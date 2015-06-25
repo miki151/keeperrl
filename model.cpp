@@ -41,6 +41,8 @@
 #include "visibility_map.h"
 #include "entity_name.h"
 #include "creature_attributes.h"
+#include "view.h"
+#include "view_index.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -393,8 +395,8 @@ void Model::exitAction() {
 #else
   bool canRetire = !playerControl->isRetired();
 #endif
-  vector<View::ListElem> elems { "Save the game",
-    {"Retire", canRetire ? View::NORMAL : View::INACTIVE} , "Change options", "Abandon the game" };
+  vector<ListElem> elems { "Save the game",
+    {"Retire", canRetire ? ListElem::NORMAL : ListElem::INACTIVE} , "Change options", "Abandon the game" };
   auto ind = view->chooseFromList("Would you like to:", elems);
   if (!ind)
     return;

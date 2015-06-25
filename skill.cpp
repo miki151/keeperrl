@@ -17,8 +17,8 @@
 
 #include "skill.h"
 #include "enums.h"
-#include "item_attributes.h"
 #include "creature.h"
+#include "modifier_type.h"
 
 string Skill::getName() const {
   return name;

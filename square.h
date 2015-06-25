@@ -19,7 +19,6 @@
 #include "util.h"
 #include "debug.h"
 #include "renderable.h"
-#include "movement_type.h"
 #include "view_object.h"
 
 class Level;
@@ -33,6 +32,8 @@ class ViewIndex;
 class Fire;
 class PoisonGas;
 class Inventory;
+class MovementType;
+class MovementSet;
 
 class Square : public Renderable {
   public:
@@ -44,7 +45,7 @@ class Square : public Renderable {
     double flamability;
     map<SquareId, int> constructions;
     bool ticking;
-    MovementSet movementSet;
+    HeapAllocated<MovementSet> movementSet;
     bool canDestroy;
     const Tribe* owner;
   };
@@ -91,16 +92,16 @@ class Square : public Renderable {
   //@{
   /** Checks if this creature can enter the square at the moment. Takes account other creatures on the square.*/
   bool canEnter(const Creature*) const;
-  bool canEnter(MovementType) const;
+  bool canEnter(const MovementType&) const;
   //@}
 
-  bool canNavigate(MovementType) const;
+  bool canNavigate(const MovementType&) const;
 
   //@{
   /** Checks if this square is can be entered by the creature. Doesn't take into account other 
     * creatures on the square.*/
   bool canEnterEmpty(const Creature*) const;
-  bool canEnterEmpty(MovementType) const;
+  bool canEnterEmpty(const MovementType&) const;
   //@}
 
   /** Checks if this square obstructs view.*/
@@ -273,7 +274,7 @@ class Square : public Renderable {
   map<SquareId, int> SERIAL(constructions);
   bool SERIAL(ticking);
   double SERIAL(fog) = 0;
-  MovementSet SERIAL(movementSet);
+  HeapAllocated<MovementSet> SERIAL(movementSet);
   void updateMovement();
   bool SERIAL(updateMemory) = true;
   mutable bool SERIAL(updateViewIndex) = true;

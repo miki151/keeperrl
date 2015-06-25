@@ -23,6 +23,8 @@
 #include "user_input.h"
 
 class Clock;
+struct MinionAction;
+class ListElem;
 
 class GuiBuilder {
   public:
@@ -63,7 +65,7 @@ class GuiBuilder {
   void drawBandOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   void drawMessages(vector<OverlayInfo>&, const vector<PlayerMessage>&, int guiLength);
   void drawGameSpeedDialog(vector<OverlayInfo>&);
-  typedef function<void(optional<View::MinionAction>)> MinionMenuCallback;
+  typedef function<void(optional<MinionAction>)> MinionMenuCallback;
   PGuiElem drawMinionMenu(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id& current,
       MinionMenuCallback);
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
@@ -93,12 +95,12 @@ class GuiBuilder {
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
   bool showMorale() const;
-  Rectangle getMenuPosition(View::MenuType);
+  Rectangle getMenuPosition(MenuType);
   Rectangle getMinionMenuPosition();
   Rectangle getEquipmentMenuPosition(int height);
   Rectangle getTextInputPosition();
-  PGuiElem drawListGui(const string& title, const vector<View::ListElem>& options,
-      View::MenuType, int* height, int* highlight, int* choice);
+  PGuiElem drawListGui(const string& title, const vector<ListElem>& options,
+      MenuType, int* height, int* highlight, int* choice);
   int getScrollPos(int index, int count);
 
   private:
@@ -172,9 +174,9 @@ class GuiBuilder {
   vector<string> getItemHint(const ItemInfo&);
   bool morale = true;
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
-  vector<PGuiElem> getMultiLine(const string& text, Color, View::MenuType, int maxWidth);
+  vector<PGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);
   PGuiElem menuElemMargins(PGuiElem);
-  PGuiElem getHighlight(View::MenuType, const string& label, int height);
+  PGuiElem getHighlight(MenuType, const string& label, int height);
   vector<string> breakText(const string& text, int maxWidth);
   string getPlayerTitle(PlayerInfo&);
 };

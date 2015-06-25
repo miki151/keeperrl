@@ -28,6 +28,10 @@
 #include "tribe.h"
 #include "collective_config.h"
 #include "entity_name.h"
+#include "modifier_type.h"
+#include "cost_info.h"
+#include "monster_ai.h"
+#include "task.h"
 
 struct Collective::ItemFetchInfo {
   ItemIndex index;
@@ -74,7 +78,7 @@ struct Collective::PrisonerInfo : public NamedTupleBase<PrisonerState, UniqueEnt
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(Task::Callback)
+  ar& SUBCLASS(TaskCallback)
     & SVAR(creatures)
     & SVAR(taskMap)
     & SVAR(tribe)
@@ -1559,11 +1563,11 @@ int Collective::numResourcePlusDebt(ResourceId id) const {
   return ret;
 }
 
-bool Collective::hasResource(CostInfo cost) const {
+bool Collective::hasResource(const CostInfo& cost) const {
   return numResource(cost.id()) >= cost.value();
 }
 
-void Collective::takeResource(CostInfo cost) {
+void Collective::takeResource(const CostInfo& cost) {
   int num = cost.value();
   if (num == 0)
     return;
@@ -1589,7 +1593,7 @@ void Collective::takeResource(CostInfo cost) {
   FAIL << "Not enough " << resourceInfo.at(cost.id()).name << " missing " << num << " of " << cost.value();
 }
 
-void Collective::returnResource(CostInfo amount) {
+void Collective::returnResource(const CostInfo& amount) {
   if (amount.value() == 0)
     return;
   CHECK(amount.value() > 0);
@@ -1779,7 +1783,7 @@ void Collective::destroySquare(Vec2 pos) {
   level->getSafeSquare(pos)->removeTriggers();
 }
 
-void Collective::addConstruction(Vec2 pos, SquareType type, CostInfo cost, bool immediately, bool noCredit) {
+void Collective::addConstruction(Vec2 pos, SquareType type, const CostInfo& cost, bool immediately, bool noCredit) {
   if (immediately && hasResource(cost)) {
     while (!getLevel()->getSafeSquare(pos)->construct(type)) {}
     onConstructed(pos, type);

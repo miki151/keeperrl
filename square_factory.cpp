@@ -32,6 +32,9 @@
 #include "event.h"
 #include "tribe.h"
 #include "entity_name.h"
+#include "modifier_type.h"
+#include "movement_set.h"
+#include "movement_type.h"
 
 class Staircase : public Square {
   public:
@@ -374,8 +377,7 @@ class TribeDoor : public Door {
   TribeDoor(const ViewObject& object, const Tribe* t, int destStrength, Square::Params params)
     : Door(object, CONSTRUCT(Square::Params,
           c = params;
-          c.movementSet
-              .addTraitForTribe(t, MovementTrait::WALK)
+          c.movementSet->addTraitForTribe(t, MovementTrait::WALK)
               .removeTrait(MovementTrait::WALK); )),
       tribe(t), destructionStrength(destStrength) {
   }

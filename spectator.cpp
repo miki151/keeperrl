@@ -6,6 +6,7 @@
 #include "model.h"
 #include "game_info.h"
 #include "creature.h"
+#include "view_index.h"
 
 Spectator::Spectator(const Level* l) : level(l) {
 }

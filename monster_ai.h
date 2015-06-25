@@ -21,25 +21,6 @@
 class Creature;
 class Location;
 
-struct MoveInfo {
-  MoveInfo(double val, CreatureAction m) : value(m ? val : 0), move(m) {}
-  MoveInfo(CreatureAction m) : MoveInfo(1.0, m) {}
-
-  double value;
-  CreatureAction move;
-
-  operator bool() const {
-    return move;
-  }
-
-  MoveInfo setValue(double v) {
-    MoveInfo ret(*this);
-    ret.value = v;
-    return ret;
-  }
-};
-
-const MoveInfo NoMove = {0.0, CreatureAction()};
 
 enum MonsterAIType { 
   MONSTER,
@@ -73,7 +54,7 @@ class Collective;
 
 class MonsterAIFactory {
   public:
-  PMonsterAI getMonsterAI(Creature* c);
+  PMonsterAI getMonsterAI(Creature* c) const;
 
   static MonsterAIFactory collective(Collective*);
   static MonsterAIFactory monster();

@@ -33,7 +33,11 @@ enum class ModifierType;
 enum class AttrType;
 enum class ItemClass;
 enum class EquipmentSlot;
+enum class SplashType;
+enum class GameTypeChoice;
+enum class MenuType;
 
+enum class MovementTrait;
 enum class SpawnType;
 enum class CreatureSize;
 

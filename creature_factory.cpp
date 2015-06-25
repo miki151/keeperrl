@@ -36,6 +36,7 @@
 #include "event.h"
 #include "tribe.h"
 #include "square_type.h"
+#include "monster_ai.h"
 
 template <class Archive> 
 void CreatureFactory::serialize(Archive& ar, const unsigned int version) {

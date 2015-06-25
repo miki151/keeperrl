@@ -3,7 +3,6 @@
 
 #include "util.h"
 #include "gzstream.h"
-#include "view.h"
 #include "model.h"
 
 class View;
@@ -11,6 +10,7 @@ class Highscores;
 class FileSharing;
 class Options;
 class Jukebox;
+class ListElem;
 
 class MainLoop {
   public:
@@ -29,19 +29,18 @@ class MainLoop {
     bool download;
   };
 
-  View::ListElem getGameName(const SaveFileInfo& save);
   int getSaveVersion(const SaveFileInfo& save);
   void uploadFile(const string& path);
-  void saveUI(PModel& model, Model::GameType type, View::SplashType splashType);
+  void saveUI(PModel& model, Model::GameType type, SplashType splashType);
   void getSaveOptions(const vector<pair<Model::GameType, string>>&,
-      vector<View::ListElem>& options, vector<SaveFileInfo>& allFiles);
+      vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
 
-  void getDownloadOptions(vector<View::ListElem>& options, vector<SaveFileInfo>& allFiles, const string& title);
+  void getDownloadOptions(vector<ListElem>& options, vector<SaveFileInfo>& allFiles, const string& title);
 
-  optional<SaveFileInfo> chooseSaveFile(const vector<View::ListElem>& options, const vector<SaveFileInfo>& allFiles,
+  optional<SaveFileInfo> chooseSaveFile(const vector<ListElem>& options, const vector<SaveFileInfo>& allFiles,
       string noSaveMsg, View*);
 
-  void doWithSplash(View::SplashType, int totalProgress, function<void(ProgressMeter&)> fun,
+  void doWithSplash(SplashType, int totalProgress, function<void(ProgressMeter&)> fun,
     function<void()> cancelFun = nullptr);
 
   void playModel(PModel, bool withMusic = true, bool noAutoSave = false);

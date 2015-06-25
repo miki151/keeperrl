@@ -66,13 +66,13 @@ class LoggingView : public View {
       return logAndGet(delegate->getAction(), LoggingToken::GET_ACTION);
     }
 
-    virtual optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
-        View::MenuType type, double* scrollPos, optional<UserInputId> action) override {
+    virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index,
+        MenuType type, double* scrollPos, optional<UserInputId> action) override {
       return logAndGet(delegate->chooseFromList(title, options, index, type, scrollPos, action),
           LoggingToken::CHOOSE_FROM_LIST);
     }
 
-    virtual View::GameTypeChoice chooseGameType() override {
+    virtual GameTypeChoice chooseGameType() override {
       return logAndGet(delegate->chooseGameType(), LoggingToken::CHOOSE_GAME_TYPE);
     }
 
@@ -88,7 +88,7 @@ class LoggingView : public View {
       return logAndGet(delegate->getNumber(title, min, max, increments), LoggingToken::GET_NUMBER);
     }
 
-    virtual optional<View::MinionAction> getMinionAction(const vector<PlayerInfo>& info,
+    virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>& info,
         UniqueEntity<Creature>::Id& current) override {
       return logAndGet(delegate->getMinionAction(info, current), LoggingToken::GET_MINION_ACTION);
     }

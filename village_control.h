@@ -17,9 +17,11 @@
 #define _VILLAGE_CONTROL_H
 
 #include "event.h"
-#include "task.h"
 #include "collective_control.h"
 #include "enum_variant.h"
+#include "entity_set.h"
+
+class Task;
 
 enum class VillageBehaviourId {
   KILL_LEADER,

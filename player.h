@@ -20,13 +20,14 @@
 #include "event.h"
 #include "controller.h"
 #include "user_input.h"
-#include "view.h"
 #include "creature_view.h"
 
 class View;
 class Model;
 class Creature;
 class Item;
+class ListElem;
+struct ItemInfo;
 
 class Player : public Controller, public CreatureView {
   public:
@@ -97,7 +98,7 @@ class Player : public Controller, public CreatureView {
   void consumeAction();
   void fireAction(Vec2 dir);
   vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
-  void getItemNames(vector<Item*> it, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
+  void getItemNames(vector<Item*> it, vector<ListElem>& names, vector<vector<Item*> >& groups,
       ItemPredicate = alwaysTrue<const Item*>());
   string getInventoryItemName(const Item*, bool plural) const;
   string getPluralName(Item* item, int num);

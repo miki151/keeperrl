@@ -20,6 +20,7 @@
 #include "creature.h"
 #include "effect.h"
 #include "equipment.h"
+#include "modifier_type.h"
 
 static vector<EffectType> combatConsumables {
     EffectType(EffectId::LASTING, LastingEffect::SPEED),

@@ -22,7 +22,6 @@
 #include "unique_entity.h"
 #include "view_index.h"
 
-class ViewIndex;
 class MapMemory;
 class MapLayout;
 class ViewObject;

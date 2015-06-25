@@ -29,6 +29,7 @@
 #include "player_message.h"
 #include "tribe.h"
 #include "skill.h"
+#include "modifier_type.h"
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {

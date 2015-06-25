@@ -17,14 +17,14 @@
 #define _MONSTER_H
 
 #include "enums.h"
-#include "monster_ai.h"
 #include "controller.h"
 
 class Creature;
+class MonsterAIFactory;
 
 class Monster : public Controller {
   public:
-  Monster(Creature*, MonsterAIFactory);
+  Monster(Creature*, const MonsterAIFactory&);
   
   virtual void you(MsgType type, const string& param) override;
   virtual void you(MsgType type, const vector<string>& param) override;

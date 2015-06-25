@@ -18,6 +18,7 @@
 #include "level_maker.h"
 #include "model.h"
 #include "level_builder.h"
+#include "monster_ai.h"
 
 static Location* getVillageLocation(bool markSurprise = false) {
   return new Location(NameGenerator::get(NameGeneratorId::TOWN)->getNext(), "", markSurprise);

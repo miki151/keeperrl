@@ -17,14 +17,15 @@
 #define _ITEM_H
 
 #include "util.h"
-#include "item_attributes.h"
 #include "enums.h"
 #include "unique_entity.h"
 #include "renderable.h"
+#include "effect_type.h"
 
 class Level;
 class Attack;
 class Fire;
+class ItemAttributes;
 
 RICH_ENUM(TrapType,
   BOULDER,
@@ -52,9 +53,8 @@ RICH_ENUM(ItemClass,
   CORPSE
 );
 
-class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item> {
+class Item : public Renderable, public UniqueEntity<Item> {
   public:
-  typedef ItemAttributes ItemAttributes;
   Item(const ItemAttributes&);
   virtual ~Item();
 
@@ -145,6 +145,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   string getModifiers(bool shorten = false) const;
   string getVisibleName(bool plural) const;
   string getBlindName(bool plural) const;
+  HeapAllocated<ItemAttributes> SERIAL(attributes);
   const Creature* SERIAL(shopkeeper) = nullptr;
   HeapAllocated<Fire> SERIAL(fire);
 };

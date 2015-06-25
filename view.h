@@ -28,6 +28,91 @@ class ProgressMeter;
 class PlayerInfo;
 struct ItemInfo;
 
+enum class SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING, AUTOSAVING };
+
+class ListElem {
+  public:
+  enum ElemMod {
+    NORMAL,
+    TEXT,
+    TITLE,
+    INACTIVE,
+  };
+
+  ListElem(const char*, ElemMod mod = NORMAL,
+      optional<UserInputId> triggerAction = none);
+  ListElem(const string& text = "", ElemMod mod = NORMAL,
+      optional<UserInputId> triggerAction = none);
+  ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
+
+  ListElem& setTip(const string&);
+
+  const string& getText() const;
+  const string& getSecondColumn() const;
+  const string& getTip() const;
+  ElemMod getMod() const;
+  optional<UserInputId> getAction() const;
+  void setMod(ElemMod);
+
+  static vector<ListElem> convert(const vector<string>&);
+
+  private:
+  string text;
+  string secondColumn;
+  string tooltip;
+  ElemMod mod;
+  optional<UserInputId> action;
+};
+
+enum class GameTypeChoice {
+  KEEPER,
+  ADVENTURER,
+  LOAD,
+  BACK,
+};
+
+struct MinionAction {
+  struct MinionItemAction {
+    vector<UniqueEntity<Item>::Id> SERIAL(ids);
+    optional<EquipmentSlot> SERIAL(slot);
+    ItemAction SERIAL(action);
+    template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version) {
+      ar & SVAR(ids) & SVAR(slot) & SVAR(action);
+    }
+  };
+  struct ControlAction {
+    template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version) {
+    }
+  };
+  struct RenameAction {
+    template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version) {
+      ar & SVAR(newName);
+    }
+    string SERIAL(newName);
+  };
+  struct BanishAction {
+    template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version) {
+    }
+  };
+  variant<MinionTask, MinionItemAction, ControlAction, RenameAction, BanishAction> SERIAL(action);
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(action);
+  }
+};
+
+enum class MenuType {
+  NORMAL,
+  MAIN,
+  MAIN_NO_TILES,
+  GAME_CHOICE,
+  YES_NO
+};
+
 class View {
   public:
   View();
@@ -38,8 +123,6 @@ class View {
 
   /** Resets the view before a new game.*/
   virtual void reset() = 0;
-
-  enum SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING, AUTOSAVING };
 
   /** Displays a splash screen in an active loop until \paramname{ready} is set to true in another thread.*/
   virtual void displaySplash(const ProgressMeter&, SplashType type, function<void()> cancelFun = nullptr) = 0;
@@ -71,60 +154,10 @@ class View {
   /** Returns whether a travel interrupt key is pressed at a given moment.*/
   virtual bool travelInterrupt() = 0;
 
-  enum ElemMod {
-    NORMAL,
-    TEXT,
-    TITLE,
-    INACTIVE,
-  };
-
-  class ListElem {
-    public:
-    ListElem(const char*, ElemMod mod = NORMAL,
-        optional<UserInputId> triggerAction = none);
-    ListElem(const string& text = "", ElemMod mod = NORMAL,
-        optional<UserInputId> triggerAction = none);
-    ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
-
-    ListElem& setTip(const string&);
-
-    const string& getText() const;
-    const string& getSecondColumn() const;
-    const string& getTip() const;
-    ElemMod getMod() const;
-    optional<UserInputId> getAction() const;
-    void setMod(ElemMod);
-
-    private:
-    string text;
-    string secondColumn;
-    string tooltip;
-    ElemMod mod;
-    optional<UserInputId> action;
-  };
-
-  static vector<ListElem> getListElem(const vector<string>&);
-
-  enum MenuType {
-    NORMAL_MENU,
-    MAIN_MENU,
-    MAIN_MENU_NO_TILES,
-    MINION_MENU,
-    GAME_CHOICE_MENU,
-    YES_NO_MENU
-  };
-
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
       Returns none if the player cancelled the choice.*/
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = NORMAL_MENU, double* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
-
-  enum GameTypeChoice {
-    KEEPER_CHOICE,
-    ADVENTURER_CHOICE,
-    LOAD_CHOICE,
-    BACK_CHOICE,
-  };
+      MenuType = MenuType::NORMAL, double* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
   virtual GameTypeChoice chooseGameType() = 0;
 
@@ -139,7 +172,7 @@ class View {
 
   /** Draws a window with a list of items.*/
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = NORMAL_MENU, optional<UserInputId> exitAction = none) = 0;
+      MenuType = MenuType::NORMAL, optional<UserInputId> exitAction = none) = 0;
 
   /** Lets the player choose a number. Returns none if the player cancelled the choice.*/
   virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) = 0;
@@ -147,40 +180,6 @@ class View {
   /** Lets the player input a string. Returns none if the player cancelled the choice.*/
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint = "") = 0;
-
-  struct MinionAction {
-    struct MinionItemAction {
-      vector<UniqueEntity<Item>::Id> SERIAL(ids);
-      optional<EquipmentSlot> SERIAL(slot);
-      ItemAction SERIAL(action);
-      template <class Archive> 
-      void serialize(Archive& ar, const unsigned int version) {
-        ar & SVAR(ids) & SVAR(slot) & SVAR(action);
-      }
-    };
-    struct ControlAction {
-      template <class Archive> 
-      void serialize(Archive& ar, const unsigned int version) {
-      }
-    };
-    struct RenameAction {
-      template <class Archive> 
-      void serialize(Archive& ar, const unsigned int version) {
-        ar & SVAR(newName);
-      }
-      string SERIAL(newName);
-    };
-    struct BanishAction {
-      template <class Archive> 
-      void serialize(Archive& ar, const unsigned int version) {
-      }
-    };
-    variant<MinionTask, MinionItemAction, ControlAction, RenameAction, BanishAction> SERIAL(action);
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-      ar & SVAR(action);
-    }
-  };
 
   virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>&,
       UniqueEntity<Creature>::Id& current) = 0;

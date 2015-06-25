@@ -17,7 +17,6 @@
 #define _GUI_ELEM
 
 #include "renderer.h"
-#include "view.h"
 
 class ViewObject;
 class Clock;
@@ -119,8 +118,7 @@ class GuiFactory {
   PGuiElem mouseOverAction(function<void()> callback, function<void()> onLeaveCallback = nullptr);
   PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
   PGuiElem mouseHighlight2(PGuiElem highlight);
-  PGuiElem mouseHighlightGameChoice(PGuiElem, View::GameTypeChoice my,
-      optional<View::GameTypeChoice>& highlight);
+  PGuiElem mouseHighlightGameChoice(PGuiElem, GameTypeChoice my, optional<GameTypeChoice>& highlight);
   static int getHeldInitValue();
   PGuiElem scrollable(PGuiElem content, double* scrollPos = nullptr, int* held = nullptr);
   PGuiElem getScrollButton();

@@ -83,7 +83,8 @@ struct InventoryItemInfo : public NamedTupleBase<vector<UniqueEntity<Item>::Id>,
 
 enum class SpellId;
 
-typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec2, TeamLeaderInfo, SpellId),
+class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec2, TeamLeaderInfo,
+    SpellId),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::LIBRARY,
@@ -113,6 +114,8 @@ typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec
         ASSIGN(TeamLeaderInfo,
             UserInputId::SET_TEAM_LEADER),
         ASSIGN(SpellId,
-            UserInputId::CAST_SPELL)> UserInput;
+            UserInputId::CAST_SPELL)> {
+  using EnumVariant::EnumVariant;
+};
 
 #endif

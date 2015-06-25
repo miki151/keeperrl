@@ -53,7 +53,7 @@ void advance(View* view, const Technology* tech) {
 }
 
 void advances(View* view, int lastInd = 0) {
-  vector<View::ListElem> options;
+  vector<ListElem> options;
   vector<Technology*> techs = Technology::getSorted();
   for (Technology* tech : techs)
     options.push_back(tech->getName());
@@ -69,7 +69,7 @@ void skill(View* view, const Skill* skill) {
 }
 
 void skills(View* view, int lastInd = 0) {
-  vector<View::ListElem> options;
+  vector<ListElem> options;
   vector<Skill*> s = Skill::getAll();
   for (Skill* skill : s)
     options.push_back(skill->getName());
@@ -88,7 +88,7 @@ void room(View* view, PlayerControl::RoomInfo& info) {
 }
 
 void rooms(View* view, int lastInd = 0) {
-  vector<View::ListElem> options;
+  vector<ListElem> options;
   vector<PlayerControl::RoomInfo> roomList = PlayerControl::getRoomInfo();
   for (auto& elem : roomList)
     options.push_back(elem.name);
@@ -107,8 +107,8 @@ void epithet(View* view, const Epithet* epithet) {
 }
 
 void deity(View* view, const Deity* d, int lastInd = 0) {
-  vector<View::ListElem> options { {"Lives in " + d->getHabitatString() +
-      " and is the " + d->getGender().god() + " of:", View::TITLE}};
+  vector<ListElem> options { {"Lives in " + d->getHabitatString() +
+      " and is the " + d->getGender().god() + " of:", ListElem::TITLE}};
   for (EpithetId id : d->getEpithets())
     options.push_back(Epithet::get(id)->getName());
   auto index = view->chooseFromList(d->getName(), options, lastInd);
@@ -123,7 +123,7 @@ void Encyclopedia::deity(View* view, const Deity* d) {
 }
 
 void deities(View* view, int lastInd = 0) {
-  vector<View::ListElem> options;
+  vector<ListElem> options;
   for (Deity* deity : Deity::getDeities())
     options.push_back(deity->getName());
   auto index = view->chooseFromList("Deities", options, lastInd);

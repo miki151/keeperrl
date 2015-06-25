@@ -14,6 +14,7 @@
 #include "model_builder.h"
 #include "parse_game.h"
 #include "name_generator.h"
+#include "view.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
     const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin, bool singleThread)
@@ -106,11 +107,6 @@ static void saveGame(PModel& model, const string& path) {
   }
 }
 
-View::ListElem MainLoop::getGameName(const SaveFileInfo& save) {
-  auto info = getNameAndVersion(userPath + "/" + save.filename);
-  return View::ListElem(info->first, getDateString(save.date));
-}
-
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
   if (auto info = getNameAndVersion(userPath + "/" + save.filename))
     return info->second;
@@ -121,7 +117,7 @@ int MainLoop::getSaveVersion(const SaveFileInfo& save) {
 void MainLoop::uploadFile(const string& path) {
   atomic<bool> cancelled(false);
   optional<string> error;
-  doWithSplash(View::UPLOADING, 1,
+  doWithSplash(SplashType::UPLOADING, 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->uploadRetired(path, meter);
       },
@@ -137,7 +133,7 @@ string MainLoop::getSavePath(Model* model, Model::GameType gameType) {
   return userPath + "/" + stripNonAscii(model->getGameIdentifier()) + getSaveSuffix(gameType);
 }
 
-void MainLoop::saveUI(PModel& model, Model::GameType type, View::SplashType splashType) {
+void MainLoop::saveUI(PModel& model, Model::GameType type, SplashType splashType) {
   string path = getSavePath(model.get(), type);
   doWithSplash(splashType, 62500,
       [&] (ProgressMeter& meter) {
@@ -153,25 +149,27 @@ void MainLoop::eraseAutosave(Model* model) {
 }
 
 void MainLoop::getSaveOptions(const vector<pair<Model::GameType, string>>& games,
-    vector<View::ListElem>& options, vector<SaveFileInfo>& allFiles) {
+    vector<ListElem>& options, vector<SaveFileInfo>& allFiles) {
   for (auto elem : games) {
     vector<SaveFileInfo> files = getSaveFiles(userPath, getSaveSuffix(elem.first));
     files = ::filter(files, [this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
     append(allFiles, files);
     if (!files.empty()) {
-      options.emplace_back(elem.second, View::TITLE);
-      append(options, transform2<View::ListElem>(files,
-            [this] (const SaveFileInfo& info) { return getGameName(info);}));
+      options.emplace_back(elem.second, ListElem::TITLE);
+      append(options, transform2<ListElem>(files,
+            [this] (const SaveFileInfo& info) {
+              auto nameAndVersion = getNameAndVersion(userPath + "/" + info.filename);
+              return ListElem(nameAndVersion->first, getDateString(info.date));}));
     }
   }
 }
 
-void MainLoop::getDownloadOptions(vector<View::ListElem>& options, vector<SaveFileInfo>& allFiles,
+void MainLoop::getDownloadOptions(vector<ListElem>& options, vector<SaveFileInfo>& allFiles,
     const string& title) {
   vector<FileSharing::GameInfo> games = fileSharing->listGames();
   sort(games.begin(), games.end(), [] (const FileSharing::GameInfo& a, const FileSharing::GameInfo& b) {
       return a.time > b.time; });
-  options.emplace_back(title, View::TITLE);
+  options.emplace_back(title, ListElem::TITLE);
   for (FileSharing::GameInfo info : games)
     if (isCompatible(info.version)) {
       bool dup = false;
@@ -187,7 +185,7 @@ void MainLoop::getDownloadOptions(vector<View::ListElem>& options, vector<SaveFi
     }
 }
 
-optional<MainLoop::SaveFileInfo> MainLoop::chooseSaveFile(const vector<View::ListElem>& options,
+optional<MainLoop::SaveFileInfo> MainLoop::chooseSaveFile(const vector<ListElem>& options,
     const vector<SaveFileInfo>& allFiles, string noSaveMsg, View* view) {
   if (options.empty()) {
     view->presentText("", noSaveMsg);
@@ -211,7 +209,7 @@ void MainLoop::playModel(PModel model, bool withMusic, bool noAutoSave) {
     double gameTimeStep = view->getGameSpeed() / stepTimeMilli;
     if (auto exitInfo = model->update(totTime)) {
       if (!exitInfo->isAbandoned())
-        saveUI(model, exitInfo->getGameType(), View::SAVING);
+        saveUI(model, exitInfo->getGameType(), SplashType::SAVING);
       eraseAutosave(model.get());
       return;
     }
@@ -225,7 +223,7 @@ void MainLoop::playModel(PModel model, bool withMusic, bool noAutoSave) {
       totTime += min(1.0, double(meter.getCount(view->getTimeMilli())) * gameTimeStep);
     if (lastAutoSave < model->getTime() - getAutosaveFreq() && !noAutoSave) {
       if (options->getBoolValue(OptionId::AUTOSAVE))
-        saveUI(model, Model::GameType::AUTOSAVE, View::AUTOSAVING);
+        saveUI(model, Model::GameType::AUTOSAVE, SplashType::AUTOSAVING);
       lastAutoSave = model->getTime();
     }
     if (useSingleThread)
@@ -242,23 +240,23 @@ void MainLoop::playGameChoice() {
     auto choice = view->chooseGameType();
     PModel model;
     switch (choice) {
-      case View::KEEPER_CHOICE:
+      case GameTypeChoice::KEEPER:
         options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
         if (options->handleOrExit(view, OptionSet::KEEPER, -1)) {
           model = keeperGame();
         }
         break;
-      case View::ADVENTURER_CHOICE:
+      case GameTypeChoice::ADVENTURER:
         options->setDefaultString(OptionId::ADVENTURER_NAME,
             NameGenerator::get(NameGeneratorId::FIRST)->getNext());
         if (options->handleOrExit(view, OptionSet::ADVENTURER, -1)) {
           model = adventurerGame();
         }
         break;
-      case View::LOAD_CHOICE:
+      case GameTypeChoice::LOAD:
         model = loadPrevious(eraseSave(options));
         break;
-      case View::BACK_CHOICE:
+      case GameTypeChoice::BACK:
         return;
     }
     if (model) {
@@ -281,7 +279,7 @@ void MainLoop::splashScreen() {
 void MainLoop::showCredits(const string& path, View* view) {
   ifstream in(path);
   CHECK(!!in);
-  vector<View::ListElem> lines;
+  vector<ListElem> lines;
   while (1) {
     char buf[100];
     in.getline(buf, 100);
@@ -289,9 +287,9 @@ void MainLoop::showCredits(const string& path, View* view) {
       break;
     string s(buf);
     if (s.back() == ':')
-      lines.emplace_back(s, View::TITLE);
+      lines.emplace_back(s, ListElem::TITLE);
     else
-      lines.emplace_back(s, View::NORMAL);
+      lines.emplace_back(s, ListElem::NORMAL);
   }
   view->presentList("Credits", lines, false);
 }
@@ -311,7 +309,7 @@ void MainLoop::start(bool tilesPresent) {
   while (1) {
     jukebox->setType(MusicType::MAIN, true);
     auto choice = view->chooseFromList("", {
-        "Play game", "Change settings", "View high scores", "View credits", "Quit"}, lastIndex, View::MAIN_MENU);
+        "Play game", "Change settings", "View high scores", "View credits", "Quit"}, lastIndex, MenuType::MAIN);
     if (!choice)
       continue;
     lastIndex = *choice;
@@ -327,7 +325,7 @@ void MainLoop::start(bool tilesPresent) {
   }
 }
 
-void MainLoop::doWithSplash(View::SplashType type, int totalProgress, function<void(ProgressMeter&)> fun,
+void MainLoop::doWithSplash(SplashType type, int totalProgress, function<void(ProgressMeter&)> fun,
     function<void()> cancelFun) {
   ProgressMeter meter(1.0 / totalProgress);
   view->displaySplash(meter, type, cancelFun);
@@ -346,7 +344,7 @@ void MainLoop::doWithSplash(View::SplashType type, int totalProgress, function<v
 PModel MainLoop::keeperGame() {
   PModel model;
   NameGenerator::init(dataFreePath + "/names");
-  doWithSplash(View::CREATING, 166000,
+  doWithSplash(SplashType::CREATING, 166000,
       [&model, this] (ProgressMeter& meter) {
         model = ModelBuilder::collectiveModel(meter, options, view,
             NameGenerator::get(NameGeneratorId::WORLD)->getNext());
@@ -356,7 +354,7 @@ PModel MainLoop::keeperGame() {
 
 PModel MainLoop::loadModel(string file, bool erase) {
   PModel model;
-  doWithSplash(View::LOADING, 62500,
+  doWithSplash(SplashType::LOADING, 62500,
       [&] (ProgressMeter& meter) {
         Square::progressMeter = &meter;
         Debug() << "Loading from " << file;
@@ -372,7 +370,7 @@ PModel MainLoop::loadModel(string file, bool erase) {
 bool MainLoop::downloadGame(const string& filename) {
   atomic<bool> cancelled(false);
   optional<string> error;
-  doWithSplash(View::DOWNLOADING, 1,
+  doWithSplash(SplashType::DOWNLOADING, 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->download(filename, userPath, meter);
       },
@@ -386,7 +384,7 @@ bool MainLoop::downloadGame(const string& filename) {
 }
 
 PModel MainLoop::adventurerGame() {
-  vector<View::ListElem> elems;
+  vector<ListElem> elems;
   vector<SaveFileInfo> files;
   getSaveOptions({
       {Model::GameType::RETIRED_KEEPER, "Retired local games:"}}, elems, files);
@@ -404,7 +402,7 @@ PModel MainLoop::adventurerGame() {
 }
 
 PModel MainLoop::loadPrevious(bool erase) {
-  vector<View::ListElem> options;
+  vector<ListElem> options;
   vector<SaveFileInfo> files;
   getSaveOptions({
       {Model::GameType::AUTOSAVE, "Recovered games:"},

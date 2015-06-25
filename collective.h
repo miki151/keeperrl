@@ -15,10 +15,9 @@
 #ifndef _COLLECTIVE_H
 #define _COLLECTIVE_H
 
-#include "monster_ai.h"
-#include "task.h"
+#include "move_info.h"
+#include "task_callback.h"
 #include "minion_task.h"
-#include "cost_info.h"
 #include "square_apply_type.h"
 #include "resource_id.h"
 #include "square_type.h"
@@ -40,6 +39,7 @@ class ConstructionMap;
 class Technology;
 class CollectiveConfig;
 class MinionAttraction;
+struct CostInfo;
 
 RICH_ENUM(CollectiveWarning,
     DIGGING,
@@ -67,7 +67,7 @@ enum class AttackPrerequisite {
   THRONE
 };
 
-class Collective : public Task::Callback {
+class Collective : public TaskCallback {
   public:
   void addCreature(Creature*, EnumSet<MinionTrait>);
   void addCreature(PCreature, Vec2, EnumSet<MinionTrait>);
@@ -157,9 +157,9 @@ class Collective : public Task::Callback {
 
   int numResource(ResourceId) const;
   int numResourcePlusDebt(ResourceId) const;
-  bool hasResource(CostInfo) const;
-  void takeResource(CostInfo);
-  void returnResource(CostInfo);
+  bool hasResource(const CostInfo&) const;
+  void takeResource(const CostInfo&);
+  void returnResource(const CostInfo&);
 
   struct ItemFetchInfo;
 
@@ -188,7 +188,7 @@ class Collective : public Task::Callback {
 
   void addTrap(Vec2, TrapType);
   void removeTrap(Vec2);
-  void addConstruction(Vec2, SquareType, CostInfo, bool immediately, bool noCredit);
+  void addConstruction(Vec2, SquareType, const CostInfo&, bool immediately, bool noCredit);
   void removeConstruction(Vec2);
   void destroySquare(Vec2);
   bool isPlannedTorch(Vec2) const;

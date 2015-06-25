@@ -1110,7 +1110,7 @@ PGuiElem GuiFactory::mouseHighlight(PGuiElem elem, int myIndex, int* highlighted
 
 class MouseHighlightGameChoice : public GuiLayout {
   public:
-  MouseHighlightGameChoice(PGuiElem h, View::GameTypeChoice my, optional<View::GameTypeChoice>& highlight)
+  MouseHighlightGameChoice(PGuiElem h, GameTypeChoice my, optional<GameTypeChoice>& highlight)
     : GuiLayout(makeVec<PGuiElem>(std::move(h))), myChoice(my), highlighted(highlight) {}
 
   virtual void onMouseGone() override {
@@ -1132,12 +1132,12 @@ class MouseHighlightGameChoice : public GuiLayout {
   }
 
   private:
-  View::GameTypeChoice myChoice;
-  optional<View::GameTypeChoice>& highlighted;
+  GameTypeChoice myChoice;
+  optional<GameTypeChoice>& highlighted;
 };
 
 PGuiElem GuiFactory::mouseHighlightGameChoice(PGuiElem elem,
-    View::GameTypeChoice my, optional<View::GameTypeChoice>& highlight) {
+    GameTypeChoice my, optional<GameTypeChoice>& highlight) {
   return PGuiElem(new MouseHighlightGameChoice(std::move(elem), my, highlight));
 }
 

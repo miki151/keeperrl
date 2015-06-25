@@ -33,6 +33,8 @@
 #include "fire.h"
 #include "tribe.h"
 #include "entity_name.h"
+#include "movement_type.h"
+#include "movement_set.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -216,18 +218,18 @@ bool Square::sunlightBurns() const {
 }
 
 void Square::updateSunlightMovement(bool isSunlight) {
-  movementSet.setSunlight(isSunlight);
+  movementSet->setSunlight(isSunlight);
 }
 
 void Square::updateMovement() {
   if (fire->isBurning()) {
-    if (!movementSet.isOnFire()) {
-      movementSet.setOnFire(true);
+    if (!movementSet->isOnFire()) {
+      movementSet->setOnFire(true);
       level->updateConnectivity(position);
     }
   } else
-  if (movementSet.isOnFire()) {
-    movementSet.setOnFire(false);
+  if (movementSet->isOnFire()) {
+    movementSet->setOnFire(false);
     level->updateConnectivity(position);
   }
 }
@@ -312,21 +314,22 @@ void Square::onItemLands(vector<PItem> item, const Attack& attack, int remaining
     dropItems(std::move(item));
 }
 
-bool Square::canNavigate(MovementType type) const {
+bool Square::canNavigate(const MovementType& type1) const {
+  MovementType type(type1);
   return canEnterEmpty(type) || (canDestroy(type.getTribe()) && !canEnterEmpty(type.setForced())) || 
       (creature && creature->isStationary() && type.getTribe() != creature->getTribe());
 }
 
-bool Square::canEnter(MovementType movement) const {
+bool Square::canEnter(const MovementType& movement) const {
   return creature == nullptr && canEnterEmpty(movement);
 }
 
-bool Square::canEnterEmpty(MovementType movement) const {
+bool Square::canEnterEmpty(const MovementType& movement) const {
   if (creature && creature->isStationary())
     return false;
   if (!movement.isForced() && forbiddenTribe && forbiddenTribe == movement.getTribe())
     return false;
-  return movementSet.canEnter(movement);
+  return movementSet->canEnter(movement);
 }
 
 bool Square::canEnter(const Creature* c) const {
@@ -553,12 +556,12 @@ bool Square::needsMemoryUpdate() const {
 }
 
 void Square::addTraitForTribe(const Tribe* tribe, MovementTrait trait) {
-  movementSet.addTraitForTribe(tribe, trait);
+  movementSet->addTraitForTribe(tribe, trait);
   level->updateConnectivity(position);
 }
 
 void Square::removeTraitForTribe(const Tribe* tribe, MovementTrait trait) {
-  movementSet.removeTraitForTribe(tribe, trait);
+  movementSet->removeTraitForTribe(tribe, trait);
   level->updateConnectivity(position);
 }
 

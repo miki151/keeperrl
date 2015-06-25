@@ -36,6 +36,8 @@
 #include "equipment.h"
 #include "spell.h"
 #include "entity_name.h"
+#include "view.h"
+#include "view_index.h"
 
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -108,18 +110,18 @@ string Player::getInventoryItemName(const Item* item, bool plural) const {
     return item->getNameAndModifiers(plural, getCreature()->isBlind());
 }
 
-void Player::getItemNames(vector<Item*> items, vector<View::ListElem>& names, vector<vector<Item*> >& groups,
+void Player::getItemNames(vector<Item*> items, vector<ListElem>& names, vector<vector<Item*> >& groups,
     ItemPredicate predicate) {
   map<string, vector<Item*> > ret = groupBy<Item*, string>(items, 
       [this] (Item* const& item) { return getInventoryItemName(item, false); });
   for (auto elem : ret) {
     if (elem.second.size() == 1)
-      names.push_back(View::ListElem(getInventoryItemName(elem.second[0], false),
-          predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE).setTip(elem.second[0]->getDescription()));
+      names.push_back(ListElem(getInventoryItemName(elem.second[0], false),
+          predicate(elem.second[0]) ? ListElem::NORMAL : ListElem::INACTIVE).setTip(elem.second[0]->getDescription()));
     else
-      names.push_back(View::ListElem(toString<int>(elem.second.size()) + " " 
+      names.push_back(ListElem(toString<int>(elem.second.size()) + " " 
             + getInventoryItemName(elem.second[0], true),
-          predicate(elem.second[0]) ? View::NORMAL : View::INACTIVE).setTip(elem.second[0]->getDescription()));
+          predicate(elem.second[0]) ? ListElem::NORMAL : ListElem::INACTIVE).setTip(elem.second[0]->getDescription()));
     groups.push_back(elem.second);
   }
 }
@@ -207,14 +209,14 @@ static string getText(ItemClass type) {
 vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, optional<UserInputId> exitAction) {
   map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
       getCreature()->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
-  vector<View::ListElem> names;
+  vector<ListElem> names;
   vector<vector<Item*> > groups;
   for (auto elem : typeDisplayOrder) 
     if (typeGroups[elem].size() > 0) {
-      names.push_back(View::ListElem(getText(elem), View::TITLE));
+      names.push_back(ListElem(getText(elem), ListElem::TITLE));
       getItemNames(typeGroups[elem], names, groups, predicate);
     }
-  optional<int> index = model->getView()->chooseFromList(text, names, 0, View::NORMAL_MENU, nullptr, exitAction);
+  optional<int> index = model->getView()->chooseFromList(text, names, 0, MenuType::NORMAL, nullptr, exitAction);
   if (index)
     return groups[*index];
   return vector<Item*>();
@@ -431,16 +433,16 @@ void Player::sleeping() {
 static bool displayTravelInfo = true;
 
 void Player::attackAction(Creature* other) {
-  vector<View::ListElem> elems;
+  vector<ListElem> elems;
   vector<AttackLevel> levels = getCreature()->getAttackLevels();
   for (auto level : levels)
     switch (level) {
-      case AttackLevel::LOW: elems.push_back(View::ListElem("Low").setTip("Aim at lower parts of the body.")); break;
-      case AttackLevel::MIDDLE: elems.push_back(View::ListElem("Middle").setTip("Aim at middle parts of the body.")); break;
-      case AttackLevel::HIGH: elems.push_back(View::ListElem("High").setTip("Aim at higher parts of the body.")); break;
+      case AttackLevel::LOW: elems.push_back(ListElem("Low").setTip("Aim at lower parts of the body.")); break;
+      case AttackLevel::MIDDLE: elems.push_back(ListElem("Middle").setTip("Aim at middle parts of the body.")); break;
+      case AttackLevel::HIGH: elems.push_back(ListElem("High").setTip("Aim at higher parts of the body.")); break;
     }
-  elems.push_back(View::ListElem("Wild").setTip("+20\% damage, -20\% accuracy, +50\% time spent."));
-  elems.push_back(View::ListElem("Swift").setTip("-20\% damage, +20\% accuracy, -30\% time spent."));
+  elems.push_back(ListElem("Wild").setTip("+20\% damage, -20\% accuracy, +50\% time spent."));
+  elems.push_back(ListElem("Swift").setTip("-20\% damage, +20\% accuracy, -30\% time spent."));
   if (auto ind = model->getView()->chooseFromList("Choose attack parameters:", elems)) {
     if (*ind < levels.size())
       getCreature()->attack(other, CONSTRUCT(Creature::AttackParams, c.level = levels[*ind];)).perform(getCreature());
@@ -578,7 +580,7 @@ void Player::makeMove() {
 }
 
 void Player::showHistory() {
-  model->getView()->presentList("Message history:", View::getListElem(messageHistory), true);
+  model->getView()->presentList("Message history:", ListElem::convert(messageHistory), true);
 }
 
 static string getForceMovementQuestion(const Square* square, const Creature* creature) {

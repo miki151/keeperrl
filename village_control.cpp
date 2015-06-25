@@ -23,6 +23,7 @@
 #include "collective_teams.h"
 #include "tribe.h"
 #include "effect_type.h"
+#include "task.h"
 
 template <class Archive>
 void VillageControl::Villain::serialize(Archive& ar, const unsigned int version) {

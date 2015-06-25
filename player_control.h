@@ -17,10 +17,8 @@
 #define _PLAYER_CONTROL_H
 
 #include "creature_view.h"
-#include "task.h"
 #include "entity_set.h"
 #include "event.h"
-#include "view.h"
 #include "collective_control.h"
 #include "event.h"
 #include "cost_info.h"
@@ -34,6 +32,9 @@ class Collective;
 class CollectiveTeams;
 class MapMemory;
 class VisibilityMap;
+class ListElem;
+class UserInput;
+struct MinionAction;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
@@ -133,50 +134,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void controlSingle(const Creature*);
   void commandTeam(TeamId);
 
-  struct BuildInfo {
-    struct SquareInfo {
-      SquareType type;
-      CostInfo cost;
-      string name;
-      bool buildImmediatly;
-      bool noCredit;
-      double costExponent;
-      optional<int> maxNumber;
-    } squareInfo;
-
-    struct TrapInfo {
-      TrapType type;
-      string name;
-      ViewId viewId;
-    } trapInfo;
-
-    enum BuildType {
-      DIG,
-      SQUARE,
-      IMP,
-      TRAP,
-      GUARD_POST,
-      DESTROY,
-      FETCH,
-      DISPATCH,
-      CLAIM_TILE,
-      FORBID_ZONE,
-      TORCH,
-    } buildType;
-
-    vector<Requirement> requirements;
-    string help;
-    char hotkey;
-    string groupName;
-
-    BuildInfo(SquareInfo info, vector<Requirement> = {}, const string& h = "", char hotkey = 0,
-        string group = "");
-    BuildInfo(TrapInfo info, vector<Requirement> = {}, const string& h = "", char hotkey = 0,
-        string group = "");
-    BuildInfo(DeityHabitat, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
-    BuildInfo(const Creature*, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
-    BuildInfo(BuildType type, const string& h = "", char hotkey = 0, string group = "");
-  };
+  struct BuildInfo;
   bool meetsRequirement(Requirement) const;
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
@@ -211,7 +169,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   int getNumMinions() const;
   void minionView(Creature* creature);
   vector<PlayerInfo> getMinionGroup(Creature* like);
-  void minionEquipmentAction(Creature* creature, const View::MinionAction::MinionItemAction&);
+  void minionEquipmentAction(Creature* creature, const MinionAction&);
   void addEquipment(Creature*, EquipmentSlot);
   void addConsumableItem(Creature*);
   void handleEquipment(View* view, Creature* creature);

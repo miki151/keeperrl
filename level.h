@@ -20,7 +20,6 @@
 #include "debug.h"
 #include "field_of_view.h"
 #include "unique_entity.h"
-#include "bucket_map.h"
 #include "movement_type.h"
 #include "sectors.h"
 
@@ -36,6 +35,7 @@ class Sectors;
 class Tribe;
 class Attack;
 class PlayerMessage;
+class CreatureBucketMap;
 
 RICH_ENUM(SquareAttrib,
   NO_DIG,
@@ -252,7 +252,7 @@ class Level : public UniqueEntity<Level> {
   const Level* SERIAL(backgroundLevel) = nullptr;
   Vec2 SERIAL(backgroundOffset);
   Table<CoverInfo> SERIAL(coverInfo);
-  BucketMap<Creature*> SERIAL(bucketMap);
+  HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
   mutable unordered_map<MovementType, Sectors> SERIAL(sectors);

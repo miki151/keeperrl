@@ -35,6 +35,7 @@
 #include "collective.h"
 #include "map_memory.h"
 #include "visibility_map.h"
+#include "view_index.h"
 
 template <class Archive>
 void Serialization::registerTypes(Archive& ar, int version) {

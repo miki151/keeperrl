@@ -16,6 +16,7 @@
 #include "stdafx.h"
 #include "options.h"
 #include "main_loop.h"
+#include "view.h"
 
 const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::HINTS, 1},
@@ -198,9 +199,9 @@ optional<Options::Value> Options::readValue(OptionId id, const string& input) {
   }
 }
 
-static View::MenuType getMenuType(OptionSet set) {
+static MenuType getMenuType(OptionSet set) {
   switch (set) {
-    default: return View::NORMAL_MENU;
+    default: return MenuType::NORMAL;
   }
 }
 
@@ -213,7 +214,7 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
           setValue(id, *val);
         break;
     case OptionId::FULLSCREEN_RESOLUTION:
-        if (auto index = view->chooseFromList("Choose resolution.", View::getListElem(choices[id])))
+        if (auto index = view->chooseFromList("Choose resolution.", ListElem::convert(choices[id])))
           setValue(id, *index);
         break;
     default:
@@ -228,10 +229,10 @@ void Options::setChoices(OptionId id, const vector<string>& v) {
 bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
   if (!optionSets.count(set))
     return true;
-  vector<View::ListElem> options;
-  options.emplace_back("Change settings:", View::TITLE);
+  vector<ListElem> options;
+  options.emplace_back("Change settings:", ListElem::TITLE);
   for (OptionId option : optionSets.at(set))
-    options.push_back(View::ListElem(names.at(option),
+    options.push_back(ListElem(names.at(option),
           getValueString(option, getValue(option))).setTip(hints.at(option)));
   options.emplace_back("Done");
   if (lastIndex == -1)
@@ -247,10 +248,10 @@ bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
 }
 
 void Options::handle(View* view, OptionSet set, int lastIndex) {
-  vector<View::ListElem> options;
-  options.emplace_back("Change settings:", View::TITLE);
+  vector<ListElem> options;
+  options.emplace_back("Change settings:", ListElem::TITLE);
   for (OptionId option : optionSets.at(set))
-    options.push_back(View::ListElem(names.at(option),
+    options.push_back(ListElem(names.at(option),
           getValueString(option, getValue(option))).setTip(hints.at(option)));
   options.emplace_back("Done");
   auto index = view->chooseFromList("", options, lastIndex, getMenuType(set));

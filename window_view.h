@@ -46,7 +46,7 @@ class WindowView: public View {
   WindowView(ViewParams); 
   virtual void initialize() override;
   virtual void reset() override;
-  virtual void displaySplash(const ProgressMeter&, View::SplashType, function<void()> cancelFun) override;
+  virtual void displaySplash(const ProgressMeter&, SplashType, function<void()> cancelFun) override;
   virtual void clearSplash() override;
 
   virtual void close() override;
@@ -56,7 +56,7 @@ class WindowView: public View {
   virtual void drawLevelMap(const CreatureView*) override;
   virtual void resetCenter() override;
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = View::NORMAL_MENU, double* scrollPos = nullptr,
+      MenuType = MenuType::NORMAL, double* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
   virtual GameTypeChoice chooseGameType() override;
   virtual optional<Vec2> chooseDirection(const string& message) override;
@@ -67,7 +67,7 @@ class WindowView: public View {
 
   virtual void presentText(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = NORMAL_MENU, optional<UserInputId> exitAction = none) override;
+      MenuType = MenuType::NORMAL, optional<UserInputId> exitAction = none) override;
   virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint) override;
@@ -103,7 +103,7 @@ class WindowView: public View {
       vector<sf::Event::KeyEvent> shortCuts);
   optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
-  PGuiElem drawGameChoices(optional<View::GameTypeChoice>& choice, optional<View::GameTypeChoice>& index);
+  PGuiElem drawGameChoices(optional<GameTypeChoice>& choice, optional<GameTypeChoice>& index);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
   void drawMap();

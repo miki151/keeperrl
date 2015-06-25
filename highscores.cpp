@@ -94,25 +94,25 @@ optional<Highscores::Score> Highscores::Score::parse(const string& buf) {
 }
 
 typedef Highscores::Score Score;
-static void fillScores(vector<View::ListElem>& elems, const vector<Score>& scores, optional<Score> lastElem) {
+static void fillScores(vector<ListElem>& elems, const vector<Score>& scores, optional<Score> lastElem) {
   for (const Score& score : scores) {
-    View::ElemMod highlight = (!lastElem || lastElem == score)
-        ? View::NORMAL : View::INACTIVE;
+    ListElem::ElemMod highlight = (!lastElem || lastElem == score)
+        ? ListElem::NORMAL : ListElem::INACTIVE;
     if (score.gameResult.empty())
-      elems.push_back(View::ListElem(score.playerName + " of " + score.worldName,
+      elems.push_back(ListElem(score.playerName + " of " + score.worldName,
           toString(score.points) + " points", highlight));
     else
-      elems.push_back(View::ListElem(score.playerName + " of " + score.worldName +
+      elems.push_back(ListElem(score.playerName + " of " + score.worldName +
           ", " + score.gameResult,
           toString(score.points) + " points", highlight));
   }
 }
 
 void Highscores::present(View* view, optional<Score> lastAdded) const {
-  vector<View::ListElem> elems { View::ListElem("Local highscores:", View::TITLE)};
+  vector<ListElem> elems { ListElem("Local highscores:", ListElem::TITLE)};
   fillScores(elems, localScores, lastAdded); 
   if (options->getBoolValue(OptionId::ONLINE)) {
-    elems.push_back(View::ListElem("Online highscores:", View::TITLE));
+    elems.push_back(ListElem("Online highscores:", ListElem::TITLE));
     fillScores(elems, remoteScores, lastAdded); 
   }
   view->presentList("High scores", elems);

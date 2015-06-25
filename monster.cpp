@@ -21,6 +21,7 @@
 #include "player_message.h"
 #include "entity_name.h"
 #include "gender.h"
+#include "monster_ai.h"
 
 template <class Archive> 
 void Monster::serialize(Archive& ar, const unsigned int version) {
@@ -33,7 +34,7 @@ SERIALIZABLE(Monster);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Monster);
 
-Monster::Monster(Creature* c, MonsterAIFactory f) : Controller(c), monsterAI(f.getMonsterAI(c)) {}
+Monster::Monster(Creature* c, const MonsterAIFactory& f) : Controller(c), monsterAI(f.getMonsterAI(c)) {}
 
 ControllerFactory Monster::getFactory(MonsterAIFactory f) {
   return ControllerFactory([=](Creature* c) { return new Monster(c, f);});

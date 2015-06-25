@@ -29,6 +29,8 @@
 #include "event.h"
 #include "entity_name.h"
 #include "skill.h"
+#include "modifier_type.h"
+#include "task.h"
 
 class Behaviour {
   public:
@@ -154,9 +156,9 @@ class Heal : public Behaviour {
     if (creature->getHealth() == 1)
       return NoMove;
     if (MoveInfo move = tryEffect(EffectId::HEAL, 1))
-      return move.setValue(min(1.0, 1.5 - creature->getHealth()));
+      return move.withValue(min(1.0, 1.5 - creature->getHealth()));
     if (MoveInfo move = tryEffect(EffectId::HEAL, 3))
-      return move.setValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
+      return move.withValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
     if (creature->getSquare()->getApplyType(creature) == SquareApplyType::SLEEP)
       return { 0.4 * min(1.0, 1.5 - creature->getHealth()), creature->applySquare()};
     Vec2 bedRadius(5, 5);
@@ -400,10 +402,10 @@ class Fighter : public Behaviour {
 
   MoveInfo getPanicMove(Creature* other, double weight) {
     if (auto teleMove = tryEffect(EffectId::TELEPORT, 1))
-      return {weight, teleMove.move};
+      return teleMove.withValue(weight);
     if (other->getPosition().dist8(creature->getPosition()) > 3)
       if (auto move = getFireMove(other->getPosition() - creature->getPosition()))
-        return {weight, move.move};
+        return move.withValue(weight);
     if (auto action = creature->moveAway(other->getPosition(), chase))
       return {weight, action.prepend([=](Creature* creature) {
         creature->setInCombat();
@@ -768,7 +770,7 @@ class Summoned : public GuardTarget {
     }
     if (target->getLevel() == creature->getLevel())
       if (MoveInfo move = getMoveTowards(target->getPosition()))
-        return move.setValue(0.5);
+        return move.withValue(0.5);
     return NoMove;
   }
 
@@ -995,7 +997,7 @@ class SplashMonsters : public Behaviour {
   bool attack = false;
 };
 
-class SplashItems : public Task::Callback {
+class SplashItems : public TaskCallback {
   public:
   void addItems(Vec2 pos, vector<Item*> v) {
     items[pos] = v;
@@ -1173,7 +1175,7 @@ void MonsterAI::makeMove() {
   vector<pair<MoveInfo, int>> moves;
   for (int i : All(behaviours)) {
     MoveInfo move = behaviours[i]->getMove();
-    move.value *= weights[i];
+    move.setValue(move.getValue() * weights[i]);
     moves.emplace_back(move, weights[i]);
     if (pickItems) {
       for (auto elem : Item::stackItems(creature->getPickUpOptions())) {
@@ -1199,16 +1201,16 @@ void MonsterAI::makeMove() {
   MoveInfo winner = NoMove;
   for (int i : All(moves)) {
     MoveInfo& move = moves[i].first;
-    if (move.value > winner.value)
+    if (move.getValue() > winner.getValue())
       winner = move;
-    if (i < moves.size() - 1 && move.value > moves[i + 1].second)
+    if (i < moves.size() - 1 && move.getValue() > moves[i + 1].second)
       break;
   }
-  CHECK(winner.value > 0);
-  winner.move.perform(creature);
+  CHECK(winner.getValue() > 0);
+  winner.getMove().perform(creature);
 }
 
-PMonsterAI MonsterAIFactory::getMonsterAI(Creature* c) {
+PMonsterAI MonsterAIFactory::getMonsterAI(Creature* c) const {
   return PMonsterAI(maker(c));
 }
 

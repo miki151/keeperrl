@@ -1,7 +1,7 @@
 #ifndef _COLLECTIVE_CONTROL_H
 #define _COLLECTIVE_CONTROL_H
 
-#include "monster_ai.h"
+#include "move_info.h"
 #include "player_message.h"
 
 class Creature;

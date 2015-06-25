@@ -27,6 +27,7 @@
 #include "level_builder.h"
 #include "square_factory.h"
 #include "model.h"
+#include "monster_ai.h"
 
 namespace {
 

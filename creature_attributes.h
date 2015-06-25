@@ -24,12 +24,12 @@
 #include "gender.h"
 #include "effect.h"
 #include "minion_task.h"
-#include "item_attributes.h"
 #include "entity_name.h"
 #include "view_object.h"
 #include "spell_map.h"
 #include "minion_task_map.h"
 #include "skill.h"
+#include "modifier_type.h"
 
 // WTF is this defined
 #undef HUGE

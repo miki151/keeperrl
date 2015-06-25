@@ -25,10 +25,12 @@
 #include "model.h"
 #include "player_message.h"
 #include "fire.h"
+#include "item_attributes.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(UniqueEntity) & SUBCLASS(ItemAttributes) & SUBCLASS(Renderable)
+  ar& SUBCLASS(UniqueEntity) & SUBCLASS(Renderable)
+    & SVAR(attributes)
     & SVAR(discarded)
     & SVAR(shopkeeper)
     & SVAR(fire);
@@ -47,8 +49,8 @@ void Item::CorpseInfo::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Item::CorpseInfo);
 
 
-Item::Item(const ItemAttributes& attr) : ItemAttributes(attr),
-    Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, *attr.name)), fire(*weight, flamability) {
+Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, *attr.name)),
+    attributes(attr), fire(*attr.weight, attr.flamability) {
 }
 
 Item::~Item() {
@@ -98,14 +100,14 @@ vector<pair<string, vector<Item*>>> Item::stackItems(vector<Item*> items, functi
 
 void Item::onEquip(Creature* c) {
   onEquipSpecial(c);
-  if (lastingEffect)
-    c->addPermanentEffect(*lastingEffect);
+  if (attributes->lastingEffect)
+    c->addPermanentEffect(*attributes->lastingEffect);
 }
 
 void Item::onUnequip(Creature* c) {
   onUnequipSpecial(c);
-  if (lastingEffect)
-    c->removePermanentEffect(*lastingEffect);
+  if (attributes->lastingEffect)
+    c->removePermanentEffect(*attributes->lastingEffect);
 }
 
 void Item::setOnFire(double amount, const Level* level, Vec2 position) {
@@ -137,7 +139,7 @@ void Item::tick(double time, Level* level, Vec2 position) {
 }
 
 void Item::onHitSquareMessage(Vec2 position, Square* s, int numItems) {
-  if (fragile) {
+  if (attributes->fragile) {
     s->getLevel()->globalMessage(position,
         getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + s->getName(), "You hear a crash");
     discarded = true;
@@ -146,36 +148,38 @@ void Item::onHitSquareMessage(Vec2 position, Square* s, int numItems) {
 }
 
 void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
-  if (fragile) {
-    c->you(plural ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES, getPluralTheName(numItems));
+  if (attributes->fragile) {
+    c->you(attributes->plural ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES,
+        getPluralTheName(numItems));
     discarded = true;
   } else
-    c->you(plural ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getPluralTheName(numItems));
+    c->you(attributes->plural ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM,
+        getPluralTheName(numItems));
   if (c->takeDamage(attack))
     return;
-  if (effect && getClass() == ItemClass::POTION) {
-    Effect::applyToCreature(c, *effect, EffectStrength::NORMAL);
+  if (attributes->effect && getClass() == ItemClass::POTION) {
+    Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL);
   }
 }
 
 double Item::getApplyTime() const {
-  return applyTime;
+  return attributes->applyTime;
 }
 
 double Item::getWeight() const {
-  return *weight;
+  return *attributes->weight;
 }
 
 string Item::getDescription() const {
-  return description;
+  return attributes->description;
 }
 
 ItemClass Item::getClass() const {
-  return *itemClass;
+  return *attributes->itemClass;
 }
 
 int Item::getPrice() const {
-  return price;
+  return attributes->price;
 }
 
 void Item::setShopkeeper(const Creature* s) {
@@ -190,21 +194,21 @@ const Creature* Item::getShopkeeper() const {
 }
 
 optional<TrapType> Item::getTrapType() const {
-  return trapType;
+  return attributes->trapType;
 }
 
 optional<CollectiveResourceId> Item::getResourceId() const {
-  return resourceId;
+  return attributes->resourceId;
 }
 
 void Item::apply(Creature* c, Level* l) {
-  if (itemClass == ItemClass::SCROLL)
+  if (attributes->itemClass == ItemClass::SCROLL)
     l->getModel()->getStatistics().add(StatId::SCROLL_READ);
-  if (effect)
-    Effect::applyToCreature(c, *effect, EffectStrength::NORMAL);
-  if (uses > -1 && --uses == 0) {
+  if (attributes->effect)
+    Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL);
+  if (attributes->uses > -1 && --attributes->uses == 0) {
     discarded = true;
-    if (usedUpMsg)
+    if (attributes->usedUpMsg)
       c->playerMessage(getTheName() + " is used up.");
   }
 }
@@ -246,7 +250,7 @@ string Item::getNoSeeApplyMsg() const {
 }
 
 void Item::setName(const string& n) {
-  name = n;
+  attributes->name = n;
 }
 
 string Item::getName(bool plural, bool blind) const {
@@ -261,14 +265,14 @@ string Item::getName(bool plural, bool blind) const {
 }
 
 string Item::getAName(bool getPlural, bool blind) const {
-  if (noArticle || getPlural)
+  if (attributes->noArticle || getPlural)
     return getName(getPlural, blind);
   else
     return addAParticle(getName(getPlural, blind));
 }
 
 string Item::getTheName(bool getPlural, bool blind) const {
-  string the = (noArticle || getPlural) ? "" : "the ";
+  string the = (attributes->noArticle || getPlural) ? "" : "the ";
   return the + getName(getPlural, blind);
 }
 
@@ -285,12 +289,12 @@ string Item::getPluralTheNameAndVerb(int count, const string& verbSingle, const 
 
 string Item::getVisibleName(bool getPlural) const {
   if (!getPlural)
-    return *name;
+    return *attributes->name;
   else {
-    if (plural)
-      return *plural;
+    if (attributes->plural)
+      return *attributes->plural;
     else
-      return *name + "s";
+      return *attributes->name + "s";
   }
 }
 
@@ -302,14 +306,14 @@ static string withSign(int a) {
 }
 
 string Item::getArtifactName() const {
-  CHECK(artifactName);
-  return *artifactName;
+  CHECK(attributes->artifactName);
+  return *attributes->artifactName;
 }
 
 string Item::getModifiers(bool shorten) const {
   string artStr;
-  if (artifactName) {
-    artStr = *artifactName;
+  if (attributes->artifactName) {
+    artStr = *attributes->artifactName;
     if (!shorten)
       artStr = " named " + artStr;
   }
@@ -330,29 +334,30 @@ string Item::getModifiers(bool shorten) const {
   }
   if (!shorten)
     for (auto mod : ENUM_ALL(ModifierType))
-      if (modifiers[mod] != 0)
+      if (attributes->modifiers[mod] != 0)
         printMod.insert(mod);
   vector<string> attrStrings;
   for (auto mod : printMod)
-    attrStrings.push_back(withSign(modifiers[mod]) + (shorten ? "" : " " + Creature::getModifierName(mod)));
+    attrStrings.push_back(withSign(attributes->modifiers[mod]) +
+        (shorten ? "" : " " + Creature::getModifierName(mod)));
   if (!shorten)
     for (auto attr : ENUM_ALL(AttrType))
-      if (attrs[attr] != 0)
-        attrStrings.push_back(withSign(attrs[attr]) + " " + Creature::getAttrName(attr));
+      if (attributes->attrs[attr] != 0)
+        attrStrings.push_back(withSign(attributes->attrs[attr]) + " " + Creature::getAttrName(attr));
   string attrString = combine(attrStrings, true);
   if (!attrString.empty())
     attrString = " (" + attrString + ")";
-  if (uses > -1 && displayUses) 
-    attrString += " (" + toString(uses) + " uses left)";
+  if (attributes->uses > -1 && attributes->displayUses) 
+    attrString += " (" + toString(attributes->uses) + " uses left)";
   return artStr + attrString;
 }
 
 string Item::getShortName(bool shortMod, bool blind) const {
-  if (blind && blindName)
+  if (blind && attributes->blindName)
     return getBlindName(false);
   string name = getModifiers(shortMod);
-  if (shortName)
-    name = *shortName + " " + name;
+  if (attributes->shortName)
+    name = *attributes->shortName + " " + name;
   if (getShopkeeper())
     name = name + " (unpaid)";
   if (fire->isBurning())
@@ -365,8 +370,8 @@ string Item::getNameAndModifiers(bool getPlural, bool blind) const {
 }
 
 string Item::getBlindName(bool plural) const {
-  if (blindName)
-    return *blindName + (plural ? "s" : "");
+  if (attributes->blindName)
+    return *attributes->blindName + (plural ? "s" : "");
   else
     return getName(plural, false);
 }
@@ -376,43 +381,43 @@ bool Item::isDiscarded() {
 }
 
 optional<EffectType> Item::getEffectType() const {
-  return effect;
+  return attributes->effect;
 }
 
 optional<EffectType> Item::getAttackEffect() const {
-  return attackEffect;
+  return attributes->attackEffect;
 }
 
 bool Item::canEquip() const {
-  return !!equipmentSlot;
+  return !!attributes->equipmentSlot;
 }
 
 EquipmentSlot Item::getEquipmentSlot() const {
   CHECK(canEquip());
-  return *equipmentSlot;
+  return *attributes->equipmentSlot;
 }
 
 void Item::addModifier(ModifierType type, int value) {
-  modifiers[type] += value;
+  attributes->modifiers[type] += value;
 }
 
 int Item::getModifier(ModifierType type) const {
-  return modifiers[type];
+  return attributes->modifiers[type];
 }
 
 int Item::getAttr(AttrType type) const {
-  return attrs[type];
+  return attributes->attrs[type];
 }
  
 AttackType Item::getAttackType() const {
-  return attackType;
+  return attributes->attackType;
 }
 
 bool Item::isWieldedTwoHanded() const {
-  return twoHanded;
+  return attributes->twoHanded;
 }
 
 int Item::getMinStrength() const {
-  return 10 + *weight;
+  return 10 + getWeight();
 }
 

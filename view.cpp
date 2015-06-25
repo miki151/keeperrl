@@ -22,46 +22,47 @@
 #include "game_info.h"
 #include "entity_name.h"
 #include "skill.h"
+#include "modifier_type.h"
 
-View::ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
+ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
 
-View::ListElem::ListElem(const string& t, const string& sec, ElemMod m) : text(t), secondColumn(sec), mod(m) {
+ListElem::ListElem(const string& t, const string& sec, ElemMod m) : text(t), secondColumn(sec), mod(m) {
 }
 
-View::ListElem::ListElem(const char* s, ElemMod m, optional<UserInputId> a) : text(s), mod(m), action(a) {
+ListElem::ListElem(const char* s, ElemMod m, optional<UserInputId> a) : text(s), mod(m), action(a) {
 }
 
-View::ListElem& View::ListElem::setTip(const string& s) {
+ListElem& ListElem::setTip(const string& s) {
   tooltip = s;
   return *this;
 }
 
-const string& View::ListElem::getText() const {
+const string& ListElem::getText() const {
   return text;
 }
 
-const string& View::ListElem::getSecondColumn() const {
+const string& ListElem::getSecondColumn() const {
   return secondColumn;
 }
 
-const string& View::ListElem::getTip() const {
+const string& ListElem::getTip() const {
   return tooltip;
 }
 
-View::ElemMod View::ListElem::getMod() const {
+ListElem::ElemMod ListElem::getMod() const {
   return mod;
 }
 
-void View::ListElem::setMod(ElemMod m) {
+void ListElem::setMod(ElemMod m) {
   mod = m;
 }
 
-optional<UserInputId> View::ListElem::getAction() const {
+optional<UserInputId> ListElem::getAction() const {
   return action;
 }
 
-vector<View::ListElem> View::getListElem(const vector<string>& v) {
+vector<ListElem> ListElem::convert(const vector<string>& v) {
   function<ListElem(const string&)> fun = [](const string& s) -> ListElem { return ListElem(s); };
   return transform2<ListElem>(v, fun);
 }

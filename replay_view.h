@@ -53,13 +53,13 @@ class ReplayView : public View {
       return readValue<UserInput>(LoggingToken::GET_ACTION);
     }
 
-    virtual optional<int> chooseFromList(const string& title, const vector<View::ListElem>& options, int index,
-        View::MenuType, double* scrollPos, optional<UserInputId> a) override {
+    virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index,
+        MenuType, double* scrollPos, optional<UserInputId> a) override {
       return readValue<optional<int>>(LoggingToken::CHOOSE_FROM_LIST);
     }
 
-    virtual View::GameTypeChoice chooseGameType() override {
-      return readValue<View::GameTypeChoice>(LoggingToken::CHOOSE_GAME_TYPE);
+    virtual GameTypeChoice chooseGameType() override {
+      return readValue<GameTypeChoice>(LoggingToken::CHOOSE_GAME_TYPE);
     }
 
     virtual optional<Vec2> chooseDirection(const string& message) override {
@@ -74,9 +74,9 @@ class ReplayView : public View {
       return readValue<optional<int>>(LoggingToken::GET_NUMBER);
     }
 
-    virtual optional<View::MinionAction> getMinionAction(const vector<PlayerInfo>&,
+    virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>&,
         UniqueEntity<Creature>::Id& current) override {
-      return readValue<optional<View::MinionAction>>(LoggingToken::GET_MINION_ACTION);
+      return readValue<optional<MinionAction>>(LoggingToken::GET_MINION_ACTION);
     }
 
     virtual optional<int> chooseItem(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id& current,

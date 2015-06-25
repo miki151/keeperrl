@@ -19,6 +19,7 @@
 #include "renderer.h"
 #include "view_id.h"
 #include "player_message.h"
+#include "view.h"
 
 using sf::Color;
 using sf::String;
@@ -683,7 +684,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
   vector<string> options = transform2<string>(itemInfo.actions, bindFunction(getActionText));
   options.push_back("cancel");
   int count = options.size();
-  PGuiElem stuff = drawListGui("", View::getListElem(options), View::NORMAL_MENU, &contentHeight, &index, &choice);
+  PGuiElem stuff = drawListGui("", ListElem::convert(options), MenuType::NORMAL, &contentHeight, &index, &choice);
   stuff = gui.miniWindow(gui.margins(std::move(stuff), 0, 0, 0, 0));
   Vec2 size(150, options.size() * listLineHeight + 35);
   menuPos.x = min(menuPos.x, renderer.getSize().x - size.x);
@@ -1210,24 +1211,24 @@ Rectangle GuiBuilder::getEquipmentMenuPosition(int height) {
   return Rectangle(origin, origin + Vec2(width, height)).intersection(Rectangle(Vec2(0, 0), renderer.getSize()));
 }
 
-Rectangle GuiBuilder::getMenuPosition(View::MenuType type) {
+Rectangle GuiBuilder::getMenuPosition(MenuType type) {
   int windowWidth = 800;
   int windowHeight = 400;
   int ySpacing;
   int yOffset = 0;
   switch (type) {
-    case View::YES_NO_MENU:
+    case MenuType::YES_NO:
       ySpacing = (renderer.getSize().y - 200) / 2;
       yOffset = - ySpacing + 100;
       break;
-    case View::MAIN_MENU_NO_TILES:
+    case MenuType::MAIN_NO_TILES:
       ySpacing = (renderer.getSize().y - windowHeight) / 2;
       break;
-    case View::MAIN_MENU:
+    case MenuType::MAIN:
       windowWidth = 0.41 * renderer.getSize().y;
       ySpacing = renderer.getSize().y / 3;
       break;
-    case View::GAME_CHOICE_MENU:
+    case MenuType::GAME_CHOICE:
       windowWidth = 0.41 * renderer.getSize().y;
       ySpacing = renderer.getSize().y * 0.28;
       yOffset = renderer.getSize().y * 0.05;
@@ -1255,10 +1256,10 @@ vector<string> GuiBuilder::breakText(const string& text, int maxWidth) {
 }
 
 
-vector<PGuiElem> GuiBuilder::getMultiLine(const string& text, Color color, View::MenuType menuType, int maxWidth) {
+vector<PGuiElem> GuiBuilder::getMultiLine(const string& text, Color color, MenuType menuType, int maxWidth) {
   vector<PGuiElem> ret;
   for (const string& s : breakText(text, maxWidth)) {
-    if (menuType != View::MenuType::MAIN_MENU)
+    if (menuType != MenuType::MAIN)
       ret.push_back(gui.label(s, color));
     else
       ret.push_back(gui.mainMenuLabelBg(s, menuLabelVPadding));
@@ -1271,15 +1272,15 @@ PGuiElem GuiBuilder::menuElemMargins(PGuiElem elem) {
   return gui.margins(std::move(elem), 10, 3, 10, 0);
 }
 
-PGuiElem GuiBuilder::getHighlight(View::MenuType type, const string& label, int height) {
+PGuiElem GuiBuilder::getHighlight(MenuType type, const string& label, int height) {
   switch (type) {
-    case View::MAIN_MENU: return menuElemMargins(gui.mainMenuLabel(label, menuLabelVPadding));
+    case MenuType::MAIN: return menuElemMargins(gui.mainMenuLabel(label, menuLabelVPadding));
     default: return gui.highlight(height);
   }
 }
 
-PGuiElem GuiBuilder::drawListGui(const string& title, const vector<View::ListElem>& options,
-    View::MenuType menuType, int* height, int* highlight, int* choice) {
+PGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& options,
+    MenuType menuType, int* height, int* highlight, int* choice) {
   vector<PGuiElem> lines;
   vector<int> heights;
   if (!title.empty()) {
@@ -1301,15 +1302,15 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<View::ListEle
       secColumnWidth = max(secColumnWidth, 80 + renderer.getTextLength(elem.getSecondColumn()));
   }
   columnWidth = min(columnWidth, getMenuPosition(menuType).getW() - secColumnWidth - 140);
-  if (menuType == View::MAIN_MENU)
+  if (menuType == MenuType::MAIN)
     columnWidth = 1000000;
   for (int i : All(options)) {
     Color color;
     switch (options[i].getMod()) {
-      case View::TITLE: color = gui.titleText; break;
-      case View::INACTIVE: color = gui.inactiveText; break;
-      case View::TEXT:
-      case View::NORMAL: color = gui.text; break;
+      case ListElem::TITLE: color = gui.titleText; break;
+      case ListElem::INACTIVE: color = gui.inactiveText; break;
+      case ListElem::TEXT:
+      case ListElem::NORMAL: color = gui.text; break;
     }
     vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType, columnWidth);
     if (options.size() == 1 && label1.size() > 1) { // hacky way of checking that we display a wall of text
@@ -1321,7 +1322,7 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<View::ListEle
     }
     heights.push_back((label1.size() - 1) * listBrokenLineHeight + listLineHeight);
     PGuiElem line;
-    if (menuType != View::MAIN_MENU)
+    if (menuType != MenuType::MAIN)
       line = gui.verticalList(std::move(label1), listBrokenLineHeight);
     else
       line = std::move(getOnlyElement(label1));
@@ -1332,7 +1333,7 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<View::ListEle
       line = gui.horizontalList(makeVec<PGuiElem>(std::move(line),
             gui.label(options[i].getSecondColumn())), columnWidth + 80);
     lines.push_back(menuElemMargins(std::move(line)));
-    if (highlight && options[i].getMod() == View::NORMAL) {
+    if (highlight && options[i].getMod() == ListElem::NORMAL) {
       lines.back() = gui.stack(makeVec<PGuiElem>(
           gui.button([=]() { *choice = numActive; }),
           std::move(lines.back()),
@@ -1342,7 +1343,7 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<View::ListEle
     lines.back() = gui.margins(std::move(lines.back()), leftMargin, 0, 0, 0);
   }
   *height = accumulate(heights.begin(), heights.end(), 0);
-  if (menuType != View::MAIN_MENU)
+  if (menuType != MenuType::MAIN)
     return gui.verticalList(std::move(lines), heights);
   else
     return gui.verticalListFit(std::move(lines), 0.0);
@@ -1443,7 +1444,7 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion, MinionMenuCall
             tasks.push_back(gui.label(getTaskText(task.task), colors[getTaskColor(task)]));
           drawMiniMenu(std::move(tasks), [=] (int ind) {
               if (!minion.minionTasks[ind].inactive) {
-                callback(View::MinionAction{minion.minionTasks[ind].task});
+                callback(MinionAction{minion.minionTasks[ind].task});
                   return true;
               } else
                 return false;}, bounds.getBottomLeft(), 200);}));
@@ -1468,7 +1469,7 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const vector<ItemInfo>&
       [=](Rectangle butBounds, optional<int> index) {
         const ItemInfo& item = items[*index];
         if (auto choice = getItemChoice(item, butBounds.getBottomLeft() + Vec2(50, 0), true))
-          callback(View::MinionAction{View::MinionAction::MinionItemAction{item.ids, item.slot, *choice}});
+          callback(MinionAction{MinionAction::MinionItemAction{item.ids, item.slot, *choice}});
       });
   lines.push_back(gui.label("Equipment", colors[ColorId::YELLOW]));
   for (int i : All(itemElems)) {
@@ -1478,7 +1479,7 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const vector<ItemInfo>&
   }
   lines.push_back(gui.stack(
       gui.label("[add consumable]", colors[ColorId::LIGHT_BLUE]),
-      gui.button([=] { callback(View::MinionAction{View::MinionAction::MinionItemAction{{}, none,
+      gui.button([=] { callback(MinionAction{MinionAction::MinionItemAction{{}, none,
           ItemAction::REPLACE}});})));
   return lines;
 }
@@ -1490,19 +1491,19 @@ vector<PGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, MinionM
       case PlayerInfo::CONTROL:
         line.push_back(gui.stack(
             gui.label("[Control]", colors[ColorId::LIGHT_BLUE]),
-            gui.button([=] { callback(View::MinionAction{View::MinionAction::ControlAction()}); })));
+            gui.button([=] { callback(MinionAction{MinionAction::ControlAction()}); })));
         break;
       case PlayerInfo::RENAME:
         line.push_back(gui.stack(
             gui.label("[Rename]", colors[ColorId::LIGHT_BLUE]),
             gui.button([=] { 
                 if (auto name = getTextInput("Rename minion", minion.firstName, 10, "Press escape to cancel."))
-                callback(View::MinionAction{View::MinionAction::RenameAction{*name}}); })));
+                callback(MinionAction{MinionAction::RenameAction{*name}}); })));
         break;
       case PlayerInfo::BANISH:
         line.push_back(gui.stack(
             gui.label("[Banish]", colors[ColorId::LIGHT_BLUE]),
-            gui.button([=] { callback(View::MinionAction{View::MinionAction::BanishAction()}); })));
+            gui.button([=] { callback(MinionAction{MinionAction::BanishAction()}); })));
         break;
     }
   return line;

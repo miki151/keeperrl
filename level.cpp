@@ -30,6 +30,7 @@
 #include "player_message.h"
 #include "vision.h"
 #include "event.h"
+#include "bucket_map.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -105,7 +106,7 @@ void Level::putCreature(Vec2 position, Creature* c) {
   CHECK(inBounds(position));
   creatures.push_back(c);
   CHECK(getSafeSquare(position)->getCreature() == nullptr);
-  bucketMap.addElement(position, c);
+  bucketMap->addElement(position, c);
   c->setLevel(this);
   c->setPosition(position);
   getSafeSquare(position)->putCreature(c);
@@ -320,7 +321,7 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
 }
 
 void Level::killCreature(Creature* creature, Creature* attacker) {
-  bucketMap.removeElement(creature->getPosition(), creature);
+  bucketMap->removeElement(creature->getPosition(), creature);
   removeElement(creatures, creature);
   getSafeSquare(creature->getPosition())->killCreature(attacker);
   model->killCreature(creature, attacker);
@@ -355,13 +356,13 @@ void Level::globalMessage(const Creature* c, const PlayerMessage& ifPlayerCanSee
 void Level::changeLevel(StairDirection dir, StairKey key, Creature* c) {
   removeElement(creatures, c);
   getSafeSquare(c->getPosition())->removeCreature();
-  bucketMap.removeElement(c->getPosition(), c);
+  bucketMap->removeElement(c->getPosition(), c);
 }
 
 void Level::changeLevel(Level* destination, Vec2 landing, Creature* c) {
   removeElement(creatures, c);
   getSafeSquare(c->getPosition())->removeCreature();
-  bucketMap.removeElement(c->getPosition(), c);
+  bucketMap->removeElement(c->getPosition(), c);
   model->changeLevel(destination, landing, c);
 }
 
@@ -381,7 +382,7 @@ vector<Creature*>& Level::getAllCreatures() {
 }
 
 vector<Creature*> Level::getAllCreatures(Rectangle bounds) const {
-  return bucketMap.getElements(bounds);
+  return bucketMap->getElements(bounds);
 }
 
 const int darkViewRadius = 5;
@@ -421,7 +422,7 @@ bool Level::canMoveCreature(const Creature* creature, Vec2 direction) const {
 void Level::moveCreature(Creature* creature, Vec2 direction) {
   CHECK(canMoveCreature(creature, direction));
   Vec2 position = creature->getPosition();
-  bucketMap.moveElement(position, position + direction, creature);
+  bucketMap->moveElement(position, position + direction, creature);
   Square* nextSquare = getSafeSquare(position + direction);
   Square* thisSquare = getSafeSquare(position);
   thisSquare->removeCreature();
@@ -436,8 +437,8 @@ void Level::moveCreature(Creature* creature, Vec2 direction) {
 void Level::swapCreatures(Creature* c1, Creature* c2) {
   Vec2 position1 = c1->getPosition();
   Vec2 position2 = c2->getPosition();
-  bucketMap.moveElement(position1, position2, c1);
-  bucketMap.moveElement(position2, position1, c2);
+  bucketMap->moveElement(position1, position2, c1);
+  bucketMap->moveElement(position2, position1, c2);
   Square* square1 = getSafeSquare(position1);
   Square* square2 = getSafeSquare(position2);
   square1->removeCreature();

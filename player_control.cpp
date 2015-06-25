@@ -51,6 +51,9 @@
 #include "tribe.h"
 #include "visibility_map.h"
 #include "entity_name.h"
+#include "monster_ai.h"
+#include "view.h"
+#include "view_index.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -78,6 +81,51 @@ SERIALIZABLE(PlayerControl);
 SERIALIZATION_CONSTRUCTOR_IMPL(PlayerControl);
 
 typedef Collective::ResourceId ResourceId;
+
+struct PlayerControl::BuildInfo {
+  struct SquareInfo {
+    SquareType type;
+    CostInfo cost;
+    string name;
+    bool buildImmediatly;
+    bool noCredit;
+    double costExponent;
+    optional<int> maxNumber;
+  } squareInfo;
+
+  struct TrapInfo {
+    TrapType type;
+    string name;
+    ViewId viewId;
+  } trapInfo;
+
+  enum BuildType {
+    DIG,
+    SQUARE,
+    IMP,
+    TRAP,
+    GUARD_POST,
+    DESTROY,
+    FETCH,
+    DISPATCH,
+    CLAIM_TILE,
+    FORBID_ZONE,
+    TORCH,
+  } buildType;
+
+  vector<Requirement> requirements;
+  string help;
+  char hotkey;
+  string groupName;
+
+  BuildInfo(SquareInfo info, vector<Requirement> = {}, const string& h = "", char hotkey = 0,
+      string group = "");
+  BuildInfo(TrapInfo info, vector<Requirement> = {}, const string& h = "", char hotkey = 0,
+      string group = "");
+  BuildInfo(DeityHabitat, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
+  BuildInfo(const Creature*, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
+  BuildInfo(BuildType type, const string& h = "", char hotkey = 0, string group = "");
+};
 
 PlayerControl::BuildInfo::BuildInfo(SquareInfo info, vector<Requirement> req, const string& h, char key, string group)
     : squareInfo(info), buildType(SQUARE), requirements(req), help(h), hotkey(key), groupName(group) {}
@@ -360,7 +408,7 @@ static vector<ItemType> marketItems {
 
 Creature* PlayerControl::getConsumptionTarget(View* view, Creature* consumer) {
   vector<Creature*> res;
-  vector<View::ListElem> opt;
+  vector<ListElem> opt;
   for (Creature* c : getCollective()->getConsumptionTargets(consumer)) {
     res.push_back(c);
     opt.emplace_back(c->getName().bare() + ", level " + toString(c->getExpLevel()));
@@ -399,7 +447,8 @@ void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
   }
 }
 
-void PlayerControl::minionEquipmentAction(Creature* creature, const View::MinionAction::MinionItemAction& action) {
+void PlayerControl::minionEquipmentAction(Creature* creature, const MinionAction& action1) {
+  auto action = boost::get<MinionAction::MinionItemAction>(action1.action);
   switch (action.action) {
     case ItemAction::DROP:
       for (auto id : action.ids)
@@ -470,13 +519,13 @@ void PlayerControl::minionView(Creature* creature) {
           getCollective()->setMinionTask(c, boost::get<MinionTask>(actionInfo->action));
           break;
         case 1:
-          minionEquipmentAction(c, boost::get<View::MinionAction::MinionItemAction>(actionInfo->action));
+          minionEquipmentAction(c, *actionInfo);
           break;
         case 2:
           controlSingle(c);
           return;
         case 3:
-          c->setFirstName(boost::get<View::MinionAction::RenameAction>(actionInfo->action).newName);
+          c->setFirstName(boost::get<MinionAction::RenameAction>(actionInfo->action).newName);
           break;
         case 4:
           if (model->getView()->yesOrNoPrompt("Do you want to banish " + c->getName().the() + " forever? "
@@ -615,12 +664,12 @@ void PlayerControl::handleMarket(View* view, int prevItem) {
     view->presentText("Information", "You need a storage room to use the market.");
     return;
   }
-  vector<View::ListElem> options;
+  vector<ListElem> options;
   vector<PItem> items;
   for (ItemType id : marketItems) {
     items.push_back(ItemFactory::fromId(id));
     options.emplace_back(items.back()->getName() + "    $" + toString(items.back()->getPrice()),
-        items.back()->getPrice() > getCollective()->numResource(ResourceId::GOLD) ? View::INACTIVE : View::NORMAL);
+        items.back()->getPrice() > getCollective()->numResource(ResourceId::GOLD) ? ListElem::INACTIVE : ListElem::NORMAL);
   }
   auto index = view->chooseFromList("Buy items", options, prevItem);
   if (!index)
@@ -637,18 +686,18 @@ static string requires(TechId id) {
 }
 
 void PlayerControl::handlePersonalSpells(View* view) {
-  vector<View::ListElem> options {
-      View::ListElem("The Keeper can learn spells for use in combat and other situations. ", View::TITLE),
-      View::ListElem("You can cast them with 's' when you are in control of the Keeper.", View::TITLE)};
+  vector<ListElem> options {
+      ListElem("The Keeper can learn spells for use in combat and other situations. ", ListElem::TITLE),
+      ListElem("You can cast them with 's' when you are in control of the Keeper.", ListElem::TITLE)};
   vector<Spell*> knownSpells = getCollective()->getAvailableSpells();
   for (auto spell : getCollective()->getAllSpells()) {
-    View::ElemMod mod = View::NORMAL;
+    ListElem::ElemMod mod = ListElem::NORMAL;
     string suff;
     if (!contains(knownSpells, spell)) {
-      mod = View::INACTIVE;
+      mod = ListElem::INACTIVE;
       suff = requires(getCollective()->getNeededTech(spell));
     }
-    options.push_back(View::ListElem(spell->getName() + suff, mod).setTip(spell->getDescription()));
+    options.push_back(ListElem(spell->getName() + suff, mod).setTip(spell->getDescription()));
   }
   view->presentList("Sorcery", options);
 }
@@ -666,25 +715,25 @@ void PlayerControl::handleLibrary(View* view) {
     view->presentText("", "You need to build a library to start research.");
     return;
   }
-  vector<View::ListElem> options;
+  vector<ListElem> options;
   bool allInactive = false;
   if (getCollective()->getSquares(SquareId::LIBRARY).size() <= getMinLibrarySize()) {
     allInactive = true;
-    options.emplace_back("You need a larger library to continue research.", View::TITLE);
+    options.emplace_back("You need a larger library to continue research.", ListElem::TITLE);
   }
-  options.push_back(View::ListElem("You have " 
-        + toString(int(getCollective()->numResource(ResourceId::MANA))) + " mana. ", View::TITLE));
+  options.push_back(ListElem("You have " 
+        + toString(int(getCollective()->numResource(ResourceId::MANA))) + " mana. ", ListElem::TITLE));
   vector<Technology*> techs = filter(Technology::getNextTechs(getCollective()->getTechnologies()),
       [](const Technology* tech) { return tech->canResearch(); });
   for (Technology* tech : techs) {
     int cost = getCollective()->getTechCost(tech);
     string text = tech->getName() + " (" + toString(cost) + " mana)";
-    options.push_back(View::ListElem(text, cost <= int(getCollective()->numResource(ResourceId::MANA))
-        && !allInactive ? View::NORMAL : View::INACTIVE).setTip(tech->getDescription()));
+    options.push_back(ListElem(text, cost <= int(getCollective()->numResource(ResourceId::MANA))
+        && !allInactive ? ListElem::NORMAL : ListElem::INACTIVE).setTip(tech->getDescription()));
   }
-  options.emplace_back("Researched:", View::TITLE);
+  options.emplace_back("Researched:", ListElem::TITLE);
   for (Technology* tech : getCollective()->getTechnologies())
-    options.push_back(View::ListElem(tech->getName(), View::INACTIVE).setTip(tech->getDescription()));
+    options.push_back(ListElem(tech->getName(), ListElem::INACTIVE).setTip(tech->getDescription()));
   auto index = view->chooseFromList("Library", options);
   if (!index)
     return;

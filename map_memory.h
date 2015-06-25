@@ -16,7 +16,6 @@
 #ifndef _MEMORY_H
 #define _MEMORY_H
 
-#include "view_index.h"
 #include "util.h"
 
 class ViewObject;
