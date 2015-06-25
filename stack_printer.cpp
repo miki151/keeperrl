@@ -23,6 +23,7 @@
 
 
 static char const * icky_global_program_name;
+time_t startTime;
 
 /* Resolve symbol name and source location given the path to the executable 
    and an address */
@@ -202,87 +203,91 @@ int addr2line(char const * const program_name, void const * const addr)
 
   void posix_signal_handler(int sig, siginfo_t *siginfo, void *context)
   {
+    FILE* errorOut = fopen("stacktrace.out", "a");
     (void)context;
     switch(sig)
     {
       case SIGSEGV:
-        fputs("Caught SIGSEGV: Segmentation Fault\n", stderr);
+        fputs("Caught SIGSEGV: Segmentation Fault\n", errorOut);
         break;
       case SIGINT:
-        fputs("Caught SIGINT: Interactive attention signal, (usually ctrl+c)\n", stderr);
+        fputs("Caught SIGINT: Interactive attention signal, (usually ctrl+c)\n", errorOut);
         break;
       case SIGFPE:
         switch(siginfo->si_code)
         {
           case FPE_INTDIV:
-            fputs("Caught SIGFPE: (integer divide by zero)\n", stderr);
+            fputs("Caught SIGFPE: (integer divide by zero)\n", errorOut);
             break;
           case FPE_INTOVF:
-            fputs("Caught SIGFPE: (integer overflow)\n", stderr);
+            fputs("Caught SIGFPE: (integer overflow)\n", errorOut);
             break;
           case FPE_FLTDIV:
-            fputs("Caught SIGFPE: (floating-point divide by zero)\n", stderr);
+            fputs("Caught SIGFPE: (floating-point divide by zero)\n", errorOut);
             break;
           case FPE_FLTOVF:
-            fputs("Caught SIGFPE: (floating-point overflow)\n", stderr);
+            fputs("Caught SIGFPE: (floating-point overflow)\n", errorOut);
             break;
           case FPE_FLTUND:
-            fputs("Caught SIGFPE: (floating-point underflow)\n", stderr);
+            fputs("Caught SIGFPE: (floating-point underflow)\n", errorOut);
             break;
           case FPE_FLTRES:
-            fputs("Caught SIGFPE: (floating-point inexact result)\n", stderr);
+            fputs("Caught SIGFPE: (floating-point inexact result)\n", errorOut);
             break;
           case FPE_FLTINV:
-            fputs("Caught SIGFPE: (floating-point invalid operation)\n", stderr);
+            fputs("Caught SIGFPE: (floating-point invalid operation)\n", errorOut);
             break;
           case FPE_FLTSUB:
-            fputs("Caught SIGFPE: (subscript out of range)\n", stderr);
+            fputs("Caught SIGFPE: (subscript out of range)\n", errorOut);
             break;
           default:
-            fputs("Caught SIGFPE: Arithmetic Exception\n", stderr);
+            fputs("Caught SIGFPE: Arithmetic Exception\n", errorOut);
             break;
         }
       case SIGILL:
         switch(siginfo->si_code)
         {
           case ILL_ILLOPC:
-            fputs("Caught SIGILL: (illegal opcode)\n", stderr);
+            fputs("Caught SIGILL: (illegal opcode)\n", errorOut);
             break;
           case ILL_ILLOPN:
-            fputs("Caught SIGILL: (illegal operand)\n", stderr);
+            fputs("Caught SIGILL: (illegal operand)\n", errorOut);
             break;
           case ILL_ILLADR:
-            fputs("Caught SIGILL: (illegal addressing mode)\n", stderr);
+            fputs("Caught SIGILL: (illegal addressing mode)\n", errorOut);
             break;
           case ILL_ILLTRP:
-            fputs("Caught SIGILL: (illegal trap)\n", stderr);
+            fputs("Caught SIGILL: (illegal trap)\n", errorOut);
             break;
           case ILL_PRVOPC:
-            fputs("Caught SIGILL: (privileged opcode)\n", stderr);
+            fputs("Caught SIGILL: (privileged opcode)\n", errorOut);
             break;
           case ILL_PRVREG:
-            fputs("Caught SIGILL: (privileged register)\n", stderr);
+            fputs("Caught SIGILL: (privileged register)\n", errorOut);
             break;
           case ILL_COPROC:
-            fputs("Caught SIGILL: (coprocessor error)\n", stderr);
+            fputs("Caught SIGILL: (coprocessor error)\n", errorOut);
             break;
           case ILL_BADSTK:
-            fputs("Caught SIGILL: (internal stack error)\n", stderr);
+            fputs("Caught SIGILL: (internal stack error)\n", errorOut);
             break;
           default:
-            fputs("Caught SIGILL: Illegal Instruction\n", stderr);
+            fputs("Caught SIGILL: Illegal Instruction\n", errorOut);
             break;
         }
         break;
       case SIGTERM:
-        fputs("Caught SIGTERM: a termination request was sent to the program\n", stderr);
+        fputs("Caught SIGTERM: a termination request was sent to the program\n", errorOut);
         break;
       case SIGABRT:
-        fputs("Caught SIGABRT: usually caused by an abort() or assert()\n", stderr);
+        fputs("Caught SIGABRT: usually caused by an abort() or assert()\n", errorOut);
         break;
       default:
         break;
     }
+    time_t curTime = time(0);
+    fprintf(errorOut, "Current time %ld, running time %ld\n", curTime, curTime - startTime);
+    fclose(errorOut);
     posix_print_stack_trace();
     _Exit(1);
   }
@@ -326,11 +331,11 @@ int addr2line(char const * const program_name, void const * const addr)
   }
 #endif
 
-void StackPrinter::initialize(const char* program_path)
+void StackPrinter::initialize(const char* program_path, time_t startT)
 {
   /* store off program path so we can use it later */
   icky_global_program_name = program_path;
-
+  startTime = startT;
   set_signal_handler();
 }
 

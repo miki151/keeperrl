@@ -115,7 +115,7 @@ void makeDir(const string& path) {
 }
 
 int main(int argc, char* argv[]) {
-  StackPrinter::initialize(argv[0]);
+  StackPrinter::initialize(argv[0], time(0));
   options_description flags("Flags");
   flags.add_options()
     ("help", "Print help")

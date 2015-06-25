@@ -18,7 +18,7 @@ void ConstructionMap::removeSquare(Vec2 pos) {
 }
 
 void ConstructionMap::addSquare(Vec2 pos, const ConstructionMap::SquareInfo& info) {
-  CHECK(!containsSquare(pos));
+  CHECK(!containsSquare(pos)) << EnumInfo<SquareId>::getString(squares[pos].getSquareType().getId());
   squares.insert(make_pair(pos, info));
   ++typeCounts[info.getSquareType()];
 }
