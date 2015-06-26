@@ -79,3 +79,181 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(CreatureAttributes);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureAttributes);
+
+BodyPart CreatureAttributes::getBodyPart(AttackLevel attack, bool flying, bool collapsed) const {
+  if (flying)
+    return chooseRandom({BodyPart::TORSO, BodyPart::HEAD, BodyPart::LEG, BodyPart::WING, BodyPart::ARM},
+        {1, 1, 1, 2, 1});
+  switch (attack) {
+    case AttackLevel::HIGH: 
+       return BodyPart::HEAD;
+    case AttackLevel::MIDDLE:
+       if (getSize() == CreatureSize::SMALL || getSize() == CreatureSize::MEDIUM || collapsed)
+         return BodyPart::HEAD;
+       else
+         return chooseRandom({BodyPart::TORSO, armOrWing()}, {1, 1});
+    case AttackLevel::LOW:
+       if (getSize() == CreatureSize::SMALL || collapsed)
+         return chooseRandom({BodyPart::TORSO, armOrWing(), BodyPart::HEAD, BodyPart::LEG}, {1, 1, 1, 1});
+       if (getSize() == CreatureSize::MEDIUM)
+         return chooseRandom({BodyPart::TORSO, armOrWing(), BodyPart::LEG}, {1, 1, 3});
+       else
+         return BodyPart::LEG;
+  }
+  return BodyPart::ARM;
+}
+
+CreatureSize CreatureAttributes::getSize() const {
+  return *size;
+}
+
+BodyPart CreatureAttributes::armOrWing() const {
+  if (numGood(BodyPart::ARM) == 0)
+    return BodyPart::WING;
+  if (numGood(BodyPart::WING) == 0)
+    return BodyPart::ARM;
+  return chooseRandom({ BodyPart::WING, BodyPart::ARM }, {1, 1});
+}
+
+double CreatureAttributes::getRawAttr(AttrType type) const {
+  return attr[type] + attrIncrease[type];
+}
+
+int CreatureAttributes::numBodyParts(BodyPart part) const {
+  return bodyParts[part];
+}
+
+int CreatureAttributes::numLost(BodyPart part) const {
+  return lostBodyParts[part];
+}
+
+int CreatureAttributes::lostOrInjuredBodyParts() const {
+  int ret = 0;
+  for (BodyPart part : ENUM_ALL(BodyPart))
+    ret += injuredBodyParts[part];
+  for (BodyPart part : ENUM_ALL(BodyPart))
+    ret += lostBodyParts[part];
+  return ret;
+}
+
+int CreatureAttributes::numInjured(BodyPart part) const {
+  return injuredBodyParts[part];
+}
+
+int CreatureAttributes::numGood(BodyPart part) const {
+  return numBodyParts(part) - numInjured(part);
+}
+
+double CreatureAttributes::getCourage() const {
+  if (!hasBrain())
+    return 1000;
+  return courage;
+}
+
+bool CreatureAttributes::hasBrain() const {
+  return brain;
+}
+
+void CreatureAttributes::setCourage(double c) {
+  courage = c;
+}
+
+const Gender& CreatureAttributes::getGender() const {
+  return gender;
+}
+
+double CreatureAttributes::getExpLevel() const {
+  vector<pair<AttrType, int>> countAttr {
+    {AttrType::STRENGTH, 12},
+    {AttrType::DEXTERITY, 12}};
+  double sum = 0;
+  for (auto elem : countAttr)
+    sum += 10.0 * (getRawAttr(elem.first) / elem.second - 1);
+  return max(1.0, sum);
+}
+
+void CreatureAttributes::increaseExpLevel(double increase) {
+  double l = getExpLevel();
+  for (int i : Range(100000)) {
+    exerciseAttr(chooseRandom<AttrType>(), 0.05);
+    if (getExpLevel() >= l + increase)
+      break;
+  }
+}
+
+double exerciseMax = 2.0;
+double increaseMult = 0.001; // This translates to about 690 stat exercises to reach 50% of the max increase,
+                             // and 2300 to reach 90%
+
+void CreatureAttributes::exerciseAttr(AttrType t, double value) {
+  attrIncrease[t] += ((exerciseMax - 1) * attr[t] - attrIncrease[t]) * increaseMult * value;
+}
+
+string CreatureAttributes::getNameAndTitle() const {
+  if (firstName)
+    return *firstName + " the " + name->bare();
+  else if (speciesName)
+    return name->bare() + " the " + *speciesName;
+  else
+    return name->the();
+}
+
+string CreatureAttributes::getSpeciesName() const {
+  if (speciesName)
+    return *speciesName;
+  else
+    return name->bare();
+}
+
+vector<AttackLevel> CreatureAttributes::getAttackLevels() const {
+  if (isHumanoid() && !numGood(BodyPart::ARM))
+    return {AttackLevel::LOW};
+  switch (getSize()) {
+    case CreatureSize::SMALL: return {AttackLevel::LOW};
+    case CreatureSize::MEDIUM: return {AttackLevel::LOW, AttackLevel::MIDDLE};
+    case CreatureSize::LARGE: return {AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH};
+    case CreatureSize::HUGE: return {AttackLevel::MIDDLE, AttackLevel::HIGH};
+  }
+}
+
+AttackLevel CreatureAttributes::getRandomAttackLevel() const {
+  return chooseRandom(getAttackLevels());
+}
+
+bool CreatureAttributes::isHumanoid() const {
+  return *humanoid;
+}
+
+string CreatureAttributes::bodyDescription() const {
+  vector<string> ret;
+  for (BodyPart part : {BodyPart::ARM, BodyPart::LEG, BodyPart::WING})
+    if (int num = numBodyParts(part))
+      ret.push_back(getPlural(getBodyPartName(part), num));
+  if (isHumanoid() && numBodyParts(BodyPart::HEAD) == 0)
+    ret.push_back("no head");
+  if (ret.size() > 0)
+    return " with " + combine(ret);
+  else
+    return "";
+}
+
+string CreatureAttributes::getBodyPartName(BodyPart part) const {
+  switch (part) {
+    case BodyPart::LEG: return "leg";
+    case BodyPart::ARM: return "arm";
+    case BodyPart::WING: return "wing";
+    case BodyPart::HEAD: return "head";
+    case BodyPart::TORSO: return "torso";
+    case BodyPart::BACK: return "back";
+  }
+}
+
+SpellMap& CreatureAttributes::getSpellMap() {
+  return spells;
+}
+
+const SpellMap& CreatureAttributes::getSpellMap() const {
+  return spells;
+}
+
+

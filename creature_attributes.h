@@ -69,6 +69,32 @@ class CreatureAttributes {
   ~CreatureAttributes();
   SERIALIZATION_DECL(CreatureAttributes);
 
+  BodyPart getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
+  CreatureSize getSize() const;
+  BodyPart armOrWing() const;
+  double getRawAttr(AttrType) const;
+  int numBodyParts(BodyPart) const;
+  int numLost(BodyPart) const;
+  int lostOrInjuredBodyParts() const;
+  int numInjured(BodyPart) const;
+  int numGood(BodyPart) const;
+  double getCourage() const;
+  void setCourage(double);
+  const Gender& getGender() const;
+  bool hasBrain() const;
+  double getExpLevel() const;
+  void increaseExpLevel(double increase);
+  void exerciseAttr(AttrType, double value);
+  string getNameAndTitle() const;
+  string getSpeciesName() const;
+  bool isHumanoid() const;
+  vector<AttackLevel> getAttackLevels() const;
+  AttackLevel getRandomAttackLevel() const;
+  string bodyDescription() const;
+  string getBodyPartName(BodyPart) const;
+  SpellMap& getSpellMap();
+  const SpellMap& getSpellMap() const;
+
   MustInitialize<ViewId> SERIAL(viewId);
   optional<ViewId> SERIAL(undeadViewId);
   optional<ViewObject> SERIAL(illusionViewObject);

@@ -48,8 +48,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Creature(const ViewObject&, Tribe*, const CreatureAttributes&, const ControllerFactory&);
   virtual ~Creature();
 
-  static string getBodyPartName(BodyPart);
-
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void makeMove();
   double getTime() const;
@@ -300,10 +298,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   private:
 
-  SpellMap& getSpellMap();
-  const SpellMap& getSpellMap() const;
-  double getExpLevelDouble() const;
-  double getRawAttr(AttrType) const;
   bool affects(LastingEffect effect) const;
   void onAffected(LastingEffect effect, bool msg);
   void consumeEffects(const EnumMap<LastingEffect, int>&);
@@ -314,13 +308,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   double getInventoryWeight() const;
   Item* getAmmo() const;
   void updateViewObject();
-  int getStrengthAttackBonus() const;
-  BodyPart getBodyPart(AttackLevel attack) const;
-  void injure(BodyPart, bool drop);
-  AttackLevel getRandomAttackLevel() const;
   AttackType getAttackType() const;
   void spendTime(double time);
-  BodyPart armOrWing() const;
   pair<double, double> getStanding(const Creature* c) const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
