@@ -950,6 +950,11 @@ int Collective::tryBuildingBeds(SpawnType spawnType, int numBeds) {
   SquareType dormType = getDormInfo()[spawnType].dormType;
   set<Vec2> bedPos = getSquares(bedType);
   set<Vec2> dormPos = getSquares(dormType);
+  for (Vec2 v : copyOf(dormPos))
+    if (constructions->containsSquare(v)) {
+      dormPos.erase(v);
+      bedPos.insert(v);
+    }
   for (int i : Range(numBeds))
     if (auto newPos = chooseBedPos(dormPos, bedPos)) {
       ++numBuilt;
@@ -1896,7 +1901,7 @@ void Collective::onConstructed(Vec2 pos, const SquareType& type) {
 }
 
 bool Collective::tryLockingDoor(Vec2 pos) {
-  if (getConstructions().containsSquare(pos)) {
+  if (containsSquare(pos)) {
     Square* square = getLevel()->getSafeSquare(pos);
     if (square->canLock()) {
       square->lock();
