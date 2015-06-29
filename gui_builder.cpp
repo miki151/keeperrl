@@ -782,7 +782,10 @@ vector<PGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info) {
 PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(info.getTitle(), colors[ColorId::WHITE]));
-  list.addElem(gui.label("Level " + toString(info.level), colors[ColorId::WHITE]));
+  list.addElem(gui.horizontalList(makeVec<PGuiElem>(
+      gui.label("Level " + toString(info.level), colors[ColorId::WHITE]),
+      gui.stack(gui.button(getButtonCallback(UserInputId::UNPOSSESS)),
+          gui.label("[U] Leave control", colors[ColorId::LIGHT_BLUE]))), 140, 1));
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addElem(gui.empty());
