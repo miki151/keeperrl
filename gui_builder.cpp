@@ -554,7 +554,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, PlayerInfo& info) {
   if (itemIndex >= totalElems)
     itemIndex = totalElems - 1;
   PGuiElem content;
-  if (totalElems == 1)
+  if (totalElems == 1 && !playerOverlayFocused)
     content = gui.stack(
         gui.margin(
           gui.leftMargin(3, gui.label(title, colors[ColorId::YELLOW])),
