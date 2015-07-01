@@ -346,7 +346,7 @@ void Square::setOnFire(double amount) {
   fire->set(amount);
   if (!burning && fire->isBurning()) {
     level->addTickingSquare(position);
-    level->globalMessage(position, "The " + getName() + " catches fire->");
+    level->globalMessage(position, "The " + getName() + " catches fire");
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
     updateMovement();
   }

@@ -115,7 +115,7 @@ void Item::setOnFire(double amount, const Level* level, Vec2 position) {
   string noBurningName = getTheName();
   fire->set(amount);
   if (!burning && fire->isBurning()) {
-    level->globalMessage(position, noBurningName + " catches fire->");
+    level->globalMessage(position, noBurningName + " catches fire");
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
   }
 }

@@ -1306,6 +1306,7 @@ class Scrollable : public GuiElem {
     else {
       defaultPos.reset(new double);
       scrollPos = defaultPos.get();
+      *scrollPos = 0;
     }
   }
 
