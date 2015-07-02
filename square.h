@@ -19,7 +19,6 @@
 #include "util.h"
 #include "debug.h"
 #include "renderable.h"
-#include "view_object.h"
 
 class Level;
 class Creature;
@@ -34,6 +33,7 @@ class PoisonGas;
 class Inventory;
 class MovementType;
 class MovementSet;
+class ViewObject;
 
 class Square : public Renderable {
   public:
@@ -205,7 +205,6 @@ class Square : public Renderable {
 
   bool sunlightBurns() const;
 
-  optional<ViewObject> getBackgroundObject() const;
   void setBackground(const Square*);
   void getViewIndex(ViewIndex&, const Tribe*) const;
 
@@ -262,7 +261,7 @@ class Square : public Renderable {
   Vec2 SERIAL(position);
   Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);
-  optional<ViewObject> SERIAL(backgroundObject);
+  PViewObject SERIAL(backgroundObject);
   optional<VisionId> SERIAL(vision);
   bool SERIAL(hide);
   int SERIAL(strength);

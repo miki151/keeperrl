@@ -226,7 +226,6 @@ class Collective : public TaskCallback {
   struct DormInfo;
   static const EnumMap<SpawnType, DormInfo>& getDormInfo();
   static optional<SquareType> getSecondarySquare(SquareType);
-  static optional<Vec2> chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds);
 
   struct MinionPaymentInfo;
 

@@ -372,16 +372,13 @@ bool Square::isBurning() const {
   return fire->isBurning();
 }
 
-optional<ViewObject> Square::getBackgroundObject() const {
-  return backgroundObject;
-}
-
 void Square::setBackground(const Square* square) {
   setDirty();
   if (getViewObject().layer() != ViewLayer::FLOOR_BACKGROUND) {
-    const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject) : square->getViewObject();
-    if (obj.layer() == ViewLayer::FLOOR_BACKGROUND)
-      backgroundObject = obj;
+    const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject.get()) : square->getViewObject();
+    if (obj.layer() == ViewLayer::FLOOR_BACKGROUND) {
+      backgroundObject.reset(new ViewObject(obj));
+    }
   }
 }
 
@@ -395,7 +392,7 @@ void Square::getViewIndex(ViewIndex& ret, const Tribe* tribe) const {
     fireSize = max(fireSize, it->getFireSize());
   fireSize = max(fireSize, fire->getSize());
   if (backgroundObject)
-    ret.insert(*backgroundObject);
+    ret.insert(*backgroundObject.get());
   ret.insert(getViewObject());
   for (const PTrigger& t : triggers)
     if (auto obj = t->getViewObject(tribe))
