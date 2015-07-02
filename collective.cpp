@@ -951,7 +951,7 @@ int Collective::tryBuildingBeds(SpawnType spawnType, int numBeds) {
   set<Vec2> bedPos = getSquares(bedType);
   set<Vec2> dormPos = getSquares(dormType);
   for (Vec2 v : copyOf(dormPos))
-    if (constructions->containsSquare(v)) {
+    if (constructions->containsSquare(v)) { // this means there is a bed planned here already
       dormPos.erase(v);
       bedPos.insert(v);
     }
