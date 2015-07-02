@@ -327,7 +327,20 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale,
   if (tile.hasSpriteCoord())
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), scale, color * tile.color);
   else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, pos.x, pos.y, tile.text);
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale, tile.color, pos.x, pos.y,
+        tile.text);
+}
+
+void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Color color) {
+  const Tile& tile = Tile::getTile(id, useSprite);
+  if (tile.hasSpriteCoord())
+    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color);
+  else
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, tile.color, pos.x, pos.y, tile.text);
+}
+
+void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, Vec2 size) {
+  drawViewObject(pos, object.id(), useSprite, size, getBleedingColor(object));
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, double scale) {

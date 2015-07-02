@@ -526,7 +526,8 @@ void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
         Animation::thrownObject(
           (trajectory.back() - trajectory.front()).mult(mapLayout->getSquareSize()),
           object,
-          currentTileLayout.sprites),
+          currentTileLayout.sprites,
+          mapLayout->getSquareSize()),
         trajectory.front());
 }
 
@@ -622,7 +623,6 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
     if (event.type == Event::MouseMoved || event.type == Event::MouseButtonPressed) {
       if (auto pos = mapGui->projectOnMap(renderer.getMousePos())) {
         refreshScreen(false);
-        int numArrow = 0;
         Vec2 middle = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds(), mapGui->getScreenPos())
             .middle();
         if (pos == middle)
@@ -631,10 +631,11 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
         Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
             middle.x + dir.x, middle.y + dir.y);
         if (currentTileLayout.sprites)
-          renderer.drawTile(wpos, {Vec2(17, 5) + dir, 4});
+          renderer.drawTile(wpos, {Vec2(17, 5) + dir, 4}, mapLayout->getSquareSize());
         else {
-          static sf::Uint32 arrows[] = { L'⇐', L'⇖', L'⇑', L'⇗', L'⇒', L'⇘', L'⇓', L'⇙'};
-          renderer.drawText(Renderer::SYMBOL_FONT, 20, colors[ColorId::WHITE],
+          int numArrow = int(dir.getCardinalDir());
+          static sf::Uint32 arrows[] = { L'⇑', L'⇓', L'⇒', L'⇐', L'⇗', L'⇖', L'⇘', L'⇙'};
+          renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, colors[ColorId::WHITE],
               wpos.x + mapLayout->getSquareSize().x / 2, wpos.y, arrows[numArrow], Renderer::HOR);
         }
         renderer.drawAndClearBuffer();

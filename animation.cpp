@@ -21,23 +21,24 @@ void Animation::render(Renderer& r, Rectangle bounds, Vec2 origin, double time) 
 
 class ThrownObject : public Animation {
   public:
-  ThrownObject(Vec2 dir, ViewObject obj, bool sprite)
-    : Animation(200), direction(dir), viewObject(obj), useSprite(sprite) {}
+  ThrownObject(Vec2 dir, ViewObject obj, bool sprite, Vec2 sz)
+    : Animation(200), direction(dir), viewObject(obj), useSprite(sprite), squareSize(sz) {}
 
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
     int x = origin.x + state * direction.x;
     int y = origin.y + state * direction.y;
-    renderer.drawViewObject(Vec2(x, y), viewObject, useSprite, 1);
+    renderer.drawViewObject(Vec2(x, y), viewObject, useSprite, squareSize);
   }
 
   private:
   Vec2 direction;
   ViewObject viewObject;
   bool useSprite;
+  Vec2 squareSize;
 };
 
-PAnimation Animation::thrownObject(Vec2 direction, ViewObject obj, bool useSprite) {
-  return PAnimation(new ThrownObject(direction, obj, useSprite));
+PAnimation Animation::thrownObject(Vec2 direction, ViewObject obj, bool useSprite, Vec2 squareSize) {
+  return PAnimation(new ThrownObject(direction, obj, useSprite, squareSize));
 }
 
 class SpriteAnim : public Animation {
