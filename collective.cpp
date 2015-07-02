@@ -797,7 +797,7 @@ static int countNeighbor(Vec2 pos, const set<Vec2>& squares) {
   return num;
 }
 
-optional<Vec2> Collective::chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds) {
+static optional<Vec2> chooseBedPos(const set<Vec2>& lair, const set<Vec2>& beds) {
   vector<Vec2> res;
   for (Vec2 v : lair) {
     if (countNeighbor(v, beds) > 2)

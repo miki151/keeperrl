@@ -554,7 +554,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, PlayerInfo& info) {
   if (itemIndex >= totalElems)
     itemIndex = totalElems - 1;
   PGuiElem content;
-  if (totalElems == 1)
+  if (totalElems == 1 && !playerOverlayFocused)
     content = gui.stack(
         gui.margin(
           gui.leftMargin(3, gui.label(title, colors[ColorId::YELLOW])),
@@ -782,7 +782,10 @@ vector<PGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info) {
 PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(info.getTitle(), colors[ColorId::WHITE]));
-  list.addElem(gui.label("Level " + toString(info.level), colors[ColorId::WHITE]));
+  list.addElem(gui.horizontalList(makeVec<PGuiElem>(
+      gui.label("Level " + toString(info.level), colors[ColorId::WHITE]),
+      gui.stack(gui.button(getButtonCallback(UserInputId::UNPOSSESS)),
+          gui.label("[U] Leave control", colors[ColorId::LIGHT_BLUE]))), 140, 1));
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addElem(gui.empty());
@@ -1474,7 +1477,7 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const vector<ItemInfo>&
   lines.push_back(gui.label("Equipment", colors[ColorId::YELLOW]));
   for (int i : All(itemElems)) {
     lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
-    if ((i == itemElems.size() || !items[i + 1].slot) && items[i].slot)
+    if ((i == itemElems.size() - 1 || !items[i + 1].slot) && items[i].slot)
       lines.push_back(gui.label("Consumables", colors[ColorId::YELLOW]));
   }
   lines.push_back(gui.stack(

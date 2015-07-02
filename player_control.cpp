@@ -781,13 +781,20 @@ string PlayerControl::getRequirementText(Requirement req) {
   }
 }
 
+static ViewId getSquareViewId(SquareType type) {
+  static unordered_map<SquareType, ViewId> ids;
+  if (!ids.count(type))
+    ids.insert(make_pair(type, SquareFactory::get(type)->getViewObject().id()));
+  return ids.at(type);
+}
+
 vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) const {
   vector<Button> buttons;
   for (BuildInfo button : buildInfo) {
     switch (button.buildType) {
       case BuildInfo::SQUARE: {
            BuildInfo::SquareInfo& elem = button.squareInfo;
-           ViewId viewId = SquareFactory::get(elem.type)->getViewObject().id();
+           ViewId viewId = getSquareViewId(elem.type);
            string description;
            if (elem.cost.value() > 0)
              description = "[" + toString(getCollective()->getSquares(elem.type).size()) + "]";
@@ -795,7 +802,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            if (Collective::resourceInfo.at(elem.cost.id()).dontDisplay && availableNow)
              description += " (" + toString(availableNow) + " available)";
            if (Collective::getSecondarySquare(elem.type))
-             viewId = SquareFactory::get(*Collective::getSecondarySquare(elem.type))->getViewObject().id();
+             viewId = getSquareViewId(*Collective::getSecondarySquare(elem.type));
            buttons.push_back({viewId, elem.name,
                getCostObj(getRoomCost(elem.type, elem.cost, elem.costExponent)),
                description,
