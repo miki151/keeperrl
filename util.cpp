@@ -86,7 +86,7 @@ RandomGen Random;
 
 template string toString<int>(const int&);
 template string toString<unsigned int>(const unsigned int&);
-template string toString<size_t>(const size_t&);
+//template string toString<size_t>(const size_t&);
 template string toString<char>(const char&);
 template string toString<double>(const double&);
 //template string toString<Vec2>(const Vec2&);
