@@ -17,6 +17,7 @@
 #define _MODEL_H
 
 #include "util.h"
+#include "map_memory.h"
 
 class PlayerControl;
 class Level;

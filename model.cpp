@@ -43,6 +43,7 @@
 #include "creature_attributes.h"
 #include "view.h"
 #include "view_index.h"
+#include "map_memory.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
