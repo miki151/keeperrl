@@ -226,8 +226,10 @@ void Renderer::initialize(bool fs, int mode) {
     renderThreadId = currentThreadId();
   else
     CHECK(currentThreadId() == *renderThreadId);
+  CHECK(!getResolutions().empty()) << sf::VideoMode::getFullscreenModes().size() << " " << int(sf::VideoMode::getDesktopMode().bitsPerPixel);
+  CHECK(mode >= 0 && mode < getResolutions().size()) << mode << " " << getResolutions().size();
   VideoMode vMode = getResolutions()[mode];
-  CHECK(vMode.isValid());
+  CHECK(vMode.isValid()) << "Video mode invalid: " << int(vMode.width) << " " << int(vMode.height) << " " << int(vMode.bitsPerPixel) << " " << fs;
   if (fullscreen)
     display.create(vMode, "KeeperRL", sf::Style::Fullscreen);
   else
