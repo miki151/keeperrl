@@ -24,6 +24,7 @@
 #include "cost_info.h"
 #include "game_info.h"
 #include "square_type.h"
+#include "map_memory.h"
 
 class Model;
 class Technology;
