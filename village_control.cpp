@@ -134,8 +134,9 @@ void VillageControl::tick(double time) {
   }
   double updateFreq = 0.1;
   if (Random.roll(1 / updateFreq))
-    for (auto& villain : villains)
-      if (villain.collective->meetsPrerequisites(villain.prerequisites)) {
+    for (auto& villain : villains) {
+      double prob = villain.getAttackProbability(this) / updateFreq;
+      if (prob > 0 && Random.roll(1 / prob)) {
         vector<Creature*> fighters;
         if (villain.leaderAttacks)
           fighters = getCollective()->getCreatures({MinionTrait::FIGHTER});
@@ -145,13 +146,11 @@ void VillageControl::tick(double time) {
           << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
         if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)
           continue;
-        double prob = villain.getAttackProbability(this) / updateFreq;
-        if (prob > 0 && Random.roll(1 / prob)) {
-          launchAttack(villain, getPrefix(randomPermutation(fighters),
-                Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation) + 1)));
-          break;
-        }
+        launchAttack(villain, getPrefix(randomPermutation(fighters),
+            Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation) + 1)));
+        break;
       }
+    }
 }
 
 MoveInfo VillageControl::getMove(Creature* c) {
@@ -271,6 +270,8 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
 
 double VillageControl::Villain::getAttackProbability(const VillageControl* self) const {
   double ret = 0;
+  if (!collective->meetsPrerequisites(prerequisites))
+    return 0;
   for (auto& elem : triggers) {
     double val = getTriggerValue(elem, self, collective);
     CHECK(val >= 0 && val <= 1);

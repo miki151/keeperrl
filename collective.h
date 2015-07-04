@@ -320,7 +320,7 @@ class Collective : public TaskCallback {
   PTask getStandardTask(Creature* c);
   PTask getEquipmentTask(Creature* c);
   PTask getHealingTask(Creature* c);
-  bool isTaskGood(const Creature*, MinionTask) const;
+  bool isTaskGood(const Creature*, MinionTask, bool ignoreTaskLock = false) const;
   PTask generateMinionTask(Creature*, MinionTask);
   void setRandomTask(const Creature*);
 

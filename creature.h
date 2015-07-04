@@ -281,6 +281,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   vector<const Creature*> getUnknownAttacker() const;
   const MinionTaskMap& getMinionTasks() const;
+  MinionTaskMap& getMinionTasks();
   int accuracyBonus() const;
   vector<string> getMainAdjectives() const;
   struct AdjectiveInfo {

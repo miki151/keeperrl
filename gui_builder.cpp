@@ -639,13 +639,10 @@ static string getActionText(ItemAction a) {
   }
 }
 
-void GuiBuilder::drawMiniMenu(vector<PGuiElem> elems, function<bool(int)> callback, Vec2 menuPos, int width) {
+void GuiBuilder::drawMiniMenu(vector<PGuiElem> elems, bool& exit, Vec2 menuPos, int width) {
   if (elems.empty())
     return;
-  bool exit = false;
   int numElems = elems.size();
-  for (int i : All(elems))
-    elems[i] = gui.stack(gui.button([&exit, callback, i] { exit = callback(i); }), std::move(elems[i]));
   int margin = 15;
   PGuiElem menu = gui.stack(
       gui.reverseButton([&exit] { exit = true; }, {{Keyboard::Escape}}),
@@ -1443,14 +1440,30 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion, MinionMenuCall
         renderer.getTextLength(curTask) + 20),
       gui.button([=] (Rectangle bounds) {
           vector<PGuiElem> tasks;
-          for (auto task : minion.minionTasks)
-            tasks.push_back(gui.label(getTaskText(task.task), colors[getTaskColor(task)]));
-          drawMiniMenu(std::move(tasks), [=] (int ind) {
-              if (!minion.minionTasks[ind].inactive) {
-                callback(MinionAction{minion.minionTasks[ind].task});
-                  return true;
-              } else
-                return false;}, bounds.getBottomLeft(), 200);}));
+          bool exit = false;
+          MinionAction::TaskAction retAction;
+          for (auto task : minion.minionTasks) {
+            function<void()> buttonFun = [] {};
+            if (!task.inactive)
+              buttonFun = [&exit, &retAction, task] {
+                  retAction.switchTo = task.task;
+                  exit = true;
+                };
+            tasks.push_back(gui.horizontalList(makeVec<PGuiElem>(
+                gui.stack(
+                    gui.button(buttonFun),
+                    gui.label(getTaskText(task.task), colors[getTaskColor(task)])),
+                gui.stack(
+                    getTooltip({"Click to turn this task on/off."}),
+                    gui.button([&exit, &retAction, task] {
+                      retAction.lock.toggle(task.task);
+                    }),
+                    gui.labelUnicode(String(L'✓'), [&retAction, task] {
+                        return colors[(retAction.lock[task.task] ^ task.locked) ? ColorId::LIGHT_GRAY : ColorId::GREEN];}))), 175));
+          }
+          drawMiniMenu(std::move(tasks), exit, bounds.getBottomLeft(), 200);
+          callback(MinionAction{retAction});
+        }));
 }
 
 vector<PGuiElem> GuiBuilder::drawAttributesOnPage(vector<PGuiElem>&& attrs) {

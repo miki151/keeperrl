@@ -478,11 +478,13 @@ vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
     if (c->getSpeciesName() == like->getSpeciesName()) {
       minions.emplace_back();
       minions.back().readFrom(c);
-      for (MinionTask t : c->getMinionTasks().getAll()) {
-        minions.back().minionTasks.push_back({t,
-            !getCollective()->isMinionTaskPossible(c, t),
-            getCollective()->getMinionTask(c) == t});
-      }
+      for (MinionTask t : ENUM_ALL(MinionTask))
+        if (c->getMinionTasks().getValue(t, true) > 0) {
+          minions.back().minionTasks.push_back({t,
+              !getCollective()->isMinionTaskPossible(c, t),
+              getCollective()->getMinionTask(c) == t,
+              c->getMinionTasks().isLocked(t)});
+        }
       minions.back().creatureId = c->getUniqueId();
       if (getCollective()->usesEquipment(c))
         fillEquipment(c, minions.back());
@@ -494,6 +496,14 @@ vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
         return m1.level > m2.level;
       });
   return minions;
+}
+
+void PlayerControl::minionTaskAction(Creature* c, const MinionAction& action1) {
+  auto action = boost::get<MinionAction::TaskAction>(action1.action);
+  if (action.switchTo)
+    getCollective()->setMinionTask(c, *action.switchTo);
+  for (MinionTask task : action.lock)
+    c->getMinionTasks().toggleLock(task);
 }
 
 void PlayerControl::minionView(Creature* creature) {
@@ -516,7 +526,7 @@ void PlayerControl::minionView(Creature* creature) {
     if (Creature* c = getCreature(currentId))
       switch (actionInfo->action.which()) {
         case 0: 
-          getCollective()->setMinionTask(c, boost::get<MinionTask>(actionInfo->action));
+          minionTaskAction(c, *actionInfo);
           break;
         case 1:
           minionEquipmentAction(c, *actionInfo);

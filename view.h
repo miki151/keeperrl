@@ -20,6 +20,7 @@
 #include "debug.h"
 #include "view_object.h"
 #include "user_input.h"
+#include "minion_task.h"
 
 class CreatureView;
 class Level;
@@ -72,6 +73,14 @@ enum class GameTypeChoice {
 };
 
 struct MinionAction {
+  struct TaskAction {
+    optional<MinionTask> SERIAL(switchTo);
+    EnumSet<MinionTask> SERIAL(lock);
+    template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version) {
+      ar & SVAR(switchTo) & SVAR(lock);
+    }
+  };
   struct MinionItemAction {
     vector<UniqueEntity<Item>::Id> SERIAL(ids);
     optional<EquipmentSlot> SERIAL(slot);
@@ -98,7 +107,7 @@ struct MinionAction {
     void serialize(Archive& ar, const unsigned int version) {
     }
   };
-  variant<MinionTask, MinionItemAction, ControlAction, RenameAction, BanishAction> SERIAL(action);
+  variant<TaskAction, MinionItemAction, ControlAction, RenameAction, BanishAction> SERIAL(action);
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(action);

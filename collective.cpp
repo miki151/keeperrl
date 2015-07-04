@@ -469,8 +469,8 @@ optional<MinionTask> Collective::getMinionTask(const Creature* c) const {
     return none;
 }
 
-bool Collective::isTaskGood(const Creature* c, MinionTask task) const {
-  if (c->getMinionTasks().getValue(task) == 0)
+bool Collective::isTaskGood(const Creature* c, MinionTask task, bool ignoreTaskLock) const {
+  if (c->getMinionTasks().getValue(task, ignoreTaskLock) == 0)
     return false;
   if (minionPayment.count(c) && minionPayment.at(c).debt() > 0 && getTaskInfo().at(task).cost > 0)
     return false;
@@ -481,6 +481,7 @@ bool Collective::isTaskGood(const Creature* c, MinionTask task) const {
     case MinionTask::SLEEP:
         if (!config->sleepOnlyAtNight())
           return true;
+        // break skipped on purpose
     case MinionTask::EXPLORE_NOCTURNAL:
         return getLevel()->getModel()->getSunlightInfo().state == SunlightState::NIGHT;
     default: return true;
@@ -528,7 +529,7 @@ optional<Vec2> Collective::getTileToExplore(const Creature* c, MinionTask task) 
 }
 
 bool Collective::isMinionTaskPossible(Creature* c, MinionTask task) {
-  return isTaskGood(c, task) && generateMinionTask(c, task);
+  return isTaskGood(c, task, true) && generateMinionTask(c, task);
 }
 
 PTask Collective::generateMinionTask(Creature* c, MinionTask task) {

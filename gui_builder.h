@@ -123,7 +123,7 @@ class GuiBuilder {
   vector<PGuiElem> drawMinionActions(const PlayerInfo&, MinionMenuCallback);
   vector<PGuiElem> joinLists(vector<PGuiElem>&&, vector<PGuiElem>&&);
   function<void()> getButtonCallback(UserInput);
-  void drawMiniMenu(vector<PGuiElem>, function<bool(int)> callback, Vec2 menuPos, int width);
+  void drawMiniMenu(vector<PGuiElem>, bool& exit, Vec2 menuPos, int width);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
   int activeBuilding = 0;
   bool hideBuildingOverlay = false;

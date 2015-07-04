@@ -141,6 +141,7 @@ class PlayerInfo {
     MinionTask task;
     bool inactive;
     bool current;
+    bool locked;
   };
   vector<MinionTaskInfo> minionTasks;
   UniqueEntity<Creature>::Id creatureId;

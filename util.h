@@ -1121,6 +1121,10 @@ class EnumSet : public EnumMap<T, char> {
     (*this)[elem] = 1;
   }
 
+  void toggle(T elem) {
+    (*this)[elem] = !(*this)[elem];
+  }
+
   void erase(T elem) {
     (*this)[elem] = 0;
   }

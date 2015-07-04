@@ -23,17 +23,21 @@ class MinionTaskMap {
   void setValue(MinionTask, double);
   void setWorkshopTasks(double);
   void clear();
+
+  void toggleLock(MinionTask);
+  bool isLocked(MinionTask) const;
   
-  double getValue(MinionTask) const;
-  MinionTask getRandom() const;
+  double getValue(MinionTask, bool ignoreTaskLock = false) const;
   bool hasAnyTask() const;
-  vector<MinionTask> getAll() const;
   
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
   
   private:
   EnumMap<MinionTask, double> SERIAL(tasks);
+  EnumSet<MinionTask> SERIAL(locked);
 };
+
+BOOST_CLASS_VERSION(MinionTaskMap, 1);
 
 #endif

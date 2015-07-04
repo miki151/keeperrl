@@ -2348,6 +2348,10 @@ const MinionTaskMap& Creature::getMinionTasks() const {
   return attributes->minionTasks;
 }
 
+MinionTaskMap& Creature::getMinionTasks() {
+  return attributes->minionTasks;
+}
+
 void Creature::updateVisibleCreatures(Rectangle range) {
   visibleEnemies.clear();
   visibleCreatures.clear();

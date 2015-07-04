@@ -110,6 +110,8 @@ class GuiFactory {
   PGuiElem mainMenuLabelBg(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_OFF]);
   PGuiElem labelUnicode(const String&, Color, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
+  PGuiElem labelUnicode(const String&, function<Color()>, int size = Renderer::textSize,
+      Renderer::FontId = Renderer::SYMBOL_FONT);
   PGuiElem viewObject(const ViewObject& object, bool useSprites);
   PGuiElem viewObject(ViewId, bool useSprites);
   PGuiElem drawCustom(function<void(Renderer&, Rectangle)>);

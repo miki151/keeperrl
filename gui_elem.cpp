@@ -348,9 +348,13 @@ PGuiElem GuiFactory::variableLabel(function<string()> fun, Renderer::CenterType 
 }
 
 PGuiElem GuiFactory::labelUnicode(const String& s, Color color, int size, Renderer::FontId fontId) {
+  return labelUnicode(s, [color] { return color; }, size, fontId);
+}
+
+PGuiElem GuiFactory::labelUnicode(const String& s, function<Color()> color, int size, Renderer::FontId fontId) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(fontId, size, color, bounds.getTopLeft().x, bounds.getTopLeft().y, s);
+          r.drawText(fontId, size, color(), bounds.getTopLeft().x, bounds.getTopLeft().y, s);
         }));
 }
 
