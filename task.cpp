@@ -755,7 +755,8 @@ class Chain : public Task {
 
   virtual void cancel() override {
     for (int i = current; i < tasks.size(); ++i)
-      tasks[i]->cancel();
+      if (!tasks[i]->isDone())
+        tasks[i]->cancel();
   }
 
   virtual MoveInfo getMove(Creature* c) override {

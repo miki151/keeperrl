@@ -472,6 +472,7 @@ void Renderer::considerMouseMoveEvent(Event& ev) {
 }
 
 bool Renderer::pollEvent(Event& ev) {
+  CHECK(currentThreadId() == *renderThreadId);
   if (monkey) {
     if (Random.roll(2))
       return false;
