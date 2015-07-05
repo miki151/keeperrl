@@ -83,7 +83,7 @@ void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& ite
 void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers) {
   Debug() << getAttackMessage(villain, attackers);
   villain.collective->addAssaultNotification(getCollective(), attackers, getAttackMessage(villain, attackers));
-  TeamId team = getCollective()->getTeams().create(attackers);
+  TeamId team = getCollective()->getTeams().createPersistent(attackers);
   getCollective()->getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
   for (Creature* c : attackers)
