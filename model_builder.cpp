@@ -73,7 +73,6 @@ static vector<EnemyInfo> getVaults(TribeSet& tribeSet) {
             c.minTeamSize = 1;
             c.leaderAttacks = true;
             c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 22}, AttackTriggerId::STOLEN_ITEMS);
-            c.prerequisites = LIST(AttackPrerequisite::THRONE);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 7);
             c.welcomeMessage = VillageControl::DRAGON_WELCOME;
             c.attackMessage = VillageControl::CREATURE_TITLE;)}),
@@ -84,7 +83,6 @@ static vector<EnemyInfo> getVaults(TribeSet& tribeSet) {
             c.minTeamSize = 1;
             c.leaderAttacks = true;
             c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 30}, AttackTriggerId::STOLEN_ITEMS);
-            c.prerequisites = LIST(AttackPrerequisite::THRONE);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 12);
             c.welcomeMessage = VillageControl::DRAGON_WELCOME;
             c.attackMessage = VillageControl::CREATURE_TITLE;)}),
@@ -159,8 +157,7 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
           c.minPopulation = 6;
           c.minTeamSize = 5;
           c.triggers = LIST(
-            {AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS}, AttackTriggerId::STOLEN_ITEMS);
-          c.prerequisites = LIST(AttackPrerequisite::THRONE);
+            {AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS}, AttackTriggerId::STOLEN_ITEMS);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
@@ -183,7 +180,6 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
           c.minTeamSize = 4;
           c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS},
               AttackTriggerId::STOLEN_ITEMS);
-          c.prerequisites = LIST(AttackPrerequisite::THRONE);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
@@ -205,7 +201,6 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
           c.minPopulation = 4;
           c.minTeamSize = 4;
           c.triggers = LIST(AttackTriggerId::STOLEN_ITEMS);
-          c.prerequisites = LIST(AttackPrerequisite::THRONE);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
@@ -226,9 +221,8 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
        {CONSTRUCT(VillainInfo,
           c.minPopulation = 3;
           c.minTeamSize = 4;
-          c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS},
+          c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
               AttackTriggerId::STOLEN_ITEMS);
-          c.prerequisites = LIST(AttackPrerequisite::THRONE);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 3);
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
@@ -254,9 +248,8 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
        {CONSTRUCT(VillainInfo,
           c.minPopulation = 12;
           c.minTeamSize = 10;
-          c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS},
+          c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
               AttackTriggerId::STOLEN_ITEMS);
-          c.prerequisites = LIST(AttackPrerequisite::THRONE);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,

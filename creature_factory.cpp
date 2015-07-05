@@ -1105,8 +1105,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::KNIGHT;
           c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 26;
-          c.attr[AttrType::DEXTERITY] = 19;
+          c.attr[AttrType::STRENGTH] = 28;
+          c.attr[AttrType::DEXTERITY] = 21;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1154,7 +1154,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
           c.attr[AttrType::STRENGTH] = 17;
-          c.attr[AttrType::DEXTERITY] = 22;
+          c.attr[AttrType::DEXTERITY] = 24;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1490,6 +1490,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setWorkshopTasks(1);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.minionTasks.setValue(MinionTask::EAT, 5);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.name = "ogre";);
     case CreatureId::CHICKEN: 
@@ -1525,8 +1526,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::MEDIUM;
           c.firstName = NameGenerator::get(NameGeneratorId::DWARF)->getNext();
-          c.attr[AttrType::STRENGTH] = 21;
-          c.attr[AttrType::DEXTERITY] = 16;
+          c.attr[AttrType::STRENGTH] = 25;
+          c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 90;

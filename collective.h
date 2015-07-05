@@ -63,10 +63,6 @@ RICH_ENUM(CollectiveWarning,
     MORE_LIGHTS
 );
 
-enum class AttackPrerequisite {
-  THRONE
-};
-
 class Collective : public TaskCallback {
   public:
   void addCreature(Creature*, EnumSet<MinionTrait>);
@@ -87,7 +83,6 @@ class Collective : public TaskCallback {
   void cancelTask(const Creature*);
   void banishCreature(Creature*);
   bool wasBanished(const Creature*) const;
-  bool meetsPrerequisites(const vector<AttackPrerequisite>&) const;
 
   typedef CollectiveWarning Warning;
   typedef CollectiveResourceId ResourceId;

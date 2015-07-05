@@ -9,7 +9,7 @@ CFLAGS = -Wall -std=c++11 -Wno-sign-compare -Wno-unused-variable -Wfatal-errors 
 ifdef CLANG
 CC = clang++
 LD = clang++
-CFLAGS += -Werror -DCLANG
+CFLAGS += -Werror -DCLANG -ftemplate-depth=512
 else
 CC = g++
 LD = g++

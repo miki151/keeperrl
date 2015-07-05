@@ -334,17 +334,6 @@ bool Collective::wasBanished(const Creature* c) const {
   return contains(banished, c);
 }
 
-bool Collective::meetsPrerequisites(const vector<AttackPrerequisite>& prereq) const {
-  for (auto elem : prereq)
-    switch (elem) {
-      case AttackPrerequisite::THRONE: 
-        if (getSquares(SquareId::THRONE).empty())
-          return false;
-        break;
-    }
-  return true;
-}
-
 vector<Creature*>& Collective::getCreatures() {
   return creatures;
 }
