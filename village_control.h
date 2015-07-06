@@ -51,6 +51,8 @@ class VillageControl : public CollectiveControl {
   typedef VillageBehaviour Behaviour;
   typedef AttackTrigger Trigger;
 
+  static bool serializationBugfix;
+
   enum AttackMessage {
     CREATURE_TITLE,
     TRIBE_AND_NAME,
