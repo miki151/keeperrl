@@ -25,13 +25,33 @@
 #include "effect_type.h"
 #include "task.h"
 
+typedef EnumVariant<AttackTriggerId, TYPES(int),
+        ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
+
+bool VillageControl::serializationBugfix = false;
+
 template <class Archive>
 void VillageControl::Villain::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(minPopulation)
     & SVAR(minTeamSize)
-    & SVAR(collective)
-    & SVAR(triggers)
-    & SVAR(prerequisites)
+    & SVAR(collective);
+  if (serializationBugfix) {
+    vector<OldTrigger> SERIAL(tmp);
+    ar & SVAR(tmp);
+    for (auto& elem : tmp) {
+      switch (elem.getId()) {
+        case AttackTriggerId::ENEMY_POPULATION:
+        case AttackTriggerId::GOLD:
+          triggers.emplace_back(elem.getId(), elem.get<int>());
+          break;
+        default:
+          triggers.emplace_back(elem.getId());
+          break;
+      }
+    }
+  } else
+    ar & SVAR(triggers);
+  ar& SVAR(prerequisites)
     & SVAR(behaviour)
     & SVAR(leaderAttacks)
     & SVAR(attackMessage)
