@@ -1079,7 +1079,7 @@ static vector<BirthSpawn> birthSpawns {
 };
 
 void Collective::considerBirths() {
-  if (!pregnancies.empty() && Random.roll(300)) {
+  if (getPopulationSize() < getMaxPopulation() && !pregnancies.empty() && Random.roll(300)) {
     Creature* c = pregnancies.front();
     pregnancies.pop_front();
     vector<pair<CreatureId, double>> candidates;
