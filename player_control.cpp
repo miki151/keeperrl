@@ -1453,7 +1453,8 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         getCollective()->setPriorityTasks(pos);
         break;
     case BuildInfo::SQUARE:
-        if (getCollective()->getConstructions().containsSquare(pos)) {
+        if (getCollective()->getConstructions().containsSquare(pos) &&
+            !getCollective()->getConstructions().getSquare(pos).isBuilt()) {
           if (selection != SELECT) {
             getCollective()->removeConstruction(pos);
             selection = DESELECT;
