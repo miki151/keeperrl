@@ -29,7 +29,7 @@ class GuiElem {
   virtual bool onRightClick(Vec2) { return false; }
   virtual bool onMouseMove(Vec2) { return false;}
   virtual void onMouseGone() {}
-  virtual void onMouseRelease() {}
+  virtual void onMouseRelease(Vec2) {}
   virtual void onRefreshBounds() {}
   virtual bool onKeyPressed(char) { return false;}
   virtual bool onKeyPressed2(Event::KeyEvent) { return false;}

@@ -237,7 +237,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::libraryInfo {
-  BuildInfo(BuildInfo::IMP, "", 'i'),
+  BuildInfo(BuildInfo::IMP, "Click on a visible square on the map to summon an imp.", 'i'),
 };
 
 vector<PlayerControl::BuildInfo> PlayerControl::minionsInfo {
@@ -1286,9 +1286,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
           getTeams().setLeader(input.get<TeamLeaderInfo>().team(), c);
         break;
     case UserInputId::MOVE_TO:
-        if (currentTeam && getTeams().isActive(*currentTeam) && getCollective()->isKnownSquare(input.get<Vec2>())) {
-          getCollective()->freeTeamMembers(*currentTeam);
-          getCollective()->setTask(getTeams().getLeader(*currentTeam), Task::goTo(input.get<Vec2>()), true);
+        if (getCurrentTeam() && getTeams().isActive(*getCurrentTeam()) &&
+            getCollective()->isKnownSquare(input.get<Vec2>())) {
+          getCollective()->freeTeamMembers(*getCurrentTeam());
+          getCollective()->setTask(getTeams().getLeader(*getCurrentTeam()), Task::goTo(input.get<Vec2>()), true);
           view->continueClock();
         }
         break;

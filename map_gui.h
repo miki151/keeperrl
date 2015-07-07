@@ -45,7 +45,7 @@ class MapGui : public GuiElem {
   virtual bool onRightClick(Vec2) override;
   virtual bool onMouseMove(Vec2) override;
   virtual void onMouseGone() override;
-  virtual void onMouseRelease() override;
+  virtual void onMouseRelease(Vec2) override;
   virtual bool onKeyPressed2(Event::KeyEvent) override;
 
   void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, bool showMorale);
@@ -82,6 +82,8 @@ class MapGui : public GuiElem {
 
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, int curTimeReal);
   Vec2 projectOnScreen(Vec2 wpos, int currentTimeReal);
+  bool considerCreatureClick(Vec2 mousePos);
+  void considerMapLeftClick(Vec2 mousePos);
   MapLayout* layout;
   Table<optional<ViewIndex>> objects;
   bool spriteMode;
@@ -89,6 +91,7 @@ class MapGui : public GuiElem {
   Callbacks callbacks;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
+  optional<Vec2> lastMapLeftClick;
   vector<string> hint;
   struct AnimationInfo {
     PAnimation animation;

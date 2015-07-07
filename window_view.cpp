@@ -1147,7 +1147,8 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
     mapGui->setHint({});
   switch (event.type) {
     case Event::MouseButtonReleased:
-      mapGui->onMouseRelease(); // MapGui needs this event otherwise it will sometimes lock the mouse button
+      // MapGui needs this event otherwise it will sometimes lock the mouse button
+      mapGui->onMouseRelease(Vec2(event.mouseButton.x, event.mouseButton.y));
       break;
     case Event::MouseButtonPressed:
       lockKeyboard = true;

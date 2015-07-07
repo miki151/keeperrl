@@ -438,7 +438,7 @@ Event Renderer::getRandomEvent() {
 bool Renderer::pollEventWorkaroundMouseReleaseBug(Event& ev) {
   if (genReleaseEvent && !Mouse::isButtonPressed(Mouse::Right) && !Mouse::isButtonPressed(Mouse::Left)) {
     ev.type = Event::MouseButtonReleased;
-    ev.mouseButton = {Mouse::Left, Mouse::getPosition().x, Mouse::getPosition().y};
+    ev.mouseButton = {Mouse::Left, Mouse::getPosition(display).x, Mouse::getPosition(display).y};
     genReleaseEvent = false;
     return true;
   }
