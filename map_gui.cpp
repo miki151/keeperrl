@@ -211,9 +211,8 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
 
 bool MapGui::onLeftClick(Vec2 v) {
   if (v.inRectangle(getBounds())) {
-    Vec2 pos = layout->projectOnMap(getBounds(), getScreenPos(), v);
-    callbacks.leftClickFun(pos);
-    mouseHeldPos = pos;
+    mouseHeldPos = v;
+    mouseOffset.x = mouseOffset.y = 0;
     return true;
   }
   return false;
@@ -233,13 +232,18 @@ void MapGui::onMouseGone() {
   lastMouseMove = none;
 }
 
+void MapGui::considerMapLeftClick(Vec2 mousePos) {
+  Vec2 pos = layout->projectOnMap(getBounds(), getScreenPos(), mousePos);
+  if (!lastMapLeftClick || lastMapLeftClick != pos) {
+    callbacks.leftClickFun(pos);
+    lastMapLeftClick = pos;
+  }
+}
+
 bool MapGui::onMouseMove(Vec2 v) {
   lastMouseMove = v;
-  Vec2 pos = layout->projectOnMap(getBounds(), getScreenPos(), v);
-  if (v.inRectangle(getBounds()) && mouseHeldPos && *mouseHeldPos != pos) {
-    callbacks.leftClickFun(pos);
-    mouseHeldPos = pos;
-  }
+  if (v.inRectangle(getBounds()) && mouseHeldPos)
+    considerMapLeftClick(v);
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
     mouseOffset.y = double(v.y - lastMousePos.y) / layout->getSquareSize().y;
@@ -252,28 +256,33 @@ bool MapGui::onMouseMove(Vec2 v) {
   return false;
 }
 
-void MapGui::onMouseRelease() {
-  if (isScrollingNow) {
-    if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1) {
-      bool creature = false;
-      for (auto& elem : creatureMap)
-        if (lastMousePos.inRectangle(elem.first)) {
-          callbacks.creatureClickFun(elem.second);
-          creature = true;
-          break;
-        }
-      if (!creature)
-        callbacks.rightClickFun(layout->projectOnMap(getBounds(), getScreenPos(), lastMousePos));
+bool MapGui::considerCreatureClick(Vec2 mousePos) {
+  for (auto& elem : creatureMap)
+    if (mousePos.inRectangle(elem.first)) {
+      callbacks.creatureClickFun(elem.second);
+      return true;
     }
+  return false;
+}
+
+void MapGui::onMouseRelease(Vec2 v) {
+  if (isScrollingNow) {
+    if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1 && !considerCreatureClick(lastMousePos))
+      callbacks.rightClickFun(layout->projectOnMap(getBounds(), getScreenPos(), lastMousePos));
     else {
       center.x -= mouseOffset.x;
       center.y -= mouseOffset.y;
     }
-    mouseOffset.x = mouseOffset.y = 0;
     isScrollingNow = false;
     callbacks.refreshFun();
+    mouseOffset.x = mouseOffset.y = 0;
   }
-  mouseHeldPos = none;
+  if (mouseHeldPos) {
+    if (mouseHeldPos->distD(v) > 10 || !considerCreatureClick(*mouseHeldPos))
+      considerMapLeftClick(v);
+    mouseHeldPos = none;
+  }
+  lastMapLeftClick = none;
 }
 
 /*void MapGui::drawFloorBorders(Renderer& renderer, DirSet borders, int x, int y) {
@@ -347,17 +356,17 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - getJumpOffset(state)) * size.y);
 }
 
-void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Rectangle tile) {
+void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Rectangle tile, int curTime) {
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
     renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
   }
   if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && showMorale)
     drawMorale(renderer, tile, object.getAttribute(ViewObject::Attribute::MORALE));
-  if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT)) {
+  if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT) && (curTime / 1000) % 2) {
     renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::YELLOW]);
   } else
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
-    renderer.drawFilledRectangle(tile, Color::Transparent, transparency(colors[ColorId::YELLOW], 120));
+    renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::YELLOW]);
   }
 }
 
@@ -402,7 +411,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         }
     Vec2 move;
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal);
-    drawCreatureHighlights(renderer, object, Rectangle(pos + movement, pos + movement + size));
+    drawCreatureHighlights(renderer, object, Rectangle(pos + movement, pos + movement + size), curTimeReal);
     if ((object.layer() == ViewLayer::CREATURE && object.id() != ViewId::BOULDER)
         || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
       renderer.drawTile(pos + movement, {Vec2(2, 22), 0}, size);

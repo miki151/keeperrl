@@ -267,7 +267,6 @@ class Collective : public TaskCallback {
   virtual void onPickedUp(Vec2 pos, EntitySet<Item>) override;
   virtual void onCantPickItem(EntitySet<Item> items) override;
   virtual void onConstructed(Vec2, const SquareType&) override;
-  virtual void onConstructionCancelled(Vec2) override;
   virtual void onTorchBuilt(Vec2, Trigger*) override;
   virtual void onAppliedSquare(Vec2 pos) override;
   virtual void onKillCancelled(Creature*) override;

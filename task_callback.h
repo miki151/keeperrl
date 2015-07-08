@@ -9,7 +9,6 @@ class SquareType;
 class TaskCallback {
   public:
   virtual void onConstructed(Vec2 pos, const SquareType&) {}
-  virtual void onConstructionCancelled(Vec2 pos) {}
   virtual bool isConstructionReachable(Vec2 pos) { return true; }
   virtual void onTorchBuilt(Vec2 pos, Trigger*) {}
   virtual void onAppliedItem(Vec2 pos, Item* item) {}

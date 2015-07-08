@@ -2142,6 +2142,9 @@ int Creature::getDifficultyPoints() const {
   difficultyPoints = max<double>(difficultyPoints,
       getModifier(ModifierType::DEFENSE) + getModifier(ModifierType::ACCURACY) + getModifier(ModifierType::DAMAGE)
       + getAttr(AttrType::SPEED) / 10);
+  CHECK(difficultyPoints >=0 && difficultyPoints < 100000) << getModifier(ModifierType::DEFENSE) << " "
+     << getModifier(ModifierType::ACCURACY) << " " << getModifier(ModifierType::DAMAGE) << " "
+     << getAttr(AttrType::SPEED);
   return difficultyPoints;
 }
 

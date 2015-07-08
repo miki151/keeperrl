@@ -95,6 +95,7 @@ class BoulderController : public Monster {
         for (int i = 1; i <= radius; ++i) {
           if (!(getCreature()->getPosition() + (v * i)).inRectangle(getCreature()->getLevel()->getBounds()))
             break;
+          bool isWall = true;
           for (Square* square : getCreature()->getSquare(v * i)) {
             if (Creature* other = square->getCreature())
               if (other->getTribe() != myTribe) {
@@ -116,9 +117,11 @@ class BoulderController : public Monster {
                   return;
                 }
               }
-            if (!square->canEnterEmpty(getCreature()))
-              break;
+            if (square->canEnterEmpty(getCreature()))
+              isWall = false;
           }
+          if (isWall)
+            break;
         }
         if (found)
           break;

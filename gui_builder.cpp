@@ -1576,7 +1576,7 @@ PGuiElem GuiBuilder::drawMinionMenu(const vector<PlayerInfo>& minions,
   }
   int minionListWidth = 180;
   return gui.stack(
-      gui.keyHandler([callback] { callback(none); }, {{Keyboard::Escape}}),
+      gui.keyHandler([callback] { callback(none); }, {{Keyboard::Escape}, {Keyboard::Return}}),
       gui.horizontalList(makeVec<PGuiElem>(
           gui.leftMargin(8, gui.topMargin(15, drawMinionButtons(minions, current))),
           gui.margins(gui.sprite(GuiFactory::TexId::VERT_BAR_MINI, GuiFactory::Alignment::LEFT),

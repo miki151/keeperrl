@@ -79,11 +79,6 @@ class Construction : public Task {
     }
   }
 
-  virtual void cancel() override {
- // if the task is transferable then this callback is not needed ???
- //   callback->onConstructionCancelled(position); 
-  }
-
   virtual MoveInfo getMove(Creature* c) override {
     if (!callback->isConstructionReachable(position))
       return NoMove;

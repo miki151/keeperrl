@@ -237,7 +237,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::libraryInfo {
-  BuildInfo(BuildInfo::IMP, "", 'i'),
+  BuildInfo(BuildInfo::IMP, "Click on a visible square on the map to summon an imp.", 'i'),
 };
 
 vector<PlayerControl::BuildInfo> PlayerControl::minionsInfo {
@@ -1053,10 +1053,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
     index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
   if (const Creature* c = square->getCreature())
-    if (getCurrentTeam() && getTeams().contains(*getCurrentTeam(), c)
-        && index.hasObject(ViewLayer::CREATURE))
-      index.getObject(ViewLayer::CREATURE).setModifier(getTeams().getLeader(*getCurrentTeam()) == c ?
-          ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT : ViewObject::Modifier::TEAM_HIGHLIGHT);
+    if (!getTeams().getActiveTeams(c).empty() && index.hasObject(ViewLayer::CREATURE))
+      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);
   if (getCollective()->isMarked(pos))
     index.setHighlight(getCollective()->getMarkHighlight(pos));
   if (getCollective()->hasPriorityTasks(pos))
@@ -1286,9 +1284,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
           getTeams().setLeader(input.get<TeamLeaderInfo>().team(), c);
         break;
     case UserInputId::MOVE_TO:
-        if (currentTeam && getTeams().isActive(*currentTeam) && getCollective()->isKnownSquare(input.get<Vec2>())) {
-          getCollective()->freeTeamMembers(*currentTeam);
-          getCollective()->setTask(getTeams().getLeader(*currentTeam), Task::goTo(input.get<Vec2>()), true);
+        if (getCurrentTeam() && getTeams().isActive(*getCurrentTeam()) &&
+            getCollective()->isKnownSquare(input.get<Vec2>())) {
+          getCollective()->freeTeamMembers(*getCurrentTeam());
+          getCollective()->setTask(getTeams().getLeader(*getCurrentTeam()), Task::goTo(input.get<Vec2>()), true);
           view->continueClock();
         }
         break;
@@ -1453,7 +1452,8 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         getCollective()->setPriorityTasks(pos);
         break;
     case BuildInfo::SQUARE:
-        if (getCollective()->getConstructions().containsSquare(pos)) {
+        if (getCollective()->getConstructions().containsSquare(pos) &&
+            !getCollective()->getConstructions().getSquare(pos).isBuilt()) {
           if (selection != SELECT) {
             getCollective()->removeConstruction(pos);
             selection = DESELECT;

@@ -416,10 +416,10 @@ class GuiLayout : public GuiElem {
       elems[i]->onMouseGone();
   }
 
-  virtual void onMouseRelease() override {
+  virtual void onMouseRelease(Vec2 pos) override {
     for (int i : AllReverse(elems))
       if (isVisible(i))
-        elems[i]->onMouseRelease();
+        elems[i]->onMouseRelease(pos);
   }
 
   virtual void render(Renderer& r) override {
@@ -1282,7 +1282,7 @@ class ScrollBar : public GuiLayout {
     return false;
   }
 
-  virtual void onMouseRelease() override {
+  virtual void onMouseRelease(Vec2) override {
     *held = notHeld;
   }
 
@@ -1360,8 +1360,8 @@ class Scrollable : public GuiElem {
     return content->onMouseMove(v);
   }
 
-  virtual void onMouseRelease() override {
-    content->onMouseRelease();
+  virtual void onMouseRelease(Vec2 pos) override {
+    content->onMouseRelease(pos);
   }
 
   virtual bool onKeyPressed(char c) override {
@@ -1693,7 +1693,7 @@ void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
   switch (event.type) {
     case Event::MouseButtonReleased:
       for (GuiElem* elem : guiElems)
-        elem->onMouseRelease();
+        elem->onMouseRelease(Vec2(event.mouseButton.x, event.mouseButton.y));
       break;
     case Event::MouseMoved: {
       bool captured = false;
