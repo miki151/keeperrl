@@ -734,8 +734,8 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
     } else if (contains(getCreature()->getUnknownAttacker(), c))
       index.insert(copyOf(ViewObject::unknownMonster()));
   }
-  if (pos == getCreature()->getPosition() && index.hasObject(ViewLayer::CREATURE))
-      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);
+ /* if (pos == getCreature()->getPosition() && index.hasObject(ViewLayer::CREATURE))
+      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);*/
   
 }
 

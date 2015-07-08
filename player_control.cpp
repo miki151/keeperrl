@@ -1053,10 +1053,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
     index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
   if (const Creature* c = square->getCreature())
-    if (getCurrentTeam() && getTeams().contains(*getCurrentTeam(), c)
-        && index.hasObject(ViewLayer::CREATURE))
-      index.getObject(ViewLayer::CREATURE).setModifier(getTeams().getLeader(*getCurrentTeam()) == c ?
-          ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT : ViewObject::Modifier::TEAM_HIGHLIGHT);
+    if (!getTeams().getActiveTeams(c).empty() && index.hasObject(ViewLayer::CREATURE))
+      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);
   if (getCollective()->isMarked(pos))
     index.setHighlight(getCollective()->getMarkHighlight(pos));
   if (getCollective()->hasPriorityTasks(pos))

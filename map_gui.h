@@ -63,7 +63,7 @@ class MapGui : public GuiElem {
   private:
   void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, int currentTimeReal,
       const EnumMap<HighlightType, double>&);
-  void drawCreatureHighlights(Renderer&, const ViewObject&, Rectangle tile);
+  void drawCreatureHighlights(Renderer&, const ViewObject&, Rectangle tile, int currentTimeReal);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
   void drawHint(Renderer& renderer, Color color, const vector<string>& text);
   void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);

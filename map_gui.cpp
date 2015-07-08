@@ -356,17 +356,17 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - getJumpOffset(state)) * size.y);
 }
 
-void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Rectangle tile) {
+void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Rectangle tile, int curTime) {
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
     renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
   }
   if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && showMorale)
     drawMorale(renderer, tile, object.getAttribute(ViewObject::Attribute::MORALE));
-  if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT)) {
+  if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT) && (curTime / 1000) % 2) {
     renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::YELLOW]);
   } else
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
-    renderer.drawFilledRectangle(tile, Color::Transparent, transparency(colors[ColorId::YELLOW], 120));
+    renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::YELLOW]);
   }
 }
 
@@ -411,7 +411,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         }
     Vec2 move;
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal);
-    drawCreatureHighlights(renderer, object, Rectangle(pos + movement, pos + movement + size));
+    drawCreatureHighlights(renderer, object, Rectangle(pos + movement, pos + movement + size), curTimeReal);
     if ((object.layer() == ViewLayer::CREATURE && object.id() != ViewId::BOULDER)
         || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
       renderer.drawTile(pos + movement, {Vec2(2, 22), 0}, size);
