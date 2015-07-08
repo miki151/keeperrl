@@ -432,6 +432,15 @@ void Player::sleeping() {
 
 static bool displayTravelInfo = true;
 
+void Player::attackAction(Creature::Id id) {
+  for (Square* square : getCreature()->getSquares(Vec2::directions8()))
+    if (const Creature* c = square->getCreature())
+      if (c->getUniqueId() == id) {
+        tryToPerform(getCreature()->attack(c));
+        break;
+      }
+}
+
 void Player::attackAction(Creature* other) {
   vector<ListElem> elems;
   vector<AttackLevel> levels = getCreature()->getAttackLevels();
@@ -546,6 +555,7 @@ void Player::makeMove() {
       break;
     case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
     case UserInputId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(this); break;
+    case UserInputId::CREATURE_BUTTON: attackAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: model->exitAction(); return;
     default: break;
   }
