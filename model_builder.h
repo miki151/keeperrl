@@ -1,12 +1,15 @@
 #ifndef _MODEL_BUILDER_H
 
 #include "village_control.h"
+#include "stair_key.h"
 
 class Level;
 class Model;
 class ProgressMeter;
 class Options;
 class View;
+
+enum class ExtraLevelId;
 
 class ModelBuilder {
   public:
@@ -22,6 +25,7 @@ class ModelBuilder {
 
   private:
   static PModel tryCollectiveModel(ProgressMeter&, Options*, View*, const string& worldName);
+  static Level* makeExtraLevel(ProgressMeter&, Model*, ExtraLevelId, StairKey);
 
 };
 

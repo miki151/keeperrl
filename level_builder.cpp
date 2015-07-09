@@ -51,8 +51,7 @@ void LevelBuilder::putSquare(Vec2 pos, PSquare square, SquareType t, optional<Sq
 void LevelBuilder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<SquareAttrib> attr) {
   progressMeter.addProgress();
   Vec2 pos = transform(posT);
-  CHECK(!contains({SquareId::UP_STAIRS, SquareId::DOWN_STAIRS}, type[pos].getId()))
-    << "Attempted to overwrite stairs";
+  CHECK(type[pos].getId() != SquareId::STAIRS) << "Attempted to overwrite stairs";
   square->setPosition(pos);
   if (squares[pos])
     square->setBackground(squares[pos].get());

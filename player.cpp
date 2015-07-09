@@ -128,9 +128,8 @@ void Player::getItemNames(vector<Item*> items, vector<ListElem>& names, vector<v
 
 static string getSquareQuestion(SquareApplyType type, string name) {
   switch (type) {
-    case SquareApplyType::DESCEND: return "descend " + name;
-    case SquareApplyType::ASCEND: return "ascend " + name;
-    case SquareApplyType::USE_CHEST: return "loot " + name;
+    case SquareApplyType::USE_STAIRS: return "use " + name;
+    case SquareApplyType::USE_CHEST: return "open " + name;
     case SquareApplyType::DRINK: return "drink from " + name;
     case SquareApplyType::PRAY: return "pray at " + name;
     case SquareApplyType::SLEEP: return "sleep on " + name;

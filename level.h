@@ -22,6 +22,7 @@
 #include "unique_entity.h"
 #include "movement_type.h"
 #include "sectors.h"
+#include "stair_key.h"
 
 class Model;
 class Square;
@@ -63,8 +64,6 @@ RICH_ENUM(VisionId,
   NORMAL
 );
 
-enum class StairDirection { UP, DOWN };
-
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level : public UniqueEntity<Level> {
   public:
@@ -94,8 +93,8 @@ class Level : public UniqueEntity<Level> {
   /** Finds an appropriate square for the \paramname{creature} changing level from \paramname{direction}.
     The square's method Square::isLandingSquare must return true for \paramname{direction}. 
     Returns the position of the stairs that were used. */
-  Vec2 landCreature(StairDirection direction, StairKey key, Creature* creature);
-  Vec2 landCreature(StairDirection direction, StairKey key, PCreature creature);
+  Vec2 landCreature(StairKey key, Creature* creature);
+  Vec2 landCreature(StairKey key, PCreature creature);
   //@}
 
   /** Lands the creature on the level randomly choosing one of the given squares.
@@ -104,7 +103,9 @@ class Level : public UniqueEntity<Level> {
   Vec2 landCreature(vector<Vec2> landing, Creature* creature);
 
   /** Returns the landing squares for given direction and stair key. See Square::getLandingLink() */
-  vector<Vec2> getLandingSquares(StairDirection, StairKey) const;
+  vector<Vec2> getLandingSquares(StairKey) const;
+
+  optional<Vec2> getStairsTo(const Level*) const;
 
   /** Removes the creature from \paramname{position} from the level and model. The creature object is retained.*/
   void killCreature(Creature*, Creature* attacker);
@@ -148,7 +149,7 @@ class Level : public UniqueEntity<Level> {
   void tick(double time);
 
   /** Moves the creature to a different level according to \paramname{direction}. */
-  void changeLevel(StairDirection direction, StairKey key, Creature* c);
+  void changeLevel(StairKey key, Creature* c);
 
   /** Moves the creature to a given level. */
   void changeLevel(Level* destination, Vec2 landing, Creature* c);
@@ -240,7 +241,7 @@ class Level : public UniqueEntity<Level> {
   Vec2 transform(Vec2);
   Table<PSquare> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
-  map<pair<StairDirection, StairKey>, vector<Vec2>> SERIAL(landingSquares);
+  unordered_map<StairKey, vector<Vec2>> SERIAL(landingSquares);
   vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
   vector<Creature*> SERIAL(creatures);

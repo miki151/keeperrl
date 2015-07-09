@@ -17,6 +17,7 @@
 #define _LOCATION_H
 
 #include "util.h"
+#include "position.h"
 
 class Level;
 

@@ -26,10 +26,15 @@ static Location* getVillageLocation(bool markSurprise = false) {
 
 typedef VillageControl::Villain VillainInfo;
 
+enum class ExtraLevelId {
+  CRYPT,
+};
+
 struct EnemyInfo {
   SettlementInfo settlement;
   CollectiveConfig config;
   vector<VillainInfo> villains;
+  optional<ExtraLevelId> extraLevel;
 };
 
 
@@ -261,6 +266,14 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
           c.buildingId = BuildingId::WOOD;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);), CollectiveConfig::noImmigrants(), {}},
       {CONSTRUCT(SettlementInfo,
+          c.type = SettlementType::CEMETERY;
+          c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::ZOMBIE);
+          c.numCreatures = 1;
+          c.location = new Location("cemetery");
+          c.tribe = tribeSet.monster.get();
+          c.downStairs = { StairKey::getNew() };
+          c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {}, ExtraLevelId::CRYPT},
+      {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CAVE;
           c.creatures = CreatureFactory::singleType(tribeSet.bandit.get(), CreatureId::BANDIT);
           c.numCreatures = Random.get(4, 9);
@@ -488,6 +501,17 @@ static string getNewIdSuffix() {
   return ret;
 }
 
+Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, Model* model, ExtraLevelId level, StairKey stairKey) {
+  switch (level) {
+    case ExtraLevelId::CRYPT: 
+      return model->buildLevel(
+         LevelBuilder(meter, 40, 40, "Crypt"),
+         LevelMaker::cryptLevel(CreatureFactory::coffins(model->tribeSet->wildlife.get()), CreatureId::VAMPIRE,
+            {stairKey}, {}));
+      break;
+  }
+}
+
 PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
   Model* m = new Model(view, worldName, TribeSet());
   m->setOptions(options);
@@ -498,7 +522,15 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
       new CollectiveBuilder(elem.config, elem.settlement.tribe);
     settlements.push_back(elem.settlement);
   }
-  Level* top = m->prepareTopLevel(meter, settlements);
+  Level* top = m->buildLevel(
+      LevelBuilder(meter, 250, 250, "Wilderness", false),
+      LevelMaker::topLevel(CreatureFactory::forrest(m->tribeSet->wildlife.get()), settlements));
+  for (auto& elem : enemyInfo)
+    if (elem.extraLevel) {
+      StairKey key = getOnlyElement(elem.settlement.downStairs);
+      Level* level = makeExtraLevel(meter, m, *elem.extraLevel, key);
+      m->addLink(key, top, level);
+    }
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet->keeper.get())
       .setLevel(top)
@@ -516,13 +548,13 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
   m->gameIdentifier = *c->getFirstName() + "_" + m->worldName + getNewIdSuffix();
   m->gameDisplayName = *c->getFirstName() + " of " + m->worldName;
   Creature* ref = c.get();
-  top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
+  top->landCreature(StairKey::keeperSpawn(), c.get());
   m->addCreature(std::move(c));
   m->playerControl->addKeeper(ref);
   for (int i : Range(4)) {
     PCreature c = CreatureFactory::fromId(CreatureId::IMP, m->tribeSet->keeper.get(),
         MonsterAIFactory::collective(m->playerCollective));
-    top->landCreature(StairDirection::UP, StairKey::PLAYER_SPAWN, c.get());
+    top->landCreature(StairKey::keeperSpawn(), c.get());
     m->playerControl->addImp(c.get());
     m->addCreature(std::move(c));
   }

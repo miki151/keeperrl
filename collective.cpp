@@ -419,10 +419,9 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
     taskMap->takeTask(c, closest);
     return closest->getMove(c);
   } else {
-    if (config->getWorkerFollowLeader() && getLeader() && !containsSquare(c->getPosition())
-        && getLeader()->getLevel() == c->getLevel()) {
-      Vec2 leaderPos = getLeader()->getPosition();
-      if (leaderPos.dist8(c->getPosition()) < 3)
+    if (config->getWorkerFollowLeader() && getLeader() && !containsSquare(c->getPosition())) {
+      Position leaderPos = Position(getLeader()->getPosition(), getLeader()->getLevel());
+      if (leaderPos.getCoord().dist8(c->getPosition()) < 3)
         return NoMove;
       if (auto action = c->moveTowards(leaderPos))
         return {1.0, action};
@@ -690,8 +689,6 @@ void Collective::cancelTask(const Creature* c) {
 MoveInfo Collective::getMove(Creature* c) {
   CHECK(control);
   CHECK(contains(creatures, c));
-  if (c->getLevel() != getLevel())
-    return NoMove;
   if (Task* task = taskMap->getTask(c))
     if (taskMap->isPriorityTask(task))
       return task->getMove(c);

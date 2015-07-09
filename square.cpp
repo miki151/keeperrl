@@ -111,15 +111,11 @@ void Square::setName(const string& s) {
   name = s;
 }
 
-void Square::setLandingLink(StairDirection direction, StairKey key) {
-  landingLink = make_pair(direction, key);
+void Square::setLandingLink(StairKey key) {
+  landingLink = key;
 }
 
-bool Square::isLandingSquare(StairDirection direction, StairKey key) {
-  return landingLink == make_pair(direction, key);
-}
-
-optional<pair<StairDirection, StairKey>> Square::getLandingLink() const {
+optional<StairKey> Square::getLandingLink() const {
   return landingLink;
 }
 

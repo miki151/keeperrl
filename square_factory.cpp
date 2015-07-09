@@ -35,17 +35,18 @@
 #include "modifier_type.h"
 #include "movement_set.h"
 #include "movement_type.h"
+#include "stair_key.h"
 
 class Staircase : public Square {
   public:
-  Staircase(const ViewObject& obj, const string& name, StairDirection dir, StairKey key) : Square(obj,
+  Staircase(const ViewObject& obj, const string& name, StairKey key) : Square(obj,
       CONSTRUCT(Square::Params,
         c.name = name;
         c.vision = VisionId::NORMAL;
         c.canHide = true;
         c.strength = 10000;
         c.movementSet = MovementSet().addTrait(MovementTrait::WALK);)) {
-    setLandingLink(dir, key);
+    setLandingLink(key);
   }
 
   virtual void onEnterSpecial(Creature* c) override {
@@ -53,16 +54,11 @@ class Staircase : public Square {
   }
 
   virtual optional<SquareApplyType> getApplyType() const override {
-    switch (getLandingLink()->first) {
-      case StairDirection::DOWN: return SquareApplyType::DESCEND;
-      case StairDirection::UP: return SquareApplyType::ASCEND;
-    }
-    return none;
+    return SquareApplyType::USE_STAIRS;
   }
 
   virtual void onApply(Creature* c) override {
-    auto link = getLandingLink();
-    getLevel()->changeLevel(link->first, link->second, c);
+    getLevel()->changeLevel(*getLandingLink(), c);
   }
 
   template <class Archive> 
@@ -847,6 +843,20 @@ PSquare SquareFactory::get(SquareType s) {
   return PSquare(getPtr(s));
 }
 
+static Square* getStairs(const StairInfo& info) {
+  ViewId id1 = ViewId(0), id2 = ViewId(0);
+  switch (info.look) {
+    case StairLook::NORMAL: id1 = ViewId::UP_STAIRCASE; id2 = ViewId::DOWN_STAIRCASE; break;
+    case StairLook::HELL: id1 = ViewId::UP_STAIRCASE_HELL; id2 = ViewId::DOWN_STAIRCASE_HELL; break;
+    case StairLook::CELLAR: id1 = ViewId::UP_STAIRCASE_CELLAR; id2 = ViewId::DOWN_STAIRCASE_CELLAR; break;
+    case StairLook::PYRAMID: id1 = ViewId::UP_STAIRCASE_PYR; id2 = ViewId::DOWN_STAIRCASE_PYR; break;
+    case StairLook::DUNGEON_ENTRANCE: id1 = id2 = ViewId::DUNGEON_ENTRANCE; break;
+    case StairLook::DUNGEON_ENTRANCE_MUD: id1 = id2 = ViewId::DUNGEON_ENTRANCE_MUD; break;
+  }
+  return new Staircase(ViewObject(info.direction == info.UP ? id1 : id2,
+        ViewLayer::FLOOR, "Stairs"), "stairs", info.key);
+}
+ 
 Square* SquareFactory::getPtr(SquareType s) {
   switch (s.getId()) {
     case SquareId::FLOOR:
@@ -1171,7 +1181,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.vision = VisionId::NORMAL;));
     case SquareId::GRAVE:
-        return new Grave(ViewObject(ViewId::GRAVE, ViewLayer::FLOOR, "Grave"), "grave");
+        return new Grave(ViewObject(ViewId::GRAVE_OUTDOOR, ViewLayer::FLOOR, "Grave"), "grave");
     case SquareId::DOOR:
         return new Door(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW),
@@ -1198,33 +1208,13 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::BORDER_GUARD:
         return new Square(ViewObject(ViewId::BORDER_GUARD, ViewLayer::FLOOR, "Wall"),
           CONSTRUCT(Square::Params, c.name = "wall";));
-    case SquareId::DOWN_STAIRS:
-    case SquareId::UP_STAIRS: FAIL << "Stairs are not handled by this method.";
+    case SquareId::STAIRS:
+        return getStairs(s.get<StairInfo>());
   }
   return 0;
 }
 
-PSquare SquareFactory::getStairs(StairDirection direction, StairKey key, StairLook look) {
-  ViewId id1 = ViewId(0), id2 = ViewId(0);
-  switch (look) {
-    case StairLook::NORMAL: id1 = ViewId::UP_STAIRCASE; id2 = ViewId::DOWN_STAIRCASE; break;
-    case StairLook::HELL: id1 = ViewId::UP_STAIRCASE_HELL; id2 = ViewId::DOWN_STAIRCASE_HELL; break;
-    case StairLook::CELLAR: id1 = ViewId::UP_STAIRCASE_CELLAR; id2 = ViewId::DOWN_STAIRCASE_CELLAR; break;
-    case StairLook::PYRAMID: id1 = ViewId::UP_STAIRCASE_PYR; id2 = ViewId::DOWN_STAIRCASE_PYR; break;
-    case StairLook::DUNGEON_ENTRANCE: id1 = id2 = ViewId::DUNGEON_ENTRANCE; break;
-    case StairLook::DUNGEON_ENTRANCE_MUD: id1 = id2 = ViewId::DUNGEON_ENTRANCE_MUD; break;
-  }
-  switch (direction) {
-    case StairDirection::UP:
-        return PSquare(new Staircase(ViewObject(id1, ViewLayer::FLOOR, "Stairs leading up"),
-            "stairs leading up", direction, key));
-    case StairDirection::DOWN:
-        return PSquare(new Staircase(ViewObject(id2, ViewLayer::FLOOR, "Stairs leading down"),
-            "stairs leading down", direction, key));
-  }
-  return nullptr;
-}
-  
+ 
 PSquare SquareFactory::getWater(double depth) {
   return PSquare(new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND, "Water"), "water", depth));
 }

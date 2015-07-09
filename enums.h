@@ -54,9 +54,6 @@ enum class SquareAttrib;
 
 enum class Dir;
 
-enum class StairKey;
-enum class StairDirection;
-
 enum class CreatureId;
 enum class ItemId;
 

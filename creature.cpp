@@ -38,7 +38,7 @@
 #include "minion_task_map.h"
 #include "tribe.h"
 #include "creature_attributes.h"
-
+#include "position.h"
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
@@ -2169,8 +2169,26 @@ CreatureAction Creature::stayIn(const Location* location) {
   return CreatureAction();
 }
 
+CreatureAction Creature::moveTowardsLevel(const Level* target) {
+  if (auto pos = level->getStairsTo(target)) {
+    if (pos == getPosition())
+      return applySquare();
+    else
+      return moveTowards(*pos, false, true);
+  }
+  else
+    return CreatureAction();
+}
+
 CreatureAction Creature::moveTowards(Vec2 pos, bool stepOnTile) {
   return moveTowards(pos, false, stepOnTile);
+}
+
+CreatureAction Creature::moveTowards(const Position& pos, bool stepOnTile) {
+  if (pos.getLevel() == getLevel())
+    return moveTowards(pos.getCoord(), false, stepOnTile);
+  else
+    return moveTowardsLevel(pos.getLevel());
 }
 
 bool Creature::canNavigateTo(Vec2 pos) const {

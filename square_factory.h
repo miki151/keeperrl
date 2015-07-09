@@ -21,20 +21,11 @@
 
 class Square;
 class Deity;
-
-enum class StairLook {
-  NORMAL,
-  HELL,
-  CELLAR,
-  PYRAMID,
-  DUNGEON_ENTRANCE,
-  DUNGEON_ENTRANCE_MUD,
-};
+class StairKey;
 
 class SquareFactory {
   public:
   static PSquare get(SquareType);
-  static PSquare getStairs(StairDirection, StairKey, StairLook = StairLook::NORMAL);
   static PSquare getAltar(Deity*);
   static PSquare getAltar(Creature*);
   static PSquare getWater(double depth);

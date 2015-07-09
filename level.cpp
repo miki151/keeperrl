@@ -68,7 +68,7 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
       FieldOfView::sightRange), lightAmount(squares.getBounds(), 0), lightCapAmount(squares.getBounds(), 1) {
   for (Vec2 pos : squares.getBounds()) {
     squares[pos]->setLevel(this);
-    optional<pair<StairDirection, StairKey>> link = squares[pos]->getLandingLink();
+    optional<StairKey> link = squares[pos]->getLandingLink();
     if (link)
       landingSquares[*link].push_back(pos);
   }
@@ -240,20 +240,24 @@ double Level::getLight(Vec2 pos) const {
         coverInfo[pos].sunlight() * model->getSunlightInfo().lightAmount));
 }
 
-vector<Vec2> Level::getLandingSquares(StairDirection dir, StairKey key) const {
-  if (landingSquares.count({dir, key}))
-    return landingSquares.at({dir, key});
+vector<Vec2> Level::getLandingSquares(StairKey key) const {
+  if (landingSquares.count(key))
+    return landingSquares.at(key);
   else
     return vector<Vec2>();
 }
 
-Vec2 Level::landCreature(StairDirection direction, StairKey key, Creature* creature) {
-  vector<Vec2> landing = landingSquares.at({direction, key});
+optional<Vec2> Level::getStairsTo(const Level* level) const {
+  return model->getStairs(this, level);
+}
+
+Vec2 Level::landCreature(StairKey key, Creature* creature) {
+  vector<Vec2> landing = landingSquares.at(key);
   return landCreature(landing, creature);
 }
 
-Vec2 Level::landCreature(StairDirection direction, StairKey key, PCreature creature) {
-  Vec2 pos = landCreature(direction, key, creature.get());
+Vec2 Level::landCreature(StairKey key, PCreature creature) {
+  Vec2 pos = landCreature(key, creature.get());
   model->addCreature(std::move(creature));
   return pos;
 }
@@ -353,10 +357,11 @@ void Level::globalMessage(const Creature* c, const PlayerMessage& ifPlayerCanSee
   }
 }
 
-void Level::changeLevel(StairDirection dir, StairKey key, Creature* c) {
+void Level::changeLevel(StairKey key, Creature* c) {
   removeElement(creatures, c);
   getSafeSquare(c->getPosition())->removeCreature();
   bucketMap->removeElement(c->getPosition(), c);
+  model->changeLevel(key, c);
 }
 
 void Level::changeLevel(Level* destination, Vec2 landing, Creature* c) {

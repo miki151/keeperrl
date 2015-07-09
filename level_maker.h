@@ -25,6 +25,7 @@ enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON};
 class ItemFactory;
 class CollectiveBuilder;
 class LevelBuilder;
+class StairKey;
 
 class LevelGenException {
 };
@@ -41,6 +42,7 @@ enum class SettlementType {
   VAULT,
   CAVE,
   ISLAND_VAULT,
+  CEMETERY,
 };
 
 struct StockpileInfo {

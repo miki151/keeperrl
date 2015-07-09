@@ -28,6 +28,7 @@ enum class VillageBehaviourId {
   KILL_MEMBERS,
   STEAL_GOLD,
 };
+
 typedef EnumVariant<VillageBehaviourId, TYPES(int),
         ASSIGN(int, VillageBehaviourId::KILL_MEMBERS)> VillageBehaviour;
 

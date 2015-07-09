@@ -43,6 +43,7 @@
 #include "creature_attributes.h"
 #include "view.h"
 #include "view_index.h"
+#include "stair_key.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -441,7 +442,7 @@ void Model::landHeroPlayer() {
   string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
   if (!advName.empty())
     player->setFirstName(advName);
-  levels[0]->landCreature(StairDirection::UP, StairKey::HERO_SPAWN, std::move(player));
+  levels[0]->landCreature(StairKey::heroSpawn(), std::move(player));
   adventurer = true;
 }
 
@@ -520,28 +521,29 @@ void Model::setHighscores(Highscores* h) {
   highscores = h;
 }
 
-static StairDirection opposite(StairDirection d) {
-  switch (d) {
-    case StairDirection::DOWN: return StairDirection::UP;
-    case StairDirection::UP: return StairDirection::DOWN;
-  }
-  return StairDirection(0);
+void Model::addLink(StairKey key, Level* l1, Level* l2) {
+  levelLinks[key] = {l1, l2};
 }
 
-void Model::addLink(StairDirection dir, StairKey key, Level* l1, Level* l2) {
-  levelLinks[make_tuple(dir, key, l1)] = l2;
-  levelLinks[make_tuple(opposite(dir), key, l2)] = l1;
-}
-
-Vec2 Model::changeLevel(StairDirection dir, StairKey key, Creature* c) {
+Vec2 Model::changeLevel(StairKey key, Creature* c) {
   Level* current = c->getLevel();
-  Level* target = levelLinks[make_tuple(dir, key, current)];
-  Vec2 newPos = target->landCreature(opposite(dir), key, c);
+  Level* target = levelLinks[key].first == current ? levelLinks[key].second : levelLinks[key].first;
+  Vec2 newPos = target->landCreature(key, c);
   if (c->isPlayer()) {
     current->updatePlayer();
     target->updatePlayer();
   }
   return newPos;
+}
+
+Vec2 Model::getStairs(const Level* from, const Level* to) {
+  optional<StairKey> key;
+  for (auto& elem : levelLinks)
+    if ((elem.second.first == from && elem.second.second == to) ||
+        (elem.second.first == to && elem.second.second == from))
+      key = elem.first;
+  CHECK(key);
+  return chooseRandom(from->getLandingSquares(*key));
 }
 
 void Model::changeLevel(Level* target, Vec2 position, Creature* c) {
@@ -621,13 +623,6 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
 
 const string& Model::getWorldName() const {
   return worldName;
-}
-
-Level* Model::prepareTopLevel(ProgressMeter& meter, vector<SettlementInfo> settlements) {
-  Level* top = buildLevel(
-      LevelBuilder(meter, 250, 250, "Wilderness", false),
-      LevelMaker::topLevel(CreatureFactory::forrest(tribeSet->wildlife.get()), settlements));
-  return top;
 }
 
 

@@ -41,6 +41,7 @@ class MinionTaskMap;
 class EntityName;
 class Gender;
 class SpellMap;
+class Position;
 
 class Creature : public Renderable, public UniqueEntity<Creature> {
   public:
@@ -227,6 +228,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Item* getWeapon() const;
   vector<vector<Item*>> stackItems(vector<Item*>) const;
 
+  CreatureAction moveTowards(const Position&, bool stepOnTile = false);
   CreatureAction moveTowards(Vec2 pos, bool stepOnTile = false);
   bool canNavigateTo(Vec2) const;
   CreatureAction moveAway(Vec2 pos, bool pathfinding = true);
@@ -306,6 +308,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void onRemoved(LastingEffect effect, bool msg);
   void onTimedOut(LastingEffect effect, bool msg);
   CreatureAction moveTowards(Vec2 pos, bool away, bool stepOnTile);
+  CreatureAction moveTowardsLevel(const Level*);
   double getInventoryWeight() const;
   Item* getAmmo() const;
   void updateViewObject();

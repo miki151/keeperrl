@@ -17,6 +17,7 @@
 #define _MODEL_H
 
 #include "util.h"
+#include "stair_key.h"
 
 class PlayerControl;
 class Level;
@@ -33,20 +34,9 @@ class LevelBuilder;
 class TimeQueue;
 class Statistics;
 struct TribeSet;
+class StairKey;
 
 enum class SunlightState { DAY, NIGHT};
-
-enum class StairKey {
-  DWARF,
-  CRYPT,
-  ORC,
-  PLAYER_SPAWN,
-  HERO_SPAWN,
-  PYRAMID,
-  TOWER,
-  CASTLE_CELLAR,
-  DRAGON
-};
 
 /**
   * Main class that holds all game logic.
@@ -74,10 +64,12 @@ class Model {
   optional<ExitInfo> update(double totalTime);
 
   /** Removes creature from current level and puts into the next, according to direction. */
-  Vec2 changeLevel(StairDirection direction, StairKey key, Creature*);
+  Vec2 changeLevel(StairKey key, Creature*);
 
   /** Removes creature from current level and puts into the given level */
   void changeLevel(Level*, Vec2 position, Creature*);
+
+  Vec2 getStairs(const Level* from, const Level* to);
 
   /** Adds new creature to the queue. Assumes this creature has already been added to a level. */
   void addCreature(PCreature);
@@ -164,7 +156,7 @@ class Model {
   const Creature* getPlayer() const;
   void landHeroPlayer();
   Level* buildLevel(LevelBuilder&&, LevelMaker*);
-  void addLink(StairDirection, StairKey, Level*, Level*);
+  void addLink(StairKey, Level*, Level*);
   Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
 
   HeapAllocated<TribeSet> SERIAL(tribeSet);
@@ -176,7 +168,7 @@ class Model {
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(lastTick) = -1000;
-  map<tuple<StairDirection, StairKey, Level*>, Level*> SERIAL(levelLinks);
+  unordered_map<StairKey, pair<Level*, Level*>> SERIAL(levelLinks);
   PlayerControl* SERIAL(playerControl) = nullptr;
   bool SERIAL(won) = false;
   bool SERIAL(addHero) = false;

@@ -5,6 +5,7 @@
 #include "creature_factory.h"
 #include "enum_variant.h"
 #include "util.h"
+#include "stair_key.h"
 
 RICH_ENUM(SquareId,
   FLOOR,
@@ -71,8 +72,7 @@ RICH_ENUM(SquareId,
   DOOR,
   TRIBE_DOOR,
   BARRICADE,
-  DOWN_STAIRS,
-  UP_STAIRS,
+  STAIRS,
   BORDER_GUARD,
   ALTAR,
   CREATURE_ALTAR,
@@ -81,8 +81,30 @@ RICH_ENUM(SquareId,
   THRONE
 );
 
+enum class StairLook {
+  NORMAL,
+  HELL,
+  CELLAR,
+  PYRAMID,
+  DUNGEON_ENTRANCE,
+  DUNGEON_ENTRANCE_MUD,
+};
+
+struct StairInfo {
+  StairKey SERIAL(key);
+  StairLook SERIAL(look);
+  enum Direction { UP, DOWN } SERIAL(direction);
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(key) & SVAR(look) & SVAR(direction);
+  }
+  bool operator == (const StairInfo& o) const {
+    return key == o.key && look == o.look && direction == o.direction;
+  }
+};
+
 class SquareType : public EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureId,
-      CreatureFactory::SingleCreature, const Tribe*),
+      CreatureFactory::SingleCreature, const Tribe*, StairInfo),
     ASSIGN(DeityHabitat, SquareId::ALTAR),
     ASSIGN(const Creature*, SquareId::CREATURE_ALTAR),
     ASSIGN(CreatureId,
@@ -95,7 +117,9 @@ class SquareType : public EnumVariant<SquareId, TYPES(DeityHabitat, const Creatu
         SquareId::HATCHERY),
     ASSIGN(const Tribe*,
         SquareId::TRIBE_DOOR,
-        SquareId::BARRICADE)> {
+        SquareId::BARRICADE),
+    ASSIGN(StairInfo,
+        SquareId::STAIRS)> {
   using EnumVariant::EnumVariant;
 };
 
