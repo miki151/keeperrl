@@ -88,11 +88,11 @@ const double nightLength = 1500;
 
 const double duskLength  = 180;
 
-optional<Model::PortalInfo> Model::getDanglingPortal() {
+optional<Position> Model::getDanglingPortal() {
   return danglingPortal;
 }
 
-void Model::setDanglingPortal(Model::PortalInfo p) {
+void Model::setDanglingPortal(Position p) {
   danglingPortal = p;
 }
 
@@ -176,17 +176,17 @@ void Model::onTechBookRead(Technology* tech) {
     playerControl->onTechBookRead(tech);
 }
 
-void Model::onAlarm(Level* l, Vec2 pos) {
+void Model::onAlarm(Position pos) {
   for (auto& col : collectives)
-    if (col->getLevel() == l && col->containsSquare(pos))
+    if (col->containsSquare(pos))
       col->onAlarm(pos);
   for (const PLevel& l : levels)
     if (const Creature* c = l->getPlayer()) {
-      if (pos == c->getPosition())
+      if (pos == c->getPosition2())
         c->playerMessage("An alarm sounds near you.");
-      else
+      else if (pos.isSameLevel(c->getPosition2()))
         c->playerMessage("An alarm sounds in the " + 
-            getCardinalName((pos - c->getPosition()).getBearing().getCardinalDir()));
+            getCardinalName(c->getPosition2().getDir(pos).getBearing().getCardinalDir()));
     }
 }
 
@@ -477,21 +477,21 @@ void Model::onAttack(Creature* victim, Creature* attacker) {
   victim->getTribe()->onMemberAttacked(victim, attacker);
 }
 
-void Model::onTrapTrigger(const Level* l, Vec2 pos) {
+void Model::onTrapTrigger(Position pos) {
   for (auto& col : collectives)
-    if (col->getLevel() == l && col->containsSquare(pos))
+    if (col->containsSquare(pos))
       col->onTrapTrigger(pos);
 }
 
-void Model::onTrapDisarm(const Level* l, const Creature* who, Vec2 pos) {
+void Model::onTrapDisarm(Position pos, const Creature* who) {
   for (auto& col : collectives)
-    if (col->getLevel() == l && col->containsSquare(pos))
+    if (col->containsSquare(pos))
       col->onTrapDisarm(who, pos);
 }
 
-void Model::onSquareDestroyed(const Level* l, Vec2 pos) {
+void Model::onSquareDestroyed(Position pos) {
   for (auto& col : collectives)
-    if (col->getLevel() == l && col->containsSquare(pos))
+    if (col->containsSquare(pos))
       col->onSquareDestroyed(pos);
 }
 

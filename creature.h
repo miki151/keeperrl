@@ -67,6 +67,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   vector<const Square*> getSquares(const vector<Vec2>& direction) const;
   void setPosition(Vec2 pos);
   Vec2 getPosition() const;
+  Position getPosition2() const;
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&);
   void heal(double amount = 1, bool replaceLimbs = false);

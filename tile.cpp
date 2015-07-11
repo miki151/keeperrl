@@ -547,8 +547,8 @@ class TileCoordLookup {
         .addBackground(byName("jeweler"))
         .setFloorBorders());
     Tile::addTile(ViewId::CEMETERY, sprite("graveyard").setFloorBorders());
-    Tile::addTile(ViewId::GRAVE, sprite("gravedeco").setNoShadow().addBackground(byName("graveyard")));
-    Tile::addTile(ViewId::GRAVE_OUTDOOR, sprite(0, 0, 2));
+    Tile::addTile(ViewId::GRAVE, sprite("RIP").setNoShadow().addBackground(byName("graveyard")));
+    Tile::addTile(ViewId::GRAVE_OUTDOOR, sprite("RIP"));
     Tile::addTile(ViewId::ROBE, sprite(7, 11, 3));
     Tile::addTile(ViewId::LEATHER_GLOVES, sprite(15, 11, 3));
     Tile::addTile(ViewId::DEXTERITY_GLOVES, sprite(19, 11, 3));

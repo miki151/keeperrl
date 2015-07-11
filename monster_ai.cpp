@@ -1011,7 +1011,7 @@ class SplashItems : public TaskCallback {
     return ret;
   }
 
-  PTask getNextTask(Vec2 position) {
+  PTask getNextTask(Vec2 position, Level* level) {
     if (items.empty())
       return nullptr;
     Vec2 pos = chooseClosest(position);
@@ -1029,7 +1029,7 @@ class SplashItems : public TaskCallback {
       return nullptr;
     Vec2 target = chooseRandom(targets);
     removeElement(targets, target);
-    return Task::bringItem(this, pos, it, {target}, 100);
+    return Task::bringItem(this, Position(pos, level), it, {Position(target, level)}, 100);
   }
 
   void setInitialized(const string& splashPath) {
@@ -1093,7 +1093,7 @@ class SplashImps : public Behaviour {
         else
           task.reset();
       }
-      task = splashItems.getNextTask(creature->getPosition());
+      task = splashItems.getNextTask(creature->getPosition(), creature->getLevel());
       if (!task)
         return creature->moveTowards(*initialPos);
       else

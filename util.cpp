@@ -16,7 +16,7 @@
 #include "stdafx.h"
 
 #include "util.h"
-
+#include "position.h"
 
 void RandomGen::init(int seed) {
   generator.seed(seed);
@@ -108,6 +108,13 @@ template <>
 string toString(const Vec2& t){
   stringstream ss;
   ss << "(" << t.x << "," << t.y << ")";
+  return ss.str();
+}
+
+template <>
+string toString(const Position& t){
+  stringstream ss;
+  ss << "(" << t.getCoord().x << "," << t.getCoord().y << ")";
   return ss.str();
 }
 

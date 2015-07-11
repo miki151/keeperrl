@@ -599,6 +599,14 @@ vector<T> transform2(vector<U>& u, Fun fun) {
   return ret;
 }
 
+template <typename T, typename U, typename Fun>
+optional<T> transform2(const optional<U>& u, Fun fun) {
+  if (u)
+    return fun(*u);
+  else
+    return none;
+}
+
 template <typename T>
 vector<T> reverse2(vector<T> v) {
   reverse(v.begin(), v.end());

@@ -23,12 +23,12 @@ PlayerMessage::Priority PlayerMessage::getPriority() const {
   return priority;
 }
 
-PlayerMessage& PlayerMessage::setPosition(Vec2 pos) {
+PlayerMessage& PlayerMessage::setPosition(Position pos) {
   position = pos;
   return *this;
 }
 
-optional<Vec2> PlayerMessage::getPosition() const {
+optional<Position> PlayerMessage::getPosition() const {
   return position;
 }
 

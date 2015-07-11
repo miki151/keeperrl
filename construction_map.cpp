@@ -4,7 +4,7 @@
 #include "trigger.h"
 #include "tribe.h"
 
-const ConstructionMap::SquareInfo& ConstructionMap::getSquare(Vec2 pos) const {
+const ConstructionMap::SquareInfo& ConstructionMap::getSquare(Position pos) const {
   for (auto& info : squares.at(pos))
     if (!info.isBuilt())
       return info;
@@ -12,7 +12,7 @@ const ConstructionMap::SquareInfo& ConstructionMap::getSquare(Vec2 pos) const {
   return squares.at(pos).back();
 }
 
-ConstructionMap::SquareInfo& ConstructionMap::getSquare(Vec2 pos) {
+ConstructionMap::SquareInfo& ConstructionMap::getSquare(Position pos) {
   for (auto& info : squares.at(pos))
     if (!info.isBuilt())
       return info;
@@ -20,21 +20,21 @@ ConstructionMap::SquareInfo& ConstructionMap::getSquare(Vec2 pos) {
   return squares.at(pos).back();
 }
 
-void ConstructionMap::removeSquare(Vec2 pos) {
+void ConstructionMap::removeSquare(Position pos) {
   for (auto& info : squares.at(pos))
     --typeCounts[info.getSquareType()];
   squares.erase(pos);
   removeElement(squarePos, pos);
 }
 
-void ConstructionMap::addSquare(Vec2 pos, const ConstructionMap::SquareInfo& info) {
+void ConstructionMap::addSquare(Position pos, const ConstructionMap::SquareInfo& info) {
   if (!squares.count(pos))
     squarePos.push_back(pos);
   squares[pos].push_back(info);
   ++typeCounts[info.getSquareType()];
 }
 
-bool ConstructionMap::containsSquare(Vec2 pos) const {
+bool ConstructionMap::containsSquare(Position pos) const {
   return squares.count(pos);
 }
 
@@ -45,36 +45,36 @@ int ConstructionMap::getSquareCount(SquareType type) const {
     return 0;
 }
 
-void ConstructionMap::onSquareDestroyed(Vec2 pos) {
+void ConstructionMap::onSquareDestroyed(Position pos) {
   getSquare(pos).reset();
 }
 
-const vector<Vec2>& ConstructionMap::getSquares() const {
+const vector<Position>& ConstructionMap::getSquares() const {
   return squarePos;
 }
 
-const ConstructionMap::TrapInfo& ConstructionMap::getTrap(Vec2 pos) const {
+const ConstructionMap::TrapInfo& ConstructionMap::getTrap(Position pos) const {
   return traps.at(pos);
 }
 
-ConstructionMap::TrapInfo& ConstructionMap::getTrap(Vec2 pos) {
+ConstructionMap::TrapInfo& ConstructionMap::getTrap(Position pos) {
   return traps.at(pos);
 }
 
-void ConstructionMap::removeTrap(Vec2 pos) {
+void ConstructionMap::removeTrap(Position pos) {
   traps.erase(pos);
 }
 
-void ConstructionMap::addTrap(Vec2 pos, const TrapInfo& info) {
+void ConstructionMap::addTrap(Position pos, const TrapInfo& info) {
   CHECK(!containsTrap(pos));
   traps.insert(make_pair(pos, info));
 }
 
-bool ConstructionMap::containsTrap(Vec2 pos) const {
+bool ConstructionMap::containsTrap(Position pos) const {
   return traps.count(pos);
 }
 
-const map<Vec2, ConstructionMap::TrapInfo>& ConstructionMap::getTraps() const {
+const map<Position, ConstructionMap::TrapInfo>& ConstructionMap::getTraps() const {
   return traps;
 }
 
@@ -178,28 +178,28 @@ void ConstructionMap::TorchInfo::setTask(UniqueEntity<Task>::Id id) {
   task = id;
 }
 
-const ConstructionMap::TorchInfo& ConstructionMap::getTorch(Vec2 pos) const {
+const ConstructionMap::TorchInfo& ConstructionMap::getTorch(Position pos) const {
   return torches.at(pos);
 }
 
-ConstructionMap::TorchInfo& ConstructionMap::getTorch(Vec2 pos) {
+ConstructionMap::TorchInfo& ConstructionMap::getTorch(Position pos) {
   return torches.at(pos);
 }
 
-void ConstructionMap::removeTorch(Vec2 pos) {
+void ConstructionMap::removeTorch(Position pos) {
   torches.erase(pos);
 }
 
-void ConstructionMap::addTorch(Vec2 pos, const TorchInfo& info) {
+void ConstructionMap::addTorch(Position pos, const TorchInfo& info) {
   CHECK(!containsTorch(pos));
   torches.insert(make_pair(pos, info));
 }
 
-bool ConstructionMap::containsTorch(Vec2 pos) const {
+bool ConstructionMap::containsTorch(Position pos) const {
   return torches.count(pos);
 }
 
-const map<Vec2, ConstructionMap::TorchInfo>& ConstructionMap::getTorches() const {
+const map<Position, ConstructionMap::TorchInfo>& ConstructionMap::getTorches() const {
   return torches;
 }
 

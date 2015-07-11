@@ -5,6 +5,7 @@
 #include "util.h"
 #include "square_type.h"
 #include "unique_entity.h"
+#include "position.h"
 
 class ConstructionMap {
   public:
@@ -68,38 +69,38 @@ class ConstructionMap {
     Trigger* SERIAL(trigger) = nullptr;
   };
 
-  const SquareInfo& getSquare(Vec2) const;
-  SquareInfo& getSquare(Vec2);
-  void removeSquare(Vec2);
-  void onSquareDestroyed(Vec2);
-  void addSquare(Vec2, const SquareInfo&);
-  bool containsSquare(Vec2) const;
+  const SquareInfo& getSquare(Position) const;
+  SquareInfo& getSquare(Position);
+  void removeSquare(Position);
+  void onSquareDestroyed(Position);
+  void addSquare(Position, const SquareInfo&);
+  bool containsSquare(Position) const;
   int getSquareCount(SquareType) const;
 
-  const TrapInfo& getTrap(Vec2) const;
-  TrapInfo& getTrap(Vec2);
-  void removeTrap(Vec2);
-  void addTrap(Vec2, const TrapInfo&);
-  bool containsTrap(Vec2) const;
+  const TrapInfo& getTrap(Position) const;
+  TrapInfo& getTrap(Position);
+  void removeTrap(Position);
+  void addTrap(Position, const TrapInfo&);
+  bool containsTrap(Position) const;
 
-  const TorchInfo& getTorch(Vec2) const;
-  TorchInfo& getTorch(Vec2);
-  void removeTorch(Vec2);
-  void addTorch(Vec2, const TorchInfo&);
-  bool containsTorch(Vec2) const;
-  const vector<Vec2>& getSquares() const;
-  const map<Vec2, TrapInfo>& getTraps() const;
-  const map<Vec2, TorchInfo>& getTorches() const;
+  const TorchInfo& getTorch(Position) const;
+  TorchInfo& getTorch(Position);
+  void removeTorch(Position);
+  void addTorch(Position, const TorchInfo&);
+  bool containsTorch(Position) const;
+  const vector<Position>& getSquares() const;
+  const map<Position, TrapInfo>& getTraps() const;
+  const map<Position, TorchInfo>& getTorches() const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  map<Vec2, vector<SquareInfo>> SERIAL(squares);
-  vector<Vec2> squarePos;
+  map<Position, vector<SquareInfo>> SERIAL(squares);
+  vector<Position> squarePos;
   unordered_map<SquareType, int> SERIAL(typeCounts);
-  map<Vec2, TrapInfo> SERIAL(traps);
-  map<Vec2, TorchInfo> SERIAL(torches);
+  map<Position, TrapInfo> SERIAL(traps);
+  map<Position, TorchInfo> SERIAL(torches);
 };
 
 #endif

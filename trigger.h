@@ -19,6 +19,7 @@
 #include "util.h"
 #include "effect_type.h"
 #include "view_object.h"
+#include "position.h"
 
 class Creature;
 class CreatureView;
@@ -40,9 +41,9 @@ class Trigger {
   virtual void setOnFire(double size);
   virtual double getLightEmission() const;
 
-  static PTrigger getPortal(const ViewObject&, Level*, Vec2 position);
-  static PTrigger getTrap(const ViewObject&, Level*, Vec2 position, EffectType, Tribe*);
-  static PTrigger getTorch(Dir attachmentDir, Level*, Vec2 position);
+  static PTrigger getPortal(const ViewObject&, Position);
+  static PTrigger getTrap(const ViewObject&, Position, EffectType, Tribe*);
+  static PTrigger getTorch(Dir attachmentDir, Position);
   static PTrigger getMeteorShower(Creature*, double duration);
 
   static const ViewObject& getTorchViewObject(Dir);
@@ -53,12 +54,11 @@ class Trigger {
   SERIALIZATION_DECL(Trigger);
 
   protected:
-  Trigger(Level*, Vec2 position);
-  Trigger(const ViewObject& obj, Level* l, Vec2 p);
+  Trigger(Position);
+  Trigger(const ViewObject& obj, Position);
 
   optional<ViewObject> SERIAL(viewObject);
-  Level* SERIAL(level);
-  Vec2 SERIAL(position);
+  Position SERIAL(position);
 };
 
 #endif

@@ -28,6 +28,7 @@ typedef VillageControl::Villain VillainInfo;
 
 enum class ExtraLevelId {
   CRYPT,
+  GNOMISH_MINES,
 };
 
 struct EnemyInfo {
@@ -116,7 +117,7 @@ static vector<EnemyInfo> getVaults(TribeSet& tribeSet) {
 
 vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
   vector<EnemyInfo> ret;
-  for (int i : Range(6, 12)) {
+  for (int i : Range(Random.get(6, 12))) {
     ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::COTTAGE;
         c.creatures = CreatureFactory::humanVillage(tribeSet.human.get());
@@ -125,7 +126,13 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
         c.tribe = tribeSet.human.get();
         c.buildingId = BuildingId::WOOD;), CollectiveConfig::noImmigrants(), {}});
   }
-  for (int i : Range(2, 5)) {
+  for (int i : Range(Random.get(2, 5))) {
+    optional<ExtraLevelId> extraLevel;
+    vector<StairKey> downStairs;
+    if (i == 0) {
+      extraLevel = ExtraLevelId::GNOMISH_MINES;
+      downStairs = {StairKey::getNew() };
+    }
     ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::SMALL_MINETOWN;
         c.creatures = CreatureFactory::gnomeVillage(tribeSet.dwarven.get());
@@ -133,7 +140,8 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
         c.location = new Location(true);
         c.tribe = tribeSet.dwarven.get();
         c.buildingId = BuildingId::DUNGEON;
-        c.stockpiles = LIST({StockpileInfo::MINERALS, 300});), CollectiveConfig::noImmigrants(), {}});
+        c.downStairs = downStairs;
+        c.stockpiles = LIST({StockpileInfo::MINERALS, 300});), CollectiveConfig::noImmigrants(), {}, extraLevel});
   }
   ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::ISLAND_VAULT;
@@ -508,6 +516,20 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, Model* model, ExtraLev
          LevelBuilder(meter, 40, 40, "Crypt"),
          LevelMaker::cryptLevel(CreatureFactory::coffins(model->tribeSet->wildlife.get()), CreatureId::VAMPIRE,
             {stairKey}, {}));
+      break;
+    case ExtraLevelId::GNOMISH_MINES: 
+      return model->buildLevel(
+         LevelBuilder(meter, 80, 60, "Gnomish mines"),
+         LevelMaker::mineTownLevel(CONSTRUCT(SettlementInfo,
+             c.type = SettlementType::MINETOWN;
+             c.creatures = CreatureFactory::gnomeVillage(model->tribeSet->dwarven.get());
+             c.numCreatures = Random.get(9, 14);
+             c.location = new Location();
+             c.tribe = model->tribeSet->dwarven.get();
+             c.buildingId = BuildingId::DUNGEON;
+             c.upStairs = {stairKey};
+             c.stockpiles = LIST({StockpileInfo::GOLD, 1000}, {StockpileInfo::MINERALS, 600});
+             c.shopFactory = ItemFactory::dwarfShop();)));
       break;
   }
 }

@@ -1918,7 +1918,7 @@ static MakerQueue* genericMineTownMaker(SettlementInfo info, int numCavern, int 
   vector<FeatureInfo> featureCount {
       { {SquareId::CHEST, CreatureId::RAT}, minFeatures, maxFeatures },
       { SquareId::BED, minFeatures, maxFeatures }};
-  LevelMaker* cavern = new UniformBlob(SquareId::FLOOR);
+  LevelMaker* cavern = new UniformBlob(building.floorInside);
   vector<LevelMaker*> vCavern;
   vector<pair<int, int>> sizes;
   for (int i : Range(numCavern)) {
@@ -1932,18 +1932,18 @@ static MakerQueue* genericMineTownMaker(SettlementInfo info, int numCavern, int 
   for (auto& elem : info.stockpiles)
     roomInsides.push_back(stockpileMaker(elem));
   queue->addMaker(new RoomMaker(numRooms, minRoomSize, maxRoomSize, building.wall, none,
-      new Empty(SquareId::FLOOR, SquareAttrib::CONNECT_CORRIDOR), roomInsides));
-  queue->addMaker(new Connector(SquareId::DOOR, 0));
+      new Empty(building.floorInside, SquareAttrib::CONNECT_CORRIDOR), roomInsides));
+  queue->addMaker(new Connector(building.door, 0));
   Predicate featurePred = Predicate::andPred(
       Predicate::attrib(SquareAttrib::EMPTY_ROOM),
-      Predicate::type(SquareId::FLOOR));
+      Predicate::type(building.floorInside));
   for (StairKey key : info.downStairs)
     queue->addMaker(new Stairs(StairInfo::Direction::DOWN, key, featurePred));
   for (StairKey key : info.upStairs)
     queue->addMaker(new Stairs(StairInfo::Direction::UP, key, featurePred));
   queue->addMaker(new DungeonFeatures(featurePred, featureCount));
-  queue->addMaker(new DungeonFeatures(Predicate::orPred(Predicate::type(SquareId::FLOOR),
-          Predicate::type(SquareId::FLOOR)), {{SquareId::TORCH, numTorches, numTorches + 1}}));
+  queue->addMaker(new DungeonFeatures(Predicate::type(building.floorInside),
+        {{SquareId::TORCH, numTorches, numTorches + 1}}));
   queue->addMaker(new Creatures(info.creatures, info.numCreatures, info.collective));
   if (info.neutralCreatures)
     queue->addMaker(

@@ -292,12 +292,11 @@ static void heal(Creature* c, int strength) {
 }
 
 static void portal(Creature* c) {
-  Level* l = c->getLevel();
   for (Square* square : c->getSquares(Vec2::directions8(true)))
     if (square->canEnter(c)) {
-      l->globalMessage(square->getPosition(), "A magic portal appears.");
+      square->getPosition2().globalMessage("A magic portal appears.");
       square->addTrigger(Trigger::getPortal(
-            ViewObject(ViewId::PORTAL, ViewLayer::LARGE_ITEM, "Portal"), l, square->getPosition()));
+            ViewObject(ViewId::PORTAL, ViewLayer::LARGE_ITEM, "Portal"), square->getPosition2()));
       return;
     }
 }
@@ -397,7 +396,7 @@ static void acid(Creature* c) {
 }
 
 static void alarm(Creature* c) {
-  c->getLevel()->getModel()->onAlarm(c->getLevel(), c->getPosition());
+  c->getLevel()->getModel()->onAlarm(c->getPosition2());
 }
 
 static void teleEnemies(Creature* c) { // handled by Collective

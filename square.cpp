@@ -102,6 +102,10 @@ Vec2 Square::getPosition() const {
   return position;
 }
 
+Position Square::getPosition2() const {
+  return Position(position, level);
+}
+
 string Square::getName() const {
   return name;
 }
@@ -162,7 +166,7 @@ void Square::destroy() {
   CHECK(isDestroyable());
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
-  level->getModel()->onSquareDestroyed(getLevel(), getPosition());
+  level->getModel()->onSquareDestroyed(getPosition2());
   getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 
@@ -178,7 +182,7 @@ void Square::destroyBy(Creature* c) {
 void Square::burnOut() {
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
-  level->getModel()->onSquareDestroyed(getLevel(), getPosition());
+  level->getModel()->onSquareDestroyed(getPosition2());
   getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 

@@ -413,6 +413,10 @@ Vec2 Creature::getPosition() const {
   return position;
 }
 
+Position Creature::getPosition2() const {
+  return Position(position, level);
+}
+
 void Creature::globalMessage(const PlayerMessage& playerCanSee) const {
   globalMessage(playerCanSee, "");
 }

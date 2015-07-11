@@ -104,7 +104,6 @@ struct PlayerControl::BuildInfo {
     SQUARE,
     IMP,
     TRAP,
-    GUARD_POST,
     DESTROY,
     FETCH,
     DISPATCH,
@@ -143,7 +142,7 @@ PlayerControl::BuildInfo::BuildInfo(const Creature* c, CostInfo cost, const stri
 
 PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, string group)
     : buildType(type), help(h), hotkey(key), groupName(group) {
-  CHECK(contains({DIG, IMP, GUARD_POST, DESTROY, FORBID_ZONE, FETCH, DISPATCH, CLAIM_TILE, TORCH}, type));
+  CHECK(contains({DIG, IMP, DESTROY, FORBID_ZONE, FETCH, DISPATCH, CLAIM_TILE, TORCH}, type));
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo() const {
@@ -200,7 +199,6 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
       if (c->isWorshipped())
         buildInfo.push_back(BuildInfo(c, altarCost, "Shrines", c->getSpeciesName(), 0));*/
   append(buildInfo, {
- //   BuildInfo(BuildInfo::GUARD_POST, "Place it anywhere to send a minion.", 'p', "Orders"),
     BuildInfo(BuildInfo::CLAIM_TILE, "Claim a tile. Building anything has the same effect.", 0, "Orders"),
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
     BuildInfo(BuildInfo::DISPATCH, "Click on an existing task to give it a high priority.", 'a', "Orders"),
@@ -668,29 +666,6 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   return concat(currentItems, allStacked)[*index];
 }
 
-void PlayerControl::handleMarket(View* view, int prevItem) {
-  vector<Vec2> storage = getCollective()->getAllSquares(getCollective()->getEquipmentStorageSquares());
-  if (storage.empty()) {
-    view->presentText("Information", "You need a storage room to use the market.");
-    return;
-  }
-  vector<ListElem> options;
-  vector<PItem> items;
-  for (ItemType id : marketItems) {
-    items.push_back(ItemFactory::fromId(id));
-    options.emplace_back(items.back()->getName() + "    $" + toString(items.back()->getPrice()),
-        items.back()->getPrice() > getCollective()->numResource(ResourceId::GOLD) ? ListElem::INACTIVE : ListElem::NORMAL);
-  }
-  auto index = view->chooseFromList("Buy items", options, prevItem);
-  if (!index)
-    return;
-  Vec2 dest = chooseRandom(storage);
-  getCollective()->takeResource({ResourceId::GOLD, items[*index]->getPrice()});
-  getLevel()->getSafeSquare(dest)->dropItem(std::move(items[*index]));
-  view->updateView(this, true);
-  handleMarket(view, *index);
-}
-
 static string requires(TechId id) {
   return " (requires: " + Technology::get(id)->getName() + ")";
 }
@@ -852,9 +827,6 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
       case BuildInfo::FORBID_ZONE:
            buttons.push_back({ViewId::FORBID_ZONE, "Forbid zone", none, "", CollectiveInfo::Button::ACTIVE});
            break;
-      case BuildInfo::GUARD_POST:
-           buttons.push_back({ViewId::GUARD_POST, "Guard post", none, "", CollectiveInfo::Button::ACTIVE});
-           break;
       case BuildInfo::TORCH:
            buttons.push_back({ViewId::TORCH, "Torch", none, "", CollectiveInfo::Button::ACTIVE});
            break;
@@ -921,8 +893,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.minionLimit = getCollective()->getMaxPopulation();
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemies.clear();
-  for (Vec2 v : getCollective()->getAllSquares())
-    if (const Creature* c = getLevel()->getSafeSquare(v)->getCreature())
+  for (Position v : getCollective()->getAllSquares())
+    if (const Creature* c = v.getCreature())
       if (c->getTribe() != getTribe() && canSee(c))
         info.enemies.push_back(c);
   info.numResource.clear();
@@ -962,7 +934,7 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
   messages.push_back(msg);
 }
 
-void PlayerControl::addImportantLongMessage(const string& msg, optional<Vec2> pos) {
+void PlayerControl::addImportantLongMessage(const string& msg, optional<Position> pos) {
   if (Creature* c = getControlled())
     c->playerMessage(PlayerMessage(msg, PlayerMessage::CRITICAL));
   for (string s : split(msg, {'.'})) {
@@ -1043,21 +1015,22 @@ void PlayerControl::getSquareViewIndex(const Square* square, bool canSee, ViewIn
 }
 
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
+  Position position(pos, getCollective()->getLevel());
   const Square* square = getLevel()->getSafeSquare(pos);
   bool canSeePos = canSee(pos);
   getSquareViewIndex(square, canSeePos, index);
   if (!canSeePos && getMemory().hasViewIndex(pos))
     index.mergeFromMemory(getMemory().getViewIndex(pos));
-  if (getCollective()->getAllSquares().count(pos) 
+  if (getCollective()->getAllSquares().count(position)
       && index.hasObject(ViewLayer::FLOOR_BACKGROUND)
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
     index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
   if (const Creature* c = square->getCreature())
     if (!getTeams().getActiveTeams(c).empty() && index.hasObject(ViewLayer::CREATURE))
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);
-  if (getCollective()->isMarked(pos))
-    index.setHighlight(getCollective()->getMarkHighlight(pos));
-  if (getCollective()->hasPriorityTasks(pos))
+  if (getCollective()->isMarked(position))
+    index.setHighlight(getCollective()->getMarkHighlight(position));
+  if (getCollective()->hasPriorityTasks(position))
     index.setHighlight(HighlightType::PRIORITY_TASK);
   if (square->isTribeForbidden(getCollective()->getTribe()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
@@ -1066,21 +1039,20 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
   const ConstructionMap& constructions = getCollective()->getConstructions();
   if (!index.hasObject(ViewLayer::LARGE_ITEM)) {
-    if (constructions.containsTrap(pos))
-      index.insert(getTrapObject(constructions.getTrap(pos).getType(), constructions.getTrap(pos).isArmed()));
-    if (getCollective()->isGuardPost(pos))
-      index.insert(ViewObject(ViewId::GUARD_POST, ViewLayer::LARGE_ITEM, "Guard post"));
-    if (constructions.containsSquare(pos) && !constructions.getSquare(pos).isBuilt())
-      index.insert(getConstructionObject(constructions.getSquare(pos).getSquareType()));
+    if (constructions.containsTrap(position))
+      index.insert(getTrapObject(constructions.getTrap(position).getType(),
+            constructions.getTrap(position).isArmed()));
+    if (constructions.containsSquare(position) && !constructions.getSquare(position).isBuilt())
+      index.insert(getConstructionObject(constructions.getSquare(position).getSquareType()));
   }
-  if (constructions.containsTorch(pos) && !constructions.getTorch(pos).isBuilt())
-    index.insert(copyOf(Trigger::getTorchViewObject(constructions.getTorch(pos).getAttachmentDir()))
+  if (constructions.containsTorch(position) && !constructions.getTorch(position).isBuilt())
+    index.insert(copyOf(Trigger::getTorchViewObject(constructions.getTorch(position).getAttachmentDir()))
         .setModifier(ViewObject::Modifier::PLANNED));
-  if (surprises.count(pos) && !getCollective()->isKnownSquare(pos))
+  if (surprises.count(pos) && !getCollective()->isKnownSquare(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
-  if (getCollective()->hasEfficiency(pos) && index.hasObject(ViewLayer::FLOOR))
+  if (getCollective()->hasEfficiency(position) && index.hasObject(ViewLayer::FLOOR))
     index.getObject(ViewLayer::FLOOR).setAttribute(
-        ViewObject::Attribute::EFFICIENCY, getCollective()->getEfficiency(pos));
+        ViewObject::Attribute::EFFICIENCY, getCollective()->getEfficiency(position));
 }
 
 optional<Vec2> PlayerControl::getPosition(bool force) const {
@@ -1166,21 +1138,21 @@ void PlayerControl::controlSingle(const Creature* cr) {
   commandTeam(getTeams().create({c}));
 }
 
-bool PlayerControl::canBuildDoor(Vec2 pos) const {
-  if (!getLevel()->getSafeSquare(pos)->canConstruct({SquareId::TRIBE_DOOR, getTribe()}))
+bool PlayerControl::canBuildDoor(Position pos) const {
+  if (!pos.getSafeSquare()->canConstruct({SquareId::TRIBE_DOOR, getTribe()}))
     return false;
   Rectangle innerRect = getLevel()->getBounds().minusMargin(1);
-  auto wallFun = [=](Vec2 pos) {
-      return getLevel()->getSafeSquare(pos)->canConstruct(SquareId::FLOOR) ||
-          !pos.inRectangle(innerRect); };
-  return !getCollective()->getConstructions().containsTrap(pos) && pos.inRectangle(innerRect) && 
+  auto wallFun = [=](Position pos) {
+      return pos.getSafeSquare()->canConstruct(SquareId::FLOOR) ||
+          !pos.getCoord().inRectangle(innerRect); };
+  return !getCollective()->getConstructions().containsTrap(pos) && pos.getCoord().inRectangle(innerRect) && 
       ((wallFun(pos - Vec2(0, 1)) && wallFun(pos - Vec2(0, -1))) ||
        (wallFun(pos - Vec2(1, 0)) && wallFun(pos - Vec2(-1, 0))));
 }
 
-bool PlayerControl::canPlacePost(Vec2 pos) const {
-  return !getCollective()->isGuardPost(pos) && !getCollective()->getConstructions().containsTrap(pos) &&
-      getLevel()->getSafeSquare(pos)->canEnterEmpty({MovementTrait::WALK}) && getCollective()->isKnownSquare(pos);
+bool PlayerControl::canPlacePost(Position pos) const {
+  return !getCollective()->getConstructions().containsTrap(pos) &&
+      pos.getSafeSquare()->canEnterEmpty({MovementTrait::WALK}) && getCollective()->isKnownSquare(pos);
 }
   
 Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) {
@@ -1239,14 +1211,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::MESSAGE_INFO:
         if (auto message = findMessage(input.get<int>())) {
           if (auto pos = message->getPosition())
-            scrollPos.push(*pos);
+            scrollPos.push(pos->getCoord());
           else if (auto id = message->getCreature()) {
             if (const Creature* c = getCreature(*id))
               scrollPos.push(c->getPosition());
           } else if (auto loc = message->getLocation()) {
             vector<Vec2> visible;
             for (Vec2 v : loc->getAllSquares())
-              if (getCollective()->isKnownSquare(v))
+              if (getCollective()->isKnownSquare(Position(v, getLevel())))
                 visible.push_back(v);
             scrollPos.push(Rectangle::boundingBox(visible).middle());
           }
@@ -1285,9 +1257,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::MOVE_TO:
         if (getCurrentTeam() && getTeams().isActive(*getCurrentTeam()) &&
-            getCollective()->isKnownSquare(input.get<Vec2>())) {
+            getCollective()->isKnownSquare(Position(input.get<Vec2>(), getLevel()))) {
           getCollective()->freeTeamMembers(*getCurrentTeam());
-          getCollective()->setTask(getTeams().getLeader(*getCurrentTeam()), Task::goTo(input.get<Vec2>()), true);
+          getCollective()->setTask(getTeams().getLeader(*getCurrentTeam()),
+              Task::goTo(Position(input.get<Vec2>(), getLevel())), true);
           view->continueClock();
         }
         break;
@@ -1343,6 +1316,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
 }
 
 void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle, bool deselectOnly) {
+  Position position(pos, getLevel());
   for (auto& req : building.requirements)
     if (!meetsRequirement(req))
       return;
@@ -1358,26 +1332,27 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
               MonsterAIFactory::collective(getCollective()));
           for (Square* square : getLevel()->getSquares(concat(pos.neighbors8(true), {pos})))
             if (square->canEnter(imp.get())
-                && (canSee(square->getPosition()) || getCollective()->containsSquare(square->getPosition()))) {
+                && (canSee(square->getPosition()) || getCollective()->containsSquare(square->getPosition2()))) {
               getCollective()->takeResource({ResourceId::MANA, getImpCost()});
-              getCollective()->addCreature(std::move(imp), square->getPosition(),
+              getCollective()->addCreature(std::move(imp), square->getPosition2(),
                   {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT});
               break;
             }
         }
         break;
     case BuildInfo::TRAP:
-        if (getCollective()->getConstructions().containsTrap(pos)) {
-          getCollective()->removeTrap(pos);// Does this mean I can remove the order if the trap physically exists?
+        if (getCollective()->getConstructions().containsTrap(position)) {
+          getCollective()->removeTrap(position);
+          // Does this mean I can remove the order if the trap physically exists?
         } else
-        if (canPlacePost(pos) && getCollective()->getSquares(SquareId::FLOOR).count(pos)) {
-          getCollective()->addTrap(pos, building.trapInfo.type);
+        if (canPlacePost(position) && getCollective()->getSquares(SquareId::FLOOR).count(position)) {
+          getCollective()->addTrap(position, building.trapInfo.type);
         }
       break;
     case BuildInfo::DESTROY:
-        if (getCollective()->isKnownSquare(pos) && !getCollective()->getLevel()->getSafeSquare(pos)->isBurning()) {
+        if (getCollective()->isKnownSquare(position) && !position.getSafeSquare()->isBurning()) {
           selection = SELECT;
-          getCollective()->destroySquare(pos);
+          getCollective()->destroySquare(position);
           updateSquareMemory(pos);
         }
         break;
@@ -1392,81 +1367,70 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             selection = SELECT;
           }
         break;
-    case BuildInfo::GUARD_POST:
-        if (getCollective()->isGuardPost(pos) && selection != SELECT) {
-          getCollective()->removeGuardPost(pos);
-          selection = DESELECT;
-        }
-        else if (canPlacePost(pos) && selection != DESELECT) {
-          getCollective()->addGuardPost(pos);
-          selection = SELECT;
-        }
-        break;
     case BuildInfo::TORCH:
-        if (getCollective()->isPlannedTorch(pos) && selection != SELECT) {
-          getCollective()->removeTorch(pos);
+        if (getCollective()->isPlannedTorch(position) && selection != SELECT) {
+          getCollective()->removeTorch(position);
           selection = DESELECT;
         }
-        else if (getCollective()->canPlaceTorch(pos) && selection != DESELECT) {
-          getCollective()->addTorch(pos);
+        else if (getCollective()->canPlaceTorch(position) && selection != DESELECT) {
+          getCollective()->addTorch(position);
           selection = SELECT;
         }
         break;
     case BuildInfo::DIG: {
-        bool markedToDig = getCollective()->isMarked(pos) &&
-            (getCollective()->getMarkHighlight(pos) == HighlightType::DIG ||
-             getCollective()->getMarkHighlight(pos) == HighlightType::CUT_TREE);
+        bool markedToDig = getCollective()->isMarked(position) &&
+            (getCollective()->getMarkHighlight(position) == HighlightType::DIG ||
+             getCollective()->getMarkHighlight(position) == HighlightType::CUT_TREE);
         if (markedToDig && selection != SELECT) {
-          getCollective()->cancelMarkedTask(pos);
+          getCollective()->cancelMarkedTask(position);
           selection = DESELECT;
         } else
         if (!markedToDig && selection != DESELECT) {
-          if (getLevel()->getSafeSquare(pos)->canConstruct(SquareId::TREE_TRUNK)) {
-            getCollective()->cutTree(pos);
+          if (position.getSafeSquare()->canConstruct(SquareId::TREE_TRUNK)) {
+            getCollective()->cutTree(position);
             selection = SELECT;
           } else
-            if (getLevel()->getSafeSquare(pos)->canConstruct(SquareId::FLOOR)
-                || !getCollective()->isKnownSquare(pos)) {
-              getCollective()->dig(pos);
+            if (position.getSafeSquare()->canConstruct(SquareId::FLOOR)
+                || !getCollective()->isKnownSquare(position)) {
+              getCollective()->dig(position);
               selection = SELECT;
             }
         }
         break;
         }
     case BuildInfo::FETCH:
-        if (getCollective()->isMarked(pos) &&
-            getCollective()->getMarkHighlight(pos) == HighlightType::FETCH_ITEMS && selection != SELECT) {
-          getCollective()->cancelMarkedTask(pos);
+        if (getCollective()->isMarked(position) &&
+            getCollective()->getMarkHighlight(position) == HighlightType::FETCH_ITEMS && selection != SELECT) {
+          getCollective()->cancelMarkedTask(position);
           selection = DESELECT;
-        } else if (selection != DESELECT && !getCollective()->isMarked(pos)) {
-          getCollective()->fetchAllItems(pos);
+        } else if (selection != DESELECT && !getCollective()->isMarked(position)) {
+          getCollective()->fetchAllItems(position);
           selection = SELECT;
         }
         break;
     case BuildInfo::CLAIM_TILE:
-        if (getCollective()->isKnownSquare(pos)
-            && getLevel()->getSafeSquare(pos)->canConstruct(SquareId::STOCKPILE))
-          getCollective()->claimSquare(pos);
+        if (getCollective()->isKnownSquare(position) && position.getSafeSquare()->canConstruct(SquareId::STOCKPILE))
+          getCollective()->claimSquare(position);
         break;
     case BuildInfo::DISPATCH:
-        getCollective()->setPriorityTasks(pos);
+        getCollective()->setPriorityTasks(position);
         break;
     case BuildInfo::SQUARE:
-        if (getCollective()->getConstructions().containsSquare(pos) &&
-            !getCollective()->getConstructions().getSquare(pos).isBuilt()) {
+        if (getCollective()->getConstructions().containsSquare(position) &&
+            !getCollective()->getConstructions().getSquare(position).isBuilt()) {
           if (selection != SELECT) {
-            getCollective()->removeConstruction(pos);
+            getCollective()->removeConstruction(position);
             selection = DESELECT;
           }
         } else {
           BuildInfo::SquareInfo info = building.squareInfo;
-          if (getCollective()->isKnownSquare(pos) && getLevel()->getSafeSquare(pos)->canConstruct(info.type) 
-              && !getCollective()->getConstructions().containsTrap(pos)
-              && (info.type.getId() != SquareId::TRIBE_DOOR || canBuildDoor(pos)) && selection != DESELECT
+          if (getCollective()->isKnownSquare(position) && position.getSafeSquare()->canConstruct(info.type) 
+              && !getCollective()->getConstructions().containsTrap(position)
+              && (info.type.getId() != SquareId::TRIBE_DOOR || canBuildDoor(position)) && selection != DESELECT
               && (!info.maxNumber || *info.maxNumber > getCollective()->getSquares(info.type).size()
                   + getCollective()->getConstructions().getSquareCount(info.type))) {
             CostInfo cost = getRoomCost(info.type, info.cost, info.costExponent);
-            getCollective()->addConstruction(pos, info.type, cost, info.buildImmediatly, info.noCredit);
+            getCollective()->addConstruction(position, info.type, cost, info.buildImmediatly, info.noCredit);
             selection = SELECT;
           }
         }
@@ -1475,7 +1439,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
 }
 
 void PlayerControl::tryLockingDoor(Vec2 pos) {
-  if (getCollective()->tryLockingDoor(pos))
+  if (getCollective()->tryLockingDoor(Position(pos, getLevel())))
     updateSquareMemory(pos);
 }
 
@@ -1503,48 +1467,6 @@ void PlayerControl::addToMemory(Vec2 pos) {
   ViewIndex index;
   getSquareViewIndex(square, true, index);
   getMemory(getLevel()).update(pos, index);
-}
-
-void PlayerControl::addDeityServant(Deity* deity, Vec2 deityPos, Vec2 victimPos) {
-  PTask task = Task::chain(Task::destroySquare(victimPos), Task::disappear());
-  PCreature creature = deity->getServant(getLevel()->getModel()->getKillEveryoneTribe()).random(
-      MonsterAIFactory::singleTask(std::move(task)));
-  for (Square* square : getLevel()->getSquares(concat({deityPos}, deityPos.neighbors8(true))))
-    if (square->canEnter(creature.get())) {
-      getLevel()->addCreature(square->getPosition(), std::move(creature));
-      break;
-    }
-}
-
-void PlayerControl::considerDeityFight() {
-  vector<pair<Vec2, SquareType>> altars;
-  vector<pair<Vec2, SquareType>> deityAltars;
-  vector<SquareType> altarTypes;
-  for (SquareType squareType : getCollective()->getSquareTypes()) {
-    const set<Vec2>& squares = getCollective()->getSquares(squareType);
-    if (!squares.empty() && contains({SquareId::ALTAR, SquareId::CREATURE_ALTAR}, squareType.getId())) {
-      altarTypes.push_back(squareType);
-      for (Vec2 v : squares) {
-        altars.push_back({v, squareType});
-        if (squareType.getId() == SquareId::ALTAR)
-          deityAltars.push_back({v, squareType});
-      }
-    }
-  }
-  if (altarTypes.size() < 2 || deityAltars.size() == 0)
-    return;
-  double fightChance = 10000.0 / pow(5, altars.size() - 2);
-  if (Random.rollD(fightChance)) {
-    pair<Vec2, SquareType> attacking = chooseRandom(deityAltars);
-    pair<Vec2, SquareType> victim;
-    do {
-      victim = chooseRandom(altars);
-    } while (victim.second.getId() == SquareId::ALTAR &&
-        victim.second == attacking.second);
-    addDeityServant(Deity::getDeity(attacking.second.get<DeityHabitat>()), attacking.first, victim.first);
-    if (victim.second.getId() == SquareId::ALTAR)
-      addDeityServant(Deity::getDeity(victim.second.get<DeityHabitat>()), victim.first, attacking.first);
-  }
 }
 
 void PlayerControl::checkKeeperDanger() {
@@ -1603,11 +1525,10 @@ void PlayerControl::tick(double time) {
     }
   if (startImpNum == -1)
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
-  considerDeityFight();
   checkKeeperDanger();
   if (retired && getKeeper()) {
     if (const Creature* c = getLevel()->getPlayer())
-      if (Random.roll(30) && !getCollective()->containsSquare(c->getPosition()))
+      if (Random.roll(30) && !getCollective()->containsSquare(c->getPosition2()))
         c->playerMessage("You sense horrible evil in the " + 
             getCardinalName((getKeeper()->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
   }
@@ -1632,7 +1553,7 @@ void PlayerControl::tick(double time) {
   for (auto assault : copyOf(assaultNotifications))
     for (const Creature* c : assault.second.creatures())
       if (canSee(c)) {
-        addImportantLongMessage(assault.second.message(), c->getPosition());
+        addImportantLongMessage(assault.second.message(), c->getPosition2());
         assaultNotifications.erase(assault.first);
         model->setCurrentMusic(MusicType::BATTLE, true);
         break;
@@ -1661,8 +1582,8 @@ bool PlayerControl::canSee(Vec2 position) const {
     return true;
   if (visibilityMap->isVisible(position))
       return true;
-  for (Vec2 pos : getCollective()->getSquares(SquareId::EYEBALL))
-    if (getLevel()->canSee(pos, position, VisionId::NORMAL))
+  for (Position pos : getCollective()->getSquares(SquareId::EYEBALL))
+    if (getLevel()->canSee(pos.getCoord(), position, VisionId::NORMAL))
       return true;
   return false;
 }
@@ -1714,7 +1635,7 @@ void PlayerControl::onTechBookRead(Technology* tech) {
 MoveInfo PlayerControl::getMove(Creature* c) {
   if (c == getKeeper() && !getCollective()->getAllSquares().empty()
       && getCollective()->getSquares(SquareId::LIBRARY).empty() // after library is built let him wander
-      && !getCollective()->containsSquare(c->getPosition()))
+      && !getCollective()->containsSquare(c->getPosition2()))
     return c->moveTowards(chooseRandom(getCollective()->getAllSquares()));
   else
     return NoMove;
@@ -1755,7 +1676,7 @@ Level* PlayerControl::getLevel() {
 void PlayerControl::uncoverRandomLocation() {
   const Location* location = nullptr;
   for (auto loc : randomPermutation(getLevel()->getAllLocations()))
-    if (!getCollective()->isKnownSquare(loc->getMiddle())) {
+    if (!getCollective()->isKnownSquare(Position(loc->getMiddle(), getLevel()))) {
       location = loc;
       break;
     }

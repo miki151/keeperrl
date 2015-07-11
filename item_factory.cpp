@@ -363,7 +363,7 @@ class TrapItem : public Item {
 
   virtual void apply(Creature* c, Level* l) override {
     c->you(MsgType::SET_UP_TRAP, "");
-    c->getSquare()->addTrigger(Trigger::getTrap(trapObject, l, c->getPosition(), effect, c->getTribe()));
+    c->getSquare()->addTrigger(Trigger::getTrap(trapObject, c->getPosition2(), effect, c->getTribe()));
     discarded = true;
   }
 

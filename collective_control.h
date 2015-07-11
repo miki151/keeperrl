@@ -37,8 +37,7 @@ class CollectiveControl {
   vector<Creature*>& getCreatures();
 
   protected:
-  Collective* getCollective();
-  const Collective* getCollective() const;
+  Collective* getCollective() const;
 
   private:
   Collective* SERIAL(collective) = nullptr;

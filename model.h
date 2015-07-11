@@ -18,6 +18,7 @@
 
 #include "util.h"
 #include "stair_key.h"
+#include "position.h"
 
 class PlayerControl;
 class Level;
@@ -119,13 +120,8 @@ class Model {
 
   SERIALIZATION_DECL(Model);
 
-  struct PortalInfo : public NamedTupleBase<Level*, Vec2> {
-    NAMED_TUPLE_STUFF(PortalInfo);
-    NAME_ELEM(0, level);
-    NAME_ELEM(1, position);
-  };
-  optional<PortalInfo> getDanglingPortal();
-  void setDanglingPortal(PortalInfo);
+  optional<Position> getDanglingPortal();
+  void setDanglingPortal(Position);
   void resetDanglingPortal();
 
   void addWoodCount(int);
@@ -136,14 +132,14 @@ class Model {
   Tribe* getPeacefulTribe();
 
   void onTechBookRead(Technology*);
-  void onAlarm(Level*, Vec2);
+  void onAlarm(Position);
   void onKilledLeader(const Collective*, const Creature*);
   void onTorture(const Creature* who, const Creature* torturer);
   void onSurrender(Creature* who, const Creature* to);
   void onAttack(Creature* victim, Creature* attacker);
-  void onTrapTrigger(const Level*, Vec2 pos);
-  void onTrapDisarm(const Level*, const Creature*, Vec2 pos);
-  void onSquareDestroyed(const Level*, Vec2 pos);
+  void onTrapTrigger(Position);
+  void onTrapDisarm(Position, const Creature*);
+  void onSquareDestroyed(Position);
   void onEquip(const Creature*, const Item*);
 
   private:
@@ -183,7 +179,7 @@ class Model {
   bool SERIAL(finishCurrentMusic) = false;
   optional<ExitInfo> exitInfo;
   unique_ptr<CreatureView> SERIAL(spectator);
-  optional<PortalInfo> SERIAL(danglingPortal);
+  optional<Position> SERIAL(danglingPortal);
   int SERIAL(woodCount) = 0;
   HeapAllocated<Statistics> SERIAL(statistics);
   string SERIAL(gameIdentifier);

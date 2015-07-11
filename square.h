@@ -20,6 +20,7 @@
 #include "debug.h"
 #include "renderable.h"
 #include "stair_key.h"
+#include "position.h"
 
 class Level;
 class Creature;
@@ -86,6 +87,7 @@ class Square : public Renderable {
 
   /** Returns the square's position on the level.*/
   Vec2 getPosition() const;
+  Position getPosition2() const;
 
   //@{
   /** Checks if this creature can enter the square at the moment. Takes account other creatures on the square.*/

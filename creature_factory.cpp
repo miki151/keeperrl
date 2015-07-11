@@ -104,7 +104,7 @@ class BoulderController : public Monster {
                   stopped = false;
                   found = true;
                   getCreature()->getLevel()->getModel()->
-                      onTrapTrigger(getCreature()->getLevel(), getCreature()->getPosition());
+                      onTrapTrigger(getCreature()->getPosition2());
                   getCreature()->monsterMessage(
                       PlayerMessage("The boulder starts rolling.", PlayerMessage::CRITICAL),
                       PlayerMessage("You hear a heavy boulder rolling.", PlayerMessage::CRITICAL));
@@ -112,7 +112,7 @@ class BoulderController : public Monster {
                 } else {
                   other->you(MsgType::DISARM_TRAP, "");
                   getCreature()->getLevel()->getModel()->
-                      onTrapDisarm(getCreature()->getLevel(), other, getCreature()->getPosition());
+                      onTrapDisarm(getCreature()->getPosition2(), other);
                   getCreature()->die();
                   return;
                 }

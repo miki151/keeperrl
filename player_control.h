@@ -24,6 +24,7 @@
 #include "cost_info.h"
 #include "game_info.h"
 #include "square_type.h"
+#include "position.h"
 
 class Model;
 class Technology;
@@ -39,7 +40,7 @@ struct MinionAction;
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
   PlayerControl(Collective*, Model*, Level*);
-  void addImportantLongMessage(const string&, optional<Vec2> = none);
+  void addImportantLongMessage(const string&, optional<Position> = none);
 
   void onConqueredLand();
 
@@ -159,9 +160,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<TechInfo> getTechInfo() const;
 
   int getImpCost() const;
-  bool canBuildDoor(Vec2 pos) const;
-  bool canPlacePost(Vec2 pos) const;
-  void handleMarket(View*, int prevItem = 0);
+  bool canBuildDoor(Position) const;
+  bool canPlacePost(Position) const;
   void getEquipmentItem(View* view, ItemPredicate predicate);
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
       double* scrollPos = nullptr);

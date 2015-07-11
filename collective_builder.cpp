@@ -32,7 +32,7 @@ PCollective CollectiveBuilder::build(const string& name) {
   for (auto& elem : creatures)
     c->addCreature(elem.creature, elem.traits);
   for (Vec2 v : squares)
-    c->claimSquare(v);
+    c->claimSquare(Position(v, level));
   return PCollective(c);
 }
 

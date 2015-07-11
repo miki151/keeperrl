@@ -60,8 +60,8 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
 
 VillageControl::VillageControl(Collective* col, vector<Villain> v)
     : CollectiveControl(col), villains(v) {
-  for (Vec2 v : col->getAllSquares())
-    for (Item* it : getCollective()->getLevel()->getSafeSquare(v)->getItems())
+  for (Position v : col->getAllSquares())
+    for (Item* it : v.getSafeSquare()->getItems())
       myItems.insert(it);
 }
 
@@ -84,7 +84,7 @@ void VillageControl::onMemberKilled(const Creature* victim, const Creature* kill
 }
 
 void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& items) {
-  if (getCollective()->containsSquare(who->getPosition()))
+  if (getCollective()->containsSquare(who->getPosition2()))
     if (auto villain = getVillain(who))
       if (contains(villain->triggers, AttackTriggerId::STOLEN_ITEMS)) {
         bool wasTheft = false;
@@ -128,8 +128,8 @@ void VillageControl::considerWelcomeMessage() {
       if (villain.welcomeMessage)
         switch (*villain.welcomeMessage) {
           case DRAGON_WELCOME:
-            for (Vec2 pos : getCollective()->getAllSquares())
-              if (Creature* c = getCollective()->getLevel()->getSafeSquare(pos)->getCreature())
+            for (Position pos : getCollective()->getAllSquares())
+              if (Creature* c = pos.getSafeSquare()->getCreature())
                 if (c->isAffected(LastingEffect::INVISIBLE) && villain.contains(c) && c->isPlayer()
                     && leader->canSee(c->getPosition())) {
                   c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "

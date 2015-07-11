@@ -66,7 +66,7 @@ RICH_ENUM(CollectiveWarning,
 class Collective : public TaskCallback {
   public:
   void addCreature(Creature*, EnumSet<MinionTrait>);
-  void addCreature(PCreature, Vec2, EnumSet<MinionTrait>);
+  void addCreature(PCreature, Position, EnumSet<MinionTrait>);
   MoveInfo getMove(Creature*);
   void setControl(PCollectiveControl);
   void tick(double time);
@@ -111,23 +111,19 @@ class Collective : public TaskCallback {
   const Creature* getLeader() const;
   Creature* getLeader();
 
-  const set<Vec2>& getSquares(SquareType) const;
-  const set<Vec2>& getSquares(SquareApplyType) const;
+  const set<Position>& getSquares(SquareType) const;
+  const set<Position>& getSquares(SquareApplyType) const;
   vector<SquareType> getSquareTypes() const;
-  vector<Vec2> getAllSquares(const vector<SquareType>&, bool centerOnly = false) const;
-  const set<Vec2>& getAllSquares() const;
-  void claimSquare(Vec2);
-  void changeSquareType(Vec2 pos, SquareType from, SquareType to);
-  bool containsSquare(Vec2 pos) const;
-  bool isKnownSquare(Vec2 pos) const;
+  vector<Position> getAllSquares(const vector<SquareType>&, bool centerOnly = false) const;
+  const set<Position>& getAllSquares() const;
+  void claimSquare(Position);
+  void changeSquareType(Position pos, SquareType from, SquareType to);
+  bool containsSquare(Position pos) const;
+  bool isKnownSquare(Position pos) const;
 
-  double getEfficiency(Vec2) const;
-  bool hasEfficiency(Vec2) const;
+  double getEfficiency(Position) const;
+  bool hasEfficiency(Position) const;
 
-  bool isGuardPost(Vec2) const;
-  void addGuardPost(Vec2);
-  void removeGuardPost(Vec2);
-  void freeFromGuardPost(const Creature*);
   bool usesEquipment(const Creature* c) const;
 
   ~Collective();
@@ -173,7 +169,7 @@ class Collective : public TaskCallback {
   static SquareType getHatcheryType(Tribe* tribe);
 
   static vector<SquareType> getEquipmentStorageSquares();
-  vector<pair<Item*, Vec2>> getTrapItems(TrapType, set<Vec2> = set<Vec2>()) const;
+  vector<pair<Item*, Position>> getTrapItems(TrapType, set<Position> = set<Position>()) const;
 
   void orderExecution(Creature*);
   void orderSacrifice(Creature*);
@@ -181,24 +177,24 @@ class Collective : public TaskCallback {
 
   const map<UniqueEntity<Creature>::Id, string>& getMinionTaskStrings() const;
 
-  void addTrap(Vec2, TrapType);
-  void removeTrap(Vec2);
-  void addConstruction(Vec2, SquareType, const CostInfo&, bool immediately, bool noCredit);
-  void removeConstruction(Vec2);
-  void destroySquare(Vec2);
-  bool isPlannedTorch(Vec2) const;
-  bool canPlaceTorch(Vec2) const;
-  void removeTorch(Vec2);
-  void addTorch(Vec2);
-  void fetchAllItems(Vec2);
-  void dig(Vec2);
-  void cancelMarkedTask(Vec2);
-  void cutTree(Vec2);
+  void addTrap(Position, TrapType);
+  void removeTrap(Position);
+  void addConstruction(Position, SquareType, const CostInfo&, bool immediately, bool noCredit);
+  void removeConstruction(Position);
+  void destroySquare(Position);
+  bool isPlannedTorch(Position) const;
+  bool canPlaceTorch(Position) const;
+  void removeTorch(Position);
+  void addTorch(Position);
+  void fetchAllItems(Position);
+  void dig(Position);
+  void cancelMarkedTask(Position);
+  void cutTree(Position);
   double getDangerLevel() const;
-  bool isMarked(Vec2) const;
-  HighlightType getMarkHighlight(Vec2) const;
-  void setPriorityTasks(Vec2);
-  bool hasPriorityTasks(Vec2) const;
+  bool isMarked(Position) const;
+  HighlightType getMarkHighlight(Position) const;
+  void setPriorityTasks(Position);
+  bool hasPriorityTasks(Position) const;
 
   bool hasTech(TechId id) const;
   void acquireTech(Technology*, bool free = false);
@@ -216,7 +212,7 @@ class Collective : public TaskCallback {
   MinionEquipment& getMinionEquipment();
   const MinionEquipment& getMinionEquipment() const;
 
-  vector<Vec2> getExtendedTiles(int maxRadius, int minRadius = 0) const;
+  vector<Position> getExtendedTiles(int maxRadius, int minRadius = 0) const;
 
   struct DormInfo;
   static const EnumMap<SpawnType, DormInfo>& getDormInfo();
@@ -232,7 +228,7 @@ class Collective : public TaskCallback {
   int getPopulationSize() const;
   int getMaxPopulation() const;
 
-  bool tryLockingDoor(Vec2);
+  bool tryLockingDoor(Position);
   void orderConsumption(Creature* consumer, Creature* who);
   vector<Creature*>getConsumptionTargets(Creature* consumer);
 
@@ -240,12 +236,12 @@ class Collective : public TaskCallback {
   void removeAssaultNotification(const Collective*);
 
   void onKilled(Creature* victim, Creature* killer);
-  void onAlarm(Vec2);
+  void onAlarm(Position);
   void onTorture(const Creature* who, const Creature* torturer);
   void onSurrender(Creature* who);
-  void onTrapTrigger(Vec2 pos);
-  void onTrapDisarm(const Creature*, Vec2 pos);
-  void onSquareDestroyed(Vec2 pos);
+  void onTrapTrigger(Position);
+  void onTrapDisarm(const Creature*, Position);
+  void onSquareDestroyed(Position);
   void onEquip(const Creature*, const Item*);
 
   CollectiveTeams& getTeams();
@@ -262,30 +258,30 @@ class Collective : public TaskCallback {
 
   protected:
   // From Task::Callback
-  virtual void onAppliedItem(Vec2 pos, Item* item) override;
-  virtual void onAppliedItemCancel(Vec2 pos) override;
-  virtual void onPickedUp(Vec2 pos, EntitySet<Item>) override;
+  virtual void onAppliedItem(Position, Item* item) override;
+  virtual void onAppliedItemCancel(Position) override;
+  virtual void onPickedUp(Position, EntitySet<Item>) override;
   virtual void onCantPickItem(EntitySet<Item> items) override;
-  virtual void onConstructed(Vec2, const SquareType&) override;
-  virtual void onTorchBuilt(Vec2, Trigger*) override;
-  virtual void onAppliedSquare(Vec2 pos) override;
+  virtual void onConstructed(Position, const SquareType&) override;
+  virtual void onTorchBuilt(Position, Trigger*) override;
+  virtual void onAppliedSquare(Position) override;
   virtual void onKillCancelled(Creature*) override;
-  virtual void onBedCreated(Vec2, const SquareType& fromType, const SquareType& toType) override;
+  virtual void onBedCreated(Position, const SquareType& fromType, const SquareType& toType) override;
   virtual void onCopulated(Creature* who, Creature* with) override;
   virtual void onConsumed(Creature* consumer, Creature* who) override;
-  virtual bool isConstructionReachable(Vec2) override;
+  virtual bool isConstructionReachable(Position) override;
 
   private:
   friend class CollectiveBuilder;
   Collective(Level*, const CollectiveConfig&, Tribe*, EnumMap<ResourceId, int> credit, const string& name);
-  void updateEfficiency(Vec2, SquareType);
+  void updateEfficiency(Position, SquareType);
   int getPaymentAmount(const Creature*) const;
   void makePayouts();
   void cashPayouts();
   void removeCreature(Creature*);
 
   const vector<ItemFetchInfo>& getFetchInfo() const;
-  void fetchItems(Vec2 pos, const ItemFetchInfo&);
+  void fetchItems(Position, const ItemFetchInfo&);
 
   void addMoraleForKill(const Creature* killer, const Creature* victim);
   void decreaseMoraleForKill(const Creature* killer, const Creature* victim);
@@ -310,7 +306,7 @@ class Collective : public TaskCallback {
 
   struct CurrentTaskInfo;
   map<UniqueEntity<Creature>::Id, CurrentTaskInfo> SERIAL(currentTasks);
-  optional<Vec2> getTileToExplore(const Creature*, MinionTask) const;
+  optional<Position> getTileToExplore(const Creature*, MinionTask) const;
   PTask getStandardTask(Creature* c);
   PTask getEquipmentTask(Creature* c);
   PTask getHealingTask(Creature* c);
@@ -318,7 +314,7 @@ class Collective : public TaskCallback {
   PTask generateMinionTask(Creature*, MinionTask);
   void setRandomTask(const Creature*);
 
-  void handleSurprise(Vec2 pos);
+  void handleSurprise(Position);
   EnumSet<Warning> SERIAL(warnings);
   MoveInfo getDropItems(Creature*);
   MoveInfo getWorkerMove(Creature*);
@@ -332,7 +328,7 @@ class Collective : public TaskCallback {
   void considerHealingLeader();
   bool considerImmigrant(const ImmigrantInfo&);
   bool considerNonSpawnImmigrant(const ImmigrantInfo&, vector<PCreature>);
-  vector<Vec2> getSpawnPos(const vector<Creature*>&);
+  vector<Position> getSpawnPos(const vector<Creature*>&);
   void considerImmigration();
   int tryBuildingBeds(SpawnType spawnType, int numBeds);
   void considerBirths();
@@ -346,20 +342,17 @@ class Collective : public TaskCallback {
   Tribe* SERIAL(tribe) = nullptr;
   map<const Deity*, double> SERIAL(deityStanding);
   Level* SERIAL(level) = nullptr;
-  unordered_map<SquareType, set<Vec2>> SERIAL(mySquares);
-  unordered_map<SquareApplyType, set<Vec2>> SERIAL(mySquares2);
-  map<Vec2, int> SERIAL(squareEfficiency);
-  set<Vec2> SERIAL(allSquares);
-  struct AlarmInfo : NamedTupleBase<double, Vec2> {
+  unordered_map<SquareType, set<Position>> SERIAL(mySquares);
+  unordered_map<SquareApplyType, set<Position>> SERIAL(mySquares2);
+  map<Position, int> SERIAL(squareEfficiency);
+  set<Position> SERIAL(allSquares);
+  struct AlarmInfo : NamedTupleBase<double, Position> {
     NAMED_TUPLE_STUFF(AlarmInfo);
-    AlarmInfo() { finishTime() = -1000; }
     NAME_ELEM(0, finishTime);
     NAME_ELEM(1, position);
-  } SERIAL(alarmInfo);
+  };
+  optional<AlarmInfo> SERIAL(alarmInfo);
   MoveInfo getAlarmMove(Creature* c);
-  struct GuardPostInfo;
-  map<Vec2, GuardPostInfo> SERIAL(guardPosts);
-  MoveInfo getGuardPostMove(Creature* c);
   HeapAllocated<ConstructionMap> SERIAL(constructions);
   EntitySet<Item> SERIAL(markedItems);
   ItemPredicate unMarkedItems() const;
@@ -369,10 +362,10 @@ class Collective : public TaskCallback {
   void clearPrisonerTask(Creature* prisoner);
   map<Creature*, PrisonerInfo> SERIAL(prisonerInfo);
   void updateConstructions();
-  void delayDangerousTasks(const vector<Vec2>& enemyPos, double delayTime);
-  bool isDelayed(Vec2 pos);
-  unordered_map<Vec2, double> SERIAL(delayedPos);
-  vector<Vec2> getEnemyPositions() const;
+  void delayDangerousTasks(const vector<Position>& enemyPos, double delayTime);
+  bool isDelayed(Position);
+  unordered_map<Position, double> SERIAL(delayedPos);
+  vector<Position> getEnemyPositions() const;
   double manaRemainder = 0;
   double getKillManaScore(const Creature*) const;
   void addMana(double);

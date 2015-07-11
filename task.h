@@ -19,6 +19,7 @@
 #include "move_info.h"
 #include "unique_entity.h"
 #include "entity_set.h"
+#include "position.h"
 
 class SquareType;
 class Location;
@@ -37,32 +38,33 @@ class Task : public UniqueEntity<Task> {
   virtual string getDescription() const = 0;
   bool isDone();
 
-  static PTask construction(TaskCallback*, Vec2 target, const SquareType&);
-  static PTask buildTorch(TaskCallback*, Vec2 target, Dir attachmentDir);
-  static PTask bringItem(TaskCallback*, Vec2 position, vector<Item*>, vector<Vec2> target, int numRetries = 10);
-  static PTask applyItem(TaskCallback*, Vec2 position, Item* item, Vec2 target);
-  static PTask applySquare(TaskCallback*, vector<Vec2> squares);
-  static PTask pickAndEquipItem(TaskCallback*, Vec2 position, Item* item);
-  static PTask equipItem(Item* item);
-  static PTask pickItem(TaskCallback*, Vec2 position, vector<Item*> items);
+  static PTask construction(TaskCallback*, Position, const SquareType&);
+  static PTask buildTorch(TaskCallback*, Position, Dir attachmentDir);
+  static PTask bringItem(TaskCallback*, Position position, vector<Item*>, vector<Position> target,
+      int numRetries = 10);
+  static PTask applyItem(TaskCallback*, Position, Item*, Position target);
+  static PTask applySquare(TaskCallback*, vector<Position>);
+  static PTask pickAndEquipItem(TaskCallback*, Position, Item*);
+  static PTask equipItem(Item*);
+  static PTask pickItem(TaskCallback*, Position, vector<Item*>);
   static PTask kill(TaskCallback*, Creature*);
   static PTask torture(TaskCallback*, Creature*);
   static PTask sacrifice(TaskCallback*, Creature*);
-  static PTask destroySquare(Vec2 position);
+  static PTask destroySquare(Position);
   static PTask disappear();
   static PTask chain(PTask, PTask);
   static PTask chain(vector<PTask>);
-  static PTask explore(Vec2);
+  static PTask explore(Position);
   static PTask attackLeader(Collective*);
   static PTask killFighters(Collective*, int numFighters);
   static PTask stealFrom(Collective*, TaskCallback*);
-  static PTask createBed(TaskCallback*, Vec2, const SquareType& fromType, const SquareType& toType);
+  static PTask createBed(TaskCallback*, Position, const SquareType& fromType, const SquareType& toType);
   static PTask consumeItem(TaskCallback*, vector<Item*> items);
   static PTask copulate(TaskCallback*, Creature* target, int numTurns);
   static PTask consume(TaskCallback*, Creature* target);
   static PTask stayInLocationUntil(const Location*, double time);
-  static PTask eat(set<Vec2> hatcherySquares);
-  static PTask goTo(Vec2);
+  static PTask eat(set<Position> hatcherySquares);
+  static PTask goTo(Position);
   static PTask dropItems(vector<Item*>);
 
   template <class Archive>
