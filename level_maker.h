@@ -19,6 +19,7 @@
 #include "util.h"
 #include "creature_factory.h"
 #include "item_factory.h"
+#include "square_factory.h"
 
 enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON};
 
@@ -65,13 +66,14 @@ struct SettlementInfo {
   optional<ItemType> elderLoot;
   optional<ItemFactory> shopFactory;
   CollectiveBuilder* collective;
+  optional<SquareFactory> furniture;
 };
 
 class LevelMaker {
   public:
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
 
-  static LevelMaker* cryptLevel(CreatureFactory roomFactory, CreatureId coffinCreature,
+  static LevelMaker* cryptLevel(CreatureFactory roomFactory, SquareFactory coffins,
       vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* topLevel(CreatureFactory forrest, vector<SettlementInfo> village);
   static LevelMaker* mineTownLevel(SettlementInfo);

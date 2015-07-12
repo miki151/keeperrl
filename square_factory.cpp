@@ -151,7 +151,7 @@ class Water : public Square {
 
 class Chest : public Square {
   public:
-  Chest(const ViewObject& object, const ViewObject& opened, const string& name, CreatureId c,
+  Chest(const ViewObject& object, const ViewObject& opened, const string& name, CreatureFactory c,
       int numC, const string& _msgItem, const string& _msgMonster, const string& _msgGold, ItemFactory _itemFactory)
     : Square(object,
           CONSTRUCT(Square::Params,
@@ -198,7 +198,7 @@ class Chest : public Square {
       c->playerMessage(msgMonster);
       int numR = numCreatures;
       for (Vec2 v : getPosition().neighbors8(true)) {
-        PCreature rat = CreatureFactory::fromId(creature, getLevel()->getModel()->getPestTribe());
+        PCreature rat = creature.random();
         if (getLevel()->getSafeSquare(v)->canEnter(rat.get())) {
           getLevel()->addCreature(v, std::move(rat));
           if (--numR == 0)
@@ -224,7 +224,7 @@ class Chest : public Square {
   SERIALIZATION_CONSTRUCTOR(Chest);
 
   private:
-  CreatureId SERIAL(creature);
+  CreatureFactory SERIAL(creature);
   int SERIAL(numCreatures);
   string SERIAL(msgItem);
   string SERIAL(msgMonster);
@@ -1161,14 +1161,14 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::CHEST:
         return new Chest(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"),
             ViewObject(ViewId::OPENED_CHEST, ViewLayer::FLOOR, "Opened chest"), "chest",
-            s.get<CreatureId>(), Random.get(3, 6),
+            s.get<CreatureFactory::SingleCreature>(), Random.get(3, 6),
             "There is an item inside", "It's full of rats!", "There is gold inside", ItemFactory::chest());
     case SquareId::TREASURE_CHEST:
         return new Furniture(ViewObject(ViewId::TREASURE_CHEST, ViewLayer::FLOOR, "Chest"), "chest", 1);
     case SquareId::COFFIN:
         return new Chest(ViewObject(ViewId::COFFIN, ViewLayer::FLOOR, "Coffin"),
             ViewObject(ViewId::OPENED_COFFIN, ViewLayer::FLOOR, "Coffin"),"coffin",
-            s.get<CreatureId>(), 1,
+            s.get<CreatureFactory::SingleCreature>(), 1,
             "There is a rotting corpse inside. You find an item.",
             "There is a rotting corpse inside. The corpse is alive!",
             "There is a rotting corpse inside. You find some gold.", ItemFactory::chest());
@@ -1217,4 +1217,34 @@ Square* SquareFactory::getPtr(SquareType s) {
  
 PSquare SquareFactory::getWater(double depth) {
   return PSquare(new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND, "Water"), "water", depth));
+} 
+
+SquareFactory::SquareFactory(const vector<SquareType>& s, const vector<double>& w) : squares(s), weights(w) {
+}
+
+SquareFactory SquareFactory::roomFurniture(Tribe* rats) {
+  return SquareFactory({SquareId::BED, SquareId::TORCH, {SquareId::CHEST, CreatureFactory::SingleCreature(rats, CreatureId::RAT)}},
+      {2, 1, 2});
+}
+
+SquareFactory SquareFactory::castleFurniture(Tribe* rats) {
+  return SquareFactory({SquareId::BED, SquareId::FOUNTAIN, SquareId::TORCH,
+      {SquareId::CHEST, CreatureFactory::SingleCreature(rats, CreatureId::RAT)}},
+      {2, 1, 1, 2});
+}
+
+SquareFactory SquareFactory::castleOutside() {
+  return SquareFactory({SquareId::TORCH, SquareId::WELL}, {4, 1});
+}
+
+SquareFactory SquareFactory::cryptCoffins(Tribe* vampire) {
+  return single({SquareId::COFFIN, CreatureFactory::SingleCreature(vampire, CreatureId::VAMPIRE_LORD)});
+}
+
+SquareFactory SquareFactory::single(SquareType type) {
+  return SquareFactory({type}, {1});
+}
+
+SquareType SquareFactory::getRandom() {
+  return chooseRandom(squares, weights);
 }

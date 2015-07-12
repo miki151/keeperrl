@@ -124,7 +124,9 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
         c.numCreatures = Random.get(3, 7);
         c.location = new Location();
         c.tribe = tribeSet.human.get();
-        c.buildingId = BuildingId::WOOD;), CollectiveConfig::noImmigrants(), {}});
+        c.buildingId = BuildingId::WOOD;
+        c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+        CollectiveConfig::noImmigrants(), {}});
   }
   for (int i : Range(Random.get(2, 5))) {
     optional<ExtraLevelId> extraLevel;
@@ -141,7 +143,9 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
         c.tribe = tribeSet.dwarven.get();
         c.buildingId = BuildingId::DUNGEON;
         c.downStairs = downStairs;
-        c.stockpiles = LIST({StockpileInfo::MINERALS, 300});), CollectiveConfig::noImmigrants(), {}, extraLevel});
+        c.stockpiles = LIST({StockpileInfo::MINERALS, 300});
+        c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+      CollectiveConfig::noImmigrants(), {}, extraLevel});
   }
   ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::ISLAND_VAULT;
@@ -159,7 +163,8 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
           c.buildingId = BuildingId::WOOD_CASTLE;
           c.stockpiles = LIST({StockpileInfo::GOLD, 800});
           c.guardId = CreatureId::WARRIOR;
-          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::BEAST_MUT);),
+          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::BEAST_MUT);
+          c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
        CollectiveConfig::withImmigrants(0.003, 16, {
            CONSTRUCT(ImmigrantInfo,
                c.id = CreatureId::WARRIOR;
@@ -181,7 +186,8 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
           c.tribe = tribeSet.lizard.get();
           c.buildingId = BuildingId::MUD;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::HUMANOID_MUT);
-          c.shopFactory = ItemFactory::mushrooms();),
+          c.shopFactory = ItemFactory::mushrooms();
+          c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
        CollectiveConfig::withImmigrants(0.007, 15, {
            CONSTRUCT(ImmigrantInfo,
                c.id = CreatureId::LIZARDMAN;
@@ -203,7 +209,8 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
           c.tribe = tribeSet.elven.get();
           c.stockpiles = LIST({StockpileInfo::GOLD, 800});
           c.buildingId = BuildingId::WOOD;
-          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);),
+          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);
+          c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
        CollectiveConfig::withImmigrants(0.002, 18, {
            CONSTRUCT(ImmigrantInfo,
                c.id = CreatureId::ELF_ARCHER;
@@ -224,7 +231,8 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
           c.tribe = tribeSet.dwarven.get();
           c.buildingId = BuildingId::DUNGEON;
           c.stockpiles = LIST({StockpileInfo::GOLD, 1000}, {StockpileInfo::MINERALS, 600});
-          c.shopFactory = ItemFactory::dwarfShop();),
+          c.shopFactory = ItemFactory::dwarfShop();
+          c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
        CollectiveConfig::withImmigrants(0.002, 15, {
            CONSTRUCT(ImmigrantInfo,
                c.id = CreatureId::DWARF;
@@ -247,7 +255,8 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
           c.stockpiles = LIST({StockpileInfo::GOLD, 700});
           c.buildingId = BuildingId::BRICK;
           c.guardId = CreatureId::CASTLE_GUARD;
-          c.shopFactory = ItemFactory::villageShop();),
+          c.shopFactory = ItemFactory::villageShop();
+          c.furniture = SquareFactory::castleFurniture(tribeSet.pest.get());),
        CollectiveConfig::withImmigrants(0.003, 26, {
            CONSTRUCT(ImmigrantInfo,
                c.id = CreatureId::KNIGHT;
@@ -272,7 +281,8 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
           c.location = new Location();
           c.tribe = tribeSet.monster.get();
           c.buildingId = BuildingId::WOOD;
-          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);), CollectiveConfig::noImmigrants(), {}},
+          c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);
+          c.furniture = SquareFactory::single(SquareId::CAULDRON);), CollectiveConfig::noImmigrants(), {}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CEMETERY;
           c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::ZOMBIE);
@@ -509,13 +519,14 @@ static string getNewIdSuffix() {
   return ret;
 }
 
-Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, Model* model, ExtraLevelId level, StairKey stairKey) {
+Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, Model* model, ExtraLevelId level, StairKey stairKey,
+    Tribe* tribe) {
   switch (level) {
     case ExtraLevelId::CRYPT: 
       return model->buildLevel(
          LevelBuilder(meter, 40, 40, "Crypt"),
-         LevelMaker::cryptLevel(CreatureFactory::coffins(model->tribeSet->wildlife.get()), CreatureId::VAMPIRE,
-            {stairKey}, {}));
+         LevelMaker::cryptLevel(CreatureFactory::singleType(model->tribeSet->monster.get(), CreatureId::ZOMBIE),
+              SquareFactory::cryptCoffins(model->tribeSet->keeper.get()), {stairKey}, {}));
       break;
     case ExtraLevelId::GNOMISH_MINES: 
       return model->buildLevel(
@@ -529,19 +540,20 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, Model* model, ExtraLev
              c.buildingId = BuildingId::DUNGEON;
              c.upStairs = {stairKey};
              c.stockpiles = LIST({StockpileInfo::GOLD, 1000}, {StockpileInfo::MINERALS, 600});
-             c.shopFactory = ItemFactory::dwarfShop();)));
+             c.shopFactory = ItemFactory::dwarfShop();
+             c.furniture = SquareFactory::roomFurniture(model->tribeSet->pest.get());)));
       break;
   }
 }
 
-PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, View* view, const string& worldName) {
+PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, View* view,
+    const string& worldName) {
   Model* m = new Model(view, worldName, TribeSet());
   m->setOptions(options);
   vector<EnemyInfo> enemyInfo = getEnemyInfo(*m->tribeSet);
   vector<SettlementInfo> settlements;
   for (auto& elem : enemyInfo) {
-    elem.settlement.collective =
-      new CollectiveBuilder(elem.config, elem.settlement.tribe);
+    elem.settlement.collective = new CollectiveBuilder(elem.config, elem.settlement.tribe);
     settlements.push_back(elem.settlement);
   }
   Level* top = m->buildLevel(
@@ -550,7 +562,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, Options* options, 
   for (auto& elem : enemyInfo)
     if (elem.extraLevel) {
       StairKey key = getOnlyElement(elem.settlement.downStairs);
-      Level* level = makeExtraLevel(meter, m, *elem.extraLevel, key);
+      Level* level = makeExtraLevel(meter, m, *elem.extraLevel, key, elem.settlement.tribe);
       m->addLink(key, top, level);
     }
   m->collectives.push_back(CollectiveBuilder(

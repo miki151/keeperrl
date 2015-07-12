@@ -32,9 +32,22 @@ class SquareFactory {
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
+  
+  SquareType getRandom();
+
+  static SquareFactory roomFurniture(Tribe* rats);
+  static SquareFactory castleFurniture(Tribe* rats);
+  static SquareFactory castleOutside();
+  static SquareFactory cryptCoffins(Tribe* vampire);
+  static SquareFactory single(SquareType);
 
   private:
   static Square* getPtr(SquareType s);
+
+  SquareFactory(const vector<SquareType>&, const vector<double>&);
+
+  vector<SquareType> squares;
+  vector<double> weights;
 };
 
 #endif

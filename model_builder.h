@@ -25,7 +25,7 @@ class ModelBuilder {
 
   private:
   static PModel tryCollectiveModel(ProgressMeter&, Options*, View*, const string& worldName);
-  static Level* makeExtraLevel(ProgressMeter&, Model*, ExtraLevelId, StairKey);
+  static Level* makeExtraLevel(ProgressMeter&, Model*, ExtraLevelId, StairKey, Tribe*);
 
 };
 
