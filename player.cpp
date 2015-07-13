@@ -477,7 +477,7 @@ void Player::makeMove() {
     updateView = false;
     for (Vec2 pos : getCreature()->getLevel()->getVisibleTiles(getCreature())) {
       ViewIndex index;
-      getViewIndex(pos, index);
+      getCreature()->getLevel()->getSafeSquare(pos)->getViewIndex(index, getCreature()->getTribe());
       (*levelMemory)[getCreature()->getLevel()->getUniqueId()].update(pos, index);
     }
     MEASURE(
