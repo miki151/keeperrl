@@ -114,14 +114,14 @@ void LevelBuilder::setMessage(const string& message) {
   entryMessage = message;
 }
 
-PLevel LevelBuilder::build(Model* m, LevelMaker* maker) {
+PLevel LevelBuilder::build(Model* m, LevelMaker* maker, int levelId) {
   CHECK(mapStack.empty());
   maker->make(this, squares.getBounds());
   for (Vec2 v : heightMap.getBounds()) {
     squares[v]->setHeight(heightMap[v]);
     squares[v]->dropItems(std::move(items[v]));
   }
-  PLevel l(new Level(std::move(squares), m, locations, entryMessage, name, std::move(coverInfo)));
+  PLevel l(new Level(std::move(squares), m, locations, entryMessage, name, std::move(coverInfo), levelId));
   for (PCreature& c : creatures) {
     Vec2 pos = c->getPosition();
     l->addCreature(pos, std::move(c));

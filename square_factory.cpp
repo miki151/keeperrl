@@ -151,8 +151,8 @@ class Water : public Square {
 
 class Chest : public Square {
   public:
-  Chest(const ViewObject& object, const ViewObject& opened, const string& name, CreatureFactory c,
-      int numC, const string& _msgItem, const string& _msgMonster, const string& _msgGold, ItemFactory _itemFactory)
+  Chest(const ViewObject& object, const ViewObject& opened, const string& name, const ChestInfo& info,
+      const string& _msgItem, const string& _msgMonster, const string& _msgGold, ItemFactory _itemFactory)
     : Square(object,
           CONSTRUCT(Square::Params,
             c.name = name;
@@ -161,7 +161,7 @@ class Chest : public Square {
             c.canDestroy = true;
             c.strength = 30;
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
-            c.flamability = 0.5;)), creature(c), numCreatures(numC),
+            c.flamability = 0.5;)), chestInfo(info),
     msgItem(_msgItem), msgMonster(_msgMonster), msgGold(_msgGold), itemFactory(_itemFactory), openedObject(opened) {}
 
   virtual void onEnterSpecial(Creature* c) override {
@@ -189,30 +189,32 @@ class Chest : public Square {
     c->playerMessage("You open the " + getName());
     opened = true;
     setViewObject(openedObject);
-    if (!Random.roll(5)) {
-      c->playerMessage(msgItem);
-      vector<PItem> items = itemFactory.random();
-      GlobalEvents.addItemsAppearedEvent(getLevel(), getPosition(), extractRefs(items));
-      c->takeItems(std::move(items), nullptr);
-    } else {
-      c->playerMessage(msgMonster);
-      int numR = numCreatures;
+    if (chestInfo.creature && chestInfo.creatureChance > 0 && Random.roll(1 / chestInfo.creatureChance)) {
+      int numR = chestInfo.numCreatures;
+      CreatureFactory factory(*chestInfo.creature);
       for (Vec2 v : getPosition().neighbors8(true)) {
-        PCreature rat = creature.random();
+        PCreature rat = factory.random();
         if (getLevel()->getSafeSquare(v)->canEnter(rat.get())) {
           getLevel()->addCreature(v, std::move(rat));
           if (--numR == 0)
             break;
         }
       }
+      if (numR < chestInfo.numCreatures) {
+        c->playerMessage(msgMonster);
+        return;
+      }
     }
+    c->playerMessage(msgItem);
+    vector<PItem> items = itemFactory.random();
+    GlobalEvents.addItemsAppearedEvent(getLevel(), getPosition(), extractRefs(items));
+    c->takeItems(std::move(items), nullptr);
   }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & SVAR(creature)
-      & SVAR(numCreatures) 
+      & SVAR(chestInfo)
       & SVAR(msgItem)
       & SVAR(msgMonster)
       & SVAR(msgGold)
@@ -224,8 +226,7 @@ class Chest : public Square {
   SERIALIZATION_CONSTRUCTOR(Chest);
 
   private:
-  CreatureFactory SERIAL(creature);
-  int SERIAL(numCreatures);
+  ChestInfo SERIAL(chestInfo);
   string SERIAL(msgItem);
   string SERIAL(msgMonster);
   string SERIAL(msgGold);
@@ -1161,14 +1162,14 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::CHEST:
         return new Chest(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"),
             ViewObject(ViewId::OPENED_CHEST, ViewLayer::FLOOR, "Opened chest"), "chest",
-            s.get<CreatureFactory::SingleCreature>(), Random.get(3, 6),
+            s.get<ChestInfo>(),
             "There is an item inside", "It's full of rats!", "There is gold inside", ItemFactory::chest());
     case SquareId::TREASURE_CHEST:
         return new Furniture(ViewObject(ViewId::TREASURE_CHEST, ViewLayer::FLOOR, "Chest"), "chest", 1);
     case SquareId::COFFIN:
         return new Chest(ViewObject(ViewId::COFFIN, ViewLayer::FLOOR, "Coffin"),
             ViewObject(ViewId::OPENED_COFFIN, ViewLayer::FLOOR, "Coffin"),"coffin",
-            s.get<CreatureFactory::SingleCreature>(), 1,
+            s.get<ChestInfo>(),
             "There is a rotting corpse inside. You find an item.",
             "There is a rotting corpse inside. The corpse is alive!",
             "There is a rotting corpse inside. You find some gold.", ItemFactory::chest());
@@ -1222,14 +1223,19 @@ PSquare SquareFactory::getWater(double depth) {
 SquareFactory::SquareFactory(const vector<SquareType>& s, const vector<double>& w) : squares(s), weights(w) {
 }
 
+SquareFactory::SquareFactory(const vector<SquareType>& f, const vector<SquareType>& s, const vector<double>& w)
+    : first(f), squares(s), weights(w) {
+}
+
 SquareFactory SquareFactory::roomFurniture(Tribe* rats) {
-  return SquareFactory({SquareId::BED, SquareId::TORCH, {SquareId::CHEST, CreatureFactory::SingleCreature(rats, CreatureId::RAT)}},
+  return SquareFactory({SquareId::BED, SquareId::TORCH,
+      {SquareId::CHEST, ChestInfo(CreatureFactory::SingleCreature(rats, CreatureId::RAT), 0.2, 5)}},
       {2, 1, 2});
 }
 
 SquareFactory SquareFactory::castleFurniture(Tribe* rats) {
   return SquareFactory({SquareId::BED, SquareId::FOUNTAIN, SquareId::TORCH,
-      {SquareId::CHEST, CreatureFactory::SingleCreature(rats, CreatureId::RAT)}},
+      {SquareId::CHEST, ChestInfo(CreatureFactory::SingleCreature(rats, CreatureId::RAT), 0.2, 5)}},
       {2, 1, 1, 2});
 }
 
@@ -1238,7 +1244,9 @@ SquareFactory SquareFactory::castleOutside() {
 }
 
 SquareFactory SquareFactory::cryptCoffins(Tribe* vampire) {
-  return single({SquareId::COFFIN, CreatureFactory::SingleCreature(vampire, CreatureId::VAMPIRE_LORD)});
+  return SquareFactory(
+      {{SquareId::COFFIN, ChestInfo(CreatureFactory::SingleCreature(vampire, CreatureId::VAMPIRE_LORD), 1, 1)}},
+      {{SquareId::COFFIN, ChestInfo()}}, {1});
 }
 
 SquareFactory SquareFactory::single(SquareType type) {
@@ -1246,5 +1254,10 @@ SquareFactory SquareFactory::single(SquareType type) {
 }
 
 SquareType SquareFactory::getRandom() {
+  if (!first.empty()) {
+    SquareType ret = first.back();
+    first.pop_back();
+    return ret;
+  }
   return chooseRandom(squares, weights);
 }

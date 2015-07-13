@@ -68,7 +68,7 @@ class Player : public Controller, public CreatureView {
   // overridden by subclasses
   virtual bool unpossess();
   virtual void onFellAsleep();
-  virtual const vector<Creature*> getTeam() const;
+  virtual vector<Creature*> getTeam() const;
 
   map<UniqueEntity<Level>::Id, MapMemory>* SERIAL(levelMemory);
   Model* SERIAL(model);

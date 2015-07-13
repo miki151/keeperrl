@@ -65,10 +65,10 @@ class Model {
   optional<ExitInfo> update(double totalTime);
 
   /** Removes creature from current level and puts into the next, according to direction. */
-  Vec2 changeLevel(StairKey key, Creature*);
+  bool changeLevel(StairKey key, Creature*);
 
   /** Removes creature from current level and puts into the given level */
-  void changeLevel(Level*, Vec2 position, Creature*);
+  bool changeLevel(Level*, Vec2 position, Creature*);
 
   Vec2 getStairs(const Level* from, const Level* to);
 
@@ -141,6 +141,8 @@ class Model {
   void onTrapDisarm(Position, const Creature*);
   void onSquareDestroyed(Position);
   void onEquip(const Creature*, const Item*);
+
+  vector<Level*> getLevels() const;
 
   private:
   Model(View* view, const string& worldName, TribeSet&&);

@@ -474,10 +474,10 @@ void Player::makeMove() {
     ViewObject::setHallu(false);
   if (updateView) {
     updateView = false;
-    for (Vec2 pos : getCreature()->getLevel()->getVisibleTiles(getCreature())) {
+    for (Position pos : getCreature()->getVisibleTiles()) {
       ViewIndex index;
-      getViewIndex(pos, index);
-      (*levelMemory)[getCreature()->getLevel()->getUniqueId()].update(pos, index);
+      getViewIndex(pos.getCoord(), index);
+      (*levelMemory)[getCreature()->getLevel()->getUniqueId()].update(pos.getCoord(), index);
     }
     MEASURE(
         model->getView()->updateView(this, false),
@@ -762,7 +762,7 @@ bool Player::unpossess() {
 void Player::onFellAsleep() {
 }
 
-const vector<Creature*> Player::getTeam() const {
+vector<Creature*> Player::getTeam() const {
   return {};
 }
 

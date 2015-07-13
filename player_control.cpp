@@ -289,7 +289,7 @@ static vector<string> getHints() {
 }
 
 PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : CollectiveControl(col), model(m),
-    hints(getHints()), visibilityMap(level->getBounds()) {
+    hints(getHints()), visibilityMap(model->getLevels()) {
   bool hotkeys[128] = {0};
   for (BuildInfo info : getBuildInfo(level, nullptr)) {
     if (info.hotkey) {
@@ -954,9 +954,9 @@ void PlayerControl::initialize() {
 
 void PlayerControl::update(Creature* c) {
   if (!retired && contains(getCreatures(), c)) {
-    vector<Vec2> visibleTiles = getCollective()->getLevel()->getVisibleTiles(c);
+    vector<Position> visibleTiles = c->getVisibleTiles();
     visibilityMap->update(c, visibleTiles);
-    for (Vec2 pos : visibleTiles) {
+    for (Position pos : visibleTiles) {
       getCollective()->addKnownTile(pos);
       addToMemory(pos);
     }
@@ -1017,7 +1017,7 @@ void PlayerControl::getSquareViewIndex(const Square* square, bool canSee, ViewIn
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   Position position(pos, getCollective()->getLevel());
   const Square* square = getLevel()->getSafeSquare(pos);
-  bool canSeePos = canSee(pos);
+  bool canSeePos = canSee(position);
   getSquareViewIndex(square, canSeePos, index);
   if (!canSeePos && getMemory().hasViewIndex(pos))
     index.mergeFromMemory(getMemory().getViewIndex(pos));
@@ -1093,8 +1093,8 @@ int PlayerControl::getImpCost() const {
 
 class MinionController : public Player {
   public:
-  MinionController(Creature* c, Model* m, map<UniqueEntity<Level>::Id, MapMemory>* memory, PlayerControl* ctrl,
-      vector<Creature*> t) : Player(c, m, false, memory), control(ctrl), team(t) {}
+  MinionController(Creature* c, Model* m, map<UniqueEntity<Level>::Id, MapMemory>* memory, PlayerControl* ctrl)
+      : Player(c, m, false, memory), control(ctrl) {}
 
   virtual void onKilled(const Creature* attacker) override {
     model->getView()->updateView(this, false);
@@ -1113,22 +1113,20 @@ class MinionController : public Player {
     unpossess();
   }
 
-  virtual const vector<Creature*> getTeam() const {
-    return filter(team, [](const Creature* c) { return !c->isDead(); });
+  virtual vector<Creature*> getTeam() const {
+    return control->getTeam(getCreature());
   }
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Player)
-      & SVAR(control)
-      & SVAR(team);
+      & SVAR(control);
   }
 
   SERIALIZATION_CONSTRUCTOR(MinionController);
 
   private:
   PlayerControl* SERIAL(control);
-  vector<Creature*> SERIAL(team);
 };
 
 void PlayerControl::controlSingle(const Creature* cr) {
@@ -1178,13 +1176,18 @@ void PlayerControl::handleAddToTeam(Creature* c) {
   }
 }
 
+vector<Creature*> PlayerControl::getTeam(const Creature* c) {
+  vector<Creature*> ret;
+  for (auto team : getTeams().getActiveTeams(c))
+    append(ret, getTeams().getMembers(team));
+  return ret;
+}
+
 void PlayerControl::commandTeam(TeamId team) {
   if (getControlled())
     leaveControl();
   Creature* c = getTeams().getLeader(team);
-  vector<Creature*> members = getTeams().getMembers(team);
-  removeElement(members, c);
-  c->pushController(PController(new MinionController(c, model, memory.get(), this, members)));
+  c->pushController(PController(new MinionController(c, model, memory.get(), this)));
   getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
 }
@@ -1332,7 +1335,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
               MonsterAIFactory::collective(getCollective()));
           for (Square* square : getLevel()->getSquares(concat(pos.neighbors8(true), {pos})))
             if (square->canEnter(imp.get())
-                && (canSee(square->getPosition()) || getCollective()->containsSquare(square->getPosition2()))) {
+                && (canSee(square->getPosition2()) || getCollective()->containsSquare(square->getPosition2()))) {
               getCollective()->takeResource({ResourceId::MANA, getImpCost()});
               getCollective()->addCreature(std::move(imp), square->getPosition2(),
                   {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT});
@@ -1459,14 +1462,14 @@ Creature* PlayerControl::getKeeper() {
   return getCollective()->getLeader();
 }
 
-void PlayerControl::addToMemory(Vec2 pos) {
-  Square* square = getLevel()->getSafeSquare(pos);
+void PlayerControl::addToMemory(Position pos) {
+  Square* square = pos.getSafeSquare();
   if (!square->needsMemoryUpdate())
     return;
   square->setMemoryUpdated();
   ViewIndex index;
   getSquareViewIndex(square, true, index);
-  getMemory(getLevel()).update(pos, index);
+  getMemory(pos.getLevel()).update(pos.getCoord(), index);
 }
 
 void PlayerControl::checkKeeperDanger() {
@@ -1532,7 +1535,7 @@ void PlayerControl::tick(double time) {
         c->playerMessage("You sense horrible evil in the " + 
             getCardinalName((getKeeper()->getPosition() - c->getPosition()).getBearing().getCardinalDir()));
   }
-  updateVisibleCreatures(getLevel()->getBounds());
+  updateVisibleCreatures();
   if (getCollective()->hasMinionDebt() && !retired && !payoutWarning) {
     model->getView()->presentText("Warning", "You don't have enough gold for salaries. "
         "Your minions will refuse to work if they are not paid.\n \n"
@@ -1540,13 +1543,22 @@ void PlayerControl::tick(double time) {
     payoutWarning = true;
   }
   vector<Creature*> addedCreatures;
-  for (const Creature* c : visibleFriends)
+  for (const Creature* c1 : visibleFriends) {
+    Creature* c = const_cast<Creature*>(c1);
     if (c->getSpawnType() && !contains(getCreatures(), c) && !getCollective()->wasBanished(c)) {
-      addedCreatures.push_back(const_cast<Creature*>(c));
-      getCollective()->addCreature(const_cast<Creature*>(c), {MinionTrait::FIGHTER});
+      addedCreatures.push_back(c);
+      getCollective()->addCreature(c, {MinionTrait::FIGHTER});
+      if (getControlled() && getControlled()->getLevel() == c->getLevel())
+        for (auto team : getTeams().getActiveTeams(getControlled())) {
+          getTeams().add(team, c);
+          getControlled()->playerMessage(PlayerMessage(c->getName().a() + " joins your team.",
+                PlayerMessage::HIGH));
+          break;
+        }
     } else  
     if (c->isMinionFood() && !contains(getCreatures(), c))
-      getCollective()->addCreature(const_cast<Creature*>(c), {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
+      getCollective()->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
+  }
   if (!addedCreatures.empty()) {
     getCollective()->addNewCreatureMessage(addedCreatures);
   }
@@ -1574,16 +1586,16 @@ void PlayerControl::tick(double time) {
 }
 
 bool PlayerControl::canSee(const Creature* c) const {
-  return canSee(c->getPosition());
+  return canSee(c->getPosition2());
 }
 
-bool PlayerControl::canSee(Vec2 position) const {
+bool PlayerControl::canSee(Position pos) const {
   if (seeEverything)
     return true;
-  if (visibilityMap->isVisible(position))
+  if (visibilityMap->isVisible(pos))
       return true;
-  for (Position pos : getCollective()->getSquares(SquareId::EYEBALL))
-    if (getLevel()->canSee(pos.getCoord(), position, VisionId::NORMAL))
+  for (Position v : getCollective()->getSquares(SquareId::EYEBALL))
+    if (pos.isSameLevel(v) && getLevel()->canSee(v.getCoord(), pos.getCoord(), VisionId::NORMAL))
       return true;
   return false;
 }
@@ -1684,7 +1696,7 @@ void PlayerControl::uncoverRandomLocation() {
   if (location)
     for (Vec2 v : location->getMiddle().circle(radius))
       if (getLevel()->inBounds(v))
-        getCollective()->addKnownTile(v);
+        getCollective()->addKnownTile(Position(v, getLevel()));
 }
 
 void PlayerControl::addAssaultNotification(const Collective* col, const vector<Creature*>& c, const string& message) {
@@ -1715,26 +1727,29 @@ void PlayerControl::onConstructed(Vec2 pos, const SquareType& type) {
   if (type == SquareId::FLOOR) {
     Vec2 visRadius(3, 3);
     for (Vec2 v : Rectangle(pos - visRadius, pos + visRadius + Vec2(1, 1)).intersection(getLevel()->getBounds())) {
-      getCollective()->addKnownTile(v);
+      getCollective()->addKnownTile(Position(v, getLevel()));
       updateSquareMemory(v);
     }
   }
 }
 
-void PlayerControl::updateVisibleCreatures(Rectangle range) {
+void PlayerControl::updateVisibleCreatures() {
   visibleEnemies.clear();
   visibleFriends.clear();
-  for (const Creature* c : getLevel()->getAllCreatures(range)) 
-    if (canSee(c)) {
-      if (isEnemy(c))
-        visibleEnemies.push_back(c);
-      else if (c->getTribe() == getTribe())
-        visibleFriends.push_back(c);
-    }
+  for (const Level* level : getLevel()->getModel()->getLevels())
+    for (const Creature* c : level->getAllCreatures()) 
+      if (canSee(c)) {
+        if (isEnemy(c))
+          visibleEnemies.push_back(c);
+        else if (c->getTribe() == getTribe())
+          visibleFriends.push_back(c);
+      }
 }
 
 vector<Vec2> PlayerControl::getVisibleEnemies() const {
-  return transform2<Vec2>(visibleEnemies, [](const Creature* c) { return c->getPosition(); });
+  return transform2<Vec2>(filter(visibleEnemies,
+        [this](const Creature* c) { return c->getLevel() == getLevel(); }),
+      [](const Creature* c) { return c->getPosition(); });
 }
 
 template <class Archive>

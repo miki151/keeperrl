@@ -36,7 +36,7 @@ class LevelBuilder {
 
   /** Builds the level. The level will keep reference to the model.
       \paramname{surface} tells if this level is on the Earth surface.*/
-  PLevel build(Model*, LevelMaker*);
+  PLevel build(Model*, LevelMaker*, int levelId);
 
   //@{
   /** Puts a square on given position. Sets optional attributes of the square. The attributes remain if the square is changed.*/

@@ -206,8 +206,9 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
 
 Collective::Collective(Level* l, const CollectiveConfig& cfg, Tribe* t, EnumMap<ResourceId, int> _credit,
     const string& n) 
-  : credit(_credit), taskMap(l->getBounds()), knownTiles(l->getBounds()), control(CollectiveControl::idle(this)),
-  tribe(NOTNULL(t)), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
+  : credit(_credit), taskMap(l->getBounds()), knownTiles(l->getModel()->getLevels()),
+    control(CollectiveControl::idle(this)),
+    tribe(NOTNULL(t)), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
 }
 
 const string& Collective::getName() const {
@@ -480,33 +481,36 @@ void Collective::setRandomTask(const Creature* c) {
     setMinionTask(c, chooseRandom(goodTasks));
 }
 
-static bool betterPos(Vec2 from, Vec2 current, Vec2 candidate) {
+static bool betterPos(Position from, Position current, Position candidate) {
   double maxDiff = 0.3;
   double curDist = from.dist8(current);
   double newDist = from.dist8(candidate);
   return Random.getDouble() <= 1.0 - (newDist - curDist) / (curDist * maxDiff);
 }
 
-static optional<Vec2> getRandomCloseTile(Vec2 from, const vector<Vec2>& tiles, function<bool(Vec2)> predicate) {
-  optional<Vec2> ret;
-  for (Vec2 pos : tiles)
+static optional<Position> getRandomCloseTile(Position from, const vector<Position>& tiles,
+    function<bool(Position)> predicate) {
+  optional<Position> ret;
+  for (Position pos : tiles)
     if (predicate(pos) && (!ret || betterPos(from, *ret, pos)))
       ret = pos;
   return ret;
 }
 
 optional<Position> Collective::getTileToExplore(const Creature* c, MinionTask task) const {
-  vector<Vec2> border = randomPermutation(knownTiles->getBorderTiles());
+  vector<Position> border = randomPermutation(knownTiles->getBorderTiles());
   switch (task) {
     case MinionTask::EXPLORE_CAVES:
-      if (auto pos = getRandomCloseTile(c->getPosition(), border,
-            [this, c](Vec2 pos) { return getLevel()->getCoverInfo(pos).sunlight() < 1 && c->isSameSector(pos);}))
-        return Position(*pos, level);
+      if (auto pos = getRandomCloseTile(c->getPosition2(), border,
+            [this, c](Position pos) {
+                return pos.getLevel() == level && level->getCoverInfo(pos.getCoord()).sunlight() < 1 &&
+                    (c->getLevel() != level || c->isSameSector(pos.getCoord()));}))
+        return pos;
     case MinionTask::EXPLORE:
     case MinionTask::EXPLORE_NOCTURNAL:
-      return transform2<Position>(getRandomCloseTile(c->getPosition(), border,
-          [this, c](Vec2 pos) { return !getLevel()->getCoverInfo(pos).covered() && c->isSameSector(pos);}),
-          [this] (Vec2 pos) { return Position(pos, level); });
+      return getRandomCloseTile(c->getPosition2(), border,
+          [this, c](Position pos) { return pos.getLevel() == level && level->getCoverInfo(pos.getCoord()).covered()
+              && (c->getLevel() != level || c->isSameSector(pos.getCoord()));});
     default: FAIL << "Unrecognized explore task: " << int(task);
   }
   return none;
@@ -1415,7 +1419,7 @@ bool Collective::containsSquare(Position pos) const {
 }
 
 bool Collective::isKnownSquare(Position pos) const {
-  return pos.getLevel() == level && knownTiles->isKnown(pos.getCoord());
+  return knownTiles->isKnown(pos);
 }
 
 void Collective::update(Creature* c) {
@@ -1811,7 +1815,7 @@ void Collective::onTorchBuilt(Position pos, Trigger* t) {
 
 bool Collective::isConstructionReachable(Position pos) {
   for (Position v : pos.neighbors8())
-    if (knownTiles->isKnown(v.getCoord()))
+    if (knownTiles->isKnown(v))
       return true;
   return false;
 }
@@ -2033,17 +2037,18 @@ void Collective::onCantPickItem(EntitySet<Item> items) {
     unmarkItem(id);
 }
 
-void Collective::addKnownTile(Vec2 pos) {
+void Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
-    if (const Location* loc = getLevel()->getLocation(pos))
+    if (const Location* loc = pos.getLocation())
       if (!knownLocations.count(loc)) {
         knownLocations.insert(loc);
         control->onDiscoveredLocation(loc);
       }
     knownTiles->addTile(pos);
-    if (Task* task = taskMap->getMarked(pos))
-      if (task->isImpossible(getLevel()))
-        taskMap->removeTask(task);
+    if (pos.getLevel() == level)
+      if (Task* task = taskMap->getMarked(pos.getCoord()))
+        if (task->isImpossible(getLevel()))
+          taskMap->removeTask(task);
   }
 }
 

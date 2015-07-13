@@ -55,6 +55,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void setTime(double t);
   void setLevel(Level* l);
   vector<const Creature*> getVisibleEnemies() const;
+  vector<Position> getVisibleTiles() const;
   Level* getLevel();
   const Level* getLevel() const;
   Square* getSquare();

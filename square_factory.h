@@ -45,7 +45,9 @@ class SquareFactory {
   static Square* getPtr(SquareType s);
 
   SquareFactory(const vector<SquareType>&, const vector<double>&);
+  SquareFactory(const vector<SquareType>& first, const vector<SquareType>&, const vector<double>&);
 
+  vector<SquareType> first;
   vector<SquareType> squares;
   vector<double> weights;
 };

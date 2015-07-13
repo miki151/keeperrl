@@ -83,6 +83,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static void registerTypes(Archive& ar, int version);
 
   void onTechBookRead(Technology*);
+  vector<Creature*> getTeam(const Creature*);
 
   protected:
   // from CreatureView
@@ -117,7 +118,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   const Tribe* getTribe() const;
   Tribe* getTribe();
   bool canSee(const Creature*) const;
-  bool canSee(Vec2 position) const;
+  bool canSee(Position) const;
   MapMemory& getMemory(Level* l);
   void initialize();
 
@@ -178,7 +179,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
   static ViewObject getTrapObject(TrapType, bool built);
-  void addToMemory(Vec2 pos);
+  void addToMemory(Position);
   void getSquareViewIndex(const Square*, bool canSee, ViewIndex&) const;
   void tryLockingDoor(Vec2 pos);
   void uncoverRandomLocation();
@@ -220,7 +221,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<string> SERIAL(hints);
   mutable queue<Vec2> scrollPos;
   optional<PlayerMessage> findMessage(PlayerMessage::Id);
-  void updateVisibleCreatures(Rectangle range);
+  void updateVisibleCreatures();
   vector<const Creature*> SERIAL(visibleEnemies);
   vector<const Creature*> SERIAL(visibleFriends);
   unordered_set<const Collective*> SERIAL(notifiedConquered);

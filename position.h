@@ -6,6 +6,7 @@
 class Square;
 class Level;
 class PlayerMessage;
+class Location;
 
 class Position {
   public:
@@ -27,6 +28,7 @@ class Position {
   vector<Position> neighbors8(bool shuffle = false) const;
   vector<Position> neighbors4(bool shuffle = false) const;
   void addCreature(PCreature);
+  const Location* getLocation() const;
 
   SERIALIZATION_DECL(Position);
 

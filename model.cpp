@@ -324,7 +324,7 @@ void Model::killCreature(Creature* c, Creature* attacker) {
 
 Level* Model::buildLevel(LevelBuilder&& b, LevelMaker* maker) {
   LevelBuilder builder(std::move(b));
-  levels.push_back(builder.build(this, maker));
+  levels.push_back(builder.build(this, maker, levels.size()));
   return levels.back().get();
 }
 
@@ -442,7 +442,7 @@ void Model::landHeroPlayer() {
   string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
   if (!advName.empty())
     player->setFirstName(advName);
-  levels[0]->landCreature(StairKey::heroSpawn(), std::move(player));
+  CHECK(levels[0]->landCreature(StairKey::heroSpawn(), std::move(player))) << "No place to spawn player";
   adventurer = true;
 }
 
@@ -525,15 +525,10 @@ void Model::addLink(StairKey key, Level* l1, Level* l2) {
   levelLinks[key] = {l1, l2};
 }
 
-Vec2 Model::changeLevel(StairKey key, Creature* c) {
+bool Model::changeLevel(StairKey key, Creature* c) {
   Level* current = c->getLevel();
   Level* target = levelLinks[key].first == current ? levelLinks[key].second : levelLinks[key].first;
-  Vec2 newPos = target->landCreature(key, c);
-  if (c->isPlayer()) {
-    current->updatePlayer();
-    target->updatePlayer();
-  }
-  return newPos;
+  return target->landCreature(key, c);
 }
 
 Vec2 Model::getStairs(const Level* from, const Level* to) {
@@ -546,13 +541,8 @@ Vec2 Model::getStairs(const Level* from, const Level* to) {
   return chooseRandom(from->getLandingSquares(*key));
 }
 
-void Model::changeLevel(Level* target, Vec2 position, Creature* c) {
-  Level* current = c->getLevel();
-  target->landCreature({position}, c);
-  if (c->isPlayer()) {
-    current->updatePlayer();
-    target->updatePlayer();
-  }
+bool Model::changeLevel(Level* target, Vec2 position, Creature* c) {
+  return target->landCreature({position}, c);
 }
   
 void Model::conquered(const string& title, vector<const Creature*> kills, int points) {
@@ -625,4 +615,7 @@ const string& Model::getWorldName() const {
   return worldName;
 }
 
+vector<Level*> Model::getLevels() const {
+  return extractRefs(levels);
+}
 

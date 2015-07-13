@@ -691,6 +691,11 @@ PCreature get(
   return PCreature(new Creature(tribe, attr, factory));
 }
 
+CreatureFactory& CreatureFactory::increaseLevel(double l) {
+  levelIncrease += l;
+  return *this;
+}
+
 CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const vector<double>& w,
     const vector<CreatureId>& u, EnumMap<CreatureId, Tribe*> overrides, double lIncrease)
     : tribe(t), creatures(c), weights(w), unique(u), tribeOverrides(overrides), levelIncrease(lIncrease) {

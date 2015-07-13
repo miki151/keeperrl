@@ -525,7 +525,8 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, Model* model, ExtraLev
     case ExtraLevelId::CRYPT: 
       return model->buildLevel(
          LevelBuilder(meter, 40, 40, "Crypt"),
-         LevelMaker::cryptLevel(CreatureFactory::singleType(model->tribeSet->monster.get(), CreatureId::ZOMBIE),
+         LevelMaker::cryptLevel(CreatureFactory::singleType(model->tribeSet->monster.get(), CreatureId::ZOMBIE)
+                .increaseLevel(5),
               SquareFactory::cryptCoffins(model->tribeSet->keeper.get()), {stairKey}, {}));
       break;
     case ExtraLevelId::GNOMISH_MINES: 

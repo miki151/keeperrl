@@ -65,7 +65,7 @@ RICH_ENUM(VisionId,
 );
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
-class Level : public UniqueEntity<Level> {
+class Level {
   public:
 
   ~Level();
@@ -93,14 +93,14 @@ class Level : public UniqueEntity<Level> {
   /** Finds an appropriate square for the \paramname{creature} changing level from \paramname{direction}.
     The square's method Square::isLandingSquare must return true for \paramname{direction}. 
     Returns the position of the stairs that were used. */
-  Vec2 landCreature(StairKey key, Creature* creature);
-  Vec2 landCreature(StairKey key, PCreature creature);
+  bool landCreature(StairKey key, Creature* creature);
+  bool landCreature(StairKey key, PCreature creature);
   //@}
 
   /** Lands the creature on the level randomly choosing one of the given squares.
       Returns the position of the stairs that were used.*/
-  Vec2 landCreature(vector<Vec2> landing, PCreature creature);
-  Vec2 landCreature(vector<Vec2> landing, Creature* creature);
+  bool landCreature(vector<Vec2> landing, PCreature creature);
+  bool landCreature(vector<Vec2> landing, Creature* creature);
 
   /** Returns the landing squares for given direction and stair key. See Square::getLandingLink() */
   vector<Vec2> getLandingSquares(StairKey) const;
@@ -233,6 +233,8 @@ class Level : public UniqueEntity<Level> {
   void updateConnectivity(Vec2);
   void updateSunlightMovement();
 
+  int getUniqueId() const;
+
   /** Class used to initialize a level object.*/
 
   SERIALIZATION_DECL(Level);
@@ -244,6 +246,8 @@ class Level : public UniqueEntity<Level> {
   unordered_map<StairKey, vector<Vec2>> SERIAL(landingSquares);
   vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
+  void insertCreature(Creature*);
+  void eraseCreature(Creature*);
   vector<Creature*> SERIAL(creatures);
   Model* SERIAL(model) = nullptr;
   mutable EnumMap<VisionId, FieldOfView> SERIAL(fieldOfView);
@@ -260,13 +264,14 @@ class Level : public UniqueEntity<Level> {
   
   friend class LevelBuilder;
   Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name,
-      Table<CoverInfo> coverInfo);
+      Table<CoverInfo> coverInfo, int levelId);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
   FieldOfView& getFieldOfView(VisionId vision) const;
   vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
   bool isWithinVision(Vec2 from, Vec2 to, VisionId) const;
+  int SERIAL(levelId) = 0;
 };
 
 #endif

@@ -2395,6 +2395,14 @@ vector<const Creature*> Creature::getVisibleEnemies() const {
   return visibleEnemies;
 }
 
+vector<Position> Creature::getVisibleTiles() const {
+  if (isBlind())
+    return {};
+  else
+    return transform2<Position>(level->getVisibleTiles(position, getVision()),
+        [this] (Vec2 v) { return Position(v, level); });
+}
+
 string Creature::getRemainingString(LastingEffect effect) const {
   return "[" + toString<int>(getTimeRemaining(effect)) + "]";
 }

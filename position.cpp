@@ -104,3 +104,7 @@ Position Position::operator + (Vec2 v) const {
 Position Position::operator - (Vec2 v) const {
   return Position(coord - v, level);
 }
+
+const Location* Position::getLocation() const {
+  return level->getLocation(coord);
+}

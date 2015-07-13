@@ -103,8 +103,23 @@ struct StairInfo {
   }
 };
 
+struct ChestInfo {
+  ChestInfo(CreatureFactory::SingleCreature c, double p, int n) : creature(c), creatureChance(p), numCreatures(n) {}
+  ChestInfo() : creatureChance(0), numCreatures(0) {}
+  optional<CreatureFactory::SingleCreature> SERIAL(creature);
+  double SERIAL(creatureChance);
+  int SERIAL(numCreatures);
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(creature) & SVAR(creatureChance) & SVAR(numCreatures);
+  }
+  bool operator == (const ChestInfo& o) const {
+    return creature == o.creature && creatureChance == o.creatureChance && numCreatures == o.numCreatures;
+  }
+};
+
 class SquareType : public EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureId,
-      CreatureFactory::SingleCreature, const Tribe*, StairInfo),
+      CreatureFactory::SingleCreature, ChestInfo, const Tribe*, StairInfo),
     ASSIGN(DeityHabitat, SquareId::ALTAR),
     ASSIGN(const Creature*, SquareId::CREATURE_ALTAR),
     ASSIGN(CreatureId,
@@ -112,7 +127,8 @@ class SquareType : public EnumVariant<SquareId, TYPES(DeityHabitat, const Creatu
         SquareId::CANIF_TREE,
         SquareId::BUSH),
     ASSIGN(CreatureFactory::SingleCreature,
-        SquareId::HATCHERY,
+        SquareId::HATCHERY),
+    ASSIGN(ChestInfo,
         SquareId::CHEST,
         SquareId::COFFIN),
     ASSIGN(const Tribe*,

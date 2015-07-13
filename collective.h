@@ -204,7 +204,7 @@ class Collective : public TaskCallback {
   vector<Spell*> getAllSpells() const;
   vector<Spell*> getAvailableSpells() const;
   TechId getNeededTech(Spell*) const;
-  void addKnownTile(Vec2 pos);
+  void addKnownTile(Position);
 
   vector<const Creature*> getKills() const;
   int getPoints() const;

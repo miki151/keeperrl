@@ -1664,9 +1664,9 @@ static MakerQueue* stockpileMaker(StockpileInfo info) {
 LevelMaker* LevelMaker::cryptLevel(CreatureFactory roomFactory, SquareFactory coffins,
     vector<StairKey> up, vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
-  queue->addMaker(new Empty(SquareId::BLACK_WALL));
-  queue->addMaker(new RoomMaker(Random.get(8, 15), 3, 5, SquareId::ROCK_WALL,
-        SquareType(SquareId::BLACK_WALL)));
+  queue->addMaker(new Empty(SquareId::MOUNTAIN2));
+  queue->addMaker(new RoomMaker(Random.get(8, 15), 3, 5, SquareId::MOUNTAIN2,
+        SquareType(SquareId::MOUNTAIN2)));
   queue->addMaker(new Connector(SquareId::DOOR, 0.75));
   queue->addMaker(new DungeonFeatures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.5, coffins));
   for (StairKey key : down)
@@ -1675,7 +1675,7 @@ LevelMaker* LevelMaker::cryptLevel(CreatureFactory roomFactory, SquareFactory co
     queue->addMaker(new Stairs(StairInfo::Direction::UP, key, Predicate::type(SquareId::FLOOR)));
   queue->addMaker(new Creatures(roomFactory, Random.get(10, 15), MonsterAIFactory::monster()));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareId::FLOOR, 5, 10));
-  return new BorderGuard(queue, SquareId::BLACK_WALL);
+  return new BorderGuard(queue, SquareId::MOUNTAIN2);
 }
 
 LevelMaker* hatchery(CreatureFactory factory, int numCreatures) {
