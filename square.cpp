@@ -566,12 +566,14 @@ void Square::forbidMovementForTribe(const Tribe* tribe) {
   CHECK(!forbiddenTribe || forbiddenTribe == tribe);
   forbiddenTribe = tribe;
   level->updateConnectivity(position);
+  setDirty();
 }
 
 void Square::allowMovementForTribe(const Tribe* tribe) {
   CHECK(!forbiddenTribe || forbiddenTribe == tribe);
   forbiddenTribe = nullptr;
   level->updateConnectivity(position);
+  setDirty();
 }
 
 bool Square::isTribeForbidden(const Tribe* tribe) const {

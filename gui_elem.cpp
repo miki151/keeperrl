@@ -1075,15 +1075,20 @@ class MouseHighlight : public GuiLayout {
     : GuiLayout(makeVec<PGuiElem>(std::move(h))), myIndex(ind), highlighted(highlight) {}
 
   virtual void onMouseGone() override {
-    if (*highlighted == myIndex)
+    if (*highlighted == myIndex && canTurnOff) {
       *highlighted = -1;
+      canTurnOff = false;
+    }
   }
 
   virtual bool onMouseMove(Vec2 pos) override {
-    if (pos.inRectangle(getBounds()))
+    if (pos.inRectangle(getBounds())) {
       *highlighted = myIndex;
-    else if (*highlighted == myIndex)
+      canTurnOff = true;
+    } else if (*highlighted == myIndex && canTurnOff) {
       *highlighted = -1;
+      canTurnOff = false;
+    }
     return false;
   }
 
@@ -1095,6 +1100,7 @@ class MouseHighlight : public GuiLayout {
   private:
   int myIndex;
   int* highlighted;
+  bool canTurnOff = false;
 };
 
 class MouseHighlight2 : public GuiLayout {

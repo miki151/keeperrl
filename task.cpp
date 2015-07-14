@@ -452,11 +452,16 @@ class ApplyItem : public BringItem {
       return c->wait();
     } else {
       if (it.size() > 1)
-        FAIL << it[0]->getName() << " " << it[0]->getUniqueId() << " "  << it[1]->getName() << " " << it[1]->getUniqueId();
+        FAIL << it[0]->getName() << " " << it[0]->getUniqueId() << " "  << it[1]->getName() << " " <<
+            it[1]->getUniqueId();
       Item* item = getOnlyElement(it);
-      return c->applyItem(item).prepend([=](Creature* c) {
-          callback->onAppliedItem(c->getPosition(), item);
-      });
+      if (auto action = c->applyItem(item))
+        return action.prepend([=](Creature* c) {
+            callback->onAppliedItem(c->getPosition(), item);
+          });
+      else return c->wait().prepend([=](Creature* c) {
+          cancel();
+        });
     }
   }
 

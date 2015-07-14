@@ -402,6 +402,8 @@ void Item::addModifier(ModifierType type, int value) {
 }
 
 int Item::getModifier(ModifierType type) const {
+  CHECK(abs(attributes->modifiers[type]) < 10000) << EnumInfo<ModifierType>::getString(type) << " "
+      << attributes->modifiers[type] << " " << getName();
   return attributes->modifiers[type];
 }
 
