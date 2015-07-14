@@ -35,3 +35,50 @@ In terminal:
   # add OSX=true to compile on OSX
   ./keeper
   ```
+
+Docker Support
+=======
+A `Dockerfile` is provided for easy installation of the dependencies
+
+```
+  git clone https://github.com/miki151/keeperrl.git
+  cd keeperrl
+  docker build -t keeperrl ./
+```
+
+##Docker Run with GUI Handling
+Docker containers are usually headless You can run GUI apps like KeeperRL by passing
+environment information about your host machines window system to the container. 
+Then when the container is run it will do all the rendering on your host machine.
+
+see: https://blog.jessfraz.com/post/docker-containers-on-the-desktop/ for more info and examples
+
+### Ubuntu 
+```
+docker run \
+       -v /tmp/.X11-unix:/tmp/.X11-unix \
+       -e DISPLAY=unix$DISPLAY \
+       --device /dev/snd:/dev/snd \
+       keeperrl
+```
+### OSX and boot2docker
+OSX Docker Container GUI support is more complicated. boot2docker runs the docker environment in a VM
+You need to run socat and host an Xquartz server on your host machine. You can then run the docker container
+and have it pipe the X GUI to the OSX host.
+
+see: http://haven.nightlyart.com/trying-gui-apps-with-docker/
+
+```
+brew install socat
+brew cask install xquartz
+open -a XQuartz
+
+##### Run socat
+socat TCP-LISTEN:6000,reuseaddr,fork UNIX-CLIENT:\"$DISPLAY\"
+```
+In a seperate terminal window
+
+```
+docker run -e DISPLAY=192.168.59.3:0 keeperrl
+```
+
