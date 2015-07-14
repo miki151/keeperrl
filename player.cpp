@@ -476,7 +476,7 @@ void Player::makeMove() {
     updateView = false;
     for (Position pos : getCreature()->getVisibleTiles()) {
       ViewIndex index;
-      getViewIndex(pos.getCoord(), index);
+      pos.getSafeSquare()->getViewIndex(index, getCreature()->getTribe());
       (*levelMemory)[getCreature()->getLevel()->getUniqueId()].update(pos.getCoord(), index);
     }
     MEASURE(

@@ -20,18 +20,21 @@ SERIALIZABLE(TaskMap);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(TaskMap);
 
-TaskMap::TaskMap(Rectangle bounds) : reversePositions(bounds), marked(bounds, nullptr), highlight(bounds) {
+TaskMap::TaskMap(const vector<Level*>& levels) : reversePositions(levels), marked(levels), highlight(levels) {
 }
 
 Task* TaskMap::getTaskForWorker(Creature* c) {
+  if (Random.roll(20))
+    for (Task* t : extractRefs(tasks))
+      if (t->isDone())
+        removeTask(t);
   Task* closest = nullptr;
   for (PTask& task : tasks) {
     if (auto pos = getPosition(task.get())) {
-      double dist = (*pos - c->getPosition()).length8();
+      double dist = pos->dist8(c->getPosition2());
       const Creature* owner = getOwner(task.get());
-      if (!task->isDone() && (!owner || (task->canTransfer() && (*pos - owner->getPosition()).length8() > dist))
-          && (!closest || dist < (*getPosition(closest) - c->getPosition()).length8()
-              || isPriorityTask(task.get()))
+      if (!task->isDone() && (!owner || (task->canTransfer() && pos->dist8(owner->getPosition2()) > dist))
+          && (!closest || dist < getPosition(closest)->dist8(c->getPosition2()) || isPriorityTask(task.get()))
           && (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getTime())) {
         bool valid = task->getMove(c);
         if (valid) {
@@ -53,12 +56,12 @@ void TaskMap::freeTaskDelay(Task* t, double d) {
   delayedTasks[t->getUniqueId()] = d;
 }
 
-void TaskMap::setPriorityTasks(Vec2 pos) {
+void TaskMap::setPriorityTasks(Position pos) {
   for (Task* t : getTasks(pos))
     priorityTasks.insert(t);
 }
 
-Task* TaskMap::addTaskCost(PTask task, Vec2 position, CostInfo cost) {
+Task* TaskMap::addTaskCost(PTask task, Position position, CostInfo cost) {
   completionCost[task.get()] = cost;
   return addTask(std::move(task), position);
 }
@@ -99,28 +102,28 @@ bool TaskMap::isPriorityTask(const Task* t) const {
   return priorityTasks.contains(t);
 }
 
-bool TaskMap::hasPriorityTasks(Vec2 pos) const {
+bool TaskMap::hasPriorityTasks(Position pos) const {
   for (Task* task : reversePositions[pos])
     if (isPriorityTask(task))
       return true;
   return false;
 }
 
-Task* TaskMap::getMarked(Vec2 pos) const {
+Task* TaskMap::getMarked(Position pos) const {
   return marked[pos];
 }
 
-void TaskMap::markSquare(Vec2 pos, HighlightType h, PTask task) {
+void TaskMap::markSquare(Position pos, HighlightType h, PTask task) {
   marked[pos] = task.get();
   highlight[pos] = h;
   addTask(std::move(task), pos);
 }
 
-HighlightType TaskMap::getHighlightType(Vec2 pos) const {
+HighlightType TaskMap::getHighlightType(Position pos) const {
   return highlight[pos];
 }
 
-void TaskMap::unmarkSquare(Vec2 pos) {
+void TaskMap::unmarkSquare(Position pos) {
   Task* task = marked[pos];
   marked[pos] = nullptr;
   removeTask(task);
@@ -144,7 +147,7 @@ Task* TaskMap::getTask(const Creature* c) {
   return nullptr;
 }
 
-const vector<Task*>& TaskMap::getTasks(Vec2 pos) const {
+const vector<Task*>& TaskMap::getTasks(Position pos) const {
   return reversePositions[pos];
 }
 
@@ -160,7 +163,7 @@ Task* TaskMap::addPriorityTask(PTask task, const Creature* c) {
   return t;
 }
 
-Task* TaskMap::addTask(PTask task, Vec2 position) {
+Task* TaskMap::addTask(PTask task, Position position) {
   positionMap[task.get()] = position;
   reversePositions[position].push_back(task.get());
   tasks.push_back(std::move(task));
@@ -172,7 +175,7 @@ void TaskMap::takeTask(const Creature* c, Task* task) {
   creatureMap.insert(c, task);
 }
 
-optional<Vec2> TaskMap::getPosition(Task* task) const {
+optional<Position> TaskMap::getPosition(Task* task) const {
   if (positionMap.count(task))
     return positionMap.at(task);
   else

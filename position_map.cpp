@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "position_map.h"
 #include "level.h"
-
+#include "task.h"
 
 template <class T>
 PositionMap<T>::PositionMap(const vector<Level*>& levels) {
@@ -30,5 +30,11 @@ SERIALIZATION_CONSTRUCTOR_IMPL2(PositionMap<T>, PositionMap);
 
 SERIALIZABLE_TMPL(PositionMap, int);
 SERIALIZABLE_TMPL(PositionMap, bool);
+
+class Task;
+
+SERIALIZABLE_TMPL(PositionMap, Task*);
+SERIALIZABLE_TMPL(PositionMap, HighlightType);
+SERIALIZABLE_TMPL(PositionMap, vector<Task*>);
 
 

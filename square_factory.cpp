@@ -743,9 +743,12 @@ class Hatchery : public Square {
     for (Square* s : getLevel()->getSquares(getPosition().neighbors8()))
       if (s->getCreature() && s->getCreature()->isMinionFood())
         return;
-    if (Random.roll(5))
-      getLevel()->addCreature(getPosition(), creature.random(
-            MonsterAIFactory::stayInPigsty(getPosition(), SquareApplyType::PIGSTY)));
+    if (Random.roll(5)) {
+      PCreature pig = creature.random(
+          MonsterAIFactory::stayInPigsty(getPosition(), SquareApplyType::PIGSTY));
+      if (canEnter(pig.get()))
+        getLevel()->addCreature(getPosition(), std::move(pig));
+    }
   }
 
   virtual optional<SquareApplyType> getApplyType() const override {

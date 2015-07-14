@@ -206,7 +206,7 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
 
 Collective::Collective(Level* l, const CollectiveConfig& cfg, Tribe* t, EnumMap<ResourceId, int> _credit,
     const string& n) 
-  : credit(_credit), taskMap(l->getBounds()), knownTiles(l->getModel()->getLevels()),
+  : credit(_credit), taskMap(l->getModel()->getLevels()), knownTiles(l->getModel()->getLevels()),
     control(CollectiveControl::idle(this)),
     tribe(NOTNULL(t)), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
 }
@@ -1752,31 +1752,31 @@ const ConstructionMap& Collective::getConstructions() const {
 }
 
 void Collective::dig(Position pos) {
-  taskMap->markSquare(pos.getCoord(), HighlightType::DIG, Task::construction(this, pos, SquareId::FLOOR));
+  taskMap->markSquare(pos, HighlightType::DIG, Task::construction(this, pos, SquareId::FLOOR));
 }
 
 void Collective::cancelMarkedTask(Position pos) {
-  taskMap->unmarkSquare(pos.getCoord());
+  taskMap->unmarkSquare(pos);
 }
 
 bool Collective::isMarked(Position pos) const {
-  return taskMap->getMarked(pos.getCoord());
+  return taskMap->getMarked(pos);
 }
 
 HighlightType Collective::getMarkHighlight(Position pos) const {
-  return taskMap->getHighlightType(pos.getCoord());
+  return taskMap->getHighlightType(pos);
 }
 
 void Collective::setPriorityTasks(Position pos) {
-  taskMap->setPriorityTasks(pos.getCoord());
+  taskMap->setPriorityTasks(pos);
 }
 
 bool Collective::hasPriorityTasks(Position pos) const {
-  return taskMap->hasPriorityTasks(pos.getCoord());
+  return taskMap->hasPriorityTasks(pos);
 }
 
 void Collective::cutTree(Position pos) {
-  taskMap->markSquare(pos.getCoord(), HighlightType::CUT_TREE, Task::construction(this, pos, SquareId::TREE_TRUNK));
+  taskMap->markSquare(pos, HighlightType::CUT_TREE, Task::construction(this, pos, SquareId::TREE_TRUNK));
 }
 
 set<TrapType> Collective::getNeededTraps() const {
@@ -1840,8 +1840,8 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
   if (auto type = pos.getSafeSquare()->getApplyType())
     mySquares2[*type].insert(pos);
   control->onConstructed(pos.getCoord(), type);
-  if (taskMap->getMarked(pos.getCoord()))
-    taskMap->unmarkSquare(pos.getCoord());
+  if (taskMap->getMarked(pos))
+    taskMap->unmarkSquare(pos);
 }
 
 bool Collective::tryLockingDoor(Position pos) {
@@ -1865,7 +1865,7 @@ void Collective::updateConstructions() {
       if (!items.empty()) {
         if (!elem.second.isArmed() && !elem.second.isMarked()) {
           Position pos = items.back().second;
-          taskMap->addTask(Task::applyItem(this, pos, items.back().first, elem.first), pos.getCoord());
+          taskMap->addTask(Task::applyItem(this, pos, items.back().first, elem.first), pos);
           markItem(items.back().first);
           items.pop_back();
           constructions->getTrap(elem.first).setMarked();
@@ -1878,7 +1878,7 @@ void Collective::updateConstructions() {
       if (!hasResource(construction.getCost()))
         continue;
       construction.setTask(
-          taskMap->addTaskCost(Task::construction(this, pos, construction.getSquareType()), pos.getCoord(),
+          taskMap->addTaskCost(Task::construction(this, pos, construction.getSquareType()), pos,
           construction.getCost())->getUniqueId());
       takeResource(construction.getCost());
     }
@@ -1886,7 +1886,7 @@ void Collective::updateConstructions() {
   for (auto& elem : constructions->getTorches())
     if (!isDelayed(elem.first) && !elem.second.hasTask() && !elem.second.isBuilt())
       constructions->getTorch(elem.first).setTask(taskMap->addTask(
-          Task::buildTorch(this, elem.first, elem.second.getAttachmentDir()), elem.first.getCoord())->getUniqueId());
+          Task::buildTorch(this, elem.first, elem.second.getAttachmentDir()), elem.first)->getUniqueId());
 }
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, double delayTime) {
@@ -1942,7 +1942,7 @@ void Collective::fetchAllItems(Position pos) {
       }
     }
     if (!tasks.empty())
-      taskMap->markSquare(pos.getCoord(), HighlightType::FETCH_ITEMS, Task::chain(std::move(tasks)));
+      taskMap->markSquare(pos, HighlightType::FETCH_ITEMS, Task::chain(std::move(tasks)));
   }
 }
 
@@ -1961,7 +1961,7 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
       setWarning(elem.warning, false);
       if (elem.oneAtATime)
         equipment = {equipment[0]};
-      taskMap->addTask(Task::bringItem(this, pos, equipment, destination), pos.getCoord());
+      taskMap->addTask(Task::bringItem(this, pos, equipment, destination), pos);
       for (Item* it : equipment)
         markItem(it);
     } else
@@ -2046,7 +2046,7 @@ void Collective::addKnownTile(Position pos) {
       }
     knownTiles->addTile(pos);
     if (pos.getLevel() == level)
-      if (Task* task = taskMap->getMarked(pos.getCoord()))
+      if (Task* task = taskMap->getMarked(pos))
         if (task->isImpossible(getLevel()))
           taskMap->removeTask(task);
   }
