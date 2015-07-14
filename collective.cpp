@@ -1872,8 +1872,6 @@ void Collective::onConstructed(Vec2 pos, const SquareType& type) {
   mySquares[type].insert(pos);
   if (efficiencySquares.count(type))
     updateEfficiency(pos, type);
-  if (taskMap->getMarked(pos))
-    taskMap->unmarkSquare(pos);
   if (constructions->containsSquare(pos) && !constructions->getSquare(pos).isBuilt())
     constructions->getSquare(pos).setBuilt();
   if (type == SquareId::FLOOR) {
@@ -1885,6 +1883,8 @@ void Collective::onConstructed(Vec2 pos, const SquareType& type) {
   if (auto type = level->getSafeSquare(pos)->getApplyType())
     mySquares2[*type].insert(pos);
   control->onConstructed(pos, type);
+  if (taskMap->getMarked(pos))
+    taskMap->unmarkSquare(pos);
 }
 
 bool Collective::tryLockingDoor(Vec2 pos) {
