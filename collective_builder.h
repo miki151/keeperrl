@@ -10,6 +10,7 @@ class Tribe;
 class Level;
 class Creature;
 struct ImmigrantInfo;
+class Position;
 
 class CollectiveBuilder {
   public:
@@ -18,6 +19,7 @@ class CollectiveBuilder {
   CollectiveBuilder& setCredit(map<CollectiveResourceId, int>);
   CollectiveBuilder& addCreature(Creature*, EnumSet<MinionTrait>);
   CollectiveBuilder& addSquares(const vector<Vec2>&);
+  CollectiveBuilder& addSquares(const vector<Position>&);
   PCollective build(const string& name = "");
   bool hasCreatures() const;
 

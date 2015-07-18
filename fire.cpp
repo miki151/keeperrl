@@ -34,7 +34,7 @@ Fire::Fire(double objectWeight, double objectFlamability) : weight(objectWeight)
 
 double epsilon = 0.001;
 
-void Fire::tick(Level* level, Vec2 position) {
+void Fire::tick() {
   burnt = min(1., burnt + size / weight);
   size += (burnt * weight - size) / 10;
   size *= (1 - burnt);

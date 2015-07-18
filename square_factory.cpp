@@ -192,10 +192,10 @@ class Chest : public Square {
     if (chestInfo.creature && chestInfo.creatureChance > 0 && Random.roll(1 / chestInfo.creatureChance)) {
       int numR = chestInfo.numCreatures;
       CreatureFactory factory(*chestInfo.creature);
-      for (Vec2 v : getPosition().neighbors8(true)) {
+      for (Position v : getPosition2().neighbors8(true)) {
         PCreature rat = factory.random();
-        if (getLevel()->getSafeSquare(v)->canEnter(rat.get())) {
-          getLevel()->addCreature(v, std::move(rat));
+        if (v.canEnter(rat.get())) {
+          v.addCreature(std::move(rat));
           if (--numR == 0)
             break;
         }
@@ -297,8 +297,8 @@ class Tree : public Square {
       getLevel()->getModel()->addWoodCount(numWood);
       int numCut = getLevel()->getModel()->getWoodCount();
       if (numCut > 1500 && Random.roll(max(50, (3000 - numCut) / 10)))
-        Effect::summon(getLevel(), CreatureFactory::singleType(
-              getLevel()->getModel()->getKillEveryoneTribe(), creature), getPosition(), 1, 100000);
+        Effect::summon(getPosition2(), CreatureFactory::singleType(
+              getLevel()->getModel()->getKillEveryoneTribe(), creature), 1, 100000);
     }
   }
 
@@ -740,12 +740,12 @@ class Hatchery : public Square {
   virtual void tickSpecial(double time) override {
     if (getCreature() || !Random.roll(10) || getPoisonGasAmount() > 0)
       return;
-    for (Square* s : getLevel()->getSquares(getPosition().neighbors8()))
-      if (s->getCreature() && s->getCreature()->isMinionFood())
+    for (Position v : getPosition2().neighbors8())
+      if (v.getCreature() && v.getCreature()->isMinionFood())
         return;
     if (Random.roll(5)) {
       PCreature pig = creature.random(
-          MonsterAIFactory::stayInPigsty(getPosition(), SquareApplyType::PIGSTY));
+          MonsterAIFactory::stayInPigsty(getPosition2(), SquareApplyType::PIGSTY));
       if (canEnter(pig.get()))
         getLevel()->addCreature(getPosition(), std::move(pig));
     }

@@ -103,7 +103,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onDiscoveredLocation(const Location*) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
-  virtual void onConstructed(Vec2, const SquareType&) override;
+  virtual void onConstructed(Position, const SquareType&) override;
   virtual void onNoEnemies() override;
 
   private:
@@ -124,9 +124,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   void considerDeityFight();
   void checkKeeperDanger();
-  void addDeityServant(Deity*, Vec2 deityPos, Vec2 victimPos);
   static string getWarningText(CollectiveWarning);
-  void updateSquareMemory(Vec2);
+  void updateSquareMemory(Position);
   bool isEnemy(const Creature*) const;
 
   Creature* getConsumptionTarget(View*, Creature* consumer);
@@ -180,8 +179,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void handleLibrary(View*);
   static ViewObject getTrapObject(TrapType, bool built);
   void addToMemory(Position);
-  void getSquareViewIndex(const Square*, bool canSee, ViewIndex&) const;
-  void tryLockingDoor(Vec2 pos);
+  void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
+  void tryLockingDoor(Position);
   void uncoverRandomLocation();
   Creature* getControlled();
   CollectiveTeams& getTeams();
@@ -203,7 +202,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   int SERIAL(startImpNum) = -1;
   bool SERIAL(retired) = false;
   bool SERIAL(payoutWarning) = false;
-  unordered_set<Vec2> SERIAL(surprises);
+  unordered_set<Position> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
   struct AssaultInfo : public NamedTupleBase<string, vector<Creature*>> {

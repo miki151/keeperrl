@@ -173,7 +173,6 @@ class CreatureFactory {
   CreatureFactory& increaseLevel(double);
 
   static PCreature getShopkeeper(Location* shopArea, Tribe*);
-  static PCreature getRollingBoulder(Vec2 direction, Tribe*);
   static PCreature getGuardingBoulder(Tribe* tribe);
 
   static PCreature addInventory(PCreature c, const vector<ItemType>& items);

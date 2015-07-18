@@ -18,7 +18,6 @@
 #include "shortest_path.h"
 #include "level.h"
 #include "creature.h"
-#include "square.h"
 
 template <class Archive> 
 void ShortestPath::serialize(Archive& ar, const unsigned int version) {
@@ -26,7 +25,8 @@ void ShortestPath::serialize(Archive& ar, const unsigned int version) {
     & SVAR(target)
     & SVAR(directions)
     & SVAR(bounds)
-    & SVAR(reversed);
+    & SVAR(reversed)
+    & SVAR(level);
 }
 
 SERIALIZABLE(ShortestPath);
@@ -63,14 +63,14 @@ static DistanceTable distanceTable(Level::getMaxBounds());
 
 const int margin = 15;
 
-ShortestPath::ShortestPath(const Level* level, const Creature* creature, Vec2 to, Vec2 from, double mult)
-    : target(to), directions(Vec2::directions8()), bounds(level->getBounds()) {
-  auto entryFun = [=](Vec2 pos) { 
-      const Square* target = level->getSafeSquare(pos);
-      if (target->canEnter(creature) || creature->getPosition() == pos) 
+ShortestPath::ShortestPath(Level* l, const Creature* creature, Vec2 to, Vec2 from, double mult)
+    : target(to), directions(Vec2::directions8()), bounds(l->getBounds()), level(l) {
+  auto entryFun = [=](Vec2 v) { 
+      Position pos(v, level);
+      if (pos.canEnter(creature) || creature->getPosition() == pos) 
         return 1.0;
-      if (target->canNavigate(creature->getMovementType())) {
-        if (const Creature* other = target->getCreature())
+      if (pos.canNavigate(creature->getMovementType())) {
+        if (const Creature* other = pos.getCreature())
           if (other->isFriend(creature))
             return 1.5;
         return 5.0;
@@ -211,6 +211,10 @@ void ShortestPath::constructPath(Vec2 pos, bool reversed) {
   if (!reversed)
     ret.push_back(target);
   path = vector<Vec2>(ret.rbegin(), ret.rend());
+}
+
+Level* ShortestPath::getLevel() const {
+  return level;
 }
 
 bool ShortestPath::isReversed() const {

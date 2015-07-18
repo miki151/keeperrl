@@ -25,7 +25,7 @@ class Level;
 
 class ShortestPath {
   public:
-  ShortestPath(const Level* level, const Creature* creature, Vec2 target, Vec2 from, double mult = 0);
+  ShortestPath(Level* level, const Creature* creature, Vec2 target, Vec2 from, double mult = 0);
   ShortestPath(
       Rectangle area,
       function<double(Vec2)> entryFun,
@@ -38,6 +38,7 @@ class ShortestPath {
   Vec2 getNextMove(Vec2 pos);
   Vec2 getTarget() const;
   bool isReversed() const;
+  Level* getLevel() const;
 
   static const double infinity;
 
@@ -53,6 +54,7 @@ class ShortestPath {
   vector<Vec2> SERIAL(directions);
   Rectangle SERIAL(bounds);
   bool SERIAL(reversed);
+  Level* SERIAL(level);
 };
 
 class Dijkstra {

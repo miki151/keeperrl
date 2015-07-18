@@ -5,24 +5,48 @@
 
 template <class T>
 PositionMap<T>::PositionMap(const vector<Level*>& levels) {
-  for (Level* l : levels)
-    tables.emplace_back(l->getBounds(), T());
+  for (Level* l : levels) {
+    tables.emplace_back(l->getBounds().minusMargin(-20), T());
+    outliers.emplace_back();
+  }
+}
+
+template <class T>
+PositionMap<T>::PositionMap(const vector<Level*>& levels, const T& def) {
+  for (Level* l : levels) {
+    tables.emplace_back(l->getBounds().minusMargin(-20), def);
+    outliers.emplace_back();
+  }
 }
 
 template <class T>
 const T& PositionMap<T>::operator [] (Position pos) const {
-  return tables[pos.getLevel()->getUniqueId()][pos.getCoord()];
+  int index = pos.getLevel()->getUniqueId();
+  const Table<T>& table = tables[index];
+  if (pos.getCoord().inRectangle(table.getBounds()))
+    return table[pos.getCoord()];
+  else if (outliers[index].count(pos.getCoord()))
+    return outliers[index].at(pos.getCoord());
+  else {
+    static T t;
+    return t;
+  }
 }
 
 template <class T>
 T& PositionMap<T>::operator [] (Position pos) {
-  return tables[pos.getLevel()->getUniqueId()][pos.getCoord()];
+  int index = pos.getLevel()->getUniqueId();
+  Table<T>& table = tables[index];
+  if (pos.getCoord().inRectangle(table.getBounds()))
+    return table[pos.getCoord()];
+  else
+    return outliers[index][pos.getCoord()];
 }
 
 template <class T>
 template <class Archive> 
 void PositionMap<T>::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(tables);
+  ar & SVAR(tables) & SVAR(outliers);
 }
 
 template <class T>

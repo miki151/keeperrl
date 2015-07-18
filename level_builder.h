@@ -73,7 +73,7 @@ class LevelBuilder {
   void addCollective(CollectiveBuilder*);
 
   /** Sets the cover of the square. The value will remain if square is changed.*/
-  void setCoverInfo(Vec2, Level::CoverInfo);
+  void setCoverInfo(Vec2, CoverInfo);
  
   enum Rot { CW0, CW1, CW2, CW3};
 
@@ -88,10 +88,10 @@ class LevelBuilder {
   Table<double> dark;
   vector<Location*> locations;
   vector<CollectiveBuilder*> collectives;
-  Table<Level::CoverInfo> coverInfo;
+  Table<CoverInfo> coverInfo;
   Table<EnumSet<SquareAttrib>> attrib;
   Table<SquareType> type;
-  vector<PCreature> creatures;
+  vector<pair<PCreature, Vec2>> creatures;
   Table<vector<PItem>> items;
   string entryMessage;
   string name;

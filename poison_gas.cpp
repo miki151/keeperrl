@@ -17,7 +17,6 @@
 
 #include "poison_gas.h"
 #include "level.h"
-#include "square.h"
 
 
 template <class Archive> 
@@ -35,18 +34,18 @@ void PoisonGas::addAmount(double a) {
 const double decrease = 0.98;
 const double spread = 0.10;
 
-void PoisonGas::tick(Level* level, Vec2 pos) {
+void PoisonGas::tick(Position pos) {
   if (amount < 0.1) {
     amount = 0;
     return;
   }
-  for (Square* square : level->getSquares(pos.neighbors8(true))) {
-    if (square->canSeeThru() && amount > 0 && square->getPoisonGasAmount() < amount) {
-      double transfer = (square->getPosition() - pos).isCardinal4() ? spread : spread / 2;
+  for (Position v : pos.neighbors8(true)) {
+    if (v.canSeeThru(VisionId::NORMAL) && amount > 0 && v.getPoisonGasAmount() < amount) {
+      double transfer = pos.getDir(v).isCardinal4() ? spread : spread / 2;
       transfer = min(amount, transfer);
-      transfer = min((amount - square->getPoisonGasAmount()) / 2, transfer);
+      transfer = min((amount - v.getPoisonGasAmount()) / 2, transfer);
       amount -= transfer;
-      square->addPoisonGas(transfer);
+      v.addPoisonGas(transfer);
     }
   }
   amount = max(0.0, amount * decrease);

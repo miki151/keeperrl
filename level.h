@@ -37,6 +37,7 @@ class Tribe;
 class Attack;
 class PlayerMessage;
 class CreatureBucketMap;
+class Position;
 
 RICH_ENUM(SquareAttrib,
   NO_DIG,
@@ -63,6 +64,13 @@ RICH_ENUM(VisionId,
   NIGHT,
   NORMAL
 );
+
+struct CoverInfo : public NamedTupleBase<bool, double> {
+  NAMED_TUPLE_STUFF(CoverInfo);
+  NAME_ELEM(0, covered);
+  NAME_ELEM(1, sunlight);
+};
+
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level {
@@ -99,13 +107,13 @@ class Level {
 
   /** Lands the creature on the level randomly choosing one of the given squares.
       Returns the position of the stairs that were used.*/
-  bool landCreature(vector<Vec2> landing, PCreature creature);
-  bool landCreature(vector<Vec2> landing, Creature* creature);
+  bool landCreature(vector<Position> landing, PCreature creature);
+  bool landCreature(vector<Position> landing, Creature* creature);
 
   /** Returns the landing squares for given direction and stair key. See Square::getLandingLink() */
-  vector<Vec2> getLandingSquares(StairKey) const;
+  vector<Position> getLandingSquares(StairKey) const;
 
-  optional<Vec2> getStairsTo(const Level*) const;
+  optional<Position> getStairsTo(const Level*) const;
 
   /** Removes the creature from \paramname{position} from the level and model. The creature object is retained.*/
   void killCreature(Creature*, Creature* attacker);
@@ -131,12 +139,8 @@ class Level {
 
   //@{
   /** Returns the given square. \paramname{pos} must lie within the boundaries. */
-  vector<const Square*> getSquare(Vec2) const;
-  vector<Square*> getSquare(Vec2);
-  vector<const Square*> getSquares(const vector<Vec2>& pos) const;
-  vector<Square*> getSquares(const vector<Vec2>&);
-  const Square* getSafeSquare(Vec2) const;
-  Square* getSafeSquare(Vec2);
+  Position getPosition(Vec2) const;
+  vector<Position> getAllPositions() const;
   //@}
 
   void replaceSquare(Vec2 pos, PSquare square, bool storePrevious = true);
@@ -152,7 +156,7 @@ class Level {
   void changeLevel(StairKey key, Creature* c);
 
   /** Moves the creature to a given level. */
-  void changeLevel(Level* destination, Vec2 landing, Creature* c);
+  void changeLevel(Position destination, Creature* c);
 
   /** Performs a throw of the item, with all consequences of the event.*/
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId);
@@ -204,12 +208,6 @@ class Level {
 
   const vector<Location*> getAllLocations() const;
 
-  struct CoverInfo : public NamedTupleBase<bool, double> {
-    NAMED_TUPLE_STUFF(CoverInfo);
-    NAME_ELEM(0, covered);
-    NAME_ELEM(1, sunlight);
-  };
-
   CoverInfo getCoverInfo(Vec2) const;
 
   const Model* getModel() const;
@@ -240,10 +238,13 @@ class Level {
   SERIALIZATION_DECL(Level);
 
   private:
+  friend class Position;
+  const Square* getSafeSquare(Vec2) const;
+  Square* getSafeSquare(Vec2);
   Vec2 transform(Vec2);
   Table<PSquare> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
-  unordered_map<StairKey, vector<Vec2>> SERIAL(landingSquares);
+  unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
   vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
   void insertCreature(Creature*);

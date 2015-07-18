@@ -21,7 +21,6 @@
 #include "location.h"
 #include "renderer.h"
 #include "map_memory.h"
-#include "square.h"
 
 void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
   mapBufferTex.update(mapBuffer);
@@ -88,16 +87,16 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
       if (!v.inRectangle(level->getBounds()) || !memory.hasViewIndex(v))
         mapBuffer.setPixel(v.x, v.y, colors[ColorId::BLACK]);
       else {
-        mapBuffer.setPixel(v.x, v.y, Tile::getColor(level->getSafeSquare(v)->getViewObject()));
-        if (level->getSafeSquare(v)->getViewObject().hasModifier(ViewObject::Modifier::ROAD))
+        mapBuffer.setPixel(v.x, v.y, Tile::getColor(level->getPosition(v).getViewObject()));
+        if (level->getPosition(v).getViewObject().hasModifier(ViewObject::Modifier::ROAD))
           info.roads.insert(v);
       }
     }
     refreshBuffer = false;
   }
   for (Vec2 v : memory.getUpdated()) {
-    mapBuffer.setPixel(v.x, v.y, Tile::getColor(level->getSafeSquare(v)->getViewObject()));
-    if (level->getSafeSquare(v)->getViewObject().hasModifier(ViewObject::Modifier::ROAD))
+    mapBuffer.setPixel(v.x, v.y, Tile::getColor(level->getPosition(v).getViewObject()));
+    if (level->getPosition(v).getViewObject().hasModifier(ViewObject::Modifier::ROAD))
       info.roads.insert(v);
   }
   memory.clearUpdated();
@@ -108,18 +107,15 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
   if (printLocations)
     for (const Location* loc : level->getAllLocations()) {
       bool seen = false;
-      for (Vec2 v : loc->getAllSquares())
-        if (memory.hasViewIndex(v)) {
+      for (Position v : loc->getAllSquares())
+        if (memory.hasViewIndex(v.getCoord())) {
           seen = true;
           break;
         }
-      if (loc->isMarkedAsSurprise() && !seen) {
-        Vec2 pos = loc->getMiddle();
-        info.locations.push_back({pos, ""});
-      }
+      if (loc->isMarkedAsSurprise() && !seen)
+        info.locations.push_back({loc->getMiddle().getCoord(), ""});
       if (loc->getName() && seen) {
-        Vec2 pos = loc->getBottomRight();
-        info.locations.push_back({pos, *loc->getName()});
+        info.locations.push_back({loc->getBottomRight().getCoord(), *loc->getName()});
       }
     }
 }

@@ -18,7 +18,6 @@
 #include "pantheon.h"
 #include "creature.h"
 #include "level.h"
-#include "square.h"
 #include "name_generator.h"
 
 template <class Archive> 

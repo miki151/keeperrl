@@ -154,9 +154,6 @@ class Square : public Renderable {
   /** Removes the creature from the square.*/
   void removeCreature();
 
-  /** Removes a killed creature from the square.*/
-  void killCreature(Creature* attacker);
-
   //@{
   /** Returns the creature from the square.*/
   Creature* getCreature();
@@ -167,7 +164,7 @@ class Square : public Renderable {
   void addTrigger(PTrigger);
 
   /** Returns all triggers.*/
-  const vector<Trigger*> getTriggers() const;
+  vector<Trigger*> getTriggers() const;
 
   /** Removes the trigger from the square.*/
   PTrigger removeTrigger(Trigger*);
@@ -222,6 +219,7 @@ class Square : public Renderable {
   virtual void onApply(Creature* c) { Debug(FATAL) << "Bad square applied"; }
   virtual double getApplyTime() const { return 1.0; }
   optional<SquareApplyType> getApplyType(const Creature*) const;
+  virtual void onKilled(Creature* victim, Creature* attacker);
 
   void forbidMovementForTribe(const Tribe*);
   void allowMovementForTribe(const Tribe*);
@@ -244,7 +242,6 @@ class Square : public Renderable {
   void onEnter(Creature*);
   virtual void onEnterSpecial(Creature*) {}
   virtual void tickSpecial(double time) {}
-  virtual void onKilled(Creature* victim, Creature* attacker);
   HeapAllocated<Inventory> SERIAL(inventory);
   string SERIAL(name);
   void addTraitForTribe(const Tribe*, MovementTrait);

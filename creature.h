@@ -21,6 +21,7 @@
 #include "creature_action.h"
 #include "renderable.h"
 #include "movement_type.h"
+#include "position.h"
 
 class Skill;
 class Level;
@@ -41,7 +42,6 @@ class MinionTaskMap;
 class EntityName;
 class Gender;
 class SpellMap;
-class Position;
 
 class Creature : public Renderable, public UniqueEntity<Creature> {
   public:
@@ -53,22 +53,11 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void makeMove();
   double getTime() const;
   void setTime(double t);
-  void setLevel(Level* l);
   vector<const Creature*> getVisibleEnemies() const;
   vector<Position> getVisibleTiles() const;
-  Level* getLevel();
-  const Level* getLevel() const;
-  Square* getSquare();
-  const Square* getSquare() const;
-  Square* getSafeSquare(Vec2 direction);
-  const Square* getSafeSquare(Vec2 direction) const;
-  vector<Square*> getSquare(Vec2 direction);
-  vector<const Square*> getSquare(Vec2 direction) const;
-  vector<Square*> getSquares(const vector<Vec2>& direction);
-  vector<const Square*> getSquares(const vector<Vec2>& direction) const;
-  void setPosition(Vec2 pos);
-  Vec2 getPosition() const;
-  Position getPosition2() const;
+  Level* getLevel() const;
+  void setPosition(Position);
+  Position getPosition() const;
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&);
   void heal(double amount = 1, bool replaceLimbs = false);
@@ -177,6 +166,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   string getPluralTheName(Item* item, int num) const;
   string getPluralAName(Item* item, int num) const;
   CreatureAction move(Vec2 direction) const;
+  CreatureAction move(Position) const;
   CreatureAction forceMove(Vec2 direction) const;
   CreatureAction swapPosition(Vec2 direction, bool force = false) const;
   CreatureAction wait() const;
@@ -208,7 +198,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction torture(Creature*) const;
   CreatureAction chatTo(Vec2 direction) const;
   CreatureAction stealFrom(Vec2 direction, const vector<Item*>&) const;
-  void give(const Creature* whom, vector<Item*> items);
+  void give(Creature* whom, vector<Item*> items);
   CreatureAction fire(Vec2 direction) const;
   CreatureAction construct(Vec2 direction, const SquareType&) const;
   bool canConstruct(const SquareType&) const;
@@ -230,10 +220,9 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Item* getWeapon() const;
   vector<vector<Item*>> stackItems(vector<Item*>) const;
 
-  CreatureAction moveTowards(const Position&, bool stepOnTile = false);
-  CreatureAction moveTowards(Vec2 pos, bool stepOnTile = false);
+  CreatureAction moveTowards(Position, bool stepOnTile = false);
   bool canNavigateTo(Vec2) const;
-  CreatureAction moveAway(Vec2 pos, bool pathfinding = true);
+  CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();
   CreatureAction stayIn(const Location*);
   bool isSameSector(Vec2) const;
@@ -309,7 +298,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void consumeBodyParts(const EnumMap<BodyPart, int>&);
   void onRemoved(LastingEffect effect, bool msg);
   void onTimedOut(LastingEffect effect, bool msg);
-  CreatureAction moveTowards(Vec2 pos, bool away, bool stepOnTile);
+  CreatureAction moveTowards(Position, bool away, bool stepOnTile);
   CreatureAction moveTowardsLevel(const Level*);
   double getInventoryWeight() const;
   Item* getAmmo() const;
@@ -319,8 +308,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   pair<double, double> getStanding(const Creature* c) const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
-  Level* SERIAL(level) = nullptr;
-  Vec2 SERIAL(position);
+  Position SERIAL(position);
   double SERIAL(time) = 1;
   HeapAllocated<Equipment> SERIAL(equipment);
   unique_ptr<ShortestPath> SERIAL(shortestPath);

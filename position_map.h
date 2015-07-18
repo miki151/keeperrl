@@ -10,6 +10,7 @@ template <class T>
 class PositionMap {
   public:
   PositionMap(const vector<Level*>&);
+  PositionMap(const vector<Level*>&, const T& def);
 
   const T& operator [] (Position) const;
   T& operator [] (Position);
@@ -18,6 +19,7 @@ class PositionMap {
 
   private:
   vector<Table<T>> SERIAL(tables);
+  vector<map<Vec2, T>> SERIAL(outliers);
 };
 
 #endif

@@ -21,6 +21,7 @@
 #include "unique_entity.h"
 #include "renderable.h"
 #include "effect_type.h"
+#include "position.h"
 
 class Level;
 class Attack;
@@ -90,7 +91,7 @@ class Item : public Renderable, public UniqueEntity<Item> {
   int getModifier(ModifierType) const;
   int getAttr(AttrType) const;
 
-  void tick(double time, Level*, Vec2 position);
+  void tick(double time, Position);
   
   string getApplyMsgThirdPerson(bool blind) const;
   string getApplyMsgFirstPerson(bool blind) const;
@@ -100,10 +101,10 @@ class Item : public Renderable, public UniqueEntity<Item> {
   void onUnequip(Creature*);
   virtual void onEquipSpecial(Creature*) {}
   virtual void onUnequipSpecial(Creature*) {}
-  virtual void setOnFire(double amount, const Level* level, Vec2 position);
+  virtual void setOnFire(double amount, Position);
   double getFireSize() const;
 
-  void onHitSquareMessage(Vec2 position, Square*, int numItems);
+  void onHitSquareMessage(Position, int numItems);
   void onHitCreature(Creature* c, const Attack& attack, int numItems);
 
   double getApplyTime() const;
@@ -137,7 +138,7 @@ class Item : public Renderable, public UniqueEntity<Item> {
   SERIALIZATION_DECL(Item);
 
   protected:
-  virtual void specialTick(double time, Level*, Vec2 position) {}
+  virtual void specialTick(double time, Position) {}
   void setName(const string& name);
   bool SERIAL(discarded) = false;
 

@@ -27,6 +27,12 @@ CollectiveBuilder& CollectiveBuilder::addSquares(const vector<Vec2>& v) {
   return *this;
 }
 
+CollectiveBuilder& CollectiveBuilder::addSquares(const vector<Position>& v) {
+  for (auto& pos : v)
+    squares.push_back(pos.getCoord());
+  return *this;
+}
+
 PCollective CollectiveBuilder::build(const string& name) {
   Collective* c = new Collective(NOTNULL(level), config, tribe, credit, name);
   for (auto& elem : creatures)

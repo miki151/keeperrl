@@ -89,8 +89,7 @@ double LevelBuilder::getHeightMap(Vec2 pos) {
 }
 
 void LevelBuilder::putCreature(Vec2 pos, PCreature creature) {
-  creature->setPosition(transform(pos));
-  creatures.push_back(NOTNULL(std::move(creature)));
+  creatures.emplace_back(std::move(creature), transform(pos));
 }
 
 void LevelBuilder::putItems(Vec2 posT, vector<PItem> it) {
@@ -103,8 +102,8 @@ bool LevelBuilder::canPutCreature(Vec2 posT, Creature* c) {
   Vec2 pos = transform(posT);
   if (!squares[pos]->canEnter(c))
     return false;
-  for (PCreature& c : creatures) {
-    if (c->getPosition() == pos)
+  for (pair<PCreature, Vec2>& c : creatures) {
+    if (c.second == pos)
       return false;
   }
   return true;
@@ -122,9 +121,8 @@ PLevel LevelBuilder::build(Model* m, LevelMaker* maker, int levelId) {
     squares[v]->dropItems(std::move(items[v]));
   }
   PLevel l(new Level(std::move(squares), m, locations, entryMessage, name, std::move(coverInfo), levelId));
-  for (PCreature& c : creatures) {
-    Vec2 pos = c->getPosition();
-    l->addCreature(pos, std::move(c));
+  for (pair<PCreature, Vec2>& c : creatures) {
+    l->addCreature(c.second, std::move(c.first));
   }
   for (CollectiveBuilder* c : collectives)
     c->setLevel(l.get());
@@ -175,7 +173,7 @@ Vec2 LevelBuilder::transform(Vec2 v) {
   return v;
 }
 
-void LevelBuilder::setCoverInfo(Vec2 pos, Level::CoverInfo info) {
+void LevelBuilder::setCoverInfo(Vec2 pos, CoverInfo info) {
   coverInfo[transform(pos)] = info;
   if (squares[pos])
     squares[pos]->updateSunlightMovement(isInSunlight(pos));

@@ -182,11 +182,11 @@ void Model::onAlarm(Position pos) {
       col->onAlarm(pos);
   for (const PLevel& l : levels)
     if (const Creature* c = l->getPlayer()) {
-      if (pos == c->getPosition2())
+      if (pos == c->getPosition())
         c->playerMessage("An alarm sounds near you.");
-      else if (pos.isSameLevel(c->getPosition2()))
+      else if (pos.isSameLevel(c->getPosition()))
         c->playerMessage("An alarm sounds in the " + 
-            getCardinalName(c->getPosition2().getDir(pos).getBearing().getCardinalDir()));
+            getCardinalName(c->getPosition().getDir(pos).getBearing().getCardinalDir()));
     }
 }
 
@@ -265,7 +265,7 @@ optional<Model::ExitInfo> Model::update(double totalTime) {
       c->update(creature);
     if (!creature->isDead()) {
       Level* level = creature->getLevel();
-      CHECK(level->getSafeSquare(creature->getPosition())->getCreature() == creature);
+      CHECK(creature->getPosition().getCreature() == creature);
     }
   } while (1);
 }
@@ -531,7 +531,7 @@ bool Model::changeLevel(StairKey key, Creature* c) {
   return target->landCreature(key, c);
 }
 
-Vec2 Model::getStairs(const Level* from, const Level* to) {
+Position Model::getStairs(const Level* from, const Level* to) {
   optional<StairKey> key;
   for (auto& elem : levelLinks)
     if ((elem.second.first == from && elem.second.second == to) ||
@@ -541,8 +541,8 @@ Vec2 Model::getStairs(const Level* from, const Level* to) {
   return chooseRandom(from->getLandingSquares(*key));
 }
 
-bool Model::changeLevel(Level* target, Vec2 position, Creature* c) {
-  return target->landCreature({position}, c);
+bool Model::changeLevel(Position position, Creature* c) {
+  return position.landCreature(c);
 }
   
 void Model::conquered(const string& title, vector<const Creature*> kills, int points) {

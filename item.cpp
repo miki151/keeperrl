@@ -20,7 +20,6 @@
 #include "level.h"
 #include "statistics.h"
 #include "effect.h"
-#include "square.h"
 #include "view_object.h"
 #include "model.h"
 #include "player_message.h"
@@ -110,12 +109,12 @@ void Item::onUnequip(Creature* c) {
     c->removePermanentEffect(*attributes->lastingEffect);
 }
 
-void Item::setOnFire(double amount, const Level* level, Vec2 position) {
+void Item::setOnFire(double amount, Position position) {
   bool burning = fire->isBurning();
   string noBurningName = getTheName();
   fire->set(amount);
   if (!burning && fire->isBurning()) {
-    level->globalMessage(position, noBurningName + " catches fire");
+    position.globalMessage(noBurningName + " catches fire");
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
   }
 }
@@ -124,27 +123,27 @@ double Item::getFireSize() const {
   return fire->getSize();
 }
 
-void Item::tick(double time, Level* level, Vec2 position) {
+void Item::tick(double time, Position position) {
   if (fire->isBurning()) {
     Debug() << getName() << " burning " << fire->getSize();
-    level->getSafeSquare(position)->setOnFire(fire->getSize());
+    position.setOnFire(fire->getSize());
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
-    fire->tick(level, position);
+    fire->tick();
     if (!fire->isBurning()) {
-      level->globalMessage(position, getTheName() + " burns out");
+      position.globalMessage(getTheName() + " burns out");
       discarded = true;
     }
   }
-  specialTick(time, level, position);
+  specialTick(time, position);
 }
 
-void Item::onHitSquareMessage(Vec2 position, Square* s, int numItems) {
+void Item::onHitSquareMessage(Position pos, int numItems) {
   if (attributes->fragile) {
-    s->getLevel()->globalMessage(position,
-        getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + s->getName(), "You hear a crash");
+    pos.globalMessage(
+        getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + pos.getName(), "You hear a crash");
     discarded = true;
   } else
-    s->getLevel()->globalMessage(position, getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + s->getName());
+    pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
 }
 
 void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {

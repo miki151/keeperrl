@@ -18,7 +18,6 @@
 #include "village_control.h"
 #include "collective.h"
 #include "creature.h"
-#include "square.h"
 #include "level.h"
 #include "collective_teams.h"
 #include "tribe.h"
@@ -61,7 +60,7 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
 VillageControl::VillageControl(Collective* col, vector<Villain> v)
     : CollectiveControl(col), villains(v) {
   for (Position v : col->getAllSquares())
-    for (Item* it : v.getSafeSquare()->getItems())
+    for (Item* it : v.getItems())
       myItems.insert(it);
 }
 
@@ -84,7 +83,7 @@ void VillageControl::onMemberKilled(const Creature* victim, const Creature* kill
 }
 
 void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& items) {
-  if (getCollective()->containsSquare(who->getPosition2()))
+  if (getCollective()->containsSquare(who->getPosition()))
     if (auto villain = getVillain(who))
       if (contains(villain->triggers, AttackTriggerId::STOLEN_ITEMS)) {
         bool wasTheft = false;
@@ -129,9 +128,9 @@ void VillageControl::considerWelcomeMessage() {
         switch (*villain.welcomeMessage) {
           case DRAGON_WELCOME:
             for (Position pos : getCollective()->getAllSquares())
-              if (Creature* c = pos.getSafeSquare()->getCreature())
+              if (Creature* c = pos.getCreature())
                 if (c->isAffected(LastingEffect::INVISIBLE) && villain.contains(c) && c->isPlayer()
-                    && leader->canSee(c->getPosition())) {
+                    && leader->canSee(c->getPosition().getCoord())) {
                   c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
                         "I hear your breath. Come along!\"", PlayerMessage::CRITICAL));
                   villain.welcomeMessage.reset();

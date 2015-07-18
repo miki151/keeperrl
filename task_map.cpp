@@ -31,10 +31,10 @@ Task* TaskMap::getTaskForWorker(Creature* c) {
   Task* closest = nullptr;
   for (PTask& task : tasks) {
     if (auto pos = getPosition(task.get())) {
-      double dist = pos->dist8(c->getPosition2());
+      double dist = pos->dist8(c->getPosition());
       const Creature* owner = getOwner(task.get());
-      if (!task->isDone() && (!owner || (task->canTransfer() && pos->dist8(owner->getPosition2()) > dist))
-          && (!closest || dist < getPosition(closest)->dist8(c->getPosition2()) || isPriorityTask(task.get()))
+      if (!task->isDone() && (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist))
+          && (!closest || dist < getPosition(closest)->dist8(c->getPosition()) || isPriorityTask(task.get()))
           && (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getTime())) {
         bool valid = task->getMove(c);
         if (valid) {

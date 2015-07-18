@@ -68,9 +68,9 @@ class Model {
   bool changeLevel(StairKey key, Creature*);
 
   /** Removes creature from current level and puts into the given level */
-  bool changeLevel(Level*, Vec2 position, Creature*);
+  bool changeLevel(Position, Creature*);
 
-  Vec2 getStairs(const Level* from, const Level* to);
+  Position getStairs(const Level* from, const Level* to);
 
   /** Adds new creature to the queue. Assumes this creature has already been added to a level. */
   void addCreature(PCreature);

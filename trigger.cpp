@@ -20,7 +20,6 @@
 #include "effect.h"
 #include "item.h"
 #include "creature.h"
-#include "square.h"
 #include "view_id.h"
 #include "view_object.h"
 #include "item_factory.h"
@@ -72,7 +71,7 @@ class Portal : public Trigger {
   public:
 
   Portal* getOther(Position info) const {
-    for (Trigger* t : info.getSafeSquare()->getTriggers())
+    for (Trigger* t : info.getTriggers())
       if (Portal* ret = dynamic_cast<Portal*>(t))
         return ret;
     return nullptr;
@@ -85,15 +84,15 @@ class Portal : public Trigger {
   }
 
   Portal(const ViewObject& obj, Position position) : Trigger(obj, position) {
-    if (auto danglingPortal = position.getLevel()->getModel()->getDanglingPortal())
+    if (auto danglingPortal = position.getModel()->getDanglingPortal())
       if (Portal* previous = getOther(*danglingPortal)) {
         otherPortal = danglingPortal;
         previous->otherPortal = position;
-        position.getLevel()->getModel()->resetDanglingPortal();
+        position.getModel()->resetDanglingPortal();
         startTime = previous->startTime = -1;
         return;
       }
-    position.getLevel()->getModel()->setDanglingPortal(position);
+    position.getModel()->setDanglingPortal(position);
   }
 
   virtual void onCreatureEnter(Creature* c) override {
@@ -105,17 +104,17 @@ class Portal : public Trigger {
       other->active = false;
       c->you(MsgType::ENTER_PORTAL, "");
       if (other->position.isSameLevel(position)) {
-        if (position.getLevel()->canMoveCreature(c, c->getPosition2().getDir(other->position))) {
-          position.getLevel()->moveCreature(c, c->getPosition2().getDir(other->position));
+        if (position.getLevel()->canMoveCreature(c, c->getPosition().getDir(other->position))) {
+          position.getLevel()->moveCreature(c, c->getPosition().getDir(other->position));
           return;
         }
-        for (Vec2 v : other->position.getCoord().neighbors8())
-          if (position.getLevel()->canMoveCreature(c, v - c->getPosition())) {
-            position.getLevel()->moveCreature(c, v - c->getPosition());
+        for (Position v : other->position.neighbors8())
+          if (position.getLevel()->canMoveCreature(c, c->getPosition().getDir(v))) {
+            position.getLevel()->moveCreature(c, c->getPosition().getDir(v));
             return;
           }
       } else
-        position.getLevel()->changeLevel(other->position.getLevel(), other->position.getCoord(), c);
+        position.getLevel()->changeLevel(other->position, c);
     } else
       c->playerMessage("The portal is inactive. Create another one to open a connection.");
   }
@@ -128,8 +127,7 @@ class Portal : public Trigger {
       VisionId vision) {
     position.globalMessage(it[0]->getPluralTheNameAndVerb(it.size(), "disappears", "disappear") +
         " in the portal.");
-    NOTNULL(getOther())->position.getLevel()->throwItem(
-        std::move(it), a, remainingDist, NOTNULL(getOther())->position.getCoord(), dir, vision);
+    NOTNULL(getOther())->position.throwItem(std::move(it), a, remainingDist, dir, vision);
   }
 
   virtual void tick(double time) override {
@@ -137,7 +135,7 @@ class Portal : public Trigger {
       startTime = time;
     if (time - startTime >= 30) {
       position.globalMessage("The portal disappears.");
-      position.getSafeSquare()->removeTrigger(this);
+      position.removeTrigger(this);
     }
   }
 
@@ -187,12 +185,12 @@ class Trap : public Trigger {
       if (!c->hasSkill(Skill::get(SkillId::DISARM_TRAPS))) {
         c->you(MsgType::TRIGGER_TRAP, "");
         Effect::applyToCreature(c, effect, EffectStrength::NORMAL);
-        position.getLevel()->getModel()->onTrapTrigger(c->getPosition2());
+        position.getModel()->onTrapTrigger(c->getPosition());
       } else {
         c->you(MsgType::DISARM_TRAP, "");
-        position.getLevel()->getModel()->onTrapDisarm(c->getPosition2(), c);
+        position.getModel()->onTrapDisarm(c->getPosition(), c);
       }
-      c->getSquare()->removeTrigger(this);
+      c->getPosition().removeTrigger(this);
     }
   }
 
@@ -254,12 +252,12 @@ namespace {
 
 class MeteorShower : public Trigger {
   public:
-  MeteorShower(Creature* c, double duration) : Trigger(c->getPosition2()), creature(c),
+  MeteorShower(Creature* c, double duration) : Trigger(c->getPosition()), creature(c),
       endTime(creature->getTime() + duration) {}
 
   virtual void tick(double time) override {
     if (time >= endTime || creature->isDead()) {
-      position.getSafeSquare()->removeTrigger(this);
+      position.removeTrigger(this);
       return;
     } else
       for (int i : Range(10))
@@ -271,19 +269,16 @@ class MeteorShower : public Trigger {
   const int range = 4;
 
   bool shootMeteorite() {
-    Vec2 targetPoint(Random.get(-areaWidth / 2, areaWidth / 2 + 1),
-                     Random.get(-areaWidth / 2, areaWidth / 2 + 1));
-    targetPoint += position.getCoord();
+    Position targetPoint = position.plus(Vec2(Random.get(-areaWidth / 2, areaWidth / 2 + 1),
+                     Random.get(-areaWidth / 2, areaWidth / 2 + 1)));
     Vec2 direction(Random.get(-1, 2), Random.get(-1, 2));
-    if (!position.getLevel()->inBounds(targetPoint) || direction.length8() == 0)
+    if (!targetPoint.isInBounds() || direction.length8() == 0)
       return false;
     for (int i : Range(range + 1))
-      if (!position.getLevel()->getSafeSquare(targetPoint + direction * i)->canEnter(
-            MovementType({MovementTrait::WALK, MovementTrait::FLY})))
+      if (!targetPoint.plus(direction * i).canEnter(MovementType({MovementTrait::WALK, MovementTrait::FLY})))
         return false;
-    position.getLevel()->throwItem(ItemFactory::fromId(ItemId::ROCK),
-        Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 25, 40, false), 10,
-        targetPoint + direction * range, -direction, VisionId::NORMAL);
+    targetPoint.plus(direction * range).throwItem(ItemFactory::fromId(ItemId::ROCK),
+        Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 25, 40, false), 10, -direction, VisionId::NORMAL);
     return true;
   }
 

@@ -21,7 +21,7 @@ class CollectiveControl {
   virtual void addAssaultNotification(const Collective*, const vector<Creature*>&, const string& message) {}
   virtual void removeAssaultNotification(const Collective*) {}
   virtual void onDiscoveredLocation(const Location*) {}
-  virtual void onConstructed(Vec2, const SquareType&) {}
+  virtual void onConstructed(Position, const SquareType&) {}
   virtual void onNoEnemies() {}
 
   SERIALIZATION_DECL(CollectiveControl);

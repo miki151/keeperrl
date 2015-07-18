@@ -22,7 +22,6 @@
 #include "ranged_weapon.h"
 #include "technology.h"
 #include "effect.h"
-#include "square.h"
 #include "view_object.h"
 #include "view_id.h"
 #include "trigger.h"
@@ -58,9 +57,9 @@ class FireScroll : public Item {
     set = true;
   }
 
-  virtual void specialTick(double time, Level* level, Vec2 position) override {
+  virtual void specialTick(double time, Position position) override {
     if (set) {
-      setOnFire(0.03, level, position);
+      setOnFire(0.03, position);
       set = false;
     }
   }
@@ -81,22 +80,20 @@ class AmuletOfWarning : public Item {
   public:
   AmuletOfWarning(const ItemAttributes& attr, int r) : Item(attr), radius(r) {}
 
-  virtual void specialTick(double time, Level* level, Vec2 position) override {
-    Creature* owner = level->getSafeSquare(position)->getCreature();
+  virtual void specialTick(double time, Position position) override {
+    Creature* owner = position.getCreature();
     if (owner && owner->getEquipment().isEquiped(this)) {
-      Rectangle rect = Rectangle(position.x - radius, position.y - radius,
-          position.x + radius + 1, position.y + radius + 1);
       bool isDanger = false;
       bool isBigDanger = false;
-      for (Square* square : level->getSquares(rect.getAllSquares())) {
-        for (Trigger* t : square->getTriggers())
+      for (Position v : position.getRectangle(Rectangle(-radius, -radius, radius + 1, radius + 1))) {
+        for (Trigger* t : v.getTriggers())
           if (t->isDangerous(owner)) {
-            if (square->getPosition().dist8(position) <= 1)
+            if (v.dist8(position) <= 1)
               isBigDanger = true;
             else
               isDanger = true;
           }
-        if (Creature* c = square->getCreature()) {
+        if (Creature* c = v.getCreature()) {
           if (!owner->canSee(c) && c->isEnemy(owner)) {
             int diff = c->getModifier(ModifierType::DAMAGE) - owner->getModifier(ModifierType::DAMAGE);
             if (diff > 5)
@@ -131,8 +128,8 @@ class AmuletOfHealing : public Item {
   public:
   AmuletOfHealing(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void specialTick(double time, Level* level, Vec2 position) override {
-    Creature* owner = level->getSafeSquare(position)->getCreature();
+  virtual void specialTick(double time, Position position) override {
+    Creature* owner = position.getCreature();
     if (owner && owner->getEquipment().isEquiped(this)) {
       if (lastTick == -1)
         lastTick = time;
@@ -213,7 +210,7 @@ class Corpse : public Item {
     }
   }
 
-  virtual void specialTick(double time, Level* level, Vec2 position) override {
+  virtual void specialTick(double time, Position position) override {
     if (rottenTime == -1)
       rottenTime = time + rottingTime;
     if (time >= rottenTime && !rotten) {
@@ -222,15 +219,15 @@ class Corpse : public Item {
       corpseInfo.isSkeleton = true;
     } else {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))
-        Effect::applyToPosition(level, position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
+        Effect::applyToPosition(position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
-          !level->getCoverInfo(position).covered() && Random.roll(35)) {
-        for (Square* square : level->getSquares(position.neighbors8(true))) {
-          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE, level->getModel()->getPestTribe(),
-              MonsterAIFactory::scavengerBird(square->getPosition()));
-          if (square->canEnter(vulture.get())) {
-            level->addCreature(square->getPosition(), std::move(vulture));
-            level->globalMessage(square->getPosition(), "A vulture lands near " + getTheName());
+          !position.getCoverInfo().covered() && Random.roll(35)) {
+        for (Position v : position.neighbors8(true)) {
+          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE,
+              position.getModel()->getPestTribe(), MonsterAIFactory::scavengerBird(v));
+          if (v.canEnter(vulture.get())) {
+            v.addCreature(std::move(vulture));
+            v.globalMessage("A vulture lands near " + getTheName());
             rottenTime -= 40;
             break;
           }
@@ -285,16 +282,16 @@ class Potion : public Item {
   public:
   Potion(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void setOnFire(double amount, const Level* level, Vec2 position) override {
+  virtual void setOnFire(double amount, Position position) override {
     heat += amount;
     Debug() << getName() << " heat " << heat;
     if (heat > 0.1) {
-      level->globalMessage(position, getAName() + " boils and explodes!");
+      position.globalMessage(getAName() + " boils and explodes!");
       discarded = true;
     }
   }
 
-  virtual void specialTick(double time, Level* level, Vec2 position) override {
+  virtual void specialTick(double time, Position position) override {
     heat = max(0., heat - 0.005);
   }
 
@@ -363,7 +360,7 @@ class TrapItem : public Item {
 
   virtual void apply(Creature* c, Level* l) override {
     c->you(MsgType::SET_UP_TRAP, "");
-    c->getSquare()->addTrigger(Trigger::getTrap(trapObject, c->getPosition2(), effect, c->getTribe()));
+    c->getPosition().addTrigger(Trigger::getTrap(trapObject, c->getPosition(), effect, c->getTribe()));
     discarded = true;
   }
 
