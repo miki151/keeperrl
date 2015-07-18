@@ -252,7 +252,8 @@ void Player::throwItem(vector<Item*> items, optional<Vec2> dir) {
 void Player::consumeAction() {
   vector<CreatureAction> actions;
   for (Vec2 v : Vec2::directions8())
-    if (auto action = getCreature()->consume(v))
+    if (Creature* c = getCreature()->getPosition().plus(v).getCreature())
+      if (auto action = getCreature()->consume(c))
       actions.push_back(action);
   if (actions.size() == 1) {
     tryToPerform(actions[0]);
@@ -261,7 +262,8 @@ void Player::consumeAction() {
     auto dir = model->getView()->chooseDirection("Which direction?");
     if (!dir)
       return;
-    tryToPerform(getCreature()->consume(*dir));
+    if (Creature* c = getCreature()->getPosition().plus(*dir).getCreature())
+      tryToPerform(getCreature()->consume(c));
   }
 }
 

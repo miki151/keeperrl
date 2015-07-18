@@ -25,14 +25,14 @@ void ShortestPath::serialize(Archive& ar, const unsigned int version) {
     & SVAR(target)
     & SVAR(directions)
     & SVAR(bounds)
-    & SVAR(reversed)
-    & SVAR(level);
+    & SVAR(reversed);
 }
 
 SERIALIZABLE(ShortestPath);
 SERIALIZATION_CONSTRUCTOR_IMPL(ShortestPath);
 
 const double ShortestPath::infinity = 1000000000;
+const double LevelShortestPath::infinity = 1000000000;
 
 const int revShortestLimit = 15;
 
@@ -62,34 +62,6 @@ class DistanceTable {
 static DistanceTable distanceTable(Level::getMaxBounds());
 
 const int margin = 15;
-
-ShortestPath::ShortestPath(Level* l, const Creature* creature, Vec2 to, Vec2 from, double mult)
-    : target(to), directions(Vec2::directions8()), bounds(l->getBounds()), level(l) {
-  auto entryFun = [=](Vec2 v) { 
-      Position pos(v, level);
-      if (pos.canEnter(creature) || creature->getPosition() == pos) 
-        return 1.0;
-      if (pos.canNavigate(creature->getMovementType())) {
-        if (const Creature* other = pos.getCreature())
-          if (other->isFriend(creature))
-            return 1.5;
-        return 5.0;
-      }
-      return infinity;};
-  CHECK(to.inRectangle(level->getBounds()));
-  CHECK(from.inRectangle(level->getBounds()));
-  if (mult == 0) {
-    // Use a suboptimal, but faster pathfinding.
-    init(entryFun, [](Vec2 v)->double { return 2 * v.lengthD(); }, target, from);
-  } else {
-    auto lengthFun = [](Vec2 v)->double { return v.length8(); };
-    bounds = bounds.intersection(Rectangle(min(to.x, from.x) - margin, min(to.y, from.y) - margin,
-        max(to.x, from.x) + margin, max(to.y, from.y) + margin));
-    init(entryFun, lengthFun, target, none, revShortestLimit);
-    distanceTable.setDistance(target, infinity);
-    reverse(entryFun, lengthFun, mult, from, revShortestLimit);
-  }
-}
 
 ShortestPath::ShortestPath(Rectangle a, function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun,
     vector<Vec2> dir, Vec2 to, Vec2 from, double mult) : target(to), directions(dir), bounds(a) {
@@ -213,10 +185,6 @@ void ShortestPath::constructPath(Vec2 pos, bool reversed) {
   path = vector<Vec2>(ret.rbegin(), ret.rend());
 }
 
-Level* ShortestPath::getLevel() const {
-  return level;
-}
-
 bool ShortestPath::isReversed() const {
   return reversed;
 }
@@ -234,6 +202,72 @@ Vec2 ShortestPath::getNextMove(Vec2 pos) {
 
 Vec2 ShortestPath::getTarget() const {
   return target;
+}
+
+static ShortestPath makeShortestPath(const Creature* creature, Position to, Position from, double mult) {
+  Level* level = creature->getLevel();
+  Rectangle bounds = level->getBounds();
+  CHECK(to.getLevel() == level && from.getLevel() == level);
+  auto entryFun = [=](Vec2 v) { 
+      Position pos(v, level);
+      if (pos.canEnter(creature) || creature->getPosition() == pos) 
+        return 1.0;
+      if (pos.canNavigate(creature->getMovementType())) {
+        if (const Creature* other = pos.getCreature())
+          if (other->isFriend(creature))
+            return 1.5;
+        return 5.0;
+      }
+      return ShortestPath::infinity;};
+  CHECK(to.getCoord().inRectangle(level->getBounds()));
+  CHECK(from.getCoord().inRectangle(level->getBounds()));
+  if (mult == 0)
+    // Use a suboptimal, but faster pathfinding.
+    return ShortestPath(bounds, entryFun, [](Vec2 v)->double { return 2 * v.lengthD(); }, Vec2::directions8(),
+        to.getCoord(), from.getCoord(), mult);
+  else {
+    auto lengthFun = [](Vec2 v)->double { return v.length8(); };
+    Vec2 vTo = to.getCoord();
+    Vec2 vFrom = from.getCoord();
+    bounds = bounds.intersection(Rectangle(min(vTo.x, vFrom.x) - margin, min(vTo.y, vFrom.y) - margin,
+        max(vTo.x, vFrom.x) + margin, max(vTo.y, vFrom.y) + margin));
+    return ShortestPath(bounds, entryFun, lengthFun, Vec2::directions8(), to.getCoord(), from.getCoord(), mult);
+  }
+}
+
+template <class Archive> 
+void LevelShortestPath::serialize(Archive& ar, const unsigned int version) {
+  ar& SVAR(path)
+    & SVAR(level);
+}
+
+SERIALIZABLE(LevelShortestPath);
+SERIALIZATION_CONSTRUCTOR_IMPL(LevelShortestPath);
+
+
+LevelShortestPath::LevelShortestPath(const Creature* creature, Position to, Position from, double mult)
+    : path(makeShortestPath(creature, to, from, mult)), level(to.getLevel()) {
+}
+
+Level* LevelShortestPath::getLevel() const {
+  return level;
+}
+
+bool LevelShortestPath::isReachable(Position pos) const {
+  return pos.getLevel() == level && path.isReachable(pos.getCoord());
+}
+
+Position LevelShortestPath::getNextMove(Position pos) {
+  CHECK(pos.getLevel() == level);
+  return Position(path.getNextMove(pos.getCoord()), level);
+}
+
+Position LevelShortestPath::getTarget() const {
+  return Position(path.getTarget(), level);
+}
+
+bool LevelShortestPath::isReversed() const {
+  return path.isReversed();
 }
 
 Dijkstra::Dijkstra(Rectangle bounds, Vec2 from, int maxDist, function<double(Vec2)> entryFun,

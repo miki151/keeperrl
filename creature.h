@@ -35,6 +35,7 @@ class CreatureVision;
 class SquareType;
 class Location;
 class ShortestPath;
+class LevelShortestPath;
 class Equipment;
 class Spell;
 class CreatureAttributes;
@@ -165,9 +166,10 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   string getPluralTheName(Item* item, int num) const;
   string getPluralAName(Item* item, int num) const;
-  CreatureAction move(Vec2 direction) const;
   CreatureAction move(Position) const;
-  CreatureAction forceMove(Vec2 direction) const;
+  CreatureAction move(Vec2) const;
+  CreatureAction forceMove(Position) const;
+  CreatureAction forceMove(Vec2) const;
   CreatureAction swapPosition(Vec2 direction, bool force = false) const;
   CreatureAction wait() const;
   vector<Item*> getPickUpOptions() const;
@@ -207,7 +209,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction destroy(Vec2 direction, DestroyAction) const;
   CreatureAction copulate(Vec2 direction) const;
   bool canCopulateWith(const Creature*) const;
-  CreatureAction consume(Vec2 direction) const;
+  CreatureAction consume(Creature*) const;
   bool canConsume(const Creature*) const;
   bool isMinionFood() const;
   
@@ -311,7 +313,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Position SERIAL(position);
   double SERIAL(time) = 1;
   HeapAllocated<Equipment> SERIAL(equipment);
-  unique_ptr<ShortestPath> SERIAL(shortestPath);
+  unique_ptr<LevelShortestPath> SERIAL(shortestPath);
   unordered_set<const Creature*> SERIAL(knownHiding);
   Tribe* SERIAL(tribe);
   double SERIAL(health) = 1;

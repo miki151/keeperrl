@@ -1062,7 +1062,7 @@ class Consume : public NonTransferable {
       return NoMove;
     }
     if (c->getPosition().dist8(target->getPosition()) == 1) {
-      if (auto action = c->consume(c->getPosition().getDir(target->getPosition())))
+      if (auto action = c->consume(target))
         return action.append([=](Creature* c) {
           setDone();
           callback->onConsumed(c, target);

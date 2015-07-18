@@ -218,7 +218,7 @@ static void emitPoisonGas(Position pos, int strength, bool msg) {
 static void guardingBuilder(Creature* c) {
   optional<Vec2> dest;
   for (Position pos : c->getPosition().neighbors8(true))
-    if (c->move(c->getPosition().getDir(pos)) && !pos.getCreature()) {
+    if (c->move(pos) && !pos.getCreature()) {
       dest = c->getPosition().getDir(pos);
       break;
     }

@@ -193,27 +193,26 @@ class MoveRandomly : public Behaviour {
   virtual MoveInfo getMove() {
     if (!visited(creature->getPosition()))
       updateMem(creature->getPosition());
-    Vec2 direction(0, 0);
+    optional<Position> target;
     double val = 0.0001;
     if (Random.roll(2))
       return {val, creature->wait()};
     for (Position pos : creature->getPosition().neighbors8(true)) {
-      Vec2 dir = creature->getPosition().getDir(pos);
-      if (!visited(pos) && creature->move(dir)) {
-        direction = dir;
+      if (!visited(pos) && creature->move(pos)) {
+        target = pos;
         break;
       }
     }
-    if (direction == Vec2(0, 0))
-      for (Vec2 dir : Vec2::directions8(true))
-        if (creature->move(dir)) {
-          direction = dir;
+    if (!target)
+      for (Position pos: creature->getPosition().neighbors8(true))
+        if (creature->move(pos)) {
+          target = pos;
           break;
         }
-    if (direction == Vec2(0, 0))
+    if (!target)
       return {val, creature->wait() };
     else
-      return {val, creature->move(direction).append([=] (Creature* creature) {
+      return {val, creature->move(*target).append([=] (Creature* creature) {
           updateMem(creature->getPosition());
       })};
   }
@@ -251,7 +250,7 @@ class StayInPigsty : public Behaviour {
     if (Random.roll(10))
       for (Position next: creature->getPosition().neighbors8(true))
         if (next.canEnter(creature) && next.getApplyType(creature) == type)
-          return creature->move(creature->getPosition().getDir(next));
+          return creature->move(next);
     return creature->wait();
   }
 
@@ -1076,10 +1075,10 @@ class AvoidFire : public Behaviour {
     if (creature->getPosition().isBurning() && !creature->isFireResistant()) {
       for (Position pos : creature->getPosition().neighbors8(true))
         if (!pos.isBurning())
-          if (auto action = creature->move(creature->getPosition().getDir(pos)))
+          if (auto action = creature->move(pos))
             return action;
       for (Position pos : creature->getPosition().neighbors8(true))
-        if (auto action = creature->forceMove(creature->getPosition().getDir(pos)))
+        if (auto action = creature->forceMove(pos))
           return action;
     }
     return NoMove;

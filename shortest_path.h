@@ -19,13 +19,13 @@
 #include <functional>
 
 #include "util.h"
+#include "position.h"
 
 class Creature;
 class Level;
 
 class ShortestPath {
   public:
-  ShortestPath(Level* level, const Creature* creature, Vec2 target, Vec2 from, double mult = 0);
   ShortestPath(
       Rectangle area,
       function<double(Vec2)> entryFun,
@@ -38,7 +38,6 @@ class ShortestPath {
   Vec2 getNextMove(Vec2 pos);
   Vec2 getTarget() const;
   bool isReversed() const;
-  Level* getLevel() const;
 
   static const double infinity;
 
@@ -54,6 +53,23 @@ class ShortestPath {
   vector<Vec2> SERIAL(directions);
   Rectangle SERIAL(bounds);
   bool SERIAL(reversed);
+};
+
+class LevelShortestPath {
+  public:
+  LevelShortestPath(const Creature* creature, Position target, Position from, double mult = 0);
+  bool isReachable(Position) const;
+  Position getNextMove(Position);
+  Position getTarget() const;
+  bool isReversed() const;
+  Level* getLevel() const;
+
+  static const double infinity;
+
+  SERIALIZATION_DECL(LevelShortestPath);
+
+  private:
+  ShortestPath SERIAL(path);
   Level* SERIAL(level);
 };
 

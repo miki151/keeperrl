@@ -220,8 +220,12 @@ void Creature::spendTime(double t) {
 }
 
 CreatureAction Creature::forceMove(Vec2 dir) const {
+  return forceMove(position.plus(dir));
+}
+
+CreatureAction Creature::forceMove(Position pos) const {
   const_cast<Creature*>(this)->forceMovement = true;
-  CreatureAction action = move(dir);
+  CreatureAction action = move(pos);
   const_cast<Creature*>(this)->forceMovement = false;
   if (action)
     return action.prepend([this] (Creature* c) { c->forceMovement = true; })
@@ -230,11 +234,12 @@ CreatureAction Creature::forceMove(Vec2 dir) const {
     return action;
 }
 
-CreatureAction Creature::move(Position pos) const {
-  return move(position.getDir(pos));
+CreatureAction Creature::move(Vec2 dir) const {
+  return move(position.plus(dir));
 }
 
-CreatureAction Creature::move(Vec2 direction) const {
+CreatureAction Creature::move(Position pos) const {
+  Vec2 direction = position.getDir(pos);
   if (holding)
     return CreatureAction("You can't break free!");
   if ((direction.length8() != 1 || !getLevel()->canMoveCreature(this, direction)) && !swapPosition(direction))
@@ -1840,8 +1845,7 @@ vector<string> Creature::popPersonalEvents() {
   return ret;
 }
 
-CreatureAction Creature::consume(Vec2 direction) const {
-  const Creature* other = position.plus(direction).getCreature();
+CreatureAction Creature::consume(Creature* other) const {
   if (!hasSkill(Skill::get(SkillId::CONSUMPTION)) || !other || !other->isCorporal() || !isFriend(other))
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* self) {
@@ -1871,7 +1875,7 @@ CreatureAction Creature::consume(Vec2 direction) const {
     }
     self->consumeBodyParts(other->attributes->bodyParts);
     self->consumeEffects(other->attributes->permanentEffects);
-    position.plus(direction).getCreature()->die(self, true, false);
+    other->die(self, true, false);
     self->spendTime(2);
   });
 }
@@ -2099,18 +2103,16 @@ int Creature::getDifficultyPoints() const {
 }
 
 CreatureAction Creature::continueMoving() {
-  if (shortestPath && shortestPath->getLevel() == getLevel() &&
-      shortestPath->isReachable(getPosition().getCoord())) {
-    Vec2 pos2 = shortestPath->getNextMove(getPosition().getCoord());
-    return move(pos2 - getPosition().getCoord());
-  }
-  return CreatureAction();
+  if (shortestPath && shortestPath->isReachable(getPosition()))
+    return move(shortestPath->getNextMove(getPosition()));
+  else
+    return CreatureAction();
 }
 
 CreatureAction Creature::stayIn(const Location* location) {
   if (!location->contains(getPosition())) {
-    for (Vec2 v : Vec2::directions8())
-      if (location->contains(position.plus(v)))
+    for (Position v : position.neighbors8(true))
+      if (location->contains(v))
         if (auto action = move(v))
           return action;
     return moveTowards(location->getMiddle());
@@ -2146,40 +2148,36 @@ bool Creature::canNavigateTo(Vec2 pos) const {
 
 CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
   CHECK(pos.isSameLevel(position));
-  Vec2 currentCoord = getPosition().getCoord();
   if (stepOnTile && !pos.canEnterEmpty(this))
     return CreatureAction();
   MEASURE(
   if (!away && !canNavigateTo(pos.getCoord()))
     return CreatureAction();
   , "Creature Sector checking " + getName().bare() + " from " + toString(position) + " to " + toString(pos));
-  Debug() << "" << currentCoord << (away ? "Moving away from" : " Moving toward ") << pos.getCoord();
+  Debug() << "" << position.getCoord() << (away ? "Moving away from" : " Moving toward ") << pos.getCoord();
   bool newPath = false;
-  bool targetChanged = shortestPath && shortestPath->getTarget().dist8(pos.getCoord()) >
-      currentCoord.dist8(pos.getCoord()) / 10;
+  bool targetChanged = shortestPath && shortestPath->getTarget().dist8(pos) > position.dist8(pos) / 10;
   if (!shortestPath || targetChanged || shortestPath->isReversed() != away) {
     newPath = true;
     if (!away)
-      shortestPath.reset(new ShortestPath(getLevel(), this, pos.getCoord(), currentCoord));
+      shortestPath.reset(new LevelShortestPath(this, pos, position));
     else
-      shortestPath.reset(new ShortestPath(getLevel(), this, pos.getCoord(), currentCoord, -1.5));
+      shortestPath.reset(new LevelShortestPath(this, pos, position, -1.5));
   }
   CHECK(shortestPath);
-  if (shortestPath->isReachable(currentCoord)) {
-    Vec2 pos2 = shortestPath->getNextMove(currentCoord);
-    if (auto action = move(pos2 - currentCoord))
+  if (shortestPath->isReachable(position))
+    if (auto action = move(shortestPath->getNextMove(position)))
       return action;
-  }
   if (newPath)
     return CreatureAction();
   Debug() << "Reconstructing shortest path.";
   if (!away)
-    shortestPath.reset(new ShortestPath(getLevel(), this, pos.getCoord(), currentCoord));
+    shortestPath.reset(new LevelShortestPath(this, pos, position));
   else
-    shortestPath.reset(new ShortestPath(getLevel(), this, pos.getCoord(), currentCoord, -1.5));
-  if (shortestPath->isReachable(currentCoord)) {
-    Position pos2 = Position(shortestPath->getNextMove(currentCoord), getLevel());
-    if (auto action = move(position.getDir(pos2)))
+    shortestPath.reset(new LevelShortestPath(this, pos, position, -1.5));
+  if (shortestPath->isReachable(position)) {
+    Position pos2 = shortestPath->getNextMove(position);
+    if (auto action = move(pos2))
       return action;
     else {
       if (!pos2.canEnterEmpty(this))
@@ -2210,7 +2208,7 @@ CreatureAction Creature::moveAway(Position pos, bool pathfinding) {
 }
 
 bool Creature::atTarget() const {
-  return shortestPath && getPosition() == Position(shortestPath->getTarget(), shortestPath->getLevel());
+  return shortestPath && getPosition() == shortestPath->getTarget();
 }
 
 void Creature::youHit(BodyPart part, AttackType type) const {
