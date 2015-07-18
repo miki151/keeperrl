@@ -105,7 +105,7 @@ void Level::addCreature(Vec2 position, PCreature c) {
   putCreature(position, ref);
 }
 
-const static double darknessRadius = 4.5;
+const static double darknessRadius = 6.5;
 
 void Level::putCreature(Vec2 position, Creature* c) {
   CHECK(inBounds(position));
@@ -235,7 +235,7 @@ bool Level::isInSunlight(Vec2 pos) const {
 }
 
 double Level::getLight(Vec2 pos) const {
-  return max(0.0, min(lightCapAmount[pos], lightAmount[pos] +
+  return max(0.0, min(coverInfo[pos].covered() ? 1 : lightCapAmount[pos], lightAmount[pos] +
         coverInfo[pos].sunlight() * model->getSunlightInfo().lightAmount));
 }
 
@@ -525,36 +525,6 @@ vector<Position> Level::getAllPositions() const {
   return ret;
 }
 
-/*vector<const Square*> Level::getSquare(Vec2 pos) const {
-  if (inBounds(pos))
-    return {getSafeSquare(pos)};
-  else
-    return {};
-}
-
-vector<Square*> Level::getSquare(Vec2 pos) {
-  if (inBounds(pos))
-    return {getSafeSquare(pos)};
-  else
-    return {};
-}
-
-vector<const Square*> Level::getSquares(const  vector<Vec2>& pos) const {
-  vector<const Square*> ret;
-  for (Vec2 v : pos)
-    if (inBounds(v))
-      ret.push_back(getSafeSquare(v));
-  return ret;
-}
-
-vector<Square*> Level::getSquares(const vector<Vec2>& pos) {
-  vector<Square*> ret;
-  for (Vec2 v : pos)
-    if (inBounds(v))
-      ret.push_back(getSafeSquare(v));
-  return ret;
-}*/
-
 void Level::addTickingSquare(Vec2 pos) {
   tickingSquares.insert(pos);
 }
@@ -592,6 +562,8 @@ void Level::updateConnectivity(Vec2 pos) {
 }
 
 bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement) const {
+  if (!inBounds(p1) || !inBounds(p2))
+    return false;
   if (!sectors.count(movement)) {
     sectors[movement] = Sectors(getBounds());
     Sectors& newSectors = sectors.at(movement);

@@ -1244,6 +1244,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage += 4;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.skills.setValue(SkillId::SORCERY, 0.5);
+          c.permanentEffects[LastingEffect::DARKNESS_SOURCE] = 1;
           c.name = "vampire lord";);
       /*   case CreatureId::VAMPIRE_BAT: 
            return PCreature(new Shapechanger(

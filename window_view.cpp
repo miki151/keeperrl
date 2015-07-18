@@ -670,7 +670,7 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
 
 bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {
   int index = defaultNo ? 1 : 0;
-  return chooseFromListInternal("", {ListElem(message, ListElem::TITLE), "Yes", "No"}, index,
+  return chooseFromListInternal("", {ListElem(capitalFirst(message), ListElem::TITLE), "Yes", "No"}, index,
       MenuType::YES_NO, nullptr, none, none, {}) == 0;
 }
 
