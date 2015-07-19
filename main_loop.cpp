@@ -64,7 +64,7 @@ static string getSaveSuffix(Model::GameType t) {
 }
 
 template <typename InputType>
-static unique_ptr<Model> loadGameUsing(const string& filename, bool eraseFile, bool serializationBugfix) {
+static unique_ptr<Model> loadGameUsing(const string& filename, bool eraseFile) {
   unique_ptr<Model> model;
   try {
     InputType input(filename.c_str());
@@ -72,14 +72,8 @@ static unique_ptr<Model> loadGameUsing(const string& filename, bool eraseFile, b
     int version;
     input.getArchive() >>BOOST_SERIALIZATION_NVP(version) >> BOOST_SERIALIZATION_NVP(discard);
     Serialization::registerTypes(input.getArchive(), version);
-    if (serializationBugfix)
-      VillageControl::serializationBugfix = true;
     input.getArchive() >> BOOST_SERIALIZATION_NVP(model);
-    VillageControl::serializationBugfix = false;
   } catch (boost::archive::archive_exception& ex) {
-    if (!serializationBugfix)
-      return loadGameUsing<InputType>(filename, eraseFile, true);
-    else
       return nullptr;
   }
   if (eraseFile)
@@ -88,9 +82,9 @@ static unique_ptr<Model> loadGameUsing(const string& filename, bool eraseFile, b
 }
 
 static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
-  if (auto model = loadGameUsing<CompressedInput>(filename, eraseFile, false))
+  if (auto model = loadGameUsing<CompressedInput>(filename, eraseFile))
     return model;
-  return loadGameUsing<CompressedInput2>(filename, eraseFile, false);
+  return loadGameUsing<CompressedInput2>(filename, eraseFile); // Try alternative format that doesn't crash on OSX.
 }
 
 bool isNonAscii(char c) {

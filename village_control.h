@@ -20,6 +20,7 @@
 #include "collective_control.h"
 #include "enum_variant.h"
 #include "entity_set.h"
+#include "creature_factory.h"
 
 class Task;
 
@@ -27,10 +28,12 @@ enum class VillageBehaviourId {
   KILL_LEADER,
   KILL_MEMBERS,
   STEAL_GOLD,
+  CAMP_AND_SPAWN,
 };
 
-typedef EnumVariant<VillageBehaviourId, TYPES(int),
-        ASSIGN(int, VillageBehaviourId::KILL_MEMBERS)> VillageBehaviour;
+typedef EnumVariant<VillageBehaviourId, TYPES(int, CreatureFactory),
+        ASSIGN(int, VillageBehaviourId::KILL_MEMBERS),
+        ASSIGN(CreatureFactory, VillageBehaviourId::CAMP_AND_SPAWN)> VillageBehaviour;
 
 RICH_ENUM(AttackTriggerId,
   POWER,
@@ -38,11 +41,12 @@ RICH_ENUM(AttackTriggerId,
   ENEMY_POPULATION,
   GOLD,
   STOLEN_ITEMS,
-  ROOM_BUILT
+  ROOM_BUILT,
+  TIMER
 );
 
 typedef EnumVariant<AttackTriggerId, TYPES(int, SquareType),
-        ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD),
+        ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD, AttackTriggerId::TIMER),
         ASSIGN(SquareType, AttackTriggerId::ROOM_BUILT)> AttackTrigger;
 
 enum class AttackPrerequisite { POK }; // OBSOLETE
@@ -51,8 +55,6 @@ class VillageControl : public CollectiveControl {
   public:
   typedef VillageBehaviour Behaviour;
   typedef AttackTrigger Trigger;
-
-  static bool serializationBugfix;
 
   enum AttackMessage {
     CREATURE_TITLE,

@@ -97,20 +97,20 @@ void Effect::registerTypes(Archive& ar, int version) {
 
 REGISTER_TYPES(Effect::registerTypes);
 
-static int summonCreatures(Position pos, int radius, vector<PCreature> creatures) {
-  int numCreated = 0;
+static vector<Creature*> summonCreatures(Position pos, int radius, vector<PCreature> creatures) {
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
+  vector<Creature*> ret;
   for (int i : All(creatures))
     for (Position v : randomPermutation(area))
       if (v.canEnter(creatures[i].get())) {
-        ++numCreated;
+        ret.push_back(creatures[i].get());
         v.addCreature(std::move(creatures[i]));
         break;
   }
-  return numCreated;
+  return ret;
 }
 
-static int summonCreatures(Creature* c, int radius, vector<PCreature> creatures) {
+static vector<Creature*> summonCreatures(Creature* c, int radius, vector<PCreature> creatures) {
   return summonCreatures(c->getPosition(), radius, std::move(creatures));
 }
 
@@ -234,19 +234,19 @@ static void guardingBuilder(Creature* c) {
   }
 }
 
-void Effect::summon(Creature* c, CreatureId id, int num, int ttl) {
+vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, int ttl) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(CreatureFactory::fromId(id, c->getTribe(), MonsterAIFactory::summoned(c, ttl)));
-  summonCreatures(c, 2, std::move(creatures));
+  return summonCreatures(c, 2, std::move(creatures));
 }
 
-void Effect::summon(Position pos, const CreatureFactory& factory1, int num, int ttl) {
+vector<Creature*> Effect::summon(Position pos, const CreatureFactory& factory1, int num, int ttl) {
   CreatureFactory factory(factory1);
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(factory.random(MonsterAIFactory::dieTime(pos.getModel()->getTime() + ttl)));
-  summonCreatures(pos, 2, std::move(creatures));
+  return summonCreatures(pos, 2, std::move(creatures));
 }
 
 static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improved") {

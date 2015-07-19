@@ -28,6 +28,9 @@
 #include "tribe.h"
 #include "skill.h"
 #include "entity_name.h"
+#include "collective_teams.h"
+#include "effect.h"
+#include "creature_factory.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -844,7 +847,7 @@ class AttackLeader : public NonTransferable {
   AttackLeader(Collective* col) : collective(col) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (c->getLevel() != collective->getLevel() || !collective->getLeader())
+    if (!collective->getLeader())
       return NoMove;
     return c->moveTowards(collective->getLeader()->getPosition());
   }
@@ -879,6 +882,89 @@ PTask Task::stealFrom(Collective* collective, TaskCallback* callback) {
       tasks.push_back(pickItem(callback, pos, gold));
   }
   return chain(std::move(tasks));
+}
+
+namespace {
+
+class CampAndSpawn : public NonTransferable {
+  public:
+  CampAndSpawn(Collective* _target, Collective* _self, CreatureFactory s, int defense, Range attack)
+    : target(_target), self(_self), spawns(s), campPos(chooseRandom(target->getExtendedTiles(15, 8))),
+      defenseSize(defense), attackSize(attack) {}
+
+  MoveInfo makeTeam(Creature* c, optional<TeamId>& team, int minMembers, vector<Creature*> initial) {
+    if (!team || !self->getTeams().exists(*team) || self->getTeams().getMembers(*team).size() < minMembers)
+      return c->wait().append([this, &team, initial] (Creature* c) {
+          for (Creature* spawn : Effect::summon(c->getPosition(), spawns, 1, 10000)) {
+            self->addCreature(spawn, {MinionTrait::FIGHTER});
+            if (!team || !self->getTeams().exists(*team)) {
+              team = self->getTeams().createPersistent(concat(initial, {spawn}));
+              self->getTeams().activate(*team);
+            } else
+              self->getTeams().add(*team, spawn);
+          }
+        });
+    else
+      return NoMove;
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (!target->getLeader())
+      return NoMove;
+    if (auto move = makeTeam(c, defenseTeam, defenseSize + 1, {c}))
+      return move;
+    if (c->getPosition() != campPos)
+      return c->moveTowards(campPos);
+    if (attackTeam && !self->getTeams().exists(*attackTeam))
+      currentAttack.reset();
+    if (!currentAttack) {
+      currentAttack = Random.get(attackSize);
+      if (auto move = makeTeam(c, attackTeam, *currentAttack, {}))
+        return move;
+      for (Creature* c : self->getTeams().getMembers(*attackTeam))
+        self->setTask(c, Task::attackLeader(target));
+    }
+    return c->wait();
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(target)
+      & SVAR(self)
+      & SVAR(spawns)
+      & SVAR(campPos)
+      & SVAR(defenseSize)
+      & SVAR(attackSize)
+      & SVAR(currentAttack)
+      & SVAR(defenseTeam)
+      & SVAR(attackTeam);
+  }
+
+  virtual string getDescription() const override {
+    return "Camp and spawn " + target->getLeader()->getName().bare();
+  }
+ 
+  SERIALIZATION_CONSTRUCTOR(CampAndSpawn);
+
+  private:
+  Collective* SERIAL(target);
+  Collective* SERIAL(self);
+  CreatureFactory SERIAL(spawns);
+  Position SERIAL(campPos);
+  int SERIAL(defenseSize);
+  Range SERIAL(attackSize);
+  optional<int> SERIAL(currentAttack);
+  optional<TeamId> SERIAL(defenseTeam);
+  optional<TeamId> SERIAL(attackTeam);
+};
+
+
+}
+
+PTask Task::campAndSpawn(Collective* target, Collective* self, const CreatureFactory& spawns, int defenseSize,
+    Range attackSize) {
+  return PTask(new CampAndSpawn(target, self, spawns, defenseSize, attackSize));
 }
 
 namespace {
@@ -1262,6 +1348,7 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Eat);
   REGISTER_TYPE(ar, GoTo);
   REGISTER_TYPE(ar, DropItems);
+  REGISTER_TYPE(ar, CampAndSpawn);
 }
 
 REGISTER_TYPES(Task::registerTypes);

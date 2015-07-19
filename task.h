@@ -24,6 +24,7 @@
 class SquareType;
 class Location;
 class TaskCallback;
+class CreatureFactory;
 
 class Task : public UniqueEntity<Task> {
   public:
@@ -56,6 +57,8 @@ class Task : public UniqueEntity<Task> {
   static PTask chain(vector<PTask>);
   static PTask explore(Position);
   static PTask attackLeader(Collective*);
+  static PTask campAndSpawn(Collective* target, Collective* self, const CreatureFactory&, int defenseSize,
+      Range attackSize);
   static PTask killFighters(Collective*, int numFighters);
   static PTask stealFrom(Collective*, TaskCallback*);
   static PTask createBed(TaskCallback*, Position, const SquareType& fromType, const SquareType& toType);

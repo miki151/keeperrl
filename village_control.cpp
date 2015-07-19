@@ -27,38 +27,20 @@
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
 
-bool VillageControl::serializationBugfix = false;
-
 template <class Archive>
 void VillageControl::Villain::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(minPopulation)
     & SVAR(minTeamSize)
-    & SVAR(collective);
-  if (serializationBugfix) {
-    vector<OldTrigger> SERIAL(tmp);
-    ar & SVAR(tmp);
-    for (auto& elem : tmp) {
-      switch (elem.getId()) {
-        case AttackTriggerId::ENEMY_POPULATION:
-        case AttackTriggerId::GOLD:
-          triggers.emplace_back(elem.getId(), elem.get<int>());
-          break;
-        default:
-          triggers.emplace_back(elem.getId());
-          break;
-      }
-    }
-  } else
-    ar & SVAR(triggers);
-  ar& SVAR(prerequisites)
+    & SVAR(collective)
+    & SVAR(triggers)
+    & SVAR(prerequisites)
     & SVAR(behaviour)
     & SVAR(leaderAttacks)
     & SVAR(attackMessage)
     & SVAR(welcomeMessage);
 }
 
-VillageControl::VillageControl(Collective* col, vector<Villain> v)
-    : CollectiveControl(col), villains(v) {
+VillageControl::VillageControl(Collective* col, vector<Villain> v) : CollectiveControl(col), villains(v) {
   for (Position v : col->getAllSquares())
     for (Item* it : v.getItems())
       myItems.insert(it);
@@ -181,6 +163,8 @@ PTask VillageControl::Villain::getAttackTask(VillageControl* self) {
     case VillageBehaviourId::KILL_LEADER: return Task::attackLeader(collective);
     case VillageBehaviourId::KILL_MEMBERS: return Task::killFighters(collective, behaviour.get<int>());
     case VillageBehaviourId::STEAL_GOLD: return Task::stealFrom(collective, self->getCollective());
+    case VillageBehaviourId::CAMP_AND_SPAWN: return Task::campAndSpawn(collective, self->getCollective(),
+        behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7));
   }
 }
 
@@ -274,6 +258,8 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
   double stolenMaxProb = 1.0 / 300;
   double roomMaxProb = 1.0 / 1000;
   switch (trigger.getId()) {
+    case AttackTriggerId::TIMER: 
+      return villain->getTime() >= trigger.get<int>() ? 0.05 : 0;
     case AttackTriggerId::ROOM_BUILT: 
       return villain->getSquares(trigger.get<SquareType>()).empty() ? 0 : roomMaxProb;
     case AttackTriggerId::POWER: 
