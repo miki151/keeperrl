@@ -155,6 +155,23 @@ vector<EnemyInfo> getEnemyInfo(TribeSet& tribeSet) {
   append(ret, getVaults(tribeSet));
   append(ret, {
       {CONSTRUCT(SettlementInfo,
+          c.type = SettlementType::COTTAGE;
+          c.creatures = CreatureFactory::singleType(tribeSet.human.get(), CreatureId::ELEMENTALIST);
+          c.numCreatures = 1;
+          c.location = new Location(true);
+          c.tribe = tribeSet.human.get();
+          c.buildingId = BuildingId::WOOD;
+          c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+       CollectiveConfig::noImmigrants(),
+       {CONSTRUCT(VillainInfo,
+          c.minPopulation = 0;
+          c.minTeamSize = 1;
+          c.leaderAttacks = true;
+          c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE});
+          c.behaviour = VillageBehaviour(VillageBehaviourId::CAMP_AND_SPAWN,
+            CreatureFactory::elementals(tribeSet.human.get()));
+          c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
+      {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CASTLE2;
           c.creatures = CreatureFactory::vikingTown(tribeSet.human.get());
           c.numCreatures = Random.get(12, 16);

@@ -764,6 +764,11 @@ CreatureFactory CreatureFactory::waterCreatures(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::KRAKEN }, {1}, { });
 }
 
+CreatureFactory CreatureFactory::elementals(Tribe* tribe) {
+  return CreatureFactory(tribe, {CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL, CreatureId::WATER_ELEMENTAL,
+      CreatureId::EARTH_ELEMENTAL}, {1, 1, 1, 1}, {});
+}
+
 CreatureFactory CreatureFactory::lavaCreatures(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::FIRE_SPHERE }, {1}, { });
 }
@@ -1843,6 +1848,19 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.weight = 10;
           c.name = "fire sphere";);
+    case CreatureId::ELEMENTALIST: 
+      return CATTR(
+          c.viewId = ViewId::ELEMENTALIST;
+          c.attr[AttrType::SPEED] = 100;
+          c.size = CreatureSize::LARGE;
+          c.attr[AttrType::STRENGTH] = 14;
+          c.attr[AttrType::DEXTERITY] = 12;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 70;
+          c.chatReactionFriendly = "curses all dungeons";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = "elementalist";);
     case CreatureId::FIRE_ELEMENTAL:
       return INHERIT(FIRE_SPHERE,
           c.viewId = ViewId::FIRE_ELEMENTAL;

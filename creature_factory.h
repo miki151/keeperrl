@@ -96,6 +96,8 @@ RICH_ENUM(CreatureId,
 
     LIZARDMAN,
     LIZARDLORD,
+
+    ELEMENTALIST,
     
     ELF,
     ELF_ARCHER,
@@ -166,6 +168,7 @@ class CreatureFactory {
   static CreatureFactory insects(Tribe* tribe);
   static CreatureFactory lavaCreatures(Tribe* tribe);
   static CreatureFactory waterCreatures(Tribe* tribe);
+  static CreatureFactory elementals(Tribe* tribe);
   
   PCreature random(const MonsterAIFactory&);
   PCreature random();

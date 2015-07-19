@@ -58,7 +58,7 @@ class Task : public UniqueEntity<Task> {
   static PTask explore(Position);
   static PTask attackLeader(Collective*);
   static PTask campAndSpawn(Collective* target, Collective* self, const CreatureFactory&, int defenseSize,
-      Range attackSize);
+      Range attackSize, int numAttacks);
   static PTask killFighters(Collective*, int numFighters);
   static PTask stealFrom(Collective*, TaskCallback*);
   static PTask createBed(TaskCallback*, Position, const SquareType& fromType, const SquareType& toType);

@@ -411,6 +411,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::STONE_GOLEM, sprite(10, 10));
     Tile::addTile(ViewId::IRON_GOLEM, sprite(12, 10));
     Tile::addTile(ViewId::LAVA_GOLEM, sprite(13, 10));
+    Tile::addTile(ViewId::ELEMENTALIST, sprite(4, 0));
     Tile::addTile(ViewId::AIR_ELEMENTAL, sprite("airelemental"));
     Tile::addTile(ViewId::FIRE_ELEMENTAL, sprite("fireelemental"));
     Tile::addTile(ViewId::WATER_ELEMENTAL, sprite("waterelemental"));
@@ -685,6 +686,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::STONE_GOLEM, symbol("Y", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::IRON_GOLEM, symbol("Y", ColorId::ORANGE));
     Tile::addSymbol(ViewId::LAVA_GOLEM, symbol("Y", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::ELEMENTALIST, symbol("@", ColorId::YELLOW));
     Tile::addSymbol(ViewId::AIR_ELEMENTAL, symbol("E", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::FIRE_ELEMENTAL, symbol("E", ColorId::RED));
     Tile::addSymbol(ViewId::WATER_ELEMENTAL, symbol("E", ColorId::BLUE));

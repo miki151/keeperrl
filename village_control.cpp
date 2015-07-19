@@ -164,7 +164,7 @@ PTask VillageControl::Villain::getAttackTask(VillageControl* self) {
     case VillageBehaviourId::KILL_MEMBERS: return Task::killFighters(collective, behaviour.get<int>());
     case VillageBehaviourId::STEAL_GOLD: return Task::stealFrom(collective, self->getCollective());
     case VillageBehaviourId::CAMP_AND_SPAWN: return Task::campAndSpawn(collective, self->getCollective(),
-        behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7));
+        behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
   }
 }
 

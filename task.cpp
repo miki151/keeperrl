@@ -888,14 +888,16 @@ namespace {
 
 class CampAndSpawn : public NonTransferable {
   public:
-  CampAndSpawn(Collective* _target, Collective* _self, CreatureFactory s, int defense, Range attack)
-    : target(_target), self(_self), spawns(s), campPos(chooseRandom(target->getExtendedTiles(15, 8))),
-      defenseSize(defense), attackSize(attack) {}
+  CampAndSpawn(Collective* _target, Collective* _self, CreatureFactory s, int defense, Range attack, int numAtt)
+    : target(_target), self(_self), spawns(s), campPos(randomPermutation(target->getExtendedTiles(15, 8))),
+      defenseSize(defense), attackSize(attack), numAttacks(numAtt) {}
 
-  MoveInfo makeTeam(Creature* c, optional<TeamId>& team, int minMembers, vector<Creature*> initial) {
-    if (!team || !self->getTeams().exists(*team) || self->getTeams().getMembers(*team).size() < minMembers)
+  MoveInfo makeTeam(Creature* c, optional<TeamId>& team, int minMembers, vector<Creature*> initial, int delay) {
+    if (!team || !self->getTeams().exists(*team) || self->getTeams().getMembers(*team).size() < minMembers) {
+      if (!Random.roll(delay))
+        return c->wait();
       return c->wait().append([this, &team, initial] (Creature* c) {
-          for (Creature* spawn : Effect::summon(c->getPosition(), spawns, 1, 10000)) {
+          for (Creature* spawn : Effect::summon(c->getPosition(), spawns, 1, 1000)) {
             self->addCreature(spawn, {MinionTrait::FIGHTER});
             if (!team || !self->getTeams().exists(*team)) {
               team = self->getTeams().createPersistent(concat(initial, {spawn}));
@@ -904,25 +906,34 @@ class CampAndSpawn : public NonTransferable {
               self->getTeams().add(*team, spawn);
           }
         });
-    else
+    } else
       return NoMove;
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (!target->getLeader())
+    if (!target->getLeader() || campPos.empty()) {
+      setDone();
       return NoMove;
-    if (auto move = makeTeam(c, defenseTeam, defenseSize + 1, {c}))
+    }
+    if (auto move = makeTeam(c, defenseTeam, defenseSize + 1, {c}, 1))
       return move;
-    if (c->getPosition() != campPos)
-      return c->moveTowards(campPos);
+    if (!contains(campPos, c->getPosition()))
+      return c->moveTowards(campPos[0]);
     if (attackTeam && !self->getTeams().exists(*attackTeam))
-      currentAttack.reset();
-    if (!currentAttack) {
+      attackTeam.reset();
+    if (!attackTeam) {
+      if (numAttacks-- <= 0) {
+        setDone();
+        return c->wait();
+      }
       currentAttack = Random.get(attackSize);
-      if (auto move = makeTeam(c, attackTeam, *currentAttack, {}))
+    }
+    if (currentAttack) {
+      if (auto move = makeTeam(c, attackTeam, *currentAttack, {}, attackTeam ? 15 : 1))
         return move;
       for (Creature* c : self->getTeams().getMembers(*attackTeam))
         self->setTask(c, Task::attackLeader(target));
+      currentAttack.reset();
     }
     return c->wait();
   }
@@ -938,7 +949,8 @@ class CampAndSpawn : public NonTransferable {
       & SVAR(attackSize)
       & SVAR(currentAttack)
       & SVAR(defenseTeam)
-      & SVAR(attackTeam);
+      & SVAR(attackTeam)
+      & SVAR(numAttacks);
   }
 
   virtual string getDescription() const override {
@@ -951,20 +963,21 @@ class CampAndSpawn : public NonTransferable {
   Collective* SERIAL(target);
   Collective* SERIAL(self);
   CreatureFactory SERIAL(spawns);
-  Position SERIAL(campPos);
+  vector<Position> SERIAL(campPos);
   int SERIAL(defenseSize);
   Range SERIAL(attackSize);
   optional<int> SERIAL(currentAttack);
   optional<TeamId> SERIAL(defenseTeam);
   optional<TeamId> SERIAL(attackTeam);
+  int SERIAL(numAttacks);
 };
 
 
 }
 
 PTask Task::campAndSpawn(Collective* target, Collective* self, const CreatureFactory& spawns, int defenseSize,
-    Range attackSize) {
-  return PTask(new CampAndSpawn(target, self, spawns, defenseSize, attackSize));
+    Range attackSize, int numAttacks) {
+  return PTask(new CampAndSpawn(target, self, spawns, defenseSize, attackSize, numAttacks));
 }
 
 namespace {
