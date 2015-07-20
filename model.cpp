@@ -538,7 +538,7 @@ Position Model::getStairs(const Level* from, const Level* to) {
         (elem.second.first == to && elem.second.second == from))
       key = elem.first;
   CHECK(key);
-  return chooseRandom(from->getLandingSquares(*key));
+  return Random.choose(from->getLandingSquares(*key));
 }
 
 bool Model::changeLevel(Position position, Creature* c) {

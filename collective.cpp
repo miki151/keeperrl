@@ -319,7 +319,7 @@ void Collective::banishCreature(Creature* c) {
   if (!items.empty())
     tasks.push_back(Task::dropItems(items));
   if (!exitTiles.empty())
-    tasks.push_back(Task::goTo(chooseRandom(exitTiles)));
+    tasks.push_back(Task::goTo(Random.choose(exitTiles)));
   tasks.push_back(Task::disappear());
   c->setController(PController(new Monster(c, MonsterAIFactory::singleTask(Task::chain(std::move(tasks))))));
   banished.push_back(c);
@@ -424,7 +424,7 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
         return NoMove;
     } else if (!hasTrait(c, MinionTrait::NO_RETURNING) &&  !getAllSquares().empty() &&
                !getAllSquares().count(c->getPosition()))
-        return c->moveTowards(chooseRandom(getAllSquares()));
+        return c->moveTowards(Random.choose(getAllSquares()));
       return NoMove;
   }
 }
@@ -477,7 +477,7 @@ void Collective::setRandomTask(const Creature* c) {
     if (isTaskGood(c, t))
       goodTasks.push_back({t, c->getMinionTasks().getValue(t)});
   if (!goodTasks.empty())
-    setMinionTask(c, chooseRandom(goodTasks));
+    setMinionTask(c, Random.choose(goodTasks));
 }
 
 static bool betterPos(Position from, Position current, Position candidate) {
@@ -497,7 +497,7 @@ static optional<Position> getRandomCloseTile(Position from, const vector<Positio
 }
 
 optional<Position> Collective::getTileToExplore(const Creature* c, MinionTask task) const {
-  vector<Position> border = randomPermutation(knownTiles->getBorderTiles());
+  vector<Position> border = Random.permutation(knownTiles->getBorderTiles());
   switch (task) {
     case MinionTask::EXPLORE_CAVES:
       if (auto pos = getRandomCloseTile(c->getPosition(), border,
@@ -578,7 +578,7 @@ SquareType Collective::getHatcheryType(Tribe* tribe) {
 }
 
 Creature* Collective::getCopulationTarget(Creature* succubus) {
-  for (Creature* c : randomPermutation(getCreatures(MinionTrait::FIGHTER)))
+  for (Creature* c : Random.permutation(getCreatures(MinionTrait::FIGHTER)))
     if (succubus->canCopulateWith(c))
       return c;
   return nullptr;
@@ -587,14 +587,14 @@ Creature* Collective::getCopulationTarget(Creature* succubus) {
 Creature* Collective::getConsumptionTarget(Creature* consumer) {
   vector<Creature*> v = getConsumptionTargets(consumer);
   if (!v.empty())
-    return chooseRandom(v);
+    return Random.choose(v);
   else
     return nullptr;
 }
 
 vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) {
   vector<Creature*> ret;
-  for (Creature* c : randomPermutation(getCreatures(MinionTrait::FIGHTER)))
+  for (Creature* c : Random.permutation(getCreatures(MinionTrait::FIGHTER)))
     if (consumer->canConsume(c) && c != getLeader())
       ret.push_back(c);
   return ret;
@@ -720,7 +720,7 @@ MoveInfo Collective::getMove(Creature* c) {
       return taskMap->addTask(std::move(t), c)->getMove(c);
   if (!hasTrait(c, MinionTrait::NO_RETURNING) && !getAllSquares().empty() &&
       !getAllSquares().count(c->getPosition()) && teams->getActiveTeams(c).empty())
-    return c->moveTowards(chooseRandom(getAllSquares()));
+    return c->moveTowards(Random.choose(getAllSquares()));
   else
     return NoMove;
 }
@@ -796,7 +796,7 @@ static optional<Position> chooseBedPos(const set<Position>& lair, const set<Posi
       res.push_back(v);
   }
   if (!res.empty())
-    return chooseRandom(res);
+    return Random.choose(res);
   else
     return none;
 }
@@ -837,7 +837,7 @@ vector<Position> Collective::getSpawnPos(const vector<Creature*>& creatures) {
     Position pos;
     int cnt = 100;
     do {
-      pos = chooseRandom(extendedTiles);
+      pos = Random.choose(extendedTiles);
     } while ((!pos.canEnter(c) || contains(spawnPos, pos)) && --cnt > 0);
     if (cnt == 0) {
       Debug() << "Couldn't spawn immigrant " << c->getName().bare();
@@ -890,7 +890,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
     return false;
   vector<Position> spawnPos;
   if (info.spawnAtDorm) {
-    for (Position v : randomPermutation(getSquares(dormType)))
+    for (Position v : Random.permutation(getSquares(dormType)))
       if (v.canEnter(creatures[spawnPos.size()].get())) {
         spawnPos.push_back(v);
         if (spawnPos.size() >= creatures.size())
@@ -1002,7 +1002,7 @@ void Collective::considerImmigration() {
   if (!ok)
     return;
   for (int i : Range(10))
-    if (considerImmigrant(chooseRandom(config->getImmigrantInfo(), weights)))
+    if (considerImmigrant(Random.choose(config->getImmigrantInfo(), weights)))
       break;
 }
 
@@ -1082,8 +1082,8 @@ void Collective::considerBirths() {
         candidates.emplace_back(elem.id, elem.frequency);
     if (candidates.empty())
       return;
-    PCreature spawn = CreatureFactory::fromId(chooseRandom(candidates), getTribe());
-    for (Position pos : c->getPosition().neighbors8(true))
+    PCreature spawn = CreatureFactory::fromId(Random.choose(candidates), getTribe());
+    for (Position pos : c->getPosition().neighbors8(Random))
       if (pos.canEnter(spawn.get())) {
         control->addMessage(c->getName().a() + " gives birth to " + spawn->getName().a());
         addCreature(std::move(spawn), pos, {MinionTrait::FIGHTER});
@@ -1534,7 +1534,7 @@ void Collective::takeResource(const CostInfo& cost) {
     }
   }
   if (resourceInfo.at(cost.id()).itemIndex)
-    for (Position pos : randomPermutation(getAllSquares(resourceInfo.at(cost.id()).storageType))) {
+    for (Position pos : Random.permutation(getAllSquares(resourceInfo.at(cost.id()).storageType))) {
       vector<Item*> goldHere = pos.getItems(*resourceInfo.at(cost.id()).itemIndex);
       for (Item* it : goldHere) {
         pos.removeItem(it);
@@ -1551,7 +1551,7 @@ void Collective::returnResource(const CostInfo& amount) {
   CHECK(amount.value() > 0);
   vector<Position> destination = getAllSquares(resourceInfo.at(amount.id()).storageType);
   if (!destination.empty()) {
-    chooseRandom(destination).dropItems(ItemFactory::fromId(resourceInfo.at(amount.id()).itemId, amount.value()));
+    Random.choose(destination).dropItems(ItemFactory::fromId(resourceInfo.at(amount.id()).itemId, amount.value()));
   } else
     credit[amount.id()] += amount.value();
 }
@@ -2005,10 +2005,10 @@ void Collective::handleSurprise(Position pos) {
   Vec2 rad(8, 8);
   bool wasMsg = false;
   Creature* c = pos.getCreature();
-  for (Position v : randomPermutation(pos.getRectangle(Rectangle(-rad, rad + Vec2(1, 1)))))
+  for (Position v : Random.permutation(pos.getRectangle(Rectangle(-rad, rad + Vec2(1, 1)))))
     if (Creature* other = v.getCreature())
       if (hasTrait(other, MinionTrait::FIGHTER) && other->getPosition().dist8(pos) > 1) {
-        for (Position dest : pos.neighbors8(true))
+        for (Position dest : pos.neighbors8(Random))
           if (getLevel()->canMoveCreature(other, other->getPosition().getDir(dest))) {
             getLevel()->moveCreature(other, other->getPosition().getDir(dest));
             other->playerMessage("Surprise!");
@@ -2111,10 +2111,10 @@ void Collective::onAppliedSquare(Position pos) {
   if (getSquares(SquareId::LIBRARY).count(pos)) {
     addMana(0.2);
     if (Random.rollD(60.0 / (getEfficiency(pos))) && !getAvailableSpells().empty())
-      c->addSpell(chooseRandom(getAvailableSpells()));
+      c->addSpell(Random.choose(getAvailableSpells()));
   }
   if (getSquares(SquareId::TRAINING_ROOM).count(pos))
-    c->exerciseAttr(chooseRandom<AttrType>(), getEfficiency(pos));
+    c->exerciseAttr(Random.choose<AttrType>(), getEfficiency(pos));
   if (contains(getAllSquares(workshopSquares), pos))
     if (Random.rollD(40.0 / (getCraftingMultiplier() * getEfficiency(pos)))) {
       vector<PItem> items;
@@ -2307,7 +2307,7 @@ void Collective::freeTeamMembers(TeamId id) {
 }
 
 static optional<Vec2> getAdjacentWall(Position pos) {
-  for (Position p : pos.neighbors4(true))
+  for (Position p : pos.neighbors4(Random))
     if (p.canConstruct(SquareId::FLOOR))
       return pos.getDir(p);
   return none;

@@ -2111,7 +2111,7 @@ CreatureAction Creature::continueMoving() {
 
 CreatureAction Creature::stayIn(const Location* location) {
   if (!location->contains(getPosition())) {
-    for (Position v : position.neighbors8(true))
+    for (Position v : position.neighbors8(Random))
       if (location->contains(v))
         if (auto action = move(v))
           return action;
@@ -2222,14 +2222,14 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::PUNCH: you(MsgType::YOUR, "neck is broken!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the back of the head!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the " + 
-                                     chooseRandom<string>({"back", "neck"})); break;
+                                     Random.choose<string>({"back", "neck"})); break;
           default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
     case BodyPart::HEAD: 
         switch (type) {
           case AttackType::SHOOT: you(MsgType::ARE, "shot in the " +
-                                      chooseRandom<string>({"eye", "neck", "forehead"}) + "!"); break;
+                                      Random.choose<string>({"eye", "neck", "forehead"}) + "!"); break;
           case AttackType::BITE: you(MsgType::YOUR, "head is bitten off!"); break;
           case AttackType::CUT: you(MsgType::YOUR, "head is chopped off!"); break;
           case AttackType::CRUSH: you(MsgType::YOUR, "skull is shattered!"); break;
@@ -2245,7 +2245,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::BITE: you(MsgType::YOUR, "internal organs are ripped out!"); break;
           case AttackType::CUT: you(MsgType::ARE, "cut in half!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the " +
-                                     chooseRandom<string>({"stomach", "heart"}, {1, 1}) + "!"); break;
+                                     Random.choose<string>({"stomach", "heart"}, {1, 1}) + "!"); break;
           case AttackType::CRUSH: you(MsgType::YOUR, "ribs and internal organs are crushed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the chest!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "stomach receives a deadly blow!"); break;

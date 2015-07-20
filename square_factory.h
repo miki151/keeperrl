@@ -33,7 +33,7 @@ class SquareFactory {
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
   
-  SquareType getRandom();
+  SquareType getRandom(RandomGen&);
 
   static SquareFactory roomFurniture(Tribe* rats);
   static SquareFactory castleFurniture(Tribe* rats);

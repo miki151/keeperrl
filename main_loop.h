@@ -49,7 +49,7 @@ class MainLoop {
   void showCredits(const string& path, View*);
   void autosave(PModel&);
 
-  PModel keeperGame();
+  PModel keeperGame(RandomGen& random);
   PModel adventurerGame();
   PModel loadModel(string file, bool erase);
   PModel loadPrevious(bool erase);

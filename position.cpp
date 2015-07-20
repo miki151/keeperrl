@@ -98,16 +98,30 @@ void Position::globalMessage(const PlayerMessage& playerCanSee) const {
   level->globalMessage(coord, playerCanSee);
 }
 
-vector<Position> Position::neighbors8(bool shuffle) const {
+vector<Position> Position::neighbors8() const {
   vector<Position> ret;
-  for (Vec2 v : coord.neighbors8(shuffle))
+  for (Vec2 v : coord.neighbors8())
     ret.push_back(Position(v, level));
   return ret;
 }
 
-vector<Position> Position::neighbors4(bool shuffle) const {
+vector<Position> Position::neighbors4() const {
   vector<Position> ret;
-  for (Vec2 v : coord.neighbors4(shuffle))
+  for (Vec2 v : coord.neighbors4())
+    ret.push_back(Position(v, level));
+  return ret;
+}
+
+vector<Position> Position::neighbors8(RandomGen& random) const {
+  vector<Position> ret;
+  for (Vec2 v : coord.neighbors8(random))
+    ret.push_back(Position(v, level));
+  return ret;
+}
+
+vector<Position> Position::neighbors4(RandomGen& random) const {
+  vector<Position> ret;
+  for (Vec2 v : coord.neighbors4(random))
     ret.push_back(Position(v, level));
   return ret;
 }

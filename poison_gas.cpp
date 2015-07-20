@@ -39,7 +39,7 @@ void PoisonGas::tick(Position pos) {
     amount = 0;
     return;
   }
-  for (Position v : pos.neighbors8(true)) {
+  for (Position v : pos.neighbors8(Random)) {
     if (v.canSeeThru(VisionId::NORMAL) && amount > 0 && v.getPoisonGasAmount() < amount) {
       double transfer = pos.getDir(v).isCardinal4() ? spread : spread / 2;
       transfer = min(amount, transfer);

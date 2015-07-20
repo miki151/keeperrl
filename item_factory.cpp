@@ -222,7 +222,7 @@ class Corpse : public Item {
         Effect::applyToPosition(position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
           !position.getCoverInfo().covered() && Random.roll(35)) {
-        for (Position v : position.neighbors8(true)) {
+        for (Position v : position.neighbors8(Random)) {
           PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE,
               position.getModel()->getPestTribe(), MonsterAIFactory::scavengerBird(v));
           if (v.canEnter(vulture.get())) {

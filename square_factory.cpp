@@ -192,7 +192,7 @@ class Chest : public Square {
     if (chestInfo.creature && chestInfo.creatureChance > 0 && Random.roll(1 / chestInfo.creatureChance)) {
       int numR = chestInfo.numCreatures;
       CreatureFactory factory(*chestInfo.creature);
-      for (Position v : getPosition2().neighbors8(true)) {
+      for (Position v : getPosition2().neighbors8(Random)) {
         PCreature rat = factory.random();
         if (v.canEnter(rat.get())) {
           v.addCreature(std::move(rat));
@@ -916,7 +916,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::EYEBALL] = 5;
               c.constructions[SquareId::IMPALED_HEAD] = 5;));
     case SquareId::CROPS:
-        return new Crops(ViewObject(chooseRandom({ViewId::CROPS, ViewId::CROPS2}),
+        return new Crops(ViewObject(Random.choose({ViewId::CROPS, ViewId::CROPS2}),
                 ViewLayer::FLOOR_BACKGROUND, "Wheat"),
             CONSTRUCT(Square::Params,
               c.name = "wheat";
@@ -1085,7 +1085,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Furniture(ViewObject(ViewId::WELL, ViewLayer::FLOOR, "Well"), "well", 0);
     case SquareId::STATUE:
         return new Furniture(
-            ViewObject(chooseRandom({ViewId::STATUE1, ViewId::STATUE2}), ViewLayer::FLOOR, "Statue"), "statue", 0);
+            ViewObject(Random.choose({ViewId::STATUE1, ViewId::STATUE2}), ViewLayer::FLOOR, "Statue"), "statue", 0);
     case SquareId::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture room"), 
             "torture room", 0.3, SquareApplyType::TORTURE);
@@ -1256,11 +1256,11 @@ SquareFactory SquareFactory::single(SquareType type) {
   return SquareFactory({type}, {1});
 }
 
-SquareType SquareFactory::getRandom() {
+SquareType SquareFactory::getRandom(RandomGen& random) {
   if (!first.empty()) {
     SquareType ret = first.back();
     first.pop_back();
     return ret;
   }
-  return chooseRandom(squares, weights);
+  return random.choose(squares, weights);
 }

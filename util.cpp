@@ -46,17 +46,14 @@ string getCardinalName(Dir d) {
     case Dir::SE: return "south-east";
     case Dir::SW: return "south-west";
   }
-  FAIL << int(d);
-  return "";
 }
 
-int RandomGen::get(const vector<double>& weights, double r) {
+int RandomGen::get(const vector<double>& weights) {
   double sum = 0;
   for (double elem : weights)
     sum += elem;
   CHECK(sum > 0);
-  if (r == -1)
-    r = Random.getDouble(0, sum);
+  int r = getDouble(0, sum);
   sum = 0;
   for (int i : All(weights)) {
     sum += weights[i];
@@ -219,48 +216,42 @@ int Vec2::dotProduct(Vec2 a, Vec2 b) {
   return a.x * b.x + a.y * b.y;
 }
 
-vector<Vec2> Vec2::box(int radius, bool shuffle) {
-  if (radius == 0)
-    return {*this};
-  vector<Vec2> v;
-  for (int k = -radius; k < radius; ++k)
-    v.push_back(*this + Vec2(k, -radius));
-  for (int k = -radius; k < radius; ++k)
-    v.push_back(*this + Vec2(radius, k));
-  for (int k = -radius; k < radius; ++k)
-    v.push_back(*this + Vec2(-k, radius));
-  for (int k = -radius; k < radius; ++k)
-    v.push_back(*this + Vec2(-radius, -k));
-  if (shuffle)
-    random_shuffle(v.begin(), v.end(), [](int a) { return Random.get(a);});
-  return v;
-}
-
 vector<Vec2> Vec2::circle(double radius, bool shuffle) {
   return filter(Rectangle(*this - Vec2(radius, radius), *this + Vec2(radius, radius)).getAllSquares(),
       [&](const Vec2& pos) { return distD(pos) <= radius; });
 }
 
-vector<Vec2> Vec2::directions8(bool shuffle) {
-  return Vec2(0, 0).neighbors8(shuffle);
+vector<Vec2> Vec2::directions8() {
+  return Vec2(0, 0).neighbors8();
 }
 
-vector<Vec2> Vec2::neighbors8(bool shuffle) const {
-  vector<Vec2> res = {Vec2(x, y + 1), Vec2(x + 1, y), Vec2(x, y - 1), Vec2(x - 1, y), Vec2(x + 1, y + 1), Vec2(x + 1, y - 1), Vec2(x - 1, y - 1), Vec2(x - 1, y + 1)};
-  if (shuffle)
-    random_shuffle(res.begin(), res.end(),[](int a) { return Random.get(a);});
-  return res;
+vector<Vec2> Vec2::neighbors8() const {
+  return {Vec2(x, y + 1), Vec2(x + 1, y), Vec2(x, y - 1), Vec2(x - 1, y), Vec2(x + 1, y + 1), Vec2(x + 1, y - 1),
+      Vec2(x - 1, y - 1), Vec2(x - 1, y + 1)};
 }
 
-vector<Vec2> Vec2::directions4(bool shuffle) {
-  return Vec2(0, 0).neighbors4(shuffle);
+vector<Vec2> Vec2::directions4() {
+  return Vec2(0, 0).neighbors4();
 }
 
-vector<Vec2> Vec2::neighbors4(bool shuffle) const {
-  vector<Vec2> res = { Vec2(x, y + 1), Vec2(x + 1, y), Vec2(x, y - 1), Vec2(x - 1, y)};
-  if (shuffle)
-    random_shuffle(res.begin(), res.end(),[](int a) { return Random.get(a);});
-  return res;
+vector<Vec2> Vec2::neighbors4() const {
+  return { Vec2(x, y + 1), Vec2(x + 1, y), Vec2(x, y - 1), Vec2(x - 1, y)};
+}
+
+vector<Vec2> Vec2::directions8(RandomGen& random) {
+  return random.permutation(directions8());
+}
+
+vector<Vec2> Vec2::neighbors8(RandomGen& random) const {
+  return random.permutation(neighbors8());
+}
+
+vector<Vec2> Vec2::directions4(RandomGen& random) {
+  return random.permutation(directions4());
+}
+
+vector<Vec2> Vec2::neighbors4(RandomGen& random) const {
+  return random.permutation(neighbors4());
 }
 
 bool Vec2::isCardinal4() const {

@@ -147,7 +147,7 @@ void VillageControl::tick(double time) {
           << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
         if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)
           continue;
-        launchAttack(villain, getPrefix(randomPermutation(fighters),
+        launchAttack(villain, getPrefix(Random.permutation(fighters),
             Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation) + 1)));
         break;
       }

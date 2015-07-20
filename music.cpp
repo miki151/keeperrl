@@ -38,7 +38,7 @@ void Jukebox::toggle(bool state) {
     return;
   on = state;
   if (on) {
-    current = chooseRandom(byType[getCurrentType()]);
+    current = Random.choose(byType[getCurrentType()]);
     currentPlaying = current;
     music[current].play();
   } else
@@ -46,7 +46,7 @@ void Jukebox::toggle(bool state) {
 }
 
 void Jukebox::setCurrent(MusicType c) {
-  current = chooseRandom(byType[c]);
+  current = Random.choose(byType[c]);
 }
 
 void Jukebox::continueCurrent() {
@@ -74,7 +74,7 @@ void Jukebox::setType(MusicType c, bool now) {
     if (byType[c].empty())
       return;
     if (getCurrentType() != c)
-      current = chooseRandom(byType[c]);
+      current = Random.choose(byType[c]);
   }
 }
 

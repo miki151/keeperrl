@@ -92,7 +92,7 @@ bool endsWith(const string&, const string& suffix);
 vector<string> split(const string& s, const set<char>& delim);
 
 class Rectangle;
-
+class RandomGen;
 
 class Vec2 {
   public:
@@ -130,10 +130,14 @@ class Vec2 {
 
   vector<Vec2> box(int radius, bool shuffle = false);
   vector<Vec2> circle(double radius, bool shuffle = false);
-  static vector<Vec2> directions8(bool shuffle = false);
-  vector<Vec2> neighbors8(bool shuffle = false) const;
-  static vector<Vec2> directions4(bool shuffle = false);
-  vector<Vec2> neighbors4(bool shuffle = false) const;
+  static vector<Vec2> directions8();
+  vector<Vec2> neighbors8() const;
+  static vector<Vec2> directions4();
+  vector<Vec2> neighbors4() const;
+  static vector<Vec2> directions8(RandomGen&);
+  vector<Vec2> neighbors8(RandomGen&) const;
+  static vector<Vec2> directions4(RandomGen&);
+  vector<Vec2> neighbors4(RandomGen&) const;
   static vector<Vec2> corners();
   static vector<set<Vec2>> calculateLayers(set<Vec2>);
 
@@ -279,19 +283,127 @@ Range AllReverse(const T& container) {
   return Range(container.size() - 1, -1);
 }
 
+template<typename T>
+class EnumInfo {
+  public:
+  static string getString(T);
+};
+
+#define RICH_ENUM(Name, ...) \
+enum class Name { __VA_ARGS__ };\
+namespace std {\
+template <>\
+struct hash<Name> {\
+  size_t operator()(Name obj) const {\
+    return int(obj);\
+  }\
+};\
+}\
+template<> \
+class EnumInfo<Name> { \
+  public:\
+  static string getString(Name e) {\
+    static vector<string> names = split(#__VA_ARGS__, {' ', ','});\
+    return names[int(e)];\
+  }\
+  enum Tmp { __VA_ARGS__, size};\
+  static Name fromString(const string& s) {\
+    for (int i : Range(size)) \
+      if (getString(Name(i)) == s) \
+        return Name(i); \
+    FAIL << #Name << " value not found " << s;\
+    return Name(0);\
+  }\
+  static optional<Name> fromStringSafe(const string& s) {\
+    for (int i : Range(size)) \
+      if (getString(Name(i)) == s) \
+        return Name(i); \
+    return none;\
+  }\
+}
+
+
 extern const vector<Vec2> neighbors;
 
 class RandomGen {
   public:
+  RandomGen() {}
+  RandomGen(RandomGen&) = delete;
   void init(int seed);
   int get(int max);
   int get(int min, int max);
   int get(Range);
-  int get(const vector<double>& weights, double r = -1);
+  int get(const vector<double>& weights);
   double getDouble();
   double getDouble(double a, double b);
   bool roll(int chance);
   bool rollD(double chance);
+  template <typename T>
+  T choose(const vector<T>& v, const vector<double>& p) {
+    CHECK(v.size() == p.size());
+    return v[get(p)];
+  }
+
+  template <typename T>
+  T choose(const vector<T>& v) {
+    vector<double> pi(v.size(), 1);
+    return choose(v, pi);
+  }
+
+  template <typename T>
+  T choose(const set<T>& vi) {
+    vector<T> v(vi.size());
+    std::copy(vi.begin(), vi.end(), v.begin());
+    return choose(v);
+  }
+
+  template <typename T>
+  T choose(initializer_list<T> vi, initializer_list<double> pi) {
+    return choose(vector<T>(vi), vector<double>(pi));
+  }
+
+  template <typename T>
+  T choose(initializer_list<T> vi) {
+    vector<T> v(vi);
+    vector<double> pi(v.size(), 1);
+    return choose(v, pi);
+  }
+
+  template <typename T>
+  T choose(vector<pair<T, double>> vi) {
+    vector<T> v;
+    vector<double> p;
+    for (auto elem : vi) {
+      v.push_back(elem.first);
+      p.push_back(elem.second);
+    }
+    return choose(v, p);
+  }
+
+  template <typename T>
+  T choose() {
+    return T(get(EnumInfo<T>::size));
+  }
+
+  template <typename T>
+  vector<T> permutation(vector<T> v) {
+    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    return v;
+  }
+
+  template <typename T>
+  vector<T> permutation(const set<T>& vi) {
+    vector<T> v(vi.size());
+    std::copy(vi.begin(), vi.end(), v.begin());
+    return permutation(v);
+  }
+
+  template <typename T>
+  vector<T> permutation(initializer_list<T> vi) {
+    vector<T> v(vi);
+    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    return v;
+  }
 
   private:
   default_random_engine generator;
@@ -453,74 +565,6 @@ class DirtyTable {
   T dirtyVal;
   int counter = 1;
 };
-
-template <typename T>
-T chooseElem(const vector<T>& v, int ind) {
-  return v[ind];
-}
-
-template <typename T>
-T chooseRandom(const vector<T>& v, const vector<double>& p, double r = -1) {
-  CHECK(v.size() == p.size());
-  return v[Random.get(p, r)];
-}
-
-
-template <typename T>
-T chooseRandom(const vector<T>& v, double r = -1) {
-  vector<double> pi(v.size(), 1);
-  return chooseRandom(v, pi, r);
-}
-
-template <typename T>
-T chooseRandom(const set<T>& vi, double r = -1) {
-  vector<T> v(vi.size());
-  std::copy(vi.begin(), vi.end(), v.begin());
-  return chooseRandom(v, r);
-}
-
-template <typename T>
-T chooseRandom(initializer_list<T> vi, initializer_list<double> pi, double r = -1) {
-  return chooseRandom(vector<T>(vi), vector<double>(pi), r);
-}
-
-template <typename T>
-T chooseRandom(initializer_list<T> vi, double r = -1) {
-  vector<T> v(vi);
-  vector<double> pi(v.size(), 1);
-  return chooseRandom(v, pi, r);
-}
-
-template <typename T>
-T chooseRandom(vector<pair<T, double>> vi, double r = -1) {
-  vector<T> v;
-  vector<double> p;
-  for (auto elem : vi) {
-    v.push_back(elem.first);
-    p.push_back(elem.second);
-  }
-  return chooseRandom(v, p);
-}
-
-template <typename T>
-vector<T> randomPermutation(vector<T> v) {
-  random_shuffle(v.begin(), v.end(), [](int a) { return Random.get(a);});
-  return v;
-}
-
-template <typename T>
-vector<T> randomPermutation(const set<T>& vi) {
-  vector<T> v(vi.size());
-  std::copy(vi.begin(), vi.end(), v.begin());
-  return randomPermutation(v);
-}
-
-template <typename T>
-vector<T> randomPermutation(initializer_list<T> vi) {
-  vector<T> v(vi);
-  random_shuffle(v.begin(), v.end(), [](int a) { return Random.get(a);});
-  return v;
-}
 
 template <typename T, typename V>
 vector<T> getKeys(const map<T, V>& m) {
@@ -952,45 +996,6 @@ string combine(const vector<T>& v) {
       transform2<string>(v, [](const T& e) { return e.name; }));
 }
 
-template<typename T>
-class EnumInfo {
-  public:
-  static string getString(T);
-};
-
-#define RICH_ENUM(Name, ...) \
-enum class Name { __VA_ARGS__ };\
-namespace std {\
-template <>\
-struct hash<Name> {\
-  size_t operator()(Name obj) const {\
-    return int(obj);\
-  }\
-};\
-}\
-template<> \
-class EnumInfo<Name> { \
-  public:\
-  static string getString(Name e) {\
-    static vector<string> names = split(#__VA_ARGS__, {' ', ','});\
-    return names[int(e)];\
-  }\
-  enum Tmp { __VA_ARGS__, size};\
-  static Name fromString(const string& s) {\
-    for (int i : Range(size)) \
-      if (getString(Name(i)) == s) \
-        return Name(i); \
-    FAIL << #Name << " value not found " << s;\
-    return Name(0);\
-  }\
-  static optional<Name> fromStringSafe(const string& s) {\
-    for (int i : Range(size)) \
-      if (getString(Name(i)) == s) \
-        return Name(i); \
-    return none;\
-  }\
-}
-
 RICH_ENUM(Dir, N, S, E, W, NE, NW, SE, SW );
 
 class DirSet {
@@ -1246,11 +1251,6 @@ class EnumAll {
 };
 
 #define ENUM_ALL(X) EnumAll<X>()
-
-template <typename T>
-T chooseRandom() {
-  return T(Random.get(EnumInfo<T>::size));
-}
 
 template <typename U, typename V>
 class BiMap {

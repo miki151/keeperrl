@@ -1332,7 +1332,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           selection = SELECT;
           PCreature imp = CreatureFactory::fromId(CreatureId::IMP, getTribe(),
               MonsterAIFactory::collective(getCollective()));
-          for (Position v : concat(position.neighbors8(true), {position}))
+          for (Position v : concat(position.neighbors8(Random), {position}))
             if (v.canEnter(imp.get()) && (canSee(v) || getCollective()->containsSquare(v))) {
               getCollective()->takeResource({ResourceId::MANA, getImpCost()});
               getCollective()->addCreature(std::move(imp), v,
@@ -1621,9 +1621,9 @@ void PlayerControl::onTechBookRead(Technology* tech) {
   vector<Technology*> nextTechs = Technology::getNextTechs(getCollective()->getTechnologies());
   if (tech == nullptr) {
     if (!nextTechs.empty())
-      tech = chooseRandom(nextTechs);
+      tech = Random.choose(nextTechs);
     else
-      tech = chooseRandom(Technology::getAll());
+      tech = Random.choose(Technology::getAll());
   }
   if (!contains(getCollective()->getTechnologies(), tech)) {
     if (!contains(nextTechs, tech))
@@ -1643,7 +1643,7 @@ MoveInfo PlayerControl::getMove(Creature* c) {
   if (c == getKeeper() && !getCollective()->getAllSquares().empty()
       && getCollective()->getSquares(SquareId::LIBRARY).empty() // after library is built let him wander
       && !getCollective()->containsSquare(c->getPosition()))
-    return c->moveTowards(chooseRandom(getCollective()->getAllSquares()));
+    return c->moveTowards(Random.choose(getCollective()->getAllSquares()));
   else
     return NoMove;
 }

@@ -84,7 +84,7 @@ class BoulderController : public Monster {
   }
 
   void considerRolling() {
-    for (Vec2 v : Vec2::directions4(true)) {
+    for (Vec2 v : Vec2::directions4(Random)) {
       int radius = 4;
       for (int i = 1; i <= radius; ++i) {
         Position curPos = getCreature()->getPosition().plus(v * i);
@@ -252,7 +252,7 @@ CreatureAttributes getKrakenAttributes(ViewId id) {
 class KrakenController : public Monster {
   public:
   KrakenController(Creature* c) : Monster(c, MonsterAIFactory::monster()) {
-    numSpawns = chooseRandom({1, 2}, {4, 1});
+    numSpawns = Random.choose({1, 2}, {4, 1});
   }
 
   void makeReady() {
@@ -349,7 +349,7 @@ class KrakenController : public Monster {
                 if (!ready) {
                   makeReady();
                 } else {
-                  Vec2 move = chooseRandom(moves);
+                  Vec2 move = Random.choose(moves);
                   ViewId viewId = getCreature()->getPosition().plus(move).canEnter({MovementTrait::SWIM}) 
                     ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
                   PCreature spawn(new Creature(getCreature()->getTribe(), getKrakenAttributes(viewId),
@@ -619,7 +619,7 @@ PCreature CreatureFactory::random(const MonsterAIFactory& actorFactory) {
     id = unique.back();
     unique.pop_back();
   } else
-    id = chooseRandom(creatures, weights);
+    id = Random.choose(creatures, weights);
   PCreature ret = fromId(id, getTribeFor(id), actorFactory);
   ret->increaseExpLevel(levelIncrease);
   return ret;
@@ -663,7 +663,7 @@ CreatureFactory CreatureFactory::humanCastle(Tribe* tribe) {
 static optional<pair<CreatureFactory, CreatureFactory>> splashFactories;
 
 void CreatureFactory::initSplash(Tribe* tribe) {
-  splashFactories = chooseRandom<optional<pair<CreatureFactory, CreatureFactory>>>( {
+  splashFactories = Random.choose<optional<pair<CreatureFactory, CreatureFactory>>>( {
       make_pair(CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {}),
         CreatureFactory::singleType(tribe, CreatureId::AVATAR)),
       make_pair(CreatureFactory(tribe, { CreatureId::WARRIOR}, { 1}, {}),
@@ -783,7 +783,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
   PCreature c = get(CATTR(
         c.viewId = humanoid ? ViewId::SPECIAL_HUMANOID : ViewId::SPECIAL_BEAST;
         c.attr[AttrType::SPEED] = r.get(70, 150);
-        c.size = chooseRandom({CreatureSize::SMALL, CreatureSize::MEDIUM, CreatureSize::LARGE}, {1, 1, 1});
+        c.size = Random.choose({CreatureSize::SMALL, CreatureSize::MEDIUM, CreatureSize::LARGE}, {1, 1, 1});
         c.attr[AttrType::STRENGTH] = r.get(20, 26);
         c.attr[AttrType::DEXTERITY] = r.get(20, 26);
         c.barehandedDamage = r.get(5, 15);
@@ -848,13 +848,13 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
       c->take(ItemFactory::fromId(ItemId::BOW));
       c->take(ItemFactory::fromId(ItemId::ARROW, Random.get(20, 36)));
     } else
-      c->take(ItemFactory::fromId(chooseRandom(
+      c->take(ItemFactory::fromId(Random.choose(
             {ItemId::SPECIAL_SWORD, ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER})));
   } else if (!keeper) {
     switch (Random.get(3)) {
       case 0:
         c->take(ItemFactory::fromId(
-              chooseRandom({ItemId::WARNING_AMULET, ItemId::HEALING_AMULET, ItemId::DEFENSE_AMULET})));
+              Random.choose({ItemId::WARNING_AMULET, ItemId::HEALING_AMULET, ItemId::DEFENSE_AMULET})));
         break;
       case 1:
         c->take(ItemFactory::fromId({ItemId::POTION,
@@ -862,7 +862,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
               Random.get(3, 6)));
         break;
       case 2:
-        c->take(ItemFactory::fromId(chooseRandom<ItemType>({
+        c->take(ItemFactory::fromId(Random.choose<ItemType>({
               {ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::STR_BONUS)},
               {ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)}}), Random.get(3, 6)));
         break;
@@ -1119,7 +1119,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.name = "archer";);
     case CreatureId::PESEANT: 
       return CATTR(
-          c.viewId = chooseRandom({ViewId::PESEANT, ViewId::PESEANT_WOMAN});
+          c.viewId = Random.choose({ViewId::PESEANT, ViewId::PESEANT_WOMAN});
           c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::LARGE;
           c.attr[AttrType::STRENGTH] = 14;
@@ -1962,16 +1962,16 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
 }
 
 ItemType randomHealing() {
-  return chooseRandom({ItemType(ItemId::POTION, EffectId::HEAL), {ItemId::FIRST_AID_KIT}});
+  return Random.choose({ItemType(ItemId::POTION, EffectId::HEAL), {ItemId::FIRST_AID_KIT}});
 }
 
 ItemType randomBackup() {
-  return chooseRandom({{ItemId::SCROLL, EffectId::DECEPTION}, {ItemId::SCROLL, EffectId::TELEPORT},
+  return Random.choose({{ItemId::SCROLL, EffectId::DECEPTION}, {ItemId::SCROLL, EffectId::TELEPORT},
       randomHealing()}, {1, 1, 8});
 }
 
 ItemType randomArmor() {
-  return chooseRandom({ItemId::LEATHER_ARMOR, ItemId::CHAIN_ARMOR}, {4, 1});
+  return Random.choose({ItemId::LEATHER_ARMOR, ItemId::CHAIN_ARMOR}, {4, 1});
 }
 
 class ItemList {
@@ -2062,7 +2062,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(randomHealing())
         .add(ItemId::GOLD_PIECE, Random.get(30, 80));
     case CreatureId::DEVIL: 
-      return ItemList().add(chooseRandom<ItemType>({
+      return ItemList().add(Random.choose<ItemType>({
               {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::BLIND)},
               {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
               {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)}}));
@@ -2085,7 +2085,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36)));
     case CreatureId::GREAT_ORC: 
       return ItemList()
-        .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
+        .add(Random.choose({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
         .add(ItemId::IRON_HELM)
         .add(ItemId::IRON_BOOTS)
         .add(ItemId::CHAIN_ARMOR)
@@ -2094,7 +2094,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::GOLD_PIECE, Random.get(100, 200));
     case CreatureId::DWARF: 
       return ItemList()
-        .add(chooseRandom({ItemId::BATTLE_AXE, ItemId::WAR_HAMMER}, {1, 1}))
+        .add(Random.choose({ItemId::BATTLE_AXE, ItemId::WAR_HAMMER}, {1, 1}))
         .maybe(0.6, randomBackup())
         .add(ItemId::CHAIN_ARMOR)
         .maybe(0.5, ItemId::IRON_HELM)
@@ -2102,7 +2102,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::GOLD_PIECE, Random.get(10, 30));
     case CreatureId::DWARF_BARON: 
       return ItemList()
-        .add(chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
+        .add(Random.choose({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
         .add(randomBackup())
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::IRON_BOOTS)
@@ -2131,7 +2131,7 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::MUMMY_LORD: 
       return ItemList()
         .add(ItemId::GOLD_PIECE, Random.get(100, 200)).add(
-            chooseRandom({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER, ItemId::SPECIAL_SWORD}, {1, 1, 1}));
+          Random.choose({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER, ItemId::SPECIAL_SWORD}, {1, 1, 1}));
     case CreatureId::WITCH: 
       return ItemList()
         .add(ItemId::KNIFE)

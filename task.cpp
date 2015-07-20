@@ -369,9 +369,9 @@ static Position chooseRandomClose(Position start, const vector<Position>& square
     if (v.dist8(start) < minD + margin)
       close.push_back(v);
   if (close.empty())
-    return chooseRandom(squares);
+    return Random.choose(squares);
   else
-    return chooseRandom(close);
+    return Random.choose(close);
 }
 
 class BringItem : public PickItem {
@@ -688,7 +688,7 @@ class DestroySquare : public NonTransferable {
           });
     if (auto action = c->moveTowards(position))
       return action;
-    for (Vec2 v : Vec2::directions8(true))
+    for (Vec2 v : Vec2::directions8(Random))
       if (auto action = c->destroy(v, Creature::DESTROY))
         return action;
     return NoMove;
@@ -889,7 +889,7 @@ namespace {
 class CampAndSpawn : public NonTransferable {
   public:
   CampAndSpawn(Collective* _target, Collective* _self, CreatureFactory s, int defense, Range attack, int numAtt)
-    : target(_target), self(_self), spawns(s), campPos(randomPermutation(target->getExtendedTiles(15, 8))),
+    : target(_target), self(_self), spawns(s), campPos(Random.permutation(target->getExtendedTiles(15, 8))),
       defenseSize(defense), attackSize(attack), numAttacks(numAtt) {}
 
   MoveInfo makeTeam(Creature* c, optional<TeamId>& team, int minMembers, vector<Creature*> initial, int delay) {
@@ -1109,7 +1109,7 @@ class Copulate : public NonTransferable {
     }
     if (c->getPosition().dist8(target->getPosition()) == 1) {
       if (Random.roll(2))
-        for (Vec2 v : Vec2::directions8(true))
+        for (Vec2 v : Vec2::directions8(Random))
           if (v.dist8(c->getPosition().getDir(target->getPosition())) == 1)
             if (auto action = c->move(v))
               return action;
@@ -1229,7 +1229,7 @@ class Eat : public Task {
       return c->eat(chicken).append([=] (Creature* c) {
         setDone();
       });
-    for (Position pos : c->getPosition().neighbors8(true)) {
+    for (Position pos : c->getPosition().neighbors8(Random)) {
       Item* chicken = getDeadChicken(pos);
       if (chicken) 
         if (auto move = c->move(pos))

@@ -249,7 +249,7 @@ void Square::tick(double time) {
   if (fire->isBurning()) {
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
     Debug() << getName() << " burning " << fire->getSize();
-    for (Position v : getPosition2().neighbors8(true))
+    for (Position v : getPosition2().neighbors8(Random))
       if (fire->getSize() > Random.getDouble() * 40)
         v.setOnFire(fire->getSize() / 20);
     fire->tick();

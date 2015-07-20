@@ -8,10 +8,14 @@
 #include "level_maker.h"
 #include "collective_builder.h"
 
-LevelBuilder::LevelBuilder(ProgressMeter& meter, int width, int height, const string& n, bool covered)
+LevelBuilder::LevelBuilder(ProgressMeter& meter, RandomGen& r, int width, int height, const string& n, bool covered)
   : squares(width, height), heightMap(width, height, 0),
     coverInfo(width, height, {covered, covered ? 0.0 : 1.0}), attrib(width, height),
-    type(width, height, SquareType(SquareId(0))), items(width, height), name(n), progressMeter(meter) {
+    type(width, height, SquareType(SquareId(0))), items(width, height), name(n), progressMeter(meter), random(r) {
+}
+
+RandomGen& LevelBuilder::getRandom() {
+  return random;
 }
 
 bool LevelBuilder::hasAttrib(Vec2 posT, SquareAttrib attr) {

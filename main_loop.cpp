@@ -240,11 +240,16 @@ void MainLoop::playGameChoice() {
   while (1) {
     auto choice = view->chooseGameType();
     PModel model;
+    RandomGen random;
     switch (choice) {
       case GameTypeChoice::KEEPER:
         options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+        options->setDefaultString(OptionId::KEEPER_SEED, NameGenerator::get(NameGeneratorId::SCROLL)->getNext());
         if (options->handleOrExit(view, OptionSet::KEEPER, -1)) {
-          model = keeperGame();
+          string seed = options->getStringValue(OptionId::KEEPER_SEED);
+          random.init(hash<string>()(seed));
+          ofstream(userPath + "/seeds.txt", std::fstream::out | std::fstream::app) << seed << std::endl;
+          model = keeperGame(random);
         }
         break;
       case GameTypeChoice::ADVENTURER:
@@ -342,12 +347,12 @@ void MainLoop::doWithSplash(SplashType type, int totalProgress, function<void(Pr
   }
 }
 
-PModel MainLoop::keeperGame() {
+PModel MainLoop::keeperGame(RandomGen& random) {
   PModel model;
   NameGenerator::init(dataFreePath + "/names");
   doWithSplash(SplashType::CREATING, 166000,
-      [&model, this] (ProgressMeter& meter) {
-        model = ModelBuilder::collectiveModel(meter, options, view,
+      [&model, this, &random] (ProgressMeter& meter) {
+        model = ModelBuilder::collectiveModel(meter, random, options, view,
             NameGenerator::get(NameGeneratorId::WORLD)->getNext());
       });
   return model;

@@ -197,14 +197,14 @@ class MoveRandomly : public Behaviour {
     double val = 0.0001;
     if (Random.roll(2))
       return {val, creature->wait()};
-    for (Position pos : creature->getPosition().neighbors8(true)) {
+    for (Position pos : creature->getPosition().neighbors8(Random)) {
       if (!visited(pos) && creature->move(pos)) {
         target = pos;
         break;
       }
     }
     if (!target)
-      for (Position pos: creature->getPosition().neighbors8(true))
+      for (Position pos: creature->getPosition().neighbors8(Random))
         if (creature->move(pos)) {
           target = pos;
           break;
@@ -248,7 +248,7 @@ class StayInPigsty : public Behaviour {
       if (auto move = creature->moveTowards(origin, true))
         return move;
     if (Random.roll(10))
-      for (Position next: creature->getPosition().neighbors8(true))
+      for (Position next: creature->getPosition().neighbors8(Random))
         if (next.canEnter(creature) && next.getApplyType(creature) == type)
           return creature->move(next);
     return creature->wait();
@@ -756,7 +756,7 @@ class Thief : public Behaviour {
         return {1.0, action};
       }
     }
-    for (Position pos : creature->getPosition().neighbors8(true)) {
+    for (Position pos : creature->getPosition().neighbors8(Random)) {
       const Creature* other = pos.getCreature();
       if (other && !contains(robbed, other)) {
         vector<Item*> allGold;
@@ -809,7 +809,7 @@ class ChooseRandom : public Behaviour {
   ChooseRandom(Creature* c, vector<Behaviour*> beh, vector<double> w) : Behaviour(c), behaviours(beh), weights(w) {}
 
   virtual MoveInfo getMove() override {
-    return chooseRandom(behaviours, weights)->getMove();
+    return Random.choose(behaviours, weights)->getMove();
   }
 
   SERIALIZATION_CONSTRUCTOR(ChooseRandom);
@@ -934,7 +934,7 @@ class SplashMonsters : public Behaviour {
     if (!attack)
       return creature->wait();
     else
-      return {0.1, creature->moveTowards(chooseRandom(heroes)->getPosition())};
+      return {0.1, creature->moveTowards(Random.choose(heroes)->getPosition())};
   };
 
   SERIALIZATION_CONSTRUCTOR(SplashMonsters);
@@ -967,7 +967,7 @@ class SplashItems : public TaskCallback {
     if (items.empty())
       return nullptr;
     Vec2 pos = chooseClosest(position);
-    vector<Item*> it = {chooseRandom(items[pos])};
+    vector<Item*> it = {Random.choose(items[pos])};
     if (it[0]->getClass() == ItemClass::GOLD || it[0]->getClass() == ItemClass::AMMO)
       for (Item* it2 : copyOf(items[pos]))
         if (it[0] != it2 && it2->getClass() == it[0]->getClass() && Random.roll(10))
@@ -979,7 +979,7 @@ class SplashItems : public TaskCallback {
     vector<Vec2>& targets = it[0]->getClass() == ItemClass::GOLD ? targetsGold : targetsCorpse;
     if (targets.empty())
       return nullptr;
-    Vec2 target = chooseRandom(targets);
+    Vec2 target = Random.choose(targets);
     removeElement(targets, target);
     return Task::bringItem(this, Position(pos, level), it, {Position(target, level)}, 100);
   }
@@ -1073,11 +1073,11 @@ class AvoidFire : public Behaviour {
 
   virtual MoveInfo getMove() override {
     if (creature->getPosition().isBurning() && !creature->isFireResistant()) {
-      for (Position pos : creature->getPosition().neighbors8(true))
+      for (Position pos : creature->getPosition().neighbors8(Random))
         if (!pos.isBurning())
           if (auto action = creature->move(pos))
             return action;
-      for (Position pos : creature->getPosition().neighbors8(true))
+      for (Position pos : creature->getPosition().neighbors8(Random))
         if (auto action = creature->forceMove(pos))
           return action;
     }

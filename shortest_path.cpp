@@ -82,11 +82,19 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> 
   function<bool(Vec2, Vec2)> comparator;
   if (from)
     comparator = [&](Vec2 pos1, Vec2 pos2) {
-      return distanceTable.getDistance(pos1) + lengthFun(*from - pos1) > 
-          distanceTable.getDistance(pos2) + lengthFun(*from - pos2); };
+      double diff = distanceTable.getDistance(pos1) + lengthFun(*from - pos1) -
+          distanceTable.getDistance(pos2) - lengthFun(*from - pos2);
+      if (diff > 0 || (diff == 0 && pos1 < pos2))
+        return 1;
+      else
+        return 0; };
   else
     comparator = [this](Vec2 pos1, Vec2 pos2) {
-      return distanceTable.getDistance(pos1) > distanceTable.getDistance(pos2); };
+      double diff = distanceTable.getDistance(pos1) - distanceTable.getDistance(pos2);
+      if (diff > 0 || (diff == 0 && pos1 < pos2))
+        return 1;
+      else
+        return 0;};
   priority_queue<Vec2, vector<Vec2>, decltype(comparator)> q(comparator) ;
   distanceTable.setDistance(target, 0);
   q.push(target);
@@ -273,8 +281,12 @@ bool LevelShortestPath::isReversed() const {
 Dijkstra::Dijkstra(Rectangle bounds, Vec2 from, int maxDist, function<double(Vec2)> entryFun,
       vector<Vec2> directions) {
   distanceTable.clear();
-  function<bool(Vec2, Vec2)> comparator = [&] (Vec2 pos1, Vec2 pos2) {
-    return distanceTable.getDistance(pos1) > distanceTable.getDistance(pos2); };
+  function<bool(Vec2, Vec2)> comparator = [this](Vec2 pos1, Vec2 pos2) {
+      double diff = distanceTable.getDistance(pos1) - distanceTable.getDistance(pos2);
+      if (diff > 0 || (diff == 0 && pos1 < pos2))
+        return 1;
+      else
+        return 0;};
   priority_queue<Vec2, vector<Vec2>, decltype(comparator)> q(comparator) ;
   distanceTable.setDistance(from, 0);
   q.push(from);

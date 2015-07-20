@@ -424,7 +424,7 @@ Event Renderer::getRandomEvent() {
       break;
     case Event::MouseButtonReleased:
     case Event::MouseButtonPressed:
-      ret.mouseButton = { chooseRandom({Mouse::Left, Mouse::Right}), Random.get(getSize().x),
+      ret.mouseButton = { Random.choose({Mouse::Left, Mouse::Right}), Random.get(getSize().x),
         Random.get(getSize().y) };
       break;
     case Event::MouseMoved:

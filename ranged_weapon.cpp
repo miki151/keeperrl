@@ -43,7 +43,7 @@ void RangedWeapon::fire(Creature* c, Level* l, PItem ammo, Vec2 dir) {
     c->getModifier(ModifierType::FIRED_DAMAGE) +
     ammo->getModifier(ModifierType::FIRED_DAMAGE) +
     getModifier(ModifierType::FIRED_DAMAGE);
-  Attack attack(c, chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
+  Attack attack(c, Random.choose({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
       AttackType::SHOOT, toHit, damage, false, none);
   c->getPosition().throwItem(std::move(ammo), attack, 20, dir, c->getVision());
 }

@@ -37,8 +37,10 @@ class Position {
   bool operator < (const Position&) const;
   void globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cannot) const;
   void globalMessage(const PlayerMessage& playerCanSee) const;
-  vector<Position> neighbors8(bool shuffle = false) const;
-  vector<Position> neighbors4(bool shuffle = false) const;
+  vector<Position> neighbors8() const;
+  vector<Position> neighbors4() const;
+  vector<Position> neighbors8(RandomGen&) const;
+  vector<Position> neighbors4(RandomGen&) const;
   vector<Position> getRectangle(Rectangle) const;
   void addCreature(PCreature);
   const Location* getLocation() const;

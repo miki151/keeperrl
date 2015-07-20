@@ -101,7 +101,7 @@ static vector<Creature*> summonCreatures(Position pos, int radius, vector<PCreat
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
   vector<Creature*> ret;
   for (int i : All(creatures))
-    for (Position v : randomPermutation(area))
+    for (Position v : Random.permutation(area))
       if (v.canEnter(creatures[i].get())) {
         ret.push_back(creatures[i].get());
         v.addCreature(std::move(creatures[i]));
@@ -189,7 +189,7 @@ static void blast(Creature* who, Position position, Vec2 direction, int maxDista
   for (auto elem : Item::stackItems(position.getItems())) {
     position.throwItem(
         position.removeItems(elem.second),
-        Attack(who, chooseRandom({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
+        Attack(who, Random.choose({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
           elem.second[0]->getAttackType(), 15, 15, false), maxDistance, direction, VisionId::NORMAL);
   }
   if (position.isDestroyable())
@@ -203,7 +203,7 @@ static void blast(Creature* c, Vec2 direction, int range) {
 
 static void wordOfPower(Creature* c, int strength) {
   GlobalEvents.addExplosionEvent(c->getLevel(), c->getPosition().getCoord());
-  for (Vec2 v : Vec2::directions8(true))
+  for (Vec2 v : Vec2::directions8(Random))
     blast(c, c->getPosition().plus(v), v, wordOfPowerDist[strength]);
 }
 
@@ -217,7 +217,7 @@ static void emitPoisonGas(Position pos, int strength, bool msg) {
 
 static void guardingBuilder(Creature* c) {
   optional<Vec2> dest;
-  for (Position pos : c->getPosition().neighbors8(true))
+  for (Position pos : c->getPosition().neighbors8(Random))
     if (c->move(pos) && !pos.getCreature()) {
       dest = c->getPosition().getDir(pos);
       break;
@@ -250,7 +250,7 @@ vector<Creature*> Effect::summon(Position pos, const CreatureFactory& factory1, 
 }
 
 static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improved") {
-  for (EquipmentSlot slot : randomPermutation(getKeys(Equipment::slotTitles)))
+  for (EquipmentSlot slot : Random.permutation(getKeys(Equipment::slotTitles)))
     for (Item* item : c->getEquipment().getItem(slot))
       if (item->getClass() == ItemClass::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
@@ -263,7 +263,7 @@ static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improv
 static void enhanceWeapon(Creature* c, int mod = 1, const string msg = "is improved") {
   if (Item* item = c->getWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
-    item->addModifier(chooseRandom({ModifierType::ACCURACY, ModifierType::DAMAGE}), mod);
+    item->addModifier(Random.choose({ModifierType::ACCURACY, ModifierType::DAMAGE}), mod);
   }
 }
 
@@ -272,7 +272,7 @@ static void destroyEquipment(Creature* c) {
   for (Item* item : c->getEquipment().getItems())
     if (c->getEquipment().isEquiped(item))
       equiped.push_back(item);
-  Item* dest = chooseRandom(equiped);
+  Item* dest = Random.choose(equiped);
   c->you(MsgType::YOUR, dest->getName() + " crumbles to dust.");
   c->steal({dest});
   return;
@@ -286,7 +286,7 @@ static void heal(Creature* c, int strength) {
 }
 
 static void portal(Creature* c) {
-  for (Position pos : c->getPosition().neighbors8(true))
+  for (Position pos : c->getPosition().neighbors8(Random))
     if (pos.canEnter(c)) {
       pos.globalMessage("A magic portal appears.");
       pos.addTrigger(Trigger::getPortal(ViewObject(ViewId::PORTAL, ViewLayer::LARGE_ITEM, "Portal"), pos));
@@ -335,7 +335,7 @@ static void teleport(Creature* c) {
   }
   CHECK(!good.empty());
   c->you(MsgType::TELE_DISAPPEAR, "");
-  l->moveCreature(c, c->getPosition().getDir(chooseRandom(good)));
+  l->moveCreature(c, c->getPosition().getDir(Random.choose(good)));
   c->you(MsgType::TELE_APPEAR, "");
 }
 

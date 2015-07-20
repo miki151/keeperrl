@@ -162,7 +162,7 @@ vector<Deity*> generateDeities() {
       EpithetId epithet;
       int cnt = 100;
       do {
-        epithet = chooseRandom(elem.second);
+        epithet = Random.choose(elem.second);
       } while (used.count(epithet) && --cnt > 0);
       if (cnt == 0)
         break;

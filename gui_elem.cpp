@@ -1450,7 +1450,7 @@ void GuiFactory::loadFreeImages(const string& path) {
   textures[TexId::MAIN_MENU_HIGHLIGHT].setSmooth(true);
   CHECK(textures[TexId::SPLASH1].loadFromFile(path + "/splash2f.png"));
   CHECK(textures[TexId::SPLASH2].loadFromFile(path + "/splash2e.png"));
-  CHECK(textures[TexId::LOADING_SPLASH].loadFromFile(path + "/" + chooseRandom(LIST(
+  CHECK(textures[TexId::LOADING_SPLASH].loadFromFile(path + "/" + Random.choose(LIST(
             "splash2a.png",
             "splash2b.png",
             "splash2c.png",

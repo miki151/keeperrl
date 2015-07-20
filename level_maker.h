@@ -73,17 +73,15 @@ class LevelMaker {
   public:
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
 
-  static LevelMaker* cryptLevel(CreatureFactory roomFactory, SquareFactory coffins,
+  static LevelMaker* cryptLevel(RandomGen&, CreatureFactory roomFactory, SquareFactory coffins,
       vector<StairKey> up, vector<StairKey> down);
-  static LevelMaker* topLevel(CreatureFactory forrest, vector<SettlementInfo> village);
-  static LevelMaker* mineTownLevel(SettlementInfo);
-  static LevelMaker* splashLevel(CreatureFactory heroLeader, CreatureFactory heroes, CreatureFactory monsters,
-      CreatureFactory imps, const string& splashPath);
-
-  static LevelMaker* pyramidLevel(optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
-  static LevelMaker* towerLevel(optional<StairKey> down, optional<StairKey> up);
-  static Vec2 getRandomExit(Rectangle rect, int minCornerDist = 1);
-  static LevelMaker* grassAndTrees();
+  static LevelMaker* topLevel(RandomGen&, CreatureFactory forrest, vector<SettlementInfo> village);
+  static LevelMaker* mineTownLevel(RandomGen&, SettlementInfo);
+  static LevelMaker* splashLevel(CreatureFactory heroLeader, CreatureFactory heroes,
+      CreatureFactory monsters, CreatureFactory imps, const string& splashPath);
+  static LevelMaker* pyramidLevel(RandomGen&, optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
+  static LevelMaker* towerLevel(RandomGen&, optional<StairKey> down, optional<StairKey> up);
+  static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
 };
 
 #endif

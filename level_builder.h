@@ -14,7 +14,7 @@ class Square;
 class LevelBuilder {
   public:
   /** Constructs a builder with given size and name. */
-  LevelBuilder(ProgressMeter&, int width, int height, const string& name, bool covered = true);
+  LevelBuilder(ProgressMeter&, RandomGen&, int width, int height, const string& name, bool covered = true);
   
   /** Move constructor.*/
   LevelBuilder(LevelBuilder&&) = default;
@@ -79,6 +79,8 @@ class LevelBuilder {
 
   void pushMap(Rectangle bounds, Rot);
   void popMap();
+
+  RandomGen& getRandom();
   
   private:
   bool isInSunlight(Vec2);
@@ -97,6 +99,7 @@ class LevelBuilder {
   string name;
   vector<Vec2::LinearMap> mapStack;
   ProgressMeter& progressMeter;
+  RandomGen& random;
 };
 
 #endif

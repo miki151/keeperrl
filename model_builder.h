@@ -15,7 +15,7 @@ class ModelBuilder {
   public:
 
   /** Generates levels and all game entities for a collective game. */
-  static PModel collectiveModel(ProgressMeter&, Options*, View*, const string& worldName);
+  static PModel collectiveModel(ProgressMeter&, RandomGen&, Options*, View*, const string& worldName);
 
   static PModel splashModel(ProgressMeter&, View*, const string& splashPath);
 
@@ -24,8 +24,8 @@ class ModelBuilder {
   static int getThronePopulationIncrease();
 
   private:
-  static PModel tryCollectiveModel(ProgressMeter&, Options*, View*, const string& worldName);
-  static Level* makeExtraLevel(ProgressMeter&, Model*, ExtraLevelId, StairKey, Tribe*);
+  static PModel tryCollectiveModel(ProgressMeter&, RandomGen&, Options*, View*, const string& worldName);
+  static Level* makeExtraLevel(ProgressMeter&, RandomGen&, Model*, ExtraLevelId, StairKey, Tribe*);
 
 };
 

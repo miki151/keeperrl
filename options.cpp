@@ -32,6 +32,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
   {OptionId::KEEPER_NAME, string("")},
+  {OptionId::KEEPER_SEED, string("")},
   {OptionId::ADVENTURER_NAME, string("")},
 };
 
@@ -49,6 +50,7 @@ const map<OptionId, string> names {
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::KEEPER_NAME, "Keeper's name"},
+  {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::ADVENTURER_NAME, "Adventurer's name"},
 };
 
@@ -67,6 +69,7 @@ const map<OptionId, string> hints {
   {OptionId::STARTING_RESOURCE, ""},
   {OptionId::START_WITH_NIGHT, ""},
   {OptionId::KEEPER_NAME, ""},
+  {OptionId::KEEPER_SEED, ""},
   {OptionId::ADVENTURER_NAME, ""},
 };
 
@@ -92,6 +95,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::FAST_IMMIGRATION,
 #endif
       OptionId::KEEPER_NAME,
+      OptionId::KEEPER_SEED,
   }},
   {OptionSet::ADVENTURER, {
       OptionId::ADVENTURER_NAME,
@@ -176,6 +180,7 @@ string Options::getValueString(OptionId id, Options::Value value) {
     case OptionId::ONLINE:
     case OptionId::START_WITH_NIGHT: return getYesNo(value);
     case OptionId::ADVENTURER_NAME:
+    case OptionId::KEEPER_SEED:
     case OptionId::KEEPER_NAME: {
         string val = boost::get<string>(value);
         if (val.empty())
@@ -190,6 +195,7 @@ string Options::getValueString(OptionId id, Options::Value value) {
 optional<Options::Value> Options::readValue(OptionId id, const string& input) {
   switch (id) {
     case OptionId::ADVENTURER_NAME:
+    case OptionId::KEEPER_SEED:
     case OptionId::KEEPER_NAME: return Options::Value(input);
     default:
         if (auto ret = fromStringSafe<int>(input))
@@ -211,6 +217,11 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
     case OptionId::ADVENTURER_NAME:
         if (auto val = view->getText("Enter " + names.at(id), boost::get<string>(value), 23,
               "Leave blank to use a random name."))
+          setValue(id, *val);
+        break;
+    case OptionId::KEEPER_SEED:
+        if (auto val = view->getText("Enter " + names.at(id), boost::get<string>(value), 23,
+              "Leave blank to use a random seed."))
           setValue(id, *val);
         break;
     case OptionId::FULLSCREEN_RESOLUTION:
