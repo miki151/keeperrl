@@ -37,6 +37,7 @@ enum class SettlementType {
   CASTLE,
   CASTLE2,
   COTTAGE,
+  TOWER,
   WITCH_HOUSE,
   MINETOWN,
   SMALL_MINETOWN,
@@ -53,7 +54,7 @@ struct StockpileInfo {
 
 struct SettlementInfo {
   SettlementType type;
-  CreatureFactory creatures;
+  optional<CreatureFactory> creatures;
   int numCreatures;
   optional<pair<CreatureFactory, int>> neutralCreatures;
   Location* location;
@@ -73,14 +74,13 @@ class LevelMaker {
   public:
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
 
-  static LevelMaker* cryptLevel(RandomGen&, CreatureFactory roomFactory, SquareFactory coffins,
-      vector<StairKey> up, vector<StairKey> down);
+  static LevelMaker* cryptLevel(RandomGen&, SettlementInfo);
   static LevelMaker* topLevel(RandomGen&, CreatureFactory forrest, vector<SettlementInfo> village);
   static LevelMaker* mineTownLevel(RandomGen&, SettlementInfo);
   static LevelMaker* splashLevel(CreatureFactory heroLeader, CreatureFactory heroes,
       CreatureFactory monsters, CreatureFactory imps, const string& splashPath);
   static LevelMaker* pyramidLevel(RandomGen&, optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
-  static LevelMaker* towerLevel(RandomGen&, optional<StairKey> down, optional<StairKey> up);
+  static LevelMaker* towerLevel(RandomGen&, SettlementInfo);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
 };
 

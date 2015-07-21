@@ -8,6 +8,7 @@ class Model;
 class ProgressMeter;
 class Options;
 class View;
+struct SettlementInfo;
 
 enum class ExtraLevelId;
 
@@ -25,7 +26,7 @@ class ModelBuilder {
 
   private:
   static PModel tryCollectiveModel(ProgressMeter&, RandomGen&, Options*, View*, const string& worldName);
-  static Level* makeExtraLevel(ProgressMeter&, RandomGen&, Model*, ExtraLevelId, StairKey, Tribe*);
+  static Level* makeExtraLevel(ProgressMeter&, RandomGen&, Model*, ExtraLevelId, const SettlementInfo&);
 
 };
 

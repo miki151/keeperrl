@@ -53,7 +53,7 @@ int RandomGen::get(const vector<double>& weights) {
   for (double elem : weights)
     sum += elem;
   CHECK(sum > 0);
-  int r = getDouble(0, sum);
+  double r = getDouble(0, sum);
   sum = 0;
   for (int i : All(weights)) {
     sum += weights[i];

@@ -341,7 +341,7 @@ class RandomGen {
   template <typename T>
   T choose(const vector<T>& v, const vector<double>& p) {
     CHECK(v.size() == p.size());
-    return v[get(p)];
+    return v.at(get(p));
   }
 
   template <typename T>

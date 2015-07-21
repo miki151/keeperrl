@@ -140,9 +140,12 @@ void VillageControl::tick(double time) {
       if (prob > 0 && Random.roll(1 / prob)) {
         vector<Creature*> fighters;
         if (villain.leaderAttacks)
-          fighters = getCollective()->getCreatures({MinionTrait::FIGHTER});
+          fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::NO_AI_ATTACK});
         else
-          fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::LEADER});
+          fighters = getCollective()->getCreatures({MinionTrait::FIGHTER},
+              {MinionTrait::LEADER, MinionTrait::NO_AI_ATTACK});
+        fighters = filter(fighters, [this] (const Creature* c) {
+            return contains(getCollective()->getAllSquares(), c->getPosition()); });
         Debug() << getCollective()->getName() << " fighters: " << int(fighters.size())
           << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
         if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)

@@ -296,9 +296,11 @@ class Tree : public Square {
       s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
       getLevel()->getModel()->addWoodCount(numWood);
       int numCut = getLevel()->getModel()->getWoodCount();
-      if (numCut > 1500 && Random.roll(max(50, (3000 - numCut) / 10)))
-        Effect::summon(getPosition2(), CreatureFactory::singleType(
-              getLevel()->getModel()->getKillEveryoneTribe(), creature), 1, 100000);
+      if (numCut > 1500 && Random.roll(max(50, (3000 - numCut) / 10))) {
+        CreatureFactory f = CreatureFactory::singleType(
+            getLevel()->getModel()->getKillEveryoneTribe(), creature);
+        Effect::summon(getPosition2(), f, 1, 100000);
+      }
     }
   }
 

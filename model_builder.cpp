@@ -29,13 +29,19 @@ typedef VillageControl::Villain VillainInfo;
 enum class ExtraLevelId {
   CRYPT,
   GNOMISH_MINES,
+  TOWER,
+};
+
+struct LevelInfo {
+  ExtraLevelId levelId;
+  StairKey stairKey;
 };
 
 struct EnemyInfo {
   SettlementInfo settlement;
   CollectiveConfig config;
   vector<VillainInfo> villains;
-  optional<ExtraLevelId> extraLevel;
+  optional<LevelInfo> extraLevel;
 };
 
 
@@ -128,13 +134,8 @@ vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet) {
         c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
         CollectiveConfig::noImmigrants(), {}});
   }
+  StairKey gnomeKey = StairKey::getNew();
   for (int i : Range(random.get(2, 5))) {
-    optional<ExtraLevelId> extraLevel;
-    vector<StairKey> downStairs;
-    if (i == 0) {
-      extraLevel = ExtraLevelId::GNOMISH_MINES;
-      downStairs = {StairKey::getNew() };
-    }
     ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::SMALL_MINETOWN;
         c.creatures = CreatureFactory::gnomeVillage(tribeSet.dwarven.get());
@@ -142,10 +143,11 @@ vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet) {
         c.location = new Location(true);
         c.tribe = tribeSet.dwarven.get();
         c.buildingId = BuildingId::DUNGEON;
-        c.downStairs = downStairs;
+        if (i == 0)
+          c.downStairs = {gnomeKey};
         c.stockpiles = LIST({StockpileInfo::MINERALS, 300});
         c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
-      CollectiveConfig::noImmigrants(), {}, extraLevel});
+      CollectiveConfig::noImmigrants(), {}});
   }
   ret.push_back({CONSTRUCT(SettlementInfo,
         c.type = SettlementType::ISLAND_VAULT;
@@ -153,24 +155,45 @@ vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet) {
         c.buildingId = BuildingId::DUNGEON;
         c.stockpiles = LIST({StockpileInfo::GOLD, 800});), CollectiveConfig::noImmigrants(), {}});
   append(ret, getVaults(random, tribeSet));
+  StairKey towerKey = StairKey::getNew();
+  StairKey cryptKey = StairKey::getNew();
   append(ret, {
       {CONSTRUCT(SettlementInfo,
-          c.type = SettlementType::COTTAGE;
+          c.type = SettlementType::MINETOWN;
+          c.creatures = CreatureFactory::gnomeVillage(tribeSet.dwarven.get());
+          c.numCreatures = random.get(3, 7);
+          c.location = new Location(true);
+          c.tribe = tribeSet.dwarven.get();
+          c.buildingId = BuildingId::DUNGEON;
+          c.upStairs = {gnomeKey};
+          c.stockpiles = LIST({StockpileInfo::MINERALS, 300});
+          c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+       CollectiveConfig::noImmigrants(), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}},
+      {CONSTRUCT(SettlementInfo,
+        c.type = SettlementType::TOWER;
+        c.location = new Location();
+        c.tribe = tribeSet.human.get();
+        c.upStairs = {towerKey};
+          c.buildingId = BuildingId::BRICK;),
+        CollectiveConfig::noImmigrants(), {}},
+      {CONSTRUCT(SettlementInfo,
+          c.type = SettlementType::TOWER;
           c.creatures = CreatureFactory::singleType(tribeSet.human.get(), CreatureId::ELEMENTALIST);
           c.numCreatures = 1;
+          c.downStairs = {towerKey};
           c.location = new Location(true);
           c.tribe = tribeSet.human.get();
-          c.buildingId = BuildingId::WOOD;
+          c.buildingId = BuildingId::BRICK;
           c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
-       CollectiveConfig::noImmigrants(),
-       {CONSTRUCT(VillainInfo,
-          c.minPopulation = 0;
+        CollectiveConfig::noImmigrants(),
+        {CONSTRUCT(VillainInfo,
+            c.minPopulation = 0;
           c.minTeamSize = 1;
           c.leaderAttacks = true;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE});
           c.behaviour = VillageBehaviour(VillageBehaviourId::CAMP_AND_SPAWN,
             CreatureFactory::elementals(tribeSet.human.get()));
-          c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
+          c.attackMessage = VillageControl::TRIBE_AND_NAME;)}, LevelInfo{ExtraLevelId::TOWER, towerKey}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CASTLE2;
           c.creatures = CreatureFactory::vikingTown(tribeSet.human.get());
@@ -191,8 +214,8 @@ vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet) {
        {CONSTRUCT(VillainInfo,
           c.minPopulation = 6;
           c.minTeamSize = 5;
-          c.triggers = LIST(
-            {AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS}, AttackTriggerId::STOLEN_ITEMS);
+          c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
+              AttackTriggerId::STOLEN_ITEMS);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}},
       {CONSTRUCT(SettlementInfo,
@@ -303,11 +326,21 @@ vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet) {
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CEMETERY;
           c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::ZOMBIE);
+          c.numCreatures = random.get(8, 12);
+          c.location = new Location("cemetery");
+          c.tribe = tribeSet.monster.get();
+          c.furniture = SquareFactory::cryptCoffins(tribeSet.keeper.get());
+          c.upStairs = { cryptKey };
+          c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {},
+       LevelInfo{ExtraLevelId::CRYPT, cryptKey}},
+      {CONSTRUCT(SettlementInfo,
+          c.type = SettlementType::CEMETERY;
+          c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::ZOMBIE);
           c.numCreatures = 1;
           c.location = new Location("cemetery");
           c.tribe = tribeSet.monster.get();
-          c.downStairs = { StairKey::getNew() };
-          c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {}, ExtraLevelId::CRYPT},
+          c.downStairs = { cryptKey };
+          c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CAVE;
           c.creatures = CreatureFactory::singleType(tribeSet.bandit.get(), CreatureId::BANDIT);
@@ -538,30 +571,20 @@ static string getNewIdSuffix() {
 }
 
 Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Model* model,
-    ExtraLevelId level, StairKey stairKey, Tribe* tribe) {
+    ExtraLevelId level, const SettlementInfo& settlement) {
   switch (level) {
+    case ExtraLevelId::TOWER: 
+      return model->buildLevel(
+         LevelBuilder(meter, random, 5, 5, "Tower"),
+         LevelMaker::towerLevel(random, settlement));
     case ExtraLevelId::CRYPT: 
       return model->buildLevel(
          LevelBuilder(meter, random, 40, 40, "Crypt"),
-         LevelMaker::cryptLevel(random, CreatureFactory::singleType(model->tribeSet->monster.get(),
-                CreatureId::ZOMBIE).increaseLevel(5),
-              SquareFactory::cryptCoffins(model->tribeSet->keeper.get()), {stairKey}, {}));
-      break;
+         LevelMaker::cryptLevel(random, settlement));
     case ExtraLevelId::GNOMISH_MINES: 
       return model->buildLevel(
          LevelBuilder(meter, random, 80, 60, "Gnomish mines"),
-         LevelMaker::mineTownLevel(random, CONSTRUCT(SettlementInfo,
-             c.type = SettlementType::MINETOWN;
-             c.creatures = CreatureFactory::gnomeVillage(model->tribeSet->dwarven.get());
-             c.numCreatures = random.get(9, 14);
-             c.location = new Location();
-             c.tribe = model->tribeSet->dwarven.get();
-             c.buildingId = BuildingId::DUNGEON;
-             c.upStairs = {stairKey};
-             c.stockpiles = LIST({StockpileInfo::GOLD, 1000}, {StockpileInfo::MINERALS, 600});
-             c.shopFactory = ItemFactory::dwarfShop();
-             c.furniture = SquareFactory::roomFurniture(model->tribeSet->pest.get());)));
-      break;
+         LevelMaker::mineTownLevel(random, settlement));
   }
 }
 
@@ -571,19 +594,21 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, RandomGen& random,
   m->setOptions(options);
   vector<EnemyInfo> enemyInfo = getEnemyInfo(random, *m->tribeSet);
   vector<SettlementInfo> settlements;
+  vector<pair<LevelInfo, SettlementInfo>> extraSettlements;
   for (auto& elem : enemyInfo) {
     elem.settlement.collective = new CollectiveBuilder(elem.config, elem.settlement.tribe);
-    settlements.push_back(elem.settlement);
+    if (!elem.extraLevel)
+      settlements.push_back(elem.settlement);
+    else
+      extraSettlements.emplace_back(*elem.extraLevel, elem.settlement);
   }
   Level* top = m->buildLevel(
       LevelBuilder(meter, random, 250, 250, "Wilderness", false),
       LevelMaker::topLevel(random, CreatureFactory::forrest(m->tribeSet->wildlife.get()), settlements));
-  for (auto& elem : enemyInfo)
-    if (elem.extraLevel) {
-      StairKey key = getOnlyElement(elem.settlement.downStairs);
-      Level* level = makeExtraLevel(meter, random, m, *elem.extraLevel, key, elem.settlement.tribe);
-      m->addLink(key, top, level);
-    }
+  for (auto& elem : extraSettlements) {
+    Level* level = makeExtraLevel(meter, random, m, elem.first.levelId, elem.second);
+    m->addLink(elem.first.stairKey, top, level);
+  }
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet->keeper.get())
       .setLevel(top)

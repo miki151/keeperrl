@@ -241,8 +241,7 @@ vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, int ttl) {
   return summonCreatures(c, 2, std::move(creatures));
 }
 
-vector<Creature*> Effect::summon(Position pos, const CreatureFactory& factory1, int num, int ttl) {
-  CreatureFactory factory(factory1);
+vector<Creature*> Effect::summon(Position pos, CreatureFactory& factory, int num, int ttl) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(factory.random(MonsterAIFactory::dieTime(pos.getModel()->getTime() + ttl)));
