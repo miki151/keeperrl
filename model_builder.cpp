@@ -174,13 +174,12 @@ vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet) {
         c.location = new Location();
         c.tribe = tribeSet.human.get();
         c.upStairs = {towerKey};
-          c.buildingId = BuildingId::BRICK;),
+        c.buildingId = BuildingId::BRICK;),
         CollectiveConfig::noImmigrants(), {}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::TOWER;
           c.creatures = CreatureFactory::singleType(tribeSet.human.get(), CreatureId::ELEMENTALIST);
           c.numCreatures = 1;
-          c.downStairs = {towerKey};
           c.location = new Location(true);
           c.tribe = tribeSet.human.get();
           c.buildingId = BuildingId::BRICK;
@@ -571,17 +570,38 @@ static string getNewIdSuffix() {
 }
 
 Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Model* model,
-    ExtraLevelId level, const SettlementInfo& settlement) {
-  switch (level) {
-    case ExtraLevelId::TOWER: 
+    const LevelInfo& levelInfo, const SettlementInfo& settlement1) {
+  SettlementInfo settlement(settlement1);
+  const int towerHeight = random.get(7, 12);
+  switch (levelInfo.levelId) {
+    case ExtraLevelId::TOWER: {
+      StairKey downLink = levelInfo.stairKey;
+      for (int i : Range(towerHeight - 1)) {
+        StairKey upLink = StairKey::getNew();
+        model->buildLevel(
+            LevelBuilder(meter, random, 4, 4, "Tower floor" + toString(i + 2)),
+            LevelMaker::towerLevel(random,
+                CONSTRUCT(SettlementInfo,
+                  c.type = SettlementType::TOWER;
+                  c.location = new Location();
+                  c.upStairs = {upLink};
+                  c.downStairs = {downLink};
+                  c.furniture = SquareFactory::single(SquareId::TORCH);
+                  c.buildingId = BuildingId::BRICK;)));
+        downLink = upLink;
+      }
+      settlement.downStairs = {downLink};
       return model->buildLevel(
-         LevelBuilder(meter, random, 5, 5, "Tower"),
+         LevelBuilder(meter, random, 5, 5, "Tower top"),
          LevelMaker::towerLevel(random, settlement));
+      }
     case ExtraLevelId::CRYPT: 
+      settlement.upStairs = {levelInfo.stairKey};
       return model->buildLevel(
          LevelBuilder(meter, random, 40, 40, "Crypt"),
          LevelMaker::cryptLevel(random, settlement));
     case ExtraLevelId::GNOMISH_MINES: 
+      settlement.upStairs = {levelInfo.stairKey};
       return model->buildLevel(
          LevelBuilder(meter, random, 80, 60, "Gnomish mines"),
          LevelMaker::mineTownLevel(random, settlement));
@@ -605,10 +625,9 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, RandomGen& random,
   Level* top = m->buildLevel(
       LevelBuilder(meter, random, 250, 250, "Wilderness", false),
       LevelMaker::topLevel(random, CreatureFactory::forrest(m->tribeSet->wildlife.get()), settlements));
-  for (auto& elem : extraSettlements) {
-    Level* level = makeExtraLevel(meter, random, m, elem.first.levelId, elem.second);
-    m->addLink(elem.first.stairKey, top, level);
-  }
+  for (auto& elem : extraSettlements)
+    makeExtraLevel(meter, random, m, elem.first, elem.second);
+  m->calculateStairNavigation();
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet->keeper.get())
       .setLevel(top)

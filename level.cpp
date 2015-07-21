@@ -246,6 +246,14 @@ vector<Position> Level::getLandingSquares(StairKey key) const {
     return vector<Position>();
 }
 
+vector<StairKey> Level::getAllStairKeys() const {
+  return getKeys(landingSquares);
+}
+
+bool Level::hasStairKey(StairKey key) const {
+  return landingSquares.count(key);
+}
+
 optional<Position> Level::getStairsTo(const Level* level) const {
   return model->getStairs(this, level);
 }

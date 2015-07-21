@@ -154,7 +154,6 @@ class Model {
   const Creature* getPlayer() const;
   void landHeroPlayer();
   Level* buildLevel(LevelBuilder&&, LevelMaker*);
-  void addLink(StairKey, Level*, Level*);
   Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
 
   HeapAllocated<TribeSet> SERIAL(tribeSet);
@@ -166,7 +165,6 @@ class Model {
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(lastTick) = -1000;
-  unordered_map<StairKey, pair<Level*, Level*>> SERIAL(levelLinks);
   PlayerControl* SERIAL(playerControl) = nullptr;
   bool SERIAL(won) = false;
   bool SERIAL(addHero) = false;
@@ -186,6 +184,9 @@ class Model {
   HeapAllocated<Statistics> SERIAL(statistics);
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
+  void calculateStairNavigation();
+  optional<StairKey> getStairsBetween(const Level* from, const Level* to);
+  map<pair<const Level*, const Level*>, StairKey> SERIAL(stairNavigation);
 };
 
 #endif

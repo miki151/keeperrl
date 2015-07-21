@@ -1869,6 +1869,8 @@ static LevelMaker* tower(RandomGen& random, SettlementInfo info, bool withExit) 
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, building.floorInside));
   queue->addMaker(new Division(0.5, 0.5, upStairs, nullptr, nullptr, downStairs));
+  if (info.furniture)
+    queue->addMaker(new DungeonFeatures(Predicate::type(building.floorInside), 0.5, *info.furniture));
   return queue;
 }
 

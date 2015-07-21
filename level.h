@@ -113,6 +113,9 @@ class Level {
   /** Returns the landing squares for given direction and stair key. See Square::getLandingLink() */
   vector<Position> getLandingSquares(StairKey) const;
 
+  vector<StairKey> getAllStairKeys() const;
+  bool hasStairKey(StairKey) const;
+
   optional<Position> getStairsTo(const Level*) const;
 
   /** Removes the creature from \paramname{position} from the level and model. The creature object is retained.*/

@@ -53,7 +53,6 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(timeQueue)
     & SVAR(deadCreatures)
     & SVAR(lastTick)
-    & SVAR(levelLinks)
     & SVAR(playerControl)
     & SVAR(playerCollective)
     & SVAR(won)
@@ -69,7 +68,8 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(tribeSet)
     & SVAR(gameIdentifier)
     & SVAR(gameDisplayName)
-    & SVAR(finishCurrentMusic);
+    & SVAR(finishCurrentMusic)
+    & SVAR(stairNavigation);
   Deity::serializeAll(ar);
   if (Archive::is_loading::value)
     updateSunlightInfo();
@@ -521,24 +521,45 @@ void Model::setHighscores(Highscores* h) {
   highscores = h;
 }
 
-void Model::addLink(StairKey key, Level* l1, Level* l2) {
-  levelLinks[key] = {l1, l2};
-}
-
 bool Model::changeLevel(StairKey key, Creature* c) {
   Level* current = c->getLevel();
-  Level* target = levelLinks[key].first == current ? levelLinks[key].second : levelLinks[key].first;
-  return target->landCreature(key, c);
+  for (Level* target : getLevels())
+    if (target != current && target->hasStairKey(key))
+      return target->landCreature(key, c);
+  FAIL << "Failed to find next level for " << key.getInternalKey() << " " << current->getName();
+  return false;
+}
+
+void Model::calculateStairNavigation() {
+  // Floyd-Warshall algorithm
+  for (const Level* l1 : getLevels())
+    for (const Level* l2 : getLevels())
+      if (l1 != l2)
+        if (auto stairKey = getStairsBetween(l1, l2))
+          stairNavigation[{l1, l2}] = *stairKey;
+  for (const Level* li : getLevels())
+    for (const Level* l1 : getLevels())
+      if (li != l1)
+        for (const Level* l2 : getLevels())
+          if (l2 != l1 && l2 != li && !stairNavigation.count({l1, l2}) && stairNavigation.count({li, l2}) &&
+              stairNavigation.count({l1, li}))
+            stairNavigation[{l1, l2}] = stairNavigation.at({l1, li});
+  for (const Level* l1 : getLevels())
+    for (const Level* l2 : getLevels())
+      if (l1 != l2)
+        CHECK(stairNavigation.count({l1, l2})) <<
+            "No stair path between levels " << l1->getName() << " " << l2->getName();
+}
+
+optional<StairKey> Model::getStairsBetween(const Level* from, const Level* to) {
+  for (StairKey key : from->getAllStairKeys())
+    if (to->hasStairKey(key))
+      return key;
+  return none;
 }
 
 Position Model::getStairs(const Level* from, const Level* to) {
-  optional<StairKey> key;
-  for (auto& elem : levelLinks)
-    if ((elem.second.first == from && elem.second.second == to) ||
-        (elem.second.first == to && elem.second.second == from))
-      key = elem.first;
-  CHECK(key);
-  return Random.choose(from->getLandingSquares(*key));
+  return Random.choose(from->getLandingSquares(stairNavigation.at({from, to})));
 }
 
 bool Model::changeLevel(Position position, Creature* c) {
