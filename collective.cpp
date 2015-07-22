@@ -419,7 +419,7 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
     taskMap->takeTask(c, closest);
     return closest->getMove(c);
   } else {
-    if (config->getWorkerFollowLeader() && getLeader() && !containsSquare(c->getPosition())
+    if (config->getWorkerFollowLeader() && getLeader() && getAllSquares().empty()
         && getLeader()->getLevel() == c->getLevel()) {
       Vec2 leaderPos = getLeader()->getPosition();
       if (leaderPos.dist8(c->getPosition()) < 3)
