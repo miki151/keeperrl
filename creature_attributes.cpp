@@ -124,7 +124,7 @@ int CreatureAttributes::numBodyParts(BodyPart part) const {
 }
 
 int CreatureAttributes::numLost(BodyPart part) const {
-  return lostBodyParts[part];
+  return CHECK_RANGE(lostBodyParts[part], -10000000, 10000000, name->bare());
 }
 
 int CreatureAttributes::lostOrInjuredBodyParts() const {
@@ -137,7 +137,7 @@ int CreatureAttributes::lostOrInjuredBodyParts() const {
 }
 
 int CreatureAttributes::numInjured(BodyPart part) const {
-  return injuredBodyParts[part];
+  return CHECK_RANGE(injuredBodyParts[part], -10000000, 10000000, name->bare());
 }
 
 int CreatureAttributes::numGood(BodyPart part) const {
