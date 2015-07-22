@@ -94,6 +94,7 @@ struct ItemInfo {
   bool pending;
   optional<EquipmentSlot> slot;
   optional<CreatureInfo> owner;
+  enum Type {EQUIPMENT, CONSUMABLE, OTHER} type;
 };
 
 class PlayerInfo {
