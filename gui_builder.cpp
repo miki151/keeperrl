@@ -782,7 +782,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   list.addElem(gui.horizontalList(makeVec<PGuiElem>(
       gui.label("Level " + toString(info.level), colors[ColorId::WHITE]),
       gui.stack(gui.button(getButtonCallback(UserInputId::UNPOSSESS)),
-          gui.label("[U] Leave control", colors[ColorId::LIGHT_BLUE]))), 140, 1));
+          gui.label("[U] Leave control", colors[ColorId::LIGHT_BLUE]))), 150, 1));
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addElem(gui.empty());
@@ -1488,15 +1488,25 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const vector<ItemInfo>&
           callback(MinionAction{MinionAction::MinionItemAction{item.ids, item.slot, *choice}});
       });
   lines.push_back(gui.label("Equipment", colors[ColorId::YELLOW]));
-  for (int i : All(itemElems)) {
-    lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
-    if ((i == itemElems.size() - 1 || !items[i + 1].slot) && items[i].slot)
-      lines.push_back(gui.label("Consumables", colors[ColorId::YELLOW]));
-  }
+  for (int i : All(itemElems))
+    if (items[i].type == items[i].EQUIPMENT)
+      lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
+  lines.push_back(gui.label("Consumables", colors[ColorId::YELLOW]));
+  for (int i : All(itemElems))
+    if (items[i].type == items[i].CONSUMABLE)
+      lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
   lines.push_back(gui.stack(
       gui.label("[add consumable]", colors[ColorId::LIGHT_BLUE]),
       gui.button([=] { callback(MinionAction{MinionAction::MinionItemAction{{}, none,
           ItemAction::REPLACE}});})));
+  for (int i : All(itemElems))
+    if (items[i].type == items[i].OTHER) {
+      lines.push_back(gui.label("Other", colors[ColorId::YELLOW]));
+      break;
+    }
+  for (int i : All(itemElems))
+    if (items[i].type == items[i].OTHER)
+      lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
   return lines;
 }
 

@@ -1043,6 +1043,10 @@ void Creature::setTime(double t) {
   time = t;
 }
 
+bool Creature::isBleeding() const {
+  return health < 0.5;
+}
+
 void Creature::tick(double realTime) {
   updateVision();
   if (Random.roll(5))
@@ -1070,7 +1074,7 @@ void Creature::tick(double realTime) {
     die(lastAttacker);
     return;
   }
-  if (health < 0.5) {
+  if (isBleeding()) {
     health -= delta / 40;
     playerMessage("You are bleeding.");
   }
@@ -2428,6 +2432,8 @@ vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
   vector<AdjectiveInfo> ret;
   if (!getWeapon())
     ret.push_back({"No weapon", ""});
+  if (health < 1)
+    ret.push_back({isBleeding() ? "Critically wounded" : "Wounded", ""});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = attributes->injuredBodyParts[part])
       ret.push_back({getPlural("Injured " + attributes->getBodyPartName(part), num), ""});

@@ -121,6 +121,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   bool isDead() const;
   bool isBlind() const;
+  bool isBleeding() const;
   const Creature* getLastAttacker() const;
   vector<const Creature*> getKills() const;
   bool isHumanoid() const;
