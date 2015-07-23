@@ -143,7 +143,8 @@ static double getWillpowerMult(double sorcerySkill) {
 }
 
 CreatureAction Creature::castSpell(Spell* spell) const {
-  CHECK(attributes->getSpellMap().contains(spell));
+  if (!attributes->getSpellMap().contains(spell))
+    return CreatureAction("You don't know this spell.");
   CHECK(!spell->isDirected());
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
@@ -896,13 +897,13 @@ int Creature::getAttr(AttrType type) const {
   int def = attributes->getRawAttr(type);
   for (Item* item : equipment->getItems())
     if (equipment->isEquiped(item))
-      def += item->getAttr(type);
+      def += CHECK_RANGE(item->getAttr(type), -10000000, 10000000, getName().bare());
   switch (type) {
     case AttrType::STRENGTH:
         if (health < 1)
           def *= 0.666 + health / 3;
         if (isAffected(LastingEffect::STR_BONUS))
-          def += attrBonus;
+          def += CHECK_RANGE(attrBonus, -10000000, 10000000, getName().bare());
         for (auto elem : strPenalty)
           def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
         def -= simulAttackPen(numAttacksThisTurn);
@@ -940,9 +941,9 @@ int Creature::getModifier(ModifierType type) const {
   int def = 0;
   for (Item* item : equipment->getItems())
     if (equipment->isEquiped(item))
-      def += item->getModifier(type);
+      def += CHECK_RANGE(item->getModifier(type), -10000000, 10000000, getName().bare());
   for (SkillId skill : ENUM_ALL(SkillId))
-    def += Skill::get(skill)->getModifier(this, type);
+    def += CHECK_RANGE(Skill::get(skill)->getModifier(this, type), -10000000, 10000000, getName().bare());
   switch (type) {
     case ModifierType::FIRED_DAMAGE: 
     case ModifierType::THROWN_DAMAGE: 
@@ -1082,6 +1083,10 @@ void Creature::setTime(double t) {
   time = t;
 }
 
+bool Creature::isBleeding() const {
+  return health < 0.5;
+}
+
 void Creature::tick(double realTime) {
   updateVision();
   if (Random.roll(5))
@@ -1109,7 +1114,7 @@ void Creature::tick(double realTime) {
     die(lastAttacker);
     return;
   }
-  if (health < 0.5) {
+  if (isBleeding()) {
     health -= delta / 40;
     playerMessage("You are bleeding.");
   }
@@ -2144,7 +2149,7 @@ int Creature::getDifficultyPoints() const {
       + getAttr(AttrType::SPEED) / 10);
   CHECK(difficultyPoints >=0 && difficultyPoints < 100000) << getModifier(ModifierType::DEFENSE) << " "
      << getModifier(ModifierType::ACCURACY) << " " << getModifier(ModifierType::DAMAGE) << " "
-     << getAttr(AttrType::SPEED);
+     << getAttr(AttrType::SPEED) << " " << getName().bare() << " " << health;
   return difficultyPoints;
 }
 
@@ -2455,6 +2460,8 @@ vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
   vector<AdjectiveInfo> ret;
   if (!getWeapon())
     ret.push_back({"No weapon", ""});
+  if (health < 1)
+    ret.push_back({isBleeding() ? "Critically wounded" : "Wounded", ""});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = attributes->injuredBodyParts[part])
       ret.push_back({getPlural("Injured " + attributes->getBodyPartName(part), num), ""});

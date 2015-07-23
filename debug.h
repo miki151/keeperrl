@@ -112,8 +112,15 @@ unique_ptr<T> notNullCheck(unique_ptr<T> e, const char* file, int line, const ch
   return e;
 }
 
+template <class T, class V>
+const T& rangeCheck(const T& e, const V& lower, const V& upper, const string& msg) {
+  if (e < lower || e > upper) Debug(FATAL) << msg << " (" << e << " not in range " << lower << "," << upper << ")";
+  return e;
+}
+
 #define NOTNULL(e) notNullCheck(e, __FILE__, __LINE__, #e)
 #define CHECKEQ(e, v) valueCheck(e, v, string(__FILE__) + ":" + toString(__LINE__) + ": " + #e + " != " + #v + " ")
 #define CHECKEQ2(e, v, msg) valueCheck(e, v, string(__FILE__) + ":" + toString(__LINE__) + ": " + #e + " != " + #v + " " + msg)
+#define CHECK_RANGE(e, lower, upper, msg) rangeCheck(e, lower, upper, string(__FILE__) + ":" + toString(__LINE__) + ": " + msg)
 
 #endif

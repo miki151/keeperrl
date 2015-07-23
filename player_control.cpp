@@ -546,7 +546,8 @@ void PlayerControl::minionView(Creature* creature) {
   }
 }
 
-static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked) {
+static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked,
+    optional<ItemInfo::Type> type = none) {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(true);
     c.fullName = stack[0]->getNameAndModifiers(false);
@@ -559,6 +560,8 @@ static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pendi
     c.actions = {ItemAction::DROP};
     c.equiped = equiped;
     c.locked = locked;
+    if (type)
+      c.type = *type;
     c.pending = pending;);
 }
 
@@ -616,7 +619,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) {
       removeElement(ownedItems, item);
       bool equiped = creature->getEquipment().isEquiped(item);
       bool locked = getCollective()->getMinionEquipment().isLocked(creature, item->getUniqueId());
-      info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked));
+      info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
       info.inventory.back().actions.push_back(locked ? ItemAction::UNLOCK : ItemAction::LOCK);
     }
     if (creature->getEquipment().getMaxItems(slot) > items.size()) {
@@ -629,7 +632,10 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) {
       [&](const Item* it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
   for (auto elem : consumables)
     info.inventory.push_back(getItemInfo(elem.second, false,
-          !creature->getEquipment().hasItem(elem.second.at(0)), false));
+          !creature->getEquipment().hasItem(elem.second.at(0)), false, ItemInfo::CONSUMABLE));
+  for (Item* item : creature->getEquipment().getItems())
+    if (!getCollective()->getMinionEquipment().isItemUseful(item))
+      info.inventory.push_back(getItemInfo({item}, false, false, false, ItemInfo::OTHER));
 }
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
