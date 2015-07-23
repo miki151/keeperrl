@@ -1540,6 +1540,7 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DWARF_FEMALE:
       return INHERIT(DWARF,
           c.viewId = ViewId::DWARF_FEMALE;
+          c.innocent = true;
           c.gender = Gender::female;);
     case CreatureId::DWARF_BARON: 
       return INHERIT(DWARF,
