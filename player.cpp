@@ -157,11 +157,12 @@ void Player::pickUpItemAction(int numStack, bool multi) {
   }
 }
 
-void Player::tryToPerform(CreatureAction action) {
+bool Player::tryToPerform(CreatureAction action) {
   if (action)
     action.perform(getCreature());
   else
     getCreature()->playerMessage(action.getFailedReason());
+  return !!action;
 }
 
 ItemClass typeDisplayOrder[] {
@@ -605,16 +606,16 @@ static string getForceMovementQuestion(Position pos, const Creature* creature) {
 }
 
 void Player::moveAction(Vec2 dir) {
-  if (auto action = getCreature()->move(dir)) {
-    action.perform(getCreature());
-  } else if (auto action = getCreature()->forceMove(dir)) {
+  if (tryToPerform(getCreature()->move(dir)))
+    return;
+  if (auto action = getCreature()->forceMove(dir)) {
     if (model->getView()->yesOrNoPrompt(getForceMovementQuestion(getCreature()->getPosition().plus(dir),
             getCreature()), true))
       action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());
-  else if (auto action = getCreature()->destroy(dir, Creature::BASH))
-    action.perform(getCreature());
+  if (!getCreature()->getPosition().plus(dir).canEnterEmpty(getCreature()))
+    tryToPerform(getCreature()->destroy(dir, Creature::BASH));
 }
 
 bool Player::isPlayer() const {
@@ -695,7 +696,12 @@ void Player::you(MsgType type, const string& param) {
     case MsgType::KILLED_BY: msg = "You are killed by " + param; break;
     case MsgType::TURN: msg = "You turn " + param; break;
     case MsgType::BECOME: msg = "You become " + param; break;
-    case MsgType::BREAK_FREE: msg = "You break free from " + param; break;
+    case MsgType::BREAK_FREE:
+        if (param.empty())
+          msg = "You break free";
+        else
+          msg = "You break free from " + param;
+        break;
     case MsgType::PRAY: msg = "You pray to " + param; break;
     case MsgType::COPULATE: msg = "You copulate " + param; break;
     case MsgType::CONSUME: msg = "You absorb " + param; break;

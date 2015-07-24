@@ -31,6 +31,7 @@
 #include "collective_teams.h"
 #include "effect.h"
 #include "creature_factory.h"
+#include "player_message.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -1307,6 +1308,113 @@ PTask Task::goTo(Position pos) {
 }
 
 namespace {
+class GoToAndWait : public NonTransferable {
+  public:
+  GoToAndWait(Position pos, double maxT) : position(pos), maxTime(maxT) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (c->getTime() >= maxTime)
+      setDone();
+    if (c->getPosition() != position)
+      return c->moveTowards(position);
+    else
+      return c->wait();
+  }
+
+  virtual string getDescription() const override {
+    return "Go to and wait " + toString(position);
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable) & SVAR(maxTime) & SVAR(position);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(GoToAndWait);
+
+  private:
+  Position SERIAL(position);
+  double SERIAL(maxTime);
+};
+}
+
+PTask Task::goToAndWait(Position pos, double maxTime) {
+  return PTask(new GoToAndWait(pos, maxTime));
+}
+
+namespace {
+class Whipping : public NonTransferable {
+  public:
+  Whipping(TaskCallback* c, Position pos, Creature* w, double i, double t)
+      : callback(c), position(pos), whipped(w), interval(i), timeout(t) {}
+
+  virtual void cancel() override {
+    callback->onWhippingDone(whipped, position);
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (c->getPosition().dist8(position) > 1)
+      return c->moveTowards(position);
+    if (started && (position.getCreature() != whipped || !whipped->isAffected(LastingEffect::TIED_UP))) {
+      setDone();
+      callback->onWhippingDone(whipped, position);
+      return NoMove;
+    }
+    if (position.getCreature() == whipped) {
+      started = true;
+      if (!whipped->isAffected(LastingEffect::TIED_UP)) {
+        whipped->addEffect(LastingEffect::TIED_UP, interval);
+        return c->wait();
+      }
+      c->monsterMessage(PlayerMessage(c->getName().the() + " whips " + whipped->getName().the()));
+      if (Random.roll(5))
+        whipped->monsterMessage(whipped->getName().the() + " screams!", "You hear a horrible scream!");
+      if (Random.roll(10)) {
+        whipped->addMorale(0.05);
+        whipped->you(MsgType::FEEL, "happier");
+      }
+      return c->wait();
+    } else {
+      if (c->getTime() > timeout) {
+        setDone();
+        callback->onWhippingDone(whipped, position);
+      }
+      return c->wait();
+    }
+  }
+
+  virtual string getDescription() const override {
+    return "Whipping " + whipped->getName().a();
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(callback)
+      & SVAR(position)
+      & SVAR(whipped)
+      & SVAR(started)
+      & SVAR(interval)
+      & SVAR(timeout);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Whipping);
+
+  protected:
+  TaskCallback* SERIAL(callback);
+  Position SERIAL(position);
+  Creature* SERIAL(whipped);
+  bool SERIAL(started) = false;
+  double SERIAL(interval);
+  double SERIAL(timeout);
+};
+}
+
+PTask Task::whipping(TaskCallback* callback, Position pos, Creature* whipped, double interval, double timeout) {
+  return PTask(new Whipping(callback, pos, whipped, interval, timeout));
+}
+
+namespace {
 class DropItems : public NonTransferable {
   public:
   DropItems(EntitySet<Item> it) : items(it) {}
@@ -1360,6 +1468,9 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Consume);
   REGISTER_TYPE(ar, Eat);
   REGISTER_TYPE(ar, GoTo);
+  REGISTER_TYPE(ar, GoToAndWait);
+  REGISTER_TYPE(ar, Whipping);
+  REGISTER_TYPE(ar, GoToAndWait);
   REGISTER_TYPE(ar, DropItems);
   REGISTER_TYPE(ar, CampAndSpawn);
 }

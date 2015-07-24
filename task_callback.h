@@ -22,6 +22,7 @@ class TaskCallback {
   virtual void onBedCreated(Position, const SquareType& fromType, const SquareType& toType) {}
   virtual void onCopulated(Creature* who, Creature* with) {}
   virtual void onConsumed(Creature* consumer, Creature* who) {}
+  virtual void onWhippingDone(Creature* whipped, Position postPosition) {}
 
   template <class Archive> 
   void serialize(Archive&, const unsigned int) {}

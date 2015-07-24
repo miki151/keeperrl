@@ -78,7 +78,7 @@ class Player : public Controller, public CreatureView {
   REGISTER_HANDLER(ThrowEvent, const Level*, const Creature*, const Item*, const vector<Vec2>& trajectory);
   REGISTER_HANDLER(ExplosionEvent, const Level*, Vec2);
 
-  void tryToPerform(CreatureAction);
+  bool tryToPerform(CreatureAction);
   void attackAction(Creature* other);
   void attackAction(UniqueEntity<Creature>::Id);
   void pickUpItemAction(int item, bool multi = false);

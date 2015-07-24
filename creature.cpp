@@ -243,11 +243,16 @@ CreatureAction Creature::move(Position pos) const {
   Vec2 direction = position.getDir(pos);
   if (holding)
     return CreatureAction("You can't break free!");
-  if ((direction.length8() != 1 || !getLevel()->canMoveCreature(this, direction)) && !swapPosition(direction))
+  if (direction.length8() != 1)
     return CreatureAction();
+  if (!getLevel()->canMoveCreature(this, direction)) {
+    auto action = swapPosition(direction);
+    if (!action) // this is so the player gets relevant info why the move failed
+      return action;
+  }
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " moving " << direction;
-    if (isAffected(LastingEffect::ENTANGLED)) {
+    if (isAffected(LastingEffect::ENTANGLED) || isAffected(LastingEffect::TIED_UP)) {
       playerMessage("You can't break free!");
       self->spendTime(1);
       return;
@@ -297,12 +302,19 @@ Controller* Creature::getController() {
   return controller.get();
 }
 
+bool Creature::hasFreeMovement() const {
+  return !isAffected(LastingEffect::SLEEP) &&
+    !isAffected(LastingEffect::STUNNED) &&
+    !isAffected(LastingEffect::ENTANGLED) &&
+    !isAffected(LastingEffect::TIED_UP);
+}
+
 CreatureAction Creature::swapPosition(Vec2 direction, bool force) const {
   const Creature* other = position.plus(direction).getCreature();
   if (!other)
     return CreatureAction();
-  if (other->isAffected(LastingEffect::SLEEP) && !force)
-    return CreatureAction(other->getName().the() + " is sleeping.");
+  if (!other->hasFreeMovement() && !force)
+    return CreatureAction(other->getName().the() + " cannot move.");
   if ((swapPositionCooldown && !isPlayer()) || other->attributes->stationary || other->isInvincible() ||
       direction.length8() != 1 || (other->isPlayer() && !force) || (other->isEnemy(this) && !force) ||
       !position.plus(direction).canEnterEmpty(this) || !position.canEnterEmpty(other))
@@ -677,6 +689,7 @@ bool Creature::affects(LastingEffect effect) const {
     case LastingEffect::RAGE:
     case LastingEffect::PANIC: return !isAffected(LastingEffect::SLEEP);
     case LastingEffect::POISON: return !isAffected(LastingEffect::POISON_RESISTANT) && !isNotLiving();
+    case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED: return isCorporal();
     default: return true;
   }
@@ -725,6 +738,7 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
       if (msg) you(MsgType::ARE, "moving more slowly");
       removeEffect(LastingEffect::SPEED, false);
       break;
+    case LastingEffect::TIED_UP: if (msg) you(MsgType::ARE, "tied up"); break;
     case LastingEffect::ENTANGLED: if (msg) you(MsgType::ARE, "entangled in a web"); break;
     case LastingEffect::SLEEP: if (msg) you(MsgType::FALL_ASLEEP, ""); break;
     case LastingEffect::POISON_RESISTANT:
@@ -761,6 +775,7 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
     case LastingEffect::RAGE:
     case LastingEffect::HALLU: if (msg) playerMessage("Your mind is clear again"); break;
     case LastingEffect::ENTANGLED: if (msg) you(MsgType::BREAK_FREE, "the web"); break;
+    case LastingEffect::TIED_UP: if (msg) you(MsgType::BREAK_FREE, ""); break;
     case LastingEffect::BLIND:
       if (msg) 
         you("can see again");
@@ -2447,6 +2462,7 @@ vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
         case LastingEffect::POISON: name = "Poisoned"; break;
         case LastingEffect::SLEEP: name = "Sleeping"; break;
         case LastingEffect::ENTANGLED: name = "Entangled"; break;
+        case LastingEffect::TIED_UP: name = "Tied up"; break;
         case LastingEffect::SLOWED: name = "Slowed"; break;
         case LastingEffect::INSANITY: name = "Insane"; break;
         default: continue;

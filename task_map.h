@@ -5,6 +5,7 @@
 #include "entity_set.h"
 #include "cost_info.h"
 #include "position_map.h"
+#include "minion_task.h"
 
 class Task;
 class Creature;
@@ -14,7 +15,7 @@ class TaskMap {
   TaskMap(const vector<Level*>&);
   Task* addTask(PTask, const Creature*);
   Task* addPriorityTask(PTask, const Creature*);
-  Task* addTask(PTask, Position);
+  Task* addTask(PTask, Position, MinionTrait required = MinionTrait::WORKER);
   Task* getTask(const Creature*);
   bool hasTask(const Creature*) const;
   const vector<Task*>& getTasks(Position) const;
@@ -36,7 +37,7 @@ class TaskMap {
   bool hasPriorityTasks(Position) const;
   void freeTaskDelay(Task*, double delayTime);
   void setPriorityTasks(Position);
-  Task* getTaskForWorker(Creature* c);
+  Task* getClosestTask(Creature* c, MinionTrait);
   const map<Task*, CostInfo>& getCompletionCosts() const;
 
   SERIALIZATION_DECL(TaskMap);
@@ -51,6 +52,7 @@ class TaskMap {
   map<Task*, CostInfo> SERIAL(completionCost);
   map<UniqueEntity<Creature>::Id, double> SERIAL(delayedTasks);
   EntitySet<Task> SERIAL(priorityTasks);
+  unordered_map<Task*, MinionTrait> SERIAL(requiredTraits);
 };
 
 #endif

@@ -132,7 +132,11 @@ void Monster::you(MsgType type, const string& param) {
     case MsgType::COPULATE: msg = getCreature()->getName().the() + " copulates " + param; break;
     case MsgType::CONSUME: msg = getCreature()->getName().the() + " absorbs " + param; break;
     case MsgType::GROW: msg = getCreature()->getName().the() + " grows " + param; break;
-    case MsgType::BREAK_FREE: msg = getCreature()->getName().the() + " breaks free from " + param; break;
+    case MsgType::BREAK_FREE:
+        if (param.empty())
+          msg = getCreature()->getName().the() + " breaks free";
+        else
+          msg = getCreature()->getName().the() + " breaks free from " + param;
     case MsgType::PRAY: msg = getCreature()->getName().the() + " prays to " + param; break;
     case MsgType::SACRIFICE: msg = getCreature()->getName().the() + " makes a sacrifice to " + param; break;
     case MsgType::HIT: msg = getCreature()->getName().the() + addName(" hits", param); break;

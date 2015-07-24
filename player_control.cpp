@@ -216,6 +216,8 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo({SquareId::MINION_STATUE, {ResourceId::GOLD, 300}, "Statue", false, false}, {},
       "Increases minion population limit by " +
             toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
+    BuildInfo({SquareId::WHIPPING_POST, {ResourceId::WOOD, 30}, "Whipping post"}, {},
+        "A place to whip your minions if they need a morale boost.", 0, "Installations"),
     BuildInfo({SquareId::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, {},
         "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
     BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
@@ -487,8 +489,11 @@ vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
       if (getCollective()->usesEquipment(c))
         fillEquipment(c, minions.back());
       minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
-      if (!getCollective()->hasTrait(c, MinionTrait::LEADER))
+      if (!getCollective()->hasTrait(c, MinionTrait::LEADER)) {
         minions.back().actions.push_back(PlayerInfo::BANISH);
+        if (getCollective()->canWhip(c))
+          minions.back().actions.push_back(PlayerInfo::WHIP);
+      }
     }
   sort(minions.begin(), minions.end(), [] (const PlayerInfo& m1, const PlayerInfo& m2) {
         return m1.level > m2.level;
@@ -540,6 +545,9 @@ void PlayerControl::minionView(Creature* creature) {
                 "Banishing has a negative impact on morale of other minions."))
             getCollective()->banishCreature(c);
           break;
+        case 5:
+          getCollective()->orderWhipping(c);
+          return;
     }
   }
 }

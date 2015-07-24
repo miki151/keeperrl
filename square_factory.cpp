@@ -889,6 +889,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::TORTURE_TABLE] = 10;
               c.constructions[SquareId::BEAST_LAIR] = 10;
               c.constructions[SquareId::IMPALED_HEAD] = 5;
+              c.constructions[SquareId::WHIPPING_POST] = 5;
               c.constructions[SquareId::BARRICADE] = 20;
               c.constructions[SquareId::TORCH] = 5;
               c.constructions[SquareId::ALTAR] = 35;
@@ -1107,6 +1108,9 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::THRONE:
         return new Furniture(ViewObject(ViewId::THRONE, ViewLayer::FLOOR, "Throne"), 
             "throne", 0, SquareApplyType::THRONE);
+    case SquareId::WHIPPING_POST:
+        return new Furniture(ViewObject(ViewId::WHIPPING_POST, ViewLayer::FLOOR, "Whipping post"), 
+            "whipping post", 0, SquareApplyType::WHIPPING);
     case SquareId::RITUAL_ROOM:
         return new Square(ViewObject(ViewId::RITUAL_ROOM, ViewLayer::FLOOR, "Ritual room"),
           CONSTRUCT(Square::Params,

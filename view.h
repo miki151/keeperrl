@@ -107,7 +107,12 @@ struct MinionAction {
     void serialize(Archive& ar, const unsigned int version) {
     }
   };
-  variant<TaskAction, MinionItemAction, ControlAction, RenameAction, BanishAction> SERIAL(action);
+  struct WhipAction {
+    template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version) {
+    }
+  };
+  variant<TaskAction, MinionItemAction, ControlAction, RenameAction, BanishAction, WhipAction> SERIAL(action);
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(action);

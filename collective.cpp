@@ -110,7 +110,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(name)
     & SVAR(config)
     & SVAR(warnings)
-    & SVAR(banished);
+    & SVAR(banished)
+    & SVAR(whippingPostsInUse);
 }
 
 SERIALIZABLE(Collective);
@@ -410,7 +411,7 @@ void Collective::onBedCreated(Position pos, const SquareType& fromType, const Sq
 MoveInfo Collective::getWorkerMove(Creature* c) {
   if (Task* task = taskMap->getTask(c))
     return task->getMove(c);
-  if (Task* closest = taskMap->getTaskForWorker(c)) {
+  if (Task* closest = taskMap->getClosestTask(c, MinionTrait::WORKER)) {
     taskMap->takeTask(c, closest);
     return closest->getMove(c);
   } else {
@@ -709,6 +710,10 @@ MoveInfo Collective::getMove(Creature* c) {
   if (PTask t = getHealingTask(c))
     if (t->getMove(c))
       return taskMap->addTask(std::move(t), c)->getMove(c);
+  if (Task* closest = taskMap->getClosestTask(c, MinionTrait::FIGHTER)) {
+    taskMap->takeTask(c, closest);
+    return closest->getMove(c);
+  }
   if (usesEquipment(c))
     if (PTask t = getEquipmentTask(c))
       if (t->getMove(c))
@@ -1694,6 +1699,29 @@ void Collective::orderSacrifice(Creature* c) {
   clearPrisonerTask(c);
   prisonerInfo.at(c) = {PrisonerState::SACRIFICE, 0};
   setMinionTask(c, MinionTask::SACRIFICE);*/
+}
+
+void Collective::onWhippingDone(Creature* whipped, Position pos) {
+  cancelTask(whipped);
+  whippingPostsInUse.erase(pos);
+}
+
+bool Collective::canWhip(Creature* c) const {
+  return c->affects(LastingEffect::ENTANGLED);
+}
+
+void Collective::orderWhipping(Creature* whipped) {
+  if (!canWhip(whipped))
+    return;
+  set<Position> posts = getSquares(SquareId::WHIPPING_POST);
+  for (Position p : whippingPostsInUse)
+    posts.erase(p);
+  if (posts.empty())
+    return;
+  Position pos = Random.choose(posts);
+  whippingPostsInUse.insert(pos);
+  taskMap->addTask(Task::whipping(this, pos, whipped, 100, getTime() + 100), pos, MinionTrait::FIGHTER);
+  setTask(whipped, Task::goToAndWait(pos, getTime() + 100));
 }
 
 bool Collective::isItemMarked(const Item* it) const {

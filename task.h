@@ -68,6 +68,8 @@ class Task : public UniqueEntity<Task> {
   static PTask stayInLocationUntil(const Location*, double time);
   static PTask eat(set<Position> hatcherySquares);
   static PTask goTo(Position);
+  static PTask goToAndWait(Position, double maxTime);
+  static PTask whipping(TaskCallback*, Position, Creature* whipped, double interval, double timeout);
   static PTask dropItems(vector<Item*>);
 
   template <class Archive>

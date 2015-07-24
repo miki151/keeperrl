@@ -518,13 +518,13 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BED, sprite("sleepdeco").setNoShadow());
     Tile::addTile(ViewId::DORM, sprite("sleep").setFloorBorders());
     Tile::addTile(ViewId::TORCH, sprite(12, 0, 2).setNoShadow().setTranslucent(0.35));
-    Tile::addTile(ViewId::DUNGEON_HEART, sprite(6, 10, 2));
     Tile::addTile(ViewId::ALTAR, sprite(2, 7, 2).setNoShadow());
     Tile::addTile(ViewId::CREATURE_ALTAR, sprite(3, 7, 2).setNoShadow());
     Tile::addTile(ViewId::TORTURE_TABLE, empty().addConnection(DirSet::fullSet(), byName("torturedeco"))
         .addBackground(byName("torture"))
         .setFloorBorders());
     Tile::addTile(ViewId::IMPALED_HEAD, sprite("impaledhead").setNoShadow());
+    Tile::addTile(ViewId::WHIPPING_POST, sprite(10, 10, 2).setNoShadow());
     Tile::addTile(ViewId::TRAINING_ROOM, empty().addConnection(DirSet::fullSet(), byName("traindeco"))
         .addBackground(byName("train")).setFloorBorders());
     Tile::addTile(ViewId::RITUAL_ROOM, empty().addConnection(DirSet::fullSet(), byName("ritualroomdeco"))
@@ -797,12 +797,12 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::PRISON, symbol(".", ColorId::BLUE));
     Tile::addSymbol(ViewId::DORM, symbol(".", ColorId::BROWN));
     Tile::addSymbol(ViewId::BED, symbol("=", ColorId::WHITE));
-    Tile::addSymbol(ViewId::DUNGEON_HEART, symbol("♥", ColorId::WHITE, true));
     Tile::addSymbol(ViewId::TORCH, symbol("*", ColorId::YELLOW));
     Tile::addSymbol(ViewId::ALTAR, symbol("Ω", ColorId::WHITE, true));
     Tile::addSymbol(ViewId::CREATURE_ALTAR, symbol("Ω", ColorId::YELLOW, true));
     Tile::addSymbol(ViewId::TORTURE_TABLE, symbol("=", ColorId::GRAY));
     Tile::addSymbol(ViewId::IMPALED_HEAD, symbol("⚲", ColorId::BROWN, true));
+    Tile::addSymbol(ViewId::WHIPPING_POST, symbol("}", ColorId::BROWN, true));
     Tile::addSymbol(ViewId::TRAINING_ROOM, symbol("‡", ColorId::BROWN, true));
     Tile::addSymbol(ViewId::RITUAL_ROOM, symbol("Ω", ColorId::PURPLE, true));
     Tile::addSymbol(ViewId::LIBRARY, symbol("▤", ColorId::BROWN, true));

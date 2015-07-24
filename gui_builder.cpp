@@ -1531,6 +1531,11 @@ vector<PGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, MinionM
             gui.label("[Banish]", colors[ColorId::LIGHT_BLUE]),
             gui.button([=] { callback(MinionAction{MinionAction::BanishAction()}); })));
         break;
+      case PlayerInfo::WHIP:
+        line.push_back(gui.stack(
+            gui.label("[Whip]", colors[ColorId::LIGHT_BLUE]),
+            gui.button([=] { callback(MinionAction{MinionAction::WhipAction()}); })));
+        break;
     }
   return line;
 }

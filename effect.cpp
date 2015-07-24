@@ -367,6 +367,7 @@ void silverDamage(Creature* c) {
 
 double getDuration(const Creature* c, LastingEffect e, int strength) {
   switch (e) {
+    case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::STRENGTH)));
     case LastingEffect::HALLU:
     case LastingEffect::SLOWED:
@@ -512,6 +513,7 @@ string Effect::getName(LastingEffect type) {
     case LastingEffect::STR_BONUS: return "strength";
     case LastingEffect::DEX_BONUS: return "dexterity";
     case LastingEffect::SLEEP: return "sleep";
+    case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "stunning";
     case LastingEffect::FIRE_RESISTANT: return "fire resistance";
@@ -536,6 +538,7 @@ string Effect::getDescription(LastingEffect type) {
     case LastingEffect::STR_BONUS: return "Gives a strength bonus.";
     case LastingEffect::DEX_BONUS: return "Gives a dexterity bonus.";
     case LastingEffect::SLEEP: return "Puts to sleep.";
+    case LastingEffect::TIED_UP:;
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "Causes stunning.";
     case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";

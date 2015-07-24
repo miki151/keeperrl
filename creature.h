@@ -269,6 +269,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void removePermanentEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
   bool isAffectedPermanently(LastingEffect) const;
+  bool affects(LastingEffect effect) const;
+  bool hasFreeMovement() const;
   bool isFireResistant() const;
   bool isDarknessSource() const;
 
@@ -295,7 +297,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   private:
 
-  bool affects(LastingEffect effect) const;
   void onAffected(LastingEffect effect, bool msg);
   void consumeEffects(const EnumMap<LastingEffect, int>&);
   void consumeBodyParts(const EnumMap<BodyPart, int>&);
