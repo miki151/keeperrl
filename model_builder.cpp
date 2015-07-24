@@ -323,6 +323,18 @@ vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet) {
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);
           c.furniture = SquareFactory::single(SquareId::CAULDRON);), CollectiveConfig::noImmigrants(), {}},
       {CONSTRUCT(SettlementInfo,
+          c.type = SettlementType::FOREST;
+          c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::ENT);
+          c.numCreatures = random.get(7, 13);
+          c.location = new Location();
+          c.tribe = tribeSet.monster.get();
+          c.buildingId = BuildingId::WOOD;),
+        CollectiveConfig::withImmigrants(0.003, 15, {
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::ENT;
+               c.frequency = 1;
+               c.traits = LIST(MinionTrait::FIGHTER);)}), {}},
+      {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CEMETERY;
           c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::ZOMBIE);
           c.numCreatures = random.get(8, 12);

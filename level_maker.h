@@ -34,6 +34,7 @@ class LevelGenException {
 enum class SettlementType {
   VILLAGE,
   VILLAGE2,
+  FOREST,
   CASTLE,
   CASTLE2,
   COTTAGE,
