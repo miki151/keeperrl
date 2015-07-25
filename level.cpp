@@ -230,13 +230,13 @@ Model* Level::getModel() {
 }
 
 bool Level::isInSunlight(Vec2 pos) const {
-  return !coverInfo[pos].covered() && lightCapAmount[pos] == 1 &&
+  return !coverInfo[pos].covered && lightCapAmount[pos] == 1 &&
       model->getSunlightInfo().state == SunlightState::DAY;
 }
 
 double Level::getLight(Vec2 pos) const {
-  return max(0.0, min(coverInfo[pos].covered() ? 1 : lightCapAmount[pos], lightAmount[pos] +
-        coverInfo[pos].sunlight() * model->getSunlightInfo().lightAmount));
+  return max(0.0, min(coverInfo[pos].covered ? 1 : lightCapAmount[pos], lightAmount[pos] +
+        coverInfo[pos].sunlight * model->getSunlightInfo().lightAmount));
 }
 
 vector<Position> Level::getLandingSquares(StairKey key) const {

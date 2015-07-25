@@ -63,23 +63,28 @@ enum class UserInputId {
     INVENTORY_ITEM,
 };
 
-struct BuildingInfo : public NamedTupleBase<Vec2, int> {
-  NAMED_TUPLE_STUFF(BuildingInfo);
-  NAME_ELEM(0, pos);
-  NAME_ELEM(1, building);
+struct BuildingInfo {
+  Vec2 SERIAL(pos);
+  int SERIAL(building);
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(pos) & SVAR(building);
+  }
 };
 
-struct TeamLeaderInfo : public NamedTupleBase<TeamId, UniqueEntity<Creature>::Id> {
-  NAMED_TUPLE_STUFF(TeamLeaderInfo);
-  NAME_ELEM(0, team);
-  NAME_ELEM(1, creatureId);
+struct TeamLeaderInfo {
+  TeamId SERIAL(team);
+  UniqueEntity<Creature>::Id SERIAL(creatureId);
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(team) & SVAR(creatureId);
+  }
 };
 
-struct InventoryItemInfo : public NamedTupleBase<vector<UniqueEntity<Item>::Id>, ItemAction> {
-  NAMED_TUPLE_STUFF(InventoryItemInfo);
-  NAME_ELEM(0, items);
-  NAME_ELEM(1, action);
-};
+struct InventoryItemInfo {
+  vector<UniqueEntity<Item>::Id> SERIAL(items);
+  ItemAction SERIAL(action);
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(items) & SVAR(action);
+  }};
 
 enum class SpellId;
 

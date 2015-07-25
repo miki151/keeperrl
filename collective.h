@@ -346,10 +346,12 @@ class Collective : public TaskCallback {
   unordered_map<SquareApplyType, set<Position>> SERIAL(mySquares2);
   map<Position, int> SERIAL(squareEfficiency);
   set<Position> SERIAL(allSquares);
-  struct AlarmInfo : NamedTupleBase<double, Position> {
-    NAMED_TUPLE_STUFF(AlarmInfo);
-    NAME_ELEM(0, finishTime);
-    NAME_ELEM(1, position);
+  struct AlarmInfo {
+    double SERIAL(finishTime);
+    Position SERIAL(position);
+    void serialize(Archive& ar, const unsigned int version) {
+      ar & SVAR(finishTime) & SVAR(position);
+    }
   };
   optional<AlarmInfo> SERIAL(alarmInfo);
   MoveInfo getAlarmMove(Creature* c);

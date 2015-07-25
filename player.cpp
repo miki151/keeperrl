@@ -538,7 +538,7 @@ void Player::makeMove() {
       }
       break;
     case UserInputId::INVENTORY_ITEM:
-      handleItems(action.get<InventoryItemInfo>().items(), action.get<InventoryItemInfo>().action()); break;
+      handleItems(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action); break;
     case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
     case UserInputId::PICK_UP_ITEM_MULTI: pickUpItemAction(action.get<int>(), true); break;
     case UserInputId::WAIT: getCreature()->wait().perform(getCreature()); break;

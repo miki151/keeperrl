@@ -53,24 +53,29 @@ struct Collective::MinionTaskInfo {
   bool centerOnly = false;
 };
 
-struct Collective::MinionPaymentInfo : public NamedTupleBase<int, double, int> {
-  NAMED_TUPLE_STUFF(MinionPaymentInfo);
-  NAME_ELEM(0, salary);
-  NAME_ELEM(1, workAmount);
-  NAME_ELEM(2, debt);
+struct Collective::MinionPaymentInfo {
+  int SERIAL(salary);
+  double SERIAL(workAmount);
+  int SERIAL(debt);
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(salary) & SVAR(workAmount) & SVAR(debt);
+  }
 };
 
-struct Collective::CurrentTaskInfo : NamedTupleBase<MinionTask, double> {
-  NAMED_TUPLE_STUFF(CurrentTaskInfo);
-  NAME_ELEM(0, task);
-  NAME_ELEM(1, finishTime);
+struct Collective::CurrentTaskInfo {
+  MinionTask SERIAL(task);
+  double SERIAL(finishTime);
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(task) & SVAR(finishTime);
+  }
 };
 
-struct Collective::PrisonerInfo : public NamedTupleBase<PrisonerState, UniqueEntity<Task>::Id> {
-  NAMED_TUPLE_STUFF(PrisonerInfo);
-  NAME_ELEM(0, state);
-  NAME_ELEM(1, task);
-};
+struct Collective::PrisonerInfo {
+  PrisonerState SERIAL(state);
+  UniqueEnity<Task>::Id SERIAL(task);
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(state) & SVAR(task);
+  }};
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -380,17 +385,17 @@ MoveInfo Collective::getDropItems(Creature *c) {
 PTask Collective::getPrisonerTask(Creature* c) {
   if (hasTrait(c, MinionTrait::FIGHTER) && c->getSpawnType() != SpawnType::DEMON && !c->hasSuicidalAttack())
     for (auto& elem : prisonerInfo)
-      if (!elem.second.task()) {
+      if (!elem.second.task) {
         Creature* prisoner = elem.first;
         PTask t;
-        switch (elem.second.state()) {
+        switch (elem.second.state) {
           case PrisonerState::EXECUTE: t = Task::kill(this, prisoner); break;
           case PrisonerState::TORTURE: t = Task::torture(this, prisoner); break;
  //         case PrisonerState::SACRIFICE: t = Task::sacrifice(this, prisoner); break;
           default: return nullptr;
         }
         if (t && t->getMove(c)) {
-          elem.second.task() = t->getUniqueId();
+          elem.second.task = t->getUniqueId();
           return t;
         } else
           return nullptr;
@@ -400,7 +405,7 @@ PTask Collective::getPrisonerTask(Creature* c) {
 
 void Collective::onKillCancelled(Creature* c) {
   if (prisonerInfo.count(c))
-    prisonerInfo.at(c).task() = 0;
+    prisonerInfo.at(c).task = 0;
 }
 
 void Collective::onBedCreated(Position pos, const SquareType& fromType, const SquareType& toType) {
@@ -447,7 +452,7 @@ void Collective::setMinionTask(const Creature* c, MinionTask task) {
 
 optional<MinionTask> Collective::getMinionTask(const Creature* c) const {
   if (currentTasks.count(c->getUniqueId()))
-    return currentTasks.at(c->getUniqueId()).task();
+    return currentTasks.at(c->getUniqueId()).task;
   else
     return none;
 }
@@ -455,7 +460,7 @@ optional<MinionTask> Collective::getMinionTask(const Creature* c) const {
 bool Collective::isTaskGood(const Creature* c, MinionTask task, bool ignoreTaskLock) const {
   if (c->getMinionTasks().getValue(task, ignoreTaskLock) == 0)
     return false;
-  if (minionPayment.count(c) && minionPayment.at(c).debt() > 0 && getTaskInfo().at(task).cost > 0)
+  if (minionPayment.count(c) && minionPayment.at(c).debt > 0 && getTaskInfo().at(task).cost > 0)
     return false;
   switch (task) {
     case MinionTask::CROPS:
@@ -502,13 +507,13 @@ optional<Position> Collective::getTileToExplore(const Creature* c, MinionTask ta
     case MinionTask::EXPLORE_CAVES:
       if (auto pos = getRandomCloseTile(c->getPosition(), border,
             [this, c](Position pos) {
-                return pos.getLevel() == level && pos.getCoverInfo().sunlight() < 1 &&
+                return pos.getLevel() == level && pos.getCoverInfo().sunlight < 1 &&
                     (c->getLevel() != level || c->isSameSector(pos.getCoord()));}))
         return pos;
     case MinionTask::EXPLORE:
     case MinionTask::EXPLORE_NOCTURNAL:
       return getRandomCloseTile(c->getPosition(), border,
-          [this, c](Position pos) { return pos.getLevel() == level && !pos.getCoverInfo().covered()
+          [this, c](Position pos) { return pos.getLevel() == level && !pos.getCoverInfo().covered
               && (c->getLevel() != level || c->isSameSector(pos.getCoord()));});
     default: FAIL << "Unrecognized explore task: " << int(task);
   }
@@ -554,14 +559,14 @@ PTask Collective::getStandardTask(Creature* c) {
   if (!c->getMinionTasks().hasAnyTask())
     return nullptr;
   if (!currentTasks.count(c->getUniqueId()) ||
-      currentTasks.at(c->getUniqueId()).finishTime() < c->getTime() ||
-      !isTaskGood(c, currentTasks.at(c->getUniqueId()).task()))
+      currentTasks.at(c->getUniqueId()).finishTime < c->getTime() ||
+      !isTaskGood(c, currentTasks.at(c->getUniqueId()).task))
     currentTasks.erase(c->getUniqueId());
   if (!currentTasks.count(c->getUniqueId()))
     setRandomTask(c);
   if (!currentTasks.count(c->getUniqueId()))
     return nullptr;
-  MinionTask task = currentTasks[c->getUniqueId()].task();
+  MinionTask task = currentTasks[c->getUniqueId()].task;
   MinionTaskInfo info = getTaskInfo().at(task);
   PTask ret = generateMinionTask(c, task);
   if (info.warning && !getAllSquares().empty())
@@ -607,7 +612,7 @@ bool Collective::isConquered() const {
 void Collective::orderConsumption(Creature* consumer, Creature* who) {
   CHECK(consumer->getMinionTasks().getValue(MinionTask::CONSUME) > 0);
   setMinionTask(who, MinionTask::CONSUME);
-  MinionTaskInfo info = getTaskInfo().at(currentTasks[consumer->getUniqueId()].task());
+  MinionTaskInfo info = getTaskInfo().at(currentTasks[consumer->getUniqueId()].task);
   minionTaskStrings[consumer->getUniqueId()] = info.description;
   taskMap->freeFromTask(consumer);
   taskMap->addTask(Task::consume(this, who), consumer);
@@ -1013,20 +1018,20 @@ int Collective::getPaymentAmount(const Creature* c) const {
     return 0;
   else
     return config->getPayoutMultiplier() *
-      minionPayment.at(c).salary() * minionPayment.at(c).workAmount() / config->getPayoutTime();
+      minionPayment.at(c).salary * minionPayment.at(c).workAmount / config->getPayoutTime();
 }
 
 int Collective::getNextSalaries() const {
   int ret = 0;
   for (Creature* c : creatures)
     if (minionPayment.count(c))
-      ret += getPaymentAmount(c) + minionPayment.at(c).debt();
+      ret += getPaymentAmount(c) + minionPayment.at(c).debt;
   return ret;
 }
 
 bool Collective::hasMinionDebt() const {
   for (Creature* c : creatures)
-    if (minionPayment.count(c) && minionPayment.at(c).debt())
+    if (minionPayment.count(c) && minionPayment.at(c).debt)
       return true;
   return false;
 }
@@ -1037,8 +1042,8 @@ void Collective::makePayouts() {
           PlayerMessage::HIGH));
   for (Creature* c : creatures)
     if (minionPayment.count(c)) {
-      minionPayment.at(c).debt() += getPaymentAmount(c);
-      minionPayment.at(c).workAmount() = 0;
+      minionPayment.at(c).debt += getPaymentAmount(c);
+      minionPayment.at(c).workAmount = 0;
     }
 }
 
@@ -1046,11 +1051,11 @@ void Collective::cashPayouts() {
   int numGold = numResource(paymentResource);
   for (Creature* c : creatures)
     if (minionPayment.count(c))
-      if (int payment = minionPayment.at(c).debt()) {
+      if (int payment = minionPayment.at(c).debt) {
         if (payment < numGold) {
           takeResource({paymentResource, payment});
           numGold -= payment;
-          minionPayment.at(c).debt() = 0;
+          minionPayment.at(c).debt = 0;
         }
       }
 }
@@ -1166,7 +1171,7 @@ void Collective::tick(double time) {
       }
     if (allSurrender) {
       for (auto elem : copyOf(prisonerInfo))
-        if (elem.second.state() == PrisonerState::SURRENDER) {
+        if (elem.second.state == PrisonerState::SURRENDER) {
           Creature* c = elem.first;
           Position pos = c->getPosition();
           if (containsSquare(pos) && !c->isDead()) {
@@ -1274,7 +1279,7 @@ void Collective::decreaseMoraleForBanishing(const Creature*) {
 void Collective::onKilled(Creature* victim, Creature* killer) {
   if (contains(creatures, victim)) {
     if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer)
-      && prisonerInfo.at(victim).state() == PrisonerState::EXECUTE)
+      && prisonerInfo.at(victim).state == PrisonerState::EXECUTE)
       returnResource({ResourceId::PRISONER_HEAD, 1});
     if (hasTrait(victim, MinionTrait::LEADER))
       getLevel()->getModel()->onKilledLeader(this, victim);
@@ -1480,8 +1485,8 @@ void Collective::onAlarm(Position pos) {
 }
 
 MoveInfo Collective::getAlarmMove(Creature* c) {
-  if (alarmInfo && alarmInfo->finishTime() > c->getTime())
-    if (auto action = c->moveTowards(alarmInfo->position()))
+  if (alarmInfo && alarmInfo->finishTime > c->getTime())
+    if (auto action = c->moveTowards(alarmInfo->position))
       return {1.0, action};
   return NoMove;
 }
@@ -1503,57 +1508,57 @@ int Collective::numResourcePlusDebt(ResourceId id) const {
   int ret = numResource(id);
   for (Position pos : constructions->getSquares()) {
     auto& construction = constructions->getSquare(pos);
-    if (!construction.isBuilt() && construction.getCost().id() == id)
-      ret -= construction.getCost().value();
+    if (!construction.isBuilt() && construction.getCost().id == id)
+      ret -= construction.getCost().value;
   }
   for (auto& elem : taskMap->getCompletionCosts())
-    if (elem.second.id() == id && !elem.first->isDone())
-      ret += elem.second.value();
+    if (elem.second.id == id && !elem.first->isDone())
+      ret += elem.second.value;
   if (id == ResourceId::GOLD)
     for (auto& elem : minionPayment)
-      ret -= elem.second.debt();
+      ret -= elem.second.debt;
   return ret;
 }
 
 bool Collective::hasResource(const CostInfo& cost) const {
-  return numResource(cost.id()) >= cost.value();
+  return numResource(cost.id) >= cost.value;
 }
 
 void Collective::takeResource(const CostInfo& cost) {
-  int num = cost.value();
+  int num = cost.value;
   if (num == 0)
     return;
   CHECK(num > 0);
-  if (credit[cost.id()]) {
-    if (credit[cost.id()] >= num) {
-      credit[cost.id()] -= num;
+  if (credit[cost.id]) {
+    if (credit[cost.id] >= num) {
+      credit[cost.id] -= num;
       return;
     } else {
-      num -= credit[cost.id()];
-      credit[cost.id()] = 0;
+      num -= credit[cost.id];
+      credit[cost.id] = 0;
     }
   }
-  if (resourceInfo.at(cost.id()).itemIndex)
-    for (Position pos : Random.permutation(getAllSquares(resourceInfo.at(cost.id()).storageType))) {
-      vector<Item*> goldHere = pos.getItems(*resourceInfo.at(cost.id()).itemIndex);
+  if (resourceInfo.at(cost.id).itemIndex)
+    for (Position pos : Random.permutation(getAllSquares(resourceInfo.at(cost.id).storageType))) {
+      vector<Item*> goldHere = pos.getItems(*resourceInfo.at(cost.id).itemIndex);
       for (Item* it : goldHere) {
         pos.removeItem(it);
         if (--num == 0)
           return;
       }
     }
-  FAIL << "Not enough " << resourceInfo.at(cost.id()).name << " missing " << num << " of " << cost.value();
+  FAIL << "Not enough " << resourceInfo.at(cost.id).name << " missing " << num << " of " << cost.value;
 }
 
 void Collective::returnResource(const CostInfo& amount) {
-  if (amount.value() == 0)
+  if (amount.value == 0)
     return;
-  CHECK(amount.value() > 0);
-  vector<Position> destination = getAllSquares(resourceInfo.at(amount.id()).storageType);
+  CHECK(amount.value > 0);
+  vector<Position> destination = getAllSquares(resourceInfo.at(amount.id).storageType);
   if (!destination.empty()) {
-    Random.choose(destination).dropItems(ItemFactory::fromId(resourceInfo.at(amount.id()).itemId, amount.value()));
+    Random.choose(destination).dropItems(ItemFactory::fromId(resourceInfo.at(amount.id).itemId, amount.value));
   } else
-    credit[amount.id()] += amount.value();
+    credit[amount.id] += amount.value;
 }
 
 vector<pair<Item*, Position>> Collective::getTrapItems(TrapType type, set<Position> squares) const {
@@ -1666,14 +1671,14 @@ vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) cons
 }
 
 void Collective::clearPrisonerTask(Creature* prisoner) {
-  if (prisonerInfo.at(prisoner).task()) {
-    taskMap->removeTask(prisonerInfo.at(prisoner).task());
-    prisonerInfo.at(prisoner).task() = 0;
+  if (prisonerInfo.at(prisoner).task) {
+    taskMap->removeTask(prisonerInfo.at(prisoner).task);
+    prisonerInfo.at(prisoner).task = 0;
   }
 }
 
 void Collective::orderExecution(Creature* c) {
-  if (prisonerInfo.at(c).state() == PrisonerState::EXECUTE)
+  if (prisonerInfo.at(c).state == PrisonerState::EXECUTE)
     return;
   clearPrisonerTask(c);
   prisonerInfo.at(c) = {PrisonerState::EXECUTE, 0};
@@ -1681,7 +1686,7 @@ void Collective::orderExecution(Creature* c) {
 }
 
 void Collective::orderTorture(Creature* c) {
-  if (prisonerInfo.at(c).state() == PrisonerState::TORTURE)
+  if (prisonerInfo.at(c).state == PrisonerState::TORTURE)
     return;
   clearPrisonerTask(c);
   prisonerInfo.at(c) = {PrisonerState::TORTURE, 0};
@@ -1689,7 +1694,7 @@ void Collective::orderTorture(Creature* c) {
 }
 
 void Collective::orderSacrifice(Creature* c) {
-/*  if (prisonerInfo.at(c).state() == PrisonerState::SACRIFICE)
+/*  if (prisonerInfo.at(c).state == PrisonerState::SACRIFICE)
     return;
   clearPrisonerTask(c);
   prisonerInfo.at(c) = {PrisonerState::SACRIFICE, 0};
@@ -2102,11 +2107,11 @@ static WorkshopInfo getWorkshopInfo(Collective* c, Position pos) {
 
 void Collective::onAppliedSquare(Position pos) {
   Creature* c = NOTNULL(pos.getCreature());
-  MinionTask currentTask = currentTasks.at(c->getUniqueId()).task();
+  MinionTask currentTask = currentTasks.at(c->getUniqueId()).task;
   if (getTaskInfo().at(currentTask).cost > 0) {
-    if (nextPayoutTime == -1 && minionPayment.count(c) && minionPayment.at(c).salary() > 0)
+    if (nextPayoutTime == -1 && minionPayment.count(c) && minionPayment.at(c).salary > 0)
       nextPayoutTime = getTime() + config->getPayoutTime();
-    minionPayment[c].workAmount() += getTaskInfo().at(currentTask).cost;
+    minionPayment[c].workAmount += getTaskInfo().at(currentTask).cost;
   }
   if (getSquares(SquareId::LIBRARY).count(pos)) {
     addMana(0.2);
@@ -2274,7 +2279,7 @@ const MinionEquipment& Collective::getMinionEquipment() const {
 
 int Collective::getSalary(const Creature* c) const {
   if (minionPayment.count(c))
-    return minionPayment.at(c).salary();
+    return minionPayment.at(c).salary;
   else
     return 0;
 }

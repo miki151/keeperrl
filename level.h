@@ -65,12 +65,13 @@ RICH_ENUM(VisionId,
   NORMAL
 );
 
-struct CoverInfo : public NamedTupleBase<bool, double> {
-  NAMED_TUPLE_STUFF(CoverInfo);
-  NAME_ELEM(0, covered);
-  NAME_ELEM(1, sunlight);
+struct CoverInfo {
+  bool SERIAL(covered);
+  double SERIAL(sunlight);
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(covered) & SVAR(sunlight);
+  }
 };
-
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level {

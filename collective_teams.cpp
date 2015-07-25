@@ -3,52 +3,52 @@
 #include "creature.h"
 
 bool CollectiveTeams::contains(TeamId team, const Creature* c) const {
-  return ::contains(teamInfo.at(team).creatures(), c);
+  return ::contains(teamInfo.at(team).creatures, c);
 }
 
 void CollectiveTeams::add(TeamId team, Creature* c) {
-  CHECK(!::contains(teamInfo[team].creatures(), c));
-  teamInfo[team].creatures().push_back(c);
+  CHECK(!::contains(teamInfo[team].creatures, c));
+  teamInfo[team].creatures.push_back(c);
 }
 
 void CollectiveTeams::remove(TeamId team, Creature* c) {
  // if (c == getLeader(team))
  //   deactivate(team); // otherwise teams are still active when the player gets killed
-  removeElement(teamInfo[team].creatures(), c);
-  if (teamInfo[team].creatures().empty())
+  removeElement(teamInfo[team].creatures, c);
+  if (teamInfo[team].creatures.empty())
     cancel(team);
 }
 
 void CollectiveTeams::activate(TeamId team) {
-  teamInfo[team].active() = true;
+  teamInfo[team].active = true;
 }
 
 void CollectiveTeams::deactivate(TeamId team) {
-  teamInfo[team].active() = false;
+  teamInfo[team].active = false;
 }
 
 void CollectiveTeams::setLeader(TeamId team, Creature* c) {
-  if (!::contains(teamInfo[team].creatures(), c))
+  if (!::contains(teamInfo[team].creatures, c))
     add(team, c);
-  swap(teamInfo[team].creatures()[0], teamInfo[team].creatures()[*findElement(teamInfo[team].creatures(), c)]);
+  swap(teamInfo[team].creatures[0], teamInfo[team].creatures[*findElement(teamInfo[team].creatures, c)]);
 }
 
 const Creature* CollectiveTeams::getLeader(TeamId team) const {
-  CHECK(!teamInfo.at(team).creatures().empty());
-  return teamInfo.at(team).creatures()[0];
+  CHECK(!teamInfo.at(team).creatures.empty());
+  return teamInfo.at(team).creatures[0];
 }
 
 Creature* CollectiveTeams::getLeader(TeamId team) {
-  CHECK(!teamInfo.at(team).creatures().empty());
-  return teamInfo.at(team).creatures()[0];
+  CHECK(!teamInfo.at(team).creatures.empty());
+  return teamInfo.at(team).creatures[0];
 }
 
 const vector<Creature*>& CollectiveTeams::getMembers(TeamId team) const {
-  return teamInfo.at(team).creatures();
+  return teamInfo.at(team).creatures;
 }
 
 vector<Creature*> CollectiveTeams::getMembers(TeamId team) {
-  return teamInfo.at(team).creatures();
+  return teamInfo.at(team).creatures;
 }
 
 vector<TeamId> CollectiveTeams::getContaining(const Creature* c) const {
@@ -81,19 +81,19 @@ vector<TeamId> CollectiveTeams::getActiveTeams() const {
 
 TeamId CollectiveTeams::create(vector<Creature*> c) {
   CHECK(!c.empty());
-  teamInfo[nextId].creatures() = c;
+  teamInfo[nextId].creatures = c;
   return nextId++;
 }
 
 TeamId CollectiveTeams::createPersistent(vector<Creature*> c) {
   TeamId id = create(c);
-  teamInfo[id].persistent() = true;
+  teamInfo[id].persistent = true;
   return id;
 }
 
 bool CollectiveTeams::isPersistent(TeamId id) const {
   CHECK(exists(id));
-  return teamInfo.at(id).persistent();
+  return teamInfo.at(id).persistent;
 }
 
 bool CollectiveTeams::exists(TeamId id) const {
@@ -101,7 +101,7 @@ bool CollectiveTeams::exists(TeamId id) const {
 }
 
 bool CollectiveTeams::isActive(TeamId team) const {
-  return teamInfo.at(team).active();
+  return teamInfo.at(team).active;
 }
 
 void CollectiveTeams::cancel(TeamId team) {

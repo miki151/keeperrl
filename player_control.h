@@ -205,16 +205,20 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   unordered_set<Position> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
-  struct AssaultInfo : public NamedTupleBase<string, vector<Creature*>> {
-    NAMED_TUPLE_STUFF(AssaultInfo);
-    NAME_ELEM(0, message);
-    NAME_ELEM(1, creatures);
+  struct AssaultInfo {
+    string SERIAL(message);
+    vector<Creature*> SERIAL(creatures);
+    void serialize(Archive& ar, const unsigned int version) {
+      ar & SVAR(message) & SVAR(creatures);
+    }
   };
   map<const Collective*, AssaultInfo> SERIAL(assaultNotifications);
-  struct CurrentWarningInfo : public NamedTupleBase<CollectiveWarning, double> {
-    NAMED_TUPLE_STUFF(CurrentWarningInfo);
-    NAME_ELEM(0, warning);
-    NAME_ELEM(1, lastView);
+  struct CurrentWarningInfo {
+    CollectiveWarning SERIAL(warning);
+    double SERIAL(lastView);
+    void serialize(Archive& ar, const unsigned int version) {
+      ar & SVAR(warning) & SVAR(lastView);
+    }
   };
   optional<CurrentWarningInfo> SERIAL(currentWarning);
   vector<string> SERIAL(hints);

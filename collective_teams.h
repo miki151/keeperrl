@@ -47,11 +47,13 @@ class CollectiveTeams {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  struct TeamInfo : public NamedTupleBase<vector<Creature*>, bool, bool> {
-    NAMED_TUPLE_STUFF(TeamInfo);
-    NAME_ELEM(0, creatures);
-    NAME_ELEM(1, active);
-    NAME_ELEM(2, persistent);
+  struct TeamInfo {
+    vector<Creature*> SERIAL(creatures);
+    bool SERIAL(active);
+    bool SERIAL(persistent);
+    void serialize(Archive& ar, const unsigned int version) {
+      ar & SVAR(creatures) & SVAR(active) & SVAR(persistent);
+    }
   };
   map<TeamId, TeamInfo> SERIAL(teamInfo);
   TeamId SERIAL(nextId) = 1;

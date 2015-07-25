@@ -67,7 +67,7 @@ void LevelBuilder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<Squ
 }
 
 bool LevelBuilder::isInSunlight(Vec2 pos) {
-  return !coverInfo[pos].covered();
+  return !coverInfo[pos].covered;
 }
 
 Rectangle LevelBuilder::toGlobalCoordinates(Rectangle area) {

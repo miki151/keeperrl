@@ -221,7 +221,7 @@ class Corpse : public Item {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))
         Effect::applyToPosition(position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
-          !position.getCoverInfo().covered() && Random.roll(35)) {
+          !position.getCoverInfo().covered && Random.roll(35)) {
         for (Position v : position.neighbors8(Random)) {
           PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE,
               position.getModel()->getPestTribe(), MonsterAIFactory::scavengerBird(v));
@@ -871,7 +871,7 @@ PItem ItemFactory::fromId(ItemType item) {
     case ItemId::TECH_BOOK: return PItem(new TechBook(getAttributes(item), item.get<TechId>()));
     case ItemId::POTION: return PItem(new Potion(getAttributes(item)));
     case ItemId::TRAP_ITEM:
-        return getTrap(getAttributes(item), item.get<TrapInfo>().trapType(), item.get<TrapInfo>().effectType());
+        return getTrap(getAttributes(item), item.get<TrapInfo>().trapType, item.get<TrapInfo>().effectType);
     default: return PItem(new Item(getAttributes(item)));
   }
   return PItem();
@@ -1213,13 +1213,13 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.price = 10;);
     case ItemId::TRAP_ITEM: return ITATTR(
             i.viewId = ViewId::TRAP_ITEM;
-            i.name = "unarmed " + Effect::getName(item.get<TrapInfo>().effectType()) + " trap";
+            i.name = "unarmed " + Effect::getName(item.get<TrapInfo>().effectType) + " trap";
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
             i.uses = 1;
             i.usedUpMsg = true;
-            i.trapType = item.get<TrapInfo>().trapType();
+            i.trapType = item.get<TrapInfo>().trapType;
             i.price = 10;);
     case ItemId::POTION: return ITATTR(
             EffectType effect = item.get<EffectType>();

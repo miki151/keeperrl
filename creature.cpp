@@ -1631,7 +1631,7 @@ bool Creature::isInnocent() const {
 }
 
 CreatureAction Creature::flyAway() const {
-  if (!isAffected(LastingEffect::FLYING) || position.getCoverInfo().covered())
+  if (!isAffected(LastingEffect::FLYING) || position.getCoverInfo().covered)
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " fly away";

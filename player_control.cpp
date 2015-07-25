@@ -732,8 +732,8 @@ void PlayerControl::handleLibrary(View* view) {
 typedef CollectiveInfo::Button Button;
 
 optional<pair<ViewId, int>> PlayerControl::getCostObj(CostInfo cost) const {
-  if (cost.value() > 0 && !Collective::resourceInfo.at(cost.id()).dontDisplay)
-    return make_pair(getResourceViewId(cost.id()), cost.value());
+  if (cost.value > 0 && !Collective::resourceInfo.at(cost.id).dontDisplay)
+    return make_pair(getResourceViewId(cost.id), cost.value);
   else
     return none;
 }
@@ -781,10 +781,10 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            BuildInfo::SquareInfo& elem = button.squareInfo;
            ViewId viewId = getSquareViewId(elem.type);
            string description;
-           if (elem.cost.value() > 0)
+           if (elem.cost.value > 0)
              description = "[" + toString(getCollective()->getSquares(elem.type).size()) + "]";
-           int availableNow = !elem.cost.value() ? 1 : getCollective()->numResource(elem.cost.id()) / elem.cost.value();
-           if (Collective::resourceInfo.at(elem.cost.id()).dontDisplay && availableNow)
+           int availableNow = !elem.cost.value ? 1 : getCollective()->numResource(elem.cost.id) / elem.cost.value;
+           if (Collective::resourceInfo.at(elem.cost.id).dontDisplay && availableNow)
              description += " (" + toString(availableNow) + " available)";
            if (Collective::getSecondarySquare(elem.type))
              viewId = getSquareViewId(*Collective::getSecondarySquare(elem.type));
@@ -1077,7 +1077,7 @@ optional<CreatureView::MovementInfo> PlayerControl::getMovementInfo() const {
 enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
 CostInfo PlayerControl::getRoomCost(SquareType type, CostInfo baseCost, double exponent) const {
-  return {baseCost.id(), int(baseCost.value() * pow(2, exponent * 
+  return {baseCost.id, int(baseCost.value * pow(2, exponent * 
         getCollective()->getConstructions().getSquareCount(type)))};
 }
 
@@ -1254,8 +1254,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
           getTeams().deactivate(input.get<TeamId>());
         break;
     case UserInputId::SET_TEAM_LEADER:
-        if (Creature* c = getCreature(input.get<TeamLeaderInfo>().creatureId()))
-          getTeams().setLeader(input.get<TeamLeaderInfo>().team(), c);
+        if (Creature* c = getCreature(input.get<TeamLeaderInfo>().creatureId))
+          getTeams().setLeader(input.get<TeamLeaderInfo>().team, c);
         break;
     case UserInputId::MOVE_TO:
         if (getCurrentTeam() && getTeams().isActive(*getCurrentTeam()) &&
@@ -1296,17 +1296,17 @@ void PlayerControl::processInput(View* view, UserInput input) {
           rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = input.get<Vec2>(); c.deselect = true;);
         break;
     case UserInputId::BUILD:
-        handleSelection(input.get<BuildingInfo>().pos(),
-            getBuildInfo()[input.get<BuildingInfo>().building()], false);
+        handleSelection(input.get<BuildingInfo>().pos,
+            getBuildInfo()[input.get<BuildingInfo>().building], false);
         break;
     case UserInputId::LIBRARY:
-        handleSelection(input.get<BuildingInfo>().pos(), libraryInfo[input.get<BuildingInfo>().building()], false);
+        handleSelection(input.get<BuildingInfo>().pos, libraryInfo[input.get<BuildingInfo>().building], false);
         break;
     case UserInputId::BUTTON_RELEASE:
         if (rectSelection) {
           selection = rectSelection->deselect ? DESELECT : SELECT;
           for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
-            handleSelection(v, getBuildInfo()[input.get<BuildingInfo>().building()], true, rectSelection->deselect);
+            handleSelection(v, getBuildInfo()[input.get<BuildingInfo>().building], true, rectSelection->deselect);
         }
         rectSelection = none;
         selection = NONE;
@@ -1515,7 +1515,7 @@ void PlayerControl::tick(double time) {
   considerNightfall();
   for (Warning w : ENUM_ALL(Warning))
     if (getCollective()->isWarning(w)) {
-      if (!currentWarning || currentWarning->warning() != w || currentWarning->lastView()+warningFrequency < time) {
+      if (!currentWarning || currentWarning->warning != w || currentWarning->lastView + warningFrequency < time) {
         addMessage(PlayerMessage(getWarningText(w), PlayerMessage::HIGH));
         currentWarning = {w, time};
       }
@@ -1558,9 +1558,9 @@ void PlayerControl::tick(double time) {
     getCollective()->addNewCreatureMessage(addedCreatures);
   }
   for (auto assault : copyOf(assaultNotifications))
-    for (const Creature* c : assault.second.creatures())
+    for (const Creature* c : assault.second.creatures)
       if (canSee(c)) {
-        addImportantLongMessage(assault.second.message(), c->getPosition());
+        addImportantLongMessage(assault.second.message, c->getPosition());
         assaultNotifications.erase(assault.first);
         model->setCurrentMusic(MusicType::BATTLE, true);
         break;
@@ -1697,8 +1697,8 @@ void PlayerControl::uncoverRandomLocation() {
 }
 
 void PlayerControl::addAssaultNotification(const Collective* col, const vector<Creature*>& c, const string& message) {
-  assaultNotifications[col].creatures() = c;
-  assaultNotifications[col].message() = message;
+  assaultNotifications[col].creatures = c;
+  assaultNotifications[col].message = message;
 }
 
 void PlayerControl::removeAssaultNotification(const Collective* col) {
