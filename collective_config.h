@@ -84,6 +84,8 @@ class CollectiveConfig {
   static CollectiveConfig withImmigrants(double immigrantFrequency, int maxPopulation, vector<ImmigrantInfo>);
   static CollectiveConfig noImmigrants();
 
+  CollectiveConfig& allowRecruiting(int minPopulation);
+
   bool getManageEquipment() const;
   bool getWorkerFollowLeader() const;
   double getImmigrantFrequency() const;
@@ -95,6 +97,7 @@ class CollectiveConfig {
   bool getWarnings() const;
   bool getConstructions() const;
   int getMaxPopulation() const;
+  optional<int> getRecruitingMinPopulation() const;
   bool sleepOnlyAtNight() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
@@ -113,6 +116,7 @@ class CollectiveConfig {
   vector<PopulationIncrease> SERIAL(populationIncreases);
   vector<ImmigrantInfo> SERIAL(immigrantInfo);
   CollectiveType SERIAL(type);
+  optional<int> SERIAL(recruitingMinPopulation);
 };
 
 

@@ -21,6 +21,7 @@
 #include "view_object.h"
 #include "user_input.h"
 #include "minion_task.h"
+#include "cost_info.h"
 
 class CreatureView;
 class Level;
@@ -28,6 +29,7 @@ class Jukebox;
 class ProgressMeter;
 class PlayerInfo;
 struct ItemInfo;
+struct CreatureInfo;
 
 enum class SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING, AUTOSAVING };
 
@@ -197,6 +199,9 @@ class View {
 
   virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>&,
       UniqueEntity<Creature>::Id& current) = 0;
+
+  virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, pair<ViewId, int> budget,
+      const vector<CreatureInfo>&, double* scrollPos) = 0;
 
   virtual optional<int> chooseItem(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id& current,
       const vector<ItemInfo>& items, double* scrollpos) = 0;

@@ -334,6 +334,22 @@ vector<Creature*>& Collective::getCreatures() {
   return creatures;
 }
 
+vector<Creature*> Collective::getRecruits() const {
+  vector<Creature*> ret;
+  vector<Creature*> possibleRecruits = filter(getCreatures(MinionTrait::FIGHTER),
+      [] (const Creature* c) { return c->getRecruitmentCost() > 0; });
+  if (auto minPop = config->getRecruitingMinPopulation())
+    for (int i = *minPop; i < possibleRecruits.size(); ++i)
+      ret.push_back(possibleRecruits[i]);
+  return ret;
+}
+
+void Collective::recruit(Creature* c, Collective* to) {
+  removeCreature(c);
+  c->setTribe(to->getTribe());
+  to->addCreature(c, {MinionTrait::FIGHTER});
+}
+
 const Creature* Collective::getLeader() const {
   if (byTrait[MinionTrait::LEADER].empty()) {
     return nullptr;
@@ -879,6 +895,17 @@ static CostInfo getSpawnCost(SpawnType type, int howMany) {
   }
 }
 
+void Collective::considerBuildingBeds() {
+  bool bedsWarning = false;
+  for (auto spawnType : ENUM_ALL(SpawnType))
+    if (auto bedType = getDormInfo()[spawnType].getBedType()) {
+      int neededBeds = bySpawnType[spawnType].size() - constructions->getSquareCount(*bedType);
+      if (neededBeds > 0)
+        bedsWarning |= tryBuildingBeds(spawnType, neededBeds) < neededBeds;
+    }
+  warnings[Warning::BEDS] = bedsWarning;
+}
+
 bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   if (info.techId && !hasTech(*info.techId))
     return false;
@@ -1132,6 +1159,7 @@ void Collective::tick(double time) {
   considerHealingLeader();
   considerBirths();
   decayMorale();
+  considerBuildingBeds();
   if (Random.rollD(1.0 / config->getImmigrantFrequency()))
     considerImmigration();
 /*  if (nextPayoutTime > -1 && time > nextPayoutTime) {

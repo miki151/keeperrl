@@ -29,6 +29,7 @@ enum class LoggingToken {
   GET_MINION_ACTION,
   GET_TIME_ABSOLUTE,
   CHOOSE_ITEM,
+  CHOOSE_RECRUIT,
   TRAVEL_INTERRUPT,
   GET_TEXT
 };
@@ -96,6 +97,11 @@ class LoggingView : public View {
     virtual optional<int> chooseItem(const vector<PlayerInfo>& info, UniqueEntity<Creature>::Id& current,
         const vector<ItemInfo>& items, double* scrollpos) override {
       return logAndGet(delegate->chooseItem(info, current, items, scrollpos), LoggingToken::CHOOSE_ITEM);
+    }
+
+    virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, pair<ViewId, int> budget,
+        const vector<CreatureInfo>& c, double* scrollPos) override {
+      return logAndGet(delegate->chooseRecruit(title, budget, c, scrollPos), LoggingToken::CHOOSE_RECRUIT);
     }
 
     virtual bool travelInterrupt() override {

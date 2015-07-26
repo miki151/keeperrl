@@ -746,7 +746,7 @@ CreatureFactory CreatureFactory::splash(Tribe* tribe) {
 }
 
 CreatureFactory CreatureFactory::orcTown(Tribe* tribe) {
-  return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::RAT}, {2, 1}, {CreatureId::GREAT_ORC});
+  return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1}, {CreatureId::GREAT_ORC});
 }
 
 CreatureFactory CreatureFactory::pyramid(Tribe* tribe, int level) {
@@ -1315,6 +1315,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
+          c.recruitmentCost = 50;
           c.firstName = NameGenerator::get(NameGeneratorId::ORC)->getNext();
           c.name = "orc";);
     case CreatureId::ORC_SHAMAN:
@@ -1447,6 +1448,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 5);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
+          c.recruitmentCost = 100;
           c.name = "ogre";);
     case CreatureId::CHICKEN: 
       return CATTR(

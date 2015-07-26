@@ -194,6 +194,24 @@ vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet) {
             CreatureFactory::elementals(tribeSet.human.get()));
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}, LevelInfo{ExtraLevelId::TOWER, towerKey}},
       {CONSTRUCT(SettlementInfo,
+          c.type = SettlementType::VILLAGE;
+          c.creatures = CreatureFactory::orcTown(tribeSet.greenskins.get());
+          c.numCreatures = random.get(12, 16);
+          c.location = getVillageLocation();
+          c.tribe = tribeSet.greenskins.get();
+          c.buildingId = BuildingId::BRICK;
+          c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+       CollectiveConfig::withImmigrants(0.003, 16, {
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::ORC;
+               c.frequency = 3;
+               c.traits = LIST(MinionTrait::FIGHTER);),          
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::OGRE;
+               c.frequency = 1;
+               c.traits = LIST(MinionTrait::FIGHTER);),
+           }).allowRecruiting(9), {}},
+      {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CASTLE2;
           c.creatures = CreatureFactory::vikingTown(tribeSet.human.get());
           c.numCreatures = random.get(12, 16);

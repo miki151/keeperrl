@@ -70,6 +70,9 @@ class GuiBuilder {
       MinionMenuCallback);
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
   vector<PGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);
+  typedef function<void(optional<int>)> CreatureMenuCallback;
+  vector<PGuiElem> drawRecruitMenu(const vector<CreatureInfo>&, CreatureMenuCallback, int budget);
+  PGuiElem drawCost(pair<ViewId, int>, ColorId = ColorId::WHITE);
   
   enum class CollectiveTab {
     BUILDINGS,
@@ -125,6 +128,8 @@ class GuiBuilder {
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(vector<PGuiElem>, bool& exit, Vec2 menuPos, int width);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
+  PGuiElem getVillageActionButton(int villageIndex, VillageAction);
+  PGuiElem getVillageStateLabel(VillageInfo::Village::State);
   int activeBuilding = 0;
   bool hideBuildingOverlay = false;
   int activeLibrary = -1;

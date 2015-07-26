@@ -786,6 +786,52 @@ optional<int> WindowView::chooseItem(const vector<PlayerInfo>& minions, UniqueEn
   return returnQueue.pop();
 }
 
+static Rectangle getCreatureMenuPosition(int height) {
+  return Rectangle(rightBarWidthCollective + 30, 80, rightBarWidthCollective + 360, height + 80);
+}
+
+optional<UniqueEntity<Creature>::Id> WindowView::chooseRecruit(const string& title, pair<ViewId, int> budget,
+    const vector<CreatureInfo>& creatures, double* scrollPos) {
+  RenderLock lock(renderMutex);
+  uiLock = true;
+  TempClockPause pause(clock);
+  SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
+  addReturnDialog<optional<UniqueEntity<Creature>::Id>>(returnQueue, [=] ()-> optional<UniqueEntity<Creature>::Id> {
+    optional<optional<UniqueEntity<Creature>::Id>> retVal;
+    int titleExtraSpace = 10;
+    GuiFactory::ListBuilder lines(gui, guiBuilder.getStandardLineHeight());
+    lines.addElem(gui.horizontalList(makeVec<PGuiElem>(gui.label(title), guiBuilder.drawCost(budget)),
+        renderer.getTextLength(toString(budget.second)) + 25, 1),
+      guiBuilder.getStandardLineHeight() + titleExtraSpace);
+    for (PGuiElem& elem : guiBuilder.drawRecruitMenu(creatures,
+        [&retVal] (optional<UniqueEntity<Creature>::Id> a) { retVal = a;}, budget.second))
+      lines.addElem(std::move(elem));
+    int menuHeight = lines.getSize() + 30;
+    PGuiElem menu = gui.stack(gui.reverseButton([&retVal] { retVal = optional<UniqueEntity<Creature>::Id>(none); }),
+        gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos),
+        15, 15, 15, 15)));
+    PGuiElem bg2 = gui.darken();
+    bg2->setBounds(renderer.getSize());
+    while (1) {
+      refreshScreen(false);
+      menu->setBounds(getCreatureMenuPosition(menuHeight));
+      bg2->render(renderer);
+      menu->render(renderer);
+      renderer.drawAndClearBuffer();
+      Event event;
+      while (renderer.pollEvent(event)) {
+        propagateEvent(event, {menu.get()});
+        if (retVal)
+          return *retVal;
+        if (considerResizeEvent(event))
+          continue;
+      }
+    }
+  });
+  lock.unlock();
+  return returnQueue.pop();
+}
+
 PGuiElem WindowView::drawGameChoices(optional<GameTypeChoice>& choice,optional<GameTypeChoice>& index) {
   return gui.verticalAspect(
       gui.marginFit(

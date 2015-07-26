@@ -109,6 +109,15 @@ int CollectiveConfig::getMaxPopulation() const {
   return maxPopulation;
 }
 
+optional<int> CollectiveConfig::getRecruitingMinPopulation() const {
+  return recruitingMinPopulation;
+}
+
+CollectiveConfig& CollectiveConfig::allowRecruiting(int minPop) {
+  recruitingMinPopulation = minPop;
+  return *this;
+}
+
 const vector<ImmigrantInfo>& CollectiveConfig::getImmigrantInfo() const {
   return immigrantInfo;
 }
@@ -126,7 +135,8 @@ void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
     & SVAR(maxPopulation)
     & SVAR(populationIncreases)
     & SVAR(immigrantInfo)
-    & SVAR(type);
+    & SVAR(type)
+    & SVAR(recruitingMinPopulation);
 }
 
 SERIALIZABLE(CollectiveConfig);

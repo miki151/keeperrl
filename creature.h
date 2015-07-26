@@ -50,6 +50,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Creature(const ViewObject&, Tribe*, const CreatureAttributes&, const ControllerFactory&);
   virtual ~Creature();
 
+  static vector<vector<Creature*>> stack(const vector<Creature*>&);
+
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void makeMove();
   double getTime() const;
@@ -103,6 +105,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   const Tribe* getTribe() const;
   Tribe* getTribe();
+  void setTribe(Tribe*);
   bool isFriend(const Creature*) const;
   int getDebt(const Creature* debtor) const;
   vector<Item*> getGold(int num) const;
@@ -136,6 +139,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool isWorshipped() const;
   bool dontChase() const;
   optional<SpawnType> getSpawnType() const;
+  int getRecruitmentCost() const;
+
   MovementType getMovementType() const;
 
   int numBodyParts(BodyPart) const;

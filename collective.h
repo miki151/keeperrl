@@ -107,6 +107,9 @@ class Collective : public TaskCallback {
   double getBeastMultiplier() const;
   double getUndeadMultiplier() const;
 
+  vector<Creature*> getRecruits() const;
+  void recruit(Creature*, Collective* to);
+
   double getEfficiency(const Creature*) const;
   const Creature* getLeader() const;
   Creature* getLeader();
@@ -330,6 +333,7 @@ class Collective : public TaskCallback {
   void onEpithetWorship(Creature*, WorshipType, EpithetId);
   void considerHealingLeader();
   bool considerImmigrant(const ImmigrantInfo&);
+  void considerBuildingBeds();
   bool considerNonSpawnImmigrant(const ImmigrantInfo&, vector<PCreature>);
   vector<Position> getSpawnPos(const vector<Creature*>&);
   void considerImmigration();

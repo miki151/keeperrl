@@ -90,8 +90,6 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Creature);
 Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes& attr,
     const ControllerFactory& f)
     : Renderable(object), attributes(attr), tribe(t), controller(f.get(this)) {
-  if (tribe)
-    tribe->addMember(this);
   for (auto id : ENUM_ALL(AttrType))
     CHECK(attributes->attr[id] > 0);
   CHECK(getUniqueId() != 0);
@@ -104,8 +102,13 @@ Creature::Creature(Tribe* t, const CreatureAttributes& attr, const ControllerFac
 }
 
 Creature::~Creature() {
-  if (tribe)
-    tribe->removeMember(this);
+}
+
+vector<vector<Creature*>> Creature::stack(const vector<Creature*>& creatures) {
+  map<string, vector<Creature*>> stacks;
+  for (Creature* c : creatures)
+    stacks[c->getSpeciesName()].push_back(c);
+  return getValues(stacks);
 }
 
 const ViewObject& Creature::getViewObjectFor(const Tribe* observer) const {
@@ -1005,6 +1008,10 @@ Tribe* Creature::getTribe() {
 
 const Tribe* Creature::getTribe() const {
   return tribe;
+}
+
+void Creature::setTribe(Tribe* t) {
+  tribe = t;
 }
 
 bool Creature::isFriend(const Creature* c) const {
@@ -2059,6 +2066,10 @@ bool Creature::dontChase() const {
 
 optional<SpawnType> Creature::getSpawnType() const {
   return attributes->spawnType;
+}
+
+int Creature::getRecruitmentCost() const {
+  return attributes->recruitmentCost;
 }
 
 MovementType Creature::getMovementType() const {

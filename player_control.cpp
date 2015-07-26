@@ -868,13 +868,44 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   return ret;
 }
 
-static VillageInfo::Village getVillageInfo(const Collective* col) {
+VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const {
   VillageInfo::Village info;
   info.name = col->getName();
   info.tribeName = col->getTribe()->getName();
   if (col->isConquered())
-    info.state = "conquered";
+    info.state = info.CONQUERED;
+  else if (col->getTribe()->isEnemy(getTribe()))
+    info.state = info.HOSTILE;
+  else
+    info.state = info.FRIENDLY;
+  if (!col->getRecruits().empty())
+    info.actions.push_back(VillageAction::RECRUIT);
   return info;
+}
+
+void PlayerControl::handleRecruiting(Collective* ally) {
+  double scrollPos = 0;
+  vector<Creature*> recruited;
+  while (1) {
+    vector<Creature*> recruits = ally->getRecruits();
+    if (recruits.empty())
+      break;
+    vector<CreatureInfo> creatures = transform2<CreatureInfo>(recruits,
+        [] (const Creature* c) { return CreatureInfo(c);});
+    auto index = model->getView()->chooseRecruit("Recruit from " + ally->getName(),
+        {ViewId::GOLD, getCollective()->numResource(ResourceId::GOLD)}, creatures, &scrollPos);
+    if (!index)
+      break;
+    for (Creature* c : recruits)
+      if (c->getUniqueId() == *index) {
+        ally->recruit(c, getCollective());
+        recruited.push_back(c);
+        getCollective()->takeResource({ResourceId::GOLD, c->getRecruitmentCost()});
+        break;
+      }
+  }
+  for (auto& stack : Creature::stack(recruited))
+    getCollective()->addNewCreatureMessage(stack);
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
@@ -1316,6 +1347,17 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::LIBRARY:
         handleSelection(input.get<BuildingInfo>().pos(), libraryInfo[input.get<BuildingInfo>().building()], false);
         break;
+    case UserInputId::VILLAGE_ACTION: {
+        int villageIndex = input.get<VillageActionInfo>().villageIndex;
+        if (model->getMainVillains().size() <= villageIndex)
+          break;
+        Collective* village = model->getMainVillains()[villageIndex];
+        switch (input.get<VillageActionInfo>().action) {
+          case VillageAction::RECRUIT: 
+            handleRecruiting(village);
+            break;
+        }
+        }
     case UserInputId::BUTTON_RELEASE:
         if (rectSelection) {
           selection = rectSelection->deselect ? DESELECT : SELECT;
