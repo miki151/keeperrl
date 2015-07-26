@@ -51,6 +51,7 @@ class CollectiveTeams {
     vector<Creature*> SERIAL(creatures);
     bool SERIAL(active);
     bool SERIAL(persistent);
+    template<class Archive>
     void serialize(Archive& ar, const unsigned int version) {
       ar & SVAR(creatures) & SVAR(active) & SVAR(persistent);
     }

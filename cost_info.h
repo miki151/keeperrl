@@ -7,6 +7,7 @@
 struct CostInfo {
   CollectiveResourceId SERIAL(id);
   int SERIAL(value);
+  template<class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(id) & SVAR(value);
   }

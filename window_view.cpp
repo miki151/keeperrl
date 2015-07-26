@@ -174,7 +174,7 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
         inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
       else
       if (collectiveTab == GuiBuilder::CollectiveTab::TECHNOLOGY && activeLibrary >= 0)
-        inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo(pos, activeLibrary)));
+        inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo{pos, activeLibrary}));
       else
       if (collectiveTab == GuiBuilder::CollectiveTab::BUILDINGS) {
         if (Keyboard::isKeyPressed(Keyboard::LShift) || Keyboard::isKeyPressed(Keyboard::RShift))
@@ -182,7 +182,7 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
         else if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl))
           inputQueue.push(UserInput(UserInputId::RECT_DESELECTION, pos));
         else
-          inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo(pos, activeBuilding)));
+          inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo{pos, activeBuilding}));
       }
     default:
       break;
@@ -1179,8 +1179,8 @@ void WindowView::processEvents() {
         break;
       case Event::MouseButtonReleased :
         if (event.mouseButton.button == sf::Mouse::Left)
-          inputQueue.push(UserInput(UserInputId::BUTTON_RELEASE, BuildingInfo(Vec2(0, 0),
-              guiBuilder.getActiveBuilding())));
+          inputQueue.push(UserInput(UserInputId::BUTTON_RELEASE, BuildingInfo{Vec2(0, 0),
+              guiBuilder.getActiveBuilding()}));
         break;
       default: break;
     }

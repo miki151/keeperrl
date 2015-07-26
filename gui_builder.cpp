@@ -824,7 +824,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
       list.addElem(getItemLine(item, [=](Rectangle butBounds) {
             if (auto choice = getItemChoice(item, butBounds.getBottomLeft() + Vec2(50, 0), false))
               callbacks.inputCallback({UserInputId::INVENTORY_ITEM,
-                  InventoryItemInfo(item.ids, *choice)});}));
+                  InventoryItemInfo{item.ids, *choice}});}));
   }
   return gui.margins(
       gui.scrollable(list.buildVerticalList(), &inventoryScroll), -5, 0, 0, 0);
@@ -920,7 +920,7 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
           gui.mouseHighlight2(gui.viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk))));
     for (auto member : team.members) {
       currentLine.push_back(gui.stack(makeVec<PGuiElem>(
-            gui.button(getButtonCallback({UserInputId::SET_TEAM_LEADER, TeamLeaderInfo(team.id, member)})),
+            gui.button(getButtonCallback({UserInputId::SET_TEAM_LEADER, TeamLeaderInfo{team.id, member}})),
             gui.viewObject(info.getMinion(member).viewId, tilesOk),
             gui.mouseHighlight2(gui.margins(
                 gui.rectangle(colors[ColorId::TRANSPARENT], colors[ColorId::WHITE]), -3, -2, 3, 2)),

@@ -57,6 +57,7 @@ struct Collective::MinionPaymentInfo {
   int SERIAL(salary);
   double SERIAL(workAmount);
   int SERIAL(debt);
+  template<class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(salary) & SVAR(workAmount) & SVAR(debt);
   }
@@ -65,6 +66,7 @@ struct Collective::MinionPaymentInfo {
 struct Collective::CurrentTaskInfo {
   MinionTask SERIAL(task);
   double SERIAL(finishTime);
+  template<class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(task) & SVAR(finishTime);
   }
@@ -72,7 +74,8 @@ struct Collective::CurrentTaskInfo {
 
 struct Collective::PrisonerInfo {
   PrisonerState SERIAL(state);
-  UniqueEnity<Task>::Id SERIAL(task);
+  UniqueEntity<Task>::Id SERIAL(task);
+  template<class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(state) & SVAR(task);
   }};

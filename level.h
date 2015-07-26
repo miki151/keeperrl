@@ -68,6 +68,7 @@ RICH_ENUM(VisionId,
 struct CoverInfo {
   bool SERIAL(covered);
   double SERIAL(sunlight);
+  template<class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(covered) & SVAR(sunlight);
   }

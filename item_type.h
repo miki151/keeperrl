@@ -63,6 +63,7 @@ enum class ItemId {
 struct TrapInfo {
   TrapType SERIAL(trapType);
   EffectType SERIAL(effectType);
+  template<class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(trapType) & SVAR(effectType);
   }

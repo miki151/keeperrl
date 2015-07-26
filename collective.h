@@ -356,6 +356,7 @@ class Collective : public TaskCallback {
   struct AlarmInfo {
     double SERIAL(finishTime);
     Position SERIAL(position);
+    template<class Archive>
     void serialize(Archive& ar, const unsigned int version) {
       ar & SVAR(finishTime) & SVAR(position);
     }

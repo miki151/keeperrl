@@ -210,6 +210,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   struct AssaultInfo {
     string SERIAL(message);
     vector<Creature*> SERIAL(creatures);
+    template<class Archive>
     void serialize(Archive& ar, const unsigned int version) {
       ar & SVAR(message) & SVAR(creatures);
     }
@@ -218,6 +219,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   struct CurrentWarningInfo {
     CollectiveWarning SERIAL(warning);
     double SERIAL(lastView);
+    template<class Archive>
     void serialize(Archive& ar, const unsigned int version) {
       ar & SVAR(warning) & SVAR(lastView);
     }

@@ -68,6 +68,7 @@ enum class UserInputId {
 struct BuildingInfo {
   Vec2 SERIAL(pos);
   int SERIAL(building);
+  template<class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(pos) & SVAR(building);
   }
@@ -76,6 +77,7 @@ struct BuildingInfo {
 struct TeamLeaderInfo {
   TeamId SERIAL(team);
   UniqueEntity<Creature>::Id SERIAL(creatureId);
+  template<class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(team) & SVAR(creatureId);
   }
@@ -84,6 +86,7 @@ struct TeamLeaderInfo {
 struct InventoryItemInfo {
   vector<UniqueEntity<Item>::Id> SERIAL(items);
   ItemAction SERIAL(action);
+  template<class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(items) & SVAR(action);
   }};
