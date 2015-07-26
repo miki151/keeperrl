@@ -746,7 +746,7 @@ CreatureFactory CreatureFactory::splash(Tribe* tribe) {
 }
 
 CreatureFactory CreatureFactory::orcTown(Tribe* tribe) {
-  return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::RAT}, {2, 1}, {CreatureId::GREAT_ORC});
+  return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1}, {CreatureId::GREAT_ORC});
 }
 
 CreatureFactory CreatureFactory::pyramid(Tribe* tribe, int level) {
@@ -1315,6 +1315,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
+          c.recruitmentCost = 50;
           c.firstName = NameGenerator::get(NameGeneratorId::ORC)->getNext();
           c.name = "orc";);
     case CreatureId::ORC_SHAMAN:
@@ -1447,6 +1448,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 5);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
+          c.recruitmentCost = 100;
           c.name = "ogre";);
     case CreatureId::CHICKEN: 
       return CATTR(
@@ -1492,6 +1494,7 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DWARF_FEMALE:
       return INHERIT(DWARF,
           c.viewId = ViewId::DWARF_FEMALE;
+          c.innocent = true;
           c.gender = Gender::female;);
     case CreatureId::DWARF_BARON: 
       return INHERIT(DWARF,
@@ -1822,7 +1825,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.insert(SkillId::STEALTH);
-          c.name = EntityName("werewolf", "werewolves"););    
+          c.name = EntityName("werewolf", "werewolves"););
     case CreatureId::DOG: 
       return INHERIT(WOLF,
           c.viewId = ViewId::DOG;
@@ -1888,9 +1891,19 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.skills.insert(SkillId::SWIMMING);
           c.name = "water elemental";);
     case CreatureId::ENT:
-      return INHERIT(EARTH_ELEMENTAL,
+      return CATTR(
           c.viewId = ViewId::ENT;
+          c.size = CreatureSize::HUGE;
+          c.attr[AttrType::SPEED] = 30;
+          c.attr[AttrType::STRENGTH] = 40;
+          c.attr[AttrType::DEXTERITY] = 14;
+          c.barehandedDamage = 0;
           c.skills.insert(SkillId::ELF_VISION);
+          c.minionTasks.clear();
+          c.weight = 2000;
+          c.humanoid = false;
+          c.chatReactionFriendly = "curses all dungeons";
+          c.chatReactionHostile = "\"Die!\"";
           c.name = "tree spirit";);
     case CreatureId::ANGEL:
       return INHERIT(KNIGHT,

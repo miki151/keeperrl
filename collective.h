@@ -107,6 +107,9 @@ class Collective : public TaskCallback {
   double getBeastMultiplier() const;
   double getUndeadMultiplier() const;
 
+  vector<Creature*> getRecruits() const;
+  void recruit(Creature*, Collective* to);
+
   double getEfficiency(const Creature*) const;
   const Creature* getLeader() const;
   Creature* getLeader();
@@ -174,6 +177,8 @@ class Collective : public TaskCallback {
   void orderExecution(Creature*);
   void orderSacrifice(Creature*);
   void orderTorture(Creature*);
+  void orderWhipping(Creature*);
+  bool canWhip(Creature*) const;
 
   const map<UniqueEntity<Creature>::Id, string>& getMinionTaskStrings() const;
 
@@ -270,6 +275,7 @@ class Collective : public TaskCallback {
   virtual void onCopulated(Creature* who, Creature* with) override;
   virtual void onConsumed(Creature* consumer, Creature* who) override;
   virtual bool isConstructionReachable(Position) override;
+  virtual void onWhippingDone(Creature* whipped, Position postPosition) override;
 
   private:
   friend class CollectiveBuilder;
@@ -327,6 +333,7 @@ class Collective : public TaskCallback {
   void onEpithetWorship(Creature*, WorshipType, EpithetId);
   void considerHealingLeader();
   bool considerImmigrant(const ImmigrantInfo&);
+  void considerBuildingBeds();
   bool considerNonSpawnImmigrant(const ImmigrantInfo&, vector<PCreature>);
   vector<Position> getSpawnPos(const vector<Creature*>&);
   void considerImmigration();
@@ -357,6 +364,7 @@ class Collective : public TaskCallback {
   MoveInfo getAlarmMove(Creature* c);
   HeapAllocated<ConstructionMap> SERIAL(constructions);
   EntitySet<Item> SERIAL(markedItems);
+  set<Position> SERIAL(whippingPostsInUse);
   ItemPredicate unMarkedItems() const;
   enum class PrisonerState { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE };
   struct PrisonerInfo;

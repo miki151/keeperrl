@@ -13,7 +13,8 @@ void TaskMap::serialize(Archive& ar, const unsigned int version) {
     & SVAR(completionCost)
     & SVAR(priorityTasks)
     & SVAR(delayedTasks)
-    & SVAR(highlight);
+    & SVAR(highlight)
+    & SVAR(requiredTraits);
 }
 
 SERIALIZABLE(TaskMap);
@@ -23,30 +24,31 @@ SERIALIZATION_CONSTRUCTOR_IMPL(TaskMap);
 TaskMap::TaskMap(const vector<Level*>& levels) : reversePositions(levels), marked(levels), highlight(levels) {
 }
 
-Task* TaskMap::getTaskForWorker(Creature* c) {
+Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
   if (Random.roll(20))
     for (Task* t : extractRefs(tasks))
       if (t->isDone())
         removeTask(t);
   Task* closest = nullptr;
-  for (PTask& task : tasks) {
-    if (auto pos = getPosition(task.get())) {
-      double dist = pos->dist8(c->getPosition());
-      const Creature* owner = getOwner(task.get());
-      if (!task->isDone() && (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist))
-          && (!closest || dist < getPosition(closest)->dist8(c->getPosition()) || isPriorityTask(task.get()))
-          && (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getTime())) {
-        bool valid = task->getMove(c);
-        if (valid) {
-          closest = task.get();
-          if (isPriorityTask(task.get()))
-            return task.get();
+  for (PTask& task : tasks)
+    if (requiredTraits.count(task.get()) && requiredTraits.at(task.get()) == trait)
+      if (auto pos = getPosition(task.get())) {
+        double dist = pos->dist8(c->getPosition());
+        const Creature* owner = getOwner(task.get());
+        if (!task->isDone() && (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist))
+            && (!closest || dist < getPosition(closest)->dist8(c->getPosition()) || isPriorityTask(task.get()))
+            && (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getTime())) {
+          bool valid = task->getMove(c);
+          if (valid) {
+            closest = task.get();
+            if (isPriorityTask(task.get()))
+              return task.get();
+          }
         }
       }
-    }
-  }
   return closest;
 }
+
 vector<const Task*> TaskMap::getAllTasks() const {
   return transform2<const Task*>(tasks, [] (const PTask& t) { return t.get(); });
 }
@@ -63,7 +65,7 @@ void TaskMap::setPriorityTasks(Position pos) {
 
 Task* TaskMap::addTaskCost(PTask task, Position position, CostInfo cost) {
   completionCost[task.get()] = cost;
-  return addTask(std::move(task), position);
+  return addTask(std::move(task), position, MinionTrait::WORKER);
 }
 
 CostInfo TaskMap::removeTask(Task* task) {
@@ -87,6 +89,8 @@ CostInfo TaskMap::removeTask(Task* task) {
     removeElement(reversePositions[positionMap.at(task)], task);
     positionMap.erase(task);
   }
+  if (requiredTraits.count(task))
+    requiredTraits.erase(task);
   return cost;
 }
 
@@ -163,8 +167,9 @@ Task* TaskMap::addPriorityTask(PTask task, const Creature* c) {
   return t;
 }
 
-Task* TaskMap::addTask(PTask task, Position position) {
+Task* TaskMap::addTask(PTask task, Position position, MinionTrait required) {
   positionMap[task.get()] = position;
+  requiredTraits[task.get()] = required;
   reversePositions[position].push_back(task.get());
   tasks.push_back(std::move(task));
   return tasks.back().get();

@@ -216,6 +216,8 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo({SquareId::MINION_STATUE, {ResourceId::GOLD, 300}, "Statue", false, false}, {},
       "Increases minion population limit by " +
             toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
+    BuildInfo({SquareId::WHIPPING_POST, {ResourceId::WOOD, 30}, "Whipping post"}, {},
+        "A place to whip your minions if they need a morale boost.", 0, "Installations"),
     BuildInfo({SquareId::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, {},
         "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
     BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
@@ -487,8 +489,11 @@ vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
       if (getCollective()->usesEquipment(c))
         fillEquipment(c, minions.back());
       minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
-      if (!getCollective()->hasTrait(c, MinionTrait::LEADER))
+      if (!getCollective()->hasTrait(c, MinionTrait::LEADER)) {
         minions.back().actions.push_back(PlayerInfo::BANISH);
+        if (getCollective()->canWhip(c))
+          minions.back().actions.push_back(PlayerInfo::WHIP);
+      }
     }
   sort(minions.begin(), minions.end(), [] (const PlayerInfo& m1, const PlayerInfo& m2) {
         return m1.level > m2.level;
@@ -540,11 +545,15 @@ void PlayerControl::minionView(Creature* creature) {
                 "Banishing has a negative impact on morale of other minions."))
             getCollective()->banishCreature(c);
           break;
+        case 5:
+          getCollective()->orderWhipping(c);
+          return;
     }
   }
 }
 
-static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked) {
+static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked,
+    optional<ItemInfo::Type> type = none) {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(true);
     c.fullName = stack[0]->getNameAndModifiers(false);
@@ -557,6 +566,8 @@ static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pendi
     c.actions = {ItemAction::DROP};
     c.equiped = equiped;
     c.locked = locked;
+    if (type)
+      c.type = *type;
     c.pending = pending;);
 }
 
@@ -614,7 +625,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) {
       removeElement(ownedItems, item);
       bool equiped = creature->getEquipment().isEquiped(item);
       bool locked = getCollective()->getMinionEquipment().isLocked(creature, item->getUniqueId());
-      info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked));
+      info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
       info.inventory.back().actions.push_back(locked ? ItemAction::UNLOCK : ItemAction::LOCK);
     }
     if (creature->getEquipment().getMaxItems(slot) > items.size()) {
@@ -627,7 +638,10 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) {
       [&](const Item* it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
   for (auto elem : consumables)
     info.inventory.push_back(getItemInfo(elem.second, false,
-          !creature->getEquipment().hasItem(elem.second.at(0)), false));
+          !creature->getEquipment().hasItem(elem.second.at(0)), false, ItemInfo::CONSUMABLE));
+  for (Item* item : creature->getEquipment().getItems())
+    if (!getCollective()->getMinionEquipment().isItemUseful(item))
+      info.inventory.push_back(getItemInfo({item}, false, false, false, ItemInfo::OTHER));
 }
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
@@ -854,13 +868,44 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   return ret;
 }
 
-static VillageInfo::Village getVillageInfo(const Collective* col) {
+VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const {
   VillageInfo::Village info;
   info.name = col->getName();
   info.tribeName = col->getTribe()->getName();
   if (col->isConquered())
-    info.state = "conquered";
+    info.state = info.CONQUERED;
+  else if (col->getTribe()->isEnemy(getTribe()))
+    info.state = info.HOSTILE;
+  else
+    info.state = info.FRIENDLY;
+  if (!col->getRecruits().empty())
+    info.actions.push_back(VillageAction::RECRUIT);
   return info;
+}
+
+void PlayerControl::handleRecruiting(Collective* ally) {
+  double scrollPos = 0;
+  vector<Creature*> recruited;
+  while (1) {
+    vector<Creature*> recruits = ally->getRecruits();
+    if (recruits.empty())
+      break;
+    vector<CreatureInfo> creatures = transform2<CreatureInfo>(recruits,
+        [] (const Creature* c) { return CreatureInfo(c);});
+    auto index = model->getView()->chooseRecruit("Recruit from " + ally->getName(),
+        {ViewId::GOLD, getCollective()->numResource(ResourceId::GOLD)}, creatures, &scrollPos);
+    if (!index)
+      break;
+    for (Creature* c : recruits)
+      if (c->getUniqueId() == *index) {
+        ally->recruit(c, getCollective());
+        recruited.push_back(c);
+        getCollective()->takeResource({ResourceId::GOLD, c->getRecruitmentCost()});
+        break;
+      }
+  }
+  for (auto& stack : Creature::stack(recruited))
+    getCollective()->addNewCreatureMessage(stack);
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
@@ -1302,6 +1347,17 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::LIBRARY:
         handleSelection(input.get<BuildingInfo>().pos, libraryInfo[input.get<BuildingInfo>().building], false);
         break;
+    case UserInputId::VILLAGE_ACTION: {
+        int villageIndex = input.get<VillageActionInfo>().villageIndex;
+        if (model->getMainVillains().size() <= villageIndex)
+          break;
+        Collective* village = model->getMainVillains()[villageIndex];
+        switch (input.get<VillageActionInfo>().action) {
+          case VillageAction::RECRUIT: 
+            handleRecruiting(village);
+            break;
+        }
+        }
     case UserInputId::BUTTON_RELEASE:
         if (rectSelection) {
           selection = rectSelection->deselect ? DESELECT : SELECT;

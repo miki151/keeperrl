@@ -50,6 +50,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Creature(const ViewObject&, Tribe*, const CreatureAttributes&, const ControllerFactory&);
   virtual ~Creature();
 
+  static vector<vector<Creature*>> stack(const vector<Creature*>&);
+
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void makeMove();
   double getTime() const;
@@ -103,6 +105,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   const Tribe* getTribe() const;
   Tribe* getTribe();
+  void setTribe(Tribe*);
   bool isFriend(const Creature*) const;
   int getDebt(const Creature* debtor) const;
   vector<Item*> getGold(int num) const;
@@ -121,6 +124,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   bool isDead() const;
   bool isBlind() const;
+  bool isBleeding() const;
   const Creature* getLastAttacker() const;
   vector<const Creature*> getKills() const;
   bool isHumanoid() const;
@@ -135,6 +139,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool isWorshipped() const;
   bool dontChase() const;
   optional<SpawnType> getSpawnType() const;
+  int getRecruitmentCost() const;
+
   MovementType getMovementType() const;
 
   int numBodyParts(BodyPart) const;
@@ -268,6 +274,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void removePermanentEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
   bool isAffectedPermanently(LastingEffect) const;
+  bool affects(LastingEffect effect) const;
+  bool hasFreeMovement() const;
   bool isFireResistant() const;
   bool isDarknessSource() const;
 
@@ -294,7 +302,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   private:
 
-  bool affects(LastingEffect effect) const;
   void onAffected(LastingEffect effect, bool msg);
   void consumeEffects(const EnumMap<LastingEffect, int>&);
   void consumeBodyParts(const EnumMap<BodyPart, int>&);

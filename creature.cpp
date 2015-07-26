@@ -90,8 +90,6 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Creature);
 Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes& attr,
     const ControllerFactory& f)
     : Renderable(object), attributes(attr), tribe(t), controller(f.get(this)) {
-  if (tribe)
-    tribe->addMember(this);
   for (auto id : ENUM_ALL(AttrType))
     CHECK(attributes->attr[id] > 0);
   CHECK(getUniqueId() != 0);
@@ -104,8 +102,13 @@ Creature::Creature(Tribe* t, const CreatureAttributes& attr, const ControllerFac
 }
 
 Creature::~Creature() {
-  if (tribe)
-    tribe->removeMember(this);
+}
+
+vector<vector<Creature*>> Creature::stack(const vector<Creature*>& creatures) {
+  map<string, vector<Creature*>> stacks;
+  for (Creature* c : creatures)
+    stacks[c->getSpeciesName()].push_back(c);
+  return getValues(stacks);
 }
 
 const ViewObject& Creature::getViewObjectFor(const Tribe* observer) const {
@@ -243,11 +246,16 @@ CreatureAction Creature::move(Position pos) const {
   Vec2 direction = position.getDir(pos);
   if (holding)
     return CreatureAction("You can't break free!");
-  if ((direction.length8() != 1 || !getLevel()->canMoveCreature(this, direction)) && !swapPosition(direction))
+  if (direction.length8() != 1)
     return CreatureAction();
+  if (!getLevel()->canMoveCreature(this, direction)) {
+    auto action = swapPosition(direction);
+    if (!action) // this is so the player gets relevant info why the move failed
+      return action;
+  }
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " moving " << direction;
-    if (isAffected(LastingEffect::ENTANGLED)) {
+    if (isAffected(LastingEffect::ENTANGLED) || isAffected(LastingEffect::TIED_UP)) {
       playerMessage("You can't break free!");
       self->spendTime(1);
       return;
@@ -297,12 +305,19 @@ Controller* Creature::getController() {
   return controller.get();
 }
 
+bool Creature::hasFreeMovement() const {
+  return !isAffected(LastingEffect::SLEEP) &&
+    !isAffected(LastingEffect::STUNNED) &&
+    !isAffected(LastingEffect::ENTANGLED) &&
+    !isAffected(LastingEffect::TIED_UP);
+}
+
 CreatureAction Creature::swapPosition(Vec2 direction, bool force) const {
   const Creature* other = position.plus(direction).getCreature();
   if (!other)
     return CreatureAction();
-  if (other->isAffected(LastingEffect::SLEEP) && !force)
-    return CreatureAction(other->getName().the() + " is sleeping.");
+  if (!other->hasFreeMovement() && !force)
+    return CreatureAction(other->getName().the() + " cannot move.");
   if ((swapPositionCooldown && !isPlayer()) || other->attributes->stationary || other->isInvincible() ||
       direction.length8() != 1 || (other->isPlayer() && !force) || (other->isEnemy(this) && !force) ||
       !position.plus(direction).canEnterEmpty(this) || !position.canEnterEmpty(other))
@@ -677,6 +692,7 @@ bool Creature::affects(LastingEffect effect) const {
     case LastingEffect::RAGE:
     case LastingEffect::PANIC: return !isAffected(LastingEffect::SLEEP);
     case LastingEffect::POISON: return !isAffected(LastingEffect::POISON_RESISTANT) && !isNotLiving();
+    case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED: return isCorporal();
     default: return true;
   }
@@ -725,6 +741,7 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
       if (msg) you(MsgType::ARE, "moving more slowly");
       removeEffect(LastingEffect::SPEED, false);
       break;
+    case LastingEffect::TIED_UP: if (msg) you(MsgType::ARE, "tied up"); break;
     case LastingEffect::ENTANGLED: if (msg) you(MsgType::ARE, "entangled in a web"); break;
     case LastingEffect::SLEEP: if (msg) you(MsgType::FALL_ASLEEP, ""); break;
     case LastingEffect::POISON_RESISTANT:
@@ -761,6 +778,7 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
     case LastingEffect::RAGE:
     case LastingEffect::HALLU: if (msg) playerMessage("Your mind is clear again"); break;
     case LastingEffect::ENTANGLED: if (msg) you(MsgType::BREAK_FREE, "the web"); break;
+    case LastingEffect::TIED_UP: if (msg) you(MsgType::BREAK_FREE, ""); break;
     case LastingEffect::BLIND:
       if (msg) 
         you("can see again");
@@ -992,6 +1010,10 @@ const Tribe* Creature::getTribe() const {
   return tribe;
 }
 
+void Creature::setTribe(Tribe* t) {
+  tribe = t;
+}
+
 bool Creature::isFriend(const Creature* c) const {
   return !isEnemy(c);
 }
@@ -1043,6 +1065,10 @@ void Creature::setTime(double t) {
   time = t;
 }
 
+bool Creature::isBleeding() const {
+  return health < 0.5;
+}
+
 void Creature::tick(double realTime) {
   updateVision();
   if (Random.roll(5))
@@ -1070,7 +1096,7 @@ void Creature::tick(double realTime) {
     die(lastAttacker);
     return;
   }
-  if (health < 0.5) {
+  if (isBleeding()) {
     health -= delta / 40;
     playerMessage("You are bleeding.");
   }
@@ -2042,6 +2068,10 @@ optional<SpawnType> Creature::getSpawnType() const {
   return attributes->spawnType;
 }
 
+int Creature::getRecruitmentCost() const {
+  return attributes->recruitmentCost;
+}
+
 MovementType Creature::getMovementType() const {
   return MovementType(getTribe(), {
       true,
@@ -2428,6 +2458,8 @@ vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
   vector<AdjectiveInfo> ret;
   if (!getWeapon())
     ret.push_back({"No weapon", ""});
+  if (health < 1)
+    ret.push_back({isBleeding() ? "Critically wounded" : "Wounded", ""});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = attributes->injuredBodyParts[part])
       ret.push_back({getPlural("Injured " + attributes->getBodyPartName(part), num), ""});
@@ -2441,6 +2473,7 @@ vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
         case LastingEffect::POISON: name = "Poisoned"; break;
         case LastingEffect::SLEEP: name = "Sleeping"; break;
         case LastingEffect::ENTANGLED: name = "Entangled"; break;
+        case LastingEffect::TIED_UP: name = "Tied up"; break;
         case LastingEffect::SLOWED: name = "Slowed"; break;
         case LastingEffect::INSANITY: name = "Insane"; break;
         default: continue;

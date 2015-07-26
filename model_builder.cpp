@@ -194,6 +194,24 @@ vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet) {
             CreatureFactory::elementals(tribeSet.human.get()));
           c.attackMessage = VillageControl::TRIBE_AND_NAME;)}, LevelInfo{ExtraLevelId::TOWER, towerKey}},
       {CONSTRUCT(SettlementInfo,
+          c.type = SettlementType::VILLAGE;
+          c.creatures = CreatureFactory::orcTown(tribeSet.greenskins.get());
+          c.numCreatures = random.get(12, 16);
+          c.location = getVillageLocation();
+          c.tribe = tribeSet.greenskins.get();
+          c.buildingId = BuildingId::BRICK;
+          c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+       CollectiveConfig::withImmigrants(0.003, 16, {
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::ORC;
+               c.frequency = 3;
+               c.traits = LIST(MinionTrait::FIGHTER);),          
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::OGRE;
+               c.frequency = 1;
+               c.traits = LIST(MinionTrait::FIGHTER);),
+           }).allowRecruiting(9), {}},
+      {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CASTLE2;
           c.creatures = CreatureFactory::vikingTown(tribeSet.human.get());
           c.numCreatures = random.get(12, 16);
@@ -322,6 +340,18 @@ vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet) {
           c.buildingId = BuildingId::WOOD;
           c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);
           c.furniture = SquareFactory::single(SquareId::CAULDRON);), CollectiveConfig::noImmigrants(), {}},
+      {CONSTRUCT(SettlementInfo,
+          c.type = SettlementType::FOREST;
+          c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::ENT);
+          c.numCreatures = random.get(7, 13);
+          c.location = new Location();
+          c.tribe = tribeSet.monster.get();
+          c.buildingId = BuildingId::WOOD;),
+        CollectiveConfig::withImmigrants(0.003, 15, {
+           CONSTRUCT(ImmigrantInfo,
+               c.id = CreatureId::ENT;
+               c.frequency = 1;
+               c.traits = LIST(MinionTrait::FIGHTER);)}), {}},
       {CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CEMETERY;
           c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::ZOMBIE);

@@ -84,6 +84,11 @@ class ReplayView : public View {
       return readValue<optional<int>>(LoggingToken::CHOOSE_ITEM);
     }
 
+    virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, pair<ViewId, int> budget,
+        const vector<CreatureInfo>& c, double* scrollPos) override {
+      return readValue<optional<UniqueEntity<Creature>::Id>>(LoggingToken::CHOOSE_RECRUIT);
+    }
+
     virtual bool travelInterrupt() override {
       return readValue<bool>(LoggingToken::TRAVEL_INTERRUPT);
     }

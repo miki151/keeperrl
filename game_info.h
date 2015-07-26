@@ -5,6 +5,8 @@
 #include "unique_entity.h"
 #include "minion_task.h"
 #include "item_action.h"
+#include "village_action.h"
+#include "cost_info.h"
 
 enum class SpellId;
 
@@ -17,7 +19,8 @@ struct CreatureInfo {
   string name;
   string speciesName;
   int expLevel;
-  double morale;
+  double morale; 
+  optional<pair<ViewId, int>> cost;
 };
 
 class CollectiveInfo {
@@ -94,6 +97,7 @@ struct ItemInfo {
   bool pending;
   optional<EquipmentSlot> slot;
   optional<CreatureInfo> owner;
+  enum Type {EQUIPMENT, CONSUMABLE, OTHER} type;
 };
 
 class PlayerInfo {
@@ -151,18 +155,20 @@ class PlayerInfo {
     CONTROL,
     RENAME,
     BANISH,
+    WHIP
   };
   vector<Action> actions;
 };
 
 class VillageInfo {
   public:
-    struct Village {
-      string name;
-      string tribeName;
-      string state;
-    };
-    vector<Village> villages;
+  struct Village {
+    string name;
+    string tribeName;
+    enum State { FRIENDLY, HOSTILE, CONQUERED } state;
+    vector<VillageAction> actions;
+  };
+  vector<Village> villages;
 };
 
 class GameSunlightInfo {

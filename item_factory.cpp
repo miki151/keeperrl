@@ -709,6 +709,7 @@ int getEffectPrice(EffectType type) {
           case LastingEffect::PANIC:
           case LastingEffect::SLEEP:
           case LastingEffect::ENTANGLED:
+          case LastingEffect::TIED_UP:
           case LastingEffect::STUNNED:
           case LastingEffect::MAGIC_SHIELD:
           case LastingEffect::RAGE: return 60;

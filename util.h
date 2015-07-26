@@ -631,15 +631,17 @@ string transform2(const string& u, Fun fun) {
 
 template <typename T, typename U, typename Fun>
 vector<T> transform2(const vector<U>& u, Fun fun) {
-  vector<T> ret(u.size());
-  transform(u.begin(), u.end(), ret.begin(), fun);
+  vector<T> ret;
+  for (const U& elem : u)
+    ret.push_back(fun(elem));
   return ret;
 }
 
 template <typename T, typename U, typename Fun>
 vector<T> transform2(vector<U>& u, Fun fun) {
-  vector<T> ret(u.size());
-  transform(u.begin(), u.end(), ret.begin(), fun);
+  vector<T> ret;
+  for (U& elem : u)
+    ret.push_back(fun(elem));
   return ret;
 }
 

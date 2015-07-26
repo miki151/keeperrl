@@ -115,7 +115,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(name)
     & SVAR(config)
     & SVAR(warnings)
-    & SVAR(banished);
+    & SVAR(banished)
+    & SVAR(whippingPostsInUse);
 }
 
 SERIALIZABLE(Collective);
@@ -338,6 +339,22 @@ vector<Creature*>& Collective::getCreatures() {
   return creatures;
 }
 
+vector<Creature*> Collective::getRecruits() const {
+  vector<Creature*> ret;
+  vector<Creature*> possibleRecruits = filter(getCreatures(MinionTrait::FIGHTER),
+      [] (const Creature* c) { return c->getRecruitmentCost() > 0; });
+  if (auto minPop = config->getRecruitingMinPopulation())
+    for (int i = *minPop; i < possibleRecruits.size(); ++i)
+      ret.push_back(possibleRecruits[i]);
+  return ret;
+}
+
+void Collective::recruit(Creature* c, Collective* to) {
+  removeCreature(c);
+  c->setTribe(to->getTribe());
+  to->addCreature(c, {MinionTrait::FIGHTER});
+}
+
 const Creature* Collective::getLeader() const {
   if (byTrait[MinionTrait::LEADER].empty()) {
     return nullptr;
@@ -415,7 +432,7 @@ void Collective::onBedCreated(Position pos, const SquareType& fromType, const Sq
 MoveInfo Collective::getWorkerMove(Creature* c) {
   if (Task* task = taskMap->getTask(c))
     return task->getMove(c);
-  if (Task* closest = taskMap->getTaskForWorker(c)) {
+  if (Task* closest = taskMap->getClosestTask(c, MinionTrait::WORKER)) {
     taskMap->takeTask(c, closest);
     return closest->getMove(c);
   } else {
@@ -714,6 +731,10 @@ MoveInfo Collective::getMove(Creature* c) {
   if (PTask t = getHealingTask(c))
     if (t->getMove(c))
       return taskMap->addTask(std::move(t), c)->getMove(c);
+  if (Task* closest = taskMap->getClosestTask(c, MinionTrait::FIGHTER)) {
+    taskMap->takeTask(c, closest);
+    return closest->getMove(c);
+  }
   if (usesEquipment(c))
     if (PTask t = getEquipmentTask(c))
       if (t->getMove(c))
@@ -877,6 +898,17 @@ static CostInfo getSpawnCost(SpawnType type, int howMany) {
     case SpawnType::UNDEAD: return {CollectiveResourceId::CORPSE, howMany};
     default: return {CollectiveResourceId::GOLD, 0};
   }
+}
+
+void Collective::considerBuildingBeds() {
+  bool bedsWarning = false;
+  for (auto spawnType : ENUM_ALL(SpawnType))
+    if (auto bedType = getDormInfo()[spawnType].getBedType()) {
+      int neededBeds = bySpawnType[spawnType].size() - constructions->getSquareCount(*bedType);
+      if (neededBeds > 0)
+        bedsWarning |= tryBuildingBeds(spawnType, neededBeds) < neededBeds;
+    }
+  warnings[Warning::BEDS] = bedsWarning;
 }
 
 bool Collective::considerImmigrant(const ImmigrantInfo& info) {
@@ -1132,6 +1164,7 @@ void Collective::tick(double time) {
   considerHealingLeader();
   considerBirths();
   decayMorale();
+  considerBuildingBeds();
   if (Random.rollD(1.0 / config->getImmigrantFrequency()))
     considerImmigration();
 /*  if (nextPayoutTime > -1 && time > nextPayoutTime) {
@@ -1699,6 +1732,29 @@ void Collective::orderSacrifice(Creature* c) {
   clearPrisonerTask(c);
   prisonerInfo.at(c) = {PrisonerState::SACRIFICE, 0};
   setMinionTask(c, MinionTask::SACRIFICE);*/
+}
+
+void Collective::onWhippingDone(Creature* whipped, Position pos) {
+  cancelTask(whipped);
+  whippingPostsInUse.erase(pos);
+}
+
+bool Collective::canWhip(Creature* c) const {
+  return c->affects(LastingEffect::ENTANGLED);
+}
+
+void Collective::orderWhipping(Creature* whipped) {
+  if (!canWhip(whipped))
+    return;
+  set<Position> posts = getSquares(SquareId::WHIPPING_POST);
+  for (Position p : whippingPostsInUse)
+    posts.erase(p);
+  if (posts.empty())
+    return;
+  Position pos = Random.choose(posts);
+  whippingPostsInUse.insert(pos);
+  taskMap->addTask(Task::whipping(this, pos, whipped, 100, getTime() + 100), pos, MinionTrait::FIGHTER);
+  setTask(whipped, Task::goToAndWait(pos, getTime() + 100));
 }
 
 bool Collective::isItemMarked(const Item* it) const {

@@ -1883,6 +1883,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::WITCH_HOUSE:
     case SettlementType::CEMETERY:
     case SettlementType::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
+    case SettlementType::FOREST:
     case SettlementType::VILLAGE2: return {30, 20};
     case SettlementType::VILLAGE:
     case SettlementType::CASTLE: return {30, 20};
@@ -1898,6 +1899,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
 
 RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
   switch (type) {
+    case SettlementType::FOREST:
     case SettlementType::VILLAGE2:
         return Predicate::andPred(
             Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)),
@@ -2047,6 +2049,12 @@ MakerQueue* cemetery(SettlementInfo info) {
   return queue;
 }
 
+static LevelMaker* emptyCollective(SettlementInfo info) {
+  return new MakerQueue({
+      new LocationMaker(info.location),
+      new Creatures(*info.creatures, info.numCreatures, info.collective)});
+}
+
 LevelMaker* LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreatures,
     vector<SettlementInfo> settlements) {
   MakerQueue* queue = new MakerQueue();
@@ -2080,6 +2088,9 @@ LevelMaker* LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
           break;
       case SettlementType::WITCH_HOUSE:
           queue = cottage(settlement);
+          break;
+      case SettlementType::FOREST:
+          queue = emptyCollective(settlement);
           break;
       case SettlementType::MINETOWN:
           queue = mineTownMaker(random, settlement);

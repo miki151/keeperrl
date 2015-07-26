@@ -19,6 +19,7 @@
 #include "util.h"
 #include "enum_variant.h"
 #include "unique_entity.h"
+#include "village_action.h"
 
 enum class UserInputId {
 // common
@@ -45,6 +46,7 @@ enum class UserInputId {
     ACTIVATE_TEAM,
     SET_TEAM_LEADER,
     TECHNOLOGY,
+    VILLAGE_ACTION,
 // turn-based actions
     MOVE,
     MOVE_TO,
@@ -86,10 +88,19 @@ struct InventoryItemInfo {
     ar & SVAR(items) & SVAR(action);
   }};
 
+struct VillageActionInfo {
+  int SERIAL(villageIndex);
+  VillageAction SERIAL(action);
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(villageIndex) & SVAR(action);
+  }
+};
+
 enum class SpellId;
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec2, TeamLeaderInfo,
-    SpellId),
+    SpellId, VillageActionInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::LIBRARY,
@@ -119,7 +130,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Inven
         ASSIGN(TeamLeaderInfo,
             UserInputId::SET_TEAM_LEADER),
         ASSIGN(SpellId,
-            UserInputId::CAST_SPELL)> {
+            UserInputId::CAST_SPELL),
+        ASSIGN(VillageActionInfo,
+            UserInputId::VILLAGE_ACTION)> {
   using EnumVariant::EnumVariant;
 };
 

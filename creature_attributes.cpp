@@ -73,7 +73,8 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(lastingEffects)
     & SVAR(minionTasks)
     & SVAR(groupName)
-    & SVAR(attrIncrease);
+    & SVAR(attrIncrease)
+    & SVAR(recruitmentCost);
 }
 
 SERIALIZABLE(CreatureAttributes);

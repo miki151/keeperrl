@@ -74,6 +74,8 @@ class WindowView: public View {
   virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id&) override;
   virtual optional<int> chooseItem(const vector<PlayerInfo>& minions, UniqueEntity<Creature>::Id& cur,
       const vector<ItemInfo>& items, double* scrollpos) override;
+  virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, pair<ViewId, int> budget,
+      const vector<CreatureInfo>&, double* scrollPos) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
   virtual int getTimeMilli() override;

@@ -139,6 +139,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool meetsRequirement(Requirement) const;
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
+  VillageInfo::Village getVillageInfo(const Collective* enemy) const;
   vector<BuildInfo> getBuildInfo() const;
   static vector<BuildInfo> getBuildInfo(const Level*, const Tribe*);
   static vector<BuildInfo> workshopInfo;
@@ -177,6 +178,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void fillEquipment(Creature*, PlayerInfo&);
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
+  void handleRecruiting(Collective* ally);
   static ViewObject getTrapObject(TrapType, bool built);
   void addToMemory(Position);
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
