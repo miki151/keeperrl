@@ -167,14 +167,20 @@ PGuiElem GuiFactory::stopMouseMovement() {
 
 class DrawCustom : public GuiElem {
   public:
-  DrawCustom(function<void(Renderer&, Rectangle)> fun) : drawFun(fun) {}
+  typedef function<void(Renderer&, Rectangle)> DrawFun;
+  DrawCustom(DrawFun draw, optional<int> width = none) : drawFun(draw), preferredWidth(width) {}
 
   virtual void render(Renderer& renderer) override {
     drawFun(renderer, getBounds());
   }
 
+  virtual optional<int> getPreferredWidth() override {
+    return preferredWidth;
+  }
+
   private:
-  function<void(Renderer&, Rectangle)> drawFun;
+  DrawFun drawFun;
+  optional<int> preferredWidth;
 };
 
 PGuiElem GuiFactory::rectangle(Color color, optional<Color> borderColor) {
@@ -285,30 +291,33 @@ PGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFli
 }
 
 PGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
+  int width = renderer.getTextLength(s);
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
             bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, 0);
           r.drawTextWithHotkey(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, hotkey);
-        }));
+        }, width));
 }
 
 PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun) {
+  int width = renderer.getTextLength(s);
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
             bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s);
           r.drawText(colorFun(), bounds.getTopLeft().x, bounds.getTopLeft().y, s);
-        }));
+        }, width));
 }
 
 PGuiElem GuiFactory::label(const string& s, int size, Color c) {
+  int width = renderer.getTextLength(s);
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
             bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, Renderer::NONE, size);
           r.drawText(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, Renderer::NONE, size);
-        }));
+        }, width));
 }
 
 static Vec2 getTextPos(Rectangle bounds, Renderer::CenterType center) {
@@ -461,6 +470,14 @@ class GuiLayout : public GuiElem {
 
   virtual bool isVisible(int num) {
     return true;
+  }
+
+  virtual optional<int> getPreferredWidth() {
+    for (int i : All(elems))
+      if (auto width = elems[i]->getPreferredWidth())
+        if (getElemBounds(i) == getBounds())
+          return *width;
+    return none;
   }
 
   protected:
@@ -648,6 +665,13 @@ class VerticalList : public GuiLayout {
     return ret;
   }
 
+  optional<int> getPreferredWidth() override {
+    for (auto& elem : elems)
+      if (auto width = elem->getPreferredWidth())
+        return width;
+    return none;
+  }
+
   int getSize() {
     return heights.size();
   }
@@ -664,7 +688,7 @@ class VerticalList : public GuiLayout {
 
 GuiFactory::ListBuilder::ListBuilder(GuiFactory& g, int defSz) : gui(g), defaultSize(defSz) {}
 
-void GuiFactory::ListBuilder::addElem(PGuiElem elem, int size) {
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElem(PGuiElem elem, int size) {
   CHECK(!backElems);
   if (size == 0) {
     CHECK(defaultSize > 0);
@@ -672,9 +696,26 @@ void GuiFactory::ListBuilder::addElem(PGuiElem elem, int size) {
   }
   elems.push_back(std::move(elem));
   sizes.push_back(size);
+  return *this;
 }
 
-void GuiFactory::ListBuilder::addBackElem(PGuiElem elem, int size) {
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElemAuto(PGuiElem elem) {
+  CHECK(!backElems);
+  int size = *elem->getPreferredWidth();
+  elems.push_back(std::move(elem));
+  sizes.push_back(size);
+  return *this;
+}
+
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addBackElemAuto(PGuiElem elem) {
+  ++backElems;
+  int size = *elem->getPreferredWidth();
+  elems.push_back(std::move(elem));
+  sizes.push_back(size);
+  return *this;
+}
+
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addBackElem(PGuiElem elem, int size) {
   ++backElems;
   if (size == 0) {
     CHECK(defaultSize > 0);
@@ -682,6 +723,7 @@ void GuiFactory::ListBuilder::addBackElem(PGuiElem elem, int size) {
   }
   elems.push_back(std::move(elem));
   sizes.push_back(size);
+  return *this;
 }
 
 int GuiFactory::ListBuilder::getSize() const {
@@ -763,6 +805,10 @@ class HorizontalList : public VerticalList {
     int height = std::accumulate(heights.begin(), heights.begin() + num, 0);
     return Rectangle(getBounds().getTopLeft() + Vec2(height, 0), getBounds().getBottomLeft() 
         + Vec2(height + heights[num], 0));
+  }
+
+  optional<int> getPreferredWidth() override {
+    return getTotalHeight();
   }
 };
 
@@ -949,6 +995,13 @@ class Margins : public GuiLayout {
   virtual Rectangle getElemBounds(int num) override {
     return Rectangle(getBounds().getPX() + left, getBounds().getPY() + top,
         getBounds().getKX() - right, getBounds().getKY() - bottom);
+  }
+
+  optional<int> getPreferredWidth() override {
+    if (auto width = elems[0]->getPreferredWidth())
+      return left + *width + right;
+    else
+      return none;
   }
 
   private:

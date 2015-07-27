@@ -800,8 +800,9 @@ optional<UniqueEntity<Creature>::Id> WindowView::chooseRecruit(const string& tit
     optional<optional<UniqueEntity<Creature>::Id>> retVal;
     int titleExtraSpace = 10;
     GuiFactory::ListBuilder lines(gui, guiBuilder.getStandardLineHeight());
-    lines.addElem(gui.horizontalList(makeVec<PGuiElem>(gui.label(title), guiBuilder.drawCost(budget)),
-        renderer.getTextLength(toString(budget.second)) + 25, 1),
+    lines.addElem(GuiFactory::ListBuilder(gui)
+        .addElemAuto(gui.label(title))
+        .addBackElemAuto(guiBuilder.drawCost(budget)).buildHorizontalList(),
       guiBuilder.getStandardLineHeight() + titleExtraSpace);
     for (PGuiElem& elem : guiBuilder.drawRecruitMenu(creatures,
         [&retVal] (optional<UniqueEntity<Creature>::Id> a) { retVal = a;}, budget.second))

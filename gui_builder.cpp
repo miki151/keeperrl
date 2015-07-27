@@ -93,28 +93,25 @@ int GuiBuilder::getActiveLibrary() const {
 
 PGuiElem GuiBuilder::drawCost(pair<ViewId, int> cost, ColorId color) {
   string costText = toString(cost.second);
-  return gui.horizontalList(makeVec<PGuiElem>(
-        gui.label(costText, colors[color]), gui.viewObject(cost.first, tilesOk)),
-      renderer.getTextLength(costText) + 6);
+  return GuiFactory::ListBuilder(gui)
+      .addElemAuto(gui.rightMargin(5, gui.label(costText, colors[color])))
+      .addElem(gui.viewObject(cost.first, tilesOk), 25)
+      .buildHorizontalList();
 }
 
 PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, int& active,
     CollectiveTab tab) {
-  vector<PGuiElem> line;
-  line.push_back(gui.viewObject(button.viewId, tilesOk));
-  vector<int> widths { 35 };
+  GuiFactory::ListBuilder line(gui);
+  line.addElem(gui.viewObject(button.viewId, tilesOk), 35);
   if (button.state != CollectiveInfo::Button::ACTIVE)
-    line.push_back(gui.label(button.name + " " + button.count, colors[ColorId::GRAY], button.hotkey));
+    line.addElem(gui.label(button.name + " " + button.count, colors[ColorId::GRAY], button.hotkey), 100);
   else
-    line.push_back(gui.conditional(
+    line.addElem(gui.conditional(
           gui.label(button.name + " " + button.count, colors[ColorId::GREEN], button.hotkey),
           gui.label(button.name + " " + button.count, colors[ColorId::WHITE], button.hotkey),
-          [=, &active] (GuiElem*) { return active == num; }));
-  widths.push_back(100);
-  if (button.cost) {
-    line.push_back(drawCost(*button.cost));
-    widths.push_back(renderer.getTextLength(toString(button.cost->second)) + 33);
-  }
+          [=, &active] (GuiElem*) { return active == num; }), 100);
+  if (button.cost)
+    line.addBackElemAuto(drawCost(*button.cost));
   function<void()> buttonFun;
   if (button.state != CollectiveInfo::Button::INACTIVE)
     buttonFun = [this, &active, num, tab] {
@@ -128,7 +125,7 @@ PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, int& 
   return gui.stack(
       getHintCallback({capitalFirst(button.help)}),
       gui.button(buttonFun, button.hotkey),
-      gui.horizontalList(std::move(line), widths, button.cost ? 1 : 0));
+      line.buildHorizontalList());
 }
 
 vector<PGuiElem> GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons, int& active,
@@ -1645,12 +1642,11 @@ vector<PGuiElem> GuiBuilder::drawRecruitMenu(const vector<CreatureInfo>& creatur
           canAfford ? gui.button([callback, elem] { callback(elem.any.uniqueId); }) : gui.empty(),
           gui.leftMargin(25, gui.stack(
               canAfford ? gui.mouseHighlight2(gui.highlight(listLineHeight)) : gui.empty(),
-              gui.horizontalList(makeVec<PGuiElem>(
-                  gui.label(toString(elem.count), colors[color]),
-                  gui.viewObject(elem.viewId, tilesOk),
-                  gui.label("level " + toString(elem.any.expLevel), colors[color]),
-                  drawCost(*elem.any.cost, color)), {20, 50, 50,
-                renderer.getTextLength(toString(elem.any.cost->second)) + 25}, 1)))));
+              GuiFactory::ListBuilder(gui)
+                  .addElemAuto(gui.rightMargin(10, gui.label(toString(elem.count), colors[color])))
+                  .addElem(gui.viewObject(elem.viewId, tilesOk), 50)
+                  .addElem(gui.label("level " + toString(elem.any.expLevel), colors[color]), 50)
+                  .addBackElemAuto(drawCost(*elem.any.cost, color)).buildHorizontalList()))));
   }
   return lines;
 }

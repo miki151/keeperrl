@@ -34,6 +34,7 @@ class GuiElem {
   virtual bool onKeyPressed(char) { return false;}
   virtual bool onKeyPressed2(Event::KeyEvent) { return false;}
   virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
+  virtual optional<int> getPreferredWidth() { return none; }
 
   void setBounds(Rectangle);
   Rectangle getBounds();
@@ -69,8 +70,10 @@ class GuiFactory {
   class ListBuilder {
     public:
     ListBuilder(GuiFactory&, int defaultSize = 0);
-    void addElem(PGuiElem, int size = 0);
-    void addBackElem(PGuiElem, int size = 0);
+    ListBuilder& addElem(PGuiElem, int size = 0);
+    ListBuilder& addElemAuto(PGuiElem);
+    ListBuilder& addBackElemAuto(PGuiElem);
+    ListBuilder& addBackElem(PGuiElem, int size = 0);
     PGuiElem buildVerticalList();
     PGuiElem buildHorizontalList();
     int getSize() const;

@@ -216,6 +216,9 @@ class Rectangle {
 
   vector<Vec2> getAllSquares() const;
 
+  bool operator == (const Rectangle&) const;
+  bool operator != (const Rectangle&) const;
+
   class Iter {
     public:
     Iter(int x, int y, int px, int py, int kx, int ky);
