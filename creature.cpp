@@ -1328,7 +1328,7 @@ bool Creature::takeDamage(const Attack& attack) {
     if (!contains(privateEnemies, other) && (other->getTribe() != tribe || Random.roll(3)))
       privateEnemies.push_back(other);
     if (!other->hasSkill(Skill::get(SkillId::STEALTH)))
-      for (Creature* c : visibleCreatures)
+      for (Creature* c : getVisibleCreatures())
         if (c->getPosition().dist8(position) < 10)
           c->removeEffect(LastingEffect::SLEEP);
   }
@@ -2350,6 +2350,11 @@ const MinionTaskMap& Creature::getMinionTasks() const {
 
 MinionTaskMap& Creature::getMinionTasks() {
   return attributes->minionTasks;
+}
+
+const vector<Creature*> Creature::getVisibleCreatures() {
+  visibleCreatures = filter(visibleCreatures, [] (const Creature* c) { return !c->isDead();});
+  return visibleCreatures;
 }
 
 void Creature::updateVisibleCreatures(Rectangle range) {

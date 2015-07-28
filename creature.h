@@ -343,6 +343,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   int SERIAL(numAttacksThisTurn) = 0;
   vector<PMoraleOverride> SERIAL(moraleOverrides);
   void updateVisibleCreatures(Rectangle range);
+  const vector<Creature*> getVisibleCreatures();
   vector<const Creature*> SERIAL(visibleEnemies);
   vector<Creature*> SERIAL(visibleCreatures);
   double getTimeRemaining(LastingEffect) const;
