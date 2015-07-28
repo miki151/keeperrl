@@ -489,7 +489,7 @@ vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
       if (getCollective()->usesEquipment(c))
         fillEquipment(c, minions.back());
       minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
-      if (!getCollective()->hasTrait(c, MinionTrait::LEADER)) {
+      if (c != getCollective()->getLeader()) {
         minions.back().actions.push_back(PlayerInfo::BANISH);
         if (getCollective()->canWhip(c))
           minions.back().actions.push_back(PlayerInfo::WHIP);
@@ -870,8 +870,8 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
 
 VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const {
   VillageInfo::Village info;
-  info.name = col->getName();
-  info.tribeName = col->getTribe()->getName();
+  info.name = col->getShortName();
+  info.tribeName = col->getTribeName();
   if (col->isConquered())
     info.state = info.CONQUERED;
   else if (col->getTribe()->isEnemy(getTribe()))
@@ -892,7 +892,7 @@ void PlayerControl::handleRecruiting(Collective* ally) {
       break;
     vector<CreatureInfo> creatures = transform2<CreatureInfo>(recruits,
         [] (const Creature* c) { return CreatureInfo(c);});
-    auto index = model->getView()->chooseRecruit("Recruit from " + ally->getName(),
+    auto index = model->getView()->chooseRecruit("Recruit from " + ally->getShortName(),
         {ViewId::GOLD, getCollective()->numResource(ResourceId::GOLD)}, creatures, &scrollPos);
     if (!index)
       break;
@@ -931,9 +931,9 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     info.payoutTimeRemaining = -1;
   info.nextPayout = getCollective()->getNextSalaries();*/
   for (Creature* c : getCollective()->getCreaturesAnyOf(
-        {MinionTrait::LEADER, MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER})) {
+        {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER}))
     info.minions.push_back(c);
-  }
+  info.minions.push_back(getCollective()->getLeader());
   info.minionCount = getCollective()->getPopulationSize();
   info.minionLimit = getCollective()->getMaxPopulation();
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
@@ -1205,7 +1205,7 @@ Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) {
 }
 
 void PlayerControl::handleAddToTeam(Creature* c) {
-  if (getCollective()->hasAnyTrait(c, {MinionTrait::FIGHTER, MinionTrait::LEADER})) {
+  if (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader()) {
     if (!getCurrentTeam()) {
       setCurrentTeam(getTeams().create({c}));
       getTeams().activate(*getCurrentTeam());
@@ -1630,7 +1630,7 @@ void PlayerControl::tick(double time) {
   }
   for (const Collective* col : model->getMainVillains())
     if (col->isConquered() && !notifiedConquered.count(col)) {
-      addImportantLongMessage("You have exterminated the armed forces of " + col->getName() + ". "
+      addImportantLongMessage("You have exterminated the armed forces of " + col->getFullName() + ". "
           "Make sure to plunder the village and retrieve any valuables.");
       notifiedConquered.insert(col);
     }
@@ -1705,7 +1705,7 @@ MoveInfo PlayerControl::getMove(Creature* c) {
 }
 
 void PlayerControl::addKeeper(Creature* c) {
-  getCollective()->addCreature(c, {MinionTrait::LEADER});
+  getCollective()->addCreature(c, {});
 }
 
 void PlayerControl::addImp(Creature* c) {

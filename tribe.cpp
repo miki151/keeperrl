@@ -108,6 +108,10 @@ bool Tribe::isEnemy(const Tribe* t) const {
   return enemyTribes.count(const_cast<Tribe*>(t));
 }
 
+bool Tribe::isDiplomatic() const {
+  return diplomatic;
+}
+
 void Tribe::onItemsStolen(const Creature* attacker) {
   if (diplomatic) {
     initStanding(attacker);
@@ -146,7 +150,7 @@ TribeSet::TribeSet() {
   adventurer.reset(new Tribe("player", false));
   keeper.reset(new Tribe("keeper", false));
   greenskins.reset(new Tribe("greenskins", true));
-  bandit.reset(new Tribe("bandits", false));
+  bandit.reset(new Tribe("bandits", true));
   killEveryone.reset(new Tribe("hostile", false));
   peaceful.reset(new Tribe("peaceful", false));
   dwarven->addEnemy({bandit.get()});

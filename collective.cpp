@@ -84,6 +84,7 @@ template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(TaskCallback)
     & SVAR(creatures)
+    & SVAR(leader)
     & SVAR(taskMap)
     & SVAR(tribe)
     & SVAR(control)
@@ -213,14 +214,37 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
 };
 
 Collective::Collective(Level* l, const CollectiveConfig& cfg, Tribe* t, EnumMap<ResourceId, int> _credit,
-    const string& n) 
+    const optional<string>& n) 
   : credit(_credit), taskMap(l->getModel()->getLevels()), knownTiles(l->getModel()->getLevels()),
     control(CollectiveControl::idle(this)),
     tribe(NOTNULL(t)), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
 }
 
-const string& Collective::getName() const {
-  return name;
+string Collective::getFullName() const {
+  if (name)
+    return getTribe()->getName() + " of " + *name;
+  else if (getLeader())
+    return getLeader()->getNameAndTitle();
+  else
+    return "";
+}
+
+string Collective::getShortName() const {
+  if (name)
+    return *name;
+  else if (getLeader())
+    return getLeader()->getFirstName().get_value_or(getLeader()->getName().bare());
+  else
+    return "";
+}
+
+string Collective::getTribeName() const {
+  if (name)
+    return getTribe()->getName();
+  else if (getLeader() && getLeader()->getFirstName())
+    return getLeader()->getSpeciesName();
+  else
+    return "";
 }
 
 Collective::~Collective() {
@@ -284,7 +308,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!traits[MinionTrait::FARM_ANIMAL])
     c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
   if (creatures.empty())
-    traits.insert(MinionTrait::LEADER);
+    leader = c;
   CHECK(c->getTribe() == tribe);
   creatures.push_back(c);
   for (MinionTrait t : traits)
@@ -359,17 +383,15 @@ void Collective::recruit(Creature* c, Collective* to) {
 }
 
 const Creature* Collective::getLeader() const {
-  if (byTrait[MinionTrait::LEADER].empty()) {
-    return nullptr;
-  } else
-    return getOnlyElement(byTrait[MinionTrait::LEADER]);
+  return leader;
 }
 
 Creature* Collective::getLeader() {
-  if (byTrait[MinionTrait::LEADER].empty())
-    return nullptr;
-  else
-    return getOnlyElement(byTrait[MinionTrait::LEADER]);
+  return leader;
+}
+
+bool Collective::hasLeader() const {
+  return leader && !leader->isDead();
 }
 
 Level* Collective::getLevel() {
@@ -439,7 +461,7 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
     taskMap->takeTask(c, closest);
     return closest->getMove(c);
   } else {
-    if (config->getWorkerFollowLeader() && getLeader() && getAllSquares().empty()) {
+    if (config->getWorkerFollowLeader() && hasLeader() && getAllSquares().empty()) {
       Position leaderPos = getLeader()->getPosition();
       if (leaderPos.dist8(c->getPosition()) < 3)
         return NoMove;
@@ -626,7 +648,7 @@ vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) {
 }
 
 bool Collective::isConquered() const {
-  return getCreaturesAnyOf({MinionTrait::FIGHTER, MinionTrait::LEADER}).empty();
+  return getCreatures({MinionTrait::FIGHTER}).empty() && !hasLeader();
 }
 
 void Collective::orderConsumption(Creature* consumer, Creature* who) {
@@ -760,14 +782,10 @@ void Collective::setControl(PCollectiveControl c) {
 
 void Collective::considerHealingLeader() {
   if (Deity* deity = Deity::getDeity(EpithetId::HEALTH))
-    if (getStanding(deity) > 0)
-      if (Random.rollD(5 / getStanding(deity))) {
-        if (Creature* leader = getLeader())
-          if (leader->getHealth() < 1) {
-            leader->you(MsgType::ARE, "healed by " + deity->getName());
-            leader->heal(1, true);
-          }
-      }
+    if (getStanding(deity) > 0 && Random.rollD(5 / getStanding(deity)) && hasLeader() && leader->getHealth() < 1) {
+      leader->you(MsgType::ARE, "healed by " + deity->getName());
+      leader->heal(1, true);
+    }
 }
 
 vector<Position> Collective::getExtendedTiles(int maxRadius, int minRadius) const {
@@ -1016,7 +1034,7 @@ double Collective::getImmigrantChance(const ImmigrantInfo& info) {
 }
 
 void Collective::considerImmigration() {
-  if (getPopulationSize() >= getMaxPopulation() || !getLeader())
+  if (getPopulationSize() >= getMaxPopulation() || !hasLeader())
     return;
   vector<double> weights;
   bool ok = false;
@@ -1317,7 +1335,7 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
     if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer)
       && prisonerInfo.at(victim).state == PrisonerState::EXECUTE)
       returnResource({ResourceId::PRISONER_HEAD, 1});
-    if (hasTrait(victim, MinionTrait::LEADER))
+    if (victim == leader)
       getLevel()->getModel()->onKilledLeader(this, victim);
     if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
       decreaseMoraleForKill(killer, victim);
@@ -2274,10 +2292,10 @@ void Collective::acquireTech(Technology* tech, bool free) {
   technologies.push_back(tech->getId());
   if (free)
     ++numFreeTech;
-  for (auto elem : spellLearning)
-    if (Technology::get(elem.techId) == tech)
-      if (Creature* leader = getLeader())
-        leader->addSpell(Spell::get(elem.id));
+  if (hasLeader())
+    for (auto elem : spellLearning)
+      if (Technology::get(elem.techId) == tech)
+        getLeader()->addSpell(Spell::get(elem.id));
 }
 
 vector<Technology*> Collective::getTechnologies() const {

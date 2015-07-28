@@ -34,6 +34,7 @@ class Tribe {
   const string& getName() const;
   void addEnemy(vector<Tribe*>);
   void addFriend(Tribe*);
+  bool isDiplomatic() const;
 
   void onMemberKilled(Creature* member, Creature* killer);
   void onMemberAttacked(Creature* member, Creature* attacker);

@@ -408,6 +408,18 @@ class RandomGen {
     return v;
   }
 
+  template <typename T>
+  vector<T> chooseN(int n, vector<T> v) {
+    CHECK(n <= v.size());
+    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    return getPrefix(v, n);
+  }
+
+  template <typename T>
+  vector<T> chooseN(int n, initializer_list<T> v) {
+    return chooseN(n, vector<T>(v));
+  }
+
   private:
   default_random_engine generator;
   std::uniform_real_distribution<double> defaultDist;

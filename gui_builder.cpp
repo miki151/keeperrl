@@ -1203,11 +1203,12 @@ PGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageAction acti
 
 PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
   vector<PGuiElem> lines;
-  for (auto& elem : info.villages) {
+  for (int i : All(info.villages)) {
+    auto& elem = info.villages[i];
     lines.push_back(gui.label(capitalFirst(elem.name) + " (" + elem.tribeName + ")", colors[ColorId::WHITE]));
     lines.push_back(gui.margins(getVillageStateLabel(elem.state), 40, 0, 0, 0));
-    for (int i : All(elem.actions))
-      lines.push_back(gui.margins(getVillageActionButton(i, elem.actions[i]), 40, 0, 0, 0));
+    for (auto action : elem.actions)
+      lines.push_back(gui.margins(getVillageActionButton(i, action), 40, 0, 0, 0));
   }
   return gui.verticalList(std::move(lines), legendLineHeight);
 }

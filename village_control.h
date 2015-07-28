@@ -56,11 +56,6 @@ class VillageControl : public CollectiveControl {
   typedef VillageBehaviour Behaviour;
   typedef AttackTrigger Trigger;
 
-  enum AttackMessage {
-    CREATURE_TITLE,
-    TRIBE_AND_NAME,
-  };
-
   enum WelcomeMessage {
     DRAGON_WELCOME,
   };
@@ -76,9 +71,7 @@ class VillageControl : public CollectiveControl {
     vector<Trigger> SERIAL(triggers);
     vector<AttackPrerequisite> SERIAL(prerequisites);
     Behaviour SERIAL(behaviour);
-    AttackMessage SERIAL(attackMessage);
     optional<WelcomeMessage> SERIAL(welcomeMessage);
-    bool SERIAL(leaderAttacks) = false;
 
     PTask getAttackTask(VillageControl* self);
     double getAttackProbability(const VillageControl* self) const;
@@ -102,7 +95,6 @@ class VillageControl : public CollectiveControl {
   SERIALIZATION_DECL(VillageControl);
 
   private:
-  const string& getAttackMessage(const Villain&) const;
   string getAttackMessage(const Villain&, const vector<Creature*> attackers) const;
   void launchAttack(Villain&, vector<Creature*> attackers);
   optional<Villain&> getVillain(const Creature*);

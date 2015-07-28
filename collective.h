@@ -113,6 +113,7 @@ class Collective : public TaskCallback {
   double getEfficiency(const Creature*) const;
   const Creature* getLeader() const;
   Creature* getLeader();
+  bool hasLeader() const;
 
   const set<Position>& getSquares(SquareType) const;
   const set<Position>& getSquares(SquareApplyType) const;
@@ -254,7 +255,9 @@ class Collective : public TaskCallback {
   void freeTeamMembers(TeamId);
   void ownItems(const Creature* who, const vector<Item*>);
 
-  const string& getName() const;
+  string getFullName() const;
+  string getShortName() const;
+  string getTribeName() const;
 
   const TaskMap& getTaskMap() const;
 
@@ -279,7 +282,7 @@ class Collective : public TaskCallback {
 
   private:
   friend class CollectiveBuilder;
-  Collective(Level*, const CollectiveConfig&, Tribe*, EnumMap<ResourceId, int> credit, const string& name);
+  Collective(Level*, const CollectiveConfig&, Tribe*, EnumMap<ResourceId, int> credit, const optional<string>& name);
   void updateEfficiency(Position, SquareType);
   int getPaymentAmount(const Creature*) const;
   void makePayouts();
@@ -343,6 +346,7 @@ class Collective : public TaskCallback {
   void considerMoraleWarning();
   void decayMorale();
   vector<Creature*> SERIAL(creatures);
+  Creature* SERIAL(leader) = nullptr;
   EnumMap<MinionTrait, vector<Creature*>> SERIAL(byTrait);
   EnumMap<SpawnType, vector<Creature*>> SERIAL(bySpawnType);
   PCollectiveControl SERIAL(control);
@@ -392,7 +396,7 @@ class Collective : public TaskCallback {
   mutable vector<ItemFetchInfo> itemFetchInfo;
   HeapAllocated<CollectiveTeams> SERIAL(teams);
   set<const Location*> SERIAL(knownLocations);
-  string SERIAL(name);
+  optional<string> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
   vector<const Creature*> SERIAL(banished);
 };

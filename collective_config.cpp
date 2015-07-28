@@ -61,6 +61,15 @@ CollectiveConfig CollectiveConfig::noImmigrants() {
   return CollectiveConfig(0, 0, 0, {}, VILLAGE, 10000, {});
 }
 
+CollectiveConfig& CollectiveConfig::setLeaderAsFighter() {
+  leaderAsFighter = true;
+  return *this;
+}
+
+bool CollectiveConfig::isLeaderFighter() const {
+  return leaderAsFighter;
+}
+
 bool CollectiveConfig::getManageEquipment() const {
   return type == KEEPER;
 }
@@ -136,7 +145,8 @@ void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
     & SVAR(populationIncreases)
     & SVAR(immigrantInfo)
     & SVAR(type)
-    & SVAR(recruitingMinPopulation);
+    & SVAR(recruitingMinPopulation)
+    & SVAR(leaderAsFighter);
 }
 
 SERIALIZABLE(CollectiveConfig);

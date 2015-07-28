@@ -2,6 +2,8 @@
 #include "collective_builder.h"
 #include "collective.h"
 #include "location.h"
+#include "creature.h"
+#include "entity_name.h"
 
 CollectiveBuilder::CollectiveBuilder(CollectiveConfig cfg, Tribe* t)
     : config(cfg), tribe(t) {
@@ -12,8 +14,16 @@ CollectiveBuilder& CollectiveBuilder::setLevel(Level* l) {
   return *this;
 }
 
-CollectiveBuilder& CollectiveBuilder::addCreature(Creature* c, EnumSet<MinionTrait> trait) {
-  creatures.push_back({c, trait});
+CollectiveBuilder& CollectiveBuilder::setName(const string& n) {
+  name = n;
+  return *this;
+}
+
+CollectiveBuilder& CollectiveBuilder::addCreature(Creature* c) {
+  if (!c->isInnocent() && (!creatures.empty() || config.isLeaderFighter()))
+    creatures.push_back({c, {MinionTrait::FIGHTER}});
+  else
+    creatures.push_back({c, {}});
   return *this;
 }
 
@@ -33,7 +43,7 @@ CollectiveBuilder& CollectiveBuilder::addSquares(const vector<Position>& v) {
   return *this;
 }
 
-PCollective CollectiveBuilder::build(const string& name) {
+PCollective CollectiveBuilder::build() {
   Collective* c = new Collective(NOTNULL(level), config, tribe, credit, name);
   for (auto& elem : creatures)
     c->addCreature(elem.creature, elem.traits);

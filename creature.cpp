@@ -396,6 +396,7 @@ Level* Creature::getLevel() const {
 }
 
 Position Creature::getPosition() const {
+  CHECK(!isDead());
   return position;
 }
 
@@ -1643,13 +1644,13 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
     for (PItem& item : equipment->removeAllItems()) {
       position.dropItem(std::move(item));
     }
-  dead = true;
   if (dropInventory && dCorpse && isCorporal())
     dropCorpse();
   getLevel()->killCreature(this, attacker);
   if (isInnocent())
     getLevel()->getModel()->getStatistics().add(StatId::INNOCENT_KILLED);
   getLevel()->getModel()->getStatistics().add(StatId::DEATH);
+  dead = true;
 }
 
 bool Creature::isInnocent() const {
@@ -1662,8 +1663,8 @@ CreatureAction Creature::flyAway() const {
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " fly away";
     monsterMessage(getName().the() + " flies away.");
-    self->dead = true;
     getLevel()->killCreature(self, nullptr);
+    self->dead = true;
   });
 }
 
@@ -1671,8 +1672,8 @@ CreatureAction Creature::disappear() const {
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " disappears";
     monsterMessage(getName().the() + " disappears.");
-    self->dead = true;
     getLevel()->killCreature(self, nullptr);
+    self->dead = true;
   });
 }
 

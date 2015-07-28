@@ -1042,8 +1042,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::WING] = 2;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.name = NameGenerator::get(NameGeneratorId::DRAGON)->getNext();
-          c.speciesName = "green dragon";
+          c.firstName = NameGenerator::get(NameGeneratorId::DRAGON)->getNext();
+          c.name = "green dragon";
+          c.speciesName = "dragon";
           );
     case CreatureId::RED_DRAGON:
       return INHERIT(GREEN_DRAGON,
@@ -1052,7 +1053,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 47;
           c.fireCreature = true;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 0;
-          c.speciesName = "red dragon";
+          c.name = "red dragon";
           );
     case CreatureId::KNIGHT: 
       return CATTR(
@@ -1863,6 +1864,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 70;
           c.chatReactionFriendly = "curses all dungeons";
           c.chatReactionHostile = "\"Die!\"";
+          c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
           c.name = "elementalist";);
     case CreatureId::FIRE_ELEMENTAL:
       return INHERIT(FIRE_SPHERE,

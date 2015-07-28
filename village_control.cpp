@@ -35,8 +35,6 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
     & SVAR(triggers)
     & SVAR(prerequisites)
     & SVAR(behaviour)
-    & SVAR(leaderAttacks)
-    & SVAR(attackMessage)
     & SVAR(welcomeMessage);
 }
 
@@ -75,7 +73,7 @@ void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& ite
             ++stolenItemCount[villain->collective];
             myItems.erase(it);
           }
-        if (getCollective()->getLeader() && wasTheft) {
+        if (getCollective()->hasLeader() && wasTheft) {
           who->playerMessage(PlayerMessage("You are going to regret this", PlayerMessage::HIGH));
         }
     }
@@ -104,21 +102,22 @@ void VillageControl::considerCancellingAttack() {
 }
 
 void VillageControl::considerWelcomeMessage() {
-  if (Creature* leader = getCollective()->getLeader())
-    for (auto& villain : villains)
-      if (villain.welcomeMessage)
-        switch (*villain.welcomeMessage) {
-          case DRAGON_WELCOME:
-            for (Position pos : getCollective()->getAllSquares())
-              if (Creature* c = pos.getCreature())
-                if (c->isAffected(LastingEffect::INVISIBLE) && villain.contains(c) && c->isPlayer()
-                    && leader->canSee(c->getPosition().getCoord())) {
-                  c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
-                        "I hear your breath. Come along!\"", PlayerMessage::CRITICAL));
-                  villain.welcomeMessage.reset();
-                }
-            break;
-        }
+  if (!getCollective()->hasLeader())
+    return;
+  for (auto& villain : villains)
+    if (villain.welcomeMessage)
+      switch (*villain.welcomeMessage) {
+        case DRAGON_WELCOME:
+          for (Position pos : getCollective()->getAllSquares())
+            if (Creature* c = pos.getCreature())
+              if (c->isAffected(LastingEffect::INVISIBLE) && villain.contains(c) && c->isPlayer()
+                  && getCollective()->getLeader()->canSee(c->getPosition().getCoord())) {
+                c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
+                      "I hear your breath. Come along!\"", PlayerMessage::CRITICAL));
+                villain.welcomeMessage.reset();
+              }
+          break;
+      }
 }
 
 void VillageControl::tick(double time) {
@@ -139,14 +138,10 @@ void VillageControl::tick(double time) {
       double prob = villain.getAttackProbability(this) / updateFreq;
       if (prob > 0 && Random.roll(1 / prob)) {
         vector<Creature*> fighters;
-        if (villain.leaderAttacks)
-          fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::NO_AI_ATTACK});
-        else
-          fighters = getCollective()->getCreatures({MinionTrait::FIGHTER},
-              {MinionTrait::LEADER, MinionTrait::NO_AI_ATTACK});
+        fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::NO_AI_ATTACK});
         fighters = filter(fighters, [this] (const Creature* c) {
             return contains(getCollective()->getAllSquares(), c->getPosition()); });
-        Debug() << getCollective()->getName() << " fighters: " << int(fighters.size())
+        Debug() << getCollective()->getShortName() << " fighters: " << int(fighters.size())
           << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
         if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)
           continue;
@@ -172,17 +167,7 @@ PTask VillageControl::Villain::getAttackTask(VillageControl* self) {
 }
 
 string VillageControl::getAttackMessage(const Villain& villain, const vector<Creature*> attackers) const {
-  switch (villain.attackMessage) {
-    case CREATURE_TITLE:
-      return "You are under attack by " + attackers[0]->getNameAndTitle() + "!";
-    case TRIBE_AND_NAME:
-      if (getCollective()->getName().empty())
-        return "You are under attack by " + getCollective()->getTribe()->getName() + "!";
-      else
-        return "You are under attack by " + getCollective()->getTribe()->getName() + 
-            " of " + getCollective()->getName() + "!";
-  }
-  return "";
+  return "You are under attack by " + getCollective()->getFullName() + "!";
 }
 
 static double powerClosenessFun(double myPower, double hisPower) {

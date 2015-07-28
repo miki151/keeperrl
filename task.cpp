@@ -848,7 +848,7 @@ class AttackLeader : public NonTransferable {
   AttackLeader(Collective* col) : collective(col) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (!collective->getLeader())
+    if (!collective->hasLeader())
       return NoMove;
     return c->moveTowards(collective->getLeader()->getPosition());
   }
@@ -912,7 +912,7 @@ class CampAndSpawn : public NonTransferable {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (!target->getLeader() || campPos.empty()) {
+    if (!target->hasLeader() || campPos.empty()) {
       setDone();
       return NoMove;
     }
@@ -988,7 +988,7 @@ class KillFighters : public NonTransferable {
   KillFighters(Collective* col, int numC) : collective(col), numCreatures(numC) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    for (const Creature* target : collective->getCreaturesAnyOf({MinionTrait::FIGHTER, MinionTrait::LEADER}))
+    for (const Creature* target : collective->getCreatures(MinionTrait::FIGHTER))
       targets.insert(target);
     int numKilled = 0;
     for (const Creature* victim : c->getKills())
@@ -1002,7 +1002,7 @@ class KillFighters : public NonTransferable {
   }
 
   virtual string getDescription() const override {
-    return "Kill " + toString(numCreatures) + " minions of " + collective->getName();
+    return "Kill " + toString(numCreatures) + " minions of " + collective->getFullName();
   }
 
   template <class Archive> 

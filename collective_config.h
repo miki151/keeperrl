@@ -85,7 +85,9 @@ class CollectiveConfig {
   static CollectiveConfig noImmigrants();
 
   CollectiveConfig& allowRecruiting(int minPopulation);
+  CollectiveConfig& setLeaderAsFighter();
 
+  bool isLeaderFighter() const;
   bool getManageEquipment() const;
   bool getWorkerFollowLeader() const;
   double getImmigrantFrequency() const;
@@ -117,6 +119,7 @@ class CollectiveConfig {
   vector<ImmigrantInfo> SERIAL(immigrantInfo);
   CollectiveType SERIAL(type);
   optional<int> SERIAL(recruitingMinPopulation);
+  bool SERIAL(leaderAsFighter);
 };
 
 
