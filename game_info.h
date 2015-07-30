@@ -155,7 +155,9 @@ class PlayerInfo {
     CONTROL,
     RENAME,
     BANISH,
-    WHIP
+    WHIP,
+    EXECUTE,
+    TORTURE,
   };
   vector<Action> actions;
 };

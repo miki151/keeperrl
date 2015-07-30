@@ -369,7 +369,7 @@ class Collective : public TaskCallback {
   MoveInfo getAlarmMove(Creature* c);
   HeapAllocated<ConstructionMap> SERIAL(constructions);
   EntitySet<Item> SERIAL(markedItems);
-  set<Position> SERIAL(whippingPostsInUse);
+  set<Position> SERIAL(squaresInUse);
   ItemPredicate unMarkedItems() const;
   enum class PrisonerState { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE };
   struct PrisonerInfo;

@@ -494,6 +494,10 @@ vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
         if (getCollective()->canWhip(c))
           minions.back().actions.push_back(PlayerInfo::WHIP);
       }
+      if (getCollective()->hasTrait(c, MinionTrait::PRISONER)) {
+        minions.back().actions.push_back(PlayerInfo::EXECUTE);
+        minions.back().actions.push_back(PlayerInfo::TORTURE);
+      }
     }
   sort(minions.begin(), minions.end(), [] (const PlayerInfo& m1, const PlayerInfo& m2) {
         return m1.level > m2.level;
@@ -547,6 +551,12 @@ void PlayerControl::minionView(Creature* creature) {
           break;
         case 5:
           getCollective()->orderWhipping(c);
+          return;
+        case 6:
+          getCollective()->orderExecution(c);
+          return;
+        case 7:
+          getCollective()->orderTorture(c);
           return;
     }
   }
@@ -1696,15 +1706,6 @@ void PlayerControl::onTechBookRead(Technology* tech) {
   }
 }
 
-MoveInfo PlayerControl::getMove(Creature* c) {
-  if (c == getKeeper() && !getCollective()->getAllSquares().empty()
-      && getCollective()->getSquares(SquareId::LIBRARY).empty() // after library is built let him wander
-      && !getCollective()->containsSquare(c->getPosition()))
-    return c->moveTowards(Random.choose(getCollective()->getAllSquares()));
-  else
-    return NoMove;
-}
-
 void PlayerControl::addKeeper(Creature* c) {
   getCollective()->addCreature(c, {});
 }
@@ -1802,7 +1803,7 @@ void PlayerControl::updateVisibleCreatures() {
 
 vector<Vec2> PlayerControl::getVisibleEnemies() const {
   return transform2<Vec2>(filter(visibleEnemies,
-        [this](const Creature* c) { return c->getLevel() == getLevel(); }),
+        [this](const Creature* c) { return !c->isDead() && c->getLevel() == getLevel(); }),
       [](const Creature* c) { return c->getPosition().getCoord(); });
 }
 

@@ -31,7 +31,7 @@ Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
         removeTask(t);
   Task* closest = nullptr;
   for (PTask& task : tasks)
-    if (requiredTraits.count(task.get()) && requiredTraits.at(task.get()) == trait)
+    if (requiredTraits.count(task.get()) && requiredTraits.at(task.get()) == trait && task->canPerform(c))
       if (auto pos = getPosition(task.get())) {
         double dist = pos->dist8(c->getPosition());
         const Creature* owner = getOwner(task.get());

@@ -37,6 +37,7 @@ class Task : public UniqueEntity<Task> {
   virtual bool canTransfer();
   virtual void cancel() {}
   virtual string getDescription() const = 0;
+  virtual bool canPerform(const Creature* c) { return true; }
   bool isDone();
 
   static PTask construction(TaskCallback*, Position, const SquareType&);

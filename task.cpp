@@ -569,14 +569,22 @@ class Kill : public NonTransferable {
       case ATTACK: return c->attack(creature);
       case TORTURE: return c->torture(creature);
     }
-    return CreatureAction();
   }
 
   virtual string getDescription() const override {
-    return "Kill " + creature->getName().bare();
+    switch (type) {
+      case ATTACK: return return "Kill " + creature->getName().bare();
+      case TORTURE: return return "Torture " + creature->getName().bare();
+    }
+    
+  }
+
+  virtual bool canPerform(const Creature* c) override {
+    return c != creature;
   }
 
   virtual MoveInfo getMove(Creature* c) override {
+    CHECK(c != creature);
     if (creature->isDead()) {
       setDone();
       return NoMove;
@@ -622,6 +630,10 @@ namespace {
 class Sacrifice : public NonTransferable {
   public:
   Sacrifice(TaskCallback* call, Creature* c) : creature(c), callback(call) {}
+
+  virtual bool canPerform(const Creature* c) override {
+    return c != creature;
+  }
 
   virtual MoveInfo getMove(Creature* c) override {
     if (creature->isDead()) {
@@ -1350,6 +1362,10 @@ class Whipping : public NonTransferable {
 
   virtual void cancel() override {
     callback->onWhippingDone(whipped, position);
+  }
+
+  virtual bool canPerform(const Creature* c) override {
+    return c != whipped;
   }
 
   virtual MoveInfo getMove(Creature* c) override {

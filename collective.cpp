@@ -120,7 +120,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(config)
     & SVAR(warnings)
     & SVAR(banished)
-    & SVAR(whippingPostsInUse);
+    & SVAR(squaresInUse);
 }
 
 SERIALIZABLE(Collective);
@@ -739,8 +739,6 @@ MoveInfo Collective::getMove(Creature* c) {
     if (taskMap->isPriorityTask(task))
       return task->getMove(c);
   if (MoveInfo move = getTeamMemberMove(c))
-    return move;
-  if (MoveInfo move = control->getMove(c))
     return move;
   if (hasTrait(c, MinionTrait::WORKER))
     return getWorkerMove(c);
@@ -1732,19 +1730,20 @@ void Collective::clearPrisonerTask(Creature* prisoner) {
 }
 
 void Collective::orderExecution(Creature* c) {
-  if (prisonerInfo.at(c).state == PrisonerState::EXECUTE)
-    return;
-  clearPrisonerTask(c);
-  prisonerInfo.at(c) = {PrisonerState::EXECUTE, 0};
-  setMinionTask(c, MinionTask::EXECUTE);
+  taskMap->addTask(Task::kill(this, c), c->getPosition(), MinionTrait::FIGHTER);
+  setTask(c, Task::goToAndWait(c->getPosition(), getTime() + 100));
 }
 
 void Collective::orderTorture(Creature* c) {
-  if (prisonerInfo.at(c).state == PrisonerState::TORTURE)
+  vector<Position> posts = getAllSquares({SquareId::TORTURE_TABLE}, true);
+  for (Position p : squaresInUse)
+    removeElement(posts, p);
+  if (posts.empty())
     return;
-  clearPrisonerTask(c);
-  prisonerInfo.at(c) = {PrisonerState::TORTURE, 0};
-  setMinionTask(c, MinionTask::TORTURE);
+  Position pos = Random.choose(posts);
+  squaresInUse.insert(pos);
+  taskMap->addTask(Task::torture(this, c), pos, MinionTrait::FIGHTER);
+  setTask(c, Task::goToAndWait(pos, getTime() + 100));
 }
 
 void Collective::orderSacrifice(Creature* c) {
@@ -1757,7 +1756,7 @@ void Collective::orderSacrifice(Creature* c) {
 
 void Collective::onWhippingDone(Creature* whipped, Position pos) {
   cancelTask(whipped);
-  whippingPostsInUse.erase(pos);
+  squaresInUse.erase(pos);
 }
 
 bool Collective::canWhip(Creature* c) const {
@@ -1768,12 +1767,12 @@ void Collective::orderWhipping(Creature* whipped) {
   if (!canWhip(whipped))
     return;
   set<Position> posts = getSquares(SquareId::WHIPPING_POST);
-  for (Position p : whippingPostsInUse)
+  for (Position p : squaresInUse)
     posts.erase(p);
   if (posts.empty())
     return;
   Position pos = Random.choose(posts);
-  whippingPostsInUse.insert(pos);
+  squaresInUse.insert(pos);
   taskMap->addTask(Task::whipping(this, pos, whipped, 100, getTime() + 100), pos, MinionTrait::FIGHTER);
   setTask(whipped, Task::goToAndWait(pos, getTime() + 100));
 }

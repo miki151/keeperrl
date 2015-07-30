@@ -152,10 +152,6 @@ void VillageControl::tick(double time) {
     }
 }
 
-MoveInfo VillageControl::getMove(Creature* c) {
-  return NoMove;
-}
-
 PTask VillageControl::Villain::getAttackTask(VillageControl* self) {
   switch (behaviour.getId()) {
     case VillageBehaviourId::KILL_LEADER: return Task::attackLeader(collective);

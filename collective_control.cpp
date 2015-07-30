@@ -28,11 +28,6 @@ const vector<Creature*>& CollectiveControl::getCreatures() const {
   return getCollective()->getCreatures();
 }
 
-MoveInfo CollectiveControl::getMove(Creature*) {
-  return NoMove;
-}
-
-
 void CollectiveControl::onMemberKilled(const Creature* victim, const Creature* killer) {
 }
 
