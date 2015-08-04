@@ -1581,6 +1581,7 @@ void Creature::heal(double amount, bool replaceLimbs) {
 }
 
 void Creature::bleed(double severity) {
+  CHECK_RANGE(severity, 0, 1000000, getName().bare());
   updateViewObject();
   health -= severity;
   updateViewObject();
