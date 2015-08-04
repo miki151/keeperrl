@@ -924,6 +924,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     gameInfo.collectiveInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});*/
   gameInfo.villageInfo.villages.clear();
   for (const Collective* col : model->getMainVillains())
+    if (getCollective()->isKnownVillain(col))
     gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
   Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
@@ -1112,9 +1113,9 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
 optional<Vec2> PlayerControl::getPosition(bool force) const {
   if (force) {
     if (const Creature* keeper = getKeeper())
-      return keeper->getPosition().getCoord();
-    else
-      return Vec2(0, 0);
+      if (!keeper->isDead())
+        return keeper->getPosition().getCoord();
+    return Vec2(0, 0);
   } else {
     if (!scrollPos.empty()) {
       Vec2 ret = scrollPos.front();

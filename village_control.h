@@ -88,7 +88,6 @@ class VillageControl : public CollectiveControl {
 
   protected:
   virtual void tick(double time) override;
-  virtual MoveInfo getMove(Creature*);
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
 

@@ -116,6 +116,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(minionAttraction)
     & SVAR(teams)
     & SVAR(knownLocations)
+    & SVAR(knownVillains)
     & SVAR(name)
     & SVAR(config)
     & SVAR(warnings)
@@ -1225,8 +1226,8 @@ void Collective::tick(double time) {
       for (auto elem : copyOf(prisonerInfo))
         if (elem.second.state == PrisonerState::SURRENDER) {
           Creature* c = elem.first;
-          Position pos = c->getPosition();
-          if (containsSquare(pos) && !c->isDead()) {
+          if (containsSquare(c->getPosition()) && !c->isDead()) {
+            Position pos = c->getPosition();
             PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
                   MonsterAIFactory::collective(this));
             if (pos.canEnterEmpty(prisoner.get())) {
@@ -2112,6 +2113,10 @@ void Collective::onCantPickItem(EntitySet<Item> items) {
     unmarkItem(id);
 }
 
+bool Collective::isKnownVillain(const Collective* col) {
+  return knownVillains.count(col);
+}
+
 void Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
     if (const Location* loc = pos.getLocation())
@@ -2124,6 +2129,9 @@ void Collective::addKnownTile(Position pos) {
       if (Task* task = taskMap->getMarked(pos))
         if (task->isImpossible(getLevel()))
           taskMap->removeTask(task);
+    for (const Collective* col : level->getModel()->getMainVillains())
+      if (col->containsSquare(pos))
+        knownVillains.insert(col);
   }
 }
 

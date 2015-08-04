@@ -573,8 +573,8 @@ class Kill : public NonTransferable {
 
   virtual string getDescription() const override {
     switch (type) {
-      case ATTACK: return return "Kill " + creature->getName().bare();
-      case TORTURE: return return "Torture " + creature->getName().bare();
+      case ATTACK: return "Kill " + creature->getName().bare();
+      case TORTURE: return "Torture " + creature->getName().bare();
     }
     
   }
