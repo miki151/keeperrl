@@ -425,7 +425,7 @@ void PlayerControl::addConsumableItem(Creature* creature) {
         return getCollective()->getMinionEquipment().getOwner(it) != creature && !it->canEquip()
         && getCollective()->getMinionEquipment().needs(creature, it, true); }, &scrollPos);
     if (chosenItem)
-      getCollective()->getMinionEquipment().own(creature, chosenItem);
+      getCollective()->ownItem(creature, chosenItem);
     else
       break;
   }
@@ -443,7 +443,7 @@ void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
         || creature->isEquipmentAppropriate(chosenItem)
         || model->getView()->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " +
           creature->getName().the() + ", and will incur an accuracy penaulty.\n Do you want to continue?"))
-      getCollective()->getMinionEquipment().own(creature, chosenItem);
+      getCollective()->ownItem(creature, chosenItem);
   }
 }
 

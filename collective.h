@@ -83,6 +83,7 @@ class Collective : public TaskCallback {
   void cancelTask(const Creature*);
   void banishCreature(Creature*);
   bool wasBanished(const Creature*) const;
+  void ownItem(const Creature*, const Item*);
 
   typedef CollectiveWarning Warning;
   typedef CollectiveResourceId ResourceId;
@@ -401,6 +402,7 @@ class Collective : public TaskCallback {
   optional<string> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
   vector<const Creature*> SERIAL(banished);
+  EntitySet<Creature> SERIAL(equipmentUpdates);
 };
 
 #endif

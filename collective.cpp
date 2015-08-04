@@ -121,7 +121,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(config)
     & SVAR(warnings)
     & SVAR(banished)
-    & SVAR(squaresInUse);
+    & SVAR(squaresInUse)
+    & SVAR(equipmentUpdates);
 }
 
 SERIALIZABLE(Collective);
@@ -661,9 +662,15 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
   taskMap->addTask(Task::consume(this, who), consumer);
 }
 
+void Collective::ownItem(const Creature* c, const Item* it) {
+  minionEquipment->own(c, it);
+  equipmentUpdates.insert(c);
+}
+
 PTask Collective::getEquipmentTask(Creature* c) {
-  if (!Random.roll(20))
+  if (!Random.roll(20) && !equipmentUpdates.contains(c))
     return nullptr;
+  equipmentUpdates.erase(c);
   autoEquipment(c, Random.roll(10));
   vector<PTask> tasks;
   for (Item* it : c->getEquipment().getItems())
