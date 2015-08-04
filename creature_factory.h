@@ -53,6 +53,7 @@ RICH_ENUM(CreatureId,
     RED_DRAGON,
     CYCLOPS,
     WITCH,
+    WITCHMAN,
 
     CLAY_GOLEM,
     STONE_GOLEM,

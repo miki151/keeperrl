@@ -1014,6 +1014,21 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionFriendly = "curses all humans";
           c.chatReactionHostile = "\"Die!\"";
           c.name = EntityName("witch", "witches"););
+    case CreatureId::WITCHMAN: 
+      return CATTR(
+          c.viewId = ViewId::WITCHMAN;
+          c.attr[AttrType::SPEED] = 140;
+          c.size = CreatureSize::MEDIUM;
+          c.attr[AttrType::STRENGTH] = 20;
+          c.attr[AttrType::DEXTERITY] = 20;
+          c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
+          c.barehandedDamage = 6;
+          c.humanoid = true;
+          c.weight = 100;
+          c.gender = Gender::male;
+          c.chatReactionFriendly = "curses all monsters";
+          c.chatReactionHostile = "\"Die!\"";
+          c.name = EntityName("witchman", "witchmen"););
     case CreatureId::CYCLOPS: 
       return CATTR(
           c.viewId = ViewId::CYCLOPS;
@@ -2069,6 +2084,14 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(randomHealing())
         .add(ItemId::GOLD_PIECE, Random.get(20, 50));
     case CreatureId::CASTLE_GUARD:
+    case CreatureId::WITCHMAN:
+      return ItemList()
+        .add(ItemId::SWORD)
+        .add(ItemId::LEATHER_ARMOR)
+        .add(ItemId::LEATHER_BOOTS)
+        .add(randomHealing())
+        .add({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SPEED}}, 4)
+        .add(ItemId::GOLD_PIECE, Random.get(350, 500));
     case CreatureId::KNIGHT: 
       return ItemList()
         .add(ItemId::SWORD)
@@ -2146,7 +2169,7 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::MUMMY_LORD: 
       return ItemList()
         .add(ItemId::GOLD_PIECE, Random.get(100, 200)).add(
-          Random.choose({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER, ItemId::SPECIAL_SWORD}, {1, 1, 1}));
+            Random.choose({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER, ItemId::SPECIAL_SWORD}));
     case CreatureId::WITCH: 
       return ItemList()
         .add(ItemId::KNIFE)
