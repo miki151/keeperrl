@@ -63,25 +63,6 @@ View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
   return new ReplayView(ifs, new WindowView(params));
 }
 
-class TempClockPause {
-  public:
-  TempClockPause(Clock* c) : clock(c) {
-    if (!clock->isPaused()) {
-      clock->pause();
-      cont = true;
-    }
-  }
-
-  ~TempClockPause() {
-    if (cont)
-      clock->cont();
-  }
-
-  private:
-  Clock* clock;
-  bool cont = false;
-};
-
 int rightBarWidthCollective = 330;
 int rightBarWidthPlayer = 330;
 int bottomBarHeightCollective = 62;
@@ -445,7 +426,7 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
   CHECK(currentThreadId() == renderThreadId);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     return concat({mapGui}, extractRefs(tempGuiElems));
-  vector<GuiElem*> ret = extractRefs(tempGuiElems);
+  vector<GuiElem*> ret = concat(extractRefs(tempGuiElems), extractRefs(blockingElems));
   if (gameReady)
     ret = concat(concat({mapGui}, ret), {minimapDecoration.get(), minimapGui});
   return ret;
@@ -455,7 +436,7 @@ vector<GuiElem*> WindowView::getClickableGuiElems() {
   CHECK(currentThreadId() == renderThreadId);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     return {mapGui};
-  vector<GuiElem*> ret = extractRefs(tempGuiElems);
+  vector<GuiElem*> ret = concat(extractRefs(tempGuiElems), extractRefs(blockingElems));
   reverse(ret.begin(), ret.end());
   if (gameReady) {
     ret.push_back(minimapGui);
@@ -786,51 +767,11 @@ optional<int> WindowView::chooseItem(const vector<PlayerInfo>& minions, UniqueEn
   return returnQueue.pop();
 }
 
-static Rectangle getCreatureMenuPosition(int height) {
-  return Rectangle(rightBarWidthCollective + 30, 80, rightBarWidthCollective + 360, height + 80);
-}
-
 optional<UniqueEntity<Creature>::Id> WindowView::chooseRecruit(const string& title, pair<ViewId, int> budget,
     const vector<CreatureInfo>& creatures, double* scrollPos) {
-  RenderLock lock(renderMutex);
-  uiLock = true;
-  TempClockPause pause(clock);
   SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
-  addReturnDialog<optional<UniqueEntity<Creature>::Id>>(returnQueue, [=] ()-> optional<UniqueEntity<Creature>::Id> {
-    optional<optional<UniqueEntity<Creature>::Id>> retVal;
-    int titleExtraSpace = 10;
-    GuiFactory::ListBuilder lines(gui, guiBuilder.getStandardLineHeight());
-    lines.addElem(GuiFactory::ListBuilder(gui)
-        .addElemAuto(gui.label(title))
-        .addBackElemAuto(guiBuilder.drawCost(budget)).buildHorizontalList(),
-      guiBuilder.getStandardLineHeight() + titleExtraSpace);
-    for (PGuiElem& elem : guiBuilder.drawRecruitMenu(creatures,
-        [&retVal] (optional<UniqueEntity<Creature>::Id> a) { retVal = a;}, budget.second))
-      lines.addElem(std::move(elem));
-    int menuHeight = lines.getSize() + 30;
-    PGuiElem menu = gui.stack(gui.reverseButton([&retVal] { retVal = optional<UniqueEntity<Creature>::Id>(none); }),
-        gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos),
-        15, 15, 15, 15)));
-    PGuiElem bg2 = gui.darken();
-    bg2->setBounds(renderer.getSize());
-    while (1) {
-      refreshScreen(false);
-      menu->setBounds(getCreatureMenuPosition(menuHeight));
-      bg2->render(renderer);
-      menu->render(renderer);
-      renderer.drawAndClearBuffer();
-      Event event;
-      while (renderer.pollEvent(event)) {
-        propagateEvent(event, {menu.get()});
-        if (retVal)
-          return *retVal;
-        if (considerResizeEvent(event))
-          continue;
-      }
-    }
-  });
-  lock.unlock();
-  return returnQueue.pop();
+  return getBlockingGui(returnQueue, guiBuilder.drawRecruitMenu(returnQueue, title, budget, creatures, scrollPos),
+      Vec2(rightBarWidthCollective + 30, 80));
 }
 
 PGuiElem WindowView::drawGameChoices(optional<GameTypeChoice>& choice,optional<GameTypeChoice>& index) {

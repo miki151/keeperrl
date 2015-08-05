@@ -35,7 +35,9 @@ class GuiElem {
   virtual bool onKeyPressed2(Event::KeyEvent) { return false;}
   virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
   virtual optional<int> getPreferredWidth() { return none; }
+  virtual optional<int> getPreferredHeight() { return none; }
 
+  void setPreferredBounds(Vec2 origin);
   void setBounds(Rectangle);
   Rectangle getBounds();
 
@@ -77,6 +79,7 @@ class GuiFactory {
     PGuiElem buildVerticalList();
     PGuiElem buildHorizontalList();
     int getSize() const;
+    bool isEmpty() const;
 
     private:
     GuiFactory& gui;
@@ -94,6 +97,7 @@ class GuiFactory {
   PGuiElem horizontalListFit(vector<PGuiElem>, double spacing = 0);
   PGuiElem verticalAspect(PGuiElem, double ratio);
   PGuiElem empty();
+  PGuiElem preferredSize(int width, int height);
   enum MarginType { TOP, LEFT, RIGHT, BOTTOM};
   PGuiElem margin(PGuiElem top, PGuiElem rest, int height, MarginType);
   PGuiElem margin(PGuiElem top, PGuiElem rest, function<int(Rectangle)> width, MarginType type);

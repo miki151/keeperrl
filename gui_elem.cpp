@@ -34,6 +34,10 @@ void GuiElem::setBounds(Rectangle b) {
   onRefreshBounds();
 }
 
+void GuiElem::setPreferredBounds(Vec2 origin) {
+  setBounds(Rectangle(origin, origin + Vec2(*getPreferredWidth(), *getPreferredHeight())));
+}
+
 GuiElem::~GuiElem() {
 }
 
@@ -168,19 +172,22 @@ PGuiElem GuiFactory::stopMouseMovement() {
 class DrawCustom : public GuiElem {
   public:
   typedef function<void(Renderer&, Rectangle)> DrawFun;
-  DrawCustom(DrawFun draw, optional<int> width = none) : drawFun(draw), preferredWidth(width) {}
+  DrawCustom(DrawFun draw, function<int()> width = nullptr) : drawFun(draw), preferredWidth(width) {}
 
   virtual void render(Renderer& renderer) override {
     drawFun(renderer, getBounds());
   }
 
   virtual optional<int> getPreferredWidth() override {
-    return preferredWidth;
+    if (preferredWidth)
+      return preferredWidth();
+    else
+      return none;
   }
 
   private:
   DrawFun drawFun;
-  optional<int> preferredWidth;
+  function<int()> preferredWidth;
 };
 
 PGuiElem GuiFactory::rectangle(Color color, optional<Color> borderColor) {
@@ -291,7 +298,7 @@ PGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFli
 }
 
 PGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
-  int width = renderer.getTextLength(s);
+  auto width = [=] { return renderer.getTextLength(s); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
@@ -301,7 +308,7 @@ PGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
 }
 
 PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun) {
-  int width = renderer.getTextLength(s);
+  auto width = [=] { return renderer.getTextLength(s); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
@@ -311,7 +318,7 @@ PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun) {
 }
 
 PGuiElem GuiFactory::label(const string& s, int size, Color c) {
-  int width = renderer.getTextLength(s);
+  auto width = [=] { return renderer.getTextLength(s); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
@@ -361,10 +368,11 @@ PGuiElem GuiFactory::labelUnicode(const String& s, Color color, int size, Render
 }
 
 PGuiElem GuiFactory::labelUnicode(const String& s, function<Color()> color, int size, Renderer::FontId fontId) {
+  auto width = [=] { return renderer.getUnicodeLength(s); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(fontId, size, color(), bounds.getTopLeft().x, bounds.getTopLeft().y, s);
-        }));
+        }, width));
 }
 
 class MainMenuLabel : public GuiElem {
@@ -477,6 +485,14 @@ class GuiLayout : public GuiElem {
       if (auto width = elems[i]->getPreferredWidth())
         if (getElemBounds(i) == getBounds())
           return *width;
+    return none;
+  }
+
+  virtual optional<int> getPreferredHeight() {
+    for (int i : All(elems))
+      if (auto height = elems[i]->getPreferredHeight())
+        if (getElemBounds(i) == getBounds())
+          return *height;
     return none;
   }
 
@@ -672,6 +688,10 @@ class VerticalList : public GuiLayout {
     return none;
   }
 
+  optional<int> getPreferredHeight() override {
+    return getTotalHeight();
+  }
+
   int getSize() {
     return heights.size();
   }
@@ -728,6 +748,10 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addBackElem(PGuiElem elem, int
 
 int GuiFactory::ListBuilder::getSize() const {
   return std::accumulate(sizes.begin(), sizes.end(), 0);
+}
+
+bool GuiFactory::ListBuilder::isEmpty() const {
+  return sizes.empty();
 }
 
 PGuiElem GuiFactory::ListBuilder::buildVerticalList() {
@@ -806,6 +830,14 @@ class HorizontalList : public VerticalList {
     return Rectangle(getBounds().getTopLeft() + Vec2(height, 0), getBounds().getBottomLeft() 
         + Vec2(height + heights[num], 0));
   }
+
+  optional<int> getPreferredHeight() override {
+    for (auto& elem : elems)
+      if (auto height = elem->getPreferredHeight())
+        return height;
+    return none;
+  }
+
 
   optional<int> getPreferredWidth() override {
     return getTotalHeight();
@@ -1004,6 +1036,13 @@ class Margins : public GuiLayout {
       return none;
   }
 
+  optional<int> getPreferredHeight() override {
+    if (auto height = elems[0]->getPreferredHeight())
+      return top + *height + bottom;
+    else
+      return none;
+  }
+
   private:
   int left;
   int top;
@@ -1051,6 +1090,30 @@ class Switchable : public GuiLayout {
   private:
   function<int()> switchFun;
 };
+
+namespace {
+
+class PreferredSize : public GuiElem {
+  public:
+  PreferredSize(Vec2 sz) : size(sz) {}
+
+  virtual optional<int> getPreferredWidth() override {
+    return size.x;
+  }
+  
+  virtual optional<int> getPreferredHeight() override {
+    return size.y;
+  }
+
+  private:
+  Vec2 size;
+};
+
+}
+
+PGuiElem GuiFactory::preferredSize(int width, int height) {
+  return PGuiElem(new PreferredSize(Vec2(width, height)));
+}
 
 PGuiElem GuiFactory::empty() {
   return PGuiElem(new GuiElem());
@@ -1749,7 +1812,9 @@ PGuiElem GuiFactory::mainMenuLabelBg(const string& s, double vPadding, Color col
 }
 
 PGuiElem GuiFactory::darken() {
-  return rectangle(Color(0, 0, 0, 150));
+  return stack(
+      stopMouseMovement(),
+      rectangle(Color(0, 0, 0, 150)));
 }
 
 void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {

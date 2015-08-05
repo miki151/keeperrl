@@ -33,13 +33,16 @@ Color transparency(const Color& color, int trans) {
   return Color(color.r, color.g, color.b, trans);
 }
 
-int Renderer::getTextLength(string s) {
-  CHECK(currentThreadId() == *renderThreadId);
+int Renderer::getUnicodeLength(String s, FontId font) {
   static Text t;
-  t.setFont(textFont);
+  t.setFont(getFont(font));
   t.setCharacterSize(textSize);
-  t.setString(toUnicode(s));
+  t.setString(s);
   return t.getLocalBounds().width;
+}
+
+int Renderer::getTextLength(string s) {
+  return getUnicodeLength(toUnicode(s), FontId::TEXT_FONT);
 }
 
 Font& Renderer::getFont(Renderer::FontId id) {

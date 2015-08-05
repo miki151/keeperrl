@@ -1161,22 +1161,18 @@ void GuiBuilder::drawMessages(vector<OverlayInfo>& ret,
   int lineHeight = 20;
   vector<PGuiElem> lines;
   for (int i : All(messages)) {
-    vector<PGuiElem> line;
-    vector<int> lengths;
+    GuiFactory::ListBuilder line(gui);
     for (auto& message : messages[i]) {
-      string text = (line.empty() ? "" : " ") + message.getText();
+      string text = (line.isEmpty() ? "" : " ") + message.getText();
       cutToFit(renderer, text, maxMessageLength - 2 * hMargin);
-      line.push_back(gui.stack(
+      line.addElemAuto(gui.stack(
             gui.button(getButtonCallback(UserInput(UserInputId::MESSAGE_INFO, message.getUniqueId()))),
             gui.label(text, getMessageColor(message))));
-      lengths.push_back(renderer.getTextLength(text));
-      if (message.isClickable()) {
-        line.push_back(gui.labelUnicode(String(L'➚'), getMessageColor(message)));
-        lengths.push_back(messageArrowLength);
-      }
+      if (message.isClickable())
+        line.addElemAuto(gui.labelUnicode(String(L'➚'), getMessageColor(message)));
     }
     if (!messages[i].empty())
-      lines.push_back(gui.horizontalList(std::move(line), lengths));
+      lines.push_back(line.buildHorizontalList());
   }
   if (!lines.empty())
     ret.push_back({gui.translucentBackground(
@@ -1391,8 +1387,7 @@ PGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions,
     auto minionId = minions[i].creatureId;
     auto colorFun = [&current, minionId] { return colors[current == minionId ? ColorId::GREEN : ColorId::WHITE];};
     GuiFactory::ListBuilder line(gui);
-    line.addElem(gui.label(minions[i].getFirstName(), colorFun),
-        renderer.getTextLength(minions[i].getFirstName()) + 5);
+    line.addElemAuto(gui.rightMargin(5, gui.label(minions[i].getFirstName(), colorFun)));
     if (auto icon = getMoraleIcon(minions[i].morale))
       line.addElem(gui.topMargin(-2, gui.icon(*icon)), 20);
     line.addBackElem(gui.label("L:" + toString(minions[i].level), colorFun), 42);
@@ -1479,7 +1474,8 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion, MinionMenuCall
                       retAction.lock.toggle(task.task);
                     }),
                     gui.labelUnicode(String(L'✓'), [&retAction, task] {
-                        return colors[(retAction.lock[task.task] ^ task.locked) ? ColorId::LIGHT_GRAY : ColorId::GREEN];}))), 175));
+                        return colors[(retAction.lock[task.task] ^ task.locked) ?
+                            ColorId::LIGHT_GRAY : ColorId::GREEN];}))), 175));
           }
           drawMiniMenu(std::move(tasks), exit, bounds.getBottomLeft(), 200);
           callback(MinionAction{retAction});
@@ -1642,8 +1638,26 @@ static vector<CreatureMapElem> getRecruitStacks(const vector<CreatureInfo>& crea
   return getValues(creatureMap);
 }
 
+PGuiElem GuiBuilder::drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
+    pair<ViewId, int> budget, const vector<CreatureInfo>& creatures, double* scrollPos) {
+  int titleExtraSpace = 10;
+  GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
+  lines.addElem(GuiFactory::ListBuilder(gui)
+      .addElemAuto(gui.label(title))
+      .addBackElemAuto(drawCost(budget)).buildHorizontalList(),
+     getStandardLineHeight() + titleExtraSpace);
+  for (PGuiElem& elem : drawRecruitList(creatures,
+        [&queue] (optional<UniqueEntity<Creature>::Id> a) { queue.push(a);}, budget.second))
+    lines.addElem(std::move(elem));
+  int menuHeight = lines.getSize() + 30;
+  return gui.stack(
+      gui.preferredSize(330, menuHeight),
+      gui.reverseButton([&queue] { queue.push(none); }),
+      gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos),
+          15, 15, 15, 15)));
+}
 
-vector<PGuiElem> GuiBuilder::drawRecruitMenu(const vector<CreatureInfo>& creatures,
+vector<PGuiElem> GuiBuilder::drawRecruitList(const vector<CreatureInfo>& creatures,
     CreatureMenuCallback callback, int budget) {
   vector<CreatureMapElem> stacks = getRecruitStacks(creatures);
   vector<PGuiElem> lines;

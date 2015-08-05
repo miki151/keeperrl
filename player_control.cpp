@@ -925,7 +925,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.villageInfo.villages.clear();
   for (const Collective* col : model->getMainVillains())
     if (getCollective()->isKnownVillain(col))
-    gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
+      gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
   Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
   gameInfo.infoType = GameInfo::InfoType::BAND;

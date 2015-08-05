@@ -22,6 +22,7 @@
 #include "input_queue.h"
 #include "animation.h"
 #include "gui_builder.h"
+#include "clock.h"
 
 class ViewIndex;
 class Options;
@@ -139,6 +140,7 @@ class WindowView: public View {
   PGuiElem mapDecoration;
   PGuiElem minimapDecoration;
   vector<PGuiElem> tempGuiElems;
+  vector<PGuiElem> blockingElems;
   vector<GuiElem*> getAllGuiElems();
   vector<GuiElem*> getClickableGuiElems();
   SyncQueue<UserInput> inputQueue;
@@ -178,6 +180,41 @@ class WindowView: public View {
     });
     if (currentThreadId() == renderThreadId)
       renderDialog.top()();
+  }
+  class TempClockPause {
+    public:
+    TempClockPause(Clock* c) : clock(c) {
+      if (!clock->isPaused()) {
+        clock->pause();
+        cont = true;
+      }
+    }
+
+    ~TempClockPause() {
+      if (cont)
+        clock->cont();
+    }
+
+    private:
+    Clock* clock;
+    bool cont = false;
+  };
+
+  template<typename T>
+  T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, Vec2 origin) {
+    RenderLock lock(renderMutex);
+    TempClockPause pause(clock);
+    if (blockingElems.empty()) {
+      blockingElems.push_back(gui.darken());
+      blockingElems.back()->setBounds(renderer.getSize());
+    }
+    blockingElems.push_back(std::move(elem));
+    blockingElems.back()->setPreferredBounds(origin);
+    lock.unlock();
+    T ret = queue.pop();
+    lock.lock();
+    blockingElems.clear();
+    return ret;
   }
   atomic<bool> splashDone;
   bool useTiles;
