@@ -83,7 +83,6 @@ class Position {
   void allowMovementForTribe(const Tribe*);
   bool isTribeForbidden(const Tribe*) const;
   const Tribe* getForbiddenTribe() const;
-  void onKilled(Creature* victim, Creature* attacker);
   void addPoisonGas(double amount);
   double getPoisonGasAmount() const;
   CoverInfo getCoverInfo() const;

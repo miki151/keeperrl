@@ -86,7 +86,7 @@ void testValueCheck() {
 }
 
 void testSplit() {
-  vector<string> v = { "pok", "pokpok", "pok" };
+  vector<string> v = { "pok", "pokpok", "", "pok" };
   vector<string> w = { "po", ";po", "po", ";;po", ";" };
   CHECK(split("pok;pokpok;;pok;", {';'}) == v) << split("pok;pokpok;;pok;", {';'});
   CHECK(split("pok;pokpok;;pok;", {'k'}) == w) << split("pok;pokpok;;pok;", {'k'});

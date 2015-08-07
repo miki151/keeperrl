@@ -126,6 +126,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool isBlind() const;
   bool isBleeding() const;
   const Creature* getLastAttacker() const;
+  optional<string> getDeathReason() const;
   vector<const Creature*> getKills() const;
   bool isHumanoid() const;
   bool isAnimal() const;
@@ -237,6 +238,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   bool atTarget() const;
   void die(Creature* attacker = nullptr, bool dropInventory = true, bool dropCorpse = true);
+  void die(const string& reason, bool dropInventory = true, bool dropCorpse = true);
   void bleed(double severity);
   void setOnFire(double amount);
   void poisonWithGas(double amount);
@@ -330,6 +332,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool SERIAL(collapsed) = false;
   bool SERIAL(hidden) = false;
   Creature* SERIAL(lastAttacker) = nullptr;
+  optional<string> SERIAL(deathReason);
   int SERIAL(swapPositionCooldown) = 0;
   vector<const Creature*> SERIAL(unknownAttacker);
   vector<const Creature*> SERIAL(privateEnemies);

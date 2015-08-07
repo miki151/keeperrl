@@ -472,9 +472,6 @@ const Creature* Square::getCreature() const {
   return creature;
 }
 
-void Square::onKilled(Creature* victim, Creature* attacker) {
-}
-
 void Square::removeCreature() {
   setDirty();
   CHECK(creature);

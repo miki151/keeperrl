@@ -77,6 +77,7 @@ class WindowView: public View {
       const vector<ItemInfo>& items, double* scrollpos) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, pair<ViewId, int> budget,
       const vector<CreatureInfo>&, double* scrollPos) override;
+  virtual void presentHighscores(const vector<HighscoreList>&);
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
   virtual int getTimeMilli() override;
@@ -199,6 +200,8 @@ class WindowView: public View {
     Clock* clock;
     bool cont = false;
   };
+
+  void getBlockingGui(Semaphore&, PGuiElem, Vec2 origin);
 
   template<typename T>
   T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, Vec2 origin) {

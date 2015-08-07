@@ -367,11 +367,6 @@ vector<Position> Position::getVisibleTiles(VisionId vision) {
     return {};
 }
 
-void Position::onKilled(Creature* victim, Creature* attacker) {
-  if (isInBounds())
-    getSquare()->onKilled(victim, attacker);
-}
-
 void Position::addPoisonGas(double amount) {
   if (isInBounds())
     getSquare()->addPoisonGas(amount);

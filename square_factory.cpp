@@ -86,7 +86,7 @@ class Magma : public Square {
     realMovement.setForced(false);
     if (!canEnterEmpty(realMovement)) {
       c->you(MsgType::BURN, getName());
-      c->die(nullptr, false);
+      c->die("burned to death", false);
     }
   }
 
@@ -120,7 +120,7 @@ class Water : public Square {
     realMovement.setForced(false);
     if (!canEnterEmpty(realMovement)) {
       c->you(MsgType::DROWN, getName());
-      c->die(nullptr, false);
+      c->die("drowned", false);
     }
   }
 
@@ -558,13 +558,13 @@ class Altar : public Square {
     return SquareApplyType::PRAY;
   }
 
-  virtual void onKilled(Creature* victim, Creature* killer) override {
+ /* virtual void onKilled(Creature* victim, Creature* killer) override {
     if (killer) {
       recentKiller = killer;
       recentVictim = victim;
       killTime = killer->getTime();
     }
-  }
+  }*/
 
   virtual void onPrayer(Creature* c) = 0;
   virtual void onSacrifice(Creature* c) = 0;

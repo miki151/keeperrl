@@ -614,7 +614,7 @@ void Player::moveAction(Vec2 dir) {
       action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());
-  if (!getCreature()->getPosition().plus(dir).canEnterEmpty(getCreature()))
+  else if (!getCreature()->getPosition().plus(dir).canEnterEmpty(getCreature()))
     tryToPerform(getCreature()->destroy(dir, Creature::BASH));
 }
 

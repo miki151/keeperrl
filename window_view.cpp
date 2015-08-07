@@ -423,6 +423,8 @@ void WindowView::rebuildGui() {
 }
 
 vector<GuiElem*> WindowView::getAllGuiElems() {
+  if (!gameReady)
+    return extractRefs(blockingElems);
   CHECK(currentThreadId() == renderThreadId);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     return concat({mapGui}, extractRefs(tempGuiElems));
@@ -523,18 +525,18 @@ void WindowView::refreshView() {
     return;
   {
     RenderLock lock(renderMutex);
-    if (!wasRendered)
+    if (!wasRendered && gameReady)
       rebuildGui();
     wasRendered = true;
     CHECK(currentThreadId() == renderThreadId);
-    if (gameReady)
+    if (gameReady || !blockingElems.empty())
       processEvents();
     if (!renderDialog.empty())
       renderDialog.top()();
-    if (uiLock && renderDialog.empty())
+    if (uiLock && renderDialog.empty() && blockingElems.empty())
       return;
   }
-  if (renderDialog.empty() && gameReady)
+  if ((renderDialog.empty() && gameReady) || !blockingElems.empty())
     refreshScreen(true);
 }
 
@@ -562,8 +564,7 @@ void WindowView::refreshScreen(bool flipBuffer) {
       else
         displayOldSplash();
     }
-    else
-      drawMap();
+    drawMap();
   }
   if (flipBuffer)
     renderer.drawAndClearBuffer();
@@ -772,6 +773,30 @@ optional<UniqueEntity<Creature>::Id> WindowView::chooseRecruit(const string& tit
   SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawRecruitMenu(returnQueue, title, budget, creatures, scrollPos),
       Vec2(rightBarWidthCollective + 30, 80));
+}
+
+void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, Vec2 origin) {
+  RenderLock lock(renderMutex);
+  TempClockPause pause(clock);
+  if (blockingElems.empty()) {
+    blockingElems.push_back(gui.darken());
+    blockingElems.back()->setBounds(renderer.getSize());
+  }
+  blockingElems.push_back(std::move(elem));
+  blockingElems.back()->setPreferredBounds(origin);
+  lock.unlock();
+  sem.p();
+  lock.lock();
+  blockingElems.clear();
+}
+
+void WindowView::presentHighscores(const vector<HighscoreList>& list) {
+  Semaphore sem;
+  int tabNum = 0;
+  bool online = false;
+  vector<double> scrollPos(list.size(), 0);
+  getBlockingGui(sem, guiBuilder.drawHighscores(list, sem, tabNum, scrollPos, online),
+      guiBuilder.getMenuPosition(MenuType::NORMAL).getTopLeft());
 }
 
 PGuiElem WindowView::drawGameChoices(optional<GameTypeChoice>& choice,optional<GameTypeChoice>& index) {

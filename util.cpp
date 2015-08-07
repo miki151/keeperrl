@@ -164,16 +164,21 @@ bool endsWith(const string& s, const string& suffix) {
 }
 
 vector<string> split(const string& s, const set<char>& delim) {
+  if (s.empty())
+    return {};
   int begin = 0;
   vector<string> ret;
   for (int i : Range(s.size() + 1))
     if (i == s.size() || delim.count(s[i])) {
       string tmp = s.substr(begin, i - begin);
-      if (!tmp.empty())
-        ret.push_back(tmp);
+      ret.push_back(tmp);
       begin = i + 1;
     }
   return ret;
+}
+
+vector<string> removeEmpty(const vector<string>& v) {
+  return filter(v, [] (const string& s) { return !s.empty(); });
 }
 
 template<>

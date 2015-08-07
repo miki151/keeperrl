@@ -140,6 +140,18 @@ enum class MenuType {
   YES_NO
 };
 
+struct HighscoreList {
+  string name;
+  enum SortBy { SCORE, TURNS } sortBy;
+  struct Elem {
+    string text;
+    int score;
+    int turns;
+    bool highlight;
+  };
+  vector<Elem> scores;
+};
+
 class View {
   public:
   View();
@@ -216,6 +228,8 @@ class View {
 
   virtual optional<int> chooseItem(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id& current,
       const vector<ItemInfo>& items, double* scrollpos) = 0;
+
+  virtual void presentHighscores(const vector<HighscoreList>&) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;

@@ -993,7 +993,7 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
 void PlayerControl::addImportantLongMessage(const string& msg, optional<Position> pos) {
   if (Creature* c = getControlled())
     c->playerMessage(PlayerMessage(msg, PlayerMessage::CRITICAL));
-  for (string s : split(msg, {'.'})) {
+  for (string s : removeEmpty(split(msg, {'.'}))) {
     trim(s);
     auto msg = PlayerMessage(s, PlayerMessage::CRITICAL);
     if (pos)
@@ -1726,7 +1726,7 @@ void PlayerControl::onConqueredLand() {
 
 void PlayerControl::onMemberKilled(const Creature* victim, const Creature* killer) {
   visibilityMap->remove(victim);
-  if (!getKeeper() && !retired && !model->isGameOver()) {
+  if (victim == getKeeper() && !retired && !model->isGameOver()) {
     model->gameOver(victim, getCollective()->getKills().size(), "enemies",
         getCollective()->getDangerLevel() + getCollective()->getPoints());
   }

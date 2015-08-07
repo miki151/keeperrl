@@ -78,6 +78,7 @@ class GuiFactory {
     ListBuilder& addBackElem(PGuiElem, int size = 0);
     PGuiElem buildVerticalList();
     PGuiElem buildHorizontalList();
+    PGuiElem buildHorizontalListFit();
     int getSize() const;
     bool isEmpty() const;
 
@@ -127,6 +128,7 @@ class GuiFactory {
   PGuiElem centerHoriz(PGuiElem, int width);
   PGuiElem mouseOverAction(function<void()> callback, function<void()> onLeaveCallback = nullptr);
   PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
+  PGuiElem mouseHighlightClick(PGuiElem highlight, int myIndex, int* highlighted);
   PGuiElem mouseHighlight2(PGuiElem highlight);
   PGuiElem mouseHighlightGameChoice(PGuiElem, GameTypeChoice my, optional<GameTypeChoice>& highlight);
   static int getHeldInitValue();
@@ -192,6 +194,7 @@ class GuiFactory {
   PGuiElem repeatedPattern(Texture& tex);
   PGuiElem background(Color);
   PGuiElem highlight(double height);
+  PGuiElem highlightDouble();
   PGuiElem mainMenuHighlight();
   PGuiElem insideBackground(PGuiElem content);
   PGuiElem window(PGuiElem content, function<void()> onExitButton);

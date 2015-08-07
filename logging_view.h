@@ -113,6 +113,9 @@ class LoggingView : public View {
       return logAndGet(delegate->getText(title, value, maxLength, hint), LoggingToken::GET_TEXT);
     }
 
+    virtual void presentHighscores(const vector<HighscoreList>&) override {
+    }
+
     virtual void initialize() override {
       delegate->initialize();
     }

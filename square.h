@@ -219,7 +219,6 @@ class Square : public Renderable {
   virtual void onApply(Creature* c) { Debug(FATAL) << "Bad square applied"; }
   virtual double getApplyTime() const { return 1.0; }
   optional<SquareApplyType> getApplyType(const Creature*) const;
-  virtual void onKilled(Creature* victim, Creature* attacker);
 
   void forbidMovementForTribe(const Tribe*);
   void allowMovementForTribe(const Tribe*);

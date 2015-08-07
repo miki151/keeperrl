@@ -340,12 +340,10 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
   }
 }
 
-void Level::killCreature(Creature* creature, Creature* attacker) {
+void Level::killCreature(Creature* creature) {
   bucketMap->removeElement(creature->getPosition().getCoord(), creature);
   eraseCreature(creature);
-  creature->getPosition().onKilled(creature, attacker);
   creature->getPosition().removeCreature();
-  model->killCreature(creature, attacker);
 }
 
 const static int hearingRange = 30;

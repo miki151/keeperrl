@@ -1678,6 +1678,57 @@ vector<PGuiElem> GuiBuilder::drawRecruitList(const vector<CreatureInfo>& creatur
   return lines;
 }
 
+PGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, double *scrollPos) {
+  GuiFactory::ListBuilder lines(gui, legendLineHeight);
+  for (auto& elem : page.scores) {
+    GuiFactory::ListBuilder line(gui);
+    ColorId color = elem.highlight ? ColorId::GREEN : ColorId::WHITE;
+    line.addElemAuto(gui.label(elem.text, colors[color]));
+    if (page.sortBy == page.SCORE)
+      line.addBackElem(gui.label(toString(elem.score) + " points", colors[color]), 100);
+    else
+      line.addBackElem(gui.label(toString(elem.turns) + " turns", colors[color]), 100);
+    lines.addElem(gui.leftMargin(30, line.buildHorizontalList()));
+  }
+  return gui.scrollable(lines.buildVerticalList(), scrollPos);
+}
+
+PGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore& sem, int& tabNum,
+    vector<double>& scrollPos, bool& online) {
+  vector<PGuiElem> pages;
+  int numTabs = list.size() / 2;
+  GuiFactory::ListBuilder topLine(gui, 200);
+  for (int i : All(list)) {
+    for (int j : All(list[i].scores))
+      if (list[i].scores[j].highlight) {
+        if (i < numTabs)
+          tabNum = i;
+        scrollPos[i] = j;
+      }
+    pages.push_back(gui.conditional(drawHighscorePage(list[i], &scrollPos[i]),
+          [&tabNum, i, &online, numTabs] (GuiElem*) { return (online && tabNum == i - numTabs) ||
+              (!online && tabNum == i) ; }));
+    if (i < numTabs)
+    topLine.addElem(gui.stack(
+        gui.margins(gui.mouseHighlightClick(gui.mainMenuHighlight(), i, &tabNum), 32, 0, 32, 0),
+        gui.centeredLabel(Renderer::HOR, list[i].name),
+        gui.button([&tabNum, i] { tabNum = i;})));
+  }
+  PGuiElem onlineBut = gui.stack(
+      gui.label("Online", [&online] { return colors[online ? ColorId::GREEN : ColorId::WHITE];}),
+      gui.button([&online] { online = !online; }));
+  Vec2 size = getMenuPosition(MenuType::NORMAL).getSize();
+  return gui.stack(makeVec<PGuiElem>(gui.preferredSize(size.x, size.y),
+      gui.keyHandler([&tabNum, numTabs] { tabNum = (tabNum + 1) % numTabs; }, {{Keyboard::Right}}),
+      gui.keyHandler([&tabNum, numTabs] { tabNum = (tabNum + numTabs - 1) % numTabs; }, {{Keyboard::Left}}),
+      gui.window(
+        gui.margin(gui.leftMargin(25, std::move(onlineBut)),
+        gui.topMargin(30, gui.margin(gui.leftMargin(5, topLine.buildHorizontalListFit()),
+            gui.margins(gui.stack(std::move(pages)), 25, 60, 0, 30), legendLineHeight, GuiFactory::TOP)), legendLineHeight, GuiFactory::TOP),
+        [&] { sem.v(); })));
+  
+}
+
 Rectangle GuiBuilder::getTextInputPosition() {
   Vec2 center = renderer.getSize() / 2;
   return Rectangle(center - Vec2(300, 129), center + Vec2(300, 129));

@@ -1233,7 +1233,7 @@ void Collective::tick(double time) {
       for (auto elem : copyOf(prisonerInfo))
         if (elem.second.state == PrisonerState::SURRENDER) {
           Creature* c = elem.first;
-          if (containsSquare(c->getPosition()) && !c->isDead()) {
+          if (!c->isDead() && containsSquare(c->getPosition())) {
             Position pos = c->getPosition();
             PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
                   MonsterAIFactory::collective(this));

@@ -84,7 +84,7 @@ optional<string> FileSharing::uploadRetired(const string& path, ProgressMeter& m
 
 void FileSharing::uploadHighscores(const string& path) {
   progressFun = [] (double p) {};
-  curlUpload(path.c_str(), (uploadUrl + "/upload_scores.php").c_str());
+  curlUpload(path.c_str(), (uploadUrl + "/upload_scores2.php").c_str());
 }
 
 string FileSharing::downloadHighscores() {

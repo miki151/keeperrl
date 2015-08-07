@@ -64,6 +64,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(collapsed)
     & SVAR(hidden)
     & SVAR(lastAttacker)
+    & SVAR(deathReason)
     & SVAR(swapPositionCooldown)
     & SVAR(unknownAttacker)
     & SVAR(privateEnemies)
@@ -212,6 +213,14 @@ bool Creature::isDead() const {
 
 const Creature* Creature::getLastAttacker() const {
   return lastAttacker;
+}
+
+optional<string> Creature::getDeathReason() const {
+  if (deathReason)
+    return deathReason;
+  if (lastAttacker)
+    return "killed by " + lastAttacker->getName().a();
+  return none;
 }
 
 vector<const Creature*> Creature::getKills() const {
@@ -1634,6 +1643,11 @@ vector<PItem> Creature::getCorpse() {
         {getUniqueId(), true, numBodyParts(BodyPart::HEAD) > 0, false}));
 }
 
+void Creature::die(const string& reason, bool dropInventory, bool dCorpse) {
+  deathReason = reason;
+  die(nullptr, dropInventory, dCorpse);
+}
+
 void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   CHECK(!dead);
   lastAttacker = attacker;
@@ -1647,7 +1661,8 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
     }
   if (dropInventory && dCorpse && isCorporal())
     dropCorpse();
-  getLevel()->killCreature(this, attacker);
+  getLevel()->killCreature(this);
+  getLevel()->getModel()->killCreature(this, attacker);
   if (isInnocent())
     getLevel()->getModel()->getStatistics().add(StatId::INNOCENT_KILLED);
   getLevel()->getModel()->getStatistics().add(StatId::DEATH);
@@ -1664,8 +1679,7 @@ CreatureAction Creature::flyAway() const {
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " fly away";
     monsterMessage(getName().the() + " flies away.");
-    getLevel()->killCreature(self, nullptr);
-    self->dead = true;
+    self->die(nullptr, false, false);
   });
 }
 
@@ -1673,8 +1687,7 @@ CreatureAction Creature::disappear() const {
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " disappears";
     monsterMessage(getName().the() + " disappears.");
-    getLevel()->killCreature(self, nullptr);
-    self->dead = true;
+    self->die(nullptr, false, false);
   });
 }
 

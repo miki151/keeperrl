@@ -90,6 +90,7 @@ string toLower(const string& s);
 bool endsWith(const string&, const string& suffix);
 
 vector<string> split(const string& s, const set<char>& delim);
+vector<string> removeEmpty(const vector<string>&);
 
 class Rectangle;
 class RandomGen;
@@ -306,7 +307,7 @@ template<> \
 class EnumInfo<Name> { \
   public:\
   static string getString(Name e) {\
-    static vector<string> names = split(#__VA_ARGS__, {' ', ','});\
+    static vector<string> names = removeEmpty(split(#__VA_ARGS__, {' ', ','}));\
     return names[int(e)];\
   }\
   enum Tmp { __VA_ARGS__, size};\

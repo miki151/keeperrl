@@ -25,6 +25,7 @@
 class Clock;
 struct MinionAction;
 class ListElem;
+struct HighscoreList;
 
 class GuiBuilder {
   public:
@@ -74,6 +75,8 @@ class GuiBuilder {
   PGuiElem drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos);
   PGuiElem drawCost(pair<ViewId, int>, ColorId = ColorId::WHITE);
+  PGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<double>& scrollPos,
+      bool& online);
   
   enum class CollectiveTab {
     BUILDINGS,
@@ -132,6 +135,7 @@ class GuiBuilder {
   PGuiElem getVillageActionButton(int villageIndex, VillageAction);
   PGuiElem getVillageStateLabel(VillageInfo::Village::State);
   vector<PGuiElem> drawRecruitList(const vector<CreatureInfo>&, CreatureMenuCallback, int budget);
+  PGuiElem drawHighscorePage(const HighscoreList&, double *scrollPos);
   int activeBuilding = 0;
   bool hideBuildingOverlay = false;
   int activeLibrary = -1;

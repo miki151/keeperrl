@@ -57,7 +57,6 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(playerCollective)
     & SVAR(won)
     & SVAR(addHero)
-    & SVAR(adventurer)
     & SVAR(currentTime)
     & SVAR(worldName)
     & SVAR(musicType)
@@ -443,7 +442,6 @@ void Model::landHeroPlayer() {
   if (!advName.empty())
     player->setFirstName(advName);
   CHECK(levels[0]->landCreature(StairKey::heroSpawn(), std::move(player))) << "No place to spawn player";
-  adventurer = true;
 }
 
 string Model::getGameDisplayName() const {
@@ -579,6 +577,9 @@ void Model::conquered(const string& title, vector<const Creature*> kills, int po
         c.gameId = getGameIdentifier();
         c.playerName = title;
         c.gameResult = "achieved world domination";
+        c.gameWon = true;
+        c.turns = getTime();
+        c.gameType = Highscores::Score::KEEPER;
   );
   highscores->add(score);
   highscores->present(view, score);
@@ -599,6 +600,9 @@ void Model::killedKeeper(const string& title, const string& keeper, const string
         c.gameId = getGameIdentifier();
         c.playerName = title;
         c.gameResult = "freed his land from " + keeper;
+        c.gameWon = true;
+        c.turns = getTime();
+        c.gameType = Highscores::Score::ADVENTURER;
   );
   highscores->add(score);
   highscores->present(view, score);
@@ -610,10 +614,8 @@ bool Model::isGameOver() const {
 
 void Model::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
   string text = "And so dies " + creature->getNameAndTitle();
-  string killer;
-  if (const Creature* c = creature->getLastAttacker()) {
-    killer = c->getName().a();
-    text += ", killed by " + killer;
+  if (auto reason = creature->getDeathReason()) {
+    text += ", " + *reason;
   }
   text += ". He killed " + toString(numKills) 
       + " " + enemiesString + " and scored " + toString(points) + " points.\n \n";
@@ -625,7 +627,11 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
         c.points = points;
         c.gameId = getGameIdentifier();
         c.playerName = *creature->getFirstName();
-        c.gameResult = (killer.empty() ? "" : "killed by " + killer);
+        c.gameResult = creature->getDeathReason().get_value_or("");
+        c.gameWon = false;
+        c.turns = getTime();
+        c.gameType = (!playerControl || playerControl->isRetired()) ? 
+            Highscores::Score::ADVENTURER : Highscores::Score::KEEPER;
   );
   highscores->add(score);
   highscores->present(view, score);

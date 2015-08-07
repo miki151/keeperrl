@@ -762,6 +762,10 @@ PGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
   return gui.horizontalList(std::move(elems), sizes, backElems);
 }
 
+PGuiElem GuiFactory::ListBuilder::buildHorizontalListFit() {
+  return gui.horizontalListFit(std::move(elems), 0);
+}
+
 PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, vector<int> heights, int numAlignBottom) {
   return PGuiElem(new VerticalList(std::move(e), heights, numAlignBottom));
 }
@@ -1189,10 +1193,25 @@ PGuiElem GuiFactory::mouseOverAction(function<void()> callback, function<void()>
   return PGuiElem(new MouseOverAction(callback, outCallback));
 }
 
-class MouseHighlight : public GuiLayout {
+class MouseHighlightBase : public GuiLayout {
   public:
-  MouseHighlight(PGuiElem h, int ind, int* highlight)
+  MouseHighlightBase(PGuiElem h, int ind, int* highlight)
     : GuiLayout(makeVec<PGuiElem>(std::move(h))), myIndex(ind), highlighted(highlight) {}
+
+  virtual void render(Renderer& r) override {
+    if (*highlighted == myIndex)
+      elems[0]->render(r);
+  }
+
+  protected:
+  int myIndex;
+  int* highlighted;
+  bool canTurnOff = false;
+};
+
+class MouseHighlight : public MouseHighlightBase {
+  public:
+  using MouseHighlightBase::MouseHighlightBase;
 
   virtual void onMouseGone() override {
     if (*highlighted == myIndex && canTurnOff) {
@@ -1211,16 +1230,22 @@ class MouseHighlight : public GuiLayout {
     }
     return false;
   }
+};
 
-  virtual void render(Renderer& r) override {
-    if (*highlighted == myIndex)
-      elems[0]->render(r);
+class MouseHighlightClick : public MouseHighlightBase {
+  public:
+  using MouseHighlightBase::MouseHighlightBase;
+
+  virtual bool onLeftClick(Vec2 pos) override {
+    if (pos.inRectangle(getBounds())) {
+      *highlighted = myIndex;
+      canTurnOff = true;
+    } else if (*highlighted == myIndex && canTurnOff) {
+      *highlighted = -1;
+      canTurnOff = false;
+    }
+    return false;
   }
-
-  private:
-  int myIndex;
-  int* highlighted;
-  bool canTurnOff = false;
 };
 
 class MouseHighlight2 : public GuiLayout {
@@ -1236,6 +1261,10 @@ class MouseHighlight2 : public GuiLayout {
 
 PGuiElem GuiFactory::mouseHighlight(PGuiElem elem, int myIndex, int* highlighted) {
   return PGuiElem(new MouseHighlight(std::move(elem), myIndex, highlighted));
+}
+
+PGuiElem GuiFactory::mouseHighlightClick(PGuiElem elem, int myIndex, int* highlighted) {
+  return PGuiElem(new MouseHighlightClick(std::move(elem), myIndex, highlighted));
 }
 
 class MouseHighlightGameChoice : public GuiLayout {
@@ -1687,6 +1716,12 @@ PGuiElem GuiFactory::highlight(double height) {
   return margins(sprite(get(TexId::MAIN_MENU_HIGHLIGHT), height), -25, 0, 0, 0);
 }
 
+PGuiElem GuiFactory::highlightDouble() {
+  return stack(
+      sprite(get(TexId::MAIN_MENU_HIGHLIGHT), Alignment::LEFT_CENTER),
+      sprite(get(TexId::MAIN_MENU_HIGHLIGHT), Alignment::RIGHT_CENTER, false, true));
+}
+
 PGuiElem GuiFactory::mainMenuHighlight() {
   return stack(
       sprite(get(TexId::MAIN_MENU_HIGHLIGHT), Alignment::LEFT_STRETCHED),
@@ -1738,7 +1773,7 @@ PGuiElem GuiFactory::miniWindow() {
 PGuiElem GuiFactory::window(PGuiElem content, function<void()> onExitButton) {
   return stack(makeVec<PGuiElem>(
         stopMouseMovement(),
-        alignment(button(onExitButton), Vec2(38, 38), Alignment::TOP_RIGHT),
+        alignment(button2(onExitButton, {sf::Keyboard::Escape}, true), Vec2(38, 38), Alignment::TOP_RIGHT),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
         margins(std::move(content), 20, 35, 30, 30),

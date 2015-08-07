@@ -168,7 +168,6 @@ class Model {
   PlayerControl* SERIAL(playerControl) = nullptr;
   bool SERIAL(won) = false;
   bool SERIAL(addHero) = false;
-  bool SERIAL(adventurer) = false;
   double SERIAL(currentTime) = 0;
   SunlightInfo sunlightInfo;
   double lastUpdate = -10;

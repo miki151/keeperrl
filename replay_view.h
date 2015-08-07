@@ -98,6 +98,9 @@ class ReplayView : public View {
       return readValue<optional<string>>(LoggingToken::GET_TEXT);
     }
 
+    virtual void presentHighscores(const vector<HighscoreList>&) override {
+    }
+
     virtual void initialize() override {
       if (delegate)
         delegate->initialize();
