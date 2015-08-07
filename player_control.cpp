@@ -1537,7 +1537,7 @@ void PlayerControl::addToMemory(Position pos) {
 
 void PlayerControl::checkKeeperDanger() {
   Creature* controlled = getControlled();
-  if (!retired && getKeeper() && controlled != getKeeper()) { 
+  if (!retired && !getKeeper()->isDead() && controlled != getKeeper()) { 
     if ((getKeeper()->wasInCombat(5) || getKeeper()->getHealth() < 1)
         && lastControlKeeperQuestion < getCollective()->getTime() - 50) {
       lastControlKeeperQuestion = getCollective()->getTime();
@@ -1592,7 +1592,7 @@ void PlayerControl::tick(double time) {
   if (startImpNum == -1)
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   checkKeeperDanger();
-  if (retired && getKeeper()) {
+  if (retired && !getKeeper()->isDead()) {
     if (const Creature* c = getLevel()->getPlayer())
       if (Random.roll(30) && !getCollective()->containsSquare(c->getPosition()))
         c->playerMessage("You sense horrible evil in the " + 
@@ -1716,7 +1716,7 @@ void PlayerControl::addImp(Creature* c) {
 }
 
 void PlayerControl::onConqueredLand() {
-  if (retired || !getKeeper())
+  if (retired || getKeeper()->isDead())
     return;
   model->conquered(*getKeeper()->getFirstName(), getCollective()->getKills(),
       getCollective()->getDangerLevel() + getCollective()->getPoints());

@@ -110,17 +110,18 @@ static vector<FileSharing::GameInfo> parseGames(const string& s) {
       break;
     Debug() << "Parsing " << string(buf);
     vector<string> fields = split(buf, {','});
-    if (fields.size() < 4)
+    if (fields.size() < 6)
       continue;
     Debug() << "Parsed " << fields;
-    ret.push_back({fields[0], fields[1], fromString<int>(fields[2]), fromString<int>(fields[3])});
+    ret.push_back({fields[0], fields[1], fromString<int>(fields[2]), fromString<int>(fields[3]),
+        fromString<int>(fields[4]), fromString<int>(fields[5])});
   }
   return ret;
 }
 
 vector<FileSharing::GameInfo> FileSharing::listGames() {
   if(CURL* curl = curl_easy_init()) {
-    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_games.php").c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_games2.php").c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
     string ret;

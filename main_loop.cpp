@@ -149,8 +149,15 @@ void MainLoop::eraseAutosave(Model* model) {
   remove(getSavePath(model, Model::GameType::AUTOSAVE).c_str());
 }
 
-void MainLoop::getSaveOptions(const vector<pair<Model::GameType, string>>& games,
-    vector<ListElem>& options, vector<SaveFileInfo>& allFiles) {
+static string getGameDesc(const FileSharing::GameInfo& game) {
+  if (game.totalGames > 0)
+    return toString(game.totalGames) + " games played, " + toString(game.wonGames) + " won";
+  else
+    return "";
+}
+
+void MainLoop::getSaveOptions(const vector<FileSharing::GameInfo>& onlineGames,
+    const vector<pair<Model::GameType, string>>& games, vector<ListElem>& options, vector<SaveFileInfo>& allFiles) {
   for (auto elem : games) {
     vector<SaveFileInfo> files = getSaveFiles(userPath, getSaveSuffix(elem.first));
     files = ::filter(files, [this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
@@ -158,18 +165,18 @@ void MainLoop::getSaveOptions(const vector<pair<Model::GameType, string>>& games
     if (!files.empty()) {
       options.emplace_back(elem.second, ListElem::TITLE);
       append(options, transform2<ListElem>(files,
-            [this] (const SaveFileInfo& info) {
+            [this, &onlineGames] (const SaveFileInfo& info) {
               auto nameAndVersion = getNameAndVersion(userPath + "/" + info.filename);
+              for (auto& elem : onlineGames)
+                if (elem.filename == info.filename)
+                  return ListElem(nameAndVersion->first, getGameDesc(elem));
               return ListElem(nameAndVersion->first, getDateString(info.date));}));
     }
   }
 }
 
-void MainLoop::getDownloadOptions(vector<ListElem>& options, vector<SaveFileInfo>& allFiles,
-    const string& title) {
-  vector<FileSharing::GameInfo> games = fileSharing->listGames();
-  sort(games.begin(), games.end(), [] (const FileSharing::GameInfo& a, const FileSharing::GameInfo& b) {
-      return a.time > b.time; });
+void MainLoop::getDownloadOptions(const vector<FileSharing::GameInfo>& games,
+    vector<ListElem>& options, vector<SaveFileInfo>& allFiles, const string& title) {
   options.emplace_back(title, ListElem::TITLE);
   for (FileSharing::GameInfo info : games)
     if (isCompatible(info.version)) {
@@ -181,7 +188,7 @@ void MainLoop::getDownloadOptions(vector<ListElem>& options, vector<SaveFileInfo
         }
       if (dup)
         continue;
-      options.emplace_back(info.displayName, getDateString(info.time));
+      options.emplace_back(info.displayName, getGameDesc(info));
       allFiles.push_back({info.filename, info.time, true});
     }
 }
@@ -392,10 +399,13 @@ bool MainLoop::downloadGame(const string& filename) {
 PModel MainLoop::adventurerGame() {
   vector<ListElem> elems;
   vector<SaveFileInfo> files;
-  getSaveOptions({
+  vector<FileSharing::GameInfo> games = fileSharing->listGames();
+  sort(games.begin(), games.end(), [] (const FileSharing::GameInfo& a, const FileSharing::GameInfo& b) {
+      return a.totalGames > b.totalGames || (a.totalGames == b.totalGames && a.time > b.time); });
+  getSaveOptions(games, {
       {Model::GameType::RETIRED_KEEPER, "Retired local games:"}}, elems, files);
   if (options->getBoolValue(OptionId::ONLINE))
-    getDownloadOptions(elems, files, "Retired online games:");
+    getDownloadOptions(games, elems, files, "Retired online games:");
   optional<SaveFileInfo> savedGame = chooseSaveFile(elems, files, "No retired games found.", view);
   if (savedGame) {
     if (savedGame->download)
@@ -410,7 +420,7 @@ PModel MainLoop::adventurerGame() {
 PModel MainLoop::loadPrevious(bool erase) {
   vector<ListElem> options;
   vector<SaveFileInfo> files;
-  getSaveOptions({
+  getSaveOptions({}, {
       {Model::GameType::AUTOSAVE, "Recovered games:"},
       {Model::GameType::KEEPER, "Keeper games:"},
       {Model::GameType::ADVENTURER, "Adventurer games:"}}, options, files);

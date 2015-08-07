@@ -4,6 +4,7 @@
 #include "util.h"
 #include "gzstream.h"
 #include "model.h"
+#include "file_sharing.h"
 
 class View;
 class Highscores;
@@ -32,10 +33,11 @@ class MainLoop {
   int getSaveVersion(const SaveFileInfo& save);
   void uploadFile(const string& path);
   void saveUI(PModel& model, Model::GameType type, SplashType splashType);
-  void getSaveOptions(const vector<pair<Model::GameType, string>>&,
+  void getSaveOptions(const vector<FileSharing::GameInfo>&, const vector<pair<Model::GameType, string>>&,
       vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
 
-  void getDownloadOptions(vector<ListElem>& options, vector<SaveFileInfo>& allFiles, const string& title);
+  void getDownloadOptions(const vector<FileSharing::GameInfo>&, vector<ListElem>& options,
+      vector<SaveFileInfo>& allFiles, const string& title);
 
   optional<SaveFileInfo> chooseSaveFile(const vector<ListElem>& options, const vector<SaveFileInfo>& allFiles,
       string noSaveMsg, View*);
