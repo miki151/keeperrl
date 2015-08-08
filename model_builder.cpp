@@ -502,13 +502,13 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet) {
     append(ret, getBanditCave(random, tribeSet));
   append(ret, getIslandVault(random, tribeSet));
   append(ret, getVaults(random, tribeSet));
+  append(ret, getHumanCastle(random, tribeSet));
   for (auto& infos : random.chooseN(random.get(5, 8), {
         getTower(random, tribeSet),
         getWarriorCastle(random, tribeSet),
         getLizardVillage(random, tribeSet),
         getElvenVillage(random, tribeSet),
         getDwarfTown(random, tribeSet),
-        getHumanCastle(random, tribeSet),
         getGreenDragon(random, tribeSet),
         getRedDragon(random, tribeSet),
         getCyclops(random, tribeSet),
