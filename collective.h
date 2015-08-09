@@ -22,6 +22,7 @@
 #include "resource_id.h"
 #include "square_type.h"
 
+class CollectiveAttack;
 class Creature;
 class CollectiveControl;
 class Tribe;
@@ -240,8 +241,8 @@ class Collective : public TaskCallback {
   void orderConsumption(Creature* consumer, Creature* who);
   vector<Creature*>getConsumptionTargets(Creature* consumer);
 
-  void addAssaultNotification(const Collective*, const vector<Creature*>&, const string& message);
-  void removeAssaultNotification(const Collective*);
+  void addAttack(const CollectiveAttack&);
+  void onRansomPaid();
 
   void onKilled(Creature* victim, Creature* killer);
   void onAlarm(Position);

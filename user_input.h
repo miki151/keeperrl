@@ -47,6 +47,8 @@ enum class UserInputId {
     SET_TEAM_LEADER,
     TECHNOLOGY,
     VILLAGE_ACTION,
+    PAY_RANSOM,
+    IGNORE_RANSOM,
 // turn-based actions
     MOVE,
     MOVE_TO,

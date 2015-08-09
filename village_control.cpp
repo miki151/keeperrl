@@ -23,6 +23,7 @@
 #include "tribe.h"
 #include "effect_type.h"
 #include "task.h"
+#include "collective_attack.h"
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
@@ -35,7 +36,8 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
     & SVAR(triggers)
     & SVAR(prerequisites)
     & SVAR(behaviour)
-    & SVAR(welcomeMessage);
+    & SVAR(welcomeMessage)
+    & SVAR(ransom);
 }
 
 VillageControl::VillageControl(Collective* col, vector<Villain> v) : CollectiveControl(col), villains(v) {
@@ -80,8 +82,12 @@ void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& ite
 }
 
 void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers) {
-  Debug() << getAttackMessage(villain, attackers);
-  villain.collective->addAssaultNotification(getCollective(), attackers, getAttackMessage(villain, attackers));
+  optional<int> ransom;
+  int hisGold = villain.collective->numResource(CollectiveResourceId::GOLD);
+  if (villain.ransom && hisGold >= villain.ransom->second)
+    ransom = max<int>(villain.ransom->second,
+        (Random.getDouble(villain.ransom->first * 0.6, villain.ransom->first * 1.5)) * hisGold);
+  villain.collective->addAttack(CollectiveAttack(getCollective(), attackers, ransom));
   TeamId team = getCollective()->getTeams().createPersistent(attackers);
   getCollective()->getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
@@ -98,6 +104,15 @@ void VillageControl::considerCancellingAttack() {
         getCollective()->cancelTask(c);
       getCollective()->getTeams().cancel(team);
     }
+  }
+}
+
+void VillageControl::onRansomPaid() {
+  for (auto team : getCollective()->getTeams().getAll()) {
+    vector<Creature*> members = getCollective()->getTeams().getMembers(team);
+    for (Creature* c : members)
+      getCollective()->cancelTask(c);
+    getCollective()->getTeams().cancel(team);
   }
 }
 
@@ -160,10 +175,6 @@ PTask VillageControl::Villain::getAttackTask(VillageControl* self) {
     case VillageBehaviourId::CAMP_AND_SPAWN: return Task::campAndSpawn(collective, self->getCollective(),
         behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
   }
-}
-
-string VillageControl::getAttackMessage(const Villain& villain, const vector<Creature*> attackers) const {
-  return "You are under attack by " + getCollective()->getFullName() + "!";
 }
 
 static double powerClosenessFun(double myPower, double hisPower) {

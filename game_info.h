@@ -82,6 +82,13 @@ class CollectiveInfo {
     bool priority;
   };
   vector<Task> taskMap;
+  
+  struct Ransom {
+    pair<ViewId, int> amount;
+    string attacker;
+    bool canAfford;
+  };
+  optional<Ransom> ransom;
 };
 
 struct ItemInfo {

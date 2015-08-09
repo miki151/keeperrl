@@ -54,6 +54,7 @@
 #include "monster_ai.h"
 #include "view.h"
 #include "view_index.h"
+#include "collective_attack.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -66,7 +67,8 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(retired)
     & SVAR(payoutWarning)
     & SVAR(surprises)
-    & SVAR(assaultNotifications)
+    & SVAR(newAttacks)
+    & SVAR(ransomAttacks)
     & SVAR(messages)
     & SVAR(currentWarning)
     & SVAR(hints)
@@ -313,6 +315,9 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
     if (loc->isMarkedAsSurprise())
       surprises.insert(loc->getMiddle());
   m->getOptions()->addTrigger(OptionId::SHOW_MAP, [&] (bool val) { seeEverything = val; });
+}
+
+PlayerControl::~PlayerControl() {
 }
 
 const int basicImpCost = 20;
@@ -918,6 +923,18 @@ void PlayerControl::handleRecruiting(Collective* ally) {
     getCollective()->addNewCreatureMessage(stack);
 }
 
+void PlayerControl::handleRansom(bool pay) {
+  if (ransomAttacks.empty())
+    return;
+  auto& ransom = ransomAttacks.front();
+  int amount = *ransom.getRansom();
+  if (pay && getCollective()->hasResource({ResourceId::GOLD, amount})) {
+    getCollective()->takeResource({ResourceId::GOLD, amount});
+    ransom.getAttacker()->onRansomPaid();
+  }
+  removeIndex(ransomAttacks, 0);
+}
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
  /* gameInfo.collectiveInfo.deities.clear();
   for (Deity* deity : Deity::getDeities())
@@ -983,6 +1000,11 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     if (const Creature *c = getCollective()->getTaskMap().getOwner(task))
       creature = c->getUniqueId();
     info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
+  }
+  for (auto& elem : ransomAttacks) {
+    info.ransom = {make_pair(ViewId::GOLD, *elem.getRansom()), elem.getAttacker()->getFullName(),
+        getCollective()->hasResource({ResourceId::GOLD, *elem.getRansom()})};
+    break;
   }
 }
 
@@ -1369,6 +1391,12 @@ void PlayerControl::processInput(View* view, UserInput input) {
             break;
         }
         }
+    case UserInputId::PAY_RANSOM:
+        handleRansom(true);
+        break;
+    case UserInputId::IGNORE_RANSOM:
+        handleRansom(false);
+        break;
     case UserInputId::BUTTON_RELEASE:
         if (rectSelection) {
           selection = rectSelection->deselect ? DESELECT : SELECT;
@@ -1625,12 +1653,21 @@ void PlayerControl::tick(double time) {
   if (!addedCreatures.empty()) {
     getCollective()->addNewCreatureMessage(addedCreatures);
   }
-  for (auto assault : copyOf(assaultNotifications))
-    for (const Creature* c : assault.second.creatures)
+  for (auto attack : copyOf(ransomAttacks))
+    for (const Creature* c : attack.getCreatures())
+      if (getCollective()->containsSquare(c->getPosition())) {
+        removeElement(ransomAttacks, attack);
+        break;
+      }
+  for (auto attack : copyOf(newAttacks))
+    for (const Creature* c : attack.getCreatures())
       if (canSee(c)) {
-        addImportantLongMessage(assault.second.message, c->getPosition());
-        assaultNotifications.erase(assault.first);
+        addImportantLongMessage("You are under attack by " + attack.getAttacker()->getFullName() + "!",
+            c->getPosition());
         model->setCurrentMusic(MusicType::BATTLE, true);
+        removeElement(newAttacks, attack);
+        if (attack.getRansom())
+          ransomAttacks.push_back(attack);
         break;
       }
   if (model->getOptions()->getBoolValue(OptionId::HINTS) && time > hintFrequency) {
@@ -1755,13 +1792,8 @@ void PlayerControl::uncoverRandomLocation() {
         getCollective()->addKnownTile(Position(v, getLevel()));*/
 }
 
-void PlayerControl::addAssaultNotification(const Collective* col, const vector<Creature*>& c, const string& message) {
-  assaultNotifications[col].creatures = c;
-  assaultNotifications[col].message = message;
-}
-
-void PlayerControl::removeAssaultNotification(const Collective* col) {
-  assaultNotifications.erase(col);
+void PlayerControl::addAttack(const CollectiveAttack& attack) {
+  newAttacks.push_back(attack);
 }
 
 void PlayerControl::onDiscoveredLocation(const Location* loc) {

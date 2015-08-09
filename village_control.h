@@ -72,6 +72,7 @@ class VillageControl : public CollectiveControl {
     vector<AttackPrerequisite> SERIAL(prerequisites);
     Behaviour SERIAL(behaviour);
     optional<WelcomeMessage> SERIAL(welcomeMessage);
+    optional<pair<double, int>> SERIAL(ransom);
 
     PTask getAttackTask(VillageControl* self);
     double getAttackProbability(const VillageControl* self) const;
@@ -90,11 +91,11 @@ class VillageControl : public CollectiveControl {
   virtual void tick(double time) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onRansomPaid() override;
 
   SERIALIZATION_DECL(VillageControl);
 
   private:
-  string getAttackMessage(const Villain&, const vector<Creature*> attackers) const;
   void launchAttack(Villain&, vector<Creature*> attackers);
   optional<Villain&> getVillain(const Creature*);
   void considerWelcomeMessage();

@@ -8,6 +8,7 @@ class Creature;
 class Collective;
 class Tribe;
 class SquareType;
+class CollectiveAttack;
 
 class CollectiveControl {
   public:
@@ -17,11 +18,11 @@ class CollectiveControl {
   virtual void onOtherKilled(const Creature* victim, const Creature* killer);
   virtual void update(Creature*);
   virtual void addMessage(const PlayerMessage&) {}
-  virtual void addAssaultNotification(const Collective*, const vector<Creature*>&, const string& message) {}
-  virtual void removeAssaultNotification(const Collective*) {}
+  virtual void addAttack(const CollectiveAttack&) {}
   virtual void onDiscoveredLocation(const Location*) {}
   virtual void onConstructed(Position, const SquareType&) {}
   virtual void onNoEnemies() {}
+  virtual void onRansomPaid() {}
 
   SERIALIZATION_DECL(CollectiveControl);
 

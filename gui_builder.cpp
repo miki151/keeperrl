@@ -1018,6 +1018,28 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info
 
 const int minionWindowWidth = 300;
 
+void GuiBuilder::drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInfo::Ransom& ransom) {
+  GuiFactory::ListBuilder lines(gui, legendLineHeight);
+  lines.addElem(gui.label(ransom.attacker + " demand " + toString(ransom.amount.second) 
+        + " gold for not attacking. Agree?"));
+  if (ransom.canAfford)
+    lines.addElem(gui.leftMargin(25, gui.stack(
+          gui.mouseHighlight2(gui.highlight(legendLineHeight)),
+          gui.button(getButtonCallback(UserInputId::PAY_RANSOM)),
+          gui.label("Yes"))));
+  else
+    lines.addElem(gui.leftMargin(25, gui.label("Yes", colors[ColorId::GRAY])));
+  lines.addElem(gui.leftMargin(25, gui.stack(
+        gui.mouseHighlight2(gui.highlight(legendLineHeight)),
+        gui.button(getButtonCallback(UserInputId::IGNORE_RANSOM)),
+        gui.label("No"))));
+  int margin = 20;
+  ret.push_back({gui.miniWindow(
+        gui.margins(lines.buildVerticalList(), margin, margin, margin, margin)),
+      Vec2(600 + 2 * margin, lines.getSize() + 2 * margin),
+      OverlayInfo::TOP_RIGHT});
+}
+
 void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
   if (showTasks) {
     drawTasksOverlay(ret, info);
@@ -1074,6 +1096,10 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
 }
 
 void GuiBuilder::drawBandOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
+  if (info.ransom) {
+    drawRansomOverlay(ret, *info.ransom);
+    return;
+  }
   switch (collectiveTab) {
     case CollectiveTab::MINIONS: return drawMinionsOverlay(ret, info);
     case CollectiveTab::BUILDINGS: return drawBuildingsOverlay(ret, info);

@@ -176,6 +176,7 @@ class GuiBuilder {
   PGuiElem getButtonLine(CollectiveInfo::Button, int num, int& active, CollectiveTab);
   void drawMinionsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   void drawTasksOverlay(vector<OverlayInfo>&, CollectiveInfo&);
+  void drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInfo::Ransom&);
   void drawBuildingsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;

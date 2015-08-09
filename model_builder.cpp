@@ -151,7 +151,8 @@ static vector<EnemyInfo> getTower(RandomGen& random, TribeSet& tribeSet) {
         c.minTeamSize = 1;
         c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE});
         c.behaviour = VillageBehaviour(VillageBehaviourId::CAMP_AND_SPAWN,
-          CreatureFactory::elementals(tribeSet.human.get()));)}, LevelInfo{ExtraLevelId::TOWER, towerKey})
+          CreatureFactory::elementals(tribeSet.human.get()));
+        c.ransom = make_pair(0.5, random.get(200, 400));)}, LevelInfo{ExtraLevelId::TOWER, towerKey})
   };
 }
 
@@ -202,7 +203,8 @@ static vector<EnemyInfo> getWarriorCastle(RandomGen& random, TribeSet& tribeSet)
           c.minTeamSize = 5;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
             AttackTriggerId::STOLEN_ITEMS);
-          c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);)})
+          c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
+          c.ransom = make_pair(0.8, random.get(500, 700));)})
   };
 }
 
@@ -282,7 +284,8 @@ static vector<EnemyInfo> getDwarfTown(RandomGen& random, TribeSet& tribeSet) {
           c.minTeamSize = 4;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
             AttackTriggerId::STOLEN_ITEMS);
-          c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 3);)})
+          c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 3);
+          c.ransom = make_pair(0.8, random.get(1200, 1600));)})
   };
 }
 
@@ -314,7 +317,8 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random, TribeSet& tribeSet) {
           c.minTeamSize = 10;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
             AttackTriggerId::STOLEN_ITEMS);
-          c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);)})
+          c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
+          c.ransom = make_pair(0.9, random.get(1400, 2000));)})
   };
 }
 
@@ -392,7 +396,8 @@ static vector<EnemyInfo> getBanditCave(RandomGen& random, TribeSet& tribeSet) {
           c.minPopulation = 0;
           c.minTeamSize = 3;
           c.triggers = LIST({AttackTriggerId::GOLD, 500});
-          c.behaviour = VillageBehaviour(VillageBehaviourId::STEAL_GOLD);)})
+          c.behaviour = VillageBehaviour(VillageBehaviourId::STEAL_GOLD);
+          c.ransom = make_pair(0.9, random.get(800, 1200));)})
   };
 }
 

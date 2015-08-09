@@ -40,6 +40,7 @@ struct MinionAction;
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
   PlayerControl(Collective*, Model*, Level*);
+  ~PlayerControl();
   void addImportantLongMessage(const string&, optional<Position> = none);
 
   void onConqueredLand();
@@ -98,8 +99,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   // from CollectiveControl
   virtual void update(Creature*) override;
-  virtual void addAssaultNotification(const Collective*, const vector<Creature*>&, const string& message) override;
-  virtual void removeAssaultNotification(const Collective*) override;
+  virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onDiscoveredLocation(const Location*) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
@@ -179,6 +179,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
   void handleRecruiting(Collective* ally);
+  void handleRansom(bool pay);
   static ViewObject getTrapObject(TrapType, bool built);
   void addToMemory(Position);
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
@@ -207,15 +208,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   unordered_set<Position> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
-  struct AssaultInfo {
-    string SERIAL(message);
-    vector<Creature*> SERIAL(creatures);
-    template<class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-      ar & SVAR(message) & SVAR(creatures);
-    }
-  };
-  map<const Collective*, AssaultInfo> SERIAL(assaultNotifications);
+  vector<CollectiveAttack> SERIAL(newAttacks);
+  vector<CollectiveAttack> SERIAL(ransomAttacks);
   struct CurrentWarningInfo {
     CollectiveWarning SERIAL(warning);
     double SERIAL(lastView);

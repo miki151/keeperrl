@@ -224,11 +224,11 @@ Collective::Collective(Level* l, const CollectiveConfig& cfg, Tribe* t, EnumMap<
 
 string Collective::getFullName() const {
   if (name)
-    return getTribe()->getName() + " of " + *name;
-  else if (getLeader())
+    return capitalFirst(getTribe()->getName()) + " of " + *name;
+  else if (getLeader() && getLeader()->getFirstName())
     return getLeader()->getNameAndTitle();
   else
-    return "";
+    return capitalFirst(getTribe()->getName());
 }
 
 string Collective::getShortName() const {
@@ -2332,6 +2332,10 @@ void Collective::onEquip(const Creature* c, const Item* it) {
   minionEquipment->own(c, it);
 }
 
+void Collective::onRansomPaid() {
+  control->onRansomPaid();
+}
+
 void Collective::ownItems(const Creature* who, const vector<Item*> items) {
   for (const Item* it : items)
     if (minionEquipment->isItemUseful(it))
@@ -2379,12 +2383,8 @@ int Collective::getNextPayoutTime() const {
   return nextPayoutTime;
 }
 
-void Collective::addAssaultNotification(const Collective* col, const vector<Creature*>& c, const string& message) {
-  control->addAssaultNotification(col, c, message);
-}
-
-void Collective::removeAssaultNotification(const Collective* col) {
-  control->removeAssaultNotification(col);
+void Collective::addAttack(const CollectiveAttack& attack) {
+  control->addAttack(attack);
 }
 
 CollectiveTeams& Collective::getTeams() {
