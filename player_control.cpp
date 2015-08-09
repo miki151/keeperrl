@@ -493,15 +493,15 @@ vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
       minions.back().creatureId = c->getUniqueId();
       if (getCollective()->usesEquipment(c))
         fillEquipment(c, minions.back());
-      minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
-      if (c != getCollective()->getLeader()) {
-        minions.back().actions.push_back(PlayerInfo::BANISH);
-        if (getCollective()->canWhip(c))
-          minions.back().actions.push_back(PlayerInfo::WHIP);
-      }
-      if (getCollective()->hasTrait(c, MinionTrait::PRISONER)) {
-        minions.back().actions.push_back(PlayerInfo::EXECUTE);
-        minions.back().actions.push_back(PlayerInfo::TORTURE);
+      if (getCollective()->hasTrait(c, MinionTrait::PRISONER))
+        minions.back().actions = { PlayerInfo::EXECUTE, PlayerInfo::TORTURE };
+      else {
+        minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
+        if (c != getCollective()->getLeader()) {
+          minions.back().actions.push_back(PlayerInfo::BANISH);
+          if (getCollective()->canWhip(c))
+            minions.back().actions.push_back(PlayerInfo::WHIP);
+        }
       }
     }
   sort(minions.begin(), minions.end(), [] (const PlayerInfo& m1, const PlayerInfo& m2) {
