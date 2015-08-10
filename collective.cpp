@@ -426,27 +426,6 @@ MoveInfo Collective::getDropItems(Creature *c) {
   return NoMove;
 }
 
-PTask Collective::getPrisonerTask(Creature* c) {
-  if (hasTrait(c, MinionTrait::FIGHTER) && c->getSpawnType() != SpawnType::DEMON && !c->hasSuicidalAttack())
-    for (auto& elem : prisonerInfo)
-      if (!elem.second.task) {
-        Creature* prisoner = elem.first;
-        PTask t;
-        switch (elem.second.state) {
-          case PrisonerState::EXECUTE: t = Task::kill(this, prisoner); break;
-          case PrisonerState::TORTURE: t = Task::torture(this, prisoner); break;
- //         case PrisonerState::SACRIFICE: t = Task::sacrifice(this, prisoner); break;
-          default: return nullptr;
-        }
-        if (t && t->getMove(c)) {
-          elem.second.task = t->getUniqueId();
-          return t;
-        } else
-          return nullptr;
-      }
-  return nullptr;
-}
-
 void Collective::onKillCancelled(Creature* c) {
   if (prisonerInfo.count(c))
     prisonerInfo.at(c).task = 0;
@@ -770,8 +749,6 @@ MoveInfo Collective::getMove(Creature* c) {
     if (PTask t = getEquipmentTask(c))
       if (t->getMove(c))
         return taskMap->addTask(std::move(t), c)->getMove(c);
-  if (PTask t = getPrisonerTask(c))
-    return taskMap->addTask(std::move(t), c)->getMove(c);
   if (PTask t = getStandardTask(c))
     if (t->getMove(c))
       return taskMap->addTask(std::move(t), c)->getMove(c);
@@ -1338,8 +1315,7 @@ void Collective::decreaseMoraleForBanishing(const Creature*) {
 
 void Collective::onKilled(Creature* victim, Creature* killer) {
   if (contains(creatures, victim)) {
-    if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer)
-      && prisonerInfo.at(victim).state == PrisonerState::EXECUTE)
+    if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer))
       returnResource({ResourceId::PRISONER_HEAD, 1});
     if (victim == leader)
       getLevel()->getModel()->onKilledLeader(this, victim);

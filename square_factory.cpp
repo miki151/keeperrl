@@ -1191,7 +1191,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.vision = VisionId::NORMAL;));
     case SquareId::GRAVE:
-        return new Grave(ViewObject(ViewId::GRAVE_OUTDOOR, ViewLayer::FLOOR, "Grave"), "grave");
+        return new Grave(ViewObject(ViewId::GRAVE, ViewLayer::FLOOR, "Grave"), "grave");
     case SquareId::DOOR:
         return new Door(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW),

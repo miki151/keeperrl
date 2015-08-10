@@ -272,7 +272,7 @@ class MeteorShower : public Trigger {
     Position targetPoint = position.plus(Vec2(Random.get(-areaWidth / 2, areaWidth / 2 + 1),
                      Random.get(-areaWidth / 2, areaWidth / 2 + 1)));
     Vec2 direction(Random.get(-1, 2), Random.get(-1, 2));
-    if (!targetPoint.isInBounds() || direction.length8() == 0)
+    if (!targetPoint.isValid() || direction.length8() == 0)
       return false;
     for (int i : Range(range + 1))
       if (!targetPoint.plus(direction * i).canEnter(MovementType({MovementTrait::WALK, MovementTrait::FLY})))

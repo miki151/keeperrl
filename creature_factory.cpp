@@ -1913,7 +1913,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.size = CreatureSize::HUGE;
           c.attr[AttrType::SPEED] = 30;
           c.attr[AttrType::STRENGTH] = 40;
-          c.attr[AttrType::DEXTERITY] = 14;
+          c.attr[AttrType::DEXTERITY] = 20;
           c.barehandedDamage = 0;
           c.skills.insert(SkillId::ELF_VISION);
           c.minionTasks.clear();

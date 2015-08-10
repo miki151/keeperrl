@@ -17,6 +17,7 @@ class Attack;
 class Position {
   public:
   Position(Vec2, Level*);
+  static Position invalid();
   static vector<Position> getAll(Level*, Rectangle);
   Vec2 getCoord() const;
   Level* getLevel() const;
@@ -28,7 +29,7 @@ class Position {
   void removeCreature();
   string getName() const;
   
-  bool isInBounds() const;
+  bool isValid() const;
   bool operator == (const Position&) const;
   bool operator != (const Position&) const;
   Position& operator = (const Position&);

@@ -549,8 +549,7 @@ class TileCoordLookup {
         .addBackground(byName("jeweler"))
         .setFloorBorders());
     Tile::addTile(ViewId::CEMETERY, sprite("graveyard").setFloorBorders());
-    Tile::addTile(ViewId::GRAVE, sprite("RIP").setNoShadow().addBackground(byName("graveyard")));
-    Tile::addTile(ViewId::GRAVE_OUTDOOR, sprite("RIP"));
+    Tile::addTile(ViewId::GRAVE, sprite("RIP").setNoShadow());
     Tile::addTile(ViewId::ROBE, sprite(7, 11, 3));
     Tile::addTile(ViewId::LEATHER_GLOVES, sprite(15, 11, 3));
     Tile::addTile(ViewId::DEXTERITY_GLOVES, sprite(19, 11, 3));
@@ -817,7 +816,6 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::JEWELER, symbol("&", ColorId::YELLOW));
     Tile::addSymbol(ViewId::CEMETERY, symbol(".", ColorId::DARK_BLUE));
     Tile::addSymbol(ViewId::GRAVE, symbol(0x2617, ColorId::GRAY, true));
-    Tile::addSymbol(ViewId::GRAVE_OUTDOOR, symbol(0x2617, ColorId::GRAY, true));
     Tile::addSymbol(ViewId::BORDER_GUARD, symbol(" ", ColorId::BLACK));
     Tile::addSymbol(ViewId::ROBE, symbol("[", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::LEATHER_GLOVES, symbol("[", ColorId::BROWN));

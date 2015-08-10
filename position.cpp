@@ -16,6 +16,10 @@ void Position::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Position);
 SERIALIZATION_CONSTRUCTOR_IMPL(Position);
 
+Position Position::invalid() {
+  return Position();
+}
+
 Vec2 Position::getCoord() const {
   return coord;
 }
@@ -34,17 +38,17 @@ Position::Position(Vec2 v, Level* l) : coord(v), level(l) {
 const static int otherLevel = 1000000;
 
 int Position::dist8(const Position& pos) const {
-  if (pos.level != level)
+  if (pos.level != level || !isValid() || !pos.isValid())
     return otherLevel;
   return pos.getCoord().dist8(coord);
 }
 
 bool Position::isSameLevel(const Position& p) const {
-  return level == p.level;
+  return isValid() && level == p.level;
 }
 
-bool Position::isInBounds() const {
-  return level->inBounds(coord);
+bool Position::isValid() const {
+  return level && level->inBounds(coord);
 }
 
 Vec2 Position::getDir(const Position& p) const {
@@ -53,19 +57,19 @@ Vec2 Position::getDir(const Position& p) const {
 }
 
 Square* Position::getSquare() const {
-  CHECK(isInBounds());
+  CHECK(isValid());
   return level->getSafeSquare(coord);
 }
 
 Creature* Position::getCreature() const {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->getCreature();
   else
     return nullptr;
 }
 
 void Position::removeCreature() {
-  CHECK(isInBounds());
+  CHECK(isValid());
   getSquare()->removeCreature();
 }
 
@@ -84,6 +88,10 @@ Position& Position::operator = (const Position& o) {
 }
 
 bool Position::operator < (const Position& p) const {
+  if (!isValid())
+    return p.isValid();
+  if (!p.isValid())
+    return true;
   if (level->getUniqueId() == p.level->getUniqueId())
     return coord < p.coord;
   else
@@ -91,11 +99,13 @@ bool Position::operator < (const Position& p) const {
 }
 
 void Position::globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cannot) const {
-  level->globalMessage(coord, playerCanSee, cannot);
+  if (isValid())
+    level->globalMessage(coord, playerCanSee, cannot);
 }
 
 void Position::globalMessage(const PlayerMessage& playerCanSee) const {
-  level->globalMessage(coord, playerCanSee);
+  if (isValid())
+    level->globalMessage(coord, playerCanSee);
 }
 
 vector<Position> Position::neighbors8() const {
@@ -134,7 +144,7 @@ vector<Position> Position::getRectangle(Rectangle rect) const {
 }
 
 void Position::addCreature(PCreature c) {
-  if (isInBounds())
+  if (isValid())
     level->addCreature(coord, std::move(c));
 }
 
@@ -147,80 +157,81 @@ Position Position::minus(Vec2 v) const {
 }
 
 const Location* Position::getLocation() const {
-  for (auto location : level->getAllLocations())
-    if (location->contains(*this))
-      return location;
+  if (isValid())
+    for (auto location : level->getAllLocations())
+      if (location->contains(*this))
+        return location;
   return nullptr;
 } 
 
 bool Position::canEnter(const Creature* c) const {
-  return isInBounds() && getSquare()->canEnter(c);
+  return isValid() && getSquare()->canEnter(c);
 }
 
 bool Position::canEnter(const MovementType& t) const {
-  return isInBounds() && getSquare()->canEnter(t);
+  return isValid() && getSquare()->canEnter(t);
 }
 
 optional<SquareApplyType> Position::getApplyType() const {
-  return isInBounds() ? getSquare()->getApplyType() : none;
+  return isValid() ? getSquare()->getApplyType() : none;
 }
 
 optional<SquareApplyType> Position::getApplyType(const Creature* c) const {
-  return isInBounds() ? getSquare()->getApplyType() : none;
+  return isValid() ? getSquare()->getApplyType() : none;
 }
 
 void Position::onApply(Creature* c) {
-  if (isInBounds())
+  if (isValid())
     getSquare()->onApply(c);
 }
 
 double Position::getApplyTime() const {
-  CHECK(isInBounds());
+  CHECK(isValid());
   return getSquare()->getApplyTime();
 }
 
 bool Position::canHide() const {
-  return isInBounds() && getSquare()->canHide();
+  return isValid() && getSquare()->canHide();
 }
 
 string Position::getName() const {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->getName();
   else
     return "";
 }
 
 void Position::getViewIndex(ViewIndex& index, const Tribe* tribe) const {
-  if (isInBounds())
+  if (isValid())
     getSquare()->getViewIndex(index, tribe);
 }
 
 vector<Trigger*> Position::getTriggers() const {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->getTriggers();
   else
     return {};
 }
 
 PTrigger Position::removeTrigger(Trigger* trigger) {
-  CHECK(isInBounds());
+  CHECK(isValid());
   return getSquare()->removeTrigger(trigger);
 }
 
 vector<PTrigger> Position::removeTriggers() {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->removeTriggers();
   else
     return {};
 }
 
 void Position::addTrigger(PTrigger t) {
-  if (isInBounds())
+  if (isValid())
     getSquare()->addTrigger(std::move(t));
 }
 
 const vector<Item*>& Position::getItems() const {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->getItems();
   else {
     static vector<Item*> empty;
@@ -229,14 +240,14 @@ const vector<Item*>& Position::getItems() const {
 }
 
 vector<Item*> Position::getItems(function<bool (Item*)> predicate) const {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->getItems(predicate);
   else
     return {};
 }
 
 const vector<Item*>& Position::getItems(ItemIndex index) const {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->getItems(index);
   else {
     static vector<Item*> empty;
@@ -245,92 +256,92 @@ const vector<Item*>& Position::getItems(ItemIndex index) const {
 }
 
 PItem Position::removeItem(Item* it) {
-  CHECK(isInBounds());
+  CHECK(isValid());
   return getSquare()->removeItem(it);
 }
 
 vector<PItem> Position::removeItems(vector<Item*> it) {
-  CHECK(isInBounds());
+  CHECK(isValid());
   return getSquare()->removeItems(it);
 }
 
 bool Position::canConstruct(const SquareType& type) const {
-  return isInBounds() && getSquare()->canConstruct(type);
+  return isValid() && getSquare()->canConstruct(type);
 }
 
 bool Position::canDestroy(const Creature* c) const {
-  return isInBounds() && getSquare()->canDestroy(c);
+  return isValid() && getSquare()->canDestroy(c);
 }
 
 bool Position::isDestroyable() const {
-  return isInBounds() && getSquare()->isDestroyable();
+  return isValid() && getSquare()->isDestroyable();
 }
 
 bool Position::canEnterEmpty(const Creature* c) const {
-  return isInBounds() && getSquare()->canEnterEmpty(c);
+  return isValid() && getSquare()->canEnterEmpty(c);
 }
 
 bool Position::canEnterEmpty(const MovementType& t) const {
-  return isInBounds() && getSquare()->canEnterEmpty(t);
+  return isValid() && getSquare()->canEnterEmpty(t);
 }
 
 void Position::dropItem(PItem item) {
-  if (isInBounds())
+  if (isValid())
     getSquare()->dropItem(std::move(item));
 }
 
 void Position::dropItems(vector<PItem> v) {
-  if (isInBounds())
+  if (isValid())
     getSquare()->dropItems(std::move(v));
 }
 
 void Position::destroyBy(Creature* c) {
-  if (isInBounds())
+  if (isValid())
     getSquare()->destroyBy(c);
 }
 
 void Position::destroy() {
-  if (isInBounds())
+  if (isValid())
     getSquare()->destroy();
 }
 
 bool Position::construct(const SquareType& type) {
-  return isInBounds() && getSquare()->construct(type);
+  return isValid() && getSquare()->construct(type);
 }
 
 bool Position::canLock() const {
-  return isInBounds() && getSquare()->canLock();
+  return isValid() && getSquare()->canLock();
 }
 
 bool Position::isLocked() const {
-  return isInBounds() && getSquare()->isLocked();
+  return isValid() && getSquare()->isLocked();
 }
 
 void Position::lock() {
-  if (isInBounds())
+  if (isValid())
     getSquare()->lock();
 }
 
 bool Position::isBurning() const {
-  return isInBounds() && getSquare()->isBurning();
+  return isValid() && getSquare()->isBurning();
 }
 
 void Position::setOnFire(double amount) {
-  if (isInBounds())
+  if (isValid())
     getSquare()->setOnFire(amount);
 }
 
 bool Position::needsMemoryUpdate() const {
-  return isInBounds() && getSquare()->needsMemoryUpdate();
+  return isValid() && getSquare()->needsMemoryUpdate();
 }
 
 void Position::setMemoryUpdated() {
-  if (isInBounds())
+  if (isValid())
     getSquare()->setMemoryUpdated();
 }
 
 const ViewObject& Position::getViewObject() const {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->getViewObject();
   else {
     static ViewObject v(ViewId::EMPTY, ViewLayer::FLOOR, "");
@@ -339,28 +350,28 @@ const ViewObject& Position::getViewObject() const {
 }
 
 void Position::forbidMovementForTribe(const Tribe* t) {
-  if (isInBounds())
+  if (isValid())
     getSquare()->forbidMovementForTribe(t);
 }
 
 void Position::allowMovementForTribe(const Tribe* t) {
-  if (isInBounds())
+  if (isValid())
     getSquare()->allowMovementForTribe(t);
 }
 
 bool Position::isTribeForbidden(const Tribe* t) const {
-  return isInBounds() && getSquare()->isTribeForbidden(t);
+  return isValid() && getSquare()->isTribeForbidden(t);
 }
 
 const Tribe* Position::getForbiddenTribe() const {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->getForbiddenTribe();
   else
     return nullptr;
 }
 
 vector<Position> Position::getVisibleTiles(VisionId vision) {
-  if (isInBounds())
+  if (isValid())
     return transform2<Position>(getLevel()->getVisibleTiles(coord, vision),
         [this] (Vec2 v) { return Position(v, getLevel()); });
   else
@@ -368,48 +379,48 @@ vector<Position> Position::getVisibleTiles(VisionId vision) {
 }
 
 void Position::addPoisonGas(double amount) {
-  if (isInBounds())
+  if (isValid())
     getSquare()->addPoisonGas(amount);
 }
 
 double Position::getPoisonGasAmount() const {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->getPoisonGasAmount();
   else
     return 0;
 }
 
 CoverInfo Position::getCoverInfo() const {
-  if (isInBounds())
+  if (isValid())
     return level->getCoverInfo(coord);
   else
     return CoverInfo {};
 }
 
 bool Position::sunlightBurns() const {
-  return isInBounds() && getSquare()->sunlightBurns();
+  return isValid() && getSquare()->sunlightBurns();
 }
 
 void Position::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId vision) {
-  if (isInBounds())
+  if (isValid())
     level->throwItem(std::move(item), attack, maxDist, coord, direction, vision);
 }
 
 void Position::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId vision) {
-  if (isInBounds())
+  if (isValid())
     level->throwItem(std::move(item), attack, maxDist, coord, direction, vision);
 }
 
 bool Position::canNavigate(const MovementType& t) const {
-  return isInBounds() && getSquare()->canNavigate(t);
+  return isValid() && getSquare()->canNavigate(t);
 }
 
 bool Position::landCreature(Creature* c) {
-  return isInBounds() && level->landCreature({*this}, c);
+  return isValid() && level->landCreature({*this}, c);
 }
 
 const vector<Vec2>& Position::getTravelDir() const {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->getTravelDir();
   else {
     static vector<Vec2> v;
@@ -418,14 +429,14 @@ const vector<Vec2>& Position::getTravelDir() const {
 }
 
 int Position::getStrength() const {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->getStrength();
   else
     return 1000000;
 }
 
 bool Position::canSeeThru(VisionId id) const {
-  if (isInBounds())
+  if (isValid())
     return getSquare()->canSeeThru(id);
   else
     return false;

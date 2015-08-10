@@ -374,7 +374,7 @@ class Collective : public TaskCallback {
   EntitySet<Item> SERIAL(markedItems);
   set<Position> SERIAL(squaresInUse);
   ItemPredicate unMarkedItems() const;
-  enum class PrisonerState { SURRENDER, PRISON, EXECUTE, TORTURE, SACRIFICE };
+  enum class PrisonerState { SURRENDER, PRISON };
   struct PrisonerInfo;
   PTask getPrisonerTask(Creature* prisoner);
   void clearPrisonerTask(Creature* prisoner);
