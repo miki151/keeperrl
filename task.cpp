@@ -1237,6 +1237,8 @@ class Eat : public Task {
         return NoMove;
       }
     }
+    if (c->getPosition() != *position && getDeadChicken(*position))
+      return c->moveTowards(*position);
     Item* chicken = getDeadChicken(c->getPosition());
     if (chicken)
       return c->eat(chicken).append([=] (Creature* c) {
@@ -1250,7 +1252,7 @@ class Eat : public Task {
       if (Creature* ch = pos.getCreature())
         if (ch->isMinionFood())
           if (auto move = c->attack(ch)) {
-            return move;
+            return move.append([this, ch, pos] (Creature*) { if (ch->isDead()) position = pos; });
       }
     }
     return c->moveTowards(*position);
