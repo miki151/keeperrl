@@ -63,7 +63,7 @@ vector<TeamId> CollectiveTeams::getAll() const {
   return getKeys(teamInfo);
 }
 
-vector<TeamId> CollectiveTeams::getActiveTeams(const Creature* c) const {
+vector<TeamId> CollectiveTeams::getActive(const Creature* c) const {
   vector<TeamId> ret;
   for (TeamId t : getContaining(c))
     if (isActive(t))
@@ -71,7 +71,15 @@ vector<TeamId> CollectiveTeams::getActiveTeams(const Creature* c) const {
   return ret;
 }
 
-vector<TeamId> CollectiveTeams::getActiveTeams() const {
+vector<TeamId> CollectiveTeams::getActiveNonPersistent(const Creature* c) const {
+  vector<TeamId> ret;
+  for (TeamId t : getContaining(c))
+    if (isActive(t) && !isPersistent(t))
+      ret.push_back(t);
+  return ret;
+}
+
+vector<TeamId> CollectiveTeams::getAllActive() const {
   vector<TeamId> ret;
   for (TeamId t : getKeys(teamInfo))
     if (isActive(t))

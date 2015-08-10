@@ -753,7 +753,7 @@ MoveInfo Collective::getMove(Creature* c) {
     if (t->getMove(c))
       return taskMap->addTask(std::move(t), c)->getMove(c);
   if (!hasTrait(c, MinionTrait::NO_RETURNING) && !getAllSquares().empty() &&
-      !getAllSquares().count(c->getPosition()) && teams->getActiveTeams(c).empty())
+      !getAllSquares().count(c->getPosition()) && teams->getActive(c).empty())
     return c->moveTowards(Random.choose(getAllSquares()));
   else
     return NoMove;

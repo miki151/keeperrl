@@ -323,7 +323,7 @@ PlayerControl::~PlayerControl() {
 const int basicImpCost = 20;
 
 Creature* PlayerControl::getControlled() {
-  for (TeamId team : getTeams().getActiveTeams()) {
+  for (TeamId team : getTeams().getAllActive()) {
     if (getTeams().getLeader(team)->isPlayer())
       return getTeams().getLeader(team);
   }
@@ -339,7 +339,7 @@ void PlayerControl::leaveControl() {
     model->getView()->resetCenter();
   if (controlled->isPlayer())
     controlled->popController();
-  for (TeamId team : getTeams().getActiveTeams(controlled))
+  for (TeamId team : getTeams().getActive(controlled))
     if (!getTeams().isPersistent(team)) {
       if (getTeams().getMembers(team).size() == 1)
         getTeams().cancel(team);
@@ -1103,7 +1103,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
     index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
   if (const Creature* c = position.getCreature())
-    if (!getTeams().getActiveTeams(c).empty() && index.hasObject(ViewLayer::CREATURE))
+    if (!getTeams().getActiveNonPersistent(c).empty() && index.hasObject(ViewLayer::CREATURE))
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);
   if (getCollective()->isMarked(position))
     index.setHighlight(getCollective()->getMarkHighlight(position));
@@ -1255,7 +1255,7 @@ void PlayerControl::handleAddToTeam(Creature* c) {
 
 vector<Creature*> PlayerControl::getTeam(const Creature* c) {
   vector<Creature*> ret;
-  for (auto team : getTeams().getActiveTeams(c))
+  for (auto team : getTeams().getActive(c))
     append(ret, getTeams().getMembers(team));
   return ret;
 }
@@ -1640,7 +1640,7 @@ void PlayerControl::tick(double time) {
       addedCreatures.push_back(c);
       getCollective()->addCreature(c, {MinionTrait::FIGHTER});
       if (getControlled() && getControlled()->getLevel() == c->getLevel())
-        for (auto team : getTeams().getActiveTeams(getControlled())) {
+        for (auto team : getTeams().getActive(getControlled())) {
           getTeams().add(team, c);
           getControlled()->playerMessage(PlayerMessage(c->getName().a() + " joins your team.",
                 PlayerMessage::HIGH));

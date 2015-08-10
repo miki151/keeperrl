@@ -37,8 +37,9 @@ class CollectiveTeams {
   vector<Creature*> getMembers(TeamId);
   vector<TeamId> getContaining(const Creature*) const;
   vector<TeamId> getAll() const;
-  vector<TeamId> getActiveTeams(const Creature*) const;
-  vector<TeamId> getActiveTeams() const;
+  vector<TeamId> getActive(const Creature*) const;
+  vector<TeamId> getActiveNonPersistent(const Creature*) const;
+  vector<TeamId> getAllActive() const;
   void cancel(TeamId);
   bool exists(TeamId) const;
   bool isPersistent(TeamId) const;
