@@ -30,6 +30,7 @@ enum class LoggingToken {
   GET_TIME_ABSOLUTE,
   CHOOSE_ITEM,
   CHOOSE_RECRUIT,
+  CHOOSE_TRADE_ITEM,
   TRAVEL_INTERRUPT,
   GET_TEXT
 };
@@ -102,6 +103,11 @@ class LoggingView : public View {
     virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, pair<ViewId, int> budget,
         const vector<CreatureInfo>& c, double* scrollPos) override {
       return logAndGet(delegate->chooseRecruit(title, budget, c, scrollPos), LoggingToken::CHOOSE_RECRUIT);
+    }
+
+    virtual optional<UniqueEntity<Creature>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
+        const vector<ItemInfo>& c, double* scrollPos) override {
+      return logAndGet(delegate->chooseTradeItem(title, budget, c, scrollPos), LoggingToken::CHOOSE_TRADE_ITEM);
     }
 
     virtual bool travelInterrupt() override {

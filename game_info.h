@@ -102,9 +102,11 @@ struct ItemInfo {
   bool equiped;
   bool locked;
   bool pending;
+  bool unavailable;
   optional<EquipmentSlot> slot;
   optional<CreatureInfo> owner;
   enum Type {EQUIPMENT, CONSUMABLE, OTHER} type;
+  optional<pair<ViewId, int>> price;
 };
 
 class PlayerInfo {

@@ -133,7 +133,7 @@ class ReverseButton : public GuiElem {
 
 PGuiElem GuiFactory::reverseButton(function<void()> fun, vector<Event::KeyEvent> hotkey, bool capture) {
   return stack(
-      keyHandler(fun, hotkey),
+      keyHandler(fun, hotkey, true),
       PGuiElem(new ReverseButton(fun, capture)));
 }
 
@@ -752,6 +752,10 @@ int GuiFactory::ListBuilder::getSize() const {
 
 bool GuiFactory::ListBuilder::isEmpty() const {
   return sizes.empty();
+}
+
+vector<PGuiElem>& GuiFactory::ListBuilder::getAllElems() {
+  return elems;
 }
 
 PGuiElem GuiFactory::ListBuilder::buildVerticalList() {

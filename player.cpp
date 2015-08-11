@@ -819,7 +819,7 @@ ItemInfo Player::getApplySquareInfo(const string& question, ViewId viewId) const
 
 ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(true, getCreature()->isBlind());
+    c.name = stack[0]->getShortName(getCreature()->isBlind());
     c.fullName = stack[0]->getNameAndModifiers(false, getCreature()->isBlind());
     c.description = getCreature()->isBlind() ? "" : stack[0]->getDescription();
     c.number = stack.size();

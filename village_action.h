@@ -2,6 +2,6 @@
 #define _VILLAGE_ACTION_H
 
 
-enum class VillageAction { RECRUIT };
+enum class VillageAction { RECRUIT, TRADE };
 
 #endif

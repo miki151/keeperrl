@@ -81,6 +81,7 @@ class GuiFactory {
     PGuiElem buildHorizontalListFit();
     int getSize() const;
     bool isEmpty() const;
+    vector<PGuiElem>& getAllElems();
 
     private:
     GuiFactory& gui;

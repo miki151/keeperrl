@@ -452,8 +452,7 @@ void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
   }
 }
 
-void PlayerControl::minionEquipmentAction(Creature* creature, const MinionAction& action1) {
-  auto action = boost::get<MinionAction::MinionItemAction>(action1.action);
+void PlayerControl::minionEquipmentAction(Creature* creature, const EquipmentActionInfo& action) {
   switch (action.action) {
     case ItemAction::DROP:
       for (auto id : action.ids)
@@ -510,8 +509,7 @@ vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
   return minions;
 }
 
-void PlayerControl::minionTaskAction(Creature* c, const MinionAction& action1) {
-  auto action = boost::get<MinionAction::TaskAction>(action1.action);
+void PlayerControl::minionTaskAction(Creature* c, const TaskActionInfo& action) {
   if (action.switchTo)
     getCollective()->setMinionTask(c, *action.switchTo);
   for (MinionTask task : action.lock)
@@ -536,31 +534,31 @@ void PlayerControl::minionView(Creature* creature) {
     if (!actionInfo)
       return;
     if (Creature* c = getCreature(currentId))
-      switch (actionInfo->action.which()) {
-        case 0: 
-          minionTaskAction(c, *actionInfo);
+      switch (actionInfo->getId()) {
+        case MinionActionId::TASK:
+          minionTaskAction(c, actionInfo->get<TaskActionInfo>());
           break;
-        case 1:
-          minionEquipmentAction(c, *actionInfo);
+        case MinionActionId::EQUIPMENT:
+          minionEquipmentAction(c, actionInfo->get<EquipmentActionInfo>());
           break;
-        case 2:
+        case MinionActionId::CONTROL:
           controlSingle(c);
           return;
-        case 3:
-          c->setFirstName(boost::get<MinionAction::RenameAction>(actionInfo->action).newName);
+        case MinionActionId::RENAME:
+          c->setFirstName(actionInfo->get<string>());
           break;
-        case 4:
+        case MinionActionId::BANISH:
           if (model->getView()->yesOrNoPrompt("Do you want to banish " + c->getName().the() + " forever? "
                 "Banishing has a negative impact on morale of other minions."))
             getCollective()->banishCreature(c);
           break;
-        case 5:
+        case MinionActionId::WHIP:
           getCollective()->orderWhipping(c);
           return;
-        case 6:
+        case MinionActionId::EXECUTE:
           getCollective()->orderExecution(c);
           return;
-        case 7:
+        case MinionActionId::TORTURE:
           getCollective()->orderTorture(c);
           return;
     }
@@ -570,7 +568,7 @@ void PlayerControl::minionView(Creature* creature) {
 static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked,
     optional<ItemInfo::Type> type = none) {
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(true);
+    c.name = stack[0]->getShortName();
     c.fullName = stack[0]->getNameAndModifiers(false);
     c.description = stack[0]->getDescription();
     c.number = stack.size();
@@ -611,6 +609,19 @@ static ItemInfo getEmptySlotItem(EquipmentSlot slot) {
     c.equiped = false;
     c.pending = false;);
 }
+
+static ItemInfo getTradeItemInfo(const vector<Item*>& stack, int budget) {
+  return CONSTRUCT(ItemInfo,
+    c.name = stack[0]->getShortName(false, true);
+    c.price = make_pair(ViewId::GOLD, stack[0]->getPrice());
+    c.fullName = stack[0]->getNameAndModifiers(false);
+    c.description = stack[0]->getDescription();
+    c.number = stack.size();
+    c.viewId = stack[0]->getViewObject().id();
+    c.ids = transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();});
+    c.unavailable = c.price->second > budget;);
+}
+
 
 void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) {
   if (!creature->isHumanoid())
@@ -887,14 +898,18 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   VillageInfo::Village info;
   info.name = col->getShortName();
   info.tribeName = col->getTribeName();
+  bool hostile = col->getTribe()->isEnemy(getTribe());
   if (col->isConquered())
     info.state = info.CONQUERED;
-  else if (col->getTribe()->isEnemy(getTribe()))
+  else if (hostile)
     info.state = info.HOSTILE;
-  else
+  else {
     info.state = info.FRIENDLY;
-  if (!col->getRecruits().empty())
-    info.actions.push_back(VillageAction::RECRUIT);
+    if (!col->getRecruits().empty())
+      info.actions.push_back(VillageAction::RECRUIT);
+    if (!col->getTradeItems().empty())
+      info.actions.push_back(VillageAction::TRADE);
+  }
   return info;
 }
 
@@ -923,6 +938,35 @@ void PlayerControl::handleRecruiting(Collective* ally) {
     getCollective()->addNewCreatureMessage(stack);
 }
 
+void PlayerControl::handleTrading(Collective* ally) {
+  double scrollPos = 0;
+  vector<Position> storage = getCollective()->getAllSquares(getCollective()->getEquipmentStorageSquares());
+  if (storage.empty()) {
+    model->getView()->presentText("Information", "You need a storage room for equipment in order to trade.");
+    return;
+  }
+  while (1) {
+    vector<Item*> available = ally->getTradeItems();
+    vector<pair<string, vector<Item*>>> items = Item::stackItems(available);
+    if (items.empty())
+      break;
+    int budget = getCollective()->numResource(ResourceId::GOLD);
+    vector<ItemInfo> itemInfo = transform2<ItemInfo>(items,
+        [this, budget] (const pair<string, vector<Item*>> it) {
+            return getTradeItemInfo(it.second, budget);});
+    auto index = model->getView()->chooseTradeItem("Trade with " + ally->getShortName(),
+        {ViewId::GOLD, getCollective()->numResource(ResourceId::GOLD)}, itemInfo, &scrollPos);
+    if (!index)
+      break;
+    for (Item* it : available)
+      if (it->getUniqueId() == *index && it->getPrice() <= budget) {
+        getCollective()->takeResource({ResourceId::GOLD, it->getPrice()});
+        Random.choose(storage).dropItem(ally->buyItem(it));
+      }
+    model->getView()->updateView(this, true);
+  }
+}
+
 void PlayerControl::handleRansom(bool pay) {
   if (ransomAttacks.empty())
     return;
@@ -941,7 +985,9 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     gameInfo.collectiveInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});*/
   gameInfo.villageInfo.villages.clear();
   for (const Collective* col : model->getMainVillains())
+#ifdef RELEASE
     if (getCollective()->isKnownVillain(col))
+#endif
       gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
   Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
@@ -1388,6 +1434,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
         switch (input.get<VillageActionInfo>().action) {
           case VillageAction::RECRUIT: 
             handleRecruiting(village);
+            break;
+          case VillageAction::TRADE: 
+            handleTrading(village);
             break;
         }
         }

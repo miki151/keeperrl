@@ -111,6 +111,8 @@ class Collective : public TaskCallback {
 
   vector<Creature*> getRecruits() const;
   void recruit(Creature*, Collective* to);
+  vector<Item*> getTradeItems() const;
+  PItem buyItem(Item*);
 
   double getEfficiency(const Creature*) const;
   const Creature* getLeader() const;

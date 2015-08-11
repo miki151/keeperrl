@@ -384,6 +384,25 @@ void Collective::recruit(Creature* c, Collective* to) {
   to->addCreature(c, {MinionTrait::FIGHTER});
 }
 
+vector<Item*> Collective::getTradeItems() const {
+  vector<Item*> ret;
+  for (Position pos : getAllSquares())
+    append(ret, pos.getItems(ItemIndex::FOR_SALE));
+  return ret;
+}
+
+PItem Collective::buyItem(Item* item) {
+  for (Position pos : getAllSquares())
+    for (Item* it : pos.getItems(ItemIndex::FOR_SALE))
+      if (it == item) {
+        PItem ret = pos.removeItem(it);
+        ret->setShopkeeper(nullptr);
+        return ret;
+      }
+  FAIL << "Couldn't find item";
+  return nullptr;
+}
+
 const Creature* Collective::getLeader() const {
   return leader;
 }

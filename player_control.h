@@ -35,7 +35,9 @@ class MapMemory;
 class VisibilityMap;
 class ListElem;
 class UserInput;
-struct MinionAction;
+class MinionAction;
+struct TaskActionInfo;
+struct EquipmentActionInfo;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
@@ -169,9 +171,9 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   int getNumMinions() const;
   void minionView(Creature* creature);
-  void minionTaskAction(Creature*, const MinionAction&);
+  void minionTaskAction(Creature*, const TaskActionInfo&);
   vector<PlayerInfo> getMinionGroup(Creature* like);
-  void minionEquipmentAction(Creature* creature, const MinionAction&);
+  void minionEquipmentAction(Creature* creature, const EquipmentActionInfo&);
   void addEquipment(Creature*, EquipmentSlot);
   void addConsumableItem(Creature*);
   void handleEquipment(View* view, Creature* creature);
@@ -179,6 +181,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
   void handleRecruiting(Collective* ally);
+  void handleTrading(Collective* ally);
   void handleRansom(bool pay);
   static ViewObject getTrapObject(TrapType, bool built);
   void addToMemory(Position);

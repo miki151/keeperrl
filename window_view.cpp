@@ -775,6 +775,13 @@ optional<UniqueEntity<Creature>::Id> WindowView::chooseRecruit(const string& tit
       Vec2(rightBarWidthCollective + 30, 80));
 }
 
+optional<UniqueEntity<Item>::Id> WindowView::chooseTradeItem(const string& title, pair<ViewId, int> budget,
+    const vector<ItemInfo>& items, double* scrollPos) {
+  SyncQueue<optional<UniqueEntity<Item>::Id>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawTradeItemMenu(returnQueue, title, budget, items, scrollPos),
+      Vec2(rightBarWidthCollective + 30, 80));
+}
+
 void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, Vec2 origin) {
   RenderLock lock(renderMutex);
   TempClockPause pause(clock);

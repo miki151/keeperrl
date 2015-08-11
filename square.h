@@ -234,6 +234,7 @@ class Square : public Renderable {
 
   Level* getLevel();
   const Level* getLevel() const;
+  void clearItemIndex(ItemIndex);
 
   SERIALIZATION_DECL(Square);
 

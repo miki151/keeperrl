@@ -96,6 +96,7 @@ class Position {
   const vector<Vec2>& getTravelDir() const;
   int getStrength() const;
   bool canSeeThru(VisionId) const;
+  void clearItemIndex(ItemIndex);
 
   SERIALIZATION_DECL(Position);
 

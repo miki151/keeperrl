@@ -583,3 +583,7 @@ optional<SquareApplyType> Square::getApplyType(const Creature* c) const {
   return none;
 }
 
+void Square::clearItemIndex(ItemIndex index) {
+  inventory->clearIndex(index);
+}
+

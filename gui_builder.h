@@ -23,7 +23,7 @@
 #include "user_input.h"
 
 class Clock;
-struct MinionAction;
+class MinionAction;
 class ListElem;
 struct HighscoreList;
 
@@ -74,6 +74,8 @@ class GuiBuilder {
   typedef function<void(optional<int>)> CreatureMenuCallback;
   PGuiElem drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos);
+  PGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
+      pair<ViewId, int> budget, const vector<ItemInfo>&, double* scrollPos);
   PGuiElem drawCost(pair<ViewId, int>, ColorId = ColorId::WHITE);
   PGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<double>& scrollPos,
       bool& online);

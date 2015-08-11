@@ -442,3 +442,7 @@ bool Position::canSeeThru(VisionId id) const {
     return false;
 }
 
+void Position::clearItemIndex(ItemIndex index) {
+  if (isValid())
+    getSquare()->clearItemIndex(index);
+}

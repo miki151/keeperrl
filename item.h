@@ -70,7 +70,7 @@ class Item : public Renderable, public UniqueEntity<Item> {
   string getAName(bool plural = false, bool blind = false) const;
   string getNameAndModifiers(bool plural = false, bool blind = false) const;
   string getArtifactName() const;
-  string getShortName(bool shortModifiers, bool blind = false) const;
+  string getShortName(bool blind = false, bool noSuffix = false) const;
   string getPluralTheName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 

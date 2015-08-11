@@ -69,6 +69,10 @@ vector<PItem> Inventory::removeItems(vector<Item*> items) {
   return ret;
 }
 
+void Inventory::clearIndex(ItemIndex ind) {
+  indexes[ind] = none;
+}
+
 vector<PItem> Inventory::removeAllItems() {
   itemsCache.clear();
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
@@ -113,6 +117,7 @@ function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
     case ItemIndex::RANGED_WEAPON: return [](const Item* it) {
         return it->getClass() == ItemClass::RANGED_WEAPON;};
     case ItemIndex::CAN_EQUIP: return [](const Item* it) {return it->canEquip();};
+    case ItemIndex::FOR_SALE: return [](const Item* it) {return !!it->getShopkeeper();};
   }
 }
 

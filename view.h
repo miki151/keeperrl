@@ -74,62 +74,41 @@ enum class GameTypeChoice {
   BACK,
 };
 
-struct MinionAction {
-  struct TaskAction {
-    optional<MinionTask> SERIAL(switchTo);
-    EnumSet<MinionTask> SERIAL(lock);
-    template <class Archive> 
+enum class MinionActionId {
+  TASK,
+  EQUIPMENT,
+  CONTROL,
+  RENAME,
+  BANISH,
+  WHIP,
+  EXECUTE,
+  TORTURE
+};
+
+struct TaskActionInfo {
+  optional<MinionTask> SERIAL(switchTo);
+  EnumSet<MinionTask> SERIAL(lock);
+  template <class Archive> 
     void serialize(Archive& ar, const unsigned int version) {
       ar & SVAR(switchTo) & SVAR(lock);
     }
-  };
-  struct MinionItemAction {
-    vector<UniqueEntity<Item>::Id> SERIAL(ids);
-    optional<EquipmentSlot> SERIAL(slot);
-    ItemAction SERIAL(action);
-    template <class Archive> 
+};
+
+struct EquipmentActionInfo {
+  vector<UniqueEntity<Item>::Id> SERIAL(ids);
+  optional<EquipmentSlot> SERIAL(slot);
+  ItemAction SERIAL(action);
+  template <class Archive> 
     void serialize(Archive& ar, const unsigned int version) {
       ar & SVAR(ids) & SVAR(slot) & SVAR(action);
     }
-  };
-  struct ControlAction {
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-    }
-  };
-  struct RenameAction {
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-      ar & SVAR(newName);
-    }
-    string SERIAL(newName);
-  };
-  struct BanishAction {
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-    }
-  };
-  struct WhipAction {
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-    }
-  };
-  struct ExecuteAction {
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-    }
-  };
-  struct TortureAction {
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-    }
-  };
-  variant<TaskAction, MinionItemAction, ControlAction, RenameAction, BanishAction, WhipAction,
-      ExecuteAction, TortureAction> SERIAL(action);
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(action);
-  }
+};
+
+class MinionAction : public EnumVariant<MinionActionId, TYPES(TaskActionInfo, EquipmentActionInfo, string),
+    ASSIGN(TaskActionInfo, MinionActionId::TASK),
+    ASSIGN(EquipmentActionInfo, MinionActionId::EQUIPMENT),
+    ASSIGN(string, MinionActionId::RENAME)> {
+  using EnumVariant::EnumVariant;
 };
 
 enum class MenuType {
@@ -225,6 +204,9 @@ class View {
 
   virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, pair<ViewId, int> budget,
       const vector<CreatureInfo>&, double* scrollPos) = 0;
+
+  virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
+      const vector<ItemInfo>&, double* scrollPos) = 0;
 
   virtual optional<int> chooseItem(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id& current,
       const vector<ItemInfo>& items, double* scrollpos) = 0;

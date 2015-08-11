@@ -77,6 +77,8 @@ class WindowView: public View {
       const vector<ItemInfo>& items, double* scrollpos) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, pair<ViewId, int> budget,
       const vector<CreatureInfo>&, double* scrollPos) override;
+  virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
+      const vector<ItemInfo>&, double* scrollPos) override;
   virtual void presentHighscores(const vector<HighscoreList>&);
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;

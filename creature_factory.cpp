@@ -433,11 +433,11 @@ class ShopkeeperController : public Monster {
       return;
     }
     if (firstMove) {
-      for (Position v : shopArea->getAllSquares())
-        for (Item* item : v.getItems()) {
-          myItems.insert(item);
+      for (Position v : shopArea->getAllSquares()) {
+        for (Item* item : v.getItems())
           item->setShopkeeper(getCreature());
-        }
+        v.clearItemIndex(ItemIndex::FOR_SALE);
+      }
       firstMove = false;
     }
     vector<const Creature*> creatures;
@@ -484,27 +484,27 @@ class ShopkeeperController : public Monster {
     CHECK(debt[from] == 0) << "Bad debt " << debt[from];
     debt.erase(from);
     for (Item* it : from->getEquipment().getItems())
-      if (unpaidItems[from].contains(it)) {
+      if (unpaidItems[from].contains(it))
         it->setShopkeeper(nullptr);
-        myItems.erase(it);
-      }
     unpaidItems.erase(from);
   }
   
   REGISTER_HANDLER(ItemsAppearedEvent, const Level* l, Vec2 position, const vector<Item*>& items) {
-    if (l == getCreature()->getLevel())
-      if (shopArea->contains(Position(position, getCreature()->getLevel()))) {
+    if (l == getCreature()->getLevel()) {
+      Position pos(position, getCreature()->getLevel());
+      if (shopArea->contains(pos)) {
         for (Item* it : items) {
           it->setShopkeeper(getCreature());
-          myItems.insert(it);
+          pos.clearItemIndex(ItemIndex::FOR_SALE);
         }
       }
+    }
   }
 
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items) {
     if (c->getLevel() == getCreature()->getLevel() && shopArea->contains(c->getPosition())) {
       for (const Item* item : items)
-        if (myItems.contains(item)) {
+        if (item->getShopkeeper() == getCreature()) {
           debt[c] += item->getPrice();
           unpaidItems[c].insert(item);
         }
@@ -514,7 +514,7 @@ class ShopkeeperController : public Monster {
   REGISTER_HANDLER(DropEvent, const Creature* c, const vector<Item*>& items) {
     if (c->getLevel() == getCreature()->getLevel() && shopArea->contains(c->getPosition())) {
       for (const Item* item : items)
-        if (myItems.contains(item)) {
+        if (item->getShopkeeper() == getCreature()) {
           if ((debt[c] -= item->getPrice()) <= 0)
             debt.erase(c);
           unpaidItems[c].erase(item);
@@ -540,7 +540,6 @@ class ShopkeeperController : public Monster {
       & SVAR(thieves)
       & SVAR(unpaidItems)
       & SVAR(shopArea)
-      & SVAR(myItems)
       & SVAR(firstMove);
   }
 
@@ -553,7 +552,6 @@ class ShopkeeperController : public Monster {
   unordered_set<const Creature*> SERIAL(thieves);
   unordered_map<const Creature*, EntitySet<Item>> SERIAL(unpaidItems);
   Location* SERIAL(shopArea);
-  EntitySet<Item> SERIAL(myItems);
   bool SERIAL(firstMove) = true;
 };
 

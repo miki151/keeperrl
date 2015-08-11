@@ -351,15 +351,15 @@ string Item::getModifiers(bool shorten) const {
   return artStr + attrString;
 }
 
-string Item::getShortName(bool shortMod, bool blind) const {
+string Item::getShortName(bool blind, bool noSuffix) const {
   if (blind && attributes->blindName)
     return getBlindName(false);
-  string name = getModifiers(shortMod);
+  string name = getModifiers(true);
   if (attributes->shortName)
     name = *attributes->shortName + " " + name;
-  if (getShopkeeper())
+  if (getShopkeeper() && !noSuffix)
     name = name + " (unpaid)";
-  if (fire->isBurning())
+  if (fire->isBurning() && !noSuffix)
     name.append(" (burning)");
   return name;
 }
