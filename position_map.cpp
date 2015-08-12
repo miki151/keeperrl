@@ -4,18 +4,18 @@
 #include "task.h"
 
 template <class T>
-PositionMap<T>::PositionMap(const vector<Level*>& levels) {
-  for (Level* l : levels) {
-    tables.emplace_back(l->getBounds().minusMargin(-20), T());
-    outliers.emplace_back();
-  }
+PositionMap<T>::PositionMap(const vector<Level*>& levels) : PositionMap(levels, T()) {
 }
 
 template <class T>
 PositionMap<T>::PositionMap(const vector<Level*>& levels, const T& def) {
   for (Level* l : levels) {
-    tables.emplace_back(l->getBounds().minusMargin(-20), def);
-    outliers.emplace_back();
+    auto id = l->getUniqueId();
+    if (id >= tables.size()) {
+      tables.resize(id + 1);
+      outliers.resize(id + 1);
+    }
+    tables[id] = Table<T>(l->getBounds().minusMargin(-20), def);
   }
 }
 

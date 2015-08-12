@@ -604,7 +604,7 @@ Tribe* CreatureFactory::getTribeFor(CreatureId id) {
   if (Tribe* t = tribeOverrides[id])
     return t;
   else
-    return tribe;
+    return NOTNULL(tribe);
 }
 
 PCreature CreatureFactory::random() {
@@ -640,7 +640,24 @@ CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const ve
     : tribe(t), creatures(c), weights(w), unique(u), tribeOverrides(overrides), levelIncrease(lIncrease) {
 }
 
+CreatureFactory::CreatureFactory(const vector<tuple<CreatureId, double, Tribe*>>& c, const vector<CreatureId>& u,
+      double lIncrease)
+    : tribe(nullptr), unique(u),levelIncrease(lIncrease) {
+  for (auto& elem : c) {
+    creatures.push_back(get<0>(elem));
+    weights.push_back(get<1>(elem));
+    tribeOverrides[get<0>(elem)] = get<2>(elem);
+  }
+}
+
 CreatureFactory CreatureFactory::humanVillage(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
+      CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
+      CreatureId::PIG, CreatureId::DOG },
+      { 1, 3, 6, 4, 1, 1, 1, 1, 6});
+}
+
+CreatureFactory CreatureFactory::humanPeaceful(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::PESEANT,
       CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
       { 2, 1, 1, 1, 1, 1, 1}, {});
@@ -773,6 +790,34 @@ CreatureFactory CreatureFactory::lavaCreatures(Tribe* tribe) {
 
 CreatureFactory CreatureFactory::singleType(Tribe* tribe, CreatureId id) {
   return CreatureFactory(tribe, { id}, {1}, {});
+}
+
+CreatureFactory CreatureFactory::gnomishMines(Tribe* peaceful, Tribe* enemy, int level) {
+  return CreatureFactory({
+      make_tuple(CreatureId::BANDIT, 100., enemy),
+      make_tuple(CreatureId::GREEN_DRAGON, 5., enemy),
+      make_tuple(CreatureId::RED_DRAGON, 5., enemy),
+      make_tuple(CreatureId::CYCLOPS, 15., enemy),
+      make_tuple(CreatureId::WITCH, 15., enemy),
+      make_tuple(CreatureId::CLAY_GOLEM, 20., enemy),
+      make_tuple(CreatureId::STONE_GOLEM, 20., enemy),
+      make_tuple(CreatureId::IRON_GOLEM, 20., enemy),
+      make_tuple(CreatureId::LAVA_GOLEM, 20., enemy),
+      make_tuple(CreatureId::FIRE_ELEMENTAL, 10., enemy),
+      make_tuple(CreatureId::WATER_ELEMENTAL, 10., enemy),
+      make_tuple(CreatureId::EARTH_ELEMENTAL, 10., enemy),
+      make_tuple(CreatureId::AIR_ELEMENTAL, 10., enemy),
+      make_tuple(CreatureId::GNOME, 100., peaceful),
+      make_tuple(CreatureId::GNOME_CHIEF, 20., peaceful),
+      make_tuple(CreatureId::DWARF, 100., enemy),
+      make_tuple(CreatureId::DWARF_FEMALE, 40., enemy),
+      make_tuple(CreatureId::JACKAL, 200., enemy),
+      make_tuple(CreatureId::BAT, 200., enemy),
+      make_tuple(CreatureId::SNAKE, 150., enemy),
+      make_tuple(CreatureId::SPIDER, 200., enemy),
+      make_tuple(CreatureId::SCORPION, 200., enemy),
+      make_tuple(CreatureId::FLY, 100., enemy),
+      make_tuple(CreatureId::RAT, 100., enemy)});
 }
 
 PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, ControllerFactory factory, bool keeper) {

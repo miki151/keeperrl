@@ -412,11 +412,11 @@ class TileCoordLookup {
     Tile::addTile(ViewId::STONE_GOLEM, sprite(10, 10));
     Tile::addTile(ViewId::IRON_GOLEM, sprite(12, 10));
     Tile::addTile(ViewId::LAVA_GOLEM, sprite(13, 10));
-    Tile::addTile(ViewId::ELEMENTALIST, sprite(4, 0));
-    Tile::addTile(ViewId::AIR_ELEMENTAL, sprite("airelemental"));
-    Tile::addTile(ViewId::FIRE_ELEMENTAL, sprite("fireelemental"));
-    Tile::addTile(ViewId::WATER_ELEMENTAL, sprite("waterelemental"));
-    Tile::addTile(ViewId::EARTH_ELEMENTAL, sprite("earthelemental"));
+    Tile::addTile(ViewId::ELEMENTALIST, sprite("element"));
+    Tile::addTile(ViewId::AIR_ELEMENTAL, sprite("wind"));
+    Tile::addTile(ViewId::FIRE_ELEMENTAL, sprite("fire"));
+    Tile::addTile(ViewId::WATER_ELEMENTAL, sprite("water"));
+    Tile::addTile(ViewId::EARTH_ELEMENTAL, sprite("earth"));
     Tile::addTile(ViewId::ENT, sprite("ent"));
     Tile::addTile(ViewId::ANGEL, sprite("angel"));
     Tile::addTile(ViewId::ZOMBIE, sprite(0, 16));
@@ -525,7 +525,8 @@ class TileCoordLookup {
         .addBackground(byName("torture"))
         .setFloorBorders());
     Tile::addTile(ViewId::IMPALED_HEAD, sprite("impaledhead").setNoShadow());
-    Tile::addTile(ViewId::WHIPPING_POST, sprite(10, 10, 2).setNoShadow());
+    Tile::addTile(ViewId::WHIPPING_POST, sprite("whip").setNoShadow());
+    Tile::addTile(ViewId::NOTICE_BOARD, sprite("board").setNoShadow());
     Tile::addTile(ViewId::TRAINING_ROOM, empty().addConnection(DirSet::fullSet(), byName("traindeco"))
         .addBackground(byName("train")).setFloorBorders());
     Tile::addTile(ViewId::RITUAL_ROOM, empty().addConnection(DirSet::fullSet(), byName("ritualroomdeco"))
@@ -804,6 +805,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::TORTURE_TABLE, symbol("=", ColorId::GRAY));
     Tile::addSymbol(ViewId::IMPALED_HEAD, symbol("⚲", ColorId::BROWN, true));
     Tile::addSymbol(ViewId::WHIPPING_POST, symbol("}", ColorId::BROWN, true));
+    Tile::addSymbol(ViewId::NOTICE_BOARD, symbol("|", ColorId::BROWN));
     Tile::addSymbol(ViewId::TRAINING_ROOM, symbol("‡", ColorId::BROWN, true));
     Tile::addSymbol(ViewId::RITUAL_ROOM, symbol("Ω", ColorId::PURPLE, true));
     Tile::addSymbol(ViewId::LIBRARY, symbol("▤", ColorId::BROWN, true));

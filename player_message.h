@@ -14,8 +14,11 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
   PlayerMessage(const string&, Priority = NORMAL);
   PlayerMessage(const char*, Priority = NORMAL);
 
+  static PlayerMessage announcement(const string& title, const string& text);
+
   PlayerMessage& setPosition(Position);
   optional<Position> getPosition() const;
+  optional<string> getAnnouncementTitle() const;
 
   PlayerMessage& setCreature(UniqueEntity<Creature>::Id);
   optional<UniqueEntity<Creature>::Id> getCreature() const;
@@ -33,9 +36,11 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
   SERIALIZATION_DECL(PlayerMessage);
 
   private:
+  PlayerMessage(const string& title, const string& text);
   string SERIAL(text);
   Priority SERIAL(priority);
   double SERIAL(freshness);
+  optional<string> SERIAL(announcementTitle);
   optional<Position> SERIAL(position);
   optional<UniqueEntity<Creature>::Id> SERIAL(creature);
   const Location* SERIAL(location) = nullptr;

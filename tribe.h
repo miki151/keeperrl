@@ -67,6 +67,7 @@ struct TribeSet {
   PTribe SERIAL(human);
   PTribe SERIAL(elven);
   PTribe SERIAL(dwarven);
+  PTribe SERIAL(gnomish);
   PTribe SERIAL(adventurer);
   PTribe SERIAL(bandit);
   PTribe SERIAL(killEveryone);

@@ -131,6 +131,7 @@ static string getSquareQuestion(SquareApplyType type, string name) {
     case SquareApplyType::DRINK: return "drink from " + name;
     case SquareApplyType::PRAY: return "pray at " + name;
     case SquareApplyType::SLEEP: return "sleep on " + name;
+    case SquareApplyType::NOTICE_BOARD: return "read " + name;
     default: break;
   }
   return "";
@@ -625,12 +626,16 @@ bool Player::isPlayer() const {
 void Player::privateMessage(const PlayerMessage& message) {
   if (message.getText().size() < 2)
     return;
-  messageHistory.push_back(message.getText());
-  if (!messages.empty() && messages.back().getFreshness() < 1)
-    messages.clear();
-  messages.emplace_back(message);
-  if (message.getPriority() == PlayerMessage::CRITICAL)
-    model->getView()->presentText("Important!", message.getText());
+  if (auto title = message.getAnnouncementTitle())
+    model->getView()->presentText(*title, message.getText());
+  else {
+    messageHistory.push_back(message.getText());
+    if (!messages.empty() && messages.back().getFreshness() < 1)
+      messages.clear();
+    messages.emplace_back(message);
+    if (message.getPriority() == PlayerMessage::CRITICAL)
+      model->getView()->presentText("Important!", message.getText());
+  }
 }
 
 void Player::you(const string& param) {

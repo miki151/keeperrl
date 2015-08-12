@@ -39,26 +39,6 @@ class PlayerMessage;
 class CreatureBucketMap;
 class Position;
 
-RICH_ENUM(SquareAttrib,
-  NO_DIG,
-  GLACIER,
-  MOUNTAIN,
-  HILL,
-  LOWLAND,
-  CONNECT_ROAD, 
-  CONNECT_CORRIDOR,
-  LAKE,
-  RIVER,
-  ROAD_CUT_THRU,
-  NO_ROAD,
-  ROOM,
-  COLLECTIVE_START,
-  COLLECTIVE_STAIRS,
-  EMPTY_ROOM,
-  FOG,
-  FORREST
-);
-
 RICH_ENUM(VisionId,
   ELF,
   NIGHT,

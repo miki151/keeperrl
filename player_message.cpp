@@ -5,6 +5,17 @@
 PlayerMessage::PlayerMessage(const string& t, Priority p) : text(makeSentence(t)), priority(p), freshness(1) {}
 PlayerMessage::PlayerMessage(const char* t, Priority p) : text(makeSentence(t)), priority(p), freshness(1) {}
 
+PlayerMessage::PlayerMessage(const string& title, const string& t) : text(t), priority(NORMAL), 
+    announcementTitle(title) {}
+
+PlayerMessage PlayerMessage::announcement(const string& title, const string& text) {
+  return PlayerMessage(title, text);
+}
+
+optional<string> PlayerMessage::getAnnouncementTitle() const {
+  return announcementTitle;
+}
+
 string PlayerMessage::getText() const {
   if (isClickable())
     return text.substr(0, text.size() - 1);
@@ -60,6 +71,7 @@ void PlayerMessage::serialize(Archive& ar, const unsigned int version) {
      & SVAR(text)
      & SVAR(priority)
      & SVAR(freshness)
+     & SVAR(announcementTitle)
      & SVAR(position)
      & SVAR(creature)
      & SVAR(location);

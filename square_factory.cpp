@@ -788,6 +788,26 @@ class Laboratory : public Furniture {
   SERIALIZATION_CONSTRUCTOR(Laboratory);
 };
 
+class NoticeBoard : public Furniture {
+  public:
+  NoticeBoard(ViewObject object, const string& t)
+      : Furniture(object, "notice board", 1, SquareApplyType::NOTICE_BOARD), text(t) {}
+
+  virtual void onApply(Creature* c) override {
+    c->playerMessage(PlayerMessage::announcement("The notice board reads:", text));
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Furniture) & SVAR(text);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(NoticeBoard);
+
+  private:
+  string SERIAL(text);
+};
+
 class Crops : public Square {
   public:
   using Square::Square;
@@ -841,6 +861,7 @@ void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, ConstructionDropItems);
   REGISTER_TYPE(ar, Hatchery);
   REGISTER_TYPE(ar, Crops);
+  REGISTER_TYPE(ar, NoticeBoard);
 }
 
 REGISTER_TYPES(SquareFactory::registerTypes);
@@ -1111,6 +1132,9 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::WHIPPING_POST:
         return new Furniture(ViewObject(ViewId::WHIPPING_POST, ViewLayer::FLOOR, "Whipping post"), 
             "whipping post", 0, SquareApplyType::WHIPPING);
+    case SquareId::NOTICE_BOARD:
+        return new NoticeBoard(ViewObject(ViewId::NOTICE_BOARD, ViewLayer::FLOOR, "Notice board"), 
+            s.get<string>());
     case SquareId::RITUAL_ROOM:
         return new Square(ViewObject(ViewId::RITUAL_ROOM, ViewLayer::FLOOR, "Ritual room"),
           CONSTRUCT(Square::Params,
@@ -1250,6 +1274,13 @@ SquareFactory SquareFactory::castleFurniture(Tribe* rats) {
 
 SquareFactory SquareFactory::castleOutside() {
   return SquareFactory({SquareId::TORCH, SquareId::WELL}, {4, 1});
+}
+
+SquareFactory SquareFactory::villageOutside(const string& boardText) {
+  if (!boardText.empty())
+    return SquareFactory({{SquareId::NOTICE_BOARD, boardText}}, {SquareId::TORCH, SquareId::WELL}, {4, 1});
+  else
+    return SquareFactory({SquareId::TORCH, SquareId::WELL}, {4, 1});
 }
 
 SquareFactory SquareFactory::cryptCoffins(Tribe* vampire) {

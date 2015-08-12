@@ -492,7 +492,8 @@ PGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
       ColorId::GRAY : ColorId::WHITE];
   if (item.number > 1)
     line.addElemAuto(gui.rightMargin(8, gui.label(toString(item.number), color)));
-  line.addElem(gui.label(item.name, color), 100);
+  if (!item.name.empty())
+    line.addElemAuto(gui.label(item.name, color));
   for (auto& elem : line.getAllElems())
     elem = gui.stack(gui.button(onClick), std::move(elem), getTooltip(getItemHint(item)));
   if (item.owner) {
@@ -1320,8 +1321,9 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
     MenuType menuType, int* height, int* highlight, int* choice) {
   vector<PGuiElem> lines;
   vector<int> heights;
+  int leftMargin = 30;
   if (!title.empty()) {
-    lines.push_back(gui.margins(gui.label(capitalFirst(title), colors[ColorId::WHITE]), 30, 0, 0, 0));
+    lines.push_back(gui.leftMargin(leftMargin, gui.label(capitalFirst(title), colors[ColorId::WHITE])));
     heights.push_back(listLineHeight);
     lines.push_back(gui.empty());
     heights.push_back(listLineHeight);
@@ -1332,7 +1334,6 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
   int numActive = 0;
   int secColumnWidth = 0;
   int columnWidth = 300;
-  int leftMargin = 30;
   for (auto& elem : options) {
     columnWidth = max(columnWidth, renderer.getTextLength(elem.getText()) + 50);
     if (!elem.getSecondColumn().empty())
@@ -1351,10 +1352,10 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
     }
     vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType, columnWidth);
     if (options.size() == 1 && label1.size() > 1) { // hacky way of checking that we display a wall of text
-      heights = vector<int>(label1.size(), listLineHeight);
-      lines = std::move(label1);
-      for (auto& line : lines)
+      append(heights, vector<int>(label1.size(), listLineHeight));
+      for (auto& line : label1)
         line = gui.margins(std::move(line), leftMargin, 0, 0, 0);
+      append(lines, std::move(label1));
       break;
     }
     heights.push_back((label1.size() - 1) * listBrokenLineHeight + listLineHeight);

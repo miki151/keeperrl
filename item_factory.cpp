@@ -516,6 +516,26 @@ ItemFactory ItemFactory::orcShop() {
       {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)}, 1} });
 }
 
+ItemFactory ItemFactory::gnomeShop() {
+  return ItemFactory({
+      {ItemId::KNIFE, 5 },
+      {ItemId::SWORD, 2 },
+      {ItemId::BATTLE_AXE, 1 },
+      {ItemId::WAR_HAMMER, 2 },
+      {ItemId::LEATHER_ARMOR, 2 },
+      {ItemId::CHAIN_ARMOR, 1 },
+      {ItemId::LEATHER_HELM, 2 },
+      {ItemId::IRON_HELM, 1 },
+      {ItemId::TELEPATHY_HELM, 0.1 },
+      {ItemId::LEATHER_BOOTS, 2 },
+      {ItemId::IRON_BOOTS, 1 },
+      {ItemId::SPEED_BOOTS, 0.3 },
+      {ItemId::LEVITATION_BOOTS, 0.3 },
+      {ItemId::LEATHER_GLOVES, 2 },
+      {ItemId::STRENGTH_GLOVES, 0.5 },
+      {ItemId::DEXTERITY_GLOVES, 0.5 } });
+}
+
 ItemFactory ItemFactory::dragonCave() {
   return ItemFactory({
       {ItemId::GOLD_PIECE, 10, 30, 100 },

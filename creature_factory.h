@@ -149,6 +149,7 @@ class CreatureFactory {
   static PCreature fromId(CreatureId, Tribe*);
   static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
   static CreatureFactory humanVillage(Tribe*);
+  static CreatureFactory humanPeaceful(Tribe*);
   static CreatureFactory splashHeroes(Tribe*);
   static CreatureFactory splashLeader(Tribe*);
   static CreatureFactory splashMonsters(Tribe*);
@@ -170,6 +171,7 @@ class CreatureFactory {
   static CreatureFactory lavaCreatures(Tribe* tribe);
   static CreatureFactory waterCreatures(Tribe* tribe);
   static CreatureFactory elementals(Tribe* tribe);
+  static CreatureFactory gnomishMines(Tribe* peaceful, Tribe* enemy, int level);
   
   PCreature random(const MonsterAIFactory&);
   PCreature random();
@@ -190,7 +192,9 @@ class CreatureFactory {
 
   private:
   CreatureFactory(Tribe* tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
-      const vector<CreatureId>& unique, EnumMap<CreatureId, Tribe*> overrides = {}, double levelIncrease = 0);
+      const vector<CreatureId>& unique = {}, EnumMap<CreatureId, Tribe*> overrides = {}, double levelIncrease = 0);
+  CreatureFactory(const vector<tuple<CreatureId, double, Tribe*>>& creatures,
+      const vector<CreatureId>& unique = {}, double levelIncrease = 0);
   static void initSplash(Tribe*);
   Tribe* getTribeFor(CreatureId);
   Tribe* SERIAL(tribe);

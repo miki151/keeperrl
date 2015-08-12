@@ -69,6 +69,7 @@ struct SettlementInfo {
   optional<ItemFactory> shopFactory;
   CollectiveBuilder* collective;
   optional<SquareFactory> furniture;
+  optional<SquareFactory> outsideFeatures;
 };
 
 class LevelMaker {
@@ -83,6 +84,8 @@ class LevelMaker {
   static LevelMaker* pyramidLevel(RandomGen&, optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
   static LevelMaker* towerLevel(RandomGen&, SettlementInfo);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
+  static LevelMaker* roomLevel(RandomGen&, CreatureFactory roomFactory, CreatureFactory waterFactory,
+    CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down, SquareFactory);
 };
 
 #endif

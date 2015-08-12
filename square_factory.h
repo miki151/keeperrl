@@ -38,6 +38,7 @@ class SquareFactory {
   static SquareFactory roomFurniture(Tribe* rats);
   static SquareFactory castleFurniture(Tribe* rats);
   static SquareFactory castleOutside();
+  static SquareFactory villageOutside(const string& boardText = "");
   static SquareFactory cryptCoffins(Tribe* vampire);
   static SquareFactory single(SquareType);
 
