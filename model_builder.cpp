@@ -30,6 +30,7 @@ enum class ExtraLevelId {
   CRYPT,
   GNOMISH_MINES,
   TOWER,
+  MAZE,
 };
 
 struct LevelInfo {
@@ -309,7 +310,8 @@ static vector<EnemyInfo> getDwarfTown(RandomGen& random, TribeSet& tribeSet) {
 }
 
 static vector<EnemyInfo> getHumanCastle(RandomGen& random, TribeSet& tribeSet) {
-  return {
+  StairKey stairKey = StairKey::getNew();
+  vector<EnemyInfo> ret {
     mainVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::CASTLE;
       c.creatures = CreatureFactory::humanCastle(tribeSet.human.get());
@@ -319,6 +321,7 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random, TribeSet& tribeSet) {
       c.stockpiles = LIST({StockpileInfo::GOLD, 700});
       c.buildingId = BuildingId::BRICK;
       c.guardId = CreatureId::CASTLE_GUARD;
+      c.downStairs = { stairKey };
       c.shopFactory = ItemFactory::villageShop();
       c.furniture = SquareFactory::castleFurniture(tribeSet.pest.get());
       c.outsideFeatures = SquareFactory::castleOutside();),
@@ -338,8 +341,19 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random, TribeSet& tribeSet) {
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
             AttackTriggerId::STOLEN_ITEMS);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
-          c.ransom = make_pair(0.9, random.get(1400, 2000));)})
-  };
+          c.ransom = make_pair(0.9, random.get(1400, 2000));)})};
+  if (random.roll(4))
+    ret.push_back(
+        lesserVillain(CONSTRUCT(SettlementInfo,
+            c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::MINOTAUR);
+            c.numCreatures = 1;
+            c.location = new Location("maze");
+            c.tribe = tribeSet.monster.get();
+            c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());
+            c.upStairs = { stairKey };
+            c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {},
+          LevelInfo{ExtraLevelId::MAZE, stairKey}));
+  return ret;
 }
 
 static vector<EnemyInfo> getWitchHouse(RandomGen& random, TribeSet& tribeSet) {
@@ -440,6 +454,22 @@ static vector<EnemyInfo> getGreenDragon(RandomGen& random, TribeSet& tribeSet) {
   };
 }
 
+static vector<EnemyInfo> getHydra(RandomGen& random, TribeSet& tribeSet) {
+  return {
+    mainVillain(CONSTRUCT(SettlementInfo,
+      c.type = SettlementType::SWAMP;
+      c.creatures = CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::HYDRA);
+      c.numCreatures = 1;
+      c.location = new Location(true);
+      c.tribe = tribeSet.killEveryone.get();), CollectiveConfig::noImmigrants().setLeaderAsFighter(),
+    { CONSTRUCT(VillainInfo,
+            c.minPopulation = 0;
+            c.minTeamSize = 1;
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 22});
+            c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 7);)})
+  };
+}
+
 static vector<EnemyInfo> getRedDragon(RandomGen& random, TribeSet& tribeSet) {
   return {
     mainVillain(CONSTRUCT(SettlementInfo,
@@ -536,6 +566,7 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
         getDwarfTown(random, tribeSet),
         getHumanVillage(random, tribeSet, boardText),
         getGreenDragon(random, tribeSet),
+        getHydra(random, tribeSet),
         getRedDragon(random, tribeSet),
         getCyclops(random, tribeSet),
         getEntTown(random, tribeSet)}))
@@ -788,6 +819,11 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Mod
       return model->buildLevel(
          LevelBuilder(meter, random, 40, 40, "Crypt"),
          LevelMaker::cryptLevel(random, settlement));
+    case ExtraLevelId::MAZE: 
+      settlement.upStairs = {levelInfo.stairKey};
+      return model->buildLevel(
+         LevelBuilder(meter, random, 40, 40, "Maze"),
+         LevelMaker::mazeLevel(random, settlement));
     case ExtraLevelId::GNOMISH_MINES: {
       StairKey upLink = levelInfo.stairKey;
       for (int i : Range(gnomeHeight - 1)) {

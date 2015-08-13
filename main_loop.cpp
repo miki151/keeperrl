@@ -273,6 +273,7 @@ void MainLoop::playGameChoice() {
         return;
     }
     if (model) {
+      Random = std::move(random);
       model->setOptions(options);
       model->setHighscores(highscores);
       jukebox->setType(MusicType::PEACEFUL, true);

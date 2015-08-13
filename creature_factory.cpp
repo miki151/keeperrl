@@ -1085,6 +1085,38 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 400;
           c.firstName = NameGenerator::get(NameGeneratorId::CYCLOPS)->getNext();
           c.name = EntityName("cyclops", "cyclopes"););
+    case CreatureId::MINOTAUR: 
+      return CATTR(
+          c.viewId = ViewId::MINOTAUR;
+          c.attr[AttrType::SPEED] = 90;
+          c.size = CreatureSize::LARGE;
+          c.attr[AttrType::STRENGTH] = 45;
+          c.attr[AttrType::DEXTERITY] = 35;
+          c.barehandedDamage = 20;
+          c.barehandedAttack = AttackType::EAT;
+          c.humanoid = true;
+          c.weight = 400;
+          c.name = "minotaur";);
+    case CreatureId::HYDRA: 
+      return CATTR(
+          c.viewId = ViewId::HYDRA;
+          c.attr[AttrType::SPEED] = 110;
+          c.size = CreatureSize::LARGE;
+          c.attr[AttrType::STRENGTH] = 35;
+          c.attr[AttrType::DEXTERITY] = 45;
+          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.harmlessApply = true;
+          c.humanoid = false;
+          c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
+          c.barehandedDamage = 10;
+          c.barehandedAttack = AttackType::EAT;
+          c.skills.insert(SkillId::SWIMMING);
+          c.weight = 400;
+          c.name = "hydra";);
+    case CreatureId::SHELOB:
+      return INHERIT(HYDRA,
+          c.viewId = ViewId::SHELOB;
+          c.name = "giant spider";);
     case CreatureId::GREEN_DRAGON: 
       return CATTR(
           c.viewId = ViewId::GREEN_DRAGON;
@@ -2148,6 +2180,9 @@ vector<ItemType> getInventory(CreatureId id) {
               {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
               {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)}}));
     case CreatureId::DARK_KNIGHT:
+    case CreatureId::MINOTAUR: 
+      return ItemList()
+        .add(ItemId::BATTLE_AXE);
     case CreatureId::AVATAR: 
       return ItemList()
         .add(ItemId::SPECIAL_BATTLE_AXE)

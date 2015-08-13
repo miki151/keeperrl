@@ -46,6 +46,7 @@ enum class SettlementType {
   CAVE,
   ISLAND_VAULT,
   CEMETERY,
+  SWAMP,
 };
 
 struct StockpileInfo {
@@ -86,6 +87,7 @@ class LevelMaker {
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
   static LevelMaker* roomLevel(RandomGen&, CreatureFactory roomFactory, CreatureFactory waterFactory,
     CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down, SquareFactory);
+  static LevelMaker* mazeLevel(RandomGen&, SettlementInfo);
 };
 
 #endif
