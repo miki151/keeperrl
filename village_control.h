@@ -21,6 +21,7 @@
 #include "enum_variant.h"
 #include "entity_set.h"
 #include "creature_factory.h"
+#include "attack_trigger.h"
 
 class Task;
 
@@ -34,22 +35,6 @@ enum class VillageBehaviourId {
 typedef EnumVariant<VillageBehaviourId, TYPES(int, CreatureFactory),
         ASSIGN(int, VillageBehaviourId::KILL_MEMBERS),
         ASSIGN(CreatureFactory, VillageBehaviourId::CAMP_AND_SPAWN)> VillageBehaviour;
-
-RICH_ENUM(AttackTriggerId,
-  POWER,
-  SELF_VICTIMS,
-  ENEMY_POPULATION,
-  GOLD,
-  STOLEN_ITEMS,
-  ROOM_BUILT,
-  TIMER
-);
-
-typedef EnumVariant<AttackTriggerId, TYPES(int, SquareType),
-        ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD, AttackTriggerId::TIMER),
-        ASSIGN(SquareType, AttackTriggerId::ROOM_BUILT)> AttackTrigger;
-
-enum class AttackPrerequisite { POK }; // OBSOLETE
 
 class VillageControl : public CollectiveControl {
   public:
@@ -69,14 +54,13 @@ class VillageControl : public CollectiveControl {
     int SERIAL(minTeamSize);
     Collective* SERIAL(collective);
     vector<Trigger> SERIAL(triggers);
-    vector<AttackPrerequisite> SERIAL(prerequisites);
     Behaviour SERIAL(behaviour);
     optional<WelcomeMessage> SERIAL(welcomeMessage);
     optional<pair<double, int>> SERIAL(ransom);
 
     PTask getAttackTask(VillageControl* self);
     double getAttackProbability(const VillageControl* self) const;
-    double getTriggerValue(const Trigger&, const VillageControl* self, const Collective* villain) const;
+    double getTriggerValue(const Trigger&, const VillageControl* self) const;
     bool contains(const Creature*);
 
     template <class Archive>
@@ -92,6 +76,7 @@ class VillageControl : public CollectiveControl {
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
   virtual void onRansomPaid() override;
+  virtual vector<TriggerInfo> getTriggers(const Collective* against) const override;
 
   SERIALIZATION_DECL(VillageControl);
 

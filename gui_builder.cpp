@@ -1219,14 +1219,60 @@ PGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageAction acti
   }
 }
 
+static string getTriggerLabel(const AttackTrigger& trigger) {
+  switch (trigger.getId()) {
+    case AttackTriggerId::SELF_VICTIMS: return "Killed tribe members";
+    case AttackTriggerId::GOLD: return "Gold";
+    case AttackTriggerId::STOLEN_ITEMS: return "Stolen items";
+    case AttackTriggerId::ROOM_BUILT: return "Throne built";
+    case AttackTriggerId::POWER: return "Keeper's power";
+    case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
+    case AttackTriggerId::TIMER: return "Time";
+  }
+}
+
+static sf::Color getTriggerColor(double value) {
+  return sf::Color(255, max<int>(0, 255 - value * 500 * 255), max<int>(0, 255 - value * 500 * 255));
+}
+
+void GuiBuilder::showAttackTriggers(const vector<TriggerInfo>& triggers, Vec2 pos) {
+  vector<PGuiElem> elems;
+  for (auto& trigger : triggers)
+#ifdef RELEASE
+    if (trigger.value > 0)
+#endif
+    elems.push_back(gui.label(getTriggerLabel(trigger.trigger)
+#ifndef RELEASE
+          + " " + toString(trigger.value)
+#endif
+          ,getTriggerColor(trigger.value)));
+  bool exit = false;
+  drawMiniMenu(std::move(elems), exit, pos, 300);
+}
+
 PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
   vector<PGuiElem> lines;
   for (int i : All(info.villages)) {
     auto& elem = info.villages[i];
-    lines.push_back(gui.label(capitalFirst(elem.name) + " (" + elem.tribeName + ")", colors[ColorId::WHITE]));
-    lines.push_back(gui.margins(getVillageStateLabel(elem.state), 40, 0, 0, 0));
+    lines.push_back(gui.label(capitalFirst(elem.name) + (elem.tribeName.empty() ?
+          string() : " (" + elem.tribeName + ")"), colors[ColorId::WHITE]));
+    GuiFactory::ListBuilder line(gui);
+    line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
+    vector<TriggerInfo> triggers = elem.triggers;
+    sort(triggers.begin(), triggers.end(),
+        [] (const TriggerInfo& t1, const TriggerInfo& t2) { return t1.value > t2.value;});
+#ifdef RELEASE
+    triggers = filter(triggers, [](const TriggerInfo& t) { return t.value > 0;});
+#endif
+    if (!triggers.empty())
+      line.addElemAuto(gui.stack(
+          gui.label("Triggers", colors[ColorId::RED]),
+          gui.button([this, triggers](Rectangle bounds) {
+              showAttackTriggers(triggers, bounds.getTopRight() + Vec2(20, 0));})));
+    lines.push_back(line.buildHorizontalList());
     for (auto action : elem.actions)
       lines.push_back(gui.margins(getVillageActionButton(i, action), 40, 0, 0, 0));
+
   }
   if (lines.empty())
     return gui.label("No foreign tribes discovered.");

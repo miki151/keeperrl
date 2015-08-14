@@ -21,6 +21,7 @@
 #include "square_apply_type.h"
 #include "resource_id.h"
 #include "square_type.h"
+#include "attack_trigger.h"
 
 class CollectiveAttack;
 class Creature;
@@ -41,6 +42,7 @@ class Technology;
 class CollectiveConfig;
 class MinionAttraction;
 struct CostInfo;
+struct TriggerInfo;
 
 RICH_ENUM(CollectiveWarning,
     DIGGING,
@@ -113,6 +115,7 @@ class Collective : public TaskCallback {
   void recruit(Creature*, Collective* to);
   vector<Item*> getTradeItems() const;
   PItem buyItem(Item*);
+  vector<TriggerInfo> getTriggers(const Collective* against) const;
 
   double getEfficiency(const Creature*) const;
   const Creature* getLeader() const;

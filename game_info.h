@@ -7,6 +7,7 @@
 #include "item_action.h"
 #include "village_action.h"
 #include "cost_info.h"
+#include "attack_trigger.h"
 
 enum class SpellId;
 
@@ -178,6 +179,7 @@ class VillageInfo {
     string tribeName;
     enum State { FRIENDLY, HOSTILE, CONQUERED } state;
     vector<VillageAction> actions;
+    vector<TriggerInfo> triggers;
   };
   vector<Village> villages;
 };

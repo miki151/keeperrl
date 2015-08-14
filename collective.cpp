@@ -403,6 +403,10 @@ PItem Collective::buyItem(Item* item) {
   return nullptr;
 }
 
+vector<TriggerInfo> Collective::getTriggers(const Collective* against) const {
+  return control->getTriggers(against);
+}
+
 const Creature* Collective::getLeader() const {
   return leader;
 }

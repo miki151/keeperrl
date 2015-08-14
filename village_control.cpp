@@ -34,7 +34,6 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
     & SVAR(minTeamSize)
     & SVAR(collective)
     & SVAR(triggers)
-    & SVAR(prerequisites)
     & SVAR(behaviour)
     & SVAR(welcomeMessage)
     & SVAR(ransom);
@@ -114,6 +113,15 @@ void VillageControl::onRansomPaid() {
       getCollective()->cancelTask(c);
     getCollective()->getTeams().cancel(team);
   }
+}
+
+vector<TriggerInfo> VillageControl::getTriggers(const Collective* against) const {
+  vector<TriggerInfo> ret;
+  for (auto& villain : villains)
+    if (villain.collective == against)
+      for (auto& elem : villain.triggers)
+        ret.push_back({elem, villain.getTriggerValue(elem, this)});
+  return ret;
 }
 
 void VillageControl::considerWelcomeMessage() {
@@ -244,8 +252,7 @@ bool VillageControl::Villain::contains(const Creature* c) {
   return ::contains(collective->getCreatures(), c);
 }
 
-double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const VillageControl* self,
-    const Collective* villain) const {
+double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const VillageControl* self) const {
   double powerMaxProb = 1.0 / 10000; // rather small chance that they attack just because you are strong
   double victimsMaxProb = 1.0 / 500;
   double populationMaxProb = 1.0 / 500;
@@ -254,21 +261,21 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
   double roomMaxProb = 1.0 / 1000;
   switch (trigger.getId()) {
     case AttackTriggerId::TIMER: 
-      return villain->getTime() >= trigger.get<int>() ? 0.05 : 0;
+      return collective->getTime() >= trigger.get<int>() ? 0.05 : 0;
     case AttackTriggerId::ROOM_BUILT: 
-      return villain->getSquares(trigger.get<SquareType>()).empty() ? 0 : roomMaxProb;
+      return collective->getSquares(trigger.get<SquareType>()).empty() ? 0 : roomMaxProb;
     case AttackTriggerId::POWER: 
-      return powerMaxProb * powerClosenessFun(self->getCollective()->getDangerLevel(), villain->getDangerLevel());
+      return powerMaxProb * powerClosenessFun(self->getCollective()->getDangerLevel(), collective->getDangerLevel());
     case AttackTriggerId::SELF_VICTIMS:
-      return victimsMaxProb * victimsFun(self->victims.count(villain) ? self->victims.at(villain) : 0, 0);
+      return victimsMaxProb * victimsFun(self->victims.count(collective) ? self->victims.at(collective) : 0, 0);
     case AttackTriggerId::ENEMY_POPULATION:
       return populationMaxProb * populationFun(
-          villain->getCreatures(MinionTrait::FIGHTER).size(), trigger.get<int>());
+          collective->getCreatures(MinionTrait::FIGHTER).size(), trigger.get<int>());
     case AttackTriggerId::GOLD:
-      return goldMaxProb * goldFun(villain->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
+      return goldMaxProb * goldFun(collective->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
     case AttackTriggerId::STOLEN_ITEMS:
       return stolenMaxProb 
-          * stolenItemsFun(self->stolenItemCount.count(villain) ? self->stolenItemCount.at(villain) : 0);
+          * stolenItemsFun(self->stolenItemCount.count(collective) ? self->stolenItemCount.at(collective) : 0);
   }
   return 0;
 }
@@ -276,7 +283,7 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
 double VillageControl::Villain::getAttackProbability(const VillageControl* self) const {
   double ret = 0;
   for (auto& elem : triggers) {
-    double val = getTriggerValue(elem, self, collective);
+    double val = getTriggerValue(elem, self);
     CHECK(val >= 0 && val <= 1);
     ret = max(ret, val);
     Debug() << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village " << self->getCollective()->getTribe()->getName()

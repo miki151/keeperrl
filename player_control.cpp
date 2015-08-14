@@ -901,8 +901,10 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   bool hostile = col->getTribe()->isEnemy(getTribe());
   if (col->isConquered())
     info.state = info.CONQUERED;
-  else if (hostile)
+  else if (hostile) {
     info.state = info.HOSTILE;
+    info.triggers = col->getTriggers(getCollective());
+  }
   else {
     info.state = info.FRIENDLY;
     if (!col->getRecruits().empty())

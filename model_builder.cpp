@@ -802,6 +802,10 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Mod
             LevelMaker::towerLevel(random,
                 CONSTRUCT(SettlementInfo,
                   c.type = SettlementType::TOWER;
+                  c.creatures = CreatureFactory::singleType(model->tribeSet->human.get(), random.choose(LIST(
+                      CreatureId::WATER_ELEMENTAL, CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL,
+                      CreatureId::EARTH_ELEMENTAL)));
+                  c.numCreatures = random.get(1, 3);
                   c.location = new Location();
                   c.upStairs = {upLink};
                   c.downStairs = {downLink};
