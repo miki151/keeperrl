@@ -1584,7 +1584,7 @@ void Creature::bleed(double severity) {
 void Creature::setOnFire(double amount) {
   if (!isFireResistant()) {
     you(MsgType::ARE, "burnt by the fire");
-    bleed(6. * amount / double(getAttr(AttrType::STRENGTH)));
+    bleed(6. * amount / double(1 + getAttr(AttrType::STRENGTH)));
   }
 }
 
