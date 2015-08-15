@@ -399,7 +399,6 @@ void Square::getViewIndex(ViewIndex& ret, const Tribe* tribe) const {
       ret.insert(copyOf(*obj).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (Item* it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
-  ret.setHighlight(HighlightType::NIGHT, 1.0 - level->getLight(position));
   if (poisonGas->getAmount() > 0)
     ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas->getAmount()));
   if (fog)
