@@ -43,6 +43,7 @@ class CollectiveConfig;
 class MinionAttraction;
 struct CostInfo;
 struct TriggerInfo;
+class Territory;
 
 RICH_ENUM(CollectiveWarning,
     DIGGING,
@@ -126,10 +127,9 @@ class Collective : public TaskCallback {
   const set<Position>& getSquares(SquareApplyType) const;
   vector<SquareType> getSquareTypes() const;
   vector<Position> getAllSquares(const vector<SquareType>&, bool centerOnly = false) const;
-  const set<Position>& getAllSquares() const;
+  const Territory& getTerritory() const;
   void claimSquare(Position);
   void changeSquareType(Position pos, SquareType from, SquareType to);
-  bool containsSquare(Position pos) const;
   bool isKnownSquare(Position pos) const;
 
   double getEfficiency(Position) const;
@@ -181,7 +181,7 @@ class Collective : public TaskCallback {
   static SquareType getHatcheryType(Tribe* tribe);
 
   static vector<SquareType> getEquipmentStorageSquares();
-  vector<pair<Item*, Position>> getTrapItems(TrapType, set<Position> = set<Position>()) const;
+  vector<pair<Item*, Position>> getTrapItems(TrapType, const vector<Position>&) const;
 
   void orderExecution(Creature*);
   void orderSacrifice(Creature*);
@@ -225,8 +225,6 @@ class Collective : public TaskCallback {
 
   MinionEquipment& getMinionEquipment();
   const MinionEquipment& getMinionEquipment() const;
-
-  vector<Position> getExtendedTiles(int maxRadius, int minRadius = 0) const;
 
   struct DormInfo;
   static const EnumMap<SpawnType, DormInfo>& getDormInfo();
@@ -364,7 +362,7 @@ class Collective : public TaskCallback {
   unordered_map<SquareType, set<Position>> SERIAL(mySquares);
   unordered_map<SquareApplyType, set<Position>> SERIAL(mySquares2);
   map<Position, int> SERIAL(squareEfficiency);
-  set<Position> SERIAL(allSquares);
+  HeapAllocated<Territory> SERIAL(territory);
   struct AlarmInfo {
     double SERIAL(finishTime);
     Position SERIAL(position);

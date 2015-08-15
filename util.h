@@ -670,6 +670,14 @@ optional<T> transform2(const optional<U>& u, Fun fun) {
 }
 
 template <typename T>
+optional<T> ifTrue(bool cond, const T& t) {
+  if (cond)
+    return t;
+  else
+    return none;
+}
+
+template <typename T>
 vector<T> reverse2(vector<T> v) {
   reverse(v.begin(), v.end());
   return v;
@@ -1012,6 +1020,11 @@ template<class T>
 string combine(const vector<T>& v) {
   return combine(
       transform2<string>(v, [](const T& e) { return e.name; }));
+}
+
+template<class T, class U>
+vector<T> asVector(const U& u) {
+  return vector<T>(u.begin(), u.end());
 }
 
 RICH_ENUM(Dir, N, S, E, W, NE, NW, SE, SW );

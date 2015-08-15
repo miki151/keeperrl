@@ -55,6 +55,7 @@
 #include "view.h"
 #include "view_index.h"
 #include "collective_attack.h"
+#include "territory.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -849,7 +850,8 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            break;
       case BuildInfo::TRAP: {
              BuildInfo::TrapInfo& elem = button.trapInfo;
-             int numTraps = getCollective()->getTrapItems(elem.type).size();
+             int numTraps = getCollective()->getTrapItems(elem.type,
+                 asVector<Position>(getCollective()->getSquares(SquareId::WORKSHOP))).size();
              buttons.push_back({elem.viewId, elem.name, none, "(" + toString(numTraps) + " ready)" });
            }
            break;
@@ -1014,7 +1016,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.minionLimit = getCollective()->getMaxPopulation();
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemies.clear();
-  for (Position v : getCollective()->getAllSquares())
+  for (Position v : getCollective()->getTerritory().getAll())
     if (const Creature* c = v.getCreature())
       if (c->getTribe() != getTribe() && canSee(c))
         info.enemies.push_back(c);
@@ -1146,7 +1148,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   getSquareViewIndex(position, canSeePos, index);
   if (!canSeePos && getMemory().hasViewIndex(pos))
     index.mergeFromMemory(getMemory().getViewIndex(pos));
-  if (getCollective()->getAllSquares().count(position)
+  if (getCollective()->getTerritory().contains(position)
       && index.hasObject(ViewLayer::FLOOR_BACKGROUND)
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
     index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
@@ -1479,7 +1481,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           PCreature imp = CreatureFactory::fromId(CreatureId::IMP, getTribe(),
               MonsterAIFactory::collective(getCollective()));
           for (Position v : concat(position.neighbors8(Random), {position}))
-            if (v.canEnter(imp.get()) && (canSee(v) || getCollective()->containsSquare(v))) {
+            if (v.canEnter(imp.get()) && (canSee(v) || getCollective()->getTerritory().contains(v))) {
               getCollective()->takeResource({ResourceId::MANA, getImpCost()});
               getCollective()->addCreature(std::move(imp), v,
                   {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT});
@@ -1673,7 +1675,7 @@ void PlayerControl::tick(double time) {
   checkKeeperDanger();
   if (retired && !getKeeper()->isDead()) {
     if (const Creature* c = getLevel()->getPlayer())
-      if (Random.roll(30) && !getCollective()->containsSquare(c->getPosition()))
+      if (Random.roll(30) && !getCollective()->getTerritory().contains(c->getPosition()))
         c->playerMessage("You sense horrible evil in the " + 
             getCardinalName(c->getPosition().getDir(getKeeper()->getPosition()).getBearing().getCardinalDir()));
   }
@@ -1706,7 +1708,7 @@ void PlayerControl::tick(double time) {
   }
   for (auto attack : copyOf(ransomAttacks))
     for (const Creature* c : attack.getCreatures())
-      if (getCollective()->containsSquare(c->getPosition())) {
+      if (getCollective()->getTerritory().contains(c->getPosition())) {
         removeElement(ransomAttacks, attack);
         break;
       }

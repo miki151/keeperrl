@@ -134,6 +134,7 @@ void TribeSet::serialize(Archive& ar, const unsigned int version) {
     & SVAR(peaceful)
     & SVAR(keeper)
     & SVAR(greenskins)
+    & SVAR(ants)
     & SVAR(lizard);
 }
 
@@ -152,20 +153,21 @@ TribeSet::TribeSet() {
   adventurer.reset(new Tribe("player", false));
   keeper.reset(new Tribe("keeper", false));
   greenskins.reset(new Tribe("greenskins", true));
+  ants.reset(new Tribe("ants", true));
   bandit.reset(new Tribe("bandits", true));
   killEveryone.reset(new Tribe("hostile", false));
   peaceful.reset(new Tribe("peaceful", false));
   dwarven->addEnemy({bandit.get()});
   gnomish->addEnemy({bandit.get()});
   keeper->addEnemy({adventurer.get(), elven.get(), dwarven.get(), human.get(), lizard.get(), pest.get(),
-      monster.get(), bandit.get() });
+      monster.get(), bandit.get(), ants.get() });
   elven->addEnemy({ dwarven.get(), bandit.get() });
-  human->addEnemy({ lizard.get(), bandit.get() });
-  adventurer->addEnemy({ monster.get(), pest.get(), bandit.get(), wildlife.get(), greenskins.get() });
+  human->addEnemy({ lizard.get(), bandit.get(), ants.get() });
+  adventurer->addEnemy({ monster.get(), pest.get(), bandit.get(), wildlife.get(), greenskins.get(), ants.get() });
   monster->addEnemy({wildlife.get()});
   killEveryone->addEnemy({greenskins.get(), monster.get(), lizard.get(), pest.get(), wildlife.get(), elven.get(),
       human.get(), dwarven.get(), gnomish.get(), adventurer.get(), keeper.get(), bandit.get(), killEveryone.get(),
-      peaceful.get()});
+      peaceful.get(), ants.get()});
 }
 
 

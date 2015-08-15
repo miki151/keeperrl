@@ -452,6 +452,9 @@ class TileCoordLookup {
     Tile::addTile(ViewId::RAT, sprite("rat"));
     Tile::addTile(ViewId::SPIDER, sprite(6, 12));
     Tile::addTile(ViewId::FLY, sprite(10, 12));
+    Tile::addTile(ViewId::ANT_WORKER, sprite("antwork"));
+    Tile::addTile(ViewId::ANT_SOLDIER, sprite("antw"));
+    Tile::addTile(ViewId::ANT_QUEEN, sprite("antq"));
     Tile::addTile(ViewId::SCORPION, sprite(11, 18));
     Tile::addTile(ViewId::SNAKE, sprite(9, 12));
     Tile::addTile(ViewId::VULTURE, sprite("vulture"));
@@ -731,6 +734,9 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::LEPRECHAUN, symbol("l", ColorId::GREEN));
     Tile::addSymbol(ViewId::RAT, symbol("r", ColorId::BROWN));
     Tile::addSymbol(ViewId::SPIDER, symbol("s", ColorId::BROWN));
+    Tile::addSymbol(ViewId::ANT_WORKER, symbol("a", ColorId::BROWN));
+    Tile::addSymbol(ViewId::ANT_SOLDIER, symbol("a", ColorId::YELLOW));
+    Tile::addSymbol(ViewId::ANT_QUEEN, symbol("a", ColorId::PURPLE));
     Tile::addSymbol(ViewId::FLY, symbol("b", ColorId::GRAY));
     Tile::addSymbol(ViewId::SCORPION, symbol("s", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::SNAKE, symbol("S", ColorId::YELLOW));

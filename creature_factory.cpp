@@ -756,6 +756,11 @@ CreatureFactory CreatureFactory::dwarfTown(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1},{ CreatureId::DWARF_BARON});
 }
 
+CreatureFactory CreatureFactory::antNest(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::ANT_WORKER, CreatureId::ANT_SOLDIER}, { 2, 1},
+      { CreatureId::ANT_QUEEN});
+}
+
 CreatureFactory CreatureFactory::splash(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::IMP}, { 1}, { CreatureId::KEEPER });
 }
@@ -1844,6 +1849,37 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dontChase = true;
           c.animal = true;
           c.name = EntityName("fly", "flies"););
+    case CreatureId::ANT_WORKER:
+      return CATTR(
+          c.viewId = ViewId::ANT_WORKER;
+          c.attr[AttrType::SPEED] = 100;
+          c.size = CreatureSize::MEDIUM;
+          c.attr[AttrType::STRENGTH] = 16;
+          c.attr[AttrType::DEXTERITY] = 16;
+          c.barehandedDamage = 4;
+          c.humanoid = false;
+          c.weight = 10;
+          c.bodyParts[BodyPart::ARM] = 0;
+          c.bodyParts[BodyPart::LEG] = 6;
+          c.bodyParts[BodyPart::WING] = 0;
+          c.animal = true;
+          c.name = "giant ant";);
+    case CreatureId::ANT_SOLDIER:
+      return INHERIT(ANT_WORKER,
+          c.viewId = ViewId::ANT_SOLDIER;
+          c.attr[AttrType::SPEED] += 30;
+          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attr[AttrType::STRENGTH] += 8;
+          c.attr[AttrType::DEXTERITY] = 8;
+          c.barehandedDamage += 8;
+          c.name = "soldier ant";);
+    case CreatureId::ANT_QUEEN:      
+      return INHERIT(ANT_SOLDIER,
+          c.viewId = ViewId::ANT_QUEEN;
+          c.attr[AttrType::STRENGTH] += 4;
+          c.attr[AttrType::DEXTERITY] = 4;
+          c.barehandedDamage += 8;
+          c.name = "ant queen";);
     case CreatureId::SNAKE: 
       return CATTR(
           c.viewId = ViewId::SNAKE;

@@ -85,6 +85,7 @@ class VillageControl : public CollectiveControl {
   optional<Villain&> getVillain(const Creature*);
   void considerWelcomeMessage();
   void considerCancellingAttack();
+  void checkEntries();
 
   REGISTER_HANDLER(PickupEvent, const Creature*, const vector<Item*>&);
 
@@ -94,6 +95,7 @@ class VillageControl : public CollectiveControl {
   EntitySet<Item> SERIAL(myItems);
   map<const Collective*, int> SERIAL(stolenItemCount);
   map<TeamId, int> SERIAL(attackSizes);
+  set<const Collective*> SERIAL(entries);
 };
 
 #endif

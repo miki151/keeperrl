@@ -112,6 +112,7 @@ static vector<EnemyInfo> getGnomishMines(RandomGen& random, TribeSet& tribeSet) 
       c.tribe = tribeSet.gnomish.get();
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = ItemFactory::gnomeShop();
+      c.outsideFeatures = SquareFactory::dungeonOutside();
       c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
       CollectiveConfig::noImmigrants(), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}),
     lesserVillain(CONSTRUCT(SettlementInfo,
@@ -123,6 +124,7 @@ static vector<EnemyInfo> getGnomishMines(RandomGen& random, TribeSet& tribeSet) 
       c.buildingId = BuildingId::DUNGEON;
       c.downStairs = {gnomeKey};
       c.stockpiles = LIST({StockpileInfo::MINERALS, 300});
+      c.outsideFeatures = SquareFactory::dungeonOutside();
       c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
       CollectiveConfig::noImmigrants(), {})
   };
@@ -281,6 +283,32 @@ static vector<EnemyInfo> getElvenVillage(RandomGen& random, TribeSet& tribeSet) 
   };
 }
 
+static vector<EnemyInfo> getAntNest(RandomGen& random, TribeSet& tribeSet) {
+  return {
+    lesserVillain(CONSTRUCT(SettlementInfo,
+      c.type = SettlementType::ANT_NEST;
+      c.creatures = CreatureFactory::antNest(tribeSet.ants.get());
+      c.numCreatures = random.get(9, 14);
+      c.location = new Location(true);
+      c.tribe = tribeSet.ants.get();
+      c.buildingId = BuildingId::DUNGEON;),
+      CollectiveConfig::withImmigrants(0.002, 15, {
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::ANT_WORKER;
+            c.frequency = 1;
+            c.traits = LIST(MinionTrait::FIGHTER);),          
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::ANT_SOLDIER;
+            c.frequency = 1;
+            c.traits = LIST(MinionTrait::FIGHTER);)}),
+      {CONSTRUCT(VillainInfo,
+          c.minPopulation = 1;
+          c.minTeamSize = 4;
+          c.triggers = LIST(AttackTriggerId::ENTRY);
+          c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);)})
+  };
+}
+
 static vector<EnemyInfo> getDwarfTown(RandomGen& random, TribeSet& tribeSet) {
   return {
     mainVillain(CONSTRUCT(SettlementInfo,
@@ -292,6 +320,7 @@ static vector<EnemyInfo> getDwarfTown(RandomGen& random, TribeSet& tribeSet) {
       c.buildingId = BuildingId::DUNGEON;
       c.stockpiles = LIST({StockpileInfo::GOLD, 1000}, {StockpileInfo::MINERALS, 600});
       c.shopFactory = ItemFactory::dwarfShop();
+      c.outsideFeatures = SquareFactory::dungeonOutside();
       c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
       CollectiveConfig::withImmigrants(0.002, 15, {
           CONSTRUCT(ImmigrantInfo,
@@ -531,6 +560,7 @@ static vector<EnemyInfo> getGnomeCave(RandomGen& random, TribeSet& tribeSet) {
       c.tribe = tribeSet.dwarven.get();
       c.buildingId = BuildingId::DUNGEON;
       c.stockpiles = LIST({StockpileInfo::MINERALS, 300});
+      c.outsideFeatures = SquareFactory::dungeonOutside();
       c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
       CollectiveConfig::noImmigrants(), {})
   };
@@ -557,6 +587,8 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
     append(ret, getBanditCave(random, tribeSet));
   append(ret, getIslandVault(random, tribeSet));
   append(ret, getVaults(random, tribeSet));
+  if (Random.roll(4))
+    append(ret, getAntNest(random, tribeSet));
   append(ret, getHumanCastle(random, tribeSet));
   for (auto& infos : random.chooseN(random.get(5, 7), {
         getTower(random, tribeSet),

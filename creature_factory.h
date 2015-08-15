@@ -134,7 +134,11 @@ RICH_ENUM(CreatureId,
     SPIDER,
     SCORPION,
     FLY,
-    RAT
+    RAT,
+
+    ANT_WORKER,
+    ANT_SOLDIER,
+    ANT_QUEEN
 );
 
 class CreatureFactory {
@@ -164,6 +168,7 @@ class CreatureFactory {
   static SingleCreature coffins(Tribe*);
   static CreatureFactory hellLevel(Tribe*);
   static CreatureFactory dwarfTown(Tribe*);
+  static CreatureFactory antNest(Tribe*);
   static CreatureFactory vikingTown(Tribe*);
   static CreatureFactory lizardTown(Tribe*);
   static CreatureFactory orcTown(Tribe*);

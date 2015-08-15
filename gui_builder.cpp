@@ -1228,6 +1228,7 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
     case AttackTriggerId::POWER: return "Keeper's power";
     case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
     case AttackTriggerId::TIMER: return "Time";
+    case AttackTriggerId::ENTRY: return "Entry";
   }
 }
 

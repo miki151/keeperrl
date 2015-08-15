@@ -1272,15 +1272,19 @@ SquareFactory SquareFactory::castleFurniture(Tribe* rats) {
       {2, 1, 1, 2});
 }
 
+SquareFactory SquareFactory::dungeonOutside() {
+  return SquareFactory({SquareId::TORCH}, {1});
+}
+
 SquareFactory SquareFactory::castleOutside() {
-  return SquareFactory({SquareId::TORCH, SquareId::WELL}, {4, 1});
+  return SquareFactory({{SquareId::WELL}}, {SquareId::TORCH}, {1});
 }
 
 SquareFactory SquareFactory::villageOutside(const string& boardText) {
   if (!boardText.empty())
-    return SquareFactory({{SquareId::NOTICE_BOARD, boardText}}, {SquareId::TORCH, SquareId::WELL}, {4, 1});
+    return SquareFactory({{SquareId::NOTICE_BOARD, boardText}, {SquareId::WELL}}, {SquareId::TORCH}, {1});
   else
-    return SquareFactory({SquareId::TORCH, SquareId::WELL}, {4, 1});
+    return SquareFactory({{SquareId::WELL}}, {SquareId::TORCH}, {1});
 }
 
 SquareFactory SquareFactory::cryptCoffins(Tribe* vampire) {

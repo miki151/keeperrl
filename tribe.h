@@ -75,6 +75,7 @@ struct TribeSet {
   PTribe SERIAL(keeper);
   PTribe SERIAL(lizard);
   PTribe SERIAL(greenskins);
+  PTribe SERIAL(ants);
 
   template <class Archive>
     void serialize(Archive& ar, const unsigned int version);

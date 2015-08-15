@@ -44,6 +44,7 @@
 #include "view.h"
 #include "view_index.h"
 #include "stair_key.h"
+#include "territory.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
@@ -177,7 +178,7 @@ void Model::onTechBookRead(Technology* tech) {
 
 void Model::onAlarm(Position pos) {
   for (auto& col : collectives)
-    if (col->containsSquare(pos))
+    if (col->getTerritory().contains(pos))
       col->onAlarm(pos);
   for (const PLevel& l : levels)
     if (const Creature* c = l->getPlayer()) {
@@ -477,19 +478,19 @@ void Model::onAttack(Creature* victim, Creature* attacker) {
 
 void Model::onTrapTrigger(Position pos) {
   for (auto& col : collectives)
-    if (col->containsSquare(pos))
+    if (col->getTerritory().contains(pos))
       col->onTrapTrigger(pos);
 }
 
 void Model::onTrapDisarm(Position pos, const Creature* who) {
   for (auto& col : collectives)
-    if (col->containsSquare(pos))
+    if (col->getTerritory().contains(pos))
       col->onTrapDisarm(who, pos);
 }
 
 void Model::onSquareDestroyed(Position pos) {
   for (auto& col : collectives)
-    if (col->containsSquare(pos))
+    if (col->getTerritory().contains(pos))
       col->onSquareDestroyed(pos);
 }
 
