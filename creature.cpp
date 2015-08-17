@@ -1750,6 +1750,10 @@ CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const
           if (type.getId() == SquareId::FLOOR) {
             monsterMessage(getName().the() + " digs a tunnel");
             playerMessage("You dig a tunnel");
+          } else
+          if (type.getId() == SquareId::MOUNTAIN2) {
+            monsterMessage(getName().the() + " fills up a tunnel");
+            playerMessage("You fill up a tunnel");
           } else {
             monsterMessage(getName().the() + " builds " + getPosition().plus(direction).getName());
             playerMessage("You build " + getPosition().plus(direction).getName());

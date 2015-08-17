@@ -213,6 +213,8 @@ class Level {
   /** Returns if two squares are connected assuming given movement.*/
   bool areConnected(Vec2, Vec2, const MovementType&) const;
 
+  bool isChokePoint(Vec2, const MovementType&) const;
+
   void updateConnectivity(Vec2);
   void updateSunlightMovement();
 
@@ -247,6 +249,7 @@ class Level {
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
   mutable unordered_map<MovementType, Sectors> SERIAL(sectors);
+  Sectors& getSectors(const MovementType&) const;
   
   friend class LevelBuilder;
   Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name,

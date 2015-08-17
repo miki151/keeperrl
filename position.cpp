@@ -446,3 +446,8 @@ void Position::clearItemIndex(ItemIndex index) {
   if (isValid())
     getSquare()->clearItemIndex(index);
 }
+
+bool Position::isChokePoint(const MovementType& movement) const {
+  return isValid() && level->isChokePoint(coord, movement);
+}
+

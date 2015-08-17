@@ -195,7 +195,6 @@ const char* Model::SunlightInfo::getText() {
     case SunlightState::NIGHT: return "night";
     case SunlightState::DAY: return "day";
   }
-  return "";
 }
 
 const Creature* Model::getPlayer() const {

@@ -1795,6 +1795,9 @@ void Collective::destroySquare(Position pos) {
 
 void Collective::addConstruction(Position pos, SquareType type, const CostInfo& cost, bool immediately,
     bool noCredit) {
+  if (type.getId() == SquareId::MOUNTAIN2 && (pos.isChokePoint({MovementTrait::WALK}) ||
+        constructions->getSquareCount(type) > 0))
+    return;
   if (immediately && hasResource(cost)) {
     while (!pos.construct(type)) {}
     onConstructed(pos, type);
@@ -1878,11 +1881,16 @@ bool Collective::isConstructionReachable(Position pos) {
 }
 
 void Collective::onConstructed(Position pos, const SquareType& type) {
-  if (!contains({SquareId::TREE_TRUNK}, type.getId()))
-    territory->insert(pos);
   CHECK(!getSquares(type).count(pos));
   for (auto& elem : mySquares)
       elem.second.erase(pos);
+  if (type.getId() == SquareId::MOUNTAIN2) {
+    destroySquare(pos);
+    territory->remove(pos);
+    return;
+  }
+  if (!contains({SquareId::TREE_TRUNK}, type.getId()))
+    territory->insert(pos);
   mySquares[type].insert(pos);
   if (efficiencySquares.count(type))
     updateEfficiency(pos, type);

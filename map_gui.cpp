@@ -132,10 +132,7 @@ optional<ViewId> getConnectionId(ViewId id) {
 }
 
 optional<ViewId> getConnectionId(const ViewObject& object) {
-  if (object.hasModifier(ViewObject::Modifier::PLANNED))
-    return none;
-  else
-    return getConnectionId(object.id());
+  return getConnectionId(object.id());
 }
 
 vector<Vec2>& getConnectionDirs(ViewId id) {
@@ -401,14 +398,13 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   if (spriteMode && tile.hasSpriteCoord()) {
     DirSet dirs;
     DirSet borderDirs;
-    if (!object.hasModifier(ViewObject::Modifier::PLANNED))
-      if (auto connectionId = getConnectionId(object))
-        for (Vec2 dir : getConnectionDirs(object.id())) {
-          if ((tilePos + dir).inRectangle(levelBounds) && connectionMap.has(tilePos + dir, *connectionId))
-            dirs.insert(dir.getCardinalDir());
-          else
-            borderDirs.insert(dir.getCardinalDir());
-        }
+    if (auto connectionId = getConnectionId(object))
+      for (Vec2 dir : getConnectionDirs(object.id())) {
+        if ((tilePos + dir).inRectangle(levelBounds) && connectionMap.has(tilePos + dir, *connectionId))
+          dirs.insert(dir.getCardinalDir());
+        else
+          borderDirs.insert(dir.getCardinalDir());
+      }
     Vec2 move;
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal);
     drawCreatureHighlights(renderer, object, Rectangle(pos + movement, pos + movement + size), curTimeReal);

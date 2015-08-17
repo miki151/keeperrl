@@ -97,6 +97,7 @@ class Position {
   int getStrength() const;
   bool canSeeThru(VisionId) const;
   void clearItemIndex(ItemIndex);
+  bool isChokePoint(const MovementType&) const;
 
   SERIALIZATION_DECL(Position);
 

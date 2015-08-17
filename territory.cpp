@@ -21,6 +21,12 @@ void Territory::insert(Position pos) {
   clearCache();
 }
 
+void Territory::remove(Position pos) {
+  removeElement(allSquaresVec, pos);
+  allSquares.erase(pos);
+  clearCache();
+}
+  
 bool Territory::contains(Position pos) const {
   return allSquares.count(pos);
 }

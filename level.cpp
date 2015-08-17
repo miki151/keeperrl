@@ -568,8 +568,10 @@ void Level::updateConnectivity(Vec2 pos) {
 }
 
 bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement) const {
-  if (!inBounds(p1) || !inBounds(p2))
-    return false;
+  return inBounds(p1) && inBounds(p2) && getSectors(movement).same(p1, p2);
+}
+
+Sectors& Level::getSectors(const MovementType& movement) const {
   if (!sectors.count(movement)) {
     sectors[movement] = Sectors(getBounds());
     Sectors& newSectors = sectors.at(movement);
@@ -577,7 +579,11 @@ bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement) const {
       if (getSafeSquare(v)->canNavigate(movement))
         newSectors.add(v);
   }
-  return sectors.at(movement).same(p1, p2);
+  return sectors.at(movement);
+}
+
+bool Level::isChokePoint(Vec2 pos, const MovementType& movement) const {
+  return getSectors(movement).isChokePoint(pos);
 }
 
 void Level::updateSunlightMovement() {

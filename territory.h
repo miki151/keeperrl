@@ -8,6 +8,7 @@ class Territory {
   public:
   void insert(Position);
   bool contains(Position) const;
+  void remove(Position);
   const vector<Position>& getAll() const;
   const vector<Position>& getExtended(int min, int max) const;
   const vector<Position>& getExtended(int max) const;
