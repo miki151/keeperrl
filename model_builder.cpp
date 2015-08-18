@@ -89,8 +89,8 @@ static vector<FriendlyVault> friendlyVaults {
 
 static vector<EnemyInfo> getVaults(RandomGen& random, TribeSet& tribeSet) {
   vector<EnemyInfo> ret {
-    getVault(SettlementType::VAULT, CreatureFactory::insects(tribeSet.monster.get()),
-        tribeSet.monster.get(), random.get(6, 12)),
+ /*   getVault(SettlementType::VAULT, CreatureFactory::insects(tribeSet.monster.get()),
+        tribeSet.monster.get(), random.get(6, 12)),*/
     getVault(SettlementType::VAULT, CreatureId::RAT, tribeSet.pest.get(), random.get(3, 8),
         ItemFactory::armory()),
   };
@@ -464,6 +464,18 @@ static vector<EnemyInfo> getBanditCave(RandomGen& random, TribeSet& tribeSet) {
   };
 }
 
+static vector<EnemyInfo> getShelob(RandomGen& random, TribeSet& tribeSet) {
+  return {
+    mainVillain(CONSTRUCT(SettlementInfo,
+      c.type = SettlementType::SPIDER_CAVE;
+      c.creatures = CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::SHELOB);
+      c.numCreatures = 1;
+      c.buildingId = BuildingId::DUNGEON;
+      c.location = new Location();
+      c.tribe = tribeSet.killEveryone.get();), CollectiveConfig::noImmigrants().setLeaderAsFighter(), {})
+  };
+}
+
 static vector<EnemyInfo> getGreenDragon(RandomGen& random, TribeSet& tribeSet) {
   return {
     mainVillain(CONSTRUCT(SettlementInfo,
@@ -590,14 +602,17 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
   if (Random.roll(4))
     append(ret, getAntNest(random, tribeSet));
   append(ret, getHumanCastle(random, tribeSet));
-  for (auto& infos : random.chooseN(random.get(5, 7), {
+  for (auto& infos : random.chooseN(4, {
         getTower(random, tribeSet),
         getWarriorCastle(random, tribeSet),
         getLizardVillage(random, tribeSet),
         getElvenVillage(random, tribeSet),
         getDwarfTown(random, tribeSet),
-        getHumanVillage(random, tribeSet, boardText),
+        getHumanVillage(random, tribeSet, boardText)}))
+    append(ret, infos);
+  for (auto& infos : random.chooseN(3, {
         getGreenDragon(random, tribeSet),
+        getShelob(random, tribeSet),
         getHydra(random, tribeSet),
         getRedDragon(random, tribeSet),
         getCyclops(random, tribeSet),

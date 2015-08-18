@@ -959,7 +959,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 100;
           c.chatReactionFriendly = "curses all law enforcement";
           c.chatReactionHostile = "\"Die!\"";
-          c.skills.insert(SkillId::DISARM_TRAPS);
+ //         c.skills.insert(SkillId::DISARM_TRAPS);
           c.name = "bandit";);
     case CreatureId::GHOST: 
       return CATTR(
@@ -1121,6 +1121,7 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::SHELOB:
       return INHERIT(HYDRA,
           c.viewId = ViewId::SHELOB;
+          c.minionTasks.setValue(MinionTask::SPIDER, 1); 
           c.name = "giant spider";);
     case CreatureId::GREEN_DRAGON: 
       return CATTR(

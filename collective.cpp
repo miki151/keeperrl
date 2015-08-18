@@ -43,7 +43,7 @@ struct Collective::ItemFetchInfo {
 };
 
 struct Collective::MinionTaskInfo {
-  enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME, EAT } type;
+  enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME, EAT, SPIDER } type;
   MinionTaskInfo(vector<SquareType>, const string& description, optional<Warning> = none, double cost = 0,
       bool centerOnly = false);
   MinionTaskInfo(Type, const string& description, optional<Warning> = none);
@@ -204,6 +204,7 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
     {MinionTask::COPULATE, {MinionTaskInfo::COPULATE, "copulation"}},
     {MinionTask::CONSUME, {MinionTaskInfo::CONSUME, "consumption"}},
     {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "spying"}},
+    {MinionTask::SPIDER, {MinionTaskInfo::SPIDER, "spider"}},
     {MinionTask::EXPLORE_NOCTURNAL, {MinionTaskInfo::EXPLORE, "spying"}},
     {MinionTask::EXPLORE_CAVES, {MinionTaskInfo::EXPLORE, "spying"}},
  //   {MinionTask::SACRIFICE, {{}, "sacrifice ordered", Collective::Warning::ALTAR}},
@@ -598,6 +599,7 @@ PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
         return Task::eat(hatchery);
       break;
       }
+    case MinionTaskInfo::SPIDER: return Task::spider(territory->getExtended(5), territory->getExtended(17));
   }
   return nullptr;
 }

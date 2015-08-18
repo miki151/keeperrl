@@ -1958,7 +1958,7 @@ CreatureAction Creature::applyItem(Item* item) const {
       double time = item->getApplyTime();
       playerMessage("You " + item->getApplyMsgFirstPerson(isBlind()));
       monsterMessage(getName().the() + " " + item->getApplyMsgThirdPerson(isBlind()), item->getNoSeeApplyMsg());
-      item->apply(self, getLevel());
+      item->apply(self);
       if (item->isDiscarded()) {
         self->equipment->removeItem(item);
       }

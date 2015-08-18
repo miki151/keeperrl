@@ -200,9 +200,9 @@ optional<CollectiveResourceId> Item::getResourceId() const {
   return attributes->resourceId;
 }
 
-void Item::apply(Creature* c, Level* l) {
+void Item::apply(Creature* c) {
   if (attributes->itemClass == ItemClass::SCROLL)
-    l->getModel()->getStatistics().add(StatId::SCROLL_READ);
+    c->getLevel()->getModel()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->effect)
     Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL);
   if (attributes->uses > -1 && --attributes->uses == 0) {

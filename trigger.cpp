@@ -165,12 +165,12 @@ namespace {
 
 class Trap : public Trigger {
   public:
-  Trap(const ViewObject& obj, Position position, EffectType _effect, Tribe* _tribe)
-      : Trigger(obj, position), effect(_effect), tribe(_tribe) {
+  Trap(const ViewObject& obj, Position position, EffectType _effect, Tribe* _tribe, bool visible)
+      : Trigger(obj, position), effect(_effect), tribe(_tribe), alwaysVisible(visible) {
   }
 
   virtual optional<ViewObject> getViewObject(const Tribe* t) const {
-    if (t == tribe)
+    if (alwaysVisible || t == tribe)
       return viewObject;
     else
       return none;
@@ -183,7 +183,8 @@ class Trap : public Trigger {
   virtual void onCreatureEnter(Creature* c) override {
     if (c->getTribe() != tribe) {
       if (!c->hasSkill(Skill::get(SkillId::DISARM_TRAPS))) {
-        c->you(MsgType::TRIGGER_TRAP, "");
+        if (!alwaysVisible)
+          c->you(MsgType::TRIGGER_TRAP, "");
         Effect::applyToCreature(c, effect, EffectStrength::NORMAL);
         position.getModel()->onTrapTrigger(c->getPosition());
       } else {
@@ -198,7 +199,8 @@ class Trap : public Trigger {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Trigger) 
       & SVAR(effect)
-      & SVAR(tribe);
+      & SVAR(tribe)
+      & SVAR(alwaysVisible);
   }
 
   SERIALIZATION_CONSTRUCTOR(Trap);
@@ -206,12 +208,13 @@ class Trap : public Trigger {
   private:
   EffectType SERIAL(effect);
   Tribe* SERIAL(tribe);
+  bool SERIAL(alwaysVisible);
 };
 
 }
 
-PTrigger Trigger::getTrap(const ViewObject& obj, Position position, EffectType effect, Tribe* tribe) {
-  return PTrigger(new Trap(obj, position, std::move(effect), tribe));
+PTrigger Trigger::getTrap(const ViewObject& obj, Position pos, EffectType e, Tribe* tribe, bool alwaysVisible) {
+  return PTrigger(new Trap(obj, pos, std::move(e), tribe, alwaysVisible));
 }
 
 namespace {

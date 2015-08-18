@@ -53,7 +53,7 @@ class FireScroll : public Item {
   public:
   FireScroll(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void apply(Creature* c, Level* l) override {
+  virtual void apply(Creature* c) override {
     set = true;
   }
 
@@ -200,7 +200,7 @@ class Corpse : public Item {
       corpseInfo(info) {
   }
 
-  virtual void apply(Creature* c, Level* l) override {
+  virtual void apply(Creature* c) override {
     Item* it = c->getWeapon();
     if (it && it->getAttackType() == AttackType::CUT) {
       c->you(MsgType::DECAPITATE, getTheName());
@@ -311,7 +311,7 @@ class SkillBook : public Item {
   public:
   SkillBook(const ItemAttributes& attr, Skill* s) : Item(attr), skill(s->getId()) {}
 
-  virtual void apply(Creature* c, Level* l) override {
+  virtual void apply(Creature* c) override {
     c->addSkill(Skill::get(skill));
   }
 
@@ -331,9 +331,9 @@ class TechBook : public Item {
   public:
   TechBook(const ItemAttributes& attr, optional<TechId> t) : Item(attr), tech(t) {}
 
-  virtual void apply(Creature* c, Level* l) override {
+  virtual void apply(Creature* c) override {
     if (!read || !!tech) {
-      l->getModel()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
+      c->getLevel()->getModel()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
       read = true;
     }
   }
@@ -354,13 +354,15 @@ class TechBook : public Item {
 
 class TrapItem : public Item {
   public:
-  TrapItem(ViewObject _trapObject, const ItemAttributes& attr, EffectType _effect)
-      : Item(attr), effect(_effect), trapObject(_trapObject) {
+  TrapItem(ViewObject _trapObject, const ItemAttributes& attr, EffectType _effect, bool visible)
+      : Item(attr), effect(_effect), trapObject(_trapObject), alwaysVisible(visible) {
   }
 
-  virtual void apply(Creature* c, Level* l) override {
-    c->you(MsgType::SET_UP_TRAP, "");
-    c->getPosition().addTrigger(Trigger::getTrap(trapObject, c->getPosition(), effect, c->getTribe()));
+  virtual void apply(Creature* c) override {
+    if (!alwaysVisible)
+      c->you(MsgType::SET_UP_TRAP, "");
+    c->getPosition().addTrigger(Trigger::getTrap(trapObject, c->getPosition(), effect, c->getTribe(),
+          alwaysVisible));
     discarded = true;
   }
 
@@ -368,7 +370,8 @@ class TrapItem : public Item {
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Item)
       & SVAR(effect)
-      & SVAR(trapObject);
+      & SVAR(trapObject)
+      & SVAR(alwaysVisible);
   }
 
   SERIALIZATION_CONSTRUCTOR(TrapItem);
@@ -376,6 +379,7 @@ class TrapItem : public Item {
   private:
   EffectType SERIAL(effect);
   ViewObject SERIAL(trapObject);
+  bool SERIAL(alwaysVisible);
 };
 
 template <class Archive>
@@ -794,11 +798,10 @@ ViewId getTrapViewId(TrapType t) {
   return ViewId(0);
 }
 
-PItem getTrap(const ItemAttributes& attr, TrapType trapType, EffectType effectType) {
-  return PItem(new TrapItem(
-        ViewObject(getTrapViewId(trapType), ViewLayer::LARGE_ITEM, Effect::getName(effectType) + " trap"),
-        attr,
-        effectType));
+PItem getTrap(const ItemAttributes& attr, TrapInfo info) {
+  return PItem(new TrapItem(ViewObject(getTrapViewId(info.trapType), ViewLayer::LARGE_ITEM,
+          Effect::getName(info.effectType) + " trap"),
+        attr, info.effectType, info.alwaysVisible));
 }
 
 ViewId getRingViewId(LastingEffect e) {
@@ -892,7 +895,7 @@ PItem ItemFactory::fromId(ItemType item) {
     case ItemId::TECH_BOOK: return PItem(new TechBook(getAttributes(item), item.get<TechId>()));
     case ItemId::POTION: return PItem(new Potion(getAttributes(item)));
     case ItemId::TRAP_ITEM:
-        return getTrap(getAttributes(item), item.get<TrapInfo>().trapType, item.get<TrapInfo>().effectType);
+        return getTrap(getAttributes(item), item.get<TrapInfo>());
     default: return PItem(new Item(getAttributes(item)));
   }
   return PItem();

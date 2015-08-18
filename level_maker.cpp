@@ -202,8 +202,8 @@ class RoomMaker : public LevelMaker {
 class Connector : public LevelMaker {
   public:
   Connector(SquareType _doorType, double _doorProb, double _diggingCost = 3,
-        Predicate pred = Predicate::canEnter({MovementTrait::WALK}))
-      : doorType(_doorType), doorProb(_doorProb), diggingCost(_diggingCost), connectPred(pred) {
+        Predicate pred = Predicate::canEnter({MovementTrait::WALK}), optional<SquareAttrib> setAttr = none)
+      : doorType(_doorType), doorProb(_doorProb), diggingCost(_diggingCost), connectPred(pred), setAttrib(setAttr) {
   }
   double getValue(LevelBuilder* builder, Vec2 pos, Rectangle area) {
     if (builder->getSquare(pos)->canNavigate({MovementTrait::WALK}))
@@ -257,7 +257,7 @@ class Connector : public LevelMaker {
           }
         if (newType == SquareId::DOOR)
           builder->putSquare(v, SquareId::FLOOR);
-        builder->putSquare(v, newType);
+        builder->putSquare(v, newType, setAttrib);
       }
       if (builder->getType(v) == SquareId::FLOOR || 
           builder->getType(v) == SquareId::BRIDGE || 
@@ -312,6 +312,7 @@ class Connector : public LevelMaker {
   double doorProb;
   double diggingCost;
   Predicate connectPred;
+  optional<SquareAttrib> setAttrib;
 };
 
 class DungeonFeatures : public LevelMaker {
@@ -1375,6 +1376,8 @@ class LocationMaker : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     builder->addLocation(location, area);
+    for (Vec2 v : area)
+      builder->addAttrib(v, SquareAttrib::LOCATION);
   }
   
   private:
@@ -1924,6 +1927,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::MINETOWN: return {30, 20};
     case SettlementType::SMALL_MINETOWN: return {15, 15};
     case SettlementType::CAVE: return {12, 12};
+    case SettlementType::SPIDER_CAVE: return {12, 12};
     case SettlementType::VAULT: return {10, 10};
     case SettlementType::TOWER: return {5, 5};
     case SettlementType::ISLAND_VAULT: return {random.get(15, 25), random.get(15, 25)};
@@ -1943,8 +1947,12 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
     case SettlementType::ANT_NEST:
     case SettlementType::SMALL_MINETOWN:
     case SettlementType::MINETOWN: return Predicate::type(SquareId::MOUNTAIN2);
+    case SettlementType::SPIDER_CAVE: return RandomLocations::LocationPredicate(
+        Predicate::type(SquareId::MOUNTAIN2), Predicate::andPred(
+          Predicate::negate(Predicate::attrib(SquareAttrib::LOCATION)),
+          Predicate::attrib(SquareAttrib::CONNECTOR)), 1, 2);
     case SettlementType::ISLAND_VAULT:
-        return Predicate::Predicate::attrib(SquareAttrib::MOUNTAIN);
+        return Predicate::attrib(SquareAttrib::MOUNTAIN);
     default: return Predicate::andPred(Predicate::attrib(SquareAttrib::LOWLAND),
                  Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
   }
@@ -2019,6 +2027,21 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
     queue->addMaker(
         new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
   queue->addMaker(new LocationMaker(info.location));
+  return queue;
+}
+
+static MakerQueue* spiderCaveMaker(SettlementInfo info) {
+  MakerQueue* queue = new MakerQueue();
+  BuildingInfo building = getBuildingInfo(info);
+  MakerQueue* inside = new MakerQueue();
+  inside->addMaker(new UniformBlob(building.floorOutside, none, SquareAttrib::CONNECT_CORRIDOR));
+  if (info.creatures)
+    inside->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective));
+  if (info.shopFactory)
+    inside->addMaker(new Items(*info.shopFactory, building.floorOutside, 5, 10));
+  queue->addMaker(new Margin(3, inside));
+  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new Connector(SquareId::FLOOR, 0));
   return queue;
 }
 
@@ -2112,6 +2135,7 @@ LevelMaker* LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   vector<SquareType> vegetationHigh { getTreesType(SquareId::DECID_TREE), getTreesType(SquareId::BUSH) };
   vector<double> probs { 2, 1 };
   RandomLocations* locations = new RandomLocations();
+  RandomLocations* locations2 = new RandomLocations();
   LevelMaker* startingPos = new StartingPos(Predicate::type(SquareId::HILL), StairKey::keeperSpawn());
   locations->add(startingPos, Vec2(4, 4), Predicate::type(SquareId::HILL));
   struct CottageInfo {
@@ -2160,6 +2184,9 @@ LevelMaker* LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
       case SettlementType::CAVE:
           queue = dragonCaveMaker(settlement); break;
           break;
+      case SettlementType::SPIDER_CAVE:
+          queue = spiderCaveMaker(settlement); break;
+          break;
       case SettlementType::CEMETERY:
           queue = cemetery(settlement); break;
           break;
@@ -2167,8 +2194,12 @@ LevelMaker* LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
           queue = swamp(settlement); break;
           break;
     }
-    locations->setMinDistance(startingPos, queue, 70);
-    locations->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
+    if (settlement.type == SettlementType::SPIDER_CAVE)
+      locations2->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
+    else {
+      locations->setMinDistance(startingPos, queue, 70);
+      locations->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
+    }
   }
   Predicate lowlandPred = Predicate::andPred(
       Predicate::attrib(SquareAttrib::LOWLAND),
@@ -2211,7 +2242,8 @@ LevelMaker* LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   queue->addMaker(new Margin(10, locations));
   queue->addMaker(new Roads(SquareId::FLOOR));
   queue->addMaker(new Connector(SquareId::DOOR, 0, 5, Predicate::andPred(Predicate::canEnter({MovementTrait::WALK}),
-          Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR))));
+          Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR)), SquareAttrib::CONNECTOR));
+  queue->addMaker(new Margin(10, locations2));
   queue->addMaker(new Items(ItemFactory::mushrooms(), SquareId::GRASS, 30, 60));
   return new BorderGuard(queue);
 }

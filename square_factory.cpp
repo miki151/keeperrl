@@ -257,7 +257,7 @@ class Fountain : public Square {
   virtual void onApply(Creature* c) override {
     c->playerMessage("You drink from the fountain.");
     PItem potion = getOnlyElement(ItemFactory::potions().random(seed));
-    potion->apply(c, getLevel());
+    potion->apply(c);
   }
 
   template <class Archive> 

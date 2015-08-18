@@ -19,6 +19,7 @@ RICH_ENUM(SquareAttrib,
   LOWLAND,
   CONNECT_ROAD, 
   CONNECT_CORRIDOR,
+  CONNECTOR,
   LAKE,
   RIVER,
   ROAD_CUT_THRU,
@@ -30,7 +31,8 @@ RICH_ENUM(SquareAttrib,
   BUILDINGS_CENTER,
   CASTLE_CORNER,
   FOG,
-  FORREST
+  FORREST,
+  LOCATION
 );
 
 class LevelBuilder {

@@ -33,6 +33,7 @@
 #include "creature_factory.h"
 #include "player_message.h"
 #include "territory.h"
+#include "item_factory.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -1463,6 +1464,63 @@ PTask Task::dropItems(vector<Item*> items) {
   return PTask(new DropItems(items));
 }
 
+namespace {
+class Spider : public NonTransferable {
+  public:
+  Spider(const vector<Position>& pos, const vector<Position>& pos2) : positionsClose(pos), positionsFurther(pos2) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (Random.roll(10))
+      for (auto& pos : Random.permutation(positionsFurther))
+        if (pos.getCreature() && pos.getCreature()->isAffected(LastingEffect::ENTANGLED)) {
+          makeWeb = pos;
+          break;
+        }
+    if (!makeWeb && Random.roll(10)) {
+      vector<Position>& positions = Random.roll(15) ? positionsFurther : positionsClose;
+      for (auto& pos : Random.permutation(positions))
+        if (pos.getTriggers().empty() && !!c->moveTowards(pos, true)) {
+          makeWeb = pos;
+          break;
+        }
+    }
+    if (!makeWeb)
+      return c->wait();
+    if (c->getPosition() == *makeWeb)
+      return c->wait().append([this](Creature* c) {
+            ItemFactory::fromId(ItemType{ItemId::TRAP_ITEM,
+                TrapInfo{TrapType::WEB, EffectType{EffectId::LASTING, LastingEffect::ENTANGLED}, true}})->apply(c);
+            setDone();
+          });
+    else
+      return c->moveTowards(*makeWeb, true);
+  }
+
+  virtual string getDescription() const override {
+    return "Spider";
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(NonTransferable)
+      & SVAR(positionsClose)
+      & SVAR(positionsFurther)
+      & SVAR(makeWeb);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(Spider);
+
+  protected:
+  vector<Position> SERIAL(positionsClose);
+  vector<Position> SERIAL(positionsFurther);
+  optional<Position> SERIAL(makeWeb);
+};
+}
+
+PTask Task::spider(const vector<Position>& posClose, const vector<Position>& posFurther) {
+  return PTask(new Spider(posClose, posFurther));
+}
+
 template <class Archive>
 void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Construction);
@@ -1492,6 +1550,7 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, GoToAndWait);
   REGISTER_TYPE(ar, DropItems);
   REGISTER_TYPE(ar, CampAndSpawn);
+  REGISTER_TYPE(ar, Spider);
 }
 
 REGISTER_TYPES(Task::registerTypes);

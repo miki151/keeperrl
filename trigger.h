@@ -42,7 +42,7 @@ class Trigger {
   virtual double getLightEmission() const;
 
   static PTrigger getPortal(const ViewObject&, Position);
-  static PTrigger getTrap(const ViewObject&, Position, EffectType, Tribe*);
+  static PTrigger getTrap(const ViewObject&, Position, EffectType, Tribe*, bool alwaysVisible);
   static PTrigger getTorch(Dir attachmentDir, Position);
   static PTrigger getMeteorShower(Creature*, double duration);
 
