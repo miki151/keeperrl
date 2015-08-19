@@ -29,6 +29,7 @@ class Renderer;
 class CreatureView;
 class Clock;
 class Creature;
+class Options;
 
 class MapGui : public GuiElem {
   public:
@@ -38,7 +39,7 @@ class MapGui : public GuiElem {
     function<void(UniqueEntity<Creature>::Id)> creatureClickFun;
     function<void()> refreshFun;
   };
-  MapGui(Callbacks, Clock*);
+  MapGui(Callbacks, Clock*, Options*);
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
@@ -98,6 +99,7 @@ class MapGui : public GuiElem {
     Vec2 position;
   };
   vector<AnimationInfo> animations;
+  Options* options;
   DirtyTable<bool> fogOfWar;
   DirtyTable<vector<ViewId>> extraBorderPos;
   bool isFoW(Vec2 pos) const;

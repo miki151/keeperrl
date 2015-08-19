@@ -96,7 +96,7 @@ void WindowView::resetMapBounds() {
 }
 
 WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(params.gui), useTiles(params.useTiles),
-    options(params.options), clock(params.clock), guiBuilder(renderer, gui, clock, {
+    options(params.options), clock(params.clock), guiBuilder(renderer, gui, clock, params.options, {
         [this](UserInput input) { inputQueue.push(input);},
         [this](const vector<string>& s) { mapGui->setHint(s);},
         [this](sf::Event::KeyEvent ev) { keyboardAction(ev);},
@@ -125,7 +125,7 @@ void WindowView::initialize() {
       [this](Vec2 pos) { mapLeftClickFun(pos); },
       [this](Vec2 pos) { mapRightClickFun(pos); },
       [this](UniqueEntity<Creature>::Id id) { mapCreatureClickFun(id); },
-      [this] { refreshInput = true;}}, clock );
+      [this] { refreshInput = true;}}, clock, options );
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = gui.border2(gui.rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
@@ -1143,7 +1143,8 @@ void WindowView::processEvents() {
       propagateEvent(event, getClickableGuiElems());
     switch (event.type) {
       case Event::KeyPressed:
-        renderer.flushEvents(Event::KeyPressed);
+        if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
+          renderer.flushEvents(Event::KeyPressed);
         break;
       case Event::MouseButtonPressed :
         if (event.mouseButton.button == sf::Mouse::Right)

@@ -20,6 +20,7 @@
 #include "view_id.h"
 #include "player_message.h"
 #include "view.h"
+#include "options.h"
 
 using sf::Color;
 using sf::String;
@@ -38,8 +39,8 @@ using sf::Texture;
 using sf::Keyboard;
 using sf::Mouse;
 
-GuiBuilder::GuiBuilder(Renderer& r, GuiFactory& g, Clock* c, Callbacks call)
-    : renderer(r), gui(g), clock(c), callbacks(call), gameSpeed(GameSpeed::NORMAL) {
+GuiBuilder::GuiBuilder(Renderer& r, GuiFactory& g, Clock* c, Options* o, Callbacks call)
+    : renderer(r), gui(g), clock(c), options(o), callbacks(call), gameSpeed(GameSpeed::NORMAL) {
 }
 
 void GuiBuilder::reset() {
@@ -99,6 +100,44 @@ PGuiElem GuiBuilder::drawCost(pair<ViewId, int> cost, ColorId color) {
       .buildHorizontalList();
 }
 
+static Keyboard::Key getKey(char c) {
+  switch (c) {
+    case 'a': return Keyboard::A;
+    case 'b': return Keyboard::B;
+    case 'c': return Keyboard::C;
+    case 'd': return Keyboard::D;
+    case 'e': return Keyboard::E;
+    case 'f': return Keyboard::F;
+    case 'g': return Keyboard::G;
+    case 'h': return Keyboard::H;
+    case 'i': return Keyboard::I;
+    case 'j': return Keyboard::J;
+    case 'k': return Keyboard::K;
+    case 'l': return Keyboard::L;
+    case 'm': return Keyboard::M;
+    case 'n': return Keyboard::N;
+    case 'o': return Keyboard::O;
+    case 'p': return Keyboard::P;
+    case 'q': return Keyboard::Q;
+    case 'r': return Keyboard::R;
+    case 's': return Keyboard::S;
+    case 't': return Keyboard::T;
+    case 'u': return Keyboard::U;
+    case 'v': return Keyboard::V;
+    case 'w': return Keyboard::W;
+    case 'x': return Keyboard::X;
+    case 'y': return Keyboard::Y;
+    case 'z': return Keyboard::Z;
+    case 0: return Keyboard::KeyCount;
+  }
+  FAIL << "Unrecognized key " << c;
+  return Keyboard::F13;
+}
+
+Event::KeyEvent GuiBuilder::getHotkeyEvent(char c) {
+  return Event::KeyEvent{getKey(c), options->getBoolValue(OptionId::WASD_SCROLLING), false, false, false};
+}
+
 PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, int& active,
     CollectiveTab tab) {
   GuiFactory::ListBuilder line(gui);
@@ -124,7 +163,7 @@ PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, int& 
   }
   return gui.stack(
       getHintCallback({capitalFirst(button.help)}),
-      gui.button(buttonFun, button.hotkey),
+      gui.button(buttonFun, getHotkeyEvent(button.hotkey)),
       line.buildHorizontalList());
 }
 
@@ -201,7 +240,7 @@ PGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
     line.push_back(gui.viewObject(ViewObject(info.techButtons[i].viewId, ViewLayer::CREATURE, ""), tilesOk));
     line.push_back(gui.label(info.techButtons[i].name, colors[ColorId::WHITE], info.techButtons[i].hotkey));
     lines.push_back(gui.stack(gui.button(
-          getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i)), info.techButtons[i].hotkey),
+          getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i)), getHotkeyEvent(info.techButtons[i].hotkey)),
           gui.horizontalList(std::move(line), 35)));
   }
   return gui.verticalList(std::move(lines), legendLineHeight);
@@ -387,13 +426,13 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
             else
               clock->pause();
             gameSpeedDialogOpen = false;
-            }, ' ')));
+            }, Event::KeyEvent{Keyboard::Space})));
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
     Color color = colors[speed == gameSpeed ? ColorId::GREEN : ColorId::WHITE];
     lines.push_back(gui.stack(gui.horizontalList(makeVec<PGuiElem>(
              gui.label(getGameSpeedName(speed), color),
              gui.label("'" + string(1, getHotkeyChar(speed)) + "' ", color)), keyMargin),
-          gui.button2([=] { gameSpeed = speed; gameSpeedDialogOpen = false; clock->cont();},
+          gui.button([=] { gameSpeed = speed; gameSpeedDialogOpen = false; clock->cont();},
             getHotkey(speed))));
   }
   reverse(lines.begin(), lines.end());
@@ -1509,7 +1548,7 @@ vector<PGuiElem> GuiBuilder::drawItemMenu(const vector<ItemInfo>& items, ItemMen
     lines.push_back(getItemLine(items[i], [=] (Rectangle bounds) { callback(bounds, i);} ));
   if (doneBut)
     lines.push_back(gui.stack(
-          gui.button2([=] { callback(Rectangle(), none); }, {Keyboard::Escape}),
+          gui.button([=] { callback(Rectangle(), none); }, {Keyboard::Escape}),
           gui.centeredLabel(Renderer::HOR, "[done]", colors[ColorId::LIGHT_BLUE])));
   return lines;
 }

@@ -27,6 +27,7 @@ RICH_ENUM(OptionId,
   FULLSCREEN_RESOLUTION,
   ONLINE,
   AUTOSAVE,
+  WASD_SCROLLING,
 
   FAST_IMMIGRATION,
   ADVENTURER_NAME,
@@ -66,8 +67,9 @@ class Options {
   void changeValue(OptionId, const Options::Value&, View*);
   string getValueString(OptionId, Options::Value);
   Value getValue(OptionId);
-  EnumMap<OptionId, Value> readValues();
-  void writeValues(const EnumMap<OptionId, Value>&);
+  const EnumMap<OptionId, Options::Value>& readValues();
+  optional<EnumMap<OptionId, Value>> values;
+  void writeValues();
   string filename;
   EnumMap<OptionId, string> defaultStrings;
   EnumMap<OptionId, optional<Value>> overrides;

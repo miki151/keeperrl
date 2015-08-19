@@ -31,7 +31,6 @@ class GuiElem {
   virtual void onMouseGone() {}
   virtual void onMouseRelease(Vec2) {}
   virtual void onRefreshBounds() {}
-  virtual bool onKeyPressed(char) { return false;}
   virtual bool onKeyPressed2(Event::KeyEvent) { return false;}
   virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
   virtual optional<int> getPreferredWidth() { return none; }
@@ -55,11 +54,11 @@ class GuiFactory {
   void loadFreeImages(const string& path);
   void loadNonFreeImages(const string& path);
 
-  PGuiElem button(function<void()> fun, char hotkey = 0, bool capture = false);
-  PGuiElem button2(function<void()> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem button(function<void()> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem button(function<void()> fun);
   PGuiElem reverseButton(function<void()> fun, vector<Event::KeyEvent> = {}, bool capture = false);
-  PGuiElem button(function<void(Rectangle buttonBounds)> fun, char hotkey = 0, bool capture = false);
-  PGuiElem button2(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem button(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem button(function<void(Rectangle buttonBounds)> fun);
   PGuiElem focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent,
       vector<Event::KeyEvent> defocusEvent, bool& focused);
   PGuiElem mouseWheel(function<void(bool)>);

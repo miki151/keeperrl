@@ -26,11 +26,12 @@
 #include "view_id.h"
 #include "level.h"
 #include "creature_view.h"
+#include "options.h"
 
 using sf::Keyboard;
 
-MapGui::MapGui(Callbacks call, Clock* c) : objects(Level::getMaxBounds()), callbacks(call), clock(c),
-    fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
+MapGui::MapGui(Callbacks call, Clock* c, Options* o) : objects(Level::getMaxBounds()), callbacks(call),
+    clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
     connectionMap(Level::getMaxBounds()), enemyPositions(Level::getMaxBounds(), false) {
   clearCenter();
 }
@@ -167,6 +168,9 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
   if (!keyScrolling)
     return false;
   switch (key.code) {
+    case Keyboard::W:
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING))
+        break;
     case Keyboard::Up:
     case Keyboard::Numpad8:
       center.y -= key.shift ? shiftScroll : normalScroll;
@@ -175,6 +179,9 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
       center.y -= key.shift ? shiftScroll : normalScroll;
       center.x += key.shift ? shiftScroll : normalScroll;
       break;
+    case Keyboard::D:
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING))
+        break;
     case Keyboard::Right: 
     case Keyboard::Numpad6:
       center.x += key.shift ? shiftScroll : normalScroll;
@@ -183,6 +190,9 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
       center.x += key.shift ? shiftScroll : normalScroll;
       center.y += key.shift ? shiftScroll : normalScroll;
       break;
+    case Keyboard::S:
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING))
+        break;
     case Keyboard::Down:
     case Keyboard::Numpad2:
       center.y += key.shift ? shiftScroll : normalScroll;
@@ -191,6 +201,9 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
       center.x -= key.shift ? shiftScroll : normalScroll;
       center.y += key.shift ? shiftScroll : normalScroll;
       break;
+    case Keyboard::A:
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING))
+        break;
     case Keyboard::Left:
     case Keyboard::Numpad4:
       center.x -= key.shift ? shiftScroll : normalScroll;

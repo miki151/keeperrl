@@ -28,6 +28,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::FULLSCREEN_RESOLUTION, 0},
   {OptionId::ONLINE, 1},
   {OptionId::AUTOSAVE, 1},
+  {OptionId::WASD_SCROLLING, 0},
   {OptionId::FAST_IMMIGRATION, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
@@ -46,6 +47,7 @@ const map<OptionId, string> names {
   {OptionId::FULLSCREEN_RESOLUTION, "Fullscreen resolution"},
   {OptionId::ONLINE, "Online exchange of dungeons and highscores"},
   {OptionId::AUTOSAVE, "Autosave"},
+  {OptionId::WASD_SCROLLING, "WASD scrolling"},
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
@@ -65,6 +67,8 @@ const map<OptionId, string> hints {
   {OptionId::ONLINE, "Upload your highscores and retired dungeons to keeperrl.com."},
   {OptionId::AUTOSAVE, "Autosave the game every " + toString(MainLoop::getAutosaveFreq()) + " turns. "
     "The save file will be used to recover in case of a crash."},
+  {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
+    "using alt + letter."},
   {OptionId::FAST_IMMIGRATION, ""},
   {OptionId::STARTING_RESOURCE, ""},
   {OptionId::START_WITH_NIGHT, ""},
@@ -82,6 +86,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::FULLSCREEN_RESOLUTION,
       OptionId::ONLINE,
       OptionId::AUTOSAVE,
+      OptionId::WASD_SCROLLING,
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
@@ -147,11 +152,11 @@ int Options::getChoiceValue(OptionId id) {
 }
 
 void Options::setValue(OptionId id, Value value) {
-  auto values = readValues();
-  values[id] = value;
+  readValues();
+  (*values)[id] = value;
   if (triggers.count(id))
     triggers.at(id)(boost::get<int>(value));
-  writeValues(values);
+  writeValues();
 }
 
 void Options::setDefaultString(OptionId id, const string& s) {
@@ -172,6 +177,7 @@ string Options::getValueString(OptionId id, Options::Value value) {
     case OptionId::ASCII:
     case OptionId::FULLSCREEN:
     case OptionId::AUTOSAVE:
+    case OptionId::WASD_SCROLLING:
     case OptionId::MUSIC: return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
@@ -273,33 +279,35 @@ void Options::handle(View* view, OptionSet set, int lastIndex) {
   handle(view, set, *index);
 }
 
-EnumMap<OptionId, Options::Value> Options::readValues() {
-  EnumMap<OptionId, Value> ret = defaults;
-  ifstream in(filename);
-  while (1) {
-    char buf[100];
-    in.getline(buf, 100);
-    if (!in)
-      break;
-    vector<string> p = split(string(buf), {','});
-    if (p.empty())
-      continue;
-    if (p.size() == 1)
-      p.push_back("");
-    OptionId optionId;
-    if (auto id = EnumInfo<OptionId>::fromStringSafe(p[0]))
-      optionId = *id;
-    else
-      continue;
-    if (auto val = readValue(optionId, p[1]))
-      ret[optionId] = *val;
+const EnumMap<OptionId, Options::Value>& Options::readValues() {
+  if (!values) {
+    values = defaults;
+    ifstream in(filename);
+    while (1) {
+      char buf[100];
+      in.getline(buf, 100);
+      if (!in)
+        break;
+      vector<string> p = split(string(buf), {','});
+      if (p.empty())
+        continue;
+      if (p.size() == 1)
+        p.push_back("");
+      OptionId optionId;
+      if (auto id = EnumInfo<OptionId>::fromStringSafe(p[0]))
+        optionId = *id;
+      else
+        continue;
+      if (auto val = readValue(optionId, p[1]))
+        (*values)[optionId] = *val;
+    }
   }
-  return ret;
+  return *values;
 }
 
-void Options::writeValues(const EnumMap<OptionId, Value>& values) {
+void Options::writeValues() {
   ofstream out(filename);
   for (OptionId id : ENUM_ALL(OptionId))
-    out << EnumInfo<OptionId>::getString(id) << "," << values[id] << std::endl;
+    out << EnumInfo<OptionId>::getString(id) << "," << (*values)[id] << std::endl;
 }
 

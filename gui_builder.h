@@ -26,6 +26,7 @@ class Clock;
 class MinionAction;
 class ListElem;
 struct HighscoreList;
+class Options;
 
 class GuiBuilder {
   public:
@@ -36,7 +37,7 @@ class GuiBuilder {
     function<void(sf::Event::KeyEvent)> keyboardCallback;
     function<void()> refreshScreen;
   };
-  GuiBuilder(Renderer&, GuiFactory&, Clock*, Callbacks);
+  GuiBuilder(Renderer&, GuiFactory&, Clock*, Options*, Callbacks);
   void reset();
   void setTilesOk(bool);
   int getStandardLineHeight() const;
@@ -116,6 +117,7 @@ class GuiBuilder {
   Renderer& renderer;
   GuiFactory& gui;
   Clock* clock;
+  Options* options;
   Callbacks callbacks;
   PGuiElem getHintCallback(const vector<string>&);
   PGuiElem getTooltip(const vector<string>&);
@@ -194,6 +196,7 @@ class GuiBuilder {
   PGuiElem getHighlight(MenuType, const string& label, int height);
   vector<string> breakText(const string& text, int maxWidth);
   string getPlayerTitle(PlayerInfo&);
+  Event::KeyEvent getHotkeyEvent(char);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

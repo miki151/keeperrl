@@ -57,25 +57,8 @@ class Button : public GuiElem {
   function<void(Rectangle)> fun;
 };
 
-class ButtonChar : public Button {
-  public:
-  ButtonChar(function<void(Rectangle)> f, char key, bool cap) : Button(f), hotkey(key), capture(cap) {}
-
-  virtual bool onKeyPressed(char c) override {
-    if (hotkey == c) {
-      fun(getBounds());
-      return capture;
-    }
-    return false;
-  }
-
-  private:
-  char hotkey;
-  bool capture;
-};
-
 static bool keyEventEqual(Event::KeyEvent k1, Event::KeyEvent k2) {
-  return k1.code == k2.code && k1.shift == k2.shift;
+  return k1.code == k2.code && k1.shift == k2.shift && k1.control == k2.control && k1.alt == k2.alt;
 }
 
 class ButtonKey : public Button {
@@ -98,20 +81,20 @@ class ButtonKey : public Button {
 GuiFactory::GuiFactory(Renderer& r, Clock* c) : clock(c), renderer(r) {
 }
 
-PGuiElem GuiFactory::button(function<void(Rectangle)> fun, char hotkey, bool capture) {
-  return PGuiElem(new ButtonChar(fun, hotkey, capture));
-}
-
-PGuiElem GuiFactory::button2(function<void(Rectangle)> fun, Event::KeyEvent hotkey, bool capture) {
+PGuiElem GuiFactory::button(function<void(Rectangle)> fun, Event::KeyEvent hotkey, bool capture) {
   return PGuiElem(new ButtonKey(fun, hotkey, capture));
 }
 
-PGuiElem GuiFactory::button(function<void()> fun, char hotkey, bool capture) {
-  return PGuiElem(new ButtonChar([=](Rectangle) { fun(); }, hotkey, capture));
+PGuiElem GuiFactory::button(function<void()> fun, Event::KeyEvent hotkey, bool capture) {
+  return PGuiElem(new ButtonKey([=](Rectangle) { fun(); }, hotkey, capture));
 }
 
-PGuiElem GuiFactory::button2(function<void()> fun, Event::KeyEvent hotkey, bool capture) {
-  return PGuiElem(new ButtonKey([=](Rectangle) { fun(); }, hotkey, capture));
+PGuiElem GuiFactory::button(function<void(Rectangle)> fun) {
+  return PGuiElem(new Button(fun));
+}
+
+PGuiElem GuiFactory::button(function<void()> fun) {
+  return PGuiElem(new Button([=](Rectangle) { fun(); }));
 }
 
 class ReverseButton : public GuiElem {
@@ -450,13 +433,6 @@ class GuiLayout : public GuiElem {
       elems[i]->setBounds(getElemBounds(i));
   }
 
-  virtual bool onKeyPressed(char key) override {
-    for (int i : AllReverse(elems))
-      if (elems[i]->onKeyPressed(key))
-        return true;
-    return false;
-  }
-
   virtual bool onKeyPressed2(Event::KeyEvent key) override {
     for (int i : AllReverse(elems))
       if (elems[i]->onKeyPressed2(key))
@@ -523,14 +499,6 @@ class Focusable : public GuiLayout {
       return true;
     }
     return GuiLayout::onLeftClick(pos);
-  }
-
-  virtual bool onKeyPressed(char key) override {
-    if (focused) {
-      GuiLayout::onKeyPressed(key);
-      return true;
-    } else
-      return false;
   }
 
   virtual bool onKeyPressed2(Event::KeyEvent key) override {
@@ -1523,10 +1491,6 @@ class Scrollable : public GuiElem {
     content->onMouseRelease(pos);
   }
 
-  virtual bool onKeyPressed(char c) override {
-    return content->onKeyPressed(c);
-  }
-
   virtual bool onKeyPressed2(Event::KeyEvent key) override {
     return content->onKeyPressed2(key);
   }
@@ -1777,7 +1741,7 @@ PGuiElem GuiFactory::miniWindow() {
 PGuiElem GuiFactory::window(PGuiElem content, function<void()> onExitButton) {
   return stack(makeVec<PGuiElem>(
         stopMouseMovement(),
-        alignment(button2(onExitButton, {sf::Keyboard::Escape}, true), Vec2(38, 38), Alignment::TOP_RIGHT),
+        alignment(button(onExitButton, {sf::Keyboard::Escape}, true), Vec2(38, 38), Alignment::TOP_RIGHT),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
         margins(std::move(content), 20, 35, 30, 30),
@@ -1886,14 +1850,6 @@ void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       for (GuiElem* elem : guiElems)
         if (elem->onKeyPressed2(event.key))
           break;
-      break;
-    case Event::TextEntered:
-      if (event.text.unicode < 128) {
-        char key = event.text.unicode;
-        for (GuiElem* elem : guiElems)
-          if (elem->onKeyPressed(key))
-            break;
-      }
       break;
     case Event::MouseWheelMoved:
       for (GuiElem* elem : guiElems)
