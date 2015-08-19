@@ -73,14 +73,6 @@ struct Collective::CurrentTaskInfo {
   }
 };
 
-struct Collective::PrisonerInfo {
-  PrisonerState SERIAL(state);
-  UniqueEntity<Task>::Id SERIAL(task);
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(state) & SVAR(task);
-  }};
-
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(TaskCallback)
@@ -100,7 +92,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(markedItems)
     & SVAR(constructions)
     & SVAR(minionEquipment)
-    & SVAR(prisonerInfo)
+    & SVAR(surrendering)
     & SVAR(minionTaskStrings)
     & SVAR(delayedPos)
     & SVAR(knownTiles)
@@ -321,8 +313,6 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     bySpawnType[*spawnType].push_back(c);
   for (const Item* item : c->getEquipment().getItems())
     minionEquipment->own(c, item);
-  if (traits[MinionTrait::PRISONER])
-    prisonerInfo[c] = {PrisonerState::PRISON, 0};
   if (traits[MinionTrait::FIGHTER]) {
     c->addMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this, c)));
   }
@@ -330,7 +320,6 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 
 void Collective::removeCreature(Creature* c) {
   removeElement(creatures, c);
-  prisonerInfo.erase(c);
   minionAttraction.erase(c);
   if (Task* task = taskMap->getTask(c)) {
     if (!task->canTransfer())
@@ -449,11 +438,6 @@ MoveInfo Collective::getDropItems(Creature *c) {
       return c->drop(items);
   }
   return NoMove;
-}
-
-void Collective::onKillCancelled(Creature* c) {
-  if (prisonerInfo.count(c))
-    prisonerInfo.at(c).task = 0;
 }
 
 void Collective::onBedCreated(Position pos, const SquareType& fromType, const SquareType& toType) {
@@ -1204,27 +1188,25 @@ void Collective::tick(double time) {
     }
     bool allSurrender = true;
     for (Position v : enemyPos)
-      if (!prisonerInfo.count(NOTNULL(v.getCreature()))) {
+      if (!surrendering.count(NOTNULL(v.getCreature()))) {
         allSurrender = false;
         break;
       }
     if (allSurrender) {
-      for (auto elem : copyOf(prisonerInfo))
-        if (elem.second.state == PrisonerState::SURRENDER) {
-          Creature* c = elem.first;
-          if (!c->isDead() && territory->contains(c->getPosition())) {
-            Position pos = c->getPosition();
-            PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
-                  MonsterAIFactory::collective(this));
-            if (pos.canEnterEmpty(prisoner.get())) {
-              pos.globalMessage(c->getName().the() + " surrenders.");
-              control->addMessage(PlayerMessage(c->getName().a() + " surrenders.").setPosition(c->getPosition()));
-              c->die(nullptr, true, false);
-              addCreature(std::move(prisoner), pos, {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
-            }
+      for (Creature* c : copyOf(surrendering)) {
+        if (!c->isDead() && territory->contains(c->getPosition())) {
+          Position pos = c->getPosition();
+          PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
+              MonsterAIFactory::collective(this));
+          if (pos.canEnterEmpty(prisoner.get())) {
+            pos.globalMessage(c->getName().the() + " surrenders.");
+            control->addMessage(PlayerMessage(c->getName().a() + " surrenders.").setPosition(c->getPosition()));
+            c->die(nullptr, true, false);
+            addCreature(std::move(prisoner), pos, {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
           }
-          prisonerInfo.erase(c);
         }
+        surrendering.erase(c);
+      }
     }
   }
   if (config->getConstructions())
@@ -1313,6 +1295,9 @@ void Collective::decreaseMoraleForKill(const Creature* killer, const Creature* v
 void Collective::decreaseMoraleForBanishing(const Creature*) {
   for (Creature* c : getCreatures(MinionTrait::FIGHTER))
     c->addMorale(-0.05);
+}
+
+void Collective::onKillCancelled(Creature* c) {
 }
 
 void Collective::onKilled(Creature* victim, Creature* killer) {
@@ -1702,13 +1687,6 @@ vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) cons
   return allItems;
 }
 
-void Collective::clearPrisonerTask(Creature* prisoner) {
-  if (prisonerInfo.at(prisoner).task) {
-    taskMap->removeTask(prisonerInfo.at(prisoner).task);
-    prisonerInfo.at(prisoner).task = 0;
-  }
-}
-
 void Collective::orderExecution(Creature* c) {
   taskMap->addTask(Task::kill(this, c), c->getPosition(), MinionTrait::FIGHTER);
   setTask(c, Task::goToAndWait(c->getPosition(), getTime() + 100));
@@ -1727,11 +1705,6 @@ void Collective::orderTorture(Creature* c) {
 }
 
 void Collective::orderSacrifice(Creature* c) {
-/*  if (prisonerInfo.at(c).state == PrisonerState::SACRIFICE)
-    return;
-  clearPrisonerTask(c);
-  prisonerInfo.at(c) = {PrisonerState::SACRIFICE, 0};
-  setMinionTask(c, MinionTask::SACRIFICE);*/
 }
 
 void Collective::onWhippingDone(Creature* whipped, Position pos) {
@@ -2034,8 +2007,8 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
 }
 
 void Collective::onSurrender(Creature* who) {
-  if (!contains(getCreatures(), who) && !prisonerInfo.count(who) && who->isHumanoid())
-    prisonerInfo[who] = {PrisonerState::SURRENDER, 0};
+  if (!contains(getCreatures(), who) && who->isHumanoid())
+    surrendering.insert(who);
 }
 
 void Collective::onSquareDestroyed(Position pos) {

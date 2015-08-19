@@ -377,11 +377,7 @@ class Collective : public TaskCallback {
   EntitySet<Item> SERIAL(markedItems);
   set<Position> SERIAL(squaresInUse);
   ItemPredicate unMarkedItems() const;
-  enum class PrisonerState { SURRENDER, PRISON };
-  struct PrisonerInfo;
-  PTask getPrisonerTask(Creature* prisoner);
-  void clearPrisonerTask(Creature* prisoner);
-  map<Creature*, PrisonerInfo> SERIAL(prisonerInfo);
+  set<Creature*> SERIAL(surrendering);
   void updateConstructions();
   void delayDangerousTasks(const vector<Position>& enemyPos, double delayTime);
   bool isDelayed(Position);
