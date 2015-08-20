@@ -809,6 +809,44 @@ static map<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
  
 }
 
+PModel ModelBuilder::quickModel(ProgressMeter& meter, RandomGen& random,
+    Options* options, View* view) {
+  Model* m = new Model(view, "quick", TribeSet());
+  m->setOptions(options);
+  string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
+  Level* top = m->buildLevel(
+      LevelBuilder(meter, random, 50, 50, "Wilderness", false),
+      LevelMaker::quickLevel(random));
+  m->calculateStairNavigation();
+  m->collectives.push_back(CollectiveBuilder(
+        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet->keeper.get())
+      .setLevel(top)
+      .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
+      .build());
+ 
+  m->playerCollective = m->collectives.back().get();
+  m->playerControl = new PlayerControl(m->playerCollective, m, top);
+  m->playerCollective->setControl(PCollectiveControl(m->playerControl));
+  PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, m->tribeSet->keeper.get(),
+      MonsterAIFactory::collective(m->playerCollective));
+  if (!keeperName.empty())
+    c->setFirstName(keeperName);
+  m->gameIdentifier = *c->getFirstName() + "_" + m->worldName;
+  m->gameDisplayName = *c->getFirstName() + " of " + m->worldName;
+  Creature* ref = c.get();
+  top->landCreature(StairKey::keeperSpawn(), c.get());
+  m->addCreature(std::move(c));
+  m->playerControl->addKeeper(ref);
+  for (int i : Range(4)) {
+    PCreature c = CreatureFactory::fromId(CreatureId::IMP, m->tribeSet->keeper.get(),
+        MonsterAIFactory::collective(m->playerCollective));
+    top->landCreature(StairKey::keeperSpawn(), c.get());
+    m->playerControl->addImp(c.get());
+    m->addCreature(std::move(c));
+  }
+  return PModel(m);
+}
+
 PModel ModelBuilder::collectiveModel(ProgressMeter& meter, RandomGen& random,
     Options* options, View* view, const string& worldName) {
   for (int i : Range(10)) {

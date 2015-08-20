@@ -1341,12 +1341,15 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(VAMPIRE,
           c.viewId = ViewId::VAMPIRE_LORD;
           c.attr[AttrType::SPEED] += 20;
-          c.attr[AttrType::STRENGTH] += 1;
-          c.attr[AttrType::DEXTERITY] += 1;
+          c.attr[AttrType::STRENGTH] += 3;
+          c.attr[AttrType::DEXTERITY] += 10;
           c.barehandedDamage += 4;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.skills.setValue(SkillId::SORCERY, 0.5);
+          c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::DARKNESS_SOURCE] = 1;
+          c.chatReactionFriendly = c.chatReactionHostile =
+              "\"There are times when you simply cannot refuse a drink!\"";
           c.name = "vampire lord";);
       /*   case CreatureId::VAMPIRE_BAT: 
            return PCreature(new Shapechanger(

@@ -17,6 +17,8 @@ class ModelBuilder {
   /** Generates levels and all game entities for a collective game. */
   static PModel collectiveModel(ProgressMeter&, RandomGen&, Options*, View*, const string& worldName);
 
+  static PModel quickModel(ProgressMeter&, RandomGen&, Options*, View*);
+
   static PModel splashModel(ProgressMeter&, View*, const string& splashPath);
 
   static int getPigstyPopulationIncrease();

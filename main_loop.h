@@ -16,7 +16,7 @@ class ListElem;
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const string& dataFreePath, const string& userPath, Options* o,
-      Jukebox* j, std::atomic<bool>& finished, bool useSingleThread);
+      Jukebox* j, std::atomic<bool>& finished, bool useSingleThread, optional<GameTypeChoice> forceGame);
 
   void start(bool tilesPresent);
 
@@ -52,6 +52,7 @@ class MainLoop {
   void autosave(PModel&);
 
   PModel keeperGame(RandomGen& random);
+  PModel quickGame(RandomGen& random);
   PModel adventurerGame();
   PModel loadModel(string file, bool erase);
   PModel loadPrevious(bool erase);
@@ -71,6 +72,7 @@ class MainLoop {
   FileSharing* fileSharing;
   std::atomic<bool>& finished;
   bool useSingleThread;
+  optional<GameTypeChoice> forceGame;
 };
 
 

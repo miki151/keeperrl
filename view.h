@@ -72,6 +72,7 @@ enum class GameTypeChoice {
   ADVENTURER,
   LOAD,
   BACK,
+  QUICK_LEVEL
 };
 
 enum class MinionActionId {

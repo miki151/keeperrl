@@ -18,9 +18,10 @@
 #include "village_control.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
-    const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin, bool singleThread)
+    const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin, bool singleThread,
+    optional<GameTypeChoice> force)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
-        highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread) {
+        highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread), forceGame(force) {
 }
 
 vector<MainLoop::SaveFileInfo> MainLoop::getSaveFiles(const string& path, const string& suffix) {
@@ -245,19 +246,26 @@ int MainLoop::getAutosaveFreq() {
 
 void MainLoop::playGameChoice() {
   while (1) {
-    auto choice = view->chooseGameType();
+    GameTypeChoice choice;
+    if (forceGame)
+      choice = *forceGame;
+    else
+      choice = view->chooseGameType();
     PModel model;
     RandomGen random;
     switch (choice) {
       case GameTypeChoice::KEEPER:
         options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
         options->setDefaultString(OptionId::KEEPER_SEED, NameGenerator::get(NameGeneratorId::SCROLL)->getNext());
-        if (options->handleOrExit(view, OptionSet::KEEPER, -1)) {
+        if (forceGame || options->handleOrExit(view, OptionSet::KEEPER, -1)) {
           string seed = options->getStringValue(OptionId::KEEPER_SEED);
           random.init(hash<string>()(seed));
           ofstream(userPath + "/seeds.txt", std::fstream::out | std::fstream::app) << seed << std::endl;
           model = keeperGame(random);
         }
+        break;
+      case GameTypeChoice::QUICK_LEVEL:
+        model = quickGame(random);
         break;
       case GameTypeChoice::ADVENTURER:
         options->setDefaultString(OptionId::ADVENTURER_NAME,
@@ -272,6 +280,7 @@ void MainLoop::playGameChoice() {
       case GameTypeChoice::BACK:
         return;
     }
+    forceGame.reset();
     if (model) {
       Random = std::move(random);
       model->setOptions(options);
@@ -286,7 +295,6 @@ void MainLoop::playGameChoice() {
 void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
-  NameGenerator::init(dataFreePath + "/names");
   playModel(ModelBuilder::splashModel(meter, view, dataFreePath + "/splash.txt"), false, true);
 }
 
@@ -311,7 +319,9 @@ void MainLoop::showCredits(const string& path, View* view) {
 void MainLoop::start(bool tilesPresent) {
   if (options->getBoolValue(OptionId::MUSIC))
     jukebox->toggle(true);
-  splashScreen();
+  NameGenerator::init(dataFreePath + "/names");
+  if (!forceGame)
+    splashScreen();
   view->reset();
   if (!tilesPresent)
     view->presentText("", "You are playing a version of KeeperRL without graphical tiles. "
@@ -322,7 +332,11 @@ void MainLoop::start(bool tilesPresent) {
   int lastIndex = 0;
   while (1) {
     jukebox->setType(MusicType::MAIN, true);
-    auto choice = view->chooseFromList("", {
+    optional<int> choice;
+    if (forceGame)
+      choice = 0;
+    else
+      choice = view->chooseFromList("", {
         "Play game", "Change settings", "View high scores", "View credits", "Quit"}, lastIndex, MenuType::MAIN);
     if (!choice)
       continue;
@@ -353,6 +367,16 @@ void MainLoop::doWithSplash(SplashType type, int totalProgress, function<void(Pr
     fun(meter);
     view->clearSplash();
   }
+}
+
+PModel MainLoop::quickGame(RandomGen& random) {
+  PModel model;
+  NameGenerator::init(dataFreePath + "/names");
+  doWithSplash(SplashType::CREATING, 166000,
+      [&model, this, &random] (ProgressMeter& meter) {
+        model = ModelBuilder::quickModel(meter, random, options, view);
+      });
+  return model;
 }
 
 PModel MainLoop::keeperGame(RandomGen& random) {

@@ -107,6 +107,7 @@ void Model::addWoodCount(int cnt) {
 int Model::getWoodCount() const {
   return woodCount;
 }
+
 Statistics& Model::getStatistics() {
   return *statistics;
 }
@@ -294,7 +295,7 @@ void Model::tick(double time) {
       bool conquered = true;
       for (Collective* col : mainVillains)
         conquered &= col->isConquered();
-      if (conquered && !won) {
+      if (!mainVillains.empty() && conquered && !won) {
         playerControl->onConqueredLand();
         won = true;
       }

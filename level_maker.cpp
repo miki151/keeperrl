@@ -2388,3 +2388,12 @@ LevelMaker* LevelMaker::roomLevel(RandomGen& random, CreatureFactory roomFactory
 }
 
 
+LevelMaker* LevelMaker::quickLevel(RandomGen&) {
+  MakerQueue* queue = new MakerQueue();
+  queue->addMaker(new Empty(SquareId::GRASS));
+  queue->addMaker(new Mountains({0.0, 0.0, 0.6, 0.68, 0.95}, 0.45, {0, 1, 0, 0, 0}, true,
+        {SquareId::MOUNTAIN2, SquareId::MOUNTAIN2, SquareId::HILL, SquareId::GRASS, SquareId::SAND}));
+  queue->addMaker(new StartingPos(Predicate::type(SquareId::GRASS), StairKey::keeperSpawn()));
+  return new BorderGuard(queue, SquareId::BLACK_WALL);
+}
+

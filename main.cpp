@@ -127,6 +127,9 @@ int main(int argc, char* argv[]) {
     ("run_tests", "Run all unit tests and exit")
     ("gen_world_exit", "Exit after creating a world")
     ("force_keeper", "Skip main menu and force keeper mode")
+#ifndef RELEASE
+    ("quick_level", "")
+#endif
     ("seed", value<int>(), "Use given seed")
     ("record", value<string>(), "Record game to file")
     ("replay", value<string>(), "Replay game from file");
@@ -223,8 +226,13 @@ int main(int argc, char* argv[]) {
   Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"));
   FileSharing fileSharing(uploadUrl);
   Highscores highscores(userPath + "/" + "highscores.txt", fileSharing, &options);
+  optional<GameTypeChoice> forceGame;
+  if (vars.count("force_keeper"))
+    forceGame = GameTypeChoice::KEEPER;
+  else if (vars.count("quick_level"))
+    forceGame = GameTypeChoice::QUICK_LEVEL;
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, gameFinished,
-      useSingleThread);
+      useSingleThread, forceGame);
   auto game = [&] {
     while (!viewInitialized) {}
     ofstream systemInfo(userPath + "/system_info.txt");

@@ -131,6 +131,7 @@ static EnumMap<OptionId, optional<Options::Value>> parseOverrides(const string& 
 
 Options::Options(const string& path, const string& _overrides)
     : filename(path), overrides(parseOverrides(_overrides)) {
+  readValues();
 }
 
 Options::Value Options::getValue(OptionId id) {
