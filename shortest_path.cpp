@@ -298,6 +298,7 @@ Dijkstra::Dijkstra(Rectangle bounds, Vec2 from, int maxDist, function<double(Vec
     if (cdist > maxDist)
       return;
     q.pop();
+    CHECK(!reachable.count(pos));
     reachable[pos] = cdist;
     for (Vec2 dir : directions) {
       Vec2 next = pos + dir;
@@ -306,7 +307,7 @@ Dijkstra::Dijkstra(Rectangle bounds, Vec2 from, int maxDist, function<double(Vec
         if (cdist < ndist) {
           double dist = cdist + entryFun(next);
           CHECK(dist > cdist) << "Entry fun non positive " << dist - cdist;
-          if (dist < ndist) {
+          if (dist < ndist && dist <= maxDist) {
             distanceTable.setDistance(next, dist);
             q.push(next);
           }
@@ -326,6 +327,37 @@ double Dijkstra::getDist(Vec2 v) const {
 }
 
 const map<Vec2, double>& Dijkstra::getAllReachable() const {
+  return reachable;
+}
+
+BfSearch::BfSearch(Rectangle bounds, Vec2 from, function<bool(Vec2)> entryFun, vector<Vec2> directions) {
+  distanceTable.clear();
+  queue<Vec2> q;
+  distanceTable.setDistance(from, 0);
+  q.push(from);
+  int numPopped = 0;
+  while (!q.empty()) {
+    ++numPopped;
+    Vec2 pos = q.front();
+    q.pop();
+    CHECK(!reachable.count(pos));
+    reachable.insert(pos);
+    for (Vec2 dir : directions) {
+      Vec2 next = pos + dir;
+      if (next.inRectangle(bounds) && distanceTable.getDistance(next) == ShortestPath::infinity && entryFun(next)) {
+        distanceTable.setDistance(next, 0);
+        q.push(next);
+      }
+    }
+  }
+ 
+}
+
+bool BfSearch::isReachable(Vec2 pos) const {
+  return reachable.count(pos);
+}
+
+const set<Vec2>& BfSearch::getAllReachable() const {
   return reachable;
 }
 

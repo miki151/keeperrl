@@ -37,35 +37,45 @@ SERIALIZABLE(MapMemory);
 
 void MapMemory::addObject(Vec2 pos, const ViewObject& obj) {
   if (pos.inRectangle(table->getBounds())) {
-    if (!(*table)[pos])
-      (*table)[pos] = ViewIndex();
-    (*table)[pos]->insert(obj);
-    (*table)[pos]->setHighlight(HighlightType::MEMORY);
+    if (!getIndex(pos))
+      getIndex(pos) = ViewIndex();
+    getIndex(pos)->insert(obj);
+    getIndex(pos)->setHighlight(HighlightType::MEMORY);
     updated.insert(pos);
   }
 }
 
+optional<ViewIndex>& MapMemory::getIndex(Vec2 pos) {
+  return (*table)[pos];
+}
+
+const optional<ViewIndex>& MapMemory::getIndex(Vec2 pos) const {
+  return (*table)[pos];
+}
+
 void MapMemory::update(Vec2 pos, const ViewIndex& index) {
   if (pos.inRectangle(table->getBounds())) {
-    (*table)[pos] = index;
-    (*table)[pos]->setHighlight(HighlightType::MEMORY);
-    (*table)[pos]->removeObject(ViewLayer::CREATURE);
+    getIndex(pos) = index;
+    getIndex(pos)->setHighlight(HighlightType::MEMORY);
+    if (getIndex(pos)->hasObject(ViewLayer::CREATURE) && 
+        !getIndex(pos)->getObject(ViewLayer::CREATURE).hasModifier(ViewObjectModifier::REMEMBER))
+      getIndex(pos)->removeObject(ViewLayer::CREATURE);
     updated.insert(pos);
   }
 }
 
 void MapMemory::clearSquare(Vec2 pos) {
   if (pos.inRectangle(table->getBounds()))
-    (*table)[pos] = none;
+    getIndex(pos) = none;
 }
 
 bool MapMemory::hasViewIndex(Vec2 pos) const {
-  return pos.inRectangle(table->getBounds()) && !!(*table)[pos];
+  return pos.inRectangle(table->getBounds()) && !!getIndex(pos);
 }
 
 const ViewIndex& MapMemory::getViewIndex(Vec2 pos) const {
   if (pos.inRectangle(table->getBounds()))
-    return *(*table)[pos];
+    return *getIndex(pos);
   else {
     static ViewIndex ind;
     return ind;

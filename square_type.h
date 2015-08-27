@@ -80,7 +80,8 @@ RICH_ENUM(SquareId,
   CREATURE_ALTAR,
   EYEBALL,
   MINION_STATUE,
-  THRONE
+  THRONE,
+  SOKOBAN_HOLE
 );
 
 enum class StairLook {
@@ -121,7 +122,7 @@ struct ChestInfo {
 };
 
 class SquareType : public EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureId,
-      CreatureFactory::SingleCreature, ChestInfo, const Tribe*, StairInfo, string),
+      CreatureFactory::SingleCreature, ChestInfo, const Tribe*, StairInfo, StairKey, string),
     ASSIGN(DeityHabitat, SquareId::ALTAR),
     ASSIGN(const Creature*, SquareId::CREATURE_ALTAR),
     ASSIGN(CreatureId,
@@ -138,6 +139,8 @@ class SquareType : public EnumVariant<SquareId, TYPES(DeityHabitat, const Creatu
     ASSIGN(const Tribe*,
         SquareId::TRIBE_DOOR,
         SquareId::BARRICADE),
+    ASSIGN(StairKey,
+        SquareId::SOKOBAN_HOLE),
     ASSIGN(StairInfo,
         SquareId::STAIRS)> {
   using EnumVariant::EnumVariant;

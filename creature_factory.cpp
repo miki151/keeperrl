@@ -200,9 +200,10 @@ class BoulderController : public Monster {
 
 class Boulder : public Creature {
   public:
-  Boulder(const CreatureAttributes& attr, Tribe* tribe) : 
-    Creature(tribe, attr, ControllerFactory([](Creature* c) { 
-            return new BoulderController(c); })) {}
+  Boulder(const CreatureAttributes& attr, Tribe* tribe, ControllerFactory f) : 
+    Creature(ViewObject(ViewId::BOULDER, ViewLayer::CREATURE, "Boulder")
+        .setModifier(ViewObjectModifier::NO_UP_MOVEMENT)
+        .setModifier(ViewObjectModifier::REMEMBER), tribe, attr, f) {}
 
   virtual vector<PItem> getCorpse() override {
     return ItemFactory::fromId(ItemId::ROCK, Random.get(10, 20));
@@ -231,7 +232,64 @@ PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {
             c.invincible = true;
             c.breathing = false;
             c.brain = false;
-            c.name = "boulder";), tribe));
+            c.name = "boulder";), tribe, ControllerFactory([](Creature* c) { 
+              return new BoulderController(c); })));
+}
+
+class SokobanController : public Monster {
+  public:
+  SokobanController(Creature* c) : Monster(c, MonsterAIFactory::idle()) {}
+
+  virtual void onBump(Creature* player) override {
+    Vec2 goDir = player->getPosition().getDir(getCreature()->getPosition());
+    if (goDir.isCardinal4() && getCreature()->getPosition().plus(goDir).canEnter(
+          getCreature()->getMovementType().setForced(true))) {
+      getCreature()->displace(goDir);
+      player->move(goDir).perform(player);
+    }
+  }
+
+  virtual void you(MsgType type, const string& param) override {
+    string msg, msgNoSee;
+    switch (type) {
+      case MsgType::BURN: msg = getCreature()->getName().the() + " burns in the " + param; break;
+      case MsgType::DROWN: msg = getCreature()->getName().the() + " falls into the " + param;
+                           msgNoSee = "You hear a loud splash"; break;
+      case MsgType::KILLED_BY: msg = getCreature()->getName().the() + " is destroyed by " + param; break;
+      case MsgType::ENTER_PORTAL: msg = getCreature()->getName().the() + " disappears in the portal."; break;
+      default: break;
+    }
+    if (!msg.empty())
+      getCreature()->monsterMessage(msg, msgNoSee);
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(Monster);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(SokobanController);
+
+  private:
+};
+
+static PCreature getSokobanBoulder(Tribe* tribe) {
+  return PCreature(new Boulder(CATTR(
+            c.viewId = ViewId::BOULDER;
+            c.attr[AttrType::DEXTERITY] = 1;
+            c.attr[AttrType::STRENGTH] = 1000;
+            c.weight = 1000;
+            c.humanoid = false;
+            c.size = CreatureSize::LARGE;
+            c.attr[AttrType::SPEED] = 140;
+            c.permanentEffects[LastingEffect::BLIND] = 1;
+            c.noSleep = true;
+            c.stationary = true;
+            c.invincible = true;
+            c.breathing = false;
+            c.brain = false;
+            c.name = "boulder";), tribe, ControllerFactory([](Creature* c) { 
+              return new SokobanController(c); })));
 }
 
 CreatureAttributes getKrakenAttributes(ViewId id) {
@@ -2102,6 +2160,8 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
     case CreatureId::SPECIAL_HUMANOID:
       return getSpecial(NameGenerator::get(NameGeneratorId::CREATURE)->getNext(),
           tribe, true, factory, false);
+    case CreatureId::SOKOBAN_BOULDER:
+      return getSokobanBoulder(tribe);
     default: return get(getAttributes(id), tribe, getController(id, aiFactory));
   }
 }

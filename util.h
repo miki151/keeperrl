@@ -126,6 +126,7 @@ class Vec2 {
   pair<Vec2, Vec2> approxL1() const;
   Vec2 getBearing() const;
   bool isCardinal4() const;
+  bool isCardinal8() const;
   Dir getCardinalDir() const;
   static Vec2 getCenterOfWeight(vector<Vec2>);
 
@@ -139,6 +140,7 @@ class Vec2 {
   vector<Vec2> neighbors8(RandomGen&) const;
   static vector<Vec2> directions4(RandomGen&);
   vector<Vec2> neighbors4(RandomGen&) const;
+  vector<Vec2> neighbors(const vector<Vec2>& directions) const;
   static vector<Vec2> corners();
   static vector<set<Vec2>> calculateLayers(set<Vec2>);
 
@@ -155,6 +157,16 @@ namespace std {
 template <> struct hash<Vec2> {
   size_t operator()(const Vec2& obj) const {
     return hash<int>()(obj.x) * 10000 + hash<int>()(obj.y);
+  }
+};
+
+template <class T> struct hash<vector<T>> {
+  size_t operator()(const vector<T>& v) const {
+    size_t seed = 0;
+    for(auto& i : v) {
+      seed ^= std::hash<T>()(i) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    return seed;
   }
 };
 
@@ -179,6 +191,42 @@ template <class T> struct hash<std::set<T>> {
 
 }
 
+class Range {
+  public:
+  Range(int start, int end);
+  Range(int end);
+
+  Range reverse();
+  Range shorten(int r);
+
+  int getStart() const;
+  int getEnd() const;
+
+  class Iter {
+    public:
+    Iter(int ind, int min, int max);
+
+    int operator* () const;
+    bool operator != (const Iter& other) const;
+
+    const Iter& operator++ ();
+
+    private:
+    int ind;
+    int min;
+    int max;
+    int increment;
+  };
+
+  Iter begin();
+  Iter end();
+
+  SERIALIZATION_DECL(Range);
+  
+  private:
+  int SERIAL(start);
+  int SERIAL(finish);
+};
 
 class Rectangle {
   public:
@@ -190,6 +238,7 @@ class Rectangle {
   Rectangle(int px, int py, int kx, int ky);
   Rectangle(Vec2 p, Vec2 k);
   static Rectangle boundingBox(const vector<Vec2>& v);
+  static Rectangle centered(Vec2 center, int radius);
 
   int getPX() const;
   int getPY() const;
@@ -198,6 +247,8 @@ class Rectangle {
   int getW() const;
   int getH() const;
   Vec2 getSize() const;
+  Range getYRange() const;
+  Range getXRange() const;
 
   Vec2 getTopLeft() const;
   Vec2 getBottomRight() const;
@@ -241,40 +292,6 @@ class Rectangle {
 
   private:
   int px, py, kx, ky, w, h;
-};
-
-class Range {
-  public:
-  Range(int start, int end);
-  Range(int end);
-
-  int getStart() const;
-  int getEnd() const;
-
-  class Iter {
-    public:
-    Iter(int ind, int min, int max);
-
-    int operator* () const;
-    bool operator != (const Iter& other) const;
-
-    const Iter& operator++ ();
-
-    private:
-    int ind;
-    int min;
-    int max;
-    int increment;
-  };
-
-  Iter begin();
-  Iter end();
-
-  SERIALIZATION_DECL(Range);
-  
-  private:
-  int SERIAL(start);
-  int SERIAL(finish);
 };
 
 template <class T>
@@ -405,6 +422,14 @@ class RandomGen {
   template <typename T>
   vector<T> permutation(initializer_list<T> vi) {
     vector<T> v(vi);
+    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    return v;
+  }
+
+  vector<int> permutation(Range r) {
+    vector<int> v;
+    for (int i : r)
+      v.push_back(i);
     random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
     return v;
   }

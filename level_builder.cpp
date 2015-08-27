@@ -117,6 +117,10 @@ void LevelBuilder::setMessage(const string& message) {
   entryMessage = message;
 }
 
+void LevelBuilder::setNoDiagonalPassing() {
+  noDiagonalPassing = true;
+}
+
 PLevel LevelBuilder::build(Model* m, LevelMaker* maker, int levelId) {
   CHECK(mapStack.empty());
   maker->make(this, squares.getBounds());
@@ -130,6 +134,7 @@ PLevel LevelBuilder::build(Model* m, LevelMaker* maker, int levelId) {
   }
   for (CollectiveBuilder* c : collectives)
     c->setLevel(l.get());
+  l->noDiagonalPassing = noDiagonalPassing;
   return l;
 }
 

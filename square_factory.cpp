@@ -831,6 +831,43 @@ class Crops : public Square {
   }
 };
 
+class SokobanHole : public Square {
+  public:
+  SokobanHole(const ViewObject& obj, const string& name, StairKey key) : Square(obj,
+      CONSTRUCT(Square::Params,
+        c.name = name;
+        c.vision = VisionId::NORMAL;
+        c.canHide = false;
+        c.strength = 10000;
+        c.movementSet = MovementSet()
+            .addForcibleTrait(MovementTrait::WALK)
+            .addTrait(MovementTrait::FLY);)),
+    stairKey(key) {
+  }
+
+  virtual void onEnterSpecial(Creature* c) override {
+    if (c->isStationary()) {
+      getPosition2().globalMessage(c->getName().the() + " fills the " + getName());
+      c->die(nullptr, false, false);
+      getLevel()->replaceSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
+    } else 
+    if (!c->isAffected(LastingEffect::FLYING)) {
+      c->you(MsgType::FALL, "into the " + getName() + "!");
+      getLevel()->changeLevel(stairKey, c);
+    }
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Square) & SVAR(stairKey);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(SokobanHole);
+
+  private:
+  StairKey SERIAL(stairKey);
+};
+
 PSquare SquareFactory::getAltar(Deity* deity) {
   return PSquare(new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), deity));
 }
@@ -862,6 +899,7 @@ void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Hatchery);
   REGISTER_TYPE(ar, Crops);
   REGISTER_TYPE(ar, NoticeBoard);
+  REGISTER_TYPE(ar, SokobanHole);
 }
 
 REGISTER_TYPES(SquareFactory::registerTypes);
@@ -1136,6 +1174,9 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::NOTICE_BOARD:
         return new NoticeBoard(ViewObject(ViewId::NOTICE_BOARD, ViewLayer::FLOOR, "Notice board"), 
             s.get<string>());
+    case SquareId::SOKOBAN_HOLE:
+        return new SokobanHole(ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR, "Hole"), "hole",
+            s.get<StairKey>());
     case SquareId::RITUAL_ROOM:
         return new Square(ViewObject(ViewId::RITUAL_ROOM, ViewLayer::FLOOR, "Ritual room"),
           CONSTRUCT(Square::Params,

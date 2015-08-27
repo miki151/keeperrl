@@ -220,6 +220,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canConsume(const Creature*) const;
   bool isMinionFood() const;
   
+  void displace(Vec2);
   void surrender(const Creature* to);
   
   virtual void onChat(Creature*);
@@ -365,15 +366,14 @@ enum class MsgType {
     BLEEDING_STOPS,
     COLLAPSE,
     FALL,
+    FALL_ASLEEP,
     PANIC,
     RAGE,
     DIE_OF,
     ARE, // bleeding
     YOUR, // your head is cut off
-    FALL_ASLEEP, //
     WAKE_UP,
     DIE, //
-    FALL_APART,
     TELE_APPEAR,
     TELE_DISAPPEAR,
     ATTACK_SURPRISE,

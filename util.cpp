@@ -259,8 +259,16 @@ vector<Vec2> Vec2::neighbors4(RandomGen& random) const {
   return random.permutation(neighbors4());
 }
 
+vector<Vec2> Vec2::neighbors(const vector<Vec2>& directions) const {
+  return transform2<Vec2>(directions, [this] (const Vec2& v) { return *this + v;});
+}
+
 bool Vec2::isCardinal4() const {
   return abs(x) + abs(y) == 1;
+}
+
+bool Vec2::isCardinal8() const {
+  return max(abs(x), abs(y)) == 1;
 }
 
 Dir Vec2::getCardinalDir() const {
@@ -330,6 +338,10 @@ Rectangle Rectangle::boundingBox(const vector<Vec2>& verts) {
     maxY = max(maxY, v.y);
   }
   return Rectangle(minX, minY, maxX + 1, maxY + 1);
+}
+
+Rectangle Rectangle::centered(Vec2 center, int radius) {
+  return Rectangle(center - Vec2(radius, radius), center + Vec2(radius + 1, radius + 1));
 }
 
 vector<Vec2> Rectangle::getAllSquares() const {
@@ -522,6 +534,14 @@ int Rectangle::getPY() const {
   return py;
 }
 
+Range Rectangle::getXRange() const {
+  return Range(px, kx);
+}
+
+Range Rectangle::getYRange() const {
+  return Range(py, ky);
+}
+
 int Rectangle::getKX() const {
   return kx;
 }
@@ -606,6 +626,24 @@ Rectangle::Iter Rectangle::end() const {
 Range::Range(int a, int b) : start(a), finish(b) {
 }
 Range::Range(int a) : Range(0, a) {}
+
+Range Range::reverse() {
+  return Range(finish - 1, start - 1);
+}
+
+Range Range::shorten(int r) {
+  if (start < finish) {
+    if (finish - start >= 2 * r)
+      return Range(start + r, finish - r);
+    else
+      return Range(0, 0);
+  } else {
+    if (start - finish >= 2 * r)
+      return Range(start - r, finish + r);
+    else
+      return Range(0, 0);
+  }
+}
 
 int Range::getStart() const {
   return start;

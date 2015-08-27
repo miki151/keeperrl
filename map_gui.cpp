@@ -329,7 +329,9 @@ static Vec2 getAttachmentOffset(Dir dir, Vec2 size) {
   return Vec2();
 }
 
-static double getJumpOffset(double state) {
+static double getJumpOffset(const ViewObject& object, double state) {
+  if (object.hasModifier(ViewObjectModifier::NO_UP_MOVEMENT))
+    return 0;
   if (state > 0.5)
     state -= 0.5;
   state *= 2;
@@ -362,8 +364,8 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   if (object.getLastMovementInfo().type == ViewObject::MovementInfo::ATTACK)
     if (dir.length8() == 1)
       return Vec2(0.8 * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
-          (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - getJumpOffset(state)) * size.y);
-  return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - getJumpOffset(state)) * size.y);
+          (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - getJumpOffset(object, state)) * size.y);
+  return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - getJumpOffset(object, state)) * size.y);
 }
 
 void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Rectangle tile, int curTime) {

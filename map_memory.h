@@ -38,6 +38,8 @@ class MapMemory {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
+  optional<ViewIndex>& getIndex(Vec2);
+  const optional<ViewIndex>& getIndex(Vec2) const;
   HeapAllocated<Table<optional<ViewIndex>>> SERIAL(table);
   mutable unordered_set<Vec2> updated;
 };

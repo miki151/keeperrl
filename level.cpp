@@ -52,7 +52,8 @@ void Level::serialize(Archive& ar, const unsigned int version) {
     & SVAR(sectors)
     & SVAR(lightAmount)
     & SVAR(lightCapAmount)
-    & SVAR(levelId);
+    & SVAR(levelId)
+    & SVAR(noDiagonalPassing);
 }  
 
 SERIALIZABLE(Level);
@@ -445,10 +446,18 @@ bool Level::playerCanSee(const Creature* c) const {
   return player != nullptr && player->canSee(c);
 }
 
+static bool canPass(const Square* square, const Creature* c) {
+  return square->canEnterEmpty(c) && (!square->getCreature() || !square->getCreature()->isStationary());
+}
+
 bool Level::canMoveCreature(const Creature* creature, Vec2 direction) const {
   Vec2 position = creature->getPosition().getCoord();
   Vec2 destination = position + direction;
   if (!inBounds(destination))
+    return false;
+  if (noDiagonalPassing && direction.isCardinal8() && !direction.isCardinal4() &&
+      !canPass(getSafeSquare(position + Vec2(direction.x, 0)), creature) &&
+      !canPass(getSafeSquare(position + Vec2(0, direction.y)), creature))
     return false;
   return getSafeSquare(destination)->canEnter(creature);
 }

@@ -662,10 +662,9 @@ void Player::you(MsgType type, const string& param) {
     case MsgType::ARE: msg = "You are " + param; break;
     case MsgType::YOUR: msg = "Your " + param; break;
     case MsgType::FEEL: msg = "You feel " + param; break;
-    case MsgType::FALL_ASLEEP: msg = "You fall asleep" + (param.size() > 0 ? " on the " + param : "."); break;
     case MsgType::WAKE_UP: msg = "You wake up."; break;
-    case MsgType::FALL_APART: msg = "You fall apart."; break;
-    case MsgType::FALL: msg = "You fall on the " + param; break;
+    case MsgType::FALL: msg = "You fall " + param; break;
+    case MsgType::FALL_ASLEEP: msg = "You fall asleep" + (param.size() > 0 ? " on the " + param : "."); break;
     case MsgType::DIE: privateMessage("You die!!"); break;
     case MsgType::TELE_DISAPPEAR: msg = "You are standing somewhere else!"; break;
     case MsgType::BLEEDING_STOPS: msg = "Your bleeding stops."; break;

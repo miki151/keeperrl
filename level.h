@@ -167,7 +167,6 @@ class Level {
   bool canSee(Vec2 from, Vec2 to, VisionId) const;
 
   /** Returns all tiles visible by a creature.*/
-  vector<Vec2> getVisibleTiles(const Creature*) const;
   vector<Vec2> getVisibleTiles(Vec2 pos, VisionId) const;
 
   /** Checks if the player can see a given square.*/
@@ -261,6 +260,7 @@ class Level {
   vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
   bool isWithinVision(Vec2 from, Vec2 to, VisionId) const;
   int SERIAL(levelId) = 0;
+  bool SERIAL(noDiagonalPassing) = false;
 };
 
 #endif

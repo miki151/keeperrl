@@ -284,6 +284,11 @@ CreatureAction Creature::move(Position pos) const {
   });
 }
 
+void Creature::displace(Vec2 dir) {
+  getLevel()->moveCreature(this, dir);
+  modViewObject().addMovementInfo({dir, getTime(), getTime() + 1, ViewObject::MovementInfo::MOVE});
+}
+
 int Creature::getDebt(const Creature* debtor) const {
   return controller->getDebt(debtor);
 }
@@ -808,7 +813,7 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
     case LastingEffect::POISON_RESISTANT: if (msg) you(MsgType::ARE, "no longer poison resistant"); break;
     case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "no longer fire resistant"); break;
     case LastingEffect::FLYING:
-      if (msg) you(MsgType::FALL, getPosition().getName());
+      if (msg) you(MsgType::FALL, "on the " + getPosition().getName());
       bleed(0.1);
       break;
     case LastingEffect::INSANITY: if (msg) you(MsgType::BECOME, "sane again"); break;
@@ -1103,7 +1108,7 @@ void Creature::tick(double realTime) {
   lastTick = realTime;
   updateViewObject();
   if (isNotLiving() && lostOrInjuredBodyParts() >= 4) {
-    you(MsgType::FALL_APART, "");
+    you(MsgType::FALL, "apart");
     die(lastAttacker);
     return;
   }

@@ -27,6 +27,7 @@ class ModelBuilder {
 
   private:
   static PModel tryCollectiveModel(ProgressMeter&, RandomGen&, Options*, View*, const string& worldName);
+  static PModel tryQuickModel(ProgressMeter&, RandomGen&, Options*, View*);
   static Level* makeExtraLevel(ProgressMeter&, RandomGen&, Model*, const LevelInfo&, const SettlementInfo&);
 
 };

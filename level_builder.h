@@ -32,7 +32,9 @@ RICH_ENUM(SquareAttrib,
   CASTLE_CORNER,
   FOG,
   FORREST,
-  LOCATION
+  LOCATION,
+  SOKOBAN_ENTRY,
+  SOKOBAN_PRIZE
 );
 
 class LevelBuilder {
@@ -98,6 +100,8 @@ class LevelBuilder {
 
   /** Sets the cover of the square. The value will remain if square is changed.*/
   void setCoverInfo(Vec2, CoverInfo);
+
+  void setNoDiagonalPassing();
  
   enum Rot { CW0, CW1, CW2, CW3};
 
@@ -124,6 +128,7 @@ class LevelBuilder {
   vector<Vec2::LinearMap> mapStack;
   ProgressMeter& progressMeter;
   RandomGen& random;
+  bool noDiagonalPassing = false;
 };
 
 #endif

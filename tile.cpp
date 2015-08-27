@@ -533,6 +533,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::IMPALED_HEAD, sprite("impaledhead").setNoShadow());
     Tile::addTile(ViewId::WHIPPING_POST, sprite("whip").setNoShadow());
     Tile::addTile(ViewId::NOTICE_BOARD, sprite("board").setNoShadow());
+    Tile::addTile(ViewId::SOKOBAN_HOLE, sprite("hole").setNoShadow());
     Tile::addTile(ViewId::TRAINING_ROOM, empty().addConnection(DirSet::fullSet(), byName("traindeco"))
         .addBackground(byName("train")).setFloorBorders());
     Tile::addTile(ViewId::RITUAL_ROOM, empty().addConnection(DirSet::fullSet(), byName("ritualroomdeco"))
@@ -818,6 +819,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::IMPALED_HEAD, symbol("⚲", ColorId::BROWN, true));
     Tile::addSymbol(ViewId::WHIPPING_POST, symbol("}", ColorId::BROWN, true));
     Tile::addSymbol(ViewId::NOTICE_BOARD, symbol("|", ColorId::BROWN));
+    Tile::addSymbol(ViewId::SOKOBAN_HOLE, symbol("0", ColorId::DARK_BLUE));
     Tile::addSymbol(ViewId::TRAINING_ROOM, symbol("‡", ColorId::BROWN, true));
     Tile::addSymbol(ViewId::RITUAL_ROOM, symbol("Ω", ColorId::PURPLE, true));
     Tile::addSymbol(ViewId::LIBRARY, symbol("▤", ColorId::BROWN, true));

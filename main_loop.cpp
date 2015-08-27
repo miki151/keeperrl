@@ -265,6 +265,7 @@ void MainLoop::playGameChoice() {
         }
         break;
       case GameTypeChoice::QUICK_LEVEL:
+        random = Random;
         model = quickGame(random);
         break;
       case GameTypeChoice::ADVENTURER:
@@ -280,7 +281,8 @@ void MainLoop::playGameChoice() {
       case GameTypeChoice::BACK:
         return;
     }
-    forceGame.reset();
+    if (forceGame != GameTypeChoice::QUICK_LEVEL)
+      forceGame.reset();
     if (model) {
       Random = std::move(random);
       model->setOptions(options);

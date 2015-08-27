@@ -31,6 +31,7 @@ enum class ExtraLevelId {
   GNOMISH_MINES,
   TOWER,
   MAZE,
+  SOKOBAN,
 };
 
 struct LevelInfo {
@@ -578,13 +579,30 @@ static vector<EnemyInfo> getGnomeCave(RandomGen& random, TribeSet& tribeSet) {
   };
 }
 
-static vector<EnemyInfo> getIslandVault(RandomGen& random, TribeSet& tribeSet) {
+/*static vector<EnemyInfo> getIslandVault(RandomGen& random, TribeSet& tribeSet) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::ISLAND_VAULT;
-      c.location = new Location(true);
+      c.location = new Location();
       c.buildingId = BuildingId::DUNGEON;
       c.stockpiles = LIST({StockpileInfo::GOLD, 800});), CollectiveConfig::noImmigrants(), {})
+  };
+}*/
+
+static vector<EnemyInfo> getSokobanEntry(RandomGen& random, TribeSet& tribeSet) {
+  StairKey link = StairKey::getNew();
+  return {
+    lesserVillain(CONSTRUCT(SettlementInfo,
+      c.type = SettlementType::ISLAND_VAULT;
+      c.location = new Location();
+      c.buildingId = BuildingId::DUNGEON;
+      c.upStairs = {link};), CollectiveConfig::noImmigrants(), {}),
+    lesserVillain(CONSTRUCT(SettlementInfo,
+      c.type = SettlementType::ISLAND_VAULT;
+      c.creatures = CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::SOKOBAN_BOULDER);
+      c.location = new Location();
+      c.buildingId = BuildingId::DUNGEON;
+      c.downStairs = {link};), CollectiveConfig::noImmigrants(), {}, LevelInfo{ExtraLevelId::SOKOBAN, link}),
   };
 }
 
@@ -597,7 +615,7 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
   }
   for (int i : Range(random.get(2, 5)))
     append(ret, getBanditCave(random, tribeSet));
-  append(ret, getIslandVault(random, tribeSet));
+  append(ret, getSokobanEntry(random, tribeSet));
   append(ret, getVaults(random, tribeSet));
   if (Random.roll(4))
     append(ret, getAntNest(random, tribeSet));
@@ -809,14 +827,14 @@ static map<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
  
 }
 
-PModel ModelBuilder::quickModel(ProgressMeter& meter, RandomGen& random,
+PModel ModelBuilder::tryQuickModel(ProgressMeter& meter, RandomGen& random,
     Options* options, View* view) {
   Model* m = new Model(view, "quick", TribeSet());
   m->setOptions(options);
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   Level* top = m->buildLevel(
-      LevelBuilder(meter, random, 50, 50, "Wilderness", false),
-      LevelMaker::quickLevel(random));
+      LevelBuilder(meter, random, 28, 14, "Wilderness", false),
+      LevelMaker::sokobanLevel(random, {}));
   m->calculateStairNavigation();
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet->keeper.get())
@@ -837,14 +855,28 @@ PModel ModelBuilder::quickModel(ProgressMeter& meter, RandomGen& random,
   top->landCreature(StairKey::keeperSpawn(), c.get());
   m->addCreature(std::move(c));
   m->playerControl->addKeeper(ref);
-  for (int i : Range(4)) {
+ /* for (int i : Range(4)) {
     PCreature c = CreatureFactory::fromId(CreatureId::IMP, m->tribeSet->keeper.get(),
         MonsterAIFactory::collective(m->playerCollective));
     top->landCreature(StairKey::keeperSpawn(), c.get());
     m->playerControl->addImp(c.get());
     m->addCreature(std::move(c));
-  }
+  }*/
   return PModel(m);
+}
+
+PModel ModelBuilder::quickModel(ProgressMeter& meter, RandomGen& random,
+    Options* options, View* view) {
+  for (int i : Range(5000)) {
+    try {
+      meter.reset();
+      return tryQuickModel(meter, random, options, view);
+    } catch (LevelGenException ex) {
+      Debug() << "Retrying level gen";
+    }
+  }
+  FAIL << "Couldn't generate a level";
+  return nullptr;
 }
 
 PModel ModelBuilder::collectiveModel(ProgressMeter& meter, RandomGen& random,
@@ -930,7 +962,17 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Mod
       return model->buildLevel(
          LevelBuilder(meter, random, 60, 40, "Mine Town"),
          LevelMaker::mineTownLevel(random, settlement));
-    }
+      }
+    case ExtraLevelId::SOKOBAN:
+      settlement.downStairs = {levelInfo.stairKey};
+      for (int i : Range(5000))
+        try {
+          return model->buildLevel(
+              LevelBuilder(meter, random, 28, 14, "Sokoban"),
+              LevelMaker::sokobanLevel(random, settlement));
+        } catch (LevelGenException ex) {
+        }
+      throw LevelGenException();
   }
 }
 
