@@ -1581,6 +1581,7 @@ void Creature::heal(double amount, bool replaceLimbs) {
 }
 
 void Creature::bleed(double severity) {
+  CHECK_RANGE(severity, 0, 1000000, getName().bare());
   updateViewObject();
   health -= severity;
   updateViewObject();
@@ -1590,7 +1591,7 @@ void Creature::bleed(double severity) {
 void Creature::setOnFire(double amount) {
   if (!isFireResistant()) {
     you(MsgType::ARE, "burnt by the fire");
-    bleed(6. * amount / double(getAttr(AttrType::STRENGTH)));
+    bleed(6. * amount / double(1 + getAttr(AttrType::STRENGTH)));
   }
 }
 
