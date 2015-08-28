@@ -417,6 +417,23 @@ static vector<EnemyInfo> getEntTown(RandomGen& random, TribeSet& tribeSet) {
   };
 }
 
+static vector<EnemyInfo> getDriadTown(RandomGen& random, TribeSet& tribeSet) {
+  return {
+    lesserVillain(CONSTRUCT(SettlementInfo,
+      c.type = SettlementType::FOREST;
+      c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::DRIAD);
+      c.numCreatures = random.get(7, 13);
+      c.location = new Location();
+      c.tribe = tribeSet.monster.get();
+      c.buildingId = BuildingId::WOOD;),
+      CollectiveConfig::withImmigrants(0.003, 15, {
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::DRIAD;
+            c.frequency = 1;
+            c.traits = LIST(MinionTrait::FIGHTER);)}), {})
+  };
+}
+
 static vector<EnemyInfo> getCemetery(RandomGen& random, TribeSet& tribeSet) {
   StairKey cryptKey = StairKey::getNew();
   return {
@@ -638,6 +655,7 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
         getHydra(random, tribeSet),
         getRedDragon(random, tribeSet),
         getCyclops(random, tribeSet),
+        getDriadTown(random, tribeSet),
         getEntTown(random, tribeSet)}))
     append(ret, infos);
   for (auto& infos : random.chooseN(random.get(2, 4), {

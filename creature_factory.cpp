@@ -1744,6 +1744,22 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.skills.insert(SkillId::HEALING);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "elf lord";);
+    case CreatureId::DRIAD: 
+      return CATTR(
+          c.viewId = ViewId::DRIAD;
+          c.attr[AttrType::SPEED] = 80;
+          c.size = CreatureSize::MEDIUM;
+          c.attr[AttrType::STRENGTH] = 11;
+          c.attr[AttrType::DEXTERITY] = 17;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 40;
+          c.chatReactionFriendly = "curses all humans";
+          c.chatReactionHostile = "\"Die!\"";
+          c.spells.add(SpellId::HEALING);
+          c.skills.insert(SkillId::ELF_VISION);
+          c.skills.setValue(SkillId::ARCHERY, 1);
+          c.name = "driad";);
     case CreatureId::HORSE: 
       return CATTR(
           c.viewId = ViewId::HORSE;

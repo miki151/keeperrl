@@ -321,6 +321,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::ELF_ARCHER, sprite("elf archer"));
     Tile::addTile(ViewId::ELF_CHILD, sprite("elf kid"));
     Tile::addTile(ViewId::ELF_LORD, sprite("elf lord"));
+    Tile::addTile(ViewId::DRIAD, sprite("elf archer"));
     Tile::addTile(ViewId::LIZARDMAN, sprite(8, 8));
     Tile::addTile(ViewId::LIZARDLORD, sprite(11, 8));
     Tile::addTile(ViewId::IMP, sprite("imp"));
@@ -614,6 +615,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::ELF_ARCHER, symbol("@", ColorId::GREEN));
     Tile::addSymbol(ViewId::ELF_CHILD, symbol("@", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF_LORD, symbol("@", ColorId::DARK_GREEN));
+    Tile::addSymbol(ViewId::DRIAD, symbol("@", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::SHOPKEEPER, symbol("@", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::LIZARDMAN, symbol("@", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::LIZARDLORD, symbol("@", ColorId::BROWN));
