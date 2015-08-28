@@ -115,7 +115,9 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(warnings)
     & SVAR(banished)
     & SVAR(squaresInUse)
-    & SVAR(equipmentUpdates);
+    & SVAR(equipmentUpdates)
+    & SVAR(deadCreatures)
+    & SVAR(spawnGhosts);
 }
 
 SERIALIZABLE(Collective);
@@ -292,6 +294,14 @@ class LeaderControlOverride : public Creature::MoraleOverride {
 
 }
 
+void Collective::addCreatureInTerritory(PCreature creature, EnumSet<MinionTrait> traits) {
+  for (Position pos : Random.permutation(territory->getAll()))
+    if (pos.canEnter(creature.get())) {
+      addCreature(std::move(creature), pos, traits);
+      return;
+    }
+}
+
 void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTrait> traits) {
   if (config->getStripSpawns())
     creature->getEquipment().removeAllItems();
@@ -320,6 +330,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 
 void Collective::removeCreature(Creature* c) {
   removeElement(creatures, c);
+  deadCreatures.push_back(c);
   minionAttraction.erase(c);
   if (Task* task = taskMap->getTask(c)) {
     if (!task->canTransfer())
@@ -353,10 +364,6 @@ void Collective::banishCreature(Creature* c) {
 
 bool Collective::wasBanished(const Creature* c) const {
   return contains(banished, c);
-}
-
-vector<Creature*>& Collective::getCreatures() {
-  return creatures;
 }
 
 vector<Creature*> Collective::getRecruits() const {
@@ -1149,12 +1156,31 @@ void Collective::decayMorale() {
     c->addMorale(-c->getMorale() * 0.0008);
 }
 
+void Collective::considerSpawningGhosts() {
+  if (deadCreatures.empty() || config->getNumGhostSpawns() == 0)
+    return;
+  if (spawnGhosts && *spawnGhosts <= getTime()) {
+    for (Creature* dead : getPrefix(Random.permutation(deadCreatures),
+          min<int>(config->getNumGhostSpawns(), deadCreatures.size())))
+      addCreatureInTerritory(CreatureFactory::getGhost(dead), {});
+    spawnGhosts = 1000000;
+  } else
+  if (!spawnGhosts) {
+    if (Random.roll(config->getGhostProb()))
+      spawnGhosts = getTime() + Random.get(250, 500);
+    else
+      spawnGhosts = 1000000;
+  }
+}
+
 void Collective::tick(double time) {
   control->tick(time);
   considerHealingLeader();
   considerBirths();
   decayMorale();
   considerBuildingBeds();
+  if (isConquered())
+    considerSpawningGhosts();
   if (Random.rollD(1.0 / config->getImmigrantFrequency()))
     considerImmigration();
 /*  if (nextPayoutTime > -1 && time > nextPayoutTime) {

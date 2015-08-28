@@ -616,6 +616,7 @@ class ShopkeeperController : public Monster {
 template <class Archive>
 void CreatureFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, BoulderController);
+  REGISTER_TYPE(ar, SokobanController);
   REGISTER_TYPE(ar, Boulder);
   REGISTER_TYPE(ar, KrakenController);
   REGISTER_TYPE(ar, KamikazeController);
@@ -1025,7 +1026,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::LARGE;
           c.attr[AttrType::STRENGTH] = 14;
-          c.attr[AttrType::DEXTERITY] = 15;
+          c.attr[AttrType::DEXTERITY] = 35;
           c.barehandedDamage = 3;
           c.barehandedAttack = AttackType::HIT;
           c.humanoid = false;
@@ -2164,6 +2165,13 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
       return getSokobanBoulder(tribe);
     default: return get(getAttributes(id), tribe, getController(id, aiFactory));
   }
+}
+
+PCreature CreatureFactory::getGhost(Creature* creature) {
+  ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Ghost");
+  viewObject.setModifier(ViewObject::Modifier::ILLUSION);
+  return PCreature(new Creature(viewObject, creature->getTribe(), getAttributes(CreatureId::LOST_SOUL),
+        Monster::getFactory(MonsterAIFactory::monster())));
 }
 
 ItemType randomHealing() {

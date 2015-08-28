@@ -288,10 +288,10 @@ void Model::tick(double time) {
   for (PLevel& l : levels)
     l->tick(time);
   lastTick = time;
+  for (PCollective& col : collectives)
+    col->tick(time);
   if (playerControl) {
     if (!playerControl->isRetired()) {
-      for (PCollective& col : collectives)
-        col->tick(time);
       bool conquered = true;
       for (Collective* col : mainVillains)
         conquered &= col->isConquered();
@@ -299,8 +299,7 @@ void Model::tick(double time) {
         playerControl->onConqueredLand();
         won = true;
       }
-    } else // temp fix to the player gets the location message
-      playerControl->tick(time);
+    }
   }
   if (musicType == MusicType::PEACEFUL && sunlightInfo.state == SunlightState::NIGHT)
     setCurrentMusic(MusicType::NIGHT, true);

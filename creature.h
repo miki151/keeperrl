@@ -188,7 +188,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
     enum Mod { WILD, SWIFT};
     optional<Mod> mod;
   };
-  CreatureAction attack(const Creature*, optional<AttackParams> = none, bool spendTime = true) const;
+  CreatureAction attack(Creature*, optional<AttackParams> = none, bool spendTime = true) const;
   CreatureAction bumpInto(Vec2 direction) const;
   CreatureAction applyItem(Item* item) const;
   CreatureAction equip(Item* item) const;

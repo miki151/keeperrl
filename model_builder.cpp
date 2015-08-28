@@ -202,8 +202,8 @@ static vector<EnemyInfo> getWarriorCastle(RandomGen& random, TribeSet& tribeSet)
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::WARRIOR;
             c.frequency = 1;
-            c.traits = LIST(MinionTrait::FIGHTER);),          
-          }),
+            c.traits = LIST(MinionTrait::FIGHTER);),
+          }).setGhostSpawns(0.1, 6),
       {CONSTRUCT(VillainInfo,
           c.minPopulation = 6;
           c.minTeamSize = 5;
@@ -226,7 +226,7 @@ static vector<EnemyInfo> getHumanVillage(RandomGen& random, TribeSet& tribeSet, 
       c.shopFactory = ItemFactory::armory();
       c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());
       c.outsideFeatures = SquareFactory::villageOutside(boardText);
-      ), CollectiveConfig::noImmigrants(), {})
+      ), CollectiveConfig::noImmigrants().setGhostSpawns(0.1, 4), {})
   };
 }
 
@@ -248,7 +248,7 @@ static vector<EnemyInfo> getLizardVillage(RandomGen& random, TribeSet& tribeSet)
             c.id = CreatureId::LIZARDMAN;
             c.frequency = 1;
             c.traits = LIST(MinionTrait::FIGHTER);),          
-          }),
+          }).setGhostSpawns(0.1, 4),
       {CONSTRUCT(VillainInfo,
           c.minPopulation = 4;
           c.minTeamSize = 4;
@@ -275,7 +275,7 @@ static vector<EnemyInfo> getElvenVillage(RandomGen& random, TribeSet& tribeSet) 
             c.id = CreatureId::ELF_ARCHER;
             c.frequency = 1;
             c.traits = LIST(MinionTrait::FIGHTER);),          
-          }),
+          }).setGhostSpawns(0.1, 4),
       {CONSTRUCT(VillainInfo,
           c.minPopulation = 4;
           c.minTeamSize = 4;
@@ -328,7 +328,7 @@ static vector<EnemyInfo> getDwarfTown(RandomGen& random, TribeSet& tribeSet) {
             c.id = CreatureId::DWARF;
             c.frequency = 1;
             c.traits = LIST(MinionTrait::FIGHTER);),          
-          }),
+          }).setGhostSpawns(0.1, 4),
       {CONSTRUCT(VillainInfo,
           c.minPopulation = 3;
           c.minTeamSize = 4;
@@ -364,7 +364,7 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random, TribeSet& tribeSet) {
             c.id = CreatureId::ARCHER;
             c.frequency = 1;
             c.traits = LIST(MinionTrait::FIGHTER);),          
-          }),
+          }).setGhostSpawns(0.1, 6),
       {CONSTRUCT(VillainInfo,
           c.minPopulation = 12;
           c.minTeamSize = 10;
@@ -486,7 +486,8 @@ static vector<EnemyInfo> getGreenDragon(RandomGen& random, TribeSet& tribeSet) {
       c.location = new Location(true);
       c.tribe = tribeSet.killEveryone.get();
       c.buildingId = BuildingId::DUNGEON;
-      c.shopFactory = ItemFactory::dragonCave();), CollectiveConfig::noImmigrants().setLeaderAsFighter(),
+      c.shopFactory = ItemFactory::dragonCave();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
+          .setGhostSpawns(0.03, 1),
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
@@ -503,7 +504,8 @@ static vector<EnemyInfo> getHydra(RandomGen& random, TribeSet& tribeSet) {
       c.creatures = CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::HYDRA);
       c.numCreatures = 1;
       c.location = new Location(true);
-      c.tribe = tribeSet.killEveryone.get();), CollectiveConfig::noImmigrants().setLeaderAsFighter(),
+      c.tribe = tribeSet.killEveryone.get();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
+          .setGhostSpawns(0.03, 1),
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
@@ -521,7 +523,8 @@ static vector<EnemyInfo> getRedDragon(RandomGen& random, TribeSet& tribeSet) {
       c.location = new Location(true);
       c.tribe = tribeSet.killEveryone.get();
       c.buildingId = BuildingId::DUNGEON;
-      c.shopFactory = ItemFactory::dragonCave();), CollectiveConfig::noImmigrants().setLeaderAsFighter(),
+      c.shopFactory = ItemFactory::dragonCave();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
+          .setGhostSpawns(0.03, 1),
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
@@ -540,7 +543,8 @@ static vector<EnemyInfo> getCyclops(RandomGen& random, TribeSet& tribeSet) {
       c.location = new Location(true);
       c.tribe = tribeSet.killEveryone.get();
       c.buildingId = BuildingId::DUNGEON;
-      c.shopFactory = ItemFactory::mushrooms(true);), CollectiveConfig::noImmigrants().setLeaderAsFighter(),
+      c.shopFactory = ItemFactory::mushrooms(true);), CollectiveConfig::noImmigrants().setLeaderAsFighter()
+          .setGhostSpawns(0.03, 1),
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;

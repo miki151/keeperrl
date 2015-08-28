@@ -94,7 +94,6 @@ class Collective : public TaskCallback {
 
   SERIALIZATION_DECL(Collective);
 
-  vector<Creature*>& getCreatures();
   const vector<Creature*>& getCreatures() const;
   bool isConquered() const;
 
@@ -289,6 +288,7 @@ class Collective : public TaskCallback {
   private:
   friend class CollectiveBuilder;
   Collective(Level*, const CollectiveConfig&, Tribe*, EnumMap<ResourceId, int> credit, const optional<string>& name);
+  void addCreatureInTerritory(PCreature, EnumSet<MinionTrait>);
   void updateEfficiency(Position, SquareType);
   int getPaymentAmount(const Creature*) const;
   void makePayouts();
@@ -344,6 +344,7 @@ class Collective : public TaskCallback {
   bool considerImmigrant(const ImmigrantInfo&);
   void considerBuildingBeds();
   bool considerNonSpawnImmigrant(const ImmigrantInfo&, vector<PCreature>);
+  void considerSpawningGhosts();
   vector<Position> getSpawnPos(const vector<Creature*>&);
   void considerImmigration();
   int tryBuildingBeds(SpawnType spawnType, int numBeds);
@@ -403,6 +404,8 @@ class Collective : public TaskCallback {
   HeapAllocated<CollectiveConfig> SERIAL(config);
   vector<const Creature*> SERIAL(banished);
   EntitySet<Creature> SERIAL(equipmentUpdates);
+  vector<Creature*> SERIAL(deadCreatures);
+  optional<double> SERIAL(spawnGhosts);
 };
 
 #endif

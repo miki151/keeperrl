@@ -36,7 +36,6 @@ class CollectiveControl {
   static void registerTypes(Archive& ar, int version);
 
   const vector<Creature*>& getCreatures() const;
-  vector<Creature*>& getCreatures();
 
   protected:
   Collective* getCollective() const;

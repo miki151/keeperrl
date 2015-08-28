@@ -190,6 +190,7 @@ class CreatureFactory {
 
   static PCreature getShopkeeper(Location* shopArea, Tribe*);
   static PCreature getGuardingBoulder(Tribe* tribe);
+  static PCreature getGhost(Creature*);
 
   static PCreature addInventory(PCreature c, const vector<ItemType>& items);
 

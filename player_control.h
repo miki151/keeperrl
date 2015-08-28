@@ -48,7 +48,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void onConqueredLand();
 
   void processInput(View* view, UserInput);
-  void tick(double);
   MoveInfo getMove(Creature* c);
 
   bool isRetired() const;
@@ -107,6 +106,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onConstructed(Position, const SquareType&) override;
   virtual void onNoEnemies() override;
+  virtual void tick(double) override;
 
   private:
 

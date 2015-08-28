@@ -1237,7 +1237,7 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
   return MsgType(0);
 }
 
-CreatureAction Creature::attack(const Creature* other, optional<AttackParams> attackParams, bool spend) const {
+CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackParams, bool spend) const {
   CHECK(!other->isDead());
   Vec2 dir = getPosition().getDir(other->getPosition());
   if (dir.length8() != 1)
@@ -1251,6 +1251,7 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackParams> at
   auto rAccuracy = [=] () { return Random.get(-accuracyVariance, accuracyVariance); };
   auto rDamage = [=] () { return Random.get(-damageVariance, damageVariance); };
   double timeSpent = 1;
+  getLevel()->getModel()->onAttack(other, c);
   accuracy += rAccuracy() + rAccuracy();
   damage += rDamage() + rDamage();
   vector<string> attackAdjective;
@@ -1285,7 +1286,6 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackParams> at
     attackLevel = *attackParams->level;
   Attack attack(c, attackLevel, getAttackType(), accuracy, damage, backstab,
       getWeapon() ? getWeapon()->getAttackEffect() : attributes->attackEffect);
-  Creature* other = c->getPosition().plus(dir).getCreature();
   if (!other->dodgeAttack(attack)) {
     if (getWeapon()) {
       you(getAttackMsg(attack.getType(), true, attack.getLevel()),
@@ -1298,7 +1298,6 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackParams> at
   }
   else
     you(MsgType::MISS_ATTACK, enemyName);
-  getLevel()->getModel()->onAttack(other, c);
   double oldTime = getTime();
   if (spend)
     c->spendTime(timeSpent);

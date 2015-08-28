@@ -435,7 +435,7 @@ static bool displayTravelInfo = true;
 
 void Player::attackAction(Creature::Id id) {
   for (Position pos : getCreature()->getPosition().neighbors8())
-    if (const Creature* c = pos.getCreature())
+    if (Creature* c = pos.getCreature())
       if (c->getUniqueId() == id) {
         tryToPerform(getCreature()->attack(c));
         break;

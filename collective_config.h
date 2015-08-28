@@ -86,6 +86,7 @@ class CollectiveConfig {
 
   CollectiveConfig& allowRecruiting(int minPopulation);
   CollectiveConfig& setLeaderAsFighter();
+  CollectiveConfig& setGhostSpawns(double prob, int number);
 
   bool isLeaderFighter() const;
   bool getManageEquipment() const;
@@ -99,6 +100,8 @@ class CollectiveConfig {
   bool getWarnings() const;
   bool getConstructions() const;
   int getMaxPopulation() const;
+  int getNumGhostSpawns() const;
+  double getGhostProb() const;
   optional<int> getRecruitingMinPopulation() const;
   bool sleepOnlyAtNight() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
@@ -120,6 +123,8 @@ class CollectiveConfig {
   CollectiveType SERIAL(type);
   optional<int> SERIAL(recruitingMinPopulation);
   bool SERIAL(leaderAsFighter);
+  int SERIAL(spawnGhosts) = 0;
+  double SERIAL(ghostProb) = 0;
 };
 
 

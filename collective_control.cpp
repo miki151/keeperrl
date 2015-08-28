@@ -20,10 +20,6 @@ Collective* CollectiveControl::getCollective() const {
 void CollectiveControl::update(Creature*) {
 }
 
-vector<Creature*>& CollectiveControl::getCreatures() {
-  return getCollective()->getCreatures();
-}
-
 const vector<Creature*>& CollectiveControl::getCreatures() const {
   return getCollective()->getCreatures();
 }
