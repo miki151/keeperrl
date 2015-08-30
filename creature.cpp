@@ -925,9 +925,10 @@ int Creature::getAttr(AttrType type) const {
           def /= 1.5;
         if (isAffected(LastingEffect::SPEED))
           def *= 1.5;
+        CHECK(def > 0);
         break;}
   }
-  return def;
+  return max(0, def);
 }
 
 int Creature::accuracyBonus() const {
@@ -1598,7 +1599,7 @@ void Creature::setOnFire(double amount) {
 void Creature::poisonWithGas(double amount) {
   if (!isAffected(LastingEffect::POISON_RESISTANT) && attributes->breathing && !isNotLiving()) {
     you(MsgType::ARE, "poisoned by the gas");
-    bleed(amount / double(getAttr(AttrType::STRENGTH)));
+    bleed(amount / double(1 + getAttr(AttrType::STRENGTH)));
   }
 }
 
