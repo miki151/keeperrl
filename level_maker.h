@@ -91,6 +91,7 @@ class LevelMaker {
     CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down, SquareFactory);
   static LevelMaker* mazeLevel(RandomGen&, SettlementInfo);
   static LevelMaker* sokobanLevel(RandomGen&, SettlementInfo);
+  static LevelMaker* quickLevel(RandomGen&);
 };
 
 #endif

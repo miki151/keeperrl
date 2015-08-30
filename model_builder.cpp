@@ -856,7 +856,7 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter& meter, RandomGen& random,
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   Level* top = m->buildLevel(
       LevelBuilder(meter, random, 28, 14, "Wilderness", false),
-      LevelMaker::sokobanLevel(random, {}));
+      LevelMaker::quickLevel(random));
   m->calculateStairNavigation();
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet->keeper.get())
