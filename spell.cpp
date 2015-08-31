@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "spell.h"
 #include "effect.h"
+#include "creature.h"
+#include "player_message.h"
+#include "entity_name.h"
 
 const string& Spell::getName() const {
   return name;
@@ -32,10 +35,12 @@ int Spell::getDifficulty() const {
   return difficulty;
 }
 
-Spell::Spell(const string& n, EffectType e, int diff) : name(n), effect(e), difficulty(diff) {
+Spell::Spell(const string& n, EffectType e, int diff, CastMessageType msg)
+    : name(n), effect(e), difficulty(diff), castMessageType(msg) {
 }
 
-Spell::Spell(const string& n, DirEffectType e, int diff) : name(n), effect(e), difficulty(diff) {
+Spell::Spell(const string& n, DirEffectType e, int diff, CastMessageType msg)
+    : name(n), effect(e), difficulty(diff), castMessageType(msg) {
 }
 
 string Spell::getDescription() const {
@@ -43,6 +48,19 @@ string Spell::getDescription() const {
     return Effect::getDescription(boost::get<DirEffectType>(effect));
   else
     return Effect::getDescription(boost::get<EffectType>(effect));
+}
+
+void Spell::addMessage(Creature* c) {
+  switch (castMessageType) {
+    case CastMessageType::STANDARD:
+      c->playerMessage("You cast " + getName());
+      c->monsterMessage(c->getName().the() + " casts a spell");
+      break;
+    case CastMessageType::AIR_BLAST:
+      c->playerMessage("You cause an air blast!");
+      c->monsterMessage(c->getName().the() + " causes an air blast!");
+      break;
+  }
 }
 
 void Spell::init() {
@@ -60,6 +78,7 @@ void Spell::init() {
   set(SpellId::TELEPORT, new Spell("escape", EffectId::TELEPORT, 80));
   set(SpellId::INVISIBILITY, new Spell("invisibility", {EffectId::LASTING, LastingEffect::INVISIBLE}, 150));
   set(SpellId::WORD_OF_POWER, new Spell("word of power", EffectId::WORD_OF_POWER, 150));
+  set(SpellId::AIR_BLAST, new Spell("air blast", EffectId::AIR_BLAST, 150, CastMessageType::AIR_BLAST));
   set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", EffectId::SUMMON_SPIRIT, 150));
   set(SpellId::PORTAL, new Spell("portal", EffectId::PORTAL, 150));
   set(SpellId::CURE_POISON, new Spell("cure poisoning", EffectId::CURE_POISON, 150));

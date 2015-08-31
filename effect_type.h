@@ -16,6 +16,7 @@ enum class EffectId {
     GUARDING_BOULDER,
     EMIT_POISON_GAS,
     WORD_OF_POWER,
+    AIR_BLAST,
     DECEPTION,
     SUMMON_INSECTS,
     ACID,

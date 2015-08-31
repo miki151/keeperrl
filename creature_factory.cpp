@@ -2072,25 +2072,56 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
           c.name = "elementalist";);
     case CreatureId::FIRE_ELEMENTAL:
-      return INHERIT(FIRE_SPHERE,
+      return CATTR(
           c.viewId = ViewId::FIRE_ELEMENTAL;
+          c.size = CreatureSize::LARGE;
           c.attr[AttrType::SPEED] = 120;
           c.attr[AttrType::STRENGTH] = 20;
           c.attr[AttrType::DEXTERITY] = 20;
           c.barehandedAttack = AttackType::HIT;
+          c.barehandedDamage = 10;
+          c.humanoid = false;
+          c.bodyParts.clear();
+          c.uncorporal = true;
+          c.breathing = false;
+          c.brain = false;
+          c.fireCreature = true;
+          c.permanentEffects[LastingEffect::FLYING] = 1;
+          c.weight = 10;
           c.name = "fire elemental";);
     case CreatureId::AIR_ELEMENTAL:
-      return INHERIT(FIRE_ELEMENTAL,
+      return CATTR(
           c.viewId = ViewId::AIR_ELEMENTAL;
-          c.fireCreature = false;
+          c.size = CreatureSize::LARGE;
           c.attr[AttrType::SPEED] = 160;
+          c.attr[AttrType::STRENGTH] = 20;
+          c.attr[AttrType::DEXTERITY] = 20;
+          c.barehandedAttack = AttackType::HIT;
+          c.barehandedDamage = 10;
+          c.humanoid = false;
+          c.bodyParts.clear();
+          c.uncorporal = true;
+          c.breathing = false;
+          c.brain = false;
+          c.fireCreature = true;
+          c.permanentEffects[LastingEffect::FLYING] = 1;
+          c.weight = 10;
+          c.spells.add(SpellId::AIR_BLAST);
           c.name = "air elemental";);
     case CreatureId::EARTH_ELEMENTAL:
       return INHERIT(AIR_ELEMENTAL,
           c.viewId = ViewId::EARTH_ELEMENTAL;
+          c.size = CreatureSize::LARGE;
           c.attr[AttrType::SPEED] = 80;
-          c.uncorporal = false;
           c.attr[AttrType::STRENGTH] = 25;
+          c.attr[AttrType::DEXTERITY] = 20;
+          c.barehandedAttack = AttackType::HIT;
+          c.barehandedDamage = 10;
+          c.humanoid = false;
+          c.bodyParts.clear();
+          c.breathing = false;
+          c.brain = false;
+          c.weight = 500;
           c.name = "earth elemental";);
     case CreatureId::WATER_ELEMENTAL:
       return INHERIT(EARTH_ELEMENTAL,

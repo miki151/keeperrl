@@ -170,7 +170,7 @@ static void creatureEffect(Creature* who, EffectType type, EffectStrength str, V
       Effect::applyToCreature(c, type, str);
 }
 
-static void blast(Creature* who, Position position, Vec2 direction, int maxDistance) {
+static void blast(Creature* who, Position position, Vec2 direction, int maxDistance, bool damage) {
   if (Creature* c = position.getCreature())
     if (!c->isStationary()) {
       int dist = 0;
@@ -183,7 +183,8 @@ static void blast(Creature* who, Position position, Vec2 direction, int maxDista
         position.getLevel()->moveCreature(c, direction * dist);
         c->you(MsgType::ARE, "thrown back");
       }
-      c->takeDamage(Attack(who, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 32, false));
+      if (damage)
+        c->takeDamage(Attack(who, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 32, false));
     }
   for (auto elem : Item::stackItems(position.getItems())) {
     position.throwItem(
@@ -191,19 +192,24 @@ static void blast(Creature* who, Position position, Vec2 direction, int maxDista
         Attack(who, Random.choose({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
           elem.second[0]->getAttackType(), 15, 15, false), maxDistance, direction, VisionId::NORMAL);
   }
-  if (position.isDestroyable())
+  if (damage && position.isDestroyable())
     position.destroy();
 }
 
 static void blast(Creature* c, Vec2 direction, int range) {
   for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
-    blast(c, c->getPosition().plus(v), direction, range);
+    blast(c, c->getPosition().plus(v), direction, range, true);
 }
 
 static void wordOfPower(Creature* c, int strength) {
   GlobalEvents.addExplosionEvent(c->getLevel(), c->getPosition().getCoord());
   for (Vec2 v : Vec2::directions8(Random))
-    blast(c, c->getPosition().plus(v), v, wordOfPowerDist[strength]);
+    blast(c, c->getPosition().plus(v), v, wordOfPowerDist[strength], true);
+}
+
+static void airBlast(Creature* c, int strength) {
+  for (Vec2 v : Vec2::directions8(Random))
+    blast(c, c->getPosition().plus(v), v, wordOfPowerDist[strength], false);
 }
 
 static void emitPoisonGas(Position pos, int strength, bool msg) {
@@ -402,6 +408,7 @@ void Effect::applyToCreature(Creature* c, const EffectType& type, EffectStrength
     case EffectId::SUMMON_INSECTS: summon(c, CreatureId::FLY, Random.get(3, 7), 100); break;
     case EffectId::DECEPTION: deception(c); break;
     case EffectId::WORD_OF_POWER: wordOfPower(c, strength); break;
+    case EffectId::AIR_BLAST: airBlast(c, strength); break;
     case EffectId::GUARDING_BOULDER: guardingBuilder(c); break;
     case EffectId::FIRE_SPHERE_PET: summon(c, CreatureId::FIRE_SPHERE, 1, 30); break;
     case EffectId::ENHANCE_ARMOR: enhanceArmor(c); break;
@@ -448,6 +455,7 @@ string Effect::getName(const EffectType& type) {
     case EffectId::ENHANCE_ARMOR: return "armor enchantement";
     case EffectId::FIRE_SPHERE_PET: return "fire sphere";
     case EffectId::WORD_OF_POWER: return "power";
+    case EffectId::AIR_BLAST: return "air blast";
     case EffectId::DECEPTION: return "deception";
     case EffectId::SUMMON_INSECTS: return "insect summoning";
     case EffectId::LEAVE_BODY: return "possesion";
@@ -481,6 +489,7 @@ string Effect::getDescription(const EffectType& type) {
     case EffectId::ENHANCE_ARMOR: return "Increases armor defense.";
     case EffectId::FIRE_SPHERE_PET: return "Creates a following fire sphere.";
     case EffectId::WORD_OF_POWER: return "Causes an explosion around the spellcaster.";
+    case EffectId::AIR_BLAST: return "Causes an explosion of air around the spellcaster.";
     case EffectId::DECEPTION: return "Creates multiple illusions of the spellcaster to confuse the enemy.";
     case EffectId::SUMMON_INSECTS: return "Summons insects to distract the enemy.";
     case EffectId::LEAVE_BODY: return "Lets the spellcaster leave his body and possess another one.";

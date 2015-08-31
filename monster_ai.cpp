@@ -505,6 +505,9 @@ class Fighter : public Behaviour {
             other->setInCombat();
         })};
     }
+    if (distance == 1)
+      if (MoveInfo move = tryEffect(EffectId::AIR_BLAST, 1))
+        return move;
     if (distance <= 5)
       for (EffectType effect : {
           EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
