@@ -501,7 +501,7 @@ void Player::makeMove() {
   UserInput action = model->getView()->getAction();
   if (travelling && action.getId() == UserInputId::IDLE)
     travelAction();
-  else if (target&& action.getId() == UserInputId::IDLE)
+  else if (target && action.getId() == UserInputId::IDLE)
     targetAction();
   else {
     Debug() << "Action " << int(action.getId());

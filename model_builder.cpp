@@ -184,6 +184,27 @@ static vector<EnemyInfo> getOrcTown(RandomGen& random, TribeSet& tribeSet) {
   };
 }
 
+static vector<EnemyInfo> getFriendlyCave(RandomGen& random, TribeSet& tribeSet, CreatureId creature) {
+  return {
+    mainVillain(CONSTRUCT(SettlementInfo,
+      c.type = SettlementType::CAVE;
+      c.creatures = CreatureFactory::singleType(tribeSet.greenskins.get(), creature);
+      c.numCreatures = random.get(4, 8);
+      c.location = new Location(true);
+      c.tribe = tribeSet.greenskins.get();
+      c.buildingId = BuildingId::DUNGEON;
+      c.closeToPlayer = true;
+      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());
+      c.outsideFeatures = SquareFactory::villageOutside();),
+      CollectiveConfig::withImmigrants(0.003, 10, {
+          CONSTRUCT(ImmigrantInfo,
+            c.id = creature;
+            c.frequency = 3;
+            c.traits = LIST(MinionTrait::FIGHTER);), 
+          }).allowRecruiting(4), {})
+  };
+}
+
 static vector<EnemyInfo> getWarriorCastle(RandomGen& random, TribeSet& tribeSet) {
   return {
     mainVillain(CONSTRUCT(SettlementInfo,
@@ -641,6 +662,10 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
   if (Random.roll(4))
     append(ret, getAntNest(random, tribeSet));
   append(ret, getHumanCastle(random, tribeSet));
+  append(ret, Random.choose({
+        getFriendlyCave(random, tribeSet, CreatureId::ORC),
+        getFriendlyCave(random, tribeSet, CreatureId::OGRE),
+        getFriendlyCave(random, tribeSet, CreatureId::HARPY)}));
   for (auto& infos : random.chooseN(4, {
         getTower(random, tribeSet),
         getWarriorCastle(random, tribeSet),
@@ -660,11 +685,11 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
     append(ret, infos);
   for (auto& infos : random.chooseN(random.get(2, 4), {
         getGnomishMines(random, tribeSet),
-        getOrcTown(random, tribeSet),
         getWitchHouse(random, tribeSet),
         getCemetery(random, tribeSet)}))
     append(ret, infos);
 
+  getOrcTown(random, tribeSet);
   return ret;
 }
 

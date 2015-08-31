@@ -1262,8 +1262,8 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
   switch (trigger.getId()) {
     case AttackTriggerId::SELF_VICTIMS: return "Killed tribe members";
     case AttackTriggerId::GOLD: return "Gold";
-    case AttackTriggerId::STOLEN_ITEMS: return "Stolen items";
-    case AttackTriggerId::ROOM_BUILT: return "Throne built";
+    case AttackTriggerId::STOLEN_ITEMS: return "Item theft";
+    case AttackTriggerId::ROOM_BUILT: return "Throne";
     case AttackTriggerId::POWER: return "Keeper's power";
     case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
     case AttackTriggerId::TIMER: return "Time";

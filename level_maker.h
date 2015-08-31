@@ -73,6 +73,7 @@ struct SettlementInfo {
   CollectiveBuilder* collective;
   optional<SquareFactory> furniture;
   optional<SquareFactory> outsideFeatures;
+  bool closeToPlayer;
 };
 
 class LevelMaker {
