@@ -335,7 +335,7 @@ void PlayerControl::leaveControl() {
     lastControlKeeperQuestion = getCollective()->getTime();
   CHECK(controlled);
   if (controlled->getLevel() != getLevel())
-    model->getView()->resetCenter();
+    model->getView()->setScrollPos(getPosition());
   if (controlled->isPlayer())
     controlled->popController();
   for (TeamId team : getTeams().getActive(controlled))
@@ -1181,20 +1181,11 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         ViewObject::Attribute::EFFICIENCY, getCollective()->getEfficiency(position));
 }
 
-optional<Vec2> PlayerControl::getPosition(bool force) const {
-  if (force) {
-    if (const Creature* keeper = getKeeper())
-      if (!keeper->isDead())
-        return keeper->getPosition().getCoord();
-    return Vec2(0, 0);
-  } else {
-    if (!scrollPos.empty()) {
-      Vec2 ret = scrollPos.front();
-      scrollPos.pop();
-      return ret;
-    } else
-      return none;
-  }
+Vec2 PlayerControl::getPosition() const {
+  if (const Creature* keeper = getKeeper())
+    if (!keeper->isDead())
+      return keeper->getPosition().getCoord();
+  return Vec2(0, 0);
 }
 
 optional<CreatureView::MovementInfo> PlayerControl::getMovementInfo() const {
@@ -1340,16 +1331,16 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::MESSAGE_INFO:
         if (auto message = findMessage(input.get<int>())) {
           if (auto pos = message->getPosition())
-            scrollPos.push(pos->getCoord());
+            model->getView()->setScrollPos(pos->getCoord());
           else if (auto id = message->getCreature()) {
             if (const Creature* c = getCreature(*id))
-              scrollPos.push(c->getPosition().getCoord());
+              model->getView()->setScrollPos(c->getPosition().getCoord());
           } else if (auto loc = message->getLocation()) {
             vector<Vec2> visible;
             for (Position v : loc->getAllSquares())
               if (getCollective()->isKnownSquare(v))
                 visible.push_back(v.getCoord());
-            scrollPos.push(Rectangle::boundingBox(visible).middle());
+            model->getView()->setScrollPos(Rectangle::boundingBox(visible).middle());
           }
         }
         break;
@@ -1359,7 +1350,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::EDIT_TEAM:
         setCurrentTeam(input.get<TeamId>());
         newTeam = false;
-        scrollPos.push(getTeams().getLeader(input.get<TeamId>())->getPosition().getCoord());
+        model->getView()->setScrollPos(getTeams().getLeader(input.get<TeamId>())->getPosition().getCoord());
         break;
     case UserInputId::CREATE_TEAM:
         newTeam = !newTeam;
@@ -1592,6 +1583,10 @@ void PlayerControl::tryLockingDoor(Position pos) {
 
 double PlayerControl::getTime() const {
   return model->getTime();
+}
+
+bool PlayerControl::isPlayerView() const {
+  return false;
 }
 
 bool PlayerControl::isRetired() const {

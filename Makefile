@@ -115,10 +115,10 @@ check_serial:
 	bash ./check_serial.sh
 
 run: $(NAME)
-	./keeper ${RUN_FLAGS}
+	./keeper ${RUN_FLAGS} &
 
 run_gdb: $(NAME)
-	xterm -e gdb --eval-command=run --eval-command=quit --args ./keeper --upload_url=localhost/~michal ${RUN_FLAGS} &
+	./run.sh ${RUN_FLAGS}
 
 ifdef RELEASE
 gen_version:

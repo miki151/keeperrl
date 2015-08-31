@@ -229,10 +229,17 @@ bool MapGui::onLeftClick(Vec2 v) {
 }
 
 bool MapGui::onRightClick(Vec2 pos) {
+  if (clock->getRealMillis() - lastRightClick < 200) {
+    lockedView = true;
+    lastRightClick = -100000;
+    return true;
+  }
+  lastRightClick = clock->getRealMillis();
   if (pos.inRectangle(getBounds())) {
     lastMousePos = pos;
     isScrollingNow = true;
     mouseOffset.x = mouseOffset.y = 0;
+    lockedView = false;
     return true;
   }
   return false;
@@ -479,6 +486,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   }
 }
 
+void MapGui::resetScrolling() {
+  lockedView = true;
+}
+
 void MapGui::clearCenter() {
   center = mouseOffset = {0.0, 0.0};
 }
@@ -496,6 +507,10 @@ void MapGui::setCenter(double x, double y) {
 void MapGui::setCenter(Vec2 v) {
   setCenter(v.x, v.y);
 }
+
+enum class MapGui::HintPosition {
+  LEFT, RIGHT
+};
 
 void MapGui::drawHint(Renderer& renderer, Color color, const vector<string>& text) {
   int lineHeight = 30;
@@ -719,6 +734,9 @@ void MapGui::render(Renderer& renderer) {
     Vec2 pos = topLeftCorner + (*highlightedInfo.tilePos - allTiles.getTopLeft()).mult(layout->getSquareSize());
     renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent, colors[ColorId::LIGHT_GRAY]);
   }
+  if (displayScrollHint && isScrollingNow) {
+    drawHint(renderer, colors[ColorId::LIGHT_BLUE], {"Double right-click to scroll back to creature."});
+  } else
   if (!hint.empty())
     drawHint(renderer, colors[ColorId::WHITE], hint);
   else
@@ -740,7 +758,8 @@ void MapGui::updateEnemyPositions(const vector<Vec2>& positions) {
     enemyPositions.setValue(v, true);
 }
 
-void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui, bool moral) {
+void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui,
+    bool moral) {
   const Level* level = view->getLevel();
   levelBounds = view->getLevel()->getBounds();
   updateEnemyPositions(view->getVisibleEnemies());
@@ -749,12 +768,10 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
   layout = mapLayout;
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
     objects[pos] = none;
-  if (!isCentered())
-    setCenter(*view->getPosition(true));
-  else if (auto pos = view->getPosition(false))
-    setCenter(*pos);
-  // If we have a fixed position (control mode), disable key scrolling because they move the character
-  keyScrolling = !view->getPosition(false);
+  displayScrollHint = view->isPlayerView() && !lockedView;
+  if (!isCentered() || (view->isPlayerView() && lockedView))
+    setCenter(view->getPosition());
+  keyScrolling = !view->isPlayerView();
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos())) 
     if (level->inBounds(pos)) {
       objects[pos].emplace();

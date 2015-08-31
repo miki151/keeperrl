@@ -93,10 +93,11 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual const MapMemory& getMemory() const override;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
-  virtual optional<Vec2> getPosition(bool force) const override;
+  virtual Vec2 getPosition() const override;
   virtual optional<MovementInfo> getMovementInfo() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getTime() const override;
+  virtual bool isPlayerView() const override;
 
   // from CollectiveControl
   virtual void update(Creature*) override;
@@ -223,7 +224,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   };
   optional<CurrentWarningInfo> SERIAL(currentWarning);
   vector<string> SERIAL(hints);
-  mutable queue<Vec2> scrollPos;
   optional<PlayerMessage> findMessage(PlayerMessage::Id);
   void updateVisibleCreatures();
   vector<const Creature*> SERIAL(visibleEnemies);

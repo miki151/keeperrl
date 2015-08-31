@@ -164,6 +164,8 @@ class View {
   /** Draw a blocking view of the whole level.*/
   virtual void drawLevelMap(const CreatureView*) = 0;
 
+  virtual void setScrollPos(Vec2) = 0;
+
   /** Scrolls back to the center of the view on next refresh.*/
   virtual void resetCenter() = 0;
 

@@ -100,7 +100,7 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
       info.roads.insert(v);
   }
   memory.clearUpdated();
-  info.player = *creature->getPosition(true);
+  info.player = creature->getPosition();
   for (Vec2 pos : creature->getVisibleEnemies())
     if (pos.inRectangle(bounds))
       info.enemies.push_back(pos);

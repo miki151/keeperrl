@@ -55,6 +55,7 @@ class WindowView: public View {
   virtual void refreshView() override;
   virtual void updateView(const CreatureView*, bool noRefresh) override;
   virtual void drawLevelMap(const CreatureView*) override;
+  virtual void setScrollPos(Vec2 pos) override;
   virtual void resetCenter() override;
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, double* scrollPos = nullptr,

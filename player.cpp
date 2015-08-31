@@ -513,6 +513,7 @@ void Player::makeMove() {
       retireMessages();
       travelling = false;
       target = none;
+      model->getView()->resetCenter();
     }
     updateView = true;
   }
@@ -721,7 +722,7 @@ const Level* Player::getLevel() const {
   return getCreature()->getLevel();
 }
 
-optional<Vec2> Player::getPosition(bool) const {
+Vec2 Player::getPosition() const {
   return getCreature()->getPosition().getCoord();
 }
 
@@ -851,3 +852,6 @@ double Player::getTime() const {
   return getCreature()->getTime();
 }
 
+bool Player::isPlayerView() const {
+  return true;
+}

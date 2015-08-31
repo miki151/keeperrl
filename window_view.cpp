@@ -447,8 +447,12 @@ vector<GuiElem*> WindowView::getClickableGuiElems() {
   return ret;
 }
 
+void WindowView::setScrollPos(Vec2 pos) {
+  mapGui->setCenter(pos);
+}
+
 void WindowView::resetCenter() {
-  mapGui->clearCenter();
+  mapGui->resetScrolling();
 }
 
 void WindowView::addVoidDialog(function<void()> fun) {

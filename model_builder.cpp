@@ -877,13 +877,13 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter& meter, RandomGen& random,
   top->landCreature(StairKey::keeperSpawn(), c.get());
   m->addCreature(std::move(c));
   m->playerControl->addKeeper(ref);
- /* for (int i : Range(4)) {
+  for (int i : Range(4)) {
     PCreature c = CreatureFactory::fromId(CreatureId::IMP, m->tribeSet->keeper.get(),
         MonsterAIFactory::collective(m->playerCollective));
     top->landCreature(StairKey::keeperSpawn(), c.get());
     m->playerControl->addImp(c.get());
     m->addCreature(std::move(c));
-  }*/
+  }
   return PModel(m);
 }
 

@@ -182,6 +182,11 @@ class ReplayView : public View {
         delegate->resetCenter();
     }
 
+    virtual void setScrollPos(Vec2 v) override {
+      if (delegate)
+        delegate->setScrollPos(v);
+    }
+
   private:
     InputArchive& input;
     View* delegate;

@@ -46,11 +46,12 @@ class Player : public Controller, public CreatureView {
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual const MapMemory& getMemory() const override;
   virtual void refreshGameInfo(GameInfo&) const override;
-  virtual optional<Vec2> getPosition(bool force) const override;
+  virtual Vec2 getPosition() const override;
   virtual optional<MovementInfo> getMovementInfo() const override;
   virtual const Level* getLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getTime() const override;
+  virtual bool isPlayerView() const override;
 
   // from Controller
   virtual void onKilled(const Creature* attacker) override;

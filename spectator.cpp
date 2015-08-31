@@ -26,7 +26,7 @@ void Spectator::refreshGameInfo(GameInfo& gameInfo)  const {
   gameInfo.infoType = GameInfo::InfoType::SPECTATOR;
 }
 
-optional<Vec2> Spectator::getPosition(bool force) const {
+Vec2 Spectator::getPosition() const {
   return level->getBounds().middle();
 }
 
@@ -46,4 +46,6 @@ vector<Vec2> Spectator::getVisibleEnemies() const {
   return {};
 }
 
-
+bool Spectator::isPlayerView() const {
+  return false;
+}

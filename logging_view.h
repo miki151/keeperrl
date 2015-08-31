@@ -183,6 +183,10 @@ class LoggingView : public View {
       delegate->resetCenter();
     }
 
+    virtual void setScrollPos(Vec2 v) override {
+      delegate->setScrollPos(v);
+    }
+
   private:
     OutputArchive& output;
     View* delegate;
