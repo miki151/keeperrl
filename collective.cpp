@@ -1167,7 +1167,7 @@ void Collective::considerSpawningGhosts() {
     spawnGhosts = 1000000;
   } else
   if (!spawnGhosts) {
-    if (Random.roll(config->getGhostProb()))
+    if (Random.roll(1.0 / config->getGhostProb()))
       spawnGhosts = getTime() + Random.get(250, 500);
     else
       spawnGhosts = 1000000;
@@ -1184,7 +1184,8 @@ int Collective::getNumKilled(double time) {
 
 void Collective::considerSendingGuardian() {
   if (auto info = config->getGuardianInfo())
-    if (!isConquered() && (!lastGuardian || lastGuardian->isDead()) && Random.roll(1.0 / info->probability)) {
+    if (!getCreatures().empty() && (!lastGuardian || lastGuardian->isDead()) &&
+        Random.roll(1.0 / info->probability)) {
       vector<Position> enemyPos = getEnemyPositions();
       if (enemyPos.size() >= info->minEnemies && getNumKilled(getTime() - 200) >= info->minVictims) {
         PCreature guardian = CreatureFactory::fromId(info->creature, getTribe(),

@@ -1674,7 +1674,7 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   if (isInnocent())
     getLevel()->getModel()->getStatistics().add(StatId::INNOCENT_KILLED);
   getLevel()->getModel()->getStatistics().add(StatId::DEATH);
-  deathTime = attacker->getTime();
+  deathTime = getTime();
 }
 
 bool Creature::isInnocent() const {
