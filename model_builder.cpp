@@ -601,7 +601,7 @@ static vector<EnemyInfo> getCottage(RandomGen& random, TribeSet& tribeSet) {
       c.tribe = tribeSet.human.get();
       c.buildingId = BuildingId::WOOD;
       c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
-      CollectiveConfig::noImmigrants(), {})
+      CollectiveConfig::noImmigrants().setGuardian({CreatureId::WITCHMAN, 0.001, 1, 2}), {})
   };
 }
 

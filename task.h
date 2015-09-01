@@ -55,6 +55,7 @@ class Task : public UniqueEntity<Task> {
   static PTask destroySquare(Position);
   static PTask disappear();
   static PTask chain(PTask, PTask);
+  static PTask chain(PTask, PTask, PTask);
   static PTask chain(vector<PTask>);
   static PTask explore(Position);
   static PTask attackLeader(Collective*);

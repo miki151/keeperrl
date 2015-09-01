@@ -117,7 +117,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(squaresInUse)
     & SVAR(equipmentUpdates)
     & SVAR(deadCreatures)
-    & SVAR(spawnGhosts);
+    & SVAR(spawnGhosts)
+    & SVAR(lastGuardian);
 }
 
 SERIALIZABLE(Collective);
@@ -1173,6 +1174,30 @@ void Collective::considerSpawningGhosts() {
   }
 }
 
+int Collective::getNumKilled(double time) {
+  int ret = 0;
+  for (Creature* c : deadCreatures)
+    if (c->getDeathTime() >= time)
+      ++ret;
+  return ret;
+}
+
+void Collective::considerSendingGuardian() {
+  if (auto info = config->getGuardianInfo())
+    if (!isConquered() && (!lastGuardian || lastGuardian->isDead()) && Random.roll(1.0 / info->probability)) {
+      vector<Position> enemyPos = getEnemyPositions();
+      if (enemyPos.size() >= info->minEnemies && getNumKilled(getTime() - 200) >= info->minVictims) {
+        PCreature guardian = CreatureFactory::fromId(info->creature, getTribe(),
+            MonsterAIFactory::singleTask(Task::chain(
+                Task::kill(this, Random.choose(enemyPos).getCreature()),
+                Task::goTo(Random.choose(territory->getExtended(10, 20))),
+                Task::disappear())));
+        lastGuardian = guardian.get();
+        getLevel()->landCreature(territory->getExtended(10, 20), std::move(guardian));
+      }
+    }
+}
+
 void Collective::tick(double time) {
   control->tick(time);
   considerHealingLeader();
@@ -1183,6 +1208,7 @@ void Collective::tick(double time) {
     considerSpawningGhosts();
   if (Random.rollD(1.0 / config->getImmigrantFrequency()))
     considerImmigration();
+  considerSendingGuardian();
 /*  if (nextPayoutTime > -1 && time > nextPayoutTime) {
     nextPayoutTime += config->getPayoutTime();
     makePayouts();

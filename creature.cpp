@@ -59,7 +59,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(tribe)
     & SVAR(health)
     & SVAR(morale)
-    & SVAR(dead)
+    & SVAR(deathTime)
     & SVAR(lastTick)
     & SVAR(collapsed)
     & SVAR(hidden)
@@ -207,7 +207,11 @@ void Creature::popController() {
 }
 
 bool Creature::isDead() const {
-  return dead;
+  return !!deathTime;
+}
+
+double Creature::getDeathTime() const {
+  return *deathTime;
 }
 
 const Creature* Creature::getLastAttacker() const {
@@ -1653,7 +1657,7 @@ void Creature::die(const string& reason, bool dropInventory, bool dCorpse) {
 }
 
 void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
-  CHECK(!dead);
+  CHECK(!isDead());
   lastAttacker = attacker;
   Debug() << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   controller->onKilled(attacker);
@@ -1670,7 +1674,7 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   if (isInnocent())
     getLevel()->getModel()->getStatistics().add(StatId::INNOCENT_KILLED);
   getLevel()->getModel()->getStatistics().add(StatId::DEATH);
-  dead = true;
+  deathTime = attacker->getTime();
 }
 
 bool Creature::isInnocent() const {

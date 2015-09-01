@@ -127,6 +127,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool isBleeding() const;
   const Creature* getLastAttacker() const;
   optional<string> getDeathReason() const;
+  double getDeathTime() const;
   vector<const Creature*> getKills() const;
   bool isHumanoid() const;
   bool isAnimal() const;
@@ -328,7 +329,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Tribe* SERIAL(tribe);
   double SERIAL(health) = 1;
   double SERIAL(morale) = 0;
-  bool SERIAL(dead) = false;
+  optional<double> SERIAL(deathTime);
   double SERIAL(lastTick) = 0;
   bool SERIAL(collapsed) = false;
   bool SERIAL(hidden) = false;

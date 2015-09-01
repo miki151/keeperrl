@@ -77,6 +77,16 @@ struct PopulationIncrease {
   void serialize(Archive& ar, const unsigned int version);
 };
 
+struct GuardianInfo {
+  CreatureId SERIAL(creature);
+  double SERIAL(probability);
+  int SERIAL(minEnemies);
+  int SERIAL(minVictims);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+};
+
 class CollectiveConfig {
   public:
   static CollectiveConfig keeper(double immigrantFrequency, int payoutTime, double payoutMultiplier,
@@ -87,6 +97,7 @@ class CollectiveConfig {
   CollectiveConfig& allowRecruiting(int minPopulation);
   CollectiveConfig& setLeaderAsFighter();
   CollectiveConfig& setGhostSpawns(double prob, int number);
+  CollectiveConfig& setGuardian(GuardianInfo);
 
   bool isLeaderFighter() const;
   bool getManageEquipment() const;
@@ -106,6 +117,7 @@ class CollectiveConfig {
   bool sleepOnlyAtNight() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
+  const optional<GuardianInfo>& getGuardianInfo() const;
 
   SERIALIZATION_DECL(CollectiveConfig);
 
@@ -125,6 +137,7 @@ class CollectiveConfig {
   bool SERIAL(leaderAsFighter);
   int SERIAL(spawnGhosts) = 0;
   double SERIAL(ghostProb) = 0;
+  optional<GuardianInfo> SERIAL(guardianInfo) = 0;
 };
 
 

@@ -810,6 +810,10 @@ PTask Task::chain(PTask t1, PTask t2) {
   return PTask(new Chain(makeVec<PTask>(std::move(t1), std::move(t2))));
 }
 
+PTask Task::chain(PTask t1, PTask t2, PTask t3) {
+  return PTask(new Chain(makeVec<PTask>(std::move(t1), std::move(t2), std::move(t2))));
+}
+
 PTask Task::chain(vector<PTask> v) {
   return PTask(new Chain(std::move(v)));
 }
