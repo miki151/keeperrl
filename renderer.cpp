@@ -207,7 +207,7 @@ void Renderer::popLayer() {
 }
 
 Vec2 Renderer::getSize() {
-  return Vec2(display.getSize().x, display.getSize().y);
+  return Vec2(display.getSize().x / zoom, display.getSize().y / zoom);
 }
 
 bool Renderer::isFullscreen() {
@@ -220,21 +220,40 @@ static vector<VideoMode> getResolutions() {
       [&] (const VideoMode& m) { return m.bitsPerPixel == desktopMode.bitsPerPixel; });
 }
 
-void Renderer::initialize(bool fs, int mode) {
-  fullscreen = fs;
+void Renderer::updateResolution() {
+  display.setView(sf::View(sf::FloatRect(0, 0, display.getSize().x / zoom, display.getSize().y / zoom)));
+}
+
+void Renderer::setFullscreen(bool v) {
+  fullscreen = v;
+}
+
+void Renderer::setFullscreenMode(int v) {
+  fullscreenMode = v;
+}
+
+void Renderer::setZoom(int v) {
+  zoom = v;
+  updateResolution();
+}
+
+void Renderer::initialize() {
   if (!renderThreadId)
     renderThreadId = currentThreadId();
   else
     CHECK(currentThreadId() == *renderThreadId);
-  CHECK(!getResolutions().empty()) << sf::VideoMode::getFullscreenModes().size() << " " << int(sf::VideoMode::getDesktopMode().bitsPerPixel);
-  CHECK(mode >= 0 && mode < getResolutions().size()) << mode << " " << getResolutions().size();
-  VideoMode vMode = getResolutions()[mode];
-  CHECK(vMode.isValid()) << "Video mode invalid: " << int(vMode.width) << " " << int(vMode.height) << " " << int(vMode.bitsPerPixel) << " " << fs;
+  CHECK(!getResolutions().empty()) << sf::VideoMode::getFullscreenModes().size() << " " <<
+      int(sf::VideoMode::getDesktopMode().bitsPerPixel);
+  CHECK(fullscreenMode >= 0 && fullscreenMode < getResolutions().size()) <<
+      fullscreenMode << " " << getResolutions().size();
+  VideoMode vMode = getResolutions()[fullscreenMode];
+  CHECK(vMode.isValid()) << "Video mode invalid: " << int(vMode.width) << " " << int(vMode.height) << " " <<
+      int(vMode.bitsPerPixel) << " " << fullscreen;
   if (fullscreen)
     display.create(vMode, "KeeperRL", sf::Style::Fullscreen);
   else
     display.create(sf::VideoMode::getDesktopMode(), "KeeperRL");
-  sfView = new sf::View(display.getDefaultView());
+  updateResolution();
   display.setVerticalSyncEnabled(true);
 }
 
@@ -408,8 +427,7 @@ void Renderer::drawAndClearBuffer() {
 }
 
 void Renderer::resize(int width, int height) {
-  display.setView(*(sfView = new sf::View(sf::FloatRect(0, 0, width, height))));
-  ++setViewCount;
+  updateResolution();
 }
 
 Event Renderer::getRandomEvent() {
@@ -438,7 +456,7 @@ Event Renderer::getRandomEvent() {
 bool Renderer::pollEventWorkaroundMouseReleaseBug(Event& ev) {
   if (genReleaseEvent && !Mouse::isButtonPressed(Mouse::Right) && !Mouse::isButtonPressed(Mouse::Left)) {
     ev.type = Event::MouseButtonReleased;
-    ev.mouseButton = {Mouse::Left, Mouse::getPosition(display).x, Mouse::getPosition(display).y};
+    ev.mouseButton = {Mouse::Left, Mouse::getPosition(display).x / zoom, Mouse::getPosition(display).y / zoom};
     genReleaseEvent = false;
     return true;
   }
@@ -460,6 +478,7 @@ bool Renderer::pollEventOrFromQueue(Event& ev) {
     eventQueue.pop_front();
     return true;
   } else if (display.pollEvent(ev)) {
+    zoomMousePos(ev);
     considerMouseMoveEvent(ev);
     return true;
   } else
@@ -485,9 +504,30 @@ bool Renderer::pollEvent(Event& ev) {
 void Renderer::flushEvents(Event::EventType type) {
   Event ev;
   while (display.pollEvent(ev)) {
+    zoomMousePos(ev);
     considerMouseMoveEvent(ev);
     if (ev.type != type)
       eventQueue.push_back(ev);
+  }
+}
+
+void Renderer::zoomMousePos(Event& ev) {
+  switch (ev.type) {
+    case Event::MouseButtonReleased:
+    case Event::MouseButtonPressed:
+      ev.mouseButton.x /= zoom;
+      ev.mouseButton.y /= zoom;
+      break;
+    case Event::MouseMoved:
+      ev.mouseMove.x /= zoom;
+      ev.mouseMove.y /= zoom;
+      break;
+    case Event::MouseWheelMoved:
+      ev.mouseWheel.x /= zoom;
+      ev.mouseWheel.y /= zoom;
+      break;
+    default:
+      break;
   }
 }
 
@@ -501,6 +541,7 @@ void Renderer::waitEvent(Event& ev) {
       eventQueue.pop_front();
     } else {
       display.waitEvent(ev);
+      zoomMousePos(ev);
       considerMouseMoveEvent(ev);
     }
   }

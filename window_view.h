@@ -185,6 +185,7 @@ class WindowView: public View {
   void drawMenuBackground(double barState, double mouthState);
   atomic<int> fullScreenTrigger;
   atomic<int> fullScreenResolution;
+  atomic<int> zoomUI;
 };
 
 
