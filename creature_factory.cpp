@@ -2076,8 +2076,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::FIRE_ELEMENTAL;
           c.size = CreatureSize::LARGE;
           c.attr[AttrType::SPEED] = 120;
-          c.attr[AttrType::STRENGTH] = 20;
-          c.attr[AttrType::DEXTERITY] = 20;
+          c.attr[AttrType::STRENGTH] = 25;
+          c.attr[AttrType::DEXTERITY] = 30;
           c.barehandedAttack = AttackType::HIT;
           c.barehandedDamage = 10;
           c.humanoid = false;
@@ -2086,6 +2086,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.breathing = false;
           c.brain = false;
           c.fireCreature = true;
+          c.attackEffect = EffectId::FIRE;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.weight = 10;
           c.name = "fire elemental";);
@@ -2095,7 +2096,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.size = CreatureSize::LARGE;
           c.attr[AttrType::SPEED] = 160;
           c.attr[AttrType::STRENGTH] = 20;
-          c.attr[AttrType::DEXTERITY] = 20;
+          c.attr[AttrType::DEXTERITY] = 30;
           c.barehandedAttack = AttackType::HIT;
           c.barehandedDamage = 10;
           c.humanoid = false;
@@ -2109,11 +2110,11 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.spells.add(SpellId::AIR_BLAST);
           c.name = "air elemental";);
     case CreatureId::EARTH_ELEMENTAL:
-      return INHERIT(AIR_ELEMENTAL,
+      return CATTR(
           c.viewId = ViewId::EARTH_ELEMENTAL;
           c.size = CreatureSize::LARGE;
           c.attr[AttrType::SPEED] = 80;
-          c.attr[AttrType::STRENGTH] = 25;
+          c.attr[AttrType::STRENGTH] = 45;
           c.attr[AttrType::DEXTERITY] = 20;
           c.barehandedAttack = AttackType::HIT;
           c.barehandedDamage = 10;
@@ -2391,6 +2392,9 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::ARROW, Random.get(20, 36))
         .add(ItemId::GOLD_PIECE, Random.get(100, 300))
         .add(randomBackup());
+    case CreatureId::DRIAD: 
+        .add(ItemId::BOW)
+        .add(ItemId::ARROW, Random.get(20, 36));
     case CreatureId::ELF_ARCHER: 
       return ItemList()
         .add(ItemId::ELVEN_SWORD)

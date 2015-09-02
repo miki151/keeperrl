@@ -1914,7 +1914,8 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
       elem.second.erase(pos);
   if (type.getId() == SquareId::MOUNTAIN2) {
     destroySquare(pos);
-    territory->remove(pos);
+    if (territory->contains(pos))
+      territory->remove(pos);
     return;
   }
   if (!contains({SquareId::TREE_TRUNK}, type.getId()))

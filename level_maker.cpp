@@ -2204,9 +2204,10 @@ LevelMaker* LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
     if (settlement.type == SettlementType::SPIDER_CAVE)
       locations2->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
     else {
-      if (settlement.closeToPlayer)
-        locations->setMaxDistance(startingPos, queue, 55);
-      else
+      if (settlement.closeToPlayer) {
+        locations->setMinDistance(startingPos, queue, 25);
+        locations->setMaxDistance(startingPos, queue, 60);
+      } else
         locations->setMinDistance(startingPos, queue, 70);
       locations->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
     }

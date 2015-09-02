@@ -16,9 +16,11 @@ void Territory::clearCache() {
 }
 
 void Territory::insert(Position pos) {
-  allSquaresVec.push_back(pos);
-  allSquares.insert(pos);
-  clearCache();
+  if (!allSquares.count(pos)) {
+    allSquaresVec.push_back(pos);
+    allSquares.insert(pos);
+    clearCache();
+  }
 }
 
 void Territory::remove(Position pos) {
@@ -64,6 +66,7 @@ const vector<Position>& Territory::getExtended(int min, int max) const {
     extendedCache[make_pair(min, max)] = calculateExtended(min, max);
   return extendedCache.at(make_pair(min, max));
 }
+
 const vector<Position>& Territory::getExtended(int max) const {
   if (!extendedCache2.count(max))
     extendedCache2[max] = calculateExtended(0, max);

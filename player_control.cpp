@@ -988,9 +988,9 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     gameInfo.collectiveInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});*/
   gameInfo.villageInfo.villages.clear();
   for (const Collective* col : model->getMainVillains())
-#ifdef RELEASE
+//#ifdef RELEASE
     if (getCollective()->isKnownVillain(col))
-#endif
+//#endif
       gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
   Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };

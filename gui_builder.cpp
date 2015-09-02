@@ -529,6 +529,8 @@ PGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
     line.addElemAuto(gui.rightMargin(8, gui.label(toString(item.number), color)));
   if (!item.name.empty())
     line.addElemAuto(gui.label(item.name, color));
+  else
+    line.addElem(gui.empty(), 130);
   for (auto& elem : line.getAllElems())
     elem = gui.stack(gui.button(onClick), std::move(elem), getTooltip(getItemHint(item)));
   if (item.owner) {
