@@ -26,6 +26,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
   {OptionId::FULLSCREEN_RESOLUTION, 0},
+  {OptionId::ZOOM_UI, 0},
   {OptionId::ONLINE, 1},
   {OptionId::AUTOSAVE, 1},
   {OptionId::WASD_SCROLLING, 0},
@@ -45,6 +46,7 @@ const map<OptionId, string> names {
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::FULLSCREEN, "Fullscreen"},
   {OptionId::FULLSCREEN_RESOLUTION, "Fullscreen resolution"},
+  {OptionId::ZOOM_UI, "Zoom in UI"},
   {OptionId::ONLINE, "Online exchange of dungeons and highscores"},
   {OptionId::AUTOSAVE, "Autosave"},
   {OptionId::WASD_SCROLLING, "WASD scrolling"},
@@ -64,6 +66,8 @@ const map<OptionId, string> hints {
   {OptionId::SHOW_MAP, ""},
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
   {OptionId::FULLSCREEN_RESOLUTION, "Choose resolution for fullscreen mode."},
+  {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
+      "Use you have a large resolution screen and things appear too small."},
   {OptionId::ONLINE, "Upload your highscores and retired dungeons to keeperrl.com."},
   {OptionId::AUTOSAVE, "Autosave the game every " + toString(MainLoop::getAutosaveFreq()) + " turns. "
     "The save file will be used to recover in case of a crash."},
@@ -84,6 +88,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::MUSIC,
       OptionId::FULLSCREEN,
       OptionId::FULLSCREEN_RESOLUTION,
+      OptionId::ZOOM_UI,
       OptionId::ONLINE,
       OptionId::AUTOSAVE,
       OptionId::WASD_SCROLLING,
@@ -185,6 +190,7 @@ string Options::getValueString(OptionId id, Options::Value value) {
     case OptionId::FAST_IMMIGRATION:
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
+    case OptionId::ZOOM_UI:
     case OptionId::START_WITH_NIGHT: return getYesNo(value);
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_SEED:

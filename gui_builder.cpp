@@ -383,12 +383,8 @@ PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, VillageInfo& villag
       gui.label("FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()),
       colors[ColorId::WHITE]));
   PGuiElem bottomElem = gui.horizontalList(std::move(bottomLine), 160);
-  bottomElem = gui.verticalList(makeVec<PGuiElem>(
-      gui.label(renderer.setViewCount > 1000 ? ("Warning: " + toString(renderer.setViewCount)) : "",
-          colors[ColorId::RED]),
-      std::move(bottomElem)), 30);
   main = gui.margin(gui.margins(std::move(bottomElem), 25, 0, 0, 0),
-      std::move(main), 48, gui.BOTTOM);
+      std::move(main), 18, gui.BOTTOM);
   return gui.margin(std::move(butGui), std::move(main), 55, gui.TOP);
 }
 

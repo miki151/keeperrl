@@ -93,7 +93,10 @@ class Renderer {
   };
 
   Renderer(const string& windowTile, Vec2 nominalTileSize, const string& fontPath);
-  void initialize(bool fullscreen, int mode = 0);
+  void setFullscreen(bool);
+  void setFullscreenMode(int);
+  void setZoom(int);
+  void initialize();
   bool isFullscreen();
   static vector<string> getFullscreenResolutions();
   const static int textSize = 19;
@@ -144,16 +147,12 @@ class Renderer {
 
   void startMonkey();
   bool isMonkey();
-  Event getRandomEvent();
 
   void printSystemInfo(ostream&);
 
   TileCoord getTileCoord(const string&);
   Vec2 getNominalSize() const;
   vector<Texture> tiles;
-
-  // remove
-  int setViewCount = 0;
 
   private:
   Renderer(const Renderer&);
@@ -163,8 +162,10 @@ class Renderer {
   bool pollEventWorkaroundMouseReleaseBug(Event&);
   bool pollEventOrFromQueue(Event&);
   void considerMouseMoveEvent(Event&);
+  void zoomMousePos(Event&);
+  void updateResolution();
+  Event getRandomEvent();
   RenderWindow display;
-  sf::View* sfView;
   bool monkey = false;
   deque<Event> eventQueue;
   bool genReleaseEvent = false;
@@ -180,6 +181,8 @@ class Renderer {
   Font& getFont(Renderer::FontId);
   optional<thread::id> renderThreadId;
   bool fullscreen;
+  int fullscreenMode;
+  int zoom;
 };
 
 #endif
