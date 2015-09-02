@@ -182,7 +182,7 @@ class Renderer {
   optional<thread::id> renderThreadId;
   bool fullscreen;
   int fullscreenMode;
-  int zoom;
+  int zoom = 1;
 };
 
 #endif
