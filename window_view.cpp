@@ -119,12 +119,16 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
         [this](UserInput input) { inputQueue.push(input);},
         [this](const vector<string>& s) { mapGui->setHint(s);},
         [this](sf::Event::KeyEvent ev) { keyboardAction(ev);},
-        [this]() { refreshScreen(false);}}), fullScreenTrigger(-1), fullScreenResolution(-1) {}
+        [this]() { refreshScreen(false);}}), fullScreenTrigger(-1), fullScreenResolution(-1), zoomUI(-1) {}
 
 void WindowView::initialize() {
-  renderer.initialize(options->getBoolValue(OptionId::FULLSCREEN), options->getChoiceValue(OptionId::FULLSCREEN_RESOLUTION));
+  renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
+  renderer.setFullscreenMode(options->getChoiceValue(OptionId::FULLSCREEN_RESOLUTION));
+  renderer.initialize();
+  renderer.setZoom(options->getBoolValue(OptionId::ZOOM_UI) ? 2 : 1);
   options->addTrigger(OptionId::FULLSCREEN, [this] (int on) { fullScreenTrigger = on; });
   options->addTrigger(OptionId::FULLSCREEN_RESOLUTION, [this] (int index) { fullScreenResolution = index; });
+  options->addTrigger(OptionId::ZOOM_UI, [this] (int on) { zoomUI = on; });
   renderThreadId = currentThreadId();
   vector<ViewLayer> allLayers;
   for (auto l : ENUM_ALL(ViewLayer))
@@ -567,13 +571,20 @@ void WindowView::refreshScreen(bool flipBuffer) {
   {
     RenderLock lock(renderMutex);
     if (fullScreenTrigger > -1) {
-      renderer.initialize(fullScreenTrigger);
+      renderer.setFullscreen(fullScreenTrigger);
+      renderer.initialize();
       fullScreenTrigger = -1;
     }
     if (fullScreenResolution > -1) {
-      if (renderer.isFullscreen())
-        renderer.initialize(true, fullScreenResolution);
+      if (renderer.isFullscreen()) {
+        renderer.setFullscreenMode(fullScreenResolution);
+        renderer.initialize();
+      }
       fullScreenResolution = -1;
+    }
+    if (zoomUI > -1) {
+      renderer.setZoom(zoomUI ? 2 : 1);
+      zoomUI = -1;
     }
     if (!gameReady) {
       if (useTiles)
