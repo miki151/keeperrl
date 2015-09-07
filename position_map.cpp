@@ -2,6 +2,7 @@
 #include "position_map.h"
 #include "level.h"
 #include "task.h"
+#include "view_index.h"
 
 template <class T>
 PositionMap<T>::PositionMap(const vector<Level*>& levels) : PositionMap(levels, T()) {
@@ -20,9 +21,14 @@ PositionMap<T>::PositionMap(const vector<Level*>& levels, const T& def) {
 }
 
 template <class T>
+bool PositionMap<T>::isValid(Position pos) const {
+  return pos.getLevel()->getUniqueId() < tables.size();
+}
+
+template <class T>
 const T& PositionMap<T>::operator [] (Position pos) const {
   int index = pos.getLevel()->getUniqueId();
-  const Table<T>& table = tables[index];
+  const Table<T>& table = tables.at(index);
   if (pos.getCoord().inRectangle(table.getBounds()))
     return table[pos.getCoord()];
   else if (outliers[index].count(pos.getCoord()))
@@ -36,7 +42,7 @@ const T& PositionMap<T>::operator [] (Position pos) const {
 template <class T>
 T& PositionMap<T>::operator [] (Position pos) {
   int index = pos.getLevel()->getUniqueId();
-  Table<T>& table = tables[index];
+  Table<T>& table = tables.at(index);
   if (pos.getCoord().inRectangle(table.getBounds()))
     return table[pos.getCoord()];
   else
@@ -60,5 +66,4 @@ class Task;
 SERIALIZABLE_TMPL(PositionMap, Task*);
 SERIALIZABLE_TMPL(PositionMap, HighlightType);
 SERIALIZABLE_TMPL(PositionMap, vector<Task*>);
-
-
+SERIALIZABLE_TMPL(PositionMap, optional<ViewIndex>);

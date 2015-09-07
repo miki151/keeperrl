@@ -306,10 +306,10 @@ PlayerControl::PlayerControl(Collective* col, Model* m, Level* level) : Collecti
       hotkeys[int(info.button.hotkey)] = true;
     }
   }
-  memory.reset(new map<UniqueEntity<Level>::Id, MapMemory>);
-  for (Vec2 v : level->getBounds())
-    if (contains({"gold ore", "iron ore", "granite"}, level->getPosition(v).getName()))
-      getMemory(level).addObject(v, level->getPosition(v).getViewObject());
+  memory.reset(new MapMemory(model->getLevels()));
+  for (Position v : level->getAllPositions())
+    if (contains({"gold ore", "iron ore", "granite"}, v.getName()))
+      memory->addObject(v, v.getViewObject());
   for(const Location* loc : level->getAllLocations())
     if (loc->isMarkedAsSurprise())
       surprises.insert(loc->getMiddle());
@@ -334,7 +334,7 @@ void PlayerControl::leaveControl() {
   if (controlled == getKeeper())
     lastControlKeeperQuestion = getCollective()->getTime();
   CHECK(controlled);
-  if (controlled->getLevel() != getLevel())
+  if (!controlled->getPosition().isSameLevel(getLevel()))
     model->getView()->setScrollPos(getPosition());
   if (controlled->isPlayer())
     controlled->popController();
@@ -1091,11 +1091,7 @@ void PlayerControl::update(Creature* c) {
 }
 
 const MapMemory& PlayerControl::getMemory() const {
-  return (*memory.get())[getLevel()->getUniqueId()];
-}
-
-MapMemory& PlayerControl::getMemory(Level* l) {
-  return (*memory.get())[l->getUniqueId()];
+  return *memory;
 }
 
 ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
@@ -1145,8 +1141,9 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   Position position(pos, getCollective()->getLevel());
   bool canSeePos = canSee(position);
   getSquareViewIndex(position, canSeePos, index);
-  if (!canSeePos && getMemory().hasViewIndex(pos))
-    index.mergeFromMemory(getMemory().getViewIndex(pos));
+  if (!canSeePos)
+    if (auto memIndex = getMemory().getViewIndex(position))
+    index.mergeFromMemory(*memIndex);
   if (getCollective()->getTerritory().contains(position)
       && index.hasObject(ViewLayer::FLOOR_BACKGROUND)
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
@@ -1210,7 +1207,7 @@ int PlayerControl::getImpCost() const {
 
 class MinionController : public Player {
   public:
-  MinionController(Creature* c, Model* m, map<UniqueEntity<Level>::Id, MapMemory>* memory, PlayerControl* ctrl)
+  MinionController(Creature* c, Model* m, MapMemory* memory, PlayerControl* ctrl)
       : Player(c, m, false, memory), control(ctrl) {}
 
   virtual void onKilled(const Creature* attacker) override {
@@ -1607,7 +1604,7 @@ void PlayerControl::addToMemory(Position pos) {
   pos.setMemoryUpdated();
   ViewIndex index;
   getSquareViewIndex(pos, true, index);
-  getMemory(pos.getLevel()).update(pos.getCoord(), index);
+  memory->update(pos, index);
 }
 
 void PlayerControl::checkKeeperDanger() {
@@ -1686,7 +1683,7 @@ void PlayerControl::tick(double time) {
     if (c->getSpawnType() && !contains(getCreatures(), c) && !getCollective()->wasBanished(c)) {
       addedCreatures.push_back(c);
       getCollective()->addCreature(c, {MinionTrait::FIGHTER});
-      if (getControlled() && getControlled()->getLevel() == c->getLevel())
+      if (getControlled() && c->getPosition().isSameLevel(getControlled()->getPosition()))
         for (auto team : getTeams().getActive(getControlled())) {
           getTeams().add(team, c);
           getControlled()->playerMessage(PlayerMessage(c->getName().a() + " joins your team.",
@@ -1854,7 +1851,7 @@ void PlayerControl::onDiscoveredLocation(const Location* loc) {
 void PlayerControl::updateSquareMemory(Position pos) {
   ViewIndex index;
   pos.getViewIndex(index, getCollective()->getTribe());
-  getMemory(pos.getLevel()).update(pos.getCoord(), index);
+  memory->update(pos, index);
 }
 
 void PlayerControl::onConstructed(Position pos, const SquareType& type) {
@@ -1883,7 +1880,7 @@ void PlayerControl::updateVisibleCreatures() {
 
 vector<Vec2> PlayerControl::getVisibleEnemies() const {
   return transform2<Vec2>(filter(visibleEnemies,
-        [this](const Creature* c) { return !c->isDead() && c->getLevel() == getLevel(); }),
+        [this](const Creature* c) { return !c->isDead() && c->getPosition().isSameLevel(getLevel()); }),
       [](const Creature* c) { return c->getPosition().getCoord(); });
 }
 

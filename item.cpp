@@ -148,12 +148,10 @@ void Item::onHitSquareMessage(Position pos, int numItems) {
 
 void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
   if (attributes->fragile) {
-    c->you(attributes->plural ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES,
-        getPluralTheName(numItems));
+    c->you(numItems > 0 ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES, getPluralTheName(numItems));
     discarded = true;
   } else
-    c->you(attributes->plural ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM,
-        getPluralTheName(numItems));
+    c->you(numItems > 0 ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getPluralTheName(numItems));
   if (c->takeDamage(attack))
     return;
   if (attributes->effect && getClass() == ItemClass::POTION) {
@@ -202,7 +200,7 @@ optional<CollectiveResourceId> Item::getResourceId() const {
 
 void Item::apply(Creature* c) {
   if (attributes->itemClass == ItemClass::SCROLL)
-    c->getLevel()->getModel()->getStatistics().add(StatId::SCROLL_READ);
+    c->getModel()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->effect)
     Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL);
   if (attributes->uses > -1 && --attributes->uses == 0) {

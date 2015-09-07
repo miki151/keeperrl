@@ -63,7 +63,7 @@ vector<Position> Location::getAllSquares() const {
 }
 
 bool Location::contains(Position pos) const {
-  return pos.getLevel() == level && table[pos.getCoord()];
+  return pos.isSameLevel(level) && table[pos.getCoord()];
 }
 
 Position Location::getMiddle() const {

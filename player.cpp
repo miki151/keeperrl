@@ -58,7 +58,7 @@ SERIALIZABLE(Player);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
-Player::Player(Creature* c, Model* m, bool greeting, map<UniqueEntity<Level>::Id, MapMemory>* memory) :
+Player::Player(Creature* c, Model* m, bool greeting, MapMemory* memory) :
     Controller(c), levelMemory(memory), model(m), displayGreeting(greeting) {
 }
 
@@ -66,7 +66,7 @@ Player::~Player() {
 }
 
 void Player::onThrowEvent(const Level* l, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) {
-  if (l == getCreature()->getLevel())
+  if (getCreature()->getPosition().isSameLevel(l))
     for (Vec2 v : trajectory)
       if (getCreature()->canSee(v)) {
         model->getView()->animateObject(trajectory, item->getViewObject());
@@ -76,19 +76,19 @@ void Player::onThrowEvent(const Level* l, const Creature* thrower, const Item* i
 
 void Player::learnLocation(const Location* loc) {
   for (Position v : loc->getAllSquares())
-    (*levelMemory)[v.getLevel()->getUniqueId()].addObject(v.getCoord(), v.getViewObject());
+    levelMemory->addObject(v, v.getViewObject());
 }
 
-void Player::onExplosionEvent(const Level* level, Vec2 pos) {
-  if (level == getCreature()->getLevel()) {
+void Player::onExplosionEvent(Position pos) {
+  if (getCreature()->getPosition().isSameLevel(pos)) {
     if (getCreature()->canSee(pos))
-      model->getView()->animation(pos, AnimationId::EXPLOSION);
+      model->getView()->animation(pos.getCoord(), AnimationId::EXPLOSION);
     else
       privateMessage("BOOM!");
   }
 }
 
-ControllerFactory Player::getFactory(Model *m, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory) {
+ControllerFactory Player::getFactory(Model *m, MapMemory* levelMemory) {
   return ControllerFactory([=](Creature* c) { return new Player(c, m, true, levelMemory);});
 }
 
@@ -359,11 +359,11 @@ void Player::travelAction() {
 void Player::targetAction() {
   updateView = true;
   CHECK(target);
-  if (getCreature()->getPosition().getCoord() == *target || model->getView()->travelInterrupt()) {
+  if (getCreature()->getPosition() == *target || model->getView()->travelInterrupt()) {
     target = none;
     return;
   }
-  if (auto action = getCreature()->moveTowards(Position(*target, getCreature()->getLevel())))
+  if (auto action = getCreature()->moveTowards(*target))
     action.perform(getCreature());
   else
     target = none;
@@ -418,7 +418,7 @@ void Player::spellAction(SpellId id) {
 }
 
 const MapMemory& Player::getMemory() const {
-  return (*levelMemory)[getCreature()->getLevel()->getUniqueId()];
+  return *levelMemory;
 }
 
 void Player::sleeping() {
@@ -479,7 +479,7 @@ void Player::makeMove() {
     for (Position pos : getCreature()->getVisibleTiles()) {
       ViewIndex index;
       pos.getViewIndex(index, getCreature()->getTribe());
-      (*levelMemory)[getCreature()->getLevel()->getUniqueId()].update(pos.getCoord(), index);
+      levelMemory->update(pos, index);
     }
     MEASURE(
         model->getView()->updateView(this, false),
@@ -521,10 +521,11 @@ void Player::makeMove() {
     case UserInputId::FIRE: fireAction(action.get<Vec2>()); break;
     case UserInputId::TRAVEL: travel = true;
     case UserInputId::MOVE: direction.push_back(action.get<Vec2>()); break;
-    case UserInputId::MOVE_TO: 
-      if (action.get<Vec2>().dist8(getCreature()->getPosition().getCoord()) == 1) {
-        Vec2 dir = action.get<Vec2>() - getCreature()->getPosition().getCoord();
-        if (const Creature* c = getCreature()->getPosition().plus(dir).getCreature()) {
+    case UserInputId::MOVE_TO: {
+      Position newPos = getCreature()->getPosition().withCoord(action.get<Vec2>());
+      if (newPos.dist8(getCreature()->getPosition()) == 1) {
+        Vec2 dir = getCreature()->getPosition().getDir(newPos);
+        if (const Creature* c = newPos.getCreature()) {
           if (!getCreature()->isEnemy(c)) {
             chatAction(dir);
             break;
@@ -532,14 +533,16 @@ void Player::makeMove() {
         }
         direction.push_back(dir);
       } else
-      if (action.get<Vec2>() != getCreature()->getPosition().getCoord()) {
+      if (newPos != getCreature()->getPosition()) {
         if (!wasJustTravelling) {
-          target = action.get<Vec2>();
-          target = Vec2(min(getCreature()->getLevel()->getBounds().getKX() - 1, max(0, target->x)),
-              min(getCreature()->getLevel()->getBounds().getKY() - 1, max(0, target->y)));
+          target = newPos;
+/*          Vec2 t = action.get<Vec2>();
+          t = Vec2(min(getCreature()->getLevel()->getBounds().getKX() - 1, max(0, t.x)),
+              min(getCreature()->getLevel()->getBounds().getKY() - 1, max(0, t.y)));*/
         }
       }
       break;
+      }
     case UserInputId::INVENTORY_ITEM:
       handleItems(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action); break;
     case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
@@ -736,13 +739,14 @@ optional<CreatureView::MovementInfo> Player::getMovementInfo() const {
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   bool canSee = getCreature()->canSee(pos);
-  Position position(pos, getCreature()->getLevel());
+  Position position = getCreature()->getPosition().withCoord(pos);
   if (canSee)
     position.getViewIndex(index, getCreature()->getTribe());
   else
     index.setHiddenId(position.getViewObject().id());
-  if (!canSee && getMemory().hasViewIndex(pos))
-    index.mergeFromMemory(getMemory().getViewIndex(pos));
+  if (!canSee)
+    if (auto memIndex = getMemory().getViewIndex(position))
+      index.mergeFromMemory(*memIndex);
   if (position.isTribeForbidden(getCreature()->getTribe()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   if (const Creature* c = position.getCreature()) {
@@ -786,7 +790,7 @@ optional<SquareApplyType> Player::getUsableSquareApplyType() const {
 void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.messageBuffer = messages;
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
-  Model::SunlightInfo sunlightInfo = getLevel()->getModel()->getSunlightInfo();
+  Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
   gameInfo.sunlightInfo.timeRemaining = sunlightInfo.timeRemaining;
   gameInfo.time = getCreature()->getTime();

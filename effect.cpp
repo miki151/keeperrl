@@ -175,12 +175,12 @@ static void blast(Creature* who, Position position, Vec2 direction, int maxDista
     if (!c->isStationary()) {
       int dist = 0;
       for (int i : Range(1, maxDistance))
-        if (position.getLevel()->canMoveCreature(c, direction * i))
+        if (position.canMoveCreature(direction * i))
           dist = i;
         else
           break;
       if (dist > 0) {
-        position.getLevel()->moveCreature(c, direction * dist);
+        position.moveCreature(direction * dist);
         c->you(MsgType::ARE, "thrown back");
       }
       if (damage)
@@ -202,7 +202,7 @@ static void blast(Creature* c, Vec2 direction, int range) {
 }
 
 static void wordOfPower(Creature* c, int strength) {
-  GlobalEvents.addExplosionEvent(c->getLevel(), c->getPosition().getCoord());
+  GlobalEvents.addExplosionEvent(c->getPosition());
   for (Vec2 v : Vec2::directions8(Random))
     blast(c, c->getPosition().plus(v), v, wordOfPowerDist[strength], true);
 }
@@ -229,7 +229,7 @@ static void guardingBuilder(Creature* c) {
     }
   Position pos = c->getPosition();
   if (dest)
-    c->getLevel()->moveCreature(c, *dest);
+    c->displace(*dest);
   else {
     Effect::applyToCreature(c, EffectType(EffectId::TELEPORT), EffectStrength::NORMAL);
   }
@@ -301,10 +301,9 @@ static void portal(Creature* c) {
 static void teleport(Creature* c) {
   Vec2 enemyRadius(12, 12);
   Vec2 teleRadius(6, 6);
-  Level* l = c->getLevel();
   Rectangle area(-enemyRadius, enemyRadius + Vec2(1, 1));
   int infinity = 10000;
-  PositionMap<int> weight({l}, infinity);
+  PositionMap<int> weight(c->getModel()->getLevels(), infinity);
   queue<Position> q;
   for (Position v : c->getPosition().getRectangle(area))
     if (Creature *other = v.getCreature())
@@ -339,7 +338,7 @@ static void teleport(Creature* c) {
   }
   CHECK(!good.empty());
   c->you(MsgType::TELE_DISAPPEAR, "");
-  l->moveCreature(c, c->getPosition().getDir(Random.choose(good)));
+  c->getPosition().moveCreature(Random.choose(good));
   c->you(MsgType::TELE_APPEAR, "");
 }
 
@@ -353,7 +352,7 @@ static void acid(Creature* c) {
 }
 
 static void alarm(Creature* c) {
-  c->getLevel()->getModel()->onAlarm(c->getPosition());
+  c->getModel()->onAlarm(c->getPosition());
 }
 
 static void teleEnemies(Creature* c) { // handled by Collective

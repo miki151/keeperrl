@@ -20,14 +20,6 @@
 #include "view_object.h"
 #include "view_index.h"
 
-MapMemory::MapMemory() : table(Level::getMaxBounds()) {
-}
-
-MapMemory::MapMemory(const MapMemory& other) : table(other.table->getWidth(), other.table->getHeight()) {
-  for (Vec2 v : table->getBounds())
-    (*table)[v] = (*other.table)[v];
-}
-
 template <class Archive> 
 void MapMemory::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(table);
@@ -35,59 +27,49 @@ void MapMemory::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(MapMemory);
 
-void MapMemory::addObject(Vec2 pos, const ViewObject& obj) {
-  if (pos.inRectangle(table->getBounds())) {
-    if (!getIndex(pos))
-      getIndex(pos) = ViewIndex();
-    getIndex(pos)->insert(obj);
-    getIndex(pos)->setHighlight(HighlightType::MEMORY);
-    updated.insert(pos);
-  }
+SERIALIZATION_CONSTRUCTOR_IMPL(MapMemory);
+
+MapMemory::MapMemory(const vector<Level*>& levels) : table(levels) {
 }
 
-optional<ViewIndex>& MapMemory::getIndex(Vec2 pos) {
+void MapMemory::addObject(Position pos, const ViewObject& obj) {
+  if (!getViewIndex(pos))
+    getViewIndex(pos) = ViewIndex();
+  getViewIndex(pos)->insert(obj);
+  getViewIndex(pos)->setHighlight(HighlightType::MEMORY);
+  updated.insert(pos);
+}
+
+optional<ViewIndex>& MapMemory::getViewIndex(Position pos) {
   return (*table)[pos];
 }
 
-const optional<ViewIndex>& MapMemory::getIndex(Vec2 pos) const {
+const optional<ViewIndex>& MapMemory::getViewIndex(Position pos) const {
+  static optional<ViewIndex> empty;
+  if (!table->isValid(pos))
+    return empty;
   return (*table)[pos];
 }
 
-void MapMemory::update(Vec2 pos, const ViewIndex& index) {
-  if (pos.inRectangle(table->getBounds())) {
-    getIndex(pos) = index;
-    getIndex(pos)->setHighlight(HighlightType::MEMORY);
-    if (getIndex(pos)->hasObject(ViewLayer::CREATURE) && 
-        !getIndex(pos)->getObject(ViewLayer::CREATURE).hasModifier(ViewObjectModifier::REMEMBER))
-      getIndex(pos)->removeObject(ViewLayer::CREATURE);
-    updated.insert(pos);
-  }
+void MapMemory::update(Position pos, const ViewIndex& index) {
+  getViewIndex(pos) = index;
+  getViewIndex(pos)->setHighlight(HighlightType::MEMORY);
+  if (getViewIndex(pos)->hasObject(ViewLayer::CREATURE) && 
+      !getViewIndex(pos)->getObject(ViewLayer::CREATURE).hasModifier(ViewObjectModifier::REMEMBER))
+    getViewIndex(pos)->removeObject(ViewLayer::CREATURE);
+  updated.insert(pos);
 }
 
-void MapMemory::clearSquare(Vec2 pos) {
-  if (pos.inRectangle(table->getBounds()))
-    getIndex(pos) = none;
+void MapMemory::clearSquare(Position pos) {
+  getViewIndex(pos) = none;
 }
 
-bool MapMemory::hasViewIndex(Vec2 pos) const {
-  return pos.inRectangle(table->getBounds()) && !!getIndex(pos);
-}
-
-const ViewIndex& MapMemory::getViewIndex(Vec2 pos) const {
-  if (pos.inRectangle(table->getBounds()))
-    return *getIndex(pos);
-  else {
-    static ViewIndex ind;
-    return ind;
-  }
-}
-  
 const MapMemory& MapMemory::empty() {
   static MapMemory mem;
   return mem;
 } 
 
-const unordered_set<Vec2>& MapMemory::getUpdated() const {
+const unordered_set<Position>& MapMemory::getUpdated() const {
   return updated;
 }
 

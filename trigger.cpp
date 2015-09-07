@@ -103,18 +103,15 @@ class Portal : public Trigger {
     if (Portal* other = getOther()) {
       other->active = false;
       c->you(MsgType::ENTER_PORTAL, "");
-      if (other->position.isSameLevel(position)) {
-        if (position.getLevel()->canMoveCreature(c, c->getPosition().getDir(other->position))) {
-          position.getLevel()->moveCreature(c, c->getPosition().getDir(other->position));
+      if (position.canMoveCreature(other->position)) {
+        position.moveCreature(other->position);
+        return;
+      }
+      for (Position v : other->position.neighbors8())
+        if (position.canMoveCreature(v)) {
+          position.moveCreature(v);
           return;
         }
-        for (Position v : other->position.neighbors8())
-          if (position.getLevel()->canMoveCreature(c, c->getPosition().getDir(v))) {
-            position.getLevel()->moveCreature(c, c->getPosition().getDir(v));
-            return;
-          }
-      } else
-        position.getLevel()->changeLevel(other->position, c);
     } else
       c->playerMessage("The portal is inactive. Create another one to open a connection.");
   }

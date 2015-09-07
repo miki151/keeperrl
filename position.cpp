@@ -47,6 +47,10 @@ bool Position::isSameLevel(const Position& p) const {
   return isValid() && level == p.level;
 }
 
+bool Position::isSameLevel(const Level* l) const {
+  return isValid() && level == l;
+}
+
 bool Position::isValid() const {
   return level && level->inBounds(coord);
 }
@@ -106,6 +110,12 @@ void Position::globalMessage(const PlayerMessage& playerCanSee, const PlayerMess
 void Position::globalMessage(const PlayerMessage& playerCanSee) const {
   if (isValid())
     level->globalMessage(coord, playerCanSee);
+}
+
+void Position::globalMessage(const Creature* c, const PlayerMessage& playerCanSee,
+    const PlayerMessage& cannot) const {
+  if (isValid())
+    level->globalMessage(c, playerCanSee, cannot);
 }
 
 vector<Position> Position::neighbors8() const {
@@ -442,6 +452,10 @@ bool Position::canSeeThru(VisionId id) const {
     return false;
 }
 
+bool Position::isVisibleBy(const Creature* c) {
+  return isValid() && level->canSee(c, coord);
+}
+
 void Position::clearItemIndex(ItemIndex index) {
   if (isValid())
     getSquare()->clearItemIndex(index);
@@ -451,3 +465,64 @@ bool Position::isChokePoint(const MovementType& movement) const {
   return isValid() && level->isChokePoint(coord, movement);
 }
 
+bool Position::isConnectedTo(Position pos, const MovementType& movement) const {
+  return isValid() && pos.isValid() && level == pos.level &&
+      level->areConnected(pos.coord, coord, movement);
+}
+
+vector<Creature*> Position::getAllCreatures(int range) const {
+  if (isValid())
+    return level->getAllCreatures(Rectangle::centered(coord, range));
+  else
+    return {};
+}
+
+void Position::moveCreature(Position pos) {
+  CHECK(isValid());
+  if (isSameLevel(pos))
+    level->moveCreature(getCreature(), getDir(pos));
+  else
+    level->changeLevel(pos, getCreature());
+}
+
+void Position::moveCreature(Vec2 direction) {
+  CHECK(isValid());
+  level->moveCreature(getCreature(), direction);
+}
+
+bool Position::canMoveCreature(Vec2 direction) const {
+  return isValid() && level->canMoveCreature(getCreature(), direction);
+}
+
+bool Position::canMoveCreature(Position pos) const {
+  return !isSameLevel(pos) || canMoveCreature(getDir(pos));
+}
+
+double Position::getLight() const {
+  if (isValid())
+    return level->getLight(coord);
+  else
+    return 0;
+}
+
+optional<Position> Position::getStairsTo(Position pos) const {
+  CHECK(isValid() && pos.isValid());
+  CHECK(!isSameLevel(pos));
+  return level->getStairsTo(pos.level);
+  
+}
+
+void Position::swapCreatures(Creature* c) {
+  CHECK(isValid() && getCreature());
+  level->swapCreatures(getCreature(), c);
+}
+
+Position Position::withCoord(Vec2 newCoord) const {
+  CHECK(isValid());
+  return Position(newCoord, level);
+}
+
+void Position::putCreature(Creature* c) {
+  CHECK(isValid());
+  level->putCreature(coord, c);
+}

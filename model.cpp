@@ -263,10 +263,8 @@ optional<Model::ExitInfo> Model::update(double totalTime) {
     }
     for (PCollective& c : collectives)
       c->update(creature);
-    if (!creature->isDead()) {
-      Level* level = creature->getLevel();
+    if (!creature->isDead())
       CHECK(creature->getPosition().getCreature() == creature);
-    }
   } while (1);
 }
 
@@ -309,6 +307,7 @@ void Model::tick(double time) {
 
 void Model::addCreature(PCreature c) {
   c->setTime(timeQueue->getCurrentTime() + 1 + Random.getDouble());
+  c->setModel(this);
   timeQueue->addCreature(std::move(c));
 }
 
@@ -336,7 +335,7 @@ Model::~Model() {
 }
 
 PCreature Model::makePlayer(int handicap) {
-  map<UniqueEntity<Level>::Id, MapMemory>* levelMemory = new map<UniqueEntity<Level>::Id, MapMemory>();
+  MapMemory* levelMemory = new MapMemory(getLevels());
   PCreature player = CreatureFactory::addInventory(
       PCreature(new Creature(tribeSet->adventurer.get(),
       CATTR(

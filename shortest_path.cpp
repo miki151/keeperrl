@@ -212,10 +212,10 @@ Vec2 ShortestPath::getTarget() const {
   return target;
 }
 
-static ShortestPath makeShortestPath(const Creature* creature, Position to, Position from, double mult) {
-  Level* level = creature->getLevel();
+ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Position to, Position from, double mult) {
+  Level* level = from.getLevel();
   Rectangle bounds = level->getBounds();
-  CHECK(to.getLevel() == level && from.getLevel() == level);
+  CHECK(to.isSameLevel(from));
   auto entryFun = [=](Vec2 v) { 
       Position pos(v, level);
       if (pos.canEnter(creature) || creature->getPosition() == pos) 

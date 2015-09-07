@@ -547,14 +547,14 @@ optional<Position> Collective::getTileToExplore(const Creature* c, MinionTask ta
     case MinionTask::EXPLORE_CAVES:
       if (auto pos = getRandomCloseTile(c->getPosition(), border,
             [this, c](Position pos) {
-                return pos.getLevel() == level && pos.getCoverInfo().sunlight < 1 &&
-                    (c->getLevel() != level || c->isSameSector(pos.getCoord()));}))
+                return pos.isSameLevel(level) && pos.getCoverInfo().sunlight < 1 &&
+                    (!c->getPosition().isSameLevel(level) || c->isSameSector(pos));}))
         return pos;
     case MinionTask::EXPLORE:
     case MinionTask::EXPLORE_NOCTURNAL:
       return getRandomCloseTile(c->getPosition(), border,
-          [this, c](Position pos) { return pos.getLevel() == level && !pos.getCoverInfo().covered
-              && (c->getLevel() != level || c->isSameSector(pos.getCoord()));});
+          [this, c](Position pos) { return pos.isSameLevel(level) && !pos.getCoverInfo().covered
+              && (!c->getPosition().isSameLevel(level) || c->isSameSector(pos));});
     default: FAIL << "Unrecognized explore task: " << int(task);
   }
   return none;
@@ -1521,7 +1521,7 @@ const double flattenVal = 0.9;
 
 double Collective::getEfficiency(Position pos) const {
   double base = squareEfficiency.at(pos) == 8 ? 1 : 0.5;
-  return base * min(1.0, (lightBase + getLevel()->getLight(pos.getCoord()) * (1 - lightBase)) / flattenVal);
+  return base * min(1.0, (lightBase + pos.getLight() * (1 - lightBase)) / flattenVal);
 }
 
 const double sizeBase = 0.5;
@@ -1982,7 +1982,7 @@ void Collective::updateConstructions() {
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, double delayTime) {
   vector<Vec2> enemyPos = transform2<Vec2>(filter(enemyPos1,
-        [=] (const Position& p) { return p.getLevel() == level; }),
+        [=] (const Position& p) { return p.isSameLevel(level); }),
       [] (const Position& p) { return p.getCoord();});
   int infinity = 1000000;
   int radius = 10;
@@ -2198,7 +2198,7 @@ static WorkshopInfo getWorkshopInfo(Collective* c, Position pos) {
             return { ItemFactory::laboratory(c->getTechnologies()), {CollectiveResourceId::MANA, 10}};
         case SquareId::JEWELER:
             return { ItemFactory::jeweler(c->getTechnologies()), {CollectiveResourceId::GOLD, 5}};
-        default: FAIL << "Bad workshop position " << pos.getCoord();
+        default: FAIL << "Bad workshop position ";// << pos;
       }
   return { ItemFactory::workshop(c->getTechnologies()),{CollectiveResourceId::GOLD, 5}};
 }

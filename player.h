@@ -21,6 +21,7 @@
 #include "controller.h"
 #include "user_input.h"
 #include "creature_view.h"
+#include "position.h"
 
 class View;
 class Model;
@@ -33,12 +34,12 @@ class Player : public Controller, public CreatureView {
   public:
   virtual ~Player();
 
-  static ControllerFactory getFactory(Model*, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory);
+  static ControllerFactory getFactory(Model*, MapMemory* levelMemory);
 
   SERIALIZATION_DECL(Player);
 
   protected:
-  Player(Creature*, Model*, bool greeting, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory);
+  Player(Creature*, Model*, bool greeting, MapMemory* levelMemory);
 
   virtual void moveAction(Vec2 direction);
 
@@ -71,13 +72,13 @@ class Player : public Controller, public CreatureView {
   virtual void onFellAsleep();
   virtual vector<Creature*> getTeam() const;
 
-  map<UniqueEntity<Level>::Id, MapMemory>* SERIAL(levelMemory);
+  MapMemory* SERIAL(levelMemory);
   Model* SERIAL(model);
   void showHistory();
 
   private:
   REGISTER_HANDLER(ThrowEvent, const Level*, const Creature*, const Item*, const vector<Vec2>& trajectory);
-  REGISTER_HANDLER(ExplosionEvent, const Level*, Vec2);
+  REGISTER_HANDLER(ExplosionEvent, Position);
 
   bool tryToPerform(CreatureAction);
   void attackAction(Creature* other);
@@ -106,7 +107,7 @@ class Player : public Controller, public CreatureView {
   string getPluralName(Item* item, int num);
   bool SERIAL(travelling) = false;
   Vec2 SERIAL(travelDir);
-  optional<Vec2> SERIAL(target);
+  optional<Position> SERIAL(target);
   const Location* SERIAL(lastLocation) = nullptr;
   vector<const Creature*> SERIAL(specialCreatures);
   bool SERIAL(displayGreeting);

@@ -771,7 +771,6 @@ const Vec2 spellIconSize = Vec2(47, 47);
 
 PGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, bool active) {
   vector<PGuiElem> ret = makeVec<PGuiElem>(
-      getTooltip({spell.name, spell.help}),
       gui.spellIcon(spell.id));
   if (spell.timeout) {
     ret.push_back(gui.darken());
@@ -779,6 +778,7 @@ PGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, bool active) {
   } else
   if (active)
     ret.push_back(gui.button(getButtonCallback({UserInputId::CAST_SPELL, spell.id})));
+  ret.push_back(getTooltip({spell.name, spell.help}));
   return gui.stack(std::move(ret));
 }
 

@@ -32,7 +32,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon);
 
 RangedWeapon::RangedWeapon(const ItemAttributes& attr) : Item(attr) {}
 
-void RangedWeapon::fire(Creature* c, Level* l, PItem ammo, Vec2 dir) {
+void RangedWeapon::fire(Creature* c, PItem ammo, Vec2 dir) {
   int toHitVariance = 10;
   int attackVariance = 15;
   int toHit = Random.get(-toHitVariance, toHitVariance) + 

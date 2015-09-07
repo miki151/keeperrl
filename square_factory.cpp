@@ -207,7 +207,7 @@ class Chest : public Square {
     }
     c->playerMessage(msgItem);
     vector<PItem> items = itemFactory.random();
-    GlobalEvents.addItemsAppearedEvent(getLevel(), getPosition(), extractRefs(items));
+    GlobalEvents.addItemsAppearedEvent(getPosition2(), extractRefs(items));
     c->takeItems(std::move(items), nullptr);
   }
 

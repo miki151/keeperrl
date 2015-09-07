@@ -93,14 +93,14 @@ class BoulderController : public Monster {
             if (!other->hasSkill(Skill::get(SkillId::DISARM_TRAPS))) {
               direction = v;
               stopped = false;
-              getCreature()->getLevel()->getModel()->onTrapTrigger(getCreature()->getPosition());
+              getCreature()->getModel()->onTrapTrigger(getCreature()->getPosition());
               getCreature()->monsterMessage(
                   PlayerMessage("The boulder starts rolling.", PlayerMessage::CRITICAL),
                   PlayerMessage("You hear a heavy boulder rolling.", PlayerMessage::CRITICAL));
               return;
             } else {
               other->you(MsgType::DISARM_TRAP, "");
-              getCreature()->getLevel()->getModel()->
+              getCreature()->getModel()->
                 onTrapDisarm(getCreature()->getPosition(), other);
               getCreature()->die();
               return;
@@ -370,8 +370,9 @@ class KrakenController : public Monster {
       if (father) {
         held->setHeld(father->getCreature());
         father->held = held;
+        Position newPos = getCreature()->getPosition();
         getCreature()->die(nullptr, false);
-        getCreature()->getLevel()->moveCreature(held, held->getPosition().getDir(getCreature()->getPosition()));
+        held->getPosition().moveCreature(newPos);
       } else {
         held->you(MsgType::ARE, "eaten by " + getCreature()->getName().the());
         held->die();
@@ -486,7 +487,7 @@ class ShopkeeperController : public Monster {
   }
 
   virtual void makeMove() override {
-    if (getCreature()->getLevel() != shopArea->getLevel()) {
+    if (!getCreature()->getPosition().isSameLevel(shopArea->getLevel())) {
       Monster::makeMove();
       return;
     }
@@ -547,20 +548,17 @@ class ShopkeeperController : public Monster {
     unpaidItems.erase(from);
   }
   
-  REGISTER_HANDLER(ItemsAppearedEvent, const Level* l, Vec2 position, const vector<Item*>& items) {
-    if (l == getCreature()->getLevel()) {
-      Position pos(position, getCreature()->getLevel());
-      if (shopArea->contains(pos)) {
-        for (Item* it : items) {
-          it->setShopkeeper(getCreature());
-          pos.clearItemIndex(ItemIndex::FOR_SALE);
-        }
+  REGISTER_HANDLER(ItemsAppearedEvent, Position position, const vector<Item*>& items) {
+    if (shopArea->contains(position)) {
+      for (Item* it : items) {
+        it->setShopkeeper(getCreature());
+        position.clearItemIndex(ItemIndex::FOR_SALE);
       }
     }
   }
 
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items) {
-    if (c->getLevel() == getCreature()->getLevel() && shopArea->contains(c->getPosition())) {
+    if (shopArea->contains(c->getPosition())) {
       for (const Item* item : items)
         if (item->getShopkeeper() == getCreature()) {
           debt[c] += item->getPrice();
@@ -570,7 +568,7 @@ class ShopkeeperController : public Monster {
   }
 
   REGISTER_HANDLER(DropEvent, const Creature* c, const vector<Item*>& items) {
-    if (c->getLevel() == getCreature()->getLevel() && shopArea->contains(c->getPosition())) {
+    if (shopArea->contains(c->getPosition())) {
       for (const Item* item : items)
         if (item->getShopkeeper() == getCreature()) {
           if ((debt[c] -= item->getPrice()) <= 0)
@@ -2393,6 +2391,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::GOLD_PIECE, Random.get(100, 300))
         .add(randomBackup());
     case CreatureId::DRIAD: 
+      return ItemList()
         .add(ItemId::BOW)
         .add(ItemId::ARROW, Random.get(20, 36));
     case CreatureId::ELF_ARCHER: 

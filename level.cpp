@@ -288,22 +288,21 @@ bool Level::landCreature(vector<Position> landing, Creature* creature) {
     creature->playerMessage(entryMessage);
     entryMessage = "";
   }
-  queue<Vec2> q;
-  set<Vec2> marked;
+  queue<Position> q;
+  set<Position> marked;
   for (Position pos : Random.permutation(landing)) {
-    q.push(pos.getCoord());
-    marked.insert(pos.getCoord());
+    q.push(pos);
+    marked.insert(pos);
   }
   while (!q.empty()) {
-    Vec2 v = q.front();
+    Position v = q.front();
     q.pop();
-    if (squares[v]->canEnter(creature)) {
-      putCreature(v, creature);
+    if (v.canEnter(creature)) {
+      v.putCreature(creature);
       return true;
     } else
-      for (Vec2 next : v.neighbors8(Random))
-        if (!marked.count(next) && next.inRectangle(squares.getBounds()) &&
-            squares[next]->canEnterEmpty(creature)) {
+      for (Position next : v.neighbors8(Random))
+        if (!marked.count(next) && next.canEnterEmpty(creature)) {
           q.push(next);
           marked.insert(next);
         }

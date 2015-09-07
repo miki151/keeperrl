@@ -122,7 +122,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   Tribe* getTribe();
   bool canSee(const Creature*) const;
   bool canSee(Position) const;
-  MapMemory& getMemory(Level* l);
   void initialize();
 
   void considerDeityFight();
@@ -193,7 +192,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
 
-  mutable unique_ptr<map<UniqueEntity<Level>::Id, MapMemory>> SERIAL(memory);
+  mutable unique_ptr<MapMemory> SERIAL(memory);
   optional<TeamId> getCurrentTeam() const;
   void setCurrentTeam(optional<TeamId>);
   optional<TeamId> currentTeam;

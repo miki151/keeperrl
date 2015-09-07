@@ -333,7 +333,7 @@ class TechBook : public Item {
 
   virtual void apply(Creature* c) override {
     if (!read || !!tech) {
-      c->getLevel()->getModel()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
+      c->getModel()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
       read = true;
     }
   }

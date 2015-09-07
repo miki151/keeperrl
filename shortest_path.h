@@ -69,6 +69,7 @@ class LevelShortestPath {
   SERIALIZATION_DECL(LevelShortestPath);
 
   private:
+  static ShortestPath makeShortestPath(const Creature* creature, Position to, Position from, double mult);
   ShortestPath SERIAL(path);
   Level* SERIAL(level);
 };

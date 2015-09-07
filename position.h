@@ -19,16 +19,19 @@ class Position {
   Position(Vec2, Level*);
   static Position invalid();
   static vector<Position> getAll(Level*, Rectangle);
-  Vec2 getCoord() const;
-  Level* getLevel() const;
   Model* getModel() const;
   int dist8(const Position&) const;
   bool isSameLevel(const Position&) const;
+  bool isSameLevel(const Level*) const;
   Vec2 getDir(const Position&) const;
   Creature* getCreature() const;
   void removeCreature();
+  void putCreature(Creature*);
   string getName() const;
-  
+  Position withCoord(Vec2 newCoord) const;
+  Vec2 getCoord() const;
+  Level* getLevel() const;
+ 
   bool isValid() const;
   bool operator == (const Position&) const;
   bool operator != (const Position&) const;
@@ -38,6 +41,7 @@ class Position {
   bool operator < (const Position&) const;
   void globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cannot) const;
   void globalMessage(const PlayerMessage& playerCanSee) const;
+  void globalMessage(const Creature*, const PlayerMessage& playerCanSee, const PlayerMessage& cannot) const;
   vector<Position> neighbors8() const;
   vector<Position> neighbors4() const;
   vector<Position> neighbors8(RandomGen&) const;
@@ -96,8 +100,18 @@ class Position {
   const vector<Vec2>& getTravelDir() const;
   int getStrength() const;
   bool canSeeThru(VisionId) const;
+  bool isVisibleBy(const Creature*);
   void clearItemIndex(ItemIndex);
   bool isChokePoint(const MovementType&) const;
+  bool isConnectedTo(Position, const MovementType&) const;
+  vector<Creature*> getAllCreatures(int range) const;
+  void moveCreature(Vec2 direction);
+  void moveCreature(Position);
+  bool canMoveCreature(Vec2 direction) const;
+  bool canMoveCreature(Position) const;
+  void swapCreatures(Creature*);
+  double getLight() const;
+  optional<Position> getStairsTo(Position) const;
 
   SERIALIZATION_DECL(Position);
 

@@ -724,10 +724,10 @@ class Summoned : public GuardTarget {
         creature->die(nullptr, false, false);
       })};
     }
-    if (target->getLevel() == creature->getLevel())
-      if (MoveInfo move = getMoveTowards(target->getPosition()))
-        return move.withValue(0.5);
-    return NoMove;
+    if (MoveInfo move = getMoveTowards(target->getPosition()))
+      return move.withValue(0.5);
+    else
+      return NoMove;
   }
 
   SERIALIZATION_CONSTRUCTOR(Summoned);
@@ -856,7 +856,7 @@ class SplashHeroes : public Behaviour {
 
   virtual MoveInfo getMove() override {
     creature->setCourage(100);
-    if (!started && creature->getLevel()->getPosition(splashLeaderPos).getCreature())
+    if (!started && creature->getPosition().withCoord(splashLeaderPos).getCreature())
       started = true;
     if (!started)
       return creature->wait();
@@ -887,7 +887,7 @@ class SplashHeroLeader : public Behaviour {
     creature->setCourage(100);
     Vec2 pos = creature->getPosition().getCoord();
     if (started)
-      return creature->moveTowards(Position(splashTarget, creature->getLevel()));
+      return creature->moveTowards(creature->getPosition().withCoord(splashTarget));
     if (pos == splashLeaderPos)
       for (Vec2 v : {Vec2(2, 0), Vec2(2, -1), Vec2(2, 1), Vec2(3, 0), Vec2(3, -1), Vec2(3, 1)})
         if (creature->getPosition().plus(v).getCreature())
@@ -896,7 +896,7 @@ class SplashHeroLeader : public Behaviour {
       if (pos.y == splashLeaderPos.y)
         return creature->move(Vec2(-1, 0));
       else
-        return creature->moveTowards(Position(splashLeaderPos, creature->getLevel()));
+        return creature->moveTowards(creature->getPosition().withCoord(splashLeaderPos));
     } else
       return creature->wait();
   };

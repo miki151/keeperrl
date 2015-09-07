@@ -12,6 +12,8 @@ class PositionMap {
   PositionMap(const vector<Level*>&);
   PositionMap(const vector<Level*>&, const T& def);
 
+  bool isValid(Position) const;
+
   const T& operator [] (Position) const;
   T& operator [] (Position);
 

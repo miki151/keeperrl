@@ -52,6 +52,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SUBCLASS(UniqueEntity)
     & SVAR(attributes)
     & SVAR(position)
+    & SVAR(model)
     & SVAR(time)
     & SVAR(equipment)
     & SVAR(shortestPath)
@@ -153,7 +154,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
   return CreatureAction(this, [=] (Creature *c) {
     spell->addMessage(c);
     Effect::applyToCreature(c, spell->getEffectType(), EffectStrength::NORMAL);
-    c->getLevel()->getModel()->getStatistics().add(StatId::SPELL_CAST);
+    model->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     c->spendTime(1);
@@ -170,7 +171,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     monsterMessage(getName().the() + " casts a spell");
     playerMessage("You cast " + spell->getName());
     Effect::applyDirected(c, dir, spell->getDirEffectType(), EffectStrength::NORMAL);
-    getLevel()->getModel()->getStatistics().add(StatId::SPELL_CAST);
+    model->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     c->spendTime(1);
@@ -260,7 +261,7 @@ CreatureAction Creature::move(Position pos) const {
     return CreatureAction("You can't break free!");
   if (direction.length8() != 1)
     return CreatureAction();
-  if (!getLevel()->canMoveCreature(this, direction)) {
+  if (!position.canMoveCreature(direction)) {
     auto action = swapPosition(direction);
     if (!action) // this is so the player gets relevant info why the move failed
       return action;
@@ -272,8 +273,8 @@ CreatureAction Creature::move(Position pos) const {
       self->spendTime(1);
       return;
     }
-    if (getLevel()->canMoveCreature(self, direction))
-      getLevel()->moveCreature(self, direction);
+    if (position.canMoveCreature(direction))
+      self->position.moveCreature(direction);
     else
       swapPosition(direction).perform(self);
     self->attributes->stationary = false;
@@ -288,7 +289,7 @@ CreatureAction Creature::move(Position pos) const {
 }
 
 void Creature::displace(Vec2 dir) {
-  getLevel()->moveCreature(this, dir);
+  position.moveCreature(dir);
   modViewObject().addMovementInfo({dir, getTime(), getTime() + 1, ViewObject::MovementInfo::MOVE});
 }
 
@@ -345,7 +346,7 @@ CreatureAction Creature::swapPosition(Vec2 direction, bool force) const {
       getPosition().plus(direction).getCreature()->playerMessage("Excuse me!");
     playerMessage("Excuse me!");
     Creature* other = getPosition().plus(direction).getCreature();
-    getLevel()->swapCreatures(self, other);
+    self->position.swapCreatures(other);
     other->modViewObject().addMovementInfo({-direction, getTime(), other->getTime(),
         ViewObject::MovementInfo::MOVE});
   });
@@ -365,9 +366,7 @@ void Creature::makeMove() {
     spendTime(1);
     return;
   }
-  int range = FieldOfView::sightRange;
-  updateVisibleCreatures(Rectangle(getPosition().getCoord() - Vec2(range, range),
-        getPosition().getCoord() + Vec2(range + 1, range + 1)));
+  updateVisibleCreatures();
   updateViewObject();
   if (swapPositionCooldown)
     --swapPositionCooldown;
@@ -423,13 +422,12 @@ void Creature::globalMessage(const PlayerMessage& playerCanSee) const {
 }
 
 void Creature::globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
-  if (getLevel())
-    getLevel()->globalMessage(this, playerCanSee, cant);
+  position.globalMessage(this, playerCanSee, cant);
 }
 
 void Creature::monsterMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
-  if (getLevel() && !isPlayer())
-    getLevel()->globalMessage(this, playerCanSee, cant);
+  if (!isPlayer())
+    position.globalMessage(this, playerCanSee, cant);
 }
 
 void Creature::monsterMessage(const PlayerMessage& playerCanSee) const {
@@ -579,8 +577,8 @@ CreatureAction Creature::equip(Item* item) const {
     playerMessage("You equip " + item->getTheName(false, isBlind()));
     monsterMessage(getName().the() + " equips " + item->getAName());
     item->onEquip(self);
-    if (getLevel())
-      getLevel()->getModel()->onEquip(self, item);
+    if (model)
+      model->onEquip(self, item);
     self->spendTime(1);
   });
 }
@@ -1077,6 +1075,14 @@ void Creature::setPosition(Position pos) {
   position = pos;
 }
 
+void Creature::setModel(Model* m) {
+  model = m;
+}
+
+Model* Creature::getModel() const {
+  return model;
+}
+
 double Creature::getTime() const {
   return time;
 }
@@ -1188,9 +1194,9 @@ void Creature::injureBodyPart(BodyPart part, bool drop) {
     return;
   if (drop) {
     if (contains({BodyPart::LEG, BodyPart::ARM, BodyPart::WING}, part))
-      getLevel()->getModel()->getStatistics().add(StatId::CHOPPED_LIMB);
+      model->getStatistics().add(StatId::CHOPPED_LIMB);
     else if (part == BodyPart::HEAD)
-      getLevel()->getModel()->getStatistics().add(StatId::CHOPPED_HEAD);
+      model->getStatistics().add(StatId::CHOPPED_HEAD);
     --attributes->bodyParts[part];
     ++attributes->lostBodyParts[part];
     if (attributes->injuredBodyParts[part] > attributes->bodyParts[part])
@@ -1255,7 +1261,7 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
   auto rAccuracy = [=] () { return Random.get(-accuracyVariance, accuracyVariance); };
   auto rDamage = [=] () { return Random.get(-damageVariance, damageVariance); };
   double timeSpent = 1;
-  getLevel()->getModel()->onAttack(other, c);
+  model->onAttack(other, c);
   accuracy += rAccuracy() + rAccuracy();
   damage += rDamage() + rDamage();
   vector<string> attackAdjective;
@@ -1671,10 +1677,10 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   if (dropInventory && dCorpse && isCorporal())
     dropCorpse();
   getLevel()->killCreature(this);
-  getLevel()->getModel()->killCreature(this, attacker);
+  model->killCreature(this, attacker);
   if (isInnocent())
-    getLevel()->getModel()->getStatistics().add(StatId::INNOCENT_KILLED);
-  getLevel()->getModel()->getStatistics().add(StatId::DEATH);
+    model->getStatistics().add(StatId::INNOCENT_KILLED);
+  model->getStatistics().add(StatId::DEATH);
   deathTime = getTime();
 }
 
@@ -1717,13 +1723,13 @@ CreatureAction Creature::torture(Creature* other) const {
       else
         other->bleed(1);
     }
-    getLevel()->getModel()->onTorture(other, this);
+    model->onTorture(other, this);
     self->spendTime(1);
   });
 }
 
 void Creature::surrender(const Creature* to) {
-  getLevel()->getModel()->onSurrender(this, to);
+  model->onSurrender(this, to);
 }
 
 void Creature::give(Creature* whom, vector<Item*> items) {
@@ -1742,7 +1748,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
     PItem ammo = self->equipment->removeItem(NOTNULL(getAmmo()));
     RangedWeapon* weapon = NOTNULL(dynamic_cast<RangedWeapon*>(
         getOnlyElement(self->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))));
-    weapon->fire(self, getLevel(), std::move(ammo), direction);
+    weapon->fire(self, std::move(ammo), direction);
     self->spendTime(1);
   });
 }
@@ -2009,21 +2015,23 @@ CreatureAction Creature::throwItem(Item* item, Vec2 direction) const {
 }
 
 bool Creature::canSee(const Creature* c) const {
-  if (c->getLevel() != getLevel())
+  if (!c->getPosition().isSameLevel(position))
     return false;
   for (CreatureVision* v : creatureVisions)
     if (v->canSee(this, c))
       return true;
   return !isBlind() && !c->isAffected(LastingEffect::INVISIBLE) &&
-         (!c->isHidden() || c->knowsHiding(this)) && 
-         getLevel()->canSee(this, c->getPosition().getCoord());
+         (!c->isHidden() || c->knowsHiding(this)) && c->getPosition().isVisibleBy(this);
+}
+
+bool Creature::canSee(Position pos) const {
+  return !isBlind() && pos.isVisibleBy(this);
 }
 
 bool Creature::canSee(Vec2 pos) const {
-  return !isBlind() && 
-      getLevel()->canSee(this, pos);
+  return !isBlind() && position.withCoord(pos).isVisibleBy(this);
 }
- 
+  
 bool Creature::isPlayer() const {
   return controller->isPlayer();
 }
@@ -2179,28 +2187,22 @@ CreatureAction Creature::stayIn(const Location* location) {
   return CreatureAction();
 }
 
-CreatureAction Creature::moveTowardsLevel(const Level* target) {
-  if (auto pos = getLevel()->getStairsTo(target)) {
-    if (pos == getPosition())
+CreatureAction Creature::moveTowards(Position pos, bool stepOnTile) {
+  if (pos.isSameLevel(position))
+    return moveTowards(pos, false, stepOnTile);
+  else if (auto stairs = position.getStairsTo(pos)) {
+    if (stairs == position)
       return applySquare();
     else
-      return moveTowards(*pos, false, true);
-  }
-  else
+      return moveTowards(*stairs, false, true);
+  } else
     return CreatureAction();
 }
 
-CreatureAction Creature::moveTowards(Position pos, bool stepOnTile) {
-  if (pos.getLevel() == getLevel())
-    return moveTowards(pos, false, stepOnTile);
-  else
-    return moveTowardsLevel(pos.getLevel());
-}
-
-bool Creature::canNavigateTo(Vec2 pos) const {
+bool Creature::canNavigateTo(Position pos) const {
   MovementType movement = getMovementType();
-  for (Vec2 v : pos.neighbors8())
-    if (v.inRectangle(getLevel()->getBounds()) && getLevel()->areConnected(getPosition().getCoord(), v, movement))
+  for (Position v : pos.neighbors8())
+    if (v.isConnectedTo(position, movement))
       return true;
   return false;
 }
@@ -2210,10 +2212,10 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
   if (stepOnTile && !pos.canEnterEmpty(this))
     return CreatureAction();
   MEASURE(
-  if (!away && !canNavigateTo(pos.getCoord()))
+  if (!away && !canNavigateTo(pos))
     return CreatureAction();
   , "Creature Sector checking " + getName().bare() + " from " + toString(position) + " to " + toString(pos));
-  Debug() << "" << getPosition().getCoord() << (away ? "Moving away from" : " Moving toward ") << pos.getCoord();
+  //Debug() << "" << getPosition().getCoord() << (away ? "Moving away from" : " Moving toward ") << pos.getCoord();
   bool newPath = false;
   bool targetChanged = shortestPath && shortestPath->getTarget().dist8(pos) > getPosition().dist8(pos) / 10;
   if (!shortestPath || targetChanged || shortestPath->isReversed() != away) {
@@ -2245,7 +2247,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
       return CreatureAction();
     }
   } else {
-    Debug() << "Cannot move toward " << pos.getCoord();
+    //Debug() << "Cannot move toward " << pos.getCoord();
     return CreatureAction();
   }
 }
@@ -2384,10 +2386,11 @@ const vector<Creature*> Creature::getVisibleCreatures() {
   return visibleCreatures;
 }
 
-void Creature::updateVisibleCreatures(Rectangle range) {
+void Creature::updateVisibleCreatures() {
+  int range = FieldOfView::sightRange;
   visibleEnemies.clear();
   visibleCreatures.clear();
-  for (Creature* c : getLevel()->getAllCreatures(range)) 
+  for (Creature* c : position.getAllCreatures(range)) 
     if (canSee(c)) {
       visibleCreatures.push_back(c);
       if (isEnemy(c))
@@ -2525,8 +2528,8 @@ vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
   return ret;
 }
 
-bool Creature::isSameSector(Vec2 pos) const {
-  return getLevel()->areConnected(getPosition().getCoord(), pos, getMovementType());
+bool Creature::isSameSector(Position pos) const {
+  return pos.isConnectedTo(position, getMovementType());
 }
 
 void Creature::setInCombat() {

@@ -149,7 +149,7 @@ void VillageControl::considerWelcomeMessage() {
           for (Position pos : getCollective()->getTerritory().getAll())
             if (Creature* c = pos.getCreature())
               if (c->isAffected(LastingEffect::INVISIBLE) && villain.contains(c) && c->isPlayer()
-                  && getCollective()->getLeader()->canSee(c->getPosition().getCoord())) {
+                  && getCollective()->getLeader()->canSee(c->getPosition())) {
                 c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
                       "I hear your breath. Come along!\"", PlayerMessage::CRITICAL));
                 villain.welcomeMessage.reset();
