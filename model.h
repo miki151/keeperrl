@@ -158,6 +158,7 @@ class Model {
 
   HeapAllocated<TribeSet> SERIAL(tribeSet);
   vector<PLevel> SERIAL(levels);
+  PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
   Collective* SERIAL(playerCollective);
   vector<Collective*> SERIAL(mainVillains);

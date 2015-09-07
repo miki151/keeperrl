@@ -2513,3 +2513,9 @@ LevelMaker* LevelMaker::quickLevel(RandomGen&) {
   queue->addMaker(new StartingPos(Predicate::type(SquareId::GRASS), StairKey::keeperSpawn()));
   return new BorderGuard(queue, SquareId::BLACK_WALL);
 }
+
+LevelMaker* LevelMaker::emptyLevel(RandomGen&) {
+  MakerQueue* queue = new MakerQueue();
+  queue->addMaker(new Empty(SquareId::GRASS));
+  return new BorderGuard(queue, SquareId::BLACK_WALL);
+}

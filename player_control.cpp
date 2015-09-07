@@ -1180,8 +1180,10 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
 
 Vec2 PlayerControl::getPosition() const {
   if (const Creature* keeper = getKeeper())
-    if (!keeper->isDead())
+    if (!keeper->isDead() && keeper->getLevel() == getLevel())
       return keeper->getPosition().getCoord();
+  if (!getCollective()->getTerritory().isEmpty())
+    return getCollective()->getTerritory().getAll().front().getCoord();
   return Vec2(0, 0);
 }
 
@@ -1321,6 +1323,13 @@ const CollectiveTeams& PlayerControl::getTeams() const {
   return getCollective()->getTeams();
 }
 
+void PlayerControl::setScrollPos(Position pos) {
+  if (pos.isSameLevel(getLevel()))
+    model->getView()->setScrollPos(pos.getCoord());
+  else if (auto stairs = getLevel()->getStairsTo(pos.getLevel()))
+    model->getView()->setScrollPos(stairs->getCoord());
+}
+
 void PlayerControl::processInput(View* view, UserInput input) {
   if (retired)
     return;
@@ -1328,16 +1337,19 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::MESSAGE_INFO:
         if (auto message = findMessage(input.get<int>())) {
           if (auto pos = message->getPosition())
-            model->getView()->setScrollPos(pos->getCoord());
+            setScrollPos(*pos);
           else if (auto id = message->getCreature()) {
             if (const Creature* c = getCreature(*id))
-              model->getView()->setScrollPos(c->getPosition().getCoord());
+              setScrollPos(c->getPosition());
           } else if (auto loc = message->getLocation()) {
-            vector<Vec2> visible;
-            for (Position v : loc->getAllSquares())
-              if (getCollective()->isKnownSquare(v))
-                visible.push_back(v.getCoord());
-            model->getView()->setScrollPos(Rectangle::boundingBox(visible).middle());
+            if (loc->getMiddle().isSameLevel(getLevel())) {
+              vector<Vec2> visible;
+              for (Position v : loc->getAllSquares())
+                if (getCollective()->isKnownSquare(v))
+                  visible.push_back(v.getCoord());
+              model->getView()->setScrollPos(Rectangle::boundingBox(visible).middle());
+            } else
+              setScrollPos(loc->getMiddle());
           }
         }
         break;
@@ -1347,7 +1359,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::EDIT_TEAM:
         setCurrentTeam(input.get<TeamId>());
         newTeam = false;
-        model->getView()->setScrollPos(getTeams().getLeader(input.get<TeamId>())->getPosition().getCoord());
+        setScrollPos(getTeams().getLeader(input.get<TeamId>())->getPosition());
         break;
     case UserInputId::CREATE_TEAM:
         newTeam = !newTeam;

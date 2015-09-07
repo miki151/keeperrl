@@ -412,8 +412,6 @@ Level* Creature::getLevel() const {
 }
 
 Position Creature::getPosition() const {
-  if (isDead())
-    return Position::invalid();
   return position;
 }
 

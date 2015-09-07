@@ -880,7 +880,7 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter& meter, RandomGen& random,
   m->setOptions(options);
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   Level* top = m->buildLevel(
-      LevelBuilder(meter, random, 28, 14, "Wilderness", false),
+      LevelBuilder(&meter, random, 28, 14, "Wilderness", false),
       LevelMaker::quickLevel(random));
   m->calculateStairNavigation();
   m->collectives.push_back(CollectiveBuilder(
@@ -962,7 +962,7 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Mod
       for (int i : Range(towerHeight - 1)) {
         StairKey upLink = StairKey::getNew();
         model->buildLevel(
-            LevelBuilder(meter, random, 4, 4, "Tower floor" + toString(i + 2)),
+            LevelBuilder(&meter, random, 4, 4, "Tower floor" + toString(i + 2)),
             LevelMaker::towerLevel(random,
                 CONSTRUCT(SettlementInfo,
                   c.type = SettlementType::TOWER;
@@ -979,25 +979,25 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Mod
       }
       settlement.downStairs = {downLink};
       return model->buildLevel(
-         LevelBuilder(meter, random, 5, 5, "Tower top"),
+         LevelBuilder(&meter, random, 5, 5, "Tower top"),
          LevelMaker::towerLevel(random, settlement));
       }
     case ExtraLevelId::CRYPT: 
       settlement.upStairs = {levelInfo.stairKey};
       return model->buildLevel(
-         LevelBuilder(meter, random, 40, 40, "Crypt"),
+         LevelBuilder(&meter, random, 40, 40, "Crypt"),
          LevelMaker::cryptLevel(random, settlement));
     case ExtraLevelId::MAZE: 
       settlement.upStairs = {levelInfo.stairKey};
       return model->buildLevel(
-         LevelBuilder(meter, random, 40, 40, "Maze"),
+         LevelBuilder(&meter, random, 40, 40, "Maze"),
          LevelMaker::mazeLevel(random, settlement));
     case ExtraLevelId::GNOMISH_MINES: {
       StairKey upLink = levelInfo.stairKey;
       for (int i : Range(gnomeHeight - 1)) {
         StairKey downLink = StairKey::getNew();
         model->buildLevel(
-            LevelBuilder(meter, random, 60, 40, "Gnomish Mines lvl " + toString(i + 1)),
+            LevelBuilder(&meter, random, 60, 40, "Gnomish Mines lvl " + toString(i + 1)),
             LevelMaker::roomLevel(random, CreatureFactory::gnomishMines(settlement.tribe,
                     model->tribeSet->monster.get(), 0),
                 CreatureFactory::waterCreatures(settlement.tribe),
@@ -1007,7 +1007,7 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Mod
       }
       settlement.upStairs = {upLink};
       return model->buildLevel(
-         LevelBuilder(meter, random, 60, 40, "Mine Town"),
+         LevelBuilder(&meter, random, 60, 40, "Mine Town"),
          LevelMaker::mineTownLevel(random, settlement));
       }
     case ExtraLevelId::SOKOBAN:
@@ -1015,7 +1015,7 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Mod
       for (int i : Range(5000))
         try {
           return model->buildLevel(
-              LevelBuilder(meter, random, 28, 14, "Sokoban"),
+              LevelBuilder(&meter, random, 28, 14, "Sokoban"),
               LevelMaker::sokobanLevel(random, settlement));
         } catch (LevelGenException ex) {
         }
@@ -1044,7 +1044,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, RandomGen& random,
       extraSettlements.emplace_back(*elem.extraLevel, elem.settlement);
   }
   Level* top = m->buildLevel(
-      LevelBuilder(meter, random, 250, 250, "Wilderness", false),
+      LevelBuilder(&meter, random, 250, 250, "Wilderness", false),
       LevelMaker::topLevel(random, CreatureFactory::forrest(m->tribeSet->wildlife.get()), settlements));
   for (auto& elem : extraSettlements)
     makeExtraLevel(meter, random, m, elem.first, elem.second);
@@ -1097,7 +1097,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, RandomGen& random,
 PModel ModelBuilder::splashModel(ProgressMeter& meter, View* view, const string& splashPath) {
   Model* m = new Model(view, "", TribeSet());
   Level* l = m->buildLevel(
-      LevelBuilder(meter, Random, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Wilderness",
+      LevelBuilder(&meter, Random, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Wilderness",
           false),
       LevelMaker::splashLevel(
           CreatureFactory::splashLeader(m->tribeSet->human.get()),

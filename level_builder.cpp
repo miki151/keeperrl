@@ -8,10 +8,14 @@
 #include "level_maker.h"
 #include "collective_builder.h"
 
-LevelBuilder::LevelBuilder(ProgressMeter& meter, RandomGen& r, int width, int height, const string& n, bool covered)
+LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int height, const string& n, bool covered)
   : squares(width, height), heightMap(width, height, 0),
     coverInfo(width, height, {covered, covered ? 0.0 : 1.0}), attrib(width, height),
     type(width, height, SquareType(SquareId(0))), items(width, height), name(n), progressMeter(meter), random(r) {
+}
+
+LevelBuilder::LevelBuilder(RandomGen& r, int width, int height, const string& n, bool covered)
+  : LevelBuilder(nullptr, r, width, height, n, covered) {
 }
 
 RandomGen& LevelBuilder::getRandom() {
@@ -53,7 +57,8 @@ void LevelBuilder::putSquare(Vec2 pos, PSquare square, SquareType t, optional<Sq
 }
 
 void LevelBuilder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<SquareAttrib> attr) {
-  progressMeter.addProgress();
+  if (progressMeter)
+    progressMeter->addProgress();
   Vec2 pos = transform(posT);
   CHECK(type[pos].getId() != SquareId::STAIRS) << "Attempted to overwrite stairs";
   square->setPosition(pos);

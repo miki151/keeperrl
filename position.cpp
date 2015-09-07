@@ -16,10 +16,6 @@ void Position::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Position);
 SERIALIZATION_CONSTRUCTOR_IMPL(Position);
 
-Position Position::invalid() {
-  return Position();
-}
-
 Vec2 Position::getCoord() const {
   return coord;
 }

@@ -17,7 +17,6 @@ class Attack;
 class Position {
   public:
   Position(Vec2, Level*);
-  static Position invalid();
   static vector<Position> getAll(Level*, Rectangle);
   Model* getModel() const;
   int dist8(const Position&) const;

@@ -136,6 +136,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void handleAddToTeam(Creature* c);
   void controlSingle(const Creature*);
   void commandTeam(TeamId);
+  void setScrollPos(Position);
 
   struct BuildInfo;
   bool meetsRequirement(Requirement) const;

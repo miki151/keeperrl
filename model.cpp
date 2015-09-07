@@ -69,7 +69,8 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(gameIdentifier)
     & SVAR(gameDisplayName)
     & SVAR(finishCurrentMusic)
-    & SVAR(stairNavigation);
+    & SVAR(stairNavigation)
+    & SVAR(cemetery);
   Deity::serializeAll(ar);
   if (Archive::is_loading::value)
     updateSunlightInfo();
@@ -312,12 +313,13 @@ void Model::addCreature(PCreature c) {
 }
 
 void Model::killCreature(Creature* c, Creature* attacker) {
-  deadCreatures.push_back(timeQueue->removeCreature(c));
   if (attacker)
     attacker->onKilled(c);
   c->getTribe()->onMemberKilled(c, attacker);
   for (auto& col : collectives)
     col->onKilled(c, attacker);
+  deadCreatures.push_back(timeQueue->removeCreature(c));
+  cemetery->landCreature(cemetery->getAllPositions(), c);
 }
 
 Level* Model::buildLevel(LevelBuilder&& b, LevelMaker* maker) {
@@ -329,6 +331,7 @@ Level* Model::buildLevel(LevelBuilder&& b, LevelMaker* maker) {
 Model::Model(View* v, const string& world, TribeSet&& tribes)
   : tribeSet(std::move(tribes)), view(v), worldName(world), musicType(MusicType::PEACEFUL) {
   updateSunlightInfo();
+  cemetery = LevelBuilder(Random, 100, 100, "Wilderness", false).build(this, LevelMaker::emptyLevel(Random), 0);
 }
 
 Model::~Model() {

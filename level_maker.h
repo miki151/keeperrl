@@ -93,6 +93,7 @@ class LevelMaker {
   static LevelMaker* mazeLevel(RandomGen&, SettlementInfo);
   static LevelMaker* sokobanLevel(RandomGen&, SettlementInfo);
   static LevelMaker* quickLevel(RandomGen&);
+  static LevelMaker* emptyLevel(RandomGen&);
 };
 
 #endif
