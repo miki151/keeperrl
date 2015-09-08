@@ -118,13 +118,40 @@ static vector<EnemyInfo> getGnomishMines(RandomGen& random, TribeSet& tribeSet) 
       CollectiveConfig::noImmigrants(), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}),
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::SMALL_MINETOWN;
-      c.creatures = CreatureFactory::gnomeVillage(tribeSet.gnomish.get());
+      c.creatures = CreatureFactory::gnomeEntrance(tribeSet.gnomish.get());
       c.numCreatures = random.get(3, 7);
       c.location = new Location(true);
       c.tribe = tribeSet.gnomish.get();
       c.buildingId = BuildingId::DUNGEON;
       c.downStairs = {gnomeKey};
-      c.stockpiles = LIST({StockpileInfo::MINERALS, 300});
+      c.outsideFeatures = SquareFactory::dungeonOutside();
+      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+      CollectiveConfig::noImmigrants(), {})
+  };
+}
+
+static vector<EnemyInfo> getDarkElvenMines(RandomGen& random, TribeSet& tribeSet) {
+  StairKey gnomeKey = StairKey::getNew();
+  return {
+    mainVillain(CONSTRUCT(SettlementInfo,
+      c.type = SettlementType::MINETOWN;
+      c.creatures = CreatureFactory::darkElfVillage(tribeSet.gnomish.get());
+      c.numCreatures = random.get(12, 24);
+      c.location = getVillageLocation();
+      c.tribe = tribeSet.gnomish.get();
+      c.buildingId = BuildingId::DUNGEON;
+      c.shopFactory = ItemFactory::armory();
+      c.outsideFeatures = SquareFactory::dungeonOutside();
+      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+      CollectiveConfig::noImmigrants(), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}),
+    lesserVillain(CONSTRUCT(SettlementInfo,
+      c.type = SettlementType::SMALL_MINETOWN;
+      c.creatures = CreatureFactory::darkElfEntrance(tribeSet.gnomish.get());
+      c.numCreatures = random.get(3, 7);
+      c.location = new Location(true);
+      c.tribe = tribeSet.gnomish.get();
+      c.buildingId = BuildingId::DUNGEON;
+      c.downStairs = {gnomeKey};
       c.outsideFeatures = SquareFactory::dungeonOutside();
       c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
       CollectiveConfig::noImmigrants(), {})
@@ -605,18 +632,18 @@ static vector<EnemyInfo> getCottage(RandomGen& random, TribeSet& tribeSet) {
   };
 }
 
-static vector<EnemyInfo> getGnomeCave(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getKoboldCave(RandomGen& random, TribeSet& tribeSet) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::SMALL_MINETOWN;
-      c.creatures = CreatureFactory::gnomeVillage(tribeSet.dwarven.get());
+      c.creatures = CreatureFactory::koboldVillage(tribeSet.dwarven.get());
       c.numCreatures = random.get(3, 7);
       c.location = new Location(true);
       c.tribe = tribeSet.dwarven.get();
       c.buildingId = BuildingId::DUNGEON;
       c.stockpiles = LIST({StockpileInfo::MINERALS, 300});
-      c.outsideFeatures = SquareFactory::dungeonOutside();
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+ /*     c.outsideFeatures = SquareFactory::dungeonOutside();
+      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());*/),
       CollectiveConfig::noImmigrants(), {})
   };
 }
@@ -652,12 +679,15 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
   vector<EnemyInfo> ret;
   for (int i : Range(random.get(6, 12)))
     append(ret, getCottage(random, tribeSet));
-  for (int i : Range(random.get(2, 5))) {
-    append(ret, getGnomeCave(random, tribeSet));
+  for (int i : Range(random.get(1, 3))) {
+    append(ret, getKoboldCave(random, tribeSet));
   }
   for (int i : Range(random.get(2, 5)))
     append(ret, getBanditCave(random, tribeSet));
   append(ret, getSokobanEntry(random, tribeSet));
+  append(ret, random.choose({
+        getGnomishMines(random, tribeSet),
+        getDarkElvenMines(random, tribeSet)}));
   append(ret, getVaults(random, tribeSet));
   if (Random.roll(4))
     append(ret, getAntNest(random, tribeSet));
@@ -683,8 +713,7 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
         getDriadTown(random, tribeSet),
         getEntTown(random, tribeSet)}))
     append(ret, infos);
-  for (auto& infos : random.chooseN(random.get(2, 4), {
-        getGnomishMines(random, tribeSet),
+  for (auto& infos : random.chooseN(1, {
         getWitchHouse(random, tribeSet),
         getCemetery(random, tribeSet)}))
     append(ret, infos);
@@ -997,7 +1026,7 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Mod
       for (int i : Range(gnomeHeight - 1)) {
         StairKey downLink = StairKey::getNew();
         model->buildLevel(
-            LevelBuilder(&meter, random, 60, 40, "Gnomish Mines lvl " + toString(i + 1)),
+            LevelBuilder(&meter, random, 60, 40, "Mines lvl " + toString(i + 1)),
             LevelMaker::roomLevel(random, CreatureFactory::gnomishMines(settlement.tribe,
                     model->tribeSet->monster.get(), 0),
                 CreatureFactory::waterCreatures(settlement.tribe),

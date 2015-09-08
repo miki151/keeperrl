@@ -725,6 +725,23 @@ CreatureFactory CreatureFactory::gnomeVillage(Tribe* tribe) {
       { 1}, { CreatureId::GNOME_CHIEF});
 }
 
+CreatureFactory CreatureFactory::gnomeEntrance(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::GNOME }, {1});
+}
+
+CreatureFactory CreatureFactory::koboldVillage(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::KOBOLD }, {1});
+}
+
+CreatureFactory CreatureFactory::darkElfVillage(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::DARK_ELF, CreatureId::DARK_ELF_CHILD, CreatureId::DARK_ELF_WARRIOR },
+      { 1, 1, 2}, { CreatureId::DARK_ELF_LORD});
+}
+
+CreatureFactory CreatureFactory::darkElfEntrance(Tribe* tribe) {
+  return CreatureFactory(tribe, { CreatureId::DARK_ELF_WARRIOR }, {1});
+}
+
 CreatureFactory CreatureFactory::humanCastle(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
       CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
@@ -1341,6 +1358,14 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attackEffect = EffectId::FIRE;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.name = "lava golem";);
+    case CreatureId::AUTOMATON: 
+      return INHERIT(IRON_GOLEM,
+          c.viewId = ViewId::AUTOMATON;
+          c.attr[AttrType::SPEED] += 30;
+          c.attr[AttrType::STRENGTH] += 12;
+          c.attr[AttrType::DEXTERITY] += 2;
+          c.barehandedDamage -= 2;
+          c.name = "automaton";);
     case CreatureId::ZOMBIE: 
       return CATTR(
           c.viewId = ViewId::ZOMBIE;
@@ -1509,6 +1534,20 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.skills.setValue(SkillId::ARCHERY, 1);
           c.name = EntityName("harpy", "harpies"););
+    case CreatureId::KOBOLD: 
+      return CATTR(
+          c.viewId = ViewId::KOBOLD;
+          c.attr[AttrType::SPEED] = 80;
+          c.size = CreatureSize::MEDIUM;
+          c.attr[AttrType::STRENGTH] = 12;
+          c.attr[AttrType::DEXTERITY] = 13;
+          c.barehandedDamage = 3;
+          c.humanoid = true;
+          c.weight = 45;
+          c.chatReactionFriendly = "talks about digging";
+          c.chatReactionHostile = "\"Die!\"";
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.name = "kobold";);
     case CreatureId::GNOME: 
       return CATTR(
           c.viewId = ViewId::GNOME;
@@ -1691,7 +1730,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.name = "lizardman chief";);
     case CreatureId::ELF: 
       return CATTR(
-          c.viewId = ViewId::ELF;
+          c.viewId = Random.choose({ViewId::ELF, ViewId::ELF_WOMAN});
           c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::MEDIUM;
           c.attr[AttrType::STRENGTH] = 11;
@@ -1742,6 +1781,25 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.skills.insert(SkillId::HEALING);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "elf lord";);
+    case CreatureId::DARK_ELF:
+      return INHERIT(ELF,
+          c.viewId = Random.choose({ViewId::DARK_ELF, ViewId::DARK_ELF_WOMAN});
+          c.skills.insert(SkillId::NIGHT_VISION);
+          c.name = EntityName("dark elf", "dark elves"););
+    case CreatureId::DARK_ELF_WARRIOR:
+      return INHERIT(ELF_ARCHER,
+          c.viewId = ViewId::DARK_ELF_WARRIOR;
+          c.skills.insert(SkillId::NIGHT_VISION);
+          c.skills.setValue(SkillId::WEAPON_MELEE, 1);
+          c.name = "dark elf warrior";);
+    case CreatureId::DARK_ELF_CHILD:
+      return INHERIT(ELF_CHILD,
+          c.viewId = ViewId::DARK_ELF_CHILD;
+          c.name = EntityName("dark elf child", "dark elf children"););
+    case CreatureId::DARK_ELF_LORD:
+      return INHERIT(ELF_LORD,
+          c.viewId = ViewId::DARK_ELF_LORD;
+          c.name = "dark elf lord";);
     case CreatureId::DRIAD: 
       return CATTR(
           c.viewId = ViewId::DRIAD;
@@ -2382,6 +2440,7 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList()
         .add(ItemId::SWORD)
         .add(randomBackup());
+    case CreatureId::DARK_ELF_LORD: 
     case CreatureId::ELF_LORD: 
       return ItemList()
         .add(ItemId::SPECIAL_ELVEN_SWORD)
@@ -2394,6 +2453,12 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList()
         .add(ItemId::BOW)
         .add(ItemId::ARROW, Random.get(20, 36));
+    case CreatureId::DARK_ELF_WARRIOR: 
+      return ItemList()
+        .add(ItemId::ELVEN_SWORD)
+        .add(ItemId::LEATHER_ARMOR)
+        .add(ItemId::GOLD_PIECE, Random.get(10, 30))
+        .add(randomBackup());
     case CreatureId::ELF_ARCHER: 
       return ItemList()
         .add(ItemId::ELVEN_SWORD)

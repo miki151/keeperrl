@@ -306,8 +306,8 @@ void Model::tick(double time) {
     setCurrentMusic(MusicType::PEACEFUL, true);
 }
 
-void Model::addCreature(PCreature c) {
-  c->setTime(timeQueue->getCurrentTime() + 1 + Random.getDouble());
+void Model::addCreature(PCreature c, double delay) {
+  c->setTime(timeQueue->getCurrentTime() + 1 + delay + Random.getDouble());
   c->setModel(this);
   timeQueue->addCreature(std::move(c));
 }

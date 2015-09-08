@@ -46,7 +46,7 @@ class Position {
   vector<Position> neighbors8(RandomGen&) const;
   vector<Position> neighbors4(RandomGen&) const;
   vector<Position> getRectangle(Rectangle) const;
-  void addCreature(PCreature);
+  void addCreature(PCreature, double delay = 0);
   const Location* getLocation() const;
   bool canEnter(const Creature*) const;
   bool canEnter(const MovementType&) const;

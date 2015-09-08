@@ -149,9 +149,9 @@ vector<Position> Position::getRectangle(Rectangle rect) const {
   return ret;
 }
 
-void Position::addCreature(PCreature c) {
+void Position::addCreature(PCreature c, double delay) {
   if (isValid())
-    level->addCreature(coord, std::move(c));
+    level->addCreature(coord, std::move(c), delay);
 }
 
 Position Position::plus(Vec2 v) const {

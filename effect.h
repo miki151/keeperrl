@@ -34,8 +34,8 @@ class Effect {
   static void applyToPosition(Position, const EffectType&, EffectStrength);
   static void applyDirected(Creature*, Vec2 direction, const DirEffectType&, EffectStrength);
 
-  static vector<Creature*> summon(Creature*, CreatureId, int num, int ttl);
-  static vector<Creature*> summon(Position, CreatureFactory&, int num, int ttl);
+  static vector<Creature*> summon(Creature*, CreatureId, int num, int ttl, double delay = 0);
+  static vector<Creature*> summon(Position, CreatureFactory&, int num, int ttl, double delay = 0);
   static string getName(const EffectType&);
   static string getName(LastingEffect);
   static string getDescription(const EffectType&);

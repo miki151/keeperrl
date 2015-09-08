@@ -449,10 +449,10 @@ ItemFactory ItemFactory::villageShop() {
       {{ItemId::SCROLL, EffectId::ENHANCE_ARMOR}, 5 },
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 5 },
       {ItemId::FIRE_SCROLL, 5 },
-      {{ItemId::SCROLL, EffectId::FIRE_SPHERE_PET}, 5 },
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 5 },
       {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 1 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 2 },
-      {{ItemId::SCROLL, EffectId::SUMMON_INSECTS}, 5 },
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 5 },
       {{ItemId::POTION, EffectId::HEAL}, 7 },
       {{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)}, 5 },
       {{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)}, 5 },
@@ -537,7 +537,8 @@ ItemFactory ItemFactory::gnomeShop() {
       {ItemId::LEVITATION_BOOTS, 0.3 },
       {ItemId::LEATHER_GLOVES, 2 },
       {ItemId::STRENGTH_GLOVES, 0.5 },
-      {ItemId::DEXTERITY_GLOVES, 0.5 } });
+      {ItemId::DEXTERITY_GLOVES, 0.5 } },
+      {ItemId::AUTOMATON_ITEM});
 }
 
 ItemFactory ItemFactory::dragonCave() {
@@ -644,10 +645,10 @@ ItemFactory ItemFactory::scrolls() {
       {{ItemId::SCROLL, EffectId::ENHANCE_ARMOR}, 1 },
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 1 },
       {ItemId::FIRE_SCROLL, 1 },
-      {{ItemId::SCROLL, EffectId::FIRE_SPHERE_PET}, 1 },
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 1 },
       {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 1 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 1 },
-      {{ItemId::SCROLL, EffectId::SUMMON_INSECTS}, 1 },
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 1 },
       {{ItemId::SCROLL, EffectId::PORTAL}, 1 }});
 }
 
@@ -694,10 +695,10 @@ ItemFactory ItemFactory::dungeon() {
       {{ItemId::SCROLL, EffectId::ENHANCE_ARMOR}, 30 },
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 30 },
       {ItemId::FIRE_SCROLL, 30 },
-      {{ItemId::SCROLL, EffectId::FIRE_SPHERE_PET}, 30 },
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 30 },
       {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 5 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 10 },
-      {{ItemId::SCROLL, EffectId::SUMMON_INSECTS}, 30 },
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 30 },
       {{ItemId::POTION, EffectId::HEAL}, 50 },
       {{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)}, 50 },
       {{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)}, 50 },
@@ -759,12 +760,10 @@ int getEffectPrice(EffectType type) {
     case EffectId::DESTROY_EQUIPMENT:
     case EffectId::ENHANCE_WEAPON:
     case EffectId::ENHANCE_ARMOR:
-    case EffectId::FIRE_SPHERE_PET:
     case EffectId::TELE_ENEMIES:
     case EffectId::CURE_POISON:
-    case EffectId::SUMMON_INSECTS: return 60;
+    case EffectId::SUMMON: return 60;
     case EffectId::GUARDING_BOULDER:
-    case EffectId::SUMMON_SPIRIT:
     case EffectId::EMIT_POISON_GAS:  return 100;
     case EffectId::DECEPTION: 
     case EffectId::LEAVE_BODY: 
@@ -1164,7 +1163,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::LEVITATION_BOOTS: return ITATTR(
             i.viewId = ViewId::LEVITATION_BOOTS;
             i.shortName = "levitation";
-            i.lastingEffect = LastingEffect::FLYING;
+            i.equipedEffect = LastingEffect::FLYING;
             i.name = "boots of " + *i.shortName;
             i.plural = "pairs of boots of " + *i.shortName;
             i.itemClass = ItemClass::ARMOR;
@@ -1175,7 +1174,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::RING: return ITATTR(
             i.viewId = getRingViewId(item.get<LastingEffect>());
             i.shortName = Effect::getName(item.get<LastingEffect>());
-            i.lastingEffect = item.get<LastingEffect>();
+            i.equipedEffect = item.get<LastingEffect>();
             i.name = "ring of " + *i.shortName;
             i.plural = "rings of " + *i.shortName;
             i.weight = 0.05;
@@ -1225,6 +1224,19 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.displayUses = true;
             i.price = 10;
             i.effect = EffectId::HEAL;);
+    case ItemId::AUTOMATON_ITEM: return ITATTR(
+            i.viewId = ViewId::TRAP_ITEM;
+            i.shortName = "automaton";
+            i.name = "automaton";
+            i.applyMsgFirstPerson = "assemble the automaton";
+            i.applyMsgThirdPerson = "assembles an automaton";
+            i.weight = 30;
+            i.itemClass = ItemClass::TOOL;
+            i.description = "";
+            i.applyTime = 3;
+            i.uses = 1;
+            i.price = 300;
+            i.effect = EffectType(EffectId::SUMMON, CreatureId::AUTOMATON););
     case ItemId::BOULDER_TRAP_ITEM: return ITATTR(
             i.viewId = ViewId::TRAP_ITEM;
             i.name = "boulder trap";

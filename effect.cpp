@@ -97,21 +97,21 @@ void Effect::registerTypes(Archive& ar, int version) {
 
 REGISTER_TYPES(Effect::registerTypes);
 
-static vector<Creature*> summonCreatures(Position pos, int radius, vector<PCreature> creatures) {
+static vector<Creature*> summonCreatures(Position pos, int radius, vector<PCreature> creatures, double delay = 0) {
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
   vector<Creature*> ret;
   for (int i : All(creatures))
     for (Position v : Random.permutation(area))
       if (v.canEnter(creatures[i].get())) {
         ret.push_back(creatures[i].get());
-        v.addCreature(std::move(creatures[i]));
+        v.addCreature(std::move(creatures[i]), delay);
         break;
   }
   return ret;
 }
 
-static vector<Creature*> summonCreatures(Creature* c, int radius, vector<PCreature> creatures) {
-  return summonCreatures(c->getPosition(), radius, std::move(creatures));
+static vector<Creature*> summonCreatures(Creature* c, int radius, vector<PCreature> creatures, double delay = 0) {
+  return summonCreatures(c->getPosition(), radius, std::move(creatures), delay);
 }
 
 static void deception(Creature* creature) {
@@ -239,18 +239,18 @@ static void guardingBuilder(Creature* c) {
   }
 }
 
-vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, int ttl) {
+vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, int ttl, double delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(CreatureFactory::fromId(id, c->getTribe(), MonsterAIFactory::summoned(c, ttl)));
-  return summonCreatures(c, 2, std::move(creatures));
+  return summonCreatures(c, 2, std::move(creatures), delay);
 }
 
-vector<Creature*> Effect::summon(Position pos, CreatureFactory& factory, int num, int ttl) {
+vector<Creature*> Effect::summon(Position pos, CreatureFactory& factory, int num, int ttl, double delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(factory.random(MonsterAIFactory::dieTime(pos.getModel()->getTime() + ttl)));
-  return summonCreatures(pos, 2, std::move(creatures));
+  return summonCreatures(pos, 2, std::move(creatures), delay);
 }
 
 static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improved") {
@@ -395,6 +395,49 @@ double getDuration(const Creature* c, LastingEffect e, int strength) {
   return 0;
 }
 
+static int getSummonTtl(CreatureId id) {
+  switch (id) {
+    case CreatureId::FIRE_SPHERE: return 30;
+    case CreatureId::SPIRIT: return 100;
+    case CreatureId::FLY: return 100;
+    case CreatureId::AUTOMATON: return 100;
+    default: FAIL << "Unsupported summon creature" << int(id);
+             return 0;
+  }
+}
+
+static Range getSummonNumber(CreatureId id) {
+  switch (id) {
+    case CreatureId::FIRE_SPHERE: return Range(1, 2);
+    case CreatureId::SPIRIT: return Range(2, 5);
+    case CreatureId::FLY: return Range(3, 7);
+    case CreatureId::AUTOMATON: return Range(1, 2);
+    default: FAIL << "Unsupported summon creature" << int(id);
+             return 0;
+  }
+}
+
+static double getSummonDelay(CreatureId id) {
+  switch (id) {
+    case CreatureId::AUTOMATON: return 5;
+    default: return 0;
+  }
+}
+
+static void summon(Creature* summoner, CreatureId id) {
+  switch (id) {
+    case CreatureId::AUTOMATON: {
+      CreatureFactory f = CreatureFactory::singleType(summoner->getModel()->getKillEveryoneTribe(), id);
+      Effect::summon(summoner->getPosition(), f, Random.get(getSummonNumber(id)), getSummonTtl(id),
+          getSummonDelay(id));
+      break;
+    }
+    default:
+      Effect::summon(summoner, id, Random.get(getSummonNumber(id)), getSummonTtl(id), getSummonDelay(id));
+      break;
+  }
+}
+
 void Effect::applyToCreature(Creature* c, const EffectType& type, EffectStrength strengthEnum) {
   int strength = int(strengthEnum);
   switch (type.getId()) {
@@ -404,12 +447,11 @@ void Effect::applyToCreature(Creature* c, const EffectType& type, EffectStrength
     case EffectId::TELE_ENEMIES: teleEnemies(c); break;
     case EffectId::ALARM: alarm(c); break;
     case EffectId::ACID: acid(c); break;
-    case EffectId::SUMMON_INSECTS: summon(c, CreatureId::FLY, Random.get(3, 7), 100); break;
+    case EffectId::SUMMON: ::summon(c, type.get<CreatureId>()); break;
     case EffectId::DECEPTION: deception(c); break;
     case EffectId::WORD_OF_POWER: wordOfPower(c, strength); break;
     case EffectId::AIR_BLAST: airBlast(c, strength); break;
     case EffectId::GUARDING_BOULDER: guardingBuilder(c); break;
-    case EffectId::FIRE_SPHERE_PET: summon(c, CreatureId::FIRE_SPHERE, 1, 30); break;
     case EffectId::ENHANCE_ARMOR: enhanceArmor(c); break;
     case EffectId::ENHANCE_WEAPON: enhanceWeapon(c); break;
     case EffectId::DESTROY_EQUIPMENT: destroyEquipment(c); break;
@@ -418,7 +460,6 @@ void Effect::applyToCreature(Creature* c, const EffectType& type, EffectStrength
     case EffectId::PORTAL: portal(c); break;
     case EffectId::TELEPORT: teleport(c); break;
     case EffectId::ROLLING_BOULDER: FAIL << "Not implemented"; break;
-    case EffectId::SUMMON_SPIRIT: summon(c, CreatureId::SPIRIT, Random.get(2, 5), 100); break;
     case EffectId::EMIT_POISON_GAS: emitPoisonGas(c->getPosition(), strength, true); break;
     case EffectId::SILVER_DAMAGE: silverDamage(c); break;
     case EffectId::CURE_POISON: c->removeEffect(LastingEffect::POISON); break;
@@ -442,6 +483,27 @@ void Effect::applyDirected(Creature* c, Vec2 direction, const DirEffectType& typ
   }
 }
 
+static string getCreaturePluralName(CreatureId id) {
+  static map<CreatureId, string> names;
+  return CreatureFactory::fromId(id, nullptr)->getName().plural();
+}
+
+static string getCreatureName(CreatureId id) {
+  if (getSummonNumber(id).getEnd() > 2)
+    return getCreaturePluralName(id);
+  static map<CreatureId, string> names;
+  if (!names.count(id))
+    names[id] = CreatureFactory::fromId(id, nullptr)->getName().bare();
+  return names.at(id);
+}
+
+static string getCreatureAName(CreatureId id) {
+  static map<CreatureId, string> names;
+  if (!names.count(id))
+    names[id] = CreatureFactory::fromId(id, nullptr)->getName().a();
+  return names.at(id);
+}
+
 string Effect::getName(const EffectType& type) {
   switch (type.getId()) {
     case EffectId::HEAL: return "healing";
@@ -452,18 +514,16 @@ string Effect::getName(const EffectType& type) {
     case EffectId::DESTROY_EQUIPMENT: return "destruction";
     case EffectId::ENHANCE_WEAPON: return "weapon enchantement";
     case EffectId::ENHANCE_ARMOR: return "armor enchantement";
-    case EffectId::FIRE_SPHERE_PET: return "fire sphere";
+    case EffectId::SUMMON: return getCreatureName(type.get<CreatureId>());
     case EffectId::WORD_OF_POWER: return "power";
     case EffectId::AIR_BLAST: return "air blast";
     case EffectId::DECEPTION: return "deception";
-    case EffectId::SUMMON_INSECTS: return "insect summoning";
     case EffectId::LEAVE_BODY: return "possesion";
     case EffectId::FIRE: return "fire";
     case EffectId::ACID: return "acid";
     case EffectId::GUARDING_BOULDER: return "boulder";
     case EffectId::ALARM: return "alarm";
     case EffectId::TELE_ENEMIES: return "surprise";
-    case EffectId::SUMMON_SPIRIT: return "spirit summoning";
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "cure poisoning";
     case EffectId::METEOR_SHOWER: return "meteor shower";
@@ -476,6 +536,15 @@ static string getLastingDescription(string desc) {
   return desc.substr(0, desc.size() - 1) + " for some turns.";
 }
 
+static string getSummoningDescription(CreatureId id) {
+  Range number = getSummonNumber(id);
+  if (number.getEnd() > 2)
+    return "Summons " + toString(number.getStart()) + " to " + toString(number.getEnd() - 1)
+        + getCreatureName(id);
+  else
+    return "Summons " + getCreatureAName(id);
+}
+
 string Effect::getDescription(const EffectType& type) {
   switch (type.getId()) {
     case EffectId::HEAL: return "Heals your wounds.";
@@ -486,18 +555,16 @@ string Effect::getDescription(const EffectType& type) {
     case EffectId::DESTROY_EQUIPMENT: return "Destroys a random piece of equipment.";
     case EffectId::ENHANCE_WEAPON: return "Increases weapon damage or accuracy.";
     case EffectId::ENHANCE_ARMOR: return "Increases armor defense.";
-    case EffectId::FIRE_SPHERE_PET: return "Creates a following fire sphere.";
+    case EffectId::SUMMON: return getSummoningDescription(type.get<CreatureId>());
     case EffectId::WORD_OF_POWER: return "Causes an explosion around the spellcaster.";
     case EffectId::AIR_BLAST: return "Causes an explosion of air around the spellcaster.";
     case EffectId::DECEPTION: return "Creates multiple illusions of the spellcaster to confuse the enemy.";
-    case EffectId::SUMMON_INSECTS: return "Summons insects to distract the enemy.";
     case EffectId::LEAVE_BODY: return "Lets the spellcaster leave his body and possess another one.";
     case EffectId::FIRE: return "fire";
     case EffectId::ACID: return "acid";
     case EffectId::GUARDING_BOULDER: return "boulder";
     case EffectId::ALARM: return "alarm";
     case EffectId::TELE_ENEMIES: return "surprise";
-    case EffectId::SUMMON_SPIRIT: return "Summons guarding spirits.";
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "Cures poisoning.";
     case EffectId::METEOR_SHOWER: return "Initiates a deadly meteor shower at the site.";

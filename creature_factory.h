@@ -62,6 +62,7 @@ RICH_ENUM(CreatureId,
     STONE_GOLEM,
     IRON_GOLEM,
     LAVA_GOLEM,
+    AUTOMATON,
 
     FIRE_ELEMENTAL,
     WATER_ELEMENTAL,
@@ -83,6 +84,8 @@ RICH_ENUM(CreatureId,
     DWARF,
     DWARF_FEMALE,
     DWARF_BARON,
+
+    KOBOLD,
 
     IMP,
     PRISONER,
@@ -107,6 +110,10 @@ RICH_ENUM(CreatureId,
     ELF_ARCHER,
     ELF_CHILD,
     ELF_LORD,
+    DARK_ELF,
+    DARK_ELF_WARRIOR,
+    DARK_ELF_CHILD,
+    DARK_ELF_LORD,
     DRIAD,
     HORSE,
     COW,
@@ -163,9 +170,13 @@ class CreatureFactory {
   static CreatureFactory splashHeroes(Tribe*);
   static CreatureFactory splashLeader(Tribe*);
   static CreatureFactory splashMonsters(Tribe*);
+  static CreatureFactory koboldVillage(Tribe*);
   static CreatureFactory gnomeVillage(Tribe*);
+  static CreatureFactory gnomeEntrance(Tribe*);
   static CreatureFactory humanCastle(Tribe*);
   static CreatureFactory elvenVillage(Tribe*);
+  static CreatureFactory darkElfVillage(Tribe*);
+  static CreatureFactory darkElfEntrance(Tribe*);
   static CreatureFactory forrest(Tribe*);
   static CreatureFactory crypt(Tribe*);
   static SingleCreature coffins(Tribe*);

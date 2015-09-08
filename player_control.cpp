@@ -446,7 +446,7 @@ void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
     if (chosenItem->getEquipmentSlot() != EquipmentSlot::WEAPON
         || creature->isEquipmentAppropriate(chosenItem)
         || model->getView()->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " +
-          creature->getName().the() + ", and will incur an accuracy penaulty.\n Do you want to continue?"))
+          creature->getName().the() + ", and will incur an accuracy penalty.\n Do you want to continue?"))
       getCollective()->ownItem(creature, chosenItem);
   }
 }

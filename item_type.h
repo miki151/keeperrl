@@ -58,6 +58,7 @@ enum class ItemId {
 
   TRAP_ITEM,
   BOULDER_TRAP_ITEM,
+  AUTOMATON_ITEM,
 };
 
 struct TrapInfo {

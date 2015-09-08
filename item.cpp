@@ -99,14 +99,14 @@ vector<pair<string, vector<Item*>>> Item::stackItems(vector<Item*> items, functi
 
 void Item::onEquip(Creature* c) {
   onEquipSpecial(c);
-  if (attributes->lastingEffect)
-    c->addPermanentEffect(*attributes->lastingEffect);
+  if (attributes->equipedEffect)
+    c->addPermanentEffect(*attributes->equipedEffect);
 }
 
 void Item::onUnequip(Creature* c) {
   onUnequipSpecial(c);
-  if (attributes->lastingEffect)
-    c->removePermanentEffect(*attributes->lastingEffect);
+  if (attributes->equipedEffect)
+    c->removePermanentEffect(*attributes->equipedEffect);
 }
 
 void Item::setOnFire(double amount, Position position) {
@@ -211,6 +211,8 @@ void Item::apply(Creature* c) {
 }
 
 string Item::getApplyMsgThirdPerson(bool blind) const {
+  if (attributes->applyMsgThirdPerson)
+    return *attributes->applyMsgThirdPerson;
   switch (getClass()) {
     case ItemClass::SCROLL: return "reads " + getAName(false, blind);
     case ItemClass::POTION: return "drinks " + getAName(false, blind);
@@ -223,6 +225,8 @@ string Item::getApplyMsgThirdPerson(bool blind) const {
 }
 
 string Item::getApplyMsgFirstPerson(bool blind) const {
+  if (attributes->applyMsgFirstPerson)
+    return *attributes->applyMsgFirstPerson;
   switch (getClass()) {
     case ItemClass::SCROLL: return "read " + getAName(false, blind);
     case ItemClass::POTION: return "drink " + getAName(false, blind);

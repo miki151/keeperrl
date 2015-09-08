@@ -100,9 +100,9 @@ Rectangle Level::getSplashVisibleBounds() {
   return Rectangle(getSplashBounds().middle() - sz / 2, getSplashBounds().middle() + sz / 2);
 }
 
-void Level::addCreature(Vec2 position, PCreature c) {
+void Level::addCreature(Vec2 position, PCreature c, double delay) {
   Creature* ref = c.get();
-  model->addCreature(std::move(c));
+  model->addCreature(std::move(c), delay);
   putCreature(position, ref);
 }
 

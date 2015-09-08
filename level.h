@@ -74,7 +74,7 @@ class Level {
   void swapCreatures(Creature*, Creature*);
 
   /** Puts \paramname{creature} on \paramname{position}. \paramname{creature} ownership is assumed by the model.*/
-  void addCreature(Vec2 position, PCreature creature);
+  void addCreature(Vec2 position, PCreature creature, double delay = 0);
 
   /** Puts the \paramname{creature} on \paramname{position}. */
   void putCreature(Vec2 position, Creature* creature);

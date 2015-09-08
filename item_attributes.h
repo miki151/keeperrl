@@ -64,7 +64,9 @@ class ItemAttributes {
   int SERIAL(uses) = -1;
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;
-  optional<LastingEffect> SERIAL(lastingEffect);
+  optional<LastingEffect> SERIAL(equipedEffect);
+  optional<string> SERIAL(applyMsgFirstPerson);
+  optional<string> SERIAL(applyMsgThirdPerson);
 };
 
 #endif

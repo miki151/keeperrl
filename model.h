@@ -73,7 +73,7 @@ class Model {
   Position getStairs(const Level* from, const Level* to);
 
   /** Adds new creature to the queue. Assumes this creature has already been added to a level. */
-  void addCreature(PCreature);
+  void addCreature(PCreature, double delay = 0);
 
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
   void killCreature(Creature*, Creature* attacker);

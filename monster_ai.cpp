@@ -515,7 +515,7 @@ class Fighter : public Behaviour {
           EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS),
           EffectType(EffectId::LASTING, LastingEffect::SPEED),
           EffectType(EffectId::DECEPTION),
-          EffectType(EffectId::SUMMON_SPIRIT)})
+          EffectType(EffectId::SUMMON, CreatureId::SPIRIT)})
         if (MoveInfo move = tryEffect(effect, 1))
           return move;
     if (distance > 1) {
@@ -691,6 +691,8 @@ class DieTime : public Behaviour {
   virtual MoveInfo getMove() override {
     if (creature->getTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
+        if (creature->isNotLiving() && creature->isCorporal())
+          creature->you(MsgType::FALL, "apart");
         creature->die(nullptr, false, false);
       })};
     }
@@ -721,6 +723,8 @@ class Summoned : public GuardTarget {
   virtual MoveInfo getMove() override {
     if (target->isDead() || creature->getTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
+        if (creature->isNotLiving() && !creature->isCorporal())
+          creature->you(MsgType::FALL, "apart");
         creature->die(nullptr, false, false);
       })};
     }
