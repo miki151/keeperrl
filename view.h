@@ -205,8 +205,8 @@ class View {
   virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>&,
       UniqueEntity<Creature>::Id& current) = 0;
 
-  virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, pair<ViewId, int> budget,
-      const vector<CreatureInfo>&, double* scrollPos) = 0;
+  virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
+      pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos) = 0;
 
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
       const vector<ItemInfo>&, double* scrollPos) = 0;

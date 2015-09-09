@@ -1765,13 +1765,16 @@ PGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id
 }
 
 PGuiElem GuiBuilder::drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
-    pair<ViewId, int> budget, const vector<CreatureInfo>& creatures, double* scrollPos) {
-  int titleExtraSpace = 10;
+    const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>& creatures, double* scrollPos) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(GuiFactory::ListBuilder(gui)
       .addElemAuto(gui.label(title))
-      .addBackElemAuto(drawCost(budget)).buildHorizontalList(),
-     getStandardLineHeight() + titleExtraSpace);
+      .addBackElemAuto(drawCost(budget)).buildHorizontalList());
+  if (!warning.empty()) {
+    lines.addElem(gui.label(warning, colors[ColorId::RED]));
+    budget.second = -1;
+  }
+  lines.addElem(gui.empty(), 10);
   for (PGuiElem& elem : drawRecruitList(creatures,
         [&queue] (optional<UniqueEntity<Creature>::Id> a) { queue.push(a);}, budget.second))
     lines.addElem(std::move(elem));

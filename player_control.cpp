@@ -926,7 +926,10 @@ void PlayerControl::handleRecruiting(Collective* ally) {
       break;
     vector<CreatureInfo> creatures = transform2<CreatureInfo>(recruits,
         [] (const Creature* c) { return CreatureInfo(c);});
-    auto index = model->getView()->chooseRecruit("Recruit from " + ally->getShortName(),
+    string warning;
+    if (getCollective()->getPopulationSize() >= getCollective()->getMaxPopulation())
+      warning = "You have reached minion limit.";
+    auto index = model->getView()->chooseRecruit("Recruit from " + ally->getShortName(), warning,
         {ViewId::GOLD, getCollective()->numResource(ResourceId::GOLD)}, creatures, &scrollPos);
     if (!index)
       break;
@@ -1704,13 +1707,15 @@ void PlayerControl::tick(double time) {
     if (c->getSpawnType() && !contains(getCreatures(), c) && !getCollective()->wasBanished(c)) {
       addedCreatures.push_back(c);
       getCollective()->addCreature(c, {MinionTrait::FIGHTER});
-      if (getControlled() && c->getPosition().isSameLevel(getControlled()->getPosition()))
-        for (auto team : getTeams().getActive(getControlled())) {
-          getTeams().add(team, c);
-          getControlled()->playerMessage(PlayerMessage(c->getName().a() + " joins your team.",
-                PlayerMessage::HIGH));
-          break;
-        }
+      if (Creature* controlled = getControlled())
+        if (getCollective()->hasTrait(controlled, MinionTrait::FIGHTER) &&
+            c->getPosition().isSameLevel(controlled->getPosition()))
+          for (auto team : getTeams().getActive(controlled)) {
+            getTeams().add(team, c);
+            controlled->playerMessage(PlayerMessage(c->getName().a() + " joins your team.",
+                  PlayerMessage::HIGH));
+            break;
+          }
     } else  
     if (c->isMinionFood() && !contains(getCreatures(), c))
       getCollective()->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});

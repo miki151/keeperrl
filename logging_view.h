@@ -100,9 +100,9 @@ class LoggingView : public View {
       return logAndGet(delegate->chooseItem(info, current, items, scrollpos), LoggingToken::CHOOSE_ITEM);
     }
 
-    virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, pair<ViewId, int> budget,
-        const vector<CreatureInfo>& c, double* scrollPos) override {
-      return logAndGet(delegate->chooseRecruit(title, budget, c, scrollPos), LoggingToken::CHOOSE_RECRUIT);
+    virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
+        pair<ViewId, int> budget, const vector<CreatureInfo>& c, double* scrollPos) override {
+      return logAndGet(delegate->chooseRecruit(title, warning, budget, c, scrollPos), LoggingToken::CHOOSE_RECRUIT);
     }
 
     virtual optional<UniqueEntity<Creature>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
