@@ -71,12 +71,13 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(newAttacks)
     & SVAR(ransomAttacks)
     & SVAR(messages)
-    & SVAR(currentWarning)
     & SVAR(hints)
     & SVAR(visibleEnemies)
     & SVAR(visibleFriends)
     & SVAR(notifiedConquered)
-    & SVAR(visibilityMap);
+    & SVAR(visibilityMap)
+    & SVAR(warningTimes)
+    & SVAR(lastWarningTime);
 }
 
 SERIALIZABLE(PlayerControl);
@@ -284,7 +285,7 @@ static bool seeEverything = false;
 const int hintFrequency = 700;
 static vector<string> getHints() {
   return {
-    "Right click on minions to control them or show information.",
+    "Control + right click on minions to add them to a team.",
  //   "You can turn these hints off in the settings (F2).",
     "Killing a leader greatly lowers the morale of his tribe and stops immigration.",
     "Your minions' morale is boosted when they are commanded by the Keeper.",
@@ -1642,13 +1643,14 @@ void PlayerControl::checkKeeperDanger() {
 }
 
 const double messageTimeout = 80;
-const double warningFrequency = 200;
+const double anyWarningFrequency = 100;
+const double warningFrequency = 500;
 
 void PlayerControl::onNoEnemies() {
   model->setCurrentMusic(MusicType::PEACEFUL, false);
 }
 
-void PlayerControl::considerNightfall() {
+void PlayerControl::considerNightfallMessage() {
   if (model->getSunlightInfo().state == SunlightState::NIGHT) {
     if (!isNight) {
       addMessage(PlayerMessage("Night is falling. Killing enemies in their sleep yields double mana.",
@@ -1659,20 +1661,24 @@ void PlayerControl::considerNightfall() {
     isNight = false;
 }
 
+void PlayerControl::considerWarning() {
+  double time = getTime();
+  if (time > lastWarningTime + anyWarningFrequency)
+    for (Warning w : ENUM_ALL(Warning))
+      if (getCollective()->isWarning(w) && (warningTimes[w] == 0 || time > warningTimes[w] + warningFrequency)) {
+        addMessage(PlayerMessage(getWarningText(w), PlayerMessage::HIGH));
+        lastWarningTime = warningTimes[w] = time;
+        break;
+      }
+}
+
 void PlayerControl::tick(double time) {
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
   messages = filter(messages, [&] (const PlayerMessage& msg) {
       return msg.getFreshness() > 0; });
-  considerNightfall();
-  for (Warning w : ENUM_ALL(Warning))
-    if (getCollective()->isWarning(w)) {
-      if (!currentWarning || currentWarning->warning != w || currentWarning->lastView + warningFrequency < time) {
-        addMessage(PlayerMessage(getWarningText(w), PlayerMessage::HIGH));
-        currentWarning = {w, time};
-      }
-      break;
-    }
+  considerNightfallMessage();
+  considerWarning();
   if (startImpNum == -1)
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   checkKeeperDanger();

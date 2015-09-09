@@ -22,6 +22,7 @@
 #include "resource_id.h"
 #include "square_type.h"
 #include "attack_trigger.h"
+#include "collective_warning.h"
 
 class CollectiveAttack;
 class Creature;
@@ -44,28 +45,6 @@ class MinionAttraction;
 struct CostInfo;
 struct TriggerInfo;
 class Territory;
-
-RICH_ENUM(CollectiveWarning,
-    DIGGING,
-    RESOURCE_STORAGE,
-    EQUIPMENT_STORAGE,
-    LIBRARY,
-    BEDS,
-    TRAINING,
-    NO_HATCHERY,
-    WORKSHOP,
-    NO_WEAPONS,
-    LOW_MORALE,
-    GRAVES,
-    CHESTS,
-    NO_PRISON,
-    LARGER_PRISON,
-    TORTURE_ROOM,
-//    ALTAR,
-    MORE_CHESTS,
-    MANA,
-    MORE_LIGHTS
-);
 
 class Collective : public TaskCallback {
   public:

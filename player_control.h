@@ -25,6 +25,7 @@
 #include "game_info.h"
 #include "square_type.h"
 #include "position.h"
+#include "collective_warning.h"
 
 class Model;
 class Technology;
@@ -113,7 +114,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
 
-  void considerNightfall();
+  void considerNightfallMessage();
+  void considerWarning();
 
   friend class KeeperControlOverride;
 
@@ -214,15 +216,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<PlayerMessage> SERIAL(messages);
   vector<CollectiveAttack> SERIAL(newAttacks);
   vector<CollectiveAttack> SERIAL(ransomAttacks);
-  struct CurrentWarningInfo {
-    CollectiveWarning SERIAL(warning);
-    double SERIAL(lastView);
-    template<class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-      ar & SVAR(warning) & SVAR(lastView);
-    }
-  };
-  optional<CurrentWarningInfo> SERIAL(currentWarning);
+  EnumMap<CollectiveWarning, double> SERIAL(warningTimes);
+  double SERIAL(lastWarningTime) = -10000;
   vector<string> SERIAL(hints);
   optional<PlayerMessage> findMessage(PlayerMessage::Id);
   void updateVisibleCreatures();
