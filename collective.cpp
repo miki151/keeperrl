@@ -917,7 +917,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   groupSize = min(groupSize, getMaxPopulation() - getPopulationSize());
   for (int i : Range(groupSize))
     creatures.push_back(CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this)));
-  if (!creatures[0]->getSpawnType())
+  if (!creatures[0]->getSpawnType() || info.ignoreSpawnType)
     return considerNonSpawnImmigrant(info, std::move(creatures));
   SpawnType spawnType = *creatures[0]->getSpawnType();
   SquareType dormType = getDormInfo()[spawnType].dormType;

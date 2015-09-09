@@ -227,6 +227,7 @@ static vector<EnemyInfo> getFriendlyCave(RandomGen& random, TribeSet& tribeSet, 
           CONSTRUCT(ImmigrantInfo,
             c.id = creature;
             c.frequency = 3;
+            c.ignoreSpawnType = true;
             c.traits = LIST(MinionTrait::FIGHTER);), 
           }).allowRecruiting(4), {})
   };

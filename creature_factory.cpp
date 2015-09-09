@@ -1530,6 +1530,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 70;
           c.gender = Gender::female;
           c.minionTasks.setWorkshopTasks(0);
+          c.recruitmentCost = 50;
           c.bodyParts[BodyPart::WING] = 2;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.skills.setValue(SkillId::ARCHERY, 1);

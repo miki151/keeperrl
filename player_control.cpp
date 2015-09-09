@@ -983,16 +983,18 @@ void PlayerControl::handleRansom(bool pay) {
   removeIndex(ransomAttacks, 0);
 }
 
+vector<Collective*> PlayerControl::getKnownVillains() const {
+  return filter(model->getMainVillains(), [this](Collective* c) {
+      return getCollective()->isKnownVillain(c);});
+}
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
  /* gameInfo.collectiveInfo.deities.clear();
   for (Deity* deity : Deity::getDeities())
     gameInfo.collectiveInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});*/
   gameInfo.villageInfo.villages.clear();
-  for (const Collective* col : model->getMainVillains())
-//#ifdef RELEASE
-    if (getCollective()->isKnownVillain(col))
-//#endif
-      gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
+  for (const Collective* col : getKnownVillains())
+    gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
   Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
   gameInfo.infoType = GameInfo::InfoType::BAND;
@@ -1432,9 +1434,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::VILLAGE_ACTION: {
         int villageIndex = input.get<VillageActionInfo>().villageIndex;
-        if (model->getMainVillains().size() <= villageIndex)
+        vector<Collective*> villains = getKnownVillains();
+        if (villains.size() <= villageIndex)
           break;
-        Collective* village = model->getMainVillains()[villageIndex];
+        Collective* village = villains[villageIndex];
         switch (input.get<VillageActionInfo>().action) {
           case VillageAction::RECRUIT: 
             handleRecruiting(village);

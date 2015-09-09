@@ -63,6 +63,7 @@ struct ImmigrantInfo {
   optional<SunlightState> SERIAL(limit);
   optional<Range> SERIAL(groupSize);
   bool SERIAL(autoTeam);
+  bool SERIAL(ignoreSpawnType);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
