@@ -1731,7 +1731,7 @@ void PlayerControl::tick(double time) {
       }
   for (auto attack : copyOf(newAttacks))
     for (const Creature* c : attack.getCreatures())
-      if (canSee(c)) {
+      if (canSee(c) && contains(getCollective()->getTerritory().getExtended(10), c->getPosition())) {
         addImportantLongMessage("You are under attack by " + attack.getAttacker()->getFullName() + "!",
             c->getPosition());
         model->setCurrentMusic(MusicType::BATTLE, true);
