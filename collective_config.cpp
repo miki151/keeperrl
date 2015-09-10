@@ -37,7 +37,8 @@ void ImmigrantInfo::serialize(Archive& ar, const unsigned int version) {
     & SVAR(techId)
     & SVAR(limit)
     & SVAR(groupSize)
-    & SVAR(autoTeam);
+    & SVAR(autoTeam)
+    & SVAR(ignoreSpawnType);
 }
 
 SERIALIZABLE(ImmigrantInfo);

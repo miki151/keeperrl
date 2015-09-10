@@ -75,7 +75,7 @@ class NoDebug {
 class Debug {
   public:
   Debug(DebugType t = INFO, const string& msg = "", int line = 0);
-  static void init();
+  static void init(bool log);
   Debug& operator <<(const string& msg);
   Debug& operator <<(const int msg);
   Debug& operator <<(const size_t msg);

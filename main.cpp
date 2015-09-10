@@ -127,6 +127,7 @@ int main(int argc, char* argv[]) {
     ("run_tests", "Run all unit tests and exit")
     ("gen_world_exit", "Exit after creating a world")
     ("force_keeper", "Skip main menu and force keeper mode")
+    ("logging", "Log to log.out")
 #ifndef RELEASE
     ("quick_level", "")
 #endif
@@ -148,7 +149,7 @@ int main(int argc, char* argv[]) {
   unique_ptr<CompressedInput> input;
   unique_ptr<CompressedOutput> output;
   string lognamePref = "log";
-  Debug::init();
+  Debug::init(vars.count("logging"));
   Skill::init();
   Technology::init();
   Spell::init();
@@ -193,7 +194,6 @@ int main(int argc, char* argv[]) {
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
- // int forceMode = vars.count("force_keeper") ? 0 : -1;
   bool genExit = vars.count("gen_world_exit");
   if (vars.count("replay")) {
     string fname = vars["replay"].as<string>();

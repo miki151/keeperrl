@@ -572,11 +572,11 @@ static vector<EnemyInfo> getHydra(RandomGen& random, TribeSet& tribeSet) {
       c.location = new Location(true);
       c.tribe = tribeSet.killEveryone.get();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
           .setGhostSpawns(0.03, 1),
-    { CONSTRUCT(VillainInfo,
+    { /*CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
             c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 22});
-            c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 7);)})
+            c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 7);)*/})
   };
 }
 

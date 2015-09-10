@@ -434,7 +434,6 @@ void testReverse3() {
 }
 
 int testAll() {
-  Debug::init();
   testStringConvertion();
   testTimeQueue();
   testRectangleIterator();

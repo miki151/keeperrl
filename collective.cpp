@@ -32,6 +32,7 @@
 #include "monster_ai.h"
 #include "task.h"
 #include "territory.h"
+#include "collective_attack.h"
 
 struct Collective::ItemFetchInfo {
   ItemIndex index;
@@ -314,7 +315,7 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!traits[MinionTrait::FARM_ANIMAL])
     c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
-  if (creatures.empty())
+  if (!leader)
     leader = c;
   CHECK(c->getTribe() == tribe);
   creatures.push_back(c);
@@ -2392,6 +2393,7 @@ int Collective::getNextPayoutTime() const {
 
 void Collective::addAttack(const CollectiveAttack& attack) {
   control->addAttack(attack);
+  knownVillains.insert(attack.getAttacker());
 }
 
 CollectiveTeams& Collective::getTeams() {

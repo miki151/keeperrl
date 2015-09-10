@@ -2114,7 +2114,7 @@ MovementType Creature::getMovementType() const {
       *attributes->size == CreatureSize::HUGE || getSize() == CreatureSize::LARGE})
     .setForced(isBlind() || isHeld() || forceMovement)
     .setFireResistant(isFireResistant())
-    .setSunlightVulnerable(isUndead());
+    .setSunlightVulnerable(isUndead() && !isAffected(LastingEffect::DARKNESS_SOURCE));
 }
 
 int Creature::numBodyParts(BodyPart part) const {
