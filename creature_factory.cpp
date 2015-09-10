@@ -534,12 +534,11 @@ class ShopkeeperController : public Monster {
     Monster::makeMove();
   }
 
-  virtual void onItemsAppeared(vector<Item*> items, const Creature* from) {
+  virtual void onItemsGiven(vector<Item*> items, const Creature* from) override {
     for (Item* item : items) {
       CHECK(item->getClass() == ItemClass::GOLD);
       --debt[from];
     }
-    getCreature()->pickUp(items, false).perform(getCreature());
     CHECK(debt[from] == 0) << "Bad debt " << debt[from];
     debt.erase(from);
     for (Item* it : from->getEquipment().getItems())

@@ -297,10 +297,14 @@ int Creature::getDebt(const Creature* debtor) const {
   return controller->getDebt(debtor);
 }
 
+bool Creature::canTakeItems(const vector<Item*>& items) const {
+  return isHumanoid();
+}
+
 void Creature::takeItems(vector<PItem> items, const Creature* from) {
   vector<Item*> ref = extractRefs(items);
-  getPosition().dropItems(std::move(items));
-  controller->onItemsAppeared(ref, from);
+  equipment->addItems(std::move(items));
+  controller->onItemsGiven(ref, from);
 }
 
 void Creature::you(MsgType type, const vector<string>& param) const {
@@ -472,7 +476,7 @@ string Creature::getPluralAName(Item* item, int num) const {
     return toString(num) + " " + item->getAName(true, isBlind());
 }
 
-CreatureAction Creature::pickUp(const vector<Item*>& items, bool spendT) const {
+CreatureAction Creature::pickUp(const vector<Item*>& items) const {
   if (!isHumanoid())
     return CreatureAction("You can't pick up anything!");
   double weight = getInventoryWeight();
@@ -482,19 +486,15 @@ CreatureAction Creature::pickUp(const vector<Item*>& items, bool spendT) const {
     return CreatureAction("You are carrying too much to pick this up.");
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " pickup ";
-    if (spendT)
-      for (auto stack : stackItems(items)) {
-        monsterMessage(getName().the() + " picks up " + getPluralAName(stack[0], stack.size()));
-        playerMessage("You pick up " + getPluralTheName(stack[0], stack.size()));
-      }
-    for (auto item : items) {
-      self->equipment->addItem(self->getPosition().removeItem(item));
+    for (auto stack : stackItems(items)) {
+      monsterMessage(getName().the() + " picks up " + getPluralAName(stack[0], stack.size()));
+      playerMessage("You pick up " + getPluralTheName(stack[0], stack.size()));
     }
+    self->equipment->addItems(self->getPosition().removeItems(items));
     if (getInventoryWeight() > getModifier(ModifierType::INV_LIMIT))
       playerMessage("You are overloaded.");
     GlobalEvents.addPickupEvent(this, items);
-    if (spendT)
-      self->spendTime(1);
+    self->spendTime(1);
   });
 }
 
@@ -1730,8 +1730,18 @@ void Creature::surrender(const Creature* to) {
   model->onSurrender(this, to);
 }
 
-void Creature::give(Creature* whom, vector<Item*> items) {
-  whom->takeItems(equipment->removeItems(items), this);
+CreatureAction Creature::give(Creature* whom, vector<Item*> items) {
+  if (!isHumanoid() || !whom->canTakeItems(items))
+    return CreatureAction(getName().the() + " can't take this item.");
+  return CreatureAction(this, [=](Creature* self) {
+    for (auto stack : stackItems(items)) {
+      monsterMessage(getName().the() + " gives " + getPluralAName(stack[0], stack.size()) + " to " +
+          whom->getName().the());
+      playerMessage("You give " + getPluralTheName(stack[0], stack.size()) + " to " +
+        whom->getName().the());
+    }
+    whom->takeItems(equipment->removeItems(items), this);
+  });
 }
 
 CreatureAction Creature::fire(Vec2 direction) const {

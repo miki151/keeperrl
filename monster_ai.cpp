@@ -152,12 +152,18 @@ class Heal : public Behaviour {
       if (MoveInfo move = tryEffect(EffectType(EffectId::CURE_POISON), 1))
         return move;
     }
-    if (creature->getHealth() == 1)
-      return NoMove;
-    if (MoveInfo move = tryEffect(EffectId::HEAL, 1))
-      return move.withValue(min(1.0, 1.5 - creature->getHealth()));
-    if (MoveInfo move = tryEffect(EffectId::HEAL, 3))
-      return move.withValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
+    if (creature->getHealth() < 1) {
+      if (MoveInfo move = tryEffect(EffectId::HEAL, 1))
+        return move.withValue(min(1.0, 1.5 - creature->getHealth()));
+      if (MoveInfo move = tryEffect(EffectId::HEAL, 3))
+        return move.withValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
+    }
+    for (Position pos : creature->getPosition().neighbors8())
+      if (Creature* c = pos.getCreature())
+        if (creature->isFriend(c) && c->getHealth() < 1)
+          for (Item* item : creature->getEquipment().getItems(Item::effectPredicate(EffectId::HEAL)))
+            if (auto action = creature->give(c, {item}))
+              return { 0.5, action};
     return NoMove;
   }
 

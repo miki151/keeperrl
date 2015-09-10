@@ -271,15 +271,19 @@ void Player::consumeAction() {
 
 vector<ItemAction> Player::getItemActions(const vector<Item*>& item) const {
   vector<ItemAction> actions;
-  if (getCreature()->equip(item[0])) {
+  if (getCreature()->equip(item[0]))
     actions.push_back(ItemAction::EQUIP);
-  }
-  if (getCreature()->applyItem(item[0])) {
+  if (getCreature()->applyItem(item[0]))
     actions.push_back(ItemAction::APPLY);
-  }
   if (getCreature()->unequip(item[0]))
     actions.push_back(ItemAction::UNEQUIP);
   else {
+    for (Position v : getCreature()->getPosition().neighbors8())
+      if (Creature* c = v.getCreature())
+        if (getCreature()->isFriend(c) && c->canTakeItems(item)) {
+          actions.push_back(ItemAction::GIVE);
+          break;
+        }
     actions.push_back(ItemAction::THROW);
     actions.push_back(ItemAction::DROP);
     if (item.size() > 1)
@@ -302,6 +306,7 @@ void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemActi
     case ItemAction::THROW: throwItem(items); break;
     case ItemAction::APPLY: applyItem(items); break;
     case ItemAction::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
+    case ItemAction::GIVE: giveAction(items); break;
     case ItemAction::EQUIP: 
       if (getCreature()->isEquipmentAppropriate(items[0]) || model->getView()->yesOrNoPrompt(
           items[0]->getTheName() + " is too heavy and will incur an accuracy penalty. Do you want to continue?"))
@@ -386,6 +391,24 @@ void Player::payDebtAction() {
         Debug() << "No debt " << c->getName().bare();
       }
     }
+}
+
+void Player::giveAction(vector<Item*> items) {
+  if (items.size() > 1) {
+    if (auto num = model->getView()->getNumber("Give how many " + items[0]->getName(true) + "?", 1, items.size()))
+      items = getPrefix(items, *num);
+    else
+      return;
+  }
+  vector<Creature*> creatures;
+  for (Position pos : getCreature()->getPosition().neighbors8())
+    if (Creature* c = pos.getCreature())
+      creatures.push_back(c);
+  if (creatures.size() == 1 && model->getView()->yesOrNoPrompt("Give " + items[0]->getTheName(items.size() > 1) +
+        " to " + creatures[0]->getName().the() + "?"))
+    tryToPerform(getCreature()->give(creatures[0], items));
+  else if (auto dir = model->getView()->chooseDirection("Give whom?"))
+    tryToPerform(getCreature()->chatTo(*dir));
 }
 
 void Player::chatAction(optional<Vec2> dir) {

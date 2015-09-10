@@ -114,6 +114,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   vector<Item*> getGold(int num) const;
 
   void takeItems(vector<PItem> items, const Creature* from);
+  bool canTakeItems(const vector<Item*>& items) const;
 
   void youHit(BodyPart part, AttackType type) const;
 
@@ -184,7 +185,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction swapPosition(Vec2 direction, bool force = false) const;
   CreatureAction wait() const;
   vector<Item*> getPickUpOptions() const;
-  CreatureAction pickUp(const vector<Item*>& item, bool spendTime = true) const;
+  CreatureAction pickUp(const vector<Item*>& item) const;
   CreatureAction drop(const vector<Item*>& item) const;
   void drop(vector<PItem> item);
   struct AttackParams {
@@ -211,7 +212,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction torture(Creature*) const;
   CreatureAction chatTo(Vec2 direction) const;
   CreatureAction stealFrom(Vec2 direction, const vector<Item*>&) const;
-  void give(Creature* whom, vector<Item*> items);
+  CreatureAction give(Creature* whom, vector<Item*> items);
   CreatureAction fire(Vec2 direction) const;
   CreatureAction construct(Vec2 direction, const SquareType&) const;
   bool canConstruct(const SquareType&) const;
