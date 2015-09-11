@@ -288,9 +288,10 @@ CreatureAction Creature::move(Position pos) const {
   });
 }
 
-void Creature::displace(Vec2 dir) {
+void Creature::displace(double time, Vec2 dir) {
   position.moveCreature(dir);
-  modViewObject().addMovementInfo({dir, getTime(), getTime() + 1, ViewObject::MovementInfo::MOVE});
+  controller->onDisplaced();
+  modViewObject().addMovementInfo({dir, time, time + 1, ViewObject::MovementInfo::MOVE});
 }
 
 int Creature::getDebt(const Creature* debtor) const {

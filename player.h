@@ -65,7 +65,7 @@ class Player : public Controller, public CreatureView {
   virtual void privateMessage(const PlayerMessage& message) override;
   virtual void learnLocation(const Location*) override;
   virtual void onBump(Creature*) override;
-
+  virtual void onDisplaced() override;
 
   // overridden by subclasses
   virtual bool unpossess();

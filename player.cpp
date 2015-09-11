@@ -760,6 +760,10 @@ optional<CreatureView::MovementInfo> Player::getMovementInfo() const {
     return none;
 }
 
+void Player::onDisplaced() {
+  currentTimePos.pos = getCreature()->getPosition().getCoord();
+}
+
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   bool canSee = getCreature()->canSee(pos);
   Position position = getCreature()->getPosition().withCoord(pos);

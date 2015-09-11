@@ -39,6 +39,7 @@ class Controller {
 
   virtual void onKilled(const Creature* attacker) {}
   virtual void onItemsGiven(vector<Item*> items, const Creature* from) { }
+  virtual void onDisplaced() {}
 
   virtual void learnLocation(const Location*) { }
 

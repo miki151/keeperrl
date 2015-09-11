@@ -180,7 +180,7 @@ static void blast(Creature* who, Position position, Vec2 direction, int maxDista
         else
           break;
       if (dist > 0) {
-        position.moveCreature(direction * dist);
+        c->displace(who->getTime(), direction * dist);
         c->you(MsgType::ARE, "thrown back");
       }
       if (damage)
@@ -229,7 +229,7 @@ static void guardingBuilder(Creature* c) {
     }
   Position pos = c->getPosition();
   if (dest)
-    c->displace(*dest);
+    c->displace(c->getTime(), *dest);
   else {
     Effect::applyToCreature(c, EffectType(EffectId::TELEPORT), EffectStrength::NORMAL);
   }
