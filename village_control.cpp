@@ -279,19 +279,27 @@ bool VillageControl::Villain::contains(const Creature* c) {
   return ::contains(collective->getCreatures(), c);
 }
 
+static double getRoomProb(SquareId id) {
+  switch (id) {
+    case SquareId::THRONE: return 0.001;
+    case SquareId::IMPALED_HEAD: return 0.000125;
+    default: FAIL << "Unsupported ROOM_BUILT type"; return 0;
+  }
+}
+
 double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const VillageControl* self) const {
   double powerMaxProb = 1.0 / 10000; // rather small chance that they attack just because you are strong
   double victimsMaxProb = 1.0 / 500;
   double populationMaxProb = 1.0 / 500;
   double goldMaxProb = 1.0 / 500;
   double stolenMaxProb = 1.0 / 300;
-  double roomMaxProb = 1.0 / 1000;
   double entryMaxProb = 1.0 / 20.0;
   switch (trigger.getId()) {
     case AttackTriggerId::TIMER: 
       return collective->getTime() >= trigger.get<int>() ? 0.05 : 0;
     case AttackTriggerId::ROOM_BUILT: 
-      return collective->getSquares(trigger.get<SquareType>()).empty() ? 0 : roomMaxProb;
+      return collective->getSquares(trigger.get<SquareType>()).size() *
+          getRoomProb(trigger.get<SquareType>().getId());
     case AttackTriggerId::POWER: 
       return powerMaxProb * powerClosenessFun(self->getCollective()->getDangerLevel(), collective->getDangerLevel());
     case AttackTriggerId::SELF_VICTIMS:

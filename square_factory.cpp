@@ -173,7 +173,7 @@ class Chest : public Square {
       s->dropItems(itemFactory.random());
   }
 
-  virtual bool canApply(const Creature* c) const {
+  virtual bool canApply(const Creature* c) const override {
     return c->isHumanoid();
   }
 
@@ -208,7 +208,7 @@ class Chest : public Square {
     c->playerMessage(msgItem);
     vector<PItem> items = itemFactory.random();
     GlobalEvents.addItemsAppearedEvent(getPosition2(), extractRefs(items));
-    c->takeItems(std::move(items), nullptr);
+    getPosition2().dropItems(std::move(items));
   }
 
   template <class Archive> 

@@ -183,7 +183,7 @@ optional<SquareApplyType> Position::getApplyType() const {
 }
 
 optional<SquareApplyType> Position::getApplyType(const Creature* c) const {
-  return isValid() ? getSquare()->getApplyType() : none;
+  return isValid() ? getSquare()->getApplyType(c) : none;
 }
 
 void Position::onApply(Creature* c) {

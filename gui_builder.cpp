@@ -1262,7 +1262,12 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
     case AttackTriggerId::SELF_VICTIMS: return "Killed tribe members";
     case AttackTriggerId::GOLD: return "Gold";
     case AttackTriggerId::STOLEN_ITEMS: return "Item theft";
-    case AttackTriggerId::ROOM_BUILT: return "Throne";
+    case AttackTriggerId::ROOM_BUILT:
+      switch (trigger.get<SquareType>().getId()) {
+        case SquareId::THRONE: return "Throne";
+        case SquareId::IMPALED_HEAD: return "Impaled heads";
+        default: FAIL << "Unsupported ROOM_BUILT type"; return "";
+      }
     case AttackTriggerId::POWER: return "Keeper's power";
     case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
     case AttackTriggerId::TIMER: return "Time";
@@ -1572,18 +1577,18 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion, MinionMenuCall
                   retAction.switchTo = task.task;
                   exit = true;
                 };
-            tasks.push_back(gui.horizontalList(makeVec<PGuiElem>(
-                gui.stack(
+            tasks.push_back(GuiFactory::ListBuilder(gui)
+                .addElemAuto(gui.stack(
                     gui.button(buttonFun),
-                    gui.label(getTaskText(task.task), colors[getTaskColor(task)])),
-                gui.stack(
+                    gui.label(getTaskText(task.task), colors[getTaskColor(task)])))
+                .addBackElemAuto(gui.stack(
                     getTooltip({"Click to turn this task on/off."}),
                     gui.button([&exit, &retAction, task] {
                       retAction.lock.toggle(task.task);
                     }),
-                    gui.labelUnicode(String(L'✓'), [&retAction, task] {
+                    gui.rightMargin(20, gui.labelUnicode(String(L'✓'), [&retAction, task] {
                         return colors[(retAction.lock[task.task] ^ task.locked) ?
-                            ColorId::LIGHT_GRAY : ColorId::GREEN];}))), 175));
+                            ColorId::LIGHT_GRAY : ColorId::GREEN];})))).buildHorizontalList());
           }
           drawMiniMenu(std::move(tasks), exit, bounds.getBottomLeft(), 200);
           callback(MinionAction{MinionActionId::TASK, retAction});
