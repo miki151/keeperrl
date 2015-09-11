@@ -1820,9 +1820,9 @@ PGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, double *scroll
     ColorId color = elem.highlight ? ColorId::GREEN : ColorId::WHITE;
     line.addElemAuto(gui.label(elem.text, colors[color]));
     if (page.sortBy == page.SCORE)
-      line.addBackElem(gui.label(toString(elem.score) + " points", colors[color]), 100);
+      line.addBackElem(gui.label(toString(elem.score) + " points", colors[color]), 130);
     else
-      line.addBackElem(gui.label(toString(elem.turns) + " turns", colors[color]), 100);
+      line.addBackElem(gui.label(toString(elem.turns) + " turns", colors[color]), 130);
     lines.addElem(gui.leftMargin(30, line.buildHorizontalList()));
   }
   return gui.scrollable(lines.buildVerticalList(), scrollPos);
