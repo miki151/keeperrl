@@ -1613,7 +1613,7 @@ void Creature::shineLight() {
     you(MsgType::ARE, "burnt by the sun");
     if (Random.roll(10)) {
       you(MsgType::YOUR, "body crumbles to dust");
-      die(nullptr);
+      die("sunlight");
     }
   }
 }

@@ -535,10 +535,9 @@ class ShopkeeperController : public Monster {
   }
 
   virtual void onItemsGiven(vector<Item*> items, const Creature* from) override {
-    for (Item* item : items) {
-      CHECK(item->getClass() == ItemClass::GOLD);
-      --debt[from];
-    }
+    for (Item* item : items)
+      if(item->getClass() == ItemClass::GOLD)
+        --debt[from];
     CHECK(debt[from] == 0) << "Bad debt " << debt[from];
     debt.erase(from);
     for (Item* it : from->getEquipment().getItems())
