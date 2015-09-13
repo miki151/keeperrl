@@ -66,7 +66,7 @@ MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
 }
 
 void MinimapGui::clear() {
-  refreshBuffer = true;
+  currentLevel = nullptr;
   info = MinimapInfo {};
 }
 
@@ -83,7 +83,9 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
   info.enemies.clear();
   info.locations.clear();
   const MapMemory& memory = creature->getMemory();
-  if (refreshBuffer) {
+  if (currentLevel != level) {
+    mapBuffer.create(Level::getMaxBounds().getW(), Level::getMaxBounds().getH());
+    info.roads.clear();
     for (Position v : level->getAllPositions()) {
       if (!memory.getViewIndex(v))
         mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, colors[ColorId::BLACK]);
@@ -93,15 +95,14 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
           info.roads.insert(v.getCoord());
       }
     }
-    refreshBuffer = false;
+    currentLevel = level;
   }
-  for (Position v : memory.getUpdated())
-    if (v.isSameLevel(level)) {
-      mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, Tile::getColor(v.getViewObject()));
-      if (v.getViewObject().hasModifier(ViewObject::Modifier::ROAD))
-        info.roads.insert(v.getCoord());
-    }
-  memory.clearUpdated();
+  for (Position v : memory.getUpdated(level)) {
+    mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, Tile::getColor(v.getViewObject()));
+    if (v.getViewObject().hasModifier(ViewObject::Modifier::ROAD))
+      info.roads.insert(v.getCoord());
+  }
+  memory.clearUpdated(level);
   info.player = creature->getPosition();
   for (Vec2 pos : creature->getVisibleEnemies())
     if (pos.inRectangle(bounds))

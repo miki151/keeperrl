@@ -286,6 +286,7 @@ const int hintFrequency = 700;
 static vector<string> getHints() {
   return {
     "Control + right click on minions to add them to a team.",
+    "Morale affects minion productivity and chances of fleeing from battle.",
  //   "You can turn these hints off in the settings (F2).",
     "Killing a leader greatly lowers the morale of his tribe and stops immigration.",
     "Your minions' morale is boosted when they are commanded by the Keeper.",
@@ -1312,6 +1313,7 @@ void PlayerControl::commandTeam(TeamId team) {
   c->pushController(PController(new MinionController(c, model, memory.get(), this)));
   getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
+  model->getView()->resetCenter();
 }
 
 optional<PlayerMessage> PlayerControl::findMessage(PlayerMessage::Id id){

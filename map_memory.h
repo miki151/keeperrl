@@ -28,8 +28,8 @@ class MapMemory {
   MapMemory(const vector<Level*>&);
   void addObject(Position, const ViewObject&);
   void update(Position, const ViewIndex&);
-  const unordered_set<Position>& getUpdated() const;
-  void clearUpdated() const;
+  const unordered_set<Position>& getUpdated(const Level*) const;
+  void clearUpdated(const Level*) const;
   void clearSquare(Position pos);
   static const MapMemory& empty();
   const optional<ViewIndex>& getViewIndex(Position) const;
@@ -37,9 +37,10 @@ class MapMemory {
   SERIALIZATION_DECL(MapMemory);
 
   private:
+  void updateUpdated(Position);
   optional<ViewIndex>& getViewIndex(Position);
   HeapAllocated<PositionMap<optional<ViewIndex>>> SERIAL(table);
-  mutable unordered_set<Position> updated;
+  mutable map<int, unordered_set<Position>> updated;
 };
 
 #endif

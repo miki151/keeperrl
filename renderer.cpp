@@ -33,8 +33,16 @@ Color transparency(const Color& color, int trans) {
   return Color(color.r, color.g, color.b, trans);
 }
 
+Text& Renderer::getTextObject() {
+  static Text t1, t2;
+  if (currentThreadId() == *renderThreadId)
+    return t1;
+  else
+    return t2;
+}
+
 int Renderer::getUnicodeLength(String s, FontId font) {
-  static Text t;
+  Text& t = getTextObject();
   t.setFont(getFont(font));
   t.setCharacterSize(textSize);
   t.setString(s);
@@ -46,10 +54,11 @@ int Renderer::getTextLength(string s) {
 }
 
 Font& Renderer::getFont(Renderer::FontId id) {
+  FontSet& fontSet = currentThreadId() == *renderThreadId ? fonts : fontsOtherThread;
   switch (id) {
-    case Renderer::TEXT_FONT: return textFont;
-    case Renderer::TILE_FONT: return tileFont;
-    case Renderer::SYMBOL_FONT: return symbolFont;
+    case Renderer::TEXT_FONT: return fontSet.textFont;
+    case Renderer::TILE_FONT: return fontSet.tileFont;
+    case Renderer::SYMBOL_FONT: return fontSet.symbolFont;
   }
 }
 
@@ -271,9 +280,10 @@ void Renderer::printSystemInfo(ostream& out) {
 }
 
 Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : nominalSize(nominal) {
-  CHECK(textFont.loadFromFile(fontPath + "/Lato-Bol.ttf"));
-  CHECK(tileFont.loadFromFile(fontPath + "/Lato-Bol.ttf"));
-  CHECK(symbolFont.loadFromFile(fontPath + "/Symbola.ttf"));
+  CHECK(fonts.textFont.loadFromFile(fontPath + "/Lato-Bol.ttf"));
+  CHECK(fonts.tileFont.loadFromFile(fontPath + "/Lato-Bol.ttf"));
+  CHECK(fonts.symbolFont.loadFromFile(fontPath + "/Symbola.ttf"));
+  fontsOtherThread = fonts;
   colors[ColorId::WHITE] = Color(255, 255, 255);
   colors[ColorId::YELLOW] = Color(250, 255, 0);
   colors[ColorId::LIGHT_BROWN] = Color(210, 150, 0);

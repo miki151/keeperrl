@@ -170,14 +170,17 @@ class Renderer {
   deque<Event> eventQueue;
   bool genReleaseEvent = false;
   void addRenderElem(function<void()>);
+  sf::Text& getTextObject();
   stack<int> layerStack;
   int currentLayer = 0;
   array<vector<function<void()>>, 2> renderList;
   vector<Vertex> quads;
   Vec2 mousePos;
-  Font textFont;
-  Font tileFont;
-  Font symbolFont;
+  struct FontSet {
+    Font textFont;
+    Font tileFont;
+    Font symbolFont;
+  } fonts, fontsOtherThread;
   Font& getFont(Renderer::FontId);
   optional<thread::id> renderThreadId;
   bool fullscreen;

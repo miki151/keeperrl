@@ -1360,7 +1360,7 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(IRON_GOLEM,
           c.viewId = ViewId::AUTOMATON;
           c.attr[AttrType::SPEED] += 30;
-          c.attr[AttrType::STRENGTH] += 12;
+          c.attr[AttrType::STRENGTH] += 22;
           c.attr[AttrType::DEXTERITY] += 2;
           c.barehandedDamage -= 2;
           c.name = "automaton";);

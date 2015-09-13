@@ -37,7 +37,7 @@ void MapMemory::addObject(Position pos, const ViewObject& obj) {
     getViewIndex(pos) = ViewIndex();
   getViewIndex(pos)->insert(obj);
   getViewIndex(pos)->setHighlight(HighlightType::MEMORY);
-  updated.insert(pos);
+  updateUpdated(pos);
 }
 
 optional<ViewIndex>& MapMemory::getViewIndex(Position pos) {
@@ -57,7 +57,11 @@ void MapMemory::update(Position pos, const ViewIndex& index) {
   if (getViewIndex(pos)->hasObject(ViewLayer::CREATURE) && 
       !getViewIndex(pos)->getObject(ViewLayer::CREATURE).hasModifier(ViewObjectModifier::REMEMBER))
     getViewIndex(pos)->removeObject(ViewLayer::CREATURE);
-  updated.insert(pos);
+  updateUpdated(pos);
+}
+
+void MapMemory::updateUpdated(Position pos) {
+  updated[pos.getLevel()->getUniqueId()].insert(pos);
 }
 
 void MapMemory::clearSquare(Position pos) {
@@ -69,10 +73,10 @@ const MapMemory& MapMemory::empty() {
   return mem;
 } 
 
-const unordered_set<Position>& MapMemory::getUpdated() const {
-  return updated;
+const unordered_set<Position>& MapMemory::getUpdated(const Level* level) const {
+  return updated[level->getUniqueId()];
 }
 
-void MapMemory::clearUpdated() const {
-  updated.clear();
+void MapMemory::clearUpdated(const Level* level) const {
+  updated[level->getUniqueId()].clear();
 }

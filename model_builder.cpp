@@ -390,7 +390,9 @@ static vector<EnemyInfo> getDwarfTown(RandomGen& random, TribeSet& tribeSet) {
 }
 
 static vector<EnemyInfo> getHumanCastle(RandomGen& random, TribeSet& tribeSet) {
-  StairKey stairKey = StairKey::getNew();
+  optional<StairKey> stairKey;
+  if (random.roll(4))
+    stairKey = StairKey::getNew();
   vector<EnemyInfo> ret {
     mainVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::CASTLE;
@@ -401,7 +403,8 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random, TribeSet& tribeSet) {
       c.stockpiles = LIST({StockpileInfo::GOLD, 700});
       c.buildingId = BuildingId::BRICK;
       c.guardId = CreatureId::CASTLE_GUARD;
-      c.downStairs = { stairKey };
+      if (stairKey)
+        c.downStairs = { *stairKey };
       c.shopFactory = ItemFactory::villageShop();
       c.furniture = SquareFactory::castleFurniture(tribeSet.pest.get());
       c.outsideFeatures = SquareFactory::castleOutside();),
@@ -422,7 +425,7 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random, TribeSet& tribeSet) {
             AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.9, random.get(1400, 2000));)})};
-  if (random.roll(4))
+  if (stairKey)
     ret.push_back(
         lesserVillain(CONSTRUCT(SettlementInfo,
             c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::MINOTAUR);
@@ -430,9 +433,10 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random, TribeSet& tribeSet) {
             c.location = new Location("maze");
             c.tribe = tribeSet.monster.get();
             c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());
-            c.upStairs = { stairKey };
+            if (stairKey)
+              c.upStairs = { *stairKey };
             c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {},
-          LevelInfo{ExtraLevelId::MAZE, stairKey}));
+          LevelInfo{ExtraLevelId::MAZE, *stairKey}));
   return ret;
 }
 
