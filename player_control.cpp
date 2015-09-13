@@ -901,6 +901,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   VillageInfo::Village info;
   info.name = col->getShortName();
   info.tribeName = col->getTribeName();
+  info.knownLocation = getCollective()->isKnownVillainLocation(col);
   bool hostile = col->getTribe()->isEnemy(getTribe());
   if (col->isConquered())
     info.state = info.CONQUERED;
@@ -1338,6 +1339,15 @@ void PlayerControl::setScrollPos(Position pos) {
     model->getView()->setScrollPos(stairs->getCoord());
 }
 
+void PlayerControl::scrollToMiddle(const vector<Position>& pos) {
+  vector<Vec2> visible;
+  for (Position v : pos)
+    if (getCollective()->isKnownSquare(v))
+      visible.push_back(v.getCoord());
+  CHECK(!visible.empty());
+  model->getView()->setScrollPos(Rectangle::boundingBox(visible).middle());
+}
+
 void PlayerControl::processInput(View* view, UserInput input) {
   if (retired)
     return;
@@ -1350,15 +1360,19 @@ void PlayerControl::processInput(View* view, UserInput input) {
             if (const Creature* c = getCreature(*id))
               setScrollPos(c->getPosition());
           } else if (auto loc = message->getLocation()) {
-            if (loc->getMiddle().isSameLevel(getLevel())) {
-              vector<Vec2> visible;
-              for (Position v : loc->getAllSquares())
-                if (getCollective()->isKnownSquare(v))
-                  visible.push_back(v.getCoord());
-              model->getView()->setScrollPos(Rectangle::boundingBox(visible).middle());
-            } else
+            if (loc->getMiddle().isSameLevel(getLevel()))
+              scrollToMiddle(loc->getAllSquares());
+            else
               setScrollPos(loc->getMiddle());
           }
+        }
+        break;
+    case UserInputId::GO_TO_VILLAGE: {
+        const Collective* col = getKnownVillains()[input.get<int>()];
+        if (col->getLevel() != getLevel())
+          setScrollPos(col->getTerritory().getAll().at(0));
+        else
+          scrollToMiddle(col->getTerritory().getAll());
         }
         break;
     case UserInputId::CONFIRM_TEAM:

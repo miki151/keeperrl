@@ -1298,8 +1298,17 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
   vector<PGuiElem> lines;
   for (int i : All(info.villages)) {
     auto& elem = info.villages[i];
-    lines.push_back(gui.label(capitalFirst(elem.name) + (elem.tribeName.empty() ?
-          string() : " (" + elem.tribeName + ")"), colors[ColorId::WHITE]));
+    PGuiElem header = gui.label(capitalFirst(elem.name) + (elem.tribeName.empty() ?
+          string() : " (" + elem.tribeName + ")"), colors[ColorId::WHITE]);
+    if (info.villages[i].knownLocation)
+      header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, i})),
+        gui.getListBuilder()
+            .addElemAuto(std::move(header))
+            .addElem(gui.empty(), 10)
+            .addElemAuto(gui.labelUnicode(String(L'➚'))).buildHorizontalList());
+    lines.push_back(std::move(header));
+    if (!info.villages[i].knownLocation)
+      lines.push_back(gui.label("Location unknown", colors[ColorId::LIGHT_BLUE]));
     GuiFactory::ListBuilder line(gui);
     line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
     vector<TriggerInfo> triggers = elem.triggers;

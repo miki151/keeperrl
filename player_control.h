@@ -132,6 +132,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void updateSquareMemory(Position);
   bool isEnemy(const Creature*) const;
   vector<Collective*> getKnownVillains() const;
+  void scrollToMiddle(const vector<Position>&);
 
   Creature* getConsumptionTarget(View*, Creature* consumer);
   void onWorshipEpithet(EpithetId);

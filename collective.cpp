@@ -111,6 +111,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(teams)
     & SVAR(knownLocations)
     & SVAR(knownVillains)
+    & SVAR(knownVillainLocations)
     & SVAR(name)
     & SVAR(config)
     & SVAR(warnings)
@@ -2132,6 +2133,10 @@ bool Collective::isKnownVillain(const Collective* col) {
   return knownVillains.count(col);
 }
 
+bool Collective::isKnownVillainLocation(const Collective* col) {
+  return knownVillainLocations.count(col);
+}
+
 void Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
     if (const Location* loc = pos.getLocation())
@@ -2145,8 +2150,10 @@ void Collective::addKnownTile(Position pos) {
         if (task->isImpossible(getLevel()))
           taskMap->removeTask(task);
     for (const Collective* col : level->getModel()->getMainVillains())
-      if (col->territory->contains(pos))
+      if (col->territory->contains(pos)) {
         knownVillains.insert(col);
+        knownVillainLocations.insert(col);
+      }
   }
 }
 

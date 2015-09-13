@@ -47,6 +47,7 @@ enum class UserInputId {
     SET_TEAM_LEADER,
     TECHNOLOGY,
     VILLAGE_ACTION,
+    GO_TO_VILLAGE,
     PAY_RANSOM,
     IGNORE_RANSOM,
 // turn-based actions
@@ -121,6 +122,7 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Inven
             UserInputId::PICK_UP_ITEM,
             UserInputId::PICK_UP_ITEM_MULTI,
             UserInputId::MESSAGE_INFO,
+            UserInputId::GO_TO_VILLAGE,
             UserInputId::COMMAND_TEAM),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM),

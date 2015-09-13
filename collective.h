@@ -115,6 +115,7 @@ class Collective : public TaskCallback {
 
   bool usesEquipment(const Creature*) const;
   bool isKnownVillain(const Collective*);
+  bool isKnownVillainLocation(const Collective*);
 
   ~Collective();
 
@@ -381,6 +382,7 @@ class Collective : public TaskCallback {
   HeapAllocated<CollectiveTeams> SERIAL(teams);
   set<const Location*> SERIAL(knownLocations);
   set<const Collective*> SERIAL(knownVillains);
+  set<const Collective*> SERIAL(knownVillainLocations);
   optional<string> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
   vector<const Creature*> SERIAL(banished);

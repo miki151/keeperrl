@@ -117,7 +117,7 @@ class GuiFactory {
       Renderer::CenterType = Renderer::NONE, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
   PGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_ON]);
   PGuiElem mainMenuLabelBg(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_OFF]);
-  PGuiElem labelUnicode(const String&, Color, int size = Renderer::textSize,
+  PGuiElem labelUnicode(const String&, Color = colors[ColorId::WHITE], int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
   PGuiElem labelUnicode(const String&, function<Color()>, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);

@@ -177,6 +177,7 @@ class VillageInfo {
   struct Village {
     string name;
     string tribeName;
+    bool knownLocation;
     enum State { FRIENDLY, HOSTILE, CONQUERED } state;
     vector<VillageAction> actions;
     vector<TriggerInfo> triggers;

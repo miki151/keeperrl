@@ -673,6 +673,9 @@ class VerticalList : public GuiLayout {
   int numAlignBack;
 };
 
+GuiFactory::ListBuilder GuiFactory::getListBuilder(int defaultSize) {
+  return ListBuilder(*this, defaultSize);
+}
 
 GuiFactory::ListBuilder::ListBuilder(GuiFactory& g, int defSz) : gui(g), defaultSize(defSz) {}
 
