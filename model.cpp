@@ -270,8 +270,13 @@ optional<Model::ExitInfo> Model::update(double totalTime) {
   } while (1);
 }
 
+static vector<Collective*> empty;
+
 const vector<Collective*>& Model::getVillains(VillainType t) const {
-  return villainsByType.at(t);
+  if (villainsByType.count(t))
+    return villainsByType.at(t);
+  else
+    return empty;
 }
 
 const vector<Collective*>& Model::getAllVillains() const {

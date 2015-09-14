@@ -345,15 +345,15 @@ class DungeonFeatures : public LevelMaker {
 
 class Creatures : public LevelMaker {
   public:
-  Creatures(CreatureFactory cf, int numC, MonsterAIFactory actorF, optional<SquareType> type = none) :
-      cfactory(cf), numCreature(numC), actorFactory(actorF), squareType(type) {}
+  Creatures(CreatureFactory cf, int numC, MonsterAIFactory actorF, Predicate pred = Predicate::alwaysTrue()) :
+      cfactory(cf), numCreature(numC), actorFactory(actorF), onPred(pred) {}
 
-  Creatures(CreatureFactory cf, int numC, CollectiveBuilder* col, optional<SquareType> type = none) :
-      cfactory(cf), numCreature(numC), actorFactory(MonsterAIFactory::monster()), squareType(type),
+  Creatures(CreatureFactory cf, int numC, CollectiveBuilder* col, Predicate pred = Predicate::alwaysTrue()) :
+      cfactory(cf), numCreature(numC), actorFactory(MonsterAIFactory::monster()), onPred(pred),
       collective(col) {}
 
-  Creatures(CreatureFactory cf, int numC, optional<SquareType> type = none) :
-      cfactory(cf), numCreature(numC), squareType(type) {}
+  Creatures(CreatureFactory cf, int numC, Predicate pred = Predicate::alwaysTrue()) :
+      cfactory(cf), numCreature(numC), onPred(pred) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     if (!actorFactory) {
@@ -369,7 +369,7 @@ class Creatures : public LevelMaker {
       do {
         pos = Vec2(builder->getRandom().get(area.getPX(), area.getKX()), builder->getRandom().get(area.getPY(), area.getKY()));
       } while (--numTries > 0 && (!builder->canPutCreature(pos, creature.get())
-          || (squareType && builder->getType(pos) != *squareType)));
+          || (!onPred.apply(builder, pos))));
       checkGen(numTries > 0);
       if (collective) {
         collective->addCreature(creature.get());
@@ -384,7 +384,7 @@ class Creatures : public LevelMaker {
   CreatureFactory cfactory;
   int numCreature;
   optional<MonsterAIFactory> actorFactory;
-  optional<SquareType> squareType;
+  Predicate onPred;
   CollectiveBuilder* collective = nullptr;
 };
 
@@ -1737,10 +1737,12 @@ MakerQueue* village2(RandomGen& random, SettlementInfo info) {
   if (info.outsideFeatures)
     queue->addMaker(new DungeonFeatures(Predicate::type(building.floorOutside), 0.01, *info.outsideFeatures));
   if (info.creatures)
-    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, building.floorOutside));
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective,
+          Predicate::type(building.floorOutside)));
   if (info.neutralCreatures)
     queue->addMaker(
-        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
+          Predicate::type(building.floorOutside)));
   return queue;
 }
 
@@ -1764,10 +1766,12 @@ MakerQueue* village(RandomGen& random, SettlementInfo info) {
         Predicate::type(building.floorOutside),
         Predicate::attrib(SquareAttrib::BUILDINGS_CENTER)), 0.2, *info.outsideFeatures, SquareAttrib::NO_ROAD));
   if (info.creatures)
-    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, building.floorOutside));
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, 
+          Predicate::type(building.floorOutside)));
   if (info.neutralCreatures)
     queue->addMaker(
-        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
+          Predicate::type(building.floorOutside)));
   return queue;
 }
 
@@ -1787,10 +1791,12 @@ MakerQueue* cottage(SettlementInfo info) {
   queue->addMaker(new Buildings(1, 2, 5, 7, building, false, {room}, false));
   queue->addMaker(new LocationMaker(info.location));
   if (info.creatures)
-    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, building.floorOutside));
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, 
+          Predicate::type(building.floorOutside)));
   if (info.neutralCreatures)
     queue->addMaker(
-        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
+          Predicate::type(building.floorOutside)));
    return queue;
 }
 
@@ -1823,10 +1829,12 @@ MakerQueue* castle(RandomGen& random, SettlementInfo info) {
   queue->addMaker(new Margin(insideMargin, new Connector(building.door, 1, 18)));
   queue->addMaker(new Margin(insideMargin, new CastleExit(info.tribe, building, *info.guardId)));
   if (info.creatures)
-    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, building.floorOutside));
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, 
+          Predicate::type(building.floorOutside)));
   if (info.neutralCreatures)
     queue->addMaker(
-        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
+          Predicate::type(building.floorOutside)));
   if (info.outsideFeatures)
     inside->addMaker(new DungeonFeatures(Predicate::type(building.floorOutside), 0.03, *info.outsideFeatures));
   if (info.furniture)
@@ -1858,10 +1866,12 @@ MakerQueue* castle2(RandomGen& random, SettlementInfo info) {
   if (info.outsideFeatures)
     queue->addMaker(new DungeonFeatures(Predicate::type(building.floorOutside), 0.05, *info.outsideFeatures));
   if (info.creatures)
-    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, building.floorOutside));
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, 
+          Predicate::type(building.floorOutside)));
   if (info.neutralCreatures)
     queue->addMaker(
-        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
+          Predicate::type(building.floorOutside)));
    return queue;
 }
 
@@ -1901,7 +1911,8 @@ static LevelMaker* tower(RandomGen& random, SettlementInfo info, bool withExit) 
   for (StairKey key : info.upStairs)
     upStairs = new Stairs(StairInfo::Direction::UP, key, Predicate::type(building.floorInside));
   if (info.creatures)
-    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, building.floorInside));
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, 
+          Predicate::type(building.floorInside)));
   queue->addMaker(new Division(0.5, 0.5, upStairs, nullptr, nullptr, downStairs));
   if (info.furniture)
     queue->addMaker(new DungeonFeatures(Predicate::type(building.floorInside), 0.5, *info.furniture));
@@ -1993,7 +2004,8 @@ static MakerQueue* genericMineTownMaker(RandomGen& random, SettlementInfo info, 
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective));
   if (info.neutralCreatures)
     queue->addMaker(
-        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
+          Predicate::type(building.floorOutside)));
   queue->addMaker(new LocationMaker(info.location));
   return queue;
 }
@@ -2025,7 +2037,8 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
     queue->addMaker(new Items(*info.shopFactory, building.floorOutside, 16, 20));
   if (info.neutralCreatures)
     queue->addMaker(
-        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, building.floorOutside));
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
+          Predicate::type(building.floorOutside)));
   queue->addMaker(new LocationMaker(info.location));
   return queue;
 }
@@ -2367,11 +2380,11 @@ static LevelMaker* underground(RandomGen& random, CreatureFactory waterFactory, 
           sizes, Predicate::alwaysTrue(), false));
           if (lakeType == SquareId::WATER) {
             queue->addMaker(new Creatures(waterFactory, 1, MonsterAIFactory::monster(),
-                  SquareType(SquareId::WATER)));
+                  Predicate::type(SquareType(SquareId::WATER))));
           }
           if (lakeType == SquareId::MAGMA) {
             queue->addMaker(new Creatures(lavaFactory, Random.get(1, 4),
-                  MonsterAIFactory::monster(), SquareType(SquareId::MAGMA)));
+                  MonsterAIFactory::monster(), Predicate::type(SquareType(SquareId::MAGMA))));
           }
            break;
       }
@@ -2422,7 +2435,9 @@ found:
       builder->putSquare(pos, SquareId::FLOOR);
       boulders.push_back(pos);
     }
-    for (Vec2 v : Rectangle::centered(start + Vec2(length + roomRadius + 1, 0), roomRadius))
+    builder->putSquare(start + Vec2(length + 1, 0), SquareId::FLOOR);
+    builder->putSquare(start + Vec2(length + 1, 0), {SquareId::TRIBE_DOOR, (Tribe*)(nullptr)});
+    for (Vec2 v : Rectangle::centered(start + Vec2(length + roomRadius + 2, 0), roomRadius))
       builder->putSquare(v, SquareId::FLOOR, SquareAttrib::SOKOBAN_PRIZE);
     set<int> visited;
     Vec2 curPos = start;
@@ -2499,9 +2514,12 @@ LevelMaker* LevelMaker::sokobanLevel(RandomGen& random, SettlementInfo info) {
   }
   queue->addMaker(new Division(0.5, locations, nullptr));
   queue->addMaker(new Connector(SquareId::FLOOR, 0, 100));
-  queue->addMaker(new SokobanMaker(*info.creatures, getOnlyElement(info.downStairs)));
+  queue->addMaker(new SokobanMaker(info.neutralCreatures->first, getOnlyElement(info.downStairs)));
   queue->addMaker(new Stairs(StairInfo::DOWN, getOnlyElement(info.downStairs),
         Predicate::attrib(SquareAttrib::SOKOBAN_ENTRY)));
+  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective,
+        Predicate::attrib(SquareAttrib::SOKOBAN_PRIZE)));
   return new BorderGuard(queue, SquareId::MOUNTAIN2);
 }
 

@@ -244,7 +244,7 @@ class SokobanController : public Monster {
     Vec2 goDir = player->getPosition().getDir(getCreature()->getPosition());
     if (goDir.isCardinal4() && getCreature()->getPosition().plus(goDir).canEnter(
           getCreature()->getMovementType().setForced(true))) {
-      getCreature()->displace(player->getTime(), goDir);
+      getCreature()->displace(getCreature()->getTime(), goDir);
       player->move(goDir).perform(player);
     }
   }

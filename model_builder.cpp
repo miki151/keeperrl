@@ -87,7 +87,7 @@ struct FriendlyVault {
 };
 
 static vector<FriendlyVault> friendlyVaults {
-  {CreatureId::SPECIAL_HUMANOID, 1, 2},
+ // {CreatureId::SPECIAL_HUMANOID, 1, 2},
   {CreatureId::ORC, 3, 8},
   {CreatureId::OGRE, 2, 5},
   {CreatureId::VAMPIRE, 2, 5},
@@ -679,7 +679,11 @@ static vector<EnemyInfo> getSokobanEntry(RandomGen& random, TribeSet& tribeSet) 
       c.upStairs = {link};), CollectiveConfig::noImmigrants(), {}),
     noVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::ISLAND_VAULT;
-      c.creatures = CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::SOKOBAN_BOULDER);
+      c.neutralCreatures = make_pair(
+          CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::SOKOBAN_BOULDER), 0);
+      c.creatures = CreatureFactory::singleType(tribeSet.keeper.get(), CreatureId::SPECIAL_HUMANOID);
+      c.numCreatures = 1;
+      c.tribe = tribeSet.keeper.get();
       c.location = new Location();
       c.buildingId = BuildingId::DUNGEON;
       c.downStairs = {link};), CollectiveConfig::noImmigrants(), {}, LevelInfo{ExtraLevelId::SOKOBAN, link}),
@@ -812,7 +816,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.salary = 40;),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::SPECIAL_HUMANOID;
-          c.frequency = 0.2;
+          c.frequency = 0.1;
           c.attractions = LIST(
             {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
             );
@@ -942,6 +946,12 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter& meter, RandomGen& random,
   top->landCreature(StairKey::keeperSpawn(), c.get());
   m->addCreature(std::move(c));
   m->playerControl->addKeeper(ref);
+  for (int i : Range(4)) {
+    PCreature c = CreatureFactory::fromId(CreatureId::SOKOBAN_BOULDER, m->tribeSet->keeper.get(),
+        MonsterAIFactory::collective(m->playerCollective));
+    top->landCreature(StairKey::keeperSpawn(), c.get());
+    m->addCreature(std::move(c));
+  }
   for (int i : Range(4)) {
     PCreature c = CreatureFactory::fromId(CreatureId::IMP, m->tribeSet->keeper.get(),
         MonsterAIFactory::collective(m->playerCollective));

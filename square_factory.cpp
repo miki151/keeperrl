@@ -376,8 +376,9 @@ class TribeDoor : public Door {
   TribeDoor(const ViewObject& object, const Tribe* t, int destStrength, Square::Params params)
     : Door(object, CONSTRUCT(Square::Params,
           c = params;
-          c.movementSet->addTraitForTribe(t, MovementTrait::WALK)
-              .removeTrait(MovementTrait::WALK); )),
+          if (t)
+            c.movementSet->addTraitForTribe(t, MovementTrait::WALK)
+                .removeTrait(MovementTrait::WALK); )),
       tribe(t), destructionStrength(destStrength) {
   }
 
@@ -397,6 +398,7 @@ class TribeDoor : public Door {
   }
 
   virtual void lock() {
+    CHECK(tribe);
     locked = !locked;
     if (locked) {
       modViewObject().setModifier(ViewObject::Modifier::LOCKED);
