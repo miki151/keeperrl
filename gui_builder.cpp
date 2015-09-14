@@ -1295,8 +1295,16 @@ void GuiBuilder::showAttackTriggers(const vector<TriggerInfo>& triggers, Vec2 po
 }
 
 PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
-  vector<PGuiElem> lines;
+  auto lines = gui.getListBuilder(legendLineHeight);
+  int titleMargin = -11;
+  if (info.numMainVillains > 0)
+    lines.addElem(gui.leftMargin(titleMargin, gui.label(toString(info.numConquered) + " out of " +
+            toString(info.totalMain) + " villains conquered:")), legendLineHeight + 8);
   for (int i : All(info.villages)) {
+    if (i == info.numMainVillains) {
+      lines.addElem(gui.empty());
+      lines.addElem(gui.leftMargin(titleMargin, gui.label("Lesser villains:")), legendLineHeight + 8);
+    }
     auto& elem = info.villages[i];
     PGuiElem header = gui.label(capitalFirst(elem.name) + (elem.tribeName.empty() ?
           string() : " (" + elem.tribeName + ")"), colors[ColorId::WHITE]);
@@ -1304,11 +1312,11 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
       header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, i})),
         gui.getListBuilder()
             .addElemAuto(std::move(header))
-            .addElem(gui.empty(), 10)
+            .addElem(gui.empty(), 7)
             .addElemAuto(gui.labelUnicode(String(L'➚'))).buildHorizontalList());
-    lines.push_back(std::move(header));
+    lines.addElem(std::move(header));
     if (!info.villages[i].knownLocation)
-      lines.push_back(gui.label("Location unknown", colors[ColorId::LIGHT_BLUE]));
+      lines.addElem(gui.leftMargin(40, gui.label("Location unknown", colors[ColorId::LIGHT_BLUE])));
     GuiFactory::ListBuilder line(gui);
     line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
     vector<TriggerInfo> triggers = elem.triggers;
@@ -1322,14 +1330,14 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
           gui.label("Triggers", colors[ColorId::RED]),
           gui.button([this, triggers](Rectangle bounds) {
               showAttackTriggers(triggers, bounds.getTopRight() + Vec2(20, 0));})));
-    lines.push_back(line.buildHorizontalList());
+    lines.addElem(line.buildHorizontalList());
     for (auto action : elem.actions)
-      lines.push_back(gui.margins(getVillageActionButton(i, action), 40, 0, 0, 0));
+      lines.addElem(gui.margins(getVillageActionButton(i, action), 40, 0, 0, 0));
 
   }
-  if (lines.empty())
+  if (lines.isEmpty())
     return gui.label("No foreign tribes discovered.");
-  return gui.verticalList(std::move(lines), legendLineHeight);
+  return gui.scrollable(lines.buildVerticalList());
 }
 
 const double menuLabelVPadding = 0.15;

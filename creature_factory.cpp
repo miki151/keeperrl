@@ -1428,6 +1428,10 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.skills.setValue(SkillId::SORCERY, 0.5);
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::DARKNESS_SOURCE] = 1;
+          for (SpellId id : Random.chooseN(Random.get(3, 6), {SpellId::WORD_OF_POWER, SpellId::DEX_BONUS,
+              SpellId::STR_BONUS, SpellId::MAGIC_SHIELD, SpellId::STUN_RAY, SpellId::DECEPTION, SpellId::DECEPTION,
+              SpellId::TELEPORT}))
+            c.spells.add(id);
           c.chatReactionFriendly = c.chatReactionHostile =
               "\"There are times when you simply cannot refuse a drink!\"";
           c.name = "vampire lord";);

@@ -183,6 +183,9 @@ class VillageInfo {
     vector<TriggerInfo> triggers;
   };
   vector<Village> villages;
+  int numMainVillains;
+  int totalMain;
+  int numConquered;
 };
 
 class GameSunlightInfo {

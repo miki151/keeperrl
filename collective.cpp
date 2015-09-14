@@ -2149,7 +2149,7 @@ void Collective::addKnownTile(Position pos) {
       if (Task* task = taskMap->getMarked(pos))
         if (task->isImpossible(getLevel()))
           taskMap->removeTask(task);
-    for (const Collective* col : level->getModel()->getMainVillains())
+    for (const Collective* col : level->getModel()->getAllVillains())
       if (col->territory->contains(pos)) {
         knownVillains.insert(col);
         knownVillainLocations.insert(col);
@@ -2439,8 +2439,7 @@ void Collective::removeTorch(Position pos) {
 
 void Collective::addTorch(Position pos) {
   CHECK(canPlaceTorch(pos));
-  constructions->addTorch(pos,
-      ConstructionMap::TorchInfo(getAdjacentWall(pos)->getCardinalDir()));
+  constructions->addTorch(pos, ConstructionMap::TorchInfo(getAdjacentWall(pos)->getCardinalDir()));
 }
 
 bool Collective::canPlaceTorch(Position pos) const {

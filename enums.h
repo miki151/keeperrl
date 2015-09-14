@@ -62,6 +62,7 @@ enum class HighlightType;
 enum class StairLook;
 
 enum class SettlementType;
+enum class VillainType;
 
 enum class ViewId;
 

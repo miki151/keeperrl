@@ -38,6 +38,7 @@ struct TribeSet;
 class StairKey;
 
 enum class SunlightState { DAY, NIGHT};
+enum class VillainType { MAIN, LESSER };
 
 /**
   * Main class that holds all game logic.
@@ -47,6 +48,7 @@ class Model {
   ~Model();
 
   enum class GameType { ADVENTURER, KEEPER, RETIRED_KEEPER, AUTOSAVE };
+
 
   class ExitInfo {
     public:
@@ -78,7 +80,8 @@ class Model {
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
   void killCreature(Creature*, Creature* attacker);
 
-  const vector<Collective*> getMainVillains() const;
+  const vector<Collective*>& getVillains(VillainType) const;
+  const vector<Collective*>& getAllVillains() const;
 
   bool isTurnBased();
 
@@ -161,7 +164,8 @@ class Model {
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
   Collective* SERIAL(playerCollective);
-  vector<Collective*> SERIAL(mainVillains);
+  map<VillainType, vector<Collective*>> SERIAL(villainsByType);
+  vector<Collective*> SERIAL(allVillains);
   View* view;
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);

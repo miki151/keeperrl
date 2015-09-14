@@ -791,7 +791,7 @@ bool PlayerControl::meetsRequirement(Requirement req) const {
     case RequirementId::TECHNOLOGY:
       return getCollective()->hasTech(req.get<TechId>());
     case RequirementId::VILLAGE_CONQUERED:
-      for (const Collective* c : model->getMainVillains())
+      for (const Collective* c : model->getVillains(VillainType::MAIN))
         if (c->isConquered())
           return true;
       return false;
@@ -988,8 +988,8 @@ void PlayerControl::handleRansom(bool pay) {
   removeIndex(ransomAttacks, 0);
 }
 
-vector<Collective*> PlayerControl::getKnownVillains() const {
-  return filter(model->getMainVillains(), [this](Collective* c) {
+vector<Collective*> PlayerControl::getKnownVillains(VillainType type) const {
+  return filter(model->getVillains(type), [this](Collective* c) {
       return getCollective()->isKnownVillain(c);});
 }
 
@@ -998,7 +998,19 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   for (Deity* deity : Deity::getDeities())
     gameInfo.collectiveInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});*/
   gameInfo.villageInfo.villages.clear();
-  for (const Collective* col : getKnownVillains())
+  gameInfo.villageInfo.totalMain = 0;
+  gameInfo.villageInfo.numConquered = 0;
+  for (const Collective* col : model->getVillains(VillainType::MAIN)) {
+    ++gameInfo.villageInfo.totalMain;
+    if (col->isConquered())
+      ++gameInfo.villageInfo.numConquered;
+  }
+  gameInfo.villageInfo.numMainVillains = 0;
+  for (const Collective* col : getKnownVillains(VillainType::MAIN)) {
+    gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
+    ++gameInfo.villageInfo.numMainVillains;
+  }
+  for (const Collective* col : getKnownVillains(VillainType::LESSER))
     gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
   Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
@@ -1348,6 +1360,10 @@ void PlayerControl::scrollToMiddle(const vector<Position>& pos) {
   model->getView()->setScrollPos(Rectangle::boundingBox(visible).middle());
 }
 
+Collective* PlayerControl::getVillain(int num) {
+  return concat(getKnownVillains(VillainType::MAIN), getKnownVillains(VillainType::LESSER))[num];
+}
+
 void PlayerControl::processInput(View* view, UserInput input) {
   if (retired)
     return;
@@ -1367,12 +1383,12 @@ void PlayerControl::processInput(View* view, UserInput input) {
           }
         }
         break;
-    case UserInputId::GO_TO_VILLAGE: {
-        const Collective* col = getKnownVillains()[input.get<int>()];
-        if (col->getLevel() != getLevel())
-          setScrollPos(col->getTerritory().getAll().at(0));
-        else
-          scrollToMiddle(col->getTerritory().getAll());
+    case UserInputId::GO_TO_VILLAGE: 
+        if (Collective* col = getVillain(input.get<int>())) {
+          if (col->getLevel() != getLevel())
+            setScrollPos(col->getTerritory().getAll().at(0));
+          else
+            scrollToMiddle(col->getTerritory().getAll());
         }
         break;
     case UserInputId::CONFIRM_TEAM:
@@ -1451,21 +1467,16 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::LIBRARY:
         handleSelection(input.get<BuildingInfo>().pos, libraryInfo[input.get<BuildingInfo>().building], false);
         break;
-    case UserInputId::VILLAGE_ACTION: {
-        int villageIndex = input.get<VillageActionInfo>().villageIndex;
-        vector<Collective*> villains = getKnownVillains();
-        if (villains.size() <= villageIndex)
-          break;
-        Collective* village = villains[villageIndex];
-        switch (input.get<VillageActionInfo>().action) {
-          case VillageAction::RECRUIT: 
-            handleRecruiting(village);
-            break;
-          case VillageAction::TRADE: 
-            handleTrading(village);
-            break;
-        }
-        }
+    case UserInputId::VILLAGE_ACTION: 
+        if (Collective* village = getVillain(input.get<VillageActionInfo>().villageIndex))
+          switch (input.get<VillageActionInfo>().action) {
+            case VillageAction::RECRUIT: 
+              handleRecruiting(village);
+              break;
+            case VillageAction::TRADE: 
+              handleTrading(village);
+              break;
+          }
     case UserInputId::PAY_RANSOM:
         handleRansom(true);
         break;
@@ -1763,10 +1774,9 @@ void PlayerControl::tick(double time) {
       hints[numHint] = "";
     }
   }
-  for (const Collective* col : model->getMainVillains())
+  for (const Collective* col : model->getVillains(VillainType::MAIN))
     if (col->isConquered() && !notifiedConquered.count(col)) {
-      addImportantLongMessage("You have exterminated the armed forces of " + col->getFullName() + ". "
-          "Make sure to plunder the village and retrieve any valuables.");
+      addImportantLongMessage("You have exterminated the armed forces of " + col->getFullName() + ".");
       notifiedConquered.insert(col);
     }
 }

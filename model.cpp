@@ -50,7 +50,8 @@ template <class Archive>
 void Model::serialize(Archive& ar, const unsigned int version) { 
   ar& SVAR(levels)
     & SVAR(collectives)
-    & SVAR(mainVillains)
+    & SVAR(villainsByType)
+    & SVAR(allVillains)
     & SVAR(timeQueue)
     & SVAR(deadCreatures)
     & SVAR(lastTick)
@@ -269,8 +270,12 @@ optional<Model::ExitInfo> Model::update(double totalTime) {
   } while (1);
 }
 
-const vector<Collective*> Model::getMainVillains() const {
-  return mainVillains;
+const vector<Collective*>& Model::getVillains(VillainType t) const {
+  return villainsByType.at(t);
+}
+
+const vector<Collective*>& Model::getAllVillains() const {
+  return allVillains;
 }
 
 void Model::tick(double time) {
@@ -292,9 +297,9 @@ void Model::tick(double time) {
   if (playerControl) {
     if (!playerControl->isRetired()) {
       bool conquered = true;
-      for (Collective* col : mainVillains)
+      for (Collective* col : getVillains(VillainType::MAIN))
         conquered &= col->isConquered();
-      if (!mainVillains.empty() && conquered && !won) {
+      if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
         playerControl->onConqueredLand();
         won = true;
       }

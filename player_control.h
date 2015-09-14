@@ -131,7 +131,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
   bool isEnemy(const Creature*) const;
-  vector<Collective*> getKnownVillains() const;
+  vector<Collective*> getKnownVillains(VillainType) const;
+  Collective* getVillain(int num);
   void scrollToMiddle(const vector<Position>&);
 
   Creature* getConsumptionTarget(View*, Creature* consumer);
