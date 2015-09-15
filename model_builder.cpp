@@ -674,7 +674,7 @@ static vector<EnemyInfo> getSokobanEntry(RandomGen& random, TribeSet& tribeSet) 
   return {
     noVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::ISLAND_VAULT;
-      c.location = new Location();
+      c.location = new Location(true);
       c.buildingId = BuildingId::DUNGEON;
       c.upStairs = {link};), CollectiveConfig::noImmigrants(), {}),
     noVillain(CONSTRUCT(SettlementInfo,
