@@ -222,8 +222,8 @@ ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Posit
         return 1.0;
       if (pos.canNavigate(creature->getMovementType())) {
         if (const Creature* other = pos.getCreature())
-          if (other->isFriend(creature))
-            return 1.5;
+          if (other->isFriend(creature) && other->hasFreeMovement())
+            return 2.1;
         return 5.0;
       }
       return ShortestPath::infinity;};

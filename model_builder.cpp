@@ -537,7 +537,7 @@ static vector<EnemyInfo> getBanditCave(RandomGen& random, TribeSet& tribeSet) {
           c.minTeamSize = 3;
           c.triggers = LIST({AttackTriggerId::GOLD, 500});
           c.behaviour = VillageBehaviour(VillageBehaviourId::STEAL_GOLD);
-          c.ransom = make_pair(0.9, random.get(800, 1200));)})
+          c.ransom = make_pair(0.5, random.get(200, 400));)})
   };
 }
 

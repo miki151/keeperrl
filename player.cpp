@@ -408,7 +408,8 @@ void Player::giveAction(vector<Item*> items) {
         " to " + creatures[0]->getName().the() + "?"))
     tryToPerform(getCreature()->give(creatures[0], items));
   else if (auto dir = model->getView()->chooseDirection("Give whom?"))
-    tryToPerform(getCreature()->chatTo(*dir));
+    if (Creature* whom = getCreature()->getPosition().plus(*dir).getCreature())
+      tryToPerform(getCreature()->give(whom, items));
 }
 
 void Player::chatAction(optional<Vec2> dir) {

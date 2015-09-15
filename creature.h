@@ -240,6 +240,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction continueMoving();
   CreatureAction stayIn(const Location*);
   bool isSameSector(Position) const;
+  bool canNavigateTo(Position) const;
 
   bool atTarget() const;
   void die(Creature* attacker = nullptr, bool dropInventory = true, bool dropCorpse = true);
@@ -315,7 +316,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void onRemoved(LastingEffect effect, bool msg);
   void onTimedOut(LastingEffect effect, bool msg);
   CreatureAction moveTowards(Position, bool away, bool stepOnTile);
-  bool canNavigateTo(Position) const;
   double getInventoryWeight() const;
   Item* getAmmo() const;
   void updateViewObject();

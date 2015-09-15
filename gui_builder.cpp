@@ -1064,7 +1064,7 @@ void GuiBuilder::drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInf
         gui.button(getButtonCallback(UserInputId::IGNORE_RANSOM)),
         gui.label("No"))));
   int margin = 20;
-  ret.push_back({gui.translucentBackground(
+  ret.push_back({gui.miniWindow(
         gui.margins(lines.buildVerticalList(), margin, margin, margin, margin)),
       Vec2(600 + 2 * margin, lines.getSize() + 2 * margin),
       OverlayInfo::TOP_RIGHT});
@@ -1337,7 +1337,7 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
   }
   if (lines.isEmpty())
     return gui.label("No foreign tribes discovered.");
-  return gui.scrollable(lines.buildVerticalList());
+  return gui.scrollable(lines.buildVerticalList(), &villagesScroll, &scrollbarsHeld);
 }
 
 const double menuLabelVPadding = 0.15;

@@ -152,6 +152,7 @@ class GuiBuilder {
   double buildingsScroll = 0;
   double minionsScroll = 0;
   double lyingItemsScroll = 0;
+  double villagesScroll = 0;
   int itemIndex = -1;
   bool playerOverlayFocused = false;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
