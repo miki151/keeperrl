@@ -23,6 +23,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#include <exception>
 
 #include "view.h"
 #include "options.h"
@@ -114,8 +115,13 @@ void makeDir(const string& path) {
   boost::filesystem::create_directories(path.c_str());
 }
 
+static void fail() {
+  *((int*) 0x1234) = 0; // best way to fail
+}
+
 int main(int argc, char* argv[]) {
   StackPrinter::initialize(argv[0], time(0));
+  std::set_terminate(fail);
   options_description flags("Flags");
   flags.add_options()
     ("help", "Print help")
