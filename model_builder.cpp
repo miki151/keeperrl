@@ -141,14 +141,18 @@ static vector<EnemyInfo> getDarkElvenMines(RandomGen& random, TribeSet& tribeSet
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::MINETOWN;
       c.creatures = CreatureFactory::darkElfVillage(tribeSet.gnomish.get());
-      c.numCreatures = random.get(12, 24);
+      c.numCreatures = random.get(14, 16);
       c.location = getVillageLocation();
       c.tribe = tribeSet.gnomish.get();
       c.buildingId = BuildingId::DUNGEON;
-      c.shopFactory = ItemFactory::armory();
       c.outsideFeatures = SquareFactory::dungeonOutside();
       c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
-      CollectiveConfig::noImmigrants(), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}),
+      CollectiveConfig::withImmigrants(0.002, 15, {
+          CONSTRUCT(ImmigrantInfo,
+            c.id = CreatureId::DARK_ELF_WARRIOR;
+            c.frequency = 3;
+            c.traits = LIST(MinionTrait::FIGHTER);),
+          }).allowRecruiting(12), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}),
     noVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::SMALL_MINETOWN;
       c.creatures = CreatureFactory::darkElfEntrance(tribeSet.gnomish.get());
