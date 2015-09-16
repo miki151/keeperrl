@@ -1297,9 +1297,10 @@ void GuiBuilder::showAttackTriggers(const vector<TriggerInfo>& triggers, Vec2 po
 PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
   auto lines = gui.getListBuilder(legendLineHeight);
   int titleMargin = -11;
+  lines.addElem(gui.leftMargin(titleMargin, gui.label(toString(info.numConquered) + "/" +
+          toString(info.totalMain) + " main villains conquered.")), legendLineHeight + 8);
   if (info.numMainVillains > 0)
-    lines.addElem(gui.leftMargin(titleMargin, gui.label(toString(info.numConquered) + " out of " +
-            toString(info.totalMain) + " villains conquered:")), legendLineHeight + 8);
+    lines.addElem(gui.leftMargin(titleMargin, gui.label("Main villains:")), legendLineHeight + 8);
   for (int i : All(info.villages)) {
     if (i == info.numMainVillains) {
       lines.addElem(gui.empty());

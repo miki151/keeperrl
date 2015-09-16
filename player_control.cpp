@@ -1037,7 +1037,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.enemies.clear();
   for (Position v : getCollective()->getTerritory().getAll())
     if (const Creature* c = v.getCreature())
-      if (c->getTribe() != getTribe() && canSee(c))
+      if (getTribe()->isEnemy(c) && canSee(c))
         info.enemies.push_back(c);
   info.numResource.clear();
   for (auto elem : getCollective()->resourceInfo)

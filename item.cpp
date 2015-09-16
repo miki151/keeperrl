@@ -148,10 +148,10 @@ void Item::onHitSquareMessage(Position pos, int numItems) {
 
 void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
   if (attributes->fragile) {
-    c->you(numItems > 0 ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES, getPluralTheName(numItems));
+    c->you(numItems > 1 ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES, getPluralTheName(numItems));
     discarded = true;
   } else
-    c->you(numItems > 0 ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getPluralTheName(numItems));
+    c->you(numItems > 1 ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getPluralTheName(numItems));
   if (c->takeDamage(attack))
     return;
   if (attributes->effect && getClass() == ItemClass::POTION) {

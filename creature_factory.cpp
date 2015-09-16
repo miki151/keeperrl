@@ -1228,8 +1228,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::KNIGHT;
           c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 28;
-          c.attr[AttrType::DEXTERITY] = 21;
+          c.attr[AttrType::STRENGTH] = 30;
+          c.attr[AttrType::DEXTERITY] = 22;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1245,8 +1245,8 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::AVATAR: 
       return INHERIT(KNIGHT,
           c.viewId = ViewId::AVATAR;
-          c.attr[AttrType::STRENGTH] += 3;
-          c.attr[AttrType::DEXTERITY] += 2;
+          c.attr[AttrType::STRENGTH] += 6;
+          c.attr[AttrType::DEXTERITY] += 4;
           c.courage = 3;
           c.barehandedDamage += 5;
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
@@ -1709,7 +1709,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::LIZARDMAN;
           c.attr[AttrType::SPEED] = 120;
           c.size = CreatureSize::MEDIUM;
-          c.attr[AttrType::STRENGTH] = 15;
+          c.attr[AttrType::STRENGTH] = 16;
           c.attr[AttrType::DEXTERITY] = 18;
           c.barehandedDamage = 7;
           c.barehandedAttack = AttackType::BITE;
@@ -1726,7 +1726,7 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(LIZARDMAN,
           c.viewId = ViewId::LIZARDLORD;
           c.attr[AttrType::SPEED] += 20;
-          c.attr[AttrType::STRENGTH] += 6;
+          c.attr[AttrType::STRENGTH] += 8;
           c.attr[AttrType::DEXTERITY] += 10;
           c.courage = 3;
           c.weight = 60;
@@ -2119,13 +2119,14 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::ELEMENTALIST: 
       return CATTR(
           c.viewId = ViewId::ELEMENTALIST;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr[AttrType::SPEED] = 120;
           c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 14;
-          c.attr[AttrType::DEXTERITY] = 12;
+          c.attr[AttrType::STRENGTH] = 16;
+          c.attr[AttrType::DEXTERITY] = 14;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 70;
+          c.gender = Gender::female;
           c.chatReactionFriendly = "curses all dungeons";
           c.chatReactionHostile = "\"Die!\"";
           c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();

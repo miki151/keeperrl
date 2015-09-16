@@ -649,7 +649,7 @@ vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) {
 }
 
 bool Collective::isConquered() const {
-  return getCreatures({MinionTrait::FIGHTER}).empty() && !hasLeader();
+  return getCreatures({MinionTrait::FIGHTER}, {MinionTrait::SUMMONED}).empty() && !hasLeader();
 }
 
 void Collective::orderConsumption(Creature* consumer, Creature* who) {

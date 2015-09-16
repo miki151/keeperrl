@@ -188,7 +188,7 @@ void VillageControl::tick(double time) {
       double prob = villain.getAttackProbability(this) / updateFreq;
       if (prob > 0 && Random.roll(1 / prob)) {
         vector<Creature*> fighters;
-        fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::NO_AI_ATTACK});
+        fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::SUMMONED});
         fighters = filter(fighters, [this] (const Creature* c) {
             return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });
         Debug() << getCollective()->getShortName() << " fighters: " << int(fighters.size())

@@ -917,7 +917,7 @@ class CampAndSpawn : public NonTransferable {
         return c->wait();
       return c->wait().append([this, &team, initial] (Creature* c) {
           for (Creature* spawn : Effect::summon(c->getPosition(), spawns, 1, 1000)) {
-            self->addCreature(spawn, {MinionTrait::FIGHTER, MinionTrait::NO_AI_ATTACK});
+            self->addCreature(spawn, {MinionTrait::FIGHTER, MinionTrait::SUMMONED});
             if (!team || !self->getTeams().exists(*team)) {
               team = self->getTeams().createPersistent(concat(initial, {spawn}));
               self->getTeams().activate(*team);
