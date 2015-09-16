@@ -79,7 +79,7 @@ static optional<string> curlUpload(const char* path, const char* url) {
 
 optional<string> FileSharing::uploadRetired(const string& path, ProgressMeter& meter) {
   progressFun = [&] (double p) { meter.setProgress(p);};
-  return curlUpload(path.c_str(), (uploadUrl + "/upload.php").c_str());
+  return curlUpload(path.c_str(), (uploadUrl + "/upload2.php").c_str());
 }
 
 void FileSharing::uploadHighscores(const string& path) {
@@ -90,7 +90,7 @@ void FileSharing::uploadHighscores(const string& path) {
 string FileSharing::downloadHighscores() {
   string ret;
   if(CURL* curl = curl_easy_init()) {
-    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/highscores.php").c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/highscores2.php").c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
