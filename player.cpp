@@ -413,19 +413,20 @@ void Player::giveAction(vector<Item*> items) {
 }
 
 void Player::chatAction(optional<Vec2> dir) {
-  vector<const Creature*> creatures;
+  vector<Creature*> creatures;
   for (Position pos : getCreature()->getPosition().neighbors8())
-    if (const Creature* c = pos.getCreature())
+    if (Creature* c = pos.getCreature())
       creatures.push_back(c);
   if (creatures.size() == 1 && !dir) {
-    tryToPerform(getCreature()->chatTo(getCreature()->getPosition().getDir(creatures[0]->getPosition())));
+    tryToPerform(getCreature()->chatTo(creatures[0]));
   } else
   if (creatures.size() > 1 || dir) {
     if (!dir)
       dir = model->getView()->chooseDirection("Which direction?");
     if (!dir)
       return;
-    tryToPerform(getCreature()->chatTo(*dir));
+    if (Creature* c = getCreature()->getPosition().plus(*dir).getCreature())
+      tryToPerform(getCreature()->chatTo(c));
   }
 }
 
@@ -457,16 +458,21 @@ void Player::sleeping() {
 
 static bool displayTravelInfo = true;
 
-void Player::attackAction(Creature::Id id) {
+void Player::creatureAction(Creature::Id id) {
   for (Position pos : getCreature()->getPosition().neighbors8())
     if (Creature* c = pos.getCreature())
       if (c->getUniqueId() == id) {
-        tryToPerform(getCreature()->attack(c));
+        if (getCreature()->isEnemy(c))
+          tryToPerform(getCreature()->attack(c));
+        else if (auto move = getCreature()->move(c->getPosition()))
+          move.perform(getCreature());
+        else
+          tryToPerform(getCreature()->chatTo(c));
         break;
       }
 }
 
-void Player::attackAction(Creature* other) {
+void Player::extendedAttackAction(Creature* other) {
   vector<ListElem> elems;
   vector<AttackLevel> levels = getCreature()->getAttackLevels();
   for (auto level : levels)
@@ -549,11 +555,9 @@ void Player::makeMove() {
       Position newPos = getCreature()->getPosition().withCoord(action.get<Vec2>());
       if (newPos.dist8(getCreature()->getPosition()) == 1) {
         Vec2 dir = getCreature()->getPosition().getDir(newPos);
-        if (const Creature* c = newPos.getCreature()) {
-          if (!getCreature()->isEnemy(c)) {
-            chatAction(dir);
-            break;
-          }
+        if (Creature* c = newPos.getCreature()) {
+          creatureAction(c->getUniqueId());
+          break;
         }
         direction.push_back(dir);
       } else
@@ -583,7 +587,7 @@ void Player::makeMove() {
       break;
     case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
     case UserInputId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(this); break;
-    case UserInputId::CREATURE_BUTTON: attackAction(action.get<Creature::Id>()); break;
+    case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: model->exitAction(); return;
     default: break;
   }
@@ -594,7 +598,7 @@ void Player::makeMove() {
   for (Vec2 dir : direction)
     if (travel) {
       if (Creature* other = getCreature()->getPosition().plus(dir).getCreature())
-        attackAction(other);
+        extendedAttackAction(other);
       else {
         vector<Vec2> squareDirs = getCreature()->getPosition().getTravelDir();
         if (findElement(squareDirs, dir)) {

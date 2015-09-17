@@ -183,6 +183,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction forceMove(Position) const;
   CreatureAction forceMove(Vec2) const;
   CreatureAction swapPosition(Vec2 direction, bool force = false) const;
+  CreatureAction swapPosition(Creature*, bool force = false) const;
   CreatureAction wait() const;
   vector<Item*> getPickUpOptions() const;
   CreatureAction pickUp(const vector<Item*>& item) const;
@@ -210,7 +211,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction flyAway() const;
   CreatureAction disappear() const;
   CreatureAction torture(Creature*) const;
-  CreatureAction chatTo(Vec2 direction) const;
+  CreatureAction chatTo(Creature*) const;
   CreatureAction stealFrom(Vec2 direction, const vector<Item*>&) const;
   CreatureAction give(Creature* whom, vector<Item*> items);
   CreatureAction fire(Vec2 direction) const;

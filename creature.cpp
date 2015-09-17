@@ -336,21 +336,26 @@ bool Creature::hasFreeMovement() const {
 }
 
 CreatureAction Creature::swapPosition(Vec2 direction, bool force) const {
-  const Creature* other = getPosition().plus(direction).getCreature();
-  if (!other)
+  if (Creature* other = getPosition().plus(direction).getCreature())
+    return swapPosition(other, force);
+  else
     return CreatureAction();
+}
+
+CreatureAction Creature::swapPosition(Creature* other, bool force) const {
+  Vec2 direction = position.getDir(other->getPosition());
+  CHECK(direction.length8() == 1);
   if (!other->hasFreeMovement() && !force)
     return CreatureAction(other->getName().the() + " cannot move.");
   if ((swapPositionCooldown && !isPlayer()) || other->attributes->stationary || other->isInvincible() ||
-      direction.length8() != 1 || (other->isPlayer() && !force) || (other->isEnemy(this) && !force) ||
-      !getPosition().plus(direction).canEnterEmpty(this) || !getPosition().canEnterEmpty(other))
+      (other->isPlayer() && !force) || (other->isEnemy(this) && !force) ||
+      !other->getPosition().canEnterEmpty(this) || !getPosition().canEnterEmpty(other))
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     self->swapPositionCooldown = 4;
     if (!force)
-      getPosition().plus(direction).getCreature()->playerMessage("Excuse me!");
+      other->playerMessage("Excuse me!");
     playerMessage("Excuse me!");
-    Creature* other = getPosition().plus(direction).getCreature();
     self->position.swapCreatures(other);
     other->modViewObject().addMovementInfo({-direction, getTime(), other->getTime(),
         ViewObject::MovementInfo::MOVE});
@@ -657,13 +662,13 @@ CreatureAction Creature::hide() const {
   });
 }
 
-CreatureAction Creature::chatTo(Vec2 direction) const {
-  if (const Creature* other = getPosition().plus(direction).getCreature())
-    return CreatureAction(this, [=](Creature* self) {
-        playerMessage("You chat with " + other->getName().the());
-        getPosition().plus(direction).getCreature()->onChat(self);
-        self->spendTime(1);
-      });
+CreatureAction Creature::chatTo(Creature* other) const {
+  CHECK(other);
+  return CreatureAction(this, [=](Creature* self) {
+      playerMessage("You chat with " + other->getName().the());
+      other->onChat(self);
+      self->spendTime(1);
+  });
   return CreatureAction();
 }
 
