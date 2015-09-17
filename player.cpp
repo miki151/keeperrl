@@ -472,6 +472,15 @@ void Player::creatureAction(Creature::Id id) {
       }
 }
 
+void Player::extendedAttackAction(Creature::Id id) {
+  for (Position pos : getCreature()->getPosition().neighbors8())
+    if (Creature* c = pos.getCreature())
+      if (c->getUniqueId() == id) {
+        extendedAttackAction(c);
+        return;
+      }
+}
+
 void Player::extendedAttackAction(Creature* other) {
   vector<ListElem> elems;
   vector<AttackLevel> levels = getCreature()->getAttackLevels();
@@ -588,6 +597,7 @@ void Player::makeMove() {
     case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
     case UserInputId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(this); break;
     case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
+    case UserInputId::ADD_TO_TEAM: extendedAttackAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: model->exitAction(); return;
     default: break;
   }

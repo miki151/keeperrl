@@ -81,6 +81,7 @@ class Player : public Controller, public CreatureView {
   REGISTER_HANDLER(ExplosionEvent, Position);
 
   bool tryToPerform(CreatureAction);
+  void extendedAttackAction(UniqueEntity<Creature>::Id);
   void extendedAttackAction(Creature* other);
   void creatureAction(UniqueEntity<Creature>::Id);
   void pickUpItemAction(int item, bool multi = false);

@@ -139,7 +139,8 @@ void WindowView::initialize() {
 void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
   if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl)) {
     inputQueue.push(UserInput(UserInputId::ADD_TO_TEAM, id));
-    guiBuilder.setCollectiveTab(GuiBuilder::CollectiveTab::MINIONS);
+    if (gameInfo.infoType == GameInfo::InfoType::BAND)
+      guiBuilder.setCollectiveTab(GuiBuilder::CollectiveTab::MINIONS);
   } else
     inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
 }
