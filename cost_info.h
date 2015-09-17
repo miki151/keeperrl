@@ -5,6 +5,8 @@
 #include "util.h"
 
 struct CostInfo {
+  CostInfo() : id(CollectiveResourceId(0)), value(0) {}
+  CostInfo(CollectiveResourceId i, int v) : id(i), value(v) {}
   CollectiveResourceId SERIAL(id);
   int SERIAL(value);
   template<class Archive>
