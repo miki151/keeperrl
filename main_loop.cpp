@@ -152,7 +152,7 @@ void MainLoop::eraseAutosave(Model* model) {
 
 static string getGameDesc(const FileSharing::GameInfo& game) {
   if (game.totalGames > 0)
-    return toString(game.totalGames) + " games played, " + toString(game.wonGames) + " won";
+    return getPlural("daredevil", game.totalGames) + toString(game.totalGames - game.wonGames) + " killed";
   else
     return "";
 }
@@ -162,6 +162,15 @@ void MainLoop::getSaveOptions(const vector<FileSharing::GameInfo>& onlineGames,
   for (auto elem : games) {
     vector<SaveFileInfo> files = getSaveFiles(userPath, getSaveSuffix(elem.first));
     files = ::filter(files, [this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
+    sort(files.begin(), files.end(), [&](const SaveFileInfo& f1, const SaveFileInfo& f2) {
+          int played1 = 0, played2 = 0;
+          for (auto& elem : onlineGames)
+            if (elem.filename == f1.filename)
+              played1 = elem.totalGames;
+            else if (elem.filename == f2.filename)
+              played2 = elem.totalGames;
+          return played1 > played2;
+        });
     append(allFiles, files);
     if (!files.empty()) {
       options.emplace_back(elem.second, ListElem::TITLE);
