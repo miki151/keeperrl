@@ -2127,6 +2127,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = true;
           c.weight = 70;
           c.gender = Gender::female;
+          c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.chatReactionFriendly = "curses all dungeons";
           c.chatReactionHostile = "\"Die!\"";
           c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();

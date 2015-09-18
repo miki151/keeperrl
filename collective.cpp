@@ -94,7 +94,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(constructions)
     & SVAR(minionEquipment)
     & SVAR(surrendering)
-    & SVAR(minionTaskStrings)
     & SVAR(delayedPos)
     & SVAR(knownTiles)
     & SVAR(technologies)
@@ -616,8 +615,6 @@ PTask Collective::getStandardTask(Creature* c) {
     setWarning(*info.warning, !ret);
   if (!ret)
     currentTasks.erase(c->getUniqueId());
-  else
-    minionTaskStrings[c->getUniqueId()] = info.description;
   return ret;
 }
 
@@ -649,14 +646,13 @@ vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) {
 }
 
 bool Collective::isConquered() const {
-  return getCreatures({MinionTrait::FIGHTER}, {MinionTrait::SUMMONED}).empty() && !hasLeader();
+  return getCreatures({MinionTrait::FIGHTER}).empty() && !hasLeader();
 }
 
 void Collective::orderConsumption(Creature* consumer, Creature* who) {
   CHECK(consumer->getMinionTasks().getValue(MinionTask::CONSUME) > 0);
   setMinionTask(who, MinionTask::CONSUME);
   MinionTaskInfo info = getTaskInfo().at(currentTasks[consumer->getUniqueId()].task);
-  minionTaskStrings[consumer->getUniqueId()] = info.description;
   taskMap->freeFromTask(consumer);
   taskMap->addTask(Task::consume(this, who), consumer);
 }
@@ -1359,8 +1355,11 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
   if (contains(creatures, victim)) {
     if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer))
       returnResource({ResourceId::PRISONER_HEAD, 1});
-    if (victim == leader)
+    if (victim == leader) {
       getLevel()->getModel()->onKilledLeader(this, victim);
+      for (Creature* c : getCreatures(MinionTrait::SUMMONED)) // shortcut to get rid of summons when summonner dies
+        c->disappear().perform(c);
+    }
     if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
       decreaseMoraleForKill(killer, victim);
       if (killer)
@@ -2337,10 +2336,6 @@ vector<const Creature*> Collective::getKills() const {
 
 int Collective::getPoints() const {
   return points;
-}
-
-const map<UniqueEntity<Creature>::Id, string>& Collective::getMinionTaskStrings() const {
-  return minionTaskStrings;
 }
 
 void Collective::onEquip(const Creature* c, const Item* it) {

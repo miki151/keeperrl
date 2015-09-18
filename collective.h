@@ -168,8 +168,6 @@ class Collective : public TaskCallback {
   void orderWhipping(Creature*);
   bool canWhip(Creature*) const;
 
-  const map<UniqueEntity<Creature>::Id, string>& getMinionTaskStrings() const;
-
   void addTrap(Position, TrapType);
   void removeTrap(Position);
   void addConstruction(Position, SquareType, const CostInfo&, bool immediately, bool noCredit);
@@ -318,7 +316,6 @@ class Collective : public TaskCallback {
   void autoEquipment(Creature* creature, bool replace);
   Item* getWorstItem(const Creature*, vector<Item*> items) const;
   int getTaskDuration(const Creature*, MinionTask) const;
-  map<UniqueEntity<Creature>::Id, string> SERIAL(minionTaskStrings);
   double getStanding(EpithetId id) const;
   void onEpithetWorship(Creature*, WorshipType, EpithetId);
   void considerHealingLeader();

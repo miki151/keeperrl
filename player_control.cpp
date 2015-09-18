@@ -1018,7 +1018,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   CollectiveInfo& info = gameInfo.collectiveInfo;
   info.buildings = fillButtons(getBuildInfo());
   info.libraryButtons = fillButtons(libraryInfo);
-  //info.tasks = getCollective()->getMinionTaskStrings();
   info.minions.clear();
   info.payoutTimeRemaining = -1;
 /*  int payoutTime = getCollective()->getNextPayoutTime();
