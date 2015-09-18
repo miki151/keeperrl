@@ -116,6 +116,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   void considerNightfallMessage();
   void considerWarning();
+  void considerAdventurerMusic();
 
   friend class KeeperControlOverride;
 

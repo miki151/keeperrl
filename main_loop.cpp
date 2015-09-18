@@ -152,7 +152,7 @@ void MainLoop::eraseAutosave(Model* model) {
 
 static string getGameDesc(const FileSharing::GameInfo& game) {
   if (game.totalGames > 0)
-    return getPlural("daredevil", game.totalGames) + toString(game.totalGames - game.wonGames) + " killed";
+    return getPlural("daredevil", game.totalGames) + " " + toString(game.totalGames - game.wonGames) + " killed";
   else
     return "";
 }
@@ -296,7 +296,6 @@ void MainLoop::playGameChoice() {
       Random = std::move(random);
       model->setOptions(options);
       model->setHighscores(highscores);
-      jukebox->setType(MusicType::PEACEFUL, true);
       playModel(std::move(model));
     }
     view->reset();

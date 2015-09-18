@@ -89,6 +89,14 @@ void initializeRendererTiles(Renderer& r, const string& path) {
   r.loadTilesFromDir(path + "/shroom46", Vec2(46, 46));
 }
 
+static int getMaxVolume() {
+  return 70;
+}
+
+static map<MusicType, int> getMaxVolumes() {
+  return {{MusicType::ADV_BATTLE, 40}, {MusicType::ADV_PEACEFUL, 40}};
+}
+
 vector<pair<MusicType, string>> getMusicTracks(const string& path) {
   if (!tilesPresent)
     return {};
@@ -109,6 +117,15 @@ vector<pair<MusicType, string>> getMusicTracks(const string& path) {
       {MusicType::NIGHT, path + "/night1.ogg"},
       {MusicType::NIGHT, path + "/night2.ogg"},
       {MusicType::NIGHT, path + "/night3.ogg"},
+      {MusicType::ADV_BATTLE, path + "/adv_battle1.ogg"},
+      {MusicType::ADV_BATTLE, path + "/adv_battle2.ogg"},
+      {MusicType::ADV_BATTLE, path + "/adv_battle3.ogg"},
+      {MusicType::ADV_BATTLE, path + "/adv_battle4.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful1.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful2.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful3.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful4.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful5.ogg"},
     };
 }
 void makeDir(const string& path) {
@@ -200,7 +217,6 @@ int main(int argc, char* argv[]) {
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
-  bool genExit = vars.count("gen_world_exit");
   if (vars.count("replay")) {
     string fname = vars["replay"].as<string>();
     Debug() << "Reading from " << fname;
@@ -229,9 +245,9 @@ int main(int argc, char* argv[]) {
     viewInitialized = true;
   }
   Tile::initialize(renderer, tilesPresent);
-  Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"));
+  Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl);
-  Highscores highscores(userPath + "/" + "highscores.txt", fileSharing, &options);
+  Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
   optional<GameTypeChoice> forceGame;
   if (vars.count("force_keeper"))
     forceGame = GameTypeChoice::KEEPER;

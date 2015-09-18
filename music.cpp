@@ -20,14 +20,23 @@
 
 using sf::Music;
 
-Jukebox::Jukebox(Options* options, vector<pair<MusicType, string>> tracks) : numTracks(tracks.size()) {
+Jukebox::Jukebox(Options* options, vector<pair<MusicType, string>> tracks, int maxVol, map<MusicType, int> maxV)
+    : numTracks(tracks.size()), maxVolume(maxVol), maxVolumes(maxV) {
   music.reset(new Music[numTracks]);
   for (int i : All(tracks)) {
     music[i].openFromFile(tracks[i].second);
     byType[tracks[i].first].push_back(i);
   }
   options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { toggle(turnOn); });
-  refreshLoop.emplace([this] { refresh(); sf::sleep(sf::milliseconds(500)); });
+  refreshLoop.emplace([this] { refresh(); sf::sleep(sf::milliseconds(200)); });
+}
+
+int Jukebox::getMaxVolume(int track) {
+  auto type = getCurrentType();
+  if (maxVolumes.count(type))
+    return maxVolumes.at(type);
+  else
+    return maxVolume;
 }
 
 void Jukebox::toggle(bool state) {
@@ -40,6 +49,7 @@ void Jukebox::toggle(bool state) {
   if (on) {
     current = Random.choose(byType[getCurrentType()]);
     currentPlaying = current;
+    music[current].setVolume(getMaxVolume(current));
     music[current].play();
   } else
     music[current].stop();
@@ -63,7 +73,7 @@ MusicType Jukebox::getCurrentType() {
   return MusicType::PEACEFUL;
 }
 
-const int volumeDec = 20;
+const int volumeDec = 10;
 
 void Jukebox::setType(MusicType c, bool now) {
   if (!now)
@@ -86,7 +96,7 @@ void Jukebox::refresh() {
     if (music[currentPlaying].getVolume() == 0) {
       music[currentPlaying].stop();
       currentPlaying = current;
-      music[currentPlaying].setVolume(100);
+      music[currentPlaying].setVolume(getMaxVolume(currentPlaying));
       music[currentPlaying].play();
     } else
       music[currentPlaying].setVolume(max(0.0f, music[currentPlaying].getVolume() - volumeDec));
@@ -99,5 +109,6 @@ void Jukebox::refresh() {
       continueCurrent();
     currentPlaying = current;
     music[current].play();
+    music[current].setVolume(getMaxVolume(current));
   }
 }

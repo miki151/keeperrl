@@ -445,6 +445,8 @@ void Model::retireCollective() {
   playerControl->retire();
   won = false;
   addHero = true;
+  musicType = MusicType::ADV_PEACEFUL;
+  finishCurrentMusic = true;
 }
 
 void Model::landHeroPlayer() {

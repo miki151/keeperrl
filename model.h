@@ -180,7 +180,7 @@ class Model {
   Highscores* highscores;
   string SERIAL(worldName);
   MusicType SERIAL(musicType);
-  bool SERIAL(finishCurrentMusic) = false;
+  bool SERIAL(finishCurrentMusic) = true;
   optional<ExitInfo> exitInfo;
   unique_ptr<CreatureView> SERIAL(spectator);
   optional<Position> SERIAL(danglingPortal);

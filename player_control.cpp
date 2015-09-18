@@ -1704,6 +1704,16 @@ void PlayerControl::considerWarning() {
       }
 }
 
+void PlayerControl::considerAdventurerMusic() {
+  if (retired)
+    if (const Creature* c = getLevel()->getPlayer()) {
+      if (getCollective()->getTerritory().contains(c->getPosition()))
+        model->setCurrentMusic(MusicType::ADV_BATTLE, true);
+      else
+        model->setCurrentMusic(MusicType::ADV_PEACEFUL, false);
+    }
+}
+
 void PlayerControl::tick(double time) {
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
@@ -1711,14 +1721,16 @@ void PlayerControl::tick(double time) {
       return msg.getFreshness() > 0; });
   considerNightfallMessage();
   considerWarning();
+  considerAdventurerMusic();
   if (startImpNum == -1)
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   checkKeeperDanger();
   if (retired && !getKeeper()->isDead()) {
-    if (const Creature* c = getLevel()->getPlayer())
+    if (const Creature* c = getLevel()->getPlayer()) {
       if (Random.roll(30) && !getCollective()->getTerritory().contains(c->getPosition()))
         c->playerMessage("You sense horrible evil in the " + 
             getCardinalName(c->getPosition().getDir(getKeeper()->getPosition()).getBearing().getCardinalDir()));
+    }
   }
   updateVisibleCreatures();
   if (getCollective()->hasMinionDebt() && !retired && !payoutWarning) {
