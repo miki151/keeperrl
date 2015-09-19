@@ -789,6 +789,11 @@ void Semaphore::p() {
   --value;
 }
 
+int Semaphore::get() {
+  std::unique_lock<std::mutex> lock(mut);
+  return value;
+}
+
 void Semaphore::v() {
   std::unique_lock<std::mutex> lock(mut);
   ++value;

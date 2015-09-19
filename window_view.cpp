@@ -808,7 +808,11 @@ void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, Vec2 origin) {
   blockingElems.push_back(std::move(elem));
   blockingElems.back()->setPreferredBounds(origin);
   lock.unlock();
-  sem.p();
+  if (currentThreadId() == renderThreadId)
+    while (!sem.get())
+      refreshView();
+  else
+    sem.p();
   lock.lock();
   blockingElems.clear();
 }

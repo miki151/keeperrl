@@ -216,6 +216,12 @@ class WindowView: public View {
     }
     blockingElems.push_back(std::move(elem));
     blockingElems.back()->setPreferredBounds(origin);
+    if (currentThreadId() == renderThreadId) {
+      while (queue.isEmpty())
+        refreshView();
+      blockingElems.clear();
+      return *queue.popAsync();
+    }
     lock.unlock();
     T ret = queue.pop();
     lock.lock();

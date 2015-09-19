@@ -1420,6 +1420,7 @@ class Semaphore {
 
   void p();
   void v();
+  int get();
 
   private:
   int value;
@@ -1437,6 +1438,11 @@ class SyncQueue {
     }
     OnExit o([=] { q.pop(); });
     return q.front();
+  }
+
+  bool isEmpty() {
+    std::unique_lock<std::mutex> lock(mut);
+    return q.empty();
   }
 
   optional<T> popAsync() {
