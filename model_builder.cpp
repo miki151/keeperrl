@@ -140,10 +140,10 @@ static vector<EnemyInfo> getDarkElvenMines(RandomGen& random, TribeSet& tribeSet
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::MINETOWN;
-      c.creatures = CreatureFactory::darkElfVillage(tribeSet.gnomish.get());
+      c.creatures = CreatureFactory::darkElfVillage(tribeSet.darkElven.get());
       c.numCreatures = random.get(14, 16);
       c.location = getVillageLocation();
-      c.tribe = tribeSet.gnomish.get();
+      c.tribe = tribeSet.darkElven.get();
       c.buildingId = BuildingId::DUNGEON;
       c.outsideFeatures = SquareFactory::dungeonOutside();
       c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
@@ -152,13 +152,13 @@ static vector<EnemyInfo> getDarkElvenMines(RandomGen& random, TribeSet& tribeSet
             c.id = CreatureId::DARK_ELF_WARRIOR;
             c.frequency = 3;
             c.traits = LIST(MinionTrait::FIGHTER);),
-          }).allowRecruiting(12), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}),
+          }).allowRecruiting(4), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}),
     noVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::SMALL_MINETOWN;
-      c.creatures = CreatureFactory::darkElfEntrance(tribeSet.gnomish.get());
+      c.creatures = CreatureFactory::darkElfEntrance(tribeSet.darkElven.get());
       c.numCreatures = random.get(3, 7);
       c.location = new Location(true);
-      c.tribe = tribeSet.gnomish.get();
+      c.tribe = tribeSet.darkElven.get();
       c.buildingId = BuildingId::DUNGEON;
       c.downStairs = {gnomeKey};
       c.outsideFeatures = SquareFactory::dungeonOutside();

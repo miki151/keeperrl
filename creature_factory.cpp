@@ -1794,7 +1794,12 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::DARK_ELF_WARRIOR;
           c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
-          c.name = "dark elf warrior";);
+          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
+          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.minionTasks.setValue(MinionTask::STUDY, 1);
+          c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.recruitmentCost = 140;
+          c.name = EntityName("dark elf", "dark elves"););
     case CreatureId::DARK_ELF_CHILD:
       return INHERIT(ELF_CHILD,
           c.viewId = ViewId::DARK_ELF_CHILD;

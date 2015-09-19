@@ -12,6 +12,7 @@ class Territory {
   const vector<Position>& getAll() const;
   const vector<Position>& getExtended(int min, int max) const;
   const vector<Position>& getExtended(int max) const;
+  const vector<Position>& getStandardExtended() const;
   bool isEmpty() const;
 
   template <class Archive>

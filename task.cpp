@@ -908,8 +908,9 @@ namespace {
 class CampAndSpawn : public NonTransferable {
   public:
   CampAndSpawn(Collective* _target, Collective* _self, CreatureFactory s, int defense, Range attack, int numAtt)
-    : target(_target), self(_self), spawns(s), campPos(Random.permutation(target->getTerritory().getExtended(8, 15))),
-      defenseSize(defense), attackSize(attack), numAttacks(numAtt) {}
+    : target(_target), self(_self), spawns(s),
+      campPos(Random.permutation(target->getTerritory().getStandardExtended())), defenseSize(defense),
+      attackSize(attack), numAttacks(numAtt) {}
 
   MoveInfo makeTeam(Creature* c, optional<TeamId>& team, int minMembers, vector<Creature*> initial, int delay) {
     if (!team || !self->getTeams().exists(*team) || self->getTeams().getMembers(*team).size() < minMembers) {

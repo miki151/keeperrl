@@ -61,6 +61,10 @@ vector<Position> Territory::calculateExtended(int minRadius, int maxRadius) cons
   return extendedQueue;
 }
 
+const vector<Position>& Territory::getStandardExtended() const {
+  return getExtended(2, 10);
+}
+
 const vector<Position>& Territory::getExtended(int min, int max) const {
   if (!extendedCache.count(make_pair(min, max)))
     extendedCache[make_pair(min, max)] = calculateExtended(min, max);
