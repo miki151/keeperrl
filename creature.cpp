@@ -2202,6 +2202,8 @@ CreatureAction Creature::stayIn(const Location* location) {
 }
 
 CreatureAction Creature::moveTowards(Position pos, bool stepOnTile) {
+  if (!pos.isValid())
+    return CreatureAction();
   if (pos.isSameLevel(position))
     return moveTowards(pos, false, stepOnTile);
   else if (auto stairs = position.getStairsTo(pos)) {

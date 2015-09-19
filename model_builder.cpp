@@ -571,7 +571,7 @@ static vector<EnemyInfo> getGreenDragon(RandomGen& random, TribeSet& tribeSet) {
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 22}, AttackTriggerId::STOLEN_ITEMS);
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 20}, AttackTriggerId::STOLEN_ITEMS);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 7);
             c.welcomeMessage = VillageControl::DRAGON_WELCOME;)})
   };
@@ -608,7 +608,7 @@ static vector<EnemyInfo> getRedDragon(RandomGen& random, TribeSet& tribeSet) {
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 30}, AttackTriggerId::STOLEN_ITEMS);
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 25}, AttackTriggerId::STOLEN_ITEMS);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 12);
             c.welcomeMessage = VillageControl::DRAGON_WELCOME;)})
   };
@@ -628,7 +628,7 @@ static vector<EnemyInfo> getCyclops(RandomGen& random, TribeSet& tribeSet) {
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 14});
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 13});
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 4);)})
   };
 }
@@ -701,7 +701,7 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
   for (int i : Range(random.get(1, 3))) {
     append(ret, getKoboldCave(random, tribeSet));
   }
-  for (int i : Range(random.get(2, 5)))
+  for (int i : Range(random.get(1, 3)))
     append(ret, getBanditCave(random, tribeSet));
   append(ret, getSokobanEntry(random, tribeSet));
   append(ret, random.choose({
