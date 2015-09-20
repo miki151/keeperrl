@@ -1427,7 +1427,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           getCollective()->freeTeamMembers(*getCurrentTeam());
           getCollective()->setTask(getTeams().getLeader(*getCurrentTeam()),
               Task::goTo(Position(input.get<Vec2>(), getLevel())), true);
-          view->continueClock();
+ //         view->continueClock();
         }
         break;
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;

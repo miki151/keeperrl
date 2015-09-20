@@ -98,6 +98,7 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
     currentLevel = level;
   }
   for (Position v : memory.getUpdated(level)) {
+    CHECK(v.getCoord().inRectangle(Vec2(mapBuffer.getSize().x, mapBuffer.getSize().y)));
     mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, Tile::getColor(v.getViewObject()));
     if (v.getViewObject().hasModifier(ViewObject::Modifier::ROAD))
       info.roads.insert(v.getCoord());

@@ -135,7 +135,7 @@ class CollectiveConfig {
   vector<ImmigrantInfo> SERIAL(immigrantInfo);
   CollectiveType SERIAL(type);
   optional<int> SERIAL(recruitingMinPopulation);
-  bool SERIAL(leaderAsFighter);
+  bool SERIAL(leaderAsFighter) = false;
   int SERIAL(spawnGhosts) = 0;
   double SERIAL(ghostProb) = 0;
   optional<GuardianInfo> SERIAL(guardianInfo) = 0;
