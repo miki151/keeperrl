@@ -138,7 +138,7 @@ class CollectiveConfig {
   bool SERIAL(leaderAsFighter) = false;
   int SERIAL(spawnGhosts) = 0;
   double SERIAL(ghostProb) = 0;
-  optional<GuardianInfo> SERIAL(guardianInfo) = 0;
+  optional<GuardianInfo> SERIAL(guardianInfo);
 };
 
 
