@@ -134,7 +134,7 @@ class GuiBuilder {
   vector<PGuiElem> drawMinionActions(const PlayerInfo&, MinionMenuCallback);
   vector<PGuiElem> joinLists(vector<PGuiElem>&&, vector<PGuiElem>&&);
   function<void()> getButtonCallback(UserInput);
-  void drawMiniMenu(vector<PGuiElem>, bool& exit, Vec2 menuPos, int width);
+  void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width);
   void showAttackTriggers(const vector<TriggerInfo>&, Vec2 pos);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
   PGuiElem getVillageActionButton(int villageIndex, VillageAction);

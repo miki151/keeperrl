@@ -51,6 +51,7 @@ void GuiBuilder::reset() {
 }
 
 const int legendLineHeight = 30;
+const int titleLineHeight = legendLineHeight + 8;
 
 int GuiBuilder::getStandardLineHeight() const {
   return legendLineHeight;
@@ -670,16 +671,15 @@ static string getActionText(ItemAction a) {
   }
 }
 
-void GuiBuilder::drawMiniMenu(vector<PGuiElem> elems, bool& exit, Vec2 menuPos, int width) {
-  if (elems.empty())
+void GuiBuilder::drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width) {
+  if (elems.isEmpty())
     return;
-  int numElems = elems.size();
+  int contentHeight = elems.getSize();
   int margin = 15;
   PGuiElem menu = gui.stack(
       gui.reverseButton([&exit] { exit = true; }, {{Keyboard::Escape}}),
-      gui.miniWindow(gui.leftMargin(margin, gui.topMargin(margin,
-            gui.verticalList(std::move(elems), legendLineHeight)))));
-  menu->setBounds(Rectangle(menuPos, menuPos + Vec2(width + 2 * margin, numElems * legendLineHeight + 2 * margin)));
+      gui.miniWindow(gui.leftMargin(margin, gui.topMargin(margin, elems.buildVerticalList()))));
+  menu->setBounds(Rectangle(menuPos, menuPos + Vec2(width + 2 * margin, contentHeight + 2 * margin)));
   PGuiElem bg = gui.darken();
   bg->setBounds(renderer.getSize());
   while (1) {
@@ -1291,20 +1291,26 @@ void GuiBuilder::showAttackTriggers(const vector<TriggerInfo>& triggers, Vec2 po
 #endif
           ,getTriggerColor(trigger.value)));
   bool exit = false;
-  drawMiniMenu(std::move(elems), exit, pos, 300);
+  if (!elems.empty()) {
+    auto list = gui.getListBuilder(legendLineHeight);
+    list.addElem(gui.label("Potential attack triggers:"), titleLineHeight);
+    for (auto& elem : elems)
+      list.addElem(std::move(elem));
+    drawMiniMenu(std::move(list), exit, pos, 300);
+  }
 }
 
 PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
   auto lines = gui.getListBuilder(legendLineHeight);
   int titleMargin = -11;
   lines.addElem(gui.leftMargin(titleMargin, gui.label(toString(info.numConquered) + "/" +
-          toString(info.totalMain) + " main villains conquered.")), legendLineHeight + 8);
+          toString(info.totalMain) + " main villains conquered.")), titleLineHeight);
   if (info.numMainVillains > 0)
-    lines.addElem(gui.leftMargin(titleMargin, gui.label("Main villains:")), legendLineHeight + 8);
+    lines.addElem(gui.leftMargin(titleMargin, gui.label("Main villains:")), titleLineHeight);
   for (int i : All(info.villages)) {
     if (i == info.numMainVillains) {
       lines.addElem(gui.empty());
-      lines.addElem(gui.leftMargin(titleMargin, gui.label("Lesser villains:")), legendLineHeight + 8);
+      lines.addElem(gui.leftMargin(titleMargin, gui.label("Lesser villains:")), titleLineHeight);
     }
     auto& elem = info.villages[i];
     PGuiElem header = gui.label(capitalFirst(elem.name) + (elem.tribeName.empty() ?
@@ -1585,7 +1591,7 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion, MinionMenuCall
           gui.label(curTask), gui.label("[change]", colors[ColorId::LIGHT_BLUE])),
         renderer.getTextLength(curTask) + 20),
       gui.button([=] (Rectangle bounds) {
-          vector<PGuiElem> tasks;
+          auto tasks = gui.getListBuilder(legendLineHeight);
           bool exit = false;
           TaskActionInfo retAction;
           for (auto task : minion.minionTasks) {
@@ -1595,7 +1601,7 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion, MinionMenuCall
                   retAction.switchTo = task.task;
                   exit = true;
                 };
-            tasks.push_back(GuiFactory::ListBuilder(gui)
+            tasks.addElem(GuiFactory::ListBuilder(gui)
                 .addElemAuto(gui.stack(
                     gui.button(buttonFun),
                     gui.label(getTaskText(task.task), colors[getTaskColor(task)])))

@@ -264,7 +264,7 @@ void Renderer::initialize() {
   if (fullscreen)
     display.create(vMode, "KeeperRL", sf::Style::Fullscreen);
   else
-    display.create(sf::VideoMode::getDesktopMode(), "KeeperRL");
+    display.create(sf::VideoMode(1280, 720), "KeeperRL");
   updateResolution();
   display.setVerticalSyncEnabled(true);
 }
