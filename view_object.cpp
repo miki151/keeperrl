@@ -172,8 +172,6 @@ vector<string> ViewObject::getLegend() const {
   if (getAttribute(Attribute::ATTACK) > -1)
     ret.push_back("Attack " + getAttributeString(Attribute::ATTACK) +
           " defense " + getAttributeString(Attribute::DEFENSE));
-  if (getAttribute(Attribute::BLEEDING) > 0) 
-    ret.push_back("Wounded");
   if (hasModifier(Modifier::PLANNED))
     ret.push_back("Planned");
   if (hasModifier(Modifier::SLEEPING))
@@ -327,8 +325,8 @@ vector<ViewId> shuffledItems;
 
 void ViewObject::setHallu(bool b) {
   if (!hallu && b) {
-    shuffledCreatures = randomPermutation(creatureIds);
-    shuffledItems = randomPermutation(itemIds);
+    shuffledCreatures = Random.permutation(creatureIds);
+    shuffledItems = Random.permutation(itemIds);
   }
   hallu = b;
 }

@@ -21,6 +21,7 @@
 #include "controller.h"
 #include "user_input.h"
 #include "creature_view.h"
+#include "position.h"
 
 class View;
 class Model;
@@ -33,12 +34,12 @@ class Player : public Controller, public CreatureView {
   public:
   virtual ~Player();
 
-  static ControllerFactory getFactory(Model*, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory);
+  static ControllerFactory getFactory(Model*, MapMemory* levelMemory);
 
   SERIALIZATION_DECL(Player);
 
   protected:
-  Player(Creature*, Model*, bool greeting, map<UniqueEntity<Level>::Id, MapMemory>* levelMemory);
+  Player(Creature*, Model*, bool greeting, MapMemory* levelMemory);
 
   virtual void moveAction(Vec2 direction);
 
@@ -46,11 +47,12 @@ class Player : public Controller, public CreatureView {
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual const MapMemory& getMemory() const override;
   virtual void refreshGameInfo(GameInfo&) const override;
-  virtual optional<Vec2> getPosition(bool force) const override;
+  virtual Vec2 getPosition() const override;
   virtual optional<MovementInfo> getMovementInfo() const override;
   virtual const Level* getLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getTime() const override;
+  virtual bool isPlayerView() const override;
 
   // from Controller
   virtual void onKilled(const Creature* attacker) override;
@@ -63,23 +65,25 @@ class Player : public Controller, public CreatureView {
   virtual void privateMessage(const PlayerMessage& message) override;
   virtual void learnLocation(const Location*) override;
   virtual void onBump(Creature*) override;
-
+  virtual void onDisplaced() override;
 
   // overridden by subclasses
   virtual bool unpossess();
   virtual void onFellAsleep();
-  virtual const vector<Creature*> getTeam() const;
+  virtual vector<Creature*> getTeam() const;
 
-  map<UniqueEntity<Level>::Id, MapMemory>* SERIAL(levelMemory);
+  MapMemory* SERIAL(levelMemory);
   Model* SERIAL(model);
   void showHistory();
 
   private:
   REGISTER_HANDLER(ThrowEvent, const Level*, const Creature*, const Item*, const vector<Vec2>& trajectory);
-  REGISTER_HANDLER(ExplosionEvent, const Level*, Vec2);
+  REGISTER_HANDLER(ExplosionEvent, Position);
 
-  void tryToPerform(CreatureAction);
-  void attackAction(Creature* other);
+  bool tryToPerform(CreatureAction);
+  void extendedAttackAction(UniqueEntity<Creature>::Id);
+  void extendedAttackAction(Creature* other);
+  void creatureAction(UniqueEntity<Creature>::Id);
   void pickUpItemAction(int item, bool multi = false);
   void equipmentAction();
   void applyItem(vector<Item*> item);
@@ -94,6 +98,7 @@ class Player : public Controller, public CreatureView {
   void targetAction();
   void payDebtAction();
   void chatAction(optional<Vec2> dir = none);
+  void giveAction(vector<Item*>);
   void spellAction(SpellId);
   void consumeAction();
   void fireAction(Vec2 dir);
@@ -104,7 +109,7 @@ class Player : public Controller, public CreatureView {
   string getPluralName(Item* item, int num);
   bool SERIAL(travelling) = false;
   Vec2 SERIAL(travelDir);
-  optional<Vec2> SERIAL(target);
+  optional<Position> SERIAL(target);
   const Location* SERIAL(lastLocation) = nullptr;
   vector<const Creature*> SERIAL(specialCreatures);
   bool SERIAL(displayGreeting);

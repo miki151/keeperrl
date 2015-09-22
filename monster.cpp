@@ -62,7 +62,7 @@ const MapMemory& Monster::getMemory() const {
 void Monster::onBump(Creature* c) {
   if (c->isEnemy(getCreature()))
     c->attack(getCreature(), none, false).perform(c);
-  else if (auto action = c->move(getCreature()->getPosition() - c->getPosition()))
+  else if (auto action = c->move(getCreature()->getPosition()))
     action.perform(c);
 }
 
@@ -89,7 +89,8 @@ void Monster::you(MsgType type, const string& param) {
     case MsgType::ARE: msg = getCreature()->getName().the() + " is " + param; break;
     case MsgType::YOUR: msg = getCreature()->getName().the() + "'s " + param; break;
     case MsgType::FEEL: msg = getCreature()->getName().the() + " looks " + param; break;
-    case MsgType::FALL_ASLEEP: msg = (getCreature()->getName().the() + " falls asleep") + (param.size() > 0 ? " on the " + param : ".");
+    case MsgType::FALL_ASLEEP: msg = (getCreature()->getName().the() + " falls asleep") +
+                               (param.size() > 0 ? " on the " + param : ".");
                                msgNoSee = "You hear snoring."; break;
     case MsgType::WAKE_UP: msg = getCreature()->getName().the() + " wakes up."; break;
     case MsgType::DIE: msg = getCreature()->getName().the() + " is killed!"; break;
@@ -98,7 +99,6 @@ void Monster::you(MsgType type, const string& param) {
     case MsgType::BLEEDING_STOPS: msg = getCreature()->getName().the() + "'s bleeding stops."; break;
     case MsgType::DIE_OF: msg = getCreature()->getName().the() +
                           " dies" + (param.empty() ? string(".") : " of " + param); break;
-    case MsgType::FALL_APART: msg = getCreature()->getName().the() + " falls apart."; break;
     case MsgType::MISS_ATTACK: msg = getCreature()->getName().the() + addName(" misses", param); break;
     case MsgType::MISS_THROWN_ITEM: msg = param + " misses " + getCreature()->getName().the(); break;
     case MsgType::MISS_THROWN_ITEM_PLURAL: msg = param + " miss " + getCreature()->getName().the(); break;
@@ -108,7 +108,7 @@ void Monster::you(MsgType type, const string& param) {
     case MsgType::ITEM_CRASHES_PLURAL: msg = param + " crash on " + getCreature()->getName().the(); break;
     case MsgType::GET_HIT_NODAMAGE: msg = "The " + param + " is harmless."; break;
     case MsgType::COLLAPSE: msg = getCreature()->getName().the() + " collapses."; break;
-    case MsgType::FALL: msg = getCreature()->getName().the() + " falls on the " + param; break;
+    case MsgType::FALL: msg = getCreature()->getName().the() + " falls " + param; break;
     case MsgType::TRIGGER_TRAP: msg = getCreature()->getName().the() + " triggers something."; break;
     case MsgType::DISARM_TRAP: msg = getCreature()->getName().the() + " disarms a trap."; break;
     case MsgType::PANIC: msg = getCreature()->getName().the() + " panics."; break;
@@ -132,7 +132,11 @@ void Monster::you(MsgType type, const string& param) {
     case MsgType::COPULATE: msg = getCreature()->getName().the() + " copulates " + param; break;
     case MsgType::CONSUME: msg = getCreature()->getName().the() + " absorbs " + param; break;
     case MsgType::GROW: msg = getCreature()->getName().the() + " grows " + param; break;
-    case MsgType::BREAK_FREE: msg = getCreature()->getName().the() + " breaks free from " + param; break;
+    case MsgType::BREAK_FREE:
+        if (param.empty())
+          msg = getCreature()->getName().the() + " breaks free";
+        else
+          msg = getCreature()->getName().the() + " breaks free from " + param;
     case MsgType::PRAY: msg = getCreature()->getName().the() + " prays to " + param; break;
     case MsgType::SACRIFICE: msg = getCreature()->getName().the() + " makes a sacrifice to " + param; break;
     case MsgType::HIT: msg = getCreature()->getName().the() + addName(" hits", param); break;

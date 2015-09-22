@@ -5,8 +5,7 @@
 RICH_ENUM(SquareApplyType,
   DRINK,
   USE_CHEST,
-  ASCEND,
-  DESCEND,
+  USE_STAIRS,
   PRAY,
   SLEEP,
   TRAIN,
@@ -16,7 +15,9 @@ RICH_ENUM(SquareApplyType,
   CROPS,
   STATUE,
   WELL,
-  THRONE
+  THRONE,
+  WHIPPING,
+  NOTICE_BOARD
 );
 
 

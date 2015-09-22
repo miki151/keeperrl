@@ -58,12 +58,17 @@ enum class ItemId {
 
   TRAP_ITEM,
   BOULDER_TRAP_ITEM,
+  AUTOMATON_ITEM,
 };
 
-struct TrapInfo : public NamedTupleBase<TrapType, EffectType> {
-  NAMED_TUPLE_STUFF(TrapInfo);
-  NAME_ELEM(0, trapType);
-  NAME_ELEM(1, effectType);
+struct TrapInfo {
+  TrapType SERIAL(trapType);
+  EffectType SERIAL(effectType);
+  bool SERIAL(alwaysVisible);
+  template<class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(trapType) & SVAR(effectType) & SVAR(alwaysVisible);
+  }
 };
 
 class ItemType : public EnumVariant<ItemId, TYPES(EffectType, TrapInfo, LastingEffect, TechId),

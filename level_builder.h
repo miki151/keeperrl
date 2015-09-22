@@ -11,10 +11,37 @@ class Model;
 class LevelMaker;
 class Square;
 
+RICH_ENUM(SquareAttrib,
+  NO_DIG,
+  GLACIER,
+  MOUNTAIN,
+  HILL,
+  LOWLAND,
+  CONNECT_ROAD, 
+  CONNECT_CORRIDOR,
+  CONNECTOR,
+  LAKE,
+  RIVER,
+  ROAD_CUT_THRU,
+  NO_ROAD,
+  ROOM,
+  COLLECTIVE_START,
+  COLLECTIVE_STAIRS,
+  EMPTY_ROOM,
+  BUILDINGS_CENTER,
+  CASTLE_CORNER,
+  FOG,
+  FORREST,
+  LOCATION,
+  SOKOBAN_ENTRY,
+  SOKOBAN_PRIZE
+);
+
 class LevelBuilder {
   public:
   /** Constructs a builder with given size and name. */
-  LevelBuilder(ProgressMeter&, int width, int height, const string& name, bool covered = true);
+  LevelBuilder(ProgressMeter*, RandomGen&, int width, int height, const string& name, bool covered = true);
+  LevelBuilder(RandomGen&, int width, int height, const string& name, bool covered = true);
   
   /** Move constructor.*/
   LevelBuilder(LevelBuilder&&) = default;
@@ -36,7 +63,7 @@ class LevelBuilder {
 
   /** Builds the level. The level will keep reference to the model.
       \paramname{surface} tells if this level is on the Earth surface.*/
-  PLevel build(Model*, LevelMaker*);
+  PLevel build(Model*, LevelMaker*, int levelId);
 
   //@{
   /** Puts a square on given position. Sets optional attributes of the square. The attributes remain if the square is changed.*/
@@ -73,12 +100,16 @@ class LevelBuilder {
   void addCollective(CollectiveBuilder*);
 
   /** Sets the cover of the square. The value will remain if square is changed.*/
-  void setCoverInfo(Vec2, Level::CoverInfo);
+  void setCoverInfo(Vec2, CoverInfo);
+
+  void setNoDiagonalPassing();
  
   enum Rot { CW0, CW1, CW2, CW3};
 
   void pushMap(Rectangle bounds, Rot);
   void popMap();
+
+  RandomGen& getRandom();
   
   private:
   bool isInSunlight(Vec2);
@@ -88,15 +119,17 @@ class LevelBuilder {
   Table<double> dark;
   vector<Location*> locations;
   vector<CollectiveBuilder*> collectives;
-  Table<Level::CoverInfo> coverInfo;
+  Table<CoverInfo> coverInfo;
   Table<EnumSet<SquareAttrib>> attrib;
   Table<SquareType> type;
-  vector<PCreature> creatures;
+  vector<pair<PCreature, Vec2>> creatures;
   Table<vector<PItem>> items;
   string entryMessage;
   string name;
   vector<Vec2::LinearMap> mapStack;
-  ProgressMeter& progressMeter;
+  ProgressMeter* progressMeter = nullptr;
+  RandomGen& random;
+  bool noDiagonalPassing = false;
 };
 
 #endif

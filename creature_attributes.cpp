@@ -73,7 +73,8 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(lastingEffects)
     & SVAR(minionTasks)
     & SVAR(groupName)
-    & SVAR(attrIncrease);
+    & SVAR(attrIncrease)
+    & SVAR(recruitmentCost);
 }
 
 SERIALIZABLE(CreatureAttributes);
@@ -82,7 +83,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(CreatureAttributes);
 
 BodyPart CreatureAttributes::getBodyPart(AttackLevel attack, bool flying, bool collapsed) const {
   if (flying)
-    return chooseRandom({BodyPart::TORSO, BodyPart::HEAD, BodyPart::LEG, BodyPart::WING, BodyPart::ARM},
+    return Random.choose({BodyPart::TORSO, BodyPart::HEAD, BodyPart::LEG, BodyPart::WING, BodyPart::ARM},
         {1, 1, 1, 2, 1});
   switch (attack) {
     case AttackLevel::HIGH: 
@@ -91,12 +92,12 @@ BodyPart CreatureAttributes::getBodyPart(AttackLevel attack, bool flying, bool c
        if (getSize() == CreatureSize::SMALL || getSize() == CreatureSize::MEDIUM || collapsed)
          return BodyPart::HEAD;
        else
-         return chooseRandom({BodyPart::TORSO, armOrWing()}, {1, 1});
+         return Random.choose({BodyPart::TORSO, armOrWing()}, {1, 1});
     case AttackLevel::LOW:
        if (getSize() == CreatureSize::SMALL || collapsed)
-         return chooseRandom({BodyPart::TORSO, armOrWing(), BodyPart::HEAD, BodyPart::LEG}, {1, 1, 1, 1});
+         return Random.choose({BodyPart::TORSO, armOrWing(), BodyPart::HEAD, BodyPart::LEG}, {1, 1, 1, 1});
        if (getSize() == CreatureSize::MEDIUM)
-         return chooseRandom({BodyPart::TORSO, armOrWing(), BodyPart::LEG}, {1, 1, 3});
+         return Random.choose({BodyPart::TORSO, armOrWing(), BodyPart::LEG}, {1, 1, 3});
        else
          return BodyPart::LEG;
   }
@@ -112,7 +113,7 @@ BodyPart CreatureAttributes::armOrWing() const {
     return BodyPart::WING;
   if (numGood(BodyPart::WING) == 0)
     return BodyPart::ARM;
-  return chooseRandom({ BodyPart::WING, BodyPart::ARM }, {1, 1});
+  return Random.choose({ BodyPart::WING, BodyPart::ARM }, {1, 1});
 }
 
 double CreatureAttributes::getRawAttr(AttrType type) const {
@@ -124,7 +125,7 @@ int CreatureAttributes::numBodyParts(BodyPart part) const {
 }
 
 int CreatureAttributes::numLost(BodyPart part) const {
-  return lostBodyParts[part];
+  return CHECK_RANGE(lostBodyParts[part], -10000000, 10000000, name->bare());
 }
 
 int CreatureAttributes::lostOrInjuredBodyParts() const {
@@ -137,7 +138,7 @@ int CreatureAttributes::lostOrInjuredBodyParts() const {
 }
 
 int CreatureAttributes::numInjured(BodyPart part) const {
-  return injuredBodyParts[part];
+  return CHECK_RANGE(injuredBodyParts[part], -10000000, 10000000, name->bare());
 }
 
 int CreatureAttributes::numGood(BodyPart part) const {
@@ -175,7 +176,7 @@ double CreatureAttributes::getExpLevel() const {
 void CreatureAttributes::increaseExpLevel(double increase) {
   double l = getExpLevel();
   for (int i : Range(100000)) {
-    exerciseAttr(chooseRandom<AttrType>(), 0.05);
+    exerciseAttr(Random.choose<AttrType>(), 0.05);
     if (getExpLevel() >= l + increase)
       break;
   }
@@ -217,7 +218,7 @@ vector<AttackLevel> CreatureAttributes::getAttackLevels() const {
 }
 
 AttackLevel CreatureAttributes::getRandomAttackLevel() const {
-  return chooseRandom(getAttackLevels());
+  return Random.choose(getAttackLevels());
 }
 
 bool CreatureAttributes::isHumanoid() const {

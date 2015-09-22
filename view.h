@@ -20,6 +20,8 @@
 #include "debug.h"
 #include "view_object.h"
 #include "user_input.h"
+#include "minion_task.h"
+#include "cost_info.h"
 
 class CreatureView;
 class Level;
@@ -27,6 +29,7 @@ class Jukebox;
 class ProgressMeter;
 class PlayerInfo;
 struct ItemInfo;
+struct CreatureInfo;
 
 enum class SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING, AUTOSAVING };
 
@@ -69,40 +72,44 @@ enum class GameTypeChoice {
   ADVENTURER,
   LOAD,
   BACK,
+  QUICK_LEVEL
 };
 
-struct MinionAction {
-  struct MinionItemAction {
-    vector<UniqueEntity<Item>::Id> SERIAL(ids);
-    optional<EquipmentSlot> SERIAL(slot);
-    ItemAction SERIAL(action);
-    template <class Archive> 
+enum class MinionActionId {
+  TASK,
+  EQUIPMENT,
+  CONTROL,
+  RENAME,
+  BANISH,
+  WHIP,
+  EXECUTE,
+  TORTURE
+};
+
+struct TaskActionInfo {
+  optional<MinionTask> SERIAL(switchTo);
+  EnumSet<MinionTask> SERIAL(lock);
+  template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version) {
+      ar & SVAR(switchTo) & SVAR(lock);
+    }
+};
+
+struct EquipmentActionInfo {
+  vector<UniqueEntity<Item>::Id> SERIAL(ids);
+  optional<EquipmentSlot> SERIAL(slot);
+  ItemAction SERIAL(action);
+  template <class Archive> 
     void serialize(Archive& ar, const unsigned int version) {
       ar & SVAR(ids) & SVAR(slot) & SVAR(action);
     }
-  };
-  struct ControlAction {
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-    }
-  };
-  struct RenameAction {
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-      ar & SVAR(newName);
-    }
-    string SERIAL(newName);
-  };
-  struct BanishAction {
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-    }
-  };
-  variant<MinionTask, MinionItemAction, ControlAction, RenameAction, BanishAction> SERIAL(action);
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(action);
-  }
+};
+
+class MinionAction : public EnumVariant<MinionActionId, TYPES(TaskActionInfo, EquipmentActionInfo, string),
+    ASSIGN(TaskActionInfo, MinionActionId::TASK),
+    ASSIGN(EquipmentActionInfo, MinionActionId::EQUIPMENT),
+    ASSIGN(string, MinionActionId::RENAME)> {
+  using EnumVariant::EnumVariant;
 };
 
 enum class MenuType {
@@ -111,6 +118,18 @@ enum class MenuType {
   MAIN_NO_TILES,
   GAME_CHOICE,
   YES_NO
+};
+
+struct HighscoreList {
+  string name;
+  enum SortBy { SCORE, TURNS } sortBy;
+  struct Elem {
+    string text;
+    int score;
+    int turns;
+    bool highlight;
+  };
+  vector<Elem> scores;
 };
 
 class View {
@@ -144,6 +163,8 @@ class View {
 
   /** Draw a blocking view of the whole level.*/
   virtual void drawLevelMap(const CreatureView*) = 0;
+
+  virtual void setScrollPos(Vec2) = 0;
 
   /** Scrolls back to the center of the view on next refresh.*/
   virtual void resetCenter() = 0;
@@ -184,8 +205,16 @@ class View {
   virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>&,
       UniqueEntity<Creature>::Id& current) = 0;
 
+  virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
+      pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos) = 0;
+
+  virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
+      const vector<ItemInfo>&, double* scrollPos) = 0;
+
   virtual optional<int> chooseItem(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id& current,
       const vector<ItemInfo>& items, double* scrollpos) = 0;
+
+  virtual void presentHighscores(const vector<HighscoreList>&) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;

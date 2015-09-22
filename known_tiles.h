@@ -16,19 +16,20 @@
 #define _KNOWN_TILES_H
 
 #include "util.h"
+#include "position_map.h"
 
 class KnownTiles {
   public:
-  KnownTiles(Rectangle bounds);
-  void addTile(Vec2);
-  bool isKnown(Vec2) const;
-  const set<Vec2>& getBorderTiles() const;
+  KnownTiles(const vector<Level*>&);
+  void addTile(Position);
+  bool isKnown(Position) const;
+  const set<Position>& getBorderTiles() const;
 
   SERIALIZATION_DECL(KnownTiles);
 
   private:
-  Table<bool> SERIAL(known);
-  set<Vec2> SERIAL(border);
+  PositionMap<bool> SERIAL(known);
+  set<Position> SERIAL(border);
 };
 
 #endif

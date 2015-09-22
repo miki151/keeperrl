@@ -19,6 +19,8 @@
 #include "util.h"
 #include "debug.h"
 #include "renderable.h"
+#include "stair_key.h"
+#include "position.h"
 
 class Level;
 class Creature;
@@ -63,13 +65,10 @@ class Square : public Renderable {
   /** Links this square as point of entry from another level.
     * \param direction direction where the creature is coming from
     * \param key id specific to a dungeon branch*/
-  void setLandingLink(StairDirection direction, StairKey key);
-
-  /** Checks if this square is a point of entry from another level. See setLandingLink().*/
-  bool isLandingSquare(StairDirection, StairKey);
+  void setLandingLink(StairKey);
 
   /** Returns the entry point details. Returns none if square is not entry point. See setLandingLink().*/
-  optional<pair<StairDirection, StairKey>> getLandingLink() const;
+  optional<StairKey> getLandingLink() const;
 
   /** Returns radius of emitted light (0 if none).*/
   virtual double getLightEmission() const;
@@ -88,6 +87,7 @@ class Square : public Renderable {
 
   /** Returns the square's position on the level.*/
   Vec2 getPosition() const;
+  Position getPosition2() const;
 
   //@{
   /** Checks if this creature can enter the square at the moment. Takes account other creatures on the square.*/
@@ -154,9 +154,6 @@ class Square : public Renderable {
   /** Removes the creature from the square.*/
   void removeCreature();
 
-  /** Removes a killed creature from the square.*/
-  void killCreature(Creature* attacker);
-
   //@{
   /** Returns the creature from the square.*/
   Creature* getCreature();
@@ -167,7 +164,7 @@ class Square : public Renderable {
   void addTrigger(PTrigger);
 
   /** Returns all triggers.*/
-  const vector<Trigger*> getTriggers() const;
+  vector<Trigger*> getTriggers() const;
 
   /** Removes the trigger from the square.*/
   PTrigger removeTrigger(Trigger*);
@@ -237,6 +234,7 @@ class Square : public Renderable {
 
   Level* getLevel();
   const Level* getLevel() const;
+  void clearItemIndex(ItemIndex);
 
   SERIALIZATION_DECL(Square);
 
@@ -244,7 +242,6 @@ class Square : public Renderable {
   void onEnter(Creature*);
   virtual void onEnterSpecial(Creature*) {}
   virtual void tickSpecial(double time) {}
-  virtual void onKilled(Creature* victim, Creature* attacker);
   HeapAllocated<Inventory> SERIAL(inventory);
   string SERIAL(name);
   void addTraitForTribe(const Tribe*, MovementTrait);
@@ -267,7 +264,7 @@ class Square : public Renderable {
   int SERIAL(strength);
   double SERIAL(height);
   vector<Vec2> SERIAL(travelDir);
-  optional<pair<StairDirection, StairKey>> SERIAL(landingLink);
+  optional<StairKey> SERIAL(landingLink);
   HeapAllocated<Fire> SERIAL(fire);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
   map<SquareId, int> SERIAL(constructions);

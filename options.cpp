@@ -26,12 +26,15 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
   {OptionId::FULLSCREEN_RESOLUTION, 0},
+  {OptionId::ZOOM_UI, 0},
   {OptionId::ONLINE, 1},
   {OptionId::AUTOSAVE, 1},
+  {OptionId::WASD_SCROLLING, 0},
   {OptionId::FAST_IMMIGRATION, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
   {OptionId::KEEPER_NAME, string("")},
+  {OptionId::KEEPER_SEED, string("")},
   {OptionId::ADVENTURER_NAME, string("")},
 };
 
@@ -43,12 +46,15 @@ const map<OptionId, string> names {
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::FULLSCREEN, "Fullscreen"},
   {OptionId::FULLSCREEN_RESOLUTION, "Fullscreen resolution"},
+  {OptionId::ZOOM_UI, "Zoom in UI"},
   {OptionId::ONLINE, "Online exchange of dungeons and highscores"},
   {OptionId::AUTOSAVE, "Autosave"},
+  {OptionId::WASD_SCROLLING, "WASD scrolling"},
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::KEEPER_NAME, "Keeper's name"},
+  {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::ADVENTURER_NAME, "Adventurer's name"},
 };
 
@@ -60,13 +66,18 @@ const map<OptionId, string> hints {
   {OptionId::SHOW_MAP, ""},
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
   {OptionId::FULLSCREEN_RESOLUTION, "Choose resolution for fullscreen mode."},
+  {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
+      "Use you have a large resolution screen and things appear too small."},
   {OptionId::ONLINE, "Upload your highscores and retired dungeons to keeperrl.com."},
   {OptionId::AUTOSAVE, "Autosave the game every " + toString(MainLoop::getAutosaveFreq()) + " turns. "
     "The save file will be used to recover in case of a crash."},
+  {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
+    "using alt + letter."},
   {OptionId::FAST_IMMIGRATION, ""},
   {OptionId::STARTING_RESOURCE, ""},
   {OptionId::START_WITH_NIGHT, ""},
   {OptionId::KEEPER_NAME, ""},
+  {OptionId::KEEPER_SEED, ""},
   {OptionId::ADVENTURER_NAME, ""},
 };
 
@@ -77,8 +88,10 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::MUSIC,
       OptionId::FULLSCREEN,
       OptionId::FULLSCREEN_RESOLUTION,
+      OptionId::ZOOM_UI,
       OptionId::ONLINE,
       OptionId::AUTOSAVE,
+      OptionId::WASD_SCROLLING,
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
@@ -92,6 +105,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::FAST_IMMIGRATION,
 #endif
       OptionId::KEEPER_NAME,
+      OptionId::KEEPER_SEED,
   }},
   {OptionSet::ADVENTURER, {
       OptionId::ADVENTURER_NAME,
@@ -122,6 +136,7 @@ static EnumMap<OptionId, optional<Options::Value>> parseOverrides(const string& 
 
 Options::Options(const string& path, const string& _overrides)
     : filename(path), overrides(parseOverrides(_overrides)) {
+  readValues();
 }
 
 Options::Value Options::getValue(OptionId id) {
@@ -143,11 +158,11 @@ int Options::getChoiceValue(OptionId id) {
 }
 
 void Options::setValue(OptionId id, Value value) {
-  auto values = readValues();
-  values[id] = value;
+  readValues();
+  (*values)[id] = value;
   if (triggers.count(id))
     triggers.at(id)(boost::get<int>(value));
-  writeValues(values);
+  writeValues();
 }
 
 void Options::setDefaultString(OptionId id, const string& s) {
@@ -168,14 +183,17 @@ string Options::getValueString(OptionId id, Options::Value value) {
     case OptionId::ASCII:
     case OptionId::FULLSCREEN:
     case OptionId::AUTOSAVE:
+    case OptionId::WASD_SCROLLING:
     case OptionId::MUSIC: return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
     case OptionId::FAST_IMMIGRATION:
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
+    case OptionId::ZOOM_UI:
     case OptionId::START_WITH_NIGHT: return getYesNo(value);
     case OptionId::ADVENTURER_NAME:
+    case OptionId::KEEPER_SEED:
     case OptionId::KEEPER_NAME: {
         string val = boost::get<string>(value);
         if (val.empty())
@@ -190,6 +208,7 @@ string Options::getValueString(OptionId id, Options::Value value) {
 optional<Options::Value> Options::readValue(OptionId id, const string& input) {
   switch (id) {
     case OptionId::ADVENTURER_NAME:
+    case OptionId::KEEPER_SEED:
     case OptionId::KEEPER_NAME: return Options::Value(input);
     default:
         if (auto ret = fromStringSafe<int>(input))
@@ -211,6 +230,11 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
     case OptionId::ADVENTURER_NAME:
         if (auto val = view->getText("Enter " + names.at(id), boost::get<string>(value), 23,
               "Leave blank to use a random name."))
+          setValue(id, *val);
+        break;
+    case OptionId::KEEPER_SEED:
+        if (auto val = view->getText("Enter " + names.at(id), boost::get<string>(value), 23,
+              "Leave blank to use a random seed."))
           setValue(id, *val);
         break;
     case OptionId::FULLSCREEN_RESOLUTION:
@@ -262,33 +286,35 @@ void Options::handle(View* view, OptionSet set, int lastIndex) {
   handle(view, set, *index);
 }
 
-EnumMap<OptionId, Options::Value> Options::readValues() {
-  EnumMap<OptionId, Value> ret = defaults;
-  ifstream in(filename);
-  while (1) {
-    char buf[100];
-    in.getline(buf, 100);
-    if (!in)
-      break;
-    vector<string> p = split(string(buf), {','});
-    if (p.empty())
-      continue;
-    if (p.size() == 1)
-      p.push_back("");
-    OptionId optionId;
-    if (auto id = EnumInfo<OptionId>::fromStringSafe(p[0]))
-      optionId = *id;
-    else
-      continue;
-    if (auto val = readValue(optionId, p[1]))
-      ret[optionId] = *val;
+const EnumMap<OptionId, Options::Value>& Options::readValues() {
+  if (!values) {
+    values = defaults;
+    ifstream in(filename);
+    while (1) {
+      char buf[100];
+      in.getline(buf, 100);
+      if (!in)
+        break;
+      vector<string> p = split(string(buf), {','});
+      if (p.empty())
+        continue;
+      if (p.size() == 1)
+        p.push_back("");
+      OptionId optionId;
+      if (auto id = EnumInfo<OptionId>::fromStringSafe(p[0]))
+        optionId = *id;
+      else
+        continue;
+      if (auto val = readValue(optionId, p[1]))
+        (*values)[optionId] = *val;
+    }
   }
-  return ret;
+  return *values;
 }
 
-void Options::writeValues(const EnumMap<OptionId, Value>& values) {
+void Options::writeValues() {
   ofstream out(filename);
   for (OptionId id : ENUM_ALL(OptionId))
-    out << EnumInfo<OptionId>::getString(id) << "," << values[id] << std::endl;
+    out << EnumInfo<OptionId>::getString(id) << "," << (*values)[id] << std::endl;
 }
 

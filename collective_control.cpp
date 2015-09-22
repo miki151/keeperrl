@@ -13,29 +13,16 @@ SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveControl);
 CollectiveControl::CollectiveControl(Collective* c) : collective(c) {
 }
 
-Collective* CollectiveControl::getCollective() {
+Collective* CollectiveControl::getCollective() const {
   return NOTNULL(collective);
 }
 
 void CollectiveControl::update(Creature*) {
 }
 
-const Collective* CollectiveControl::getCollective() const {
-  return NOTNULL(collective);
-}
-
-vector<Creature*>& CollectiveControl::getCreatures() {
-  return getCollective()->getCreatures();
-}
-
 const vector<Creature*>& CollectiveControl::getCreatures() const {
   return getCollective()->getCreatures();
 }
-
-MoveInfo CollectiveControl::getMove(Creature*) {
-  return NoMove;
-}
-
 
 void CollectiveControl::onMemberKilled(const Creature* victim, const Creature* killer) {
 }

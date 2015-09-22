@@ -20,7 +20,6 @@
 #include "level.h"
 #include "statistics.h"
 #include "effect.h"
-#include "square.h"
 #include "view_object.h"
 #include "model.h"
 #include "player_message.h"
@@ -100,22 +99,22 @@ vector<pair<string, vector<Item*>>> Item::stackItems(vector<Item*> items, functi
 
 void Item::onEquip(Creature* c) {
   onEquipSpecial(c);
-  if (attributes->lastingEffect)
-    c->addPermanentEffect(*attributes->lastingEffect);
+  if (attributes->equipedEffect)
+    c->addPermanentEffect(*attributes->equipedEffect);
 }
 
 void Item::onUnequip(Creature* c) {
   onUnequipSpecial(c);
-  if (attributes->lastingEffect)
-    c->removePermanentEffect(*attributes->lastingEffect);
+  if (attributes->equipedEffect)
+    c->removePermanentEffect(*attributes->equipedEffect);
 }
 
-void Item::setOnFire(double amount, const Level* level, Vec2 position) {
+void Item::setOnFire(double amount, Position position) {
   bool burning = fire->isBurning();
   string noBurningName = getTheName();
   fire->set(amount);
   if (!burning && fire->isBurning()) {
-    level->globalMessage(position, noBurningName + " catches fire");
+    position.globalMessage(noBurningName + " catches fire");
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
   }
 }
@@ -124,37 +123,35 @@ double Item::getFireSize() const {
   return fire->getSize();
 }
 
-void Item::tick(double time, Level* level, Vec2 position) {
+void Item::tick(double time, Position position) {
   if (fire->isBurning()) {
     Debug() << getName() << " burning " << fire->getSize();
-    level->getSafeSquare(position)->setOnFire(fire->getSize());
+    position.setOnFire(fire->getSize());
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
-    fire->tick(level, position);
+    fire->tick();
     if (!fire->isBurning()) {
-      level->globalMessage(position, getTheName() + " burns out");
+      position.globalMessage(getTheName() + " burns out");
       discarded = true;
     }
   }
-  specialTick(time, level, position);
+  specialTick(time, position);
 }
 
-void Item::onHitSquareMessage(Vec2 position, Square* s, int numItems) {
+void Item::onHitSquareMessage(Position pos, int numItems) {
   if (attributes->fragile) {
-    s->getLevel()->globalMessage(position,
-        getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + s->getName(), "You hear a crash");
+    pos.globalMessage(
+        getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + pos.getName(), "You hear a crash");
     discarded = true;
   } else
-    s->getLevel()->globalMessage(position, getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + s->getName());
+    pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
 }
 
 void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
   if (attributes->fragile) {
-    c->you(attributes->plural ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES,
-        getPluralTheName(numItems));
+    c->you(numItems > 1 ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES, getPluralTheName(numItems));
     discarded = true;
   } else
-    c->you(attributes->plural ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM,
-        getPluralTheName(numItems));
+    c->you(numItems > 1 ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getPluralTheName(numItems));
   if (c->takeDamage(attack))
     return;
   if (attributes->effect && getClass() == ItemClass::POTION) {
@@ -201,9 +198,9 @@ optional<CollectiveResourceId> Item::getResourceId() const {
   return attributes->resourceId;
 }
 
-void Item::apply(Creature* c, Level* l) {
+void Item::apply(Creature* c) {
   if (attributes->itemClass == ItemClass::SCROLL)
-    l->getModel()->getStatistics().add(StatId::SCROLL_READ);
+    c->getModel()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->effect)
     Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL);
   if (attributes->uses > -1 && --attributes->uses == 0) {
@@ -214,6 +211,8 @@ void Item::apply(Creature* c, Level* l) {
 }
 
 string Item::getApplyMsgThirdPerson(bool blind) const {
+  if (attributes->applyMsgThirdPerson)
+    return *attributes->applyMsgThirdPerson;
   switch (getClass()) {
     case ItemClass::SCROLL: return "reads " + getAName(false, blind);
     case ItemClass::POTION: return "drinks " + getAName(false, blind);
@@ -226,6 +225,8 @@ string Item::getApplyMsgThirdPerson(bool blind) const {
 }
 
 string Item::getApplyMsgFirstPerson(bool blind) const {
+  if (attributes->applyMsgFirstPerson)
+    return *attributes->applyMsgFirstPerson;
   switch (getClass()) {
     case ItemClass::SCROLL: return "read " + getAName(false, blind);
     case ItemClass::POTION: return "drink " + getAName(false, blind);
@@ -352,15 +353,15 @@ string Item::getModifiers(bool shorten) const {
   return artStr + attrString;
 }
 
-string Item::getShortName(bool shortMod, bool blind) const {
+string Item::getShortName(bool blind, bool noSuffix) const {
   if (blind && attributes->blindName)
     return getBlindName(false);
-  string name = getModifiers(shortMod);
+  string name = getModifiers(true);
   if (attributes->shortName)
     name = *attributes->shortName + " " + name;
-  if (getShopkeeper())
+  if (getShopkeeper() && !noSuffix)
     name = name + " (unpaid)";
-  if (fire->isBurning())
+  if (fire->isBurning() && !noSuffix)
     name.append(" (burning)");
   return name;
 }
@@ -402,6 +403,8 @@ void Item::addModifier(ModifierType type, int value) {
 }
 
 int Item::getModifier(ModifierType type) const {
+  CHECK(abs(attributes->modifiers[type]) < 10000) << EnumInfo<ModifierType>::getString(type) << " "
+      << attributes->modifiers[type] << " " << getName();
   return attributes->modifiers[type];
 }
 

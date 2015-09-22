@@ -29,6 +29,7 @@ class Renderer;
 class CreatureView;
 class Clock;
 class Creature;
+class Options;
 
 class MapGui : public GuiElem {
   public:
@@ -38,14 +39,14 @@ class MapGui : public GuiElem {
     function<void(UniqueEntity<Creature>::Id)> creatureClickFun;
     function<void()> refreshFun;
   };
-  MapGui(Callbacks, Clock*);
+  MapGui(Callbacks, Clock*, Options*);
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
   virtual bool onRightClick(Vec2) override;
   virtual bool onMouseMove(Vec2) override;
   virtual void onMouseGone() override;
-  virtual void onMouseRelease() override;
+  virtual void onMouseRelease(Vec2) override;
   virtual bool onKeyPressed2(Event::KeyEvent) override;
 
   void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, bool showMorale);
@@ -56,6 +57,7 @@ class MapGui : public GuiElem {
   void setCenter(double x, double y);
   void setCenter(Vec2 pos);
   void clearCenter();
+  void resetScrolling();
   bool isCentered() const;
   Vec2 getScreenPos() const;
   optional<Vec2> projectOnMap(Vec2 screenCoord);
@@ -63,8 +65,9 @@ class MapGui : public GuiElem {
   private:
   void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, int currentTimeReal,
       const EnumMap<HighlightType, double>&);
-  void drawCreatureHighlights(Renderer&, const ViewObject&, Rectangle tile);
+  void drawCreatureHighlights(Renderer&, const ViewObject&, Rectangle tile, int currentTimeReal);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
+  enum class HintPosition;
   void drawHint(Renderer& renderer, Color color, const vector<string>& text);
   void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);
   void renderExtraBorders(Renderer&, int currentTimeReal);
@@ -82,6 +85,8 @@ class MapGui : public GuiElem {
 
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, int curTimeReal);
   Vec2 projectOnScreen(Vec2 wpos, int currentTimeReal);
+  bool considerCreatureClick(Vec2 mousePos);
+  void considerMapLeftClick(Vec2 mousePos);
   MapLayout* layout;
   Table<optional<ViewIndex>> objects;
   bool spriteMode;
@@ -89,12 +94,14 @@ class MapGui : public GuiElem {
   Callbacks callbacks;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
+  optional<Vec2> lastMapLeftClick;
   vector<string> hint;
   struct AnimationInfo {
     PAnimation animation;
     Vec2 position;
   };
   vector<AnimationInfo> animations;
+  Options* options;
   DirtyTable<bool> fogOfWar;
   DirtyTable<vector<ViewId>> extraBorderPos;
   bool isFoW(Vec2 pos) const;
@@ -133,6 +140,9 @@ class MapGui : public GuiElem {
   bool showMorale;
   DirtyTable<bool> enemyPositions;
   void updateEnemyPositions(const vector<Vec2>&);
+  bool lockedView = true;
+  int lastRightClick = -10000;
+  bool displayScrollHint = false;
 };
 
 #endif

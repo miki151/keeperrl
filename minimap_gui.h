@@ -56,7 +56,7 @@ class MinimapGui : public GuiElem {
 
   sf::Texture mapBufferTex;
   sf::Image mapBuffer;
-  bool refreshBuffer = true;
+  const Level* currentLevel = nullptr;
 };
 
 #endif

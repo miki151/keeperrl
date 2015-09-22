@@ -35,17 +35,18 @@
 #include "modifier_type.h"
 #include "movement_set.h"
 #include "movement_type.h"
+#include "stair_key.h"
 
 class Staircase : public Square {
   public:
-  Staircase(const ViewObject& obj, const string& name, StairDirection dir, StairKey key) : Square(obj,
+  Staircase(const ViewObject& obj, const string& name, StairKey key) : Square(obj,
       CONSTRUCT(Square::Params,
         c.name = name;
         c.vision = VisionId::NORMAL;
         c.canHide = true;
         c.strength = 10000;
         c.movementSet = MovementSet().addTrait(MovementTrait::WALK);)) {
-    setLandingLink(dir, key);
+    setLandingLink(key);
   }
 
   virtual void onEnterSpecial(Creature* c) override {
@@ -53,16 +54,11 @@ class Staircase : public Square {
   }
 
   virtual optional<SquareApplyType> getApplyType() const override {
-    switch (getLandingLink()->first) {
-      case StairDirection::DOWN: return SquareApplyType::DESCEND;
-      case StairDirection::UP: return SquareApplyType::ASCEND;
-    }
-    return none;
+    return SquareApplyType::USE_STAIRS;
   }
 
   virtual void onApply(Creature* c) override {
-    auto link = getLandingLink();
-    getLevel()->changeLevel(link->first, link->second, c);
+    getLevel()->changeLevel(*getLandingLink(), c);
   }
 
   template <class Archive> 
@@ -90,7 +86,7 @@ class Magma : public Square {
     realMovement.setForced(false);
     if (!canEnterEmpty(realMovement)) {
       c->you(MsgType::BURN, getName());
-      c->die(nullptr, false);
+      c->die("burned to death", false);
     }
   }
 
@@ -124,7 +120,7 @@ class Water : public Square {
     realMovement.setForced(false);
     if (!canEnterEmpty(realMovement)) {
       c->you(MsgType::DROWN, getName());
-      c->die(nullptr, false);
+      c->die("drowned", false);
     }
   }
 
@@ -155,8 +151,8 @@ class Water : public Square {
 
 class Chest : public Square {
   public:
-  Chest(const ViewObject& object, const ViewObject& opened, const string& name, CreatureId c,
-      int numC, const string& _msgItem, const string& _msgMonster, const string& _msgGold, ItemFactory _itemFactory)
+  Chest(const ViewObject& object, const ViewObject& opened, const string& name, const ChestInfo& info,
+      const string& _msgItem, const string& _msgMonster, const string& _msgGold, ItemFactory _itemFactory)
     : Square(object,
           CONSTRUCT(Square::Params,
             c.name = name;
@@ -165,7 +161,7 @@ class Chest : public Square {
             c.canDestroy = true;
             c.strength = 30;
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
-            c.flamability = 0.5;)), creature(c), numCreatures(numC),
+            c.flamability = 0.5;)), chestInfo(info),
     msgItem(_msgItem), msgMonster(_msgMonster), msgGold(_msgGold), itemFactory(_itemFactory), openedObject(opened) {}
 
   virtual void onEnterSpecial(Creature* c) override {
@@ -177,7 +173,7 @@ class Chest : public Square {
       s->dropItems(itemFactory.random());
   }
 
-  virtual bool canApply(const Creature* c) const {
+  virtual bool canApply(const Creature* c) const override {
     return c->isHumanoid();
   }
 
@@ -193,30 +189,32 @@ class Chest : public Square {
     c->playerMessage("You open the " + getName());
     opened = true;
     setViewObject(openedObject);
-    if (!Random.roll(5)) {
-      c->playerMessage(msgItem);
-      vector<PItem> items = itemFactory.random();
-      GlobalEvents.addItemsAppearedEvent(getLevel(), getPosition(), extractRefs(items));
-      c->takeItems(std::move(items), nullptr);
-    } else {
-      c->playerMessage(msgMonster);
-      int numR = numCreatures;
-      for (Vec2 v : getPosition().neighbors8(true)) {
-        PCreature rat = CreatureFactory::fromId(creature, getLevel()->getModel()->getPestTribe());
-        if (getLevel()->getSafeSquare(v)->canEnter(rat.get())) {
-          getLevel()->addCreature(v, std::move(rat));
+    if (chestInfo.creature && chestInfo.creatureChance > 0 && Random.roll(1 / chestInfo.creatureChance)) {
+      int numR = chestInfo.numCreatures;
+      CreatureFactory factory(*chestInfo.creature);
+      for (Position v : getPosition2().neighbors8(Random)) {
+        PCreature rat = factory.random();
+        if (v.canEnter(rat.get())) {
+          v.addCreature(std::move(rat));
           if (--numR == 0)
             break;
         }
       }
+      if (numR < chestInfo.numCreatures) {
+        c->playerMessage(msgMonster);
+        return;
+      }
     }
+    c->playerMessage(msgItem);
+    vector<PItem> items = itemFactory.random();
+    GlobalEvents.addItemsAppearedEvent(getPosition2(), extractRefs(items));
+    getPosition2().dropItems(std::move(items));
   }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(Square)
-      & SVAR(creature)
-      & SVAR(numCreatures) 
+      & SVAR(chestInfo)
       & SVAR(msgItem)
       & SVAR(msgMonster)
       & SVAR(msgGold)
@@ -228,8 +226,7 @@ class Chest : public Square {
   SERIALIZATION_CONSTRUCTOR(Chest);
 
   private:
-  CreatureId SERIAL(creature);
-  int SERIAL(numCreatures);
+  ChestInfo SERIAL(chestInfo);
   string SERIAL(msgItem);
   string SERIAL(msgMonster);
   string SERIAL(msgGold);
@@ -260,7 +257,7 @@ class Fountain : public Square {
   virtual void onApply(Creature* c) override {
     c->playerMessage("You drink from the fountain.");
     PItem potion = getOnlyElement(ItemFactory::potions().random(seed));
-    potion->apply(c, getLevel());
+    potion->apply(c);
   }
 
   template <class Archive> 
@@ -299,9 +296,11 @@ class Tree : public Square {
       s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
       getLevel()->getModel()->addWoodCount(numWood);
       int numCut = getLevel()->getModel()->getWoodCount();
-      if (numCut > 1500 && Random.roll(max(50, (3000 - numCut) / 10)))
-        Effect::summon(getLevel(), CreatureFactory::singleType(
-              getLevel()->getModel()->getKillEveryoneTribe(), creature), getPosition(), 1, 100000);
+      if (numCut > 1500 && Random.roll(max(150, (3000 - numCut) / 5))) {
+        CreatureFactory f = CreatureFactory::singleType(
+            getLevel()->getModel()->getKillEveryoneTribe(), creature);
+        Effect::summon(getPosition2(), f, 1, 100000);
+      }
     }
   }
 
@@ -377,8 +376,9 @@ class TribeDoor : public Door {
   TribeDoor(const ViewObject& object, const Tribe* t, int destStrength, Square::Params params)
     : Door(object, CONSTRUCT(Square::Params,
           c = params;
-          c.movementSet->addTraitForTribe(t, MovementTrait::WALK)
-              .removeTrait(MovementTrait::WALK); )),
+          if (t)
+            c.movementSet->addTraitForTribe(t, MovementTrait::WALK)
+                .removeTrait(MovementTrait::WALK); )),
       tribe(t), destructionStrength(destStrength) {
   }
 
@@ -398,6 +398,7 @@ class TribeDoor : public Door {
   }
 
   virtual void lock() {
+    CHECK(tribe);
     locked = !locked;
     if (locked) {
       modViewObject().setModifier(ViewObject::Modifier::LOCKED);
@@ -559,13 +560,13 @@ class Altar : public Square {
     return SquareApplyType::PRAY;
   }
 
-  virtual void onKilled(Creature* victim, Creature* killer) override {
+ /* virtual void onKilled(Creature* victim, Creature* killer) override {
     if (killer) {
       recentKiller = killer;
       recentVictim = victim;
       killTime = killer->getTime();
     }
-  }
+  }*/
 
   virtual void onPrayer(Creature* c) = 0;
   virtual void onSacrifice(Creature* c) = 0;
@@ -743,12 +744,15 @@ class Hatchery : public Square {
   virtual void tickSpecial(double time) override {
     if (getCreature() || !Random.roll(10) || getPoisonGasAmount() > 0)
       return;
-    for (Square* s : getLevel()->getSquares(getPosition().neighbors8()))
-      if (s->getCreature() && s->getCreature()->isMinionFood())
+    for (Position v : getPosition2().neighbors8())
+      if (v.getCreature() && v.getCreature()->isMinionFood())
         return;
-    if (Random.roll(5))
-      getLevel()->addCreature(getPosition(), creature.random(
-            MonsterAIFactory::stayInPigsty(getPosition(), SquareApplyType::PIGSTY)));
+    if (Random.roll(5)) {
+      PCreature pig = creature.random(
+          MonsterAIFactory::stayInPigsty(getPosition2(), SquareApplyType::PIGSTY));
+      if (canEnter(pig.get()))
+        getLevel()->addCreature(getPosition(), std::move(pig));
+    }
   }
 
   virtual optional<SquareApplyType> getApplyType() const override {
@@ -786,6 +790,26 @@ class Laboratory : public Furniture {
   SERIALIZATION_CONSTRUCTOR(Laboratory);
 };
 
+class NoticeBoard : public Furniture {
+  public:
+  NoticeBoard(ViewObject object, const string& t)
+      : Furniture(object, "notice board", 1, SquareApplyType::NOTICE_BOARD), text(t) {}
+
+  virtual void onApply(Creature* c) override {
+    c->playerMessage(PlayerMessage::announcement("The notice board reads:", text));
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Furniture) & SVAR(text);
+  }
+  
+  SERIALIZATION_CONSTRUCTOR(NoticeBoard);
+
+  private:
+  string SERIAL(text);
+};
+
 class Crops : public Square {
   public:
   using Square::Square;
@@ -807,6 +831,43 @@ class Crops : public Square {
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(Square);
   }
+};
+
+class SokobanHole : public Square {
+  public:
+  SokobanHole(const ViewObject& obj, const string& name, StairKey key) : Square(obj,
+      CONSTRUCT(Square::Params,
+        c.name = name;
+        c.vision = VisionId::NORMAL;
+        c.canHide = false;
+        c.strength = 10000;
+        c.movementSet = MovementSet()
+            .addForcibleTrait(MovementTrait::WALK)
+            .addTrait(MovementTrait::FLY);)),
+    stairKey(key) {
+  }
+
+  virtual void onEnterSpecial(Creature* c) override {
+    if (c->isStationary()) {
+      getPosition2().globalMessage(c->getName().the() + " fills the " + getName());
+      c->die(nullptr, false, false);
+      getLevel()->replaceSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
+    } else 
+    if (!c->isAffected(LastingEffect::FLYING)) {
+      c->you(MsgType::FALL, "into the " + getName() + "!");
+      getLevel()->changeLevel(stairKey, c);
+    }
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(Square) & SVAR(stairKey);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(SokobanHole);
+
+  private:
+  StairKey SERIAL(stairKey);
 };
 
 PSquare SquareFactory::getAltar(Deity* deity) {
@@ -839,6 +900,8 @@ void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, ConstructionDropItems);
   REGISTER_TYPE(ar, Hatchery);
   REGISTER_TYPE(ar, Crops);
+  REGISTER_TYPE(ar, NoticeBoard);
+  REGISTER_TYPE(ar, SokobanHole);
 }
 
 REGISTER_TYPES(SquareFactory::registerTypes);
@@ -847,6 +910,20 @@ PSquare SquareFactory::get(SquareType s) {
   return PSquare(getPtr(s));
 }
 
+static Square* getStairs(const StairInfo& info) {
+  ViewId id1 = ViewId(0), id2 = ViewId(0);
+  switch (info.look) {
+    case StairLook::NORMAL: id1 = ViewId::UP_STAIRCASE; id2 = ViewId::DOWN_STAIRCASE; break;
+    case StairLook::HELL: id1 = ViewId::UP_STAIRCASE_HELL; id2 = ViewId::DOWN_STAIRCASE_HELL; break;
+    case StairLook::CELLAR: id1 = ViewId::UP_STAIRCASE_CELLAR; id2 = ViewId::DOWN_STAIRCASE_CELLAR; break;
+    case StairLook::PYRAMID: id1 = ViewId::UP_STAIRCASE_PYR; id2 = ViewId::DOWN_STAIRCASE_PYR; break;
+    case StairLook::DUNGEON_ENTRANCE: id1 = id2 = ViewId::DUNGEON_ENTRANCE; break;
+    case StairLook::DUNGEON_ENTRANCE_MUD: id1 = id2 = ViewId::DUNGEON_ENTRANCE_MUD; break;
+  }
+  return new Staircase(ViewObject(info.direction == info.UP ? id1 : id2,
+        ViewLayer::FLOOR, "Stairs"), "stairs", info.key);
+}
+ 
 Square* SquareFactory::getPtr(SquareType s) {
   switch (s.getId()) {
     case SquareId::FLOOR:
@@ -873,6 +950,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::TORTURE_TABLE] = 10;
               c.constructions[SquareId::BEAST_LAIR] = 10;
               c.constructions[SquareId::IMPALED_HEAD] = 5;
+              c.constructions[SquareId::WHIPPING_POST] = 5;
               c.constructions[SquareId::BARRICADE] = 20;
               c.constructions[SquareId::TORCH] = 5;
               c.constructions[SquareId::ALTAR] = 35;
@@ -880,6 +958,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::CREATURE_ALTAR] = 35;
               c.constructions[SquareId::MINION_STATUE] = 35;
               c.constructions[SquareId::THRONE] = 100;
+              c.constructions[SquareId::MOUNTAIN2] = 15;
               c.constructions[SquareId::RITUAL_ROOM] = 10;));
     case SquareId::BLACK_FLOOR:
         return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND, "Floor"),
@@ -902,7 +981,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::EYEBALL] = 5;
               c.constructions[SquareId::IMPALED_HEAD] = 5;));
     case SquareId::CROPS:
-        return new Crops(ViewObject(chooseRandom({ViewId::CROPS, ViewId::CROPS2}),
+        return new Crops(ViewObject(Random.choose({ViewId::CROPS, ViewId::CROPS2}),
                 ViewLayer::FLOOR_BACKGROUND, "Wheat"),
             CONSTRUCT(Square::Params,
               c.name = "wheat";
@@ -1071,7 +1150,7 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Furniture(ViewObject(ViewId::WELL, ViewLayer::FLOOR, "Well"), "well", 0);
     case SquareId::STATUE:
         return new Furniture(
-            ViewObject(chooseRandom({ViewId::STATUE1, ViewId::STATUE2}), ViewLayer::FLOOR, "Statue"), "statue", 0);
+            ViewObject(Random.choose({ViewId::STATUE1, ViewId::STATUE2}), ViewLayer::FLOOR, "Statue"), "statue", 0);
     case SquareId::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture room"), 
             "torture room", 0.3, SquareApplyType::TORTURE);
@@ -1091,6 +1170,15 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::THRONE:
         return new Furniture(ViewObject(ViewId::THRONE, ViewLayer::FLOOR, "Throne"), 
             "throne", 0, SquareApplyType::THRONE);
+    case SquareId::WHIPPING_POST:
+        return new Furniture(ViewObject(ViewId::WHIPPING_POST, ViewLayer::FLOOR, "Whipping post"), 
+            "whipping post", 0, SquareApplyType::WHIPPING);
+    case SquareId::NOTICE_BOARD:
+        return new NoticeBoard(ViewObject(ViewId::NOTICE_BOARD, ViewLayer::FLOOR, "Notice board"), 
+            s.get<string>());
+    case SquareId::SOKOBAN_HOLE:
+        return new SokobanHole(ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR, "Hole"), "hole",
+            s.get<StairKey>());
     case SquareId::RITUAL_ROOM:
         return new Square(ViewObject(ViewId::RITUAL_ROOM, ViewLayer::FLOOR, "Ritual room"),
           CONSTRUCT(Square::Params,
@@ -1151,14 +1239,14 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::CHEST:
         return new Chest(ViewObject(ViewId::CHEST, ViewLayer::FLOOR, "Chest"),
             ViewObject(ViewId::OPENED_CHEST, ViewLayer::FLOOR, "Opened chest"), "chest",
-            s.get<CreatureId>(), Random.get(3, 6),
+            s.get<ChestInfo>(),
             "There is an item inside", "It's full of rats!", "There is gold inside", ItemFactory::chest());
     case SquareId::TREASURE_CHEST:
         return new Furniture(ViewObject(ViewId::TREASURE_CHEST, ViewLayer::FLOOR, "Chest"), "chest", 1);
     case SquareId::COFFIN:
         return new Chest(ViewObject(ViewId::COFFIN, ViewLayer::FLOOR, "Coffin"),
             ViewObject(ViewId::OPENED_COFFIN, ViewLayer::FLOOR, "Coffin"),"coffin",
-            s.get<CreatureId>(), 1,
+            s.get<ChestInfo>(),
             "There is a rotting corpse inside. You find an item.",
             "There is a rotting corpse inside. The corpse is alive!",
             "There is a rotting corpse inside. You find some gold.", ItemFactory::chest());
@@ -1198,33 +1286,66 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::BORDER_GUARD:
         return new Square(ViewObject(ViewId::BORDER_GUARD, ViewLayer::FLOOR, "Wall"),
           CONSTRUCT(Square::Params, c.name = "wall";));
-    case SquareId::DOWN_STAIRS:
-    case SquareId::UP_STAIRS: FAIL << "Stairs are not handled by this method.";
+    case SquareId::STAIRS:
+        return getStairs(s.get<StairInfo>());
   }
   return 0;
 }
 
-PSquare SquareFactory::getStairs(StairDirection direction, StairKey key, StairLook look) {
-  ViewId id1 = ViewId(0), id2 = ViewId(0);
-  switch (look) {
-    case StairLook::NORMAL: id1 = ViewId::UP_STAIRCASE; id2 = ViewId::DOWN_STAIRCASE; break;
-    case StairLook::HELL: id1 = ViewId::UP_STAIRCASE_HELL; id2 = ViewId::DOWN_STAIRCASE_HELL; break;
-    case StairLook::CELLAR: id1 = ViewId::UP_STAIRCASE_CELLAR; id2 = ViewId::DOWN_STAIRCASE_CELLAR; break;
-    case StairLook::PYRAMID: id1 = ViewId::UP_STAIRCASE_PYR; id2 = ViewId::DOWN_STAIRCASE_PYR; break;
-    case StairLook::DUNGEON_ENTRANCE: id1 = id2 = ViewId::DUNGEON_ENTRANCE; break;
-    case StairLook::DUNGEON_ENTRANCE_MUD: id1 = id2 = ViewId::DUNGEON_ENTRANCE_MUD; break;
-  }
-  switch (direction) {
-    case StairDirection::UP:
-        return PSquare(new Staircase(ViewObject(id1, ViewLayer::FLOOR, "Stairs leading up"),
-            "stairs leading up", direction, key));
-    case StairDirection::DOWN:
-        return PSquare(new Staircase(ViewObject(id2, ViewLayer::FLOOR, "Stairs leading down"),
-            "stairs leading down", direction, key));
-  }
-  return nullptr;
-}
-  
+ 
 PSquare SquareFactory::getWater(double depth) {
   return PSquare(new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND, "Water"), "water", depth));
+} 
+
+SquareFactory::SquareFactory(const vector<SquareType>& s, const vector<double>& w) : squares(s), weights(w) {
+}
+
+SquareFactory::SquareFactory(const vector<SquareType>& f, const vector<SquareType>& s, const vector<double>& w)
+    : first(f), squares(s), weights(w) {
+}
+
+SquareFactory SquareFactory::roomFurniture(Tribe* rats) {
+  return SquareFactory({SquareId::BED, SquareId::TORCH,
+      {SquareId::CHEST, ChestInfo(CreatureFactory::SingleCreature(rats, CreatureId::RAT), 0.2, 5)}},
+      {2, 1, 2});
+}
+
+SquareFactory SquareFactory::castleFurniture(Tribe* rats) {
+  return SquareFactory({SquareId::BED, SquareId::FOUNTAIN, SquareId::TORCH,
+      {SquareId::CHEST, ChestInfo(CreatureFactory::SingleCreature(rats, CreatureId::RAT), 0.2, 5)}},
+      {2, 1, 1, 2});
+}
+
+SquareFactory SquareFactory::dungeonOutside() {
+  return SquareFactory({SquareId::TORCH}, {1});
+}
+
+SquareFactory SquareFactory::castleOutside() {
+  return SquareFactory({{SquareId::WELL}}, {SquareId::TORCH}, {1});
+}
+
+SquareFactory SquareFactory::villageOutside(const string& boardText) {
+  if (!boardText.empty())
+    return SquareFactory({{SquareId::NOTICE_BOARD, boardText}, {SquareId::WELL}}, {SquareId::TORCH}, {1});
+  else
+    return SquareFactory({{SquareId::WELL}}, {SquareId::TORCH}, {1});
+}
+
+SquareFactory SquareFactory::cryptCoffins(Tribe* vampire) {
+  return SquareFactory(
+      {{SquareId::COFFIN, ChestInfo(CreatureFactory::SingleCreature(vampire, CreatureId::VAMPIRE_LORD), 1, 1)}},
+      {{SquareId::COFFIN, ChestInfo()}}, {1});
+}
+
+SquareFactory SquareFactory::single(SquareType type) {
+  return SquareFactory({type}, {1});
+}
+
+SquareType SquareFactory::getRandom(RandomGen& random) {
+  if (!first.empty()) {
+    SquareType ret = first.back();
+    first.pop_back();
+    return ret;
+  }
+  return random.choose(squares, weights);
 }

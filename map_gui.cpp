@@ -26,11 +26,12 @@
 #include "view_id.h"
 #include "level.h"
 #include "creature_view.h"
+#include "options.h"
 
 using sf::Keyboard;
 
-MapGui::MapGui(Callbacks call, Clock* c) : objects(Level::getMaxBounds()), callbacks(call), clock(c),
-    fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
+MapGui::MapGui(Callbacks call, Clock* c, Options* o) : objects(Level::getMaxBounds()), callbacks(call),
+    clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
     connectionMap(Level::getMaxBounds()), enemyPositions(Level::getMaxBounds(), false) {
   clearCenter();
 }
@@ -132,10 +133,7 @@ optional<ViewId> getConnectionId(ViewId id) {
 }
 
 optional<ViewId> getConnectionId(const ViewObject& object) {
-  if (object.hasModifier(ViewObject::Modifier::PLANNED))
-    return none;
-  else
-    return getConnectionId(object.id());
+  return getConnectionId(object.id());
 }
 
 vector<Vec2>& getConnectionDirs(ViewId id) {
@@ -170,6 +168,9 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
   if (!keyScrolling)
     return false;
   switch (key.code) {
+    case Keyboard::W:
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING))
+        break;
     case Keyboard::Up:
     case Keyboard::Numpad8:
       center.y -= key.shift ? shiftScroll : normalScroll;
@@ -178,6 +179,9 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
       center.y -= key.shift ? shiftScroll : normalScroll;
       center.x += key.shift ? shiftScroll : normalScroll;
       break;
+    case Keyboard::D:
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING))
+        break;
     case Keyboard::Right: 
     case Keyboard::Numpad6:
       center.x += key.shift ? shiftScroll : normalScroll;
@@ -186,6 +190,9 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
       center.x += key.shift ? shiftScroll : normalScroll;
       center.y += key.shift ? shiftScroll : normalScroll;
       break;
+    case Keyboard::S:
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING))
+        break;
     case Keyboard::Down:
     case Keyboard::Numpad2:
       center.y += key.shift ? shiftScroll : normalScroll;
@@ -194,6 +201,9 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
       center.x -= key.shift ? shiftScroll : normalScroll;
       center.y += key.shift ? shiftScroll : normalScroll;
       break;
+    case Keyboard::A:
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING))
+        break;
     case Keyboard::Left:
     case Keyboard::Numpad4:
       center.x -= key.shift ? shiftScroll : normalScroll;
@@ -211,19 +221,25 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
 
 bool MapGui::onLeftClick(Vec2 v) {
   if (v.inRectangle(getBounds())) {
-    Vec2 pos = layout->projectOnMap(getBounds(), getScreenPos(), v);
-    callbacks.leftClickFun(pos);
-    mouseHeldPos = pos;
+    mouseHeldPos = v;
+    mouseOffset.x = mouseOffset.y = 0;
     return true;
   }
   return false;
 }
 
 bool MapGui::onRightClick(Vec2 pos) {
+  if (clock->getRealMillis() - lastRightClick < 200) {
+    lockedView = true;
+    lastRightClick = -100000;
+    return true;
+  }
+  lastRightClick = clock->getRealMillis();
   if (pos.inRectangle(getBounds())) {
     lastMousePos = pos;
     isScrollingNow = true;
     mouseOffset.x = mouseOffset.y = 0;
+    lockedView = false;
     return true;
   }
   return false;
@@ -233,13 +249,18 @@ void MapGui::onMouseGone() {
   lastMouseMove = none;
 }
 
+void MapGui::considerMapLeftClick(Vec2 mousePos) {
+  Vec2 pos = layout->projectOnMap(getBounds(), getScreenPos(), mousePos);
+  if (!lastMapLeftClick || lastMapLeftClick != pos) {
+    callbacks.leftClickFun(pos);
+    lastMapLeftClick = pos;
+  }
+}
+
 bool MapGui::onMouseMove(Vec2 v) {
   lastMouseMove = v;
-  Vec2 pos = layout->projectOnMap(getBounds(), getScreenPos(), v);
-  if (v.inRectangle(getBounds()) && mouseHeldPos && *mouseHeldPos != pos) {
-    callbacks.leftClickFun(pos);
-    mouseHeldPos = pos;
-  }
+  if (v.inRectangle(getBounds()) && mouseHeldPos)
+    considerMapLeftClick(v);
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
     mouseOffset.y = double(v.y - lastMousePos.y) / layout->getSquareSize().y;
@@ -252,28 +273,33 @@ bool MapGui::onMouseMove(Vec2 v) {
   return false;
 }
 
-void MapGui::onMouseRelease() {
-  if (isScrollingNow) {
-    if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1) {
-      bool creature = false;
-      for (auto& elem : creatureMap)
-        if (lastMousePos.inRectangle(elem.first)) {
-          callbacks.creatureClickFun(elem.second);
-          creature = true;
-          break;
-        }
-      if (!creature)
-        callbacks.rightClickFun(layout->projectOnMap(getBounds(), getScreenPos(), lastMousePos));
+bool MapGui::considerCreatureClick(Vec2 mousePos) {
+  for (auto& elem : creatureMap)
+    if (mousePos.inRectangle(elem.first)) {
+      callbacks.creatureClickFun(elem.second);
+      return true;
     }
+  return false;
+}
+
+void MapGui::onMouseRelease(Vec2 v) {
+  if (isScrollingNow) {
+    if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1 && !considerCreatureClick(lastMousePos))
+      callbacks.rightClickFun(layout->projectOnMap(getBounds(), getScreenPos(), lastMousePos));
     else {
       center.x -= mouseOffset.x;
       center.y -= mouseOffset.y;
     }
-    mouseOffset.x = mouseOffset.y = 0;
     isScrollingNow = false;
     callbacks.refreshFun();
+    mouseOffset.x = mouseOffset.y = 0;
   }
-  mouseHeldPos = none;
+  if (mouseHeldPos) {
+    if (mouseHeldPos->distD(v) > 10 || !considerCreatureClick(*mouseHeldPos))
+      considerMapLeftClick(v);
+    mouseHeldPos = none;
+  }
+  lastMapLeftClick = none;
 }
 
 /*void MapGui::drawFloorBorders(Renderer& renderer, DirSet borders, int x, int y) {
@@ -310,7 +336,9 @@ static Vec2 getAttachmentOffset(Dir dir, Vec2 size) {
   return Vec2();
 }
 
-static double getJumpOffset(double state) {
+static double getJumpOffset(const ViewObject& object, double state) {
+  if (object.hasModifier(ViewObjectModifier::NO_UP_MOVEMENT))
+    return 0;
   if (state > 0.5)
     state -= 0.5;
   state *= 2;
@@ -343,21 +371,21 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   if (object.getLastMovementInfo().type == ViewObject::MovementInfo::ATTACK)
     if (dir.length8() == 1)
       return Vec2(0.8 * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
-          (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - getJumpOffset(state)) * size.y);
-  return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - getJumpOffset(state)) * size.y);
+          (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - getJumpOffset(object, state)) * size.y);
+  return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - getJumpOffset(object, state)) * size.y);
 }
 
-void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Rectangle tile) {
+void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Rectangle tile, int curTime) {
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
     renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
   }
   if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && showMorale)
     drawMorale(renderer, tile, object.getAttribute(ViewObject::Attribute::MORALE));
-  if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT)) {
+  if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT) && (curTime / 1000) % 2) {
     renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::YELLOW]);
   } else
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
-    renderer.drawFilledRectangle(tile, Color::Transparent, transparency(colors[ColorId::YELLOW], 120));
+    renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::YELLOW]);
   }
 }
 
@@ -392,17 +420,16 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   if (spriteMode && tile.hasSpriteCoord()) {
     DirSet dirs;
     DirSet borderDirs;
-    if (!object.hasModifier(ViewObject::Modifier::PLANNED))
-      if (auto connectionId = getConnectionId(object))
-        for (Vec2 dir : getConnectionDirs(object.id())) {
-          if ((tilePos + dir).inRectangle(levelBounds) && connectionMap.has(tilePos + dir, *connectionId))
-            dirs.insert(dir.getCardinalDir());
-          else
-            borderDirs.insert(dir.getCardinalDir());
-        }
+    if (auto connectionId = getConnectionId(object))
+      for (Vec2 dir : getConnectionDirs(object.id())) {
+        if ((tilePos + dir).inRectangle(levelBounds) && connectionMap.has(tilePos + dir, *connectionId))
+          dirs.insert(dir.getCardinalDir());
+        else
+          borderDirs.insert(dir.getCardinalDir());
+      }
     Vec2 move;
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal);
-    drawCreatureHighlights(renderer, object, Rectangle(pos + movement, pos + movement + size));
+    drawCreatureHighlights(renderer, object, Rectangle(pos + movement, pos + movement + size), curTimeReal);
     if ((object.layer() == ViewLayer::CREATURE && object.id() != ViewId::BOULDER)
         || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
       renderer.drawTile(pos + movement, {Vec2(2, 22), 0}, size);
@@ -459,6 +486,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   }
 }
 
+void MapGui::resetScrolling() {
+  lockedView = true;
+}
+
 void MapGui::clearCenter() {
   center = mouseOffset = {0.0, 0.0};
 }
@@ -476,6 +507,10 @@ void MapGui::setCenter(double x, double y) {
 void MapGui::setCenter(Vec2 v) {
   setCenter(v.x, v.y);
 }
+
+enum class MapGui::HintPosition {
+  LEFT, RIGHT
+};
 
 void MapGui::drawHint(Renderer& renderer, Color color, const vector<string>& text) {
   int lineHeight = 30;
@@ -699,6 +734,9 @@ void MapGui::render(Renderer& renderer) {
     Vec2 pos = topLeftCorner + (*highlightedInfo.tilePos - allTiles.getTopLeft()).mult(layout->getSquareSize());
     renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent, colors[ColorId::LIGHT_GRAY]);
   }
+  if (displayScrollHint && isScrollingNow) {
+    drawHint(renderer, colors[ColorId::LIGHT_BLUE], {"Double right-click to scroll back to creature."});
+  } else
   if (!hint.empty())
     drawHint(renderer, colors[ColorId::WHITE], hint);
   else
@@ -720,7 +758,8 @@ void MapGui::updateEnemyPositions(const vector<Vec2>& positions) {
     enemyPositions.setValue(v, true);
 }
 
-void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui, bool moral) {
+void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui,
+    bool moral) {
   const Level* level = view->getLevel();
   levelBounds = view->getLevel()->getBounds();
   updateEnemyPositions(view->getVisibleEnemies());
@@ -729,17 +768,15 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
   layout = mapLayout;
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
     objects[pos] = none;
-  if (!isCentered())
-    setCenter(*view->getPosition(true));
-  else if (auto pos = view->getPosition(false))
-    setCenter(*pos);
-  // If we have a fixed position (control mode), disable key scrolling because they move the character
-  keyScrolling = !view->getPosition(false);
+  displayScrollHint = view->isPlayerView() && !lockedView;
+  if (!isCentered() || (view->isPlayerView() && lockedView))
+    setCenter(view->getPosition());
+  keyScrolling = !view->isPlayerView();
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos())) 
     if (level->inBounds(pos)) {
       objects[pos].emplace();
       view->getViewIndex(pos, *objects[pos]);
-      if (!objects[pos]->isEmpty())
+      if (objects[pos]->hasObject(ViewLayer::FLOOR) || objects[pos]->hasObject(ViewLayer::FLOOR_BACKGROUND))
         objects[pos]->setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
     }
   currentTimeGame = smoothMovement ? view->getTime() : 1000000000;

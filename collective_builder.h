@@ -10,15 +10,18 @@ class Tribe;
 class Level;
 class Creature;
 struct ImmigrantInfo;
+class Position;
 
 class CollectiveBuilder {
   public:
   CollectiveBuilder(CollectiveConfig, Tribe*);
   CollectiveBuilder& setLevel(Level*);
   CollectiveBuilder& setCredit(map<CollectiveResourceId, int>);
-  CollectiveBuilder& addCreature(Creature*, EnumSet<MinionTrait>);
+  CollectiveBuilder& addCreature(Creature*);
   CollectiveBuilder& addSquares(const vector<Vec2>&);
-  PCollective build(const string& name = "");
+  CollectiveBuilder& addSquares(const vector<Position>&);
+  CollectiveBuilder& setName(const string&);
+  PCollective build();
   bool hasCreatures() const;
 
   private:
@@ -32,6 +35,7 @@ class CollectiveBuilder {
   Tribe* tribe;
   map<CollectiveResourceId, int> credit;
   vector<Vec2> squares;
+  optional<string> name;
 };
 
 #endif

@@ -97,22 +97,18 @@ void Sectors::join(Vec2 pos1, int sector) {
 
 static DirtyTable<int> bfsTable(Level::getMaxBounds(), -1);
 
-void Sectors::remove(Vec2 pos) {
-  if (!contains(pos))
-    return;
-  --sizes[sectors[pos]];
-  sectors[pos] = -1;
+vector<Vec2> Sectors::getDisjoint(Vec2 pos) const {
   vector<queue<Vec2>> queues;
   bfsTable.clear();
   int numNeighbor = 0;
   for (Vec2 v : pos.neighbors8())
-    if (v.inRectangle(bounds) && contains(v)) {
-      bfsTable.setValue(v, numNeighbor++);
-      queues.emplace_back();
-      queues.back().push(v);
-    }
+    if (v.inRectangle(bounds) && contains(v) && !bfsTable.isDirty(v)) {
+        bfsTable.setValue(v, numNeighbor++);
+        queues.emplace_back();
+        queues.back().push(v);
+      }
   if (numNeighbor == 0)
-    return;
+    return {};
   DisjointSets sets(numNeighbor);
   int lastNeighbor = -1;
   while (1) {
@@ -138,10 +134,25 @@ void Sectors::remove(Vec2 pos) {
     }
   }
   int maxSector = sizes.size() - 1;
+  vector<Vec2> ret;
   for (Vec2 v : pos.neighbors8())
     if (v.inRectangle(bounds) && sectors[v] <= maxSector && contains(v) &&
-        !sets.same(bfsTable.getDirtyValue(v), lastNeighbor))
-      join(v, getNewSector());
+          !sets.same(bfsTable.getDirtyValue(v), lastNeighbor))
+      ret.push_back(v);
+  return ret;
+}
+
+bool Sectors::isChokePoint(Vec2 pos) const {
+  return !getDisjoint(pos).empty();
+}
+
+void Sectors::remove(Vec2 pos) {
+  if (!contains(pos))
+    return;
+  --sizes[sectors[pos]];
+  sectors[pos] = -1;
+  for (Vec2 v : getDisjoint(pos))
+    join(v, getNewSector());
 }
 
 using namespace std;

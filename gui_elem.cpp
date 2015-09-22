@@ -34,6 +34,10 @@ void GuiElem::setBounds(Rectangle b) {
   onRefreshBounds();
 }
 
+void GuiElem::setPreferredBounds(Vec2 origin) {
+  setBounds(Rectangle(origin, origin + Vec2(*getPreferredWidth(), *getPreferredHeight())));
+}
+
 GuiElem::~GuiElem() {
 }
 
@@ -53,25 +57,8 @@ class Button : public GuiElem {
   function<void(Rectangle)> fun;
 };
 
-class ButtonChar : public Button {
-  public:
-  ButtonChar(function<void(Rectangle)> f, char key, bool cap) : Button(f), hotkey(key), capture(cap) {}
-
-  virtual bool onKeyPressed(char c) override {
-    if (hotkey == c) {
-      fun(getBounds());
-      return capture;
-    }
-    return false;
-  }
-
-  private:
-  char hotkey;
-  bool capture;
-};
-
 static bool keyEventEqual(Event::KeyEvent k1, Event::KeyEvent k2) {
-  return k1.code == k2.code && k1.shift == k2.shift;
+  return k1.code == k2.code && k1.shift == k2.shift && k1.control == k2.control && k1.alt == k2.alt;
 }
 
 class ButtonKey : public Button {
@@ -94,20 +81,20 @@ class ButtonKey : public Button {
 GuiFactory::GuiFactory(Renderer& r, Clock* c) : clock(c), renderer(r) {
 }
 
-PGuiElem GuiFactory::button(function<void(Rectangle)> fun, char hotkey, bool capture) {
-  return PGuiElem(new ButtonChar(fun, hotkey, capture));
-}
-
-PGuiElem GuiFactory::button2(function<void(Rectangle)> fun, Event::KeyEvent hotkey, bool capture) {
+PGuiElem GuiFactory::button(function<void(Rectangle)> fun, Event::KeyEvent hotkey, bool capture) {
   return PGuiElem(new ButtonKey(fun, hotkey, capture));
 }
 
-PGuiElem GuiFactory::button(function<void()> fun, char hotkey, bool capture) {
-  return PGuiElem(new ButtonChar([=](Rectangle) { fun(); }, hotkey, capture));
+PGuiElem GuiFactory::button(function<void()> fun, Event::KeyEvent hotkey, bool capture) {
+  return PGuiElem(new ButtonKey([=](Rectangle) { fun(); }, hotkey, capture));
 }
 
-PGuiElem GuiFactory::button2(function<void()> fun, Event::KeyEvent hotkey, bool capture) {
-  return PGuiElem(new ButtonKey([=](Rectangle) { fun(); }, hotkey, capture));
+PGuiElem GuiFactory::button(function<void(Rectangle)> fun) {
+  return PGuiElem(new Button(fun));
+}
+
+PGuiElem GuiFactory::button(function<void()> fun) {
+  return PGuiElem(new Button([=](Rectangle) { fun(); }));
 }
 
 class ReverseButton : public GuiElem {
@@ -129,7 +116,7 @@ class ReverseButton : public GuiElem {
 
 PGuiElem GuiFactory::reverseButton(function<void()> fun, vector<Event::KeyEvent> hotkey, bool capture) {
   return stack(
-      keyHandler(fun, hotkey),
+      keyHandler(fun, hotkey, true),
       PGuiElem(new ReverseButton(fun, capture)));
 }
 
@@ -167,14 +154,23 @@ PGuiElem GuiFactory::stopMouseMovement() {
 
 class DrawCustom : public GuiElem {
   public:
-  DrawCustom(function<void(Renderer&, Rectangle)> fun) : drawFun(fun) {}
+  typedef function<void(Renderer&, Rectangle)> DrawFun;
+  DrawCustom(DrawFun draw, function<int()> width = nullptr) : drawFun(draw), preferredWidth(width) {}
 
   virtual void render(Renderer& renderer) override {
     drawFun(renderer, getBounds());
   }
 
+  virtual optional<int> getPreferredWidth() override {
+    if (preferredWidth)
+      return preferredWidth();
+    else
+      return none;
+  }
+
   private:
-  function<void(Renderer&, Rectangle)> drawFun;
+  DrawFun drawFun;
+  function<int()> preferredWidth;
 };
 
 PGuiElem GuiFactory::rectangle(Color color, optional<Color> borderColor) {
@@ -285,30 +281,33 @@ PGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFli
 }
 
 PGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
+  auto width = [=] { return renderer.getTextLength(s); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
             bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, 0);
           r.drawTextWithHotkey(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, hotkey);
-        }));
+        }, width));
 }
 
 PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun) {
+  auto width = [=] { return renderer.getTextLength(s); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
             bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s);
           r.drawText(colorFun(), bounds.getTopLeft().x, bounds.getTopLeft().y, s);
-        }));
+        }, width));
 }
 
 PGuiElem GuiFactory::label(const string& s, int size, Color c) {
+  auto width = [=] { return renderer.getTextLength(s); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
             bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, Renderer::NONE, size);
           r.drawText(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, Renderer::NONE, size);
-        }));
+        }, width));
 }
 
 static Vec2 getTextPos(Rectangle bounds, Renderer::CenterType center) {
@@ -348,10 +347,15 @@ PGuiElem GuiFactory::variableLabel(function<string()> fun, Renderer::CenterType 
 }
 
 PGuiElem GuiFactory::labelUnicode(const String& s, Color color, int size, Renderer::FontId fontId) {
+  return labelUnicode(s, [color] { return color; }, size, fontId);
+}
+
+PGuiElem GuiFactory::labelUnicode(const String& s, function<Color()> color, int size, Renderer::FontId fontId) {
+  auto width = [=] { return renderer.getUnicodeLength(s); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(fontId, size, color, bounds.getTopLeft().x, bounds.getTopLeft().y, s);
-        }));
+          r.drawText(fontId, size, color(), bounds.getTopLeft().x, bounds.getTopLeft().y, s);
+        }, width));
 }
 
 class MainMenuLabel : public GuiElem {
@@ -412,10 +416,10 @@ class GuiLayout : public GuiElem {
       elems[i]->onMouseGone();
   }
 
-  virtual void onMouseRelease() override {
+  virtual void onMouseRelease(Vec2 pos) override {
     for (int i : AllReverse(elems))
       if (isVisible(i))
-        elems[i]->onMouseRelease();
+        elems[i]->onMouseRelease(pos);
   }
 
   virtual void render(Renderer& r) override {
@@ -427,13 +431,6 @@ class GuiLayout : public GuiElem {
   virtual void onRefreshBounds() override {
     for (int i : All(elems))
       elems[i]->setBounds(getElemBounds(i));
-  }
-
-  virtual bool onKeyPressed(char key) override {
-    for (int i : AllReverse(elems))
-      if (elems[i]->onKeyPressed(key))
-        return true;
-    return false;
   }
 
   virtual bool onKeyPressed2(Event::KeyEvent key) override {
@@ -457,6 +454,22 @@ class GuiLayout : public GuiElem {
 
   virtual bool isVisible(int num) {
     return true;
+  }
+
+  virtual optional<int> getPreferredWidth() {
+    for (int i : All(elems))
+      if (auto width = elems[i]->getPreferredWidth())
+        if (getElemBounds(i) == getBounds())
+          return *width;
+    return none;
+  }
+
+  virtual optional<int> getPreferredHeight() {
+    for (int i : All(elems))
+      if (auto height = elems[i]->getPreferredHeight())
+        if (getElemBounds(i) == getBounds())
+          return *height;
+    return none;
   }
 
   protected:
@@ -486,14 +499,6 @@ class Focusable : public GuiLayout {
       return true;
     }
     return GuiLayout::onLeftClick(pos);
-  }
-
-  virtual bool onKeyPressed(char key) override {
-    if (focused) {
-      GuiLayout::onKeyPressed(key);
-      return true;
-    } else
-      return false;
   }
 
   virtual bool onKeyPressed2(Event::KeyEvent key) override {
@@ -644,6 +649,17 @@ class VerticalList : public GuiLayout {
     return ret;
   }
 
+  optional<int> getPreferredWidth() override {
+    for (auto& elem : elems)
+      if (auto width = elem->getPreferredWidth())
+        return width;
+    return none;
+  }
+
+  optional<int> getPreferredHeight() override {
+    return getTotalHeight();
+  }
+
   int getSize() {
     return heights.size();
   }
@@ -657,10 +673,13 @@ class VerticalList : public GuiLayout {
   int numAlignBack;
 };
 
+GuiFactory::ListBuilder GuiFactory::getListBuilder(int defaultSize) {
+  return ListBuilder(*this, defaultSize);
+}
 
 GuiFactory::ListBuilder::ListBuilder(GuiFactory& g, int defSz) : gui(g), defaultSize(defSz) {}
 
-void GuiFactory::ListBuilder::addElem(PGuiElem elem, int size) {
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElem(PGuiElem elem, int size) {
   CHECK(!backElems);
   if (size == 0) {
     CHECK(defaultSize > 0);
@@ -668,9 +687,26 @@ void GuiFactory::ListBuilder::addElem(PGuiElem elem, int size) {
   }
   elems.push_back(std::move(elem));
   sizes.push_back(size);
+  return *this;
 }
 
-void GuiFactory::ListBuilder::addBackElem(PGuiElem elem, int size) {
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElemAuto(PGuiElem elem) {
+  CHECK(!backElems);
+  int size = *elem->getPreferredWidth();
+  elems.push_back(std::move(elem));
+  sizes.push_back(size);
+  return *this;
+}
+
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addBackElemAuto(PGuiElem elem) {
+  ++backElems;
+  int size = *elem->getPreferredWidth();
+  elems.push_back(std::move(elem));
+  sizes.push_back(size);
+  return *this;
+}
+
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addBackElem(PGuiElem elem, int size) {
   ++backElems;
   if (size == 0) {
     CHECK(defaultSize > 0);
@@ -678,10 +714,19 @@ void GuiFactory::ListBuilder::addBackElem(PGuiElem elem, int size) {
   }
   elems.push_back(std::move(elem));
   sizes.push_back(size);
+  return *this;
 }
 
 int GuiFactory::ListBuilder::getSize() const {
   return std::accumulate(sizes.begin(), sizes.end(), 0);
+}
+
+bool GuiFactory::ListBuilder::isEmpty() const {
+  return sizes.empty();
+}
+
+vector<PGuiElem>& GuiFactory::ListBuilder::getAllElems() {
+  return elems;
 }
 
 PGuiElem GuiFactory::ListBuilder::buildVerticalList() {
@@ -690,6 +735,10 @@ PGuiElem GuiFactory::ListBuilder::buildVerticalList() {
 
 PGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
   return gui.horizontalList(std::move(elems), sizes, backElems);
+}
+
+PGuiElem GuiFactory::ListBuilder::buildHorizontalListFit() {
+  return gui.horizontalListFit(std::move(elems), 0);
 }
 
 PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, vector<int> heights, int numAlignBottom) {
@@ -759,6 +808,18 @@ class HorizontalList : public VerticalList {
     int height = std::accumulate(heights.begin(), heights.begin() + num, 0);
     return Rectangle(getBounds().getTopLeft() + Vec2(height, 0), getBounds().getBottomLeft() 
         + Vec2(height + heights[num], 0));
+  }
+
+  optional<int> getPreferredHeight() override {
+    for (auto& elem : elems)
+      if (auto height = elem->getPreferredHeight())
+        return height;
+    return none;
+  }
+
+
+  optional<int> getPreferredWidth() override {
+    return getTotalHeight();
   }
 };
 
@@ -947,6 +1008,20 @@ class Margins : public GuiLayout {
         getBounds().getKX() - right, getBounds().getKY() - bottom);
   }
 
+  optional<int> getPreferredWidth() override {
+    if (auto width = elems[0]->getPreferredWidth())
+      return left + *width + right;
+    else
+      return none;
+  }
+
+  optional<int> getPreferredHeight() override {
+    if (auto height = elems[0]->getPreferredHeight())
+      return top + *height + bottom;
+    else
+      return none;
+  }
+
   private:
   int left;
   int top;
@@ -960,6 +1035,10 @@ PGuiElem GuiFactory::margins(PGuiElem content, int left, int top, int right, int
 
 PGuiElem GuiFactory::leftMargin(int size, PGuiElem content) {
   return PGuiElem(new Margins(std::move(content), size, 0, 0, 0));
+}
+
+PGuiElem GuiFactory::rightMargin(int size, PGuiElem content) {
+  return PGuiElem(new Margins(std::move(content), 0, 0, size, 0));
 }
 
 PGuiElem GuiFactory::topMargin(int size, PGuiElem content) {
@@ -990,6 +1069,30 @@ class Switchable : public GuiLayout {
   private:
   function<int()> switchFun;
 };
+
+namespace {
+
+class PreferredSize : public GuiElem {
+  public:
+  PreferredSize(Vec2 sz) : size(sz) {}
+
+  virtual optional<int> getPreferredWidth() override {
+    return size.x;
+  }
+  
+  virtual optional<int> getPreferredHeight() override {
+    return size.y;
+  }
+
+  private:
+  Vec2 size;
+};
+
+}
+
+PGuiElem GuiFactory::preferredSize(int width, int height) {
+  return PGuiElem(new PreferredSize(Vec2(width, height)));
+}
 
 PGuiElem GuiFactory::empty() {
   return PGuiElem(new GuiElem());
@@ -1065,32 +1168,59 @@ PGuiElem GuiFactory::mouseOverAction(function<void()> callback, function<void()>
   return PGuiElem(new MouseOverAction(callback, outCallback));
 }
 
-class MouseHighlight : public GuiLayout {
+class MouseHighlightBase : public GuiLayout {
   public:
-  MouseHighlight(PGuiElem h, int ind, int* highlight)
+  MouseHighlightBase(PGuiElem h, int ind, int* highlight)
     : GuiLayout(makeVec<PGuiElem>(std::move(h))), myIndex(ind), highlighted(highlight) {}
-
-  virtual void onMouseGone() override {
-    if (*highlighted == myIndex)
-      *highlighted = -1;
-  }
-
-  virtual bool onMouseMove(Vec2 pos) override {
-    if (pos.inRectangle(getBounds()))
-      *highlighted = myIndex;
-    else if (*highlighted == myIndex)
-      *highlighted = -1;
-    return false;
-  }
 
   virtual void render(Renderer& r) override {
     if (*highlighted == myIndex)
       elems[0]->render(r);
   }
 
-  private:
+  protected:
   int myIndex;
   int* highlighted;
+  bool canTurnOff = false;
+};
+
+class MouseHighlight : public MouseHighlightBase {
+  public:
+  using MouseHighlightBase::MouseHighlightBase;
+
+  virtual void onMouseGone() override {
+    if (*highlighted == myIndex && canTurnOff) {
+      *highlighted = -1;
+      canTurnOff = false;
+    }
+  }
+
+  virtual bool onMouseMove(Vec2 pos) override {
+    if (pos.inRectangle(getBounds())) {
+      *highlighted = myIndex;
+      canTurnOff = true;
+    } else if (*highlighted == myIndex && canTurnOff) {
+      *highlighted = -1;
+      canTurnOff = false;
+    }
+    return false;
+  }
+};
+
+class MouseHighlightClick : public MouseHighlightBase {
+  public:
+  using MouseHighlightBase::MouseHighlightBase;
+
+  virtual bool onLeftClick(Vec2 pos) override {
+    if (pos.inRectangle(getBounds())) {
+      *highlighted = myIndex;
+      canTurnOff = true;
+    } else if (*highlighted == myIndex && canTurnOff) {
+      *highlighted = -1;
+      canTurnOff = false;
+    }
+    return false;
+  }
 };
 
 class MouseHighlight2 : public GuiLayout {
@@ -1106,6 +1236,10 @@ class MouseHighlight2 : public GuiLayout {
 
 PGuiElem GuiFactory::mouseHighlight(PGuiElem elem, int myIndex, int* highlighted) {
   return PGuiElem(new MouseHighlight(std::move(elem), myIndex, highlighted));
+}
+
+PGuiElem GuiFactory::mouseHighlightClick(PGuiElem elem, int myIndex, int* highlighted) {
+  return PGuiElem(new MouseHighlightClick(std::move(elem), myIndex, highlighted));
 }
 
 class MouseHighlightGameChoice : public GuiLayout {
@@ -1278,7 +1412,7 @@ class ScrollBar : public GuiLayout {
     return false;
   }
 
-  virtual void onMouseRelease() override {
+  virtual void onMouseRelease(Vec2) override {
     *held = notHeld;
   }
 
@@ -1356,12 +1490,8 @@ class Scrollable : public GuiElem {
     return content->onMouseMove(v);
   }
 
-  virtual void onMouseRelease() override {
-    content->onMouseRelease();
-  }
-
-  virtual bool onKeyPressed(char c) override {
-    return content->onKeyPressed(c);
+  virtual void onMouseRelease(Vec2 pos) override {
+    content->onMouseRelease(pos);
   }
 
   virtual bool onKeyPressed2(Event::KeyEvent key) override {
@@ -1440,7 +1570,7 @@ void GuiFactory::loadFreeImages(const string& path) {
   textures[TexId::MAIN_MENU_HIGHLIGHT].setSmooth(true);
   CHECK(textures[TexId::SPLASH1].loadFromFile(path + "/splash2f.png"));
   CHECK(textures[TexId::SPLASH2].loadFromFile(path + "/splash2e.png"));
-  CHECK(textures[TexId::LOADING_SPLASH].loadFromFile(path + "/" + chooseRandom(LIST(
+  CHECK(textures[TexId::LOADING_SPLASH].loadFromFile(path + "/" + Random.choose(LIST(
             "splash2a.png",
             "splash2b.png",
             "splash2c.png",
@@ -1557,6 +1687,12 @@ PGuiElem GuiFactory::highlight(double height) {
   return margins(sprite(get(TexId::MAIN_MENU_HIGHLIGHT), height), -25, 0, 0, 0);
 }
 
+PGuiElem GuiFactory::highlightDouble() {
+  return stack(
+      sprite(get(TexId::MAIN_MENU_HIGHLIGHT), Alignment::LEFT_CENTER),
+      sprite(get(TexId::MAIN_MENU_HIGHLIGHT), Alignment::RIGHT_CENTER, false, true));
+}
+
 PGuiElem GuiFactory::mainMenuHighlight() {
   return stack(
       sprite(get(TexId::MAIN_MENU_HIGHLIGHT), Alignment::LEFT_STRETCHED),
@@ -1608,7 +1744,7 @@ PGuiElem GuiFactory::miniWindow() {
 PGuiElem GuiFactory::window(PGuiElem content, function<void()> onExitButton) {
   return stack(makeVec<PGuiElem>(
         stopMouseMovement(),
-        alignment(button(onExitButton), Vec2(38, 38), Alignment::TOP_RIGHT),
+        alignment(button(onExitButton, {sf::Keyboard::Escape}, true), Vec2(38, 38), Alignment::TOP_RIGHT),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
         margins(std::move(content), 20, 35, 30, 30),
@@ -1682,14 +1818,16 @@ PGuiElem GuiFactory::mainMenuLabelBg(const string& s, double vPadding, Color col
 }
 
 PGuiElem GuiFactory::darken() {
-  return rectangle(Color(0, 0, 0, 150));
+  return stack(
+      stopMouseMovement(),
+      rectangle(Color(0, 0, 0, 150)));
 }
 
 void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
   switch (event.type) {
     case Event::MouseButtonReleased:
       for (GuiElem* elem : guiElems)
-        elem->onMouseRelease();
+        elem->onMouseRelease(Vec2(event.mouseButton.x, event.mouseButton.y));
       break;
     case Event::MouseMoved: {
       bool captured = false;
@@ -1715,14 +1853,6 @@ void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       for (GuiElem* elem : guiElems)
         if (elem->onKeyPressed2(event.key))
           break;
-      break;
-    case Event::TextEntered:
-      if (event.text.unicode < 128) {
-        char key = event.text.unicode;
-        for (GuiElem* elem : guiElems)
-          if (elem->onKeyPressed(key))
-            break;
-      }
       break;
     case Event::MouseWheelMoved:
       for (GuiElem* elem : guiElems)

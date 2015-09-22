@@ -5,6 +5,9 @@
 #include "unique_entity.h"
 #include "minion_task.h"
 #include "item_action.h"
+#include "village_action.h"
+#include "cost_info.h"
+#include "attack_trigger.h"
 
 enum class SpellId;
 
@@ -17,7 +20,8 @@ struct CreatureInfo {
   string name;
   string speciesName;
   int expLevel;
-  double morale;
+  double morale; 
+  optional<pair<ViewId, int>> cost;
 };
 
 class CollectiveInfo {
@@ -79,6 +83,13 @@ class CollectiveInfo {
     bool priority;
   };
   vector<Task> taskMap;
+  
+  struct Ransom {
+    pair<ViewId, int> amount;
+    string attacker;
+    bool canAfford;
+  };
+  optional<Ransom> ransom;
 };
 
 struct ItemInfo {
@@ -92,8 +103,11 @@ struct ItemInfo {
   bool equiped;
   bool locked;
   bool pending;
+  bool unavailable;
   optional<EquipmentSlot> slot;
   optional<CreatureInfo> owner;
+  enum Type {EQUIPMENT, CONSUMABLE, OTHER} type;
+  optional<pair<ViewId, int>> price;
 };
 
 class PlayerInfo {
@@ -141,6 +155,7 @@ class PlayerInfo {
     MinionTask task;
     bool inactive;
     bool current;
+    bool locked;
   };
   vector<MinionTaskInfo> minionTasks;
   UniqueEntity<Creature>::Id creatureId;
@@ -150,18 +165,27 @@ class PlayerInfo {
     CONTROL,
     RENAME,
     BANISH,
+    WHIP,
+    EXECUTE,
+    TORTURE,
   };
   vector<Action> actions;
 };
 
 class VillageInfo {
   public:
-    struct Village {
-      string name;
-      string tribeName;
-      string state;
-    };
-    vector<Village> villages;
+  struct Village {
+    string name;
+    string tribeName;
+    bool knownLocation;
+    enum State { FRIENDLY, HOSTILE, CONQUERED } state;
+    vector<VillageAction> actions;
+    vector<TriggerInfo> triggers;
+  };
+  vector<Village> villages;
+  int numMainVillains;
+  int totalMain;
+  int numConquered;
 };
 
 class GameSunlightInfo {
