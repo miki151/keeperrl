@@ -31,23 +31,27 @@ enum class VillageBehaviourId {
 typedef EnumVariant<VillageBehaviourId, TYPES(int),
         ASSIGN(int, VillageBehaviourId::KILL_MEMBERS)> VillageBehaviour;
 
-enum class AttackTriggerId {
+RICH_ENUM(AttackTriggerId,
   POWER,
   SELF_VICTIMS,
   ENEMY_POPULATION,
   GOLD,
   STOLEN_ITEMS,
-};
+  ROOM_BUILT
+);
 
-typedef EnumVariant<AttackTriggerId, TYPES(int),
-        ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> AttackTrigger;
+typedef EnumVariant<AttackTriggerId, TYPES(int, SquareType),
+        ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD),
+        ASSIGN(SquareType, AttackTriggerId::ROOM_BUILT)> AttackTrigger;
 
-enum class AttackPrerequisite;
+enum class AttackPrerequisite { POK }; // OBSOLETE
 
 class VillageControl : public CollectiveControl {
   public:
   typedef VillageBehaviour Behaviour;
   typedef AttackTrigger Trigger;
+
+  static bool serializationBugfix;
 
   enum AttackMessage {
     CREATURE_TITLE,

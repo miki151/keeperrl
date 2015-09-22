@@ -24,6 +24,10 @@ TaskMap::TaskMap(Rectangle bounds) : reversePositions(bounds), marked(bounds, nu
 }
 
 Task* TaskMap::getTaskForWorker(Creature* c) {
+  if (Random.roll(20))
+    for (Task* t : extractRefs(tasks))
+      if (t->isDone())
+        removeTask(t);
   Task* closest = nullptr;
   for (PTask& task : tasks) {
     if (auto pos = getPosition(task.get())) {
@@ -64,7 +68,8 @@ Task* TaskMap::addTaskCost(PTask task, Vec2 position, CostInfo cost) {
 }
 
 CostInfo TaskMap::removeTask(Task* task) {
-  task->cancel();
+  if (!task->isDone())
+    task->cancel();
   CostInfo cost;
   if (completionCost.count(task)) {
     cost = completionCost.at(task);

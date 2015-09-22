@@ -81,6 +81,7 @@ class Player : public Controller, public CreatureView {
 
   void tryToPerform(CreatureAction);
   void attackAction(Creature* other);
+  void attackAction(UniqueEntity<Creature>::Id);
   void pickUpItemAction(int item, bool multi = false);
   void equipmentAction();
   void applyItem(vector<Item*> item);

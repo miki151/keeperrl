@@ -25,13 +25,33 @@
 #include "effect_type.h"
 #include "task.h"
 
+typedef EnumVariant<AttackTriggerId, TYPES(int),
+        ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
+
+bool VillageControl::serializationBugfix = false;
+
 template <class Archive>
 void VillageControl::Villain::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(minPopulation)
     & SVAR(minTeamSize)
-    & SVAR(collective)
-    & SVAR(triggers)
-    & SVAR(prerequisites)
+    & SVAR(collective);
+  if (serializationBugfix) {
+    vector<OldTrigger> SERIAL(tmp);
+    ar & SVAR(tmp);
+    for (auto& elem : tmp) {
+      switch (elem.getId()) {
+        case AttackTriggerId::ENEMY_POPULATION:
+        case AttackTriggerId::GOLD:
+          triggers.emplace_back(elem.getId(), elem.get<int>());
+          break;
+        default:
+          triggers.emplace_back(elem.getId());
+          break;
+      }
+    }
+  } else
+    ar & SVAR(triggers);
+  ar& SVAR(prerequisites)
     & SVAR(behaviour)
     & SVAR(leaderAttacks)
     & SVAR(attackMessage)
@@ -83,7 +103,7 @@ void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& ite
 void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers) {
   Debug() << getAttackMessage(villain, attackers);
   villain.collective->addAssaultNotification(getCollective(), attackers, getAttackMessage(villain, attackers));
-  TeamId team = getCollective()->getTeams().create(attackers);
+  TeamId team = getCollective()->getTeams().createPersistent(attackers);
   getCollective()->getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
   for (Creature* c : attackers)
@@ -134,8 +154,9 @@ void VillageControl::tick(double time) {
   }
   double updateFreq = 0.1;
   if (Random.roll(1 / updateFreq))
-    for (auto& villain : villains)
-      if (villain.collective->meetsPrerequisites(villain.prerequisites)) {
+    for (auto& villain : villains) {
+      double prob = villain.getAttackProbability(this) / updateFreq;
+      if (prob > 0 && Random.roll(1 / prob)) {
         vector<Creature*> fighters;
         if (villain.leaderAttacks)
           fighters = getCollective()->getCreatures({MinionTrait::FIGHTER});
@@ -145,13 +166,11 @@ void VillageControl::tick(double time) {
           << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
         if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)
           continue;
-        double prob = villain.getAttackProbability(this) / updateFreq;
-        if (prob > 0 && Random.roll(1 / prob)) {
-          launchAttack(villain, getPrefix(randomPermutation(fighters),
-                Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation) + 1)));
-          break;
-        }
+        launchAttack(villain, getPrefix(randomPermutation(fighters),
+            Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation) + 1)));
+        break;
       }
+    }
 }
 
 MoveInfo VillageControl::getMove(Creature* c) {
@@ -200,8 +219,10 @@ static double victimsFun(int victims, int minPopulation) {
     return 0;
   else if (victims == 1)
     return 0.1;
-  else if (victims == 2)
+  else if (victims <= 3)
     return 0.3;
+  else if (victims <= 5)
+    return 0.7;
   else
     return 1.0;
 }
@@ -252,7 +273,10 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
   double populationMaxProb = 1.0 / 500;
   double goldMaxProb = 1.0 / 500;
   double stolenMaxProb = 1.0 / 300;
+  double roomMaxProb = 1.0 / 1000;
   switch (trigger.getId()) {
+    case AttackTriggerId::ROOM_BUILT: 
+      return villain->getSquares(trigger.get<SquareType>()).empty() ? 0 : roomMaxProb;
     case AttackTriggerId::POWER: 
       return powerMaxProb * powerClosenessFun(self->getCollective()->getDangerLevel(), villain->getDangerLevel());
     case AttackTriggerId::SELF_VICTIMS:
@@ -275,7 +299,7 @@ double VillageControl::Villain::getAttackProbability(const VillageControl* self)
     double val = getTriggerValue(elem, self, collective);
     CHECK(val >= 0 && val <= 1);
     ret = max(ret, val);
-    Debug() << "trigger " << int(elem.getId()) << " village " << self->getCollective()->getTribe()->getName()
+    Debug() << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village " << self->getCollective()->getTribe()->getName()
       << " under attack probability " << val;
   }
   return ret;

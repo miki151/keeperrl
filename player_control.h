@@ -169,6 +169,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   int getNumMinions() const;
   void minionView(Creature* creature);
+  void minionTaskAction(Creature*, const MinionAction&);
   vector<PlayerInfo> getMinionGroup(Creature* like);
   void minionEquipmentAction(Creature* creature, const MinionAction&);
   void addEquipment(Creature*, EquipmentSlot);

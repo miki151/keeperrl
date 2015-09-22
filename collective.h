@@ -63,10 +63,6 @@ RICH_ENUM(CollectiveWarning,
     MORE_LIGHTS
 );
 
-enum class AttackPrerequisite {
-  THRONE
-};
-
 class Collective : public TaskCallback {
   public:
   void addCreature(Creature*, EnumSet<MinionTrait>);
@@ -87,7 +83,6 @@ class Collective : public TaskCallback {
   void cancelTask(const Creature*);
   void banishCreature(Creature*);
   bool wasBanished(const Creature*) const;
-  bool meetsPrerequisites(const vector<AttackPrerequisite>&) const;
 
   typedef CollectiveWarning Warning;
   typedef CollectiveResourceId ResourceId;
@@ -272,7 +267,6 @@ class Collective : public TaskCallback {
   virtual void onPickedUp(Vec2 pos, EntitySet<Item>) override;
   virtual void onCantPickItem(EntitySet<Item> items) override;
   virtual void onConstructed(Vec2, const SquareType&) override;
-  virtual void onConstructionCancelled(Vec2) override;
   virtual void onTorchBuilt(Vec2, Trigger*) override;
   virtual void onAppliedSquare(Vec2 pos) override;
   virtual void onKillCancelled(Creature*) override;
@@ -320,7 +314,7 @@ class Collective : public TaskCallback {
   PTask getStandardTask(Creature* c);
   PTask getEquipmentTask(Creature* c);
   PTask getHealingTask(Creature* c);
-  bool isTaskGood(const Creature*, MinionTask) const;
+  bool isTaskGood(const Creature*, MinionTask, bool ignoreTaskLock = false) const;
   PTask generateMinionTask(Creature*, MinionTask);
   void setRandomTask(const Creature*);
 

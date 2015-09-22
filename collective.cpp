@@ -334,17 +334,6 @@ bool Collective::wasBanished(const Creature* c) const {
   return contains(banished, c);
 }
 
-bool Collective::meetsPrerequisites(const vector<AttackPrerequisite>& prereq) const {
-  for (auto elem : prereq)
-    switch (elem) {
-      case AttackPrerequisite::THRONE: 
-        if (getSquares(SquareId::THRONE).empty())
-          return false;
-        break;
-    }
-  return true;
-}
-
 vector<Creature*>& Collective::getCreatures() {
   return creatures;
 }
@@ -430,7 +419,7 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
     taskMap->takeTask(c, closest);
     return closest->getMove(c);
   } else {
-    if (config->getWorkerFollowLeader() && getLeader() && !containsSquare(c->getPosition())
+    if (config->getWorkerFollowLeader() && getLeader() && getAllSquares().empty()
         && getLeader()->getLevel() == c->getLevel()) {
       Vec2 leaderPos = getLeader()->getPosition();
       if (leaderPos.dist8(c->getPosition()) < 3)
@@ -469,8 +458,8 @@ optional<MinionTask> Collective::getMinionTask(const Creature* c) const {
     return none;
 }
 
-bool Collective::isTaskGood(const Creature* c, MinionTask task) const {
-  if (c->getMinionTasks().getValue(task) == 0)
+bool Collective::isTaskGood(const Creature* c, MinionTask task, bool ignoreTaskLock) const {
+  if (c->getMinionTasks().getValue(task, ignoreTaskLock) == 0)
     return false;
   if (minionPayment.count(c) && minionPayment.at(c).debt() > 0 && getTaskInfo().at(task).cost > 0)
     return false;
@@ -481,6 +470,7 @@ bool Collective::isTaskGood(const Creature* c, MinionTask task) const {
     case MinionTask::SLEEP:
         if (!config->sleepOnlyAtNight())
           return true;
+        // break skipped on purpose
     case MinionTask::EXPLORE_NOCTURNAL:
         return getLevel()->getModel()->getSunlightInfo().state == SunlightState::NIGHT;
     default: return true;
@@ -528,7 +518,7 @@ optional<Vec2> Collective::getTileToExplore(const Creature* c, MinionTask task) 
 }
 
 bool Collective::isMinionTaskPossible(Creature* c, MinionTask task) {
-  return isTaskGood(c, task) && generateMinionTask(c, task);
+  return isTaskGood(c, task, true) && generateMinionTask(c, task);
 }
 
 PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
@@ -916,8 +906,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
     spawnPos = getSpawnPos(extractRefs(creatures));
   groupSize = min<int>(groupSize, spawnPos.size());
   if (auto bedType = getDormInfo()[spawnType].getBedType()) {
-    int neededBeds = bySpawnType[spawnType].size() + groupSize - getSquares(*bedType).size() -
-        constructions->getSquareCount(*bedType);
+    int neededBeds = bySpawnType[spawnType].size() + groupSize - constructions->getSquareCount(*bedType);
     if (neededBeds > 0) {
       int numBuilt = tryBuildingBeds(spawnType, neededBeds);
       if (numBuilt == 0)
@@ -951,7 +940,8 @@ int Collective::tryBuildingBeds(SpawnType spawnType, int numBeds) {
   set<Vec2> bedPos = getSquares(bedType);
   set<Vec2> dormPos = getSquares(dormType);
   for (Vec2 v : copyOf(dormPos))
-    if (constructions->containsSquare(v)) { // this means there is a bed planned here already
+    if (constructions->containsSquare(v) && !constructions->getSquare(v).isBuilt()) {
+      // this means there is a bed planned here already
       dormPos.erase(v);
       bedPos.insert(v);
     }
@@ -1089,7 +1079,7 @@ static vector<BirthSpawn> birthSpawns {
 };
 
 void Collective::considerBirths() {
-  if (!pregnancies.empty() && Random.roll(300)) {
+  if (getPopulationSize() < getMaxPopulation() && !pregnancies.empty() && Random.roll(300)) {
     Creature* c = pregnancies.front();
     pregnancies.pop_front();
     vector<pair<CreatureId, double>> candidates;
@@ -1556,9 +1546,11 @@ int Collective::numResource(ResourceId id) const {
 
 int Collective::numResourcePlusDebt(ResourceId id) const {
   int ret = numResource(id);
-  for (auto& elem : constructions->getSquares())
-    if (!elem.second.isBuilt() && elem.second.getCost().id() == id)
-      ret -= elem.second.getCost().value();
+  for (Vec2 pos : constructions->getSquares()) {
+    auto& construction = constructions->getSquare(pos);
+    if (!construction.isBuilt() && construction.getCost().id() == id)
+      ret -= construction.getCost().value();
+  }
   for (auto& elem : taskMap->getCompletionCosts())
     if (elem.second.id() == id && !elem.first->isDone())
       ret += elem.second.value();
@@ -1871,11 +1863,6 @@ bool Collective::isConstructionReachable(Vec2 pos) {
   return false;
 }
 
-void Collective::onConstructionCancelled(Vec2 pos) {
-  if (constructions->containsSquare(pos))
-    constructions->getSquare(pos).reset();
-}
-
 void Collective::onConstructed(Vec2 pos, const SquareType& type) {
   if (!contains({SquareId::TREE_TRUNK}, type.getId()))
     allSquares.insert(pos);
@@ -1885,10 +1872,8 @@ void Collective::onConstructed(Vec2 pos, const SquareType& type) {
   mySquares[type].insert(pos);
   if (efficiencySquares.count(type))
     updateEfficiency(pos, type);
-  if (taskMap->getMarked(pos))
-    taskMap->unmarkSquare(pos);
-  if (constructions->containsSquare(pos))
-    constructions->removeSquare(pos);
+  if (constructions->containsSquare(pos) && !constructions->getSquare(pos).isBuilt())
+    constructions->getSquare(pos).setBuilt();
   if (type == SquareId::FLOOR) {
     for (Vec2 v : pos.neighbors4())
       if (constructions->containsTorch(v) &&
@@ -1898,6 +1883,8 @@ void Collective::onConstructed(Vec2 pos, const SquareType& type) {
   if (auto type = level->getSafeSquare(pos)->getApplyType())
     mySquares2[*type].insert(pos);
   control->onConstructed(pos, type);
+  if (taskMap->getMarked(pos))
+    taskMap->unmarkSquare(pos);
 }
 
 bool Collective::tryLockingDoor(Vec2 pos) {
@@ -1928,15 +1915,17 @@ void Collective::updateConstructions() {
         }
       }
     }
-  for (auto& elem : constructions->getSquares())
-    if (!isDelayed(elem.first) && !elem.second.hasTask() && !elem.second.isBuilt()) {
-      if (!hasResource(elem.second.getCost()))
+  for (Vec2 pos : constructions->getSquares()) {
+    auto& construction = constructions->getSquare(pos);
+    if (!isDelayed(pos) && !construction.hasTask() && !construction.isBuilt()) {
+      if (!hasResource(construction.getCost()))
         continue;
-      constructions->getSquare(elem.first).setTask(
-          taskMap->addTaskCost(Task::construction(this, elem.first, elem.second.getSquareType()), elem.first,
-          elem.second.getCost())->getUniqueId());
-      takeResource(elem.second.getCost());
+      construction.setTask(
+          taskMap->addTaskCost(Task::construction(this, pos, construction.getSquareType()), pos,
+          construction.getCost())->getUniqueId());
+      takeResource(construction.getCost());
     }
+  }
   for (auto& elem : constructions->getTorches())
     if (!isDelayed(elem.first) && !elem.second.hasTask() && !elem.second.isBuilt())
       constructions->getTorch(elem.first).setTask(taskMap->addTask(
@@ -2037,7 +2026,7 @@ void Collective::onSquareDestroyed(Vec2 pos) {
       elem.second.erase(pos);
   mySquares[SquareId::FLOOR].insert(pos);
   if (constructions->containsSquare(pos))
-    constructions->getSquare(pos).reset();
+    constructions->onSquareDestroyed(pos);
 }
 
 void Collective::onTrapTrigger(Vec2 pos) {

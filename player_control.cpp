@@ -237,7 +237,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::libraryInfo {
-  BuildInfo(BuildInfo::IMP, "", 'i'),
+  BuildInfo(BuildInfo::IMP, "Click on a visible square on the map to summon an imp.", 'i'),
 };
 
 vector<PlayerControl::BuildInfo> PlayerControl::minionsInfo {
@@ -478,11 +478,13 @@ vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
     if (c->getSpeciesName() == like->getSpeciesName()) {
       minions.emplace_back();
       minions.back().readFrom(c);
-      for (MinionTask t : c->getMinionTasks().getAll()) {
-        minions.back().minionTasks.push_back({t,
-            !getCollective()->isMinionTaskPossible(c, t),
-            getCollective()->getMinionTask(c) == t});
-      }
+      for (MinionTask t : ENUM_ALL(MinionTask))
+        if (c->getMinionTasks().getValue(t, true) > 0) {
+          minions.back().minionTasks.push_back({t,
+              !getCollective()->isMinionTaskPossible(c, t),
+              getCollective()->getMinionTask(c) == t,
+              c->getMinionTasks().isLocked(t)});
+        }
       minions.back().creatureId = c->getUniqueId();
       if (getCollective()->usesEquipment(c))
         fillEquipment(c, minions.back());
@@ -494,6 +496,14 @@ vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
         return m1.level > m2.level;
       });
   return minions;
+}
+
+void PlayerControl::minionTaskAction(Creature* c, const MinionAction& action1) {
+  auto action = boost::get<MinionAction::TaskAction>(action1.action);
+  if (action.switchTo)
+    getCollective()->setMinionTask(c, *action.switchTo);
+  for (MinionTask task : action.lock)
+    c->getMinionTasks().toggleLock(task);
 }
 
 void PlayerControl::minionView(Creature* creature) {
@@ -516,7 +526,7 @@ void PlayerControl::minionView(Creature* creature) {
     if (Creature* c = getCreature(currentId))
       switch (actionInfo->action.which()) {
         case 0: 
-          getCollective()->setMinionTask(c, boost::get<MinionTask>(actionInfo->action));
+          minionTaskAction(c, *actionInfo);
           break;
         case 1:
           minionEquipmentAction(c, *actionInfo);
@@ -536,7 +546,8 @@ void PlayerControl::minionView(Creature* creature) {
   }
 }
 
-static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked) {
+static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked,
+    optional<ItemInfo::Type> type = none) {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(true);
     c.fullName = stack[0]->getNameAndModifiers(false);
@@ -549,6 +560,8 @@ static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pendi
     c.actions = {ItemAction::DROP};
     c.equiped = equiped;
     c.locked = locked;
+    if (type)
+      c.type = *type;
     c.pending = pending;);
 }
 
@@ -606,7 +619,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) {
       removeElement(ownedItems, item);
       bool equiped = creature->getEquipment().isEquiped(item);
       bool locked = getCollective()->getMinionEquipment().isLocked(creature, item->getUniqueId());
-      info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked));
+      info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
       info.inventory.back().actions.push_back(locked ? ItemAction::UNLOCK : ItemAction::LOCK);
     }
     if (creature->getEquipment().getMaxItems(slot) > items.size()) {
@@ -619,7 +632,10 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) {
       [&](const Item* it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
   for (auto elem : consumables)
     info.inventory.push_back(getItemInfo(elem.second, false,
-          !creature->getEquipment().hasItem(elem.second.at(0)), false));
+          !creature->getEquipment().hasItem(elem.second.at(0)), false, ItemInfo::CONSUMABLE));
+  for (Item* item : creature->getEquipment().getItems())
+    if (!getCollective()->getMinionEquipment().isItemUseful(item))
+      info.inventory.push_back(getItemInfo({item}, false, false, false, ItemInfo::OTHER));
 }
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
@@ -1043,10 +1059,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
     index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
   if (const Creature* c = square->getCreature())
-    if (getCurrentTeam() && getTeams().contains(*getCurrentTeam(), c)
-        && index.hasObject(ViewLayer::CREATURE))
-      index.getObject(ViewLayer::CREATURE).setModifier(getTeams().getLeader(*getCurrentTeam()) == c ?
-          ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT : ViewObject::Modifier::TEAM_HIGHLIGHT);
+    if (!getTeams().getActiveTeams(c).empty() && index.hasObject(ViewLayer::CREATURE))
+      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);
   if (getCollective()->isMarked(pos))
     index.setHighlight(getCollective()->getMarkHighlight(pos));
   if (getCollective()->hasPriorityTasks(pos))
@@ -1276,9 +1290,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
           getTeams().setLeader(input.get<TeamLeaderInfo>().team(), c);
         break;
     case UserInputId::MOVE_TO:
-        if (currentTeam && getTeams().isActive(*currentTeam) && getCollective()->isKnownSquare(input.get<Vec2>())) {
-          getCollective()->freeTeamMembers(*currentTeam);
-          getCollective()->setTask(getTeams().getLeader(*currentTeam), Task::goTo(input.get<Vec2>()), true);
+        if (getCurrentTeam() && getTeams().isActive(*getCurrentTeam()) &&
+            getCollective()->isKnownSquare(input.get<Vec2>())) {
+          getCollective()->freeTeamMembers(*getCurrentTeam());
+          getCollective()->setTask(getTeams().getLeader(*getCurrentTeam()), Task::goTo(input.get<Vec2>()), true);
           view->continueClock();
         }
         break;
@@ -1443,7 +1458,8 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         getCollective()->setPriorityTasks(pos);
         break;
     case BuildInfo::SQUARE:
-        if (getCollective()->getConstructions().containsSquare(pos)) {
+        if (getCollective()->getConstructions().containsSquare(pos) &&
+            !getCollective()->getConstructions().getSquare(pos).isBuilt()) {
           if (selection != SELECT) {
             getCollective()->removeConstruction(pos);
             selection = DESELECT;

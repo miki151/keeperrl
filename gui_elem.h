@@ -29,7 +29,7 @@ class GuiElem {
   virtual bool onRightClick(Vec2) { return false; }
   virtual bool onMouseMove(Vec2) { return false;}
   virtual void onMouseGone() {}
-  virtual void onMouseRelease() {}
+  virtual void onMouseRelease(Vec2) {}
   virtual void onRefreshBounds() {}
   virtual bool onKeyPressed(char) { return false;}
   virtual bool onKeyPressed2(Event::KeyEvent) { return false;}
@@ -98,6 +98,7 @@ class GuiFactory {
   PGuiElem marginFit(PGuiElem top, PGuiElem rest, double height, MarginType);
   PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
   PGuiElem leftMargin(int size, PGuiElem content);
+  PGuiElem rightMargin(int size, PGuiElem content);
   PGuiElem topMargin(int size, PGuiElem content);
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
@@ -109,6 +110,8 @@ class GuiFactory {
   PGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_ON]);
   PGuiElem mainMenuLabelBg(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_OFF]);
   PGuiElem labelUnicode(const String&, Color, int size = Renderer::textSize,
+      Renderer::FontId = Renderer::SYMBOL_FONT);
+  PGuiElem labelUnicode(const String&, function<Color()>, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
   PGuiElem viewObject(const ViewObject& object, bool useSprites);
   PGuiElem viewObject(ViewId, bool useSprites);

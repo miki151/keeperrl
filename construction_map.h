@@ -19,7 +19,7 @@ class ConstructionMap {
     bool isBuilt() const;
     UniqueEntity<Task>::Id getTask() const;
     bool hasTask() const;
-    SquareType getSquareType() const;
+    const SquareType& getSquareType() const;
 
     SERIALIZATION_DECL(SquareInfo);
 
@@ -71,6 +71,7 @@ class ConstructionMap {
   const SquareInfo& getSquare(Vec2) const;
   SquareInfo& getSquare(Vec2);
   void removeSquare(Vec2);
+  void onSquareDestroyed(Vec2);
   void addSquare(Vec2, const SquareInfo&);
   bool containsSquare(Vec2) const;
   int getSquareCount(SquareType) const;
@@ -86,8 +87,7 @@ class ConstructionMap {
   void removeTorch(Vec2);
   void addTorch(Vec2, const TorchInfo&);
   bool containsTorch(Vec2) const;
-
-  const map<Vec2, SquareInfo>& getSquares() const;
+  const vector<Vec2>& getSquares() const;
   const map<Vec2, TrapInfo>& getTraps() const;
   const map<Vec2, TorchInfo>& getTorches() const;
 
@@ -95,7 +95,8 @@ class ConstructionMap {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  map<Vec2, SquareInfo> SERIAL(squares);
+  map<Vec2, vector<SquareInfo>> SERIAL(squares);
+  vector<Vec2> squarePos;
   unordered_map<SquareType, int> SERIAL(typeCounts);
   map<Vec2, TrapInfo> SERIAL(traps);
   map<Vec2, TorchInfo> SERIAL(torches);

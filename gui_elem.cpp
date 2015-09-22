@@ -348,9 +348,13 @@ PGuiElem GuiFactory::variableLabel(function<string()> fun, Renderer::CenterType 
 }
 
 PGuiElem GuiFactory::labelUnicode(const String& s, Color color, int size, Renderer::FontId fontId) {
+  return labelUnicode(s, [color] { return color; }, size, fontId);
+}
+
+PGuiElem GuiFactory::labelUnicode(const String& s, function<Color()> color, int size, Renderer::FontId fontId) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(fontId, size, color, bounds.getTopLeft().x, bounds.getTopLeft().y, s);
+          r.drawText(fontId, size, color(), bounds.getTopLeft().x, bounds.getTopLeft().y, s);
         }));
 }
 
@@ -412,10 +416,10 @@ class GuiLayout : public GuiElem {
       elems[i]->onMouseGone();
   }
 
-  virtual void onMouseRelease() override {
+  virtual void onMouseRelease(Vec2 pos) override {
     for (int i : AllReverse(elems))
       if (isVisible(i))
-        elems[i]->onMouseRelease();
+        elems[i]->onMouseRelease(pos);
   }
 
   virtual void render(Renderer& r) override {
@@ -962,6 +966,10 @@ PGuiElem GuiFactory::leftMargin(int size, PGuiElem content) {
   return PGuiElem(new Margins(std::move(content), size, 0, 0, 0));
 }
 
+PGuiElem GuiFactory::rightMargin(int size, PGuiElem content) {
+  return PGuiElem(new Margins(std::move(content), 0, 0, size, 0));
+}
+
 PGuiElem GuiFactory::topMargin(int size, PGuiElem content) {
   return PGuiElem(new Margins(std::move(content), 0, size, 0, 0));
 }
@@ -1071,15 +1079,20 @@ class MouseHighlight : public GuiLayout {
     : GuiLayout(makeVec<PGuiElem>(std::move(h))), myIndex(ind), highlighted(highlight) {}
 
   virtual void onMouseGone() override {
-    if (*highlighted == myIndex)
+    if (*highlighted == myIndex && canTurnOff) {
       *highlighted = -1;
+      canTurnOff = false;
+    }
   }
 
   virtual bool onMouseMove(Vec2 pos) override {
-    if (pos.inRectangle(getBounds()))
+    if (pos.inRectangle(getBounds())) {
       *highlighted = myIndex;
-    else if (*highlighted == myIndex)
+      canTurnOff = true;
+    } else if (*highlighted == myIndex && canTurnOff) {
       *highlighted = -1;
+      canTurnOff = false;
+    }
     return false;
   }
 
@@ -1091,6 +1104,7 @@ class MouseHighlight : public GuiLayout {
   private:
   int myIndex;
   int* highlighted;
+  bool canTurnOff = false;
 };
 
 class MouseHighlight2 : public GuiLayout {
@@ -1278,7 +1292,7 @@ class ScrollBar : public GuiLayout {
     return false;
   }
 
-  virtual void onMouseRelease() override {
+  virtual void onMouseRelease(Vec2) override {
     *held = notHeld;
   }
 
@@ -1356,8 +1370,8 @@ class Scrollable : public GuiElem {
     return content->onMouseMove(v);
   }
 
-  virtual void onMouseRelease() override {
-    content->onMouseRelease();
+  virtual void onMouseRelease(Vec2 pos) override {
+    content->onMouseRelease(pos);
   }
 
   virtual bool onKeyPressed(char c) override {
@@ -1689,7 +1703,7 @@ void GuiElem::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
   switch (event.type) {
     case Event::MouseButtonReleased:
       for (GuiElem* elem : guiElems)
-        elem->onMouseRelease();
+        elem->onMouseRelease(Vec2(event.mouseButton.x, event.mouseButton.y));
       break;
     case Event::MouseMoved: {
       bool captured = false;

@@ -79,11 +79,6 @@ class Construction : public Task {
     }
   }
 
-  virtual void cancel() override {
- // if the task is transferable then this callback is not needed ???
- //   callback->onConstructionCancelled(position); 
-  }
-
   virtual MoveInfo getMove(Creature* c) override {
     if (!callback->isConstructionReachable(position))
       return NoMove;
@@ -457,11 +452,16 @@ class ApplyItem : public BringItem {
       return c->wait();
     } else {
       if (it.size() > 1)
-        FAIL << it[0]->getName() << " " << it[0]->getUniqueId() << " "  << it[1]->getName() << " " << it[1]->getUniqueId();
+        FAIL << it[0]->getName() << " " << it[0]->getUniqueId() << " "  << it[1]->getName() << " " <<
+            it[1]->getUniqueId();
       Item* item = getOnlyElement(it);
-      return c->applyItem(item).prepend([=](Creature* c) {
-          callback->onAppliedItem(c->getPosition(), item);
-      });
+      if (auto action = c->applyItem(item))
+        return action.prepend([=](Creature* c) {
+            callback->onAppliedItem(c->getPosition(), item);
+          });
+      else return c->wait().prepend([=](Creature* c) {
+          cancel();
+        });
     }
   }
 
@@ -755,7 +755,8 @@ class Chain : public Task {
 
   virtual void cancel() override {
     for (int i = current; i < tasks.size(); ++i)
-      tasks[i]->cancel();
+      if (!tasks[i]->isDone())
+        tasks[i]->cancel();
   }
 
   virtual MoveInfo getMove(Creature* c) override {

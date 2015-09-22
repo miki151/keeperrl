@@ -128,6 +128,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   bool isDead() const;
   bool isBlind() const;
+  bool isBleeding() const;
   const Creature* getLastAttacker() const;
   vector<const Creature*> getKills() const;
   bool isHumanoid() const;
@@ -281,6 +282,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   vector<const Creature*> getUnknownAttacker() const;
   const MinionTaskMap& getMinionTasks() const;
+  MinionTaskMap& getMinionTasks();
   int accuracyBonus() const;
   vector<string> getMainAdjectives() const;
   struct AdjectiveInfo {

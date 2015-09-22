@@ -95,6 +95,7 @@ class BoulderController : public Monster {
         for (int i = 1; i <= radius; ++i) {
           if (!(getCreature()->getPosition() + (v * i)).inRectangle(getCreature()->getLevel()->getBounds()))
             break;
+          bool isWall = true;
           for (Square* square : getCreature()->getSquare(v * i)) {
             if (Creature* other = square->getCreature())
               if (other->getTribe() != myTribe) {
@@ -116,9 +117,11 @@ class BoulderController : public Monster {
                   return;
                 }
               }
-            if (!square->canEnterEmpty(getCreature()))
-              break;
+            if (square->canEnterEmpty(getCreature()))
+              isWall = false;
           }
+          if (isWall)
+            break;
         }
         if (found)
           break;
@@ -1105,8 +1108,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::KNIGHT;
           c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 26;
-          c.attr[AttrType::DEXTERITY] = 19;
+          c.attr[AttrType::STRENGTH] = 28;
+          c.attr[AttrType::DEXTERITY] = 21;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1154,7 +1157,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::LARGE;
           c.attr[AttrType::STRENGTH] = 17;
-          c.attr[AttrType::DEXTERITY] = 22;
+          c.attr[AttrType::DEXTERITY] = 24;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 100;
@@ -1490,6 +1493,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setWorkshopTasks(1);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.minionTasks.setValue(MinionTask::EAT, 5);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.name = "ogre";);
     case CreatureId::CHICKEN: 
@@ -1525,8 +1529,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::SPEED] = 80;
           c.size = CreatureSize::MEDIUM;
           c.firstName = NameGenerator::get(NameGeneratorId::DWARF)->getNext();
-          c.attr[AttrType::STRENGTH] = 21;
-          c.attr[AttrType::DEXTERITY] = 16;
+          c.attr[AttrType::STRENGTH] = 25;
+          c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 3;
           c.humanoid = true;
           c.weight = 90;
@@ -1536,6 +1540,7 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DWARF_FEMALE:
       return INHERIT(DWARF,
           c.viewId = ViewId::DWARF_FEMALE;
+          c.innocent = true;
           c.gender = Gender::female;);
     case CreatureId::DWARF_BARON: 
       return INHERIT(DWARF,

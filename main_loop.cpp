@@ -15,6 +15,7 @@
 #include "parse_game.h"
 #include "name_generator.h"
 #include "view.h"
+#include "village_control.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
     const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin, bool singleThread)
@@ -63,7 +64,7 @@ static string getSaveSuffix(Model::GameType t) {
 }
 
 template <typename InputType>
-static unique_ptr<Model> loadGameUsing(const string& filename, bool eraseFile) {
+static unique_ptr<Model> loadGameUsing(const string& filename, bool eraseFile, bool serializationBugfix) {
   unique_ptr<Model> model;
   try {
     InputType input(filename.c_str());
@@ -71,9 +72,15 @@ static unique_ptr<Model> loadGameUsing(const string& filename, bool eraseFile) {
     int version;
     input.getArchive() >>BOOST_SERIALIZATION_NVP(version) >> BOOST_SERIALIZATION_NVP(discard);
     Serialization::registerTypes(input.getArchive(), version);
+    if (serializationBugfix)
+      VillageControl::serializationBugfix = true;
     input.getArchive() >> BOOST_SERIALIZATION_NVP(model);
+    VillageControl::serializationBugfix = false;
   } catch (boost::archive::archive_exception& ex) {
-    return nullptr;
+    if (!serializationBugfix)
+      return loadGameUsing<InputType>(filename, eraseFile, true);
+    else
+      return nullptr;
   }
   if (eraseFile)
     remove(filename.c_str());
@@ -81,9 +88,9 @@ static unique_ptr<Model> loadGameUsing(const string& filename, bool eraseFile) {
 }
 
 static unique_ptr<Model> loadGame(const string& filename, bool eraseFile) {
-  if (auto model = loadGameUsing<CompressedInput>(filename, eraseFile))
+  if (auto model = loadGameUsing<CompressedInput>(filename, eraseFile, false))
     return model;
-  return loadGameUsing<CompressedInput2>(filename, eraseFile);
+  return loadGameUsing<CompressedInput2>(filename, eraseFile, false);
 }
 
 bool isNonAscii(char c) {

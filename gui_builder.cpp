@@ -343,12 +343,8 @@ PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, VillageInfo& villag
       gui.label("FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()),
       colors[ColorId::WHITE]));
   PGuiElem bottomElem = gui.horizontalList(std::move(bottomLine), 160);
-  bottomElem = gui.verticalList(makeVec<PGuiElem>(
-      gui.label(renderer.setViewCount > 1000 ? ("Warning: " + toString(renderer.setViewCount)) : "",
-          colors[ColorId::RED]),
-      std::move(bottomElem)), 30);
   main = gui.margin(gui.margins(std::move(bottomElem), 25, 0, 0, 0),
-      std::move(main), 48, gui.BOTTOM);
+      std::move(main), 18, gui.BOTTOM);
   return gui.margin(std::move(butGui), std::move(main), 55, gui.TOP);
 }
 
@@ -639,13 +635,10 @@ static string getActionText(ItemAction a) {
   }
 }
 
-void GuiBuilder::drawMiniMenu(vector<PGuiElem> elems, function<bool(int)> callback, Vec2 menuPos, int width) {
+void GuiBuilder::drawMiniMenu(vector<PGuiElem> elems, bool& exit, Vec2 menuPos, int width) {
   if (elems.empty())
     return;
-  bool exit = false;
   int numElems = elems.size();
-  for (int i : All(elems))
-    elems[i] = gui.stack(gui.button([&exit, callback, i] { exit = callback(i); }), std::move(elems[i]));
   int margin = 15;
   PGuiElem menu = gui.stack(
       gui.reverseButton([&exit] { exit = true; }, {{Keyboard::Escape}}),
@@ -785,7 +778,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   list.addElem(gui.horizontalList(makeVec<PGuiElem>(
       gui.label("Level " + toString(info.level), colors[ColorId::WHITE]),
       gui.stack(gui.button(getButtonCallback(UserInputId::UNPOSSESS)),
-          gui.label("[U] Leave control", colors[ColorId::LIGHT_BLUE]))), 140, 1));
+          gui.label("[U] Leave control", colors[ColorId::LIGHT_BLUE]))), 150, 1));
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addElem(gui.empty());
@@ -1443,14 +1436,30 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion, MinionMenuCall
         renderer.getTextLength(curTask) + 20),
       gui.button([=] (Rectangle bounds) {
           vector<PGuiElem> tasks;
-          for (auto task : minion.minionTasks)
-            tasks.push_back(gui.label(getTaskText(task.task), colors[getTaskColor(task)]));
-          drawMiniMenu(std::move(tasks), [=] (int ind) {
-              if (!minion.minionTasks[ind].inactive) {
-                callback(MinionAction{minion.minionTasks[ind].task});
-                  return true;
-              } else
-                return false;}, bounds.getBottomLeft(), 200);}));
+          bool exit = false;
+          MinionAction::TaskAction retAction;
+          for (auto task : minion.minionTasks) {
+            function<void()> buttonFun = [] {};
+            if (!task.inactive)
+              buttonFun = [&exit, &retAction, task] {
+                  retAction.switchTo = task.task;
+                  exit = true;
+                };
+            tasks.push_back(gui.horizontalList(makeVec<PGuiElem>(
+                gui.stack(
+                    gui.button(buttonFun),
+                    gui.label(getTaskText(task.task), colors[getTaskColor(task)])),
+                gui.stack(
+                    getTooltip({"Click to turn this task on/off."}),
+                    gui.button([&exit, &retAction, task] {
+                      retAction.lock.toggle(task.task);
+                    }),
+                    gui.labelUnicode(String(L'✓'), [&retAction, task] {
+                        return colors[(retAction.lock[task.task] ^ task.locked) ? ColorId::LIGHT_GRAY : ColorId::GREEN];}))), 175));
+          }
+          drawMiniMenu(std::move(tasks), exit, bounds.getBottomLeft(), 200);
+          callback(MinionAction{retAction});
+        }));
 }
 
 vector<PGuiElem> GuiBuilder::drawAttributesOnPage(vector<PGuiElem>&& attrs) {
@@ -1475,15 +1484,25 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const vector<ItemInfo>&
           callback(MinionAction{MinionAction::MinionItemAction{item.ids, item.slot, *choice}});
       });
   lines.push_back(gui.label("Equipment", colors[ColorId::YELLOW]));
-  for (int i : All(itemElems)) {
-    lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
-    if ((i == itemElems.size() - 1 || !items[i + 1].slot) && items[i].slot)
-      lines.push_back(gui.label("Consumables", colors[ColorId::YELLOW]));
-  }
+  for (int i : All(itemElems))
+    if (items[i].type == items[i].EQUIPMENT)
+      lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
+  lines.push_back(gui.label("Consumables", colors[ColorId::YELLOW]));
+  for (int i : All(itemElems))
+    if (items[i].type == items[i].CONSUMABLE)
+      lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
   lines.push_back(gui.stack(
       gui.label("[add consumable]", colors[ColorId::LIGHT_BLUE]),
       gui.button([=] { callback(MinionAction{MinionAction::MinionItemAction{{}, none,
           ItemAction::REPLACE}});})));
+  for (int i : All(itemElems))
+    if (items[i].type == items[i].OTHER) {
+      lines.push_back(gui.label("Other", colors[ColorId::YELLOW]));
+      break;
+    }
+  for (int i : All(itemElems))
+    if (items[i].type == items[i].OTHER)
+      lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
   return lines;
 }
 
@@ -1563,7 +1582,7 @@ PGuiElem GuiBuilder::drawMinionMenu(const vector<PlayerInfo>& minions,
   }
   int minionListWidth = 180;
   return gui.stack(
-      gui.keyHandler([callback] { callback(none); }, {{Keyboard::Escape}}),
+      gui.keyHandler([callback] { callback(none); }, {{Keyboard::Escape}, {Keyboard::Return}}),
       gui.horizontalList(makeVec<PGuiElem>(
           gui.leftMargin(8, gui.topMargin(15, drawMinionButtons(minions, current))),
           gui.margins(gui.sprite(GuiFactory::TexId::VERT_BAR_MINI, GuiFactory::Alignment::LEFT),

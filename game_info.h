@@ -94,6 +94,7 @@ struct ItemInfo {
   bool pending;
   optional<EquipmentSlot> slot;
   optional<CreatureInfo> owner;
+  enum Type {EQUIPMENT, CONSUMABLE, OTHER} type;
 };
 
 class PlayerInfo {
@@ -141,6 +142,7 @@ class PlayerInfo {
     MinionTask task;
     bool inactive;
     bool current;
+    bool locked;
   };
   vector<MinionTaskInfo> minionTasks;
   UniqueEntity<Creature>::Id creatureId;
