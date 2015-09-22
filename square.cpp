@@ -102,6 +102,10 @@ Vec2 Square::getPosition() const {
   return position;
 }
 
+Position Square::getPosition2() const {
+  return Position(position, level);
+}
+
 string Square::getName() const {
   return name;
 }
@@ -111,15 +115,11 @@ void Square::setName(const string& s) {
   name = s;
 }
 
-void Square::setLandingLink(StairDirection direction, StairKey key) {
-  landingLink = make_pair(direction, key);
+void Square::setLandingLink(StairKey key) {
+  landingLink = key;
 }
 
-bool Square::isLandingSquare(StairDirection direction, StairKey key) {
-  return landingLink == make_pair(direction, key);
-}
-
-optional<pair<StairDirection, StairKey>> Square::getLandingLink() const {
+optional<StairKey> Square::getLandingLink() const {
   return landingLink;
 }
 
@@ -166,7 +166,7 @@ void Square::destroy() {
   CHECK(isDestroyable());
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
-  level->getModel()->onSquareDestroyed(getLevel(), getPosition());
+  level->getModel()->onSquareDestroyed(getPosition2());
   getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 
@@ -182,7 +182,7 @@ void Square::destroyBy(Creature* c) {
 void Square::burnOut() {
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
-  level->getModel()->onSquareDestroyed(getLevel(), getPosition());
+  level->getModel()->onSquareDestroyed(getPosition2());
   getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 
@@ -238,21 +238,21 @@ void Square::tick(double time) {
   setDirty();
   if (!inventory->isEmpty())
     for (Item* item : inventory->getItems()) {
-      item->tick(time, level, position);
+      item->tick(time, Position(position, level));
       if (item->isDiscarded())
         inventory->removeItem(item);
     }
-  poisonGas->tick(level, position);
+  poisonGas->tick(getPosition2());
   if (creature && poisonGas->getAmount() > 0.2) {
     creature->poisonWithGas(min(1.0, poisonGas->getAmount()));
   }
   if (fire->isBurning()) {
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
     Debug() << getName() << " burning " << fire->getSize();
-    for (Square* s : level->getSquares(position.neighbors8(true)))
+    for (Position v : getPosition2().neighbors8(Random))
       if (fire->getSize() > Random.getDouble() * 40)
-        s->setOnFire(fire->getSize() / 20);
-    fire->tick(level, position);
+        v.setOnFire(fire->getSize() / 20);
+    fire->tick();
     if (fire->isBurntOut()) {
       level->globalMessage(position, "The " + getName() + " burns out");
       updateMovement();
@@ -262,7 +262,7 @@ void Square::tick(double time) {
     if (creature)
       creature->setOnFire(fire->getSize());
     for (Item* it : getItems())
-      it->setOnFire(fire->getSize(), level, position);
+      it->setOnFire(fire->getSize(), Position(position, level));
     for (Trigger* t : extractRefs(triggers))
       t->setOnFire(fire->getSize());
   }
@@ -309,7 +309,7 @@ void Square::onItemLands(vector<PItem> item, const Attack& attack, int remaining
       return;
     }
 
-  item[0]->onHitSquareMessage(position, this, item.size());
+  item[0]->onHitSquareMessage(getPosition2(), item.size());
   if (!item[0]->isDiscarded())
     dropItems(std::move(item));
 }
@@ -353,7 +353,7 @@ void Square::setOnFire(double amount) {
   if (creature)
     creature->setOnFire(amount);
   for (Item* it : getItems())
-    it->setOnFire(amount, level, position);
+    it->setOnFire(amount, Position(position, level));
 }
 
 void Square::addPoisonGas(double amount) {
@@ -399,7 +399,6 @@ void Square::getViewIndex(ViewIndex& ret, const Tribe* tribe) const {
       ret.insert(copyOf(*obj).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (Item* it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
-  ret.setHighlight(HighlightType::NIGHT, 1.0 - level->getLight(position));
   if (poisonGas->getAmount() > 0)
     ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas->getAmount()));
   if (fog)
@@ -443,7 +442,7 @@ void Square::addTrigger(PTrigger t) {
   triggers.push_back(std::move(t));
 }
 
-const vector<Trigger*> Square::getTriggers() const {
+vector<Trigger*> Square::getTriggers() const {
   return extractRefs(triggers);
 }
 
@@ -470,14 +469,6 @@ vector<PTrigger> Square::removeTriggers() {
 
 const Creature* Square::getCreature() const {
   return creature;
-}
-
-void Square::killCreature(Creature* attacker) {
-  onKilled(creature, attacker);
-  removeCreature();
-}
-
-void Square::onKilled(Creature* victim, Creature* attacker) {
 }
 
 void Square::removeCreature() {
@@ -589,5 +580,9 @@ optional<SquareApplyType> Square::getApplyType(const Creature* c) const {
     if (canApply(c))
       return ret;
   return none;
+}
+
+void Square::clearItemIndex(ItemIndex index) {
+  inventory->clearIndex(index);
 }
 

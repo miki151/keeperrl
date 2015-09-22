@@ -19,12 +19,14 @@
 #include "util.h"
 #include "creature_factory.h"
 #include "item_factory.h"
+#include "square_factory.h"
 
 enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON};
 
 class ItemFactory;
 class CollectiveBuilder;
 class LevelBuilder;
+class StairKey;
 
 class LevelGenException {
 };
@@ -32,15 +34,21 @@ class LevelGenException {
 enum class SettlementType {
   VILLAGE,
   VILLAGE2,
+  FOREST,
   CASTLE,
   CASTLE2,
   COTTAGE,
+  TOWER,
   WITCH_HOUSE,
   MINETOWN,
+  ANT_NEST,
   SMALL_MINETOWN,
   VAULT,
   CAVE,
+  SPIDER_CAVE,
   ISLAND_VAULT,
+  CEMETERY,
+  SWAMP,
 };
 
 struct StockpileInfo {
@@ -50,7 +58,7 @@ struct StockpileInfo {
 
 struct SettlementInfo {
   SettlementType type;
-  CreatureFactory creatures;
+  optional<CreatureFactory> creatures;
   int numCreatures;
   optional<pair<CreatureFactory, int>> neutralCreatures;
   Location* location;
@@ -63,23 +71,29 @@ struct SettlementInfo {
   optional<ItemType> elderLoot;
   optional<ItemFactory> shopFactory;
   CollectiveBuilder* collective;
+  optional<SquareFactory> furniture;
+  optional<SquareFactory> outsideFeatures;
+  bool closeToPlayer;
 };
 
 class LevelMaker {
   public:
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
 
-  static LevelMaker* cryptLevel(CreatureFactory roomFactory, CreatureId coffinCreature,
-      vector<StairKey> up, vector<StairKey> down);
-  static LevelMaker* topLevel(CreatureFactory forrest, vector<SettlementInfo> village);
-  static LevelMaker* mineTownLevel(SettlementInfo);
-  static LevelMaker* splashLevel(CreatureFactory heroLeader, CreatureFactory heroes, CreatureFactory monsters,
-      CreatureFactory imps, const string& splashPath);
-
-  static LevelMaker* pyramidLevel(optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
-  static LevelMaker* towerLevel(optional<StairKey> down, optional<StairKey> up);
-  static Vec2 getRandomExit(Rectangle rect, int minCornerDist = 1);
-  static LevelMaker* grassAndTrees();
+  static LevelMaker* cryptLevel(RandomGen&, SettlementInfo);
+  static LevelMaker* topLevel(RandomGen&, CreatureFactory forrest, vector<SettlementInfo> village);
+  static LevelMaker* mineTownLevel(RandomGen&, SettlementInfo);
+  static LevelMaker* splashLevel(CreatureFactory heroLeader, CreatureFactory heroes,
+      CreatureFactory monsters, CreatureFactory imps, const string& splashPath);
+  static LevelMaker* pyramidLevel(RandomGen&, optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
+  static LevelMaker* towerLevel(RandomGen&, SettlementInfo);
+  static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
+  static LevelMaker* roomLevel(RandomGen&, CreatureFactory roomFactory, CreatureFactory waterFactory,
+    CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down, SquareFactory);
+  static LevelMaker* mazeLevel(RandomGen&, SettlementInfo);
+  static LevelMaker* sokobanLevel(RandomGen&, SettlementInfo);
+  static LevelMaker* quickLevel(RandomGen&);
+  static LevelMaker* emptyLevel(RandomGen&);
 };
 
 #endif

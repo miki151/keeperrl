@@ -21,7 +21,7 @@
 #include "location.h"
 #include "renderer.h"
 #include "map_memory.h"
-#include "square.h"
+#include "view_index.h"
 
 void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
   mapBufferTex.update(mapBuffer);
@@ -66,7 +66,7 @@ MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
 }
 
 void MinimapGui::clear() {
-  refreshBuffer = true;
+  currentLevel = nullptr;
   info = MinimapInfo {};
 }
 
@@ -83,43 +83,43 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
   info.enemies.clear();
   info.locations.clear();
   const MapMemory& memory = creature->getMemory();
-  if (refreshBuffer) {
-    for (Vec2 v : Level::getMaxBounds()) {
-      if (!v.inRectangle(level->getBounds()) || !memory.hasViewIndex(v))
-        mapBuffer.setPixel(v.x, v.y, colors[ColorId::BLACK]);
+  if (currentLevel != level) {
+    mapBuffer.create(Level::getMaxBounds().getW(), Level::getMaxBounds().getH());
+    info.roads.clear();
+    for (Position v : level->getAllPositions()) {
+      if (!memory.getViewIndex(v))
+        mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, colors[ColorId::BLACK]);
       else {
-        mapBuffer.setPixel(v.x, v.y, Tile::getColor(level->getSafeSquare(v)->getViewObject()));
-        if (level->getSafeSquare(v)->getViewObject().hasModifier(ViewObject::Modifier::ROAD))
-          info.roads.insert(v);
+        mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, Tile::getColor(v.getViewObject()));
+        if (v.getViewObject().hasModifier(ViewObject::Modifier::ROAD))
+          info.roads.insert(v.getCoord());
       }
     }
-    refreshBuffer = false;
+    currentLevel = level;
   }
-  for (Vec2 v : memory.getUpdated()) {
-    mapBuffer.setPixel(v.x, v.y, Tile::getColor(level->getSafeSquare(v)->getViewObject()));
-    if (level->getSafeSquare(v)->getViewObject().hasModifier(ViewObject::Modifier::ROAD))
-      info.roads.insert(v);
+  for (Position v : memory.getUpdated(level)) {
+    CHECK(v.getCoord().inRectangle(Vec2(mapBuffer.getSize().x, mapBuffer.getSize().y))) << v.getCoord();
+    mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, Tile::getColor(v.getViewObject()));
+    if (v.getViewObject().hasModifier(ViewObject::Modifier::ROAD))
+      info.roads.insert(v.getCoord());
   }
-  memory.clearUpdated();
-  info.player = *creature->getPosition(true);
+  memory.clearUpdated(level);
+  info.player = creature->getPosition();
   for (Vec2 pos : creature->getVisibleEnemies())
     if (pos.inRectangle(bounds))
       info.enemies.push_back(pos);
   if (printLocations)
     for (const Location* loc : level->getAllLocations()) {
       bool seen = false;
-      for (Vec2 v : loc->getAllSquares())
-        if (memory.hasViewIndex(v)) {
+      for (Position v : loc->getAllSquares())
+        if (memory.getViewIndex(v)) {
           seen = true;
           break;
         }
-      if (loc->isMarkedAsSurprise() && !seen) {
-        Vec2 pos = loc->getMiddle();
-        info.locations.push_back({pos, ""});
-      }
+      if (loc->isMarkedAsSurprise() && !seen)
+        info.locations.push_back({loc->getMiddle().getCoord(), ""});
       if (loc->getName() && seen) {
-        Vec2 pos = loc->getBottomRight();
-        info.locations.push_back({pos, *loc->getName()});
+        info.locations.push_back({loc->getBottomRight().getCoord(), *loc->getName()});
       }
     }
 }

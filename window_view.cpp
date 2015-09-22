@@ -63,25 +63,6 @@ View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
   return new ReplayView(ifs, new WindowView(params));
 }
 
-class TempClockPause {
-  public:
-  TempClockPause(Clock* c) : clock(c) {
-    if (!clock->isPaused()) {
-      clock->pause();
-      cont = true;
-    }
-  }
-
-  ~TempClockPause() {
-    if (cont)
-      clock->cont();
-  }
-
-  private:
-  Clock* clock;
-  bool cont = false;
-};
-
 int rightBarWidthCollective = 330;
 int rightBarWidthPlayer = 330;
 int bottomBarHeightCollective = 62;
@@ -115,7 +96,7 @@ void WindowView::resetMapBounds() {
 }
 
 WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(params.gui), useTiles(params.useTiles),
-    options(params.options), clock(params.clock), guiBuilder(renderer, gui, clock, {
+    options(params.options), clock(params.clock), guiBuilder(renderer, gui, clock, params.options, {
         [this](UserInput input) { inputQueue.push(input);},
         [this](const vector<string>& s) { mapGui->setHint(s);},
         [this](sf::Event::KeyEvent ev) { keyboardAction(ev);},
@@ -148,7 +129,7 @@ void WindowView::initialize() {
       [this](Vec2 pos) { mapLeftClickFun(pos); },
       [this](Vec2 pos) { mapRightClickFun(pos); },
       [this](UniqueEntity<Creature>::Id id) { mapCreatureClickFun(id); },
-      [this] { refreshInput = true;}}, clock );
+      [this] { refreshInput = true;}}, clock, options );
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = gui.border2(gui.rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
@@ -158,7 +139,8 @@ void WindowView::initialize() {
 void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
   if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl)) {
     inputQueue.push(UserInput(UserInputId::ADD_TO_TEAM, id));
-    guiBuilder.setCollectiveTab(GuiBuilder::CollectiveTab::MINIONS);
+    if (gameInfo.infoType == GameInfo::InfoType::BAND)
+      guiBuilder.setCollectiveTab(GuiBuilder::CollectiveTab::MINIONS);
   } else
     inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
 }
@@ -178,7 +160,7 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
         inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
       else
       if (collectiveTab == GuiBuilder::CollectiveTab::TECHNOLOGY && activeLibrary >= 0)
-        inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo(pos, activeLibrary)));
+        inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo{pos, activeLibrary}));
       else
       if (collectiveTab == GuiBuilder::CollectiveTab::BUILDINGS) {
         if (Keyboard::isKeyPressed(Keyboard::LShift) || Keyboard::isKeyPressed(Keyboard::RShift))
@@ -186,7 +168,7 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
         else if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl))
           inputQueue.push(UserInput(UserInputId::RECT_DESELECTION, pos));
         else
-          inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo(pos, activeBuilding)));
+          inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo{pos, activeBuilding}));
       }
     default:
       break;
@@ -446,10 +428,12 @@ void WindowView::rebuildGui() {
 }
 
 vector<GuiElem*> WindowView::getAllGuiElems() {
+  if (!gameReady)
+    return extractRefs(blockingElems);
   CHECK(currentThreadId() == renderThreadId);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     return concat({mapGui}, extractRefs(tempGuiElems));
-  vector<GuiElem*> ret = extractRefs(tempGuiElems);
+  vector<GuiElem*> ret = concat(extractRefs(tempGuiElems), extractRefs(blockingElems));
   if (gameReady)
     ret = concat(concat({mapGui}, ret), {minimapDecoration.get(), minimapGui});
   return ret;
@@ -459,7 +443,7 @@ vector<GuiElem*> WindowView::getClickableGuiElems() {
   CHECK(currentThreadId() == renderThreadId);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     return {mapGui};
-  vector<GuiElem*> ret = extractRefs(tempGuiElems);
+  vector<GuiElem*> ret = concat(extractRefs(tempGuiElems), extractRefs(blockingElems));
   reverse(ret.begin(), ret.end());
   if (gameReady) {
     ret.push_back(minimapGui);
@@ -468,8 +452,12 @@ vector<GuiElem*> WindowView::getClickableGuiElems() {
   return ret;
 }
 
+void WindowView::setScrollPos(Vec2 pos) {
+  mapGui->setCenter(pos);
+}
+
 void WindowView::resetCenter() {
-  mapGui->clearCenter();
+  mapGui->resetScrolling();
 }
 
 void WindowView::addVoidDialog(function<void()> fun) {
@@ -546,18 +534,18 @@ void WindowView::refreshView() {
     return;
   {
     RenderLock lock(renderMutex);
-    if (!wasRendered)
+    if (!wasRendered && gameReady)
       rebuildGui();
     wasRendered = true;
     CHECK(currentThreadId() == renderThreadId);
-    if (gameReady)
+    if (gameReady || !blockingElems.empty())
       processEvents();
     if (!renderDialog.empty())
       renderDialog.top()();
-    if (uiLock && renderDialog.empty())
+    if (uiLock && renderDialog.empty() && blockingElems.empty())
       return;
   }
-  if (renderDialog.empty() && gameReady)
+  if ((renderDialog.empty() && gameReady) || !blockingElems.empty())
     refreshScreen(true);
 }
 
@@ -592,8 +580,7 @@ void WindowView::refreshScreen(bool flipBuffer) {
       else
         displayOldSplash();
     }
-    else
-      drawMap();
+    drawMap();
   }
   if (flipBuffer)
     renderer.drawAndClearBuffer();
@@ -681,7 +668,7 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
 
 bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {
   int index = defaultNo ? 1 : 0;
-  return chooseFromListInternal("", {ListElem(message, ListElem::TITLE), "Yes", "No"}, index,
+  return chooseFromListInternal("", {ListElem(capitalFirst(message), ListElem::TITLE), "Yes", "No"}, index,
       MenuType::YES_NO, nullptr, none, none, {}) == 0;
 }
 
@@ -795,6 +782,48 @@ optional<int> WindowView::chooseItem(const vector<PlayerInfo>& minions, UniqueEn
   });
   lock.unlock();
   return returnQueue.pop();
+}
+
+optional<UniqueEntity<Creature>::Id> WindowView::chooseRecruit(const string& title, const string& warning,
+    pair<ViewId, int> budget, const vector<CreatureInfo>& creatures, double* scrollPos) {
+  SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawRecruitMenu(returnQueue, title, warning, budget, creatures,
+        scrollPos), Vec2(rightBarWidthCollective + 30, 80));
+}
+
+optional<UniqueEntity<Item>::Id> WindowView::chooseTradeItem(const string& title, pair<ViewId, int> budget,
+    const vector<ItemInfo>& items, double* scrollPos) {
+  SyncQueue<optional<UniqueEntity<Item>::Id>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawTradeItemMenu(returnQueue, title, budget, items, scrollPos),
+      Vec2(rightBarWidthCollective + 30, 80));
+}
+
+void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, Vec2 origin) {
+  RenderLock lock(renderMutex);
+  TempClockPause pause(clock);
+  if (blockingElems.empty()) {
+    blockingElems.push_back(gui.darken());
+    blockingElems.back()->setBounds(renderer.getSize());
+  }
+  blockingElems.push_back(std::move(elem));
+  blockingElems.back()->setPreferredBounds(origin);
+  lock.unlock();
+  if (currentThreadId() == renderThreadId)
+    while (!sem.get())
+      refreshView();
+  else
+    sem.p();
+  lock.lock();
+  blockingElems.clear();
+}
+
+void WindowView::presentHighscores(const vector<HighscoreList>& list) {
+  Semaphore sem;
+  int tabNum = 0;
+  bool online = false;
+  vector<double> scrollPos(list.size(), 0);
+  getBlockingGui(sem, guiBuilder.drawHighscores(list, sem, tabNum, scrollPos, online),
+      guiBuilder.getMenuPosition(MenuType::NORMAL).getTopLeft());
 }
 
 PGuiElem WindowView::drawGameChoices(optional<GameTypeChoice>& choice,optional<GameTypeChoice>& index) {
@@ -1134,7 +1163,8 @@ void WindowView::processEvents() {
       propagateEvent(event, getClickableGuiElems());
     switch (event.type) {
       case Event::KeyPressed:
-        renderer.flushEvents(Event::KeyPressed);
+        if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
+          renderer.flushEvents(Event::KeyPressed);
         break;
       case Event::MouseButtonPressed :
         if (event.mouseButton.button == sf::Mouse::Right)
@@ -1144,8 +1174,8 @@ void WindowView::processEvents() {
         break;
       case Event::MouseButtonReleased :
         if (event.mouseButton.button == sf::Mouse::Left)
-          inputQueue.push(UserInput(UserInputId::BUTTON_RELEASE, BuildingInfo(Vec2(0, 0),
-              guiBuilder.getActiveBuilding())));
+          inputQueue.push(UserInput(UserInputId::BUTTON_RELEASE, BuildingInfo{Vec2(0, 0),
+              guiBuilder.getActiveBuilding()}));
         break;
       default: break;
     }

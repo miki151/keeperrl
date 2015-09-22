@@ -325,8 +325,8 @@ vector<ViewId> shuffledItems;
 
 void ViewObject::setHallu(bool b) {
   if (!hallu && b) {
-    shuffledCreatures = randomPermutation(creatureIds);
-    shuffledItems = randomPermutation(itemIds);
+    shuffledCreatures = Random.permutation(creatureIds);
+    shuffledItems = Random.permutation(itemIds);
   }
   hallu = b;
 }

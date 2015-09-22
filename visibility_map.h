@@ -2,21 +2,23 @@
 #define _VISIBILITY_MAP_H
 
 #include "util.h"
+#include "position_map.h"
 
 class Creature;
+class Level;
 
 class VisibilityMap {
   public:
-  VisibilityMap(Rectangle bounds);
-  void update(const Creature*, vector<Vec2> visibleTiles);
+  VisibilityMap(const vector<Level*>&);
+  void update(const Creature*, vector<Position> visibleTiles);
   void remove(const Creature*);
-  bool isVisible(Vec2 pos) const;
+  bool isVisible(Position) const;
 
   SERIALIZATION_DECL(VisibilityMap);
 
   private:
-  map<const Creature*, vector<Vec2>> SERIAL(lastUpdates);
-  Table<int> SERIAL(visibilityCount);
+  map<const Creature*, vector<Position>> SERIAL(lastUpdates);
+  PositionMap<int> SERIAL(visibilityCount);
 };
 
 #endif

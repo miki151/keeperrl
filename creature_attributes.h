@@ -139,6 +139,7 @@ class CreatureAttributes {
   bool SERIAL(worshipped) = false;
   bool SERIAL(dontChase) = false;
   double SERIAL(attributeGain) = 0.5;
+  int SERIAL(recruitmentCost) = 0;
   Skillset SERIAL(skills);
   SpellMap SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);

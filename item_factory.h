@@ -42,6 +42,7 @@ class ItemFactory {
   static ItemFactory villageShop();
   static ItemFactory dwarfShop();
   static ItemFactory orcShop();
+  static ItemFactory gnomeShop();
   static ItemFactory dragonCave();
   static ItemFactory workshop(const vector<Technology*>& techs);
   static ItemFactory forge(const vector<Technology*>& techs);

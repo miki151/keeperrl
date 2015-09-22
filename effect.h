@@ -18,6 +18,7 @@
 
 #include "util.h"
 #include "enums.h"
+#include "position.h"
 
 class Level;
 class Creature;
@@ -30,11 +31,11 @@ class DirEffectType;
 class Effect {
   public:
   static void applyToCreature(Creature*, const EffectType&, EffectStrength);
-  static void applyToPosition(Level*, Vec2, const EffectType&, EffectStrength);
+  static void applyToPosition(Position, const EffectType&, EffectStrength);
   static void applyDirected(Creature*, Vec2 direction, const DirEffectType&, EffectStrength);
 
-  static void summon(Creature*, CreatureId, int num, int ttl);
-  static void summon(Level*, const CreatureFactory&, Vec2 pos, int num, int ttl);
+  static vector<Creature*> summon(Creature*, CreatureId, int num, int ttl, double delay = 0);
+  static vector<Creature*> summon(Position, CreatureFactory&, int num, int ttl, double delay = 0);
   static string getName(const EffectType&);
   static string getName(LastingEffect);
   static string getDescription(const EffectType&);

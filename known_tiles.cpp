@@ -11,21 +11,21 @@ SERIALIZABLE(KnownTiles);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(KnownTiles);
 
-KnownTiles::KnownTiles(Rectangle bounds) : known(bounds, false) {
+KnownTiles::KnownTiles(const vector<Level*>& levels) : known(levels) {
 }
 
-void KnownTiles::addTile(Vec2 pos) {
+void KnownTiles::addTile(Position pos) {
   known[pos] = true;
   border.erase(pos);
-  for (Vec2 v : pos.neighbors4())
-    if (v.inRectangle(known.getBounds()) && !known[v])
+  for (Position v : pos.neighbors4())
+    if (!known[v])
       border.insert(v);
 }
 
-const set<Vec2>& KnownTiles::getBorderTiles() const {
+const set<Position>& KnownTiles::getBorderTiles() const {
   return border;
 }
 
-bool KnownTiles::isKnown(Vec2 pos) const {
-  return pos.inRectangle(known.getBounds()) && known[pos];
+bool KnownTiles::isKnown(Position pos) const {
+  return known[pos];
 };

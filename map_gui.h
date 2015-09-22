@@ -29,6 +29,7 @@ class Renderer;
 class CreatureView;
 class Clock;
 class Creature;
+class Options;
 
 class MapGui : public GuiElem {
   public:
@@ -38,7 +39,7 @@ class MapGui : public GuiElem {
     function<void(UniqueEntity<Creature>::Id)> creatureClickFun;
     function<void()> refreshFun;
   };
-  MapGui(Callbacks, Clock*);
+  MapGui(Callbacks, Clock*, Options*);
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
@@ -56,6 +57,7 @@ class MapGui : public GuiElem {
   void setCenter(double x, double y);
   void setCenter(Vec2 pos);
   void clearCenter();
+  void resetScrolling();
   bool isCentered() const;
   Vec2 getScreenPos() const;
   optional<Vec2> projectOnMap(Vec2 screenCoord);
@@ -65,6 +67,7 @@ class MapGui : public GuiElem {
       const EnumMap<HighlightType, double>&);
   void drawCreatureHighlights(Renderer&, const ViewObject&, Rectangle tile, int currentTimeReal);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
+  enum class HintPosition;
   void drawHint(Renderer& renderer, Color color, const vector<string>& text);
   void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);
   void renderExtraBorders(Renderer&, int currentTimeReal);
@@ -98,6 +101,7 @@ class MapGui : public GuiElem {
     Vec2 position;
   };
   vector<AnimationInfo> animations;
+  Options* options;
   DirtyTable<bool> fogOfWar;
   DirtyTable<vector<ViewId>> extraBorderPos;
   bool isFoW(Vec2 pos) const;
@@ -136,6 +140,9 @@ class MapGui : public GuiElem {
   bool showMorale;
   DirtyTable<bool> enemyPositions;
   void updateEnemyPositions(const vector<Vec2>&);
+  bool lockedView = true;
+  int lastRightClick = -10000;
+  bool displayScrollHint = false;
 };
 
 #endif

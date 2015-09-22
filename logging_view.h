@@ -29,6 +29,8 @@ enum class LoggingToken {
   GET_MINION_ACTION,
   GET_TIME_ABSOLUTE,
   CHOOSE_ITEM,
+  CHOOSE_RECRUIT,
+  CHOOSE_TRADE_ITEM,
   TRAVEL_INTERRUPT,
   GET_TEXT
 };
@@ -98,6 +100,16 @@ class LoggingView : public View {
       return logAndGet(delegate->chooseItem(info, current, items, scrollpos), LoggingToken::CHOOSE_ITEM);
     }
 
+    virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
+        pair<ViewId, int> budget, const vector<CreatureInfo>& c, double* scrollPos) override {
+      return logAndGet(delegate->chooseRecruit(title, warning, budget, c, scrollPos), LoggingToken::CHOOSE_RECRUIT);
+    }
+
+    virtual optional<UniqueEntity<Creature>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
+        const vector<ItemInfo>& c, double* scrollPos) override {
+      return logAndGet(delegate->chooseTradeItem(title, budget, c, scrollPos), LoggingToken::CHOOSE_TRADE_ITEM);
+    }
+
     virtual bool travelInterrupt() override {
       return logAndGet(delegate->travelInterrupt(), LoggingToken::TRAVEL_INTERRUPT);
     }
@@ -105,6 +117,9 @@ class LoggingView : public View {
     virtual optional<string> getText(const string& title, const string& value, int maxLength,
         const string& hint = "") override {
       return logAndGet(delegate->getText(title, value, maxLength, hint), LoggingToken::GET_TEXT);
+    }
+
+    virtual void presentHighscores(const vector<HighscoreList>&) override {
     }
 
     virtual void initialize() override {
@@ -166,6 +181,10 @@ class LoggingView : public View {
 
     virtual void resetCenter() override {
       delegate->resetCenter();
+    }
+
+    virtual void setScrollPos(Vec2 v) override {
+      delegate->setScrollPos(v);
     }
 
   private:

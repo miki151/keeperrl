@@ -103,7 +103,10 @@ void MinionEquipment::discard(const Item* it) {
 }
 
 void MinionEquipment::discard(UniqueEntity<Item>::Id id) {
-  owners.erase(id);
+  if (owners.count(id)) {
+    locked.erase(make_pair(owners.at(id)->getUniqueId(), id));
+    owners.erase(id);
+  }
 }
 
 void MinionEquipment::own(const Creature* c, const Item* it) {

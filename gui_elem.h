@@ -31,10 +31,12 @@ class GuiElem {
   virtual void onMouseGone() {}
   virtual void onMouseRelease(Vec2) {}
   virtual void onRefreshBounds() {}
-  virtual bool onKeyPressed(char) { return false;}
   virtual bool onKeyPressed2(Event::KeyEvent) { return false;}
   virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
+  virtual optional<int> getPreferredWidth() { return none; }
+  virtual optional<int> getPreferredHeight() { return none; }
 
+  void setPreferredBounds(Vec2 origin);
   void setBounds(Rectangle);
   Rectangle getBounds();
 
@@ -52,11 +54,11 @@ class GuiFactory {
   void loadFreeImages(const string& path);
   void loadNonFreeImages(const string& path);
 
-  PGuiElem button(function<void()> fun, char hotkey = 0, bool capture = false);
-  PGuiElem button2(function<void()> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem button(function<void()> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem button(function<void()> fun);
   PGuiElem reverseButton(function<void()> fun, vector<Event::KeyEvent> = {}, bool capture = false);
-  PGuiElem button(function<void(Rectangle buttonBounds)> fun, char hotkey = 0, bool capture = false);
-  PGuiElem button2(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem button(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem button(function<void(Rectangle buttonBounds)> fun);
   PGuiElem focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent,
       vector<Event::KeyEvent> defocusEvent, bool& focused);
   PGuiElem mouseWheel(function<void(bool)>);
@@ -69,11 +71,16 @@ class GuiFactory {
   class ListBuilder {
     public:
     ListBuilder(GuiFactory&, int defaultSize = 0);
-    void addElem(PGuiElem, int size = 0);
-    void addBackElem(PGuiElem, int size = 0);
+    ListBuilder& addElem(PGuiElem, int size = 0);
+    ListBuilder& addElemAuto(PGuiElem);
+    ListBuilder& addBackElemAuto(PGuiElem);
+    ListBuilder& addBackElem(PGuiElem, int size = 0);
     PGuiElem buildVerticalList();
     PGuiElem buildHorizontalList();
+    PGuiElem buildHorizontalListFit();
     int getSize() const;
+    bool isEmpty() const;
+    vector<PGuiElem>& getAllElems();
 
     private:
     GuiFactory& gui;
@@ -91,6 +98,7 @@ class GuiFactory {
   PGuiElem horizontalListFit(vector<PGuiElem>, double spacing = 0);
   PGuiElem verticalAspect(PGuiElem, double ratio);
   PGuiElem empty();
+  PGuiElem preferredSize(int width, int height);
   enum MarginType { TOP, LEFT, RIGHT, BOTTOM};
   PGuiElem margin(PGuiElem top, PGuiElem rest, int height, MarginType);
   PGuiElem margin(PGuiElem top, PGuiElem rest, function<int(Rectangle)> width, MarginType type);
@@ -109,7 +117,7 @@ class GuiFactory {
       Renderer::CenterType = Renderer::NONE, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
   PGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_ON]);
   PGuiElem mainMenuLabelBg(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_OFF]);
-  PGuiElem labelUnicode(const String&, Color, int size = Renderer::textSize,
+  PGuiElem labelUnicode(const String&, Color = colors[ColorId::WHITE], int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
   PGuiElem labelUnicode(const String&, function<Color()>, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
@@ -120,6 +128,7 @@ class GuiFactory {
   PGuiElem centerHoriz(PGuiElem, int width);
   PGuiElem mouseOverAction(function<void()> callback, function<void()> onLeaveCallback = nullptr);
   PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
+  PGuiElem mouseHighlightClick(PGuiElem highlight, int myIndex, int* highlighted);
   PGuiElem mouseHighlight2(PGuiElem highlight);
   PGuiElem mouseHighlightGameChoice(PGuiElem, GameTypeChoice my, optional<GameTypeChoice>& highlight);
   static int getHeldInitValue();
@@ -185,6 +194,7 @@ class GuiFactory {
   PGuiElem repeatedPattern(Texture& tex);
   PGuiElem background(Color);
   PGuiElem highlight(double height);
+  PGuiElem highlightDouble();
   PGuiElem mainMenuHighlight();
   PGuiElem insideBackground(PGuiElem content);
   PGuiElem window(PGuiElem content, function<void()> onExitButton);

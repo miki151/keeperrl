@@ -31,7 +31,7 @@ string getSyllable() {
 }
 
 string getWord() {
-  int syllables = chooseRandom({1, 2, 3, 4}, {1, 4, 3, 1});
+  int syllables = Random.choose({1, 2, 3, 4}, {1, 4, 3, 1});
   string ret;
   for (int i : Range(syllables))
     ret += getSyllable();
@@ -53,7 +53,7 @@ void NameGenerator::init(const string& namesPath) {
   vector<string> input;
   for (int i : Range(1000)) {
     string ret;
-    int parts = chooseRandom({1, 2}, {3, 1});
+    int parts = Random.choose({1, 2}, {3, 1});
     for (int k : Range(parts))
       ret += getWord() + " ";
     trim(ret);
@@ -89,6 +89,6 @@ string NameGenerator::getNext() {
 
   
 NameGenerator::NameGenerator(vector<string> list, bool oneN) : oneName(oneN) {
-  for (string name : randomPermutation(list))
+  for (string name : Random.permutation(list))
     names.push(name);
 }

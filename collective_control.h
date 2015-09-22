@@ -8,21 +8,23 @@ class Creature;
 class Collective;
 class Tribe;
 class SquareType;
+class CollectiveAttack;
+struct TriggerInfo;
 
 class CollectiveControl {
   public:
   CollectiveControl(Collective*);
-  virtual MoveInfo getMove(Creature*);
   virtual void tick(double time) = 0;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer);
   virtual void onOtherKilled(const Creature* victim, const Creature* killer);
   virtual void update(Creature*);
   virtual void addMessage(const PlayerMessage&) {}
-  virtual void addAssaultNotification(const Collective*, const vector<Creature*>&, const string& message) {}
-  virtual void removeAssaultNotification(const Collective*) {}
+  virtual void addAttack(const CollectiveAttack&) {}
   virtual void onDiscoveredLocation(const Location*) {}
-  virtual void onConstructed(Vec2, const SquareType&) {}
+  virtual void onConstructed(Position, const SquareType&) {}
   virtual void onNoEnemies() {}
+  virtual void onRansomPaid() {}
+  virtual vector<TriggerInfo> getTriggers(const Collective* against) const { return {}; }
 
   SERIALIZATION_DECL(CollectiveControl);
 
@@ -34,11 +36,9 @@ class CollectiveControl {
   static void registerTypes(Archive& ar, int version);
 
   const vector<Creature*>& getCreatures() const;
-  vector<Creature*>& getCreatures();
 
   protected:
-  Collective* getCollective();
-  const Collective* getCollective() const;
+  Collective* getCollective() const;
 
   private:
   Collective* SERIAL(collective) = nullptr;

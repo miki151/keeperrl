@@ -29,7 +29,8 @@ class CreatureView {
   virtual const MapMemory& getMemory() const = 0;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const = 0;
   virtual void refreshGameInfo(GameInfo&) const = 0;
-  virtual optional<Vec2> getPosition(bool force) const = 0;
+  virtual bool isPlayerView() const = 0;
+  virtual Vec2 getPosition() const = 0;
   struct MovementInfo {
     Vec2 from;
     Vec2 to;

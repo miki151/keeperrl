@@ -19,13 +19,13 @@
 #include <functional>
 
 #include "util.h"
+#include "position.h"
 
 class Creature;
 class Level;
 
 class ShortestPath {
   public:
-  ShortestPath(const Level* level, const Creature* creature, Vec2 target, Vec2 from, double mult = 0);
   ShortestPath(
       Rectangle area,
       function<double(Vec2)> entryFun,
@@ -55,6 +55,25 @@ class ShortestPath {
   bool SERIAL(reversed);
 };
 
+class LevelShortestPath {
+  public:
+  LevelShortestPath(const Creature* creature, Position target, Position from, double mult = 0);
+  bool isReachable(Position) const;
+  Position getNextMove(Position);
+  Position getTarget() const;
+  bool isReversed() const;
+  Level* getLevel() const;
+
+  static const double infinity;
+
+  SERIALIZATION_DECL(LevelShortestPath);
+
+  private:
+  static ShortestPath makeShortestPath(const Creature* creature, Position to, Position from, double mult);
+  ShortestPath SERIAL(path);
+  Level* SERIAL(level);
+};
+
 class Dijkstra {
   public:
   Dijkstra(Rectangle bounds, Vec2 from, int maxDist, function<double(Vec2)> entryFun,
@@ -65,6 +84,16 @@ class Dijkstra {
   
   private:
   map<Vec2, double> reachable;
+};
+
+class BfSearch {
+  public:
+  BfSearch(Rectangle bounds, Vec2 from, function<bool(Vec2)> entryFun, vector<Vec2> directions = Vec2::directions8());
+  bool isReachable(Vec2) const;
+  const set<Vec2>& getAllReachable() const;
+
+  private:
+  set<Vec2> reachable;
 };
 
 #endif

@@ -23,8 +23,10 @@
 #include "user_input.h"
 
 class Clock;
-struct MinionAction;
+class MinionAction;
 class ListElem;
+struct HighscoreList;
+class Options;
 
 class GuiBuilder {
   public:
@@ -35,7 +37,7 @@ class GuiBuilder {
     function<void(sf::Event::KeyEvent)> keyboardCallback;
     function<void()> refreshScreen;
   };
-  GuiBuilder(Renderer&, GuiFactory&, Clock*, Callbacks);
+  GuiBuilder(Renderer&, GuiFactory&, Clock*, Options*, Callbacks);
   void reset();
   void setTilesOk(bool);
   int getStandardLineHeight() const;
@@ -70,6 +72,14 @@ class GuiBuilder {
       MinionMenuCallback);
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
   vector<PGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);
+  typedef function<void(optional<int>)> CreatureMenuCallback;
+  PGuiElem drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
+      const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos);
+  PGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
+      pair<ViewId, int> budget, const vector<ItemInfo>&, double* scrollPos);
+  PGuiElem drawCost(pair<ViewId, int>, ColorId = ColorId::WHITE);
+  PGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<double>& scrollPos,
+      bool& online);
   
   enum class CollectiveTab {
     BUILDINGS,
@@ -107,6 +117,7 @@ class GuiBuilder {
   Renderer& renderer;
   GuiFactory& gui;
   Clock* clock;
+  Options* options;
   Callbacks callbacks;
   PGuiElem getHintCallback(const vector<string>&);
   PGuiElem getTooltip(const vector<string>&);
@@ -123,8 +134,13 @@ class GuiBuilder {
   vector<PGuiElem> drawMinionActions(const PlayerInfo&, MinionMenuCallback);
   vector<PGuiElem> joinLists(vector<PGuiElem>&&, vector<PGuiElem>&&);
   function<void()> getButtonCallback(UserInput);
-  void drawMiniMenu(vector<PGuiElem>, bool& exit, Vec2 menuPos, int width);
+  void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width);
+  void showAttackTriggers(const vector<TriggerInfo>&, Vec2 pos);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
+  PGuiElem getVillageActionButton(int villageIndex, VillageAction);
+  PGuiElem getVillageStateLabel(VillageInfo::Village::State);
+  vector<PGuiElem> drawRecruitList(const vector<CreatureInfo>&, CreatureMenuCallback, int budget);
+  PGuiElem drawHighscorePage(const HighscoreList&, double *scrollPos);
   int activeBuilding = 0;
   bool hideBuildingOverlay = false;
   int activeLibrary = -1;
@@ -136,6 +152,7 @@ class GuiBuilder {
   double buildingsScroll = 0;
   double minionsScroll = 0;
   double lyingItemsScroll = 0;
+  double villagesScroll = 0;
   int itemIndex = -1;
   bool playerOverlayFocused = false;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
@@ -165,6 +182,7 @@ class GuiBuilder {
   PGuiElem getButtonLine(CollectiveInfo::Button, int num, int& active, CollectiveTab);
   void drawMinionsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   void drawTasksOverlay(vector<OverlayInfo>&, CollectiveInfo&);
+  void drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInfo::Ransom&);
   void drawBuildingsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
@@ -179,6 +197,7 @@ class GuiBuilder {
   PGuiElem getHighlight(MenuType, const string& label, int height);
   vector<string> breakText(const string& text, int maxWidth);
   string getPlayerTitle(PlayerInfo&);
+  Event::KeyEvent getHotkeyEvent(char);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

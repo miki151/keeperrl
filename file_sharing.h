@@ -15,6 +15,8 @@ class FileSharing {
     string displayName;
     string filename;
     time_t time;
+    int totalGames;
+    int wonGames;
     int version;
   };
   vector<GameInfo> listGames();
