@@ -1472,7 +1472,8 @@ PTask Task::dropItems(vector<Item*> items) {
 namespace {
 class Spider : public NonTransferable {
   public:
-  Spider(const vector<Position>& pos, const vector<Position>& pos2) : positionsClose(pos), positionsFurther(pos2) {}
+  Spider(Position orig, const vector<Position>& pos, const vector<Position>& pos2)
+      : origin(orig), positionsClose(pos), positionsFurther(pos2) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (Random.roll(10))
@@ -1482,7 +1483,7 @@ class Spider : public NonTransferable {
           break;
         }
     if (!makeWeb && Random.roll(10)) {
-      vector<Position>& positions = Random.roll(15) ? positionsFurther : positionsClose;
+      vector<Position>& positions = Random.roll(10) ? positionsFurther : positionsClose;
       for (auto& pos : Random.permutation(positions))
         if (pos.getTriggers().empty() && !!c->moveTowards(pos, true)) {
           makeWeb = pos;
@@ -1490,7 +1491,7 @@ class Spider : public NonTransferable {
         }
     }
     if (!makeWeb)
-      return c->wait();
+      return c->moveTowards(origin);
     if (c->getPosition() == *makeWeb)
       return c->wait().append([this](Creature* c) {
             ItemFactory::fromId(ItemType{ItemId::TRAP_ITEM,
@@ -1508,6 +1509,7 @@ class Spider : public NonTransferable {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(NonTransferable)
+      & SVAR(origin)
       & SVAR(positionsClose)
       & SVAR(positionsFurther)
       & SVAR(makeWeb);
@@ -1516,14 +1518,15 @@ class Spider : public NonTransferable {
   SERIALIZATION_CONSTRUCTOR(Spider);
 
   protected:
+  Position SERIAL(origin);
   vector<Position> SERIAL(positionsClose);
   vector<Position> SERIAL(positionsFurther);
   optional<Position> SERIAL(makeWeb);
 };
 }
 
-PTask Task::spider(const vector<Position>& posClose, const vector<Position>& posFurther) {
-  return PTask(new Spider(posClose, posFurther));
+PTask Task::spider(Position origin, const vector<Position>& posClose, const vector<Position>& posFurther) {
+  return PTask(new Spider(origin, posClose, posFurther));
 }
 
 template <class Archive>

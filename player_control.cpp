@@ -990,7 +990,7 @@ void PlayerControl::handleRansom(bool pay) {
 
 vector<Collective*> PlayerControl::getKnownVillains(VillainType type) const {
   return filter(model->getVillains(type), [this](Collective* c) {
-      return getCollective()->isKnownVillain(c);});
+      return seeEverything || getCollective()->isKnownVillain(c);});
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {

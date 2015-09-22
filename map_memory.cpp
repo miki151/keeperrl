@@ -61,7 +61,8 @@ void MapMemory::update(Position pos, const ViewIndex& index) {
 }
 
 void MapMemory::updateUpdated(Position pos) {
-  updated[pos.getLevel()->getUniqueId()].insert(pos);
+  if (pos.isValid())
+    updated[pos.getLevel()->getUniqueId()].insert(pos);
 }
 
 void MapMemory::clearSquare(Position pos) {

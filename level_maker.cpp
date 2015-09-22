@@ -2039,7 +2039,7 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
     queue->addMaker(
         new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
           Predicate::type(building.floorOutside)));
-  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new Margin(1, new LocationMaker(info.location)));
   return queue;
 }
 
@@ -2064,6 +2064,7 @@ static LevelMaker* islandVaultMaker(RandomGen& random, SettlementInfo info, bool
   queue->addMaker(new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE));
   RandomLocations* locations = new RandomLocations();
   MakerQueue* inside = new MakerQueue();
+  inside->addMaker(new LocationMaker(info.location));
   Predicate featurePred = Predicate::type(building.floorInside);
   if (!info.stockpiles.empty())
     inside->addMaker(stockpileMaker(getOnlyElement(info.stockpiles)));

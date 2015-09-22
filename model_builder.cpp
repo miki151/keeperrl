@@ -548,7 +548,7 @@ static vector<EnemyInfo> getBanditCave(RandomGen& random, TribeSet& tribeSet) {
 static vector<EnemyInfo> getShelob(RandomGen& random, TribeSet& tribeSet) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
-      c.type = SettlementType::SPIDER_CAVE;
+      c.type = SettlementType::CAVE;
       c.creatures = CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::SHELOB);
       c.numCreatures = 1;
       c.buildingId = BuildingId::DUNGEON;

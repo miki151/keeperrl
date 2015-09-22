@@ -592,7 +592,8 @@ PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
         return Task::eat(hatchery);
       break;
       }
-    case MinionTaskInfo::SPIDER: return Task::spider(territory->getExtended(5), territory->getExtended(17));
+    case MinionTaskInfo::SPIDER: return Task::spider(territory->getAll().front(), territory->getExtended(3),
+                                     territory->getExtended(6));
   }
   return nullptr;
 }

@@ -73,7 +73,7 @@ class Task : public UniqueEntity<Task> {
   static PTask goToAndWait(Position, double maxTime);
   static PTask whipping(TaskCallback*, Position, Creature* whipped, double interval, double timeout);
   static PTask dropItems(vector<Item*>);
-  static PTask spider(const vector<Position>& posClose, const vector<Position>& posFurther);
+  static PTask spider(Position origin, const vector<Position>& posClose, const vector<Position>& posFurther);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
