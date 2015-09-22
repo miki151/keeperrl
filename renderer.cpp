@@ -498,7 +498,7 @@ bool Renderer::pollEvent(Event& ev) {
     ev = getRandomEvent();
     return true;
   } else 
-    return pollEventWorkaroundMouseReleaseBug(ev);
+    return pollEventOrFromQueue(ev);
 }
 
 void Renderer::flushEvents(Event::EventType type) {
