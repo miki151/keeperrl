@@ -200,9 +200,6 @@ class Level {
   void addLightSource(Vec2, double radius);
   void removeLightSource(Vec2, double radius);
 
-  void addDarknessSource(Vec2, double radius);
-  void removeDarknessSource(Vec2, double radius);
-
   /** Returns the amount of light in the square, capped within (0, 1).*/
   double getLight(Vec2) const;
 
@@ -234,7 +231,7 @@ class Level {
   vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
   void insertCreature(Creature*);
-  void eraseCreature(Creature*);
+  void eraseCreature(Creature*, Vec2 coord);
   vector<Creature*> SERIAL(creatures);
   Model* SERIAL(model) = nullptr;
   mutable EnumMap<VisionId, FieldOfView> SERIAL(fieldOfView);
@@ -255,6 +252,8 @@ class Level {
       Table<CoverInfo> coverInfo, int levelId);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
+  void addDarknessSource(Vec2, double radius);
+  void removeDarknessSource(Vec2, double radius);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
   FieldOfView& getFieldOfView(VisionId vision) const;
   vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
