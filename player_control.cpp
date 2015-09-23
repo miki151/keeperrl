@@ -1725,7 +1725,7 @@ void PlayerControl::tick(double time) {
   if (startImpNum == -1)
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   checkKeeperDanger();
-  if (retired && !getKeeper()->isDead()) {
+  if (retired && !getKeeper()->isDead() && getKeeper()->getPosition().isSameLevel(getLevel())) {
     if (const Creature* c = getLevel()->getPlayer()) {
       if (Random.roll(30) && !getCollective()->getTerritory().contains(c->getPosition()))
         c->playerMessage("You sense horrible evil in the " + 

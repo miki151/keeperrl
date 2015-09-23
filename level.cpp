@@ -110,10 +110,12 @@ const static double darknessRadius = 6.5;
 
 void Level::putCreature(Vec2 position, Creature* c) {
   CHECK(inBounds(position));
-  insertCreature(c);
+  creatures.push_back(c);
+  if (c->isPlayer())
+    player = c;
   CHECK(getSafeSquare(position)->getCreature() == nullptr);
-  bucketMap->addElement(position, c);
   c->setPosition(Position(position, this));
+  bucketMap->addElement(position, c);
   getSafeSquare(position)->putCreature(c);
   if (c->isDarknessSource())
     addDarknessSource(position, darknessRadius);
@@ -341,9 +343,7 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
 }
 
 void Level::killCreature(Creature* creature) {
-  bucketMap->removeElement(creature->getPosition().getCoord(), creature);
-  eraseCreature(creature);
-  creature->getPosition().removeCreature();
+  eraseCreature(creature, creature->getPosition().getCoord());
 }
 
 const static int hearingRange = 30;
@@ -372,20 +372,14 @@ void Level::globalMessage(const Creature* c, const PlayerMessage& ifPlayerCanSee
 
 void Level::changeLevel(StairKey key, Creature* c) {
   Vec2 oldPos = c->getPosition().getCoord();
-  if (model->changeLevel(key, c)) {
-    eraseCreature(c);
-    getSafeSquare(oldPos)->removeCreature();
-    bucketMap->removeElement(oldPos, c);
-  }
+  if (model->changeLevel(key, c))
+    eraseCreature(c, oldPos);
 }
 
 void Level::changeLevel(Position destination, Creature* c) {
   Vec2 oldPos = c->getPosition().getCoord();
-  if (model->changeLevel(destination, c)) {
-    eraseCreature(c);
-    getSafeSquare(oldPos)->removeCreature();
-    bucketMap->removeElement(oldPos, c);
-  }
+  if (model->changeLevel(destination, c))
+    eraseCreature(c, oldPos);
 }
 
 void Level::updatePlayer() {
@@ -395,16 +389,14 @@ void Level::updatePlayer() {
       player = c;
 }
 
-void Level::insertCreature(Creature* c) {
-  creatures.push_back(c);
-  if (c->isPlayer())
-    player = c;
-}
-
-void Level::eraseCreature(Creature* c) {
+void Level::eraseCreature(Creature* c, Vec2 coord) {
   removeElement(creatures, c);
   if (c->isPlayer())
     player = nullptr;
+  bucketMap->removeElement(coord, c);
+  getSafeSquare(coord)->removeCreature();
+  if (c->isDarknessSource())
+    removeDarknessSource(coord, darknessRadius);
 }
 
 const vector<Creature*>& Level::getAllCreatures() const {
@@ -470,7 +462,7 @@ void Level::moveCreature(Creature* creature, Vec2 direction) {
   thisSquare->removeCreature();
   creature->setPosition(Position(position + direction, this));
   nextSquare->putCreature(creature);
-  if (creature->isAffected(LastingEffect::DARKNESS_SOURCE)) {
+  if (creature->isDarknessSource()) {
     addDarknessSource(position + direction, darknessRadius);
     removeDarknessSource(position, darknessRadius);
   }
@@ -489,11 +481,11 @@ void Level::swapCreatures(Creature* c1, Creature* c2) {
   c2->setPosition(Position(position1, this));
   square1->putCreature(c2);
   square2->putCreature(c1);
-  if (c1->isAffected(LastingEffect::DARKNESS_SOURCE)) {
+  if (c1->isDarknessSource()) {
     addDarknessSource(position2, darknessRadius);
     removeDarknessSource(position1, darknessRadius);
   }
-  if (c2->isAffected(LastingEffect::DARKNESS_SOURCE)) {
+  if (c2->isDarknessSource()) {
     addDarknessSource(position1, darknessRadius);
     removeDarknessSource(position2, darknessRadius);
   }
