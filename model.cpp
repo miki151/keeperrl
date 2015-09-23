@@ -572,6 +572,8 @@ optional<StairKey> Model::getStairsBetween(const Level* from, const Level* to) {
 }
 
 Position Model::getStairs(const Level* from, const Level* to) {
+  CHECK(from != to);
+  CHECK(stairNavigation.count({from, to})) << "No link " << from->getName() << " " << to->getName();
   return Random.choose(from->getLandingSquares(stairNavigation.at({from, to})));
 }
 

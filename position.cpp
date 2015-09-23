@@ -504,8 +504,7 @@ double Position::getLight() const {
 optional<Position> Position::getStairsTo(Position pos) const {
   CHECK(isValid() && pos.isValid());
   CHECK(!isSameLevel(pos));
-  return level->getStairsTo(pos.level);
-  
+  return level->getStairsTo(pos.level); 
 }
 
 void Position::swapCreatures(Creature* c) {
