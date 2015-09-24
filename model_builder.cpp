@@ -928,7 +928,7 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter& meter, RandomGen& random,
   m->setOptions(options);
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   Level* top = m->buildLevel(
-      LevelBuilder(&meter, random, 28, 14, "Wilderness", false),
+      LevelBuilder(&meter, random, 28, 14, "Quick", false),
       LevelMaker::quickLevel(random));
   m->calculateStairNavigation();
   m->collectives.push_back(CollectiveBuilder(
@@ -1152,7 +1152,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, RandomGen& random,
 PModel ModelBuilder::splashModel(ProgressMeter& meter, View* view, const string& splashPath) {
   Model* m = new Model(view, "", TribeSet());
   Level* l = m->buildLevel(
-      LevelBuilder(&meter, Random, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Wilderness",
+      LevelBuilder(&meter, Random, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Splash",
           false),
       LevelMaker::splashLevel(
           CreatureFactory::splashLeader(m->tribeSet->human.get()),
