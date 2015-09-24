@@ -320,10 +320,10 @@ void Player::hideAction() {
 }
 
 bool Player::interruptedByEnemy() {
-  vector<Creature*> enemies = getCreature()->getVisibleEnemies();
+  vector<const Creature*> enemies = getCreature()->getVisibleEnemies();
   vector<string> ignoreCreatures { "a boar" ,"a deer", "a fox", "a vulture", "a rat", "a jackal", "a boulder" };
   if (enemies.size() > 0) {
-    for (Creature* c : enemies)
+    for (const Creature* c : enemies)
       if (!contains(ignoreCreatures, c->getName().a())) {
         model->getView()->updateView(this, false);
         privateMessage("You notice " + c->getName().a());
