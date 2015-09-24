@@ -59,7 +59,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void setModel(Model*);
   Level* getLevel() const;
   Model* getModel() const;
-  vector<Creature*> getVisibleEnemies() const;
+  vector<const Creature*> getVisibleEnemies() const;
   vector<Position> getVisibleTiles() const;
   void setPosition(Position);
   Position getPosition() const;
@@ -291,7 +291,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   vector<AttackLevel> getAttackLevels() const;
   bool hasSuicidalAttack() const;
 
-  vector<Creature*> getUnknownAttacker() const;
+  vector<const Creature*> getUnknownAttacker() const;
   const MinionTaskMap& getMinionTasks() const;
   MinionTaskMap& getMinionTasks();
   int accuracyBonus() const;
@@ -330,7 +330,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   double SERIAL(time) = 1;
   HeapAllocated<Equipment> SERIAL(equipment);
   unique_ptr<LevelShortestPath> SERIAL(shortestPath);
-  unordered_set<Creature*> SERIAL(knownHiding);
+  unordered_set<const Creature*> SERIAL(knownHiding);
   Tribe* SERIAL(tribe);
   double SERIAL(health) = 1;
   double SERIAL(morale) = 0;
@@ -341,7 +341,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Creature* SERIAL(lastAttacker) = nullptr;
   optional<string> SERIAL(deathReason);
   int SERIAL(swapPositionCooldown) = 0;
-  vector<Creature*> SERIAL(unknownAttacker);
+  vector<const Creature*> SERIAL(unknownAttacker);
   vector<const Creature*> SERIAL(privateEnemies);
   const Creature* SERIAL(holding) = nullptr;
   PController SERIAL(controller);
@@ -354,7 +354,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   vector<PMoraleOverride> SERIAL(moraleOverrides);
   void updateVisibleCreatures();
   const vector<Creature*>& getVisibleCreatures();
-  vector<Creature*> SERIAL(visibleEnemies);
+  vector<const Creature*> SERIAL(visibleEnemies);
   vector<Creature*> SERIAL(visibleCreatures);
   double getTimeRemaining(LastingEffect) const;
   string getRemainingString(LastingEffect) const;
