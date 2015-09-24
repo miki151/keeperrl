@@ -708,10 +708,10 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
         getGnomishMines(random, tribeSet),
         getDarkElvenMines(random, tribeSet)}));
   append(ret, getVaults(random, tribeSet));
-  if (Random.roll(4))
+  if (random.roll(4))
     append(ret, getAntNest(random, tribeSet));
   append(ret, getHumanCastle(random, tribeSet));
-  append(ret, Random.choose({
+  append(ret, random.choose({
         getFriendlyCave(random, tribeSet, CreatureId::ORC),
         getFriendlyCave(random, tribeSet, CreatureId::OGRE),
         getFriendlyCave(random, tribeSet, CreatureId::HARPY)}));
