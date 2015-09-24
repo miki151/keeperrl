@@ -2368,7 +2368,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
   }
 }
 
-vector<Creature*> Creature::getUnknownAttacker() const {
+vector<const Creature*> Creature::getUnknownAttacker() const {
   return filter(unknownAttacker, [](const Creature* c) { return !c->isDead();});
 }
 
@@ -2412,12 +2412,12 @@ void Creature::updateVisibleCreatures() {
       if (isEnemy(c))
         visibleEnemies.push_back(c);
     }
-  for (Creature* c : getUnknownAttacker())
+  for (const Creature* c : getUnknownAttacker())
     if (!contains(visibleEnemies, c))
       visibleEnemies.push_back(c);
 }
 
-vector<Creature*> Creature::getVisibleEnemies() const {
+vector<const Creature*> Creature::getVisibleEnemies() const {
   return filter(visibleEnemies, [] (const Creature* c) { return !c->isDead();});
 }
 
