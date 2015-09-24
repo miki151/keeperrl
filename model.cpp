@@ -342,7 +342,7 @@ Level* Model::buildLevel(LevelBuilder&& b, LevelMaker* maker) {
 Model::Model(View* v, const string& world, TribeSet&& tribes)
   : tribeSet(std::move(tribes)), view(v), worldName(world), musicType(MusicType::PEACEFUL) {
   updateSunlightInfo();
-  cemetery = LevelBuilder(Random, 100, 100, "Wilderness", false).build(this, LevelMaker::emptyLevel(Random), 0);
+  cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false).build(this, LevelMaker::emptyLevel(Random), 0);
 }
 
 Model::~Model() {
@@ -572,6 +572,8 @@ optional<StairKey> Model::getStairsBetween(const Level* from, const Level* to) {
 }
 
 Position Model::getStairs(const Level* from, const Level* to) {
+  CHECK(contains(getLevels(), from));
+  CHECK(contains(getLevels(), to));
   CHECK(from != to);
   CHECK(stairNavigation.count({from, to})) << "No link " << from->getName() << " " << to->getName();
   return Random.choose(from->getLandingSquares(stairNavigation.at({from, to})));

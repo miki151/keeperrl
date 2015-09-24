@@ -651,7 +651,7 @@ CreatureAction Creature::hide() const {
     playerMessage("You hide behind the " + getPosition().getName());
     self->knownHiding.clear();
     self->modViewObject().setModifier(ViewObject::Modifier::HIDDEN);
-    for (const Creature* other : getLevel()->getAllCreatures())
+    for (Creature* other : getLevel()->getAllCreatures())
       if (other->canSee(this) && other->isEnemy(this)) {
         self->knownHiding.insert(other);
         if (!isBlind())
@@ -705,7 +705,7 @@ bool Creature::isHidden() const {
 }
 
 bool Creature::knowsHiding(const Creature* c) const {
-  return knownHiding.count(c) == 1;
+  return knownHiding.count(const_cast<Creature*>(c)) == 1; // OBSOLETE: change to entity set
 }
 
 bool Creature::affects(LastingEffect effect) const {
@@ -1323,7 +1323,7 @@ bool Creature::dodgeAttack(const Attack& attack) {
   ++numAttacksThisTurn;
   Debug() << getName().the() << " dodging " << attack.getAttacker()->getName().bare()
     << " accuracy " << attack.getAccuracy() << " dodge " << getModifier(ModifierType::ACCURACY);
-  if (const Creature* c = attack.getAttacker()) {
+  if (Creature* c = attack.getAttacker()) {
     if (!canSee(c))
       unknownAttacker.push_back(c);
   }
@@ -2368,7 +2368,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
   }
 }
 
-vector<const Creature*> Creature::getUnknownAttacker() const {
+vector<Creature*> Creature::getUnknownAttacker() const {
   return filter(unknownAttacker, [](const Creature* c) { return !c->isDead();});
 }
 
@@ -2397,7 +2397,7 @@ MinionTaskMap& Creature::getMinionTasks() {
   return attributes->minionTasks;
 }
 
-const vector<Creature*> Creature::getVisibleCreatures() {
+const vector<Creature*>& Creature::getVisibleCreatures() {
   visibleCreatures = filter(visibleCreatures, [] (const Creature* c) { return !c->isDead();});
   return visibleCreatures;
 }
@@ -2412,13 +2412,13 @@ void Creature::updateVisibleCreatures() {
       if (isEnemy(c))
         visibleEnemies.push_back(c);
     }
-  for (const Creature* c : getUnknownAttacker())
+  for (Creature* c : getUnknownAttacker())
     if (!contains(visibleEnemies, c))
       visibleEnemies.push_back(c);
 }
 
-vector<const Creature*> Creature::getVisibleEnemies() const {
-  return visibleEnemies;
+vector<Creature*> Creature::getVisibleEnemies() const {
+  return filter(visibleEnemies, [] (const Creature* c) { return !c->isDead();});
 }
 
 vector<Position> Creature::getVisibleTiles() const {

@@ -169,7 +169,7 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
     return false;
   switch (key.code) {
     case Keyboard::W:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING))
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
         break;
     case Keyboard::Up:
     case Keyboard::Numpad8:
@@ -180,7 +180,7 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
       center.x += key.shift ? shiftScroll : normalScroll;
       break;
     case Keyboard::D:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING))
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
         break;
     case Keyboard::Right: 
     case Keyboard::Numpad6:
@@ -191,7 +191,7 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
       center.y += key.shift ? shiftScroll : normalScroll;
       break;
     case Keyboard::S:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING))
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
         break;
     case Keyboard::Down:
     case Keyboard::Numpad2:
@@ -202,7 +202,7 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
       center.y += key.shift ? shiftScroll : normalScroll;
       break;
     case Keyboard::A:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING))
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
         break;
     case Keyboard::Left:
     case Keyboard::Numpad4:

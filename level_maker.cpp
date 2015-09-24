@@ -2348,18 +2348,18 @@ LevelMaker* LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory 
 
 static LevelMaker* underground(RandomGen& random, CreatureFactory waterFactory, CreatureFactory lavaFactory) {
   MakerQueue* queue = new MakerQueue();
-  if (Random.roll(1)) {
+  if (random.roll(1)) {
     LevelMaker* cavern = new UniformBlob(SquareId::FLOOR);
     vector<LevelMaker*> vCavern;
     vector<pair<int, int>> sizes;
-    int minSize = Random.get(5, 15);
-    int maxSize = minSize + Random.get(3, 10);
-    for (int i : Range(sqrt(Random.get(4, 100)))) {
-      int size = Random.get(minSize, maxSize);
+    int minSize = random.get(5, 15);
+    int maxSize = minSize + random.get(3, 10);
+    for (int i : Range(sqrt(random.get(4, 100)))) {
+      int size = random.get(minSize, maxSize);
       sizes.push_back(make_pair(size, size));
       MakerQueue* queue = new MakerQueue();
       queue->addMaker(cavern);
-   /*   if (Random.roll(4))
+   /*   if (random.roll(4))
         queue->addMaker(new Items(ItemFactory::mushrooms(), SquareId::PATH, 2, 5));*/
       vCavern.push_back(queue);
     }
@@ -2369,11 +2369,11 @@ static LevelMaker* underground(RandomGen& random, CreatureFactory waterFactory, 
     case 1: queue->addMaker(new River(3, random.choose({SquareId::WATER, SquareId::MAGMA})));
             break;
     case 2:{
-          int numLakes = sqrt(Random.get(1, 100));
+          int numLakes = sqrt(random.get(1, 100));
           SquareType lakeType = random.choose({SquareId::WATER, SquareId::MAGMA});
           vector<pair<int, int>> sizes;
           for (int i : Range(numLakes)) {
-            int size = Random.get(6, 20);
+            int size = random.get(6, 20);
             sizes.emplace_back(size, size);
           }
           queue->addMaker(new RandomLocations(
@@ -2384,7 +2384,7 @@ static LevelMaker* underground(RandomGen& random, CreatureFactory waterFactory, 
                   Predicate::type(SquareType(SquareId::WATER))));
           }
           if (lakeType == SquareId::MAGMA) {
-            queue->addMaker(new Creatures(lavaFactory, Random.get(1, 4),
+            queue->addMaker(new Creatures(lavaFactory, random.get(1, 4),
                   MonsterAIFactory::monster(), Predicate::type(SquareType(SquareId::MAGMA))));
           }
            break;
@@ -2399,7 +2399,7 @@ LevelMaker* LevelMaker::roomLevel(RandomGen& random, CreatureFactory roomFactory
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::MOUNTAIN2));
   queue->addMaker(underground(random, waterFactory, lavaFactory));
-  queue->addMaker(new RoomMaker(Random.get(8, 15), 4, 7, SquareId::MOUNTAIN2,
+  queue->addMaker(new RoomMaker(random.get(8, 15), 4, 7, SquareId::MOUNTAIN2,
         SquareType(SquareId::MOUNTAIN2), new Empty(SquareId::FLOOR)));
   queue->addMaker(new Connector(SquareId::DOOR, 0.5));
   queue->addMaker(new DungeonFeatures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.05, furniture));
@@ -2407,7 +2407,7 @@ LevelMaker* LevelMaker::roomLevel(RandomGen& random, CreatureFactory roomFactory
     queue->addMaker(new Stairs(StairInfo::DOWN, key, Predicate::type(SquareId::FLOOR)));
   for (StairKey key : up)
     queue->addMaker(new Stairs(StairInfo::UP, key, Predicate::type(SquareId::FLOOR)));
-  queue->addMaker(new Creatures(roomFactory, Random.get(10, 15), MonsterAIFactory::monster()));
+  queue->addMaker(new Creatures(roomFactory, random.get(10, 15), MonsterAIFactory::monster()));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareId::FLOOR, 5, 10));
   return new BorderGuard(queue, SquareId::BLACK_WALL);
 }
