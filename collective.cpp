@@ -739,6 +739,8 @@ void Collective::cancelTask(const Creature* c) {
 MoveInfo Collective::getMove(Creature* c) {
   CHECK(control);
   CHECK(contains(creatures, c));
+  CHECK(!c->isDead());
+  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel()));
   if (Task* task = taskMap->getTask(c))
     if (taskMap->isPriorityTask(task))
       return task->getMove(c);

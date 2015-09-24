@@ -535,15 +535,16 @@ class ShopkeeperController : public Monster {
   }
 
   virtual void onItemsGiven(vector<Item*> items, const Creature* from) override {
-    for (Item* item : items)
-      if(item->getClass() == ItemClass::GOLD)
-        --debt[from];
-    CHECK(debt[from] == 0) << "Bad debt " << debt[from];
-    debt.erase(from);
+    int paid = filter(items, Item::classPredicate(ItemClass::GOLD)).size();
+    if ((debt[from] -= paid) <= 0)
+      debt.erase(from);
     for (Item* it : from->getEquipment().getItems())
-      if (unpaidItems[from].contains(it))
+      if (unpaidItems[from].contains(it) && it->getPrice() <= paid) {
         it->setShopkeeper(nullptr);
-    unpaidItems.erase(from);
+        paid -= it->getPrice();
+      }
+    if (unpaidItems[from].empty())
+      unpaidItems.erase(from);
   }
   
   REGISTER_HANDLER(ItemsAppearedEvent, Position position, const vector<Item*>& items) {

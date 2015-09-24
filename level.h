@@ -230,7 +230,6 @@ class Level {
   unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
   vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
-  void insertCreature(Creature*);
   void eraseCreature(Creature*, Vec2 coord);
   vector<Creature*> SERIAL(creatures);
   Model* SERIAL(model) = nullptr;
