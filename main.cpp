@@ -44,6 +44,7 @@
 #include "parse_game.h"
 #include "version.h"
 #include "vision.h"
+#include "model_builder.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -148,7 +149,7 @@ int main(int argc, char* argv[]) {
     ("upload_url", value<string>(), "URL for uploading maps")
     ("override_settings", value<string>(), "Override settings")
     ("run_tests", "Run all unit tests and exit")
-    ("gen_world_exit", "Exit after creating a world")
+    ("worldgen_test", value<int>(), "Test how often world generation fails")
     ("force_keeper", "Skip main menu and force keeper mode")
     ("logging", "Log to log.out")
 #ifndef RELEASE
@@ -208,6 +209,8 @@ int main(int argc, char* argv[]) {
     overrideSettings = vars["override_settings"].as<string>();
   Options options(userPath + "/options.txt", overrideSettings);
   options.setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
+  int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
+  Random.init(seed);
   Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
   Clock clock;
   GuiFactory guiFactory(renderer, &clock);
@@ -216,7 +219,6 @@ int main(int argc, char* argv[]) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
-  int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   if (vars.count("replay")) {
     string fname = vars["replay"].as<string>();
     Debug() << "Reading from " << fname;
@@ -226,7 +228,6 @@ int main(int argc, char* argv[]) {
     view.reset(WindowView::createReplayView(input->getArchive(),
           {renderer, guiFactory, tilesPresent, &options, &clock}));
   } else {
-    Random.init(seed);
     if (vars.count("record")) {
       string fname = vars["record"].as<string>();
       output.reset(new CompressedOutput(fname));
@@ -255,6 +256,10 @@ int main(int argc, char* argv[]) {
     forceGame = GameTypeChoice::QUICK_LEVEL;
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, gameFinished,
       useSingleThread, forceGame);
+  if (vars.count("worldgen_test")) {
+    loop.modelGenTest(vars["worldgen_test"].as<int>(), Random, &options);
+    return 0;
+  }
   auto game = [&] {
     while (!viewInitialized) {}
     ofstream systemInfo(userPath + "/system_info.txt");

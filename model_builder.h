@@ -15,20 +15,21 @@ class ModelBuilder {
   public:
 
   /** Generates levels and all game entities for a collective game. */
-  static PModel collectiveModel(ProgressMeter&, RandomGen&, Options*, View*, const string& worldName);
+  static PModel collectiveModel(ProgressMeter*, RandomGen&, Options*, View*, const string& worldName);
+  static void measureModelGen(int numTries, RandomGen&, Options*);
 
-  static PModel quickModel(ProgressMeter&, RandomGen&, Options*, View*);
+  static PModel quickModel(ProgressMeter*, RandomGen&, Options*, View*);
 
-  static PModel splashModel(ProgressMeter&, View*, const string& splashPath);
+  static PModel splashModel(ProgressMeter*, View*, const string& splashPath);
 
   static int getPigstyPopulationIncrease();
   static int getStatuePopulationIncrease();
   static int getThronePopulationIncrease();
 
   private:
-  static PModel tryCollectiveModel(ProgressMeter&, RandomGen&, Options*, View*, const string& worldName);
-  static PModel tryQuickModel(ProgressMeter&, RandomGen&, Options*, View*);
-  static Level* makeExtraLevel(ProgressMeter&, RandomGen&, Model*, const LevelInfo&, const SettlementInfo&);
+  static PModel tryCollectiveModel(ProgressMeter*, RandomGen&, Options*, View*, const string& worldName);
+  static PModel tryQuickModel(ProgressMeter*, RandomGen&, Options*, View*);
+  static Level* makeExtraLevel(ProgressMeter*, RandomGen&, Model*, const LevelInfo&, const SettlementInfo&);
 
 };
 

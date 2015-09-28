@@ -19,6 +19,7 @@ class MainLoop {
       Jukebox* j, std::atomic<bool>& finished, bool useSingleThread, optional<GameTypeChoice> forceGame);
 
   void start(bool tilesPresent);
+  void modelGenTest(int numTries, RandomGen&, Options*);
 
   static int getAutosaveFreq();
 

@@ -98,15 +98,11 @@ string stripNonAscii(string s) {
 }
 
 static void saveGame(PModel& model, const string& path) {
-  try {
-    CompressedOutput out(path);
-    Serialization::registerTypes(out.getArchive(), saveVersion);
-    string game = model->getGameDisplayName();
-    out.getArchive() << BOOST_SERIALIZATION_NVP(saveVersion) << BOOST_SERIALIZATION_NVP(game)
-        << BOOST_SERIALIZATION_NVP(model);
-  } catch (boost::archive::archive_exception& ex) {
-    FAIL << ex.what();
-  }
+  CompressedOutput out(path);
+  Serialization::registerTypes(out.getArchive(), saveVersion);
+  string game = model->getGameDisplayName();
+  out.getArchive() << BOOST_SERIALIZATION_NVP(saveVersion) << BOOST_SERIALIZATION_NVP(game)
+      << BOOST_SERIALIZATION_NVP(model);
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
@@ -306,7 +302,7 @@ void MainLoop::playGameChoice() {
 void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
-  playModel(ModelBuilder::splashModel(meter, view, dataFreePath + "/splash.txt"), false, true);
+  playModel(ModelBuilder::splashModel(&meter, view, dataFreePath + "/splash.txt"), false, true);
 }
 
 void MainLoop::showCredits(const string& path, View* view) {
@@ -385,9 +381,14 @@ PModel MainLoop::quickGame(RandomGen& random) {
   NameGenerator::init(dataFreePath + "/names");
   doWithSplash(SplashType::CREATING, 166000,
       [&model, this, &random] (ProgressMeter& meter) {
-        model = ModelBuilder::quickModel(meter, random, options, view);
+        model = ModelBuilder::quickModel(&meter, random, options, view);
       });
   return model;
+}
+
+void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
+  NameGenerator::init(dataFreePath + "/names");
+  ModelBuilder::measureModelGen(numTries, Random, options);
 }
 
 PModel MainLoop::keeperGame(RandomGen& random) {
@@ -395,7 +396,7 @@ PModel MainLoop::keeperGame(RandomGen& random) {
   NameGenerator::init(dataFreePath + "/names");
   doWithSplash(SplashType::CREATING, 166000,
       [&model, this, &random] (ProgressMeter& meter) {
-        model = ModelBuilder::collectiveModel(meter, random, options, view,
+        model = ModelBuilder::collectiveModel(&meter, random, options, view,
             NameGenerator::get(NameGeneratorId::WORLD)->getNext());
       });
   return model;

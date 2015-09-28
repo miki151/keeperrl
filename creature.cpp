@@ -1133,6 +1133,7 @@ void Creature::tick(double realTime) {
   if (health <= 0) {
     you(MsgType::DIE_OF, isAffected(LastingEffect::POISON) ? "poisoning" : "bleeding");
     die(lastAttacker);
+    return;
   }
   if (getPosition().sunlightBurns())
     shineLight();
@@ -1253,6 +1254,8 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
 
 CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackParams, bool spend) const {
   CHECK(!other->isDead());
+  if (!position.isSameLevel(other->getPosition()))
+    return CreatureAction();
   Vec2 dir = getPosition().getDir(other->getPosition());
   if (dir.length8() != 1)
     return CreatureAction();
