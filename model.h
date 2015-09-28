@@ -156,7 +156,7 @@ class Model {
   PCreature makePlayer(int handicap);
   const Creature* getPlayer() const;
   void landHeroPlayer();
-  Level* buildLevel(LevelBuilder&&, LevelMaker*);
+  Level* buildLevel(LevelBuilder&&, PLevelMaker);
   Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
 
   HeapAllocated<TribeSet> SERIAL(tribeSet);

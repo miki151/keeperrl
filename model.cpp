@@ -332,16 +332,17 @@ void Model::killCreature(Creature* c, Creature* attacker) {
   cemetery->landCreature(cemetery->getAllPositions(), c);
 }
 
-Level* Model::buildLevel(LevelBuilder&& b, LevelMaker* maker) {
+Level* Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
   LevelBuilder builder(std::move(b));
-  levels.push_back(builder.build(this, maker, levels.size()));
+  levels.push_back(builder.build(this, maker.get(), levels.size()));
   return levels.back().get();
 }
 
 Model::Model(View* v, const string& world, TribeSet&& tribes)
   : tribeSet(std::move(tribes)), view(v), worldName(world), musicType(MusicType::PEACEFUL) {
   updateSunlightInfo();
-  cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false).build(this, LevelMaker::emptyLevel(Random), 0);
+  cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
+      .build(this, LevelMaker::emptyLevel(Random).get(), 0);
 }
 
 Model::~Model() {

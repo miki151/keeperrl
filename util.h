@@ -34,6 +34,7 @@ optional<T> fromStringSafe(const string& s);
 #define DEF_UNIQUE_PTR(T) class T;\
   typedef unique_ptr<T> P##T;
 
+DEF_UNIQUE_PTR(LevelMaker);
 DEF_UNIQUE_PTR(Item);
 DEF_UNIQUE_PTR(Creature);
 DEF_UNIQUE_PTR(Square);
@@ -72,6 +73,14 @@ vector<T*> extractRefs(vector<unique_ptr<T>>& v) {
   vector<T*> ret;
   for (auto& el : v)
     ret.push_back(el.get());
+  return ret;
+}
+
+template<class T>
+vector<unique_ptr<T>> toUniquePtr(const vector<T*>& v) {
+  vector<unique_ptr<T>> ret;
+  for (T* el : v)
+    ret.push_back(unique_ptr<T>(el));
   return ret;
 }
 
