@@ -1679,7 +1679,8 @@ const double anyWarningFrequency = 100;
 const double warningFrequency = 500;
 
 void PlayerControl::onNoEnemies() {
-  model->setCurrentMusic(MusicType::PEACEFUL, false);
+  if (!isRetired())
+    model->setCurrentMusic(MusicType::PEACEFUL, false);
 }
 
 void PlayerControl::considerNightfallMessage() {
