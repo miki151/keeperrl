@@ -98,15 +98,11 @@ string stripNonAscii(string s) {
 }
 
 static void saveGame(PModel& model, const string& path) {
-  try {
-    CompressedOutput out(path);
-    Serialization::registerTypes(out.getArchive(), saveVersion);
-    string game = model->getGameDisplayName();
-    out.getArchive() << BOOST_SERIALIZATION_NVP(saveVersion) << BOOST_SERIALIZATION_NVP(game)
-        << BOOST_SERIALIZATION_NVP(model);
-  } catch (boost::archive::archive_exception& ex) {
-    FAIL << ex.what();
-  }
+  CompressedOutput out(path);
+  Serialization::registerTypes(out.getArchive(), saveVersion);
+  string game = model->getGameDisplayName();
+  out.getArchive() << BOOST_SERIALIZATION_NVP(saveVersion) << BOOST_SERIALIZATION_NVP(game)
+      << BOOST_SERIALIZATION_NVP(model);
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
