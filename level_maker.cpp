@@ -130,7 +130,7 @@ class RoomMaker : public LevelMaker {
       wallType(_wallType),
       squareType(_onType),
       roomContents(_roomContents),
-      insideMakers(_insideMakers),
+      insideMakers(toUniquePtr(_insideMakers)),
       diggableCorners(_diggableCorners) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -194,8 +194,8 @@ class RoomMaker : public LevelMaker {
   int maxSize;
   SquareType wallType;
   optional<SquareType> squareType;
-  LevelMaker* roomContents;
-  vector<LevelMaker*> insideMakers;
+  PLevelMaker roomContents;
+  vector<PLevelMaker> insideMakers;
   bool diggableCorners;
 };
 
@@ -474,22 +474,6 @@ class River : public LevelMaker {
   SquareType squareType;
 };
 
-
-class RepeatMaker : public LevelMaker {
-  public:
-  RepeatMaker(int num, LevelMaker* m) : number(num), maker(m) {}
-
-  virtual void make(LevelBuilder* builder, Rectangle area) override {
-    for (int i : Range(number))
-      maker->make(builder, area);
-  }
-
-  private:
-  int number;
-  LevelMaker* maker;
-};
-
-
 class MountainRiver : public LevelMaker {
   public:
   MountainRiver(int num, SquareType waterType, SquareType sandType, Predicate startPred)
@@ -723,7 +707,7 @@ class Buildings : public LevelMaker {
     minSize(_minSize), maxSize(_maxSize),
     align(_align),
     building(_building),
-    insideMakers(_insideMakers),
+    insideMakers(toUniquePtr(_insideMakers)),
     roadConnection(_roadConnection) {
       CHECK(insideMakers.size() <= minBuildings);
     }
@@ -818,7 +802,7 @@ class Buildings : public LevelMaker {
   int maxSize;
   bool align;
   BuildingInfo building;
-  vector<LevelMaker*> insideMakers;
+  vector<PLevelMaker> insideMakers;
   bool roadConnection;
 };
 
@@ -841,26 +825,26 @@ class BorderGuard : public LevelMaker {
 
   private:
   SquareType type;
-  LevelMaker* insideMaker;
+  PLevelMaker insideMaker;
 
 };
 
 class MakerQueue : public LevelMaker {
   public:
   MakerQueue() = default;
-  MakerQueue(vector<LevelMaker*> _makers) : makers(_makers) {}
+  MakerQueue(vector<LevelMaker*> _makers) : makers(toUniquePtr(_makers)) {}
 
   void addMaker(LevelMaker* maker) {
-    makers.push_back(maker);
+    makers.push_back(PLevelMaker(maker));
   }
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    for (LevelMaker* maker : makers)
+    for (auto& maker : makers)
       maker->make(builder, area);
   }
 
   private:
-  vector<LevelMaker*> makers;
+  vector<PLevelMaker> makers;
 };
 
 class PredicatePrecalc {
@@ -892,14 +876,16 @@ class RandomLocations : public LevelMaker {
   public:
   RandomLocations(const vector<LevelMaker*>& _insideMakers, const vector<pair<int, int>>& _sizes,
       Predicate pred, bool _separate = true)
-      : insideMakers(_insideMakers), sizes(_sizes), predicate(sizes.size(), pred), separate(_separate) {
+        : insideMakers(toUniquePtr(_insideMakers)), sizes(_sizes), predicate(sizes.size(), pred),
+          separate(_separate) {
         CHECK(insideMakers.size() == sizes.size());
         CHECK(predicate.size() == sizes.size());
       }
 
   RandomLocations(const vector<LevelMaker*>& _insideMakers, const vector<pair<int, int>>& _sizes,
       const vector<Predicate>& pred, bool _separate = true)
-      : insideMakers(_insideMakers), sizes(_sizes), predicate(pred.begin(), pred.end()), separate(_separate) {
+        : insideMakers(toUniquePtr(_insideMakers)), sizes(_sizes), predicate(pred.begin(), pred.end()),
+          separate(_separate) {
     CHECK(insideMakers.size() == sizes.size());
     CHECK(pred.size() == sizes.size());
   }
@@ -946,7 +932,7 @@ class RandomLocations : public LevelMaker {
   RandomLocations(bool _separate = true) : separate(_separate) {}
 
   void add(LevelMaker* maker, Vec2 size, LocationPredicate pred) {
-    insideMakers.push_back(maker);
+    insideMakers.emplace_back(maker);
     sizes.push_back({size.x, size.y});
     predicate.push_back(pred);
   }
@@ -962,13 +948,13 @@ class RandomLocations : public LevelMaker {
   }
 
   void setMinDistanceLast(LevelMaker* m, double dist) {
-    minDistance[{m, insideMakers.back()}]  = dist;
-    minDistance[{insideMakers.back(), m}]  = dist;
+    minDistance[{m, insideMakers.back().get()}]  = dist;
+    minDistance[{insideMakers.back().get(), m}]  = dist;
   }
 
   void setMaxDistanceLast(LevelMaker* m, double dist) {
-    maxDistance[{m, insideMakers.back()}] = dist;
-    maxDistance[{insideMakers.back(), m}] = dist;
+    maxDistance[{m, insideMakers.back().get()}] = dist;
+    maxDistance[{insideMakers.back().get(), m}] = dist;
   }
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1003,10 +989,10 @@ class RandomLocations : public LevelMaker {
         px = area.getPX() + builder->getRandom().get(area.getW() - width);
         py = area.getPY() + builder->getRandom().get(area.getH() - height);
         for (int j : Range(i))
-          if ((maxDistance.count({insideMakers[j], insideMakers[i]}) && 
-                maxDistance[{insideMakers[j], insideMakers[i]}] <
+          if ((maxDistance.count({insideMakers[j].get(), insideMakers[i].get()}) && 
+                maxDistance[{insideMakers[j].get(), insideMakers[i].get()}] <
                   Vec2(px + width / 2, py + height / 2).dist8(occupied[j].middle())) ||
-              minDistance[{insideMakers[j], insideMakers[i]}] >
+              minDistance[{insideMakers[j].get(), insideMakers[i].get()}] >
                   Vec2(px + width / 2, py + height / 2).dist8(occupied[j].middle())) {
             ok = false;
             break;
@@ -1036,7 +1022,7 @@ class RandomLocations : public LevelMaker {
   }
 
   private:
-  vector<LevelMaker*> insideMakers;
+  vector<PLevelMaker> insideMakers;
   vector<pair<int, int>> sizes;
   vector<LocationPredicate> predicate;
   bool separate;
@@ -1670,7 +1656,7 @@ static MakerQueue* stockpileMaker(StockpileInfo info) {
   return queue;
 }
 
-LevelMaker* LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
+PLevelMaker LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
   BuildingInfo building = getBuildingInfo(info);
   queue->addMaker(new Empty(SquareId::MOUNTAIN2));
@@ -1686,10 +1672,10 @@ LevelMaker* LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareId::FLOOR, 5, 10));
-  return new BorderGuard(queue, SquareId::MOUNTAIN2);
+  return PLevelMaker(new BorderGuard(queue, SquareId::MOUNTAIN2));
 }
 
-LevelMaker* LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
+PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
   BuildingInfo building = getBuildingInfo(info);
   queue->addMaker(new Empty(SquareId::MOUNTAIN2));
@@ -1704,7 +1690,7 @@ LevelMaker* LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareId::FLOOR, 5, 10));
-  return new BorderGuard(queue, SquareId::MOUNTAIN2);
+  return PLevelMaker(new BorderGuard(queue, SquareId::MOUNTAIN2));
 }
 
 LevelMaker* hatchery(CreatureFactory factory, int numCreatures) {
@@ -1919,8 +1905,8 @@ static LevelMaker* tower(RandomGen& random, SettlementInfo info, bool withExit) 
   return queue;
 }
 
-LevelMaker* LevelMaker::towerLevel(RandomGen& random, SettlementInfo info) {
-  return tower(random, info, false);
+PLevelMaker LevelMaker::towerLevel(RandomGen& random, SettlementInfo info) {
+  return PLevelMaker(tower(random, info, false));
 }
 
 Vec2 getSize(RandomGen& random, SettlementType type) {
@@ -1929,7 +1915,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::CEMETERY:
     case SettlementType::SWAMP: return {random.get(12, 16), random.get(12, 16)};
     case SettlementType::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
-    case SettlementType::FOREST:
+    case SettlementType::FOREST: return {18, 13};
     case SettlementType::VILLAGE2: return {30, 20};
     case SettlementType::VILLAGE:
     case SettlementType::ANT_NEST:
@@ -2095,11 +2081,11 @@ static MakerQueue* dragonCaveMaker(SettlementInfo info) {
   return queue;
 }
 
-LevelMaker* LevelMaker::mineTownLevel(RandomGen& random, SettlementInfo info) {
+PLevelMaker LevelMaker::mineTownLevel(RandomGen& random, SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::MOUNTAIN2));
   queue->addMaker(mineTownMaker(random, info));
-  return new BorderGuard(queue, SquareId::MOUNTAIN2);
+  return PLevelMaker(new BorderGuard(queue, SquareId::MOUNTAIN2));
 }
 
 static void addResources(RandomGen& random, RandomLocations* locations, int count, int countHere,
@@ -2148,7 +2134,7 @@ LevelMaker* swamp(SettlementInfo info) {
   return queue;
 }
 
-LevelMaker* LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreatures,
+PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreatures,
     vector<SettlementInfo> settlements) {
   MakerQueue* queue = new MakerQueue();
   vector<SquareType> vegetationLow {
@@ -2270,10 +2256,10 @@ LevelMaker* LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
           Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR)), SquareAttrib::CONNECTOR));
   queue->addMaker(new Margin(10, locations2));
   queue->addMaker(new Items(ItemFactory::mushrooms(), SquareId::GRASS, 30, 60));
-  return new BorderGuard(queue);
+  return PLevelMaker(new BorderGuard(queue));
 }
 
-LevelMaker* LevelMaker::pyramidLevel(RandomGen& random, optional<CreatureFactory> cfactory, vector<StairKey> up,
+PLevelMaker LevelMaker::pyramidLevel(RandomGen& random, optional<CreatureFactory> cfactory, vector<StairKey> up,
     vector<StairKey> down) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::YELLOW_WALL));
@@ -2290,7 +2276,7 @@ LevelMaker* LevelMaker::pyramidLevel(RandomGen& random, optional<CreatureFactory
   if (cfactory)
     queue->addMaker(new Creatures(*cfactory, random.get(3, 5), MonsterAIFactory::monster()));
   queue->addMaker(new Connector(SquareId::DOOR, 0));
-  return queue;
+  return PLevelMaker(queue);
 }
 
 Vec2 LevelMaker::getRandomExit(RandomGen& random, Rectangle rect, int minCornerDist) {
@@ -2317,7 +2303,7 @@ class SpecificArea : public LevelMaker {
   LevelMaker* maker;
 };
 
-LevelMaker* LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory heroes, CreatureFactory monsters,
+PLevelMaker LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory heroes, CreatureFactory monsters,
     CreatureFactory imps, const string& splashPath) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::BLACK_FLOOR));
@@ -2342,7 +2328,7 @@ LevelMaker* LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory 
           MonsterAIFactory::splashImps(splashPath))));
   queue->addMaker(new SpecificArea(monsterSpawn2, new Creatures(imps, 15,
           MonsterAIFactory::splashImps(splashPath))));
-  return new BorderGuard(queue, SquareId::BLACK_WALL);
+  return PLevelMaker(new BorderGuard(queue, SquareId::BLACK_WALL));
 }
 
 
@@ -2394,7 +2380,7 @@ static LevelMaker* underground(RandomGen& random, CreatureFactory waterFactory, 
   return queue;
 }
 
-LevelMaker* LevelMaker::roomLevel(RandomGen& random, CreatureFactory roomFactory, CreatureFactory waterFactory,
+PLevelMaker LevelMaker::roomLevel(RandomGen& random, CreatureFactory roomFactory, CreatureFactory waterFactory,
     CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down, SquareFactory furniture) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::MOUNTAIN2));
@@ -2409,7 +2395,7 @@ LevelMaker* LevelMaker::roomLevel(RandomGen& random, CreatureFactory roomFactory
     queue->addMaker(new Stairs(StairInfo::UP, key, Predicate::type(SquareId::FLOOR)));
   queue->addMaker(new Creatures(roomFactory, random.get(10, 15), MonsterAIFactory::monster()));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareId::FLOOR, 5, 10));
-  return new BorderGuard(queue, SquareId::BLACK_WALL);
+  return PLevelMaker(new BorderGuard(queue, SquareId::BLACK_WALL));
 }
 
 class SokobanMaker : public LevelMaker {
@@ -2503,7 +2489,7 @@ found:
   StairKey holeKey;
 };
 
-LevelMaker* LevelMaker::sokobanLevel(RandomGen& random, SettlementInfo info) {
+PLevelMaker LevelMaker::sokobanLevel(RandomGen& random, SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::MOUNTAIN2));
   RandomLocations* locations = new RandomLocations();
@@ -2521,20 +2507,20 @@ LevelMaker* LevelMaker::sokobanLevel(RandomGen& random, SettlementInfo info) {
   queue->addMaker(new LocationMaker(info.location));
   queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective,
         Predicate::attrib(SquareAttrib::SOKOBAN_PRIZE)));
-  return new BorderGuard(queue, SquareId::MOUNTAIN2);
+  return PLevelMaker(new BorderGuard(queue, SquareId::MOUNTAIN2));
 }
 
-LevelMaker* LevelMaker::quickLevel(RandomGen&) {
+PLevelMaker LevelMaker::quickLevel(RandomGen&) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::GRASS));
   queue->addMaker(new Mountains({0.0, 0.0, 0.6, 0.68, 0.95}, 0.45, {0, 1, 0, 0, 0}, true,
         {SquareId::MOUNTAIN2, SquareId::MOUNTAIN2, SquareId::HILL, SquareId::GRASS, SquareId::SAND}));
   queue->addMaker(new StartingPos(Predicate::type(SquareId::GRASS), StairKey::keeperSpawn()));
-  return new BorderGuard(queue, SquareId::BLACK_WALL);
+  return PLevelMaker(new BorderGuard(queue, SquareId::BLACK_WALL));
 }
 
-LevelMaker* LevelMaker::emptyLevel(RandomGen&) {
+PLevelMaker LevelMaker::emptyLevel(RandomGen&) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::GRASS));
-  return new BorderGuard(queue, SquareId::BLACK_WALL);
+  return PLevelMaker(new BorderGuard(queue, SquareId::BLACK_WALL));
 }

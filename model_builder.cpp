@@ -1,3 +1,5 @@
+#include <SFML/Graphics.hpp>
+
 #include "stdafx.h"
 #include "model_builder.h"
 #include "level.h"
@@ -696,7 +698,7 @@ static vector<EnemyInfo> getSokobanEntry(RandomGen& random, TribeSet& tribeSet) 
 
 static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, const string& boardText) {
   vector<EnemyInfo> ret;
-  for (int i : Range(random.get(6, 12)))
+  for (int i : Range(random.get(5, 9)))
     append(ret, getCottage(random, tribeSet));
   for (int i : Range(random.get(1, 3))) {
     append(ret, getKoboldCave(random, tribeSet));
@@ -715,7 +717,7 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
         getFriendlyCave(random, tribeSet, CreatureId::ORC),
         getFriendlyCave(random, tribeSet, CreatureId::OGRE),
         getFriendlyCave(random, tribeSet, CreatureId::HARPY)}));
-  for (auto& infos : random.chooseN(4, {
+  for (auto& infos : random.chooseN(3, {
         getTower(random, tribeSet),
         getWarriorCastle(random, tribeSet),
         getLizardVillage(random, tribeSet),
@@ -736,8 +738,6 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, con
         getWitchHouse(random, tribeSet),
         getCemetery(random, tribeSet)}))
     append(ret, infos);
-
-  getOrcTown(random, tribeSet);
   return ret;
 }
 
@@ -922,13 +922,13 @@ static map<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
  
 }
 
-PModel ModelBuilder::tryQuickModel(ProgressMeter& meter, RandomGen& random,
+PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random,
     Options* options, View* view) {
   Model* m = new Model(view, "quick", TribeSet());
   m->setOptions(options);
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   Level* top = m->buildLevel(
-      LevelBuilder(&meter, random, 28, 14, "Quick", false),
+      LevelBuilder(meter, random, 28, 14, "Quick", false),
       LevelMaker::quickLevel(random));
   m->calculateStairNavigation();
   m->collectives.push_back(CollectiveBuilder(
@@ -966,11 +966,11 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter& meter, RandomGen& random,
   return PModel(m);
 }
 
-PModel ModelBuilder::quickModel(ProgressMeter& meter, RandomGen& random,
+PModel ModelBuilder::quickModel(ProgressMeter* meter, RandomGen& random,
     Options* options, View* view) {
   for (int i : Range(5000)) {
     try {
-      meter.reset();
+      meter->reset();
       return tryQuickModel(meter, random, options, view);
     } catch (LevelGenException ex) {
       Debug() << "Retrying level gen";
@@ -980,11 +980,31 @@ PModel ModelBuilder::quickModel(ProgressMeter& meter, RandomGen& random,
   return nullptr;
 }
 
-PModel ModelBuilder::collectiveModel(ProgressMeter& meter, RandomGen& random,
+void ModelBuilder::measureModelGen(int numTries, RandomGen& random, Options* options) {
+  int numSuccess = 0;
+  int maxT = 0;
+  int minT = 1000000;
+  double sumT = 0;
+  for (int i : Range(numTries))
+    try {
+      sf::Clock c;
+      tryCollectiveModel(nullptr, random, options, nullptr, "pok");
+      int millis = c.getElapsedTime().asMilliseconds();
+      sumT += millis;
+      maxT = max(maxT, millis);
+      minT = min(minT, millis);
+      ++numSuccess;
+    } catch (LevelGenException ex) {
+    }
+  std::cout << numSuccess << " / " << numTries << " gens successful.\nMinT: " << minT << "\nMaxT: " << maxT <<
+      "\nAvgT: " << sumT / numSuccess << std::endl;
+}
+
+PModel ModelBuilder::collectiveModel(ProgressMeter* meter, RandomGen& random,
     Options* options, View* view, const string& worldName) {
   for (int i : Range(10)) {
     try {
-      meter.reset();
+      meter->reset();
       return tryCollectiveModel(meter, random, options, view, worldName);
     } catch (LevelGenException ex) {
       Debug() << "Retrying level gen";
@@ -1005,7 +1025,7 @@ static string getNewIdSuffix() {
   return ret;
 }
 
-Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Model* model,
+Level* ModelBuilder::makeExtraLevel(ProgressMeter* meter, RandomGen& random, Model* model,
     const LevelInfo& levelInfo, const SettlementInfo& settlement1) {
   SettlementInfo settlement(settlement1);
   const int towerHeight = random.get(7, 12);
@@ -1016,7 +1036,7 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Mod
       for (int i : Range(towerHeight - 1)) {
         StairKey upLink = StairKey::getNew();
         model->buildLevel(
-            LevelBuilder(&meter, random, 4, 4, "Tower floor" + toString(i + 2)),
+            LevelBuilder(meter, random, 4, 4, "Tower floor" + toString(i + 2)),
             LevelMaker::towerLevel(random,
                 CONSTRUCT(SettlementInfo,
                   c.type = SettlementType::TOWER;
@@ -1033,25 +1053,25 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Mod
       }
       settlement.downStairs = {downLink};
       return model->buildLevel(
-         LevelBuilder(&meter, random, 5, 5, "Tower top"),
+         LevelBuilder(meter, random, 5, 5, "Tower top"),
          LevelMaker::towerLevel(random, settlement));
       }
     case ExtraLevelId::CRYPT: 
       settlement.upStairs = {levelInfo.stairKey};
       return model->buildLevel(
-         LevelBuilder(&meter, random, 40, 40, "Crypt"),
+         LevelBuilder(meter, random, 40, 40, "Crypt"),
          LevelMaker::cryptLevel(random, settlement));
     case ExtraLevelId::MAZE: 
       settlement.upStairs = {levelInfo.stairKey};
       return model->buildLevel(
-         LevelBuilder(&meter, random, 40, 40, "Maze"),
+         LevelBuilder(meter, random, 40, 40, "Maze"),
          LevelMaker::mazeLevel(random, settlement));
     case ExtraLevelId::GNOMISH_MINES: {
       StairKey upLink = levelInfo.stairKey;
       for (int i : Range(gnomeHeight - 1)) {
         StairKey downLink = StairKey::getNew();
         model->buildLevel(
-            LevelBuilder(&meter, random, 60, 40, "Mines lvl " + toString(i + 1)),
+            LevelBuilder(meter, random, 60, 40, "Mines lvl " + toString(i + 1)),
             LevelMaker::roomLevel(random, CreatureFactory::gnomishMines(settlement.tribe,
                     model->tribeSet->monster.get(), 0),
                 CreatureFactory::waterCreatures(settlement.tribe),
@@ -1061,7 +1081,7 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Mod
       }
       settlement.upStairs = {upLink};
       return model->buildLevel(
-         LevelBuilder(&meter, random, 60, 40, "Mine Town"),
+         LevelBuilder(meter, random, 60, 40, "Mine Town"),
          LevelMaker::mineTownLevel(random, settlement));
       }
     case ExtraLevelId::SOKOBAN:
@@ -1069,7 +1089,7 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter& meter, RandomGen& random, Mod
       for (int i : Range(5000))
         try {
           return model->buildLevel(
-              LevelBuilder(&meter, random, 28, 14, "Sokoban"),
+              LevelBuilder(meter, random, 28, 14, "Sokoban"),
               LevelMaker::sokobanLevel(random, settlement));
         } catch (LevelGenException ex) {
         }
@@ -1081,7 +1101,7 @@ static string getBoardText(const string& keeperName, const string& dukeName) {
   return dukeName + " will reward a daring hero 150 florens for slaying " + keeperName + " the Keeper.";
 }
 
-PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, RandomGen& random,
+PModel ModelBuilder::tryCollectiveModel(ProgressMeter* meter, RandomGen& random,
     Options* options, View* view, const string& worldName) {
   Model* m = new Model(view, worldName, TribeSet());
   m->setOptions(options);
@@ -1098,7 +1118,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, RandomGen& random,
       extraSettlements.emplace_back(*elem.extraLevel, elem.settlement);
   }
   Level* top = m->buildLevel(
-      LevelBuilder(&meter, random, 250, 250, "Wilderness", false),
+      LevelBuilder(meter, random, 250, 250, "Wilderness", false),
       LevelMaker::topLevel(random, CreatureFactory::forrest(m->tribeSet->wildlife.get()), settlements));
   for (auto& elem : extraSettlements)
     makeExtraLevel(meter, random, m, elem.first, elem.second);
@@ -1149,10 +1169,10 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter& meter, RandomGen& random,
   return PModel(m);
 }
 
-PModel ModelBuilder::splashModel(ProgressMeter& meter, View* view, const string& splashPath) {
+PModel ModelBuilder::splashModel(ProgressMeter* meter, View* view, const string& splashPath) {
   Model* m = new Model(view, "", TribeSet());
   Level* l = m->buildLevel(
-      LevelBuilder(&meter, Random, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Splash",
+      LevelBuilder(meter, Random, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Splash",
           false),
       LevelMaker::splashLevel(
           CreatureFactory::splashLeader(m->tribeSet->human.get()),

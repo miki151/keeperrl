@@ -80,20 +80,20 @@ class LevelMaker {
   public:
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
 
-  static LevelMaker* cryptLevel(RandomGen&, SettlementInfo);
-  static LevelMaker* topLevel(RandomGen&, CreatureFactory forrest, vector<SettlementInfo> village);
-  static LevelMaker* mineTownLevel(RandomGen&, SettlementInfo);
-  static LevelMaker* splashLevel(CreatureFactory heroLeader, CreatureFactory heroes,
+  static PLevelMaker cryptLevel(RandomGen&, SettlementInfo);
+  static PLevelMaker topLevel(RandomGen&, CreatureFactory forrest, vector<SettlementInfo> village);
+  static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo);
+  static PLevelMaker splashLevel(CreatureFactory heroLeader, CreatureFactory heroes,
       CreatureFactory monsters, CreatureFactory imps, const string& splashPath);
-  static LevelMaker* pyramidLevel(RandomGen&, optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
-  static LevelMaker* towerLevel(RandomGen&, SettlementInfo);
+  static PLevelMaker pyramidLevel(RandomGen&, optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
+  static PLevelMaker towerLevel(RandomGen&, SettlementInfo);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
-  static LevelMaker* roomLevel(RandomGen&, CreatureFactory roomFactory, CreatureFactory waterFactory,
+  static PLevelMaker roomLevel(RandomGen&, CreatureFactory roomFactory, CreatureFactory waterFactory,
     CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down, SquareFactory);
-  static LevelMaker* mazeLevel(RandomGen&, SettlementInfo);
-  static LevelMaker* sokobanLevel(RandomGen&, SettlementInfo);
-  static LevelMaker* quickLevel(RandomGen&);
-  static LevelMaker* emptyLevel(RandomGen&);
+  static PLevelMaker mazeLevel(RandomGen&, SettlementInfo);
+  static PLevelMaker sokobanLevel(RandomGen&, SettlementInfo);
+  static PLevelMaker quickLevel(RandomGen&);
+  static PLevelMaker emptyLevel(RandomGen&);
 };
 
 #endif
