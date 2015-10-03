@@ -96,10 +96,8 @@ class CreatureAttributes {
   const SpellMap& getSpellMap() const;
 
   MustInitialize<ViewId> SERIAL(viewId);
-  optional<ViewId> SERIAL(undeadViewId);
   optional<ViewObject> SERIAL(illusionViewObject);
   MustInitialize<EntityName> SERIAL(name);
-  optional<string> SERIAL(undeadName);
   EnumMap<AttrType, int> SERIAL(attr);
   MustInitialize<CreatureSize> SERIAL(size);
   MustInitialize<double> SERIAL(weight);

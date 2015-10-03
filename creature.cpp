@@ -1782,7 +1782,7 @@ CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const
             monsterMessage(getName().the() + " digs a tunnel");
             playerMessage("You dig a tunnel");
           } else
-          if (type.getId() == SquareId::MOUNTAIN2) {
+          if (type.getId() == SquareId::MOUNTAIN) {
             monsterMessage(getName().the() + " fills up a tunnel");
             playerMessage("You fill up a tunnel");
           } else {

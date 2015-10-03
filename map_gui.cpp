@@ -117,13 +117,10 @@ set<Vec2> shadowed;
 optional<ViewId> getConnectionId(ViewId id) {
   switch (id) {
     case ViewId::BLACK_WALL:
-    case ViewId::YELLOW_WALL:
-    case ViewId::HELL_WALL:
-    case ViewId::LOW_ROCK_WALL:
     case ViewId::WOOD_WALL:
     case ViewId::CASTLE_WALL:
     case ViewId::MUD_WALL:
-    case ViewId::MOUNTAIN2:
+    case ViewId::MOUNTAIN:
     case ViewId::GOLD_ORE:
     case ViewId::IRON_ORE:
     case ViewId::STONE:
@@ -153,7 +150,7 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
     case ViewId::JEWELER:
     case ViewId::TORTURE_TABLE:
     case ViewId::RITUAL_ROOM:
-    case ViewId::MOUNTAIN2:
+    case ViewId::MOUNTAIN:
     case ViewId::GOLD_ORE:
     case ViewId::IRON_ORE:
     case ViewId::STONE:
@@ -432,13 +429,15 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     drawCreatureHighlights(renderer, object, Rectangle(pos + movement, pos + movement + size), curTimeReal);
     if ((object.layer() == ViewLayer::CREATURE && object.id() != ViewId::BOULDER)
         || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
-      renderer.drawTile(pos + movement, {Vec2(2, 22), 0}, size);
+      static auto coord = renderer.getTileCoord("round_shadow");
+      renderer.drawTile(pos + movement, coord, size, sf::Color(255, 255, 255, 160));
       move.y = -4* size.y / renderer.getNominalSize().y;
     }
+    static auto shortShadow = renderer.getTileCoord("short_shadow");
     if (auto background = tile.getBackgroundCoord()) {
       renderer.drawTile(pos, *background, size, color);
       if (shadowed.count(tilePos))
-        renderer.drawTile(pos, {Vec2(1, 21), 5}, size, color);
+        renderer.drawTile(pos, shortShadow, size, sf::Color(255, 255, 255, 170));
     }
     if (auto dir = object.getAttachmentDir())
       move = getAttachmentOffset(*dir, size);
@@ -460,14 +459,17 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
 /*    if (tile.floorBorders) {
       drawFloorBorders(renderer, borderDirs, x, y);
     }*/
-    if (contains({ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND}, object.layer()) && 
+    if ((object.layer() == ViewLayer::FLOOR || object.layer() == ViewLayer::FLOOR_BACKGROUND) && 
         shadowed.count(tilePos) && !tile.noShadow)
-      renderer.drawTile(pos, {Vec2(1, 21), 5}, size);
+      renderer.drawTile(pos, shortShadow, size, sf::Color(255, 255, 255, 170));
     if (object.getAttribute(ViewObject::Attribute::BURNING) > 0) {
-      renderer.drawTile(pos, {Vec2(Random.get(10, 12), 0), 2}, size);
+      static auto fire1 = renderer.getTileCoord("fire1");
+      static auto fire2 = renderer.getTileCoord("fire2");
+      renderer.drawTile(pos, Random.choose({fire1, fire2}), size);
     }
+    static auto key = renderer.getTileCoord("key");
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
-      renderer.drawTile(pos, {Vec2(5, 6), 3}, size);
+      renderer.drawTile(pos, key, size);
   } else {
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal);
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);

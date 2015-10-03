@@ -78,16 +78,12 @@ static thread::attributes getAttributes() {
 #endif
 
 void initializeRendererTiles(Renderer& r, const string& path) {
-  r.loadTilesFromFile(path + "/tiles_int.png", Vec2(36, 36));
-  r.loadTilesFromFile(path + "/tiles2_int.png", Vec2(36, 36));
-  r.loadTilesFromFile(path + "/tiles3_int.png", Vec2(36, 36));
-  r.loadTilesFromFile(path + "/tiles4_int.png", Vec2(24, 24));
-  r.loadTilesFromFile(path + "/tiles5_int.png", Vec2(36, 36));
-  r.loadTilesFromFile(path + "/tiles6_int.png", Vec2(36, 36));
-  r.loadTilesFromFile(path + "/tiles7_int.png", Vec2(36, 36));
-  r.loadTilesFromDir(path + "/shroom24", Vec2(24, 24));
-  r.loadTilesFromDir(path + "/shroom36", Vec2(36, 36));
-  r.loadTilesFromDir(path + "/shroom46", Vec2(46, 46));
+  r.loadTilesFromDir(path + "/orig16", Vec2(16, 16));
+  r.loadAltTilesFromDir(path + "/orig16_scaled", Vec2(24, 24));
+  r.loadTilesFromDir(path + "/orig24", Vec2(24, 24));
+  r.loadAltTilesFromDir(path + "/orig24_scaled", Vec2(36, 36));
+  r.loadTilesFromDir(path + "/orig30", Vec2(30, 30));
+  r.loadAltTilesFromDir(path + "/orig30_scaled", Vec2(45, 45));
 }
 
 static int getMaxVolume() {
@@ -211,7 +207,7 @@ int main(int argc, char* argv[]) {
   options.setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   Random.init(seed);
-  Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
+  Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
   Clock clock;
   GuiFactory guiFactory(renderer, &clock);
   guiFactory.loadFreeImages(freeDataPath + "/images");

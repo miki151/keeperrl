@@ -329,12 +329,17 @@ Color Renderer::getBleedingColor(const ViewObject& object) {
 }
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool hFlip, bool vFlip) {
-  Vec2 sz = Renderer::tileSize[coord.texNum];
+  CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
+  Texture* tex = &tiles[coord.texNum];
+  Vec2 sz = tileSize[coord.texNum];
   Vec2 off = (nominalSize -  sz).mult(size).div(Renderer::nominalSize * 2);
   Vec2 tileSize = sz.mult(size).div(nominalSize);
   if (sz.y > nominalSize.y)
     off.y *= 2;
-  CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
+  if (altTileSize.size() > coord.texNum && size == altTileSize[coord.texNum]) {
+    sz = size;
+    tex = &altTiles[coord.texNum];
+  }
   Vec2 coordPos = coord.pos.mult(sz);
   if (vFlip) {
     sz.y *= -1;
@@ -346,14 +351,14 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool 
     tileSize.x *= -1;
     coordPos.x -= sz.x;
   }
-  drawSprite(pos + off, coordPos, sz, Renderer::tiles.at(coord.texNum), tileSize, color);
+  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color);
 }
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Vec2 sz = Renderer::tileSize[coord.texNum];
   Vec2 off = getOffset(Renderer::nominalSize - sz, scale);
-  drawSprite(pos + off, coord.pos.mult(sz), sz, Renderer::tiles.at(coord.texNum), sz * scale, color);
+  drawSprite(pos + off, coord.pos.mult(sz), sz, tiles.at(coord.texNum), sz * scale, color);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
@@ -383,8 +388,17 @@ void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite
 
 const static string imageSuf = ".png";
 
+bool Renderer::loadAltTilesFromDir(const string& path, Vec2 altSize) {
+  altTileSize.push_back(altSize);
+  return loadTilesFromDir(path, altTiles, altSize, 720 * altSize.x / tileSize.back().x);
+}
+
 bool Renderer::loadTilesFromDir(const string& path, Vec2 size) {
   tileSize.push_back(size);
+  return loadTilesFromDir(path, tiles, size, 720);
+}
+
+bool Renderer::loadTilesFromDir(const string& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
   DIR* dir = opendir(path.c_str());
   if (!dir)
     return false;
@@ -395,10 +409,9 @@ bool Renderer::loadTilesFromDir(const string& path, Vec2 size) {
     if (endsWith(name, imageSuf))
       files.push_back(name);
   }
-  int imageWidth = 720;
-  int rowLength = imageWidth / size.x;
+  int rowLength = setWidth / size.x;
   Image image;
-  image.create(imageWidth, ((files.size() + rowLength - 1) / rowLength) * size.y);
+  image.create(setWidth, ((files.size() + rowLength - 1) / rowLength) * size.y);
   for (int i : All(files)) {
     Image im;
     CHECK(im.loadFromFile((path + "/" + files[i]).c_str())) << "Failed to load " << files[i];

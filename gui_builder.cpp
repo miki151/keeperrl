@@ -261,7 +261,7 @@ PGuiElem GuiBuilder::drawKeeperHelp() {
     "to control or show information",
     "",
     "[space] pause",
-    "[z] or mouse wheel: zoom",
+    "[a] and [z] or mouse wheel: zoom",
     "press mouse wheel: level map",
     "",
     "follow the orange hints :-)"};
@@ -942,9 +942,9 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
           gui.button(getButtonCallback(info.currentTeam == i ? UserInput(UserInputId::CONFIRM_TEAM)
               : UserInput(UserInputId::EDIT_TEAM, team.id))),
           info.currentTeam == i 
-              ? gui.viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk)
-              : gui.viewObject(ViewId::TEAM_BUTTON, tilesOk),
-          gui.mouseHighlight2(gui.viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk))));
+              ? gui.icon(GuiFactory::TEAM_BUTTON_HIGHLIGHT)
+              : gui.icon(GuiFactory::TEAM_BUTTON),
+          gui.mouseHighlight2(gui.icon(GuiFactory::TEAM_BUTTON_HIGHLIGHT))));
     for (auto member : team.members) {
       currentLine.push_back(gui.stack(makeVec<PGuiElem>(
             gui.button(getButtonCallback({UserInputId::SET_TEAM_LEADER, TeamLeaderInfo{team.id, member}})),
@@ -979,7 +979,7 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
         gui.label("[new team]", colors[ColorId::WHITE])));
   else
     list.push_back(gui.horizontalList(makeVec<PGuiElem>(
-        gui.viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk),
+        gui.bottomMargin(5, gui.icon(GuiFactory::TEAM_BUTTON_HIGHLIGHT)),
         gui.label("Click on minions to add.", colors[ColorId::LIGHT_BLUE])), elemWidth));
   if (info.currentTeam)
     list.push_back(gui.label("Click members to change leader.", colors[ColorId::LIGHT_BLUE]));

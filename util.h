@@ -934,6 +934,14 @@ void removeIndex(vector<T>& v, int index) {
 }
 
 template<class T>
+optional<int> findAddress(const vector<T>& v, const T* ptr) {
+  for (int i : All(v))
+    if (&v[i] == ptr)
+      return i;
+  return none;
+}
+
+template<class T>
 optional<int> findElement(const vector<T>& v, const T& element) {
   for (int i : All(v))
     if (v[i] == element)

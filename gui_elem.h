@@ -108,6 +108,7 @@ class GuiFactory {
   PGuiElem leftMargin(int size, PGuiElem content);
   PGuiElem rightMargin(int size, PGuiElem content);
   PGuiElem topMargin(int size, PGuiElem content);
+  PGuiElem bottomMargin(int size, PGuiElem content);
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem label(const string&, function<Color()>);
@@ -237,6 +238,8 @@ class GuiFactory {
     MORALE_2 = 15,
     MORALE_3 = 16,
     MORALE_4 = 17,
+    TEAM_BUTTON = 18,
+    TEAM_BUTTON_HIGHLIGHT = 19,
   };
 
   PGuiElem icon(IconId);

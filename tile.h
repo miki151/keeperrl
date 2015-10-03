@@ -82,7 +82,6 @@ class Tile {
   optional<TileCoord> backgroundCoord;
   optional<TileCoord> highlightCoord;
   array<optional<TileCoord>, 256> connections;
-  bool anyConnections = false;
   optional<pair<Dir, TileCoord>> connectionOption;
   array<vector<TileCoord>, 256> corners;
   array<optional<TileCoord>, 256> extraBorders;

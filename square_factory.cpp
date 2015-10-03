@@ -914,11 +914,6 @@ static Square* getStairs(const StairInfo& info) {
   ViewId id1 = ViewId(0), id2 = ViewId(0);
   switch (info.look) {
     case StairLook::NORMAL: id1 = ViewId::UP_STAIRCASE; id2 = ViewId::DOWN_STAIRCASE; break;
-    case StairLook::HELL: id1 = ViewId::UP_STAIRCASE_HELL; id2 = ViewId::DOWN_STAIRCASE_HELL; break;
-    case StairLook::CELLAR: id1 = ViewId::UP_STAIRCASE_CELLAR; id2 = ViewId::DOWN_STAIRCASE_CELLAR; break;
-    case StairLook::PYRAMID: id1 = ViewId::UP_STAIRCASE_PYR; id2 = ViewId::DOWN_STAIRCASE_PYR; break;
-    case StairLook::DUNGEON_ENTRANCE: id1 = id2 = ViewId::DUNGEON_ENTRANCE; break;
-    case StairLook::DUNGEON_ENTRANCE_MUD: id1 = id2 = ViewId::DUNGEON_ENTRANCE_MUD; break;
   }
   return new Staircase(ViewObject(info.direction == info.UP ? id1 : id2,
         ViewLayer::FLOOR, "Stairs"), "stairs", info.key);
@@ -958,7 +953,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::CREATURE_ALTAR] = 35;
               c.constructions[SquareId::MINION_STATUE] = 35;
               c.constructions[SquareId::THRONE] = 100;
-              c.constructions[SquareId::MOUNTAIN2] = 15;
+              c.constructions[SquareId::MOUNTAIN] = 15;
               c.constructions[SquareId::RITUAL_ROOM] = 10;));
     case SquareId::BLACK_FLOOR:
         return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND, "Floor"),
@@ -1021,9 +1016,6 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), "granite",
             {{SquareId::FLOOR, Random.get(30, 80)}},
             ItemFactory::fromId(ItemId::ROCK, Random.get(18, 40)));
-    case SquareId::LOW_ROCK_WALL:
-        return new Square(ViewObject(ViewId::LOW_ROCK_WALL, ViewLayer::FLOOR, "Wall")
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));
     case SquareId::WOOD_WALL:
         return new Square(ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR, "Wooden wall")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params,
@@ -1032,12 +1024,6 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::BLACK_WALL:
         return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR, "Wall")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));
-    case SquareId::YELLOW_WALL:
-        return new Square(ViewObject(ViewId::YELLOW_WALL, ViewLayer::FLOOR, "Wall")
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));
-    case SquareId::HELL_WALL:
-        return new Square(ViewObject(ViewId::HELL_WALL, ViewLayer::FLOOR, "Wall")
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));
     case SquareId::CASTLE_WALL:
         return new Square(ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR, "Wall")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));
@@ -1045,21 +1031,11 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Square(ViewObject(ViewId::MUD_WALL, ViewLayer::FLOOR, "Wall")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));
     case SquareId::MOUNTAIN:
-        return new Square(ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR, "Mountain"),
-          CONSTRUCT(Square::Params,
-            c.name = "mountain";
-            c.vision = VisionId::NORMAL;));
-    case SquareId::MOUNTAIN2:
-        return new Square(ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR, "Mountain")
+        return new Square(ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR, "Mountain")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW),
           CONSTRUCT(Square::Params,
             c.name = "mountain";
             c.constructions[SquareId::FLOOR] = Random.get(3, 8);));
-    case SquareId::GLACIER:
-        return new Square(ViewObject(ViewId::SNOW, ViewLayer::FLOOR, "Mountain"),
-          CONSTRUCT(Square::Params,
-            c.name = "mountain";
-            c.vision = VisionId::NORMAL;));
     case SquareId::HILL:
         return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND, "Hill"),
           CONSTRUCT(Square::Params,
@@ -1148,9 +1124,6 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.vision = VisionId::NORMAL;));
     case SquareId::WELL:
         return new Furniture(ViewObject(ViewId::WELL, ViewLayer::FLOOR, "Well"), "well", 0);
-    case SquareId::STATUE:
-        return new Furniture(
-            ViewObject(Random.choose({ViewId::STATUE1, ViewId::STATUE2}), ViewLayer::FLOOR, "Statue"), "statue", 0);
     case SquareId::TORTURE_TABLE:
         return new Furniture(ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR, "Torture room"), 
             "torture room", 0.3, SquareApplyType::TORTURE);

@@ -813,10 +813,6 @@ CreatureFactory::SingleCreature CreatureFactory::coffins(Tribe* tribe) {
   return SingleCreature(tribe, CreatureId::VAMPIRE);
 }
 
-CreatureFactory CreatureFactory::hellLevel(Tribe* tribe) {
-  return CreatureFactory(tribe, { CreatureId::DEVIL}, { 1}, {CreatureId::DARK_KNIGHT});
-}
-
 CreatureFactory CreatureFactory::vikingTown(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::WARRIOR}, { 1}, {CreatureId::SHAMAN});
 }
@@ -839,7 +835,7 @@ CreatureFactory CreatureFactory::splash(Tribe* tribe) {
 }
 
 CreatureFactory CreatureFactory::orcTown(Tribe* tribe) {
-  return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1}, {CreatureId::GREAT_ORC});
+  return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1});
 }
 
 CreatureFactory CreatureFactory::pyramid(Tribe* tribe, int level) {
@@ -850,11 +846,11 @@ CreatureFactory CreatureFactory::pyramid(Tribe* tribe, int level) {
 }
 
 CreatureFactory CreatureFactory::insects(Tribe* tribe) {
-  return CreatureFactory(tribe, { CreatureId::SPIDER, CreatureId::SCORPION }, {1, 1}, { });
+  return CreatureFactory(tribe, { CreatureId::SPIDER}, {1});
 }
 
 CreatureFactory CreatureFactory::waterCreatures(Tribe* tribe) {
-  return CreatureFactory(tribe, { CreatureId::KRAKEN }, {1}, { });
+  return CreatureFactory(tribe, { CreatureId::KRAKEN }, {1});
 }
 
 CreatureFactory CreatureFactory::elementals(Tribe* tribe) {
@@ -893,7 +889,6 @@ CreatureFactory CreatureFactory::gnomishMines(Tribe* peaceful, Tribe* enemy, int
       make_tuple(CreatureId::BAT, 200., enemy),
       make_tuple(CreatureId::SNAKE, 150., enemy),
       make_tuple(CreatureId::SPIDER, 200., enemy),
-      make_tuple(CreatureId::SCORPION, 200., enemy),
       make_tuple(CreatureId::FLY, 100., enemy),
       make_tuple(CreatureId::RAT, 100., enemy)});
 }
@@ -1003,8 +998,6 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::KEEPER: 
       return CATTR(
           c.viewId = ViewId::KEEPER;
-          c.undeadViewId = ViewId::UNDEAD_KEEPER;
-          c.undeadName = "Lich";
           c.attr[AttrType::SPEED] = 100;
           c.weight = 90;
           c.size = CreatureSize::LARGE;
@@ -1094,32 +1087,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.skills.insert(SkillId::CONSUMPTION);
           c.name = "doppleganger";
           );
-    case CreatureId::DEVIL: 
-      return CATTR(
-          c.viewId = ViewId::DEVIL;
-          c.attr[AttrType::SPEED] = 100;
-          c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 19;
-          c.attr[AttrType::DEXTERITY] = 16;
-          c.barehandedDamage = 10;
-          c.humanoid = true;
-          c.weight = 80;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
-          c.name = "devil";);
-    case CreatureId::DARK_KNIGHT: 
-      return CATTR(
-          c.viewId = ViewId::DARK_KNIGHT;
-          c.attr[AttrType::SPEED] = 100;
-          c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 22;
-          c.attr[AttrType::DEXTERITY] = 19;
-          c.barehandedDamage = 3;
-          c.humanoid = true;
-          c.weight = 100;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
-          c.name = "dark knight";);
     case CreatureId::WITCH: 
       return CATTR(
           c.viewId = ViewId::WITCH;
@@ -1395,7 +1362,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 50;
           c.undead = true;
           c.name = "skeleton";);
-    case CreatureId::VAMPIRE_BAT:
     case CreatureId::VAMPIRE: 
       return CATTR(
           c.viewId = ViewId::VAMPIRE;
@@ -1436,25 +1402,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.chatReactionFriendly = c.chatReactionHostile =
               "\"There are times when you simply cannot refuse a drink!\"";
           c.name = "vampire lord";);
-      /*   case CreatureId::VAMPIRE_BAT: 
-           return PCreature(new Shapechanger(
-           ViewObject(ViewId::BAT, ViewLayer::CREATURE, "Bat"),
-           tribe,
-           CATTR(
-           c.attr[AttrType::SPEED] = 150;
-           c.size = CreatureSize::SMALL;
-           c.attr[AttrType::STRENGTH] = 3;
-           c.attr[AttrType::DEXTERITY] = 16;
-           c.barehandedDamage = 12;
-           c.humanoid = false;
-           c.legs = 0;
-           c.arms = 0;
-           c.wings = 2;
-           c.weight = 1;
-           c.flyer = true;
-           c.name = "bat";), {
-           CreatureId::VAMPIRE}
-           ));*/
     case CreatureId::MUMMY: 
       return CATTR(
           c.viewId = ViewId::MUMMY;
@@ -1472,15 +1419,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.name = EntityName("mummy", "mummies"););
-    case CreatureId::MUMMY_LORD: 
-      return INHERIT(MUMMY,
-          c.viewId = ViewId::MUMMY_LORD;
-          c.attr[AttrType::STRENGTH] += 4;
-          c.attr[AttrType::DEXTERITY] += 2;
-          c.weight = 120;
-          c.chatReactionFriendly = "curses all gravediggers";
-          c.chatReactionHostile = "\"Die!\"";
-          c.name = NameGenerator::get(NameGeneratorId::AZTEC)->getNext(););
     case CreatureId::ORC: 
       return CATTR(
           c.viewId = ViewId::ORC;
@@ -1517,13 +1455,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.0);
           c.skills.insert(SkillId::HEALING);
           c.name = "orc shaman";);
-    case CreatureId::GREAT_ORC: 
-      return INHERIT(ORC,
-          c.viewId = ViewId::GREAT_ORC;
-          c.attr[AttrType::STRENGTH] += 6;
-          c.attr[AttrType::DEXTERITY] += 6;
-          c.weight += 80;
-          c.name = "great orc";);
     case CreatureId::HARPY:
       return INHERIT(ORC,
           c.viewId = ViewId::HARPY;
@@ -1957,9 +1888,9 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dontChase = true;
           c.skills.insert(SkillId::SWIMMING);
           c.name = "rat";);
-    case CreatureId::SCORPION: 
+    case CreatureId::SPIDER: 
       return CATTR(
-          c.viewId = ViewId::SCORPION;
+          c.viewId = ViewId::SPIDER;
           c.attr[AttrType::SPEED] = 100;
           c.size = CreatureSize::SMALL;
           c.attr[AttrType::STRENGTH] = 9;
@@ -1971,10 +1902,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::ARM] = 0;
           c.bodyParts[BodyPart::LEG] = 8;
           c.animal = true;
-          c.name = "scorpion";);
-    case CreatureId::SPIDER: 
-      return INHERIT(SCORPION,
-          c.viewId = ViewId::SPIDER;
           c.name = "spider";);
     case CreatureId::FLY: 
       return CATTR(
@@ -2397,12 +2324,6 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::LEATHER_BOOTS)
         .add(randomHealing())
         .add(ItemId::GOLD_PIECE, Random.get(30, 80));
-    case CreatureId::DEVIL: 
-      return ItemList().add(Random.choose<ItemType>({
-              {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::BLIND)},
-              {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
-              {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)}}));
-    case CreatureId::DARK_KNIGHT:
     case CreatureId::MINOTAUR: 
       return ItemList()
         .add(ItemId::BATTLE_AXE);
@@ -2422,15 +2343,6 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::SWORD)
         .maybe(0.3, randomBackup())
         .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36)));
-    case CreatureId::GREAT_ORC: 
-      return ItemList()
-        .add(Random.choose({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
-        .add(ItemId::IRON_HELM)
-        .add(ItemId::IRON_BOOTS)
-        .add(ItemId::CHAIN_ARMOR)
-        .add(randomBackup())
-        .add(ItemId::KNIFE, Random.get(2, 5))
-        .add(ItemId::GOLD_PIECE, Random.get(100, 200));
     case CreatureId::DWARF: 
       return ItemList()
         .add(Random.choose({ItemId::BATTLE_AXE, ItemId::WAR_HAMMER}, {1, 1}))
