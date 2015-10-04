@@ -134,6 +134,7 @@ class PlayerInfo {
   int level;
   vector<string> adjectives;
   string levelName;
+  int positionHash;
   string weaponName;
   struct Effect {
     string name;

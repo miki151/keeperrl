@@ -421,10 +421,6 @@ bool Position::canNavigate(const MovementType& t) const {
   return isValid() && getSquare()->canNavigate(t);
 }
 
-bool Position::landCreature(Creature* c) {
-  return isValid() && level->landCreature({*this}, c);
-}
-
 const vector<Vec2>& Position::getTravelDir() const {
   if (isValid())
     return getSquare()->getTravelDir();

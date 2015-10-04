@@ -66,11 +66,8 @@ class Model {
     Returns the total logical time elapsed.*/
   optional<ExitInfo> update(double totalTime);
 
-  /** Removes creature from current level and puts into the next, according to direction. */
-  bool changeLevel(StairKey key, Creature*);
-
-  /** Removes creature from current level and puts into the given level */
-  bool changeLevel(Position, Creature*);
+  /** Returns the level that the stairs lead to. */
+  Level* getLinkedLevel(Level* from, StairKey) const;
 
   Position getStairs(const Level* from, const Level* to);
 

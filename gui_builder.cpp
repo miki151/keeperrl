@@ -566,6 +566,11 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, PlayerInfo& info) {
     itemIndex = -1;
     return;
   }
+  if (lastPlayerPositionHash && lastPlayerPositionHash != info.positionHash) {
+    playerOverlayFocused = false;
+    itemIndex = -1;
+  }
+  lastPlayerPositionHash = info.positionHash;
   vector<PGuiElem> lines;
   const int maxElems = 6;
   const string title = "Click or press [Enter]:";
