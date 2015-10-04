@@ -741,7 +741,7 @@ MoveInfo Collective::getMove(Creature* c) {
   CHECK(contains(creatures, c));
   CHECK(!c->isDead());
   CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
-      c->getPosition().getLevel()->getName();
+      c->getPosition().getLevel()->getName() << " " << c->getName().bare();
   if (Task* task = taskMap->getTask(c))
     if (taskMap->isPriorityTask(task))
       return task->getMove(c);

@@ -2421,7 +2421,8 @@ void Creature::updateVisibleCreatures() {
 }
 
 vector<const Creature*> Creature::getVisibleEnemies() const {
-  return filter(visibleEnemies, [] (const Creature* c) { return !c->isDead();});
+  return filter(visibleEnemies, [this] (const Creature* c) {
+      return c->getPosition().isSameLevel(getLevel()) && !c->isDead();});
 }
 
 vector<Position> Creature::getVisibleTiles() const {
