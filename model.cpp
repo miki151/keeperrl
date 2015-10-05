@@ -535,13 +535,12 @@ void Model::setHighscores(Highscores* h) {
   highscores = h;
 }
 
-bool Model::changeLevel(StairKey key, Creature* c) {
-  Level* current = c->getLevel();
+Level* Model::getLinkedLevel(Level* from, StairKey key) const {
   for (Level* target : getLevels())
-    if (target != current && target->hasStairKey(key))
-      return target->landCreature(key, c);
-  FAIL << "Failed to find next level for " << key.getInternalKey() << " " << current->getName();
-  return false;
+    if (target != from && target->hasStairKey(key))
+      return target;
+  FAIL << "Failed to find next level for " << key.getInternalKey() << " " << from->getName();
+  return nullptr;
 }
 
 void Model::calculateStairNavigation() {
@@ -580,10 +579,6 @@ Position Model::getStairs(const Level* from, const Level* to) {
   return Random.choose(from->getLandingSquares(stairNavigation.at({from, to})));
 }
 
-bool Model::changeLevel(Position position, Creature* c) {
-  return position.landCreature(c);
-}
-  
 void Model::conquered(const string& title, vector<const Creature*> kills, int points) {
   string text= "You have conquered this land. You killed " + toString(kills.size()) +
       " innocent beings and scored " + toString(points) +

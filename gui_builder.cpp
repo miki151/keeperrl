@@ -566,6 +566,11 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, PlayerInfo& info) {
     itemIndex = -1;
     return;
   }
+  if (lastPlayerPositionHash && lastPlayerPositionHash != info.positionHash) {
+    playerOverlayFocused = false;
+    itemIndex = -1;
+  }
+  lastPlayerPositionHash = info.positionHash;
   vector<PGuiElem> lines;
   const int maxElems = 6;
   const string title = "Click or press [Enter]:";
@@ -1752,11 +1757,11 @@ PGuiElem GuiBuilder::drawMinionMenu(const vector<PlayerInfo>& minions,
     minionPages.push_back(gui.conditional(gui.margins(drawMinionPage(minions[i], callback),
           10, 15, 10, 10), [minionId, &current] (GuiElem*) { return minionId == current; }));
   }
-  int minionListWidth = 180;
+  int minionListWidth = 220;
   return gui.stack(
       gui.keyHandler([callback] { callback(none); }, {{Keyboard::Escape}, {Keyboard::Return}}),
       gui.horizontalList(makeVec<PGuiElem>(
-          gui.leftMargin(8, gui.topMargin(15, drawMinionButtons(minions, current))),
+          gui.margins(gui.scrollable(drawMinionButtons(minions, current)), 8, 15, 5, 0),
           gui.margins(gui.sprite(GuiFactory::TexId::VERT_BAR_MINI, GuiFactory::Alignment::LEFT),
             0, -15, 0, -15)), minionListWidth),
       gui.leftMargin(minionListWidth + 20, gui.stack(std::move(minionPages))));
