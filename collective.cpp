@@ -318,6 +318,8 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!leader)
     leader = c;
   CHECK(c->getTribe() == tribe);
+  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
+      c->getPosition().getLevel()->getName() << " " << c->getName().bare();
   creatures.push_back(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
