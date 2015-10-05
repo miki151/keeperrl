@@ -318,9 +318,17 @@ class TileCoordLookup {
     Tile::addTile(ViewId::KEEPER, sprite("keeper"));
     Tile::addTile(ViewId::UNDEAD_KEEPER, sprite(9, 16));
     Tile::addTile(ViewId::ELF, sprite("elf male"));
+    Tile::addTile(ViewId::ELF_WOMAN, sprite("elf female"));
     Tile::addTile(ViewId::ELF_ARCHER, sprite("elf archer"));
     Tile::addTile(ViewId::ELF_CHILD, sprite("elf kid"));
     Tile::addTile(ViewId::ELF_LORD, sprite("elf lord"));
+    Tile::addTile(ViewId::DARK_ELF, sprite("dark_elf"));
+    Tile::addTile(ViewId::DARK_ELF_WOMAN, sprite("dark_elf_female"));
+    Tile::addTile(ViewId::DARK_ELF_WARRIOR, sprite("dark_elf_warrior"));
+    Tile::addTile(ViewId::DARK_ELF_CHILD, sprite("dark_elf_kid"));
+    Tile::addTile(ViewId::DARK_ELF_LORD, sprite("dark_elf_lord"));
+    Tile::addTile(ViewId::DRIAD, sprite("driada"));
+    Tile::addTile(ViewId::KOBOLD, sprite("kobold"));
     Tile::addTile(ViewId::LIZARDMAN, sprite(8, 8));
     Tile::addTile(ViewId::LIZARDLORD, sprite(11, 8));
     Tile::addTile(ViewId::IMP, sprite("imp"));
@@ -397,7 +405,11 @@ class TileCoordLookup {
     Tile::addTile(ViewId::GREEN_DRAGON, sprite("greendragon"));
     Tile::addTile(ViewId::RED_DRAGON, sprite("reddragon"));
     Tile::addTile(ViewId::CYCLOPS, sprite(10, 14));
+    Tile::addTile(ViewId::MINOTAUR, sprite("mino"));
+    Tile::addTile(ViewId::HYDRA, sprite("hydra"));
+    Tile::addTile(ViewId::SHELOB, sprite("szelob"));
     Tile::addTile(ViewId::WITCH, sprite(15, 16));
+    Tile::addTile(ViewId::WITCHMAN, sprite("witchman"));
     Tile::addTile(ViewId::KNIGHT, sprite("knight"));
     Tile::addTile(ViewId::WARRIOR, sprite(6, 0));
     Tile::addTile(ViewId::SHAMAN, sprite(5, 0));
@@ -411,10 +423,12 @@ class TileCoordLookup {
     Tile::addTile(ViewId::STONE_GOLEM, sprite(10, 10));
     Tile::addTile(ViewId::IRON_GOLEM, sprite(12, 10));
     Tile::addTile(ViewId::LAVA_GOLEM, sprite(13, 10));
-    Tile::addTile(ViewId::AIR_ELEMENTAL, sprite("airelemental"));
-    Tile::addTile(ViewId::FIRE_ELEMENTAL, sprite("fireelemental"));
-    Tile::addTile(ViewId::WATER_ELEMENTAL, sprite("waterelemental"));
-    Tile::addTile(ViewId::EARTH_ELEMENTAL, sprite("earthelemental"));
+    Tile::addTile(ViewId::AUTOMATON, sprite("automaton"));
+    Tile::addTile(ViewId::ELEMENTALIST, sprite("element"));
+    Tile::addTile(ViewId::AIR_ELEMENTAL, sprite("wind"));
+    Tile::addTile(ViewId::FIRE_ELEMENTAL, sprite("fire"));
+    Tile::addTile(ViewId::WATER_ELEMENTAL, sprite("water"));
+    Tile::addTile(ViewId::EARTH_ELEMENTAL, sprite("earth"));
     Tile::addTile(ViewId::ENT, sprite("ent"));
     Tile::addTile(ViewId::ANGEL, sprite("angel"));
     Tile::addTile(ViewId::ZOMBIE, sprite(0, 16));
@@ -447,6 +461,9 @@ class TileCoordLookup {
     Tile::addTile(ViewId::RAT, sprite("rat"));
     Tile::addTile(ViewId::SPIDER, sprite(6, 12));
     Tile::addTile(ViewId::FLY, sprite(10, 12));
+    Tile::addTile(ViewId::ANT_WORKER, sprite("antwork"));
+    Tile::addTile(ViewId::ANT_SOLDIER, sprite("antw"));
+    Tile::addTile(ViewId::ANT_QUEEN, sprite("antq"));
     Tile::addTile(ViewId::SCORPION, sprite(11, 18));
     Tile::addTile(ViewId::SNAKE, sprite(9, 12));
     Tile::addTile(ViewId::VULTURE, sprite("vulture"));
@@ -517,13 +534,15 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BED, sprite("sleepdeco").setNoShadow());
     Tile::addTile(ViewId::DORM, sprite("sleep").setFloorBorders());
     Tile::addTile(ViewId::TORCH, sprite(12, 0, 2).setNoShadow().setTranslucent(0.35));
-    Tile::addTile(ViewId::DUNGEON_HEART, sprite(6, 10, 2));
     Tile::addTile(ViewId::ALTAR, sprite(2, 7, 2).setNoShadow());
     Tile::addTile(ViewId::CREATURE_ALTAR, sprite(3, 7, 2).setNoShadow());
     Tile::addTile(ViewId::TORTURE_TABLE, empty().addConnection(DirSet::fullSet(), byName("torturedeco"))
         .addBackground(byName("torture"))
         .setFloorBorders());
     Tile::addTile(ViewId::IMPALED_HEAD, sprite("impaledhead").setNoShadow());
+    Tile::addTile(ViewId::WHIPPING_POST, sprite("whip").setNoShadow());
+    Tile::addTile(ViewId::NOTICE_BOARD, sprite("board").setNoShadow());
+    Tile::addTile(ViewId::SOKOBAN_HOLE, sprite("hole").setNoShadow());
     Tile::addTile(ViewId::TRAINING_ROOM, empty().addConnection(DirSet::fullSet(), byName("traindeco"))
         .addBackground(byName("train")).setFloorBorders());
     Tile::addTile(ViewId::RITUAL_ROOM, empty().addConnection(DirSet::fullSet(), byName("ritualroomdeco"))
@@ -547,7 +566,7 @@ class TileCoordLookup {
         .addBackground(byName("jeweler"))
         .setFloorBorders());
     Tile::addTile(ViewId::CEMETERY, sprite("graveyard").setFloorBorders());
-    Tile::addTile(ViewId::GRAVE, sprite("gravedeco").setNoShadow().addBackground(byName("graveyard")));
+    Tile::addTile(ViewId::GRAVE, sprite("RIP").setNoShadow());
     Tile::addTile(ViewId::ROBE, sprite(7, 11, 3));
     Tile::addTile(ViewId::LEATHER_GLOVES, sprite(15, 11, 3));
     Tile::addTile(ViewId::DEXTERITY_GLOVES, sprite(19, 11, 3));
@@ -601,9 +620,17 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::UNDEAD_KEEPER, symbol("@", ColorId::DARK_GRAY));
     Tile::addSymbol(ViewId::UNKNOWN_MONSTER, symbol("?", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF, symbol("@", ColorId::LIGHT_GREEN));
+    Tile::addSymbol(ViewId::ELF_WOMAN, symbol("@", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF_ARCHER, symbol("@", ColorId::GREEN));
     Tile::addSymbol(ViewId::ELF_CHILD, symbol("@", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF_LORD, symbol("@", ColorId::DARK_GREEN));
+    Tile::addSymbol(ViewId::DARK_ELF, symbol("@", ColorId::ALMOST_DARK_GRAY));
+    Tile::addSymbol(ViewId::DARK_ELF_WOMAN, symbol("@", ColorId::ALMOST_DARK_GRAY));
+    Tile::addSymbol(ViewId::DARK_ELF_WARRIOR, symbol("@", ColorId::GRAY));
+    Tile::addSymbol(ViewId::DARK_ELF_CHILD, symbol("@", ColorId::ALMOST_GRAY));
+    Tile::addSymbol(ViewId::DARK_ELF_LORD, symbol("@", ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::DRIAD, symbol("@", ColorId::LIGHT_BROWN));
+    Tile::addSymbol(ViewId::KOBOLD, symbol("k", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::SHOPKEEPER, symbol("@", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::LIZARDMAN, symbol("@", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::LIZARDLORD, symbol("@", ColorId::BROWN));
@@ -667,7 +694,11 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::GREEN_DRAGON, symbol("D", ColorId::GREEN));
     Tile::addSymbol(ViewId::RED_DRAGON, symbol("D", ColorId::RED));
     Tile::addSymbol(ViewId::CYCLOPS, symbol("C", ColorId::GREEN));
+    Tile::addSymbol(ViewId::MINOTAUR, symbol("C", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::HYDRA, symbol("H", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::SHELOB, symbol("S", ColorId::PURPLE));
     Tile::addSymbol(ViewId::WITCH, symbol("@", ColorId::BROWN));
+    Tile::addSymbol(ViewId::WITCHMAN, symbol("@", ColorId::WHITE));
     Tile::addSymbol(ViewId::GHOST, symbol("&", ColorId::WHITE));
     Tile::addSymbol(ViewId::SPIRIT, symbol("&", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::DEVIL, symbol("&", ColorId::PURPLE));
@@ -684,6 +715,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::STONE_GOLEM, symbol("Y", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::IRON_GOLEM, symbol("Y", ColorId::ORANGE));
     Tile::addSymbol(ViewId::LAVA_GOLEM, symbol("Y", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::AUTOMATON, symbol("A", ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::ELEMENTALIST, symbol("@", ColorId::YELLOW));
     Tile::addSymbol(ViewId::AIR_ELEMENTAL, symbol("E", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::FIRE_ELEMENTAL, symbol("E", ColorId::RED));
     Tile::addSymbol(ViewId::WATER_ELEMENTAL, symbol("E", ColorId::BLUE));
@@ -720,6 +753,9 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::LEPRECHAUN, symbol("l", ColorId::GREEN));
     Tile::addSymbol(ViewId::RAT, symbol("r", ColorId::BROWN));
     Tile::addSymbol(ViewId::SPIDER, symbol("s", ColorId::BROWN));
+    Tile::addSymbol(ViewId::ANT_WORKER, symbol("a", ColorId::BROWN));
+    Tile::addSymbol(ViewId::ANT_SOLDIER, symbol("a", ColorId::YELLOW));
+    Tile::addSymbol(ViewId::ANT_QUEEN, symbol("a", ColorId::PURPLE));
     Tile::addSymbol(ViewId::FLY, symbol("b", ColorId::GRAY));
     Tile::addSymbol(ViewId::SCORPION, symbol("s", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::SNAKE, symbol("S", ColorId::YELLOW));
@@ -794,12 +830,14 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::PRISON, symbol(".", ColorId::BLUE));
     Tile::addSymbol(ViewId::DORM, symbol(".", ColorId::BROWN));
     Tile::addSymbol(ViewId::BED, symbol("=", ColorId::WHITE));
-    Tile::addSymbol(ViewId::DUNGEON_HEART, symbol("♥", ColorId::WHITE, true));
     Tile::addSymbol(ViewId::TORCH, symbol("*", ColorId::YELLOW));
     Tile::addSymbol(ViewId::ALTAR, symbol("Ω", ColorId::WHITE, true));
     Tile::addSymbol(ViewId::CREATURE_ALTAR, symbol("Ω", ColorId::YELLOW, true));
     Tile::addSymbol(ViewId::TORTURE_TABLE, symbol("=", ColorId::GRAY));
     Tile::addSymbol(ViewId::IMPALED_HEAD, symbol("⚲", ColorId::BROWN, true));
+    Tile::addSymbol(ViewId::WHIPPING_POST, symbol("}", ColorId::BROWN, true));
+    Tile::addSymbol(ViewId::NOTICE_BOARD, symbol("|", ColorId::BROWN));
+    Tile::addSymbol(ViewId::SOKOBAN_HOLE, symbol("0", ColorId::DARK_BLUE));
     Tile::addSymbol(ViewId::TRAINING_ROOM, symbol("‡", ColorId::BROWN, true));
     Tile::addSymbol(ViewId::RITUAL_ROOM, symbol("Ω", ColorId::PURPLE, true));
     Tile::addSymbol(ViewId::LIBRARY, symbol("▤", ColorId::BROWN, true));

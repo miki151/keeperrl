@@ -18,6 +18,8 @@
 
 #include "util.h"
 #include "map_memory.h"
+#include "stair_key.h"
+#include "position.h"
 
 class PlayerControl;
 class Level;
@@ -34,20 +36,10 @@ class LevelBuilder;
 class TimeQueue;
 class Statistics;
 struct TribeSet;
+class StairKey;
 
 enum class SunlightState { DAY, NIGHT};
-
-enum class StairKey {
-  DWARF,
-  CRYPT,
-  ORC,
-  PLAYER_SPAWN,
-  HERO_SPAWN,
-  PYRAMID,
-  TOWER,
-  CASTLE_CELLAR,
-  DRAGON
-};
+enum class VillainType { MAIN, LESSER };
 
 /**
   * Main class that holds all game logic.
@@ -57,6 +49,7 @@ class Model {
   ~Model();
 
   enum class GameType { ADVENTURER, KEEPER, RETIRED_KEEPER, AUTOSAVE };
+
 
   class ExitInfo {
     public:
@@ -75,18 +68,21 @@ class Model {
   optional<ExitInfo> update(double totalTime);
 
   /** Removes creature from current level and puts into the next, according to direction. */
-  Vec2 changeLevel(StairDirection direction, StairKey key, Creature*);
+  bool changeLevel(StairKey key, Creature*);
 
   /** Removes creature from current level and puts into the given level */
-  void changeLevel(Level*, Vec2 position, Creature*);
+  bool changeLevel(Position, Creature*);
+
+  Position getStairs(const Level* from, const Level* to);
 
   /** Adds new creature to the queue. Assumes this creature has already been added to a level. */
-  void addCreature(PCreature);
+  void addCreature(PCreature, double delay = 0);
 
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
   void killCreature(Creature*, Creature* attacker);
 
-  const vector<Collective*> getMainVillains() const;
+  const vector<Collective*>& getVillains(VillainType) const;
+  const vector<Collective*>& getAllVillains() const;
 
   bool isTurnBased();
 
@@ -128,13 +124,8 @@ class Model {
 
   SERIALIZATION_DECL(Model);
 
-  struct PortalInfo : public NamedTupleBase<Level*, Vec2> {
-    NAMED_TUPLE_STUFF(PortalInfo);
-    NAME_ELEM(0, level);
-    NAME_ELEM(1, position);
-  };
-  optional<PortalInfo> getDanglingPortal();
-  void setDanglingPortal(PortalInfo);
+  optional<Position> getDanglingPortal();
+  void setDanglingPortal(Position);
   void resetDanglingPortal();
 
   void addWoodCount(int);
@@ -145,15 +136,17 @@ class Model {
   Tribe* getPeacefulTribe();
 
   void onTechBookRead(Technology*);
-  void onAlarm(Level*, Vec2);
+  void onAlarm(Position);
   void onKilledLeader(const Collective*, const Creature*);
   void onTorture(const Creature* who, const Creature* torturer);
   void onSurrender(Creature* who, const Creature* to);
   void onAttack(Creature* victim, Creature* attacker);
-  void onTrapTrigger(const Level*, Vec2 pos);
-  void onTrapDisarm(const Level*, const Creature*, Vec2 pos);
-  void onSquareDestroyed(const Level*, Vec2 pos);
+  void onTrapTrigger(Position);
+  void onTrapDisarm(Position, const Creature*);
+  void onSquareDestroyed(Position);
   void onEquip(const Creature*, const Item*);
+
+  vector<Level*> getLevels() const;
 
   private:
   Model(View* view, const string& worldName, TribeSet&&);
@@ -164,24 +157,23 @@ class Model {
   PCreature makePlayer(int handicap);
   const Creature* getPlayer() const;
   void landHeroPlayer();
-  Level* buildLevel(LevelBuilder&&, LevelMaker*);
-  void addLink(StairDirection, StairKey, Level*, Level*);
+  Level* buildLevel(LevelBuilder&&, PLevelMaker);
   Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
 
   HeapAllocated<TribeSet> SERIAL(tribeSet);
   vector<PLevel> SERIAL(levels);
+  PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
   Collective* SERIAL(playerCollective);
-  vector<Collective*> SERIAL(mainVillains);
+  map<VillainType, vector<Collective*>> SERIAL(villainsByType);
+  vector<Collective*> SERIAL(allVillains);
   View* view;
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(lastTick) = -1000;
-  map<tuple<StairDirection, StairKey, Level*>, Level*> SERIAL(levelLinks);
   PlayerControl* SERIAL(playerControl) = nullptr;
   bool SERIAL(won) = false;
   bool SERIAL(addHero) = false;
-  bool SERIAL(adventurer) = false;
   double SERIAL(currentTime) = 0;
   SunlightInfo sunlightInfo;
   double lastUpdate = -10;
@@ -189,14 +181,17 @@ class Model {
   Highscores* highscores;
   string SERIAL(worldName);
   MusicType SERIAL(musicType);
-  bool SERIAL(finishCurrentMusic) = false;
+  bool SERIAL(finishCurrentMusic) = true;
   optional<ExitInfo> exitInfo;
   unique_ptr<CreatureView> SERIAL(spectator);
-  optional<PortalInfo> SERIAL(danglingPortal);
+  optional<Position> SERIAL(danglingPortal);
   int SERIAL(woodCount) = 0;
   HeapAllocated<Statistics> SERIAL(statistics);
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
+  void calculateStairNavigation();
+  optional<StairKey> getStairsBetween(const Level* from, const Level* to);
+  map<pair<const Level*, const Level*>, StairKey> SERIAL(stairNavigation);
 };
 
 #endif

@@ -23,6 +23,7 @@
 #include "entity_name.h"
 #include "skill.h"
 #include "modifier_type.h"
+#include "view_id.h"
 
 ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
@@ -80,7 +81,8 @@ CreatureInfo::CreatureInfo(const Creature* c)
       name(c->getName().bare()),
       speciesName(c->getSpeciesName()),
       expLevel(c->getExpLevel()),
-      morale(c->getMorale()) {
+      morale(c->getMorale()),
+      cost({ViewId::GOLD, c->getRecruitmentCost()}){
 }
 
 string PlayerInfo::getFirstName() const {

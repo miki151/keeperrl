@@ -23,6 +23,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#include <exception>
 
 #include "view.h"
 #include "options.h"
@@ -43,6 +44,7 @@
 #include "parse_game.h"
 #include "version.h"
 #include "vision.h"
+#include "model_builder.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -88,6 +90,14 @@ void initializeRendererTiles(Renderer& r, const string& path) {
   r.loadTilesFromDir(path + "/shroom46", Vec2(46, 46));
 }
 
+static int getMaxVolume() {
+  return 70;
+}
+
+static map<MusicType, int> getMaxVolumes() {
+  return {{MusicType::ADV_BATTLE, 40}, {MusicType::ADV_PEACEFUL, 40}};
+}
+
 vector<pair<MusicType, string>> getMusicTracks(const string& path) {
   if (!tilesPresent)
     return {};
@@ -108,14 +118,28 @@ vector<pair<MusicType, string>> getMusicTracks(const string& path) {
       {MusicType::NIGHT, path + "/night1.ogg"},
       {MusicType::NIGHT, path + "/night2.ogg"},
       {MusicType::NIGHT, path + "/night3.ogg"},
+      {MusicType::ADV_BATTLE, path + "/adv_battle1.ogg"},
+      {MusicType::ADV_BATTLE, path + "/adv_battle2.ogg"},
+      {MusicType::ADV_BATTLE, path + "/adv_battle3.ogg"},
+      {MusicType::ADV_BATTLE, path + "/adv_battle4.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful1.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful2.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful3.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful4.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful5.ogg"},
     };
 }
 void makeDir(const string& path) {
   boost::filesystem::create_directories(path.c_str());
 }
 
+static void fail() {
+  *((int*) 0x1234) = 0; // best way to fail
+}
+
 int main(int argc, char* argv[]) {
   StackPrinter::initialize(argv[0], time(0));
+  std::set_terminate(fail);
   options_description flags("Flags");
   flags.add_options()
     ("help", "Print help")
@@ -125,8 +149,12 @@ int main(int argc, char* argv[]) {
     ("upload_url", value<string>(), "URL for uploading maps")
     ("override_settings", value<string>(), "Override settings")
     ("run_tests", "Run all unit tests and exit")
-    ("gen_world_exit", "Exit after creating a world")
+    ("worldgen_test", value<int>(), "Test how often world generation fails")
     ("force_keeper", "Skip main menu and force keeper mode")
+    ("logging", "Log to log.out")
+#ifndef RELEASE
+    ("quick_level", "")
+#endif
     ("seed", value<int>(), "Use given seed")
     ("record", value<string>(), "Record game to file")
     ("replay", value<string>(), "Replay game from file");
@@ -145,7 +173,7 @@ int main(int argc, char* argv[]) {
   unique_ptr<CompressedInput> input;
   unique_ptr<CompressedOutput> output;
   string lognamePref = "log";
-  Debug::init();
+  Debug::init(vars.count("logging"));
   Skill::init();
   Technology::init();
   Spell::init();
@@ -181,6 +209,8 @@ int main(int argc, char* argv[]) {
     overrideSettings = vars["override_settings"].as<string>();
   Options options(userPath + "/options.txt", overrideSettings);
   options.setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
+  int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
+  Random.init(seed);
   Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
   Clock clock;
   GuiFactory guiFactory(renderer, &clock);
@@ -189,9 +219,6 @@ int main(int argc, char* argv[]) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
-  int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
- // int forceMode = vars.count("force_keeper") ? 0 : -1;
-  bool genExit = vars.count("gen_world_exit");
   if (vars.count("replay")) {
     string fname = vars["replay"].as<string>();
     Debug() << "Reading from " << fname;
@@ -201,7 +228,6 @@ int main(int argc, char* argv[]) {
     view.reset(WindowView::createReplayView(input->getArchive(),
           {renderer, guiFactory, tilesPresent, &options, &clock}));
   } else {
-    Random.init(seed);
     if (vars.count("record")) {
       string fname = vars["record"].as<string>();
       output.reset(new CompressedOutput(fname));
@@ -220,11 +246,20 @@ int main(int argc, char* argv[]) {
     viewInitialized = true;
   }
   Tile::initialize(renderer, tilesPresent);
-  Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"));
+  Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl);
-  Highscores highscores(userPath + "/" + "highscores.txt", fileSharing, &options);
+  Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
+  optional<GameTypeChoice> forceGame;
+  if (vars.count("force_keeper"))
+    forceGame = GameTypeChoice::KEEPER;
+  else if (vars.count("quick_level"))
+    forceGame = GameTypeChoice::QUICK_LEVEL;
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, gameFinished,
-      useSingleThread);
+      useSingleThread, forceGame);
+  if (vars.count("worldgen_test")) {
+    loop.modelGenTest(vars["worldgen_test"].as<int>(), Random, &options);
+    return 0;
+  }
   auto game = [&] {
     while (!viewInitialized) {}
     ofstream systemInfo(userPath + "/system_info.txt");

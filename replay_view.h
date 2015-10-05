@@ -84,6 +84,16 @@ class ReplayView : public View {
       return readValue<optional<int>>(LoggingToken::CHOOSE_ITEM);
     }
 
+    virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
+        pair<ViewId, int> budget, const vector<CreatureInfo>& c, double* scrollPos) override {
+      return readValue<optional<UniqueEntity<Creature>::Id>>(LoggingToken::CHOOSE_RECRUIT);
+    }
+
+    virtual optional<UniqueEntity<Creature>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
+        const vector<ItemInfo>& c, double* scrollPos) override {
+      return readValue<optional<UniqueEntity<Item>::Id>>(LoggingToken::CHOOSE_TRADE_ITEM);
+    }
+
     virtual bool travelInterrupt() override {
       return readValue<bool>(LoggingToken::TRAVEL_INTERRUPT);
     }
@@ -91,6 +101,9 @@ class ReplayView : public View {
     virtual optional<string> getText(const string& title, const string& value, int maxLength,
         const string& hint = "") override {
       return readValue<optional<string>>(LoggingToken::GET_TEXT);
+    }
+
+    virtual void presentHighscores(const vector<HighscoreList>&) override {
     }
 
     virtual void initialize() override {
@@ -167,6 +180,11 @@ class ReplayView : public View {
     virtual void resetCenter() override {
       if (delegate)
         delegate->resetCenter();
+    }
+
+    virtual void setScrollPos(Vec2 v) override {
+      if (delegate)
+        delegate->setScrollPos(v);
     }
 
   private:

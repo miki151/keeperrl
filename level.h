@@ -22,6 +22,7 @@
 #include "unique_entity.h"
 #include "movement_type.h"
 #include "sectors.h"
+#include "stair_key.h"
 
 class Model;
 class Square;
@@ -36,26 +37,7 @@ class Tribe;
 class Attack;
 class PlayerMessage;
 class CreatureBucketMap;
-
-RICH_ENUM(SquareAttrib,
-  NO_DIG,
-  GLACIER,
-  MOUNTAIN,
-  HILL,
-  LOWLAND,
-  CONNECT_ROAD, 
-  CONNECT_CORRIDOR,
-  LAKE,
-  RIVER,
-  ROAD_CUT_THRU,
-  NO_ROAD,
-  ROOM,
-  COLLECTIVE_START,
-  COLLECTIVE_STAIRS,
-  EMPTY_ROOM,
-  FOG,
-  FORREST
-);
+class Position;
 
 RICH_ENUM(VisionId,
   ELF,
@@ -63,10 +45,17 @@ RICH_ENUM(VisionId,
   NORMAL
 );
 
-enum class StairDirection { UP, DOWN };
+struct CoverInfo {
+  bool SERIAL(covered);
+  double SERIAL(sunlight);
+  template<class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(covered) & SVAR(sunlight);
+  }
+};
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
-class Level : public UniqueEntity<Level> {
+class Level {
   public:
 
   ~Level();
@@ -85,7 +74,7 @@ class Level : public UniqueEntity<Level> {
   void swapCreatures(Creature*, Creature*);
 
   /** Puts \paramname{creature} on \paramname{position}. \paramname{creature} ownership is assumed by the model.*/
-  void addCreature(Vec2 position, PCreature creature);
+  void addCreature(Vec2 position, PCreature creature, double delay = 0);
 
   /** Puts the \paramname{creature} on \paramname{position}. */
   void putCreature(Vec2 position, Creature* creature);
@@ -94,20 +83,25 @@ class Level : public UniqueEntity<Level> {
   /** Finds an appropriate square for the \paramname{creature} changing level from \paramname{direction}.
     The square's method Square::isLandingSquare must return true for \paramname{direction}. 
     Returns the position of the stairs that were used. */
-  Vec2 landCreature(StairDirection direction, StairKey key, Creature* creature);
-  Vec2 landCreature(StairDirection direction, StairKey key, PCreature creature);
+  bool landCreature(StairKey key, Creature* creature);
+  bool landCreature(StairKey key, PCreature creature);
   //@}
 
   /** Lands the creature on the level randomly choosing one of the given squares.
       Returns the position of the stairs that were used.*/
-  Vec2 landCreature(vector<Vec2> landing, PCreature creature);
-  Vec2 landCreature(vector<Vec2> landing, Creature* creature);
+  bool landCreature(vector<Position> landing, PCreature creature);
+  bool landCreature(vector<Position> landing, Creature* creature);
 
   /** Returns the landing squares for given direction and stair key. See Square::getLandingLink() */
-  vector<Vec2> getLandingSquares(StairDirection, StairKey) const;
+  vector<Position> getLandingSquares(StairKey) const;
+
+  vector<StairKey> getAllStairKeys() const;
+  bool hasStairKey(StairKey) const;
+
+  optional<Position> getStairsTo(const Level*) const;
 
   /** Removes the creature from \paramname{position} from the level and model. The creature object is retained.*/
-  void killCreature(Creature*, Creature* attacker);
+  void killCreature(Creature*);
 
   /** Recalculates visibility data assuming that \paramname{changedSquare} has changed
       its obstructing/non-obstructing attribute. */
@@ -130,12 +124,8 @@ class Level : public UniqueEntity<Level> {
 
   //@{
   /** Returns the given square. \paramname{pos} must lie within the boundaries. */
-  vector<const Square*> getSquare(Vec2) const;
-  vector<Square*> getSquare(Vec2);
-  vector<const Square*> getSquares(const vector<Vec2>& pos) const;
-  vector<Square*> getSquares(const vector<Vec2>&);
-  const Square* getSafeSquare(Vec2) const;
-  Square* getSafeSquare(Vec2);
+  Position getPosition(Vec2) const;
+  vector<Position> getAllPositions() const;
   //@}
 
   void replaceSquare(Vec2 pos, PSquare square, bool storePrevious = true);
@@ -148,10 +138,10 @@ class Level : public UniqueEntity<Level> {
   void tick(double time);
 
   /** Moves the creature to a different level according to \paramname{direction}. */
-  void changeLevel(StairDirection direction, StairKey key, Creature* c);
+  void changeLevel(StairKey key, Creature* c);
 
   /** Moves the creature to a given level. */
-  void changeLevel(Level* destination, Vec2 landing, Creature* c);
+  void changeLevel(Position destination, Creature* c);
 
   /** Performs a throw of the item, with all consequences of the event.*/
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId);
@@ -177,7 +167,6 @@ class Level : public UniqueEntity<Level> {
   bool canSee(Vec2 from, Vec2 to, VisionId) const;
 
   /** Returns all tiles visible by a creature.*/
-  vector<Vec2> getVisibleTiles(const Creature*) const;
   vector<Vec2> getVisibleTiles(Vec2 pos, VisionId) const;
 
   /** Checks if the player can see a given square.*/
@@ -203,12 +192,6 @@ class Level : public UniqueEntity<Level> {
 
   const vector<Location*> getAllLocations() const;
 
-  struct CoverInfo : public NamedTupleBase<bool, double> {
-    NAMED_TUPLE_STUFF(CoverInfo);
-    NAME_ELEM(0, covered);
-    NAME_ELEM(1, sunlight);
-  };
-
   CoverInfo getCoverInfo(Vec2) const;
 
   const Model* getModel() const;
@@ -216,9 +199,6 @@ class Level : public UniqueEntity<Level> {
 
   void addLightSource(Vec2, double radius);
   void removeLightSource(Vec2, double radius);
-
-  void addDarknessSource(Vec2, double radius);
-  void removeDarknessSource(Vec2, double radius);
 
   /** Returns the amount of light in the square, capped within (0, 1).*/
   double getLight(Vec2) const;
@@ -229,20 +209,28 @@ class Level : public UniqueEntity<Level> {
   /** Returns if two squares are connected assuming given movement.*/
   bool areConnected(Vec2, Vec2, const MovementType&) const;
 
+  bool isChokePoint(Vec2, const MovementType&) const;
+
   void updateConnectivity(Vec2);
   void updateSunlightMovement();
+
+  int getUniqueId() const;
 
   /** Class used to initialize a level object.*/
 
   SERIALIZATION_DECL(Level);
 
   private:
+  friend class Position;
+  const Square* getSafeSquare(Vec2) const;
+  Square* getSafeSquare(Vec2);
   Vec2 transform(Vec2);
   Table<PSquare> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
-  map<pair<StairDirection, StairKey>, vector<Vec2>> SERIAL(landingSquares);
+  unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
   vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
+  void eraseCreature(Creature*, Vec2 coord);
   vector<Creature*> SERIAL(creatures);
   Model* SERIAL(model) = nullptr;
   mutable EnumMap<VisionId, FieldOfView> SERIAL(fieldOfView);
@@ -256,16 +244,21 @@ class Level : public UniqueEntity<Level> {
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
   mutable unordered_map<MovementType, Sectors> SERIAL(sectors);
+  Sectors& getSectors(const MovementType&) const;
   
   friend class LevelBuilder;
   Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name,
-      Table<CoverInfo> coverInfo);
+      Table<CoverInfo> coverInfo, int levelId);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
+  void addDarknessSource(Vec2, double radius);
+  void removeDarknessSource(Vec2, double radius);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
   FieldOfView& getFieldOfView(VisionId vision) const;
   vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
   bool isWithinVision(Vec2 from, Vec2 to, VisionId) const;
+  int SERIAL(levelId) = 0;
+  bool SERIAL(noDiagonalPassing) = false;
 };
 
 #endif

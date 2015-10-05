@@ -21,6 +21,7 @@
 #include "creature_action.h"
 #include "renderable.h"
 #include "movement_type.h"
+#include "position.h"
 
 class Skill;
 class Level;
@@ -34,6 +35,7 @@ class CreatureVision;
 class SquareType;
 class Location;
 class ShortestPath;
+class LevelShortestPath;
 class Equipment;
 class Spell;
 class CreatureAttributes;
@@ -48,24 +50,19 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Creature(const ViewObject&, Tribe*, const CreatureAttributes&, const ControllerFactory&);
   virtual ~Creature();
 
+  static vector<vector<Creature*>> stack(const vector<Creature*>&);
+
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void makeMove();
   double getTime() const;
   void setTime(double t);
-  void setLevel(Level* l);
+  void setModel(Model*);
+  Level* getLevel() const;
+  Model* getModel() const;
   vector<const Creature*> getVisibleEnemies() const;
-  Level* getLevel();
-  const Level* getLevel() const;
-  Square* getSquare();
-  const Square* getSquare() const;
-  Square* getSafeSquare(Vec2 direction);
-  const Square* getSafeSquare(Vec2 direction) const;
-  vector<Square*> getSquare(Vec2 direction);
-  vector<const Square*> getSquare(Vec2 direction) const;
-  vector<Square*> getSquares(const vector<Vec2>& direction);
-  vector<const Square*> getSquares(const vector<Vec2>& direction) const;
-  void setPosition(Vec2 pos);
-  Vec2 getPosition() const;
+  vector<Position> getVisibleTiles() const;
+  void setPosition(Position);
+  Position getPosition() const;
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&);
   void heal(double amount = 1, bool replaceLimbs = false);
@@ -90,7 +87,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Equipment& getEquipment();
   vector<PItem> steal(const vector<Item*> items);
   bool canSee(const Creature*) const;
-  bool canSee(Vec2 pos) const;
+  bool canSee(Position) const;
+  bool canSee(Vec2) const;
   bool isEnemy(const Creature*) const;
   void tick(double realTime);
 
@@ -110,11 +108,13 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   const Tribe* getTribe() const;
   Tribe* getTribe();
+  void setTribe(Tribe*);
   bool isFriend(const Creature*) const;
   int getDebt(const Creature* debtor) const;
   vector<Item*> getGold(int num) const;
 
   void takeItems(vector<PItem> items, const Creature* from);
+  bool canTakeItems(const vector<Item*>& items) const;
 
   void youHit(BodyPart part, AttackType type) const;
 
@@ -130,6 +130,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool isBlind() const;
   bool isBleeding() const;
   const Creature* getLastAttacker() const;
+  optional<string> getDeathReason() const;
+  double getDeathTime() const;
   vector<const Creature*> getKills() const;
   bool isHumanoid() const;
   bool isAnimal() const;
@@ -143,6 +145,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool isWorshipped() const;
   bool dontChase() const;
   optional<SpawnType> getSpawnType() const;
+  int getRecruitmentCost() const;
+
   MovementType getMovementType() const;
 
   int numBodyParts(BodyPart) const;
@@ -174,12 +178,15 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   string getPluralTheName(Item* item, int num) const;
   string getPluralAName(Item* item, int num) const;
-  CreatureAction move(Vec2 direction) const;
-  CreatureAction forceMove(Vec2 direction) const;
+  CreatureAction move(Position) const;
+  CreatureAction move(Vec2) const;
+  CreatureAction forceMove(Position) const;
+  CreatureAction forceMove(Vec2) const;
   CreatureAction swapPosition(Vec2 direction, bool force = false) const;
+  CreatureAction swapPosition(Creature*, bool force = false) const;
   CreatureAction wait() const;
   vector<Item*> getPickUpOptions() const;
-  CreatureAction pickUp(const vector<Item*>& item, bool spendTime = true) const;
+  CreatureAction pickUp(const vector<Item*>& item) const;
   CreatureAction drop(const vector<Item*>& item) const;
   void drop(vector<PItem> item);
   struct AttackParams {
@@ -187,7 +194,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
     enum Mod { WILD, SWIFT};
     optional<Mod> mod;
   };
-  CreatureAction attack(const Creature*, optional<AttackParams> = none, bool spendTime = true) const;
+  CreatureAction attack(Creature*, optional<AttackParams> = none, bool spendTime = true) const;
   CreatureAction bumpInto(Vec2 direction) const;
   CreatureAction applyItem(Item* item) const;
   CreatureAction equip(Item* item) const;
@@ -204,9 +211,9 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction flyAway() const;
   CreatureAction disappear() const;
   CreatureAction torture(Creature*) const;
-  CreatureAction chatTo(Vec2 direction) const;
+  CreatureAction chatTo(Creature*) const;
   CreatureAction stealFrom(Vec2 direction, const vector<Item*>&) const;
-  void give(const Creature* whom, vector<Item*> items);
+  CreatureAction give(Creature* whom, vector<Item*> items);
   CreatureAction fire(Vec2 direction) const;
   CreatureAction construct(Vec2 direction, const SquareType&) const;
   bool canConstruct(const SquareType&) const;
@@ -215,10 +222,11 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction destroy(Vec2 direction, DestroyAction) const;
   CreatureAction copulate(Vec2 direction) const;
   bool canCopulateWith(const Creature*) const;
-  CreatureAction consume(Vec2 direction) const;
+  CreatureAction consume(Creature*) const;
   bool canConsume(const Creature*) const;
   bool isMinionFood() const;
   
+  void displace(double time, Vec2);
   void surrender(const Creature* to);
   
   virtual void onChat(Creature*);
@@ -228,15 +236,16 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Item* getWeapon() const;
   vector<vector<Item*>> stackItems(vector<Item*>) const;
 
-  CreatureAction moveTowards(Vec2 pos, bool stepOnTile = false);
-  bool canNavigateTo(Vec2) const;
-  CreatureAction moveAway(Vec2 pos, bool pathfinding = true);
+  CreatureAction moveTowards(Position, bool stepOnTile = false);
+  CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();
   CreatureAction stayIn(const Location*);
-  bool isSameSector(Vec2) const;
+  bool isSameSector(Position) const;
+  bool canNavigateTo(Position) const;
 
   bool atTarget() const;
   void die(Creature* attacker = nullptr, bool dropInventory = true, bool dropCorpse = true);
+  void die(const string& reason, bool dropInventory = true, bool dropCorpse = true);
   void bleed(double severity);
   void setOnFire(double amount);
   void poisonWithGas(double amount);
@@ -274,6 +283,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void removePermanentEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
   bool isAffectedPermanently(LastingEffect) const;
+  bool affects(LastingEffect effect) const;
+  bool hasFreeMovement() const;
   bool isFireResistant() const;
   bool isDarknessSource() const;
 
@@ -300,13 +311,12 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   private:
 
-  bool affects(LastingEffect effect) const;
   void onAffected(LastingEffect effect, bool msg);
   void consumeEffects(const EnumMap<LastingEffect, int>&);
   void consumeBodyParts(const EnumMap<BodyPart, int>&);
   void onRemoved(LastingEffect effect, bool msg);
   void onTimedOut(LastingEffect effect, bool msg);
-  CreatureAction moveTowards(Vec2 pos, bool away, bool stepOnTile);
+  CreatureAction moveTowards(Position, bool away, bool stepOnTile);
   double getInventoryWeight() const;
   Item* getAmmo() const;
   void updateViewObject();
@@ -315,20 +325,21 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   pair<double, double> getStanding(const Creature* c) const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
-  Level* SERIAL(level) = nullptr;
-  Vec2 SERIAL(position);
+  Position SERIAL(position);
+  Model* SERIAL(model) = nullptr;
   double SERIAL(time) = 1;
   HeapAllocated<Equipment> SERIAL(equipment);
-  unique_ptr<ShortestPath> SERIAL(shortestPath);
+  unique_ptr<LevelShortestPath> SERIAL(shortestPath);
   unordered_set<const Creature*> SERIAL(knownHiding);
   Tribe* SERIAL(tribe);
   double SERIAL(health) = 1;
   double SERIAL(morale) = 0;
-  bool SERIAL(dead) = false;
+  optional<double> SERIAL(deathTime);
   double SERIAL(lastTick) = 0;
   bool SERIAL(collapsed) = false;
   bool SERIAL(hidden) = false;
   Creature* SERIAL(lastAttacker) = nullptr;
+  optional<string> SERIAL(deathReason);
   int SERIAL(swapPositionCooldown) = 0;
   vector<const Creature*> SERIAL(unknownAttacker);
   vector<const Creature*> SERIAL(privateEnemies);
@@ -341,7 +352,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   int SERIAL(points) = 0;
   int SERIAL(numAttacksThisTurn) = 0;
   vector<PMoraleOverride> SERIAL(moraleOverrides);
-  void updateVisibleCreatures(Rectangle range);
+  void updateVisibleCreatures();
+  const vector<Creature*>& getVisibleCreatures();
   vector<const Creature*> SERIAL(visibleEnemies);
   vector<Creature*> SERIAL(visibleCreatures);
   double getTimeRemaining(LastingEffect) const;
@@ -360,15 +372,14 @@ enum class MsgType {
     BLEEDING_STOPS,
     COLLAPSE,
     FALL,
+    FALL_ASLEEP,
     PANIC,
     RAGE,
     DIE_OF,
     ARE, // bleeding
     YOUR, // your head is cut off
-    FALL_ASLEEP, //
     WAKE_UP,
     DIE, //
-    FALL_APART,
     TELE_APPEAR,
     TELE_DISAPPEAR,
     ATTACK_SURPRISE,

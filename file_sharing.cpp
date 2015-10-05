@@ -79,18 +79,18 @@ static optional<string> curlUpload(const char* path, const char* url) {
 
 optional<string> FileSharing::uploadRetired(const string& path, ProgressMeter& meter) {
   progressFun = [&] (double p) { meter.setProgress(p);};
-  return curlUpload(path.c_str(), (uploadUrl + "/upload.php").c_str());
+  return curlUpload(path.c_str(), (uploadUrl + "/upload2.php").c_str());
 }
 
 void FileSharing::uploadHighscores(const string& path) {
   progressFun = [] (double p) {};
-  curlUpload(path.c_str(), (uploadUrl + "/upload_scores.php").c_str());
+  curlUpload(path.c_str(), (uploadUrl + "/upload_scores2.php").c_str());
 }
 
 string FileSharing::downloadHighscores() {
   string ret;
   if(CURL* curl = curl_easy_init()) {
-    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/highscores.php").c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/highscores2.php").c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
@@ -110,17 +110,18 @@ static vector<FileSharing::GameInfo> parseGames(const string& s) {
       break;
     Debug() << "Parsing " << string(buf);
     vector<string> fields = split(buf, {','});
-    if (fields.size() < 4)
+    if (fields.size() < 6)
       continue;
     Debug() << "Parsed " << fields;
-    ret.push_back({fields[0], fields[1], fromString<int>(fields[2]), fromString<int>(fields[3])});
+    ret.push_back({fields[0], fields[1], fromString<int>(fields[2]), fromString<int>(fields[3]),
+        fromString<int>(fields[4]), fromString<int>(fields[5])});
   }
   return ret;
 }
 
 vector<FileSharing::GameInfo> FileSharing::listGames() {
   if(CURL* curl = curl_easy_init()) {
-    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_games.php").c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_games2.php").c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
     string ret;

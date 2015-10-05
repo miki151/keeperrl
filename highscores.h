@@ -19,7 +19,10 @@ class Highscores {
     string playerName;
     string worldName;
     string gameResult;
+    bool gameWon;
     int points;
+    int turns;
+    enum GameType { KEEPER, ADVENTURER } gameType;
   };
 
   void present(View*, optional<Score> lastAdded = none) const;

@@ -102,6 +102,7 @@ class Renderer {
   const static int textSize = 19;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(string s);
+  int getUnicodeLength(String s, FontId = SYMBOL_FONT);
   enum CenterType { NONE, HOR, VER, HOR_VER };
   void drawText(FontId, int size, Color, int x, int y, String, CenterType center = NONE);
   void drawTextWithHotkey(Color, int x, int y, const string&, char key);
@@ -169,14 +170,17 @@ class Renderer {
   deque<Event> eventQueue;
   bool genReleaseEvent = false;
   void addRenderElem(function<void()>);
+  sf::Text& getTextObject();
   stack<int> layerStack;
   int currentLayer = 0;
   array<vector<function<void()>>, 2> renderList;
   vector<Vertex> quads;
   Vec2 mousePos;
-  Font textFont;
-  Font tileFont;
-  Font symbolFont;
+  struct FontSet {
+    Font textFont;
+    Font tileFont;
+    Font symbolFont;
+  } fonts, fontsOtherThread;
   Font& getFont(Renderer::FontId);
   optional<thread::id> renderThreadId;
   bool fullscreen;

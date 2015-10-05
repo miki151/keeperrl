@@ -8,10 +8,18 @@
 #include "level_maker.h"
 #include "collective_builder.h"
 
-LevelBuilder::LevelBuilder(ProgressMeter& meter, int width, int height, const string& n, bool covered)
+LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int height, const string& n, bool covered)
   : squares(width, height), heightMap(width, height, 0),
     coverInfo(width, height, {covered, covered ? 0.0 : 1.0}), attrib(width, height),
-    type(width, height, SquareType(SquareId(0))), items(width, height), name(n), progressMeter(meter) {
+    type(width, height, SquareType(SquareId(0))), items(width, height), name(n), progressMeter(meter), random(r) {
+}
+
+LevelBuilder::LevelBuilder(RandomGen& r, int width, int height, const string& n, bool covered)
+  : LevelBuilder(nullptr, r, width, height, n, covered) {
+}
+
+RandomGen& LevelBuilder::getRandom() {
+  return random;
 }
 
 bool LevelBuilder::hasAttrib(Vec2 posT, SquareAttrib attr) {
@@ -49,10 +57,10 @@ void LevelBuilder::putSquare(Vec2 pos, PSquare square, SquareType t, optional<Sq
 }
 
 void LevelBuilder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<SquareAttrib> attr) {
-  progressMeter.addProgress();
+  if (progressMeter)
+    progressMeter->addProgress();
   Vec2 pos = transform(posT);
-  CHECK(!contains({SquareId::UP_STAIRS, SquareId::DOWN_STAIRS}, type[pos].getId()))
-    << "Attempted to overwrite stairs";
+  CHECK(type[pos].getId() != SquareId::STAIRS) << "Attempted to overwrite stairs";
   square->setPosition(pos);
   if (squares[pos])
     square->setBackground(squares[pos].get());
@@ -64,7 +72,7 @@ void LevelBuilder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<Squ
 }
 
 bool LevelBuilder::isInSunlight(Vec2 pos) {
-  return !coverInfo[pos].covered();
+  return !coverInfo[pos].covered;
 }
 
 Rectangle LevelBuilder::toGlobalCoordinates(Rectangle area) {
@@ -90,8 +98,7 @@ double LevelBuilder::getHeightMap(Vec2 pos) {
 }
 
 void LevelBuilder::putCreature(Vec2 pos, PCreature creature) {
-  creature->setPosition(transform(pos));
-  creatures.push_back(NOTNULL(std::move(creature)));
+  creatures.emplace_back(std::move(creature), transform(pos));
 }
 
 void LevelBuilder::putItems(Vec2 posT, vector<PItem> it) {
@@ -104,8 +111,8 @@ bool LevelBuilder::canPutCreature(Vec2 posT, Creature* c) {
   Vec2 pos = transform(posT);
   if (!squares[pos]->canEnter(c))
     return false;
-  for (PCreature& c : creatures) {
-    if (c->getPosition() == pos)
+  for (pair<PCreature, Vec2>& c : creatures) {
+    if (c.second == pos)
       return false;
   }
   return true;
@@ -115,20 +122,24 @@ void LevelBuilder::setMessage(const string& message) {
   entryMessage = message;
 }
 
-PLevel LevelBuilder::build(Model* m, LevelMaker* maker) {
+void LevelBuilder::setNoDiagonalPassing() {
+  noDiagonalPassing = true;
+}
+
+PLevel LevelBuilder::build(Model* m, LevelMaker* maker, int levelId) {
   CHECK(mapStack.empty());
   maker->make(this, squares.getBounds());
   for (Vec2 v : heightMap.getBounds()) {
     squares[v]->setHeight(heightMap[v]);
     squares[v]->dropItems(std::move(items[v]));
   }
-  PLevel l(new Level(std::move(squares), m, locations, entryMessage, name, std::move(coverInfo)));
-  for (PCreature& c : creatures) {
-    Vec2 pos = c->getPosition();
-    l->addCreature(pos, std::move(c));
+  PLevel l(new Level(std::move(squares), m, locations, entryMessage, name, std::move(coverInfo), levelId));
+  for (pair<PCreature, Vec2>& c : creatures) {
+    l->addCreature(c.second, std::move(c.first));
   }
   for (CollectiveBuilder* c : collectives)
     c->setLevel(l.get());
+  l->noDiagonalPassing = noDiagonalPassing;
   return l;
 }
 
@@ -176,7 +187,7 @@ Vec2 LevelBuilder::transform(Vec2 v) {
   return v;
 }
 
-void LevelBuilder::setCoverInfo(Vec2 pos, Level::CoverInfo info) {
+void LevelBuilder::setCoverInfo(Vec2 pos, CoverInfo info) {
   coverInfo[transform(pos)] = info;
   if (squares[pos])
     squares[pos]->updateSunlightMovement(isInSunlight(pos));

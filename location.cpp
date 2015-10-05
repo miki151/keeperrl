@@ -18,7 +18,6 @@
 #include "location.h"
 #include "creature.h"
 #include "level.h"
-#include "square.h"
 
 template <class Archive> 
 void Location::serialize(Archive& ar, const unsigned int version) {
@@ -58,21 +57,21 @@ string Location::getDescription() const {
   return *description;
 }
 
-const vector<Vec2>& Location::getAllSquares() const {
+vector<Position> Location::getAllSquares() const {
   CHECK(level) << "Location bounds not initialized";
-  return squares;
+  return transform2<Position>(squares, [this] (Vec2 v) { return Position(v, level); });
 }
 
-bool Location::contains(Vec2 pos) const {
-  return table[pos];
+bool Location::contains(Position pos) const {
+  return pos.isSameLevel(level) && table[pos.getCoord()];
 }
 
-Vec2 Location::getMiddle() const {
-  return middle;
+Position Location::getMiddle() const {
+  return Position(middle, level);
 }
 
-Vec2 Location::getBottomRight() const {
-  return bottomRight;
+Position Location::getBottomRight() const {
+  return Position(bottomRight, level);
 }
 
 void Location::setBounds(Rectangle b) {
@@ -83,7 +82,7 @@ void Location::setBounds(Rectangle b) {
   bottomRight = b.getBottomRight();
 }
 
-void Location::setLevel(const Level* l) {
+void Location::setLevel(Level* l) {
   level = l;
 }
 

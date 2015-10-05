@@ -18,7 +18,6 @@
 #include "pantheon.h"
 #include "creature.h"
 #include "level.h"
-#include "square.h"
 #include "name_generator.h"
 
 template <class Archive> 
@@ -163,7 +162,7 @@ vector<Deity*> generateDeities() {
       EpithetId epithet;
       int cnt = 100;
       do {
-        epithet = chooseRandom(elem.second);
+        epithet = Random.choose(elem.second);
       } while (used.count(epithet) && --cnt > 0);
       if (cnt == 0)
         break;

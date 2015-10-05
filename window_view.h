@@ -22,6 +22,7 @@
 #include "input_queue.h"
 #include "animation.h"
 #include "gui_builder.h"
+#include "clock.h"
 
 class ViewIndex;
 class Options;
@@ -54,6 +55,7 @@ class WindowView: public View {
   virtual void refreshView() override;
   virtual void updateView(const CreatureView*, bool noRefresh) override;
   virtual void drawLevelMap(const CreatureView*) override;
+  virtual void setScrollPos(Vec2 pos) override;
   virtual void resetCenter() override;
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, double* scrollPos = nullptr,
@@ -74,6 +76,11 @@ class WindowView: public View {
   virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id&) override;
   virtual optional<int> chooseItem(const vector<PlayerInfo>& minions, UniqueEntity<Creature>::Id& cur,
       const vector<ItemInfo>& items, double* scrollpos) override;
+  virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
+      pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos) override;
+  virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
+      const vector<ItemInfo>&, double* scrollPos) override;
+  virtual void presentHighscores(const vector<HighscoreList>&);
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
   virtual int getTimeMilli() override;
@@ -137,6 +144,7 @@ class WindowView: public View {
   PGuiElem mapDecoration;
   PGuiElem minimapDecoration;
   vector<PGuiElem> tempGuiElems;
+  vector<PGuiElem> blockingElems;
   vector<GuiElem*> getAllGuiElems();
   vector<GuiElem*> getClickableGuiElems();
   SyncQueue<UserInput> inputQueue;
@@ -176,6 +184,49 @@ class WindowView: public View {
     });
     if (currentThreadId() == renderThreadId)
       renderDialog.top()();
+  }
+  class TempClockPause {
+    public:
+    TempClockPause(Clock* c) : clock(c) {
+      if (!clock->isPaused()) {
+        clock->pause();
+        cont = true;
+      }
+    }
+
+    ~TempClockPause() {
+      if (cont)
+        clock->cont();
+    }
+
+    private:
+    Clock* clock;
+    bool cont = false;
+  };
+
+  void getBlockingGui(Semaphore&, PGuiElem, Vec2 origin);
+
+  template<typename T>
+  T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, Vec2 origin) {
+    RenderLock lock(renderMutex);
+    TempClockPause pause(clock);
+    if (blockingElems.empty()) {
+      blockingElems.push_back(gui.darken());
+      blockingElems.back()->setBounds(renderer.getSize());
+    }
+    blockingElems.push_back(std::move(elem));
+    blockingElems.back()->setPreferredBounds(origin);
+    if (currentThreadId() == renderThreadId) {
+      while (queue.isEmpty())
+        refreshView();
+      blockingElems.clear();
+      return *queue.popAsync();
+    }
+    lock.unlock();
+    T ret = queue.pop();
+    lock.lock();
+    blockingElems.clear();
+    return ret;
   }
   atomic<bool> splashDone;
   bool useTiles;

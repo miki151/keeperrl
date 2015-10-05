@@ -25,6 +25,8 @@
 #include "game_info.h"
 #include "square_type.h"
 #include "map_memory.h"
+#include "position.h"
+#include "collective_warning.h"
 
 class Model;
 class Technology;
@@ -35,17 +37,19 @@ class MapMemory;
 class VisibilityMap;
 class ListElem;
 class UserInput;
-struct MinionAction;
+class MinionAction;
+struct TaskActionInfo;
+struct EquipmentActionInfo;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
   PlayerControl(Collective*, Model*, Level*);
-  void addImportantLongMessage(const string&, optional<Vec2> = none);
+  ~PlayerControl();
+  void addImportantLongMessage(const string&, optional<Position> = none);
 
   void onConqueredLand();
 
   void processInput(View* view, UserInput);
-  void tick(double);
   MoveInfo getMove(Creature* c);
 
   bool isRetired() const;
@@ -83,6 +87,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static void registerTypes(Archive& ar, int version);
 
   void onTechBookRead(Technology*);
+  vector<Creature*> getTeam(const Creature*);
 
   protected:
   // from CreatureView
@@ -90,26 +95,29 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual const MapMemory& getMemory() const override;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
-  virtual optional<Vec2> getPosition(bool force) const override;
+  virtual Vec2 getPosition() const override;
   virtual optional<MovementInfo> getMovementInfo() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getTime() const override;
+  virtual bool isPlayerView() const override;
 
   // from CollectiveControl
   virtual void update(Creature*) override;
-  virtual void addAssaultNotification(const Collective*, const vector<Creature*>&, const string& message) override;
-  virtual void removeAssaultNotification(const Collective*) override;
+  virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onDiscoveredLocation(const Location*) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
-  virtual void onConstructed(Vec2, const SquareType&) override;
+  virtual void onConstructed(Position, const SquareType&) override;
   virtual void onNoEnemies() override;
+  virtual void tick(double) override;
 
   private:
 
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
 
-  void considerNightfall();
+  void considerNightfallMessage();
+  void considerWarning();
+  void considerAdventurerMusic();
 
   friend class KeeperControlOverride;
 
@@ -117,16 +125,17 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   const Tribe* getTribe() const;
   Tribe* getTribe();
   bool canSee(const Creature*) const;
-  bool canSee(Vec2 position) const;
-  MapMemory& getMemory(Level* l);
+  bool canSee(Position) const;
   void initialize();
 
   void considerDeityFight();
   void checkKeeperDanger();
-  void addDeityServant(Deity*, Vec2 deityPos, Vec2 victimPos);
   static string getWarningText(CollectiveWarning);
-  void updateSquareMemory(Vec2);
+  void updateSquareMemory(Position);
   bool isEnemy(const Creature*) const;
+  vector<Collective*> getKnownVillains(VillainType) const;
+  Collective* getVillain(int num);
+  void scrollToMiddle(const vector<Position>&);
 
   Creature* getConsumptionTarget(View*, Creature* consumer);
   void onWorshipEpithet(EpithetId);
@@ -134,11 +143,13 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void handleAddToTeam(Creature* c);
   void controlSingle(const Creature*);
   void commandTeam(TeamId);
+  void setScrollPos(Position);
 
   struct BuildInfo;
   bool meetsRequirement(Requirement) const;
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
+  VillageInfo::Village getVillageInfo(const Collective* enemy) const;
   vector<BuildInfo> getBuildInfo() const;
   static vector<BuildInfo> getBuildInfo(const Level*, const Tribe*);
   static vector<BuildInfo> workshopInfo;
@@ -160,34 +171,36 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<TechInfo> getTechInfo() const;
 
   int getImpCost() const;
-  bool canBuildDoor(Vec2 pos) const;
-  bool canPlacePost(Vec2 pos) const;
-  void handleMarket(View*, int prevItem = 0);
+  bool canBuildDoor(Position) const;
+  bool canPlacePost(Position) const;
   void getEquipmentItem(View* view, ItemPredicate predicate);
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
       double* scrollPos = nullptr);
 
   int getNumMinions() const;
   void minionView(Creature* creature);
-  void minionTaskAction(Creature*, const MinionAction&);
+  void minionTaskAction(Creature*, const TaskActionInfo&);
   vector<PlayerInfo> getMinionGroup(Creature* like);
-  void minionEquipmentAction(Creature* creature, const MinionAction&);
+  void minionEquipmentAction(Creature* creature, const EquipmentActionInfo&);
   void addEquipment(Creature*, EquipmentSlot);
   void addConsumableItem(Creature*);
   void handleEquipment(View* view, Creature* creature);
   void fillEquipment(Creature*, PlayerInfo&);
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
+  void handleRecruiting(Collective* ally);
+  void handleTrading(Collective* ally);
+  void handleRansom(bool pay);
   static ViewObject getTrapObject(TrapType, bool built);
-  void addToMemory(Vec2 pos);
-  void getSquareViewIndex(const Square*, bool canSee, ViewIndex&) const;
-  void tryLockingDoor(Vec2 pos);
+  void addToMemory(Position);
+  void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
+  void tryLockingDoor(Position);
   void uncoverRandomLocation();
   Creature* getControlled();
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
 
-  mutable unique_ptr<map<UniqueEntity<Level>::Id, MapMemory>> SERIAL(memory);
+  mutable unique_ptr<MapMemory> SERIAL(memory);
   optional<TeamId> getCurrentTeam() const;
   void setCurrentTeam(optional<TeamId>);
   optional<TeamId> currentTeam;
@@ -203,25 +216,16 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   int SERIAL(startImpNum) = -1;
   bool SERIAL(retired) = false;
   bool SERIAL(payoutWarning) = false;
-  unordered_set<Vec2> SERIAL(surprises);
+  unordered_set<Position> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
-  struct AssaultInfo : public NamedTupleBase<string, vector<Creature*>> {
-    NAMED_TUPLE_STUFF(AssaultInfo);
-    NAME_ELEM(0, message);
-    NAME_ELEM(1, creatures);
-  };
-  map<const Collective*, AssaultInfo> SERIAL(assaultNotifications);
-  struct CurrentWarningInfo : public NamedTupleBase<CollectiveWarning, double> {
-    NAMED_TUPLE_STUFF(CurrentWarningInfo);
-    NAME_ELEM(0, warning);
-    NAME_ELEM(1, lastView);
-  };
-  optional<CurrentWarningInfo> SERIAL(currentWarning);
+  vector<CollectiveAttack> SERIAL(newAttacks);
+  vector<CollectiveAttack> SERIAL(ransomAttacks);
+  EnumMap<CollectiveWarning, double> SERIAL(warningTimes);
+  double SERIAL(lastWarningTime) = -10000;
   vector<string> SERIAL(hints);
-  mutable queue<Vec2> scrollPos;
   optional<PlayerMessage> findMessage(PlayerMessage::Id);
-  void updateVisibleCreatures(Rectangle range);
+  void updateVisibleCreatures();
   vector<const Creature*> SERIAL(visibleEnemies);
   vector<const Creature*> SERIAL(visibleFriends);
   unordered_set<const Collective*> SERIAL(notifiedConquered);

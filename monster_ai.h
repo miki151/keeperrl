@@ -17,6 +17,7 @@
 #define _ACTOR_H
 
 #include "creature_action.h"
+#include "position.h"
 
 class Creature;
 class Location;
@@ -60,13 +61,13 @@ class MonsterAIFactory {
   static MonsterAIFactory monster();
   static MonsterAIFactory singleTask(PTask&&);
   static MonsterAIFactory stayInLocation(Location*, bool moveRandomly = true);
-  static MonsterAIFactory guardSquare(Vec2 pos);
+  static MonsterAIFactory guardSquare(Position);
   static MonsterAIFactory wildlifeNonPredator();
-  static MonsterAIFactory scavengerBird(Vec2 corpsePos);
+  static MonsterAIFactory scavengerBird(Position corpsePos);
   static MonsterAIFactory summoned(Creature*, int ttl);
   static MonsterAIFactory dieTime(double time);
   static MonsterAIFactory moveRandomly();
-  static MonsterAIFactory stayInPigsty(Vec2 origin, SquareApplyType);
+  static MonsterAIFactory stayInPigsty(Position origin, SquareApplyType);
   static MonsterAIFactory idle();
   static MonsterAIFactory splashHeroes(bool leader);
   static MonsterAIFactory splashMonsters();

@@ -28,6 +28,7 @@ class Sectors {
   void dump();
   bool contains(Vec2) const;
   int getNumSectors() const;
+  bool isChokePoint(Vec2) const;
 
   SERIALIZATION_DECL(Sectors);
 
@@ -35,6 +36,7 @@ class Sectors {
   void setSector(Vec2, int);
   int getNewSector();
   void join(Vec2, int);
+  vector<Vec2> getDisjoint(Vec2) const;
   Rectangle SERIAL(bounds);
   Table<int> SERIAL(sectors);
   vector<int> SERIAL(sizes);

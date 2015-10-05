@@ -31,11 +31,10 @@ class Tribe {
   bool isEnemy(const Creature*) const;
   bool isEnemy(const Tribe*) const;
   void makeSlightEnemy(const Creature*);
-  void addMember(const Creature*);
-  void removeMember(const Creature*);
   const string& getName() const;
   void addEnemy(vector<Tribe*>);
   void addFriend(Tribe*);
+  bool isDiplomatic() const;
 
   void onMemberKilled(Creature* member, Creature* killer);
   void onMemberAttacked(Creature* member, Creature* attacker);
@@ -55,7 +54,6 @@ class Tribe {
 
   unordered_map<const Creature*, double> SERIAL(standing);
   vector<pair<Creature*, Creature*>> SERIAL(attacks);
-  vector<const Creature*> SERIAL(members);
   unordered_set<Tribe*> SERIAL(enemyTribes);
   string SERIAL(name);
 };
@@ -68,13 +66,17 @@ struct TribeSet {
   PTribe SERIAL(wildlife);
   PTribe SERIAL(human);
   PTribe SERIAL(elven);
+  PTribe SERIAL(darkElven);
   PTribe SERIAL(dwarven);
+  PTribe SERIAL(gnomish);
   PTribe SERIAL(adventurer);
   PTribe SERIAL(bandit);
   PTribe SERIAL(killEveryone);
   PTribe SERIAL(peaceful);
   PTribe SERIAL(keeper);
   PTribe SERIAL(lizard);
+  PTribe SERIAL(greenskins);
+  PTribe SERIAL(ants);
 
   template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
