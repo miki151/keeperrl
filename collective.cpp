@@ -318,6 +318,8 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!leader)
     leader = c;
   CHECK(c->getTribe() == tribe);
+  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
+      c->getPosition().getLevel()->getName() << " " << c->getName().bare();
   creatures.push_back(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
@@ -741,7 +743,7 @@ MoveInfo Collective::getMove(Creature* c) {
   CHECK(contains(creatures, c));
   CHECK(!c->isDead());
   CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
-      c->getPosition().getLevel()->getName();
+      c->getPosition().getLevel()->getName() << " " << c->getName().bare();
   if (Task* task = taskMap->getTask(c))
     if (taskMap->isPriorityTask(task))
       return task->getMove(c);

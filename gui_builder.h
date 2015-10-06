@@ -155,6 +155,7 @@ class GuiBuilder {
   double villagesScroll = 0;
   int itemIndex = -1;
   bool playerOverlayFocused = false;
+  optional<int> lastPlayerPositionHash;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   bool disableTooltip = false;
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;

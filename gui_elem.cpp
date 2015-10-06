@@ -527,8 +527,8 @@ class Focusable : public GuiLayout {
   bool& focused;
 };
 
-PGuiElem GuiFactory::focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent, vector<Event::KeyEvent> defocusEvent,
-    bool& focused) {
+PGuiElem GuiFactory::focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent,
+    vector<Event::KeyEvent> defocusEvent, bool& focused) {
   return PGuiElem(new Focusable(std::move(content), focusEvent, defocusEvent, focused));
 }
 
