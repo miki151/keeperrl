@@ -84,10 +84,12 @@ class Renderer {
   public: 
   class TileCoord {
     public:
-    TileCoord(Vec2, int);
     TileCoord();
     TileCoord(const TileCoord& o) : pos(o.pos), texNum(o.texNum) {}
 
+    private:
+    friend class Renderer;
+    TileCoord(Vec2, int);
     Vec2 pos;
     int texNum;
   };
@@ -131,6 +133,8 @@ class Renderer {
   static Color getBleedingColor(const ViewObject&);
   Vec2 getSize();
   bool loadTilesFromDir(const string& path, Vec2 size);
+  bool loadTilesFromDir(const string& path, vector<Texture>&, Vec2 size, int setWidth);
+  bool loadAltTilesFromDir(const string& path, Vec2 altSize);
   bool loadTilesFromFile(const string& path, Vec2 size);
   static String toUnicode(const string&);
 
@@ -153,9 +157,11 @@ class Renderer {
   TileCoord getTileCoord(const string&);
   Vec2 getNominalSize() const;
   vector<Texture> tiles;
+  vector<Texture> altTiles;
 
   private:
   Renderer(const Renderer&);
+  vector<Vec2> altTileSize;
   vector<Vec2> tileSize;
   Vec2 nominalSize;
   map<string, TileCoord> tileCoords;

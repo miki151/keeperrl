@@ -158,7 +158,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
   const string workshop = "Manufactories";
   vector<BuildInfo> buildInfo {
     BuildInfo(BuildInfo::DIG, "", 'd'),
-    BuildInfo({SquareId::MOUNTAIN2, {ResourceId::STONE, 50}, "Fill up tunnel"}, {},
+    BuildInfo({SquareId::MOUNTAIN, {ResourceId::STONE, 50}, "Fill up tunnel"}, {},
         "Fill up one tile at a time. Cutting off an area is not allowed."),
     BuildInfo({SquareId::STOCKPILE, {ResourceId::GOLD, 0}, "Everything", true}, {},
         "All possible items in your dungeon can be stored here.", 's', "Storage"),
@@ -202,7 +202,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
         "Can be used to torture prisoners.", 'u'),
     BuildInfo(BuildInfo::CLAIM_TILE, "Claim a tile. Building anything has the same effect.", 0, "Orders"),
     BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
-    BuildInfo(BuildInfo::DISPATCH, "Click on an existing task to give it a high priority.", 'a', "Orders"),
+    BuildInfo(BuildInfo::DISPATCH, "Click on an existing task to give it a high priority.", 0, "Orders"),
     BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
     BuildInfo(BuildInfo::FORBID_ZONE, "Mark tiles to keep minions from entering.", 'b', "Orders"),
     BuildInfo({{SquareId::TRIBE_DOOR, tribe}, {ResourceId::WOOD, 5}, "Door"},
@@ -594,7 +594,7 @@ static ViewId getSlotViewId(EquipmentSlot slot) {
     case EquipmentSlot::RANGED_WEAPON: return ViewId::BOW;
     case EquipmentSlot::GLOVES: return ViewId::LEATHER_GLOVES;
     case EquipmentSlot::BODY_ARMOR: return ViewId::LEATHER_ARMOR;
-    case EquipmentSlot::AMULET: return ViewId::AMBER_AMULET;
+    case EquipmentSlot::AMULET: return ViewId::AMULET1;
   }
 }
 

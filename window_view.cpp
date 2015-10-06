@@ -115,12 +115,13 @@ void WindowView::initialize() {
   for (auto l : ENUM_ALL(ViewLayer))
     allLayers.push_back(l);
   asciiLayouts = {
-    MapLayout(Vec2(16, 20), allLayers),
+    {MapLayout(Vec2(16, 20), allLayers),
     MapLayout(Vec2(8, 10),
-        {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE}), false};
-  spriteLayouts = {
+        {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE})}, false};
+  spriteLayouts = {{
+    MapLayout(Vec2(48, 48), allLayers),
     MapLayout(Vec2(36, 36), allLayers),
-    MapLayout(Vec2(18, 18), allLayers), true};
+    MapLayout(Vec2(24, 24), allLayers)}, true};
   if (useTiles)
     currentTileLayout = spriteLayouts;
   else
@@ -188,7 +189,7 @@ void WindowView::mapRightClickFun(Vec2 pos) {
 
 void WindowView::reset() {
   RenderLock lock(renderMutex);
-  mapLayout = &currentTileLayout.normalLayout;
+  mapLayout = &currentTileLayout.layouts[0];
   gameReady = false;
   wasRendered = false;
   minimapGui->clear();
@@ -340,7 +341,7 @@ void WindowView::rebuildGui() {
   int bottomBarHeight = 0;
   int rightBottomMargin = 30;
   tempGuiElems.clear();
-  tempGuiElems.push_back(gui.mouseWheel([this](bool up) { zoom(!up); }));
+  tempGuiElems.push_back(gui.mouseWheel([this](bool up) { zoom(up ? -1 : 1); }));
   tempGuiElems.back()->setBounds(getMapGuiBounds());
   tempGuiElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)));
   tempGuiElems.back()->setBounds(getMapGuiBounds());
@@ -628,8 +629,12 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
         Vec2 dir = (*pos - middle).getBearing();
         Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
             middle.x + dir.x, middle.y + dir.y);
+        static vector<Renderer::TileCoord> coords;
+        if (coords.empty())
+          for (int i = 0; i < 8; ++i)
+            coords.push_back(renderer.getTileCoord("arrow" + toString(i)));
         if (currentTileLayout.sprites)
-          renderer.drawTile(wpos, {Vec2(17, 5) + dir, 4}, mapLayout->getSquareSize());
+          renderer.drawTile(wpos, coords[int(dir.getCardinalDir())], mapLayout->getSquareSize());
         else {
           int numArrow = int(dir.getCardinalDir());
           static sf::Uint32 arrows[] = { L'⇑', L'⇓', L'⇒', L'⇐', L'⇗', L'⇖', L'⇘', L'⇙'};
@@ -1081,35 +1086,27 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
   chooseFromListInternal(title, conv, -1, menu, &scrollPos, exitAction, none, {});
 }
 
-void WindowView::switchZoom() {
+void WindowView::zoom(int dir) {
   refreshInput = true;
-  if (mapLayout != &currentTileLayout.normalLayout)
-    mapLayout = &currentTileLayout.normalLayout;
-  else
-    mapLayout = &currentTileLayout.unzoomLayout;
-}
-
-void WindowView::zoom(bool out) {
-  refreshInput = true;
-  if (mapLayout != &currentTileLayout.normalLayout && !out)
-    mapLayout = &currentTileLayout.normalLayout;
-  else if (out)
-    mapLayout = &currentTileLayout.unzoomLayout;
+  auto& layouts = currentTileLayout.layouts;
+  int index = dir + *findAddress(layouts, mapLayout);
+  index = max(0, min<int>(layouts.size() - 1, index));
+  mapLayout = &currentTileLayout.layouts[index];
 }
 
 void WindowView::switchTiles() {
-  bool normal = (mapLayout == &currentTileLayout.normalLayout);
+  int index = *findAddress(currentTileLayout.layouts, mapLayout);
   if (options->getBoolValue(OptionId::ASCII) || !useTiles)
     currentTileLayout = asciiLayouts;
   else
     currentTileLayout = spriteLayouts;
-  if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR && useTiles &&
-      renderer.getSize().x < Level::getSplashVisibleBounds().getW() * mapLayout->getSquareSize().x)
-    normal = false;
-  if (normal)
-    mapLayout = &currentTileLayout.normalLayout;
-  else
-    mapLayout = &currentTileLayout.unzoomLayout;
+  if (currentTileLayout.layouts.size() <= index)
+    index = 0;
+  while (gameInfo.infoType == GameInfo::InfoType::SPECTATOR && useTiles &&
+      renderer.getSize().x < Level::getSplashVisibleBounds().getW() *
+      currentTileLayout.layouts[index].getSquareSize().x && index < currentTileLayout.layouts.size() - 1)
+    ++index;
+  mapLayout = &currentTileLayout.layouts[index];
 }
 
 bool WindowView::travelInterrupt() {
@@ -1213,7 +1210,8 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
     return;
   lockKeyboard = true;
   switch (key.code) {
-    case Keyboard::Z: switchZoom(); break;
+    case Keyboard::Z: zoom(1); break;
+    case Keyboard::A: zoom(-1); break;
     case Keyboard::F2: options->handle(this, OptionSet::GENERAL); refreshScreen(); break;
     case Keyboard::Space:
       inputQueue.push(UserInput(UserInputId::WAIT));

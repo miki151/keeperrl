@@ -527,8 +527,8 @@ class Focusable : public GuiLayout {
   bool& focused;
 };
 
-PGuiElem GuiFactory::focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent, vector<Event::KeyEvent> defocusEvent,
-    bool& focused) {
+PGuiElem GuiFactory::focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent,
+    vector<Event::KeyEvent> defocusEvent, bool& focused) {
   return PGuiElem(new Focusable(std::move(content), focusEvent, defocusEvent, focused));
 }
 
@@ -1045,6 +1045,10 @@ PGuiElem GuiFactory::topMargin(int size, PGuiElem content) {
   return PGuiElem(new Margins(std::move(content), 0, size, 0, 0));
 }
 
+PGuiElem GuiFactory::bottomMargin(int size, PGuiElem content) {
+  return PGuiElem(new Margins(std::move(content), 0, 0, 0, size));
+}
+
 class Invisible : public GuiLayout {
   public:
   Invisible(PGuiElem content) : GuiLayout(makeVec<PGuiElem>(std::move(content))) {}
@@ -1105,9 +1109,9 @@ class ViewObjectGui : public GuiElem {
   
   virtual void render(Renderer& renderer) override {
     if (ViewObject* obj = boost::get<ViewObject>(&object))
-      renderer.drawViewObject(getBounds().getTopLeft(), *obj, useSprites, 0.6666);
+      renderer.drawViewObject(getBounds().getTopLeft(), *obj, useSprites);
     else
-      renderer.drawViewObject(getBounds().getTopLeft(), boost::get<ViewId>(object), useSprites, 0.6666);
+      renderer.drawViewObject(getBounds().getTopLeft(), boost::get<ViewId>(object), useSprites);
   }
 
   private:
@@ -1592,6 +1596,12 @@ void GuiFactory::loadFreeImages(const string& path) {
     iconTextures.emplace_back();
     CHECK(iconTextures.back().loadFromFile(path + "/morale_icons.png",
           sf::IntRect(0, i * moraleIconWidth, moraleIconWidth, moraleIconWidth)));
+  }
+  const int teamIconWidth = 16;
+  for (int i = 0; i < 2; ++i) {
+    iconTextures.emplace_back();
+    CHECK(iconTextures.back().loadFromFile(path + "/team_icons.png",
+          sf::IntRect(0, i * teamIconWidth, teamIconWidth, teamIconWidth)));
   }
   const int spellIconWidth = 40;
   for (SpellId id : ENUM_ALL(SpellId)) {

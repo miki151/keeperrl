@@ -122,8 +122,7 @@ class WindowView: public View {
   void drawAndClearBuffer();
   void displayAutosaveSplash(const ProgressMeter&);
 
-  void switchZoom();
-  void zoom(bool out);
+  void zoom(int dir);
   void resize(int width, int height);
   Rectangle getMapGuiBounds() const;
   Rectangle getMinimapBounds() const;
@@ -157,8 +156,7 @@ class WindowView: public View {
   typedef std::unique_lock<std::recursive_mutex> RenderLock;
 
   struct TileLayouts {
-    MapLayout normalLayout;
-    MapLayout unzoomLayout;
+    vector<MapLayout> layouts;
     bool sprites;
   };
   TileLayouts asciiLayouts;

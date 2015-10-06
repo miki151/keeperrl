@@ -261,7 +261,7 @@ PGuiElem GuiBuilder::drawKeeperHelp() {
     "to control or show information",
     "",
     "[space] pause",
-    "[z] or mouse wheel: zoom",
+    "[a] and [z] or mouse wheel: zoom",
     "press mouse wheel: level map",
     "",
     "follow the orange hints :-)"};
@@ -566,6 +566,11 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, PlayerInfo& info) {
     itemIndex = -1;
     return;
   }
+  if (lastPlayerPositionHash && lastPlayerPositionHash != info.positionHash) {
+    playerOverlayFocused = false;
+    itemIndex = -1;
+  }
+  lastPlayerPositionHash = info.positionHash;
   vector<PGuiElem> lines;
   const int maxElems = 6;
   const string title = "Click or press [Enter]:";
@@ -942,9 +947,9 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
           gui.button(getButtonCallback(info.currentTeam == i ? UserInput(UserInputId::CONFIRM_TEAM)
               : UserInput(UserInputId::EDIT_TEAM, team.id))),
           info.currentTeam == i 
-              ? gui.viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk)
-              : gui.viewObject(ViewId::TEAM_BUTTON, tilesOk),
-          gui.mouseHighlight2(gui.viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk))));
+              ? gui.icon(GuiFactory::TEAM_BUTTON_HIGHLIGHT)
+              : gui.icon(GuiFactory::TEAM_BUTTON),
+          gui.mouseHighlight2(gui.icon(GuiFactory::TEAM_BUTTON_HIGHLIGHT))));
     for (auto member : team.members) {
       currentLine.push_back(gui.stack(makeVec<PGuiElem>(
             gui.button(getButtonCallback({UserInputId::SET_TEAM_LEADER, TeamLeaderInfo{team.id, member}})),
@@ -979,7 +984,7 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
         gui.label("[new team]", colors[ColorId::WHITE])));
   else
     list.push_back(gui.horizontalList(makeVec<PGuiElem>(
-        gui.viewObject(ViewId::TEAM_BUTTON_HIGHLIGHT, tilesOk),
+        gui.bottomMargin(5, gui.icon(GuiFactory::TEAM_BUTTON_HIGHLIGHT)),
         gui.label("Click on minions to add.", colors[ColorId::LIGHT_BLUE])), elemWidth));
   if (info.currentTeam)
     list.push_back(gui.label("Click members to change leader.", colors[ColorId::LIGHT_BLUE]));
@@ -1752,11 +1757,11 @@ PGuiElem GuiBuilder::drawMinionMenu(const vector<PlayerInfo>& minions,
     minionPages.push_back(gui.conditional(gui.margins(drawMinionPage(minions[i], callback),
           10, 15, 10, 10), [minionId, &current] (GuiElem*) { return minionId == current; }));
   }
-  int minionListWidth = 180;
+  int minionListWidth = 220;
   return gui.stack(
       gui.keyHandler([callback] { callback(none); }, {{Keyboard::Escape}, {Keyboard::Return}}),
       gui.horizontalList(makeVec<PGuiElem>(
-          gui.leftMargin(8, gui.topMargin(15, drawMinionButtons(minions, current))),
+          gui.margins(gui.scrollable(drawMinionButtons(minions, current)), 8, 15, 5, 0),
           gui.margins(gui.sprite(GuiFactory::TexId::VERT_BAR_MINI, GuiFactory::Alignment::LEFT),
             0, -15, 0, -15)), minionListWidth),
       gui.leftMargin(minionListWidth + 20, gui.stack(std::move(minionPages))));

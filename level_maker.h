@@ -85,7 +85,6 @@ class LevelMaker {
   static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo);
   static PLevelMaker splashLevel(CreatureFactory heroLeader, CreatureFactory heroes,
       CreatureFactory monsters, CreatureFactory imps, const string& splashPath);
-  static PLevelMaker pyramidLevel(RandomGen&, optional<CreatureFactory>, vector<StairKey> up, vector<StairKey> down);
   static PLevelMaker towerLevel(RandomGen&, SettlementInfo);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
   static PLevelMaker roomLevel(RandomGen&, CreatureFactory roomFactory, CreatureFactory waterFactory,

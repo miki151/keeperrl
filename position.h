@@ -94,7 +94,6 @@ class Position {
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   bool canNavigate(const MovementType&) const;
-  bool landCreature(Creature*);
   vector<Position> getVisibleTiles(VisionId);
   const vector<Vec2>& getTravelDir() const;
   int getStrength() const;

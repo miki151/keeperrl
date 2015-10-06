@@ -318,6 +318,8 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!leader)
     leader = c;
   CHECK(c->getTribe() == tribe);
+  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
+      c->getPosition().getLevel()->getName() << " " << c->getName().bare();
   creatures.push_back(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
@@ -741,7 +743,7 @@ MoveInfo Collective::getMove(Creature* c) {
   CHECK(contains(creatures, c));
   CHECK(!c->isDead());
   CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
-      c->getPosition().getLevel()->getName();
+      c->getPosition().getLevel()->getName() << " " << c->getName().bare();
   if (Task* task = taskMap->getTask(c))
     if (taskMap->isPriorityTask(task))
       return task->getMove(c);
@@ -1828,7 +1830,7 @@ void Collective::destroySquare(Position pos) {
 
 void Collective::addConstruction(Position pos, SquareType type, const CostInfo& cost, bool immediately,
     bool noCredit) {
-  if (type.getId() == SquareId::MOUNTAIN2 && (pos.isChokePoint({MovementTrait::WALK}) ||
+  if (type.getId() == SquareId::MOUNTAIN && (pos.isChokePoint({MovementTrait::WALK}) ||
         constructions->getSquareCount(type) > 0))
     return;
   if (immediately && hasResource(cost)) {
@@ -1917,7 +1919,7 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
   CHECK(!getSquares(type).count(pos));
   for (auto& elem : mySquares)
       elem.second.erase(pos);
-  if (type.getId() == SquareId::MOUNTAIN2) {
+  if (type.getId() == SquareId::MOUNTAIN) {
     destroySquare(pos);
     if (territory->contains(pos))
       territory->remove(pos);

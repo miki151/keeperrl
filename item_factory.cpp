@@ -1182,7 +1182,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::RING;
             i.price = 200;);
     case ItemId::WARNING_AMULET: return ITATTR(
-            i.viewId = ViewId::STEEL_AMULET;
+            i.viewId = ViewId::AMULET1;
             i.shortName = "warning";
             i.name = "amulet of " + *i.shortName;
             i.plural = "amulets of " + *i.shortName;
@@ -1192,7 +1192,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.price = 220;
             i.weight = 0.3;);
     case ItemId::HEALING_AMULET: return ITATTR(
-            i.viewId = ViewId::AMBER_AMULET;
+            i.viewId = ViewId::AMULET2;
             i.shortName = "healing";
             i.name = "amulet of " + *i.shortName;
             i.plural = "amulets of " + *i.shortName;
@@ -1202,7 +1202,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.price = 300;
             i.weight = 0.3;);
     case ItemId::DEFENSE_AMULET: return ITATTR(
-            i.viewId = ViewId::COPPER_AMULET;
+            i.viewId = ViewId::AMULET3;
             i.shortName = "defense";
             i.name = "amulet of " + *i.shortName;
             i.plural = "amulets of " + *i.shortName;
@@ -1260,7 +1260,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.price = 10;);
     case ItemId::POTION: return ITATTR(
             EffectType effect = item.get<EffectType>();
-            i.viewId = ViewId::PUCE_POTION;
+            i.viewId = ViewId::POTION1;
             i.shortName = Effect::getName(effect);
             i.name = "potion of " + *i.shortName;
             i.plural = "potions of " + *i.shortName;
