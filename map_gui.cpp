@@ -159,9 +159,15 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
   }
 }
 
+void MapGui::softScroll(double x, double y) {
+  if (softCenter)
+    center = *softCenter;
+  softCenter = {center.x + x, center.y + y};
+  lastRenderTime = clock->getRealMillis();
+}
+
 bool MapGui::onKeyPressed2(Event::KeyEvent key) {
-  const double shiftScroll = 10;
-  const double normalScroll = 2.5;
+  const double scrollDist = key.shift ? 20 : 5;
   if (!keyScrolling)
     return false;
   switch (key.code) {
@@ -170,44 +176,40 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
         break;
     case Keyboard::Up:
     case Keyboard::Numpad8:
-      center.y -= key.shift ? shiftScroll : normalScroll;
+      softScroll(0, -scrollDist);
       break;
     case Keyboard::Numpad9:
-      center.y -= key.shift ? shiftScroll : normalScroll;
-      center.x += key.shift ? shiftScroll : normalScroll;
+      softScroll(scrollDist, -scrollDist);
       break;
     case Keyboard::D:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
         break;
     case Keyboard::Right: 
     case Keyboard::Numpad6:
-      center.x += key.shift ? shiftScroll : normalScroll;
+      softScroll(scrollDist, 0);
       break;
     case Keyboard::Numpad3:
-      center.x += key.shift ? shiftScroll : normalScroll;
-      center.y += key.shift ? shiftScroll : normalScroll;
+      softScroll(scrollDist, scrollDist);
       break;
     case Keyboard::S:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
         break;
     case Keyboard::Down:
     case Keyboard::Numpad2:
-      center.y += key.shift ? shiftScroll : normalScroll;
+      softScroll(0, scrollDist);
       break;
     case Keyboard::Numpad1:
-      center.x -= key.shift ? shiftScroll : normalScroll;
-      center.y += key.shift ? shiftScroll : normalScroll;
+      softScroll(-scrollDist, scrollDist);
       break;
     case Keyboard::A:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
         break;
     case Keyboard::Left:
     case Keyboard::Numpad4:
-      center.x -= key.shift ? shiftScroll : normalScroll;
+      softScroll(-scrollDist, 0);
       break;
     case Keyboard::Numpad7:
-      center.x -= key.shift ? shiftScroll : normalScroll;
-      center.y -= key.shift ? shiftScroll : normalScroll;
+      softScroll(-scrollDist, -scrollDist);
       break;
     default: break;
   }
@@ -726,6 +728,21 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
 void MapGui::render(Renderer& renderer) {
   Vec2 size = layout->getSquareSize();
   int currentTimeReal = clock->getRealMillis();
+  if (softCenter) {
+    double moveDist = (currentTimeReal - lastRenderTime) / 20;
+    double offsetx = softCenter->x - center.x;
+    double offsety = softCenter->y - center.y;
+    double offset = sqrt(offsetx * offsetx + offsety * offsety);
+    if (offset <= moveDist)
+      softCenter = none;
+    else {
+      offsetx /= offset;
+      offsety /= offset;
+      center.x += offsetx * moveDist;
+      center.y += offsety * moveDist;
+    }
+    lastRenderTime = currentTimeReal;
+  }
   HighlightedInfo highlightedInfo = getHighlightedInfo(renderer, size, currentTimeReal);
   renderMapObjects(renderer, size, highlightedInfo, currentTimeReal);
   renderHighlights(renderer, size, currentTimeReal);

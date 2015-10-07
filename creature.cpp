@@ -2478,6 +2478,9 @@ vector<Creature::AdjectiveInfo> Creature::getWeaponAdjective() const {
 
 vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
   vector<AdjectiveInfo> ret;
+  if (!getWeapon() && !isHumanoid()) {
+    ret.push_back({"+" + toString(attributes->barehandedDamage) + " unarmed attack", ""});
+  }
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect)) {
       string name;
@@ -2512,8 +2515,9 @@ vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
 
 vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
   vector<AdjectiveInfo> ret;
-  if (!getWeapon())
-    ret.push_back({"No weapon", ""});
+  if (!getWeapon() && isHumanoid()) {
+    ret.push_back({"+" + toString(attributes->barehandedDamage) + " unarmed attack", ""});
+  }
   if (health < 1)
     ret.push_back({isBleeding() ? "Critically wounded" : "Wounded", ""});
   for (BodyPart part : ENUM_ALL(BodyPart))

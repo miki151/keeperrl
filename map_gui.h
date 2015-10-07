@@ -73,6 +73,7 @@ class MapGui : public GuiElem {
   void renderExtraBorders(Renderer&, int currentTimeReal);
   void renderHighlights(Renderer&, Vec2 size, int currentTimeReal);
   optional<Vec2> getMousePos();
+  void softScroll(double x, double y);
   struct HighlightedInfo {
     optional<Vec2> creaturePos;
     optional<Vec2> tilePos;
@@ -92,6 +93,7 @@ class MapGui : public GuiElem {
   bool spriteMode;
   Rectangle levelBounds = Rectangle(1, 1);
   Callbacks callbacks;
+  double lastRenderTime = 0;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
   optional<Vec2> lastMapLeftClick;
@@ -105,10 +107,11 @@ class MapGui : public GuiElem {
   DirtyTable<bool> fogOfWar;
   DirtyTable<vector<ViewId>> extraBorderPos;
   bool isFoW(Vec2 pos) const;
-  struct {
+  struct Coords {
     double x;
     double y;
   } mouseOffset, center;
+  optional<Coords> softCenter;
   Vec2 lastMousePos;
   optional<Vec2> lastMouseMove;
   bool isScrollingNow = false;
