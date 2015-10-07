@@ -1147,6 +1147,10 @@ PGuiElem GuiFactory::translate(PGuiElem e, Vec2 v, Rectangle newSize) {
   return PGuiElem(new TranslateGui(std::move(e), v, newSize));
 }
 
+PGuiElem GuiFactory::onRenderedAction(function<void()> fun) {
+  return PGuiElem(new DrawCustom([=] (Renderer& r, Rectangle bounds) { fun(); }));
+}
+
 class MouseOverAction : public GuiElem {
   public:
   MouseOverAction(function<void()> f, function<void()> f2) : callback(f), outCallback(f2) {}

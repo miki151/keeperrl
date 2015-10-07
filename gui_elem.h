@@ -127,6 +127,7 @@ class GuiFactory {
   PGuiElem drawCustom(function<void(Renderer&, Rectangle)>);
   PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
   PGuiElem centerHoriz(PGuiElem, int width);
+  PGuiElem onRenderedAction(function<void()>);
   PGuiElem mouseOverAction(function<void()> callback, function<void()> onLeaveCallback = nullptr);
   PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
   PGuiElem mouseHighlightClick(PGuiElem highlight, int myIndex, int* highlighted);
@@ -220,26 +221,26 @@ class GuiFactory {
   Color inactiveText;
 
   enum IconId {
-    BUILDING = 5,
-    MINION = 4,
-    LIBRARY = 1,
-    WORKSHOP = 0,
-    DIPLOMACY = 2,
-    HELP = 3,
-    DEITIES = 6,
-    TEAM = 7,
-    STAT_ATT = 8,
-    STAT_DEF = 9,
-    STAT_STR = 12,
-    STAT_DEX = 13,
-    STAT_ACC = 10,
-    STAT_SPD = 11,
-    MORALE_1 = 14,
-    MORALE_2 = 15,
-    MORALE_3 = 16,
-    MORALE_4 = 17,
-    TEAM_BUTTON = 18,
-    TEAM_BUTTON_HIGHLIGHT = 19,
+    WORKSHOP,
+    LIBRARY,
+    DIPLOMACY,
+    HELP,
+    MINION,
+    BUILDING,
+    DEITIES,
+    CLICK_TAB,
+    STAT_ATT,
+    STAT_DEF,
+    STAT_ACC,
+    STAT_SPD,
+    STAT_STR,
+    STAT_DEX,
+    MORALE_1,
+    MORALE_2,
+    MORALE_3,
+    MORALE_4,
+    TEAM_BUTTON,
+    TEAM_BUTTON_HIGHLIGHT,
   };
 
   PGuiElem icon(IconId);

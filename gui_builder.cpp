@@ -48,6 +48,7 @@ void GuiBuilder::reset() {
   activeBuilding = 0;
   activeLibrary = -1;
   gameSpeed = GameSpeed::NORMAL;
+  numSeenVillains = -1;
 }
 
 const int legendLineHeight = 30;
@@ -344,7 +345,8 @@ PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, VillageInfo& villag
       gui.icon(gui.BUILDING),
       gui.icon(gui.MINION),
       gui.icon(gui.LIBRARY),
-      gui.icon(gui.DIPLOMACY),
+      gui.stack(gui.icon(gui.DIPLOMACY),
+          numSeenVillains < villageInfo.villages.size() ? gui.icon(gui.CLICK_TAB) : gui.empty()),
       gui.icon(gui.HELP));
   for (int i : All(buttons)) {
     if (int(collectiveTab) == i)
@@ -1349,7 +1351,12 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
   }
   if (lines.isEmpty())
     return gui.label("No foreign tribes discovered.");
-  return gui.scrollable(lines.buildVerticalList(), &villagesScroll, &scrollbarsHeld);
+  int numVillains = info.villages.size();
+  if (numSeenVillains == -1)
+    numSeenVillains = numVillains;
+  return gui.stack(
+    gui.onRenderedAction([this, numVillains] { numSeenVillains = numVillains;}),
+    gui.scrollable(lines.buildVerticalList(), &villagesScroll, &scrollbarsHeld));
 }
 
 const double menuLabelVPadding = 0.15;

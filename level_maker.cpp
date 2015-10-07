@@ -1852,14 +1852,6 @@ MakerQueue* castle2(RandomGen& random, SettlementInfo info) {
    return queue;
 }
 
-LevelMaker* dungeonEntrance(StairKey key, SquareType onType, const string& dungeonDesc) {
-  MakerQueue* queue = new MakerQueue();
-  queue->addMaker(new Stairs(StairInfo::Direction::DOWN, key, Predicate::type(onType), SquareAttrib::CONNECT_ROAD,
-      StairLook::DUNGEON_ENTRANCE));
-  queue->addMaker(new LocationMaker(new Location("dungeon entrance", dungeonDesc)));
-  return queue;
-}
-
 LevelMaker* makeLake() {
   MakerQueue* queue = new MakerQueue();
   Location* loc = new Location();

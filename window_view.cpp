@@ -120,7 +120,7 @@ void WindowView::initialize() {
         {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE})}, false};
   spriteLayouts = {{
     MapLayout(Vec2(48, 48), allLayers),
-    MapLayout(Vec2(36, 36), allLayers),
+//    MapLayout(Vec2(36, 36), allLayers),
     MapLayout(Vec2(24, 24), allLayers)}, true};
   if (useTiles)
     currentTileLayout = spriteLayouts;
