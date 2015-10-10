@@ -1112,6 +1112,8 @@ static vector<BirthSpawn> birthSpawns {
 };
 
 void Collective::considerBirths() {
+  while (!pregnancies.empty() && pregnancies.front()->isDead())
+    pregnancies.pop_front();
   if (getPopulationSize() < getMaxPopulation() && !pregnancies.empty() && Random.roll(300)) {
     Creature* c = pregnancies.front();
     pregnancies.pop_front();
