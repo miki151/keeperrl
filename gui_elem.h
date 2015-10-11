@@ -105,6 +105,7 @@ class GuiFactory {
   PGuiElem maybeMargin(PGuiElem top, PGuiElem rest, int width, MarginType, function<bool(Rectangle)>);
   PGuiElem marginFit(PGuiElem top, PGuiElem rest, double height, MarginType);
   PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
+  PGuiElem margins(PGuiElem content, int all);
   PGuiElem leftMargin(int size, PGuiElem content);
   PGuiElem rightMargin(int size, PGuiElem content);
   PGuiElem topMargin(int size, PGuiElem content);

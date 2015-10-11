@@ -73,9 +73,7 @@ class WindowView: public View {
   virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint) override;
-  virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id&) override;
-  virtual optional<int> chooseItem(const vector<PlayerInfo>& minions, UniqueEntity<Creature>::Id& cur,
-      const vector<ItemInfo>& items, double* scrollpos) override;
+  virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
       pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos) override;
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,

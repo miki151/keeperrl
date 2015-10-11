@@ -75,43 +75,6 @@ enum class GameTypeChoice {
   QUICK_LEVEL
 };
 
-enum class MinionActionId {
-  TASK,
-  EQUIPMENT,
-  CONTROL,
-  RENAME,
-  BANISH,
-  WHIP,
-  EXECUTE,
-  TORTURE
-};
-
-struct TaskActionInfo {
-  optional<MinionTask> SERIAL(switchTo);
-  EnumSet<MinionTask> SERIAL(lock);
-  template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-      ar & SVAR(switchTo) & SVAR(lock);
-    }
-};
-
-struct EquipmentActionInfo {
-  vector<UniqueEntity<Item>::Id> SERIAL(ids);
-  optional<EquipmentSlot> SERIAL(slot);
-  ItemAction SERIAL(action);
-  template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-      ar & SVAR(ids) & SVAR(slot) & SVAR(action);
-    }
-};
-
-class MinionAction : public EnumVariant<MinionActionId, TYPES(TaskActionInfo, EquipmentActionInfo, string),
-    ASSIGN(TaskActionInfo, MinionActionId::TASK),
-    ASSIGN(EquipmentActionInfo, MinionActionId::EQUIPMENT),
-    ASSIGN(string, MinionActionId::RENAME)> {
-  using EnumVariant::EnumVariant;
-};
-
 enum class MenuType {
   NORMAL,
   MAIN,
@@ -202,17 +165,13 @@ class View {
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint = "") = 0;
 
-  virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>&,
-      UniqueEntity<Creature>::Id& current) = 0;
-
   virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
       pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos) = 0;
 
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
       const vector<ItemInfo>&, double* scrollPos) = 0;
 
-  virtual optional<int> chooseItem(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id& current,
-      const vector<ItemInfo>& items, double* scrollpos) = 0;
+  virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) = 0;
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
 

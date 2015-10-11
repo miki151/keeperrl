@@ -24,74 +24,6 @@ struct CreatureInfo {
   optional<pair<ViewId, int>> cost;
 };
 
-class CollectiveInfo {
-  public:
-  string warning;
-  struct Button {
-    ViewId viewId;
-    string name;
-    optional<pair<ViewId, int>> cost;
-    string count;
-    enum { ACTIVE, GRAY_CLICKABLE, INACTIVE} state;
-    string help;
-    char hotkey;
-    string groupName;
-  };
-  vector<Button> buildings;
-  vector<Button> minionButtons;
-  vector<Button> libraryButtons;
-  int minionCount;
-  int minionLimit;
-  string monsterHeader;
-  vector<CreatureInfo> minions;
-  vector<CreatureInfo> enemies;
-  map<UniqueEntity<Creature>::Id, string> tasks;
-  struct Resource {
-    ViewId viewId;
-    int count;
-    string name;
-  };
-  vector<Resource> numResource;
-  struct Team {
-    TeamId id;
-    vector<UniqueEntity<Creature>::Id> members;
-    bool active;
-  };
-  vector<Team> teams;
-  optional<int> currentTeam;
-  bool newTeam;
-  CreatureInfo& getMinion(UniqueEntity<Creature>::Id);
-  int nextPayout;
-  int payoutTimeRemaining;
-
-  struct TechButton {
-    ViewId viewId;
-    string name;
-    char hotkey;
-  };
-  vector<TechButton> techButtons;
-
-  struct Deity {
-    string name;
-    double standing;
-  };
-  vector<Deity> deities;
-
-  struct Task {
-    string name;
-    optional<UniqueEntity<Creature>::Id> creature;
-    bool priority;
-  };
-  vector<Task> taskMap;
-  
-  struct Ransom {
-    pair<ViewId, int> amount;
-    string attacker;
-    bool canAfford;
-  };
-  optional<Ransom> ransom;
-};
-
 struct ItemInfo {
   string name;
   string fullName;
@@ -171,6 +103,87 @@ class PlayerInfo {
     TORTURE,
   };
   vector<Action> actions;
+};
+
+class CollectiveInfo {
+  public:
+  string warning;
+  struct Button {
+    ViewId viewId;
+    string name;
+    optional<pair<ViewId, int>> cost;
+    string count;
+    enum { ACTIVE, GRAY_CLICKABLE, INACTIVE} state;
+    string help;
+    char hotkey;
+    string groupName;
+  };
+  vector<Button> buildings;
+  vector<Button> minionButtons;
+  vector<Button> libraryButtons;
+  int minionCount;
+  int minionLimit;
+  string monsterHeader;
+  vector<CreatureInfo> minions;
+  struct CreatureGroup {
+    UniqueEntity<Creature>::Id creatureId;
+    string name;
+    ViewId viewId;
+    int count;
+    bool highlight;
+  };
+  vector<CreatureGroup> minionGroups;
+  vector<CreatureGroup> enemyGroups;
+  struct ChosenInfo {
+    UniqueEntity<Creature>::Id chosenId;
+    vector<PlayerInfo> creatures;
+  };
+  optional<ChosenInfo> chosen;
+  map<UniqueEntity<Creature>::Id, string> tasks;
+  struct Resource {
+    ViewId viewId;
+    int count;
+    string name;
+  };
+  vector<Resource> numResource;
+  struct Team {
+    TeamId id;
+    vector<UniqueEntity<Creature>::Id> members;
+    bool active;
+  };
+  vector<Team> teams;
+  optional<int> currentTeam;
+  bool newTeam;
+  CreatureInfo& getMinion(UniqueEntity<Creature>::Id);
+  int nextPayout;
+  int payoutTimeRemaining;
+
+  struct TechButton {
+    ViewId viewId;
+    string name;
+    char hotkey;
+  };
+  vector<TechButton> techButtons;
+
+  struct Deity {
+    string name;
+    double standing;
+  };
+  vector<Deity> deities;
+
+  struct Task {
+    string name;
+    optional<UniqueEntity<Creature>::Id> creature;
+    bool priority;
+  };
+  vector<Task> taskMap;
+  
+  struct Ransom {
+    pair<ViewId, int> amount;
+    string attacker;
+    bool canAfford;
+  };
+  optional<Ransom> ransom;
 };
 
 class VillageInfo {

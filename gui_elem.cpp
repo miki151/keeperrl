@@ -1033,6 +1033,10 @@ PGuiElem GuiFactory::margins(PGuiElem content, int left, int top, int right, int
   return PGuiElem(new Margins(std::move(content), left, top, right, bottom));
 }
 
+PGuiElem GuiFactory::margins(PGuiElem content, int all) {
+  return PGuiElem(new Margins(std::move(content), all, all, all, all));
+}
+
 PGuiElem GuiFactory::leftMargin(int size, PGuiElem content) {
   return PGuiElem(new Margins(std::move(content), size, 0, 0, 0));
 }

@@ -138,7 +138,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   Creature* getConsumptionTarget(View*, Creature* consumer);
   void onWorshipEpithet(EpithetId);
-  Creature* getCreature(UniqueEntity<Creature>::Id id);
+  Creature* getCreature(UniqueEntity<Creature>::Id id) const;
   void handleAddToTeam(Creature* c);
   void controlSingle(const Creature*);
   void commandTeam(TeamId);
@@ -177,14 +177,17 @@ class PlayerControl : public CreatureView, public CollectiveControl {
       double* scrollPos = nullptr);
 
   int getNumMinions() const;
-  void minionView(Creature* creature);
-  void minionTaskAction(Creature*, const TaskActionInfo&);
-  vector<PlayerInfo> getMinionGroup(Creature* like);
-  void minionEquipmentAction(Creature* creature, const EquipmentActionInfo&);
+  void minionTaskAction(const TaskActionInfo&);
+  bool areInSameGroup(Creature*, Creature*) const;
+  void fillMinions(CollectiveInfo&) const;
+  vector<PlayerInfo> getMinionGroup(Creature* like) const;
+  vector<CollectiveInfo::CreatureGroup> getCreatureGroups(vector<Creature*>) const;
+  vector<CollectiveInfo::CreatureGroup> getEnemyGroups() const;
+  void minionEquipmentAction(const EquipmentActionInfo&);
   void addEquipment(Creature*, EquipmentSlot);
   void addConsumableItem(Creature*);
   void handleEquipment(View* view, Creature* creature);
-  void fillEquipment(Creature*, PlayerInfo&);
+  void fillEquipment(Creature*, PlayerInfo&) const;
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
   void handleRecruiting(Collective* ally);
@@ -215,6 +218,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   int SERIAL(startImpNum) = -1;
   bool SERIAL(retired) = false;
   bool SERIAL(payoutWarning) = false;
+  optional<UniqueEntity<Creature>::Id> SERIAL(chosenCreature);
   unordered_set<Position> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);

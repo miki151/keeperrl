@@ -142,8 +142,10 @@ void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
     inputQueue.push(UserInput(UserInputId::ADD_TO_TEAM, id));
     if (gameInfo.infoType == GameInfo::InfoType::BAND)
       guiBuilder.setCollectiveTab(GuiBuilder::CollectiveTab::MINIONS);
-  } else
+  } else {
     inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
+    guiBuilder.setCollectiveTab(GuiBuilder::CollectiveTab::MINIONS);
+  }
 }
 
 void WindowView::mapLeftClickFun(Vec2 pos) {
@@ -399,6 +401,9 @@ void WindowView::rebuildGui() {
       int width = overlay.size.x;
       int height = overlay.size.y;
       switch (overlay.alignment) {
+        case GuiBuilder::OverlayInfo::MINIONS:
+          pos = Vec2(rightBarWidth - 20, rightWindowHeight - 6);
+          break;
         case GuiBuilder::OverlayInfo::TOP_RIGHT:
           pos = Vec2(rightBarWidth + sideOffset, rightWindowHeight);
           break;
@@ -708,49 +713,12 @@ optional<string> WindowView::getText(const string& title, const string& value, i
   return returnQueue.pop();
 }
 
-optional<MinionAction> WindowView::getMinionAction(const vector<PlayerInfo>& minions,
-    UniqueEntity<Creature>::Id& currentMinion) {
-  RenderLock lock(renderMutex);
-  uiLock = true;
-  TempClockPause pause(clock);
-  SyncQueue<optional<MinionAction>> returnQueue;
-  addReturnDialog<optional<MinionAction>>(returnQueue, [=, &currentMinion] ()-> optional<MinionAction> {
-    optional<optional<MinionAction>> ret;
-    tempGuiElems.push_back(gui.stack(gui.reverseButton([&ret] { ret = optional<MinionAction>(none); }),
-        gui.window(guiBuilder.drawMinionMenu(minions, currentMinion, [&] (optional<MinionAction> r) { ret = r; }),
-          [&ret] { ret = optional<MinionAction>(none); })));
-    GuiElem* menu = tempGuiElems.back().get();
-    menu->setBounds(guiBuilder.getMinionMenuPosition());
-    PGuiElem bg = gui.darken();
-    bg->setBounds(getMapGuiBounds());
-    while (1) {
-      refreshScreen(false);
-      bg->render(renderer);
-      menu->render(renderer);
-      renderer.drawAndClearBuffer();
-      Event event;
-      while (renderer.pollEvent(event)) {
-        propagateEvent(event, {menu});
-        if (ret) {
-          tempGuiElems.pop_back();
-          return *ret;
-        }
-        if (considerResizeEvent(event))
-          continue;
-      }
-    }
-  });
-  lock.unlock();
-  return returnQueue.pop();
-}
-
-optional<int> WindowView::chooseItem(const vector<PlayerInfo>& minions, UniqueEntity<Creature>::Id& cur,
-    const vector<ItemInfo>& items, double* scrollPos1) {
+optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, double* scrollPos1) {
   RenderLock lock(renderMutex);
   uiLock = true;
   TempClockPause pause(clock);
   SyncQueue<optional<int>> returnQueue;
-  addReturnDialog<optional<int>>(returnQueue, [=, &cur] ()-> optional<int> {
+  addReturnDialog<optional<int>>(returnQueue, [=] ()-> optional<int> {
     double* scrollPos = scrollPos1;
     double localScrollPos;
     if (!scrollPos)
@@ -763,21 +731,17 @@ optional<int> WindowView::chooseItem(const vector<PlayerInfo>& minions, UniqueEn
         gui.miniWindow(gui.margins(
             gui.scrollable(gui.verticalList(std::move(lines), guiBuilder.getStandardLineHeight()), scrollPos),
         15, 15, 15, 15)));
-    PGuiElem bg1 = gui.window(guiBuilder.drawMinionMenu(minions, cur, [&] (optional<MinionAction>) { }),
-          [&retVal] { retVal = optional<int>(none); });
-    bg1->setBounds(guiBuilder.getMinionMenuPosition());
     PGuiElem bg2 = gui.darken();
     bg2->setBounds(renderer.getSize());
     while (1) {
       refreshScreen(false);
       menu->setBounds(guiBuilder.getEquipmentMenuPosition(menuHeight));
-      bg1->render(renderer);
       bg2->render(renderer);
       menu->render(renderer);
       renderer.drawAndClearBuffer();
       Event event;
       while (renderer.pollEvent(event)) {
-        propagateEvent(event, {menu.get(), bg1.get()});
+        propagateEvent(event, {menu.get()});
         if (retVal)
           return *retVal;
         if (considerResizeEvent(event))

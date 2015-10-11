@@ -68,6 +68,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(retired)
     & SVAR(payoutWarning)
     & SVAR(surprises)
+    & SVAR(chosenCreature)
     & SVAR(newAttacks)
     & SVAR(ransomAttacks)
     & SVAR(messages)
@@ -453,7 +454,8 @@ void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
   }
 }
 
-void PlayerControl::minionEquipmentAction(Creature* creature, const EquipmentActionInfo& action) {
+void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
+  Creature* creature = getCreature(action.creature);
   switch (action.action) {
     case ItemAction::DROP:
       for (auto id : action.ids)
@@ -477,93 +479,12 @@ void PlayerControl::minionEquipmentAction(Creature* creature, const EquipmentAct
   }
 }
 
-vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) {
-  vector<PlayerInfo> minions;
-  for (Creature* c : getCreatures())
-    if (c->getSpeciesName() == like->getSpeciesName()) {
-      minions.emplace_back();
-      minions.back().readFrom(c);
-      for (MinionTask t : ENUM_ALL(MinionTask))
-        if (c->getMinionTasks().getValue(t, true) > 0) {
-          minions.back().minionTasks.push_back({t,
-              !getCollective()->isMinionTaskPossible(c, t),
-              getCollective()->getMinionTask(c) == t,
-              c->getMinionTasks().isLocked(t)});
-        }
-      minions.back().creatureId = c->getUniqueId();
-      if (getCollective()->usesEquipment(c))
-        fillEquipment(c, minions.back());
-      if (getCollective()->hasTrait(c, MinionTrait::PRISONER))
-        minions.back().actions = { PlayerInfo::EXECUTE, PlayerInfo::TORTURE };
-      else {
-        minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
-        if (c != getCollective()->getLeader()) {
-          minions.back().actions.push_back(PlayerInfo::BANISH);
-          if (getCollective()->canWhip(c))
-            minions.back().actions.push_back(PlayerInfo::WHIP);
-        }
-      }
-    }
-  sort(minions.begin(), minions.end(), [] (const PlayerInfo& m1, const PlayerInfo& m2) {
-        return m1.level > m2.level;
-      });
-  return minions;
-}
-
-void PlayerControl::minionTaskAction(Creature* c, const TaskActionInfo& action) {
+void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
+  Creature* c = getCreature(action.creature);
   if (action.switchTo)
     getCollective()->setMinionTask(c, *action.switchTo);
   for (MinionTask task : action.lock)
     c->getMinionTasks().toggleLock(task);
-}
-
-void PlayerControl::minionView(Creature* creature) {
-  UniqueEntity<Creature>::Id currentId = creature->getUniqueId();
-  while (1) {
-    vector<PlayerInfo> group = getMinionGroup(creature);
-    if (group.empty())
-      return;
-    bool isId = false;
-    for (auto& elem : group)
-      if (elem.creatureId == currentId) {
-        isId = true;
-        break;
-      }
-    if (!isId)
-      currentId = group[0].creatureId;
-    auto actionInfo = model->getView()->getMinionAction(group, currentId);
-    if (!actionInfo)
-      return;
-    if (Creature* c = getCreature(currentId))
-      switch (actionInfo->getId()) {
-        case MinionActionId::TASK:
-          minionTaskAction(c, actionInfo->get<TaskActionInfo>());
-          break;
-        case MinionActionId::EQUIPMENT:
-          minionEquipmentAction(c, actionInfo->get<EquipmentActionInfo>());
-          break;
-        case MinionActionId::CONTROL:
-          controlSingle(c);
-          return;
-        case MinionActionId::RENAME:
-          c->setFirstName(actionInfo->get<string>());
-          break;
-        case MinionActionId::BANISH:
-          if (model->getView()->yesOrNoPrompt("Do you want to banish " + c->getName().the() + " forever? "
-                "Banishing has a negative impact on morale of other minions."))
-            getCollective()->banishCreature(c);
-          break;
-        case MinionActionId::WHIP:
-          getCollective()->orderWhipping(c);
-          return;
-        case MinionActionId::EXECUTE:
-          getCollective()->orderExecution(c);
-          return;
-        case MinionActionId::TORTURE:
-          getCollective()->orderTorture(c);
-          return;
-    }
-  }
 }
 
 static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked,
@@ -624,7 +545,7 @@ static ItemInfo getTradeItemInfo(const vector<Item*>& stack, int budget) {
 }
 
 
-void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) {
+void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   if (!creature->isHumanoid())
     return;
   int index = 0;
@@ -701,7 +622,7 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
     allStacked.push_back(elem.second.front());
   }
   auto creatureId = creature->getUniqueId();
-  auto index = model->getView()->chooseItem(getMinionGroup(creature), creatureId, options, scrollPos);
+  auto index = model->getView()->chooseItem(options, scrollPos);
   if (!index)
     return nullptr;
   return concat(currentItems, allStacked)[*index];
@@ -993,10 +914,75 @@ vector<Collective*> PlayerControl::getKnownVillains(VillainType type) const {
       return seeEverything || getCollective()->isKnownVillain(c);});
 }
 
+vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) const {
+  vector<PlayerInfo> minions;
+  for (Creature* c : getCreatures())
+    if (c->getSpeciesName() == like->getSpeciesName()) {
+      minions.emplace_back();
+      minions.back().readFrom(c);
+      for (MinionTask t : ENUM_ALL(MinionTask))
+        if (c->getMinionTasks().getValue(t, true) > 0) {
+          minions.back().minionTasks.push_back({t,
+              !getCollective()->isMinionTaskPossible(c, t),
+              getCollective()->getMinionTask(c) == t,
+              c->getMinionTasks().isLocked(t)});
+        }
+      minions.back().creatureId = c->getUniqueId();
+      if (getCollective()->usesEquipment(c))
+        fillEquipment(c, minions.back());
+      if (getCollective()->hasTrait(c, MinionTrait::PRISONER))
+        minions.back().actions = { PlayerInfo::EXECUTE, PlayerInfo::TORTURE };
+      else {
+        minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
+        if (c != getCollective()->getLeader()) {
+          minions.back().actions.push_back(PlayerInfo::BANISH);
+          if (getCollective()->canWhip(c))
+            minions.back().actions.push_back(PlayerInfo::WHIP);
+        }
+      }
+    }
+  sort(minions.begin(), minions.end(), [] (const PlayerInfo& m1, const PlayerInfo& m2) {
+        return m1.level > m2.level;
+      });
+  return minions;
+}
+
+vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<Creature*> v) const {
+  sort(v.begin(), v.end(), [](const Creature* c1, const Creature* c2) {
+        return c1->getExpLevel() > c2->getExpLevel();});
+  map<string, CollectiveInfo::CreatureGroup> groups;
+  for (Creature* c : v) {
+    if (!groups.count(c->getSpeciesName()))
+      groups[c->getSpeciesName()] = { c->getUniqueId(), c->getSpeciesName(), c->getViewObject().id(), 0};
+    ++groups[c->getSpeciesName()].count;
+    if (chosenCreature == c->getUniqueId())
+      groups[c->getSpeciesName()].highlight = true;
+
+  }
+  return getValues(groups);
+}
+
+vector<CollectiveInfo::CreatureGroup> PlayerControl::getEnemyGroups() const {
+  vector<Creature*> enemies;
+  for (Vec2 v : getVisibleEnemies())
+    if (Creature* c = Position(v, getCollective()->getLevel()).getCreature())
+      enemies.push_back(c);
+  return getCreatureGroups(enemies);
+}
+
+void PlayerControl::fillMinions(CollectiveInfo& info) const {
+  vector<Creature*> minions;
+  for (Creature* c : getCollective()->getCreaturesAnyOf(
+        {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER}))
+    minions.push_back(c);
+  minions.push_back(getCollective()->getLeader());
+  info.minionGroups = getCreatureGroups(minions);
+  info.minions = transform2<CreatureInfo>(minions, [](const Creature* c) { return CreatureInfo(c) ;});
+  info.minionCount = getCollective()->getPopulationSize();
+  info.minionLimit = getCollective()->getMaxPopulation();
+}
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
- /* gameInfo.collectiveInfo.deities.clear();
-  for (Deity* deity : Deity::getDeities())
-    gameInfo.collectiveInfo.deities.push_back({deity->getName(), getCollective()->getStanding(deity)});*/
   gameInfo.villageInfo.villages.clear();
   gameInfo.villageInfo.totalMain = 0;
   gameInfo.villageInfo.numConquered = 0;
@@ -1018,26 +1004,12 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   CollectiveInfo& info = gameInfo.collectiveInfo;
   info.buildings = fillButtons(getBuildInfo());
   info.libraryButtons = fillButtons(libraryInfo);
-  info.minions.clear();
-  info.payoutTimeRemaining = -1;
-/*  int payoutTime = getCollective()->getNextPayoutTime();
-  if (payoutTime > -1)
-    info.payoutTimeRemaining = payoutTime - getCollective()->getTime();
-  else
-    info.payoutTimeRemaining = -1;
-  info.nextPayout = getCollective()->getNextSalaries();*/
-  for (Creature* c : getCollective()->getCreaturesAnyOf(
-        {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER}))
-    info.minions.push_back(c);
-  info.minions.push_back(getCollective()->getLeader());
-  info.minionCount = getCollective()->getPopulationSize();
-  info.minionLimit = getCollective()->getMaxPopulation();
+  fillMinions(info);
+  if (chosenCreature)
+    if (Creature* c = getCreature(*chosenCreature))
+      info.chosen = {*chosenCreature, getMinionGroup(c)};
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
-  info.enemies.clear();
-  for (Position v : getCollective()->getTerritory().getAll())
-    if (const Creature* c = v.getCreature())
-      if (getTribe()->isEnemy(c) && canSee(c))
-        info.enemies.push_back(c);
+  info.enemyGroups = getEnemyGroups();
   info.numResource.clear();
   for (auto elem : getCollective()->resourceInfo)
     if (!elem.second.dontDisplay)
@@ -1288,7 +1260,7 @@ bool PlayerControl::canPlacePost(Position pos) const {
       pos.canEnterEmpty({MovementTrait::WALK}) && getCollective()->isKnownSquare(pos);
 }
   
-Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) {
+Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) const {
   for (Creature* c : getCreatures())
     if (c->getUniqueId() == id)
       return c;
@@ -1433,9 +1405,62 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DEITIES: Encyclopedia().deity(view, Deity::getDeities()[input.get<int>()]); break;
     case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
-    case UserInputId::CREATURE_BUTTON: 
+    case UserInputId::CREATURE_GROUP_BUTTON: 
         if (Creature* c = getCreature(input.get<int>()))
-          minionView(c);
+          if (!chosenCreature || getCreature(*chosenCreature)->getSpeciesName() != c->getSpeciesName()) {
+            chosenCreature = input.get<int>();
+            break;
+          }
+        chosenCreature = none;
+        break;
+    case UserInputId::CREATURE_BUTTON: 
+        if (Creature* c = getCreature(input.get<int>())) {
+          if (getCurrentTeam() || newTeam)
+            handleAddToTeam(c);
+          else 
+            chosenCreature = input.get<int>();
+        } else
+          chosenCreature = none;
+        break;
+    case UserInputId::CREATURE_TASK_ACTION:
+        minionTaskAction(input.get<TaskActionInfo>());
+        break;
+    case UserInputId::CREATURE_EQUIPMENT_ACTION:
+        minionEquipmentAction(input.get<EquipmentActionInfo>());
+        break;
+    case UserInputId::CREATURE_CONTROL:
+        if (Creature* c = getCreature(input.get<int>())) {
+          controlSingle(c);
+          chosenCreature = none;
+        }
+        break;
+    case UserInputId::CREATURE_RENAME:
+        if (Creature* c = getCreature(input.get<RenameActionInfo>().creature))
+          c->setFirstName(input.get<RenameActionInfo>().name);
+        break;
+    case UserInputId::CREATURE_BANISH:
+        if (Creature* c = getCreature(input.get<int>()))
+          if (model->getView()->yesOrNoPrompt("Do you want to banish " + c->getName().the() + " forever? "
+              "Banishing has a negative impact on morale of other minions."))
+            getCollective()->banishCreature(c);
+        break;
+    case UserInputId::CREATURE_WHIP:
+        if (Creature* c = getCreature(input.get<int>())) {
+          getCollective()->orderWhipping(c);
+          chosenCreature = none;
+        }
+        break;
+    case UserInputId::CREATURE_EXECUTE:
+        if (Creature* c = getCreature(input.get<int>())) {
+          getCollective()->orderExecution(c);
+          chosenCreature = none;
+        }
+        break;
+    case UserInputId::CREATURE_TORTURE:
+        if (Creature* c = getCreature(input.get<int>())) {
+          getCollective()->orderTorture(c);
+          chosenCreature = none;
+        }
         break;
     case UserInputId::ADD_TO_TEAM: 
         if (Creature* c = getCreature(input.get<int>()))

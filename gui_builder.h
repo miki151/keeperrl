@@ -61,15 +61,12 @@ class GuiBuilder {
   struct OverlayInfo {
     PGuiElem elem;
     Vec2 size;
-    enum { LEFT, TOP_RIGHT, BOTTOM_RIGHT, MESSAGES, GAME_SPEED, INVISIBLE } alignment;
+    enum { LEFT, TOP_RIGHT, BOTTOM_RIGHT, MESSAGES, GAME_SPEED, INVISIBLE, MINIONS } alignment;
   };
   void drawPlayerOverlay(vector<OverlayInfo>&, PlayerInfo&);
   void drawBandOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   void drawMessages(vector<OverlayInfo>&, const vector<PlayerMessage>&, int guiLength);
   void drawGameSpeedDialog(vector<OverlayInfo>&);
-  typedef function<void(optional<MinionAction>)> MinionMenuCallback;
-  PGuiElem drawMinionMenu(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id& current,
-      MinionMenuCallback);
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
   vector<PGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);
   typedef function<void(optional<int>)> CreatureMenuCallback;
@@ -122,16 +119,16 @@ class GuiBuilder {
   PGuiElem getHintCallback(const vector<string>&);
   PGuiElem getTooltip(const vector<string>&);
   vector<PGuiElem> drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>&);
-  PGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id& current);
-  PGuiElem drawMinionPage(const PlayerInfo&, MinionMenuCallback);
-  PGuiElem drawActivityButton(const PlayerInfo&, MinionMenuCallback);
+  PGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current);
+  PGuiElem drawMinionPage(const PlayerInfo&);
+  PGuiElem drawActivityButton(const PlayerInfo&);
   vector<PGuiElem> drawAttributesOnPage(vector<PGuiElem>&&);
-  vector<PGuiElem> drawEquipmentAndConsumables(const vector<ItemInfo>&, MinionMenuCallback);
+  vector<PGuiElem> drawEquipmentAndConsumables(const PlayerInfo&);
   vector<PGuiElem> drawSkillsList(const PlayerInfo&);
   vector<PGuiElem> drawSpellsList(const PlayerInfo&, bool active);
   PGuiElem getSpellIcon(const PlayerInfo::Spell&, bool active);
   vector<PGuiElem> drawEffectsList(const PlayerInfo&);
-  vector<PGuiElem> drawMinionActions(const PlayerInfo&, MinionMenuCallback);
+  vector<PGuiElem> drawMinionActions(const PlayerInfo&);
   vector<PGuiElem> joinLists(vector<PGuiElem>&&, vector<PGuiElem>&&);
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width);
@@ -144,7 +141,6 @@ class GuiBuilder {
   int activeBuilding = 0;
   bool hideBuildingOverlay = false;
   int activeLibrary = -1;
-  string chosenCreature;
   bool showTasks = false;
   bool tilesOk;
   double inventoryScroll = 0;
