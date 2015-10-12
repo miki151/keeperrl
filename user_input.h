@@ -81,46 +81,32 @@ enum class UserInputId {
 struct BuildingInfo {
   Vec2 SERIAL(pos);
   int SERIAL(building);
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(pos) & SVAR(building);
-  }
+  SERIALIZE_ALL(pos, building);
 };
 
 struct TeamLeaderInfo {
   TeamId SERIAL(team);
   UniqueEntity<Creature>::Id SERIAL(creatureId);
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(team) & SVAR(creatureId);
-  }
+  SERIALIZE_ALL(team, creatureId);
 };
 
 struct InventoryItemInfo {
   vector<UniqueEntity<Item>::Id> SERIAL(items);
   ItemAction SERIAL(action);
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(items) & SVAR(action);
-  }};
+  SERIALIZE_ALL(items, action);
+};
 
 struct VillageActionInfo {
   int SERIAL(villageIndex);
   VillageAction SERIAL(action);
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(villageIndex) & SVAR(action);
-  }
+  SERIALIZE_ALL(villageIndex, action);
 };
 
 struct TaskActionInfo {
   UniqueEntity<Creature>::Id SERIAL(creature);
   optional<MinionTask> SERIAL(switchTo);
   EnumSet<MinionTask> SERIAL(lock);
-  template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-      ar & SVAR(creature) & SVAR(switchTo) & SVAR(lock);
-    }
+  SERIALIZE_ALL(creature, switchTo, lock);
 };
 
 struct EquipmentActionInfo {
@@ -128,19 +114,13 @@ struct EquipmentActionInfo {
   vector<UniqueEntity<Item>::Id> SERIAL(ids);
   optional<EquipmentSlot> SERIAL(slot);
   ItemAction SERIAL(action);
-  template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version) {
-      ar & SVAR(creature) & SVAR(ids) & SVAR(slot) & SVAR(action);
-    }
+  SERIALIZE_ALL(creature, ids, slot, action);
 };
 
 struct RenameActionInfo {
   UniqueEntity<Creature>::Id SERIAL(creature);
   string SERIAL(name);
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(creature) & SVAR(name);
-  }
+  SERIALIZE_ALL(creature, name);
 };
 
 enum class SpellId;

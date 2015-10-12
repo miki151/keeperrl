@@ -61,11 +61,7 @@ class Staircase : public Square {
     getLevel()->changeLevel(*getLandingLink(), c);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Square);
-  }
-
+  SERIALIZE_SUBCLASS(Square);
   SERIALIZATION_CONSTRUCTOR(Staircase);
 
 };
@@ -96,11 +92,7 @@ class Magma : public Square {
             "burns", "burn") + " in the magma.");
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square);
-  }
-
+  SERIALIZE_SUBCLASS(Square);
   SERIALIZATION_CONSTRUCTOR(Magma);
 };
 
@@ -130,11 +122,7 @@ class Water : public Square {
             "sinks", "sink") + " in the water.", "You hear a splash.");
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square);
-  }
-
+  SERIALIZE_SUBCLASS(Square);
   SERIALIZATION_CONSTRUCTOR(Water);
   
   private:
@@ -211,18 +199,7 @@ class Chest : public Square {
     getPosition2().dropItems(std::move(items));
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(chestInfo)
-      & SVAR(msgItem)
-      & SVAR(msgMonster)
-      & SVAR(msgGold)
-      & SVAR(opened)
-      & SVAR(itemFactory)
-      & SVAR(openedObject);
-  }
-
+  SERIALIZE_ALL2(Square, chestInfo, msgItem, msgMonster, msgGold, opened, itemFactory, openedObject);
   SERIALIZATION_CONSTRUCTOR(Chest);
 
   private:
@@ -260,12 +237,8 @@ class Fountain : public Square {
     potion->apply(c);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(seed);
-  }
 
+  SERIALIZE_ALL2(Square, seed);
   SERIALIZATION_CONSTRUCTOR(Fountain);
 
   private:
@@ -309,13 +282,7 @@ class Tree : public Square {
     getLevel()->replaceSquare(getPosition(), SquareFactory::get(SquareId::BURNT_TREE));
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(creature)
-      & SVAR(numWood);
-  }
-
+  SERIALIZE_ALL2(Square, creature, numWood);
   SERIALIZATION_CONSTRUCTOR(Tree);
 
   private:
@@ -340,13 +307,7 @@ class TrapSquare : public Square {
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(active)
-      & SVAR(effect);
-  }
-
+  SERIALIZE_ALL2(Square, active, effect);
   SERIALIZATION_CONSTRUCTOR(TrapSquare);
 
   private:
@@ -362,11 +323,8 @@ class Door : public Square {
     c->playerMessage("You open the door.");
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Square);
-  }
-  
+
+  SERIALIZE_SUBCLASS(Square);
   SERIALIZATION_CONSTRUCTOR(Door);
 };
 
@@ -410,14 +368,7 @@ class TribeDoor : public Door {
     setDirty();
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Door)
-      & SVAR(tribe)
-      & SVAR(destructionStrength)
-      & SVAR(locked);
-  }
-
+  SERIALIZE_ALL2(Door, tribe, destructionStrength, locked);
   SERIALIZATION_CONSTRUCTOR(TribeDoor);
 
   private:
@@ -445,12 +396,7 @@ class Barricade : public Square {
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(destructionStrength);
-  }
-
+  SERIALIZE_ALL2(Square, destructionStrength);
   SERIALIZATION_CONSTRUCTOR(Barricade);
 
   private:
@@ -477,12 +423,7 @@ class Furniture : public Square {
 
   virtual void onApply(Creature* c) {}
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(applyType);
-  }
-
+  SERIALIZE_ALL2(Square, applyType);
   SERIALIZATION_CONSTRUCTOR(Furniture);
   
   private:
@@ -507,11 +448,7 @@ class Bed : public Furniture {
       getCreature()->heal(0.005);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Furniture);
-  }
-  
+  SERIALIZE_SUBCLASS(Furniture);
   SERIALIZATION_CONSTRUCTOR(Bed);
 };
 
@@ -532,11 +469,7 @@ class Grave : public Bed {
     Bed::onApply(c);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Bed);
-  }
-
+  SERIALIZE_SUBCLASS(Bed);
   SERIALIZATION_CONSTRUCTOR(Grave);
 };
 
@@ -586,14 +519,7 @@ class Altar : public Square {
     onPrayer(c);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(recentKiller)
-      & SVAR(recentVictim)
-      & SVAR(killTime);
-  }
-
+  SERIALIZE_ALL2(Square, recentKiller, recentVictim, killTime);
   SERIALIZATION_CONSTRUCTOR(Altar);
 
   private:
@@ -635,12 +561,7 @@ class DeityAltar : public Altar {
  //   GlobalEvents.addWorshipEvent(c, deity, WorshipType::SACRIFICE);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Altar)
-      & SVAR(deity);
-  }
-
+  SERIALIZE_ALL2(Altar, deity);
   SERIALIZATION_CONSTRUCTOR(DeityAltar);
 
   private:
@@ -677,12 +598,7 @@ class CreatureAltar : public Altar {
  //   GlobalEvents.addWorshipCreatureEvent(c, creature, WorshipType::SACRIFICE);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Altar)
-      & SVAR(creature);
-  }
-
+  SERIALIZE_ALL2(Altar, creature);
   SERIALIZATION_CONSTRUCTOR(CreatureAltar);
 
   private:
@@ -702,12 +618,7 @@ class ConstructionDropItems : public Square {
     s->dropItems(std::move(items));
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(items);
-  }
-
+  SERIALIZE_ALL2(Square, items);
   SERIALIZATION_CONSTRUCTOR(ConstructionDropItems);
 
   private:
@@ -718,15 +629,11 @@ class Torch : public Furniture {
   public:
   Torch(const ViewObject& object, const string& name) : Furniture(object, name, 1) {}
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Furniture);
-  }
-
   double getLightEmission() const override {
     return 8.2;
   }
 
+  SERIALIZE_SUBCLASS(Furniture);
   SERIALIZATION_CONSTRUCTOR(Torch);
 };
 
@@ -762,12 +669,7 @@ class Hatchery : public Square {
   virtual void onApply(Creature* c) override {
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(creature);
-  }
-  
+  SERIALIZE_ALL2(Square, creature);
   SERIALIZATION_CONSTRUCTOR(Hatchery);
 
   private:
@@ -782,11 +684,7 @@ class Laboratory : public Furniture {
     c->playerMessage("You mix the concoction.");
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Furniture);
-  }
-  
+  SERIALIZE_SUBCLASS(Furniture);
   SERIALIZATION_CONSTRUCTOR(Laboratory);
 };
 
@@ -799,11 +697,7 @@ class NoticeBoard : public Furniture {
     c->playerMessage(PlayerMessage::announcement("The notice board reads:", text));
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Furniture) & SVAR(text);
-  }
-  
+  SERIALIZE_ALL2(Furniture, text);
   SERIALIZATION_CONSTRUCTOR(NoticeBoard);
 
   private:
@@ -827,10 +721,7 @@ class Crops : public Square {
     return 3.0;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Square);
-  }
+  SERIALIZE_SUBCLASS(Square);
 };
 
 class SokobanHole : public Square {
@@ -859,11 +750,7 @@ class SokobanHole : public Square {
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Square) & SVAR(stairKey);
-  }
-
+  SERIALIZE_ALL2(Square, stairKey);
   SERIALIZATION_CONSTRUCTOR(SokobanHole);
 
   private:

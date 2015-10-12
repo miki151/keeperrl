@@ -918,8 +918,6 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
     line.push_back(gui.viewObject(elem.viewId, tilesOk));
     widths.push_back(40);
     Color col = elem.highlight ? colors[ColorId::GREEN] : colors[ColorId::WHITE];
-    if (elem.highlight)
-      setCollectiveTab(CollectiveTab::MINIONS);
     line.push_back(gui.label(toString(elem.count) + "   " + elem.name, col));
     widths.push_back(200);
     list.push_back(gui.leftMargin(20, gui.stack(

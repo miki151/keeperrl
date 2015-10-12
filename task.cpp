@@ -104,14 +104,7 @@ class Construction : public Task {
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Task)
-      & SVAR(position)
-      & SVAR(type)
-      & SVAR(callback);
-  }
-  
+  SERIALIZE_ALL2(Task, position, type, callback);
   SERIALIZATION_CONSTRUCTOR(Construction);
 
   private:
@@ -150,14 +143,7 @@ class BuildTorch : public Task {
     return "Build torch " + toString(position);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Task)
-      & SVAR(position)
-      & SVAR(callback)
-      & SVAR(attachmentDir);
-  }
-  
+  SERIALIZE_ALL2(Task, position, callback, attachmentDir); 
   SERIALIZATION_CONSTRUCTOR(BuildTorch);
 
   private:
@@ -181,10 +167,7 @@ class NonTransferable : public Task {
     return false;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Task);
-  }
+  SERIALIZE_SUBCLASS(Task); 
 };
 
 }
@@ -260,16 +243,7 @@ class PickItem : public NonTransferable {
     return NoMove;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(items)
-      & SVAR(pickedUp)
-      & SVAR(position)
-      & SVAR(tries)
-      & SVAR(callback);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, items, pickedUp, position, tries, callback); 
   SERIALIZATION_CONSTRUCTOR(PickItem);
 
   protected:
@@ -310,11 +284,7 @@ class PickAndEquipItem : public PickItem {
     return NoMove;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(PickItem);
-  }
-  
+  SERIALIZE_SUBCLASS(PickItem);   
   SERIALIZATION_CONSTRUCTOR(PickAndEquipItem);
 };
 
@@ -345,11 +315,7 @@ class EquipItem : public NonTransferable {
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(NonTransferable) & SVAR(itemId);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, itemId); 
   SERIALIZATION_CONSTRUCTOR(EquipItem);
 
   private:
@@ -422,12 +388,7 @@ class BringItem : public PickItem {
     return !pickedUp;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(PickItem)
-      & SVAR(target);
-  }
-  
+  SERIALIZE_ALL2(PickItem, target); 
   SERIALIZATION_CONSTRUCTOR(BringItem);
 
   protected:
@@ -470,12 +431,7 @@ class ApplyItem : public BringItem {
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(BringItem)
-      & SVAR(callback);
-  }
-  
+  SERIALIZE_ALL2(BringItem, callback); 
   SERIALIZATION_CONSTRUCTOR(ApplyItem);
 
   private:
@@ -534,16 +490,7 @@ class ApplySquare : public NonTransferable {
     return "Apply square " + (position ? toString(*position) : "");
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(positions)
-      & SVAR(rejectedPosition)
-      & SVAR(invalidCount)
-      & SVAR(position)
-      & SVAR(callback);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, positions, rejectedPosition, invalidCount, position, callback); 
   SERIALIZATION_CONSTRUCTOR(ApplySquare);
 
   private:
@@ -601,14 +548,7 @@ class Kill : public NonTransferable {
     callback->onKillCancelled(creature);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(creature)
-      & SVAR(type)
-      & SVAR(callback);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, creature, type, callback); 
   SERIALIZATION_CONSTRUCTOR(Kill);
 
   private:
@@ -665,14 +605,7 @@ class Sacrifice : public NonTransferable {
     callback->onKillCancelled(creature);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(creature)
-      & SVAR(sacrificePos)
-      & SVAR(callback);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, creature, sacrificePos, callback); 
   SERIALIZATION_CONSTRUCTOR(Sacrifice);
 
   private:
@@ -713,12 +646,7 @@ class DestroySquare : public NonTransferable {
     return "Destroy " + toString(position);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(position);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, position); 
   SERIALIZATION_CONSTRUCTOR(DestroySquare);
 
   private:
@@ -745,10 +673,7 @@ class Disappear : public NonTransferable {
     return "Disappear";
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable);
-  }
+  SERIALIZE_SUBCLASS(NonTransferable); 
 };
 
 }
@@ -790,13 +715,7 @@ class Chain : public Task {
     return tasks[current]->getDescription();
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Task)
-      & SVAR(tasks)
-      & SVAR(current);
-  }
-  
+  SERIALIZE_ALL2(Task, tasks, current); 
   SERIALIZATION_CONSTRUCTOR(Chain);
 
   private:
@@ -841,12 +760,7 @@ class Explore : public NonTransferable {
     return "Explore " + toString(position);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(position);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, position); 
   SERIALIZATION_CONSTRUCTOR(Explore);
 
   private:
@@ -871,16 +785,12 @@ class AttackLeader : public NonTransferable {
     return c->moveTowards(collective->getLeader()->getPosition());
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(collective);
-  }
 
   virtual string getDescription() const override {
     return "Attack " + collective->getLeader()->getName().bare();
   }
   
+  SERIALIZE_ALL2(NonTransferable, collective); 
   SERIALIZATION_CONSTRUCTOR(AttackLeader);
 
   private:
@@ -958,25 +868,11 @@ class CampAndSpawn : public NonTransferable {
     return c->wait();
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(target)
-      & SVAR(self)
-      & SVAR(spawns)
-      & SVAR(campPos)
-      & SVAR(defenseSize)
-      & SVAR(attackSize)
-      & SVAR(currentAttack)
-      & SVAR(defenseTeam)
-      & SVAR(attackTeam)
-      & SVAR(numAttacks);
-  }
-
   virtual string getDescription() const override {
     return "Camp and spawn " + target->getLeader()->getName().bare();
   }
  
+  SERIALIZE_ALL2(NonTransferable, target, self, spawns, campPos, defenseSize, attackSize, currentAttack, defenseTeam, attackTeam, numAttacks); 
   SERIALIZATION_CONSTRUCTOR(CampAndSpawn);
 
   private:
@@ -1024,14 +920,7 @@ class KillFighters : public NonTransferable {
     return "Kill " + toString(numCreatures) + " minions of " + collective->getFullName();
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(collective)
-      & SVAR(numCreatures)
-      & SVAR(targets);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, collective, numCreatures, targets); 
   SERIALIZATION_CONSTRUCTOR(KillFighters);
 
   private:
@@ -1060,13 +949,7 @@ class StayInLocationUntil : public NonTransferable {
     return c->stayIn(location);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(NonTransferable)
-      & SVAR(location)
-      & SVAR(time);
-  }
-
+  SERIALIZE_ALL2(NonTransferable, location, time); 
   virtual string getDescription() const override {
     return "Stay in " + (location->getName().get_value_or("location")) + " until " + toString(time);
   }
@@ -1094,17 +977,11 @@ class ConsumeItem : public NonTransferable {
         c->getEquipment().removeItems(c->getEquipment().getItems(items.containsPredicate())); });
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(items)
-      & SVAR(callback);
-  }
-
   virtual string getDescription() const override {
     return "Consume item";
   }
   
+  SERIALIZE_ALL2(NonTransferable, items, callback); 
   SERIALIZATION_CONSTRUCTOR(ConsumeItem);
 
   protected:
@@ -1149,14 +1026,7 @@ class Copulate : public NonTransferable {
     return "Copulate with " + target->getName().bare();
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(target)
-      & SVAR(numTurns)
-      & SVAR(callback);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, target, numTurns, callback); 
   SERIALIZATION_CONSTRUCTOR(Copulate);
 
   protected:
@@ -1196,13 +1066,7 @@ class Consume : public NonTransferable {
     return "Absorb " + target->getName().bare();
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(target)
-      & SVAR(callback);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, target, callback); 
   SERIALIZATION_CONSTRUCTOR(Consume);
 
   protected:
@@ -1272,14 +1136,7 @@ class Eat : public Task {
       return "Eat";
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Task)
-      & SVAR(position)
-      & SVAR(positions)
-      & SVAR(rejectedPosition);
-  }
-  
+  SERIALIZE_ALL2(Task, position, positions, rejectedPosition); 
   SERIALIZATION_CONSTRUCTOR(Eat);
 
   private:
@@ -1311,12 +1168,7 @@ class GoTo : public NonTransferable {
     return "Go to " + toString(target);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(target);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, target); 
   SERIALIZATION_CONSTRUCTOR(GoTo);
 
   protected:
@@ -1346,11 +1198,7 @@ class GoToAndWait : public NonTransferable {
     return "Go to and wait " + toString(position);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable) & SVAR(maxTime) & SVAR(position);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, position, maxTime); 
   SERIALIZATION_CONSTRUCTOR(GoToAndWait);
 
   private:
@@ -1412,17 +1260,7 @@ class Whipping : public NonTransferable {
     return "Whipping " + whipped->getName().a();
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(callback)
-      & SVAR(position)
-      & SVAR(whipped)
-      & SVAR(started)
-      & SVAR(interval)
-      & SVAR(timeout);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, callback, position, whipped, started, interval, timeout); 
   SERIALIZATION_CONSTRUCTOR(Whipping);
 
   protected:
@@ -1452,12 +1290,7 @@ class DropItems : public NonTransferable {
     return "Drop items";
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(items);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, items); 
   SERIALIZATION_CONSTRUCTOR(DropItems);
 
   protected:
@@ -1506,15 +1339,7 @@ class Spider : public NonTransferable {
     return "Spider";
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(NonTransferable)
-      & SVAR(origin)
-      & SVAR(positionsClose)
-      & SVAR(positionsFurther)
-      & SVAR(makeWeb);
-  }
-  
+  SERIALIZE_ALL2(NonTransferable, origin, positionsClose, positionsFurther, makeWeb); 
   SERIALIZATION_CONSTRUCTOR(Spider);
 
   protected:

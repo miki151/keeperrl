@@ -183,13 +183,7 @@ class BoulderController : public Monster {
       getCreature()->monsterMessage(msg, msgNoSee);
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Monster) 
-      & SVAR(direction)
-      & SVAR(stopped);
-  }
-
+  SERIALIZE_ALL2(Monster, direction, stopped);
   SERIALIZATION_CONSTRUCTOR(BoulderController);
 
   private:
@@ -209,11 +203,7 @@ class Boulder : public Creature {
     return ItemFactory::fromId(ItemId::ROCK, Random.get(10, 20));
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Creature);
-  }
-  
+  SERIALIZE_SUBCLASS(Creature);
   SERIALIZATION_CONSTRUCTOR(Boulder);
 };
 
@@ -263,11 +253,7 @@ class SokobanController : public Monster {
       getCreature()->monsterMessage(msg, msgNoSee);
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Monster);
-  }
-
+  SERIALIZE_SUBCLASS(Monster);
   SERIALIZATION_CONSTRUCTOR(SokobanController);
 
   private:
@@ -432,17 +418,7 @@ class KrakenController : public Monster {
     getCreature()->wait().perform(getCreature());
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Monster)
-      & SVAR(numSpawns)
-      & SVAR(waitNow)
-      & SVAR(ready)
-      & SVAR(held)
-      & SVAR(spawns)
-      & SVAR(father);
-  }
-
+  SERIALIZE_ALL2(Monster, numSpawns, waitNow, ready, held, spawns, father);
   SERIALIZATION_CONSTRUCTOR(KrakenController);
 
   private:
@@ -586,18 +562,7 @@ class ShopkeeperController : public Monster {
     }
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Monster)
-      & SVAR(prevCreatures)
-      & SVAR(debt)
-      & SVAR(thiefCount)
-      & SVAR(thieves)
-      & SVAR(unpaidItems)
-      & SVAR(shopArea)
-      & SVAR(firstMove);
-  }
-
+  SERIALIZE_ALL2(Monster, prevCreatures, debt, thiefCount, thieves, unpaidItems, shopArea, firstMove);
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
 
   private:

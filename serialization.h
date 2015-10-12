@@ -65,6 +65,35 @@ typedef text_iarchive InputArchive2;
 #define SERIALIZATION_CONSTRUCTOR(A) \
   A() {}
 
+template <typename Archive>
+void serializeAll(Archive& ar) {
+}
+
+template <typename Archive, typename Arg1, typename... Args>
+void serializeAll(Archive& ar, Arg1& arg1, Args&... args) {
+  ar & boost::serialization::make_nvp("arg1", arg1);
+  serializeAll(ar, args...);
+}
+
+#define SERIALIZE_SUBCLASS(SUB) \
+  template <class Archive> \
+  void serialize(Archive& ar, const unsigned int version) { \
+    ar & SUBCLASS(SUB);\
+  }
+
+#define SERIALIZE_ALL2(SUB, ...) \
+  template <class Archive> \
+  void serialize(Archive& ar, const unsigned int version) { \
+    ar & SUBCLASS(SUB);\
+    serializeAll(ar, __VA_ARGS__); \
+  }
+
+#define SERIALIZE_ALL(...) \
+  template <class Archive> \
+  void serialize(Archive& ar, const unsigned int version) { \
+    serializeAll(ar, __VA_ARGS__); \
+  }
+
 class Serialization {
   public:
   template <class Archive>

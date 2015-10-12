@@ -59,19 +59,13 @@ struct Collective::MinionPaymentInfo {
   int SERIAL(salary);
   double SERIAL(workAmount);
   int SERIAL(debt);
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(salary) & SVAR(workAmount) & SVAR(debt);
-  }
+  SERIALIZE_ALL(salary, workAmount, debt);
 };
 
 struct Collective::CurrentTaskInfo {
   MinionTask SERIAL(task);
   double SERIAL(finishTime);
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(task) & SVAR(finishTime);
-  }
+  SERIALIZE_ALL(task, finishTime);
 };
 
 template <class Archive>

@@ -64,12 +64,7 @@ class FireScroll : public Item {
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(set);
-  }
-
+  SERIALIZE_ALL2(Item, set);
   SERIALIZATION_CONSTRUCTOR(FireScroll);
 
   private:
@@ -111,13 +106,8 @@ class AmuletOfWarning : public Item {
         owner->playerMessage(getTheName() + " vibrates");
     }
   }
- 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(radius);
-  }
- 
+
+  SERIALIZE_ALL2(Item, radius);
   SERIALIZATION_CONSTRUCTOR(AmuletOfWarning);
 
   private:
@@ -140,13 +130,8 @@ class AmuletOfHealing : public Item {
     } else 
       lastTick = -1;
   }
- 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(lastTick);
-  }
- 
+
+  SERIALIZE_ALL2(Item, lastTick);
   SERIALIZATION_CONSTRUCTOR(AmuletOfHealing);
 
   private:
@@ -159,10 +144,7 @@ class Telepathy : public CreatureVision {
     return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->hasBrain();
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(CreatureVision);
-  }
+  SERIALIZE_SUBCLASS(CreatureVision);
 };
 
 class ItemOfCreatureVision : public Item {
@@ -177,12 +159,7 @@ class ItemOfCreatureVision : public Item {
     c->removeCreatureVision(vision.get());
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(vision);
-  }
-
+  SERIALIZE_ALL2(Item, vision);
   SERIALIZATION_CONSTRUCTOR(ItemOfCreatureVision);
 
   private:
@@ -240,17 +217,7 @@ class Corpse : public Item {
     return corpseInfo;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item) 
-      & SVAR(object2) 
-      & SVAR(rotten)
-      & SVAR(rottenTime)
-      & SVAR(rottingTime)
-      & SVAR(rottenName)
-      & SVAR(corpseInfo);
-  }
-
+  SERIALIZE_ALL2(Item, object2, rotten, rottenTime, rottingTime, rottenName, corpseInfo);
   SERIALIZATION_CONSTRUCTOR(Corpse);
 
   private:
@@ -295,12 +262,7 @@ class Potion : public Item {
     heat = max(0., heat - 0.005);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item) 
-      & SVAR(heat);
-  }
-
+  SERIALIZE_ALL2(Item, heat);
   SERIALIZATION_CONSTRUCTOR(Potion);
 
   private:
@@ -315,12 +277,7 @@ class SkillBook : public Item {
     c->addSkill(Skill::get(skill));
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(skill);
-  }
-
+  SERIALIZE_ALL2(Item, skill);
   SERIALIZATION_CONSTRUCTOR(SkillBook);
 
   private:
@@ -338,13 +295,7 @@ class TechBook : public Item {
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(tech)
-      & SVAR(read);
-  }
-
+  SERIALIZE_ALL2(Item, tech, read);
   SERIALIZATION_CONSTRUCTOR(TechBook);
 
   private:
@@ -366,14 +317,7 @@ class TrapItem : public Item {
     discarded = true;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(effect)
-      & SVAR(trapObject)
-      & SVAR(alwaysVisible);
-  }
-
+  SERIALIZE_ALL2(Item, effect, trapObject, alwaysVisible);
   SERIALIZATION_CONSTRUCTOR(TrapItem);
 
   private:
