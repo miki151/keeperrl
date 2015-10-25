@@ -117,7 +117,7 @@ class Collective : public TaskCallback {
   bool isKnownVillain(const Collective*);
   bool isKnownVillainLocation(const Collective*);
 
-  ~Collective();
+  virtual ~Collective();
 
   void setWarning(Warning, bool state = true);
   bool isWarning(Warning) const;
@@ -340,7 +340,7 @@ class Collective : public TaskCallback {
   map<const Deity*, double> SERIAL(deityStanding);
   Level* SERIAL(level) = nullptr;
   unordered_map<SquareType, set<Position>> SERIAL(mySquares);
-  unordered_map<SquareApplyType, set<Position>> SERIAL(mySquares2);
+  unordered_map<SquareApplyType, set<Position>, CustomHash<SquareApplyType>> SERIAL(mySquares2);
   map<Position, int> SERIAL(squareEfficiency);
   HeapAllocated<Territory> SERIAL(territory);
   struct AlarmInfo {
@@ -361,7 +361,7 @@ class Collective : public TaskCallback {
   void updateConstructions();
   void delayDangerousTasks(const vector<Position>& enemyPos, double delayTime);
   bool isDelayed(Position);
-  unordered_map<Position, double> SERIAL(delayedPos);
+  unordered_map<Position, double, CustomHash<Position>> SERIAL(delayedPos);
   vector<Position> getEnemyPositions() const;
   double manaRemainder = 0;
   double getKillManaScore(const Creature*) const;

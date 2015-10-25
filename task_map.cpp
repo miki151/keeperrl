@@ -136,7 +136,7 @@ bool TaskMap::hasTask(const Creature* c) const {
   if (creatureMap.contains(c))
     return !creatureMap.get(c)->isDone();
   else
-    return nullptr;
+    return false;
 }
 
 Task* TaskMap::getTask(const Creature* c) {

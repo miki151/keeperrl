@@ -17,6 +17,7 @@
 #define _GUI_ELEM
 
 #include "renderer.h"
+#include "drag_and_drop.h"
 
 class ViewObject;
 class Clock;
@@ -42,8 +43,6 @@ class GuiElem {
 
   virtual ~GuiElem();
 
-  static void propagateEvent(const Event&, vector<GuiElem*>);
-
   private:
   Rectangle bounds;
 };
@@ -54,11 +53,16 @@ class GuiFactory {
   void loadFreeImages(const string& path);
   void loadNonFreeImages(const string& path);
 
+  DragContainer& getDragContainer();
+  void propagateEvent(const Event&, vector<GuiElem*>);
+
   PGuiElem button(function<void()> fun, Event::KeyEvent, bool capture = false);
   PGuiElem button(function<void()> fun);
   PGuiElem reverseButton(function<void()> fun, vector<Event::KeyEvent> = {}, bool capture = false);
   PGuiElem button(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
   PGuiElem button(function<void(Rectangle buttonBounds)> fun);
+  PGuiElem releaseButton(function<void()> fun);
+  PGuiElem releaseButton(function<void(Rectangle buttonBounds)> fun);
   PGuiElem focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent,
       vector<Event::KeyEvent> defocusEvent, bool& focused);
   PGuiElem mouseWheel(function<void(bool)>);
@@ -67,6 +71,7 @@ class GuiFactory {
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
+  PGuiElem external(GuiElem*);
   PGuiElem rectangle(sf::Color color, optional<sf::Color> borderColor = none);
   class ListBuilder {
     public:
@@ -101,6 +106,7 @@ class GuiFactory {
   PGuiElem preferredSize(int width, int height);
   enum MarginType { TOP, LEFT, RIGHT, BOTTOM};
   PGuiElem margin(PGuiElem top, PGuiElem rest, int height, MarginType);
+  PGuiElem marginAuto(PGuiElem top, PGuiElem rest, MarginType);
   PGuiElem margin(PGuiElem top, PGuiElem rest, function<int(Rectangle)> width, MarginType type);
   PGuiElem maybeMargin(PGuiElem top, PGuiElem rest, int width, MarginType, function<bool(Rectangle)>);
   PGuiElem marginFit(PGuiElem top, PGuiElem rest, double height, MarginType);
@@ -150,6 +156,8 @@ class GuiFactory {
   PGuiElem stopMouseMovement();
   PGuiElem fullScreen(PGuiElem);
   PGuiElem alignment(PGuiElem, Vec2 size, GuiFactory::Alignment);
+  PGuiElem dragSource(DragContent, function<PGuiElem()>);
+  PGuiElem dragListener(function<void(DragContent)>);
 
   enum class TexId {
     SCROLLBAR,
@@ -244,7 +252,7 @@ class GuiFactory {
     TEAM_BUTTON_HIGHLIGHT,
   };
 
-  PGuiElem icon(IconId);
+  PGuiElem icon(IconId, Alignment = Alignment::CENTER);
   Texture& get(TexId);
   PGuiElem spellIcon(SpellId);
 
@@ -259,6 +267,7 @@ class GuiFactory {
   vector<Texture> spellTextures;
   Clock* clock;
   Renderer& renderer;
+  DragContainer dragContainer;
 };
 
 

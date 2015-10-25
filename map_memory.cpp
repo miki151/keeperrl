@@ -74,7 +74,7 @@ const MapMemory& MapMemory::empty() {
   return mem;
 } 
 
-const unordered_set<Position>& MapMemory::getUpdated(const Level* level) const {
+const unordered_set<Position, CustomHash<Position>>& MapMemory::getUpdated(const Level* level) const {
   return updated[level->getUniqueId()];
 }
 

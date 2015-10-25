@@ -27,14 +27,15 @@ class MinionAction;
 class ListElem;
 struct HighscoreList;
 class Options;
+class MapGui;
 
 class GuiBuilder {
   public:
   enum class GameSpeed;
   struct Callbacks {
-    function<void(UserInput)> inputCallback;
-    function<void(const vector<string>&)> hintCallback;
-    function<void(sf::Event::KeyEvent)> keyboardCallback;
+    function<void(UserInput)> input;
+    function<void(const vector<string>&)> hint;
+    function<void(sf::Event::KeyEvent)> keyboard;
     function<void()> refreshScreen;
   };
   GuiBuilder(Renderer&, GuiFactory&, Clock*, Options*, Callbacks);
@@ -109,6 +110,7 @@ class GuiBuilder {
   PGuiElem drawListGui(const string& title, const vector<ListElem>& options,
       MenuType, int* height, int* highlight, int* choice);
   int getScrollPos(int index, int count);
+  void setMapGui(MapGui*);
 
   private:
   Renderer& renderer;
@@ -119,7 +121,9 @@ class GuiBuilder {
   PGuiElem getHintCallback(const vector<string>&);
   PGuiElem getTooltip(const vector<string>&);
   vector<PGuiElem> drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>&);
-  PGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current);
+  PGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
+  PGuiElem minionButtonsCache;
+  int minionButtonsHash = 0;
   PGuiElem drawMinionPage(const PlayerInfo&);
   PGuiElem drawActivityButton(const PlayerInfo&);
   vector<PGuiElem> drawAttributesOnPage(vector<PGuiElem>&&);
@@ -138,6 +142,9 @@ class GuiBuilder {
   PGuiElem getVillageStateLabel(VillageInfo::Village::State);
   vector<PGuiElem> drawRecruitList(const vector<CreatureInfo>&, CreatureMenuCallback, int budget);
   PGuiElem drawHighscorePage(const HighscoreList&, double *scrollPos);
+  PGuiElem drawTeams(CollectiveInfo&);
+  PGuiElem teamCache;
+  int teamHash = 0;
   int activeBuilding = 0;
   bool hideBuildingOverlay = false;
   int activeLibrary = -1;
@@ -179,6 +186,8 @@ class GuiBuilder {
   vector<PGuiElem> drawButtons(vector<CollectiveInfo::Button> buttons, int& active, CollectiveTab);
   PGuiElem getButtonLine(CollectiveInfo::Button, int num, int& active, CollectiveTab);
   void drawMinionsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
+  PGuiElem minionsOverlayCache;
+  int minionsOverlayHash = 0;
   void drawTasksOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   void drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInfo::Ransom&);
   void drawBuildingsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
@@ -196,6 +205,7 @@ class GuiBuilder {
   vector<string> breakText(const string& text, int maxWidth);
   string getPlayerTitle(PlayerInfo&);
   Event::KeyEvent getHotkeyEvent(char);
+  MapGui* mapGui = nullptr;
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

@@ -347,15 +347,15 @@ class TribeDoor : public Door {
     }
   }
 
-  virtual bool canLock() const {
+  virtual bool canLock() const override {
     return true;
   }
 
-  virtual bool isLocked() const {
+  virtual bool isLocked() const override {
     return locked;
   }
 
-  virtual void lock() {
+  virtual void lock() override {
     CHECK(tribe);
     locked = !locked;
     if (locked) {
@@ -421,7 +421,7 @@ class Furniture : public Square {
     return applyType;
   }
 
-  virtual void onApply(Creature* c) {}
+  virtual void onApply(Creature* c) override {}
 
   SERIALIZE_ALL2(Square, applyType);
   SERIALIZATION_CONSTRUCTOR(Furniture);
@@ -456,7 +456,7 @@ class Grave : public Bed {
   public:
   Grave(const ViewObject& object, const string& name) : Bed(object, name, 0) {}
 
-  virtual bool canApply(const Creature* c) const {
+  virtual bool canApply(const Creature* c) const override {
     return c->isUndead();
   }
 
@@ -485,7 +485,7 @@ class Altar : public Square {
         c.strength = 100;)) {
   }
 
-  virtual bool canApply(const Creature* c) const {
+  virtual bool canApply(const Creature* c) const override {
     return c->isHumanoid();
   }
 
@@ -717,7 +717,7 @@ class Crops : public Square {
       c->globalMessage(c->getName().the() + " scythes the field.");
   }
 
-  virtual double getApplyTime() const {
+  virtual double getApplyTime() const override {
     return 3.0;
   }
 

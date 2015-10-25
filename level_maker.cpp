@@ -2406,7 +2406,7 @@ found:
   private:
 
   int getHash(const vector<Vec2>& boulders, Vec2 curPos) {
-    return std::hash<vector<Vec2>>()(boulders);// + std::hash<Vec2>()(curPos);
+    return combineHash(boulders);// + std::hash<Vec2>()(curPos);
   }
 
   bool isFree(Vec2 pos) {

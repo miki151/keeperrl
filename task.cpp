@@ -71,7 +71,7 @@ class Construction : public Task {
   public:
   Construction(TaskCallback* c, Position pos, const SquareType& _type) : type(_type), position(pos), callback(c) {}
 
-  virtual bool isImpossible(const Level* level) {
+  virtual bool isImpossible(const Level* level) override {
     return !position.canConstruct(type);
   }
 

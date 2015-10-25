@@ -16,6 +16,10 @@ void Position::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Position);
 SERIALIZATION_CONSTRUCTOR_IMPL(Position);
 
+int Position::getHash() const {
+  return combineHash(coord, level->getUniqueId());
+}
+
 Vec2 Position::getCoord() const {
   return coord;
 }

@@ -38,6 +38,7 @@ enum class UserInputId {
     POSSESS,
     BUTTON_RELEASE,
     ADD_TO_TEAM,
+    REMOVE_FROM_TEAM,
     CREATURE_BUTTON,
     CREATURE_GROUP_BUTTON,
     CREATURE_TASK_ACTION,
@@ -49,12 +50,9 @@ enum class UserInputId {
     CREATURE_EXECUTE,
     CREATURE_TORTURE,
     CREATE_TEAM,
-    EDIT_TEAM,
-    CONFIRM_TEAM,
     CANCEL_TEAM,
-    COMMAND_TEAM,
+    SELECT_TEAM,
     ACTIVATE_TEAM,
-    SET_TEAM_LEADER,
     TECHNOLOGY,
     VILLAGE_ACTION,
     GO_TO_VILLAGE,
@@ -84,7 +82,7 @@ struct BuildingInfo {
   SERIALIZE_ALL(pos, building);
 };
 
-struct TeamLeaderInfo {
+struct TeamCreatureInfo {
   TeamId SERIAL(team);
   UniqueEntity<Creature>::Id SERIAL(creatureId);
   SERIALIZE_ALL(team, creatureId);
@@ -125,7 +123,7 @@ struct RenameActionInfo {
 
 enum class SpellId;
 
-class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec2, TeamLeaderInfo,
+class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec2, TeamCreatureInfo,
     SpellId, VillageActionInfo, TaskActionInfo, EquipmentActionInfo, RenameActionInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
@@ -141,15 +139,14 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Inven
             UserInputId::CREATURE_TORTURE,
             UserInputId::CREATURE_WHIP,
             UserInputId::CREATURE_BANISH,
-            UserInputId::ADD_TO_TEAM,
-            UserInputId::EDIT_TEAM,
+            UserInputId::CREATE_TEAM,
             UserInputId::CANCEL_TEAM,
             UserInputId::ACTIVATE_TEAM,
+            UserInputId::SELECT_TEAM,
             UserInputId::PICK_UP_ITEM,
             UserInputId::PICK_UP_ITEM_MULTI,
             UserInputId::MESSAGE_INFO,
-            UserInputId::GO_TO_VILLAGE,
-            UserInputId::COMMAND_TEAM),
+            UserInputId::GO_TO_VILLAGE),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM),
         ASSIGN(Vec2,
@@ -160,8 +157,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Inven
             UserInputId::FIRE,
             UserInputId::RECT_SELECTION,
             UserInputId::RECT_DESELECTION),
-        ASSIGN(TeamLeaderInfo,
-            UserInputId::SET_TEAM_LEADER),
+        ASSIGN(TeamCreatureInfo,
+            UserInputId::ADD_TO_TEAM,
+            UserInputId::REMOVE_FROM_TEAM),
         ASSIGN(SpellId,
             UserInputId::CAST_SPELL),
         ASSIGN(VillageActionInfo,

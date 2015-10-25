@@ -39,6 +39,7 @@ class UserInput;
 class MinionAction;
 struct TaskActionInfo;
 struct EquipmentActionInfo;
+struct TeamCreatureInfo;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
@@ -90,7 +91,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   protected:
   // from CreatureView
-  virtual const Level* getLevel() const;
+  virtual const Level* getLevel() const override;
   virtual const MapMemory& getMemory() const override;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
@@ -139,7 +140,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   Creature* getConsumptionTarget(View*, Creature* consumer);
   void onWorshipEpithet(EpithetId);
   Creature* getCreature(UniqueEntity<Creature>::Id id) const;
-  void handleAddToTeam(Creature* c);
   void controlSingle(const Creature*);
   void commandTeam(TeamId);
   void setScrollPos(Position);
@@ -180,7 +180,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void minionTaskAction(const TaskActionInfo&);
   bool areInSameGroup(Creature*, Creature*) const;
   void fillMinions(CollectiveInfo&) const;
-  vector<PlayerInfo> getMinionGroup(Creature* like) const;
+  vector<Creature*> getMinionsLike(Creature*) const;
+  vector<PlayerInfo> getPlayerInfos(const vector<Creature*>&) const;
   vector<CollectiveInfo::CreatureGroup> getCreatureGroups(vector<Creature*>) const;
   vector<CollectiveInfo::CreatureGroup> getEnemyGroups() const;
   void minionEquipmentAction(const EquipmentActionInfo&);
@@ -203,9 +204,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   const CollectiveTeams& getTeams() const;
 
   mutable unique_ptr<MapMemory> SERIAL(memory);
-  optional<TeamId> getCurrentTeam() const;
-  void setCurrentTeam(optional<TeamId>);
-  optional<TeamId> currentTeam;
   Model* SERIAL(model);
   bool SERIAL(showWelcomeMsg) = true;
   struct SelectionInfo {
@@ -218,8 +216,9 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   int SERIAL(startImpNum) = -1;
   bool SERIAL(retired) = false;
   bool SERIAL(payoutWarning) = false;
-  optional<UniqueEntity<Creature>::Id> SERIAL(chosenCreature);
-  unordered_set<Position> SERIAL(surprises);
+  optional<UniqueEntity<Creature>::Id> chosenCreature;
+  optional<TeamId> chosenTeam;
+  unordered_set<Position, CustomHash<Position>> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
   vector<CollectiveAttack> SERIAL(newAttacks);
@@ -232,7 +231,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<const Creature*> SERIAL(visibleEnemies);
   vector<const Creature*> SERIAL(visibleFriends);
   unordered_set<const Collective*> SERIAL(notifiedConquered);
-  bool newTeam = false;
   HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
   bool firstRender = true;
   bool isNight = true;

@@ -123,16 +123,16 @@ namespace serialization {
 
 // why the f** are these things not implemented by default in boost?
 //unordered_map
-template<class Archive, class T, class U>
-inline void save(Archive& ar, const unordered_map<T, U>& t, unsigned int file_version){
+template<class Archive, class T, class U, class H>
+inline void save(Archive& ar, const unordered_map<T, U, H>& t, unsigned int file_version){
   int count = t.size();
   ar << BOOST_SERIALIZATION_NVP(count);
   for (auto& elem : t)
     ar << boost::serialization::make_nvp("key", elem.first) << boost::serialization::make_nvp("value", elem.second);
 }
 
-template<class Archive, class T, class U>
-inline void load(Archive& ar, unordered_map<T, U>& t, unsigned int){
+template<class Archive, class T, class U, class H>
+inline void load(Archive& ar, unordered_map<T, U, H>& t, unsigned int){
   int count;
   ar >> BOOST_SERIALIZATION_NVP(count);
   t.clear();
@@ -144,8 +144,8 @@ inline void load(Archive& ar, unordered_map<T, U>& t, unsigned int){
   }
 }
 
-template<class Archive, class T, class U>
-inline void serialize(Archive& ar, unordered_map<T, U>& t, unsigned int file_version){
+template<class Archive, class T, class U, class H>
+inline void serialize(Archive& ar, unordered_map<T, U, H>& t, unsigned int file_version){
   boost::serialization::split_free(ar, t, file_version);
 }
 
@@ -239,16 +239,16 @@ inline void serialize(Archive& ar, stack<T>& t, unsigned int file_version){
 }
 
 //unordered_set
-template<class Archive, class T>
-inline void save(Archive& ar, const unordered_set<T>& t, unsigned int file_version){
+template<class Archive, class T, class H>
+inline void save(Archive& ar, const unordered_set<T, H>& t, unsigned int file_version){
   int count = t.size();
   ar << BOOST_SERIALIZATION_NVP(count);
   for (auto elem : t)
     ar << boost::serialization::make_nvp("item", elem);
 }
 
-template<class Archive, class T>
-inline void load(Archive& ar, unordered_set<T>& t, unsigned int){
+template<class Archive, class T, class H>
+inline void load(Archive& ar, unordered_set<T, H>& t, unsigned int){
   int count;
   ar >> BOOST_SERIALIZATION_NVP(count);
   t.clear();
@@ -260,8 +260,8 @@ inline void load(Archive& ar, unordered_set<T>& t, unsigned int){
   }
 }
 
-template<class Archive, class T>
-inline void serialize(Archive& ar, unordered_set<T>& t, unsigned int file_version){
+template<class Archive, class T, class H>
+inline void serialize(Archive& ar, unordered_set<T, H>& t, unsigned int file_version){
   boost::serialization::split_free(ar, t, file_version);
 }
 

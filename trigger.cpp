@@ -121,7 +121,7 @@ class Portal : public Trigger {
   }
 
   virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir,
-      VisionId vision) {
+      VisionId vision) override {
     position.globalMessage(it[0]->getPluralTheNameAndVerb(it.size(), "disappears", "disappear") +
         " in the portal.");
     NOTNULL(getOther())->position.throwItem(std::move(it), a, remainingDist, dir, vision);
@@ -136,13 +136,7 @@ class Portal : public Trigger {
     }
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Trigger)
-      & SVAR(startTime)
-      & SVAR(active)
-      & SVAR(otherPortal);
-  }
+  SERIALIZE_ALL2(Trigger, startTime, active, otherPortal);
 
   SERIALIZATION_CONSTRUCTOR(Portal);
 
@@ -166,7 +160,7 @@ class Trap : public Trigger {
       : Trigger(obj, position), effect(_effect), tribe(_tribe), alwaysVisible(visible) {
   }
 
-  virtual optional<ViewObject> getViewObject(const Tribe* t) const {
+  virtual optional<ViewObject> getViewObject(const Tribe* t) const override {
     if (alwaysVisible || t == tribe)
       return viewObject;
     else
@@ -192,14 +186,7 @@ class Trap : public Trigger {
     }
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Trigger) 
-      & SVAR(effect)
-      & SVAR(tribe)
-      & SVAR(alwaysVisible);
-  }
-
+  SERIALIZE_ALL2(Trigger, effect, tribe, alwaysVisible);
   SERIALIZATION_CONSTRUCTOR(Trap);
 
   private:
@@ -225,11 +212,7 @@ class Torch : public Trigger {
     return 8.2;
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Trigger);
-  }
-
+  SERIALIZE_SUBCLASS(Trigger);
   SERIALIZATION_CONSTRUCTOR(Torch);
 };
 
@@ -282,11 +265,7 @@ class MeteorShower : public Trigger {
     return true;
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Trigger) & SVAR(creature) & SVAR(endTime);
-  }
-
+  SERIALIZE_ALL2(Trigger, creature, endTime);
   SERIALIZATION_CONSTRUCTOR(MeteorShower);
 
   private:

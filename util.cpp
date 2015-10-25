@@ -186,13 +186,6 @@ bool contains(const string& s, const string& p) {
   return s.find(p) != string::npos;
 }
 
-template <class Archive> 
-void Vec2::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(x) & BOOST_SERIALIZATION_NVP(y);
-}
-
-SERIALIZABLE(Vec2);
-
 Vec2::Vec2(int _x, int _y) : x(_x), y(_y) {
 }
 

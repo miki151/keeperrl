@@ -68,7 +68,6 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(retired)
     & SVAR(payoutWarning)
     & SVAR(surprises)
-    & SVAR(chosenCreature)
     & SVAR(newAttacks)
     & SVAR(ransomAttacks)
     & SVAR(messages)
@@ -914,35 +913,42 @@ vector<Collective*> PlayerControl::getKnownVillains(VillainType type) const {
       return seeEverything || getCollective()->isKnownVillain(c);});
 }
 
-vector<PlayerInfo> PlayerControl::getMinionGroup(Creature* like) const {
-  vector<PlayerInfo> minions;
+vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
+  vector<Creature*> minions;
   for (Creature* c : getCreatures())
-    if (c->getSpeciesName() == like->getSpeciesName()) {
-      minions.emplace_back();
-      minions.back().readFrom(c);
-      for (MinionTask t : ENUM_ALL(MinionTask))
-        if (c->getMinionTasks().getValue(t, true) > 0) {
-          minions.back().minionTasks.push_back({t,
-              !getCollective()->isMinionTaskPossible(c, t),
-              getCollective()->getMinionTask(c) == t,
-              c->getMinionTasks().isLocked(t)});
-        }
-      minions.back().creatureId = c->getUniqueId();
-      if (getCollective()->usesEquipment(c))
-        fillEquipment(c, minions.back());
-      if (getCollective()->hasTrait(c, MinionTrait::PRISONER))
-        minions.back().actions = { PlayerInfo::EXECUTE, PlayerInfo::TORTURE };
-      else {
-        minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
-        if (c != getCollective()->getLeader()) {
-          minions.back().actions.push_back(PlayerInfo::BANISH);
-          if (getCollective()->canWhip(c))
-            minions.back().actions.push_back(PlayerInfo::WHIP);
-        }
+    if (c->getSpeciesName() == like->getSpeciesName())
+      minions.push_back(c);
+  return minions;
+}
+
+vector<PlayerInfo> PlayerControl::getPlayerInfos(const vector<Creature*>& creatures) const {
+  vector<PlayerInfo> minions;
+  for (Creature* c : creatures) {
+    minions.emplace_back();
+    minions.back().readFrom(c);
+    for (MinionTask t : ENUM_ALL(MinionTask))
+      if (c->getMinionTasks().getValue(t, true) > 0) {
+        minions.back().minionTasks.push_back({t,
+            !getCollective()->isMinionTaskPossible(c, t),
+            getCollective()->getMinionTask(c) == t,
+            c->getMinionTasks().isLocked(t)});
+      }
+    minions.back().creatureId = c->getUniqueId();
+    if (getCollective()->usesEquipment(c))
+      fillEquipment(c, minions.back());
+    if (getCollective()->hasTrait(c, MinionTrait::PRISONER))
+      minions.back().actions = { PlayerInfo::EXECUTE, PlayerInfo::TORTURE };
+    else {
+      minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
+      if (c != getCollective()->getLeader()) {
+        minions.back().actions.push_back(PlayerInfo::BANISH);
+        if (getCollective()->canWhip(c))
+          minions.back().actions.push_back(PlayerInfo::WHIP);
       }
     }
+  }
   sort(minions.begin(), minions.end(), [] (const PlayerInfo& m1, const PlayerInfo& m2) {
-        return m1.level > m2.level;
+      return m1.level > m2.level || (m1.level == m2.level && m1.creatureId > m2.creatureId);
       });
   return minions;
 }
@@ -955,7 +961,7 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<Cr
     if (!groups.count(c->getSpeciesName()))
       groups[c->getSpeciesName()] = { c->getUniqueId(), c->getSpeciesName(), c->getViewObject().id(), 0};
     ++groups[c->getSpeciesName()].count;
-    if (chosenCreature == c->getUniqueId())
+    if (chosenCreature == c->getUniqueId() && !chosenTeam)
       groups[c->getSpeciesName()].highlight = true;
 
   }
@@ -1006,8 +1012,12 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.libraryButtons = fillButtons(libraryInfo);
   fillMinions(info);
   if (chosenCreature)
-    if (Creature* c = getCreature(*chosenCreature))
-      info.chosen = {*chosenCreature, getMinionGroup(c)};
+    if (Creature* c = getCreature(*chosenCreature)) {
+      if (!chosenTeam)
+        info.chosen = {*chosenCreature, getPlayerInfos(getMinionsLike(c))};
+      else
+        info.chosen = {*chosenCreature, getPlayerInfos(getTeams().getMembers(*chosenTeam)), *chosenTeam};
+    }
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemyGroups = getEnemyGroups();
   info.numResource.clear();
@@ -1017,9 +1027,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
           {getResourceViewId(elem.first), getCollective()->numResourcePlusDebt(elem.first), elem.second.name});
   info.warning = "";
   gameInfo.time = getCollective()->getTime();
-  info.currentTeam.reset();
   info.teams.clear();
-  info.newTeam = newTeam;
   for (int i : All(getTeams().getAll())) {
     TeamId team = getTeams().getAll()[i];
     info.teams.emplace_back();
@@ -1027,8 +1035,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
       info.teams.back().members.push_back(c->getUniqueId());
     info.teams.back().active = getTeams().isActive(team);
     info.teams.back().id = team;
-    if (getCurrentTeam() == team)
-      info.currentTeam = i;
+    if (chosenTeam == team)
+      info.teams.back().highlight = true;
   }
   info.techButtons.clear();
   for (TechInfo tech : getTechInfo())
@@ -1105,17 +1113,6 @@ static const ViewObject& getConstructionObject(SquareType type) {
     objects.at(type).setModifier(ViewObject::Modifier::PLANNED);
   }
   return objects.at(type);
-}
-
-void PlayerControl::setCurrentTeam(optional<TeamId> team) {
-  currentTeam = team;
-}
-
-optional<TeamId> PlayerControl::getCurrentTeam() const {
-  if (currentTeam && getTeams().exists(*currentTeam))
-    return currentTeam;
-  else
-    return none;
 }
 
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
@@ -1220,7 +1217,7 @@ class MinionController : public Player {
     unpossess();
   }
 
-  virtual vector<Creature*> getTeam() const {
+  virtual vector<Creature*> getTeam() const override {
     return control->getTeam(getCreature());
   }
 
@@ -1265,22 +1262,6 @@ Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) const {
     if (c->getUniqueId() == id)
       return c;
   return nullptr;
-}
-
-void PlayerControl::handleAddToTeam(Creature* c) {
-  if (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader()) {
-    if (!getCurrentTeam()) {
-      setCurrentTeam(getTeams().create({c}));
-      getTeams().activate(*getCurrentTeam());
-      newTeam = false;
-    }
-    else if (getTeams().contains(*getCurrentTeam(), c)) {
-      getTeams().remove(*getCurrentTeam(), c);
- /*     if (!getCurrentTeam())  // team disappeared so it was the last minion in it
-        newTeam = true;*/
-    } else
-      getTeams().add(*getCurrentTeam(), c);
-  }
 }
 
 vector<Creature*> PlayerControl::getTeam(const Creature* c) {
@@ -1362,26 +1343,26 @@ void PlayerControl::processInput(View* view, UserInput input) {
             scrollToMiddle(col->getTerritory().getAll());
         }
         break;
-    case UserInputId::CONFIRM_TEAM:
-        setCurrentTeam(none);
-        break;
-    case UserInputId::EDIT_TEAM:
-        setCurrentTeam(input.get<TeamId>());
-        newTeam = false;
-        setScrollPos(getTeams().getLeader(input.get<TeamId>())->getPosition());
-        break;
     case UserInputId::CREATE_TEAM:
-        newTeam = !newTeam;
-        setCurrentTeam(none);
-        break;
-    case UserInputId::COMMAND_TEAM:
-        if (!getCurrentTeam() || getTeams().getMembers(*getCurrentTeam()).empty())
-          break;
-        commandTeam(*getCurrentTeam());
-        setCurrentTeam(none);
+        if (Creature* c = getCreature(input.get<int>()))
+          if (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader())
+            getTeams().create({c});
         break;
     case UserInputId::CANCEL_TEAM:
+        if (chosenTeam == input.get<TeamId>()) {
+          chosenTeam = none;
+          chosenCreature = none;
+        }
         getTeams().cancel(input.get<TeamId>());
+        break;
+    case UserInputId::SELECT_TEAM:
+        if (chosenTeam == input.get<TeamId>()) {
+          chosenTeam = none;
+          chosenCreature = none;
+        } else {
+          chosenTeam = input.get<TeamId>();
+          chosenCreature = getTeams().getLeader(input.get<TeamId>())->getUniqueId();
+        }
         break;
     case UserInputId::ACTIVATE_TEAM:
         if (!getTeams().isActive(input.get<TeamId>()))
@@ -1389,11 +1370,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         else
           getTeams().deactivate(input.get<TeamId>());
         break;
-    case UserInputId::SET_TEAM_LEADER:
-        if (Creature* c = getCreature(input.get<TeamLeaderInfo>().creatureId))
-          getTeams().setLeader(input.get<TeamLeaderInfo>().team, c);
-        break;
-    case UserInputId::MOVE_TO:
+/*    case UserInputId::MOVE_TO:
         if (getCurrentTeam() && getTeams().isActive(*getCurrentTeam()) &&
             getCollective()->isKnownSquare(Position(input.get<Vec2>(), getLevel()))) {
           getCollective()->freeTeamMembers(*getCurrentTeam());
@@ -1401,26 +1378,30 @@ void PlayerControl::processInput(View* view, UserInput input) {
               Task::goTo(Position(input.get<Vec2>(), getLevel())), true);
  //         view->continueClock();
         }
-        break;
+        break;*/
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DEITIES: Encyclopedia().deity(view, Deity::getDeities()[input.get<int>()]); break;
     case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
     case UserInputId::CREATURE_GROUP_BUTTON: 
         if (Creature* c = getCreature(input.get<int>()))
-          if (!chosenCreature || getCreature(*chosenCreature)->getSpeciesName() != c->getSpeciesName()) {
+          if (!chosenCreature || chosenTeam ||
+              getCreature(*chosenCreature)->getSpeciesName() != c->getSpeciesName()) {
+            chosenTeam = none;
             chosenCreature = input.get<int>();
             break;
           }
+        chosenTeam = none;
         chosenCreature = none;
         break;
-    case UserInputId::CREATURE_BUTTON: 
+    case UserInputId::CREATURE_BUTTON:
         if (Creature* c = getCreature(input.get<int>())) {
-          if (getCurrentTeam() || newTeam)
-            handleAddToTeam(c);
-          else 
-            chosenCreature = input.get<int>();
-        } else
+          chosenCreature = input.get<int>();
+          if (chosenTeam && !getTeams().contains(*chosenTeam, c))
+            chosenTeam = none;
+        } else {
           chosenCreature = none;
+          chosenTeam = none;
+        }
         break;
     case UserInputId::CREATURE_TASK_ACTION:
         minionTaskAction(input.get<TaskActionInfo>());
@@ -1430,8 +1411,13 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::CREATURE_CONTROL:
         if (Creature* c = getCreature(input.get<int>())) {
-          controlSingle(c);
+          if (chosenTeam && getTeams().exists(*chosenTeam)) {
+            getTeams().setLeader(*chosenTeam, c);
+            commandTeam(*chosenTeam);
+          } else
+            controlSingle(c);
           chosenCreature = none;
+          chosenTeam = none;
         }
         break;
     case UserInputId::CREATURE_RENAME:
@@ -1462,10 +1448,25 @@ void PlayerControl::processInput(View* view, UserInput input) {
           chosenCreature = none;
         }
         break;
-    case UserInputId::ADD_TO_TEAM: 
-        if (Creature* c = getCreature(input.get<int>()))
-          handleAddToTeam(c);
-        break;
+    case UserInputId::ADD_TO_TEAM: {
+        auto info = input.get<TeamCreatureInfo>();
+        if (Creature* c = getCreature(info.creatureId))
+          if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) &&
+              (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader()))
+            getTeams().add(info.team, c);
+        break; }
+    case UserInputId::REMOVE_FROM_TEAM: {
+        auto info = input.get<TeamCreatureInfo>();
+        if (Creature* c = getCreature(info.creatureId))
+          if (getTeams().exists(info.team) && getTeams().contains(info.team, c)) {
+            getTeams().remove(info.team, c);
+            if (!getTeams().exists(info.team) && chosenTeam == info.team) {
+              chosenTeam = none;
+              chosenCreature = none;
+            } else if (chosenCreature == info.creatureId)
+              chosenCreature = getTeams().getLeader(info.team)->getUniqueId();
+          }
+        break; }
     case UserInputId::POSSESS: {
         Vec2 pos = input.get<Vec2>();
         if (pos.inRectangle(getLevel()->getBounds()))

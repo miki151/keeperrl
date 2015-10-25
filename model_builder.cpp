@@ -950,10 +950,11 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random,
   top->landCreature(StairKey::keeperSpawn(), c.get());
   m->addCreature(std::move(c));
   m->playerControl->addKeeper(ref);
-  for (int i : Range(4)) {
-    PCreature c = CreatureFactory::fromId(CreatureId::SOKOBAN_BOULDER, m->tribeSet->keeper.get(),
+  for (int i : Range(16)) {
+    PCreature c = CreatureFactory::fromId(CreatureId::ORC, m->tribeSet->keeper.get(),
         MonsterAIFactory::collective(m->playerCollective));
     top->landCreature(StairKey::keeperSpawn(), c.get());
+    m->playerCollective->addCreature(c.get(), {MinionTrait::FIGHTER});
     m->addCreature(std::move(c));
   }
   for (int i : Range(4)) {

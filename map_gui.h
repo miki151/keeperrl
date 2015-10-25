@@ -38,6 +38,7 @@ class MapGui : public GuiElem {
     function<void(Vec2)> rightClickFun;
     function<void(UniqueEntity<Creature>::Id)> creatureClickFun;
     function<void()> refreshFun;
+    function<void(UniqueEntity<Creature>::Id, ViewId, Vec2)> creatureDragFun;
   };
   MapGui(Callbacks, Clock*, Options*);
 
@@ -61,6 +62,9 @@ class MapGui : public GuiElem {
   bool isCentered() const;
   Vec2 getScreenPos() const;
   optional<Vec2> projectOnMap(Vec2 screenCoord);
+  void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
+  void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
+  optional<Color> getCreatureHighlight(UniqueEntity<Creature>::Id, int curTime);
 
   private:
   void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, int currentTimeReal,
@@ -87,6 +91,12 @@ class MapGui : public GuiElem {
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, int curTimeReal);
   Vec2 projectOnScreen(Vec2 wpos, int currentTimeReal);
   bool considerCreatureClick(Vec2 mousePos);
+  struct CreatureInfo {
+    Rectangle bounds;
+    UniqueEntity<Creature>::Id id;
+    ViewId viewId;
+  };
+  optional<CreatureInfo&> getCreature(Vec2 mousePos);
   void considerMapLeftClick(Vec2 mousePos);
   MapLayout* layout;
   Table<optional<ViewIndex>> objects;
@@ -96,6 +106,7 @@ class MapGui : public GuiElem {
   double lastRenderTime = 0;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
+  bool mouseDragging = false;
   optional<Vec2> lastMapLeftClick;
   vector<string> hint;
   struct AnimationInfo {
@@ -139,13 +150,14 @@ class MapGui : public GuiElem {
   bool keyScrolling = false;
   ViewIdMap connectionMap;
   bool mouseUI = false;
-  vector<pair<Rectangle, UniqueEntity<Creature>::Id>> creatureMap;
+  vector<CreatureInfo> creatureMap;
   bool showMorale;
   DirtyTable<bool> enemyPositions;
   void updateEnemyPositions(const vector<Vec2>&);
   bool lockedView = true;
   int lastRightClick = -10000;
   bool displayScrollHint = false;
+  map<UniqueEntity<Creature>::Id, int> teamHighlight;
 };
 
 #endif

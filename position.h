@@ -112,21 +112,13 @@ class Position {
   optional<Position> getStairsTo(Position) const;
 
   SERIALIZATION_DECL(Position);
+  int getHash() const;
 
   private:
   Square* getSquare() const;
   Vec2 SERIAL(coord);
   Level* SERIAL(level) = nullptr;
 };
-
-namespace std {
-
-template <> struct hash<Position> {
-  size_t operator()(const Position& obj) const {
-    return hash<Vec2>()(obj.getCoord());
-  }
-};
-}
 
 
 #endif

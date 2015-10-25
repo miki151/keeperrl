@@ -60,6 +60,16 @@ void MapGui::ViewIdMap::clear() {
   ids.clear();
 }
 
+void MapGui::highlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
+  for (auto& id : ids)
+    ++teamHighlight[id];
+}
+
+void MapGui::unhighlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
+  for (auto& id : ids)
+    CHECK(--teamHighlight[id] >= 0);
+}
+
 Vec2 MapGui::getScreenPos() const {
   return Vec2((center.x - mouseOffset.x) * layout->getSquareSize().x,
       (center.y - mouseOffset.y) * layout->getSquareSize().y);
@@ -220,6 +230,11 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
 
 bool MapGui::onLeftClick(Vec2 v) {
   if (v.inRectangle(getBounds())) {
+    if (auto c = getCreature(v)) {
+      callbacks.creatureDragFun(c->id, c->viewId, v);
+      mouseDragging = true;
+    } else
+      mouseDragging = false;
     mouseHeldPos = v;
     mouseOffset.x = mouseOffset.y = 0;
     return true;
@@ -258,7 +273,7 @@ void MapGui::considerMapLeftClick(Vec2 mousePos) {
 
 bool MapGui::onMouseMove(Vec2 v) {
   lastMouseMove = v;
-  if (v.inRectangle(getBounds()) && mouseHeldPos)
+  if (v.inRectangle(getBounds()) && mouseHeldPos && !mouseDragging)
     considerMapLeftClick(v);
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
@@ -272,18 +287,16 @@ bool MapGui::onMouseMove(Vec2 v) {
   return false;
 }
 
-bool MapGui::considerCreatureClick(Vec2 mousePos) {
+optional<MapGui::CreatureInfo&> MapGui::getCreature(Vec2 mousePos) {
   for (auto& elem : creatureMap)
-    if (mousePos.inRectangle(elem.first)) {
-      callbacks.creatureClickFun(elem.second);
-      return true;
-    }
-  return false;
+    if (mousePos.inRectangle(elem.bounds))
+      return elem;
+  return none;
 }
 
 void MapGui::onMouseRelease(Vec2 v) {
   if (isScrollingNow) {
-    if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1 && !considerCreatureClick(lastMousePos))
+    if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1)
       callbacks.rightClickFun(layout->projectOnMap(getBounds(), getScreenPos(), lastMousePos));
     else {
       center.x -= mouseOffset.x;
@@ -293,11 +306,17 @@ void MapGui::onMouseRelease(Vec2 v) {
     callbacks.refreshFun();
     mouseOffset.x = mouseOffset.y = 0;
   }
-  if (mouseHeldPos) {
-    if (mouseHeldPos->distD(v) > 10 || !considerCreatureClick(*mouseHeldPos))
+  if (mouseHeldPos && !mouseDragging) {
+    if (mouseHeldPos->distD(v) > 10)
       considerMapLeftClick(v);
-    mouseHeldPos = none;
+    else {
+      if (auto c = getCreature(*mouseHeldPos))
+        callbacks.creatureClickFun(c->id);
+      else    
+        considerMapLeftClick(v);
+    }
   }
+  mouseHeldPos = none;
   lastMapLeftClick = none;
 }
 
@@ -386,6 +405,16 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
     renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::YELLOW]);
   }
+  if (object.getCreatureId())
+    if (auto color = getCreatureHighlight(*object.getCreatureId(), curTime))
+      renderer.drawFilledRectangle(tile, Color::Transparent, *color);
+}
+
+optional<Color> MapGui::getCreatureHighlight(UniqueEntity<Creature>::Id creature, int curTime) {
+  if (teamHighlight[creature] > 0)
+    return colors[ColorId::YELLOW];
+  else
+    return none;
 }
 
 static bool mirrorSprite(ViewId id) {
@@ -453,7 +482,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       if (auto coord = tile.getHighlightCoord())
         renderer.drawTile(pos + move, *coord, size, color);
     if (auto id = object.getCreatureId())
-      creatureMap.emplace_back(Rectangle(pos + move, pos + move + size), *id);
+      creatureMap.push_back(CreatureInfo{Rectangle(pos + move, pos + move + size), *id, object.id()});
     if (tile.hasCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, coord, size, color);
@@ -478,7 +507,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y, Tile::getColor(object),
         tilePos.x, tilePos.y, tile.text, Renderer::HOR);
     if (auto id = object.getCreatureId())
-      creatureMap.emplace_back(Rectangle(tilePos, tilePos + size), *id);
+      creatureMap.push_back(CreatureInfo{Rectangle(tilePos, tilePos + size), *id, object.id()});
     double burningVal = object.getAttribute(ViewObject::Attribute::BURNING);
     if (burningVal > 0) {
       renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'ѡ',

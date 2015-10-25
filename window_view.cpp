@@ -127,14 +127,20 @@ void WindowView::initialize() {
   else
     currentTileLayout = asciiLayouts;
   mapGui = new MapGui({
-      [this](Vec2 pos) { mapLeftClickFun(pos); },
-      [this](Vec2 pos) { mapRightClickFun(pos); },
-      [this](UniqueEntity<Creature>::Id id) { mapCreatureClickFun(id); },
-      [this] { refreshInput = true;}}, clock, options );
+      bindMethod(&WindowView::mapLeftClickFun, this),
+      bindMethod(&WindowView::mapRightClickFun, this),
+      bindMethod(&WindowView::mapCreatureClickFun, this),
+      [this] { refreshInput = true;},
+      bindMethod(&WindowView::mapCreatureDragFun, this)}, clock, options );
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = gui.border2(gui.rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
   guiBuilder.setTilesOk(useTiles);
+  guiBuilder.setMapGui(mapGui);
+}
+
+void WindowView::mapCreatureDragFun(UniqueEntity<Creature>::Id id, ViewId viewId, Vec2 origin) {
+  gui.getDragContainer().put({DragContentId::CREATURE, id}, gui.viewObject(viewId, useTiles), origin);
 }
 
 void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
@@ -558,6 +564,12 @@ void WindowView::refreshView() {
 void WindowView::drawMap() {
   for (GuiElem* gui : getAllGuiElems())
     gui->render(renderer);
+  Vec2 mousePos = renderer.getMousePos();
+  if (GuiElem* dragged = gui.getDragContainer().getGui())
+    if (gui.getDragContainer().getOrigin().dist8(mousePos) > 30) {
+      dragged->setBounds(Rectangle(mousePos + Vec2(15, 15), mousePos + Vec2(35, 35)));
+      dragged->render(renderer);
+    }
   guiBuilder.addFpsCounterTick();
 }
 
@@ -1157,7 +1169,7 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       break;
     default:break;
   }
-  GuiElem::propagateEvent(event, guiElems);
+  gui.propagateEvent(event, guiElems);
 }
 
 UserInputId getDirActionId(const Event::KeyEvent& key) {

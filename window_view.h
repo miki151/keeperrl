@@ -78,7 +78,7 @@ class WindowView: public View {
       pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos) override;
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
       const vector<ItemInfo>&, double* scrollPos) override;
-  virtual void presentHighscores(const vector<HighscoreList>&);
+  virtual void presentHighscores(const vector<HighscoreList>&) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
   virtual int getTimeMilli() override;
@@ -101,6 +101,7 @@ class WindowView: public View {
   void updateMinimap(const CreatureView*);
   void mapLeftClickFun(Vec2);
   void mapCreatureClickFun(UniqueEntity<Creature>::Id);
+  void mapCreatureDragFun(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   void mapRightClickFun(Vec2);
   Rectangle getTextInputPosition();
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
