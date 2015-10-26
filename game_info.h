@@ -238,7 +238,7 @@ class GameSunlightInfo {
 class GameInfo {
   public:
   enum class InfoType { PLAYER, BAND, SPECTATOR} HASH(infoType) = InfoType::PLAYER;
-  double HASH(time);
+  int HASH(time);
 
   CollectiveInfo HASH(collectiveInfo);
   PlayerInfo HASH(playerInfo);

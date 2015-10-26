@@ -112,6 +112,7 @@ class WindowView: public View {
   PGuiElem drawGameChoices(optional<GameTypeChoice>& choice, optional<GameTypeChoice>& index);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
+  int lastGuiHash = 0;
   void drawMap();
   void propagateEvent(const Event& event, vector<GuiElem*>);
   void keyboardAction(Event::KeyEvent key);

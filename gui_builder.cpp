@@ -327,7 +327,7 @@ PGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
       gui.centerHoriz(gui.horizontalList(std::move(bottomLine), 140, 3), numBottom * 140)), 28);
 }
 
-string GuiBuilder::getGameSpeedName(GuiBuilder::GameSpeed gameSpeed) const {
+const char* GuiBuilder::getGameSpeedName(GuiBuilder::GameSpeed gameSpeed) const {
   switch (gameSpeed) {
     case GameSpeed::SLOW: return "slow";
     case GameSpeed::NORMAL: return "normal";
@@ -336,7 +336,7 @@ string GuiBuilder::getGameSpeedName(GuiBuilder::GameSpeed gameSpeed) const {
   }
 }
 
-string GuiBuilder::getCurrentGameSpeedName() const {
+const char* GuiBuilder::getCurrentGameSpeedName() const {
   if (clock->isPaused())
     return "paused";
   else
@@ -352,12 +352,10 @@ PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, VillageInfo& villag
           numSeenVillains < villageInfo.villages.size() ? gui.icon(gui.CLICK_TAB) : gui.empty()),
       gui.icon(gui.HELP));
   for (int i : All(buttons)) {
-    if (int(collectiveTab) == i)
-      buttons[i] = gui.border2(std::move(buttons[i]));
-    else
-      buttons[i] = gui.margins(std::move(buttons[i]), 6, 6, 6, 6);
-    buttons[i] = gui.stack(std::move(buttons[i]),
-        gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }));
+    buttons[i] = gui.stack(
+        std::move(buttons[i]),
+        gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }),
+        gui.conditional(gui.border2(), [this, i] (GuiElem*) { return int(collectiveTab) == i;}));
   }
   vector<pair<CollectiveTab, PGuiElem>> elems = makeVec<pair<CollectiveTab, PGuiElem>>(
       make_pair(CollectiveTab::MINIONS, drawMinions(info)),
@@ -366,11 +364,10 @@ PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, VillageInfo& villag
       make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(info)),
       make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
   vector<PGuiElem> tabs;
-  for (auto& elem : elems)
-    if (elem.first == collectiveTab)
-      tabs.push_back(std::move(elem.second));
-    else
-      tabs.push_back(gui.invisible(std::move(elem.second)));
+  for (auto& elem : elems) {
+    auto tab = elem.first;
+    tabs.push_back(gui.conditional(std::move(elem.second), [tab, this] (GuiElem*) { return tab == collectiveTab;}));
+  }
   PGuiElem main = gui.stack(std::move(tabs));
   main = gui.margins(std::move(main), 15, 15, 15, 5);
   int numButtons = buttons.size();
@@ -380,11 +377,11 @@ PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, VillageInfo& villag
   bottomLine.push_back(gui.stack(
       gui.horizontalList(makeVec<PGuiElem>(
           gui.label("speed:"),
-          gui.label(getCurrentGameSpeedName(),
-              colors[clock->isPaused() ? ColorId::RED : ColorId::WHITE])), 60),
+          gui.label([this] { return getCurrentGameSpeedName();},
+              [this] { return colors[clock->isPaused() ? ColorId::RED : ColorId::WHITE]; })), 60),
       gui.button([&] { gameSpeedDialogOpen = !gameSpeedDialogOpen; })));
   bottomLine.push_back(
-      gui.label("FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()),
+      gui.label([this]()->string { return "FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()); },
       colors[ColorId::WHITE]));
   PGuiElem bottomElem = gui.horizontalList(std::move(bottomLine), 160);
   main = gui.margin(gui.margins(std::move(bottomElem), 25, 0, 0, 0),
@@ -440,8 +437,8 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
   Vec2 size(150 + 2 * margin, legendLineHeight * lines.size() - 10 + 2 * margin);
   PGuiElem dialog = gui.miniWindow(
       gui.margins(gui.verticalList(std::move(lines), legendLineHeight), margin, margin, margin, margin));
-  overlays.push_back({std::move(dialog), size,
-      gameSpeedDialogOpen ? OverlayInfo::GAME_SPEED : OverlayInfo::INVISIBLE});
+  overlays.push_back({gui.conditional(std::move(dialog), [this] { return gameSpeedDialogOpen; }), size,
+      OverlayInfo::GAME_SPEED});
 }
 
 PGuiElem GuiBuilder::getSunlightInfoGui(GameSunlightInfo& sunlightInfo) {
@@ -870,12 +867,10 @@ PGuiElem GuiBuilder::drawRightPlayerInfo(PlayerInfo& info) {
     gui.icon(gui.DIPLOMACY),
     gui.icon(gui.HELP));
   for (int i : All(buttons)) {
-    if (int(minionTab) == i)
-      buttons[i] = gui.border2(std::move(buttons[i]));
-    else
-      buttons[i] = gui.margins(std::move(buttons[i]), 6, 6, 6, 6);
-    buttons[i] = gui.stack(std::move(buttons[i]),
-        gui.button([this, i]() { minionTab = MinionTab(i); }));
+    buttons[i] = gui.stack(
+        std::move(buttons[i]),
+        gui.button([this, i]() { minionTab = MinionTab(i); }),
+        gui.conditional(gui.border2(), [this, i] (GuiElem*) { return int(minionTab) == i;}));
   }
   PGuiElem main;
   vector<pair<MinionTab, PGuiElem>> elems = makeVec<pair<MinionTab, PGuiElem>>(

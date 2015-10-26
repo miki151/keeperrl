@@ -166,8 +166,8 @@ class GuiBuilder {
   MinionTab minionTab = MinionTab::INVENTORY;
   bool gameSpeedDialogOpen = false;
   atomic<GameSpeed> gameSpeed;
-  string getGameSpeedName(GameSpeed) const;
-  string getCurrentGameSpeedName() const;
+  const char* getGameSpeedName(GameSpeed) const;
+  const char* getCurrentGameSpeedName() const;
   
   class FpsCounter {
     public:

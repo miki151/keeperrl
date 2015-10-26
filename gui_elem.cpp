@@ -344,6 +344,26 @@ PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun) {
         }, width));
 }
 
+PGuiElem GuiFactory::label(function<const char*()> textFun, function<Color()> colorFun) {
+  auto width = [=] { return renderer.getTextLength(textFun()); };
+  return PGuiElem(new DrawCustom(
+        [=] (Renderer& r, Rectangle bounds) {
+          r.drawText(transparency(colors[ColorId::BLACK], 100),
+            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, textFun());
+          r.drawText(colorFun(), bounds.getTopLeft().x, bounds.getTopLeft().y, textFun());
+        }, width));
+}
+
+PGuiElem GuiFactory::label(function<string()> textFun, Color color) {
+  auto width = [=] { return renderer.getTextLength(textFun()); };
+  return PGuiElem(new DrawCustom(
+        [=] (Renderer& r, Rectangle bounds) {
+          r.drawText(transparency(colors[ColorId::BLACK], 100),
+            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, textFun());
+          r.drawText(color, bounds.getTopLeft().x, bounds.getTopLeft().y, textFun());
+        }, width));
+}
+
 PGuiElem GuiFactory::label(const string& s, int size, Color c) {
   auto width = [=] { return renderer.getTextLength(s); };
   return PGuiElem(new DrawCustom(
@@ -1839,6 +1859,10 @@ class Conditional : public GuiLayout {
   function<bool(GuiElem*)> cond;
 };
 
+PGuiElem GuiFactory::conditional(PGuiElem elem, function<bool()> f) {
+  return PGuiElem(new Conditional(std::move(elem), [f](GuiElem*) { return f(); }));
+}
+
 PGuiElem GuiFactory::conditional(PGuiElem elem, function<bool(GuiElem*)> f) {
   return PGuiElem(new Conditional(std::move(elem), f));
 }
@@ -1885,9 +1909,9 @@ PGuiElem GuiFactory::mainMenuHighlight() {
       sprite(get(TexId::MAIN_MENU_HIGHLIGHT), Alignment::RIGHT_STRETCHED, false, true));
 }
 
-PGuiElem GuiFactory::border2(PGuiElem content) {
+PGuiElem GuiFactory::border2() {
   double alpha = 1;
-  return stack(makeVec<PGuiElem>(std::move(content),
+  return stack(makeVec<PGuiElem>(
         sprite(get(TexId::BORDER_TOP), Alignment::TOP, false, false, Vec2(border2Width, 0), alpha),
         sprite(get(TexId::BORDER_BOTTOM), Alignment::BOTTOM, false, false, Vec2(border2Width, 0), alpha),
         sprite(get(TexId::BORDER_LEFT), Alignment::LEFT, false, false, Vec2(0, border2Width), alpha),

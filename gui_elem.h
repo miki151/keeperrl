@@ -119,6 +119,8 @@ class GuiFactory {
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem label(const string&, function<Color()>);
+  PGuiElem label(function<const char*()>, function<Color()>);
+  PGuiElem label(function<string()>, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, Color = colors[ColorId::WHITE]);
   PGuiElem variableLabel(function<string()>,
@@ -144,6 +146,7 @@ class GuiFactory {
   PGuiElem scrollable(PGuiElem content, double* scrollPos = nullptr, int* held = nullptr);
   PGuiElem getScrollButton();
   PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
+  PGuiElem conditional(PGuiElem elem, function<bool()> cond);
   PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER,
       TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER, LEFT_STRETCHED, RIGHT_STRETCHED,
@@ -213,7 +216,7 @@ class GuiFactory {
   PGuiElem miniWindow(PGuiElem content);
   PGuiElem mapWindow(PGuiElem content);
   PGuiElem miniBorder();
-  PGuiElem border2(PGuiElem content);
+  PGuiElem border2();
   PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight);
   PGuiElem invisible(PGuiElem content);
   PGuiElem background(PGuiElem content, Color);

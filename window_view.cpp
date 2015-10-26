@@ -133,7 +133,7 @@ void WindowView::initialize() {
       [this] { refreshInput = true;},
       bindMethod(&WindowView::mapCreatureDragFun, this)}, clock, options );
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
-  minimapDecoration = gui.border2(gui.rectangle(colors[ColorId::BLACK]));
+  minimapDecoration = gui.stack(gui.border2(), gui.rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
   guiBuilder.setTilesOk(useTiles);
   guiBuilder.setMapGui(mapGui);
@@ -343,6 +343,11 @@ Color getSpeedColor(int value) {
 }
 
 void WindowView::rebuildGui() {
+  int newHash = gameInfo.getHash();
+  if (newHash == lastGuiHash)
+    return;
+  Debug() << "Rebuilding UI";
+  lastGuiHash = newHash;
   PGuiElem bottom, right;
   vector<GuiBuilder::OverlayInfo> overlays;
   int rightBarWidth = 0;
