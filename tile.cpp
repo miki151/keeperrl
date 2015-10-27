@@ -551,8 +551,22 @@ class TileCoordLookup {
         .addConnection({Dir::NW}, byName("fogofwarcornnw"))
         .addConnection({Dir::SE}, byName("fogofwarcornse"))
         .addConnection({Dir::SW}, byName("fogofwarcornsw")));
-    Tile::addTile(ViewId::SPECIAL_BEAST, sprite("special_beast"));
-    Tile::addTile(ViewId::SPECIAL_HUMANOID, sprite("special_humanoid"));
+    Tile::addTile(ViewId::SPECIAL_BLBN, sprite("special_blbn"));
+    Tile::addTile(ViewId::SPECIAL_BLBW, sprite("special_blbw"));
+    Tile::addTile(ViewId::SPECIAL_BLGN, sprite("special_blgn"));
+    Tile::addTile(ViewId::SPECIAL_BLGW, sprite("special_blgw"));
+    Tile::addTile(ViewId::SPECIAL_BMBN, sprite("special_bmbn"));
+    Tile::addTile(ViewId::SPECIAL_BMBW, sprite("special_bmbw"));
+    Tile::addTile(ViewId::SPECIAL_BMGN, sprite("special_bmgn"));
+    Tile::addTile(ViewId::SPECIAL_BMGW, sprite("special_bmgw"));
+    Tile::addTile(ViewId::SPECIAL_HLBN, sprite("special_hlbn"));
+    Tile::addTile(ViewId::SPECIAL_HLBW, sprite("special_hlbw"));
+    Tile::addTile(ViewId::SPECIAL_HLGN, sprite("special_hlgn"));
+    Tile::addTile(ViewId::SPECIAL_HLGW, sprite("special_hlgw"));
+    Tile::addTile(ViewId::SPECIAL_HMBN, sprite("special_hmbn"));
+    Tile::addTile(ViewId::SPECIAL_HMBW, sprite("special_hmbw"));
+    Tile::addTile(ViewId::SPECIAL_HMGN, sprite("special_hmgn"));
+    Tile::addTile(ViewId::SPECIAL_HMGW, sprite("special_hmgw"));
   }
 
   Tile symbol(const string& s, ColorId id, bool symbol = false) {
@@ -799,8 +813,22 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::FETCH_ICON, symbol(0x1f44b, ColorId::LIGHT_BROWN, true));
     Tile::addSymbol(ViewId::FOG_OF_WAR, symbol(' ', ColorId::WHITE));
     Tile::addSymbol(ViewId::FOG_OF_WAR_CORNER, symbol(' ', ColorId::WHITE));
-    Tile::addSymbol(ViewId::SPECIAL_BEAST, symbol('B', ColorId::PURPLE));
-    Tile::addSymbol(ViewId::SPECIAL_HUMANOID, symbol('H', ColorId::PURPLE));
+    Tile::addSymbol(ViewId::SPECIAL_BLBN, symbol('B', ColorId::PURPLE));
+    Tile::addSymbol(ViewId::SPECIAL_BLBW, symbol('B', ColorId::LIGHT_RED));
+    Tile::addSymbol(ViewId::SPECIAL_BLGN, symbol('B', ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::SPECIAL_BLGW, symbol('B', ColorId::WHITE));
+    Tile::addSymbol(ViewId::SPECIAL_BMBN, symbol('B', ColorId::YELLOW));
+    Tile::addSymbol(ViewId::SPECIAL_BMBW, symbol('B', ColorId::ORANGE));
+    Tile::addSymbol(ViewId::SPECIAL_BMGN, symbol('B', ColorId::GREEN));
+    Tile::addSymbol(ViewId::SPECIAL_BMGW, symbol('B', ColorId::LIGHT_GREEN));
+    Tile::addSymbol(ViewId::SPECIAL_HLBN, symbol('H', ColorId::PURPLE));
+    Tile::addSymbol(ViewId::SPECIAL_HLBW, symbol('H', ColorId::LIGHT_RED));
+    Tile::addSymbol(ViewId::SPECIAL_HLGN, symbol('H', ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::SPECIAL_HLGW, symbol('H', ColorId::WHITE));
+    Tile::addSymbol(ViewId::SPECIAL_HMBN, symbol('H', ColorId::YELLOW));
+    Tile::addSymbol(ViewId::SPECIAL_HMBW, symbol('H', ColorId::ORANGE));
+    Tile::addSymbol(ViewId::SPECIAL_HMGN, symbol('H', ColorId::GREEN));
+    Tile::addSymbol(ViewId::SPECIAL_HMGW, symbol('H', ColorId::LIGHT_GREEN));
   }
  
   private:

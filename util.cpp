@@ -772,6 +772,30 @@ string getPlural(const string& a, int num) {
     return toString(num) + " " + a + "s";
 }
 
+static string toText(int num) {
+  switch (num) {
+    case 0: return "zero";
+    case 1: return "one";
+    case 2: return "two";
+    case 3: return "three";
+    case 4: return "four";
+    case 5: return "five";
+    case 6: return "six";
+    case 7: return "seven";
+    case 8: return "eight";
+    case 9: return "nine";
+    default: FAIL << "Unsupported number " << num;
+             return "";
+  }
+}
+
+string getPluralText(const string& a, int num) {
+  if (num == 1)
+    return "a " + a;
+  else
+    return toText(num) + " " + a + "s";
+}
+
 Semaphore::Semaphore(int v) : value(v) {}
 
 void Semaphore::p() {

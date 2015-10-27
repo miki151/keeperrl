@@ -157,7 +157,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void injureBodyPart(BodyPart part, bool drop);
   bool isCritical(BodyPart part) const;
   double getMinDamage(BodyPart part) const;
-  string bodyDescription() const;
 
   double getCourage() const;
   void setCourage(double);

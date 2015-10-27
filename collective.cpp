@@ -1101,8 +1101,8 @@ static vector<BirthSpawn> birthSpawns {
   { CreatureId::HARPY, 0.5 },
   { CreatureId::OGRE, 0.5 },
   { CreatureId::WEREWOLF, 0.5 },
-  { CreatureId::SPECIAL_HUMANOID, 1.0, TechId::HUMANOID_MUT},
-  { CreatureId::SPECIAL_MONSTER_KEEPER, 1.0, TechId::BEAST_MUT },
+  { CreatureId::SPECIAL_HM, 1.0, TechId::HUMANOID_MUT},
+  { CreatureId::SPECIAL_BM, 1.0, TechId::BEAST_MUT },
 };
 
 void Collective::considerBirths() {

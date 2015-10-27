@@ -1739,6 +1739,8 @@ vector<PGuiElem> GuiBuilder::joinLists(vector<PGuiElem>&& v1, vector<PGuiElem>&&
 PGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(minion.getTitle()));
+  if (!minion.description.empty())
+    list.addElem(gui.label(minion.description, 14, colors[ColorId::LIGHT_GRAY]));
   list.addElem(gui.horizontalList(drawMinionActions(minion), 140));
   vector<PGuiElem> leftLines;
   leftLines.push_back(gui.label("Attributes", colors[ColorId::YELLOW]));

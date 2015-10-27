@@ -136,6 +136,7 @@ class CreatureAttributes {
   bool SERIAL(invincible) = false;
   bool SERIAL(worshipped) = false;
   bool SERIAL(dontChase) = false;
+  bool SERIAL(isSpecial) = false;
   double SERIAL(attributeGain) = 0.5;
   int SERIAL(recruitmentCost) = 0;
   Skillset SERIAL(skills);

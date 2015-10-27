@@ -73,6 +73,7 @@ class PlayerInfo {
   string HASH(name);
   int HASH(level);
   vector<string> HASH(adjectives);
+  string description;
   string HASH(levelName);
   int HASH(positionHash);
   string HASH(weaponName);

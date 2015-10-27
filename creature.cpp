@@ -1502,19 +1502,6 @@ static string adjectives(CreatureSize s, bool undead, bool notLiving) {
   return combine(ret);
 }
 
-string Creature::bodyDescription() const {
-  vector<string> ret;
-  for (BodyPart part : {BodyPart::ARM, BodyPart::LEG, BodyPart::WING})
-    if (int num = numBodyParts(part))
-      ret.push_back(getPlural(attributes->getBodyPartName(part), num));
-  if (isHumanoid() && numBodyParts(BodyPart::HEAD) == 0)
-    ret.push_back("no head");
-  if (ret.size() > 0)
-    return " with " + combine(ret);
-  else
-    return "";
-}
-
 string attrStr(bool strong, bool agile, bool fast) {
   vector<string> good;
   vector<string> bad;
@@ -1539,15 +1526,18 @@ string attrStr(bool strong, bool agile, bool fast) {
 }
 
 string Creature::getDescription() const {
+  if (!attributes->isSpecial)
+    return "";
   string weapon;
   string attack;
   if (attributes->attackEffect)
     attack = " It has a " + Effect::getName(*attributes->attackEffect) + " attack.";
-  return getName().the() + " is a " + adjectives(getSize(), isUndead(), attributes->notLiving) +
-      (isHumanoid() ? " humanoid" : " beast") + (!isCorporal() ? " spirit" : "") + bodyDescription() + ". " +
-     "It is " + attrStr(attributes->getRawAttr(AttrType::STRENGTH) > 16,
+  return adjectives(getSize(), isUndead(), attributes->notLiving) +
+      (isHumanoid() ? " humanoid" : " beast") + (!isCorporal() ? " spirit" : "") +
+      attributes->bodyDescription() + ". " +
+     /*"It is " + attrStr(attributes->getRawAttr(AttrType::STRENGTH) > 16,
          attributes->getRawAttr(AttrType::DEXTERITY) > 16,
-         attributes->getRawAttr(AttrType::SPEED) > 100) + "." + weapon + attack;
+         attributes->getRawAttr(AttrType::SPEED) > 100) + "." + */weapon + attack;
 }
 
 void Creature::setBoulderSpeed(double value) {

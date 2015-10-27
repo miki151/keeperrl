@@ -1006,6 +1006,7 @@ string combine(const vector<string>& adj, bool commasOnly = false);
 
 string getPlural(const string& singular, const string& plural, int num);
 string getPlural(const string&, int num);
+string getPluralText(const string&, int num);
 
 template<class T>
 string combine(const vector<T*>& v) {

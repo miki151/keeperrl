@@ -64,6 +64,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(invincible)
     & SVAR(worshipped)
     & SVAR(dontChase)
+    & SVAR(isSpecial)
     & SVAR(attributeGain)
     & SVAR(skills)
     & SVAR(spells)
@@ -225,10 +226,15 @@ bool CreatureAttributes::isHumanoid() const {
 
 string CreatureAttributes::bodyDescription() const {
   vector<string> ret;
+  bool anyLimbs = false;
   for (BodyPart part : {BodyPart::ARM, BodyPart::LEG, BodyPart::WING})
-    if (int num = numBodyParts(part))
-      ret.push_back(getPlural(getBodyPartName(part), num));
-  if (isHumanoid() && numBodyParts(BodyPart::HEAD) == 0)
+    if (int num = numBodyParts(part)) {
+      ret.push_back(getPluralText(getBodyPartName(part), num));
+      anyLimbs = true;
+    }
+  if (!anyLimbs)
+    ret.push_back("no limbs");
+  if (numBodyParts(BodyPart::HEAD) == 0)
     ret.push_back("no head");
   if (ret.size() > 0)
     return " with " + combine(ret);
