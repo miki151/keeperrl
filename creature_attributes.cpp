@@ -227,11 +227,24 @@ bool CreatureAttributes::isHumanoid() const {
 string CreatureAttributes::bodyDescription() const {
   vector<string> ret;
   bool anyLimbs = false;
-  for (BodyPart part : {BodyPart::ARM, BodyPart::LEG, BodyPart::WING})
+  auto listParts = {BodyPart::ARM, BodyPart::LEG, BodyPart::WING};
+  if (*humanoid)
+    listParts = {BodyPart::WING};
+  for (BodyPart part : listParts)
     if (int num = numBodyParts(part)) {
       ret.push_back(getPluralText(getBodyPartName(part), num));
       anyLimbs = true;
     }
+  if (*humanoid) {
+    bool noArms = numBodyParts(BodyPart::ARM) == 0;
+    bool noLegs = numBodyParts(BodyPart::LEG) == 0;
+    if (noArms && noLegs)
+      ret.push_back("no limbs");
+    else if (noArms)
+      ret.push_back("no arms");
+    else if (noLegs)
+      ret.push_back("no legs");
+  } else
   if (!anyLimbs)
     ret.push_back("no limbs");
   if (numBodyParts(BodyPart::HEAD) == 0)

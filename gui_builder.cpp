@@ -189,7 +189,8 @@ vector<PGuiElem> GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons,
       vector<PGuiElem> line;
       line.push_back(gui.viewObject(button1.viewId, tilesOk));
       line.push_back(gui.label(groupedButtons.front().groupName,
-            active <= lastItem && active >= firstItem ? colors[ColorId::GREEN] : colors[ColorId::WHITE]));
+            [&active, firstItem, lastItem] { return active <= lastItem && active >= firstItem 
+                  ? colors[ColorId::GREEN] : colors[ColorId::WHITE];}));
       elems.push_back(gui.stack(
             gui.button(buttonFun),
             gui.horizontalList(std::move(line), 35)));
@@ -974,7 +975,7 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
   list.addElem(gui.empty());
   list.addElem(gui.horizontalList(makeVec<PGuiElem>(
           gui.stack(
-            gui.label("Show tasks", colors[showTasks ? ColorId::GREEN : ColorId::WHITE]),
+            gui.label("Show tasks", [this] { return colors[showTasks ? ColorId::GREEN : ColorId::WHITE]; }),
             gui.button([this] { closeOverlayWindows(); showTasks = !showTasks; })),
           gui.stack(
             getHintCallback({"Morale affects minion's productivity and chances of fleeing from battle."}),
@@ -1047,10 +1048,6 @@ void GuiBuilder::drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInf
 }
 
 void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
-  if (showTasks) {
-    drawTasksOverlay(ret, info);
-    return;
-  }
   int margin = 20;
   Vec2 size(600, 600);
   int minionListWidth = 220;
@@ -1093,37 +1090,40 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& in
 }
 
 void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
-  if (activeBuilding == -1 || info.buildings[activeBuilding].groupName.empty() || hideBuildingOverlay)
-    return;
-  string groupName = info.buildings[activeBuilding].groupName;
-  vector<PGuiElem> lines;
+  map<string, GuiFactory::ListBuilder> overlaysMap;
   for (int i : All(info.buildings)) {
     auto& elem = info.buildings[i];
-    if (elem.groupName == groupName)
-      lines.push_back(getButtonLine(elem, i, activeBuilding, collectiveTab));
+    if (!elem.groupName.empty()) {
+      if (!overlaysMap.count(elem.groupName))
+        overlaysMap.emplace(make_pair(elem.groupName, gui.getListBuilder(legendLineHeight)));
+      overlaysMap.at(elem.groupName).addElem(getButtonLine(elem, i, activeBuilding, collectiveTab));
+    }
   }
-  lines.push_back(gui.stack(
+  for (auto& elem : overlaysMap) {
+    auto& lines = elem.second;
+    lines.addElem(gui.stack(
         gui.centeredLabel(Renderer::HOR, "[close]", colors[ColorId::LIGHT_BLUE]),
-        gui.button([=] { hideBuildingOverlay = true;})));
-  int margin = 20;
-  int height = lines.size() * legendLineHeight - 8;
-  ret.push_back({gui.miniWindow(gui.stack(
-          gui.keyHandler([=] { hideBuildingOverlay = true; }, {{Keyboard::Escape}}, true),
-          gui.margins(gui.verticalList(std::move(lines), legendLineHeight), margin))),
+        gui.button([=] { hideBuildingOverlay = true;})), legendLineHeight);
+    int margin = 20;
+    int height = lines.getSize() - 8;
+    string groupName = elem.first;
+    ret.push_back({gui.conditional(
+          gui.miniWindow(gui.stack(
+              gui.keyHandler([=] { hideBuildingOverlay = true; }, {{Keyboard::Escape}}, true),
+              gui.margins(lines.buildVerticalList(), margin))),
+          [=] { return !info.ransom && collectiveTab == CollectiveTab::BUILDINGS && activeBuilding > -1 &&
+                  info.buildings[activeBuilding].groupName == groupName && !hideBuildingOverlay; }),
       Vec2(300 + 2 * margin, height + 2 * margin),
       OverlayInfo::TOP_RIGHT});
+  }
 }
 
 void GuiBuilder::drawBandOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
-  if (info.ransom) {
+  if (info.ransom)
     drawRansomOverlay(ret, *info.ransom);
-    return;
-  }
-  switch (collectiveTab) {
-    case CollectiveTab::MINIONS: return drawMinionsOverlay(ret, info);
-    case CollectiveTab::BUILDINGS: return drawBuildingsOverlay(ret, info);
-    default: break;
-  }
+  drawMinionsOverlay(ret, info);
+  drawTasksOverlay(ret, info);
+  drawBuildingsOverlay(ret, info);
 }
 
 int GuiBuilder::getNumMessageLines() const {
@@ -1549,7 +1549,7 @@ PGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
               line.buildHorizontalList()));
       }
     }
-    minionButtonsCache = gui.scrollable(list.buildVerticalList());
+    minionButtonsCache = gui.scrollable(list.buildVerticalList(), &minionButtonsScroll, &scrollbarsHeld);
     cache = minionButtonsHash;
   }
   return gui.external(minionButtonsCache.get());

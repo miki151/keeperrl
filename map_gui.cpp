@@ -306,8 +306,8 @@ void MapGui::onMouseRelease(Vec2 v) {
     callbacks.refreshFun();
     mouseOffset.x = mouseOffset.y = 0;
   }
-  if (mouseHeldPos && !mouseDragging) {
-    if (mouseHeldPos->distD(v) > 10)
+  if (mouseHeldPos) {
+    if (mouseHeldPos->distD(v) > 10 && !mouseDragging)
       considerMapLeftClick(v);
     else {
       if (auto c = getCreature(*mouseHeldPos))

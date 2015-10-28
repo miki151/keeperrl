@@ -153,6 +153,7 @@ class GuiBuilder {
   double inventoryScroll = 0;
   double playerStatsScroll = 0;
   double buildingsScroll = 0;
+  double minionButtonsScroll = 0;
   double minionsScroll = 0;
   double lyingItemsScroll = 0;
   double villagesScroll = 0;
