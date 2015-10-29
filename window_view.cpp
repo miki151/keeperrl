@@ -1115,6 +1115,8 @@ bool WindowView::isClockStopped() {
 }
 
 bool WindowView::considerResizeEvent(sf::Event& event) {
+  if (event.type == Event::Closed)
+    exit(0);
   if (event.type == Event::Resized) {
     resize(event.size.width, event.size.height);
     return true;

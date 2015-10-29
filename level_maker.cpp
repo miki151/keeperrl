@@ -2478,6 +2478,9 @@ PLevelMaker LevelMaker::quickLevel(RandomGen&) {
   queue->addMaker(new Empty(SquareId::GRASS));
   queue->addMaker(new Mountains({0.0, 0.0, 0.6, 0.68, 0.95}, 0.45, {0, 1, 0, 0, 0},
         {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND}));
+/*  queue->addMaker(new RandomLocations(
+          {new Empty(SquareId::FLOOR)}, {{2, 2}},
+          Predicate::type(SquareId::MOUNTAIN)));*/
   queue->addMaker(new StartingPos(Predicate::type(SquareId::GRASS), StairKey::keeperSpawn()));
   return PLevelMaker(new BorderGuard(queue, SquareId::BLACK_WALL));
 }
