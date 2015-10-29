@@ -1851,16 +1851,32 @@ class Conditional : public GuiLayout {
   public:
   Conditional(PGuiElem e, function<bool(GuiElem*)> f) : GuiLayout(makeVec<PGuiElem>(std::move(e))), cond(f) {}
 
-  virtual bool isVisible(int num) {
+  virtual bool isVisible(int num) override {
     return cond(this);
   }
 
-  private:
+  protected:
   function<bool(GuiElem*)> cond;
 };
 
 PGuiElem GuiFactory::conditional(PGuiElem elem, function<bool()> f) {
   return PGuiElem(new Conditional(std::move(elem), [f](GuiElem*) { return f(); }));
+}
+
+class ConditionalStopKeys : public Conditional {
+  public:
+  using Conditional::Conditional;
+
+  virtual bool onKeyPressed2(Event::KeyEvent key) override {
+    if (cond(this))
+      return Conditional::onKeyPressed2(key);
+    else
+      return false;
+  }
+};
+
+PGuiElem GuiFactory::conditionalStopKeys(PGuiElem elem, function<bool()> f) {
+  return PGuiElem(new ConditionalStopKeys(std::move(elem), [f](GuiElem*) { return f(); }));
 }
 
 PGuiElem GuiFactory::conditional(PGuiElem elem, function<bool(GuiElem*)> f) {

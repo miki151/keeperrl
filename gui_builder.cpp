@@ -350,7 +350,7 @@ PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, VillageInfo& villag
       gui.icon(gui.MINION),
       gui.icon(gui.LIBRARY),
       gui.stack(gui.icon(gui.DIPLOMACY),
-          numSeenVillains < villageInfo.villages.size() ? gui.icon(gui.CLICK_TAB) : gui.empty()),
+          gui.conditional(gui.icon(gui.CLICK_TAB), [=] { return numSeenVillains < villageInfo.villages.size();})),
       gui.icon(gui.HELP));
   for (int i : All(buttons)) {
     buttons[i] = gui.stack(
@@ -1018,9 +1018,9 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info
   int lineHeight = 25;
   int margin = 20;
   append(lines, std::move(freeLines));
-  ret.push_back({gui.miniWindow(gui.stack(
-        gui.keyHandler([=] { showTasks = false; }, {{Keyboard::Escape}}, true),
-        gui.margins(gui.verticalList(std::move(lines), lineHeight), margin, margin, margin, margin))),
+  ret.push_back({gui.conditional(gui.miniWindow(
+        gui.margins(gui.verticalList(std::move(lines), lineHeight), margin, margin, margin, margin)),
+        [this] { return showTasks; }),
       Vec2(taskMapWindowWidth, info.taskMap.size() * lineHeight + 2 * margin),
       OverlayInfo::TOP_RIGHT});
 }
@@ -1096,7 +1096,7 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
     if (!elem.groupName.empty()) {
       if (!overlaysMap.count(elem.groupName))
         overlaysMap.emplace(make_pair(elem.groupName, gui.getListBuilder(legendLineHeight)));
-      overlaysMap.at(elem.groupName).addElem(getButtonLine(elem, i, activeBuilding, collectiveTab));
+      overlaysMap.at(elem.groupName).addElem(getButtonLine(elem, i, activeBuilding, CollectiveTab::BUILDINGS));
     }
   }
   for (auto& elem : overlaysMap) {
@@ -1107,7 +1107,7 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
     int margin = 20;
     int height = lines.getSize() - 8;
     string groupName = elem.first;
-    ret.push_back({gui.conditional(
+    ret.push_back({gui.conditionalStopKeys(
           gui.miniWindow(gui.stack(
               gui.keyHandler([=] { hideBuildingOverlay = true; }, {{Keyboard::Escape}}, true),
               gui.margins(lines.buildVerticalList(), margin))),

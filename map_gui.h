@@ -106,7 +106,7 @@ class MapGui : public GuiElem {
   double lastRenderTime = 0;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
-  bool mouseDragging = false;
+  bool creatureClick = false;
   optional<Vec2> lastMapLeftClick;
   vector<string> hint;
   struct AnimationInfo {

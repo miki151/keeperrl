@@ -232,9 +232,9 @@ bool MapGui::onLeftClick(Vec2 v) {
   if (v.inRectangle(getBounds())) {
     if (auto c = getCreature(v)) {
       callbacks.creatureDragFun(c->id, c->viewId, v);
-      mouseDragging = true;
+      creatureClick = true;
     } else
-      mouseDragging = false;
+      creatureClick = false;
     mouseHeldPos = v;
     mouseOffset.x = mouseOffset.y = 0;
     return true;
@@ -273,7 +273,7 @@ void MapGui::considerMapLeftClick(Vec2 mousePos) {
 
 bool MapGui::onMouseMove(Vec2 v) {
   lastMouseMove = v;
-  if (v.inRectangle(getBounds()) && mouseHeldPos && !mouseDragging)
+  if (v.inRectangle(getBounds()) && mouseHeldPos && !creatureClick)
     considerMapLeftClick(v);
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
@@ -307,8 +307,10 @@ void MapGui::onMouseRelease(Vec2 v) {
     mouseOffset.x = mouseOffset.y = 0;
   }
   if (mouseHeldPos) {
-    if (mouseHeldPos->distD(v) > 10 && !mouseDragging)
-      considerMapLeftClick(v);
+    if (mouseHeldPos->distD(v) > 10) {
+      if (!creatureClick)
+        considerMapLeftClick(v);
+    }
     else {
       if (auto c = getCreature(*mouseHeldPos))
         callbacks.creatureClickFun(c->id);
