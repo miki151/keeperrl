@@ -334,6 +334,28 @@ PGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
         }, width));
 }
 
+static void lighten(Color& c) {
+  int a = 160;
+  int b = 200;
+  auto fun = [=] (int x) { return x * (255 - a) / b + a;};
+  c.r = min(255, fun(c.r));
+  c.g = min(255, fun(c.g));
+  c.b = min(255, fun(c.b));
+}
+
+PGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
+  auto width = [=] { return renderer.getTextLength(s); };
+  return PGuiElem(new DrawCustom(
+        [=] (Renderer& r, Rectangle bounds) {
+          r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
+            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, 0);
+          Color c1(c);
+          if (r.getMousePos().inRectangle(bounds))
+            lighten(c1);
+          r.drawTextWithHotkey(c1, bounds.getTopLeft().x, bounds.getTopLeft().y, s, hotkey);
+        }, width));
+}
+
 PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun) {
   auto width = [=] { return renderer.getTextLength(s); };
   return PGuiElem(new DrawCustom(
@@ -418,7 +440,10 @@ PGuiElem GuiFactory::labelUnicode(const String& s, function<Color()> color, int 
   auto width = [=] { return renderer.getUnicodeLength(s); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(fontId, size, color(), bounds.getTopLeft().x, bounds.getTopLeft().y, s);
+          Color c = color();
+          if (r.getMousePos().inRectangle(bounds))
+            lighten(c);
+          r.drawText(fontId, size, c, bounds.getTopLeft().x, bounds.getTopLeft().y, s);
         }, width));
 }
 

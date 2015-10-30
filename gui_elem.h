@@ -117,6 +117,7 @@ class GuiFactory {
   PGuiElem topMargin(int size, PGuiElem content);
   PGuiElem bottomMargin(int size, PGuiElem content);
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
+  PGuiElem labelHighlight(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem label(const string&, function<Color()>);
   PGuiElem label(function<const char*()>, function<Color()>);

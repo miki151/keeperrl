@@ -326,7 +326,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BRIDGE, sprite("bridge").addOption(Dir::S, byName("bridge2")));
     Tile::addTile(ViewId::ROAD, getRoadTile("road"));
     Tile::addTile(ViewId::FLOOR, sprite("floor"));
-    Tile::addTile(ViewId::KEEPER_FLOOR, sprite("floor"));
+    Tile::addTile(ViewId::KEEPER_FLOOR, sprite("floor_keeper"));
     Tile::addTile(ViewId::SAND, getExtraBorderTile("sand")
         .addExtraBorderId(ViewId::WATER));
     Tile::addTile(ViewId::MUD, getExtraBorderTile("mud")
@@ -340,13 +340,13 @@ class TileCoordLookup {
         .addExtraBorderId(ViewId::WATER));
     Tile::addTile(ViewId::CROPS, sprite("wheatfield1"));
     Tile::addTile(ViewId::CROPS2, sprite("wheatfield2"));
-    Tile::addTile(ViewId::MOUNTAIN, getMountainTile(sprite("mountain").setNoShadow(), "mountain"));
+    Tile::addTile(ViewId::MOUNTAIN, getMountainTile(sprite("mountain_ted").setNoShadow(), "mountain"));
     Tile::addTile(ViewId::WALL, getWallTile("wall"));
-    Tile::addTile(ViewId::GOLD_ORE, getMountainTile(sprite("gold_ore").addBackground(byName("mountain"))
+    Tile::addTile(ViewId::GOLD_ORE, getMountainTile(sprite("gold_ore").addBackground(byName("mountain_ted"))
           .setNoShadow(), "mountain"));
-    Tile::addTile(ViewId::IRON_ORE, getMountainTile(sprite("iron_ore").addBackground(byName("mountain"))
+    Tile::addTile(ViewId::IRON_ORE, getMountainTile(sprite("iron_ore").addBackground(byName("mountain_ted"))
           .setNoShadow(), "mountain"));
-    Tile::addTile(ViewId::STONE, getMountainTile(sprite("stone_ore").addBackground(byName("mountain"))
+    Tile::addTile(ViewId::STONE, getMountainTile(sprite("stone_ore").addBackground(byName("mountain_ted"))
           .setNoShadow(), "mountain"));
     Tile::addTile(ViewId::HILL, getExtraBorderTile("hill")
         .addExtraBorderId(ViewId::SAND)
@@ -486,7 +486,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::SURPRISE_TRAP, sprite("surprisetrap"));
     Tile::addTile(ViewId::TERROR_TRAP, sprite("terror_trap"));
     Tile::addTile(ViewId::ROCK, sprite("stonepile"));
-    Tile::addTile(ViewId::IRON_ROCK, sprite("ironpile2"));
+    Tile::addTile(ViewId::IRON_ROCK, sprite("ironpile"));
     Tile::addTile(ViewId::WOOD_PLANK, sprite("wood2"));
     Tile::addTile(ViewId::STOCKPILE1, sprite("storage1").setFloorBorders());
     Tile::addTile(ViewId::STOCKPILE2, sprite("storage2").setFloorBorders());

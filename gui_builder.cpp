@@ -1068,7 +1068,7 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& in
         auto list = gui.getListBuilder(legendLineHeight);
         list.addElem(gui.stack(
             gui.button(getButtonCallback({UserInputId::CANCEL_TEAM, *info.chosen->teamId})),
-            gui.label("[Disband team]", colors[ColorId::LIGHT_BLUE])));
+            gui.labelHighlight("[Disband team]", colors[ColorId::LIGHT_BLUE])));
         list.addElem(gui.empty(), legendLineHeight);
         leftSide = gui.marginAuto(list.buildVerticalList(), std::move(leftSide), GuiFactory::TOP);
       }
@@ -1237,11 +1237,11 @@ PGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageAction acti
   switch (action) {
     case VillageAction::RECRUIT: 
       return gui.stack(
-          gui.label("Recruit", colors[ColorId::GREEN]),
+          gui.labelHighlight("Recruit", colors[ColorId::GREEN]),
           gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION, VillageActionInfo{villageIndex, action}})));
     case VillageAction::TRADE: 
       return gui.stack(
-          gui.label("Trade", colors[ColorId::GREEN]),
+          gui.labelHighlight("Trade", colors[ColorId::GREEN]),
           gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION, VillageActionInfo{villageIndex, action}})));
   }
 }
@@ -1323,7 +1323,7 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
 #endif
     if (!triggers.empty())
       line.addElemAuto(gui.stack(
-          gui.label("Triggers", colors[ColorId::RED]),
+          gui.labelHighlight("Triggers", colors[ColorId::RED]),
           gui.button([this, triggers](Rectangle bounds) {
               showAttackTriggers(triggers, bounds.getTopRight() + Vec2(20, 0));})));
     lines.addElem(line.buildHorizontalList());
@@ -1609,7 +1609,7 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
       curTask = getTaskText(task.task);
   return gui.stack(
       gui.horizontalList(makeVec<PGuiElem>(
-          gui.label(curTask), gui.label("[change]", colors[ColorId::LIGHT_BLUE])),
+          gui.labelHighlight(curTask), gui.label("[change]", colors[ColorId::LIGHT_BLUE])),
         renderer.getTextLength(curTask) + 20),
       gui.button([=] (Rectangle bounds) {
           auto tasks = gui.getListBuilder(legendLineHeight);
@@ -1672,7 +1672,7 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minio
     if (items[i].type == items[i].CONSUMABLE)
       lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
   lines.push_back(gui.stack(
-      gui.label("[add consumable]", colors[ColorId::LIGHT_BLUE]),
+      gui.labelHighlight("[add consumable]", colors[ColorId::LIGHT_BLUE]),
       gui.button(getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION, 
               EquipmentActionInfo{minion.creatureId, {}, none, ItemAction::REPLACE}}))));
   for (int i : All(itemElems))
@@ -1692,12 +1692,12 @@ vector<PGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion) {
     switch (action) {
       case PlayerInfo::CONTROL:
         line.push_back(gui.stack(
-            gui.label("[Control]", colors[ColorId::LIGHT_BLUE]),
+            gui.labelHighlight("[Control]", colors[ColorId::LIGHT_BLUE]),
             gui.button(getButtonCallback({UserInputId::CREATURE_CONTROL, minion.creatureId}))));
         break;
       case PlayerInfo::RENAME:
         line.push_back(gui.stack(
-            gui.label("[Rename]", colors[ColorId::LIGHT_BLUE]),
+            gui.labelHighlight("[Rename]", colors[ColorId::LIGHT_BLUE]),
             gui.button([=] { 
                 if (auto name = getTextInput("Rename minion", minion.firstName, 10, "Press escape to cancel."))
                 callbacks.input({UserInputId::CREATURE_RENAME,
@@ -1705,22 +1705,22 @@ vector<PGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion) {
         break;
       case PlayerInfo::BANISH:
         line.push_back(gui.stack(
-            gui.label("[Banish]", colors[ColorId::LIGHT_BLUE]),
+            gui.labelHighlight("[Banish]", colors[ColorId::LIGHT_BLUE]),
             gui.button(getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId}))));
         break;
       case PlayerInfo::WHIP:
         line.push_back(gui.stack(
-            gui.label("[Whip]", colors[ColorId::LIGHT_BLUE]),
+            gui.labelHighlight("[Whip]", colors[ColorId::LIGHT_BLUE]),
             gui.button(getButtonCallback({UserInputId::CREATURE_WHIP, minion.creatureId}))));
         break;
       case PlayerInfo::EXECUTE:
         line.push_back(gui.stack(
-            gui.label("[Execute]", colors[ColorId::LIGHT_BLUE]),
+            gui.labelHighlight("[Execute]", colors[ColorId::LIGHT_BLUE]),
             gui.button(getButtonCallback({UserInputId::CREATURE_EXECUTE, minion.creatureId}))));
         break;
       case PlayerInfo::TORTURE:
         line.push_back(gui.stack(
-            gui.label("[Torture]", colors[ColorId::LIGHT_BLUE]),
+            gui.labelHighlight("[Torture]", colors[ColorId::LIGHT_BLUE]),
             gui.button(getButtonCallback({UserInputId::CREATURE_TORTURE, minion.creatureId}))));
         break;
     }
