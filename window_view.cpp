@@ -442,6 +442,10 @@ void WindowView::rebuildGui() {
       Debug() << "Overlay " << overlay.alignment << " bounds " << tempGuiElems.back()->getBounds();
     }
   }
+  Event ev;
+  ev.type = Event::MouseMoved;
+  ev.mouseMove = {renderer.getMousePos().x, renderer.getMousePos().y};
+  propagateEvent(ev, getClickableGuiElems());
 }
 
 vector<GuiElem*> WindowView::getAllGuiElems() {

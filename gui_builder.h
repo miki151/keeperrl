@@ -44,18 +44,17 @@ class GuiBuilder {
   int getStandardLineHeight() const;
   
   PGuiElem getSunlightInfoGui(GameSunlightInfo& sunlightInfo);
-  PGuiElem getTurnInfoGui(int turn);
+  PGuiElem getTurnInfoGui(int& turn);
   PGuiElem drawBottomPlayerInfo(GameInfo&);
   PGuiElem drawRightPlayerInfo(PlayerInfo&);
   PGuiElem drawPlayerHelp(PlayerInfo&);
   PGuiElem drawPlayerInventory(PlayerInfo&);
-  PGuiElem drawBottomBandInfo(GameInfo&);
   PGuiElem drawRightBandInfo(CollectiveInfo&, VillageInfo&);
-  PGuiElem drawBuildings(CollectiveInfo&);
   PGuiElem drawTechnology(CollectiveInfo&);
   PGuiElem drawVillages(VillageInfo&);
   PGuiElem drawDeities(CollectiveInfo&);
   PGuiElem drawMinions(CollectiveInfo&);
+  PGuiElem drawBottomBandInfo(GameInfo&);
   PGuiElem drawKeeperHelp();
   optional<string> getTextInput(const string& title, const string& value, int maxLength, const string& hint);
 
@@ -121,6 +120,10 @@ class GuiBuilder {
   PGuiElem getHintCallback(const vector<string>&);
   PGuiElem getTooltip(const vector<string>&);
   vector<PGuiElem> drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>&);
+  PGuiElem drawBuildings(CollectiveInfo&);
+  PGuiElem buildingsCache;
+  int buildingsHash = 0;
+  PGuiElem bottomBandCache;
   PGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
   PGuiElem minionButtonsCache;
   int minionButtonsHash = 0;

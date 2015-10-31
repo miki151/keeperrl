@@ -366,7 +366,7 @@ PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun) {
         }, width));
 }
 
-PGuiElem GuiFactory::label(function<const char*()> textFun, function<Color()> colorFun) {
+PGuiElem GuiFactory::label(function<string()> textFun, function<Color()> colorFun) {
   auto width = [=] { return renderer.getTextLength(textFun()); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
@@ -1367,16 +1367,13 @@ class MouseOverAction : public GuiElem {
     }
   }
 
-  virtual void render(Renderer& r) override {
-    if (!in && r.getMousePos().inRectangle(getBounds())) {
+  virtual bool onMouseMove(Vec2 pos) override {
+    if ((!in || !outCallback) && pos.inRectangle(getBounds())) {
       callback();
       in = true;
-    } else
-    if (in && !r.getMousePos().inRectangle(getBounds())) {
-      if (outCallback)
-        outCallback();
-      in = false;
-    }
+    } else if (!pos.inRectangle(getBounds()))
+      onMouseGone();
+    return false;
   }
 
   ~MouseOverAction() {
@@ -1911,6 +1908,10 @@ PGuiElem GuiFactory::conditional(PGuiElem elem, function<bool(GuiElem*)> f) {
 PGuiElem GuiFactory::conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> f) {
   return stack(PGuiElem(new Conditional(std::move(elem), f)),
       PGuiElem(new Conditional(std::move(alter), [=] (GuiElem* e) { return !f(e);})));
+}
+
+PGuiElem GuiFactory::conditional(PGuiElem elem, PGuiElem alter, function<bool()> f) {
+  return conditional(std::move(elem), std::move(alter), [=] (GuiElem*) { return f(); });
 }
 
 PGuiElem GuiFactory::scrollable(PGuiElem content, double* scrollPos, int* held) {

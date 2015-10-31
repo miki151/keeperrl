@@ -211,8 +211,13 @@ vector<PGuiElem> GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons,
 }
 
 PGuiElem GuiBuilder::drawBuildings(CollectiveInfo& info) {
-  return gui.scrollable(gui.verticalList(drawButtons(info.buildings, activeBuilding, CollectiveTab::BUILDINGS),
-      legendLineHeight), &buildingsScroll, &scrollbarsHeld);
+  int newHash = combineHash(info.buildings);
+  if (newHash != buildingsHash) {
+    buildingsCache =  gui.scrollable(gui.verticalList(drawButtons(info.buildings, activeBuilding,
+            CollectiveTab::BUILDINGS), legendLineHeight), &buildingsScroll, &scrollbarsHeld);
+    buildingsHash = newHash;
+  }
+  return gui.external(buildingsCache.get());
 }
 
 PGuiElem GuiBuilder::getStandingGui(double standing) {
@@ -307,25 +312,29 @@ const int resourceSpace = 110;
 PGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   CollectiveInfo& info = gameInfo.collectiveInfo;
   GameSunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
-  vector<PGuiElem> topLine;
-  for (int i : All(info.numResource)) {
-    vector<PGuiElem> res;
-    res.push_back(gui.viewObject(info.numResource[i].viewId, tilesOk));
-    res.push_back(gui.label(toString<int>(info.numResource[i].count),
-          info.numResource[i].count >= 0 ? colors[ColorId::WHITE] : colors[ColorId::RED]));
-    topLine.push_back(gui.stack(getHintCallback({info.numResource[i].name}),
-          gui.horizontalList(std::move(res), 30)));
+  if (!bottomBandCache) {
+    vector<PGuiElem> topLine;
+    for (int i : All(info.numResource)) {
+      vector<PGuiElem> res;
+      res.push_back(gui.viewObject(info.numResource[i].viewId, tilesOk));
+      res.push_back(gui.label([&info, i] { return toString<int>(info.numResource[i].count); },
+            [&info, i] { return info.numResource[i].count >= 0 ? colors[ColorId::WHITE] : colors[ColorId::RED]; }));
+      topLine.push_back(gui.stack(getHintCallback({info.numResource[i].name}),
+            gui.horizontalList(std::move(res), 30)));
+    }
+    vector<PGuiElem> bottomLine;
+    bottomLine.push_back(getTurnInfoGui(gameInfo.time));
+    bottomLine.push_back(getSunlightInfoGui(sunlightInfo));
+    bottomLine.push_back(gui.label([&gameInfo] {
+          return "population: " + toString(gameInfo.collectiveInfo.minionCount) + " / " +
+          toString(gameInfo.collectiveInfo.minionLimit); }));
+    int numTop = topLine.size();
+    int numBottom = bottomLine.size();
+    bottomBandCache = gui.verticalList(makeVec<PGuiElem>(
+          gui.centerHoriz(gui.horizontalList(std::move(topLine), resourceSpace), numTop * resourceSpace),
+          gui.centerHoriz(gui.horizontalList(std::move(bottomLine), 140, 3), numBottom * 140)), 28);
   }
-  vector<PGuiElem> bottomLine;
-  bottomLine.push_back(getTurnInfoGui(gameInfo.time));
-  bottomLine.push_back(getSunlightInfoGui(sunlightInfo));
-  bottomLine.push_back(gui.label("population: " + toString(gameInfo.collectiveInfo.minionCount) + " / " +
-        toString(gameInfo.collectiveInfo.minionLimit)));
-  int numTop = topLine.size();
-  int numBottom = bottomLine.size();
-  return gui.verticalList(makeVec<PGuiElem>(
-      gui.centerHoriz(gui.horizontalList(std::move(topLine), resourceSpace), numTop * resourceSpace),
-      gui.centerHoriz(gui.horizontalList(std::move(bottomLine), 140, 3), numBottom * 140)), 28);
+  return gui.external(bottomBandCache.get());
 }
 
 const char* GuiBuilder::getGameSpeedName(GuiBuilder::GameSpeed gameSpeed) const {
@@ -443,19 +452,18 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
 }
 
 PGuiElem GuiBuilder::getSunlightInfoGui(GameSunlightInfo& sunlightInfo) {
-  vector<PGuiElem> line;
-  Color color = sunlightInfo.description == "day" ? colors[ColorId::WHITE] : colors[ColorId::LIGHT_BLUE];
-  line.push_back(gui.label(sunlightInfo.description, color));
-  line.push_back(gui.label("[" + toString(sunlightInfo.timeRemaining) + "]", color));
   return gui.stack(
-    getHintCallback({sunlightInfo.description == "day"
-      ? "Time remaining till nightfall." : "Time remaining till day."}),
-    gui.horizontalList(std::move(line), renderer.getTextLength(sunlightInfo.description) + 5));
+      gui.conditional(
+          getHintCallback({"Time remaining till nightfall."}),
+          getHintCallback({"Time remaining till day."}),
+          [&] { return sunlightInfo.description == "day";}),
+      gui.label([&] { return sunlightInfo.description + " [" + toString(sunlightInfo.timeRemaining) + "]"; },
+          [&] { return sunlightInfo.description == "day" ? colors[ColorId::WHITE] : colors[ColorId::LIGHT_BLUE];}));
 }
 
-PGuiElem GuiBuilder::getTurnInfoGui(int turn) {
+PGuiElem GuiBuilder::getTurnInfoGui(int& turn) {
   return gui.stack(getHintCallback({"Current turn."}),
-      gui.label("T: " + toString(turn), colors[ColorId::WHITE]));
+      gui.label([&turn] { return "T: " + toString(turn); }, colors[ColorId::WHITE]));
 }
 
 static Color getBonusColor(int bonus) {

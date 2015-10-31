@@ -120,7 +120,7 @@ class GuiFactory {
   PGuiElem labelHighlight(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem label(const string&, function<Color()>);
-  PGuiElem label(function<const char*()>, function<Color()>);
+  PGuiElem label(function<string()>, function<Color()>);
   PGuiElem label(function<string()>, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, Color = colors[ColorId::WHITE]);
@@ -150,6 +150,7 @@ class GuiFactory {
   PGuiElem conditional(PGuiElem elem, function<bool()> cond);
   PGuiElem conditionalStopKeys(PGuiElem elem, function<bool()> cond);
   PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
+  PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool()> cond);
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER,
       TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER, LEFT_STRETCHED, RIGHT_STRETCHED,
       CENTER_STRETCHED};
