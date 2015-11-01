@@ -1145,7 +1145,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter* meter, RandomGen& random,
       extraSettlements.emplace_back(*elem.extraLevel, elem.settlement);
   }
   Level* top = m->buildLevel(
-      LevelBuilder(meter, random, 250, 250, "Wilderness", false),
+      LevelBuilder(meter, random, 360, 360, "Wilderness", false),
       LevelMaker::topLevel(random, CreatureFactory::forrest(m->tribeSet->wildlife.get()), settlements));
   for (auto& elem : extraSettlements)
     makeExtraLevel(meter, random, m, elem.first, elem.second);

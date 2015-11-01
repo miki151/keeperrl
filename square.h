@@ -227,7 +227,7 @@ class Square : public Renderable {
  
   virtual ~Square();
 
-  void setFog(double val);
+  void setUnavailable();
 
   bool needsMemoryUpdate() const;
   void setMemoryUpdated();
@@ -269,7 +269,6 @@ class Square : public Renderable {
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
   map<SquareId, int> SERIAL(constructions);
   bool SERIAL(ticking);
-  double SERIAL(fog) = 0;
   HeapAllocated<MovementSet> SERIAL(movementSet);
   void updateMovement();
   bool SERIAL(updateMemory) = true;
@@ -278,6 +277,7 @@ class Square : public Renderable {
   bool SERIAL(destroyable) = false;
   const Tribe* SERIAL(owner);
   const Tribe* SERIAL(forbiddenTribe) = nullptr;
+  bool SERIAL(unavailable) = false;
 };
 
 #endif

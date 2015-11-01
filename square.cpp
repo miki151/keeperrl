@@ -56,14 +56,14 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(poisonGas)
     & SVAR(constructions)
     & SVAR(ticking)
-    & SVAR(fog)
     & SVAR(movementSet)
     & SVAR(updateViewIndex)
     & SVAR(updateMemory)
     & SVAR(viewIndex)
     & SVAR(destroyable)
     & SVAR(owner)
-    & SVAR(forbiddenTribe);
+    & SVAR(forbiddenTribe)
+    & SVAR(unavailable);
   if (progressMeter)
     progressMeter->addProgress();
   updateViewIndex = true;
@@ -208,9 +208,10 @@ const Level* Square::getLevel() const {
   return level;
 }
 
-void Square::setFog(double val) {
-  setDirty();
-  fog = val;
+void Square::setUnavailable() {
+  unavailable = true;
+  constructions.clear();
+  movementSet->clear();
 }
 
 bool Square::sunlightBurns() const {
@@ -401,8 +402,8 @@ void Square::getViewIndex(ViewIndex& ret, const Tribe* tribe) const {
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (poisonGas->getAmount() > 0)
     ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas->getAmount()));
-  if (fog)
-    ret.setHighlight(HighlightType::FOG, fog);
+  if (unavailable)
+    ret.setHighlight(HighlightType::UNAVAILABLE);
   updateViewIndex = false;
   *viewIndex = ret;
 }

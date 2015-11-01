@@ -1628,6 +1628,20 @@ class SetCovered : public LevelMaker {
   }
 };
 
+class AddMapBorder : public LevelMaker {
+  public:
+  AddMapBorder(int w) : width(w) {}
+
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
+    for (Vec2 v : area)
+      if (!v.inRectangle(area.minusMargin(width)))
+        builder->getSquare(v)->setUnavailable();
+  }
+
+  private:
+  int width;
+};
+
 }
 
 static MakerQueue* stockpileMaker(StockpileInfo info) {
@@ -2224,6 +2238,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   addResources(random, locations, random.get(4, 6), 1, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE, startingPos);
   addResources(random, locations, random.get(3, 6), 2, 5, 10, maxDist, maxDist2, SquareId::STONE, startingPos);
   addResources(random, locations, random.get(7, 12), 4, 5, 10, maxDist, maxDist2, SquareId::IRON_ORE, startingPos);
+  int mapBorder = 30;
+  int locationMargin = 20;
   queue->addMaker(new Empty(SquareId::WATER));
   queue->addMaker(new Mountains({0.0, 0.0, 0.6, 0.68, 0.95}, 0.45, {0, 1, 0, 0, 0},
         {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND}));
@@ -2233,12 +2249,14 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
           Predicate::type(SquareId::MOUNTAIN)));
   queue->addMaker(new Forrest(0.7, 0.5, SquareId::GRASS, vegetationLow, probs));
   queue->addMaker(new Forrest(0.4, 0.5, SquareId::HILL, vegetationHigh, probs));
-  queue->addMaker(new Margin(10, locations));
-  queue->addMaker(new Roads(SquareId::FLOOR));
-  queue->addMaker(new Connector(SquareId::DOOR, 0, 5, Predicate::andPred(Predicate::canEnter({MovementTrait::WALK}),
-          Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR)), SquareAttrib::CONNECTOR));
-  queue->addMaker(new Margin(10, locations2));
+  queue->addMaker(new Margin(mapBorder + locationMargin, locations));
+  queue->addMaker(new Margin(mapBorder, new Roads(SquareId::FLOOR)));
+  queue->addMaker(new Margin(mapBorder, new Connector(SquareId::DOOR, 0, 5,
+          Predicate::andPred(Predicate::canEnter({MovementTrait::WALK}),
+          Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR)), SquareAttrib::CONNECTOR)));
+  queue->addMaker(new Margin(mapBorder + locationMargin, locations2));
   queue->addMaker(new Items(ItemFactory::mushrooms(), SquareId::GRASS, 30, 60));
+  queue->addMaker(new AddMapBorder(mapBorder));
   return PLevelMaker(new BorderGuard(queue));
 }
 
@@ -2482,6 +2500,7 @@ PLevelMaker LevelMaker::quickLevel(RandomGen&) {
           {new Empty(SquareId::FLOOR)}, {{2, 2}},
           Predicate::type(SquareId::MOUNTAIN)));*/
   queue->addMaker(new StartingPos(Predicate::type(SquareId::GRASS), StairKey::keeperSpawn()));
+  queue->addMaker(new AddMapBorder(2));
   return PLevelMaker(new BorderGuard(queue, SquareId::BLACK_WALL));
 }
 

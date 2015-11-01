@@ -89,7 +89,7 @@ int Level::getUniqueId() const {
 }
 
 Rectangle Level::getMaxBounds() {
-  return Rectangle(300, 300);
+  return Rectangle(360, 360);
 }
 
 Rectangle Level::getSplashBounds() {

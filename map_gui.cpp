@@ -119,6 +119,7 @@ Color getHighlightColor(HighlightType type, double amount) {
     case HighlightType::EFFICIENCY: return transparency(Color(255, 0, 0) , 120 * (1 - amount));
     case HighlightType::PRIORITY_TASK: return transparency(Color(0, 255, 0), 120);
     case HighlightType::FORBIDDEN_ZONE: return transparency(Color(255, 0, 0), 120);
+    case HighlightType::UNAVAILABLE: return transparency(Color(0, 0, 0), 120);
   }
 }
 
@@ -649,6 +650,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal
               case HighlightType::RECT_DESELECTION:
               case HighlightType::PRIORITY_TASK:
               case HighlightType::DIG:
+              case HighlightType::UNAVAILABLE:
                 if (spriteMode) {
                   renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size,
                       getHighlightColor(highlight, index->getHighlight(highlight)));
@@ -704,7 +706,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size
 void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& highlightedInfo,int currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
-  renderer.drawFilledRectangle(getBounds(), colors[ColorId::ALMOST_BLACK]);
+  renderer.drawFilledRectangle(getBounds(), colors[ColorId::BLACK]);
   renderer.drawFilledRectangle(Rectangle(
         projectOnScreen(levelBounds.getTopLeft(), currentTimeReal),
         projectOnScreen(levelBounds.getBottomRight(), currentTimeReal)), colors[ColorId::BLACK]);
