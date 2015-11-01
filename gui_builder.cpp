@@ -997,7 +997,9 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
       vector<PGuiElem> line;
       line.push_back(gui.viewObject(elem.viewId, tilesOk));
       line.push_back(gui.label(toString(elem.count) + "   " + elem.name, colors[ColorId::WHITE]));
-      list.addElem(gui.horizontalList(std::move(line), 20));
+      list.addElem(gui.stack(
+          gui.button(getButtonCallback({UserInputId::GO_TO_ENEMY, elem.creatureId})),
+          gui.horizontalList(std::move(line), 20)));
     }
   }
   return gui.scrollable(list.buildVerticalList(), &minionsScroll, &scrollbarsHeld);

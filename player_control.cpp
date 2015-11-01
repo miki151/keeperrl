@@ -1447,6 +1447,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
           chosenCreature = none;
         }
         break;
+    case UserInputId::GO_TO_ENEMY:
+        for (Vec2 v : getVisibleEnemies())
+          if (Creature* c = Position(v, getCollective()->getLevel()).getCreature())
+            setScrollPos(c->getPosition());
+        break;
     case UserInputId::ADD_TO_TEAM: {
         auto info = input.get<TeamCreatureInfo>();
         if (Creature* c = getCreature(info.creatureId))
