@@ -131,7 +131,8 @@ class CollectiveInfo {
     string HASH(help);
     char HASH(hotkey);
     string HASH(groupName);
-    HASH_ALL(viewId, name, cost, count, state, help, hotkey, groupName);
+    bool HASH(hotkeyOpensGroup);
+    HASH_ALL(viewId, name, cost, count, state, help, hotkey, groupName, hotkeyOpensGroup);
   };
   vector<Button> HASH(buildings);
   vector<Button> HASH(minionButtons);

@@ -119,7 +119,7 @@ class GuiFactory {
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem labelHighlight(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
-  PGuiElem label(const string&, function<Color()>);
+  PGuiElem label(const string&, function<Color()>, char hotkey = 0);
   PGuiElem label(function<string()>, function<Color()>);
   PGuiElem label(function<string()>, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = colors[ColorId::WHITE]);

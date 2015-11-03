@@ -147,17 +147,17 @@ void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
   if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl)) {
     inputQueue.push(UserInput(UserInputId::ADD_TO_TEAM, id));
     if (gameInfo.infoType == GameInfo::InfoType::BAND)
-      guiBuilder.setCollectiveTab(GuiBuilder::CollectiveTab::MINIONS);
+      guiBuilder.setCollectiveTab(CollectiveTab::MINIONS);
   } else {
     inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
-    guiBuilder.setCollectiveTab(GuiBuilder::CollectiveTab::MINIONS);
+    guiBuilder.setCollectiveTab(CollectiveTab::MINIONS);
   }
 }
 
 void WindowView::mapLeftClickFun(Vec2 pos) {
   guiBuilder.closeOverlayWindows();
-  int activeLibrary = guiBuilder.getActiveLibrary();
-  int activeBuilding = guiBuilder.getActiveBuilding();
+  optional<int> activeLibrary = guiBuilder.getActiveButton(CollectiveTab::TECHNOLOGY);
+  optional<int> activeBuilding = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS);
   auto collectiveTab = guiBuilder.getCollectiveTab();
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::SPECTATOR:
@@ -165,19 +165,21 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
       inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
       break;
     case GameInfo::InfoType::BAND:
-      if (collectiveTab == GuiBuilder::CollectiveTab::MINIONS)
+      if (collectiveTab == CollectiveTab::MINIONS)
         inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
       else
-      if (collectiveTab == GuiBuilder::CollectiveTab::TECHNOLOGY && activeLibrary >= 0)
-        inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo{pos, activeLibrary}));
+      if (collectiveTab == CollectiveTab::TECHNOLOGY && activeLibrary)
+        inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo{pos, *activeLibrary}));
       else
-      if (collectiveTab == GuiBuilder::CollectiveTab::BUILDINGS) {
+      if (collectiveTab == CollectiveTab::BUILDINGS) {
         if (Keyboard::isKeyPressed(Keyboard::LShift) || Keyboard::isKeyPressed(Keyboard::RShift))
           inputQueue.push(UserInput(UserInputId::RECT_SELECTION, pos));
         else if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl))
           inputQueue.push(UserInput(UserInputId::RECT_DESELECTION, pos));
+        else if (activeBuilding)
+          inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo{pos, *activeBuilding}));
         else
-          inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo{pos, activeBuilding}));
+          inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
       }
     default:
       break;
@@ -188,7 +190,7 @@ void WindowView::mapRightClickFun(Vec2 pos) {
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::SPECTATOR:
     case GameInfo::InfoType::BAND:
-      inputQueue.push(UserInput(UserInputId::POSSESS, pos));
+      guiBuilder.clearActiveButton();
       break;
     default:
       break;
@@ -1150,16 +1152,16 @@ void WindowView::processEvents() {
         if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
           renderer.flushEvents(Event::KeyPressed);
         break;
-      case Event::MouseButtonPressed :
+      case Event::MouseButtonPressed:
         if (event.mouseButton.button == sf::Mouse::Right)
           guiBuilder.closeOverlayWindows();
         if (event.mouseButton.button == sf::Mouse::Middle)
           inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP));
         break;
-      case Event::MouseButtonReleased :
+      case Event::MouseButtonReleased:
         if (event.mouseButton.button == sf::Mouse::Left)
-          inputQueue.push(UserInput(UserInputId::BUTTON_RELEASE, BuildingInfo{Vec2(0, 0),
-              guiBuilder.getActiveBuilding()}));
+          if (auto building = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS))
+            inputQueue.push(UserInput(UserInputId::BUTTON_RELEASE, BuildingInfo{Vec2(0, 0), *building}));
         break;
       default: break;
     }
@@ -1204,7 +1206,7 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
       inputQueue.push(UserInput(UserInputId::WAIT));
       break;
     case Keyboard::Escape:
-      if (!renderer.isMonkey())
+      if (!guiBuilder.clearActiveButton() && !renderer.isMonkey())
         inputQueue.push(UserInput(UserInputId::EXIT));
       break;
     case Keyboard::Up:

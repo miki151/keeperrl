@@ -912,13 +912,13 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
 }
 
 static map<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
-  return {{CollectiveResourceId::MANA, 200}};
   if (resourceBonus) {
     map<CollectiveResourceId, int> credit;
     for (auto elem : ENUM_ALL(CollectiveResourceId))
       credit[elem] = 10000;
     return credit;
-  }
+  } else
+    return {{CollectiveResourceId::MANA, 200}};
  
 }
 
@@ -934,7 +934,7 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random,
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet->keeper.get())
       .setLevel(top)
-      .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
+      .setCredit(getKeeperCredit(true))
       .build());
  
   m->playerCollective = m->collectives.back().get();

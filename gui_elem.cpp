@@ -356,13 +356,13 @@ PGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
         }, width));
 }
 
-PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun) {
+PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hotkey) {
   auto width = [=] { return renderer.getTextLength(s); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
             bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s);
-          r.drawText(colorFun(), bounds.getTopLeft().x, bounds.getTopLeft().y, s);
+          r.drawTextWithHotkey(colorFun(), bounds.getTopLeft().x, bounds.getTopLeft().y, s, hotkey);
         }, width));
 }
 

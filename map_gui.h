@@ -65,6 +65,8 @@ class MapGui : public GuiElem {
   void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   optional<Color> getCreatureHighlight(UniqueEntity<Creature>::Id, int curTime);
+  void setButtonViewId(ViewId);
+  void clearButtonViewId();
 
   private:
   void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, int currentTimeReal,
@@ -158,6 +160,7 @@ class MapGui : public GuiElem {
   int lastRightClick = -10000;
   bool displayScrollHint = false;
   map<UniqueEntity<Creature>::Id, int> teamHighlight;
+  optional<ViewId> buttonViewId;
 };
 
 #endif

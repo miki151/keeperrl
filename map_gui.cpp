@@ -60,6 +60,14 @@ void MapGui::ViewIdMap::clear() {
   ids.clear();
 }
 
+void MapGui::setButtonViewId(ViewId id) {
+  buttonViewId = id;
+}
+
+void MapGui::clearButtonViewId() {
+  buttonViewId = none;
+}
+
 void MapGui::highlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
   for (auto& id : ids)
     ++teamHighlight[id];
@@ -224,8 +232,10 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
       break;
     default: break;
   }
-  center.x = max(0.0, min<double>(center.x, levelBounds.getKX()));
-  center.y = max(0.0, min<double>(center.y, levelBounds.getKY()));
+  if (softCenter) {
+    softCenter->x = max(0.0, min<double>(softCenter->x, levelBounds.getKX()));
+    softCenter->y = max(0.0, min<double>(softCenter->y, levelBounds.getKY()));
+  }
   return false;
 }
 
@@ -484,8 +494,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
       if (auto coord = tile.getHighlightCoord())
         renderer.drawTile(pos + move, *coord, size, color);
-    if (auto id = object.getCreatureId())
-      creatureMap.push_back(CreatureInfo{Rectangle(pos + move, pos + move + size), *id, object.id()});
+    if (!buttonViewId)
+      if (auto id = object.getCreatureId())
+        creatureMap.push_back(CreatureInfo{Rectangle(pos + move, pos + move + size), *id, object.id()});
     if (tile.hasCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, coord, size, color);
@@ -509,8 +520,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y, Tile::getColor(object),
         tilePos.x, tilePos.y, tile.text, Renderer::HOR);
-    if (auto id = object.getCreatureId())
-      creatureMap.push_back(CreatureInfo{Rectangle(tilePos, tilePos + size), *id, object.id()});
+    if (!buttonViewId)
+      if (auto id = object.getCreatureId())
+        creatureMap.push_back(CreatureInfo{Rectangle(tilePos, tilePos + size), *id, object.id()});
     double burningVal = object.getAttribute(ViewObject::Attribute::BURNING);
     if (burningVal > 0) {
       renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'ѡ',
@@ -683,7 +695,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size
   if (auto mousePos = getMousePos())
     if (mouseUI) {
       ret.tilePos = layout->projectOnMap(getBounds(), getScreenPos(), *mousePos);
-      if (ret.tilePos->inRectangle(objects.getBounds()))
+      if (!buttonViewId && ret.tilePos->inRectangle(objects.getBounds()))
         for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
             .intersection(objects.getBounds())) {
           Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
@@ -747,7 +759,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
               isFoW(wpos + Vec2(Dir::SE)),
               isFoW(wpos + Vec2(Dir::SW))));
     }
-    if (highlightedInfo.creaturePos && (layer == ViewLayer::FLOOR || !spriteMode))
+    if (!buttonViewId && highlightedInfo.creaturePos && (layer == ViewLayer::FLOOR || !spriteMode))
       renderer.drawFilledRectangle(Rectangle(*highlightedInfo.creaturePos, *highlightedInfo.creaturePos + size),
           Color::Transparent, colors[ColorId::LIGHT_GRAY]);
     if (!spriteMode)
@@ -798,6 +810,8 @@ void MapGui::render(Renderer& renderer) {
       col = colors[ColorId::RED];
     drawHint(renderer, col, highlightedInfo.object->getLegend());
   }
+  if (buttonViewId && renderer.getMousePos().inRectangle(getBounds()))
+    renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), *buttonViewId, spriteMode, size);
 }
 
 void MapGui::setHint(const vector<string>& h) {

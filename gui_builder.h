@@ -29,6 +29,14 @@ struct HighscoreList;
 class Options;
 class MapGui;
 
+RICH_ENUM(CollectiveTab,
+  BUILDINGS,
+  MINIONS,
+  TECHNOLOGY,
+  VILLAGES,
+  KEY_MAPPING
+);
+
 class GuiBuilder {
   public:
   enum class GameSpeed;
@@ -78,14 +86,6 @@ class GuiBuilder {
   PGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<double>& scrollPos,
       bool& online);
   
-  enum class CollectiveTab {
-    BUILDINGS,
-    MINIONS,
-    TECHNOLOGY,
-    VILLAGES,
-    KEY_MAPPING,
-  };
-  
   void setCollectiveTab(CollectiveTab t);
   CollectiveTab getCollectiveTab() const;
 
@@ -97,8 +97,9 @@ class GuiBuilder {
   void addFpsCounterTick();
   void addUpsCounterTick();
   void closeOverlayWindows();
-  int getActiveBuilding() const;
-  int getActiveLibrary() const;
+  bool clearActiveButton();
+  void setActiveButton(CollectiveTab, int num, ViewId);
+  optional<int> getActiveButton(CollectiveTab) const;
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
   bool showMorale() const;
@@ -148,9 +149,12 @@ class GuiBuilder {
   PGuiElem drawTeams(CollectiveInfo&);
   PGuiElem teamCache;
   int teamHash = 0;
-  int activeBuilding = 0;
-  bool hideBuildingOverlay = false;
-  int activeLibrary = -1;
+  optional<string> activeGroup;
+  struct ActiveButton {
+    CollectiveTab tab;
+    int num;
+  };
+  optional<ActiveButton> activeButton;
   bool showTasks = false;
   bool tilesOk;
   double inventoryScroll = 0;
@@ -187,8 +191,8 @@ class GuiBuilder {
     sf::Clock clock;
   } fpsCounter, upsCounter;
 
-  vector<PGuiElem> drawButtons(vector<CollectiveInfo::Button> buttons, int& active, CollectiveTab);
-  PGuiElem getButtonLine(CollectiveInfo::Button, int num, int& active, CollectiveTab);
+  vector<PGuiElem> drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab);
+  PGuiElem getButtonLine(CollectiveInfo::Button, int num, CollectiveTab);
   void drawMinionsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   PGuiElem minionsOverlayCache;
   int minionsOverlayHash = 0;

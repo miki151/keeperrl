@@ -120,18 +120,18 @@ struct PlayerControl::BuildInfo {
   string help;
   char hotkey;
   string groupName;
+  bool hotkeyOpensGroup;
 
-  BuildInfo(SquareInfo info, vector<Requirement> = {}, const string& h = "", char hotkey = 0,
-      string group = "");
+  BuildInfo(SquareInfo info, vector<Requirement> req = {}, const string& h = "", char key = 0, string group = "",
+      bool hotkeyOpens = false) : squareInfo(info), buildType(SQUARE), requirements(req), help(h), hotkey(key),
+      groupName(group), hotkeyOpensGroup(hotkeyOpens) {}
+
   BuildInfo(TrapInfo info, vector<Requirement> = {}, const string& h = "", char hotkey = 0,
       string group = "");
   BuildInfo(DeityHabitat, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
   BuildInfo(const Creature*, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
   BuildInfo(BuildType type, const string& h = "", char hotkey = 0, string group = "");
 };
-
-PlayerControl::BuildInfo::BuildInfo(SquareInfo info, vector<Requirement> req, const string& h, char key, string group)
-    : squareInfo(info), buildType(SQUARE), requirements(req), help(h), hotkey(key), groupName(group) {}
 
 PlayerControl::BuildInfo::BuildInfo(TrapInfo info, vector<Requirement> req, const string& h, char key, string group)
     : trapInfo(info), buildType(TRAP), requirements(req), help(h), hotkey(key), groupName(group) {}
@@ -161,7 +161,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
     BuildInfo({SquareId::MOUNTAIN, {ResourceId::STONE, 50}, "Fill up tunnel"}, {},
         "Fill up one tile at a time. Cutting off an area is not allowed."),
     BuildInfo({SquareId::STOCKPILE, {ResourceId::GOLD, 0}, "Everything", true}, {},
-        "All possible items in your dungeon can be stored here.", 's', "Storage"),
+        "All possible items in your dungeon can be stored here.", 's', "Storage", true),
     BuildInfo({SquareId::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, {},
         "All equipment for your minions can be stored here.", 0, "Storage"),
     BuildInfo({SquareId::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, {},
@@ -802,6 +802,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
     buttons.back().help = combineSentences(concat({button.help}, unmetReqText));
     buttons.back().hotkey = button.hotkey;
     buttons.back().groupName = button.groupName;
+    buttons.back().hotkeyOpensGroup = button.hotkeyOpensGroup;
   }
   return buttons;
 }
@@ -1369,6 +1370,13 @@ void PlayerControl::processInput(View* view, UserInput input) {
         else
           getTeams().deactivate(input.get<TeamId>());
         break;
+    case UserInputId::TILE_CLICK: {
+        Vec2 pos = input.get<Vec2>();
+        if (pos.inRectangle(getLevel()->getBounds()))
+          tryLockingDoor(Position(pos, getLevel()));
+        break;
+        }
+
 /*    case UserInputId::MOVE_TO:
         if (getCurrentTeam() && getTeams().isActive(*getCurrentTeam()) &&
             getCollective()->isKnownSquare(Position(input.get<Vec2>(), getLevel()))) {
@@ -1471,12 +1479,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
               chosenCreature = getTeams().getLeader(info.team)->getUniqueId();
           }
         break; }
-    case UserInputId::POSSESS: {
-        Vec2 pos = input.get<Vec2>();
-        if (pos.inRectangle(getLevel()->getBounds()))
-          tryLockingDoor(Position(pos, getLevel()));
-        break;
-        }
     case UserInputId::RECT_SELECTION:
         if (rectSelection) {
           rectSelection->corner2 = input.get<Vec2>();
