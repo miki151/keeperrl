@@ -63,6 +63,7 @@ class Skill : public Singleton<Skill, SkillId> {
 class Skillset {
   public:
   void insert(SkillId);
+  void erase(SkillId);
   bool hasDiscrete(SkillId) const;
   double getValue(SkillId) const;
   void setValue(SkillId, double);

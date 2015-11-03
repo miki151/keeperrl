@@ -1749,11 +1749,13 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DARK_ELF:
       return INHERIT(ELF,
           c.viewId = Random.choose({ViewId::DARK_ELF, ViewId::DARK_ELF_WOMAN});
+          c.skills.erase(SkillId::ELF_VISION);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.name = EntityName("dark elf", "dark elves"););
     case CreatureId::DARK_ELF_WARRIOR:
       return INHERIT(ELF_ARCHER,
           c.viewId = ViewId::DARK_ELF_WARRIOR;
+          c.skills.erase(SkillId::ELF_VISION);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
@@ -1765,10 +1767,14 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DARK_ELF_CHILD:
       return INHERIT(ELF_CHILD,
           c.viewId = ViewId::DARK_ELF_CHILD;
+          c.skills.erase(SkillId::ELF_VISION);
+          c.skills.insert(SkillId::NIGHT_VISION);
           c.name = EntityName("dark elf child", "dark elf children"););
     case CreatureId::DARK_ELF_LORD:
       return INHERIT(ELF_LORD,
           c.viewId = ViewId::DARK_ELF_LORD;
+          c.skills.erase(SkillId::ELF_VISION);
+          c.skills.insert(SkillId::NIGHT_VISION);
           c.name = "dark elf lord";);
     case CreatureId::DRIAD: 
       return CATTR(

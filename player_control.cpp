@@ -1564,6 +1564,11 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
       break;
     case BuildInfo::DESTROY:
+        if (getCollective()->getConstructions().containsSquare(position) &&
+            !getCollective()->getConstructions().getSquare(position).isBuilt()) {
+          getCollective()->removeConstruction(position);
+          selection = SELECT;
+        } else
         if (getCollective()->isKnownSquare(position) && !position.isBurning()) {
           selection = SELECT;
           getCollective()->destroySquare(position);
