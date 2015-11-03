@@ -33,6 +33,7 @@ MapMemory::MapMemory(const vector<Level*>& levels) : table(levels) {
 }
 
 void MapMemory::addObject(Position pos, const ViewObject& obj) {
+  CHECK(pos.isValid());
   if (!getViewIndex(pos))
     getViewIndex(pos) = ViewIndex();
   getViewIndex(pos)->insert(obj);
@@ -52,6 +53,7 @@ const optional<ViewIndex>& MapMemory::getViewIndex(Position pos) const {
 }
 
 void MapMemory::update(Position pos, const ViewIndex& index) {
+  CHECK(pos.isValid());
   getViewIndex(pos) = index;
   getViewIndex(pos)->setHighlight(HighlightType::MEMORY);
   if (getViewIndex(pos)->hasObject(ViewLayer::CREATURE) && 

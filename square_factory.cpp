@@ -1131,7 +1131,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.canDestroy = true;
             c.flamability = 1;));
     case SquareId::TRIBE_DOOR:
-        return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door - right click to lock.")
+        return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door. Click to lock.")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), s.get<const Tribe*>(), 100,
           CONSTRUCT(Square::Params,
             c.name = "door";
