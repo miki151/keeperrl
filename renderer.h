@@ -123,8 +123,10 @@ class Renderer {
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline = none);
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, Vec2 size);
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1);
+  void drawViewObject(Vec2 pos, const ViewObject&);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, Vec2 size, Color = colors[ColorId::WHITE]);
+  void drawViewObject(Vec2 pos, ViewId, Color = colors[ColorId::WHITE]);
   void drawTile(Vec2 pos, TileCoord coord, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = colors[ColorId::WHITE], bool hFlip = false,
       bool vFlip = false);

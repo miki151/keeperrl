@@ -135,12 +135,11 @@ void WindowView::initialize() {
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = gui.stack(gui.border2(), gui.rectangle(colors[ColorId::BLACK]));
   resetMapBounds();
-  guiBuilder.setTilesOk(useTiles);
   guiBuilder.setMapGui(mapGui);
 }
 
 void WindowView::mapCreatureDragFun(UniqueEntity<Creature>::Id id, ViewId viewId, Vec2 origin) {
-  gui.getDragContainer().put({DragContentId::CREATURE, id}, gui.viewObject(viewId, useTiles), origin);
+  gui.getDragContainer().put({DragContentId::CREATURE, id}, gui.viewObject(viewId), origin);
 }
 
 void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {

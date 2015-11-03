@@ -853,6 +853,15 @@ const Tile& Tile::getTile(ViewId id, bool sprite) {
   }
 }
 
+const Tile& Tile::getTile(ViewId id) {
+  if (tiles[id])
+    return *tiles[id];
+  else {
+    CHECK(symbols[id]);
+    return *symbols[id];
+  }
+}
+
 Color Tile::getColor(const ViewObject& object) {
   if (object.hasModifier(ViewObject::Modifier::LOCKED))
     return colors[ColorId::PURPLE];

@@ -68,10 +68,6 @@ function<void()> GuiBuilder::getButtonCallback(UserInput input) {
   return [this, input]() { callbacks.input(input); };
 }
 
-void GuiBuilder::setTilesOk(bool ok) {
-  tilesOk = ok;
-}
-
 void GuiBuilder::setCollectiveTab(CollectiveTab t) {
   collectiveTab = t;
   if (t != CollectiveTab::MINIONS) {
@@ -112,7 +108,7 @@ PGuiElem GuiBuilder::drawCost(pair<ViewId, int> cost, ColorId color) {
   string costText = toString(cost.second);
   return GuiFactory::ListBuilder(gui)
       .addElemAuto(gui.rightMargin(5, gui.label(costText, colors[color])))
-      .addElem(gui.viewObject(cost.first, tilesOk), 25)
+      .addElem(gui.viewObject(cost.first), 25)
       .buildHorizontalList();
 }
 
@@ -156,7 +152,7 @@ Event::KeyEvent GuiBuilder::getHotkeyEvent(char c) {
 
 PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, CollectiveTab tab) {
   GuiFactory::ListBuilder line(gui);
-  line.addElem(gui.viewObject(button.viewId, tilesOk), 35);
+  line.addElem(gui.viewObject(button.viewId), 35);
   if (button.state != CollectiveInfo::Button::ACTIVE)
     line.addElem(gui.label(button.name + " " + button.count, colors[ColorId::GRAY], button.hotkey), 100);
   else
@@ -202,7 +198,7 @@ vector<PGuiElem> GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons,
         clearActiveButton();
       };
       vector<PGuiElem> line;
-      line.push_back(gui.viewObject(buttons[i].viewId, tilesOk));
+      line.push_back(gui.viewObject(buttons[i].viewId));
       char hotkey = buttons[i].hotkeyOpensGroup ? buttons[i].hotkey : 0;
       line.push_back(gui.label(lastGroup, [lastGroup, this] {
             return activeGroup == lastGroup ? colors[ColorId::GREEN] : colors[ColorId::WHITE];}, hotkey));
@@ -255,7 +251,7 @@ PGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
   vector<PGuiElem> lines = drawButtons(info.libraryButtons, CollectiveTab::TECHNOLOGY);
   for (int i : All(info.techButtons)) {
     vector<PGuiElem> line;
-    line.push_back(gui.viewObject(ViewObject(info.techButtons[i].viewId, ViewLayer::CREATURE, ""), tilesOk));
+    line.push_back(gui.viewObject(info.techButtons[i].viewId));
     line.push_back(gui.label(info.techButtons[i].name, colors[ColorId::WHITE], info.techButtons[i].hotkey));
     lines.push_back(gui.stack(gui.button(
           getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i)), getHotkeyEvent(info.techButtons[i].hotkey)),
@@ -323,7 +319,7 @@ PGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
     vector<PGuiElem> topLine;
     for (int i : All(info.numResource)) {
       vector<PGuiElem> res;
-      res.push_back(gui.viewObject(info.numResource[i].viewId, tilesOk));
+      res.push_back(gui.viewObject(info.numResource[i].viewId));
       res.push_back(gui.label([&info, i] { return toString<int>(info.numResource[i].count); },
             [&info, i] { return info.numResource[i].count >= 0 ? colors[ColorId::WHITE] : colors[ColorId::RED]; }));
       topLine.push_back(gui.stack(getHintCallback({info.numResource[i].name}),
@@ -536,10 +532,10 @@ PGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   GuiFactory::ListBuilder line(gui);
   int leftMargin = -4;
   if (item.locked) {
-    line.addElem(gui.viewObject(ViewId::KEY, tilesOk), viewObjectWidth);
+    line.addElem(gui.viewObject(ViewId::KEY), viewObjectWidth);
     leftMargin -= viewObjectWidth - 3;
   }
-  line.addElem(gui.viewObject(item.viewId, tilesOk), viewObjectWidth);
+  line.addElem(gui.viewObject(item.viewId), viewObjectWidth);
   Color color = colors[item.equiped ? ColorId::GREEN : (item.pending || item.unavailable) ?
       ColorId::GRAY : ColorId::WHITE];
   if (item.number > 1)
@@ -551,7 +547,7 @@ PGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   for (auto& elem : line.getAllElems())
     elem = gui.stack(gui.button(onClick), std::move(elem), getTooltip(getItemHint(item)));
   if (item.owner) {
-    line.addBackElem(gui.viewObject(item.owner->viewId, tilesOk), viewObjectWidth);
+    line.addBackElem(gui.viewObject(item.owner->viewId), viewObjectWidth);
     line.addBackElem(gui.label("L:" + toString(item.owner->expLevel)), 60);
   }
   if (item.price)
@@ -845,7 +841,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
         gui.label("Team: ", colors[ColorId::WHITE]));
     for (auto& elem : info.team) {
       currentLine.push_back(gui.stack(
-            gui.viewObject(elem.viewId, tilesOk),
+            gui.viewObject(elem.viewId),
             gui.label(toString(elem.expLevel), 12)));
       widths.push_back(30);
       if (currentLine.size() >= numPerLine) {
@@ -935,7 +931,7 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
       for (auto member : team.members) {
         auto& memberInfo = info.getMinion(member);
         currentLine.push_back(gui.stack(makeVec<PGuiElem>(
-                gui.viewObject(memberInfo.viewId, tilesOk),
+                gui.viewObject(memberInfo.viewId),
                 gui.label(toString(memberInfo.expLevel), 12))));
         if (currentLine.size() >= numPerLine)
           teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
@@ -976,7 +972,7 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
     auto& elem = info.minionGroups[i];
     vector<PGuiElem> line;
     vector<int> widths;
-    line.push_back(gui.viewObject(elem.viewId, tilesOk));
+    line.push_back(gui.viewObject(elem.viewId));
     widths.push_back(40);
     Color col = elem.highlight ? colors[ColorId::GREEN] : colors[ColorId::WHITE];
     line.push_back(gui.label(toString(elem.count) + "   " + elem.name, col));
@@ -1002,7 +998,7 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
     list.addElem(gui.label("Enemies:", colors[ColorId::WHITE]));
     for (auto& elem : info.enemyGroups){
       vector<PGuiElem> line;
-      line.push_back(gui.viewObject(elem.viewId, tilesOk));
+      line.push_back(gui.viewObject(elem.viewId));
       line.push_back(gui.label(toString(elem.count) + "   " + elem.name, colors[ColorId::WHITE]));
       list.addElem(gui.stack(
           gui.button(getButtonCallback({UserInputId::GO_TO_ENEMY, elem.creatureId})),
@@ -1026,7 +1022,7 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info
   for (auto& elem : info.taskMap)
     if (elem.creature)
       lines.push_back(gui.horizontalList(makeVec<PGuiElem>(
-            gui.viewObject(info.getMinion(*elem.creature).viewId, tilesOk),
+            gui.viewObject(info.getMinion(*elem.creature).viewId),
             gui.label(elem.name, colors[elem.priority ? ColorId::GREEN : ColorId::WHITE])), 35));
     else
       freeLines.push_back(gui.horizontalList(makeVec<PGuiElem>(
@@ -1544,7 +1540,7 @@ PGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
     map<ViewId, vector<PlayerInfo>> minionMap = groupByViewId(minions);
     auto list = gui.getListBuilder(legendLineHeight);
     for (auto& elem : minionMap) {
-      list.addElem(gui.topMargin(5, gui.viewObject(elem.first, tilesOk)), legendLineHeight + 5);
+      list.addElem(gui.topMargin(5, gui.viewObject(elem.first)), legendLineHeight + 5);
       for (auto& minion : elem.second) {
         auto minionId = minion.creatureId;
         Color color = colors[current == minionId ? ColorId::GREEN : ColorId::WHITE];
@@ -1566,7 +1562,7 @@ PGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
         list.addElem(gui.stack(
               gui.button(getButtonCallback({UserInputId::CREATURE_BUTTON, minionId})),
               gui.dragSource({DragContentId::CREATURE, minionId},
-                [=]{ return gui.viewObject(minion.viewId, tilesOk);}),
+                [=]{ return gui.viewObject(minion.viewId);}),
               line.buildHorizontalList()));
       }
     }
@@ -1859,7 +1855,7 @@ vector<PGuiElem> GuiBuilder::drawRecruitList(const vector<CreatureInfo>& creatur
               canAfford ? gui.mouseHighlight2(gui.highlight(listLineHeight)) : gui.empty(),
               GuiFactory::ListBuilder(gui)
                   .addElemAuto(gui.rightMargin(10, gui.label(toString(elem.count), colors[color])))
-                  .addElem(gui.viewObject(elem.viewId, tilesOk), 50)
+                  .addElem(gui.viewObject(elem.viewId), 50)
                   .addElem(gui.label("level " + toString(elem.any.expLevel), colors[color]), 50)
                   .addBackElemAuto(drawCost(*elem.any.cost, color)).buildHorizontalList()))));
   }

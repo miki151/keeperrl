@@ -810,7 +810,7 @@ void MapGui::render(Renderer& renderer) {
       col = colors[ColorId::RED];
     drawHint(renderer, col, highlightedInfo.object->getLegend());
   }
-  if (buttonViewId && renderer.getMousePos().inRectangle(getBounds()))
+  if (spriteMode && buttonViewId && renderer.getMousePos().inRectangle(getBounds()))
     renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), *buttonViewId, spriteMode, size);
 }
 

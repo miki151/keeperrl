@@ -26,6 +26,7 @@ class Tile {
   public:
   typedef Renderer::TileCoord TileCoord;
   static const Tile& getTile(ViewId, bool sprite);
+  static const Tile& getTile(ViewId);
   static Color getColor(const ViewObject& object);
 
   static Tile empty();

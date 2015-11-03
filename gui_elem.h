@@ -132,8 +132,8 @@ class GuiFactory {
       Renderer::FontId = Renderer::SYMBOL_FONT);
   PGuiElem labelUnicode(const String&, function<Color()>, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
-  PGuiElem viewObject(const ViewObject& object, bool useSprites);
-  PGuiElem viewObject(ViewId, bool useSprites);
+  PGuiElem viewObject(const ViewObject&);
+  PGuiElem viewObject(ViewId);
   PGuiElem drawCustom(function<void(Renderer&, Rectangle)>);
   PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
   PGuiElem centerHoriz(PGuiElem, int width);

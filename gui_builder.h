@@ -48,7 +48,6 @@ class GuiBuilder {
   };
   GuiBuilder(Renderer&, GuiFactory&, Clock*, Options*, Callbacks);
   void reset();
-  void setTilesOk(bool);
   int getStandardLineHeight() const;
   
   PGuiElem getSunlightInfoGui(GameSunlightInfo& sunlightInfo);
@@ -156,7 +155,6 @@ class GuiBuilder {
   };
   optional<ActiveButton> activeButton;
   bool showTasks = false;
-  bool tilesOk;
   double inventoryScroll = 0;
   double playerStatsScroll = 0;
   double buildingsScroll = 0;

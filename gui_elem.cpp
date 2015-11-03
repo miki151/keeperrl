@@ -1268,27 +1268,26 @@ PGuiElem GuiFactory::empty() {
 
 class ViewObjectGui : public GuiElem {
   public:
-  ViewObjectGui(const ViewObject& obj, bool sprites) : object(obj), useSprites(sprites) {}
-  ViewObjectGui(ViewId id, bool sprites) : object(id), useSprites(sprites) {}
+  ViewObjectGui(const ViewObject& obj) : object(obj) {}
+  ViewObjectGui(ViewId id) : object(id) {}
   
   virtual void render(Renderer& renderer) override {
     if (ViewObject* obj = boost::get<ViewObject>(&object))
-      renderer.drawViewObject(getBounds().getTopLeft(), *obj, useSprites);
+      renderer.drawViewObject(getBounds().getTopLeft(), *obj);
     else
-      renderer.drawViewObject(getBounds().getTopLeft(), boost::get<ViewId>(object), useSprites);
+      renderer.drawViewObject(getBounds().getTopLeft(), boost::get<ViewId>(object));
   }
 
   private:
   variant<ViewObject, ViewId> object;
-  bool useSprites;
 };
 
-PGuiElem GuiFactory::viewObject(const ViewObject& object, bool useSprites) {
-  return PGuiElem(new ViewObjectGui(object, useSprites));
+PGuiElem GuiFactory::viewObject(const ViewObject& object) {
+  return PGuiElem(new ViewObjectGui(object));
 }
 
-PGuiElem GuiFactory::viewObject(ViewId id, bool useSprites) {
-  return PGuiElem(new ViewObjectGui(id, useSprites));
+PGuiElem GuiFactory::viewObject(ViewId id) {
+  return PGuiElem(new ViewObjectGui(id));
 }
 
 class DragSource : public GuiElem {
