@@ -120,7 +120,7 @@ struct PlayerControl::BuildInfo {
   string help;
   char hotkey;
   string groupName;
-  bool hotkeyOpensGroup;
+  bool hotkeyOpensGroup = false;
 
   BuildInfo(SquareInfo info, vector<Requirement> req = {}, const string& h = "", char key = 0, string group = "",
       bool hotkeyOpens = false) : squareInfo(info), buildType(SQUARE), requirements(req), help(h), hotkey(key),

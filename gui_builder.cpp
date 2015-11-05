@@ -179,7 +179,7 @@ PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
   }
   return gui.stack(
       getHintCallback({capitalFirst(button.help)}),
-      gui.button(buttonFun, getHotkeyEvent(!button.hotkeyOpensGroup ? button.hotkey : 0)),
+      gui.button(buttonFun, getHotkeyEvent(!button.hotkeyOpensGroup ? button.hotkey : 0), true),
       line.buildHorizontalList());
 }
 
