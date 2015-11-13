@@ -1751,7 +1751,7 @@ void Collective::orderExecution(Creature* c) {
 void Collective::orderTorture(Creature* c) {
   vector<Position> posts = getAllSquares({SquareId::TORTURE_TABLE}, true);
   for (Position p : squaresInUse)
-    removeElement(posts, p);
+    removeElementMaybe(posts, p);
   if (posts.empty())
     return;
   Position pos = Random.choose(posts);
