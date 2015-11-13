@@ -38,12 +38,13 @@
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(UniqueEntity)
-    & SVAR(done);
+    & SVAR(done)
+    & SVAR(transfer);
 }
 
 SERIALIZABLE(Task);
 
-Task::Task() {
+Task::Task(bool t) : transfer(t) {
 }
 
 Task::~Task() {
@@ -54,6 +55,10 @@ bool Task::isImpossible(const Level*) {
 }
 
 bool Task::canTransfer() {
+  return transfer;
+}
+
+bool Task::canPerform(const Creature* c) {
   return true;
 }
 
@@ -69,7 +74,8 @@ namespace {
 
 class Construction : public Task {
   public:
-  Construction(TaskCallback* c, Position pos, const SquareType& _type) : type(_type), position(pos), callback(c) {}
+  Construction(TaskCallback* c, Position pos, const SquareType& _type) : Task(true), type(_type), position(pos),
+      callback(c) {}
 
   virtual bool isImpossible(const Level* level) override {
     return !position.canConstruct(type);
@@ -123,7 +129,7 @@ namespace {
 
 class BuildTorch : public Task {
   public:
-  BuildTorch(TaskCallback* c, Position pos, Dir dir) : position(pos), callback(c), attachmentDir(dir) {}
+  BuildTorch(TaskCallback* c, Position pos, Dir dir) : Task(true), position(pos), callback(c), attachmentDir(dir) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(c->hasSkill(Skill::get(SkillId::CONSTRUCTION)));
@@ -160,19 +166,7 @@ PTask Task::buildTorch(TaskCallback* call, Position target, Dir attachmentDir) {
 
 namespace {
 
-class NonTransferable : public Task {
-  public:
-
-  virtual bool canTransfer() override {
-    return false;
-  }
-
-  SERIALIZE_SUBCLASS(Task); 
-};
-
-}
-
-class PickItem : public NonTransferable {
+class PickItem : public Task {
   public:
   PickItem(TaskCallback* c, Position pos, vector<Item*> _items, int retries = 10)
       : items(_items), position(pos), callback(c), tries(retries) {
@@ -243,7 +237,7 @@ class PickItem : public NonTransferable {
     return NoMove;
   }
 
-  SERIALIZE_ALL2(NonTransferable, items, pickedUp, position, tries, callback); 
+  SERIALIZE_ALL2(Task, items, pickedUp, position, tries, callback); 
   SERIALIZATION_CONSTRUCTOR(PickItem);
 
   protected:
@@ -253,10 +247,13 @@ class PickItem : public NonTransferable {
   TaskCallback* SERIAL(callback);
   int SERIAL(tries);
 };
+}
 
 PTask Task::pickItem(TaskCallback* c, Position position, vector<Item*> items) {
   return PTask(new PickItem(c, position, items));
 }
+
+namespace {
 
 class PickAndEquipItem : public PickItem {
   public:
@@ -288,12 +285,15 @@ class PickAndEquipItem : public PickItem {
   SERIALIZATION_CONSTRUCTOR(PickAndEquipItem);
 };
 
+}
+
 PTask Task::pickAndEquipItem(TaskCallback* c, Position position, Item* items) {
   return PTask(new PickAndEquipItem(c, position, {items}));
 }
 
 namespace {
-class EquipItem : public NonTransferable {
+
+class EquipItem : public Task {
   public:
   EquipItem(Item* item) : itemId(item->getUniqueId()) {
   }
@@ -315,7 +315,7 @@ class EquipItem : public NonTransferable {
     }
   }
 
-  SERIALIZE_ALL2(NonTransferable, itemId); 
+  SERIALIZE_ALL2(Task, itemId); 
   SERIALIZATION_CONSTRUCTOR(EquipItem);
 
   private:
@@ -442,7 +442,7 @@ PTask Task::applyItem(TaskCallback* c, Position position, Item* item, Position t
   return PTask(new ApplyItem(c, position, {item}, target));
 }
 
-class ApplySquare : public NonTransferable {
+class ApplySquare : public Task {
   public:
   ApplySquare(TaskCallback* c, vector<Position> pos) : positions(pos), callback(c) {}
 
@@ -490,7 +490,7 @@ class ApplySquare : public NonTransferable {
     return "Apply square " + (position ? toString(*position) : "");
   }
 
-  SERIALIZE_ALL2(NonTransferable, positions, rejectedPosition, invalidCount, position, callback); 
+  SERIALIZE_ALL2(Task, positions, rejectedPosition, invalidCount, position, callback); 
   SERIALIZATION_CONSTRUCTOR(ApplySquare);
 
   private:
@@ -508,7 +508,7 @@ PTask Task::applySquare(TaskCallback* c, vector<Position> position) {
 
 namespace {
 
-class Kill : public NonTransferable {
+class Kill : public Task {
   public:
   enum Type { ATTACK, TORTURE };
   Kill(TaskCallback* call, Creature* c, Type t) : creature(c), type(t), callback(call) {}
@@ -548,7 +548,7 @@ class Kill : public NonTransferable {
     callback->onKillCancelled(creature);
   }
 
-  SERIALIZE_ALL2(NonTransferable, creature, type, callback); 
+  SERIALIZE_ALL2(Task, creature, type, callback); 
   SERIALIZATION_CONSTRUCTOR(Kill);
 
   private:
@@ -569,7 +569,7 @@ PTask Task::torture(TaskCallback* callback, Creature* creature) {
 
 namespace {
 
-class Sacrifice : public NonTransferable {
+class Sacrifice : public Task {
   public:
   Sacrifice(TaskCallback* call, Creature* c) : creature(c), callback(call) {}
 
@@ -605,7 +605,7 @@ class Sacrifice : public NonTransferable {
     callback->onKillCancelled(creature);
   }
 
-  SERIALIZE_ALL2(NonTransferable, creature, sacrificePos, callback); 
+  SERIALIZE_ALL2(Task, creature, sacrificePos, callback); 
   SERIALIZATION_CONSTRUCTOR(Sacrifice);
 
   private:
@@ -622,7 +622,7 @@ PTask Task::sacrifice(TaskCallback* callback, Creature* creature) {
 
 namespace {
 
-class DestroySquare : public NonTransferable {
+class DestroySquare : public Task {
   public:
   DestroySquare(Position pos) : position(pos) {
   }
@@ -646,7 +646,7 @@ class DestroySquare : public NonTransferable {
     return "Destroy " + toString(position);
   }
 
-  SERIALIZE_ALL2(NonTransferable, position); 
+  SERIALIZE_ALL2(Task, position); 
   SERIALIZATION_CONSTRUCTOR(DestroySquare);
 
   private:
@@ -661,9 +661,9 @@ PTask Task::destroySquare(Position position) {
 
 namespace {
 
-class Disappear : public NonTransferable {
+class Disappear : public Task {
   public:
-  using NonTransferable::NonTransferable;
+  Disappear() {}
 
   virtual MoveInfo getMove(Creature* c) override {
     return c->disappear();
@@ -673,7 +673,7 @@ class Disappear : public NonTransferable {
     return "Disappear";
   }
 
-  SERIALIZE_SUBCLASS(NonTransferable); 
+  SERIALIZE_SUBCLASS(Task); 
 };
 
 }
@@ -739,7 +739,7 @@ PTask Task::chain(vector<PTask> v) {
 
 namespace {
 
-class Explore : public NonTransferable {
+class Explore : public Task {
   public:
   Explore(Position pos) : position(pos) {}
 
@@ -760,7 +760,7 @@ class Explore : public NonTransferable {
     return "Explore " + toString(position);
   }
 
-  SERIALIZE_ALL2(NonTransferable, position); 
+  SERIALIZE_ALL2(Task, position); 
   SERIALIZATION_CONSTRUCTOR(Explore);
 
   private:
@@ -775,7 +775,7 @@ PTask Task::explore(Position pos) {
 
 namespace {
 
-class AttackLeader : public NonTransferable {
+class AttackLeader : public Task {
   public:
   AttackLeader(Collective* col) : collective(col) {}
 
@@ -790,7 +790,7 @@ class AttackLeader : public NonTransferable {
     return "Attack " + collective->getLeader()->getName().bare();
   }
   
-  SERIALIZE_ALL2(NonTransferable, collective); 
+  SERIALIZE_ALL2(Task, collective); 
   SERIALIZATION_CONSTRUCTOR(AttackLeader);
 
   private:
@@ -815,7 +815,7 @@ PTask Task::stealFrom(Collective* collective, TaskCallback* callback) {
 
 namespace {
 
-class CampAndSpawn : public NonTransferable {
+class CampAndSpawn : public Task {
   public:
   CampAndSpawn(Collective* _target, Collective* _self, CreatureFactory s, int defense, Range attack, int numAtt)
     : target(_target), self(_self), spawns(s),
@@ -872,7 +872,7 @@ class CampAndSpawn : public NonTransferable {
     return "Camp and spawn " + target->getLeader()->getName().bare();
   }
  
-  SERIALIZE_ALL2(NonTransferable, target, self, spawns, campPos, defenseSize, attackSize, currentAttack, defenseTeam, attackTeam, numAttacks); 
+  SERIALIZE_ALL2(Task, target, self, spawns, campPos, defenseSize, attackSize, currentAttack, defenseTeam, attackTeam, numAttacks); 
   SERIALIZATION_CONSTRUCTOR(CampAndSpawn);
 
   private:
@@ -898,7 +898,7 @@ PTask Task::campAndSpawn(Collective* target, Collective* self, const CreatureFac
 
 namespace {
 
-class KillFighters : public NonTransferable {
+class KillFighters : public Task {
   public:
   KillFighters(Collective* col, int numC) : collective(col), numCreatures(numC) {}
 
@@ -920,7 +920,7 @@ class KillFighters : public NonTransferable {
     return "Kill " + toString(numCreatures) + " minions of " + collective->getFullName();
   }
 
-  SERIALIZE_ALL2(NonTransferable, collective, numCreatures, targets); 
+  SERIALIZE_ALL2(Task, collective, numCreatures, targets); 
   SERIALIZATION_CONSTRUCTOR(KillFighters);
 
   private:
@@ -937,7 +937,7 @@ PTask Task::killFighters(Collective* col, int numCreatures) {
 
 namespace {
 
-class StayInLocationUntil : public NonTransferable {
+class StayInLocationUntil : public Task {
   public:
   StayInLocationUntil(const Location* l, double t) : location(l), time(t) {}
 
@@ -949,7 +949,7 @@ class StayInLocationUntil : public NonTransferable {
     return c->stayIn(location);
   }
 
-  SERIALIZE_ALL2(NonTransferable, location, time); 
+  SERIALIZE_ALL2(Task, location, time); 
   virtual string getDescription() const override {
     return "Stay in " + (location->getName().get_value_or("location")) + " until " + toString(time);
   }
@@ -968,7 +968,7 @@ PTask Task::stayInLocationUntil(const Location* l, double time) {
 }
 
 namespace {
-class ConsumeItem : public NonTransferable {
+class ConsumeItem : public Task {
   public:
   ConsumeItem(TaskCallback* c, vector<Item*> _items) : items(_items), callback(c) {}
 
@@ -981,7 +981,7 @@ class ConsumeItem : public NonTransferable {
     return "Consume item";
   }
   
-  SERIALIZE_ALL2(NonTransferable, items, callback); 
+  SERIALIZE_ALL2(Task, items, callback); 
   SERIALIZATION_CONSTRUCTOR(ConsumeItem);
 
   protected:
@@ -995,7 +995,7 @@ PTask Task::consumeItem(TaskCallback* c, vector<Item*> items) {
 }
 
 namespace {
-class Copulate : public NonTransferable {
+class Copulate : public Task {
   public:
   Copulate(TaskCallback* c, Creature* t, int turns) : target(t), callback(c), numTurns(turns) {}
 
@@ -1026,7 +1026,7 @@ class Copulate : public NonTransferable {
     return "Copulate with " + target->getName().bare();
   }
 
-  SERIALIZE_ALL2(NonTransferable, target, numTurns, callback); 
+  SERIALIZE_ALL2(Task, target, numTurns, callback); 
   SERIALIZATION_CONSTRUCTOR(Copulate);
 
   protected:
@@ -1041,7 +1041,7 @@ PTask Task::copulate(TaskCallback* c, Creature* target, int numTurns) {
 }
 
 namespace {
-class Consume : public NonTransferable {
+class Consume : public Task {
   public:
   Consume(TaskCallback* c, Creature* t) : target(t), callback(c) {}
 
@@ -1066,7 +1066,7 @@ class Consume : public NonTransferable {
     return "Absorb " + target->getName().bare();
   }
 
-  SERIALIZE_ALL2(NonTransferable, target, callback); 
+  SERIALIZE_ALL2(Task, target, callback); 
   SERIALIZATION_CONSTRUCTOR(Consume);
 
   protected:
@@ -1152,7 +1152,7 @@ PTask Task::eat(set<Position> hatcherySquares) {
 }
 
 namespace {
-class GoTo : public NonTransferable {
+class GoTo : public Task {
   public:
   GoTo(Position pos) : target(pos) {}
 
@@ -1168,7 +1168,7 @@ class GoTo : public NonTransferable {
     return "Go to " + toString(target);
   }
 
-  SERIALIZE_ALL2(NonTransferable, target); 
+  SERIALIZE_ALL2(Task, target); 
   SERIALIZATION_CONSTRUCTOR(GoTo);
 
   protected:
@@ -1181,7 +1181,7 @@ PTask Task::goTo(Position pos) {
 }
 
 namespace {
-class GoToAndWait : public NonTransferable {
+class GoToAndWait : public Task {
   public:
   GoToAndWait(Position pos, double maxT) : position(pos), maxTime(maxT) {}
 
@@ -1198,7 +1198,7 @@ class GoToAndWait : public NonTransferable {
     return "Go to and wait " + toString(position);
   }
 
-  SERIALIZE_ALL2(NonTransferable, position, maxTime); 
+  SERIALIZE_ALL2(Task, position, maxTime); 
   SERIALIZATION_CONSTRUCTOR(GoToAndWait);
 
   private:
@@ -1212,7 +1212,7 @@ PTask Task::goToAndWait(Position pos, double maxTime) {
 }
 
 namespace {
-class Whipping : public NonTransferable {
+class Whipping : public Task {
   public:
   Whipping(TaskCallback* c, Position pos, Creature* w, double i, double t)
       : callback(c), position(pos), whipped(w), interval(i), timeout(t) {}
@@ -1260,7 +1260,7 @@ class Whipping : public NonTransferable {
     return "Whipping " + whipped->getName().a();
   }
 
-  SERIALIZE_ALL2(NonTransferable, callback, position, whipped, started, interval, timeout); 
+  SERIALIZE_ALL2(Task, callback, position, whipped, started, interval, timeout); 
   SERIALIZATION_CONSTRUCTOR(Whipping);
 
   protected:
@@ -1278,7 +1278,7 @@ PTask Task::whipping(TaskCallback* callback, Position pos, Creature* whipped, do
 }
 
 namespace {
-class DropItems : public NonTransferable {
+class DropItems : public Task {
   public:
   DropItems(EntitySet<Item> it) : items(it) {}
 
@@ -1290,7 +1290,7 @@ class DropItems : public NonTransferable {
     return "Drop items";
   }
 
-  SERIALIZE_ALL2(NonTransferable, items); 
+  SERIALIZE_ALL2(Task, items); 
   SERIALIZATION_CONSTRUCTOR(DropItems);
 
   protected:
@@ -1303,7 +1303,7 @@ PTask Task::dropItems(vector<Item*> items) {
 }
 
 namespace {
-class Spider : public NonTransferable {
+class Spider : public Task {
   public:
   Spider(Position orig, const vector<Position>& pos, const vector<Position>& pos2)
       : origin(orig), positionsClose(pos), positionsFurther(pos2) {}
@@ -1339,7 +1339,7 @@ class Spider : public NonTransferable {
     return "Spider";
   }
 
-  SERIALIZE_ALL2(NonTransferable, origin, positionsClose, positionsFurther, makeWeb); 
+  SERIALIZE_ALL2(Task, origin, positionsClose, positionsFurther, makeWeb); 
   SERIALIZATION_CONSTRUCTOR(Spider);
 
   protected:
