@@ -86,7 +86,7 @@ Square::~Square() {
 }
 
 void Square::putCreature(Creature* c) {
-  CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
+  //CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
   setCreature(c);
   onEnter(c);
   if (c->isStationary())

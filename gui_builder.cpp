@@ -830,7 +830,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   list.addElem(gui.horizontalList(makeVec<PGuiElem>(
       gui.label("Level " + toString(info.level), colors[ColorId::WHITE]),
       gui.stack(gui.button(getButtonCallback(UserInputId::UNPOSSESS)),
-          gui.label("[U] Leave control", colors[ColorId::LIGHT_BLUE]))), 150, 1));
+          gui.labelHighlight("[U] Leave control", colors[ColorId::LIGHT_BLUE]))), 150, 1));
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addElem(gui.empty());
@@ -1626,7 +1626,7 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
       curTask = getTaskText(task.task);
   return gui.stack(
       gui.horizontalList(makeVec<PGuiElem>(
-          gui.labelHighlight(curTask), gui.label("[change]", colors[ColorId::LIGHT_BLUE])),
+          gui.labelHighlight(curTask), gui.labelHighlight("[change]", colors[ColorId::LIGHT_BLUE])),
         renderer.getTextLength(curTask) + 20),
       gui.button([=] (Rectangle bounds) {
           auto tasks = gui.getListBuilder(legendLineHeight);

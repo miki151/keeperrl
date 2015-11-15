@@ -489,15 +489,10 @@ vector<Vec2> Level::getVisibleTiles(Vec2 pos, VisionId vision) const {
       [&](Vec2 v) { return isWithinVision(pos, v, vision); });
 }
 
-unordered_map<Vec2, const ViewObject*, CustomHash<Vec2>> objectList;
-
 void Level::setBackgroundLevel(const Level* l, Vec2 offs) {
   backgroundLevel = l;
   backgroundOffset = offs;
 }
-
-static unordered_map<Vec2, const ViewObject*, CustomHash<Vec2>> background;
-
 
 const Square* Level::getSafeSquare(Vec2 pos) const {
   CHECK(inBounds(pos));
