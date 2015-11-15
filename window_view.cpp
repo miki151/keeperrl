@@ -1075,7 +1075,13 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
 void WindowView::zoom(int dir) {
   refreshInput = true;
   auto& layouts = currentTileLayout.layouts;
-  int index = dir + *findAddress(layouts, mapLayout);
+  int index = *findAddress(layouts, mapLayout);
+  if (dir != 0 )
+    index += dir;
+  else {
+    CHECK(index == 0 || index == 1) << index;
+    index = 1 - index;
+  }
   index = max(0, min<int>(layouts.size() - 1, index));
   mapLayout = &currentTileLayout.layouts[index];
 }
@@ -1201,8 +1207,7 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
     return;
   lockKeyboard = true;
   switch (key.code) {
-    case Keyboard::Z: zoom(1); break;
-    case Keyboard::A: zoom(-1); break;
+    case Keyboard::Z: zoom(0); break;
     case Keyboard::F2: options->handle(this, OptionSet::GENERAL); refreshScreen(); break;
     case Keyboard::Space:
       inputQueue.push(UserInput(UserInputId::WAIT));

@@ -546,6 +546,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::FETCH_ICON, sprite("leather_gloves"));
     Tile::addTile(ViewId::EYEBALL, sprite("eyeball2").setNoShadow());
     Tile::addTile(ViewId::FOG_OF_WAR, getWaterTile("empty", "fogofwar"));
+    Tile::addTile(ViewId::CREATURE_HIGHLIGHT, sprite("creature_highlight"));
+    Tile::addTile(ViewId::SQUARE_HIGHLIGHT, sprite("square_highlight"));
     Tile::addTile(ViewId::FOG_OF_WAR_CORNER, sprite("fogofwar")
         .addConnection({Dir::NE}, byName("fogofwarcornne"))
         .addConnection({Dir::NW}, byName("fogofwarcornnw"))
@@ -812,6 +814,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::EYEBALL, symbol("e", ColorId::BLUE));
     Tile::addSymbol(ViewId::FETCH_ICON, symbol(0x1f44b, ColorId::LIGHT_BROWN, true));
     Tile::addSymbol(ViewId::FOG_OF_WAR, symbol(' ', ColorId::WHITE));
+    Tile::addSymbol(ViewId::CREATURE_HIGHLIGHT, symbol(' ', ColorId::WHITE));
+    Tile::addSymbol(ViewId::SQUARE_HIGHLIGHT, symbol(' ', ColorId::WHITE));
     Tile::addSymbol(ViewId::FOG_OF_WAR_CORNER, symbol(' ', ColorId::WHITE));
     Tile::addSymbol(ViewId::SPECIAL_BLBN, symbol('B', ColorId::PURPLE));
     Tile::addSymbol(ViewId::SPECIAL_BLBW, symbol('B', ColorId::LIGHT_RED));

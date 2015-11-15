@@ -155,11 +155,11 @@ bool Square::construct(const SquareType& type) {
 }
 
 bool Square::canDestroy(const Tribe* tribe) const {
-  return destroyable && tribe != owner && !fire->isBurning();
+  return isDestroyable() && tribe != owner && !fire->isBurning();
 }
 
 bool Square::isDestroyable() const {
-  return destroyable;
+  return destroyable && !unavailable;
 }
 
 void Square::destroy() {
@@ -172,7 +172,7 @@ void Square::destroy() {
 
 bool Square::canDestroy(const Creature* c) const {
   return canDestroy(c->getTribe())
-    || (destroyable && c->isInvincible()); // so that boulders destroy keeper doors
+    || (isDestroyable() && c->isInvincible()); // so that boulders destroy keeper doors
 }
 
 void Square::destroyBy(Creature* c) {
