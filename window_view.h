@@ -23,7 +23,9 @@
 #include "animation.h"
 #include "gui_builder.h"
 #include "clock.h"
+#include "sound.h"
 
+class SoundLibrary;
 class ViewIndex;
 class Options;
 class Clock;
@@ -39,6 +41,7 @@ class WindowView: public View {
     bool useTiles;
     Options* options;
     Clock* clock;
+    SoundLibrary* soundLibrary;
   };
   static View* createDefaultView(ViewParams);
   static View* createLoggingView(OutputArchive& of, ViewParams);
@@ -86,6 +89,7 @@ class WindowView: public View {
   virtual void stopClock() override;
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
+  virtual void addSound(const Sound&) override;
   
   private:
 
@@ -231,6 +235,10 @@ class WindowView: public View {
   atomic<int> fullScreenTrigger;
   atomic<int> fullScreenResolution;
   atomic<int> zoomUI;
+  void playSounds(const CreatureView*);
+  vector<Sound> soundQueue;
+  EnumMap<SoundId, int> lastPlayed;
+  SoundLibrary* soundLibrary;
 };
 
 

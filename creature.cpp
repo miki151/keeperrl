@@ -38,6 +38,9 @@
 #include "tribe.h"
 #include "creature_attributes.h"
 #include "position.h"
+#include "view.h"
+#include "sound.h"
+#include "trigger.h"
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
@@ -1312,9 +1315,10 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
     } else
       you(getAttackMsg(attack.getType(), false, attack.getLevel()), concat({enemyName}, attackAdjective));
     other->takeDamage(attack);
-  }
-  else
+  } else {
     you(MsgType::MISS_ATTACK, enemyName);
+    getModel()->getView()->addSound(Sound(SoundId::MISSED_ATTACK).setPosition(getPosition()));
+  }
   double oldTime = getTime();
   if (spend)
     c->spendTime(timeSpent);
@@ -1352,6 +1356,17 @@ bool Creature::isCritical(BodyPart part) const {
     || (part == BodyPart::HEAD && numGood(part) == 0 && !isUndead());
 }
 
+static optional<SoundId> getAttackSound(AttackType type, bool damage) {
+  switch (type) {
+    case AttackType::HIT:
+    case AttackType::PUNCH:
+    case AttackType::CRUSH: return damage ? SoundId::BLUNT_DAMAGE : SoundId::BLUNT_NO_DAMAGE;
+    case AttackType::CUT:
+    case AttackType::STAB: return damage ? SoundId::BLADE_DAMAGE : SoundId::BLADE_NO_DAMAGE;
+    default: return none;
+  }
+}
+
 bool Creature::takeDamage(const Attack& attack) {
   AttackType attackType = attack.getType();
   Creature* other = attack.getAttacker();
@@ -1380,6 +1395,8 @@ bool Creature::takeDamage(const Attack& attack) {
     attributes->lastingEffects[LastingEffect::MAGIC_SHIELD] -= 5;
     globalMessage("The magic shield absorbs the attack", "");
   }
+  if (auto sound = getAttackSound(attack.getType(), attack.getStrength() > defense))
+    getModel()->getView()->addSound(Sound(*sound).setPosition(getPosition()));
   if (attack.getStrength() > defense) {
     if (attackType == AttackType::EAT) {
       if (isLarger(other->getSize(), getSize()) && Random.roll(3)) {
@@ -1660,8 +1677,22 @@ void Creature::die(const string& reason, bool dropInventory, bool dCorpse) {
   die(nullptr, dropInventory, dCorpse);
 }
 
+static double getDeathSoundPitch(CreatureSize size) {
+  switch (size) {
+    case CreatureSize::HUGE: return 0.6;
+    case CreatureSize::LARGE: return 0.9;
+    case CreatureSize::MEDIUM: return 1.5;
+    case CreatureSize::SMALL: return 3.3;
+  }
+}
+
 void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   CHECK(!isDead());
+  if (dCorpse)
+    getModel()->getView()->addSound(Sound(isHumanoid() ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH)
+        .setPosition(getPosition())
+        .setPitch(getDeathSoundPitch(getSize()))
+        );
   lastAttacker = attacker;
   Debug() << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   controller->onKilled(attacker);
@@ -1760,9 +1791,23 @@ CreatureAction Creature::fire(Vec2 direction) const {
   });
 }
 
+CreatureAction Creature::placeTorch(Dir attachmentDir, function<void(Trigger*)> builtCallback) const {
+  return CreatureAction(this, [=](Creature* self) {
+      PTrigger torch = Trigger::getTorch(attachmentDir, position);
+      Trigger* tRef = torch.get();
+      getPosition().addTrigger(std::move(torch));
+      getModel()->getView()->addSound(Sound(SoundId::DIGGING).setPitch(0.5));
+      builtCallback(tRef);
+  });
+}
+
 CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const {
   if (getPosition().plus(direction).canConstruct(type) && canConstruct(type))
     return CreatureAction(this, [=](Creature* self) {
+        if (type.getId() == SquareId::FLOOR)
+          getModel()->getView()->addSound(SoundId::DIGGING);
+        else
+          getModel()->getView()->addSound(Sound(SoundId::DIGGING).setPitch(0.5));
         if (getPosition().plus(direction).construct(type)) {
           if (type.getId() == SquareId::TREE_TRUNK) {
             monsterMessage(getName().the() + " cuts a tree");

@@ -110,6 +110,11 @@ class ReplayView : public View {
         delegate->reset();
     }
 
+    virtual void addSound(const Sound& s) override {
+      if (delegate)
+        delegate->addSound(s);
+    }
+
     virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {
  //     if (delegate)
  //       delegate->displaySplash(m, type, cancelFun);

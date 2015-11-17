@@ -56,6 +56,7 @@
 #include "view_index.h"
 #include "collective_attack.h"
 #include "territory.h"
+#include "sound.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -1567,11 +1568,13 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         if (getCollective()->getConstructions().containsSquare(position) &&
             !getCollective()->getConstructions().getSquare(position).isBuilt()) {
           getCollective()->removeConstruction(position);
+          model->getView()->addSound(SoundId::DIG_UNMARK);
           selection = SELECT;
         } else
         if (getCollective()->isKnownSquare(position) && !position.isBurning()) {
           selection = SELECT;
           getCollective()->destroySquare(position);
+          model->getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
           updateSquareMemory(position);
         }
         break;
@@ -1588,11 +1591,13 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     case BuildInfo::TORCH:
         if (getCollective()->isPlannedTorch(position) && selection != SELECT) {
           getCollective()->removeTorch(position);
+          model->getView()->addSound(SoundId::DIG_UNMARK);
           selection = DESELECT;
         }
         else if (getCollective()->canPlaceTorch(position) && selection != DESELECT) {
           getCollective()->addTorch(position);
           selection = SELECT;
+          model->getView()->addSound(SoundId::ADD_CONSTRUCTION);
         }
         break;
     case BuildInfo::DIG: {
@@ -1601,15 +1606,18 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
              getCollective()->getMarkHighlight(position) == HighlightType::CUT_TREE);
         if (markedToDig && selection != SELECT) {
           getCollective()->cancelMarkedTask(position);
+          model->getView()->addSound(SoundId::DIG_UNMARK);
           selection = DESELECT;
         } else
         if (!markedToDig && selection != DESELECT) {
           if (position.canConstruct(SquareId::TREE_TRUNK)) {
             getCollective()->cutTree(position);
+            model->getView()->addSound(SoundId::DIG_MARK);
             selection = SELECT;
           } else
             if (position.canConstruct(SquareId::FLOOR) || !getCollective()->isKnownSquare(position)) {
               getCollective()->dig(position);
+              model->getView()->addSound(SoundId::DIG_MARK);
               selection = SELECT;
             }
         }
@@ -1638,6 +1646,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           if (selection != SELECT) {
             getCollective()->removeConstruction(position);
             selection = DESELECT;
+            model->getView()->addSound(SoundId::DIG_UNMARK);
           }
         } else {
           BuildInfo::SquareInfo info = building.squareInfo;
@@ -1649,6 +1658,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             CostInfo cost = getRoomCost(info.type, info.cost, info.costExponent);
             getCollective()->addConstruction(position, info.type, cost, info.buildImmediatly, info.noCredit);
             selection = SELECT;
+            model->getView()->addSound(SoundId::ADD_CONSTRUCTION);
           }
         }
         break;

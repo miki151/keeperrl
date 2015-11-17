@@ -30,6 +30,7 @@ class ProgressMeter;
 class PlayerInfo;
 struct ItemInfo;
 struct CreatureInfo;
+class Sound;
 
 enum class SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING, AUTOSAVING };
 
@@ -196,6 +197,8 @@ class View {
 
   /** Returns whether the real time clock is currently stopped.*/
   virtual bool isClockStopped() = 0;
+
+  virtual void addSound(const Sound&) = 0;
 };
 
 enum class AnimationId {

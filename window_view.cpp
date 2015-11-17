@@ -33,6 +33,8 @@
 #include "map_gui.h"
 #include "minimap_gui.h"
 #include "player_message.h"
+#include "position.h"
+#include "sound_library.h"
 
 using sf::Color;
 using sf::String;
@@ -100,7 +102,8 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
         [this](UserInput input) { inputQueue.push(input);},
         [this](const vector<string>& s) { mapGui->setHint(s);},
         [this](sf::Event::KeyEvent ev) { keyboardAction(ev);},
-        [this]() { refreshScreen(false);}}), fullScreenTrigger(-1), fullScreenResolution(-1), zoomUI(-1) {}
+        [this]() { refreshScreen(false);}}), fullScreenTrigger(-1), fullScreenResolution(-1), zoomUI(-1),
+    soundLibrary(params.soundLibrary) {}
 
 void WindowView::initialize() {
   renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
@@ -511,11 +514,11 @@ void WindowView::updateMinimap(const CreatureView* creature) {
   minimapGui->update(level, bounds, creature);
 }
 
-void WindowView::updateView(const CreatureView* collective, bool noRefresh) {
+void WindowView::updateView(const CreatureView* view, bool noRefresh) {
   if (!wasRendered && currentThreadId() != renderThreadId)
     return;
   GameInfo newInfo;
-  collective->refreshGameInfo(newInfo);
+  view->refreshGameInfo(newInfo);
   RenderLock lock(renderMutex);
   wasRendered = false;
   guiBuilder.addUpsCounterTick();
@@ -526,11 +529,27 @@ void WindowView::updateView(const CreatureView* collective, bool noRefresh) {
   gameInfo = newInfo;
   mapGui->setSpriteMode(currentTileLayout.sprites);
   bool spectator = gameInfo.infoType == GameInfo::InfoType::SPECTATOR;
-  mapGui->updateObjects(collective, mapLayout, currentTileLayout.sprites || spectator,
+  mapGui->updateObjects(view, mapLayout, currentTileLayout.sprites || spectator,
       !spectator, guiBuilder.showMorale());
-  updateMinimap(collective);
+  updateMinimap(view);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     guiBuilder.setGameSpeed(GuiBuilder::GameSpeed::NORMAL);
+  if (soundLibrary)
+    playSounds(view);
+}
+
+void WindowView::playSounds(const CreatureView* view) {
+  Rectangle area = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds(), mapGui->getScreenPos());
+  int curTime = clock->getRealMillis();
+  const int soundCooldown = 70;
+  for (auto& sound : soundQueue) {
+    if (curTime > lastPlayed[sound.getId()] + soundCooldown && (!sound.getPosition() || 
+        (sound.getPosition()->isSameLevel(view->getLevel()) && sound.getPosition()->getCoord().inRectangle(area)))) {
+      soundLibrary->playSound(sound);
+      lastPlayed[sound.getId()] = curTime;
+    }
+  }
+  soundQueue.clear();
 }
 
 void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
@@ -1280,4 +1299,8 @@ double WindowView::getGameSpeed() {
     case GuiBuilder::GameSpeed::FAST: return 0.04;
     case GuiBuilder::GameSpeed::VERY_FAST: return 0.06;
   }
+}
+
+void WindowView::addSound(const Sound& sound) {
+  soundQueue.push_back(sound);
 }

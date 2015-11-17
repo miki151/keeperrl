@@ -134,12 +134,9 @@ class BuildTorch : public Task {
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(c->hasSkill(Skill::get(SkillId::CONSTRUCTION)));
     if (c->getPosition() == position)
-      return c->wait().append([=](Creature* c) {
-          PTrigger torch = Trigger::getTorch(attachmentDir, position);
-          Trigger* tRef = torch.get();
-          c->getPosition().addTrigger(std::move(torch));
+      return c->placeTorch(attachmentDir, [=](Trigger* t) {
+          callback->onTorchBuilt(position, t);
           setDone();
-          callback->onTorchBuilt(position, tRef);
         });
     else
       return c->moveTowards(position);

@@ -951,36 +951,17 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random,
   m->addCreature(std::move(c));
   m->playerControl->addKeeper(ref);
   vector<CreatureId> ids {
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
+    CreatureId::IMP,
+    CreatureId::IMP,
+    CreatureId::IMP,
+    CreatureId::IMP,
+    CreatureId::IMP,
   };
   for (auto elem : ids) {
-    PCreature c = CreatureFactory::fromId(elem, m->tribeSet->keeper.get(),
-        MonsterAIFactory::collective(m->playerCollective));
+    PCreature c = CreatureFactory::fromId(elem, m->tribeSet->monster.get(),
+        MonsterAIFactory::monster());
     top->landCreature(StairKey::keeperSpawn(), c.get());
-    m->playerCollective->addCreature(c.get(), {MinionTrait::FIGHTER});
+//    m->playerCollective->addCreature(c.get(), {MinionTrait::FIGHTER});
     m->addCreature(std::move(c));
   }
   for (int i : Range(4)) {

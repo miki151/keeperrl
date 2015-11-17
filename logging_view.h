@@ -56,6 +56,10 @@ class LoggingView : public View {
       return logAndGet(delegate->getTimeMilliAbsolute(), LoggingToken::GET_TIME_ABSOLUTE);
     }
 
+    virtual void addSound(const Sound& s) override {
+      delegate->addSound(s);
+    }
+
     virtual double getGameSpeed() override {
       return logAndGet(delegate->getGameSpeed(), LoggingToken::GET_GAME_SPEED);
     }

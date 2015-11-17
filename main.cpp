@@ -45,6 +45,7 @@
 #include "version.h"
 #include "vision.h"
 #include "model_builder.h"
+#include "sound_library.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -208,11 +209,14 @@ int main(int argc, char* argv[]) {
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   Random.init(seed);
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
+  SoundLibrary* soundLibrary = nullptr;
   Clock clock;
   GuiFactory guiFactory(renderer, &clock);
   guiFactory.loadFreeImages(freeDataPath + "/images");
-  if (tilesPresent)
+  if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
+    soundLibrary = new SoundLibrary(paidDataPath + "/sound");
+  }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
   if (vars.count("replay")) {
@@ -222,7 +226,7 @@ int main(int argc, char* argv[]) {
     input->getArchive() >> seed;
     Random.init(seed);
     view.reset(WindowView::createReplayView(input->getArchive(),
-          {renderer, guiFactory, tilesPresent, &options, &clock}));
+          {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
   } else {
     if (vars.count("record")) {
       string fname = vars["record"].as<string>();
@@ -230,10 +234,10 @@ int main(int argc, char* argv[]) {
       output->getArchive() << seed;
       Debug() << "Writing to " << fname;
       view.reset(WindowView::createLoggingView(output->getArchive(),
-            {renderer, guiFactory, tilesPresent, &options, &clock}));
+            {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
     } else 
       view.reset(WindowView::createDefaultView(
-            {renderer, guiFactory, tilesPresent, &options, &clock}));
+            {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
   } 
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);
