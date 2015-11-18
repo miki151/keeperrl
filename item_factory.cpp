@@ -35,6 +35,7 @@
 #include "equipment.h"
 #include "skill.h"
 #include "item_attributes.h"
+#include "sound.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -53,7 +54,7 @@ class FireScroll : public Item {
   public:
   FireScroll(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void apply(Creature* c) override {
+  virtual void applySpecial(Creature* c) override {
     set = true;
   }
 
@@ -177,7 +178,7 @@ class Corpse : public Item {
       corpseInfo(info) {
   }
 
-  virtual void apply(Creature* c) override {
+  virtual void applySpecial(Creature* c) override {
     Item* it = c->getWeapon();
     if (it && it->getAttackType() == AttackType::CUT) {
       c->you(MsgType::DECAPITATE, getTheName());
@@ -273,7 +274,7 @@ class SkillBook : public Item {
   public:
   SkillBook(const ItemAttributes& attr, Skill* s) : Item(attr), skill(s->getId()) {}
 
-  virtual void apply(Creature* c) override {
+  virtual void applySpecial(Creature* c) override {
     c->addSkill(Skill::get(skill));
   }
 
@@ -288,7 +289,7 @@ class TechBook : public Item {
   public:
   TechBook(const ItemAttributes& attr, optional<TechId> t) : Item(attr), tech(t) {}
 
-  virtual void apply(Creature* c) override {
+  virtual void applySpecial(Creature* c) override {
     if (!read || !!tech) {
       c->getModel()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
       read = true;
@@ -309,7 +310,7 @@ class TrapItem : public Item {
       : Item(attr), effect(_effect), trapObject(_trapObject), alwaysVisible(visible) {
   }
 
-  virtual void apply(Creature* c) override {
+  virtual void applySpecial(Creature* c) override {
     if (!alwaysVisible)
       c->you(MsgType::SET_UP_TRAP, "");
     c->getPosition().addTrigger(Trigger::getTrap(trapObject, c->getPosition(), effect, c->getTribe(),
@@ -1174,6 +1175,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.name = "automaton";
             i.applyMsgFirstPerson = "assemble the automaton";
             i.applyMsgThirdPerson = "assembles an automaton";
+            i.applySound = SoundId::TRAP_ARMING;
             i.weight = 30;
             i.itemClass = ItemClass::TOOL;
             i.description = "";
@@ -1187,6 +1189,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
+            i.applySound = SoundId::TRAP_ARMING;
             i.uses = 1;
             i.usedUpMsg = true;
             i.effect = EffectId::GUARDING_BOULDER;
@@ -1198,6 +1201,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
+            i.applySound = SoundId::TRAP_ARMING;
             i.uses = 1;
             i.usedUpMsg = true;
             i.trapType = item.get<TrapInfo>().trapType;

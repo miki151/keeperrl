@@ -25,6 +25,8 @@
 #include "player_message.h"
 #include "fire.h"
 #include "item_attributes.h"
+#include "view.h"
+#include "sound.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -198,7 +200,13 @@ optional<CollectiveResourceId> Item::getResourceId() const {
   return attributes->resourceId;
 }
 
-void Item::apply(Creature* c) {
+void Item::apply(Creature* c, bool noSound) {
+  if (attributes->applySound && !noSound)
+    c->addSound(*attributes->applySound);
+  applySpecial(c);
+}
+
+void Item::applySpecial(Creature* c) {
   if (attributes->itemClass == ItemClass::SCROLL)
     c->getModel()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->effect)

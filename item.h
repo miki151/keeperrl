@@ -61,7 +61,8 @@ class Item : public Renderable, public UniqueEntity<Item> {
 
   static string getTrapName(TrapType);
 
-  virtual void apply(Creature*);
+  virtual void applySpecial(Creature*);
+  void apply(Creature*, bool noSound = false);
 
   bool isDiscarded();
 

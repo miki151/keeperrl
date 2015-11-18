@@ -1317,7 +1317,7 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
     other->takeDamage(attack);
   } else {
     you(MsgType::MISS_ATTACK, enemyName);
-    getModel()->getView()->addSound(Sound(SoundId::MISSED_ATTACK).setPosition(getPosition()));
+    addSound(SoundId::MISSED_ATTACK);
   }
   double oldTime = getTime();
   if (spend)
@@ -1396,7 +1396,7 @@ bool Creature::takeDamage(const Attack& attack) {
     globalMessage("The magic shield absorbs the attack", "");
   }
   if (auto sound = getAttackSound(attack.getType(), attack.getStrength() > defense))
-    getModel()->getView()->addSound(Sound(*sound).setPosition(getPosition()));
+    addSound(*sound);
   if (attack.getStrength() > defense) {
     if (attackType == AttackType::EAT) {
       if (isLarger(other->getSize(), getSize()) && Random.roll(3)) {
@@ -1689,10 +1689,8 @@ static double getDeathSoundPitch(CreatureSize size) {
 void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   CHECK(!isDead());
   if (dCorpse)
-    getModel()->getView()->addSound(Sound(isHumanoid() ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH)
-        .setPosition(getPosition())
-        .setPitch(getDeathSoundPitch(getSize()))
-        );
+    addSound(Sound(isHumanoid() ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH)
+        .setPitch(getDeathSoundPitch(getSize())));
   lastAttacker = attacker;
   Debug() << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   controller->onKilled(attacker);
@@ -1796,18 +1794,26 @@ CreatureAction Creature::placeTorch(Dir attachmentDir, function<void(Trigger*)> 
       PTrigger torch = Trigger::getTorch(attachmentDir, position);
       Trigger* tRef = torch.get();
       getPosition().addTrigger(std::move(torch));
-      getModel()->getView()->addSound(Sound(SoundId::DIGGING).setPitch(0.5));
+      addSound(Sound(SoundId::DIGGING).setPitch(0.5));
       builtCallback(tRef);
   });
+}
+
+void Creature::addSound(const Sound& sound1) const {
+  Sound sound(sound1);
+  sound.setPosition(getPosition());
+  getModel()->getView()->addSound(sound);
 }
 
 CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const {
   if (getPosition().plus(direction).canConstruct(type) && canConstruct(type))
     return CreatureAction(this, [=](Creature* self) {
         if (type.getId() == SquareId::FLOOR)
-          getModel()->getView()->addSound(SoundId::DIGGING);
+          addSound(SoundId::DIGGING);
+        else if (type.getId() == SquareId::TREE_TRUNK)
+          addSound(SoundId::TREE_CUTTING);
         else
-          getModel()->getView()->addSound(Sound(SoundId::DIGGING).setPitch(0.5));
+          addSound(Sound(SoundId::DIGGING).setPitch(0.5));
         if (getPosition().plus(direction).construct(type)) {
           if (type.getId() == SquareId::TREE_TRUNK) {
             monsterMessage(getName().the() + " cuts a tree");

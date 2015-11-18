@@ -49,7 +49,8 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(shortName)
     & SVAR(equipedEffect)
     & SVAR(applyMsgFirstPerson)
-    & SVAR(applyMsgThirdPerson);
+    & SVAR(applyMsgThirdPerson)
+    & SVAR(applySound);
 }
 
 SERIALIZABLE(ItemAttributes);

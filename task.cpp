@@ -1325,7 +1325,8 @@ class Spider : public Task {
     if (c->getPosition() == *makeWeb)
       return c->wait().append([this](Creature* c) {
             ItemFactory::fromId(ItemType{ItemId::TRAP_ITEM,
-                TrapInfo{TrapType::WEB, EffectType{EffectId::LASTING, LastingEffect::ENTANGLED}, true}})->apply(c);
+                TrapInfo{TrapType::WEB, EffectType{EffectId::LASTING, LastingEffect::ENTANGLED}, true}})->
+                apply(c, true);
             setDone();
           });
     else

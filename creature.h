@@ -43,6 +43,7 @@ class MinionTaskMap;
 class EntityName;
 class Gender;
 class SpellMap;
+class Sound;
 
 class Creature : public Renderable, public UniqueEntity<Creature> {
   public:
@@ -308,6 +309,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void setInCombat();
   bool wasInCombat(double numLastTurns) const;
   void onKilled(const Creature* victim);
+
+  void addSound(const Sound&) const;
 
   private:
 

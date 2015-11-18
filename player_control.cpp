@@ -1557,11 +1557,13 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     case BuildInfo::TRAP:
         if (getCollective()->getConstructions().containsTrap(position)) {
           getCollective()->removeTrap(position);
+          model->getView()->addSound(SoundId::DIG_UNMARK);
           // Does this mean I can remove the order if the trap physically exists?
         } else
         if (canPlacePost(position) && (getCollective()->getSquares(SquareId::FLOOR).count(position) || 
               getCollective()->getSquares(SquareId::BRIDGE).count(position))) {
           getCollective()->addTrap(position, building.trapInfo.type);
+          model->getView()->addSound(SoundId::ADD_CONSTRUCTION);
         }
       break;
     case BuildInfo::DESTROY:
