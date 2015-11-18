@@ -156,10 +156,10 @@ PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
   if (button.state != CollectiveInfo::Button::ACTIVE)
     line.addElem(gui.label(button.name + " " + button.count, colors[ColorId::GRAY], button.hotkey), 100);
   else
-    line.addElem(gui.conditional(
-          gui.label(button.name + " " + button.count, colors[ColorId::GREEN], button.hotkey),
-          gui.label(button.name + " " + button.count, colors[ColorId::WHITE], button.hotkey),
-          [=] (GuiElem*) { return getActiveButton(tab) == num; }), 100);
+    line.addElem(gui.stack(
+          gui.uiHighlightConditional([=] () { return getActiveButton(tab) == num; }),
+          gui.label(button.name + " " + button.count, colors[ColorId::WHITE], button.hotkey)
+          ), 100);
   if (button.cost)
     line.addBackElemAuto(drawCost(*button.cost));
   function<void()> buttonFun;
@@ -200,8 +200,9 @@ vector<PGuiElem> GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons,
       vector<PGuiElem> line;
       line.push_back(gui.viewObject(buttons[i].viewId));
       char hotkey = buttons[i].hotkeyOpensGroup ? buttons[i].hotkey : 0;
-      line.push_back(gui.label(lastGroup, [lastGroup, this] {
-            return activeGroup == lastGroup ? colors[ColorId::GREEN] : colors[ColorId::WHITE];}, hotkey));
+      line.push_back(gui.stack(
+          gui.uiHighlightConditional([=] { return activeGroup == lastGroup;}),
+          gui.label(lastGroup, colors[ColorId::WHITE], hotkey)));
       elems.push_back(gui.stack(
             gui.button(buttonFun, getHotkeyEvent(buttons[i].hotkeyOpensGroup ? buttons[i].hotkey : 0)),
             gui.horizontalList(std::move(line), 35)));
@@ -939,26 +940,23 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
       if (!currentLine.empty())
         teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
       lines.addElemAuto(gui.stack(makeVec<PGuiElem>(
-              gui.conditional(gui.margins(
-                  gui.rectangle(colors[ColorId::TRANSPARENT], colors[ColorId::GREEN]), -3, -2, 3, 2),
-                  [team] (GuiElem*) { return team.highlight; }),
               gui.mouseOverAction([team, this] { mapGui->highlightTeam(team.members); },
                 [team, this] { mapGui->unhighlightTeam(team.members); }),
               gui.button(getButtonCallback({UserInputId::SELECT_TEAM, team.id})),
-              gui.mouseHighlight2(gui.margins(
-                  gui.rectangle(colors[ColorId::TRANSPARENT], colors[ColorId::WHITE]), -3, -2, 3, 2)),
+              gui.uiHighlightConditional([team] () { return team.highlight; }),
+              gui.uiHighlightMouseOver(),
               gui.dragListener([this, team](DragContent content) {
                 callbacks.input({UserInputId::ADD_TO_TEAM, TeamCreatureInfo{team.id, content.get<int>()}});}),
               gui.getListBuilder(22)
               .addElem(gui.topMargin(8, gui.icon(GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
               .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
     }
-    lines.addElem(gui.stack(
+    lines.addElem(gui.stack(makeVec<PGuiElem>(
           gui.dragListener([this](DragContent content) {
-            callbacks.input({UserInputId::CREATE_TEAM, content.get<int>() });}),
-          gui.mouseHighlight2(gui.margins(
-              gui.rectangle(colors[ColorId::TRANSPARENT], colors[ColorId::WHITE]), -3, -2, 3, 2)),
-          gui.label("[new team]", colors[ColorId::WHITE])));
+              callbacks.input({UserInputId::CREATE_TEAM, content.get<int>() });}),
+          gui.uiHighlightMouseOver(),
+          getHintCallback({"Drag minions here to create a new team."}),
+          gui.label("[new team]", colors[ColorId::WHITE]))));
     teamCache = lines.buildVerticalList();
     teamHash = newHash;
   }
@@ -974,8 +972,9 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
     vector<int> widths;
     line.push_back(gui.viewObject(elem.viewId));
     widths.push_back(40);
-    Color col = elem.highlight ? colors[ColorId::GREEN] : colors[ColorId::WHITE];
-    line.push_back(gui.label(toString(elem.count) + "   " + elem.name, col));
+    line.push_back(gui.label(toString(elem.count) + "   " + elem.name, colors[ColorId::WHITE]));
+    if (elem.highlight)
+      line.back() = gui.stack(gui.uiHighlight(), std::move(line.back()));
     widths.push_back(200);
     list.addElem(gui.leftMargin(20, gui.stack(
         gui.button(getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, elem.creatureId})),
@@ -986,12 +985,14 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
   list.addElem(gui.empty());
   list.addElem(gui.horizontalList(makeVec<PGuiElem>(
           gui.stack(
-            gui.label("Show tasks", [this] { return colors[showTasks ? ColorId::GREEN : ColorId::WHITE]; }),
+            gui.uiHighlightConditional([=] { return showTasks;}),
+            gui.label("Show tasks"),
             gui.button([this] { closeOverlayWindows(); showTasks = !showTasks; })),
-          gui.stack(
+          gui.stack(makeVec<PGuiElem>(
             getHintCallback({"Morale affects minion's productivity and chances of fleeing from battle."}),
-            gui.label("Show morale", colors[morale ? ColorId::GREEN : ColorId::WHITE]),
-            gui.button([this] { morale = !morale; }))
+            gui.uiHighlightConditional([=] { return morale;}),
+            gui.label("Show morale"),
+            gui.button([this] { morale = !morale; })))
       ), 120));
   list.addElem(gui.empty());
   if (!info.enemyGroups.empty()) {
@@ -1002,6 +1003,7 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
       line.push_back(gui.label(toString(elem.count) + "   " + elem.name, colors[ColorId::WHITE]));
       list.addElem(gui.stack(
           gui.button(getButtonCallback({UserInputId::GO_TO_ENEMY, elem.creatureId})),
+          gui.uiHighlightMouseOver(),
           gui.horizontalList(std::move(line), 20)));
     }
   }
@@ -1543,27 +1545,22 @@ PGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
       list.addElem(gui.topMargin(5, gui.viewObject(elem.first)), legendLineHeight + 5);
       for (auto& minion : elem.second) {
         auto minionId = minion.creatureId;
-        Color color = colors[current == minionId ? ColorId::GREEN : ColorId::WHITE];
-        function<Color()> colorFun = [this, color, minionId] {
-          if (auto hColor = mapGui->getCreatureHighlight(minionId, clock->getRealMillis()))
-            return *hColor;
-          else
-            return color;
-        };
         GuiFactory::ListBuilder line(gui);
         if (teamId)
           line.addElem(gui.leftMargin(-16, gui.stack(
               gui.button(getButtonCallback({UserInputId::REMOVE_FROM_TEAM, TeamCreatureInfo{*teamId, minionId}})),
               gui.labelUnicode(String(L'✘'), colors[ColorId::RED]))), 1);
-        line.addElemAuto(gui.rightMargin(5, gui.label(minion.getFirstName(), colorFun)));
+        line.addElemAuto(gui.rightMargin(5, gui.label(minion.getFirstName())));
         if (auto icon = getMoraleIcon(minion.morale))
           line.addElem(gui.topMargin(-2, gui.icon(*icon)), 20);
-        line.addBackElem(gui.label("L:" + toString(minion.level), colorFun), 42);
-        list.addElem(gui.stack(
+        line.addBackElem(gui.label("L:" + toString(minion.level)), 42);
+        list.addElem(gui.stack(makeVec<PGuiElem>(
               gui.button(getButtonCallback({UserInputId::CREATURE_BUTTON, minionId})),
+              gui.uiHighlight([=] { return mapGui->getCreatureHighlight(minionId, clock->getRealMillis());}),
+              gui.uiHighlightConditional([=] { return current == minionId;}),
               gui.dragSource({DragContentId::CREATURE, minionId},
                 [=]{ return gui.viewObject(minion.viewId);}),
-              line.buildHorizontalList()));
+              line.buildHorizontalList())));
       }
     }
     minionButtonsCache = gui.scrollable(list.buildVerticalList(), &minionButtonsScroll, &scrollbarsHeld);

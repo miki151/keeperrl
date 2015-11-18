@@ -414,16 +414,18 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
   } else
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
     drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
-  if (object.getCreatureId())
-    if (auto color = getCreatureHighlight(*object.getCreatureId(), curTime))
-      drawCreatureHighlight(renderer, pos, sz, *color);
+  if (object.getCreatureId()) {
+    Color c = getCreatureHighlight(*object.getCreatureId(), curTime);
+    if (c.a > 0)
+      drawCreatureHighlight(renderer, pos, sz, c);
+  }
 }
 
-optional<Color> MapGui::getCreatureHighlight(UniqueEntity<Creature>::Id creature, int curTime) {
+Color MapGui::getCreatureHighlight(UniqueEntity<Creature>::Id creature, int curTime) {
   if (teamHighlight[creature] > 0)
     return colors[ColorId::YELLOW];
   else
-    return none;
+    return Color(0, 0, 0, 0);
 }
 
 static bool mirrorSprite(ViewId id) {

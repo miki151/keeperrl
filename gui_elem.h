@@ -155,7 +155,7 @@ class GuiFactory {
       TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER, LEFT_STRETCHED, RIGHT_STRETCHED,
       CENTER_STRETCHED};
   PGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
-      Vec2 offset = Vec2(0, 0), double alpha = 1);
+      Vec2 offset = Vec2(0, 0), function<Color()> = nullptr);
   PGuiElem sprite(Texture&, double scale);
   PGuiElem tooltip(const vector<string>&);
   PGuiElem darken();
@@ -194,6 +194,7 @@ class GuiFactory {
     WINDOW_CORNER,
     WINDOW_CORNER_EXIT,
     WINDOW_VERT_BAR,
+    UI_HIGHLIGHT,
     MAIN_MENU_HIGHLIGHT,
     KEEPER_CHOICE,
     ADVENTURER_CHOICE,
@@ -207,7 +208,7 @@ class GuiFactory {
     LOADING_SPLASH,
   };
 
-  PGuiElem sprite(TexId, Alignment);
+  PGuiElem sprite(TexId, Alignment, function<Color()> = nullptr);
   PGuiElem repeatedPattern(Texture& tex);
   PGuiElem background(Color);
   PGuiElem highlight(double height);
@@ -261,6 +262,10 @@ class GuiFactory {
   PGuiElem icon(IconId, Alignment = Alignment::CENTER);
   Texture& get(TexId);
   PGuiElem spellIcon(SpellId);
+  PGuiElem uiHighlightMouseOver(Color = colors[ColorId::GREEN]);
+  PGuiElem uiHighlightConditional(function<bool()>, Color = colors[ColorId::GREEN]);
+  PGuiElem uiHighlight(Color = colors[ColorId::GREEN]);
+  PGuiElem uiHighlight(function<Color()>);
 
   private:
 

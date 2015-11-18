@@ -240,9 +240,10 @@ PGuiElem GuiFactory::sprite(Texture& tex, double height) {
         }));
 }
 
-PGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset, double alpha) {
+PGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset,
+    function<Color()> col) {
   return PGuiElem(new DrawCustom(
-        [&tex, align, offset, alpha, vFlip, hFlip] (Renderer& r, Rectangle bounds) {
+        [&tex, align, offset, col, vFlip, hFlip] (Renderer& r, Rectangle bounds) {
           Vec2 size(tex.getSize().x, tex.getSize().y);
           optional<Vec2> stretchSize;
           Vec2 origin;
@@ -320,7 +321,7 @@ PGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFli
             size = Vec2(-size.x, size.y);
             origin = Vec2(-size.x, origin.y);
           }
-          r.drawSprite(pos, origin, size, tex, Color(255, 255, 255, alpha * 255), stretchSize);
+          r.drawSprite(pos, origin, size, tex, !!col ? col() : colors[ColorId::WHITE], stretchSize);
         }));
 }
 
@@ -1796,6 +1797,7 @@ void GuiFactory::loadFreeImages(const string& path) {
             "splash2b.png",
             "splash2c.png",
             "splash2d.png"))));
+  CHECK(textures[TexId::UI_HIGHLIGHT].loadFromFile(path + "/ui/ui_highlight.png"));
   const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i) {
     iconTextures.emplace_back();
@@ -1951,16 +1953,15 @@ PGuiElem GuiFactory::mainMenuHighlight() {
 }
 
 PGuiElem GuiFactory::border2() {
-  double alpha = 1;
   return stack(makeVec<PGuiElem>(
-        sprite(get(TexId::BORDER_TOP), Alignment::TOP, false, false, Vec2(border2Width, 0), alpha),
-        sprite(get(TexId::BORDER_BOTTOM), Alignment::BOTTOM, false, false, Vec2(border2Width, 0), alpha),
-        sprite(get(TexId::BORDER_LEFT), Alignment::LEFT, false, false, Vec2(0, border2Width), alpha),
-        sprite(get(TexId::BORDER_RIGHT), Alignment::RIGHT, false, false, Vec2(0, border2Width), alpha),
-        sprite(get(TexId::BORDER_TOP_LEFT), Alignment::TOP_LEFT, false, false, Vec2(0, 0), alpha),
-        sprite(get(TexId::BORDER_TOP_RIGHT), Alignment::TOP_RIGHT, false, false, Vec2(0, 0), alpha),
-        sprite(get(TexId::BORDER_BOTTOM_LEFT), Alignment::BOTTOM_LEFT, false, false, Vec2(0, 0), alpha),
-        sprite(get(TexId::BORDER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT, false, false, Vec2(0, 0), alpha)));
+        sprite(get(TexId::BORDER_TOP), Alignment::TOP, false, false, Vec2(border2Width, 0)),
+        sprite(get(TexId::BORDER_BOTTOM), Alignment::BOTTOM, false, false, Vec2(border2Width, 0)),
+        sprite(get(TexId::BORDER_LEFT), Alignment::LEFT, false, false, Vec2(0, border2Width)),
+        sprite(get(TexId::BORDER_RIGHT), Alignment::RIGHT, false, false, Vec2(0, border2Width)),
+        sprite(get(TexId::BORDER_TOP_LEFT), Alignment::TOP_LEFT, false, false, Vec2(0, 0)),
+        sprite(get(TexId::BORDER_TOP_RIGHT), Alignment::TOP_RIGHT, false, false, Vec2(0, 0)),
+        sprite(get(TexId::BORDER_BOTTOM_LEFT), Alignment::BOTTOM_LEFT, false, false, Vec2(0, 0)),
+        sprite(get(TexId::BORDER_BOTTOM_RIGHT), Alignment::BOTTOM_RIGHT, false, false, Vec2(0, 0))));
 }
 
 PGuiElem GuiFactory::miniBorder() {
@@ -2057,8 +2058,24 @@ PGuiElem GuiFactory::spellIcon(SpellId id) {
   return sprite(spellTextures[int(id)], Alignment::CENTER);
 }
 
-PGuiElem GuiFactory::sprite(TexId id, Alignment a) {
-  return sprite(get(id), a);
+PGuiElem GuiFactory::uiHighlightMouseOver(Color c) {
+  return mouseHighlight2(uiHighlight(c));
+}
+
+PGuiElem GuiFactory::uiHighlight(Color c) {
+  return uiHighlight([=] { return c; });
+}
+
+PGuiElem GuiFactory::uiHighlight(function<Color()> c) {
+  return leftMargin(-8, topMargin(-4, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_STRETCHED, c)));
+}
+
+PGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {
+  return conditional(uiHighlight(c), cond);
+}
+
+PGuiElem GuiFactory::sprite(TexId id, Alignment a, function<Color()> c) {
+  return sprite(get(id), a, false, false, Vec2(0, 0), c);
 }
 
 PGuiElem GuiFactory::mainMenuLabelBg(const string& s, double vPadding, Color color) {
