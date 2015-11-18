@@ -73,6 +73,8 @@ class MapGui : public GuiElem {
       const EnumMap<HighlightType, double>&);
   void drawCreatureHighlights(Renderer&, const ViewObject&, Vec2 pos, Vec2 sz, int currentTimeReal);
   void drawCreatureHighlight(Renderer&, Vec2 pos, Vec2 size, Color);
+  void drawSquareHighlight(Renderer&, Vec2 pos, Vec2 size);
+  void considerRedrawingSquareHighlight(Renderer&, int currentTimeReal, Vec2 pos, Vec2 size);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
   enum class HintPosition;
   void drawHint(Renderer& renderer, Color color, const vector<string>& text);

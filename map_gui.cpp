@@ -761,13 +761,9 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
     if (layer == ViewLayer::FLOOR || !spriteMode) {
       if (!buttonViewId && highlightedInfo.creaturePos)
         drawCreatureHighlight(renderer, *highlightedInfo.creaturePos, size, colors[ColorId::ALMOST_WHITE]);
-      if (highlightedInfo.tilePos) {
-        Vec2 pos = topLeftCorner + (*highlightedInfo.tilePos - allTiles.getTopLeft()).mult(layout->getSquareSize());
-        if (spriteMode)
-          renderer.drawViewObject(pos, ViewId::SQUARE_HIGHLIGHT, true, size, colors[ColorId::ALMOST_WHITE]);
-        else
-          renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent, colors[ColorId::LIGHT_GRAY]);
-      }
+      if (highlightedInfo.tilePos)
+        drawSquareHighlight(renderer, topLeftCorner + (*highlightedInfo.tilePos - allTiles.getTopLeft()).mult(size),
+            size);
     }
     if (!spriteMode)
       break;
@@ -782,7 +778,21 @@ void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Colo
     renderer.drawViewObject(pos + Vec2(0, size.y / 5), ViewId::CREATURE_HIGHLIGHT, true, size, color);
   else
     renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent, color);
+}
 
+void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
+  if (spriteMode)
+    renderer.drawViewObject(pos, ViewId::SQUARE_HIGHLIGHT, true, size, colors[ColorId::ALMOST_WHITE]);
+  else
+    renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent, colors[ColorId::LIGHT_GRAY]);
+}
+
+void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, int currentTimeReal, Vec2 pos, Vec2 size) {
+  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
+  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  for (Vec2 v : pos.neighbors8())
+    if (!objects[v] || objects[v]->noObjects())
+      drawSquareHighlight(renderer, topLeftCorner + (pos - allTiles.getTopLeft()).mult(size), size);
 }
 
 void MapGui::render(Renderer& renderer) {
@@ -807,8 +817,8 @@ void MapGui::render(Renderer& renderer) {
   renderMapObjects(renderer, size, highlightedInfo, currentTimeReal);
   renderHighlights(renderer, size, currentTimeReal);
   renderAnimations(renderer, currentTimeReal);
-  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  if (highlightedInfo.tilePos)
+    considerRedrawingSquareHighlight(renderer, currentTimeReal, *highlightedInfo.tilePos, size);
   if (displayScrollHint && isScrollingNow) {
     drawHint(renderer, colors[ColorId::LIGHT_BLUE], {"Double right-click to scroll back to creature."});
   } else
