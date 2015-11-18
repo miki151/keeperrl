@@ -2,10 +2,13 @@
 #include "dirent.h"
 #include "sound_library.h"
 #include "sound.h"
+#include "options.h"
 
 using sf::Music;
 
-SoundLibrary::SoundLibrary(const string& path) {
+SoundLibrary::SoundLibrary(Options* options, const string& path) {
+  on = options->getBoolValue(OptionId::SOUND);
+  options->addTrigger(OptionId::SOUND, [this](bool turnOn) { on = turnOn; });
   for (SoundId id : ENUM_ALL(SoundId))
     addSounds(id, path + "/" + toLower(EnumInfo<SoundId>::getString(id)));
 }
@@ -24,6 +27,8 @@ void SoundLibrary::addSounds(SoundId id, const string& path) {
 }
 
 void SoundLibrary::playSound(const Sound& s) {
+  if (!on)
+    return;
   if (int numSounds = sounds[s.getId()].size()) {
     int ind = Random.get(numSounds);
     sounds[s.getId()][ind]->setPitch(s.getPitch());

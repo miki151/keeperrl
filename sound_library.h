@@ -5,14 +5,17 @@
 
 #include "sound.h"
 
+class Options;
+
 class SoundLibrary {
   public:
-  SoundLibrary(const string& path);
+  SoundLibrary(Options*, const string& path);
   void playSound(const Sound&);
 
   private:
   void addSounds(SoundId, const string& path);
   EnumMap<SoundId, vector<unique_ptr<sf::Music>>> sounds;
+  bool on;
 };
 
 
