@@ -790,9 +790,11 @@ void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
 void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, int currentTimeReal, Vec2 pos, Vec2 size) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
-  for (Vec2 v : pos.neighbors8())
-    if (!objects[v] || objects[v]->noObjects())
+  for (Vec2 v : concat({pos}, pos.neighbors8()))
+    if (v.inRectangle(objects.getBounds()) && (!objects[v] || objects[v]->noObjects())) {
       drawSquareHighlight(renderer, topLeftCorner + (pos - allTiles.getTopLeft()).mult(size), size);
+      break;
+    }
 }
 
 void MapGui::render(Renderer& renderer) {

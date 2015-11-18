@@ -69,9 +69,12 @@ function<void()> GuiBuilder::getButtonCallback(UserInput input) {
 }
 
 void GuiBuilder::setCollectiveTab(CollectiveTab t) {
-  collectiveTab = t;
-  if (t != CollectiveTab::MINIONS) {
-    closeOverlayWindows();
+  if (collectiveTab != t) {
+    collectiveTab = t;
+    clearActiveButton();
+    if (t != CollectiveTab::MINIONS) {
+      closeOverlayWindows();
+    }
   }
 }
 
@@ -96,8 +99,9 @@ void GuiBuilder::setActiveButton(CollectiveTab tab, int num, ViewId viewId) {
 }
 
 bool GuiBuilder::clearActiveButton() {
-  if (activeButton) {
+  if (activeButton || activeGroup) {
     activeButton = none;
+    activeGroup = none;
     mapGui->clearButtonViewId();
     return true;
   }
@@ -169,8 +173,8 @@ PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
       if (getActiveButton(tab) == num)
         clearActiveButton();
       else {
-        setActiveButton(tab, num, viewId);
         setCollectiveTab(tab);
+        setActiveButton(tab, num, viewId);
       }
       activeGroup = none;
     };
@@ -191,11 +195,14 @@ vector<PGuiElem> GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons,
     if (!buttons[i].groupName.empty() && buttons[i].groupName != lastGroup) {
       lastGroup = buttons[i].groupName;
       function<void()> buttonFun = [=] {
-        if (activeGroup != lastGroup)
+        if (activeGroup != lastGroup) {
+          clearActiveButton();
+          setCollectiveTab(tab);
           activeGroup = lastGroup;
-        else
+        } else {
+          clearActiveButton();
           activeGroup = none;
-        clearActiveButton();
+        }
       };
       vector<PGuiElem> line;
       line.push_back(gui.viewObject(buttons[i].viewId));
