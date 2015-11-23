@@ -675,7 +675,7 @@ CreatureFactory CreatureFactory::humanVillage(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
       CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
       CreatureId::PIG, CreatureId::DOG },
-      { 1, 3, 6, 4, 1, 1, 1, 1, 6});
+      { 2, 6, 6, 4, 1, 1, 1, 1, 6}, {CreatureId::KNIGHT});
 }
 
 CreatureFactory CreatureFactory::humanPeaceful(Tribe* tribe) {
