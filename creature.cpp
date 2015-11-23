@@ -1796,6 +1796,29 @@ CreatureAction Creature::placeTorch(Dir attachmentDir, function<void(Trigger*)> 
       getPosition().addTrigger(std::move(torch));
       addSound(Sound(SoundId::DIGGING).setPitch(0.5));
       builtCallback(tRef);
+      self->spendTime(1);
+  });
+}
+
+CreatureAction Creature::whip(const Position& pos) const {
+  Creature* whipped = pos.getCreature();
+  if (pos.dist8(position) > 1 || !whipped)
+    return CreatureAction();
+  return CreatureAction(this, [=](Creature* self) {
+    monsterMessage(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
+    double oldTime = getTime();
+    self->spendTime(1);
+    if (Random.roll(3)) {
+      addSound(SoundId::WHIP);
+      self->modViewObject().addMovementInfo({position.getDir(pos), oldTime, getTime(),
+          ViewObject::MovementInfo::ATTACK});
+    }
+    if (Random.roll(5))
+      whipped->monsterMessage(whipped->getName().the() + " screams!", "You hear a horrible scream!");
+    if (Random.roll(10)) {
+      whipped->addMorale(0.05);
+      whipped->you(MsgType::FEEL, "happier");
+    }
   });
 }
 

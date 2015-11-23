@@ -1571,6 +1571,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
               getCollective()->takeResource({ResourceId::MANA, getImpCost()});
               getCollective()->addCreature(std::move(imp), v,
                   {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT});
+              model->getView()->addSound(Sound(SoundId::CREATE_IMP).setPitch(2));
               break;
             }
         }

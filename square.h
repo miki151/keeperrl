@@ -50,6 +50,7 @@ class Square : public Renderable {
     HeapAllocated<MovementSet> movementSet;
     bool canDestroy;
     const Tribe* owner;
+    optional<SoundId> applySound;
   };
   Square(const ViewObject&, Params);
 
@@ -216,7 +217,7 @@ class Square : public Renderable {
 
   virtual optional<SquareApplyType> getApplyType() const { return none; }
   virtual bool canApply(const Creature*) const { return true; }
-  virtual void onApply(Creature* c) { Debug(FATAL) << "Bad square applied"; }
+  void apply(Creature*);
   virtual double getApplyTime() const { return 1.0; }
   optional<SquareApplyType> getApplyType(const Creature*) const;
 
@@ -243,6 +244,7 @@ class Square : public Renderable {
   void onEnter(Creature*);
   virtual void onEnterSpecial(Creature*) {}
   virtual void tickSpecial(double time) {}
+  virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
   HeapAllocated<Inventory> SERIAL(inventory);
   string SERIAL(name);
   void addTraitForTribe(const Tribe*, MovementTrait);
@@ -279,6 +281,7 @@ class Square : public Renderable {
   const Tribe* SERIAL(owner);
   const Tribe* SERIAL(forbiddenTribe) = nullptr;
   bool SERIAL(unavailable) = false;
+  optional<SoundId> SERIAL(applySound);
 };
 
 #endif

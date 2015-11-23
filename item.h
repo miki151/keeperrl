@@ -61,7 +61,6 @@ class Item : public Renderable, public UniqueEntity<Item> {
 
   static string getTrapName(TrapType);
 
-  virtual void applySpecial(Creature*);
   void apply(Creature*, bool noSound = false);
 
   bool isDiscarded();
@@ -142,6 +141,7 @@ class Item : public Renderable, public UniqueEntity<Item> {
   virtual void specialTick(double time, Position) {}
   void setName(const string& name);
   bool SERIAL(discarded) = false;
+  virtual void applySpecial(Creature*);
 
   private:
   string getModifiers(bool shorten = false) const;

@@ -217,6 +217,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction fire(Vec2 direction) const;
   CreatureAction construct(Vec2 direction, const SquareType&) const;
   CreatureAction placeTorch(Dir attachmentDir, function<void(Trigger*)> builtCallback) const;
+  CreatureAction whip(const Position&) const;
   bool canConstruct(const SquareType&) const;
   CreatureAction eat(Item*) const;
   enum DestroyAction { BASH, EAT, DESTROY };

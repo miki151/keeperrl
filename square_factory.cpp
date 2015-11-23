@@ -36,6 +36,8 @@
 #include "movement_set.h"
 #include "movement_type.h"
 #include "stair_key.h"
+#include "view.h"
+#include "sound.h"
 
 class Staircase : public Square {
   public:
@@ -344,7 +346,8 @@ class TribeDoor : public Door {
     destructionStrength -= c->getAttr(AttrType::STRENGTH);
     if (destructionStrength <= 0) {
       Door::destroyBy(c);
-    }
+    } else
+      getLevel()->getModel()->getView()->addSound(SoundId::BANG_DOOR);
   }
 
   virtual bool canLock() const override {
@@ -406,7 +409,7 @@ class Barricade : public Square {
 class Furniture : public Square {
   public:
   Furniture(ViewObject object, const string& name, double flamability,
-      optional<SquareApplyType> _applyType = none) 
+      optional<SquareApplyType> _applyType = none, optional<SoundId> applySound = none) 
       : Square(object.setModifier(ViewObject::Modifier::ROUND_SHADOW),
           CONSTRUCT(Square::Params,
             c.name = name;
@@ -414,6 +417,7 @@ class Furniture : public Square {
             c.canHide = true;
             c.strength = 100;
             c.canDestroy = true;
+            c.applySound = applySound;
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.flamability = flamability;)), applyType(_applyType) {}
 
@@ -1026,7 +1030,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.vision = VisionId::NORMAL;));
     case SquareId::TRAINING_ROOM:
         return new Furniture(ViewObject(ViewId::TRAINING_ROOM, ViewLayer::FLOOR, "Training room"), 
-            "training room", 1, SquareApplyType::TRAIN);
+            "training room", 1, SquareApplyType::TRAIN, SoundId::MISSED_ATTACK);
     case SquareId::THRONE:
         return new Furniture(ViewObject(ViewId::THRONE, ViewLayer::FLOOR, "Throne"), 
             "throne", 0, SquareApplyType::THRONE);

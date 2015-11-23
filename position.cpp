@@ -192,7 +192,7 @@ optional<SquareApplyType> Position::getApplyType(const Creature* c) const {
 
 void Position::onApply(Creature* c) {
   if (isValid())
-    getSquare()->onApply(c);
+    getSquare()->apply(c);
 }
 
 double Position::getApplyTime() const {

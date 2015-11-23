@@ -35,6 +35,8 @@
 #include "entity_name.h"
 #include "movement_type.h"
 #include "movement_set.h"
+#include "view.h"
+#include "sound.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -63,7 +65,8 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(destroyable)
     & SVAR(owner)
     & SVAR(forbiddenTribe)
-    & SVAR(unavailable);
+    & SVAR(unavailable)
+    & SVAR(applySound);
   if (progressMeter)
     progressMeter->addProgress();
   updateViewIndex = true;
@@ -79,7 +82,8 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
     fire(p.strength, p.flamability), constructions(p.constructions), ticking(p.ticking),
-    movementSet(p.movementSet), viewIndex(new ViewIndex()), destroyable(p.canDestroy), owner(p.owner) {
+    movementSet(p.movementSet), viewIndex(new ViewIndex()), destroyable(p.canDestroy), owner(p.owner),
+    applySound(p.applySound) {
 }
 
 Square::~Square() {
@@ -166,6 +170,7 @@ void Square::destroy() {
   CHECK(isDestroyable());
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
+  level->getModel()->getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
   level->getModel()->onSquareDestroyed(getPosition2());
   getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
@@ -591,3 +596,8 @@ void Square::clearItemIndex(ItemIndex index) {
   inventory->clearIndex(index);
 }
 
+void Square::apply(Creature* c) {
+  if (applySound)
+    level->getModel()->getView()->addSound(*applySound);
+  onApply(c);
+}

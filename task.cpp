@@ -1236,14 +1236,7 @@ class Whipping : public Task {
         whipped->addEffect(LastingEffect::TIED_UP, interval);
         return c->wait();
       }
-      c->monsterMessage(PlayerMessage(c->getName().the() + " whips " + whipped->getName().the()));
-      if (Random.roll(5))
-        whipped->monsterMessage(whipped->getName().the() + " screams!", "You hear a horrible scream!");
-      if (Random.roll(10)) {
-        whipped->addMorale(0.05);
-        whipped->you(MsgType::FEEL, "happier");
-      }
-      return c->wait();
+      return c->whip(whipped->getPosition());
     } else {
       if (c->getTime() > timeout) {
         setDone();
