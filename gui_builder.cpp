@@ -116,44 +116,6 @@ PGuiElem GuiBuilder::drawCost(pair<ViewId, int> cost, ColorId color) {
       .buildHorizontalList();
 }
 
-static Keyboard::Key getKey(char c) {
-  switch (c) {
-    case 'a': return Keyboard::A;
-    case 'b': return Keyboard::B;
-    case 'c': return Keyboard::C;
-    case 'd': return Keyboard::D;
-    case 'e': return Keyboard::E;
-    case 'f': return Keyboard::F;
-    case 'g': return Keyboard::G;
-    case 'h': return Keyboard::H;
-    case 'i': return Keyboard::I;
-    case 'j': return Keyboard::J;
-    case 'k': return Keyboard::K;
-    case 'l': return Keyboard::L;
-    case 'm': return Keyboard::M;
-    case 'n': return Keyboard::N;
-    case 'o': return Keyboard::O;
-    case 'p': return Keyboard::P;
-    case 'q': return Keyboard::Q;
-    case 'r': return Keyboard::R;
-    case 's': return Keyboard::S;
-    case 't': return Keyboard::T;
-    case 'u': return Keyboard::U;
-    case 'v': return Keyboard::V;
-    case 'w': return Keyboard::W;
-    case 'x': return Keyboard::X;
-    case 'y': return Keyboard::Y;
-    case 'z': return Keyboard::Z;
-    case 0: return Keyboard::KeyCount;
-  }
-  FAIL << "Unrecognized key " << c;
-  return Keyboard::F13;
-}
-
-Event::KeyEvent GuiBuilder::getHotkeyEvent(char c) {
-  return Event::KeyEvent{getKey(c), options->getBoolValue(OptionId::WASD_SCROLLING), false, false, false};
-}
-
 PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, CollectiveTab tab) {
   GuiFactory::ListBuilder line(gui);
   line.addElem(gui.viewObject(button.viewId), 35);
@@ -183,7 +145,7 @@ PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
   }
   return gui.stack(
       getHintCallback({capitalFirst(button.help)}),
-      gui.button(buttonFun, getHotkeyEvent(!button.hotkeyOpensGroup ? button.hotkey : 0), true),
+      gui.buttonChar(buttonFun, !button.hotkeyOpensGroup ? button.hotkey : 0, true),
       line.buildHorizontalList());
 }
 
@@ -211,7 +173,7 @@ vector<PGuiElem> GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons,
           gui.uiHighlightConditional([=] { return activeGroup == lastGroup;}),
           gui.label(lastGroup, colors[ColorId::WHITE], hotkey)));
       elems.push_back(gui.stack(
-            gui.button(buttonFun, getHotkeyEvent(buttons[i].hotkeyOpensGroup ? buttons[i].hotkey : 0)),
+            gui.buttonChar(buttonFun, buttons[i].hotkeyOpensGroup ? buttons[i].hotkey : 0),
             gui.horizontalList(std::move(line), 35)));
     }
     if (buttons[i].groupName.empty())
@@ -261,8 +223,8 @@ PGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
     vector<PGuiElem> line;
     line.push_back(gui.viewObject(info.techButtons[i].viewId));
     line.push_back(gui.label(info.techButtons[i].name, colors[ColorId::WHITE], info.techButtons[i].hotkey));
-    lines.push_back(gui.stack(gui.button(
-          getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i)), getHotkeyEvent(info.techButtons[i].hotkey)),
+    lines.push_back(gui.stack(gui.buttonChar(
+          getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i)), info.techButtons[i].hotkey),
           gui.horizontalList(std::move(line), 35)));
   }
   return gui.verticalList(std::move(lines), legendLineHeight);

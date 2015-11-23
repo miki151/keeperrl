@@ -211,7 +211,7 @@ int main(int argc, char* argv[]) {
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
   SoundLibrary* soundLibrary = nullptr;
   Clock clock;
-  GuiFactory guiFactory(renderer, &clock);
+  GuiFactory guiFactory(renderer, &clock, &options);
   guiFactory.loadFreeImages(freeDataPath + "/images");
   if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");

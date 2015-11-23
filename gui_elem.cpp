@@ -20,8 +20,10 @@
 #include "tile.h"
 #include "clock.h"
 #include "spell.h"
+#include "options.h"
 
 using sf::Color;
+using sf::Keyboard;
 
 DEF_UNIQUE_PTR(VerticalList);
 
@@ -78,7 +80,65 @@ class ButtonKey : public Button {
   bool capture;
 };
 
-GuiFactory::GuiFactory(Renderer& r, Clock* c) : clock(c), renderer(r) {
+static Keyboard::Key getKey(char c) {
+  switch (c) {
+    case 'a': return Keyboard::A;
+    case 'b': return Keyboard::B;
+    case 'c': return Keyboard::C;
+    case 'd': return Keyboard::D;
+    case 'e': return Keyboard::E;
+    case 'f': return Keyboard::F;
+    case 'g': return Keyboard::G;
+    case 'h': return Keyboard::H;
+    case 'i': return Keyboard::I;
+    case 'j': return Keyboard::J;
+    case 'k': return Keyboard::K;
+    case 'l': return Keyboard::L;
+    case 'm': return Keyboard::M;
+    case 'n': return Keyboard::N;
+    case 'o': return Keyboard::O;
+    case 'p': return Keyboard::P;
+    case 'q': return Keyboard::Q;
+    case 'r': return Keyboard::R;
+    case 's': return Keyboard::S;
+    case 't': return Keyboard::T;
+    case 'u': return Keyboard::U;
+    case 'v': return Keyboard::V;
+    case 'w': return Keyboard::W;
+    case 'x': return Keyboard::X;
+    case 'y': return Keyboard::Y;
+    case 'z': return Keyboard::Z;
+    case 0: return Keyboard::KeyCount;
+  }
+  FAIL << "Unrecognized key " << c;
+  return Keyboard::F13;
+}
+
+class ButtonChar : public Button {
+  public:
+  ButtonChar(function<void(Rectangle)> f, char c, bool cap, Options* o) : Button(f), hotkey(c), capture(cap),
+      options(o) {}
+
+  bool isHotkeyEvent(char c, Event::KeyEvent key) {
+    return (options->getBoolValue(OptionId::WASD_SCROLLING) == key.alt) && !key.control && !key.shift &&
+      getKey(c) == key.code;
+  }
+
+  virtual bool onKeyPressed2(Event::KeyEvent key) override {
+    if (isHotkeyEvent(hotkey, key)) {
+      fun(getBounds());
+      return capture;
+    }
+    return false;
+  }
+
+  private:
+  char hotkey;
+  bool capture;
+  Options* options;
+};
+
+GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o) : clock(c), renderer(r), options(o) {
 }
 
 DragContainer& GuiFactory::getDragContainer() {
@@ -87,6 +147,10 @@ DragContainer& GuiFactory::getDragContainer() {
 
 PGuiElem GuiFactory::button(function<void(Rectangle)> fun, Event::KeyEvent hotkey, bool capture) {
   return PGuiElem(new ButtonKey(fun, hotkey, capture));
+}
+
+PGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture) {
+  return PGuiElem(new ButtonChar([=](Rectangle) { fun(); }, hotkey, capture, options));
 }
 
 PGuiElem GuiFactory::button(function<void()> fun, Event::KeyEvent hotkey, bool capture) {

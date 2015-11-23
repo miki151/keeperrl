@@ -21,6 +21,7 @@
 
 class ViewObject;
 class Clock;
+class Options;
 enum class SpellId;
 
 class GuiElem {
@@ -49,7 +50,7 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*);
+  GuiFactory(Renderer&, Clock*, Options*);
   void loadFreeImages(const string& path);
   void loadNonFreeImages(const string& path);
 
@@ -57,6 +58,7 @@ class GuiFactory {
   void propagateEvent(const Event&, vector<GuiElem*>);
 
   PGuiElem button(function<void()> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem buttonChar(function<void()> fun, char, bool capture = false);
   PGuiElem button(function<void()> fun);
   PGuiElem reverseButton(function<void()> fun, vector<Event::KeyEvent> = {}, bool capture = false);
   PGuiElem button(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
@@ -272,12 +274,14 @@ class GuiFactory {
   PGuiElem getScrollbar();
   Vec2 getScrollButtonSize();
   Texture& getIconTex(IconId);
+  Event::KeyEvent getHotkeyEvent(char) ;
 
   map<TexId, Texture> textures;
   vector<Texture> iconTextures;
   vector<Texture> spellTextures;
   Clock* clock;
   Renderer& renderer;
+  Options* options;
   DragContainer dragContainer;
 };
 
