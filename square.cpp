@@ -208,6 +208,10 @@ const Level* Square::getLevel() const {
   return level;
 }
 
+bool Square::isUnavailable() const {
+  return unavailable;
+}
+
 void Square::setUnavailable() {
   unavailable = true;
   constructions.clear();

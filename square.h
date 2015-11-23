@@ -228,6 +228,7 @@ class Square : public Renderable {
   virtual ~Square();
 
   void setUnavailable();
+  bool isUnavailable() const;
 
   bool needsMemoryUpdate() const;
   void setMemoryUpdated();

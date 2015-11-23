@@ -75,6 +75,9 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(hints)
     & SVAR(visibleEnemies)
     & SVAR(visibleFriends)
+    & SVAR(knownLocations)
+    & SVAR(knownVillains)
+    & SVAR(knownVillainLocations)
     & SVAR(notifiedConquered)
     & SVAR(visibilityMap)
     & SVAR(warningTimes)
@@ -822,7 +825,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   VillageInfo::Village info;
   info.name = col->getShortName();
   info.tribeName = col->getTribeName();
-  info.knownLocation = getCollective()->isKnownVillainLocation(col);
+  info.knownLocation = knownVillainLocations.count(col);
   bool hostile = col->getTribe()->isEnemy(getTribe());
   if (col->isConquered())
     info.state = info.CONQUERED;
@@ -911,7 +914,7 @@ void PlayerControl::handleRansom(bool pay) {
 
 vector<Collective*> PlayerControl::getKnownVillains(VillainType type) const {
   return filter(model->getVillains(type), [this](Collective* c) {
-      return seeEverything || getCollective()->isKnownVillain(c);});
+      return seeEverything || knownVillains.count(c);});
 }
 
 vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
@@ -1824,6 +1827,7 @@ void PlayerControl::tick(double time) {
             c->getPosition());
         model->setCurrentMusic(MusicType::BATTLE, true);
         removeElement(newAttacks, attack);
+        knownVillains.insert(attack.getAttacker());
         if (attack.getRansom())
           ransomAttacks.push_back(attack);
         break;
@@ -1953,14 +1957,6 @@ void PlayerControl::addAttack(const CollectiveAttack& attack) {
   newAttacks.push_back(attack);
 }
 
-void PlayerControl::onDiscoveredLocation(const Location* loc) {
-  if (auto name = loc->getName())
-    addMessage(PlayerMessage("Your minions discover the location of " + *name, PlayerMessage::HIGH)
-        .setLocation(loc));
-  else if (loc->isMarkedAsSurprise())
-    addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
-}
-
 void PlayerControl::updateSquareMemory(Position pos) {
   ViewIndex index;
   pos.getViewIndex(index, getCollective()->getTribe());
@@ -1995,6 +1991,23 @@ vector<Vec2> PlayerControl::getVisibleEnemies() const {
   return transform2<Vec2>(filter(visibleEnemies,
         [this](const Creature* c) { return !c->isDead() && c->getPosition().isSameLevel(getLevel()); }),
       [](const Creature* c) { return c->getPosition().getCoord(); });
+}
+
+void PlayerControl::onNewTile(const Position& pos) {
+  if (const Location* loc = pos.getLocation())
+    if (!knownLocations.count(loc)) {
+      knownLocations.insert(loc);
+      if (auto name = loc->getName())
+        addMessage(PlayerMessage("Your minions discover the location of " + *name, PlayerMessage::HIGH)
+            .setLocation(loc));
+      else if (loc->isMarkedAsSurprise())
+        addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
+    }
+  for (const Collective* col : getLevel()->getModel()->getAllVillains())
+    if (col->getTerritory().contains(pos)) {
+      knownVillains.insert(col);
+      knownVillainLocations.insert(col);
+    }
 }
 
 template <class Archive>

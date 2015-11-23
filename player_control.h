@@ -105,7 +105,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void update(Creature*) override;
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
-  virtual void onDiscoveredLocation(const Location*) override;
+  virtual void onNewTile(const Position&) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onConstructed(Position, const SquareType&) override;
   virtual void onNoEnemies() override;
@@ -232,6 +232,9 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<const Creature*> SERIAL(visibleFriends);
   unordered_set<const Collective*> SERIAL(notifiedConquered);
   HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
+  set<const Location*> SERIAL(knownLocations);
+  set<const Collective*> SERIAL(knownVillains);
+  set<const Collective*> SERIAL(knownVillainLocations);
   bool firstRender = true;
   bool isNight = true;
 };

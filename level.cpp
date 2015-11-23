@@ -170,6 +170,8 @@ void Level::replaceSquare(Vec2 pos, PSquare square, bool storePrevious) {
   addLightSource(pos, squares[pos]->getLightEmission(), -1);
   square->setPosition(pos);
   square->setLevel(this);
+  if (squares[pos]->isUnavailable())
+    square->setUnavailable();
   for (PTrigger& t : squares[pos]->removeTriggers())
     square->addTrigger(std::move(t));
   square->setBackground(squares[pos].get());

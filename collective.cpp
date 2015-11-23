@@ -102,9 +102,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(nextPayoutTime)
     & SVAR(minionAttraction)
     & SVAR(teams)
-    & SVAR(knownLocations)
-    & SVAR(knownVillains)
-    & SVAR(knownVillainLocations)
     & SVAR(name)
     & SVAR(config)
     & SVAR(warnings)
@@ -2130,31 +2127,14 @@ void Collective::onCantPickItem(EntitySet<Item> items) {
     unmarkItem(id);
 }
 
-bool Collective::isKnownVillain(const Collective* col) {
-  return knownVillains.count(col);
-}
-
-bool Collective::isKnownVillainLocation(const Collective* col) {
-  return knownVillainLocations.count(col);
-}
-
 void Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
-    if (const Location* loc = pos.getLocation())
-      if (!knownLocations.count(loc)) {
-        knownLocations.insert(loc);
-        control->onDiscoveredLocation(loc);
-      }
     knownTiles->addTile(pos);
+    control->onNewTile(pos);
     if (pos.getLevel() == level)
       if (Task* task = taskMap->getMarked(pos))
         if (task->isImpossible(getLevel()))
           taskMap->removeTask(task);
-    for (const Collective* col : level->getModel()->getAllVillains())
-      if (col->territory->contains(pos)) {
-        knownVillains.insert(col);
-        knownVillainLocations.insert(col);
-      }
   }
 }
 
@@ -2397,7 +2377,6 @@ int Collective::getNextPayoutTime() const {
 
 void Collective::addAttack(const CollectiveAttack& attack) {
   control->addAttack(attack);
-  knownVillains.insert(attack.getAttacker());
 }
 
 CollectiveTeams& Collective::getTeams() {

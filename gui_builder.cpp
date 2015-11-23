@@ -1605,8 +1605,6 @@ static string getTaskText(MinionTask option) {
 static ColorId getTaskColor(PlayerInfo::MinionTaskInfo info) {
   if (info.inactive)
     return ColorId::GRAY;
-  if (info.current)
-    return ColorId::GREEN;
   else
     return ColorId::WHITE;
 }
@@ -1647,6 +1645,7 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
             tasks.addElem(GuiFactory::ListBuilder(gui)
                 .addElemAuto(gui.stack(
                     gui.button(buttonFun),
+                    gui.uiHighlightConditional([=]{ return task.current; }),
                     gui.label(getTaskText(task.task), colors[getTaskColor(task)])))
                 .addBackElemAuto(gui.stack(
                     getTooltip({"Click to turn this task on/off."}),

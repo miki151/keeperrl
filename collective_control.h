@@ -20,7 +20,7 @@ class CollectiveControl {
   virtual void update(Creature*);
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAttack(const CollectiveAttack&) {}
-  virtual void onDiscoveredLocation(const Location*) {}
+  virtual void onNewTile(const Position&) {}
   virtual void onConstructed(Position, const SquareType&) {}
   virtual void onNoEnemies() {}
   virtual void onRansomPaid() {}
