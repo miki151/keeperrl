@@ -925,7 +925,16 @@ vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
   return minions;
 }
 
-vector<PlayerInfo> PlayerControl::getPlayerInfos(const vector<Creature*>& creatures) const {
+void PlayerControl::sortMinionsForUI(vector<Creature*>& minions) const {
+  sort(minions.begin(), minions.end(), [] (const Creature* c1, const Creature* c2) {
+      int l1 = c1->getExpLevel();
+      int l2 = c2->getExpLevel();
+      return l1 > l2 || (l1 == l2 && c1->getUniqueId() > c2->getUniqueId());
+      });
+}
+
+vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) const {
+  sortMinionsForUI(creatures);
   vector<PlayerInfo> minions;
   for (Creature* c : creatures) {
     minions.emplace_back();
@@ -951,9 +960,6 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(const vector<Creature*>& creatu
       }
     }
   }
-  sort(minions.begin(), minions.end(), [] (const PlayerInfo& m1, const PlayerInfo& m2) {
-      return m1.level > m2.level || (m1.level == m2.level && m1.creatureId > m2.creatureId);
-      });
   return minions;
 }
 
@@ -1395,7 +1401,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
     case UserInputId::CREATURE_GROUP_BUTTON: 
         if (Creature* c = getCreature(input.get<int>()))
-          if (!chosenCreature || chosenTeam ||
+          if (!chosenCreature || chosenTeam || !getCreature(*chosenCreature) ||
               getCreature(*chosenCreature)->getSpeciesName() != c->getSpeciesName()) {
             chosenTeam = none;
             chosenCreature = input.get<int>();
@@ -1438,8 +1444,20 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CREATURE_BANISH:
         if (Creature* c = getCreature(input.get<int>()))
           if (model->getView()->yesOrNoPrompt("Do you want to banish " + c->getName().the() + " forever? "
-              "Banishing has a negative impact on morale of other minions."))
+              "Banishing has a negative impact on morale of other minions.")) {
+            vector<Creature*> like = getMinionsLike(c);
+            sortMinionsForUI(like);
+            if (like.size() > 1)
+              for (int i : All(like))
+                if (like[i] == c) {
+                  if (i < like.size() - 1)
+                    chosenCreature = like[i + 1]->getUniqueId();
+                  else
+                    chosenCreature = like[like.size() - 2]->getUniqueId();
+                  break;
+                }
             getCollective()->banishCreature(c);
+          }
         break;
     case UserInputId::CREATURE_WHIP:
         if (Creature* c = getCreature(input.get<int>())) {

@@ -181,7 +181,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool areInSameGroup(Creature*, Creature*) const;
   void fillMinions(CollectiveInfo&) const;
   vector<Creature*> getMinionsLike(Creature*) const;
-  vector<PlayerInfo> getPlayerInfos(const vector<Creature*>&) const;
+  vector<PlayerInfo> getPlayerInfos(vector<Creature*>) const;
+  void sortMinionsForUI(vector<Creature*>&) const;
   vector<CollectiveInfo::CreatureGroup> getCreatureGroups(vector<Creature*>) const;
   vector<CollectiveInfo::CreatureGroup> getEnemyGroups() const;
   void minionEquipmentAction(const EquipmentActionInfo&);
