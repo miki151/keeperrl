@@ -332,13 +332,15 @@ PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, VillageInfo& villag
       gui.icon(gui.MINION),
       gui.icon(gui.LIBRARY),
       gui.stack(gui.icon(gui.DIPLOMACY),
-          gui.conditional(gui.icon(gui.CLICK_TAB), [=] { return numSeenVillains < villageInfo.villages.size();})),
+          gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::YELLOW]),
+              [=] { return numSeenVillains < villageInfo.villages.size();})),
       gui.icon(gui.HELP));
   for (int i : All(buttons)) {
     buttons[i] = gui.stack(
+        gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
+            [this, i] (GuiElem*) { return int(collectiveTab) == i;}),
         std::move(buttons[i]),
-        gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }),
-        gui.conditional(gui.border2(), [this, i] (GuiElem*) { return int(collectiveTab) == i;}));
+        gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }));
   }
   vector<pair<CollectiveTab, PGuiElem>> elems = makeVec<pair<CollectiveTab, PGuiElem>>(
       make_pair(CollectiveTab::MINIONS, drawMinions(info)),
@@ -1198,11 +1200,15 @@ void GuiBuilder::drawMessages(vector<OverlayInfo>& ret,
     for (auto& message : messages[i]) {
       string text = (line.isEmpty() ? "" : " ") + message.getText();
       cutToFit(renderer, text, maxMessageLength - 2 * hMargin);
+      if (message.isClickable()) {
+        line.addElemAuto(gui.stack(
+              gui.button(getButtonCallback(UserInput(UserInputId::MESSAGE_INFO, message.getUniqueId()))),
+              gui.labelHighlight(text, getMessageColor(message))));
+        line.addElemAuto(gui.labelUnicode(String(L'➚'), getMessageColor(message)));
+      } else
       line.addElemAuto(gui.stack(
             gui.button(getButtonCallback(UserInput(UserInputId::MESSAGE_INFO, message.getUniqueId()))),
             gui.label(text, getMessageColor(message))));
-      if (message.isClickable())
-        line.addElemAuto(gui.labelUnicode(String(L'➚'), getMessageColor(message)));
     }
     if (!messages[i].empty())
       lines.push_back(line.buildHorizontalList());

@@ -158,6 +158,7 @@ class GuiFactory {
       CENTER_STRETCHED};
   PGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
       Vec2 offset = Vec2(0, 0), function<Color()> = nullptr);
+  PGuiElem sprite(Texture&, Alignment, Color);
   PGuiElem sprite(Texture&, double scale);
   PGuiElem tooltip(const vector<string>&);
   PGuiElem darken();
@@ -246,7 +247,7 @@ class GuiFactory {
     MINION,
     BUILDING,
     DEITIES,
-    CLICK_TAB,
+    HIGHLIGHT,
     STAT_ATT,
     STAT_DEF,
     STAT_ACC,
@@ -261,7 +262,7 @@ class GuiFactory {
     TEAM_BUTTON_HIGHLIGHT,
   };
 
-  PGuiElem icon(IconId, Alignment = Alignment::CENTER);
+  PGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color(255, 255, 255));
   Texture& get(TexId);
   PGuiElem spellIcon(SpellId);
   PGuiElem uiHighlightMouseOver(Color = colors[ColorId::GREEN]);

@@ -598,6 +598,6 @@ void Square::clearItemIndex(ItemIndex index) {
 
 void Square::apply(Creature* c) {
   if (applySound)
-    level->getModel()->getView()->addSound(*applySound);
+    c->addSound(*applySound);
   onApply(c);
 }

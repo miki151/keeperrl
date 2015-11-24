@@ -400,6 +400,8 @@ PGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
 }
 
 static void lighten(Color& c) {
+  if (3 * 255 - c.r - c.g - c.b < 75)
+    c = colors[ColorId::YELLOW];
   int a = 160;
   int b = 200;
   auto fun = [=] (int x) { return x * (255 - a) / b + a;};
@@ -2114,8 +2116,8 @@ PGuiElem GuiFactory::background(PGuiElem content, Color color) {
   return stack(rectangle(color), std::move(content));
 }
 
-PGuiElem GuiFactory::icon(IconId id, Alignment alignment) {
-  return sprite(getIconTex(id), alignment);
+PGuiElem GuiFactory::icon(IconId id, Alignment alignment, Color color) {
+  return sprite(getIconTex(id), alignment, color);
 }
 
 PGuiElem GuiFactory::spellIcon(SpellId id) {
@@ -2140,6 +2142,10 @@ PGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {
 
 PGuiElem GuiFactory::sprite(TexId id, Alignment a, function<Color()> c) {
   return sprite(get(id), a, false, false, Vec2(0, 0), c);
+}
+
+PGuiElem GuiFactory::sprite(Texture& t, Alignment a, Color c) {
+  return sprite(t, a, false, false, Vec2(0, 0), [=]{ return c; });
 }
 
 PGuiElem GuiFactory::mainMenuLabelBg(const string& s, double vPadding, Color color) {
