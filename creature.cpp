@@ -160,6 +160,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     model->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
+    c->addSound(spell->getSound());
     c->spendTime(1);
   });
 }
@@ -177,6 +178,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     model->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
+    c->addSound(spell->getSound());
     c->spendTime(1);
   });
 }

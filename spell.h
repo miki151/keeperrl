@@ -58,17 +58,19 @@ class Spell : public Singleton<Spell, SpellId> {
   int getDifficulty() const;
   string getDescription() const;
   void addMessage(Creature*);
+  SoundId getSound() const;
 
   static void init();
 
   private:
-  Spell(const string&, EffectType, int difficulty, CastMessageType = CastMessageType::STANDARD);
-  Spell(const string&, DirEffectType, int difficulty, CastMessageType = CastMessageType::STANDARD);
+  Spell(const string&, EffectType, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
+  Spell(const string&, DirEffectType, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
 
   const string name;
   const variant<EffectType, DirEffectType> effect;
   const int difficulty;
   const CastMessageType castMessageType;
+  const SoundId sound;
 };
 
 #endif
