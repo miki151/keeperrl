@@ -347,7 +347,7 @@ class TribeDoor : public Door {
     if (destructionStrength <= 0) {
       Door::destroyBy(c);
     } else
-      getLevel()->getModel()->getView()->addSound(SoundId::BANG_DOOR);
+      c->addSound(SoundId::BANG_DOOR);
   }
 
   virtual bool canLock() const override {

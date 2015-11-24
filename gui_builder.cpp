@@ -331,9 +331,9 @@ PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, VillageInfo& villag
       gui.icon(gui.BUILDING),
       gui.icon(gui.MINION),
       gui.icon(gui.LIBRARY),
-      gui.stack(gui.icon(gui.DIPLOMACY),
-          gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::YELLOW]),
-              [=] { return numSeenVillains < villageInfo.villages.size();})),
+      gui.stack(gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::YELLOW]),
+                    [=] { return numSeenVillains < villageInfo.villages.size();}),
+                gui.icon(gui.DIPLOMACY)),
       gui.icon(gui.HELP));
   for (int i : All(buttons)) {
     buttons[i] = gui.stack(
