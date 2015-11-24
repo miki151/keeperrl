@@ -1296,14 +1296,17 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
       lines.addElem(gui.leftMargin(titleMargin, gui.label("Lesser villains:")), titleLineHeight);
     }
     auto& elem = info.villages[i];
-    PGuiElem header = gui.label(capitalFirst(elem.name) + (elem.tribeName.empty() ?
-          string() : " (" + elem.tribeName + ")"), colors[ColorId::WHITE]);
+    string title = capitalFirst(elem.name) + (elem.tribeName.empty() ?
+          string() : " (" + elem.tribeName + ")");
+    PGuiElem header;
     if (info.villages[i].knownLocation)
       header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, i})),
         gui.getListBuilder()
-            .addElemAuto(std::move(header))
+            .addElemAuto(gui.labelHighlight(title))
             .addElem(gui.empty(), 7)
             .addElemAuto(gui.labelUnicode(String(L'➚'))).buildHorizontalList());
+    else
+      header = gui.label(title);
     lines.addElem(std::move(header));
     if (!info.villages[i].knownLocation)
       lines.addElem(gui.leftMargin(40, gui.label("Location unknown", colors[ColorId::LIGHT_BLUE])));
