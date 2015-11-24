@@ -33,6 +33,7 @@
 #include "creature_attributes.h"
 #include "entity_name.h"
 #include "position_map.h"
+#include "sound.h"
 
 vector<int> healingPoints { 5, 15, 40};
 vector<int> sleepTime { 15, 80, 200};
@@ -135,6 +136,7 @@ static void deception(Creature* creature) {
           c.breathing = false;
           c.uncorporal = true;
           c.humanoid = true;
+          c.dyingSound = SoundId::MISSED_ATTACK;
           c.name = "illusion";),
         ControllerFactory([creature] (Creature* o) { return new IllusionController(o, creature->getTime()
             + Random.get(5, 10));}))));

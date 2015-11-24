@@ -36,6 +36,7 @@
 #include "tribe.h"
 #include "square_type.h"
 #include "monster_ai.h"
+#include "sound.h"
 
 template <class Archive> 
 void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
@@ -1836,6 +1837,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dontChase = true;
           c.animal = true;
           c.isFood = true;
+          c.dyingSound = SoundId::DYING_PIG;
           c.name = "pig";);
     case CreatureId::GOAT:
       return INHERIT(PIG,

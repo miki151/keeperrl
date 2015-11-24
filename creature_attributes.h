@@ -30,6 +30,7 @@
 #include "minion_task_map.h"
 #include "skill.h"
 #include "modifier_type.h"
+#include "sound.h"
 
 // WTF is this defined
 #undef HUGE
@@ -94,6 +95,9 @@ class CreatureAttributes {
   string getBodyPartName(BodyPart) const;
   SpellMap& getSpellMap();
   const SpellMap& getSpellMap() const;
+  optional<Sound> getDeathSound() const;
+  optional<SoundId> getAttackSound(AttackType, bool damage) const;
+
 
   MustInitialize<ViewId> SERIAL(viewId);
   optional<ViewObject> SERIAL(illusionViewObject);
@@ -146,6 +150,7 @@ class CreatureAttributes {
   MinionTaskMap SERIAL(minionTasks);
   string SERIAL(groupName) = "group";
   EnumMap<AttrType, double> SERIAL(attrIncrease);
+  optional<SoundId> SERIAL(dyingSound);
 };
 
 #endif

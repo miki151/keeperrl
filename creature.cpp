@@ -1358,17 +1358,6 @@ bool Creature::isCritical(BodyPart part) const {
     || (part == BodyPart::HEAD && numGood(part) == 0 && !isUndead());
 }
 
-static optional<SoundId> getAttackSound(AttackType type, bool damage) {
-  switch (type) {
-    case AttackType::HIT:
-    case AttackType::PUNCH:
-    case AttackType::CRUSH: return damage ? SoundId::BLUNT_DAMAGE : SoundId::BLUNT_NO_DAMAGE;
-    case AttackType::CUT:
-    case AttackType::STAB: return damage ? SoundId::BLADE_DAMAGE : SoundId::BLADE_NO_DAMAGE;
-    default: return none;
-  }
-}
-
 bool Creature::takeDamage(const Attack& attack) {
   AttackType attackType = attack.getType();
   Creature* other = attack.getAttacker();
@@ -1397,7 +1386,7 @@ bool Creature::takeDamage(const Attack& attack) {
     attributes->lastingEffects[LastingEffect::MAGIC_SHIELD] -= 5;
     globalMessage("The magic shield absorbs the attack", "");
   }
-  if (auto sound = getAttackSound(attack.getType(), attack.getStrength() > defense))
+  if (auto sound = attributes->getAttackSound(attack.getType(), attack.getStrength() > defense))
     addSound(*sound);
   if (attack.getStrength() > defense) {
     if (attackType == AttackType::EAT) {
@@ -1679,20 +1668,11 @@ void Creature::die(const string& reason, bool dropInventory, bool dCorpse) {
   die(nullptr, dropInventory, dCorpse);
 }
 
-static double getDeathSoundPitch(CreatureSize size) {
-  switch (size) {
-    case CreatureSize::HUGE: return 0.6;
-    case CreatureSize::LARGE: return 0.9;
-    case CreatureSize::MEDIUM: return 1.5;
-    case CreatureSize::SMALL: return 3.3;
-  }
-}
-
 void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   CHECK(!isDead());
   if (dCorpse)
-    addSound(Sound(isHumanoid() ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH)
-        .setPitch(getDeathSoundPitch(getSize())));
+    if (auto sound = attributes->getDeathSound())
+      addSound(*sound);
   lastAttacker = attacker;
   Debug() << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   controller->onKilled(attacker);

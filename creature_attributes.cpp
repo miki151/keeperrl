@@ -17,6 +17,7 @@
 
 #include "creature_attributes.h"
 #include "creature.h"
+#include "sound.h"
 
 CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
   fun(*this);
@@ -73,7 +74,8 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(minionTasks)
     & SVAR(groupName)
     & SVAR(attrIncrease)
-    & SVAR(recruitmentCost);
+    & SVAR(recruitmentCost)
+    & SVAR(dyingSound);
 }
 
 SERIALIZABLE(CreatureAttributes);
@@ -274,4 +276,31 @@ const SpellMap& CreatureAttributes::getSpellMap() const {
   return spells;
 }
 
+optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damage) const {
+  if (!dyingSound)
+    switch (type) {
+      case AttackType::HIT:
+      case AttackType::PUNCH:
+      case AttackType::CRUSH: return damage ? SoundId::BLUNT_DAMAGE : SoundId::BLUNT_NO_DAMAGE;
+      case AttackType::CUT:
+      case AttackType::STAB: return damage ? SoundId::BLADE_DAMAGE : SoundId::BLADE_NO_DAMAGE;
+      default: return none;
+    }
+  else
+    return none;
+}
+
+static double getDeathSoundPitch(CreatureSize size) {
+  switch (size) {
+    case CreatureSize::HUGE: return 0.6;
+    case CreatureSize::LARGE: return 0.9;
+    case CreatureSize::MEDIUM: return 1.5;
+    case CreatureSize::SMALL: return 3.3;
+  }
+}
+
+optional<Sound> CreatureAttributes::getDeathSound() const {
+  return Sound(dyingSound ? *dyingSound : isHumanoid() ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH)
+      .setPitch(getDeathSoundPitch(getSize()));
+}
 
