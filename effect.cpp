@@ -137,6 +137,7 @@ static void deception(Creature* creature) {
           c.uncorporal = true;
           c.humanoid = true;
           c.dyingSound = SoundId::MISSED_ATTACK;
+          c.noAttackSound = true;
           c.name = "illusion";),
         ControllerFactory([creature] (Creature* o) { return new IllusionController(o, creature->getTime()
             + Random.get(5, 10));}))));

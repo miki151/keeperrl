@@ -75,7 +75,9 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(groupName)
     & SVAR(attrIncrease)
     & SVAR(recruitmentCost)
-    & SVAR(dyingSound);
+    & SVAR(dyingSound)
+    & SVAR(noDyingSound)
+    & SVAR(noAttackSound);
 }
 
 SERIALIZABLE(CreatureAttributes);
@@ -277,7 +279,7 @@ const SpellMap& CreatureAttributes::getSpellMap() const {
 }
 
 optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damage) const {
-  if (!dyingSound)
+  if (!noAttackSound)
     switch (type) {
       case AttackType::HIT:
       case AttackType::PUNCH:
@@ -300,7 +302,10 @@ static double getDeathSoundPitch(CreatureSize size) {
 }
 
 optional<Sound> CreatureAttributes::getDeathSound() const {
-  return Sound(dyingSound ? *dyingSound : isHumanoid() ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH)
-      .setPitch(getDeathSoundPitch(getSize()));
+  if (noDyingSound)
+    return none;
+  else
+    return Sound(dyingSound ? *dyingSound : isHumanoid() ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH)
+        .setPitch(getDeathSoundPitch(getSize()));
 }
 

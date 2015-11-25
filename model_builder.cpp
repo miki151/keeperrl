@@ -951,7 +951,11 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random,
   m->addCreature(std::move(c));
   m->playerControl->addKeeper(ref);
   vector<CreatureId> ids {
-    CreatureId::SPECIAL_BL,
+    CreatureId::DONKEY,
+    CreatureId::DONKEY,
+    CreatureId::DONKEY,
+    CreatureId::DONKEY,
+    CreatureId::DONKEY,
     CreatureId::SPECIAL_BM,
     CreatureId::SPECIAL_HL,
     CreatureId::SPECIAL_HM,

@@ -151,6 +151,8 @@ class CreatureAttributes {
   string SERIAL(groupName) = "group";
   EnumMap<AttrType, double> SERIAL(attrIncrease);
   optional<SoundId> SERIAL(dyingSound);
+  bool SERIAL(noDyingSound) = false;
+  bool SERIAL(noAttackSound) = false;
 };
 
 #endif

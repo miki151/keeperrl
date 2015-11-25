@@ -1823,6 +1823,7 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(COW,
           c.viewId = ViewId::DONKEY;
           c.weight = 200;
+          c.dyingSound = SoundId::DYING_DONKEY;
           c.name = "donkey";);
     case CreatureId::PIG: 
       return CATTR(
@@ -1940,6 +1941,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::ARM] = 0;
           c.bodyParts[BodyPart::LEG] = 8;
           c.animal = true;
+          c.noDyingSound = true;
           c.name = "spider";);
     case CreatureId::FLY: 
       return CATTR(
@@ -1957,6 +1959,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.courage = 100;
           c.dontChase = true;
           c.animal = true;
+          c.noDyingSound = true;
           c.name = EntityName("fly", "flies"););
     case CreatureId::ANT_WORKER:
       return CATTR(
@@ -1972,6 +1975,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::LEG] = 6;
           c.bodyParts[BodyPart::WING] = 0;
           c.animal = true;
+          c.noDyingSound = true;
           c.name = "giant ant";);
     case CreatureId::ANT_SOLDIER:
       return INHERIT(ANT_WORKER,
@@ -2002,6 +2006,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.animal = true;
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.skills.insert(SkillId::SWIMMING);
+          c.noDyingSound = true;
           c.name = "snake";);
     case CreatureId::RAVEN: 
       return CATTR(
@@ -2023,6 +2028,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::EXPLORE, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.groupName = "flock";
+          c.noDyingSound = true;
           c.name = "raven";);
     case CreatureId::VULTURE: 
       return INHERIT(RAVEN,
@@ -2086,6 +2092,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.fireCreature = true;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.weight = 10;
+          c.noDyingSound = true;
           c.name = "fire sphere";);
     case CreatureId::ELEMENTALIST: 
       return CATTR(
@@ -2121,6 +2128,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attackEffect = EffectId::FIRE;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.weight = 10;
+          c.noDyingSound = true;
           c.name = "fire elemental";);
     case CreatureId::AIR_ELEMENTAL:
       return CATTR(
@@ -2140,6 +2148,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.weight = 10;
           c.spells.add(SpellId::AIR_BLAST);
+          c.noDyingSound = true;
           c.name = "air elemental";);
     case CreatureId::EARTH_ELEMENTAL:
       return CATTR(
@@ -2155,6 +2164,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.breathing = false;
           c.brain = false;
           c.weight = 500;
+          c.noDyingSound = true;
           c.name = "earth elemental";);
     case CreatureId::WATER_ELEMENTAL:
       return INHERIT(EARTH_ELEMENTAL,
