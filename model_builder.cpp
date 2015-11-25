@@ -687,7 +687,7 @@ static vector<EnemyInfo> getSokobanEntry(RandomGen& random, TribeSet& tribeSet) 
       c.type = SettlementType::ISLAND_VAULT;
       c.neutralCreatures = make_pair(
           CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::SOKOBAN_BOULDER), 0);
-      c.creatures = CreatureFactory::singleType(tribeSet.keeper.get(), CreatureId::SPECIAL_HUMANOID);
+      c.creatures = CreatureFactory::singleType(tribeSet.keeper.get(), CreatureId::SPECIAL_HL);
       c.numCreatures = 1;
       c.tribe = tribeSet.keeper.get();
       c.location = new Location();
@@ -818,7 +818,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
             );
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 40;),
-      CONSTRUCT(ImmigrantInfo,
+/*      CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::SPECIAL_HUMANOID;
           c.frequency = 0.1;
           c.attractions = LIST(
@@ -827,7 +827,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.traits = {MinionTrait::FIGHTER};
           c.spawnAtDorm = true;
           c.techId = TechId::HUMANOID_MUT;
-          c.salary = 40;),
+          c.salary = 40;),*/
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::ZOMBIE;
           c.frequency = 0.5;
@@ -902,23 +902,23 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
             {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 4.0, 12.0}
             );
           c.salary = 0;),
-      CONSTRUCT(ImmigrantInfo,
+      /*CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::SPECIAL_MONSTER_KEEPER;
           c.frequency = 0.1;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
           c.spawnAtDorm = true;
           c.techId = TechId::BEAST_MUT;
-          c.salary = 0;)});
+          c.salary = 0;)*/});
 }
 
 static map<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
-  return {{CollectiveResourceId::MANA, 200}};
   if (resourceBonus) {
     map<CollectiveResourceId, int> credit;
     for (auto elem : ENUM_ALL(CollectiveResourceId))
       credit[elem] = 10000;
     return credit;
-  }
+  } else
+    return {{CollectiveResourceId::MANA, 200}};
  
 }
 
@@ -934,7 +934,7 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random,
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet->keeper.get())
       .setLevel(top)
-      .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
+      .setCredit(getKeeperCredit(true))
       .build());
  
   m->playerCollective = m->collectives.back().get();
@@ -950,10 +950,41 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random,
   top->landCreature(StairKey::keeperSpawn(), c.get());
   m->addCreature(std::move(c));
   m->playerControl->addKeeper(ref);
-  for (int i : Range(4)) {
-    PCreature c = CreatureFactory::fromId(CreatureId::SOKOBAN_BOULDER, m->tribeSet->keeper.get(),
-        MonsterAIFactory::collective(m->playerCollective));
+  vector<CreatureId> ids {
+    CreatureId::DONKEY,
+    CreatureId::DONKEY,
+    CreatureId::DONKEY,
+    CreatureId::DONKEY,
+    CreatureId::DONKEY,
+    CreatureId::SPECIAL_BM,
+    CreatureId::SPECIAL_HL,
+    CreatureId::SPECIAL_HM,
+    CreatureId::SPECIAL_BL,
+    CreatureId::SPECIAL_BM,
+    CreatureId::SPECIAL_HL,
+    CreatureId::SPECIAL_HM,
+    CreatureId::SPECIAL_BL,
+    CreatureId::SPECIAL_BM,
+    CreatureId::SPECIAL_HL,
+    CreatureId::SPECIAL_HM,
+    CreatureId::SPECIAL_BL,
+    CreatureId::SPECIAL_BM,
+    CreatureId::SPECIAL_HL,
+    CreatureId::SPECIAL_HM,
+    CreatureId::SPECIAL_BL,
+    CreatureId::SPECIAL_BM,
+    CreatureId::SPECIAL_HL,
+    CreatureId::SPECIAL_HM,
+    CreatureId::SPECIAL_BL,
+    CreatureId::SPECIAL_BM,
+    CreatureId::SPECIAL_HL,
+    CreatureId::SPECIAL_HM,
+  };
+  for (auto elem : ids) {
+    PCreature c = CreatureFactory::fromId(elem, m->tribeSet->keeper.get(),
+        MonsterAIFactory::monster());
     top->landCreature(StairKey::keeperSpawn(), c.get());
+//    m->playerCollective->addCreature(c.get(), {MinionTrait::FIGHTER});
     m->addCreature(std::move(c));
   }
   for (int i : Range(4)) {
@@ -1118,7 +1149,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter* meter, RandomGen& random,
       extraSettlements.emplace_back(*elem.extraLevel, elem.settlement);
   }
   Level* top = m->buildLevel(
-      LevelBuilder(meter, random, 250, 250, "Wilderness", false),
+      LevelBuilder(meter, random, 360, 360, "Wilderness", false),
       LevelMaker::topLevel(random, CreatureFactory::forrest(m->tribeSet->wildlife.get()), settlements));
   for (auto& elem : extraSettlements)
     makeExtraLevel(meter, random, m, elem.first, elem.second);

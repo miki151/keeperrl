@@ -31,10 +31,10 @@ class Monster : public Controller {
   virtual void you(const string& param) override;
   
   virtual void makeMove() override;
-  virtual bool isPlayer() const;
+  virtual bool isPlayer() const override;
   virtual const MapMemory& getMemory() const;
 
-  virtual void onBump(Creature*);
+  virtual void onBump(Creature*) override;
 
   static ControllerFactory getFactory(MonsterAIFactory);
 

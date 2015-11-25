@@ -45,6 +45,7 @@
 #include "version.h"
 #include "vision.h"
 #include "model_builder.h"
+#include "sound_library.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -79,11 +80,11 @@ static thread::attributes getAttributes() {
 
 void initializeRendererTiles(Renderer& r, const string& path) {
   r.loadTilesFromDir(path + "/orig16", Vec2(16, 16));
-  r.loadAltTilesFromDir(path + "/orig16_scaled", Vec2(24, 24));
+//  r.loadAltTilesFromDir(path + "/orig16_scaled", Vec2(24, 24));
   r.loadTilesFromDir(path + "/orig24", Vec2(24, 24));
-  r.loadAltTilesFromDir(path + "/orig24_scaled", Vec2(36, 36));
+//  r.loadAltTilesFromDir(path + "/orig24_scaled", Vec2(36, 36));
   r.loadTilesFromDir(path + "/orig30", Vec2(30, 30));
-  r.loadAltTilesFromDir(path + "/orig30_scaled", Vec2(45, 45));
+//  r.loadAltTilesFromDir(path + "/orig30_scaled", Vec2(45, 45));
 }
 
 static int getMaxVolume() {
@@ -208,11 +209,14 @@ int main(int argc, char* argv[]) {
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   Random.init(seed);
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
+  SoundLibrary* soundLibrary = nullptr;
   Clock clock;
-  GuiFactory guiFactory(renderer, &clock);
+  GuiFactory guiFactory(renderer, &clock, &options);
   guiFactory.loadFreeImages(freeDataPath + "/images");
-  if (tilesPresent)
+  if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
+    soundLibrary = new SoundLibrary(&options, paidDataPath + "/sound");
+  }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
   if (vars.count("replay")) {
@@ -222,7 +226,7 @@ int main(int argc, char* argv[]) {
     input->getArchive() >> seed;
     Random.init(seed);
     view.reset(WindowView::createReplayView(input->getArchive(),
-          {renderer, guiFactory, tilesPresent, &options, &clock}));
+          {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
   } else {
     if (vars.count("record")) {
       string fname = vars["record"].as<string>();
@@ -230,10 +234,10 @@ int main(int argc, char* argv[]) {
       output->getArchive() << seed;
       Debug() << "Writing to " << fname;
       view.reset(WindowView::createLoggingView(output->getArchive(),
-            {renderer, guiFactory, tilesPresent, &options, &clock}));
+            {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
     } else 
       view.reset(WindowView::createDefaultView(
-            {renderer, guiFactory, tilesPresent, &options, &clock}));
+            {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
   } 
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);

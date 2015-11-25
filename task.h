@@ -29,7 +29,7 @@ class CreatureFactory;
 class Task : public UniqueEntity<Task> {
   public:
 
-  Task();
+  Task(bool transferable = false);
   virtual ~Task();
 
   virtual MoveInfo getMove(Creature*) = 0;
@@ -37,7 +37,7 @@ class Task : public UniqueEntity<Task> {
   virtual bool canTransfer();
   virtual void cancel() {}
   virtual string getDescription() const = 0;
-  virtual bool canPerform(const Creature* c) { return true; }
+  virtual bool canPerform(const Creature* c);
   bool isDone();
 
   static PTask construction(TaskCallback*, Position, const SquareType&);
@@ -77,7 +77,7 @@ class Task : public UniqueEntity<Task> {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
-
+  
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
 
@@ -86,6 +86,7 @@ class Task : public UniqueEntity<Task> {
 
   private:
   bool SERIAL(done) = false;
+  bool SERIAL(transfer);
 };
 
 #endif

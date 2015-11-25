@@ -133,6 +133,11 @@ void Skillset::insert(SkillId s) {
   discrete.insert(s);
 }
 
+void Skillset::erase(SkillId s) {
+  CHECK(Skill::get(s)->isDiscrete());
+  discrete.erase(s);
+}
+
 bool Skillset::hasDiscrete(SkillId s) const {
   CHECK(Skill::get(s)->isDiscrete());
   return discrete[s];

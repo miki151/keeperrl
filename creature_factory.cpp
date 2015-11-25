@@ -36,6 +36,7 @@
 #include "tribe.h"
 #include "square_type.h"
 #include "monster_ai.h"
+#include "sound.h"
 
 template <class Archive> 
 void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
@@ -183,13 +184,7 @@ class BoulderController : public Monster {
       getCreature()->monsterMessage(msg, msgNoSee);
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Monster) 
-      & SVAR(direction)
-      & SVAR(stopped);
-  }
-
+  SERIALIZE_ALL2(Monster, direction, stopped);
   SERIALIZATION_CONSTRUCTOR(BoulderController);
 
   private:
@@ -209,11 +204,7 @@ class Boulder : public Creature {
     return ItemFactory::fromId(ItemId::ROCK, Random.get(10, 20));
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Creature);
-  }
-  
+  SERIALIZE_SUBCLASS(Creature);
   SERIALIZATION_CONSTRUCTOR(Boulder);
 };
 
@@ -263,11 +254,7 @@ class SokobanController : public Monster {
       getCreature()->monsterMessage(msg, msgNoSee);
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Monster);
-  }
-
+  SERIALIZE_SUBCLASS(Monster);
   SERIALIZATION_CONSTRUCTOR(SokobanController);
 
   private:
@@ -432,17 +419,7 @@ class KrakenController : public Monster {
     getCreature()->wait().perform(getCreature());
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Monster)
-      & SVAR(numSpawns)
-      & SVAR(waitNow)
-      & SVAR(ready)
-      & SVAR(held)
-      & SVAR(spawns)
-      & SVAR(father);
-  }
-
+  SERIALIZE_ALL2(Monster, numSpawns, waitNow, ready, held, spawns, father);
   SERIALIZATION_CONSTRUCTOR(KrakenController);
 
   private:
@@ -586,18 +563,7 @@ class ShopkeeperController : public Monster {
     }
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Monster)
-      & SVAR(prevCreatures)
-      & SVAR(debt)
-      & SVAR(thiefCount)
-      & SVAR(thieves)
-      & SVAR(unpaidItems)
-      & SVAR(shopArea)
-      & SVAR(firstMove);
-  }
-
+  SERIALIZE_ALL2(Monster, prevCreatures, debt, thiefCount, thieves, unpaidItems, shopArea, firstMove);
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
 
   private:
@@ -710,7 +676,7 @@ CreatureFactory CreatureFactory::humanVillage(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
       CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
       CreatureId::PIG, CreatureId::DOG },
-      { 1, 3, 6, 4, 1, 1, 1, 1, 6});
+      { 2, 6, 6, 4, 1, 1, 1, 1, 6}, {CreatureId::KNIGHT});
 }
 
 CreatureFactory CreatureFactory::humanPeaceful(Tribe* tribe) {
@@ -779,7 +745,7 @@ CreatureFactory CreatureFactory::splashLeader(Tribe* tribe) {
 
 CreatureFactory CreatureFactory::splashMonsters(Tribe* tribe) {
   return CreatureFactory(tribe, { CreatureId::GNOME, CreatureId::GOBLIN, CreatureId::OGRE,
-      CreatureId::SPECIAL_HUMANOID, CreatureId::SPECIAL_MONSTER_KEEPER, CreatureId::WOLF, CreatureId::CAVE_BEAR,
+      CreatureId::SPECIAL_HL, CreatureId::SPECIAL_BL, CreatureId::WOLF, CreatureId::CAVE_BEAR,
       CreatureId::BAT, CreatureId::WEREWOLF, CreatureId::ZOMBIE, CreatureId::VAMPIRE, CreatureId::DOPPLEGANGER,
       CreatureId::SUCCUBUS},
       { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}, 25);
@@ -893,27 +859,124 @@ CreatureFactory CreatureFactory::gnomishMines(Tribe* peaceful, Tribe* enemy, int
       make_tuple(CreatureId::RAT, 100., enemy)});
 }
 
-PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, ControllerFactory factory, bool keeper) {
-  RandomGen r;
-  r.init(hash<string>()(name));
+static ViewId getViewId(bool humanoid, bool large, bool body, bool wings) {
+  static vector<ViewId> specialViewIds {
+    ViewId::SPECIAL_BLBN,
+    ViewId::SPECIAL_BLBW,
+    ViewId::SPECIAL_BLGN,
+    ViewId::SPECIAL_BLGW,
+    ViewId::SPECIAL_BMBN,
+    ViewId::SPECIAL_BMBW,
+    ViewId::SPECIAL_BMGN,
+    ViewId::SPECIAL_BMGW,
+    ViewId::SPECIAL_HLBN,
+    ViewId::SPECIAL_HLBW,
+    ViewId::SPECIAL_HLGN,
+    ViewId::SPECIAL_HLGW,
+    ViewId::SPECIAL_HMBN,
+    ViewId::SPECIAL_HMBW,
+    ViewId::SPECIAL_HMGN,
+    ViewId::SPECIAL_HMGW,
+  };
+  return specialViewIds[humanoid * 8 + (!large) * 4 + (!body) * 2 + wings];
+}
+
+static string getSpeciesName(bool humanoid, bool large, bool body, bool wings) {
+  static vector<string> names {
+    "devitablex",
+    "owlbeast",
+    "hellar dra",
+    "marilisk",
+    "gelaticorn",
+    "mant eatur",
+    "phanticore",
+    "yeth horro",
+    "yeth amon",
+    "mantic dra",
+    "unic cread",
+    "under hulk",
+    "nightshasa",
+    "manananggal",
+    "dire spawn",
+    "shamander",
+  };
+  return names[humanoid * 8 + (!large) * 4 + (!body) * 2 + wings];
+}
+
+static optional<EffectType> getSpecialBeastAttack(bool large, bool body, bool wings) {
+  static vector<optional<EffectType>> attacks {
+    none,
+    EffectType(EffectId::FIRE),
+    EffectType(EffectId::FIRE),
+    none,
+    EffectType(EffectId::LASTING, LastingEffect::POISON),
+    none,
+    EffectType(EffectId::LASTING, LastingEffect::POISON),
+    none,
+  };
+  return attacks[(!large) * 4 + (!body) * 2 + wings];
+}
+
+static EnumMap<BodyPart, int> getSpecialBeastBody(bool large, bool body, bool wings) {
+  static vector<EnumMap<BodyPart, int>> parts {
+    {
+      { BodyPart::LEG, 2}},
+    {
+      { BodyPart::ARM, 2},
+      { BodyPart::LEG, 2},
+      { BodyPart::WING, 2},
+      { BodyPart::HEAD, 1}},
+    {
+      { BodyPart::LEG, 4},
+      { BodyPart::HEAD, 1}},
+    {
+      { BodyPart::ARM, 2},
+      { BodyPart::WING, 2},
+      { BodyPart::HEAD, 1}},
+    {},
+    { 
+      { BodyPart::LEG, 2},
+      { BodyPart::WING, 2},
+      { BodyPart::HEAD, 1}},
+    {
+      { BodyPart::LEG, 8},
+      { BodyPart::HEAD, 1}},
+    { 
+      { BodyPart::WING, 2},
+      { BodyPart::HEAD, 1}},
+  };
+  return parts[(!large) * 4 + (!body) * 2 + wings];
+}
+
+PCreature getSpecial(Tribe* tribe, bool humanoid, bool large, ControllerFactory factory) {
+  bool wings = Random.roll(2);
+  bool body = Random.roll(2);
+  string name = getSpeciesName(humanoid, large, body, wings);
   PCreature c = get(CATTR(
-        c.viewId = humanoid ? ViewId::SPECIAL_HUMANOID : ViewId::SPECIAL_BEAST;
-        c.attr[AttrType::SPEED] = r.get(70, 150);
-        c.size = Random.choose({CreatureSize::SMALL, CreatureSize::MEDIUM, CreatureSize::LARGE}, {1, 1, 1});
-        c.attr[AttrType::STRENGTH] = r.get(20, 26);
-        c.attr[AttrType::DEXTERITY] = r.get(20, 26);
-        c.barehandedDamage = r.get(5, 15);
+        c.viewId = getViewId(humanoid, large, body, wings);
+        c.isSpecial = true;
+        c.attr[AttrType::SPEED] = Random.get(80, 120);
+        if (!large)
+          c.attr[AttrType::SPEED] += 20;
+        c.size = large ? CreatureSize::LARGE : CreatureSize::MEDIUM;
+        c.attr[AttrType::STRENGTH] = Random.get(18, 24);
+        c.attr[AttrType::DEXTERITY] = Random.get(18, 24);
+        if (large) {
+          c.attr[AttrType::STRENGTH] += 6;
+          c.attr[AttrType::DEXTERITY] -= 2;
+        }
+        c.barehandedDamage = Random.get(5, 15);
         c.humanoid = humanoid;
         c.spawnType = humanoid ? SpawnType::HUMANOID : SpawnType::BEAST;
         if (humanoid) {
-          c.skills.setValue(SkillId::WEAPON_MELEE, r.getDouble(0, 1));
-          c.skills.setValue(SkillId::UNARMED_MELEE, r.getDouble(0, 1));
-          c.skills.setValue(SkillId::ARCHERY, r.getDouble(0, 1));
-          c.skills.setValue(SkillId::SORCERY, r.getDouble(0, 1));
+          c.skills.setValue(SkillId::WEAPON_MELEE, Random.getDouble(0, 1));
+          c.skills.setValue(SkillId::UNARMED_MELEE, Random.getDouble(0, 1));
+          c.skills.setValue(SkillId::ARCHERY, Random.getDouble(0, 1));
+          c.skills.setValue(SkillId::SORCERY, Random.getDouble(0, 1));
         }
-        c.weight = c.size == CreatureSize::LARGE ? r.get(80,120) : 
-                   c.size == CreatureSize::MEDIUM ? r.get(40, 60) :
-                   r.get(5, 20);
+        c.weight = c.size == CreatureSize::LARGE ? Random.get(80,120) : 
+                   c.size == CreatureSize::MEDIUM ? Random.get(40, 60) :
+                   Random.get(5, 20);
         if (*c.humanoid) {
           c.chatReactionFriendly = "\"I am the mighty " + name + "\"";
           c.chatReactionHostile = "\"I am the mighty " + name + ". Die!\"";
@@ -928,35 +991,24 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
         c.name = name;
         c.speciesName = humanoid ? "legendary humanoid" : "legendary beast";
         c.firstName = NameGenerator::get(NameGeneratorId::DEMON)->getNext();
-        if (!(*c.humanoid) && Random.roll(10)) {
+        if (!body) {
           c.uncorporal = true;
-          c.bodyParts.clear();
           c.attr[AttrType::STRENGTH] -= 5;
           c.attr[AttrType::DEXTERITY] += 10;
           c.barehandedDamage += 10;
-        } else {
-          if (r.roll(4)) {
-            c.bodyParts[BodyPart::WING] = 2;
-            c.permanentEffects[LastingEffect::FLYING] = 1;
-          }
-          if (*c.humanoid == false) {
-            c.bodyParts[BodyPart::ARM] = r.roll(2) ? 2 : 0;
-            c.bodyParts[BodyPart::LEG] = r.get(3) * 2;
-            c.attr[AttrType::STRENGTH] += 5;
-            c.attr[AttrType::DEXTERITY] += 5;
-            c.barehandedDamage += 5;
-            switch (Random.get(8)) {
-              case 0: c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON); break;
-              case 1: c.attackEffect = EffectId::FIRE; c.barehandedAttack = AttackType::HIT; break;
-              default: break;
-            }
-          }
-          if (Random.roll(10)) {
-            c.undead = true;
-            c.name = "undead " + (*c.name).bare();
-          }
         }
-        if (r.roll(3))
+        if (wings) {
+          c.bodyParts[BodyPart::WING] = 2;
+          c.permanentEffects[LastingEffect::FLYING] = 1;
+        }
+        if (!humanoid) {
+          c.bodyParts = getSpecialBeastBody(large, body, wings);
+          c.attr[AttrType::STRENGTH] += 5;
+          c.attr[AttrType::DEXTERITY] += 5;
+          c.barehandedDamage += 5;
+          c.attackEffect = getSpecialBeastAttack(large, body, wings);
+        }
+        if (Random.roll(3))
           c.skills.insert(SkillId::SWIMMING);
         ), tribe, factory);
   if (c->isHumanoid()) {
@@ -966,28 +1018,7 @@ PCreature getSpecial(const string& name, Tribe* tribe, bool humanoid, Controller
     } else
       c->take(ItemFactory::fromId(Random.choose(
             {ItemId::SPECIAL_SWORD, ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER})));
-  } else if (!keeper) {
-    switch (Random.get(3)) {
-      case 0:
-        c->take(ItemFactory::fromId(
-              Random.choose({ItemId::WARNING_AMULET, ItemId::HEALING_AMULET, ItemId::DEFENSE_AMULET})));
-        break;
-      case 1:
-        c->take(ItemFactory::fromId({ItemId::POTION,
-              EffectType(EffectId::LASTING, LastingEffect::INVISIBLE)},
-              Random.get(3, 6)));
-        break;
-      case 2:
-        c->take(ItemFactory::fromId(Random.choose<ItemType>({
-              {ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::STR_BONUS)},
-              {ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)}}), Random.get(3, 6)));
-        break;
-      default:
-        FAIL << "Unhandled case value";
-    }
-
   }
-  Debug() << c->getDescription();
   return c;
 }
 
@@ -1719,11 +1750,13 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DARK_ELF:
       return INHERIT(ELF,
           c.viewId = Random.choose({ViewId::DARK_ELF, ViewId::DARK_ELF_WOMAN});
+          c.skills.erase(SkillId::ELF_VISION);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.name = EntityName("dark elf", "dark elves"););
     case CreatureId::DARK_ELF_WARRIOR:
       return INHERIT(ELF_ARCHER,
           c.viewId = ViewId::DARK_ELF_WARRIOR;
+          c.skills.erase(SkillId::ELF_VISION);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
@@ -1735,10 +1768,14 @@ CreatureAttributes getAttributes(CreatureId id) {
     case CreatureId::DARK_ELF_CHILD:
       return INHERIT(ELF_CHILD,
           c.viewId = ViewId::DARK_ELF_CHILD;
+          c.skills.erase(SkillId::ELF_VISION);
+          c.skills.insert(SkillId::NIGHT_VISION);
           c.name = EntityName("dark elf child", "dark elf children"););
     case CreatureId::DARK_ELF_LORD:
       return INHERIT(ELF_LORD,
           c.viewId = ViewId::DARK_ELF_LORD;
+          c.skills.erase(SkillId::ELF_VISION);
+          c.skills.insert(SkillId::NIGHT_VISION);
           c.name = "dark elf lord";);
     case CreatureId::DRIAD: 
       return CATTR(
@@ -1786,6 +1823,7 @@ CreatureAttributes getAttributes(CreatureId id) {
       return INHERIT(COW,
           c.viewId = ViewId::DONKEY;
           c.weight = 200;
+          c.dyingSound = SoundId::DYING_DONKEY;
           c.name = "donkey";);
     case CreatureId::PIG: 
       return CATTR(
@@ -1800,6 +1838,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.dontChase = true;
           c.animal = true;
           c.isFood = true;
+          c.dyingSound = SoundId::DYING_PIG;
           c.name = "pig";);
     case CreatureId::GOAT:
       return INHERIT(PIG,
@@ -1902,6 +1941,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::ARM] = 0;
           c.bodyParts[BodyPart::LEG] = 8;
           c.animal = true;
+          c.noDyingSound = true;
           c.name = "spider";);
     case CreatureId::FLY: 
       return CATTR(
@@ -1919,6 +1959,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.courage = 100;
           c.dontChase = true;
           c.animal = true;
+          c.noDyingSound = true;
           c.name = EntityName("fly", "flies"););
     case CreatureId::ANT_WORKER:
       return CATTR(
@@ -1934,6 +1975,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::LEG] = 6;
           c.bodyParts[BodyPart::WING] = 0;
           c.animal = true;
+          c.noDyingSound = true;
           c.name = "giant ant";);
     case CreatureId::ANT_SOLDIER:
       return INHERIT(ANT_WORKER,
@@ -1964,6 +2006,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.animal = true;
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.skills.insert(SkillId::SWIMMING);
+          c.noDyingSound = true;
           c.name = "snake";);
     case CreatureId::RAVEN: 
       return CATTR(
@@ -1985,6 +2028,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::EXPLORE, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.groupName = "flock";
+          c.noDyingSound = true;
           c.name = "raven";);
     case CreatureId::VULTURE: 
       return INHERIT(RAVEN,
@@ -2048,6 +2092,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.fireCreature = true;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.weight = 10;
+          c.noDyingSound = true;
           c.name = "fire sphere";);
     case CreatureId::ELEMENTALIST: 
       return CATTR(
@@ -2083,6 +2128,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attackEffect = EffectId::FIRE;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.weight = 10;
+          c.noDyingSound = true;
           c.name = "fire elemental";);
     case CreatureId::AIR_ELEMENTAL:
       return CATTR(
@@ -2102,6 +2148,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.weight = 10;
           c.spells.add(SpellId::AIR_BLAST);
+          c.noDyingSound = true;
           c.name = "air elemental";);
     case CreatureId::EARTH_ELEMENTAL:
       return CATTR(
@@ -2117,6 +2164,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.breathing = false;
           c.brain = false;
           c.weight = 500;
+          c.noDyingSound = true;
           c.name = "earth elemental";);
     case CreatureId::WATER_ELEMENTAL:
       return INHERIT(EARTH_ELEMENTAL,
@@ -2194,15 +2242,14 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
 PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
   ControllerFactory factory = Monster::getFactory(aiFactory);
   switch (id) {
-    case CreatureId::SPECIAL_MONSTER:
-      return getSpecial(NameGenerator::get(NameGeneratorId::CREATURE)->getNext(),
-          tribe, false, factory, false);
-    case CreatureId::SPECIAL_MONSTER_KEEPER:
-      return getSpecial(NameGenerator::get(NameGeneratorId::CREATURE)->getNext(),
-          tribe, false, factory, true);
-    case CreatureId::SPECIAL_HUMANOID:
-      return getSpecial(NameGenerator::get(NameGeneratorId::CREATURE)->getNext(),
-          tribe, true, factory, false);
+    case CreatureId::SPECIAL_BL:
+      return getSpecial(tribe, false, true, factory);
+    case CreatureId::SPECIAL_BM:
+      return getSpecial(tribe, false, false, factory);
+    case CreatureId::SPECIAL_HL:
+      return getSpecial(tribe, true, true, factory);
+    case CreatureId::SPECIAL_HM:
+      return getSpecial(tribe, true, false, factory);
     case CreatureId::SOKOBAN_BOULDER:
       return getSokobanBoulder(tribe);
     default: return get(getAttributes(id), tribe, getController(id, aiFactory));

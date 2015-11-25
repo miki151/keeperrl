@@ -89,7 +89,7 @@ int Level::getUniqueId() const {
 }
 
 Rectangle Level::getMaxBounds() {
-  return Rectangle(300, 300);
+  return Rectangle(360, 360);
 }
 
 Rectangle Level::getSplashBounds() {
@@ -170,6 +170,8 @@ void Level::replaceSquare(Vec2 pos, PSquare square, bool storePrevious) {
   addLightSource(pos, squares[pos]->getLightEmission(), -1);
   square->setPosition(pos);
   square->setLevel(this);
+  if (squares[pos]->isUnavailable())
+    square->setUnavailable();
   for (PTrigger& t : squares[pos]->removeTriggers())
     square->addTrigger(std::move(t));
   square->setBackground(squares[pos].get());
@@ -489,15 +491,10 @@ vector<Vec2> Level::getVisibleTiles(Vec2 pos, VisionId vision) const {
       [&](Vec2 v) { return isWithinVision(pos, v, vision); });
 }
 
-unordered_map<Vec2, const ViewObject*> objectList;
-
 void Level::setBackgroundLevel(const Level* l, Vec2 offs) {
   backgroundLevel = l;
   backgroundOffset = offs;
 }
-
-static unordered_map<Vec2, const ViewObject*> background;
-
 
 const Square* Level::getSafeSquare(Vec2 pos) const {
   CHECK(inBounds(pos));

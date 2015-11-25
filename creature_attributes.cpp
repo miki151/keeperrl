@@ -17,6 +17,7 @@
 
 #include "creature_attributes.h"
 #include "creature.h"
+#include "sound.h"
 
 CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
   fun(*this);
@@ -64,6 +65,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(invincible)
     & SVAR(worshipped)
     & SVAR(dontChase)
+    & SVAR(isSpecial)
     & SVAR(attributeGain)
     & SVAR(skills)
     & SVAR(spells)
@@ -72,7 +74,10 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(minionTasks)
     & SVAR(groupName)
     & SVAR(attrIncrease)
-    & SVAR(recruitmentCost);
+    & SVAR(recruitmentCost)
+    & SVAR(dyingSound)
+    & SVAR(noDyingSound)
+    & SVAR(noAttackSound);
 }
 
 SERIALIZABLE(CreatureAttributes);
@@ -225,10 +230,28 @@ bool CreatureAttributes::isHumanoid() const {
 
 string CreatureAttributes::bodyDescription() const {
   vector<string> ret;
-  for (BodyPart part : {BodyPart::ARM, BodyPart::LEG, BodyPart::WING})
-    if (int num = numBodyParts(part))
-      ret.push_back(getPlural(getBodyPartName(part), num));
-  if (isHumanoid() && numBodyParts(BodyPart::HEAD) == 0)
+  bool anyLimbs = false;
+  auto listParts = {BodyPart::ARM, BodyPart::LEG, BodyPart::WING};
+  if (*humanoid)
+    listParts = {BodyPart::WING};
+  for (BodyPart part : listParts)
+    if (int num = numBodyParts(part)) {
+      ret.push_back(getPluralText(getBodyPartName(part), num));
+      anyLimbs = true;
+    }
+  if (*humanoid) {
+    bool noArms = numBodyParts(BodyPart::ARM) == 0;
+    bool noLegs = numBodyParts(BodyPart::LEG) == 0;
+    if (noArms && noLegs)
+      ret.push_back("no limbs");
+    else if (noArms)
+      ret.push_back("no arms");
+    else if (noLegs)
+      ret.push_back("no legs");
+  } else
+  if (!anyLimbs)
+    ret.push_back("no limbs");
+  if (numBodyParts(BodyPart::HEAD) == 0)
     ret.push_back("no head");
   if (ret.size() > 0)
     return " with " + combine(ret);
@@ -255,4 +278,34 @@ const SpellMap& CreatureAttributes::getSpellMap() const {
   return spells;
 }
 
+optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damage) const {
+  if (!noAttackSound)
+    switch (type) {
+      case AttackType::HIT:
+      case AttackType::PUNCH:
+      case AttackType::CRUSH: return damage ? SoundId::BLUNT_DAMAGE : SoundId::BLUNT_NO_DAMAGE;
+      case AttackType::CUT:
+      case AttackType::STAB: return damage ? SoundId::BLADE_DAMAGE : SoundId::BLADE_NO_DAMAGE;
+      default: return none;
+    }
+  else
+    return none;
+}
+
+static double getDeathSoundPitch(CreatureSize size) {
+  switch (size) {
+    case CreatureSize::HUGE: return 0.6;
+    case CreatureSize::LARGE: return 0.9;
+    case CreatureSize::MEDIUM: return 1.5;
+    case CreatureSize::SMALL: return 3.3;
+  }
+}
+
+optional<Sound> CreatureAttributes::getDeathSound() const {
+  if (noDyingSound)
+    return none;
+  else
+    return Sound(dyingSound ? *dyingSound : isHumanoid() ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH)
+        .setPitch(getDeathSoundPitch(getSize()));
+}
 

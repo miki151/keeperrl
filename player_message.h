@@ -32,6 +32,8 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
   Priority getPriority() const;
   double getFreshness() const;
   void setFreshness(double);
+
+  int getHash() const;
   
   SERIALIZATION_DECL(PlayerMessage);
 

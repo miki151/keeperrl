@@ -60,6 +60,24 @@ void MapGui::ViewIdMap::clear() {
   ids.clear();
 }
 
+void MapGui::setButtonViewId(ViewId id) {
+  buttonViewId = id;
+}
+
+void MapGui::clearButtonViewId() {
+  buttonViewId = none;
+}
+
+void MapGui::highlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
+  for (auto& id : ids)
+    ++teamHighlight[id];
+}
+
+void MapGui::unhighlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
+  for (auto& id : ids)
+    CHECK(--teamHighlight[id] >= 0);
+}
+
 Vec2 MapGui::getScreenPos() const {
   return Vec2((center.x - mouseOffset.x) * layout->getSquareSize().x,
       (center.y - mouseOffset.y) * layout->getSquareSize().y);
@@ -109,6 +127,7 @@ Color getHighlightColor(HighlightType type, double amount) {
     case HighlightType::EFFICIENCY: return transparency(Color(255, 0, 0) , 120 * (1 - amount));
     case HighlightType::PRIORITY_TASK: return transparency(Color(0, 255, 0), 120);
     case HighlightType::FORBIDDEN_ZONE: return transparency(Color(255, 0, 0), 120);
+    case HighlightType::UNAVAILABLE: return transparency(Color(0, 0, 0), 120);
   }
 }
 
@@ -159,9 +178,15 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
   }
 }
 
+void MapGui::softScroll(double x, double y) {
+  if (softCenter)
+    center = *softCenter;
+  softCenter = {center.x + x, center.y + y};
+  lastRenderTime = clock->getRealMillis();
+}
+
 bool MapGui::onKeyPressed2(Event::KeyEvent key) {
-  const double shiftScroll = 10;
-  const double normalScroll = 2.5;
+  const double scrollDist = key.shift ? 20 : 5;
   if (!keyScrolling)
     return false;
   switch (key.code) {
@@ -170,54 +195,57 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
         break;
     case Keyboard::Up:
     case Keyboard::Numpad8:
-      center.y -= key.shift ? shiftScroll : normalScroll;
+      softScroll(0, -scrollDist);
       break;
     case Keyboard::Numpad9:
-      center.y -= key.shift ? shiftScroll : normalScroll;
-      center.x += key.shift ? shiftScroll : normalScroll;
+      softScroll(scrollDist, -scrollDist);
       break;
     case Keyboard::D:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
         break;
     case Keyboard::Right: 
     case Keyboard::Numpad6:
-      center.x += key.shift ? shiftScroll : normalScroll;
+      softScroll(scrollDist, 0);
       break;
     case Keyboard::Numpad3:
-      center.x += key.shift ? shiftScroll : normalScroll;
-      center.y += key.shift ? shiftScroll : normalScroll;
+      softScroll(scrollDist, scrollDist);
       break;
     case Keyboard::S:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
         break;
     case Keyboard::Down:
     case Keyboard::Numpad2:
-      center.y += key.shift ? shiftScroll : normalScroll;
+      softScroll(0, scrollDist);
       break;
     case Keyboard::Numpad1:
-      center.x -= key.shift ? shiftScroll : normalScroll;
-      center.y += key.shift ? shiftScroll : normalScroll;
+      softScroll(-scrollDist, scrollDist);
       break;
     case Keyboard::A:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
         break;
     case Keyboard::Left:
     case Keyboard::Numpad4:
-      center.x -= key.shift ? shiftScroll : normalScroll;
+      softScroll(-scrollDist, 0);
       break;
     case Keyboard::Numpad7:
-      center.x -= key.shift ? shiftScroll : normalScroll;
-      center.y -= key.shift ? shiftScroll : normalScroll;
+      softScroll(-scrollDist, -scrollDist);
       break;
     default: break;
   }
-  center.x = max(0.0, min<double>(center.x, levelBounds.getKX()));
-  center.y = max(0.0, min<double>(center.y, levelBounds.getKY()));
+  if (softCenter) {
+    softCenter->x = max(0.0, min<double>(softCenter->x, levelBounds.getKX()));
+    softCenter->y = max(0.0, min<double>(softCenter->y, levelBounds.getKY()));
+  }
   return false;
 }
 
 bool MapGui::onLeftClick(Vec2 v) {
   if (v.inRectangle(getBounds())) {
+    if (auto c = getCreature(v)) {
+      callbacks.creatureDragFun(c->id, c->viewId, v);
+      creatureClick = true;
+    } else
+      creatureClick = false;
     mouseHeldPos = v;
     mouseOffset.x = mouseOffset.y = 0;
     return true;
@@ -256,7 +284,7 @@ void MapGui::considerMapLeftClick(Vec2 mousePos) {
 
 bool MapGui::onMouseMove(Vec2 v) {
   lastMouseMove = v;
-  if (v.inRectangle(getBounds()) && mouseHeldPos)
+  if (v.inRectangle(getBounds()) && mouseHeldPos && !creatureClick)
     considerMapLeftClick(v);
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
@@ -270,18 +298,16 @@ bool MapGui::onMouseMove(Vec2 v) {
   return false;
 }
 
-bool MapGui::considerCreatureClick(Vec2 mousePos) {
+optional<MapGui::CreatureInfo&> MapGui::getCreature(Vec2 mousePos) {
   for (auto& elem : creatureMap)
-    if (mousePos.inRectangle(elem.first)) {
-      callbacks.creatureClickFun(elem.second);
-      return true;
-    }
-  return false;
+    if (mousePos.inRectangle(elem.bounds))
+      return elem;
+  return none;
 }
 
 void MapGui::onMouseRelease(Vec2 v) {
   if (isScrollingNow) {
-    if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1 && !considerCreatureClick(lastMousePos))
+    if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1)
       callbacks.rightClickFun(layout->projectOnMap(getBounds(), getScreenPos(), lastMousePos));
     else {
       center.x -= mouseOffset.x;
@@ -292,10 +318,18 @@ void MapGui::onMouseRelease(Vec2 v) {
     mouseOffset.x = mouseOffset.y = 0;
   }
   if (mouseHeldPos) {
-    if (mouseHeldPos->distD(v) > 10 || !considerCreatureClick(*mouseHeldPos))
-      considerMapLeftClick(v);
-    mouseHeldPos = none;
+    if (mouseHeldPos->distD(v) > 10) {
+      if (!creatureClick)
+        considerMapLeftClick(v);
+    }
+    else {
+      if (auto c = getCreature(*mouseHeldPos))
+        callbacks.creatureClickFun(c->id);
+      else    
+        considerMapLeftClick(v);
+    }
   }
+  mouseHeldPos = none;
   lastMapLeftClick = none;
 }
 
@@ -313,13 +347,11 @@ void MapGui::onMouseRelease(Vec2 v) {
   }
 }*/
 
-static void drawMorale(Renderer& renderer, const Rectangle& rect, double morale) {
-  Color col;
+static Color getMoraleColor(double morale) {
   if (morale < 0)
-    col = Color(255, 0, 0, -morale * 150);
+    return Color(255, 0, 0, -morale * 150);
   else
-    col = Color(0, 255, 0, morale * 150);
-  renderer.drawFilledRectangle(rect, Color::Transparent, col);
+    return Color(0, 255, 0, morale * 150);
 }
 
 static Vec2 getAttachmentOffset(Dir dir, Vec2 size) {
@@ -372,18 +404,28 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - getJumpOffset(object, state)) * size.y);
 }
 
-void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Rectangle tile, int curTime) {
-  if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
-    renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::LIGHT_GRAY]);
-  }
+void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Vec2 pos, Vec2 sz, int curTime) {
+  if (object.hasModifier(ViewObject::Modifier::PLAYER))
+    drawCreatureHighlight(renderer, pos, sz, colors[ColorId::ALMOST_WHITE]);
   if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && showMorale)
-    drawMorale(renderer, tile, object.getAttribute(ViewObject::Attribute::MORALE));
+    drawCreatureHighlight(renderer, pos, sz, getMoraleColor(object.getAttribute(ViewObject::Attribute::MORALE)));
   if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT) && (curTime / 1000) % 2) {
-    renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::YELLOW]);
+    drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
   } else
-  if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT)) {
-    renderer.drawFilledRectangle(tile, Color::Transparent, colors[ColorId::YELLOW]);
+  if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
+    drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
+  if (object.getCreatureId()) {
+    Color c = getCreatureHighlight(*object.getCreatureId(), curTime);
+    if (c.a > 0)
+      drawCreatureHighlight(renderer, pos, sz, c);
   }
+}
+
+Color MapGui::getCreatureHighlight(UniqueEntity<Creature>::Id creature, int curTime) {
+  if (teamHighlight[creature] > 0)
+    return colors[ColorId::YELLOW];
+  else
+    return Color(0, 0, 0, 0);
 }
 
 static bool mirrorSprite(ViewId id) {
@@ -426,7 +468,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       }
     Vec2 move;
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal);
-    drawCreatureHighlights(renderer, object, Rectangle(pos + movement, pos + movement + size), curTimeReal);
+    drawCreatureHighlights(renderer, object, pos + movement, size, curTimeReal);
     if ((object.layer() == ViewLayer::CREATURE && object.id() != ViewId::BOULDER)
         || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
       static auto coord = renderer.getTileCoord("round_shadow");
@@ -450,8 +492,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
       if (auto coord = tile.getHighlightCoord())
         renderer.drawTile(pos + move, *coord, size, color);
-    if (auto id = object.getCreatureId())
-      creatureMap.emplace_back(Rectangle(pos + move, pos + move + size), *id);
+    if (!buttonViewId)
+      if (auto id = object.getCreatureId())
+        creatureMap.push_back(CreatureInfo{Rectangle(pos + move, pos + move + size), *id, object.id()});
     if (tile.hasCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, coord, size, color);
@@ -473,10 +516,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   } else {
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal);
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
+    drawCreatureHighlights(renderer, object, pos, size, curTimeReal);
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y, Tile::getColor(object),
         tilePos.x, tilePos.y, tile.text, Renderer::HOR);
-    if (auto id = object.getCreatureId())
-      creatureMap.emplace_back(Rectangle(tilePos, tilePos + size), *id);
+    if (!buttonViewId)
+      if (auto id = object.getCreatureId())
+        creatureMap.push_back(CreatureInfo{Rectangle(tilePos, tilePos + size), *id, object.id()});
     double burningVal = object.getAttribute(ViewObject::Attribute::BURNING);
     if (burningVal > 0) {
       renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'ѡ',
@@ -616,6 +661,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal
               case HighlightType::RECT_DESELECTION:
               case HighlightType::PRIORITY_TASK:
               case HighlightType::DIG:
+              case HighlightType::UNAVAILABLE:
                 if (spriteMode) {
                   renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size,
                       getHighlightColor(highlight, index->getHighlight(highlight)));
@@ -648,7 +694,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size
   if (auto mousePos = getMousePos())
     if (mouseUI) {
       ret.tilePos = layout->projectOnMap(getBounds(), getScreenPos(), *mousePos);
-      if (ret.tilePos->inRectangle(objects.getBounds()))
+      if (!buttonViewId && ret.tilePos->inRectangle(objects.getBounds()))
         for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
             .intersection(objects.getBounds())) {
           Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
@@ -671,7 +717,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size
 void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& highlightedInfo,int currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
-  renderer.drawFilledRectangle(getBounds(), colors[ColorId::ALMOST_BLACK]);
+  renderer.drawFilledRectangle(getBounds(), colors[ColorId::BLACK]);
   renderer.drawFilledRectangle(Rectangle(
         projectOnScreen(levelBounds.getTopLeft(), currentTimeReal),
         projectOnScreen(levelBounds.getBottomRight(), currentTimeReal)), colors[ColorId::BLACK]);
@@ -712,9 +758,13 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
               isFoW(wpos + Vec2(Dir::SE)),
               isFoW(wpos + Vec2(Dir::SW))));
     }
-    if (highlightedInfo.creaturePos && (layer == ViewLayer::FLOOR || !spriteMode))
-      renderer.drawFilledRectangle(Rectangle(*highlightedInfo.creaturePos, *highlightedInfo.creaturePos + size),
-          Color::Transparent, colors[ColorId::LIGHT_GRAY]);
+    if (layer == ViewLayer::FLOOR || !spriteMode) {
+      if (!buttonViewId && highlightedInfo.creaturePos)
+        drawCreatureHighlight(renderer, *highlightedInfo.creaturePos, size, colors[ColorId::ALMOST_WHITE]);
+      if (highlightedInfo.tilePos)
+        drawSquareHighlight(renderer, topLeftCorner + (*highlightedInfo.tilePos - allTiles.getTopLeft()).mult(size),
+            size);
+    }
     if (!spriteMode)
       break;
     if (layer == ViewLayer::FLOOR_BACKGROUND)
@@ -723,19 +773,54 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
   renderer.drawQuads();
 }
 
+void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color) {
+  if (spriteMode)
+    renderer.drawViewObject(pos + Vec2(0, size.y / 5), ViewId::CREATURE_HIGHLIGHT, true, size, color);
+  else
+    renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent, color);
+}
+
+void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
+  if (spriteMode)
+    renderer.drawViewObject(pos, ViewId::SQUARE_HIGHLIGHT, true, size, colors[ColorId::ALMOST_WHITE]);
+  else
+    renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent, colors[ColorId::LIGHT_GRAY]);
+}
+
+void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, int currentTimeReal, Vec2 pos, Vec2 size) {
+  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
+  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  for (Vec2 v : concat({pos}, pos.neighbors8()))
+    if (v.inRectangle(objects.getBounds()) && (!objects[v] || objects[v]->noObjects())) {
+      drawSquareHighlight(renderer, topLeftCorner + (pos - allTiles.getTopLeft()).mult(size), size);
+      break;
+    }
+}
+
 void MapGui::render(Renderer& renderer) {
   Vec2 size = layout->getSquareSize();
   int currentTimeReal = clock->getRealMillis();
+  if (softCenter) {
+    double moveDist = (currentTimeReal - lastRenderTime) / 20;
+    double offsetx = softCenter->x - center.x;
+    double offsety = softCenter->y - center.y;
+    double offset = sqrt(offsetx * offsetx + offsety * offsety);
+    if (offset <= moveDist)
+      softCenter = none;
+    else {
+      offsetx /= offset;
+      offsety /= offset;
+      center.x += offsetx * moveDist;
+      center.y += offsety * moveDist;
+    }
+    lastRenderTime = currentTimeReal;
+  }
   HighlightedInfo highlightedInfo = getHighlightedInfo(renderer, size, currentTimeReal);
   renderMapObjects(renderer, size, highlightedInfo, currentTimeReal);
   renderHighlights(renderer, size, currentTimeReal);
   renderAnimations(renderer, currentTimeReal);
-  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
-  if (highlightedInfo.tilePos) {
-    Vec2 pos = topLeftCorner + (*highlightedInfo.tilePos - allTiles.getTopLeft()).mult(layout->getSquareSize());
-    renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent, colors[ColorId::LIGHT_GRAY]);
-  }
+  if (highlightedInfo.tilePos)
+    considerRedrawingSquareHighlight(renderer, currentTimeReal, *highlightedInfo.tilePos, size);
   if (displayScrollHint && isScrollingNow) {
     drawHint(renderer, colors[ColorId::LIGHT_BLUE], {"Double right-click to scroll back to creature."});
   } else
@@ -748,6 +833,8 @@ void MapGui::render(Renderer& renderer) {
       col = colors[ColorId::RED];
     drawHint(renderer, col, highlightedInfo.object->getLegend());
   }
+  if (spriteMode && buttonViewId && renderer.getMousePos().inRectangle(getBounds()))
+    renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), *buttonViewId, spriteMode, size);
 }
 
 void MapGui::setHint(const vector<string>& h) {

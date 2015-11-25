@@ -361,6 +361,15 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
   drawSprite(pos + off, coord.pos.mult(sz), sz, tiles.at(coord.texNum), sz * scale, color);
 }
 
+void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
+  const Tile& tile = Tile::getTile(id);
+  if (tile.hasSpriteCoord())
+    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), 1, color * tile.color);
+  else
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, pos.x, pos.y,
+        tile.text);
+}
+
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
   const Tile& tile = Tile::getTile(id, useSprite);
   if (tile.hasSpriteCoord())
@@ -384,6 +393,10 @@ void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, double scale) {
   drawViewObject(pos, object.id(), useSprite, scale, getBleedingColor(object));
+}
+
+void Renderer::drawViewObject(Vec2 pos, const ViewObject& object) {
+  drawViewObject(pos, object.id(), getBleedingColor(object));
 }
 
 const static string imageSuf = ".png";

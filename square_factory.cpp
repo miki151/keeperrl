@@ -36,6 +36,8 @@
 #include "movement_set.h"
 #include "movement_type.h"
 #include "stair_key.h"
+#include "view.h"
+#include "sound.h"
 
 class Staircase : public Square {
   public:
@@ -61,11 +63,7 @@ class Staircase : public Square {
     getLevel()->changeLevel(*getLandingLink(), c);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Square);
-  }
-
+  SERIALIZE_SUBCLASS(Square);
   SERIALIZATION_CONSTRUCTOR(Staircase);
 
 };
@@ -96,11 +94,7 @@ class Magma : public Square {
             "burns", "burn") + " in the magma.");
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square);
-  }
-
+  SERIALIZE_SUBCLASS(Square);
   SERIALIZATION_CONSTRUCTOR(Magma);
 };
 
@@ -130,11 +124,7 @@ class Water : public Square {
             "sinks", "sink") + " in the water.", "You hear a splash.");
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square);
-  }
-
+  SERIALIZE_SUBCLASS(Square);
   SERIALIZATION_CONSTRUCTOR(Water);
   
   private:
@@ -211,18 +201,7 @@ class Chest : public Square {
     getPosition2().dropItems(std::move(items));
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(chestInfo)
-      & SVAR(msgItem)
-      & SVAR(msgMonster)
-      & SVAR(msgGold)
-      & SVAR(opened)
-      & SVAR(itemFactory)
-      & SVAR(openedObject);
-  }
-
+  SERIALIZE_ALL2(Square, chestInfo, msgItem, msgMonster, msgGold, opened, itemFactory, openedObject);
   SERIALIZATION_CONSTRUCTOR(Chest);
 
   private:
@@ -260,12 +239,8 @@ class Fountain : public Square {
     potion->apply(c);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(seed);
-  }
 
+  SERIALIZE_ALL2(Square, seed);
   SERIALIZATION_CONSTRUCTOR(Fountain);
 
   private:
@@ -309,13 +284,7 @@ class Tree : public Square {
     getLevel()->replaceSquare(getPosition(), SquareFactory::get(SquareId::BURNT_TREE));
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(creature)
-      & SVAR(numWood);
-  }
-
+  SERIALIZE_ALL2(Square, creature, numWood);
   SERIALIZATION_CONSTRUCTOR(Tree);
 
   private:
@@ -340,13 +309,7 @@ class TrapSquare : public Square {
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(active)
-      & SVAR(effect);
-  }
-
+  SERIALIZE_ALL2(Square, active, effect);
   SERIALIZATION_CONSTRUCTOR(TrapSquare);
 
   private:
@@ -362,11 +325,8 @@ class Door : public Square {
     c->playerMessage("You open the door.");
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Square);
-  }
-  
+
+  SERIALIZE_SUBCLASS(Square);
   SERIALIZATION_CONSTRUCTOR(Door);
 };
 
@@ -386,18 +346,19 @@ class TribeDoor : public Door {
     destructionStrength -= c->getAttr(AttrType::STRENGTH);
     if (destructionStrength <= 0) {
       Door::destroyBy(c);
-    }
+    } else
+      c->addSound(SoundId::BANG_DOOR);
   }
 
-  virtual bool canLock() const {
+  virtual bool canLock() const override {
     return true;
   }
 
-  virtual bool isLocked() const {
+  virtual bool isLocked() const override {
     return locked;
   }
 
-  virtual void lock() {
+  virtual void lock() override {
     CHECK(tribe);
     locked = !locked;
     if (locked) {
@@ -410,14 +371,7 @@ class TribeDoor : public Door {
     setDirty();
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Door)
-      & SVAR(tribe)
-      & SVAR(destructionStrength)
-      & SVAR(locked);
-  }
-
+  SERIALIZE_ALL2(Door, tribe, destructionStrength, locked);
   SERIALIZATION_CONSTRUCTOR(TribeDoor);
 
   private:
@@ -445,12 +399,7 @@ class Barricade : public Square {
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(destructionStrength);
-  }
-
+  SERIALIZE_ALL2(Square, destructionStrength);
   SERIALIZATION_CONSTRUCTOR(Barricade);
 
   private:
@@ -460,7 +409,7 @@ class Barricade : public Square {
 class Furniture : public Square {
   public:
   Furniture(ViewObject object, const string& name, double flamability,
-      optional<SquareApplyType> _applyType = none) 
+      optional<SquareApplyType> _applyType = none, optional<SoundId> applySound = none) 
       : Square(object.setModifier(ViewObject::Modifier::ROUND_SHADOW),
           CONSTRUCT(Square::Params,
             c.name = name;
@@ -468,6 +417,7 @@ class Furniture : public Square {
             c.canHide = true;
             c.strength = 100;
             c.canDestroy = true;
+            c.applySound = applySound;
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.flamability = flamability;)), applyType(_applyType) {}
 
@@ -475,14 +425,9 @@ class Furniture : public Square {
     return applyType;
   }
 
-  virtual void onApply(Creature* c) {}
+  virtual void onApply(Creature* c) override {}
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(applyType);
-  }
-
+  SERIALIZE_ALL2(Square, applyType);
   SERIALIZATION_CONSTRUCTOR(Furniture);
   
   private:
@@ -507,11 +452,7 @@ class Bed : public Furniture {
       getCreature()->heal(0.005);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Furniture);
-  }
-  
+  SERIALIZE_SUBCLASS(Furniture);
   SERIALIZATION_CONSTRUCTOR(Bed);
 };
 
@@ -519,7 +460,7 @@ class Grave : public Bed {
   public:
   Grave(const ViewObject& object, const string& name) : Bed(object, name, 0) {}
 
-  virtual bool canApply(const Creature* c) const {
+  virtual bool canApply(const Creature* c) const override {
     return c->isUndead();
   }
 
@@ -532,11 +473,7 @@ class Grave : public Bed {
     Bed::onApply(c);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Bed);
-  }
-
+  SERIALIZE_SUBCLASS(Bed);
   SERIALIZATION_CONSTRUCTOR(Grave);
 };
 
@@ -552,7 +489,7 @@ class Altar : public Square {
         c.strength = 100;)) {
   }
 
-  virtual bool canApply(const Creature* c) const {
+  virtual bool canApply(const Creature* c) const override {
     return c->isHumanoid();
   }
 
@@ -586,14 +523,7 @@ class Altar : public Square {
     onPrayer(c);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(recentKiller)
-      & SVAR(recentVictim)
-      & SVAR(killTime);
-  }
-
+  SERIALIZE_ALL2(Square, recentKiller, recentVictim, killTime);
   SERIALIZATION_CONSTRUCTOR(Altar);
 
   private:
@@ -635,12 +565,7 @@ class DeityAltar : public Altar {
  //   GlobalEvents.addWorshipEvent(c, deity, WorshipType::SACRIFICE);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Altar)
-      & SVAR(deity);
-  }
-
+  SERIALIZE_ALL2(Altar, deity);
   SERIALIZATION_CONSTRUCTOR(DeityAltar);
 
   private:
@@ -677,12 +602,7 @@ class CreatureAltar : public Altar {
  //   GlobalEvents.addWorshipCreatureEvent(c, creature, WorshipType::SACRIFICE);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Altar)
-      & SVAR(creature);
-  }
-
+  SERIALIZE_ALL2(Altar, creature);
   SERIALIZATION_CONSTRUCTOR(CreatureAltar);
 
   private:
@@ -702,12 +622,7 @@ class ConstructionDropItems : public Square {
     s->dropItems(std::move(items));
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(items);
-  }
-
+  SERIALIZE_ALL2(Square, items);
   SERIALIZATION_CONSTRUCTOR(ConstructionDropItems);
 
   private:
@@ -718,15 +633,11 @@ class Torch : public Furniture {
   public:
   Torch(const ViewObject& object, const string& name) : Furniture(object, name, 1) {}
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Furniture);
-  }
-
   double getLightEmission() const override {
     return 8.2;
   }
 
+  SERIALIZE_SUBCLASS(Furniture);
   SERIALIZATION_CONSTRUCTOR(Torch);
 };
 
@@ -762,12 +673,7 @@ class Hatchery : public Square {
   virtual void onApply(Creature* c) override {
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Square)
-      & SVAR(creature);
-  }
-  
+  SERIALIZE_ALL2(Square, creature);
   SERIALIZATION_CONSTRUCTOR(Hatchery);
 
   private:
@@ -782,11 +688,7 @@ class Laboratory : public Furniture {
     c->playerMessage("You mix the concoction.");
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Furniture);
-  }
-  
+  SERIALIZE_SUBCLASS(Furniture);
   SERIALIZATION_CONSTRUCTOR(Laboratory);
 };
 
@@ -799,11 +701,7 @@ class NoticeBoard : public Furniture {
     c->playerMessage(PlayerMessage::announcement("The notice board reads:", text));
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Furniture) & SVAR(text);
-  }
-  
+  SERIALIZE_ALL2(Furniture, text);
   SERIALIZATION_CONSTRUCTOR(NoticeBoard);
 
   private:
@@ -823,14 +721,11 @@ class Crops : public Square {
       c->globalMessage(c->getName().the() + " scythes the field.");
   }
 
-  virtual double getApplyTime() const {
+  virtual double getApplyTime() const override {
     return 3.0;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Square);
-  }
+  SERIALIZE_SUBCLASS(Square);
 };
 
 class SokobanHole : public Square {
@@ -859,11 +754,7 @@ class SokobanHole : public Square {
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Square) & SVAR(stairKey);
-  }
-
+  SERIALIZE_ALL2(Square, stairKey);
   SERIALIZATION_CONSTRUCTOR(SokobanHole);
 
   private:
@@ -1139,7 +1030,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.vision = VisionId::NORMAL;));
     case SquareId::TRAINING_ROOM:
         return new Furniture(ViewObject(ViewId::TRAINING_ROOM, ViewLayer::FLOOR, "Training room"), 
-            "training room", 1, SquareApplyType::TRAIN);
+            "training room", 1, SquareApplyType::TRAIN, SoundId::MISSED_ATTACK);
     case SquareId::THRONE:
         return new Furniture(ViewObject(ViewId::THRONE, ViewLayer::FLOOR, "Throne"), 
             "throne", 0, SquareApplyType::THRONE);
@@ -1195,7 +1086,7 @@ Square* SquareFactory::getPtr(SquareType s) {
       return new Furniture(ViewObject(ViewId::MINION_STATUE, ViewLayer::FLOOR, "Statue"),"statue", 0,
             SquareApplyType::STATUE);
     case SquareId::HATCHERY:
-        return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Hatchery"), "hatchery",
+        return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Pigsty"), "pigsty",
             s.get<CreatureFactory::SingleCreature>());
     case SquareId::ALTAR:
         return new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
@@ -1244,7 +1135,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.canDestroy = true;
             c.flamability = 1;));
     case SquareId::TRIBE_DOOR:
-        return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door - right click to lock.")
+        return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door. Click to lock.")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), s.get<const Tribe*>(), 100,
           CONSTRUCT(Square::Params,
             c.name = "door";
