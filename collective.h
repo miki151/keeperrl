@@ -114,10 +114,8 @@ class Collective : public TaskCallback {
   bool hasEfficiency(Position) const;
 
   bool usesEquipment(const Creature*) const;
-  bool isKnownVillain(const Collective*);
-  bool isKnownVillainLocation(const Collective*);
 
-  ~Collective();
+  virtual ~Collective();
 
   void setWarning(Warning, bool state = true);
   bool isWarning(Warning) const;
@@ -340,7 +338,7 @@ class Collective : public TaskCallback {
   map<const Deity*, double> SERIAL(deityStanding);
   Level* SERIAL(level) = nullptr;
   unordered_map<SquareType, set<Position>> SERIAL(mySquares);
-  unordered_map<SquareApplyType, set<Position>> SERIAL(mySquares2);
+  unordered_map<SquareApplyType, set<Position>, CustomHash<SquareApplyType>> SERIAL(mySquares2);
   map<Position, int> SERIAL(squareEfficiency);
   HeapAllocated<Territory> SERIAL(territory);
   struct AlarmInfo {
@@ -361,7 +359,7 @@ class Collective : public TaskCallback {
   void updateConstructions();
   void delayDangerousTasks(const vector<Position>& enemyPos, double delayTime);
   bool isDelayed(Position);
-  unordered_map<Position, double> SERIAL(delayedPos);
+  unordered_map<Position, double, CustomHash<Position>> SERIAL(delayedPos);
   vector<Position> getEnemyPositions() const;
   double manaRemainder = 0;
   double getKillManaScore(const Creature*) const;
@@ -377,9 +375,6 @@ class Collective : public TaskCallback {
   deque<Creature*> SERIAL(pregnancies);
   mutable vector<ItemFetchInfo> itemFetchInfo;
   HeapAllocated<CollectiveTeams> SERIAL(teams);
-  set<const Location*> SERIAL(knownLocations);
-  set<const Collective*> SERIAL(knownVillains);
-  set<const Collective*> SERIAL(knownVillainLocations);
   optional<string> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
   vector<const Creature*> SERIAL(banished);

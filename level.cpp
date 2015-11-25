@@ -31,6 +31,7 @@
 #include "vision.h"
 #include "event.h"
 #include "bucket_map.h"
+#include "entity_name.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -88,7 +89,7 @@ int Level::getUniqueId() const {
 }
 
 Rectangle Level::getMaxBounds() {
-  return Rectangle(300, 300);
+  return Rectangle(360, 360);
 }
 
 Rectangle Level::getSplashBounds() {
@@ -111,16 +112,15 @@ const static double darknessRadius = 6.5;
 void Level::putCreature(Vec2 position, Creature* c) {
   CHECK(inBounds(position));
   creatures.push_back(c);
-  if (c->isPlayer())
+  if (c->isPlayer()) {
     player = c;
+    if (entryMessage != "") {
+      c->playerMessage(entryMessage);
+      entryMessage = "";
+    }
+  }
   CHECK(getSafeSquare(position)->getCreature() == nullptr);
-  c->setPosition(Position(position, this));
-  bucketMap->addElement(position, c);
-  getSafeSquare(position)->putCreature(c);
-  if (c->isDarknessSource())
-    addDarknessSource(position, darknessRadius);
-  if (c->isPlayer())
-    player = c;
+  placeCreature(c, position);
 }
 
 void Level::addLightSource(Vec2 pos, double radius) {
@@ -139,14 +139,6 @@ void Level::addLightSource(Vec2 pos, double radius, int numLight) {
         lightAmount[v] += min(1.0, 1 - (dist) / radius) * numLight;
     }
   }
-}
-
-void Level::addDarknessSource(Vec2 pos, double radius) {
-  addDarknessSource(pos, radius, 1);
-}
-
-void Level::removeDarknessSource(Vec2 pos, double radius) {
-  addDarknessSource(pos, radius, -1);
 }
 
 void Level::addDarknessSource(Vec2 pos, double radius, int numDarkness) {
@@ -178,6 +170,8 @@ void Level::replaceSquare(Vec2 pos, PSquare square, bool storePrevious) {
   addLightSource(pos, squares[pos]->getLightEmission(), -1);
   square->setPosition(pos);
   square->setLevel(this);
+  if (squares[pos]->isUnavailable())
+    square->setUnavailable();
   for (PTrigger& t : squares[pos]->removeTriggers())
     square->addTrigger(std::move(t));
   square->setBackground(squares[pos].get());
@@ -284,12 +278,6 @@ bool Level::landCreature(vector<Position> landing, PCreature creature) {
 
 bool Level::landCreature(vector<Position> landing, Creature* creature) {
   CHECK(creature);
-  if (creature->isPlayer())
-    player = creature;
-  if (entryMessage != "") {
-    creature->playerMessage(entryMessage);
-    entryMessage = "";
-  }
   queue<Position> q;
   set<Position> marked;
   for (Position pos : Random.permutation(landing)) {
@@ -372,13 +360,26 @@ void Level::globalMessage(const Creature* c, const PlayerMessage& ifPlayerCanSee
 
 void Level::changeLevel(StairKey key, Creature* c) {
   Vec2 oldPos = c->getPosition().getCoord();
-  if (model->changeLevel(key, c))
+  Level* otherLevel = model->getLinkedLevel(this, key);
+  if (otherLevel->landCreature(key, c))
     eraseCreature(c, oldPos);
+  else {
+    Position otherPos = Random.choose(otherLevel->landingSquares.at(key));
+    if (Creature* other = otherPos.getCreature()) {
+      if (!other->isPlayer() && c->getPosition().canEnterEmpty(other) && otherPos.canEnterEmpty(c)) {
+        otherLevel->eraseCreature(other, otherPos.getCoord());
+        eraseCreature(c, oldPos);
+        putCreature(oldPos, other);
+        otherLevel->putCreature(otherPos.getCoord(), c);
+        c->playerMessage("You switch levels with " + other->getName().a());
+      }
+    }
+  }
 }
 
 void Level::changeLevel(Position destination, Creature* c) {
   Vec2 oldPos = c->getPosition().getCoord();
-  if (model->changeLevel(destination, c))
+  if (destination.isValid() && destination.getLevel()->landCreature({destination}, c))
     eraseCreature(c, oldPos);
 }
 
@@ -393,10 +394,7 @@ void Level::eraseCreature(Creature* c, Vec2 coord) {
   removeElement(creatures, c);
   if (c->isPlayer())
     player = nullptr;
-  bucketMap->removeElement(coord, c);
-  getSafeSquare(coord)->removeCreature();
-  if (c->isDarknessSource())
-    removeDarknessSource(coord, darknessRadius);
+  unplaceCreature(c, coord);
 }
 
 const vector<Creature*>& Level::getAllCreatures() const {
@@ -456,39 +454,32 @@ bool Level::canMoveCreature(const Creature* creature, Vec2 direction) const {
 void Level::moveCreature(Creature* creature, Vec2 direction) {
   CHECK(canMoveCreature(creature, direction));
   Vec2 position = creature->getPosition().getCoord();
-  bucketMap->moveElement(position, position + direction, creature);
-  Square* nextSquare = getSafeSquare(position + direction);
-  Square* thisSquare = getSafeSquare(position);
-  thisSquare->removeCreature();
-  creature->setPosition(Position(position + direction, this));
-  nextSquare->putCreature(creature);
-  if (creature->isDarknessSource()) {
-    addDarknessSource(position + direction, darknessRadius);
-    removeDarknessSource(position, darknessRadius);
-  }
+  unplaceCreature(creature, position);
+  placeCreature(creature, position + direction);
+}
+
+void Level::unplaceCreature(Creature* creature, Vec2 pos) {
+  bucketMap->removeElement(pos, creature);
+  getSafeSquare(pos)->removeCreature();
+  if (creature->isDarknessSource())   
+    addDarknessSource(pos, darknessRadius, -1);
+}
+
+void Level::placeCreature(Creature* creature, Vec2 pos) {
+  creature->setPosition(Position(pos, this));
+  bucketMap->addElement(pos, creature);
+  getSafeSquare(pos)->putCreature(creature);
+  if (creature->isDarknessSource())
+    addDarknessSource(pos, darknessRadius, 1);
 }
 
 void Level::swapCreatures(Creature* c1, Creature* c2) {
-  Vec2 position1 = c1->getPosition().getCoord();
-  Vec2 position2 = c2->getPosition().getCoord();
-  bucketMap->moveElement(position1, position2, c1);
-  bucketMap->moveElement(position2, position1, c2);
-  Square* square1 = getSafeSquare(position1);
-  Square* square2 = getSafeSquare(position2);
-  square1->removeCreature();
-  square2->removeCreature();
-  c1->setPosition(Position(position2, this));
-  c2->setPosition(Position(position1, this));
-  square1->putCreature(c2);
-  square2->putCreature(c1);
-  if (c1->isDarknessSource()) {
-    addDarknessSource(position2, darknessRadius);
-    removeDarknessSource(position1, darknessRadius);
-  }
-  if (c2->isDarknessSource()) {
-    addDarknessSource(position1, darknessRadius);
-    removeDarknessSource(position2, darknessRadius);
-  }
+  Vec2 pos1 = c1->getPosition().getCoord();
+  Vec2 pos2 = c2->getPosition().getCoord();
+  unplaceCreature(c1, pos1);
+  unplaceCreature(c2, pos2);
+  placeCreature(c1, pos2);
+  placeCreature(c2, pos1);
 }
 
 vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
@@ -500,15 +491,10 @@ vector<Vec2> Level::getVisibleTiles(Vec2 pos, VisionId vision) const {
       [&](Vec2 v) { return isWithinVision(pos, v, vision); });
 }
 
-unordered_map<Vec2, const ViewObject*> objectList;
-
 void Level::setBackgroundLevel(const Level* l, Vec2 offs) {
   backgroundLevel = l;
   backgroundOffset = offs;
 }
-
-static unordered_map<Vec2, const ViewObject*> background;
-
 
 const Square* Level::getSafeSquare(Vec2 pos) const {
   CHECK(inBounds(pos));

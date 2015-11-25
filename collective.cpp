@@ -59,19 +59,13 @@ struct Collective::MinionPaymentInfo {
   int SERIAL(salary);
   double SERIAL(workAmount);
   int SERIAL(debt);
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(salary) & SVAR(workAmount) & SVAR(debt);
-  }
+  SERIALIZE_ALL(salary, workAmount, debt);
 };
 
 struct Collective::CurrentTaskInfo {
   MinionTask SERIAL(task);
   double SERIAL(finishTime);
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(task) & SVAR(finishTime);
-  }
+  SERIALIZE_ALL(task, finishTime);
 };
 
 template <class Archive>
@@ -108,9 +102,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(nextPayoutTime)
     & SVAR(minionAttraction)
     & SVAR(teams)
-    & SVAR(knownLocations)
-    & SVAR(knownVillains)
-    & SVAR(knownVillainLocations)
     & SVAR(name)
     & SVAR(config)
     & SVAR(warnings)
@@ -318,6 +309,8 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!leader)
     leader = c;
   CHECK(c->getTribe() == tribe);
+  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
+      c->getPosition().getLevel()->getName() << " " << c->getName().bare();
   creatures.push_back(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
@@ -592,8 +585,8 @@ PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
         return Task::eat(hatchery);
       break;
       }
-    case MinionTaskInfo::SPIDER: return Task::spider(territory->getAll().front(), territory->getExtended(3),
-                                     territory->getExtended(6));
+    case MinionTaskInfo::SPIDER:
+      return Task::spider(territory->getAll().front(), territory->getExtended(3), territory->getExtended(6));
   }
   return nullptr;
 }
@@ -741,7 +734,7 @@ MoveInfo Collective::getMove(Creature* c) {
   CHECK(contains(creatures, c));
   CHECK(!c->isDead());
   CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
-      c->getPosition().getLevel()->getName();
+      c->getPosition().getLevel()->getName() << " " << c->getName().bare();
   if (Task* task = taskMap->getTask(c))
     if (taskMap->isPriorityTask(task))
       return task->getMove(c);
@@ -1105,11 +1098,13 @@ static vector<BirthSpawn> birthSpawns {
   { CreatureId::HARPY, 0.5 },
   { CreatureId::OGRE, 0.5 },
   { CreatureId::WEREWOLF, 0.5 },
-  { CreatureId::SPECIAL_HUMANOID, 1.0, TechId::HUMANOID_MUT},
-  { CreatureId::SPECIAL_MONSTER_KEEPER, 1.0, TechId::BEAST_MUT },
+  { CreatureId::SPECIAL_HM, 1.0, TechId::HUMANOID_MUT},
+  { CreatureId::SPECIAL_BM, 1.0, TechId::BEAST_MUT },
 };
 
 void Collective::considerBirths() {
+  while (!pregnancies.empty() && pregnancies.front()->isDead())
+    pregnancies.pop_front();
   if (getPopulationSize() < getMaxPopulation() && !pregnancies.empty() && Random.roll(300)) {
     Creature* c = pregnancies.front();
     pregnancies.pop_front();
@@ -1753,7 +1748,7 @@ void Collective::orderExecution(Creature* c) {
 void Collective::orderTorture(Creature* c) {
   vector<Position> posts = getAllSquares({SquareId::TORTURE_TABLE}, true);
   for (Position p : squaresInUse)
-    removeElement(posts, p);
+    removeElementMaybe(posts, p);
   if (posts.empty())
     return;
   Position pos = Random.choose(posts);
@@ -1828,7 +1823,7 @@ void Collective::destroySquare(Position pos) {
 
 void Collective::addConstruction(Position pos, SquareType type, const CostInfo& cost, bool immediately,
     bool noCredit) {
-  if (type.getId() == SquareId::MOUNTAIN2 && (pos.isChokePoint({MovementTrait::WALK}) ||
+  if (type.getId() == SquareId::MOUNTAIN && (pos.isChokePoint({MovementTrait::WALK}) ||
         constructions->getSquareCount(type) > 0))
     return;
   if (immediately && hasResource(cost)) {
@@ -1917,7 +1912,7 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
   CHECK(!getSquares(type).count(pos));
   for (auto& elem : mySquares)
       elem.second.erase(pos);
-  if (type.getId() == SquareId::MOUNTAIN2) {
+  if (type.getId() == SquareId::MOUNTAIN) {
     destroySquare(pos);
     if (territory->contains(pos))
       territory->remove(pos);
@@ -2132,31 +2127,14 @@ void Collective::onCantPickItem(EntitySet<Item> items) {
     unmarkItem(id);
 }
 
-bool Collective::isKnownVillain(const Collective* col) {
-  return knownVillains.count(col);
-}
-
-bool Collective::isKnownVillainLocation(const Collective* col) {
-  return knownVillainLocations.count(col);
-}
-
 void Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
-    if (const Location* loc = pos.getLocation())
-      if (!knownLocations.count(loc)) {
-        knownLocations.insert(loc);
-        control->onDiscoveredLocation(loc);
-      }
     knownTiles->addTile(pos);
+    control->onNewTile(pos);
     if (pos.getLevel() == level)
       if (Task* task = taskMap->getMarked(pos))
         if (task->isImpossible(getLevel()))
           taskMap->removeTask(task);
-    for (const Collective* col : level->getModel()->getAllVillains())
-      if (col->territory->contains(pos)) {
-        knownVillains.insert(col);
-        knownVillainLocations.insert(col);
-      }
   }
 }
 
@@ -2399,7 +2377,6 @@ int Collective::getNextPayoutTime() const {
 
 void Collective::addAttack(const CollectiveAttack& attack) {
   control->addAttack(attack);
-  knownVillains.insert(attack.getAttacker());
 }
 
 CollectiveTeams& Collective::getTeams() {

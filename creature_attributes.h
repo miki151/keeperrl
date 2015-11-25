@@ -30,6 +30,7 @@
 #include "minion_task_map.h"
 #include "skill.h"
 #include "modifier_type.h"
+#include "sound.h"
 
 // WTF is this defined
 #undef HUGE
@@ -94,12 +95,13 @@ class CreatureAttributes {
   string getBodyPartName(BodyPart) const;
   SpellMap& getSpellMap();
   const SpellMap& getSpellMap() const;
+  optional<Sound> getDeathSound() const;
+  optional<SoundId> getAttackSound(AttackType, bool damage) const;
+
 
   MustInitialize<ViewId> SERIAL(viewId);
-  optional<ViewId> SERIAL(undeadViewId);
   optional<ViewObject> SERIAL(illusionViewObject);
   MustInitialize<EntityName> SERIAL(name);
-  optional<string> SERIAL(undeadName);
   EnumMap<AttrType, int> SERIAL(attr);
   MustInitialize<CreatureSize> SERIAL(size);
   MustInitialize<double> SERIAL(weight);
@@ -138,6 +140,7 @@ class CreatureAttributes {
   bool SERIAL(invincible) = false;
   bool SERIAL(worshipped) = false;
   bool SERIAL(dontChase) = false;
+  bool SERIAL(isSpecial) = false;
   double SERIAL(attributeGain) = 0.5;
   int SERIAL(recruitmentCost) = 0;
   Skillset SERIAL(skills);
@@ -147,6 +150,9 @@ class CreatureAttributes {
   MinionTaskMap SERIAL(minionTasks);
   string SERIAL(groupName) = "group";
   EnumMap<AttrType, double> SERIAL(attrIncrease);
+  optional<SoundId> SERIAL(dyingSound);
+  bool SERIAL(noDyingSound) = false;
+  bool SERIAL(noAttackSound) = false;
 };
 
 #endif

@@ -35,6 +35,8 @@
 #include "entity_name.h"
 #include "movement_type.h"
 #include "movement_set.h"
+#include "view.h"
+#include "sound.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -56,14 +58,15 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(poisonGas)
     & SVAR(constructions)
     & SVAR(ticking)
-    & SVAR(fog)
     & SVAR(movementSet)
     & SVAR(updateViewIndex)
     & SVAR(updateMemory)
     & SVAR(viewIndex)
     & SVAR(destroyable)
     & SVAR(owner)
-    & SVAR(forbiddenTribe);
+    & SVAR(forbiddenTribe)
+    & SVAR(unavailable)
+    & SVAR(applySound);
   if (progressMeter)
     progressMeter->addProgress();
   updateViewIndex = true;
@@ -79,14 +82,15 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
     fire(p.strength, p.flamability), constructions(p.constructions), ticking(p.ticking),
-    movementSet(p.movementSet), viewIndex(new ViewIndex()), destroyable(p.canDestroy), owner(p.owner) {
+    movementSet(p.movementSet), viewIndex(new ViewIndex()), destroyable(p.canDestroy), owner(p.owner),
+    applySound(p.applySound) {
 }
 
 Square::~Square() {
 }
 
 void Square::putCreature(Creature* c) {
-  CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
+  //CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
   setCreature(c);
   onEnter(c);
   if (c->isStationary())
@@ -155,24 +159,25 @@ bool Square::construct(const SquareType& type) {
 }
 
 bool Square::canDestroy(const Tribe* tribe) const {
-  return destroyable && tribe != owner && !fire->isBurning();
+  return isDestroyable() && tribe != owner && !fire->isBurning();
 }
 
 bool Square::isDestroyable() const {
-  return destroyable;
+  return destroyable && !unavailable;
 }
 
 void Square::destroy() {
   CHECK(isDestroyable());
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
+  level->getModel()->getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
   level->getModel()->onSquareDestroyed(getPosition2());
   getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 
 bool Square::canDestroy(const Creature* c) const {
   return canDestroy(c->getTribe())
-    || (destroyable && c->isInvincible()); // so that boulders destroy keeper doors
+    || (isDestroyable() && c->isInvincible()); // so that boulders destroy keeper doors
 }
 
 void Square::destroyBy(Creature* c) {
@@ -208,9 +213,14 @@ const Level* Square::getLevel() const {
   return level;
 }
 
-void Square::setFog(double val) {
-  setDirty();
-  fog = val;
+bool Square::isUnavailable() const {
+  return unavailable;
+}
+
+void Square::setUnavailable() {
+  unavailable = true;
+  constructions.clear();
+  movementSet->clear();
 }
 
 bool Square::sunlightBurns() const {
@@ -401,8 +411,8 @@ void Square::getViewIndex(ViewIndex& ret, const Tribe* tribe) const {
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (poisonGas->getAmount() > 0)
     ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas->getAmount()));
-  if (fog)
-    ret.setHighlight(HighlightType::FOG, fog);
+  if (unavailable)
+    ret.setHighlight(HighlightType::UNAVAILABLE);
   updateViewIndex = false;
   *viewIndex = ret;
 }
@@ -586,3 +596,8 @@ void Square::clearItemIndex(ItemIndex index) {
   inventory->clearIndex(index);
 }
 
+void Square::apply(Creature* c) {
+  if (applySound)
+    c->addSound(*applySound);
+  onApply(c);
+}

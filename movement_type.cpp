@@ -37,7 +37,7 @@ const EnumSet<MovementTrait>& MovementType::getTraits() const {
 
 namespace std {
   size_t hash<MovementType>::operator()(const MovementType& t) const {
-      return hash<EnumSet<MovementTrait>>()(t.getTraits());
+      return combineHash(t.getTraits());
   }
 }
 

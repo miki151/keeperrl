@@ -186,13 +186,6 @@ bool contains(const string& s, const string& p) {
   return s.find(p) != string::npos;
 }
 
-template <class Archive> 
-void Vec2::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(x) & BOOST_SERIALIZATION_NVP(y);
-}
-
-SERIALIZABLE(Vec2);
-
 Vec2::Vec2(int _x, int _y) : x(_x), y(_y) {
 }
 
@@ -777,6 +770,30 @@ string getPlural(const string& a, int num) {
     return "1 " + a;
   else
     return toString(num) + " " + a + "s";
+}
+
+static string toText(int num) {
+  switch (num) {
+    case 0: return "zero";
+    case 1: return "one";
+    case 2: return "two";
+    case 3: return "three";
+    case 4: return "four";
+    case 5: return "five";
+    case 6: return "six";
+    case 7: return "seven";
+    case 8: return "eight";
+    case 9: return "nine";
+    default: FAIL << "Unsupported number " << num;
+             return "";
+  }
+}
+
+string getPluralText(const string& a, int num) {
+  if (num == 1)
+    return "a " + a;
+  else
+    return toText(num) + " " + a + "s";
 }
 
 Semaphore::Semaphore(int v) : value(v) {}

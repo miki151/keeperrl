@@ -72,14 +72,12 @@ destiff
 destiffon
 destrou
 devitable
-devitablex
 devitan
 digestiff
 digestrou
 dinotaur
 dire
 dire anida
-dire spawn
 dire stal
 dopper
 dopperibo
@@ -118,7 +116,6 @@ gargonne
 gargouill
 gargouille
 gelaticore
-gelaticorn
 gelatin
 gem dra
 ghound
@@ -126,7 +123,6 @@ gian
 gibber dra
 gibberibo
 gibberin
-gibbering
 gith
 githid
 githzer
@@ -148,7 +144,6 @@ halfeshnee
 halflin
 hell horro
 hell houl
-hellar dra
 hook horro
 hook houl
 hook hound
@@ -189,15 +184,11 @@ locat
 locathak
 lycant
 lycantle
-manananggal
 mant
-mant eatur
 manthrope
 manthroper
-mantic dra
 manticorn
 mantle
-marilisk
 mast
 masterkin
 mastiff
@@ -210,7 +201,6 @@ nalflin
 nalfling
 nightmar
 nightshar
-nightshasa
 nightshasm
 nupper
 nupperin
@@ -222,12 +212,10 @@ oreaterkin
 oreatur
 oreaturtle
 oreaturtur
-owlbeast
 owlbeaster
 phan
 phant
 phanthrope
-phanticore
 phantle
 phasa
 phase stal
@@ -259,7 +247,6 @@ salamant
 salamantle
 sato
 scorn
-shamander
 shamant
 shamantle
 shamblin
@@ -311,8 +298,6 @@ umberibo
 umberin
 umbering
 under kaen
-under hulk
-unic cread
 unic dra
 unicore
 unicorpius
@@ -342,7 +327,5 @@ wrai
 wyver
 yeen
 yeth
-yeth amon
-yeth horro
 yeth houl
 yrthah

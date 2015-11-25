@@ -94,7 +94,6 @@ class Position {
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   bool canNavigate(const MovementType&) const;
-  bool landCreature(Creature*);
   vector<Position> getVisibleTiles(VisionId);
   const vector<Vec2>& getTravelDir() const;
   int getStrength() const;
@@ -113,21 +112,13 @@ class Position {
   optional<Position> getStairsTo(Position) const;
 
   SERIALIZATION_DECL(Position);
+  int getHash() const;
 
   private:
   Square* getSquare() const;
   Vec2 SERIAL(coord);
   Level* SERIAL(level) = nullptr;
 };
-
-namespace std {
-
-template <> struct hash<Position> {
-  size_t operator()(const Position& obj) const {
-    return hash<Vec2>()(obj.getCoord());
-  }
-};
-}
 
 
 #endif

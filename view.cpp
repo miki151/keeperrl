@@ -24,6 +24,8 @@
 #include "skill.h"
 #include "modifier_type.h"
 #include "view_id.h"
+#include "level.h"
+#include "position.h"
 
 ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
@@ -117,10 +119,13 @@ void PlayerInfo::readFrom(const Creature* c) {
   firstName = c->getFirstName().get_value_or("");
   name = c->getName().bare();
   adjectives = c->getMainAdjectives();
+  description = capitalFirst(c->getDescription());
   Item* weapon = c->getWeapon();
   weaponName = weapon ? weapon->getName() : "";
   viewId = c->getViewObject().id();
   morale = c->getMorale();
+  levelName = c->getLevel()->getName();
+  positionHash = c->getPosition().getHash();
   typedef PlayerInfo::AttributeInfo::Id AttrId;
   attributes = {
     { "Attack",

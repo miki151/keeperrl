@@ -12,8 +12,8 @@ void CollectiveTeams::add(TeamId team, Creature* c) {
 }
 
 void CollectiveTeams::remove(TeamId team, Creature* c) {
- // if (c == getLeader(team))
- //   deactivate(team); // otherwise teams are still active when the player gets killed
+  if (c == getLeader(team))
+    deactivate(team); // otherwise teams are still active when the player gets killed
   removeElement(teamInfo[team].creatures, c);
   if (teamInfo[team].creatures.empty())
     cancel(team);
