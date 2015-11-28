@@ -74,13 +74,7 @@ class ReplayView : public View {
       return readValue<optional<int>>(LoggingToken::GET_NUMBER);
     }
 
-    virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>&,
-        UniqueEntity<Creature>::Id& current) override {
-      return readValue<optional<MinionAction>>(LoggingToken::GET_MINION_ACTION);
-    }
-
-    virtual optional<int> chooseItem(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id& current,
-        const vector<ItemInfo>& items, double* scrollpos) override {
+    virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) override {
       return readValue<optional<int>>(LoggingToken::CHOOSE_ITEM);
     }
 
@@ -114,6 +108,11 @@ class ReplayView : public View {
     virtual void reset() override {
       if (delegate)
         delegate->reset();
+    }
+
+    virtual void addSound(const Sound& s) override {
+      if (delegate)
+        delegate->addSound(s);
     }
 
     virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {

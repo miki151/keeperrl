@@ -86,4 +86,6 @@ enum class EpithetId;
 enum class ItemIndex;
 
 enum class CollectiveWarning;
+enum class SoundId;
+
 #endif

@@ -56,6 +56,10 @@ class LoggingView : public View {
       return logAndGet(delegate->getTimeMilliAbsolute(), LoggingToken::GET_TIME_ABSOLUTE);
     }
 
+    virtual void addSound(const Sound& s) override {
+      delegate->addSound(s);
+    }
+
     virtual double getGameSpeed() override {
       return logAndGet(delegate->getGameSpeed(), LoggingToken::GET_GAME_SPEED);
     }
@@ -90,14 +94,8 @@ class LoggingView : public View {
       return logAndGet(delegate->getNumber(title, min, max, increments), LoggingToken::GET_NUMBER);
     }
 
-    virtual optional<MinionAction> getMinionAction(const vector<PlayerInfo>& info,
-        UniqueEntity<Creature>::Id& current) override {
-      return logAndGet(delegate->getMinionAction(info, current), LoggingToken::GET_MINION_ACTION);
-    }
-
-    virtual optional<int> chooseItem(const vector<PlayerInfo>& info, UniqueEntity<Creature>::Id& current,
-        const vector<ItemInfo>& items, double* scrollpos) override {
-      return logAndGet(delegate->chooseItem(info, current, items, scrollpos), LoggingToken::CHOOSE_ITEM);
+    virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) override {
+      return logAndGet(delegate->chooseItem(items, scrollpos), LoggingToken::CHOOSE_ITEM);
     }
 
     virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,

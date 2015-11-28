@@ -22,6 +22,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::HINTS, 1},
   {OptionId::ASCII, 0},
   {OptionId::MUSIC, 1},
+  {OptionId::SOUND, 1},
   {OptionId::KEEP_SAVEFILES, 0},
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
@@ -42,6 +43,7 @@ const map<OptionId, string> names {
   {OptionId::HINTS, "In-game hints"},
   {OptionId::ASCII, "Unicode graphics"},
   {OptionId::MUSIC, "Music"},
+  {OptionId::SOUND, "Sound effects"},
   {OptionId::KEEP_SAVEFILES, "Keep save files"},
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::FULLSCREEN, "Fullscreen"},
@@ -62,6 +64,7 @@ const map<OptionId, string> hints {
   {OptionId::HINTS, "Display some extra helpful information during the game."},
   {OptionId::ASCII, "Switch to old school roguelike graphics."},
   {OptionId::MUSIC, ""},
+  {OptionId::SOUND, ""},
   {OptionId::KEEP_SAVEFILES, "Don't remove the save file when a game is loaded."},
   {OptionId::SHOW_MAP, ""},
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
@@ -86,6 +89,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::HINTS,
       OptionId::ASCII,
       OptionId::MUSIC,
+      OptionId::SOUND,
       OptionId::FULLSCREEN,
       OptionId::FULLSCREEN_RESOLUTION,
       OptionId::ZOOM_UI,
@@ -184,6 +188,7 @@ string Options::getValueString(OptionId id, Options::Value value) {
     case OptionId::FULLSCREEN:
     case OptionId::AUTOSAVE:
     case OptionId::WASD_SCROLLING:
+    case OptionId::SOUND:
     case OptionId::MUSIC: return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:

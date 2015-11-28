@@ -15,19 +15,13 @@ RICH_ENUM(SquareId,
   GRASS,
   CROPS,
   MUD,
-  HELL_WALL,
   ROCK_WALL,
-  LOW_ROCK_WALL,
   WOOD_WALL,
   BLACK_WALL,
-  YELLOW_WALL,
   CASTLE_WALL,
   WELL,
-  STATUE,
   MUD_WALL,
   MOUNTAIN,
-  MOUNTAIN2,
-  GLACIER,
   HILL,
   WATER,
   MAGMA,
@@ -86,21 +80,13 @@ RICH_ENUM(SquareId,
 
 enum class StairLook {
   NORMAL,
-  HELL,
-  CELLAR,
-  PYRAMID,
-  DUNGEON_ENTRANCE,
-  DUNGEON_ENTRANCE_MUD,
 };
 
 struct StairInfo {
   StairKey SERIAL(key);
   StairLook SERIAL(look);
   enum Direction { UP, DOWN } SERIAL(direction);
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(key) & SVAR(look) & SVAR(direction);
-  }
+  SERIALIZE_ALL(key, look, direction);
   bool operator == (const StairInfo& o) const {
     return key == o.key && look == o.look && direction == o.direction;
   }
@@ -112,10 +98,7 @@ struct ChestInfo {
   optional<CreatureFactory::SingleCreature> SERIAL(creature);
   double SERIAL(creatureChance);
   int SERIAL(numCreatures);
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(creature) & SVAR(creatureChance) & SVAR(numCreatures);
-  }
+  SERIALIZE_ALL(creature, creatureChance, numCreatures);
   bool operator == (const ChestInfo& o) const {
     return creature == o.creature && creatureChance == o.creatureChance && numCreatures == o.numCreatures;
   }

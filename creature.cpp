@@ -38,6 +38,9 @@
 #include "tribe.h"
 #include "creature_attributes.h"
 #include "position.h"
+#include "view.h"
+#include "sound.h"
+#include "trigger.h"
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
@@ -157,6 +160,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     model->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
+    c->addSound(spell->getSound());
     c->spendTime(1);
   });
 }
@@ -174,6 +178,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     model->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
+    c->addSound(spell->getSound());
     c->spendTime(1);
   });
 }
@@ -1312,9 +1317,10 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
     } else
       you(getAttackMsg(attack.getType(), false, attack.getLevel()), concat({enemyName}, attackAdjective));
     other->takeDamage(attack);
-  }
-  else
+  } else {
     you(MsgType::MISS_ATTACK, enemyName);
+    addSound(SoundId::MISSED_ATTACK);
+  }
   double oldTime = getTime();
   if (spend)
     c->spendTime(timeSpent);
@@ -1380,6 +1386,8 @@ bool Creature::takeDamage(const Attack& attack) {
     attributes->lastingEffects[LastingEffect::MAGIC_SHIELD] -= 5;
     globalMessage("The magic shield absorbs the attack", "");
   }
+  if (auto sound = attributes->getAttackSound(attack.getType(), attack.getStrength() > defense))
+    addSound(*sound);
   if (attack.getStrength() > defense) {
     if (attackType == AttackType::EAT) {
       if (isLarger(other->getSize(), getSize()) && Random.roll(3)) {
@@ -1502,19 +1510,6 @@ static string adjectives(CreatureSize s, bool undead, bool notLiving) {
   return combine(ret);
 }
 
-string Creature::bodyDescription() const {
-  vector<string> ret;
-  for (BodyPart part : {BodyPart::ARM, BodyPart::LEG, BodyPart::WING})
-    if (int num = numBodyParts(part))
-      ret.push_back(getPlural(attributes->getBodyPartName(part), num));
-  if (isHumanoid() && numBodyParts(BodyPart::HEAD) == 0)
-    ret.push_back("no head");
-  if (ret.size() > 0)
-    return " with " + combine(ret);
-  else
-    return "";
-}
-
 string attrStr(bool strong, bool agile, bool fast) {
   vector<string> good;
   vector<string> bad;
@@ -1539,15 +1534,18 @@ string attrStr(bool strong, bool agile, bool fast) {
 }
 
 string Creature::getDescription() const {
+  if (!attributes->isSpecial)
+    return "";
   string weapon;
   string attack;
   if (attributes->attackEffect)
     attack = " It has a " + Effect::getName(*attributes->attackEffect) + " attack.";
-  return getName().the() + " is a " + adjectives(getSize(), isUndead(), attributes->notLiving) +
-      (isHumanoid() ? " humanoid" : " beast") + (!isCorporal() ? " spirit" : "") + bodyDescription() + ". " +
-     "It is " + attrStr(attributes->getRawAttr(AttrType::STRENGTH) > 16,
+  return adjectives(getSize(), isUndead(), attributes->notLiving) +
+      (isHumanoid() ? " humanoid" : " beast") + (!isCorporal() ? " spirit" : "") +
+      attributes->bodyDescription() + ". " +
+     /*"It is " + attrStr(attributes->getRawAttr(AttrType::STRENGTH) > 16,
          attributes->getRawAttr(AttrType::DEXTERITY) > 16,
-         attributes->getRawAttr(AttrType::SPEED) > 100) + "." + weapon + attack;
+         attributes->getRawAttr(AttrType::SPEED) > 100) + "." + */weapon + attack;
 }
 
 void Creature::setBoulderSpeed(double value) {
@@ -1672,6 +1670,9 @@ void Creature::die(const string& reason, bool dropInventory, bool dCorpse) {
 
 void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   CHECK(!isDead());
+  if (dCorpse)
+    if (auto sound = attributes->getDeathSound())
+      addSound(*sound);
   lastAttacker = attacker;
   Debug() << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   controller->onKilled(attacker);
@@ -1770,9 +1771,54 @@ CreatureAction Creature::fire(Vec2 direction) const {
   });
 }
 
+CreatureAction Creature::placeTorch(Dir attachmentDir, function<void(Trigger*)> builtCallback) const {
+  return CreatureAction(this, [=](Creature* self) {
+      PTrigger torch = Trigger::getTorch(attachmentDir, position);
+      Trigger* tRef = torch.get();
+      getPosition().addTrigger(std::move(torch));
+      addSound(Sound(SoundId::DIGGING).setPitch(0.5));
+      builtCallback(tRef);
+      self->spendTime(1);
+  });
+}
+
+CreatureAction Creature::whip(const Position& pos) const {
+  Creature* whipped = pos.getCreature();
+  if (pos.dist8(position) > 1 || !whipped)
+    return CreatureAction();
+  return CreatureAction(this, [=](Creature* self) {
+    monsterMessage(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
+    double oldTime = getTime();
+    self->spendTime(1);
+    if (Random.roll(3)) {
+      addSound(SoundId::WHIP);
+      self->modViewObject().addMovementInfo({position.getDir(pos), oldTime, getTime(),
+          ViewObject::MovementInfo::ATTACK});
+    }
+    if (Random.roll(5))
+      whipped->monsterMessage(whipped->getName().the() + " screams!", "You hear a horrible scream!");
+    if (Random.roll(10)) {
+      whipped->addMorale(0.05);
+      whipped->you(MsgType::FEEL, "happier");
+    }
+  });
+}
+
+void Creature::addSound(const Sound& sound1) const {
+  Sound sound(sound1);
+  sound.setPosition(getPosition());
+  getModel()->getView()->addSound(sound);
+}
+
 CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const {
   if (getPosition().plus(direction).canConstruct(type) && canConstruct(type))
     return CreatureAction(this, [=](Creature* self) {
+        if (type.getId() == SquareId::FLOOR)
+          addSound(SoundId::DIGGING);
+        else if (type.getId() == SquareId::TREE_TRUNK)
+          addSound(SoundId::TREE_CUTTING);
+        else
+          addSound(Sound(SoundId::DIGGING).setPitch(0.5));
         if (getPosition().plus(direction).construct(type)) {
           if (type.getId() == SquareId::TREE_TRUNK) {
             monsterMessage(getName().the() + " cuts a tree");
@@ -1782,7 +1828,7 @@ CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const
             monsterMessage(getName().the() + " digs a tunnel");
             playerMessage("You dig a tunnel");
           } else
-          if (type.getId() == SquareId::MOUNTAIN2) {
+          if (type.getId() == SquareId::MOUNTAIN) {
             monsterMessage(getName().the() + " fills up a tunnel");
             playerMessage("You fill up a tunnel");
           } else {
@@ -2478,6 +2524,9 @@ vector<Creature::AdjectiveInfo> Creature::getWeaponAdjective() const {
 
 vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
   vector<AdjectiveInfo> ret;
+  if (!getWeapon() && !isHumanoid()) {
+    ret.push_back({"+" + toString(attributes->barehandedDamage) + " unarmed attack", ""});
+  }
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect)) {
       string name;
@@ -2512,8 +2561,9 @@ vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
 
 vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
   vector<AdjectiveInfo> ret;
-  if (!getWeapon())
-    ret.push_back({"No weapon", ""});
+  if (!getWeapon() && isHumanoid()) {
+    ret.push_back({"+" + toString(attributes->barehandedDamage) + " unarmed attack", ""});
+  }
   if (health < 1)
     ret.push_back({isBleeding() ? "Critically wounded" : "Wounded", ""});
   for (BodyPart part : ENUM_ALL(BodyPart))

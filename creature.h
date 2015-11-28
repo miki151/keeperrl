@@ -43,6 +43,7 @@ class MinionTaskMap;
 class EntityName;
 class Gender;
 class SpellMap;
+class Sound;
 
 class Creature : public Renderable, public UniqueEntity<Creature> {
   public:
@@ -157,7 +158,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void injureBodyPart(BodyPart part, bool drop);
   bool isCritical(BodyPart part) const;
   double getMinDamage(BodyPart part) const;
-  string bodyDescription() const;
 
   double getCourage() const;
   void setCourage(double);
@@ -216,6 +216,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction give(Creature* whom, vector<Item*> items);
   CreatureAction fire(Vec2 direction) const;
   CreatureAction construct(Vec2 direction, const SquareType&) const;
+  CreatureAction placeTorch(Dir attachmentDir, function<void(Trigger*)> builtCallback) const;
+  CreatureAction whip(const Position&) const;
   bool canConstruct(const SquareType&) const;
   CreatureAction eat(Item*) const;
   enum DestroyAction { BASH, EAT, DESTROY };
@@ -308,6 +310,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void setInCombat();
   bool wasInCombat(double numLastTurns) const;
   void onKilled(const Creature* victim);
+
+  void addSound(const Sound&) const;
 
   private:
 

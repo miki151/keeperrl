@@ -26,6 +26,7 @@ class Tile {
   public:
   typedef Renderer::TileCoord TileCoord;
   static const Tile& getTile(ViewId, bool sprite);
+  static const Tile& getTile(ViewId);
   static Color getColor(const ViewObject& object);
 
   static Tile empty();
@@ -82,7 +83,6 @@ class Tile {
   optional<TileCoord> backgroundCoord;
   optional<TileCoord> highlightCoord;
   array<optional<TileCoord>, 256> connections;
-  bool anyConnections = false;
   optional<pair<Dir, TileCoord>> connectionOption;
   array<vector<TileCoord>, 256> corners;
   array<optional<TileCoord>, 256> extraBorders;

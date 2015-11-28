@@ -21,6 +21,7 @@
 #include "debug.h"
 #include "enums.h"
 #include "serialization.h"
+#include "hashing.h"
 
 template <class T>
 string toString(const T& t);
@@ -104,9 +105,12 @@ vector<string> removeEmpty(const vector<string>&);
 class Rectangle;
 class RandomGen;
 
+string getCardinalName(Dir d);
+
 class Vec2 {
   public:
-  int x, y;
+  int SERIAL(x); // HASH(x)
+  int SERIAL(y); // HASH(y)
   Vec2() : x(0), y(0) {}
   Vec2(int x, int y);
   Vec2(Dir);
@@ -155,50 +159,9 @@ class Vec2 {
 
   typedef function<Vec2(Vec2)> LinearMap;
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
+  SERIALIZE_ALL(x, y);
+  HASH_ALL(x, y);
 };
-
-string getCardinalName(Dir d);
-
-namespace std {
-
-template <> struct hash<Vec2> {
-  size_t operator()(const Vec2& obj) const {
-    return hash<int>()(obj.x) * 10000 + hash<int>()(obj.y);
-  }
-};
-
-template <class T> struct hash<vector<T>> {
-  size_t operator()(const vector<T>& v) const {
-    size_t seed = 0;
-    for(auto& i : v) {
-      seed ^= std::hash<T>()(i) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    }
-    return seed;
-  }
-};
-
-#ifdef DEBUG_STL
-/*template <> struct hash<__gnu_debug::string> {
-  size_t operator()(const string& v) const {
-    return hash<std::string>()(v);
-  }
-};*/
-
-template <class T> struct hash<__gnu_debug::set<T>> {
-#else
-template <class T> struct hash<std::set<T>> {
-#endif
-  size_t operator()(const set<T>& v) const {
-    size_t ret = 0;
-    for (const T& elem : v)
-      ret = ret * 79146198 + hash<T>()(elem);
-    return ret;
-  }
-};
-
-}
 
 class Range {
   public:
@@ -321,14 +284,6 @@ class EnumInfo {
 
 #define RICH_ENUM(Name, ...) \
 enum class Name { __VA_ARGS__ };\
-namespace std {\
-template <>\
-struct hash<Name> {\
-  size_t operator()(Name obj) const {\
-    return int(obj);\
-  }\
-};\
-}\
 template<> \
 class EnumInfo<Name> { \
   public:\
@@ -934,6 +889,14 @@ void removeIndex(vector<T>& v, int index) {
 }
 
 template<class T>
+optional<int> findAddress(const vector<T>& v, const T* ptr) {
+  for (int i : All(v))
+    if (&v[i] == ptr)
+      return i;
+  return none;
+}
+
+template<class T>
 optional<int> findElement(const vector<T>& v, const T& element) {
   for (int i : All(v))
     if (v[i] == element)
@@ -1043,6 +1006,7 @@ string combine(const vector<string>& adj, bool commasOnly = false);
 
 string getPlural(const string& singular, const string& plural, int num);
 string getPlural(const string&, int num);
+string getPluralText(const string&, int num);
 
 template<class T>
 string combine(const vector<T*>& v) {
@@ -1265,21 +1229,15 @@ class EnumSet : public EnumMap<T, char> {
   Iter end() const {
     return Iter(*this, EnumInfo<T>::size);
   }
-};
 
-namespace std {
-
-template <typename T>
-struct hash<EnumSet<T>> {
-  size_t operator()(const EnumSet<T>& obj) const {
-    size_t ret = 0;
-    for (const T& elem : obj) {
-      ret = ret * 79146198 + hash<T>()(elem);
+  int getHash() const {
+    int ret = 0;
+    for (const T& elem : *this) {
+      ret = ret * 79146198 + combineHash(elem);
     }
     return ret;
   }
 };
-}
 
 template <class T>
 class EnumAll {

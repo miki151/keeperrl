@@ -35,6 +35,7 @@
 #include "equipment.h"
 #include "skill.h"
 #include "item_attributes.h"
+#include "sound.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -53,7 +54,7 @@ class FireScroll : public Item {
   public:
   FireScroll(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void apply(Creature* c) override {
+  virtual void applySpecial(Creature* c) override {
     set = true;
   }
 
@@ -64,12 +65,7 @@ class FireScroll : public Item {
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(set);
-  }
-
+  SERIALIZE_ALL2(Item, set);
   SERIALIZATION_CONSTRUCTOR(FireScroll);
 
   private:
@@ -111,13 +107,8 @@ class AmuletOfWarning : public Item {
         owner->playerMessage(getTheName() + " vibrates");
     }
   }
- 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(radius);
-  }
- 
+
+  SERIALIZE_ALL2(Item, radius);
   SERIALIZATION_CONSTRUCTOR(AmuletOfWarning);
 
   private:
@@ -140,13 +131,8 @@ class AmuletOfHealing : public Item {
     } else 
       lastTick = -1;
   }
- 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(lastTick);
-  }
- 
+
+  SERIALIZE_ALL2(Item, lastTick);
   SERIALIZATION_CONSTRUCTOR(AmuletOfHealing);
 
   private:
@@ -159,10 +145,7 @@ class Telepathy : public CreatureVision {
     return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->hasBrain();
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(CreatureVision);
-  }
+  SERIALIZE_SUBCLASS(CreatureVision);
 };
 
 class ItemOfCreatureVision : public Item {
@@ -177,12 +160,7 @@ class ItemOfCreatureVision : public Item {
     c->removeCreatureVision(vision.get());
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(vision);
-  }
-
+  SERIALIZE_ALL2(Item, vision);
   SERIALIZATION_CONSTRUCTOR(ItemOfCreatureVision);
 
   private:
@@ -200,7 +178,7 @@ class Corpse : public Item {
       corpseInfo(info) {
   }
 
-  virtual void apply(Creature* c) override {
+  virtual void applySpecial(Creature* c) override {
     Item* it = c->getWeapon();
     if (it && it->getAttackType() == AttackType::CUT) {
       c->you(MsgType::DECAPITATE, getTheName());
@@ -240,17 +218,7 @@ class Corpse : public Item {
     return corpseInfo;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item) 
-      & SVAR(object2) 
-      & SVAR(rotten)
-      & SVAR(rottenTime)
-      & SVAR(rottingTime)
-      & SVAR(rottenName)
-      & SVAR(corpseInfo);
-  }
-
+  SERIALIZE_ALL2(Item, object2, rotten, rottenTime, rottingTime, rottenName, corpseInfo);
   SERIALIZATION_CONSTRUCTOR(Corpse);
 
   private:
@@ -295,12 +263,7 @@ class Potion : public Item {
     heat = max(0., heat - 0.005);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item) 
-      & SVAR(heat);
-  }
-
+  SERIALIZE_ALL2(Item, heat);
   SERIALIZATION_CONSTRUCTOR(Potion);
 
   private:
@@ -311,16 +274,11 @@ class SkillBook : public Item {
   public:
   SkillBook(const ItemAttributes& attr, Skill* s) : Item(attr), skill(s->getId()) {}
 
-  virtual void apply(Creature* c) override {
+  virtual void applySpecial(Creature* c) override {
     c->addSkill(Skill::get(skill));
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(skill);
-  }
-
+  SERIALIZE_ALL2(Item, skill);
   SERIALIZATION_CONSTRUCTOR(SkillBook);
 
   private:
@@ -331,20 +289,14 @@ class TechBook : public Item {
   public:
   TechBook(const ItemAttributes& attr, optional<TechId> t) : Item(attr), tech(t) {}
 
-  virtual void apply(Creature* c) override {
+  virtual void applySpecial(Creature* c) override {
     if (!read || !!tech) {
       c->getModel()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
       read = true;
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(tech)
-      & SVAR(read);
-  }
-
+  SERIALIZE_ALL2(Item, tech, read);
   SERIALIZATION_CONSTRUCTOR(TechBook);
 
   private:
@@ -358,7 +310,7 @@ class TrapItem : public Item {
       : Item(attr), effect(_effect), trapObject(_trapObject), alwaysVisible(visible) {
   }
 
-  virtual void apply(Creature* c) override {
+  virtual void applySpecial(Creature* c) override {
     if (!alwaysVisible)
       c->you(MsgType::SET_UP_TRAP, "");
     c->getPosition().addTrigger(Trigger::getTrap(trapObject, c->getPosition(), effect, c->getTribe(),
@@ -366,14 +318,7 @@ class TrapItem : public Item {
     discarded = true;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(effect)
-      & SVAR(trapObject)
-      & SVAR(alwaysVisible);
-  }
-
+  SERIALIZE_ALL2(Item, effect, trapObject, alwaysVisible);
   SERIALIZATION_CONSTRUCTOR(TrapItem);
 
   private:
@@ -1182,7 +1127,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::RING;
             i.price = 200;);
     case ItemId::WARNING_AMULET: return ITATTR(
-            i.viewId = ViewId::STEEL_AMULET;
+            i.viewId = ViewId::AMULET1;
             i.shortName = "warning";
             i.name = "amulet of " + *i.shortName;
             i.plural = "amulets of " + *i.shortName;
@@ -1192,7 +1137,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.price = 220;
             i.weight = 0.3;);
     case ItemId::HEALING_AMULET: return ITATTR(
-            i.viewId = ViewId::AMBER_AMULET;
+            i.viewId = ViewId::AMULET2;
             i.shortName = "healing";
             i.name = "amulet of " + *i.shortName;
             i.plural = "amulets of " + *i.shortName;
@@ -1202,7 +1147,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.price = 300;
             i.weight = 0.3;);
     case ItemId::DEFENSE_AMULET: return ITATTR(
-            i.viewId = ViewId::COPPER_AMULET;
+            i.viewId = ViewId::AMULET3;
             i.shortName = "defense";
             i.name = "amulet of " + *i.shortName;
             i.plural = "amulets of " + *i.shortName;
@@ -1230,6 +1175,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.name = "automaton";
             i.applyMsgFirstPerson = "assemble the automaton";
             i.applyMsgThirdPerson = "assembles an automaton";
+            i.applySound = SoundId::TRAP_ARMING;
             i.weight = 30;
             i.itemClass = ItemClass::TOOL;
             i.description = "";
@@ -1243,6 +1189,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
+            i.applySound = SoundId::TRAP_ARMING;
             i.uses = 1;
             i.usedUpMsg = true;
             i.effect = EffectId::GUARDING_BOULDER;
@@ -1254,13 +1201,14 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
+            i.applySound = SoundId::TRAP_ARMING;
             i.uses = 1;
             i.usedUpMsg = true;
             i.trapType = item.get<TrapInfo>().trapType;
             i.price = 10;);
     case ItemId::POTION: return ITATTR(
             EffectType effect = item.get<EffectType>();
-            i.viewId = ViewId::PUCE_POTION;
+            i.viewId = ViewId::POTION1;
             i.shortName = Effect::getName(effect);
             i.name = "potion of " + *i.shortName;
             i.plural = "potions of " + *i.shortName;

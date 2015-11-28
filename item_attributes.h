@@ -67,6 +67,7 @@ class ItemAttributes {
   optional<LastingEffect> SERIAL(equipedEffect);
   optional<string> SERIAL(applyMsgFirstPerson);
   optional<string> SERIAL(applyMsgThirdPerson);
+  optional<SoundId> SERIAL(applySound);
 };
 
 #endif

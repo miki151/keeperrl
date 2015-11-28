@@ -34,21 +34,19 @@ RICH_ENUM(CreatureId,
     GOBLIN, 
     ORC,
     ORC_SHAMAN,
-    GREAT_ORC,
     HARPY,
     SUCCUBUS,
     DOPPLEGANGER,
     BANDIT,
 
-    SPECIAL_MONSTER,
-    SPECIAL_MONSTER_KEEPER,
-    SPECIAL_HUMANOID,
+    SPECIAL_BL,
+    SPECIAL_BM,
+    SPECIAL_HL,
+    SPECIAL_HM,
 
     GHOST,
     SPIRIT,
     LOST_SOUL,
-    DEVIL,
-    DARK_KNIGHT,
     GREEN_DRAGON,
     RED_DRAGON,
     CYCLOPS,
@@ -74,7 +72,6 @@ RICH_ENUM(CreatureId,
     ZOMBIE,
     VAMPIRE,
     VAMPIRE_LORD,
-    VAMPIRE_BAT,
     MUMMY,
     MUMMY_LORD,
     SKELETON,
@@ -140,7 +137,6 @@ RICH_ENUM(CreatureId,
     SNAKE,
     CAVE_BEAR,
     SPIDER,
-    SCORPION,
     FLY,
     RAT,
 
@@ -180,7 +176,6 @@ class CreatureFactory {
   static CreatureFactory forrest(Tribe*);
   static CreatureFactory crypt(Tribe*);
   static SingleCreature coffins(Tribe*);
-  static CreatureFactory hellLevel(Tribe*);
   static CreatureFactory dwarfTown(Tribe*);
   static CreatureFactory antNest(Tribe*);
   static CreatureFactory vikingTown(Tribe*);

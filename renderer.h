@@ -84,10 +84,12 @@ class Renderer {
   public: 
   class TileCoord {
     public:
-    TileCoord(Vec2, int);
     TileCoord();
     TileCoord(const TileCoord& o) : pos(o.pos), texNum(o.texNum) {}
 
+    private:
+    friend class Renderer;
+    TileCoord(Vec2, int);
     Vec2 pos;
     int texNum;
   };
@@ -100,6 +102,7 @@ class Renderer {
   bool isFullscreen();
   static vector<string> getFullscreenResolutions();
   const static int textSize = 19;
+  const static int smallTextSize = 14;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(string s);
   int getUnicodeLength(String s, FontId = SYMBOL_FONT);
@@ -121,8 +124,10 @@ class Renderer {
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline = none);
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, Vec2 size);
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1);
+  void drawViewObject(Vec2 pos, const ViewObject&);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, Vec2 size, Color = colors[ColorId::WHITE]);
+  void drawViewObject(Vec2 pos, ViewId, Color = colors[ColorId::WHITE]);
   void drawTile(Vec2 pos, TileCoord coord, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = colors[ColorId::WHITE], bool hFlip = false,
       bool vFlip = false);
@@ -131,6 +136,8 @@ class Renderer {
   static Color getBleedingColor(const ViewObject&);
   Vec2 getSize();
   bool loadTilesFromDir(const string& path, Vec2 size);
+  bool loadTilesFromDir(const string& path, vector<Texture>&, Vec2 size, int setWidth);
+  bool loadAltTilesFromDir(const string& path, Vec2 altSize);
   bool loadTilesFromFile(const string& path, Vec2 size);
   static String toUnicode(const string&);
 
@@ -153,9 +160,11 @@ class Renderer {
   TileCoord getTileCoord(const string&);
   Vec2 getNominalSize() const;
   vector<Texture> tiles;
+  vector<Texture> altTiles;
 
   private:
   Renderer(const Renderer&);
+  vector<Vec2> altTileSize;
   vector<Vec2> tileSize;
   Vec2 nominalSize;
   map<string, TileCoord> tileCoords;

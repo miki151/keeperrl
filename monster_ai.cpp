@@ -378,7 +378,7 @@ class Fighter : public Behaviour {
       return NoMove;
   }
 
-  virtual double itemValue(const Item* item) {
+  virtual double itemValue(const Item* item) override {
     if (contains<EffectType>({
           EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
           EffectType(EffectId::LASTING, LastingEffect::SLOWED),

@@ -17,9 +17,11 @@
 #define _GUI_ELEM
 
 #include "renderer.h"
+#include "drag_and_drop.h"
 
 class ViewObject;
 class Clock;
+class Options;
 enum class SpellId;
 
 class GuiElem {
@@ -42,23 +44,27 @@ class GuiElem {
 
   virtual ~GuiElem();
 
-  static void propagateEvent(const Event&, vector<GuiElem*>);
-
   private:
   Rectangle bounds;
 };
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*);
+  GuiFactory(Renderer&, Clock*, Options*);
   void loadFreeImages(const string& path);
   void loadNonFreeImages(const string& path);
 
+  DragContainer& getDragContainer();
+  void propagateEvent(const Event&, vector<GuiElem*>);
+
   PGuiElem button(function<void()> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem buttonChar(function<void()> fun, char, bool capture = false);
   PGuiElem button(function<void()> fun);
   PGuiElem reverseButton(function<void()> fun, vector<Event::KeyEvent> = {}, bool capture = false);
   PGuiElem button(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
   PGuiElem button(function<void(Rectangle buttonBounds)> fun);
+  PGuiElem releaseButton(function<void()> fun);
+  PGuiElem releaseButton(function<void(Rectangle buttonBounds)> fun);
   PGuiElem focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent,
       vector<Event::KeyEvent> defocusEvent, bool& focused);
   PGuiElem mouseWheel(function<void(bool)>);
@@ -67,6 +73,7 @@ class GuiFactory {
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
+  PGuiElem external(GuiElem*);
   PGuiElem rectangle(sf::Color color, optional<sf::Color> borderColor = none);
   class ListBuilder {
     public:
@@ -101,16 +108,22 @@ class GuiFactory {
   PGuiElem preferredSize(int width, int height);
   enum MarginType { TOP, LEFT, RIGHT, BOTTOM};
   PGuiElem margin(PGuiElem top, PGuiElem rest, int height, MarginType);
+  PGuiElem marginAuto(PGuiElem top, PGuiElem rest, MarginType);
   PGuiElem margin(PGuiElem top, PGuiElem rest, function<int(Rectangle)> width, MarginType type);
   PGuiElem maybeMargin(PGuiElem top, PGuiElem rest, int width, MarginType, function<bool(Rectangle)>);
   PGuiElem marginFit(PGuiElem top, PGuiElem rest, double height, MarginType);
   PGuiElem margins(PGuiElem content, int left, int top, int right, int bottom);
+  PGuiElem margins(PGuiElem content, int all);
   PGuiElem leftMargin(int size, PGuiElem content);
   PGuiElem rightMargin(int size, PGuiElem content);
   PGuiElem topMargin(int size, PGuiElem content);
+  PGuiElem bottomMargin(int size, PGuiElem content);
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
+  PGuiElem labelHighlight(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
-  PGuiElem label(const string&, function<Color()>);
+  PGuiElem label(const string&, function<Color()>, char hotkey = 0);
+  PGuiElem label(function<string()>, function<Color()>);
+  PGuiElem label(function<string()>, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, Color = colors[ColorId::WHITE]);
   PGuiElem variableLabel(function<string()>,
@@ -121,11 +134,12 @@ class GuiFactory {
       Renderer::FontId = Renderer::SYMBOL_FONT);
   PGuiElem labelUnicode(const String&, function<Color()>, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
-  PGuiElem viewObject(const ViewObject& object, bool useSprites);
-  PGuiElem viewObject(ViewId, bool useSprites);
+  PGuiElem viewObject(const ViewObject&);
+  PGuiElem viewObject(ViewId);
   PGuiElem drawCustom(function<void(Renderer&, Rectangle)>);
   PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
   PGuiElem centerHoriz(PGuiElem, int width);
+  PGuiElem onRenderedAction(function<void()>);
   PGuiElem mouseOverAction(function<void()> callback, function<void()> onLeaveCallback = nullptr);
   PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
   PGuiElem mouseHighlightClick(PGuiElem highlight, int myIndex, int* highlighted);
@@ -135,18 +149,24 @@ class GuiFactory {
   PGuiElem scrollable(PGuiElem content, double* scrollPos = nullptr, int* held = nullptr);
   PGuiElem getScrollButton();
   PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
+  PGuiElem conditional(PGuiElem elem, function<bool()> cond);
+  PGuiElem conditionalStopKeys(PGuiElem elem, function<bool()> cond);
   PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
+  PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool()> cond);
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER,
       TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER, LEFT_STRETCHED, RIGHT_STRETCHED,
       CENTER_STRETCHED};
   PGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
-      Vec2 offset = Vec2(0, 0), double alpha = 1);
+      Vec2 offset = Vec2(0, 0), function<Color()> = nullptr);
+  PGuiElem sprite(Texture&, Alignment, Color);
   PGuiElem sprite(Texture&, double scale);
   PGuiElem tooltip(const vector<string>&);
   PGuiElem darken();
   PGuiElem stopMouseMovement();
   PGuiElem fullScreen(PGuiElem);
   PGuiElem alignment(PGuiElem, Vec2 size, GuiFactory::Alignment);
+  PGuiElem dragSource(DragContent, function<PGuiElem()>);
+  PGuiElem dragListener(function<void(DragContent)>);
 
   enum class TexId {
     SCROLLBAR,
@@ -177,6 +197,7 @@ class GuiFactory {
     WINDOW_CORNER,
     WINDOW_CORNER_EXIT,
     WINDOW_VERT_BAR,
+    UI_HIGHLIGHT,
     MAIN_MENU_HIGHLIGHT,
     KEEPER_CHOICE,
     ADVENTURER_CHOICE,
@@ -190,7 +211,7 @@ class GuiFactory {
     LOADING_SPLASH,
   };
 
-  PGuiElem sprite(TexId, Alignment);
+  PGuiElem sprite(TexId, Alignment, function<Color()> = nullptr);
   PGuiElem repeatedPattern(Texture& tex);
   PGuiElem background(Color);
   PGuiElem highlight(double height);
@@ -202,7 +223,7 @@ class GuiFactory {
   PGuiElem miniWindow(PGuiElem content);
   PGuiElem mapWindow(PGuiElem content);
   PGuiElem miniBorder();
-  PGuiElem border2(PGuiElem content);
+  PGuiElem border2();
   PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight);
   PGuiElem invisible(PGuiElem content);
   PGuiElem background(PGuiElem content, Color);
@@ -219,41 +240,50 @@ class GuiFactory {
   Color inactiveText;
 
   enum IconId {
-    BUILDING = 5,
-    MINION = 4,
-    LIBRARY = 1,
-    WORKSHOP = 0,
-    DIPLOMACY = 2,
-    HELP = 3,
-    DEITIES = 6,
-    TEAM = 7,
-    STAT_ATT = 8,
-    STAT_DEF = 9,
-    STAT_STR = 12,
-    STAT_DEX = 13,
-    STAT_ACC = 10,
-    STAT_SPD = 11,
-    MORALE_1 = 14,
-    MORALE_2 = 15,
-    MORALE_3 = 16,
-    MORALE_4 = 17,
+    WORKSHOP,
+    LIBRARY,
+    DIPLOMACY,
+    HELP,
+    MINION,
+    BUILDING,
+    DEITIES,
+    HIGHLIGHT,
+    STAT_ATT,
+    STAT_DEF,
+    STAT_ACC,
+    STAT_SPD,
+    STAT_STR,
+    STAT_DEX,
+    MORALE_1,
+    MORALE_2,
+    MORALE_3,
+    MORALE_4,
+    TEAM_BUTTON,
+    TEAM_BUTTON_HIGHLIGHT,
   };
 
-  PGuiElem icon(IconId);
+  PGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color(255, 255, 255));
   Texture& get(TexId);
   PGuiElem spellIcon(SpellId);
+  PGuiElem uiHighlightMouseOver(Color = colors[ColorId::GREEN]);
+  PGuiElem uiHighlightConditional(function<bool()>, Color = colors[ColorId::GREEN]);
+  PGuiElem uiHighlight(Color = colors[ColorId::GREEN]);
+  PGuiElem uiHighlight(function<Color()>);
 
   private:
 
   PGuiElem getScrollbar();
   Vec2 getScrollButtonSize();
   Texture& getIconTex(IconId);
+  Event::KeyEvent getHotkeyEvent(char) ;
 
   map<TexId, Texture> textures;
   vector<Texture> iconTextures;
   vector<Texture> spellTextures;
   Clock* clock;
   Renderer& renderer;
+  Options* options;
+  DragContainer dragContainer;
 };
 
 

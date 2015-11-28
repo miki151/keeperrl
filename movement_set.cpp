@@ -76,3 +76,8 @@ MovementSet& MovementSet::addForcibleTrait(MovementTrait trait) {
   return *this;
 }
 
+void MovementSet::clear() {
+  traits.clear();
+  forcibleTraits.clear();
+  tribeOverrides = none;
+}

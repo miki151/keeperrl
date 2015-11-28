@@ -65,6 +65,10 @@ bool PlayerMessage::isClickable() const {
   return position || creature || location;
 }
 
+int PlayerMessage::getHash() const {
+  return combineHash(text, priority, freshness);
+}
+
 template <class Archive> 
 void PlayerMessage::serialize(Archive& ar, const unsigned int version) { 
   ar & SUBCLASS(UniqueEntity) 

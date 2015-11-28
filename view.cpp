@@ -119,12 +119,13 @@ void PlayerInfo::readFrom(const Creature* c) {
   firstName = c->getFirstName().get_value_or("");
   name = c->getName().bare();
   adjectives = c->getMainAdjectives();
+  description = capitalFirst(c->getDescription());
   Item* weapon = c->getWeapon();
   weaponName = weapon ? weapon->getName() : "";
   viewId = c->getViewObject().id();
   morale = c->getMorale();
   levelName = c->getLevel()->getName();
-  positionHash = std::hash<Position>()(c->getPosition());
+  positionHash = c->getPosition().getHash();
   typedef PlayerInfo::AttributeInfo::Id AttrId;
   attributes = {
     { "Attack",

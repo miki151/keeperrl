@@ -636,11 +636,13 @@ void Player::showHistory() {
 }
 
 static string getForceMovementQuestion(Position pos, const Creature* creature) {
-  if (pos.isBurning())
+  if (pos.canEnterEmpty(creature))
+    return "";
+  else if (pos.isBurning())
     return "Walk into the fire?";
   else if (pos.canEnterEmpty(MovementTrait::SWIM))
     return "The water is very deep, are you sure?";
-  else if (pos.canEnterEmpty({MovementTrait::WALK}) && creature->getMovementType().isSunlightVulnerable())
+  else if (pos.sunlightBurns() && creature->getMovementType().isSunlightVulnerable())
     return "Walk into the sunlight?";
   else if (pos.isTribeForbidden(creature->getTribe()))
     return "Walk into the forbidden zone?";
@@ -652,8 +654,9 @@ void Player::moveAction(Vec2 dir) {
   if (tryToPerform(getCreature()->move(dir)))
     return;
   if (auto action = getCreature()->forceMove(dir)) {
-    if (model->getView()->yesOrNoPrompt(getForceMovementQuestion(getCreature()->getPosition().plus(dir),
-            getCreature()), true))
+    string nextQuestion = getForceMovementQuestion(getCreature()->getPosition().plus(dir), getCreature());
+    string hereQuestion = getForceMovementQuestion(getCreature()->getPosition(), getCreature());
+    if (hereQuestion == nextQuestion || model->getView()->yesOrNoPrompt(nextQuestion, true))
       action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());

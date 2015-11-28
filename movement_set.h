@@ -22,6 +22,8 @@ class MovementSet {
   MovementSet& removeTraitForTribe(const Tribe*, MovementTrait);
   MovementSet& addForcibleTrait(MovementTrait);
 
+  void clear();
+
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
   
