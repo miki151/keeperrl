@@ -1047,7 +1047,8 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& in
       for (int i : All(minions))
         if (minions[i].creatureId == current)
           minionPage = gui.margins(drawMinionPage(minions[i]), 10, 15, 10, 10);
-      CHECK(!!minionPage);
+      if (!minionPage)
+        return;
       PGuiElem menu;
       PGuiElem leftSide = drawMinionButtons(minions, current, info.chosen->teamId);
       if (info.chosen->teamId) {

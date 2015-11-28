@@ -1021,6 +1021,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.buildings = fillButtons(getBuildInfo());
   info.libraryButtons = fillButtons(libraryInfo);
   fillMinions(info);
+  info.chosen.reset();
   if (chosenCreature)
     if (Creature* c = getCreature(*chosenCreature)) {
       if (!chosenTeam)
@@ -1055,8 +1056,10 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.taskMap.clear();
   for (const Task* task : getCollective()->getTaskMap().getAllTasks()) {
     optional<UniqueEntity<Creature>::Id> creature;
-    if (const Creature *c = getCollective()->getTaskMap().getOwner(task))
+    if (const Creature *c = getCollective()->getTaskMap().getOwner(task)) {
+      CHECK(contains(getCollective()->getCreatures(), c));
       creature = c->getUniqueId();
+    }
     info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
   }
   for (auto& elem : ransomAttacks) {

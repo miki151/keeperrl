@@ -208,6 +208,7 @@ void WindowView::reset() {
   mapGui->clearCenter();
   guiBuilder.reset();
   gameInfo = GameInfo{};
+  soundQueue.clear();
 }
 
 void WindowView::displayOldSplash() {
