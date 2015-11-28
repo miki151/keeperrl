@@ -90,7 +90,7 @@ DEPS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.d))
 ##############################################################################
 
 
-all: check_serial gen_version $(NAME)
+all: gen_version $(NAME)
 
 stdafx.h.gch: stdafx.h
 	$(CC) -x c++-header $< -MMD $(CFLAGS) -o $@
