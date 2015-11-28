@@ -207,7 +207,7 @@ class Square : public Renderable {
   void getViewIndex(ViewIndex&, const Tribe*) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
-  virtual bool itemBounces(Item* item, VisionId) const;
+  bool itemBounces(Item* item, VisionId) const;
   void onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, VisionId);
   const vector<Item*>& getItems() const;
   vector<Item*> getItems(function<bool (Item*)> predicate) const;

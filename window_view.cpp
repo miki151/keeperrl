@@ -102,7 +102,9 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
         [this](UserInput input) { inputQueue.push(input);},
         [this](const vector<string>& s) { mapGui->setHint(s);},
         [this](sf::Event::KeyEvent ev) { keyboardAction(ev);},
-        [this]() { refreshScreen(false);}}), fullScreenTrigger(-1), fullScreenResolution(-1), zoomUI(-1),
+        [this]() { refreshScreen(false);},
+        [this](const string& s) { presentText("", s); },
+        }), fullScreenTrigger(-1), fullScreenResolution(-1), zoomUI(-1),
     soundLibrary(params.soundLibrary) {}
 
 void WindowView::initialize() {
@@ -676,13 +678,13 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
         Vec2 dir = (*pos - middle).getBearing();
         Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
             middle.x + dir.x, middle.y + dir.y);
-        static vector<Renderer::TileCoord> coords;
-        if (coords.empty())
-          for (int i = 0; i < 8; ++i)
-            coords.push_back(renderer.getTileCoord("arrow" + toString(i)));
-        if (currentTileLayout.sprites)
+        if (currentTileLayout.sprites) {
+          static vector<Renderer::TileCoord> coords;
+          if (coords.empty())
+            for (int i = 0; i < 8; ++i)
+              coords.push_back(renderer.getTileCoord("arrow" + toString(i)));
           renderer.drawTile(wpos, coords[int(dir.getCardinalDir())], mapLayout->getSquareSize());
-        else {
+        } else {
           int numArrow = int(dir.getCardinalDir());
           static sf::Uint32 arrows[] = { L'⇑', L'⇓', L'⇒', L'⇐', L'⇗', L'⇖', L'⇘', L'⇙'};
           renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, colors[ColorId::WHITE],

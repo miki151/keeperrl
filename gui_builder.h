@@ -45,6 +45,7 @@ class GuiBuilder {
     function<void(const vector<string>&)> hint;
     function<void(sf::Event::KeyEvent)> keyboard;
     function<void()> refreshScreen;
+    function<void(const string&)> info;
   };
   GuiBuilder(Renderer&, GuiFactory&, Clock*, Options*, Callbacks);
   void reset();

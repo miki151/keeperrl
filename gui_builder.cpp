@@ -922,11 +922,13 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
               .addElem(gui.topMargin(8, gui.icon(GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
               .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
     }
+    string hint = "Drag and drop minions here to create a new team.";
     lines.addElem(gui.stack(makeVec<PGuiElem>(
           gui.dragListener([this](DragContent content) {
               callbacks.input({UserInputId::CREATE_TEAM, content.get<int>() });}),
           gui.uiHighlightMouseOver(),
-          getHintCallback({"Drag minions here to create a new team."}),
+          getHintCallback({hint}),
+          gui.button([this, hint] { callbacks.info(hint); }),
           gui.label("[new team]", colors[ColorId::WHITE]))));
     teamCache = lines.buildVerticalList();
     teamHash = newHash;
@@ -1056,6 +1058,10 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& in
         list.addElem(gui.stack(
             gui.button(getButtonCallback({UserInputId::CANCEL_TEAM, *info.chosen->teamId})),
             gui.labelHighlight("[Disband team]", colors[ColorId::LIGHT_BLUE])));
+        list.addElem(gui.label("Control a chosen minion to", Renderer::smallTextSize,
+              colors[ColorId::LIGHT_GRAY]), Renderer::smallTextSize + 2);
+        list.addElem(gui.label("command the team.", Renderer::smallTextSize,
+              colors[ColorId::LIGHT_GRAY]));
         list.addElem(gui.empty(), legendLineHeight);
         leftSide = gui.marginAuto(list.buildVerticalList(), std::move(leftSide), GuiFactory::TOP);
       }
@@ -1732,7 +1738,7 @@ PGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(minion.getTitle()));
   if (!minion.description.empty())
-    list.addElem(gui.label(minion.description, 14, colors[ColorId::LIGHT_GRAY]));
+    list.addElem(gui.label(minion.description, Renderer::smallTextSize, colors[ColorId::LIGHT_GRAY]));
   list.addElem(gui.horizontalList(drawMinionActions(minion), 140));
   vector<PGuiElem> leftLines;
   leftLines.push_back(gui.label("Attributes", colors[ColorId::YELLOW]));

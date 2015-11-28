@@ -102,6 +102,7 @@ class Renderer {
   bool isFullscreen();
   static vector<string> getFullscreenResolutions();
   const static int textSize = 19;
+  const static int smallTextSize = 14;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(string s);
   int getUnicodeLength(String s, FontId = SYMBOL_FONT);
