@@ -18,7 +18,6 @@
 #include "location.h"
 #include "creature.h"
 #include "level.h"
-#include "square.h"
 
 template <class Archive> 
 void Location::serialize(Archive& ar, const unsigned int version) {
@@ -35,12 +34,13 @@ void Location::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Location);
 
 Location::Location(const string& _name, const string& desc, bool sup)
-    : name(_name), description(desc), surprise(sup) {
+    : name(_name), description(desc), table(Level::getMaxBounds(), false), surprise(sup) {
 }
 
-Location::Location(bool s) : surprise(s) {}
+Location::Location(bool s) : table(Level::getMaxBounds(), false), surprise(s) {}
 
-Location::Location(Level* l, Rectangle b) : level(l), squares(b.getAllSquares()) {
+Location::Location(Level* l, Rectangle b) : level(l), squares(b.getAllSquares()),
+    table(Level::getMaxBounds(), false) {
   for (Vec2 v : squares)
     table[v] = true;
 }
@@ -57,21 +57,21 @@ string Location::getDescription() const {
   return *description;
 }
 
-const vector<Vec2>& Location::getAllSquares() const {
+vector<Position> Location::getAllSquares() const {
   CHECK(level) << "Location bounds not initialized";
-  return squares;
+  return transform2<Position>(squares, [this] (Vec2 v) { return Position(v, level); });
 }
 
-bool Location::contains(Vec2 pos) const {
-  return table[pos];
+bool Location::contains(Position pos) const {
+  return pos.isSameLevel(level) && table[pos.getCoord()];
 }
 
-Vec2 Location::getMiddle() const {
-  return middle;
+Position Location::getMiddle() const {
+  return Position(middle, level);
 }
 
-Vec2 Location::getBottomRight() const {
-  return bottomRight;
+Position Location::getBottomRight() const {
+  return Position(bottomRight, level);
 }
 
 void Location::setBounds(Rectangle b) {
@@ -82,7 +82,7 @@ void Location::setBounds(Rectangle b) {
   bottomRight = b.getBottomRight();
 }
 
-void Location::setLevel(const Level* l) {
+void Location::setLevel(Level* l) {
   level = l;
 }
 

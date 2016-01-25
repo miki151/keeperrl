@@ -18,13 +18,15 @@
 
 #include "view_object.h"
 #include "renderer.h"
-#include "view_id.h"
 #include "util.h"
+
+enum class ViewId;
 
 class Tile {
   public:
   typedef Renderer::TileCoord TileCoord;
   static const Tile& getTile(ViewId, bool sprite);
+  static const Tile& getTile(ViewId);
   static Color getColor(const ViewObject& object);
 
   static Tile empty();
@@ -81,7 +83,6 @@ class Tile {
   optional<TileCoord> backgroundCoord;
   optional<TileCoord> highlightCoord;
   array<optional<TileCoord>, 256> connections;
-  bool anyConnections = false;
   optional<pair<Dir, TileCoord>> connectionOption;
   array<vector<TileCoord>, 256> corners;
   array<optional<TileCoord>, 256> extraBorders;
@@ -89,8 +90,6 @@ class Tile {
   vector<ViewId> extraBorderIds;
   static void addTile(ViewId, Tile);
   static void addSymbol(ViewId, Tile);
-  static EnumMap<ViewId, optional<Tile>> tiles;
-  static EnumMap<ViewId, optional<Tile>> symbols;
 };
 
 

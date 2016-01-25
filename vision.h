@@ -18,12 +18,7 @@
 
 #include "singleton.h"
 #include "enums.h"
-
-RICH_ENUM(VisionId,
-  ELF,
-  NIGHT,
-  NORMAL
-);
+#include "level.h"
 
 class Vision : public Singleton<Vision, VisionId> {
   public:

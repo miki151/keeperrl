@@ -3,7 +3,7 @@ Michał Brzozowski
 
 Music:
 Marcin Brzozowski and Krzysztof Łoza
-www.spotmusic.pl
+https://soundcloud.com/spotmusicpl
 https://soundcloud.com/christopher-loza
 
 Graphics:
@@ -13,6 +13,10 @@ Artur Reterski, http://artperski.com
 
 Testing and ideas:
 Jakub Jurkowski
+
+Consultations:
+Ted Martens, @ted_martens
+DarkGod, @darkgodone
 
 Font:
 Lato by Łukasz Dziedzic

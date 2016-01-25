@@ -59,6 +59,10 @@ bool ViewIndex::isEmpty() const {
   return objects.empty() && !anyHighlight;
 }
 
+bool ViewIndex::hasAnyHighlight() const {
+  return anyHighlight;
+}
+
 bool ViewIndex::noObjects() const {
   return objects.empty();
 }

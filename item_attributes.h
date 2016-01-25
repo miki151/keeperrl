@@ -22,30 +22,11 @@
 #include "util.h"
 #include "enums.h"
 #include "effect_type.h"
+#include "modifier_type.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
 class EnemyCheck;
-
-RICH_ENUM(ModifierType,
-  DAMAGE,
-  ACCURACY,
-  THROWN_DAMAGE,
-  THROWN_ACCURACY,
-  FIRED_DAMAGE,
-  FIRED_ACCURACY,
-  DEFENSE,
-  INV_LIMIT
-);
-
-RICH_ENUM(AttrType,
-  STRENGTH,
-  DEXTERITY,
-  SPEED
-);
-
-
-enum class AttackType { CUT, STAB, CRUSH, PUNCH, BITE, EAT, HIT, SHOOT, SPELL, POSSESS};
 
 class ItemAttributes {
   public:
@@ -83,7 +64,10 @@ class ItemAttributes {
   int SERIAL(uses) = -1;
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;
-  optional<LastingEffect> SERIAL(lastingEffect);
+  optional<LastingEffect> SERIAL(equipedEffect);
+  optional<string> SERIAL(applyMsgFirstPerson);
+  optional<string> SERIAL(applyMsgThirdPerson);
+  optional<SoundId> SERIAL(applySound);
 };
 
 #endif

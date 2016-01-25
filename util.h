@@ -21,6 +21,7 @@
 #include "debug.h"
 #include "enums.h"
 #include "serialization.h"
+#include "hashing.h"
 
 template <class T>
 string toString(const T& t);
@@ -34,6 +35,7 @@ optional<T> fromStringSafe(const string& s);
 #define DEF_UNIQUE_PTR(T) class T;\
   typedef unique_ptr<T> P##T;
 
+DEF_UNIQUE_PTR(LevelMaker);
 DEF_UNIQUE_PTR(Item);
 DEF_UNIQUE_PTR(Creature);
 DEF_UNIQUE_PTR(Square);
@@ -76,6 +78,14 @@ vector<T*> extractRefs(vector<unique_ptr<T>>& v) {
 }
 
 template<class T>
+vector<unique_ptr<T>> toUniquePtr(const vector<T*>& v) {
+  vector<unique_ptr<T>> ret;
+  for (T* el : v)
+    ret.push_back(unique_ptr<T>(el));
+  return ret;
+}
+
+template<class T>
 const vector<T*> extractRefs(const vector<unique_ptr<T>>& v) {
   vector<T*> ret;
   for (auto& el : v)
@@ -90,13 +100,17 @@ string toLower(const string& s);
 bool endsWith(const string&, const string& suffix);
 
 vector<string> split(const string& s, const set<char>& delim);
+vector<string> removeEmpty(const vector<string>&);
 
 class Rectangle;
+class RandomGen;
 
+string getCardinalName(Dir d);
 
 class Vec2 {
   public:
-  int x, y;
+  int SERIAL(x); // HASH(x)
+  int SERIAL(y); // HASH(y)
   Vec2() : x(0), y(0) {}
   Vec2(int x, int y);
   Vec2(Dir);
@@ -125,55 +139,66 @@ class Vec2 {
   pair<Vec2, Vec2> approxL1() const;
   Vec2 getBearing() const;
   bool isCardinal4() const;
+  bool isCardinal8() const;
   Dir getCardinalDir() const;
   static Vec2 getCenterOfWeight(vector<Vec2>);
 
   vector<Vec2> box(int radius, bool shuffle = false);
   vector<Vec2> circle(double radius, bool shuffle = false);
-  static vector<Vec2> directions8(bool shuffle = false);
-  vector<Vec2> neighbors8(bool shuffle = false) const;
-  static vector<Vec2> directions4(bool shuffle = false);
-  vector<Vec2> neighbors4(bool shuffle = false) const;
+  static vector<Vec2> directions8();
+  vector<Vec2> neighbors8() const;
+  static vector<Vec2> directions4();
+  vector<Vec2> neighbors4() const;
+  static vector<Vec2> directions8(RandomGen&);
+  vector<Vec2> neighbors8(RandomGen&) const;
+  static vector<Vec2> directions4(RandomGen&);
+  vector<Vec2> neighbors4(RandomGen&) const;
+  vector<Vec2> neighbors(const vector<Vec2>& directions) const;
   static vector<Vec2> corners();
   static vector<set<Vec2>> calculateLayers(set<Vec2>);
 
   typedef function<Vec2(Vec2)> LinearMap;
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
+  SERIALIZE_ALL(x, y);
+  HASH_ALL(x, y);
 };
 
-string getCardinalName(Dir d);
+class Range {
+  public:
+  Range(int start, int end);
+  Range(int end);
 
-namespace std {
+  Range reverse();
+  Range shorten(int r);
 
-template <> struct hash<Vec2> {
-  size_t operator()(const Vec2& obj) const {
-    return hash<int>()(obj.x) * 10000 + hash<int>()(obj.y);
-  }
+  int getStart() const;
+  int getEnd() const;
+
+  class Iter {
+    public:
+    Iter(int ind, int min, int max);
+
+    int operator* () const;
+    bool operator != (const Iter& other) const;
+
+    const Iter& operator++ ();
+
+    private:
+    int ind;
+    int min;
+    int max;
+    int increment;
+  };
+
+  Iter begin();
+  Iter end();
+
+  SERIALIZATION_DECL(Range);
+  
+  private:
+  int SERIAL(start);
+  int SERIAL(finish);
 };
-
-#ifdef DEBUG_STL
-/*template <> struct hash<__gnu_debug::string> {
-  size_t operator()(const string& v) const {
-    return hash<std::string>()(v);
-  }
-};*/
-
-template <class T> struct hash<__gnu_debug::set<T>> {
-#else
-template <class T> struct hash<std::set<T>> {
-#endif
-  size_t operator()(const set<T>& v) const {
-    size_t ret = 0;
-    for (const T& elem : v)
-      ret = ret * 79146198 + hash<T>()(elem);
-    return ret;
-  }
-};
-
-}
-
 
 class Rectangle {
   public:
@@ -185,6 +210,7 @@ class Rectangle {
   Rectangle(int px, int py, int kx, int ky);
   Rectangle(Vec2 p, Vec2 k);
   static Rectangle boundingBox(const vector<Vec2>& v);
+  static Rectangle centered(Vec2 center, int radius);
 
   int getPX() const;
   int getPY() const;
@@ -193,6 +219,8 @@ class Rectangle {
   int getW() const;
   int getH() const;
   Vec2 getSize() const;
+  Range getYRange() const;
+  Range getXRange() const;
 
   Vec2 getTopLeft() const;
   Vec2 getBottomRight() const;
@@ -211,6 +239,9 @@ class Rectangle {
   Vec2 middle() const;
 
   vector<Vec2> getAllSquares() const;
+
+  bool operator == (const Rectangle&) const;
+  bool operator != (const Rectangle&) const;
 
   class Iter {
     public:
@@ -235,57 +266,149 @@ class Rectangle {
   int px, py, kx, ky, w, h;
 };
 
-class Range {
-  public:
-  Range(int start, int end);
-  Range(int end);
-
-  int getStart() const;
-  int getEnd() const;
-
-  class Iter {
-    public:
-    Iter(int ind, int min, int max);
-
-    int operator* () const;
-    bool operator != (const Iter& other) const;
-
-    const Iter& operator++ ();
-
-    private:
-    int ind;
-    int min;
-    int max;
-  };
-
-  Iter begin();
-  Iter end();
-
-  SERIALIZATION_DECL(Range);
-  
-  private:
-  int SERIAL(start);
-  int SERIAL(finish);
-};
-
 template <class T>
 Range All(const T& container) {
   return Range(container.size());
 }
 
+template <class T>
+Range AllReverse(const T& container) {
+  return Range(container.size() - 1, -1);
+}
+
+template<typename T>
+class EnumInfo {
+  public:
+  static string getString(T);
+};
+
+#define RICH_ENUM(Name, ...) \
+enum class Name { __VA_ARGS__ };\
+template<> \
+class EnumInfo<Name> { \
+  public:\
+  static string getString(Name e) {\
+    static vector<string> names = removeEmpty(split(#__VA_ARGS__, {' ', ','}));\
+    return names[int(e)];\
+  }\
+  enum Tmp { __VA_ARGS__, size};\
+  static Name fromString(const string& s) {\
+    for (int i : Range(size)) \
+      if (getString(Name(i)) == s) \
+        return Name(i); \
+    FAIL << #Name << " value not found " << s;\
+    return Name(0);\
+  }\
+  static optional<Name> fromStringSafe(const string& s) {\
+    for (int i : Range(size)) \
+      if (getString(Name(i)) == s) \
+        return Name(i); \
+    return none;\
+  }\
+}
+
+
 extern const vector<Vec2> neighbors;
 
 class RandomGen {
   public:
+  RandomGen() {}
+  RandomGen(RandomGen&) = delete;
   void init(int seed);
   int get(int max);
   int get(int min, int max);
   int get(Range);
-  int get(const vector<double>& weights, double r = -1);
+  int get(const vector<double>& weights);
   double getDouble();
   double getDouble(double a, double b);
   bool roll(int chance);
   bool rollD(double chance);
+  template <typename T>
+  T choose(const vector<T>& v, const vector<double>& p) {
+    CHECK(v.size() == p.size());
+    return v.at(get(p));
+  }
+
+  template <typename T>
+  T choose(const vector<T>& v) {
+    vector<double> pi(v.size(), 1);
+    return choose(v, pi);
+  }
+
+  template <typename T>
+  T choose(const set<T>& vi) {
+    vector<T> v(vi.size());
+    std::copy(vi.begin(), vi.end(), v.begin());
+    return choose(v);
+  }
+
+  template <typename T>
+  T choose(initializer_list<T> vi, initializer_list<double> pi) {
+    return choose(vector<T>(vi), vector<double>(pi));
+  }
+
+  template <typename T>
+  T choose(initializer_list<T> vi) {
+    vector<T> v(vi);
+    vector<double> pi(v.size(), 1);
+    return choose(v, pi);
+  }
+
+  template <typename T>
+  T choose(vector<pair<T, double>> vi) {
+    vector<T> v;
+    vector<double> p;
+    for (auto elem : vi) {
+      v.push_back(elem.first);
+      p.push_back(elem.second);
+    }
+    return choose(v, p);
+  }
+
+  template <typename T>
+  T choose() {
+    return T(get(EnumInfo<T>::size));
+  }
+
+  template <typename T>
+  vector<T> permutation(vector<T> v) {
+    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    return v;
+  }
+
+  template <typename T>
+  vector<T> permutation(const set<T>& vi) {
+    vector<T> v(vi.size());
+    std::copy(vi.begin(), vi.end(), v.begin());
+    return permutation(v);
+  }
+
+  template <typename T>
+  vector<T> permutation(initializer_list<T> vi) {
+    vector<T> v(vi);
+    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    return v;
+  }
+
+  vector<int> permutation(Range r) {
+    vector<int> v;
+    for (int i : r)
+      v.push_back(i);
+    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    return v;
+  }
+
+  template <typename T>
+  vector<T> chooseN(int n, vector<T> v) {
+    CHECK(n <= v.size());
+    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    return getPrefix(v, n);
+  }
+
+  template <typename T>
+  vector<T> chooseN(int n, initializer_list<T> v) {
+    return chooseN(n, vector<T>(v));
+  }
 
   private:
   default_random_engine generator;
@@ -415,7 +538,7 @@ class DirtyTable {
   public:
   DirtyTable(Rectangle bounds, T dirty) : val(bounds), dirty(bounds, 0), dirtyVal(dirty) {} 
 
-  T getValue(Vec2 v) const {
+  const T& getValue(Vec2 v) const {
     return dirty[v] < counter ? dirtyVal : val[v];
   }
 
@@ -447,74 +570,6 @@ class DirtyTable {
   T dirtyVal;
   int counter = 1;
 };
-
-template <typename T>
-T chooseElem(const vector<T>& v, int ind) {
-  return v[ind];
-}
-
-template <typename T>
-T chooseRandom(const vector<T>& v, const vector<double>& p, double r = -1) {
-  CHECK(v.size() == p.size());
-  return v[Random.get(p, r)];
-}
-
-
-template <typename T>
-T chooseRandom(const vector<T>& v, double r = -1) {
-  vector<double> pi(v.size(), 1);
-  return chooseRandom(v, pi, r);
-}
-
-template <typename T>
-T chooseRandom(const set<T>& vi, double r = -1) {
-  vector<T> v(vi.size());
-  std::copy(vi.begin(), vi.end(), v.begin());
-  return chooseRandom(v, r);
-}
-
-template <typename T>
-T chooseRandom(initializer_list<T> vi, initializer_list<double> pi, double r = -1) {
-  return chooseRandom(vector<T>(vi), vector<double>(pi), r);
-}
-
-template <typename T>
-T chooseRandom(initializer_list<T> vi, double r = -1) {
-  vector<T> v(vi);
-  vector<double> pi(v.size(), 1);
-  return chooseRandom(v, pi, r);
-}
-
-template <typename T>
-T chooseRandom(vector<pair<T, double>> vi, double r = -1) {
-  vector<T> v;
-  vector<double> p;
-  for (auto elem : vi) {
-    v.push_back(elem.first);
-    p.push_back(elem.second);
-  }
-  return chooseRandom(v, p);
-}
-
-template <typename T>
-vector<T> randomPermutation(vector<T> v) {
-  random_shuffle(v.begin(), v.end(), [](int a) { return Random.get(a);});
-  return v;
-}
-
-template <typename T>
-vector<T> randomPermutation(const set<T>& vi) {
-  vector<T> v(vi.size());
-  std::copy(vi.begin(), vi.end(), v.begin());
-  return randomPermutation(v);
-}
-
-template <typename T>
-vector<T> randomPermutation(initializer_list<T> vi) {
-  vector<T> v(vi);
-  random_shuffle(v.begin(), v.end(), [](int a) { return Random.get(a);});
-  return v;
-}
 
 template <typename T, typename V>
 vector<T> getKeys(const map<T, V>& m) {
@@ -581,16 +636,34 @@ string transform2(const string& u, Fun fun) {
 
 template <typename T, typename U, typename Fun>
 vector<T> transform2(const vector<U>& u, Fun fun) {
-  vector<T> ret(u.size());
-  transform(u.begin(), u.end(), ret.begin(), fun);
+  vector<T> ret;
+  for (const U& elem : u)
+    ret.push_back(fun(elem));
   return ret;
 }
 
 template <typename T, typename U, typename Fun>
 vector<T> transform2(vector<U>& u, Fun fun) {
-  vector<T> ret(u.size());
-  transform(u.begin(), u.end(), ret.begin(), fun);
+  vector<T> ret;
+  for (U& elem : u)
+    ret.push_back(fun(elem));
   return ret;
+}
+
+template <typename T, typename U, typename Fun>
+optional<T> transform2(const optional<U>& u, Fun fun) {
+  if (u)
+    return fun(*u);
+  else
+    return none;
+}
+
+template <typename T>
+optional<T> ifTrue(bool cond, const T& t) {
+  if (cond)
+    return t;
+  else
+    return none;
 }
 
 template <typename T>
@@ -816,6 +889,14 @@ void removeIndex(vector<T>& v, int index) {
 }
 
 template<class T>
+optional<int> findAddress(const vector<T>& v, const T* ptr) {
+  for (int i : All(v))
+    if (&v[i] == ptr)
+      return i;
+  return none;
+}
+
+template<class T>
 optional<int> findElement(const vector<T>& v, const T& element) {
   for (int i : All(v))
     if (v[i] == element)
@@ -925,6 +1006,7 @@ string combine(const vector<string>& adj, bool commasOnly = false);
 
 string getPlural(const string& singular, const string& plural, int num);
 string getPlural(const string&, int num);
+string getPluralText(const string&, int num);
 
 template<class T>
 string combine(const vector<T*>& v) {
@@ -938,43 +1020,9 @@ string combine(const vector<T>& v) {
       transform2<string>(v, [](const T& e) { return e.name; }));
 }
 
-template<typename T>
-class EnumInfo {
-  public:
-  static string getString(T);
-};
-
-#define RICH_ENUM(Name, ...) \
-enum class Name { __VA_ARGS__ };\
-namespace std {\
-template <>\
-struct hash<Name> {\
-  size_t operator()(Name obj) const {\
-    return int(obj);\
-  }\
-};\
-}\
-template<> \
-class EnumInfo<Name> { \
-  public:\
-  static string getString(Name e) {\
-    static vector<string> names = split(#__VA_ARGS__, {' ', ','});\
-    return names[int(e)];\
-  }\
-  enum Tmp { __VA_ARGS__, size};\
-  static Name fromString(const string& s) {\
-    for (int i : Range(size)) \
-      if (getString(Name(i)) == s) \
-        return Name(i); \
-    FAIL << #Name << " value not found " << s;\
-    return Name(0);\
-  }\
-  static optional<Name> fromStringSafe(const string& s) {\
-    for (int i : Range(size)) \
-      if (getString(Name(i)) == s) \
-        return Name(i); \
-    return none;\
-  }\
+template<class T, class U>
+vector<T> asVector(const U& u) {
+  return vector<T>(u.begin(), u.end());
 }
 
 RICH_ENUM(Dir, N, S, E, W, NE, NW, SE, SW );
@@ -1055,6 +1103,11 @@ class EnumMap {
       elems[int(elem.first)] = elem.second;
   }
 
+  EnumMap(const map<T, U> m) : EnumMap() {
+    for (auto elem : m)
+      elems[int(elem.first)] = elem.second;
+  }
+
   void operator = (initializer_list<pair<T, U>> il) {
     for (auto elem : il)
       elems[int(elem.first)] = elem.second;
@@ -1108,6 +1161,10 @@ class EnumSet : public EnumMap<T, char> {
 
   void insert(T elem) {
     (*this)[elem] = 1;
+  }
+
+  void toggle(T elem) {
+    (*this)[elem] = !(*this)[elem];
   }
 
   void erase(T elem) {
@@ -1172,21 +1229,15 @@ class EnumSet : public EnumMap<T, char> {
   Iter end() const {
     return Iter(*this, EnumInfo<T>::size);
   }
-};
 
-namespace std {
-
-template <typename T>
-struct hash<EnumSet<T>> {
-  size_t operator()(const EnumSet<T>& obj) const {
-    size_t ret = 0;
-    for (const T& elem : obj) {
-      ret = ret * 79146198 + hash<T>()(elem);
+  int getHash() const {
+    int ret = 0;
+    for (const T& elem : *this) {
+      ret = ret * 79146198 + combineHash(elem);
     }
     return ret;
   }
 };
-}
 
 template <class T>
 class EnumAll {
@@ -1223,11 +1274,6 @@ class EnumAll {
 };
 
 #define ENUM_ALL(X) EnumAll<X>()
-
-template <typename T>
-T chooseRandom() {
-  return T(Random.get(EnumInfo<T>::size));
-}
 
 template <typename U, typename V>
 class BiMap {
@@ -1289,12 +1335,59 @@ class BiMap {
   map<V, U> SERIAL(m2);
 };
 
+template <class T>
+class HeapAllocated {
+  public:
+
+  template <typename... Args>
+  HeapAllocated(Args... a) : elem(new T(a...)) {}
+
+  HeapAllocated(T&& o) : elem(new T(std::move(o))) {}
+
+  HeapAllocated(const HeapAllocated& o) : elem(new T(*o)) {}
+
+  T* operator -> () {
+    return elem.get();
+  }
+
+  const T* operator -> () const {
+    return elem.get();
+  }
+
+  T& operator * () {
+    return *elem.get();
+  }
+
+  const T& operator * () const {
+    return *elem.get();
+  }
+
+  HeapAllocated& operator = (const T& t) {
+    *elem.get() = t;
+    return *this;
+  }
+
+  HeapAllocated& operator = (const HeapAllocated& t) {
+    *elem.get() = *t;
+    return *this;
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SVAR(elem);
+  }
+
+  private:
+  unique_ptr<T> SERIAL(elem);
+};
+
 class Semaphore {
   public:
   Semaphore(int val = 0);
 
   void p();
   void v();
+  int get();
 
   private:
   int value;
@@ -1312,6 +1405,11 @@ class SyncQueue {
     }
     OnExit o([=] { q.pop(); });
     return q.front();
+  }
+
+  bool isEmpty() {
+    std::unique_lock<std::mutex> lock(mut);
+    return q.empty();
   }
 
   optional<T> popAsync() {
@@ -1374,27 +1472,6 @@ struct DestructorFunction {
   private:
   function<void()> destFun;
 };
-
-
-template<typename... Args>
-struct NamedTupleBase : public tuple<Args...> {
-  typedef tuple<Args...> BaseTuple;
-  NamedTupleBase(Args... a) : BaseTuple(a...) {}
-  NamedTupleBase() {}
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    boost::serialization::serialize<Archive, Args...>(ar, *this, version);
-  }
-};
-
-#define NAMED_TUPLE_STUFF(name)\
-  using NamedTupleBase::NamedTupleBase;\
-  name& operator = (const name& a) { NamedTupleBase::operator = (a); return *this; }
-
-#define NAME_ELEM(num, name)\
-  std::tuple_element<num, BaseTuple>::type& name() { return get<num>(*this); }\
-  const std::tuple_element<num, BaseTuple>::type& name() const { return get<num>(*this); }
-
 
 class DisjointSets {
   public:

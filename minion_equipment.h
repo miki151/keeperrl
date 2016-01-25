@@ -30,12 +30,16 @@ class MinionEquipment {
   const Creature* getOwner(const Item*) const;
   void own(const Creature*, const Item*);
   void discard(const Item*);
+  void discard(UniqueEntity<Item>::Id);
   void updateOwners(const vector<Item*>);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   static int getItemValue(const Item*);
+
+  void setLocked(const Creature*, UniqueEntity<Item>::Id, bool locked);
+  bool isLocked(const Creature*, UniqueEntity<Item>::Id) const;
 
   private:
   enum EquipmentType { ARMOR, HEALING, ARCHERY, COMBAT_ITEM };
@@ -45,6 +49,7 @@ class MinionEquipment {
   bool isItemAppropriate(const Creature*, const Item*) const;
 
   map<UniqueEntity<Item>::Id, const Creature*> SERIAL(owners);
+  set<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>> SERIAL(locked);
 };
 
 #endif

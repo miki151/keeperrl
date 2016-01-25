@@ -150,4 +150,7 @@ using eos::portable_iarchive;
 using boost::archive::text_iarchive;
 using boost::archive::text_oarchive;
 #include "serialization.h"
+#include "util.h"
+#include "debug.h"
+#include "enums.h"
 #endif

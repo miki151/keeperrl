@@ -37,14 +37,14 @@ class EnumVariant {
   public:
   EnumVariant() {}
   EnumVariant(Id i) : id(i) {
-    boost::apply_visitor(CheckVisitor(id), values);
+    NO_RELEASE(boost::apply_visitor(CheckVisitor(id), values));
   }
 
   EnumVariant(const EnumVariant& other) = default;
 
   template<typename U>
   EnumVariant(Id i, U u) : id(i), values(u) {
-    boost::apply_visitor(CheckVisitor(id), values);
+    NO_RELEASE(boost::apply_visitor(CheckVisitor(id), values));
   }
 
   Id getId() const {

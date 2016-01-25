@@ -20,12 +20,81 @@
 #include "debug.h"
 #include "view_object.h"
 #include "user_input.h"
-#include "game_info.h"
+#include "minion_task.h"
+#include "cost_info.h"
 
 class CreatureView;
 class Level;
 class Jukebox;
 class ProgressMeter;
+class PlayerInfo;
+struct ItemInfo;
+struct CreatureInfo;
+class Sound;
+
+enum class SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING, AUTOSAVING };
+
+class ListElem {
+  public:
+  enum ElemMod {
+    NORMAL,
+    TEXT,
+    TITLE,
+    INACTIVE,
+  };
+
+  ListElem(const char*, ElemMod mod = NORMAL,
+      optional<UserInputId> triggerAction = none);
+  ListElem(const string& text = "", ElemMod mod = NORMAL,
+      optional<UserInputId> triggerAction = none);
+  ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
+
+  ListElem& setTip(const string&);
+
+  const string& getText() const;
+  const string& getSecondColumn() const;
+  const string& getTip() const;
+  ElemMod getMod() const;
+  optional<UserInputId> getAction() const;
+  void setMod(ElemMod);
+
+  static vector<ListElem> convert(const vector<string>&);
+
+  private:
+  string text;
+  string secondColumn;
+  string tooltip;
+  ElemMod mod;
+  optional<UserInputId> action;
+};
+
+enum class GameTypeChoice {
+  KEEPER,
+  ADVENTURER,
+  LOAD,
+  BACK,
+  QUICK_LEVEL
+};
+
+enum class MenuType {
+  NORMAL,
+  MAIN,
+  MAIN_NO_TILES,
+  GAME_CHOICE,
+  YES_NO
+};
+
+struct HighscoreList {
+  string name;
+  enum SortBy { SCORE, TURNS } sortBy;
+  struct Elem {
+    string text;
+    int score;
+    int turns;
+    bool highlight;
+  };
+  vector<Elem> scores;
+};
 
 class View {
   public:
@@ -37,8 +106,6 @@ class View {
 
   /** Resets the view before a new game.*/
   virtual void reset() = 0;
-
-  enum SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING, AUTOSAVING };
 
   /** Displays a splash screen in an active loop until \paramname{ready} is set to true in another thread.*/
   virtual void displaySplash(const ProgressMeter&, SplashType type, function<void()> cancelFun = nullptr) = 0;
@@ -61,6 +128,8 @@ class View {
   /** Draw a blocking view of the whole level.*/
   virtual void drawLevelMap(const CreatureView*) = 0;
 
+  virtual void setScrollPos(Vec2) = 0;
+
   /** Scrolls back to the center of the view on next refresh.*/
   virtual void resetCenter() = 0;
 
@@ -70,64 +139,14 @@ class View {
   /** Returns whether a travel interrupt key is pressed at a given moment.*/
   virtual bool travelInterrupt() = 0;
 
-  enum ElemMod {
-    NORMAL,
-    TEXT,
-    TITLE,
-    INACTIVE,
-  };
-
-  class ListElem {
-    public:
-    ListElem(const char*, ElemMod mod = NORMAL,
-        optional<UserInputId> triggerAction = none);
-    ListElem(const string& text = "", ElemMod mod = NORMAL,
-        optional<UserInputId> triggerAction = none);
-    ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
-
-    ListElem& setTip(const string&);
-
-    const string& getText() const;
-    const string& getSecondColumn() const;
-    const string& getTip() const;
-    ElemMod getMod() const;
-    optional<UserInputId> getAction() const;
-    void setMod(ElemMod);
-
-    private:
-    string text;
-    string secondColumn;
-    string tooltip;
-    ElemMod mod;
-    optional<UserInputId> action;
-  };
-
-  static vector<ListElem> getListElem(const vector<string>&);
-
-  enum MenuType {
-    NORMAL_MENU,
-    MAIN_MENU,
-    MAIN_MENU_NO_TILES,
-    MINION_MENU,
-    GAME_CHOICE_MENU,
-    YES_NO_MENU,
-  };
-
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
       Returns none if the player cancelled the choice.*/
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = NORMAL_MENU, double* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
-
-  enum GameTypeChoice {
-    KEEPER_CHOICE,
-    ADVENTURER_CHOICE,
-    LOAD_CHOICE,
-    BACK_CHOICE,
-  };
+      MenuType = MenuType::NORMAL, double* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
   virtual GameTypeChoice chooseGameType() = 0;
 
-  /** Let's the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
+  /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(const string& message) = 0;
 
   /** Asks the player a yer-or-no question.*/
@@ -138,14 +157,24 @@ class View {
 
   /** Draws a window with a list of items.*/
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = NORMAL_MENU, optional<UserInputId> exitAction = none) = 0;
+      MenuType = MenuType::NORMAL, optional<UserInputId> exitAction = none) = 0;
 
-  /** Let's the player choose a number. Returns none if the player cancelled the choice.*/
+  /** Lets the player choose a number. Returns none if the player cancelled the choice.*/
   virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) = 0;
 
-  /** Let's the player input a string. Returns none if the player cancelled the choice.*/
+  /** Lets the player input a string. Returns none if the player cancelled the choice.*/
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint = "") = 0;
+
+  virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
+      pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos) = 0;
+
+  virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
+      const vector<ItemInfo>&, double* scrollPos) = 0;
+
+  virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) = 0;
+
+  virtual void presentHighscores(const vector<HighscoreList>&) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;
@@ -164,11 +193,12 @@ class View {
   virtual void stopClock() = 0;
 
   /** Continues the real time clock after it had been stopped.*/
-
   virtual void continueClock() = 0;
 
   /** Returns whether the real time clock is currently stopped.*/
   virtual bool isClockStopped() = 0;
+
+  virtual void addSound(const Sound&) = 0;
 };
 
 enum class AnimationId {

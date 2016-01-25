@@ -2,9 +2,29 @@
 #include "util.h"
 #include "creature.h"
 #include "collective_config.h"
+#include "tribe.h"
 
 AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
   : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}
+
+template <class Archive>
+void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
+  ar& SVAR(immigrantFrequency)
+    & SVAR(payoutTime)
+    & SVAR(payoutMultiplier)
+    & SVAR(maxPopulation)
+    & SVAR(populationIncreases)
+    & SVAR(immigrantInfo)
+    & SVAR(type)
+    & SVAR(recruitingMinPopulation)
+    & SVAR(leaderAsFighter)
+    & SVAR(spawnGhosts)
+    & SVAR(ghostProb)
+    & SVAR(guardianInfo);
+}
+
+SERIALIZABLE(CollectiveConfig);
+SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveConfig);
 
 template <class Archive>
 void ImmigrantInfo::serialize(Archive& ar, const unsigned int version) {
@@ -17,7 +37,8 @@ void ImmigrantInfo::serialize(Archive& ar, const unsigned int version) {
     & SVAR(techId)
     & SVAR(limit)
     & SVAR(groupSize)
-    & SVAR(autoTeam);
+    & SVAR(autoTeam)
+    & SVAR(ignoreSpawnType);
 }
 
 SERIALIZABLE(ImmigrantInfo);
@@ -42,6 +63,16 @@ void PopulationIncrease::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(PopulationIncrease);
 
+template <class Archive>
+void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
+  ar& SVAR(creature)
+    & SVAR(probability)
+    & SVAR(minEnemies)
+    & SVAR(minVictims);
+}
+
+SERIALIZABLE(GuardianInfo);
+
 CollectiveConfig::CollectiveConfig(double freq, int payoutT, double payoutM, vector<ImmigrantInfo> im,
     CollectiveType t, int maxPop, vector<PopulationIncrease> popInc)
     : immigrantFrequency(freq), payoutTime(payoutT), payoutMultiplier(payoutM),
@@ -58,6 +89,29 @@ CollectiveConfig CollectiveConfig::withImmigrants(double frequency, int maxPopul
 
 CollectiveConfig CollectiveConfig::noImmigrants() {
   return CollectiveConfig(0, 0, 0, {}, VILLAGE, 10000, {});
+}
+
+CollectiveConfig& CollectiveConfig::setLeaderAsFighter() {
+  leaderAsFighter = true;
+  return *this;
+}
+
+CollectiveConfig& CollectiveConfig::setGhostSpawns(double prob, int num) {
+  ghostProb = prob;
+  spawnGhosts = num;
+  return *this;
+}
+
+int CollectiveConfig::getNumGhostSpawns() const {
+  return spawnGhosts;
+}
+
+double CollectiveConfig::getGhostProb() const {
+  return ghostProb;
+}
+
+bool CollectiveConfig::isLeaderFighter() const {
+  return leaderAsFighter;
 }
 
 bool CollectiveConfig::getManageEquipment() const {
@@ -108,6 +162,15 @@ int CollectiveConfig::getMaxPopulation() const {
   return maxPopulation;
 }
 
+optional<int> CollectiveConfig::getRecruitingMinPopulation() const {
+  return recruitingMinPopulation;
+}
+
+CollectiveConfig& CollectiveConfig::allowRecruiting(int minPop) {
+  recruitingMinPopulation = minPop;
+  return *this;
+}
+
 const vector<ImmigrantInfo>& CollectiveConfig::getImmigrantInfo() const {
   return immigrantInfo;
 }
@@ -116,18 +179,11 @@ const vector<PopulationIncrease>& CollectiveConfig::getPopulationIncreases() con
   return populationIncreases;
 }
 
-
-template <class Archive>
-void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(immigrantFrequency)
-    & SVAR(payoutTime)
-    & SVAR(payoutMultiplier)
-    & SVAR(maxPopulation)
-    & SVAR(populationIncreases)
-    & SVAR(immigrantInfo)
-    & SVAR(type);
+CollectiveConfig& CollectiveConfig::setGuardian(GuardianInfo info) {
+  guardianInfo = info;
+  return *this;
 }
 
-SERIALIZABLE(CollectiveConfig);
-SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveConfig);
-
+const optional<GuardianInfo>& CollectiveConfig::getGuardianInfo() const {
+  return guardianInfo;
+}

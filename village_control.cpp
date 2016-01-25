@@ -18,8 +18,31 @@
 #include "village_control.h"
 #include "collective.h"
 #include "creature.h"
-#include "square.h"
+#include "level.h"
+#include "collective_teams.h"
+#include "tribe.h"
+#include "effect_type.h"
+#include "task.h"
+#include "collective_attack.h"
+#include "territory.h"
 
+typedef EnumVariant<AttackTriggerId, TYPES(int),
+        ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
+
+SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
+
+template <class Archive>
+void VillageControl::serialize(Archive& ar, const unsigned int version) {
+  ar& SUBCLASS(CollectiveControl)
+    & SVAR(villains)
+    & SVAR(victims)
+    & SVAR(myItems)
+    & SVAR(stolenItemCount)
+    & SVAR(attackSizes)
+    & SVAR(entries);
+}
+
+SERIALIZABLE(VillageControl);
 template <class Archive>
 void VillageControl::Villain::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(minPopulation)
@@ -27,15 +50,13 @@ void VillageControl::Villain::serialize(Archive& ar, const unsigned int version)
     & SVAR(collective)
     & SVAR(triggers)
     & SVAR(behaviour)
-    & SVAR(leaderAttacks)
-    & SVAR(attackMessage)
-    & SVAR(welcomeMessage);
+    & SVAR(welcomeMessage)
+    & SVAR(ransom);
 }
 
-VillageControl::VillageControl(Collective* col, vector<Villain> v)
-    : CollectiveControl(col), villains(v) {
-  for (Vec2 v : col->getAllSquares())
-    for (Item* it : getCollective()->getLevel()->getSafeSquare(v)->getItems())
+VillageControl::VillageControl(Collective* col, vector<Villain> v) : CollectiveControl(col), villains(v) {
+  for (Position v : col->getTerritory().getAll())
+    for (Item* it : v.getItems())
       myItems.insert(it);
 }
 
@@ -58,7 +79,7 @@ void VillageControl::onMemberKilled(const Creature* victim, const Creature* kill
 }
 
 void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& items) {
-  if (getCollective()->containsSquare(who->getPosition()))
+  if (getCollective()->getTerritory().contains(who->getPosition()))
     if (auto villain = getVillain(who))
       if (contains(villain->triggers, AttackTriggerId::STOLEN_ITEMS)) {
         bool wasTheft = false;
@@ -68,16 +89,20 @@ void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& ite
             ++stolenItemCount[villain->collective];
             myItems.erase(it);
           }
-        if (getCollective()->getLeader() && wasTheft) {
+        if (getCollective()->hasLeader() && wasTheft) {
           who->playerMessage(PlayerMessage("You are going to regret this", PlayerMessage::HIGH));
         }
     }
 }
 
 void VillageControl::launchAttack(Villain& villain, vector<Creature*> attackers) {
-  Debug() << getAttackMessage(villain, attackers);
-  villain.collective->addAssaultNotification(getCollective(), attackers, getAttackMessage(villain, attackers));
-  TeamId team = getCollective()->getTeams().create(attackers);
+  optional<int> ransom;
+  int hisGold = villain.collective->numResource(CollectiveResourceId::GOLD);
+  if (villain.ransom && hisGold >= villain.ransom->second)
+    ransom = max<int>(villain.ransom->second,
+        (Random.getDouble(villain.ransom->first * 0.6, villain.ransom->first * 1.5)) * hisGold);
+  villain.collective->addAttack(CollectiveAttack(getCollective(), attackers, ransom));
+  TeamId team = getCollective()->getTeams().createPersistent(attackers);
   getCollective()->getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
   for (Creature* c : attackers)
@@ -96,27 +121,58 @@ void VillageControl::considerCancellingAttack() {
   }
 }
 
+void VillageControl::onRansomPaid() {
+  for (auto team : getCollective()->getTeams().getAll()) {
+    vector<Creature*> members = getCollective()->getTeams().getMembers(team);
+    for (Creature* c : members)
+      getCollective()->cancelTask(c);
+    getCollective()->getTeams().cancel(team);
+  }
+}
+
+vector<TriggerInfo> VillageControl::getTriggers(const Collective* against) const {
+  vector<TriggerInfo> ret;
+  for (auto& villain : villains)
+    if (villain.collective == against)
+      for (auto& elem : villain.triggers)
+        ret.push_back({elem, villain.getTriggerValue(elem, this)});
+  return ret;
+}
+
 void VillageControl::considerWelcomeMessage() {
-  if (Creature* leader = getCollective()->getLeader())
-    for (auto& villain : villains)
-      if (villain.welcomeMessage)
-        switch (*villain.welcomeMessage) {
-          case DRAGON_WELCOME:
-            for (Vec2 pos : getCollective()->getAllSquares())
-              if (Creature* c = getCollective()->getLevel()->getSafeSquare(pos)->getCreature())
-                if (c->isAffected(LastingEffect::INVISIBLE) && villain.contains(c) && c->isPlayer()
-                    && leader->canSee(c->getPosition())) {
-                  c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
-                        "I hear your breath. Come along!\"", PlayerMessage::CRITICAL));
-                  villain.welcomeMessage.reset();
-                }
-            break;
-        }
+  if (!getCollective()->hasLeader())
+    return;
+  for (auto& villain : villains)
+    if (villain.welcomeMessage)
+      switch (*villain.welcomeMessage) {
+        case DRAGON_WELCOME:
+          for (Position pos : getCollective()->getTerritory().getAll())
+            if (Creature* c = pos.getCreature())
+              if (c->isAffected(LastingEffect::INVISIBLE) && villain.contains(c) && c->isPlayer()
+                  && getCollective()->getLeader()->canSee(c->getPosition())) {
+                c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
+                      "I hear your breath. Come along!\"", PlayerMessage::CRITICAL));
+                villain.welcomeMessage.reset();
+              }
+          break;
+      }
+}
+
+void VillageControl::checkEntries() {
+  for (auto& villain : villains)
+    for (auto& trigger : villain.triggers)
+      if (trigger.getId() == AttackTriggerId::ENTRY)
+        for (Position pos : getCollective()->getTerritory().getAll())
+          if (Creature* c = pos.getCreature())
+            if (getCollective()->getTribe()->isEnemy(c))
+              if (auto villain = getVillain(c))
+                entries.insert(villain->collective);         
 }
 
 void VillageControl::tick(double time) {
   considerWelcomeMessage();
   considerCancellingAttack();
+  checkEntries();
   vector<Creature*> allMembers = getCollective()->getCreatures();
   for (auto team : getCollective()->getTeams().getAll()) {
     for (const Creature* c : getCollective()->getTeams().getMembers(team))
@@ -129,26 +185,21 @@ void VillageControl::tick(double time) {
   double updateFreq = 0.1;
   if (Random.roll(1 / updateFreq))
     for (auto& villain : villains) {
-      vector<Creature*> fighters;
-      if (villain.leaderAttacks)
-        fighters = getCollective()->getCreatures({MinionTrait::FIGHTER});
-      else
-        fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::LEADER});
-      Debug() << getCollective()->getName() << " fighters: " << int(fighters.size())
-        << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
-      if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)
-        continue;
       double prob = villain.getAttackProbability(this) / updateFreq;
       if (prob > 0 && Random.roll(1 / prob)) {
-        launchAttack(villain, getPrefix(randomPermutation(fighters),
+        vector<Creature*> fighters;
+        fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::SUMMONED});
+        fighters = filter(fighters, [this] (const Creature* c) {
+            return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });
+        Debug() << getCollective()->getShortName() << " fighters: " << int(fighters.size())
+          << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
+        if (fighters.size() < villain.minTeamSize || allMembers.size() < villain.minPopulation + villain.minTeamSize)
+          continue;
+        launchAttack(villain, getPrefix(Random.permutation(fighters),
             Random.get(villain.minTeamSize, min(fighters.size(), allMembers.size() - villain.minPopulation) + 1)));
         break;
       }
     }
-}
-
-MoveInfo VillageControl::getMove(Creature* c) {
-  return NoMove;
 }
 
 PTask VillageControl::Villain::getAttackTask(VillageControl* self) {
@@ -156,21 +207,9 @@ PTask VillageControl::Villain::getAttackTask(VillageControl* self) {
     case VillageBehaviourId::KILL_LEADER: return Task::attackLeader(collective);
     case VillageBehaviourId::KILL_MEMBERS: return Task::killFighters(collective, behaviour.get<int>());
     case VillageBehaviourId::STEAL_GOLD: return Task::stealFrom(collective, self->getCollective());
+    case VillageBehaviourId::CAMP_AND_SPAWN: return Task::campAndSpawn(collective, self->getCollective(),
+        behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
   }
-}
-
-string VillageControl::getAttackMessage(const Villain& villain, const vector<Creature*> attackers) const {
-  switch (villain.attackMessage) {
-    case CREATURE_TITLE:
-      return "You are under attack by " + attackers[0]->getNameAndTitle() + "!";
-    case TRIBE_AND_NAME:
-      if (getCollective()->getName().empty())
-        return "You are under attack by " + getCollective()->getTribe()->getName() + "!";
-      else
-        return "You are under attack by " + getCollective()->getTribe()->getName() + 
-            " of " + getCollective()->getName() + "!";
-  }
-  return "";
 }
 
 static double powerClosenessFun(double myPower, double hisPower) {
@@ -193,8 +232,10 @@ static double victimsFun(int victims, int minPopulation) {
     return 0;
   else if (victims == 1)
     return 0.1;
-  else if (victims == 2)
+  else if (victims <= 3)
     return 0.3;
+  else if (victims <= 5)
+    return 0.7;
   else
     return 1.0;
 }
@@ -238,26 +279,41 @@ bool VillageControl::Villain::contains(const Creature* c) {
   return ::contains(collective->getCreatures(), c);
 }
 
-double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const VillageControl* self,
-    const Collective* villain) const {
+static double getRoomProb(SquareId id) {
+  switch (id) {
+    case SquareId::THRONE: return 0.001;
+    case SquareId::IMPALED_HEAD: return 0.000125;
+    default: FAIL << "Unsupported ROOM_BUILT type"; return 0;
+  }
+}
+
+double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const VillageControl* self) const {
   double powerMaxProb = 1.0 / 10000; // rather small chance that they attack just because you are strong
   double victimsMaxProb = 1.0 / 500;
   double populationMaxProb = 1.0 / 500;
   double goldMaxProb = 1.0 / 500;
   double stolenMaxProb = 1.0 / 300;
+  double entryMaxProb = 1.0 / 20.0;
   switch (trigger.getId()) {
+    case AttackTriggerId::TIMER: 
+      return collective->getTime() >= trigger.get<int>() ? 0.05 : 0;
+    case AttackTriggerId::ROOM_BUILT: 
+      return collective->getSquares(trigger.get<SquareType>()).size() *
+          getRoomProb(trigger.get<SquareType>().getId());
     case AttackTriggerId::POWER: 
-      return powerMaxProb * powerClosenessFun(self->getCollective()->getWarLevel(), villain->getWarLevel());
+      return powerMaxProb * powerClosenessFun(self->getCollective()->getDangerLevel(), collective->getDangerLevel());
     case AttackTriggerId::SELF_VICTIMS:
-      return victimsMaxProb * victimsFun(self->victims.count(villain) ? self->victims.at(villain) : 0, 0);
+      return victimsMaxProb * victimsFun(self->victims.count(collective) ? self->victims.at(collective) : 0, 0);
     case AttackTriggerId::ENEMY_POPULATION:
       return populationMaxProb * populationFun(
-          villain->getCreatures(MinionTrait::FIGHTER).size(), trigger.get<int>());
+          collective->getCreatures(MinionTrait::FIGHTER).size(), trigger.get<int>());
     case AttackTriggerId::GOLD:
-      return goldMaxProb * goldFun(villain->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
+      return goldMaxProb * goldFun(collective->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
     case AttackTriggerId::STOLEN_ITEMS:
       return stolenMaxProb 
-          * stolenItemsFun(self->stolenItemCount.count(villain) ? self->stolenItemCount.at(villain) : 0);
+          * stolenItemsFun(self->stolenItemCount.count(collective) ? self->stolenItemCount.at(collective) : 0);
+    case AttackTriggerId::ENTRY:
+      return entryMaxProb * self->entries.count(collective);
   }
   return 0;
 }
@@ -265,25 +321,12 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
 double VillageControl::Villain::getAttackProbability(const VillageControl* self) const {
   double ret = 0;
   for (auto& elem : triggers) {
-    double val = getTriggerValue(elem, self, collective);
+    double val = getTriggerValue(elem, self);
     CHECK(val >= 0 && val <= 1);
     ret = max(ret, val);
-    Debug() << "trigger " << int(elem.getId()) << " village " << self->getCollective()->getTribe()->getName()
+    Debug() << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village " << self->getCollective()->getTribe()->getName()
       << " under attack probability " << val;
   }
   return ret;
 }
 
-SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
-
-template <class Archive>
-void VillageControl::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(CollectiveControl)
-    & SVAR(villains)
-    & SVAR(victims)
-    & SVAR(myItems)
-    & SVAR(stolenItemCount)
-    & SVAR(attackSizes);
-}
-
-SERIALIZABLE(VillageControl);

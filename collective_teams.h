@@ -37,8 +37,9 @@ class CollectiveTeams {
   vector<Creature*> getMembers(TeamId);
   vector<TeamId> getContaining(const Creature*) const;
   vector<TeamId> getAll() const;
-  vector<TeamId> getActiveTeams(const Creature*) const;
-  vector<TeamId> getActiveTeams() const;
+  vector<TeamId> getActive(const Creature*) const;
+  vector<TeamId> getActiveNonPersistent(const Creature*) const;
+  vector<TeamId> getAllActive() const;
   void cancel(TeamId);
   bool exists(TeamId) const;
   bool isPersistent(TeamId) const;
@@ -47,11 +48,14 @@ class CollectiveTeams {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  struct TeamInfo : public NamedTupleBase<vector<Creature*>, bool, bool> {
-    NAMED_TUPLE_STUFF(TeamInfo);
-    NAME_ELEM(0, creatures);
-    NAME_ELEM(1, active);
-    NAME_ELEM(2, persistent);
+  struct TeamInfo {
+    vector<Creature*> SERIAL(creatures);
+    bool SERIAL(active);
+    bool SERIAL(persistent);
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+      ar & SVAR(creatures) & SVAR(active) & SVAR(persistent);
+    }
   };
   map<TeamId, TeamInfo> SERIAL(teamInfo);
   TeamId SERIAL(nextId) = 1;

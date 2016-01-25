@@ -15,6 +15,8 @@ class FileSharing {
     string displayName;
     string filename;
     time_t time;
+    int totalGames;
+    int wonGames;
     int version;
   };
   vector<GameInfo> listGames();
@@ -22,7 +24,7 @@ class FileSharing {
   void uploadHighscores(const string& path);
   string downloadHighscores();
 
-  function<void()> getCancelFun();
+  void cancel();
   
   private:
   string uploadUrl;

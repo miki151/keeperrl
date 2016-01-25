@@ -17,6 +17,7 @@
 #define _EVENT_H
 
 #include "util.h"
+#include "position.h"
 
 class Level;
 class Creature;
@@ -45,9 +46,9 @@ class EventListener {
   public:
   EVENT(PickupEvent, const Creature*, const vector<Item*>& items);
   EVENT(DropEvent, const Creature*, const vector<Item*>& items);
-  EVENT(ItemsAppearedEvent, const Level*, Vec2 position, const vector<Item*>& items);
+  EVENT(ItemsAppearedEvent, Position, const vector<Item*>& items);
   EVENT(ThrowEvent, const Level*, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory);
-  EVENT(ExplosionEvent, const Level* level, Vec2 pos);
+  EVENT(ExplosionEvent, Position);
 };
 
 extern EventListener GlobalEvents;

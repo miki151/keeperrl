@@ -10,7 +10,7 @@ class Animation {
   void render(Renderer&, Rectangle bounds, Vec2 origin, double time);
   bool isDone(double time) const;
   void setBegin(double time);
-  static PAnimation thrownObject(Vec2 direction, ViewObject, bool useSprite);
+  static PAnimation thrownObject(Vec2 direction, ViewObject, bool useSprite, Vec2 squareSize);
   static PAnimation fromId(AnimationId);
 
   protected:

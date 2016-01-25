@@ -21,6 +21,7 @@
 typedef int TeamId;
 
 enum class MusicType;
+enum class SunlightState;
 
 enum class CollectiveResourceId;
 enum class CollectiveConfigId;
@@ -32,8 +33,18 @@ enum class ModifierType;
 enum class AttrType;
 enum class ItemClass;
 enum class EquipmentSlot;
+enum class SplashType;
+enum class GameTypeChoice;
+enum class MenuType;
+
+enum class MovementTrait;
+enum class SpawnType;
+enum class CreatureSize;
 
 enum class SquareApplyType;
+enum class SquareId;
+enum class ItemAction;
+enum class WorshipType;
 
 enum class MinionTask;
 enum class MinionTrait;
@@ -43,9 +54,6 @@ enum class SquareAttrib;
 
 enum class Dir;
 
-enum class StairKey;
-enum class StairDirection;
-
 enum class CreatureId;
 enum class ItemId;
 
@@ -54,6 +62,7 @@ enum class HighlightType;
 enum class StairLook;
 
 enum class SettlementType;
+enum class VillainType;
 
 enum class ViewId;
 
@@ -77,4 +86,6 @@ enum class EpithetId;
 enum class ItemIndex;
 
 enum class CollectiveWarning;
+enum class SoundId;
+
 #endif

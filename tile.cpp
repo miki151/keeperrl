@@ -16,7 +16,7 @@
 #include "stdafx.h"
 #include "tile.h"
 #include "gui_elem.h"
-
+#include "view_id.h"
 
 Tile::Tile() {
 }
@@ -53,7 +53,6 @@ Tile Tile::setFloorBorders() {
 }
 
 Tile Tile::addConnection(DirSet dirs, TileCoord coord) {
-  anyConnections = true;
   connections[dirs] = coord;
   return *this;
 }
@@ -140,8 +139,8 @@ Tile::TileCoord Tile::getSpriteCoord(DirSet c) const {
   }
 }
 
-EnumMap<ViewId, optional<Tile>> Tile::tiles;
-EnumMap<ViewId, optional<Tile>> Tile::symbols;
+static EnumMap<ViewId, optional<Tile>> tiles;
+static EnumMap<ViewId, optional<Tile>> symbols;
 
 void Tile::addTile(ViewId id, Tile tile) {
   tiles[id] = tile;
@@ -160,7 +159,7 @@ class TileCoordLookup {
     genTiles();
     bool bad = false;
     for (ViewId id : ENUM_ALL(ViewId))
-      if (!Tile::tiles[id]) {
+      if (!tiles[id]) {
         Debug() << "ViewId not found: " << EnumInfo<ViewId>::getString(id);
         bad = true;
       }
@@ -171,7 +170,7 @@ class TileCoordLookup {
     genSymbols();
     bool bad = false;
     for (ViewId id : ENUM_ALL(ViewId))
-      if (!Tile::symbols[id]) {
+      if (!symbols[id]) {
         Debug() << "ViewId not found: " << EnumInfo<ViewId>::getString(id);
         bad = true;
       }
@@ -182,18 +181,6 @@ class TileCoordLookup {
     return renderer.getTileCoord(s);
   }
 
-  Tile::TileCoord byCoord(int x, int y, int tex) {
-    return {Vec2(x, y), tex};
-  }
-
-  Tile sprite(int x, int y, int tex) {
-    return Tile::byCoord({Vec2(x, y), tex});
-  }
-
-  Tile sprite(int x, int y) {
-    return sprite(x, y, 0);
-  }
-
   Tile sprite(const string& s) {
     return Tile::byCoord(byName(s));
   }
@@ -202,103 +189,99 @@ class TileCoordLookup {
     return sprite("empty");
   }
 
-  Tile getRoadTile(int pathSet) {
-    int tex = 5;
-    return sprite(0, pathSet, tex)
-      .addConnection({Dir::E, Dir::W}, byCoord(2, pathSet, tex))
-      .addConnection({Dir::W}, byCoord(3, pathSet, tex))
-      .addConnection({Dir::E}, byCoord(1, pathSet, tex))
-      .addConnection({Dir::S}, byCoord(4, pathSet, tex))
-      .addConnection({Dir::N, Dir::S}, byCoord(5, pathSet, tex))
-      .addConnection({Dir::N}, byCoord(6, pathSet, tex))
-      .addConnection({Dir::S, Dir::E}, byCoord(7, pathSet, tex))
-      .addConnection({Dir::S, Dir::W}, byCoord(8, pathSet, tex))
-      .addConnection({Dir::N, Dir::E}, byCoord(9, pathSet, tex))
-      .addConnection({Dir::N, Dir::W}, byCoord(10, pathSet, tex))
-      .addConnection({Dir::N, Dir::E, Dir::S, Dir::W}, byCoord(11, pathSet, tex))
-      .addConnection({Dir::E, Dir::S, Dir::W}, byCoord(12, pathSet, tex))
-      .addConnection({Dir::N, Dir::S, Dir::W}, byCoord(13, pathSet, tex))
-      .addConnection({Dir::N, Dir::E, Dir::S}, byCoord(14, pathSet, tex))
-      .addConnection({Dir::N, Dir::E, Dir::W}, byCoord(15, pathSet, tex));
+  Tile getRoadTile(const string& prefix) {
+    return sprite(prefix)
+      .addConnection({Dir::E, Dir::W}, byName(prefix + "ew"))
+      .addConnection({Dir::W}, byName(prefix + "w"))
+      .addConnection({Dir::E}, byName(prefix + "e"))
+      .addConnection({Dir::S}, byName(prefix + "s"))
+      .addConnection({Dir::N, Dir::S}, byName(prefix + "ns"))
+      .addConnection({Dir::N}, byName(prefix + "n"))
+      .addConnection({Dir::S, Dir::E}, byName(prefix + "se"))
+      .addConnection({Dir::S, Dir::W}, byName(prefix + "sw"))
+      .addConnection({Dir::N, Dir::E}, byName(prefix + "ne"))
+      .addConnection({Dir::N, Dir::W}, byName(prefix + "nw"))
+      .addConnection({Dir::N, Dir::E, Dir::S, Dir::W}, byName(prefix + "nesw"))
+      .addConnection({Dir::E, Dir::S, Dir::W}, byName(prefix + "esw"))
+      .addConnection({Dir::N, Dir::S, Dir::W}, byName(prefix + "nsw"))
+      .addConnection({Dir::N, Dir::E, Dir::S}, byName(prefix + "nes"))
+      .addConnection({Dir::N, Dir::E, Dir::W}, byName(prefix + "new"));
   }
 
-  Tile getWallTile(int wallSet) {
+  Tile getWallTile(const string& prefix) {
     int tex = 1;
-    return sprite(9, wallSet, tex).setNoShadow()
-      .addConnection({Dir::E, Dir::W}, byCoord(11, wallSet, tex))
-      .addConnection({Dir::W}, byCoord(12, wallSet, tex))
-      .addConnection({Dir::E}, byCoord(10, wallSet, tex))
-      .addConnection({Dir::S}, byCoord(13, wallSet, tex))
-      .addConnection({Dir::N, Dir::S}, byCoord(14, wallSet, tex))
-      .addConnection({Dir::N}, byCoord(15, wallSet, tex))
-      .addConnection({Dir::E, Dir::S}, byCoord(16, wallSet, tex))
-      .addConnection({Dir::S, Dir::W}, byCoord(17, wallSet, tex))
-      .addConnection({Dir::N, Dir::E}, byCoord(18, wallSet, tex))
-      .addConnection({Dir::N, Dir::W}, byCoord(19, wallSet, tex))
-      .addConnection({Dir::N, Dir::E, Dir::S, Dir::W}, byCoord(20, wallSet, tex))
-      .addConnection({Dir::E, Dir::S, Dir::W}, byCoord(21, wallSet, tex))
-      .addConnection({Dir::N, Dir::S, Dir::W}, byCoord(22, wallSet, tex))
-      .addConnection({Dir::N, Dir::E, Dir::S}, byCoord(23, wallSet, tex))
-      .addConnection({Dir::N, Dir::E, Dir::W}, byCoord(24, wallSet, tex));
+    return sprite(prefix).setNoShadow()
+      .addConnection({Dir::E}, byName(prefix + "e"))
+      .addConnection({Dir::E, Dir::W}, byName(prefix + "ew"))
+      .addConnection({Dir::W}, byName(prefix + "w"))
+      .addConnection({Dir::S}, byName(prefix + "s"))
+      .addConnection({Dir::N, Dir::S}, byName(prefix + "ns"))
+      .addConnection({Dir::N}, byName(prefix + "n"))
+      .addConnection({Dir::E, Dir::S}, byName(prefix + "es"))
+      .addConnection({Dir::S, Dir::W}, byName(prefix + "sw"))
+      .addConnection({Dir::N, Dir::E}, byName(prefix + "ne"))
+      .addConnection({Dir::N, Dir::W}, byName(prefix + "nw"))
+      .addConnection({Dir::N, Dir::E, Dir::S, Dir::W}, byName(prefix + "nesw"))
+      .addConnection({Dir::E, Dir::S, Dir::W}, byName(prefix + "esw"))
+      .addConnection({Dir::N, Dir::S, Dir::W}, byName(prefix + "nsw"))
+      .addConnection({Dir::N, Dir::E, Dir::S}, byName(prefix + "nes"))
+      .addConnection({Dir::N, Dir::E, Dir::W}, byName(prefix + "new"));
   }
 
-  Tile getMountainTile(int numT, int set) {
-    int tex = 1;
-    return sprite(numT, set, tex).setNoShadow()
-      .addCorner({Dir::S, Dir::W}, {Dir::W}, byCoord(10, set, tex))
-      .addCorner({Dir::N, Dir::W}, {Dir::W}, byCoord(11, set, tex))
-      .addCorner({Dir::S, Dir::E}, {Dir::E}, byCoord(12, set, tex))
-      .addCorner({Dir::N, Dir::E}, {Dir::E}, byCoord(13, set, tex))
-      .addCorner({Dir::N, Dir::W}, {Dir::N}, byCoord(14, set, tex))
-      .addCorner({Dir::N, Dir::E}, {Dir::N}, byCoord(15, set, tex))
-      .addCorner({Dir::S, Dir::W}, {Dir::S}, byCoord(16, set, tex))
-      .addCorner({Dir::S, Dir::E}, {Dir::S}, byCoord(17, set, tex))
-      .addCorner({Dir::N, Dir::W}, {}, byCoord(18, set, tex))
-      .addCorner({Dir::N, Dir::E}, {}, byCoord(19, set, tex))
-      .addCorner({Dir::S, Dir::W}, {}, byCoord(20, set, tex))
-      .addCorner({Dir::S, Dir::E}, {}, byCoord(21, set, tex))
-      .addCorner({Dir::S, Dir::E, Dir::SE}, {Dir::S, Dir::E}, byCoord(22, set, tex))
-      .addCorner({Dir::S, Dir::W, Dir::SW}, {Dir::S, Dir::W}, byCoord(23, set, tex))
-      .addCorner({Dir::N, Dir::E, Dir::NE}, {Dir::N, Dir::E}, byCoord(24, set, tex))
-      .addCorner({Dir::N, Dir::W, Dir::NW}, {Dir::N, Dir::W}, byCoord(25, set, tex));
+  Tile getMountainTile(Tile background, const string& prefix) {
+    return background
+      .addCorner({Dir::S, Dir::W}, {Dir::W}, byName(prefix + "sw_w"))
+      .addCorner({Dir::N, Dir::W}, {Dir::W}, byName(prefix + "nw_w"))
+      .addCorner({Dir::S, Dir::E}, {Dir::E}, byName(prefix + "se_e"))
+      .addCorner({Dir::N, Dir::E}, {Dir::E}, byName(prefix + "ne_e"))
+      .addCorner({Dir::N, Dir::W}, {Dir::N}, byName(prefix + "nw_n"))
+      .addCorner({Dir::N, Dir::E}, {Dir::N}, byName(prefix + "ne_n"))
+      .addCorner({Dir::S, Dir::W}, {Dir::S}, byName(prefix + "sw_s"))
+      .addCorner({Dir::S, Dir::E}, {Dir::S}, byName(prefix + "se_s"))
+      .addCorner({Dir::N, Dir::W}, {}, byName(prefix + "nw"))
+      .addCorner({Dir::N, Dir::E}, {}, byName(prefix + "ne"))
+      .addCorner({Dir::S, Dir::W}, {}, byName(prefix + "sw"))
+      .addCorner({Dir::S, Dir::E}, {}, byName(prefix + "se"))
+      .addCorner({Dir::S, Dir::E, Dir::SE}, {Dir::S, Dir::E}, byName(prefix + "sese_se"))
+      .addCorner({Dir::S, Dir::W, Dir::SW}, {Dir::S, Dir::W}, byName(prefix + "swsw_sw"))
+      .addCorner({Dir::N, Dir::E, Dir::NE}, {Dir::N, Dir::E}, byName(prefix + "nene_ne"))
+      .addCorner({Dir::N, Dir::W, Dir::NW}, {Dir::N, Dir::W}, byName(prefix + "nwnw_nw"));
   }
 
-  Tile getWaterTile(int leftX) {
-    int tex = 4;
-    return sprite(leftX, 5, tex)
-      .addConnection({Dir::N, Dir::E, Dir::S, Dir::W}, byCoord(leftX - 1, 7, tex))
-      .addConnection({Dir::E, Dir::S, Dir::W}, byCoord(leftX, 4, tex))
-      .addConnection({Dir::N, Dir::E, Dir::W}, byCoord(leftX, 6, tex))
-      .addConnection({Dir::N, Dir::S, Dir::W}, byCoord(leftX + 1, 5, tex))
-      .addConnection({Dir::N, Dir::E, Dir::S}, byCoord(leftX - 1, 5, tex))
-      .addConnection({Dir::N, Dir::E}, byCoord(leftX - 1, 6, tex))
-      .addConnection({Dir::E, Dir::S}, byCoord(leftX - 1, 4, tex))
-      .addConnection({Dir::S, Dir::W}, byCoord(leftX + 1, 4, tex))
-      .addConnection({Dir::N, Dir::W}, byCoord(leftX + 1, 6, tex))
-      .addConnection({Dir::S}, byCoord(leftX, 7, tex))
-      .addConnection({Dir::N}, byCoord(leftX, 8, tex))
-      .addConnection({Dir::W}, byCoord(leftX + 1, 7, tex))
-      .addConnection({Dir::E}, byCoord(leftX + 1, 8, tex))
-      .addConnection({Dir::N, Dir::S}, byCoord(leftX + 1, 12, tex))
-      .addConnection({Dir::E, Dir::W}, byCoord(leftX + 1, 11, tex));
+  Tile getWaterTile(const string& background, const string& prefix) {
+    return empty().addBackground(byName(background))
+      .addConnection({Dir::N, Dir::E, Dir::S, Dir::W}, byName("empty"))
+      .addConnection({Dir::E, Dir::S, Dir::W}, byName(prefix + "esw"))
+      .addConnection({Dir::N, Dir::E, Dir::W}, byName(prefix + "new"))
+      .addConnection({Dir::N, Dir::S, Dir::W}, byName(prefix + "nsw"))
+      .addConnection({Dir::N, Dir::E, Dir::S}, byName(prefix + "nes"))
+      .addConnection({Dir::N, Dir::E}, byName(prefix + "ne"))
+      .addConnection({Dir::E, Dir::S}, byName(prefix + "es"))
+      .addConnection({Dir::S, Dir::W}, byName(prefix + "sw"))
+      .addConnection({Dir::N, Dir::W}, byName(prefix + "nw"))
+      .addConnection({Dir::S}, byName(prefix + "s"))
+      .addConnection({Dir::N}, byName(prefix + "n"))
+      .addConnection({Dir::W}, byName(prefix + "w"))
+      .addConnection({Dir::E}, byName(prefix + "e"))
+      .addConnection({Dir::N, Dir::S}, byName(prefix + "ns"))
+      .addConnection({Dir::E, Dir::W}, byName(prefix + "ew"));
   }
 
-  Tile getExtraBorderTile(int set) {
-    int tex = 5;
-    return sprite(1, set, tex)
-      .addExtraBorder({Dir::W, Dir::N}, byCoord(10, set, tex))
-      .addExtraBorder({Dir::E, Dir::N}, byCoord(11, set, tex))
-      .addExtraBorder({Dir::E, Dir::S}, byCoord(12, set, tex))
-      .addExtraBorder({Dir::W, Dir::S}, byCoord(13, set, tex))
-      .addExtraBorder({Dir::W, Dir::N, Dir::E}, byCoord(14, set, tex))
-      .addExtraBorder({Dir::S, Dir::N, Dir::E}, byCoord(15, set, tex))
-      .addExtraBorder({Dir::S, Dir::W, Dir::E}, byCoord(16, set, tex))
-      .addExtraBorder({Dir::S, Dir::W, Dir::N}, byCoord(17, set, tex))
-      .addExtraBorder({Dir::S, Dir::W, Dir::N, Dir::E}, byCoord(18, set, tex))
-      .addExtraBorder({Dir::N}, byCoord(19, set, tex))
-      .addExtraBorder({Dir::E}, byCoord(20, set, tex))
-      .addExtraBorder({Dir::S}, byCoord(21, set, tex))
-      .addExtraBorder({Dir::W}, byCoord(22, set, tex));
+  Tile getExtraBorderTile(const string& prefix) {
+    return sprite(prefix)
+      .addExtraBorder({Dir::W, Dir::N}, byName(prefix + "wn"))
+      .addExtraBorder({Dir::E, Dir::N}, byName(prefix + "en"))
+      .addExtraBorder({Dir::E, Dir::S}, byName(prefix + "es"))
+      .addExtraBorder({Dir::W, Dir::S}, byName(prefix + "ws"))
+      .addExtraBorder({Dir::W, Dir::N, Dir::E}, byName(prefix + "wne"))
+      .addExtraBorder({Dir::S, Dir::N, Dir::E}, byName(prefix + "sne"))
+      .addExtraBorder({Dir::S, Dir::W, Dir::E}, byName(prefix + "swe"))
+      .addExtraBorder({Dir::S, Dir::W, Dir::N}, byName(prefix + "swn"))
+      .addExtraBorder({Dir::S, Dir::W, Dir::N, Dir::E}, byName(prefix + "swne"))
+      .addExtraBorder({Dir::N}, byName(prefix + "n"))
+      .addExtraBorder({Dir::E}, byName(prefix + "e"))
+      .addExtraBorder({Dir::S}, byName(prefix + "s"))
+      .addExtraBorder({Dir::W}, byName(prefix + "w"));
   }
 
   void genTiles() {
@@ -314,116 +297,116 @@ class TileCoordLookup {
     Tile::addTile(ViewId::CANIF_TREE, sprite("tree1").setNoShadow().addHighlight(byName("tree1_mark")));
     Tile::addTile(ViewId::TREE_TRUNK, sprite("treecut").setNoShadow());
     Tile::addTile(ViewId::BURNT_TREE, sprite("treeburnt").setNoShadow());
-    Tile::addTile(ViewId::PLAYER, sprite(1, 0));
+    Tile::addTile(ViewId::PLAYER, sprite("adventurer"));
     Tile::addTile(ViewId::KEEPER, sprite("keeper"));
-    Tile::addTile(ViewId::UNDEAD_KEEPER, sprite(9, 16));
     Tile::addTile(ViewId::ELF, sprite("elf male"));
+    Tile::addTile(ViewId::ELF_WOMAN, sprite("elf female"));
     Tile::addTile(ViewId::ELF_ARCHER, sprite("elf archer"));
     Tile::addTile(ViewId::ELF_CHILD, sprite("elf kid"));
     Tile::addTile(ViewId::ELF_LORD, sprite("elf lord"));
-    Tile::addTile(ViewId::LIZARDMAN, sprite(8, 8));
-    Tile::addTile(ViewId::LIZARDLORD, sprite(11, 8));
+    Tile::addTile(ViewId::DARK_ELF, sprite("dark_elf"));
+    Tile::addTile(ViewId::DARK_ELF_WOMAN, sprite("dark_elf_female"));
+    Tile::addTile(ViewId::DARK_ELF_WARRIOR, sprite("dark_elf_warrior"));
+    Tile::addTile(ViewId::DARK_ELF_CHILD, sprite("dark_elf_kid"));
+    Tile::addTile(ViewId::DARK_ELF_LORD, sprite("dark_elf_lord"));
+    Tile::addTile(ViewId::DRIAD, sprite("driada"));
+    Tile::addTile(ViewId::KOBOLD, sprite("kobold"));
+    Tile::addTile(ViewId::LIZARDMAN, sprite("lizardman"));
+    Tile::addTile(ViewId::LIZARDLORD, sprite("lizardlord"));
     Tile::addTile(ViewId::IMP, sprite("imp"));
     Tile::addTile(ViewId::PRISONER, sprite("prisoner"));
     Tile::addTile(ViewId::OGRE, sprite("troll"));
-    Tile::addTile(ViewId::CHICKEN, sprite("chicken"));
-    Tile::addTile(ViewId::GNOME, sprite(15, 8));
-    Tile::addTile(ViewId::DWARF, sprite(2, 6));
-    Tile::addTile(ViewId::DWARF_BARON, sprite(3, 6));
-    Tile::addTile(ViewId::SHOPKEEPER, sprite(4, 2));
+    Tile::addTile(ViewId::CHICKEN, sprite("hen"));
+    Tile::addTile(ViewId::GNOME, sprite("gnome"));
+    Tile::addTile(ViewId::GNOME_BOSS, sprite("gnomeboss"));
+    Tile::addTile(ViewId::DWARF, sprite("dwarf"));
+    Tile::addTile(ViewId::DWARF_BARON, sprite("dwarfboss"));
+    Tile::addTile(ViewId::DWARF_FEMALE, sprite("dwarf_f"));
+    Tile::addTile(ViewId::SHOPKEEPER, sprite("salesman"));
     Tile::addTile(ViewId::BRIDGE, sprite("bridge").addOption(Dir::S, byName("bridge2")));
-    Tile::addTile(ViewId::ROAD, getRoadTile(7));
-    Tile::addTile(ViewId::FLOOR, sprite(3, 14, 1));
-    Tile::addTile(ViewId::KEEPER_FLOOR, sprite(4, 18, 1));
-    Tile::addTile(ViewId::SAND, getExtraBorderTile(14)
+    Tile::addTile(ViewId::ROAD, getRoadTile("road"));
+    Tile::addTile(ViewId::FLOOR, sprite("floor"));
+    Tile::addTile(ViewId::KEEPER_FLOOR, sprite("floor_keeper"));
+    Tile::addTile(ViewId::SAND, getExtraBorderTile("sand")
         .addExtraBorderId(ViewId::WATER));
-    Tile::addTile(ViewId::MUD, getExtraBorderTile(10)
+    Tile::addTile(ViewId::MUD, getExtraBorderTile("mud")
         .addExtraBorderId(ViewId::WATER)
         .addExtraBorderId(ViewId::HILL)
         .addExtraBorderId(ViewId::SAND));
-    Tile::addTile(ViewId::GRASS, getExtraBorderTile(18)
+    Tile::addTile(ViewId::GRASS, getExtraBorderTile("grass")
         .addExtraBorderId(ViewId::SAND)
         .addExtraBorderId(ViewId::HILL)
         .addExtraBorderId(ViewId::MUD)
         .addExtraBorderId(ViewId::WATER));
     Tile::addTile(ViewId::CROPS, sprite("wheatfield1"));
     Tile::addTile(ViewId::CROPS2, sprite("wheatfield2"));
-    Tile::addTile(ViewId::MOUNTAIN2, getMountainTile(9, 18));
-    Tile::addTile(ViewId::WALL, getWallTile(2));
-    Tile::addTile(ViewId::MOUNTAIN, sprite(17, 2, 2).setNoShadow());
-    Tile::addTile(ViewId::GOLD_ORE, getMountainTile(8, 18));
-    Tile::addTile(ViewId::IRON_ORE, getMountainTile(7, 18));
-    Tile::addTile(ViewId::STONE, getMountainTile(6, 18));
-    Tile::addTile(ViewId::SNOW, sprite(16, 2, 2).setNoShadow());
-    Tile::addTile(ViewId::HILL, getExtraBorderTile(8)
+    Tile::addTile(ViewId::MOUNTAIN, getMountainTile(sprite("mountain_ted").setNoShadow(), "mountain"));
+    Tile::addTile(ViewId::WALL, getWallTile("wall"));
+    Tile::addTile(ViewId::GOLD_ORE, getMountainTile(sprite("gold_ore").addBackground(byName("mountain_ted"))
+          .setNoShadow(), "mountain"));
+    Tile::addTile(ViewId::IRON_ORE, getMountainTile(sprite("iron_ore").addBackground(byName("mountain_ted"))
+          .setNoShadow(), "mountain"));
+    Tile::addTile(ViewId::STONE, getMountainTile(sprite("stone_ore").addBackground(byName("mountain_ted"))
+          .setNoShadow(), "mountain"));
+    Tile::addTile(ViewId::HILL, getExtraBorderTile("hill")
         .addExtraBorderId(ViewId::SAND)
         .addExtraBorderId(ViewId::WATER));
-    Tile::addTile(ViewId::WOOD_WALL, getWallTile(4));
-    Tile::addTile(ViewId::BLACK_WALL, getWallTile(2));
-    Tile::addTile(ViewId::YELLOW_WALL, getWallTile(8));
-    Tile::addTile(ViewId::LOW_ROCK_WALL, getWallTile(21));
-    Tile::addTile(ViewId::HELL_WALL, getWallTile(22));
-    Tile::addTile(ViewId::CASTLE_WALL, getWallTile(5));
-    Tile::addTile(ViewId::MUD_WALL, getWallTile(13));
-    Tile::addTile(ViewId::SECRETPASS, sprite(0, 15, 1));
-    Tile::addTile(ViewId::DUNGEON_ENTRANCE, sprite(15, 2, 2).setNoShadow());
-    Tile::addTile(ViewId::DUNGEON_ENTRANCE_MUD, sprite(19, 2, 2).setNoShadow());
-    Tile::addTile(ViewId::DOWN_STAIRCASE, sprite(8, 0, 1).setNoShadow());
-    Tile::addTile(ViewId::UP_STAIRCASE, sprite(7, 0, 1).setNoShadow());
-    Tile::addTile(ViewId::DOWN_STAIRCASE_CELLAR, sprite(8, 21, 1).setNoShadow());
-    Tile::addTile(ViewId::UP_STAIRCASE_CELLAR, sprite(7, 21, 1).setNoShadow());
-    Tile::addTile(ViewId::DOWN_STAIRCASE_HELL, sprite(8, 1, 1).setNoShadow());
-    Tile::addTile(ViewId::UP_STAIRCASE_HELL, sprite(7, 22, 1).setNoShadow());
-    Tile::addTile(ViewId::DOWN_STAIRCASE_PYR, sprite(8, 8, 1).setNoShadow());
-    Tile::addTile(ViewId::UP_STAIRCASE_PYR, sprite(7, 8, 1).setNoShadow());
-    Tile::addTile(ViewId::WELL, sprite(5, 8, 2).setNoShadow());
-    Tile::addTile(ViewId::STATUE1, sprite(6, 5, 2).setNoShadow());
-    Tile::addTile(ViewId::STATUE2, sprite(7, 5, 2).setNoShadow());
-    Tile::addTile(ViewId::THRONE, sprite(7, 4, 2).setNoShadow());
-    Tile::addTile(ViewId::GREAT_ORC, sprite(6, 14));
+    Tile::addTile(ViewId::WOOD_WALL, getWallTile("wood_wall"));
+    Tile::addTile(ViewId::BLACK_WALL, getWallTile("wall"));
+    Tile::addTile(ViewId::CASTLE_WALL, getWallTile("castle_wall"));
+    Tile::addTile(ViewId::MUD_WALL, getWallTile("mud_wall"));
+    Tile::addTile(ViewId::DOWN_STAIRCASE, sprite("down_stairs").setNoShadow());
+    Tile::addTile(ViewId::UP_STAIRCASE, sprite("up_stairs").setNoShadow());
+    Tile::addTile(ViewId::WELL, sprite("well").setNoShadow());
+    Tile::addTile(ViewId::MINION_STATUE, sprite("statue").setNoShadow());
+    Tile::addTile(ViewId::THRONE, sprite("throne").setNoShadow());
     Tile::addTile(ViewId::ORC, sprite("orc"));
-    Tile::addTile(ViewId::ORC_SHAMAN, sprite("shaman"));
-    Tile::addTile(ViewId::HARPY, sprite("harpysmall"));
+    Tile::addTile(ViewId::ORC_SHAMAN, sprite("orcshaman"));
+    Tile::addTile(ViewId::HARPY, sprite("harpy"));
     Tile::addTile(ViewId::DOPPLEGANGER, sprite("dopple"));
     Tile::addTile(ViewId::SUCCUBUS, sprite("succubussmall"));
-    Tile::addTile(ViewId::BANDIT, sprite(0, 2));
+    Tile::addTile(ViewId::BANDIT, sprite("bandit"));
     Tile::addTile(ViewId::GHOST, sprite("ghost4"));
-    Tile::addTile(ViewId::SPIRIT, sprite(17, 14));
-    Tile::addTile(ViewId::DEVIL, sprite(17, 18));
-    Tile::addTile(ViewId::DARK_KNIGHT, sprite(12, 14));
+    Tile::addTile(ViewId::SPIRIT, sprite("spirit"));
     Tile::addTile(ViewId::GREEN_DRAGON, sprite("greendragon"));
     Tile::addTile(ViewId::RED_DRAGON, sprite("reddragon"));
-    Tile::addTile(ViewId::CYCLOPS, sprite(10, 14));
-    Tile::addTile(ViewId::WITCH, sprite(15, 16));
-    Tile::addTile(ViewId::KNIGHT, sprite(0, 0));
-    Tile::addTile(ViewId::WARRIOR, sprite(6, 0));
-    Tile::addTile(ViewId::SHAMAN, sprite(5, 0));
-    Tile::addTile(ViewId::CASTLE_GUARD, sprite(15, 2));
-    Tile::addTile(ViewId::AVATAR, sprite(9, 0));
-    Tile::addTile(ViewId::ARCHER, sprite(2, 0));
+    Tile::addTile(ViewId::CYCLOPS, sprite("cyclops"));
+    Tile::addTile(ViewId::MINOTAUR, sprite("mino"));
+    Tile::addTile(ViewId::HYDRA, sprite("hydra"));
+    Tile::addTile(ViewId::SHELOB, sprite("szelob"));
+    Tile::addTile(ViewId::WITCH, sprite("witch"));
+    Tile::addTile(ViewId::WITCHMAN, sprite("witchman"));
+    Tile::addTile(ViewId::KNIGHT, sprite("knight"));
+    Tile::addTile(ViewId::WARRIOR, sprite("warrior"));
+    Tile::addTile(ViewId::SHAMAN, sprite("shaman"));
+    Tile::addTile(ViewId::CASTLE_GUARD, sprite("knight"));
+    Tile::addTile(ViewId::AVATAR, sprite("knightboss"));
+    Tile::addTile(ViewId::ARCHER, sprite("archer"));
     Tile::addTile(ViewId::PESEANT, sprite("peasant"));
     Tile::addTile(ViewId::PESEANT_WOMAN, sprite("peasantgirl"));
     Tile::addTile(ViewId::CHILD, sprite("peasantkid"));
-    Tile::addTile(ViewId::CLAY_GOLEM, sprite(12, 11));
-    Tile::addTile(ViewId::STONE_GOLEM, sprite(10, 10));
-    Tile::addTile(ViewId::IRON_GOLEM, sprite(12, 10));
-    Tile::addTile(ViewId::LAVA_GOLEM, sprite(13, 10));
-    Tile::addTile(ViewId::AIR_ELEMENTAL, sprite("airelemental"));
-    Tile::addTile(ViewId::FIRE_ELEMENTAL, sprite("fireelemental"));
-    Tile::addTile(ViewId::WATER_ELEMENTAL, sprite("waterelemental"));
-    Tile::addTile(ViewId::EARTH_ELEMENTAL, sprite("earthelemental"));
+    Tile::addTile(ViewId::CLAY_GOLEM, sprite("clay_golem"));
+    Tile::addTile(ViewId::STONE_GOLEM, sprite("stone_golem"));
+    Tile::addTile(ViewId::IRON_GOLEM, sprite("iron_golem"));
+    Tile::addTile(ViewId::LAVA_GOLEM, sprite("lava_golem"));
+    Tile::addTile(ViewId::AUTOMATON, sprite("automaton"));
+    Tile::addTile(ViewId::ELEMENTALIST, sprite("elementalist"));
+    Tile::addTile(ViewId::AIR_ELEMENTAL, sprite("airelement"));
+    Tile::addTile(ViewId::FIRE_ELEMENTAL, sprite("fireelement"));
+    Tile::addTile(ViewId::WATER_ELEMENTAL, sprite("waterelement"));
+    Tile::addTile(ViewId::EARTH_ELEMENTAL, sprite("earthelement"));
     Tile::addTile(ViewId::ENT, sprite("ent"));
-    Tile::addTile(ViewId::ANGEL, sprite("angel"));
-    Tile::addTile(ViewId::ZOMBIE, sprite(0, 16));
+    Tile::addTile(ViewId::ANGEL, sprite("ent"));
+    Tile::addTile(ViewId::ZOMBIE, sprite("zombie"));
     Tile::addTile(ViewId::SKELETON, sprite("skeleton"));
     Tile::addTile(ViewId::VAMPIRE_LORD, sprite("vampirelord"));
-    Tile::addTile(ViewId::MUMMY, sprite(7, 16));
-    Tile::addTile(ViewId::MUMMY_LORD, sprite(8, 16));
-    Tile::addTile(ViewId::JACKAL, sprite(12, 12));
+    Tile::addTile(ViewId::MUMMY, sprite("mummy"));
+    Tile::addTile(ViewId::JACKAL, sprite("jackal"));
     Tile::addTile(ViewId::DEER, sprite("deer"));
     Tile::addTile(ViewId::HORSE, sprite("horse"));
     Tile::addTile(ViewId::COW, sprite("cow"));
     Tile::addTile(ViewId::PIG, sprite("pig"));
+    Tile::addTile(ViewId::DONKEY, sprite("donkey"));
     Tile::addTile(ViewId::GOAT, sprite("goat"));
     Tile::addTile(ViewId::BOAR, sprite("boar"));
     Tile::addTile(ViewId::FOX, sprite("fox"));
@@ -433,92 +416,94 @@ class TileCoordLookup {
     Tile::addTile(ViewId::KRAKEN_HEAD, sprite("krakenhead"));
     Tile::addTile(ViewId::KRAKEN_LAND, sprite("krakenland1"));
     Tile::addTile(ViewId::KRAKEN_WATER, sprite("krakenwater2"));
-    Tile::addTile(ViewId::DEATH, sprite(9, 16));
-    Tile::addTile(ViewId::NIGHTMARE, sprite(9, 16));
-    Tile::addTile(ViewId::FIRE_SPHERE, sprite(16, 20));
-    Tile::addTile(ViewId::BEAR, sprite(8, 18));
-    Tile::addTile(ViewId::BAT, sprite(2, 12));
+    Tile::addTile(ViewId::DEATH, sprite("death"));
+    Tile::addTile(ViewId::FIRE_SPHERE, sprite("fire_sphere"));
+    Tile::addTile(ViewId::BEAR, sprite("bear"));
+    Tile::addTile(ViewId::BAT, sprite("bat"));
     Tile::addTile(ViewId::GOBLIN, sprite("goblin"));
     Tile::addTile(ViewId::LEPRECHAUN, sprite("leprechaun"));
     Tile::addTile(ViewId::RAT, sprite("rat"));
-    Tile::addTile(ViewId::SPIDER, sprite(6, 12));
-    Tile::addTile(ViewId::FLY, sprite(10, 12));
-    Tile::addTile(ViewId::SCORPION, sprite(11, 18));
-    Tile::addTile(ViewId::SNAKE, sprite(9, 12));
+    Tile::addTile(ViewId::SPIDER, sprite("spider"));
+    Tile::addTile(ViewId::FLY, sprite("fly"));
+    Tile::addTile(ViewId::ANT_WORKER, sprite("antwork"));
+    Tile::addTile(ViewId::ANT_SOLDIER, sprite("antw"));
+    Tile::addTile(ViewId::ANT_QUEEN, sprite("antq"));
+    Tile::addTile(ViewId::SNAKE, sprite("snake"));
     Tile::addTile(ViewId::VULTURE, sprite("vulture"));
-    Tile::addTile(ViewId::RAVEN, sprite(17, 12));
+    Tile::addTile(ViewId::RAVEN, sprite("raven"));
     Tile::addTile(ViewId::BODY_PART, sprite("corpse4"));
-    Tile::addTile(ViewId::BONE, sprite(3, 0, 2));
+    Tile::addTile(ViewId::BONE, sprite("bone"));
     Tile::addTile(ViewId::BUSH, sprite("bush").setNoShadow().addHighlight(byName("bush_mark")));
-    Tile::addTile(ViewId::WATER, getWaterTile(5));
-    Tile::addTile(ViewId::MAGMA, getWaterTile(11));
+    Tile::addTile(ViewId::WATER, getWaterTile("waternesw", "water"));
+    Tile::addTile(ViewId::MAGMA, getWaterTile("magmanesw", "magma"));
     Tile::addTile(ViewId::DOOR, sprite("door").setNoShadow());
     Tile::addTile(ViewId::BARRICADE, sprite("barricade").setNoShadow());
-    Tile::addTile(ViewId::DIG_ICON, sprite(8, 10, 2));
-    Tile::addTile(ViewId::SWORD, sprite(12, 9, 3));
-    Tile::addTile(ViewId::SPEAR, sprite(5, 8, 3));
-    Tile::addTile(ViewId::SPECIAL_SWORD, sprite(13, 9, 3));
-    Tile::addTile(ViewId::ELVEN_SWORD, sprite(14, 9, 3));
-    Tile::addTile(ViewId::KNIFE, sprite(20, 9, 3));
-    Tile::addTile(ViewId::WAR_HAMMER, sprite(10, 7, 3));
-    Tile::addTile(ViewId::SPECIAL_WAR_HAMMER, sprite(11, 7, 3));
-    Tile::addTile(ViewId::BATTLE_AXE, sprite(13, 7, 3));
-    Tile::addTile(ViewId::SPECIAL_BATTLE_AXE, sprite(21, 7, 3));
-    Tile::addTile(ViewId::BOW, sprite(14, 8, 3));
-    Tile::addTile(ViewId::ARROW, sprite(5, 8, 3));
+    Tile::addTile(ViewId::DIG_ICON, sprite("dig_icon"));
+    Tile::addTile(ViewId::SWORD, sprite("sword"));
+    Tile::addTile(ViewId::SPEAR, sprite("spear"));
+    Tile::addTile(ViewId::SPECIAL_SWORD, sprite("special_sword"));
+    Tile::addTile(ViewId::ELVEN_SWORD, sprite("elven_sword"));
+    Tile::addTile(ViewId::KNIFE, sprite("knife"));
+    Tile::addTile(ViewId::WAR_HAMMER, sprite("warhammer"));
+    Tile::addTile(ViewId::SPECIAL_WAR_HAMMER, sprite("special_warhammer"));
+    Tile::addTile(ViewId::BATTLE_AXE, sprite("battle_axe"));
+    Tile::addTile(ViewId::SPECIAL_BATTLE_AXE, sprite("special_battle_axe"));
+    Tile::addTile(ViewId::BOW, sprite("bow"));
+    Tile::addTile(ViewId::ARROW, sprite("arrow"));
     Tile::addTile(ViewId::CLUB, sprite("club"));
     Tile::addTile(ViewId::HEAVY_CLUB, sprite("heavy club"));
-    Tile::addTile(ViewId::SCROLL, sprite(3, 6, 3));
-    Tile::addTile(ViewId::STEEL_AMULET, sprite(1, 1, 3));
-    Tile::addTile(ViewId::COPPER_AMULET, sprite(2, 1, 3));
-    Tile::addTile(ViewId::CRYSTAL_AMULET, sprite(4, 1, 3));
-    Tile::addTile(ViewId::WOODEN_AMULET, sprite(0, 1, 3));
-    Tile::addTile(ViewId::AMBER_AMULET, sprite(3, 1, 3));
-    Tile::addTile(ViewId::FIRE_RESIST_RING, sprite(11, 3, 3));
-    Tile::addTile(ViewId::POISON_RESIST_RING, sprite(16, 3, 3));
-    Tile::addTile(ViewId::BOOK, sprite(0, 3, 3));
-    Tile::addTile(ViewId::FIRST_AID, sprite("medkit2"));
+    Tile::addTile(ViewId::SCROLL, sprite("scroll"));
+    Tile::addTile(ViewId::AMULET1, sprite("amulet1"));
+    Tile::addTile(ViewId::AMULET2, sprite("amulet2"));
+    Tile::addTile(ViewId::AMULET3, sprite("amulet3"));
+    Tile::addTile(ViewId::AMULET4, sprite("amulet4"));
+    Tile::addTile(ViewId::AMULET5, sprite("amulet5"));
+    Tile::addTile(ViewId::FIRE_RESIST_RING, sprite("ring_red"));
+    Tile::addTile(ViewId::POISON_RESIST_RING, sprite("ring_green"));
+    Tile::addTile(ViewId::BOOK, sprite("book"));
+    Tile::addTile(ViewId::FIRST_AID, sprite("medkit"));
     Tile::addTile(ViewId::TRAP_ITEM, sprite("trapbox"));
-    Tile::addTile(ViewId::EFFERVESCENT_POTION, sprite(6, 0, 3));
-    Tile::addTile(ViewId::MURKY_POTION, sprite(10, 0, 3));
-    Tile::addTile(ViewId::SWIRLY_POTION, sprite(9, 0, 3));
-    Tile::addTile(ViewId::VIOLET_POTION, sprite(7, 0, 3));
-    Tile::addTile(ViewId::PUCE_POTION, sprite(8, 0, 3));
-    Tile::addTile(ViewId::SMOKY_POTION, sprite(11, 0, 3));
-    Tile::addTile(ViewId::FIZZY_POTION, sprite(9, 0, 3));
-    Tile::addTile(ViewId::MILKY_POTION, sprite(11, 0, 3));
-    Tile::addTile(ViewId::MUSHROOM, sprite(5, 4, 3));
-    Tile::addTile(ViewId::FOUNTAIN, sprite(0, 7, 2).setNoShadow());
-    Tile::addTile(ViewId::GOLD, sprite(8, 3, 3).setNoShadow());
+    Tile::addTile(ViewId::POTION1, sprite("potion1"));
+    Tile::addTile(ViewId::POTION2, sprite("potion2"));
+    Tile::addTile(ViewId::POTION3, sprite("potion3"));
+    Tile::addTile(ViewId::POTION4, sprite("potion4"));
+    Tile::addTile(ViewId::POTION5, sprite("potion5"));
+    Tile::addTile(ViewId::POTION6, sprite("potion6"));
+    Tile::addTile(ViewId::MUSHROOM, sprite("mushroom1"));
+    Tile::addTile(ViewId::KEY, sprite("key"));
+    Tile::addTile(ViewId::FOUNTAIN, sprite("fountain").setNoShadow());
+    Tile::addTile(ViewId::GOLD, sprite("gold").setNoShadow());
     Tile::addTile(ViewId::TREASURE_CHEST, sprite("treasurydeco").setNoShadow().addBackground(byName("treasury")));
-    Tile::addTile(ViewId::CHEST, sprite(3, 3, 2).setNoShadow());
-    Tile::addTile(ViewId::OPENED_CHEST, sprite(6, 3, 2).setNoShadow());
-    Tile::addTile(ViewId::COFFIN, sprite(7, 3, 2).setNoShadow());
-    Tile::addTile(ViewId::OPENED_COFFIN, sprite(8, 3, 2).setNoShadow());
+    Tile::addTile(ViewId::CHEST, sprite("chest").setNoShadow());
+    Tile::addTile(ViewId::OPENED_CHEST, sprite("chest_opened").setNoShadow());
+    Tile::addTile(ViewId::COFFIN, sprite("coffin").setNoShadow());
+    Tile::addTile(ViewId::OPENED_COFFIN, sprite("coffin_opened").setNoShadow());
     Tile::addTile(ViewId::BOULDER, sprite("boulder"));
     Tile::addTile(ViewId::PORTAL, sprite("surprise"));
-    Tile::addTile(ViewId::GAS_TRAP, sprite(2, 6, 3));
-    Tile::addTile(ViewId::ALARM_TRAP, sprite(16, 5, 3));
-    Tile::addTile(ViewId::WEB_TRAP, sprite(4, 1, 2));
+    Tile::addTile(ViewId::GAS_TRAP, sprite("gas_trap"));
+    Tile::addTile(ViewId::ALARM_TRAP, sprite("alarm_trap"));
+    Tile::addTile(ViewId::WEB_TRAP, sprite("web_trap"));
     Tile::addTile(ViewId::SURPRISE_TRAP, sprite("surprisetrap"));
-    Tile::addTile(ViewId::TERROR_TRAP, sprite(1, 6, 3));
+    Tile::addTile(ViewId::TERROR_TRAP, sprite("terror_trap"));
     Tile::addTile(ViewId::ROCK, sprite("stonepile"));
-    Tile::addTile(ViewId::IRON_ROCK, sprite("ironpile2"));
+    Tile::addTile(ViewId::IRON_ROCK, sprite("ironpile"));
     Tile::addTile(ViewId::WOOD_PLANK, sprite("wood2"));
     Tile::addTile(ViewId::STOCKPILE1, sprite("storage1").setFloorBorders());
     Tile::addTile(ViewId::STOCKPILE2, sprite("storage2").setFloorBorders());
     Tile::addTile(ViewId::STOCKPILE3, sprite("storage3").setFloorBorders());
-    Tile::addTile(ViewId::PRISON, sprite(6, 2, 1));
+    Tile::addTile(ViewId::PRISON, sprite("prison"));
     Tile::addTile(ViewId::BED, sprite("sleepdeco").setNoShadow());
     Tile::addTile(ViewId::DORM, sprite("sleep").setFloorBorders());
-    Tile::addTile(ViewId::TORCH, sprite(12, 0, 2).setNoShadow().setTranslucent(0.35));
-    Tile::addTile(ViewId::DUNGEON_HEART, sprite(6, 10, 2));
-    Tile::addTile(ViewId::ALTAR, sprite(2, 7, 2).setNoShadow());
-    Tile::addTile(ViewId::CREATURE_ALTAR, sprite(3, 7, 2).setNoShadow());
+    Tile::addTile(ViewId::TORCH, sprite("torch").setNoShadow().setTranslucent(0.35));
+    Tile::addTile(ViewId::ALTAR, sprite("altar").setNoShadow());
+    Tile::addTile(ViewId::CREATURE_ALTAR, sprite("altar2").setNoShadow());
     Tile::addTile(ViewId::TORTURE_TABLE, empty().addConnection(DirSet::fullSet(), byName("torturedeco"))
         .addBackground(byName("torture"))
         .setFloorBorders());
     Tile::addTile(ViewId::IMPALED_HEAD, sprite("impaledhead").setNoShadow());
+    Tile::addTile(ViewId::WHIPPING_POST, sprite("whipping_post").setNoShadow());
+    Tile::addTile(ViewId::NOTICE_BOARD, sprite("board").setNoShadow());
+    Tile::addTile(ViewId::SOKOBAN_HOLE, sprite("hole").setNoShadow());
     Tile::addTile(ViewId::TRAINING_ROOM, empty().addConnection(DirSet::fullSet(), byName("traindeco"))
         .addBackground(byName("train")).setFloorBorders());
     Tile::addTile(ViewId::RITUAL_ROOM, empty().addConnection(DirSet::fullSet(), byName("ritualroomdeco"))
@@ -542,42 +527,48 @@ class TileCoordLookup {
         .addBackground(byName("jeweler"))
         .setFloorBorders());
     Tile::addTile(ViewId::CEMETERY, sprite("graveyard").setFloorBorders());
-    Tile::addTile(ViewId::GRAVE, sprite("gravedeco").setNoShadow().addBackground(byName("graveyard")));
-    Tile::addTile(ViewId::ROBE, sprite(7, 11, 3));
-    Tile::addTile(ViewId::LEATHER_GLOVES, sprite(15, 11, 3));
-    Tile::addTile(ViewId::DEXTERITY_GLOVES, sprite(19, 11, 3));
-    Tile::addTile(ViewId::STRENGTH_GLOVES, sprite(20, 11, 3));
-    Tile::addTile(ViewId::LEATHER_ARMOR, sprite(0, 12, 3));
-    Tile::addTile(ViewId::LEATHER_HELM, sprite(10, 12, 3));
-    Tile::addTile(ViewId::TELEPATHY_HELM, sprite(17, 12, 3));
-    Tile::addTile(ViewId::CHAIN_ARMOR, sprite(1, 12, 3));
-    Tile::addTile(ViewId::IRON_HELM, sprite(14, 12, 3));
-    Tile::addTile(ViewId::LEATHER_BOOTS, sprite(0, 13, 3));
-    Tile::addTile(ViewId::IRON_BOOTS, sprite(6, 13, 3));
-    Tile::addTile(ViewId::SPEED_BOOTS, sprite(3, 13, 3));
-    Tile::addTile(ViewId::LEVITATION_BOOTS, sprite(2, 13, 3));
+    Tile::addTile(ViewId::GRAVE, sprite("RIP").setNoShadow());
+    Tile::addTile(ViewId::ROBE, sprite("robe"));
+    Tile::addTile(ViewId::LEATHER_GLOVES, sprite("leather_gloves"));
+    Tile::addTile(ViewId::DEXTERITY_GLOVES, sprite("blue_gloves"));
+    Tile::addTile(ViewId::STRENGTH_GLOVES, sprite("red_gloves"));
+    Tile::addTile(ViewId::LEATHER_ARMOR, sprite("leather_armor"));
+    Tile::addTile(ViewId::LEATHER_HELM, sprite("leather_helm"));
+    Tile::addTile(ViewId::TELEPATHY_HELM, sprite("blue_helm"));
+    Tile::addTile(ViewId::CHAIN_ARMOR, sprite("chain_armor"));
+    Tile::addTile(ViewId::IRON_HELM, sprite("iron_helm"));
+    Tile::addTile(ViewId::LEATHER_BOOTS, sprite("leather_boots"));
+    Tile::addTile(ViewId::IRON_BOOTS, sprite("iron_boots"));
+    Tile::addTile(ViewId::SPEED_BOOTS, sprite("blue_boots"));
+    Tile::addTile(ViewId::LEVITATION_BOOTS, sprite("green_boots"));
     Tile::addTile(ViewId::GUARD_POST, sprite("guardroom"));
-    Tile::addTile(ViewId::MANA, sprite(5, 10, 2));
-    Tile::addTile(ViewId::DANGER, sprite(12, 9, 2));
-    Tile::addTile(ViewId::FETCH_ICON, sprite(15, 11, 3));
+    Tile::addTile(ViewId::MANA, sprite("mana"));
+    Tile::addTile(ViewId::FETCH_ICON, sprite("leather_gloves"));
     Tile::addTile(ViewId::EYEBALL, sprite("eyeball2").setNoShadow());
-    Tile::addTile(ViewId::FOG_OF_WAR, getWaterTile(14));
-    Tile::addTile(ViewId::FOG_OF_WAR_CORNER, sprite(14, 5, 4)
-        .addConnection({Dir::NE}, byCoord(14, 11, 4))
-        .addConnection({Dir::NW}, byCoord(13, 11, 4))
-        .addConnection({Dir::SE}, byCoord(14, 12, 4))
-        .addConnection({Dir::SW}, byCoord(13, 12, 4)));
-    Tile::addTile(ViewId::SPECIAL_BEAST, sprite(7, 10));
-    Tile::addTile(ViewId::SPECIAL_HUMANOID, sprite(2, 10));
-    Tile::addTile(ViewId::TEAM_BUTTON, sprite("team_button"));
-    Tile::addTile(ViewId::TEAM_BUTTON_HIGHLIGHT, sprite("team_button_highlight"));
-    Tile::addTile(ViewId::STAT_ATT, sprite(12, 9, 3));
-    Tile::addTile(ViewId::STAT_DEF, sprite(2, 10, 3));
-    Tile::addTile(ViewId::STAT_STR, sprite(9, 12, 3));
-    Tile::addTile(ViewId::STAT_DEX, sprite(20, 11, 3));
-    Tile::addTile(ViewId::STAT_LVL, sprite(19, 2, 3));
-    Tile::addTile(ViewId::STAT_SPD, sprite(7, 4, 3));
-    Tile::addTile(ViewId::STAT_ACC, sprite(11, 6, 3));
+    Tile::addTile(ViewId::FOG_OF_WAR, getWaterTile("empty", "fogofwar"));
+    Tile::addTile(ViewId::CREATURE_HIGHLIGHT, sprite("creature_highlight"));
+    Tile::addTile(ViewId::SQUARE_HIGHLIGHT, sprite("square_highlight"));
+    Tile::addTile(ViewId::FOG_OF_WAR_CORNER, sprite("fogofwar")
+        .addConnection({Dir::NE}, byName("fogofwarcornne"))
+        .addConnection({Dir::NW}, byName("fogofwarcornnw"))
+        .addConnection({Dir::SE}, byName("fogofwarcornse"))
+        .addConnection({Dir::SW}, byName("fogofwarcornsw")));
+    Tile::addTile(ViewId::SPECIAL_BLBN, sprite("special_blbn"));
+    Tile::addTile(ViewId::SPECIAL_BLBW, sprite("special_blbw"));
+    Tile::addTile(ViewId::SPECIAL_BLGN, sprite("special_blgn"));
+    Tile::addTile(ViewId::SPECIAL_BLGW, sprite("special_blgw"));
+    Tile::addTile(ViewId::SPECIAL_BMBN, sprite("special_bmbn"));
+    Tile::addTile(ViewId::SPECIAL_BMBW, sprite("special_bmbw"));
+    Tile::addTile(ViewId::SPECIAL_BMGN, sprite("special_bmgn"));
+    Tile::addTile(ViewId::SPECIAL_BMGW, sprite("special_bmgw"));
+    Tile::addTile(ViewId::SPECIAL_HLBN, sprite("special_hlbn"));
+    Tile::addTile(ViewId::SPECIAL_HLBW, sprite("special_hlbw"));
+    Tile::addTile(ViewId::SPECIAL_HLGN, sprite("special_hlgn"));
+    Tile::addTile(ViewId::SPECIAL_HLGW, sprite("special_hlgw"));
+    Tile::addTile(ViewId::SPECIAL_HMBN, sprite("special_hmbn"));
+    Tile::addTile(ViewId::SPECIAL_HMBW, sprite("special_hmbw"));
+    Tile::addTile(ViewId::SPECIAL_HMGN, sprite("special_hmgn"));
+    Tile::addTile(ViewId::SPECIAL_HMGW, sprite("special_hmgw"));
   }
 
   Tile symbol(const string& s, ColorId id, bool symbol = false) {
@@ -593,12 +584,19 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::DIG_MARK, symbol(" ", ColorId::BLACK));
     Tile::addSymbol(ViewId::PLAYER, symbol("@", ColorId::WHITE));
     Tile::addSymbol(ViewId::KEEPER, symbol("@", ColorId::PURPLE));
-    Tile::addSymbol(ViewId::UNDEAD_KEEPER, symbol("@", ColorId::DARK_GRAY));
     Tile::addSymbol(ViewId::UNKNOWN_MONSTER, symbol("?", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF, symbol("@", ColorId::LIGHT_GREEN));
+    Tile::addSymbol(ViewId::ELF_WOMAN, symbol("@", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF_ARCHER, symbol("@", ColorId::GREEN));
     Tile::addSymbol(ViewId::ELF_CHILD, symbol("@", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF_LORD, symbol("@", ColorId::DARK_GREEN));
+    Tile::addSymbol(ViewId::DARK_ELF, symbol("@", ColorId::ALMOST_DARK_GRAY));
+    Tile::addSymbol(ViewId::DARK_ELF_WOMAN, symbol("@", ColorId::ALMOST_DARK_GRAY));
+    Tile::addSymbol(ViewId::DARK_ELF_WARRIOR, symbol("@", ColorId::GRAY));
+    Tile::addSymbol(ViewId::DARK_ELF_CHILD, symbol("@", ColorId::ALMOST_GRAY));
+    Tile::addSymbol(ViewId::DARK_ELF_LORD, symbol("@", ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::DRIAD, symbol("@", ColorId::LIGHT_BROWN));
+    Tile::addSymbol(ViewId::KOBOLD, symbol("k", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::SHOPKEEPER, symbol("@", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::LIZARDMAN, symbol("@", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::LIZARDLORD, symbol("@", ColorId::BROWN));
@@ -607,8 +605,10 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::OGRE, symbol("O", ColorId::GREEN));
     Tile::addSymbol(ViewId::CHICKEN, symbol("c", ColorId::YELLOW));
     Tile::addSymbol(ViewId::GNOME, symbol("g", ColorId::GREEN));
+    Tile::addSymbol(ViewId::GNOME_BOSS, symbol("g", ColorId::DARK_BLUE));
     Tile::addSymbol(ViewId::DWARF, symbol("h", ColorId::BLUE));
     Tile::addSymbol(ViewId::DWARF_BARON, symbol("h", ColorId::DARK_BLUE));
+    Tile::addSymbol(ViewId::DWARF_FEMALE, symbol("h", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::FLOOR, symbol(".", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::KEEPER_FLOOR, symbol(".", ColorId::WHITE));
     Tile::addSymbol(ViewId::BRIDGE, symbol("_", ColorId::BROWN));
@@ -621,48 +621,34 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::CASTLE_WALL, symbol("#", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::MUD_WALL, symbol("#", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::WALL, symbol("#", ColorId::LIGHT_GRAY));
-    Tile::addSymbol(ViewId::MOUNTAIN, symbol(0x25ee, ColorId::DARK_GRAY, true));
-    Tile::addSymbol(ViewId::MOUNTAIN2, symbol("#", ColorId::DARK_GRAY));
+    Tile::addSymbol(ViewId::MOUNTAIN, symbol("#", ColorId::DARK_GRAY));
     Tile::addSymbol(ViewId::GOLD_ORE, symbol("⁂", ColorId::YELLOW, true));
     Tile::addSymbol(ViewId::IRON_ORE, symbol("⁂", ColorId::DARK_BROWN, true));
     Tile::addSymbol(ViewId::STONE, symbol("⁂", ColorId::LIGHT_GRAY, true));
-    Tile::addSymbol(ViewId::SNOW, symbol(0x25ee, ColorId::WHITE, true));
     Tile::addSymbol(ViewId::HILL, symbol(0x1d022, ColorId::DARK_GREEN, true));
     Tile::addSymbol(ViewId::WOOD_WALL, symbol("#", ColorId::DARK_BROWN));
     Tile::addSymbol(ViewId::BLACK_WALL, symbol("#", ColorId::LIGHT_GRAY));
-    Tile::addSymbol(ViewId::YELLOW_WALL, symbol("#", ColorId::YELLOW));
-    Tile::addSymbol(ViewId::LOW_ROCK_WALL, symbol("#", ColorId::DARK_GRAY));
-    Tile::addSymbol(ViewId::HELL_WALL, symbol("#", ColorId::RED));
-    Tile::addSymbol(ViewId::SECRETPASS, symbol("#", ColorId::LIGHT_GRAY));
-    Tile::addSymbol(ViewId::DUNGEON_ENTRANCE, symbol(0x2798, ColorId::BROWN, true));
-    Tile::addSymbol(ViewId::DUNGEON_ENTRANCE_MUD, symbol(0x2798, ColorId::BROWN, true));
-    Tile::addSymbol(ViewId::DOWN_STAIRCASE_CELLAR, symbol(0x2798, ColorId::ALMOST_WHITE, true));
     Tile::addSymbol(ViewId::DOWN_STAIRCASE, symbol(0x2798, ColorId::ALMOST_WHITE, true));
-    Tile::addSymbol(ViewId::UP_STAIRCASE_CELLAR, symbol(0x279a, ColorId::ALMOST_WHITE, true));
     Tile::addSymbol(ViewId::UP_STAIRCASE, symbol(0x279a, ColorId::ALMOST_WHITE, true));
-    Tile::addSymbol(ViewId::DOWN_STAIRCASE_HELL, symbol(0x2798, ColorId::RED, true));
-    Tile::addSymbol(ViewId::UP_STAIRCASE_HELL, symbol(0x279a, ColorId::RED, true));
-    Tile::addSymbol(ViewId::DOWN_STAIRCASE_PYR, symbol(0x2798, ColorId::YELLOW, true));
-    Tile::addSymbol(ViewId::UP_STAIRCASE_PYR, symbol(0x279a, ColorId::YELLOW, true));
     Tile::addSymbol(ViewId::WELL, symbol("0", ColorId::BLUE));
-    Tile::addSymbol(ViewId::STATUE1, symbol("&", ColorId::LIGHT_GRAY));
-    Tile::addSymbol(ViewId::STATUE2, symbol("&", ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::MINION_STATUE, symbol("&", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::THRONE, symbol("Ω", ColorId::YELLOW));
-    Tile::addSymbol(ViewId::GREAT_ORC, symbol("o", ColorId::PURPLE));
     Tile::addSymbol(ViewId::ORC, symbol("o", ColorId::DARK_BLUE));
     Tile::addSymbol(ViewId::ORC_SHAMAN, symbol("o", ColorId::YELLOW));
     Tile::addSymbol(ViewId::HARPY, symbol("R", ColorId::YELLOW));
     Tile::addSymbol(ViewId::DOPPLEGANGER, symbol("&", ColorId::YELLOW));
     Tile::addSymbol(ViewId::SUCCUBUS, symbol("&", ColorId::RED));
     Tile::addSymbol(ViewId::BANDIT, symbol("@", ColorId::DARK_BLUE));
-    Tile::addSymbol(ViewId::DARK_KNIGHT, symbol("@", ColorId::PURPLE));
     Tile::addSymbol(ViewId::GREEN_DRAGON, symbol("D", ColorId::GREEN));
     Tile::addSymbol(ViewId::RED_DRAGON, symbol("D", ColorId::RED));
     Tile::addSymbol(ViewId::CYCLOPS, symbol("C", ColorId::GREEN));
+    Tile::addSymbol(ViewId::MINOTAUR, symbol("C", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::HYDRA, symbol("H", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::SHELOB, symbol("S", ColorId::PURPLE));
     Tile::addSymbol(ViewId::WITCH, symbol("@", ColorId::BROWN));
+    Tile::addSymbol(ViewId::WITCHMAN, symbol("@", ColorId::WHITE));
     Tile::addSymbol(ViewId::GHOST, symbol("&", ColorId::WHITE));
     Tile::addSymbol(ViewId::SPIRIT, symbol("&", ColorId::LIGHT_BLUE));
-    Tile::addSymbol(ViewId::DEVIL, symbol("&", ColorId::PURPLE));
     Tile::addSymbol(ViewId::CASTLE_GUARD, symbol("@", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::KNIGHT, symbol("@", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::WARRIOR, symbol("@", ColorId::DARK_GRAY));
@@ -676,6 +662,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::STONE_GOLEM, symbol("Y", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::IRON_GOLEM, symbol("Y", ColorId::ORANGE));
     Tile::addSymbol(ViewId::LAVA_GOLEM, symbol("Y", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::AUTOMATON, symbol("A", ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::ELEMENTALIST, symbol("@", ColorId::YELLOW));
     Tile::addSymbol(ViewId::AIR_ELEMENTAL, symbol("E", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::FIRE_ELEMENTAL, symbol("E", ColorId::RED));
     Tile::addSymbol(ViewId::WATER_ELEMENTAL, symbol("E", ColorId::BLUE));
@@ -687,12 +675,12 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::VAMPIRE, symbol("V", ColorId::DARK_GRAY));
     Tile::addSymbol(ViewId::VAMPIRE_LORD, symbol("V", ColorId::PURPLE));
     Tile::addSymbol(ViewId::MUMMY, symbol("Z", ColorId::YELLOW));
-    Tile::addSymbol(ViewId::MUMMY_LORD, symbol("Z", ColorId::ORANGE));
     Tile::addSymbol(ViewId::JACKAL, symbol("d", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::DEER, symbol("R", ColorId::DARK_BROWN));
     Tile::addSymbol(ViewId::HORSE, symbol("H", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::COW, symbol("C", ColorId::WHITE));
     Tile::addSymbol(ViewId::PIG, symbol("p", ColorId::YELLOW));
+    Tile::addSymbol(ViewId::DONKEY, symbol("D", ColorId::GRAY));
     Tile::addSymbol(ViewId::GOAT, symbol("g", ColorId::GRAY));
     Tile::addSymbol(ViewId::BOAR, symbol("b", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::FOX, symbol("d", ColorId::ORANGE_BROWN));
@@ -703,7 +691,6 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::KRAKEN_WATER, symbol("S", ColorId::DARK_GREEN));
     Tile::addSymbol(ViewId::KRAKEN_LAND, symbol("S", ColorId::DARK_GREEN));
     Tile::addSymbol(ViewId::DEATH, symbol("D", ColorId::DARK_GRAY));
-    Tile::addSymbol(ViewId::NIGHTMARE, symbol("n", ColorId::PURPLE));
     Tile::addSymbol(ViewId::FIRE_SPHERE, symbol("e", ColorId::RED));
     Tile::addSymbol(ViewId::BEAR, symbol("N", ColorId::BROWN));
     Tile::addSymbol(ViewId::BAT, symbol("b", ColorId::DARK_GRAY));
@@ -711,8 +698,10 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::LEPRECHAUN, symbol("l", ColorId::GREEN));
     Tile::addSymbol(ViewId::RAT, symbol("r", ColorId::BROWN));
     Tile::addSymbol(ViewId::SPIDER, symbol("s", ColorId::BROWN));
+    Tile::addSymbol(ViewId::ANT_WORKER, symbol("a", ColorId::BROWN));
+    Tile::addSymbol(ViewId::ANT_SOLDIER, symbol("a", ColorId::YELLOW));
+    Tile::addSymbol(ViewId::ANT_QUEEN, symbol("a", ColorId::PURPLE));
     Tile::addSymbol(ViewId::FLY, symbol("b", ColorId::GRAY));
-    Tile::addSymbol(ViewId::SCORPION, symbol("s", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::SNAKE, symbol("S", ColorId::YELLOW));
     Tile::addSymbol(ViewId::VULTURE, symbol("v", ColorId::DARK_GRAY));
     Tile::addSymbol(ViewId::RAVEN, symbol("v", ColorId::DARK_GRAY));
@@ -742,25 +731,24 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::HEAVY_CLUB, symbol(")", ColorId::BROWN));
     Tile::addSymbol(ViewId::ARROW, symbol("\\", ColorId::BROWN));
     Tile::addSymbol(ViewId::SCROLL, symbol("?", ColorId::WHITE));
-    Tile::addSymbol(ViewId::STEEL_AMULET, symbol("\"", ColorId::YELLOW));
-    Tile::addSymbol(ViewId::COPPER_AMULET, symbol("\"", ColorId::YELLOW));
-    Tile::addSymbol(ViewId::CRYSTAL_AMULET, symbol("\"", ColorId::YELLOW));
-    Tile::addSymbol(ViewId::WOODEN_AMULET, symbol("\"", ColorId::YELLOW));
-    Tile::addSymbol(ViewId::AMBER_AMULET, symbol("\"", ColorId::YELLOW));
+    Tile::addSymbol(ViewId::AMULET1, symbol("\"", ColorId::YELLOW));
+    Tile::addSymbol(ViewId::AMULET2, symbol("\"", ColorId::YELLOW));
+    Tile::addSymbol(ViewId::AMULET3, symbol("\"", ColorId::YELLOW));
+    Tile::addSymbol(ViewId::AMULET4, symbol("\"", ColorId::YELLOW));
+    Tile::addSymbol(ViewId::AMULET5, symbol("\"", ColorId::YELLOW));
     Tile::addSymbol(ViewId::FIRE_RESIST_RING, symbol("=", ColorId::RED));
     Tile::addSymbol(ViewId::POISON_RESIST_RING, symbol("=", ColorId::GREEN));
     Tile::addSymbol(ViewId::BOOK, symbol("+", ColorId::YELLOW));
     Tile::addSymbol(ViewId::FIRST_AID, symbol("+", ColorId::RED));
     Tile::addSymbol(ViewId::TRAP_ITEM, symbol("+", ColorId::YELLOW));
-    Tile::addSymbol(ViewId::EFFERVESCENT_POTION, symbol("!", ColorId::LIGHT_RED));
-    Tile::addSymbol(ViewId::MURKY_POTION, symbol("!", ColorId::BLUE));
-    Tile::addSymbol(ViewId::SWIRLY_POTION, symbol("!", ColorId::YELLOW));
-    Tile::addSymbol(ViewId::VIOLET_POTION, symbol("!", ColorId::VIOLET));
-    Tile::addSymbol(ViewId::PUCE_POTION, symbol("!", ColorId::DARK_BROWN));
-    Tile::addSymbol(ViewId::SMOKY_POTION, symbol("!", ColorId::LIGHT_GRAY));
-    Tile::addSymbol(ViewId::FIZZY_POTION, symbol("!", ColorId::LIGHT_BLUE));
-    Tile::addSymbol(ViewId::MILKY_POTION, symbol("!", ColorId::WHITE));
+    Tile::addSymbol(ViewId::POTION1, symbol("!", ColorId::LIGHT_RED));
+    Tile::addSymbol(ViewId::POTION2, symbol("!", ColorId::BLUE));
+    Tile::addSymbol(ViewId::POTION3, symbol("!", ColorId::YELLOW));
+    Tile::addSymbol(ViewId::POTION4, symbol("!", ColorId::VIOLET));
+    Tile::addSymbol(ViewId::POTION5, symbol("!", ColorId::DARK_BROWN));
+    Tile::addSymbol(ViewId::POTION6, symbol("!", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::MUSHROOM, symbol(0x22c6, ColorId::PINK, true));
+    Tile::addSymbol(ViewId::KEY, symbol("*", ColorId::YELLOW));
     Tile::addSymbol(ViewId::FOUNTAIN, symbol("0", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::GOLD, symbol("$", ColorId::YELLOW));
     Tile::addSymbol(ViewId::TREASURE_CHEST, symbol("=", ColorId::BROWN));
@@ -784,12 +772,14 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::PRISON, symbol(".", ColorId::BLUE));
     Tile::addSymbol(ViewId::DORM, symbol(".", ColorId::BROWN));
     Tile::addSymbol(ViewId::BED, symbol("=", ColorId::WHITE));
-    Tile::addSymbol(ViewId::DUNGEON_HEART, symbol("♥", ColorId::WHITE, true));
     Tile::addSymbol(ViewId::TORCH, symbol("*", ColorId::YELLOW));
     Tile::addSymbol(ViewId::ALTAR, symbol("Ω", ColorId::WHITE, true));
     Tile::addSymbol(ViewId::CREATURE_ALTAR, symbol("Ω", ColorId::YELLOW, true));
     Tile::addSymbol(ViewId::TORTURE_TABLE, symbol("=", ColorId::GRAY));
     Tile::addSymbol(ViewId::IMPALED_HEAD, symbol("⚲", ColorId::BROWN, true));
+    Tile::addSymbol(ViewId::WHIPPING_POST, symbol("}", ColorId::BROWN, true));
+    Tile::addSymbol(ViewId::NOTICE_BOARD, symbol("|", ColorId::BROWN));
+    Tile::addSymbol(ViewId::SOKOBAN_HOLE, symbol("0", ColorId::DARK_BLUE));
     Tile::addSymbol(ViewId::TRAINING_ROOM, symbol("‡", ColorId::BROWN, true));
     Tile::addSymbol(ViewId::RITUAL_ROOM, symbol("Ω", ColorId::PURPLE, true));
     Tile::addSymbol(ViewId::LIBRARY, symbol("▤", ColorId::BROWN, true));
@@ -822,21 +812,27 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::FORBID_ZONE, symbol("#", ColorId::RED));
     Tile::addSymbol(ViewId::MANA, symbol("✱", ColorId::BLUE, true));
     Tile::addSymbol(ViewId::EYEBALL, symbol("e", ColorId::BLUE));
-    Tile::addSymbol(ViewId::DANGER, symbol("*", ColorId::RED));
     Tile::addSymbol(ViewId::FETCH_ICON, symbol(0x1f44b, ColorId::LIGHT_BROWN, true));
     Tile::addSymbol(ViewId::FOG_OF_WAR, symbol(' ', ColorId::WHITE));
+    Tile::addSymbol(ViewId::CREATURE_HIGHLIGHT, symbol(' ', ColorId::WHITE));
+    Tile::addSymbol(ViewId::SQUARE_HIGHLIGHT, symbol(' ', ColorId::WHITE));
     Tile::addSymbol(ViewId::FOG_OF_WAR_CORNER, symbol(' ', ColorId::WHITE));
-    Tile::addSymbol(ViewId::SPECIAL_BEAST, symbol('B', ColorId::PURPLE));
-    Tile::addSymbol(ViewId::SPECIAL_HUMANOID, symbol('H', ColorId::PURPLE));
-    Tile::addSymbol(ViewId::TEAM_BUTTON, symbol("⚐", ColorId::WHITE, true));
-    Tile::addSymbol(ViewId::TEAM_BUTTON_HIGHLIGHT, symbol("⚐", ColorId::GREEN, true));
-    Tile::addSymbol(ViewId::STAT_ATT, symbol("A", ColorId::BLUE));
-    Tile::addSymbol(ViewId::STAT_DEF, symbol("D", ColorId::BLUE));
-    Tile::addSymbol(ViewId::STAT_STR, symbol("S", ColorId::BLUE));
-    Tile::addSymbol(ViewId::STAT_DEX, symbol("X", ColorId::BLUE));
-    Tile::addSymbol(ViewId::STAT_LVL, symbol("L", ColorId::BLUE));
-    Tile::addSymbol(ViewId::STAT_SPD, symbol("P", ColorId::BLUE));
-    Tile::addSymbol(ViewId::STAT_ACC, symbol("C", ColorId::BLUE));
+    Tile::addSymbol(ViewId::SPECIAL_BLBN, symbol('B', ColorId::PURPLE));
+    Tile::addSymbol(ViewId::SPECIAL_BLBW, symbol('B', ColorId::LIGHT_RED));
+    Tile::addSymbol(ViewId::SPECIAL_BLGN, symbol('B', ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::SPECIAL_BLGW, symbol('B', ColorId::WHITE));
+    Tile::addSymbol(ViewId::SPECIAL_BMBN, symbol('B', ColorId::YELLOW));
+    Tile::addSymbol(ViewId::SPECIAL_BMBW, symbol('B', ColorId::ORANGE));
+    Tile::addSymbol(ViewId::SPECIAL_BMGN, symbol('B', ColorId::GREEN));
+    Tile::addSymbol(ViewId::SPECIAL_BMGW, symbol('B', ColorId::LIGHT_GREEN));
+    Tile::addSymbol(ViewId::SPECIAL_HLBN, symbol('H', ColorId::PURPLE));
+    Tile::addSymbol(ViewId::SPECIAL_HLBW, symbol('H', ColorId::LIGHT_RED));
+    Tile::addSymbol(ViewId::SPECIAL_HLGN, symbol('H', ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::SPECIAL_HLGW, symbol('H', ColorId::WHITE));
+    Tile::addSymbol(ViewId::SPECIAL_HMBN, symbol('H', ColorId::YELLOW));
+    Tile::addSymbol(ViewId::SPECIAL_HMBW, symbol('H', ColorId::ORANGE));
+    Tile::addSymbol(ViewId::SPECIAL_HMGN, symbol('H', ColorId::GREEN));
+    Tile::addSymbol(ViewId::SPECIAL_HMGW, symbol('H', ColorId::LIGHT_GREEN));
   }
  
   private:
@@ -855,6 +851,15 @@ const Tile& Tile::getTile(ViewId id, bool sprite) {
     CHECK(tiles[id]);
     return *tiles[id];
   }
+  else {
+    CHECK(symbols[id]);
+    return *symbols[id];
+  }
+}
+
+const Tile& Tile::getTile(ViewId id) {
+  if (tiles[id])
+    return *tiles[id];
   else {
     CHECK(symbols[id]);
     return *symbols[id];

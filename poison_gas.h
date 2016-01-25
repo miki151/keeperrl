@@ -17,13 +17,14 @@
 #define _POISON_GAS_H
 
 #include "util.h"
+#include "position.h"
 
 class Level;
 
 class PoisonGas {
   public:
   void addAmount(double amount);
-  void tick(Level*, Vec2 pos);
+  void tick(Position);
   double getAmount() const;
 
   template <class Archive> 

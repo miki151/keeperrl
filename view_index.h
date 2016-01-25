@@ -33,7 +33,8 @@ RICH_ENUM(HighlightType,
   NIGHT,
   EFFICIENCY,
   PRIORITY_TASK,
-  FORBIDDEN_ZONE
+  FORBIDDEN_ZONE,
+  UNAVAILABLE
 );
 
 class ViewIndex {
@@ -48,6 +49,7 @@ class ViewIndex {
   void mergeFromMemory(const ViewIndex& memory);
   bool isEmpty() const;
   bool noObjects() const;
+  bool hasAnyHighlight() const;
   ~ViewIndex();
   // If the tile is not visible, we still need the id of the floor tile to render connections properly.
   optional<ViewId> getHiddenId() const;

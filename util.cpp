@@ -16,7 +16,7 @@
 #include "stdafx.h"
 
 #include "util.h"
-
+#include "position.h"
 
 void RandomGen::init(int seed) {
   generator.seed(seed);
@@ -46,17 +46,14 @@ string getCardinalName(Dir d) {
     case Dir::SE: return "south-east";
     case Dir::SW: return "south-west";
   }
-  FAIL << int(d);
-  return "";
 }
 
-int RandomGen::get(const vector<double>& weights, double r) {
+int RandomGen::get(const vector<double>& weights) {
   double sum = 0;
   for (double elem : weights)
     sum += elem;
   CHECK(sum > 0);
-  if (r == -1)
-    r = Random.getDouble(0, sum);
+  double r = getDouble(0, sum);
   sum = 0;
   for (int i : All(weights)) {
     sum += weights[i];
@@ -85,6 +82,7 @@ double RandomGen::getDouble(double a, double b) {
 RandomGen Random;
 
 template string toString<int>(const int&);
+template string toString<unsigned int>(const unsigned int&);
 template string toString<size_t>(const size_t&);
 template string toString<char>(const char&);
 template string toString<double>(const double&);
@@ -107,6 +105,13 @@ template <>
 string toString(const Vec2& t){
   stringstream ss;
   ss << "(" << t.x << "," << t.y << ")";
+  return ss.str();
+}
+
+template <>
+string toString(const Position& t){
+  stringstream ss;
+  ss << "(" << t.getCoord().x << "," << t.getCoord().y << ")";
   return ss.str();
 }
 
@@ -159,29 +164,27 @@ bool endsWith(const string& s, const string& suffix) {
 }
 
 vector<string> split(const string& s, const set<char>& delim) {
+  if (s.empty())
+    return {};
   int begin = 0;
   vector<string> ret;
   for (int i : Range(s.size() + 1))
     if (i == s.size() || delim.count(s[i])) {
       string tmp = s.substr(begin, i - begin);
-      if (!tmp.empty())
-        ret.push_back(tmp);
+      ret.push_back(tmp);
       begin = i + 1;
     }
   return ret;
+}
+
+vector<string> removeEmpty(const vector<string>& v) {
+  return filter(v, [] (const string& s) { return !s.empty(); });
 }
 
 template<>
 bool contains(const string& s, const string& p) {
   return s.find(p) != string::npos;
 }
-
-template <class Archive> 
-void Vec2::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(x) & BOOST_SERIALIZATION_NVP(y);
-}
-
-SERIALIZABLE(Vec2);
 
 Vec2::Vec2(int _x, int _y) : x(_x), y(_y) {
 }
@@ -211,52 +214,54 @@ int Vec2::dotProduct(Vec2 a, Vec2 b) {
   return a.x * b.x + a.y * b.y;
 }
 
-vector<Vec2> Vec2::box(int radius, bool shuffle) {
-  if (radius == 0)
-    return {*this};
-  vector<Vec2> v;
-  for (int k = -radius; k < radius; ++k)
-    v.push_back(*this + Vec2(k, -radius));
-  for (int k = -radius; k < radius; ++k)
-    v.push_back(*this + Vec2(radius, k));
-  for (int k = -radius; k < radius; ++k)
-    v.push_back(*this + Vec2(-k, radius));
-  for (int k = -radius; k < radius; ++k)
-    v.push_back(*this + Vec2(-radius, -k));
-  if (shuffle)
-    random_shuffle(v.begin(), v.end(), [](int a) { return Random.get(a);});
-  return v;
-}
-
 vector<Vec2> Vec2::circle(double radius, bool shuffle) {
   return filter(Rectangle(*this - Vec2(radius, radius), *this + Vec2(radius, radius)).getAllSquares(),
       [&](const Vec2& pos) { return distD(pos) <= radius; });
 }
 
-vector<Vec2> Vec2::directions8(bool shuffle) {
-  return Vec2(0, 0).neighbors8(shuffle);
+vector<Vec2> Vec2::directions8() {
+  return Vec2(0, 0).neighbors8();
 }
 
-vector<Vec2> Vec2::neighbors8(bool shuffle) const {
-  vector<Vec2> res = {Vec2(x, y + 1), Vec2(x + 1, y), Vec2(x, y - 1), Vec2(x - 1, y), Vec2(x + 1, y + 1), Vec2(x + 1, y - 1), Vec2(x - 1, y - 1), Vec2(x - 1, y + 1)};
-  if (shuffle)
-    random_shuffle(res.begin(), res.end(),[](int a) { return Random.get(a);});
-  return res;
+vector<Vec2> Vec2::neighbors8() const {
+  return {Vec2(x, y + 1), Vec2(x + 1, y), Vec2(x, y - 1), Vec2(x - 1, y), Vec2(x + 1, y + 1), Vec2(x + 1, y - 1),
+      Vec2(x - 1, y - 1), Vec2(x - 1, y + 1)};
 }
 
-vector<Vec2> Vec2::directions4(bool shuffle) {
-  return Vec2(0, 0).neighbors4(shuffle);
+vector<Vec2> Vec2::directions4() {
+  return Vec2(0, 0).neighbors4();
 }
 
-vector<Vec2> Vec2::neighbors4(bool shuffle) const {
-  vector<Vec2> res = { Vec2(x, y + 1), Vec2(x + 1, y), Vec2(x, y - 1), Vec2(x - 1, y)};
-  if (shuffle)
-    random_shuffle(res.begin(), res.end(),[](int a) { return Random.get(a);});
-  return res;
+vector<Vec2> Vec2::neighbors4() const {
+  return { Vec2(x, y + 1), Vec2(x + 1, y), Vec2(x, y - 1), Vec2(x - 1, y)};
+}
+
+vector<Vec2> Vec2::directions8(RandomGen& random) {
+  return random.permutation(directions8());
+}
+
+vector<Vec2> Vec2::neighbors8(RandomGen& random) const {
+  return random.permutation(neighbors8());
+}
+
+vector<Vec2> Vec2::directions4(RandomGen& random) {
+  return random.permutation(directions4());
+}
+
+vector<Vec2> Vec2::neighbors4(RandomGen& random) const {
+  return random.permutation(neighbors4());
+}
+
+vector<Vec2> Vec2::neighbors(const vector<Vec2>& directions) const {
+  return transform2<Vec2>(directions, [this] (const Vec2& v) { return *this + v;});
 }
 
 bool Vec2::isCardinal4() const {
   return abs(x) + abs(y) == 1;
+}
+
+bool Vec2::isCardinal8() const {
+  return max(abs(x), abs(y)) == 1;
 }
 
 Dir Vec2::getCardinalDir() const {
@@ -328,6 +333,10 @@ Rectangle Rectangle::boundingBox(const vector<Vec2>& verts) {
   return Rectangle(minX, minY, maxX + 1, maxY + 1);
 }
 
+Rectangle Rectangle::centered(Vec2 center, int radius) {
+  return Rectangle(center - Vec2(radius, radius), center + Vec2(radius + 1, radius + 1));
+}
+
 vector<Vec2> Rectangle::getAllSquares() const {
   vector<Vec2> ret;
   for (Vec2 v : (*this))
@@ -339,6 +348,14 @@ Rectangle Rectangle::apply(Vec2::LinearMap map) const {
   Vec2 v1 = map(Vec2(px, py));
   Vec2 v2 = map(Vec2(kx - 1, ky - 1));
   return Rectangle(min(v1.x, v2.x), min(v1.y, v2.y), max(v1.x, v2.x) + 1, max(v1.y, v2.y) + 1);
+}
+
+bool Rectangle::operator == (const Rectangle& r) const {
+  return px == r.px && py == r.py && kx == r.kx && ky == r.ky;
+}
+
+bool Rectangle::operator != (const Rectangle& r) const {
+  return !(*this == r);
 }
 
 bool Vec2::inRectangle(int px, int py, int kx, int ky) const {
@@ -488,8 +505,8 @@ Rectangle::Rectangle(int px1, int py1, int kx1, int ky1) : px(px1), py(py1), kx(
 }
 
 Rectangle::Rectangle(Vec2 p, Vec2 k) : px(p.x), py(p.y), kx(k.x), ky(k.y), w(k.x - p.x), h(k.y - p.y) {
-  CHECK(k.x > p.x);
-  CHECK(k.y > p.y);
+  CHECK(k.x > p.x) << p << " " << k;
+  CHECK(k.y > p.y) << p << " " << k;
 }
 
 Rectangle::Iter::Iter(int x1, int y1, int px1, int py1, int kx1, int ky1) : pos(x1, y1), px(px1), py(py1), kx(kx1), ky(ky1) {}
@@ -508,6 +525,14 @@ int Rectangle::getPX() const {
 
 int Rectangle::getPY() const {
   return py;
+}
+
+Range Rectangle::getXRange() const {
+  return Range(px, kx);
+}
+
+Range Rectangle::getYRange() const {
+  return Range(py, ky);
 }
 
 int Rectangle::getKX() const {
@@ -592,9 +617,26 @@ Rectangle::Iter Rectangle::end() const {
 }
 
 Range::Range(int a, int b) : start(a), finish(b) {
-  CHECK(a <= b);
 }
 Range::Range(int a) : Range(0, a) {}
+
+Range Range::reverse() {
+  return Range(finish - 1, start - 1);
+}
+
+Range Range::shorten(int r) {
+  if (start < finish) {
+    if (finish - start >= 2 * r)
+      return Range(start + r, finish - r);
+    else
+      return Range(0, 0);
+  } else {
+    if (start - finish >= 2 * r)
+      return Range(start - r, finish + r);
+    else
+      return Range(0, 0);
+  }
+}
 
 int Range::getStart() const {
   return start;
@@ -612,7 +654,7 @@ Range::Iter Range::end() {
   return Iter(finish, start, finish);
 }
 
-Range::Iter::Iter(int i, int a, int b) : ind(i), min(a), max(b) {}
+Range::Iter::Iter(int i, int a, int b) : ind(i), min(a), max(b), increment(a < b ? 1 : -1) {}
 
 int Range::Iter::operator* () const {
   return ind;
@@ -623,7 +665,8 @@ bool Range::Iter::operator != (const Iter& other) const {
 }
 
 const Range::Iter& Range::Iter::operator++ () {
-  CHECK(++ind <= max);
+  ind += increment;
+  //CHECK(ind <= max && ind >= min) << ind << " " << min << " " << max;
   return *this;
 }
 
@@ -729,6 +772,30 @@ string getPlural(const string& a, int num) {
     return toString(num) + " " + a + "s";
 }
 
+static string toText(int num) {
+  switch (num) {
+    case 0: return "zero";
+    case 1: return "one";
+    case 2: return "two";
+    case 3: return "three";
+    case 4: return "four";
+    case 5: return "five";
+    case 6: return "six";
+    case 7: return "seven";
+    case 8: return "eight";
+    case 9: return "nine";
+    default: FAIL << "Unsupported number " << num;
+             return "";
+  }
+}
+
+string getPluralText(const string& a, int num) {
+  if (num == 1)
+    return "a " + a;
+  else
+    return toText(num) + " " + a + "s";
+}
+
 Semaphore::Semaphore(int v) : value(v) {}
 
 void Semaphore::p() {
@@ -737,6 +804,11 @@ void Semaphore::p() {
     cond.wait(lock);
   }
   --value;
+}
+
+int Semaphore::get() {
+  std::unique_lock<std::mutex> lock(mut);
+  return value;
 }
 
 void Semaphore::v() {

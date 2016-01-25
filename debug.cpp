@@ -37,24 +37,24 @@ Debug::Debug(DebugType t, const string& msg, int line)
 
 static ofstream output;
 
-void Debug::init() {
-#ifndef RELEASE
-  output.open("log.out");
-#endif
+void Debug::init(bool log) {
+  if (log)
+    output.open("log.out");
 }
 
 void Debug::add(const string& a) {
   out += a;
 }
+
 Debug::~Debug() {
   if (type == DebugType::FATAL) {
     (ofstream("stacktrace.out") << out << endl).flush();
     fail();
   } else {
-#ifndef RELEASE
-    output << out << endl;
-    output.flush();
-#endif
+    if (output) {
+      output << out << endl;
+      output.flush();
+    }
   }
 }
 Debug& Debug::operator <<(const string& msg) {

@@ -12,16 +12,15 @@ enum class EffectId {
     DESTROY_EQUIPMENT,
     ENHANCE_ARMOR,
     ENHANCE_WEAPON,
-    FIRE_SPHERE_PET,
     GUARDING_BOULDER,
     EMIT_POISON_GAS,
     WORD_OF_POWER,
+    AIR_BLAST,
     DECEPTION,
-    SUMMON_INSECTS,
+    SUMMON,
     ACID,
     ALARM,
     TELE_ENEMIES,
-    SUMMON_SPIRIT,
     LEAVE_BODY,
     SILVER_DAMAGE,
     CURE_POISON,
@@ -42,6 +41,7 @@ RICH_ENUM(LastingEffect,
     INVISIBLE,
     POISON,
     ENTANGLED,
+    TIED_UP,
     STUNNED,
     POISON_RESISTANT,
     FIRE_RESISTANT,
@@ -51,16 +51,20 @@ RICH_ENUM(LastingEffect,
     DARKNESS_SOURCE
 );
 
-
-typedef EnumVariant<EffectId, TYPES(LastingEffect),
-        ASSIGN(LastingEffect, EffectId::LASTING)> EffectType;
+class EffectType : public EnumVariant<EffectId, TYPES(LastingEffect, CreatureId),
+        ASSIGN(LastingEffect, EffectId::LASTING),
+        ASSIGN(CreatureId, EffectId::SUMMON)> {
+  using EnumVariant::EnumVariant;
+};
 
 enum class DirEffectId {
   BLAST,
   CREATURE_EFFECT,
 };
 
-typedef EnumVariant<DirEffectId, TYPES(EffectType),
-        ASSIGN(EffectType, DirEffectId::CREATURE_EFFECT)> DirEffectType;
+class DirEffectType : public EnumVariant<DirEffectId, TYPES(EffectType),
+        ASSIGN(EffectType, DirEffectId::CREATURE_EFFECT)> {
+  using EnumVariant::EnumVariant;
+};
 
 #endif

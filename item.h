@@ -17,14 +17,16 @@
 #define _ITEM_H
 
 #include "util.h"
-#include "item_attributes.h"
 #include "enums.h"
-#include "fire.h"
 #include "unique_entity.h"
 #include "renderable.h"
+#include "effect_type.h"
+#include "position.h"
 
 class Level;
 class Attack;
+class Fire;
+class ItemAttributes;
 
 RICH_ENUM(TrapType,
   BOULDER,
@@ -33,16 +35,6 @@ RICH_ENUM(TrapType,
   WEB,
   SURPRISE,
   TERROR
-);
-
-RICH_ENUM(CollectiveResourceId,
-  GOLD,
-  WOOD,
-  IRON,
-  STONE,
-  MANA,
-  PRISONER_HEAD,
-  CORPSE
 );
 
 RICH_ENUM(ItemClass,
@@ -62,15 +54,14 @@ RICH_ENUM(ItemClass,
   CORPSE
 );
 
-class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item> {
+class Item : public Renderable, public UniqueEntity<Item> {
   public:
-  typedef ItemAttributes ItemAttributes;
   Item(const ItemAttributes&);
   virtual ~Item();
 
   static string getTrapName(TrapType);
 
-  virtual void apply(Creature*, Level*);
+  void apply(Creature*, bool noSound = false);
 
   bool isDiscarded();
 
@@ -79,7 +70,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   string getAName(bool plural = false, bool blind = false) const;
   string getNameAndModifiers(bool plural = false, bool blind = false) const;
   string getArtifactName() const;
-  string getShortName(bool shortModifiers, bool blind = false) const;
+  string getShortName(bool blind = false, bool noSuffix = false) const;
   string getPluralTheName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
@@ -100,7 +91,7 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   int getModifier(ModifierType) const;
   int getAttr(AttrType) const;
 
-  void tick(double time, Level*, Vec2 position);
+  void tick(double time, Position);
   
   string getApplyMsgThirdPerson(bool blind) const;
   string getApplyMsgFirstPerson(bool blind) const;
@@ -110,10 +101,10 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   void onUnequip(Creature*);
   virtual void onEquipSpecial(Creature*) {}
   virtual void onUnequipSpecial(Creature*) {}
-  virtual void setOnFire(double amount, const Level* level, Vec2 position);
+  virtual void setOnFire(double amount, Position);
   double getFireSize() const;
 
-  void onHitSquareMessage(Vec2 position, Square*, int numItems);
+  void onHitSquareMessage(Position, int numItems);
   void onHitCreature(Creature* c, const Attack& attack, int numItems);
 
   double getApplyTime() const;
@@ -147,16 +138,18 @@ class Item : private ItemAttributes, public Renderable, public UniqueEntity<Item
   SERIALIZATION_DECL(Item);
 
   protected:
-  virtual void specialTick(double time, Level*, Vec2 position) {}
+  virtual void specialTick(double time, Position) {}
   void setName(const string& name);
   bool SERIAL(discarded) = false;
+  virtual void applySpecial(Creature*);
 
   private:
   string getModifiers(bool shorten = false) const;
   string getVisibleName(bool plural) const;
   string getBlindName(bool plural) const;
+  HeapAllocated<ItemAttributes> SERIAL(attributes);
   const Creature* SERIAL(shopkeeper) = nullptr;
-  Fire SERIAL(fire);
+  HeapAllocated<Fire> SERIAL(fire);
 };
 
 

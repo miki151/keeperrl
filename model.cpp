@@ -33,22 +33,32 @@
 #include "music.h"
 #include "trigger.h"
 #include "highscores.h"
-
+#include "level_maker.h"
+#include "map_memory.h"
+#include "level_builder.h"
+#include "tribe.h"
+#include "time_queue.h"
+#include "visibility_map.h"
+#include "entity_name.h"
+#include "creature_attributes.h"
+#include "view.h"
+#include "view_index.h"
+#include "stair_key.h"
+#include "territory.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) { 
   ar& SVAR(levels)
     & SVAR(collectives)
-    & SVAR(mainVillains)
+    & SVAR(villainsByType)
+    & SVAR(allVillains)
     & SVAR(timeQueue)
     & SVAR(deadCreatures)
     & SVAR(lastTick)
-    & SVAR(levelLinks)
     & SVAR(playerControl)
     & SVAR(playerCollective)
     & SVAR(won)
     & SVAR(addHero)
-    & SVAR(adventurer)
     & SVAR(currentTime)
     & SVAR(worldName)
     & SVAR(musicType)
@@ -59,7 +69,9 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(tribeSet)
     & SVAR(gameIdentifier)
     & SVAR(gameDisplayName)
-    & SVAR(finishCurrentMusic);
+    & SVAR(finishCurrentMusic)
+    & SVAR(stairNavigation)
+    & SVAR(cemetery);
   Deity::serializeAll(ar);
   if (Archive::is_loading::value)
     updateSunlightInfo();
@@ -78,11 +90,11 @@ const double nightLength = 1500;
 
 const double duskLength  = 180;
 
-optional<Model::PortalInfo> Model::getDanglingPortal() {
+optional<Position> Model::getDanglingPortal() {
   return danglingPortal;
 }
 
-void Model::setDanglingPortal(Model::PortalInfo p) {
+void Model::setDanglingPortal(Position p) {
   danglingPortal = p;
 }
 
@@ -97,24 +109,25 @@ void Model::addWoodCount(int cnt) {
 int Model::getWoodCount() const {
   return woodCount;
 }
+
 Statistics& Model::getStatistics() {
-  return statistics;
+  return *statistics;
 }
 
 const Statistics& Model::getStatistics() const {
-  return statistics;
+  return *statistics;
 }
 
 Tribe* Model::getPestTribe() {
-  return tribeSet.pest.get();
+  return tribeSet->pest.get();
 }
 
 Tribe* Model::getKillEveryoneTribe() {
-  return tribeSet.killEveryone.get();
+  return tribeSet->killEveryone.get();
 }
 
 Tribe* Model::getPeacefulTribe() {
-  return tribeSet.peaceful.get();
+  return tribeSet->peaceful.get();
 }
 
 MusicType Model::getCurrentMusic() const {
@@ -139,23 +152,23 @@ void Model::updateSunlightInfo() {
   while (1) {
     d += dayLength;
     if (d > currentTime) {
-      sunlightInfo = {1, d - currentTime, SunlightInfo::DAY};
+      sunlightInfo = {1, d - currentTime, SunlightState::DAY};
       break;
     }
     d += duskLength;
     if (d > currentTime) {
       sunlightInfo = {(d - currentTime) / duskLength, d + nightLength - duskLength - currentTime,
-        SunlightInfo::NIGHT};
+        SunlightState::NIGHT};
       break;
     }
     d += nightLength - 2 * duskLength;
     if (d > currentTime) {
-      sunlightInfo = {0, d + duskLength - currentTime, SunlightInfo::NIGHT};
+      sunlightInfo = {0, d + duskLength - currentTime, SunlightState::NIGHT};
       break;
     }
     d += duskLength;
     if (d > currentTime) {
-      sunlightInfo = {1 - (d - currentTime) / duskLength, d - currentTime, SunlightInfo::NIGHT};
+      sunlightInfo = {1 - (d - currentTime) / duskLength, d - currentTime, SunlightState::NIGHT};
       break;
     }
   }
@@ -166,26 +179,25 @@ void Model::onTechBookRead(Technology* tech) {
     playerControl->onTechBookRead(tech);
 }
 
-void Model::onAlarm(Level* l, Vec2 pos) {
+void Model::onAlarm(Position pos) {
   for (auto& col : collectives)
-    if (col->getLevel() == l && col->containsSquare(pos))
+    if (col->getTerritory().contains(pos))
       col->onAlarm(pos);
   for (const PLevel& l : levels)
     if (const Creature* c = l->getPlayer()) {
       if (pos == c->getPosition())
         c->playerMessage("An alarm sounds near you.");
-      else
+      else if (pos.isSameLevel(c->getPosition()))
         c->playerMessage("An alarm sounds in the " + 
-            getCardinalName((pos - c->getPosition()).getBearing().getCardinalDir()));
+            getCardinalName(c->getPosition().getDir(pos).getBearing().getCardinalDir()));
     }
 }
 
 const char* Model::SunlightInfo::getText() {
   switch (state) {
-    case NIGHT: return "night";
-    case DAY: return "day";
+    case SunlightState::NIGHT: return "night";
+    case SunlightState::DAY: return "day";
   }
-  return "";
 }
 
 const Creature* Model::getPlayer() const {
@@ -211,7 +223,7 @@ optional<Model::ExitInfo> Model::update(double totalTime) {
     lastUpdate = absoluteTime;
   } 
   do {
-    Creature* creature = timeQueue.getNextCreature();
+    Creature* creature = timeQueue->getNextCreature();
     CHECK(creature) << "No more creatures";
     //Debug() << creature->getName().the() << " moving now " << creature->getTime();
     currentTime = creature->getTime();
@@ -253,15 +265,22 @@ optional<Model::ExitInfo> Model::update(double totalTime) {
     }
     for (PCollective& c : collectives)
       c->update(creature);
-    if (!creature->isDead()) {
-      Level* level = creature->getLevel();
-      CHECK(level->getSafeSquare(creature->getPosition())->getCreature() == creature);
-    }
+    if (!creature->isDead())
+      CHECK(creature->getPosition().getCreature() == creature);
   } while (1);
 }
 
-const vector<Collective*> Model::getMainVillains() const {
-  return mainVillains;
+static vector<Collective*> empty;
+
+const vector<Collective*>& Model::getVillains(VillainType t) const {
+  if (villainsByType.count(t))
+    return villainsByType.at(t);
+  else
+    return empty;
+}
+
+const vector<Collective*>& Model::getAllVillains() const {
+  return allVillains;
 }
 
 void Model::tick(double time) {
@@ -272,64 +291,67 @@ void Model::tick(double time) {
       l->updateSunlightMovement();
   }
   Debug() << "Turn " << time;
-  for (Creature* c : timeQueue.getAllCreatures()) {
+  for (Creature* c : timeQueue->getAllCreatures()) {
     c->tick(time);
   }
   for (PLevel& l : levels)
     l->tick(time);
   lastTick = time;
+  for (PCollective& col : collectives)
+    col->tick(time);
   if (playerControl) {
     if (!playerControl->isRetired()) {
-      for (PCollective& col : collectives)
-        col->tick(time);
       bool conquered = true;
-      for (Collective* col : mainVillains)
+      for (Collective* col : getVillains(VillainType::MAIN))
         conquered &= col->isConquered();
-      if (conquered && !won) {
+      if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
         playerControl->onConqueredLand();
         won = true;
       }
-    } else // temp fix to the player gets the location message
-      playerControl->tick(time);
+    }
   }
-  if (musicType == MusicType::PEACEFUL && sunlightInfo.state == SunlightInfo::NIGHT)
+  if (musicType == MusicType::PEACEFUL && sunlightInfo.state == SunlightState::NIGHT)
     setCurrentMusic(MusicType::NIGHT, true);
-  else if (musicType == MusicType::NIGHT && sunlightInfo.state == SunlightInfo::DAY)
+  else if (musicType == MusicType::NIGHT && sunlightInfo.state == SunlightState::DAY)
     setCurrentMusic(MusicType::PEACEFUL, true);
 }
 
-void Model::addCreature(PCreature c) {
-  c->setTime(timeQueue.getCurrentTime() + 1 + Random.getDouble());
-  timeQueue.addCreature(std::move(c));
+void Model::addCreature(PCreature c, double delay) {
+  c->setTime(timeQueue->getCurrentTime() + 1 + delay + Random.getDouble());
+  c->setModel(this);
+  timeQueue->addCreature(std::move(c));
 }
 
 void Model::killCreature(Creature* c, Creature* attacker) {
-  deadCreatures.push_back(timeQueue.removeCreature(c));
   if (attacker)
     attacker->onKilled(c);
   c->getTribe()->onMemberKilled(c, attacker);
   for (auto& col : collectives)
     col->onKilled(c, attacker);
+  deadCreatures.push_back(timeQueue->removeCreature(c));
+  cemetery->landCreature(cemetery->getAllPositions(), c);
 }
 
-Level* Model::buildLevel(Level::Builder&& b, LevelMaker* maker) {
-  Level::Builder builder(std::move(b));
-  levels.push_back(builder.build(this, maker));
+Level* Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
+  LevelBuilder builder(std::move(b));
+  levels.push_back(builder.build(this, maker.get(), levels.size()));
   return levels.back().get();
 }
 
-Model::Model(View* v, const string& world, Tribe::Set&& tribes)
+Model::Model(View* v, const string& world, TribeSet&& tribes)
   : tribeSet(std::move(tribes)), view(v), worldName(world), musicType(MusicType::PEACEFUL) {
   updateSunlightInfo();
+  cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
+      .build(this, LevelMaker::emptyLevel(Random).get(), 0);
 }
 
 Model::~Model() {
 }
 
 PCreature Model::makePlayer(int handicap) {
-  map<UniqueEntity<Level>::Id, MapMemory>* levelMemory = new map<UniqueEntity<Level>::Id, MapMemory>();
+  MapMemory* levelMemory = new MapMemory(getLevels());
   PCreature player = CreatureFactory::addInventory(
-      PCreature(new Creature(tribeSet.adventurer.get(),
+      PCreature(new Creature(tribeSet->adventurer.get(),
       CATTR(
           c.viewId = ViewId::PLAYER;
           c.attr[AttrType::SPEED] = 100;
@@ -386,8 +408,8 @@ void Model::exitAction() {
 #else
   bool canRetire = !playerControl->isRetired();
 #endif
-  vector<View::ListElem> elems { "Save the game",
-    {"Retire", canRetire ? View::NORMAL : View::INACTIVE} , "Change options", "Abandon the game" };
+  vector<ListElem> elems { "Save the game",
+    {"Retire", canRetire ? ListElem::NORMAL : ListElem::INACTIVE} , "Change options", "Abandon the game" };
   auto ind = view->chooseFromList("Would you like to:", elems);
   if (!ind)
     return;
@@ -420,10 +442,12 @@ void Model::exitAction() {
 
 void Model::retireCollective() {
   CHECK(playerControl);
-  statistics.clear();
+  statistics->clear();
   playerControl->retire();
   won = false;
   addHero = true;
+  musicType = MusicType::ADV_PEACEFUL;
+  finishCurrentMusic = true;
 }
 
 void Model::landHeroPlayer() {
@@ -432,8 +456,7 @@ void Model::landHeroPlayer() {
   string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
   if (!advName.empty())
     player->setFirstName(advName);
-  levels[0]->landCreature(StairDirection::UP, StairKey::HERO_SPAWN, std::move(player));
-  adventurer = true;
+  CHECK(levels[0]->landCreature(StairKey::heroSpawn(), std::move(player))) << "No place to spawn player";
 }
 
 string Model::getGameDisplayName() const {
@@ -467,21 +490,21 @@ void Model::onAttack(Creature* victim, Creature* attacker) {
   victim->getTribe()->onMemberAttacked(victim, attacker);
 }
 
-void Model::onTrapTrigger(const Level* l, Vec2 pos) {
+void Model::onTrapTrigger(Position pos) {
   for (auto& col : collectives)
-    if (col->getLevel() == l && col->containsSquare(pos))
+    if (col->getTerritory().contains(pos))
       col->onTrapTrigger(pos);
 }
 
-void Model::onTrapDisarm(const Level* l, const Creature* who, Vec2 pos) {
+void Model::onTrapDisarm(Position pos, const Creature* who) {
   for (auto& col : collectives)
-    if (col->getLevel() == l && col->containsSquare(pos))
+    if (col->getTerritory().contains(pos))
       col->onTrapDisarm(who, pos);
 }
 
-void Model::onSquareDestroyed(const Level* l, Vec2 pos) {
+void Model::onSquareDestroyed(Position pos) {
   for (auto& col : collectives)
-    if (col->getLevel() == l && col->containsSquare(pos))
+    if (col->getTerritory().contains(pos))
       col->onSquareDestroyed(pos);
 }
 
@@ -511,36 +534,55 @@ void Model::setHighscores(Highscores* h) {
   highscores = h;
 }
 
-void Model::addLink(StairDirection dir, StairKey key, Level* l1, Level* l2) {
-  levelLinks[make_tuple(dir, key, l1)] = l2;
-  levelLinks[make_tuple(opposite(dir), key, l2)] = l1;
+Level* Model::getLinkedLevel(Level* from, StairKey key) const {
+  for (Level* target : getLevels())
+    if (target != from && target->hasStairKey(key))
+      return target;
+  FAIL << "Failed to find next level for " << key.getInternalKey() << " " << from->getName();
+  return nullptr;
 }
 
-Vec2 Model::changeLevel(StairDirection dir, StairKey key, Creature* c) {
-  Level* current = c->getLevel();
-  Level* target = levelLinks[make_tuple(dir, key, current)];
-  Vec2 newPos = target->landCreature(opposite(dir), key, c);
-  if (c->isPlayer()) {
-    current->updatePlayer();
-    target->updatePlayer();
-  }
-  return newPos;
+void Model::calculateStairNavigation() {
+  // Floyd-Warshall algorithm
+  for (const Level* l1 : getLevels())
+    for (const Level* l2 : getLevels())
+      if (l1 != l2)
+        if (auto stairKey = getStairsBetween(l1, l2))
+          stairNavigation[{l1, l2}] = *stairKey;
+  for (const Level* li : getLevels())
+    for (const Level* l1 : getLevels())
+      if (li != l1)
+        for (const Level* l2 : getLevels())
+          if (l2 != l1 && l2 != li && !stairNavigation.count({l1, l2}) && stairNavigation.count({li, l2}) &&
+              stairNavigation.count({l1, li}))
+            stairNavigation[{l1, l2}] = stairNavigation.at({l1, li});
+  for (const Level* l1 : getLevels())
+    for (const Level* l2 : getLevels())
+      if (l1 != l2)
+        CHECK(stairNavigation.count({l1, l2})) <<
+            "No stair path between levels " << l1->getName() << " " << l2->getName();
 }
 
-void Model::changeLevel(Level* target, Vec2 position, Creature* c) {
-  Level* current = c->getLevel();
-  target->landCreature({position}, c);
-  if (c->isPlayer()) {
-    current->updatePlayer();
-    target->updatePlayer();
-  }
+optional<StairKey> Model::getStairsBetween(const Level* from, const Level* to) {
+  for (StairKey key : from->getAllStairKeys())
+    if (to->hasStairKey(key))
+      return key;
+  return none;
 }
-  
+
+Position Model::getStairs(const Level* from, const Level* to) {
+  CHECK(contains(getLevels(), from));
+  CHECK(contains(getLevels(), to));
+  CHECK(from != to);
+  CHECK(stairNavigation.count({from, to})) << "No link " << from->getName() << " " << to->getName();
+  return Random.choose(from->getLandingSquares(stairNavigation.at({from, to})));
+}
+
 void Model::conquered(const string& title, vector<const Creature*> kills, int points) {
   string text= "You have conquered this land. You killed " + toString(kills.size()) +
       " innocent beings and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
-  for (string stat : statistics.getText())
+  for (string stat : statistics->getText())
     text += stat + "\n";
   view->presentText("Victory", text);
   Highscores::Score score = CONSTRUCT(Highscores::Score,
@@ -549,6 +591,9 @@ void Model::conquered(const string& title, vector<const Creature*> kills, int po
         c.gameId = getGameIdentifier();
         c.playerName = title;
         c.gameResult = "achieved world domination";
+        c.gameWon = true;
+        c.turns = getTime();
+        c.gameType = Highscores::Score::KEEPER;
   );
   highscores->add(score);
   highscores->present(view, score);
@@ -560,7 +605,7 @@ void Model::killedKeeper(const string& title, const string& keeper, const string
       ". You killed " + toString(kills.size()) +
       " enemies and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
-  for (string stat : statistics.getText())
+  for (string stat : statistics->getText())
     text += stat + "\n";
   view->presentText("Victory", text);
   Highscores::Score score = CONSTRUCT(Highscores::Score,
@@ -569,6 +614,9 @@ void Model::killedKeeper(const string& title, const string& keeper, const string
         c.gameId = getGameIdentifier();
         c.playerName = title;
         c.gameResult = "freed his land from " + keeper;
+        c.gameWon = true;
+        c.turns = getTime();
+        c.gameType = Highscores::Score::ADVENTURER;
   );
   highscores->add(score);
   highscores->present(view, score);
@@ -580,14 +628,12 @@ bool Model::isGameOver() const {
 
 void Model::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
   string text = "And so dies " + creature->getNameAndTitle();
-  string killer;
-  if (const Creature* c = creature->getLastAttacker()) {
-    killer = c->getName().a();
-    text += ", killed by " + killer;
+  if (auto reason = creature->getDeathReason()) {
+    text += ", " + *reason;
   }
   text += ". He killed " + toString(numKills) 
       + " " + enemiesString + " and scored " + toString(points) + " points.\n \n";
-  for (string stat : statistics.getText())
+  for (string stat : statistics->getText())
     text += stat + "\n";
   view->presentText("Game over", text);
   Highscores::Score score = CONSTRUCT(Highscores::Score,
@@ -595,7 +641,11 @@ void Model::gameOver(const Creature* creature, int numKills, const string& enemi
         c.points = points;
         c.gameId = getGameIdentifier();
         c.playerName = *creature->getFirstName();
-        c.gameResult = (killer.empty() ? "" : "killed by " + killer);
+        c.gameResult = creature->getDeathReason().get_value_or("");
+        c.gameWon = false;
+        c.turns = getTime();
+        c.gameType = (!playerControl || playerControl->isRetired()) ? 
+            Highscores::Score::ADVENTURER : Highscores::Score::KEEPER;
   );
   highscores->add(score);
   highscores->present(view, score);
@@ -606,11 +656,7 @@ const string& Model::getWorldName() const {
   return worldName;
 }
 
-Level* Model::prepareTopLevel(ProgressMeter& meter, vector<SettlementInfo> settlements) {
-  Level* top = buildLevel(
-      Level::Builder(meter, 250, 250, "Wilderness", false),
-      LevelMaker::topLevel(CreatureFactory::forrest(tribeSet.wildlife.get()), settlements));
-  return top;
+vector<Level*> Model::getLevels() const {
+  return extractRefs(levels);
 }
-
 

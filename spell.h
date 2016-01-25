@@ -32,6 +32,7 @@ RICH_ENUM(SpellId,
   TELEPORT,
   INVISIBILITY,
   WORD_OF_POWER,
+  AIR_BLAST,
   SUMMON_SPIRIT,
   PORTAL,
   CURE_POISON,
@@ -40,6 +41,11 @@ RICH_ENUM(SpellId,
   BLAST,
   STUN_RAY
 );
+
+enum class CastMessageType {
+  STANDARD,
+  AIR_BLAST
+};
 
 class Spell : public Singleton<Spell, SpellId> {
   public:
@@ -51,16 +57,20 @@ class Spell : public Singleton<Spell, SpellId> {
   DirEffectType getDirEffectType() const;
   int getDifficulty() const;
   string getDescription() const;
+  void addMessage(Creature*);
+  SoundId getSound() const;
 
   static void init();
 
   private:
-  Spell(const string&, EffectType, int difficulty);
-  Spell(const string&, DirEffectType, int difficulty);
+  Spell(const string&, EffectType, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
+  Spell(const string&, DirEffectType, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
 
   const string name;
   const variant<EffectType, DirEffectType> effect;
   const int difficulty;
+  const CastMessageType castMessageType;
+  const SoundId sound;
 };
 
 #endif

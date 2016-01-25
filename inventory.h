@@ -34,7 +34,8 @@ RICH_ENUM(ItemIndex,
   TRAP,
   MINION_EQUIPMENT,
   RANGED_WEAPON,
-  CAN_EQUIP
+  CAN_EQUIP,
+  FOR_SALE
 );
 
 class Inventory {
@@ -45,6 +46,7 @@ class Inventory {
   PItem removeItem(Item* item);
   vector<PItem> removeItems(vector<Item*> items);
   vector<PItem> removeAllItems();
+  void clearIndex(ItemIndex);
 
   const vector<Item*>& getItems() const;
   vector<Item*> getItems(function<bool (Item*)> predicate) const;

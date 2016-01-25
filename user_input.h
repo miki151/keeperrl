@@ -19,7 +19,8 @@
 #include "util.h"
 #include "enum_variant.h"
 #include "unique_entity.h"
-#include "game_info.h"
+#include "village_action.h"
+#include "minion_task.h"
 
 enum class UserInputId {
 // common
@@ -30,26 +31,41 @@ enum class UserInputId {
     MESSAGE_INFO,
 // real-time actions
     BUILD,
+    TILE_CLICK,
     LIBRARY,
     DEITIES,
     RECT_SELECTION,
     RECT_DESELECTION,
-    POSSESS,
     BUTTON_RELEASE,
+    ADD_TO_TEAM,
+    REMOVE_FROM_TEAM,
     CREATURE_BUTTON,
+    CREATURE_GROUP_BUTTON,
+    CREATURE_TASK_ACTION,
+    CREATURE_EQUIPMENT_ACTION,
+    CREATURE_CONTROL,
+    CREATURE_RENAME,
+    CREATURE_BANISH,
+    CREATURE_WHIP,
+    CREATURE_EXECUTE,
+    CREATURE_TORTURE,
+    GO_TO_ENEMY,
     CREATE_TEAM,
-    EDIT_TEAM,
     CANCEL_TEAM,
-    COMMAND_TEAM,
-    SET_TEAM_LEADER,
+    SELECT_TEAM,
+    ACTIVATE_TEAM,
     TECHNOLOGY,
+    VILLAGE_ACTION,
+    GO_TO_VILLAGE,
+    PAY_RANSOM,
+    IGNORE_RANSOM,
 // turn-based actions
     MOVE,
     MOVE_TO,
     TRAVEL,
     FIRE,
-    PICK_UP,
     PICK_UP_ITEM,
+    PICK_UP_ITEM_MULTI,
     SHOW_HISTORY,
     HIDE,
     PAY_DEBT,
@@ -61,26 +77,55 @@ enum class UserInputId {
     INVENTORY_ITEM,
 };
 
-struct BuildingInfo : public NamedTupleBase<Vec2, int> {
-  NAMED_TUPLE_STUFF(BuildingInfo);
-  NAME_ELEM(0, pos);
-  NAME_ELEM(1, building);
+struct BuildingInfo {
+  Vec2 SERIAL(pos);
+  int SERIAL(building);
+  SERIALIZE_ALL(pos, building);
 };
 
-struct TeamLeaderInfo : public NamedTupleBase<TeamId, UniqueEntity<Creature>::Id> {
-  NAMED_TUPLE_STUFF(TeamLeaderInfo);
-  NAME_ELEM(0, team);
-  NAME_ELEM(1, creatureId);
+struct TeamCreatureInfo {
+  TeamId SERIAL(team);
+  UniqueEntity<Creature>::Id SERIAL(creatureId);
+  SERIALIZE_ALL(team, creatureId);
 };
 
-struct InventoryItemInfo : public NamedTupleBase<vector<UniqueEntity<Item>::Id>,
-    GameInfo::PlayerInfo::ItemInfo::Action> {
-  NAMED_TUPLE_STUFF(InventoryItemInfo);
-  NAME_ELEM(0, items);
-  NAME_ELEM(1, action);
+struct InventoryItemInfo {
+  vector<UniqueEntity<Item>::Id> SERIAL(items);
+  ItemAction SERIAL(action);
+  SERIALIZE_ALL(items, action);
 };
 
-typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec2, TeamLeaderInfo),
+struct VillageActionInfo {
+  int SERIAL(villageIndex);
+  VillageAction SERIAL(action);
+  SERIALIZE_ALL(villageIndex, action);
+};
+
+struct TaskActionInfo {
+  UniqueEntity<Creature>::Id SERIAL(creature);
+  optional<MinionTask> SERIAL(switchTo);
+  EnumSet<MinionTask> SERIAL(lock);
+  SERIALIZE_ALL(creature, switchTo, lock);
+};
+
+struct EquipmentActionInfo {
+  UniqueEntity<Creature>::Id SERIAL(creature);
+  vector<UniqueEntity<Item>::Id> SERIAL(ids);
+  optional<EquipmentSlot> SERIAL(slot);
+  ItemAction SERIAL(action);
+  SERIALIZE_ALL(creature, ids, slot, action);
+};
+
+struct RenameActionInfo {
+  UniqueEntity<Creature>::Id SERIAL(creature);
+  string SERIAL(name);
+  SERIALIZE_ALL(creature, name);
+};
+
+enum class SpellId;
+
+class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec2, TeamCreatureInfo,
+    SpellId, VillageActionInfo, TaskActionInfo, EquipmentActionInfo, RenameActionInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::LIBRARY,
@@ -89,23 +134,46 @@ typedef EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec
             UserInputId::TECHNOLOGY,
             UserInputId::DEITIES,
             UserInputId::CREATURE_BUTTON,
-            UserInputId::EDIT_TEAM,
+            UserInputId::CREATURE_GROUP_BUTTON,
+            UserInputId::CREATURE_CONTROL,
+            UserInputId::CREATURE_EXECUTE,
+            UserInputId::CREATURE_TORTURE,
+            UserInputId::CREATURE_WHIP,
+            UserInputId::CREATURE_BANISH,
+            UserInputId::GO_TO_ENEMY,
+            UserInputId::CREATE_TEAM,
             UserInputId::CANCEL_TEAM,
+            UserInputId::ACTIVATE_TEAM,
+            UserInputId::SELECT_TEAM,
             UserInputId::PICK_UP_ITEM,
+            UserInputId::PICK_UP_ITEM_MULTI,
             UserInputId::MESSAGE_INFO,
-            UserInputId::CAST_SPELL,
-            UserInputId::COMMAND_TEAM),
+            UserInputId::GO_TO_VILLAGE),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM),
         ASSIGN(Vec2,
-            UserInputId::POSSESS,
+            UserInputId::TILE_CLICK,
             UserInputId::MOVE, 
             UserInputId::MOVE_TO, 
             UserInputId::TRAVEL, 
             UserInputId::FIRE,
             UserInputId::RECT_SELECTION,
             UserInputId::RECT_DESELECTION),
-        ASSIGN(TeamLeaderInfo,
-            UserInputId::SET_TEAM_LEADER)> UserInput;
+        ASSIGN(TeamCreatureInfo,
+            UserInputId::ADD_TO_TEAM,
+            UserInputId::REMOVE_FROM_TEAM),
+        ASSIGN(SpellId,
+            UserInputId::CAST_SPELL),
+        ASSIGN(VillageActionInfo,
+            UserInputId::VILLAGE_ACTION),
+        ASSIGN(TaskActionInfo,
+            UserInputId::CREATURE_TASK_ACTION),
+        ASSIGN(EquipmentActionInfo,
+            UserInputId::CREATURE_EQUIPMENT_ACTION),
+        ASSIGN(RenameActionInfo,
+            UserInputId::CREATURE_RENAME)
+        > {
+  using EnumVariant::EnumVariant;
+};
 
 #endif

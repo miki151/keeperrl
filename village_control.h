@@ -17,38 +17,29 @@
 #define _VILLAGE_CONTROL_H
 
 #include "event.h"
-#include "task.h"
-#include "game_info.h"
 #include "collective_control.h"
+#include "enum_variant.h"
+#include "entity_set.h"
+#include "creature_factory.h"
+#include "attack_trigger.h"
+
+class Task;
 
 enum class VillageBehaviourId {
   KILL_LEADER,
   KILL_MEMBERS,
   STEAL_GOLD,
-};
-typedef EnumVariant<VillageBehaviourId, TYPES(int),
-        ASSIGN(int, VillageBehaviourId::KILL_MEMBERS)> VillageBehaviour;
-
-enum class AttackTriggerId {
-  POWER,
-  SELF_VICTIMS,
-  ENEMY_POPULATION,
-  GOLD,
-  STOLEN_ITEMS,
+  CAMP_AND_SPAWN,
 };
 
-typedef EnumVariant<AttackTriggerId, TYPES(int),
-        ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> AttackTrigger;
+typedef EnumVariant<VillageBehaviourId, TYPES(int, CreatureFactory),
+        ASSIGN(int, VillageBehaviourId::KILL_MEMBERS),
+        ASSIGN(CreatureFactory, VillageBehaviourId::CAMP_AND_SPAWN)> VillageBehaviour;
 
 class VillageControl : public CollectiveControl {
   public:
   typedef VillageBehaviour Behaviour;
   typedef AttackTrigger Trigger;
-
-  enum AttackMessage {
-    CREATURE_TITLE,
-    TRIBE_AND_NAME,
-  };
 
   enum WelcomeMessage {
     DRAGON_WELCOME,
@@ -64,13 +55,12 @@ class VillageControl : public CollectiveControl {
     Collective* SERIAL(collective);
     vector<Trigger> SERIAL(triggers);
     Behaviour SERIAL(behaviour);
-    AttackMessage SERIAL(attackMessage);
     optional<WelcomeMessage> SERIAL(welcomeMessage);
-    bool SERIAL(leaderAttacks) = false;
+    optional<pair<double, int>> SERIAL(ransom);
 
     PTask getAttackTask(VillageControl* self);
     double getAttackProbability(const VillageControl* self) const;
-    double getTriggerValue(const Trigger&, const VillageControl* self, const Collective* villain) const;
+    double getTriggerValue(const Trigger&, const VillageControl* self) const;
     bool contains(const Creature*);
 
     template <class Archive>
@@ -83,19 +73,19 @@ class VillageControl : public CollectiveControl {
 
   protected:
   virtual void tick(double time) override;
-  virtual MoveInfo getMove(Creature*);
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onRansomPaid() override;
+  virtual vector<TriggerInfo> getTriggers(const Collective* against) const override;
 
   SERIALIZATION_DECL(VillageControl);
 
   private:
-  const string& getAttackMessage(const Villain&) const;
-  string getAttackMessage(const Villain&, const vector<Creature*> attackers) const;
   void launchAttack(Villain&, vector<Creature*> attackers);
   optional<Villain&> getVillain(const Creature*);
   void considerWelcomeMessage();
   void considerCancellingAttack();
+  void checkEntries();
 
   REGISTER_HANDLER(PickupEvent, const Creature*, const vector<Item*>&);
 
@@ -105,6 +95,7 @@ class VillageControl : public CollectiveControl {
   EntitySet<Item> SERIAL(myItems);
   map<const Collective*, int> SERIAL(stolenItemCount);
   map<TeamId, int> SERIAL(attackSizes);
+  set<const Collective*> SERIAL(entries);
 };
 
 #endif

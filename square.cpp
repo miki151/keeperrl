@@ -24,6 +24,19 @@
 #include "trigger.h"
 #include "progress_meter.h"
 #include "model.h"
+#include "vision.h"
+#include "player_message.h"
+#include "square_type.h"
+#include "view_index.h"
+#include "inventory.h"
+#include "poison_gas.h"
+#include "fire.h"
+#include "tribe.h"
+#include "entity_name.h"
+#include "movement_type.h"
+#include "movement_set.h"
+#include "view.h"
+#include "sound.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -45,14 +58,15 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(poisonGas)
     & SVAR(constructions)
     & SVAR(ticking)
-    & SVAR(fog)
     & SVAR(movementSet)
     & SVAR(updateViewIndex)
     & SVAR(updateMemory)
     & SVAR(viewIndex)
     & SVAR(destroyable)
     & SVAR(owner)
-    & SVAR(forbiddenTribe);
+    & SVAR(forbiddenTribe)
+    & SVAR(unavailable)
+    & SVAR(applySound);
   if (progressMeter)
     progressMeter->addProgress();
   updateViewIndex = true;
@@ -68,14 +82,15 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
     fire(p.strength, p.flamability), constructions(p.constructions), ticking(p.ticking),
-    movementSet(p.movementSet), destroyable(p.canDestroy), owner(p.owner) {
+    movementSet(p.movementSet), viewIndex(new ViewIndex()), destroyable(p.canDestroy), owner(p.owner),
+    applySound(p.applySound) {
 }
 
 Square::~Square() {
 }
 
 void Square::putCreature(Creature* c) {
-  CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
+  //CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
   setCreature(c);
   onEnter(c);
   if (c->isStationary())
@@ -91,6 +106,10 @@ Vec2 Square::getPosition() const {
   return position;
 }
 
+Position Square::getPosition2() const {
+  return Position(position, level);
+}
+
 string Square::getName() const {
   return name;
 }
@@ -100,15 +119,11 @@ void Square::setName(const string& s) {
   name = s;
 }
 
-void Square::setLandingLink(StairDirection direction, StairKey key) {
-  landingLink = make_pair(direction, key);
+void Square::setLandingLink(StairKey key) {
+  landingLink = key;
 }
 
-bool Square::isLandingSquare(StairDirection direction, StairKey key) {
-  return landingLink == make_pair(direction, key);
-}
-
-optional<pair<StairDirection, StairKey>> Square::getLandingLink() const {
+optional<StairKey> Square::getLandingLink() const {
   return landingLink;
 }
 
@@ -129,11 +144,11 @@ void Square::addTravelDir(Vec2 dir) {
     travelDir.push_back(dir);
 }
 
-bool Square::canConstruct(SquareType type) const {
+bool Square::canConstruct(const SquareType& type) const {
   return constructions.count(type.getId());
 }
 
-bool Square::construct(SquareType type) {
+bool Square::construct(const SquareType& type) {
   setDirty();
   CHECK(canConstruct(type));
   if (--constructions[type.getId()] <= 0) {
@@ -144,24 +159,25 @@ bool Square::construct(SquareType type) {
 }
 
 bool Square::canDestroy(const Tribe* tribe) const {
-  return destroyable && tribe != owner && !fire.isBurning();
+  return isDestroyable() && tribe != owner && !fire->isBurning();
 }
 
 bool Square::isDestroyable() const {
-  return destroyable;
+  return destroyable && !unavailable;
 }
 
 void Square::destroy() {
   CHECK(isDestroyable());
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
-  level->getModel()->onSquareDestroyed(getLevel(), getPosition());
+  level->getModel()->getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
+  level->getModel()->onSquareDestroyed(getPosition2());
   getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 
 bool Square::canDestroy(const Creature* c) const {
   return canDestroy(c->getTribe())
-    || (destroyable && c->isInvincible()); // so that boulders destroy keeper doors
+    || (isDestroyable() && c->isInvincible()); // so that boulders destroy keeper doors
 }
 
 void Square::destroyBy(Creature* c) {
@@ -171,7 +187,7 @@ void Square::destroyBy(Creature* c) {
 void Square::burnOut() {
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
-  level->getModel()->onSquareDestroyed(getLevel(), getPosition());
+  level->getModel()->onSquareDestroyed(getPosition2());
   getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 
@@ -185,7 +201,7 @@ void Square::setCreature(Creature* c) {
 
 void Square::setLevel(Level* l) {
   level = l;
-  if (ticking || !inventory.isEmpty())
+  if (ticking || !inventory->isEmpty())
     level->addTickingSquare(position);
 }
 
@@ -197,9 +213,14 @@ const Level* Square::getLevel() const {
   return level;
 }
 
-void Square::setFog(double val) {
-  setDirty();
-  fog = val;
+bool Square::isUnavailable() const {
+  return unavailable;
+}
+
+void Square::setUnavailable() {
+  unavailable = true;
+  constructions.clear();
+  movementSet->clear();
 }
 
 bool Square::sunlightBurns() const {
@@ -207,53 +228,53 @@ bool Square::sunlightBurns() const {
 }
 
 void Square::updateSunlightMovement(bool isSunlight) {
-  movementSet.setSunlight(isSunlight);
+  movementSet->setSunlight(isSunlight);
 }
 
 void Square::updateMovement() {
-  if (fire.isBurning()) {
-    if (!movementSet.isOnFire()) {
-      movementSet.setOnFire(true);
+  if (fire->isBurning()) {
+    if (!movementSet->isOnFire()) {
+      movementSet->setOnFire(true);
       level->updateConnectivity(position);
     }
   } else
-  if (movementSet.isOnFire()) {
-    movementSet.setOnFire(false);
+  if (movementSet->isOnFire()) {
+    movementSet->setOnFire(false);
     level->updateConnectivity(position);
   }
 }
 
 void Square::tick(double time) {
   setDirty();
-  if (!inventory.isEmpty())
-    for (Item* item : inventory.getItems()) {
-      item->tick(time, level, position);
+  if (!inventory->isEmpty())
+    for (Item* item : inventory->getItems()) {
+      item->tick(time, Position(position, level));
       if (item->isDiscarded())
-        inventory.removeItem(item);
+        inventory->removeItem(item);
     }
-  poisonGas.tick(level, position);
-  if (creature && poisonGas.getAmount() > 0.2) {
-    creature->poisonWithGas(min(1.0, poisonGas.getAmount()));
+  poisonGas->tick(getPosition2());
+  if (creature && poisonGas->getAmount() > 0.2) {
+    creature->poisonWithGas(min(1.0, poisonGas->getAmount()));
   }
-  if (fire.isBurning()) {
-    modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
-    Debug() << getName() << " burning " << fire.getSize();
-    for (Square* s : level->getSquares(position.neighbors8(true)))
-      if (fire.getSize() > Random.getDouble() * 40)
-        s->setOnFire(fire.getSize() / 20);
-    fire.tick(level, position);
-    if (fire.isBurntOut()) {
+  if (fire->isBurning()) {
+    modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+    Debug() << getName() << " burning " << fire->getSize();
+    for (Position v : getPosition2().neighbors8(Random))
+      if (fire->getSize() > Random.getDouble() * 40)
+        v.setOnFire(fire->getSize() / 20);
+    fire->tick();
+    if (fire->isBurntOut()) {
       level->globalMessage(position, "The " + getName() + " burns out");
       updateMovement();
       burnOut();
       return;
     }
     if (creature)
-      creature->setOnFire(fire.getSize());
+      creature->setOnFire(fire->getSize());
     for (Item* it : getItems())
-      it->setOnFire(fire.getSize(), level, position);
+      it->setOnFire(fire->getSize(), Position(position, level));
     for (Trigger* t : extractRefs(triggers))
-      t->setOnFire(fire.getSize());
+      t->setOnFire(fire->getSize());
   }
   for (Trigger* t : extractRefs(triggers))
     t->tick(time);
@@ -298,26 +319,27 @@ void Square::onItemLands(vector<PItem> item, const Attack& attack, int remaining
       return;
     }
 
-  item[0]->onHitSquareMessage(position, this, item.size());
+  item[0]->onHitSquareMessage(getPosition2(), item.size());
   if (!item[0]->isDiscarded())
     dropItems(std::move(item));
 }
 
-bool Square::canNavigate(MovementType type) const {
+bool Square::canNavigate(const MovementType& type1) const {
+  MovementType type(type1);
   return canEnterEmpty(type) || (canDestroy(type.getTribe()) && !canEnterEmpty(type.setForced())) || 
       (creature && creature->isStationary() && type.getTribe() != creature->getTribe());
 }
 
-bool Square::canEnter(MovementType movement) const {
+bool Square::canEnter(const MovementType& movement) const {
   return creature == nullptr && canEnterEmpty(movement);
 }
 
-bool Square::canEnterEmpty(MovementType movement) const {
+bool Square::canEnterEmpty(const MovementType& movement) const {
   if (creature && creature->isStationary())
     return false;
   if (!movement.isForced() && forbiddenTribe && forbiddenTribe == movement.getTribe())
     return false;
-  return movementSet.canEnter(movement);
+  return movementSet->canEnter(movement);
 }
 
 bool Square::canEnter(const Creature* c) const {
@@ -330,73 +352,69 @@ bool Square::canEnterEmpty(const Creature* c) const {
 
 void Square::setOnFire(double amount) {
   setDirty();
-  bool burning = fire.isBurning();
-  fire.set(amount);
-  if (!burning && fire.isBurning()) {
+  bool burning = fire->isBurning();
+  fire->set(amount);
+  if (!burning && fire->isBurning()) {
     level->addTickingSquare(position);
-    level->globalMessage(position, "The " + getName() + " catches fire.");
-    modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire.getSize());
+    level->globalMessage(position, "The " + getName() + " catches fire");
+    modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
     updateMovement();
   }
   if (creature)
     creature->setOnFire(amount);
   for (Item* it : getItems())
-    it->setOnFire(amount, level, position);
+    it->setOnFire(amount, Position(position, level));
 }
 
 void Square::addPoisonGas(double amount) {
   setDirty();
   if (canSeeThru()) {
-    poisonGas.addAmount(amount);
+    poisonGas->addAmount(amount);
     level->addTickingSquare(position);
   }
 }
 
 double Square::getPoisonGasAmount() const {
-  return poisonGas.getAmount();
+  return poisonGas->getAmount();
 }
 
 bool Square::isBurning() const {
-  return fire.isBurning();
-}
-
-optional<ViewObject> Square::getBackgroundObject() const {
-  return backgroundObject;
+  return fire->isBurning();
 }
 
 void Square::setBackground(const Square* square) {
   setDirty();
   if (getViewObject().layer() != ViewLayer::FLOOR_BACKGROUND) {
-    const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject) : square->getViewObject();
-    if (obj.layer() == ViewLayer::FLOOR_BACKGROUND)
-      backgroundObject = obj;
+    const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject.get()) : square->getViewObject();
+    if (obj.layer() == ViewLayer::FLOOR_BACKGROUND) {
+      backgroundObject.reset(new ViewObject(obj));
+    }
   }
 }
 
 void Square::getViewIndex(ViewIndex& ret, const Tribe* tribe) const {
   if (!updateViewIndex) {
-    ret = viewIndex;
+    ret = *viewIndex;
     return;
   }
   double fireSize = 0;
-  for (Item* it : inventory.getItems())
+  for (Item* it : inventory->getItems())
     fireSize = max(fireSize, it->getFireSize());
-  fireSize = max(fireSize, fire.getSize());
+  fireSize = max(fireSize, fire->getSize());
   if (backgroundObject)
-    ret.insert(*backgroundObject);
+    ret.insert(*backgroundObject.get());
   ret.insert(getViewObject());
   for (const PTrigger& t : triggers)
     if (auto obj = t->getViewObject(tribe))
       ret.insert(copyOf(*obj).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (Item* it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
-  ret.setHighlight(HighlightType::NIGHT, 1.0 - level->getLight(position));
-  if (poisonGas.getAmount() > 0)
-    ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas.getAmount()));
-  if (fog)
-    ret.setHighlight(HighlightType::FOG, fog);
+  if (poisonGas->getAmount() > 0)
+    ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas->getAmount()));
+  if (unavailable)
+    ret.setHighlight(HighlightType::UNAVAILABLE);
   updateViewIndex = false;
-  viewIndex = ret;
+  *viewIndex = ret;
 }
 
 void Square::onEnter(Creature* c) {
@@ -415,11 +433,11 @@ void Square::dropItems(vector<PItem> items) {
   if (level)  // if level == null, then it's being constructed, square will be added later
     level->addTickingSquare(getPosition());
   for (PItem& it : items)
-    inventory.addItem(std::move(it));
+    inventory->addItem(std::move(it));
 }
 
 bool Square::hasItem(Item* it) const {
-  return inventory.hasItem(it);
+  return inventory->hasItem(it);
 }
 
 Creature* Square::getCreature() {
@@ -434,7 +452,7 @@ void Square::addTrigger(PTrigger t) {
   triggers.push_back(std::move(t));
 }
 
-const vector<Trigger*> Square::getTriggers() const {
+vector<Trigger*> Square::getTriggers() const {
   return extractRefs(triggers);
 }
 
@@ -463,14 +481,6 @@ const Creature* Square::getCreature() const {
   return creature;
 }
 
-void Square::killCreature(Creature* attacker) {
-  onKilled(creature, attacker);
-  removeCreature();
-}
-
-void Square::onKilled(Creature* victim, Creature* attacker) {
-}
-
 void Square::removeCreature() {
   setDirty();
   CHECK(creature);
@@ -482,6 +492,10 @@ void Square::removeCreature() {
 
 bool Square::canSeeThru(VisionId v) const {
   return vision && (v == *vision || Vision::get(v)->getInheritedFov() == Vision::get(*vision));
+}
+
+bool Square::canSeeThru() const {
+  return canSeeThru(VisionId::NORMAL);
 }
 
 void Square::setVision(VisionId v) {
@@ -498,32 +512,32 @@ int Square::getStrength() const {
 }
 
 Item* Square::getTopItem() const {
-  if (!inventory.isEmpty())
-    return inventory.getItems().back();
+  if (!inventory->isEmpty())
+    return inventory->getItems().back();
   else
     return nullptr;
 }
 
 vector<Item*> Square::getItems(function<bool (Item*)> predicate) const {
-  return inventory.getItems(predicate);
+  return inventory->getItems(predicate);
 }
 
 const vector<Item*>& Square::getItems() const {
-  return inventory.getItems();
+  return inventory->getItems();
 }
 
 const vector<Item*>& Square::getItems(ItemIndex index) const {
-  return inventory.getItems(index);
+  return inventory->getItems(index);
 }
 
 PItem Square::removeItem(Item* it) {
   setDirty();
-  return inventory.removeItem(it);
+  return inventory->removeItem(it);
 }
 
 vector<PItem> Square::removeItems(vector<Item*> it) {
   setDirty();
-  return inventory.removeItems(it);
+  return inventory->removeItems(it);
 }
 
 void Square::setDirty() {
@@ -540,12 +554,12 @@ bool Square::needsMemoryUpdate() const {
 }
 
 void Square::addTraitForTribe(const Tribe* tribe, MovementTrait trait) {
-  movementSet.addTraitForTribe(tribe, trait);
+  movementSet->addTraitForTribe(tribe, trait);
   level->updateConnectivity(position);
 }
 
 void Square::removeTraitForTribe(const Tribe* tribe, MovementTrait trait) {
-  movementSet.removeTraitForTribe(tribe, trait);
+  movementSet->removeTraitForTribe(tribe, trait);
   level->updateConnectivity(position);
 }
 
@@ -553,12 +567,14 @@ void Square::forbidMovementForTribe(const Tribe* tribe) {
   CHECK(!forbiddenTribe || forbiddenTribe == tribe);
   forbiddenTribe = tribe;
   level->updateConnectivity(position);
+  setDirty();
 }
 
 void Square::allowMovementForTribe(const Tribe* tribe) {
   CHECK(!forbiddenTribe || forbiddenTribe == tribe);
   forbiddenTribe = nullptr;
   level->updateConnectivity(position);
+  setDirty();
 }
 
 bool Square::isTribeForbidden(const Tribe* tribe) const {
@@ -576,3 +592,12 @@ optional<SquareApplyType> Square::getApplyType(const Creature* c) const {
   return none;
 }
 
+void Square::clearItemIndex(ItemIndex index) {
+  inventory->clearIndex(index);
+}
+
+void Square::apply(Creature* c) {
+  if (applySound)
+    c->addSound(*applySound);
+  onApply(c);
+}

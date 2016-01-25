@@ -17,7 +17,9 @@
 #define _LOCATION_H
 
 #include "util.h"
-#include "level.h"
+#include "position.h"
+
+class Level;
 
 class Location {
   public:
@@ -28,11 +30,11 @@ class Location {
   string getDescription() const;
   bool isMarkedAsSurprise() const;
   void setBounds(Rectangle);
-  bool contains(Vec2) const;
-  Vec2 getMiddle() const;
-  Vec2 getBottomRight() const;
-  const vector<Vec2>& getAllSquares() const;
-  void setLevel(const Level*);
+  bool contains(Position) const;
+  Position getMiddle() const;
+  Position getBottomRight() const;
+  vector<Position> getAllSquares() const;
+  void setLevel(Level*);
   const Level* getLevel() const;
 
   template <class Archive> 
@@ -41,9 +43,9 @@ class Location {
   private:
   optional<string> SERIAL(name);
   optional<string> SERIAL(description);
-  const Level* SERIAL(level) = nullptr;
+  Level* SERIAL(level) = nullptr;
   vector<Vec2> SERIAL(squares);
-  Table<bool> SERIAL(table) = Table<bool>(Level::getMaxBounds(), false);
+  Table<bool> SERIAL(table);
   Vec2 SERIAL(middle);
   Vec2 SERIAL(bottomRight);
   bool SERIAL(surprise) = false;

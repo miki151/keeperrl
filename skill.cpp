@@ -17,8 +17,8 @@
 
 #include "skill.h"
 #include "enums.h"
-#include "item_attributes.h"
 #include "creature.h"
+#include "modifier_type.h"
 
 string Skill::getName() const {
   return name;
@@ -131,6 +131,11 @@ Skill::Skill(string _name, string _helpText, bool _discrete, bool _consume)
 void Skillset::insert(SkillId s) {
   CHECK(Skill::get(s)->isDiscrete());
   discrete.insert(s);
+}
+
+void Skillset::erase(SkillId s) {
+  CHECK(Skill::get(s)->isDiscrete());
+  discrete.erase(s);
 }
 
 bool Skillset::hasDiscrete(SkillId s) const {

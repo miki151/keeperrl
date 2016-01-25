@@ -16,35 +16,20 @@
 #ifndef _TASK_H
 #define _TASK_H
 
-#include "monster_ai.h"
+#include "move_info.h"
 #include "unique_entity.h"
 #include "entity_set.h"
-#include "square_type.h"
+#include "position.h"
+
+class SquareType;
+class Location;
+class TaskCallback;
+class CreatureFactory;
 
 class Task : public UniqueEntity<Task> {
   public:
 
-  class Callback {
-    public:
-    virtual void onConstructed(Vec2 pos, SquareType) {}
-    virtual void onConstructionCancelled(Vec2 pos) {}
-    virtual bool isConstructionReachable(Vec2 pos) { return true; }
-    virtual void onTorchBuilt(Vec2 pos, Trigger*) {}
-    virtual void onAppliedItem(Vec2 pos, Item* item) {}
-    virtual void onAppliedSquare(Vec2 pos) {}
-    virtual void onAppliedItemCancel(Vec2 pos) {}
-    virtual void onPickedUp(Vec2 pos, EntitySet<Item>) {}
-    virtual void onBrought(Vec2 pos, EntitySet<Item>) {}
-    virtual void onCantPickItem(EntitySet<Item> items) {}
-    virtual void onKillCancelled(Creature*) {}
-    virtual void onBedCreated(Vec2 pos, SquareType fromType, SquareType toType) {}
-    virtual void onCopulated(Creature* who, Creature* with) {}
-    virtual void onConsumed(Creature* consumer, Creature* who) {}
-
-    SERIALIZATION_DECL(Callback);
-  };
-
-  Task();
+  Task(bool transferable = false);
   virtual ~Task();
 
   virtual MoveInfo getMove(Creature*) = 0;
@@ -52,37 +37,47 @@ class Task : public UniqueEntity<Task> {
   virtual bool canTransfer();
   virtual void cancel() {}
   virtual string getDescription() const = 0;
+  virtual bool canPerform(const Creature* c);
   bool isDone();
 
-  static PTask construction(Callback*, Vec2 target, SquareType);
-  static PTask buildTorch(Callback*, Vec2 target, Dir attachmentDir);
-  static PTask bringItem(Callback*, Vec2 position, vector<Item*>, vector<Vec2> target, int numRetries = 10);
-  static PTask applyItem(Callback*, Vec2 position, Item* item, Vec2 target);
-  static PTask applySquare(Callback*, vector<Vec2> squares);
-  static PTask pickAndEquipItem(Callback*, Vec2 position, Item* item);
-  static PTask equipItem(Item* item);
-  static PTask pickItem(Callback*, Vec2 position, vector<Item*> items);
-  static PTask kill(Callback*, Creature*);
-  static PTask torture(Callback*, Creature*);
-  static PTask sacrifice(Callback*, Creature*);
-  static PTask destroySquare(Vec2 position);
+  static PTask construction(TaskCallback*, Position, const SquareType&);
+  static PTask buildTorch(TaskCallback*, Position, Dir attachmentDir);
+  static PTask bringItem(TaskCallback*, Position position, vector<Item*>, vector<Position> target,
+      int numRetries = 10);
+  static PTask applyItem(TaskCallback*, Position, Item*, Position target);
+  static PTask applySquare(TaskCallback*, vector<Position>);
+  static PTask pickAndEquipItem(TaskCallback*, Position, Item*);
+  static PTask equipItem(Item*);
+  static PTask pickItem(TaskCallback*, Position, vector<Item*>);
+  static PTask kill(TaskCallback*, Creature*);
+  static PTask torture(TaskCallback*, Creature*);
+  static PTask sacrifice(TaskCallback*, Creature*);
+  static PTask destroySquare(Position);
   static PTask disappear();
   static PTask chain(PTask, PTask);
+  static PTask chain(PTask, PTask, PTask);
   static PTask chain(vector<PTask>);
-  static PTask explore(Vec2);
+  static PTask explore(Position);
   static PTask attackLeader(Collective*);
+  static PTask campAndSpawn(Collective* target, Collective* self, const CreatureFactory&, int defenseSize,
+      Range attackSize, int numAttacks);
   static PTask killFighters(Collective*, int numFighters);
-  static PTask stealFrom(Collective*, Callback*);
-  static PTask createBed(Callback*, Vec2, SquareType fromType, SquareType toType);
-  static PTask consumeItem(Callback*, vector<Item*> items);
-  static PTask copulate(Callback*, Creature* target, int numTurns);
-  static PTask consume(Callback*, Creature* target);
+  static PTask stealFrom(Collective*, TaskCallback*);
+  static PTask createBed(TaskCallback*, Position, const SquareType& fromType, const SquareType& toType);
+  static PTask consumeItem(TaskCallback*, vector<Item*> items);
+  static PTask copulate(TaskCallback*, Creature* target, int numTurns);
+  static PTask consume(TaskCallback*, Creature* target);
   static PTask stayInLocationUntil(const Location*, double time);
-  static PTask eat(set<Vec2> hatcherySquares);
+  static PTask eat(set<Position> hatcherySquares);
+  static PTask goTo(Position);
+  static PTask goToAndWait(Position, double maxTime);
+  static PTask whipping(TaskCallback*, Position, Creature* whipped, double interval, double timeout);
+  static PTask dropItems(vector<Item*>);
+  static PTask spider(Position origin, const vector<Position>& posClose, const vector<Position>& posFurther);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
-
+  
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
 
@@ -91,6 +86,7 @@ class Task : public UniqueEntity<Task> {
 
   private:
   bool SERIAL(done) = false;
+  bool SERIAL(transfer);
 };
 
 #endif

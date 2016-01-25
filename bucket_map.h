@@ -20,4 +20,10 @@ class BucketMap {
   Table<unordered_set<T>> SERIAL(buckets);
 };
 
+class Creature;
+class CreatureBucketMap : public BucketMap<Creature*> {
+  public:
+  using BucketMap::BucketMap;
+};
+
 #endif

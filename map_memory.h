@@ -16,30 +16,31 @@
 #ifndef _MEMORY_H
 #define _MEMORY_H
 
-#include "view_index.h"
 #include "util.h"
+#include "position.h"
+#include "position_map.h"
 
 class ViewObject;
+class ViewIndex;
 
 class MapMemory {
   public:
-  MapMemory();
-  MapMemory(const MapMemory&);
-  void addObject(Vec2 pos, const ViewObject& obj);
-  void update(Vec2, const ViewIndex&);
-  const unordered_set<Vec2>& getUpdated() const;
-  void clearUpdated() const;
-  void clearSquare(Vec2 pos);
-  bool hasViewIndex(Vec2 pos) const;
-  ViewIndex getViewIndex(Vec2 pos) const;
+  MapMemory(const vector<Level*>&);
+  void addObject(Position, const ViewObject&);
+  void update(Position, const ViewIndex&);
+  const unordered_set<Position, CustomHash<Position>>& getUpdated(const Level*) const;
+  void clearUpdated(const Level*) const;
+  void clearSquare(Position pos);
   static const MapMemory& empty();
+  const optional<ViewIndex>& getViewIndex(Position) const;
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
+  SERIALIZATION_DECL(MapMemory);
 
   private:
-  Table<optional<ViewIndex>> SERIAL(table);
-  mutable unordered_set<Vec2> updated;
+  void updateUpdated(Position);
+  optional<ViewIndex>& getViewIndex(Position);
+  HeapAllocated<PositionMap<optional<ViewIndex>>> SERIAL(table);
+  mutable map<int, unordered_set<Position, CustomHash<Position>>> updated;
 };
 
 #endif

@@ -17,48 +17,55 @@
 
 #include "view.h"
 #include "creature.h"
-#include "collective.h"
+#include "spell.h"
+#include "item.h"
+#include "game_info.h"
+#include "entity_name.h"
+#include "skill.h"
+#include "modifier_type.h"
+#include "view_id.h"
+#include "level.h"
+#include "position.h"
 
-
-View::ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
+ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
 
-View::ListElem::ListElem(const string& t, const string& sec, ElemMod m) : text(t), secondColumn(sec), mod(m) {
+ListElem::ListElem(const string& t, const string& sec, ElemMod m) : text(t), secondColumn(sec), mod(m) {
 }
 
-View::ListElem::ListElem(const char* s, ElemMod m, optional<UserInputId> a) : text(s), mod(m), action(a) {
+ListElem::ListElem(const char* s, ElemMod m, optional<UserInputId> a) : text(s), mod(m), action(a) {
 }
 
-View::ListElem& View::ListElem::setTip(const string& s) {
+ListElem& ListElem::setTip(const string& s) {
   tooltip = s;
   return *this;
 }
 
-const string& View::ListElem::getText() const {
+const string& ListElem::getText() const {
   return text;
 }
 
-const string& View::ListElem::getSecondColumn() const {
+const string& ListElem::getSecondColumn() const {
   return secondColumn;
 }
 
-const string& View::ListElem::getTip() const {
+const string& ListElem::getTip() const {
   return tooltip;
 }
 
-View::ElemMod View::ListElem::getMod() const {
+ListElem::ElemMod ListElem::getMod() const {
   return mod;
 }
 
-void View::ListElem::setMod(ElemMod m) {
+void ListElem::setMod(ElemMod m) {
   mod = m;
 }
 
-optional<UserInputId> View::ListElem::getAction() const {
+optional<UserInputId> ListElem::getAction() const {
   return action;
 }
 
-vector<View::ListElem> View::getListElem(const vector<string>& v) {
+vector<ListElem> ListElem::convert(const vector<string>& v) {
   function<ListElem(const string&)> fun = [](const string& s) -> ListElem { return ListElem(s); };
   return transform2<ListElem>(v, fun);
 }
@@ -70,16 +77,112 @@ View::View() {
 View::~View() {
 }
 
-GameInfo::CreatureInfo::CreatureInfo(const Creature* c) 
-    : viewObject(c->getViewObject()),
+CreatureInfo::CreatureInfo(const Creature* c) 
+    : viewId(c->getViewObject().id()),
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
       speciesName(c->getSpeciesName()),
       expLevel(c->getExpLevel()),
-      morale(c->getMorale()) {
+      morale(c->getMorale()),
+      cost({ViewId::GOLD, c->getRecruitmentCost()}){
 }
 
-GameInfo::CreatureInfo& GameInfo::BandInfo::getMinion(UniqueEntity<Creature>::Id id) {
+string PlayerInfo::getFirstName() const {
+  if (!firstName.empty())
+    return firstName;
+  else
+    return capitalFirst(name);
+}
+
+string PlayerInfo::getTitle() const {
+  string title = name;
+  for (int i : All(adjectives)) {
+    title = adjectives[i] + " " + title;
+    break; // only use the first one
+  }
+  if (!firstName.empty())
+    title = firstName + " the " + title;
+  return capitalFirst(title);
+}
+
+vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
+  vector<PlayerInfo::SkillInfo> ret;
+  for (auto skill : c->getDiscreteSkills())
+    ret.push_back(PlayerInfo::SkillInfo{Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
+  for (SkillId id : ENUM_ALL(SkillId))
+    if (!Skill::get(id)->isDiscrete() && c->getSkillValue(Skill::get(id)) > 0)
+      ret.push_back(PlayerInfo::SkillInfo{Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
+  return ret;
+}
+
+void PlayerInfo::readFrom(const Creature* c) {
+  firstName = c->getFirstName().get_value_or("");
+  name = c->getName().bare();
+  adjectives = c->getMainAdjectives();
+  description = capitalFirst(c->getDescription());
+  Item* weapon = c->getWeapon();
+  weaponName = weapon ? weapon->getName() : "";
+  viewId = c->getViewObject().id();
+  morale = c->getMorale();
+  levelName = c->getLevel()->getName();
+  positionHash = c->getPosition().getHash();
+  typedef PlayerInfo::AttributeInfo::Id AttrId;
+  attributes = {
+    { "Attack",
+      AttrId::ATT,
+      c->getModifier(ModifierType::DAMAGE),
+      c->isAffected(LastingEffect::RAGE) ? 1 : c->isAffected(LastingEffect::PANIC) ? -1 : 0,
+      "Affects if and how much damage is dealt in combat."},
+    { "Defense",
+      AttrId::DEF,
+      c->getModifier(ModifierType::DEFENSE),
+      c->isAffected(LastingEffect::RAGE) ? -1 : (c->isAffected(LastingEffect::PANIC) 
+          || c->isAffected(LastingEffect::MAGIC_SHIELD)) ? 1 : 0,
+      "Affects if and how much damage is taken in combat."},
+    { "Strength",
+      AttrId::STR,
+      c->getAttr(AttrType::STRENGTH),
+      c->isAffected(LastingEffect::STR_BONUS),
+      "Affects the values of attack, defense and carrying capacity."},
+    { "Dexterity",
+      AttrId::DEX,
+      c->getAttr(AttrType::DEXTERITY),
+      c->isAffected(LastingEffect::DEX_BONUS),
+      "Affects the values of melee and ranged accuracy, and ranged damage."},
+    { "Accuracy",
+      AttrId::ACC,
+      c->getModifier(ModifierType::ACCURACY),
+      c->accuracyBonus(),
+      "Defines the chance of a successful melee attack and dodging."},
+    { "Speed",
+      AttrId::SPD,
+      c->getAttr(AttrType::SPEED),
+      c->isAffected(LastingEffect::SPEED) ? 1 : c->isAffected(LastingEffect::SLOWED) ? -1 : 0,
+      "Affects how much game time every action uses."},
+/*    { "Level",
+      ViewId::STAT_LVL,
+      c->getExpLevel(), 0,
+      "Describes general combat value of the creature."}*/
+  };
+  level = c->getExpLevel();
+  skills = getSkillNames(c);
+  effects.clear();
+  for (auto& adj : c->getBadAdjectives())
+    effects.push_back({adj.name, adj.help, true});
+  for (auto& adj : c->getGoodAdjectives())
+    effects.push_back({adj.name, adj.help, false});
+  spells.clear();
+  for (::Spell* spell : c->getSpells()) {
+    bool ready = c->isReady(spell);
+    spells.push_back({
+        spell->getId(),
+        spell->getName() + (ready ? "" : " [" + toString<int>(c->getSpellDelay(spell)) + "]"),
+        spell->getDescription(),
+        c->isReady(spell) ? none : optional<int>(c->getSpellDelay(spell))});
+  }
+}
+
+CreatureInfo& CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) {
   for (auto& elem : minions)
     if (elem.uniqueId == id)
       return elem;

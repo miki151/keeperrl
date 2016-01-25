@@ -23,6 +23,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#include <exception>
 
 #include "view.h"
 #include "options.h"
@@ -41,6 +42,10 @@
 #include "clock.h"
 #include "skill.h"
 #include "parse_game.h"
+#include "version.h"
+#include "vision.h"
+#include "model_builder.h"
+#include "sound_library.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -48,10 +53,6 @@
 
 #ifndef USER_DIR
 #define USER_DIR "."
-#endif
-
-#ifdef OSX_APP
-#include "resource_path.hpp"
 #endif
 
 using namespace boost::iostreams;
@@ -78,16 +79,20 @@ static thread::attributes getAttributes() {
 #endif
 
 void initializeRendererTiles(Renderer& r, const string& path) {
-  r.loadTilesFromFile(path + "/tiles_int.png", Vec2(36, 36));
-  r.loadTilesFromFile(path + "/tiles2_int.png", Vec2(36, 36));
-  r.loadTilesFromFile(path + "/tiles3_int.png", Vec2(36, 36));
-  r.loadTilesFromFile(path + "/tiles4_int.png", Vec2(24, 24));
-  r.loadTilesFromFile(path + "/tiles5_int.png", Vec2(36, 36));
-  r.loadTilesFromFile(path + "/tiles6_int.png", Vec2(36, 36));
-  r.loadTilesFromFile(path + "/tiles7_int.png", Vec2(36, 36));
-  r.loadTilesFromDir(path + "/shroom24", Vec2(24, 24));
-  r.loadTilesFromDir(path + "/shroom36", Vec2(36, 36));
-  r.loadTilesFromDir(path + "/shroom46", Vec2(46, 46));
+  r.loadTilesFromDir(path + "/orig16", Vec2(16, 16));
+//  r.loadAltTilesFromDir(path + "/orig16_scaled", Vec2(24, 24));
+  r.loadTilesFromDir(path + "/orig24", Vec2(24, 24));
+//  r.loadAltTilesFromDir(path + "/orig24_scaled", Vec2(36, 36));
+  r.loadTilesFromDir(path + "/orig30", Vec2(30, 30));
+//  r.loadAltTilesFromDir(path + "/orig30_scaled", Vec2(45, 45));
+}
+
+static int getMaxVolume() {
+  return 70;
+}
+
+static map<MusicType, int> getMaxVolumes() {
+  return {{MusicType::ADV_BATTLE, 40}, {MusicType::ADV_PEACEFUL, 40}};
 }
 
 vector<pair<MusicType, string>> getMusicTracks(const string& path) {
@@ -110,147 +115,158 @@ vector<pair<MusicType, string>> getMusicTracks(const string& path) {
       {MusicType::NIGHT, path + "/night1.ogg"},
       {MusicType::NIGHT, path + "/night2.ogg"},
       {MusicType::NIGHT, path + "/night3.ogg"},
+      {MusicType::ADV_BATTLE, path + "/adv_battle1.ogg"},
+      {MusicType::ADV_BATTLE, path + "/adv_battle2.ogg"},
+      {MusicType::ADV_BATTLE, path + "/adv_battle3.ogg"},
+      {MusicType::ADV_BATTLE, path + "/adv_battle4.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful1.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful2.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful3.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful4.ogg"},
+      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful5.ogg"},
     };
 }
 void makeDir(const string& path) {
   boost::filesystem::create_directories(path.c_str());
 }
 
+static void fail() {
+  *((int*) 0x1234) = 0; // best way to fail
+}
+
 int main(int argc, char* argv[]) {
-  StackPrinter::initialize(argv[0]);
+  StackPrinter::initialize(argv[0], time(0));
+  std::set_terminate(fail);
   options_description flags("Flags");
   flags.add_options()
     ("help", "Print help")
+    ("single_thread", "Use a single thread for rendering and game logic")
     ("user_dir", value<string>(), "Directory for options and save files")
     ("data_dir", value<string>(), "Directory containing the game data")
     ("upload_url", value<string>(), "URL for uploading maps")
     ("override_settings", value<string>(), "Override settings")
     ("run_tests", "Run all unit tests and exit")
-    ("gen_world_exit", "Exit after creating a world")
+    ("worldgen_test", value<int>(), "Test how often world generation fails")
     ("force_keeper", "Skip main menu and force keeper mode")
+    ("logging", "Log to log.out")
+#ifndef RELEASE
+    ("quick_level", "")
+#endif
     ("seed", value<int>(), "Use given seed")
+    ("record", value<string>(), "Record game to file")
     ("replay", value<string>(), "Replay game from file");
   variables_map vars;
-  string dataPath;
-  string userPath;
-  string uploadUrl;
-  string overrideSettings;
-  int seed;
-  bool genExit;
-  bool replay;
-  try
-  {
-    store(parse_command_line(argc, argv, flags), vars);
-        
-    if (vars.count("help")) {
-      std::cout << flags << endl;
-      return 0;
-    }
-    if (vars.count("run_tests")) {
-      testAll();
-      return 0;
-    }
-      
-    if (vars.count("data_dir"))
-      dataPath = vars["data_dir"].as<string>();
-    else
-#ifdef OSX_APP
-      dataPath = resourcePath();
-#else
-      dataPath = DATA_DIR;
-#endif
-      
-    if (vars.count("user_dir"))
-      userPath = vars["user_dir"].as<string>();
-    else
-    if (const char* localPath = std::getenv("XDG_DATA_HOME"))
-      userPath = localPath + string("/KeeperRL");
-    else
-      userPath = USER_DIR;
-    
-    if (vars.count("upload_url"))
-      uploadUrl = vars["upload_url"].as<string>();
-    else
-      uploadUrl = "http://keeperrl.com/retired";
-    
-    if (vars.count("override_settings"))
-      overrideSettings = vars["override_settings"].as<string>();
-      
-    seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
-      
-    genExit = vars.count("gen_world_exit");
-    replay = vars.count("replay");
-  }
-  catch(error& e)
-  {
-    std::cout << "Error parsing flags: ";
-    for (int count = 1; count < argc; ++count)
-        std::cout << argv[count] << endl;
+  store(parse_command_line(argc, argv, flags), vars);
+  if (vars.count("help")) {
+    std::cout << flags << endl;
     return 0;
   }
-    
+  if (vars.count("run_tests")) {
+    testAll();
+    return 0;
+  }
+  bool useSingleThread = vars.count("single_thread");
   unique_ptr<View> view;
   unique_ptr<CompressedInput> input;
   unique_ptr<CompressedOutput> output;
   string lognamePref = "log";
-  Debug::init();
+  Debug::init(vars.count("logging"));
   Skill::init();
   Technology::init();
   Spell::init();
   Epithet::init();
   Vision::init();
-  
+  string dataPath;
+  if (vars.count("data_dir"))
+    dataPath = vars["data_dir"].as<string>();
+  else
+    dataPath = DATA_DIR;
   string freeDataPath = dataPath + "/data_free";
   string paidDataPath = dataPath + "/data";
   string contribDataPath = dataPath + "/data_contrib";
   tilesPresent = !!opendir(paidDataPath.c_str());
-  
+  string userPath;
+  if (vars.count("user_dir"))
+    userPath = vars["user_dir"].as<string>();
+  else
+  if (const char* localPath = std::getenv("XDG_DATA_HOME"))
+    userPath = localPath + string("/KeeperRL");
+  else
+    userPath = USER_DIR;
   Debug() << "Data path: " << dataPath;
   Debug() << "User path: " << userPath;
-  
+  string uploadUrl;
+  if (vars.count("upload_url"))
+    uploadUrl = vars["upload_url"].as<string>();
+  else
+    uploadUrl = "http://keeperrl.com/retired";
   makeDir(userPath);
+  string overrideSettings;
+  if (vars.count("override_settings"))
+    overrideSettings = vars["override_settings"].as<string>();
   Options options(userPath + "/options.txt", overrideSettings);
-  Renderer renderer("KeeperRL", Vec2(36, 36), contribDataPath);
+  options.setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
+  int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
+  Random.init(seed);
+  Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
+  SoundLibrary* soundLibrary = nullptr;
   Clock clock;
-  GuiFactory guiFactory(&clock);
+  GuiFactory guiFactory(renderer, &clock, &options);
   guiFactory.loadFreeImages(freeDataPath + "/images");
-  if (tilesPresent)
+  if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
+    soundLibrary = new SoundLibrary(&options, paidDataPath + "/sound");
+  }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
-  
- // int forceMode = vars.count("force_keeper") ? 0 : -1;
-  if (replay) {
+  if (vars.count("replay")) {
     string fname = vars["replay"].as<string>();
     Debug() << "Reading from " << fname;
-    seed = fromString<int>(fname.substr(lognamePref.size()));
-    Random.init(seed);
     input.reset(new CompressedInput(fname));
-    view.reset(WindowView::createReplayView(input->getArchive(),
-          {renderer, guiFactory, tilesPresent, &options, &clock}));
-  } else {
+    input->getArchive() >> seed;
     Random.init(seed);
-#ifndef RELEASE
-    string fname(lognamePref);
-    fname += toString(seed);
-    output.reset(new CompressedOutput(fname));
-    Debug() << "Writing to " << fname;
-    view.reset(WindowView::createLoggingView(output->getArchive(),
-          {renderer, guiFactory, tilesPresent, &options, &clock}));
-#else
-    view.reset(WindowView::createDefaultView(
-          {renderer, guiFactory, tilesPresent, &options, &clock}));
-#endif
+    view.reset(WindowView::createReplayView(input->getArchive(),
+          {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
+  } else {
+    if (vars.count("record")) {
+      string fname = vars["record"].as<string>();
+      output.reset(new CompressedOutput(fname));
+      output->getArchive() << seed;
+      Debug() << "Writing to " << fname;
+      view.reset(WindowView::createLoggingView(output->getArchive(),
+            {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
+    } else 
+      view.reset(WindowView::createDefaultView(
+            {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
   } 
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);
+  if (useSingleThread) {
+    view->initialize();
+    viewInitialized = true;
+  }
   Tile::initialize(renderer, tilesPresent);
-  Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"));
+  Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl);
-  Highscores highscores(userPath + "/" + "highscores.txt", fileSharing, &options);
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, gameFinished);
-  auto game = [&] { while (!viewInitialized) {} loop.start(tilesPresent); };
-  auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };
+  Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
+  optional<GameTypeChoice> forceGame;
+  if (vars.count("force_keeper"))
+    forceGame = GameTypeChoice::KEEPER;
+  else if (vars.count("quick_level"))
+    forceGame = GameTypeChoice::QUICK_LEVEL;
+  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, gameFinished,
+      useSingleThread, forceGame);
+  if (vars.count("worldgen_test")) {
+    loop.modelGenTest(vars["worldgen_test"].as<int>(), Random, &options);
+    return 0;
+  }
+  auto game = [&] {
+    while (!viewInitialized) {}
+    ofstream systemInfo(userPath + "/system_info.txt");
+    systemInfo << "KeeperRL version " << BUILD_VERSION << " " << BUILD_DATE << std::endl;
+    renderer.printSystemInfo(systemInfo);
+    loop.start(tilesPresent); };
+  auto render = [&] { if (!useSingleThread) renderLoop(view.get(), &options, gameFinished, viewInitialized); };
 #ifdef OSX // see thread comment in stdafx.h
   thread t(getAttributes(), game);
   render();

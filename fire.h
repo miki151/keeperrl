@@ -22,7 +22,7 @@ class Level;
 class Fire {
   public:
   Fire(double objectWeight, double objectFlamability);
-  void tick(Level* level, Vec2 position);
+  void tick();
   void set(double amount);
   bool isBurning() const;
   double getSize() const;

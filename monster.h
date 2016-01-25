@@ -16,24 +16,25 @@
 #ifndef _MONSTER_H
 #define _MONSTER_H
 
-#include "creature.h"
-#include "shortest_path.h"
 #include "enums.h"
-#include "monster_ai.h"
+#include "controller.h"
+
+class Creature;
+class MonsterAIFactory;
 
 class Monster : public Controller {
   public:
-  Monster(Creature*, MonsterAIFactory);
+  Monster(Creature*, const MonsterAIFactory&);
   
   virtual void you(MsgType type, const string& param) override;
   virtual void you(MsgType type, const vector<string>& param) override;
   virtual void you(const string& param) override;
   
   virtual void makeMove() override;
-  virtual bool isPlayer() const;
+  virtual bool isPlayer() const override;
   virtual const MapMemory& getMemory() const;
 
-  virtual void onBump(Creature*);
+  virtual void onBump(Creature*) override;
 
   static ControllerFactory getFactory(MonsterAIFactory);
 

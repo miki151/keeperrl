@@ -25,7 +25,8 @@ RICH_ENUM(MinionTask,
   COPULATE,
   CONSUME,
   RITUAL,
-  CROPS
+  CROPS,
+  SPIDER
 );
 
 inline vector<MinionTask> getWorkshopTasks() {
@@ -37,11 +38,19 @@ RICH_ENUM(MinionTrait,
   FIGHTER,
   WORKER,
   PRISONER,
+  SUMMONED,
   NO_EQUIPMENT,
   NO_RETURNING,
   NO_LIMIT,
   FARM_ANIMAL
 );
 
+
+RICH_ENUM(SpawnType,
+  HUMANOID,
+  UNDEAD,
+  BEAST,
+  DEMON
+);
 
 #endif

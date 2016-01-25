@@ -21,51 +21,37 @@
 
 class Square;
 class Deity;
-
-enum class StairLook {
-  NORMAL,
-  HELL,
-  CELLAR,
-  PYRAMID,
-  DUNGEON_ENTRANCE,
-  DUNGEON_ENTRANCE_MUD,
-};
-
-enum class StairKey {
-  DWARF,
-  CRYPT,
-  ORC,
-  PLAYER_SPAWN,
-  HERO_SPAWN,
-  PYRAMID,
-  TOWER,
-  CASTLE_CELLAR,
-  DRAGON
-};
-
-enum class StairDirection { UP, DOWN };
-
-inline StairDirection opposite(StairDirection d) {
-  switch (d) {
-    case StairDirection::DOWN: return StairDirection::UP;
-    case StairDirection::UP: return StairDirection::DOWN;
-  }
-  return StairDirection(0);
-}
+class StairKey;
 
 class SquareFactory {
   public:
   static PSquare get(SquareType);
-  static PSquare getStairs(StairDirection, StairKey, StairLook = StairLook::NORMAL);
   static PSquare getAltar(Deity*);
   static PSquare getAltar(Creature*);
   static PSquare getWater(double depth);
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
+  
+  SquareType getRandom(RandomGen&);
+
+  static SquareFactory roomFurniture(Tribe* rats);
+  static SquareFactory castleFurniture(Tribe* rats);
+  static SquareFactory dungeonOutside();
+  static SquareFactory castleOutside();
+  static SquareFactory villageOutside(const string& boardText = "");
+  static SquareFactory cryptCoffins(Tribe* vampire);
+  static SquareFactory single(SquareType);
 
   private:
   static Square* getPtr(SquareType s);
+
+  SquareFactory(const vector<SquareType>&, const vector<double>&);
+  SquareFactory(const vector<SquareType>& first, const vector<SquareType>&, const vector<double>&);
+
+  vector<SquareType> first;
+  vector<SquareType> squares;
+  vector<double> weights;
 };
 
 #endif

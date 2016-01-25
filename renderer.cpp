@@ -33,24 +33,36 @@ Color transparency(const Color& color, int trans) {
   return Color(color.r, color.g, color.b, trans);
 }
 
-int Renderer::getTextLength(string s) {
-  CHECK(currentThreadId() == renderThreadId);
-  static Text t;
-  t.setFont(textFont);
+Text& Renderer::getTextObject() {
+  static Text t1, t2;
+  if (currentThreadId() == *renderThreadId)
+    return t1;
+  else
+    return t2;
+}
+
+int Renderer::getUnicodeLength(String s, FontId font) {
+  Text& t = getTextObject();
+  t.setFont(getFont(font));
   t.setCharacterSize(textSize);
-  t.setString(toUnicode(s));
+  t.setString(s);
   return t.getLocalBounds().width;
 }
 
+int Renderer::getTextLength(string s) {
+  return getUnicodeLength(toUnicode(s), FontId::TEXT_FONT);
+}
+
 Font& Renderer::getFont(Renderer::FontId id) {
+  FontSet& fontSet = currentThreadId() == *renderThreadId ? fonts : fontsOtherThread;
   switch (id) {
-    case Renderer::TEXT_FONT: return textFont;
-    case Renderer::TILE_FONT: return tileFont;
-    case Renderer::SYMBOL_FONT: return symbolFont;
+    case Renderer::TEXT_FONT: return fontSet.textFont;
+    case Renderer::TILE_FONT: return fontSet.tileFont;
+    case Renderer::SYMBOL_FONT: return fontSet.symbolFont;
   }
 }
 
-void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s, bool center) {
+void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s, CenterType center) {
   addRenderElem([this, s, center, size, color, x, y, id] {
       int ox = 0;
       int oy = 0;
@@ -58,13 +70,24 @@ void Renderer::drawText(FontId id, int size, Color color, int x, int y, String s
       t.setFont(getFont(id));
       t.setCharacterSize(size);
       t.setString(s);
-      if (center) {
       sf::FloatRect bounds = t.getLocalBounds();
-      ox -= bounds.left + bounds.width / 2;
+      switch (center) {
+        case HOR:
+          ox -= bounds.left + bounds.width / 2;
+          break;
+        case VER:
+          oy -= bounds.top + bounds.height / 2;
+          break;
+        case HOR_VER:
+          ox -= bounds.left + bounds.width / 2;
+          oy -= bounds.top + bounds.height / 2;
+          break;
+        default:
+          break;
       }
       t.setPosition(x + ox, y + oy);
       t.setColor(color);
-      display->draw(t);
+      display.draw(t);
   });
 }
 
@@ -74,11 +97,11 @@ String Renderer::toUnicode(const string& s) {
   return utf32;
 }
 
-void Renderer::drawText(Color color, int x, int y, string s, bool center, int size) {
+void Renderer::drawText(Color color, int x, int y, string s, CenterType center, int size) {
   drawText(TEXT_FONT, size, color, x, y, toUnicode(s), center);
 }
 
-void Renderer::drawText(Color color, int x, int y, const char* c, bool center, int size) {
+void Renderer::drawText(Color color, int x, int y, const char* c, CenterType center, int size) {
   drawText(TEXT_FONT, size, color, x, y, String(c), center);
 }
 
@@ -102,12 +125,14 @@ void Renderer::drawImage(Rectangle target, Rectangle source, const Texture& imag
 }
 
 void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, double scale) {
-  Sprite s(t, sf::IntRect(0, 0, (kx - px) / scale, (ky - py) / scale));
-  s.setPosition(px, py);
-  if (scale != 1) {
-    s.setScale(scale, scale);
-  }
-  addRenderElem([this, s] { display->draw(s); });
+  addRenderElem([this, &t, px, py, kx, ky, scale] {
+      static Sprite s;
+      s.setPosition(px, py);
+      s.setTexture(t);
+      s.setTextureRect(sf::IntRect(0, 0, (kx - px) / scale, (ky - py) / scale));
+      s.setScale(scale, scale);
+      display.draw(s);
+  });
 }
 
 void Renderer::drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture& t, optional<Color> color,
@@ -124,24 +149,36 @@ void Renderer::drawSprite(Vec2 pos, Vec2 stretchSize, const Texture& t) {
 
 void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t, Vec2 targetSize,
     optional<Color> color) {
-  Sprite s(t, sf::IntRect(source.x, source.y, size.x, size.y));
-  s.setPosition(pos.x, pos.y);
-  if (color)
-    s.setColor(*color);
-  if (targetSize.x != -1)
-    s.setScale(double(targetSize.x) / size.x, double(targetSize.y) / size.y);
-  addRenderElem([this, s] { display->draw(s); });
+  addRenderElem([this, &t, pos, source, size, targetSize, color] {
+      static Sprite s;
+      s.setTexture(t);
+      s.setTextureRect(sf::IntRect(source.x, source.y, size.x, size.y));
+      s.setPosition(pos.x, pos.y);
+      if (color)
+        s.setColor(*color);
+      else
+        s.setColor(sf::Color(255, 255, 255));
+      if (targetSize.x != -1)
+        s.setScale(double(targetSize.x) / size.x, double(targetSize.y) / size.y);
+      else
+        s.setScale(1, 1);
+      display.draw(s);   
+  });
 }
 
 void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline) {
-  RectangleShape r(Vector2f(t.getW(), t.getH()));
-  r.setPosition(t.getPX(), t.getPY());
-  r.setFillColor(color);
-  if (outline) {
-    r.setOutlineThickness(-2);
-    r.setOutlineColor(*outline);
-  }
-  addRenderElem([this, r] { display->draw(r); });
+  addRenderElem([this, t, color, outline] {
+      static RectangleShape r;
+      r.setSize(Vector2f(t.getW(), t.getH()));
+      r.setPosition(t.getPX(), t.getPY());
+      r.setFillColor(color);
+      if (outline) {
+        r.setOutlineThickness(-2);
+        r.setOutlineColor(*outline);
+      } else
+        r.setOutlineThickness(0);
+      display.draw(r);
+  });
 }
 
 void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline) {
@@ -162,7 +199,7 @@ void Renderer::addQuad(const Rectangle& r, Color color) {
 void Renderer::drawQuads() {
   if (!quads.empty()) {
     vector<Vertex>& quadsTmp = quads;
-    addRenderElem([this, quadsTmp] { display->draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
+    addRenderElem([this, quadsTmp] { display.draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
     quads.clear();
   }
 }
@@ -182,25 +219,71 @@ void Renderer::popLayer() {
 }
 
 Vec2 Renderer::getSize() {
-  return Vec2(display->getSize().x, display->getSize().y);
+  return Vec2(display.getSize().x / zoom, display.getSize().y / zoom);
 }
 
-void Renderer::initialize(bool fullscreen) {
-  renderThreadId = currentThreadId();
-  if (display)
-    display->close();
-  if (fullscreen)
-    display = new RenderWindow(sf::VideoMode::getFullscreenModes()[0], "KeeperRL", sf::Style::Fullscreen);
+bool Renderer::isFullscreen() {
+  return fullscreen;
+}
+
+static vector<VideoMode> getResolutions() {
+  static VideoMode desktopMode = sf::VideoMode::getDesktopMode();
+  return filter(sf::VideoMode::getFullscreenModes(),
+      [&] (const VideoMode& m) { return m.bitsPerPixel == desktopMode.bitsPerPixel; });
+}
+
+void Renderer::updateResolution() {
+  display.setView(sf::View(sf::FloatRect(0, 0, display.getSize().x / zoom, display.getSize().y / zoom)));
+}
+
+void Renderer::setFullscreen(bool v) {
+  fullscreen = v;
+}
+
+void Renderer::setFullscreenMode(int v) {
+  fullscreenMode = v;
+}
+
+void Renderer::setZoom(int v) {
+  zoom = v;
+  updateResolution();
+}
+
+void Renderer::initialize() {
+  if (!renderThreadId)
+    renderThreadId = currentThreadId();
   else
-    display = new RenderWindow(sf::VideoMode::getDesktopMode(), "KeeperRL");
-  sfView = new sf::View(display->getDefaultView());
-  display->setVerticalSyncEnabled(true);
+    CHECK(currentThreadId() == *renderThreadId);
+  CHECK(!getResolutions().empty()) << sf::VideoMode::getFullscreenModes().size() << " " <<
+      int(sf::VideoMode::getDesktopMode().bitsPerPixel);
+  CHECK(fullscreenMode >= 0 && fullscreenMode < getResolutions().size()) <<
+      fullscreenMode << " " << getResolutions().size();
+  VideoMode vMode = getResolutions()[fullscreenMode];
+  CHECK(vMode.isValid()) << "Video mode invalid: " << int(vMode.width) << " " << int(vMode.height) << " " <<
+      int(vMode.bitsPerPixel) << " " << fullscreen;
+  if (fullscreen)
+    display.create(vMode, "KeeperRL", sf::Style::Fullscreen);
+  else
+    display.create(sf::VideoMode::getDesktopMode(), "KeeperRL");
+  updateResolution();
+  display.setVerticalSyncEnabled(true);
+}
+
+vector<string> Renderer::getFullscreenResolutions() {
+  return transform2<string>(getResolutions(),
+      [] (const VideoMode& m) { return toString(m.width) + "x" + toString(m.height);});
+}
+
+void Renderer::printSystemInfo(ostream& out) {
+  sf::ContextSettings settings = display.getSettings();
+  out << "OpenGL Major: " << settings.majorVersion << " minor: " << settings.minorVersion << std::endl;
 }
 
 Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : nominalSize(nominal) {
-  CHECK(textFont.loadFromFile(fontPath + "/Lato-Bol.ttf"));
-  CHECK(tileFont.loadFromFile(fontPath + "/Lato-Bol.ttf"));
-  CHECK(symbolFont.loadFromFile(fontPath + "/Symbola.ttf"));
+  CHECK(fonts.textFont.loadFromFile(fontPath + "/Lato-Bol.ttf"));
+  CHECK(fonts.tileFont.loadFromFile(fontPath + "/Lato-Bol.ttf"));
+  CHECK(fonts.symbolFont.loadFromFile(fontPath + "/Symbola.ttf"));
+  fontsOtherThread = fonts;
   colors[ColorId::WHITE] = Color(255, 255, 255);
   colors[ColorId::YELLOW] = Color(250, 255, 0);
   colors[ColorId::LIGHT_BROWN] = Color(210, 150, 0);
@@ -246,12 +329,17 @@ Color Renderer::getBleedingColor(const ViewObject& object) {
 }
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool hFlip, bool vFlip) {
-  Vec2 sz = Renderer::tileSize[coord.texNum];
+  CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
+  Texture* tex = &tiles[coord.texNum];
+  Vec2 sz = tileSize[coord.texNum];
   Vec2 off = (nominalSize -  sz).mult(size).div(Renderer::nominalSize * 2);
   Vec2 tileSize = sz.mult(size).div(nominalSize);
   if (sz.y > nominalSize.y)
     off.y *= 2;
-  CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
+  if (altTileSize.size() > coord.texNum && size == altTileSize[coord.texNum]) {
+    sz = size;
+    tex = &altTiles[coord.texNum];
+  }
   Vec2 coordPos = coord.pos.mult(sz);
   if (vFlip) {
     sz.y *= -1;
@@ -263,14 +351,23 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool 
     tileSize.x *= -1;
     coordPos.x -= sz.x;
   }
-  drawSprite(pos + off, coordPos, sz, Renderer::tiles.at(coord.texNum), tileSize, color);
+  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color);
 }
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Vec2 sz = Renderer::tileSize[coord.texNum];
   Vec2 off = getOffset(Renderer::nominalSize - sz, scale);
-  drawSprite(pos + off, coord.pos.mult(sz), sz, Renderer::tiles.at(coord.texNum), sz * scale, color);
+  drawSprite(pos + off, coord.pos.mult(sz), sz, tiles.at(coord.texNum), sz * scale, color);
+}
+
+void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
+  const Tile& tile = Tile::getTile(id);
+  if (tile.hasSpriteCoord())
+    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), 1, color * tile.color);
+  else
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, pos.x, pos.y,
+        tile.text);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
@@ -278,17 +375,43 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale,
   if (tile.hasSpriteCoord())
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), scale, color * tile.color);
   else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, pos.x, pos.y, tile.text);
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale, tile.color, pos.x, pos.y,
+        tile.text);
+}
+
+void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Color color) {
+  const Tile& tile = Tile::getTile(id, useSprite);
+  if (tile.hasSpriteCoord())
+    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color);
+  else
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, tile.color, pos.x, pos.y, tile.text);
+}
+
+void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, Vec2 size) {
+  drawViewObject(pos, object.id(), useSprite, size, getBleedingColor(object));
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, double scale) {
   drawViewObject(pos, object.id(), useSprite, scale, getBleedingColor(object));
 }
 
+void Renderer::drawViewObject(Vec2 pos, const ViewObject& object) {
+  drawViewObject(pos, object.id(), getBleedingColor(object));
+}
+
 const static string imageSuf = ".png";
+
+bool Renderer::loadAltTilesFromDir(const string& path, Vec2 altSize) {
+  altTileSize.push_back(altSize);
+  return loadTilesFromDir(path, altTiles, altSize, 720 * altSize.x / tileSize.back().x);
+}
 
 bool Renderer::loadTilesFromDir(const string& path, Vec2 size) {
   tileSize.push_back(size);
+  return loadTilesFromDir(path, tiles, size, 720);
+}
+
+bool Renderer::loadTilesFromDir(const string& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
   DIR* dir = opendir(path.c_str());
   if (!dir)
     return false;
@@ -299,10 +422,9 @@ bool Renderer::loadTilesFromDir(const string& path, Vec2 size) {
     if (endsWith(name, imageSuf))
       files.push_back(name);
   }
-  int imageWidth = 720;
-  int rowLength = imageWidth / size.x;
+  int rowLength = setWidth / size.x;
   Image image;
-  image.create(imageWidth, ((files.size() + rowLength - 1) / rowLength) * size.y);
+  image.create(setWidth, ((files.size() + rowLength - 1) / rowLength) * size.y);
   for (int i : All(files)) {
     Image im;
     CHECK(im.loadFromFile((path + "/" + files[i]).c_str())) << "Failed to load " << files[i];
@@ -339,13 +461,12 @@ void Renderer::drawAndClearBuffer() {
       elem();
     renderList[i].clear();
   }
-  display->display();
-  display->clear(Color(0, 0, 0));
+  display.display();
+  display.clear(Color(0, 0, 0));
 }
 
 void Renderer::resize(int width, int height) {
-  display->setView(*(sfView = new sf::View(sf::FloatRect(0, 0, width, height))));
-  ++setViewCount;
+  updateResolution();
 }
 
 Event Renderer::getRandomEvent() {
@@ -360,7 +481,7 @@ Event Renderer::getRandomEvent() {
       break;
     case Event::MouseButtonReleased:
     case Event::MouseButtonPressed:
-      ret.mouseButton = { chooseRandom({Mouse::Left, Mouse::Right}), Random.get(getSize().x),
+      ret.mouseButton = { Random.choose({Mouse::Left, Mouse::Right}), Random.get(getSize().x),
         Random.get(getSize().y) };
       break;
     case Event::MouseMoved:
@@ -374,7 +495,7 @@ Event Renderer::getRandomEvent() {
 bool Renderer::pollEventWorkaroundMouseReleaseBug(Event& ev) {
   if (genReleaseEvent && !Mouse::isButtonPressed(Mouse::Right) && !Mouse::isButtonPressed(Mouse::Left)) {
     ev.type = Event::MouseButtonReleased;
-    ev.mouseButton = {Mouse::Left, Mouse::getPosition().x, Mouse::getPosition().y};
+    ev.mouseButton = {Mouse::Left, Mouse::getPosition(display).x / zoom, Mouse::getPosition(display).y / zoom};
     genReleaseEvent = false;
     return true;
   }
@@ -395,7 +516,8 @@ bool Renderer::pollEventOrFromQueue(Event& ev) {
     ev = eventQueue.front();
     eventQueue.pop_front();
     return true;
-  } else if (display->pollEvent(ev)) {
+  } else if (display.pollEvent(ev)) {
+    zoomMousePos(ev);
     considerMouseMoveEvent(ev);
     return true;
   } else
@@ -408,6 +530,7 @@ void Renderer::considerMouseMoveEvent(Event& ev) {
 }
 
 bool Renderer::pollEvent(Event& ev) {
+  CHECK(currentThreadId() == *renderThreadId);
   if (monkey) {
     if (Random.roll(2))
       return false;
@@ -419,10 +542,31 @@ bool Renderer::pollEvent(Event& ev) {
 
 void Renderer::flushEvents(Event::EventType type) {
   Event ev;
-  while (display->pollEvent(ev)) {
+  while (display.pollEvent(ev)) {
+    zoomMousePos(ev);
     considerMouseMoveEvent(ev);
     if (ev.type != type)
       eventQueue.push_back(ev);
+  }
+}
+
+void Renderer::zoomMousePos(Event& ev) {
+  switch (ev.type) {
+    case Event::MouseButtonReleased:
+    case Event::MouseButtonPressed:
+      ev.mouseButton.x /= zoom;
+      ev.mouseButton.y /= zoom;
+      break;
+    case Event::MouseMoved:
+      ev.mouseMove.x /= zoom;
+      ev.mouseMove.y /= zoom;
+      break;
+    case Event::MouseWheelMoved:
+      ev.mouseWheel.x /= zoom;
+      ev.mouseWheel.y /= zoom;
+      break;
+    default:
+      break;
   }
 }
 
@@ -435,7 +579,8 @@ void Renderer::waitEvent(Event& ev) {
       ev = eventQueue.front();
       eventQueue.pop_front();
     } else {
-      display->waitEvent(ev);
+      display.waitEvent(ev);
+      zoomMousePos(ev);
       considerMouseMoveEvent(ev);
     }
   }

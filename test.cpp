@@ -86,7 +86,7 @@ void testValueCheck() {
 }
 
 void testSplit() {
-  vector<string> v = { "pok", "pokpok", "pok" };
+  vector<string> v = { "pok", "pokpok", "", "pok", "" };
   vector<string> w = { "po", ";po", "po", ";;po", ";" };
   CHECK(split("pok;pokpok;;pok;", {';'}) == v) << split("pok;pokpok;;pok;", {';'});
   CHECK(split("pok;pokpok;;pok;", {'k'}) == w) << split("pok;pokpok;;pok;", {'k'});
@@ -137,17 +137,6 @@ void testShortestPathReverse() {
   CHECK(res == expected);*/
 }
 
-void testRandom() {
-  CHECK(chooseRandom<string>({"pokpok", "kwakwa", "pikpik"}, { 1, 2, 3}, 1) == "pokpok");
-  CHECK(chooseRandom<string>({"pokpok", "kwakwa", "pikpik"}, { 1, 2, 3}, 2) == "kwakwa");
-  CHECK(chooseRandom<string>({"pokpok", "kwakwa", "pikpik"}, { 1, 2, 3}, 3) == "kwakwa");
-  CHECK(chooseRandom<string>({"pokpok", "kwakwa", "pikpik"}, { 1, 2, 3}, 4) == "pikpik");
-  CHECK(chooseRandom<string>({"pokpok", "kwakwa", "pikpik"}, { 1, 2, 3}, 5) == "pikpik");
-  CHECK(chooseRandom<string>({"pokpok", "kwakwa", "pikpik"}, { 1, 2, 3}, 6) == "pikpik");
-  CHECK(chooseRandom<string>({"pokpok", "kwakwa", "pikpik"}, { 1, 0, 3}, 1) == "pokpok");
-  CHECK(chooseRandom<string>({"pokpok", "kwakwa", "pikpik"}, { 1, 0, 3}, 2) == "pikpik");
-}
-
 void testRange() {
   vector<int> a;
   vector<int> b {0,1,2,3,4,5,6};
@@ -162,6 +151,30 @@ void testRange() {
   for (int x : All(b))
     a.push_back(x);
   CHECKEQ(a, b);
+}
+
+void testRange2() {
+  vector<int> a;
+  const vector<int> b {6,5,4,3,2,1,0};
+  for (int x : Range(6, -1))
+    a.push_back(x);
+  CHECKEQ(a, b);
+  a.clear();
+  for (int x : Range(4, 0))
+    a.push_back(x);
+  CHECKEQ(getSubsequence(b, 2, 4), a);
+  a.clear();
+  for (int x : All(b)) {
+    a.push_back(b[x]);
+  }
+  CHECKEQ(a, b);
+  a.clear();
+  for (int x : Range(4, 4))
+    a.push_back(x);
+  a.clear();
+  for (int x : Range(4, 3))
+    a.push_back(x);
+  CHECK(getOnlyElement(a) == 4);
 }
 
 void testContains() {
@@ -299,35 +312,10 @@ void testProjection() {
   CHECKEQ(proj, Vec2(2, 4));*/
 }
 
-void testVec2Box0() {
-  vector<Vec2> v = Vec2(-2, -3).box(0, false);
-  vector<Vec2> res { Vec2(-2, -3) };
-  CHECKEQ(v, res);
-}
-
-void testVec2Box1() {
-  vector<Vec2> v = Vec2(-2, -3).box(1, false);
-  vector<Vec2> res { Vec2(-3, -4), Vec2(-2, -4), Vec2(-1, -4),
-      Vec2(-1, -3), Vec2(-1, -2), Vec2(-2, -2),
-      Vec2(-3, -2), Vec2(-3, -3) };
-  CHECKEQ(v, res);
-}
-
-void testVec2Box2() {
-  vector<Vec2> v = Vec2(-2, -3).box(2, false);
-  vector<Vec2> res { Vec2(-4, -5),
-      Vec2(-3, -5), Vec2(-2, -5), Vec2(-1, -5),
-      Vec2(0, -5), Vec2(0, -4), Vec2(0, -3),
-      Vec2(0, -2), Vec2(0, -1), Vec2(-1, -1),
-      Vec2(-2, -1), Vec2(-3, -1), Vec2(-4, -1),
-      Vec2(-4, -2), Vec2(-4, -3), Vec2(-4, -4)};
-  CHECKEQ(v, res);
-}
-
 void testRandomExit() {
   Rectangle r(5, 10, 15, 20);
   for (int i : Range(1000)) {
-    Vec2 v = LevelMaker::getRandomExit(r);
+    Vec2 v = LevelMaker::getRandomExit(Random, r);
     CHECK((v.x == 5) ^ (v.x == 14) ^ (v.y == 10) ^ (v.y == 19));
   }
 }
@@ -446,7 +434,6 @@ void testReverse3() {
 }
 
 int testAll() {
-  Debug::init();
   testStringConvertion();
   testTimeQueue();
   testRectangleIterator();
@@ -456,8 +443,8 @@ int testAll() {
   testAStar();
   testShortestPath2();
   testShortestPathReverse();
-  testRandom();
   testRange();
+  testRange2();
   testContains();
   testPredicates();
   testOptional();
@@ -470,9 +457,6 @@ int testAll() {
   testProjection();
   testRandomExit();
   testCombine();
-  testVec2Box0();
-  testVec2Box1();
-  testVec2Box2();
   testSectors1();
   testSectors2();
   testSectors3();

@@ -24,8 +24,23 @@
 #include "model.h"
 #include "effect.h"
 #include "item_factory.h"
-#include "square.h"
 #include "location.h"
+#include "controller.h"
+#include "player_message.h"
+#include "attack.h"
+#include "vision.h"
+#include "square_type.h"
+#include "square_apply_type.h"
+#include "equipment.h"
+#include "shortest_path.h"
+#include "spell_map.h"
+#include "minion_task_map.h"
+#include "tribe.h"
+#include "creature_attributes.h"
+#include "position.h"
+#include "view.h"
+#include "sound.h"
+#include "trigger.h"
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
@@ -36,11 +51,11 @@ SERIALIZABLE(Creature::MoraleOverride);
 template <class Archive> 
 void Creature::serialize(Archive& ar, const unsigned int version) { 
   ar
-    & SUBCLASS(CreatureAttributes)
     & SUBCLASS(Renderable)
     & SUBCLASS(UniqueEntity)
-    & SVAR(level)
+    & SVAR(attributes)
     & SVAR(position)
+    & SVAR(model)
     & SVAR(time)
     & SVAR(equipment)
     & SVAR(shortestPath)
@@ -48,15 +63,13 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(tribe)
     & SVAR(health)
     & SVAR(morale)
-    & SVAR(dead)
+    & SVAR(deathTime)
     & SVAR(lastTick)
     & SVAR(collapsed)
-    & SVAR(injuredBodyParts)
-    & SVAR(lostBodyParts)
     & SVAR(hidden)
     & SVAR(lastAttacker)
+    & SVAR(deathReason)
     & SVAR(swapPositionCooldown)
-    & SVAR(lastingEffects)
     & SVAR(unknownAttacker)
     & SVAR(privateEnemies)
     & SVAR(holding)
@@ -68,7 +81,6 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SVAR(points)
     & SVAR(numAttacksThisTurn)
     & SVAR(moraleOverrides)
-    & SVAR(attrIncrease)
     & SVAR(visibleEnemies)
     & SVAR(visibleCreatures)
     & SVAR(vision)
@@ -80,52 +92,56 @@ SERIALIZABLE(Creature);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Creature);
 
-Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes& attributes, ControllerFactory f)
-    : CreatureAttributes(attributes), Renderable(object), tribe(t), controller(f.get(this)) {
-  if (tribe)
-    tribe->addMember(this);
+Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes& attr,
+    const ControllerFactory& f)
+    : Renderable(object), attributes(attr), tribe(t), controller(f.get(this)) {
   for (auto id : ENUM_ALL(AttrType))
-    CHECK(attr[id] > 0);
+    CHECK(attributes->attr[id] > 0);
   CHECK(getUniqueId() != 0);
   modViewObject().setCreatureId(getUniqueId());
   updateVision();    
 }
 
-Creature::Creature(Tribe* t, const CreatureAttributes& attr, ControllerFactory f)
+Creature::Creature(Tribe* t, const CreatureAttributes& attr, const ControllerFactory& f)
     : Creature(ViewObject(*attr.viewId, ViewLayer::CREATURE, (*attr.name).bare()), t, attr, f) {
 }
 
 Creature::~Creature() {
-  if (tribe)
-    tribe->removeMember(this);
+}
+
+vector<vector<Creature*>> Creature::stack(const vector<Creature*>& creatures) {
+  map<string, vector<Creature*>> stacks;
+  for (Creature* c : creatures)
+    stacks[c->getSpeciesName()].push_back(c);
+  return getValues(stacks);
 }
 
 const ViewObject& Creature::getViewObjectFor(const Tribe* observer) const {
-  if (illusionViewObject && observer->isEnemy(this))
-    return *illusionViewObject;
+  if (attributes->illusionViewObject && observer->isEnemy(this))
+    return *attributes->illusionViewObject;
   else
     return getViewObject();
 }
 
 bool Creature::isFireResistant() const {
-  return fireCreature || isAffected(LastingEffect::FIRE_RESISTANT);
+  return attributes->fireCreature || isAffected(LastingEffect::FIRE_RESISTANT);
 }
 
 void Creature::addSpell(Spell* spell) {
-  spells.add(spell);
+  attributes->getSpellMap().add(spell);
 }
 
 vector<Spell*> Creature::getSpells() const {
-  return spells.getAll();
+  return attributes->getSpellMap().getAll();
 }
 
 double Creature::getSpellDelay(Spell* spell) const {
   CHECK(!isReady(spell));
-  return spells.getReadyTime(spell) - getTime();
+  return attributes->getSpellMap().getReadyTime(spell) - getTime();
 }
 
 bool Creature::isReady(Spell* spell) const {
-  return spells.getReadyTime(spell) < getTime();
+  return attributes->getSpellMap().getReadyTime(spell) < getTime();
 }
 
 static double getWillpowerMult(double sorcerySkill) {
@@ -133,23 +149,24 @@ static double getWillpowerMult(double sorcerySkill) {
 }
 
 CreatureAction Creature::castSpell(Spell* spell) const {
-  CHECK(spells.contains(spell));
+  if (!attributes->getSpellMap().contains(spell))
+    return CreatureAction("You don't know this spell.");
   CHECK(!spell->isDirected());
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (Creature *c) {
-    monsterMessage(getName().the() + " casts a spell");
-    playerMessage("You cast " + spell->getName());
+    spell->addMessage(c);
     Effect::applyToCreature(c, spell->getEffectType(), EffectStrength::NORMAL);
-    c->level->getModel()->getStatistics().add(StatId::SPELL_CAST);
-    c->spells.setReadyTime(spell, getTime() + spell->getDifficulty()
+    model->getStatistics().add(StatId::SPELL_CAST);
+    c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
+    c->addSound(spell->getSound());
     c->spendTime(1);
   });
 }
 
 CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
-  CHECK(spells.contains(spell));
+  CHECK(attributes->getSpellMap().contains(spell));
   CHECK(spell->isDirected());
   CHECK(dir.length8() == 1);
   if (!isReady(spell))
@@ -158,9 +175,10 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     monsterMessage(getName().the() + " casts a spell");
     playerMessage("You cast " + spell->getName());
     Effect::applyDirected(c, dir, spell->getDirEffectType(), EffectStrength::NORMAL);
-    level->getModel()->getStatistics().add(StatId::SPELL_CAST);
-    c->spells.setReadyTime(spell, getTime() + spell->getDifficulty()
+    model->getStatistics().add(StatId::SPELL_CAST);
+    c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
+    c->addSound(spell->getSound());
     c->spendTime(1);
   });
 }
@@ -182,7 +200,7 @@ void Creature::setController(PController ctrl) {
   if (ctrl->isPlayer())
     modViewObject().setModifier(ViewObject::Modifier::PLAYER);
   controller = std::move(ctrl);
-  level->updatePlayer();
+  getLevel()->updatePlayer();
 }
 
 void Creature::popController() {
@@ -191,15 +209,27 @@ void Creature::popController() {
   CHECK(!controllerStack.empty());
   controller = std::move(controllerStack.back());
   controllerStack.pop_back();
-  level->updatePlayer();
+  getLevel()->updatePlayer();
 }
 
 bool Creature::isDead() const {
-  return dead;
+  return !!deathTime;
+}
+
+double Creature::getDeathTime() const {
+  return *deathTime;
 }
 
 const Creature* Creature::getLastAttacker() const {
   return lastAttacker;
+}
+
+optional<string> Creature::getDeathReason() const {
+  if (deathReason)
+    return deathReason;
+  if (lastAttacker)
+    return "killed by " + lastAttacker->getName().a();
+  return none;
 }
 
 vector<const Creature*> Creature::getKills() const {
@@ -212,8 +242,12 @@ void Creature::spendTime(double t) {
 }
 
 CreatureAction Creature::forceMove(Vec2 dir) const {
+  return forceMove(getPosition().plus(dir));
+}
+
+CreatureAction Creature::forceMove(Position pos) const {
   const_cast<Creature*>(this)->forceMovement = true;
-  CreatureAction action = move(dir);
+  CreatureAction action = move(pos);
   const_cast<Creature*>(this)->forceMovement = false;
   if (action)
     return action.prepend([this] (Creature* c) { c->forceMovement = true; })
@@ -222,26 +256,36 @@ CreatureAction Creature::forceMove(Vec2 dir) const {
     return action;
 }
 
-CreatureAction Creature::move(Vec2 direction) const {
+CreatureAction Creature::move(Vec2 dir) const {
+  return move(getPosition().plus(dir));
+}
+
+CreatureAction Creature::move(Position pos) const {
+  Vec2 direction = getPosition().getDir(pos);
   if (holding)
     return CreatureAction("You can't break free!");
-  if ((direction.length8() != 1 || !level->canMoveCreature(this, direction)) && !swapPosition(direction))
+  if (direction.length8() != 1)
     return CreatureAction();
+  if (!position.canMoveCreature(direction)) {
+    auto action = swapPosition(direction);
+    if (!action) // this is so the player gets relevant info why the move failed
+      return action;
+  }
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " moving " << direction;
-    if (isAffected(LastingEffect::ENTANGLED)) {
+    if (isAffected(LastingEffect::ENTANGLED) || isAffected(LastingEffect::TIED_UP)) {
       playerMessage("You can't break free!");
       self->spendTime(1);
       return;
     }
-    if (level->canMoveCreature(self, direction))
-      level->moveCreature(self, direction);
+    if (position.canMoveCreature(direction))
+      self->position.moveCreature(direction);
     else
       swapPosition(direction).perform(self);
-    self->stationary = false;
+    self->attributes->stationary = false;
     double oldTime = getTime();
     if (collapsed) {
-      you(MsgType::CRAWL, getSquare()->getName());
+      you(MsgType::CRAWL, getPosition().getName());
       self->spendTime(3);
     } else
       self->spendTime(1);
@@ -249,14 +293,24 @@ CreatureAction Creature::move(Vec2 direction) const {
   });
 }
 
+void Creature::displace(double time, Vec2 dir) {
+  position.moveCreature(dir);
+  controller->onDisplaced();
+  modViewObject().addMovementInfo({dir, time, time + 1, ViewObject::MovementInfo::MOVE});
+}
+
 int Creature::getDebt(const Creature* debtor) const {
   return controller->getDebt(debtor);
 }
 
+bool Creature::canTakeItems(const vector<Item*>& items) const {
+  return isHumanoid();
+}
+
 void Creature::takeItems(vector<PItem> items, const Creature* from) {
   vector<Item*> ref = extractRefs(items);
-  getSquare()->dropItems(std::move(items));
-  controller->onItemsAppeared(ref, from);
+  equipment->addItems(std::move(items));
+  controller->onItemsGiven(ref, from);
 }
 
 void Creature::you(MsgType type, const vector<string>& param) const {
@@ -279,25 +333,35 @@ Controller* Creature::getController() {
   return controller.get();
 }
 
+bool Creature::hasFreeMovement() const {
+  return !isAffected(LastingEffect::SLEEP) &&
+    !isAffected(LastingEffect::STUNNED) &&
+    !isAffected(LastingEffect::ENTANGLED) &&
+    !isAffected(LastingEffect::TIED_UP);
+}
+
 CreatureAction Creature::swapPosition(Vec2 direction, bool force) const {
-  if (!getLevel()->inBounds(position + direction))
+  if (Creature* other = getPosition().plus(direction).getCreature())
+    return swapPosition(other, force);
+  else
     return CreatureAction();
-  const Creature* other = getSafeSquare(direction)->getCreature();
-  if (!other)
-    return CreatureAction();
-  if (other->isAffected(LastingEffect::SLEEP) && !force)
-    return CreatureAction(other->getName().the() + " is sleeping.");
-  if ((swapPositionCooldown && !isPlayer()) || other->stationary || other->invincible ||
-      direction.length8() != 1 || (other->isPlayer() && !force) || (other->isEnemy(this) && !force) ||
-      !getSafeSquare(direction)->canEnterEmpty(this) || !getSquare()->canEnterEmpty(other))
+}
+
+CreatureAction Creature::swapPosition(Creature* other, bool force) const {
+  Vec2 direction = position.getDir(other->getPosition());
+  CHECK(direction.length8() == 1);
+  if (!other->hasFreeMovement() && !force)
+    return CreatureAction(other->getName().the() + " cannot move.");
+  if ((swapPositionCooldown && !isPlayer()) || other->attributes->stationary || other->isInvincible() ||
+      (other->isPlayer() && !force) || (other->isEnemy(this) && !force) ||
+      !other->getPosition().canEnterEmpty(this) || !getPosition().canEnterEmpty(other))
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     self->swapPositionCooldown = 4;
     if (!force)
-      getSafeSquare(direction)->getCreature()->playerMessage("Excuse me!");
+      other->playerMessage("Excuse me!");
     playerMessage("Excuse me!");
-    Creature* other = self->getSafeSquare(direction)->getCreature();
-    level->swapCreatures(self, other);
+    self->position.swapCreatures(other);
     other->modViewObject().addMovementInfo({-direction, getTime(), other->getTime(),
         ViewObject::MovementInfo::MOVE});
   });
@@ -317,8 +381,7 @@ void Creature::makeMove() {
     spendTime(1);
     return;
   }
-  int range = FieldOfView::sightRange;
-  updateVisibleCreatures(Rectangle(getPosition() - Vec2(range, range), getPosition() + Vec2(range, range)));
+  updateVisibleCreatures();
   updateViewObject();
   if (swapPositionCooldown)
     --swapPositionCooldown;
@@ -327,40 +390,8 @@ void Creature::makeMove() {
   if (!hidden)
     modViewObject().removeModifier(ViewObject::Modifier::HIDDEN);
   unknownAttacker.clear();
-  if (fireCreature && Random.roll(5))
-    getSquare()->setOnFire(1);
-}
-
-Square* Creature::getSquare() {
-  return level->getSafeSquare(position);
-}
-
-const Square* Creature::getSquare() const {
-  return getLevel()->getSafeSquare(position);
-}
-
-vector<Square*> Creature::getSquare(Vec2 direction) {
-  return getLevel()->getSquare(position + direction);
-}
-
-vector<const Square*> Creature::getSquare(Vec2 direction) const {
-  return getLevel()->getSquare(position + direction);
-}
-
-Square* Creature::getSafeSquare(Vec2 direction) {
-  return getLevel()->getSafeSquare(position + direction);
-}
-
-const Square* Creature::getSafeSquare(Vec2 direction) const {
-  return getLevel()->getSafeSquare(position + direction);
-}
-
-vector<Square*> Creature::getSquares(const vector<Vec2>& direction) {
-  return getLevel()->getSquares(transform2<Vec2>(direction, [&] (const Vec2& v) { return v + getPosition();}));
-}
-
-vector<const Square*> Creature::getSquares(const vector<Vec2>& direction) const {
-  return getLevel()->getSquares(transform2<Vec2>(direction, [&] (const Vec2& v) { return v + getPosition();}));
+  if (attributes->fireCreature && Random.roll(5))
+    getPosition().setOnFire(1);
 }
 
 CreatureAction Creature::wait() const {
@@ -373,70 +404,73 @@ CreatureAction Creature::wait() const {
 }
 
 const Equipment& Creature::getEquipment() const {
-  return equipment;
+  return *equipment;
 }
 
 Equipment& Creature::getEquipment() {
-  return equipment;
+  return *equipment;
 }
 
 vector<PItem> Creature::steal(const vector<Item*> items) {
-  return equipment.removeItems(items);
+  return equipment->removeItems(items);
 }
 
 Item* Creature::getAmmo() const {
-  for (Item* item : equipment.getItems())
+  for (Item* item : equipment->getItems())
     if (item->getClass() == ItemClass::AMMO)
       return item;
   return nullptr;
 }
 
-Level* Creature::getLevel() {
-  return level;
+Level* Creature::getLevel() const {
+  return getPosition().getLevel();
 }
 
-const Level* Creature::getLevel() const {
-  return level;
-}
-
-Vec2 Creature::getPosition() const {
+Position Creature::getPosition() const {
   return position;
 }
 
+void Creature::globalMessage(const PlayerMessage& playerCanSee) const {
+  globalMessage(playerCanSee, "");
+}
+
 void Creature::globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
-  if (level)
-    level->globalMessage(this, playerCanSee, cant);
+  position.globalMessage(this, playerCanSee, cant);
 }
 
 void Creature::monsterMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
-  if (level && !isPlayer())
-    level->globalMessage(this, playerCanSee, cant);
+  if (!isPlayer())
+    position.globalMessage(this, playerCanSee, cant);
+}
+
+void Creature::monsterMessage(const PlayerMessage& playerCanSee) const {
+  monsterMessage(playerCanSee, "");
 }
 
 void Creature::addSkill(Skill* skill) {
   if (!hasSkill(skill)) {
-    skills.insert(skill->getId());
+    attributes->skills.insert(skill->getId());
     playerMessage(skill->getHelpText());
   }
 }
 
 bool Creature::hasSkill(Skill* skill) const {
-  return skills.hasDiscrete(skill->getId());
+  return attributes->skills.hasDiscrete(skill->getId());
 }
 
 double Creature::getSkillValue(const Skill* skill) const {
-  return skills.getValue(skill->getId());
+  return attributes->skills.getValue(skill->getId());
 }
 
 const EnumSet<SkillId>& Creature::getDiscreteSkills() const {
-  return skills.getAllDiscrete();
+  return attributes->skills.getAllDiscrete();
 }
 
 vector<Item*> Creature::getPickUpOptions() const {
   if (!isHumanoid())
     return vector<Item*>();
   else
-    return getSquare()->getItems();
+    return getPosition().getItems();
 }
 
 string Creature::getPluralTheName(Item* item, int num) const {
@@ -453,7 +487,7 @@ string Creature::getPluralAName(Item* item, int num) const {
     return toString(num) + " " + item->getAName(true, isBlind());
 }
 
-CreatureAction Creature::pickUp(const vector<Item*>& items, bool spendT) const {
+CreatureAction Creature::pickUp(const vector<Item*>& items) const {
   if (!isHumanoid())
     return CreatureAction("You can't pick up anything!");
   double weight = getInventoryWeight();
@@ -463,19 +497,15 @@ CreatureAction Creature::pickUp(const vector<Item*>& items, bool spendT) const {
     return CreatureAction("You are carrying too much to pick this up.");
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " pickup ";
-    if (spendT)
-      for (auto stack : stackItems(items)) {
-        monsterMessage(getName().the() + " picks up " + getPluralAName(stack[0], stack.size()));
-        playerMessage("You pick up " + getPluralTheName(stack[0], stack.size()));
-      }
-    for (auto item : items) {
-      self->equipment.addItem(self->getSquare()->removeItem(item));
+    for (auto stack : stackItems(items)) {
+      monsterMessage(getName().the() + " picks up " + getPluralAName(stack[0], stack.size()));
+      playerMessage("You pick up " + getPluralTheName(stack[0], stack.size()));
     }
+    self->equipment->addItems(self->getPosition().removeItems(items));
     if (getInventoryWeight() > getModifier(ModifierType::INV_LIMIT))
       playerMessage("You are overloaded.");
     GlobalEvents.addPickupEvent(this, items);
-    if (spendT)
-      self->spendTime(1);
+    self->spendTime(1);
   });
 }
 
@@ -495,7 +525,7 @@ CreatureAction Creature::drop(const vector<Item*>& items) const {
       playerMessage("You drop " + getPluralTheName(stack[0], stack.size()));
     }
     for (auto item : items) {
-      self->getSquare()->dropItem(self->equipment.removeItem(item));
+      self->getPosition().dropItem(self->equipment->removeItem(item));
     }
     GlobalEvents.addDropEvent(this, items);
     self->spendTime(1);
@@ -503,7 +533,7 @@ CreatureAction Creature::drop(const vector<Item*>& items) const {
 }
 
 void Creature::drop(vector<PItem> items) {
-  getSquare()->dropItems(std::move(items));
+  getPosition().dropItems(std::move(items));
 }
 
 bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
@@ -512,7 +542,7 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
       *reason = "Only humanoids can equip items!";
     return false;
   }
-  if (cantEquip) {
+  if (attributes->cantEquip) {
     if (reason)
       *reason = "You can't equip items!";
     return false;
@@ -531,7 +561,7 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
 }
 
 bool Creature::canEquip(const Item* item) const {
-  return canEquipIfEmptySlot(item, nullptr) && equipment.canEquip(item);
+  return canEquipIfEmptySlot(item, nullptr) && equipment->canEquip(item);
 }
 
 bool Creature::isEquipmentAppropriate(const Item* item) const {
@@ -542,28 +572,28 @@ CreatureAction Creature::equip(Item* item) const {
   string reason;
   if (!canEquipIfEmptySlot(item, &reason))
     return CreatureAction(reason);
-  if (contains(equipment.getItem(item->getEquipmentSlot()), item))
+  if (contains(equipment->getItem(item->getEquipmentSlot()), item))
     return CreatureAction();
   return CreatureAction(this, [=](Creature *self) {
     Debug() << getName().the() << " equip " << item->getName();
     EquipmentSlot slot = item->getEquipmentSlot();
-    if (self->equipment.getItem(slot).size() >= self->equipment.getMaxItems(slot)) {
-      Item* previousItem = self->equipment.getItem(slot)[0];
-      self->equipment.unequip(previousItem);
+    if (self->equipment->getItem(slot).size() >= self->equipment->getMaxItems(slot)) {
+      Item* previousItem = self->equipment->getItem(slot)[0];
+      self->equipment->unequip(previousItem);
       previousItem->onUnequip(self);
     }
-    self->equipment.equip(item, slot);
+    self->equipment->equip(item, slot);
     playerMessage("You equip " + item->getTheName(false, isBlind()));
     monsterMessage(getName().the() + " equips " + item->getAName());
     item->onEquip(self);
-    if (level)
-      level->getModel()->onEquip(self, item);
+    if (model)
+      model->onEquip(self, item);
     self->spendTime(1);
   });
 }
 
 CreatureAction Creature::unequip(Item* item) const {
-  if (!equipment.isEquiped(item))
+  if (!equipment->isEquiped(item))
     return CreatureAction("This item is not equiped.");
   if (!isHumanoid())
     return CreatureAction("You can't remove this item!");
@@ -571,9 +601,9 @@ CreatureAction Creature::unequip(Item* item) const {
     return CreatureAction("You have no healthy arms!");
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " unequip";
-    CHECK(equipment.isEquiped(item)) << "Item not equiped.";
+    CHECK(equipment->isEquiped(item)) << "Item not equiped.";
     EquipmentSlot slot = item->getEquipmentSlot();
-    self->equipment.unequip(item);
+    self->equipment->unequip(item);
     playerMessage("You " + string(slot == EquipmentSlot::WEAPON ? " sheathe " : " remove ") +
         item->getTheName(false, isBlind()));
     monsterMessage(getName().the() + (slot == EquipmentSlot::WEAPON ? " sheathes " : " removes ") +
@@ -584,13 +614,11 @@ CreatureAction Creature::unequip(Item* item) const {
 }
 
 CreatureAction Creature::heal(Vec2 direction) const {
-  if (!getLevel()->inBounds(position + direction))
-    return CreatureAction();
-  const Creature* other = getSafeSquare(direction)->getCreature();
+  const Creature* other = getPosition().plus(direction).getCreature();
   if (!hasSkill(Skill::get(SkillId::HEALING)) || !other || other->getHealth() >= 0.9999 || other == this)
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
-    Creature* other = self->getSafeSquare(direction)->getCreature();
+    Creature* other = getPosition().plus(direction).getCreature();
     other->playerMessage("\"Let me help you my friend.\"");
     other->you(MsgType::ARE, "healed by " + getName().the());
     other->heal();
@@ -599,9 +627,7 @@ CreatureAction Creature::heal(Vec2 direction) const {
 }
 
 CreatureAction Creature::bumpInto(Vec2 direction) const {
-  if (!getLevel()->inBounds(position + direction))
-    return CreatureAction(); 
-  if (const Creature* other = getSafeSquare(direction)->getCreature())
+  if (const Creature* other = getPosition().plus(direction).getCreature())
     return CreatureAction(this, [=](Creature* self) {
       other->controller->onBump(self);
       self->spendTime(1);
@@ -611,11 +637,11 @@ CreatureAction Creature::bumpInto(Vec2 direction) const {
 }
 
 CreatureAction Creature::applySquare() const {
-  if (getSquare()->getApplyType(this))
+  if (getPosition().getApplyType(this))
     return CreatureAction(this, [=](Creature* self) {
-      Debug() << getName().the() << " applying " << getSquare()->getName();
-      self->getSquare()->onApply(self);
-      self->spendTime(self->getSquare()->getApplyTime());
+      Debug() << getName().the() << " applying " << getPosition().getName();
+      self->getPosition().onApply(self);
+      self->spendTime(self->getPosition().getApplyTime());
     });
   else
     return CreatureAction();
@@ -624,13 +650,13 @@ CreatureAction Creature::applySquare() const {
 CreatureAction Creature::hide() const {
   if (!hasSkill(Skill::get(SkillId::AMBUSH)))
     return CreatureAction("You don't have this skill.");
-  if (!getSquare()->canHide())
+  if (!getPosition().canHide())
     return CreatureAction("You can't hide here.");
   return CreatureAction(this, [=](Creature* self) {
-    playerMessage("You hide behind the " + getSquare()->getName());
+    playerMessage("You hide behind the " + getPosition().getName());
     self->knownHiding.clear();
     self->modViewObject().setModifier(ViewObject::Modifier::HIDDEN);
-    for (const Creature* other : getLevel()->getAllCreatures())
+    for (Creature* other : getLevel()->getAllCreatures())
       if (other->canSee(this) && other->isEnemy(this)) {
         self->knownHiding.insert(other);
         if (!isBlind())
@@ -641,29 +667,28 @@ CreatureAction Creature::hide() const {
   });
 }
 
-CreatureAction Creature::chatTo(Vec2 direction) const {
-  for (const Square* s : getSquare(direction))
-    if (const Creature* other = s->getCreature())
-      return CreatureAction(this, [=](Creature* self) {
-          playerMessage("You chat with " + other->getName().the());
-          self->getSafeSquare(direction)->getCreature()->onChat(self);
-          self->spendTime(1);
-          });
+CreatureAction Creature::chatTo(Creature* other) const {
+  CHECK(other);
+  return CreatureAction(this, [=](Creature* self) {
+      playerMessage("You chat with " + other->getName().the());
+      other->onChat(self);
+      self->spendTime(1);
+  });
   return CreatureAction();
 }
 
 void Creature::onChat(Creature* from) {
-  if (isEnemy(from) && chatReactionHostile) {
-    if (chatReactionHostile->front() == '\"')
-      from->playerMessage(*chatReactionHostile);
+  if (isEnemy(from) && attributes->chatReactionHostile) {
+    if (attributes->chatReactionHostile->front() == '\"')
+      from->playerMessage(*attributes->chatReactionHostile);
     else
-      from->playerMessage(getName().the() + " " + *chatReactionHostile);
+      from->playerMessage(getName().the() + " " + *attributes->chatReactionHostile);
   }
-  if (!isEnemy(from) && chatReactionFriendly) {
-    if (chatReactionFriendly->front() == '\"')
-      from->playerMessage(*chatReactionFriendly);
+  if (!isEnemy(from) && attributes->chatReactionFriendly) {
+    if (attributes->chatReactionFriendly->front() == '\"')
+      from->playerMessage(*attributes->chatReactionFriendly);
     else
-      from->playerMessage(getName().the() + " " + *chatReactionFriendly);
+      from->playerMessage(getName().the() + " " + *attributes->chatReactionFriendly);
   }
 }
 
@@ -672,11 +697,10 @@ void Creature::learnLocation(const Location* loc) {
 }
 
 CreatureAction Creature::stealFrom(Vec2 direction, const vector<Item*>& items) const {
-  for (const Square* s : getSquare(direction))
-    if (s->getCreature())
-      return CreatureAction(this, [=](Creature *self) {
-        Creature* other = NOTNULL(self->getSafeSquare(direction)->getCreature());
-        self->equipment.addItems(other->steal(items));
+  if (getPosition().plus(direction).getCreature())
+    return CreatureAction(this, [=](Creature *self) {
+        Creature* other = NOTNULL(getPosition().plus(direction).getCreature());
+        self->equipment->addItems(other->steal(items));
       });
   return CreatureAction();
 }
@@ -686,7 +710,7 @@ bool Creature::isHidden() const {
 }
 
 bool Creature::knowsHiding(const Creature* c) const {
-  return knownHiding.count(c) == 1;
+  return knownHiding.count(const_cast<Creature*>(c)) == 1; // OBSOLETE: change to entity set
 }
 
 bool Creature::affects(LastingEffect effect) const {
@@ -694,7 +718,8 @@ bool Creature::affects(LastingEffect effect) const {
     case LastingEffect::RAGE:
     case LastingEffect::PANIC: return !isAffected(LastingEffect::SLEEP);
     case LastingEffect::POISON: return !isAffected(LastingEffect::POISON_RESISTANT) && !isNotLiving();
-    case LastingEffect::ENTANGLED: return !uncorporal;
+    case LastingEffect::TIED_UP:
+    case LastingEffect::ENTANGLED: return isCorporal();
     default: return true;
   }
 }
@@ -742,6 +767,7 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
       if (msg) you(MsgType::ARE, "moving more slowly");
       removeEffect(LastingEffect::SPEED, false);
       break;
+    case LastingEffect::TIED_UP: if (msg) you(MsgType::ARE, "tied up"); break;
     case LastingEffect::ENTANGLED: if (msg) you(MsgType::ARE, "entangled in a web"); break;
     case LastingEffect::SLEEP: if (msg) you(MsgType::FALL_ASLEEP, ""); break;
     case LastingEffect::POISON_RESISTANT:
@@ -778,6 +804,7 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
     case LastingEffect::RAGE:
     case LastingEffect::HALLU: if (msg) playerMessage("Your mind is clear again"); break;
     case LastingEffect::ENTANGLED: if (msg) you(MsgType::BREAK_FREE, "the web"); break;
+    case LastingEffect::TIED_UP: if (msg) you(MsgType::BREAK_FREE, ""); break;
     case LastingEffect::BLIND:
       if (msg) 
         you("can see again");
@@ -796,7 +823,7 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
     case LastingEffect::POISON_RESISTANT: if (msg) you(MsgType::ARE, "no longer poison resistant"); break;
     case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "no longer fire resistant"); break;
     case LastingEffect::FLYING:
-      if (msg) you(MsgType::FALL, getSquare()->getName());
+      if (msg) you(MsgType::FALL, "on the " + getPosition().getName());
       bleed(0.1);
       break;
     case LastingEffect::INSANITY: if (msg) you(MsgType::BECOME, "sane again"); break;
@@ -806,17 +833,17 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
 }
 
 void Creature::addEffect(LastingEffect effect, double time, bool msg) {
-  if (lastingEffects[effect] < getTime() + time && affects(effect)) {
+  if (attributes->lastingEffects[effect] < getTime() + time && affects(effect)) {
     if (!isAffected(effect))
       onAffected(effect, msg);
-    lastingEffects[effect] = getTime() + time;
+    attributes->lastingEffects[effect] = getTime() + time;
   }
 }
 
 void Creature::removeEffect(LastingEffect effect, bool msg) {
   if (!isAffected(effect))
     return;
-  lastingEffects[effect] = 0;
+  attributes->lastingEffects[effect] = 0;
   if (!isAffected(effect))
     onRemoved(effect, msg);
 }
@@ -824,27 +851,27 @@ void Creature::removeEffect(LastingEffect effect, bool msg) {
 void Creature::addPermanentEffect(LastingEffect effect, bool msg) {
   if (!isAffected(effect))
     onAffected(effect, msg);
-  ++permanentEffects[effect];
+  ++attributes->permanentEffects[effect];
 }
 
 void Creature::removePermanentEffect(LastingEffect effect, bool msg) {
-  --permanentEffects[effect];
-  CHECK(permanentEffects[effect] >= 0);
+  --attributes->permanentEffects[effect];
+  CHECK(attributes->permanentEffects[effect] >= 0);
   if (!isAffected(effect))
     onRemoved(effect, msg);
 }
 
 double Creature::getTimeRemaining(LastingEffect effect) const {
   CHECK(isAffected(effect));
-  return lastingEffects[effect] - getTime();
+  return attributes->lastingEffects[effect] - getTime();
 }
 
 bool Creature::isAffected(LastingEffect effect) const {
-  return lastingEffects[effect] >= getTime() || permanentEffects[effect] > 0;
+  return attributes->lastingEffects[effect] >= getTime() || attributes->permanentEffects[effect] > 0;
 }
 
 bool Creature::isAffectedPermanently(LastingEffect effect) const {
-  return permanentEffects[effect] > 0;
+  return attributes->permanentEffects[effect] > 0;
 }
 
 bool Creature::isBlind() const {
@@ -853,10 +880,6 @@ bool Creature::isBlind() const {
 
 bool Creature::isDarknessSource() const {
   return isAffected(LastingEffect::DARKNESS_SOURCE);
-}
-
-double Creature::getRawAttr(AttrType type) const {
-  return attr[type] + attrIncrease[type];
 }
 
 int attrBonus = 3;
@@ -879,16 +902,16 @@ int simulAttackPen(int attackers) {
 }
 
 int Creature::getAttr(AttrType type) const {
-  int def = getRawAttr(type);
-  for (Item* item : equipment.getItems())
-    if (equipment.isEquiped(item))
-      def += item->getAttr(type);
+  int def = attributes->getRawAttr(type);
+  for (Item* item : equipment->getItems())
+    if (equipment->isEquiped(item))
+      def += CHECK_RANGE(item->getAttr(type), -10000000, 10000000, getName().bare());
   switch (type) {
     case AttrType::STRENGTH:
         if (health < 1)
           def *= 0.666 + health / 3;
         if (isAffected(LastingEffect::STR_BONUS))
-          def += attrBonus;
+          def += CHECK_RANGE(attrBonus, -10000000, 10000000, getName().bare());
         for (auto elem : strPenalty)
           def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
         def -= simulAttackPen(numAttacksThisTurn);
@@ -904,15 +927,16 @@ int Creature::getAttr(AttrType type) const {
         break;
     case AttrType::SPEED: {
         double totWeight = getInventoryWeight();
-        if (!carryAnything && totWeight > getAttr(AttrType::STRENGTH))
+        if (!attributes->carryAnything && totWeight > getAttr(AttrType::STRENGTH))
           def -= 20.0 * totWeight / def;
         if (isAffected(LastingEffect::SLOWED))
           def /= 1.5;
         if (isAffected(LastingEffect::SPEED))
           def *= 1.5;
+        CHECK(def > 0);
         break;}
   }
-  return def;
+  return max(0, def);
 }
 
 int Creature::accuracyBonus() const {
@@ -924,11 +948,11 @@ int Creature::accuracyBonus() const {
 
 int Creature::getModifier(ModifierType type) const {
   int def = 0;
-  for (Item* item : equipment.getItems())
-    if (equipment.isEquiped(item))
-      def += item->getModifier(type);
+  for (Item* item : equipment->getItems())
+    if (equipment->isEquiped(item))
+      def += CHECK_RANGE(item->getModifier(type), -10000000, 10000000, getName().bare());
   for (SkillId skill : ENUM_ALL(SkillId))
-    def += Skill::get(skill)->getModifier(this, type);
+    def += CHECK_RANGE(Skill::get(skill)->getModifier(this, type), -10000000, 10000000, getName().bare());
   switch (type) {
     case ModifierType::FIRED_DAMAGE: 
     case ModifierType::THROWN_DAMAGE: 
@@ -941,7 +965,7 @@ int Creature::getModifier(ModifierType type) const {
     case ModifierType::DAMAGE: 
         def += getAttr(AttrType::STRENGTH);
         if (!getWeapon())
-          def += barehandedDamage;
+          def += attributes->barehandedDamage;
         if (isAffected(LastingEffect::PANIC))
           def -= attrBonus;
         if (isAffected(LastingEffect::RAGE))
@@ -969,7 +993,7 @@ int Creature::getModifier(ModifierType type) const {
           def = 0;
         break;
     case ModifierType::INV_LIMIT:
-        if (carryAnything)
+        if (attributes->carryAnything)
           return 1000000;
         return getAttr(AttrType::STRENGTH) * 2;
   }
@@ -989,9 +1013,13 @@ void Creature::onKilled(const Creature* victim) {
   int difficulty = victim->getDifficultyPoints();
   CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
   points += difficulty;
-  double levelDiff = victim->getExpLevelDouble() - getExpLevelDouble();
+  double levelDiff = victim->attributes->getExpLevel() - attributes->getExpLevel();
   increaseExpLevel(max(minLevelGain, min(maxLevelGain, 
       (maxLevelGain - equalLevelGain) * levelDiff / maxLevelDiff + equalLevelGain)));
+}
+
+void Creature::increaseExpLevel(double increase) {
+  return attributes->increaseExpLevel(increase);
 }
 
 double Creature::getInventoryWeight() const {
@@ -1007,6 +1035,10 @@ Tribe* Creature::getTribe() {
 
 const Tribe* Creature::getTribe() const {
   return tribe;
+}
+
+void Creature::setTribe(Tribe* t) {
+  tribe = t;
 }
 
 bool Creature::isFriend(const Creature* c) const {
@@ -1040,7 +1072,7 @@ bool Creature::isEnemy(const Creature* c) const {
 
 vector<Item*> Creature::getGold(int num) const {
   vector<Item*> ret;
-  for (Item* item : equipment.getItems([](Item* it) { return it->getClass() == ItemClass::GOLD; })) {
+  for (Item* item : equipment->getItems([](Item* it) { return it->getClass() == ItemClass::GOLD; })) {
     ret.push_back(item);
     if (ret.size() == num)
       return ret;
@@ -1048,12 +1080,16 @@ vector<Item*> Creature::getGold(int num) const {
   return ret;
 }
 
-void Creature::setPosition(Vec2 pos) {
+void Creature::setPosition(Position pos) {
   position = pos;
 }
 
-void Creature::setLevel(Level* l) {
-  level = l;
+void Creature::setModel(Model* m) {
+  model = m;
+}
+
+Model* Creature::getModel() const {
+  return model;
 }
 
 double Creature::getTime() const {
@@ -1064,18 +1100,22 @@ void Creature::setTime(double t) {
   time = t;
 }
 
+bool Creature::isBleeding() const {
+  return health < 0.5;
+}
+
 void Creature::tick(double realTime) {
   updateVision();
   if (Random.roll(5))
     getDifficultyPoints();
-  for (Item* item : equipment.getItems()) {
-    item->tick(time, level, position);
+  for (Item* item : equipment->getItems()) {
+    item->tick(time, position);
     if (item->isDiscarded())
-      equipment.removeItem(item);
+      equipment->removeItem(item);
   }
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
-    if (lastingEffects[effect] > 0 && lastingEffects[effect] < realTime) {
-      lastingEffects[effect] = 0;
+    if (attributes->lastingEffects[effect] > 0 && attributes->lastingEffects[effect] < realTime) {
+      attributes->lastingEffects[effect] = 0;
       if (!isAffected(effect))
         onTimedOut(effect, true);
     }
@@ -1087,54 +1127,25 @@ void Creature::tick(double realTime) {
   lastTick = realTime;
   updateViewObject();
   if (isNotLiving() && lostOrInjuredBodyParts() >= 4) {
-    you(MsgType::FALL_APART, "");
+    you(MsgType::FALL, "apart");
     die(lastAttacker);
     return;
   }
-  if (health < 0.5) {
+  if (isBleeding()) {
     health -= delta / 40;
     playerMessage("You are bleeding.");
   }
   if (health <= 0) {
     you(MsgType::DIE_OF, isAffected(LastingEffect::POISON) ? "poisoning" : "bleeding");
     die(lastAttacker);
+    return;
   }
-  if (getSquare()->sunlightBurns())
+  if (getPosition().sunlightBurns())
     shineLight();
 }
 
-BodyPart Creature::armOrWing() const {
-  if (numGood(BodyPart::ARM) == 0)
-    return BodyPart::WING;
-  if (numGood(BodyPart::WING) == 0)
-    return BodyPart::ARM;
-  return chooseRandom({ BodyPart::WING, BodyPart::ARM }, {1, 1});
-}
-
-BodyPart Creature::getBodyPart(AttackLevel attack) const {
-  if (isAffected(LastingEffect::FLYING))
-    return chooseRandom({BodyPart::TORSO, BodyPart::HEAD, BodyPart::LEG, BodyPart::WING, BodyPart::ARM}, {1, 1, 1, 2, 1});
-  switch (attack) {
-    case AttackLevel::HIGH: 
-       return BodyPart::HEAD;
-    case AttackLevel::MIDDLE:
-       if (size == CreatureSize::SMALL || size == CreatureSize::MEDIUM || collapsed)
-         return BodyPart::HEAD;
-       else
-         return chooseRandom({BodyPart::TORSO, armOrWing()}, {1, 1});
-    case AttackLevel::LOW:
-       if (size == CreatureSize::SMALL || collapsed)
-         return chooseRandom({BodyPart::TORSO, armOrWing(), BodyPart::HEAD, BodyPart::LEG}, {1, 1, 1, 1});
-       if (size == CreatureSize::MEDIUM)
-         return chooseRandom({BodyPart::TORSO, armOrWing(), BodyPart::LEG}, {1, 1, 3});
-       else
-         return BodyPart::LEG;
-  }
-  return BodyPart::ARM;
-}
-
 bool Creature::hasSuicidalAttack() const {
-  return barehandedAttack == AttackType::POSSESS;
+  return attributes->barehandedAttack == AttackType::POSSESS;
 }
 
 static string getAttackParam(AttackType type) {
@@ -1149,17 +1160,6 @@ static string getAttackParam(AttackType type) {
     case AttackType::SHOOT: return "shot";
     case AttackType::SPELL: return "spell";
     case AttackType::POSSESS: return "touch";
-  }
-}
-
-string Creature::getBodyPartName(BodyPart part) {
-  switch (part) {
-    case BodyPart::LEG: return "leg";
-    case BodyPart::ARM: return "arm";
-    case BodyPart::WING: return "wing";
-    case BodyPart::HEAD: return "head";
-    case BodyPart::TORSO: return "torso";
-    case BodyPart::BACK: return "back";
   }
 }
 
@@ -1200,20 +1200,20 @@ static string getBodyPartBone(BodyPart part) {
 }
 
 void Creature::injureBodyPart(BodyPart part, bool drop) {
-  if (bodyParts[part] == 0)
+  if (attributes->bodyParts[part] == 0)
     return;
   if (drop) {
     if (contains({BodyPart::LEG, BodyPart::ARM, BodyPart::WING}, part))
-      level->getModel()->getStatistics().add(StatId::CHOPPED_LIMB);
+      model->getStatistics().add(StatId::CHOPPED_LIMB);
     else if (part == BodyPart::HEAD)
-      level->getModel()->getStatistics().add(StatId::CHOPPED_HEAD);
-    --bodyParts[part];
-    ++lostBodyParts[part];
-    if (injuredBodyParts[part] > bodyParts[part])
-      --injuredBodyParts[part];
+      model->getStatistics().add(StatId::CHOPPED_HEAD);
+    --attributes->bodyParts[part];
+    ++attributes->lostBodyParts[part];
+    if (attributes->injuredBodyParts[part] > attributes->bodyParts[part])
+      --attributes->injuredBodyParts[part];
   }
-  else if (injuredBodyParts[part] < bodyParts[part])
-    ++injuredBodyParts[part];
+  else if (attributes->injuredBodyParts[part] < attributes->bodyParts[part])
+    ++attributes->injuredBodyParts[part];
   switch (part) {
     case BodyPart::LEG:
       if (!collapsed && !isAffected(LastingEffect::FLYING)) {
@@ -1224,7 +1224,7 @@ void Creature::injureBodyPart(BodyPart part, bool drop) {
     case BodyPart::ARM:
       if (getWeapon()) {
         you(MsgType::DROP_WEAPON, getWeapon()->getName());
-        getSquare()->dropItem(equipment.removeItem(getWeapon()));
+        getPosition().dropItem(equipment->removeItem(getWeapon()));
       }
       break;
     case BodyPart::WING:
@@ -1238,9 +1238,9 @@ void Creature::injureBodyPart(BodyPart part, bool drop) {
     default: break;
   }
   if (drop)
-    getSquare()->dropItem(ItemFactory::corpse(getName().bare() + " " + getBodyPartName(part),
+    getPosition().dropItem(ItemFactory::corpse(getName().bare() + " " + attributes->getBodyPartName(part),
         getName().bare() + " " + getBodyPartBone(part),
-        getWeight() / 8, isFood ? ItemClass::FOOD : ItemClass::CORPSE));
+        getWeight() / 8, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE));
 }
 
 static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
@@ -1257,9 +1257,11 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
   return MsgType(0);
 }
 
-CreatureAction Creature::attack(const Creature* other, optional<AttackParams> attackParams, bool spend) const {
+CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackParams, bool spend) const {
   CHECK(!other->isDead());
-  Vec2 dir = other->getPosition() - getPosition();
+  if (!position.isSameLevel(other->getPosition()))
+    return CreatureAction();
+  Vec2 dir = getPosition().getDir(other->getPosition());
   if (dir.length8() != 1)
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* c) {
@@ -1271,6 +1273,7 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackParams> at
   auto rAccuracy = [=] () { return Random.get(-accuracyVariance, accuracyVariance); };
   auto rDamage = [=] () { return Random.get(-damageVariance, damageVariance); };
   double timeSpent = 1;
+  model->onAttack(other, c);
   accuracy += rAccuracy() + rAccuracy();
   damage += rDamage() + rDamage();
   vector<string> attackAdjective;
@@ -1300,12 +1303,11 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackParams> at
  //   }
     you(MsgType::ATTACK_SURPRISE, enemyName);
   }
-  AttackLevel attackLevel = getRandomAttackLevel();
+  AttackLevel attackLevel = attributes->getRandomAttackLevel();
   if (attackParams && attackParams->level)
     attackLevel = *attackParams->level;
   Attack attack(c, attackLevel, getAttackType(), accuracy, damage, backstab,
-      getWeapon() ? getWeapon()->getAttackEffect() : attackEffect);
-  Creature* other = c->getSafeSquare(dir)->getCreature();
+      getWeapon() ? getWeapon()->getAttackEffect() : attributes->attackEffect);
   if (!other->dodgeAttack(attack)) {
     if (getWeapon()) {
       you(getAttackMsg(attack.getType(), true, attack.getLevel()),
@@ -1315,10 +1317,10 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackParams> at
     } else
       you(getAttackMsg(attack.getType(), false, attack.getLevel()), concat({enemyName}, attackAdjective));
     other->takeDamage(attack);
-  }
-  else
+  } else {
     you(MsgType::MISS_ATTACK, enemyName);
-  level->getModel()->onAttack(other, c);
+    addSound(SoundId::MISSED_ATTACK);
+  }
   double oldTime = getTime();
   if (spend)
     c->spendTime(timeSpent);
@@ -1326,11 +1328,11 @@ CreatureAction Creature::attack(const Creature* other, optional<AttackParams> at
   });
 }
 
-bool Creature::dodgeAttack(Attack attack) {
+bool Creature::dodgeAttack(const Attack& attack) {
   ++numAttacksThisTurn;
   Debug() << getName().the() << " dodging " << attack.getAttacker()->getName().bare()
     << " accuracy " << attack.getAccuracy() << " dodge " << getModifier(ModifierType::ACCURACY);
-  if (const Creature* c = attack.getAttacker()) {
+  if (Creature* c = attack.getAttacker()) {
     if (!canSee(c))
       unknownAttacker.push_back(c);
   }
@@ -1356,14 +1358,14 @@ bool Creature::isCritical(BodyPart part) const {
     || (part == BodyPart::HEAD && numGood(part) == 0 && !isUndead());
 }
 
-bool Creature::takeDamage(Attack attack) {
+bool Creature::takeDamage(const Attack& attack) {
   AttackType attackType = attack.getType();
   Creature* other = attack.getAttacker();
   if (other) {
     if (!contains(privateEnemies, other) && (other->getTribe() != tribe || Random.roll(3)))
       privateEnemies.push_back(other);
     if (!other->hasSkill(Skill::get(SkillId::STEALTH)))
-      for (Creature* c : visibleCreatures)
+      for (Creature* c : getVisibleCreatures())
         if (c->getPosition().dist8(position) < 10)
           c->removeEffect(LastingEffect::SLEEP);
   }
@@ -1376,17 +1378,19 @@ bool Creature::takeDamage(Attack attack) {
   int defense = getModifier(ModifierType::DEFENSE);
   Debug() << getName().the() << " attacked by " << other->getName().the()
       << " damage " << attack.getStrength() << " defense " << defense;
-  if (passiveAttack && other && other->getPosition().dist8(position) == 1) {
-    Effect::applyToCreature(other, *passiveAttack, EffectStrength::NORMAL);
+  if (attributes->passiveAttack && other && other->getPosition().dist8(position) == 1) {
+    Effect::applyToCreature(other, *attributes->passiveAttack, EffectStrength::NORMAL);
     other->lastAttacker = this;
   }
   if (isAffected(LastingEffect::MAGIC_SHIELD)) {
-    lastingEffects[LastingEffect::MAGIC_SHIELD] -= 5;
+    attributes->lastingEffects[LastingEffect::MAGIC_SHIELD] -= 5;
     globalMessage("The magic shield absorbs the attack", "");
   }
+  if (auto sound = attributes->getAttackSound(attack.getType(), attack.getStrength() > defense))
+    addSound(*sound);
   if (attack.getStrength() > defense) {
     if (attackType == AttackType::EAT) {
-      if (isLarger(*other->size, *size) && Random.roll(3)) {
+      if (isLarger(other->getSize(), getSize()) && Random.roll(3)) {
         you(MsgType::ARE, "devoured by " + other->getName().the());
         die(other, false, false);
         return true;
@@ -1395,12 +1399,12 @@ bool Creature::takeDamage(Attack attack) {
     }
     lastAttacker = attack.getAttacker();
     double dam = (defense == 0) ? 1 : double(attack.getStrength() - defense) / defense;
-    dam *= damageMultiplier;
     if (!isNotLiving())
       bleed(dam);
-    if (!uncorporal) {
+    if (isCorporal()) {
       if (attackType != AttackType::SPELL) {
-        BodyPart part = attack.inTheBack() && Random.roll(3) ? BodyPart::BACK : getBodyPart(attack.getLevel());
+        BodyPart part = attack.inTheBack() && Random.roll(3) ? BodyPart::BACK :
+            attributes->getBodyPart(attack.getLevel(), isAffected(LastingEffect::FLYING), collapsed);
         if (dam >= getMinDamage(part) && numGood(part) > 0) {
           youHit(part, attackType); 
           injureBodyPart(part, contains({AttackType::CUT, AttackType::BITE}, attackType));
@@ -1437,7 +1441,7 @@ bool Creature::takeDamage(Attack attack) {
       Effect::applyToCreature(this, *effect, EffectStrength::WEAK);
   } else {
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attackType));
-    if (attack.getEffect() && attack.getAttacker()->harmlessApply)
+    if (attack.getEffect() && attack.getAttacker()->attributes->harmlessApply)
       Effect::applyToCreature(this, *attack.getEffect(), EffectStrength::NORMAL);
   }
   if (isAffected(LastingEffect::SLEEP))
@@ -1484,7 +1488,7 @@ void Creature::addMoraleOverride(PMoraleOverride mod) {
 }
 
 double Creature::getWeight() const {
-  return *weight;
+  return *attributes->weight;
 }
 
 string sizeStr(CreatureSize s) {
@@ -1504,19 +1508,6 @@ static string adjectives(CreatureSize s, bool undead, bool notLiving) {
   if (undead)
     ret.push_back("undead");
   return combine(ret);
-}
-
-string Creature::bodyDescription() const {
-  vector<string> ret;
-  for (BodyPart part : {BodyPart::ARM, BodyPart::LEG, BodyPart::WING})
-    if (int num = numBodyParts(part))
-      ret.push_back(getPlural(getBodyPartName(part), num));
-  if (isHumanoid() && numBodyParts(BodyPart::HEAD) == 0)
-    ret.push_back("no head");
-  if (ret.size() > 0)
-    return " with " + combine(ret);
-  else
-    return "";
 }
 
 string attrStr(bool strong, bool agile, bool fast) {
@@ -1542,27 +1533,27 @@ string attrStr(bool strong, bool agile, bool fast) {
   return p1;
 }
 
-bool Creature::isSpecialMonster() const {
-  return specialMonster;
-}
-
 string Creature::getDescription() const {
+  if (!attributes->isSpecial)
+    return "";
   string weapon;
   string attack;
-  if (attackEffect)
-    attack = " It has a " + Effect::getName(*attackEffect) + " attack.";
-  return getName().the() + " is a " + adjectives(*size, undead, notLiving) +
-      (isHumanoid() ? " humanoid" : " beast") + (uncorporal ? " spirit" : "") + bodyDescription() + ". " +
-     "It is " + attrStr(getRawAttr(AttrType::STRENGTH) > 16, getRawAttr(AttrType::DEXTERITY) > 16,
-         getRawAttr(AttrType::SPEED) > 100) + "." + weapon + attack;
+  if (attributes->attackEffect)
+    attack = " It has a " + Effect::getName(*attributes->attackEffect) + " attack.";
+  return adjectives(getSize(), isUndead(), attributes->notLiving) +
+      (isHumanoid() ? " humanoid" : " beast") + (!isCorporal() ? " spirit" : "") +
+      attributes->bodyDescription() + ". " +
+     /*"It is " + attrStr(attributes->getRawAttr(AttrType::STRENGTH) > 16,
+         attributes->getRawAttr(AttrType::DEXTERITY) > 16,
+         attributes->getRawAttr(AttrType::SPEED) > 100) + "." + */weapon + attack;
 }
 
 void Creature::setBoulderSpeed(double value) {
-  attr[AttrType::SPEED] = value;
+  attributes->attr[AttrType::SPEED] = value;
 }
   
 CreatureSize Creature::getSize() const {
-  return *size;
+  return attributes->getSize();
 }
 
 void Creature::heal(double amount, bool replaceLimbs) {
@@ -1571,25 +1562,25 @@ void Creature::heal(double amount, bool replaceLimbs) {
     health = min(1., health + amount);
     if (health >= 0.5) {
       for (BodyPart part : ENUM_ALL(BodyPart))
-        if (int numInjured = injuredBodyParts[part]) {
-          you(MsgType::YOUR, getBodyPartName(part) + (numInjured > 1 ? "s are" : " is") + " in better shape");
-          if (part == BodyPart::LEG && !lostBodyParts[BodyPart::LEG] && collapsed) {
+        if (int numInjured = attributes->injuredBodyParts[part]) {
+          you(MsgType::YOUR, attributes->getBodyPartName(part) + (numInjured > 1 ? "s are" : " is") + " in better shape");
+          if (part == BodyPart::LEG && !attributes->lostBodyParts[BodyPart::LEG] && collapsed) {
             collapsed = false;
             you(MsgType::STAND_UP, "");
           }
-          injuredBodyParts[part] = 0;
+          attributes->injuredBodyParts[part] = 0;
         }
       if (replaceLimbs)
       for (BodyPart part : ENUM_ALL(BodyPart))
-        if (int numInjured = lostBodyParts[part]) {
-            you(MsgType::YOUR, getBodyPartName(part) + (numInjured > 1 ? "s grow back!" : " grows back!"));
+        if (int numInjured = attributes->lostBodyParts[part]) {
+            you(MsgType::YOUR, attributes->getBodyPartName(part) + (numInjured > 1 ? "s grow back!" : " grows back!"));
             if (part == BodyPart::LEG && collapsed) {
               collapsed = false;
               you(MsgType::STAND_UP, "");
             }
             if (part == BodyPart::WING)
               addPermanentEffect(LastingEffect::FLYING);
-            lostBodyParts[part] = 0;
+            attributes->lostBodyParts[part] = 0;
           }
     }
     if (health == 1) {
@@ -1602,6 +1593,7 @@ void Creature::heal(double amount, bool replaceLimbs) {
 }
 
 void Creature::bleed(double severity) {
+  CHECK_RANGE(severity, 0, 1000000, getName().bare());
   updateViewObject();
   health -= severity;
   updateViewObject();
@@ -1611,23 +1603,23 @@ void Creature::bleed(double severity) {
 void Creature::setOnFire(double amount) {
   if (!isFireResistant()) {
     you(MsgType::ARE, "burnt by the fire");
-    bleed(6. * amount / double(getAttr(AttrType::STRENGTH)));
+    bleed(6. * amount / double(1 + getAttr(AttrType::STRENGTH)));
   }
 }
 
 void Creature::poisonWithGas(double amount) {
-  if (!isAffected(LastingEffect::POISON_RESISTANT) && breathing && !isNotLiving()) {
+  if (!isAffected(LastingEffect::POISON_RESISTANT) && attributes->breathing && !isNotLiving()) {
     you(MsgType::ARE, "poisoned by the gas");
-    bleed(amount / double(getAttr(AttrType::STRENGTH)));
+    bleed(amount / double(1 + getAttr(AttrType::STRENGTH)));
   }
 }
 
 void Creature::shineLight() {
-  if (undead) {
+  if (isUndead()) {
     you(MsgType::ARE, "burnt by the sun");
     if (Random.roll(10)) {
       you(MsgType::YOUR, "body crumbles to dust");
-      die(nullptr);
+      die("sunlight");
     }
   }
 }
@@ -1641,11 +1633,11 @@ bool Creature::isHeld() const {
 }
 
 bool Creature::canSleep() const {
-  return !noSleep;
+  return !attributes->noSleep;
 }
 
 bool Creature::isMinionFood() const {
-  return isFood;
+  return attributes->isFood;
 }
 
 void Creature::take(vector<PItem> items) {
@@ -1655,54 +1647,62 @@ void Creature::take(vector<PItem> items) {
 
 void Creature::take(PItem item) {
   Item* ref = item.get();
-  equipment.addItem(std::move(item));
+  equipment->addItem(std::move(item));
   if (auto action = equip(ref))
     action.perform(this);
 }
 
 void Creature::dropCorpse() {
-  getSquare()->dropItems(getCorpse());
+  getPosition().dropItems(getCorpse());
 }
 
 vector<PItem> Creature::getCorpse() {
   return makeVec<PItem>(
       ItemFactory::corpse(getName().bare() + " corpse", getName().bare() + " skeleton", getWeight(),
-        isFood ? ItemClass::FOOD : ItemClass::CORPSE,
+        isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE,
         {getUniqueId(), true, numBodyParts(BodyPart::HEAD) > 0, false}));
 }
 
+void Creature::die(const string& reason, bool dropInventory, bool dCorpse) {
+  deathReason = reason;
+  die(nullptr, dropInventory, dCorpse);
+}
+
 void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
-  CHECK(!dead);
+  CHECK(!isDead());
+  if (dCorpse)
+    if (auto sound = attributes->getDeathSound())
+      addSound(*sound);
   lastAttacker = attacker;
   Debug() << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   controller->onKilled(attacker);
   if (attacker)
     attacker->kills.push_back(this);
   if (dropInventory)
-    for (PItem& item : equipment.removeAllItems()) {
-      getSquare()->dropItem(std::move(item));
+    for (PItem& item : equipment->removeAllItems()) {
+      getPosition().dropItem(std::move(item));
     }
-  dead = true;
-  if (dropInventory && dCorpse && !uncorporal)
+  if (dropInventory && dCorpse && isCorporal())
     dropCorpse();
-  level->killCreature(this, attacker);
-  if (innocent)
-    level->getModel()->getStatistics().add(StatId::INNOCENT_KILLED);
-  level->getModel()->getStatistics().add(StatId::DEATH);
+  getLevel()->killCreature(this);
+  model->killCreature(this, attacker);
+  if (isInnocent())
+    model->getStatistics().add(StatId::INNOCENT_KILLED);
+  model->getStatistics().add(StatId::DEATH);
+  deathTime = getTime();
 }
 
 bool Creature::isInnocent() const {
-  return innocent;
+  return attributes->innocent;
 }
 
 CreatureAction Creature::flyAway() const {
-  if (!isAffected(LastingEffect::FLYING) || level->getCoverInfo(position).covered())
+  if (!isAffected(LastingEffect::FLYING) || getPosition().getCoverInfo().covered)
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " fly away";
     monsterMessage(getName().the() + " flies away.");
-    self->dead = true;
-    level->killCreature(self, nullptr);
+    self->die(nullptr, false, false);
   });
 }
 
@@ -1710,13 +1710,12 @@ CreatureAction Creature::disappear() const {
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " disappears";
     monsterMessage(getName().the() + " disappears.");
-    self->dead = true;
-    level->killCreature(self, nullptr);
+    self->die(nullptr, false, false);
   });
 }
 
 CreatureAction Creature::torture(Creature* other) const {
-  if (other->getSquare()->getApplyType(this) != SquareApplyType::TORTURE
+  if (other->getPosition().getApplyType(this) != SquareApplyType::TORTURE
       || other->getPosition().dist8(getPosition()) != 1)
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
@@ -1732,17 +1731,27 @@ CreatureAction Creature::torture(Creature* other) const {
       else
         other->bleed(1);
     }
-    level->getModel()->onTorture(other, this);
+    model->onTorture(other, this);
     self->spendTime(1);
   });
 }
 
 void Creature::surrender(const Creature* to) {
-  getLevel()->getModel()->onSurrender(this, to);
+  model->onSurrender(this, to);
 }
 
-void Creature::give(const Creature* whom, vector<Item*> items) {
-  getLevel()->getSafeSquare(whom->getPosition())->getCreature()->takeItems(equipment.removeItems(items), this);
+CreatureAction Creature::give(Creature* whom, vector<Item*> items) {
+  if (!isHumanoid() || !whom->canTakeItems(items))
+    return CreatureAction(getName().the() + " can't take this item.");
+  return CreatureAction(this, [=](Creature* self) {
+    for (auto stack : stackItems(items)) {
+      monsterMessage(getName().the() + " gives " + getPluralAName(stack[0], stack.size()) + " to " +
+          whom->getName().the());
+      playerMessage("You give " + getPluralTheName(stack[0], stack.size()) + " to " +
+        whom->getName().the());
+    }
+    whom->takeItems(equipment->removeItems(items), this);
+  });
 }
 
 CreatureAction Creature::fire(Vec2 direction) const {
@@ -1754,19 +1763,63 @@ CreatureAction Creature::fire(Vec2 direction) const {
   if (!getAmmo())
     return CreatureAction("Out of ammunition");
   return CreatureAction(this, [=](Creature* self) {
-    PItem ammo = self->equipment.removeItem(NOTNULL(getAmmo()));
+    PItem ammo = self->equipment->removeItem(NOTNULL(getAmmo()));
     RangedWeapon* weapon = NOTNULL(dynamic_cast<RangedWeapon*>(
         getOnlyElement(self->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))));
-    weapon->fire(self, level, std::move(ammo), direction);
+    weapon->fire(self, std::move(ammo), direction);
     self->spendTime(1);
   });
 }
 
-CreatureAction Creature::construct(Vec2 direction, SquareType type) const {
-  for (const Square* s : getSquare(direction))
-    if (s->canConstruct(type) && canConstruct(type))
-      return CreatureAction(this, [=](Creature* self) {
-        if (self->getSafeSquare(direction)->construct(type)) {
+CreatureAction Creature::placeTorch(Dir attachmentDir, function<void(Trigger*)> builtCallback) const {
+  return CreatureAction(this, [=](Creature* self) {
+      PTrigger torch = Trigger::getTorch(attachmentDir, position);
+      Trigger* tRef = torch.get();
+      getPosition().addTrigger(std::move(torch));
+      addSound(Sound(SoundId::DIGGING).setPitch(0.5));
+      builtCallback(tRef);
+      self->spendTime(1);
+  });
+}
+
+CreatureAction Creature::whip(const Position& pos) const {
+  Creature* whipped = pos.getCreature();
+  if (pos.dist8(position) > 1 || !whipped)
+    return CreatureAction();
+  return CreatureAction(this, [=](Creature* self) {
+    monsterMessage(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
+    double oldTime = getTime();
+    self->spendTime(1);
+    if (Random.roll(3)) {
+      addSound(SoundId::WHIP);
+      self->modViewObject().addMovementInfo({position.getDir(pos), oldTime, getTime(),
+          ViewObject::MovementInfo::ATTACK});
+    }
+    if (Random.roll(5))
+      whipped->monsterMessage(whipped->getName().the() + " screams!", "You hear a horrible scream!");
+    if (Random.roll(10)) {
+      whipped->addMorale(0.05);
+      whipped->you(MsgType::FEEL, "happier");
+    }
+  });
+}
+
+void Creature::addSound(const Sound& sound1) const {
+  Sound sound(sound1);
+  sound.setPosition(getPosition());
+  getModel()->getView()->addSound(sound);
+}
+
+CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const {
+  if (getPosition().plus(direction).canConstruct(type) && canConstruct(type))
+    return CreatureAction(this, [=](Creature* self) {
+        if (type.getId() == SquareId::FLOOR)
+          addSound(SoundId::DIGGING);
+        else if (type.getId() == SquareId::TREE_TRUNK)
+          addSound(SoundId::TREE_CUTTING);
+        else
+          addSound(Sound(SoundId::DIGGING).setPitch(0.5));
+        if (getPosition().plus(direction).construct(type)) {
           if (type.getId() == SquareId::TREE_TRUNK) {
             monsterMessage(getName().the() + " cuts a tree");
             playerMessage("You cut a tree");
@@ -1774,9 +1827,13 @@ CreatureAction Creature::construct(Vec2 direction, SquareType type) const {
           if (type.getId() == SquareId::FLOOR) {
             monsterMessage(getName().the() + " digs a tunnel");
             playerMessage("You dig a tunnel");
+          } else
+          if (type.getId() == SquareId::MOUNTAIN) {
+            monsterMessage(getName().the() + " fills up a tunnel");
+            playerMessage("You fill up a tunnel");
           } else {
-            monsterMessage(getName().the() + " builds " + getSafeSquare(direction)->getName());
-            playerMessage("You build " + getSafeSquare(direction)->getName());
+            monsterMessage(getName().the() + " builds " + getPosition().plus(direction).getName());
+            playerMessage("You build " + getPosition().plus(direction).getName());
           }
         }
         self->spendTime(1);
@@ -1784,7 +1841,7 @@ CreatureAction Creature::construct(Vec2 direction, SquareType type) const {
   return CreatureAction();
 }
 
-bool Creature::canConstruct(SquareType type) const {
+bool Creature::canConstruct(const SquareType& type) const {
   return hasSkill(Skill::get(SkillId::CONSTRUCTION));
 }
 
@@ -1792,30 +1849,30 @@ CreatureAction Creature::eat(Item* item) const {
   return CreatureAction(this, [=](Creature* self) {
     monsterMessage(getName().the() + " eats " + item->getAName());
     playerMessage("You eat " + item->getAName());
-    self->getSquare()->removeItem(item);
+    self->getPosition().removeItem(item);
     self->spendTime(3);
   });
 }
 
 CreatureAction Creature::destroy(Vec2 direction, DestroyAction dAction) const {
-  for (const Square* s : getSquare(direction))
-    if (direction.length8() == 1 && s->canDestroy(this))
+  if (direction.length8() == 1 && getPosition().plus(direction).canDestroy(this))
       return CreatureAction(this, [=](Creature* self) {
+        string name = getPosition().plus(direction).getName();
         switch (dAction) {
           case BASH: 
-            playerMessage("You bash the " + s->getName());
-            monsterMessage(getName().the() + " bashes the " + s->getName(), "BANG!");
+            playerMessage("You bash the " + name);
+            monsterMessage(getName().the() + " bashes the " + name, "BANG!");
             break;
           case EAT: 
-            playerMessage("You eat the " + s->getName());
-            monsterMessage(getName().the() + " eats the " + s->getName(), "You hear chewing");
+            playerMessage("You eat the " + name);
+            monsterMessage(getName().the() + " eats the " + name, "You hear chewing");
             break;
           case DESTROY: 
-            playerMessage("You destroy the " + s->getName());
-            monsterMessage(getName().the() + " destroys the " + s->getName(), "CRASH!");
+            playerMessage("You destroy the " + name);
+            monsterMessage(getName().the() + " destroys the " + name, "CRASH!");
             break;
       }
-      self->getSafeSquare(direction)->destroyBy(self);
+      getPosition().plus(direction).destroyBy(self);
       self->spendTime(1);
     });
   return CreatureAction();
@@ -1830,17 +1887,14 @@ bool Creature::canConsume(const Creature* c) const {
 }
 
 CreatureAction Creature::copulate(Vec2 direction) const {
-  for (const Square* s : getSquare(direction)) {
-    const Creature* other = s->getCreature();
-    if (!other || !canCopulateWith(other))
-      return CreatureAction();
-    return CreatureAction(this, [=](Creature* self) {
+  const Creature* other = getPosition().plus(direction).getCreature();
+  if (!other || !canCopulateWith(other))
+    return CreatureAction();
+  return CreatureAction(this, [=](Creature* self) {
       Debug() << getName().bare() << " copulate with " << other->getName().bare();
       you(MsgType::COPULATE, "with " + other->getName().the());
       self->spendTime(2);
     });
-  }
-  return CreatureAction();
 }
 
 static bool consumeProb() {
@@ -1899,12 +1953,13 @@ void Creature::consumeEffects(const EnumMap<LastingEffect, int>& effects) {
 
 void Creature::consumeBodyParts(const EnumMap<BodyPart, int>& parts) {
   for (BodyPart part : ENUM_ALL(BodyPart))
-    if (parts[part] > bodyParts[part] && consumeProb()) {
-      if (bodyParts[part] + 1 == parts[part])
-        you(MsgType::GROW, "a " + getBodyPartName(part));
+    if (parts[part] > attributes->bodyParts[part] && consumeProb()) {
+      if (attributes->bodyParts[part] + 1 == parts[part])
+        you(MsgType::GROW, "a " + attributes->getBodyPartName(part));
       else
-        you(MsgType::GROW, toString(parts[part] - bodyParts[part]) + " " + getBodyPartName(part) + "s");
-      bodyParts[part] = parts[part];
+        you(MsgType::GROW, toString(parts[part] - attributes->bodyParts[part]) + " " +
+            attributes->getBodyPartName(part) + "s");
+      attributes->bodyParts[part] = parts[part];
     }
 }
 
@@ -1914,63 +1969,47 @@ vector<string> Creature::popPersonalEvents() {
   return ret;
 }
 
-CreatureAction Creature::consume(Vec2 direction) const {
-  if (!getLevel()->inBounds(position + direction))
-    return CreatureAction();
-  const Creature* other = getSafeSquare(direction)->getCreature();
+CreatureAction Creature::consume(Creature* other) const {
   if (!hasSkill(Skill::get(SkillId::CONSUMPTION)) || !other || !other->isCorporal() || !isFriend(other))
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* self) {
     Debug() << getName().bare() << " consume " << other->getName().bare();
     you(MsgType::CONSUME, other->getName().the());
-    self->consumeBodyParts(other->bodyParts);
-    if (*other->humanoid && !*humanoid 
-        && bodyParts[BodyPart::ARM] >= 2 && bodyParts[BodyPart::LEG] >= 2 && bodyParts[BodyPart::HEAD] >= 1) {
+    self->consumeBodyParts(other->attributes->bodyParts);
+    if (other->isHumanoid() && !isHumanoid() 
+        && numBodyParts(BodyPart::ARM) >= 2 && numBodyParts(BodyPart::LEG) >= 2 && numBodyParts(BodyPart::HEAD) >= 1) {
       you(MsgType::BECOME, "a humanoid");
       self->personalEvents.push_back(getName().the() + " turns into a humanoid");
-      *self->humanoid = true;
+      *self->attributes->humanoid = true;
     }
     vector<string> adjectives;
     for (auto t : ENUM_ALL(AttrType))
-      consumeAttr(self->attr[t], other->attr[t], adjectives, getAttrNameMore(t));
-    consumeAttr(*self->size, *other->size, adjectives, "larger");
-    consumeAttr(*self->weight, *other->weight, adjectives, "");
-    consumeAttr(self->barehandedDamage, other->barehandedDamage, adjectives, "more dangerous");
-    consumeAttr(self->barehandedAttack, other->barehandedAttack, adjectives, "");
-    consumeAttr(self->attackEffect, other->attackEffect, adjectives, "");
-    consumeAttr(self->passiveAttack, other->passiveAttack, adjectives, "");
-    consumeAttr(self->gender, other->gender, adjectives);
-    consumeAttr(self->skills, other->skills, adjectives);
+      consumeAttr(self->attributes->attr[t], other->attributes->attr[t], adjectives, getAttrNameMore(t));
+    consumeAttr(*self->attributes->size, *other->attributes->size, adjectives, "larger");
+    consumeAttr(*self->attributes->weight, *other->attributes->weight, adjectives, "");
+    consumeAttr(self->attributes->barehandedDamage, other->attributes->barehandedDamage, adjectives, "more dangerous");
+    consumeAttr(self->attributes->barehandedAttack, other->attributes->barehandedAttack, adjectives, "");
+    consumeAttr(self->attributes->attackEffect, other->attributes->attackEffect, adjectives, "");
+    consumeAttr(self->attributes->passiveAttack, other->attributes->passiveAttack, adjectives, "");
+    consumeAttr(self->attributes->gender, other->attributes->gender, adjectives);
+    consumeAttr(self->attributes->skills, other->attributes->skills, adjectives);
     if (!adjectives.empty()) {
       you(MsgType::BECOME, combine(adjectives));
       self->personalEvents.push_back(getName().the() + " becomes " + combine(adjectives));
     }
-    self->consumeBodyParts(other->bodyParts);
-    self->consumeEffects(other->permanentEffects);
-    self->getSafeSquare(direction)->getCreature()->die(self, true, false);
+    self->consumeBodyParts(other->attributes->bodyParts);
+    self->consumeEffects(other->attributes->permanentEffects);
+    other->die(self, true, false);
     self->spendTime(2);
   });
 }
 
 vector<AttackLevel> Creature::getAttackLevels() const {
-  if (isHumanoid() && !numGood(BodyPart::ARM))
-    return {AttackLevel::LOW};
-  switch (*size) {
-    case CreatureSize::SMALL: return {AttackLevel::LOW};
-    case CreatureSize::MEDIUM: return {AttackLevel::LOW, AttackLevel::MIDDLE};
-    case CreatureSize::LARGE: return {AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH};
-    case CreatureSize::HUGE: return {AttackLevel::MIDDLE, AttackLevel::HIGH};
-  }
-  FAIL << "ewf";
-  return {};
-}
-
-AttackLevel Creature::getRandomAttackLevel() const {
-  return chooseRandom(getAttackLevels());
+  return attributes->getAttackLevels();
 }
 
 Item* Creature::getWeapon() const {
-  vector<Item*> it = equipment.getItem(EquipmentSlot::WEAPON);
+  vector<Item*> it = equipment->getItem(EquipmentSlot::WEAPON);
   if (it.empty())
     return nullptr;
   else
@@ -1980,8 +2019,8 @@ Item* Creature::getWeapon() const {
 AttackType Creature::getAttackType() const {
   if (getWeapon())
     return getWeapon()->getAttackType();
-  else if (barehandedAttack)
-    return *barehandedAttack;
+  else if (attributes->barehandedAttack)
+    return *attributes->barehandedAttack;
   else
     return isHumanoid() ? AttackType::PUNCH : AttackType::BITE;
 }
@@ -1996,9 +2035,9 @@ CreatureAction Creature::applyItem(Item* item) const {
       double time = item->getApplyTime();
       playerMessage("You " + item->getApplyMsgFirstPerson(isBlind()));
       monsterMessage(getName().the() + " " + item->getApplyMsgThirdPerson(isBlind()), item->getNoSeeApplyMsg());
-      item->apply(self, level);
+      item->apply(self);
       if (item->isDiscarded()) {
-        self->equipment.removeItem(item);
+        self->equipment->removeItem(item);
       }
       self->spendTime(time);
   });
@@ -2030,103 +2069,106 @@ CreatureAction Creature::throwItem(Item* item, Vec2 direction) const {
     accuracy += Skill::get(SkillId::KNIFE_THROWING)->getModifier(this, ModifierType::THROWN_ACCURACY);
   }
   return CreatureAction(this, [=](Creature* self) {
-    Attack attack(self, getRandomAttackLevel(), item->getAttackType(), accuracy, damage, false, none);
+    Attack attack(self, attributes->getRandomAttackLevel(), item->getAttackType(), accuracy, damage, false, none);
     playerMessage("You throw " + item->getAName(false, isBlind()));
     monsterMessage(getName().the() + " throws " + item->getAName());
-    level->throwItem(self->equipment.removeItem(item), attack, dist, getPosition(), direction, getVision());
+    self->getPosition().throwItem(self->equipment->removeItem(item), attack, dist, direction, getVision());
     self->spendTime(1);
   });
 }
 
 bool Creature::canSee(const Creature* c) const {
-  if (c->getLevel() != level)
+  if (!c->getPosition().isSameLevel(position))
     return false;
   for (CreatureVision* v : creatureVisions)
     if (v->canSee(this, c))
       return true;
   return !isBlind() && !c->isAffected(LastingEffect::INVISIBLE) &&
-         (!c->isHidden() || c->knowsHiding(this)) && 
-         getLevel()->canSee(this, c->getPosition());
+         (!c->isHidden() || c->knowsHiding(this)) && c->getPosition().isVisibleBy(this);
+}
+
+bool Creature::canSee(Position pos) const {
+  return !isBlind() && pos.isVisibleBy(this);
 }
 
 bool Creature::canSee(Vec2 pos) const {
-  return !isBlind() && 
-      getLevel()->canSee(this, pos);
+  return !isBlind() && position.withCoord(pos).isVisibleBy(this);
 }
- 
+  
 bool Creature::isPlayer() const {
   return controller->isPlayer();
 }
 
 optional<string> Creature::getFirstName() const {
-  return firstName;
+  return attributes->firstName;
 }
 
 void Creature::setFirstName(const string& name) {
-  firstName = name;
+  attributes->firstName = name;
 }
 
 string Creature::getGroupName(int count) const {
-  return groupName + " of " + getName().multiple(count);
+  return attributes->groupName + " of " + getName().multiple(count);
 }
 
 const EntityName& Creature::getName() const {
-  return *name;
+  return *attributes->name;
 }
 
 string Creature::getSpeciesName() const {
-  if (speciesName)
-    return *speciesName;
-  else
-    return getName().bare();
+  return attributes->getSpeciesName();
 }
 
 bool Creature::isHumanoid() const {
-  return *humanoid;
+  return attributes->isHumanoid();
 }
 
 bool Creature::isAnimal() const {
-  return animal;
+  return attributes->animal;
 }
 
 bool Creature::isStationary() const {
-  return stationary;
+  return attributes->stationary;
 }
 
 void Creature::setStationary() {
-  stationary = true;
+  attributes->stationary = true;
 }
 
 bool Creature::isInvincible() const {
-  return invincible;
+  return attributes->invincible;
 }
 
 bool Creature::isUndead() const {
-  return undead;
+  return attributes->undead;
 }
 
 bool Creature::isNotLiving() const {
-  return undead || notLiving || uncorporal;
+  return isUndead() || attributes->notLiving || !isCorporal();
 }
 
 bool Creature::isCorporal() const {
-  return !uncorporal;
+  return !attributes->uncorporal;
 }
 
 bool Creature::isWorshipped() const {
-  return worshipped;
+  return attributes->worshipped;
 }
 
 bool Creature::hasBrain() const {
-  return brain;
+  return attributes->hasBrain();
 }
 
 bool Creature::dontChase() const {
-  return CreatureAttributes::dontChase;
+  return attributes->dontChase;
 }
 
 optional<SpawnType> Creature::getSpawnType() const {
-  return spawnType;
+  return attributes->spawnType;
+}
+
+int Creature::getRecruitmentCost() const {
+  return attributes->recruitmentCost;
 }
 
 MovementType Creature::getMovementType() const {
@@ -2134,103 +2176,73 @@ MovementType Creature::getMovementType() const {
       true,
       isAffected(LastingEffect::FLYING),
       hasSkill(Skill::get(SkillId::SWIMMING)),
-      *size == CreatureSize::HUGE || *size == CreatureSize::LARGE})
+      *attributes->size == CreatureSize::HUGE || getSize() == CreatureSize::LARGE})
     .setForced(isBlind() || isHeld() || forceMovement)
     .setFireResistant(isFireResistant())
-    .setSunlightVulnerable(undead);
+    .setSunlightVulnerable(isUndead() && !isAffected(LastingEffect::DARKNESS_SOURCE));
 }
 
 int Creature::numBodyParts(BodyPart part) const {
-  return bodyParts[part];
+  return attributes->numBodyParts(part);
 }
 
 int Creature::numLost(BodyPart part) const {
-  return lostBodyParts[part];
+  return attributes->numLost(part);
 }
 
 int Creature::lostOrInjuredBodyParts() const {
-  int ret = 0;
-  for (BodyPart part : ENUM_ALL(BodyPart))
-    ret += injuredBodyParts[part];
-  for (BodyPart part : ENUM_ALL(BodyPart))
-    ret += lostBodyParts[part];
-  return ret;
+  return attributes->lostOrInjuredBodyParts();
 }
 
 int Creature::numInjured(BodyPart part) const {
-  return injuredBodyParts[part];
+  return attributes->numInjured(part);
 }
 
 int Creature::numGood(BodyPart part) const {
-  return numBodyParts(part) - numInjured(part);
+  return attributes->numGood(part);
 }
 
 double Creature::getCourage() const {
-  if (!hasBrain())
-    return 1000;
-  return courage;
+  return attributes->getCourage();
 }
 
 void Creature::setCourage(double c) {
-  courage = c;
+  attributes->setCourage(c);
 }
 
-Gender Creature::getGender() const {
-  return gender;
-}
-
-double Creature::getExpLevelDouble() const {
-  vector<pair<AttrType, int>> countAttr {
-    {AttrType::STRENGTH, 12},
-    {AttrType::DEXTERITY, 12}};
-  double sum = 0;
-  for (auto elem : countAttr)
-    sum += 10.0 * (getRawAttr(elem.first) / elem.second - 1);
-  return max(1.0, sum);
+const Gender& Creature::getGender() const {
+  return attributes->getGender();
 }
 
 int Creature::getExpLevel() const {
-  return getExpLevelDouble();
+  return attributes->getExpLevel();
 }
-
-double exerciseMax = 2.0;
-double increaseMult = 0.001; // This translates to about 690 stat exercises to reach 50% of the max increase,
-                             // and 2300 to reach 90%
 
 void Creature::exerciseAttr(AttrType t, double value) {
-  attrIncrease[t] += ((exerciseMax - 1) * attr[t] - attrIncrease[t]) * increaseMult * value;
-}
-
-void Creature::increaseExpLevel(double increase) {
-  double l = getExpLevelDouble();
-  for (int i : Range(100000)) {
-    exerciseAttr(chooseRandom<AttrType>(), 0.05);
-    if (getExpLevelDouble() >= l + increase)
-      break;
-  }
+  attributes->exerciseAttr(t, value);
 }
 
 int Creature::getDifficultyPoints() const {
   difficultyPoints = max<double>(difficultyPoints,
       getModifier(ModifierType::DEFENSE) + getModifier(ModifierType::ACCURACY) + getModifier(ModifierType::DAMAGE)
       + getAttr(AttrType::SPEED) / 10);
+  CHECK(difficultyPoints >=0 && difficultyPoints < 100000) << getModifier(ModifierType::DEFENSE) << " "
+     << getModifier(ModifierType::ACCURACY) << " " << getModifier(ModifierType::DAMAGE) << " "
+     << getAttr(AttrType::SPEED) << " " << getName().bare() << " " << health;
   return difficultyPoints;
 }
 
 CreatureAction Creature::continueMoving() {
-  if (shortestPath && shortestPath->isReachable(getPosition())) {
-    Vec2 pos2 = shortestPath->getNextMove(getPosition());
-    return move(pos2 - getPosition());
-  }
-  return CreatureAction();
+  if (shortestPath && shortestPath->isReachable(getPosition()))
+    return move(shortestPath->getNextMove(getPosition()));
+  else
+    return CreatureAction();
 }
 
 CreatureAction Creature::stayIn(const Location* location) {
-  if (getLevel() != location->getLevel())
-    return CreatureAction();
   if (!location->contains(getPosition())) {
-    for (Vec2 v : Vec2::directions8())
-      if (location->contains((getPosition() + v)))
+    for (Position v : getPosition().neighbors8(Random))
+      if (location->contains(v))
         if (auto action = move(v))
           return action;
     return moveTowards(location->getMiddle());
@@ -2238,69 +2250,79 @@ CreatureAction Creature::stayIn(const Location* location) {
   return CreatureAction();
 }
 
-CreatureAction Creature::moveTowards(Vec2 pos, bool stepOnTile) {
-  return moveTowards(pos, false, stepOnTile);
+CreatureAction Creature::moveTowards(Position pos, bool stepOnTile) {
+  if (!pos.isValid())
+    return CreatureAction();
+  if (pos.isSameLevel(position))
+    return moveTowards(pos, false, stepOnTile);
+  else if (auto stairs = position.getStairsTo(pos)) {
+    if (stairs == position)
+      return applySquare();
+    else
+      return moveTowards(*stairs, false, true);
+  } else
+    return CreatureAction();
 }
 
-bool Creature::canNavigateTo(Vec2 pos) const {
+bool Creature::canNavigateTo(Position pos) const {
   MovementType movement = getMovementType();
-  for (Vec2 v : pos.neighbors8())
-    if (v.inRectangle(level->getBounds()) && level->areConnected(position, v, movement))
+  for (Position v : pos.neighbors8())
+    if (v.isConnectedTo(position, movement))
       return true;
   return false;
 }
 
-CreatureAction Creature::moveTowards(Vec2 pos, bool away, bool stepOnTile) {
-  if (stepOnTile && !level->getSafeSquare(pos)->canEnterEmpty(this))
+CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
+  CHECK(pos.isSameLevel(position));
+  if (stepOnTile && !pos.canEnterEmpty(this))
     return CreatureAction();
   MEASURE(
   if (!away && !canNavigateTo(pos))
     return CreatureAction();
   , "Creature Sector checking " + getName().bare() + " from " + toString(position) + " to " + toString(pos));
-  Debug() << "" << getPosition() << (away ? "Moving away from" : " Moving toward ") << pos;
+  //Debug() << "" << getPosition().getCoord() << (away ? "Moving away from" : " Moving toward ") << pos.getCoord();
   bool newPath = false;
   bool targetChanged = shortestPath && shortestPath->getTarget().dist8(pos) > getPosition().dist8(pos) / 10;
   if (!shortestPath || targetChanged || shortestPath->isReversed() != away) {
     newPath = true;
     if (!away)
-      shortestPath = ShortestPath(getLevel(), this, pos, getPosition());
+      shortestPath.reset(new LevelShortestPath(this, pos, position));
     else
-      shortestPath = ShortestPath(getLevel(), this, pos, getPosition(), -1.5);
+      shortestPath.reset(new LevelShortestPath(this, pos, position, -1.5));
   }
   CHECK(shortestPath);
-  if (shortestPath->isReachable(getPosition())) {
-    Vec2 pos2 = shortestPath->getNextMove(getPosition());
-    if (auto action = move(pos2 - getPosition()))
+  if (shortestPath->isReachable(position))
+    if (auto action = move(shortestPath->getNextMove(position)))
       return action;
-  }
   if (newPath)
     return CreatureAction();
   Debug() << "Reconstructing shortest path.";
   if (!away)
-    shortestPath = ShortestPath(getLevel(), this, pos, getPosition());
+    shortestPath.reset(new LevelShortestPath(this, pos, position));
   else
-    shortestPath = ShortestPath(getLevel(), this, pos, getPosition(), -1.5);
-  if (shortestPath->isReachable(getPosition())) {
-    Vec2 pos2 = shortestPath->getNextMove(getPosition());
-    if (auto action = move(pos2 - getPosition()))
+    shortestPath.reset(new LevelShortestPath(this, pos, position, -1.5));
+  if (shortestPath->isReachable(position)) {
+    Position pos2 = shortestPath->getNextMove(position);
+    if (auto action = move(pos2))
       return action;
     else {
-      if (!getLevel()->getSafeSquare(pos2)->canEnterEmpty(this))
-        if (auto action = destroy(pos2 - getPosition(), Creature::BASH))
+      if (!pos2.canEnterEmpty(this))
+        if (auto action = destroy(getPosition().getDir(pos2), Creature::BASH))
           return action;
       return CreatureAction();
     }
   } else {
-    Debug() << "Cannot move toward " << pos;
+    //Debug() << "Cannot move toward " << pos.getCoord();
     return CreatureAction();
   }
 }
 
-CreatureAction Creature::moveAway(Vec2 pos, bool pathfinding) {
-  if ((pos - getPosition()).length8() <= 5 && pathfinding)
+CreatureAction Creature::moveAway(Position pos, bool pathfinding) {
+  CHECK(pos.isSameLevel(position));
+  if (pos.dist8(getPosition()) <= 5 && pathfinding)
     if (auto action = moveTowards(pos, true, false))
       return action;
-  pair<Vec2, Vec2> dirs = (getPosition() - pos).approxL1();
+  pair<Vec2, Vec2> dirs = pos.getDir(getPosition()).approxL1();
   vector<CreatureAction> moves;
   if (auto action = move(dirs.first))
     moves.push_back(action);
@@ -2326,14 +2348,14 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::PUNCH: you(MsgType::YOUR, "neck is broken!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the back of the head!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the " + 
-                                     chooseRandom<string>({"back", "neck"})); break;
+                                     Random.choose<string>({"back", "neck"})); break;
           default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
     case BodyPart::HEAD: 
         switch (type) {
           case AttackType::SHOOT: you(MsgType::ARE, "shot in the " +
-                                      chooseRandom<string>({"eye", "neck", "forehead"}) + "!"); break;
+                                      Random.choose<string>({"eye", "neck", "forehead"}) + "!"); break;
           case AttackType::BITE: you(MsgType::YOUR, "head is bitten off!"); break;
           case AttackType::CUT: you(MsgType::YOUR, "head is chopped off!"); break;
           case AttackType::CRUSH: you(MsgType::YOUR, "skull is shattered!"); break;
@@ -2349,7 +2371,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::BITE: you(MsgType::YOUR, "internal organs are ripped out!"); break;
           case AttackType::CUT: you(MsgType::ARE, "cut in half!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the " +
-                                     chooseRandom<string>({"stomach", "heart"}, {1, 1}) + "!"); break;
+                                     Random.choose<string>({"stomach", "heart"}, {1, 1}) + "!"); break;
           case AttackType::CRUSH: you(MsgType::YOUR, "ribs and internal organs are crushed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the chest!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "stomach receives a deadly blow!"); break;
@@ -2400,12 +2422,7 @@ vector<const Creature*> Creature::getUnknownAttacker() const {
 }
 
 string Creature::getNameAndTitle() const {
-  if (firstName)
-    return *firstName + " the " + getName().bare();
-  else if (speciesName)
-    return getName().bare() + " the " + *speciesName;
-  else
-    return getName().the();
+  return attributes->getNameAndTitle();
 }
 
 void Creature::updateVision() {
@@ -2421,24 +2438,24 @@ VisionId Creature::getVision() const {
   return vision;
 }
 
-vector<Creature::SkillInfo> Creature::getSkillNames() const {
-  vector<SkillInfo> ret;
-  for (auto skill : getDiscreteSkills())
-    ret.push_back({Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
-  for (SkillId id : ENUM_ALL(SkillId))
-    if (!Skill::get(id)->isDiscrete() && getSkillValue(Skill::get(id)) > 0)
-      ret.push_back({Skill::get(id)->getNameForCreature(this), Skill::get(id)->getHelpText()});
-  return ret;
-}
-
 const MinionTaskMap& Creature::getMinionTasks() const {
-  return minionTasks;
+  return attributes->minionTasks;
 }
 
-void Creature::updateVisibleCreatures(Rectangle range) {
+MinionTaskMap& Creature::getMinionTasks() {
+  return attributes->minionTasks;
+}
+
+const vector<Creature*>& Creature::getVisibleCreatures() {
+  visibleCreatures = filter(visibleCreatures, [] (const Creature* c) { return !c->isDead();});
+  return visibleCreatures;
+}
+
+void Creature::updateVisibleCreatures() {
+  int range = FieldOfView::sightRange;
   visibleEnemies.clear();
   visibleCreatures.clear();
-  for (Creature* c : getLevel()->getAllCreatures(range)) 
+  for (Creature* c : position.getAllCreatures(range)) 
     if (canSee(c)) {
       visibleCreatures.push_back(c);
       if (isEnemy(c))
@@ -2450,11 +2467,31 @@ void Creature::updateVisibleCreatures(Rectangle range) {
 }
 
 vector<const Creature*> Creature::getVisibleEnemies() const {
-  return visibleEnemies;
+  return filter(visibleEnemies, [this] (const Creature* c) {
+      return c->getPosition().isSameLevel(getLevel()) && !c->isDead();});
+}
+
+vector<Position> Creature::getVisibleTiles() const {
+  if (isBlind())
+    return {};
+  else
+    return getPosition().getVisibleTiles(getVision());
 }
 
 string Creature::getRemainingString(LastingEffect effect) const {
   return "[" + toString<int>(getTimeRemaining(effect)) + "]";
+}
+
+const char* getMoraleText(double morale) {
+  if (morale >= 0.7)
+    return "ecstatic";
+  if (morale >= 0.2)
+    return "merry";
+  if (morale < -0.7)
+    return "depressed";
+  if (morale < -0.2)
+    return "unhappy";
+  return nullptr;
 }
 
 vector<string> Creature::getMainAdjectives() const {
@@ -2473,6 +2510,8 @@ vector<string> Creature::getMainAdjectives() const {
     ret.push_back("legless");
   if (isAffected(LastingEffect::HALLU))
     ret.push_back("tripped");
+  if (auto text = getMoraleText(getMorale()))
+    ret.push_back(text);
   return ret;
 }
 
@@ -2485,6 +2524,9 @@ vector<Creature::AdjectiveInfo> Creature::getWeaponAdjective() const {
 
 vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
   vector<AdjectiveInfo> ret;
+  if (!getWeapon() && !isHumanoid()) {
+    ret.push_back({"+" + toString(attributes->barehandedDamage) + " unarmed attack", ""});
+  }
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect)) {
       string name;
@@ -2507,19 +2549,29 @@ vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
       if (!isAffectedPermanently(effect))
         ret.back().name += "  " + getRemainingString(effect);
     }
+  if (isUndead())
+    ret.push_back({"Undead",
+        "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
+  if (morale > 0)
+    if (auto text = getMoraleText(getMorale()))
+      ret.push_back({capitalFirst(text),
+          "Morale affects minion's productivity and chances of fleeing from battle."});
   return ret;
 }
 
 vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
   vector<AdjectiveInfo> ret;
-  if (!getWeapon())
-    ret.push_back({"No weapon", ""});
+  if (!getWeapon() && isHumanoid()) {
+    ret.push_back({"+" + toString(attributes->barehandedDamage) + " unarmed attack", ""});
+  }
+  if (health < 1)
+    ret.push_back({isBleeding() ? "Critically wounded" : "Wounded", ""});
   for (BodyPart part : ENUM_ALL(BodyPart))
-    if (int num = injuredBodyParts[part])
-      ret.push_back({getPlural("Injured " + getBodyPartName(part), num), ""});
+    if (int num = attributes->injuredBodyParts[part])
+      ret.push_back({getPlural("Injured " + attributes->getBodyPartName(part), num), ""});
   for (BodyPart part : ENUM_ALL(BodyPart))
-    if (int num = lostBodyParts[part])
-      ret.push_back({getPlural("Lost " + getBodyPartName(part), num), ""});
+    if (int num = attributes->lostBodyParts[part])
+      ret.push_back({getPlural("Lost " + attributes->getBodyPartName(part), num), ""});
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect)) {
       string name;
@@ -2527,6 +2579,7 @@ vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
         case LastingEffect::POISON: name = "Poisoned"; break;
         case LastingEffect::SLEEP: name = "Sleeping"; break;
         case LastingEffect::ENTANGLED: name = "Entangled"; break;
+        case LastingEffect::TIED_UP: name = "Tied up"; break;
         case LastingEffect::SLOWED: name = "Slowed"; break;
         case LastingEffect::INSANITY: name = "Insane"; break;
         default: continue;
@@ -2538,11 +2591,15 @@ vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
   if (isBlind())
     ret.push_back({"Blind"
         + (isAffected(LastingEffect::BLIND) ? (" " + getRemainingString(LastingEffect::BLIND)) : ""), ""});
+  if (morale < 0)
+    if (auto text = getMoraleText(getMorale()))
+      ret.push_back({capitalFirst(text),
+          "Morale affects minion's productivity and chances of fleeing from battle."});
   return ret;
 }
 
-bool Creature::isSameSector(Vec2 pos) const {
-  return level->areConnected(position, pos, getMovementType());
+bool Creature::isSameSector(Position pos) const {
+  return pos.isConnectedTo(position, getMovementType());
 }
 
 void Creature::setInCombat() {

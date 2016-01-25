@@ -19,7 +19,6 @@
 #include "square_type.h"
 #include "util.h"
 #include "minion_task.h"
-#include "model.h"
 
 enum class ItemClass;
 
@@ -28,9 +27,11 @@ enum class AttractionId {
   ITEM_INDEX,
 };
 
-typedef EnumVariant<AttractionId, TYPES(SquareType, ItemIndex),
+class MinionAttraction : public EnumVariant<AttractionId, TYPES(SquareType, ItemIndex),
     ASSIGN(SquareType, AttractionId::SQUARE),
-    ASSIGN(ItemIndex, AttractionId::ITEM_INDEX)> MinionAttraction;
+    ASSIGN(ItemIndex, AttractionId::ITEM_INDEX)> {
+  using EnumVariant::EnumVariant;
+};
 
 namespace std {
   template <> struct hash<MinionAttraction> {
@@ -59,9 +60,10 @@ struct ImmigrantInfo {
   bool SERIAL(spawnAtDorm);
   int SERIAL(salary);
   optional<TechId> SERIAL(techId);
-  optional<Model::SunlightInfo::State> SERIAL(limit);
+  optional<SunlightState> SERIAL(limit);
   optional<Range> SERIAL(groupSize);
   bool SERIAL(autoTeam);
+  bool SERIAL(ignoreSpawnType);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -76,6 +78,16 @@ struct PopulationIncrease {
   void serialize(Archive& ar, const unsigned int version);
 };
 
+struct GuardianInfo {
+  CreatureId SERIAL(creature);
+  double SERIAL(probability);
+  int SERIAL(minEnemies);
+  int SERIAL(minVictims);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+};
+
 class CollectiveConfig {
   public:
   static CollectiveConfig keeper(double immigrantFrequency, int payoutTime, double payoutMultiplier,
@@ -83,6 +95,12 @@ class CollectiveConfig {
   static CollectiveConfig withImmigrants(double immigrantFrequency, int maxPopulation, vector<ImmigrantInfo>);
   static CollectiveConfig noImmigrants();
 
+  CollectiveConfig& allowRecruiting(int minPopulation);
+  CollectiveConfig& setLeaderAsFighter();
+  CollectiveConfig& setGhostSpawns(double prob, int number);
+  CollectiveConfig& setGuardian(GuardianInfo);
+
+  bool isLeaderFighter() const;
   bool getManageEquipment() const;
   bool getWorkerFollowLeader() const;
   double getImmigrantFrequency() const;
@@ -94,9 +112,13 @@ class CollectiveConfig {
   bool getWarnings() const;
   bool getConstructions() const;
   int getMaxPopulation() const;
+  int getNumGhostSpawns() const;
+  double getGhostProb() const;
+  optional<int> getRecruitingMinPopulation() const;
   bool sleepOnlyAtNight() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
+  const optional<GuardianInfo>& getGuardianInfo() const;
 
   SERIALIZATION_DECL(CollectiveConfig);
 
@@ -112,6 +134,11 @@ class CollectiveConfig {
   vector<PopulationIncrease> SERIAL(populationIncreases);
   vector<ImmigrantInfo> SERIAL(immigrantInfo);
   CollectiveType SERIAL(type);
+  optional<int> SERIAL(recruitingMinPopulation);
+  bool SERIAL(leaderAsFighter) = false;
+  int SERIAL(spawnGhosts) = 0;
+  double SERIAL(ghostProb) = 0;
+  optional<GuardianInfo> SERIAL(guardianInfo);
 };
 
 

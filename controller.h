@@ -38,7 +38,8 @@ class Controller {
   virtual void privateMessage(const PlayerMessage& message) {}
 
   virtual void onKilled(const Creature* attacker) {}
-  virtual void onItemsAppeared(vector<Item*> items, const Creature* from) { }
+  virtual void onItemsGiven(vector<Item*> items, const Creature* from) { }
+  virtual void onDisplaced() {}
 
   virtual void learnLocation(const Location*) { }
 
@@ -81,7 +82,7 @@ class DoNothingController : public Controller {
 class ControllerFactory {
   public:
   ControllerFactory(function<Controller* (Creature*)>);
-  PController get(Creature*);
+  PController get(Creature*) const;
 
   private:
   function<Controller* (Creature*)> fun;

@@ -17,29 +17,11 @@
 #define _ACTOR_H
 
 #include "creature_action.h"
+#include "position.h"
 
 class Creature;
 class Location;
 
-struct MoveInfo {
-  MoveInfo(double val, CreatureAction m) : value(m ? val : 0), move(m) {}
-  MoveInfo(CreatureAction m) : MoveInfo(1.0, m) {}
-
-  double value;
-  CreatureAction move;
-
-  operator bool() const {
-    return move;
-  }
-
-  MoveInfo setValue(double v) {
-    MoveInfo ret(*this);
-    ret.value = v;
-    return ret;
-  }
-};
-
-const MoveInfo NoMove = {0.0, CreatureAction()};
 
 enum MonsterAIType { 
   MONSTER,
@@ -73,19 +55,19 @@ class Collective;
 
 class MonsterAIFactory {
   public:
-  PMonsterAI getMonsterAI(Creature* c);
+  PMonsterAI getMonsterAI(Creature* c) const;
 
   static MonsterAIFactory collective(Collective*);
   static MonsterAIFactory monster();
-  static MonsterAIFactory singleTask(PTask&);
+  static MonsterAIFactory singleTask(PTask&&);
   static MonsterAIFactory stayInLocation(Location*, bool moveRandomly = true);
-  static MonsterAIFactory guardSquare(Vec2 pos);
+  static MonsterAIFactory guardSquare(Position);
   static MonsterAIFactory wildlifeNonPredator();
-  static MonsterAIFactory scavengerBird(Vec2 corpsePos);
+  static MonsterAIFactory scavengerBird(Position corpsePos);
   static MonsterAIFactory summoned(Creature*, int ttl);
   static MonsterAIFactory dieTime(double time);
   static MonsterAIFactory moveRandomly();
-  static MonsterAIFactory stayInPigsty(Vec2 origin, SquareApplyType);
+  static MonsterAIFactory stayInPigsty(Position origin, SquareApplyType);
   static MonsterAIFactory idle();
   static MonsterAIFactory splashHeroes(bool leader);
   static MonsterAIFactory splashMonsters();

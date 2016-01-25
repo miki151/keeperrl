@@ -84,23 +84,32 @@ class Renderer {
   public: 
   class TileCoord {
     public:
-    TileCoord(Vec2, int);
     TileCoord();
     TileCoord(const TileCoord& o) : pos(o.pos), texNum(o.texNum) {}
 
+    private:
+    friend class Renderer;
+    TileCoord(Vec2, int);
     Vec2 pos;
     int texNum;
   };
 
   Renderer(const string& windowTile, Vec2 nominalTileSize, const string& fontPath);
-  void initialize(bool fullscreen);
+  void setFullscreen(bool);
+  void setFullscreenMode(int);
+  void setZoom(int);
+  void initialize();
+  bool isFullscreen();
+  static vector<string> getFullscreenResolutions();
   const static int textSize = 19;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(string s);
-  void drawText(FontId, int size, Color, int x, int y, String, bool center = false);
+  int getUnicodeLength(String s, FontId = SYMBOL_FONT);
+  enum CenterType { NONE, HOR, VER, HOR_VER };
+  void drawText(FontId, int size, Color, int x, int y, String, CenterType center = NONE);
   void drawTextWithHotkey(Color, int x, int y, const string&, char key);
-  void drawText(Color, int x, int y, string, bool center = false, int size = textSize);
-  void drawText(Color, int x, int y, const char* c, bool center = false, int size = textSize);
+  void drawText(Color, int x, int y, string, CenterType center = NONE, int size = textSize);
+  void drawText(Color, int x, int y, const char* c, CenterType center = NONE, int size = textSize);
   void drawImage(int px, int py, const Texture&, double scale = 1);
   void drawImage(int px, int py, int kx, int ky, const Texture&, double scale = 1);
   void drawImage(Rectangle target, Rectangle source, const Texture&);
@@ -112,8 +121,12 @@ class Renderer {
   void drawSprite(Vec2 pos, Vec2 stretchSize, const Texture&);
   void drawFilledRectangle(const Rectangle&, Color, optional<Color> outline = none);
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline = none);
+  void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, Vec2 size);
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1);
+  void drawViewObject(Vec2 pos, const ViewObject&);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
+  void drawViewObject(Vec2 pos, ViewId, bool useSprite, Vec2 size, Color = colors[ColorId::WHITE]);
+  void drawViewObject(Vec2 pos, ViewId, Color = colors[ColorId::WHITE]);
   void drawTile(Vec2 pos, TileCoord coord, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = colors[ColorId::WHITE], bool hFlip = false,
       bool vFlip = false);
@@ -122,6 +135,8 @@ class Renderer {
   static Color getBleedingColor(const ViewObject&);
   Vec2 getSize();
   bool loadTilesFromDir(const string& path, Vec2 size);
+  bool loadTilesFromDir(const string& path, vector<Texture>&, Vec2 size, int setWidth);
+  bool loadAltTilesFromDir(const string& path, Vec2 altSize);
   bool loadTilesFromFile(const string& path, Vec2 size);
   static String toUnicode(const string&);
 
@@ -138,39 +153,47 @@ class Renderer {
 
   void startMonkey();
   bool isMonkey();
-  Event getRandomEvent();
+
+  void printSystemInfo(ostream&);
 
   TileCoord getTileCoord(const string&);
   Vec2 getNominalSize() const;
   vector<Texture> tiles;
-
-  // remove
-  int setViewCount = 0;
+  vector<Texture> altTiles;
 
   private:
   Renderer(const Renderer&);
+  vector<Vec2> altTileSize;
   vector<Vec2> tileSize;
   Vec2 nominalSize;
   map<string, TileCoord> tileCoords;
   bool pollEventWorkaroundMouseReleaseBug(Event&);
   bool pollEventOrFromQueue(Event&);
   void considerMouseMoveEvent(Event&);
-  RenderWindow* display = nullptr;
-  sf::View* sfView;
+  void zoomMousePos(Event&);
+  void updateResolution();
+  Event getRandomEvent();
+  RenderWindow display;
   bool monkey = false;
   deque<Event> eventQueue;
   bool genReleaseEvent = false;
   void addRenderElem(function<void()>);
+  sf::Text& getTextObject();
   stack<int> layerStack;
   int currentLayer = 0;
   array<vector<function<void()>>, 2> renderList;
   vector<Vertex> quads;
   Vec2 mousePos;
-  Font textFont;
-  Font tileFont;
-  Font symbolFont;
+  struct FontSet {
+    Font textFont;
+    Font tileFont;
+    Font symbolFont;
+  } fonts, fontsOtherThread;
   Font& getFont(Renderer::FontId);
-  thread::id renderThreadId;
+  optional<thread::id> renderThreadId;
+  bool fullscreen;
+  int fullscreenMode;
+  int zoom = 1;
 };
 
 #endif

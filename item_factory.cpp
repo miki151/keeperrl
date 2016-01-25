@@ -22,12 +22,20 @@
 #include "ranged_weapon.h"
 #include "technology.h"
 #include "effect.h"
-#include "square.h"
 #include "view_object.h"
 #include "view_id.h"
 #include "trigger.h"
 #include "model.h"
 #include "creature.h"
+#include "monster_ai.h"
+#include "name_generator.h"
+#include "player_message.h"
+#include "vision.h"
+#include "resource_id.h"
+#include "equipment.h"
+#include "skill.h"
+#include "item_attributes.h"
+#include "sound.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -46,23 +54,18 @@ class FireScroll : public Item {
   public:
   FireScroll(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void apply(Creature* c, Level* l) override {
+  virtual void applySpecial(Creature* c) override {
     set = true;
   }
 
-  virtual void specialTick(double time, Level* level, Vec2 position) override {
+  virtual void specialTick(double time, Position position) override {
     if (set) {
-      setOnFire(0.03, level, position);
+      setOnFire(0.03, position);
       set = false;
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(set);
-  }
-
+  SERIALIZE_ALL2(Item, set);
   SERIALIZATION_CONSTRUCTOR(FireScroll);
 
   private:
@@ -73,22 +76,20 @@ class AmuletOfWarning : public Item {
   public:
   AmuletOfWarning(const ItemAttributes& attr, int r) : Item(attr), radius(r) {}
 
-  virtual void specialTick(double time, Level* level, Vec2 position) override {
-    Creature* owner = level->getSafeSquare(position)->getCreature();
+  virtual void specialTick(double time, Position position) override {
+    Creature* owner = position.getCreature();
     if (owner && owner->getEquipment().isEquiped(this)) {
-      Rectangle rect = Rectangle(position.x - radius, position.y - radius,
-          position.x + radius + 1, position.y + radius + 1);
       bool isDanger = false;
       bool isBigDanger = false;
-      for (Square* square : level->getSquares(rect.getAllSquares())) {
-        for (Trigger* t : square->getTriggers())
+      for (Position v : position.getRectangle(Rectangle(-radius, -radius, radius + 1, radius + 1))) {
+        for (Trigger* t : v.getTriggers())
           if (t->isDangerous(owner)) {
-            if (square->getPosition().dist8(position) <= 1)
+            if (v.dist8(position) <= 1)
               isBigDanger = true;
             else
               isDanger = true;
           }
-        if (Creature* c = square->getCreature()) {
+        if (Creature* c = v.getCreature()) {
           if (!owner->canSee(c) && c->isEnemy(owner)) {
             int diff = c->getModifier(ModifierType::DAMAGE) - owner->getModifier(ModifierType::DAMAGE);
             if (diff > 5)
@@ -106,13 +107,8 @@ class AmuletOfWarning : public Item {
         owner->playerMessage(getTheName() + " vibrates");
     }
   }
- 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(radius);
-  }
- 
+
+  SERIALIZE_ALL2(Item, radius);
   SERIALIZATION_CONSTRUCTOR(AmuletOfWarning);
 
   private:
@@ -123,8 +119,8 @@ class AmuletOfHealing : public Item {
   public:
   AmuletOfHealing(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void specialTick(double time, Level* level, Vec2 position) override {
-    Creature* owner = level->getSafeSquare(position)->getCreature();
+  virtual void specialTick(double time, Position position) override {
+    Creature* owner = position.getCreature();
     if (owner && owner->getEquipment().isEquiped(this)) {
       if (lastTick == -1)
         lastTick = time;
@@ -135,13 +131,8 @@ class AmuletOfHealing : public Item {
     } else 
       lastTick = -1;
   }
- 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(lastTick);
-  }
- 
+
+  SERIALIZE_ALL2(Item, lastTick);
   SERIALIZATION_CONSTRUCTOR(AmuletOfHealing);
 
   private:
@@ -154,10 +145,7 @@ class Telepathy : public CreatureVision {
     return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->hasBrain();
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(CreatureVision);
-  }
+  SERIALIZE_SUBCLASS(CreatureVision);
 };
 
 class ItemOfCreatureVision : public Item {
@@ -172,12 +160,7 @@ class ItemOfCreatureVision : public Item {
     c->removeCreatureVision(vision.get());
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(vision);
-  }
-
+  SERIALIZE_ALL2(Item, vision);
   SERIALIZATION_CONSTRUCTOR(ItemOfCreatureVision);
 
   private:
@@ -195,7 +178,7 @@ class Corpse : public Item {
       corpseInfo(info) {
   }
 
-  virtual void apply(Creature* c, Level* l) override {
+  virtual void applySpecial(Creature* c) override {
     Item* it = c->getWeapon();
     if (it && it->getAttackType() == AttackType::CUT) {
       c->you(MsgType::DECAPITATE, getTheName());
@@ -205,7 +188,7 @@ class Corpse : public Item {
     }
   }
 
-  virtual void specialTick(double time, Level* level, Vec2 position) override {
+  virtual void specialTick(double time, Position position) override {
     if (rottenTime == -1)
       rottenTime = time + rottingTime;
     if (time >= rottenTime && !rotten) {
@@ -214,15 +197,15 @@ class Corpse : public Item {
       corpseInfo.isSkeleton = true;
     } else {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))
-        Effect::applyToPosition(level, position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
+        Effect::applyToPosition(position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
-          !level->getCoverInfo(position).covered() && Random.roll(35)) {
-        for (Square* square : level->getSquares(position.neighbors8(true))) {
-          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE, level->getModel()->getPestTribe(),
-              MonsterAIFactory::scavengerBird(square->getPosition()));
-          if (square->canEnter(vulture.get())) {
-            level->addCreature(square->getPosition(), std::move(vulture));
-            level->globalMessage(square->getPosition(), "A vulture lands near " + getTheName());
+          !position.getCoverInfo().covered && Random.roll(35)) {
+        for (Position v : position.neighbors8(Random)) {
+          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE,
+              position.getModel()->getPestTribe(), MonsterAIFactory::scavengerBird(v));
+          if (v.canEnter(vulture.get())) {
+            v.addCreature(std::move(vulture));
+            v.globalMessage("A vulture lands near " + getTheName());
             rottenTime -= 40;
             break;
           }
@@ -235,17 +218,7 @@ class Corpse : public Item {
     return corpseInfo;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item) 
-      & SVAR(object2) 
-      & SVAR(rotten)
-      & SVAR(rottenTime)
-      & SVAR(rottingTime)
-      & SVAR(rottenName)
-      & SVAR(corpseInfo);
-  }
-
+  SERIALIZE_ALL2(Item, object2, rotten, rottenTime, rottingTime, rottenName, corpseInfo);
   SERIALIZATION_CONSTRUCTOR(Corpse);
 
   private:
@@ -277,25 +250,20 @@ class Potion : public Item {
   public:
   Potion(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void setOnFire(double amount, const Level* level, Vec2 position) override {
+  virtual void setOnFire(double amount, Position position) override {
     heat += amount;
     Debug() << getName() << " heat " << heat;
     if (heat > 0.1) {
-      level->globalMessage(position, getAName() + " boils and explodes!");
+      position.globalMessage(getAName() + " boils and explodes!");
       discarded = true;
     }
   }
 
-  virtual void specialTick(double time, Level* level, Vec2 position) override {
+  virtual void specialTick(double time, Position position) override {
     heat = max(0., heat - 0.005);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item) 
-      & SVAR(heat);
-  }
-
+  SERIALIZE_ALL2(Item, heat);
   SERIALIZATION_CONSTRUCTOR(Potion);
 
   private:
@@ -306,16 +274,11 @@ class SkillBook : public Item {
   public:
   SkillBook(const ItemAttributes& attr, Skill* s) : Item(attr), skill(s->getId()) {}
 
-  virtual void apply(Creature* c, Level* l) override {
+  virtual void applySpecial(Creature* c) override {
     c->addSkill(Skill::get(skill));
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(skill);
-  }
-
+  SERIALIZE_ALL2(Item, skill);
   SERIALIZATION_CONSTRUCTOR(SkillBook);
 
   private:
@@ -326,20 +289,14 @@ class TechBook : public Item {
   public:
   TechBook(const ItemAttributes& attr, optional<TechId> t) : Item(attr), tech(t) {}
 
-  virtual void apply(Creature* c, Level* l) override {
+  virtual void applySpecial(Creature* c) override {
     if (!read || !!tech) {
-      l->getModel()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
+      c->getModel()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
       read = true;
     }
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(tech)
-      & SVAR(read);
-  }
-
+  SERIALIZE_ALL2(Item, tech, read);
   SERIALIZATION_CONSTRUCTOR(TechBook);
 
   private:
@@ -349,28 +306,25 @@ class TechBook : public Item {
 
 class TrapItem : public Item {
   public:
-  TrapItem(ViewObject _trapObject, const ItemAttributes& attr, EffectType _effect)
-      : Item(attr), effect(_effect), trapObject(_trapObject) {
+  TrapItem(ViewObject _trapObject, const ItemAttributes& attr, EffectType _effect, bool visible)
+      : Item(attr), effect(_effect), trapObject(_trapObject), alwaysVisible(visible) {
   }
 
-  virtual void apply(Creature* c, Level* l) override {
-    c->you(MsgType::SET_UP_TRAP, "");
-    c->getSquare()->addTrigger(Trigger::getTrap(trapObject, l, c->getPosition(), effect, c->getTribe()));
+  virtual void applySpecial(Creature* c) override {
+    if (!alwaysVisible)
+      c->you(MsgType::SET_UP_TRAP, "");
+    c->getPosition().addTrigger(Trigger::getTrap(trapObject, c->getPosition(), effect, c->getTribe(),
+          alwaysVisible));
     discarded = true;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Item)
-      & SVAR(effect)
-      & SVAR(trapObject);
-  }
-
+  SERIALIZE_ALL2(Item, effect, trapObject, alwaysVisible);
   SERIALIZATION_CONSTRUCTOR(TrapItem);
 
   private:
   EffectType SERIAL(effect);
   ViewObject SERIAL(trapObject);
+  bool SERIAL(alwaysVisible);
 };
 
 template <class Archive>
@@ -440,10 +394,10 @@ ItemFactory ItemFactory::villageShop() {
       {{ItemId::SCROLL, EffectId::ENHANCE_ARMOR}, 5 },
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 5 },
       {ItemId::FIRE_SCROLL, 5 },
-      {{ItemId::SCROLL, EffectId::FIRE_SPHERE_PET}, 5 },
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 5 },
       {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 1 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 2 },
-      {{ItemId::SCROLL, EffectId::SUMMON_INSECTS}, 5 },
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 5 },
       {{ItemId::POTION, EffectId::HEAL}, 7 },
       {{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)}, 5 },
       {{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)}, 5 },
@@ -509,6 +463,27 @@ ItemFactory ItemFactory::orcShop() {
       {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::RAGE)}, 1 },
       {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::STR_BONUS)}, 1 },
       {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)}, 1} });
+}
+
+ItemFactory ItemFactory::gnomeShop() {
+  return ItemFactory({
+      {ItemId::KNIFE, 5 },
+      {ItemId::SWORD, 2 },
+      {ItemId::BATTLE_AXE, 1 },
+      {ItemId::WAR_HAMMER, 2 },
+      {ItemId::LEATHER_ARMOR, 2 },
+      {ItemId::CHAIN_ARMOR, 1 },
+      {ItemId::LEATHER_HELM, 2 },
+      {ItemId::IRON_HELM, 1 },
+      {ItemId::TELEPATHY_HELM, 0.1 },
+      {ItemId::LEATHER_BOOTS, 2 },
+      {ItemId::IRON_BOOTS, 1 },
+      {ItemId::SPEED_BOOTS, 0.3 },
+      {ItemId::LEVITATION_BOOTS, 0.3 },
+      {ItemId::LEATHER_GLOVES, 2 },
+      {ItemId::STRENGTH_GLOVES, 0.5 },
+      {ItemId::DEXTERITY_GLOVES, 0.5 } },
+      {ItemId::AUTOMATON_ITEM});
 }
 
 ItemFactory ItemFactory::dragonCave() {
@@ -615,10 +590,10 @@ ItemFactory ItemFactory::scrolls() {
       {{ItemId::SCROLL, EffectId::ENHANCE_ARMOR}, 1 },
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 1 },
       {ItemId::FIRE_SCROLL, 1 },
-      {{ItemId::SCROLL, EffectId::FIRE_SPHERE_PET}, 1 },
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 1 },
       {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 1 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 1 },
-      {{ItemId::SCROLL, EffectId::SUMMON_INSECTS}, 1 },
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 1 },
       {{ItemId::SCROLL, EffectId::PORTAL}, 1 }});
 }
 
@@ -665,10 +640,10 @@ ItemFactory ItemFactory::dungeon() {
       {{ItemId::SCROLL, EffectId::ENHANCE_ARMOR}, 30 },
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 30 },
       {ItemId::FIRE_SCROLL, 30 },
-      {{ItemId::SCROLL, EffectId::FIRE_SPHERE_PET}, 30 },
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 30 },
       {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 5 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 10 },
-      {{ItemId::SCROLL, EffectId::SUMMON_INSECTS}, 30 },
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 30 },
       {{ItemId::POTION, EffectId::HEAL}, 50 },
       {{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)}, 50 },
       {{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)}, 50 },
@@ -704,6 +679,7 @@ int getEffectPrice(EffectType type) {
           case LastingEffect::PANIC:
           case LastingEffect::SLEEP:
           case LastingEffect::ENTANGLED:
+          case LastingEffect::TIED_UP:
           case LastingEffect::STUNNED:
           case LastingEffect::MAGIC_SHIELD:
           case LastingEffect::RAGE: return 60;
@@ -729,16 +705,15 @@ int getEffectPrice(EffectType type) {
     case EffectId::DESTROY_EQUIPMENT:
     case EffectId::ENHANCE_WEAPON:
     case EffectId::ENHANCE_ARMOR:
-    case EffectId::FIRE_SPHERE_PET:
     case EffectId::TELE_ENEMIES:
     case EffectId::CURE_POISON:
-    case EffectId::SUMMON_INSECTS: return 60;
+    case EffectId::SUMMON: return 60;
     case EffectId::GUARDING_BOULDER:
-    case EffectId::SUMMON_SPIRIT:
     case EffectId::EMIT_POISON_GAS:  return 100;
     case EffectId::DECEPTION: 
     case EffectId::LEAVE_BODY: 
     case EffectId::METEOR_SHOWER: 
+    case EffectId::AIR_BLAST: 
     case EffectId::WORD_OF_POWER: return 150;
   }
   return -1;
@@ -768,11 +743,10 @@ ViewId getTrapViewId(TrapType t) {
   return ViewId(0);
 }
 
-PItem getTrap(const ItemAttributes& attr, TrapType trapType, EffectType effectType) {
-  return PItem(new TrapItem(
-        ViewObject(getTrapViewId(trapType), ViewLayer::LARGE_ITEM, Effect::getName(effectType) + " trap"),
-        attr,
-        effectType));
+PItem getTrap(const ItemAttributes& attr, TrapInfo info) {
+  return PItem(new TrapItem(ViewObject(getTrapViewId(info.trapType), ViewLayer::LARGE_ITEM,
+          Effect::getName(info.effectType) + " trap"),
+        attr, info.effectType, info.alwaysVisible));
 }
 
 ViewId getRingViewId(LastingEffect e) {
@@ -866,7 +840,7 @@ PItem ItemFactory::fromId(ItemType item) {
     case ItemId::TECH_BOOK: return PItem(new TechBook(getAttributes(item), item.get<TechId>()));
     case ItemId::POTION: return PItem(new Potion(getAttributes(item)));
     case ItemId::TRAP_ITEM:
-        return getTrap(getAttributes(item), item.get<TrapInfo>().trapType(), item.get<TrapInfo>().effectType());
+        return getTrap(getAttributes(item), item.get<TrapInfo>());
     default: return PItem(new Item(getAttributes(item)));
   }
   return PItem();
@@ -1134,7 +1108,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::LEVITATION_BOOTS: return ITATTR(
             i.viewId = ViewId::LEVITATION_BOOTS;
             i.shortName = "levitation";
-            i.lastingEffect = LastingEffect::FLYING;
+            i.equipedEffect = LastingEffect::FLYING;
             i.name = "boots of " + *i.shortName;
             i.plural = "pairs of boots of " + *i.shortName;
             i.itemClass = ItemClass::ARMOR;
@@ -1145,7 +1119,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::RING: return ITATTR(
             i.viewId = getRingViewId(item.get<LastingEffect>());
             i.shortName = Effect::getName(item.get<LastingEffect>());
-            i.lastingEffect = item.get<LastingEffect>();
+            i.equipedEffect = item.get<LastingEffect>();
             i.name = "ring of " + *i.shortName;
             i.plural = "rings of " + *i.shortName;
             i.weight = 0.05;
@@ -1153,7 +1127,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::RING;
             i.price = 200;);
     case ItemId::WARNING_AMULET: return ITATTR(
-            i.viewId = ViewId::STEEL_AMULET;
+            i.viewId = ViewId::AMULET1;
             i.shortName = "warning";
             i.name = "amulet of " + *i.shortName;
             i.plural = "amulets of " + *i.shortName;
@@ -1163,7 +1137,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.price = 220;
             i.weight = 0.3;);
     case ItemId::HEALING_AMULET: return ITATTR(
-            i.viewId = ViewId::AMBER_AMULET;
+            i.viewId = ViewId::AMULET2;
             i.shortName = "healing";
             i.name = "amulet of " + *i.shortName;
             i.plural = "amulets of " + *i.shortName;
@@ -1173,7 +1147,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.price = 300;
             i.weight = 0.3;);
     case ItemId::DEFENSE_AMULET: return ITATTR(
-            i.viewId = ViewId::COPPER_AMULET;
+            i.viewId = ViewId::AMULET3;
             i.shortName = "defense";
             i.name = "amulet of " + *i.shortName;
             i.plural = "amulets of " + *i.shortName;
@@ -1195,12 +1169,27 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.displayUses = true;
             i.price = 10;
             i.effect = EffectId::HEAL;);
+    case ItemId::AUTOMATON_ITEM: return ITATTR(
+            i.viewId = ViewId::TRAP_ITEM;
+            i.shortName = "automaton";
+            i.name = "automaton";
+            i.applyMsgFirstPerson = "assemble the automaton";
+            i.applyMsgThirdPerson = "assembles an automaton";
+            i.applySound = SoundId::TRAP_ARMING;
+            i.weight = 30;
+            i.itemClass = ItemClass::TOOL;
+            i.description = "";
+            i.applyTime = 3;
+            i.uses = 1;
+            i.price = 300;
+            i.effect = EffectType(EffectId::SUMMON, CreatureId::AUTOMATON););
     case ItemId::BOULDER_TRAP_ITEM: return ITATTR(
             i.viewId = ViewId::TRAP_ITEM;
             i.name = "boulder trap";
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
+            i.applySound = SoundId::TRAP_ARMING;
             i.uses = 1;
             i.usedUpMsg = true;
             i.effect = EffectId::GUARDING_BOULDER;
@@ -1208,17 +1197,18 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.price = 10;);
     case ItemId::TRAP_ITEM: return ITATTR(
             i.viewId = ViewId::TRAP_ITEM;
-            i.name = "unarmed " + Effect::getName(item.get<TrapInfo>().effectType()) + " trap";
+            i.name = "unarmed " + Effect::getName(item.get<TrapInfo>().effectType) + " trap";
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
+            i.applySound = SoundId::TRAP_ARMING;
             i.uses = 1;
             i.usedUpMsg = true;
-            i.trapType = item.get<TrapInfo>().trapType();
+            i.trapType = item.get<TrapInfo>().trapType;
             i.price = 10;);
     case ItemId::POTION: return ITATTR(
             EffectType effect = item.get<EffectType>();
-            i.viewId = ViewId::PUCE_POTION;
+            i.viewId = ViewId::POTION1;
             i.shortName = Effect::getName(effect);
             i.name = "potion of " + *i.shortName;
             i.plural = "potions of " + *i.shortName;

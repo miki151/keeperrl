@@ -16,13 +16,20 @@
 #include "stdafx.h"
 
 #include "monster_ai.h"
-#include "square.h"
 #include "level.h"
 #include "collective.h"
 #include "effect.h"
 #include "item.h"
 #include "creature.h"
 #include "location.h"
+#include "player_message.h"
+#include "equipment.h"
+#include "spell.h"
+#include "event.h"
+#include "entity_name.h"
+#include "skill.h"
+#include "modifier_type.h"
+#include "task.h"
 
 class Behaviour {
   public:
@@ -75,7 +82,7 @@ Creature* Behaviour::getClosestEnemy() {
     int curDist = other->getPosition().dist8(creature->getPosition());
     if (curDist < dist && (!other->dontChase() || curDist == 1)) {
       result = const_cast<Creature*>(other);
-      dist = (other->getPosition() - creature->getPosition()).length8();
+      dist = creature->getPosition().dist8(other->getPosition());
     }
   }
   return result;
@@ -94,7 +101,7 @@ Item* Behaviour::getBestWeapon() {
 
 MoveInfo Behaviour::tryEffect(EffectType type, double maxTurns) {
   for (Spell* spell : creature->getSpells()) {
-    if (spell->hasEffect(type))
+   if (spell->hasEffect(type))
       if (auto action = creature->castSpell(spell))
         return { 1, action };
   }
@@ -117,7 +124,7 @@ MoveInfo Behaviour::tryEffect(DirEffectType type, Vec2 dir) {
 
 class Heal : public Behaviour {
   public:
-  Heal(Creature* c, bool _useBeds = true) : Behaviour(c), useBeds(_useBeds) {}
+  Heal(Creature* c) : Behaviour(c) {}
 
   virtual double itemValue(const Item* item) {
     if (item->getEffectType() == EffectType(EffectId::HEAL)) {
@@ -130,11 +137,11 @@ class Heal : public Behaviour {
   virtual MoveInfo getMove() {
     if (creature->hasSkill(Skill::get(SkillId::HEALING))) {
       int healingRadius = 2;
-      for (Square* square : creature->getSquares(
-            Rectangle(-healingRadius, -healingRadius, healingRadius, healingRadius).getAllSquares()))
-        if (const Creature* other = square->getCreature())
+      for (Position pos : creature->getPosition().getRectangle(
+            Rectangle(-healingRadius, -healingRadius, healingRadius + 1, healingRadius + 1)))
+        if (const Creature* other = pos.getCreature())
           if (creature->isFriend(other))
-            if (auto action = creature->heal(other->getPosition() - creature->getPosition()))
+            if (auto action = creature->heal(creature->getPosition().getDir(other->getPosition())))
               return {0.5, action};
     }
     if (!creature->isHumanoid())
@@ -145,50 +152,27 @@ class Heal : public Behaviour {
       if (MoveInfo move = tryEffect(EffectType(EffectId::CURE_POISON), 1))
         return move;
     }
-    if (creature->getHealth() == 1)
-      return NoMove;
-    if (MoveInfo move = tryEffect(EffectId::HEAL, 1))
-      return move.setValue(min(1.0, 1.5 - creature->getHealth()));
-    if (MoveInfo move = tryEffect(EffectId::HEAL, 3))
-      return move.setValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
-    if (creature->getSquare()->getApplyType(creature) == SquareApplyType::SLEEP)
-      return { 0.4 * min(1.0, 1.5 - creature->getHealth()), creature->applySquare()};
-    Vec2 bedRadius(5, 5);
-    if (useBeds && creature->canSleep() && !creature->isAffected(LastingEffect::POISON)) {
-      if (!hasBed || hasBed->level != creature->getLevel()) {
-        for (Square* square : creature->getSquares(Rectangle(-bedRadius, bedRadius).getAllSquares()))
-          if (square->getApplyType(creature) == SquareApplyType::SLEEP)
-            if (auto action = creature->moveTowards(square->getPosition())) {
-              hasBed = BedInfo{square->getPosition(), creature->getLevel() };
-              return { 0.4 * min(1.0, 1.5 - creature->getHealth()), action};
-            }
-      } else 
-        if (auto action = creature->moveTowards(hasBed->pos))
-          return { 0.4 * min(1.0, 1.5 - creature->getHealth()), action};
+    if (creature->getHealth() < 1) {
+      if (MoveInfo move = tryEffect(EffectId::HEAL, 1))
+        return move.withValue(min(1.0, 1.5 - creature->getHealth()));
+      if (MoveInfo move = tryEffect(EffectId::HEAL, 3))
+        return move.withValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
     }
-
+    for (Position pos : creature->getPosition().neighbors8())
+      if (Creature* c = pos.getCreature())
+        if (creature->isFriend(c) && c->getHealth() < 1)
+          for (Item* item : creature->getEquipment().getItems(Item::effectPredicate(EffectId::HEAL)))
+            if (auto action = creature->give(c, {item}))
+              return { 0.5, action};
     return NoMove;
   }
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(hasBed) & SVAR(useBeds);
+    ar & SUBCLASS(Behaviour);
   }
 
   SERIALIZATION_CONSTRUCTOR(Heal);
-
-  private:
-  struct BedInfo {
-    Vec2 pos;
-    const Level* level;
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-      ar & BOOST_SERIALIZATION_NVP(pos) & BOOST_SERIALIZATION_NVP(level);
-    }
-  };
-  optional<BedInfo> SERIAL(hasBed);
-  bool SERIAL(useBeds);
 };
 
 class Rest : public Behaviour {
@@ -215,37 +199,37 @@ class MoveRandomly : public Behaviour {
   virtual MoveInfo getMove() {
     if (!visited(creature->getPosition()))
       updateMem(creature->getPosition());
-    Vec2 direction(0, 0);
+    optional<Position> target;
     double val = 0.0001;
     if (Random.roll(2))
       return {val, creature->wait()};
-    Vec2 pos = creature->getPosition();
-    for (Vec2 dir : Vec2::directions8(true))
-      if (!visited(pos + dir) && creature->move(dir)) {
-        direction = dir;
+    for (Position pos : creature->getPosition().neighbors8(Random)) {
+      if (!visited(pos) && creature->move(pos)) {
+        target = pos;
         break;
       }
-    if (direction == Vec2(0, 0))
-      for (Vec2 dir : Vec2::directions8(true))
-        if (creature->move(dir)) {
-          direction = dir;
+    }
+    if (!target)
+      for (Position pos: creature->getPosition().neighbors8(Random))
+        if (creature->move(pos)) {
+          target = pos;
           break;
         }
-    if (direction == Vec2(0, 0))
+    if (!target)
       return {val, creature->wait() };
     else
-      return {val, creature->move(direction).append([=] (Creature* creature) {
+      return {val, creature->move(*target).append([=] (Creature* creature) {
           updateMem(creature->getPosition());
       })};
   }
 
-  void updateMem(Vec2 pos) {
+  void updateMem(Position pos) {
     memory.push_back(pos);
     if (memory.size() > memSize)
       memory.pop_front();
   }
 
-  bool visited(Vec2 pos) {
+  bool visited(Position pos) {
     return contains(memory, pos);
   }
 
@@ -257,22 +241,22 @@ class MoveRandomly : public Behaviour {
   }
 
   private:
-  deque<Vec2> SERIAL(memory);
+  deque<Position> SERIAL(memory);
   int SERIAL(memSize);
 };
 
 class StayInPigsty : public Behaviour {
   public:
-  StayInPigsty(Creature* c, Vec2 orig, SquareApplyType t) : Behaviour(c), origin(orig), type(t) {}
+  StayInPigsty(Creature* c, Position orig, SquareApplyType t) : Behaviour(c), origin(orig), type(t) {}
 
   MoveInfo getMove() override {
-    if (creature->getSquare()->getApplyType(creature) != type)
+    if (creature->getPosition().getApplyType(creature) != type)
       if (auto move = creature->moveTowards(origin, true))
         return move;
     if (Random.roll(10))
-      for (Square* s : creature->getSquares(Vec2::directions8(true)))
-        if (s->canEnter(creature) && s->getApplyType(creature) == type)
-          return creature->move(s->getPosition() - creature->getPosition());
+      for (Position next: creature->getPosition().neighbors8(Random))
+        if (next.canEnter(creature) && next.getApplyType(creature) == type)
+          return creature->move(next);
     return creature->wait();
   }
 
@@ -284,7 +268,7 @@ class StayInPigsty : public Behaviour {
   }
 
   private:
-  Vec2 SERIAL(origin);
+  Position SERIAL(origin);
   SquareApplyType SERIAL(type);
 
 };
@@ -295,7 +279,7 @@ class BirdFlyAway : public Behaviour {
 
   virtual MoveInfo getMove() override {
     const Creature* enemy = getClosestEnemy();
-    if (Random.roll(15) || ( enemy && (enemy->getPosition() - creature->getPosition()).lengthD() < maxDist))
+    if (Random.roll(15) || ( enemy && enemy->getPosition().dist8(creature->getPosition()) < maxDist))
       if (auto action = creature->flyAway())
         return {1.0, action};
     return NoMove;
@@ -339,20 +323,6 @@ class Fighter : public Behaviour {
   virtual ~Fighter() {
   }
 
-  REGISTER_HANDLER(ThrowEvent, const Level* l, const Creature* thrower, const Item* item, const vector<Vec2>& traj) {
-    if (!creature->isHumanoid() || l != creature->getLevel())
-      return;
-    string name = creature->getName().bare();
-    if (contains(traj, creature->getPosition())
-          && item->getName().size() > name.size() && item->getName().substr(0, name.size()) == name) {
-      creature->globalMessage(creature->getName().the() + " screams in terror!", "You hear a scream of terror.");
-      if (Random.roll(2))
-        creature->addEffect(LastingEffect::RAGE, (30));
-      else
-        creature->addMorale(-0.5);
-    }
-  }
-
   double getMoraleBonus() {
     return creature->getCourage() * pow(2.0, creature->getMorale());
   }
@@ -394,21 +364,21 @@ class Fighter : public Behaviour {
 
   MoveInfo getPanicMove(Creature* other, double weight) {
     if (auto teleMove = tryEffect(EffectId::TELEPORT, 1))
-      return {weight, teleMove.move};
+      return teleMove.withValue(weight);
     if (other->getPosition().dist8(creature->getPosition()) > 3)
-      if (auto move = getFireMove(other->getPosition() - creature->getPosition()))
-        return {weight, move.move};
+      if (auto move = getFireMove(creature->getPosition().getDir(other->getPosition())))
+        return move.withValue(weight);
     if (auto action = creature->moveAway(other->getPosition(), chase))
       return {weight, action.prepend([=](Creature* creature) {
         creature->setInCombat();
         other->setInCombat();
-        lastSeen = {creature->getPosition(), creature->getTime(), creature->getLevel(), LastSeen::PANIC, other};
+        lastSeen = {creature->getPosition(), creature->getTime(), LastSeen::PANIC, other};
       })};
     else
       return NoMove;
   }
 
-  virtual double itemValue(const Item* item) {
+  virtual double itemValue(const Item* item) override {
     if (contains<EffectType>({
           EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
           EffectType(EffectId::LASTING, LastingEffect::SLOWED),
@@ -438,7 +408,7 @@ class Fighter : public Behaviour {
   bool checkFriendlyFire(Vec2 enemyDir) {
     Vec2 dir = enemyDir.shorten();
     for (Vec2 v = dir; v != enemyDir; v += dir) {
-      const Creature* c = creature->getSafeSquare(v)->getCreature();
+      const Creature* c = creature->getPosition().plus(v).getCreature();
       if (c && !creature->isEnemy(c))
         return true;
     }
@@ -504,7 +474,7 @@ class Fighter : public Behaviour {
   MoveInfo getLastSeenMove() {
     if (auto lastSeen = getLastSeen()) {
       double lastSeenTimeout = 20;
-      if (lastSeen->level != creature->getLevel() ||
+      if (!lastSeen->pos.isSameLevel(creature->getPosition()) ||
           lastSeen->time < creature->getTime() - lastSeenTimeout ||
           lastSeen->pos == creature->getPosition()) {
         lastSeen = none;
@@ -526,13 +496,12 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo getAttackMove(Creature* other, bool chase) {
-    int radius = 4;
     int distance = 10000;
     CHECK(other);
     if (other->isInvincible())
       return NoMove;
     Debug() << creature->getName().bare() << " enemy " << other->getName().bare();
-    Vec2 enemyDir = (other->getPosition() - creature->getPosition());
+    Vec2 enemyDir = creature->getPosition().getDir(other->getPosition());
     distance = enemyDir.length8();
     if (creature->isHumanoid() && !creature->getWeapon()) {
       if (Item* weapon = getBestWeapon())
@@ -542,6 +511,9 @@ class Fighter : public Behaviour {
             other->setInCombat();
         })};
     }
+    if (distance == 1)
+      if (MoveInfo move = tryEffect(EffectId::AIR_BLAST, 1))
+        return move;
     if (distance <= 5)
       for (EffectType effect : {
           EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
@@ -549,7 +521,7 @@ class Fighter : public Behaviour {
           EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS),
           EffectType(EffectId::LASTING, LastingEffect::SPEED),
           EffectType(EffectId::DECEPTION),
-          EffectType(EffectId::SUMMON_SPIRIT)})
+          EffectType(EffectId::SUMMON, CreatureId::SPIRIT)})
         if (MoveInfo move = tryEffect(effect, 1))
           return move;
     if (distance > 1) {
@@ -561,12 +533,11 @@ class Fighter : public Behaviour {
       }
       if (chase && !other->dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
-        if (auto action = creature->moveTowards(creature->getPosition() + enemyDir))
+        if (auto action = creature->moveTowards(other->getPosition()))
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=](Creature* creature) {
             creature->setInCombat();
             other->setInCombat();
-            lastSeen = {creature->getPosition() + enemyDir, creature->getTime(), creature->getLevel(),
-                LastSeen::ATTACK, other};
+            lastSeen = {other->getPosition(), creature->getTime(), LastSeen::ATTACK, other};
             if (!chaseFreeze.count(other) || other->getTime() > chaseFreeze.at(other).second)
               chaseFreeze[other] = make_pair(other->getTime() + 20, other->getTime() + 70);
           })};
@@ -605,9 +576,8 @@ class Fighter : public Behaviour {
   double SERIAL(maxPowerRatio);
   bool SERIAL(chase);
   struct LastSeen {
-    Vec2 pos;
+    Position pos;
     double time;
-    const Level* level;
     enum { ATTACK, PANIC} type;
     const Creature* creature;
 
@@ -615,7 +585,6 @@ class Fighter : public Behaviour {
     void serialize(Archive& ar, const unsigned int version) {
       ar& BOOST_SERIALIZATION_NVP(pos)
         & BOOST_SERIALIZATION_NVP(time)
-        & BOOST_SERIALIZATION_NVP(level)
         & BOOST_SERIALIZATION_NVP(type)
         & BOOST_SERIALIZATION_NVP(creature);
     }
@@ -646,8 +615,8 @@ class GuardTarget : public Behaviour {
   }
 
   protected:
-  MoveInfo getMoveTowards(Vec2 target) {
-    double dist = (creature->getPosition() - target).lengthD();
+  MoveInfo getMoveTowards(Position target) {
+    double dist = creature->getPosition().dist8(target);
     if (dist <= minDist)
       return NoMove;
     double exp = 1.5;
@@ -687,7 +656,8 @@ class GuardArea : public Behaviour {
 
 class GuardSquare : public GuardTarget {
   public:
-  GuardSquare(Creature* c, Vec2 _pos, double minDist, double maxDist) : GuardTarget(c, minDist, maxDist), pos(_pos) {}
+  GuardSquare(Creature* c, Position _pos, double minDist, double maxDist) : GuardTarget(c, minDist, maxDist),
+      pos(_pos) {}
 
   virtual MoveInfo getMove() override {
     return getMoveTowards(pos);
@@ -701,7 +671,7 @@ class GuardSquare : public GuardTarget {
   }
 
   private:
-  Vec2 SERIAL(pos);
+  Position SERIAL(pos);
 };
 
 class Wait : public Behaviour {
@@ -727,6 +697,8 @@ class DieTime : public Behaviour {
   virtual MoveInfo getMove() override {
     if (creature->getTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
+        if (creature->isNotLiving() && creature->isCorporal())
+          creature->you(MsgType::FALL, "apart");
         creature->die(nullptr, false, false);
       })};
     }
@@ -757,13 +729,15 @@ class Summoned : public GuardTarget {
   virtual MoveInfo getMove() override {
     if (target->isDead() || creature->getTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
+        if (creature->isNotLiving() && !creature->isCorporal())
+          creature->you(MsgType::FALL, "apart");
         creature->die(nullptr, false, false);
       })};
     }
-    if (target->getLevel() == creature->getLevel())
-      if (MoveInfo move = getMoveTowards(target->getPosition()))
-        return move.setValue(0.5);
-    return NoMove;
+    if (MoveInfo move = getMoveTowards(target->getPosition()))
+      return move.withValue(0.5);
+    else
+      return NoMove;
   }
 
   SERIALIZATION_CONSTRUCTOR(Summoned);
@@ -795,15 +769,15 @@ class Thief : public Behaviour {
         return {1.0, action};
       }
     }
-    for (Square* square : creature->getSquares(Vec2::directions8(true))) {
-      const Creature* other = square->getCreature();
+    for (Position pos : creature->getPosition().neighbors8(Random)) {
+      const Creature* other = pos.getCreature();
       if (other && !contains(robbed, other)) {
         vector<Item*> allGold;
         for (Item* it : other->getEquipment().getItems())
           if (it->getClass() == ItemClass::GOLD)
             allGold.push_back(it);
         if (allGold.size() > 0)
-          if (auto action = creature->stealFrom(other->getPosition() - creature->getPosition(), allGold))
+          if (auto action = creature->stealFrom(creature->getPosition().getDir(other->getPosition()), allGold))
           return {1.0, action.append([=](Creature* creature) {
             other->playerMessage(creature->getName().the() + " steals all your gold!");
             robbed.push_back(other);
@@ -848,7 +822,7 @@ class ChooseRandom : public Behaviour {
   ChooseRandom(Creature* c, vector<Behaviour*> beh, vector<double> w) : Behaviour(c), behaviours(beh), weights(w) {}
 
   virtual MoveInfo getMove() override {
-    return chooseRandom(behaviours, weights)->getMove();
+    return Random.choose(behaviours, weights)->getMove();
   }
 
   SERIALIZATION_CONSTRUCTOR(ChooseRandom);
@@ -892,12 +866,12 @@ class SplashHeroes : public Behaviour {
 
   virtual MoveInfo getMove() override {
     creature->setCourage(100);
-    if (!started && creature->getLevel()->getSafeSquare(splashLeaderPos)->getCreature())
+    if (!started && creature->getPosition().withCoord(splashLeaderPos).getCreature())
       started = true;
     if (!started)
       return creature->wait();
     else {
-      if (creature->getPosition().x > splashTarget.x)
+      if (creature->getPosition().getCoord().x > splashTarget.x)
         return {0.1, creature->move(Vec2(-1, 0))};
       else
         return {0.1, creature->wait()};
@@ -921,19 +895,18 @@ class SplashHeroLeader : public Behaviour {
 
   virtual MoveInfo getMove() override {
     creature->setCourage(100);
-    Vec2 pos = creature->getPosition();
+    Vec2 pos = creature->getPosition().getCoord();
     if (started)
-      return creature->moveTowards(splashTarget);
+      return creature->moveTowards(creature->getPosition().withCoord(splashTarget));
     if (pos == splashLeaderPos)
-      for (Square* square : creature->getSquares(
-            {Vec2(2, 0), Vec2(2, -1), Vec2(2, 1), Vec2(3, 0), Vec2(3, -1), Vec2(3, 1)}))
-        if (square->getCreature())
+      for (Vec2 v : {Vec2(2, 0), Vec2(2, -1), Vec2(2, 1), Vec2(3, 0), Vec2(3, -1), Vec2(3, 1)})
+        if (creature->getPosition().plus(v).getCreature())
           started = true;
     if (pos != splashLeaderPos) {
       if (pos.y == splashLeaderPos.y)
         return creature->move(Vec2(-1, 0));
       else
-        return creature->moveTowards(splashLeaderPos);
+        return creature->moveTowards(creature->getPosition().withCoord(splashLeaderPos));
     } else
       return creature->wait();
   };
@@ -957,24 +930,24 @@ class SplashMonsters : public Behaviour {
   virtual MoveInfo getMove() override {
     creature->setCourage(100);
     if (!initialPos)
-      initialPos = creature->getPosition();
+      initialPos = creature->getPosition().getCoord();
     vector<Creature*> heroes;
-    for (Square* square : creature->getLevel()->getSquares(creature->getLevel()->getBounds().getAllSquares()))
-      if (square->getCreature() && square->getCreature()->isEnemy(creature))
-        heroes.push_back(square->getCreature());
+    for (Position v : creature->getLevel()->getAllPositions())
+      if (v.getCreature() && v.getCreature()->isEnemy(creature))
+        heroes.push_back(v.getCreature());
     if (heroes.empty()) {
-      if (creature->getPosition() == *initialPos)
+      if (creature->getPosition().getCoord() == *initialPos)
         return creature->wait();
       else
-        return creature->moveTowards(*initialPos);
+        return creature->moveTowards(Position(*initialPos, creature->getLevel()));
     }
-    if (const Creature* other = creature->getLevel()->getSafeSquare(splashTarget)->getCreature())
+    if (const Creature* other = creature->getLevel()->getPosition(splashTarget).getCreature())
       if (creature->isEnemy(other))
         attack = true;
     if (!attack)
       return creature->wait();
     else
-      return {0.1, creature->moveTowards(chooseRandom(heroes)->getPosition())};
+      return {0.1, creature->moveTowards(Random.choose(heroes)->getPosition())};
   };
 
   SERIALIZATION_CONSTRUCTOR(SplashMonsters);
@@ -989,7 +962,7 @@ class SplashMonsters : public Behaviour {
   bool attack = false;
 };
 
-class SplashItems : public Task::Callback {
+class SplashItems : public TaskCallback {
   public:
   void addItems(Vec2 pos, vector<Item*> v) {
     items[pos] = v;
@@ -1003,11 +976,11 @@ class SplashItems : public Task::Callback {
     return ret;
   }
 
-  PTask getNextTask(Vec2 position) {
+  PTask getNextTask(Vec2 position, Level* level) {
     if (items.empty())
       return nullptr;
     Vec2 pos = chooseClosest(position);
-    vector<Item*> it = {chooseRandom(items[pos])};
+    vector<Item*> it = {Random.choose(items[pos])};
     if (it[0]->getClass() == ItemClass::GOLD || it[0]->getClass() == ItemClass::AMMO)
       for (Item* it2 : copyOf(items[pos]))
         if (it[0] != it2 && it2->getClass() == it[0]->getClass() && Random.roll(10))
@@ -1019,9 +992,9 @@ class SplashItems : public Task::Callback {
     vector<Vec2>& targets = it[0]->getClass() == ItemClass::GOLD ? targetsGold : targetsCorpse;
     if (targets.empty())
       return nullptr;
-    Vec2 target = chooseRandom(targets);
+    Vec2 target = Random.choose(targets);
     removeElement(targets, target);
-    return Task::bringItem(this, pos, it, {target}, 100);
+    return Task::bringItem(this, Position(pos, level), it, {Position(target, level)}, 100);
   }
 
   void setInitialized(const string& splashPath) {
@@ -1059,7 +1032,7 @@ class SplashImps : public Behaviour {
 
   void initializeSplashItems() {
     for (Vec2 v : Level::getSplashVisibleBounds()) {
-      vector<Item*> inv = creature->getLevel()->getSafeSquare(v)->getItems(
+      vector<Item*> inv = creature->getLevel()->getPosition(v).getItems(
           [](const Item* it) { return it->getClass() == ItemClass::GOLD || it->getClass() == ItemClass::CORPSE;});
       if (!inv.empty())
         splashItems.addItems(v, inv);
@@ -1070,7 +1043,7 @@ class SplashImps : public Behaviour {
   virtual MoveInfo getMove() override {
     creature->addEffect(LastingEffect::SPEED, 1000);
     if (!initialPos)
-      initialPos = creature->getPosition();
+      initialPos = creature->getPosition().getCoord();
     bool heroesDead = true;
     for (const Creature* c : creature->getLevel()->getAllCreatures())
       if (c->isEnemy(creature)) {
@@ -1085,9 +1058,9 @@ class SplashImps : public Behaviour {
         else
           task.reset();
       }
-      task = splashItems.getNextTask(creature->getPosition());
+      task = splashItems.getNextTask(creature->getPosition().getCoord(), creature->getLevel());
       if (!task)
-        return creature->moveTowards(*initialPos);
+        return creature->moveTowards(Position(*initialPos, creature->getLevel()));
       else
         return task->getMove(creature);
     }
@@ -1112,13 +1085,13 @@ class AvoidFire : public Behaviour {
   using Behaviour::Behaviour;
 
   virtual MoveInfo getMove() override {
-    if (creature->getSquare()->isBurning() && !creature->isFireResistant()) {
-      for (Square* s : creature->getSquares(Vec2::directions8(true)))
-        if (!s->isBurning())
-          if (auto action = creature->move(s->getPosition() - creature->getPosition()))
+    if (creature->getPosition().isBurning() && !creature->isFireResistant()) {
+      for (Position pos : creature->getPosition().neighbors8(Random))
+        if (!pos.isBurning())
+          if (auto action = creature->move(pos))
             return action;
-      for (Square* s : creature->getSquares(Vec2::directions8(true)))
-        if (auto action = creature->forceMove(s->getPosition() - creature->getPosition()))
+      for (Position pos : creature->getPosition().neighbors8(Random))
+        if (auto action = creature->forceMove(pos))
           return action;
     }
     return NoMove;
@@ -1167,7 +1140,7 @@ void MonsterAI::makeMove() {
   vector<pair<MoveInfo, int>> moves;
   for (int i : All(behaviours)) {
     MoveInfo move = behaviours[i]->getMove();
-    move.value *= weights[i];
+    move.setValue(move.getValue() * weights[i]);
     moves.emplace_back(move, weights[i]);
     if (pickItems) {
       for (auto elem : Item::stackItems(creature->getPickUpOptions())) {
@@ -1193,16 +1166,16 @@ void MonsterAI::makeMove() {
   MoveInfo winner = NoMove;
   for (int i : All(moves)) {
     MoveInfo& move = moves[i].first;
-    if (move.value > winner.value)
+    if (move.getValue() > winner.getValue())
       winner = move;
-    if (i < moves.size() - 1 && move.value > moves[i + 1].second)
+    if (i < moves.size() - 1 && move.getValue() > moves[i + 1].second)
       break;
   }
-  CHECK(winner.value > 0);
-  winner.move.perform(creature);
+  CHECK(winner.getValue() > 0);
+  winner.getMove().perform(creature);
 }
 
-PMonsterAI MonsterAIFactory::getMonsterAI(Creature* c) {
+PMonsterAI MonsterAIFactory::getMonsterAI(Creature* c) const {
   return PMonsterAI(maker(c));
 }
 
@@ -1217,7 +1190,7 @@ MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         new AvoidFire(c),
-        new Heal(c, false),
+        new Heal(c),
         new Fighter(c, 0.6, true),
         new ByCollective(c, col),
         new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
@@ -1249,12 +1222,16 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(Location* l, bool moveRandomly
   });
 }
 
-MonsterAIFactory MonsterAIFactory::singleTask(PTask& task) {
-  return MonsterAIFactory([=, &task](Creature* c) {
+MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t) {
+  Task* released = t.release();
+  return MonsterAIFactory([=](Creature* c) mutable {
+      CHECK(released);
+      Task* task = released;
+      released = nullptr;
       return new MonsterAI(c, {
-        new Heal(c, false),
+        new Heal(c),
         new Fighter(c, 0.6, false),
-        new SingleTask(c, std::move(task)),
+        new SingleTask(c, PTask(task)),
         new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
         { 6, 5, 2, 1}, true);
       });
@@ -1277,7 +1254,7 @@ MonsterAIFactory MonsterAIFactory::moveRandomly() {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::stayInPigsty(Vec2 origin, SquareApplyType type) {
+MonsterAIFactory MonsterAIFactory::stayInPigsty(Position origin, SquareApplyType type) {
   return MonsterAIFactory([origin, type](Creature* c) {
       return new MonsterAI(c, {
           new AvoidFire(c),
@@ -1295,7 +1272,7 @@ MonsterAIFactory MonsterAIFactory::idle() {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::scavengerBird(Vec2 corpsePos) {
+MonsterAIFactory MonsterAIFactory::scavengerBird(Position corpsePos) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
           new BirdFlyAway(c, 3),
@@ -1305,7 +1282,7 @@ MonsterAIFactory MonsterAIFactory::scavengerBird(Vec2 corpsePos) {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::guardSquare(Vec2 pos) {
+MonsterAIFactory MonsterAIFactory::guardSquare(Position pos) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
           new Wait(c),
@@ -1344,7 +1321,7 @@ MonsterAIFactory MonsterAIFactory::splashHeroes(bool leader) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         leader ? (Behaviour*)new SplashHeroLeader(c) : (Behaviour*)new SplashHeroes(c),
-        new Heal(c, false),
+        new Heal(c),
         new Fighter(c, 0.6, true),
         new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
         { 6, 5, 2, 1}, false);
@@ -1355,7 +1332,7 @@ MonsterAIFactory MonsterAIFactory::splashMonsters() {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         new SplashMonsters(c),
-        new Heal(c, false),
+        new Heal(c),
         new Fighter(c, 0.6, true),
         new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
         { 6, 5, 2, 1}, false);
@@ -1366,7 +1343,7 @@ MonsterAIFactory MonsterAIFactory::splashImps(const string& splashPath) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         new SplashImps(c, splashPath),
-        new Heal(c, false),
+        new Heal(c),
         new Fighter(c, 0.6, true),
         new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
         { 6, 5, 2, 1}, false);

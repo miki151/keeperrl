@@ -18,15 +18,9 @@
 
 #include "util.h"
 #include "debug.h"
-#include "inventory.h"
-#include "view_index.h"
-#include "poison_gas.h"
-#include "vision.h"
-#include "fire.h"
-#include "square_type.h"
 #include "renderable.h"
-#include "movement_type.h"
-#include "view_object.h"
+#include "stair_key.h"
+#include "position.h"
 
 class Level;
 class Creature;
@@ -34,23 +28,14 @@ class Item;
 class CreatureView;
 class Attack;
 class ProgressMeter;
-
-RICH_ENUM(SquareApplyType,
-  DRINK,
-  USE_CHEST,
-  ASCEND,
-  DESCEND,
-  PRAY,
-  SLEEP,
-  TRAIN,
-  WORKSHOP,
-  TORTURE,
-  PIGSTY,
-  CROPS,
-  STATUE,
-  WELL,
-  THRONE
-);
+class SquareType;
+class ViewIndex;
+class Fire;
+class PoisonGas;
+class Inventory;
+class MovementType;
+class MovementSet;
+class ViewObject;
 
 class Square : public Renderable {
   public:
@@ -62,9 +47,10 @@ class Square : public Renderable {
     double flamability;
     map<SquareId, int> constructions;
     bool ticking;
-    MovementSet movementSet;
+    HeapAllocated<MovementSet> movementSet;
     bool canDestroy;
     const Tribe* owner;
+    optional<SoundId> applySound;
   };
   Square(const ViewObject&, Params);
 
@@ -80,13 +66,10 @@ class Square : public Renderable {
   /** Links this square as point of entry from another level.
     * \param direction direction where the creature is coming from
     * \param key id specific to a dungeon branch*/
-  void setLandingLink(StairDirection direction, StairKey key);
-
-  /** Checks if this square is a point of entry from another level. See setLandingLink().*/
-  bool isLandingSquare(StairDirection, StairKey);
+  void setLandingLink(StairKey);
 
   /** Returns the entry point details. Returns none if square is not entry point. See setLandingLink().*/
-  optional<pair<StairDirection, StairKey>> getLandingLink() const;
+  optional<StairKey> getLandingLink() const;
 
   /** Returns radius of emitted light (0 if none).*/
   virtual double getLightEmission() const;
@@ -105,24 +88,26 @@ class Square : public Renderable {
 
   /** Returns the square's position on the level.*/
   Vec2 getPosition() const;
+  Position getPosition2() const;
 
   //@{
   /** Checks if this creature can enter the square at the moment. Takes account other creatures on the square.*/
   bool canEnter(const Creature*) const;
-  bool canEnter(MovementType) const;
+  bool canEnter(const MovementType&) const;
   //@}
 
-  bool canNavigate(MovementType) const;
+  bool canNavigate(const MovementType&) const;
 
   //@{
   /** Checks if this square is can be entered by the creature. Doesn't take into account other 
     * creatures on the square.*/
   bool canEnterEmpty(const Creature*) const;
-  bool canEnterEmpty(MovementType) const;
+  bool canEnterEmpty(const MovementType&) const;
   //@}
 
   /** Checks if this square obstructs view.*/
-  bool canSeeThru(VisionId = VisionId::NORMAL) const;
+  bool canSeeThru(VisionId) const;
+  bool canSeeThru() const;
 
   /** Sets if this square obstructs view.*/
   void setVision(VisionId);
@@ -170,9 +155,6 @@ class Square : public Renderable {
   /** Removes the creature from the square.*/
   void removeCreature();
 
-  /** Removes a killed creature from the square.*/
-  void killCreature(Creature* attacker);
-
   //@{
   /** Returns the creature from the square.*/
   Creature* getCreature();
@@ -183,7 +165,7 @@ class Square : public Renderable {
   void addTrigger(PTrigger);
 
   /** Returns all triggers.*/
-  const vector<Trigger*> getTriggers() const;
+  vector<Trigger*> getTriggers() const;
 
   /** Removes the trigger from the square.*/
   PTrigger removeTrigger(Trigger*);
@@ -201,11 +183,11 @@ class Square : public Renderable {
   bool hasItem(Item*) const;
 
   /** Checks if another square can be constructed from this one.*/
-  bool canConstruct(SquareType) const;
+  bool canConstruct(const SquareType&) const;
 
   /** Constructs another square. The construction might finish after several attempts.
     Returns true if construction was finishd.*/
-  bool construct(SquareType);
+  bool construct(const SquareType&);
 
   /** Called just before swapping the old square for the new constructed one.*/
   virtual void onConstructNewSquare(Square* newSquare) {}
@@ -221,7 +203,6 @@ class Square : public Renderable {
 
   bool sunlightBurns() const;
 
-  optional<ViewObject> getBackgroundObject() const;
   void setBackground(const Square*);
   void getViewIndex(ViewIndex&, const Tribe*) const;
 
@@ -236,7 +217,7 @@ class Square : public Renderable {
 
   virtual optional<SquareApplyType> getApplyType() const { return none; }
   virtual bool canApply(const Creature*) const { return true; }
-  virtual void onApply(Creature* c) { Debug(FATAL) << "Bad square applied"; }
+  void apply(Creature*);
   virtual double getApplyTime() const { return 1.0; }
   optional<SquareApplyType> getApplyType(const Creature*) const;
 
@@ -247,13 +228,15 @@ class Square : public Renderable {
  
   virtual ~Square();
 
-  void setFog(double val);
+  void setUnavailable();
+  bool isUnavailable() const;
 
   bool needsMemoryUpdate() const;
   void setMemoryUpdated();
 
   Level* getLevel();
   const Level* getLevel() const;
+  void clearItemIndex(ItemIndex);
 
   SERIALIZATION_DECL(Square);
 
@@ -261,8 +244,8 @@ class Square : public Renderable {
   void onEnter(Creature*);
   virtual void onEnterSpecial(Creature*) {}
   virtual void tickSpecial(double time) {}
-  virtual void onKilled(Creature* victim, Creature* attacker);
-  Inventory SERIAL(inventory);
+  virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
+  HeapAllocated<Inventory> SERIAL(inventory);
   string SERIAL(name);
   void addTraitForTribe(const Tribe*, MovementTrait);
   void removeTraitForTribe(const Tribe*, MovementTrait);
@@ -278,26 +261,27 @@ class Square : public Renderable {
   Vec2 SERIAL(position);
   Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);
-  optional<ViewObject> SERIAL(backgroundObject);
+  PViewObject SERIAL(backgroundObject);
   optional<VisionId> SERIAL(vision);
   bool SERIAL(hide);
   int SERIAL(strength);
   double SERIAL(height);
   vector<Vec2> SERIAL(travelDir);
-  optional<pair<StairDirection, StairKey>> SERIAL(landingLink);
-  Fire SERIAL(fire);
-  PoisonGas SERIAL(poisonGas);
+  optional<StairKey> SERIAL(landingLink);
+  HeapAllocated<Fire> SERIAL(fire);
+  HeapAllocated<PoisonGas> SERIAL(poisonGas);
   map<SquareId, int> SERIAL(constructions);
   bool SERIAL(ticking);
-  double SERIAL(fog) = 0;
-  MovementSet SERIAL(movementSet);
+  HeapAllocated<MovementSet> SERIAL(movementSet);
   void updateMovement();
   bool SERIAL(updateMemory) = true;
   mutable bool SERIAL(updateViewIndex) = true;
-  mutable ViewIndex SERIAL(viewIndex);
+  unique_ptr<ViewIndex> SERIAL(viewIndex);
   bool SERIAL(destroyable) = false;
   const Tribe* SERIAL(owner);
   const Tribe* SERIAL(forbiddenTribe) = nullptr;
+  bool SERIAL(unavailable) = false;
+  optional<SoundId> SERIAL(applySound);
 };
 
 #endif

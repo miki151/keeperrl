@@ -172,14 +172,15 @@ vector<string> ViewObject::getLegend() const {
   if (getAttribute(Attribute::ATTACK) > -1)
     ret.push_back("Attack " + getAttributeString(Attribute::ATTACK) +
           " defense " + getAttributeString(Attribute::DEFENSE));
-  if (getAttribute(Attribute::BLEEDING) > 0) 
-    ret.push_back("Wounded");
   if (hasModifier(Modifier::PLANNED))
     ret.push_back("Planned");
   if (hasModifier(Modifier::SLEEPING))
     ret.push_back("Sleeping");
   if (position.x > -1)
     ret.push_back(toString(position.x) + ", " + toString(position.y));
+#ifndef RELEASE
+  ret.push_back("Morale " + getAttributeString(Attribute::MORALE));
+#endif
   append(ret, adjectives);
   return ret;
 }
@@ -204,14 +205,12 @@ static vector<ViewId> creatureIds {
   ViewId::PRISONER,
   ViewId::OGRE,
   ViewId::CHICKEN,
-  ViewId::DARK_KNIGHT,
   ViewId::GREEN_DRAGON,
   ViewId::RED_DRAGON,
   ViewId::CYCLOPS,
   ViewId::WITCH,
   ViewId::GHOST,
   ViewId::SPIRIT,
-  ViewId::DEVIL,
   ViewId::KNIGHT,
   ViewId::CASTLE_GUARD,
   ViewId::AVATAR,
@@ -220,7 +219,6 @@ static vector<ViewId> creatureIds {
   ViewId::CHILD,
   ViewId::SHAMAN,
   ViewId::WARRIOR,
-  ViewId::GREAT_ORC,
   ViewId::ORC,
   ViewId::BANDIT,
   ViewId::CLAY_GOLEM,
@@ -232,7 +230,6 @@ static vector<ViewId> creatureIds {
   ViewId::VAMPIRE,
   ViewId::VAMPIRE_LORD,
   ViewId::MUMMY,
-  ViewId::MUMMY_LORD,
   ViewId::HORSE,
   ViewId::COW,
   ViewId::PIG,
@@ -247,7 +244,6 @@ static vector<ViewId> creatureIds {
   ViewId::RAT,
   ViewId::SPIDER,
   ViewId::FLY,
-  ViewId::SCORPION,
   ViewId::SNAKE,
   ViewId::VULTURE,
   ViewId::RAVEN,
@@ -257,10 +253,23 @@ static vector<ViewId> creatureIds {
   ViewId::KRAKEN_LAND,
   ViewId::KRAKEN_WATER,
   ViewId::FIRE_SPHERE,
-  ViewId::NIGHTMARE,
   ViewId::DEATH,
-  ViewId::SPECIAL_BEAST,
-  ViewId::SPECIAL_HUMANOID,
+  ViewId::SPECIAL_BLBN,
+  ViewId::SPECIAL_BLBW,
+  ViewId::SPECIAL_BLGN,
+  ViewId::SPECIAL_BLGW,
+  ViewId::SPECIAL_BMBN,
+  ViewId::SPECIAL_BMBW,
+  ViewId::SPECIAL_BMGN,
+  ViewId::SPECIAL_BMGW,
+  ViewId::SPECIAL_HLBN,
+  ViewId::SPECIAL_HLBW,
+  ViewId::SPECIAL_HLGN,
+  ViewId::SPECIAL_HLGW,
+  ViewId::SPECIAL_HMBN,
+  ViewId::SPECIAL_HMBW,
+  ViewId::SPECIAL_HMGN,
+  ViewId::SPECIAL_HMGW,
   ViewId::CANIF_TREE,
   ViewId::DECID_TREE,
 };
@@ -280,21 +289,19 @@ static vector<ViewId> itemIds {
   ViewId::BOW,
   ViewId::ARROW,
   ViewId::SCROLL,
-  ViewId::STEEL_AMULET,
-  ViewId::COPPER_AMULET,
-  ViewId::CRYSTAL_AMULET,
-  ViewId::WOODEN_AMULET,
-  ViewId::AMBER_AMULET,
+  ViewId::AMULET1,
+  ViewId::AMULET2,
+  ViewId::AMULET3,
+  ViewId::AMULET4,
+  ViewId::AMULET5,
   ViewId::BOOK,
   ViewId::FIRST_AID,
-  ViewId::EFFERVESCENT_POTION,
-  ViewId::MURKY_POTION,
-  ViewId::SWIRLY_POTION,
-  ViewId::VIOLET_POTION,
-  ViewId::PUCE_POTION,
-  ViewId::SMOKY_POTION,
-  ViewId::FIZZY_POTION,
-  ViewId::MILKY_POTION,
+  ViewId::POTION1,
+  ViewId::POTION2,
+  ViewId::POTION3,
+  ViewId::POTION4,
+  ViewId::POTION5,
+  ViewId::POTION6,
   ViewId::GOLD,
   ViewId::LEATHER_ARMOR,
   ViewId::LEATHER_HELM,
@@ -324,8 +331,8 @@ vector<ViewId> shuffledItems;
 
 void ViewObject::setHallu(bool b) {
   if (!hallu && b) {
-    shuffledCreatures = randomPermutation(creatureIds);
-    shuffledItems = randomPermutation(itemIds);
+    shuffledCreatures = Random.permutation(creatureIds);
+    shuffledItems = Random.permutation(itemIds);
   }
   hallu = b;
 }
@@ -351,11 +358,6 @@ const ViewObject& ViewObject::unknownMonster() {
 
 const ViewObject& ViewObject::empty() {
   static ViewObject ret(ViewId::BORDER_GUARD, ViewLayer::FLOOR, "");
-  return ret;
-}
-
-const ViewObject& ViewObject::mana() {
-  static ViewObject ret(ViewId::MANA, ViewLayer::FLOOR, "");
   return ret;
 }
 

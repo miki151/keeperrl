@@ -21,11 +21,12 @@
 #include <functional>
 
 #include "util.h"
-#include "tribe.h"
-#include "monster_ai.h"
-#include "item_type.h"
 
 class Creature;
+class MonsterAIFactory;
+class Location;
+class Tribe;
+class ItemType;
 
 RICH_ENUM(CreatureId,
     KEEPER,
@@ -33,30 +34,33 @@ RICH_ENUM(CreatureId,
     GOBLIN, 
     ORC,
     ORC_SHAMAN,
-    GREAT_ORC,
     HARPY,
     SUCCUBUS,
     DOPPLEGANGER,
     BANDIT,
 
-    SPECIAL_MONSTER,
-    SPECIAL_MONSTER_KEEPER,
-    SPECIAL_HUMANOID,
+    SPECIAL_BL,
+    SPECIAL_BM,
+    SPECIAL_HL,
+    SPECIAL_HM,
 
     GHOST,
     SPIRIT,
     LOST_SOUL,
-    DEVIL,
-    DARK_KNIGHT,
     GREEN_DRAGON,
     RED_DRAGON,
     CYCLOPS,
+    MINOTAUR,
+    HYDRA,
+    SHELOB,
     WITCH,
+    WITCHMAN,
 
     CLAY_GOLEM,
     STONE_GOLEM,
     IRON_GOLEM,
     LAVA_GOLEM,
+    AUTOMATON,
 
     FIRE_ELEMENTAL,
     WATER_ELEMENTAL,
@@ -68,14 +72,17 @@ RICH_ENUM(CreatureId,
     ZOMBIE,
     VAMPIRE,
     VAMPIRE_LORD,
-    VAMPIRE_BAT,
     MUMMY,
     MUMMY_LORD,
     SKELETON,
     
     GNOME,
+    GNOME_CHIEF,
     DWARF,
+    DWARF_FEMALE,
     DWARF_BARON,
+
+    KOBOLD,
 
     IMP,
     PRISONER,
@@ -93,15 +100,23 @@ RICH_ENUM(CreatureId,
 
     LIZARDMAN,
     LIZARDLORD,
+
+    ELEMENTALIST,
     
     ELF,
     ELF_ARCHER,
     ELF_CHILD,
     ELF_LORD,
+    DARK_ELF,
+    DARK_ELF_WARRIOR,
+    DARK_ELF_CHILD,
+    DARK_ELF_LORD,
+    DRIAD,
     HORSE,
     COW,
     PIG,
     GOAT,
+    DONKEY,
     
     LEPRECHAUN,
     
@@ -122,9 +137,14 @@ RICH_ENUM(CreatureId,
     SNAKE,
     CAVE_BEAR,
     SPIDER,
-    SCORPION,
     FLY,
-    RAT
+    RAT,
+
+    ANT_WORKER,
+    ANT_SOLDIER,
+    ANT_QUEEN,
+
+    SOKOBAN_BOULDER
 );
 
 class CreatureFactory {
@@ -138,19 +158,26 @@ class CreatureFactory {
   };
   CreatureFactory(const SingleCreature&);
 
-  static PCreature fromId(CreatureId, Tribe*, MonsterAIFactory = MonsterAIFactory::monster());
+  static PCreature fromId(CreatureId, Tribe*, const MonsterAIFactory&);
+  static PCreature fromId(CreatureId, Tribe*);
   static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
   static CreatureFactory humanVillage(Tribe*);
+  static CreatureFactory humanPeaceful(Tribe*);
   static CreatureFactory splashHeroes(Tribe*);
+  static CreatureFactory splashLeader(Tribe*);
   static CreatureFactory splashMonsters(Tribe*);
+  static CreatureFactory koboldVillage(Tribe*);
   static CreatureFactory gnomeVillage(Tribe*);
+  static CreatureFactory gnomeEntrance(Tribe*);
   static CreatureFactory humanCastle(Tribe*);
   static CreatureFactory elvenVillage(Tribe*);
+  static CreatureFactory darkElfVillage(Tribe*);
+  static CreatureFactory darkElfEntrance(Tribe*);
   static CreatureFactory forrest(Tribe*);
   static CreatureFactory crypt(Tribe*);
   static SingleCreature coffins(Tribe*);
-  static CreatureFactory hellLevel(Tribe*);
   static CreatureFactory dwarfTown(Tribe*);
+  static CreatureFactory antNest(Tribe*);
   static CreatureFactory vikingTown(Tribe*);
   static CreatureFactory lizardTown(Tribe*);
   static CreatureFactory orcTown(Tribe*);
@@ -160,12 +187,17 @@ class CreatureFactory {
   static CreatureFactory insects(Tribe* tribe);
   static CreatureFactory lavaCreatures(Tribe* tribe);
   static CreatureFactory waterCreatures(Tribe* tribe);
+  static CreatureFactory elementals(Tribe* tribe);
+  static CreatureFactory gnomishMines(Tribe* peaceful, Tribe* enemy, int level);
   
-  PCreature random(MonsterAIFactory = MonsterAIFactory::monster());
+  PCreature random(const MonsterAIFactory&);
+  PCreature random();
+
+  CreatureFactory& increaseLevel(double);
 
   static PCreature getShopkeeper(Location* shopArea, Tribe*);
-  static PCreature getRollingBoulder(Vec2 direction, Tribe*);
   static PCreature getGuardingBoulder(Tribe* tribe);
+  static PCreature getGhost(Creature*);
 
   static PCreature addInventory(PCreature c, const vector<ItemType>& items);
 
@@ -178,7 +210,10 @@ class CreatureFactory {
 
   private:
   CreatureFactory(Tribe* tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
-      const vector<CreatureId>& unique, EnumMap<CreatureId, Tribe*> overrides = {}, double levelIncrease = 0);
+      const vector<CreatureId>& unique = {}, EnumMap<CreatureId, Tribe*> overrides = {}, double levelIncrease = 0);
+  CreatureFactory(const vector<tuple<CreatureId, double, Tribe*>>& creatures,
+      const vector<CreatureId>& unique = {}, double levelIncrease = 0);
+  static void initSplash(Tribe*);
   Tribe* getTribeFor(CreatureId);
   Tribe* SERIAL(tribe);
   vector<CreatureId> SERIAL(creatures);

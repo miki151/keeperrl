@@ -5,6 +5,17 @@
 PlayerMessage::PlayerMessage(const string& t, Priority p) : text(makeSentence(t)), priority(p), freshness(1) {}
 PlayerMessage::PlayerMessage(const char* t, Priority p) : text(makeSentence(t)), priority(p), freshness(1) {}
 
+PlayerMessage::PlayerMessage(const string& title, const string& t) : text(t), priority(NORMAL), 
+    announcementTitle(title) {}
+
+PlayerMessage PlayerMessage::announcement(const string& title, const string& text) {
+  return PlayerMessage(title, text);
+}
+
+optional<string> PlayerMessage::getAnnouncementTitle() const {
+  return announcementTitle;
+}
+
 string PlayerMessage::getText() const {
   if (isClickable())
     return text.substr(0, text.size() - 1);
@@ -23,12 +34,12 @@ PlayerMessage::Priority PlayerMessage::getPriority() const {
   return priority;
 }
 
-PlayerMessage& PlayerMessage::setPosition(Vec2 pos) {
+PlayerMessage& PlayerMessage::setPosition(Position pos) {
   position = pos;
   return *this;
 }
 
-optional<Vec2> PlayerMessage::getPosition() const {
+optional<Position> PlayerMessage::getPosition() const {
   return position;
 }
 
@@ -54,12 +65,17 @@ bool PlayerMessage::isClickable() const {
   return position || creature || location;
 }
 
+int PlayerMessage::getHash() const {
+  return combineHash(text, priority, freshness);
+}
+
 template <class Archive> 
 void PlayerMessage::serialize(Archive& ar, const unsigned int version) { 
   ar & SUBCLASS(UniqueEntity) 
      & SVAR(text)
      & SVAR(priority)
      & SVAR(freshness)
+     & SVAR(announcementTitle)
      & SVAR(position)
      & SVAR(creature)
      & SVAR(location);

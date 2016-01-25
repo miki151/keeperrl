@@ -16,22 +16,26 @@
 #ifndef _OPTIONS_H
 #define _OPTIONS_H
 
-#include "view.h"
 #include "util.h"
 
 RICH_ENUM(OptionId,
   HINTS,
   ASCII,
   MUSIC,
+  SOUND,
   KEEP_SAVEFILES,
   FULLSCREEN,
+  FULLSCREEN_RESOLUTION,
   ONLINE,
   AUTOSAVE,
+  WASD_SCROLLING,
+  ZOOM_UI,
 
   FAST_IMMIGRATION,
   ADVENTURER_NAME,
 
   KEEPER_NAME,
+  KEEPER_SEED,
   SHOW_MAP,
   START_WITH_NIGHT,
   STARTING_RESOURCE
@@ -43,28 +47,35 @@ enum class OptionSet {
   ADVENTURER,
 };
 
+class View;
+
 class Options {
   public:
-  typedef variant<bool, string> Value;
+  typedef variant<int, string> Value;
   Options(const string& path, const string& overrides);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
+  int getChoiceValue(OptionId);
   void handle(View*, OptionSet, int lastIndex = 0);
   bool handleOrExit(View*, OptionSet, int lastIndex = -1);
-  typedef function<void(bool)> Trigger;
+  typedef function<void(int)> Trigger;
   void addTrigger(OptionId, Trigger trigger);
   void setDefaultString(OptionId, const string&);
+  void setChoices(OptionId, const vector<string>&);
 
   private:
   void setValue(OptionId, Value);
+  optional<Value> readValue(OptionId, const string&);
   void changeValue(OptionId, const Options::Value&, View*);
   string getValueString(OptionId, Options::Value);
   Value getValue(OptionId);
-  EnumMap<OptionId, Value> readValues();
-  void writeValues(const EnumMap<OptionId, Value>&);
+  const EnumMap<OptionId, Options::Value>& readValues();
+  optional<EnumMap<OptionId, Value>> values;
+  void writeValues();
   string filename;
   EnumMap<OptionId, string> defaultStrings;
   EnumMap<OptionId, optional<Value>> overrides;
+  EnumMap<OptionId, vector<string>> choices;
 };
 
 

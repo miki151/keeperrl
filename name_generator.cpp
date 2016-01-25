@@ -31,7 +31,7 @@ string getSyllable() {
 }
 
 string getWord() {
-  int syllables = chooseRandom({1, 2, 3, 4}, {1, 4, 3, 1});
+  int syllables = Random.choose({1, 2, 3, 4}, {1, 4, 3, 1});
   string ret;
   for (int i : Range(syllables))
     ret += getSyllable();
@@ -53,7 +53,7 @@ void NameGenerator::init(const string& namesPath) {
   vector<string> input;
   for (int i : Range(1000)) {
     string ret;
-    int parts = chooseRandom({1, 2}, {3, 1});
+    int parts = Random.choose({1, 2}, {3, 1});
     for (int k : Range(parts))
       ret += getWord() + " ";
     trim(ret);
@@ -72,10 +72,13 @@ void NameGenerator::init(const string& namesPath) {
   set(NameGeneratorId::DOG, new NameGenerator(readLines(namesPath + "/dogs.txt")));
   set(NameGeneratorId::DRAGON, new NameGenerator(readLines(namesPath + "/dragons.txt")));
   set(NameGeneratorId::CYCLOPS, new NameGenerator(readLines(namesPath + "/cyclops.txt")));
+  set(NameGeneratorId::ORC, new NameGenerator(readLines(namesPath + "/orc.txt")));
+  set(NameGeneratorId::VAMPIRE, new NameGenerator(readLines(namesPath + "/vampires.txt")));
 }
 
 
 string NameGenerator::getNext() {
+  CHECK(!names.empty());
   string ret = names.front();
   if (!oneName) {
     names.pop();
@@ -86,6 +89,6 @@ string NameGenerator::getNext() {
 
   
 NameGenerator::NameGenerator(vector<string> list, bool oneN) : oneName(oneN) {
-  for (string name : randomPermutation(list))
+  for (string name : Random.permutation(list))
     names.push(name);
 }

@@ -6,6 +6,7 @@
 #include "model.h"
 #include "game_info.h"
 #include "creature.h"
+#include "view_index.h"
 
 Spectator::Spectator(const Level* l) : level(l) {
 }
@@ -15,9 +16,9 @@ const MapMemory& Spectator::getMemory() const {
 }
 
 void Spectator::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  const Square* square = getLevel()->getSafeSquare(pos);
-  square->getViewIndex(index, nullptr);
-  if (const Creature* c = square->getCreature())
+  Position position = getLevel()->getPosition(pos);
+  position.getViewIndex(index, nullptr);
+  if (const Creature* c = position.getCreature())
     index.insert(c->getViewObject());
 }
 
@@ -25,7 +26,7 @@ void Spectator::refreshGameInfo(GameInfo& gameInfo)  const {
   gameInfo.infoType = GameInfo::InfoType::SPECTATOR;
 }
 
-optional<Vec2> Spectator::getPosition(bool force) const {
+Vec2 Spectator::getPosition() const {
   return level->getBounds().middle();
 }
 
@@ -45,4 +46,6 @@ vector<Vec2> Spectator::getVisibleEnemies() const {
   return {};
 }
 
-
+bool Spectator::isPlayerView() const {
+  return false;
+}
