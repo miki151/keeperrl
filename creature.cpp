@@ -55,7 +55,6 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     & SUBCLASS(UniqueEntity)
     & SVAR(attributes)
     & SVAR(position)
-    & SVAR(model)
     & SVAR(time)
     & SVAR(equipment)
     & SVAR(shortestPath)
@@ -157,7 +156,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
   return CreatureAction(this, [=] (Creature *c) {
     spell->addMessage(c);
     Effect::applyToCreature(c, spell->getEffectType(), EffectStrength::NORMAL);
-    model->getStatistics().add(StatId::SPELL_CAST);
+    getModel()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     c->addSound(spell->getSound());
@@ -175,7 +174,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     monsterMessage(getName().the() + " casts a spell");
     playerMessage("You cast " + spell->getName());
     Effect::applyDirected(c, dir, spell->getDirEffectType(), EffectStrength::NORMAL);
-    model->getStatistics().add(StatId::SPELL_CAST);
+    getModel()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     c->addSound(spell->getSound());
@@ -586,7 +585,7 @@ CreatureAction Creature::equip(Item* item) const {
     playerMessage("You equip " + item->getTheName(false, isBlind()));
     monsterMessage(getName().the() + " equips " + item->getAName());
     item->onEquip(self);
-    if (model)
+    if (Model* model = getModel())
       model->onEquip(self, item);
     self->spendTime(1);
   });
@@ -1084,12 +1083,8 @@ void Creature::setPosition(Position pos) {
   position = pos;
 }
 
-void Creature::setModel(Model* m) {
-  model = m;
-}
-
 Model* Creature::getModel() const {
-  return model;
+  return getPosition().getModel();
 }
 
 double Creature::getTime() const {
@@ -1204,9 +1199,9 @@ void Creature::injureBodyPart(BodyPart part, bool drop) {
     return;
   if (drop) {
     if (contains({BodyPart::LEG, BodyPart::ARM, BodyPart::WING}, part))
-      model->getStatistics().add(StatId::CHOPPED_LIMB);
+      getModel()->getStatistics().add(StatId::CHOPPED_LIMB);
     else if (part == BodyPart::HEAD)
-      model->getStatistics().add(StatId::CHOPPED_HEAD);
+      getModel()->getStatistics().add(StatId::CHOPPED_HEAD);
     --attributes->bodyParts[part];
     ++attributes->lostBodyParts[part];
     if (attributes->injuredBodyParts[part] > attributes->bodyParts[part])
@@ -1273,7 +1268,7 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
   auto rAccuracy = [=] () { return Random.get(-accuracyVariance, accuracyVariance); };
   auto rDamage = [=] () { return Random.get(-damageVariance, damageVariance); };
   double timeSpent = 1;
-  model->onAttack(other, c);
+  getModel()->onAttack(other, c);
   accuracy += rAccuracy() + rAccuracy();
   damage += rDamage() + rDamage();
   vector<string> attackAdjective;
@@ -1685,10 +1680,10 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   if (dropInventory && dCorpse && isCorporal())
     dropCorpse();
   getLevel()->killCreature(this);
-  model->killCreature(this, attacker);
+  getModel()->killCreature(this, attacker);
   if (isInnocent())
-    model->getStatistics().add(StatId::INNOCENT_KILLED);
-  model->getStatistics().add(StatId::DEATH);
+    getModel()->getStatistics().add(StatId::INNOCENT_KILLED);
+  getModel()->getStatistics().add(StatId::DEATH);
   deathTime = getTime();
 }
 
@@ -1731,13 +1726,13 @@ CreatureAction Creature::torture(Creature* other) const {
       else
         other->bleed(1);
     }
-    model->onTorture(other, this);
+    getModel()->onTorture(other, this);
     self->spendTime(1);
   });
 }
 
 void Creature::surrender(const Creature* to) {
-  model->onSurrender(this, to);
+  getModel()->onSurrender(this, to);
 }
 
 CreatureAction Creature::give(Creature* whom, vector<Item*> items) {

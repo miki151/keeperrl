@@ -34,12 +34,12 @@ class Player : public Controller, public CreatureView {
   public:
   virtual ~Player();
 
-  static ControllerFactory getFactory(Model*, MapMemory* levelMemory);
+  static ControllerFactory getFactory(MapMemory* levelMemory);
 
   SERIALIZATION_DECL(Player);
 
   protected:
-  Player(Creature*, Model*, bool greeting, MapMemory* levelMemory);
+  Player(Creature*, bool greeting, MapMemory* levelMemory);
 
   virtual void moveAction(Vec2 direction);
 
@@ -73,8 +73,8 @@ class Player : public Controller, public CreatureView {
   virtual vector<Creature*> getTeam() const;
 
   MapMemory* SERIAL(levelMemory);
-  Model* SERIAL(model);
   void showHistory();
+  Model* getModel() const;
 
   private:
   REGISTER_HANDLER(ThrowEvent, const Level*, const Creature*, const Item*, const vector<Vec2>& trajectory);

@@ -92,6 +92,5 @@ ItemPredicate EntitySet<Item>::containsPredicate() const {
 SERIALIZABLE_TMPL(EntitySet, Item);
 SERIALIZABLE_TMPL(EntitySet, Task);
 SERIALIZABLE_TMPL(EntitySet, Creature);
-SERIALIZABLE_TMPL(EntitySet, Level);
 
 

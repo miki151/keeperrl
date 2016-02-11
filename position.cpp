@@ -29,7 +29,10 @@ Level* Position::getLevel() const {
 }
 
 Model* Position::getModel() const {
-  return level->getModel();
+  if (isValid())
+    return level->getModel();
+  else
+    return nullptr;
 }
 
 Position::Position(Vec2 v, Level* l) : coord(v), level(l) {

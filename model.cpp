@@ -318,7 +318,6 @@ void Model::tick(double time) {
 
 void Model::addCreature(PCreature c, double delay) {
   c->setTime(timeQueue->getCurrentTime() + 1 + delay + Random.getDouble());
-  c->setModel(this);
   timeQueue->addCreature(std::move(c));
 }
 
@@ -363,7 +362,7 @@ PCreature Model::makePlayer(int handicap) {
           c.humanoid = true;
           c.name = "Adventurer";
           c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
-          c.skills.insert(SkillId::AMBUSH);), Player::getFactory(this, levelMemory))), {
+          c.skills.insert(SkillId::AMBUSH);), Player::getFactory(levelMemory))), {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,

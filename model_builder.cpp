@@ -938,7 +938,7 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random,
       .build());
  
   m->playerCollective = m->collectives.back().get();
-  m->playerControl = new PlayerControl(m->playerCollective, m, top);
+  m->playerControl = new PlayerControl(m->playerCollective, top);
   m->playerCollective->setControl(PCollectiveControl(m->playerControl));
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, m->tribeSet->keeper.get(),
       MonsterAIFactory::collective(m->playerCollective));
@@ -1161,7 +1161,7 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter* meter, RandomGen& random,
       .build());
  
   m->playerCollective = m->collectives.back().get();
-  m->playerControl = new PlayerControl(m->playerCollective, m, top);
+  m->playerControl = new PlayerControl(m->playerCollective, top);
   m->playerCollective->setControl(PCollectiveControl(m->playerControl));
   PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, m->tribeSet->keeper.get(),
       MonsterAIFactory::collective(m->playerCollective));

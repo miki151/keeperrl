@@ -43,7 +43,7 @@ struct TeamCreatureInfo;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
-  PlayerControl(Collective*, Model*, Level*);
+  PlayerControl(Collective*, Level*);
   ~PlayerControl();
   void addImportantLongMessage(const string&, optional<Position> = none);
 
@@ -203,9 +203,10 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   Creature* getControlled();
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
+  Model* getModel();
+  const Model* getModel() const;
 
   mutable unique_ptr<MapMemory> SERIAL(memory);
-  Model* SERIAL(model);
   bool SERIAL(showWelcomeMsg) = true;
   struct SelectionInfo {
     Vec2 corner1;
