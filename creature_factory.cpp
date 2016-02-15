@@ -52,7 +52,7 @@ SERIALIZABLE(CreatureFactory);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory);
 
-CreatureFactory::SingleCreature::SingleCreature(Tribe* t, CreatureId i) : id(i), tribe(t) {}
+CreatureFactory::SingleCreature::SingleCreature(TribeId t, CreatureId i) : id(i), tribe(t) {}
 
 bool CreatureFactory::SingleCreature::operator == (const SingleCreature& o) const {
   return tribe == o.tribe && id == o.id;
@@ -195,7 +195,7 @@ class BoulderController : public Monster {
 
 class Boulder : public Creature {
   public:
-  Boulder(const CreatureAttributes& attr, Tribe* tribe, ControllerFactory f) : 
+  Boulder(const CreatureAttributes& attr, TribeId tribe, ControllerFactory f) : 
     Creature(ViewObject(ViewId::BOULDER, ViewLayer::CREATURE, "Boulder")
         .setModifier(ViewObjectModifier::NO_UP_MOVEMENT)
         .setModifier(ViewObjectModifier::REMEMBER), tribe, attr, f) {}
@@ -208,7 +208,7 @@ class Boulder : public Creature {
   SERIALIZATION_CONSTRUCTOR(Boulder);
 };
 
-PCreature CreatureFactory::getGuardingBoulder(Tribe* tribe) {
+PCreature CreatureFactory::getGuardingBoulder(TribeId tribe) {
   return PCreature(new Boulder(CATTR(
             c.viewId = ViewId::BOULDER;
             c.attr[AttrType::DEXTERITY] = 1;
@@ -260,7 +260,7 @@ class SokobanController : public Monster {
   private:
 };
 
-static PCreature getSokobanBoulder(Tribe* tribe) {
+static PCreature getSokobanBoulder(TribeId tribe) {
   return PCreature(new Boulder(CATTR(
             c.viewId = ViewId::BOULDER;
             c.attr[AttrType::DEXTERITY] = 1;
@@ -398,7 +398,7 @@ class KrakenController : public Monster {
                   Vec2 move = Random.choose(moves);
                   ViewId viewId = getCreature()->getPosition().plus(move).canEnter({MovementTrait::SWIM}) 
                     ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
-                  PCreature spawn(new Creature(getCreature()->getTribe(), getKrakenAttributes(viewId),
+                  PCreature spawn(new Creature(getCreature()->getTribeId(), getKrakenAttributes(viewId),
                         ControllerFactory([=](Creature* c) {
                           return new KrakenController(c);
                           })));
@@ -596,7 +596,7 @@ PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemType>& ite
   return c;
 }
 
-PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
+PCreature CreatureFactory::getShopkeeper(Location* shopArea, TribeId tribe) {
   PCreature ret(new Creature(tribe,
       CATTR(
         c.viewId = ViewId::SHOPKEEPER;
@@ -622,11 +622,11 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, Tribe* tribe) {
   return addInventory(std::move(ret), inventory);
 }
 
-Tribe* CreatureFactory::getTribeFor(CreatureId id) {
-  if (Tribe* t = tribeOverrides[id])
-    return t;
+TribeId CreatureFactory::getTribeFor(CreatureId id) {
+  if (auto t = tribeOverrides[id])
+    return *t;
   else
-    return NOTNULL(tribe);
+    return *tribe;
 }
 
 PCreature CreatureFactory::random() {
@@ -647,7 +647,7 @@ PCreature CreatureFactory::random(const MonsterAIFactory& actorFactory) {
 
 PCreature get(
     CreatureAttributes attr, 
-    Tribe* tribe,
+    TribeId tribe,
     ControllerFactory factory) {
   return PCreature(new Creature(tribe, attr, factory));
 }
@@ -657,14 +657,13 @@ CreatureFactory& CreatureFactory::increaseLevel(double l) {
   return *this;
 }
 
-CreatureFactory::CreatureFactory(Tribe* t, const vector<CreatureId>& c, const vector<double>& w,
-    const vector<CreatureId>& u, EnumMap<CreatureId, Tribe*> overrides, double lIncrease)
+CreatureFactory::CreatureFactory(TribeId t, const vector<CreatureId>& c, const vector<double>& w,
+    const vector<CreatureId>& u, EnumMap<CreatureId, optional<TribeId>> overrides, double lIncrease)
     : tribe(t), creatures(c), weights(w), unique(u), tribeOverrides(overrides), levelIncrease(lIncrease) {
 }
 
-CreatureFactory::CreatureFactory(const vector<tuple<CreatureId, double, Tribe*>>& c, const vector<CreatureId>& u,
-      double lIncrease)
-    : tribe(nullptr), unique(u),levelIncrease(lIncrease) {
+CreatureFactory::CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& c, const vector<CreatureId>& u,
+      double lIncrease) : unique(u),levelIncrease(lIncrease) {
   for (auto& elem : c) {
     creatures.push_back(get<0>(elem));
     weights.push_back(get<1>(elem));
@@ -672,42 +671,42 @@ CreatureFactory::CreatureFactory(const vector<tuple<CreatureId, double, Tribe*>>
   }
 }
 
-CreatureFactory CreatureFactory::humanVillage(Tribe* tribe) {
+CreatureFactory CreatureFactory::humanVillage(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
       CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
       CreatureId::PIG, CreatureId::DOG },
       { 2, 6, 6, 4, 1, 1, 1, 1, 6}, {CreatureId::KNIGHT});
 }
 
-CreatureFactory CreatureFactory::humanPeaceful(Tribe* tribe) {
+CreatureFactory CreatureFactory::humanPeaceful(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::PESEANT,
       CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
       { 2, 1, 1, 1, 1, 1, 1}, {});
 }
 
-CreatureFactory CreatureFactory::gnomeVillage(Tribe* tribe) {
+CreatureFactory CreatureFactory::gnomeVillage(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::GNOME },
       { 1}, { CreatureId::GNOME_CHIEF});
 }
 
-CreatureFactory CreatureFactory::gnomeEntrance(Tribe* tribe) {
+CreatureFactory CreatureFactory::gnomeEntrance(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::GNOME }, {1});
 }
 
-CreatureFactory CreatureFactory::koboldVillage(Tribe* tribe) {
+CreatureFactory CreatureFactory::koboldVillage(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::KOBOLD }, {1});
 }
 
-CreatureFactory CreatureFactory::darkElfVillage(Tribe* tribe) {
+CreatureFactory CreatureFactory::darkElfVillage(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::DARK_ELF, CreatureId::DARK_ELF_CHILD, CreatureId::DARK_ELF_WARRIOR },
       { 1, 1, 2}, { CreatureId::DARK_ELF_LORD});
 }
 
-CreatureFactory CreatureFactory::darkElfEntrance(Tribe* tribe) {
+CreatureFactory CreatureFactory::darkElfEntrance(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::DARK_ELF_WARRIOR }, {1});
 }
 
-CreatureFactory CreatureFactory::humanCastle(Tribe* tribe) {
+CreatureFactory CreatureFactory::humanCastle(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
       CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
       CreatureId::PIG, CreatureId::DOG },
@@ -716,7 +715,7 @@ CreatureFactory CreatureFactory::humanCastle(Tribe* tribe) {
 
 static optional<pair<CreatureFactory, CreatureFactory>> splashFactories;
 
-void CreatureFactory::initSplash(Tribe* tribe) {
+void CreatureFactory::initSplash(TribeId tribe) {
   splashFactories = Random.choose<optional<pair<CreatureFactory, CreatureFactory>>>( {
       make_pair(CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {}),
         CreatureFactory::singleType(tribe, CreatureId::AVATAR)),
@@ -731,19 +730,19 @@ void CreatureFactory::initSplash(Tribe* tribe) {
       });
 }
 
-CreatureFactory CreatureFactory::splashHeroes(Tribe* tribe) {
+CreatureFactory CreatureFactory::splashHeroes(TribeId tribe) {
   if (!splashFactories)
     initSplash(tribe);
   return splashFactories->first;
 }
 
-CreatureFactory CreatureFactory::splashLeader(Tribe* tribe) {
+CreatureFactory CreatureFactory::splashLeader(TribeId tribe) {
   if (!splashFactories)
     initSplash(tribe);
   return splashFactories->second;
 }
 
-CreatureFactory CreatureFactory::splashMonsters(Tribe* tribe) {
+CreatureFactory CreatureFactory::splashMonsters(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::GNOME, CreatureId::GOBLIN, CreatureId::OGRE,
       CreatureId::SPECIAL_HL, CreatureId::SPECIAL_BL, CreatureId::WOLF, CreatureId::CAVE_BEAR,
       CreatureId::BAT, CreatureId::WEREWOLF, CreatureId::ZOMBIE, CreatureId::VAMPIRE, CreatureId::DOPPLEGANGER,
@@ -751,7 +750,7 @@ CreatureFactory CreatureFactory::splashMonsters(Tribe* tribe) {
       { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}, 25);
 }
 
-CreatureFactory CreatureFactory::elvenVillage(Tribe* tribe) {
+CreatureFactory CreatureFactory::elvenVillage(TribeId tribe) {
   double armedRatio = 0.4;
   CreatureFactory ret(tribe, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
       CreatureId::COW, CreatureId::DOG },
@@ -765,74 +764,74 @@ CreatureFactory CreatureFactory::elvenVillage(Tribe* tribe) {
   return ret;
 }
 
-CreatureFactory CreatureFactory::forrest(Tribe* tribe) {
+CreatureFactory CreatureFactory::forrest(TribeId tribe) {
   return CreatureFactory(tribe,
       { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR, CreatureId::LEPRECHAUN },
       { 4, 2, 2, 1}, {});
 }
 
-CreatureFactory CreatureFactory::crypt(Tribe* tribe) {
+CreatureFactory CreatureFactory::crypt(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::ZOMBIE}, { 1}, {});
 }
 
-CreatureFactory::SingleCreature CreatureFactory::coffins(Tribe* tribe) {
+CreatureFactory::SingleCreature CreatureFactory::coffins(TribeId tribe) {
   return SingleCreature(tribe, CreatureId::VAMPIRE);
 }
 
-CreatureFactory CreatureFactory::vikingTown(Tribe* tribe) {
+CreatureFactory CreatureFactory::vikingTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::WARRIOR}, { 1}, {CreatureId::SHAMAN});
 }
 
-CreatureFactory CreatureFactory::lizardTown(Tribe* tribe) {
+CreatureFactory CreatureFactory::lizardTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::LIZARDMAN, }, { 1}, {CreatureId::LIZARDLORD});
 }
 
-CreatureFactory CreatureFactory::dwarfTown(Tribe* tribe) {
+CreatureFactory CreatureFactory::dwarfTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1},{ CreatureId::DWARF_BARON});
 }
 
-CreatureFactory CreatureFactory::antNest(Tribe* tribe) {
+CreatureFactory CreatureFactory::antNest(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::ANT_WORKER, CreatureId::ANT_SOLDIER}, { 2, 1},
       { CreatureId::ANT_QUEEN});
 }
 
-CreatureFactory CreatureFactory::splash(Tribe* tribe) {
+CreatureFactory CreatureFactory::splash(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::IMP}, { 1}, { CreatureId::KEEPER });
 }
 
-CreatureFactory CreatureFactory::orcTown(Tribe* tribe) {
+CreatureFactory CreatureFactory::orcTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1});
 }
 
-CreatureFactory CreatureFactory::pyramid(Tribe* tribe, int level) {
+CreatureFactory CreatureFactory::pyramid(TribeId tribe, int level) {
   if (level == 2)
     return CreatureFactory(tribe, { CreatureId::MUMMY }, {1}, { CreatureId::MUMMY_LORD });
   else
     return CreatureFactory(tribe, { CreatureId::MUMMY }, {1}, { });
 }
 
-CreatureFactory CreatureFactory::insects(Tribe* tribe) {
+CreatureFactory CreatureFactory::insects(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::SPIDER}, {1});
 }
 
-CreatureFactory CreatureFactory::waterCreatures(Tribe* tribe) {
+CreatureFactory CreatureFactory::waterCreatures(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::KRAKEN }, {1});
 }
 
-CreatureFactory CreatureFactory::elementals(Tribe* tribe) {
+CreatureFactory CreatureFactory::elementals(TribeId tribe) {
   return CreatureFactory(tribe, {CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL, CreatureId::WATER_ELEMENTAL,
       CreatureId::EARTH_ELEMENTAL}, {1, 1, 1, 1}, {});
 }
 
-CreatureFactory CreatureFactory::lavaCreatures(Tribe* tribe) {
+CreatureFactory CreatureFactory::lavaCreatures(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::FIRE_SPHERE }, {1}, { });
 }
 
-CreatureFactory CreatureFactory::singleType(Tribe* tribe, CreatureId id) {
+CreatureFactory CreatureFactory::singleType(TribeId tribe, CreatureId id) {
   return CreatureFactory(tribe, { id}, {1}, {});
 }
 
-CreatureFactory CreatureFactory::gnomishMines(Tribe* peaceful, Tribe* enemy, int level) {
+CreatureFactory CreatureFactory::gnomishMines(TribeId peaceful, TribeId enemy, int level) {
   return CreatureFactory({
       make_tuple(CreatureId::BANDIT, 100., enemy),
       make_tuple(CreatureId::GREEN_DRAGON, 5., enemy),
@@ -948,7 +947,7 @@ static EnumMap<BodyPart, int> getSpecialBeastBody(bool large, bool body, bool wi
   return parts[(!large) * 4 + (!body) * 2 + wings];
 }
 
-PCreature getSpecial(Tribe* tribe, bool humanoid, bool large, ControllerFactory factory) {
+PCreature getSpecial(TribeId tribe, bool humanoid, bool large, ControllerFactory factory) {
   bool wings = Random.roll(2);
   bool body = Random.roll(2);
   string name = getSpeciesName(humanoid, large, body, wings);
@@ -2239,7 +2238,7 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
   }
 }
 
-PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
+PCreature get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) {
   ControllerFactory factory = Monster::getFactory(aiFactory);
   switch (id) {
     case CreatureId::SPECIAL_BL:
@@ -2259,7 +2258,7 @@ PCreature get(CreatureId id, Tribe* tribe, MonsterAIFactory aiFactory) {
 PCreature CreatureFactory::getGhost(Creature* creature) {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Ghost");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
-  return PCreature(new Creature(viewObject, creature->getTribe(), getAttributes(CreatureId::LOST_SOUL),
+  return PCreature(new Creature(viewObject, creature->getTribeId(), getAttributes(CreatureId::LOST_SOUL),
         Monster::getFactory(MonsterAIFactory::monster())));
 }
 
@@ -2456,11 +2455,11 @@ vector<ItemType> getInventory(CreatureId id) {
   }
 }
 
-PCreature CreatureFactory::fromId(CreatureId id, Tribe* t) {
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t) {
   return fromId(id, t, MonsterAIFactory::monster());
 }
 
-PCreature CreatureFactory::fromId(CreatureId id, Tribe* t, const MonsterAIFactory& factory) {
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory) {
   return addInventory(get(id, t, factory), getInventory(id));
 }
 

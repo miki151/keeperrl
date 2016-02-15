@@ -57,7 +57,7 @@ class Position {
   void onApply(Creature*);
   double getApplyTime() const;
   bool canHide() const;
-  void getViewIndex(ViewIndex&, const Tribe*) const;
+  void getViewIndex(ViewIndex&, TribeId) const;
   vector<Trigger*> getTriggers() const;
   PTrigger removeTrigger(Trigger*);
   vector<PTrigger> removeTriggers();
@@ -83,10 +83,10 @@ class Position {
   bool needsMemoryUpdate() const;
   void setMemoryUpdated();
   const ViewObject& getViewObject() const;
-  void forbidMovementForTribe(const Tribe*);
-  void allowMovementForTribe(const Tribe*);
-  bool isTribeForbidden(const Tribe*) const;
-  const Tribe* getForbiddenTribe() const;
+  void forbidMovementForTribe(TribeId);
+  void allowMovementForTribe(TribeId);
+  bool isTribeForbidden(TribeId) const;
+  optional<TribeId> getForbiddenTribe() const;
   void addPoisonGas(double amount);
   double getPoisonGasAmount() const;
   CoverInfo getCoverInfo() const;

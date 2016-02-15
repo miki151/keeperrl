@@ -214,7 +214,7 @@ string Position::getName() const {
     return "";
 }
 
-void Position::getViewIndex(ViewIndex& index, const Tribe* tribe) const {
+void Position::getViewIndex(ViewIndex& index, TribeId tribe) const {
   if (isValid())
     getSquare()->getViewIndex(index, tribe);
 }
@@ -362,21 +362,21 @@ const ViewObject& Position::getViewObject() const {
   }
 }
 
-void Position::forbidMovementForTribe(const Tribe* t) {
+void Position::forbidMovementForTribe(TribeId t) {
   if (isValid())
     getSquare()->forbidMovementForTribe(t);
 }
 
-void Position::allowMovementForTribe(const Tribe* t) {
+void Position::allowMovementForTribe(TribeId t) {
   if (isValid())
     getSquare()->allowMovementForTribe(t);
 }
 
-bool Position::isTribeForbidden(const Tribe* t) const {
+bool Position::isTribeForbidden(TribeId t) const {
   return isValid() && getSquare()->isTribeForbidden(t);
 }
 
-const Tribe* Position::getForbiddenTribe() const {
+optional<TribeId> Position::getForbiddenTribe() const {
   if (isValid())
     return getSquare()->getForbiddenTribe();
   else

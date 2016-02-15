@@ -122,8 +122,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   friend class KeeperControlOverride;
 
   Level* getLevel();
-  const Tribe* getTribe() const;
-  Tribe* getTribe();
+  TribeId getTribeId() const;
   bool canSee(const Creature*) const;
   bool canSee(Position) const;
   void initialize();
@@ -150,7 +149,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   VillageInfo::Village getVillageInfo(const Collective* enemy) const;
   vector<BuildInfo> getBuildInfo() const;
-  static vector<BuildInfo> getBuildInfo(const Level*, const Tribe*);
+  static vector<BuildInfo> getBuildInfo(TribeId);
   static vector<BuildInfo> workshopInfo;
   static vector<BuildInfo> libraryInfo;
   static vector<BuildInfo> minionsInfo;

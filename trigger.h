@@ -29,7 +29,7 @@ class ViewObject;
 
 class Trigger {
   public:
-  virtual optional<ViewObject> getViewObject(const Tribe*) const;
+  virtual optional<ViewObject> getViewObject(TribeId) const;
   virtual ~Trigger();
 
   virtual void onCreatureEnter(Creature* c);
@@ -42,7 +42,7 @@ class Trigger {
   virtual double getLightEmission() const;
 
   static PTrigger getPortal(const ViewObject&, Position);
-  static PTrigger getTrap(const ViewObject&, Position, EffectType, Tribe*, bool alwaysVisible);
+  static PTrigger getTrap(const ViewObject&, Position, EffectType, TribeId, bool alwaysVisible);
   static PTrigger getTorch(Dir attachmentDir, Position);
   static PTrigger getMeteorShower(Creature*, double duration);
 

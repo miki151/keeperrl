@@ -1427,7 +1427,7 @@ class Stairs : public LevelMaker {
 
 class ShopMaker : public LevelMaker {
   public:
-  ShopMaker(ItemFactory _factory, Tribe* _tribe, int _numItems, BuildingInfo _building)
+  ShopMaker(ItemFactory _factory, TribeId _tribe, int _numItems, BuildingInfo _building)
       : factory(_factory), tribe(_tribe), numItems(_numItems), building(_building) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1448,7 +1448,7 @@ class ShopMaker : public LevelMaker {
 
   private:
   ItemFactory factory;
-  Tribe* tribe;
+  TribeId tribe;
   int numItems;
   BuildingInfo building;
 };
@@ -1592,7 +1592,7 @@ class AreaCorners : public LevelMaker {
 
 class CastleExit : public LevelMaker {
   public:
-  CastleExit(Tribe* _guardTribe, BuildingInfo _building, CreatureId _guardId)
+  CastleExit(TribeId _guardTribe, BuildingInfo _building, CreatureId _guardId)
     : guardTribe(_guardTribe), building(_building), guardId(_guardId) {}
   
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1615,7 +1615,7 @@ class CastleExit : public LevelMaker {
   }
 
   private:
-  Tribe* guardTribe;
+  TribeId guardTribe;
   BuildingInfo building;
   CreatureId guardId;
 };
@@ -2404,7 +2404,7 @@ found:
       boulders.push_back(pos);
     }
     builder->putSquare(start + Vec2(length + 1, 0), SquareId::FLOOR);
-    builder->putSquare(start + Vec2(length + 1, 0), {SquareId::TRIBE_DOOR, (Tribe*)(nullptr)});
+    builder->putSquare(start + Vec2(length + 1, 0), {SquareId::TRIBE_DOOR, TribeId::HOSTILE});
     for (Vec2 v : Rectangle::centered(start + Vec2(length + roomRadius + 2, 0), roomRadius))
       builder->putSquare(v, SquareId::FLOOR, SquareAttrib::SOKOBAN_PRIZE);
     set<int> visited;

@@ -42,7 +42,7 @@ class Tribe {
 
   SERIALIZATION_DECL(Tribe);
 
-  friend struct TribeSet;
+  static EnumMap<TribeId, PTribe> generateTribes();
 
   private:
   Tribe(const string& name, bool diplomatic);
@@ -58,29 +58,24 @@ class Tribe {
   string SERIAL(name);
 };
 
-struct TribeSet {
-  TribeSet();
-
-  PTribe SERIAL(monster);
-  PTribe SERIAL(pest);
-  PTribe SERIAL(wildlife);
-  PTribe SERIAL(human);
-  PTribe SERIAL(elven);
-  PTribe SERIAL(darkElven);
-  PTribe SERIAL(dwarven);
-  PTribe SERIAL(gnomish);
-  PTribe SERIAL(adventurer);
-  PTribe SERIAL(bandit);
-  PTribe SERIAL(killEveryone);
-  PTribe SERIAL(peaceful);
-  PTribe SERIAL(keeper);
-  PTribe SERIAL(lizard);
-  PTribe SERIAL(greenskins);
-  PTribe SERIAL(ants);
-
-  template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-};
+RICH_ENUM(TribeId,
+  MONSTER,
+  PEST,
+  WILDLIFE,
+  HUMAN,
+  ELF,
+  DARK_ELF,
+  DWARF,
+  GNOME,
+  ADVENTURER,
+  BANDIT,
+  HOSTILE,
+  PEACEFUL,
+  KEEPER,
+  LIZARD,
+  GREENSKIN,
+  ANT
+);
 
 
 #endif

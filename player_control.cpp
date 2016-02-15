@@ -153,10 +153,10 @@ PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, s
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo() const {
-  return getBuildInfo(getLevel(), getTribe());
+  return getBuildInfo(getTribeId());
 }
 
-vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level, const Tribe* tribe) {
+vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(TribeId tribe) {
   const CostInfo altarCost {ResourceId::STONE, 30};
   const string workshop = "Manufactories";
   vector<BuildInfo> buildInfo {
@@ -176,7 +176,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(const Level* level,
         "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
     BuildInfo({SquareId::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, {},
         "Stores gold."),
-    BuildInfo({Collective::getHatcheryType(const_cast<Tribe*>(tribe)),
+    BuildInfo({Collective::getHatcheryType(tribe),
         {ResourceId::WOOD, 20}, "Pigsty"}, {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
         "Increases minion population limit by up to " +
             toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 'p'),
@@ -250,7 +250,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::minionsInfo {
 
 vector<PlayerControl::RoomInfo> PlayerControl::getRoomInfo() {
   vector<RoomInfo> ret;
-  for (BuildInfo bInfo : getBuildInfo(nullptr, nullptr))
+  for (BuildInfo bInfo : getBuildInfo(TribeId::KEEPER))
     if (bInfo.buildType == BuildInfo::SQUARE)
       ret.push_back({bInfo.squareInfo.name, bInfo.help, bInfo.requirements});
   return ret;
@@ -298,7 +298,7 @@ static vector<string> getHints() {
 PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(col), hints(getHints()),
     visibilityMap(getModel()->getLevels()) {
   bool hotkeys[128] = {0};
-  for (BuildInfo info : getBuildInfo(level, nullptr)) {
+  for (BuildInfo info : getBuildInfo(TribeId::KEEPER)) {
     if (info.hotkey) {
       CHECK(!hotkeys[int(info.hotkey)]);
       hotkeys[int(info.hotkey)] = true;
@@ -704,7 +704,7 @@ optional<pair<ViewId, int>> PlayerControl::getCostObj(CostInfo cost) const {
 string PlayerControl::getMinionName(CreatureId id) const {
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = CreatureFactory::fromId(id, nullptr)->getName().bare();
+    names[id] = CreatureFactory::fromId(id, TribeId::MONSTER)->getName().bare();
   return names.at(id);
 }
 
@@ -825,7 +825,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   info.name = col->getShortName();
   info.tribeName = col->getTribeName();
   info.knownLocation = knownVillainLocations.count(col);
-  bool hostile = col->getTribe()->isEnemy(getTribe());
+  bool hostile = col->getTribe()->isEnemy(getCollective()->getTribe());
   if (col->isConquered())
     info.state = info.CONQUERED;
   else if (hostile) {
@@ -1106,7 +1106,7 @@ const MapMemory& PlayerControl::getMemory() const {
 }
 
 ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
-  for (const PlayerControl::BuildInfo& info : getBuildInfo(nullptr, nullptr))
+  for (const PlayerControl::BuildInfo& info : getBuildInfo(TribeId::KEEPER))
     if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type) {
       if (!armed)
         return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed " + Item::getTrapName(type) + " trap")
@@ -1129,7 +1129,7 @@ static const ViewObject& getConstructionObject(SquareType type) {
 
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
   if (canSee)
-    pos.getViewIndex(index, getCollective()->getTribe());
+    pos.getViewIndex(index, getTribeId());
   else
     index.setHiddenId(pos.getViewObject().id());
   if (const Creature* c = pos.getCreature())
@@ -1155,7 +1155,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHighlight(getCollective()->getMarkHighlight(position));
   if (getCollective()->hasPriorityTasks(position))
     index.setHighlight(HighlightType::PRIORITY_TASK);
-  if (position.isTribeForbidden(getCollective()->getTribe()))
+  if (position.isTribeForbidden(getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   if (rectSelection
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
@@ -1253,7 +1253,7 @@ void PlayerControl::controlSingle(const Creature* cr) {
 }
 
 bool PlayerControl::canBuildDoor(Position pos) const {
-  if (!pos.canConstruct({SquareId::TRIBE_DOOR, getTribe()}))
+  if (!pos.canConstruct({SquareId::TRIBE_DOOR, getTribeId()}))
     return false;
   Rectangle innerRect = getLevel()->getBounds().minusMargin(1);
   auto wallFun = [=](Position pos) {
@@ -1566,7 +1566,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     case BuildInfo::IMP:
         if (getCollective()->numResource(ResourceId::MANA) >= getImpCost() && selection == NONE && !rectangle) {
           selection = SELECT;
-          PCreature imp = CreatureFactory::fromId(CreatureId::IMP, getTribe(),
+          PCreature imp = CreatureFactory::fromId(CreatureId::IMP, getTribeId(),
               MonsterAIFactory::collective(getCollective()));
           for (Position v : concat(position.neighbors8(Random), {position}))
             if (v.canEnter(imp.get()) && (canSee(v) || getCollective()->getTerritory().contains(v))) {
@@ -1605,12 +1605,12 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
         break;
     case BuildInfo::FORBID_ZONE:
-        if (position.isTribeForbidden(getCollective()->getTribe()) && selection != SELECT) {
-          position.allowMovementForTribe(getCollective()->getTribe());
+        if (position.isTribeForbidden(getTribeId()) && selection != SELECT) {
+          position.allowMovementForTribe(getTribeId());
           selection = DESELECT;
         } 
-        else if (!position.isTribeForbidden(getCollective()->getTribe()) && selection != DESELECT) {
-          position.forbidMovementForTribe(getCollective()->getTribe());
+        else if (!position.isTribeForbidden(getTribeId()) && selection != DESELECT) {
+          position.forbidMovementForTribe(getTribeId());
           selection = SELECT;
         }
         break;
@@ -1882,12 +1882,8 @@ bool PlayerControl::canSee(Position pos) const {
   return false;
 }
 
-const Tribe* PlayerControl::getTribe() const {
-  return getCollective()->getTribe();
-}
-
-Tribe* PlayerControl::getTribe() {
-  return getCollective()->getTribe();
+TribeId PlayerControl::getTribeId() const {
+  return getCollective()->getTribeId();
 }
 
 bool PlayerControl::isEnemy(const Creature* c) const {
@@ -1988,7 +1984,7 @@ void PlayerControl::addAttack(const CollectiveAttack& attack) {
 
 void PlayerControl::updateSquareMemory(Position pos) {
   ViewIndex index;
-  pos.getViewIndex(index, getCollective()->getTribe());
+  pos.getViewIndex(index, getTribeId());
   memory->update(pos, index);
 }
 
@@ -2011,7 +2007,7 @@ void PlayerControl::updateVisibleCreatures() {
       if (canSee(c)) {
         if (isEnemy(c))
           visibleEnemies.push_back(c);
-        else if (c->getTribe() == getTribe())
+        else if (c->getTribeId() == getTribeId())
           visibleFriends.push_back(c);
       }
 }

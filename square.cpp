@@ -158,8 +158,8 @@ bool Square::construct(const SquareType& type) {
     return false;
 }
 
-bool Square::canDestroy(const Tribe* tribe) const {
-  return isDestroyable() && tribe != owner && !fire->isBurning();
+bool Square::canDestroy(TribeId tribe) const {
+  return isDestroyable() && owner != tribe && !fire->isBurning();
 }
 
 bool Square::isDestroyable() const {
@@ -176,7 +176,7 @@ void Square::destroy() {
 }
 
 bool Square::canDestroy(const Creature* c) const {
-  return canDestroy(c->getTribe())
+  return canDestroy(c->getTribeId())
     || (isDestroyable() && c->isInvincible()); // so that boulders destroy keeper doors
 }
 
@@ -326,8 +326,9 @@ void Square::onItemLands(vector<PItem> item, const Attack& attack, int remaining
 
 bool Square::canNavigate(const MovementType& type1) const {
   MovementType type(type1);
-  return canEnterEmpty(type) || (canDestroy(type.getTribe()) && !canEnterEmpty(type.setForced())) || 
-      (creature && creature->isStationary() && type.getTribe() != creature->getTribe());
+  return canEnterEmpty(type) || 
+    ((isDestroyable() && (!type.getTribe() || canDestroy(*type.getTribe()))) && !canEnterEmpty(type.setForced())) || 
+    (creature && creature->isStationary() && type.getTribe() != creature->getTribeId());
 }
 
 bool Square::canEnter(const MovementType& movement) const {
@@ -392,7 +393,7 @@ void Square::setBackground(const Square* square) {
   }
 }
 
-void Square::getViewIndex(ViewIndex& ret, const Tribe* tribe) const {
+void Square::getViewIndex(ViewIndex& ret, TribeId tribe) const {
   if (!updateViewIndex) {
     ret = *viewIndex;
     return;
@@ -553,35 +554,35 @@ bool Square::needsMemoryUpdate() const {
   return updateMemory;
 }
 
-void Square::addTraitForTribe(const Tribe* tribe, MovementTrait trait) {
+void Square::addTraitForTribe(TribeId tribe, MovementTrait trait) {
   movementSet->addTraitForTribe(tribe, trait);
   level->updateConnectivity(position);
 }
 
-void Square::removeTraitForTribe(const Tribe* tribe, MovementTrait trait) {
+void Square::removeTraitForTribe(TribeId tribe, MovementTrait trait) {
   movementSet->removeTraitForTribe(tribe, trait);
   level->updateConnectivity(position);
 }
 
-void Square::forbidMovementForTribe(const Tribe* tribe) {
+void Square::forbidMovementForTribe(TribeId tribe) {
   CHECK(!forbiddenTribe || forbiddenTribe == tribe);
   forbiddenTribe = tribe;
   level->updateConnectivity(position);
   setDirty();
 }
 
-void Square::allowMovementForTribe(const Tribe* tribe) {
+void Square::allowMovementForTribe(TribeId tribe) {
   CHECK(!forbiddenTribe || forbiddenTribe == tribe);
-  forbiddenTribe = nullptr;
+  forbiddenTribe = none;
   level->updateConnectivity(position);
   setDirty();
 }
 
-bool Square::isTribeForbidden(const Tribe* tribe) const {
+bool Square::isTribeForbidden(TribeId tribe) const {
   return forbiddenTribe == tribe;
 }
 
-const Tribe* Square::getForbiddenTribe() const {
+optional<TribeId> Square::getForbiddenTribe() const {
   return forbiddenTribe;
 }
 

@@ -1089,6 +1089,7 @@ class EnumMap {
   }
 
   EnumMap(const EnumMap& o) : elems(o.elems) {}
+  EnumMap(EnumMap&& o) : elems(std::move(o.elems)) {}
 
   bool operator == (const EnumMap<T, U>& other) const {
     return elems == other.elems;

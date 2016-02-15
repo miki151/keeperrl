@@ -204,20 +204,21 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
   return ret;
 };
 
-Collective::Collective(Level* l, const CollectiveConfig& cfg, Tribe* t, EnumMap<ResourceId, int> _credit,
+Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
     const optional<string>& n) 
   : credit(_credit), taskMap(l->getModel()->getLevels()), knownTiles(l->getModel()->getLevels()),
     control(CollectiveControl::idle(this)),
-    tribe(NOTNULL(t)), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
+    tribe(t), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
 }
 
 string Collective::getFullName() const {
+  string tribeName = capitalFirst(getTribe()->getName());
   if (name)
-    return capitalFirst(getTribe()->getName()) + " of " + *name;
+    return tribeName + " of " + *name;
   else if (getLeader() && getLeader()->getFirstName())
     return getLeader()->getNameAndTitle();
   else
-    return capitalFirst(getTribe()->getName());
+    return tribeName;
 }
 
 string Collective::getShortName() const {
@@ -308,7 +309,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
   if (!leader)
     leader = c;
-  CHECK(c->getTribe() == tribe);
+  CHECK(c->getTribeId() == tribe);
   CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
       c->getPosition().getLevel()->getName() << " " << c->getName().bare();
   creatures.push_back(c);
@@ -373,7 +374,7 @@ vector<Creature*> Collective::getRecruits() const {
 
 void Collective::recruit(Creature* c, Collective* to) {
   removeCreature(c);
-  c->setTribe(to->getTribe());
+  c->setTribe(to->getTribeId());
   to->addCreature(c, {MinionTrait::FIGHTER});
 }
 
@@ -420,12 +421,12 @@ const Level* Collective::getLevel() const {
   return level;
 }
 
-const Tribe* Collective::getTribe() const {
+TribeId Collective::getTribeId() const {
   return tribe;
 }
 
-Tribe* Collective::getTribe() {
-  return tribe;
+Tribe* Collective::getTribe() const {
+  return getLevel()->getModel()->getTribe(tribe);
 }
 
 const vector<Creature*>& Collective::getCreatures() const {
@@ -612,7 +613,7 @@ PTask Collective::getStandardTask(Creature* c) {
   return ret;
 }
 
-SquareType Collective::getHatcheryType(Tribe* tribe) {
+SquareType Collective::getHatcheryType(TribeId tribe) {
   return {SquareId::HATCHERY, CreatureFactory::SingleCreature(tribe, CreatureId::PIG)};
 }
 
@@ -911,7 +912,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   int groupSize = info.groupSize ? Random.get(*info.groupSize) : 1;
   groupSize = min(groupSize, getMaxPopulation() - getPopulationSize());
   for (int i : Range(groupSize))
-    creatures.push_back(CreatureFactory::fromId(info.id, getTribe(), MonsterAIFactory::collective(this)));
+    creatures.push_back(CreatureFactory::fromId(info.id, getTribeId(), MonsterAIFactory::collective(this)));
   if (!creatures[0]->getSpawnType() || info.ignoreSpawnType)
     return considerNonSpawnImmigrant(info, std::move(creatures));
   SpawnType spawnType = *creatures[0]->getSpawnType();
@@ -1114,7 +1115,7 @@ void Collective::considerBirths() {
         candidates.emplace_back(elem.id, elem.frequency);
     if (candidates.empty())
       return;
-    PCreature spawn = CreatureFactory::fromId(Random.choose(candidates), getTribe());
+    PCreature spawn = CreatureFactory::fromId(Random.choose(candidates), getTribeId());
     for (Position pos : c->getPosition().neighbors8(Random))
       if (pos.canEnter(spawn.get())) {
         control->addMessage(c->getName().a() + " gives birth to " + spawn->getName().a());
@@ -1185,7 +1186,7 @@ void Collective::considerSendingGuardian() {
         Random.roll(1.0 / info->probability)) {
       vector<Position> enemyPos = getEnemyPositions();
       if (enemyPos.size() >= info->minEnemies && getNumKilled(getTime() - 200) >= info->minVictims) {
-        PCreature guardian = CreatureFactory::fromId(info->creature, getTribe(),
+        PCreature guardian = CreatureFactory::fromId(info->creature, getTribeId(),
             MonsterAIFactory::singleTask(Task::chain(
                 Task::kill(this, Random.choose(enemyPos).getCreature()),
                 Task::goTo(Random.choose(territory->getExtended(10, 20))),
@@ -1246,7 +1247,7 @@ void Collective::tick(double time) {
       for (Creature* c : copyOf(surrendering)) {
         if (!c->isDead() && territory->contains(c->getPosition())) {
           Position pos = c->getPosition();
-          PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, getTribe(),
+          PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, getTribeId(),
               MonsterAIFactory::collective(this));
           if (pos.canEnterEmpty(prisoner.get())) {
             pos.globalMessage(c->getName().the() + " surrenders.");

@@ -105,7 +105,7 @@ struct ChestInfo {
 };
 
 class SquareType : public EnumVariant<SquareId, TYPES(DeityHabitat, const Creature*, CreatureId,
-      CreatureFactory::SingleCreature, ChestInfo, const Tribe*, StairInfo, StairKey, string),
+      CreatureFactory::SingleCreature, ChestInfo, TribeId, StairInfo, StairKey, string),
     ASSIGN(DeityHabitat, SquareId::ALTAR),
     ASSIGN(const Creature*, SquareId::CREATURE_ALTAR),
     ASSIGN(CreatureId,
@@ -119,7 +119,7 @@ class SquareType : public EnumVariant<SquareId, TYPES(DeityHabitat, const Creatu
         SquareId::COFFIN),
     ASSIGN(string,
         SquareId::NOTICE_BOARD),
-    ASSIGN(const Tribe*,
+    ASSIGN(TribeId,
         SquareId::TRIBE_DOOR,
         SquareId::BARRICADE),
     ASSIGN(StairKey,

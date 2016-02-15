@@ -13,13 +13,13 @@ void MovementType::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(MovementType);
 
-MovementType::MovementType(EnumSet<MovementTrait> t) : traits(t), tribe(nullptr) {
+MovementType::MovementType(EnumSet<MovementTrait> t) : traits(t) {
 }
 
-MovementType::MovementType(MovementTrait t) : traits({t}), tribe(nullptr) {
+MovementType::MovementType(MovementTrait t) : traits({t}) {
 }
 
-MovementType::MovementType(const Tribe* tr, EnumSet<MovementTrait> t) : traits(t), tribe(tr) {
+MovementType::MovementType(TribeId tr, EnumSet<MovementTrait> t) : traits(t), tribe(tr) {
 }
 
 bool MovementType::hasTrait(MovementTrait t) const {
@@ -41,7 +41,7 @@ namespace std {
   }
 }
 
-const Tribe* MovementType::getTribe() const {
+optional<TribeId> MovementType::getTribe() const {
   return tribe;
 }
 

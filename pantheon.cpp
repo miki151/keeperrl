@@ -209,7 +209,7 @@ Deity::Deity(const string& n, Gender g, const vector<EpithetId>& e, DeityHabitat
     name(n), gender(g), epithets(e), habitat(h) {
 }
 
-CreatureFactory Deity::getServant(Tribe* tribe) const {
+CreatureFactory Deity::getServant(TribeId tribe) const {
   CreatureId id = CreatureId(0);
   switch (habitat) {
     case DeityHabitat::AIR: id = CreatureId::AIR_ELEMENTAL; break;

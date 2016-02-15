@@ -35,12 +35,12 @@ class SquareFactory {
   
   SquareType getRandom(RandomGen&);
 
-  static SquareFactory roomFurniture(Tribe* rats);
-  static SquareFactory castleFurniture(Tribe* rats);
+  static SquareFactory roomFurniture(TribeId rats);
+  static SquareFactory castleFurniture(TribeId rats);
   static SquareFactory dungeonOutside();
   static SquareFactory castleOutside();
   static SquareFactory villageOutside(const string& boardText = "");
-  static SquareFactory cryptCoffins(Tribe* vampire);
+  static SquareFactory cryptCoffins(TribeId vampire);
   static SquareFactory single(SquareType);
 
   private:

@@ -120,7 +120,7 @@ static void deception(Creature* creature) {
   for (int i : Range(Random.get(3, 7))) {
     ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
     viewObject.setModifier(ViewObject::Modifier::ILLUSION);
-    creatures.push_back(PCreature(new Creature(viewObject, creature->getTribe(), CATTR(
+    creatures.push_back(PCreature(new Creature(viewObject, creature->getTribeId(), CATTR(
           c.viewId = ViewId::ROCK; //overriden anyway
           c.illusionViewObject = creature->getViewObject();
           c.illusionViewObject->removeModifier(ViewObject::Modifier::INVISIBLE);
@@ -149,7 +149,7 @@ static void leaveBody(Creature* creature) {
   string spiritName = creature->getFirstName().get_value_or(creature->getName().bare()) + "'s spirit";
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, spiritName);
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
-  PCreature spirit(new Creature(viewObject, creature->getTribe(), CATTR(
+  PCreature spirit(new Creature(viewObject, creature->getTribeId(), CATTR(
           c.viewId = ViewId::ROCK; //overriden anyway
           c.attr[AttrType::SPEED] = 100;
           c.weight = 1;
@@ -237,7 +237,7 @@ static void guardingBuilder(Creature* c) {
     Effect::applyToCreature(c, EffectType(EffectId::TELEPORT), EffectStrength::NORMAL);
   }
   if (c->getPosition() != pos) {
-    PCreature boulder = CreatureFactory::getGuardingBoulder(c->getTribe());
+    PCreature boulder = CreatureFactory::getGuardingBoulder(c->getTribeId());
     pos.addCreature(std::move(boulder));
   }
 }
@@ -245,7 +245,7 @@ static void guardingBuilder(Creature* c) {
 vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, int ttl, double delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(CreatureFactory::fromId(id, c->getTribe(), MonsterAIFactory::summoned(c, ttl)));
+    creatures.push_back(CreatureFactory::fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c, ttl)));
   return summonCreatures(c, 2, std::move(creatures), delay);
 }
 
@@ -430,7 +430,7 @@ static double getSummonDelay(CreatureId id) {
 static void summon(Creature* summoner, CreatureId id) {
   switch (id) {
     case CreatureId::AUTOMATON: {
-      CreatureFactory f = CreatureFactory::singleType(summoner->getModel()->getKillEveryoneTribe(), id);
+      CreatureFactory f = CreatureFactory::singleType(TribeId::HOSTILE, id);
       Effect::summon(summoner->getPosition(), f, Random.get(getSummonNumber(id)), getSummonTtl(id),
           getSummonDelay(id));
       break;
@@ -488,7 +488,7 @@ void Effect::applyDirected(Creature* c, Vec2 direction, const DirEffectType& typ
 
 static string getCreaturePluralName(CreatureId id) {
   static map<CreatureId, string> names;
-  return CreatureFactory::fromId(id, nullptr)->getName().plural();
+  return CreatureFactory::fromId(id, TribeId::HUMAN)->getName().plural();
 }
 
 static string getCreatureName(CreatureId id) {
@@ -496,14 +496,14 @@ static string getCreatureName(CreatureId id) {
     return getCreaturePluralName(id);
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = CreatureFactory::fromId(id, nullptr)->getName().bare();
+    names[id] = CreatureFactory::fromId(id, TribeId::HUMAN)->getName().bare();
   return names.at(id);
 }
 
 static string getCreatureAName(CreatureId id) {
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = CreatureFactory::fromId(id, nullptr)->getName().a();
+    names[id] = CreatureFactory::fromId(id, TribeId::HUMAN)->getName().a();
   return names.at(id);
 }
 

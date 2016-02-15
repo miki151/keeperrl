@@ -49,7 +49,7 @@ class Square : public Renderable {
     bool ticking;
     HeapAllocated<MovementSet> movementSet;
     bool canDestroy;
-    const Tribe* owner;
+    optional<TribeId> owner;
     optional<SoundId> applySound;
   };
   Square(const ViewObject&, Params);
@@ -204,7 +204,7 @@ class Square : public Renderable {
   bool sunlightBurns() const;
 
   void setBackground(const Square*);
-  void getViewIndex(ViewIndex&, const Tribe*) const;
+  void getViewIndex(ViewIndex&, TribeId) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
   bool itemBounces(Item* item, VisionId) const;
@@ -221,10 +221,10 @@ class Square : public Renderable {
   virtual double getApplyTime() const { return 1.0; }
   optional<SquareApplyType> getApplyType(const Creature*) const;
 
-  void forbidMovementForTribe(const Tribe*);
-  void allowMovementForTribe(const Tribe*);
-  bool isTribeForbidden(const Tribe*) const;
-  const Tribe* getForbiddenTribe() const;
+  void forbidMovementForTribe(TribeId);
+  void allowMovementForTribe(TribeId);
+  bool isTribeForbidden(TribeId) const;
+  optional<TribeId> getForbiddenTribe() const;
  
   virtual ~Square();
 
@@ -247,15 +247,15 @@ class Square : public Renderable {
   virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
   HeapAllocated<Inventory> SERIAL(inventory);
   string SERIAL(name);
-  void addTraitForTribe(const Tribe*, MovementTrait);
-  void removeTraitForTribe(const Tribe*, MovementTrait);
+  void addTraitForTribe(TribeId, MovementTrait);
+  void removeTraitForTribe(TribeId, MovementTrait);
   void setDirty();
 
   private:
   Item* getTopItem() const;
 
   /** Checks if this square can be destroyed by member of the tribe.*/
-  bool canDestroy(const Tribe*) const;
+  bool canDestroy(TribeId) const;
 
   Level* SERIAL(level) = nullptr;
   Vec2 SERIAL(position);
@@ -278,8 +278,8 @@ class Square : public Renderable {
   mutable bool SERIAL(updateViewIndex) = true;
   unique_ptr<ViewIndex> SERIAL(viewIndex);
   bool SERIAL(destroyable) = false;
-  const Tribe* SERIAL(owner);
-  const Tribe* SERIAL(forbiddenTribe) = nullptr;
+  optional<TribeId> SERIAL(owner);
+  optional<TribeId> SERIAL(forbiddenTribe);
   bool SERIAL(unavailable) = false;
   optional<SoundId> SERIAL(applySound);
 };

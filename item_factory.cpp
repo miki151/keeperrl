@@ -201,8 +201,8 @@ class Corpse : public Item {
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
           !position.getCoverInfo().covered && Random.roll(35)) {
         for (Position v : position.neighbors8(Random)) {
-          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE,
-              position.getModel()->getPestTribe(), MonsterAIFactory::scavengerBird(v));
+          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE, TribeId::PEST,
+                    MonsterAIFactory::scavengerBird(v));
           if (v.canEnter(vulture.get())) {
             v.addCreature(std::move(vulture));
             v.globalMessage("A vulture lands near " + getTheName());
@@ -313,7 +313,7 @@ class TrapItem : public Item {
   virtual void applySpecial(Creature* c) override {
     if (!alwaysVisible)
       c->you(MsgType::SET_UP_TRAP, "");
-    c->getPosition().addTrigger(Trigger::getTrap(trapObject, c->getPosition(), effect, c->getTribe(),
+    c->getPosition().addTrigger(Trigger::getTrap(trapObject, c->getPosition(), effect, c->getTribeId(),
           alwaysVisible));
     discarded = true;
   }

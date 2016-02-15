@@ -150,53 +150,53 @@ RICH_ENUM(CreatureId,
 class CreatureFactory {
   public:
   struct SingleCreature {
-    SingleCreature(Tribe*, CreatureId);
+    SingleCreature(TribeId, CreatureId);
     CreatureId SERIAL(id);
-    Tribe* SERIAL(tribe);
+    TribeId SERIAL(tribe);
     bool operator == (const SingleCreature&) const;
     SERIALIZATION_DECL(SingleCreature);
   };
   CreatureFactory(const SingleCreature&);
 
-  static PCreature fromId(CreatureId, Tribe*, const MonsterAIFactory&);
-  static PCreature fromId(CreatureId, Tribe*);
+  static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
+  static PCreature fromId(CreatureId, TribeId);
   static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
-  static CreatureFactory humanVillage(Tribe*);
-  static CreatureFactory humanPeaceful(Tribe*);
-  static CreatureFactory splashHeroes(Tribe*);
-  static CreatureFactory splashLeader(Tribe*);
-  static CreatureFactory splashMonsters(Tribe*);
-  static CreatureFactory koboldVillage(Tribe*);
-  static CreatureFactory gnomeVillage(Tribe*);
-  static CreatureFactory gnomeEntrance(Tribe*);
-  static CreatureFactory humanCastle(Tribe*);
-  static CreatureFactory elvenVillage(Tribe*);
-  static CreatureFactory darkElfVillage(Tribe*);
-  static CreatureFactory darkElfEntrance(Tribe*);
-  static CreatureFactory forrest(Tribe*);
-  static CreatureFactory crypt(Tribe*);
-  static SingleCreature coffins(Tribe*);
-  static CreatureFactory dwarfTown(Tribe*);
-  static CreatureFactory antNest(Tribe*);
-  static CreatureFactory vikingTown(Tribe*);
-  static CreatureFactory lizardTown(Tribe*);
-  static CreatureFactory orcTown(Tribe*);
-  static CreatureFactory splash(Tribe*);
-  static CreatureFactory singleType(Tribe*, CreatureId);
-  static CreatureFactory pyramid(Tribe*, int level);
-  static CreatureFactory insects(Tribe* tribe);
-  static CreatureFactory lavaCreatures(Tribe* tribe);
-  static CreatureFactory waterCreatures(Tribe* tribe);
-  static CreatureFactory elementals(Tribe* tribe);
-  static CreatureFactory gnomishMines(Tribe* peaceful, Tribe* enemy, int level);
+  static CreatureFactory humanVillage(TribeId);
+  static CreatureFactory humanPeaceful(TribeId);
+  static CreatureFactory splashHeroes(TribeId);
+  static CreatureFactory splashLeader(TribeId);
+  static CreatureFactory splashMonsters(TribeId);
+  static CreatureFactory koboldVillage(TribeId);
+  static CreatureFactory gnomeVillage(TribeId);
+  static CreatureFactory gnomeEntrance(TribeId);
+  static CreatureFactory humanCastle(TribeId);
+  static CreatureFactory elvenVillage(TribeId);
+  static CreatureFactory darkElfVillage(TribeId);
+  static CreatureFactory darkElfEntrance(TribeId);
+  static CreatureFactory forrest(TribeId);
+  static CreatureFactory crypt(TribeId);
+  static SingleCreature coffins(TribeId);
+  static CreatureFactory dwarfTown(TribeId);
+  static CreatureFactory antNest(TribeId);
+  static CreatureFactory vikingTown(TribeId);
+  static CreatureFactory lizardTown(TribeId);
+  static CreatureFactory orcTown(TribeId);
+  static CreatureFactory splash(TribeId);
+  static CreatureFactory singleType(TribeId, CreatureId);
+  static CreatureFactory pyramid(TribeId, int level);
+  static CreatureFactory insects(TribeId tribe);
+  static CreatureFactory lavaCreatures(TribeId tribe);
+  static CreatureFactory waterCreatures(TribeId tribe);
+  static CreatureFactory elementals(TribeId tribe);
+  static CreatureFactory gnomishMines(TribeId peaceful, TribeId enemy, int level);
   
   PCreature random(const MonsterAIFactory&);
   PCreature random();
 
   CreatureFactory& increaseLevel(double);
 
-  static PCreature getShopkeeper(Location* shopArea, Tribe*);
-  static PCreature getGuardingBoulder(Tribe* tribe);
+  static PCreature getShopkeeper(Location* shopArea, TribeId);
+  static PCreature getGuardingBoulder(TribeId);
   static PCreature getGhost(Creature*);
 
   static PCreature addInventory(PCreature c, const vector<ItemType>& items);
@@ -209,17 +209,18 @@ class CreatureFactory {
   SERIALIZATION_DECL(CreatureFactory);
 
   private:
-  CreatureFactory(Tribe* tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
-      const vector<CreatureId>& unique = {}, EnumMap<CreatureId, Tribe*> overrides = {}, double levelIncrease = 0);
-  CreatureFactory(const vector<tuple<CreatureId, double, Tribe*>>& creatures,
+  CreatureFactory(TribeId tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
+      const vector<CreatureId>& unique = {}, EnumMap<CreatureId, optional<TribeId>> overrides = {},
+      double levelIncrease = 0);
+  CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& creatures,
       const vector<CreatureId>& unique = {}, double levelIncrease = 0);
-  static void initSplash(Tribe*);
-  Tribe* getTribeFor(CreatureId);
-  Tribe* SERIAL(tribe);
+  static void initSplash(TribeId);
+  TribeId getTribeFor(CreatureId);
+  optional<TribeId> SERIAL(tribe);
   vector<CreatureId> SERIAL(creatures);
   vector<double> SERIAL(weights);
   vector<CreatureId> SERIAL(unique);
-  EnumMap<CreatureId, Tribe*> SERIAL(tribeOverrides);
+  EnumMap<CreatureId, optional<TribeId>> SERIAL(tribeOverrides);
   double SERIAL(levelIncrease) = 0;
 };
 

@@ -18,8 +18,8 @@ class MovementSet {
   
   MovementSet& addTrait(MovementTrait);
   MovementSet& removeTrait(MovementTrait);
-  MovementSet& addTraitForTribe(const Tribe*, MovementTrait);
-  MovementSet& removeTraitForTribe(const Tribe*, MovementTrait);
+  MovementSet& addTraitForTribe(TribeId, MovementTrait);
+  MovementSet& removeTraitForTribe(TribeId, MovementTrait);
   MovementSet& addForcibleTrait(MovementTrait);
 
   void clear();
@@ -33,7 +33,7 @@ class MovementSet {
   typedef EnumSet<MovementTrait> TribeSet;
   TribeSet SERIAL(traits);
   TribeSet SERIAL(forcibleTraits);
-  optional<pair<const Tribe*, TribeSet>> SERIAL(tribeOverrides);
+  optional<pair<TribeId, TribeSet>> SERIAL(tribeOverrides);
 };
 
 

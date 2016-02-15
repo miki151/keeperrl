@@ -66,7 +66,7 @@ void Model::serialize(Archive& ar, const unsigned int version) {
     & SVAR(woodCount)
     & SVAR(statistics)
     & SVAR(spectator)
-    & SVAR(tribeSet)
+    & SVAR(tribes)
     & SVAR(gameIdentifier)
     & SVAR(gameDisplayName)
     & SVAR(finishCurrentMusic)
@@ -118,16 +118,8 @@ const Statistics& Model::getStatistics() const {
   return *statistics;
 }
 
-Tribe* Model::getPestTribe() {
-  return tribeSet->pest.get();
-}
-
-Tribe* Model::getKillEveryoneTribe() {
-  return tribeSet->killEveryone.get();
-}
-
-Tribe* Model::getPeacefulTribe() {
-  return tribeSet->peaceful.get();
+Tribe* Model::getTribe(TribeId id) const {
+  return tribes[id].get();
 }
 
 MusicType Model::getCurrentMusic() const {
@@ -337,8 +329,8 @@ Level* Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
   return levels.back().get();
 }
 
-Model::Model(View* v, const string& world, TribeSet&& tribes)
-  : tribeSet(std::move(tribes)), view(v), worldName(world), musicType(MusicType::PEACEFUL) {
+Model::Model(View* v, EnumMap<TribeId, PTribe>&& t, const string& world) : tribes(std::move(t)), view(v),
+    worldName(world), musicType(MusicType::PEACEFUL) {
   updateSunlightInfo();
   cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
       .build(this, LevelMaker::emptyLevel(Random).get(), 0);
@@ -350,7 +342,7 @@ Model::~Model() {
 PCreature Model::makePlayer(int handicap) {
   MapMemory* levelMemory = new MapMemory(getLevels());
   PCreature player = CreatureFactory::addInventory(
-      PCreature(new Creature(tribeSet->adventurer.get(),
+      PCreature(new Creature(TribeId::ADVENTURER,
       CATTR(
           c.viewId = ViewId::PLAYER;
           c.attr[AttrType::SPEED] = 100;

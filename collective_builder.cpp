@@ -5,7 +5,7 @@
 #include "creature.h"
 #include "entity_name.h"
 
-CollectiveBuilder::CollectiveBuilder(CollectiveConfig cfg, Tribe* t)
+CollectiveBuilder::CollectiveBuilder(CollectiveConfig cfg, TribeId t)
     : config(cfg), tribe(t) {
 }
 

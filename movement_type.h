@@ -16,9 +16,9 @@ class MovementType {
   public:
   MovementType(EnumSet<MovementTrait> = {});
   MovementType(MovementTrait);
-  MovementType(const Tribe*, EnumSet<MovementTrait> = {});
+  MovementType(TribeId, EnumSet<MovementTrait> = {});
   bool hasTrait(MovementTrait) const;
-  const Tribe* getTribe() const;
+  optional<TribeId> getTribe() const;
   MovementType& removeTrait(MovementTrait);
   MovementType& addTrait(MovementTrait);
   MovementType& setSunlightVulnerable(bool = true);
@@ -40,7 +40,7 @@ class MovementType {
   bool SERIAL(fireResistant) = false;
   bool SERIAL(forced) = false;
   EnumSet<MovementTrait> SERIAL(traits);
-  const Tribe* SERIAL(tribe);
+  optional<TribeId> SERIAL(tribe);
 };
 
 namespace std {

@@ -516,7 +516,7 @@ void Player::makeMove() {
     updateView = false;
     for (Position pos : getCreature()->getVisibleTiles()) {
       ViewIndex index;
-      pos.getViewIndex(index, getCreature()->getTribe());
+      pos.getViewIndex(index, getCreature()->getTribeId());
       levelMemory->update(pos, index);
     }
     MEASURE(
@@ -643,7 +643,7 @@ static string getForceMovementQuestion(Position pos, const Creature* creature) {
     return "The water is very deep, are you sure?";
   else if (pos.sunlightBurns() && creature->getMovementType().isSunlightVulnerable())
     return "Walk into the sunlight?";
-  else if (pos.isTribeForbidden(creature->getTribe()))
+  else if (pos.isTribeForbidden(creature->getTribeId()))
     return "Walk into the forbidden zone?";
   else
     return "Walk into the " + pos.getName() + "?";
@@ -789,13 +789,13 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   bool canSee = getCreature()->canSee(pos);
   Position position = getCreature()->getPosition().withCoord(pos);
   if (canSee)
-    position.getViewIndex(index, getCreature()->getTribe());
+    position.getViewIndex(index, getCreature()->getTribeId());
   else
     index.setHiddenId(position.getViewObject().id());
   if (!canSee)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
-  if (position.isTribeForbidden(getCreature()->getTribe()))
+  if (position.isTribeForbidden(getCreature()->getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   if (const Creature* c = position.getCreature()) {
     if (getCreature()->canSee(c) || c == getCreature()) {

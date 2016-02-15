@@ -272,8 +272,7 @@ class Tree : public Square {
       getLevel()->getModel()->addWoodCount(numWood);
       int numCut = getLevel()->getModel()->getWoodCount();
       if (numCut > 1500 && Random.roll(max(150, (3000 - numCut) / 5))) {
-        CreatureFactory f = CreatureFactory::singleType(
-            getLevel()->getModel()->getKillEveryoneTribe(), creature);
+        CreatureFactory f = CreatureFactory::singleType(TribeId::HOSTILE, creature);
         Effect::summon(getPosition2(), f, 1, 100000);
       }
     }
@@ -333,12 +332,10 @@ class Door : public Square {
 class TribeDoor : public Door {
   public:
 
-  TribeDoor(const ViewObject& object, const Tribe* t, int destStrength, Square::Params params)
+  TribeDoor(const ViewObject& object, TribeId t, int destStrength, Square::Params params)
     : Door(object, CONSTRUCT(Square::Params,
           c = params;
-          if (t)
-            c.movementSet->addTraitForTribe(t, MovementTrait::WALK)
-                .removeTrait(MovementTrait::WALK); )),
+          c.movementSet->addTraitForTribe(t, MovementTrait::WALK).removeTrait(MovementTrait::WALK); )),
       tribe(t), destructionStrength(destStrength) {
   }
 
@@ -359,7 +356,6 @@ class TribeDoor : public Door {
   }
 
   virtual void lock() override {
-    CHECK(tribe);
     locked = !locked;
     if (locked) {
       modViewObject().setModifier(ViewObject::Modifier::LOCKED);
@@ -375,14 +371,14 @@ class TribeDoor : public Door {
   SERIALIZATION_CONSTRUCTOR(TribeDoor);
 
   private:
-  const Tribe* SERIAL(tribe);
+  TribeId SERIAL(tribe);
   int SERIAL(destructionStrength);
   bool SERIAL(locked) = false;
 };
 
 class Barricade : public Square {
   public:
-  Barricade(const ViewObject& object, const Tribe* t, int destStrength) : Square(object,
+  Barricade(const ViewObject& object, TribeId t, int destStrength) : Square(object,
       CONSTRUCT(Square::Params,
         c.name = "barricade";
         c.vision = VisionId::NORMAL;
@@ -1136,17 +1132,17 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.flamability = 1;));
     case SquareId::TRIBE_DOOR:
         return new TribeDoor(ViewObject(ViewId::DOOR, ViewLayer::FLOOR, "Door. Click to lock.")
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), s.get<const Tribe*>(), 100,
+            .setModifier(ViewObject::Modifier::CASTS_SHADOW), s.get<TribeId>(), 100,
           CONSTRUCT(Square::Params,
             c.name = "door";
             c.canHide = true;
             c.strength = 100;
             c.flamability = 1;
             c.canDestroy = true;
-            c.owner = s.get<const Tribe*>();));
+            c.owner = s.get<TribeId>();));
     case SquareId::BARRICADE:
         return new Barricade(ViewObject(ViewId::BARRICADE, ViewLayer::FLOOR, "Barricade")
-            .setModifier(ViewObject::Modifier::ROUND_SHADOW), s.get<const Tribe*>(), 200);
+            .setModifier(ViewObject::Modifier::ROUND_SHADOW), s.get<TribeId>(), 200);
     case SquareId::BORDER_GUARD:
         return new Square(ViewObject(ViewId::BORDER_GUARD, ViewLayer::FLOOR, "Wall"),
           CONSTRUCT(Square::Params, c.name = "wall";));
@@ -1168,13 +1164,13 @@ SquareFactory::SquareFactory(const vector<SquareType>& f, const vector<SquareTyp
     : first(f), squares(s), weights(w) {
 }
 
-SquareFactory SquareFactory::roomFurniture(Tribe* rats) {
+SquareFactory SquareFactory::roomFurniture(TribeId rats) {
   return SquareFactory({SquareId::BED, SquareId::TORCH,
       {SquareId::CHEST, ChestInfo(CreatureFactory::SingleCreature(rats, CreatureId::RAT), 0.2, 5)}},
       {2, 1, 2});
 }
 
-SquareFactory SquareFactory::castleFurniture(Tribe* rats) {
+SquareFactory SquareFactory::castleFurniture(TribeId rats) {
   return SquareFactory({SquareId::BED, SquareId::FOUNTAIN, SquareId::TORCH,
       {SquareId::CHEST, ChestInfo(CreatureFactory::SingleCreature(rats, CreatureId::RAT), 0.2, 5)}},
       {2, 1, 1, 2});
@@ -1195,7 +1191,7 @@ SquareFactory SquareFactory::villageOutside(const string& boardText) {
     return SquareFactory({{SquareId::WELL}}, {SquareId::TORCH}, {1});
 }
 
-SquareFactory SquareFactory::cryptCoffins(Tribe* vampire) {
+SquareFactory SquareFactory::cryptCoffins(TribeId vampire) {
   return SquareFactory(
       {{SquareId::COFFIN, ChestInfo(CreatureFactory::SingleCreature(vampire, CreatureId::VAMPIRE_LORD), 1, 1)}},
       {{SquareId::COFFIN, ChestInfo()}}, {1});

@@ -14,7 +14,7 @@ class Position;
 
 class CollectiveBuilder {
   public:
-  CollectiveBuilder(CollectiveConfig, Tribe*);
+  CollectiveBuilder(CollectiveConfig, TribeId);
   CollectiveBuilder& setLevel(Level*);
   CollectiveBuilder& setCredit(map<CollectiveResourceId, int>);
   CollectiveBuilder& addCreature(Creature*);
@@ -32,7 +32,7 @@ class CollectiveBuilder {
   };
   vector<CreatureInfo> creatures;
   CollectiveConfig config;
-  Tribe* tribe;
+  TribeId tribe;
   map<CollectiveResourceId, int> credit;
   vector<Vec2> squares;
   optional<string> name;

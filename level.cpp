@@ -175,8 +175,8 @@ void Level::replaceSquare(Vec2 pos, PSquare square, bool storePrevious) {
   for (PTrigger& t : squares[pos]->removeTriggers())
     square->addTrigger(std::move(t));
   square->setBackground(squares[pos].get());
-  if (const Tribe* tribe = squares[pos]->getForbiddenTribe())
-    square->forbidMovementForTribe(tribe);
+  if (auto tribe = squares[pos]->getForbiddenTribe())
+    square->forbidMovementForTribe(*tribe);
   if (storePrevious)
     oldSquares[pos] = std::move(squares[pos]);
   squares[pos] = std::move(square);
@@ -541,6 +541,7 @@ int Level::getWidth() const {
 int Level::getHeight() const {
   return squares.getHeight();
 }
+
 const string& Level::getName() const {
   return name;
 }

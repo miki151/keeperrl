@@ -91,7 +91,7 @@ SERIALIZABLE(Creature);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Creature);
 
-Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes& attr,
+Creature::Creature(const ViewObject& object, TribeId t, const CreatureAttributes& attr,
     const ControllerFactory& f)
     : Renderable(object), attributes(attr), tribe(t), controller(f.get(this)) {
   for (auto id : ENUM_ALL(AttrType))
@@ -101,7 +101,7 @@ Creature::Creature(const ViewObject& object, Tribe* t, const CreatureAttributes&
   updateVision();    
 }
 
-Creature::Creature(Tribe* t, const CreatureAttributes& attr, const ControllerFactory& f)
+Creature::Creature(TribeId t, const CreatureAttributes& attr, const ControllerFactory& f)
     : Creature(ViewObject(*attr.viewId, ViewLayer::CREATURE, (*attr.name).bare()), t, attr, f) {
 }
 
@@ -1029,14 +1029,18 @@ double Creature::getInventoryWeight() const {
 }
 
 Tribe* Creature::getTribe() {
-  return tribe;
+  return getModel()->getTribe(tribe);
 }
 
 const Tribe* Creature::getTribe() const {
+  return getModel()->getTribe(tribe);
+}
+
+TribeId Creature::getTribeId() const {
   return tribe;
 }
 
-void Creature::setTribe(Tribe* t) {
+void Creature::setTribe(TribeId t) {
   tribe = t;
 }
 
@@ -1357,7 +1361,7 @@ bool Creature::takeDamage(const Attack& attack) {
   AttackType attackType = attack.getType();
   Creature* other = attack.getAttacker();
   if (other) {
-    if (!contains(privateEnemies, other) && (other->getTribe() != tribe || Random.roll(3)))
+    if (!contains(privateEnemies, other) && (other->tribe != tribe || Random.roll(3)))
       privateEnemies.push_back(other);
     if (!other->hasSkill(Skill::get(SkillId::STEALTH)))
       for (Creature* c : getVisibleCreatures())
@@ -2167,7 +2171,7 @@ int Creature::getRecruitmentCost() const {
 }
 
 MovementType Creature::getMovementType() const {
-  return MovementType(getTribe(), {
+  return MovementType(getTribeId(), {
       true,
       isAffected(LastingEffect::FLYING),
       hasSkill(Skill::get(SkillId::SWIMMING)),

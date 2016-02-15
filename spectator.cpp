@@ -17,7 +17,7 @@ const MapMemory& Spectator::getMemory() const {
 
 void Spectator::getViewIndex(Vec2 pos, ViewIndex& index) const {
   Position position = getLevel()->getPosition(pos);
-  position.getViewIndex(index, nullptr);
+  position.getViewIndex(index, TribeId::PEACEFUL);
   if (const Creature* c = position.getCreature())
     index.insert(c->getViewObject());
 }

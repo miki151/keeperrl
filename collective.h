@@ -53,8 +53,8 @@ class Collective : public TaskCallback {
   MoveInfo getMove(Creature*);
   void setControl(PCollectiveControl);
   void tick(double time);
-  const Tribe* getTribe() const;
-  Tribe* getTribe();
+  TribeId getTribeId() const;
+  Tribe* getTribe() const;
   double getStanding(const Deity*) const;
   Level* getLevel();
   const Level* getLevel() const;
@@ -155,7 +155,7 @@ class Collective : public TaskCallback {
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
   static void sortByEquipmentValue(vector<Item*>&);
-  static SquareType getHatcheryType(Tribe* tribe);
+  static SquareType getHatcheryType(TribeId);
 
   static vector<SquareType> getEquipmentStorageSquares();
   vector<pair<Item*, Position>> getTrapItems(TrapType, const vector<Position>&) const;
@@ -263,7 +263,7 @@ class Collective : public TaskCallback {
 
   private:
   friend class CollectiveBuilder;
-  Collective(Level*, const CollectiveConfig&, Tribe*, EnumMap<ResourceId, int> credit, const optional<string>& name);
+  Collective(Level*, const CollectiveConfig&, TribeId, EnumMap<ResourceId, int> credit, const optional<string>& name);
   void addCreatureInTerritory(PCreature, EnumSet<MinionTrait>);
   void updateEfficiency(Position, SquareType);
   int getPaymentAmount(const Creature*) const;
@@ -334,7 +334,7 @@ class Collective : public TaskCallback {
   EnumMap<MinionTrait, vector<Creature*>> SERIAL(byTrait);
   EnumMap<SpawnType, vector<Creature*>> SERIAL(bySpawnType);
   PCollectiveControl SERIAL(control);
-  Tribe* SERIAL(tribe) = nullptr;
+  TribeId SERIAL(tribe);
   map<const Deity*, double> SERIAL(deityStanding);
   Level* SERIAL(level) = nullptr;
   unordered_map<SquareType, set<Position>> SERIAL(mySquares);

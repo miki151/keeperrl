@@ -47,8 +47,8 @@ class Sound;
 
 class Creature : public Renderable, public UniqueEntity<Creature> {
   public:
-  Creature(Tribe*, const CreatureAttributes&, const ControllerFactory&);
-  Creature(const ViewObject&, Tribe*, const CreatureAttributes&, const ControllerFactory&);
+  Creature(TribeId, const CreatureAttributes&, const ControllerFactory&);
+  Creature(const ViewObject&, TribeId, const CreatureAttributes&, const ControllerFactory&);
   virtual ~Creature();
 
   static vector<vector<Creature*>> stack(const vector<Creature*>&);
@@ -108,7 +108,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   const Tribe* getTribe() const;
   Tribe* getTribe();
-  void setTribe(Tribe*);
+  TribeId getTribeId() const;
+  void setTribe(TribeId);
   bool isFriend(const Creature*) const;
   int getDebt(const Creature* debtor) const;
   vector<Item*> getGold(int num) const;
@@ -333,7 +334,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   HeapAllocated<Equipment> SERIAL(equipment);
   unique_ptr<LevelShortestPath> SERIAL(shortestPath);
   unordered_set<const Creature*> SERIAL(knownHiding);
-  Tribe* SERIAL(tribe);
+  TribeId SERIAL(tribe);
   double SERIAL(health) = 1;
   double SERIAL(morale) = 0;
   optional<double> SERIAL(deathTime);

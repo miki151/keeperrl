@@ -19,6 +19,7 @@
 #include "util.h"
 #include "stair_key.h"
 #include "position.h"
+#include "tribe.h"
 
 class PlayerControl;
 class Level;
@@ -127,9 +128,7 @@ class Model {
   void addWoodCount(int);
   int getWoodCount() const;
 
-  Tribe* getPestTribe();
-  Tribe* getKillEveryoneTribe();
-  Tribe* getPeacefulTribe();
+  Tribe* getTribe(TribeId) const;
 
   void onTechBookRead(Technology*);
   void onAlarm(Position);
@@ -145,7 +144,7 @@ class Model {
   vector<Level*> getLevels() const;
 
   private:
-  Model(View* view, const string& worldName, TribeSet&&);
+  Model(View* view, EnumMap<TribeId, PTribe>&&, const string& worldName);
 
   friend class ModelBuilder;
 
@@ -156,7 +155,7 @@ class Model {
   Level* buildLevel(LevelBuilder&&, PLevelMaker);
   Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
 
-  HeapAllocated<TribeSet> SERIAL(tribeSet);
+  EnumMap<TribeId, PTribe> SERIAL(tribes);
   vector<PLevel> SERIAL(levels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
