@@ -176,7 +176,7 @@ class Range {
 
   class Iter {
     public:
-    Iter(int ind, int min, int max);
+    Iter(int ind, int min, int max, int increment);
 
     int operator* () const;
     bool operator != (const Iter& other) const;
@@ -198,6 +198,7 @@ class Range {
   private:
   int SERIAL(start);
   int SERIAL(finish);
+  int SERIAL(increment) = 1;
 };
 
 class Rectangle {
@@ -273,7 +274,7 @@ Range All(const T& container) {
 
 template <class T>
 Range AllReverse(const T& container) {
-  return Range(container.size() - 1, -1);
+  return All(container).reverse();
 }
 
 template<typename T>
@@ -426,6 +427,11 @@ template <class T>
 class Table {
   public:
   Table(Table&& t) = default;
+
+  Table(const Table& t) : Table(t.bounds) {
+    for (int i : Range(bounds.w * bounds.h))
+      mem[i] = t.mem[i];
+  }
 
   Table(int x, int y, int w, int h) : bounds(x, y, x + w, y + h), mem(new T[w * h]) {
   }

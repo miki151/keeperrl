@@ -621,7 +621,9 @@ Range::Range(int a, int b) : start(a), finish(b) {
 Range::Range(int a) : Range(0, a) {}
 
 Range Range::reverse() {
-  return Range(finish - 1, start - 1);
+  Range r(finish - 1, start - 1);
+  r.increment = -1;
+  return r;
 }
 
 Range Range::shorten(int r) {
@@ -647,14 +649,17 @@ int Range::getEnd() const {
 }
 
 Range::Iter Range::begin() {
-  return Iter(start, start, finish);
+  if ((increment > 0 && start < finish) || (increment < 0 && start > finish))
+    return Iter(start, start, finish, increment);
+  else
+    return end();
 }
 
 Range::Iter Range::end() {
-  return Iter(finish, start, finish);
+  return Iter(finish, start, finish, increment);
 }
 
-Range::Iter::Iter(int i, int a, int b) : ind(i), min(a), max(b), increment(a < b ? 1 : -1) {}
+Range::Iter::Iter(int i, int a, int b, int inc) : ind(i), min(a), max(b), increment(inc) {}
 
 int Range::Iter::operator* () const {
   return ind;
@@ -673,7 +678,8 @@ const Range::Iter& Range::Iter::operator++ () {
 template <class Archive> 
 void Range::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(start)
-    & SVAR(finish);
+    & SVAR(finish)
+    & SVAR(increment);
 }
 
 SERIALIZABLE(Range);
