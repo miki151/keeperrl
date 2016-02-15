@@ -515,8 +515,8 @@ string Effect::getName(const EffectType& type) {
     case EffectId::PORTAL: return "magic portal";
     case EffectId::EMIT_POISON_GAS: return "poison gas";
     case EffectId::DESTROY_EQUIPMENT: return "destruction";
-    case EffectId::ENHANCE_WEAPON: return "weapon enchantement";
-    case EffectId::ENHANCE_ARMOR: return "armor enchantement";
+    case EffectId::ENHANCE_WEAPON: return "weapon enchantment";
+    case EffectId::ENHANCE_ARMOR: return "armor enchantment";
     case EffectId::SUMMON: return getCreatureName(type.get<CreatureId>());
     case EffectId::WORD_OF_POWER: return "power";
     case EffectId::AIR_BLAST: return "air blast";
