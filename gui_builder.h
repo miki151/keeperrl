@@ -28,6 +28,8 @@ class ListElem;
 struct HighscoreList;
 class Options;
 class MapGui;
+class CampaignAction;
+class Campaign;
 
 RICH_ENUM(CollectiveTab,
   BUILDINGS,
@@ -82,6 +84,8 @@ class GuiBuilder {
       const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos);
   PGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
       pair<ViewId, int> budget, const vector<ItemInfo>&, double* scrollPos);
+  PGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, optional<Vec2>& embarkPos);
+  PGuiElem drawCampaignGrid(const Campaign&, function<void(Vec2)> clickFun, optional<Vec2>& markedPos);
   PGuiElem drawCost(pair<ViewId, int>, ColorId = ColorId::WHITE);
   PGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<double>& scrollPos,
       bool& online);
@@ -103,7 +107,7 @@ class GuiBuilder {
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
   bool showMorale() const;
-  Rectangle getMenuPosition(MenuType);
+  Rectangle getMenuPosition(MenuType, int numElems);
   Rectangle getMinionMenuPosition();
   Rectangle getEquipmentMenuPosition(int height);
   Rectangle getTextInputPosition();

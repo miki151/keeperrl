@@ -214,7 +214,7 @@ void WindowView::reset() {
 }
 
 void WindowView::displayOldSplash() {
-  Rectangle menuPosition = guiBuilder.getMenuPosition(MenuType::MAIN_NO_TILES);
+  Rectangle menuPosition = guiBuilder.getMenuPosition(MenuType::MAIN_NO_TILES, 0);
   int margin = 10;
   renderer.drawImage(renderer.getSize().x / 2 - 415, menuPosition.getKY() + margin,
       gui.get(GuiFactory::TexId::SPLASH1));
@@ -811,6 +811,13 @@ optional<UniqueEntity<Item>::Id> WindowView::chooseTradeItem(const string& title
       Vec2(rightBarWidthCollective + 30, 80));
 }
 
+CampaignAction WindowView::prepareCampaign(Campaign& campaign) {
+  SyncQueue<CampaignAction> returnQueue;
+  optional<Vec2> embarkPos;
+  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, embarkPos),
+      Vec2(rightBarWidthCollective + 30, 80));
+}
+
 void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, Vec2 origin) {
   RenderLock lock(renderMutex);
   TempClockPause pause(clock);
@@ -836,10 +843,10 @@ void WindowView::presentHighscores(const vector<HighscoreList>& list) {
   bool online = false;
   vector<double> scrollPos(list.size(), 0);
   getBlockingGui(sem, guiBuilder.drawHighscores(list, sem, tabNum, scrollPos, online),
-      guiBuilder.getMenuPosition(MenuType::NORMAL).getTopLeft());
+      guiBuilder.getMenuPosition(MenuType::NORMAL, 0).getTopLeft());
 }
 
-PGuiElem WindowView::drawGameChoices(optional<GameTypeChoice>& choice,optional<GameTypeChoice>& index) {
+PGuiElem WindowView::drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index) {
   return gui.verticalAspect(
       gui.marginFit(
       gui.horizontalListFit(makeVec<PGuiElem>(
@@ -868,43 +875,36 @@ PGuiElem WindowView::drawGameChoices(optional<GameTypeChoice>& choice,optional<G
               ))), 0),
       gui.margins(gui.verticalListFit(makeVec<PGuiElem>(
           gui.stack(
-            gui.button([&] { choice = GameTypeChoice::LOAD;}),
-            gui.mainMenuLabelBg("Load game", 0.2),
-            gui.mouseHighlightGameChoice(gui.mainMenuLabel("Load game", 0.2), GameTypeChoice::LOAD, index)),
-          gui.stack(
-            gui.button([&] { choice = GameTypeChoice::BACK;}),
+            gui.button([&] { choice = optional<GameTypeChoice>(none);}),
             gui.mainMenuLabelBg("Go back", 0.2),
-            gui.mouseHighlightGameChoice(gui.mainMenuLabel("Go back", 0.2), GameTypeChoice::BACK, index)
-          )), 0), 0, 30, 0, 0),
+            gui.mouseHighlightGameChoice(gui.mainMenuLabel("Go back", 0.2), none, index)),
+          gui.empty()), 0), 0, 30, 0, 0),
       0.7, gui.TOP), 1);
 }
 
-GameTypeChoice WindowView::chooseGameType() {
+optional<GameTypeChoice> WindowView::chooseGameType() {
   if (!useTiles) {
     if (auto ind = chooseFromListInternal("", {
           ListElem("Choose your role:", ListElem::TITLE),
           "Keeper",
-          "Adventurer",
-          ListElem("Or simply:", ListElem::TITLE),
-          "Load game",
-          "Go back",
+          "Adventurer"
           },
         0, MenuType::MAIN, nullptr, none, none, {}))
       return (GameTypeChoice)(*ind);
     else
-      return GameTypeChoice::BACK;
+      return none;
   }
   RenderLock lock(renderMutex);
   uiLock = true;
   TempClockPause pause(clock);
-  SyncQueue<GameTypeChoice> returnQueue;
-  addReturnDialog<GameTypeChoice>(returnQueue, [=] ()-> GameTypeChoice {
-  optional<GameTypeChoice> choice;
+  SyncQueue<optional<GameTypeChoice>> returnQueue;
+  addReturnDialog<optional<GameTypeChoice>>(returnQueue, [=] ()-> optional<GameTypeChoice> {
+  optional<optional<GameTypeChoice>> choice;
   optional<GameTypeChoice> index = GameTypeChoice::KEEPER;
   PGuiElem stuff = drawGameChoices(choice, index);
   while (1) {
     refreshScreen(false);
-    stuff->setBounds(guiBuilder.getMenuPosition(MenuType::GAME_CHOICE));
+    stuff->setBounds(guiBuilder.getMenuPosition(MenuType::GAME_CHOICE, 0));
     stuff->render(renderer);
     renderer.drawAndClearBuffer();
     Event event;
@@ -931,34 +931,9 @@ GameTypeChoice WindowView::chooseGameType() {
               index = GameTypeChoice::KEEPER;
             break;
           case Keyboard::Numpad8:
-          case Keyboard::Up:
-            if (!index)
-              index = GameTypeChoice::KEEPER;
-            else
-              switch (*index) {
-                case GameTypeChoice::LOAD: index = GameTypeChoice::KEEPER; break;
-                case GameTypeChoice::BACK: index = GameTypeChoice::LOAD; break;
-                case GameTypeChoice::KEEPER: 
-                case GameTypeChoice::ADVENTURER: index = GameTypeChoice::BACK; break;
-                default: break;
-              }
-            break;
-          case Keyboard::Numpad2:
-          case Keyboard::Down:
-            if (!index)
-              index = GameTypeChoice::KEEPER;
-            else
-              switch (*index) {
-                case GameTypeChoice::LOAD: index = GameTypeChoice::BACK; break;
-                case GameTypeChoice::BACK: index = GameTypeChoice::KEEPER; break;
-                case GameTypeChoice::KEEPER: 
-                case GameTypeChoice::ADVENTURER: index = GameTypeChoice::LOAD; break;
-                default: break;
-              }
-            break;
           case Keyboard::Numpad5:
           case Keyboard::Return: if (index) return *index;
-          case Keyboard::Escape: return GameTypeChoice::BACK;
+          case Keyboard::Escape: return none;
           default: break;
         }
     }
@@ -1056,7 +1031,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
       }, true));
   while (1) {
     refreshScreen(false);
-    stuff->setBounds(guiBuilder.getMenuPosition(menuType));
+    stuff->setBounds(guiBuilder.getMenuPosition(menuType, options.size()));
     stuff->render(renderer);
     renderer.drawAndClearBuffer();
     Event event;

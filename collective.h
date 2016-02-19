@@ -57,6 +57,7 @@ class Collective : public TaskCallback {
   Tribe* getTribe() const;
   double getStanding(const Deity*) const;
   Level* getLevel();
+  Game* getGame() const;
   const Level* getLevel() const;
   double getTime() const;
   void update(Creature*);
@@ -67,6 +68,9 @@ class Collective : public TaskCallback {
   void banishCreature(Creature*);
   bool wasBanished(const Creature*) const;
   void ownItem(const Creature*, const Item*);
+  void setVillainType(VillainType);
+  optional<VillainType> getVillainType() const;
+  CollectiveControl* getControl() const;
 
   typedef CollectiveWarning Warning;
   typedef CollectiveResourceId ResourceId;
@@ -382,6 +386,7 @@ class Collective : public TaskCallback {
   vector<Creature*> SERIAL(deadCreatures);
   optional<double> SERIAL(spawnGhosts);
   Creature* SERIAL(lastGuardian) = nullptr;
+  optional<VillainType> SERIAL(villainType);
 };
 
 #endif

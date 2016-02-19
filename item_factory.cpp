@@ -25,7 +25,7 @@
 #include "view_object.h"
 #include "view_id.h"
 #include "trigger.h"
-#include "model.h"
+#include "game.h"
 #include "creature.h"
 #include "monster_ai.h"
 #include "name_generator.h"
@@ -291,7 +291,7 @@ class TechBook : public Item {
 
   virtual void applySpecial(Creature* c) override {
     if (!read || !!tech) {
-      c->getModel()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
+      c->getGame()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
       read = true;
     }
   }

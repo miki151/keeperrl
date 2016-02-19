@@ -1069,7 +1069,15 @@ PGuiElem GuiFactory::verticalAspect(PGuiElem elem, double ratio) {
 
 class CenterHoriz : public GuiLayout {
   public:
-  CenterHoriz(PGuiElem elem, int w) : GuiLayout(makeVec<PGuiElem>(std::move(elem))), width(w) {}
+  CenterHoriz(PGuiElem elem, int w = -1) : GuiLayout(makeVec<PGuiElem>(std::move(elem))),
+      width(w > -1 ? w : *elems[0]->getPreferredWidth()) {}
+
+  optional<int> getPreferredHeight() override {
+    if (auto height = elems[0]->getPreferredHeight())
+      return *height;
+    else
+      return none;
+  }
 
   virtual Rectangle getElemBounds(int num) override {
     int center = (getBounds().getPX() + getBounds().getKX()) / 2;
@@ -1335,26 +1343,27 @@ PGuiElem GuiFactory::empty() {
 
 class ViewObjectGui : public GuiElem {
   public:
-  ViewObjectGui(const ViewObject& obj) : object(obj) {}
-  ViewObjectGui(ViewId id) : object(id) {}
+  ViewObjectGui(const ViewObject& obj, double sc) : object(obj), scale(sc) {}
+  ViewObjectGui(ViewId id, double sc) : object(id), scale(sc) {}
   
   virtual void render(Renderer& renderer) override {
     if (ViewObject* obj = boost::get<ViewObject>(&object))
-      renderer.drawViewObject(getBounds().getTopLeft(), *obj);
+      renderer.drawViewObject(getBounds().getTopLeft(), *obj, true, scale);
     else
-      renderer.drawViewObject(getBounds().getTopLeft(), boost::get<ViewId>(object));
+      renderer.drawViewObject(getBounds().getTopLeft(), boost::get<ViewId>(object), true, scale);
   }
 
   private:
   variant<ViewObject, ViewId> object;
+  double scale;
 };
 
-PGuiElem GuiFactory::viewObject(const ViewObject& object) {
-  return PGuiElem(new ViewObjectGui(object));
+PGuiElem GuiFactory::viewObject(const ViewObject& object, double scale) {
+  return PGuiElem(new ViewObjectGui(object, scale));
 }
 
-PGuiElem GuiFactory::viewObject(ViewId id) {
-  return PGuiElem(new ViewObjectGui(id));
+PGuiElem GuiFactory::viewObject(ViewId id, double scale) {
+  return PGuiElem(new ViewObjectGui(id, scale));
 }
 
 class DragSource : public GuiElem {
@@ -1532,7 +1541,7 @@ PGuiElem GuiFactory::mouseHighlightClick(PGuiElem elem, int myIndex, int* highli
 
 class MouseHighlightGameChoice : public GuiLayout {
   public:
-  MouseHighlightGameChoice(PGuiElem h, GameTypeChoice my, optional<GameTypeChoice>& highlight)
+  MouseHighlightGameChoice(PGuiElem h, optional<GameTypeChoice> my, optional<GameTypeChoice>& highlight)
     : GuiLayout(makeVec<PGuiElem>(std::move(h))), myChoice(my), highlighted(highlight) {}
 
   virtual void onMouseGone() override {
@@ -1554,12 +1563,12 @@ class MouseHighlightGameChoice : public GuiLayout {
   }
 
   private:
-  GameTypeChoice myChoice;
+  optional<GameTypeChoice> myChoice;
   optional<GameTypeChoice>& highlighted;
 };
 
 PGuiElem GuiFactory::mouseHighlightGameChoice(PGuiElem elem,
-    GameTypeChoice my, optional<GameTypeChoice>& highlight) {
+    optional<GameTypeChoice> my, optional<GameTypeChoice>& highlight) {
   return PGuiElem(new MouseHighlightGameChoice(std::move(elem), my, highlight));
 }
 
@@ -2138,6 +2147,10 @@ PGuiElem GuiFactory::uiHighlight(function<Color()> c) {
 
 PGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {
   return conditional(uiHighlight(c), cond);
+}
+
+PGuiElem GuiFactory::rectangleHighlight() {
+  return rectangle(sf::Color(0, 0, 0, 0), colors[ColorId::WHITE]);
 }
 
 PGuiElem GuiFactory::sprite(TexId id, Alignment a, function<Color()> c) {

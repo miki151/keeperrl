@@ -7,6 +7,7 @@
 #include "item.h"
 #include "view_id.h"
 #include "location.h"
+#include "model.h"
 
 template <class Archive> 
 void Position::serialize(Archive& ar, const unsigned int version) {
@@ -31,6 +32,13 @@ Level* Position::getLevel() const {
 Model* Position::getModel() const {
   if (isValid())
     return level->getModel();
+  else
+    return nullptr;
+}
+
+Game* Position::getGame() const {
+  if (isValid())
+    return level->getModel()->getGame();
   else
     return nullptr;
 }

@@ -21,7 +21,7 @@
 #include "statistics.h"
 #include "effect.h"
 #include "view_object.h"
-#include "model.h"
+#include "game.h"
 #include "player_message.h"
 #include "fire.h"
 #include "item_attributes.h"
@@ -208,7 +208,7 @@ void Item::apply(Creature* c, bool noSound) {
 
 void Item::applySpecial(Creature* c) {
   if (attributes->itemClass == ItemClass::SCROLL)
-    c->getModel()->getStatistics().add(StatId::SCROLL_READ);
+    c->getGame()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->effect)
     Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL);
   if (attributes->uses > -1 && --attributes->uses == 0) {

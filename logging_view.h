@@ -60,6 +60,10 @@ class LoggingView : public View {
       delegate->addSound(s);
     }
 
+    virtual CampaignAction prepareCampaign(Campaign& c) override {
+      return delegate->prepareCampaign(c);
+    }
+
     virtual double getGameSpeed() override {
       return logAndGet(delegate->getGameSpeed(), LoggingToken::GET_GAME_SPEED);
     }
@@ -78,7 +82,7 @@ class LoggingView : public View {
           LoggingToken::CHOOSE_FROM_LIST);
     }
 
-    virtual GameTypeChoice chooseGameType() override {
+    virtual optional<GameTypeChoice> chooseGameType() override {
       return logAndGet(delegate->chooseGameType(), LoggingToken::CHOOSE_GAME_TYPE);
     }
 

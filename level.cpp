@@ -32,6 +32,8 @@
 #include "event.h"
 #include "bucket_map.h"
 #include "entity_name.h"
+#include "sunlight_info.h"
+#include "game.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -81,7 +83,6 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
     fieldOfView[vision] = FieldOfView(squares, vision);
   for (Vec2 pos : squares.getBounds())
     addLightSource(pos, squares[pos]->getLightEmission(), 1);
-  updateSunlightMovement();
 }
 
 int Level::getUniqueId() const {
@@ -226,14 +227,18 @@ Model* Level::getModel() {
   return model;
 }
 
+Game* Level::getGame() const {
+  return model->getGame();
+}
+
 bool Level::isInSunlight(Vec2 pos) const {
   return !coverInfo[pos].covered && lightCapAmount[pos] == 1 &&
-      model->getSunlightInfo().state == SunlightState::DAY;
+      getGame()->getSunlightInfo().state == SunlightState::DAY;
 }
 
 double Level::getLight(Vec2 pos) const {
   return max(0.0, min(coverInfo[pos].covered ? 1 : lightCapAmount[pos], lightAmount[pos] +
-        coverInfo[pos].sunlight * model->getSunlightInfo().lightAmount));
+        coverInfo[pos].sunlight * getGame()->getSunlightInfo().lightAmount));
 }
 
 vector<Position> Level::getLandingSquares(StairKey key) const {
@@ -330,8 +335,9 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
   }
 }
 
-void Level::killCreature(Creature* creature) {
+void Level::killCreature(Creature* creature, Creature* attacker) {
   eraseCreature(creature, creature->getPosition().getCoord());
+  getModel()->killCreature(creature, attacker);
 }
 
 const static int hearingRange = 30;

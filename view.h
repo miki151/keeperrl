@@ -31,6 +31,7 @@ class PlayerInfo;
 struct ItemInfo;
 struct CreatureInfo;
 class Sound;
+class Campaign;
 
 enum class SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING, AUTOSAVING };
 
@@ -71,9 +72,7 @@ class ListElem {
 enum class GameTypeChoice {
   KEEPER,
   ADVENTURER,
-  LOAD,
-  BACK,
-  QUICK_LEVEL
+  QUICK_LEVEL,
 };
 
 enum class MenuType {
@@ -94,6 +93,18 @@ struct HighscoreList {
     bool highlight;
   };
   vector<Elem> scores;
+};
+
+enum class CampaignActionId {
+  CANCEL,
+  INC_WIDTH,
+  INC_HEIGHT,
+  CHOOSE_SITE
+};
+class CampaignAction : public EnumVariant<CampaignActionId, TYPES(int, Vec2),
+  ASSIGN(int, CampaignActionId::INC_WIDTH, CampaignActionId::INC_HEIGHT),
+  ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE)> {
+    using EnumVariant::EnumVariant;
 };
 
 class View {
@@ -144,7 +155,7 @@ class View {
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, double* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
-  virtual GameTypeChoice chooseGameType() = 0;
+  virtual optional<GameTypeChoice> chooseGameType() = 0;
 
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(const string& message) = 0;
@@ -175,6 +186,8 @@ class View {
   virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) = 0;
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
+
+  virtual CampaignAction prepareCampaign(Campaign&) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;

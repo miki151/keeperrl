@@ -22,6 +22,7 @@
 #include "view.h"
 #include "options.h"
 #include "map_gui.h"
+#include "campaign.h"
 
 using sf::Color;
 using sf::String;
@@ -1361,7 +1362,7 @@ Rectangle GuiBuilder::getEquipmentMenuPosition(int height) {
   return Rectangle(origin, origin + Vec2(width, height)).intersection(Rectangle(Vec2(0, 0), renderer.getSize()));
 }
 
-Rectangle GuiBuilder::getMenuPosition(MenuType type) {
+Rectangle GuiBuilder::getMenuPosition(MenuType type, int numElems) {
   int windowWidth = 800;
   int windowHeight = 400;
   int ySpacing;
@@ -1376,7 +1377,7 @@ Rectangle GuiBuilder::getMenuPosition(MenuType type) {
       break;
     case MenuType::MAIN:
       windowWidth = 0.41 * renderer.getSize().y;
-      ySpacing = renderer.getSize().y / 3;
+      ySpacing = (1.0 + (5 - numElems) * 0.1) * renderer.getSize().y / 3;
       break;
     case MenuType::GAME_CHOICE:
       windowWidth = 0.41 * renderer.getSize().y;
@@ -1451,7 +1452,7 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
     if (!elem.getSecondColumn().empty())
       secColumnWidth = max(secColumnWidth, 80 + renderer.getTextLength(elem.getSecondColumn()));
   }
-  columnWidth = min(columnWidth, getMenuPosition(menuType).getW() - secColumnWidth - 140);
+  columnWidth = min(columnWidth, getMenuPosition(menuType, options.size()).getW() - secColumnWidth - 140);
   if (menuType == MenuType::MAIN)
     columnWidth = 1000000;
   for (int i : All(options)) {
@@ -1800,6 +1801,67 @@ PGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id
           15, 15, 15, 15)));
 }
 
+PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& campaign, function<void(Vec2)> clickFun,
+    optional<Vec2>& markedPos){
+  auto rows = gui.getListBuilder(48);
+  auto& sites = campaign.getSites();
+  for (int y : sites.getBounds().getYRange()) {
+    auto columns = gui.getListBuilder(48);
+    for (int x : sites.getBounds().getXRange())
+      columns.addElem(gui.viewObject(sites[x][y].viewId, 2));
+    rows.addElem(columns.buildHorizontalList());
+  }
+  auto rows2 = gui.getListBuilder(48);
+  for (int y : sites.getBounds().getYRange()) {
+    auto columns = gui.getListBuilder(48);
+    for (int x : sites.getBounds().getXRange())
+      if (sites[x][y].villain)
+        columns.addElem(gui.viewObject(sites[x][y].villain->viewId, 2));
+      else
+        columns.addElem(gui.stack(
+            gui.button([clickFun, x, y] { clickFun(Vec2(x, y)); }),
+            gui.conditional(gui.rectangleHighlight(),
+                [&markedPos, x, y] { return markedPos == Vec2(x, y);}),
+            gui.mouseHighlight2(gui.rectangleHighlight())));
+    rows2.addElem(columns.buildHorizontalList());
+  }
+  return gui.stack(rows.buildVerticalList(), rows2.buildVerticalList());
+}
+
+PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign,
+    optional<Vec2>& embarkPos) {
+  GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
+  lines.addElem(gui.centerHoriz(gui.label("Campaign setup")));
+  lines.addElem(     
+        gui.getListBuilder()
+        .addElemAuto(gui.label("World name: " + campaign.getWorldName()))
+        .addElem(gui.empty(), 30)
+        .addElemAuto(gui.stack(
+            gui.button([] {  }),
+            gui.labelHighlight("[change]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList());
+  lines.addElem(gui.label("Width: " + toString(campaign.getSites().getBounds().getW())));
+  lines.addElem(gui.label("Height: " + toString(campaign.getSites().getBounds().getH())));
+  lines.addElem(gui.empty(), 15);
+  lines.addElem(gui.centerHoriz(gui.label("Choose embark site:")));
+  lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign,
+        [&embarkPos] (Vec2 pos) { embarkPos = pos;}, embarkPos)));
+  lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
+        .addElemAuto(gui.conditional(
+            gui.stack(
+                gui.button([&] { queue.push({CampaignActionId::CHOOSE_SITE, *embarkPos}); }, {Keyboard::Escape}),
+                gui.labelHighlight("[confirm]", colors[ColorId::LIGHT_BLUE])),
+            gui.label("[confirm]", colors[ColorId::LIGHT_GRAY]),
+            [&] { return !!embarkPos; }))
+        .addElem(gui.empty(), 10)
+        .addElemAuto(
+            gui.stack(
+                gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
+                gui.labelHighlight("[cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
+  return gui.stack(
+      gui.preferredSize(500, 500),
+      gui.miniWindow(gui.margins(lines.buildVerticalList(), 15, 15, 15, 15)));
+}
+
 PGuiElem GuiBuilder::drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
     const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>& creatures, double* scrollPos) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
@@ -1882,7 +1944,7 @@ PGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
   PGuiElem onlineBut = gui.stack(
       gui.label("Online", [&online] { return colors[online ? ColorId::GREEN : ColorId::WHITE];}),
       gui.button([&online] { online = !online; }));
-  Vec2 size = getMenuPosition(MenuType::NORMAL).getSize();
+  Vec2 size = getMenuPosition(MenuType::NORMAL, 0).getSize();
   return gui.stack(makeVec<PGuiElem>(gui.preferredSize(size.x, size.y),
       gui.keyHandler([&tabNum, numTabs] { tabNum = (tabNum + 1) % numTabs; }, {{Keyboard::Right}}),
       gui.keyHandler([&tabNum, numTabs] { tabNum = (tabNum + numTabs - 1) % numTabs; }, {{Keyboard::Left}}),

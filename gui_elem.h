@@ -134,17 +134,17 @@ class GuiFactory {
       Renderer::FontId = Renderer::SYMBOL_FONT);
   PGuiElem labelUnicode(const String&, function<Color()>, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
-  PGuiElem viewObject(const ViewObject&);
-  PGuiElem viewObject(ViewId);
+  PGuiElem viewObject(const ViewObject&, double scale = 1);
+  PGuiElem viewObject(ViewId, double scale = 1);
   PGuiElem drawCustom(function<void(Renderer&, Rectangle)>);
   PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
-  PGuiElem centerHoriz(PGuiElem, int width);
+  PGuiElem centerHoriz(PGuiElem, int width = -1);
   PGuiElem onRenderedAction(function<void()>);
   PGuiElem mouseOverAction(function<void()> callback, function<void()> onLeaveCallback = nullptr);
   PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
   PGuiElem mouseHighlightClick(PGuiElem highlight, int myIndex, int* highlighted);
   PGuiElem mouseHighlight2(PGuiElem highlight);
-  PGuiElem mouseHighlightGameChoice(PGuiElem, GameTypeChoice my, optional<GameTypeChoice>& highlight);
+  PGuiElem mouseHighlightGameChoice(PGuiElem, optional<GameTypeChoice> my, optional<GameTypeChoice>& highlight);
   static int getHeldInitValue();
   PGuiElem scrollable(PGuiElem content, double* scrollPos = nullptr, int* held = nullptr);
   PGuiElem getScrollButton();
@@ -269,6 +269,7 @@ class GuiFactory {
   PGuiElem uiHighlightConditional(function<bool()>, Color = colors[ColorId::GREEN]);
   PGuiElem uiHighlight(Color = colors[ColorId::GREEN]);
   PGuiElem uiHighlight(function<Color()>);
+  PGuiElem rectangleHighlight();
 
   private:
 

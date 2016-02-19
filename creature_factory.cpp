@@ -26,7 +26,7 @@
 #include "view_id.h"
 #include "location.h"
 #include "creature.h"
-#include "model.h"
+#include "game.h"
 #include "name_generator.h"
 #include "player_message.h"
 #include "equipment.h"
@@ -94,15 +94,14 @@ class BoulderController : public Monster {
             if (!other->hasSkill(Skill::get(SkillId::DISARM_TRAPS))) {
               direction = v;
               stopped = false;
-              getCreature()->getModel()->onTrapTrigger(getCreature()->getPosition());
+              getCreature()->getGame()->onTrapTrigger(getCreature()->getPosition());
               getCreature()->monsterMessage(
                   PlayerMessage("The boulder starts rolling.", PlayerMessage::CRITICAL),
                   PlayerMessage("You hear a heavy boulder rolling.", PlayerMessage::CRITICAL));
               return;
             } else {
               other->you(MsgType::DISARM_TRAP, "");
-              getCreature()->getModel()->
-                onTrapDisarm(getCreature()->getPosition(), other);
+              getCreature()->getGame()->onTrapDisarm(getCreature()->getPosition(), other);
               getCreature()->die();
               return;
             }

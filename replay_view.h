@@ -58,7 +58,7 @@ class ReplayView : public View {
       return readValue<optional<int>>(LoggingToken::CHOOSE_FROM_LIST);
     }
 
-    virtual GameTypeChoice chooseGameType() override {
+    virtual optional<GameTypeChoice> chooseGameType() override {
       return readValue<GameTypeChoice>(LoggingToken::CHOOSE_GAME_TYPE);
     }
 
@@ -113,6 +113,10 @@ class ReplayView : public View {
     virtual void addSound(const Sound& s) override {
       if (delegate)
         delegate->addSound(s);
+    }
+
+    virtual CampaignAction prepareCampaign(Campaign& c) override {
+      return delegate->prepareCampaign(c);
     }
 
     virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {

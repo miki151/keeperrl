@@ -74,9 +74,6 @@ class Square : public Renderable {
   /** Returns radius of emitted light (0 if none).*/
   virtual double getLightEmission() const;
 
-  /** Sets the height of the square.*/
-  void setHeight(double height);
-
   /** Adds direction for auto-traveling. \paramname{dir} must point to next square on path.*/
   void addTravelDir(Vec2 dir);
 
@@ -265,7 +262,6 @@ class Square : public Renderable {
   optional<VisionId> SERIAL(vision);
   bool SERIAL(hide);
   int SERIAL(strength);
-  double SERIAL(height);
   vector<Vec2> SERIAL(travelDir);
   optional<StairKey> SERIAL(landingLink);
   HeapAllocated<Fire> SERIAL(fire);

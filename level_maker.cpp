@@ -2132,7 +2132,7 @@ LevelMaker* swamp(SettlementInfo info) {
 }
 
 PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreatures,
-    vector<SettlementInfo> settlements) {
+    vector<SettlementInfo> settlements, int width) {
   MakerQueue* queue = new MakerQueue();
   vector<SquareType> vegetationLow {
       getTreesType(SquareId::CANIF_TREE), getTreesType(SquareId::BUSH) };
@@ -2180,7 +2180,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
           break;
       case SettlementType::VAULT:
           queue = vaultMaker(settlement, false);
-          locations->setMaxDistance(startingPos, queue, 100);
+          locations->setMaxDistance(startingPos, queue, width / 3);
           break;
       case SettlementType::ISLAND_VAULT:
           queue = islandVaultMaker(random, settlement, false);
@@ -2223,18 +2223,18 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
     }
  /* for (int i : Range(random.get(1, 4)))
     locations->add(new Lake(), {20, 20}, Predicate::attrib(SquareAttrib::LOWLAND));*/
-  for (int i : Range(random.get(3, 6))) {
+/*  for (int i : Range(random.get(3, 6))) {
     locations->add(new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE), 
         {random.get(5, 30), random.get(5, 30)}, Predicate::type(SquareId::MOUNTAIN));
- //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
-  }
-  for (int i : Range(random.get(3, 5))) {
+  //  locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
+  }*/
+/*  for (int i : Range(random.get(3, 5))) {
     locations->add(new UniformBlob(SquareId::FLOOR, none), 
         {random.get(5, 12), random.get(5, 12)}, Predicate::type(SquareId::MOUNTAIN));
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
-  }
-  int maxDist = 35;
-  int maxDist2 = 80;
+  }*/
+  int maxDist = 1000;
+  int maxDist2 = 1000;
   addResources(random, locations, random.get(4, 6), 1, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE, startingPos);
   addResources(random, locations, random.get(3, 6), 2, 5, 10, maxDist, maxDist2, SquareId::STONE, startingPos);
   addResources(random, locations, random.get(7, 12), 4, 5, 10, maxDist, maxDist2, SquareId::IRON_ORE, startingPos);
@@ -2255,7 +2255,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
           Predicate::andPred(Predicate::canEnter({MovementTrait::WALK}),
           Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR)), SquareAttrib::CONNECTOR)));
   queue->addMaker(new Margin(mapBorder + locationMargin, locations2));
-  queue->addMaker(new Items(ItemFactory::mushrooms(), SquareId::GRASS, 30, 60));
+  queue->addMaker(new Items(ItemFactory::mushrooms(), SquareId::GRASS, width / 10, width / 5));
   queue->addMaker(new AddMapBorder(mapBorder));
   return PLevelMaker(new BorderGuard(queue));
 }

@@ -3,7 +3,7 @@
 
 #include "util.h"
 #include "gzstream.h"
-#include "model.h"
+#include "game.h"
 #include "file_sharing.h"
 
 class View;
@@ -12,6 +12,8 @@ class FileSharing;
 class Options;
 class Jukebox;
 class ListElem;
+class Campaign;
+class Model;
 
 class MainLoop {
   public:
@@ -33,8 +35,8 @@ class MainLoop {
 
   int getSaveVersion(const SaveFileInfo& save);
   void uploadFile(const string& path);
-  void saveUI(PModel& model, Model::GameType type, SplashType splashType);
-  void getSaveOptions(const vector<FileSharing::GameInfo>&, const vector<pair<Model::GameType, string>>&,
+  void saveUI(PGame&, Game::SaveType type, SplashType splashType);
+  void getSaveOptions(const vector<FileSharing::GameInfo>&, const vector<pair<Game::SaveType, string>>&,
       vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
 
   void getDownloadOptions(const vector<FileSharing::GameInfo>&, vector<ListElem>& options,
@@ -46,19 +48,21 @@ class MainLoop {
   void doWithSplash(SplashType, int totalProgress, function<void(ProgressMeter&)> fun,
     function<void()> cancelFun = nullptr);
 
-  void playModel(PModel, bool withMusic = true, bool noAutoSave = false);
+  PGame prepareCampaign(RandomGen&);
+  PGame prepareSingleMap(RandomGen&);
+  void playGame(PGame&&, bool withMusic, bool noAutoSave);
   void playGameChoice();
   void splashScreen();
   void showCredits(const string& path, View*);
-  void autosave(PModel&);
 
-  PModel keeperGame(RandomGen& random);
+  PModel keeperCampaign(RandomGen& random);
+  PModel keeperSingleMap(RandomGen& random);
   PModel quickGame(RandomGen& random);
-  PModel adventurerGame();
-  PModel loadModel(string file, bool erase);
-  PModel loadPrevious(bool erase);
-  string getSavePath(Model*, Model::GameType);
-  void eraseAutosave(Model*);
+  PGame adventurerGame();
+  PGame loadGame(string file, bool erase);
+  PGame loadPrevious(bool erase);
+  string getSavePath(PGame&, Game::SaveType);
+  void eraseAutosave(PGame&);
 
   bool downloadGame(const string& filename);
   static bool eraseSave(Options* options);

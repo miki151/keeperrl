@@ -23,6 +23,7 @@
 #include "item.h"
 #include "view_object.h"
 #include "view_id.h"
+#include "game.h"
 #include "model.h"
 #include "trigger.h"
 #include "monster_ai.h"
@@ -306,7 +307,7 @@ static void teleport(Creature* c) {
   Vec2 teleRadius(6, 6);
   Rectangle area(-enemyRadius, enemyRadius + Vec2(1, 1));
   int infinity = 10000;
-  PositionMap<int> weight(c->getModel()->getLevels(), infinity);
+  PositionMap<int> weight(c->getPosition().getModel()->getLevels(), infinity);
   queue<Position> q;
   for (Position v : c->getPosition().getRectangle(area))
     if (Creature *other = v.getCreature())
@@ -355,7 +356,7 @@ static void acid(Creature* c) {
 }
 
 static void alarm(Creature* c) {
-  c->getModel()->onAlarm(c->getPosition());
+  c->getGame()->onAlarm(c->getPosition());
 }
 
 static void teleEnemies(Creature* c) { // handled by Collective

@@ -44,6 +44,7 @@ class EntityName;
 class Gender;
 class SpellMap;
 class Sound;
+class Game;
 
 class Creature : public Renderable, public UniqueEntity<Creature> {
   public:
@@ -58,7 +59,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   double getTime() const;
   void setTime(double t);
   Level* getLevel() const;
-  Model* getModel() const;
+  Game* getGame() const;
   vector<const Creature*> getVisibleEnemies() const;
   vector<Position> getVisibleTiles() const;
   void setPosition(Position);

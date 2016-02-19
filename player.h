@@ -29,6 +29,7 @@ class Creature;
 class Item;
 class ListElem;
 struct ItemInfo;
+class Game;
 
 class Player : public Controller, public CreatureView {
   public:
@@ -74,7 +75,7 @@ class Player : public Controller, public CreatureView {
 
   MapMemory* SERIAL(levelMemory);
   void showHistory();
-  Model* getModel() const;
+  Game* getGame() const;
 
   private:
   REGISTER_HANDLER(ThrowEvent, const Level*, const Creature*, const Item*, const vector<Vec2>& trajectory);

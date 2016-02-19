@@ -81,7 +81,7 @@ class LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
 
   static PLevelMaker cryptLevel(RandomGen&, SettlementInfo);
-  static PLevelMaker topLevel(RandomGen&, CreatureFactory forrest, vector<SettlementInfo> village);
+  static PLevelMaker topLevel(RandomGen&, CreatureFactory forrest, vector<SettlementInfo> village, int width);
   static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo);
   static PLevelMaker splashLevel(CreatureFactory heroLeader, CreatureFactory heroes,
       CreatureFactory monsters, CreatureFactory imps, const string& splashPath);

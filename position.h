@@ -13,12 +13,14 @@ class SquareType;
 class MovementType;
 struct CoverInfo;
 class Attack;
+class Game;
 
 class Position {
   public:
   Position(Vec2, Level*);
   static vector<Position> getAll(Level*, Rectangle);
   Model* getModel() const;
+  Game* getGame() const;
   int dist8(const Position&) const;
   bool isSameLevel(const Position&) const;
   bool isSameLevel(const Level*) const;

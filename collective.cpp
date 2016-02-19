@@ -13,6 +13,7 @@
 #include "options.h"
 #include "trigger.h"
 #include "model.h"
+#include "game.h"
 #include "spell.h"
 #include "location.h"
 #include "view_id.h"
@@ -110,7 +111,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
     & SVAR(equipmentUpdates)
     & SVAR(deadCreatures)
     & SVAR(spawnGhosts)
-    & SVAR(lastGuardian);
+    & SVAR(lastGuardian)
+    & SVAR(villainType);
 }
 
 SERIALIZABLE(Collective);
@@ -237,6 +239,14 @@ string Collective::getTribeName() const {
     return getLeader()->getSpeciesName();
   else
     return "";
+}
+
+void Collective::setVillainType(VillainType t) {
+  villainType = t;
+}
+
+optional<VillainType> Collective::getVillainType() const {
+  return villainType;
 }
 
 Collective::~Collective() {
@@ -421,12 +431,20 @@ const Level* Collective::getLevel() const {
   return level;
 }
 
+Game* Collective::getGame() const {
+  return level->getModel()->getGame();
+}
+
+CollectiveControl* Collective::getControl() const {
+  return control.get();
+}
+
 TribeId Collective::getTribeId() const {
   return tribe;
 }
 
 Tribe* Collective::getTribe() const {
-  return getLevel()->getModel()->getTribe(tribe);
+  return getGame()->getTribe(tribe);
 }
 
 const vector<Creature*>& Collective::getCreatures() const {
@@ -500,13 +518,13 @@ bool Collective::isTaskGood(const Creature* c, MinionTask task, bool ignoreTaskL
   switch (task) {
     case MinionTask::CROPS:
     case MinionTask::EXPLORE:
-        return getLevel()->getModel()->getSunlightInfo().state == SunlightState::DAY;
+        return getGame()->getSunlightInfo().state == SunlightState::DAY;
     case MinionTask::SLEEP:
         if (!config->sleepOnlyAtNight())
           return true;
         // break skipped on purpose
     case MinionTask::EXPLORE_NOCTURNAL:
-        return getLevel()->getModel()->getSunlightInfo().state == SunlightState::NIGHT;
+        return getGame()->getSunlightInfo().state == SunlightState::NIGHT;
     default: return true;
   }
 }
@@ -992,7 +1010,7 @@ void Collective::addNewCreatureMessage(const vector<Creature*>& creatures) {
 }
 
 double Collective::getImmigrantChance(const ImmigrantInfo& info) {
-  if (info.limit && info.limit != getLevel()->getModel()->getSunlightInfo().state)
+  if (info.limit && info.limit != getGame()->getSunlightInfo().state)
     return 0;
   double result = 0;
   if (info.attractions.empty())
@@ -1356,7 +1374,7 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
     if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer))
       returnResource({ResourceId::PRISONER_HEAD, 1});
     if (victim == leader) {
-      getLevel()->getModel()->onKilledLeader(this, victim);
+      getGame()->onKilledLeader(this, victim);
       for (Creature* c : getCreatures(MinionTrait::SUMMONED)) // shortcut to get rid of summons when summonner dies
         c->disappear().perform(c);
     }
@@ -2218,11 +2236,11 @@ void Collective::onAppliedSquare(Position pos) {
           break;
       }
       if (items[0]->getClass() == ItemClass::WEAPON)
-        level->getModel()->getStatistics().add(StatId::WEAPON_PRODUCED);
+        getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
       if (items[0]->getClass() == ItemClass::ARMOR)
-        level->getModel()->getStatistics().add(StatId::ARMOR_PRODUCED);
+        getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
       if (items[0]->getClass() == ItemClass::POTION)
-        level->getModel()->getStatistics().add(StatId::POTION_PRODUCED);
+        getGame()->getStatistics().add(StatId::POTION_PRODUCED);
       addProducesMessage(c, items);
       pos.dropItems(std::move(items));
     }

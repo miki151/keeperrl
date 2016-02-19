@@ -23,7 +23,7 @@
 #include "view_object.h"
 #include "trigger.h"
 #include "progress_meter.h"
-#include "model.h"
+#include "game.h"
 #include "vision.h"
 #include "player_message.h"
 #include "square_type.h"
@@ -51,7 +51,6 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(vision)
     & SVAR(hide)
     & SVAR(strength)
-    & SVAR(height)
     & SVAR(travelDir)
     & SVAR(landingLink)
     & SVAR(fire)
@@ -134,11 +133,6 @@ double Square::getLightEmission() const {
   return sum;
 }
 
-void Square::setHeight(double h) {
-  modViewObject().setAttribute(ViewObject::Attribute::HEIGHT, h);
-  height = h;
-}
-
 void Square::addTravelDir(Vec2 dir) {
   if (!findElement(travelDir, dir))
     travelDir.push_back(dir);
@@ -170,8 +164,8 @@ void Square::destroy() {
   CHECK(isDestroyable());
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
-  level->getModel()->getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
-  level->getModel()->onSquareDestroyed(getPosition2());
+  level->getGame()->getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
+  level->getGame()->onSquareDestroyed(getPosition2());
   getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 
@@ -187,7 +181,7 @@ void Square::destroyBy(Creature* c) {
 void Square::burnOut() {
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
-  level->getModel()->onSquareDestroyed(getPosition2());
+  level->getGame()->onSquareDestroyed(getPosition2());
   getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 

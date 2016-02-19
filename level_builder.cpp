@@ -129,10 +129,8 @@ void LevelBuilder::setNoDiagonalPassing() {
 PLevel LevelBuilder::build(Model* m, LevelMaker* maker, int levelId) {
   CHECK(mapStack.empty());
   maker->make(this, squares.getBounds());
-  for (Vec2 v : heightMap.getBounds()) {
-    squares[v]->setHeight(heightMap[v]);
+  for (Vec2 v : squares.getBounds())
     squares[v]->dropItems(std::move(items[v]));
-  }
   PLevel l(new Level(std::move(squares), m, locations, entryMessage, name, std::move(coverInfo), levelId));
   for (pair<PCreature, Vec2>& c : creatures) {
     l->addCreature(c.second, std::move(c.first));

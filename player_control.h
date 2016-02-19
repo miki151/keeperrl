@@ -55,8 +55,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool isRetired() const;
   const Creature* getKeeper() const;
   Creature* getKeeper();
-  void addImp(Creature*);
-  void addKeeper(Creature*);
 
   void render(View*);
 
@@ -204,6 +202,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   const CollectiveTeams& getTeams() const;
   Model* getModel();
   const Model* getModel() const;
+  Game* getGame() const;
+  View* getView() const;
 
   mutable unique_ptr<MapMemory> SERIAL(memory);
   bool SERIAL(showWelcomeMsg) = true;

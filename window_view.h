@@ -63,7 +63,7 @@ class WindowView: public View {
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, double* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
-  virtual GameTypeChoice chooseGameType() override;
+  virtual optional<GameTypeChoice> chooseGameType() override;
   virtual optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
@@ -90,6 +90,7 @@ class WindowView: public View {
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
   virtual void addSound(const Sound&) override;
+  virtual CampaignAction prepareCampaign(Campaign&) override;
   
   private:
 
@@ -109,7 +110,7 @@ class WindowView: public View {
       vector<sf::Event::KeyEvent> shortCuts);
   optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
-  PGuiElem drawGameChoices(optional<GameTypeChoice>& choice, optional<GameTypeChoice>& index);
+  PGuiElem drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
   int lastGuiHash = 0;

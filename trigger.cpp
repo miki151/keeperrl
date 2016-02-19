@@ -23,7 +23,7 @@
 #include "view_id.h"
 #include "view_object.h"
 #include "item_factory.h"
-#include "model.h"
+#include "game.h"
 #include "attack.h"
 #include "player_message.h"
 #include "tribe.h"
@@ -84,15 +84,15 @@ class Portal : public Trigger {
   }
 
   Portal(const ViewObject& obj, Position position) : Trigger(obj, position) {
-    if (auto danglingPortal = position.getModel()->getDanglingPortal())
+    if (auto danglingPortal = position.getGame()->getDanglingPortal())
       if (Portal* previous = getOther(*danglingPortal)) {
         otherPortal = danglingPortal;
         previous->otherPortal = position;
-        position.getModel()->resetDanglingPortal();
+        position.getGame()->resetDanglingPortal();
         startTime = previous->startTime = -1;
         return;
       }
-    position.getModel()->setDanglingPortal(position);
+    position.getGame()->setDanglingPortal(position);
   }
 
   virtual void onCreatureEnter(Creature* c) override {
@@ -177,10 +177,10 @@ class Trap : public Trigger {
         if (!alwaysVisible)
           c->you(MsgType::TRIGGER_TRAP, "");
         Effect::applyToCreature(c, effect, EffectStrength::NORMAL);
-        position.getModel()->onTrapTrigger(c->getPosition());
+        position.getGame()->onTrapTrigger(c->getPosition());
       } else {
         c->you(MsgType::DISARM_TRAP, "");
-        position.getModel()->onTrapDisarm(c->getPosition(), c);
+        position.getGame()->onTrapDisarm(c->getPosition(), c);
       }
       c->getPosition().removeTrigger(this);
     }

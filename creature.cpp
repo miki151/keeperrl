@@ -21,7 +21,7 @@
 #include "ranged_weapon.h"
 #include "statistics.h"
 #include "options.h"
-#include "model.h"
+#include "game.h"
 #include "effect.h"
 #include "item_factory.h"
 #include "location.h"
@@ -156,7 +156,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
   return CreatureAction(this, [=] (Creature *c) {
     spell->addMessage(c);
     Effect::applyToCreature(c, spell->getEffectType(), EffectStrength::NORMAL);
-    getModel()->getStatistics().add(StatId::SPELL_CAST);
+    getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     c->addSound(spell->getSound());
@@ -174,7 +174,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     monsterMessage(getName().the() + " casts a spell");
     playerMessage("You cast " + spell->getName());
     Effect::applyDirected(c, dir, spell->getDirEffectType(), EffectStrength::NORMAL);
-    getModel()->getStatistics().add(StatId::SPELL_CAST);
+    getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     c->addSound(spell->getSound());
@@ -425,6 +425,10 @@ Level* Creature::getLevel() const {
   return getPosition().getLevel();
 }
 
+Game* Creature::getGame() const {
+  return getPosition().getGame();
+}
+
 Position Creature::getPosition() const {
   return position;
 }
@@ -585,8 +589,8 @@ CreatureAction Creature::equip(Item* item) const {
     playerMessage("You equip " + item->getTheName(false, isBlind()));
     monsterMessage(getName().the() + " equips " + item->getAName());
     item->onEquip(self);
-    if (Model* model = getModel())
-      model->onEquip(self, item);
+    if (Game* game = getGame())
+      game->onEquip(self, item);
     self->spendTime(1);
   });
 }
@@ -1029,11 +1033,11 @@ double Creature::getInventoryWeight() const {
 }
 
 Tribe* Creature::getTribe() {
-  return getModel()->getTribe(tribe);
+  return getGame()->getTribe(tribe);
 }
 
 const Tribe* Creature::getTribe() const {
-  return getModel()->getTribe(tribe);
+  return getGame()->getTribe(tribe);
 }
 
 TribeId Creature::getTribeId() const {
@@ -1085,10 +1089,6 @@ vector<Item*> Creature::getGold(int num) const {
 
 void Creature::setPosition(Position pos) {
   position = pos;
-}
-
-Model* Creature::getModel() const {
-  return getPosition().getModel();
 }
 
 double Creature::getTime() const {
@@ -1203,9 +1203,9 @@ void Creature::injureBodyPart(BodyPart part, bool drop) {
     return;
   if (drop) {
     if (contains({BodyPart::LEG, BodyPart::ARM, BodyPart::WING}, part))
-      getModel()->getStatistics().add(StatId::CHOPPED_LIMB);
+      getGame()->getStatistics().add(StatId::CHOPPED_LIMB);
     else if (part == BodyPart::HEAD)
-      getModel()->getStatistics().add(StatId::CHOPPED_HEAD);
+      getGame()->getStatistics().add(StatId::CHOPPED_HEAD);
     --attributes->bodyParts[part];
     ++attributes->lostBodyParts[part];
     if (attributes->injuredBodyParts[part] > attributes->bodyParts[part])
@@ -1272,7 +1272,7 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
   auto rAccuracy = [=] () { return Random.get(-accuracyVariance, accuracyVariance); };
   auto rDamage = [=] () { return Random.get(-damageVariance, damageVariance); };
   double timeSpent = 1;
-  getModel()->onAttack(other, c);
+  getGame()->onAttack(other, c);
   accuracy += rAccuracy() + rAccuracy();
   damage += rDamage() + rDamage();
   vector<string> attackAdjective;
@@ -1683,11 +1683,10 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
     }
   if (dropInventory && dCorpse && isCorporal())
     dropCorpse();
-  getLevel()->killCreature(this);
-  getModel()->killCreature(this, attacker);
+  getLevel()->killCreature(this, attacker);
   if (isInnocent())
-    getModel()->getStatistics().add(StatId::INNOCENT_KILLED);
-  getModel()->getStatistics().add(StatId::DEATH);
+    getGame()->getStatistics().add(StatId::INNOCENT_KILLED);
+  getGame()->getStatistics().add(StatId::DEATH);
   deathTime = getTime();
 }
 
@@ -1730,13 +1729,13 @@ CreatureAction Creature::torture(Creature* other) const {
       else
         other->bleed(1);
     }
-    getModel()->onTorture(other, this);
+    getGame()->onTorture(other, this);
     self->spendTime(1);
   });
 }
 
 void Creature::surrender(const Creature* to) {
-  getModel()->onSurrender(this, to);
+  getGame()->onSurrender(this, to);
 }
 
 CreatureAction Creature::give(Creature* whom, vector<Item*> items) {
@@ -1806,7 +1805,7 @@ CreatureAction Creature::whip(const Position& pos) const {
 void Creature::addSound(const Sound& sound1) const {
   Sound sound(sound1);
   sound.setPosition(getPosition());
-  getModel()->getView()->addSound(sound);
+  getGame()->getView()->addSound(sound);
 }
 
 CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const {

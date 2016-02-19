@@ -38,6 +38,7 @@ class Attack;
 class PlayerMessage;
 class CreatureBucketMap;
 class Position;
+class Game;
 
 RICH_ENUM(VisionId,
   ELF,
@@ -101,7 +102,7 @@ class Level {
   optional<Position> getStairsTo(const Level*) const;
 
   /** Removes the creature from \paramname{position} from the level and model. The creature object is retained.*/
-  void killCreature(Creature*);
+  void killCreature(Creature* victim, Creature* attacker);
 
   /** Recalculates visibility data assuming that \paramname{changedSquare} has changed
       its obstructing/non-obstructing attribute. */
@@ -196,6 +197,7 @@ class Level {
 
   const Model* getModel() const;
   Model* getModel();
+  Game* getGame() const;
 
   void addLightSource(Vec2, double radius);
   void removeLightSource(Vec2, double radius);
