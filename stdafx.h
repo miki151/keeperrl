@@ -27,7 +27,6 @@
 #include <cstring>
 #include <time.h>
 #include <cstdlib>
-#include <sys/time.h>
 #include <typeinfo>
 #include <unordered_set>
 #include <unordered_map>
@@ -36,6 +35,7 @@
 #include <stack>
 #include <stdexcept>
 #include <tuple>
+#include <numeric>
 
 // Use boost threads on OSX to use the main thread for rendering
 // and set a large stack size for the model thread.

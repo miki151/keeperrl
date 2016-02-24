@@ -167,18 +167,18 @@ void Model::calculateStairNavigation() {
     for (const Level* l2 : getLevels())
       if (l1 != l2)
         if (auto stairKey = getStairsBetween(l1, l2))
-          stairNavigation[{l1, l2}] = *stairKey;
+          stairNavigation[make_pair(l1, l2)] = *stairKey;
   for (const Level* li : getLevels())
     for (const Level* l1 : getLevels())
       if (li != l1)
         for (const Level* l2 : getLevels())
-          if (l2 != l1 && l2 != li && !stairNavigation.count({l1, l2}) && stairNavigation.count({li, l2}) &&
-              stairNavigation.count({l1, li}))
-            stairNavigation[{l1, l2}] = stairNavigation.at({l1, li});
+          if (l2 != l1 && l2 != li && !stairNavigation.count(make_pair(l1, l2)) && stairNavigation.count(make_pair(li, l2)) &&
+              stairNavigation.count(make_pair(l1, li)))
+            stairNavigation[make_pair(l1, l2)] = stairNavigation.at(make_pair(l1, li));
   for (const Level* l1 : getLevels())
     for (const Level* l2 : getLevels())
       if (l1 != l2)
-        CHECK(stairNavigation.count({l1, l2})) <<
+        CHECK(stairNavigation.count(make_pair(l1, l2))) <<
             "No stair path between levels " << l1->getName() << " " << l2->getName();
 }
 

@@ -35,7 +35,6 @@
 #include "spell.h"
 #include "window_view.h"
 #include "file_sharing.h"
-#include "stack_printer.h"
 #include "highscores.h"
 #include "main_loop.h"
 #include "dirent.h"
@@ -46,6 +45,10 @@
 #include "vision.h"
 #include "model_builder.h"
 #include "sound_library.h"
+
+#ifndef VSTUDIO
+#include "stack_printer.h"
+#endif
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -62,6 +65,7 @@ using namespace boost::archive;
 
 void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<bool>& initialized) {
   view->initialize();
+  options->setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
   initialized = true;
   while (!finished) {
     view->refreshView();
@@ -135,7 +139,9 @@ static void fail() {
 }
 
 int main(int argc, char* argv[]) {
+#ifndef VSTUDIO
   StackPrinter::initialize(argv[0], time(0));
+#endif
   std::set_terminate(fail);
   options_description flags("Flags");
   flags.add_options()
@@ -205,7 +211,6 @@ int main(int argc, char* argv[]) {
   if (vars.count("override_settings"))
     overrideSettings = vars["override_settings"].as<string>();
   Options options(userPath + "/options.txt", overrideSettings);
-  options.setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   Random.init(seed);
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);

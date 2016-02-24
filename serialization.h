@@ -152,25 +152,20 @@ inline void serialize(Archive& ar, unordered_map<T, U, H>& t, unsigned int file_
 //priority queue
 template<class Archive, class T, class U, class V>
 inline void save(Archive& ar, priority_queue<T, U, V> t, unsigned int file_version){
-  int count = t.size();
-  ar << BOOST_SERIALIZATION_NVP(count);
-  T array[count];
-  int cnt = 0;
+  vector<T> array;
   while (!t.empty()) {
-    array[cnt++] = t.top();
+    array.push_back(t.top());
     t.pop();
   }
-  ar << boost::serialization::make_array(array, count);
+  ar << BOOST_SERIALIZATION_NVP(array);
 }
 
 template<class Archive, class T, class U, class V>
 inline void load(Archive& ar, priority_queue<T, U, V>& t, unsigned int){
-  int count;
-  ar >> BOOST_SERIALIZATION_NVP(count);
-  T array[count];
-  ar >> boost::serialization::make_array(array, count);
-  for (int i = 0; i < count; ++i) {
-    t.push(std::move(array[i]));
+  vector<T> array;
+  ar >> BOOST_SERIALIZATION_NVP(array);
+  for (T& elem : array) {
+    t.push(std::move(elem));
   }
 }
 

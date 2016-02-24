@@ -1016,13 +1016,15 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter* meter, RandomGen& random, Mod
       }
     case ExtraLevelId::SOKOBAN:
       settlement.downStairs = {levelInfo.stairKey};
-      for (int i : Range(5000))
+      for (int i : Range(5000)) {
         try {
           return model->buildLevel(
               LevelBuilder(meter, random, 28, 14, "Sokoban"),
               LevelMaker::sokobanLevel(random, settlement));
         } catch (LevelGenException ex) {
+          Debug() << "Retrying";
         }
+      }
       throw LevelGenException();
   }
 }
@@ -1129,7 +1131,7 @@ void ModelBuilder::measureModelGen(int numTries, RandomGen& random, Options* opt
   int maxT = 0;
   int minT = 1000000;
   double sumT = 0;
-  for (int i : Range(numTries))
+  for (int i : Range(numTries)) {
     try {
       sf::Clock c;
       tryCampaignModel(nullptr, random, options, "");
@@ -1139,7 +1141,9 @@ void ModelBuilder::measureModelGen(int numTries, RandomGen& random, Options* opt
       minT = min(minT, millis);
       ++numSuccess;
     } catch (LevelGenException ex) {
+      Debug() << "Retrying";
     }
+  }
   std::cout << numSuccess << " / " << numTries << " gens successful.\nMinT: " << minT << "\nMaxT: " << maxT <<
       "\nAvgT: " << sumT / numSuccess << std::endl;
 }

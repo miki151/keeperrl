@@ -145,7 +145,7 @@ DragContainer& GuiFactory::getDragContainer() {
   return dragContainer;
 }
 
-PGuiElem GuiFactory::button(function<void(Rectangle)> fun, Event::KeyEvent hotkey, bool capture) {
+PGuiElem GuiFactory::buttonRect(function<void(Rectangle)> fun, Event::KeyEvent hotkey, bool capture) {
   return PGuiElem(new ButtonKey(fun, hotkey, capture));
 }
 
@@ -157,7 +157,7 @@ PGuiElem GuiFactory::button(function<void()> fun, Event::KeyEvent hotkey, bool c
   return PGuiElem(new ButtonKey([=](Rectangle) { fun(); }, hotkey, capture));
 }
 
-PGuiElem GuiFactory::button(function<void(Rectangle)> fun) {
+PGuiElem GuiFactory::buttonRect(function<void(Rectangle)> fun) {
   return PGuiElem(new Button(fun));
 }
 
@@ -433,8 +433,8 @@ PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hot
         }, width));
 }
 
-PGuiElem GuiFactory::label(function<string()> textFun, function<Color()> colorFun) {
-  auto width = [=] { return renderer.getTextLength(textFun()); };
+PGuiElem GuiFactory::labelFun(function<string()> textFun, function<Color()> colorFun) {
+  function<int()> width = [this, textFun] { return renderer.getTextLength(textFun()); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
@@ -443,7 +443,7 @@ PGuiElem GuiFactory::label(function<string()> textFun, function<Color()> colorFu
         }, width));
 }
 
-PGuiElem GuiFactory::label(function<string()> textFun, Color color) {
+PGuiElem GuiFactory::labelFun(function<string()> textFun, Color color) {
   auto width = [=] { return renderer.getTextLength(textFun()); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
@@ -1977,17 +1977,17 @@ PGuiElem GuiFactory::conditionalStopKeys(PGuiElem elem, function<bool()> f) {
   return PGuiElem(new ConditionalStopKeys(std::move(elem), [f](GuiElem*) { return f(); }));
 }
 
-PGuiElem GuiFactory::conditional(PGuiElem elem, function<bool(GuiElem*)> f) {
+PGuiElem GuiFactory::conditional2(PGuiElem elem, function<bool(GuiElem*)> f) {
   return PGuiElem(new Conditional(std::move(elem), f));
 }
 
-PGuiElem GuiFactory::conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> f) {
+PGuiElem GuiFactory::conditional2(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> f) {
   return stack(PGuiElem(new Conditional(std::move(elem), f)),
       PGuiElem(new Conditional(std::move(alter), [=] (GuiElem* e) { return !f(e);})));
 }
 
 PGuiElem GuiFactory::conditional(PGuiElem elem, PGuiElem alter, function<bool()> f) {
-  return conditional(std::move(elem), std::move(alter), [=] (GuiElem*) { return f(); });
+  return conditional(std::move(elem), std::move(alter), [=] { return f(); });
 }
 
 PGuiElem GuiFactory::scrollable(PGuiElem content, double* scrollPos, int* held) {
@@ -2000,7 +2000,7 @@ PGuiElem GuiFactory::scrollable(PGuiElem content, double* scrollPos, int* held) 
   PGuiElem bar(new ScrollBar(
         std::move(getScrollButton()), list, getScrollButtonSize(), scrollBarMargin, scrollPos, contentHeight, held));
   PGuiElem barButtons = getScrollbar();
-  barButtons = conditional(std::move(barButtons), [=] (GuiElem* e) {
+  barButtons = conditional2(std::move(barButtons), [=] (GuiElem* e) {
       return e->getBounds().getH() < contentHeight;});
   return maybeMargin(stack(std::move(barButtons), std::move(bar)),
         std::move(scrollable), scrollbarWidth, RIGHT,
