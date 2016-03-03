@@ -66,7 +66,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 Level::~Level() {}
 
 Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& message, const string& n,
-    Table<CoverInfo> covers, int id) 
+    Table<CoverInfo> covers, LevelId id) 
     : squares(std::move(s)), oldSquares(squares.getBounds()), locations(l), model(m), entryMessage(message),
       name(n), coverInfo(std::move(covers)), bucketMap(squares.getBounds().getW(), squares.getBounds().getH(),
       FieldOfView::sightRange), lightAmount(squares.getBounds(), 0), lightCapAmount(squares.getBounds(), 1),
@@ -85,7 +85,7 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& mess
     addLightSource(pos, squares[pos]->getLightEmission(), 1);
 }
 
-int Level::getUniqueId() const {
+LevelId Level::getUniqueId() const {
   return levelId;
 }
 

@@ -491,7 +491,7 @@ const vector<Collective*>& Game::getCollectives() const {
 }
 
 PCreature Game::makeAdventurer(int handicap) {
-  MapMemory* levelMemory = new MapMemory(models[0]->getLevels());
+  MapMemory* levelMemory = new MapMemory();
   PCreature player = CreatureFactory::addInventory(
       PCreature(new Creature(TribeId::ADVENTURER,
       CATTR(

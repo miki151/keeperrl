@@ -12,7 +12,6 @@ class Creature;
 
 class TaskMap {
   public:
-  TaskMap(const vector<Level*>&);
   Task* addTask(PTask, const Creature*);
   Task* addPriorityTask(PTask, const Creature*);
   Task* addTask(PTask, Position, MinionTrait required = MinionTrait::WORKER);
@@ -40,7 +39,8 @@ class TaskMap {
   Task* getClosestTask(Creature* c, MinionTrait);
   const map<Task*, CostInfo>& getCompletionCosts() const;
 
-  SERIALIZATION_DECL(TaskMap);
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
 
   private:
   BiMap<const Creature*, Task*> SERIAL(creatureMap);

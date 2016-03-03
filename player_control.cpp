@@ -296,8 +296,7 @@ static vector<string> getHints() {
   };
 }
 
-PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(col), hints(getHints()),
-    visibilityMap(getModel()->getLevels()) {
+PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(col), hints(getHints()) {
   bool hotkeys[128] = {0};
   for (BuildInfo info : getBuildInfo(TribeId::KEEPER)) {
     if (info.hotkey) {
@@ -311,7 +310,7 @@ PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(
       hotkeys[int(info.button.hotkey)] = true;
     }
   }
-  memory.reset(new MapMemory(getModel()->getLevels()));
+  memory.reset(new MapMemory());
   for (Position v : level->getAllPositions())
     if (contains({"gold ore", "iron ore", "granite"}, v.getName()))
       memory->addObject(v, v.getViewObject());

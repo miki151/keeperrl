@@ -9,12 +9,12 @@ class Level;
 
 class VisibilityMap {
   public:
-  VisibilityMap(const vector<Level*>&);
   void update(const Creature*, vector<Position> visibleTiles);
   void remove(const Creature*);
   bool isVisible(Position) const;
 
-  SERIALIZATION_DECL(VisibilityMap);
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
 
   private:
   map<const Creature*, vector<Position>> SERIAL(lastUpdates);

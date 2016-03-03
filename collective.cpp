@@ -208,8 +208,7 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
 
 Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
     const optional<string>& n) 
-  : credit(_credit), taskMap(l->getModel()->getLevels()), knownTiles(l->getModel()->getLevels()),
-    control(CollectiveControl::idle(this)),
+  : credit(_credit), control(CollectiveControl::idle(this)),
     tribe(t), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
 }
 

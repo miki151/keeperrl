@@ -104,6 +104,8 @@ class Level {
   /** Removes the creature from \paramname{position} from the level and model. The creature object is retained.*/
   void killCreature(Creature* victim, Creature* attacker);
 
+  void removeCreature(Creature*);
+
   /** Recalculates visibility data assuming that \paramname{changedSquare} has changed
       its obstructing/non-obstructing attribute. */
   void updateVisibility(Vec2 changedSquare);
@@ -216,7 +218,7 @@ class Level {
   void updateConnectivity(Vec2);
   void updateSunlightMovement();
 
-  int getUniqueId() const;
+  LevelId getUniqueId() const;
 
   /** Class used to initialize a level object.*/
 
@@ -252,14 +254,14 @@ class Level {
   
   friend class LevelBuilder;
   Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name,
-      Table<CoverInfo> coverInfo, int levelId);
+      Table<CoverInfo> coverInfo, LevelId);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
   FieldOfView& getFieldOfView(VisionId vision) const;
   vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
   bool isWithinVision(Vec2 from, Vec2 to, VisionId) const;
-  int SERIAL(levelId) = 0;
+  LevelId SERIAL(levelId) = 0;
   bool SERIAL(noDiagonalPassing) = false;
 };
 

@@ -5,58 +5,78 @@
 #include "view_index.h"
 
 template <class T>
-PositionMap<T>::PositionMap(const vector<Level*>& levels) : PositionMap(levels, T()) {
+PositionMap<T>::PositionMap(const T& def) : defaultVal(def) {
 }
 
 template <class T>
-PositionMap<T>::PositionMap(const vector<Level*>& levels, const T& def) {
-  for (Level* l : levels) {
-    auto id = l->getUniqueId();
-    if (id >= tables.size()) {
-      tables.resize(id + 1);
-      outliers.resize(id + 1);
-    }
-    tables[id] = Table<T>(l->getBounds().minusMargin(-20), def);
+const T& PositionMap<T>::get(Position pos) const {
+  LevelId levelId = pos.getLevel()->getUniqueId();
+  try {
+    const Table<T>& table = tables.at(levelId);
+    if (pos.getCoord().inRectangle(table.getBounds()))
+      return table[pos.getCoord()];
+    else
+      return outliers.at(levelId).at(pos.getCoord());
+  } catch (std::out_of_range) {
+    return defaultVal;
   }
 }
 
 template <class T>
-bool PositionMap<T>::isValid(Position pos) const {
-  return pos.getLevel()->getUniqueId() < tables.size();
-}
-
-template <class T>
-const T& PositionMap<T>::operator [] (Position pos) const {
-  int index = pos.getLevel()->getUniqueId();
-  const Table<T>& table = tables.at(index);
-  if (pos.getCoord().inRectangle(table.getBounds()))
-    return table[pos.getCoord()];
-  else if (outliers[index].count(pos.getCoord()))
-    return outliers[index].at(pos.getCoord());
-  else {
-    static T t;
-    return t;
+Table<T>& PositionMap<T>::getTable(Position pos) {
+  LevelId levelId = pos.getLevel()->getUniqueId();
+  try {
+    return tables.at(levelId);
+  } catch (std::out_of_range) {
+    auto it = tables.insert(make_pair(levelId, Table<T>(pos.getLevel()->getBounds().minusMargin(-20), defaultVal)));
+    return it.first->second;
   }
 }
 
 template <class T>
-T& PositionMap<T>::operator [] (Position pos) {
-  int index = pos.getLevel()->getUniqueId();
-  Table<T>& table = tables.at(index);
-  if (pos.getCoord().inRectangle(table.getBounds()))
+T& PositionMap<T>::getOrInit(Position pos) {
+  LevelId levelId = pos.getLevel()->getUniqueId();
+  Table<T>& table = getTable(pos);
+  if (pos.getCoord().inRectangle(table.getBounds())) {
     return table[pos.getCoord()];
+  }
+  else try {
+    return outliers.at(levelId).at(pos.getCoord());
+  } catch (std::out_of_range) {
+    return outliers[levelId][pos.getCoord()] = defaultVal;
+  }
+}
+
+template <class T>
+T& PositionMap<T>::getOrFail(Position pos) {
+  LevelId levelId = pos.getLevel()->getUniqueId();
+  try {
+    Table<T>& table = tables.at(levelId);
+    if (pos.getCoord().inRectangle(table.getBounds()))
+      return table[pos.getCoord()];
+    else
+      return outliers.at(levelId).at(pos.getCoord());
+  } catch (std::out_of_range) {
+    FAIL << "getOrFail failed " << pos.getCoord();
+    return defaultVal;
+  }
+}
+
+template <class T>
+void PositionMap<T>::set(Position pos, const T& elem) {
+  LevelId levelId = pos.getLevel()->getUniqueId();
+  Table<T>& table = tables[levelId];
+  if (pos.getCoord().inRectangle(table.getBounds()))
+    table[pos.getCoord()] = elem;
   else
-    return outliers[index][pos.getCoord()];
+    outliers[levelId][pos.getCoord()] = elem;
 }
 
 template <class T>
 template <class Archive> 
 void PositionMap<T>::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(tables) & SVAR(outliers);
+  serializeAll(ar, tables, outliers, defaultVal);
 }
-
-template <class T>
-SERIALIZATION_CONSTRUCTOR_IMPL2(PositionMap<T>, PositionMap);
 
 SERIALIZABLE_TMPL(PositionMap, int);
 SERIALIZABLE_TMPL(PositionMap, bool);

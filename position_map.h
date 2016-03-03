@@ -9,19 +9,21 @@ class Level;
 template <class T>
 class PositionMap {
   public:
-  PositionMap(const vector<Level*>&);
-  PositionMap(const vector<Level*>&, const T& def);
+  PositionMap(const T& defaultVal = T());
 
-  bool isValid(Position) const;
+  const T& get(Position) const;
+  T& getOrInit(Position);
+  T& getOrFail(Position);
+  void set(Position, const T&);
 
-  const T& operator [] (Position) const;
-  T& operator [] (Position);
-
-  SERIALIZATION_DECL(PositionMap);
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
 
   private:
-  vector<Table<T>> SERIAL(tables);
-  vector<map<Vec2, T>> SERIAL(outliers);
+  Table<T>& getTable(Position);
+  map<LevelId, Table<T>> SERIAL(tables);
+  map<LevelId, map<Vec2, T>> SERIAL(outliers);
+  T SERIAL(defaultVal);
 };
 
 #endif

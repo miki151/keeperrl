@@ -129,13 +129,13 @@ void Model::addCreature(PCreature c, double delay) {
 
 Level* Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
   LevelBuilder builder(std::move(b));
-  levels.push_back(builder.build(this, maker.get(), levels.size()));
+  levels.push_back(builder.build(this, maker.get(), Random.getLL()));
   return levels.back().get();
 }
 
 Model::Model() {
   cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
-      .build(this, LevelMaker::emptyLevel(Random).get(), 0);
+      .build(this, LevelMaker::emptyLevel(Random).get(), Random.getLL());
 }
 
 Model::~Model() {

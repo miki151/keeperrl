@@ -19,6 +19,7 @@
 #include "serialization.h"
 
 typedef int TeamId;
+typedef long long LevelId;
 
 enum class MusicType;
 enum class SunlightState;

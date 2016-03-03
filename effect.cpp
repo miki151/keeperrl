@@ -307,20 +307,20 @@ static void teleport(Creature* c) {
   Vec2 teleRadius(6, 6);
   Rectangle area(-enemyRadius, enemyRadius + Vec2(1, 1));
   int infinity = 10000;
-  PositionMap<int> weight(c->getPosition().getModel()->getLevels(), infinity);
+  PositionMap<int> weight(infinity);
   queue<Position> q;
   for (Position v : c->getPosition().getRectangle(area))
     if (Creature *other = v.getCreature())
       if (other->isEnemy(c)) {
         q.push(v);
-        weight[v] = 0;
+        weight.set(v, 0);
       }
   while (!q.empty()) {
     Position v = q.front();
     q.pop();
     for (Position w : v.neighbors8())
-      if (w.canEnterEmpty({MovementTrait::WALK}) && weight[w] == infinity) {
-        weight[w] = weight[v] + 1;
+      if (w.canEnterEmpty({MovementTrait::WALK}) && weight.get(w) == infinity) {
+        weight.set(w, weight.get(v) + 1);
         q.push(w);
       }
   }
@@ -329,11 +329,11 @@ static void teleport(Creature* c) {
   for (Position v : c->getPosition().getRectangle(area)) {
     if (!v.canEnter(c) || v.isBurning() || v.getPoisonGasAmount() > 0)
       continue;
-    if (weight[v] == maxW)
+    if (weight.get(v) == maxW)
       good.push_back(v);
-    else if (weight[v] > maxW) {
+    else if (weight.get(v) > maxW) {
       good = {v};
-      maxW = weight[v];
+      maxW = weight.get(v);
     }
   }
   if (maxW < 2) {
