@@ -3,11 +3,18 @@
 
 enum class SunlightState { DAY, NIGHT};
 
-struct SunlightInfo {
+class SunlightInfo {
+  public:
+  const char* getText() const;
+  void update(double currentTime);
+  SunlightState getState() const;
+  double getLightAmount() const;
+  double getTimeRemaining() const;
+
+  private:
   double lightAmount;
   double timeRemaining;
   SunlightState state;
-  const char* getText();
 };
 
 #endif

@@ -115,7 +115,11 @@ class ReplayView : public View {
         delegate->addSound(s);
     }
 
-    virtual CampaignAction prepareCampaign(Campaign& c) override {
+    virtual optional<Vec2> chooseSite(const string& message, const Campaign& c) override {
+      return delegate->chooseSite(message, c);
+    }
+
+    virtual CampaignAction prepareCampaign(const Campaign& c) override {
       return delegate->prepareCampaign(c);
     }
 

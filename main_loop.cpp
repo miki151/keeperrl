@@ -271,7 +271,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     case GameTypeChoice::KEEPER:*/
       options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
       if (options->handleOrExit(view, OptionSet::KEEPER, -1))
-        return Game::campaignGame(keeperCampaign(random),
+        return Game::campaignGame(keeperCampaign(*campaign, random), campaign->getPlayerPos(),
             options->getStringValue(OptionId::KEEPER_NAME), *campaign);
       else
         return nullptr;
@@ -440,15 +440,14 @@ void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
   ModelBuilder::measureModelGen(numTries, Random, options);
 }
 
-PModel MainLoop::keeperCampaign(RandomGen& random) {
-  PModel model;
+Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
+  Table<PModel> models;
   NameGenerator::init(dataFreePath + "/names");
-  doWithSplash(SplashType::CREATING, 166000,
-      [&model, this, &random] (ProgressMeter& meter) {
-        model = ModelBuilder::campaignModel(&meter, random, options,
-            NameGenerator::get(NameGeneratorId::WORLD)->getNext());
+  doWithSplash(SplashType::CREATING, campaign.getSites().getHeight() * campaign.getSites().getWidth(),
+      [&models, this, &random, &campaign] (ProgressMeter& meter) {
+        models = campaign.buildModels(&meter, random, options);
       });
-  return model;
+  return models;
 }
 
 PModel MainLoop::keeperSingleMap(RandomGen& random) {
@@ -458,6 +457,7 @@ PModel MainLoop::keeperSingleMap(RandomGen& random) {
       [&model, this, &random] (ProgressMeter& meter) {
         model = ModelBuilder::singleMapModel(&meter, random, options,
             NameGenerator::get(NameGeneratorId::WORLD)->getNext());
+        ModelBuilder::spawnKeeper(model.get(), options);
       });
   return model;
 }

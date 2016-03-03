@@ -1014,7 +1014,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   for (const Collective* col : getKnownVillains(VillainType::LESSER))
     gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
-  gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.timeRemaining };
+  gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.getTimeRemaining() };
   gameInfo.infoType = GameInfo::InfoType::BAND;
   CollectiveInfo& info = gameInfo.collectiveInfo;
   info.buildings = fillButtons(getBuildInfo());
@@ -1036,7 +1036,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
       info.numResource.push_back(
           {getResourceViewId(elem.first), getCollective()->numResourcePlusDebt(elem.first), elem.second.name});
   info.warning = "";
-  gameInfo.time = getCollective()->getTime();
+  gameInfo.time = getCollective()->getGame()->getGlobalTime();
   info.teams.clear();
   for (int i : All(getTeams().getAll())) {
     TeamId team = getTeams().getAll()[i];
@@ -1757,7 +1757,7 @@ void PlayerControl::onNoEnemies() {
 }
 
 void PlayerControl::considerNightfallMessage() {
-  if (getGame()->getSunlightInfo().state == SunlightState::NIGHT) {
+  if (getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
     if (!isNight) {
       addMessage(PlayerMessage("Night is falling. Killing enemies in their sleep yields double mana.",
             PlayerMessage::HIGH));

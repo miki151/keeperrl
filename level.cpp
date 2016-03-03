@@ -233,12 +233,12 @@ Game* Level::getGame() const {
 
 bool Level::isInSunlight(Vec2 pos) const {
   return !coverInfo[pos].covered && lightCapAmount[pos] == 1 &&
-      getGame()->getSunlightInfo().state == SunlightState::DAY;
+      getGame()->getSunlightInfo().getState() == SunlightState::DAY;
 }
 
 double Level::getLight(Vec2 pos) const {
   return max(0.0, min(coverInfo[pos].covered ? 1 : lightCapAmount[pos], lightAmount[pos] +
-        coverInfo[pos].sunlight * getGame()->getSunlightInfo().lightAmount));
+        coverInfo[pos].sunlight * getGame()->getSunlightInfo().getLightAmount()));
 }
 
 vector<Position> Level::getLandingSquares(StairKey key) const {
@@ -338,6 +338,10 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
 void Level::killCreature(Creature* creature, Creature* attacker) {
   eraseCreature(creature, creature->getPosition().getCoord());
   getModel()->killCreature(creature, attacker);
+}
+
+void Level::removeCreature(Creature* creature) {
+  eraseCreature(creature, creature->getPosition().getCoord());
 }
 
 const static int hearingRange = 30;

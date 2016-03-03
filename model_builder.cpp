@@ -45,28 +45,28 @@ struct LevelInfo {
 struct EnemyInfo {
   SettlementInfo settlement;
   CollectiveConfig config;
-  vector<VillainInfo> villains;
+  optional<VillainInfo> villain;
   optional<LevelInfo> extraLevel;
   optional<VillainType> villainType;
 };
 
-static EnemyInfo mainVillain(SettlementInfo settlement, CollectiveConfig config, vector<VillainInfo> villains = {},
-    optional<LevelInfo> extraLevel = none) {
-  return EnemyInfo{settlement, config, villains, extraLevel, VillainType::MAIN};
+static EnemyInfo mainVillain(SettlementInfo settlement, CollectiveConfig config,
+    optional<VillainInfo> villain = none, optional<LevelInfo> extraLevel = none) {
+  return EnemyInfo{settlement, config, villain, extraLevel, VillainType::MAIN};
 }
 
 static EnemyInfo lesserVillain(SettlementInfo settlement, CollectiveConfig config,
-    vector<VillainInfo> villains = {}, optional<LevelInfo> extraLevel = none) {
-  return EnemyInfo{settlement, config, villains, extraLevel, VillainType::LESSER};
+    optional<VillainInfo> villain = none, optional<LevelInfo> extraLevel = none) {
+  return EnemyInfo{settlement, config, villain, extraLevel, VillainType::LESSER};
 }
 
 static EnemyInfo noVillain(SettlementInfo settlement, CollectiveConfig config,
-    vector<VillainInfo> villains = {}, optional<LevelInfo> extraLevel = none) {
-  return EnemyInfo{settlement, config, villains, extraLevel, none};
+    optional<VillainInfo> villain = none, optional<LevelInfo> extraLevel = none) {
+  return EnemyInfo{settlement, config, villain, extraLevel, none};
 }
 
 static EnemyInfo getVault(SettlementType type, CreatureFactory factory, TribeId tribe, int num,
-    optional<ItemFactory> itemFactory = none, vector<VillainInfo> villains = {}) {
+    optional<ItemFactory> itemFactory = none, optional<VillainInfo> villain = none) {
   return noVillain(CONSTRUCT(SettlementInfo,
       c.type = type;
       c.creatures = factory;
@@ -75,12 +75,12 @@ static EnemyInfo getVault(SettlementType type, CreatureFactory factory, TribeId 
       c.tribe = tribe;
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = itemFactory;), CollectiveConfig::noImmigrants(),
-    villains);
+    villain);
 }
 
 static EnemyInfo getVault(SettlementType type, CreatureId id, TribeId tribe, int num,
-    optional<ItemFactory> itemFactory = none, vector<VillainInfo> villains = {}) {
-  return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, villains);
+    optional<ItemFactory> itemFactory = none, optional<VillainInfo> villain = none) {
+  return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, villain);
 }
 
 struct FriendlyVault {
@@ -882,11 +882,11 @@ static EnumSet<MinionTrait> getImpTraits() {
   return {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT};
 }
 
-PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random, Options* options) {
+PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random, Options* options, int width) {
   Model* m = new Model();
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   Level* top = m->buildLevel(
-      LevelBuilder(meter, random, 28, 14, "Quick", false),
+      LevelBuilder(meter, random, width, width, "Quick", false),
       LevelMaker::quickLevel(random));
   m->calculateStairNavigation();
   m->collectives.push_back(CollectiveBuilder(
@@ -894,45 +894,8 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random, Opti
       .setLevel(top)
       .setCredit(getKeeperCredit(true))
       .build());
-  Collective* playerCollective = m->collectives.back().get();
-  PlayerControl* playerControl = new PlayerControl(playerCollective, top);
-  playerCollective->setControl(PCollectiveControl(playerControl));
-  PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, TribeId::KEEPER,
-      MonsterAIFactory::collective(playerCollective));
-  if (!keeperName.empty())
-    c->setFirstName(keeperName);
-  Creature* ref = c.get();
-  top->landCreature(StairKey::keeperSpawn(), c.get());
-  playerCollective->addCreature(ref, {});
   vector<CreatureId> ids {
     CreatureId::DONKEY,
-    CreatureId::DONKEY,
-    CreatureId::DONKEY,
-    CreatureId::DONKEY,
-    CreatureId::DONKEY,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
   };
   for (auto elem : ids) {
     PCreature c = CreatureFactory::fromId(elem, TribeId::KEEPER,
@@ -941,19 +904,12 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random, Opti
 //    m->playerCollective->addCreature(c.get(), {MinionTrait::FIGHTER});
     m->addCreature(std::move(c));
   }
-  for (int i : Range(4)) {
-    PCreature c = CreatureFactory::fromId(CreatureId::IMP, TribeId::KEEPER,
-        MonsterAIFactory::collective(playerCollective));
-    top->landCreature(StairKey::keeperSpawn(), c.get());
-    playerCollective->addCreature(c.get(), getImpTraits());
-    m->addCreature(std::move(c));
-  }
   return PModel(m);
 }
 
 PModel ModelBuilder::quickModel(ProgressMeter* meter, RandomGen& random,
     Options* options) {
-  return tryBuilding(meter, 5000, [=, &random] { return tryQuickModel(meter, random, options); });
+  return tryBuilding(meter, 5000, [=, &random] { return tryQuickModel(meter, random, options, 40); });
 }
 
 Level* ModelBuilder::makeExtraLevel(ProgressMeter* meter, RandomGen& random, Model* model,
@@ -1078,18 +1034,40 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, const string& boardText
 
 PModel ModelBuilder::singleMapModel(ProgressMeter* meter, RandomGen& random,
     Options* options, const string& worldName) {
-  return tryBuilding(meter, 10, [=, &random] { 
+  PModel ret = tryBuilding(meter, 10, [=, &random] {
       return tryModel(meter, random, options, 360, worldName,
           getEnemyInfo(random, getBoardText(options->getStringValue(OptionId::KEEPER_NAME),
             "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext())));});
+  return ret;
 }
 
-PModel ModelBuilder::tryCampaignModel(ProgressMeter* meter, RandomGen& random,
+PModel ModelBuilder::tryCampaignBaseModel(ProgressMeter* meter, RandomGen& random,
     Options* options, const string& siteName) {
   vector<EnemyInfo> enemyInfo;
-//  append(enemyInfo, getBanditCave(random));
-  //      append(enemyInfo, getSokobanEntry(random));
+ // append(enemyInfo, getBanditCave(random));
+  /*      append(enemyInfo, getSokobanEntry(random));
+        append(enemyInfo, random.choose({
+          getFriendlyCave(random, CreatureId::ORC),
+          getFriendlyCave(random, CreatureId::OGRE),
+          getFriendlyCave(random, CreatureId::HARPY)}));*/
   /*      append(enemyInfo, random.choose({
+          getGreenDragon(random),
+          getShelob(random),
+          getHydra(random),
+          getRedDragon(random),
+          getCyclops(random),
+          getDriadTown(random),
+          getEntTown(random)}));*/
+  PModel ret = tryModel(meter, random, options, 210, siteName, enemyInfo);
+  return ret;
+}
+
+PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& random,
+    Options* options, const string& siteName) {
+  vector<EnemyInfo> enemyInfo;
+  //append(enemyInfo, getBanditCave(random));
+  /*      append(enemyInfo, getSokobanEntry(random));
+        append(enemyInfo, random.choose({
           getFriendlyCave(random, CreatureId::ORC),
           getFriendlyCave(random, CreatureId::OGRE),
           getFriendlyCave(random, CreatureId::HARPY)}));*/
@@ -1107,7 +1085,8 @@ PModel ModelBuilder::tryCampaignModel(ProgressMeter* meter, RandomGen& random,
 PModel ModelBuilder::tryBuilding(ProgressMeter* meter, int numTries, function<PModel()> buildFun) {
   for (int i : Range(numTries)) {
     try {
-      meter->reset();
+      if (meter)
+        meter->reset();
       return buildFun();
     } catch (LevelGenException ex) {
       Debug() << "Retrying level gen";
@@ -1118,10 +1097,16 @@ PModel ModelBuilder::tryBuilding(ProgressMeter* meter, int numTries, function<PM
 
 }
 
-PModel ModelBuilder::campaignModel(ProgressMeter* meter, RandomGen& random,
+PModel ModelBuilder::campaignBaseModel(ProgressMeter* meter, RandomGen& random,
     Options* options, const string& siteName) {
   return tryBuilding(meter, 10, [=, &random] {
-      return tryCampaignModel(meter, random, options, siteName); });
+      return tryCampaignBaseModel(meter, random, options, siteName); });
+}
+
+PModel ModelBuilder::campaignSiteModel(ProgressMeter* meter, RandomGen& random,
+    Options* options, const string& siteName) {
+  return tryBuilding(meter, 10, [=, &random] {
+      return tryCampaignSiteModel(meter, random, options, siteName); });
 }
 
 void ModelBuilder::measureModelGen(int numTries, RandomGen& random, Options* options) {
@@ -1132,7 +1117,7 @@ void ModelBuilder::measureModelGen(int numTries, RandomGen& random, Options* opt
   for (int i : Range(numTries))
     try {
       sf::Clock c;
-      tryCampaignModel(nullptr, random, options, "");
+      tryCampaignBaseModel(nullptr, random, options, "");
       int millis = c.getElapsedTime().asMilliseconds();
       sumT += millis;
       maxT = max(maxT, millis);
@@ -1144,10 +1129,37 @@ void ModelBuilder::measureModelGen(int numTries, RandomGen& random, Options* opt
       "\nAvgT: " << sumT / numSuccess << std::endl;
 }
 
+void ModelBuilder::spawnKeeper(Model* m, Options* options) {
+  Level* level = m->levels[0].get();
+  m->collectives.push_back(CollectiveBuilder(
+        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::KEEPER)
+      .setLevel(level)
+      .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
+      .build());
+  Collective* playerCollective = m->collectives.back().get();
+  playerCollective->setVillainType(VillainType::PLAYER);
+  playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, level)));
+  PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, TribeId::KEEPER,
+      MonsterAIFactory::collective(playerCollective));
+  string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
+  if (!keeperName.empty())
+    c->setFirstName(keeperName);
+  Creature* ref = c.get();
+  level->landCreature(StairKey::keeperSpawn(), c.get());
+  m->addCreature(std::move(c));
+  playerCollective->addCreature(ref, {});
+  for (int i : Range(4)) {
+    PCreature c = CreatureFactory::fromId(CreatureId::IMP, TribeId::KEEPER,
+        MonsterAIFactory::collective(playerCollective));
+    level->landCreature(StairKey::keeperSpawn(), c.get());
+    playerCollective->addCreature(c.get(), getImpTraits());
+    m->addCreature(std::move(c));
+  }
+}
+
 PModel ModelBuilder::tryModel(ProgressMeter* meter, RandomGen& random,
     Options* options, int width, const string& levelName, vector<EnemyInfo> enemyInfo) {
   Model* m = new Model();
-  string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   vector<SettlementInfo> settlements;
   vector<pair<LevelInfo, SettlementInfo>> extraSettlements;
   for (auto& elem : enemyInfo) {
@@ -1163,30 +1175,6 @@ PModel ModelBuilder::tryModel(ProgressMeter* meter, RandomGen& random,
   for (auto& elem : extraSettlements)
     makeExtraLevel(meter, random, m, elem.first, elem.second);
   m->calculateStairNavigation();
-  m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::KEEPER)
-      .setLevel(top)
-      .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
-      .build());
- 
-  Collective* playerCollective = m->collectives.back().get();
-  playerCollective->setVillainType(VillainType::PLAYER);
-  playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, top)));
-  PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, TribeId::KEEPER,
-      MonsterAIFactory::collective(playerCollective));
-  if (!keeperName.empty())
-    c->setFirstName(keeperName);
-  Creature* ref = c.get();
-  top->landCreature(StairKey::keeperSpawn(), c.get());
-  m->addCreature(std::move(c));
-  playerCollective->addCreature(ref, {});
-  for (int i : Range(4)) {
-    PCreature c = CreatureFactory::fromId(CreatureId::IMP, TribeId::KEEPER,
-        MonsterAIFactory::collective(playerCollective));
-    top->landCreature(StairKey::keeperSpawn(), c.get());
-    playerCollective->addCreature(c.get(), getImpTraits());
-    m->addCreature(std::move(c));
-  }
   for (int i : All(enemyInfo)) {
     if (!enemyInfo[i].settlement.collective->hasCreatures())
       continue;
@@ -1195,9 +1183,7 @@ PModel ModelBuilder::tryModel(ProgressMeter* meter, RandomGen& random,
     if (auto name = location->getName())
       enemyInfo[i].settlement.collective->setName(*name);
     PCollective collective = enemyInfo[i].settlement.collective->addSquares(location->getAllSquares()).build();
-    if (!enemyInfo[i].villains.empty())
-      getOnlyElement(enemyInfo[i].villains).collective = playerCollective;
-    control.reset(new VillageControl(collective.get(), enemyInfo[i].villains));
+    control.reset(new VillageControl(collective.get(), enemyInfo[i].villain));
     if (enemyInfo[i].villainType)
       collective->setVillainType(*enemyInfo[i].villainType);
     collective->setControl(std::move(control));

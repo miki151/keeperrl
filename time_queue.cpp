@@ -43,6 +43,7 @@ TimeQueue::TimeQueue() : queue([](QElem e1, QElem e2) {
 
 void TimeQueue::addCreature(PCreature c) {
   queue.push({c.get(), c->getTime()});
+  dead.erase(c.get());
   creatures.push_back(std::move(c));
 }
   

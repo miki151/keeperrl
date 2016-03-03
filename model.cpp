@@ -106,6 +106,8 @@ void Model::update(double totalTime) {
     CreatureAction::checkUsage(false);
 #endif
   }
+  if (!creature->isDead() && creature->getLevel()->getModel() != this)
+    return;
   for (PCollective& c : collectives)
     c->update(creature);
   if (!creature->isDead())
@@ -209,5 +211,15 @@ void Model::killCreature(Creature* c, Creature* attacker) {
     col->onKilled(c, attacker);
   deadCreatures.push_back(timeQueue->removeCreature(c));
   cemetery->landCreature(cemetery->getAllPositions(), c);
+}
+
+PCreature Model::extractCreature(Creature* c) {
+  PCreature ret = timeQueue->removeCreature(c);
+  c->getLevel()->removeCreature(c);
+  return ret;
+}
+
+void Model::transferCreature(PCreature&& c) {
+  levels[0]->landCreature(StairKey::keeperSpawn(), std::move(c));
 }
 

@@ -507,6 +507,10 @@ void Player::retireMessages() {
 }
 
 void Player::makeMove() {
+  if (currentTimePos.time > getCreature()->getTime()) {
+    previousTimePos.pos.x = -1;
+    previousTimePos.time = currentTimePos.time = 0;
+  }
   vector<Vec2> squareDirs = getCreature()->getPosition().getTravelDir();
   if (getCreature()->isAffected(LastingEffect::HALLU))
     ViewObject::setHallu(true);
@@ -598,6 +602,7 @@ void Player::makeMove() {
     case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
     case UserInputId::ADD_TO_TEAM: extendedAttackAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
+    case UserInputId::TRANSFER: getGame()->transferAction({getCreature()}); return;
     default: break;
   }
   if (getCreature()->isAffected(LastingEffect::SLEEP)) {
@@ -840,8 +845,8 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
-  gameInfo.sunlightInfo.timeRemaining = sunlightInfo.timeRemaining;
-  gameInfo.time = getCreature()->getTime();
+  gameInfo.sunlightInfo.timeRemaining = sunlightInfo.getTimeRemaining();
+  gameInfo.time = getCreature()->getGame()->getGlobalTime();
   PlayerInfo& info = gameInfo.playerInfo;
   info.readFrom(getCreature());
   info.team.clear();

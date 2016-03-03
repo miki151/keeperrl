@@ -329,11 +329,12 @@ static void teleport(Creature* c) {
   for (Position v : c->getPosition().getRectangle(area)) {
     if (!v.canEnter(c) || v.isBurning() || v.getPoisonGasAmount() > 0)
       continue;
-    if (weight.get(v) == maxW)
+    int weightV = weight.get(v);
+    if (weightV == maxW)
       good.push_back(v);
-    else if (weight.get(v) > maxW) {
+    else if (weightV > maxW) {
       good = {v};
-      maxW = weight.get(v);
+      maxW = weightV;
     }
   }
   if (maxW < 2) {

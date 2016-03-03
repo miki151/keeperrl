@@ -52,7 +52,6 @@ class VillageControl : public CollectiveControl {
   struct Villain {
     int SERIAL(minPopulation);
     int SERIAL(minTeamSize);
-    Collective* SERIAL(collective);
     vector<Trigger> SERIAL(triggers);
     Behaviour SERIAL(behaviour);
     optional<WelcomeMessage> SERIAL(welcomeMessage);
@@ -69,7 +68,7 @@ class VillageControl : public CollectiveControl {
 
   friend struct Villain;
 
-  VillageControl(Collective*, vector<Villain>);
+  VillageControl(Collective*, optional<Villain>);
 
   protected:
   virtual void tick(double time) override;
@@ -81,21 +80,22 @@ class VillageControl : public CollectiveControl {
   SERIALIZATION_DECL(VillageControl);
 
   private:
-  void launchAttack(Villain&, vector<Creature*> attackers);
-  optional<Villain&> getVillain(const Creature*);
+  void launchAttack(vector<Creature*> attackers);
   void considerWelcomeMessage();
   void considerCancellingAttack();
   void checkEntries();
+  bool isEnemy(const Creature*);
+  Collective* getEnemyCollective() const;
 
   REGISTER_HANDLER(PickupEvent, const Creature*, const vector<Item*>&);
 
-  vector<Villain> SERIAL(villains);
+  optional<Villain> SERIAL(villain);
 
-  map<const Collective*, double> SERIAL(victims);
+  double SERIAL(victims);
   EntitySet<Item> SERIAL(myItems);
-  map<const Collective*, int> SERIAL(stolenItemCount);
+  int SERIAL(stolenItemCount);
   map<TeamId, int> SERIAL(attackSizes);
-  set<const Collective*> SERIAL(entries);
+  bool SERIAL(entries);
 };
 
 #endif

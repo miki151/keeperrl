@@ -72,6 +72,7 @@ enum class UserInputId {
     CHAT,
     WAIT,
     UNPOSSESS,
+    TRANSFER,
     CAST_SPELL,
     CONSUME,
     INVENTORY_ITEM,

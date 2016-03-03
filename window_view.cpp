@@ -811,11 +811,18 @@ optional<UniqueEntity<Item>::Id> WindowView::chooseTradeItem(const string& title
       Vec2(rightBarWidthCollective + 30, 80));
 }
 
-CampaignAction WindowView::prepareCampaign(Campaign& campaign) {
+optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign) {
+  SyncQueue<optional<Vec2>> returnQueue;
+  optional<Vec2> sitePos;
+  return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, sitePos),
+      Vec2(rightBarWidthCollective + 30, 160));
+}
+
+CampaignAction WindowView::prepareCampaign(const Campaign& campaign) {
   SyncQueue<CampaignAction> returnQueue;
   optional<Vec2> embarkPos;
   return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, embarkPos),
-      Vec2(rightBarWidthCollective + 30, 80));
+      Vec2(rightBarWidthCollective + 30, 160));
 }
 
 void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, Vec2 origin) {

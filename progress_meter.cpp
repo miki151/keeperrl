@@ -9,8 +9,8 @@ double ProgressMeter::getProgress() const {
   return max(0.0, min(1.0, progress * increase));
 }
 
-void ProgressMeter::addProgress() {
-  ++progress;
+void ProgressMeter::addProgress(int num) {
+  progress += num;
 }
 
 void ProgressMeter::reset() {

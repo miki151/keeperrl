@@ -4,6 +4,8 @@
 #include "util.h"
 
 class View;
+class ProgressMeter;
+class Options;
 
 class Campaign {
   public:
@@ -15,13 +17,15 @@ class Campaign {
 
   struct SiteInfo {
     string SERIAL(description);
-    ViewId SERIAL(viewId);
+    vector<ViewId> SERIAL(viewId);
     optional<VillainInfo> SERIAL(villain);
-    SERIALIZE_ALL(description, viewId, villain);
+    bool SERIAL(blocked);
+    bool canEmbark() const;
+    SERIALIZE_ALL(description, viewId, villain, blocked);
   };
 
+  Table<PModel> buildModels(ProgressMeter*, RandomGen&, Options*) const;
   const Table<SiteInfo>& getSites() const;
-  Vec2 chooseSite(View*, const string& message);
   static optional<Campaign> prepareCampaign(View*, const string& worldName, RandomGen&);
   Vec2 getPlayerPos() const;
   const string& getWorldName() const;

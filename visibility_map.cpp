@@ -6,7 +6,7 @@
 
 template <class Archive> 
 void VisibilityMap::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(lastUpdates) & SVAR(visibilityCount);
+  serializeAll(ar, lastUpdates, visibilityCount);
 }
 
 SERIALIZABLE(VisibilityMap);

@@ -804,6 +804,9 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
       gui.label("Level " + toString(info.level), colors[ColorId::WHITE]),
       gui.stack(gui.button(getButtonCallback(UserInputId::UNPOSSESS)),
           gui.labelHighlight("[U] Leave control", colors[ColorId::LIGHT_BLUE]))), 150, 1));
+  list.addElem(
+      gui.stack(gui.button(getButtonCallback(UserInputId::TRANSFER), {Keyboard::T}),
+          gui.labelHighlight("[T] Leave site", colors[ColorId::LIGHT_BLUE])));
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addElem(gui.empty());
@@ -1801,31 +1804,60 @@ PGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id
           15, 15, 15, 15)));
 }
 
-PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& campaign, function<void(Vec2)> clickFun,
-    optional<Vec2>& markedPos){
+PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>& marked, function<bool(Vec2)> activeFun){
   auto rows = gui.getListBuilder(48);
-  auto& sites = campaign.getSites();
+  auto& sites = c.getSites();
   for (int y : sites.getBounds().getYRange()) {
     auto columns = gui.getListBuilder(48);
-    for (int x : sites.getBounds().getXRange())
-      columns.addElem(gui.viewObject(sites[x][y].viewId, 2));
+    for (int x : sites.getBounds().getXRange()) {
+      vector<PGuiElem> v;
+      for (ViewId id : sites[x][y].viewId)
+        v.push_back(gui.viewObject(id, 2));
+      columns.addElem(gui.stack(std::move(v)));
+    }
     rows.addElem(columns.buildHorizontalList());
   }
   auto rows2 = gui.getListBuilder(48);
   for (int y : sites.getBounds().getYRange()) {
     auto columns = gui.getListBuilder(48);
-    for (int x : sites.getBounds().getXRange())
+    for (int x : sites.getBounds().getXRange()) {
+      vector<PGuiElem> elem;
       if (sites[x][y].villain)
-        columns.addElem(gui.viewObject(sites[x][y].villain->viewId, 2));
-      else
-        columns.addElem(gui.stack(
-            gui.button([clickFun, x, y] { clickFun(Vec2(x, y)); }),
+        elem.push_back(gui.viewObject(sites[x][y].villain->viewId, 2));
+      if (activeFun(Vec2(x, y)))
+        elem.push_back(gui.stack(
+            gui.button([x, y, &marked] { marked = Vec2(x, y); }),
             gui.conditional(gui.rectangleHighlight(),
-                [&markedPos, x, y] { return markedPos == Vec2(x, y);}),
+                [&marked, x, y] { return marked == Vec2(x, y);}),
             gui.mouseHighlight2(gui.rectangleHighlight())));
+      columns.addElem(gui.stack(std::move(elem)));
+    }
     rows2.addElem(columns.buildHorizontalList());
   }
   return gui.stack(rows.buildVerticalList(), rows2.buildVerticalList());
+}
+
+PGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const string& message,
+    const Campaign& campaign, optional<Vec2>& sitePos) {
+  GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
+  lines.addElem(gui.centerHoriz(gui.label(message)));
+  lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, sitePos,
+          [&campaign](Vec2 pos) { return !!campaign.getSites()[pos].villain; })));
+  lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
+        .addElemAuto(gui.conditional(
+            gui.stack(
+                gui.button([&] { queue.push(*sitePos); }),
+                gui.labelHighlight("[confirm]", colors[ColorId::LIGHT_BLUE])),
+            gui.label("[confirm]", colors[ColorId::LIGHT_GRAY]),
+            [&] { return !!sitePos; }))
+        .addElem(gui.empty(), 10)
+        .addElemAuto(
+            gui.stack(
+                gui.button([&queue] { queue.push(none); }, {Keyboard::Escape}),
+                gui.labelHighlight("[cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
+  return gui.stack(
+      gui.preferredSize(500, 500),
+      gui.miniWindow(gui.margins(lines.buildVerticalList(), 15)));
 }
 
 PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign,
@@ -1843,12 +1875,12 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
   lines.addElem(gui.label("Height: " + toString(campaign.getSites().getBounds().getH())));
   lines.addElem(gui.empty(), 15);
   lines.addElem(gui.centerHoriz(gui.label("Choose embark site:")));
-  lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign,
-        [&embarkPos] (Vec2 pos) { embarkPos = pos;}, embarkPos)));
+  lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, embarkPos,
+        [&campaign](Vec2 pos) { return campaign.getSites()[pos].canEmbark(); })));
   lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
         .addElemAuto(gui.conditional(
             gui.stack(
-                gui.button([&] { queue.push({CampaignActionId::CHOOSE_SITE, *embarkPos}); }, {Keyboard::Escape}),
+                gui.button([&] { queue.push({CampaignActionId::CHOOSE_SITE, *embarkPos}); }),
                 gui.labelHighlight("[confirm]", colors[ColorId::LIGHT_BLUE])),
             gui.label("[confirm]", colors[ColorId::LIGHT_GRAY]),
             [&] { return !!embarkPos; }))
@@ -1859,7 +1891,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
                 gui.labelHighlight("[cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   return gui.stack(
       gui.preferredSize(500, 500),
-      gui.miniWindow(gui.margins(lines.buildVerticalList(), 15, 15, 15, 15)));
+      gui.miniWindow(gui.margins(lines.buildVerticalList(), 15)));
 }
 
 PGuiElem GuiBuilder::drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,

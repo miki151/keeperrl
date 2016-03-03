@@ -85,7 +85,9 @@ class GuiBuilder {
   PGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
       pair<ViewId, int> budget, const vector<ItemInfo>&, double* scrollPos);
   PGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, optional<Vec2>& embarkPos);
-  PGuiElem drawCampaignGrid(const Campaign&, function<void(Vec2)> clickFun, optional<Vec2>& markedPos);
+  PGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
+      optional<Vec2>& sitePos);
+  PGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>& markedPos, function<bool(Vec2)> activeFun);
   PGuiElem drawCost(pair<ViewId, int>, ColorId = ColorId::WHITE);
   PGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<double>& scrollPos,
       bool& online);

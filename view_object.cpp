@@ -78,6 +78,14 @@ Vec2 ViewObject::getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creatu
     return movementQueue.getTotalMovement(tBegin - 0.00000001, tEnd);
 }
 
+void ViewObject::clearMovementInfo() {
+  movementQueue.clear();
+}
+
+void ViewObject::MovementQueue::clear() {
+  index = totalMoves = 0;
+}
+
 void ViewObject::MovementQueue::add(MovementInfo info) {
   elems[index] = info;
   ++totalMoves;

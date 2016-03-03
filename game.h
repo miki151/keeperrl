@@ -5,10 +5,10 @@
 #include "sunlight_info.h"
 #include "tribe.h"
 #include "enum_variant.h"
+#include "campaign.h"
 
 class Options;
 class Highscores;
-class Campaign;
 class View;
 class Statistics;
 class PlayerControl;
@@ -19,7 +19,7 @@ enum class VillainType { MAIN, LESSER, PLAYER };
 class Game {
   public:
   static PGame singleMapGame(const string& worldName, const string& playerName, PModel&&);
-  static PGame campaignGame(PModel&&, const string& playerName, const Campaign&);
+  static PGame campaignGame(Table<PModel>&&, Vec2 basePos, const string& playerName, const Campaign&);
   static PGame splashScreen(PModel&&);
 
   enum class SaveType { ADVENTURER, KEEPER, RETIRED_KEEPER, AUTOSAVE };
@@ -38,6 +38,7 @@ class Game {
   void setView(View*);
   View* getView() const;
   void exitAction();
+  void transferAction(const vector<Creature*>&);
   string getGameIdentifier() const;
   string getGameDisplayName() const;
   MusicType getCurrentMusic() const;
@@ -48,6 +49,7 @@ class Game {
   Tribe* getTribe(TribeId) const;
   double getGlobalTime() const;
   void landHeroPlayer();
+  Collective* getPlayerCollective() const;
 
   const vector<Collective*>& getVillains(VillainType) const;
   const vector<Collective*>& getCollectives() const;
@@ -85,18 +87,17 @@ class Game {
   SERIALIZATION_DECL(Game);
 
   private:
-  Game(const string& worldName, const string& playerName, PModel&&);
+  Game(const string& worldName, const string& playerName, Table<PModel>&&, Vec2 basePos, optional<Campaign> = none);
   void updateSunlightInfo();
   void tick(double time);
-  Model* getModel(const Position&) const;
-  void addModel(PModel);
   PCreature makeAdventurer(int handicap);
 
   string SERIAL(worldName);
   SunlightInfo sunlightInfo;
-  vector<PModel> SERIAL(models);
-  Model* SERIAL(currentModel) = nullptr;
-  unique_ptr<Campaign> SERIAL(campaign);
+  Table<PModel> SERIAL(models);
+  Table<double> SERIAL(localTime);
+  Vec2 SERIAL(currentModel);
+  Vec2 SERIAL(baseModel);
   View* view;
   double SERIAL(currentTime) = 0;
   optional<ExitInfo> exitInfo;
@@ -117,6 +118,8 @@ class Game {
   double lastUpdate = -10;
   PlayerControl* SERIAL(playerControl) = nullptr;
   Collective* SERIAL(playerCollective) = nullptr;
+  optional<Campaign> SERIAL(campaign);
+  bool wasTransfered = false;
 };
 
 

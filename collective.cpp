@@ -517,13 +517,13 @@ bool Collective::isTaskGood(const Creature* c, MinionTask task, bool ignoreTaskL
   switch (task) {
     case MinionTask::CROPS:
     case MinionTask::EXPLORE:
-        return getGame()->getSunlightInfo().state == SunlightState::DAY;
+        return getGame()->getSunlightInfo().getState() == SunlightState::DAY;
     case MinionTask::SLEEP:
         if (!config->sleepOnlyAtNight())
           return true;
         // break skipped on purpose
     case MinionTask::EXPLORE_NOCTURNAL:
-        return getGame()->getSunlightInfo().state == SunlightState::NIGHT;
+        return getGame()->getSunlightInfo().getState() == SunlightState::NIGHT;
     default: return true;
   }
 }
@@ -1009,7 +1009,7 @@ void Collective::addNewCreatureMessage(const vector<Creature*>& creatures) {
 }
 
 double Collective::getImmigrantChance(const ImmigrantInfo& info) {
-  if (info.limit && info.limit != getGame()->getSunlightInfo().state)
+  if (info.limit && info.limit != getGame()->getSunlightInfo().getState())
     return 0;
   double result = 0;
   if (info.attractions.empty())

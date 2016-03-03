@@ -21,7 +21,7 @@ class ProgressMeter {
   ProgressMeter(double increase);
   double getProgress() const;
   void setProgress(double);
-  void addProgress();
+  void addProgress(int = 1);
   void reset();
 
   private:
