@@ -325,12 +325,29 @@ PlayerControl::~PlayerControl() {
 
 const int basicImpCost = 20;
 
-Creature* PlayerControl::getControlled() {
-  for (TeamId team : getTeams().getAllActive()) {
+Creature* PlayerControl::getControlled() const {
+  if (auto team = getCurrentTeam())
+    return getTeams().getLeader(*team);
+  else
+    return nullptr;
+}
+
+optional<TeamId> PlayerControl::getCurrentTeam() const {
+  for (TeamId team : getTeams().getAllActive())
     if (getTeams().getLeader(team)->isPlayer())
-      return getTeams().getLeader(team);
-  }
-  return nullptr;
+      return team;
+  return none;
+}
+
+bool PlayerControl::swapTeam() {
+  if (auto team = getCurrentTeam())
+    if (getTeams().getMembers(*team).size() > 1) {
+      leaveControl();
+      getTeams().rotateLeader(*team);
+      commandTeam(*team);
+      return true;
+    }
+  return false;
 }
 
 void PlayerControl::leaveControl() {
@@ -1217,6 +1234,10 @@ class MinionController : public Player {
     if (getGame()->getView()->yesOrNoPrompt("Display message history?"))
       showHistory();
     //creature->popController(); this makes the controller crash if creature committed suicide
+  }
+
+  virtual bool swapTeam() override {
+    return control->swapTeam();
   }
 
   virtual bool unpossess() override {

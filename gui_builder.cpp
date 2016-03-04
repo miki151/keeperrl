@@ -800,13 +800,22 @@ vector<PGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info) {
 PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(info.getTitle(), colors[ColorId::WHITE]));
-  list.addElem(gui.horizontalList(makeVec<PGuiElem>(
-      gui.label("Level " + toString(info.level), colors[ColorId::WHITE]),
-      gui.stack(gui.button(getButtonCallback(UserInputId::UNPOSSESS)),
-          gui.labelHighlight("[U] Leave control", colors[ColorId::LIGHT_BLUE]))), 150, 1));
-  list.addElem(
-      gui.stack(gui.button(getButtonCallback(UserInputId::TRANSFER), {Keyboard::T}),
-          gui.labelHighlight("[T] Leave site", colors[ColorId::LIGHT_BLUE])));
+  list.addElem(gui.label("Level " + toString(info.level), colors[ColorId::WHITE]));
+  auto line = gui.getListBuilder();
+  line.addElemAuto(gui.label("Commands: "));
+  line.addElemAuto(gui.stack(
+        gui.button(getButtonCallback(UserInputId::UNPOSSESS), {Keyboard::U}, true),
+        gui.labelHighlight("[U] ", colors[ColorId::LIGHT_BLUE]),
+        getTooltip({"Leave minion and disband team."})));
+  line.addElemAuto(gui.stack(
+        gui.button(getButtonCallback(UserInputId::TRANSFER), {Keyboard::T}, true),
+        gui.labelHighlight("[T] ", colors[ColorId::LIGHT_BLUE]),
+        getTooltip({"Travel to another site."})));
+  line.addElemAuto(gui.stack(
+        gui.button(getButtonCallback(UserInputId::SWAP_TEAM), {Keyboard::T}, true),
+        gui.labelHighlight("[S] ", colors[ColorId::LIGHT_BLUE]),
+        getTooltip({"Switch control to a different team member."})));
+  list.addElem(line.buildHorizontalList());
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addElem(gui.empty());
@@ -1853,7 +1862,7 @@ PGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
         .addElem(gui.empty(), 10)
         .addElemAuto(
             gui.stack(
-                gui.button([&queue] { queue.push(none); }, {Keyboard::Escape}),
+                gui.button([&queue] { queue.push(none); }, {Keyboard::Escape}, true),
                 gui.labelHighlight("[cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   return gui.stack(
       gui.preferredSize(500, 500),

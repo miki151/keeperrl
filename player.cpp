@@ -597,6 +597,10 @@ void Player::makeMove() {
       if (unpossess())
         return;
       break;
+    case UserInputId::SWAP_TEAM:
+      if (swapTeam())
+        return;
+      break;
     case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
     case UserInputId::DRAW_LEVEL_MAP: getGame()->getView()->drawLevelMap(this); break;
     case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
@@ -823,6 +827,10 @@ void Player::onKilled(const Creature* attacker) {
 }
 
 bool Player::unpossess() {
+  return false;
+}
+
+bool Player::swapTeam() {
   return false;
 }
 

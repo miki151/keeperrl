@@ -61,6 +61,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool isTurnBased();
   void retire();
   void leaveControl();
+  bool swapTeam();
 
   enum class RequirementId {
     TECHNOLOGY,
@@ -116,8 +117,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void considerNightfallMessage();
   void considerWarning();
   void considerAdventurerMusic();
-
-  friend class KeeperControlOverride;
 
   Level* getLevel();
   TribeId getTribeId() const;
@@ -197,7 +196,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void tryLockingDoor(Position);
   void uncoverRandomLocation();
-  Creature* getControlled();
+  Creature* getControlled() const;
+  optional<TeamId> getCurrentTeam() const;
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
   Model* getModel();

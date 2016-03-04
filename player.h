@@ -70,6 +70,7 @@ class Player : public Controller, public CreatureView {
 
   // overridden by subclasses
   virtual bool unpossess();
+  virtual bool swapTeam();
   virtual void onFellAsleep();
   virtual vector<Creature*> getTeam() const;
 

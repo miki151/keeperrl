@@ -73,6 +73,7 @@ enum class UserInputId {
     WAIT,
     UNPOSSESS,
     TRANSFER,
+    SWAP_TEAM,
     CAST_SPELL,
     CONSUME,
     INVENTORY_ITEM,
