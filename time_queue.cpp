@@ -77,15 +77,14 @@ Creature* TimeQueue::getMinCreature() {
   CHECK(creatures.size() > 0);
   removeDead();
   QElem elem = queue.top();
-  if (elem.time == elem.creature->getTime())
-    return elem.creature;
-  else {
+  while (elem.time != elem.creature->getTime()) {
+    CHECK(elem.time < elem.creature->getTime());
     queue.pop();
     removeDead();
     queue.push({elem.creature, elem.creature->getTime()});
-    CHECK(queue.top().creature->getTime() == queue.top().time);
-    return queue.top().creature;
+    elem = queue.top();
   }
+  return elem.creature;
 }
 
 Creature* TimeQueue::getNextCreature() {

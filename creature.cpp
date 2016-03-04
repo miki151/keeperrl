@@ -1097,7 +1097,7 @@ double Creature::getTime() const {
 
 void Creature::setTime(double t) {
   time = t;
-//  modViewObject().clearMovementInfo();
+  modViewObject().clearMovementInfo();
 }
 
 bool Creature::isBleeding() const {

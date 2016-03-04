@@ -54,7 +54,7 @@ class Model {
   /** Returns the level that the stairs lead to. */
   Level* getLinkedLevel(Level* from, StairKey) const;
 
-  Position getStairs(const Level* from, const Level* to);
+  optional<Position> getStairs(const Level* from, const Level* to);
 
   /** Adds new creature to the queue. Assumes this creature has already been added to a level. */
   void addCreature(PCreature, double delay = 0);

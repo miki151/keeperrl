@@ -602,7 +602,7 @@ void Player::makeMove() {
     case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
     case UserInputId::ADD_TO_TEAM: extendedAttackAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
-    case UserInputId::TRANSFER: getGame()->transferAction({getCreature()}); return;
+    case UserInputId::TRANSFER: getGame()->transferAction(getTeam()); return;
     default: break;
   }
   if (getCreature()->isAffected(LastingEffect::SLEEP)) {
@@ -830,7 +830,7 @@ void Player::onFellAsleep() {
 }
 
 vector<Creature*> Player::getTeam() const {
-  return {};
+  return {getCreature()};
 }
 
 optional<SquareApplyType> Player::getUsableSquareApplyType() const {

@@ -65,7 +65,7 @@ T& PositionMap<T>::getOrFail(Position pos) {
 template <class T>
 void PositionMap<T>::set(Position pos, const T& elem) {
   LevelId levelId = pos.getLevel()->getUniqueId();
-  Table<T>& table = tables[levelId];
+  Table<T>& table = getTable(pos);
   if (pos.getCoord().inRectangle(table.getBounds()))
     table[pos.getCoord()] = elem;
   else

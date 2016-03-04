@@ -57,8 +57,7 @@ class Controller {
   SERIALIZATION_DECL(Controller);
 
   protected:
-  Creature* getCreature();
-  const Creature* getCreature() const;
+  Creature* getCreature() const;
 
   private:
   Creature* SERIAL(creature);
