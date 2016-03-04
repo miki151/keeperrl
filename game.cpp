@@ -151,6 +151,8 @@ optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
     if (model->getTime() > totalTime)
       return none;
     model->update(totalTime);
+    if (exitInfo)
+      return exitInfo;
     if (wasTransfered) {
       wasTransfered = false;
       return none;
