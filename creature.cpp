@@ -196,19 +196,22 @@ void Creature::pushController(PController ctrl) {
 }
 
 void Creature::setController(PController ctrl) {
-  if (ctrl->isPlayer())
+  if (ctrl->isPlayer()) {
     modViewObject().setModifier(ViewObject::Modifier::PLAYER);
+    if (Game* g = getGame())
+      g->setPlayer(this);
+  }
   controller = std::move(ctrl);
-  getLevel()->updatePlayer();
 }
 
 void Creature::popController() {
-  if (controller->isPlayer())
+  if (controller->isPlayer()) {
     modViewObject().removeModifier(ViewObject::Modifier::PLAYER);
+    getGame()->cancelPlayer(this);
+  }
   CHECK(!controllerStack.empty());
   controller = std::move(controllerStack.back());
   controllerStack.pop_back();
-  getLevel()->updatePlayer();
 }
 
 bool Creature::isDead() const {

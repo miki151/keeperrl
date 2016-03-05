@@ -70,13 +70,6 @@ int Model::getWoodCount() const {
   return woodCount;
 }
 
-const Creature* Model::getPlayer() const {
-  for (const PLevel& l : levels)
-    if (l->getPlayer())
-      return l->getPlayer();
-  return nullptr;
-}
-
 vector<Collective*> Model::getCollectives() const {
   return extractRefs(collectives);
 }
@@ -126,6 +119,8 @@ void Model::tick(double time) {
 
 void Model::addCreature(PCreature c, double delay) {
   c->setTime(timeQueue->getCurrentTime() + 1 + delay + Random.getDouble());
+  if (c->isPlayer())
+    game->setPlayer(c.get());
   timeQueue->addCreature(std::move(c));
 }
 

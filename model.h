@@ -74,7 +74,6 @@ class Model {
 
   void killCreature(Creature* victim, Creature* attacker);
   void updateSunlightMovement();
-  const Creature* getPlayer() const;
 
   PCreature extractCreature(Creature*);
   void transferCreature(PCreature&&);

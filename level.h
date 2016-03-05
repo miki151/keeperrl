@@ -150,9 +150,6 @@ class Level {
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId);
 
-  /** Sets the creature that is assumed to be the player.*/
-  void updatePlayer();
-
   /** Sets the level to be rendered in the background with given offset.*/
   void setBackgroundLevel(const Level*, Vec2 offset);
 
@@ -188,7 +185,7 @@ class Level {
   void globalMessage(const Creature*, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const;
 
   /** Returns the player creature.*/
-  const Creature* getPlayer() const;
+  Creature* getPlayer() const;
 
   /** Returns name of the given location. Returns nullptr if none. */
   const Location* getLocation(Vec2) const;
@@ -240,9 +237,7 @@ class Level {
   vector<Creature*> SERIAL(creatures);
   Model* SERIAL(model) = nullptr;
   mutable EnumMap<VisionId, FieldOfView> SERIAL(fieldOfView);
-  string SERIAL(entryMessage);
   string SERIAL(name);
-  Creature* SERIAL(player) = nullptr;
   const Level* SERIAL(backgroundLevel) = nullptr;
   Vec2 SERIAL(backgroundOffset);
   Table<CoverInfo> SERIAL(coverInfo);
@@ -253,8 +248,7 @@ class Level {
   Sectors& getSectors(const MovementType&) const;
   
   friend class LevelBuilder;
-  Level(Table<PSquare> s, Model*, vector<Location*>, const string& message, const string& name,
-      Table<CoverInfo> coverInfo, LevelId);
+  Level(Table<PSquare> s, Model*, vector<Location*>, const string& name, Table<CoverInfo> coverInfo, LevelId);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);

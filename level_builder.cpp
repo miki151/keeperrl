@@ -118,10 +118,6 @@ bool LevelBuilder::canPutCreature(Vec2 posT, Creature* c) {
   return true;
 }
 
-void LevelBuilder::setMessage(const string& message) {
-  entryMessage = message;
-}
-
 void LevelBuilder::setNoDiagonalPassing() {
   noDiagonalPassing = true;
 }
@@ -131,7 +127,7 @@ PLevel LevelBuilder::build(Model* m, LevelMaker* maker, LevelId levelId) {
   maker->make(this, squares.getBounds());
   for (Vec2 v : squares.getBounds())
     squares[v]->dropItems(std::move(items[v]));
-  PLevel l(new Level(std::move(squares), m, locations, entryMessage, name, std::move(coverInfo), levelId));
+  PLevel l(new Level(std::move(squares), m, locations, name, std::move(coverInfo), levelId));
   for (pair<PCreature, Vec2>& c : creatures) {
     l->addCreature(c.second, std::move(c.first));
   }

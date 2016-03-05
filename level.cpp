@@ -45,9 +45,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
     & SVAR(creatures)
     & SVAR(model)
     & SVAR(fieldOfView)
-    & SVAR(entryMessage)
     & SVAR(name)
-    & SVAR(player)
     & SVAR(backgroundLevel)
     & SVAR(backgroundOffset)
     & SVAR(coverInfo)
@@ -65,9 +63,9 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 
 Level::~Level() {}
 
-Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& message, const string& n,
+Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& n,
     Table<CoverInfo> covers, LevelId id) 
-    : squares(std::move(s)), oldSquares(squares.getBounds()), locations(l), model(m), entryMessage(message),
+    : squares(std::move(s)), oldSquares(squares.getBounds()), locations(l), model(m), 
       name(n), coverInfo(std::move(covers)), bucketMap(squares.getBounds().getW(), squares.getBounds().getH(),
       FieldOfView::sightRange), lightAmount(squares.getBounds(), 0), lightCapAmount(squares.getBounds(), 1),
       levelId(id) {
@@ -113,13 +111,6 @@ const static double darknessRadius = 6.5;
 void Level::putCreature(Vec2 position, Creature* c) {
   CHECK(inBounds(position));
   creatures.push_back(c);
-  if (c->isPlayer()) {
-    player = c;
-    if (entryMessage != "") {
-      c->playerMessage(entryMessage);
-      entryMessage = "";
-    }
-  }
   CHECK(getSafeSquare(position)->getCreature() == nullptr);
   placeCreature(c, position);
 }
@@ -207,8 +198,11 @@ void Level::updateVisibility(Vec2 changedSquare) {
   }
 }
 
-const Creature* Level::getPlayer() const {
-  return player;
+Creature* Level::getPlayer() const {
+  if (Creature* player = model->getGame()->getPlayer())
+    if (player->getLevel() == this)
+      return player;
+  return nullptr;
 }
 
 const vector<Location*> Level::getAllLocations() const {
@@ -347,7 +341,7 @@ void Level::removeCreature(Creature* creature) {
 const static int hearingRange = 30;
 
 void Level::globalMessage(Vec2 position, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const {
-  if (player) {
+  if (Creature* player = getPlayer()) {
     if (playerCanSee(position))
       player->playerMessage(ifPlayerCanSee);
     else if (player->getPosition().getCoord().dist8(position) < hearingRange)
@@ -359,12 +353,12 @@ void Level::globalMessage(Vec2 position, const PlayerMessage& playerCanSee) cons
   globalMessage(position, playerCanSee, "");
 }
 
-void Level::globalMessage(const Creature* c, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const {
-  if (player) {
+void Level::globalMessage(const Creature* c, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cant) const {
+  if (Creature* player = getPlayer()) {
     if (player->canSee(c))
       player->playerMessage(ifPlayerCanSee);
     else if (player->getPosition().dist8(c->getPosition()) < hearingRange)
-      player->playerMessage(cannot);
+      player->playerMessage(cant);
   }
 }
 
@@ -393,17 +387,8 @@ void Level::changeLevel(Position destination, Creature* c) {
     eraseCreature(c, oldPos);
 }
 
-void Level::updatePlayer() {
-  player = nullptr;
-  for (Creature* c : creatures)
-    if (c->isPlayer())
-      player = c;
-}
-
 void Level::eraseCreature(Creature* c, Vec2 coord) {
   removeElement(creatures, c);
-  if (c->isPlayer())
-    player = nullptr;
   unplaceCreature(c, coord);
 }
 
@@ -438,11 +423,17 @@ bool Level::canSee(const Creature* c, Vec2 pos) const {
 }
 
 bool Level::playerCanSee(Vec2 pos) const {
-  return player != nullptr && player->canSee(pos);
+  if (Creature* player = getPlayer())
+    return player->canSee(pos);
+  else
+    return false;
 }
 
 bool Level::playerCanSee(const Creature* c) const {
-  return player != nullptr && player->canSee(c);
+  if (Creature* player = getPlayer())
+    return player->canSee(c);
+  else
+    return false;
 }
 
 static bool canPass(const Square* square, const Creature* c) {

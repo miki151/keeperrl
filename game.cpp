@@ -26,8 +26,8 @@
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) { 
   serializeAll(ar, villainsByType, collectives, lastTick, playerControl, playerCollective, won, currentTime);
-  serializeAll(ar, worldName, musicType, danglingPortal, statistics, spectator, tribes, gameIdentifier);
-  serializeAll(ar, gameDisplayName, finishCurrentMusic, models, currentModel, baseModel, campaign, localTime);
+  serializeAll(ar, worldName, musicType, danglingPortal, statistics, spectator, tribes, gameIdentifier, player);
+  serializeAll(ar, gameDisplayName, finishCurrentMusic, models, baseModel, campaign, localTime);
   Deity::serializeAll(ar);
   if (Archive::is_loading::value)
     sunlightInfo.update(currentTime);
@@ -48,8 +48,8 @@ static string getNewIdSuffix() {
 }
 
 Game::Game(const string& world, const string& player, Table<PModel>&& m, Vec2 basePos, optional<Campaign> c)
-    : worldName(world), models(std::move(m)), localTime(models.getBounds(), 0), currentModel(basePos),
-    baseModel(basePos), tribes(Tribe::generateTribes()), musicType(MusicType::PEACEFUL), campaign(c) {
+    : worldName(world), models(std::move(m)), baseModel(basePos),
+      tribes(Tribe::generateTribes()), musicType(MusicType::PEACEFUL), campaign(c) {
   sunlightInfo.update(currentTime);
   gameIdentifier = player + "_" + worldName + getNewIdSuffix();
   gameDisplayName = player + " of " + worldName;
@@ -107,8 +107,16 @@ const vector<Collective*>& Game::getVillains(VillainType type) const {
     return empty;
 }
 
+Model* Game::getCurrentModel() const {
+  if (Creature* c = getPlayer())
+    return c->getPosition().getModel();
+  else
+    return models[baseModel].get();
+}
+
 optional<Game::ExitInfo> Game::update(double timeDiff) {
   currentTime += timeDiff;
+  Model* currentModel = getCurrentModel();
   localTime[currentModel] += timeDiff;
   while (currentTime > lastTick + 1) {
     lastTick += 1;
@@ -233,7 +241,6 @@ void Game::transferAction(const vector<Creature*>& creatures) {
     for (Creature* c : creatures) {
       models[*dest]->transferCreature(src->extractCreature(c));
     }
-    currentModel = *dest;
     wasTransfered = true;
   }
 }
@@ -313,8 +320,8 @@ string Game::getGameIdentifier() const {
 void Game::onKilledLeader(const Collective* victim, const Creature* leader) {
   if (models.getHeight() == 1 && models.getWidth() == 1 && playerControl && playerControl->isRetired() &&
       playerCollective == victim) {
-    const Creature* c = models[0][0]->getPlayer();
-    killedKeeper(*c->getFirstName(), leader->getNameAndTitle(), worldName, c->getKills(), c->getPoints());
+    if (Creature* c = getPlayer())
+      killedKeeper(*c->getFirstName(), leader->getNameAndTitle(), worldName, c->getKills(), c->getPoints());
   }
 }
 
@@ -499,3 +506,18 @@ void Game::setView(View* v) {
   view = v;
 }
 
+void Game::setPlayer(Creature* c) {
+  player = c;
+}
+
+Creature* Game::getPlayer() const {
+  if (player && !player->isDead())
+    return player;
+  else
+    return nullptr;
+}
+
+void Game::cancelPlayer(Creature* c) {
+  CHECK(c == player);
+  player = nullptr;
+}

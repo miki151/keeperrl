@@ -124,7 +124,6 @@ class LevelBuilder {
   Table<SquareType> type;
   vector<pair<PCreature, Vec2>> creatures;
   Table<vector<PItem>> items;
-  string entryMessage;
   string name;
   vector<Vec2::LinearMap> mapStack;
   ProgressMeter* progressMeter = nullptr;

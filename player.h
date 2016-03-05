@@ -40,7 +40,7 @@ class Player : public Controller, public CreatureView {
   SERIALIZATION_DECL(Player);
 
   protected:
-  Player(Creature*, bool greeting, MapMemory* levelMemory);
+  Player(Creature*, bool greeting, MapMemory*);
 
   virtual void moveAction(Vec2 direction);
 

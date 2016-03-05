@@ -806,7 +806,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   line.addElemAuto(gui.stack(
         gui.button(getButtonCallback(UserInputId::UNPOSSESS), {Keyboard::U}, true),
         gui.labelHighlight("[U] ", colors[ColorId::LIGHT_BLUE]),
-        getTooltip({"Leave minion and disband team."})));
+        getTooltip({"Leave minion and order team back to base."})));
   line.addElemAuto(gui.stack(
         gui.button(getButtonCallback(UserInputId::TRANSFER), {Keyboard::T}, true),
         gui.labelHighlight("[T] ", colors[ColorId::LIGHT_BLUE]),

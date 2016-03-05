@@ -50,6 +50,9 @@ class Game {
   double getGlobalTime() const;
   void landHeroPlayer();
   Collective* getPlayerCollective() const;
+  void setPlayer(Creature*);
+  Creature* getPlayer() const;
+  void cancelPlayer(Creature*);
 
   const vector<Collective*>& getVillains(VillainType) const;
   const vector<Collective*>& getCollectives() const;
@@ -91,12 +94,12 @@ class Game {
   void updateSunlightInfo();
   void tick(double time);
   PCreature makeAdventurer(int handicap);
+  Model* getCurrentModel() const;
 
   string SERIAL(worldName);
   SunlightInfo sunlightInfo;
   Table<PModel> SERIAL(models);
-  Table<double> SERIAL(localTime);
-  Vec2 SERIAL(currentModel);
+  map<Model*, double> SERIAL(localTime);
   Vec2 SERIAL(baseModel);
   View* view;
   double SERIAL(currentTime) = 0;
@@ -120,6 +123,7 @@ class Game {
   Collective* SERIAL(playerCollective) = nullptr;
   optional<Campaign> SERIAL(campaign);
   bool wasTransfered = false;
+  Creature* SERIAL(player) = nullptr;
 };
 
 
