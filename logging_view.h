@@ -60,8 +60,8 @@ class LoggingView : public View {
       delegate->addSound(s);
     }
 
-    virtual optional<Vec2> chooseSite(const string& message, const Campaign& c) override {
-      return delegate->chooseSite(message, c);
+    virtual optional<Vec2> chooseSite(const string& message, const Campaign& c, optional<Vec2> cur) override {
+      return delegate->chooseSite(message, c, cur);
     }
 
     virtual CampaignAction prepareCampaign(const Campaign& c) override {

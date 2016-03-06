@@ -26,7 +26,7 @@ Vec2 Campaign::getPlayerPos() const {
   return playerPos;
 }
 
-Campaign::Campaign(Vec2 size) : sites(size) {
+Campaign::Campaign(Vec2 size) : sites(size, {}) {
 }
 
 const string& Campaign::getWorldName() const {

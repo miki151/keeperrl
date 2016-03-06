@@ -1343,27 +1343,28 @@ PGuiElem GuiFactory::empty() {
 
 class ViewObjectGui : public GuiElem {
   public:
-  ViewObjectGui(const ViewObject& obj, double sc) : object(obj), scale(sc) {}
-  ViewObjectGui(ViewId id, double sc) : object(id), scale(sc) {}
+  ViewObjectGui(const ViewObject& obj, double sc, Color c) : object(obj), scale(sc), color(c) {}
+  ViewObjectGui(ViewId id, double sc, Color c) : object(id), scale(sc), color(c) {}
   
   virtual void render(Renderer& renderer) override {
     if (ViewObject* obj = boost::get<ViewObject>(&object))
-      renderer.drawViewObject(getBounds().getTopLeft(), *obj, true, scale);
+      renderer.drawViewObject(getBounds().getTopLeft(), *obj, true, scale, color);
     else
-      renderer.drawViewObject(getBounds().getTopLeft(), boost::get<ViewId>(object), true, scale);
+      renderer.drawViewObject(getBounds().getTopLeft(), boost::get<ViewId>(object), true, scale, color);
   }
 
   private:
   variant<ViewObject, ViewId> object;
   double scale;
+  Color color;
 };
 
-PGuiElem GuiFactory::viewObject(const ViewObject& object, double scale) {
-  return PGuiElem(new ViewObjectGui(object, scale));
+PGuiElem GuiFactory::viewObject(const ViewObject& object, double scale, Color color) {
+  return PGuiElem(new ViewObjectGui(object, scale, color));
 }
 
-PGuiElem GuiFactory::viewObject(ViewId id, double scale) {
-  return PGuiElem(new ViewObjectGui(id, scale));
+PGuiElem GuiFactory::viewObject(ViewId id, double scale, Color color) {
+  return PGuiElem(new ViewObjectGui(id, scale, color));
 }
 
 class DragSource : public GuiElem {

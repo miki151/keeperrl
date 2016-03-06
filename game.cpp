@@ -238,10 +238,19 @@ void Game::transferCreature(Creature* c, Model* to) {
     to->transferCreature(from->extractCreature(c));
 }
 
+Vec2 Game::getModelCoords(const Model* m) const {
+  for (Vec2 v : models.getBounds())
+    if (models[v].get() == m)
+      return v;
+  FAIL << "Model not found";
+  return Vec2();
+}
+
 void Game::transferAction(const vector<Creature*>& creatures) {
   if (!campaign)
     return;
-  if (auto dest = view->chooseSite("Choose destination site:", *campaign)) {
+  if (auto dest = view->chooseSite("Choose destination site:", *campaign,
+        getModelCoords(creatures[0]->getLevel()->getModel()))) {
     CHECK(models[*dest]);
     for (Creature* c : creatures)
       transferCreature(c, models[*dest].get());

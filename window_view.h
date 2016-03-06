@@ -90,7 +90,7 @@ class WindowView: public View {
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
   virtual void addSound(const Sound&) override;
-  virtual optional<Vec2> chooseSite(const string& message, const Campaign&) override;
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current) override;
   virtual CampaignAction prepareCampaign(const Campaign&) override;
   
   private:

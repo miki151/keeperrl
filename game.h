@@ -96,6 +96,7 @@ class Game {
   void tick(double time);
   PCreature makeAdventurer(int handicap);
   Model* getCurrentModel() const;
+  Vec2 getModelCoords(const Model*) const;
 
   string SERIAL(worldName);
   SunlightInfo sunlightInfo;
