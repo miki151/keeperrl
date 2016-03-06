@@ -39,6 +39,7 @@ class Game {
   View* getView() const;
   void exitAction();
   void transferAction(const vector<Creature*>&);
+  void transferCreature(Creature*, Model* to);
   string getGameIdentifier() const;
   string getGameDisplayName() const;
   MusicType getCurrentMusic() const;

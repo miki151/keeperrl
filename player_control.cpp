@@ -359,7 +359,9 @@ void PlayerControl::leaveControl() {
     getView()->setScrollPos(getPosition());
   if (controlled->isPlayer())
     controlled->popController();
-  for (TeamId team : getTeams().getActive(controlled))
+  for (TeamId team : getTeams().getActive(controlled)) {
+    for (Creature* c : getTeams().getMembers(team))
+      getGame()->transferCreature(c, getCollective()->getLevel()->getModel());
     if (!getTeams().isPersistent(team)) {
       if (getTeams().getMembers(team).size() == 1)
         getTeams().cancel(team);
@@ -367,6 +369,7 @@ void PlayerControl::leaveControl() {
         getTeams().deactivate(team);
       break;
     }
+  }
   getView()->stopClock();
 }
 

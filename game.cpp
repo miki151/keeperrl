@@ -122,7 +122,7 @@ optional<Game::ExitInfo> Game::update(double timeDiff) {
     lastTick += 1;
     tick(lastTick);
   }
-  return updateModel(models[currentModel].get(), localTime[currentModel]);
+  return updateModel(currentModel, localTime[currentModel]);
 }
 
 optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
@@ -232,15 +232,19 @@ void Game::exitAction() {
   }
 }
 
+void Game::transferCreature(Creature* c, Model* to) {
+  Model* from = c->getLevel()->getModel();
+  if (from != to)
+    to->transferCreature(from->extractCreature(c));
+}
+
 void Game::transferAction(const vector<Creature*>& creatures) {
   if (!campaign)
     return;
   if (auto dest = view->chooseSite("Choose destination site:", *campaign)) {
     CHECK(models[*dest]);
-    Model* src = creatures[0]->getLevel()->getModel();
-    for (Creature* c : creatures) {
-      models[*dest]->transferCreature(src->extractCreature(c));
-    }
+    for (Creature* c : creatures)
+      transferCreature(c, models[*dest].get());
     wasTransfered = true;
   }
 }
