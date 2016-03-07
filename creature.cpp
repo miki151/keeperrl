@@ -2582,10 +2582,10 @@ bool Creature::isSameSector(Position pos) const {
 }
 
 void Creature::setInCombat() {
-  lastCombatTime = getTime();
+  lastCombatTime = getGame()->getGlobalTime();
 }
 
 bool Creature::wasInCombat(double numLastTurns) const {
-  return lastCombatTime && *lastCombatTime >= getTime() - numLastTurns;
+  return lastCombatTime && *lastCombatTime >= getGame()->getGlobalTime() - numLastTurns;
 }
 
