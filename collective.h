@@ -23,6 +23,7 @@
 #include "square_type.h"
 #include "attack_trigger.h"
 #include "collective_warning.h"
+#include "creature_listener.h"
 
 class CollectiveAttack;
 class Creature;
@@ -46,7 +47,7 @@ struct CostInfo;
 struct TriggerInfo;
 class Territory;
 
-class Collective : public TaskCallback {
+class Collective : public TaskCallback, public CreatureListener {
   public:
   void addCreature(Creature*, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
@@ -60,7 +61,6 @@ class Collective : public TaskCallback {
   Game* getGame() const;
   const Level* getLevel() const;
   double getTime() const;
-  void update(Creature*);
   void addNewCreatureMessage(const vector<Creature*>&);
   void setTask(const Creature*, PTask, bool priority = false);
   bool hasTask(const Creature*) const;
@@ -226,7 +226,6 @@ class Collective : public TaskCallback {
   void addAttack(const CollectiveAttack&);
   void onRansomPaid();
 
-  void onKilled(Creature* victim, Creature* killer);
   void onAlarm(Position);
   void onTorture(const Creature* who, const Creature* torturer);
   void onSurrender(Creature* who);
@@ -264,6 +263,10 @@ class Collective : public TaskCallback {
   virtual void onConsumed(Creature* consumer, Creature* who) override;
   virtual bool isConstructionReachable(Position) override;
   virtual void onWhippingDone(Creature* whipped, Position postPosition) override;
+
+  // From CreatureListener
+  virtual void onKilled(Creature* victim, Creature* killer) override;
+  virtual void onMoved(Creature*) override;
 
   private:
   friend class CollectiveBuilder;

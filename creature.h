@@ -22,6 +22,7 @@
 #include "renderable.h"
 #include "movement_type.h"
 #include "position.h"
+#include "event_generator.h"
 
 class Skill;
 class Level;
@@ -45,6 +46,7 @@ class Gender;
 class SpellMap;
 class Sound;
 class Game;
+class CreatureListener;
 
 class Creature : public Renderable, public UniqueEntity<Creature> {
   public:
@@ -367,6 +369,9 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   vector<string> SERIAL(personalEvents);
   bool forceMovement = false;
   optional<double> SERIAL(lastCombatTime);
+
+  friend class CreatureListener;
+  HeapAllocated<EventGenerator<CreatureListener>> SERIAL(eventGenerator);
 };
 
 enum class AttackLevel { LOW, MIDDLE, HIGH };

@@ -41,6 +41,7 @@
 #include "view.h"
 #include "sound.h"
 #include "trigger.h"
+#include "creature_listener.h"
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
@@ -50,41 +51,12 @@ SERIALIZABLE(Creature::MoraleOverride);
 
 template <class Archive> 
 void Creature::serialize(Archive& ar, const unsigned int version) { 
-  ar
-    & SUBCLASS(Renderable)
-    & SUBCLASS(UniqueEntity)
-    & SVAR(attributes)
-    & SVAR(position)
-    & SVAR(time)
-    & SVAR(equipment)
-    & SVAR(shortestPath)
-    & SVAR(knownHiding)
-    & SVAR(tribe)
-    & SVAR(health)
-    & SVAR(morale)
-    & SVAR(deathTime)
-    & SVAR(lastTick)
-    & SVAR(collapsed)
-    & SVAR(hidden)
-    & SVAR(lastAttacker)
-    & SVAR(deathReason)
-    & SVAR(swapPositionCooldown)
-    & SVAR(unknownAttacker)
-    & SVAR(privateEnemies)
-    & SVAR(holding)
-    & SVAR(controller)
-    & SVAR(controllerStack)
-    & SVAR(creatureVisions)
-    & SVAR(kills)
-    & SVAR(difficultyPoints)
-    & SVAR(points)
-    & SVAR(numAttacksThisTurn)
-    & SVAR(moraleOverrides)
-    & SVAR(visibleEnemies)
-    & SVAR(visibleCreatures)
-    & SVAR(vision)
-    & SVAR(personalEvents)
-    & SVAR(lastCombatTime);
+  ar & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
+  serializeAll(ar, attributes, position, time, equipment, shortestPath, knownHiding, tribe, health, morale);
+  serializeAll(ar, deathTime, lastTick, collapsed, hidden, lastAttacker, deathReason, swapPositionCooldown);
+  serializeAll(ar, unknownAttacker, privateEnemies, holding, controller, controllerStack, creatureVisions, kills);
+  serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverrides, visibleEnemies, visibleCreatures);
+  serializeAll(ar, vision, personalEvents, lastCombatTime, eventGenerator);
 }
 
 SERIALIZABLE(Creature);
@@ -394,6 +366,9 @@ void Creature::makeMove() {
   unknownAttacker.clear();
   if (attributes->fireCreature && Random.roll(5))
     getPosition().setOnFire(1);
+  if (!isDead())
+    for (CreatureListener* l : eventGenerator->getListeners())
+      l->onMoved(this);
 }
 
 CreatureAction Creature::wait() const {
@@ -1687,6 +1662,8 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
     }
   if (dropInventory && dCorpse && isCorporal())
     dropCorpse();
+  for (CreatureListener* l : eventGenerator->getListeners())
+    l->onKilled(this, attacker);
   getLevel()->killCreature(this, attacker);
   if (isInnocent())
     getGame()->getStatistics().add(StatId::INNOCENT_KILLED);

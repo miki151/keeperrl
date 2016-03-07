@@ -72,47 +72,13 @@ struct Collective::CurrentTaskInfo {
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(TaskCallback)
-    & SVAR(creatures)
-    & SVAR(leader)
-    & SVAR(taskMap)
-    & SVAR(tribe)
-    & SVAR(control)
-    & SVAR(byTrait)
-    & SVAR(bySpawnType)
-    & SVAR(deityStanding)
-    & SVAR(mySquares)
-    & SVAR(mySquares2)
-    & SVAR(territory)
-    & SVAR(squareEfficiency)
-    & SVAR(alarmInfo)
-    & SVAR(markedItems)
-    & SVAR(constructions)
-    & SVAR(minionEquipment)
-    & SVAR(surrendering)
-    & SVAR(delayedPos)
-    & SVAR(knownTiles)
-    & SVAR(technologies)
-    & SVAR(numFreeTech)
-    & SVAR(kills)
-    & SVAR(points)
-    & SVAR(currentTasks)
-    & SVAR(credit)
-    & SVAR(level)
-    & SVAR(minionPayment)
-    & SVAR(pregnancies)
-    & SVAR(nextPayoutTime)
-    & SVAR(minionAttraction)
-    & SVAR(teams)
-    & SVAR(name)
-    & SVAR(config)
-    & SVAR(warnings)
-    & SVAR(banished)
-    & SVAR(squaresInUse)
-    & SVAR(equipmentUpdates)
-    & SVAR(deadCreatures)
-    & SVAR(spawnGhosts)
-    & SVAR(lastGuardian)
-    & SVAR(villainType);
+    & SUBCLASS(CreatureListener);
+  serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType, deityStanding, mySquares);
+  serializeAll(ar, mySquares2, territory, squareEfficiency, alarmInfo, markedItems, constructions, minionEquipment);
+  serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
+  serializeAll(ar, credit, level, minionPayment, pregnancies, nextPayoutTime, minionAttraction, teams, name);
+  serializeAll(ar, config, warnings, banished, squaresInUse, equipmentUpdates, deadCreatures, spawnGhosts);
+  serializeAll(ar, lastGuardian, villainType);
 }
 
 SERIALIZABLE(Collective);
@@ -322,6 +288,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
       c->getPosition().getLevel()->getName() << " " << c->getName().bare();
   creatures.push_back(c);
+  subscribeToCreature(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
   if (auto spawnType = c->getSpawnType())
@@ -335,6 +302,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 
 void Collective::removeCreature(Creature* c) {
   removeElement(creatures, c);
+  unsubscribeFromCreature(c);
   deadCreatures.push_back(c);
   minionAttraction.erase(c);
   if (Task* task = taskMap->getTask(c)) {
@@ -885,18 +853,18 @@ vector<Position> Collective::getSpawnPos(const vector<Creature*>& creatures) {
   return spawnPos;
 }
 
-bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCreature> creatures) {
+bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCreature> immigrants) {
   CHECK(!info.spawnAtDorm);
-  auto creatureRefs = extractRefs(creatures);
+  auto creatureRefs = extractRefs(immigrants);
   vector<Position> spawnPos;
   spawnPos = getSpawnPos(creatureRefs);
-  if (spawnPos.size() < creatures.size())
+  if (spawnPos.size() < immigrants.size())
     return false;
   if (info.autoTeam)
-    teams->activate(teams->createPersistent(extractRefs(creatures)));
-  for (int i : All(creatures)) {
-    Creature* c = creatures[i].get();
-    addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
+    teams->activate(teams->createPersistent(extractRefs(immigrants)));
+  for (int i : All(immigrants)) {
+    Creature* c = immigrants[i].get();
+    addCreature(std::move(immigrants[i]), spawnPos[i], info.traits);
     minionPayment[c] = {info.salary, 0.0, 0};
     minionAttraction[c] = info.attractions;
   }
@@ -925,27 +893,27 @@ void Collective::considerBuildingBeds() {
 bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   if (info.techId && !hasTech(*info.techId))
     return false;
-  vector<PCreature> creatures;
+  vector<PCreature> immigrants;
   int groupSize = info.groupSize ? Random.get(*info.groupSize) : 1;
   groupSize = min(groupSize, getMaxPopulation() - getPopulationSize());
   for (int i : Range(groupSize))
-    creatures.push_back(CreatureFactory::fromId(info.id, getTribeId(), MonsterAIFactory::collective(this)));
-  if (!creatures[0]->getSpawnType() || info.ignoreSpawnType)
-    return considerNonSpawnImmigrant(info, std::move(creatures));
-  SpawnType spawnType = *creatures[0]->getSpawnType();
+    immigrants.push_back(CreatureFactory::fromId(info.id, getTribeId(), MonsterAIFactory::collective(this)));
+  if (!immigrants[0]->getSpawnType() || info.ignoreSpawnType)
+    return considerNonSpawnImmigrant(info, std::move(immigrants));
+  SpawnType spawnType = *immigrants[0]->getSpawnType();
   SquareType dormType = getDormInfo()[spawnType].dormType;
   if (!hasResource(getSpawnCost(spawnType, groupSize)))
     return false;
   vector<Position> spawnPos;
   if (info.spawnAtDorm) {
     for (Position v : Random.permutation(getSquares(dormType)))
-      if (v.canEnter(creatures[spawnPos.size()].get())) {
+      if (v.canEnter(immigrants[spawnPos.size()].get())) {
         spawnPos.push_back(v);
-        if (spawnPos.size() >= creatures.size())
+        if (spawnPos.size() >= immigrants.size())
           break;
       }
   } else
-    spawnPos = getSpawnPos(extractRefs(creatures));
+    spawnPos = getSpawnPos(extractRefs(immigrants));
   groupSize = min<int>(groupSize, spawnPos.size());
   if (auto bedType = getDormInfo()[spawnType].getBedType()) {
     int neededBeds = bySpawnType[spawnType].size() + groupSize - constructions->getSquareCount(*bedType);
@@ -958,17 +926,17 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   }
   if (groupSize < 1)
     return false;
-  if (creatures.size() > groupSize)
-    creatures.resize(groupSize);
-  takeResource(getSpawnCost(spawnType, creatures.size()));
+  if (immigrants.size() > groupSize)
+    immigrants.resize(groupSize);
+  takeResource(getSpawnCost(spawnType, immigrants.size()));
   if (info.autoTeam && groupSize > 1)
-    teams->activate(teams->createPersistent(extractRefs(creatures)));
-  addNewCreatureMessage(extractRefs(creatures));
-  for (int i : All(creatures)) {
-    Creature* c = creatures[i].get();
+    teams->activate(teams->createPersistent(extractRefs(immigrants)));
+  addNewCreatureMessage(extractRefs(immigrants));
+  for (int i : All(immigrants)) {
+    Creature* c = immigrants[i].get();
     if (i == 0 && groupSize > 1) // group leader
       c->increaseExpLevel(2);
-    addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
+    addCreature(std::move(immigrants[i]), spawnPos[i], info.traits);
     minionPayment[c] = {info.salary, 0.0, 0};
     minionAttraction[c] = info.attractions;
   }
@@ -998,13 +966,13 @@ int Collective::tryBuildingBeds(SpawnType spawnType, int numBeds) {
   return numBuilt;
 }
 
-void Collective::addNewCreatureMessage(const vector<Creature*>& creatures) {
-  if (creatures.size() == 1)
-    control->addMessage(PlayerMessage(creatures[0]->getName().a() + " joins your forces.")
-        .setCreature(creatures[0]->getUniqueId()));
+void Collective::addNewCreatureMessage(const vector<Creature*>& immigrants) {
+  if (immigrants.size() == 1)
+    control->addMessage(PlayerMessage(immigrants[0]->getName().a() + " joins your forces.")
+        .setCreature(immigrants[0]->getUniqueId()));
   else {
-    control->addMessage(PlayerMessage("A " + creatures[0]->getGroupName(creatures.size()) + " joins your forces.")
-        .setCreature(creatures[0]->getUniqueId()));
+    control->addMessage(PlayerMessage("A " + immigrants[0]->getGroupName(immigrants.size()) + " joins your forces.")
+        .setCreature(immigrants[0]->getUniqueId()));
   }
 }
 
@@ -1516,7 +1484,7 @@ bool Collective::isKnownSquare(Position pos) const {
   return knownTiles->isKnown(pos);
 }
 
-void Collective::update(Creature* c) {
+void Collective::onMoved(Creature* c) {
   control->update(c);
 }
 

@@ -1378,6 +1378,14 @@ class HeapAllocated {
     return *elem.get();
   }
 
+  const T* get() const {
+    return elem.get();
+  }
+
+  T* get() {
+    return elem.get();
+  }
+
   HeapAllocated& operator = (const T& t) {
     *elem.get() = t;
     return *this;

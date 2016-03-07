@@ -99,11 +99,7 @@ void Model::update(double totalTime) {
     CreatureAction::checkUsage(false);
 #endif
   }
-  if (!creature->isDead() && creature->getLevel()->getModel() != this)
-    return;
-  for (PCollective& c : collectives)
-    c->update(creature);
-  if (!creature->isDead())
+  if (!creature->isDead() && creature->getLevel()->getModel() == this)
     CHECK(creature->getPosition().getCreature() == creature);
 }
 
@@ -201,8 +197,6 @@ void Model::killCreature(Creature* c, Creature* attacker) {
   if (attacker)
     attacker->onKilled(c);
   c->getTribe()->onMemberKilled(c, attacker);
-  for (auto& col : collectives)
-    col->onKilled(c, attacker);
   deadCreatures.push_back(timeQueue->removeCreature(c));
   cemetery->landCreature(cemetery->getAllPositions(), c);
 }
