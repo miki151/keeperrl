@@ -1107,10 +1107,10 @@ void PlayerControl::addImportantLongMessage(const string& msg, optional<Position
 
 void PlayerControl::initialize() {
   for (Creature* c : getCreatures())
-    update(c);
+    onMoved(c);
 }
 
-void PlayerControl::update(Creature* c) {
+void PlayerControl::onMoved(Creature* c) {
   if (!retired && contains(getCreatures(), c)) {
     vector<Position> visibleTiles = c->getVisibleTiles();
     visibilityMap->update(c, visibleTiles);
@@ -1812,6 +1812,14 @@ void PlayerControl::considerAdventurerMusic() {
     }
 }
 
+void PlayerControl::update() {
+  for (const Collective* col : getGame()->getVillains(VillainType::MAIN))
+    if (col->isConquered() && !notifiedConquered.count(col)) {
+      addImportantLongMessage("You have exterminated the armed forces of " + col->getFullName() + ".");
+      notifiedConquered.insert(col);
+    }
+}
+
 void PlayerControl::tick(double time) {
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
@@ -1884,11 +1892,6 @@ void PlayerControl::tick(double time) {
       hints[numHint] = "";
     }
   }
-  for (const Collective* col : getGame()->getVillains(VillainType::MAIN))
-    if (col->isConquered() && !notifiedConquered.count(col)) {
-      addImportantLongMessage("You have exterminated the armed forces of " + col->getFullName() + ".");
-      notifiedConquered.insert(col);
-    }
 }
 
 bool PlayerControl::canSee(const Creature* c) const {

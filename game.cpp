@@ -188,6 +188,8 @@ void Game::tick(double time) {
       }
     }
   }
+  for (Collective* col : collectives)
+    col->update();
   if (musicType == MusicType::PEACEFUL && sunlightInfo.getState() == SunlightState::NIGHT)
     setCurrentMusic(MusicType::NIGHT, true);
   else if (musicType == MusicType::NIGHT && sunlightInfo.getState() == SunlightState::DAY)

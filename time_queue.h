@@ -27,7 +27,6 @@ class TimeQueue {
   vector<Creature*> getAllCreatures() const;
   void addCreature(PCreature c);
   PCreature removeCreature(Creature* c);
-  double getCurrentTime();
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);

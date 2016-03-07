@@ -17,7 +17,10 @@ Collective* CollectiveControl::getCollective() const {
   return NOTNULL(collective);
 }
 
-void CollectiveControl::update(Creature*) {
+void CollectiveControl::onMoved(Creature*) {
+}
+
+void CollectiveControl::update() {
 }
 
 const vector<Creature*>& CollectiveControl::getCreatures() const {

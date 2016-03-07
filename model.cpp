@@ -114,7 +114,7 @@ void Model::tick(double time) {
 }
 
 void Model::addCreature(PCreature c, double delay) {
-  c->setTime(timeQueue->getCurrentTime() + 1 + delay + Random.getDouble());
+  c->setTime(getTime() + 1 + delay + Random.getDouble());
   if (c->isPlayer())
     game->setPlayer(c.get());
   timeQueue->addCreature(std::move(c));

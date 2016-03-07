@@ -74,7 +74,8 @@ void TimeQueue::removeDead() {
 }
 
 Creature* TimeQueue::getMinCreature() {
-  CHECK(creatures.size() > 0);
+  if (creatures.empty())
+    return nullptr;
   removeDead();
   QElem elem = queue.top();
   while (elem.time != elem.creature->getTime()) {
@@ -92,9 +93,3 @@ Creature* TimeQueue::getNextCreature() {
   return c;
 }
 
-double TimeQueue::getCurrentTime() {
-  if (creatures.size() > 0) 
-    return getMinCreature()->getTime();
-  else
-    return 0;
-}

@@ -101,7 +101,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual bool isPlayerView() const override;
 
   // from CollectiveControl
-  virtual void update(Creature*) override;
+  virtual void onMoved(Creature*) override;
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onNewTile(const Position&) override;
@@ -109,6 +109,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void onConstructed(Position, const SquareType&) override;
   virtual void onNoEnemies() override;
   virtual void tick(double) override;
+  virtual void update() override;
 
   private:
 

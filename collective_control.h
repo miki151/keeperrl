@@ -14,10 +14,11 @@ struct TriggerInfo;
 class CollectiveControl {
   public:
   CollectiveControl(Collective*);
+  virtual void update();
   virtual void tick(double time) = 0;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer);
   virtual void onOtherKilled(const Creature* victim, const Creature* killer);
-  virtual void update(Creature*);
+  virtual void onMoved(Creature*);
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAttack(const CollectiveAttack&) {}
   virtual void onNewTile(const Position&) {}

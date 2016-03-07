@@ -54,6 +54,7 @@ class Collective : public TaskCallback, public CreatureListener {
   MoveInfo getMove(Creature*);
   void setControl(PCollectiveControl);
   void tick(double time);
+  void update();
   TribeId getTribeId() const;
   Tribe* getTribe() const;
   double getStanding(const Deity*) const;

@@ -1182,6 +1182,10 @@ void Collective::considerSendingGuardian() {
     }
 }
 
+void Collective::update() {
+  control->update();
+}
+
 void Collective::tick(double time) {
   control->tick(time);
   considerHealingLeader();
@@ -1485,7 +1489,7 @@ bool Collective::isKnownSquare(Position pos) const {
 }
 
 void Collective::onMoved(Creature* c) {
-  control->update(c);
+  control->onMoved(c);
 }
 
 const static unordered_set<SquareType> efficiencySquares {
