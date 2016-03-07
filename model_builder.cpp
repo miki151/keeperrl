@@ -22,6 +22,7 @@
 #include "level_builder.h"
 #include "monster_ai.h"
 #include "game.h"
+#include "campaign.h"
 
 static Location* getVillageLocation(bool markSurprise = false) {
   return new Location(NameGenerator::get(NameGeneratorId::TOWN)->getNext(), "", markSurprise);
@@ -907,8 +908,7 @@ PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random, Opti
   return PModel(m);
 }
 
-PModel ModelBuilder::quickModel(ProgressMeter* meter, RandomGen& random,
-    Options* options) {
+PModel ModelBuilder::quickModel(ProgressMeter* meter, RandomGen& random, Options* options) {
   return tryBuilding(meter, 5000, [=, &random] { return tryQuickModel(meter, random, options, 40); });
 }
 
@@ -1063,8 +1063,16 @@ PModel ModelBuilder::tryCampaignBaseModel(ProgressMeter* meter, RandomGen& rando
 }
 
 PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& random,
-    Options* options, const string& siteName) {
+    Options* options, const string& siteName, EnemyId enemyId) {
   vector<EnemyInfo> enemyInfo;
+  switch (enemyId) {
+    case EnemyId::KNIGHTS: append(enemyInfo, getHumanCastle(random)); break;
+    case EnemyId::RED_DRAGON: append(enemyInfo, getRedDragon(random)); break;
+    case EnemyId::DWARVES: append(enemyInfo, getDwarfTown(random)); break;
+    case EnemyId::ELVES: append(enemyInfo, getElvenVillage(random)); break;
+    case EnemyId::ELEMENTALIST: append(enemyInfo, getTower(random)); break;
+    case EnemyId::KEEPER: FAIL << "Bad enemyId KEEPER";
+  }
   //append(enemyInfo, getBanditCave(random));
   /*      append(enemyInfo, getSokobanEntry(random));
         append(enemyInfo, random.choose({
@@ -1104,9 +1112,9 @@ PModel ModelBuilder::campaignBaseModel(ProgressMeter* meter, RandomGen& random,
 }
 
 PModel ModelBuilder::campaignSiteModel(ProgressMeter* meter, RandomGen& random,
-    Options* options, const string& siteName) {
+    Options* options, const string& siteName, EnemyId enemyId) {
   return tryBuilding(meter, 10, [=, &random] {
-      return tryCampaignSiteModel(meter, random, options, siteName); });
+      return tryCampaignSiteModel(meter, random, options, siteName, enemyId); });
 }
 
 void ModelBuilder::measureModelGen(int numTries, RandomGen& random, Options* options) {

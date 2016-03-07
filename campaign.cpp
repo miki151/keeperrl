@@ -35,10 +35,10 @@ const string& Campaign::getWorldName() const {
 
 static Campaign::VillainInfo getRandomVillain(RandomGen& random) {
   return random.choose<Campaign::VillainInfo>({
-      {ViewId::AVATAR, "knights"},
-      {ViewId::ELF_LORD, "elves"},
-      {ViewId::DWARF_BARON, "dwarves"},
-      {ViewId::RED_DRAGON, "dragon"},
+      {ViewId::AVATAR, EnemyId::KNIGHTS, "knights"},
+      {ViewId::ELF_LORD, EnemyId::ELVES, "elves"},
+      {ViewId::DWARF_BARON, EnemyId::DWARVES, "dwarves"},
+      {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "dragon"},
       
       });
 }
@@ -80,7 +80,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, const string& worldName
       case CampaignActionId::CANCEL: return none;
       case CampaignActionId::CHOOSE_SITE:
           campaign.playerPos = action.get<Vec2>();
-          campaign.sites[campaign.playerPos].villain = VillainInfo{ViewId::KEEPER, "keeper"};
+          campaign.sites[campaign.playerPos].villain = VillainInfo{ViewId::KEEPER, EnemyId::KEEPER, "keeper"};
           return campaign;
     }
   }
@@ -95,8 +95,8 @@ Table<PModel> Campaign::buildModels(ProgressMeter* meter, RandomGen& random, Opt
       ret[v] = ModelBuilder::quickModel(nullptr, random, options);
       ModelBuilder::spawnKeeper(ret[v].get(), options);
     } else if (sites[v].villain)
-      ret[v] = ModelBuilder::quickModel(nullptr, random, options);
-      //ret[v] = ModelBuilder::campaignSiteModel(nullptr, random, options, "pok");
+      //ret[v] = ModelBuilder::quickModel(nullptr, random, options);
+      ret[v] = ModelBuilder::campaignSiteModel(nullptr, random, options, "pok", sites[v].villain->enemyId);
   }
   return ret;
 }

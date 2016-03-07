@@ -7,12 +7,22 @@ class View;
 class ProgressMeter;
 class Options;
 
+enum class EnemyId {
+  KNIGHTS,
+  DWARVES,
+  ELVES,
+  RED_DRAGON,
+  ELEMENTALIST,
+  KEEPER,
+};
+
 class Campaign {
   public:
   struct VillainInfo {
     ViewId SERIAL(viewId);
+    EnemyId SERIAL(enemyId);
     string SERIAL(name);
-    SERIALIZE_ALL(viewId, name);
+    SERIALIZE_ALL(viewId, name, enemyId);
   };
 
   struct SiteInfo {
