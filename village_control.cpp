@@ -97,12 +97,14 @@ void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& ite
 }
 
 void VillageControl::launchAttack(vector<Creature*> attackers) {
+  Collective* enemy = getEnemyCollective();
+  getCollective()->getGame()->transferCreatures(attackers, enemy->getLevel()->getModel());
   optional<int> ransom;
-  int hisGold = getEnemyCollective()->numResource(CollectiveResourceId::GOLD);
+  int hisGold = enemy->numResource(CollectiveResourceId::GOLD);
   if (villain->ransom && hisGold >= villain->ransom->second)
     ransom = max<int>(villain->ransom->second,
         (Random.getDouble(villain->ransom->first * 0.6, villain->ransom->first * 1.5)) * hisGold);
-  getEnemyCollective()->addAttack(CollectiveAttack(getCollective(), attackers, ransom));
+  enemy->addAttack(CollectiveAttack(getCollective(), attackers, ransom));
   TeamId team = getCollective()->getTeams().createPersistent(attackers);
   getCollective()->getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
@@ -168,7 +170,7 @@ void VillageControl::checkEntries() {
               entries = true;
 }
 
-void VillageControl::tick(double time) {
+void VillageControl::update() {
   considerWelcomeMessage();
   considerCancellingAttack();
   checkEntries();

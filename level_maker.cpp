@@ -1322,6 +1322,25 @@ class StartingPos : public LevelMaker {
   StairKey stairKey;
 };
 
+class TransferPos : public LevelMaker {
+  public:
+
+  TransferPos(Predicate pred, StairKey key, int w) : predicate(pred), stairKey(key), width(w) {}
+
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
+    for (Vec2 pos : area)
+      if (((pos.x - area.getPX() < width) || (pos.y - area.getPY() < width) ||
+          (area.getKX() - pos.x <= width) || (area.getKY() - pos.y <= width)) &&
+          predicate.apply(builder, pos))
+        builder->getSquare(pos)->setLandingLink(stairKey);
+  }
+
+  private:
+  Predicate predicate;
+  StairKey stairKey;
+  int width;
+};
+
 class Forrest : public LevelMaker {
   public:
   Forrest(double _ratio, double _density, SquareType _onType, vector<SquareType> _types, vector<double> _probs) 
@@ -2140,7 +2159,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   vector<double> probs { 2, 1 };
   RandomLocations* locations = new RandomLocations();
   RandomLocations* locations2 = new RandomLocations();
-  LevelMaker* startingPos = new StartingPos(Predicate::type(SquareId::HILL), StairKey::keeperSpawn());
+  LevelMaker* startingPos = new StartingPos(Predicate::alwaysTrue(), StairKey::keeperSpawn());
   locations->add(startingPos, Vec2(4, 4), Predicate::type(SquareId::HILL));
   struct CottageInfo {
     LevelMaker* maker;
@@ -2251,6 +2270,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   queue->addMaker(new Forrest(0.4, 0.5, SquareId::HILL, vegetationHigh, probs));
   queue->addMaker(new Margin(mapBorder + locationMargin, locations));
   queue->addMaker(new Margin(mapBorder, new Roads(SquareId::FLOOR)));
+  queue->addMaker(new Margin(mapBorder,
+        new TransferPos(Predicate::type(SquareId::GRASS), StairKey::transferLanding(), 2)));
   queue->addMaker(new Margin(mapBorder, new Connector(SquareId::DOOR, 0, 5,
           Predicate::andPred(Predicate::canEnter({MovementTrait::WALK}),
           Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR)), SquareAttrib::CONNECTOR)));
@@ -2500,6 +2521,8 @@ PLevelMaker LevelMaker::quickLevel(RandomGen&) {
           {new Empty(SquareId::FLOOR)}, {{2, 2}},
           Predicate::type(SquareId::MOUNTAIN)));*/
   queue->addMaker(new StartingPos(Predicate::type(SquareId::GRASS), StairKey::keeperSpawn()));
+  queue->addMaker(new Margin(2,
+        new TransferPos(Predicate::type(SquareId::GRASS), StairKey::transferLanding(), 2)));
   queue->addMaker(new AddMapBorder(2));
   return PLevelMaker(new BorderGuard(queue, SquareId::BLACK_WALL));
 }

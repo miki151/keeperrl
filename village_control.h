@@ -71,7 +71,7 @@ class VillageControl : public CollectiveControl {
   VillageControl(Collective*, optional<Villain>);
 
   protected:
-  virtual void tick(double time) override;
+  virtual void update() override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
   virtual void onRansomPaid() override;
@@ -91,11 +91,11 @@ class VillageControl : public CollectiveControl {
 
   optional<Villain> SERIAL(villain);
 
-  double SERIAL(victims);
+  double SERIAL(victims) = 0;
   EntitySet<Item> SERIAL(myItems);
-  int SERIAL(stolenItemCount);
+  int SERIAL(stolenItemCount) = 1000;
   map<TeamId, int> SERIAL(attackSizes);
-  bool SERIAL(entries);
+  bool SERIAL(entries) = false;
 };
 
 #endif

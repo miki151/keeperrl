@@ -67,7 +67,9 @@ class Model {
   Game* getGame() const;
   void tick(double time);
   vector<Collective*> getCollectives() const;
-  vector<Level*> getLevels() const;
+  vector<Creature*> getAllCreatures() const;
+
+  Level* getTopLevel() const;
 
   void addWoodCount(int);
   int getWoodCount() const;
@@ -76,7 +78,7 @@ class Model {
   void updateSunlightMovement();
 
   PCreature extractCreature(Creature*);
-  void transferCreature(PCreature&&);
+  void transferCreatures(vector<PCreature>, Vec2 travelDir);
 
   Model();
 
@@ -87,6 +89,7 @@ class Model {
 
   friend class ModelBuilder;
 
+  vector<Level*> getLevels() const;
   PCreature makePlayer(int handicap);
   void landHeroPlayer();
   Level* buildLevel(LevelBuilder&&, PLevelMaker);

@@ -39,7 +39,8 @@ class Game {
   View* getView() const;
   void exitAction();
   void transferAction(const vector<Creature*>&);
-  void transferCreature(Creature*, Model* to);
+  void transferCreatures(vector<Creature*>, Model* to);
+  Position getTransferPos(Model* from, Model* to) const;
   string getGameIdentifier() const;
   string getGameDisplayName() const;
   MusicType getCurrentMusic() const;
@@ -107,7 +108,7 @@ class Game {
   double SERIAL(currentTime) = 0;
   optional<ExitInfo> exitInfo;
   EnumMap<TribeId, PTribe> SERIAL(tribes);
-  double SERIAL(lastTick) = -1000;
+  double SERIAL(lastTick) = 0;
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
   bool SERIAL(won) = false;

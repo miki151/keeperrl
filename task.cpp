@@ -34,6 +34,8 @@
 #include "player_message.h"
 #include "territory.h"
 #include "item_factory.h"
+#include "game.h"
+#include "model.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -1178,6 +1180,37 @@ PTask Task::goTo(Position pos) {
 }
 
 namespace {
+class TransferTo : public Task {
+  public:
+  TransferTo(Model* m) : model(m) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (!target)
+      target = c->getGame()->getTransferPos(model, c->getPosition().getModel());
+    if (c->getPosition() == target) {
+      return c->wait().append([=] (Creature* c) { setDone(); c->getGame()->transferCreatures({c}, model); });
+    } else
+      return c->moveTowards(*target);
+  }
+
+  virtual string getDescription() const override {
+    return "Go to site";
+  }
+
+  SERIALIZE_ALL2(Task, target, model); 
+  SERIALIZATION_CONSTRUCTOR(TransferTo);
+
+  protected:
+  optional<Position> SERIAL(target);
+  Model* SERIAL(model);
+};
+}
+
+PTask Task::transferTo(Model *m) {
+  return PTask(new TransferTo(m));
+}
+
+namespace {
 class GoToAndWait : public Task {
   public:
   GoToAndWait(Position pos, double maxT) : position(pos), maxTime(maxT) {}
@@ -1369,6 +1402,7 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Consume);
   REGISTER_TYPE(ar, Eat);
   REGISTER_TYPE(ar, GoTo);
+  REGISTER_TYPE(ar, TransferTo);
   REGISTER_TYPE(ar, GoToAndWait);
   REGISTER_TYPE(ar, Whipping);
   REGISTER_TYPE(ar, GoToAndWait);

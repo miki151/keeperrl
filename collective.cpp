@@ -285,8 +285,8 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!leader)
     leader = c;
   CHECK(c->getTribeId() == tribe);
-  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
-      c->getPosition().getLevel()->getName() << " " << c->getName().bare();
+/*  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
+      c->getPosition().getLevel()->getName() << " " << c->getName().bare();*/
   creatures.push_back(c);
   subscribeToCreature(c);
   for (MinionTrait t : traits)
@@ -719,8 +719,8 @@ MoveInfo Collective::getMove(Creature* c) {
   CHECK(control);
   CHECK(contains(creatures, c));
   CHECK(!c->isDead());
-  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
-      c->getPosition().getLevel()->getName() << " " << c->getName().bare();
+/*  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
+      c->getPosition().getLevel()->getName() << " " << c->getName().bare();*/
   if (Task* task = taskMap->getTask(c))
     if (taskMap->isPriorityTask(task))
       return task->getMove(c);
@@ -752,10 +752,14 @@ MoveInfo Collective::getMove(Creature* c) {
     if (t->getMove(c))
       return taskMap->addTask(std::move(t), c)->getMove(c);
   if (!hasTrait(c, MinionTrait::NO_RETURNING) && !territory->isEmpty() &&
-      !territory->contains(c->getPosition()) && teams->getActive(c).empty())
-    return c->moveTowards(Random.choose(territory->getAll()));
-  else
-    return NoMove;
+      !territory->contains(c->getPosition()) && teams->getActive(c).empty()) {
+    if (c->getPosition().getModel() == getLevel()->getModel())
+      return c->moveTowards(Random.choose(territory->getAll()));
+    else
+      if (PTask t = Task::transferTo(getLevel()->getModel()))
+        return taskMap->addTask(std::move(t), c)->getMove(c);
+  }
+  return NoMove;
 }
 
 void Collective::setControl(PCollectiveControl c) {

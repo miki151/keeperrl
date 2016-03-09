@@ -75,26 +75,28 @@ class Level {
   void swapCreatures(Creature*, Creature*);
 
   /** Puts \paramname{creature} on \paramname{position}. \paramname{creature} ownership is assumed by the model.*/
-  void addCreature(Vec2 position, PCreature creature, double delay = 0);
+  void addCreature(Vec2 position, PCreature, double delay = 0);
 
   /** Puts the \paramname{creature} on \paramname{position}. */
-  void putCreature(Vec2 position, Creature* creature);
+  void putCreature(Vec2 position, Creature*);
 
   //@{
   /** Finds an appropriate square for the \paramname{creature} changing level from \paramname{direction}.
     The square's method Square::isLandingSquare must return true for \paramname{direction}. 
     Returns the position of the stairs that were used. */
-  bool landCreature(StairKey key, Creature* creature);
-  bool landCreature(StairKey key, PCreature creature);
+  bool landCreature(StairKey key, Creature*);
+  bool landCreature(StairKey key, PCreature);
+  bool landCreature(StairKey key, PCreature, Vec2 travelDir);
   //@}
 
   /** Lands the creature on the level randomly choosing one of the given squares.
       Returns the position of the stairs that were used.*/
-  bool landCreature(vector<Position> landing, PCreature creature);
-  bool landCreature(vector<Position> landing, Creature* creature);
+  bool landCreature(vector<Position> landing, PCreature);
+  bool landCreature(vector<Position> landing, Creature*);
 
   /** Returns the landing squares for given direction and stair key. See Square::getLandingLink() */
   vector<Position> getLandingSquares(StairKey) const;
+  Position getLandingSquare(StairKey, Vec2 travelDir) const;
 
   vector<StairKey> getAllStairKeys() const;
   bool hasStairKey(StairKey) const;

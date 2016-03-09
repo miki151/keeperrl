@@ -193,6 +193,10 @@ vector<Level*> Model::getLevels() const {
   return extractRefs(levels);
 }
 
+Level* Model::getTopLevel() const {
+  return levels[0].get();
+}
+
 void Model::killCreature(Creature* c, Creature* attacker) {
   if (attacker)
     attacker->onKilled(c);
@@ -207,7 +211,11 @@ PCreature Model::extractCreature(Creature* c) {
   return ret;
 }
 
-void Model::transferCreature(PCreature&& c) {
-  levels[0]->landCreature(StairKey::keeperSpawn(), std::move(c));
+void Model::transferCreatures(vector<PCreature> creatures, Vec2 travelDir) {
+  for (PCreature& c : creatures)
+    CHECK(getTopLevel()->landCreature(StairKey::transferLanding(), std::move(c), travelDir));
 }
 
+vector<Creature*> Model::getAllCreatures() const { 
+  return timeQueue->getAllCreatures();
+}

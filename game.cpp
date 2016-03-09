@@ -87,7 +87,7 @@ PGame Game::splashScreen(PModel&& model) {
   Table<PModel> t(1, 1);
   t[0][0] = std::move(model);
   PGame game(new Game("", "", std::move(t), Vec2(0, 0)));
-  game->spectator.reset(new Spectator(game->models[0][0]->getLevels()[0]));
+  game->spectator.reset(new Spectator(game->models[0][0]->getTopLevel()));
   return game;
 }
 
@@ -176,7 +176,6 @@ void Game::tick(double time) {
       if (Model* m = models[v].get())
         m->updateSunlightMovement();
   Debug() << "Global time " << time;
-  lastTick = time;
   if (playerControl) {
     if (!playerControl->isRetired()) {
       bool conquered = true;
@@ -234,10 +233,20 @@ void Game::exitAction() {
   }
 }
 
-void Game::transferCreature(Creature* c, Model* to) {
-  Model* from = c->getLevel()->getModel();
-  if (from != to)
-    to->transferCreature(from->extractCreature(c));
+Position Game::getTransferPos(Model* from, Model* to) const {
+  return to->getTopLevel()->getLandingSquare(StairKey::transferLanding(),
+      getModelCoords(from) - getModelCoords(to));
+}
+
+void Game::transferCreatures(vector<Creature*> creatures, Model* to) {
+  vector<PCreature> ex;
+  for (Creature* c : creatures) {
+    Model* from = c->getLevel()->getModel();
+    if (from != to)
+      ex.push_back(from->extractCreature(c));
+  }
+  if (!ex.empty())
+    to->transferCreatures(std::move(ex), getModelCoords(creatures[0]->getLevel()->getModel()) - getModelCoords(to));
 }
 
 Vec2 Game::getModelCoords(const Model* m) const {
@@ -254,8 +263,7 @@ void Game::transferAction(const vector<Creature*>& creatures) {
   if (auto dest = view->chooseSite("Choose destination site:", *campaign,
         getModelCoords(creatures[0]->getLevel()->getModel()))) {
     CHECK(models[*dest]);
-    for (Creature* c : creatures)
-      transferCreature(c, models[*dest].get());
+    transferCreatures(creatures, models[*dest].get());
     wasTransfered = true;
   }
 }
@@ -304,14 +312,13 @@ void Game::onAlarm(Position pos) {
   for (auto& col : model->getCollectives())
     if (col->getTerritory().contains(pos))
       col->onAlarm(pos);
-  for (Level* l : model->getLevels())
-    if (const Creature* c = l->getPlayer()) {
-      if (pos == c->getPosition())
-        c->playerMessage("An alarm sounds near you.");
-      else if (pos.isSameLevel(c->getPosition()))
-        c->playerMessage("An alarm sounds in the " + 
-            getCardinalName(c->getPosition().getDir(pos).getBearing().getCardinalDir()));
-    }
+  if (const Creature* c = getPlayer()) {
+    if (pos == c->getPosition())
+      c->playerMessage("An alarm sounds near you.");
+    else if (pos.isSameLevel(c->getPosition()))
+      c->playerMessage("An alarm sounds in the " + 
+          getCardinalName(c->getPosition().getDir(pos).getBearing().getCardinalDir()));
+  }
 }
 
 void Game::landHeroPlayer() {
@@ -320,7 +327,7 @@ void Game::landHeroPlayer() {
   string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
   if (!advName.empty())
     player->setFirstName(advName);
-  Level* target = models[0][0]->getLevels()[0];
+  Level* target = models[0][0]->getTopLevel();
   CHECK(target->landCreature(target->getAllPositions(), std::move(player))) << "No place to spawn player";
 }
 

@@ -267,6 +267,32 @@ bool Level::landCreature(StairKey key, PCreature creature) {
     return false;
 }
 
+static Vec2 projectOnBorders(Rectangle area, Vec2 d) {
+  Vec2 center = Vec2((area.getPX() + area.getKX()) / 2, (area.getPY() + area.getKY()) / 2);
+  if (d.x == 0) {
+    return Vec2(center.x, d.y > 0 ? area.getKY() - 1 : area.getPY());
+  }
+  int cy = d.y * area.getW() / 2 / abs(d.x);
+  if (center.y + cy >= area.getPY() && center.y + cy < area.getKY())
+    return Vec2(d.x > 0 ? area.getKX() - 1 : area.getPX(), center.y + cy);
+  int cx = d.x * area.getH() / 2 / abs(d.y);
+  return Vec2(center.x + cx, d.y > 0 ? area.getKY() - 1: area.getPY());
+}
+
+Position Level::getLandingSquare(StairKey key, Vec2 travelDir) const {
+  vector<Position> landing = landingSquares.at(key);
+  Vec2 entryPos = projectOnBorders(getBounds(), travelDir);
+  Position target = landing.at(0);
+  for (Position p : landing)
+    if (p.getCoord().distD(entryPos) < target.getCoord().distD(entryPos))
+      target = p;
+  return target;
+}
+
+bool Level::landCreature(StairKey key, PCreature creature, Vec2 travelDir) {
+  return landCreature({getLandingSquare(key, travelDir)}, std::move(creatures[0]));
+}
+
 bool Level::landCreature(vector<Position> landing, PCreature creature) {
   if (landCreature(landing, creature.get())) {
     model->addCreature(std::move(creature));

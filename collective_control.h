@@ -15,7 +15,7 @@ class CollectiveControl {
   public:
   CollectiveControl(Collective*);
   virtual void update();
-  virtual void tick(double time) = 0;
+  virtual void tick(double time);
   virtual void onMemberKilled(const Creature* victim, const Creature* killer);
   virtual void onOtherKilled(const Creature* victim, const Creature* killer);
   virtual void onMoved(Creature*);

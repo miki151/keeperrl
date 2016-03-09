@@ -23,6 +23,9 @@ void CollectiveControl::onMoved(Creature*) {
 void CollectiveControl::update() {
 }
 
+void CollectiveControl::tick(double) {
+}
+
 const vector<Creature*>& CollectiveControl::getCreatures() const {
   return getCollective()->getCreatures();
 }

@@ -360,8 +360,7 @@ void PlayerControl::leaveControl() {
   if (controlled->isPlayer())
     controlled->popController();
   for (TeamId team : getTeams().getActive(controlled)) {
-    for (Creature* c : getTeams().getMembers(team))
-      getGame()->transferCreature(c, getCollective()->getLevel()->getModel());
+    getGame()->transferCreatures(getTeams().getMembers(team), getCollective()->getLevel()->getModel());
     if (!getTeams().isPersistent(team)) {
       if (getTeams().getMembers(team).size() == 1)
         getTeams().cancel(team);
@@ -2029,14 +2028,13 @@ void PlayerControl::onConstructed(Position pos, const SquareType& type) {
 void PlayerControl::updateVisibleCreatures() {
   visibleEnemies.clear();
   visibleFriends.clear();
-  for (const Level* level : getLevel()->getModel()->getLevels())
-    for (const Creature* c : level->getAllCreatures()) 
-      if (canSee(c)) {
-        if (isEnemy(c))
-          visibleEnemies.push_back(c);
-        else if (c->getTribeId() == getTribeId())
-          visibleFriends.push_back(c);
-      }
+  for (const Creature* c : getLevel()->getModel()->getAllCreatures()) 
+    if (canSee(c)) {
+      if (isEnemy(c))
+        visibleEnemies.push_back(c);
+      else if (c->getTribeId() == getTribeId())
+        visibleFriends.push_back(c);
+    }
 }
 
 vector<Vec2> PlayerControl::getVisibleEnemies() const {
