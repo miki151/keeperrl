@@ -127,11 +127,11 @@ class Player : public Controller, public CreatureView {
   ItemInfo getApplySquareInfo(const string& question, ViewId viewId) const;
   optional<SquareApplyType> getUsableSquareApplyType() const;
   struct TimePosInfo {
-    Vec2 pos;
+    Position pos;
     double time;
   };
-  TimePosInfo currentTimePos = {Vec2(-1, -1), 0.0};
-  TimePosInfo previousTimePos = {Vec2(-1, -1), 0.0};
+  optional<TimePosInfo> currentTimePos;
+  optional<TimePosInfo> previousTimePos;
 };
 
 #endif

@@ -127,6 +127,7 @@ class MapGui : public GuiElem {
     double x;
     double y;
   } mouseOffset, center;
+  const Level* currentLevel = nullptr;
   optional<Coords> softCenter;
   Vec2 lastMousePos;
   optional<Vec2> lastMouseMove;

@@ -93,7 +93,7 @@ class VillageControl : public CollectiveControl {
 
   double SERIAL(victims) = 0;
   EntitySet<Item> SERIAL(myItems);
-  int SERIAL(stolenItemCount) = 1000;
+  int SERIAL(stolenItemCount) = 0;
   map<TeamId, int> SERIAL(attackSizes);
   bool SERIAL(entries) = false;
 };

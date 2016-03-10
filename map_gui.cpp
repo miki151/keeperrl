@@ -539,6 +539,8 @@ void MapGui::resetScrolling() {
 
 void MapGui::clearCenter() {
   center = mouseOffset = {0.0, 0.0};
+  softCenter = none;
+  screenMovement = none;
 }
 
 bool MapGui::isCentered() const {
@@ -549,6 +551,7 @@ void MapGui::setCenter(double x, double y) {
   center = {x, y};
   center.x = max(0.0, min<double>(center.x, levelBounds.getKX()));
   center.y = max(0.0, min<double>(center.y, levelBounds.getKY()));
+  softCenter = none;
 }
 
 void MapGui::setCenter(Vec2 v) {
@@ -858,8 +861,16 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
     objects[pos] = none;
   displayScrollHint = view->isPlayerView() && !lockedView;
-  if (!isCentered() || (view->isPlayerView() && lockedView))
+  if (currentLevel != level) {
+    screenMovement = none;
+    clearCenter();
     setCenter(view->getPosition());
+    currentLevel = level;
+    mouseOffset = {0, 0};
+  }
+  if (!isCentered() || (view->isPlayerView() && lockedView) || currentLevel != level) {
+    setCenter(view->getPosition());
+  }
   keyScrolling = !view->isPlayerView();
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos())) 
     if (level->inBounds(pos)) {

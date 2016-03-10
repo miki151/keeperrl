@@ -1087,7 +1087,7 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
           getCyclops(random),
           getDriadTown(random),
           getEntTown(random)}));*/
-  return tryModel(meter, random, options, 210, siteName, enemyInfo);
+  return tryModel(meter, random, options, 150, siteName, enemyInfo);
 }
 
 PModel ModelBuilder::tryBuilding(ProgressMeter* meter, int numTries, function<PModel()> buildFun) {

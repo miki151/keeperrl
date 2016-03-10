@@ -290,7 +290,7 @@ Position Level::getLandingSquare(StairKey key, Vec2 travelDir) const {
 }
 
 bool Level::landCreature(StairKey key, PCreature creature, Vec2 travelDir) {
-  return landCreature({getLandingSquare(key, travelDir)}, std::move(creatures[0]));
+  return landCreature({getLandingSquare(key, travelDir)}, std::move(creature));
 }
 
 bool Level::landCreature(vector<Position> landing, PCreature creature) {

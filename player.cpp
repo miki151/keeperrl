@@ -507,9 +507,8 @@ void Player::retireMessages() {
 }
 
 void Player::makeMove() {
-  if (currentTimePos.time > getCreature()->getTime()) {
-    previousTimePos.pos.x = -1;
-    previousTimePos.time = currentTimePos.time = 0;
+  if (currentTimePos && currentTimePos->pos.getLevel() != getCreature()->getLevel()) {
+    previousTimePos = currentTimePos = none;
   }
   vector<Vec2> squareDirs = getCreature()->getPosition().getTravelDir();
   if (getCreature()->isAffected(LastingEffect::HALLU))
@@ -631,11 +630,12 @@ void Player::makeMove() {
       break;
     }
   }
-  if (!getCreature()->isDead()) {
-    if (getCreature()->getTime() > currentTimePos.time) {
+  if (!getCreature()->isDead() && (!currentTimePos || getCreature()->getTime() > currentTimePos->time)) {
+    if (currentTimePos && (!previousTimePos || currentTimePos->pos.isSameLevel(previousTimePos->pos)))
       previousTimePos = currentTimePos;
-      currentTimePos = { getCreature()->getPosition().getCoord(), getCreature()->getTime()};
-    }
+    else
+      previousTimePos = none;
+    currentTimePos = { getCreature()->getPosition(), getCreature()->getTime()};
   }
 }
 
@@ -783,15 +783,15 @@ Vec2 Player::getPosition() const {
 }
 
 optional<CreatureView::MovementInfo> Player::getMovementInfo() const {
-  if (previousTimePos.pos.x > -1)
-    return MovementInfo({previousTimePos.pos, currentTimePos.pos, previousTimePos.time,
+  if (previousTimePos && currentTimePos)
+    return MovementInfo({previousTimePos->pos.getCoord(), currentTimePos->pos.getCoord(), previousTimePos->time,
         getCreature()->getUniqueId()});
   else
     return none;
 }
 
 void Player::onDisplaced() {
-  currentTimePos.pos = getCreature()->getPosition().getCoord();
+  currentTimePos->pos = getCreature()->getPosition();
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
