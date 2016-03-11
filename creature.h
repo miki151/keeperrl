@@ -313,6 +313,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void setInCombat();
   bool wasInCombat(double numLastTurns) const;
   void onKilled(const Creature* victim);
+  void onMoved();
 
   void addSound(const Sound&) const;
 

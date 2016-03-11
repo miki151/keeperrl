@@ -94,6 +94,7 @@ void Square::putCreature(Creature* c) {
   onEnter(c);
   if (c->isStationary())
     level->addTickingSquare(position);
+  c->onMoved();
 }
 
 void Square::setPosition(Vec2 v) {

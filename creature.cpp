@@ -366,9 +366,11 @@ void Creature::makeMove() {
   unknownAttacker.clear();
   if (attributes->fireCreature && Random.roll(5))
     getPosition().setOnFire(1);
-  if (!isDead())
-    for (CreatureListener* l : eventGenerator->getListeners())
-      l->onMoved(this);
+}
+
+void Creature::onMoved() {
+  for (CreatureListener* l : eventGenerator->getListeners())
+    l->onMoved(this);
 }
 
 CreatureAction Creature::wait() const {
