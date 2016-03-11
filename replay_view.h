@@ -123,6 +123,11 @@ class ReplayView : public View {
       return delegate->prepareCampaign(c);
     }
 
+    virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>& c,
+        const string& cancelText) override {
+      return delegate->chooseTeamLeader(title, c, cancelText);
+    }
+
     virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {
  //     if (delegate)
  //       delegate->displaySplash(m, type, cancelFun);

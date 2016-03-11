@@ -73,6 +73,7 @@ class GuiFactory {
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
+  PGuiElem stack(PGuiElem, PGuiElem, PGuiElem, PGuiElem);
   PGuiElem external(GuiElem*);
   PGuiElem rectangle(sf::Color color, optional<sf::Color> borderColor = none);
   class ListBuilder {
@@ -90,6 +91,7 @@ class GuiFactory {
     vector<PGuiElem>& getAllElems();
 
     private:
+    void clear();
     GuiFactory& gui;
     vector<PGuiElem> elems;
     vector<int> sizes;
@@ -220,7 +222,7 @@ class GuiFactory {
   PGuiElem insideBackground(PGuiElem content);
   PGuiElem window(PGuiElem content, function<void()> onExitButton);
   PGuiElem miniWindow();
-  PGuiElem miniWindow(PGuiElem content);
+  PGuiElem miniWindow(PGuiElem content, function<void()> onExitButton = nullptr);
   PGuiElem mapWindow(PGuiElem content);
   PGuiElem miniBorder();
   PGuiElem border2();

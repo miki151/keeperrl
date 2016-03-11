@@ -126,12 +126,12 @@ CreatureAction Creature::castSpell(Spell* spell) const {
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (Creature *c) {
+    c->addSound(spell->getSound());
     spell->addMessage(c);
     Effect::applyToCreature(c, spell->getEffectType(), EffectStrength::NORMAL);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
-    c->addSound(spell->getSound());
     c->spendTime(1);
   });
 }
@@ -143,13 +143,13 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (Creature *c) {
+    c->addSound(spell->getSound());
     monsterMessage(getName().the() + " casts a spell");
     playerMessage("You cast " + spell->getName());
     Effect::applyDirected(c, dir, spell->getDirEffectType(), EffectStrength::NORMAL);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
-    c->addSound(spell->getSound());
     c->spendTime(1);
   });
 }

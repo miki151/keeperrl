@@ -339,10 +339,35 @@ optional<TeamId> PlayerControl::getCurrentTeam() const {
   return none;
 }
 
+void PlayerControl::onControlledKilled() {
+  if (getKeeper()->isPlayer())
+    return;
+  vector<CreatureInfo> team;
+  TeamId currentTeam = *getCurrentTeam();
+  for (Creature* c : getTeams().getMembers(currentTeam))
+    if (!c->isPlayer())
+      team.push_back(c);
+  if (team.empty())
+    return;
+  optional<Creature::Id> newLeader;
+  if (team.size() == 1)
+    newLeader = team[0].uniqueId;
+  else
+    newLeader = getView()->chooseTeamLeader("Choose new team leader:", team, "Order team back to base");
+  if (newLeader) {
+    if (Creature* c = getCreature(*newLeader)) {
+      getTeams().setLeader(currentTeam, c);
+      commandTeam(currentTeam);
+      return;
+    }
+  }
+  leaveControl();
+}
+
 bool PlayerControl::swapTeam() {
   if (auto team = getCurrentTeam())
     if (getTeams().getMembers(*team).size() > 1) {
-      leaveControl();
+      getControlled()->popController();
       getTeams().rotateLeader(*team);
       commandTeam(*team);
       return true;
@@ -1958,6 +1983,8 @@ void PlayerControl::onConqueredLand() {
 }
 
 void PlayerControl::onMemberKilled(const Creature* victim, const Creature* killer) {
+  if (victim->isPlayer())
+    onControlledKilled();
   visibilityMap->remove(victim);
   if (victim == getKeeper() && !retired && !getGame()->isGameOver()) {
     getGame()->gameOver(victim, getCollective()->getKills().size(), "enemies",

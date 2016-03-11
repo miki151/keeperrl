@@ -1346,6 +1346,7 @@ void Collective::onKillCancelled(Creature* c) {
 
 void Collective::onKilled(Creature* victim, Creature* killer) {
   if (contains(creatures, victim)) {
+    control->onMemberKilled(victim, killer);
     if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer))
       returnResource({ResourceId::PRISONER_HEAD, 1});
     if (victim == leader) {
@@ -1363,7 +1364,6 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
             .setPosition(victim->getPosition()));
     }
     removeCreature(victim);
-    control->onMemberKilled(victim, killer);
   } else
     control->onOtherKilled(victim, killer);
   if (victim->getTribe() != getTribe() && (/*!killer || */contains(creatures, killer))) {

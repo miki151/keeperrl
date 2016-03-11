@@ -68,6 +68,11 @@ class LoggingView : public View {
       return delegate->prepareCampaign(c);
     }
 
+    virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>& c,
+        const string& cancelText) override {
+      return delegate->chooseTeamLeader(title, c, cancelText);
+    }
+
     virtual double getGameSpeed() override {
       return logAndGet(delegate->getGameSpeed(), LoggingToken::GET_GAME_SPEED);
     }

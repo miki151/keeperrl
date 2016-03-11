@@ -422,7 +422,7 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
   int margin = 20;
   Vec2 size(150 + 2 * margin, legendLineHeight * lines.size() - 10 + 2 * margin);
   PGuiElem dialog = gui.miniWindow(
-      gui.margins(gui.verticalList(std::move(lines), legendLineHeight), margin, margin, margin, margin));
+      gui.margins(gui.verticalList(std::move(lines), legendLineHeight), margin));
   overlays.push_back({gui.conditional(std::move(dialog), [this] { return gameSpeedDialogOpen; }), size,
       OverlayInfo::GAME_SPEED});
 }
@@ -666,9 +666,8 @@ void GuiBuilder::drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 me
     return;
   int contentHeight = elems.getSize();
   int margin = 15;
-  PGuiElem menu = gui.stack(
-      gui.reverseButton([&exit] { exit = true; }, {{Keyboard::Escape}}),
-      gui.miniWindow(gui.leftMargin(margin, gui.topMargin(margin, elems.buildVerticalList()))));
+  PGuiElem menu = gui.miniWindow(gui.leftMargin(margin, gui.topMargin(margin, elems.buildVerticalList())),
+          [&exit] { exit = true; });
   menu->setBounds(Rectangle(menuPos, menuPos + Vec2(width + 2 * margin, contentHeight + 2 * margin)));
   PGuiElem bg = gui.darken();
   bg->setBounds(renderer.getSize());
@@ -687,8 +686,7 @@ void GuiBuilder::drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 me
 
 }
 
-optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos,
-    bool autoDefault) {
+optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault) {
   if (itemInfo.actions.empty())
     return none;
   if (itemInfo.actions.size() == 1 && autoDefault)
@@ -703,7 +701,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
   options.push_back("cancel");
   int count = options.size();
   PGuiElem stuff = drawListGui("", ListElem::convert(options), MenuType::NORMAL, &contentHeight, &index, &choice);
-  stuff = gui.miniWindow(gui.margins(std::move(stuff), 0, 0, 0, 0));
+  stuff = gui.miniWindow(gui.margins(std::move(stuff), 0));
   Vec2 size(150, options.size() * listLineHeight + 35);
   menuPos.x = min(menuPos.x, renderer.getSize().x - size.x);
   menuPos.y = min(menuPos.y, renderer.getSize().y - size.y);
@@ -1020,7 +1018,7 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info
   int margin = 20;
   append(lines, std::move(freeLines));
   ret.push_back({gui.conditional(gui.miniWindow(
-        gui.margins(gui.verticalList(std::move(lines), lineHeight), margin, margin, margin, margin)),
+        gui.margins(gui.verticalList(std::move(lines), lineHeight), margin)),
         [this] { return showTasks; }),
       Vec2(taskMapWindowWidth, info.taskMap.size() * lineHeight + 2 * margin),
       OverlayInfo::TOP_RIGHT});
@@ -1087,8 +1085,8 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& in
                 0, -15, 0, -15)), minionListWidth),
           gui.leftMargin(minionListWidth + 20, std::move(minionPage)));
       minionsOverlayCache = gui.miniWindow(gui.stack(
-            gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, -1}), {{Keyboard::Escape}}, true),
-            gui.margins(std::move(menu), margin)));
+          gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, -1}), {{Keyboard::Escape}}, true),
+          gui.margins(std::move(menu), margin)));
       minionsOverlayHash = newHash;
     }
     ret.push_back({gui.external(minionsOverlayCache.get()), size, OverlayInfo::MINIONS});
@@ -1683,7 +1681,7 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minio
     if (items[i].type == items[i].CONSUMABLE)
       lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
   lines.push_back(gui.stack(
-      gui.labelHighlight("[add consumable]", colors[ColorId::LIGHT_BLUE]),
+      gui.labelHighlight("[Add consumable]", colors[ColorId::LIGHT_BLUE]),
       gui.button(getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION, 
               EquipmentActionInfo{minion.creatureId, {}, none, ItemAction::REPLACE}}))));
   for (int i : All(itemElems))
@@ -1808,9 +1806,8 @@ PGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id
   int menuHeight = lines.getSize() + 30;
   return gui.stack(
       gui.preferredSize(330, menuHeight),
-      gui.reverseButton([&queue] { queue.push(none); }, {{Keyboard::Escape}}),
-      gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos),
-          15, 15, 15, 15)));
+      gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos), 15),
+          [&queue] { queue.push(none); }));
 }
 
 PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>& marked, function<bool(Vec2)> activeFun){
@@ -1861,14 +1858,14 @@ PGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
         .addElemAuto(gui.conditional(
             gui.stack(
                 gui.button([&] { queue.push(*sitePos); }),
-                gui.labelHighlight("[confirm]", colors[ColorId::LIGHT_BLUE])),
-            gui.label("[confirm]", colors[ColorId::LIGHT_GRAY]),
+                gui.labelHighlight("[Confirm]", colors[ColorId::LIGHT_BLUE])),
+            gui.label("[Confirm]", colors[ColorId::LIGHT_GRAY]),
             [&] { return !!sitePos; }))
         .addElem(gui.empty(), 10)
         .addElemAuto(
             gui.stack(
                 gui.button([&queue] { queue.push(none); }, {Keyboard::Escape}, true),
-                gui.labelHighlight("[cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
+                gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   return gui.stack(
       gui.preferredSize(500, 500),
       gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
@@ -1884,7 +1881,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
         .addElem(gui.empty(), 30)
         .addElemAuto(gui.stack(
             gui.button([] {  }),
-            gui.labelHighlight("[change]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList());
+            gui.labelHighlight("[Change]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList());
   lines.addElem(gui.label("Width: " + toString(campaign.getSites().getBounds().getW())));
   lines.addElem(gui.label("Height: " + toString(campaign.getSites().getBounds().getH())));
   lines.addElem(gui.empty(), 15);
@@ -1895,17 +1892,46 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
         .addElemAuto(gui.conditional(
             gui.stack(
                 gui.button([&] { queue.push({CampaignActionId::CHOOSE_SITE, *embarkPos}); }),
-                gui.labelHighlight("[confirm]", colors[ColorId::LIGHT_BLUE])),
-            gui.label("[confirm]", colors[ColorId::LIGHT_GRAY]),
+                gui.labelHighlight("[Confirm]", colors[ColorId::LIGHT_BLUE])),
+            gui.label("[Confirm]", colors[ColorId::LIGHT_GRAY]),
             [&] { return !!embarkPos; }))
         .addElem(gui.empty(), 10)
         .addElemAuto(
             gui.stack(
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
-                gui.labelHighlight("[cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
+                gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   return gui.stack(
       gui.preferredSize(500, 590),
       gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(CampaignActionId::CANCEL); }));
+}
+
+PGuiElem GuiBuilder::drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
+      const vector<CreatureInfo>& team, const string& cancelText) {
+  auto lines = gui.getListBuilder(getStandardLineHeight() + 10);
+  lines.addElem(gui.centerHoriz(gui.label(title)));
+  const int windowWidth = 450;
+  auto line = gui.getListBuilder(60);
+  for (auto& elem : team) {
+    line.addElem(gui.stack(
+          gui.mouseHighlight2(gui.bottomMargin(22, gui.rightMargin(6,
+                gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER_STRETCHED, colors[ColorId::GREEN])))),
+          gui.button([&queue, elem] { queue.push(elem.uniqueId); }),
+          gui.viewObject(elem.viewId, 2),
+          gui.label(toString(elem.expLevel), 20)));
+    if (line.getSize() >= windowWidth - 50)
+      lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
+  }
+  if (!line.isEmpty())
+      lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
+  if (!cancelText.empty())
+    lines.addElem(gui.centerHoriz(gui.stack(
+          gui.labelHighlight("[" + cancelText + "]", colors[ColorId::LIGHT_BLUE]),
+          gui.button([&queue] { queue.push(none);}))));
+  int margin = 25;
+  int height = 2 * margin + lines.getSize() + 30;
+  return gui.stack(
+      gui.preferredSize(2 * margin + windowWidth, height),
+      gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
 }
 
 PGuiElem GuiBuilder::drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
@@ -1925,9 +1951,8 @@ PGuiElem GuiBuilder::drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::
   int menuHeight = lines.getSize() + 30;
   return gui.stack(
       gui.preferredSize(330, menuHeight),
-      gui.reverseButton([&queue] { queue.push(none); }, {{Keyboard::Escape}}),
-      gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos),
-          15, 15, 15, 15)));
+      gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos), 15),
+          [&queue] { queue.push(none); }));
 }
 
 vector<PGuiElem> GuiBuilder::drawRecruitList(const vector<CreatureInfo>& creatures,

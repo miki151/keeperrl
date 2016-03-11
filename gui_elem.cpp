@@ -644,6 +644,10 @@ PGuiElem GuiFactory::stack(PGuiElem g1, PGuiElem g2, PGuiElem g3) {
   return stack(makeVec<PGuiElem>(std::move(g1), std::move(g2), std::move(g3)));
 }
 
+PGuiElem GuiFactory::stack(PGuiElem g1, PGuiElem g2, PGuiElem g3, PGuiElem g4) {
+  return stack(makeVec<PGuiElem>(std::move(g1), std::move(g2), std::move(g3), std::move(g4)));
+}
+
 class External : public GuiElem {
   public:
   External(GuiElem* e) : elem(e) {}
@@ -940,22 +944,34 @@ vector<PGuiElem>& GuiFactory::ListBuilder::getAllElems() {
   return elems;
 }
 
+void GuiFactory::ListBuilder::clear() {
+  elems.clear();
+  sizes.clear();
+  backElems = 0;
+}
+
 PGuiElem GuiFactory::ListBuilder::buildVerticalList() {
   for (int i : All(sizes))
     if (sizes[i] == -1)
       sizes[i] = *elems[i]->getPreferredHeight();
-  return gui.verticalList(std::move(elems), sizes, backElems);
+  PGuiElem ret = gui.verticalList(std::move(elems), sizes, backElems);
+  clear();
+  return ret;
 }
 
 PGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
   for (int i : All(sizes))
     if (sizes[i] == -1)
       sizes[i] = *elems[i]->getPreferredWidth();
-  return gui.horizontalList(std::move(elems), sizes, backElems);
+  PGuiElem ret = gui.horizontalList(std::move(elems), sizes, backElems);
+  clear();
+  return ret;
 }
 
 PGuiElem GuiFactory::ListBuilder::buildHorizontalListFit() {
-  return gui.horizontalListFit(std::move(elems), 0);
+  PGuiElem ret = gui.horizontalListFit(std::move(elems), 0);
+  clear();
+  return ret;
 }
 
 PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, vector<int> heights, int numAlignBottom) {
@@ -2052,13 +2068,16 @@ PGuiElem GuiFactory::miniBorder() {
         sprite(get(TexId::CORNER_MINI), Alignment::TOP_LEFT, false, false)));
 }
 
-PGuiElem GuiFactory::miniWindow(PGuiElem content) {
-  return stack(makeVec<PGuiElem>(
+PGuiElem GuiFactory::miniWindow(PGuiElem content, function<void()> onExitButton) {
+  auto ret = makeVec<PGuiElem>(
         stopMouseMovement(),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
         miniBorder(),
-        std::move(content)));
+        std::move(content));
+  if (onExitButton)
+    ret.push_back(reverseButton(onExitButton, {{Keyboard::Escape}}));
+  return stack(std::move(ret));
 }
 
 PGuiElem GuiFactory::miniWindow() {

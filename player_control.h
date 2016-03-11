@@ -62,6 +62,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void retire();
   void leaveControl();
   bool swapTeam();
+  void onControlledKilled();
 
   enum class RequirementId {
     TECHNOLOGY,
