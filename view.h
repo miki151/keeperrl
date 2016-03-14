@@ -99,10 +99,14 @@ enum class CampaignActionId {
   CANCEL,
   INC_WIDTH,
   INC_HEIGHT,
-  CHOOSE_SITE
+  NUM_VILLAINS,
+  CHOOSE_SITE,
+  WORLD_NAME,
+  REROLL_MAP
 };
+
 class CampaignAction : public EnumVariant<CampaignActionId, TYPES(int, Vec2),
-  ASSIGN(int, CampaignActionId::INC_WIDTH, CampaignActionId::INC_HEIGHT),
+  ASSIGN(int, CampaignActionId::INC_WIDTH, CampaignActionId::INC_HEIGHT, CampaignActionId::NUM_VILLAINS),
   ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE)> {
     using EnumVariant::EnumVariant;
 };

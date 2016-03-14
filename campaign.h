@@ -36,9 +36,12 @@ class Campaign {
 
   Table<PModel> buildModels(ProgressMeter*, RandomGen&, Options*) const;
   const Table<SiteInfo>& getSites() const;
-  static optional<Campaign> prepareCampaign(View*, const string& worldName, RandomGen&);
+  static optional<Campaign> prepareCampaign(View*, function<string()> worldNameGen, RandomGen&);
   Vec2 getPlayerPos() const;
   const string& getWorldName() const;
+  int getNumVillains() const;
+  int getMaxVillains() const;
+  int getMinVillains() const;
 
   SERIALIZATION_DECL(Campaign);
 

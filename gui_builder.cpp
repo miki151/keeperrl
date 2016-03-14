@@ -1875,19 +1875,38 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
     optional<Vec2>& embarkPos) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label("Campaign setup")));
+  lines.addElem(gui.empty());
   lines.addElem(     
         gui.getListBuilder()
         .addElemAuto(gui.label("World name: " + campaign.getWorldName()))
         .addElem(gui.empty(), 30)
         .addElemAuto(gui.stack(
-            gui.button([] {  }),
+            gui.button([&queue] { queue.push(CampaignActionId::WORLD_NAME); }),
             gui.labelHighlight("[Change]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList());
-  lines.addElem(gui.label("Width: " + toString(campaign.getSites().getBounds().getW())));
-  lines.addElem(gui.label("Height: " + toString(campaign.getSites().getBounds().getH())));
+//  lines.addElem(gui.label("Width: " + toString(campaign.getSites().getBounds().getW())));
+//  lines.addElem(gui.label("Height: " + toString(campaign.getSites().getBounds().getH())));
+  lines.addElem(gui.getListBuilder()
+      .addElem(gui.label("Number of villains: " + toString(campaign.getNumVillains())), 200)
+      .addElem(gui.empty(), 15)
+      .addElemAuto(campaign.getNumVillains() < campaign.getMaxVillains()
+          ? gui.stack(
+                gui.labelHighlight("[+]", colors[ColorId::LIGHT_BLUE]),
+                gui.button([&queue] { queue.push({CampaignActionId::NUM_VILLAINS, 1});}))
+          : gui.label("[+]", colors[ColorId::GRAY]))
+      .addElem(gui.empty(), 10)
+      .addElemAuto(campaign.getNumVillains() > campaign.getMinVillains()
+          ? gui.stack(
+                gui.labelHighlight("[-]", colors[ColorId::LIGHT_BLUE]),
+                gui.button([&queue] { queue.push({CampaignActionId::NUM_VILLAINS, -1});}))
+          : gui.label("[-]", colors[ColorId::GRAY]))
+      .buildHorizontalList());
   lines.addElem(gui.empty(), 15);
   lines.addElem(gui.centerHoriz(gui.label("Choose embark site:")));
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, embarkPos,
         [&campaign](Vec2 pos) { return campaign.getSites()[pos].canEmbark(); })));
+  lines.addElem(gui.centerHoriz(gui.stack(
+        gui.button([&queue] { queue.push(CampaignActionId::REROLL_MAP);}),
+        gui.labelHighlight("[Re-roll map]", colors[ColorId::LIGHT_BLUE]))));
   lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
         .addElemAuto(gui.conditional(
             gui.stack(

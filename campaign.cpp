@@ -43,13 +43,33 @@ static Campaign::VillainInfo getRandomVillain(RandomGen& random) {
       });
 }
 
-optional<Campaign> Campaign::prepareCampaign(View* view, const string& worldName, RandomGen& random) {
+int Campaign::getNumVillains() const {
+  int ret = 0;
+  for (Vec2 v : sites.getBounds())
+    if (!!sites[v].villain)
+      ++ret;
+  return ret;
+}
+
+int Campaign::getMaxVillains() const {
+  return 12;
+}
+
+int Campaign::getMinVillains() const {
+  return 0;
+}
+
+optional<Campaign> Campaign::prepareCampaign(View* view, function<string()> worldNameGen, RandomGen& random) {
   Vec2 size(8, 5);
   int numVillains = 4;
   int numBlocked = random.get(4, 8);
+  string worldName;
   while (1) {
     Campaign campaign(size);
-    campaign.worldName = worldName;
+    if (!worldName.empty())
+      campaign.worldName = worldName;
+    else
+      campaign.worldName = worldNameGen();
     for (Vec2 v : Rectangle(size)) {
       campaign.sites[v].viewId.push_back(ViewId::GRASS);
       campaign.sites[v].description = "site " + toString(v);
@@ -66,22 +86,49 @@ optional<Campaign> Campaign::prepareCampaign(View* view, const string& worldName
       campaign.sites[pos].villain = getRandomVillain(random);
     }
     for (int i : Range(numBlocked)) {
+      if (freePos.size() <= 1)
+        break;
       Vec2 pos = random.choose(freePos);
       removeElement(freePos, pos);
       campaign.sites[pos].blocked = true;
       campaign.sites[pos].viewId.push_back(ViewId::MAP_MOUNTAIN);
-      if (freePos.empty())
-        break;
     }
-    CampaignAction action = view->prepareCampaign(campaign);
-    switch (action.getId()) {
-      case CampaignActionId::INC_WIDTH: size.x += action.get<int>(); break;
-      case CampaignActionId::INC_HEIGHT: size.y += action.get<int>(); break;
-      case CampaignActionId::CANCEL: return none;
-      case CampaignActionId::CHOOSE_SITE:
-          campaign.playerPos = action.get<Vec2>();
-          campaign.sites[campaign.playerPos].villain = VillainInfo{ViewId::KEEPER, EnemyId::KEEPER, "keeper"};
-          return campaign;
+    while (1) {
+      bool reroll = false;
+      CampaignAction action = view->prepareCampaign(campaign);
+      switch (action.getId()) {
+        case CampaignActionId::INC_WIDTH:
+            size.x += action.get<int>(); reroll = true;
+            break;
+        case CampaignActionId::INC_HEIGHT:
+            size.y += action.get<int>(); reroll = true;
+            break;
+        case CampaignActionId::NUM_VILLAINS:
+            numVillains = max(0, numVillains + action.get<int>());
+            reroll = true;
+            break;
+        case CampaignActionId::REROLL_MAP:
+            reroll = true; break;
+        case CampaignActionId::CANCEL:
+            return none;
+        case CampaignActionId::WORLD_NAME:
+            if (auto name = view->getText("Enter world name", worldName, 15,
+                  "Leave blank to use a random name.")) {
+              if (!name->empty())
+                campaign.worldName = worldName = *name;
+              else {
+                worldName = "";
+                campaign.worldName = worldNameGen();
+              }
+            }
+            break;
+        case CampaignActionId::CHOOSE_SITE:
+            campaign.playerPos = action.get<Vec2>();
+            campaign.sites[campaign.playerPos].villain = VillainInfo{ViewId::KEEPER, EnemyId::KEEPER, "keeper"};
+            return campaign;
+      }
+      if (reroll)
+        break;
     }
   }
 }

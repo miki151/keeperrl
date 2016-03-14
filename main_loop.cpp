@@ -257,7 +257,8 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
 
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   random.init(Random.get(1234567));
-  optional<Campaign> campaign = Campaign::prepareCampaign(view, "Patagonia", random);
+  optional<Campaign> campaign = Campaign::prepareCampaign(view,
+      []{ return NameGenerator::get(NameGeneratorId::WORLD)->getNext(); }, random);
   if (!campaign)
     return nullptr;
 /*  optional<GameTypeChoice> choice;
