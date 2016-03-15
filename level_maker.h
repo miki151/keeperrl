@@ -51,6 +51,12 @@ enum class SettlementType {
   SWAMP,
 };
 
+RICH_ENUM(BiomeId,
+  GRASSLAND,
+  FORREST,
+  MOUNTAIN
+);
+
 struct StockpileInfo {
   enum Type { GOLD, MINERALS } type;
   int number;
@@ -81,7 +87,8 @@ class LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
 
   static PLevelMaker cryptLevel(RandomGen&, SettlementInfo);
-  static PLevelMaker topLevel(RandomGen&, CreatureFactory forrest, vector<SettlementInfo> village, int width);
+  static PLevelMaker topLevel(RandomGen&, CreatureFactory forrest, vector<SettlementInfo> village, int width,
+      bool keeperSpawn, BiomeId);
   static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo);
   static PLevelMaker splashLevel(CreatureFactory heroLeader, CreatureFactory heroes,
       CreatureFactory monsters, CreatureFactory imps, const string& splashPath);

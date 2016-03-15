@@ -438,7 +438,7 @@ PModel MainLoop::quickGame(RandomGen& random) {
 
 void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
   NameGenerator::init(dataFreePath + "/names");
-  ModelBuilder::measureModelGen(numTries, Random, options);
+  ModelBuilder::measureSiteGen(numTries, Random, options);
 }
 
 Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {

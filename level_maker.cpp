@@ -1347,7 +1347,7 @@ class Forrest : public LevelMaker {
       : ratio(_ratio), density(_density), types(_types), probs(_probs), onType(_onType) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    Table<double> wys = genNoiseMap(builder->getRandom(), area, {0, 0, 0, 0, 0}, 0.9);
+    Table<double> wys = genNoiseMap(builder->getRandom(), area, {0, 0, 0, 0, 0}, 0.5);
     vector<double> values = sortedValues(wys);
     double cutoff = values[values.size() * ratio];
     for (Vec2 v : area)
@@ -1932,7 +1932,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::SWAMP: return {random.get(12, 16), random.get(12, 16)};
     case SettlementType::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
     case SettlementType::FOREST: return {18, 13};
-    case SettlementType::VILLAGE2: return {30, 20};
+    case SettlementType::VILLAGE2: return {20, 20};
     case SettlementType::VILLAGE:
     case SettlementType::ANT_NEST:
     case SettlementType::CASTLE: return {30, 20};
@@ -2150,17 +2150,46 @@ LevelMaker* swamp(SettlementInfo info) {
   return queue;
 }
 
-PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreatures,
-    vector<SettlementInfo> settlements, int width) {
-  MakerQueue* queue = new MakerQueue();
+static LevelMaker* getMountains(BiomeId id) {
+  switch (id) {
+    case BiomeId::GRASSLAND:
+    case BiomeId::FORREST:
+      return new Mountains({0.0, 0.0, 0.75, 0.83, 0.95}, 0.45, {0, 1, 0, 0, 0},
+            {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND});
+    case BiomeId::MOUNTAIN:
+      return new Mountains({0.0, 0.0, 0.05, 0.28, 0.75}, 0.45, {0, 1, 0, 0, 0},
+            {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND});
+  }
+}
+
+static LevelMaker* getForrest(BiomeId id) {
   vector<SquareType> vegetationLow {
       getTreesType(SquareId::CANIF_TREE), getTreesType(SquareId::BUSH) };
   vector<SquareType> vegetationHigh { getTreesType(SquareId::DECID_TREE), getTreesType(SquareId::BUSH) };
   vector<double> probs { 2, 1 };
+  switch (id) {
+    case BiomeId::MOUNTAIN:
+    case BiomeId::GRASSLAND:
+      return new MakerQueue({
+          new Forrest(0.3, 0.25, SquareId::GRASS, vegetationLow, probs),
+          new Forrest(0.3, 0.25, SquareId::HILL, vegetationHigh, probs)});
+    case BiomeId::FORREST:
+      return new MakerQueue({
+          new Forrest(0.8, 0.5, SquareId::GRASS, vegetationLow, probs),
+          new Forrest(0.8, 0.5, SquareId::HILL, vegetationHigh, probs)});
+  }
+}
+
+PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreatures,
+    vector<SettlementInfo> settlements, int width, bool keeperSpawn, BiomeId biomeId) {
+  MakerQueue* queue = new MakerQueue();
   RandomLocations* locations = new RandomLocations();
   RandomLocations* locations2 = new RandomLocations();
-  LevelMaker* startingPos = new StartingPos(Predicate::alwaysTrue(), StairKey::keeperSpawn());
-  locations->add(startingPos, Vec2(4, 4), Predicate::type(SquareId::HILL));
+  LevelMaker* startingPos = nullptr;
+  if (keeperSpawn) {
+    startingPos = new StartingPos(Predicate::alwaysTrue(), StairKey::keeperSpawn());
+    locations->add(startingPos, Vec2(4, 4), Predicate::type(SquareId::HILL));
+  }
   struct CottageInfo {
     LevelMaker* maker;
     CollectiveBuilder* collective;
@@ -2199,7 +2228,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
           break;
       case SettlementType::VAULT:
           queue = vaultMaker(settlement, false);
-          locations->setMaxDistance(startingPos, queue, width / 3);
+          if (keeperSpawn)
+            locations->setMaxDistance(startingPos, queue, width / 3);
           break;
       case SettlementType::ISLAND_VAULT:
           queue = islandVaultMaker(random, settlement, false);
@@ -2220,11 +2250,13 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
     if (settlement.type == SettlementType::SPIDER_CAVE)
       locations2->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
     else {
-      if (settlement.closeToPlayer) {
-        locations->setMinDistance(startingPos, queue, 25);
-        locations->setMaxDistance(startingPos, queue, 60);
-      } else
-        locations->setMinDistance(startingPos, queue, 70);
+      if (keeperSpawn) {
+        if (settlement.closeToPlayer) {
+          locations->setMinDistance(startingPos, queue, 25);
+          locations->setMaxDistance(startingPos, queue, 60);
+        } else
+          locations->setMinDistance(startingPos, queue, 70);
+      }
       locations->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
     }
   }
@@ -2254,20 +2286,20 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   }*/
   int maxDist = 1000;
   int maxDist2 = 1000;
-  addResources(random, locations, random.get(4, 6), 1, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE, startingPos);
-  addResources(random, locations, random.get(3, 6), 2, 5, 10, maxDist, maxDist2, SquareId::STONE, startingPos);
-  addResources(random, locations, random.get(7, 12), 4, 5, 10, maxDist, maxDist2, SquareId::IRON_ORE, startingPos);
+  if (keeperSpawn) {
+    addResources(random, locations, random.get(4, 6), 1, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE, startingPos);
+    addResources(random, locations, random.get(3, 6), 2, 5, 10, maxDist, maxDist2, SquareId::STONE, startingPos);
+    addResources(random, locations, random.get(7, 12), 4, 5, 10, maxDist, maxDist2, SquareId::IRON_ORE, startingPos);
+  }
   int mapBorder = 30;
-  int locationMargin = 20;
+  int locationMargin = 10;
   queue->addMaker(new Empty(SquareId::WATER));
-  queue->addMaker(new Mountains({0.0, 0.0, 0.6, 0.68, 0.95}, 0.45, {0, 1, 0, 0, 0},
-        {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND}));
+  queue->addMaker(getMountains(biomeId));
   queue->addMaker(new AddAttrib(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::LOWLAND)));
   queue->addMaker(new AddAttrib(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::HILL)));
-  queue->addMaker(new MountainRiver(2, SquareId::WATER, SquareId::SAND,
+  queue->addMaker(new MountainRiver(1, SquareId::WATER, SquareId::SAND,
           Predicate::type(SquareId::MOUNTAIN)));
-  queue->addMaker(new Forrest(0.7, 0.5, SquareId::GRASS, vegetationLow, probs));
-  queue->addMaker(new Forrest(0.4, 0.5, SquareId::HILL, vegetationHigh, probs));
+  queue->addMaker(getForrest(biomeId));
   queue->addMaker(new Margin(mapBorder + locationMargin, locations));
   queue->addMaker(new Margin(mapBorder, new Roads(SquareId::FLOOR)));
   queue->addMaker(new Margin(mapBorder,

@@ -7,14 +7,18 @@ class View;
 class ProgressMeter;
 class Options;
 
-enum class EnemyId {
+RICH_ENUM(EnemyId,
   KNIGHTS,
   DWARVES,
   ELVES,
+  DARK_ELVES,
+  GNOMES,
   RED_DRAGON,
+  GREEN_DRAGON,
   ELEMENTALIST,
-  KEEPER,
-};
+  BANDITS,
+  SURPRISE
+);
 
 class Campaign {
   public:

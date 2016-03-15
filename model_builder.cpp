@@ -1037,7 +1037,7 @@ PModel ModelBuilder::singleMapModel(ProgressMeter* meter, RandomGen& random,
   PModel ret = tryBuilding(meter, 10, [=, &random] {
       return tryModel(meter, random, options, 360, worldName,
           getEnemyInfo(random, getBoardText(options->getStringValue(OptionId::KEEPER_NAME),
-            "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext())));});
+            "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext())), true, BiomeId::GRASSLAND);});
   return ret;
 }
 
@@ -1058,20 +1058,42 @@ PModel ModelBuilder::tryCampaignBaseModel(ProgressMeter* meter, RandomGen& rando
           getCyclops(random),
           getDriadTown(random),
           getEntTown(random)}));*/
-  PModel ret = tryModel(meter, random, options, 210, siteName, enemyInfo);
+  PModel ret = tryModel(meter, random, options, 210, siteName, enemyInfo, true, BiomeId::MOUNTAIN);
   return ret;
 }
 
 PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& random,
     Options* options, const string& siteName, EnemyId enemyId) {
   vector<EnemyInfo> enemyInfo;
+  BiomeId biomeId;
   switch (enemyId) {
     case EnemyId::KNIGHTS: append(enemyInfo, getHumanCastle(random)); break;
     case EnemyId::RED_DRAGON: append(enemyInfo, getRedDragon(random)); break;
+    case EnemyId::GREEN_DRAGON: append(enemyInfo, getGreenDragon(random)); break;
     case EnemyId::DWARVES: append(enemyInfo, getDwarfTown(random)); break;
     case EnemyId::ELVES: append(enemyInfo, getElvenVillage(random)); break;
     case EnemyId::ELEMENTALIST: append(enemyInfo, getTower(random)); break;
-    case EnemyId::KEEPER: FAIL << "Bad enemyId KEEPER";
+    case EnemyId::BANDITS: append(enemyInfo, getBanditCave(random)); break;
+    case EnemyId::DARK_ELVES: append(enemyInfo, getDarkElvenMines(random)); break;
+    case EnemyId::GNOMES: append(enemyInfo, getGnomishMines(random)); break;
+    case EnemyId::SURPRISE: append(enemyInfo, getFriendlyCave(random, 
+                                random.choose({CreatureId::ORC, CreatureId::HARPY, CreatureId::OGRE}))); break;
+  }
+  switch (enemyId) {
+    case EnemyId::KNIGHTS:
+    case EnemyId::ELEMENTALIST:
+      biomeId = BiomeId::GRASSLAND;
+    case EnemyId::RED_DRAGON:
+    case EnemyId::GREEN_DRAGON:
+    case EnemyId::DWARVES:
+    case EnemyId::DARK_ELVES:
+    case EnemyId::SURPRISE:
+    case EnemyId::GNOMES:
+      biomeId = BiomeId::MOUNTAIN;
+    case EnemyId::ELVES:
+      biomeId = BiomeId::FORREST;
+    case EnemyId::BANDITS:
+      biomeId = random.choose<BiomeId>();
   }
   //append(enemyInfo, getBanditCave(random));
   /*      append(enemyInfo, getSokobanEntry(random));
@@ -1087,7 +1109,7 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
           getCyclops(random),
           getDriadTown(random),
           getEntTown(random)}));*/
-  return tryModel(meter, random, options, 210, siteName, enemyInfo);
+  return tryModel(meter, random, options, 170, siteName, enemyInfo, false, biomeId);
 }
 
 PModel ModelBuilder::tryBuilding(ProgressMeter* meter, int numTries, function<PModel()> buildFun) {
@@ -1107,17 +1129,26 @@ PModel ModelBuilder::tryBuilding(ProgressMeter* meter, int numTries, function<PM
 
 PModel ModelBuilder::campaignBaseModel(ProgressMeter* meter, RandomGen& random,
     Options* options, const string& siteName) {
-  return tryBuilding(meter, 10, [=, &random] {
+  return tryBuilding(meter, 20, [=, &random] {
       return tryCampaignBaseModel(meter, random, options, siteName); });
 }
 
 PModel ModelBuilder::campaignSiteModel(ProgressMeter* meter, RandomGen& random,
     Options* options, const string& siteName, EnemyId enemyId) {
-  return tryBuilding(meter, 10, [=, &random] {
+  return tryBuilding(meter, 20, [=, &random] {
       return tryCampaignSiteModel(meter, random, options, siteName, enemyId); });
 }
 
-void ModelBuilder::measureModelGen(int numTries, RandomGen& random, Options* options) {
+void ModelBuilder::measureSiteGen(int numTries, RandomGen& random, Options* options) {
+//  for (EnemyId id : {EnemyId::ELVES}) {
+  for (EnemyId id : ENUM_ALL(EnemyId)) {
+    std::cout << "Measuring " << EnumInfo<EnemyId>::getString(id) << std::endl;
+    measureModelGen(numTries, [&] {
+      tryCampaignSiteModel(nullptr, random, options, "", id); });
+  }
+}
+
+void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
   int numSuccess = 0;
   int maxT = 0;
   int minT = 1000000;
@@ -1125,7 +1156,7 @@ void ModelBuilder::measureModelGen(int numTries, RandomGen& random, Options* opt
   for (int i : Range(numTries))
     try {
       sf::Clock c;
-      tryCampaignBaseModel(nullptr, random, options, "");
+      genFun();
       int millis = c.getElapsedTime().asMilliseconds();
       sumT += millis;
       maxT = max(maxT, millis);
@@ -1165,8 +1196,8 @@ void ModelBuilder::spawnKeeper(Model* m, Options* options) {
   }
 }
 
-PModel ModelBuilder::tryModel(ProgressMeter* meter, RandomGen& random,
-    Options* options, int width, const string& levelName, vector<EnemyInfo> enemyInfo) {
+PModel ModelBuilder::tryModel(ProgressMeter* meter, RandomGen& random, Options* options, int width,
+    const string& levelName, vector<EnemyInfo> enemyInfo, bool keeperSpawn, BiomeId biomeId) {
   Model* m = new Model();
   vector<SettlementInfo> settlements;
   vector<pair<LevelInfo, SettlementInfo>> extraSettlements;
@@ -1179,7 +1210,8 @@ PModel ModelBuilder::tryModel(ProgressMeter* meter, RandomGen& random,
   }
   Level* top = m->buildLevel(
       LevelBuilder(meter, random, width, width, levelName, false),
-      LevelMaker::topLevel(random, CreatureFactory::forrest(TribeId::WILDLIFE), settlements, width));
+      LevelMaker::topLevel(random, CreatureFactory::forrest(TribeId::WILDLIFE), settlements, width, keeperSpawn,
+          biomeId));
   for (auto& elem : extraSettlements)
     makeExtraLevel(meter, random, m, elem.first, elem.second);
   m->calculateStairNavigation();

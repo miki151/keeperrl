@@ -38,8 +38,13 @@ static Campaign::VillainInfo getRandomVillain(RandomGen& random) {
       {ViewId::AVATAR, EnemyId::KNIGHTS, "knights"},
       {ViewId::ELF_LORD, EnemyId::ELVES, "elves"},
       {ViewId::DWARF_BARON, EnemyId::DWARVES, "dwarves"},
-      {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "dragon"},
-      
+      {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "red dragon"},
+      {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "elementalist"},
+      {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "green dragon"},
+      {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "dark elves"},
+      {ViewId::GNOME_BOSS, EnemyId::GNOMES, "gnomes"},
+      {ViewId::BANDIT, EnemyId::BANDITS, "bandits"},
+      {ViewId::UNKNOWN_MONSTER, EnemyId::SURPRISE, "unknown"},
       });
 }
 
@@ -124,7 +129,6 @@ optional<Campaign> Campaign::prepareCampaign(View* view, function<string()> worl
             break;
         case CampaignActionId::CHOOSE_SITE:
             campaign.playerPos = action.get<Vec2>();
-            campaign.sites[campaign.playerPos].villain = VillainInfo{ViewId::KEEPER, EnemyId::KEEPER, "keeper"};
             return campaign;
       }
       if (reroll)
