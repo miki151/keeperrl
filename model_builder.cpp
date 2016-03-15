@@ -1083,6 +1083,7 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
     case EnemyId::KNIGHTS:
     case EnemyId::ELEMENTALIST:
       biomeId = BiomeId::GRASSLAND;
+      break;
     case EnemyId::RED_DRAGON:
     case EnemyId::GREEN_DRAGON:
     case EnemyId::DWARVES:
@@ -1090,10 +1091,13 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
     case EnemyId::SURPRISE:
     case EnemyId::GNOMES:
       biomeId = BiomeId::MOUNTAIN;
+      break;
     case EnemyId::ELVES:
       biomeId = BiomeId::FORREST;
+      break;
     case EnemyId::BANDITS:
       biomeId = random.choose<BiomeId>();
+      break;
   }
   //append(enemyInfo, getBanditCave(random));
   /*      append(enemyInfo, getSokobanEntry(random));
@@ -1140,8 +1144,8 @@ PModel ModelBuilder::campaignSiteModel(ProgressMeter* meter, RandomGen& random,
 }
 
 void ModelBuilder::measureSiteGen(int numTries, RandomGen& random, Options* options) {
-//  for (EnemyId id : {EnemyId::ELVES}) {
-  for (EnemyId id : ENUM_ALL(EnemyId)) {
+  for (EnemyId id : {EnemyId::RED_DRAGON}) {
+//  for (EnemyId id : ENUM_ALL(EnemyId)) {
     std::cout << "Measuring " << EnumInfo<EnemyId>::getString(id) << std::endl;
     measureModelGen(numTries, [&] {
       tryCampaignSiteModel(nullptr, random, options, "", id); });

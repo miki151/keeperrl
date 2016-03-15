@@ -1328,11 +1328,15 @@ class TransferPos : public LevelMaker {
   TransferPos(Predicate pred, StairKey key, int w) : predicate(pred), stairKey(key), width(w) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
+    bool found = false;
     for (Vec2 pos : area)
       if (((pos.x - area.getPX() < width) || (pos.y - area.getPY() < width) ||
           (area.getKX() - pos.x <= width) || (area.getKY() - pos.y <= width)) &&
-          predicate.apply(builder, pos))
+          predicate.apply(builder, pos)) {
         builder->getSquare(pos)->setLandingLink(stairKey);
+        found = true;
+      }
+    checkGen(found);
   }
 
   private:
@@ -2303,7 +2307,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   queue->addMaker(new Margin(mapBorder + locationMargin, locations));
   queue->addMaker(new Margin(mapBorder, new Roads(SquareId::FLOOR)));
   queue->addMaker(new Margin(mapBorder,
-        new TransferPos(Predicate::type(SquareId::GRASS), StairKey::transferLanding(), 2)));
+        new TransferPos(Predicate::canEnter(MovementTrait::WALK), StairKey::transferLanding(), 2)));
   queue->addMaker(new Margin(mapBorder, new Connector(SquareId::DOOR, 0, 5,
           Predicate::andPred(Predicate::canEnter({MovementTrait::WALK}),
           Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR)), SquareAttrib::CONNECTOR)));

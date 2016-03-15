@@ -8,7 +8,7 @@
 
 template <class Archive> 
 void Campaign::serialize(Archive& ar, const unsigned int version) { 
-  serializeAll(ar, sites, playerPos, worldName);
+  serializeAll(ar, sites, playerPos, worldName, defeated);
 }
 
 SERIALIZABLE(Campaign);
@@ -22,11 +22,11 @@ bool Campaign::SiteInfo::canEmbark() const {
   return !villain && !blocked;
 }
 
-Vec2 Campaign::getPlayerPos() const {
+optional<Vec2> Campaign::getPlayerPos() const {
   return playerPos;
 }
 
-Campaign::Campaign(Vec2 size) : sites(size, {}) {
+Campaign::Campaign(Vec2 size) : sites(size, {}), defeated(size, false) {
 }
 
 const string& Campaign::getWorldName() const {
@@ -46,6 +46,14 @@ static Campaign::VillainInfo getRandomVillain(RandomGen& random) {
       {ViewId::BANDIT, EnemyId::BANDITS, "bandits"},
       {ViewId::UNKNOWN_MONSTER, EnemyId::SURPRISE, "unknown"},
       });
+}
+
+bool Campaign::isDefeated(Vec2 pos) const {
+  return defeated[pos];
+}
+
+void Campaign::setDefeated(Vec2 pos) {
+  defeated[pos] = true;
 }
 
 int Campaign::getNumVillains() const {
@@ -129,6 +137,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, function<string()> worl
             break;
         case CampaignActionId::CHOOSE_SITE:
             campaign.playerPos = action.get<Vec2>();
+            campaign.sites[*campaign.playerPos].player = {ViewId::KEEPER};
             return campaign;
       }
       if (reroll)

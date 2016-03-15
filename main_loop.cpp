@@ -272,7 +272,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     case GameTypeChoice::KEEPER:*/
       options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
       if (options->handleOrExit(view, OptionSet::KEEPER, -1))
-        return Game::campaignGame(keeperCampaign(*campaign, random), campaign->getPlayerPos(),
+        return Game::campaignGame(keeperCampaign(*campaign, random), *campaign->getPlayerPos(),
             options->getStringValue(OptionId::KEEPER_NAME), *campaign);
       else
         return nullptr;

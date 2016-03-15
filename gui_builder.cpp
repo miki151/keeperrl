@@ -1827,17 +1827,23 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>& marked,
   for (int y : sites.getBounds().getYRange()) {
     auto columns = gui.getListBuilder(48);
     for (int x : sites.getBounds().getXRange()) {
+      Vec2 pos(x, y);
       vector<PGuiElem> elem;
       elem.push_back(gui.conditional(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, 2),
-            [&marked, x, y] { return marked == Vec2(x, y);}));
-      if (activeFun(Vec2(x, y)))
+            [&marked, pos] { return marked == pos;}));
+      if (activeFun(pos))
         elem.push_back(gui.stack(
-            gui.button([x, y, &marked] { marked = Vec2(x, y); }),
+            gui.button([pos, &marked] { marked = pos; }),
             gui.mouseHighlight2(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, 2))));
       else
         elem.push_back(gui.mouseHighlight2(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, 2, colors[ColorId::RED])));
-      if (sites[x][y].villain)
-        elem.push_back(gui.viewObject(sites[x][y].villain->viewId, 2));
+      if (sites[x][y].villain) {
+        elem.push_back(gui.viewObject(sites[pos].villain->viewId, 2));
+        if (c.isDefeated(pos))
+          elem.push_back(gui.viewObject(ViewId::TERROR_TRAP, 2));
+      }
+      if (sites[x][y].player)
+        elem.push_back(gui.viewObject(sites[pos].player->viewId, 2));
       columns.addElem(gui.stack(std::move(elem)));
     }
     rows2.addElem(columns.buildHorizontalList());
@@ -1852,8 +1858,8 @@ PGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
     const Campaign& campaign, optional<Vec2>& sitePos) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label(message)));
-  lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, sitePos,
-          [&campaign](Vec2 pos) { return !!campaign.getSites()[pos].villain; })));
+  lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, sitePos, [&campaign](Vec2 pos) {
+          return !!campaign.getSites()[pos].villain || !!campaign.getSites()[pos].player; })));
   lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
         .addElemAuto(gui.conditional(
             gui.stack(

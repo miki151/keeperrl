@@ -179,8 +179,11 @@ void Game::tick(double time) {
   if (playerControl) {
     if (!playerControl->isRetired()) {
       bool conquered = true;
-      for (Collective* col : getVillains(VillainType::MAIN))
+      for (Collective* col : getVillains(VillainType::MAIN)) {
         conquered &= col->isConquered();
+        if (col->isConquered())
+          campaign->setDefeated(getModelCoords(col->getLevel()->getModel()));
+      }
       if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
         playerControl->onConqueredLand();
         won = true;
