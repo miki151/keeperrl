@@ -285,7 +285,7 @@ class TileCoordLookup {
   }
 
   void genTiles() {
-    Tile::addTile(ViewId::UNKNOWN_MONSTER, symbol("?", ColorId::LIGHT_GREEN));
+    Tile::addTile(ViewId::UNKNOWN_MONSTER, sprite("unknown"));
     Tile::addTile(ViewId::DIG_MARK, sprite("dig_mark"));
     Tile::addTile(ViewId::FORBID_ZONE, sprite("dig_mark").setColor(colors[ColorId::RED]));
     Tile::addTile(ViewId::DESTROY_BUTTON, sprite("remove"));

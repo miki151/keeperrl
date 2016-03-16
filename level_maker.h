@@ -47,6 +47,7 @@ enum class SettlementType {
   CAVE,
   SPIDER_CAVE,
   ISLAND_VAULT,
+  ISLAND_VAULT_DOOR,
   CEMETERY,
   SWAMP,
 };

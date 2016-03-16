@@ -677,11 +677,11 @@ static vector<EnemyInfo> getKoboldCave(RandomGen& random) {
   };
 }*/
 
-static vector<EnemyInfo> getSokobanEntry(RandomGen& random) {
+static vector<EnemyInfo> getSokobanEntry(RandomGen& random, SettlementType entryType) {
   StairKey link = StairKey::getNew();
   return {
     noVillain(CONSTRUCT(SettlementInfo,
-      c.type = SettlementType::ISLAND_VAULT;
+      c.type = entryType;
       c.location = new Location(true);
       c.buildingId = BuildingId::DUNGEON;
       c.upStairs = {link};), CollectiveConfig::noImmigrants(), {}),
@@ -996,7 +996,7 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, const string& boardText
   }
   for (int i : Range(random.get(1, 3)))
     append(ret, getBanditCave(random));
-  append(ret, getSokobanEntry(random));
+  append(ret, getSokobanEntry(random, SettlementType::ISLAND_VAULT));
   append(ret, random.choose({
         getGnomishMines(random),
         getDarkElvenMines(random)}));
@@ -1067,17 +1067,30 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
   vector<EnemyInfo> enemyInfo;
   BiomeId biomeId;
   switch (enemyId) {
-    case EnemyId::KNIGHTS: append(enemyInfo, getHumanCastle(random)); break;
-    case EnemyId::RED_DRAGON: append(enemyInfo, getRedDragon(random)); break;
-    case EnemyId::GREEN_DRAGON: append(enemyInfo, getGreenDragon(random)); break;
-    case EnemyId::DWARVES: append(enemyInfo, getDwarfTown(random)); break;
-    case EnemyId::ELVES: append(enemyInfo, getElvenVillage(random)); break;
-    case EnemyId::ELEMENTALIST: append(enemyInfo, getTower(random)); break;
-    case EnemyId::BANDITS: append(enemyInfo, getBanditCave(random)); break;
-    case EnemyId::DARK_ELVES: append(enemyInfo, getDarkElvenMines(random)); break;
-    case EnemyId::GNOMES: append(enemyInfo, getGnomishMines(random)); break;
-    case EnemyId::SURPRISE: append(enemyInfo, getFriendlyCave(random, 
-                                random.choose({CreatureId::ORC, CreatureId::HARPY, CreatureId::OGRE}))); break;
+    case EnemyId::KNIGHTS:
+      append(enemyInfo, getHumanCastle(random)); break;
+    case EnemyId::RED_DRAGON:
+      append(enemyInfo, getRedDragon(random)); break;
+    case EnemyId::GREEN_DRAGON:
+      append(enemyInfo, getGreenDragon(random)); break;
+    case EnemyId::DWARVES:
+      append(enemyInfo, getDwarfTown(random)); break;
+    case EnemyId::ELVES:
+      append(enemyInfo, getElvenVillage(random)); break;
+    case EnemyId::ELEMENTALIST:
+      append(enemyInfo, getTower(random)); break;
+    case EnemyId::BANDITS:
+      append(enemyInfo, getBanditCave(random)); break;
+    case EnemyId::DARK_ELVES:
+      append(enemyInfo, getDarkElvenMines(random)); break;
+    case EnemyId::GNOMES:
+      append(enemyInfo, getGnomishMines(random)); break;
+    case EnemyId::SURPRISE:
+      append(enemyInfo, random.choose({
+            getFriendlyCave(random, random.choose({CreatureId::ORC, CreatureId::HARPY, CreatureId::OGRE})),
+            getSokobanEntry(random, SettlementType::ISLAND_VAULT_DOOR),
+            }));
+      break;
   }
   switch (enemyId) {
     case EnemyId::KNIGHTS:
@@ -1144,7 +1157,7 @@ PModel ModelBuilder::campaignSiteModel(ProgressMeter* meter, RandomGen& random,
 }
 
 void ModelBuilder::measureSiteGen(int numTries, RandomGen& random, Options* options) {
-  for (EnemyId id : {EnemyId::RED_DRAGON}) {
+  for (EnemyId id : {EnemyId::SURPRISE}) {
 //  for (EnemyId id : ENUM_ALL(EnemyId)) {
     std::cout << "Measuring " << EnumInfo<EnemyId>::getString(id) << std::endl;
     measureModelGen(numTries, [&] {
@@ -1166,7 +1179,11 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
       maxT = max(maxT, millis);
       minT = min(minT, millis);
       ++numSuccess;
+      std::cout << ".";
+      std::cout.flush();
     } catch (LevelGenException ex) {
+      std::cout << "x";
+      std::cout.flush();
     }
   std::cout << numSuccess << " / " << numTries << " gens successful.\nMinT: " << minT << "\nMaxT: " << maxT <<
       "\nAvgT: " << sumT / numSuccess << std::endl;
