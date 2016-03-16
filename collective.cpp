@@ -861,7 +861,15 @@ bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCr
   CHECK(!info.spawnAtDorm);
   auto creatureRefs = extractRefs(immigrants);
   vector<Position> spawnPos;
-  spawnPos = getSpawnPos(creatureRefs);
+  if (!config->activeImmigrantion(getGame())) {
+    for (Position v : Random.permutation(territory->getAll()))
+      if (v.canEnter(immigrants[spawnPos.size()].get())) {
+        spawnPos.push_back(v);
+        if (spawnPos.size() >= immigrants.size())
+          break;
+      }
+  } else 
+    spawnPos = getSpawnPos(creatureRefs);
   if (spawnPos.size() < immigrants.size())
     return false;
   if (info.autoTeam)
@@ -1186,8 +1194,11 @@ void Collective::considerSendingGuardian() {
     }
 }
 
-void Collective::update() {
+void Collective::update(bool currentlyActive) {
   control->update();
+  if (currentlyActive == config->activeImmigrantion(getGame()) &&
+      Random.rollD(1.0 / config->getImmigrantFrequency()))
+    considerImmigration();
 }
 
 void Collective::tick(double time) {
@@ -1198,8 +1209,6 @@ void Collective::tick(double time) {
   considerBuildingBeds();
   if (isConquered())
     considerSpawningGhosts();
-  if (Random.rollD(1.0 / config->getImmigrantFrequency()))
-    considerImmigration();
   considerSendingGuardian();
 /*  if (nextPayoutTime > -1 && time > nextPayoutTime) {
     nextPayoutTime += config->getPayoutTime();

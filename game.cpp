@@ -95,6 +95,10 @@ bool Game::isTurnBased() {
   return !spectator && (!playerControl || playerControl->isTurnBased());
 }
 
+bool Game::isSingleModel() const {
+  return models.getBounds().getSize() == Vec2(1, 1);
+}
+
 double Game::getGlobalTime() const {
   return currentTime;
 }
@@ -191,7 +195,7 @@ void Game::tick(double time) {
     }
   }
   for (Collective* col : collectives)
-    col->update();
+    col->update(col->getLevel()->getModel() == getCurrentModel());
   if (musicType == MusicType::PEACEFUL && sunlightInfo.getState() == SunlightState::NIGHT)
     setCurrentMusic(MusicType::NIGHT, true);
   else if (musicType == MusicType::NIGHT && sunlightInfo.getState() == SunlightState::DAY)

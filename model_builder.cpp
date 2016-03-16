@@ -1114,20 +1114,6 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
       biomeId = random.choose<BiomeId>();
       break;
   }
-  //append(enemyInfo, getBanditCave(random));
-  /*      append(enemyInfo, getSokobanEntry(random));
-        append(enemyInfo, random.choose({
-          getFriendlyCave(random, CreatureId::ORC),
-          getFriendlyCave(random, CreatureId::OGRE),
-          getFriendlyCave(random, CreatureId::HARPY)}));*/
-  /*      append(enemyInfo, random.choose({
-          getGreenDragon(random),
-          getShelob(random),
-          getHydra(random),
-          getRedDragon(random),
-          getCyclops(random),
-          getDriadTown(random),
-          getEntTown(random)}));*/
   return tryModel(meter, random, options, 170, siteName, enemyInfo, false, biomeId);
 }
 

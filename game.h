@@ -31,7 +31,6 @@ class Game {
   };
 
   optional<ExitInfo> update(double timeDiff);
-  optional<ExitInfo> updateModel(Model*, double totalTime);
   Options* getOptions();
   void setOptions(Options*);
   void setHighscores(Highscores*);
@@ -68,6 +67,7 @@ class Game {
     vector<const Creature*> kills, int points);
   bool isGameOver() const;
   bool isTurnBased();
+  bool isSingleModel() const;
 
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
   void killCreature(Creature*, Creature* attacker);
@@ -98,6 +98,7 @@ class Game {
   PCreature makeAdventurer(int handicap);
   Model* getCurrentModel() const;
   Vec2 getModelCoords(const Model*) const;
+  optional<ExitInfo> updateModel(Model*, double totalTime);
 
   string SERIAL(worldName);
   SunlightInfo sunlightInfo;

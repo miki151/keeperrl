@@ -3,6 +3,7 @@
 #include "creature.h"
 #include "collective_config.h"
 #include "tribe.h"
+#include "game.h"
 
 AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
   : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}
@@ -124,6 +125,10 @@ bool CollectiveConfig::getWorkerFollowLeader() const {
 
 bool CollectiveConfig::sleepOnlyAtNight() const {
   return type != KEEPER;
+}
+
+bool CollectiveConfig::activeImmigrantion(const Game* game) const {
+  return type == KEEPER || game->isSingleModel();
 }
 
 double CollectiveConfig::getImmigrantFrequency() const {
