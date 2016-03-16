@@ -889,6 +889,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
 void PlayerControl::handleRecruiting(Collective* ally) {
   double scrollPos = 0;
   vector<Creature*> recruited;
+  vector<Creature*> transfers;
   while (1) {
     vector<Creature*> recruits = ally->getRecruits();
     if (recruits.empty())
@@ -906,12 +907,16 @@ void PlayerControl::handleRecruiting(Collective* ally) {
       if (c->getUniqueId() == *index) {
         ally->recruit(c, getCollective());
         recruited.push_back(c);
+        if (c->getLevel()->getModel() != getModel())
+          transfers.push_back(c);
         getCollective()->takeResource({ResourceId::GOLD, c->getRecruitmentCost()});
         break;
       }
   }
   for (auto& stack : Creature::stack(recruited))
     getCollective()->addNewCreatureMessage(stack);
+  if (!transfers.empty())
+    getGame()->transferCreatures(transfers, getModel());
 }
 
 void PlayerControl::handleTrading(Collective* ally) {
