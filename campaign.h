@@ -17,7 +17,8 @@ RICH_ENUM(EnemyId,
   GREEN_DRAGON,
   ELEMENTALIST,
   BANDITS,
-  SURPRISE
+  FRIENDLY_CAVE,
+  SOKOBAN
 );
 
 class Campaign {

@@ -74,7 +74,6 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
     & SVAR(messages)
     & SVAR(hints)
     & SVAR(visibleEnemies)
-    & SVAR(visibleFriends)
     & SVAR(knownLocations)
     & SVAR(knownVillains)
     & SVAR(knownVillainLocations)
@@ -1847,6 +1846,34 @@ void PlayerControl::update() {
       addImportantLongMessage("You have exterminated the armed forces of " + col->getFullName() + ".");
       notifiedConquered.insert(col);
     }
+  updateVisibleCreatures();
+  vector<Creature*> addedCreatures;
+  vector<Level*> currentLevels {getLevel()};
+  if (Creature* c = getControlled())
+    if (!contains(currentLevels, c->getLevel()))
+      currentLevels.push_back(c->getLevel());
+  for (Level* l : currentLevels)
+    for (Creature* c : l->getAllCreatures()) 
+      if (c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
+        if (c->getSpawnType() && !contains(getCreatures(), c) && !getCollective()->wasBanished(c)) {
+          addedCreatures.push_back(c);
+          getCollective()->addCreature(c, {MinionTrait::FIGHTER});
+          if (Creature* controlled = getControlled())
+            if (getCollective()->hasTrait(controlled, MinionTrait::FIGHTER) &&
+                c->getPosition().isSameLevel(controlled->getPosition()))
+              for (auto team : getTeams().getActive(controlled)) {
+                getTeams().add(team, c);
+                controlled->playerMessage(PlayerMessage(c->getName().a() + " joins your team.",
+                      PlayerMessage::HIGH));
+                break;
+              }
+        } else  
+          if (c->isMinionFood() && !contains(getCreatures(), c))
+            getCollective()->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
+      }
+  if (!addedCreatures.empty()) {
+    getCollective()->addNewCreatureMessage(addedCreatures);
+  }
 }
 
 void PlayerControl::tick(double time) {
@@ -1867,34 +1894,11 @@ void PlayerControl::tick(double time) {
             getCardinalName(c->getPosition().getDir(getKeeper()->getPosition()).getBearing().getCardinalDir()));
     }
   }
-  updateVisibleCreatures();
   if (getCollective()->hasMinionDebt() && !retired && !payoutWarning) {
     getView()->presentText("Warning", "You don't have enough gold for salaries. "
         "Your minions will refuse to work if they are not paid.\n \n"
         "You can get more gold by mining or retrieve it from killed heroes and conquered villages.");
     payoutWarning = true;
-  }
-  vector<Creature*> addedCreatures;
-  for (const Creature* c1 : visibleFriends) {
-    Creature* c = const_cast<Creature*>(c1);
-    if (c->getSpawnType() && !contains(getCreatures(), c) && !getCollective()->wasBanished(c)) {
-      addedCreatures.push_back(c);
-      getCollective()->addCreature(c, {MinionTrait::FIGHTER});
-      if (Creature* controlled = getControlled())
-        if (getCollective()->hasTrait(controlled, MinionTrait::FIGHTER) &&
-            c->getPosition().isSameLevel(controlled->getPosition()))
-          for (auto team : getTeams().getActive(controlled)) {
-            getTeams().add(team, c);
-            controlled->playerMessage(PlayerMessage(c->getName().a() + " joins your team.",
-                  PlayerMessage::HIGH));
-            break;
-          }
-    } else  
-    if (c->isMinionFood() && !contains(getCreatures(), c))
-      getCollective()->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
-  }
-  if (!addedCreatures.empty()) {
-    getCollective()->addNewCreatureMessage(addedCreatures);
   }
   for (auto attack : copyOf(ransomAttacks))
     for (const Creature* c : attack.getCreatures())
@@ -2059,14 +2063,9 @@ void PlayerControl::onConstructed(Position pos, const SquareType& type) {
 
 void PlayerControl::updateVisibleCreatures() {
   visibleEnemies.clear();
-  visibleFriends.clear();
   for (const Creature* c : getLevel()->getModel()->getAllCreatures()) 
-    if (canSee(c)) {
-      if (isEnemy(c))
+    if (canSee(c) && isEnemy(c))
         visibleEnemies.push_back(c);
-      else if (c->getTribeId() == getTribeId())
-        visibleFriends.push_back(c);
-    }
 }
 
 vector<Vec2> PlayerControl::getVisibleEnemies() const {

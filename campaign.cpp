@@ -44,7 +44,8 @@ static Campaign::VillainInfo getRandomVillain(RandomGen& random) {
       {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "dark elves"},
       {ViewId::GNOME_BOSS, EnemyId::GNOMES, "gnomes"},
       {ViewId::BANDIT, EnemyId::BANDITS, "bandits"},
-      {ViewId::UNKNOWN_MONSTER, EnemyId::SURPRISE, "unknown"},
+      {ViewId::UNKNOWN_MONSTER, EnemyId::FRIENDLY_CAVE, "unknown"},
+      {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "unknown"},
       });
 }
 
