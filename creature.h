@@ -58,8 +58,9 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void makeMove();
-  double getTime() const;
-  void setTime(double t);
+  double getLocalTime() const;
+  double getGlobalTime() const;
+  void setLocalTime(double t);
   Level* getLevel() const;
   Game* getGame() const;
   vector<const Creature*> getVisibleEnemies() const;
@@ -93,7 +94,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canSee(Position) const;
   bool canSee(Vec2) const;
   bool isEnemy(const Creature*) const;
-  void tick(double realTime);
+  void tick();
 
   const EntityName& getName() const;
   string getSpeciesName() const;
@@ -334,7 +335,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
-  double SERIAL(time) = 1;
+  double SERIAL(localTime) = 1;
   HeapAllocated<Equipment> SERIAL(equipment);
   unique_ptr<LevelShortestPath> SERIAL(shortestPath);
   unordered_set<const Creature*> SERIAL(knownHiding);
@@ -342,7 +343,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   double SERIAL(health) = 1;
   double SERIAL(morale) = 0;
   optional<double> SERIAL(deathTime);
-  double SERIAL(lastTick) = 0;
   bool SERIAL(collapsed) = false;
   bool SERIAL(hidden) = false;
   Creature* SERIAL(lastAttacker) = nullptr;

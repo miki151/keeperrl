@@ -630,12 +630,12 @@ void Player::makeMove() {
       break;
     }
   }
-  if (!getCreature()->isDead() && (!currentTimePos || getCreature()->getTime() > currentTimePos->time)) {
+  if (!getCreature()->isDead() && (!currentTimePos || getCreature()->getLocalTime() > currentTimePos->time)) {
     if (currentTimePos && (!previousTimePos || currentTimePos->pos.isSameLevel(previousTimePos->pos)))
       previousTimePos = currentTimePos;
     else
       previousTimePos = none;
-    currentTimePos = { getCreature()->getPosition(), getCreature()->getTime()};
+    currentTimePos = { getCreature()->getPosition(), getCreature()->getLocalTime()};
   }
 }
 
@@ -913,8 +913,8 @@ vector<Vec2> Player::getVisibleEnemies() const {
       [](const Creature* c) { return c->getPosition().getCoord(); });
 }
 
-double Player::getTime() const {
-  return getCreature()->getTime();
+double Player::getLocalTime() const {
+  return getCreature()->getLocalTime();
 }
 
 bool Player::isPlayerView() const {

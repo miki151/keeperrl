@@ -125,7 +125,7 @@ double Item::getFireSize() const {
   return fire->getSize();
 }
 
-void Item::tick(double time, Position position) {
+void Item::tick(Position position) {
   if (fire->isBurning()) {
     Debug() << getName() << " burning " << fire->getSize();
     position.setOnFire(fire->getSize());
@@ -136,7 +136,7 @@ void Item::tick(double time, Position position) {
       discarded = true;
     }
   }
-  specialTick(time, position);
+  specialTick(position);
 }
 
 void Item::onHitSquareMessage(Position pos, int numItems) {

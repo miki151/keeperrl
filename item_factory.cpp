@@ -58,7 +58,7 @@ class FireScroll : public Item {
     set = true;
   }
 
-  virtual void specialTick(double time, Position position) override {
+  virtual void specialTick(Position position) override {
     if (set) {
       setOnFire(0.03, position);
       set = false;
@@ -76,7 +76,7 @@ class AmuletOfWarning : public Item {
   public:
   AmuletOfWarning(const ItemAttributes& attr, int r) : Item(attr), radius(r) {}
 
-  virtual void specialTick(double time, Position position) override {
+  virtual void specialTick(Position position) override {
     Creature* owner = position.getCreature();
     if (owner && owner->getEquipment().isEquiped(this)) {
       bool isDanger = false;
@@ -119,24 +119,14 @@ class AmuletOfHealing : public Item {
   public:
   AmuletOfHealing(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void specialTick(double time, Position position) override {
+  virtual void specialTick(Position position) override {
     Creature* owner = position.getCreature();
-    if (owner && owner->getEquipment().isEquiped(this)) {
-      if (lastTick == -1)
-        lastTick = time;
-      else {
-        owner->heal((time - lastTick) / 20);
-      }
-      lastTick = time;
-    } else 
-      lastTick = -1;
+    if (owner && owner->getEquipment().isEquiped(this))
+        owner->heal(1.0 / 20);
   }
 
-  SERIALIZE_ALL2(Item, lastTick);
+  SERIALIZE_SUBCLASS(Item);
   SERIALIZATION_CONSTRUCTOR(AmuletOfHealing);
-
-  private:
-  double SERIAL(lastTick) = -1;
 };
 
 class Telepathy : public CreatureVision {
@@ -188,7 +178,8 @@ class Corpse : public Item {
     }
   }
 
-  virtual void specialTick(double time, Position position) override {
+  virtual void specialTick(Position position) override {
+    double time = position.getGame()->getGlobalTime();
     if (rottenTime == -1)
       rottenTime = time + rottingTime;
     if (time >= rottenTime && !rotten) {
@@ -259,7 +250,7 @@ class Potion : public Item {
     }
   }
 
-  virtual void specialTick(double time, Position position) override {
+  virtual void specialTick(Position position) override {
     heat = max(0., heat - 0.005);
   }
 

@@ -52,7 +52,7 @@ class Player : public Controller, public CreatureView {
   virtual optional<MovementInfo> getMovementInfo() const override;
   virtual const Level* getLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
-  virtual double getTime() const override;
+  virtual double getLocalTime() const override;
   virtual bool isPlayerView() const override;
 
   // from Controller

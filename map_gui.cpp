@@ -879,7 +879,7 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
       if (objects[pos]->hasObject(ViewLayer::FLOOR) || objects[pos]->hasObject(ViewLayer::FLOOR_BACKGROUND))
         objects[pos]->setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
     }
-  currentTimeGame = smoothMovement ? view->getTime() : 1000000000;
+  currentTimeGame = smoothMovement ? view->getLocalTime() : 1000000000;
   if (smoothMovement) {
     if (auto movement = view->getMovementInfo()) {
       if (!screenMovement || screenMovement->startTimeGame != movement->prevTime) {

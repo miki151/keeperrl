@@ -140,7 +140,7 @@ class Level {
   void addTickingSquare(Vec2 pos);
 
   /** Ticks all squares that must be ticked. */
-  void tick(double time);
+  void tick();
 
   /** Moves the creature to a different level according to \paramname{direction}. */
   void changeLevel(StairKey key, Creature* c);

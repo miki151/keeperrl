@@ -52,8 +52,8 @@ SERIALIZABLE(Creature::MoraleOverride);
 template <class Archive> 
 void Creature::serialize(Archive& ar, const unsigned int version) { 
   ar & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
-  serializeAll(ar, attributes, position, time, equipment, shortestPath, knownHiding, tribe, health, morale);
-  serializeAll(ar, deathTime, lastTick, collapsed, hidden, lastAttacker, deathReason, swapPositionCooldown);
+  serializeAll(ar, attributes, position, localTime, equipment, shortestPath, knownHiding, tribe, health, morale);
+  serializeAll(ar, deathTime, collapsed, hidden, lastAttacker, deathReason, swapPositionCooldown);
   serializeAll(ar, unknownAttacker, privateEnemies, holding, controller, controllerStack, creatureVisions, kills);
   serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverrides, visibleEnemies, visibleCreatures);
   serializeAll(ar, vision, personalEvents, lastCombatTime, eventGenerator);
@@ -108,11 +108,11 @@ vector<Spell*> Creature::getSpells() const {
 
 double Creature::getSpellDelay(Spell* spell) const {
   CHECK(!isReady(spell));
-  return attributes->getSpellMap().getReadyTime(spell) - getTime();
+  return attributes->getSpellMap().getReadyTime(spell) - getGlobalTime();
 }
 
 bool Creature::isReady(Spell* spell) const {
-  return attributes->getSpellMap().getReadyTime(spell) < getTime();
+  return attributes->getSpellMap().getReadyTime(spell) < getGlobalTime();
 }
 
 static double getWillpowerMult(double sorcerySkill) {
@@ -130,7 +130,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     spell->addMessage(c);
     Effect::applyToCreature(c, spell->getEffectType(), EffectStrength::NORMAL);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
-    c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
+    c->attributes->getSpellMap().setReadyTime(spell, getGlobalTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     c->spendTime(1);
   });
@@ -148,7 +148,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     playerMessage("You cast " + spell->getName());
     Effect::applyDirected(c, dir, spell->getDirEffectType(), EffectStrength::NORMAL);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
-    c->attributes->getSpellMap().setReadyTime(spell, getTime() + spell->getDifficulty()
+    c->attributes->getSpellMap().setReadyTime(spell, getGlobalTime() + spell->getDifficulty()
         * getWillpowerMult(getSkillValue(Skill::get(SkillId::SORCERY))));
     c->spendTime(1);
   });
@@ -211,7 +211,7 @@ vector<const Creature*> Creature::getKills() const {
 }
 
 void Creature::spendTime(double t) {
-  time += 100.0 * t / (double) getAttr(AttrType::SPEED);
+  localTime += 100.0 * t / (double) getAttr(AttrType::SPEED);
   hidden = false;
 }
 
@@ -257,13 +257,13 @@ CreatureAction Creature::move(Position pos) const {
     else
       swapPosition(direction).perform(self);
     self->attributes->stationary = false;
-    double oldTime = getTime();
+    double oldTime = getLocalTime();
     if (collapsed) {
       you(MsgType::CRAWL, getPosition().getName());
       self->spendTime(3);
     } else
       self->spendTime(1);
-    self->modViewObject().addMovementInfo({direction, oldTime, getTime(), ViewObject::MovementInfo::MOVE});
+    self->modViewObject().addMovementInfo({direction, oldTime, getLocalTime(), ViewObject::MovementInfo::MOVE});
   });
 }
 
@@ -336,7 +336,7 @@ CreatureAction Creature::swapPosition(Creature* other, bool force) const {
       other->playerMessage("Excuse me!");
     playerMessage("Excuse me!");
     self->position.swapCreatures(other);
-    other->modViewObject().addMovementInfo({-direction, getTime(), other->getTime(),
+    other->modViewObject().addMovementInfo({-direction, getLocalTime(), other->getLocalTime(),
         ViewObject::MovementInfo::MOVE});
   });
 }
@@ -816,10 +816,10 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
 }
 
 void Creature::addEffect(LastingEffect effect, double time, bool msg) {
-  if (attributes->lastingEffects[effect] < getTime() + time && affects(effect)) {
+  if (attributes->lastingEffects[effect] < getGlobalTime() + time && affects(effect)) {
     if (!isAffected(effect))
       onAffected(effect, msg);
-    attributes->lastingEffects[effect] = getTime() + time;
+    attributes->lastingEffects[effect] = getGlobalTime() + time;
   }
 }
 
@@ -846,11 +846,11 @@ void Creature::removePermanentEffect(LastingEffect effect, bool msg) {
 
 double Creature::getTimeRemaining(LastingEffect effect) const {
   CHECK(isAffected(effect));
-  return attributes->lastingEffects[effect] - getTime();
+  return attributes->lastingEffects[effect] - getGlobalTime();
 }
 
 bool Creature::isAffected(LastingEffect effect) const {
-  return attributes->lastingEffects[effect] >= getTime() || attributes->permanentEffects[effect] > 0;
+  return attributes->lastingEffects[effect] >= getGlobalTime() || attributes->permanentEffects[effect] > 0;
 }
 
 bool Creature::isAffectedPermanently(LastingEffect effect) const {
@@ -1071,12 +1071,19 @@ void Creature::setPosition(Position pos) {
   position = pos;
 }
 
-double Creature::getTime() const {
-  return time;
+double Creature::getLocalTime() const {
+  return localTime;
 }
 
-void Creature::setTime(double t) {
-  time = t;
+double Creature::getGlobalTime() const {
+  if (Game* g = getGame())
+    return g->getGlobalTime();
+  else
+    return 1;
+}
+
+void Creature::setLocalTime(double t) {
+  localTime = t;
   modViewObject().clearMovementInfo();
 }
 
@@ -1084,17 +1091,18 @@ bool Creature::isBleeding() const {
   return health < 0.5;
 }
 
-void Creature::tick(double realTime) {
+void Creature::tick() {
   updateVision();
   if (Random.roll(5))
     getDifficultyPoints();
   for (Item* item : equipment->getItems()) {
-    item->tick(time, position);
+    item->tick(position);
     if (item->isDiscarded())
       equipment->removeItem(item);
   }
+  double globalTime = getGlobalTime();
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
-    if (attributes->lastingEffects[effect] > 0 && attributes->lastingEffects[effect] < realTime) {
+    if (attributes->lastingEffects[effect] > 0 && attributes->lastingEffects[effect] < globalTime) {
       attributes->lastingEffects[effect] = 0;
       if (!isAffected(effect))
         onTimedOut(effect, true);
@@ -1103,8 +1111,6 @@ void Creature::tick(double realTime) {
     bleed(1.0 / 60);
     playerMessage("You feel poison flowing in your veins.");
   }
-  double delta = realTime - lastTick;
-  lastTick = realTime;
   updateViewObject();
   if (isNotLiving() && lostOrInjuredBodyParts() >= 4) {
     you(MsgType::FALL, "apart");
@@ -1112,7 +1118,7 @@ void Creature::tick(double realTime) {
     return;
   }
   if (isBleeding()) {
-    health -= delta / 40;
+    health -= 1.0 / 40;
     playerMessage("You are bleeding.");
   }
   if (health <= 0) {
@@ -1301,10 +1307,10 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
     you(MsgType::MISS_ATTACK, enemyName);
     addSound(SoundId::MISSED_ATTACK);
   }
-  double oldTime = getTime();
+  double oldTime = getLocalTime();
   if (spend)
     c->spendTime(timeSpent);
-  c->modViewObject().addMovementInfo({dir, oldTime, getTime(), ViewObject::MovementInfo::ATTACK});
+  c->modViewObject().addMovementInfo({dir, oldTime, getLocalTime(), ViewObject::MovementInfo::ATTACK});
   });
 }
 
@@ -1670,7 +1676,7 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   if (isInnocent())
     getGame()->getStatistics().add(StatId::INNOCENT_KILLED);
   getGame()->getStatistics().add(StatId::DEATH);
-  deathTime = getTime();
+  deathTime = getGlobalTime();
 }
 
 bool Creature::isInnocent() const {
@@ -1769,11 +1775,11 @@ CreatureAction Creature::whip(const Position& pos) const {
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     monsterMessage(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
-    double oldTime = getTime();
+    double oldTime = getLocalTime();
     self->spendTime(1);
     if (Random.roll(3)) {
       addSound(SoundId::WHIP);
-      self->modViewObject().addMovementInfo({position.getDir(pos), oldTime, getTime(),
+      self->modViewObject().addMovementInfo({position.getDir(pos), oldTime, getLocalTime(),
           ViewObject::MovementInfo::ATTACK});
     }
     if (Random.roll(5))

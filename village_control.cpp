@@ -299,7 +299,7 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
   Collective* collective = self->getEnemyCollective();
   switch (trigger.getId()) {
     case AttackTriggerId::TIMER: 
-      return collective->getTime() >= trigger.get<int>() ? 0.05 : 0;
+      return collective->getGlobalTime() >= trigger.get<int>() ? 0.05 : 0;
     case AttackTriggerId::ROOM_BUILT: 
       return collective->getSquares(trigger.get<SquareType>()).size() *
           getRoomProb(trigger.get<SquareType>().getId());

@@ -23,7 +23,7 @@ void CollectiveControl::onMoved(Creature*) {
 void CollectiveControl::update() {
 }
 
-void CollectiveControl::tick(double) {
+void CollectiveControl::tick() {
 }
 
 const vector<Creature*>& CollectiveControl::getCreatures() const {
@@ -44,7 +44,7 @@ class IdleControl : public CollectiveControl {
 
   using CollectiveControl::CollectiveControl;
 
-  virtual void tick(double time) override {
+  virtual void tick() override {
   }
 
   SERIALIZATION_CONSTRUCTOR(IdleControl);

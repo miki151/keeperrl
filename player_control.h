@@ -98,7 +98,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual Vec2 getPosition() const override;
   virtual optional<MovementInfo> getMovementInfo() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
-  virtual double getTime() const override;
+  virtual double getLocalTime() const override;
   virtual bool isPlayerView() const override;
 
   // from CollectiveControl
@@ -109,7 +109,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onConstructed(Position, const SquareType&) override;
   virtual void onNoEnemies() override;
-  virtual void tick(double) override;
+  virtual void tick() override;
   virtual void update() override;
 
   private:

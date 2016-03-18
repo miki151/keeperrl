@@ -548,9 +548,9 @@ void Level::addTickingSquare(Vec2 pos) {
   tickingSquares.insert(pos);
 }
 
-void Level::tick(double time) {
+void Level::tick() {
   for (Vec2 pos : tickingSquares)
-    squares[pos]->tick(time);
+    squares[pos]->tick();
 }
 
 bool Level::inBounds(Vec2 pos) const {

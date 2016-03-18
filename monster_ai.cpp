@@ -30,6 +30,7 @@
 #include "skill.h"
 #include "modifier_type.h"
 #include "task.h"
+#include "game.h"
 
 class Behaviour {
   public:
@@ -372,7 +373,7 @@ class Fighter : public Behaviour {
       return {weight, action.prepend([=](Creature* creature) {
         creature->setInCombat();
         other->setInCombat();
-        lastSeen = {creature->getPosition(), creature->getTime(), LastSeen::PANIC, other};
+        lastSeen = {creature->getPosition(), creature->getGlobalTime(), LastSeen::PANIC, other};
       })};
     else
       return NoMove;
@@ -475,7 +476,7 @@ class Fighter : public Behaviour {
     if (auto lastSeen = getLastSeen()) {
       double lastSeenTimeout = 20;
       if (!lastSeen->pos.isSameLevel(creature->getPosition()) ||
-          lastSeen->time < creature->getTime() - lastSeenTimeout ||
+          lastSeen->time < creature->getGlobalTime() - lastSeenTimeout ||
           lastSeen->pos == creature->getPosition()) {
         lastSeen = none;
         return NoMove;
@@ -537,9 +538,9 @@ class Fighter : public Behaviour {
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=](Creature* creature) {
             creature->setInCombat();
             other->setInCombat();
-            lastSeen = {other->getPosition(), creature->getTime(), LastSeen::ATTACK, other};
-            if (!chaseFreeze.count(other) || other->getTime() > chaseFreeze.at(other).second)
-              chaseFreeze[other] = make_pair(other->getTime() + 20, other->getTime() + 70);
+            lastSeen = {other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other};
+            if (!chaseFreeze.count(other) || other->getGlobalTime() > chaseFreeze.at(other).second)
+              chaseFreeze[other] = make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70);
           })};
       }
     }
@@ -598,8 +599,8 @@ class Fighter : public Behaviour {
   map<const Creature*, pair<double, double>> chaseFreeze;
 
   bool isChaseFrozen(const Creature* c) {
-    return chaseFreeze.count(c) && chaseFreeze.at(c).first <= c->getTime()
-      && chaseFreeze.at(c).second >= c->getTime();
+    return chaseFreeze.count(c) && chaseFreeze.at(c).first <= c->getGlobalTime()
+      && chaseFreeze.at(c).second >= c->getGlobalTime();
   }
 };
 
@@ -695,7 +696,7 @@ class DieTime : public Behaviour {
   DieTime(Creature* c, double t) : Behaviour(c), dieTime(t) {}
 
   virtual MoveInfo getMove() override {
-    if (creature->getTime() > dieTime) {
+    if (creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
         if (creature->isNotLiving() && creature->isCorporal())
           creature->you(MsgType::FALL, "apart");
@@ -720,14 +721,14 @@ class DieTime : public Behaviour {
 class Summoned : public GuardTarget {
   public:
   Summoned(Creature* c, Creature* _target, double minDist, double maxDist, double ttl) 
-      : GuardTarget(c, minDist, maxDist), target(_target), dieTime(target->getTime() + ttl) {
+      : GuardTarget(c, minDist, maxDist), target(_target), dieTime(target->getGlobalTime() + ttl) {
   }
 
   virtual ~Summoned() {
   }
 
   virtual MoveInfo getMove() override {
-    if (target->isDead() || creature->getTime() > dieTime) {
+    if (target->isDead() || creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
         if (creature->isNotLiving() && !creature->isCorporal())
           creature->you(MsgType::FALL, "apart");

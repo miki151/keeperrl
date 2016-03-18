@@ -61,26 +61,11 @@
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(CollectiveControl)
-    & SVAR(memory)
-    & SVAR(showWelcomeMsg)
-    & SVAR(lastControlKeeperQuestion)
-    & SVAR(startImpNum)
-    & SVAR(retired)
-    & SVAR(payoutWarning)
-    & SVAR(surprises)
-    & SVAR(newAttacks)
-    & SVAR(ransomAttacks)
-    & SVAR(messages)
-    & SVAR(hints)
-    & SVAR(visibleEnemies)
-    & SVAR(knownLocations)
-    & SVAR(knownVillains)
-    & SVAR(knownVillainLocations)
-    & SVAR(notifiedConquered)
-    & SVAR(visibilityMap)
-    & SVAR(warningTimes)
-    & SVAR(lastWarningTime);
+  ar& SUBCLASS(CollectiveControl);
+  serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum, retired, payoutWarning);
+  serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
+  serializeAll(ar, knownVillains, knownVillainLocations, notifiedConquered, visibilityMap, warningTimes);
+  serializeAll(ar, lastWarningTime);
 }
 
 SERIALIZABLE(PlayerControl);
@@ -377,7 +362,7 @@ bool PlayerControl::swapTeam() {
 void PlayerControl::leaveControl() {
   Creature* controlled = getControlled();
   if (controlled == getKeeper())
-    lastControlKeeperQuestion = getCollective()->getTime();
+    lastControlKeeperQuestion = getCollective()->getGlobalTime();
   CHECK(controlled);
   if (!controlled->getPosition().isSameLevel(getLevel()))
     getView()->setScrollPos(getPosition());
@@ -1748,7 +1733,7 @@ void PlayerControl::tryLockingDoor(Position pos) {
     updateSquareMemory(pos);
 }
 
-double PlayerControl::getTime() const {
+double PlayerControl::getLocalTime() const {
   return getModel()->getTime();
 }
 
@@ -1781,16 +1766,16 @@ void PlayerControl::checkKeeperDanger() {
   Creature* controlled = getControlled();
   if (!retired && !getKeeper()->isDead() && controlled != getKeeper()) { 
     if ((getKeeper()->wasInCombat(5) || getKeeper()->getHealth() < 1)
-        && lastControlKeeperQuestion < getCollective()->getTime() - 50) {
-      lastControlKeeperQuestion = getCollective()->getTime();
+        && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 50) {
+      lastControlKeeperQuestion = getCollective()->getGlobalTime();
       if (getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {
         controlSingle(getKeeper());
         return;
       }
     }
     if (getKeeper()->isAffected(LastingEffect::POISON)
-        && lastControlKeeperQuestion < getCollective()->getTime() - 5) {
-      lastControlKeeperQuestion = getCollective()->getTime();
+        && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 5) {
+      lastControlKeeperQuestion = getCollective()->getGlobalTime();
       if (getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {
         controlSingle(getKeeper());
         return;
@@ -1820,7 +1805,7 @@ void PlayerControl::considerNightfallMessage() {
 }
 
 void PlayerControl::considerWarning() {
-  double time = getTime();
+  double time = getLocalTime();
   if (time > lastWarningTime + anyWarningFrequency)
     for (Warning w : ENUM_ALL(Warning))
       if (getCollective()->isWarning(w) && (warningTimes[w] == 0 || time > warningTimes[w] + warningFrequency)) {
@@ -1876,7 +1861,7 @@ void PlayerControl::update() {
   }
 }
 
-void PlayerControl::tick(double time) {
+void PlayerControl::tick() {
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
   messages = filter(messages, [&] (const PlayerMessage& msg) {
@@ -1918,6 +1903,7 @@ void PlayerControl::tick(double time) {
           ransomAttacks.push_back(attack);
         break;
       }
+  double time = getCollective()->getLocalTime();
   if (getGame()->getOptions()->getBoolValue(OptionId::HINTS) && time > hintFrequency) {
     int numHint = int(time) / hintFrequency - 1;
     if (numHint < hints.size() && !hints[numHint].empty()) {

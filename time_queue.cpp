@@ -42,7 +42,7 @@ TimeQueue::TimeQueue() : queue([](QElem e1, QElem e2) {
 }
 
 void TimeQueue::addCreature(PCreature c) {
-  queue.push({c.get(), c->getTime()});
+  queue.push({c.get(), c->getLocalTime()});
   dead.erase(c.get());
   creatures.push_back(std::move(c));
 }
@@ -78,11 +78,11 @@ Creature* TimeQueue::getMinCreature() {
     return nullptr;
   removeDead();
   QElem elem = queue.top();
-  while (elem.time != elem.creature->getTime()) {
-    CHECK(elem.time < elem.creature->getTime());
+  while (elem.time != elem.creature->getLocalTime()) {
+    CHECK(elem.time < elem.creature->getLocalTime());
     queue.pop();
     removeDead();
-    queue.push({elem.creature, elem.creature->getTime()});
+    queue.push({elem.creature, elem.creature->getLocalTime()});
     elem = queue.top();
   }
   return elem.creature;

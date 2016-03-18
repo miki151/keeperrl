@@ -309,7 +309,7 @@ void Collective::removeCreature(Creature* c) {
     if (!task->canTransfer())
       returnResource(taskMap->removeTask(task));
     else
-      taskMap->freeTaskDelay(task, getTime() + 50);
+      taskMap->freeTaskDelay(task, getLocalTime() + 50);
   }
   if (auto spawnType = c->getSpawnType())
     removeElement(bySpawnType[*spawnType], c);
@@ -467,7 +467,7 @@ int Collective::getTaskDuration(const Creature* c, MinionTask task) const {
 }
 
 void Collective::setMinionTask(const Creature* c, MinionTask task) {
-  currentTasks[c->getUniqueId()] = {task, c->getTime() + getTaskDuration(c, task)};
+  currentTasks[c->getUniqueId()] = {task, c->getLocalTime() + getTaskDuration(c, task)};
 }
 
 optional<MinionTask> Collective::getMinionTask(const Creature* c) const {
@@ -581,7 +581,7 @@ PTask Collective::getStandardTask(Creature* c) {
   if (!c->getMinionTasks().hasAnyTask())
     return nullptr;
   if (!currentTasks.count(c->getUniqueId()) ||
-      currentTasks.at(c->getUniqueId()).finishTime < c->getTime() ||
+      currentTasks.at(c->getUniqueId()).finishTime < c->getLocalTime() ||
       !isTaskGood(c, currentTasks.at(c->getUniqueId()).task))
     currentTasks.erase(c->getUniqueId());
   if (!currentTasks.count(c->getUniqueId()))
@@ -698,7 +698,7 @@ void Collective::setTask(const Creature *c, PTask task, bool priority) {
     if (!task->canTransfer())
       returnResource(taskMap->removeTask(task));
     else
-      taskMap->freeTaskDelay(task, getTime() + 50);
+      taskMap->freeTaskDelay(task, getLocalTime() + 50);
   }
   if (priority)
     taskMap->addPriorityTask(std::move(task), c);
@@ -1155,7 +1155,7 @@ void Collective::decayMorale() {
 void Collective::considerSpawningGhosts() {
   if (deadCreatures.empty() || config->getNumGhostSpawns() == 0)
     return;
-  if (spawnGhosts && *spawnGhosts <= getTime()) {
+  if (spawnGhosts && *spawnGhosts <= getGlobalTime()) {
     for (Creature* dead : getPrefix(Random.permutation(deadCreatures),
           min<int>(config->getNumGhostSpawns(), deadCreatures.size())))
       addCreatureInTerritory(CreatureFactory::getGhost(dead), {});
@@ -1163,7 +1163,7 @@ void Collective::considerSpawningGhosts() {
   } else
   if (!spawnGhosts) {
     if (Random.roll(1.0 / config->getGhostProb()))
-      spawnGhosts = getTime() + Random.get(250, 500);
+      spawnGhosts = getGlobalTime() + Random.get(250, 500);
     else
       spawnGhosts = 1000000;
   }
@@ -1182,7 +1182,7 @@ void Collective::considerSendingGuardian() {
     if (!getCreatures().empty() && (!lastGuardian || lastGuardian->isDead()) &&
         Random.roll(1.0 / info->probability)) {
       vector<Position> enemyPos = getEnemyPositions();
-      if (enemyPos.size() >= info->minEnemies && getNumKilled(getTime() - 200) >= info->minVictims) {
+      if (enemyPos.size() >= info->minEnemies && getNumKilled(getGlobalTime() - 200) >= info->minVictims) {
         PCreature guardian = CreatureFactory::fromId(info->creature, getTribeId(),
             MonsterAIFactory::singleTask(Task::chain(
                 Task::kill(this, Random.choose(enemyPos).getCreature()),
@@ -1201,8 +1201,8 @@ void Collective::update(bool currentlyActive) {
     considerImmigration();
 }
 
-void Collective::tick(double time) {
-  control->tick(time);
+void Collective::tick() {
+  control->tick();
   considerHealingLeader();
   considerBirths();
   decayMorale();
@@ -1234,7 +1234,7 @@ void Collective::tick(double time) {
   if (config->getEnemyPositions() && Random.roll(5)) {
     vector<Position> enemyPos = getEnemyPositions();
     if (!enemyPos.empty())
-      delayDangerousTasks(enemyPos, getTime() + 20);
+      delayDangerousTasks(enemyPos, getLocalTime() + 20);
     else {
       alarmInfo.reset();
       control->onNoEnemies();
@@ -1553,21 +1553,25 @@ static const int alarmTime = 100;
 
 void Collective::onAlarm(Position pos) {
   control->addMessage(PlayerMessage("An alarm goes off.", PlayerMessage::HIGH).setPosition(pos));
-  alarmInfo = {getTime() + alarmTime, pos };
+  alarmInfo = {getGlobalTime() + alarmTime, pos };
   for (Creature* c : byTrait[MinionTrait::FIGHTER])
     if (c->isAffected(LastingEffect::SLEEP))
       c->removeEffect(LastingEffect::SLEEP);
 }
 
 MoveInfo Collective::getAlarmMove(Creature* c) {
-  if (alarmInfo && alarmInfo->finishTime > c->getTime())
+  if (alarmInfo && alarmInfo->finishTime > getGlobalTime())
     if (auto action = c->moveTowards(alarmInfo->position))
       return {1.0, action};
   return NoMove;
 }
 
-double Collective::getTime() const {
+double Collective::getLocalTime() const {
   return getLevel()->getModel()->getTime();
+}
+
+double Collective::getGlobalTime() const {
+  return getGame()->getGlobalTime();
 }
 
 int Collective::numResource(ResourceId id) const {
@@ -1745,7 +1749,7 @@ vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) cons
 
 void Collective::orderExecution(Creature* c) {
   taskMap->addTask(Task::kill(this, c), c->getPosition(), MinionTrait::FIGHTER);
-  setTask(c, Task::goToAndWait(c->getPosition(), getTime() + 100));
+  setTask(c, Task::goToAndWait(c->getPosition(), getLocalTime() + 100));
 }
 
 void Collective::orderTorture(Creature* c) {
@@ -1757,7 +1761,7 @@ void Collective::orderTorture(Creature* c) {
   Position pos = Random.choose(posts);
   squaresInUse.insert(pos);
   taskMap->addTask(Task::torture(this, c), pos, MinionTrait::FIGHTER);
-  setTask(c, Task::goToAndWait(pos, getTime() + 100));
+  setTask(c, Task::goToAndWait(pos, getLocalTime() + 100));
 }
 
 void Collective::orderSacrifice(Creature* c) {
@@ -1782,8 +1786,8 @@ void Collective::orderWhipping(Creature* whipped) {
     return;
   Position pos = Random.choose(posts);
   squaresInUse.insert(pos);
-  taskMap->addTask(Task::whipping(this, pos, whipped, 100, getTime() + 100), pos, MinionTrait::FIGHTER);
-  setTask(whipped, Task::goToAndWait(pos, getTime() + 100));
+  taskMap->addTask(Task::whipping(this, pos, whipped, 100, getLocalTime() + 100), pos, MinionTrait::FIGHTER);
+  setTask(whipped, Task::goToAndWait(pos, getLocalTime() + 100));
 }
 
 bool Collective::isItemMarked(const Item* it) const {
@@ -2012,7 +2016,7 @@ void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, double d
 }
 
 bool Collective::isDelayed(Position pos) {
-  return delayedPos.count(pos) && delayedPos.at(pos) > getTime();
+  return delayedPos.count(pos) && delayedPos.at(pos) > getLocalTime();
 }
 
 void Collective::fetchAllItems(Position pos) {
@@ -2200,7 +2204,7 @@ void Collective::onAppliedSquare(Position pos) {
   MinionTask currentTask = currentTasks.at(c->getUniqueId()).task;
   if (getTaskInfo().at(currentTask).cost > 0) {
     if (nextPayoutTime == -1 && minionPayment.count(c) && minionPayment.at(c).salary > 0)
-      nextPayoutTime = getTime() + config->getPayoutTime();
+      nextPayoutTime = getLocalTime() + config->getPayoutTime();
     minionPayment[c].workAmount += getTaskInfo().at(currentTask).cost;
   }
   if (getSquares(SquareId::LIBRARY).count(pos)) {

@@ -83,7 +83,7 @@ void Model::update(double totalTime) {
   Creature* creature = timeQueue->getNextCreature();
   CHECK(creature) << "No more creatures";
   //Debug() << creature->getName().the() << " moving now " << creature->getTime();
-  currentTime = creature->getTime();
+  currentTime = creature->getLocalTime();
   if (currentTime > totalTime)
     return;
   while (totalTime > lastTick + 1) {
@@ -105,16 +105,16 @@ void Model::update(double totalTime) {
 
 void Model::tick(double time) {
   for (Creature* c : timeQueue->getAllCreatures()) {
-    c->tick(time);
+    c->tick();
   }
   for (PLevel& l : levels)
-    l->tick(time);
+    l->tick();
   for (PCollective& col : collectives)
-    col->tick(time);
+    col->tick();
 }
 
 void Model::addCreature(PCreature c, double delay) {
-  c->setTime(getTime() + 1 + delay + Random.getDouble());
+  c->setLocalTime(getTime() + 1 + delay + Random.getDouble());
   if (c->isPlayer())
     game->setPlayer(c.get());
   timeQueue->addCreature(std::move(c));

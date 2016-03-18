@@ -72,7 +72,7 @@ class IllusionController : public DoNothingController {
   }
 
   virtual void makeMove() override {
-    if (creature->getTime() >= deathTime)
+    if (creature->getGlobalTime() >= deathTime)
       kill();
     else
       creature->wait().perform(getCreature());
@@ -140,8 +140,8 @@ static void deception(Creature* creature) {
           c.dyingSound = SoundId::MISSED_ATTACK;
           c.noAttackSound = true;
           c.name = "illusion";),
-        ControllerFactory([creature] (Creature* o) { return new IllusionController(o, creature->getTime()
-            + Random.get(5, 10));}))));
+        ControllerFactory([creature] (Creature* o) { return new IllusionController(o,
+            creature->getGlobalTime() + Random.get(5, 10));}))));
   }
   summonCreatures(creature, 2, std::move(creatures));
 }
@@ -184,7 +184,7 @@ static void blast(Creature* who, Position position, Vec2 direction, int maxDista
         else
           break;
       if (dist > 0) {
-        c->displace(who->getTime(), direction * dist);
+        c->displace(who->getLocalTime(), direction * dist);
         c->you(MsgType::ARE, "thrown back");
       }
       if (damage)
@@ -233,7 +233,7 @@ static void guardingBuilder(Creature* c) {
     }
   Position pos = c->getPosition();
   if (dest)
-    c->displace(c->getTime(), *dest);
+    c->displace(c->getLocalTime(), *dest);
   else {
     Effect::applyToCreature(c, EffectType(EffectId::TELEPORT), EffectStrength::NORMAL);
   }
@@ -253,7 +253,7 @@ vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, int ttl, d
 vector<Creature*> Effect::summon(Position pos, CreatureFactory& factory, int num, int ttl, double delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(factory.random(MonsterAIFactory::dieTime(pos.getModel()->getTime() + ttl)));
+    creatures.push_back(factory.random(MonsterAIFactory::dieTime(pos.getGame()->getGlobalTime() + ttl)));
   return summonCreatures(pos, 2, std::move(creatures), delay);
 }
 

@@ -443,7 +443,7 @@ class Bed : public Furniture {
     getLevel()->addTickingSquare(getPosition());
   }
 
-  virtual void tickSpecial(double time) override {
+  virtual void tickSpecial() override {
     if (getCreature() && getCreature()->isAffected(LastingEffect::SLEEP))
       getCreature()->heal(0.005);
   }
@@ -506,7 +506,7 @@ class Altar : public Square {
   virtual string getName() = 0;
 
   virtual void onApply(Creature* c) override {
-    if (c == recentKiller && recentVictim && killTime >= c->getTime() - sacrificeTimeout)
+/*    if (c == recentKiller && recentVictim && killTime >= c->getTime() - sacrificeTimeout)
       for (Item* it : getItems(Item::classPredicate(ItemClass::CORPSE)))
         if (it->getCorpseInfo()->victim == recentVictim->getUniqueId()) {
           c->you(MsgType::SACRIFICE, getName());
@@ -514,7 +514,7 @@ class Altar : public Square {
           removeItem(it);
           onSacrifice(c);
           return;
-        }
+        }*/
     c->playerMessage("You pray to " + getName());
     onPrayer(c);
   }
@@ -526,7 +526,7 @@ class Altar : public Square {
   const Creature* SERIAL(recentKiller) = nullptr;
   const Creature* SERIAL(recentVictim) = nullptr;
   double SERIAL(killTime) = -100;
-  const double sacrificeTimeout = 50;
+//  const double sacrificeTimeout = 50;
 };
 
 class DeityAltar : public Altar {
@@ -648,7 +648,7 @@ class Hatchery : public Square {
         c.ticking = true;)),
     creature(c) {}
 
-  virtual void tickSpecial(double time) override {
+  virtual void tickSpecial() override {
     if (getCreature() || !Random.roll(10) || getPoisonGasAmount() > 0)
       return;
     for (Position v : getPosition2().neighbors8())

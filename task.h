@@ -67,7 +67,6 @@ class Task : public UniqueEntity<Task> {
   static PTask consumeItem(TaskCallback*, vector<Item*> items);
   static PTask copulate(TaskCallback*, Creature* target, int numTurns);
   static PTask consume(TaskCallback*, Creature* target);
-  static PTask stayInLocationUntil(const Location*, double time);
   static PTask eat(set<Position> hatcherySquares);
   static PTask goTo(Position);
   static PTask transferTo(Model*);

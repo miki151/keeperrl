@@ -53,7 +53,7 @@ class Collective : public TaskCallback, public CreatureListener {
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
   MoveInfo getMove(Creature*);
   void setControl(PCollectiveControl);
-  void tick(double time);
+  void tick();
   void update(bool currentlyActive);
   TribeId getTribeId() const;
   Tribe* getTribe() const;
@@ -61,7 +61,6 @@ class Collective : public TaskCallback, public CreatureListener {
   Level* getLevel();
   Game* getGame() const;
   const Level* getLevel() const;
-  double getTime() const;
   void addNewCreatureMessage(const vector<Creature*>&);
   void setTask(const Creature*, PTask, bool priority = false);
   bool hasTask(const Creature*) const;
@@ -72,6 +71,8 @@ class Collective : public TaskCallback, public CreatureListener {
   void setVillainType(VillainType);
   optional<VillainType> getVillainType() const;
   CollectiveControl* getControl() const;
+  double getLocalTime() const;
+  double getGlobalTime() const;
 
   typedef CollectiveWarning Warning;
   typedef CollectiveResourceId ResourceId;

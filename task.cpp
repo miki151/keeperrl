@@ -935,38 +935,6 @@ PTask Task::killFighters(Collective* col, int numCreatures) {
 }
 
 namespace {
-
-class StayInLocationUntil : public Task {
-  public:
-  StayInLocationUntil(const Location* l, double t) : location(l), time(t) {}
-
-  virtual MoveInfo getMove(Creature* c) override {
-    if (c->getTime() >= time) {
-      setDone();
-      return NoMove;
-    }
-    return c->stayIn(location);
-  }
-
-  SERIALIZE_ALL2(Task, location, time); 
-  virtual string getDescription() const override {
-    return "Stay in " + (location->getName().get_value_or("location")) + " until " + toString(time);
-  }
-
-  SERIALIZATION_CONSTRUCTOR(StayInLocationUntil);
-
-  private:
-  const Location* SERIAL(location);
-  double SERIAL(time);
-};
-
-}
-
-PTask Task::stayInLocationUntil(const Location* l, double time) {
-  return PTask(new StayInLocationUntil(l, time));
-}
-
-namespace {
 class ConsumeItem : public Task {
   public:
   ConsumeItem(TaskCallback* c, vector<Item*> _items) : items(_items), callback(c) {}
@@ -1216,7 +1184,7 @@ class GoToAndWait : public Task {
   GoToAndWait(Position pos, double maxT) : position(pos), maxTime(maxT) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (c->getTime() >= maxTime)
+    if (c->getLocalTime() >= maxTime)
       setDone();
     if (c->getPosition() != position)
       return c->moveTowards(position);
@@ -1271,7 +1239,7 @@ class Whipping : public Task {
       }
       return c->whip(whipped->getPosition());
     } else {
-      if (c->getTime() > timeout) {
+      if (c->getLocalTime() > timeout) {
         setDone();
         callback->onWhippingDone(whipped, position);
       }
@@ -1396,7 +1364,6 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Explore);
   REGISTER_TYPE(ar, AttackLeader);
   REGISTER_TYPE(ar, KillFighters);
-  REGISTER_TYPE(ar, StayInLocationUntil);
   REGISTER_TYPE(ar, ConsumeItem);
   REGISTER_TYPE(ar, Copulate);
   REGISTER_TYPE(ar, Consume);

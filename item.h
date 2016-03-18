@@ -91,7 +91,7 @@ class Item : public Renderable, public UniqueEntity<Item> {
   int getModifier(ModifierType) const;
   int getAttr(AttrType) const;
 
-  void tick(double time, Position);
+  void tick(Position);
   
   string getApplyMsgThirdPerson(bool blind) const;
   string getApplyMsgFirstPerson(bool blind) const;
@@ -138,7 +138,7 @@ class Item : public Renderable, public UniqueEntity<Item> {
   SERIALIZATION_DECL(Item);
 
   protected:
-  virtual void specialTick(double time, Position) {}
+  virtual void specialTick(Position) {}
   void setName(const string& name);
   bool SERIAL(discarded) = false;
   virtual void applySpecial(Creature*);

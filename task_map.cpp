@@ -34,7 +34,7 @@ Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
             (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
             (!closest || dist < getPosition(closest)->dist8(c->getPosition()) || isPriorityTask(task.get())) &&
             c->canNavigateTo(*pos) &&
-            (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getTime())) {
+            (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getLocalTime())) {
           closest = task.get();
           if (isPriorityTask(task.get()))
             return task.get();
