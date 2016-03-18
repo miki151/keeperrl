@@ -125,6 +125,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool canSee(const Creature*) const;
   bool canSee(Position) const;
   void initialize();
+  bool isConsideredAttacking(const Creature*);
 
   void considerDeityFight();
   void checkKeeperDanger();

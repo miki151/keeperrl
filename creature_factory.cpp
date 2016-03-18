@@ -2321,6 +2321,14 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER: 
       return ItemList()
+        .add({ItemId::SCROLL, EffectId::PORTAL})
+        .add({ItemId::SCROLL, EffectId::PORTAL})
+        .add({ItemId::SCROLL, EffectId::PORTAL})
+        .add({ItemId::SCROLL, EffectId::PORTAL})
+        .add({ItemId::SCROLL, EffectId::PORTAL})
+        .add({ItemId::SCROLL, EffectId::PORTAL})
+        .add({ItemId::SCROLL, EffectId::PORTAL})
+        .add({ItemId::SCROLL, EffectId::PORTAL})
         .add(ItemId::ROBE);
     case CreatureId::DEATH: 
       return ItemList()

@@ -1861,6 +1861,13 @@ void PlayerControl::update() {
   }
 }
 
+bool PlayerControl::isConsideredAttacking(const Creature* c) {
+  if (getGame()->isSingleModel())
+    return canSee(c) && contains(getCollective()->getTerritory().getStandardExtended(), c->getPosition());
+  else
+    return canSee(c) && c->getLevel() == getLevel();
+}
+
 void PlayerControl::tick() {
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
@@ -1893,7 +1900,7 @@ void PlayerControl::tick() {
       }
   for (auto attack : copyOf(newAttacks))
     for (const Creature* c : attack.getCreatures())
-      if (canSee(c) && contains(getCollective()->getTerritory().getStandardExtended(), c->getPosition())) {
+      if (isConsideredAttacking(c)) {
         addImportantLongMessage("You are under attack by " + attack.getAttacker()->getFullName() + "!",
             c->getPosition());
         getGame()->setCurrentMusic(MusicType::BATTLE, true);

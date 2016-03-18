@@ -98,7 +98,7 @@ class Model {
   vector<PLevel> SERIAL(levels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
-  Game* SERIAL(game);
+  Game* SERIAL(game) = nullptr;
   double SERIAL(lastTick) = 0;
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
