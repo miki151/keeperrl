@@ -1068,6 +1068,8 @@ vector<Item*> Creature::getGold(int num) const {
 }
 
 void Creature::setPosition(Position pos) {
+  if (!pos.isSameLevel(position))
+    modViewObject().clearMovementInfo();
   position = pos;
 }
 

@@ -631,7 +631,7 @@ void Player::makeMove() {
     }
   }
   if (!getCreature()->isDead() && (!currentTimePos || getCreature()->getLocalTime() > currentTimePos->time)) {
-    if (currentTimePos && (!previousTimePos || currentTimePos->pos.isSameLevel(previousTimePos->pos)))
+    if (currentTimePos /*&& (!previousTimePos || currentTimePos->pos.isSameLevel(previousTimePos->pos))*/)
       previousTimePos = currentTimePos;
     else
       previousTimePos = none;
