@@ -15,6 +15,7 @@ class PlayerControl;
 class CreatureView;
 
 enum class VillainType { MAIN, LESSER, PLAYER };
+enum class GameSaveType { ADVENTURER, KEEPER, RETIRED_SINGLE, RETIRED_SITE, AUTOSAVE };
 
 class Game {
   public:
@@ -22,11 +23,10 @@ class Game {
   static PGame campaignGame(Table<PModel>&&, Vec2 basePos, const string& playerName, const Campaign&);
   static PGame splashScreen(PModel&&);
 
-  enum class SaveType { ADVENTURER, KEEPER, RETIRED_KEEPER, AUTOSAVE };
 
-  enum class ExitId { SAVE, QUIT, SWITCH_MODEL };
+  enum class ExitId { SAVE, QUIT };
 
-  class ExitInfo : public EnumVariant<ExitId, TYPES(SaveType), ASSIGN(SaveType, ExitId::SAVE)> {
+  class ExitInfo : public EnumVariant<ExitId, TYPES(GameSaveType), ASSIGN(GameSaveType, ExitId::SAVE)> {
     using EnumVariant::EnumVariant;
   };
 
@@ -86,6 +86,9 @@ class Game {
   void onTrapDisarm(Position, const Creature*);
   void onSquareDestroyed(Position);
   void onEquip(const Creature*, const Item*);
+
+  PModel& getMainModel();
+  void prepareRetirement();
 
   ~Game();
 

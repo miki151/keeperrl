@@ -82,6 +82,8 @@ class Player : public Controller, public CreatureView {
   REGISTER_HANDLER(ThrowEvent, const Level*, const Creature*, const Item*, const vector<Vec2>& trajectory);
   REGISTER_HANDLER(ExplosionEvent, Position);
 
+  void considerAdventurerMusic();
+  void considerKeeperDirectionMessage();
   bool tryToPerform(CreatureAction);
   void extendedAttackAction(UniqueEntity<Creature>::Id);
   void extendedAttackAction(Creature* other);

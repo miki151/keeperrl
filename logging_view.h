@@ -64,8 +64,8 @@ class LoggingView : public View {
       return delegate->chooseSite(message, c, cur);
     }
 
-    virtual CampaignAction prepareCampaign(const Campaign& c) override {
-      return delegate->prepareCampaign(c);
+    virtual CampaignAction prepareCampaign(const Campaign& c, const CampaignSetupInfo& setup) override {
+      return delegate->prepareCampaign(c, setup);
     }
 
     virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>& c,

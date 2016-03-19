@@ -23,7 +23,7 @@ typedef long long LevelId;
 
 enum class MusicType;
 enum class SunlightState;
-
+enum class GameSaveType;
 enum class EnemyId;
 enum class CollectiveResourceId;
 enum class CollectiveConfigId;

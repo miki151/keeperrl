@@ -19,7 +19,7 @@ const Table<Campaign::SiteInfo>& Campaign::getSites() const {
 }
 
 bool Campaign::SiteInfo::canEmbark() const {
-  return !villain && !blocked;
+  return !dweller && !blocked;
 }
 
 optional<Vec2> Campaign::getPlayerPos() const {
@@ -57,25 +57,64 @@ void Campaign::setDefeated(Vec2 pos) {
   defeated[pos] = true;
 }
 
-int Campaign::getNumVillains() const {
+optional<Campaign::VillainInfo> Campaign::SiteInfo::getVillain() const {
+  if (dweller)
+    if (const VillainInfo* info = boost::get<VillainInfo>(&(*dweller)))
+      return *info;
+  return none;
+}
+
+optional<Campaign::PlayerInfo> Campaign::SiteInfo::getPlayer() const {
+  if (dweller)
+    if (const PlayerInfo* info = boost::get<PlayerInfo>(&(*dweller)))
+      return *info;
+  return none;
+}
+
+optional<Campaign::RetiredSiteInfo> Campaign::SiteInfo::getRetired() const {
+  if (dweller)
+    if (const RetiredSiteInfo* info = boost::get<RetiredSiteInfo>(&(*dweller)))
+      return *info;
+  return none;
+}
+ 
+bool Campaign::SiteInfo::isEmpty() const {
+  return !dweller;
+}
+
+optional<ViewId> Campaign::SiteInfo::getDwellerViewId() const {
+  if (!dweller)
+    return none;
+  if (const PlayerInfo* info = boost::get<PlayerInfo>(&(*dweller)))
+    return info->viewId;
+  if (const VillainInfo* info = boost::get<VillainInfo>(&(*dweller)))
+    return info->viewId;
+  if (const RetiredSiteInfo* info = boost::get<RetiredSiteInfo>(&(*dweller)))
+    return info->viewId;
+  return none;
+}
+
+int Campaign::getNumGenVillains() const {
   int ret = 0;
   for (Vec2 v : sites.getBounds())
-    if (!!sites[v].villain)
+    if (sites[v].getVillain())
       ++ret;
   return ret;
 }
 
-int Campaign::getMaxVillains() const {
-  return 12;
+int Campaign::getNumRetVillains() const {
+  int ret = 0;
+  for (Vec2 v : sites.getBounds())
+    if (sites[v].getRetired())
+      ++ret;
+  return ret;
 }
 
-int Campaign::getMinVillains() const {
-  return 0;
-}
-
-optional<Campaign> Campaign::prepareCampaign(View* view, function<string()> worldNameGen, RandomGen& random) {
+optional<Campaign> Campaign::prepareCampaign(View* view, const vector<RetiredSiteInfo>& retired,
+    function<string()> worldNameGen, RandomGen& random) {
   Vec2 size(8, 5);
-  int numVillains = 4;
+  int numGenVillains = 4;
+  int numRetired = min<int>(1, retired.size());
   int numBlocked = random.get(4, 8);
   string worldName;
   while (1) {
@@ -90,14 +129,19 @@ optional<Campaign> Campaign::prepareCampaign(View* view, function<string()> worl
     }
     vector<Vec2> freePos;
     for (Vec2 v : Rectangle(size))
-      if (!campaign.sites[v].villain)
+      if (campaign.sites[v].canEmbark())
         freePos.push_back(v);
-    while (freePos.size() < numVillains + 1)
-      --numVillains;
-    for (int i : Range(numVillains)) {
+    while (freePos.size() < numGenVillains + numRetired + 1)
+      --numGenVillains;
+    for (int i : Range(numGenVillains)) {
       Vec2 pos = random.choose(freePos);
       removeElement(freePos, pos);
-      campaign.sites[pos].villain = getRandomVillain(random);
+      campaign.sites[pos].dweller = getRandomVillain(random);
+    }
+    for (int i : Range(numRetired)) {
+      Vec2 pos = random.choose(freePos);
+      removeElement(freePos, pos);
+      campaign.sites[pos].dweller = random.choose(retired);
     }
     for (int i : Range(numBlocked)) {
       if (freePos.size() <= 1)
@@ -109,7 +153,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, function<string()> worl
     }
     while (1) {
       bool reroll = false;
-      CampaignAction action = view->prepareCampaign(campaign);
+      CampaignAction action = view->prepareCampaign(campaign, CampaignSetupInfo{0, 12, (int)retired.size()});
       switch (action.getId()) {
         case CampaignActionId::INC_WIDTH:
             size.x += action.get<int>(); reroll = true;
@@ -117,8 +161,12 @@ optional<Campaign> Campaign::prepareCampaign(View* view, function<string()> worl
         case CampaignActionId::INC_HEIGHT:
             size.y += action.get<int>(); reroll = true;
             break;
-        case CampaignActionId::NUM_VILLAINS:
-            numVillains = max(0, numVillains + action.get<int>());
+        case CampaignActionId::NUM_GEN_VILLAINS:
+            numGenVillains = max(0, numGenVillains + action.get<int>());
+            reroll = true;
+            break;
+        case CampaignActionId::NUM_RET_VILLAINS:
+            numRetired = max(0, numRetired + action.get<int>());
             reroll = true;
             break;
         case CampaignActionId::REROLL_MAP:
@@ -138,7 +186,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, function<string()> worl
             break;
         case CampaignActionId::CHOOSE_SITE:
             campaign.playerPos = action.get<Vec2>();
-            campaign.sites[*campaign.playerPos].player = {ViewId::KEEPER};
+            campaign.sites[*campaign.playerPos].dweller = PlayerInfo{ViewId::KEEPER};
             return campaign;
       }
       if (reroll)
@@ -147,17 +195,3 @@ optional<Campaign> Campaign::prepareCampaign(View* view, function<string()> worl
   }
 }
 
-Table<PModel> Campaign::buildModels(ProgressMeter* meter, RandomGen& random, Options* options) const {
-  Table<PModel> ret(sites.getBounds());
-  for (Vec2 v : sites.getBounds()) {
-    meter->addProgress();
-    if (v == playerPos) {
-      //ret[v] = ModelBuilder::campaignBaseModel(nullptr, random, options, "pok");
-      ret[v] = ModelBuilder::quickModel(nullptr, random, options);
-      ModelBuilder::spawnKeeper(ret[v].get(), options);
-    } else if (sites[v].villain)
-      //ret[v] = ModelBuilder::quickModel(nullptr, random, options);
-      ret[v] = ModelBuilder::campaignSiteModel(nullptr, random, options, "pok", sites[v].villain->enemyId);
-  }
-  return ret;
-}

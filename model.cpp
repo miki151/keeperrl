@@ -46,19 +46,15 @@
 #include "game.h"
 
 template <class Archive> 
-void Model::serialize(Archive& ar, const unsigned int version) { 
-  ar& SVAR(levels)
-    & SVAR(collectives)
-    & SVAR(timeQueue)
-    & SVAR(deadCreatures)
-    & SVAR(currentTime)
-    & SVAR(woodCount)
-    & SVAR(game)
-    & SVAR(lastTick)
-    & SVAR(stairNavigation)
-    & SVAR(cemetery);
+void Model::serialize(Archive& ar, const unsigned int version) {
+  CHECK(!serializationLocked);
+  serializeAll(ar, levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
+  serializeAll(ar, stairNavigation, cemetery);
 }
 
+void Model::lockSerialization() {
+  serializationLocked = true;
+}
 
 SERIALIZABLE(Model);
 
@@ -211,11 +207,11 @@ PCreature Model::extractCreature(Creature* c) {
   return ret;
 }
 
-void Model::transferCreatures(vector<PCreature> creatures, Vec2 travelDir) {
-  for (PCreature& c : creatures)
-    CHECK(getTopLevel()->landCreature(StairKey::transferLanding(), std::move(c), travelDir));
+void Model::transferCreature(PCreature c, Vec2 travelDir) {
+  CHECK(getTopLevel()->landCreature(StairKey::transferLanding(), std::move(c), travelDir));
 }
 
 vector<Creature*> Model::getAllCreatures() const { 
   return timeQueue->getAllCreatures();
+
 }

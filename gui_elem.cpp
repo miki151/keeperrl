@@ -955,7 +955,6 @@ PGuiElem GuiFactory::ListBuilder::buildVerticalList() {
     if (sizes[i] == -1)
       sizes[i] = *elems[i]->getPreferredHeight();
   PGuiElem ret = gui.verticalList(std::move(elems), sizes, backElems);
-  clear();
   return ret;
 }
 
@@ -964,13 +963,11 @@ PGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
     if (sizes[i] == -1)
       sizes[i] = *elems[i]->getPreferredWidth();
   PGuiElem ret = gui.horizontalList(std::move(elems), sizes, backElems);
-  clear();
   return ret;
 }
 
 PGuiElem GuiFactory::ListBuilder::buildHorizontalListFit() {
   PGuiElem ret = gui.horizontalListFit(std::move(elems), 0);
-  clear();
   return ret;
 }
 

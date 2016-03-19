@@ -89,9 +89,9 @@ class GuiFactory {
     int getSize() const;
     bool isEmpty() const;
     vector<PGuiElem>& getAllElems();
+    void clear();
 
     private:
-    void clear();
     GuiFactory& gui;
     vector<PGuiElem> elems;
     vector<int> sizes;

@@ -52,14 +52,12 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void processInput(View* view, UserInput);
   MoveInfo getMove(Creature* c);
 
-  bool isRetired() const;
   const Creature* getKeeper() const;
   Creature* getKeeper();
 
   void render(View*);
 
   bool isTurnBased();
-  void retire();
   void leaveControl();
   bool swapTeam();
   void onControlledKilled();
@@ -118,7 +116,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   void considerNightfallMessage();
   void considerWarning();
-  void considerAdventurerMusic();
 
   Level* getLevel();
   TribeId getTribeId() const;
@@ -218,7 +215,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   optional<SelectionInfo> rectSelection;
   double SERIAL(lastControlKeeperQuestion) = -100;
   int SERIAL(startImpNum) = -1;
-  bool SERIAL(retired) = false;
   bool SERIAL(payoutWarning) = false;
   optional<UniqueEntity<Creature>::Id> chosenCreature;
   optional<TeamId> chosenTeam;

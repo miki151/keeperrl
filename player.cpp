@@ -37,6 +37,10 @@
 #include "entity_name.h"
 #include "view.h"
 #include "view_index.h"
+#include "music.h"
+#include "model.h"
+#include "collective.h"
+#include "territory.h"
 
 template <class Archive> 
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -383,8 +387,8 @@ void Player::payDebtAction() {
         if (gold.size() < debt) {
           privateMessage("You don't have enough gold to pay.");
         } else if (getGame()->getView()->yesOrNoPrompt("Buy items for " + toString(debt) + " zorkmids?")) {
-          privateMessage("You pay " + c->getName().the() + " " + toString(debt) + " zorkmids.");
-          getCreature()->give(c, gold);
+          if (tryToPerform(getCreature()->give(c, gold)))
+            privateMessage("You pay " + c->getName().the() + " " + toString(debt) + " zorkmids.");
         }
       } else {
         Debug() << "No debt " << c->getName().bare();
@@ -507,6 +511,10 @@ void Player::retireMessages() {
 }
 
 void Player::makeMove() {
+  if (!getGame()->getPlayerCollective()) {
+    considerAdventurerMusic();
+    considerKeeperDirectionMessage();
+  }
   if (currentTimePos && currentTimePos->pos.getLevel() != getCreature()->getLevel()) {
     previousTimePos = currentTimePos = none;
   }
@@ -919,4 +927,24 @@ double Player::getLocalTime() const {
 
 bool Player::isPlayerView() const {
   return true;
+}
+
+void Player::considerAdventurerMusic() {
+  for (Collective* col : getCreature()->getPosition().getModel()->getCollectives())
+    if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&
+        col->getTerritory().contains(getCreature()->getPosition())) {
+      getGame()->setCurrentMusic(MusicType::ADV_BATTLE, true);
+      return;
+    }
+  getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL, false);
+}
+
+void Player::considerKeeperDirectionMessage() {
+  for (Collective* col : getCreature()->getPosition().getModel()->getCollectives())
+    if (col->getVillainType() == VillainType::MAIN && !col->isConquered() && col->getLeader() &&
+        !col->getLeader()->isDead() && col->getLeader()->getPosition().isSameLevel(getLevel()) &&
+        Random.roll(30) && !col->getTerritory().contains(getCreature()->getPosition()))
+      getCreature()->playerMessage("You sense horrible evil in the " + 
+            getCardinalName(getCreature()->getPosition().getDir(col->getLeader()->getPosition())
+                .getBearing().getCardinalDir()));
 }

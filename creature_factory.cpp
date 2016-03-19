@@ -1030,8 +1030,8 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::SPEED] = 100;
           c.weight = 90;
           c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 85;
-          c.attr[AttrType::DEXTERITY] = 85;
+          c.attr[AttrType::STRENGTH] = 15;
+          c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 5;
           c.humanoid = true;
           c.name = "Keeper";

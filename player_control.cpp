@@ -23,7 +23,6 @@
 #include "statistics.h"
 #include "options.h"
 #include "technology.h"
-#include "music.h"
 #include "village_control.h"
 #include "pantheon.h"
 #include "item.h"
@@ -62,7 +61,7 @@
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl);
-  serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum, retired, payoutWarning);
+  serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum, payoutWarning);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
   serializeAll(ar, knownVillains, knownVillainLocations, notifiedConquered, visibilityMap, warningTimes);
   serializeAll(ar, lastWarningTime);
@@ -382,8 +381,6 @@ void PlayerControl::leaveControl() {
 }
 
 void PlayerControl::render(View* view) {
-  if (retired)
-    return;
   if (firstRender) {
     firstRender = false;
     initialize();
@@ -404,13 +401,7 @@ void PlayerControl::render(View* view) {
 }
 
 bool PlayerControl::isTurnBased() {
-  return retired || getControlled();
-}
-
-void PlayerControl::retire() {
-  if (getControlled())
-    leaveControl();
-  retired = true;
+  return getControlled();
 }
 
 ViewId PlayerControl::getResourceViewId(ResourceId id) const {
@@ -1124,7 +1115,7 @@ void PlayerControl::initialize() {
 }
 
 void PlayerControl::onMoved(Creature* c) {
-  if (!retired && contains(getCreatures(), c)) {
+  if (contains(getCreatures(), c)) {
     vector<Position> visibleTiles = c->getVisibleTiles();
     visibilityMap->update(c, visibleTiles);
     for (Position pos : visibleTiles) {
@@ -1366,8 +1357,6 @@ Collective* PlayerControl::getVillain(int num) {
 }
 
 void PlayerControl::processInput(View* view, UserInput input) {
-  if (retired)
-    return;
   switch (input.getId()) {
     case UserInputId::MESSAGE_INFO:
         if (auto message = findMessage(input.get<int>())) {
@@ -1741,10 +1730,6 @@ bool PlayerControl::isPlayerView() const {
   return false;
 }
 
-bool PlayerControl::isRetired() const {
-  return retired;
-}
-
 const Creature* PlayerControl::getKeeper() const {
   return getCollective()->getLeader();
 }
@@ -1764,7 +1749,7 @@ void PlayerControl::addToMemory(Position pos) {
 
 void PlayerControl::checkKeeperDanger() {
   Creature* controlled = getControlled();
-  if (!retired && !getKeeper()->isDead() && controlled != getKeeper()) { 
+  if (!getKeeper()->isDead() && controlled != getKeeper()) { 
     if ((getKeeper()->wasInCombat(5) || getKeeper()->getHealth() < 1)
         && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 50) {
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
@@ -1789,8 +1774,7 @@ const double anyWarningFrequency = 100;
 const double warningFrequency = 500;
 
 void PlayerControl::onNoEnemies() {
-  if (!isRetired())
-    getGame()->setCurrentMusic(MusicType::PEACEFUL, false);
+  getGame()->setCurrentMusic(MusicType::PEACEFUL, false);
 }
 
 void PlayerControl::considerNightfallMessage() {
@@ -1813,16 +1797,6 @@ void PlayerControl::considerWarning() {
         lastWarningTime = warningTimes[w] = time;
         break;
       }
-}
-
-void PlayerControl::considerAdventurerMusic() {
-  if (retired)
-    if (const Creature* c = getLevel()->getPlayer()) {
-      if (getCollective()->getTerritory().contains(c->getPosition()))
-        getGame()->setCurrentMusic(MusicType::ADV_BATTLE, true);
-      else
-        getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL, false);
-    }
 }
 
 void PlayerControl::update() {
@@ -1875,18 +1849,10 @@ void PlayerControl::tick() {
       return msg.getFreshness() > 0; });
   considerNightfallMessage();
   considerWarning();
-  considerAdventurerMusic();
   if (startImpNum == -1)
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   checkKeeperDanger();
-  if (retired && !getKeeper()->isDead() && getKeeper()->getPosition().isSameLevel(getLevel())) {
-    if (const Creature* c = getLevel()->getPlayer()) {
-      if (Random.roll(30) && !getCollective()->getTerritory().contains(c->getPosition()))
-        c->playerMessage("You sense horrible evil in the " + 
-            getCardinalName(c->getPosition().getDir(getKeeper()->getPosition()).getBearing().getCardinalDir()));
-    }
-  }
-  if (getCollective()->hasMinionDebt() && !retired && !payoutWarning) {
+  if (getCollective()->hasMinionDebt() && !payoutWarning) {
     getView()->presentText("Warning", "You don't have enough gold for salaries. "
         "Your minions will refuse to work if they are not paid.\n \n"
         "You can get more gold by mining or retrieve it from killed heroes and conquered villages.");
@@ -1949,11 +1915,6 @@ void PlayerControl::onPickupEvent(const Creature* c, const vector<Item*>& items)
 }
 
 void PlayerControl::onTechBookRead(Technology* tech) {
-  if (retired) {
-    getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
-        + ", but you do not comprehend it.");
-    return;   
-  }
   vector<Technology*> nextTechs = Technology::getNextTechs(getCollective()->getTechnologies());
   if (tech == nullptr) {
     if (!nextTechs.empty())
@@ -1976,7 +1937,7 @@ void PlayerControl::onTechBookRead(Technology* tech) {
 }
 
 void PlayerControl::onConqueredLand() {
-  if (retired || getKeeper()->isDead())
+  if (getKeeper()->isDead())
     return;
   getGame()->conquered(*getKeeper()->getFirstName(), getCollective()->getKills(),
       getCollective()->getDangerLevel() + getCollective()->getPoints());
@@ -1988,7 +1949,7 @@ void PlayerControl::onMemberKilled(const Creature* victim, const Creature* kille
   if (victim->isPlayer())
     onControlledKilled();
   visibilityMap->remove(victim);
-  if (victim == getKeeper() && !retired && !getGame()->isGameOver()) {
+  if (victim == getKeeper() && !getGame()->isGameOver()) {
     getGame()->gameOver(victim, getCollective()->getKills().size(), "enemies",
         getCollective()->getDangerLevel() + getCollective()->getPoints());
   }
@@ -2056,7 +2017,7 @@ void PlayerControl::onConstructed(Position pos, const SquareType& type) {
 
 void PlayerControl::updateVisibleCreatures() {
   visibleEnemies.clear();
-  for (const Creature* c : getLevel()->getModel()->getAllCreatures()) 
+  for (const Creature* c : getLevel()->getAllCreatures()) 
     if (canSee(c) && isEnemy(c))
         visibleEnemies.push_back(c);
 }

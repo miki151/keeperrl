@@ -65,7 +65,10 @@ Collective* VillageControl::getEnemyCollective() const {
 }
 
 bool VillageControl::isEnemy(const Creature* c) {
-  return contains(c->getGame()->getPlayerCollective()->getCreatures(), c);
+  if (Collective* col = getEnemyCollective())
+    return contains(col->getCreatures(), c);
+  else
+    return false;
 }
 
 void VillageControl::onOtherKilled(const Creature* victim, const Creature* killer) {
@@ -97,20 +100,21 @@ void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& ite
 }
 
 void VillageControl::launchAttack(vector<Creature*> attackers) {
-  Collective* enemy = getEnemyCollective();
-  getCollective()->getGame()->transferCreatures(attackers, enemy->getLevel()->getModel());
-  optional<int> ransom;
-  int hisGold = enemy->numResource(CollectiveResourceId::GOLD);
-  if (villain->ransom && hisGold >= villain->ransom->second)
-    ransom = max<int>(villain->ransom->second,
-        (Random.getDouble(villain->ransom->first * 0.6, villain->ransom->first * 1.5)) * hisGold);
-  enemy->addAttack(CollectiveAttack(getCollective(), attackers, ransom));
-  TeamId team = getCollective()->getTeams().createPersistent(attackers);
-  getCollective()->getTeams().activate(team);
-  getCollective()->freeTeamMembers(team);
-  for (Creature* c : attackers)
-    getCollective()->setTask(c, villain->getAttackTask(this));
-  attackSizes[team] = attackers.size();
+  if (Collective* enemy = getEnemyCollective()) {
+    getCollective()->getGame()->transferCreatures(attackers, enemy->getLevel()->getModel());
+    optional<int> ransom;
+    int hisGold = enemy->numResource(CollectiveResourceId::GOLD);
+    if (villain->ransom && hisGold >= villain->ransom->second)
+      ransom = max<int>(villain->ransom->second,
+          (Random.getDouble(villain->ransom->first * 0.6, villain->ransom->first * 1.5)) * hisGold);
+    enemy->addAttack(CollectiveAttack(getCollective(), attackers, ransom));
+    TeamId team = getCollective()->getTeams().createPersistent(attackers);
+    getCollective()->getTeams().activate(team);
+    getCollective()->freeTeamMembers(team);
+    for (Creature* c : attackers)
+      getCollective()->setTask(c, villain->getAttackTask(this));
+    attackSizes[team] = attackers.size();
+  }
 }
 
 void VillageControl::considerCancellingAttack() {
@@ -150,7 +154,7 @@ void VillageControl::considerWelcomeMessage() {
         case DRAGON_WELCOME:
           for (Position pos : getCollective()->getTerritory().getAll())
             if (Creature* c = pos.getCreature())
-              if (c->isAffected(LastingEffect::INVISIBLE) && villain->contains(c) && c->isPlayer()
+              if (c->isAffected(LastingEffect::INVISIBLE) && isEnemy(c) && c->isPlayer()
                   && getCollective()->getLeader()->canSee(c->getPosition())) {
                 c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
                       "I hear your breath. Come along!\"", PlayerMessage::CRITICAL));
@@ -203,13 +207,16 @@ void VillageControl::update() {
 }
 
 PTask VillageControl::Villain::getAttackTask(VillageControl* self) {
+  Collective* enemy = self->getEnemyCollective();
   switch (behaviour.getId()) {
-    case VillageBehaviourId::KILL_LEADER: return Task::attackLeader(self->getEnemyCollective());
-    case VillageBehaviourId::KILL_MEMBERS: return Task::killFighters(self->getEnemyCollective(),
-                                               behaviour.get<int>());
-    case VillageBehaviourId::STEAL_GOLD: return Task::stealFrom(self->getEnemyCollective(), self->getCollective());
+    case VillageBehaviourId::KILL_LEADER:
+      return Task::attackLeader(enemy);
+    case VillageBehaviourId::KILL_MEMBERS:
+      return Task::killFighters(enemy, behaviour.get<int>());
+    case VillageBehaviourId::STEAL_GOLD:
+      return Task::stealFrom(enemy, self->getCollective());
     case VillageBehaviourId::CAMP_AND_SPAWN:
-        return Task::campAndSpawn(self->getEnemyCollective(), self->getCollective(),
+      return Task::campAndSpawn(enemy, self->getCollective(),
             behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
   }
 }
@@ -277,10 +284,6 @@ static double stolenItemsFun(int numStolen) {
     return 1.0;
 }
 
-bool VillageControl::Villain::contains(const Creature* c) {
-  return ::contains(c->getGame()->getPlayerCollective()->getCreatures(), c);
-}
-
 static double getRoomProb(SquareId id) {
   switch (id) {
     case SquareId::THRONE: return 0.001;
@@ -296,28 +299,29 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
   double goldMaxProb = 1.0 / 500;
   double stolenMaxProb = 1.0 / 300;
   double entryMaxProb = 1.0 / 20.0;
-  Collective* collective = self->getEnemyCollective();
-  switch (trigger.getId()) {
-    case AttackTriggerId::TIMER: 
-      return collective->getGlobalTime() >= trigger.get<int>() ? 0.05 : 0;
-    case AttackTriggerId::ROOM_BUILT: 
-      return collective->getSquares(trigger.get<SquareType>()).size() *
+  if (Collective* collective = self->getEnemyCollective())
+    switch (trigger.getId()) {
+      case AttackTriggerId::TIMER: 
+        return collective->getGlobalTime() >= trigger.get<int>() ? 0.05 : 0;
+      case AttackTriggerId::ROOM_BUILT: 
+        return collective->getSquares(trigger.get<SquareType>()).size() *
           getRoomProb(trigger.get<SquareType>().getId());
-    case AttackTriggerId::POWER: 
-      return powerMaxProb * powerClosenessFun(self->getCollective()->getDangerLevel(), collective->getDangerLevel());
-    case AttackTriggerId::SELF_VICTIMS:
-      return victimsMaxProb * victimsFun(self->victims, 0);
-    case AttackTriggerId::ENEMY_POPULATION:
-      return populationMaxProb * populationFun(
-          collective->getCreatures(MinionTrait::FIGHTER).size(), trigger.get<int>());
-    case AttackTriggerId::GOLD:
-      return goldMaxProb * goldFun(collective->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
-    case AttackTriggerId::STOLEN_ITEMS:
-      return stolenMaxProb 
+      case AttackTriggerId::POWER: 
+        return powerMaxProb *
+            powerClosenessFun(self->getCollective()->getDangerLevel(), collective->getDangerLevel());
+      case AttackTriggerId::SELF_VICTIMS:
+        return victimsMaxProb * victimsFun(self->victims, 0);
+      case AttackTriggerId::ENEMY_POPULATION:
+        return populationMaxProb * populationFun(
+            collective->getCreatures(MinionTrait::FIGHTER).size(), trigger.get<int>());
+      case AttackTriggerId::GOLD:
+        return goldMaxProb * goldFun(collective->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
+      case AttackTriggerId::STOLEN_ITEMS:
+        return stolenMaxProb 
           * stolenItemsFun(self->stolenItemCount);
-    case AttackTriggerId::ENTRY:
-      return entryMaxProb * self->entries;
-  }
+      case AttackTriggerId::ENTRY:
+        return entryMaxProb * self->entries;
+    }
   return 0;
 }
 

@@ -2,6 +2,7 @@
 #define _CAMPAIGN_H
 
 #include "util.h"
+#include "main_loop.h"
 
 class View;
 class ProgressMeter;
@@ -29,30 +30,32 @@ class Campaign {
     string SERIAL(name);
     SERIALIZE_ALL(viewId, name, enemyId);
   };
-
   struct PlayerInfo {
     ViewId SERIAL(viewId);
     SERIALIZE_ALL(viewId);
   };
-
+  typedef MainLoop::RetiredSiteInfo RetiredSiteInfo;
   struct SiteInfo {
     string SERIAL(description);
     vector<ViewId> SERIAL(viewId);
-    optional<VillainInfo> SERIAL(villain);
-    optional<PlayerInfo> SERIAL(player);
-    bool SERIAL(blocked);
+    optional<variant<VillainInfo, RetiredSiteInfo, PlayerInfo>> SERIAL(dweller);
+    optional<VillainInfo> getVillain() const;
+    optional<RetiredSiteInfo> getRetired() const;
+    optional<PlayerInfo> getPlayer() const;
+    bool isEmpty() const;
+    bool SERIAL(blocked) = false;
     bool canEmbark() const;
-    SERIALIZE_ALL(description, viewId, villain, player, blocked);
+    optional<ViewId> getDwellerViewId() const;
+    SERIALIZE_ALL(description, viewId, dweller, blocked);
   };
 
-  Table<PModel> buildModels(ProgressMeter*, RandomGen&, Options*) const;
   const Table<SiteInfo>& getSites() const;
-  static optional<Campaign> prepareCampaign(View*, function<string()> worldNameGen, RandomGen&);
+  static optional<Campaign> prepareCampaign(View*, const vector<RetiredSiteInfo>&, function<string()> worldNameGen,
+      RandomGen&);
   optional<Vec2> getPlayerPos() const;
   const string& getWorldName() const;
-  int getNumVillains() const;
-  int getMaxVillains() const;
-  int getMinVillains() const;
+  int getNumGenVillains() const;
+  int getNumRetVillains() const;
   bool isDefeated(Vec2) const;
   void setDefeated(Vec2);
 

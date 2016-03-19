@@ -22,7 +22,6 @@
 #include "tribe.h"
 #include "enum_variant.h"
 
-class PlayerControl;
 class Level;
 class ProgressMeter;
 class Options;
@@ -78,12 +77,14 @@ class Model {
   void updateSunlightMovement();
 
   PCreature extractCreature(Creature*);
-  void transferCreatures(vector<PCreature>, Vec2 travelDir);
+  void transferCreature(PCreature, Vec2 travelDir);
 
   Model();
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
+
+  void lockSerialization();
 
   private:
 
@@ -107,6 +108,7 @@ class Model {
   void calculateStairNavigation();
   optional<StairKey> getStairsBetween(const Level* from, const Level* to);
   map<pair<const Level*, const Level*>, StairKey> SERIAL(stairNavigation);
+  bool serializationLocked = false;
 };
 
 #endif
