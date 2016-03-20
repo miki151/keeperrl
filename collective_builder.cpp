@@ -45,6 +45,7 @@ CollectiveBuilder& CollectiveBuilder::addSquares(const vector<Position>& v) {
 
 PCollective CollectiveBuilder::build() {
   Collective* c = new Collective(NOTNULL(level), config, tribe, credit, name);
+  CHECK(!creatures.empty());
   for (auto& elem : creatures)
     c->addCreature(elem.creature, elem.traits);
   for (Vec2 v : squares)

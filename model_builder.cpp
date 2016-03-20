@@ -1179,23 +1179,22 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
 
 void ModelBuilder::spawnKeeper(Model* m, Options* options) {
   Level* level = m->levels[0].get();
+  PCreature keeper = CreatureFactory::fromId(CreatureId::KEEPER, TribeId::KEEPER);
+  string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
+  if (!keeperName.empty())
+    keeper->setFirstName(keeperName);
+  Creature* keeperRef = keeper.get();
+  level->landCreature(StairKey::keeperSpawn(), keeperRef);
+  m->addCreature(std::move(keeper));
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::KEEPER)
       .setLevel(level)
+      .addCreature(keeperRef)
       .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
       .build());
   Collective* playerCollective = m->collectives.back().get();
   playerCollective->setVillainType(VillainType::PLAYER);
   playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, level)));
-  PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, TribeId::KEEPER,
-      MonsterAIFactory::collective(playerCollective));
-  string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
-  if (!keeperName.empty())
-    c->setFirstName(keeperName);
-  Creature* ref = c.get();
-  level->landCreature(StairKey::keeperSpawn(), c.get());
-  m->addCreature(std::move(c));
-  playerCollective->addCreature(ref, {});
   for (int i : Range(4)) {
     PCreature c = CreatureFactory::fromId(CreatureId::IMP, TribeId::KEEPER,
         MonsterAIFactory::collective(playerCollective));
