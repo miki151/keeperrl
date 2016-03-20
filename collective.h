@@ -29,7 +29,6 @@ class CollectiveAttack;
 class Creature;
 class CollectiveControl;
 class Tribe;
-class Deity;
 class Level;
 class Trigger;
 struct ImmigrantInfo;
@@ -57,7 +56,6 @@ class Collective : public TaskCallback, public CreatureListener {
   void update(bool currentlyActive);
   TribeId getTribeId() const;
   Tribe* getTribe() const;
-  double getStanding(const Deity*) const;
   Level* getLevel();
   Game* getGame() const;
   const Level* getLevel() const;
@@ -90,11 +88,6 @@ class Collective : public TaskCallback, public CreatureListener {
   bool hasAnyTrait(const Creature*, EnumSet<MinionTrait>) const;
   void setTrait(Creature* c, MinionTrait);
   void removeTrait(Creature* c, MinionTrait);
-
-  double getTechCostMultiplier() const;
-  double getCraftingMultiplier() const;
-  double getBeastMultiplier() const;
-  double getUndeadMultiplier() const;
 
   vector<Creature*> getRecruits() const;
   void recruit(Creature*, Collective* to);
@@ -323,9 +316,6 @@ class Collective : public TaskCallback, public CreatureListener {
   void autoEquipment(Creature* creature, bool replace);
   Item* getWorstItem(const Creature*, vector<Item*> items) const;
   int getTaskDuration(const Creature*, MinionTask) const;
-  double getStanding(EpithetId id) const;
-  void onEpithetWorship(Creature*, WorshipType, EpithetId);
-  void considerHealingLeader();
   bool considerImmigrant(const ImmigrantInfo&);
   void considerBuildingBeds();
   bool considerNonSpawnImmigrant(const ImmigrantInfo&, vector<PCreature>);
@@ -344,7 +334,6 @@ class Collective : public TaskCallback, public CreatureListener {
   EnumMap<SpawnType, vector<Creature*>> SERIAL(bySpawnType);
   PCollectiveControl SERIAL(control);
   TribeId SERIAL(tribe);
-  map<const Deity*, double> SERIAL(deityStanding);
   Level* SERIAL(level) = nullptr;
   unordered_map<SquareType, set<Position>> SERIAL(mySquares);
   unordered_map<SquareApplyType, set<Position>, CustomHash<SquareApplyType>> SERIAL(mySquares2);

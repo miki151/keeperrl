@@ -29,7 +29,6 @@
 #include "options.h"
 #include "technology.h"
 #include "music.h"
-#include "pantheon.h"
 #include "test.h"
 #include "tile.h"
 #include "spell.h"
@@ -174,7 +173,6 @@ int main(int argc, char* argv[]) {
   Skill::init();
   Technology::init();
   Spell::init();
-  Epithet::init();
   Vision::init();
   string dataPath;
   if (vars.count("data_dir"))

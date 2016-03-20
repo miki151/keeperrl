@@ -124,7 +124,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void initialize();
   bool isConsideredAttacking(const Creature*);
 
-  void considerDeityFight();
   void checkKeeperDanger();
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
@@ -134,7 +133,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void scrollToMiddle(const vector<Position>&);
 
   Creature* getConsumptionTarget(View*, Creature* consumer);
-  void onWorshipEpithet(EpithetId);
   Creature* getCreature(UniqueEntity<Creature>::Id id) const;
   void controlSingle(const Creature*);
   void commandTeam(TeamId);

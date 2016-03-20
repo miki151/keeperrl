@@ -185,13 +185,6 @@ class CollectiveInfo {
   };
   vector<TechButton> HASH(techButtons);
 
-  struct Deity {
-    string HASH(name);
-    double HASH(standing);
-    HASH_ALL(name, standing);
-  };
-  vector<Deity> HASH(deities);
-
   struct Task {
     string HASH(name);
     optional<UniqueEntity<Creature>::Id> HASH(creature);
@@ -208,7 +201,7 @@ class CollectiveInfo {
   };
   optional<Ransom> HASH(ransom);
 
-  HASH_ALL(warning, buildings, minionButtons, libraryButtons, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosen, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, deities, taskMap, ransom);
+  HASH_ALL(warning, buildings, minionButtons, libraryButtons, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosen, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom);
 };
 
 class VillageInfo {

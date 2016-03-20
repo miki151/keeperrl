@@ -117,7 +117,6 @@ class Player : public Controller, public CreatureView {
   const Location* SERIAL(lastLocation) = nullptr;
   vector<const Creature*> SERIAL(specialCreatures);
   bool SERIAL(displayGreeting);
-  vector<EpithetId> SERIAL(usedEpithets);
   bool updateView = true;
   void retireMessages();
   vector<PlayerMessage> SERIAL(messages);

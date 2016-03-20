@@ -205,19 +205,6 @@ PGuiElem GuiBuilder::getStandingGui(double standing) {
     return gui.label("good", color);
 }
 
-PGuiElem GuiBuilder::drawDeities(CollectiveInfo& info) {
-  vector<PGuiElem> lines;
-  for (int i : All(info.deities)) {
-    lines.push_back(gui.stack(
-          gui.button(getButtonCallback(UserInput(UserInputId::DEITIES, i))),
-          gui.label(capitalFirst(info.deities[i].name), colors[ColorId::WHITE])));
-    lines.push_back(gui.margins(gui.horizontalList(makeVec<PGuiElem>(
-              gui.label("standing: ", colors[ColorId::WHITE]),
-              getStandingGui(info.deities[i].standing)), 85), 40, 0, 0, 0));
-  }
-  return gui.verticalList(std::move(lines), legendLineHeight);
-}
-
 PGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
   vector<PGuiElem> lines = drawButtons(info.libraryButtons, CollectiveTab::TECHNOLOGY);
   for (int i : All(info.techButtons)) {

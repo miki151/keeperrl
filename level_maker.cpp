@@ -16,7 +16,6 @@
 #include "stdafx.h"
 
 #include "level_maker.h"
-#include "pantheon.h"
 #include "item_factory.h"
 #include "square.h"
 #include "collective_builder.h"
@@ -1048,49 +1047,6 @@ class Margin : public LevelMaker {
   private:
   int left, top, right, bottom;
   LevelMaker* inside;
-};
-
-class Shrine : public LevelMaker {
-  public:
-  Shrine(DeityHabitat _deity, SquareType _floorType, Predicate wallPred, SquareType _newWall,
-      LevelMaker* _locationMaker = nullptr) : deity(_deity), floorType(_floorType),
-      wallPredicate(wallPred), newWall(_newWall), locationMaker(_locationMaker) {}
-
-  virtual void make(LevelBuilder* builder, Rectangle area) override {
-    for (int i : Range(10009)) {
-      Vec2 pos = area.randomVec2();
-      if (!wallPredicate.apply(builder, pos))
-        continue;
-      int numFloor = 0;
-      int numWall = 0;
-      for (Vec2 fl : pos.neighbors8()) {
-        if (builder->getType(fl) == floorType)
-          ++numFloor;
-        if (wallPredicate.apply(builder, fl))
-          ++numWall;
-      }
-      if (numFloor < 3 || numWall < 5) {
-        continue;
-      }
-      builder->putSquare(pos, floorType);
-      builder->putSquare(pos, SquareType(SquareId::ALTAR, deity));
-      for (Vec2 fl : pos.neighbors8())
-        if (wallPredicate.apply(builder, fl))
-          builder->putSquare(fl, newWall);
-      if (locationMaker)
-        locationMaker->make(builder, Rectangle(pos - Vec2(1, 1), pos + Vec2(2, 2)));
-      Debug() << "Created a shrine of " << int(deity);
-      return;
-    }
-    Debug() << "Didn't find a good place for the shrine of " << int(deity);
-  }
-
-  private:
-  DeityHabitat deity;
-  SquareType floorType;
-  Predicate wallPredicate;
-  SquareType newWall;
-  LevelMaker* locationMaker;
 };
 
 void addAvg(int x, int y, const Table<double>& wys, double& avg, int& num) {

@@ -21,7 +21,6 @@
 #include "level.h"
 #include "item_factory.h"
 #include "creature_factory.h"
-#include "pantheon.h"
 #include "effect.h"
 #include "view_object.h"
 #include "view_id.h"
@@ -529,45 +528,6 @@ class Altar : public Square {
 //  const double sacrificeTimeout = 50;
 };
 
-class DeityAltar : public Altar {
-  public:
-  DeityAltar(const ViewObject& object, Deity* d) : Altar(ViewObject(object.id(), object.layer(),
-        "Shrine to " + d->getName())), deity(d) {
-  }
-
-  virtual void onEnterSpecial(Creature* c) override {
-    if (c->isHumanoid()) {
-      c->playerMessage("This is a shrine to " + deity->getName());
-      c->playerMessage(deity->getGender().he() + " lives in " + deity->getHabitatString());
-      c->playerMessage(deity->getGender().he() + " is the " + deity->getGender().god() + " of "
-          + deity->getEpithetsString());
-    }
-  }
-
-  virtual string getName() override {
-    return deity->getName();
-  }
-
-  virtual void destroyBy(Creature* c) override {
- //   GlobalEvents.addWorshipEvent(c, deity, WorshipType::DESTROY_ALTAR);
- //   Altar::destroyBy(c);
-  }
-
-  virtual void onPrayer(Creature* c) override {
- //   GlobalEvents.addWorshipEvent(c, deity, WorshipType::PRAYER);
-  }
-
-  virtual void onSacrifice(Creature* c) override {
- //   GlobalEvents.addWorshipEvent(c, deity, WorshipType::SACRIFICE);
-  }
-
-  SERIALIZE_ALL2(Altar, deity);
-  SERIALIZATION_CONSTRUCTOR(DeityAltar);
-
-  private:
-  Deity* SERIAL(deity);
-};
-
 class CreatureAltar : public Altar {
   public:
   CreatureAltar(const ViewObject& object, const Creature* c) : Altar(ViewObject(object.id(), object.layer(),
@@ -757,10 +717,6 @@ class SokobanHole : public Square {
   StairKey SERIAL(stairKey);
 };
 
-PSquare SquareFactory::getAltar(Deity* deity) {
-  return PSquare(new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), deity));
-}
-
 PSquare SquareFactory::getAltar(Creature* creature) {
   return PSquare(new CreatureAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), creature));
 }
@@ -782,7 +738,6 @@ void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Barricade);
   REGISTER_TYPE(ar, Torch);
   REGISTER_TYPE(ar, Grave);
-  REGISTER_TYPE(ar, DeityAltar);
   REGISTER_TYPE(ar, CreatureAltar);
   REGISTER_TYPE(ar, ConstructionDropItems);
   REGISTER_TYPE(ar, Hatchery);
@@ -835,7 +790,6 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::WHIPPING_POST] = 5;
               c.constructions[SquareId::BARRICADE] = 20;
               c.constructions[SquareId::TORCH] = 5;
-              c.constructions[SquareId::ALTAR] = 35;
               c.constructions[SquareId::EYEBALL] = 5;
               c.constructions[SquareId::CREATURE_ALTAR] = 35;
               c.constructions[SquareId::MINION_STATUE] = 35;
@@ -1084,9 +1038,6 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Pigsty"), "pigsty",
             s.get<CreatureFactory::SingleCreature>());
-    case SquareId::ALTAR:
-        return new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
-              Deity::getDeity(s.get<DeityHabitat>()));
     case SquareId::CREATURE_ALTAR:
         return new CreatureAltar(ViewObject(ViewId::CREATURE_ALTAR, ViewLayer::FLOOR, "Shrine"),
               s.get<const Creature*>());

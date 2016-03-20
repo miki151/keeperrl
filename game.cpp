@@ -3,7 +3,6 @@
 #include "view.h"
 #include "clock.h"
 #include "tribe.h"
-#include "pantheon.h"
 #include "music.h"
 #include "player_control.h"
 #include "village_control.h"
@@ -29,7 +28,6 @@ void Game::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, villainsByType, collectives, lastTick, playerControl, playerCollective, won, currentTime);
   serializeAll(ar, worldName, musicType, danglingPortal, statistics, spectator, tribes, gameIdentifier, player);
   serializeAll(ar, gameDisplayName, finishCurrentMusic, models, baseModel, campaign, localTime);
-  Deity::serializeAll(ar);
   if (Archive::is_loading::value)
     sunlightInfo.update(currentTime);
 }

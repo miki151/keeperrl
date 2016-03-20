@@ -23,7 +23,6 @@ class Level;
 class Creature;
 class Item;
 class Technology;
-class Deity;
 enum class WorshipType;
 enum class AssaultType;
 

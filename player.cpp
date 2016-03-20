@@ -23,7 +23,6 @@
 #include "game.h"
 #include "options.h"
 #include "creature.h"
-#include "pantheon.h"
 #include "item_factory.h"
 #include "effect.h"
 #include "view_id.h"
@@ -52,7 +51,6 @@ void Player::serialize(Archive& ar, const unsigned int version) {
     & SVAR(specialCreatures)
     & SVAR(displayGreeting)
     & SVAR(levelMemory)
-    & SVAR(usedEpithets)
     & SVAR(messages)
     & SVAR(messageHistory);
 }

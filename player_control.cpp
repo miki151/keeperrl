@@ -24,7 +24,6 @@
 #include "options.h"
 #include "technology.h"
 #include "village_control.h"
-#include "pantheon.h"
 #include "item.h"
 #include "item_factory.h"
 #include "creature.h"
@@ -115,17 +114,12 @@ struct PlayerControl::BuildInfo {
 
   BuildInfo(TrapInfo info, vector<Requirement> = {}, const string& h = "", char hotkey = 0,
       string group = "");
-  BuildInfo(DeityHabitat, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
   BuildInfo(const Creature*, CostInfo, const string& groupName, const string& h = "", char hotkey = 0);
   BuildInfo(BuildType type, const string& h = "", char hotkey = 0, string group = "");
 };
 
 PlayerControl::BuildInfo::BuildInfo(TrapInfo info, vector<Requirement> req, const string& h, char key, string group)
     : trapInfo(info), buildType(TRAP), requirements(req), help(h), hotkey(key), groupName(group) {}
-
-PlayerControl::BuildInfo::BuildInfo(DeityHabitat habitat, CostInfo cost, const string& group, const string& h,
-    char key) : squareInfo({SquareType(SquareId::ALTAR, habitat), cost, "To " + Deity::getDeity(habitat)->getName(), false}),
-    buildType(SQUARE), help(h), hotkey(key), groupName(group) {}
 
 PlayerControl::BuildInfo::BuildInfo(const Creature* c, CostInfo cost, const string& group, const string& h, char key)
     : squareInfo({SquareType(SquareId::CREATURE_ALTAR, c), cost, "To " + c->getName().bare(), false}),
@@ -1425,7 +1419,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
         break;*/
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
-    case UserInputId::DEITIES: Encyclopedia().deity(view, Deity::getDeities()[input.get<int>()]); break;
     case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
     case UserInputId::CREATURE_GROUP_BUTTON: 
         if (Creature* c = getCreature(input.get<int>()))

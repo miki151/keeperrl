@@ -2,7 +2,6 @@
 #include "collective.h"
 #include "collective_control.h"
 #include "creature.h"
-#include "pantheon.h"
 #include "effect.h"
 #include "level.h"
 #include "item.h"
@@ -34,6 +33,7 @@
 #include "task.h"
 #include "territory.h"
 #include "collective_attack.h"
+#include "gender.h"
 
 struct Collective::ItemFetchInfo {
   ItemIndex index;
@@ -73,7 +73,7 @@ template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(TaskCallback)
     & SUBCLASS(CreatureListener);
-  serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType, deityStanding, mySquares);
+  serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType, mySquares);
   serializeAll(ar, mySquares2, territory, squareEfficiency, alarmInfo, markedItems, constructions, minionEquipment);
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
   serializeAll(ar, credit, level, minionPayment, pregnancies, nextPayoutTime, minionAttraction, teams, name);
@@ -766,14 +766,6 @@ void Collective::setControl(PCollectiveControl c) {
   control = std::move(c);
 }
 
-void Collective::considerHealingLeader() {
-  if (Deity* deity = Deity::getDeity(EpithetId::HEALTH))
-    if (getStanding(deity) > 0 && Random.rollD(5 / getStanding(deity)) && hasLeader() && leader->getHealth() < 1) {
-      leader->you(MsgType::ARE, "healed by " + deity->getName());
-      leader->heal(1, true);
-    }
-}
-
 vector<Position> Collective::getEnemyPositions() const {
   vector<Position> enemyPos;
   for (Position pos : territory->getExtended(10))
@@ -1203,7 +1195,6 @@ void Collective::update(bool currentlyActive) {
 
 void Collective::tick() {
   control->tick();
-  considerHealingLeader();
   considerBirths();
   decayMorale();
   considerBuildingBeds();
@@ -1385,57 +1376,6 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
     if (killer)
       control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a())
           .setPosition(victim->getPosition()));
-  }
-}
-
-double Collective::getStanding(const Deity* d) const {
-  if (deityStanding.count(d))
-    return deityStanding.at(d);
-  else
-    return 0;
-}
-
-double Collective::getStanding(EpithetId id) const {
-  if (Deity* d = Deity::getDeity(id))
-    return getStanding(d);
-  else
-    return 0;
-}
-
-static double standingFun(double standing) {
-  const double maxMult = 2.0;
-  return pow(maxMult, standing);
-}
-
-double Collective::getTechCostMultiplier() const {
-  return 1.0 / standingFun(getStanding(EpithetId::WISDOM));
-}
-
-double Collective::getCraftingMultiplier() const {
-  return standingFun(getStanding(EpithetId::CRAFTS));
-}
-
-double Collective::getBeastMultiplier() const {
-  return 1.0 / standingFun(getStanding(EpithetId::NATURE));
-}
-
-double Collective::getUndeadMultiplier() const {
-  return 1.0 / standingFun(getStanding(EpithetId::DEATH));
-}
-
-void Collective::onEpithetWorship(Creature* who, WorshipType type, EpithetId id) {
-  if (type == WorshipType::DESTROY_ALTAR)
-    return;
-  double increase = 0;
-  switch (type) {
-    case WorshipType::PRAYER: increase = 1.0 / 400; break;
-    case WorshipType::SACRIFICE: increase = 1.0 / 2; break;
-    default: break;
-  }
-  switch (id) {
-    case EpithetId::COURAGE: who->addMorale(increase); break;
-    case EpithetId::FEAR: who->addMorale(-increase); break;
-    default: break;
   }
 }
 
@@ -2215,7 +2155,7 @@ void Collective::onAppliedSquare(Position pos) {
   if (getSquares(SquareId::TRAINING_ROOM).count(pos))
     c->exerciseAttr(Random.choose<AttrType>(), getEfficiency(pos));
   if (contains(getAllSquares(workshopSquares), pos))
-    if (Random.rollD(40.0 / (getCraftingMultiplier() * getEfficiency(pos)))) {
+    if (Random.rollD(40.0 / getEfficiency(pos))) {
       vector<PItem> items;
       for (int i : Range(20)) {
         auto workshopInfo = getWorkshopInfo(this, pos);

@@ -82,10 +82,7 @@ enum class VisionId;
 
 enum class LastingEffect;
 
-enum class DeityHabitat;
-
 enum class NameGeneratorId;
-enum class EpithetId;
 enum class ItemIndex;
 
 enum class CollectiveWarning;

@@ -22,7 +22,6 @@
 #include "options.h"
 #include "technology.h"
 #include "level.h"
-#include "pantheon.h"
 #include "name_generator.h"
 #include "item_factory.h"
 #include "creature.h"
