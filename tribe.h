@@ -27,7 +27,6 @@ class Creature;
 
 class Tribe {
   public:
-  double getStanding(const Creature*) const;
   bool isEnemy(const Creature*) const;
   bool isEnemy(const Tribe*) const;
   void makeSlightEnemy(const Creature*);
@@ -46,6 +45,7 @@ class Tribe {
 
   private:
   Tribe(const string& name, bool diplomatic);
+  double getStanding(const Creature*) const;
 
   bool SERIAL(diplomatic);
 

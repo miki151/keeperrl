@@ -1032,29 +1032,13 @@ bool Creature::isFriend(const Creature* c) const {
   return !isEnemy(c);
 }
 
-pair<double, double> Creature::getStanding(const Creature* c) const {
-  double bestWeight = 0;
-  double standing = getTribe()->getStanding(c);
-  if (contains(privateEnemies, c)) {
-    standing = -1;
-    bestWeight = 1;
-  }
-  return make_pair(standing, bestWeight);
-}
-
 bool Creature::isEnemy(const Creature* c) const {
+  if (c == this)
+    return false;
   if (isAffected(LastingEffect::INSANITY))
     return c != this;
-  pair<double, double> myStanding = getStanding(c);
-  pair<double, double> hisStanding = c->getStanding(this);
-  double standing = 0;
-  if (myStanding.second > hisStanding.second)
-    standing = myStanding.first;
-  if (myStanding.second < hisStanding.second)
-    standing = hisStanding.first;
-  if (myStanding.second == hisStanding.second)
-    standing = min(myStanding.first, hisStanding.first);
-  return c != this && standing < 0;
+  return getTribe()->isEnemy(c) || c->getTribe()->isEnemy(this) ||
+    contains(privateEnemies, c) || contains(c->privateEnemies, this);
 }
 
 vector<Item*> Creature::getGold(int num) const {

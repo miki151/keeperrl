@@ -331,7 +331,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void updateViewObject();
   AttackType getAttackType() const;
   void spendTime(double time);
-  pair<double, double> getStanding(const Creature* c) const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
