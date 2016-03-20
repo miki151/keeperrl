@@ -26,6 +26,7 @@
 #include "collective_attack.h"
 #include "territory.h"
 #include "game.h"
+#include "collective_name.h"
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
@@ -196,7 +197,7 @@ void VillageControl::update() {
         fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::SUMMONED});
         fighters = filter(fighters, [this] (const Creature* c) {
             return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });
-        Debug() << getCollective()->getShortName() << " fighters: " << int(fighters.size())
+        Debug() << getCollective()->getName().getShort() << " fighters: " << int(fighters.size())
           << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
         if (fighters.size() >= villain->minTeamSize && 
             allMembers.size() >= villain->minPopulation + villain->minTeamSize)
@@ -331,8 +332,8 @@ double VillageControl::Villain::getAttackProbability(const VillageControl* self)
     double val = getTriggerValue(elem, self);
     CHECK(val >= 0 && val <= 1);
     ret = max(ret, val);
-    Debug() << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village " << self->getCollective()->getTribe()->getName()
-      << " under attack probability " << val;
+    Debug() << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village "
+        << self->getCollective()->getName().getFull() << " under attack probability " << val;
   }
   return ret;
 }

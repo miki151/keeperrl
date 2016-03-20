@@ -30,7 +30,6 @@ class Tribe {
   bool isEnemy(const Creature*) const;
   bool isEnemy(const Tribe*) const;
   void makeSlightEnemy(const Creature*);
-  const string& getName() const;
   void addEnemy(vector<Tribe*>);
   void addFriend(Tribe*);
   bool isDiplomatic() const;

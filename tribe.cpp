@@ -34,10 +34,6 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Tribe);
 Tribe::Tribe(const string& n, bool d) : diplomatic(d), name(n) {
 }
 
-const string& Tribe::getName() const {
-  return name;
-}
-
 double Tribe::getStanding(const Creature* c) const {
   if (enemyTribes.count(const_cast<Tribe*>(c->getTribe())))
     return -1;

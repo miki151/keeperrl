@@ -36,6 +36,7 @@
 #include "item_factory.h"
 #include "game.h"
 #include "model.h"
+#include "collective_name.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -916,7 +917,7 @@ class KillFighters : public Task {
   }
 
   virtual string getDescription() const override {
-    return "Kill " + toString(numCreatures) + " minions of " + collective->getFullName();
+    return "Kill " + toString(numCreatures) + " minions of " + collective->getName().getFull();
   }
 
   SERIALIZE_ALL2(Task, collective, numCreatures, targets); 

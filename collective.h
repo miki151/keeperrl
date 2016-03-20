@@ -45,6 +45,7 @@ class MinionAttraction;
 struct CostInfo;
 struct TriggerInfo;
 class Territory;
+class CollectiveName;
 
 class Collective : public TaskCallback, public CreatureListener {
   public:
@@ -234,10 +235,7 @@ class Collective : public TaskCallback, public CreatureListener {
   void freeTeamMembers(TeamId);
   void ownItems(const Creature* who, const vector<Item*>);
 
-  string getFullName() const;
-  string getShortName() const;
-  string getTribeName() const;
-
+  const CollectiveName& getName() const;
   const TaskMap& getTaskMap() const;
 
   template <class Archive>
@@ -265,7 +263,7 @@ class Collective : public TaskCallback, public CreatureListener {
 
   private:
   friend class CollectiveBuilder;
-  Collective(Level*, const CollectiveConfig&, TribeId, EnumMap<ResourceId, int> credit, const optional<string>& name);
+  Collective(Level*, const CollectiveConfig&, TribeId, EnumMap<ResourceId, int> credit, const CollectiveName&);
   void addCreatureInTerritory(PCreature, EnumSet<MinionTrait>);
   void updateEfficiency(Position, SquareType);
   int getPaymentAmount(const Creature*) const;
@@ -373,7 +371,7 @@ class Collective : public TaskCallback, public CreatureListener {
   deque<Creature*> SERIAL(pregnancies);
   mutable vector<ItemFetchInfo> itemFetchInfo;
   HeapAllocated<CollectiveTeams> SERIAL(teams);
-  optional<string> SERIAL(name);
+  HeapAllocated<CollectiveName> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
   vector<const Creature*> SERIAL(banished);
   EntitySet<Creature> SERIAL(equipmentUpdates);

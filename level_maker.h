@@ -70,6 +70,7 @@ struct SettlementInfo {
   optional<pair<CreatureFactory, int>> neutralCreatures;
   Location* location;
   TribeId tribe;
+  optional<string> race;
   BuildingId buildingId;
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;

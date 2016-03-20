@@ -120,6 +120,7 @@ static vector<EnemyInfo> getGnomishMines(RandomGen& random) {
       c.numCreatures = random.get(12, 24);
       c.location = getVillageLocation();
       c.tribe = TribeId::GNOME;
+      c.race = "gnomes";
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = ItemFactory::gnomeShop();
       c.outsideFeatures = SquareFactory::dungeonOutside();
@@ -131,6 +132,7 @@ static vector<EnemyInfo> getGnomishMines(RandomGen& random) {
       c.numCreatures = random.get(3, 7);
       c.location = new Location(true);
       c.tribe = TribeId::GNOME;
+      c.race = "gnomes";
       c.buildingId = BuildingId::DUNGEON;
       c.downStairs = {gnomeKey};
       c.outsideFeatures = SquareFactory::dungeonOutside();
@@ -148,6 +150,7 @@ static vector<EnemyInfo> getDarkElvenMines(RandomGen& random) {
       c.numCreatures = random.get(14, 16);
       c.location = getVillageLocation();
       c.tribe = TribeId::DARK_ELF;
+      c.race = "dark elves";
       c.buildingId = BuildingId::DUNGEON;
       c.outsideFeatures = SquareFactory::dungeonOutside();
       c.furniture = SquareFactory::roomFurniture(TribeId::PEST);),
@@ -163,6 +166,7 @@ static vector<EnemyInfo> getDarkElvenMines(RandomGen& random) {
       c.numCreatures = random.get(3, 7);
       c.location = new Location(true);
       c.tribe = TribeId::DARK_ELF;
+      c.race = "dark elves";
       c.buildingId = BuildingId::DUNGEON;
       c.downStairs = {gnomeKey};
       c.outsideFeatures = SquareFactory::dungeonOutside();
@@ -209,6 +213,7 @@ static vector<EnemyInfo> getOrcTown(RandomGen& random) {
       c.numCreatures = random.get(12, 16);
       c.location = getVillageLocation();
       c.tribe = TribeId::GREENSKIN;
+      c.race = "greenskins";
       c.buildingId = BuildingId::BRICK;
       c.furniture = SquareFactory::roomFurniture(TribeId::PEST);
       c.outsideFeatures = SquareFactory::villageOutside();),
@@ -255,6 +260,7 @@ static vector<EnemyInfo> getWarriorCastle(RandomGen& random) {
       c.numCreatures = random.get(12, 16);
       c.location = getVillageLocation();
       c.tribe = TribeId::HUMAN;
+      c.race = "humans";
       c.buildingId = BuildingId::WOOD_CASTLE;
       c.stockpiles = LIST({StockpileInfo::GOLD, 800});
       c.guardId = CreatureId::WARRIOR;
@@ -285,6 +291,7 @@ static vector<EnemyInfo> getHumanVillage(RandomGen& random, const string& boardT
       c.numCreatures = random.get(12, 20);
       c.location = getVillageLocation();
       c.tribe = TribeId::HUMAN;
+      c.race = "humans";
       c.buildingId = BuildingId::WOOD;
       c.shopFactory = ItemFactory::armory();
       c.furniture = SquareFactory::roomFurniture(TribeId::PEST);
@@ -301,6 +308,7 @@ static vector<EnemyInfo> getLizardVillage(RandomGen& random) {
       c.numCreatures = random.get(8, 14);
       c.location = getVillageLocation();
       c.tribe = TribeId::LIZARD;
+      c.race = "lizardmen";
       c.buildingId = BuildingId::MUD;
       c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::HUMANOID_MUT);
       c.shopFactory = ItemFactory::mushrooms();
@@ -329,6 +337,7 @@ static vector<EnemyInfo> getElvenVillage(RandomGen& random) {
       c.numCreatures = random.get(11, 18);
       c.location = getVillageLocation();
       c.tribe = TribeId::ELF;
+      c.race = "elves";
       c.stockpiles = LIST({StockpileInfo::GOLD, 800});
       c.buildingId = BuildingId::WOOD;
       c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);
@@ -355,6 +364,7 @@ static vector<EnemyInfo> getAntNest(RandomGen& random) {
       c.numCreatures = random.get(9, 14);
       c.location = new Location(true);
       c.tribe = TribeId::ANT;
+      c.race = "ants";
       c.buildingId = BuildingId::DUNGEON;),
       CollectiveConfig::withImmigrants(0.002, 15, {
           CONSTRUCT(ImmigrantInfo,
@@ -381,6 +391,7 @@ static vector<EnemyInfo> getDwarfTown(RandomGen& random) {
       c.numCreatures = random.get(9, 14);
       c.location = getVillageLocation(true);
       c.tribe = TribeId::DWARF;
+      c.race = "dwarves";
       c.buildingId = BuildingId::DUNGEON;
       c.stockpiles = LIST({StockpileInfo::GOLD, 1000}, {StockpileInfo::MINERALS, 600});
       c.shopFactory = ItemFactory::dwarfShop();
@@ -413,6 +424,7 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random) {
       c.numCreatures = random.get(20, 26);
       c.location = getVillageLocation();
       c.tribe = TribeId::HUMAN;
+      c.race = "humans";
       c.stockpiles = LIST({StockpileInfo::GOLD, 700});
       c.buildingId = BuildingId::BRICK;
       c.guardId = CreatureId::CASTLE_GUARD;
@@ -445,6 +457,7 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random) {
             c.numCreatures = 1;
             c.location = new Location("maze");
             c.tribe = TribeId::MONSTER;
+            c.race = "monsters";
             c.furniture = SquareFactory::roomFurniture(TribeId::PEST);
             if (stairKey)
               c.upStairs = { *stairKey };
@@ -461,6 +474,7 @@ static vector<EnemyInfo> getWitchHouse(RandomGen& random) {
       c.numCreatures = 1;
       c.location = new Location();
       c.tribe = TribeId::MONSTER;
+      c.race = "witch";
       c.buildingId = BuildingId::WOOD;
       c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);
       c.furniture = SquareFactory::single(SquareId::CAULDRON);), CollectiveConfig::noImmigrants(), {})
@@ -475,6 +489,7 @@ static vector<EnemyInfo> getEntTown(RandomGen& random) {
       c.numCreatures = random.get(7, 13);
       c.location = new Location();
       c.tribe = TribeId::MONSTER;
+      c.race = "ents";
       c.buildingId = BuildingId::WOOD;),
       CollectiveConfig::withImmigrants(0.003, 15, {
           CONSTRUCT(ImmigrantInfo,
@@ -492,6 +507,7 @@ static vector<EnemyInfo> getDriadTown(RandomGen& random) {
       c.numCreatures = random.get(7, 13);
       c.location = new Location();
       c.tribe = TribeId::MONSTER;
+      c.race = "driads";
       c.buildingId = BuildingId::WOOD;),
       CollectiveConfig::withImmigrants(0.003, 15, {
           CONSTRUCT(ImmigrantInfo,
@@ -510,6 +526,7 @@ static vector<EnemyInfo> getCemetery(RandomGen& random) {
           c.numCreatures = random.get(8, 12);
           c.location = new Location("cemetery");
           c.tribe = TribeId::MONSTER;
+          c.race = "undead";
           c.furniture = SquareFactory::cryptCoffins(TribeId::KEEPER);
           c.upStairs = { cryptKey };
           c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {},
@@ -519,6 +536,7 @@ static vector<EnemyInfo> getCemetery(RandomGen& random) {
           c.creatures = CreatureFactory::singleType(TribeId::MONSTER, CreatureId::ZOMBIE);
           c.numCreatures = 1;
           c.location = new Location("cemetery");
+          c.race = "undead";
           c.tribe = TribeId::MONSTER;
           c.downStairs = { cryptKey };
           c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {})
@@ -533,6 +551,7 @@ static vector<EnemyInfo> getBanditCave(RandomGen& random) {
       c.numCreatures = random.get(4, 9);
       c.location = new Location();
       c.tribe = TribeId::BANDIT;
+      c.race = "bandits";
       c.buildingId = BuildingId::DUNGEON;),
       CollectiveConfig::withImmigrants(0.001, 10, {
           CONSTRUCT(ImmigrantInfo,
@@ -555,6 +574,7 @@ static vector<EnemyInfo> getShelob(RandomGen& random) {
       c.type = SettlementType::CAVE;
       c.creatures = CreatureFactory::singleType(TribeId::HOSTILE, CreatureId::SHELOB);
       c.numCreatures = 1;
+      c.race = "giant spider";
       c.buildingId = BuildingId::DUNGEON;
       c.location = new Location(true);
       c.tribe = TribeId::HOSTILE;), CollectiveConfig::noImmigrants().setLeaderAsFighter(), {})
@@ -569,6 +589,7 @@ static vector<EnemyInfo> getGreenDragon(RandomGen& random) {
       c.numCreatures = 1;
       c.location = new Location(true);
       c.tribe = TribeId::HOSTILE;
+      c.race = "dragon";
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = ItemFactory::dragonCave();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
           .setGhostSpawns(0.03, 1),
@@ -587,6 +608,7 @@ static vector<EnemyInfo> getHydra(RandomGen& random) {
       c.type = SettlementType::SWAMP;
       c.creatures = CreatureFactory::singleType(TribeId::HOSTILE, CreatureId::HYDRA);
       c.numCreatures = 1;
+      c.race = "hydra";
       c.location = new Location(true);
       c.tribe = TribeId::HOSTILE;), CollectiveConfig::noImmigrants().setLeaderAsFighter()
           .setGhostSpawns(0.03, 1),
@@ -605,6 +627,7 @@ static vector<EnemyInfo> getRedDragon(RandomGen& random) {
       c.creatures = CreatureFactory::singleType(TribeId::HOSTILE, CreatureId::RED_DRAGON);
       c.numCreatures = 1;
       c.location = new Location(true);
+      c.race = "dragon";
       c.tribe = TribeId::HOSTILE;
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = ItemFactory::dragonCave();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
@@ -625,6 +648,7 @@ static vector<EnemyInfo> getCyclops(RandomGen& random) {
       c.creatures = CreatureFactory::singleType(TribeId::HOSTILE, CreatureId::CYCLOPS);
       c.numCreatures = 1;
       c.location = new Location(true);
+      c.race = "cyclops";
       c.tribe = TribeId::HOSTILE;
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = ItemFactory::mushrooms(true);), CollectiveConfig::noImmigrants().setLeaderAsFighter()
@@ -645,6 +669,7 @@ static vector<EnemyInfo> getCottage(RandomGen& random) {
       c.numCreatures = random.get(3, 7);
       c.location = new Location();
       c.tribe = TribeId::HUMAN;
+      c.race = "humans";
       c.buildingId = BuildingId::WOOD;
       c.furniture = SquareFactory::roomFurniture(TribeId::PEST);),
       CollectiveConfig::noImmigrants().setGuardian({CreatureId::WITCHMAN, 0.001, 1, 2}), {})
@@ -658,6 +683,7 @@ static vector<EnemyInfo> getKoboldCave(RandomGen& random) {
       c.creatures = CreatureFactory::koboldVillage(TribeId::DWARF);
       c.numCreatures = random.get(3, 7);
       c.location = new Location(true);    
+      c.race = "kobolds";
       c.tribe = TribeId::DWARF;
       c.buildingId = BuildingId::DUNGEON;
       c.stockpiles = LIST({StockpileInfo::MINERALS, 300});
@@ -1229,7 +1255,9 @@ PModel ModelBuilder::tryModel(ProgressMeter* meter, RandomGen& random, Options* 
     PVillageControl control;
     Location* location = enemyInfo[i].settlement.location;
     if (auto name = location->getName())
-      enemyInfo[i].settlement.collective->setName(*name);
+      enemyInfo[i].settlement.collective->setLocationName(*name);
+    if (auto race = enemyInfo[i].settlement.race)
+      enemyInfo[i].settlement.collective->setRaceName(*race);
     PCollective collective = enemyInfo[i].settlement.collective->addSquares(location->getAllSquares()).build();
     control.reset(new VillageControl(collective.get(), enemyInfo[i].villain));
     if (enemyInfo[i].villainType)

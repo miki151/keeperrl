@@ -34,6 +34,7 @@
 #include "territory.h"
 #include "collective_attack.h"
 #include "gender.h"
+#include "collective_name.h"
 
 struct Collective::ItemFetchInfo {
   ItemIndex index;
@@ -173,37 +174,13 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
 };
 
 Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
-    const optional<string>& n) 
+    const CollectiveName& n) 
   : credit(_credit), control(CollectiveControl::idle(this)),
     tribe(t), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
 }
 
-string Collective::getFullName() const {
-  string tribeName = capitalFirst(getTribe()->getName());
-  if (name)
-    return tribeName + " of " + *name;
-  else if (getLeader() && getLeader()->getFirstName())
-    return getLeader()->getNameAndTitle();
-  else
-    return tribeName;
-}
-
-string Collective::getShortName() const {
-  if (name)
-    return *name;
-  else if (getLeader())
-    return getLeader()->getFirstName().get_value_or(getLeader()->getName().bare());
-  else
-    return "";
-}
-
-string Collective::getTribeName() const {
-  if (name)
-    return getTribe()->getName();
-  else if (getLeader() && getLeader()->getFirstName())
-    return getLeader()->getSpeciesName();
-  else
-    return "";
+const CollectiveName& Collective::getName() const {
+  return *name;
 }
 
 void Collective::setVillainType(VillainType t) {

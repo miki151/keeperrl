@@ -20,7 +20,8 @@ class CollectiveBuilder {
   CollectiveBuilder& addCreature(Creature*);
   CollectiveBuilder& addSquares(const vector<Vec2>&);
   CollectiveBuilder& addSquares(const vector<Position>&);
-  CollectiveBuilder& setName(const string&);
+  CollectiveBuilder& setLocationName(const string&);
+  CollectiveBuilder& setRaceName(const string&);
   PCollective build();
   bool hasCreatures() const;
 
@@ -35,7 +36,8 @@ class CollectiveBuilder {
   TribeId tribe;
   map<CollectiveResourceId, int> credit;
   vector<Vec2> squares;
-  optional<string> name;
+  optional<string> locationName;
+  optional<string> raceName;
 };
 
 #endif

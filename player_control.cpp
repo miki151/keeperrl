@@ -56,6 +56,7 @@
 #include "territory.h"
 #include "sound.h"
 #include "game.h"
+#include "collective_name.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -835,8 +836,8 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
 
 VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const {
   VillageInfo::Village info;
-  info.name = col->getShortName();
-  info.tribeName = col->getTribeName();
+  info.name = col->getName().getShort();
+  info.tribeName = col->getName().getRace();
   info.knownLocation = knownVillainLocations.count(col);
   bool hostile = col->getTribe()->isEnemy(getCollective()->getTribe());
   if (col->isConquered())
@@ -868,7 +869,7 @@ void PlayerControl::handleRecruiting(Collective* ally) {
     string warning;
     if (getCollective()->getPopulationSize() >= getCollective()->getMaxPopulation())
       warning = "You have reached minion limit.";
-    auto index = getView()->chooseRecruit("Recruit from " + ally->getShortName(), warning,
+    auto index = getView()->chooseRecruit("Recruit from " + ally->getName().getShort(), warning,
         {ViewId::GOLD, getCollective()->numResource(ResourceId::GOLD)}, creatures, &scrollPos);
     if (!index)
       break;
@@ -904,7 +905,7 @@ void PlayerControl::handleTrading(Collective* ally) {
     vector<ItemInfo> itemInfo = transform2<ItemInfo>(items,
         [this, budget] (const pair<string, vector<Item*>> it) {
             return getTradeItemInfo(it.second, budget);});
-    auto index = getView()->chooseTradeItem("Trade with " + ally->getShortName(),
+    auto index = getView()->chooseTradeItem("Trade with " + ally->getName().getShort(),
         {ViewId::GOLD, getCollective()->numResource(ResourceId::GOLD)}, itemInfo, &scrollPos);
     if (!index)
       break;
@@ -1080,7 +1081,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
   }
   for (auto& elem : ransomAttacks) {
-    info.ransom = {make_pair(ViewId::GOLD, *elem.getRansom()), elem.getAttacker()->getFullName(),
+    info.ransom = {make_pair(ViewId::GOLD, *elem.getRansom()), elem.getAttacker()->getName().getFull(),
         getCollective()->hasResource({ResourceId::GOLD, *elem.getRansom()})};
     break;
   }
@@ -1795,7 +1796,7 @@ void PlayerControl::considerWarning() {
 void PlayerControl::update() {
   for (const Collective* col : getGame()->getVillains(VillainType::MAIN))
     if (col->isConquered() && !notifiedConquered.count(col)) {
-      addImportantLongMessage("You have exterminated the armed forces of " + col->getFullName() + ".");
+      addImportantLongMessage("You have exterminated the armed forces of " + col->getName().getFull() + ".");
       notifiedConquered.insert(col);
     }
   updateVisibleCreatures();
@@ -1860,7 +1861,7 @@ void PlayerControl::tick() {
   for (auto attack : copyOf(newAttacks))
     for (const Creature* c : attack.getCreatures())
       if (isConsideredAttacking(c)) {
-        addImportantLongMessage("You are under attack by " + attack.getAttacker()->getFullName() + "!",
+        addImportantLongMessage("You are under attack by " + attack.getAttacker()->getName().getFull() + "!",
             c->getPosition());
         getGame()->setCurrentMusic(MusicType::BATTLE, true);
         removeElement(newAttacks, attack);
