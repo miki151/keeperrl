@@ -22,6 +22,8 @@
 #include "village_action.h"
 #include "minion_task.h"
 
+class PlayerMessage;
+
 enum class UserInputId {
 // common
     IDLE,
@@ -125,29 +127,34 @@ struct RenameActionInfo {
 
 enum class SpellId;
 
-class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec2, TeamCreatureInfo,
-    SpellId, VillageActionInfo, TaskActionInfo, EquipmentActionInfo, RenameActionInfo),
+class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
+    UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
+    TaskActionInfo, EquipmentActionInfo, RenameActionInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::LIBRARY,
             UserInputId::BUTTON_RELEASE),
-        ASSIGN(int,
-            UserInputId::TECHNOLOGY,
+        ASSIGN(UniqueEntity<Creature>::Id,
             UserInputId::CREATURE_BUTTON,
+            UserInputId::CREATE_TEAM,
             UserInputId::CREATURE_GROUP_BUTTON,
             UserInputId::CREATURE_CONTROL,
-            UserInputId::CREATURE_EXECUTE,
-            UserInputId::CREATURE_TORTURE,
-            UserInputId::CREATURE_WHIP,
             UserInputId::CREATURE_BANISH,
+            UserInputId::CREATURE_WHIP,
+            UserInputId::CREATURE_EXECUTE,
+            UserInputId::CREATURE_TORTURE
+            ),
+        ASSIGN(UniqueEntity<PlayerMessage>::Id,
+            UserInputId::MESSAGE_INFO
+            ),
+        ASSIGN(int,
+            UserInputId::TECHNOLOGY,
             UserInputId::GO_TO_ENEMY,
-            UserInputId::CREATE_TEAM,
             UserInputId::CANCEL_TEAM,
             UserInputId::ACTIVATE_TEAM,
             UserInputId::SELECT_TEAM,
             UserInputId::PICK_UP_ITEM,
             UserInputId::PICK_UP_ITEM_MULTI,
-            UserInputId::MESSAGE_INFO,
             UserInputId::GO_TO_VILLAGE),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM),

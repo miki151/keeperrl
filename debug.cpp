@@ -65,6 +65,10 @@ Debug& Debug::operator <<(const int msg) {
   add(toString(msg));
   return *this;
 }
+Debug& Debug::operator <<(const long long msg) {
+  add(toString(msg));
+  return *this;
+}
 Debug& Debug::operator <<(const size_t msg) {
   add(toString(msg));
   return *this;

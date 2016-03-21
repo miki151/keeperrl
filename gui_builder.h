@@ -79,7 +79,7 @@ class GuiBuilder {
   void drawGameSpeedDialog(vector<OverlayInfo>&);
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
   vector<PGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);
-  typedef function<void(optional<int>)> CreatureMenuCallback;
+  typedef function<void(optional<UniqueEntity<Creature>::Id>)> CreatureMenuCallback;
   PGuiElem drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos);
   PGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,

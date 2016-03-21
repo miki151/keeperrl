@@ -84,7 +84,8 @@ CollectiveTab GuiBuilder::getCollectiveTab() const {
 }
 
 void GuiBuilder::closeOverlayWindows() {
-  callbacks.input({UserInputId::CREATURE_BUTTON, -1});
+  // send a random id which wont be found
+  callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}); 
 }
 
 optional<int> GuiBuilder::getActiveButton(CollectiveTab tab) const {
@@ -915,7 +916,8 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
               gui.uiHighlightConditional([team] () { return team.highlight; }),
               gui.uiHighlightMouseOver(),
               gui.dragListener([this, team](DragContent content) {
-                callbacks.input({UserInputId::ADD_TO_TEAM, TeamCreatureInfo{team.id, content.get<int>()}});}),
+                callbacks.input({UserInputId::ADD_TO_TEAM,
+                    TeamCreatureInfo{team.id, content.get<UniqueEntity<Creature>::Id>()}});}),
               gui.getListBuilder(22)
               .addElem(gui.topMargin(8, gui.icon(GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
               .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
@@ -923,7 +925,7 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
     string hint = "Drag and drop minions here to create a new team.";
     lines.addElem(gui.stack(makeVec<PGuiElem>(
           gui.dragListener([this](DragContent content) {
-              callbacks.input({UserInputId::CREATE_TEAM, content.get<int>() });}),
+              callbacks.input({UserInputId::CREATE_TEAM, content.get<UniqueEntity<Creature>::Id>() });}),
           gui.uiHighlightMouseOver(),
           getHintCallback({hint}),
           gui.button([this, hint] { callbacks.info(hint); }),
@@ -1064,7 +1066,7 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& in
         leftSide = gui.marginAuto(list.buildVerticalList(), std::move(leftSide), GuiFactory::TOP);
       }
       menu = gui.stack(
-          gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, -1}),
+          gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}),
             {{Keyboard::Escape}, {Keyboard::Return}}),
           gui.horizontalList(makeVec<PGuiElem>(
               gui.margins(std::move(leftSide), 8, 15, 5, 0),
@@ -1072,7 +1074,8 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& in
                 0, -15, 0, -15)), minionListWidth),
           gui.leftMargin(minionListWidth + 20, std::move(minionPage)));
       minionsOverlayCache = gui.miniWindow(gui.stack(
-          gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, -1}), {{Keyboard::Escape}}, true),
+          gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}),
+            {{Keyboard::Escape}}, true),
           gui.margins(std::move(menu), margin)));
       minionsOverlayHash = newHash;
     }

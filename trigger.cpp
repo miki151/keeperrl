@@ -266,7 +266,7 @@ class MeteorShower : public Trigger {
     return true;
   }
 
-  SERIALIZE_ALL2(Trigger, creature, endTime);
+  SERIALIZE_ALL2(Trigger, endTime);
   SERIALIZATION_CONSTRUCTOR(MeteorShower);
 
   private:

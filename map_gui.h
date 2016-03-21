@@ -21,6 +21,7 @@
 #include "view_id.h"
 #include "unique_entity.h"
 #include "view_index.h"
+#include "entity_map.h"
 
 class MapMemory;
 class MapLayout;
@@ -163,7 +164,7 @@ class MapGui : public GuiElem {
   bool lockedView = true;
   int lastRightClick = -10000;
   bool displayScrollHint = false;
-  map<UniqueEntity<Creature>::Id, int> teamHighlight;
+  EntityMap<Creature, int> teamHighlight;
   optional<ViewId> buttonViewId;
 };
 

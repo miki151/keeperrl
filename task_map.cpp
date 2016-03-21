@@ -30,11 +30,12 @@ Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
       if (auto pos = getPosition(task.get())) {
         double dist = pos->dist8(c->getPosition());
         const Creature* owner = getOwner(task.get());
+        optional<double> delayed = delayedTasks.getMaybe(task.get());
         if (!task->isDone() &&
             (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
             (!closest || dist < getPosition(closest)->dist8(c->getPosition()) || isPriorityTask(task.get())) &&
             c->canNavigateTo(*pos) &&
-            (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getLocalTime())) {
+            (!delayed || *delayed < c->getLocalTime())) {
           closest = task.get();
           if (isPriorityTask(task.get()))
             return task.get();
@@ -49,7 +50,7 @@ vector<const Task*> TaskMap::getAllTasks() const {
 
 void TaskMap::freeTaskDelay(Task* t, double d) {
   freeTask(t);
-  delayedTasks[t->getUniqueId()] = d;
+  delayedTasks.set(t, d);
 }
 
 void TaskMap::setPriorityTasks(Position pos) {

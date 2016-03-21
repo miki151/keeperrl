@@ -13,14 +13,15 @@ SERIALIZABLE(VisibilityMap);
 
 void VisibilityMap::update(const Creature* c, vector<Position> visibleTiles) {
   remove(c);
-  lastUpdates[c] = visibleTiles;
+  lastUpdates.set(c, visibleTiles);
   for (Position v : visibleTiles)
     ++visibilityCount.getOrInit(v);
 }
 
 void VisibilityMap::remove(const Creature* c) {
-  for (Position v : lastUpdates[c])
-    --visibilityCount.getOrFail(v);
+  if (auto pos = lastUpdates.getMaybe(c))
+    for (Position v : *pos)
+      --visibilityCount.getOrFail(v);
   lastUpdates.erase(c);
 }
 

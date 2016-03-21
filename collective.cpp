@@ -64,12 +64,6 @@ struct Collective::MinionPaymentInfo {
   SERIALIZE_ALL(salary, workAmount, debt);
 };
 
-struct Collective::CurrentTaskInfo {
-  MinionTask SERIAL(task);
-  double SERIAL(finishTime);
-  SERIALIZE_ALL(task, finishTime);
-};
-
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(TaskCallback)
@@ -443,12 +437,12 @@ int Collective::getTaskDuration(const Creature* c, MinionTask task) const {
 }
 
 void Collective::setMinionTask(const Creature* c, MinionTask task) {
-  currentTasks[c->getUniqueId()] = {task, c->getLocalTime() + getTaskDuration(c, task)};
+  currentTasks.set(c, {task, c->getLocalTime() + getTaskDuration(c, task)});
 }
 
 optional<MinionTask> Collective::getMinionTask(const Creature* c) const {
-  if (currentTasks.count(c->getUniqueId()))
-    return currentTasks.at(c->getUniqueId()).task;
+  if (auto current = currentTasks.getMaybe(c))
+    return current->task;
   else
     return none;
 }
@@ -556,22 +550,22 @@ PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
 PTask Collective::getStandardTask(Creature* c) {
   if (!c->getMinionTasks().hasAnyTask())
     return nullptr;
-  if (!currentTasks.count(c->getUniqueId()) ||
-      currentTasks.at(c->getUniqueId()).finishTime < c->getLocalTime() ||
-      !isTaskGood(c, currentTasks.at(c->getUniqueId()).task))
-    currentTasks.erase(c->getUniqueId());
-  if (!currentTasks.count(c->getUniqueId()))
+  auto current = currentTasks.getMaybe(c);
+  if (!current || current->finishTime < c->getLocalTime() || !isTaskGood(c, current->task)) {
+    currentTasks.erase(c);
     setRandomTask(c);
-  if (!currentTasks.count(c->getUniqueId()))
+  }
+  if (auto current = currentTasks.getMaybe(c)) {
+    MinionTask task = current->task;
+    MinionTaskInfo info = getTaskInfo().at(task);
+    PTask ret = generateMinionTask(c, task);
+    if (info.warning && !territory->isEmpty())
+      setWarning(*info.warning, !ret);
+    if (!ret)
+      currentTasks.erase(c);
+    return ret;
+  } else
     return nullptr;
-  MinionTask task = currentTasks[c->getUniqueId()].task;
-  MinionTaskInfo info = getTaskInfo().at(task);
-  PTask ret = generateMinionTask(c, task);
-  if (info.warning && !territory->isEmpty())
-    setWarning(*info.warning, !ret);
-  if (!ret)
-    currentTasks.erase(c->getUniqueId());
-  return ret;
 }
 
 SquareType Collective::getHatcheryType(TribeId tribe) {
@@ -608,7 +602,7 @@ bool Collective::isConquered() const {
 void Collective::orderConsumption(Creature* consumer, Creature* who) {
   CHECK(consumer->getMinionTasks().getValue(MinionTask::CONSUME) > 0);
   setMinionTask(who, MinionTask::CONSUME);
-  MinionTaskInfo info = getTaskInfo().at(currentTasks[consumer->getUniqueId()].task);
+  MinionTaskInfo info = getTaskInfo().at(currentTasks.get(consumer).task);
   taskMap->freeFromTask(consumer);
   taskMap->addTask(Task::consume(this, who), consumer);
 }
@@ -2119,7 +2113,7 @@ static WorkshopInfo getWorkshopInfo(Collective* c, Position pos) {
 
 void Collective::onAppliedSquare(Position pos) {
   Creature* c = NOTNULL(pos.getCreature());
-  MinionTask currentTask = currentTasks.at(c->getUniqueId()).task;
+  MinionTask currentTask = currentTasks.get(c).task;
   if (getTaskInfo().at(currentTask).cost > 0) {
     if (nextPayoutTime == -1 && minionPayment.count(c) && minionPayment.at(c).salary > 0)
       nextPayoutTime = getLocalTime() + config->getPayoutTime();

@@ -28,7 +28,7 @@ class ConstructionMap {
     CostInfo SERIAL(cost);
     bool SERIAL(built) = false;
     SquareType SERIAL(type);
-    UniqueEntity<Task>::Id SERIAL(task) = -1;
+    optional<UniqueEntity<Task>::Id> SERIAL(task);
   };
 
   class TrapInfo {
@@ -64,7 +64,7 @@ class ConstructionMap {
     
     private:
     bool SERIAL(built) = false;
-    UniqueEntity<Task>::Id SERIAL(task) = -1;
+    optional<UniqueEntity<Task>::Id> SERIAL(task);
     Dir SERIAL(attachmentDir);
     Trigger* SERIAL(trigger) = nullptr;
   };

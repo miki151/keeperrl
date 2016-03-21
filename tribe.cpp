@@ -35,13 +35,13 @@ double Tribe::getStanding(const Creature* c) const {
     return -1;
   if (c->getTribe() == this)
     return 1;
-  if (standing.count(c)) 
-    return standing.at(c);
+  if (auto res = standing.getMaybe(c)) 
+    return *res;
   return 0;
 }
 
 void Tribe::initStanding(const Creature* c) {
-  standing[c] = getStanding(c);
+  standing.set(c, getStanding(c));
 }
 
 void Tribe::addEnemy(Tribe* t) {
@@ -70,11 +70,11 @@ void Tribe::onMemberKilled(Creature* member, Creature* attacker) {
   if (attacker == nullptr)
     return;
   initStanding(attacker);
-  standing[attacker] -= killPenalty * getMultiplier(member);
+  standing.get(attacker) -= killPenalty * getMultiplier(member);
   for (Tribe* t : enemyTribes)
     if (t->diplomatic) {
       t->initStanding(attacker);
-      t->standing[attacker] += killBonus * getMultiplier(member);
+      t->standing.get(attacker) += killBonus * getMultiplier(member);
     }
 }
 
@@ -83,7 +83,7 @@ void Tribe::onMemberAttacked(Creature* member, Creature* attacker) {
     return;
   attacks.emplace_back(member, attacker);
   initStanding(attacker);
-  standing[attacker] -= attackPenalty * getMultiplier(member);
+  standing.get(attacker) -= attackPenalty * getMultiplier(member);
 }
 
 bool Tribe::isEnemy(const Creature* c) const {
@@ -97,7 +97,7 @@ bool Tribe::isEnemy(const Tribe* t) const {
 void Tribe::onItemsStolen(const Creature* attacker) {
   if (diplomatic) {
     initStanding(attacker);
-    standing[attacker] -= thiefPenalty;
+    standing.get(attacker) -= thiefPenalty;
   }
 }
 

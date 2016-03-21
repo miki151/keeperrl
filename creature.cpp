@@ -68,7 +68,6 @@ Creature::Creature(const ViewObject& object, TribeId t, const CreatureAttributes
     : Renderable(object), attributes(attr), tribe(t), controller(f.get(this)) {
   for (auto id : ENUM_ALL(AttrType))
     CHECK(attributes->attr[id] > 0);
-  CHECK(getUniqueId() != 0);
   modViewObject().setCreatureId(getUniqueId());
   updateVision();    
 }

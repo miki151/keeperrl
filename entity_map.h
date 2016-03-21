@@ -13,35 +13,37 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _UNIQUE_ENTITY_H
-#define _UNIQUE_ENTITY_H
+#ifndef _ENTITY_MAP_H
+#define _ENTITY_MAP_H
 
-#include "enums.h"
+#include "unique_entity.h"
+#include "util.h"
 
-template<typename T>
-class UniqueEntity {
+template <typename Key, typename Value>
+class EntityMap {
   public:
-  class Id {
-    public:
-    Id();
-    bool operator == (const Id&) const;
-    bool operator != (const Id&) const;
-    bool operator < (const Id&) const;
-    bool operator > (const Id&) const;
-    int getHash() const;
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version);
+  EntityMap();
+  EntityMap& operator = (const EntityMap&) = default;
+  void set(const Key*, const Value&);
+  void erase(const Key*);
+  const Value& get(const Key*) const;
+  Value& get(const Key*);
+  optional<Value> getMaybe(const Key*) const;
+  bool empty() const;
+  void clear();
+  int getSize() const;
 
-    private:
-    long long SERIAL(key);
-  };
-  Id getUniqueId() const;
+  void set(typename UniqueEntity<Key>::Id, const Value&);
+  void erase(typename UniqueEntity<Key>::Id);
+  const Value& get(typename UniqueEntity<Key>::Id) const;
+  Value& get(typename UniqueEntity<Key>::Id);
+  optional<Value> getMaybe(typename UniqueEntity<Key>::Id) const;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  Id SERIAL(id);
+  map<typename UniqueEntity<Key>::Id, Value> SERIAL(elems);
 };
 
 #endif

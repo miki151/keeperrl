@@ -22,6 +22,7 @@
 #include "enums.h"
 #include "event.h"
 #include "singleton.h"
+#include "entity_map.h"
 
 class Creature;
 
@@ -93,7 +94,7 @@ class Tribe {
   void initStanding(const Creature*);
   double getMultiplier(const Creature* member);
 
-  unordered_map<const Creature*, double> SERIAL(standing);
+  EntityMap<Creature, double> SERIAL(standing);
   vector<pair<Creature*, Creature*>> SERIAL(attacks);
   unordered_set<Tribe*> SERIAL(enemyTribes);
 };

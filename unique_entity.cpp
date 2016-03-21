@@ -21,11 +21,40 @@
 #include "task.h"
 #include "player_message.h"
 
-static int idCounter = 1;
+template<typename T>
+UniqueEntity<T>::Id::Id() {
+  key = Random.getLL();
+}
 
 template<typename T>
-UniqueEntity<T>::UniqueEntity() {
-  id = ++idCounter;
+bool UniqueEntity<T>::Id::operator == (const Id& id) const {
+  return key == id.key;
+}
+
+template<typename T>
+bool UniqueEntity<T>::Id::operator < (const Id& id) const {
+  return key < id.key;
+}
+
+template<typename T>
+bool UniqueEntity<T>::Id::operator > (const Id& id) const {
+  return key > id.key;
+}
+
+template<typename T>
+bool UniqueEntity<T>::Id::operator != (const Id& id) const {
+  return !(*this == id);
+}
+
+template<typename T>
+int UniqueEntity<T>::Id::getHash() const {
+  return int(key);
+}
+
+template<typename T>
+template <class Archive> 
+void UniqueEntity<T>::Id::serialize(Archive& ar, const unsigned int version) {
+  serializeAll(ar, key);
 }
 
 template<typename T>
@@ -36,9 +65,7 @@ auto UniqueEntity<T>::getUniqueId() const -> Id {
 template<typename T>
 template <class Archive> 
 void UniqueEntity<T>::serialize(Archive& ar, const unsigned int version) {
-  ar & BOOST_SERIALIZATION_NVP(id);
-  if (id > idCounter)
-    idCounter = id;
+  serializeAll(ar, id);
 }
 
 SERIALIZABLE_TMPL(UniqueEntity, Level);

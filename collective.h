@@ -24,6 +24,7 @@
 #include "attack_trigger.h"
 #include "collective_warning.h"
 #include "creature_listener.h"
+#include "entity_map.h"
 
 class CollectiveAttack;
 class Creature;
@@ -296,8 +297,13 @@ class Collective : public TaskCallback, public CreatureListener {
 
   HeapAllocated<KnownTiles> SERIAL(knownTiles);
 
-  struct CurrentTaskInfo;
-  map<UniqueEntity<Creature>::Id, CurrentTaskInfo> SERIAL(currentTasks);
+  struct CurrentTaskInfo {
+    MinionTask SERIAL(task);
+    double SERIAL(finishTime);
+    SERIALIZE_ALL(task, finishTime);
+  };
+
+  EntityMap<Creature, CurrentTaskInfo> SERIAL(currentTasks);
   optional<Position> getTileToExplore(const Creature*, MinionTask) const;
   PTask getStandardTask(Creature* c);
   PTask getEquipmentTask(Creature* c);

@@ -3,6 +3,7 @@
 
 #include "util.h"
 #include "entity_set.h"
+#include "entity_map.h"
 #include "cost_info.h"
 #include "position_map.h"
 #include "minion_task.h"
@@ -50,7 +51,7 @@ class TaskMap {
   PositionMap<Task*> SERIAL(marked);
   PositionMap<HighlightType> SERIAL(highlight);
   map<Task*, CostInfo> SERIAL(completionCost);
-  map<UniqueEntity<Creature>::Id, double> SERIAL(delayedTasks);
+  EntityMap<Task, double> SERIAL(delayedTasks);
   EntitySet<Task> SERIAL(priorityTasks);
   unordered_map<Task*, MinionTrait> SERIAL(requiredTraits);
 };

@@ -70,12 +70,12 @@ void MapGui::clearButtonViewId() {
 
 void MapGui::highlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
   for (auto& id : ids)
-    ++teamHighlight[id];
+    ++teamHighlight.get(id);
 }
 
 void MapGui::unhighlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
   for (auto& id : ids)
-    CHECK(--teamHighlight[id] >= 0);
+    CHECK(--teamHighlight.get(id) >= 0);
 }
 
 Vec2 MapGui::getScreenPos() const {
@@ -422,7 +422,7 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
 }
 
 Color MapGui::getCreatureHighlight(UniqueEntity<Creature>::Id creature, int curTime) {
-  if (teamHighlight[creature] > 0)
+  if (teamHighlight.getMaybe(creature))
     return colors[ColorId::YELLOW];
   else
     return Color(0, 0, 0, 0);

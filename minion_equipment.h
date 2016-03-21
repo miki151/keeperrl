@@ -18,6 +18,7 @@
 
 #include "util.h"
 #include "unique_entity.h"
+#include "entity_map.h"
 
 class Creature;
 class Item;
@@ -48,7 +49,7 @@ class MinionEquipment {
   int getEquipmentLimit(EquipmentType type) const;
   bool isItemAppropriate(const Creature*, const Item*) const;
 
-  map<UniqueEntity<Item>::Id, const Creature*> SERIAL(owners);
+  EntityMap<Item, const Creature*> SERIAL(owners);
   set<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>> SERIAL(locked);
 };
 

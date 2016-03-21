@@ -1354,7 +1354,7 @@ Collective* PlayerControl::getVillain(int num) {
 void PlayerControl::processInput(View* view, UserInput input) {
   switch (input.getId()) {
     case UserInputId::MESSAGE_INFO:
-        if (auto message = findMessage(input.get<int>())) {
+        if (auto message = findMessage(input.get<PlayerMessage::Id>())) {
           if (auto pos = message->getPosition())
             setScrollPos(*pos);
           else if (auto id = message->getCreature()) {
@@ -1377,7 +1377,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
         break;
     case UserInputId::CREATE_TEAM:
-        if (Creature* c = getCreature(input.get<int>()))
+        if (Creature* c = getCreature(input.get<UniqueEntity<Creature>::Id>()))
           if (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader())
             getTeams().create({c});
         break;
@@ -1422,19 +1422,19 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
     case UserInputId::CREATURE_GROUP_BUTTON: 
-        if (Creature* c = getCreature(input.get<int>()))
+        if (Creature* c = getCreature(input.get<Creature::Id>()))
           if (!chosenCreature || chosenTeam || !getCreature(*chosenCreature) ||
               getCreature(*chosenCreature)->getSpeciesName() != c->getSpeciesName()) {
             chosenTeam = none;
-            chosenCreature = input.get<int>();
+            chosenCreature = input.get<Creature::Id>();
             break;
           }
         chosenTeam = none;
         chosenCreature = none;
         break;
     case UserInputId::CREATURE_BUTTON:
-        if (Creature* c = getCreature(input.get<int>())) {
-          chosenCreature = input.get<int>();
+        if (Creature* c = getCreature(input.get<Creature::Id>())) {
+          chosenCreature = input.get<Creature::Id>();
           if (chosenTeam && !getTeams().contains(*chosenTeam, c))
             chosenTeam = none;
         } else {
@@ -1449,7 +1449,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         minionEquipmentAction(input.get<EquipmentActionInfo>());
         break;
     case UserInputId::CREATURE_CONTROL:
-        if (Creature* c = getCreature(input.get<int>())) {
+        if (Creature* c = getCreature(input.get<Creature::Id>())) {
           if (chosenTeam && getTeams().exists(*chosenTeam)) {
             getTeams().setLeader(*chosenTeam, c);
             commandTeam(*chosenTeam);
@@ -1464,7 +1464,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           c->setFirstName(input.get<RenameActionInfo>().name);
         break;
     case UserInputId::CREATURE_BANISH:
-        if (Creature* c = getCreature(input.get<int>()))
+        if (Creature* c = getCreature(input.get<Creature::Id>()))
           if (getView()->yesOrNoPrompt("Do you want to banish " + c->getName().the() + " forever? "
               "Banishing has a negative impact on morale of other minions.")) {
             vector<Creature*> like = getMinionsLike(c);
@@ -1482,19 +1482,19 @@ void PlayerControl::processInput(View* view, UserInput input) {
           }
         break;
     case UserInputId::CREATURE_WHIP:
-        if (Creature* c = getCreature(input.get<int>())) {
+        if (Creature* c = getCreature(input.get<Creature::Id>())) {
           getCollective()->orderWhipping(c);
           chosenCreature = none;
         }
         break;
     case UserInputId::CREATURE_EXECUTE:
-        if (Creature* c = getCreature(input.get<int>())) {
+        if (Creature* c = getCreature(input.get<Creature::Id>())) {
           getCollective()->orderExecution(c);
           chosenCreature = none;
         }
         break;
     case UserInputId::CREATURE_TORTURE:
-        if (Creature* c = getCreature(input.get<int>())) {
+        if (Creature* c = getCreature(input.get<Creature::Id>())) {
           getCollective()->orderTorture(c);
           chosenCreature = none;
         }
