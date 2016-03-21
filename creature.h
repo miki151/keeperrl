@@ -135,7 +135,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool isDead() const;
   bool isBlind() const;
   bool isBleeding() const;
-  const Creature* getLastAttacker() const;
   optional<string> getDeathReason() const;
   double getDeathTime() const;
   const EntitySet<Creature>& getKills() const;
@@ -332,6 +331,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void updateViewObject();
   AttackType getAttackType() const;
   void spendTime(double time);
+  void updateDeathReason(const Creature* attacker);
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
@@ -345,7 +345,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   optional<double> SERIAL(deathTime);
   bool SERIAL(collapsed) = false;
   bool SERIAL(hidden) = false;
-  Creature* SERIAL(lastAttacker) = nullptr;
   optional<string> SERIAL(deathReason);
   int SERIAL(swapPositionCooldown) = 0;
   vector<const Creature*> SERIAL(unknownAttacker);

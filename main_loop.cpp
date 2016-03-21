@@ -495,8 +495,6 @@ Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
           else if (auto retired = sites[v].getRetired()) {
             if (PModel m = loadModelFromFile(userPath + "/" + retired->save.filename, false))
               models[v] = std::move(m);
-            else
-              view->presentText("Sorry", "Error reading " + retired->save.filename + ". Leaving blank site.");
           }
         }
       });

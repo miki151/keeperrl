@@ -53,7 +53,7 @@ template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) { 
   ar & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
   serializeAll(ar, attributes, position, localTime, equipment, shortestPath, knownHiding, tribe, health, morale);
-  serializeAll(ar, deathTime, collapsed, hidden, lastAttacker, deathReason, swapPositionCooldown);
+  serializeAll(ar, deathTime, collapsed, hidden, deathReason, swapPositionCooldown);
   serializeAll(ar, unknownAttacker, privateEnemies, holding, controller, controllerStack, creatureVisions, kills);
   serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverrides, visibleEnemies, visibleCreatures);
   serializeAll(ar, vision, personalEvents, lastCombatTime, eventGenerator);
@@ -193,16 +193,15 @@ double Creature::getDeathTime() const {
   return *deathTime;
 }
 
-const Creature* Creature::getLastAttacker() const {
-  return lastAttacker;
+void Creature::updateDeathReason(const Creature* attacker) {
+  deathReason = "killed by " + attacker->getName().a();
 }
 
 optional<string> Creature::getDeathReason() const {
-  if (deathReason)
+  if (isDead())
     return deathReason;
-  if (lastAttacker)
-    return "killed by " + lastAttacker->getName().a();
-  return none;
+  else
+    return none;
 }
 
 const EntitySet<Creature>& Creature::getKills() const {
@@ -1099,7 +1098,7 @@ void Creature::tick() {
   updateViewObject();
   if (isNotLiving() && lostOrInjuredBodyParts() >= 4) {
     you(MsgType::FALL, "apart");
-    die(lastAttacker);
+    die();
     return;
   }
   if (isBleeding()) {
@@ -1108,7 +1107,7 @@ void Creature::tick() {
   }
   if (health <= 0) {
     you(MsgType::DIE_OF, isAffected(LastingEffect::POISON) ? "poisoning" : "bleeding");
-    die(lastAttacker);
+    die();
     return;
   }
   if (getPosition().sunlightBurns())
@@ -1348,7 +1347,7 @@ bool Creature::takeDamage(const Attack& attack) {
       << " damage " << attack.getStrength() << " defense " << defense;
     if (attributes->passiveAttack && attacker->getPosition().dist8(position) == 1) {
       Effect::applyToCreature(attacker, *attributes->passiveAttack, EffectStrength::NORMAL);
-      attacker->lastAttacker = this;
+      attacker->updateDeathReason(this);
     }
   }
   if (isAffected(LastingEffect::MAGIC_SHIELD)) {
@@ -1368,7 +1367,8 @@ bool Creature::takeDamage(const Attack& attack) {
           attackType = AttackType::BITE;
       }
     }
-    lastAttacker = attack.getAttacker();
+    if (Creature* attacker = attack.getAttacker())
+      updateDeathReason(attacker);
     double dam = (defense == 0) ? 1 : double(attack.getStrength() - defense) / defense;
     if (!isNotLiving())
       bleed(dam);
@@ -1557,7 +1557,7 @@ void Creature::heal(double amount, bool replaceLimbs) {
     if (health == 1) {
       you(MsgType::BLEEDING_STOPS, "");
       health = 1;
-      lastAttacker = nullptr;
+      deathReason = none;
     }
     updateViewObject();
   }
@@ -1641,10 +1641,12 @@ void Creature::die(const string& reason, bool dropInventory, bool dCorpse) {
 
 void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   CHECK(!isDead());
+  deathTime = getGlobalTime();
   if (dCorpse)
     if (auto sound = attributes->getDeathSound())
       addSound(*sound);
-  lastAttacker = attacker;
+  if (attacker)
+    updateDeathReason(attacker);
   Debug() << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   controller->onKilled(attacker);
   if (attacker)
@@ -1661,7 +1663,6 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   if (isInnocent())
     getGame()->getStatistics().add(StatId::INNOCENT_KILLED);
   getGame()->getStatistics().add(StatId::DEATH);
-  deathTime = getGlobalTime();
 }
 
 bool Creature::isInnocent() const {
