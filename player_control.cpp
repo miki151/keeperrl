@@ -1377,7 +1377,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
         break;
     case UserInputId::CREATE_TEAM:
-        if (Creature* c = getCreature(input.get<UniqueEntity<Creature>::Id>()))
+        if (Creature* c = getCreature(input.get<Creature::Id>()))
           if (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader())
             getTeams().create({c});
         break;

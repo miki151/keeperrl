@@ -70,7 +70,7 @@ void MapGui::clearButtonViewId() {
 
 void MapGui::highlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
   for (auto& id : ids)
-    ++teamHighlight.get(id);
+    teamHighlight.set(id, teamHighlight.getMaybe(id).get_value_or(0) + 1);
 }
 
 void MapGui::unhighlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
