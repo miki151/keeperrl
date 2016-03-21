@@ -89,6 +89,7 @@ class Game {
 
   PModel& getMainModel();
   void prepareRetirement();
+  void doneRetirement();
 
   ~Game();
 
@@ -111,7 +112,7 @@ class Game {
   View* view;
   double SERIAL(currentTime) = 0;
   optional<ExitInfo> exitInfo;
-  EnumMap<TribeId, PTribe> SERIAL(tribes);
+  Tribe::Map SERIAL(tribes);
   double SERIAL(lastTick) = 0;
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);

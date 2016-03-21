@@ -21,6 +21,7 @@
 #include "renderable.h"
 #include "stair_key.h"
 #include "position.h"
+#include "tribe.h"
 
 class Level;
 class Creature;

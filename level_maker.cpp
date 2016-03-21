@@ -2427,7 +2427,7 @@ found:
       boulders.push_back(pos);
     }
     builder->putSquare(start + Vec2(length + 1, 0), SquareId::FLOOR);
-    builder->putSquare(start + Vec2(length + 1, 0), {SquareId::TRIBE_DOOR, TribeId::HOSTILE});
+    builder->putSquare(start + Vec2(length + 1, 0), {SquareId::TRIBE_DOOR, TribeId::getHostile()});
     for (Vec2 v : Rectangle::centered(start + Vec2(length + roomRadius + 2, 0), roomRadius))
       builder->putSquare(v, SquareId::FLOOR, SquareAttrib::SOKOBAN_PRIZE);
     set<int> visited;

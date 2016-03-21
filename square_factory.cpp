@@ -271,7 +271,7 @@ class Tree : public Square {
       getLevel()->getModel()->addWoodCount(numWood);
       int numCut = getLevel()->getModel()->getWoodCount();
       if (numCut > 1500 && Random.roll(max(150, (3000 - numCut) / 5))) {
-        CreatureFactory f = CreatureFactory::singleType(TribeId::HOSTILE, creature);
+        CreatureFactory f = CreatureFactory::singleType(TribeId::getHostile(), creature);
         Effect::summon(getPosition2(), f, 1, 100000);
       }
     }

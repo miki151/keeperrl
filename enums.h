@@ -75,7 +75,6 @@ enum class EffectId;
 enum class AnimationId;
 
 enum class SpellId;
-enum class TribeId;
 enum class TechId;
 enum class SkillId;
 enum class VisionId;

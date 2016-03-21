@@ -146,6 +146,11 @@ void Game::prepareRetirement() {
             transferCreatures({c}, models[v].get());
   playerCollective = nullptr;
   playerControl = nullptr;
+  TribeId::switchForSerialization(TribeId::getKeeper(), TribeId::getRetiredKeeper());
+}
+
+void Game::doneRetirement() {
+  TribeId::clearSwitch();
 }
 
 optional<Game::ExitInfo> Game::update(double timeDiff) {
@@ -313,7 +318,7 @@ const Statistics& Game::getStatistics() const {
 }
 
 Tribe* Game::getTribe(TribeId id) const {
-  return tribes[id].get();
+  return tribes.at(id).get();
 }
 
 Collective* Game::getPlayerCollective() const {
@@ -534,7 +539,7 @@ const vector<Collective*>& Game::getCollectives() const {
 PCreature Game::makeAdventurer(int handicap) {
   MapMemory* levelMemory = new MapMemory();
   PCreature player = CreatureFactory::addInventory(
-      PCreature(new Creature(TribeId::ADVENTURER,
+      PCreature(new Creature(TribeId::getAdventurer(),
       CATTR(
           c.viewId = ViewId::PLAYER;
           c.attr[AttrType::SPEED] = 100;

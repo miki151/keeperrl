@@ -432,7 +432,7 @@ static double getSummonDelay(CreatureId id) {
 static void summon(Creature* summoner, CreatureId id) {
   switch (id) {
     case CreatureId::AUTOMATON: {
-      CreatureFactory f = CreatureFactory::singleType(TribeId::HOSTILE, id);
+      CreatureFactory f = CreatureFactory::singleType(TribeId::getHostile(), id);
       Effect::summon(summoner->getPosition(), f, Random.get(getSummonNumber(id)), getSummonTtl(id),
           getSummonDelay(id));
       break;
@@ -490,7 +490,7 @@ void Effect::applyDirected(Creature* c, Vec2 direction, const DirEffectType& typ
 
 static string getCreaturePluralName(CreatureId id) {
   static map<CreatureId, string> names;
-  return CreatureFactory::fromId(id, TribeId::HUMAN)->getName().plural();
+  return CreatureFactory::fromId(id, TribeId::getHuman())->getName().plural();
 }
 
 static string getCreatureName(CreatureId id) {
@@ -498,14 +498,14 @@ static string getCreatureName(CreatureId id) {
     return getCreaturePluralName(id);
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = CreatureFactory::fromId(id, TribeId::HUMAN)->getName().bare();
+    names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().bare();
   return names.at(id);
 }
 
 static string getCreatureAName(CreatureId id) {
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = CreatureFactory::fromId(id, TribeId::HUMAN)->getName().a();
+    names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().a();
   return names.at(id);
 }
 

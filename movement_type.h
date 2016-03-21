@@ -2,6 +2,7 @@
 #define _MOVEMENT_TYPE
 
 #include "util.h"
+#include "tribe.h"
 
 RICH_ENUM(MovementTrait,
   WALK,
@@ -9,8 +10,6 @@ RICH_ENUM(MovementTrait,
   SWIM,
   WADE
 );
-
-class Tribe;
 
 class MovementType {
   public:

@@ -226,7 +226,7 @@ string Position::getName() const {
     return "";
 }
 
-void Position::getViewIndex(ViewIndex& index, TribeId tribe) const {
+void Position::getViewIndex(ViewIndex& index, const TribeId& tribe) const {
   if (isValid())
     getSquare()->getViewIndex(index, tribe);
 }

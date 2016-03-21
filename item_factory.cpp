@@ -192,7 +192,7 @@ class Corpse : public Item {
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
           !position.getCoverInfo().covered && Random.roll(35)) {
         for (Position v : position.neighbors8(Random)) {
-          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE, TribeId::PEST,
+          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE, TribeId::getPest(),
                     MonsterAIFactory::scavengerBird(v));
           if (v.canEnter(vulture.get())) {
             v.addCreature(std::move(vulture));

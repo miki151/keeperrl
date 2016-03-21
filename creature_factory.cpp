@@ -2321,14 +2321,6 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER: 
       return ItemList()
-        .add({ItemId::SCROLL, EffectId::PORTAL})
-        .add({ItemId::SCROLL, EffectId::PORTAL})
-        .add({ItemId::SCROLL, EffectId::PORTAL})
-        .add({ItemId::SCROLL, EffectId::PORTAL})
-        .add({ItemId::SCROLL, EffectId::PORTAL})
-        .add({ItemId::SCROLL, EffectId::PORTAL})
-        .add({ItemId::SCROLL, EffectId::PORTAL})
-        .add({ItemId::SCROLL, EffectId::PORTAL})
         .add(ItemId::ROBE);
     case CreatureId::DEATH: 
       return ItemList()
@@ -2353,6 +2345,9 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::LIZARDMAN: 
       return ItemList().add(ItemId::LEATHER_ARMOR)
         .add(ItemId::GOLD_PIECE, Random.get(10, 20));
+    case CreatureId::HARPY: 
+      return ItemList()
+        .add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36));
     case CreatureId::ARCHER: 
       return ItemList()
         .add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36))

@@ -229,7 +229,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::minionsInfo {
 
 vector<PlayerControl::RoomInfo> PlayerControl::getRoomInfo() {
   vector<RoomInfo> ret;
-  for (BuildInfo bInfo : getBuildInfo(TribeId::KEEPER))
+  for (BuildInfo bInfo : getBuildInfo(TribeId::getKeeper()))
     if (bInfo.buildType == BuildInfo::SQUARE)
       ret.push_back({bInfo.squareInfo.name, bInfo.help, bInfo.requirements});
   return ret;
@@ -276,7 +276,7 @@ static vector<string> getHints() {
 
 PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(col), hints(getHints()) {
   bool hotkeys[128] = {0};
-  for (BuildInfo info : getBuildInfo(TribeId::KEEPER)) {
+  for (BuildInfo info : getBuildInfo(TribeId::getKeeper())) {
     if (info.hotkey) {
       CHECK(!hotkeys[int(info.hotkey)]);
       hotkeys[int(info.hotkey)] = true;
@@ -718,7 +718,7 @@ optional<pair<ViewId, int>> PlayerControl::getCostObj(CostInfo cost) const {
 string PlayerControl::getMinionName(CreatureId id) const {
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = CreatureFactory::fromId(id, TribeId::MONSTER)->getName().bare();
+    names[id] = CreatureFactory::fromId(id, TribeId::getMonster())->getName().bare();
   return names.at(id);
 }
 
@@ -1125,7 +1125,7 @@ const MapMemory& PlayerControl::getMemory() const {
 }
 
 ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
-  for (const PlayerControl::BuildInfo& info : getBuildInfo(TribeId::KEEPER))
+  for (const PlayerControl::BuildInfo& info : getBuildInfo(TribeId::getKeeper()))
     if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type) {
       if (!armed)
         return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed " + Item::getTrapName(type) + " trap")
