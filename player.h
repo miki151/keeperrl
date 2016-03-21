@@ -79,7 +79,7 @@ class Player : public Controller, public CreatureView {
   Game* getGame() const;
 
   private:
-  REGISTER_HANDLER(ThrowEvent, const Level*, const Creature*, const Item*, const vector<Vec2>& trajectory);
+  REGISTER_HANDLER(ThrowEvent, const Level*, const Item*, const vector<Vec2>& trajectory);
   REGISTER_HANDLER(ExplosionEvent, Position);
 
   void considerAdventurerMusic();

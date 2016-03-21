@@ -383,7 +383,7 @@ string Game::getGameIdentifier() const {
 void Game::onKilledLeader(const Collective* victim, const Creature* leader) {
   if (isSingleModel() && victim->getVillainType() == VillainType::MAIN) {
     if (Creature* c = getPlayer())
-      killedKeeper(*c->getFirstName(), leader->getNameAndTitle(), worldName, c->getKills(), c->getPoints());
+      killedKeeper(*c->getFirstName(), leader->getNameAndTitle(), worldName, c->getKills().getSize(), c->getPoints());
   }
 }
 
@@ -431,8 +431,8 @@ View* Game::getView() const {
   return view;
 }
 
-void Game::conquered(const string& title, vector<const Creature*> kills, int points) {
-  string text= "You have conquered this land. You killed " + toString(kills.size()) +
+void Game::conquered(const string& title, int numKills, int points) {
+  string text= "You have conquered this land. You killed " + toString(numKills) +
       " innocent beings and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
   for (string stat : statistics->getText())
@@ -452,11 +452,9 @@ void Game::conquered(const string& title, vector<const Creature*> kills, int poi
   highscores->present(view, score);
 }
 
-void Game::killedKeeper(const string& title, const string& keeper, const string& land,
-    vector<const Creature*> kills, int points) {
+void Game::killedKeeper(const string& title, const string& keeper, const string& land, int numKills, int points) {
   string text= "You have freed this land from the bloody reign of " + keeper + 
-      ". You killed " + toString(kills.size()) +
-      " enemies and scored " + toString(points) +
+      ". You killed " + toString(numKills) + " enemies and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
   for (string stat : statistics->getText())
     text += stat + "\n";

@@ -66,7 +66,7 @@ Player::Player(Creature* c, bool greeting, MapMemory* memory) :
 Player::~Player() {
 }
 
-void Player::onThrowEvent(const Level* l, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) {
+void Player::onThrowEvent(const Level* l, const Item* item, const vector<Vec2>& trajectory) {
   if (getCreature()->getPosition().isSameLevel(l))
     for (Vec2 v : trajectory)
       if (getCreature()->canSee(v)) {
@@ -829,7 +829,7 @@ void Player::onKilled(const Creature* attacker) {
   getGame()->getView()->updateView(this, false);
   if (getGame()->getView()->yesOrNoPrompt("Display message history?"))
     showHistory();
-  getGame()->gameOver(getCreature(), getCreature()->getKills().size(), "monsters", getCreature()->getPoints());
+  getGame()->gameOver(getCreature(), getCreature()->getKills().getSize(), "monsters", getCreature()->getPoints());
 }
 
 bool Player::unpossess() {

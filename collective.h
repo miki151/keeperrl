@@ -195,7 +195,7 @@ class Collective : public TaskCallback, public CreatureListener {
   TechId getNeededTech(Spell*) const;
   void addKnownTile(Position);
 
-  vector<const Creature*> getKills() const;
+  const EntitySet<Creature>& getKills() const;
   int getPoints() const;
 
   MinionEquipment& getMinionEquipment();
@@ -351,7 +351,7 @@ class Collective : public TaskCallback, public CreatureListener {
   EntitySet<Item> SERIAL(markedItems);
   set<Position> SERIAL(squaresInUse);
   ItemPredicate unMarkedItems() const;
-  set<Creature*> SERIAL(surrendering);
+  EntitySet<Creature> SERIAL(surrendering);
   void updateConstructions();
   void delayDangerousTasks(const vector<Position>& enemyPos, double delayTime);
   bool isDelayed(Position);
@@ -360,7 +360,7 @@ class Collective : public TaskCallback, public CreatureListener {
   double manaRemainder = 0;
   double getKillManaScore(const Creature*) const;
   void addMana(double);
-  vector<const Creature*> SERIAL(kills);
+  EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;
   map<const Creature*, MinionPaymentInfo> SERIAL(minionPayment);
   int SERIAL(nextPayoutTime);
@@ -373,7 +373,7 @@ class Collective : public TaskCallback, public CreatureListener {
   HeapAllocated<CollectiveTeams> SERIAL(teams);
   HeapAllocated<CollectiveName> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
-  vector<const Creature*> SERIAL(banished);
+  EntitySet<Creature> SERIAL(banished);
   EntitySet<Creature> SERIAL(equipmentUpdates);
   vector<Creature*> SERIAL(deadCreatures);
   optional<double> SERIAL(spawnGhosts);

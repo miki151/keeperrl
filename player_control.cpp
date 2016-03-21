@@ -1933,7 +1933,7 @@ void PlayerControl::onTechBookRead(Technology* tech) {
 void PlayerControl::onConqueredLand() {
   if (getKeeper()->isDead())
     return;
-  getGame()->conquered(*getKeeper()->getFirstName(), getCollective()->getKills(),
+  getGame()->conquered(*getKeeper()->getFirstName(), getCollective()->getKills().getSize(),
       getCollective()->getDangerLevel() + getCollective()->getPoints());
   getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
       "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
@@ -1944,7 +1944,7 @@ void PlayerControl::onMemberKilled(const Creature* victim, const Creature* kille
     onControlledKilled();
   visibilityMap->remove(victim);
   if (victim == getKeeper() && !getGame()->isGameOver()) {
-    getGame()->gameOver(victim, getCollective()->getKills().size(), "enemies",
+    getGame()->gameOver(victim, getCollective()->getKills().getSize(), "enemies",
         getCollective()->getDangerLevel() + getCollective()->getPoints());
   }
 }

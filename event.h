@@ -46,7 +46,7 @@ class EventListener {
   EVENT(PickupEvent, const Creature*, const vector<Item*>& items);
   EVENT(DropEvent, const Creature*, const vector<Item*>& items);
   EVENT(ItemsAppearedEvent, Position, const vector<Item*>& items);
-  EVENT(ThrowEvent, const Level*, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory);
+  EVENT(ThrowEvent, const Level*, const Item* item, const vector<Vec2>& trajectory);
   EVENT(ExplosionEvent, Position);
 };
 

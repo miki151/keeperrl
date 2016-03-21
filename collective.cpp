@@ -216,9 +216,9 @@ namespace {
 
 class LeaderControlOverride : public Creature::MoraleOverride {
   public:
-  LeaderControlOverride(Collective* col, Creature* c) : collective(col), creature(c) {}
+  LeaderControlOverride(Collective* col) : collective(col) {}
 
-  virtual optional<double> getMorale() override {
+  virtual optional<double> getMorale(const Creature* creature) override {
     for (auto team : collective->getTeams().getContaining(collective->getLeader()))
       if (collective->getTeams().isActive(team) && collective->getTeams().contains(team, creature) &&
           collective->getTeams().getLeader(team) == collective->getLeader())
@@ -230,12 +230,11 @@ class LeaderControlOverride : public Creature::MoraleOverride {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Creature::MoraleOverride) & SVAR(collective) & SVAR(creature);
+    ar & SUBCLASS(Creature::MoraleOverride) & SVAR(collective);
   }
 
   private:
   Collective* SERIAL(collective);
-  Creature* SERIAL(creature);
 };
 
 }
@@ -273,7 +272,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   for (const Item* item : c->getEquipment().getItems())
     minionEquipment->own(c, item);
   if (traits[MinionTrait::FIGHTER]) {
-    c->addMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this, c)));
+    c->addMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this)));
   }
 }
 
@@ -309,11 +308,11 @@ void Collective::banishCreature(Creature* c) {
     tasks.push_back(Task::goTo(Random.choose(exitTiles)));
   tasks.push_back(Task::disappear());
   c->setController(PController(new Monster(c, MonsterAIFactory::singleTask(Task::chain(std::move(tasks))))));
-  banished.push_back(c);
+  banished.insert(c);
 }
 
 bool Collective::wasBanished(const Creature* c) const {
-  return contains(banished, c);
+  return banished.contains(c);
 }
 
 vector<Creature*> Collective::getRecruits() const {
@@ -1208,13 +1207,15 @@ void Collective::tick() {
       control->onNoEnemies();
     }
     bool allSurrender = true;
+    vector<Creature*> surrenderingVec;
     for (Position v : enemyPos)
-      if (!surrendering.count(NOTNULL(v.getCreature()))) {
+      if (!surrendering.contains(NOTNULL(v.getCreature()))) {
         allSurrender = false;
         break;
-      }
+      } else
+        surrenderingVec.push_back(v.getCreature());
     if (allSurrender) {
-      for (Creature* c : copyOf(surrendering)) {
+      for (Creature* c : surrenderingVec) {
         if (!c->isDead() && territory->contains(c->getPosition())) {
           Position pos = c->getPosition();
           PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, getTribeId(),
@@ -1346,7 +1347,7 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
   if (victim->getTribe() != getTribe() && (/*!killer || */contains(creatures, killer))) {
     addMana(getKillManaScore(victim));
     addMoraleForKill(killer, victim);
-    kills.push_back(victim);
+    kills.insert(victim);
     int difficulty = victim->getDifficultyPoints();
     CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;
@@ -2236,7 +2237,7 @@ vector<Technology*> Collective::getTechnologies() const {
   return transform2<Technology*>(technologies, [] (const TechId t) { return Technology::get(t); });
 }
 
-vector<const Creature*> Collective::getKills() const {
+const EntitySet<Creature>& Collective::getKills() const {
   return kills;
 }
 

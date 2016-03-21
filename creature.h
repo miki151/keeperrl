@@ -23,6 +23,7 @@
 #include "movement_type.h"
 #include "position.h"
 #include "event_generator.h"
+#include "entity_set.h"
 
 class Skill;
 class Level;
@@ -76,7 +77,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   DEF_UNIQUE_PTR(MoraleOverride);
   class MoraleOverride {
     public:
-    virtual optional<double> getMorale() = 0;
+    virtual optional<double> getMorale(const Creature*) = 0;
     virtual ~MoraleOverride() {}
     template <class Archive> 
     void serialize(Archive& ar, const unsigned int version);
@@ -137,7 +138,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   const Creature* getLastAttacker() const;
   optional<string> getDeathReason() const;
   double getDeathTime() const;
-  vector<const Creature*> getKills() const;
+  const EntitySet<Creature>& getKills() const;
   bool isHumanoid() const;
   bool isAnimal() const;
   bool isStationary() const;
@@ -337,7 +338,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   double SERIAL(localTime) = 1;
   HeapAllocated<Equipment> SERIAL(equipment);
   unique_ptr<LevelShortestPath> SERIAL(shortestPath);
-  unordered_set<const Creature*> SERIAL(knownHiding);
+  EntitySet<Creature> SERIAL(knownHiding);
   TribeId SERIAL(tribe);
   double SERIAL(health) = 1;
   double SERIAL(morale) = 0;
@@ -348,12 +349,12 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   optional<string> SERIAL(deathReason);
   int SERIAL(swapPositionCooldown) = 0;
   vector<const Creature*> SERIAL(unknownAttacker);
-  vector<const Creature*> SERIAL(privateEnemies);
+  EntitySet<Creature> SERIAL(privateEnemies);
   const Creature* SERIAL(holding) = nullptr;
   PController SERIAL(controller);
   vector<PController> SERIAL(controllerStack);
   vector<CreatureVision*> SERIAL(creatureVisions);
-  vector<const Creature*> SERIAL(kills);
+  EntitySet<Creature> SERIAL(kills);
   mutable double SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
   int SERIAL(numAttacksThisTurn) = 0;

@@ -906,7 +906,7 @@ class KillFighters : public Task {
     for (const Creature* target : collective->getCreatures(MinionTrait::FIGHTER))
       targets.insert(target);
     int numKilled = 0;
-    for (const Creature* victim : c->getKills())
+    for (Creature::Id victim : c->getKills())
       if (targets.contains(victim))
         ++numKilled;
     if (numKilled >= numCreatures || targets.empty()) {

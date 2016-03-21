@@ -206,7 +206,7 @@ optional<string> Creature::getDeathReason() const {
   return none;
 }
 
-vector<const Creature*> Creature::getKills() const {
+const EntitySet<Creature>& Creature::getKills() const {
   return kills;
 }
 
@@ -693,7 +693,7 @@ bool Creature::isHidden() const {
 }
 
 bool Creature::knowsHiding(const Creature* c) const {
-  return knownHiding.count(const_cast<Creature*>(c)) == 1; // OBSOLETE: change to entity set
+  return knownHiding.contains(c);
 }
 
 bool Creature::affects(LastingEffect effect) const {
@@ -1038,7 +1038,7 @@ bool Creature::isEnemy(const Creature* c) const {
   if (isAffected(LastingEffect::INSANITY))
     return c != this;
   return getTribe()->isEnemy(c) || c->getTribe()->isEnemy(this) ||
-    contains(privateEnemies, c) || contains(c->privateEnemies, this);
+    privateEnemies.contains(c) || c->privateEnemies.contains(this);
 }
 
 vector<Item*> Creature::getGold(int num) const {
@@ -1302,13 +1302,12 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
 
 bool Creature::dodgeAttack(const Attack& attack) {
   ++numAttacksThisTurn;
-  Debug() << getName().the() << " dodging " << attack.getAttacker()->getName().bare()
-    << " accuracy " << attack.getAccuracy() << " dodge " << getModifier(ModifierType::ACCURACY);
-  if (Creature* c = attack.getAttacker()) {
-    if (!canSee(c))
-      unknownAttacker.push_back(c);
+  Creature* attacker = attack.getAttacker();
+  if (attacker) {
+    if (!canSee(attacker))
+      unknownAttacker.push_back(attacker);
   }
-  return canSee(attack.getAttacker()) && attack.getAccuracy() <= getModifier(ModifierType::ACCURACY);
+  return (!attacker || canSee(attacker)) && attack.getAccuracy() <= getModifier(ModifierType::ACCURACY);
 }
 
 double Creature::getMinDamage(BodyPart part) const {
@@ -1332,27 +1331,26 @@ bool Creature::isCritical(BodyPart part) const {
 
 bool Creature::takeDamage(const Attack& attack) {
   AttackType attackType = attack.getType();
-  Creature* other = attack.getAttacker();
-  if (other) {
-    if (!contains(privateEnemies, other) && (other->tribe != tribe || Random.roll(3)))
-      privateEnemies.push_back(other);
-    if (!other->hasSkill(Skill::get(SkillId::STEALTH)))
+  int defense = getModifier(ModifierType::DEFENSE);
+  if (Creature* attacker = attack.getAttacker()) {
+    if (!privateEnemies.contains(attacker) && (attacker->tribe != tribe || Random.roll(3)))
+      privateEnemies.insert(attacker);
+    if (!attacker->hasSkill(Skill::get(SkillId::STEALTH)))
       for (Creature* c : getVisibleCreatures())
         if (c->getPosition().dist8(position) < 10)
           c->removeEffect(LastingEffect::SLEEP);
-  }
-  if (other && attackType == AttackType::POSSESS) {
-    you(MsgType::ARE, "possessed by " + other->getName().the());
-    other->die(nullptr, false, false);
-    addEffect(LastingEffect::INSANITY, 10);
-    return false;
-  }
-  int defense = getModifier(ModifierType::DEFENSE);
-  Debug() << getName().the() << " attacked by " << other->getName().the()
+    if (attackType == AttackType::POSSESS) {
+      you(MsgType::ARE, "possessed by " + attacker->getName().the());
+      attacker->die(nullptr, false, false);
+      addEffect(LastingEffect::INSANITY, 10);
+      return false;
+    }
+    Debug() << getName().the() << " attacked by " << attacker->getName().the()
       << " damage " << attack.getStrength() << " defense " << defense;
-  if (attributes->passiveAttack && other && other->getPosition().dist8(position) == 1) {
-    Effect::applyToCreature(other, *attributes->passiveAttack, EffectStrength::NORMAL);
-    other->lastAttacker = this;
+    if (attributes->passiveAttack && attacker->getPosition().dist8(position) == 1) {
+      Effect::applyToCreature(attacker, *attributes->passiveAttack, EffectStrength::NORMAL);
+      attacker->lastAttacker = this;
+    }
   }
   if (isAffected(LastingEffect::MAGIC_SHIELD)) {
     attributes->lastingEffects[LastingEffect::MAGIC_SHIELD] -= 5;
@@ -1362,12 +1360,14 @@ bool Creature::takeDamage(const Attack& attack) {
     addSound(*sound);
   if (attack.getStrength() > defense) {
     if (attackType == AttackType::EAT) {
-      if (isLarger(other->getSize(), getSize()) && Random.roll(3)) {
-        you(MsgType::ARE, "devoured by " + other->getName().the());
-        die(other, false, false);
-        return true;
-      } else
-        attackType = AttackType::BITE;
+      if (Creature* attacker = attack.getAttacker()) {
+        if (isLarger(attacker->getSize(), getSize()) && Random.roll(3)) {
+          you(MsgType::ARE, "devoured by " + attacker->getName().the());
+          die(attacker, false, false);
+          return true;
+        } else
+          attackType = AttackType::BITE;
+      }
     }
     lastAttacker = attack.getAttacker();
     double dam = (defense == 0) ? 1 : double(attack.getStrength() - defense) / defense;
@@ -1413,7 +1413,7 @@ bool Creature::takeDamage(const Attack& attack) {
       Effect::applyToCreature(this, *effect, EffectStrength::WEAK);
   } else {
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attackType));
-    if (attack.getEffect() && attack.getAttacker()->attributes->harmlessApply)
+    if (attack.getEffect())
       Effect::applyToCreature(this, *attack.getEffect(), EffectStrength::NORMAL);
   }
   if (isAffected(LastingEffect::SLEEP))
@@ -1446,7 +1446,7 @@ double Creature::getHealth() const {
 
 double Creature::getMorale() const {
   for (auto& elem : moraleOverrides)
-    if (auto ret = elem->getMorale())
+    if (auto ret = elem->getMorale(this))
       return *ret;
   return morale;
 }
@@ -1649,7 +1649,7 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   Debug() << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   controller->onKilled(attacker);
   if (attacker)
-    attacker->kills.push_back(this);
+    attacker->kills.insert(this);
   if (dropInventory)
     for (PItem& item : equipment->removeAllItems()) {
       getPosition().dropItem(std::move(item));

@@ -240,7 +240,7 @@ class MeteorShower : public Trigger {
       endTime(creature->getGlobalTime() + duration) {}
 
   virtual void tick() override {
-    if (position.getGame()->getGlobalTime() >= endTime || creature->isDead()) {
+    if (position.getGame()->getGlobalTime() >= endTime || (creature && creature->isDead())) {
       position.removeTrigger(this);
       return;
     } else
@@ -270,7 +270,8 @@ class MeteorShower : public Trigger {
   SERIALIZATION_CONSTRUCTOR(MeteorShower);
 
   private:
-  Creature* SERIAL(creature);
+  Creature* creature = nullptr; // Not serializing cause it might potentially cause a crash when saving a
+      // single model in campaign mode.
   double SERIAL(endTime);
 };
 

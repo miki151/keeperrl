@@ -1179,7 +1179,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 35;
           c.attr[AttrType::DEXTERITY] = 45;
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
-          c.harmlessApply = true;
           c.humanoid = false;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.barehandedDamage = 10;
@@ -1675,7 +1674,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 7;
           c.barehandedAttack = AttackType::BITE;
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
-          c.harmlessApply = true;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.humanoid = true;
           c.weight = 50;
