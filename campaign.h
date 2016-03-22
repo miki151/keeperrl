@@ -50,6 +50,7 @@ class Campaign {
   };
 
   const Table<SiteInfo>& getSites() const;
+  void clearSite(Vec2);
   static optional<Campaign> prepareCampaign(View*, const vector<RetiredSiteInfo>&, function<string()> worldNameGen,
       RandomGen&);
   optional<Vec2> getPlayerPos() const;

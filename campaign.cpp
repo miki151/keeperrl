@@ -33,6 +33,12 @@ const string& Campaign::getWorldName() const {
   return worldName;
 }
 
+void Campaign::clearSite(Vec2 v) {
+  sites[v] = SiteInfo{};
+  sites[v].viewId = {ViewId::GRASS};
+  sites[v].description = "site " + toString(v);
+}
+
 static Campaign::VillainInfo getRandomVillain(RandomGen& random) {
   return random.choose<Campaign::VillainInfo>({
       {ViewId::AVATAR, EnemyId::KNIGHTS, "knights"},
@@ -123,10 +129,8 @@ optional<Campaign> Campaign::prepareCampaign(View* view, const vector<RetiredSit
       campaign.worldName = worldName;
     else
       campaign.worldName = worldNameGen();
-    for (Vec2 v : Rectangle(size)) {
-      campaign.sites[v].viewId.push_back(ViewId::GRASS);
-      campaign.sites[v].description = "site " + toString(v);
-    }
+    for (Vec2 v : Rectangle(size))
+      campaign.clearSite(v);
     vector<Vec2> freePos;
     for (Vec2 v : Rectangle(size))
       if (campaign.sites[v].canEmbark())

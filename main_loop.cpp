@@ -479,9 +479,10 @@ void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
 
 Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
   Table<PModel> models(campaign.getSites().getBounds());
+  optional<string> failedToLoad;
   NameGenerator::init(dataFreePath + "/names");
   doWithSplash(SplashType::CREATING, campaign.getSites().getHeight() * campaign.getSites().getWidth(),
-      [&models, this, &random, &campaign] (ProgressMeter& meter) {
+      [&models, this, &random, &campaign, &failedToLoad] (ProgressMeter& meter) {
         auto& sites = campaign.getSites();
         for (Vec2 v : sites.getBounds()) {
           meter.addProgress();
@@ -495,9 +496,15 @@ Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
           else if (auto retired = sites[v].getRetired()) {
             if (PModel m = loadModelFromFile(userPath + "/" + retired->save.filename, false))
               models[v] = std::move(m);
+            else {
+              failedToLoad = retired->save.filename;
+              campaign.clearSite(v);
+            }
           }
         }
       });
+  if (failedToLoad)
+    view->presentText("Sorry", "Error reading " + *failedToLoad + ". Leaving blank site.");
   return models;
 }
 
