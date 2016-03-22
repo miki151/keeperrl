@@ -115,7 +115,6 @@ class Player : public Controller, public CreatureView {
   Vec2 SERIAL(travelDir);
   optional<Position> SERIAL(target);
   const Location* SERIAL(lastLocation) = nullptr;
-  vector<const Creature*> SERIAL(specialCreatures);
   bool SERIAL(displayGreeting);
   bool updateView = true;
   void retireMessages();

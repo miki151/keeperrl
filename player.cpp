@@ -48,7 +48,6 @@ void Player::serialize(Archive& ar, const unsigned int version) {
     & SVAR(travelDir)
     & SVAR(target)
     & SVAR(lastLocation)
-    & SVAR(specialCreatures)
     & SVAR(displayGreeting)
     & SVAR(levelMemory)
     & SVAR(messages)
@@ -321,10 +320,10 @@ void Player::hideAction() {
 }
 
 bool Player::interruptedByEnemy() {
-  vector<const Creature*> enemies = getCreature()->getVisibleEnemies();
+  vector<Creature*> enemies = getCreature()->getVisibleEnemies();
   vector<string> ignoreCreatures { "a boar" ,"a deer", "a fox", "a vulture", "a rat", "a jackal", "a boulder" };
   if (enemies.size() > 0) {
-    for (const Creature* c : enemies)
+    for (Creature* c : enemies)
       if (!contains(ignoreCreatures, c->getName().a())) {
         getGame()->getView()->updateView(this, false);
         privateMessage("You notice " + c->getName().a());
@@ -817,7 +816,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));
       if (contains(getTeam(), c))
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
-    } else if (contains(getCreature()->getUnknownAttacker(), c))
+    } else if (getCreature()->isUnknownAttacker(c))
       index.insert(copyOf(ViewObject::unknownMonster()));
   }
  /* if (pos == getCreature()->getPosition() && index.hasObject(ViewLayer::CREATURE))

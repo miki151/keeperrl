@@ -54,7 +54,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
   serializeAll(ar, attributes, position, localTime, equipment, shortestPath, knownHiding, tribe, health, morale);
   serializeAll(ar, deathTime, collapsed, hidden, deathReason, swapPositionCooldown);
-  serializeAll(ar, unknownAttacker, privateEnemies, holding, controller, controllerStack, creatureVisions, kills);
+  serializeAll(ar, unknownAttackers, privateEnemies, holding, controller, controllerStack, creatureVisions, kills);
   serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverrides, visibleEnemies, visibleCreatures);
   serializeAll(ar, vision, personalEvents, lastCombatTime, eventGenerator);
 }
@@ -361,7 +361,7 @@ void Creature::makeMove() {
   Debug() << getName().bare() << " morale " << getMorale();
   if (!hidden)
     modViewObject().removeModifier(ViewObject::Modifier::HIDDEN);
-  unknownAttacker.clear();
+  unknownAttackers.clear();
   if (attributes->fireCreature && Random.roll(5))
     getPosition().setOnFire(1);
 }
@@ -1303,7 +1303,7 @@ bool Creature::dodgeAttack(const Attack& attack) {
   Creature* attacker = attack.getAttacker();
   if (attacker) {
     if (!canSee(attacker))
-      unknownAttacker.push_back(attacker);
+      unknownAttackers.insert(attacker);
   }
   return (!attacker || canSee(attacker)) && attack.getAccuracy() <= getModifier(ModifierType::ACCURACY);
 }
@@ -1334,9 +1334,9 @@ bool Creature::takeDamage(const Attack& attack) {
     if (!privateEnemies.contains(attacker) && (attacker->tribe != tribe || Random.roll(3)))
       privateEnemies.insert(attacker);
     if (!attacker->hasSkill(Skill::get(SkillId::STEALTH)))
-      for (Creature* c : getVisibleCreatures())
-        if (c->getPosition().dist8(position) < 10)
-          c->removeEffect(LastingEffect::SLEEP);
+      for (Position p : visibleCreatures)
+        if (p.dist8(position) < 10 && p.getCreature() && !p.getCreature()->isDead())
+          p.getCreature()->removeEffect(LastingEffect::SLEEP);
     if (attackType == AttackType::POSSESS) {
       you(MsgType::ARE, "possessed by " + attacker->getName().the());
       attacker->die(nullptr, false, false);
@@ -2390,8 +2390,8 @@ void Creature::youHit(BodyPart part, AttackType type) const {
   }
 }
 
-vector<const Creature*> Creature::getUnknownAttacker() const {
-  return filter(unknownAttacker, [](const Creature* c) { return !c->isDead();});
+bool Creature::isUnknownAttacker(const Creature* c) const {
+  return unknownAttackers.contains(c);
 }
 
 string Creature::getNameAndTitle() const {
@@ -2419,29 +2419,25 @@ MinionTaskMap& Creature::getMinionTasks() {
   return attributes->minionTasks;
 }
 
-const vector<Creature*>& Creature::getVisibleCreatures() {
-  visibleCreatures = filter(visibleCreatures, [] (const Creature* c) { return !c->isDead();});
-  return visibleCreatures;
-}
-
 void Creature::updateVisibleCreatures() {
   int range = FieldOfView::sightRange;
   visibleEnemies.clear();
   visibleCreatures.clear();
   for (Creature* c : position.getAllCreatures(range)) 
-    if (canSee(c)) {
-      visibleCreatures.push_back(c);
+    if (canSee(c) || isUnknownAttacker(c)) {
+      visibleCreatures.push_back(c->getPosition());
       if (isEnemy(c))
-        visibleEnemies.push_back(c);
+        visibleEnemies.push_back(c->getPosition());
     }
-  for (const Creature* c : getUnknownAttacker())
-    if (!contains(visibleEnemies, c))
-      visibleEnemies.push_back(c);
 }
 
-vector<const Creature*> Creature::getVisibleEnemies() const {
-  return filter(visibleEnemies, [this] (const Creature* c) {
-      return c->getPosition().isSameLevel(getLevel()) && !c->isDead();});
+vector<Creature*> Creature::getVisibleEnemies() const {
+  vector<Creature*> ret;
+  for (Position p : visibleEnemies)
+    if (Creature* c = p.getCreature())
+      if (!c->isDead())
+        ret.push_back(c);
+  return ret;
 }
 
 vector<Position> Creature::getVisibleTiles() const {

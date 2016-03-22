@@ -64,7 +64,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void setLocalTime(double t);
   Level* getLevel() const;
   Game* getGame() const;
-  vector<const Creature*> getVisibleEnemies() const;
+  vector<Creature*> getVisibleEnemies() const;
   vector<Position> getVisibleTiles() const;
   void setPosition(Position);
   Position getPosition() const;
@@ -297,7 +297,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   vector<AttackLevel> getAttackLevels() const;
   bool hasSuicidalAttack() const;
 
-  vector<const Creature*> getUnknownAttacker() const;
+  bool isUnknownAttacker(const Creature*) const;
   const MinionTaskMap& getMinionTasks() const;
   MinionTaskMap& getMinionTasks();
   int accuracyBonus() const;
@@ -347,7 +347,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool SERIAL(hidden) = false;
   optional<string> SERIAL(deathReason);
   int SERIAL(swapPositionCooldown) = 0;
-  vector<const Creature*> SERIAL(unknownAttacker);
+  EntitySet<Creature> SERIAL(unknownAttackers);
   EntitySet<Creature> SERIAL(privateEnemies);
   const Creature* SERIAL(holding) = nullptr;
   PController SERIAL(controller);
@@ -359,9 +359,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   int SERIAL(numAttacksThisTurn) = 0;
   vector<PMoraleOverride> SERIAL(moraleOverrides);
   void updateVisibleCreatures();
-  const vector<Creature*>& getVisibleCreatures();
-  vector<const Creature*> SERIAL(visibleEnemies);
-  vector<Creature*> SERIAL(visibleCreatures);
+  vector<Position> SERIAL(visibleEnemies);
+  vector<Position> SERIAL(visibleCreatures);
   double getTimeRemaining(LastingEffect) const;
   string getRemainingString(LastingEffect) const;
   VisionId SERIAL(vision);
