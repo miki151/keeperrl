@@ -456,16 +456,16 @@ vector<Item*> Creature::getPickUpOptions() const {
 
 string Creature::getPluralTheName(Item* item, int num) const {
   if (num == 1)
-    return item->getTheName(false, isBlind());
+    return item->getTheName(false, this);
   else
-    return toString(num) + " " + item->getTheName(true, isBlind());
+    return toString(num) + " " + item->getTheName(true, this);
 }
 
 string Creature::getPluralAName(Item* item, int num) const {
   if (num == 1)
-    return item->getAName(false, isBlind());
+    return item->getAName(false, this);
   else
-    return toString(num) + " " + item->getAName(true, isBlind());
+    return toString(num) + " " + item->getAName(true, this);
 }
 
 CreatureAction Creature::pickUp(const vector<Item*>& items) const {
@@ -492,7 +492,7 @@ CreatureAction Creature::pickUp(const vector<Item*>& items) const {
 
 vector<vector<Item*>> Creature::stackItems(vector<Item*> items) const {
   map<string, vector<Item*> > stacks = groupBy<Item*, string>(items, 
-      [this] (Item* const& item) { return item->getNameAndModifiers(false, isBlind()); });
+      [this] (Item* const& item) { return item->getNameAndModifiers(false, this); });
   return getValues(stacks);
 }
 
@@ -564,7 +564,7 @@ CreatureAction Creature::equip(Item* item) const {
       previousItem->onUnequip(self);
     }
     self->equipment->equip(item, slot);
-    playerMessage("You equip " + item->getTheName(false, isBlind()));
+    playerMessage("You equip " + item->getTheName(false, this));
     monsterMessage(getName().the() + " equips " + item->getAName());
     item->onEquip(self);
     if (Game* game = getGame())
@@ -586,7 +586,7 @@ CreatureAction Creature::unequip(Item* item) const {
     EquipmentSlot slot = item->getEquipmentSlot();
     self->equipment->unequip(item);
     playerMessage("You " + string(slot == EquipmentSlot::WEAPON ? " sheathe " : " remove ") +
-        item->getTheName(false, isBlind()));
+        item->getTheName(false, this));
     monsterMessage(getName().the() + (slot == EquipmentSlot::WEAPON ? " sheathes " : " removes ") +
         item->getAName());
     item->onUnequip(self);
@@ -2006,8 +2006,8 @@ CreatureAction Creature::applyItem(Item* item) const {
     return CreatureAction("You have no healthy arms!");
   return CreatureAction(this, [=] (Creature* self) {
       double time = item->getApplyTime();
-      playerMessage("You " + item->getApplyMsgFirstPerson(isBlind()));
-      monsterMessage(getName().the() + " " + item->getApplyMsgThirdPerson(isBlind()), item->getNoSeeApplyMsg());
+      playerMessage("You " + item->getApplyMsgFirstPerson(self));
+      monsterMessage(getName().the() + " " + item->getApplyMsgThirdPerson(self), item->getNoSeeApplyMsg());
       item->apply(self);
       if (item->isDiscarded()) {
         self->equipment->removeItem(item);
@@ -2043,7 +2043,7 @@ CreatureAction Creature::throwItem(Item* item, Vec2 direction) const {
   }
   return CreatureAction(this, [=](Creature* self) {
     Attack attack(self, attributes->getRandomAttackLevel(), item->getAttackType(), accuracy, damage, false, none);
-    playerMessage("You throw " + item->getAName(false, isBlind()));
+    playerMessage("You throw " + item->getAName(false, this));
     monsterMessage(getName().the() + " throws " + item->getAName());
     self->getPosition().throwItem(self->equipment->removeItem(item), attack, dist, direction, getVision());
     self->spendTime(1);
@@ -2434,6 +2434,15 @@ void Creature::updateVisibleCreatures() {
 vector<Creature*> Creature::getVisibleEnemies() const {
   vector<Creature*> ret;
   for (Position p : visibleEnemies)
+    if (Creature* c = p.getCreature())
+      if (!c->isDead())
+        ret.push_back(c);
+  return ret;
+}
+
+vector<Creature*> Creature::getVisibleCreatures() const {
+  vector<Creature*> ret;
+  for (Position p : visibleCreatures)
     if (Creature* c = p.getCreature())
       if (!c->isDead())
         ret.push_back(c);

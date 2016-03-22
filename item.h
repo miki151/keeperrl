@@ -65,12 +65,12 @@ class Item : public Renderable, public UniqueEntity<Item> {
 
   bool isDiscarded();
 
-  string getName(bool plural = false, bool blind = false) const;
-  string getTheName(bool plural = false, bool blind = false) const;
-  string getAName(bool plural = false, bool blind = false) const;
-  string getNameAndModifiers(bool plural = false, bool blind = false) const;
+  string getName(bool plural = false, const Creature* owner = nullptr) const;
+  string getTheName(bool plural = false, const Creature* owner = nullptr) const;
+  string getAName(bool plural = false, const Creature* owner = nullptr) const;
+  string getNameAndModifiers(bool plural = false, const Creature* owner = nullptr) const;
   string getArtifactName() const;
-  string getShortName(bool blind = false, bool noSuffix = false) const;
+  string getShortName(const Creature* owner = nullptr, bool noSuffix = false) const;
   string getPluralTheName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
@@ -80,7 +80,10 @@ class Item : public Renderable, public UniqueEntity<Item> {
   
   int getPrice() const;
   void setShopkeeper(const Creature* shopkeeper);
-  const Creature* getShopkeeper() const;
+  const Creature* getShopkeeper(const Creature* owner) const;
+  bool isShopkeeper(const Creature*) const;
+  // This function returns true after shopkeeper was killed. TODO: refactor shops.
+  bool isOrWasForSale() const;
 
   optional<TrapType> getTrapType() const;
   optional<CollectiveResourceId> getResourceId() const;
@@ -93,8 +96,8 @@ class Item : public Renderable, public UniqueEntity<Item> {
 
   void tick(Position);
   
-  string getApplyMsgThirdPerson(bool blind) const;
-  string getApplyMsgFirstPerson(bool blind) const;
+  string getApplyMsgThirdPerson(const Creature* owner) const;
+  string getApplyMsgFirstPerson(const Creature* owner) const;
   string getNoSeeApplyMsg() const;
 
   void onEquip(Creature*);
@@ -148,7 +151,7 @@ class Item : public Renderable, public UniqueEntity<Item> {
   string getVisibleName(bool plural) const;
   string getBlindName(bool plural) const;
   HeapAllocated<ItemAttributes> SERIAL(attributes);
-  const Creature* SERIAL(shopkeeper) = nullptr;
+  optional<UniqueEntity<Creature>::Id> SERIAL(shopkeeper);
   HeapAllocated<Fire> SERIAL(fire);
 };
 

@@ -142,14 +142,14 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_BANISH,
             UserInputId::CREATURE_WHIP,
             UserInputId::CREATURE_EXECUTE,
-            UserInputId::CREATURE_TORTURE
+            UserInputId::CREATURE_TORTURE,
+            UserInputId::GO_TO_ENEMY
             ),
         ASSIGN(UniqueEntity<PlayerMessage>::Id,
             UserInputId::MESSAGE_INFO
             ),
         ASSIGN(int,
             UserInputId::TECHNOLOGY,
-            UserInputId::GO_TO_ENEMY,
             UserInputId::CANCEL_TEAM,
             UserInputId::ACTIVATE_TEAM,
             UserInputId::SELECT_TEAM,

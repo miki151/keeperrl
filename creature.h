@@ -65,6 +65,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Level* getLevel() const;
   Game* getGame() const;
   vector<Creature*> getVisibleEnemies() const;
+  vector<Creature*> getVisibleCreatures() const;
   vector<Position> getVisibleTiles() const;
   void setPosition(Position);
   Position getPosition() const;

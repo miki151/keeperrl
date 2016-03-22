@@ -422,7 +422,7 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
 }
 
 Color MapGui::getCreatureHighlight(UniqueEntity<Creature>::Id creature, int curTime) {
-  if (teamHighlight.getMaybe(creature))
+  if (teamHighlight.getMaybe(creature).get_value_or(0) > 0)
     return colors[ColorId::YELLOW];
   else
     return Color(0, 0, 0, 0);

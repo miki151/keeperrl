@@ -549,7 +549,7 @@ static ItemInfo getEmptySlotItem(EquipmentSlot slot) {
 
 static ItemInfo getTradeItemInfo(const vector<Item*>& stack, int budget) {
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(false, true);
+    c.name = stack[0]->getShortName(nullptr, true);
     c.price = make_pair(ViewId::GOLD, stack[0]->getPrice());
     c.fullName = stack[0]->getNameAndModifiers(false);
     c.description = stack[0]->getDescription();

@@ -491,7 +491,7 @@ class ShopkeeperController : public Monster {
     for (auto elem : debt) {
       const Creature* c = elem.first;
       if (!contains(creatures, c)) {
-        c->playerMessage("\"Come back, you owe me " + toString(elem.second) + " zorkmids!\"");
+        c->playerMessage("\"Come back, you owe me " + toString(elem.second) + " gold!\"");
         if (++thiefCount[c] == 4) {
           c->playerMessage("\"Thief! Thief!\"");
           getCreature()->getTribe()->onItemsStolen(c);
@@ -535,7 +535,7 @@ class ShopkeeperController : public Monster {
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items) {
     if (shopArea->contains(c->getPosition())) {
       for (const Item* item : items)
-        if (item->getShopkeeper() == getCreature()) {
+        if (item->isShopkeeper(getCreature())) {
           debt[c] += item->getPrice();
           unpaidItems[c].insert(item);
         }
@@ -545,7 +545,7 @@ class ShopkeeperController : public Monster {
   REGISTER_HANDLER(DropEvent, const Creature* c, const vector<Item*>& items) {
     if (shopArea->contains(c->getPosition())) {
       for (const Item* item : items)
-        if (item->getShopkeeper() == getCreature()) {
+        if (item->isShopkeeper(getCreature())) {
           if ((debt[c] -= item->getPrice()) <= 0)
             debt.erase(c);
           unpaidItems[c].erase(item);

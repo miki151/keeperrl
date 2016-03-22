@@ -1146,7 +1146,7 @@ void MonsterAI::makeMove() {
     if (pickItems) {
       for (auto elem : Item::stackItems(creature->getPickUpOptions())) {
         Item* item = elem.second[0];
-        if (!item->getShopkeeper() && creature->pickUp(elem.second))
+        if (!item->isOrWasForSale() && creature->pickUp(elem.second))
           moves.emplace_back(
               MoveInfo({ behaviours[i]->itemValue(item) * weights[i], creature->pickUp(elem.second)}),
               weights[i]);

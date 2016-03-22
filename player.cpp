@@ -102,10 +102,10 @@ void Player::onBump(Creature*) {
 
 string Player::getInventoryItemName(const Item* item, bool plural) const {
   if (getCreature()->getEquipment().isEquiped(item))
-    return item->getNameAndModifiers(plural, getCreature()->isBlind()) + " " 
+    return item->getNameAndModifiers(plural, getCreature()) + " " 
       + getSlotSuffix(item->getEquipmentSlot());
   else
-    return item->getNameAndModifiers(plural, getCreature()->isBlind());
+    return item->getNameAndModifiers(plural, getCreature());
 }
 
 void Player::getItemNames(vector<Item*> items, vector<ListElem>& names, vector<vector<Item*> >& groups,
@@ -383,9 +383,9 @@ void Player::payDebtAction() {
         vector<Item*> gold = getCreature()->getGold(debt);
         if (gold.size() < debt) {
           privateMessage("You don't have enough gold to pay.");
-        } else if (getGame()->getView()->yesOrNoPrompt("Buy items for " + toString(debt) + " zorkmids?")) {
+        } else if (getGame()->getView()->yesOrNoPrompt("Buy items for " + toString(debt) + " gold?")) {
           if (tryToPerform(getCreature()->give(c, gold)))
-            privateMessage("You pay " + c->getName().the() + " " + toString(debt) + " zorkmids.");
+            privateMessage("You pay " + c->getName().the() + " " + toString(debt) + " gold.");
         }
       } else {
         Debug() << "No debt " << c->getName().bare();
@@ -894,8 +894,8 @@ ItemInfo Player::getApplySquareInfo(const string& question, ViewId viewId) const
 
 ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(getCreature()->isBlind());
-    c.fullName = stack[0]->getNameAndModifiers(false, getCreature()->isBlind());
+    c.name = stack[0]->getShortName(getCreature());
+    c.fullName = stack[0]->getNameAndModifiers(false, getCreature());
     c.description = getCreature()->isBlind() ? "" : stack[0]->getDescription();
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
