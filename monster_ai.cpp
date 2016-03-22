@@ -792,7 +792,7 @@ class Thief : public Behaviour {
   SERIALIZE_ALL2(Behaviour, robbed);
 
   private:
-  EnumSet<Creature> SERIAL(robbed);
+  EntitySet<Creature> SERIAL(robbed);
 };
 
 class ByCollective : public Behaviour {

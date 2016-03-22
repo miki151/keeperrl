@@ -1317,38 +1317,40 @@ void Collective::onKillCancelled(Creature* c) {
 }
 
 void Collective::onKilled(Creature* victim, Creature* killer) {
-  if (contains(creatures, victim)) {
-    control->onMemberKilled(victim, killer);
-    if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer))
-      returnResource({ResourceId::PRISONER_HEAD, 1});
-    if (victim == leader) {
-      getGame()->onKilledLeader(this, victim);
-      for (Creature* c : getCreatures(MinionTrait::SUMMONED)) // shortcut to get rid of summons when summonner dies
-        c->disappear().perform(c);
-    }
-    if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
-      decreaseMoraleForKill(killer, victim);
-      if (killer)
-        control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
-              PlayerMessage::HIGH).setPosition(victim->getPosition()));
-      else
-        control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", PlayerMessage::HIGH)
-            .setPosition(victim->getPosition()));
-    }
-    removeCreature(victim);
-  } else
-    control->onOtherKilled(victim, killer);
-  if (victim->getTribe() != getTribe() && (/*!killer || */contains(creatures, killer))) {
+  CHECK(contains(creatures, victim));
+  control->onMemberKilled(victim, killer);
+  if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer))
+    returnResource({ResourceId::PRISONER_HEAD, 1});
+  if (victim == leader) {
+    getGame()->onKilledLeader(this, victim);
+    for (Creature* c : getCreatures(MinionTrait::SUMMONED)) // shortcut to get rid of summons when summonner dies
+      c->disappear().perform(c);
+  }
+  if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
+    decreaseMoraleForKill(killer, victim);
+    if (killer)
+      control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
+            PlayerMessage::HIGH).setPosition(victim->getPosition()));
+    else
+      control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", PlayerMessage::HIGH)
+          .setPosition(victim->getPosition()));
+  }
+  removeCreature(victim);
+  //control->onOtherKilled(victim, killer); TODO: implement
+}
+
+void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
+  CHECK(contains(creatures, killer));
+  if (victim->getTribe() != getTribe()) {
     addMana(getKillManaScore(victim));
     addMoraleForKill(killer, victim);
     kills.insert(victim);
     int difficulty = victim->getDifficultyPoints();
     CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;
-    if (killer)
-      control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a())
-          .setPosition(victim->getPosition()));
   }
+  control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a())
+      .setPosition(victim->getPosition()));
 }
 
 double Collective::getEfficiency(const Creature* c) const {

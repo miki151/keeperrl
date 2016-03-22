@@ -995,13 +995,15 @@ double minLevelGain = 0.02;
 double equalLevelGain = 0.2;
 double maxLevelDiff = 30;
 
-void Creature::onKilled(const Creature* victim) {
+void Creature::onKilled(Creature* victim) {
   int difficulty = victim->getDifficultyPoints();
   CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
   points += difficulty;
   double levelDiff = victim->attributes->getExpLevel() - attributes->getExpLevel();
   increaseExpLevel(max(minLevelGain, min(maxLevelGain, 
       (maxLevelGain - equalLevelGain) * levelDiff / maxLevelDiff + equalLevelGain)));
+  for (CreatureListener* l : eventGenerator->getListeners())
+    l->onKilledSomeone(this, victim);
 }
 
 void Creature::increaseExpLevel(double increase) {

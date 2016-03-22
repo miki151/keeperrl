@@ -42,7 +42,7 @@ class EntityMap {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
-  typedef typename map<typename UniqueEntity<Key>::Id, typename Value>::const_iterator Iter;
+  typedef typename map<typename UniqueEntity<Key>::Id, Value>::const_iterator Iter;
 
   Iter begin() const;
   Iter end() const;

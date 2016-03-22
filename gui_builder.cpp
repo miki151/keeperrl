@@ -798,7 +798,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
         gui.labelHighlight("[T] ", colors[ColorId::LIGHT_BLUE]),
         getTooltip({"Travel to another site."})));
   line.addElemAuto(gui.stack(
-        gui.button(getButtonCallback(UserInputId::SWAP_TEAM), {Keyboard::T}, true),
+        gui.button(getButtonCallback(UserInputId::SWAP_TEAM), {Keyboard::S}, true),
         gui.labelHighlight("[S] ", colors[ColorId::LIGHT_BLUE]),
         getTooltip({"Switch control to a different team member."})));
   list.addElem(line.buildHorizontalList());

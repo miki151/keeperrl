@@ -260,6 +260,7 @@ class Collective : public TaskCallback, public CreatureListener {
 
   // From CreatureListener
   virtual void onKilled(Creature* victim, Creature* killer) override;
+  virtual void onKilledSomeone(Creature* killer, Creature* victim) override;
   virtual void onMoved(Creature*) override;
 
   private:

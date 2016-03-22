@@ -316,7 +316,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   vector<string> popPersonalEvents();
   void setInCombat();
   bool wasInCombat(double numLastTurns) const;
-  void onKilled(const Creature* victim);
+  void onKilled(Creature* victim);
   void onMoved();
 
   void addSound(const Sound&) const;

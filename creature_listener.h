@@ -17,6 +17,7 @@ class CreatureListener {
   void unsubscribeFromCreature(Generator*);
 
   virtual void onKilled(Creature* victim, Creature* attacker) {}
+  virtual void onKilledSomeone(Creature* attacker, Creature* victim) {}
   virtual void onMoved(Creature*) {}
 
   template <class Archive> 

@@ -85,7 +85,7 @@ typename EntityMap<Key, Value>::Iter EntityMap<Key, Value>::begin() const {
 
 template <typename Key, typename Value>
 typename EntityMap<Key, Value>::Iter EntityMap<Key, Value>::end() const {
-  return elems.end()
+  return elems.end();
 }
 
 
