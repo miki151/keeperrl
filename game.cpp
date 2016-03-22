@@ -402,10 +402,6 @@ void Game::onSurrender(Creature* who, const Creature* to) {
       col->onSurrender(who);
 }
 
-void Game::onAttack(Creature* victim, Creature* attacker) {
-  victim->getTribe()->onMemberAttacked(victim, attacker);
-}
-
 void Game::onTrapTrigger(Position pos) {
   for (auto& col : collectives)
     if (col->getTerritory().contains(pos))

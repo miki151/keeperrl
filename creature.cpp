@@ -1248,7 +1248,6 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
   auto rAccuracy = [=] () { return Random.get(-accuracyVariance, accuracyVariance); };
   auto rDamage = [=] () { return Random.get(-damageVariance, damageVariance); };
   double timeSpent = 1;
-  getGame()->onAttack(other, c);
   accuracy += rAccuracy() + rAccuracy();
   damage += rDamage() + rDamage();
   vector<string> attackAdjective;
@@ -1336,7 +1335,7 @@ bool Creature::takeDamage(const Attack& attack) {
   AttackType attackType = attack.getType();
   int defense = getModifier(ModifierType::DEFENSE);
   if (Creature* attacker = attack.getAttacker()) {
-    if (!privateEnemies.contains(attacker) && (attacker->tribe != tribe || Random.roll(3)))
+    if (attacker->tribe != tribe || Random.roll(3))
       privateEnemies.insert(attacker);
     if (!attacker->hasSkill(Skill::get(SkillId::STEALTH)))
       for (Position p : visibleCreatures)

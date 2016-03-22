@@ -2013,13 +2013,11 @@ void PlayerControl::updateVisibleCreatures() {
   visibleEnemies.clear();
   for (const Creature* c : getLevel()->getAllCreatures()) 
     if (canSee(c) && isEnemy(c))
-        visibleEnemies.push_back(c);
+        visibleEnemies.push_back(c->getPosition().getCoord());
 }
 
 vector<Vec2> PlayerControl::getVisibleEnemies() const {
-  return transform2<Vec2>(filter(visibleEnemies,
-        [this](const Creature* c) { return !c->isDead() && c->getPosition().isSameLevel(getLevel()); }),
-      [](const Creature* c) { return c->getPosition().getCoord(); });
+  return visibleEnemies;
 }
 
 void PlayerControl::onNewTile(const Position& pos) {

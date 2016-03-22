@@ -76,7 +76,6 @@ class Tribe {
   void addFriend(Tribe*);
 
   void onMemberKilled(Creature* member, Creature* killer);
-  void onMemberAttacked(Creature* member, Creature* attacker);
   void onItemsStolen(const Creature* thief);
 
   SERIALIZATION_DECL(Tribe);
@@ -95,7 +94,6 @@ class Tribe {
   double getMultiplier(const Creature* member);
 
   EntityMap<Creature, double> SERIAL(standing);
-  vector<pair<Creature*, Creature*>> SERIAL(attacks);
   unordered_set<Tribe*> SERIAL(enemyTribes);
 };
 

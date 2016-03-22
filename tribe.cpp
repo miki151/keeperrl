@@ -20,7 +20,7 @@
 
 template <class Archive> 
 void Tribe::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, diplomatic, standing, attacks, enemyTribes);
+  serializeAll(ar, diplomatic, standing, enemyTribes);
 }
 
 SERIALIZABLE(Tribe);
@@ -76,14 +76,6 @@ void Tribe::onMemberKilled(Creature* member, Creature* attacker) {
       t->initStanding(attacker);
       t->standing.get(attacker) += killBonus * getMultiplier(member);
     }
-}
-
-void Tribe::onMemberAttacked(Creature* member, Creature* attacker) {
-  if (contains(attacks, make_pair(member, attacker)))
-    return;
-  attacks.emplace_back(member, attacker);
-  initStanding(attacker);
-  standing.get(attacker) -= attackPenalty * getMultiplier(member);
 }
 
 bool Tribe::isEnemy(const Creature* c) const {

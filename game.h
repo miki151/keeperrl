@@ -80,7 +80,6 @@ class Game {
   void onKilledLeader(const Collective*, const Creature*);
   void onTorture(const Creature* who, const Creature* torturer);
   void onSurrender(Creature* who, const Creature* to);
-  void onAttack(Creature* victim, Creature* attacker);
   void onTrapTrigger(Position);
   void onTrapDisarm(Position, const Creature*);
   void onSquareDestroyed(Position);

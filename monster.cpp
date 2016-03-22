@@ -26,8 +26,7 @@
 template <class Archive> 
 void Monster::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(Controller)
-     & SVAR(monsterAI)
-     & SVAR(enemies);
+     & SVAR(monsterAI);
 }
 
 SERIALIZABLE(Monster);

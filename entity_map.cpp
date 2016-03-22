@@ -78,6 +78,16 @@ optional<Value> EntityMap<Key, Value>::getMaybe(typename UniqueEntity<Key>::Id i
   }
 }
 
+template <typename Key, typename Value>
+typename EntityMap<Key, Value>::Iter EntityMap<Key, Value>::begin() const {
+  return elems.begin();
+}
+
+template <typename Key, typename Value>
+typename EntityMap<Key, Value>::Iter EntityMap<Key, Value>::end() const {
+  return elems.end()
+}
+
 
 template <typename Key, typename Value>
 template <class Archive> 

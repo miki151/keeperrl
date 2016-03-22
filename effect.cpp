@@ -58,12 +58,12 @@ vector<int> creatureEffectRange { 2, 5, 10};
 
 class IllusionController : public DoNothingController {
   public:
-  IllusionController(Creature* c, double deathT) : DoNothingController(c), creature(c), deathTime(deathT) {}
+  IllusionController(Creature* c, double deathT) : DoNothingController(c), deathTime(deathT) {}
 
   void kill() {
-    creature->monsterMessage("The illusion disappears.");
-    if (!creature->isDead())
-      creature->die();
+    getCreature()->monsterMessage("The illusion disappears.");
+    if (!getCreature()->isDead())
+      getCreature()->die();
   }
 
   virtual void onBump(Creature* c) override {
@@ -72,23 +72,21 @@ class IllusionController : public DoNothingController {
   }
 
   virtual void makeMove() override {
-    if (creature->getGlobalTime() >= deathTime)
+    if (getCreature()->getGlobalTime() >= deathTime)
       kill();
     else
-      creature->wait().perform(getCreature());
+      getCreature()->wait().perform(getCreature());
   }
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(DoNothingController) 
-      & SVAR(creature)
-      & SVAR(deathTime);
+    ar& SUBCLASS(DoNothingController);
+    serializeAll(ar, deathTime);
   }
 
   SERIALIZATION_CONSTRUCTOR(IllusionController);
 
   private:
-  Creature* SERIAL(creature);
   double SERIAL(deathTime);
 };
 

@@ -762,8 +762,8 @@ class Thief : public Behaviour {
   virtual MoveInfo getMove() override {
     if (!creature->hasSkill(Skill::get(SkillId::STEALING)))
       return NoMove;
-    for (const Creature* other : robbed) {
-      if (creature->canSee(other)) {
+    for (const Creature* other : creature->getVisibleEnemies()) {
+      if (robbed.contains(other)) {
         if (MoveInfo teleMove = tryEffect(EffectId::TELEPORT, 1))
           return teleMove;
         if (auto action = creature->moveAway(other->getPosition()))
@@ -772,7 +772,7 @@ class Thief : public Behaviour {
     }
     for (Position pos : creature->getPosition().neighbors8(Random)) {
       const Creature* other = pos.getCreature();
-      if (other && !contains(robbed, other)) {
+      if (other && !robbed.contains(other)) {
         vector<Item*> allGold;
         for (Item* it : other->getEquipment().getItems())
           if (it->getClass() == ItemClass::GOLD)
@@ -781,7 +781,7 @@ class Thief : public Behaviour {
           if (auto action = creature->stealFrom(creature->getPosition().getDir(other->getPosition()), allGold))
           return {1.0, action.append([=](Creature* creature) {
             other->playerMessage(creature->getName().the() + " steals all your gold!");
-            robbed.push_back(other);
+            robbed.insert(other);
           })};
       }
     }
@@ -789,14 +789,10 @@ class Thief : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Thief);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(robbed);
-  }
+  SERIALIZE_ALL2(Behaviour, robbed);
 
   private:
-  vector<const Creature*> SERIAL(robbed);
+  EnumSet<Creature> SERIAL(robbed);
 };
 
 class ByCollective : public Behaviour {
