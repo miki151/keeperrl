@@ -1112,9 +1112,11 @@ void PlayerControl::initialize() {
 void PlayerControl::onMoved(Creature* c) {
   if (contains(getCreatures(), c)) {
     vector<Position> visibleTiles = c->getVisibleTiles();
-    visibilityMap->update(c, visibleTiles);
+    if (c->getPosition().getModel() == getModel())
+      visibilityMap->update(c, visibleTiles);
     for (Position pos : visibleTiles) {
-      getCollective()->addKnownTile(pos);
+      if (c->getPosition().getModel() == getModel())
+        getCollective()->addKnownTile(pos);
       addToMemory(pos);
     }
   }
