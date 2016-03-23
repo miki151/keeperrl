@@ -373,7 +373,7 @@ class Fighter : public Behaviour {
       return {weight, action.prepend([=](Creature* creature) {
         creature->setInCombat();
         other->setInCombat();
-        lastSeen = {creature->getPosition(), creature->getGlobalTime(), LastSeen::PANIC, other};
+        lastSeen = {creature->getPosition(), creature->getGlobalTime(), LastSeen::PANIC, other->getUniqueId()};
       })};
     else
       return NoMove;
@@ -538,7 +538,7 @@ class Fighter : public Behaviour {
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=](Creature* creature) {
             creature->setInCombat();
             other->setInCombat();
-            lastSeen = {other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other};
+            lastSeen = {other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
             if (!chaseFreeze.count(other) || other->getGlobalTime() > chaseFreeze.at(other).second)
               chaseFreeze[other] = make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70);
           })};
@@ -564,35 +564,21 @@ class Fighter : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Fighter);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Behaviour)
-      & SVAR(maxPowerRatio)
-      & SVAR(chase)
-      & SVAR(lastSeen);
-  }
+  SERIALIZE_ALL2(Behaviour, maxPowerRatio, chase, lastSeen);
 
   private:
   double SERIAL(maxPowerRatio);
   bool SERIAL(chase);
   struct LastSeen {
-    Position pos;
-    double time;
-    enum { ATTACK, PANIC} type;
-    const Creature* creature;
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-      ar& BOOST_SERIALIZATION_NVP(pos)
-        & BOOST_SERIALIZATION_NVP(time)
-        & BOOST_SERIALIZATION_NVP(type)
-        & BOOST_SERIALIZATION_NVP(creature);
-    }
+    Position SERIAL(pos);
+    double SERIAL(time);
+    enum { ATTACK, PANIC} SERIAL(type);
+    Creature::Id SERIAL(creature);
+    SERIALIZE_ALL(pos, time, type, creature);
   };
   optional<LastSeen> SERIAL(lastSeen);
   optional<LastSeen>& getLastSeen() {
-    if (lastSeen && lastSeen->creature->isDead())
+    if (lastSeen && !creature->getLevel()->containsCreature(lastSeen->creature))
       lastSeen.reset();
     return lastSeen;
   }

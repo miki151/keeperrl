@@ -37,24 +37,9 @@
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(squares)
-    & SVAR(oldSquares)
-    & SVAR(landingSquares)
-    & SVAR(locations)
-    & SVAR(tickingSquares)
-    & SVAR(creatures)
-    & SVAR(model)
-    & SVAR(fieldOfView)
-    & SVAR(name)
-    & SVAR(backgroundLevel)
-    & SVAR(backgroundOffset)
-    & SVAR(coverInfo)
-    & SVAR(bucketMap)
-    & SVAR(sectors)
-    & SVAR(lightAmount)
-    & SVAR(lightCapAmount)
-    & SVAR(levelId)
-    & SVAR(noDiagonalPassing);
+  serializeAll(ar, squares, oldSquares, landingSquares, locations, tickingSquares, creatures, model, fieldOfView);
+  serializeAll(ar, name, backgroundLevel, backgroundOffset, coverInfo, bucketMap, sectors, lightAmount);
+  serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds);
 }  
 
 SERIALIZABLE(Level);
@@ -111,6 +96,7 @@ const static double darknessRadius = 6.5;
 void Level::putCreature(Vec2 position, Creature* c) {
   CHECK(inBounds(position));
   creatures.push_back(c);
+  creatureIds.insert(c);
   CHECK(getSafeSquare(position)->getCreature() == nullptr);
   placeCreature(c, position);
 }
@@ -416,6 +402,7 @@ void Level::changeLevel(Position destination, Creature* c) {
 void Level::eraseCreature(Creature* c, Vec2 coord) {
   removeElement(creatures, c);
   unplaceCreature(c, coord);
+  creatureIds.erase(c);
 }
 
 const vector<Creature*>& Level::getAllCreatures() const {
@@ -428,6 +415,10 @@ vector<Creature*>& Level::getAllCreatures() {
 
 vector<Creature*> Level::getAllCreatures(Rectangle bounds) const {
   return bucketMap->getElements(bounds);
+}
+
+bool Level::containsCreature(UniqueEntity<Creature>::Id id) const {
+  return creatureIds.contains(id);
 }
 
 const int darkViewRadius = 5;

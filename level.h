@@ -23,6 +23,7 @@
 #include "movement_type.h"
 #include "sectors.h"
 #include "stair_key.h"
+#include "entity_set.h"
 
 class Model;
 class Square;
@@ -162,6 +163,8 @@ class Level {
   vector<Creature*> getAllCreatures(Rectangle bounds) const;
   //@}
 
+  bool containsCreature(UniqueEntity<Creature>::Id) const;
+
   /** Checks whether the creature can see the square.*/
   bool canSee(const Creature* c, Vec2 to) const;
 
@@ -237,6 +240,7 @@ class Level {
   void placeCreature(Creature*, Vec2 pos);
   void unplaceCreature(Creature*, Vec2 pos);
   vector<Creature*> SERIAL(creatures);
+  EntitySet<Creature> SERIAL(creatureIds);
   Model* SERIAL(model) = nullptr;
   mutable EnumMap<VisionId, FieldOfView> SERIAL(fieldOfView);
   string SERIAL(name);

@@ -1094,13 +1094,19 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
   BiomeId biomeId;
   switch (enemyId) {
     case EnemyId::KNIGHTS:
-      append(enemyInfo, getHumanCastle(random)); break;
+      append(enemyInfo, getHumanCastle(random));
+      for (int i : Range(random.get(3, 5)))
+        append(enemyInfo, getCottage(random));
+      break;
     case EnemyId::RED_DRAGON:
       append(enemyInfo, getRedDragon(random)); break;
     case EnemyId::GREEN_DRAGON:
       append(enemyInfo, getGreenDragon(random)); break;
     case EnemyId::DWARVES:
-      append(enemyInfo, getDwarfTown(random)); break;
+      append(enemyInfo, getDwarfTown(random));
+      for (int i : Range(random.get(1, 3)))
+        append(enemyInfo, getKoboldCave(random));
+      break;
     case EnemyId::ELVES:
       append(enemyInfo, getElvenVillage(random)); break;
     case EnemyId::ELEMENTALIST:
