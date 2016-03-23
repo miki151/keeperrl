@@ -285,7 +285,7 @@ vector<MainLoop::RetiredSiteInfo> MainLoop::getRetiredSites() {
   vector<RetiredSiteInfo> ret;
   for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE))) {
     if (isCompatible(getSaveVersion(info)))
-      ret.push_back({info, ViewId::KEEPER, getNameAndVersion(userPath + "/" + info.filename)->first});
+      ret.push_back({info, ViewId::RETIRED_KEEPER, getNameAndVersion(userPath + "/" + info.filename)->first});
   }
   return ret;
 }

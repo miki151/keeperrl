@@ -126,6 +126,7 @@ void Game::prepareRetirement() {
     if (models[v] && v != baseModel)
       models[v]->lockSerialization();
   playerCollective->setVillainType(VillainType::MAIN);
+  playerControl->getKeeper()->modViewObject().setId(ViewId::RETIRED_KEEPER);
   playerCollective->setControl(PCollectiveControl(
         new VillageControl(playerCollective, CONSTRUCT(VillageControl::Villain,
           c.minPopulation = 6;

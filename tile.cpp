@@ -299,6 +299,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BURNT_TREE, sprite("treeburnt").setNoShadow());
     Tile::addTile(ViewId::PLAYER, sprite("adventurer"));
     Tile::addTile(ViewId::KEEPER, sprite("keeper"));
+    Tile::addTile(ViewId::RETIRED_KEEPER, sprite("retired_keeper"));
     Tile::addTile(ViewId::ELF, sprite("elf male"));
     Tile::addTile(ViewId::ELF_WOMAN, sprite("elf female"));
     Tile::addTile(ViewId::ELF_ARCHER, sprite("elf archer"));
@@ -309,7 +310,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::DARK_ELF_WARRIOR, sprite("dark_elf_warrior"));
     Tile::addTile(ViewId::DARK_ELF_CHILD, sprite("dark_elf_kid"));
     Tile::addTile(ViewId::DARK_ELF_LORD, sprite("dark_elf_lord"));
-    Tile::addTile(ViewId::DRIAD, sprite("driada"));
+    Tile::addTile(ViewId::DRIAD, sprite("driad"));
     Tile::addTile(ViewId::KOBOLD, sprite("kobold"));
     Tile::addTile(ViewId::LIZARDMAN, sprite("lizardman"));
     Tile::addTile(ViewId::LIZARDLORD, sprite("lizardlord"));
@@ -585,6 +586,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::DIG_MARK, symbol(" ", ColorId::BLACK));
     Tile::addSymbol(ViewId::PLAYER, symbol("@", ColorId::WHITE));
     Tile::addSymbol(ViewId::KEEPER, symbol("@", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::RETIRED_KEEPER, symbol("@", ColorId::BLUE));
     Tile::addSymbol(ViewId::UNKNOWN_MONSTER, symbol("?", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF, symbol("@", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF_WOMAN, symbol("@", ColorId::LIGHT_GREEN));
