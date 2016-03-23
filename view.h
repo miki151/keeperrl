@@ -103,7 +103,8 @@ enum class CampaignActionId {
   NUM_RET_VILLAINS,
   CHOOSE_SITE,
   WORLD_NAME,
-  REROLL_MAP
+  REROLL_MAP,
+  CONFIRM
 };
 
 class CampaignAction : public EnumVariant<CampaignActionId, TYPES(int, Vec2),

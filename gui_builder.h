@@ -88,7 +88,8 @@ class GuiBuilder {
       optional<Vec2>& embarkPos);
   PGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
-  PGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>& markedPos, function<bool(Vec2)> activeFun);
+  PGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>& markedPos, function<bool(Vec2)> activeFun,
+      function<void(Vec2)> clickFun);
   PGuiElem drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       const vector<CreatureInfo>&, const string& cancelText);
   PGuiElem drawCost(pair<ViewId, int>, ColorId = ColorId::WHITE);

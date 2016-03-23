@@ -1107,10 +1107,22 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
       append(enemyInfo, getTower(random)); break;
     case EnemyId::BANDITS:
       append(enemyInfo, getBanditCave(random)); break;
+    case EnemyId::LIZARDMEN:
+      append(enemyInfo, getLizardVillage(random)); break;
     case EnemyId::DARK_ELVES:
       append(enemyInfo, getDarkElvenMines(random)); break;
     case EnemyId::GNOMES:
       append(enemyInfo, getGnomishMines(random)); break;
+    case EnemyId::ENTS:
+      append(enemyInfo, getEntTown(random)); break;
+    case EnemyId::DRIADS:
+      append(enemyInfo, getDriadTown(random)); break;
+    case EnemyId::SHELOB:
+      append(enemyInfo, getShelob(random)); break;
+    case EnemyId::CYCLOPS:
+      append(enemyInfo, getCyclops(random)); break;
+    case EnemyId::HYDRA:
+      append(enemyInfo, getHydra(random)); break;
     case EnemyId::FRIENDLY_CAVE:
       append(enemyInfo, getFriendlyCave(random,
             random.choose({CreatureId::ORC, CreatureId::HARPY, CreatureId::OGRE})));
@@ -1122,6 +1134,8 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
   switch (enemyId) {
     case EnemyId::KNIGHTS:
     case EnemyId::ELEMENTALIST:
+    case EnemyId::LIZARDMEN:
+    case EnemyId::HYDRA:
       biomeId = BiomeId::GRASSLAND;
       break;
     case EnemyId::RED_DRAGON:
@@ -1131,9 +1145,13 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
     case EnemyId::FRIENDLY_CAVE:
     case EnemyId::SOKOBAN:
     case EnemyId::GNOMES:
+    case EnemyId::CYCLOPS:
+    case EnemyId::SHELOB:
       biomeId = BiomeId::MOUNTAIN;
       break;
     case EnemyId::ELVES:
+    case EnemyId::DRIADS:
+    case EnemyId::ENTS:
       biomeId = BiomeId::FORREST;
       break;
     case EnemyId::BANDITS:

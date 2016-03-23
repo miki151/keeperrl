@@ -14,12 +14,18 @@ RICH_ENUM(EnemyId,
   ELVES,
   DARK_ELVES,
   GNOMES,
+  LIZARDMEN,
   RED_DRAGON,
   GREEN_DRAGON,
   ELEMENTALIST,
   BANDITS,
   FRIENDLY_CAVE,
-  SOKOBAN
+  SOKOBAN,
+  ENTS,
+  DRIADS,
+  CYCLOPS,
+  SHELOB,
+  HYDRA
 );
 
 class Campaign {
@@ -28,7 +34,8 @@ class Campaign {
     ViewId SERIAL(viewId);
     EnemyId SERIAL(enemyId);
     string SERIAL(name);
-    SERIALIZE_ALL(viewId, name, enemyId);
+    bool SERIAL(hostile);
+    SERIALIZE_ALL(viewId, name, enemyId, hostile);
   };
   struct PlayerInfo {
     ViewId SERIAL(viewId);
@@ -42,6 +49,7 @@ class Campaign {
     optional<VillainInfo> getVillain() const;
     optional<RetiredSiteInfo> getRetired() const;
     optional<PlayerInfo> getPlayer() const;
+    bool isEnemy() const;
     bool isEmpty() const;
     bool SERIAL(blocked) = false;
     bool canEmbark() const;
@@ -59,10 +67,13 @@ class Campaign {
   int getNumRetVillains() const;
   bool isDefeated(Vec2) const;
   void setDefeated(Vec2);
+  bool canTravelTo(Vec2) const;
+  set<Vec2> getInfluencePos() const;
 
   SERIALIZATION_DECL(Campaign);
 
   private:
+  bool checkRectangle(Rectangle) const;
   Campaign(Vec2 size);
   Table<SiteInfo> SERIAL(sites);
   optional<Vec2> SERIAL(playerPos);

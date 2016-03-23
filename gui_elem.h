@@ -271,7 +271,7 @@ class GuiFactory {
   PGuiElem uiHighlightConditional(function<bool()>, Color = colors[ColorId::GREEN]);
   PGuiElem uiHighlight(Color = colors[ColorId::GREEN]);
   PGuiElem uiHighlight(function<Color()>);
-  PGuiElem rectangleHighlight();
+  PGuiElem rectangleBorder(Color);
 
   private:
 

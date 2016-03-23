@@ -221,8 +221,8 @@ void Game::tick(double time) {
   Debug() << "Global time " << time;
   if (playerControl) {
     bool conquered = true;
-    for (Collective* col : getVillains(VillainType::MAIN)) {
-      conquered &= col->isConquered();
+    for (Collective* col : getCollectives()) {
+      conquered &= col->isConquered() || col->getVillainType() != VillainType::MAIN;
       if (col->isConquered())
         campaign->setDefeated(getModelCoords(col->getLevel()->getModel()));
     }

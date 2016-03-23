@@ -22,6 +22,10 @@ bool Campaign::SiteInfo::canEmbark() const {
   return !dweller && !blocked;
 }
 
+bool Campaign::canTravelTo(Vec2 pos) const {
+  return (getInfluencePos().count(pos) || playerPos == pos) && !sites[pos].isEmpty();
+}
+
 optional<Vec2> Campaign::getPlayerPos() const {
   return playerPos;
 }
@@ -41,17 +45,23 @@ void Campaign::clearSite(Vec2 v) {
 
 static Campaign::VillainInfo getRandomVillain(RandomGen& random) {
   return random.choose<Campaign::VillainInfo>({
-      {ViewId::AVATAR, EnemyId::KNIGHTS, "knights"},
-      {ViewId::ELF_LORD, EnemyId::ELVES, "elves"},
-      {ViewId::DWARF_BARON, EnemyId::DWARVES, "dwarves"},
-      {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "red dragon"},
-      {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "elementalist"},
-      {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "green dragon"},
-      {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "dark elves"},
-      {ViewId::GNOME_BOSS, EnemyId::GNOMES, "gnomes"},
-      {ViewId::BANDIT, EnemyId::BANDITS, "bandits"},
-      {ViewId::UNKNOWN_MONSTER, EnemyId::FRIENDLY_CAVE, "unknown"},
-      {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "unknown"},
+      {ViewId::AVATAR, EnemyId::KNIGHTS, "knights", true},
+      {ViewId::ELF_LORD, EnemyId::ELVES, "elves", true},
+      {ViewId::DWARF_BARON, EnemyId::DWARVES, "dwarves", true},
+      {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "red dragon", true},
+      {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "elementalist", true},
+      {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "green dragon", true},
+      {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "dark elves", false},
+      {ViewId::GNOME_BOSS, EnemyId::GNOMES, "gnomes", false},
+      {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "lizardmen", true},
+      {ViewId::BANDIT, EnemyId::BANDITS, "bandits", true},
+      {ViewId::ENT, EnemyId::ENTS, "tree spirits", true},
+      {ViewId::DRIAD, EnemyId::DRIADS, "driads", true},
+      {ViewId::CYCLOPS, EnemyId::CYCLOPS, "cyclops", true},
+      {ViewId::SHELOB, EnemyId::SHELOB, "giant spider", true},
+      {ViewId::HYDRA, EnemyId::HYDRA, "hydra", true},
+      {ViewId::UNKNOWN_MONSTER, EnemyId::FRIENDLY_CAVE, "unknown", false},
+      {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "unknown", false},
       });
 }
 
@@ -98,6 +108,27 @@ optional<ViewId> Campaign::SiteInfo::getDwellerViewId() const {
   if (const RetiredSiteInfo* info = boost::get<RetiredSiteInfo>(&(*dweller)))
     return info->viewId;
   return none;
+}
+
+bool Campaign::SiteInfo::isEnemy() const {
+  return getRetired() || (getVillain() && getVillain()->hostile);
+}
+set<Vec2> Campaign::getInfluencePos() const {
+  if (!playerPos)
+    return {};
+  set<Vec2> ret;
+  for (double r = 1; r <= max(sites.getWidth(), sites.getHeight()); r += 0.1) {
+    for (Vec2 v : sites.getBounds())
+      if ((sites[v].getVillain() || sites[v].getRetired()) && v.distD(*playerPos) <= r)
+        ret.insert(v);
+    int numEnemies = 0;
+    for (Vec2 v : ret)
+      if (sites[v].isEnemy() && !defeated[v])
+        ++numEnemies;
+    if (numEnemies >= 3)
+      break;
+  }
+  return ret;
 }
 
 int Campaign::getNumGenVillains() const {
@@ -189,8 +220,12 @@ optional<Campaign> Campaign::prepareCampaign(View* view, const vector<RetiredSit
             }
             break;
         case CampaignActionId::CHOOSE_SITE:
+            if (campaign.playerPos)
+              campaign.clearSite(*campaign.playerPos);
             campaign.playerPos = action.get<Vec2>();
             campaign.sites[*campaign.playerPos].dweller = PlayerInfo{ViewId::KEEPER};
+            break;
+        case CampaignActionId::CONFIRM:
             return campaign;
       }
       if (reroll)

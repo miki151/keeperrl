@@ -2166,8 +2166,8 @@ PGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {
   return conditional(uiHighlight(c), cond);
 }
 
-PGuiElem GuiFactory::rectangleHighlight() {
-  return rectangle(sf::Color(0, 0, 0, 0), colors[ColorId::WHITE]);
+PGuiElem GuiFactory::rectangleBorder(Color col) {
+  return rectangle(sf::Color(0, 0, 0, 0), col);
 }
 
 PGuiElem GuiFactory::sprite(TexId id, Alignment a, function<Color()> c) {
