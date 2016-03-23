@@ -45,23 +45,23 @@ void Campaign::clearSite(Vec2 v) {
 
 static Campaign::VillainInfo getRandomVillain(RandomGen& random) {
   return random.choose<Campaign::VillainInfo>({
-      {ViewId::AVATAR, EnemyId::KNIGHTS, "knights", true},
-      {ViewId::ELF_LORD, EnemyId::ELVES, "elves", true},
-      {ViewId::DWARF_BARON, EnemyId::DWARVES, "dwarves", true},
-      {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "red dragon", true},
-      {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "elementalist", true},
-      {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "green dragon", true},
-      {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "dark elves", false},
-      {ViewId::GNOME_BOSS, EnemyId::GNOMES, "gnomes", false},
-      {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "lizardmen", true},
-      {ViewId::BANDIT, EnemyId::BANDITS, "bandits", true},
-      {ViewId::ENT, EnemyId::ENTS, "tree spirits", true},
-      {ViewId::DRIAD, EnemyId::DRIADS, "driads", true},
-      {ViewId::CYCLOPS, EnemyId::CYCLOPS, "cyclops", true},
-      {ViewId::SHELOB, EnemyId::SHELOB, "giant spider", true},
-      {ViewId::HYDRA, EnemyId::HYDRA, "hydra", true},
-      {ViewId::UNKNOWN_MONSTER, EnemyId::FRIENDLY_CAVE, "unknown", false},
-      {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "unknown", false},
+      {ViewId::AVATAR, EnemyId::KNIGHTS, "Knights", true},
+      {ViewId::ELF_LORD, EnemyId::ELVES, "Elves", true},
+      {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", true},
+      {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", true},
+      {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "Elementalist", true},
+      {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", true},
+      {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", false},
+      {ViewId::GNOME_BOSS, EnemyId::GNOMES, "Gnomes", false},
+      {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", true},
+      {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", true},
+      {ViewId::ENT, EnemyId::ENTS, "Tree spirits", true},
+      {ViewId::DRIAD, EnemyId::DRIADS, "Driads", true},
+      {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", true},
+      {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", true},
+      {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", true},
+      {ViewId::UNKNOWN_MONSTER, EnemyId::FRIENDLY_CAVE, "Unknown", false},
+      {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "Unknown", false},
       });
 }
 
@@ -96,6 +96,18 @@ optional<Campaign::RetiredSiteInfo> Campaign::SiteInfo::getRetired() const {
  
 bool Campaign::SiteInfo::isEmpty() const {
   return !dweller;
+}
+
+optional<string> Campaign::SiteInfo::getDwellerDescription() const {
+  if (!dweller)
+    return none;
+  if (const PlayerInfo* info = boost::get<PlayerInfo>(&(*dweller)))
+    return string("This is your home site");
+  if (const VillainInfo* info = boost::get<VillainInfo>(&(*dweller)))
+    return info->name + " " + (info->hostile ? "(hostile)" : "(ally)");
+  if (const RetiredSiteInfo* info = boost::get<RetiredSiteInfo>(&(*dweller)))
+    return info->name + " (hostile)";
+  return none;
 }
 
 optional<ViewId> Campaign::SiteInfo::getDwellerViewId() const {

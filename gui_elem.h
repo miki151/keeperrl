@@ -162,7 +162,7 @@ class GuiFactory {
       Vec2 offset = Vec2(0, 0), function<Color()> = nullptr);
   PGuiElem sprite(Texture&, Alignment, Color);
   PGuiElem sprite(Texture&, double scale);
-  PGuiElem tooltip(const vector<string>&);
+  PGuiElem tooltip(const vector<string>&, int delayMilli = 700);
   PGuiElem darken();
   PGuiElem stopMouseMovement();
   PGuiElem fullScreen(PGuiElem);

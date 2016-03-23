@@ -1821,20 +1821,29 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>& marked,
     for (int x : sites.getBounds().getXRange()) {
       Vec2 pos(x, y);
       vector<PGuiElem> elem;
-      elem.push_back(gui.conditional(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, 2),
-            [&marked, pos] { return marked == pos;}));
-      if (activeFun(pos))
-        elem.push_back(gui.stack(
-            gui.button([pos, clickFun] { clickFun(pos); }),
-            gui.mouseHighlight2(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, 2))));
       if (auto id = sites[x][y].getDwellerViewId()) {
         if (c.getPlayerPos() && c.getInfluencePos().count(pos))
           elem.push_back(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2,
                 sites[pos].isEnemy() ? colors[ColorId::RED] : colors[ColorId::GREEN]));
+        if (activeFun(pos))
+          elem.push_back(gui.stack(
+                gui.button([pos, clickFun] { clickFun(pos); }),
+                gui.mouseHighlight2(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2))));
+        elem.push_back(gui.conditional(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2),
+              [&marked, pos] { return marked == pos;}));
         elem.push_back(gui.topMargin(-6, gui.viewObject(*id, 2)));
         if (c.isDefeated(pos))
           elem.push_back(gui.viewObject(ViewId::TERROR_TRAP, 2));
+      } else {
+        if (activeFun(pos))
+          elem.push_back(gui.stack(
+                gui.button([pos, clickFun] { clickFun(pos); }),
+                gui.mouseHighlight2(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, 2))));
+        elem.push_back(gui.conditional(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2),
+              [&marked, pos] { return marked == pos;}));
       }
+      if (auto desc = sites[x][y].getDwellerDescription())
+        elem.push_back(gui.tooltip({*desc}, 0));
       columns.addElem(gui.stack(std::move(elem)));
     }
     rows2.addElem(columns.buildHorizontalList());

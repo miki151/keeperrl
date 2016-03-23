@@ -54,6 +54,7 @@ class Campaign {
     bool SERIAL(blocked) = false;
     bool canEmbark() const;
     optional<ViewId> getDwellerViewId() const;
+    optional<string> getDwellerDescription() const;
     SERIALIZE_ALL(description, viewId, dweller, blocked);
   };
 
