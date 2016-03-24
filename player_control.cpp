@@ -931,8 +931,11 @@ void PlayerControl::handleRansom(bool pay) {
 }
 
 vector<Collective*> PlayerControl::getKnownVillains(VillainType type) const {
-  return filter(getGame()->getVillains(type), [this](Collective* c) {
-      return seeEverything || knownVillains.count(c);});
+  if (type == VillainType::MAIN && !getGame()->isSingleModel())
+    return getGame()->getVillains(VillainType::MAIN);
+  else
+    return filter(getGame()->getVillains(type), [this](Collective* c) {
+        return seeEverything || knownVillains.count(c);});
 }
 
 vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
