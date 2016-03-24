@@ -122,10 +122,10 @@ static void saveMainModel(PGame& game, const string& path) {
   CompressedOutput out(path);
   Serialization::registerTypes(out.getArchive(), saveVersion);
   string name = game->getGameDisplayName();
-  game->getMainModel()->setGame(nullptr);
+  game->prepareRetirement();
   out.getArchive() << BOOST_SERIALIZATION_NVP(saveVersion) << BOOST_SERIALIZATION_NVP(name)
       << BOOST_SERIALIZATION_NVP(game->getMainModel());
-  game->getMainModel()->setGame(game.get());
+  game->doneRetirement();
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {

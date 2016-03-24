@@ -125,6 +125,8 @@ void Game::prepareRetirement() {
   for (Vec2 v : models.getBounds())
     if (models[v] && v != baseModel)
       models[v]->lockSerialization();
+    else
+      models[v]->setGame(nullptr);
   playerCollective->setVillainType(VillainType::MAIN);
   playerControl->getKeeper()->modViewObject().setId(ViewId::RETIRED_KEEPER);
   playerCollective->setControl(PCollectiveControl(
@@ -258,7 +260,6 @@ void Game::exitAction() {
           exitInfo = ExitInfo(ExitId::SAVE, GameSaveType::RETIRED_SINGLE);
         else
           exitInfo = ExitInfo(ExitId::SAVE, GameSaveType::RETIRED_SITE);
-        prepareRetirement();
         return;
       }
       break;
