@@ -17,6 +17,7 @@
 #define _TIME_QUEUE_H
 
 #include "util.h"
+#include "entity_set.h"
 
 class Creature;
 
@@ -45,7 +46,7 @@ class TimeQueue {
     void serialize(Archive& ar, const unsigned int version);
   };
   priority_queue<QElem, vector<QElem>, function<bool(QElem, QElem)>> SERIAL(queue);
-  unordered_set<Creature*> SERIAL(dead);
+  EntitySet<Creature> SERIAL(dead);
 };
 
 #endif

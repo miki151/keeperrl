@@ -715,6 +715,9 @@ void Creature::onAffected(LastingEffect effect, bool msg) {
     case LastingEffect::FLYING:
       if (msg) you(MsgType::ARE, "flying!");
       break;
+    case LastingEffect::PREGNANT:
+      if (msg) you(MsgType::ARE, "pregnant!");
+      break;
     case LastingEffect::STUNNED:
       if (msg) you(MsgType::ARE, "stunned");
       break;
@@ -814,6 +817,7 @@ void Creature::onTimedOut(LastingEffect effect, bool msg) {
       break;
     case LastingEffect::INSANITY: if (msg) you(MsgType::BECOME, "sane again"); break;
     case LastingEffect::MAGIC_SHIELD: if (msg) you(MsgType::FEEL, "less protected"); break;
+    case LastingEffect::PREGNANT: break;
     case LastingEffect::DARKNESS_SOURCE: break;
   } 
 }
@@ -2525,6 +2529,7 @@ vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
         case LastingEffect::FLYING: name = "Flying"; break;
         case LastingEffect::MAGIC_SHIELD: name = "Magic shield"; break;
         case LastingEffect::DARKNESS_SOURCE: name = "Source of darkness"; break;
+        case LastingEffect::PREGNANT: name = "Pregnant"; break;
         default: continue;
       }
       ret.push_back({name, Effect::getDescription(effect)});

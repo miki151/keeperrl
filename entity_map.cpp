@@ -3,6 +3,7 @@
 #include "creature.h"
 #include "task.h"
 #include "collective.h"
+#include "collective_config.h"
 #include "item.h"
 
 template <typename Key, typename Value>
@@ -20,13 +21,18 @@ void EntityMap<Key, Value>::erase(const Key* key) {
 }
 
 template <typename Key, typename Value>
-const Value& EntityMap<Key, Value>::get(const Key* key) const {
-  return get(key->getUniqueId());
+const Value& EntityMap<Key, Value>::getOrFail(const Key* key) const {
+  return getOrFail(key->getUniqueId());
 }
 
 template <typename Key, typename Value>
-Value& EntityMap<Key, Value>::get(const Key* key) {
-  return get(key->getUniqueId());
+Value& EntityMap<Key, Value>::getOrFail(const Key* key) {
+  return getOrFail(key->getUniqueId());
+}
+
+template <typename Key, typename Value>
+Value& EntityMap<Key, Value>::getOrInit(const Key* key) {
+  return getOrInit(key->getUniqueId());
 }
 
 template <typename Key, typename Value>
@@ -60,19 +66,24 @@ void EntityMap<Key, Value>::erase(typename UniqueEntity<Key>::Id id) {
 }
 
 template <typename Key, typename Value>
-const Value& EntityMap<Key, Value>::get(typename UniqueEntity<Key>::Id id) const {
+const Value& EntityMap<Key, Value>::getOrFail(typename UniqueEntity<Key>::Id id) const {
   return elems.at(id);
 }
 
 template <typename Key, typename Value>
-Value& EntityMap<Key, Value>::get(typename UniqueEntity<Key>::Id id) {
+Value& EntityMap<Key, Value>::getOrFail(typename UniqueEntity<Key>::Id id) {
   return elems.at(id);
+}
+
+template <typename Key, typename Value>
+Value& EntityMap<Key, Value>::getOrInit(typename UniqueEntity<Key>::Id id) {
+  return elems[id];
 }
 
 template <typename Key, typename Value>
 optional<Value> EntityMap<Key, Value>::getMaybe(typename UniqueEntity<Key>::Id id) const {
   try {
-    return get(id);
+    return getOrFail(id);
   } catch (std::out_of_range) {
     return none;
   }
@@ -99,6 +110,8 @@ void EntityMap<Key, Value>::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE_TMPL(EntityMap, Creature, double);
 SERIALIZABLE_TMPL(EntityMap, Creature, int);
 SERIALIZABLE_TMPL(EntityMap, Creature, Collective::CurrentTaskInfo);
+SERIALIZABLE_TMPL(EntityMap, Creature, Collective::MinionPaymentInfo);
+SERIALIZABLE_TMPL(EntityMap, Creature, vector<AttractionInfo>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<Position>);
 SERIALIZABLE_TMPL(EntityMap, Task, double);
 SERIALIZABLE_TMPL(EntityMap, Item, const Creature*);

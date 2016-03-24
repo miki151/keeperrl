@@ -20,9 +20,7 @@
 
 template <class Archive> 
 void TimeQueue::serialize(Archive& ar, const unsigned int version) { 
-  ar& SVAR(creatures)
-    & SVAR(queue)
-    & SVAR(dead);
+  serializeAll(ar, creatures, queue, dead);
 }
 
 SERIALIZABLE(TimeQueue);
@@ -69,7 +67,7 @@ vector<Creature*> TimeQueue::getAllCreatures() const {
 }
 
 void TimeQueue::removeDead() {
-  while (!queue.empty() && dead.count(queue.top().creature))
+  while (!queue.empty() && dead.contains(queue.top().creature))
     queue.pop();
 }
 

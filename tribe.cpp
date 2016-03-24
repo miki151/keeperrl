@@ -70,11 +70,11 @@ void Tribe::onMemberKilled(Creature* member, Creature* attacker) {
   if (attacker == nullptr)
     return;
   initStanding(attacker);
-  standing.get(attacker) -= killPenalty * getMultiplier(member);
+  standing.getOrFail(attacker) -= killPenalty * getMultiplier(member);
   for (Tribe* t : enemyTribes)
     if (t->diplomatic) {
       t->initStanding(attacker);
-      t->standing.get(attacker) += killBonus * getMultiplier(member);
+      t->standing.getOrFail(attacker) += killBonus * getMultiplier(member);
     }
 }
 
@@ -89,7 +89,7 @@ bool Tribe::isEnemy(const Tribe* t) const {
 void Tribe::onItemsStolen(const Creature* attacker) {
   if (diplomatic) {
     initStanding(attacker);
-    standing.get(attacker) -= thiefPenalty;
+    standing.getOrFail(attacker) -= thiefPenalty;
   }
 }
 

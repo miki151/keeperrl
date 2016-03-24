@@ -57,13 +57,6 @@ struct Collective::MinionTaskInfo {
   bool centerOnly = false;
 };
 
-struct Collective::MinionPaymentInfo {
-  int SERIAL(salary);
-  double SERIAL(workAmount);
-  int SERIAL(debt);
-  SERIALIZE_ALL(salary, workAmount, debt);
-};
-
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(TaskCallback)
@@ -273,7 +266,8 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 void Collective::removeCreature(Creature* c) {
   removeElement(creatures, c);
   unsubscribeFromCreature(c);
-  deadCreatures.push_back(c);
+  if (config->getNumGhostSpawns() > 0 || config->getGuardianInfo())
+    deadCreatures.push_back(c);
   minionAttraction.erase(c);
   if (Task* task = taskMap->getTask(c)) {
     if (!task->canTransfer())
@@ -450,8 +444,9 @@ optional<MinionTask> Collective::getMinionTask(const Creature* c) const {
 bool Collective::isTaskGood(const Creature* c, MinionTask task, bool ignoreTaskLock) const {
   if (c->getMinionTasks().getValue(task, ignoreTaskLock) == 0)
     return false;
-  if (minionPayment.count(c) && minionPayment.at(c).debt > 0 && getTaskInfo().at(task).cost > 0)
-    return false;
+  if (auto elem = minionPayment.getMaybe(c))
+    if (elem->debt > 0 && getTaskInfo().at(task).cost > 0)
+      return false;
   switch (task) {
     case MinionTask::CROPS:
     case MinionTask::EXPLORE:
@@ -602,7 +597,6 @@ bool Collective::isConquered() const {
 void Collective::orderConsumption(Creature* consumer, Creature* who) {
   CHECK(consumer->getMinionTasks().getValue(MinionTask::CONSUME) > 0);
   setMinionTask(who, MinionTask::CONSUME);
-  MinionTaskInfo info = getTaskInfo().at(currentTasks.get(consumer).task);
   taskMap->freeFromTask(consumer);
   taskMap->addTask(Task::consume(this, who), consumer);
 }
@@ -839,8 +833,8 @@ bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCr
   for (int i : All(immigrants)) {
     Creature* c = immigrants[i].get();
     addCreature(std::move(immigrants[i]), spawnPos[i], info.traits);
-    minionPayment[c] = {info.salary, 0.0, 0};
-    minionAttraction[c] = info.attractions;
+    minionPayment.set(c, {info.salary, 0.0, 0});
+    minionAttraction.set(c, info.attractions);
   }
   addNewCreatureMessage(creatureRefs);
   return true;
@@ -911,8 +905,8 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
     if (i == 0 && groupSize > 1) // group leader
       c->increaseExpLevel(2);
     addCreature(std::move(immigrants[i]), spawnPos[i], info.traits);
-    minionPayment[c] = {info.salary, 0.0, 0};
-    minionAttraction[c] = info.attractions;
+    minionPayment.set(c, {info.salary, 0.0, 0});
+    minionAttraction.set(c, info.attractions);
   }
   return true;
 }
@@ -999,25 +993,25 @@ void Collective::considerImmigration() {
 const Collective::ResourceId paymentResource = Collective::ResourceId::GOLD;
 
 int Collective::getPaymentAmount(const Creature* c) const {
-  if (!minionPayment.count(c))
-    return 0;
-  else
+  if (auto payment = minionPayment.getMaybe(c))
     return config->getPayoutMultiplier() *
-      minionPayment.at(c).salary * minionPayment.at(c).workAmount / config->getPayoutTime();
+      payment->salary * payment->workAmount / config->getPayoutTime();
+  return 0;
 }
 
 int Collective::getNextSalaries() const {
   int ret = 0;
   for (Creature* c : creatures)
-    if (minionPayment.count(c))
-      ret += getPaymentAmount(c) + minionPayment.at(c).debt;
+    if (auto payment = minionPayment.getMaybe(c))
+      ret += getPaymentAmount(c) + payment->debt;
   return ret;
 }
 
 bool Collective::hasMinionDebt() const {
   for (Creature* c : creatures)
-    if (minionPayment.count(c) && minionPayment.at(c).debt)
-      return true;
+    if (auto payment = minionPayment.getMaybe(c))
+      if (payment->debt > 0)
+        return true;
   return false;
 }
 
@@ -1026,22 +1020,20 @@ void Collective::makePayouts() {
     control->addMessage(PlayerMessage("Payout time: " + toString(numPay) + " gold",
           PlayerMessage::HIGH));
   for (Creature* c : creatures)
-    if (minionPayment.count(c)) {
-      minionPayment.at(c).debt += getPaymentAmount(c);
-      minionPayment.at(c).workAmount = 0;
+    if (minionPayment.getMaybe(c)) {
+      minionPayment.getOrFail(c).debt += getPaymentAmount(c);
+      minionPayment.getOrFail(c).workAmount = 0;
     }
 }
 
 void Collective::cashPayouts() {
   int numGold = numResource(paymentResource);
   for (Creature* c : creatures)
-    if (minionPayment.count(c))
-      if (int payment = minionPayment.at(c).debt) {
-        if (payment < numGold) {
-          takeResource({paymentResource, payment});
-          numGold -= payment;
-          minionPayment.at(c).debt = 0;
-        }
+    if (auto payment = minionPayment.getMaybe(c))
+      if (payment->debt > 0 && payment->debt < numGold) {
+        takeResource({paymentResource, payment->debt});
+        numGold -= payment->debt;
+        minionPayment.getOrFail(c).debt = 0;
       }
 }
 
@@ -1063,25 +1055,27 @@ static vector<BirthSpawn> birthSpawns {
 };
 
 void Collective::considerBirths() {
-  while (!pregnancies.empty() && pregnancies.front()->isDead())
-    pregnancies.pop_front();
-  if (getPopulationSize() < getMaxPopulation() && !pregnancies.empty() && Random.roll(300)) {
-    Creature* c = pregnancies.front();
-    pregnancies.pop_front();
-    vector<pair<CreatureId, double>> candidates;
-    for (auto& elem : birthSpawns)
-      if (!elem.tech || hasTech(*elem.tech)) 
-        candidates.emplace_back(elem.id, elem.frequency);
-    if (candidates.empty())
-      return;
-    PCreature spawn = CreatureFactory::fromId(Random.choose(candidates), getTribeId());
-    for (Position pos : c->getPosition().neighbors8(Random))
-      if (pos.canEnter(spawn.get())) {
-        control->addMessage(c->getName().a() + " gives birth to " + spawn->getName().a());
-        addCreature(std::move(spawn), pos, {MinionTrait::FIGHTER});
-        return;
+  for (Creature* c : getCreatures())
+    if (pregnancies.contains(c) && !c->isAffected(LastingEffect::PREGNANT)) {
+      pregnancies.erase(c);
+      if (getPopulationSize() < getMaxPopulation()) {
+        vector<pair<CreatureId, double>> candidates;
+        for (auto& elem : birthSpawns)
+          if (!elem.tech || hasTech(*elem.tech)) 
+            candidates.emplace_back(elem.id, elem.frequency);
+        if (candidates.empty())
+          return;
+        PCreature spawn = CreatureFactory::fromId(Random.choose(candidates), getTribeId());
+        for (Position pos : c->getPosition().neighbors8(Random))
+          if (pos.canEnter(spawn.get())) {
+            control->addMessage(c->getName().a() + " gives birth to " + spawn->getName().a());
+            c->playerMessage("You give birth to " + spawn->getName().a() + "!");
+            c->monsterMessage(c->getName().the() + " gives birth to "  + spawn->getName().a());
+            addCreature(std::move(spawn), pos, {MinionTrait::FIGHTER});
+            return;
+          }
       }
-  }
+    }
 }
 
 static vector<SquareType> roomsNeedingLight {
@@ -1161,6 +1155,8 @@ void Collective::update(bool currentlyActive) {
   if (currentlyActive == config->activeImmigrantion(getGame()) &&
       Random.rollD(1.0 / config->getImmigrantFrequency()))
     considerImmigration();
+  if (isConquered())
+    considerSpawningGhosts();
 }
 
 void Collective::tick() {
@@ -1168,8 +1164,6 @@ void Collective::tick() {
   considerBirths();
   decayMorale();
   considerBuildingBeds();
-  if (isConquered())
-    considerSpawningGhosts();
   considerSendingGuardian();
 /*  if (nextPayoutTime > -1 && time > nextPayoutTime) {
     nextPayoutTime += config->getPayoutTime();
@@ -2115,11 +2109,11 @@ static WorkshopInfo getWorkshopInfo(Collective* c, Position pos) {
 
 void Collective::onAppliedSquare(Position pos) {
   Creature* c = NOTNULL(pos.getCreature());
-  MinionTask currentTask = currentTasks.get(c).task;
+  MinionTask currentTask = currentTasks.getOrFail(c).task;
   if (getTaskInfo().at(currentTask).cost > 0) {
-    if (nextPayoutTime == -1 && minionPayment.count(c) && minionPayment.at(c).salary > 0)
+    if (nextPayoutTime == -1 && minionPayment.getMaybe(c) && minionPayment.getOrFail(c).salary > 0)
       nextPayoutTime = getLocalTime() + config->getPayoutTime();
-    minionPayment[c].workAmount += getTaskInfo().at(currentTask).cost;
+    minionPayment.getOrInit(c).workAmount += getTaskInfo().at(currentTask).cost;
   }
   if (getSquares(SquareId::LIBRARY).count(pos)) {
     addMana(0.2);
@@ -2267,8 +2261,10 @@ void Collective::onCopulated(Creature* who, Creature* with) {
     control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
   if (contains(getCreatures(), with))
     with->addMorale(1);
-  if (!contains(pregnancies, who)) 
-    pregnancies.push_back(who);
+  if (!pregnancies.contains(who)) {
+    pregnancies.insert(who);
+    who->addEffect(LastingEffect::PREGNANT, Random.get(200, 300));
+  }
 }
 
 void Collective::onConsumed(Creature* consumer, Creature* who) {
@@ -2286,8 +2282,8 @@ const MinionEquipment& Collective::getMinionEquipment() const {
 }
 
 int Collective::getSalary(const Creature* c) const {
-  if (minionPayment.count(c))
-    return minionPayment.at(c).salary;
+  if (auto payment = minionPayment.getMaybe(c))
+    return payment->salary;
   else
     return 0;
 }

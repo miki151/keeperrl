@@ -206,7 +206,13 @@ class Collective : public TaskCallback, public CreatureListener {
   static const EnumMap<SpawnType, DormInfo>& getDormInfo();
   static optional<SquareType> getSecondarySquare(SquareType);
 
-  struct MinionPaymentInfo;
+  struct MinionPaymentInfo {
+    int SERIAL(salary);
+    double SERIAL(workAmount);
+    int SERIAL(debt);
+    SERIALIZE_ALL(salary, workAmount, debt);
+  };
+
 
   int getNextPayoutTime() const;
   int getSalary(const Creature*) const;
@@ -369,13 +375,13 @@ class Collective : public TaskCallback, public CreatureListener {
   void addMana(double);
   EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;
-  map<const Creature*, MinionPaymentInfo> SERIAL(minionPayment);
+  EntityMap<Creature, MinionPaymentInfo> SERIAL(minionPayment);
   int SERIAL(nextPayoutTime);
-  unordered_map<const Creature*, vector<AttractionInfo>> SERIAL(minionAttraction);
+  EntityMap<Creature, vector<AttractionInfo>> SERIAL(minionAttraction);
   double getAttractionOccupation(const MinionAttraction&);
   Creature* getCopulationTarget(Creature* succubus);
   Creature* getConsumptionTarget(Creature* consumer);
-  deque<Creature*> SERIAL(pregnancies);
+  EntitySet<Creature> SERIAL(pregnancies);
   mutable vector<ItemFetchInfo> itemFetchInfo;
   HeapAllocated<CollectiveTeams> SERIAL(teams);
   HeapAllocated<CollectiveName> SERIAL(name);

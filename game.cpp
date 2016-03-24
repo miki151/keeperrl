@@ -123,10 +123,14 @@ PModel& Game::getMainModel() {
 
 void Game::prepareRetirement() {
   for (Vec2 v : models.getBounds())
-    if (models[v] && v != baseModel)
-      models[v]->lockSerialization();
-    else
-      models[v]->setGame(nullptr);
+    if (models[v]) {
+      if (v != baseModel)
+        models[v]->lockSerialization();
+      else {
+        models[v]->setGame(nullptr);
+        models[v]->clearDeadCreatures();
+      }
+    }
   playerCollective->setVillainType(VillainType::MAIN);
   playerControl->getKeeper()->modViewObject().setId(ViewId::RETIRED_KEEPER);
   playerCollective->setControl(PCollectiveControl(

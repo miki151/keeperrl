@@ -683,6 +683,7 @@ int getEffectPrice(EffectType type) {
           case LastingEffect::POISON: return 100;
           case LastingEffect::INVISIBLE: return 120;
           case LastingEffect::DARKNESS_SOURCE:
+          case LastingEffect::PREGNANT:
           case LastingEffect::FLYING: return 130;
         }
     case EffectId::ACID:

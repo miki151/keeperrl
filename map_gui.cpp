@@ -70,12 +70,12 @@ void MapGui::clearButtonViewId() {
 
 void MapGui::highlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
   for (auto& id : ids)
-    teamHighlight.set(id, teamHighlight.getMaybe(id).get_value_or(0) + 1);
+    ++teamHighlight.getOrInit(id);
 }
 
 void MapGui::unhighlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
   for (auto& id : ids)
-    CHECK(--teamHighlight.get(id) >= 0);
+    CHECK(--teamHighlight.getOrFail(id) >= 0);
 }
 
 Vec2 MapGui::getScreenPos() const {

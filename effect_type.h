@@ -48,7 +48,8 @@ RICH_ENUM(LastingEffect,
     FLYING,
     INSANITY,
     MAGIC_SHIELD,
-    DARKNESS_SOURCE
+    DARKNESS_SOURCE,
+    PREGNANT
 );
 
 class EffectType : public EnumVariant<EffectId, TYPES(LastingEffect, CreatureId),

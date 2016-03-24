@@ -26,8 +26,9 @@ class EntityMap {
   EntityMap& operator = (const EntityMap&) = default;
   void set(const Key*, const Value&);
   void erase(const Key*);
-  const Value& get(const Key*) const;
-  Value& get(const Key*);
+  const Value& getOrFail(const Key*) const;
+  Value& getOrFail(const Key*);
+  Value& getOrInit(const Key*);
   optional<Value> getMaybe(const Key*) const;
   bool empty() const;
   void clear();
@@ -35,8 +36,9 @@ class EntityMap {
 
   void set(typename UniqueEntity<Key>::Id, const Value&);
   void erase(typename UniqueEntity<Key>::Id);
-  const Value& get(typename UniqueEntity<Key>::Id) const;
-  Value& get(typename UniqueEntity<Key>::Id);
+  const Value& getOrFail(typename UniqueEntity<Key>::Id) const;
+  Value& getOrFail(typename UniqueEntity<Key>::Id);
+  Value& getOrInit(typename UniqueEntity<Key>::Id);
   optional<Value> getMaybe(typename UniqueEntity<Key>::Id) const;
 
   template <class Archive> 

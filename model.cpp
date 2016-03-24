@@ -122,6 +122,11 @@ Level* Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
 }
 
 Model::Model() {
+  clearDeadCreatures();
+}
+
+void Model::clearDeadCreatures() {
+  deadCreatures.clear();
   cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
       .build(this, LevelMaker::emptyLevel(Random).get(), Random.getLL());
 }
