@@ -64,7 +64,7 @@ class LoggingView : public View {
       return delegate->chooseSite(message, c, cur);
     }
 
-    virtual CampaignAction prepareCampaign(const Campaign& c, const CampaignSetupInfo& setup) override {
+    virtual CampaignAction prepareCampaign(const Campaign& c, CampaignSetupInfo& setup) override {
       return delegate->prepareCampaign(c, setup);
     }
 

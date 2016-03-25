@@ -84,8 +84,7 @@ class GuiBuilder {
       const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos);
   PGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
       pair<ViewId, int> budget, const vector<ItemInfo>&, double* scrollPos);
-  PGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, const CampaignSetupInfo&,
-      optional<Vec2>& embarkPos);
+  PGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, CampaignSetupInfo&, optional<Vec2>& embark);
   PGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
   PGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>& markedPos, function<bool(Vec2)> activeFun,

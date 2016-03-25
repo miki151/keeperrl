@@ -1093,6 +1093,15 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
   vector<EnemyInfo> enemyInfo;
   BiomeId biomeId;
   switch (enemyId) {
+    case EnemyId::ANTS:
+      append(enemyInfo, getAntNest(random)); break;
+    case EnemyId::ORC_VILLAGE:
+      append(enemyInfo, getOrcTown(random)); break;
+    case EnemyId::VILLAGE:
+      append(enemyInfo, getHumanVillage(random, getBoardText(options->getStringValue(OptionId::KEEPER_NAME),
+            "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext()))); break;
+    case EnemyId::WARRIORS:
+      append(enemyInfo, getWarriorCastle(random)); break;
     case EnemyId::KNIGHTS:
       append(enemyInfo, getHumanCastle(random));
       for (int i : Range(random.get(3, 5)))
@@ -1139,9 +1148,12 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
   }
   switch (enemyId) {
     case EnemyId::KNIGHTS:
+    case EnemyId::WARRIORS:
     case EnemyId::ELEMENTALIST:
     case EnemyId::LIZARDMEN:
     case EnemyId::HYDRA:
+    case EnemyId::VILLAGE:
+    case EnemyId::ORC_VILLAGE:
       biomeId = BiomeId::GRASSLAND;
       break;
     case EnemyId::RED_DRAGON:
@@ -1153,6 +1165,7 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
     case EnemyId::GNOMES:
     case EnemyId::CYCLOPS:
     case EnemyId::SHELOB:
+    case EnemyId::ANTS:
       biomeId = BiomeId::MOUNTAIN;
       break;
     case EnemyId::ELVES:

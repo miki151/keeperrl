@@ -97,27 +97,25 @@ struct HighscoreList {
 
 enum class CampaignActionId {
   CANCEL,
-  INC_WIDTH,
-  INC_HEIGHT,
-  NUM_GEN_VILLAINS,
-  NUM_RET_VILLAINS,
   CHOOSE_SITE,
   WORLD_NAME,
   REROLL_MAP,
   CONFIRM
 };
 
-class CampaignAction : public EnumVariant<CampaignActionId, TYPES(int, Vec2),
-  ASSIGN(int, CampaignActionId::INC_WIDTH, CampaignActionId::INC_HEIGHT, CampaignActionId::NUM_GEN_VILLAINS,
-      CampaignActionId::NUM_RET_VILLAINS),
+class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2),
   ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE)> {
     using EnumVariant::EnumVariant;
 };
 
 struct CampaignSetupInfo {
-  int minVillains;
-  int maxVillains;
-  int maxRetired;
+  struct Counter {
+    int value;
+    int min;
+    int max;
+    string name;
+  };
+  vector<Counter> counters;
 };
 
 class View {
@@ -200,7 +198,7 @@ class View {
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
 
-  virtual CampaignAction prepareCampaign(const Campaign&, const CampaignSetupInfo&) = 0;
+  virtual CampaignAction prepareCampaign(const Campaign&, CampaignSetupInfo&) = 0;
 
   virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) = 0;

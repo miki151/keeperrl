@@ -1895,7 +1895,7 @@ PGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncreas
 }
 
 PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign,
-    const CampaignSetupInfo& setup, optional<Vec2>& embarkPos) {
+    CampaignSetupInfo& setup, optional<Vec2>& embarkPos) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label("Campaign setup")));
   lines.addElem(gui.empty());
@@ -1906,20 +1906,13 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
         .addElemAuto(gui.stack(
             gui.button([&queue] { queue.push(CampaignActionId::WORLD_NAME); }),
             gui.labelHighlight("[Change]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList());
-//  lines.addElem(gui.label("Width: " + toString(campaign.getSites().getBounds().getW())));
-//  lines.addElem(gui.label("Height: " + toString(campaign.getSites().getBounds().getH())));
-  lines.addElem(gui.getListBuilder()
-      .addElem(gui.label("Generated villains: " + toString(campaign.getNumGenVillains())), 200)
-      .addElem(gui.empty(), 15)
-      .addElemAuto(drawPlusMinus([&queue](int inc) { queue.push({CampaignActionId::NUM_GEN_VILLAINS, inc}); },
-          campaign.getNumGenVillains() < setup.maxVillains, campaign.getNumGenVillains() > setup.minVillains))
-      .buildHorizontalList());
-  lines.addElem(gui.getListBuilder()
-      .addElem(gui.label("Retired villains: " + toString(campaign.getNumRetVillains())), 200)
-      .addElem(gui.empty(), 15)
-      .addElemAuto(drawPlusMinus([&queue](int inc) { queue.push({CampaignActionId::NUM_RET_VILLAINS, inc}); },
-          campaign.getNumRetVillains() < setup.maxRetired, campaign.getNumRetVillains() > 0))
-      .buildHorizontalList());
+  for (auto& counter : setup.counters)
+    lines.addElem(gui.getListBuilder()
+        .addElem(gui.label(counter.name + ": "  + toString(counter.value)), 200)
+        .addElem(gui.empty(), 15)
+        .addElemAuto(drawPlusMinus([&](int i) { counter.value += i; queue.push(CampaignActionId::REROLL_MAP);},
+            counter.value < counter.max, counter.value > counter.min))
+        .buildHorizontalList());
   lines.addElem(gui.empty(), 15);
   lines.addElem(gui.centerHoriz(gui.label("Choose embark site:")));
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, embarkPos,
@@ -1941,7 +1934,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   return gui.stack(
-      gui.preferredSize(500, 590),
+      gui.preferredSize(600, 660),
       gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
 

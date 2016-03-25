@@ -43,26 +43,39 @@ void Campaign::clearSite(Vec2 v) {
   sites[v].description = "site " + toString(v);
 }
 
-static Campaign::VillainInfo getRandomVillain(RandomGen& random) {
-  return random.choose<Campaign::VillainInfo>({
+static vector<Campaign::VillainInfo> getMainVillains() {
+  return {
       {ViewId::AVATAR, EnemyId::KNIGHTS, "Knights", true},
       {ViewId::ELF_LORD, EnemyId::ELVES, "Elves", true},
       {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", true},
       {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", true},
       {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "Elementalist", true},
       {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", true},
-      {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", false},
-      {ViewId::GNOME_BOSS, EnemyId::GNOMES, "Gnomes", false},
       {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", true},
+      {ViewId::SHAMAN, EnemyId::WARRIORS, "Warriors", true},
+  };
+}
+
+static vector<Campaign::VillainInfo> getLesserVillains() {
+  return {
       {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", true},
       {ViewId::ENT, EnemyId::ENTS, "Tree spirits", true},
       {ViewId::DRIAD, EnemyId::DRIADS, "Driads", true},
       {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", true},
       {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", true},
       {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", true},
+      {ViewId::ANT_QUEEN, EnemyId::ANTS, "Ants", true},
+  };
+}
+
+static vector<Campaign::VillainInfo> getAllies() {
+  return {
       {ViewId::UNKNOWN_MONSTER, EnemyId::FRIENDLY_CAVE, "Unknown", false},
       {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "Unknown", false},
-      });
+      {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", false},
+      {ViewId::GNOME_BOSS, EnemyId::GNOMES, "Gnomes", false},
+      {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", false},
+  };
 }
 
 bool Campaign::isDefeated(Vec2 pos) const {
@@ -162,11 +175,28 @@ int Campaign::getNumRetVillains() const {
 optional<Campaign> Campaign::prepareCampaign(View* view, const vector<RetiredSiteInfo>& retired,
     function<string()> worldNameGen, RandomGen& random) {
   Vec2 size(8, 5);
-  int numGenVillains = 4;
-  int numRetired = min<int>(1, retired.size());
   int numBlocked = random.get(4, 8);
+  CampaignSetupInfo setup {{
+              {4, 0, 9, "Main villains"},
+              {min<int>(1, retired.size()), 0, min<int>(3, retired.size()), "Retired villains"},
+              {2, 0, 8, "Lesser villains"},
+              {2, 0, 6, "Allies"}
+  }};
   string worldName;
   while (1) {
+    int numRetired = setup.counters[1].value;
+    vector<VillainInfo> mainVillains;
+    while (mainVillains.size() < setup.counters[0].value)
+      append(mainVillains, random.permutation(getMainVillains()));
+    mainVillains.resize(setup.counters[0].value);
+    vector<VillainInfo> lesserVillains;
+    while (lesserVillains.size() < setup.counters[2].value)
+      append(lesserVillains, random.permutation(getLesserVillains()));
+    lesserVillains.resize(setup.counters[2].value);
+    vector<VillainInfo> allies;
+    while (allies.size() < setup.counters[3].value)
+      append(allies, random.permutation(getAllies()));
+    allies.resize(setup.counters[3].value);
     Campaign campaign(size);
     if (!worldName.empty())
       campaign.worldName = worldName;
@@ -178,17 +208,25 @@ optional<Campaign> Campaign::prepareCampaign(View* view, const vector<RetiredSit
     for (Vec2 v : Rectangle(size))
       if (campaign.sites[v].canEmbark())
         freePos.push_back(v);
-    while (freePos.size() < numGenVillains + numRetired + 1)
-      --numGenVillains;
-    for (int i : Range(numGenVillains)) {
+    for (int i : All(mainVillains)) {
       Vec2 pos = random.choose(freePos);
       removeElement(freePos, pos);
-      campaign.sites[pos].dweller = getRandomVillain(random);
+      campaign.sites[pos].dweller = mainVillains[i];
     }
     for (int i : Range(numRetired)) {
       Vec2 pos = random.choose(freePos);
       removeElement(freePos, pos);
       campaign.sites[pos].dweller = random.choose(retired);
+    }
+    for (int i : All(lesserVillains)) {
+      Vec2 pos = random.choose(freePos);
+      removeElement(freePos, pos);
+      campaign.sites[pos].dweller = lesserVillains[i];
+    }
+    for (int i : All(allies)) {
+      Vec2 pos = random.choose(freePos);
+      removeElement(freePos, pos);
+      campaign.sites[pos].dweller = allies[i];
     }
     for (int i : Range(numBlocked)) {
       if (freePos.size() <= 1)
@@ -200,22 +238,8 @@ optional<Campaign> Campaign::prepareCampaign(View* view, const vector<RetiredSit
     }
     while (1) {
       bool reroll = false;
-      CampaignAction action = view->prepareCampaign(campaign, CampaignSetupInfo{0, 12, (int)retired.size()});
+      CampaignAction action = view->prepareCampaign(campaign, setup);
       switch (action.getId()) {
-        case CampaignActionId::INC_WIDTH:
-            size.x += action.get<int>(); reroll = true;
-            break;
-        case CampaignActionId::INC_HEIGHT:
-            size.y += action.get<int>(); reroll = true;
-            break;
-        case CampaignActionId::NUM_GEN_VILLAINS:
-            numGenVillains = max(0, numGenVillains + action.get<int>());
-            reroll = true;
-            break;
-        case CampaignActionId::NUM_RET_VILLAINS:
-            numRetired = max(0, numRetired + action.get<int>());
-            reroll = true;
-            break;
         case CampaignActionId::REROLL_MAP:
             reroll = true; break;
         case CampaignActionId::CANCEL:
