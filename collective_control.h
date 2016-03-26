@@ -21,7 +21,6 @@ class CollectiveControl {
   virtual void onMoved(Creature*);
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAttack(const CollectiveAttack&) {}
-  virtual void onNewTile(const Position&) {}
   virtual void onConstructed(Position, const SquareType&) {}
   virtual void onNoEnemies() {}
   virtual void onRansomPaid() {}

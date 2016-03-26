@@ -3,6 +3,7 @@
 #include "level.h"
 #include "task.h"
 #include "view_index.h"
+#include "model.h"
 
 template <class T>
 PositionMap<T>::PositionMap(const T& def) : defaultVal(def) {
@@ -70,6 +71,19 @@ void PositionMap<T>::set(Position pos, const T& elem) {
     table[pos.getCoord()] = elem;
   else
     outliers[levelId][pos.getCoord()] = elem;
+}
+
+template <class T>
+void PositionMap<T>::limitToModel(const Model* m) {
+  std::set<LevelId> goodIds;
+  for (Level* l : m->getLevels())
+    goodIds.insert(l->getUniqueId());
+  for (auto& elem : copyOf(tables))
+    if (!goodIds.count(elem.first))
+      tables.erase(elem.first);
+  for (auto& elem : copyOf(outliers))
+    if (!goodIds.count(elem.first))
+      outliers.erase(elem.first);
 }
 
 template <class T>

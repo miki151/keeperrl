@@ -1,15 +1,15 @@
 /* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
- 
+
  This file is part of KeeperRL.
- 
+
  KeeperRL is free software; you can redistribute it and/or modify it under the terms of the
  GNU General Public License as published by the Free Software Foundation; either version 2
  of the License, or (at your option) any later version.
- 
+
  KeeperRL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
  even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License along with this program.
  If not, see http://www.gnu.org/licenses/ . */
 
@@ -85,7 +85,7 @@ CollectiveTab GuiBuilder::getCollectiveTab() const {
 
 void GuiBuilder::closeOverlayWindows() {
   // send a random id which wont be found
-  callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}); 
+  callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()});
 }
 
 optional<int> GuiBuilder::getActiveButton(CollectiveTab tab) const {
@@ -392,7 +392,7 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
             gui.label("pause"),
             gui.label("[space]")), keyMargin),
         gui.button([=] {
-            if (clock->isPaused()) 
+            if (clock->isPaused())
               clock->cont();
             else
               clock->pause();
@@ -709,7 +709,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
       }
       if (choice == -100)
         return none;
-      if (event.type == Event::MouseButtonPressed && 
+      if (event.type == Event::MouseButtonPressed &&
           !Vec2(event.mouseButton.x, event.mouseButton.x).inRectangle(stuff->getBounds()))
         return none;
       if (event.type == Event::KeyPressed)
@@ -719,7 +719,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
           case Keyboard::Numpad2:
           case Keyboard::Down: index = (index + 1 + count) % count; break;
           case Keyboard::Numpad5:
-          case Keyboard::Return: 
+          case Keyboard::Return:
               if (index > -1) {
                 if (index < itemInfo.actions.size())
                   return itemInfo.actions[index];
@@ -1015,7 +1015,7 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info
 
 void GuiBuilder::drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInfo::Ransom& ransom) {
   GuiFactory::ListBuilder lines(gui, legendLineHeight);
-  lines.addElem(gui.label(ransom.attacker + " demand " + toString(ransom.amount.second) 
+  lines.addElem(gui.label(ransom.attacker + " demand " + toString(ransom.amount.second)
         + " gold for not attacking. Agree?"));
   if (ransom.canAfford)
     lines.addElem(gui.leftMargin(25, gui.stack(
@@ -1158,7 +1158,7 @@ static int getNumFitting(Renderer& renderer, const vector<PlayerMessage>& messag
     if (currentWidth > 0)
       ++length;
     if (currentWidth + length > maxLength) {
-      if (currentLine == numLines - 1) 
+      if (currentLine == numLines - 1)
         return messages.size() - i - 1;
       currentWidth = 0;
       ++currentLine;
@@ -1179,7 +1179,7 @@ static vector<vector<PlayerMessage>> fitMessages(Renderer& renderer, const vecto
     if (currentWidth > 0)
       ++length;
     if (currentWidth + length > maxLength) {
-      if (ret.size() == numLines) 
+      if (ret.size() == numLines)
         break;
       currentWidth = 0;
       ret.emplace_back();
@@ -1235,17 +1235,30 @@ PGuiElem GuiBuilder::getVillageStateLabel(VillageInfo::Village::State state) {
   }
 }
 
-PGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageAction action) {
-  switch (action) {
-    case VillageAction::RECRUIT: 
-      return gui.stack(
-          gui.labelHighlight("Recruit", colors[ColorId::GREEN]),
-          gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION, VillageActionInfo{villageIndex, action}})));
-    case VillageAction::TRADE: 
-      return gui.stack(
-          gui.labelHighlight("Trade", colors[ColorId::GREEN]),
-          gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION, VillageActionInfo{villageIndex, action}})));
-  }
+PGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageInfo::Village::ActionInfo action) {
+  if (action.disabledReason)
+    switch (action.action) {
+      case VillageAction::RECRUIT:
+        return gui.stack(
+            gui.label("Recruit", colors[ColorId::GRAY]),
+            getTooltip({*action.disabledReason}));
+      case VillageAction::TRADE:
+        return gui.stack(
+            gui.label("Trade", colors[ColorId::GRAY]),
+            getTooltip({*action.disabledReason}));
+    } else
+      switch (action.action) {
+        case VillageAction::RECRUIT:
+          return gui.stack(
+              gui.labelHighlight("Recruit", colors[ColorId::GREEN]),
+              gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION,
+                  VillageActionInfo{villageIndex, action.action}})));
+        case VillageAction::TRADE:
+          return gui.stack(
+              gui.labelHighlight("Trade", colors[ColorId::GREEN]),
+              gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION, VillageActionInfo{villageIndex,
+                  action.action}})));
+      }
 }
 
 static string getTriggerLabel(const AttackTrigger& trigger) {
@@ -1292,58 +1305,63 @@ void GuiBuilder::showAttackTriggers(const vector<TriggerInfo>& triggers, Vec2 po
 }
 
 PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
-  auto lines = gui.getListBuilder(legendLineHeight);
-  int titleMargin = -11;
-  lines.addElem(gui.leftMargin(titleMargin, gui.label(toString(info.numConquered) + "/" +
-          toString(info.totalMain) + " main villains conquered.")), titleLineHeight);
-  if (info.numMainVillains > 0)
-    lines.addElem(gui.leftMargin(titleMargin, gui.label("Main villains:")), titleLineHeight);
-  for (int i : All(info.villages)) {
-    if (i == info.numMainVillains) {
-      lines.addElem(gui.empty());
-      lines.addElem(gui.leftMargin(titleMargin, gui.label("Lesser villains:")), titleLineHeight);
-    }
-    auto& elem = info.villages[i];
-    string title = capitalFirst(elem.name) + (elem.tribeName.empty() ?
-          string() : " (" + elem.tribeName + ")");
-    PGuiElem header;
-    if (info.villages[i].knownLocation)
-      header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, i})),
-        gui.getListBuilder()
-            .addElemAuto(gui.labelHighlight(title))
-            .addElem(gui.empty(), 7)
-            .addElemAuto(gui.labelUnicode(String(L'➚'))).buildHorizontalList());
-    else
-      header = gui.label(title);
-    lines.addElem(std::move(header));
-    if (!info.villages[i].knownLocation)
-      lines.addElem(gui.leftMargin(40, gui.label("Location unknown", colors[ColorId::LIGHT_BLUE])));
-    GuiFactory::ListBuilder line(gui);
-    line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
-    vector<TriggerInfo> triggers = elem.triggers;
-    sort(triggers.begin(), triggers.end(),
-        [] (const TriggerInfo& t1, const TriggerInfo& t2) { return t1.value > t2.value;});
-#ifdef RELEASE
-    triggers = filter(triggers, [](const TriggerInfo& t) { return t.value > 0;});
-#endif
-    if (!triggers.empty())
-      line.addElemAuto(gui.stack(
-          gui.labelHighlight("Triggers", colors[ColorId::RED]),
-          gui.button([this, triggers](Rectangle bounds) {
-              showAttackTriggers(triggers, bounds.getTopRight() + Vec2(20, 0));})));
-    lines.addElem(line.buildHorizontalList());
-    for (auto action : elem.actions)
-      lines.addElem(gui.margins(getVillageActionButton(i, action), 40, 0, 0, 0));
+  int currentHash = combineHash(info);
+  if (currentHash != villagesHash) {
+    villagesHash = currentHash;
+    auto lines = gui.getListBuilder(legendLineHeight);
+    int titleMargin = -11;
+    lines.addElem(gui.leftMargin(titleMargin, gui.label(toString(info.numConquered) + "/" +
+            toString(info.totalMain) + " main villains conquered.")), titleLineHeight);
+    if (info.numMainVillains > 0)
+      lines.addElem(gui.leftMargin(titleMargin, gui.label("Main villains:")), titleLineHeight);
+    for (int i : All(info.villages)) {
+      if (i == info.numMainVillains) {
+        lines.addElem(gui.empty());
+        lines.addElem(gui.leftMargin(titleMargin, gui.label("Lesser villains:")), titleLineHeight);
+      }
+      auto& elem = info.villages[i];
+      string title = capitalFirst(elem.name) + (elem.tribeName.empty() ?
+            string() : " (" + elem.tribeName + ")");
+      PGuiElem header;
+      if (info.villages[i].knownLocation)
+        header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, i})),
+          gui.getListBuilder()
+              .addElemAuto(gui.labelHighlight(title))
+              .addElem(gui.empty(), 7)
+              .addElemAuto(gui.labelUnicode(String(L'➚'))).buildHorizontalList());
+      else
+        header = gui.label(title);
+      lines.addElem(std::move(header));
+      if (!info.villages[i].knownLocation)
+        lines.addElem(gui.leftMargin(40, gui.label("Location unknown", colors[ColorId::LIGHT_BLUE])));
+      GuiFactory::ListBuilder line(gui);
+      line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
+      vector<TriggerInfo> triggers = elem.triggers;
+      sort(triggers.begin(), triggers.end(),
+          [] (const TriggerInfo& t1, const TriggerInfo& t2) { return t1.value > t2.value;});
+  #ifdef RELEASE
+      triggers = filter(triggers, [](const TriggerInfo& t) { return t.value > 0;});
+  #endif
+      if (!triggers.empty())
+        line.addElemAuto(gui.stack(
+            gui.labelHighlight("Triggers", colors[ColorId::RED]),
+            gui.button([this, triggers](Rectangle bounds) {
+                showAttackTriggers(triggers, bounds.getTopRight() + Vec2(20, 0));})));
+      lines.addElem(line.buildHorizontalList());
+      for (auto action : elem.actions)
+        lines.addElem(gui.margins(getVillageActionButton(i, action), 40, 0, 0, 0));
 
+    }
+    if (lines.isEmpty())
+      return gui.label("No foreign tribes discovered.");
+    int numVillains = info.villages.size();
+    if (numSeenVillains == -1)
+      numSeenVillains = numVillains;
+    villagesCache = gui.stack(
+      gui.onRenderedAction([this, numVillains] { numSeenVillains = numVillains;}),
+      gui.scrollable(lines.buildVerticalList(), &villagesScroll, &scrollbarsHeld));
   }
-  if (lines.isEmpty())
-    return gui.label("No foreign tribes discovered.");
-  int numVillains = info.villages.size();
-  if (numSeenVillains == -1)
-    numSeenVillains = numVillains;
-  return gui.stack(
-    gui.onRenderedAction([this, numVillains] { numSeenVillains = numVillains;}),
-    gui.scrollable(lines.buildVerticalList(), &villagesScroll, &scrollbarsHeld));
+  return gui.external(villagesCache.get());
 }
 
 const double menuLabelVPadding = 0.15;
@@ -1672,7 +1690,7 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minio
       lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
   lines.push_back(gui.stack(
       gui.labelHighlight("[Add consumable]", colors[ColorId::LIGHT_BLUE]),
-      gui.button(getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION, 
+      gui.button(getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
               EquipmentActionInfo{minion.creatureId, {}, none, ItemAction::REPLACE}}))));
   for (int i : All(itemElems))
     if (items[i].type == items[i].OTHER) {
@@ -1697,7 +1715,7 @@ vector<PGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion) {
       case PlayerInfo::RENAME:
         line.push_back(gui.stack(
             gui.labelHighlight("[Rename]", colors[ColorId::LIGHT_BLUE]),
-            gui.button([=] { 
+            gui.button([=] {
                 if (auto name = getTextInput("Rename minion", minion.firstName, 10, "Press escape to cancel."))
                 callbacks.input({UserInputId::CREATURE_RENAME,
                     RenameActionInfo{minion.creatureId, *name}}); })));
@@ -1899,7 +1917,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label("Campaign setup")));
   lines.addElem(gui.empty());
-  lines.addElem(     
+  lines.addElem(
         gui.getListBuilder()
         .addElemAuto(gui.label("World name: " + campaign.getWorldName()))
         .addElem(gui.empty(), 30)
@@ -2059,7 +2077,7 @@ PGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
         gui.topMargin(30, gui.margin(gui.leftMargin(5, topLine.buildHorizontalListFit()),
             gui.margins(gui.stack(std::move(pages)), 25, 60, 0, 30), legendLineHeight, GuiFactory::TOP)), legendLineHeight, GuiFactory::TOP),
         [&] { sem.v(); })));
-  
+
 }
 
 Rectangle GuiBuilder::getTextInputPosition() {
@@ -2117,5 +2135,3 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
     }
   }
 }
-
-

@@ -103,7 +103,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void onMoved(Creature*) override;
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
-  virtual void onNewTile(const Position&) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onConstructed(Position, const SquareType&) override;
   virtual void onNoEnemies() override;
@@ -127,6 +126,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void checkKeeperDanger();
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
+  void updateKnownLocations(const Position&);
   bool isEnemy(const Creature*) const;
   vector<Collective*> getKnownVillains(VillainType) const;
   Collective* getVillain(int num);

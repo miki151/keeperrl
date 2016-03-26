@@ -110,6 +110,7 @@ class Collective : public TaskCallback, public CreatureListener {
   void claimSquare(Position);
   void changeSquareType(Position pos, SquareType from, SquareType to);
   bool isKnownSquare(Position pos) const;
+  void limitKnownTilesToModel();
 
   double getEfficiency(Position) const;
   bool hasEfficiency(Position) const;
@@ -194,7 +195,7 @@ class Collective : public TaskCallback, public CreatureListener {
   vector<Spell*> getAllSpells() const;
   vector<Spell*> getAvailableSpells() const;
   TechId getNeededTech(Spell*) const;
-  void addKnownTile(Position);
+  bool addKnownTile(Position);
 
   const EntitySet<Creature>& getKills() const;
   int getPoints() const;

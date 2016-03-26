@@ -220,6 +220,7 @@ bool Position::canHide() const {
 }
 
 string Position::getName() const {
+  getSquare()->hasItem( nullptr);
   if (isValid())
     return getSquare()->getName();
   else

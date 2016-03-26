@@ -1,15 +1,15 @@
 /* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
- 
+
  This file is part of KeeperRL.
- 
+
  KeeperRL is free software; you can redistribute it and/or modify it under the terms of the
  GNU General Public License as published by the Free Software Foundation; either version 2
  of the License, or (at your option) any later version.
- 
+
  KeeperRL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
  even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License along with this program.
  If not, see http://www.gnu.org/licenses/ . */
 
@@ -53,7 +53,7 @@ class GuiBuilder {
   GuiBuilder(Renderer&, GuiFactory&, Clock*, Options*, Callbacks);
   void reset();
   int getStandardLineHeight() const;
-  
+
   PGuiElem getSunlightInfoGui(GameSunlightInfo& sunlightInfo);
   PGuiElem getTurnInfoGui(int& turn);
   PGuiElem drawBottomPlayerInfo(GameInfo&);
@@ -62,7 +62,6 @@ class GuiBuilder {
   PGuiElem drawPlayerInventory(PlayerInfo&);
   PGuiElem drawRightBandInfo(CollectiveInfo&, VillageInfo&);
   PGuiElem drawTechnology(CollectiveInfo&);
-  PGuiElem drawVillages(VillageInfo&);
   PGuiElem drawMinions(CollectiveInfo&);
   PGuiElem drawBottomBandInfo(GameInfo&);
   PGuiElem drawKeeperHelp();
@@ -94,7 +93,7 @@ class GuiBuilder {
   PGuiElem drawCost(pair<ViewId, int>, ColorId = ColorId::WHITE);
   PGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<double>& scrollPos,
       bool& online);
-  
+
   void setCollectiveTab(CollectiveTab t);
   CollectiveTab getCollectiveTab() const;
 
@@ -139,6 +138,9 @@ class GuiBuilder {
   int minionButtonsHash = 0;
   PGuiElem drawMinionPage(const PlayerInfo&);
   PGuiElem drawActivityButton(const PlayerInfo&);
+  PGuiElem drawVillages(VillageInfo&);
+  PGuiElem villagesCache;
+  int villagesHash = 0;
   vector<PGuiElem> drawAttributesOnPage(vector<PGuiElem>&&);
   vector<PGuiElem> drawEquipmentAndConsumables(const PlayerInfo&);
   vector<PGuiElem> drawSkillsList(const PlayerInfo&);
@@ -151,7 +153,7 @@ class GuiBuilder {
   void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width);
   void showAttackTriggers(const vector<TriggerInfo>&, Vec2 pos);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
-  PGuiElem getVillageActionButton(int villageIndex, VillageAction);
+  PGuiElem getVillageActionButton(int villageIndex, VillageInfo::Village::ActionInfo);
   PGuiElem getVillageStateLabel(VillageInfo::Village::State);
   vector<PGuiElem> drawRecruitList(const vector<CreatureInfo>&, CreatureMenuCallback, int budget);
   PGuiElem drawHighscorePage(const HighscoreList&, double *scrollPos);
@@ -185,11 +187,11 @@ class GuiBuilder {
   atomic<GameSpeed> gameSpeed;
   const char* getGameSpeedName(GameSpeed) const;
   const char* getCurrentGameSpeedName() const;
-  
+
   class FpsCounter {
     public:
     int getSec();
-    
+
     void addTick();
 
     int getFps();

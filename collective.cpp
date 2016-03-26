@@ -2042,15 +2042,20 @@ void Collective::onCantPickItem(EntitySet<Item> items) {
     unmarkItem(id);
 }
 
-void Collective::addKnownTile(Position pos) {
+void Collective::limitKnownTilesToModel() {
+  knownTiles->limitToModel(getLevel()->getModel());
+}
+
+bool Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
     knownTiles->addTile(pos);
-    control->onNewTile(pos);
     if (pos.getLevel() == level)
       if (Task* task = taskMap->getMarked(pos))
         if (task->isImpossible(getLevel()))
           taskMap->removeTask(task);
-  }
+    return true;
+  } else
+    return false;
 }
 
 void Collective::addMana(double value) {

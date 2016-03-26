@@ -132,6 +132,7 @@ void Game::prepareRetirement() {
       }
     }
   playerCollective->setVillainType(VillainType::MAIN);
+  playerCollective->limitKnownTilesToModel();
   playerControl->getKeeper()->modViewObject().setId(ViewId::RETIRED_KEEPER);
   playerCollective->setControl(PCollectiveControl(
         new VillageControl(playerCollective, CONSTRUCT(VillageControl::Villain,
@@ -166,6 +167,12 @@ void Game::doneRetirement() {
 optional<Game::ExitInfo> Game::update(double timeDiff) {
   currentTime += timeDiff;
   Model* currentModel = getCurrentModel();
+  // Give every model a couple of turns so that things like shopkeepers can initialize.
+  for (Vec2 v : models.getBounds())
+    if (models[v] && !localTime.count(models[v].get())) {
+      localTime[models[v].get()] = 2;
+      models[v]->update(2);
+    }
   localTime[currentModel] += timeDiff;
   while (currentTime > lastTick + 1) {
     lastTick += 1;

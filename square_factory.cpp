@@ -704,10 +704,11 @@ class SokobanHole : public Square {
       c->die(nullptr, false, false);
       getLevel()->replaceSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
     } else 
-    if (!c->isAffected(LastingEffect::FLYING)) {
+    if (!c->isAffected(LastingEffect::FLYING))
       c->you(MsgType::FALL, "into the " + getName() + "!");
-      getLevel()->changeLevel(stairKey, c);
-    }
+    else
+      c->you(MsgType::ARE, "sucked into the " + getName() + "!");
+    getLevel()->changeLevel(stairKey, c);
   }
 
   SERIALIZE_ALL2(Square, stairKey);

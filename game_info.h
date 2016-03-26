@@ -211,7 +211,12 @@ class VillageInfo {
     string HASH(tribeName);
     bool HASH(knownLocation);
     enum State { FRIENDLY, HOSTILE, CONQUERED } HASH(state);
-    vector<VillageAction> HASH(actions);
+    struct ActionInfo {
+      VillageAction HASH(action);
+      optional<string> HASH(disabledReason);
+      HASH_ALL(action, disabledReason);
+    };
+    vector<ActionInfo> HASH(actions);
     vector<TriggerInfo> triggers;
     HASH_ALL(name, tribeName, knownLocation, state, actions);
   };

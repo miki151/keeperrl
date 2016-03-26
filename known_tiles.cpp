@@ -23,3 +23,10 @@ const set<Position>& KnownTiles::getBorderTiles() const {
 bool KnownTiles::isKnown(Position pos) const {
   return known.get(pos);
 };
+
+void KnownTiles::limitToModel(const Model* m) {
+  for (Position p : copyOf(border))
+    if (p.getModel() != m)
+      border.erase(p);
+  known.limitToModel(m);
+}

@@ -67,6 +67,7 @@ class Model {
   void tick(double time);
   vector<Collective*> getCollectives() const;
   vector<Creature*> getAllCreatures() const;
+  vector<Level*> getLevels() const;
 
   Level* getTopLevel() const;
 
@@ -91,7 +92,6 @@ class Model {
 
   friend class ModelBuilder;
 
-  vector<Level*> getLevels() const;
   PCreature makePlayer(int handicap);
   void landHeroPlayer();
   Level* buildLevel(LevelBuilder&&, PLevelMaker);

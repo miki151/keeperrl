@@ -848,10 +848,18 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   }
   else {
     info.state = info.FRIENDLY;
-    if (!col->getRecruits().empty())
-      info.actions.push_back(VillageAction::RECRUIT);
-    if (!col->getTradeItems().empty())
-      info.actions.push_back(VillageAction::TRADE);
+    if (knownVillains.count(col)) {
+      if (!col->getRecruits().empty())
+        info.actions.push_back({VillageAction::RECRUIT});
+      if (!col->getTradeItems().empty())
+        info.actions.push_back({VillageAction::TRADE});
+    } else {
+      if (!col->getRecruits().empty())
+        info.actions.push_back({VillageAction::RECRUIT,
+            string("You must discover the location of the ally first.")});
+      if (!col->getTradeItems().empty())
+        info.actions.push_back({VillageAction::TRADE, string("You must discover the location of the ally first.")});
+    }
   }
   return info;
 }
@@ -931,8 +939,8 @@ void PlayerControl::handleRansom(bool pay) {
 }
 
 vector<Collective*> PlayerControl::getKnownVillains(VillainType type) const {
-  if (type == VillainType::MAIN && !getGame()->isSingleModel())
-    return getGame()->getVillains(VillainType::MAIN);
+  if (!getGame()->isSingleModel())
+    return getGame()->getVillains(type);
   else
     return filter(getGame()->getVillains(type), [this](Collective* c) {
         return seeEverything || knownVillains.count(c);});
@@ -1118,12 +1126,30 @@ void PlayerControl::onMoved(Creature* c) {
     if (c->getPosition().getModel() == getModel())
       visibilityMap->update(c, visibleTiles);
     for (Position pos : visibleTiles) {
-      if (c->getPosition().getModel() == getModel())
-        getCollective()->addKnownTile(pos);
+      if (getCollective()->addKnownTile(pos))
+        updateKnownLocations(pos);
       addToMemory(pos);
     }
   }
 }
+
+void PlayerControl::updateKnownLocations(const Position& pos) {
+  if (const Location* loc = pos.getLocation())
+    if (!knownLocations.count(loc)) {
+      knownLocations.insert(loc);
+      if (auto name = loc->getName())
+        addMessage(PlayerMessage("Your minions discover the location of " + *name, PlayerMessage::HIGH)
+            .setLocation(loc));
+      else if (loc->isMarkedAsSurprise())
+        addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
+    }
+  for (const Collective* col : getGame()->getCollectives())
+    if (col != getCollective() && col->getTerritory().contains(pos)) {
+      knownVillains.insert(col);
+      knownVillainLocations.insert(col);
+    }
+}
+
 
 const MapMemory& PlayerControl::getMemory() const {
   return *memory;
@@ -2023,23 +2049,6 @@ void PlayerControl::updateVisibleCreatures() {
 
 vector<Vec2> PlayerControl::getVisibleEnemies() const {
   return visibleEnemies;
-}
-
-void PlayerControl::onNewTile(const Position& pos) {
-  if (const Location* loc = pos.getLocation())
-    if (!knownLocations.count(loc)) {
-      knownLocations.insert(loc);
-      if (auto name = loc->getName())
-        addMessage(PlayerMessage("Your minions discover the location of " + *name, PlayerMessage::HIGH)
-            .setLocation(loc));
-      else if (loc->isMarkedAsSurprise())
-        addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
-    }
-  for (const Collective* col : getGame()->getCollectives())
-    if (col != getCollective() && col->getTerritory().contains(pos)) {
-      knownVillains.insert(col);
-      knownVillainLocations.insert(col);
-    }
 }
 
 template <class Archive>

@@ -41,7 +41,7 @@
 #include "collective.h"
 #include "territory.h"
 
-template <class Archive> 
+template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(Controller)
     & SVAR(travelling)
@@ -102,7 +102,7 @@ void Player::onBump(Creature*) {
 
 string Player::getInventoryItemName(const Item* item, bool plural) const {
   if (getCreature()->getEquipment().isEquiped(item))
-    return item->getNameAndModifiers(plural, getCreature()) + " " 
+    return item->getNameAndModifiers(plural, getCreature()) + " "
       + getSlotSuffix(item->getEquipmentSlot());
   else
     return item->getNameAndModifiers(plural, getCreature());
@@ -110,14 +110,14 @@ string Player::getInventoryItemName(const Item* item, bool plural) const {
 
 void Player::getItemNames(vector<Item*> items, vector<ListElem>& names, vector<vector<Item*> >& groups,
     ItemPredicate predicate) {
-  map<string, vector<Item*> > ret = groupBy<Item*, string>(items, 
+  map<string, vector<Item*> > ret = groupBy<Item*, string>(items,
       [this] (Item* const& item) { return getInventoryItemName(item, false); });
   for (auto elem : ret) {
     if (elem.second.size() == 1)
       names.push_back(ListElem(getInventoryItemName(elem.second[0], false),
           predicate(elem.second[0]) ? ListElem::NORMAL : ListElem::INACTIVE).setTip(elem.second[0]->getDescription()));
     else
-      names.push_back(ListElem(toString<int>(elem.second.size()) + " " 
+      names.push_back(ListElem(toString<int>(elem.second.size()) + " "
             + getInventoryItemName(elem.second[0], true),
           predicate(elem.second[0]) ? ListElem::NORMAL : ListElem::INACTIVE).setTip(elem.second[0]->getDescription()));
     groups.push_back(elem.second);
@@ -210,7 +210,7 @@ vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, op
       getCreature()->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
   vector<ListElem> names;
   vector<vector<Item*> > groups;
-  for (auto elem : typeDisplayOrder) 
+  for (auto elem : typeDisplayOrder)
     if (typeGroups[elem].size() > 0) {
       names.push_back(ListElem(getText(elem), ListElem::TITLE));
       getItemNames(typeGroups[elem], names, groups, predicate);
@@ -228,8 +228,8 @@ void Player::applyItem(vector<Item*> items) {
   }
   if (items[0]->getApplyTime() > 1) {
     for (const Creature* c : getCreature()->getVisibleEnemies())
-      if (getCreature()->getPosition().dist8(c->getPosition()) < 3) { 
-        if (!getGame()->getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " + 
+      if (getCreature()->getPosition().dist8(c->getPosition()) < 3) {
+        if (!getGame()->getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " +
             toString(items[0]->getApplyTime()) + " turns. Are you sure you want to continue?"))
           return;
         else
@@ -307,7 +307,7 @@ void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemActi
     case ItemAction::APPLY: applyItem(items); break;
     case ItemAction::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
     case ItemAction::GIVE: giveAction(items); break;
-    case ItemAction::EQUIP: 
+    case ItemAction::EQUIP:
       if (getCreature()->isEquipmentAppropriate(items[0]) || getGame()->getView()->yesOrNoPrompt(
           items[0]->getTheName() + " is too heavy and will incur an accuracy penalty. Do you want to continue?"))
         tryToPerform(getCreature()->equip(items[0])); break;
@@ -532,7 +532,7 @@ void Player::makeMove() {
         "level render time");
   } else
     getGame()->getView()->refreshView();
-  if (displayTravelInfo && getCreature()->getPosition().getName() == "road" 
+  if (displayTravelInfo && getCreature()->getPosition().getName() == "road"
       && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     getGame()->getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
@@ -821,7 +821,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   }
  /* if (pos == getCreature()->getPosition() && index.hasObject(ViewLayer::CREATURE))
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);*/
-  
+
 }
 
 void Player::onKilled(const Creature* attacker) {
@@ -878,7 +878,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.inventory.clear();
   map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
       getCreature()->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
-  for (auto elem : typeDisplayOrder) 
+  for (auto elem : typeDisplayOrder)
     if (typeGroups[elem].size() > 0)
       append(info.inventory, getItemInfos(typeGroups[elem]));
 }
@@ -905,7 +905,7 @@ ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
 }
 
 vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
-  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items, 
+  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
       [this] (Item* const& item) { return getInventoryItemName(item, false); });
   vector<ItemInfo> ret;
   for (auto elem : stacks)
@@ -941,7 +941,7 @@ void Player::considerKeeperDirectionMessage() {
     if (col->getVillainType() == VillainType::MAIN && !col->isConquered() && col->getLeader() &&
         !col->getLeader()->isDead() && col->getLeader()->getPosition().isSameLevel(getLevel()) &&
         Random.roll(30) && !col->getTerritory().contains(getCreature()->getPosition()))
-      getCreature()->playerMessage("You sense horrible evil in the " + 
+      getCreature()->playerMessage("You sense horrible evil in the " +
             getCardinalName(getCreature()->getPosition().getDir(col->getLeader()->getPosition())
                 .getBearing().getCardinalDir()));
 }
