@@ -171,7 +171,7 @@ optional<Game::ExitInfo> Game::update(double timeDiff) {
   for (Vec2 v : models.getBounds())
     if (models[v] && !localTime.count(models[v].get())) {
       localTime[models[v].get()] = 2;
-      models[v]->update(2);
+      updateModel(models[v].get(), 2);
     }
   localTime[currentModel] += timeDiff;
   while (currentTime > lastTick + 1) {
@@ -224,6 +224,11 @@ optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
   } while (1);
 }
 
+bool Game::isVillainActive(const Collective* col) {
+  const Model* m = col->getLevel()->getModel();
+  return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
+}
+
 void Game::tick(double time) {
   auto previous = sunlightInfo.getState();
   sunlightInfo.update(currentTime);
@@ -236,7 +241,7 @@ void Game::tick(double time) {
     bool conquered = true;
     for (Collective* col : getCollectives()) {
       conquered &= col->isConquered() || col->getVillainType() != VillainType::MAIN;
-      if (col->isConquered())
+      if (col->isConquered() && campaign)
         campaign->setDefeated(getModelCoords(col->getLevel()->getModel()));
     }
     if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
@@ -244,8 +249,10 @@ void Game::tick(double time) {
       won = true;
     }
   }
-  for (Collective* col : collectives)
-    col->update(col->getLevel()->getModel() == getCurrentModel());
+  for (Collective* col : collectives) {
+    if (isVillainActive(col))
+      col->update(col->getLevel()->getModel() == getCurrentModel());
+  }
   if (musicType == MusicType::PEACEFUL && sunlightInfo.getState() == SunlightState::NIGHT)
     setCurrentMusic(MusicType::NIGHT, true);
   else if (musicType == MusicType::NIGHT && sunlightInfo.getState() == SunlightState::DAY)

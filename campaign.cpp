@@ -8,7 +8,7 @@
 
 template <class Archive> 
 void Campaign::serialize(Archive& ar, const unsigned int version) { 
-  serializeAll(ar, sites, playerPos, worldName, defeated);
+  serializeAll(ar, sites, playerPos, worldName, defeated, influencePos);
 }
 
 SERIALIZABLE(Campaign);
@@ -23,7 +23,7 @@ bool Campaign::SiteInfo::canEmbark() const {
 }
 
 bool Campaign::canTravelTo(Vec2 pos) const {
-  return (getInfluencePos().count(pos) || playerPos == pos) && !sites[pos].isEmpty();
+  return (isInInfluence(pos) || playerPos == pos) && !sites[pos].isEmpty();
 }
 
 optional<Vec2> Campaign::getPlayerPos() const {
@@ -84,6 +84,7 @@ bool Campaign::isDefeated(Vec2 pos) const {
 
 void Campaign::setDefeated(Vec2 pos) {
   defeated[pos] = true;
+  refreshInfluencePos();
 }
 
 optional<Campaign::VillainInfo> Campaign::SiteInfo::getVillain() const {
@@ -138,22 +139,26 @@ optional<ViewId> Campaign::SiteInfo::getDwellerViewId() const {
 bool Campaign::SiteInfo::isEnemy() const {
   return getRetired() || (getVillain() && getVillain()->hostile);
 }
-set<Vec2> Campaign::getInfluencePos() const {
+
+bool Campaign::isInInfluence(Vec2 pos) const {
+  return influencePos.count(pos);
+}
+
+void Campaign::refreshInfluencePos() {
+  influencePos.clear();
   if (!playerPos)
-    return {};
-  set<Vec2> ret;
+    return;
   for (double r = 1; r <= max(sites.getWidth(), sites.getHeight()); r += 0.1) {
     for (Vec2 v : sites.getBounds())
       if ((sites[v].getVillain() || sites[v].getRetired()) && v.distD(*playerPos) <= r)
-        ret.insert(v);
+        influencePos.insert(v);
     int numEnemies = 0;
-    for (Vec2 v : ret)
+    for (Vec2 v : influencePos)
       if (sites[v].isEnemy() && !defeated[v])
         ++numEnemies;
     if (numEnemies >= 3)
       break;
   }
-  return ret;
 }
 
 int Campaign::getNumGenVillains() const {
@@ -238,6 +243,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, const vector<RetiredSit
     }
     while (1) {
       bool reroll = false;
+      campaign.refreshInfluencePos();
       CampaignAction action = view->prepareCampaign(campaign, setup);
       switch (action.getId()) {
         case CampaignActionId::REROLL_MAP:

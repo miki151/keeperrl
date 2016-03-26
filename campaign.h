@@ -75,17 +75,18 @@ class Campaign {
   bool isDefeated(Vec2) const;
   void setDefeated(Vec2);
   bool canTravelTo(Vec2) const;
-  set<Vec2> getInfluencePos() const;
+  bool isInInfluence(Vec2) const;
 
   SERIALIZATION_DECL(Campaign);
 
   private:
-  bool checkRectangle(Rectangle) const;
+  void refreshInfluencePos();
   Campaign(Vec2 size);
   Table<SiteInfo> SERIAL(sites);
   optional<Vec2> SERIAL(playerPos);
   string SERIAL(worldName);
   Table<bool> SERIAL(defeated);
+  set<Vec2> SERIAL(influencePos);
 };
 
 

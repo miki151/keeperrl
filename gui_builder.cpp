@@ -1323,7 +1323,7 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
       string title = capitalFirst(elem.name) + (elem.tribeName.empty() ?
             string() : " (" + elem.tribeName + ")");
       PGuiElem header;
-      if (info.villages[i].knownLocation)
+      if (info.villages[i].access == VillageInfo::Village::LOCATION)
         header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, i})),
           gui.getListBuilder()
               .addElemAuto(gui.labelHighlight(title))
@@ -1332,8 +1332,10 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
       else
         header = gui.label(title);
       lines.addElem(std::move(header));
-      if (!info.villages[i].knownLocation)
+      if (info.villages[i].access == VillageInfo::Village::NO_LOCATION)
         lines.addElem(gui.leftMargin(40, gui.label("Location unknown", colors[ColorId::LIGHT_BLUE])));
+      else if (info.villages[i].access == VillageInfo::Village::INACTIVE)
+        lines.addElem(gui.leftMargin(40, gui.label("Outside influence zone", colors[ColorId::GRAY])));
       GuiFactory::ListBuilder line(gui);
       line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
       vector<TriggerInfo> triggers = elem.triggers;
@@ -1840,7 +1842,7 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>& marked,
       Vec2 pos(x, y);
       vector<PGuiElem> elem;
       if (auto id = sites[x][y].getDwellerViewId()) {
-        if (c.getPlayerPos() && c.getInfluencePos().count(pos))
+        if (c.getPlayerPos() && c.isInInfluence(pos))
           elem.push_back(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2,
                 sites[pos].isEnemy() ? colors[ColorId::RED] : colors[ColorId::GREEN]));
         if (activeFun(pos))

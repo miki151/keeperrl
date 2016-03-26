@@ -838,14 +838,24 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   VillageInfo::Village info;
   info.name = col->getName().getShort();
   info.tribeName = col->getName().getRace();
-  info.knownLocation = knownVillainLocations.count(col);
+  if (getGame()->isSingleModel()) {
+    if (!knownVillainLocations.count(col))
+      info.access = VillageInfo::Village::NO_LOCATION;
+    else {
+      info.access = VillageInfo::Village::LOCATION;
+      info.triggers = col->getTriggers(getCollective());
+    }
+  } else if (!getGame()->isVillainActive(col))
+    info.access = VillageInfo::Village::INACTIVE;
+  else {
+    info.access = VillageInfo::Village::ACTIVE;
+    info.triggers = col->getTriggers(getCollective());
+  }
   bool hostile = col->getTribe()->isEnemy(getCollective()->getTribe());
   if (col->isConquered())
     info.state = info.CONQUERED;
-  else if (hostile) {
+  else if (hostile)
     info.state = info.HOSTILE;
-    info.triggers = col->getTriggers(getCollective());
-  }
   else {
     info.state = info.FRIENDLY;
     if (knownVillains.count(col)) {
@@ -853,7 +863,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
         info.actions.push_back({VillageAction::RECRUIT});
       if (!col->getTradeItems().empty())
         info.actions.push_back({VillageAction::TRADE});
-    } else {
+    } else if (getGame()->isVillainActive(col)){
       if (!col->getRecruits().empty())
         info.actions.push_back({VillageAction::RECRUIT,
             string("You must discover the location of the ally first.")});

@@ -209,7 +209,8 @@ class VillageInfo {
   struct Village {
     string HASH(name);
     string HASH(tribeName);
-    bool HASH(knownLocation);
+    enum Access { ACTIVE, INACTIVE, LOCATION, NO_LOCATION };
+    Access HASH(access);
     enum State { FRIENDLY, HOSTILE, CONQUERED } HASH(state);
     struct ActionInfo {
       VillageAction HASH(action);
@@ -218,7 +219,7 @@ class VillageInfo {
     };
     vector<ActionInfo> HASH(actions);
     vector<TriggerInfo> triggers;
-    HASH_ALL(name, tribeName, knownLocation, state, actions);
+    HASH_ALL(name, tribeName, access, state, actions);
   };
   vector<Village> HASH(villages);
   int HASH(numMainVillains);
