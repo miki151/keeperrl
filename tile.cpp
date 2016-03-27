@@ -285,7 +285,7 @@ class TileCoordLookup {
   }
 
   void genTiles() {
-    Tile::addTile(ViewId::UNKNOWN_MONSTER, symbol("?", ColorId::LIGHT_GREEN));
+    Tile::addTile(ViewId::UNKNOWN_MONSTER, sprite("unknown"));
     Tile::addTile(ViewId::DIG_MARK, sprite("dig_mark"));
     Tile::addTile(ViewId::FORBID_ZONE, sprite("dig_mark").setColor(colors[ColorId::RED]));
     Tile::addTile(ViewId::DESTROY_BUTTON, sprite("remove"));
@@ -299,6 +299,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BURNT_TREE, sprite("treeburnt").setNoShadow());
     Tile::addTile(ViewId::PLAYER, sprite("adventurer"));
     Tile::addTile(ViewId::KEEPER, sprite("keeper"));
+    Tile::addTile(ViewId::RETIRED_KEEPER, sprite("retired_keeper"));
     Tile::addTile(ViewId::ELF, sprite("elf male"));
     Tile::addTile(ViewId::ELF_WOMAN, sprite("elf female"));
     Tile::addTile(ViewId::ELF_ARCHER, sprite("elf archer"));
@@ -309,7 +310,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::DARK_ELF_WARRIOR, sprite("dark_elf_warrior"));
     Tile::addTile(ViewId::DARK_ELF_CHILD, sprite("dark_elf_kid"));
     Tile::addTile(ViewId::DARK_ELF_LORD, sprite("dark_elf_lord"));
-    Tile::addTile(ViewId::DRIAD, sprite("driada"));
+    Tile::addTile(ViewId::DRIAD, sprite("driad"));
     Tile::addTile(ViewId::KOBOLD, sprite("kobold"));
     Tile::addTile(ViewId::LIZARDMAN, sprite("lizardman"));
     Tile::addTile(ViewId::LIZARDLORD, sprite("lizardlord"));
@@ -342,6 +343,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::CROPS2, sprite("wheatfield2"));
     Tile::addTile(ViewId::MOUNTAIN, getMountainTile(sprite("mountain_ted").setNoShadow(), "mountain"));
     Tile::addTile(ViewId::WALL, getWallTile("wall"));
+    Tile::addTile(ViewId::MAP_MOUNTAIN, sprite("map_mountain"));
     Tile::addTile(ViewId::GOLD_ORE, getMountainTile(sprite("gold_ore").addBackground(byName("mountain_ted"))
           .setNoShadow(), "mountain"));
     Tile::addTile(ViewId::IRON_ORE, getMountainTile(sprite("iron_ore").addBackground(byName("mountain_ted"))
@@ -361,6 +363,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::MINION_STATUE, sprite("statue").setNoShadow());
     Tile::addTile(ViewId::THRONE, sprite("throne").setNoShadow());
     Tile::addTile(ViewId::ORC, sprite("orc"));
+    Tile::addTile(ViewId::ORC_CAPTAIN, sprite("orc_captain"));
     Tile::addTile(ViewId::ORC_SHAMAN, sprite("orcshaman"));
     Tile::addTile(ViewId::HARPY, sprite("harpy"));
     Tile::addTile(ViewId::DOPPLEGANGER, sprite("dopple"));
@@ -584,6 +587,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::DIG_MARK, symbol(" ", ColorId::BLACK));
     Tile::addSymbol(ViewId::PLAYER, symbol("@", ColorId::WHITE));
     Tile::addSymbol(ViewId::KEEPER, symbol("@", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::RETIRED_KEEPER, symbol("@", ColorId::BLUE));
     Tile::addSymbol(ViewId::UNKNOWN_MONSTER, symbol("?", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF, symbol("@", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF_WOMAN, symbol("@", ColorId::LIGHT_GREEN));
@@ -622,6 +626,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::MUD_WALL, symbol("#", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::WALL, symbol("#", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::MOUNTAIN, symbol("#", ColorId::DARK_GRAY));
+    Tile::addSymbol(ViewId::MAP_MOUNTAIN, symbol("^", ColorId::DARK_GRAY));
     Tile::addSymbol(ViewId::GOLD_ORE, symbol("⁂", ColorId::YELLOW, true));
     Tile::addSymbol(ViewId::IRON_ORE, symbol("⁂", ColorId::DARK_BROWN, true));
     Tile::addSymbol(ViewId::STONE, symbol("⁂", ColorId::LIGHT_GRAY, true));
@@ -634,6 +639,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::MINION_STATUE, symbol("&", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::THRONE, symbol("Ω", ColorId::YELLOW));
     Tile::addSymbol(ViewId::ORC, symbol("o", ColorId::DARK_BLUE));
+    Tile::addSymbol(ViewId::ORC_CAPTAIN, symbol("o", ColorId::PURPLE));
     Tile::addSymbol(ViewId::ORC_SHAMAN, symbol("o", ColorId::YELLOW));
     Tile::addSymbol(ViewId::HARPY, symbol("R", ColorId::YELLOW));
     Tile::addSymbol(ViewId::DOPPLEGANGER, symbol("&", ColorId::YELLOW));

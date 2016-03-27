@@ -34,6 +34,9 @@
 #include "player_message.h"
 #include "territory.h"
 #include "item_factory.h"
+#include "game.h"
+#include "model.h"
+#include "collective_name.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -415,8 +418,8 @@ class ApplyItem : public BringItem {
       return c->wait();
     } else {
       if (it.size() > 1)
-        FAIL << it[0]->getName() << " " << it[0]->getUniqueId() << " "  << it[1]->getName() << " " <<
-            it[1]->getUniqueId();
+        FAIL << it[0]->getName() << " " << it[0]->getUniqueId().getHash() << " "  << it[1]->getName() << " " <<
+            it[1]->getUniqueId().getHash();
       Item* item = getOnlyElement(it);
       if (auto action = c->applyItem(item))
         return action.prepend([=](Creature* c) {
@@ -903,7 +906,7 @@ class KillFighters : public Task {
     for (const Creature* target : collective->getCreatures(MinionTrait::FIGHTER))
       targets.insert(target);
     int numKilled = 0;
-    for (const Creature* victim : c->getKills())
+    for (Creature::Id victim : c->getKills())
       if (targets.contains(victim))
         ++numKilled;
     if (numKilled >= numCreatures || targets.empty()) {
@@ -914,7 +917,7 @@ class KillFighters : public Task {
   }
 
   virtual string getDescription() const override {
-    return "Kill " + toString(numCreatures) + " minions of " + collective->getFullName();
+    return "Kill " + toString(numCreatures) + " minions of " + collective->getName().getFull();
   }
 
   SERIALIZE_ALL2(Task, collective, numCreatures, targets); 
@@ -930,38 +933,6 @@ class KillFighters : public Task {
 
 PTask Task::killFighters(Collective* col, int numCreatures) {
   return PTask(new KillFighters(col, numCreatures));
-}
-
-namespace {
-
-class StayInLocationUntil : public Task {
-  public:
-  StayInLocationUntil(const Location* l, double t) : location(l), time(t) {}
-
-  virtual MoveInfo getMove(Creature* c) override {
-    if (c->getTime() >= time) {
-      setDone();
-      return NoMove;
-    }
-    return c->stayIn(location);
-  }
-
-  SERIALIZE_ALL2(Task, location, time); 
-  virtual string getDescription() const override {
-    return "Stay in " + (location->getName().get_value_or("location")) + " until " + toString(time);
-  }
-
-  SERIALIZATION_CONSTRUCTOR(StayInLocationUntil);
-
-  private:
-  const Location* SERIAL(location);
-  double SERIAL(time);
-};
-
-}
-
-PTask Task::stayInLocationUntil(const Location* l, double time) {
-  return PTask(new StayInLocationUntil(l, time));
 }
 
 namespace {
@@ -1178,12 +1149,43 @@ PTask Task::goTo(Position pos) {
 }
 
 namespace {
+class TransferTo : public Task {
+  public:
+  TransferTo(Model* m) : model(m) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (!target)
+      target = c->getGame()->getTransferPos(model, c->getPosition().getModel());
+    if (c->getPosition() == target) {
+      return c->wait().append([=] (Creature* c) { setDone(); c->getGame()->transferCreatures({c}, model); });
+    } else
+      return c->moveTowards(*target);
+  }
+
+  virtual string getDescription() const override {
+    return "Go to site";
+  }
+
+  SERIALIZE_ALL2(Task, target, model); 
+  SERIALIZATION_CONSTRUCTOR(TransferTo);
+
+  protected:
+  optional<Position> SERIAL(target);
+  Model* SERIAL(model);
+};
+}
+
+PTask Task::transferTo(Model *m) {
+  return PTask(new TransferTo(m));
+}
+
+namespace {
 class GoToAndWait : public Task {
   public:
   GoToAndWait(Position pos, double maxT) : position(pos), maxTime(maxT) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (c->getTime() >= maxTime)
+    if (c->getLocalTime() >= maxTime)
       setDone();
     if (c->getPosition() != position)
       return c->moveTowards(position);
@@ -1238,7 +1240,7 @@ class Whipping : public Task {
       }
       return c->whip(whipped->getPosition());
     } else {
-      if (c->getTime() > timeout) {
+      if (c->getLocalTime() > timeout) {
         setDone();
         callback->onWhippingDone(whipped, position);
       }
@@ -1363,12 +1365,12 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Explore);
   REGISTER_TYPE(ar, AttackLeader);
   REGISTER_TYPE(ar, KillFighters);
-  REGISTER_TYPE(ar, StayInLocationUntil);
   REGISTER_TYPE(ar, ConsumeItem);
   REGISTER_TYPE(ar, Copulate);
   REGISTER_TYPE(ar, Consume);
   REGISTER_TYPE(ar, Eat);
   REGISTER_TYPE(ar, GoTo);
+  REGISTER_TYPE(ar, TransferTo);
   REGISTER_TYPE(ar, GoToAndWait);
   REGISTER_TYPE(ar, Whipping);
   REGISTER_TYPE(ar, GoToAndWait);

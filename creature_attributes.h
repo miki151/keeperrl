@@ -112,7 +112,6 @@ class CreatureAttributes {
   int SERIAL(barehandedDamage) = 0;
   optional<AttackType> SERIAL(barehandedAttack);
   optional<EffectType> SERIAL(attackEffect);
-  bool SERIAL(harmlessApply) = false; // apply the attack effect even if attack was harmless
   optional<EffectType> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::male;
   EnumMap<BodyPart, int> SERIAL(bodyParts) { 

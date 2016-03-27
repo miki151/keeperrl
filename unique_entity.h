@@ -21,15 +21,27 @@
 template<typename T>
 class UniqueEntity {
   public:
-  typedef int Id;
-  UniqueEntity();
+  class Id {
+    public:
+    Id();
+    bool operator == (const Id&) const;
+    bool operator != (const Id&) const;
+    bool operator < (const Id&) const;
+    bool operator > (const Id&) const;
+    int getHash() const;
+    template <class Archive> 
+    void serialize(Archive& ar, const unsigned int version);
+
+    private:
+    long long SERIAL(key);
+  };
   Id getUniqueId() const;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  Id id;
+  Id SERIAL(id);
 };
 
 #endif

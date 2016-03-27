@@ -14,6 +14,7 @@ class MovementType;
 struct CoverInfo;
 class Attack;
 class Game;
+class TribeId;
 
 class Position {
   public:
@@ -24,6 +25,7 @@ class Position {
   int dist8(const Position&) const;
   bool isSameLevel(const Position&) const;
   bool isSameLevel(const Level*) const;
+  bool isSameModel(const Position&) const;
   Vec2 getDir(const Position&) const;
   Creature* getCreature() const;
   void removeCreature();
@@ -59,7 +61,7 @@ class Position {
   void onApply(Creature*);
   double getApplyTime() const;
   bool canHide() const;
-  void getViewIndex(ViewIndex&, TribeId) const;
+  void getViewIndex(ViewIndex&, const TribeId&) const;
   vector<Trigger*> getTriggers() const;
   PTrigger removeTrigger(Trigger*);
   vector<PTrigger> removeTriggers();

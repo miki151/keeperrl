@@ -3,32 +3,29 @@
 #include "creature.h"
 #include "entity_name.h"
 
-SERIALIZATION_CONSTRUCTOR_IMPL(VisibilityMap);
 
 template <class Archive> 
 void VisibilityMap::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(lastUpdates) & SVAR(visibilityCount);
+  serializeAll(ar, lastUpdates, visibilityCount);
 }
 
 SERIALIZABLE(VisibilityMap);
 
-VisibilityMap::VisibilityMap(const vector<Level*>& levels) : visibilityCount(levels) {
-}
-
 void VisibilityMap::update(const Creature* c, vector<Position> visibleTiles) {
   remove(c);
-  lastUpdates[c] = visibleTiles;
+  lastUpdates.set(c, visibleTiles);
   for (Position v : visibleTiles)
-    ++visibilityCount[v];
+    ++visibilityCount.getOrInit(v);
 }
 
 void VisibilityMap::remove(const Creature* c) {
-  for (Position v : lastUpdates[c])
-    --visibilityCount[v];
+  if (auto pos = lastUpdates.getMaybe(c))
+    for (Position v : *pos)
+      --visibilityCount.getOrFail(v);
   lastUpdates.erase(c);
 }
 
 bool VisibilityMap::isVisible(Position pos) const {
-  return visibilityCount[pos] > 0;
+  return visibilityCount.get(pos) > 0;
 }
 

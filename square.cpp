@@ -94,6 +94,7 @@ void Square::putCreature(Creature* c) {
   onEnter(c);
   if (c->isStationary())
     level->addTickingSquare(position);
+  c->onMoved();
 }
 
 void Square::setPosition(Vec2 v) {
@@ -238,11 +239,11 @@ void Square::updateMovement() {
   }
 }
 
-void Square::tick(double time) {
+void Square::tick() {
   setDirty();
   if (!inventory->isEmpty())
     for (Item* item : inventory->getItems()) {
-      item->tick(time, Position(position, level));
+      item->tick(Position(position, level));
       if (item->isDiscarded())
         inventory->removeItem(item);
     }
@@ -271,10 +272,10 @@ void Square::tick(double time) {
       t->setOnFire(fire->getSize());
   }
   for (Trigger* t : extractRefs(triggers))
-    t->tick(time);
+    t->tick();
   if (creature && creature->isStationary())
     level->updateConnectivity(position);
-  tickSpecial(time);
+  tickSpecial();
 }
 
 bool Square::itemLands(vector<Item*> item, const Attack& attack) const {

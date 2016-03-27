@@ -22,7 +22,6 @@
 #include "options.h"
 #include "technology.h"
 #include "level.h"
-#include "pantheon.h"
 #include "name_generator.h"
 #include "item_factory.h"
 #include "creature.h"
@@ -46,19 +45,15 @@
 #include "game.h"
 
 template <class Archive> 
-void Model::serialize(Archive& ar, const unsigned int version) { 
-  ar& SVAR(levels)
-    & SVAR(collectives)
-    & SVAR(timeQueue)
-    & SVAR(deadCreatures)
-    & SVAR(currentTime)
-    & SVAR(woodCount)
-    & SVAR(game)
-    & SVAR(lastTick)
-    & SVAR(stairNavigation)
-    & SVAR(cemetery);
+void Model::serialize(Archive& ar, const unsigned int version) {
+  CHECK(!serializationLocked);
+  serializeAll(ar, levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
+  serializeAll(ar, stairNavigation, cemetery);
 }
 
+void Model::lockSerialization() {
+  serializationLocked = true;
+}
 
 SERIALIZABLE(Model);
 
@@ -68,13 +63,6 @@ void Model::addWoodCount(int cnt) {
 
 int Model::getWoodCount() const {
   return woodCount;
-}
-
-const Creature* Model::getPlayer() const {
-  for (const PLevel& l : levels)
-    if (l->getPlayer())
-      return l->getPlayer();
-  return nullptr;
 }
 
 vector<Collective*> Model::getCollectives() const {
@@ -90,7 +78,7 @@ void Model::update(double totalTime) {
   Creature* creature = timeQueue->getNextCreature();
   CHECK(creature) << "No more creatures";
   //Debug() << creature->getName().the() << " moving now " << creature->getTime();
-  currentTime = creature->getTime();
+  currentTime = creature->getLocalTime();
   if (currentTime > totalTime)
     return;
   while (totalTime > lastTick + 1) {
@@ -106,36 +94,41 @@ void Model::update(double totalTime) {
     CreatureAction::checkUsage(false);
 #endif
   }
-  for (PCollective& c : collectives)
-    c->update(creature);
-  if (!creature->isDead())
+  if (!creature->isDead() && creature->getLevel()->getModel() == this)
     CHECK(creature->getPosition().getCreature() == creature);
 }
 
 void Model::tick(double time) {
   for (Creature* c : timeQueue->getAllCreatures()) {
-    c->tick(time);
+    c->tick();
   }
   for (PLevel& l : levels)
-    l->tick(time);
+    l->tick();
   for (PCollective& col : collectives)
-    col->tick(time);
+    col->tick();
 }
 
 void Model::addCreature(PCreature c, double delay) {
-  c->setTime(timeQueue->getCurrentTime() + 1 + delay + Random.getDouble());
+  c->setLocalTime(getTime() + 1 + delay + Random.getDouble());
+  if (c->isPlayer())
+    game->setPlayer(c.get());
   timeQueue->addCreature(std::move(c));
 }
 
 Level* Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
   LevelBuilder builder(std::move(b));
-  levels.push_back(builder.build(this, maker.get(), levels.size()));
+  levels.push_back(builder.build(this, maker.get(), Random.getLL()));
   return levels.back().get();
 }
 
 Model::Model() {
+  clearDeadCreatures();
+}
+
+void Model::clearDeadCreatures() {
+  deadCreatures.clear();
   cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
-      .build(this, LevelMaker::emptyLevel(Random).get(), 0);
+      .build(this, LevelMaker::emptyLevel(Random).get(), Random.getLL());
 }
 
 Model::~Model() {
@@ -189,11 +182,10 @@ optional<StairKey> Model::getStairsBetween(const Level* from, const Level* to) {
   return none;
 }
 
-Position Model::getStairs(const Level* from, const Level* to) {
-  CHECK(contains(getLevels(), from));
-  CHECK(contains(getLevels(), to));
+optional<Position> Model::getStairs(const Level* from, const Level* to) {
   CHECK(from != to);
-  CHECK(stairNavigation.count({from, to})) << "No link " << from->getName() << " " << to->getName();
+  if (!contains(getLevels(), from) || ! contains(getLevels(), to) || !stairNavigation.count({from, to}))
+    return none;
   return Random.choose(from->getLandingSquares(stairNavigation.at({from, to})));
 }
 
@@ -201,13 +193,29 @@ vector<Level*> Model::getLevels() const {
   return extractRefs(levels);
 }
 
+Level* Model::getTopLevel() const {
+  return levels[0].get();
+}
+
 void Model::killCreature(Creature* c, Creature* attacker) {
   if (attacker)
     attacker->onKilled(c);
   c->getTribe()->onMemberKilled(c, attacker);
-  for (auto& col : collectives)
-    col->onKilled(c, attacker);
   deadCreatures.push_back(timeQueue->removeCreature(c));
   cemetery->landCreature(cemetery->getAllPositions(), c);
 }
 
+PCreature Model::extractCreature(Creature* c) {
+  PCreature ret = timeQueue->removeCreature(c);
+  c->getLevel()->removeCreature(c);
+  return ret;
+}
+
+void Model::transferCreature(PCreature c, Vec2 travelDir) {
+  CHECK(getTopLevel()->landCreature(StairKey::transferLanding(), std::move(c), travelDir));
+}
+
+vector<Creature*> Model::getAllCreatures() const { 
+  return timeQueue->getAllCreatures();
+
+}

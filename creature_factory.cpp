@@ -234,7 +234,7 @@ class SokobanController : public Monster {
     Vec2 goDir = player->getPosition().getDir(getCreature()->getPosition());
     if (goDir.isCardinal4() && getCreature()->getPosition().plus(goDir).canEnter(
           getCreature()->getMovementType().setForced(true))) {
-      getCreature()->displace(getCreature()->getTime(), goDir);
+      getCreature()->displace(getCreature()->getLocalTime(), goDir);
       player->move(goDir).perform(player);
     }
   }
@@ -491,7 +491,7 @@ class ShopkeeperController : public Monster {
     for (auto elem : debt) {
       const Creature* c = elem.first;
       if (!contains(creatures, c)) {
-        c->playerMessage("\"Come back, you owe me " + toString(elem.second) + " zorkmids!\"");
+        c->playerMessage("\"Come back, you owe me " + toString(elem.second) + " gold!\"");
         if (++thiefCount[c] == 4) {
           c->playerMessage("\"Thief! Thief!\"");
           getCreature()->getTribe()->onItemsStolen(c);
@@ -535,7 +535,7 @@ class ShopkeeperController : public Monster {
   REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items) {
     if (shopArea->contains(c->getPosition())) {
       for (const Item* item : items)
-        if (item->getShopkeeper() == getCreature()) {
+        if (item->isShopkeeper(getCreature())) {
           debt[c] += item->getPrice();
           unpaidItems[c].insert(item);
         }
@@ -545,7 +545,7 @@ class ShopkeeperController : public Monster {
   REGISTER_HANDLER(DropEvent, const Creature* c, const vector<Item*>& items) {
     if (shopArea->contains(c->getPosition())) {
       for (const Item* item : items)
-        if (item->getShopkeeper() == getCreature()) {
+        if (item->isShopkeeper(getCreature())) {
           if ((debt[c] -= item->getPrice()) <= 0)
             debt.erase(c);
           unpaidItems[c].erase(item);
@@ -1179,7 +1179,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 35;
           c.attr[AttrType::DEXTERITY] = 45;
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
-          c.harmlessApply = true;
           c.humanoid = false;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.barehandedDamage = 10;
@@ -1675,7 +1674,6 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.barehandedDamage = 7;
           c.barehandedAttack = AttackType::BITE;
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
-          c.harmlessApply = true;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.humanoid = true;
           c.weight = 50;
@@ -2345,6 +2343,9 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::LIZARDMAN: 
       return ItemList().add(ItemId::LEATHER_ARMOR)
         .add(ItemId::GOLD_PIECE, Random.get(10, 20));
+    case CreatureId::HARPY: 
+      return ItemList()
+        .add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36));
     case CreatureId::ARCHER: 
       return ItemList()
         .add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36))

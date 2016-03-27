@@ -36,7 +36,7 @@ static vector<EffectType> combatConsumables {
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(owners) & SVAR(locked);
+  serializeAll(ar, owners, locked);
 }
 
 SERIALIZABLE(MinionEquipment);
@@ -83,16 +83,16 @@ bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit, boo
 }
 
 const Creature* MinionEquipment::getOwner(const Item* it) const {
-  if (owners.count(it->getUniqueId()))
-    return owners.at(it->getUniqueId());
+  if (auto owner = owners.getMaybe(it))
+    return *owner;
   else
     return nullptr;
 }
 
 void MinionEquipment::updateOwners(const vector<Item*> items) {
   for (const Item* item : items)
-    if (owners.count(item->getUniqueId())) {
-      const Creature* c = owners.at(item->getUniqueId());
+    if (auto owner = owners.getMaybe(item)) {
+      const Creature* c = *owner;
       if (c->isDead() || !needs(c, item, true, true))
         discard(item);
     }
@@ -103,14 +103,14 @@ void MinionEquipment::discard(const Item* it) {
 }
 
 void MinionEquipment::discard(UniqueEntity<Item>::Id id) {
-  if (owners.count(id)) {
-    locked.erase(make_pair(owners.at(id)->getUniqueId(), id));
+  if (auto owner = owners.getMaybe(id)) {
+    locked.erase(make_pair((*owner)->getUniqueId(), id));
     owners.erase(id);
   }
 }
 
 void MinionEquipment::own(const Creature* c, const Item* it) {
-  owners[it->getUniqueId()] = c;
+  owners.set(it, c);
 }
 
 bool MinionEquipment::isItemAppropriate(const Creature* c, const Item* it) const {

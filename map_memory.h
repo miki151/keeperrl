@@ -25,7 +25,7 @@ class ViewIndex;
 
 class MapMemory {
   public:
-  MapMemory(const vector<Level*>&);
+  MapMemory();
   void addObject(Position, const ViewObject&);
   void update(Position, const ViewIndex&);
   const unordered_set<Position, CustomHash<Position>>& getUpdated(const Level*) const;
@@ -34,7 +34,8 @@ class MapMemory {
   static const MapMemory& empty();
   const optional<ViewIndex>& getViewIndex(Position) const;
 
-  SERIALIZATION_DECL(MapMemory);
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
 
   private:
   void updateUpdated(Position);

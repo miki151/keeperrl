@@ -58,12 +58,12 @@ vector<int> creatureEffectRange { 2, 5, 10};
 
 class IllusionController : public DoNothingController {
   public:
-  IllusionController(Creature* c, double deathT) : DoNothingController(c), creature(c), deathTime(deathT) {}
+  IllusionController(Creature* c, double deathT) : DoNothingController(c), deathTime(deathT) {}
 
   void kill() {
-    creature->monsterMessage("The illusion disappears.");
-    if (!creature->isDead())
-      creature->die();
+    getCreature()->monsterMessage("The illusion disappears.");
+    if (!getCreature()->isDead())
+      getCreature()->die();
   }
 
   virtual void onBump(Creature* c) override {
@@ -72,23 +72,21 @@ class IllusionController : public DoNothingController {
   }
 
   virtual void makeMove() override {
-    if (creature->getTime() >= deathTime)
+    if (getCreature()->getGlobalTime() >= deathTime)
       kill();
     else
-      creature->wait().perform(getCreature());
+      getCreature()->wait().perform(getCreature());
   }
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(DoNothingController) 
-      & SVAR(creature)
-      & SVAR(deathTime);
+    ar& SUBCLASS(DoNothingController);
+    serializeAll(ar, deathTime);
   }
 
   SERIALIZATION_CONSTRUCTOR(IllusionController);
 
   private:
-  Creature* SERIAL(creature);
   double SERIAL(deathTime);
 };
 
@@ -140,8 +138,8 @@ static void deception(Creature* creature) {
           c.dyingSound = SoundId::MISSED_ATTACK;
           c.noAttackSound = true;
           c.name = "illusion";),
-        ControllerFactory([creature] (Creature* o) { return new IllusionController(o, creature->getTime()
-            + Random.get(5, 10));}))));
+        ControllerFactory([creature] (Creature* o) { return new IllusionController(o,
+            creature->getGlobalTime() + Random.get(5, 10));}))));
   }
   summonCreatures(creature, 2, std::move(creatures));
 }
@@ -184,7 +182,7 @@ static void blast(Creature* who, Position position, Vec2 direction, int maxDista
         else
           break;
       if (dist > 0) {
-        c->displace(who->getTime(), direction * dist);
+        c->displace(who->getLocalTime(), direction * dist);
         c->you(MsgType::ARE, "thrown back");
       }
       if (damage)
@@ -233,7 +231,7 @@ static void guardingBuilder(Creature* c) {
     }
   Position pos = c->getPosition();
   if (dest)
-    c->displace(c->getTime(), *dest);
+    c->displace(c->getLocalTime(), *dest);
   else {
     Effect::applyToCreature(c, EffectType(EffectId::TELEPORT), EffectStrength::NORMAL);
   }
@@ -253,7 +251,7 @@ vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, int ttl, d
 vector<Creature*> Effect::summon(Position pos, CreatureFactory& factory, int num, int ttl, double delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(factory.random(MonsterAIFactory::dieTime(pos.getModel()->getTime() + ttl)));
+    creatures.push_back(factory.random(MonsterAIFactory::dieTime(pos.getGame()->getGlobalTime() + ttl)));
   return summonCreatures(pos, 2, std::move(creatures), delay);
 }
 
@@ -307,20 +305,20 @@ static void teleport(Creature* c) {
   Vec2 teleRadius(6, 6);
   Rectangle area(-enemyRadius, enemyRadius + Vec2(1, 1));
   int infinity = 10000;
-  PositionMap<int> weight(c->getPosition().getModel()->getLevels(), infinity);
+  PositionMap<int> weight(infinity);
   queue<Position> q;
   for (Position v : c->getPosition().getRectangle(area))
     if (Creature *other = v.getCreature())
       if (other->isEnemy(c)) {
         q.push(v);
-        weight[v] = 0;
+        weight.set(v, 0);
       }
   while (!q.empty()) {
     Position v = q.front();
     q.pop();
     for (Position w : v.neighbors8())
-      if (w.canEnterEmpty({MovementTrait::WALK}) && weight[w] == infinity) {
-        weight[w] = weight[v] + 1;
+      if (w.canEnterEmpty({MovementTrait::WALK}) && weight.get(w) == infinity) {
+        weight.set(w, weight.get(v) + 1);
         q.push(w);
       }
   }
@@ -329,11 +327,12 @@ static void teleport(Creature* c) {
   for (Position v : c->getPosition().getRectangle(area)) {
     if (!v.canEnter(c) || v.isBurning() || v.getPoisonGasAmount() > 0)
       continue;
-    if (weight[v] == maxW)
+    int weightV = weight.get(v);
+    if (weightV == maxW)
       good.push_back(v);
-    else if (weight[v] > maxW) {
+    else if (weightV > maxW) {
       good = {v};
-      maxW = weight[v];
+      maxW = weightV;
     }
   }
   if (maxW < 2) {
@@ -375,6 +374,7 @@ void silverDamage(Creature* c) {
 
 double getDuration(const Creature* c, LastingEffect e, int strength) {
   switch (e) {
+    case LastingEffect::PREGNANT: return 900;
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::STRENGTH)));
     case LastingEffect::HALLU:
@@ -431,7 +431,7 @@ static double getSummonDelay(CreatureId id) {
 static void summon(Creature* summoner, CreatureId id) {
   switch (id) {
     case CreatureId::AUTOMATON: {
-      CreatureFactory f = CreatureFactory::singleType(TribeId::HOSTILE, id);
+      CreatureFactory f = CreatureFactory::singleType(TribeId::getHostile(), id);
       Effect::summon(summoner->getPosition(), f, Random.get(getSummonNumber(id)), getSummonTtl(id),
           getSummonDelay(id));
       break;
@@ -489,7 +489,7 @@ void Effect::applyDirected(Creature* c, Vec2 direction, const DirEffectType& typ
 
 static string getCreaturePluralName(CreatureId id) {
   static map<CreatureId, string> names;
-  return CreatureFactory::fromId(id, TribeId::HUMAN)->getName().plural();
+  return CreatureFactory::fromId(id, TribeId::getHuman())->getName().plural();
 }
 
 static string getCreatureName(CreatureId id) {
@@ -497,14 +497,14 @@ static string getCreatureName(CreatureId id) {
     return getCreaturePluralName(id);
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = CreatureFactory::fromId(id, TribeId::HUMAN)->getName().bare();
+    names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().bare();
   return names.at(id);
 }
 
 static string getCreatureAName(CreatureId id) {
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = CreatureFactory::fromId(id, TribeId::HUMAN)->getName().a();
+    names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().a();
   return names.at(id);
 }
 
@@ -578,6 +578,7 @@ string Effect::getDescription(const EffectType& type) {
 
 string Effect::getName(LastingEffect type) {
   switch (type) {
+    case LastingEffect::PREGNANT: return "pregnant";
     case LastingEffect::SLOWED: return "slowness";
     case LastingEffect::SPEED: return "speed";
     case LastingEffect::BLIND: return "blindness";
@@ -603,6 +604,7 @@ string Effect::getName(LastingEffect type) {
 
 string Effect::getDescription(LastingEffect type) {
   switch (type) {
+    case LastingEffect::PREGNANT: return "This is no dream! This is really happening!";
     case LastingEffect::SLOWED: return "Causes unnaturally slow movement.";
     case LastingEffect::SPEED: return "Causes unnaturally quick movement.";
     case LastingEffect::BLIND: return "Causes blindness";

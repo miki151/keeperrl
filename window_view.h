@@ -90,8 +90,11 @@ class WindowView: public View {
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
   virtual void addSound(const Sound&) override;
-  virtual CampaignAction prepareCampaign(Campaign&) override;
-  
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current) override;
+  virtual CampaignAction prepareCampaign(const Campaign&, CampaignSetupInfo&) override;
+  virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
+      const string& cancelText) override;
+ 
   private:
 
   Renderer& renderer;

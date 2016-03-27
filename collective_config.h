@@ -22,6 +22,8 @@
 
 enum class ItemClass;
 
+class Game;
+
 enum class AttractionId {
   SQUARE,
   ITEM_INDEX,
@@ -119,6 +121,8 @@ class CollectiveConfig {
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
+
+  bool activeImmigrantion(const Game*) const;
 
   SERIALIZATION_DECL(CollectiveConfig);
 

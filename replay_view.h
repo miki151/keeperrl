@@ -83,7 +83,7 @@ class ReplayView : public View {
       return readValue<optional<UniqueEntity<Creature>::Id>>(LoggingToken::CHOOSE_RECRUIT);
     }
 
-    virtual optional<UniqueEntity<Creature>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
+    virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
         const vector<ItemInfo>& c, double* scrollPos) override {
       return readValue<optional<UniqueEntity<Item>::Id>>(LoggingToken::CHOOSE_TRADE_ITEM);
     }
@@ -115,8 +115,17 @@ class ReplayView : public View {
         delegate->addSound(s);
     }
 
-    virtual CampaignAction prepareCampaign(Campaign& c) override {
-      return delegate->prepareCampaign(c);
+    virtual optional<Vec2> chooseSite(const string& message, const Campaign& c, optional<Vec2> cur) override {
+      return delegate->chooseSite(message, c, cur);
+    }
+
+    virtual CampaignAction prepareCampaign(const Campaign& c, CampaignSetupInfo& setup) override {
+      return delegate->prepareCampaign(c, setup);
+    }
+
+    virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>& c,
+        const string& cancelText) override {
+      return delegate->chooseTeamLeader(title, c, cancelText);
     }
 
     virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {

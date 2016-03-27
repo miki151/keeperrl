@@ -16,7 +16,6 @@
 #include "stdafx.h"
 
 #include "level_maker.h"
-#include "pantheon.h"
 #include "item_factory.h"
 #include "square.h"
 #include "collective_builder.h"
@@ -1050,49 +1049,6 @@ class Margin : public LevelMaker {
   LevelMaker* inside;
 };
 
-class Shrine : public LevelMaker {
-  public:
-  Shrine(DeityHabitat _deity, SquareType _floorType, Predicate wallPred, SquareType _newWall,
-      LevelMaker* _locationMaker = nullptr) : deity(_deity), floorType(_floorType),
-      wallPredicate(wallPred), newWall(_newWall), locationMaker(_locationMaker) {}
-
-  virtual void make(LevelBuilder* builder, Rectangle area) override {
-    for (int i : Range(10009)) {
-      Vec2 pos = area.randomVec2();
-      if (!wallPredicate.apply(builder, pos))
-        continue;
-      int numFloor = 0;
-      int numWall = 0;
-      for (Vec2 fl : pos.neighbors8()) {
-        if (builder->getType(fl) == floorType)
-          ++numFloor;
-        if (wallPredicate.apply(builder, fl))
-          ++numWall;
-      }
-      if (numFloor < 3 || numWall < 5) {
-        continue;
-      }
-      builder->putSquare(pos, floorType);
-      builder->putSquare(pos, SquareType(SquareId::ALTAR, deity));
-      for (Vec2 fl : pos.neighbors8())
-        if (wallPredicate.apply(builder, fl))
-          builder->putSquare(fl, newWall);
-      if (locationMaker)
-        locationMaker->make(builder, Rectangle(pos - Vec2(1, 1), pos + Vec2(2, 2)));
-      Debug() << "Created a shrine of " << int(deity);
-      return;
-    }
-    Debug() << "Didn't find a good place for the shrine of " << int(deity);
-  }
-
-  private:
-  DeityHabitat deity;
-  SquareType floorType;
-  Predicate wallPredicate;
-  SquareType newWall;
-  LevelMaker* locationMaker;
-};
-
 void addAvg(int x, int y, const Table<double>& wys, double& avg, int& num) {
   Vec2 pos(x, y);
   if (pos.inRectangle(wys.getBounds())) {
@@ -1322,13 +1278,36 @@ class StartingPos : public LevelMaker {
   StairKey stairKey;
 };
 
+class TransferPos : public LevelMaker {
+  public:
+
+  TransferPos(Predicate pred, StairKey key, int w) : predicate(pred), stairKey(key), width(w) {}
+
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
+    bool found = false;
+    for (Vec2 pos : area)
+      if (((pos.x - area.getPX() < width) || (pos.y - area.getPY() < width) ||
+          (area.getKX() - pos.x <= width) || (area.getKY() - pos.y <= width)) &&
+          predicate.apply(builder, pos)) {
+        builder->getSquare(pos)->setLandingLink(stairKey);
+        found = true;
+      }
+    checkGen(found);
+  }
+
+  private:
+  Predicate predicate;
+  StairKey stairKey;
+  int width;
+};
+
 class Forrest : public LevelMaker {
   public:
   Forrest(double _ratio, double _density, SquareType _onType, vector<SquareType> _types, vector<double> _probs) 
       : ratio(_ratio), density(_density), types(_types), probs(_probs), onType(_onType) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    Table<double> wys = genNoiseMap(builder->getRandom(), area, {0, 0, 0, 0, 0}, 0.9);
+    Table<double> wys = genNoiseMap(builder->getRandom(), area, {0, 0, 0, 0, 0}, 0.5);
     vector<double> values = sortedValues(wys);
     double cutoff = values[values.size() * ratio];
     for (Vec2 v : area)
@@ -1913,7 +1892,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::SWAMP: return {random.get(12, 16), random.get(12, 16)};
     case SettlementType::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
     case SettlementType::FOREST: return {18, 13};
-    case SettlementType::VILLAGE2: return {30, 20};
+    case SettlementType::VILLAGE2: return {20, 20};
     case SettlementType::VILLAGE:
     case SettlementType::ANT_NEST:
     case SettlementType::CASTLE: return {30, 20};
@@ -1924,7 +1903,8 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::SPIDER_CAVE: return {12, 12};
     case SettlementType::VAULT: return {10, 10};
     case SettlementType::TOWER: return {5, 5};
-    case SettlementType::ISLAND_VAULT: return {random.get(15, 25), random.get(15, 25)};
+    case SettlementType::ISLAND_VAULT_DOOR:
+    case SettlementType::ISLAND_VAULT: return {6, 6};
   }
 }
 
@@ -1932,23 +1912,30 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
   switch (type) {
     case SettlementType::FOREST:
     case SettlementType::VILLAGE2:
-        return Predicate::andPred(
-            Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)),
-            Predicate::attrib(SquareAttrib::FORREST));
-    case SettlementType::CAVE: return RandomLocations::LocationPredicate(
-        Predicate::type(SquareId::MOUNTAIN), Predicate::type(SquareId::HILL), 5, 15);
+      return Predicate::andPred(
+          Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)),
+          Predicate::attrib(SquareAttrib::FORREST));
+    case SettlementType::CAVE:
+      return RandomLocations::LocationPredicate(
+          Predicate::type(SquareId::MOUNTAIN), Predicate::type(SquareId::HILL), 5, 15);
     case SettlementType::VAULT:
     case SettlementType::ANT_NEST:
     case SettlementType::SMALL_MINETOWN:
-    case SettlementType::MINETOWN: return Predicate::type(SquareId::MOUNTAIN);
-    case SettlementType::SPIDER_CAVE: return RandomLocations::LocationPredicate(
-        Predicate::type(SquareId::MOUNTAIN), Predicate::andPred(
-          Predicate::negate(Predicate::attrib(SquareAttrib::LOCATION)),
-          Predicate::attrib(SquareAttrib::CONNECTOR)), 1, 2);
+    case SettlementType::MINETOWN:
+      return Predicate::type(SquareId::MOUNTAIN);
+    case SettlementType::SPIDER_CAVE:
+      return RandomLocations::LocationPredicate(
+          Predicate::type(SquareId::MOUNTAIN), Predicate::andPred(
+            Predicate::negate(Predicate::attrib(SquareAttrib::LOCATION)),
+            Predicate::attrib(SquareAttrib::CONNECTOR)), 1, 2);
     case SettlementType::ISLAND_VAULT:
-        return Predicate::attrib(SquareAttrib::MOUNTAIN);
-    default: return Predicate::andPred(Predicate::attrib(SquareAttrib::LOWLAND),
-                 Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
+      return Predicate::attrib(SquareAttrib::MOUNTAIN);
+    case SettlementType::ISLAND_VAULT_DOOR:
+      return RandomLocations::LocationPredicate(
+          Predicate::attrib(SquareAttrib::MOUNTAIN), Predicate::attrib(SquareAttrib::RIVER), 10, 30);
+    default:
+      return Predicate::andPred(Predicate::attrib(SquareAttrib::LOWLAND),
+          Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
   }
 }
 
@@ -2041,11 +2028,8 @@ static MakerQueue* spiderCaveMaker(SettlementInfo info) {
   return queue;
 }
 
-static LevelMaker* islandVaultMaker(RandomGen& random, SettlementInfo info, bool connection) {
-  MakerQueue* queue = new MakerQueue();
+static LevelMaker* islandVaultMaker(RandomGen& random, SettlementInfo info, bool door) {
   BuildingInfo building = getBuildingInfo(info);
-  queue->addMaker(new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE));
-  RandomLocations* locations = new RandomLocations();
   MakerQueue* inside = new MakerQueue();
   inside->addMaker(new LocationMaker(info.location));
   Predicate featurePred = Predicate::type(building.floorInside);
@@ -2057,18 +2041,17 @@ static LevelMaker* islandVaultMaker(RandomGen& random, SettlementInfo info, bool
     inside->addMaker(new Stairs(StairInfo::Direction::DOWN, key, featurePred));
   for (StairKey key : info.upStairs)
     inside->addMaker(new Stairs(StairInfo::Direction::UP, key, featurePred));
-
-  locations->add(new Margin(1, new MakerQueue({
+  MakerQueue* buildingMaker = new MakerQueue({
       new Empty(building.wall),
       new AddAttrib(SquareAttrib::NO_DIG),
-      new RemoveAttrib(SquareAttrib::LAKE),
-      //new AddAttrib(SquareAttrib::CONNECT_CORRIDOR),
+      new RemoveAttrib(SquareAttrib::CONNECT_CORRIDOR),
       new Margin(1, inside),
-      //new LevelExit(SquareId::DOOR)
-      })),
-      Vec2(random.get(6, 8), random.get(6, 8)), Predicate::type(SquareId::WATER));
-  queue->addMaker(new Margin(3, locations));
-  return queue;
+      });
+  if (door)
+    buildingMaker->addMaker(new LevelExit(SquareId::DOOR));
+  return new MakerQueue({
+        new Empty(SquareId::WATER),
+        new Margin(1, buildingMaker)});
 }
 
 static MakerQueue* dragonCaveMaker(SettlementInfo info) {
@@ -2131,17 +2114,49 @@ LevelMaker* swamp(SettlementInfo info) {
   return queue;
 }
 
-PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreatures,
-    vector<SettlementInfo> settlements, int width) {
-  MakerQueue* queue = new MakerQueue();
+static LevelMaker* getMountains(BiomeId id) {
+  switch (id) {
+    case BiomeId::GRASSLAND:
+    case BiomeId::FORREST:
+      return new Mountains({0.0, 0.0, 0.75, 0.83, 0.95}, 0.45, {0, 1, 0, 0, 0},
+            {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND});
+    case BiomeId::MOUNTAIN:
+      return new Mountains({0.0, 0.0, 0.05, 0.28, 0.75}, 0.45, {0, 1, 0, 0, 0},
+            {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND});
+  }
+}
+
+static LevelMaker* getForrest(BiomeId id) {
   vector<SquareType> vegetationLow {
       getTreesType(SquareId::CANIF_TREE), getTreesType(SquareId::BUSH) };
   vector<SquareType> vegetationHigh { getTreesType(SquareId::DECID_TREE), getTreesType(SquareId::BUSH) };
   vector<double> probs { 2, 1 };
+  switch (id) {
+    case BiomeId::MOUNTAIN:
+      return new MakerQueue({
+          new Forrest(0.7, 0.5, SquareId::GRASS, vegetationLow, probs),
+          new Forrest(0.7, 0.5, SquareId::HILL, vegetationHigh, probs)});
+    case BiomeId::GRASSLAND:
+      return new MakerQueue({
+          new Forrest(0.3, 0.25, SquareId::GRASS, vegetationLow, probs),
+          new Forrest(0.3, 0.25, SquareId::HILL, vegetationHigh, probs)});
+    case BiomeId::FORREST:
+      return new MakerQueue({
+          new Forrest(0.8, 0.5, SquareId::GRASS, vegetationLow, probs),
+          new Forrest(0.8, 0.5, SquareId::HILL, vegetationHigh, probs)});
+  }
+}
+
+PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreatures,
+    vector<SettlementInfo> settlements, int width, bool keeperSpawn, BiomeId biomeId) {
+  MakerQueue* queue = new MakerQueue();
   RandomLocations* locations = new RandomLocations();
   RandomLocations* locations2 = new RandomLocations();
-  LevelMaker* startingPos = new StartingPos(Predicate::type(SquareId::HILL), StairKey::keeperSpawn());
-  locations->add(startingPos, Vec2(4, 4), Predicate::type(SquareId::HILL));
+  LevelMaker* startingPos = nullptr;
+  if (keeperSpawn) {
+    startingPos = new StartingPos(Predicate::alwaysTrue(), StairKey::keeperSpawn());
+    locations->add(startingPos, Vec2(4, 4), Predicate::type(SquareId::HILL));
+  }
   struct CottageInfo {
     LevelMaker* maker;
     CollectiveBuilder* collective;
@@ -2180,10 +2195,14 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
           break;
       case SettlementType::VAULT:
           queue = vaultMaker(settlement, false);
-          locations->setMaxDistance(startingPos, queue, width / 3);
+          if (keeperSpawn)
+            locations->setMaxDistance(startingPos, queue, width / 3);
           break;
       case SettlementType::ISLAND_VAULT:
           queue = islandVaultMaker(random, settlement, false);
+          break;
+      case SettlementType::ISLAND_VAULT_DOOR:
+          queue = islandVaultMaker(random, settlement, true);
           break;
       case SettlementType::CAVE:
           queue = dragonCaveMaker(settlement); break;
@@ -2201,11 +2220,13 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
     if (settlement.type == SettlementType::SPIDER_CAVE)
       locations2->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
     else {
-      if (settlement.closeToPlayer) {
-        locations->setMinDistance(startingPos, queue, 25);
-        locations->setMaxDistance(startingPos, queue, 60);
-      } else
-        locations->setMinDistance(startingPos, queue, 70);
+      if (keeperSpawn) {
+        if (settlement.closeToPlayer) {
+          locations->setMinDistance(startingPos, queue, 25);
+          locations->setMaxDistance(startingPos, queue, 60);
+        } else
+          locations->setMinDistance(startingPos, queue, 70);
+      }
       locations->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
     }
   }
@@ -2235,22 +2256,24 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   }*/
   int maxDist = 1000;
   int maxDist2 = 1000;
-  addResources(random, locations, random.get(4, 6), 1, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE, startingPos);
-  addResources(random, locations, random.get(3, 6), 2, 5, 10, maxDist, maxDist2, SquareId::STONE, startingPos);
-  addResources(random, locations, random.get(7, 12), 4, 5, 10, maxDist, maxDist2, SquareId::IRON_ORE, startingPos);
+  if (keeperSpawn) {
+    addResources(random, locations, random.get(4, 6), 1, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE, startingPos);
+    addResources(random, locations, random.get(3, 6), 2, 5, 10, maxDist, maxDist2, SquareId::STONE, startingPos);
+    addResources(random, locations, random.get(7, 12), 4, 5, 10, maxDist, maxDist2, SquareId::IRON_ORE, startingPos);
+  }
   int mapBorder = 30;
-  int locationMargin = 20;
+  int locationMargin = 10;
   queue->addMaker(new Empty(SquareId::WATER));
-  queue->addMaker(new Mountains({0.0, 0.0, 0.6, 0.68, 0.95}, 0.45, {0, 1, 0, 0, 0},
-        {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND}));
+  queue->addMaker(getMountains(biomeId));
+  queue->addMaker(new MountainRiver(1, SquareId::WATER, SquareId::SAND,
+          Predicate::type(SquareId::MOUNTAIN)));
   queue->addMaker(new AddAttrib(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::LOWLAND)));
   queue->addMaker(new AddAttrib(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::HILL)));
-  queue->addMaker(new MountainRiver(2, SquareId::WATER, SquareId::SAND,
-          Predicate::type(SquareId::MOUNTAIN)));
-  queue->addMaker(new Forrest(0.7, 0.5, SquareId::GRASS, vegetationLow, probs));
-  queue->addMaker(new Forrest(0.4, 0.5, SquareId::HILL, vegetationHigh, probs));
+  queue->addMaker(getForrest(biomeId));
   queue->addMaker(new Margin(mapBorder + locationMargin, locations));
   queue->addMaker(new Margin(mapBorder, new Roads(SquareId::FLOOR)));
+  queue->addMaker(new Margin(mapBorder,
+        new TransferPos(Predicate::canEnter(MovementTrait::WALK), StairKey::transferLanding(), 2)));
   queue->addMaker(new Margin(mapBorder, new Connector(SquareId::DOOR, 0, 5,
           Predicate::andPred(Predicate::canEnter({MovementTrait::WALK}),
           Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR)), SquareAttrib::CONNECTOR)));
@@ -2404,7 +2427,7 @@ found:
       boulders.push_back(pos);
     }
     builder->putSquare(start + Vec2(length + 1, 0), SquareId::FLOOR);
-    builder->putSquare(start + Vec2(length + 1, 0), {SquareId::TRIBE_DOOR, TribeId::HOSTILE});
+    builder->putSquare(start + Vec2(length + 1, 0), {SquareId::TRIBE_DOOR, TribeId::getHostile()});
     for (Vec2 v : Rectangle::centered(start + Vec2(length + roomRadius + 2, 0), roomRadius))
       builder->putSquare(v, SquareId::FLOOR, SquareAttrib::SOKOBAN_PRIZE);
     set<int> visited;
@@ -2500,6 +2523,8 @@ PLevelMaker LevelMaker::quickLevel(RandomGen&) {
           {new Empty(SquareId::FLOOR)}, {{2, 2}},
           Predicate::type(SquareId::MOUNTAIN)));*/
   queue->addMaker(new StartingPos(Predicate::type(SquareId::GRASS), StairKey::keeperSpawn()));
+  queue->addMaker(new Margin(2,
+        new TransferPos(Predicate::type(SquareId::GRASS), StairKey::transferLanding(), 2)));
   queue->addMaker(new AddMapBorder(2));
   return PLevelMaker(new BorderGuard(queue, SquareId::BLACK_WALL));
 }

@@ -63,7 +63,7 @@ double Trigger::getLightEmission() const {
 bool Trigger::interceptsFlyingItem(Item* it) const { return false; }
 void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, VisionId) {}
 bool Trigger::isDangerous(const Creature* c) const { return false; }
-void Trigger::tick(double time) {}
+void Trigger::tick() {}
 
 namespace {
 
@@ -127,7 +127,8 @@ class Portal : public Trigger {
     NOTNULL(getOther())->position.throwItem(std::move(it), a, remainingDist, dir, vision);
   }
 
-  virtual void tick(double time) override {
+  virtual void tick() override {
+    double time = position.getGame()->getGlobalTime();
     if (startTime == -1)
       startTime = time;
     if (time - startTime >= 30) {
@@ -236,10 +237,10 @@ namespace {
 class MeteorShower : public Trigger {
   public:
   MeteorShower(Creature* c, double duration) : Trigger(c->getPosition()), creature(c),
-      endTime(creature->getTime() + duration) {}
+      endTime(creature->getGlobalTime() + duration) {}
 
-  virtual void tick(double time) override {
-    if (time >= endTime || creature->isDead()) {
+  virtual void tick() override {
+    if (position.getGame()->getGlobalTime() >= endTime || (creature && creature->isDead())) {
       position.removeTrigger(this);
       return;
     } else
@@ -265,11 +266,12 @@ class MeteorShower : public Trigger {
     return true;
   }
 
-  SERIALIZE_ALL2(Trigger, creature, endTime);
+  SERIALIZE_ALL2(Trigger, endTime);
   SERIALIZATION_CONSTRUCTOR(MeteorShower);
 
   private:
-  Creature* SERIAL(creature);
+  Creature* creature = nullptr; // Not serializing cause it might potentially cause a crash when saving a
+      // single model in campaign mode.
   double SERIAL(endTime);
 };
 

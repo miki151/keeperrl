@@ -70,12 +70,12 @@ void MapGui::clearButtonViewId() {
 
 void MapGui::highlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
   for (auto& id : ids)
-    ++teamHighlight[id];
+    ++teamHighlight.getOrInit(id);
 }
 
 void MapGui::unhighlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
   for (auto& id : ids)
-    CHECK(--teamHighlight[id] >= 0);
+    CHECK(--teamHighlight.getOrFail(id) >= 0);
 }
 
 Vec2 MapGui::getScreenPos() const {
@@ -422,7 +422,7 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
 }
 
 Color MapGui::getCreatureHighlight(UniqueEntity<Creature>::Id creature, int curTime) {
-  if (teamHighlight[creature] > 0)
+  if (teamHighlight.getMaybe(creature).get_value_or(0) > 0)
     return colors[ColorId::YELLOW];
   else
     return Color(0, 0, 0, 0);
@@ -539,6 +539,8 @@ void MapGui::resetScrolling() {
 
 void MapGui::clearCenter() {
   center = mouseOffset = {0.0, 0.0};
+  softCenter = none;
+  screenMovement = none;
 }
 
 bool MapGui::isCentered() const {
@@ -549,6 +551,7 @@ void MapGui::setCenter(double x, double y) {
   center = {x, y};
   center.x = max(0.0, min<double>(center.x, levelBounds.getKX()));
   center.y = max(0.0, min<double>(center.y, levelBounds.getKY()));
+  softCenter = none;
 }
 
 void MapGui::setCenter(Vec2 v) {
@@ -858,8 +861,16 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
     objects[pos] = none;
   displayScrollHint = view->isPlayerView() && !lockedView;
-  if (!isCentered() || (view->isPlayerView() && lockedView))
+  if (currentLevel != level) {
+    screenMovement = none;
+    clearCenter();
     setCenter(view->getPosition());
+    currentLevel = level;
+    mouseOffset = {0, 0};
+  }
+  if (!isCentered() || (view->isPlayerView() && lockedView) || currentLevel != level) {
+    setCenter(view->getPosition());
+  }
   keyScrolling = !view->isPlayerView();
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos())) 
     if (level->inBounds(pos)) {
@@ -868,7 +879,7 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
       if (objects[pos]->hasObject(ViewLayer::FLOOR) || objects[pos]->hasObject(ViewLayer::FLOOR_BACKGROUND))
         objects[pos]->setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
     }
-  currentTimeGame = smoothMovement ? view->getTime() : 1000000000;
+  currentTimeGame = smoothMovement ? view->getLocalTime() : 1000000000;
   if (smoothMovement) {
     if (auto movement = view->getMovementInfo()) {
       if (!screenMovement || screenMovement->startTimeGame != movement->prevTime) {

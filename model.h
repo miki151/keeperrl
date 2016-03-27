@@ -22,7 +22,6 @@
 #include "tribe.h"
 #include "enum_variant.h"
 
-class PlayerControl;
 class Level;
 class ProgressMeter;
 class Options;
@@ -38,7 +37,6 @@ class TimeQueue;
 class Statistics;
 struct TribeSet;
 class StairKey;
-struct SunlightInfo;
 class Game;
 
 /**
@@ -55,7 +53,7 @@ class Model {
   /** Returns the level that the stairs lead to. */
   Level* getLinkedLevel(Level* from, StairKey) const;
 
-  Position getStairs(const Level* from, const Level* to);
+  optional<Position> getStairs(const Level* from, const Level* to);
 
   /** Adds new creature to the queue. Assumes this creature has already been added to a level. */
   void addCreature(PCreature, double delay = 0);
@@ -68,19 +66,27 @@ class Model {
   Game* getGame() const;
   void tick(double time);
   vector<Collective*> getCollectives() const;
+  vector<Creature*> getAllCreatures() const;
   vector<Level*> getLevels() const;
+
+  Level* getTopLevel() const;
 
   void addWoodCount(int);
   int getWoodCount() const;
 
   void killCreature(Creature* victim, Creature* attacker);
   void updateSunlightMovement();
-  const Creature* getPlayer() const;
+
+  PCreature extractCreature(Creature*);
+  void transferCreature(PCreature, Vec2 travelDir);
 
   Model();
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
+
+  void lockSerialization();
+  void clearDeadCreatures();
 
   private:
 
@@ -94,7 +100,7 @@ class Model {
   vector<PLevel> SERIAL(levels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
-  Game* SERIAL(game);
+  Game* SERIAL(game) = nullptr;
   double SERIAL(lastTick) = 0;
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
@@ -103,6 +109,7 @@ class Model {
   void calculateStairNavigation();
   optional<StairKey> getStairsBetween(const Level* from, const Level* to);
   map<pair<const Level*, const Level*>, StairKey> SERIAL(stairNavigation);
+  bool serializationLocked = false;
 };
 
 #endif

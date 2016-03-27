@@ -20,13 +20,11 @@
 #include "square_type.h"
 
 class Square;
-class Deity;
 class StairKey;
 
 class SquareFactory {
   public:
   static PSquare get(SquareType);
-  static PSquare getAltar(Deity*);
   static PSquare getAltar(Creature*);
   static PSquare getWater(double depth);
 

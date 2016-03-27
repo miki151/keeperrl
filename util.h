@@ -335,6 +335,7 @@ class RandomGen {
   RandomGen(RandomGen&) = delete;
   void init(int seed);
   int get(int max);
+  long long getLL();
   int get(int min, int max);
   int get(Range);
   int get(const vector<double>& weights);
@@ -476,6 +477,13 @@ class Table {
   }
 
   Table& operator = (Table&& other) = default;
+  Table& operator = (const Table& other) {
+    bounds = other.bounds;
+    mem.reset(new T[bounds.w * bounds.h]);
+    for (int i : Range(bounds.w * bounds.h))
+      mem[i] = other.mem[i];
+    return *this;
+  }
 
   int getWidth() const {
     return bounds.w;
@@ -1385,6 +1393,14 @@ class HeapAllocated {
 
   const T& operator * () const {
     return *elem.get();
+  }
+
+  const T* get() const {
+    return elem.get();
+  }
+
+  T* get() {
+    return elem.get();
   }
 
   HeapAllocated& operator = (const T& t) {

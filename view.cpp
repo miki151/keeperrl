@@ -186,7 +186,7 @@ CreatureInfo& CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) {
   for (auto& elem : minions)
     if (elem.uniqueId == id)
       return elem;
-  FAIL << "Minion not found " << id;
+  FAIL << "Minion not found ";
   return minions[0];
 }
 

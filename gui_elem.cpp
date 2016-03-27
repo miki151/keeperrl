@@ -644,6 +644,10 @@ PGuiElem GuiFactory::stack(PGuiElem g1, PGuiElem g2, PGuiElem g3) {
   return stack(makeVec<PGuiElem>(std::move(g1), std::move(g2), std::move(g3)));
 }
 
+PGuiElem GuiFactory::stack(PGuiElem g1, PGuiElem g2, PGuiElem g3, PGuiElem g4) {
+  return stack(makeVec<PGuiElem>(std::move(g1), std::move(g2), std::move(g3), std::move(g4)));
+}
+
 class External : public GuiElem {
   public:
   External(GuiElem* e) : elem(e) {}
@@ -940,22 +944,31 @@ vector<PGuiElem>& GuiFactory::ListBuilder::getAllElems() {
   return elems;
 }
 
+void GuiFactory::ListBuilder::clear() {
+  elems.clear();
+  sizes.clear();
+  backElems = 0;
+}
+
 PGuiElem GuiFactory::ListBuilder::buildVerticalList() {
   for (int i : All(sizes))
     if (sizes[i] == -1)
       sizes[i] = *elems[i]->getPreferredHeight();
-  return gui.verticalList(std::move(elems), sizes, backElems);
+  PGuiElem ret = gui.verticalList(std::move(elems), sizes, backElems);
+  return ret;
 }
 
 PGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
   for (int i : All(sizes))
     if (sizes[i] == -1)
       sizes[i] = *elems[i]->getPreferredWidth();
-  return gui.horizontalList(std::move(elems), sizes, backElems);
+  PGuiElem ret = gui.horizontalList(std::move(elems), sizes, backElems);
+  return ret;
 }
 
 PGuiElem GuiFactory::ListBuilder::buildHorizontalListFit() {
-  return gui.horizontalListFit(std::move(elems), 0);
+  PGuiElem ret = gui.horizontalListFit(std::move(elems), 0);
+  return ret;
 }
 
 PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, vector<int> heights, int numAlignBottom) {
@@ -1343,27 +1356,28 @@ PGuiElem GuiFactory::empty() {
 
 class ViewObjectGui : public GuiElem {
   public:
-  ViewObjectGui(const ViewObject& obj, double sc) : object(obj), scale(sc) {}
-  ViewObjectGui(ViewId id, double sc) : object(id), scale(sc) {}
+  ViewObjectGui(const ViewObject& obj, double sc, Color c) : object(obj), scale(sc), color(c) {}
+  ViewObjectGui(ViewId id, double sc, Color c) : object(id), scale(sc), color(c) {}
   
   virtual void render(Renderer& renderer) override {
     if (ViewObject* obj = boost::get<ViewObject>(&object))
-      renderer.drawViewObject(getBounds().getTopLeft(), *obj, true, scale);
+      renderer.drawViewObject(getBounds().getTopLeft(), *obj, true, scale, color);
     else
-      renderer.drawViewObject(getBounds().getTopLeft(), boost::get<ViewId>(object), true, scale);
+      renderer.drawViewObject(getBounds().getTopLeft(), boost::get<ViewId>(object), true, scale, color);
   }
 
   private:
   variant<ViewObject, ViewId> object;
   double scale;
+  Color color;
 };
 
-PGuiElem GuiFactory::viewObject(const ViewObject& object, double scale) {
-  return PGuiElem(new ViewObjectGui(object, scale));
+PGuiElem GuiFactory::viewObject(const ViewObject& object, double scale, Color color) {
+  return PGuiElem(new ViewObjectGui(object, scale, color));
 }
 
-PGuiElem GuiFactory::viewObject(ViewId id, double scale) {
-  return PGuiElem(new ViewObjectGui(id, scale));
+PGuiElem GuiFactory::viewObject(ViewId id, double scale, Color color) {
+  return PGuiElem(new ViewObjectGui(id, scale, color));
 }
 
 class DragSource : public GuiElem {
@@ -1580,12 +1594,11 @@ const static int tooltipLineHeight = 28;
 const static int tooltipHMargin = 15;
 const static int tooltipVMargin = 15;
 const static Vec2 tooltipOffset = Vec2(10, 10);
-const static int tooltipDelay = 700;
 
 class Tooltip : public GuiElem {
   public:
-  Tooltip(const vector<string>& t, PGuiElem bg, Clock* c) : text(t), background(std::move(bg)),
-      lastTimeOut(c->getRealMillis()), clock(c) {
+  Tooltip(const vector<string>& t, PGuiElem bg, Clock* c, int delayM) : text(t), background(std::move(bg)),
+      lastTimeOut(c->getRealMillis()), clock(c), delayMilli(delayM) {
   }
 
   virtual bool onMouseMove(Vec2 pos) override {
@@ -1599,7 +1612,7 @@ class Tooltip : public GuiElem {
 
   virtual void render(Renderer& r) override {
     if (canRender) {
-      if (clock->getRealMillis() > lastTimeOut + tooltipDelay) {
+      if (clock->getRealMillis() > lastTimeOut + delayMilli) {
         Vec2 size(0, text.size() * tooltipLineHeight + 2 * tooltipVMargin);
         for (const string& t : text)
           size.x = max(size.x, r.getTextLength(t) + 2 * tooltipHMargin);
@@ -1624,12 +1637,13 @@ class Tooltip : public GuiElem {
   PGuiElem background;
   int lastTimeOut;
   Clock* clock;
+  int delayMilli;
 };
 
-PGuiElem GuiFactory::tooltip(const vector<string>& v) {
+PGuiElem GuiFactory::tooltip(const vector<string>& v, int delayMilli) {
   if (v.empty() || (v.size() == 1 && v[0].empty()))
     return empty();
-  return PGuiElem(new Tooltip(v, stack(background(background1), miniBorder()), clock));
+  return PGuiElem(new Tooltip(v, stack(background(background1), miniBorder()), clock, delayMilli));
 }
 
 const static int notHeld = -1000;
@@ -2051,13 +2065,16 @@ PGuiElem GuiFactory::miniBorder() {
         sprite(get(TexId::CORNER_MINI), Alignment::TOP_LEFT, false, false)));
 }
 
-PGuiElem GuiFactory::miniWindow(PGuiElem content) {
-  return stack(makeVec<PGuiElem>(
+PGuiElem GuiFactory::miniWindow(PGuiElem content, function<void()> onExitButton) {
+  auto ret = makeVec<PGuiElem>(
         stopMouseMovement(),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
         miniBorder(),
-        std::move(content)));
+        std::move(content));
+  if (onExitButton)
+    ret.push_back(reverseButton(onExitButton, {{Keyboard::Escape}}));
+  return stack(std::move(ret));
 }
 
 PGuiElem GuiFactory::miniWindow() {
@@ -2149,8 +2166,8 @@ PGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {
   return conditional(uiHighlight(c), cond);
 }
 
-PGuiElem GuiFactory::rectangleHighlight() {
-  return rectangle(sf::Color(0, 0, 0, 0), colors[ColorId::WHITE]);
+PGuiElem GuiFactory::rectangleBorder(Color col) {
+  return rectangle(sf::Color(0, 0, 0, 0), col);
 }
 
 PGuiElem GuiFactory::sprite(TexId id, Alignment a, function<Color()> c) {

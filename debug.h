@@ -62,6 +62,7 @@ class NoDebug {
   public:
   NoDebug& operator <<(const string& msg) { return *this;}
   NoDebug& operator <<(const int msg) {return *this;}
+  NoDebug& operator <<(const long long msg) {return *this;}
   NoDebug& operator <<(const size_t msg) {return *this;}
   NoDebug& operator <<(const char msg) {return *this;}
   NoDebug& operator <<(const double msg) {return *this;}
@@ -78,6 +79,7 @@ class Debug {
   static void init(bool log);
   Debug& operator <<(const string& msg);
   Debug& operator <<(const int msg);
+  Debug& operator <<(const long long msg);
   Debug& operator <<(const size_t msg);
   Debug& operator <<(const char msg);
   Debug& operator <<(const double msg);

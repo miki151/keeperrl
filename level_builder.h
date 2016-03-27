@@ -63,7 +63,7 @@ class LevelBuilder {
 
   /** Builds the level. The level will keep reference to the model.
       \paramname{surface} tells if this level is on the Earth surface.*/
-  PLevel build(Model*, LevelMaker*, int levelId);
+  PLevel build(Model*, LevelMaker*, LevelId);
 
   //@{
   /** Puts a square on given position. Sets optional attributes of the square. The attributes remain if the square is changed.*/
@@ -124,7 +124,6 @@ class LevelBuilder {
   Table<SquareType> type;
   vector<pair<PCreature, Vec2>> creatures;
   Table<vector<PItem>> items;
-  string entryMessage;
   string name;
   vector<Vec2::LinearMap> mapStack;
   ProgressMeter* progressMeter = nullptr;

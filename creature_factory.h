@@ -16,11 +16,8 @@
 #ifndef _CREATURE_FACTORY
 #define _CREATURE_FACTORY
 
-#include <map>
-#include <string>
-#include <functional>
-
 #include "util.h"
+#include "tribe.h"
 
 class Creature;
 class MonsterAIFactory;

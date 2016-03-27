@@ -20,12 +20,13 @@
 
 class KnownTiles {
   public:
-  KnownTiles(const vector<Level*>&);
   void addTile(Position);
   bool isKnown(Position) const;
   const set<Position>& getBorderTiles() const;
+  void limitToModel(const Model*);
 
-  SERIALIZATION_DECL(KnownTiles);
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
 
   private:
   PositionMap<bool> SERIAL(known);

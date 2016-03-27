@@ -2,7 +2,6 @@
 #include "collective.h"
 #include "collective_control.h"
 #include "creature.h"
-#include "pantheon.h"
 #include "effect.h"
 #include "level.h"
 #include "item.h"
@@ -34,6 +33,8 @@
 #include "task.h"
 #include "territory.h"
 #include "collective_attack.h"
+#include "gender.h"
+#include "collective_name.h"
 
 struct Collective::ItemFetchInfo {
   ItemIndex index;
@@ -56,63 +57,16 @@ struct Collective::MinionTaskInfo {
   bool centerOnly = false;
 };
 
-struct Collective::MinionPaymentInfo {
-  int SERIAL(salary);
-  double SERIAL(workAmount);
-  int SERIAL(debt);
-  SERIALIZE_ALL(salary, workAmount, debt);
-};
-
-struct Collective::CurrentTaskInfo {
-  MinionTask SERIAL(task);
-  double SERIAL(finishTime);
-  SERIALIZE_ALL(task, finishTime);
-};
-
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(TaskCallback)
-    & SVAR(creatures)
-    & SVAR(leader)
-    & SVAR(taskMap)
-    & SVAR(tribe)
-    & SVAR(control)
-    & SVAR(byTrait)
-    & SVAR(bySpawnType)
-    & SVAR(deityStanding)
-    & SVAR(mySquares)
-    & SVAR(mySquares2)
-    & SVAR(territory)
-    & SVAR(squareEfficiency)
-    & SVAR(alarmInfo)
-    & SVAR(markedItems)
-    & SVAR(constructions)
-    & SVAR(minionEquipment)
-    & SVAR(surrendering)
-    & SVAR(delayedPos)
-    & SVAR(knownTiles)
-    & SVAR(technologies)
-    & SVAR(numFreeTech)
-    & SVAR(kills)
-    & SVAR(points)
-    & SVAR(currentTasks)
-    & SVAR(credit)
-    & SVAR(level)
-    & SVAR(minionPayment)
-    & SVAR(pregnancies)
-    & SVAR(nextPayoutTime)
-    & SVAR(minionAttraction)
-    & SVAR(teams)
-    & SVAR(name)
-    & SVAR(config)
-    & SVAR(warnings)
-    & SVAR(banished)
-    & SVAR(squaresInUse)
-    & SVAR(equipmentUpdates)
-    & SVAR(deadCreatures)
-    & SVAR(spawnGhosts)
-    & SVAR(lastGuardian)
-    & SVAR(villainType);
+    & SUBCLASS(CreatureListener);
+  serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType, mySquares);
+  serializeAll(ar, mySquares2, territory, squareEfficiency, alarmInfo, markedItems, constructions, minionEquipment);
+  serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
+  serializeAll(ar, credit, level, minionPayment, pregnancies, nextPayoutTime, minionAttraction, teams, name);
+  serializeAll(ar, config, warnings, banished, squaresInUse, equipmentUpdates, deadCreatures, spawnGhosts);
+  serializeAll(ar, lastGuardian, villainType);
 }
 
 SERIALIZABLE(Collective);
@@ -207,38 +161,13 @@ map<MinionTask, Collective::MinionTaskInfo> Collective::getTaskInfo() const {
 };
 
 Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
-    const optional<string>& n) 
-  : credit(_credit), taskMap(l->getModel()->getLevels()), knownTiles(l->getModel()->getLevels()),
-    control(CollectiveControl::idle(this)),
+    const CollectiveName& n) 
+  : credit(_credit), control(CollectiveControl::idle(this)),
     tribe(t), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
 }
 
-string Collective::getFullName() const {
-  string tribeName = capitalFirst(getTribe()->getName());
-  if (name)
-    return tribeName + " of " + *name;
-  else if (getLeader() && getLeader()->getFirstName())
-    return getLeader()->getNameAndTitle();
-  else
-    return tribeName;
-}
-
-string Collective::getShortName() const {
-  if (name)
-    return *name;
-  else if (getLeader())
-    return getLeader()->getFirstName().get_value_or(getLeader()->getName().bare());
-  else
-    return "";
-}
-
-string Collective::getTribeName() const {
-  if (name)
-    return getTribe()->getName();
-  else if (getLeader() && getLeader()->getFirstName())
-    return getLeader()->getSpeciesName();
-  else
-    return "";
+const CollectiveName& Collective::getName() const {
+  return *name;
 }
 
 void Collective::setVillainType(VillainType t) {
@@ -274,9 +203,9 @@ namespace {
 
 class LeaderControlOverride : public Creature::MoraleOverride {
   public:
-  LeaderControlOverride(Collective* col, Creature* c) : collective(col), creature(c) {}
+  LeaderControlOverride(Collective* col) : collective(col) {}
 
-  virtual optional<double> getMorale() override {
+  virtual optional<double> getMorale(const Creature* creature) override {
     for (auto team : collective->getTeams().getContaining(collective->getLeader()))
       if (collective->getTeams().isActive(team) && collective->getTeams().contains(team, creature) &&
           collective->getTeams().getLeader(team) == collective->getLeader())
@@ -288,12 +217,11 @@ class LeaderControlOverride : public Creature::MoraleOverride {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Creature::MoraleOverride) & SVAR(collective) & SVAR(creature);
+    ar & SUBCLASS(Creature::MoraleOverride) & SVAR(collective);
   }
 
   private:
   Collective* SERIAL(collective);
-  Creature* SERIAL(creature);
 };
 
 }
@@ -320,9 +248,10 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!leader)
     leader = c;
   CHECK(c->getTribeId() == tribe);
-  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
-      c->getPosition().getLevel()->getName() << " " << c->getName().bare();
+/*  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
+      c->getPosition().getLevel()->getName() << " " << c->getName().bare();*/
   creatures.push_back(c);
+  subscribeToCreature(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
   if (auto spawnType = c->getSpawnType())
@@ -330,19 +259,21 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   for (const Item* item : c->getEquipment().getItems())
     minionEquipment->own(c, item);
   if (traits[MinionTrait::FIGHTER]) {
-    c->addMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this, c)));
+    c->addMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this)));
   }
 }
 
 void Collective::removeCreature(Creature* c) {
   removeElement(creatures, c);
-  deadCreatures.push_back(c);
+  unsubscribeFromCreature(c);
+  if (config->getNumGhostSpawns() > 0 || config->getGuardianInfo())
+    deadCreatures.push_back(c);
   minionAttraction.erase(c);
   if (Task* task = taskMap->getTask(c)) {
     if (!task->canTransfer())
       returnResource(taskMap->removeTask(task));
     else
-      taskMap->freeTaskDelay(task, getTime() + 50);
+      taskMap->freeTaskDelay(task, getLocalTime() + 50);
   }
   if (auto spawnType = c->getSpawnType())
     removeElement(bySpawnType[*spawnType], c);
@@ -365,11 +296,11 @@ void Collective::banishCreature(Creature* c) {
     tasks.push_back(Task::goTo(Random.choose(exitTiles)));
   tasks.push_back(Task::disappear());
   c->setController(PController(new Monster(c, MonsterAIFactory::singleTask(Task::chain(std::move(tasks))))));
-  banished.push_back(c);
+  banished.insert(c);
 }
 
 bool Collective::wasBanished(const Creature* c) const {
-  return contains(banished, c);
+  return banished.contains(c);
 }
 
 vector<Creature*> Collective::getRecruits() const {
@@ -500,12 +431,12 @@ int Collective::getTaskDuration(const Creature* c, MinionTask task) const {
 }
 
 void Collective::setMinionTask(const Creature* c, MinionTask task) {
-  currentTasks[c->getUniqueId()] = {task, c->getTime() + getTaskDuration(c, task)};
+  currentTasks.set(c, {task, c->getLocalTime() + getTaskDuration(c, task)});
 }
 
 optional<MinionTask> Collective::getMinionTask(const Creature* c) const {
-  if (currentTasks.count(c->getUniqueId()))
-    return currentTasks.at(c->getUniqueId()).task;
+  if (auto current = currentTasks.getMaybe(c))
+    return current->task;
   else
     return none;
 }
@@ -513,18 +444,19 @@ optional<MinionTask> Collective::getMinionTask(const Creature* c) const {
 bool Collective::isTaskGood(const Creature* c, MinionTask task, bool ignoreTaskLock) const {
   if (c->getMinionTasks().getValue(task, ignoreTaskLock) == 0)
     return false;
-  if (minionPayment.count(c) && minionPayment.at(c).debt > 0 && getTaskInfo().at(task).cost > 0)
-    return false;
+  if (auto elem = minionPayment.getMaybe(c))
+    if (elem->debt > 0 && getTaskInfo().at(task).cost > 0)
+      return false;
   switch (task) {
     case MinionTask::CROPS:
     case MinionTask::EXPLORE:
-        return getGame()->getSunlightInfo().state == SunlightState::DAY;
+        return getGame()->getSunlightInfo().getState() == SunlightState::DAY;
     case MinionTask::SLEEP:
         if (!config->sleepOnlyAtNight())
           return true;
         // break skipped on purpose
     case MinionTask::EXPLORE_NOCTURNAL:
-        return getGame()->getSunlightInfo().state == SunlightState::NIGHT;
+        return getGame()->getSunlightInfo().getState() == SunlightState::NIGHT;
     default: return true;
   }
 }
@@ -613,22 +545,22 @@ PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
 PTask Collective::getStandardTask(Creature* c) {
   if (!c->getMinionTasks().hasAnyTask())
     return nullptr;
-  if (!currentTasks.count(c->getUniqueId()) ||
-      currentTasks.at(c->getUniqueId()).finishTime < c->getTime() ||
-      !isTaskGood(c, currentTasks.at(c->getUniqueId()).task))
-    currentTasks.erase(c->getUniqueId());
-  if (!currentTasks.count(c->getUniqueId()))
+  auto current = currentTasks.getMaybe(c);
+  if (!current || current->finishTime < c->getLocalTime() || !isTaskGood(c, current->task)) {
+    currentTasks.erase(c);
     setRandomTask(c);
-  if (!currentTasks.count(c->getUniqueId()))
+  }
+  if (auto current = currentTasks.getMaybe(c)) {
+    MinionTask task = current->task;
+    MinionTaskInfo info = getTaskInfo().at(task);
+    PTask ret = generateMinionTask(c, task);
+    if (info.warning && !territory->isEmpty())
+      setWarning(*info.warning, !ret);
+    if (!ret)
+      currentTasks.erase(c);
+    return ret;
+  } else
     return nullptr;
-  MinionTask task = currentTasks[c->getUniqueId()].task;
-  MinionTaskInfo info = getTaskInfo().at(task);
-  PTask ret = generateMinionTask(c, task);
-  if (info.warning && !territory->isEmpty())
-    setWarning(*info.warning, !ret);
-  if (!ret)
-    currentTasks.erase(c->getUniqueId());
-  return ret;
 }
 
 SquareType Collective::getHatcheryType(TribeId tribe) {
@@ -665,7 +597,6 @@ bool Collective::isConquered() const {
 void Collective::orderConsumption(Creature* consumer, Creature* who) {
   CHECK(consumer->getMinionTasks().getValue(MinionTask::CONSUME) > 0);
   setMinionTask(who, MinionTask::CONSUME);
-  MinionTaskInfo info = getTaskInfo().at(currentTasks[consumer->getUniqueId()].task);
   taskMap->freeFromTask(consumer);
   taskMap->addTask(Task::consume(this, who), consumer);
 }
@@ -731,7 +662,7 @@ void Collective::setTask(const Creature *c, PTask task, bool priority) {
     if (!task->canTransfer())
       returnResource(taskMap->removeTask(task));
     else
-      taskMap->freeTaskDelay(task, getTime() + 50);
+      taskMap->freeTaskDelay(task, getLocalTime() + 50);
   }
   if (priority)
     taskMap->addPriorityTask(std::move(task), c);
@@ -752,8 +683,8 @@ MoveInfo Collective::getMove(Creature* c) {
   CHECK(control);
   CHECK(contains(creatures, c));
   CHECK(!c->isDead());
-  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
-      c->getPosition().getLevel()->getName() << " " << c->getName().bare();
+/*  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
+      c->getPosition().getLevel()->getName() << " " << c->getName().bare();*/
   if (Task* task = taskMap->getTask(c))
     if (taskMap->isPriorityTask(task))
       return task->getMove(c);
@@ -785,22 +716,18 @@ MoveInfo Collective::getMove(Creature* c) {
     if (t->getMove(c))
       return taskMap->addTask(std::move(t), c)->getMove(c);
   if (!hasTrait(c, MinionTrait::NO_RETURNING) && !territory->isEmpty() &&
-      !territory->contains(c->getPosition()) && teams->getActive(c).empty())
-    return c->moveTowards(Random.choose(territory->getAll()));
-  else
-    return NoMove;
+      !territory->contains(c->getPosition()) && teams->getActive(c).empty()) {
+    if (c->getPosition().getModel() == getLevel()->getModel())
+      return c->moveTowards(Random.choose(territory->getAll()));
+    else
+      if (PTask t = Task::transferTo(getLevel()->getModel()))
+        return taskMap->addTask(std::move(t), c)->getMove(c);
+  }
+  return NoMove;
 }
 
 void Collective::setControl(PCollectiveControl c) {
   control = std::move(c);
-}
-
-void Collective::considerHealingLeader() {
-  if (Deity* deity = Deity::getDeity(EpithetId::HEALTH))
-    if (getStanding(deity) > 0 && Random.rollD(5 / getStanding(deity)) && hasLeader() && leader->getHealth() < 1) {
-      leader->you(MsgType::ARE, "healed by " + deity->getName());
-      leader->heal(1, true);
-    }
 }
 
 vector<Position> Collective::getEnemyPositions() const {
@@ -886,20 +813,28 @@ vector<Position> Collective::getSpawnPos(const vector<Creature*>& creatures) {
   return spawnPos;
 }
 
-bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCreature> creatures) {
+bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCreature> immigrants) {
   CHECK(!info.spawnAtDorm);
-  auto creatureRefs = extractRefs(creatures);
+  auto creatureRefs = extractRefs(immigrants);
   vector<Position> spawnPos;
-  spawnPos = getSpawnPos(creatureRefs);
-  if (spawnPos.size() < creatures.size())
+  if (!config->activeImmigrantion(getGame())) {
+    for (Position v : Random.permutation(territory->getAll()))
+      if (v.canEnter(immigrants[spawnPos.size()].get())) {
+        spawnPos.push_back(v);
+        if (spawnPos.size() >= immigrants.size())
+          break;
+      }
+  } else 
+    spawnPos = getSpawnPos(creatureRefs);
+  if (spawnPos.size() < immigrants.size())
     return false;
   if (info.autoTeam)
-    teams->activate(teams->createPersistent(extractRefs(creatures)));
-  for (int i : All(creatures)) {
-    Creature* c = creatures[i].get();
-    addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
-    minionPayment[c] = {info.salary, 0.0, 0};
-    minionAttraction[c] = info.attractions;
+    teams->activate(teams->createPersistent(extractRefs(immigrants)));
+  for (int i : All(immigrants)) {
+    Creature* c = immigrants[i].get();
+    addCreature(std::move(immigrants[i]), spawnPos[i], info.traits);
+    minionPayment.set(c, {info.salary, 0.0, 0});
+    minionAttraction.set(c, info.attractions);
   }
   addNewCreatureMessage(creatureRefs);
   return true;
@@ -926,27 +861,27 @@ void Collective::considerBuildingBeds() {
 bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   if (info.techId && !hasTech(*info.techId))
     return false;
-  vector<PCreature> creatures;
+  vector<PCreature> immigrants;
   int groupSize = info.groupSize ? Random.get(*info.groupSize) : 1;
   groupSize = min(groupSize, getMaxPopulation() - getPopulationSize());
   for (int i : Range(groupSize))
-    creatures.push_back(CreatureFactory::fromId(info.id, getTribeId(), MonsterAIFactory::collective(this)));
-  if (!creatures[0]->getSpawnType() || info.ignoreSpawnType)
-    return considerNonSpawnImmigrant(info, std::move(creatures));
-  SpawnType spawnType = *creatures[0]->getSpawnType();
+    immigrants.push_back(CreatureFactory::fromId(info.id, getTribeId(), MonsterAIFactory::collective(this)));
+  if (!immigrants[0]->getSpawnType() || info.ignoreSpawnType)
+    return considerNonSpawnImmigrant(info, std::move(immigrants));
+  SpawnType spawnType = *immigrants[0]->getSpawnType();
   SquareType dormType = getDormInfo()[spawnType].dormType;
   if (!hasResource(getSpawnCost(spawnType, groupSize)))
     return false;
   vector<Position> spawnPos;
   if (info.spawnAtDorm) {
     for (Position v : Random.permutation(getSquares(dormType)))
-      if (v.canEnter(creatures[spawnPos.size()].get())) {
+      if (v.canEnter(immigrants[spawnPos.size()].get())) {
         spawnPos.push_back(v);
-        if (spawnPos.size() >= creatures.size())
+        if (spawnPos.size() >= immigrants.size())
           break;
       }
   } else
-    spawnPos = getSpawnPos(extractRefs(creatures));
+    spawnPos = getSpawnPos(extractRefs(immigrants));
   groupSize = min<int>(groupSize, spawnPos.size());
   if (auto bedType = getDormInfo()[spawnType].getBedType()) {
     int neededBeds = bySpawnType[spawnType].size() + groupSize - constructions->getSquareCount(*bedType);
@@ -959,19 +894,19 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   }
   if (groupSize < 1)
     return false;
-  if (creatures.size() > groupSize)
-    creatures.resize(groupSize);
-  takeResource(getSpawnCost(spawnType, creatures.size()));
+  if (immigrants.size() > groupSize)
+    immigrants.resize(groupSize);
+  takeResource(getSpawnCost(spawnType, immigrants.size()));
   if (info.autoTeam && groupSize > 1)
-    teams->activate(teams->createPersistent(extractRefs(creatures)));
-  addNewCreatureMessage(extractRefs(creatures));
-  for (int i : All(creatures)) {
-    Creature* c = creatures[i].get();
+    teams->activate(teams->createPersistent(extractRefs(immigrants)));
+  addNewCreatureMessage(extractRefs(immigrants));
+  for (int i : All(immigrants)) {
+    Creature* c = immigrants[i].get();
     if (i == 0 && groupSize > 1) // group leader
       c->increaseExpLevel(2);
-    addCreature(std::move(creatures[i]), spawnPos[i], info.traits);
-    minionPayment[c] = {info.salary, 0.0, 0};
-    minionAttraction[c] = info.attractions;
+    addCreature(std::move(immigrants[i]), spawnPos[i], info.traits);
+    minionPayment.set(c, {info.salary, 0.0, 0});
+    minionAttraction.set(c, info.attractions);
   }
   return true;
 }
@@ -999,18 +934,18 @@ int Collective::tryBuildingBeds(SpawnType spawnType, int numBeds) {
   return numBuilt;
 }
 
-void Collective::addNewCreatureMessage(const vector<Creature*>& creatures) {
-  if (creatures.size() == 1)
-    control->addMessage(PlayerMessage(creatures[0]->getName().a() + " joins your forces.")
-        .setCreature(creatures[0]->getUniqueId()));
+void Collective::addNewCreatureMessage(const vector<Creature*>& immigrants) {
+  if (immigrants.size() == 1)
+    control->addMessage(PlayerMessage(immigrants[0]->getName().a() + " joins your forces.")
+        .setCreature(immigrants[0]->getUniqueId()));
   else {
-    control->addMessage(PlayerMessage("A " + creatures[0]->getGroupName(creatures.size()) + " joins your forces.")
-        .setCreature(creatures[0]->getUniqueId()));
+    control->addMessage(PlayerMessage("A " + immigrants[0]->getGroupName(immigrants.size()) + " joins your forces.")
+        .setCreature(immigrants[0]->getUniqueId()));
   }
 }
 
 double Collective::getImmigrantChance(const ImmigrantInfo& info) {
-  if (info.limit && info.limit != getGame()->getSunlightInfo().state)
+  if (info.limit && info.limit != getGame()->getSunlightInfo().getState())
     return 0;
   double result = 0;
   if (info.attractions.empty())
@@ -1058,25 +993,25 @@ void Collective::considerImmigration() {
 const Collective::ResourceId paymentResource = Collective::ResourceId::GOLD;
 
 int Collective::getPaymentAmount(const Creature* c) const {
-  if (!minionPayment.count(c))
-    return 0;
-  else
+  if (auto payment = minionPayment.getMaybe(c))
     return config->getPayoutMultiplier() *
-      minionPayment.at(c).salary * minionPayment.at(c).workAmount / config->getPayoutTime();
+      payment->salary * payment->workAmount / config->getPayoutTime();
+  return 0;
 }
 
 int Collective::getNextSalaries() const {
   int ret = 0;
   for (Creature* c : creatures)
-    if (minionPayment.count(c))
-      ret += getPaymentAmount(c) + minionPayment.at(c).debt;
+    if (auto payment = minionPayment.getMaybe(c))
+      ret += getPaymentAmount(c) + payment->debt;
   return ret;
 }
 
 bool Collective::hasMinionDebt() const {
   for (Creature* c : creatures)
-    if (minionPayment.count(c) && minionPayment.at(c).debt)
-      return true;
+    if (auto payment = minionPayment.getMaybe(c))
+      if (payment->debt > 0)
+        return true;
   return false;
 }
 
@@ -1085,22 +1020,20 @@ void Collective::makePayouts() {
     control->addMessage(PlayerMessage("Payout time: " + toString(numPay) + " gold",
           PlayerMessage::HIGH));
   for (Creature* c : creatures)
-    if (minionPayment.count(c)) {
-      minionPayment.at(c).debt += getPaymentAmount(c);
-      minionPayment.at(c).workAmount = 0;
+    if (minionPayment.getMaybe(c)) {
+      minionPayment.getOrFail(c).debt += getPaymentAmount(c);
+      minionPayment.getOrFail(c).workAmount = 0;
     }
 }
 
 void Collective::cashPayouts() {
   int numGold = numResource(paymentResource);
   for (Creature* c : creatures)
-    if (minionPayment.count(c))
-      if (int payment = minionPayment.at(c).debt) {
-        if (payment < numGold) {
-          takeResource({paymentResource, payment});
-          numGold -= payment;
-          minionPayment.at(c).debt = 0;
-        }
+    if (auto payment = minionPayment.getMaybe(c))
+      if (payment->debt > 0 && payment->debt < numGold) {
+        takeResource({paymentResource, payment->debt});
+        numGold -= payment->debt;
+        minionPayment.getOrFail(c).debt = 0;
       }
 }
 
@@ -1122,25 +1055,27 @@ static vector<BirthSpawn> birthSpawns {
 };
 
 void Collective::considerBirths() {
-  while (!pregnancies.empty() && pregnancies.front()->isDead())
-    pregnancies.pop_front();
-  if (getPopulationSize() < getMaxPopulation() && !pregnancies.empty() && Random.roll(300)) {
-    Creature* c = pregnancies.front();
-    pregnancies.pop_front();
-    vector<pair<CreatureId, double>> candidates;
-    for (auto& elem : birthSpawns)
-      if (!elem.tech || hasTech(*elem.tech)) 
-        candidates.emplace_back(elem.id, elem.frequency);
-    if (candidates.empty())
-      return;
-    PCreature spawn = CreatureFactory::fromId(Random.choose(candidates), getTribeId());
-    for (Position pos : c->getPosition().neighbors8(Random))
-      if (pos.canEnter(spawn.get())) {
-        control->addMessage(c->getName().a() + " gives birth to " + spawn->getName().a());
-        addCreature(std::move(spawn), pos, {MinionTrait::FIGHTER});
-        return;
+  for (Creature* c : getCreatures())
+    if (pregnancies.contains(c) && !c->isAffected(LastingEffect::PREGNANT)) {
+      pregnancies.erase(c);
+      if (getPopulationSize() < getMaxPopulation()) {
+        vector<pair<CreatureId, double>> candidates;
+        for (auto& elem : birthSpawns)
+          if (!elem.tech || hasTech(*elem.tech)) 
+            candidates.emplace_back(elem.id, elem.frequency);
+        if (candidates.empty())
+          return;
+        PCreature spawn = CreatureFactory::fromId(Random.choose(candidates), getTribeId());
+        for (Position pos : c->getPosition().neighbors8(Random))
+          if (pos.canEnter(spawn.get())) {
+            control->addMessage(c->getName().a() + " gives birth to " + spawn->getName().a());
+            c->playerMessage("You give birth to " + spawn->getName().a() + "!");
+            c->monsterMessage(c->getName().the() + " gives birth to "  + spawn->getName().a());
+            addCreature(std::move(spawn), pos, {MinionTrait::FIGHTER});
+            return;
+          }
       }
-  }
+    }
 }
 
 static vector<SquareType> roomsNeedingLight {
@@ -1176,7 +1111,7 @@ void Collective::decayMorale() {
 void Collective::considerSpawningGhosts() {
   if (deadCreatures.empty() || config->getNumGhostSpawns() == 0)
     return;
-  if (spawnGhosts && *spawnGhosts <= getTime()) {
+  if (spawnGhosts && *spawnGhosts <= getGlobalTime()) {
     for (Creature* dead : getPrefix(Random.permutation(deadCreatures),
           min<int>(config->getNumGhostSpawns(), deadCreatures.size())))
       addCreatureInTerritory(CreatureFactory::getGhost(dead), {});
@@ -1184,7 +1119,7 @@ void Collective::considerSpawningGhosts() {
   } else
   if (!spawnGhosts) {
     if (Random.roll(1.0 / config->getGhostProb()))
-      spawnGhosts = getTime() + Random.get(250, 500);
+      spawnGhosts = getGlobalTime() + Random.get(250, 500);
     else
       spawnGhosts = 1000000;
   }
@@ -1203,7 +1138,7 @@ void Collective::considerSendingGuardian() {
     if (!getCreatures().empty() && (!lastGuardian || lastGuardian->isDead()) &&
         Random.roll(1.0 / info->probability)) {
       vector<Position> enemyPos = getEnemyPositions();
-      if (enemyPos.size() >= info->minEnemies && getNumKilled(getTime() - 200) >= info->minVictims) {
+      if (enemyPos.size() >= info->minEnemies && getNumKilled(getGlobalTime() - 200) >= info->minVictims) {
         PCreature guardian = CreatureFactory::fromId(info->creature, getTribeId(),
             MonsterAIFactory::singleTask(Task::chain(
                 Task::kill(this, Random.choose(enemyPos).getCreature()),
@@ -1215,16 +1150,20 @@ void Collective::considerSendingGuardian() {
     }
 }
 
-void Collective::tick(double time) {
-  control->tick(time);
-  considerHealingLeader();
+void Collective::update(bool currentlyActive) {
+  control->update();
+  if (currentlyActive == config->activeImmigrantion(getGame()) &&
+      Random.rollD(1.0 / config->getImmigrantFrequency()))
+    considerImmigration();
+  if (isConquered())
+    considerSpawningGhosts();
+}
+
+void Collective::tick() {
+  control->tick();
   considerBirths();
   decayMorale();
   considerBuildingBeds();
-  if (isConquered())
-    considerSpawningGhosts();
-  if (Random.rollD(1.0 / config->getImmigrantFrequency()))
-    considerImmigration();
   considerSendingGuardian();
 /*  if (nextPayoutTime > -1 && time > nextPayoutTime) {
     nextPayoutTime += config->getPayoutTime();
@@ -1250,19 +1189,21 @@ void Collective::tick(double time) {
   if (config->getEnemyPositions() && Random.roll(5)) {
     vector<Position> enemyPos = getEnemyPositions();
     if (!enemyPos.empty())
-      delayDangerousTasks(enemyPos, getTime() + 20);
+      delayDangerousTasks(enemyPos, getLocalTime() + 20);
     else {
       alarmInfo.reset();
       control->onNoEnemies();
     }
     bool allSurrender = true;
+    vector<Creature*> surrenderingVec;
     for (Position v : enemyPos)
-      if (!surrendering.count(NOTNULL(v.getCreature()))) {
+      if (!surrendering.contains(NOTNULL(v.getCreature()))) {
         allSurrender = false;
         break;
-      }
+      } else
+        surrenderingVec.push_back(v.getCreature());
     if (allSurrender) {
-      for (Creature* c : copyOf(surrendering)) {
+      for (Creature* c : surrenderingVec) {
         if (!c->isDead() && territory->contains(c->getPosition())) {
           Position pos = c->getPosition();
           PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, getTribeId(),
@@ -1370,89 +1311,40 @@ void Collective::onKillCancelled(Creature* c) {
 }
 
 void Collective::onKilled(Creature* victim, Creature* killer) {
-  if (contains(creatures, victim)) {
-    if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer))
-      returnResource({ResourceId::PRISONER_HEAD, 1});
-    if (victim == leader) {
-      getGame()->onKilledLeader(this, victim);
-      for (Creature* c : getCreatures(MinionTrait::SUMMONED)) // shortcut to get rid of summons when summonner dies
-        c->disappear().perform(c);
-    }
-    if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
-      decreaseMoraleForKill(killer, victim);
-      if (killer)
-        control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
-              PlayerMessage::HIGH).setPosition(victim->getPosition()));
-      else
-        control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", PlayerMessage::HIGH)
-            .setPosition(victim->getPosition()));
-    }
-    removeCreature(victim);
-    control->onMemberKilled(victim, killer);
-  } else
-    control->onOtherKilled(victim, killer);
-  if (victim->getTribe() != getTribe() && (/*!killer || */contains(creatures, killer))) {
+  CHECK(contains(creatures, victim));
+  control->onMemberKilled(victim, killer);
+  if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer))
+    returnResource({ResourceId::PRISONER_HEAD, 1});
+  if (victim == leader) {
+    getGame()->onKilledLeader(this, victim);
+    for (Creature* c : getCreatures(MinionTrait::SUMMONED)) // shortcut to get rid of summons when summonner dies
+      c->disappear().perform(c);
+  }
+  if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
+    decreaseMoraleForKill(killer, victim);
+    if (killer)
+      control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
+            PlayerMessage::HIGH).setPosition(victim->getPosition()));
+    else
+      control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", PlayerMessage::HIGH)
+          .setPosition(victim->getPosition()));
+  }
+  removeCreature(victim);
+  //control->onOtherKilled(victim, killer); TODO: implement
+}
+
+void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
+  CHECK(contains(creatures, killer));
+  if (victim->getTribe() != getTribe()) {
     addMana(getKillManaScore(victim));
     addMoraleForKill(killer, victim);
-    kills.push_back(victim);
+    kills.insert(victim);
     int difficulty = victim->getDifficultyPoints();
     CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;
-    if (killer)
-      control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a())
-          .setPosition(victim->getPosition()));
   }
-}
-
-double Collective::getStanding(const Deity* d) const {
-  if (deityStanding.count(d))
-    return deityStanding.at(d);
-  else
-    return 0;
-}
-
-double Collective::getStanding(EpithetId id) const {
-  if (Deity* d = Deity::getDeity(id))
-    return getStanding(d);
-  else
-    return 0;
-}
-
-static double standingFun(double standing) {
-  const double maxMult = 2.0;
-  return pow(maxMult, standing);
-}
-
-double Collective::getTechCostMultiplier() const {
-  return 1.0 / standingFun(getStanding(EpithetId::WISDOM));
-}
-
-double Collective::getCraftingMultiplier() const {
-  return standingFun(getStanding(EpithetId::CRAFTS));
-}
-
-double Collective::getBeastMultiplier() const {
-  return 1.0 / standingFun(getStanding(EpithetId::NATURE));
-}
-
-double Collective::getUndeadMultiplier() const {
-  return 1.0 / standingFun(getStanding(EpithetId::DEATH));
-}
-
-void Collective::onEpithetWorship(Creature* who, WorshipType type, EpithetId id) {
-  if (type == WorshipType::DESTROY_ALTAR)
-    return;
-  double increase = 0;
-  switch (type) {
-    case WorshipType::PRAYER: increase = 1.0 / 400; break;
-    case WorshipType::SACRIFICE: increase = 1.0 / 2; break;
-    default: break;
-  }
-  switch (id) {
-    case EpithetId::COURAGE: who->addMorale(increase); break;
-    case EpithetId::FEAR: who->addMorale(-increase); break;
-    default: break;
-  }
+  control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a())
+      .setPosition(victim->getPosition()));
 }
 
 double Collective::getEfficiency(const Creature* c) const {
@@ -1517,8 +1409,8 @@ bool Collective::isKnownSquare(Position pos) const {
   return knownTiles->isKnown(pos);
 }
 
-void Collective::update(Creature* c) {
-  control->update(c);
+void Collective::onMoved(Creature* c) {
+  control->onMoved(c);
 }
 
 const static unordered_set<SquareType> efficiencySquares {
@@ -1569,21 +1461,25 @@ static const int alarmTime = 100;
 
 void Collective::onAlarm(Position pos) {
   control->addMessage(PlayerMessage("An alarm goes off.", PlayerMessage::HIGH).setPosition(pos));
-  alarmInfo = {getTime() + alarmTime, pos };
+  alarmInfo = {getGlobalTime() + alarmTime, pos };
   for (Creature* c : byTrait[MinionTrait::FIGHTER])
     if (c->isAffected(LastingEffect::SLEEP))
       c->removeEffect(LastingEffect::SLEEP);
 }
 
 MoveInfo Collective::getAlarmMove(Creature* c) {
-  if (alarmInfo && alarmInfo->finishTime > c->getTime())
+  if (alarmInfo && alarmInfo->finishTime > getGlobalTime())
     if (auto action = c->moveTowards(alarmInfo->position))
       return {1.0, action};
   return NoMove;
 }
 
-double Collective::getTime() const {
+double Collective::getLocalTime() const {
   return getLevel()->getModel()->getTime();
+}
+
+double Collective::getGlobalTime() const {
+  return getGame()->getGlobalTime();
 }
 
 int Collective::numResource(ResourceId id) const {
@@ -1761,7 +1657,7 @@ vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) cons
 
 void Collective::orderExecution(Creature* c) {
   taskMap->addTask(Task::kill(this, c), c->getPosition(), MinionTrait::FIGHTER);
-  setTask(c, Task::goToAndWait(c->getPosition(), getTime() + 100));
+  setTask(c, Task::goToAndWait(c->getPosition(), getLocalTime() + 100));
 }
 
 void Collective::orderTorture(Creature* c) {
@@ -1773,7 +1669,7 @@ void Collective::orderTorture(Creature* c) {
   Position pos = Random.choose(posts);
   squaresInUse.insert(pos);
   taskMap->addTask(Task::torture(this, c), pos, MinionTrait::FIGHTER);
-  setTask(c, Task::goToAndWait(pos, getTime() + 100));
+  setTask(c, Task::goToAndWait(pos, getLocalTime() + 100));
 }
 
 void Collective::orderSacrifice(Creature* c) {
@@ -1798,8 +1694,8 @@ void Collective::orderWhipping(Creature* whipped) {
     return;
   Position pos = Random.choose(posts);
   squaresInUse.insert(pos);
-  taskMap->addTask(Task::whipping(this, pos, whipped, 100, getTime() + 100), pos, MinionTrait::FIGHTER);
-  setTask(whipped, Task::goToAndWait(pos, getTime() + 100));
+  taskMap->addTask(Task::whipping(this, pos, whipped, 100, getLocalTime() + 100), pos, MinionTrait::FIGHTER);
+  setTask(whipped, Task::goToAndWait(pos, getLocalTime() + 100));
 }
 
 bool Collective::isItemMarked(const Item* it) const {
@@ -2028,7 +1924,7 @@ void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, double d
 }
 
 bool Collective::isDelayed(Position pos) {
-  return delayedPos.count(pos) && delayedPos.at(pos) > getTime();
+  return delayedPos.count(pos) && delayedPos.at(pos) > getLocalTime();
 }
 
 void Collective::fetchAllItems(Position pos) {
@@ -2146,15 +2042,20 @@ void Collective::onCantPickItem(EntitySet<Item> items) {
     unmarkItem(id);
 }
 
-void Collective::addKnownTile(Position pos) {
+void Collective::limitKnownTilesToModel() {
+  knownTiles->limitToModel(getLevel()->getModel());
+}
+
+bool Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
     knownTiles->addTile(pos);
-    control->onNewTile(pos);
     if (pos.getLevel() == level)
       if (Task* task = taskMap->getMarked(pos))
         if (task->isImpossible(getLevel()))
           taskMap->removeTask(task);
-  }
+    return true;
+  } else
+    return false;
 }
 
 void Collective::addMana(double value) {
@@ -2213,11 +2114,11 @@ static WorkshopInfo getWorkshopInfo(Collective* c, Position pos) {
 
 void Collective::onAppliedSquare(Position pos) {
   Creature* c = NOTNULL(pos.getCreature());
-  MinionTask currentTask = currentTasks.at(c->getUniqueId()).task;
+  MinionTask currentTask = currentTasks.getOrFail(c).task;
   if (getTaskInfo().at(currentTask).cost > 0) {
-    if (nextPayoutTime == -1 && minionPayment.count(c) && minionPayment.at(c).salary > 0)
-      nextPayoutTime = getTime() + config->getPayoutTime();
-    minionPayment[c].workAmount += getTaskInfo().at(currentTask).cost;
+    if (nextPayoutTime == -1 && minionPayment.getMaybe(c) && minionPayment.getOrFail(c).salary > 0)
+      nextPayoutTime = getLocalTime() + config->getPayoutTime();
+    minionPayment.getOrInit(c).workAmount += getTaskInfo().at(currentTask).cost;
   }
   if (getSquares(SquareId::LIBRARY).count(pos)) {
     addMana(0.2);
@@ -2227,7 +2128,7 @@ void Collective::onAppliedSquare(Position pos) {
   if (getSquares(SquareId::TRAINING_ROOM).count(pos))
     c->exerciseAttr(Random.choose<AttrType>(), getEfficiency(pos));
   if (contains(getAllSquares(workshopSquares), pos))
-    if (Random.rollD(40.0 / (getCraftingMultiplier() * getEfficiency(pos)))) {
+    if (Random.rollD(40.0 / getEfficiency(pos))) {
       vector<PItem> items;
       for (int i : Range(20)) {
         auto workshopInfo = getWorkshopInfo(this, pos);
@@ -2331,7 +2232,7 @@ vector<Technology*> Collective::getTechnologies() const {
   return transform2<Technology*>(technologies, [] (const TechId t) { return Technology::get(t); });
 }
 
-vector<const Creature*> Collective::getKills() const {
+const EntitySet<Creature>& Collective::getKills() const {
   return kills;
 }
 
@@ -2365,8 +2266,10 @@ void Collective::onCopulated(Creature* who, Creature* with) {
     control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
   if (contains(getCreatures(), with))
     with->addMorale(1);
-  if (!contains(pregnancies, who)) 
-    pregnancies.push_back(who);
+  if (!pregnancies.contains(who)) {
+    pregnancies.insert(who);
+    who->addEffect(LastingEffect::PREGNANT, Random.get(200, 300));
+  }
 }
 
 void Collective::onConsumed(Creature* consumer, Creature* who) {
@@ -2384,8 +2287,8 @@ const MinionEquipment& Collective::getMinionEquipment() const {
 }
 
 int Collective::getSalary(const Creature* c) const {
-  if (minionPayment.count(c))
-    return minionPayment.at(c).salary;
+  if (auto payment = minionPayment.getMaybe(c))
+    return payment->salary;
   else
     return 0;
 }

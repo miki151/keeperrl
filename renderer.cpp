@@ -391,8 +391,8 @@ void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite
   drawViewObject(pos, object.id(), useSprite, size, getBleedingColor(object));
 }
 
-void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, double scale) {
-  drawViewObject(pos, object.id(), useSprite, scale, getBleedingColor(object));
+void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, double scale, Color color) {
+  drawViewObject(pos, object.id(), useSprite, scale, getBleedingColor(object) * color);
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object) {

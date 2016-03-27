@@ -185,13 +185,6 @@ class CollectiveInfo {
   };
   vector<TechButton> HASH(techButtons);
 
-  struct Deity {
-    string HASH(name);
-    double HASH(standing);
-    HASH_ALL(name, standing);
-  };
-  vector<Deity> HASH(deities);
-
   struct Task {
     string HASH(name);
     optional<UniqueEntity<Creature>::Id> HASH(creature);
@@ -208,7 +201,7 @@ class CollectiveInfo {
   };
   optional<Ransom> HASH(ransom);
 
-  HASH_ALL(warning, buildings, minionButtons, libraryButtons, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosen, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, deities, taskMap, ransom);
+  HASH_ALL(warning, buildings, minionButtons, libraryButtons, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosen, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom);
 };
 
 class VillageInfo {
@@ -216,11 +209,17 @@ class VillageInfo {
   struct Village {
     string HASH(name);
     string HASH(tribeName);
-    bool HASH(knownLocation);
+    enum Access { ACTIVE, INACTIVE, LOCATION, NO_LOCATION };
+    Access HASH(access);
     enum State { FRIENDLY, HOSTILE, CONQUERED } HASH(state);
-    vector<VillageAction> HASH(actions);
+    struct ActionInfo {
+      VillageAction HASH(action);
+      optional<string> HASH(disabledReason);
+      HASH_ALL(action, disabledReason);
+    };
+    vector<ActionInfo> HASH(actions);
     vector<TriggerInfo> triggers;
-    HASH_ALL(name, tribeName, knownLocation, state, actions);
+    HASH_ALL(name, tribeName, access, state, actions);
   };
   vector<Village> HASH(villages);
   int HASH(numMainVillains);

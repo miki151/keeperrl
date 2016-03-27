@@ -73,6 +73,7 @@ class ViewObject {
   };
 
   void addMovementInfo(MovementInfo);
+  void clearMovementInfo();
   bool hasAnyMovementInfo() const;
   MovementInfo getLastMovementInfo() const;
   Vec2 getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creature>::Id controlledId) const;
@@ -105,6 +106,7 @@ class ViewObject {
     const MovementInfo& getLast() const;
     Vec2 getTotalMovement(double tBegin, double tEnd) const;
     bool hasAny() const;
+    void clear();
 
     private:
     int makeGoodIndex(int index) const;

@@ -246,7 +246,7 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
 void WindowView::displayAutosaveSplash(const ProgressMeter& meter) {
   splashDone = false;
   renderDialog.push([=, &meter] {
-    PGuiElem window = gui.miniWindow(gui.empty());
+    PGuiElem window = gui.miniWindow(gui.empty(), []{});
     Vec2 windowSize(440, 70);
     Rectangle bounds((renderer.getSize() - windowSize) / 2, (renderer.getSize() + windowSize) / 2);
     Rectangle progressBar(bounds.minusMargin(15));
@@ -771,10 +771,9 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, double* scro
     vector<PGuiElem> lines = guiBuilder.drawItemMenu(items,
       [&retVal] (Rectangle butBounds, optional<int> a) { retVal = a;}, true);
     int menuHeight = lines.size() * guiBuilder.getStandardLineHeight() + 30;
-    PGuiElem menu = gui.stack(gui.reverseButton([&retVal] { retVal = optional<int>(none); }),
-        gui.miniWindow(gui.margins(
+    PGuiElem menu = gui.miniWindow(gui.margins(
             gui.scrollable(gui.verticalList(std::move(lines), guiBuilder.getStandardLineHeight()), scrollPos),
-        15, 15, 15, 15)));
+        15, 15, 15, 15), [&retVal] { retVal = optional<int>(none); });
     PGuiElem bg2 = gui.darken();
     bg2->setBounds(renderer.getSize());
     while (1) {
@@ -811,11 +810,24 @@ optional<UniqueEntity<Item>::Id> WindowView::chooseTradeItem(const string& title
       Vec2(rightBarWidthCollective + 30, 80));
 }
 
-CampaignAction WindowView::prepareCampaign(Campaign& campaign) {
+optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, optional<Vec2> current) {
+  SyncQueue<optional<Vec2>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, current),
+      Vec2(rightBarWidthCollective + 30, 160));
+}
+
+CampaignAction WindowView::prepareCampaign(const Campaign& campaign, CampaignSetupInfo& setup) {
   SyncQueue<CampaignAction> returnQueue;
   optional<Vec2> embarkPos;
-  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, embarkPos),
-      Vec2(rightBarWidthCollective + 30, 80));
+  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, setup, embarkPos),
+      Vec2(rightBarWidthCollective + 30, 160));
+}
+
+optional<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,
+    const vector<CreatureInfo>& creatures, const string& cancelText) {
+  SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawTeamLeaderMenu(returnQueue, title, creatures, cancelText),
+      Vec2(rightBarWidthCollective + 30, 160));
 }
 
 void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, Vec2 origin) {
@@ -1253,7 +1265,6 @@ void WindowView::keyboardAction(Event::KeyEvent key) {
     case Keyboard::H: inputQueue.push(UserInput(UserInputId::HIDE)); break;
     case Keyboard::P: inputQueue.push(UserInput(UserInputId::PAY_DEBT)); break;
     case Keyboard::C: inputQueue.push(UserInput(key.shift ? UserInputId::CONSUME : UserInputId::CHAT)); break;
-    case Keyboard::U: inputQueue.push(UserInput(UserInputId::UNPOSSESS)); break;
     default: break;
   }
 }

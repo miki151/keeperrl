@@ -30,6 +30,7 @@
 #include "skill.h"
 #include "modifier_type.h"
 #include "task.h"
+#include "game.h"
 
 class Behaviour {
   public:
@@ -372,7 +373,7 @@ class Fighter : public Behaviour {
       return {weight, action.prepend([=](Creature* creature) {
         creature->setInCombat();
         other->setInCombat();
-        lastSeen = {creature->getPosition(), creature->getTime(), LastSeen::PANIC, other};
+        lastSeen = {creature->getPosition(), creature->getGlobalTime(), LastSeen::PANIC, other->getUniqueId()};
       })};
     else
       return NoMove;
@@ -475,7 +476,7 @@ class Fighter : public Behaviour {
     if (auto lastSeen = getLastSeen()) {
       double lastSeenTimeout = 20;
       if (!lastSeen->pos.isSameLevel(creature->getPosition()) ||
-          lastSeen->time < creature->getTime() - lastSeenTimeout ||
+          lastSeen->time < creature->getGlobalTime() - lastSeenTimeout ||
           lastSeen->pos == creature->getPosition()) {
         lastSeen = none;
         return NoMove;
@@ -537,9 +538,9 @@ class Fighter : public Behaviour {
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=](Creature* creature) {
             creature->setInCombat();
             other->setInCombat();
-            lastSeen = {other->getPosition(), creature->getTime(), LastSeen::ATTACK, other};
-            if (!chaseFreeze.count(other) || other->getTime() > chaseFreeze.at(other).second)
-              chaseFreeze[other] = make_pair(other->getTime() + 20, other->getTime() + 70);
+            lastSeen = {other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
+            if (!chaseFreeze.count(other) || other->getGlobalTime() > chaseFreeze.at(other).second)
+              chaseFreeze[other] = make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70);
           })};
       }
     }
@@ -563,43 +564,29 @@ class Fighter : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Fighter);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Behaviour)
-      & SVAR(maxPowerRatio)
-      & SVAR(chase)
-      & SVAR(lastSeen);
-  }
+  SERIALIZE_ALL2(Behaviour, maxPowerRatio, chase, lastSeen);
 
   private:
   double SERIAL(maxPowerRatio);
   bool SERIAL(chase);
   struct LastSeen {
-    Position pos;
-    double time;
-    enum { ATTACK, PANIC} type;
-    const Creature* creature;
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-      ar& BOOST_SERIALIZATION_NVP(pos)
-        & BOOST_SERIALIZATION_NVP(time)
-        & BOOST_SERIALIZATION_NVP(type)
-        & BOOST_SERIALIZATION_NVP(creature);
-    }
+    Position SERIAL(pos);
+    double SERIAL(time);
+    enum { ATTACK, PANIC} SERIAL(type);
+    Creature::Id SERIAL(creature);
+    SERIALIZE_ALL(pos, time, type, creature);
   };
   optional<LastSeen> SERIAL(lastSeen);
   optional<LastSeen>& getLastSeen() {
-    if (lastSeen && lastSeen->creature->isDead())
+    if (lastSeen && !creature->getLevel()->containsCreature(lastSeen->creature))
       lastSeen.reset();
     return lastSeen;
   }
   map<const Creature*, pair<double, double>> chaseFreeze;
 
   bool isChaseFrozen(const Creature* c) {
-    return chaseFreeze.count(c) && chaseFreeze.at(c).first <= c->getTime()
-      && chaseFreeze.at(c).second >= c->getTime();
+    return chaseFreeze.count(c) && chaseFreeze.at(c).first <= c->getGlobalTime()
+      && chaseFreeze.at(c).second >= c->getGlobalTime();
   }
 };
 
@@ -695,7 +682,7 @@ class DieTime : public Behaviour {
   DieTime(Creature* c, double t) : Behaviour(c), dieTime(t) {}
 
   virtual MoveInfo getMove() override {
-    if (creature->getTime() > dieTime) {
+    if (creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
         if (creature->isNotLiving() && creature->isCorporal())
           creature->you(MsgType::FALL, "apart");
@@ -720,14 +707,14 @@ class DieTime : public Behaviour {
 class Summoned : public GuardTarget {
   public:
   Summoned(Creature* c, Creature* _target, double minDist, double maxDist, double ttl) 
-      : GuardTarget(c, minDist, maxDist), target(_target), dieTime(target->getTime() + ttl) {
+      : GuardTarget(c, minDist, maxDist), target(_target), dieTime(target->getGlobalTime() + ttl) {
   }
 
   virtual ~Summoned() {
   }
 
   virtual MoveInfo getMove() override {
-    if (target->isDead() || creature->getTime() > dieTime) {
+    if (target->isDead() || creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
         if (creature->isNotLiving() && !creature->isCorporal())
           creature->you(MsgType::FALL, "apart");
@@ -761,8 +748,8 @@ class Thief : public Behaviour {
   virtual MoveInfo getMove() override {
     if (!creature->hasSkill(Skill::get(SkillId::STEALING)))
       return NoMove;
-    for (const Creature* other : robbed) {
-      if (creature->canSee(other)) {
+    for (const Creature* other : creature->getVisibleEnemies()) {
+      if (robbed.contains(other)) {
         if (MoveInfo teleMove = tryEffect(EffectId::TELEPORT, 1))
           return teleMove;
         if (auto action = creature->moveAway(other->getPosition()))
@@ -771,7 +758,7 @@ class Thief : public Behaviour {
     }
     for (Position pos : creature->getPosition().neighbors8(Random)) {
       const Creature* other = pos.getCreature();
-      if (other && !contains(robbed, other)) {
+      if (other && !robbed.contains(other)) {
         vector<Item*> allGold;
         for (Item* it : other->getEquipment().getItems())
           if (it->getClass() == ItemClass::GOLD)
@@ -780,7 +767,7 @@ class Thief : public Behaviour {
           if (auto action = creature->stealFrom(creature->getPosition().getDir(other->getPosition()), allGold))
           return {1.0, action.append([=](Creature* creature) {
             other->playerMessage(creature->getName().the() + " steals all your gold!");
-            robbed.push_back(other);
+            robbed.insert(other);
           })};
       }
     }
@@ -788,14 +775,10 @@ class Thief : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Thief);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(robbed);
-  }
+  SERIALIZE_ALL2(Behaviour, robbed);
 
   private:
-  vector<const Creature*> SERIAL(robbed);
+  EntitySet<Creature> SERIAL(robbed);
 };
 
 class ByCollective : public Behaviour {
@@ -1145,7 +1128,7 @@ void MonsterAI::makeMove() {
     if (pickItems) {
       for (auto elem : Item::stackItems(creature->getPickUpOptions())) {
         Item* item = elem.second[0];
-        if (!item->getShopkeeper() && creature->pickUp(elem.second))
+        if (!item->isOrWasForSale() && creature->pickUp(elem.second))
           moves.emplace_back(
               MoveInfo({ behaviours[i]->itemValue(item) * weights[i], creature->pickUp(elem.second)}),
               weights[i]);

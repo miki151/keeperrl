@@ -117,7 +117,7 @@ function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
     case ItemIndex::RANGED_WEAPON: return [](const Item* it) {
         return it->getClass() == ItemClass::RANGED_WEAPON;};
     case ItemIndex::CAN_EQUIP: return [](const Item* it) {return it->canEquip();};
-    case ItemIndex::FOR_SALE: return [](const Item* it) {return !!it->getShopkeeper();};
+    case ItemIndex::FOR_SALE: return [](const Item* it) {return it->isOrWasForSale();};
   }
 }
 

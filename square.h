@@ -21,6 +21,7 @@
 #include "renderable.h"
 #include "stair_key.h"
 #include "position.h"
+#include "tribe.h"
 
 class Level;
 class Creature;
@@ -191,7 +192,7 @@ class Square : public Renderable {
   
   /** Triggers all time-dependent processes like burning. Calls tick() for items if present.
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
-  void tick(double time);
+  void tick();
   void updateSunlightMovement(bool isSunlight);
 
   virtual bool canLock() const { return false; }
@@ -240,7 +241,7 @@ class Square : public Renderable {
   protected:
   void onEnter(Creature*);
   virtual void onEnterSpecial(Creature*) {}
-  virtual void tickSpecial(double time) {}
+  virtual void tickSpecial() {}
   virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
   HeapAllocated<Inventory> SERIAL(inventory);
   string SERIAL(name);

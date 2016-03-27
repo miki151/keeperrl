@@ -9,9 +9,8 @@ enum class DragContentId {
   CREATURE
 };
 
-class DragContent : public EnumVariant<DragContentId, TYPES(int),
-    ASSIGN(int,
-        DragContentId::CREATURE)> {
+class DragContent : public EnumVariant<DragContentId, TYPES(UniqueEntity<Creature>::Id),
+    ASSIGN(UniqueEntity<Creature>::Id, DragContentId::CREATURE)> {
   using EnumVariant::EnumVariant;
 };
 

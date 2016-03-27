@@ -97,14 +97,25 @@ struct HighscoreList {
 
 enum class CampaignActionId {
   CANCEL,
-  INC_WIDTH,
-  INC_HEIGHT,
-  CHOOSE_SITE
+  CHOOSE_SITE,
+  WORLD_NAME,
+  REROLL_MAP,
+  CONFIRM
 };
-class CampaignAction : public EnumVariant<CampaignActionId, TYPES(int, Vec2),
-  ASSIGN(int, CampaignActionId::INC_WIDTH, CampaignActionId::INC_HEIGHT),
+
+class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2),
   ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE)> {
     using EnumVariant::EnumVariant;
+};
+
+struct CampaignSetupInfo {
+  struct Counter {
+    int value;
+    int min;
+    int max;
+    string name;
+  };
+  vector<Counter> counters;
 };
 
 class View {
@@ -187,7 +198,12 @@ class View {
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
 
-  virtual CampaignAction prepareCampaign(Campaign&) = 0;
+  virtual CampaignAction prepareCampaign(const Campaign&, CampaignSetupInfo&) = 0;
+
+  virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
+      const string& cancelText) = 0;
+
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;

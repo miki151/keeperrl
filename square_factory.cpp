@@ -21,7 +21,6 @@
 #include "level.h"
 #include "item_factory.h"
 #include "creature_factory.h"
-#include "pantheon.h"
 #include "effect.h"
 #include "view_object.h"
 #include "view_id.h"
@@ -272,7 +271,7 @@ class Tree : public Square {
       getLevel()->getModel()->addWoodCount(numWood);
       int numCut = getLevel()->getModel()->getWoodCount();
       if (numCut > 1500 && Random.roll(max(150, (3000 - numCut) / 5))) {
-        CreatureFactory f = CreatureFactory::singleType(TribeId::HOSTILE, creature);
+        CreatureFactory f = CreatureFactory::singleType(TribeId::getHostile(), creature);
         Effect::summon(getPosition2(), f, 1, 100000);
       }
     }
@@ -443,7 +442,7 @@ class Bed : public Furniture {
     getLevel()->addTickingSquare(getPosition());
   }
 
-  virtual void tickSpecial(double time) override {
+  virtual void tickSpecial() override {
     if (getCreature() && getCreature()->isAffected(LastingEffect::SLEEP))
       getCreature()->heal(0.005);
   }
@@ -506,7 +505,7 @@ class Altar : public Square {
   virtual string getName() = 0;
 
   virtual void onApply(Creature* c) override {
-    if (c == recentKiller && recentVictim && killTime >= c->getTime() - sacrificeTimeout)
+/*    if (c == recentKiller && recentVictim && killTime >= c->getTime() - sacrificeTimeout)
       for (Item* it : getItems(Item::classPredicate(ItemClass::CORPSE)))
         if (it->getCorpseInfo()->victim == recentVictim->getUniqueId()) {
           c->you(MsgType::SACRIFICE, getName());
@@ -514,7 +513,7 @@ class Altar : public Square {
           removeItem(it);
           onSacrifice(c);
           return;
-        }
+        }*/
     c->playerMessage("You pray to " + getName());
     onPrayer(c);
   }
@@ -526,46 +525,7 @@ class Altar : public Square {
   const Creature* SERIAL(recentKiller) = nullptr;
   const Creature* SERIAL(recentVictim) = nullptr;
   double SERIAL(killTime) = -100;
-  const double sacrificeTimeout = 50;
-};
-
-class DeityAltar : public Altar {
-  public:
-  DeityAltar(const ViewObject& object, Deity* d) : Altar(ViewObject(object.id(), object.layer(),
-        "Shrine to " + d->getName())), deity(d) {
-  }
-
-  virtual void onEnterSpecial(Creature* c) override {
-    if (c->isHumanoid()) {
-      c->playerMessage("This is a shrine to " + deity->getName());
-      c->playerMessage(deity->getGender().he() + " lives in " + deity->getHabitatString());
-      c->playerMessage(deity->getGender().he() + " is the " + deity->getGender().god() + " of "
-          + deity->getEpithetsString());
-    }
-  }
-
-  virtual string getName() override {
-    return deity->getName();
-  }
-
-  virtual void destroyBy(Creature* c) override {
- //   GlobalEvents.addWorshipEvent(c, deity, WorshipType::DESTROY_ALTAR);
- //   Altar::destroyBy(c);
-  }
-
-  virtual void onPrayer(Creature* c) override {
- //   GlobalEvents.addWorshipEvent(c, deity, WorshipType::PRAYER);
-  }
-
-  virtual void onSacrifice(Creature* c) override {
- //   GlobalEvents.addWorshipEvent(c, deity, WorshipType::SACRIFICE);
-  }
-
-  SERIALIZE_ALL2(Altar, deity);
-  SERIALIZATION_CONSTRUCTOR(DeityAltar);
-
-  private:
-  Deity* SERIAL(deity);
+//  const double sacrificeTimeout = 50;
 };
 
 class CreatureAltar : public Altar {
@@ -648,7 +608,7 @@ class Hatchery : public Square {
         c.ticking = true;)),
     creature(c) {}
 
-  virtual void tickSpecial(double time) override {
+  virtual void tickSpecial() override {
     if (getCreature() || !Random.roll(10) || getPoisonGasAmount() > 0)
       return;
     for (Position v : getPosition2().neighbors8())
@@ -744,10 +704,11 @@ class SokobanHole : public Square {
       c->die(nullptr, false, false);
       getLevel()->replaceSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
     } else 
-    if (!c->isAffected(LastingEffect::FLYING)) {
+    if (!c->isAffected(LastingEffect::FLYING))
       c->you(MsgType::FALL, "into the " + getName() + "!");
-      getLevel()->changeLevel(stairKey, c);
-    }
+    else
+      c->you(MsgType::ARE, "sucked into the " + getName() + "!");
+    getLevel()->changeLevel(stairKey, c);
   }
 
   SERIALIZE_ALL2(Square, stairKey);
@@ -756,10 +717,6 @@ class SokobanHole : public Square {
   private:
   StairKey SERIAL(stairKey);
 };
-
-PSquare SquareFactory::getAltar(Deity* deity) {
-  return PSquare(new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), deity));
-}
 
 PSquare SquareFactory::getAltar(Creature* creature) {
   return PSquare(new CreatureAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"), creature));
@@ -782,7 +739,6 @@ void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Barricade);
   REGISTER_TYPE(ar, Torch);
   REGISTER_TYPE(ar, Grave);
-  REGISTER_TYPE(ar, DeityAltar);
   REGISTER_TYPE(ar, CreatureAltar);
   REGISTER_TYPE(ar, ConstructionDropItems);
   REGISTER_TYPE(ar, Hatchery);
@@ -835,7 +791,6 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::WHIPPING_POST] = 5;
               c.constructions[SquareId::BARRICADE] = 20;
               c.constructions[SquareId::TORCH] = 5;
-              c.constructions[SquareId::ALTAR] = 35;
               c.constructions[SquareId::EYEBALL] = 5;
               c.constructions[SquareId::CREATURE_ALTAR] = 35;
               c.constructions[SquareId::MINION_STATUE] = 35;
@@ -1084,9 +1039,6 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::HATCHERY:
         return new Hatchery(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND, "Pigsty"), "pigsty",
             s.get<CreatureFactory::SingleCreature>());
-    case SquareId::ALTAR:
-        return new DeityAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR, "Shrine"),
-              Deity::getDeity(s.get<DeityHabitat>()));
     case SquareId::CREATURE_ALTAR:
         return new CreatureAltar(ViewObject(ViewId::CREATURE_ALTAR, ViewLayer::FLOOR, "Shrine"),
               s.get<const Creature*>());

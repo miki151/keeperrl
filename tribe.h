@@ -22,60 +22,79 @@
 #include "enums.h"
 #include "event.h"
 #include "singleton.h"
+#include "entity_map.h"
 
 class Creature;
 
+class TribeId {
+  public:
+  static TribeId getMonster();
+  static TribeId getPest();
+  static TribeId getWildlife();
+  static TribeId getHuman();
+  static TribeId getElf();
+  static TribeId getDarkElf();
+  static TribeId getDwarf();
+  static TribeId getGnome();
+  static TribeId getAdventurer();
+  static TribeId getBandit();
+  static TribeId getHostile();
+  static TribeId getPeaceful();
+  static TribeId getKeeper();
+  static TribeId getRetiredKeeper();
+  static TribeId getLizard();
+  static TribeId getGreenskin();
+  static TribeId getAnt();
+
+  bool operator == (const TribeId&) const;
+  bool operator != (const TribeId&) const;
+
+  int getHash() const;
+
+  // This is a ridiculous, but effective hack to switch one tribe for another in entire model before retiring a game.
+  static void switchForSerialization(TribeId from, TribeId to);
+  static void clearSwitch();
+
+  SERIALIZATION_DECL(TribeId);
+
+  private:
+  typedef long long KeyType;
+  TribeId(KeyType key);
+  KeyType SERIAL(key);
+  static optional<pair<TribeId, TribeId>> serialSwitch;
+};
+
+
 class Tribe {
   public:
-  double getStanding(const Creature*) const;
+  Tribe(const Tribe&) = delete;
+  Tribe& operator = (Tribe&&) = default;
+  Tribe(Tribe&&) = default;
   bool isEnemy(const Creature*) const;
   bool isEnemy(const Tribe*) const;
-  void makeSlightEnemy(const Creature*);
-  const string& getName() const;
-  void addEnemy(vector<Tribe*>);
+  void addEnemy(Tribe*);
   void addFriend(Tribe*);
-  bool isDiplomatic() const;
 
   void onMemberKilled(Creature* member, Creature* killer);
-  void onMemberAttacked(Creature* member, Creature* attacker);
   void onItemsStolen(const Creature* thief);
 
   SERIALIZATION_DECL(Tribe);
 
-  static EnumMap<TribeId, PTribe> generateTribes();
+  typedef unordered_map<TribeId, PTribe, CustomHash<TribeId>> Map;
+
+  static Map generateTribes();
 
   private:
-  Tribe(const string& name, bool diplomatic);
+  Tribe(bool diplomatic);
+  double getStanding(const Creature*) const;
 
   bool SERIAL(diplomatic);
 
   void initStanding(const Creature*);
   double getMultiplier(const Creature* member);
 
-  unordered_map<const Creature*, double> SERIAL(standing);
-  vector<pair<Creature*, Creature*>> SERIAL(attacks);
+  EntityMap<Creature, double> SERIAL(standing);
   unordered_set<Tribe*> SERIAL(enemyTribes);
-  string SERIAL(name);
 };
-
-RICH_ENUM(TribeId,
-  MONSTER,
-  PEST,
-  WILDLIFE,
-  HUMAN,
-  ELF,
-  DARK_ELF,
-  DWARF,
-  GNOME,
-  ADVENTURER,
-  BANDIT,
-  HOSTILE,
-  PEACEFUL,
-  KEEPER,
-  LIZARD,
-  GREENSKIN,
-  ANT
-);
-
 
 #endif

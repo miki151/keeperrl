@@ -73,6 +73,7 @@ class GuiFactory {
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
+  PGuiElem stack(PGuiElem, PGuiElem, PGuiElem, PGuiElem);
   PGuiElem external(GuiElem*);
   PGuiElem rectangle(sf::Color color, optional<sf::Color> borderColor = none);
   class ListBuilder {
@@ -88,6 +89,7 @@ class GuiFactory {
     int getSize() const;
     bool isEmpty() const;
     vector<PGuiElem>& getAllElems();
+    void clear();
 
     private:
     GuiFactory& gui;
@@ -134,8 +136,8 @@ class GuiFactory {
       Renderer::FontId = Renderer::SYMBOL_FONT);
   PGuiElem labelUnicode(const String&, function<Color()>, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
-  PGuiElem viewObject(const ViewObject&, double scale = 1);
-  PGuiElem viewObject(ViewId, double scale = 1);
+  PGuiElem viewObject(const ViewObject&, double scale = 1, Color = colors[ColorId::WHITE]);
+  PGuiElem viewObject(ViewId, double scale = 1, Color = colors[ColorId::WHITE]);
   PGuiElem drawCustom(function<void(Renderer&, Rectangle)>);
   PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
   PGuiElem centerHoriz(PGuiElem, int width = -1);
@@ -160,7 +162,7 @@ class GuiFactory {
       Vec2 offset = Vec2(0, 0), function<Color()> = nullptr);
   PGuiElem sprite(Texture&, Alignment, Color);
   PGuiElem sprite(Texture&, double scale);
-  PGuiElem tooltip(const vector<string>&);
+  PGuiElem tooltip(const vector<string>&, int delayMilli = 700);
   PGuiElem darken();
   PGuiElem stopMouseMovement();
   PGuiElem fullScreen(PGuiElem);
@@ -220,7 +222,7 @@ class GuiFactory {
   PGuiElem insideBackground(PGuiElem content);
   PGuiElem window(PGuiElem content, function<void()> onExitButton);
   PGuiElem miniWindow();
-  PGuiElem miniWindow(PGuiElem content);
+  PGuiElem miniWindow(PGuiElem content, function<void()> onExitButton = nullptr);
   PGuiElem mapWindow(PGuiElem content);
   PGuiElem miniBorder();
   PGuiElem border2();
@@ -269,7 +271,7 @@ class GuiFactory {
   PGuiElem uiHighlightConditional(function<bool()>, Color = colors[ColorId::GREEN]);
   PGuiElem uiHighlight(Color = colors[ColorId::GREEN]);
   PGuiElem uiHighlight(function<Color()>);
-  PGuiElem rectangleHighlight();
+  PGuiElem rectangleBorder(Color);
 
   private:
 

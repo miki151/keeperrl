@@ -26,6 +26,10 @@ int RandomGen::get(int max) {
   return get(0, max);
 }
 
+long long RandomGen::getLL() {
+  return uniform_int_distribution<long long>(-(1LL << 62), 1LL << 62)(generator);
+}
+
 int RandomGen::get(Range r) {
   return get(r.getStart(), r.getEnd());
 }

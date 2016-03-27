@@ -41,7 +41,6 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(barehandedDamage)
     & SVAR(barehandedAttack)
     & SVAR(attackEffect)
-    & SVAR(harmlessApply)
     & SVAR(passiveAttack)
     & SVAR(gender)
     & SVAR(bodyParts)

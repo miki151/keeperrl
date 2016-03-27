@@ -1,15 +1,15 @@
 /* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
- 
+
  This file is part of KeeperRL.
- 
+
  KeeperRL is free software; you can redistribute it and/or modify it under the terms of the
  GNU General Public License as published by the Free Software Foundation; either version 2
  of the License, or (at your option) any later version.
- 
+
  KeeperRL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
  even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License along with this program.
  If not, see http://www.gnu.org/licenses/ . */
 
@@ -84,7 +84,8 @@ CollectiveTab GuiBuilder::getCollectiveTab() const {
 }
 
 void GuiBuilder::closeOverlayWindows() {
-  callbacks.input({UserInputId::CREATURE_BUTTON, -1});
+  // send a random id which wont be found
+  callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()});
 }
 
 optional<int> GuiBuilder::getActiveButton(CollectiveTab tab) const {
@@ -203,19 +204,6 @@ PGuiElem GuiBuilder::getStandingGui(double standing) {
     return gui.label("neutral", color);
   else
     return gui.label("good", color);
-}
-
-PGuiElem GuiBuilder::drawDeities(CollectiveInfo& info) {
-  vector<PGuiElem> lines;
-  for (int i : All(info.deities)) {
-    lines.push_back(gui.stack(
-          gui.button(getButtonCallback(UserInput(UserInputId::DEITIES, i))),
-          gui.label(capitalFirst(info.deities[i].name), colors[ColorId::WHITE])));
-    lines.push_back(gui.margins(gui.horizontalList(makeVec<PGuiElem>(
-              gui.label("standing: ", colors[ColorId::WHITE]),
-              getStandingGui(info.deities[i].standing)), 85), 40, 0, 0, 0));
-  }
-  return gui.verticalList(std::move(lines), legendLineHeight);
 }
 
 PGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
@@ -404,7 +392,7 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
             gui.label("pause"),
             gui.label("[space]")), keyMargin),
         gui.button([=] {
-            if (clock->isPaused()) 
+            if (clock->isPaused())
               clock->cont();
             else
               clock->pause();
@@ -422,7 +410,7 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
   int margin = 20;
   Vec2 size(150 + 2 * margin, legendLineHeight * lines.size() - 10 + 2 * margin);
   PGuiElem dialog = gui.miniWindow(
-      gui.margins(gui.verticalList(std::move(lines), legendLineHeight), margin, margin, margin, margin));
+      gui.margins(gui.verticalList(std::move(lines), legendLineHeight), margin));
   overlays.push_back({gui.conditional(std::move(dialog), [this] { return gameSpeedDialogOpen; }), size,
       OverlayInfo::GAME_SPEED});
 }
@@ -666,9 +654,8 @@ void GuiBuilder::drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 me
     return;
   int contentHeight = elems.getSize();
   int margin = 15;
-  PGuiElem menu = gui.stack(
-      gui.reverseButton([&exit] { exit = true; }, {{Keyboard::Escape}}),
-      gui.miniWindow(gui.leftMargin(margin, gui.topMargin(margin, elems.buildVerticalList()))));
+  PGuiElem menu = gui.miniWindow(gui.leftMargin(margin, gui.topMargin(margin, elems.buildVerticalList())),
+          [&exit] { exit = true; });
   menu->setBounds(Rectangle(menuPos, menuPos + Vec2(width + 2 * margin, contentHeight + 2 * margin)));
   PGuiElem bg = gui.darken();
   bg->setBounds(renderer.getSize());
@@ -687,8 +674,7 @@ void GuiBuilder::drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 me
 
 }
 
-optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos,
-    bool autoDefault) {
+optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault) {
   if (itemInfo.actions.empty())
     return none;
   if (itemInfo.actions.size() == 1 && autoDefault)
@@ -703,7 +689,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
   options.push_back("cancel");
   int count = options.size();
   PGuiElem stuff = drawListGui("", ListElem::convert(options), MenuType::NORMAL, &contentHeight, &index, &choice);
-  stuff = gui.miniWindow(gui.margins(std::move(stuff), 0, 0, 0, 0));
+  stuff = gui.miniWindow(gui.margins(std::move(stuff), 0));
   Vec2 size(150, options.size() * listLineHeight + 35);
   menuPos.x = min(menuPos.x, renderer.getSize().x - size.x);
   menuPos.y = min(menuPos.y, renderer.getSize().y - size.y);
@@ -723,7 +709,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
       }
       if (choice == -100)
         return none;
-      if (event.type == Event::MouseButtonPressed && 
+      if (event.type == Event::MouseButtonPressed &&
           !Vec2(event.mouseButton.x, event.mouseButton.x).inRectangle(stuff->getBounds()))
         return none;
       if (event.type == Event::KeyPressed)
@@ -733,7 +719,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
           case Keyboard::Numpad2:
           case Keyboard::Down: index = (index + 1 + count) % count; break;
           case Keyboard::Numpad5:
-          case Keyboard::Return: 
+          case Keyboard::Return:
               if (index > -1) {
                 if (index < itemInfo.actions.size())
                   return itemInfo.actions[index];
@@ -800,10 +786,22 @@ vector<PGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info) {
 PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(info.getTitle(), colors[ColorId::WHITE]));
-  list.addElem(gui.horizontalList(makeVec<PGuiElem>(
-      gui.label("Level " + toString(info.level), colors[ColorId::WHITE]),
-      gui.stack(gui.button(getButtonCallback(UserInputId::UNPOSSESS)),
-          gui.labelHighlight("[U] Leave control", colors[ColorId::LIGHT_BLUE]))), 150, 1));
+  list.addElem(gui.label("Level " + toString(info.level), colors[ColorId::WHITE]));
+  auto line = gui.getListBuilder();
+  line.addElemAuto(gui.label("Commands: "));
+  line.addElemAuto(gui.stack(
+        gui.button(getButtonCallback(UserInputId::UNPOSSESS), {Keyboard::U}, true),
+        gui.labelHighlight("[U] ", colors[ColorId::LIGHT_BLUE]),
+        getTooltip({"Leave minion and order team back to base."})));
+  line.addElemAuto(gui.stack(
+        gui.button(getButtonCallback(UserInputId::TRANSFER), {Keyboard::T}, true),
+        gui.labelHighlight("[T] ", colors[ColorId::LIGHT_BLUE]),
+        getTooltip({"Travel to another site."})));
+  line.addElemAuto(gui.stack(
+        gui.button(getButtonCallback(UserInputId::SWAP_TEAM), {Keyboard::S}, true),
+        gui.labelHighlight("[S] ", colors[ColorId::LIGHT_BLUE]),
+        getTooltip({"Switch control to a different team member."})));
+  list.addElem(line.buildHorizontalList());
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addElem(gui.empty());
@@ -918,7 +916,8 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
               gui.uiHighlightConditional([team] () { return team.highlight; }),
               gui.uiHighlightMouseOver(),
               gui.dragListener([this, team](DragContent content) {
-                callbacks.input({UserInputId::ADD_TO_TEAM, TeamCreatureInfo{team.id, content.get<int>()}});}),
+                callbacks.input({UserInputId::ADD_TO_TEAM,
+                    TeamCreatureInfo{team.id, content.get<UniqueEntity<Creature>::Id>()}});}),
               gui.getListBuilder(22)
               .addElem(gui.topMargin(8, gui.icon(GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
               .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
@@ -926,7 +925,7 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
     string hint = "Drag and drop minions here to create a new team.";
     lines.addElem(gui.stack(makeVec<PGuiElem>(
           gui.dragListener([this](DragContent content) {
-              callbacks.input({UserInputId::CREATE_TEAM, content.get<int>() });}),
+              callbacks.input({UserInputId::CREATE_TEAM, content.get<UniqueEntity<Creature>::Id>() });}),
           gui.uiHighlightMouseOver(),
           getHintCallback({hint}),
           gui.button([this, hint] { callbacks.info(hint); }),
@@ -1008,7 +1007,7 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info
   int margin = 20;
   append(lines, std::move(freeLines));
   ret.push_back({gui.conditional(gui.miniWindow(
-        gui.margins(gui.verticalList(std::move(lines), lineHeight), margin, margin, margin, margin)),
+        gui.margins(gui.verticalList(std::move(lines), lineHeight), margin)),
         [this] { return showTasks; }),
       Vec2(taskMapWindowWidth, info.taskMap.size() * lineHeight + 2 * margin),
       OverlayInfo::TOP_RIGHT});
@@ -1016,7 +1015,7 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info
 
 void GuiBuilder::drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInfo::Ransom& ransom) {
   GuiFactory::ListBuilder lines(gui, legendLineHeight);
-  lines.addElem(gui.label(ransom.attacker + " demand " + toString(ransom.amount.second) 
+  lines.addElem(gui.label(ransom.attacker + " demand " + toString(ransom.amount.second)
         + " gold for not attacking. Agree?"));
   if (ransom.canAfford)
     lines.addElem(gui.leftMargin(25, gui.stack(
@@ -1067,7 +1066,7 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& in
         leftSide = gui.marginAuto(list.buildVerticalList(), std::move(leftSide), GuiFactory::TOP);
       }
       menu = gui.stack(
-          gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, -1}),
+          gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}),
             {{Keyboard::Escape}, {Keyboard::Return}}),
           gui.horizontalList(makeVec<PGuiElem>(
               gui.margins(std::move(leftSide), 8, 15, 5, 0),
@@ -1075,8 +1074,9 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& in
                 0, -15, 0, -15)), minionListWidth),
           gui.leftMargin(minionListWidth + 20, std::move(minionPage)));
       minionsOverlayCache = gui.miniWindow(gui.stack(
-            gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, -1}), {{Keyboard::Escape}}, true),
-            gui.margins(std::move(menu), margin)));
+          gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}),
+            {{Keyboard::Escape}}, true),
+          gui.margins(std::move(menu), margin)));
       minionsOverlayHash = newHash;
     }
     ret.push_back({gui.external(minionsOverlayCache.get()), size, OverlayInfo::MINIONS});
@@ -1158,7 +1158,7 @@ static int getNumFitting(Renderer& renderer, const vector<PlayerMessage>& messag
     if (currentWidth > 0)
       ++length;
     if (currentWidth + length > maxLength) {
-      if (currentLine == numLines - 1) 
+      if (currentLine == numLines - 1)
         return messages.size() - i - 1;
       currentWidth = 0;
       ++currentLine;
@@ -1179,7 +1179,7 @@ static vector<vector<PlayerMessage>> fitMessages(Renderer& renderer, const vecto
     if (currentWidth > 0)
       ++length;
     if (currentWidth + length > maxLength) {
-      if (ret.size() == numLines) 
+      if (ret.size() == numLines)
         break;
       currentWidth = 0;
       ret.emplace_back();
@@ -1235,17 +1235,30 @@ PGuiElem GuiBuilder::getVillageStateLabel(VillageInfo::Village::State state) {
   }
 }
 
-PGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageAction action) {
-  switch (action) {
-    case VillageAction::RECRUIT: 
-      return gui.stack(
-          gui.labelHighlight("Recruit", colors[ColorId::GREEN]),
-          gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION, VillageActionInfo{villageIndex, action}})));
-    case VillageAction::TRADE: 
-      return gui.stack(
-          gui.labelHighlight("Trade", colors[ColorId::GREEN]),
-          gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION, VillageActionInfo{villageIndex, action}})));
-  }
+PGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageInfo::Village::ActionInfo action) {
+  if (action.disabledReason)
+    switch (action.action) {
+      case VillageAction::RECRUIT:
+        return gui.stack(
+            gui.label("Recruit", colors[ColorId::GRAY]),
+            getTooltip({*action.disabledReason}));
+      case VillageAction::TRADE:
+        return gui.stack(
+            gui.label("Trade", colors[ColorId::GRAY]),
+            getTooltip({*action.disabledReason}));
+    } else
+      switch (action.action) {
+        case VillageAction::RECRUIT:
+          return gui.stack(
+              gui.labelHighlight("Recruit", colors[ColorId::GREEN]),
+              gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION,
+                  VillageActionInfo{villageIndex, action.action}})));
+        case VillageAction::TRADE:
+          return gui.stack(
+              gui.labelHighlight("Trade", colors[ColorId::GREEN]),
+              gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION, VillageActionInfo{villageIndex,
+                  action.action}})));
+      }
 }
 
 static string getTriggerLabel(const AttackTrigger& trigger) {
@@ -1292,58 +1305,65 @@ void GuiBuilder::showAttackTriggers(const vector<TriggerInfo>& triggers, Vec2 po
 }
 
 PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
-  auto lines = gui.getListBuilder(legendLineHeight);
-  int titleMargin = -11;
-  lines.addElem(gui.leftMargin(titleMargin, gui.label(toString(info.numConquered) + "/" +
-          toString(info.totalMain) + " main villains conquered.")), titleLineHeight);
-  if (info.numMainVillains > 0)
-    lines.addElem(gui.leftMargin(titleMargin, gui.label("Main villains:")), titleLineHeight);
-  for (int i : All(info.villages)) {
-    if (i == info.numMainVillains) {
-      lines.addElem(gui.empty());
-      lines.addElem(gui.leftMargin(titleMargin, gui.label("Lesser villains:")), titleLineHeight);
-    }
-    auto& elem = info.villages[i];
-    string title = capitalFirst(elem.name) + (elem.tribeName.empty() ?
-          string() : " (" + elem.tribeName + ")");
-    PGuiElem header;
-    if (info.villages[i].knownLocation)
-      header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, i})),
-        gui.getListBuilder()
-            .addElemAuto(gui.labelHighlight(title))
-            .addElem(gui.empty(), 7)
-            .addElemAuto(gui.labelUnicode(String(L'➚'))).buildHorizontalList());
-    else
-      header = gui.label(title);
-    lines.addElem(std::move(header));
-    if (!info.villages[i].knownLocation)
-      lines.addElem(gui.leftMargin(40, gui.label("Location unknown", colors[ColorId::LIGHT_BLUE])));
-    GuiFactory::ListBuilder line(gui);
-    line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
-    vector<TriggerInfo> triggers = elem.triggers;
-    sort(triggers.begin(), triggers.end(),
-        [] (const TriggerInfo& t1, const TriggerInfo& t2) { return t1.value > t2.value;});
-#ifdef RELEASE
-    triggers = filter(triggers, [](const TriggerInfo& t) { return t.value > 0;});
-#endif
-    if (!triggers.empty())
-      line.addElemAuto(gui.stack(
-          gui.labelHighlight("Triggers", colors[ColorId::RED]),
-          gui.buttonRect([this, triggers](Rectangle bounds) {
-              showAttackTriggers(triggers, bounds.getTopRight() + Vec2(20, 0));})));
-    lines.addElem(line.buildHorizontalList());
-    for (auto action : elem.actions)
-      lines.addElem(gui.margins(getVillageActionButton(i, action), 40, 0, 0, 0));
+  int currentHash = combineHash(info);
+  if (currentHash != villagesHash) {
+    villagesHash = currentHash;
+    auto lines = gui.getListBuilder(legendLineHeight);
+    int titleMargin = -11;
+    lines.addElem(gui.leftMargin(titleMargin, gui.label(toString(info.numConquered) + "/" +
+            toString(info.totalMain) + " main villains conquered.")), titleLineHeight);
+    if (info.numMainVillains > 0)
+      lines.addElem(gui.leftMargin(titleMargin, gui.label("Main villains:")), titleLineHeight);
+    for (int i : All(info.villages)) {
+      if (i == info.numMainVillains) {
+        lines.addElem(gui.empty());
+        lines.addElem(gui.leftMargin(titleMargin, gui.label("Lesser villains:")), titleLineHeight);
+      }
+      auto& elem = info.villages[i];
+      string title = capitalFirst(elem.name) + (elem.tribeName.empty() ?
+            string() : " (" + elem.tribeName + ")");
+      PGuiElem header;
+      if (info.villages[i].access == VillageInfo::Village::LOCATION)
+        header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, i})),
+          gui.getListBuilder()
+              .addElemAuto(gui.labelHighlight(title))
+              .addElem(gui.empty(), 7)
+              .addElemAuto(gui.labelUnicode(String(L'➚'))).buildHorizontalList());
+      else
+        header = gui.label(title);
+      lines.addElem(std::move(header));
+      if (info.villages[i].access == VillageInfo::Village::NO_LOCATION)
+        lines.addElem(gui.leftMargin(40, gui.label("Location unknown", colors[ColorId::LIGHT_BLUE])));
+      else if (info.villages[i].access == VillageInfo::Village::INACTIVE)
+        lines.addElem(gui.leftMargin(40, gui.label("Outside influence zone", colors[ColorId::GRAY])));
+      GuiFactory::ListBuilder line(gui);
+      line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
+      vector<TriggerInfo> triggers = elem.triggers;
+      sort(triggers.begin(), triggers.end(),
+          [] (const TriggerInfo& t1, const TriggerInfo& t2) { return t1.value > t2.value;});
+  #ifdef RELEASE
+      triggers = filter(triggers, [](const TriggerInfo& t) { return t.value > 0;});
+  #endif
+      if (!triggers.empty())
+        line.addElemAuto(gui.stack(
+            gui.labelHighlight("Triggers", colors[ColorId::RED]),
+            gui.buttonRect([this, triggers](Rectangle bounds) {
+                showAttackTriggers(triggers, bounds.getTopRight() + Vec2(20, 0));})));
+      lines.addElem(line.buildHorizontalList());
+      for (auto action : elem.actions)
+        lines.addElem(gui.margins(getVillageActionButton(i, action), 40, 0, 0, 0));
 
+    }
+    if (lines.isEmpty())
+      return gui.label("No foreign tribes discovered.");
+    int numVillains = info.villages.size();
+    if (numSeenVillains == -1)
+      numSeenVillains = numVillains;
+    villagesCache = gui.stack(
+      gui.onRenderedAction([this, numVillains] { numSeenVillains = numVillains;}),
+      gui.scrollable(lines.buildVerticalList(), &villagesScroll, &scrollbarsHeld));
   }
-  if (lines.isEmpty())
-    return gui.label("No foreign tribes discovered.");
-  int numVillains = info.villages.size();
-  if (numSeenVillains == -1)
-    numSeenVillains = numVillains;
-  return gui.stack(
-    gui.onRenderedAction([this, numVillains] { numSeenVillains = numVillains;}),
-    gui.scrollable(lines.buildVerticalList(), &villagesScroll, &scrollbarsHeld));
+  return gui.external(villagesCache.get());
 }
 
 const double menuLabelVPadding = 0.15;
@@ -1671,8 +1691,8 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minio
     if (items[i].type == items[i].CONSUMABLE)
       lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
   lines.push_back(gui.stack(
-      gui.labelHighlight("[add consumable]", colors[ColorId::LIGHT_BLUE]),
-      gui.button(getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION, 
+      gui.labelHighlight("[Add consumable]", colors[ColorId::LIGHT_BLUE]),
+      gui.button(getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
               EquipmentActionInfo{minion.creatureId, {}, none, ItemAction::REPLACE}}))));
   for (int i : All(itemElems))
     if (items[i].type == items[i].OTHER) {
@@ -1697,7 +1717,7 @@ vector<PGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion) {
       case PlayerInfo::RENAME:
         line.push_back(gui.stack(
             gui.labelHighlight("[Rename]", colors[ColorId::LIGHT_BLUE]),
-            gui.button([=] { 
+            gui.button([=] {
                 if (auto name = getTextInput("Rename minion", minion.firstName, 10, "Press escape to cancel."))
                 callbacks.input({UserInputId::CREATURE_RENAME,
                     RenameActionInfo{minion.creatureId, *name}}); })));
@@ -1796,70 +1816,177 @@ PGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id
   int menuHeight = lines.getSize() + 30;
   return gui.stack(
       gui.preferredSize(330, menuHeight),
-      gui.reverseButton([&queue] { queue.push(none); }, {{Keyboard::Escape}}),
-      gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos),
-          15, 15, 15, 15)));
+      gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos), 15),
+          [&queue] { queue.push(none); }));
 }
 
-PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& campaign, function<void(Vec2)> clickFun,
-    optional<Vec2>& markedPos){
-  auto rows = gui.getListBuilder(48);
-  auto& sites = campaign.getSites();
+PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>& marked, function<bool(Vec2)> activeFun,
+    function<void(Vec2)> clickFun){
+  int iconSize = 48;
+  auto rows = gui.getListBuilder(iconSize);
+  auto& sites = c.getSites();
   for (int y : sites.getBounds().getYRange()) {
-    auto columns = gui.getListBuilder(48);
-    for (int x : sites.getBounds().getXRange())
-      columns.addElem(gui.viewObject(sites[x][y].viewId, 2));
+    auto columns = gui.getListBuilder(iconSize);
+    for (int x : sites.getBounds().getXRange()) {
+      vector<PGuiElem> v;
+      for (int i : All(sites[x][y].viewId))
+        v.push_back(gui.viewObject(sites[x][y].viewId[i], 2));
+      columns.addElem(gui.stack(std::move(v)));
+    }
     rows.addElem(columns.buildHorizontalList());
   }
-  auto rows2 = gui.getListBuilder(48);
+  auto rows2 = gui.getListBuilder(iconSize);
   for (int y : sites.getBounds().getYRange()) {
-    auto columns = gui.getListBuilder(48);
-    for (int x : sites.getBounds().getXRange())
-      if (sites[x][y].villain)
-        columns.addElem(gui.viewObject(sites[x][y].villain->viewId, 2));
-      else
-        columns.addElem(gui.stack(
-            gui.button([clickFun, x, y] { clickFun(Vec2(x, y)); }),
-            gui.conditional(gui.rectangleHighlight(),
-                [&markedPos, x, y] { return markedPos == Vec2(x, y);}),
-            gui.mouseHighlight2(gui.rectangleHighlight())));
+    auto columns = gui.getListBuilder(iconSize);
+    for (int x : sites.getBounds().getXRange()) {
+      Vec2 pos(x, y);
+      vector<PGuiElem> elem;
+      if (auto id = sites[x][y].getDwellerViewId()) {
+        if (c.getPlayerPos() && c.isInInfluence(pos))
+          elem.push_back(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2,
+                sites[pos].isEnemy() ? colors[ColorId::RED] : colors[ColorId::GREEN]));
+        if (activeFun(pos))
+          elem.push_back(gui.stack(
+                gui.button([pos, clickFun] { clickFun(pos); }),
+                gui.mouseHighlight2(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2))));
+        elem.push_back(gui.conditional(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2),
+              [&marked, pos] { return marked == pos;}));
+        elem.push_back(gui.topMargin(-6, gui.viewObject(*id, 2)));
+        if (c.isDefeated(pos))
+          elem.push_back(gui.viewObject(ViewId::TERROR_TRAP, 2));
+      } else {
+        if (activeFun(pos))
+          elem.push_back(gui.stack(
+                gui.button([pos, clickFun] { clickFun(pos); }),
+                gui.mouseHighlight2(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, 2))));
+        elem.push_back(gui.conditional(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2),
+              [&marked, pos] { return marked == pos;}));
+      }
+      if (auto desc = sites[x][y].getDwellerDescription())
+        elem.push_back(gui.tooltip({*desc}, 0));
+      columns.addElem(gui.stack(std::move(elem)));
+    }
     rows2.addElem(columns.buildHorizontalList());
   }
-  return gui.stack(rows.buildVerticalList(), rows2.buildVerticalList());
+  return //gui.miniWindow(gui.margins(
+    gui.stack(rows.buildVerticalList(), rows2.buildVerticalList())
+  //      , 15))
+    ;
+}
+
+PGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const string& message,
+    const Campaign& campaign, optional<Vec2>& sitePos) {
+  GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
+  lines.addElem(gui.centerHoriz(gui.label(message)));
+  lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, sitePos,
+      [&campaign](Vec2 pos) { return campaign.canTravelTo(pos); },
+      [&campaign, &sitePos](Vec2 pos) { sitePos = pos; })));
+  lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
+        .addElemAuto(gui.conditional(
+            gui.stack(
+                gui.button([&] { queue.push(*sitePos); }),
+                gui.labelHighlight("[Confirm]", colors[ColorId::LIGHT_BLUE])),
+            gui.label("[Confirm]", colors[ColorId::LIGHT_GRAY]),
+            [&] { return !!sitePos; }))
+        .addElem(gui.empty(), 10)
+        .addElemAuto(
+            gui.stack(
+                gui.button([&queue] { queue.push(none); }, {Keyboard::Escape}, true),
+                gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
+  return gui.stack(
+      gui.preferredSize(500, 500),
+      gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
+}
+
+PGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease) {
+  return gui.getListBuilder()
+      .addElemAuto(canIncrease
+          ? gui.stack(
+                gui.labelHighlight("[+]", colors[ColorId::LIGHT_BLUE]),
+                gui.button([callback] { callback(1); }))
+          : gui.label("[+]", colors[ColorId::GRAY]))
+      .addElem(gui.empty(), 10)
+      .addElemAuto(canDecrease
+          ? gui.stack(
+                gui.labelHighlight("[-]", colors[ColorId::LIGHT_BLUE]),
+                gui.button([callback] { callback(-1); }))
+          : gui.label("[-]", colors[ColorId::GRAY]))
+      .buildHorizontalList();
 }
 
 PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign,
-    optional<Vec2>& embarkPos) {
+    CampaignSetupInfo& setup, optional<Vec2>& embarkPos) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label("Campaign setup")));
-  lines.addElem(     
+  lines.addElem(gui.empty());
+  lines.addElem(
         gui.getListBuilder()
         .addElemAuto(gui.label("World name: " + campaign.getWorldName()))
         .addElem(gui.empty(), 30)
         .addElemAuto(gui.stack(
-            gui.button([] {  }),
-            gui.labelHighlight("[change]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList());
-  lines.addElem(gui.label("Width: " + toString(campaign.getSites().getBounds().getW())));
-  lines.addElem(gui.label("Height: " + toString(campaign.getSites().getBounds().getH())));
+            gui.button([&queue] { queue.push(CampaignActionId::WORLD_NAME); }),
+            gui.labelHighlight("[Change]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList());
+  for (auto& counter : setup.counters)
+    lines.addElem(gui.getListBuilder()
+        .addElem(gui.label(counter.name + ": "  + toString(counter.value)), 200)
+        .addElem(gui.empty(), 15)
+        .addElemAuto(drawPlusMinus([&](int i) { counter.value += i; queue.push(CampaignActionId::REROLL_MAP);},
+            counter.value < counter.max, counter.value > counter.min))
+        .buildHorizontalList());
   lines.addElem(gui.empty(), 15);
   lines.addElem(gui.centerHoriz(gui.label("Choose embark site:")));
-  lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign,
-        [&embarkPos] (Vec2 pos) { embarkPos = pos;}, embarkPos)));
+  lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, embarkPos,
+        [&campaign](Vec2 pos) { return campaign.getSites()[pos].canEmbark(); },
+        [&campaign, &queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
+  lines.addElem(gui.centerHoriz(gui.stack(
+        gui.button([&queue] { queue.push(CampaignActionId::REROLL_MAP);}),
+        gui.labelHighlight("[Re-roll map]", colors[ColorId::LIGHT_BLUE]))));
   lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
         .addElemAuto(gui.conditional(
             gui.stack(
-                gui.button([&] { queue.push({CampaignActionId::CHOOSE_SITE, *embarkPos}); }, {Keyboard::Escape}),
-                gui.labelHighlight("[confirm]", colors[ColorId::LIGHT_BLUE])),
-            gui.label("[confirm]", colors[ColorId::LIGHT_GRAY]),
-            [&] { return !!embarkPos; }))
+                gui.button([&] { queue.push(CampaignActionId::CONFIRM); }),
+                gui.labelHighlight("[Confirm]", colors[ColorId::LIGHT_BLUE])),
+            gui.label("[Confirm]", colors[ColorId::LIGHT_GRAY]),
+            [&campaign] { return !!campaign.getPlayerPos(); }))
         .addElem(gui.empty(), 10)
         .addElemAuto(
             gui.stack(
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
-                gui.labelHighlight("[cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
+                gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   return gui.stack(
-      gui.preferredSize(500, 500),
-      gui.miniWindow(gui.margins(lines.buildVerticalList(), 15, 15, 15, 15)));
+      gui.preferredSize(600, 660),
+      gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(CampaignActionId::CANCEL); }));
+}
+
+PGuiElem GuiBuilder::drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
+      const vector<CreatureInfo>& team, const string& cancelText) {
+  auto lines = gui.getListBuilder(getStandardLineHeight() + 10);
+  lines.addElem(gui.centerHoriz(gui.label(title)));
+  const int windowWidth = 450;
+  auto line = gui.getListBuilder(60);
+  for (auto& elem : team) {
+    line.addElem(gui.stack(
+          gui.mouseHighlight2(gui.bottomMargin(22, gui.rightMargin(6,
+                gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER_STRETCHED, colors[ColorId::GREEN])))),
+          gui.button([&queue, elem] { queue.push(elem.uniqueId); }),
+          gui.viewObject(elem.viewId, 2),
+          gui.label(toString(elem.expLevel), 20)));
+    if (line.getSize() >= windowWidth - 50) {
+      lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
+      line.clear();
+    }
+  }
+  if (!line.isEmpty())
+      lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
+  if (!cancelText.empty())
+    lines.addElem(gui.centerHoriz(gui.stack(
+          gui.labelHighlight("[" + cancelText + "]", colors[ColorId::LIGHT_BLUE]),
+          gui.button([&queue] { queue.push(none);}))));
+  int margin = 25;
+  int height = 2 * margin + lines.getSize() + 30;
+  return gui.stack(
+      gui.preferredSize(2 * margin + windowWidth, height),
+      gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
 }
 
 PGuiElem GuiBuilder::drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
@@ -1879,9 +2006,8 @@ PGuiElem GuiBuilder::drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::
   int menuHeight = lines.getSize() + 30;
   return gui.stack(
       gui.preferredSize(330, menuHeight),
-      gui.reverseButton([&queue] { queue.push(none); }, {{Keyboard::Escape}}),
-      gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos),
-          15, 15, 15, 15)));
+      gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos), 15),
+          [&queue] { queue.push(none); }));
 }
 
 vector<PGuiElem> GuiBuilder::drawRecruitList(const vector<CreatureInfo>& creatures,
@@ -1953,7 +2079,7 @@ PGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
         gui.topMargin(30, gui.margin(gui.leftMargin(5, topLine.buildHorizontalListFit()),
             gui.margins(gui.stack(std::move(pages)), 25, 60, 0, 30), legendLineHeight, GuiFactory::TOP)), legendLineHeight, GuiFactory::TOP),
         [&] { sem.v(); })));
-  
+
 }
 
 Rectangle GuiBuilder::getTextInputPosition() {
@@ -2011,5 +2137,3 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
     }
   }
 }
-
-

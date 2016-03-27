@@ -58,6 +58,10 @@ bool Position::isSameLevel(const Position& p) const {
   return isValid() && level == p.level;
 }
 
+bool Position::isSameModel(const Position& p) const {
+  return isValid() && p.isValid() && getModel() == p.getModel();
+}
+
 bool Position::isSameLevel(const Level* l) const {
   return isValid() && level == l;
 }
@@ -216,13 +220,14 @@ bool Position::canHide() const {
 }
 
 string Position::getName() const {
+  getSquare()->hasItem( nullptr);
   if (isValid())
     return getSquare()->getName();
   else
     return "";
 }
 
-void Position::getViewIndex(ViewIndex& index, TribeId tribe) const {
+void Position::getViewIndex(ViewIndex& index, const TribeId& tribe) const {
   if (isValid())
     getSquare()->getViewIndex(index, tribe);
 }
@@ -488,8 +493,9 @@ void Position::moveCreature(Position pos) {
   CHECK(isValid());
   if (isSameLevel(pos))
     level->moveCreature(getCreature(), getDir(pos));
-  else
+  else if (isSameModel(pos))
     level->changeLevel(pos, getCreature());
+  else pos.getLevel()->landCreature({pos}, getModel()->extractCreature(getCreature()));
 }
 
 void Position::moveCreature(Vec2 direction) {

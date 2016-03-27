@@ -125,7 +125,7 @@ double Item::getFireSize() const {
   return fire->getSize();
 }
 
-void Item::tick(double time, Position position) {
+void Item::tick(Position position) {
   if (fire->isBurning()) {
     Debug() << getName() << " burning " << fire->getSize();
     position.setOnFire(fire->getSize());
@@ -136,7 +136,7 @@ void Item::tick(double time, Position position) {
       discarded = true;
     }
   }
-  specialTick(time, position);
+  specialTick(position);
 }
 
 void Item::onHitSquareMessage(Position pos, int numItems) {
@@ -181,15 +181,19 @@ int Item::getPrice() const {
   return attributes->price;
 }
 
-void Item::setShopkeeper(const Creature* s) {
-  shopkeeper = s;
+bool Item::isShopkeeper(const Creature* c) const {
+  return shopkeeper == c->getUniqueId();
 }
 
-const Creature* Item::getShopkeeper() const {
-  if (!shopkeeper || shopkeeper->isDead())
-    return nullptr;
+void Item::setShopkeeper(const Creature* s) {
+  if (s)
+    shopkeeper = s->getUniqueId();
   else
-    return shopkeeper;
+    shopkeeper = none;
+}
+
+bool Item::isOrWasForSale() const {
+  return !!shopkeeper;
 }
 
 optional<TrapType> Item::getTrapType() const {
@@ -218,29 +222,29 @@ void Item::applySpecial(Creature* c) {
   }
 }
 
-string Item::getApplyMsgThirdPerson(bool blind) const {
+string Item::getApplyMsgThirdPerson(const Creature* owner) const {
   if (attributes->applyMsgThirdPerson)
     return *attributes->applyMsgThirdPerson;
   switch (getClass()) {
-    case ItemClass::SCROLL: return "reads " + getAName(false, blind);
-    case ItemClass::POTION: return "drinks " + getAName(false, blind);
-    case ItemClass::BOOK: return "reads " + getAName(false, blind);
-    case ItemClass::TOOL: return "applies " + getAName(false, blind);
-    case ItemClass::FOOD: return "eats " + getAName(false, blind);
+    case ItemClass::SCROLL: return "reads " + getAName(false, owner);
+    case ItemClass::POTION: return "drinks " + getAName(false, owner);
+    case ItemClass::BOOK: return "reads " + getAName(false, owner);
+    case ItemClass::TOOL: return "applies " + getAName(false, owner);
+    case ItemClass::FOOD: return "eats " + getAName(false, owner);
     default: FAIL << "Bad type for applying " << (int)getClass();
   }
   return "";
 }
 
-string Item::getApplyMsgFirstPerson(bool blind) const {
+string Item::getApplyMsgFirstPerson(const Creature* owner) const {
   if (attributes->applyMsgFirstPerson)
     return *attributes->applyMsgFirstPerson;
   switch (getClass()) {
-    case ItemClass::SCROLL: return "read " + getAName(false, blind);
-    case ItemClass::POTION: return "drink " + getAName(false, blind);
-    case ItemClass::BOOK: return "read " + getAName(false, blind);
-    case ItemClass::TOOL: return "apply " + getAName(false, blind);
-    case ItemClass::FOOD: return "eat " + getAName(false, blind);
+    case ItemClass::SCROLL: return "read " + getAName(false, owner);
+    case ItemClass::POTION: return "drink " + getAName(false, owner);
+    case ItemClass::BOOK: return "read " + getAName(false, owner);
+    case ItemClass::TOOL: return "apply " + getAName(false, owner);
+    case ItemClass::FOOD: return "eat " + getAName(false, owner);
     default: FAIL << "Bad type for applying " << (int)getClass();
   }
   return "";
@@ -262,27 +266,35 @@ void Item::setName(const string& n) {
   attributes->name = n;
 }
 
-string Item::getName(bool plural, bool blind) const {
+const Creature* Item::getShopkeeper(const Creature* owner) const {
+  if (shopkeeper)
+    for (Creature* c : owner->getVisibleCreatures())
+      if (c->getUniqueId() == *shopkeeper)
+        return c;
+  return nullptr;
+}
+
+string Item::getName(bool plural, const Creature* owner) const {
   string suff;
   if (fire->isBurning())
     suff.append(" (burning)");
-  if (getShopkeeper())
-    suff += " (" + toString(getPrice()) + (plural ? " zorkmids each)" : " zorkmids)");
-  if (blind)
+  if (owner && getShopkeeper(owner))
+    suff += " (" + toString(getPrice()) + (plural ? " gold each)" : " gold)");
+  if (owner && owner->isBlind())
     return getBlindName(plural);
   return getVisibleName(plural) + suff;
 }
 
-string Item::getAName(bool getPlural, bool blind) const {
+string Item::getAName(bool getPlural, const Creature* owner) const {
   if (attributes->noArticle || getPlural)
-    return getName(getPlural, blind);
+    return getName(getPlural, owner);
   else
-    return addAParticle(getName(getPlural, blind));
+    return addAParticle(getName(getPlural, owner));
 }
 
-string Item::getTheName(bool getPlural, bool blind) const {
+string Item::getTheName(bool getPlural, const Creature* owner) const {
   string the = (attributes->noArticle || getPlural) ? "" : "the ";
-  return the + getName(getPlural, blind);
+  return the + getName(getPlural, owner);
 }
 
 string Item::getPluralTheName(int count) const {
@@ -361,28 +373,28 @@ string Item::getModifiers(bool shorten) const {
   return artStr + attrString;
 }
 
-string Item::getShortName(bool blind, bool noSuffix) const {
-  if (blind && attributes->blindName)
+string Item::getShortName(const Creature* owner, bool noSuffix) const {
+  if (owner && owner->isBlind() && attributes->blindName)
     return getBlindName(false);
   string name = getModifiers(true);
   if (attributes->shortName)
     name = *attributes->shortName + " " + name;
-  if (getShopkeeper() && !noSuffix)
+  if (owner && getShopkeeper(owner) && !noSuffix)
     name = name + " (unpaid)";
   if (fire->isBurning() && !noSuffix)
     name.append(" (burning)");
   return name;
 }
 
-string Item::getNameAndModifiers(bool getPlural, bool blind) const {
-  return getName(getPlural, blind) + getModifiers();
+string Item::getNameAndModifiers(bool getPlural, const Creature* owner) const {
+  return getName(getPlural, owner) + getModifiers();
 }
 
 string Item::getBlindName(bool plural) const {
   if (attributes->blindName)
     return *attributes->blindName + (plural ? "s" : "");
   else
-    return getName(plural, false);
+    return getName(plural);
 }
 
 bool Item::isDiscarded() {

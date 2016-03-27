@@ -3,7 +3,6 @@
 
 #include "util.h"
 #include "gzstream.h"
-#include "game.h"
 #include "file_sharing.h"
 
 class View;
@@ -25,18 +24,27 @@ class MainLoop {
 
   static int getAutosaveFreq();
 
-  private:
-
   struct SaveFileInfo {
-    string filename;
-    time_t date;
-    bool download;
+    string SERIAL(filename);
+    time_t SERIAL(date);
+    bool SERIAL(download);
+    SERIALIZE_ALL(filename, date, download);
   };
 
+  struct RetiredSiteInfo {
+    MainLoop::SaveFileInfo SERIAL(save);
+    ViewId SERIAL(viewId);
+    string SERIAL(name);
+    SERIALIZE_ALL(save, viewId, name);
+  };
+
+  private:
+
+  vector<RetiredSiteInfo> getRetiredSites();
   int getSaveVersion(const SaveFileInfo& save);
   void uploadFile(const string& path);
-  void saveUI(PGame&, Game::SaveType type, SplashType splashType);
-  void getSaveOptions(const vector<FileSharing::GameInfo>&, const vector<pair<Game::SaveType, string>>&,
+  void saveUI(PGame&, GameSaveType type, SplashType splashType);
+  void getSaveOptions(const vector<FileSharing::GameInfo>&, const vector<pair<GameSaveType, string>>&,
       vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
 
   void getDownloadOptions(const vector<FileSharing::GameInfo>&, vector<ListElem>& options,
@@ -55,13 +63,13 @@ class MainLoop {
   void splashScreen();
   void showCredits(const string& path, View*);
 
-  PModel keeperCampaign(RandomGen& random);
+  Table<PModel> keeperCampaign(Campaign& campaign, RandomGen& random);
   PModel keeperSingleMap(RandomGen& random);
   PModel quickGame(RandomGen& random);
   PGame adventurerGame();
   PGame loadGame(string file, bool erase);
   PGame loadPrevious(bool erase);
-  string getSavePath(PGame&, Game::SaveType);
+  string getSavePath(PGame&, GameSaveType);
   void eraseAutosave(PGame&);
 
   bool downloadGame(const string& filename);
