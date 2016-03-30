@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "collective_name.h"
 #include "creature.h"
-#include "entity_name.h"
+#include "creature_name.h"
 
 
 template <class Archive>
@@ -16,20 +16,20 @@ SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveName);
 CollectiveName::CollectiveName(optional<string> race, optional<string> location, const Creature* leader) {
   if (location && race)
     fullName = capitalFirst(*race) + " of " + *location;
-  else if (auto first = leader->getFirstName())
+  else if (auto first = leader->getName().first())
     fullName = *first + " the " + leader->getName().bare();
   else if (race)
     fullName = capitalFirst(*race);
   else
-    fullName = leader->getNameAndTitle();
+    fullName = leader->getName().title();
   if (location)
     shortName = *location;
   else
-    shortName = leader->getFirstName().get_value_or(leader->getName().bare());
+    shortName = leader->getName().first().get_value_or(leader->getName().bare());
   if (race)
     raceName = *race;
   else
-    raceName = leader->getSpeciesName();
+    raceName = leader->getName().stack();
 }
 
 const string& CollectiveName::getShort() const {

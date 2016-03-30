@@ -23,6 +23,7 @@
 #include "monster_ai.h"
 #include "game.h"
 #include "campaign.h"
+#include "creature_name.h"
 
 static Location* getVillageLocation(bool markSurprise = false) {
   return new Location(NameGenerator::get(NameGeneratorId::TOWN)->getNext(), "", markSurprise);
@@ -1245,7 +1246,7 @@ void ModelBuilder::spawnKeeper(Model* m, Options* options) {
   PCreature keeper = CreatureFactory::fromId(CreatureId::KEEPER, TribeId::getKeeper());
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   if (!keeperName.empty())
-    keeper->setFirstName(keeperName);
+    keeper->getName().setFirst(keeperName);
   Creature* keeperRef = keeper.get();
   level->landCreature(StairKey::keeperSpawn(), keeperRef);
   m->addCreature(std::move(keeper));

@@ -20,7 +20,7 @@
 #include "spell.h"
 #include "item.h"
 #include "game_info.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "skill.h"
 #include "modifier_type.h"
 #include "view_id.h"
@@ -81,7 +81,7 @@ CreatureInfo::CreatureInfo(const Creature* c)
     : viewId(c->getViewObject().id()),
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
-      speciesName(c->getSpeciesName()),
+      stackName(c->getName().stack()),
       expLevel(c->getExpLevel()),
       morale(c->getMorale()),
       cost({ViewId::GOLD, c->getRecruitmentCost()}){
@@ -95,14 +95,7 @@ string PlayerInfo::getFirstName() const {
 }
 
 string PlayerInfo::getTitle() const {
-  string title = name;
-  for (int i : All(adjectives)) {
-    title = adjectives[i] + " " + title;
-    break; // only use the first one
-  }
-  if (!firstName.empty())
-    title = firstName + " the " + title;
-  return capitalFirst(title);
+  return name;
 }
 
 vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
@@ -116,7 +109,7 @@ vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
 }
 
 void PlayerInfo::readFrom(const Creature* c) {
-  firstName = c->getFirstName().get_value_or("");
+  firstName = c->getName().first().get_value_or("");
   name = c->getName().bare();
   adjectives = c->getMainAdjectives();
   description = capitalFirst(c->getDescription());

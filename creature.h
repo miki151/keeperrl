@@ -42,7 +42,7 @@ class Equipment;
 class Spell;
 class CreatureAttributes;
 class MinionTaskMap;
-class EntityName;
+class CreatureName;
 class Gender;
 class SpellMap;
 class Sound;
@@ -98,12 +98,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool isEnemy(const Creature*) const;
   void tick();
 
-  const EntityName& getName() const;
-  string getSpeciesName() const;
-  string getNameAndTitle() const;
-  optional<string> getFirstName() const;
-  void setFirstName(const string&);
-  string getGroupName(int count) const;
+  const CreatureName& getName() const;
+  CreatureName& getName();
   int getModifier(ModifierType) const;
   int getAttr(AttrType) const;
   static string getAttrName(AttrType);

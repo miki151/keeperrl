@@ -26,7 +26,7 @@
 #include "equipment.h"
 #include "spell.h"
 #include "event.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "skill.h"
 #include "modifier_type.h"
 #include "task.h"

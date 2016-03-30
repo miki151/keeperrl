@@ -32,7 +32,7 @@
 #include "equipment.h"
 #include "event.h"
 #include "creature_attributes.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "position_map.h"
 #include "sound.h"
 
@@ -145,7 +145,7 @@ static void deception(Creature* creature) {
 }
 
 static void leaveBody(Creature* creature) {
-  string spiritName = creature->getFirstName().get_value_or(creature->getName().bare()) + "'s spirit";
+  string spiritName = creature->getName().first().get_value_or(creature->getName().bare()) + "'s spirit";
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, spiritName);
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
   PCreature spirit(new Creature(viewObject, creature->getTribeId(), CATTR(

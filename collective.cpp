@@ -26,7 +26,7 @@
 #include "minion_task_map.h"
 #include "tribe.h"
 #include "collective_config.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "modifier_type.h"
 #include "cost_info.h"
 #include "monster_ai.h"
@@ -939,8 +939,8 @@ void Collective::addNewCreatureMessage(const vector<Creature*>& immigrants) {
     control->addMessage(PlayerMessage(immigrants[0]->getName().a() + " joins your forces.")
         .setCreature(immigrants[0]->getUniqueId()));
   else {
-    control->addMessage(PlayerMessage("A " + immigrants[0]->getGroupName(immigrants.size()) + " joins your forces.")
-        .setCreature(immigrants[0]->getUniqueId()));
+    control->addMessage(PlayerMessage("A " + immigrants[0]->getName().multiple(immigrants.size()) + 
+          " joins your forces.").setCreature(immigrants[0]->getUniqueId()));
   }
 }
 

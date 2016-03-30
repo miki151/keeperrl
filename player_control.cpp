@@ -48,7 +48,7 @@
 #include "spell.h"
 #include "tribe.h"
 #include "visibility_map.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "monster_ai.h"
 #include "view.h"
 #include "view_index.h"
@@ -959,7 +959,7 @@ vector<Collective*> PlayerControl::getKnownVillains(VillainType type) const {
 vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
   vector<Creature*> minions;
   for (Creature* c : getCreatures())
-    if (c->getSpeciesName() == like->getSpeciesName())
+    if (c->getName().stack() == like->getName().stack())
       minions.push_back(c);
   return minions;
 }
@@ -1007,11 +1007,11 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<Cr
         return c1->getExpLevel() > c2->getExpLevel();});
   map<string, CollectiveInfo::CreatureGroup> groups;
   for (Creature* c : v) {
-    if (!groups.count(c->getSpeciesName()))
-      groups[c->getSpeciesName()] = { c->getUniqueId(), c->getSpeciesName(), c->getViewObject().id(), 0};
-    ++groups[c->getSpeciesName()].count;
+    if (!groups.count(c->getName().stack()))
+      groups[c->getName().stack()] = { c->getUniqueId(), c->getName().stack(), c->getViewObject().id(), 0};
+    ++groups[c->getName().stack()].count;
     if (chosenCreature == c->getUniqueId() && !chosenTeam)
-      groups[c->getSpeciesName()].highlight = true;
+      groups[c->getName().stack()].highlight = true;
 
   }
   return getValues(groups);
@@ -1465,7 +1465,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CREATURE_GROUP_BUTTON: 
         if (Creature* c = getCreature(input.get<Creature::Id>()))
           if (!chosenCreature || chosenTeam || !getCreature(*chosenCreature) ||
-              getCreature(*chosenCreature)->getSpeciesName() != c->getSpeciesName()) {
+              getCreature(*chosenCreature)->getName().stack() != c->getName().stack()) {
             chosenTeam = none;
             chosenCreature = input.get<Creature::Id>();
             break;
@@ -1502,7 +1502,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::CREATURE_RENAME:
         if (Creature* c = getCreature(input.get<RenameActionInfo>().creature))
-          c->setFirstName(input.get<RenameActionInfo>().name);
+          c->getName().setFirst(input.get<RenameActionInfo>().name);
         break;
     case UserInputId::CREATURE_BANISH:
         if (Creature* c = getCreature(input.get<Creature::Id>()))
@@ -1974,7 +1974,7 @@ void PlayerControl::onTechBookRead(Technology* tech) {
 void PlayerControl::onConqueredLand() {
   if (getKeeper()->isDead())
     return;
-  getGame()->conquered(*getKeeper()->getFirstName(), getCollective()->getKills().getSize(),
+  getGame()->conquered(*getKeeper()->getName().first(), getCollective()->getKills().getSize(),
       getCollective()->getDangerLevel() + getCollective()->getPoints());
   getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
       "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");

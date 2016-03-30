@@ -24,7 +24,7 @@
 #include "gender.h"
 #include "effect.h"
 #include "minion_task.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "view_object.h"
 #include "spell_map.h"
 #include "minion_task_map.h"
@@ -86,8 +86,6 @@ class CreatureAttributes {
   double getExpLevel() const;
   void increaseExpLevel(double increase);
   void exerciseAttr(AttrType, double value);
-  string getNameAndTitle() const;
-  string getSpeciesName() const;
   bool isHumanoid() const;
   vector<AttackLevel> getAttackLevels() const;
   AttackLevel getRandomAttackLevel() const;
@@ -101,14 +99,12 @@ class CreatureAttributes {
 
   MustInitialize<ViewId> SERIAL(viewId);
   optional<ViewObject> SERIAL(illusionViewObject);
-  MustInitialize<EntityName> SERIAL(name);
+  MustInitialize<CreatureName> SERIAL(name);
   EnumMap<AttrType, int> SERIAL(attr);
   MustInitialize<CreatureSize> SERIAL(size);
   MustInitialize<double> SERIAL(weight);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);
-  optional<string> SERIAL(firstName);
-  optional<string> SERIAL(speciesName);
   int SERIAL(barehandedDamage) = 0;
   optional<AttackType> SERIAL(barehandedAttack);
   optional<EffectType> SERIAL(attackEffect);
@@ -147,7 +143,6 @@ class CreatureAttributes {
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
   MinionTaskMap SERIAL(minionTasks);
-  string SERIAL(groupName) = "group";
   EnumMap<AttrType, double> SERIAL(attrIncrease);
   optional<SoundId> SERIAL(dyingSound);
   bool SERIAL(noDyingSound) = false;

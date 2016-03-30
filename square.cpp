@@ -32,7 +32,7 @@
 #include "poison_gas.h"
 #include "fire.h"
 #include "tribe.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "movement_type.h"
 #include "movement_set.h"
 #include "view.h"

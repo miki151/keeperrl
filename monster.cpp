@@ -19,7 +19,7 @@
 #include "map_memory.h"
 #include "creature.h"
 #include "player_message.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "gender.h"
 #include "monster_ai.h"
 

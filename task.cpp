@@ -27,7 +27,7 @@
 #include "equipment.h"
 #include "tribe.h"
 #include "skill.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "collective_teams.h"
 #include "effect.h"
 #include "creature_factory.h"

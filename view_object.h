@@ -64,6 +64,7 @@ class ViewObject {
   int getPositionHash() const;
 
   void setAdjectives(const vector<string>&);
+  void setDescription(const string&);
 
   struct MovementInfo {
     Vec2 direction;

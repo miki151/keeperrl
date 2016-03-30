@@ -82,7 +82,7 @@ Creature::~Creature() {
 vector<vector<Creature*>> Creature::stack(const vector<Creature*>& creatures) {
   map<string, vector<Creature*>> stacks;
   for (Creature* c : creatures)
-    stacks[c->getSpeciesName()].push_back(c);
+    stacks[c->getName().stack()].push_back(c);
   return getValues(stacks);
 }
 
@@ -1446,6 +1446,7 @@ void Creature::updateViewObject() {
   else
     modViewObject().removeModifier(ViewObject::Modifier::SLEEPING);
   modViewObject().setAttribute(ViewObject::Attribute::BLEEDING, 1 - health);
+  modViewObject().setDescription(getName().bare());
 }
 
 double Creature::getHealth() const {
@@ -2080,24 +2081,12 @@ bool Creature::isPlayer() const {
   return controller->isPlayer();
 }
 
-optional<string> Creature::getFirstName() const {
-  return attributes->firstName;
-}
-
-void Creature::setFirstName(const string& name) {
-  attributes->firstName = name;
-}
-
-string Creature::getGroupName(int count) const {
-  return attributes->groupName + " of " + getName().multiple(count);
-}
-
-const EntityName& Creature::getName() const {
+const CreatureName& Creature::getName() const {
   return *attributes->name;
 }
 
-string Creature::getSpeciesName() const {
-  return attributes->getSpeciesName();
+CreatureName& Creature::getName() {
+  return *attributes->name;
 }
 
 bool Creature::isHumanoid() const {
@@ -2400,10 +2389,6 @@ void Creature::youHit(BodyPart part, AttackType type) const {
 
 bool Creature::isUnknownAttacker(const Creature* c) const {
   return unknownAttackers.contains(c);
-}
-
-string Creature::getNameAndTitle() const {
-  return attributes->getNameAndTitle();
 }
 
 void Creature::updateVision() {

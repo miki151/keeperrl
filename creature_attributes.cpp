@@ -36,8 +36,6 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(weight)
     & SVAR(chatReactionFriendly)
     & SVAR(chatReactionHostile)
-    & SVAR(firstName)
-    & SVAR(speciesName)
     & SVAR(barehandedDamage)
     & SVAR(barehandedAttack)
     & SVAR(attackEffect)
@@ -71,7 +69,6 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
     & SVAR(permanentEffects)
     & SVAR(lastingEffects)
     & SVAR(minionTasks)
-    & SVAR(groupName)
     & SVAR(attrIncrease)
     & SVAR(recruitmentCost)
     & SVAR(dyingSound)
@@ -190,22 +187,6 @@ double increaseMult = 0.001; // This translates to about 690 stat exercises to r
 
 void CreatureAttributes::exerciseAttr(AttrType t, double value) {
   attrIncrease[t] += ((exerciseMax - 1) * attr[t] - attrIncrease[t]) * increaseMult * value;
-}
-
-string CreatureAttributes::getNameAndTitle() const {
-  if (firstName)
-    return *firstName + " the " + name->bare();
-  else if (speciesName)
-    return name->bare() + " the " + *speciesName;
-  else
-    return name->the();
-}
-
-string CreatureAttributes::getSpeciesName() const {
-  if (speciesName)
-    return *speciesName;
-  else
-    return name->bare();
 }
 
 vector<AttackLevel> CreatureAttributes::getAttackLevels() const {

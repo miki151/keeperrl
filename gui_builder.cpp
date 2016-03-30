@@ -881,10 +881,10 @@ static map<string, CreatureMapElem> getCreatureMap(const vector<CreatureInfo>& c
   map<string, CreatureMapElem> creatureMap;
   for (int i : All(creatures)) {
     auto elem = creatures[i];
-    if (!creatureMap.count(elem.speciesName)) {
-      creatureMap.insert(make_pair(elem.speciesName, CreatureMapElem({elem.viewId, 1, elem})));
+    if (!creatureMap.count(elem.stackName)) {
+      creatureMap.insert(make_pair(elem.stackName, CreatureMapElem({elem.viewId, 1, elem})));
     } else
-      ++creatureMap.at(elem.speciesName).count;
+      ++creatureMap.at(elem.stackName).count;
   }
   return creatureMap;
 }
@@ -1793,7 +1793,7 @@ static vector<CreatureMapElem> getRecruitStacks(const vector<CreatureInfo>& crea
   map<string, CreatureMapElem> creatureMap;
   for (int i : All(creatures)) {
     auto elem = creatures[i];
-    string key = elem.speciesName + " " + toString(elem.cost->second) + " " + toString(elem.expLevel);
+    string key = elem.stackName + " " + toString(elem.cost->second) + " " + toString(elem.expLevel);
     if (!creatureMap.count(key)) {
       creatureMap.insert(make_pair(key, CreatureMapElem({elem.viewId, 1, elem})));
     } else

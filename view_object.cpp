@@ -147,6 +147,10 @@ double ViewObject::getAttribute(Attribute attr) const {
   return attributes[attr];
 }
 
+void ViewObject::setDescription(const string& s) {
+  description = s;
+}
+
 string ViewObject::getDescription() const {
   return description;
 }

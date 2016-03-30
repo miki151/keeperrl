@@ -30,7 +30,7 @@
 #include "square_apply_type.h"
 #include "event.h"
 #include "tribe.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "modifier_type.h"
 #include "movement_set.h"
 #include "movement_type.h"

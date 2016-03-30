@@ -3,7 +3,7 @@
 #include "collective.h"
 #include "location.h"
 #include "creature.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "collective_name.h"
 
 CollectiveBuilder::CollectiveBuilder(CollectiveConfig cfg, TribeId t)

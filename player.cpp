@@ -33,7 +33,7 @@
 #include "game_info.h"
 #include "equipment.h"
 #include "spell.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "view.h"
 #include "view_index.h"
 #include "music.h"
@@ -538,8 +538,8 @@ void Player::makeMove() {
     displayTravelInfo = false;
   }
   if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
-    CHECK(getCreature()->getFirstName());
-    getGame()->getView()->presentText("", "Dear " + *getCreature()->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + getGame()->getWorldName() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
+    CHECK(getCreature()->getName().first());
+    getGame()->getView()->presentText("", "Dear " + *getCreature()->getName().first() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + getGame()->getWorldName() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
     getGame()->getView()->presentText("", "Judging by the corpses lying around here, you suspect that new circumstances may have arisen.");
     displayGreeting = false;
     getGame()->getView()->updateView(this, false);

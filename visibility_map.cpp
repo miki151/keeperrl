@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "visibility_map.h"
 #include "creature.h"
-#include "entity_name.h"
+#include "creature_name.h"
 
 
 template <class Archive> 

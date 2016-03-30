@@ -20,11 +20,11 @@ struct CreatureInfo {
   ViewId HASH(viewId);
   UniqueEntity<Creature>::Id HASH(uniqueId);
   string HASH(name);
-  string HASH(speciesName);
+  string HASH(stackName);
   int HASH(expLevel);
   double HASH(morale); 
   optional<pair<ViewId, int>> HASH(cost);
-  HASH_ALL(viewId, uniqueId, name, speciesName, expLevel, morale, cost);
+  HASH_ALL(viewId, uniqueId, name, stackName, expLevel, morale, cost);
 };
 
 

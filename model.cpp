@@ -36,7 +36,7 @@
 #include "tribe.h"
 #include "time_queue.h"
 #include "visibility_map.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "creature_attributes.h"
 #include "view.h"
 #include "view_index.h"

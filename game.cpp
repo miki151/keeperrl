@@ -390,7 +390,7 @@ void Game::landHeroPlayer() {
   PCreature player = makeAdventurer(handicap.get_value_or(0));
   string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
   if (!advName.empty())
-    player->setFirstName(advName);
+    player->getName().setFirst(advName);
   Level* target = models[0][0]->getTopLevel();
   CHECK(target->landCreature(target->getAllPositions(), std::move(player))) << "No place to spawn player";
 }
@@ -406,7 +406,7 @@ string Game::getGameIdentifier() const {
 void Game::onKilledLeader(const Collective* victim, const Creature* leader) {
   if (isSingleModel() && victim->getVillainType() == VillainType::MAIN) {
     if (Creature* c = getPlayer())
-      killedKeeper(*c->getFirstName(), leader->getNameAndTitle(), worldName, c->getKills().getSize(), c->getPoints());
+      killedKeeper(*c->getName().first(), c->getName().title(), worldName, c->getKills().getSize(), c->getPoints());
   }
 }
 
@@ -497,7 +497,7 @@ bool Game::isGameOver() const {
 }
 
 void Game::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
-  string text = "And so dies " + creature->getNameAndTitle();
+  string text = "And so dies " + creature->getName().title();
   if (auto reason = creature->getDeathReason()) {
     text += ", " + *reason;
   }
@@ -510,7 +510,7 @@ void Game::gameOver(const Creature* creature, int numKills, const string& enemie
         c.worldName = getWorldName();
         c.points = points;
         c.gameId = getGameIdentifier();
-        c.playerName = *creature->getFirstName();
+        c.playerName = *creature->getName().first();
         c.gameResult = creature->getDeathReason().get_value_or("");
         c.gameWon = false;
         c.turns = getGlobalTime();
@@ -567,7 +567,7 @@ PCreature Game::makeAdventurer(int handicap) {
           c.barehandedDamage = 5;
           c.humanoid = true;
           c.name = "Adventurer";
-          c.firstName = NameGenerator::get(NameGeneratorId::FIRST)->getNext();
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
           c.skills.insert(SkillId::AMBUSH);), Player::getFactory(levelMemory))), {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,

@@ -31,7 +31,7 @@
 #include "vision.h"
 #include "event.h"
 #include "bucket_map.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "sunlight_info.h"
 #include "game.h"
 
