@@ -31,6 +31,7 @@
 #include "modifier_type.h"
 #include "task.h"
 #include "game.h"
+#include "creature_attributes.h"
 
 class Behaviour {
   public:
@@ -81,7 +82,7 @@ Creature* Behaviour::getClosestEnemy() {
   Creature* result = nullptr;
   for (const Creature* other : creature->getVisibleEnemies()) {
     int curDist = other->getPosition().dist8(creature->getPosition());
-    if (curDist < dist && (!other->dontChase() || curDist == 1)) {
+    if (curDist < dist && (!other->getAttributes().dontChase() || curDist == 1)) {
       result = const_cast<Creature*>(other);
       dist = creature->getPosition().dist8(other->getPosition());
     }
@@ -101,7 +102,7 @@ Item* Behaviour::getBestWeapon() {
 }
 
 MoveInfo Behaviour::tryEffect(EffectType type, double maxTurns) {
-  for (Spell* spell : creature->getSpells()) {
+  for (Spell* spell : creature->getAttributes().getSpellMap().getAll()) {
    if (spell->hasEffect(type))
       if (auto action = creature->castSpell(spell))
         return { 1, action };
@@ -115,7 +116,7 @@ MoveInfo Behaviour::tryEffect(EffectType type, double maxTurns) {
 }
 
 MoveInfo Behaviour::tryEffect(DirEffectType type, Vec2 dir) {
-  for (Spell* spell : creature->getSpells()) {
+  for (Spell* spell : creature->getAttributes().getSpellMap().getAll()) {
     if (spell->hasEffect(type))
       if (auto action = creature->castSpell(spell, dir))
         return { 1, action };
@@ -136,7 +137,7 @@ class Heal : public Behaviour {
   }
 
   virtual MoveInfo getMove() {
-    if (creature->hasSkill(Skill::get(SkillId::HEALING))) {
+    if (creature->getAttributes().getSkills().hasDiscrete(SkillId::HEALING)) {
       int healingRadius = 2;
       for (Position pos : creature->getPosition().getRectangle(
             Rectangle(-healingRadius, -healingRadius, healingRadius + 1, healingRadius + 1)))
@@ -145,7 +146,7 @@ class Heal : public Behaviour {
             if (auto action = creature->heal(creature->getPosition().getDir(other->getPosition())))
               return MoveInfo(0.5, action);
     }
-    if (!creature->isHumanoid())
+    if (!creature->getAttributes().isHumanoid())
       return NoMove;
     if (creature->isAffected(LastingEffect::POISON)) {
       if (MoveInfo move = tryEffect(EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT), 1))
@@ -325,7 +326,7 @@ class Fighter : public Behaviour {
   }
 
   double getMoraleBonus() {
-    return creature->getCourage() * pow(2.0, creature->getMorale());
+    return creature->getAttributes().getCourage() * pow(2.0, creature->getMorale());
   }
 
   virtual MoveInfo getMove() override {
@@ -343,13 +344,13 @@ class Fighter : public Behaviour {
       weight = min(1.0, max(0.0, weight));
       if (creature->isAffected(LastingEffect::PANIC))
         weight = 1;
-      if (other->isAffected(LastingEffect::SLEEP) || other->isStationary())
+      if (other->isAffected(LastingEffect::SLEEP) || other->getAttributes().isStationary())
         weight = 0;
       Debug() << creature->getName().bare() << " panic weight " << weight;
       if (weight >= 0.5) {
         double dist = creature->getPosition().dist8(other->getPosition());
         if (dist < 7) {
-          if (dist == 1 && creature->isHumanoid())
+          if (dist == 1 && creature->getAttributes().isHumanoid())
             creature->surrender(other);
           if (MoveInfo move = getPanicMove(other, weight))
             return move;
@@ -393,7 +394,7 @@ class Fighter : public Behaviour {
           EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)},
           item->getEffectType()))
       return 1;
-    if (item->getClass() == ItemClass::AMMO && creature->getSkillValue(Skill::get(SkillId::ARCHERY)) > 0)
+    if (item->getClass() == ItemClass::AMMO && creature->getAttributes().getSkills().getValue(SkillId::ARCHERY) > 0)
       return 0.1;
     if (!creature->isEquipmentAppropriate(item))
       return 0;
@@ -499,12 +500,12 @@ class Fighter : public Behaviour {
   MoveInfo getAttackMove(Creature* other, bool chase) {
     int distance = 10000;
     CHECK(other);
-    if (other->isInvincible())
+    if (other->getAttributes().isInvincible())
       return NoMove;
     Debug() << creature->getName().bare() << " enemy " << other->getName().bare();
     Vec2 enemyDir = creature->getPosition().getDir(other->getPosition());
     distance = enemyDir.length8();
-    if (creature->isHumanoid() && !creature->getWeapon()) {
+    if (creature->getAttributes().isHumanoid() && !creature->getWeapon()) {
       if (Item* weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
           return {3.0 / (2.0 + distance), action.prepend([=](Creature* creature) {
@@ -532,7 +533,7 @@ class Fighter : public Behaviour {
         if (MoveInfo move = getThrowMove(enemyDir))
           return move;
       }
-      if (chase && !other->dontChase() && !isChaseFrozen(other)) {
+      if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
         if (auto action = creature->moveTowards(other->getPosition()))
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=](Creature* creature) {
@@ -684,7 +685,7 @@ class DieTime : public Behaviour {
   virtual MoveInfo getMove() override {
     if (creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
-        if (creature->isNotLiving() && creature->isCorporal())
+        if (creature->getAttributes().isNotLiving() && creature->getAttributes().isCorporal())
           creature->you(MsgType::FALL, "apart");
         creature->die(nullptr, false, false);
       })};
@@ -716,7 +717,7 @@ class Summoned : public GuardTarget {
   virtual MoveInfo getMove() override {
     if (target->isDead() || creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
-        if (creature->isNotLiving() && !creature->isCorporal())
+        if (creature->getAttributes().isNotLiving() && !creature->getAttributes().isCorporal())
           creature->you(MsgType::FALL, "apart");
         creature->die(nullptr, false, false);
       })};
@@ -746,7 +747,7 @@ class Thief : public Behaviour {
   Thief(Creature* c) : Behaviour(c) {}
  
   virtual MoveInfo getMove() override {
-    if (!creature->hasSkill(Skill::get(SkillId::STEALING)))
+    if (!creature->getAttributes().getSkills().hasDiscrete(SkillId::STEALING))
       return NoMove;
     for (const Creature* other : creature->getVisibleEnemies()) {
       if (robbed.contains(other)) {
@@ -848,7 +849,7 @@ class SplashHeroes : public Behaviour {
   SplashHeroes(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    creature->setCourage(100);
+    creature->getAttributes().setCourage(100);
     if (!started && creature->getPosition().withCoord(splashLeaderPos).getCreature())
       started = true;
     if (!started)
@@ -877,7 +878,7 @@ class SplashHeroLeader : public Behaviour {
   SplashHeroLeader(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    creature->setCourage(100);
+    creature->getAttributes().setCourage(100);
     Vec2 pos = creature->getPosition().getCoord();
     if (started)
       return creature->moveTowards(creature->getPosition().withCoord(splashTarget));
@@ -911,7 +912,7 @@ class SplashMonsters : public Behaviour {
   SplashMonsters(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    creature->setCourage(100);
+    creature->getAttributes().setCourage(100);
     if (!initialPos)
       initialPos = creature->getPosition().getCoord();
     vector<Creature*> heroes;

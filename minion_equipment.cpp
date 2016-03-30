@@ -21,6 +21,7 @@
 #include "effect.h"
 #include "equipment.h"
 #include "modifier_type.h"
+#include "creature_attributes.h"
 
 static vector<EffectType> combatConsumables {
     EffectType(EffectId::LASTING, LastingEffect::SPEED),
@@ -76,7 +77,7 @@ bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit, boo
     return ((c->canEquip(it) || (replacement && c->canEquipIfEmptySlot(it))) && (isItemAppropriate(c, it) || noLimit))
       || (type == ARCHERY && (c->canEquip(it) ||
         (it->getClass() == ItemClass::AMMO && !c->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON).empty())))
-      || (type == HEALING && !c->isNotLiving()) 
+      || (type == HEALING && !c->getAttributes().isNotLiving()) 
       || type == COMBAT_ITEM;
   } else
     return false;

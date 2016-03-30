@@ -24,6 +24,8 @@ class MonsterAIFactory;
 class Location;
 class Tribe;
 class ItemType;
+class CreatureAttributes;
+class ControllerFactory;
 
 RICH_ENUM(CreatureId,
     KEEPER,
@@ -195,8 +197,11 @@ class CreatureFactory {
   static PCreature getShopkeeper(Location* shopArea, TribeId);
   static PCreature getGuardingBoulder(TribeId);
   static PCreature getGhost(Creature*);
+  static PCreature getIllusion(Creature*);
+  static PCreature getAdventurer(int handicap);
 
   static PCreature addInventory(PCreature c, const vector<ItemType>& items);
+  static CreatureAttributes getKrakenAttributes(ViewId);
 
   static void init();
 
@@ -212,6 +217,11 @@ class CreatureFactory {
   CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& creatures,
       const vector<CreatureId>& unique = {}, double levelIncrease = 0);
   static void initSplash(TribeId);
+  static PCreature getSokobanBoulder(TribeId);
+  static PCreature getSpecial(TribeId, bool humanoid, bool large, const ControllerFactory&);
+  static PCreature get(CreatureId, TribeId, MonsterAIFactory);
+  static PCreature get(const CreatureAttributes&, TribeId, const ControllerFactory&);
+  static CreatureAttributes getAttributes(CreatureId id);
   TribeId getTribeFor(CreatureId);
   optional<TribeId> SERIAL(tribe);
   vector<CreatureId> SERIAL(creatures);

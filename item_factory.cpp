@@ -36,6 +36,7 @@
 #include "skill.h"
 #include "item_attributes.h"
 #include "sound.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -132,7 +133,7 @@ class AmuletOfHealing : public Item {
 class Telepathy : public CreatureVision {
   public:
   virtual bool canSee(const Creature* c1, const Creature* c2) override {
-    return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->hasBrain();
+    return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getAttributes().hasBrain();
   }
 
   SERIALIZE_SUBCLASS(CreatureVision);

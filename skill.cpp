@@ -19,13 +19,14 @@
 #include "enums.h"
 #include "creature.h"
 #include "modifier_type.h"
+#include "creature_attributes.h"
 
 string Skill::getName() const {
   return name;
 }
 
 string Skill::getNameForCreature(const Creature* c) const {
-  double val = c->getSkillValue(this);
+  double val = c->getAttributes().getSkills().getValue(getId());
   CHECK(val >= 0 && val <= 1) << "Skill value " << val;
   string grade;
   if (val == 0)
@@ -51,8 +52,8 @@ bool Skill::isDiscrete() const {
 
 static int archeryBonus(const Creature* c, ModifierType t) {
   switch (t) {
-    case ModifierType::FIRED_ACCURACY: return c->getSkillValue(Skill::get(SkillId::ARCHERY)) * 10;
-    case ModifierType::FIRED_DAMAGE: return c->getSkillValue(Skill::get(SkillId::ARCHERY)) * 10;
+    case ModifierType::FIRED_ACCURACY: return c->getAttributes().getSkills().getValue(SkillId::ARCHERY) * 10;
+    case ModifierType::FIRED_DAMAGE: return c->getAttributes().getSkills().getValue(SkillId::ARCHERY) * 10;
     default: break;
   }
   return 0;
@@ -62,8 +63,8 @@ static int weaponBonus(const Creature* c, ModifierType t) {
   if (!c->getWeapon())
     return 0;
   switch (t) {
-    case ModifierType::ACCURACY: return c->getSkillValue(Skill::get(SkillId::WEAPON_MELEE)) * 10;
-    case ModifierType::DAMAGE: return c->getSkillValue(Skill::get(SkillId::WEAPON_MELEE)) * 10;
+    case ModifierType::ACCURACY: return c->getAttributes().getSkills().getValue(SkillId::WEAPON_MELEE) * 10;
+    case ModifierType::DAMAGE: return c->getAttributes().getSkills().getValue(SkillId::WEAPON_MELEE) * 10;
     default: break;
   }
   return 0;
@@ -73,8 +74,8 @@ static int unarmedBonus(const Creature* c, ModifierType t) {
   if (c->getWeapon())
     return 0;
   switch (t) {
-    case ModifierType::ACCURACY: return c->getSkillValue(Skill::get(SkillId::UNARMED_MELEE)) * 10;
-    case ModifierType::DAMAGE: return c->getSkillValue(Skill::get(SkillId::UNARMED_MELEE)) * 10;
+    case ModifierType::ACCURACY: return c->getAttributes().getSkills().getValue(SkillId::UNARMED_MELEE) * 10;
+    case ModifierType::DAMAGE: return c->getAttributes().getSkills().getValue(SkillId::UNARMED_MELEE) * 10;
     default: break;
   }
   return 0;
@@ -82,8 +83,10 @@ static int unarmedBonus(const Creature* c, ModifierType t) {
 
 static int knifeBonus(const Creature* c, ModifierType t) {
   switch (t) {
-    case ModifierType::THROWN_ACCURACY: return c->getSkillValue(Skill::get(SkillId::KNIFE_THROWING)) * 10;
-    case ModifierType::THROWN_DAMAGE: return c->getSkillValue(Skill::get(SkillId::KNIFE_THROWING)) * 10;
+    case ModifierType::THROWN_ACCURACY:
+      return c->getAttributes().getSkills().getValue(SkillId::KNIFE_THROWING) * 10;
+    case ModifierType::THROWN_DAMAGE:
+      return c->getAttributes().getSkills().getValue(SkillId::KNIFE_THROWING) * 10;
     default: break;
   }
   return 0;

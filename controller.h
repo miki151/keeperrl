@@ -41,8 +41,6 @@ class Controller {
   virtual void onItemsGiven(vector<Item*> items, const Creature* from) { }
   virtual void onDisplaced() {}
 
-  virtual void learnLocation(const Location*) { }
-
   virtual void makeMove() = 0;
   virtual void sleeping() {}
 

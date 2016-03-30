@@ -37,6 +37,7 @@
 #include "movement_set.h"
 #include "view.h"
 #include "sound.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -92,7 +93,7 @@ void Square::putCreature(Creature* c) {
   //CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
   setCreature(c);
   onEnter(c);
-  if (c->isStationary())
+  if (c->getAttributes().isStationary())
     level->addTickingSquare(position);
   c->onMoved();
 }
@@ -172,7 +173,7 @@ void Square::destroy() {
 
 bool Square::canDestroy(const Creature* c) const {
   return canDestroy(c->getTribeId())
-    || (isDestroyable() && c->isInvincible()); // so that boulders destroy keeper doors
+    || (isDestroyable() && c->getAttributes().isInvincible()); // so that boulders destroy keeper doors
 }
 
 void Square::destroyBy(Creature* c) {
@@ -273,7 +274,7 @@ void Square::tick() {
   }
   for (Trigger* t : extractRefs(triggers))
     t->tick();
-  if (creature && creature->isStationary())
+  if (creature && creature->getAttributes().isStationary())
     level->updateConnectivity(position);
   tickSpecial();
 }
@@ -323,7 +324,7 @@ bool Square::canNavigate(const MovementType& type1) const {
   MovementType type(type1);
   return canEnterEmpty(type) || 
     ((isDestroyable() && (!type.getTribe() || canDestroy(*type.getTribe()))) && !canEnterEmpty(type.setForced())) || 
-    (creature && creature->isStationary() && type.getTribe() != creature->getTribeId());
+    (creature && creature->getAttributes().isStationary() && type.getTribe() != creature->getTribeId());
 }
 
 bool Square::canEnter(const MovementType& movement) const {
@@ -331,7 +332,7 @@ bool Square::canEnter(const MovementType& movement) const {
 }
 
 bool Square::canEnterEmpty(const MovementType& movement) const {
-  if (creature && creature->isStationary())
+  if (creature && creature->getAttributes().isStationary())
     return false;
   if (!movement.isForced() && forbiddenTribe && forbiddenTribe == movement.getTribe())
     return false;
@@ -482,7 +483,7 @@ void Square::removeCreature() {
   CHECK(creature);
   Creature* tmp = creature;
   creature = nullptr;
-  if (tmp->isStationary())
+  if (tmp->getAttributes().isStationary())
     level->updateConnectivity(position);
 }
 

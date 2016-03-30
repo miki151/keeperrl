@@ -37,6 +37,7 @@
 #include "stair_key.h"
 #include "view.h"
 #include "sound.h"
+#include "creature_attributes.h"
 
 class Staircase : public Square {
   public:
@@ -163,7 +164,7 @@ class Chest : public Square {
   }
 
   virtual bool canApply(const Creature* c) const override {
-    return c->isHumanoid();
+    return c->getAttributes().isHumanoid();
   }
 
   virtual optional<SquareApplyType> getApplyType() const override { 
@@ -456,7 +457,7 @@ class Grave : public Bed {
   Grave(const ViewObject& object, const string& name) : Bed(object, name, 0) {}
 
   virtual bool canApply(const Creature* c) const override {
-    return c->isUndead();
+    return c->getAttributes().isUndead();
   }
 
   virtual optional<SquareApplyType> getApplyType() const override { 
@@ -464,7 +465,7 @@ class Grave : public Bed {
   }
 
   virtual void onApply(Creature* c) override {
-    CHECK(c->isUndead());
+    CHECK(c->getAttributes().isUndead());
     Bed::onApply(c);
   }
 
@@ -485,7 +486,7 @@ class Altar : public Square {
   }
 
   virtual bool canApply(const Creature* c) const override {
-    return c->isHumanoid();
+    return c->getAttributes().isHumanoid();
   }
 
   virtual optional<SquareApplyType> getApplyType() const override { 
@@ -535,9 +536,9 @@ class CreatureAltar : public Altar {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    if (c->isHumanoid()) {
+    if (c->getAttributes().isHumanoid()) {
       c->playerMessage("This is a shrine to " + creature->getName().bare());
-      c->playerMessage(creature->getDescription());
+      c->playerMessage(creature->getAttributes().getDescription());
     }
   }
 
@@ -612,7 +613,7 @@ class Hatchery : public Square {
     if (getCreature() || !Random.roll(10) || getPoisonGasAmount() > 0)
       return;
     for (Position v : getPosition2().neighbors8())
-      if (v.getCreature() && v.getCreature()->isMinionFood())
+      if (v.getCreature() && v.getCreature()->getAttributes().isMinionFood())
         return;
     if (Random.roll(5)) {
       PCreature pig = creature.random(
@@ -699,7 +700,7 @@ class SokobanHole : public Square {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    if (c->isStationary()) {
+    if (c->getAttributes().isStationary()) {
       getPosition2().globalMessage(c->getName().the() + " fills the " + getName());
       c->die(nullptr, false, false);
       getLevel()->replaceSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));

@@ -18,6 +18,9 @@
 #include "creature_attributes.h"
 #include "creature.h"
 #include "sound.h"
+#include "player_message.h"
+#include "item.h"
+#include "item_factory.h"
 
 CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
   fun(*this);
@@ -27,53 +30,13 @@ CreatureAttributes::~CreatureAttributes() {}
 
 template <class Archive> 
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(viewId)
-    & SVAR(illusionViewObject)
-    & SVAR(spawnType)
-    & SVAR(name)
-    & SVAR(size)
-    & SVAR(attr)
-    & SVAR(weight)
-    & SVAR(chatReactionFriendly)
-    & SVAR(chatReactionHostile)
-    & SVAR(barehandedDamage)
-    & SVAR(barehandedAttack)
-    & SVAR(attackEffect)
-    & SVAR(passiveAttack)
-    & SVAR(gender)
-    & SVAR(bodyParts)
-    & SVAR(injuredBodyParts)
-    & SVAR(lostBodyParts)
-    & SVAR(innocent)
-    & SVAR(uncorporal)
-    & SVAR(fireCreature)
-    & SVAR(breathing)
-    & SVAR(humanoid)
-    & SVAR(animal)
-    & SVAR(undead)
-    & SVAR(notLiving)
-    & SVAR(brain)
-    & SVAR(isFood)
-    & SVAR(stationary)
-    & SVAR(noSleep)
-    & SVAR(cantEquip)
-    & SVAR(courage)
-    & SVAR(carryAnything)
-    & SVAR(invincible)
-    & SVAR(worshipped)
-    & SVAR(dontChase)
-    & SVAR(isSpecial)
-    & SVAR(attributeGain)
-    & SVAR(skills)
-    & SVAR(spells)
-    & SVAR(permanentEffects)
-    & SVAR(lastingEffects)
-    & SVAR(minionTasks)
-    & SVAR(attrIncrease)
-    & SVAR(recruitmentCost)
-    & SVAR(dyingSound)
-    & SVAR(noDyingSound)
-    & SVAR(noAttackSound);
+  serializeAll(ar, viewId, illusionViewObject, spawnType, name, size, attr, weight, chatReactionFriendly);
+  serializeAll(ar, chatReactionHostile, barehandedDamage, barehandedAttack, attackEffect, passiveAttack, gender);
+  serializeAll(ar, bodyParts, injuredBodyParts, lostBodyParts, innocent, uncorporal, fireCreature, breathing);
+  serializeAll(ar, humanoid, animal, undead, notLiving, brain, isFood, stationary, noSleep, cantEquip, courage);
+  serializeAll(ar, carryAnything, invincible, worshipped, noChase, isSpecial, attributeGain, skills, spells);
+  serializeAll(ar, permanentEffects, lastingEffects, minionTasks, attrIncrease, recruitmentCost, dyingSound);
+  serializeAll(ar, noDyingSound, noAttackSound);
 }
 
 SERIALIZABLE(CreatureAttributes);
@@ -103,6 +66,14 @@ BodyPart CreatureAttributes::getBodyPart(AttackLevel attack, bool flying, bool c
   return BodyPart::ARM;
 }
 
+CreatureName& CreatureAttributes::getName() {
+  return *name;
+}
+
+const CreatureName& CreatureAttributes::getName() const {
+  return *name;
+}
+
 CreatureSize CreatureAttributes::getSize() const {
   return *size;
 }
@@ -117,6 +88,10 @@ BodyPart CreatureAttributes::armOrWing() const {
 
 double CreatureAttributes::getRawAttr(AttrType type) const {
   return attr[type] + attrIncrease[type];
+}
+
+void CreatureAttributes::setBaseAttr(AttrType type, int v) {
+  attr[type] = v;
 }
 
 int CreatureAttributes::numBodyParts(BodyPart part) const {
@@ -142,6 +117,14 @@ int CreatureAttributes::numInjured(BodyPart part) const {
 
 int CreatureAttributes::numGood(BodyPart part) const {
   return numBodyParts(part) - numInjured(part);
+}
+
+void CreatureAttributes::clearInjured(BodyPart part) {
+  injuredBodyParts[part] = 0;
+}
+
+void CreatureAttributes::clearLost(BodyPart part) {
+  lostBodyParts[part] = 0;
 }
 
 double CreatureAttributes::getCourage() const {
@@ -288,4 +271,351 @@ optional<Sound> CreatureAttributes::getDeathSound() const {
     return Sound(dyingSound ? *dyingSound : isHumanoid() ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH)
         .setPitch(getDeathSoundPitch(getSize()));
 }
+
+string sizeStr(CreatureSize s) {
+  switch (s) {
+    case CreatureSize::SMALL: return "small";
+    case CreatureSize::MEDIUM: return "medium";
+    case CreatureSize::LARGE: return "large";
+    case CreatureSize::HUGE: return "huge";
+  }
+  return 0;
+}
+
+static string adjectives(CreatureSize s, bool undead, bool notLiving) {
+  vector<string> ret {sizeStr(s)};
+  if (notLiving)
+    ret.push_back("non-living");
+  if (undead)
+    ret.push_back("undead");
+  return combine(ret);
+}
+
+string CreatureAttributes::getDescription() const {
+  if (!isSpecial)
+    return "";
+  string attack;
+  if (attackEffect)
+    attack = " It has a " + Effect::getName(*attackEffect) + " attack.";
+  return adjectives(getSize(), isUndead(), notLiving) +
+      (isHumanoid() ? " humanoid" : " beast") + (!isCorporal() ? " spirit" : "") +
+      bodyDescription() + ". " + attack;
+}
+
+void CreatureAttributes::chatReaction(Creature* me, Creature* other) {
+  if (me->isEnemy(other) && chatReactionHostile) {
+    if (chatReactionHostile->front() == '\"')
+      other->playerMessage(*chatReactionHostile);
+    else
+      other->playerMessage(me->getName().the() + " " + *chatReactionHostile);
+  }
+  if (!me->isEnemy(other) && chatReactionFriendly) {
+    if (chatReactionFriendly->front() == '\"')
+      other->playerMessage(*chatReactionFriendly);
+    else
+      other->playerMessage(me->getName().the() + " " + *chatReactionFriendly);
+  }
+}
+
+bool CreatureAttributes::isAffected(LastingEffect effect, double time) const {
+  return lastingEffects[effect] >= time || permanentEffects[effect] > 0;
+}
+
+bool CreatureAttributes::considerTimeout(LastingEffect effect, double globalTime) {
+  if (lastingEffects[effect] > 0 && lastingEffects[effect] < globalTime) {
+    clearLastingEffect(effect);
+    if (!isAffected(effect, globalTime))
+      return true;
+  }
+  return false;
+}
+  
+bool CreatureAttributes::considerAffecting(LastingEffect effect, double globalTime, double timeout) {
+  if (lastingEffects[effect] < globalTime + timeout) {
+    lastingEffects[effect] = globalTime + timeout;
+    if (!isAffected(effect, globalTime))
+      return true;
+  }
+  return false;
+}
+
+void CreatureAttributes::looseBodyPart(BodyPart part) {
+  --bodyParts[part];
+  ++lostBodyParts[part];
+  if (injuredBodyParts[part] > bodyParts[part])
+    --injuredBodyParts[part];
+}
+
+void CreatureAttributes::injureBodyPart(BodyPart part) {
+  if (injuredBodyParts[part] < bodyParts[part])
+    ++injuredBodyParts[part];
+}
+
+bool CreatureAttributes::canSleep() const {
+  return !noSleep;
+}
+
+static bool consumeProb() {
+  return true;
+}
+
+void CreatureAttributes::consumeBodyParts(const Creature* c, const CreatureAttributes& other) {
+  for (BodyPart part : ENUM_ALL(BodyPart))
+    if (other.bodyParts[part] > bodyParts[part]) {
+      if (bodyParts[part] + 1 == other.bodyParts[part])
+        c->you(MsgType::GROW, "a " + getBodyPartName(part));
+      else
+        c->you(MsgType::GROW, toString(other.bodyParts[part] - bodyParts[part]) + " " +
+            getBodyPartName(part) + "s");
+      bodyParts[part] = other.bodyParts[part];
+    }
+}
+
+static string getAttrNameMore(AttrType attr) {
+  switch (attr) {
+    case AttrType::STRENGTH: return "stronger";
+    case AttrType::DEXTERITY: return "more agile";
+    case AttrType::SPEED: return "faster";
+  }
+}
+
+template <typename T>
+void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj) {
+  if (consumeProb() && mine < his) {
+    mine = his;
+    if (!adj.empty())
+      adjectives.push_back(adj);
+  }
+}
+
+void consumeAttr(Gender& mine, const Gender& his, vector<string>& adjectives) {
+  if (consumeProb() && mine != his) {
+    mine = his;
+    adjectives.emplace_back(mine == Gender::male ? "more masculine" : "more feminine");
+  }
+}
+
+
+template <typename T>
+void consumeAttr(optional<T>& mine, const optional<T>& his, vector<string>& adjectives, const string& adj) {
+  if (consumeProb() && !mine && his) {
+    mine = *his;
+    if (!adj.empty())
+      adjectives.push_back(adj);
+  }
+}
+
+void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives) {
+  bool was = false;
+  for (SkillId id : his.getAllDiscrete())
+    if (!mine.hasDiscrete(id) && Skill::get(id)->transferOnConsumption() && consumeProb()) {
+      mine.insert(id);
+      was = true;
+    }
+  for (SkillId id : ENUM_ALL(SkillId)) {
+    if (!Skill::get(id)->isDiscrete() && mine.getValue(id) < his.getValue(id)) {
+      mine.setValue(id, his.getValue(id));
+      was = true;
+    }
+  }
+  if (was)
+    adjectives.push_back("more skillfull");
+}
+
+void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& effects) {
+  for (LastingEffect effect : ENUM_ALL(LastingEffect))
+    if (effects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb()) {
+      addPermanentEffect(effect);
+    }
+}
+
+void CreatureAttributes::consume(Creature* self, const CreatureAttributes& other) {
+  Debug() << name->bare() << " consume " << other.name->bare();
+  self->you(MsgType::CONSUME, other.name->the());
+  consumeBodyParts(self, other);
+  if (other.isHumanoid() && !isHumanoid() && numBodyParts(BodyPart::ARM) >= 2 && numBodyParts(BodyPart::LEG) >= 2
+      && numBodyParts(BodyPart::HEAD) >= 1) {
+    self->you(MsgType::BECOME, "a humanoid");
+    self->addPersonalEvent(getName().the() + " turns into a humanoid");
+    humanoid = true;
+  }
+  vector<string> adjectives;
+  for (auto t : ENUM_ALL(AttrType))
+    consumeAttr(attr[t], other.attr[t], adjectives, getAttrNameMore(t));
+  consumeAttr(*size, *other.size, adjectives, "larger");
+  consumeAttr(*weight, *other.weight, adjectives, "");
+  consumeAttr(barehandedDamage, other.barehandedDamage, adjectives, "more dangerous");
+  consumeAttr(barehandedAttack, other.barehandedAttack, adjectives, "");
+  consumeAttr(attackEffect, other.attackEffect, adjectives, "");
+  consumeAttr(passiveAttack, other.passiveAttack, adjectives, "");
+  consumeAttr(gender, other.gender, adjectives);
+  consumeAttr(skills, other.skills, adjectives);
+  if (!adjectives.empty()) {
+    self->you(MsgType::BECOME, combine(adjectives));
+    self->addPersonalEvent(getName().the() + " becomes " + combine(adjectives));
+  }
+  consumeBodyParts(self,other);
+  consumeEffects(other.permanentEffects);
+}
+
+AttackType CreatureAttributes::getAttackType(const Item* weapon) const {
+  if (weapon)
+    return weapon->getAttackType();
+  else if (barehandedAttack)
+    return *barehandedAttack;
+  else
+    return isHumanoid() ? AttackType::PUNCH : AttackType::BITE;
+}
+
+string CreatureAttributes::getRemainingString(LastingEffect effect, double time) const {
+  return "[" + toString<int>(lastingEffects[effect] - time) + "]";
+}
+
+bool CreatureAttributes::isStationary() const {
+  return stationary;
+}
+
+void CreatureAttributes::setStationary(bool s) {
+  stationary = s;
+}
+
+bool CreatureAttributes::isUndead() const {
+  return undead;
+}
+
+bool CreatureAttributes::isInvincible() const {
+  return invincible;
+}
+
+int CreatureAttributes::getRecruitmentCost() const {
+  return recruitmentCost;
+}
+
+Skillset& CreatureAttributes::getSkills() {
+  return skills;
+}
+
+const Skillset& CreatureAttributes::getSkills() const {
+  return skills;
+}
+
+bool CreatureAttributes::isMinionFood() const {
+  return isFood;
+}
+
+ViewObject CreatureAttributes::createViewObject() const {
+  return ViewObject(*viewId, ViewLayer::CREATURE, name->bare());
+}
+
+const optional<ViewObject>& CreatureAttributes::getIllusionViewObject() const {
+  return illusionViewObject;
+}
+
+bool CreatureAttributes::isFireCreature() const {
+  return fireCreature;
+}
+
+bool CreatureAttributes::canEquip() const {
+  return !cantEquip;
+}
+
+bool CreatureAttributes::isCorporal() const {
+  return !uncorporal;
+}
+
+bool CreatureAttributes::isNotLiving() const {
+  return undead || notLiving || uncorporal;
+}
+
+bool CreatureAttributes::isBreathing() const {
+  return breathing;
+}
+
+bool CreatureAttributes::isAffectedPermanently(LastingEffect effect) const {
+  return permanentEffects[effect] > 0;
+}
+
+void CreatureAttributes::shortenEffect(LastingEffect effect, double time) {
+  CHECK(lastingEffects[effect] >= time);
+  lastingEffects[effect] -= time;
+}
+
+void CreatureAttributes::clearLastingEffect(LastingEffect effect) {
+  lastingEffects[effect] = 0;
+}
+
+void CreatureAttributes::addPermanentEffect(LastingEffect effect) {
+  ++permanentEffects[effect];
+}
+
+void CreatureAttributes::removePermanentEffect(LastingEffect effect) {
+  CHECK(--permanentEffects[effect] >= 0);
+}
+
+bool CreatureAttributes::canCarryAnything() const {
+  return carryAnything;
+}
+
+int CreatureAttributes::getBarehandedDamage() const {
+  return barehandedDamage;
+}
+
+optional<EffectType> CreatureAttributes::getAttackEffect() const {
+  return attackEffect;
+}
+
+bool CreatureAttributes::isInnocent() const {
+  return innocent;
+}
+
+optional<SpawnType> CreatureAttributes::getSpawnType() const {
+  return spawnType;
+}
+ 
+const MinionTaskMap& CreatureAttributes::getMinionTasks() const {
+  return minionTasks;
+}
+
+MinionTaskMap& CreatureAttributes::getMinionTasks() {
+  return minionTasks;
+}
+
+static string getBodyPartBone(BodyPart part) {
+  switch (part) {
+    case BodyPart::HEAD: return "skull";
+    default: return "bone";
+  }
+}
+
+PItem CreatureAttributes::getBodyPartItem(BodyPart part) {
+  return ItemFactory::corpse(getName().bare() + " " + getBodyPartName(part),
+        getName().bare() + " " + getBodyPartBone(part),
+        *weight / 8, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
+}
+
+vector<PItem> CreatureAttributes::getCorpseItem(Creature::Id id) {
+  return makeVec<PItem>(
+      ItemFactory::corpse(getName().bare() + " corpse", getName().bare() + " skeleton", *weight,
+        isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE,
+        {id, true, numBodyParts(BodyPart::HEAD) > 0, false}));
+}
+
+bool CreatureAttributes::dontChase() const {
+  return noChase;
+}
+
+double CreatureAttributes::getMinDamage(BodyPart part) const {
+  map<BodyPart, double> damage {
+    {BodyPart::WING, 0.3},
+    {BodyPart::ARM, 0.6},
+    {BodyPart::LEG, 0.8},
+    {BodyPart::HEAD, 0.8},
+    {BodyPart::TORSO, 1.5},
+    {BodyPart::BACK, 1.5}};
+  if (isUndead())
+    return damage.at(part) / 2;
+  else
+    return damage.at(part);
+}
+
 

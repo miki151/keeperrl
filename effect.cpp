@@ -56,46 +56,6 @@ vector<double> wordOfPowerDist { 1, 3, 10};
 vector<int> blastRange { 2, 5, 10};
 vector<int> creatureEffectRange { 2, 5, 10};
 
-class IllusionController : public DoNothingController {
-  public:
-  IllusionController(Creature* c, double deathT) : DoNothingController(c), deathTime(deathT) {}
-
-  void kill() {
-    getCreature()->monsterMessage("The illusion disappears.");
-    if (!getCreature()->isDead())
-      getCreature()->die();
-  }
-
-  virtual void onBump(Creature* c) override {
-    c->attack(getCreature(), none, false).perform(c);
-    kill();
-  }
-
-  virtual void makeMove() override {
-    if (getCreature()->getGlobalTime() >= deathTime)
-      kill();
-    else
-      getCreature()->wait().perform(getCreature());
-  }
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(DoNothingController);
-    serializeAll(ar, deathTime);
-  }
-
-  SERIALIZATION_CONSTRUCTOR(IllusionController);
-
-  private:
-  double SERIAL(deathTime);
-};
-
-template <class Archive>
-void Effect::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, IllusionController);
-}
-
-REGISTER_TYPES(Effect::registerTypes);
 
 static vector<Creature*> summonCreatures(Position pos, int radius, vector<PCreature> creatures, double delay = 0) {
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
@@ -116,54 +76,9 @@ static vector<Creature*> summonCreatures(Creature* c, int radius, vector<PCreatu
 
 static void deception(Creature* creature) {
   vector<PCreature> creatures;
-  for (int i : Range(Random.get(3, 7))) {
-    ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
-    viewObject.setModifier(ViewObject::Modifier::ILLUSION);
-    creatures.push_back(PCreature(new Creature(viewObject, creature->getTribeId(), CATTR(
-          c.viewId = ViewId::ROCK; //overriden anyway
-          c.illusionViewObject = creature->getViewObject();
-          c.illusionViewObject->removeModifier(ViewObject::Modifier::INVISIBLE);
-          c.attr[AttrType::SPEED] = 100;
-          c.weight = 1;
-          c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 1;
-          c.attr[AttrType::DEXTERITY] = 1;
-          c.barehandedDamage = 20; // just so it's not ignored by creatures
-          c.stationary = true;
-          c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.noSleep = true;
-          c.breathing = false;
-          c.uncorporal = true;
-          c.humanoid = true;
-          c.dyingSound = SoundId::MISSED_ATTACK;
-          c.noAttackSound = true;
-          c.name = "illusion";),
-        ControllerFactory([creature] (Creature* o) { return new IllusionController(o,
-            creature->getGlobalTime() + Random.get(5, 10));}))));
-  }
+  for (int i : Range(Random.get(3, 7)))
+    creatures.push_back(CreatureFactory::getIllusion(creature));
   summonCreatures(creature, 2, std::move(creatures));
-}
-
-static void leaveBody(Creature* creature) {
-  string spiritName = creature->getName().first().get_value_or(creature->getName().bare()) + "'s spirit";
-  ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, spiritName);
-  viewObject.setModifier(ViewObject::Modifier::ILLUSION);
-  PCreature spirit(new Creature(viewObject, creature->getTribeId(), CATTR(
-          c.viewId = ViewId::ROCK; //overriden anyway
-          c.attr[AttrType::SPEED] = 100;
-          c.weight = 1;
-          c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 1;
-          c.barehandedDamage = 20; // just so it's not ignored by creatures
-          c.attr[AttrType::DEXTERITY] = 1;
-          c.noSleep = true;
-          c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.breathing = false;
-          c.uncorporal = true;
-          c.humanoid = false;
-          c.name = spiritName;),
-        ControllerFactory([creature] (Creature* o) { return creature->getController()->getPossessedController(o);})));
-  summonCreatures(creature, 1, makeVec<PCreature>(std::move(spirit)));
 }
 
 static void creatureEffect(Creature* who, EffectType type, EffectStrength str, Vec2 direction, int range) {
@@ -174,7 +89,7 @@ static void creatureEffect(Creature* who, EffectType type, EffectStrength str, V
 
 static void blast(Creature* who, Position position, Vec2 direction, int maxDistance, bool damage) {
   if (Creature* c = position.getCreature())
-    if (!c->isStationary()) {
+    if (!c->getAttributes().isStationary()) {
       int dist = 0;
       for (int i : Range(1, maxDistance))
         if (position.canMoveCreature(direction * i))
@@ -285,7 +200,7 @@ static void destroyEquipment(Creature* c) {
 }
 
 static void heal(Creature* c, int strength) {
-  if (c->getHealth() < 1 || (strength == int(EffectStrength::STRONG) && c->lostOrInjuredBodyParts()))
+  if (c->getHealth() < 1 || (strength == int(EffectStrength::STRONG) && c->getAttributes().lostOrInjuredBodyParts()))
     c->heal(1, strength == int(EffectStrength::STRONG));
   else
     c->playerMessage("You feel refreshed.");
@@ -366,7 +281,7 @@ double entangledTime(int strength) {
 }
 
 void silverDamage(Creature* c) {
-  if (c->isUndead()) {
+  if (c->getAttributes().isUndead()) {
     c->you(MsgType::ARE, "hurt by the silver");
     c->bleed(Random.getDouble(0.0, 0.15));
   }
@@ -445,7 +360,7 @@ static void summon(Creature* summoner, CreatureId id) {
 void Effect::applyToCreature(Creature* c, const EffectType& type, EffectStrength strengthEnum) {
   int strength = int(strengthEnum);
   switch (type.getId()) {
-    case EffectId::LEAVE_BODY: leaveBody(c); break;
+    case EffectId::LEAVE_BODY: FAIL << "Implement"; break;
     case EffectId::LASTING:
         c->addEffect(type.get<LastingEffect>(), getDuration(c, type.get<LastingEffect>(), strength)); break;
     case EffectId::TELE_ENEMIES: teleEnemies(c); break;

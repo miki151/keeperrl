@@ -37,6 +37,7 @@
 #include "game.h"
 #include "model.h"
 #include "collective_name.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -98,7 +99,7 @@ class Construction : public Task {
       return NoMove;
     if (c->getPosition().dist8(position) > 1)
       return c->moveTowards(position);
-    CHECK(c->hasSkill(Skill::get(SkillId::CONSTRUCTION)));
+    CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
     Vec2 dir = c->getPosition().getDir(position);
     if (auto action = c->construct(dir, type))
       return {1.0, action.append([=](Creature* c) {
@@ -135,7 +136,7 @@ class BuildTorch : public Task {
   BuildTorch(TaskCallback* c, Position pos, Dir dir) : Task(true), position(pos), callback(c), attachmentDir(dir) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    CHECK(c->hasSkill(Skill::get(SkillId::CONSTRUCTION)));
+    CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
     if (c->getPosition() == position)
       return c->placeTorch(attachmentDir, [=](Trigger* t) {
           callback->onTorchBuilt(position, t);
@@ -303,7 +304,7 @@ class EquipItem : public Task {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    CHECK(c->isHumanoid()) << c->getName().bare();
+    CHECK(c->getAttributes().isHumanoid()) << c->getName().bare();
     if (Item* item = c->getEquipment().getItemById(itemId)) {
       if (auto action = c->equip(item))
         return action.append([=](Creature* c) {setDone();});
@@ -1089,7 +1090,7 @@ class Eat : public Task {
         if (auto move = c->move(pos))
           return move;
       if (Creature* ch = pos.getCreature())
-        if (ch->isMinionFood())
+        if (ch->getAttributes().isMinionFood())
           if (auto move = c->attack(ch)) {
             return move.append([this, ch, pos] (Creature*) { if (ch->isDead()) position = pos; });
       }

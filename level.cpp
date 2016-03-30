@@ -34,6 +34,7 @@
 #include "creature_name.h"
 #include "sunlight_info.h"
 #include "game.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -454,7 +455,8 @@ bool Level::playerCanSee(const Creature* c) const {
 }
 
 static bool canPass(const Square* square, const Creature* c) {
-  return square->canEnterEmpty(c) && (!square->getCreature() || !square->getCreature()->isStationary());
+  return square->canEnterEmpty(c) && (!square->getCreature() ||
+      !square->getCreature()->getAttributes().isStationary());
 }
 
 bool Level::canMoveCreature(const Creature* creature, Vec2 direction) const {

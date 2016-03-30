@@ -37,6 +37,8 @@
 #include "square_type.h"
 #include "monster_ai.h"
 #include "sound.h"
+#include "player.h"
+#include "map_memory.h"
 
 template <class Archive> 
 void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
@@ -91,7 +93,7 @@ class BoulderController : public Monster {
         Position curPos = getCreature()->getPosition().plus(v * i);
         if (Creature* other = curPos.getCreature()) {
           if (other->getTribe() != getCreature()->getTribe()) {
-            if (!other->hasSkill(Skill::get(SkillId::DISARM_TRAPS))) {
+            if (!other->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
               direction = v;
               stopped = false;
               getCreature()->getGame()->onTrapTrigger(getCreature()->getPosition());
@@ -123,11 +125,11 @@ class BoulderController : public Monster {
     Position nextPos = getCreature()->getPosition().plus(direction);
     if (nextPos.getStrength() < 300) {
       if (Creature* c = nextPos.getCreature()) {
-        if (!c->isCorporal()) {
+        if (!c->getAttributes().isCorporal()) {
           if (auto action = getCreature()->swapPosition(direction, true))
             action.perform(getCreature());
         } else {
-          decreaseHealth(c->getSize());
+          decreaseHealth(c->getAttributes().getSize());
           if (health < 0) {
             nextPos.globalMessage(getCreature()->getName().the() + " crashes on the " + c->getName().the(),
                   "You hear a crash");
@@ -166,7 +168,7 @@ class BoulderController : public Monster {
       getCreature()->die();
       return;
     }
-    getCreature()->setBoulderSpeed(speed);
+    getCreature()->getAttributes().setBaseAttr(AttrType::SPEED, speed);
   }
 
   virtual void you(MsgType type, const string& param) override {
@@ -259,7 +261,34 @@ class SokobanController : public Monster {
   private:
 };
 
-static PCreature getSokobanBoulder(TribeId tribe) {
+PCreature CreatureFactory::getAdventurer(int handicap) {
+  MapMemory* levelMemory = new MapMemory();
+  PCreature player = CreatureFactory::addInventory(
+      PCreature(new Creature(TribeId::getAdventurer(),
+      CATTR(
+          c.viewId = ViewId::PLAYER;
+          c.attr[AttrType::SPEED] = 100;
+          c.weight = 90;
+          c.size = CreatureSize::LARGE;
+          c.attr[AttrType::STRENGTH] = 13 + handicap;
+          c.attr[AttrType::DEXTERITY] = 15 + handicap;
+          c.barehandedDamage = 5;
+          c.humanoid = true;
+          c.name = "Adventurer";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+          c.skills.insert(SkillId::AMBUSH);), Player::getFactory(levelMemory))), {
+      ItemId::FIRST_AID_KIT,
+      ItemId::SWORD,
+      ItemId::KNIFE,
+      ItemId::LEATHER_GLOVES,
+      ItemId::LEATHER_ARMOR,
+      ItemId::LEATHER_HELM});
+  for (int i : Range(Random.get(70, 131)))
+    player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
+  return player;
+}
+
+PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
   return PCreature(new Boulder(CATTR(
             c.viewId = ViewId::BOULDER;
             c.attr[AttrType::DEXTERITY] = 1;
@@ -278,7 +307,7 @@ static PCreature getSokobanBoulder(TribeId tribe) {
               return new SokobanController(c); })));
 }
 
-CreatureAttributes getKrakenAttributes(ViewId id) {
+CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id) {
   return CATTR(
       c.viewId = id;
       c.attr[AttrType::SPEED] = 40;
@@ -368,7 +397,8 @@ class KrakenController : public Monster {
     for (Position pos : getCreature()->getPosition().getRectangle(
           Rectangle(Vec2(-radius, -radius), Vec2(radius + 1, radius + 1))))
         if (Creature * c = pos.getCreature())
-          if (getCreature()->canSee(c) && getCreature()->isEnemy(c) && !getCreature()->isStationary()) {
+          if (getCreature()->canSee(c) && getCreature()->isEnemy(c) &&
+              !getCreature()->getAttributes().isStationary()) {
             Vec2 v = getCreature()->getPosition().getDir(pos);
             isEnemy = true;
             if (numSpawns > 0) {
@@ -397,7 +427,8 @@ class KrakenController : public Monster {
                   Vec2 move = Random.choose(moves);
                   ViewId viewId = getCreature()->getPosition().plus(move).canEnter({MovementTrait::SWIM}) 
                     ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
-                  PCreature spawn(new Creature(getCreature()->getTribeId(), getKrakenAttributes(viewId),
+                  PCreature spawn(new Creature(getCreature()->getTribeId(),
+                        CreatureFactory::getKrakenAttributes(viewId),
                         ControllerFactory([=](Creature* c) {
                           return new KrakenController(c);
                           })));
@@ -575,18 +606,6 @@ class ShopkeeperController : public Monster {
   bool SERIAL(firstMove) = true;
 };
 
-template <class Archive>
-void CreatureFactory::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, BoulderController);
-  REGISTER_TYPE(ar, SokobanController);
-  REGISTER_TYPE(ar, Boulder);
-  REGISTER_TYPE(ar, KrakenController);
-  REGISTER_TYPE(ar, KamikazeController);
-  REGISTER_TYPE(ar, ShopkeeperController);
-}
-
-REGISTER_TYPES(CreatureFactory::registerTypes);
-
 PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemType>& items) {
   for (ItemType item : items) {
     PItem it = ItemFactory::fromId(item);
@@ -621,6 +640,79 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, TribeId tribe) {
   return addInventory(std::move(ret), inventory);
 }
 
+class IllusionController : public DoNothingController {
+  public:
+  IllusionController(Creature* c, double deathT) : DoNothingController(c), deathTime(deathT) {}
+
+  void kill() {
+    getCreature()->monsterMessage("The illusion disappears.");
+    if (!getCreature()->isDead())
+      getCreature()->die();
+  }
+
+  virtual void onBump(Creature* c) override {
+    c->attack(getCreature(), none, false).perform(c);
+    kill();
+  }
+
+  virtual void makeMove() override {
+    if (getCreature()->getGlobalTime() >= deathTime)
+      kill();
+    else
+      getCreature()->wait().perform(getCreature());
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& SUBCLASS(DoNothingController);
+    serializeAll(ar, deathTime);
+  }
+
+  SERIALIZATION_CONSTRUCTOR(IllusionController);
+
+  private:
+  double SERIAL(deathTime);
+};
+
+PCreature CreatureFactory::getIllusion(Creature* creature) {
+  ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
+  viewObject.setModifier(ViewObject::Modifier::ILLUSION);
+  return PCreature(new Creature(viewObject, creature->getTribeId(), CATTR(
+          c.viewId = ViewId::ROCK; //overriden anyway
+          c.illusionViewObject = creature->getViewObject();
+          c.illusionViewObject->removeModifier(ViewObject::Modifier::INVISIBLE);
+          c.attr[AttrType::SPEED] = 100;
+          c.weight = 1;
+          c.size = CreatureSize::LARGE;
+          c.attr[AttrType::STRENGTH] = 1;
+          c.attr[AttrType::DEXTERITY] = 1;
+          c.barehandedDamage = 20; // just so it's not ignored by creatures
+          c.stationary = true;
+          c.permanentEffects[LastingEffect::FLYING] = 1;
+          c.noSleep = true;
+          c.breathing = false;
+          c.uncorporal = true;
+          c.humanoid = true;
+          c.dyingSound = SoundId::MISSED_ATTACK;
+          c.noAttackSound = true;
+          c.name = "illusion";),
+        ControllerFactory([creature] (Creature* o) { return new IllusionController(o,
+            creature->getGlobalTime() + Random.get(5, 10));})));
+}
+
+template <class Archive>
+void CreatureFactory::registerTypes(Archive& ar, int version) {
+  REGISTER_TYPE(ar, BoulderController);
+  REGISTER_TYPE(ar, SokobanController);
+  REGISTER_TYPE(ar, Boulder);
+  REGISTER_TYPE(ar, KrakenController);
+  REGISTER_TYPE(ar, KamikazeController);
+  REGISTER_TYPE(ar, ShopkeeperController);
+  REGISTER_TYPE(ar, IllusionController);
+}
+
+REGISTER_TYPES(CreatureFactory::registerTypes);
+
 TribeId CreatureFactory::getTribeFor(CreatureId id) {
   if (auto t = tribeOverrides[id])
     return *t;
@@ -640,14 +732,11 @@ PCreature CreatureFactory::random(const MonsterAIFactory& actorFactory) {
   } else
     id = Random.choose(creatures, weights);
   PCreature ret = fromId(id, getTribeFor(id), actorFactory);
-  ret->increaseExpLevel(levelIncrease);
+  ret->getAttributes().increaseExpLevel(levelIncrease);
   return ret;
 }
 
-PCreature get(
-    CreatureAttributes attr, 
-    TribeId tribe,
-    ControllerFactory factory) {
+PCreature CreatureFactory::get(const CreatureAttributes& attr, TribeId tribe, const ControllerFactory& factory) {
   return PCreature(new Creature(tribe, attr, factory));
 }
 
@@ -664,9 +753,9 @@ CreatureFactory::CreatureFactory(TribeId t, const vector<CreatureId>& c, const v
 CreatureFactory::CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& c, const vector<CreatureId>& u,
       double lIncrease) : unique(u),levelIncrease(lIncrease) {
   for (auto& elem : c) {
-    creatures.push_back(get<0>(elem));
-    weights.push_back(get<1>(elem));
-    tribeOverrides[get<0>(elem)] = get<2>(elem);
+    creatures.push_back(::get<0>(elem));
+    weights.push_back(::get<1>(elem));
+    tribeOverrides[::get<0>(elem)] = ::get<2>(elem);
   }
 }
 
@@ -946,7 +1035,7 @@ static EnumMap<BodyPart, int> getSpecialBeastBody(bool large, bool body, bool wi
   return parts[(!large) * 4 + (!body) * 2 + wings];
 }
 
-PCreature getSpecial(TribeId tribe, bool humanoid, bool large, ControllerFactory factory) {
+PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, const ControllerFactory& factory) {
   bool wings = Random.roll(2);
   bool body = Random.roll(2);
   string name = getSpeciesName(humanoid, large, body, wings);
@@ -1009,7 +1098,7 @@ PCreature getSpecial(TribeId tribe, bool humanoid, bool large, ControllerFactory
         if (Random.roll(3))
           c.skills.insert(SkillId::SWIMMING);
         ), tribe, factory);
-  if (c->isHumanoid()) {
+  if (c->getAttributes().isHumanoid()) {
     if (Random.roll(400)) {
       c->take(ItemFactory::fromId(ItemId::BOW));
       c->take(ItemFactory::fromId(ItemId::ARROW, Random.get(20, 36)));
@@ -1022,7 +1111,7 @@ PCreature getSpecial(TribeId tribe, bool humanoid, bool large, ControllerFactory
 
 #define INHERIT(ID, X) CreatureAttributes([&](CreatureAttributes& c) { c = getAttributes(CreatureId::ID); X })
 
-CreatureAttributes getAttributes(CreatureId id) {
+CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
   switch (id) {
     case CreatureId::KEEPER: 
       return CATTR(
@@ -1570,7 +1659,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.weight = 30;
           c.courage = 0.1;
           c.carryAnything = true;
-          c.dontChase = true;
+          c.noChase = true;
           c.cantEquip = true;
           c.skills.insert(SkillId::CONSTRUCTION);
           c.chatReactionFriendly = "talks about digging";
@@ -1588,7 +1677,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = true;
           c.courage = 0.1;
           c.carryAnything = true;
-          c.dontChase = true;
+          c.noChase = true;
           c.cantEquip = true;
           c.skills.insert(SkillId::CONSTRUCTION);
           c.chatReactionFriendly = "talks about escape plans";
@@ -1808,7 +1897,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.weight = 500;
           c.animal = true;
-          c.dontChase = true;
+          c.noChase = true;
           c.name = "horse";);
     case CreatureId::COW: 
       return CATTR(
@@ -1821,7 +1910,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.weight = 400;
           c.animal = true;
-          c.dontChase = true;
+          c.noChase = true;
           c.name = "cow";);
     case CreatureId::DONKEY: 
       return INHERIT(COW,
@@ -1839,7 +1928,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.innocent = true;
           c.weight = 150;
-          c.dontChase = true;
+          c.noChase = true;
           c.animal = true;
           c.isFood = true;
           c.dyingSound = SoundId::DYING_PIG;
@@ -1872,7 +1961,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.weight = 400;
           c.animal = true;
-          c.dontChase = true;
+          c.noChase = true;
           c.name = CreatureName("deer", "deer"););
     case CreatureId::BOAR: 
       return CATTR(
@@ -1885,7 +1974,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.innocent = true;
           c.weight = 200;
           c.animal = true;
-          c.dontChase = true;
+          c.noChase = true;
           c.name = "boar";);
     case CreatureId::FOX: 
       return CATTR(
@@ -1899,7 +1988,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.weight = 10;
           c.animal = true;
-          c.dontChase = true;
+          c.noChase = true;
           c.name = CreatureName("fox", "foxes"););
     case CreatureId::CAVE_BEAR: 
       return CATTR(
@@ -1928,7 +2017,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.humanoid = false;
           c.weight = 1;
           c.animal = true;
-          c.dontChase = true;
+          c.noChase = true;
           c.skills.insert(SkillId::SWIMMING);
           c.name = "rat";);
     case CreatureId::SPIDER: 
@@ -1961,7 +2050,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::LEG] = 6;
           c.bodyParts[BodyPart::WING] = 2;
           c.courage = 100;
-          c.dontChase = true;
+          c.noChase = true;
           c.animal = true;
           c.noDyingSound = true;
           c.name = CreatureName("fly", "flies"););
@@ -2025,7 +2114,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.bodyParts[BodyPart::LEG] = 2;
           c.bodyParts[BodyPart::WING] = 2;
           c.animal = true;
-          c.dontChase = true;
+          c.noChase = true;
           c.courage = 100;
           c.spawnType = SpawnType::BEAST;
           c.permanentEffects[LastingEffect::FLYING] = 1;
@@ -2040,7 +2129,7 @@ CreatureAttributes getAttributes(CreatureId id) {
           c.viewId = ViewId::VULTURE;
           c.attr[AttrType::SPEED] = 80;
           c.weight = 5;
-          c.dontChase = true;
+          c.noChase = true;
           c.name = "vulture";);
     case CreatureId::WOLF: 
       return CATTR(
@@ -2246,7 +2335,7 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
   }
 }
 
-PCreature get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) {
+PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) {
   ControllerFactory factory = Monster::getFactory(aiFactory);
   switch (id) {
     case CreatureId::SPECIAL_BL:

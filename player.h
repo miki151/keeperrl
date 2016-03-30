@@ -64,7 +64,6 @@ class Player : public Controller, public CreatureView {
   virtual void you(MsgType type, const vector<string>& param) override;
   virtual void you(const string& param) override;
   virtual void privateMessage(const PlayerMessage& message) override;
-  virtual void learnLocation(const Location*) override;
   virtual void onBump(Creature*) override;
   virtual void onDisplaced() override;
 

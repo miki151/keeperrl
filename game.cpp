@@ -386,7 +386,7 @@ void Game::onAlarm(Position pos) {
 
 void Game::landHeroPlayer() {
   auto handicap = view->getNumber("Choose handicap (your adventurer's strength and dexterity increase)", 0, 20, 5);
-  PCreature player = makeAdventurer(handicap.get_value_or(0));
+  PCreature player = CreatureFactory::getAdventurer(handicap.get_value_or(0));
   string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
   if (!advName.empty())
     player->getName().setFirst(advName);
@@ -550,33 +550,6 @@ void Game::resetDanglingPortal() {
 
 const vector<Collective*>& Game::getCollectives() const {
   return collectives;
-}
-
-PCreature Game::makeAdventurer(int handicap) {
-  MapMemory* levelMemory = new MapMemory();
-  PCreature player = CreatureFactory::addInventory(
-      PCreature(new Creature(TribeId::getAdventurer(),
-      CATTR(
-          c.viewId = ViewId::PLAYER;
-          c.attr[AttrType::SPEED] = 100;
-          c.weight = 90;
-          c.size = CreatureSize::LARGE;
-          c.attr[AttrType::STRENGTH] = 13 + handicap;
-          c.attr[AttrType::DEXTERITY] = 15 + handicap;
-          c.barehandedDamage = 5;
-          c.humanoid = true;
-          c.name = "Adventurer";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
-          c.skills.insert(SkillId::AMBUSH);), Player::getFactory(levelMemory))), {
-      ItemId::FIRST_AID_KIT,
-      ItemId::SWORD,
-      ItemId::KNIFE,
-      ItemId::LEATHER_GLOVES,
-      ItemId::LEATHER_ARMOR,
-      ItemId::LEATHER_HELM});
-  for (int i : Range(Random.get(70, 131)))
-    player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
-  return player;
 }
 
 void Game::setView(View* v) {

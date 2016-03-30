@@ -5,6 +5,7 @@
 #include "creature.h"
 #include "creature_name.h"
 #include "collective_name.h"
+#include "creature_attributes.h"
 
 CollectiveBuilder::CollectiveBuilder(CollectiveConfig cfg, TribeId t)
     : config(cfg), tribe(t) {
@@ -26,7 +27,7 @@ CollectiveBuilder& CollectiveBuilder::setRaceName(const string& n) {
 }
 
 CollectiveBuilder& CollectiveBuilder::addCreature(Creature* c) {
-  if (!c->isInnocent() && (!creatures.empty() || config.isLeaderFighter()))
+  if (!c->getAttributes().isInnocent() && (!creatures.empty() || config.isLeaderFighter()))
     creatures.push_back({c, {MinionTrait::FIGHTER}});
   else
     creatures.push_back({c, {}});

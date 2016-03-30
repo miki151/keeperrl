@@ -40,6 +40,7 @@
 #include "model.h"
 #include "collective.h"
 #include "territory.h"
+#include "creature_attributes.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -72,11 +73,6 @@ void Player::onThrowEvent(const Level* l, const Item* item, const vector<Vec2>& 
         getView()->animateObject(trajectory, item->getViewObject());
         return;
       }
-}
-
-void Player::learnLocation(const Location* loc) {
-  for (Position v : loc->getAllSquares())
-    levelMemory->addObject(v, v.getViewObject());
 }
 
 void Player::onExplosionEvent(Position pos) {
@@ -483,7 +479,7 @@ void Player::extendedAttackAction(Creature::Id id) {
 
 void Player::extendedAttackAction(Creature* other) {
   vector<ListElem> elems;
-  vector<AttackLevel> levels = getCreature()->getAttackLevels();
+  vector<AttackLevel> levels = getCreature()->getAttributes().getAttackLevels();
   for (auto level : levels)
     switch (level) {
       case AttackLevel::LOW: elems.push_back(ListElem("Low").setTip("Aim at lower parts of the body.")); break;
@@ -784,7 +780,7 @@ Game* Player::getGame() const {
 }
 
 View* Player::getView() const {
-  return getView();
+  return getGame()->getView();
 }
 
 Vec2 Player::getPosition() const {

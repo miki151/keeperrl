@@ -57,6 +57,7 @@
 #include "sound.h"
 #include "game.h"
 #include "collective_name.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -433,7 +434,7 @@ Creature* PlayerControl::getConsumptionTarget(View* view, Creature* consumer) {
   vector<ListElem> opt;
   for (Creature* c : getCollective()->getConsumptionTargets(consumer)) {
     res.push_back(c);
-    opt.emplace_back(c->getName().bare() + ", level " + toString(c->getExpLevel()));
+    opt.emplace_back(c->getName().bare() + ", level " + toString(c->getAttributes().getExpLevel()));
   }
   if (auto index = view->chooseFromList("Choose minion to absorb:", opt))
     return res[*index];
@@ -499,7 +500,7 @@ void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
   if (action.switchTo)
     getCollective()->setMinionTask(c, *action.switchTo);
   for (MinionTask task : action.lock)
-    c->getMinionTasks().toggleLock(task);
+    c->getAttributes().getMinionTasks().toggleLock(task);
 }
 
 static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked,
@@ -561,7 +562,7 @@ static ItemInfo getTradeItemInfo(const vector<Item*>& stack, int budget) {
 
 
 void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
-  if (!creature->isHumanoid())
+  if (!creature->getAttributes().isHumanoid())
     return;
   int index = 0;
   double scrollPos = 0;
@@ -625,7 +626,7 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   vector<pair<string, vector<Item*>>> usedStacks = Item::stackItems(usedItems,
       [&](const Item* it) {
         const Creature* c = NOTNULL(getCollective()->getMinionEquipment().getOwner(it));
-        return " owned by " + c->getName().a() + " (level " + toString(c->getExpLevel()) + ")";});
+        return " owned by " + c->getName().a() + " (level " + toString(c->getAttributes().getExpLevel()) + ")";});
   vector<Item*> allStacked;
   vector<ItemInfo> options;
   for (Item* it : currentItems)
@@ -897,7 +898,7 @@ void PlayerControl::handleRecruiting(Collective* ally) {
         recruited.push_back(c);
         if (c->getLevel()->getModel() != getModel())
           transfers.push_back(c);
-        getCollective()->takeResource({ResourceId::GOLD, c->getRecruitmentCost()});
+        getCollective()->takeResource({ResourceId::GOLD, c->getAttributes().getRecruitmentCost()});
         break;
       }
   }
@@ -966,8 +967,8 @@ vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
 
 void PlayerControl::sortMinionsForUI(vector<Creature*>& minions) const {
   sort(minions.begin(), minions.end(), [] (const Creature* c1, const Creature* c2) {
-      int l1 = c1->getExpLevel();
-      int l2 = c2->getExpLevel();
+      int l1 = c1->getAttributes().getExpLevel();
+      int l2 = c2->getAttributes().getExpLevel();
       return l1 > l2 || (l1 == l2 && c1->getUniqueId() > c2->getUniqueId());
       });
 }
@@ -979,11 +980,11 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
     minions.emplace_back();
     minions.back().readFrom(c);
     for (MinionTask t : ENUM_ALL(MinionTask))
-      if (c->getMinionTasks().getValue(t, true) > 0) {
+      if (c->getAttributes().getMinionTasks().getValue(t, true) > 0) {
         minions.back().minionTasks.push_back({t,
             !getCollective()->isMinionTaskPossible(c, t),
             getCollective()->getMinionTask(c) == t,
-            c->getMinionTasks().isLocked(t)});
+            c->getAttributes().getMinionTasks().isLocked(t)});
       }
     minions.back().creatureId = c->getUniqueId();
     if (getCollective()->usesEquipment(c))
@@ -1004,7 +1005,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
 
 vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<Creature*> v) const {
   sort(v.begin(), v.end(), [](const Creature* c1, const Creature* c2) {
-        return c1->getExpLevel() > c2->getExpLevel();});
+        return c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel();});
   map<string, CollectiveInfo::CreatureGroup> groups;
   for (Creature* c : v) {
     if (!groups.count(c->getName().stack()))
@@ -1849,7 +1850,7 @@ void PlayerControl::update() {
   for (Level* l : currentLevels)
     for (Creature* c : l->getAllCreatures()) 
       if (c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
-        if (c->getSpawnType() && !contains(getCreatures(), c) && !getCollective()->wasBanished(c)) {
+        if (c->getAttributes().getSpawnType() && !contains(getCreatures(), c) && !getCollective()->wasBanished(c)) {
           addedCreatures.push_back(c);
           getCollective()->addCreature(c, {MinionTrait::FIGHTER});
           if (Creature* controlled = getControlled())
@@ -1862,7 +1863,7 @@ void PlayerControl::update() {
                 break;
               }
         } else  
-          if (c->isMinionFood() && !contains(getCreatures(), c))
+          if (c->getAttributes().isMinionFood() && !contains(getCreatures(), c))
             getCollective()->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
       }
   if (!addedCreatures.empty()) {

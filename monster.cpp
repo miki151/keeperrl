@@ -22,6 +22,7 @@
 #include "creature_name.h"
 #include "gender.h"
 #include "monster_ai.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void Monster::serialize(Archive& ar, const unsigned int version) {
@@ -69,9 +70,9 @@ void Monster::you(MsgType type, const vector<string>& param) {
   string msg;
   switch (type) {
     case MsgType::SWING_WEAPON:
-      msg = getCreature()->getName().the() + " swings " + getCreature()->getGender().his() + " " + param.at(0); break;
+      msg = getCreature()->getName().the() + " swings " + getCreature()->getAttributes().getGender().his() + " " + param.at(0); break;
     case MsgType::THRUST_WEAPON:
-      msg = getCreature()->getName().the() + " thrusts " + getCreature()->getGender().his() + " " + param.at(0); break;
+      msg = getCreature()->getName().the() + " thrusts " + getCreature()->getAttributes().getGender().his() + " " + param.at(0); break;
     case MsgType::KICK: msg = getCreature()->getName().the() + addName(" kicks", param.at(0)); break;
     case MsgType::PUNCH: msg = getCreature()->getName().the() + addName(" punches", param.at(0)); break;
     default: you(type, param.at(0)); return;
@@ -114,11 +115,13 @@ void Monster::you(MsgType type, const string& param) {
     case MsgType::RAGE: msg = getCreature()->getName().the() + " is enraged."; break;
     case MsgType::BITE: msg = getCreature()->getName().the() + addName(" bites", param); break;
     case MsgType::CRAWL: msg = getCreature()->getName().the() + " is crawling"; break;
-    case MsgType::STAND_UP: msg = getCreature()->getName().the() + " is back on " + getCreature()->getGender().his() + " feet ";
+    case MsgType::STAND_UP: msg = getCreature()->getName().the() + " is back on " +
+                            getCreature()->getAttributes().getGender().his() + " feet ";
                             break;
     case MsgType::TURN_INVISIBLE: msg = getCreature()->getName().the() + " disappears!"; break;
     case MsgType::TURN_VISIBLE: msg = getCreature()->getName().the() + " appears out of nowhere!"; break;
-    case MsgType::DROP_WEAPON: msg = getCreature()->getName().the() + " drops " + getCreature()->getGender().his() + " " + param;
+    case MsgType::DROP_WEAPON: msg = getCreature()->getName().the() + " drops " +
+                               getCreature()->getAttributes().getGender().his() + " " + param;
                                break;
     case MsgType::ENTER_PORTAL: msg = getCreature()->getName().the() + " disappears in the portal."; break;
     case MsgType::HAPPENS_TO: msg = param + " " + getCreature()->getName().the(); break;

@@ -2001,7 +2001,7 @@ PGuiElem GuiFactory::conditional2(PGuiElem elem, PGuiElem alter, function<bool(G
 }
 
 PGuiElem GuiFactory::conditional(PGuiElem elem, PGuiElem alter, function<bool()> f) {
-  return conditional(std::move(elem), std::move(alter), [=] { return f(); });
+  return conditional2(std::move(elem), std::move(alter), [=] (GuiElem*) { return f(); });
 }
 
 PGuiElem GuiFactory::scrollable(PGuiElem content, double* scrollPos, int* held) {
@@ -2012,7 +2012,7 @@ PGuiElem GuiFactory::scrollable(PGuiElem content, double* scrollPos, int* held) 
   scrollPos = ((Scrollable*)(scrollable.get()))->getScrollPosPtr();
   int scrollBarMargin = get(TexId::SCROLL_UP).getSize().y;
   PGuiElem bar(new ScrollBar(
-        std::move(getScrollButton()), list, getScrollButtonSize(), scrollBarMargin, scrollPos, contentHeight, held));
+        getScrollButton(), list, getScrollButtonSize(), scrollBarMargin, scrollPos, contentHeight, held));
   PGuiElem barButtons = getScrollbar();
   barButtons = conditional2(std::move(barButtons), [=] (GuiElem* e) {
       return e->getBounds().getH() < contentHeight;});

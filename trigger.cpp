@@ -29,6 +29,7 @@
 #include "tribe.h"
 #include "skill.h"
 #include "modifier_type.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {
@@ -174,7 +175,7 @@ class Trap : public Trigger {
 
   virtual void onCreatureEnter(Creature* c) override {
     if (c->getTribeId() != tribe) {
-      if (!c->hasSkill(Skill::get(SkillId::DISARM_TRAPS))) {
+      if (!c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
         if (!alwaysVisible)
           c->you(MsgType::TRIGGER_TRAP, "");
         Effect::applyToCreature(c, effect, EffectStrength::NORMAL);

@@ -85,8 +85,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   };
   void addMoraleOverride(PMoraleOverride);
 
-  double getWeight() const;
-  bool canSleep() const;
   void take(PItem item);
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
@@ -129,6 +127,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
   void globalMessage(const PlayerMessage& playerCanSee) const;
 
+  const CreatureAttributes& getAttributes() const;
+  CreatureAttributes& getAttributes();
   bool isDead() const;
   bool isBlind() const;
   bool isBleeding() const;
@@ -137,47 +137,14 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   optional<string> getDeathReason() const;
   double getDeathTime() const;
   const EntitySet<Creature>& getKills() const;
-  bool isHumanoid() const;
-  bool isAnimal() const;
-  bool isStationary() const;
-  void setStationary();
-  bool isInvincible() const;
-  bool isUndead() const;
-  bool hasBrain() const;
-  bool isNotLiving() const;
-  bool isCorporal() const;
-  bool isWorshipped() const;
-  bool dontChase() const;
-  optional<SpawnType> getSpawnType() const;
-  int getRecruitmentCost() const;
 
   MovementType getMovementType() const;
 
-  int numBodyParts(BodyPart) const;
-  int numLost(BodyPart) const;
-  int numInjured(BodyPart) const;
-  int lostOrInjuredBodyParts() const;
-  int numGood(BodyPart) const;
   void injureBodyPart(BodyPart part, bool drop);
   bool isCritical(BodyPart part) const;
-  double getMinDamage(BodyPart part) const;
-
-  double getCourage() const;
-  void setCourage(double);
-  const Gender& getGender() const;
-
   int getDifficultyPoints() const;
-  int getExpLevel() const;
-  void exerciseAttr(AttrType, double value = 1);
-  void increaseExpLevel(double increase);
-
-  string getDescription() const;
-  bool isInnocent() const;
 
   void addSkill(Skill* skill);
-  bool hasSkill(Skill*) const;
-  double getSkillValue(const Skill*) const;
-  const EnumSet<SkillId>& getDiscreteSkills() const;
 
   string getPluralTheName(Item* item, int num) const;
   string getPluralAName(Item* item, int num) const;
@@ -229,14 +196,11 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canCopulateWith(const Creature*) const;
   CreatureAction consume(Creature*) const;
   bool canConsume(const Creature*) const;
-  bool isMinionFood() const;
   
   void displace(double time, Vec2);
   void surrender(const Creature* to);
   
   virtual void onChat(Creature*);
-
-  void learnLocation(const Location*);
 
   Item* getWeapon() const;
   vector<vector<Item*>> stackItems(vector<Item*>) const;
@@ -268,13 +232,9 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void pushController(PController);
   void setController(PController);
   void popController();
-  void setBoulderSpeed(double);
-  CreatureSize getSize() const;
 
   void addCreatureVision(CreatureVision*);
   void removeCreatureVision(CreatureVision*);
-  void addSpell(Spell*);
-  vector<Spell*> getSpells() const;
   CreatureAction castSpell(Spell*) const;
   CreatureAction castSpell(Spell*, Vec2) const;
   double getSpellDelay(Spell*) const;
@@ -287,18 +247,12 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void addPermanentEffect(LastingEffect, bool msg = true);
   void removePermanentEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
-  bool isAffectedPermanently(LastingEffect) const;
   bool affects(LastingEffect effect) const;
   bool hasFreeMovement() const;
   bool isFireResistant() const;
   bool isDarknessSource() const;
 
-  vector<AttackLevel> getAttackLevels() const;
-  bool hasSuicidalAttack() const;
-
   bool isUnknownAttacker(const Creature*) const;
-  const MinionTaskMap& getMinionTasks() const;
-  MinionTaskMap& getMinionTasks();
   int accuracyBonus() const;
   vector<string> getMainAdjectives() const;
   struct AdjectiveInfo {
@@ -310,6 +264,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   vector<AdjectiveInfo> getBadAdjectives() const;
 
   vector<string> popPersonalEvents();
+  void addPersonalEvent(const string&);
   void setInCombat();
   bool wasInCombat(double numLastTurns) const;
   void onKilled(Creature* victim);
@@ -320,15 +275,12 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   private:
 
   void onAffected(LastingEffect effect, bool msg);
-  void consumeEffects(const EnumMap<LastingEffect, int>&);
-  void consumeBodyParts(const EnumMap<BodyPart, int>&);
   void onRemoved(LastingEffect effect, bool msg);
   void onTimedOut(LastingEffect effect, bool msg);
   CreatureAction moveTowards(Position, bool away, bool stepOnTile);
   double getInventoryWeight() const;
   Item* getAmmo() const;
   void updateViewObject();
-  AttackType getAttackType() const;
   void spendTime(double time);
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
@@ -360,8 +312,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void updateVisibleCreatures();
   vector<Position> SERIAL(visibleEnemies);
   vector<Position> SERIAL(visibleCreatures);
-  double getTimeRemaining(LastingEffect) const;
-  string getRemainingString(LastingEffect) const;
   VisionId SERIAL(vision);
   void updateVision();
   vector<string> SERIAL(personalEvents);
