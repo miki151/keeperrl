@@ -24,10 +24,20 @@
 #include "hashing.h"
 
 template <class T>
-string toString(const T& t);
+string toString(const T& t) {
+  stringstream ss;
+  ss << t;
+  return ss.str();
+}
 
 template <class T>
-T fromString(const string& s);
+T fromString(const string& s) {
+  std::stringstream ss(s);
+  T t;
+  ss >> t;
+  CHECK(ss) << "Error parsing " << s << " to " << typeid(T).name();
+  return t;
+}
 
 template <class T>
 optional<T> fromStringSafe(const string& s);
@@ -163,6 +173,13 @@ class Vec2 {
   SERIALIZE_ALL(x, y);
   HASH_ALL(x, y);
 };
+
+template <>
+inline string toString(const Vec2& v) {
+  stringstream ss;
+  ss << "(" << v.x << ", " << v.y << ")";
+  return ss.str();
+}
 
 class Range {
   public:

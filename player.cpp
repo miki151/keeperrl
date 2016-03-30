@@ -69,7 +69,7 @@ void Player::onThrowEvent(const Level* l, const Item* item, const vector<Vec2>& 
   if (getCreature()->getPosition().isSameLevel(l))
     for (Vec2 v : trajectory)
       if (getCreature()->canSee(v)) {
-        getGame()->getView()->animateObject(trajectory, item->getViewObject());
+        getView()->animateObject(trajectory, item->getViewObject());
         return;
       }
 }
@@ -82,7 +82,7 @@ void Player::learnLocation(const Location* loc) {
 void Player::onExplosionEvent(Position pos) {
   if (getCreature()->getPosition().isSameLevel(pos)) {
     if (getCreature()->canSee(pos))
-      getGame()->getView()->animation(pos.getCoord(), AnimationId::EXPLOSION);
+      getView()->animation(pos.getCoord(), AnimationId::EXPLOSION);
     else
       privateMessage("BOOM!");
   }
@@ -149,7 +149,7 @@ void Player::pickUpItemAction(int numStack, bool multi) {
   if (numStack < stacks.size()) {
     vector<Item*> items = stacks[numStack];
     if (multi && items.size() > 1) {
-      auto num = getGame()->getView()->getNumber("Pick up how many " + items[0]->getName(true) + "?", 1, items.size());
+      auto num = getView()->getNumber("Pick up how many " + items[0]->getName(true) + "?", 1, items.size());
       if (!num)
         return;
       items = getPrefix(items, *num);
@@ -215,7 +215,7 @@ vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, op
       names.push_back(ListElem(getText(elem), ListElem::TITLE));
       getItemNames(typeGroups[elem], names, groups, predicate);
     }
-  optional<int> index = getGame()->getView()->chooseFromList(text, names, 0, MenuType::NORMAL, nullptr, exitAction);
+  optional<int> index = getView()->chooseFromList(text, names, 0, MenuType::NORMAL, nullptr, exitAction);
   if (index)
     return groups[*index];
   return vector<Item*>();
@@ -228,8 +228,8 @@ void Player::applyItem(vector<Item*> items) {
   }
   if (items[0]->getApplyTime() > 1) {
     for (const Creature* c : getCreature()->getVisibleEnemies())
-      if (getCreature()->getPosition().dist8(c->getPosition()) < 3) {
-        if (!getGame()->getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " +
+      if (getCreature()->getPosition().dist8(c->getPosition()) < 3) { 
+        if (!getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " + 
             toString(items[0]->getApplyTime()) + " turns. Are you sure you want to continue?"))
           return;
         else
@@ -243,7 +243,7 @@ void Player::throwItem(vector<Item*> items, optional<Vec2> dir) {
   if (items[0]->getClass() == ItemClass::AMMO && getGame()->getOptions()->getBoolValue(OptionId::HINTS))
     privateMessage(PlayerMessage("To fire arrows equip a bow and use alt + direction key", PlayerMessage::CRITICAL));
   if (!dir) {
-    auto cDir = getGame()->getView()->chooseDirection("Which direction do you want to throw?");
+    auto cDir = getView()->chooseDirection("Which direction do you want to throw?");
     if (!cDir)
       return;
     dir = *cDir;
@@ -261,7 +261,7 @@ void Player::consumeAction() {
     tryToPerform(actions[0]);
   } else
   if (actions.size() > 1) {
-    auto dir = getGame()->getView()->chooseDirection("Which direction?");
+    auto dir = getView()->chooseDirection("Which direction?");
     if (!dir)
       return;
     if (Creature* c = getCreature()->getPosition().plus(*dir).getCreature())
@@ -301,14 +301,14 @@ void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemActi
   switch (action) {
     case ItemAction::DROP: tryToPerform(getCreature()->drop(items)); break;
     case ItemAction::DROP_MULTI:
-      if (auto num = getGame()->getView()->getNumber("Drop how many " + items[0]->getName(true) + "?", 1, items.size()))
+      if (auto num = getView()->getNumber("Drop how many " + items[0]->getName(true) + "?", 1, items.size()))
         tryToPerform(getCreature()->drop(getPrefix(items, *num))); break;
     case ItemAction::THROW: throwItem(items); break;
     case ItemAction::APPLY: applyItem(items); break;
     case ItemAction::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
     case ItemAction::GIVE: giveAction(items); break;
-    case ItemAction::EQUIP:
-      if (getCreature()->isEquipmentAppropriate(items[0]) || getGame()->getView()->yesOrNoPrompt(
+    case ItemAction::EQUIP: 
+      if (getCreature()->isEquipmentAppropriate(items[0]) || getView()->yesOrNoPrompt(
           items[0]->getTheName() + " is too heavy and will incur an accuracy penalty. Do you want to continue?"))
         tryToPerform(getCreature()->equip(items[0])); break;
     default: FAIL << "Unhandled item action " << int(action);
@@ -325,7 +325,7 @@ bool Player::interruptedByEnemy() {
   if (enemies.size() > 0) {
     for (Creature* c : enemies)
       if (!contains(ignoreCreatures, c->getName().a())) {
-        getGame()->getView()->updateView(this, false);
+        getView()->updateView(this, false);
         privateMessage("You notice " + c->getName().a());
         return true;
       }
@@ -335,7 +335,7 @@ bool Player::interruptedByEnemy() {
 
 void Player::travelAction() {
   updateView = true;
-  if (!getCreature()->move(travelDir) || getGame()->getView()->travelInterrupt() || interruptedByEnemy()) {
+  if (!getCreature()->move(travelDir) || getView()->travelInterrupt() || interruptedByEnemy()) {
     travelling = false;
     return;
   }
@@ -364,7 +364,7 @@ void Player::travelAction() {
 void Player::targetAction() {
   updateView = true;
   CHECK(target);
-  if (getCreature()->getPosition() == *target || getGame()->getView()->travelInterrupt()) {
+  if (getCreature()->getPosition() == *target || getView()->travelInterrupt()) {
     target = none;
     return;
   }
@@ -383,7 +383,7 @@ void Player::payDebtAction() {
         vector<Item*> gold = getCreature()->getGold(debt);
         if (gold.size() < debt) {
           privateMessage("You don't have enough gold to pay.");
-        } else if (getGame()->getView()->yesOrNoPrompt("Buy items for " + toString(debt) + " gold?")) {
+        } else if (getView()->yesOrNoPrompt("Buy items for " + toString(debt) + " gold?")) {
           if (tryToPerform(getCreature()->give(c, gold)))
             privateMessage("You pay " + c->getName().the() + " " + toString(debt) + " gold.");
         }
@@ -395,7 +395,7 @@ void Player::payDebtAction() {
 
 void Player::giveAction(vector<Item*> items) {
   if (items.size() > 1) {
-    if (auto num = getGame()->getView()->getNumber("Give how many " + items[0]->getName(true) + "?", 1, items.size()))
+    if (auto num = getView()->getNumber("Give how many " + items[0]->getName(true) + "?", 1, items.size()))
       items = getPrefix(items, *num);
     else
       return;
@@ -404,10 +404,10 @@ void Player::giveAction(vector<Item*> items) {
   for (Position pos : getCreature()->getPosition().neighbors8())
     if (Creature* c = pos.getCreature())
       creatures.push_back(c);
-  if (creatures.size() == 1 && getGame()->getView()->yesOrNoPrompt("Give " + items[0]->getTheName(items.size() > 1) +
+  if (creatures.size() == 1 && getView()->yesOrNoPrompt("Give " + items[0]->getTheName(items.size() > 1) +
         " to " + creatures[0]->getName().the() + "?"))
     tryToPerform(getCreature()->give(creatures[0], items));
-  else if (auto dir = getGame()->getView()->chooseDirection("Give whom?"))
+  else if (auto dir = getView()->chooseDirection("Give whom?"))
     if (Creature* whom = getCreature()->getPosition().plus(*dir).getCreature())
       tryToPerform(getCreature()->give(whom, items));
 }
@@ -422,7 +422,7 @@ void Player::chatAction(optional<Vec2> dir) {
   } else
   if (creatures.size() > 1 || dir) {
     if (!dir)
-      dir = getGame()->getView()->chooseDirection("Which direction?");
+      dir = getView()->chooseDirection("Which direction?");
     if (!dir)
       return;
     if (Creature* c = getCreature()->getPosition().plus(*dir).getCreature())
@@ -438,7 +438,7 @@ void Player::spellAction(SpellId id) {
   Spell* spell = Spell::get(id);
   if (!spell->isDirected())
     tryToPerform(getCreature()->castSpell(spell));
-  else if (auto dir = getGame()->getView()->chooseDirection("Which direction?"))
+  else if (auto dir = getView()->chooseDirection("Which direction?"))
     tryToPerform(getCreature()->castSpell(spell, *dir));
 }
 
@@ -452,7 +452,7 @@ void Player::sleeping() {
   else
     ViewObject::setHallu(false);
   MEASURE(
-      getGame()->getView()->updateView(this, false),
+      getView()->updateView(this, false),
       "level render time");
 }
 
@@ -492,7 +492,7 @@ void Player::extendedAttackAction(Creature* other) {
     }
   elems.push_back(ListElem("Wild").setTip("+20\% damage, -20\% accuracy, +50\% time spent."));
   elems.push_back(ListElem("Swift").setTip("-20\% damage, +20\% accuracy, -30\% time spent."));
-  if (auto ind = getGame()->getView()->chooseFromList("Choose attack parameters:", elems)) {
+  if (auto ind = getView()->chooseFromList("Choose attack parameters:", elems)) {
     if (*ind < levels.size())
       getCreature()->attack(other, CONSTRUCT(Creature::AttackParams, c.level = levels[*ind];)).perform(getCreature());
     else
@@ -528,23 +528,23 @@ void Player::makeMove() {
       levelMemory->update(pos, index);
     }
     MEASURE(
-        getGame()->getView()->updateView(this, false),
+        getView()->updateView(this, false),
         "level render time");
   } else
-    getGame()->getView()->refreshView();
-  if (displayTravelInfo && getCreature()->getPosition().getName() == "road"
+    getView()->refreshView();
+  if (displayTravelInfo && getCreature()->getPosition().getName() == "road" 
       && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
-    getGame()->getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
+    getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
   }
   if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     CHECK(getCreature()->getName().first());
-    getGame()->getView()->presentText("", "Dear " + *getCreature()->getName().first() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + getGame()->getWorldName() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
-    getGame()->getView()->presentText("", "Judging by the corpses lying around here, you suspect that new circumstances may have arisen.");
+    getView()->presentText("", "Dear " + *getCreature()->getName().first() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + getGame()->getWorldName() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
+    getView()->presentText("", "Judging by the corpses lying around here, you suspect that new circumstances may have arisen.");
     displayGreeting = false;
-    getGame()->getView()->updateView(this, false);
+    getView()->updateView(this, false);
   }
-  UserInput action = getGame()->getView()->getAction();
+  UserInput action = getView()->getAction();
   if (travelling && action.getId() == UserInputId::IDLE)
     travelAction();
   else if (target && action.getId() == UserInputId::IDLE)
@@ -559,7 +559,7 @@ void Player::makeMove() {
       retireMessages();
       travelling = false;
       target = none;
-      getGame()->getView()->resetCenter();
+      getView()->resetCenter();
     }
     updateView = true;
   }
@@ -606,7 +606,7 @@ void Player::makeMove() {
         return;
       break;
     case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
-    case UserInputId::DRAW_LEVEL_MAP: getGame()->getView()->drawLevelMap(this); break;
+    case UserInputId::DRAW_LEVEL_MAP: getView()->drawLevelMap(this); break;
     case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
     case UserInputId::ADD_TO_TEAM: extendedAttackAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
@@ -645,7 +645,7 @@ void Player::makeMove() {
 }
 
 void Player::showHistory() {
-  getGame()->getView()->presentList("Message history:", ListElem::convert(messageHistory), true);
+  getView()->presentList("Message history:", ListElem::convert(messageHistory), true);
 }
 
 static string getForceMovementQuestion(Position pos, const Creature* creature) {
@@ -669,7 +669,7 @@ void Player::moveAction(Vec2 dir) {
   if (auto action = getCreature()->forceMove(dir)) {
     string nextQuestion = getForceMovementQuestion(getCreature()->getPosition().plus(dir), getCreature());
     string hereQuestion = getForceMovementQuestion(getCreature()->getPosition(), getCreature());
-    if (hereQuestion == nextQuestion || getGame()->getView()->yesOrNoPrompt(nextQuestion, true))
+    if (hereQuestion == nextQuestion || getView()->yesOrNoPrompt(nextQuestion, true))
       action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());
@@ -685,14 +685,14 @@ void Player::privateMessage(const PlayerMessage& message) {
   if (message.getText().size() < 2)
     return;
   if (auto title = message.getAnnouncementTitle())
-    getGame()->getView()->presentText(*title, message.getText());
+    getView()->presentText(*title, message.getText());
   else {
     messageHistory.push_back(message.getText());
     if (!messages.empty() && messages.back().getFreshness() < 1)
       messages.clear();
     messages.emplace_back(message);
     if (message.getPriority() == PlayerMessage::CRITICAL)
-      getGame()->getView()->presentText("Important!", message.getText());
+      getView()->presentText("Important!", message.getText());
   }
 }
 
@@ -783,6 +783,10 @@ Game* Player::getGame() const {
   return getCreature()->getGame();
 }
 
+View* Player::getView() const {
+  return getView();
+}
+
 Vec2 Player::getPosition() const {
   return getCreature()->getPosition().getCoord();
 }
@@ -825,8 +829,8 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
 }
 
 void Player::onKilled(const Creature* attacker) {
-  getGame()->getView()->updateView(this, false);
-  if (getGame()->getView()->yesOrNoPrompt("Display message history?"))
+  getView()->updateView(this, false);
+  if (getView()->yesOrNoPrompt("Display message history?"))
     showHistory();
   getGame()->gameOver(getCreature(), getCreature()->getKills().getSize(), "monsters", getCreature()->getPoints());
 }

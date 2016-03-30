@@ -85,54 +85,9 @@ double RandomGen::getDouble(double a, double b) {
 
 RandomGen Random;
 
-template string toString<int>(const int&);
-template string toString<long long>(const long long&);
-template string toString<unsigned int>(const unsigned int&);
-template string toString<size_t>(const size_t&);
-template string toString<char>(const char&);
-template string toString<double>(const double&);
-//template string toString<Vec2>(const Vec2&);
-
-template int fromString<int>(const string&);
-template double fromString<double>(const string&);
-
 template optional<int> fromStringSafe<int>(const string&);
 template optional<double> fromStringSafe<double>(const string&);
 
-template <class T>
-string toString(const T& t){
-  stringstream ss;
-  ss << t;
-  return ss.str();
-}
-
-template <>
-string toString(const Vec2& t){
-  stringstream ss;
-  ss << "(" << t.x << "," << t.y << ")";
-  return ss.str();
-}
-
-template <>
-string toString(const Position& t){
-  stringstream ss;
-  ss << "(" << t.getCoord().x << "," << t.getCoord().y << ")";
-  return ss.str();
-}
-
-template <>
-string toString(const bool& t){
-  return t ? "true" : "false";
-}
-
-template <class T>
-T fromString(const string& s){
-  std::stringstream ss(s);
-  T t;
-  ss >> t;
-  CHECK(ss) << "Error parsing " << s << " to " << typeid(T).name();
-  return t;
-}
 
 template <class T>
 optional<T> fromStringSafe(const string& s){
@@ -745,6 +700,8 @@ string noCapitalFirst(string s) {
 }
 
 string makeSentence(string s) {
+  if (s.empty())
+    return s;
   s = capitalFirst(s);
   if (s.size() > 1 && s[0] == '\"' && islower(s[1]))
     s[1] = toupper(s[1]);

@@ -110,7 +110,7 @@ MoveInfo Behaviour::tryEffect(EffectType type, double maxTurns) {
   for (Item* item : items)
     if (item->getApplyTime() <= maxTurns)
       if (auto action = creature->applyItem(item))
-        return { 1, action};
+        return MoveInfo(1, action);
   return NoMove;
 }
 
@@ -143,7 +143,7 @@ class Heal : public Behaviour {
         if (const Creature* other = pos.getCreature())
           if (creature->isFriend(other))
             if (auto action = creature->heal(creature->getPosition().getDir(other->getPosition())))
-              return {0.5, action};
+              return MoveInfo(0.5, action);
     }
     if (!creature->isHumanoid())
       return NoMove;
@@ -164,7 +164,7 @@ class Heal : public Behaviour {
         if (creature->isFriend(c) && c->getHealth() < 1)
           for (Item* item : creature->getEquipment().getItems(Item::effectPredicate(EffectId::HEAL)))
             if (auto action = creature->give(c, {item}))
-              return { 0.5, action};
+              return MoveInfo(0.5, action);
     return NoMove;
   }
 

@@ -2271,11 +2271,11 @@ PCreature CreatureFactory::getGhost(Creature* creature) {
 }
 
 ItemType randomHealing() {
-  return Random.choose({ItemType(ItemId::POTION, EffectId::HEAL), {ItemId::FIRST_AID_KIT}});
+  return Random.choose({ItemType(ItemId::POTION, EffectId::HEAL), ItemType(ItemId::FIRST_AID_KIT)});
 }
 
 ItemType randomBackup() {
-  return Random.choose({{ItemId::SCROLL, EffectId::DECEPTION}, {ItemId::SCROLL, EffectId::TELEPORT},
+  return Random.choose({ ItemType(ItemId::SCROLL, EffectId::DECEPTION), ItemType(ItemId::SCROLL, EffectId::TELEPORT),
       randomHealing()}, {1, 1, 8});
 }
 

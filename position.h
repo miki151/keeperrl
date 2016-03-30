@@ -124,5 +124,11 @@ class Position {
   Level* SERIAL(level) = nullptr;
 };
 
+template <>
+inline string toString(const Position& t) {
+	stringstream ss;
+	ss << toString(t.getCoord());
+	return ss.str();
+}
 
 #endif

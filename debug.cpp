@@ -31,8 +31,12 @@ namespace boost {
 }
 
 
-Debug::Debug(DebugType t, const string& msg, int line) 
-    : out((string[]) { "INFO ", "FATAL "}[t] + msg + ":" + toString(line) + " "), type(t) {
+Debug::Debug(DebugType t, const string& msg, int line) : type(t) {
+	if (t == DebugType::FATAL)
+		out = "FATAL";
+	else
+		out = "INFO";
+	out += msg + ":" + toString(line) + " ";
 }
 
 static ofstream output;

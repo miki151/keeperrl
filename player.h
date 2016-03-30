@@ -77,6 +77,7 @@ class Player : public Controller, public CreatureView {
   MapMemory* SERIAL(levelMemory);
   void showHistory();
   Game* getGame() const;
+  View* getView() const;
 
   private:
   REGISTER_HANDLER(ThrowEvent, const Level*, const Item*, const vector<Vec2>& trajectory);

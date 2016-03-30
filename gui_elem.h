@@ -61,8 +61,8 @@ class GuiFactory {
   PGuiElem buttonChar(function<void()> fun, char, bool capture = false);
   PGuiElem button(function<void()> fun);
   PGuiElem reverseButton(function<void()> fun, vector<Event::KeyEvent> = {}, bool capture = false);
-  PGuiElem button(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
-  PGuiElem button(function<void(Rectangle buttonBounds)> fun);
+  PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun);
   PGuiElem releaseButton(function<void()> fun);
   PGuiElem releaseButton(function<void(Rectangle buttonBounds)> fun);
   PGuiElem focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent,
@@ -124,8 +124,8 @@ class GuiFactory {
   PGuiElem labelHighlight(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem label(const string&, function<Color()>, char hotkey = 0);
-  PGuiElem label(function<string()>, function<Color()>);
-  PGuiElem label(function<string()>, Color = colors[ColorId::WHITE]);
+  PGuiElem labelFun(function<string()>, function<Color()>);
+  PGuiElem labelFun(function<string()>, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, Color = colors[ColorId::WHITE]);
   PGuiElem variableLabel(function<string()>,
@@ -150,10 +150,10 @@ class GuiFactory {
   static int getHeldInitValue();
   PGuiElem scrollable(PGuiElem content, double* scrollPos = nullptr, int* held = nullptr);
   PGuiElem getScrollButton();
-  PGuiElem conditional(PGuiElem elem, function<bool(GuiElem*)> cond);
+  PGuiElem conditional2(PGuiElem elem, function<bool(GuiElem*)> cond);
   PGuiElem conditional(PGuiElem elem, function<bool()> cond);
   PGuiElem conditionalStopKeys(PGuiElem elem, function<bool()> cond);
-  PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
+  PGuiElem conditional2(PGuiElem elem, PGuiElem alter, function<bool(GuiElem*)> cond);
   PGuiElem conditional(PGuiElem elem, PGuiElem alter, function<bool()> cond);
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER,
       TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER, LEFT_STRETCHED, RIGHT_STRETCHED,
