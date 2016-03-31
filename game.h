@@ -72,9 +72,8 @@ class Game {
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
   void killCreature(Creature*, Creature* attacker);
 
-  optional<Position> getDanglingPortal();
-  void setDanglingPortal(Position);
-  void resetDanglingPortal();
+  optional<Position> getOtherPortal(Position) const;
+  void registerPortal(Position);
 
   void onTechBookRead(Technology*);
   void onAlarm(Position);
@@ -121,7 +120,7 @@ class Game {
   MusicType SERIAL(musicType);
   bool SERIAL(finishCurrentMusic) = true;
   unique_ptr<CreatureView> SERIAL(spectator);
-  optional<Position> SERIAL(danglingPortal);
+  vector<Position> SERIAL(portals);
   HeapAllocated<Statistics> SERIAL(statistics);
   Options* options;
   Highscores* highscores;

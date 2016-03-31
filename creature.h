@@ -310,8 +310,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   int SERIAL(numAttacksThisTurn) = 0;
   vector<PMoraleOverride> SERIAL(moraleOverrides);
   void updateVisibleCreatures();
-  vector<Position> SERIAL(visibleEnemies);
-  vector<Position> SERIAL(visibleCreatures);
+  vector<Position> visibleEnemies;
+  vector<Position> visibleCreatures;
   VisionId SERIAL(vision);
   void updateVision();
   vector<string> SERIAL(personalEvents);

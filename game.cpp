@@ -26,7 +26,7 @@
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) { 
   serializeAll(ar, villainsByType, collectives, lastTick, playerControl, playerCollective, won, currentTime);
-  serializeAll(ar, worldName, musicType, danglingPortal, statistics, spectator, tribes, gameIdentifier, player);
+  serializeAll(ar, worldName, musicType, portals, statistics, spectator, tribes, gameIdentifier, player);
   serializeAll(ar, gameDisplayName, finishCurrentMusic, models, baseModel, campaign, localTime);
   if (Archive::is_loading::value)
     sunlightInfo.update(currentTime);
@@ -122,6 +122,7 @@ PModel& Game::getMainModel() {
 }
 
 void Game::prepareRetirement() {
+  Model* mainModel = models[baseModel].get();
   for (Vec2 v : models.getBounds())
     if (models[v]) {
       if (v != baseModel)
@@ -144,16 +145,16 @@ void Game::prepareRetirement() {
           c.ransom = make_pair(0.8, Random.get(500, 700));))));
   for (Collective* col : models[baseModel]->getCollectives())
     for (Creature* c : col->getCreatures())
-      if (c->getPosition().getModel() != models[baseModel].get())
-        transferCreatures({c}, models[baseModel].get());
+      if (c->getPosition().getModel() != mainModel)
+        transferCreatures({c}, mainModel);
   for (Vec2 v : models.getBounds())
     if (models[v] && v != baseModel)
       for (Collective* col : models[v]->getCollectives())
         for (Creature* c : col->getCreatures())
-          if (c->getPosition().getModel() == models[baseModel].get())
+          if (c->getPosition().getModel() == mainModel)
             transferCreatures({c}, models[v].get());
   // So we don't have references to creatures in another model.
-  for (Creature* c : getMainModel()->getAllCreatures())
+  for (Creature* c : mainModel->getAllCreatures())
     c->clearLastAttacker();
   playerCollective = nullptr;
   playerControl = nullptr;
@@ -170,8 +171,8 @@ optional<Game::ExitInfo> Game::update(double timeDiff) {
   // Give every model a couple of turns so that things like shopkeepers can initialize.
   for (Vec2 v : models.getBounds())
     if (models[v] && !localTime.count(models[v].get())) {
-      localTime[models[v].get()] = 2;
-      updateModel(models[v].get(), 2);
+      localTime[models[v].get()] = models[v]->getTime() + 2;
+      updateModel(models[v].get(), localTime[models[v].get()]);
     }
   localTime[currentModel] += timeDiff;
   while (currentTime > lastTick + 1) {
@@ -536,16 +537,19 @@ const string& Game::getWorldName() const {
   return worldName;
 }
 
-optional<Position> Game::getDanglingPortal() {
-  return danglingPortal;
+optional<Position> Game::getOtherPortal(Position position) const {
+  if (auto index = findElement(portals, position)) {
+    if (*index % 2 == 1)
+      return portals[*index - 1];
+    if (*index < portals.size() - 1)
+      return portals[*index + 1];
+  }
+  return none;
 }
 
-void Game::setDanglingPortal(Position p) {
-  danglingPortal = p;
-}
-
-void Game::resetDanglingPortal() {
-  danglingPortal.reset();
+void Game::registerPortal(Position pos) {
+  if (!contains(portals, pos))
+    portals.push_back(pos);
 }
 
 const vector<Collective*>& Game::getCollectives() const {

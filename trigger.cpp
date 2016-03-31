@@ -79,21 +79,13 @@ class Portal : public Trigger {
   }
 
   Portal* getOther() const {
-    if (otherPortal)
+    if (auto otherPortal = position.getGame()->getOtherPortal(position))
       return getOther(*otherPortal);
     return nullptr;
   }
 
   Portal(const ViewObject& obj, Position position) : Trigger(obj, position) {
-    if (auto danglingPortal = position.getGame()->getDanglingPortal())
-      if (Portal* previous = getOther(*danglingPortal)) {
-        otherPortal = danglingPortal;
-        previous->otherPortal = position;
-        position.getGame()->resetDanglingPortal();
-        startTime = previous->startTime = -1;
-        return;
-      }
-    position.getGame()->setDanglingPortal(position);
+    position.getGame()->registerPortal(position);
   }
 
   virtual void onCreatureEnter(Creature* c) override {
@@ -129,6 +121,7 @@ class Portal : public Trigger {
   }
 
   virtual void tick() override {
+    position.getGame()->registerPortal(position);
     double time = position.getGame()->getGlobalTime();
     if (startTime == -1)
       startTime = time;
@@ -138,14 +131,12 @@ class Portal : public Trigger {
     }
   }
 
-  SERIALIZE_ALL2(Trigger, startTime, active, otherPortal);
-
+  SERIALIZE_ALL2(Trigger, startTime, active);
   SERIALIZATION_CONSTRUCTOR(Portal);
 
   private:
   double SERIAL(startTime) = 1000000;
   bool SERIAL(active) = true;
-  optional<Position> SERIAL(otherPortal);
 };
 
 }

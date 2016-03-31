@@ -55,7 +55,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, attributes, position, localTime, equipment, shortestPath, knownHiding, tribe, health, morale);
   serializeAll(ar, deathTime, collapsed, hidden, lastAttacker, deathReason, swapPositionCooldown);
   serializeAll(ar, unknownAttackers, privateEnemies, holding, controller, controllerStack, creatureVisions, kills);
-  serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverrides, visibleEnemies, visibleCreatures);
+  serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverrides);
   serializeAll(ar, vision, personalEvents, lastCombatTime, eventGenerator);
 }
 
@@ -1018,8 +1018,11 @@ vector<Item*> Creature::getGold(int num) const {
 }
 
 void Creature::setPosition(Position pos) {
-  if (!pos.isSameLevel(position))
+  if (!pos.isSameLevel(position)) {
     modViewObject().clearMovementInfo();
+  }
+  if (shortestPath && shortestPath->getLevel() != pos.getLevel())
+    shortestPath.reset();
   position = pos;
 }
 
