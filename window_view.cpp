@@ -816,10 +816,10 @@ optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& cam
       Vec2(rightBarWidthCollective + 30, 160));
 }
 
-CampaignAction WindowView::prepareCampaign(const Campaign& campaign, CampaignSetupInfo& setup) {
+CampaignAction WindowView::prepareCampaign(const Campaign& campaign, Options* options) {
   SyncQueue<CampaignAction> returnQueue;
   optional<Vec2> embarkPos;
-  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, setup, embarkPos),
+  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, embarkPos),
       Vec2(rightBarWidthCollective + 30, 160));
 }
 

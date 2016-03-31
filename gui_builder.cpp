@@ -1914,25 +1914,43 @@ PGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncreas
       .buildHorizontalList();
 }
 
-PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign,
-    CampaignSetupInfo& setup, optional<Vec2>& embarkPos) {
+PGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void()> onChanged) {
+  auto line = gui.getListBuilder();
+  string value = options->getValueString(id);
+  string name = options->getName(id);
+  line.addElem(gui.label(name + ": " + value), 300);
+  line.addElem(gui.empty(), 30);
+  switch (options->getType(id)) {
+    case Options::STRING:
+      line.addElemAuto(gui.stack(
+          gui.button([=] {
+              if (auto val = getTextInput("Enter " + name, value, 10, "Press escape to cancel.")) {
+                options->setValue(id, *val);
+                onChanged();
+              }}),
+          gui.labelHighlight("[Change]", colors[ColorId::LIGHT_BLUE])));
+      break;
+    case Options::INT: {
+      auto limits = options->getLimits(id);
+      int value = options->getIntValue(id);
+      line.addElemAuto(drawPlusMinus([=] (int v) {
+            options->setValue(id, value + v); onChanged();}, value < limits->second, value > limits->first));
+      }
+      break;
+    default:
+      break;
+  }
+  return line.buildHorizontalList();
+}
+
+PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign, Options* options,
+    optional<Vec2>& embarkPos) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label("Campaign setup")));
   lines.addElem(gui.empty());
-  lines.addElem(
-        gui.getListBuilder()
-        .addElemAuto(gui.label("World name: " + campaign.getWorldName()))
-        .addElem(gui.empty(), 30)
-        .addElemAuto(gui.stack(
-            gui.button([&queue] { queue.push(CampaignActionId::WORLD_NAME); }),
-            gui.labelHighlight("[Change]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList());
-  for (auto& counter : setup.counters)
-    lines.addElem(gui.getListBuilder()
-        .addElem(gui.label(counter.name + ": "  + toString(counter.value)), 200)
-        .addElem(gui.empty(), 15)
-        .addElemAuto(drawPlusMinus([&](int i) { counter.value += i; queue.push(CampaignActionId::REROLL_MAP);},
-            counter.value < counter.max, counter.value > counter.min))
-        .buildHorizontalList());
+  lines.addElem(gui.label("World name: " + campaign.getWorldName()));
+  for (OptionId id : options->getOptions(OptionSet::CAMPAIGN))
+    lines.addElem(drawOptionElem(options, id, [&queue] { queue.push(CampaignActionId::REROLL_MAP);}));
   lines.addElem(gui.empty(), 15);
   lines.addElem(gui.centerHoriz(gui.label("Choose embark site:")));
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, embarkPos,

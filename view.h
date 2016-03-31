@@ -32,6 +32,7 @@ struct ItemInfo;
 struct CreatureInfo;
 class Sound;
 class Campaign;
+class Options;
 
 enum class SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING, AUTOSAVING };
 
@@ -98,7 +99,6 @@ struct HighscoreList {
 enum class CampaignActionId {
   CANCEL,
   CHOOSE_SITE,
-  WORLD_NAME,
   REROLL_MAP,
   CONFIRM
 };
@@ -106,16 +106,6 @@ enum class CampaignActionId {
 class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2),
   ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE)> {
     using EnumVariant::EnumVariant;
-};
-
-struct CampaignSetupInfo {
-  struct Counter {
-    int value;
-    int min;
-    int max;
-    string name;
-  };
-  vector<Counter> counters;
 };
 
 class View {
@@ -198,7 +188,7 @@ class View {
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
 
-  virtual CampaignAction prepareCampaign(const Campaign&, CampaignSetupInfo&) = 0;
+  virtual CampaignAction prepareCampaign(const Campaign&, Options*) = 0;
 
   virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) = 0;

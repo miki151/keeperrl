@@ -38,6 +38,7 @@ enum class EquipmentSlot;
 enum class SplashType;
 enum class GameTypeChoice;
 enum class MenuType;
+enum class OptionId;
 
 enum class MovementTrait;
 enum class SpawnType;

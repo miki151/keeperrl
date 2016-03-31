@@ -293,38 +293,12 @@ vector<MainLoop::RetiredSiteInfo> MainLoop::getRetiredSites() {
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   random.init(Random.get(1234567));
   vector<RetiredSiteInfo> retired = getRetiredSites();
-  optional<Campaign> campaign = Campaign::prepareCampaign(view, retired,
+  optional<Campaign> campaign = Campaign::prepareCampaign(view, options, retired,
       []{ return NameGenerator::get(NameGeneratorId::WORLD)->getNext(); }, random);
   if (!campaign)
     return nullptr;
-/*  optional<GameTypeChoice> choice;
-  if (forceGame)
-    choice = *forceGame;
-  else
-    choice = view->chooseGameType();
-  if (!choice)
-    return;
-  switch (*choice) {
-    case GameTypeChoice::KEEPER:*/
-      options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
-      if (options->handleOrExit(view, OptionSet::KEEPER, -1))
-        return Game::campaignGame(keeperCampaign(*campaign, random), *campaign->getPlayerPos(),
-            options->getStringValue(OptionId::KEEPER_NAME), *campaign);
-      else
-        return nullptr;
-/*      break;
-    case GameTypeChoice::QUICK_LEVEL:
-      random = Random;
-      model = quickGame(random);
-      break;
-    case GameTypeChoice::ADVENTURER:
-      options->setDefaultString(OptionId::ADVENTURER_NAME,
-          NameGenerator::get(NameGeneratorId::FIRST)->getNext());
-      if (options->handleOrExit(view, OptionSet::ADVENTURER, -1)) {
-        model = adventurerGame();
-      }
-      break;
-  }*/
+  return Game::campaignGame(keeperCampaign(*campaign, random), *campaign->getPlayerPos(),
+      options->getStringValue(OptionId::KEEPER_NAME), *campaign);
 }
 
 PGame MainLoop::prepareSingleMap(RandomGen& random) {

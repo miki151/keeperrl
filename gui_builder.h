@@ -83,7 +83,7 @@ class GuiBuilder {
       const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos);
   PGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
       pair<ViewId, int> budget, const vector<ItemInfo>&, double* scrollPos);
-  PGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, CampaignSetupInfo&, optional<Vec2>& embark);
+  PGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, Options*, optional<Vec2>& embark);
   PGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
   PGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>& markedPos, function<bool(Vec2)> activeFun,
@@ -159,6 +159,7 @@ class GuiBuilder {
   PGuiElem drawHighscorePage(const HighscoreList&, double *scrollPos);
   PGuiElem drawTeams(CollectiveInfo&);
   PGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
+  PGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged);
   PGuiElem teamCache;
   int teamHash = 0;
   optional<string> activeGroup;

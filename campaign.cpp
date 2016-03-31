@@ -5,6 +5,8 @@
 #include "model_builder.h"
 #include "model.h"
 #include "progress_meter.h"
+#include "options.h"
+#include "name_generator.h"
 
 template <class Archive> 
 void Campaign::serialize(Archive& ar, const unsigned int version) { 
@@ -177,31 +179,33 @@ int Campaign::getNumRetVillains() const {
   return ret;
 }
 
-optional<Campaign> Campaign::prepareCampaign(View* view, const vector<RetiredSiteInfo>& retired,
+optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, const vector<RetiredSiteInfo>& retired,
     function<string()> worldNameGen, RandomGen& random) {
   Vec2 size(8, 5);
   int numBlocked = random.get(4, 8);
-  CampaignSetupInfo setup {{
-              {4, 0, 9, "Main villains"},
-              {min<int>(1, retired.size()), 0, min<int>(3, retired.size()), "Retired villains"},
-              {2, 0, 8, "Lesser villains"},
-              {2, 0, 6, "Allies"}
-  }};
   string worldName;
   while (1) {
-    int numRetired = setup.counters[1].value;
+    options->setLimits(OptionId::RETIRED_VILLAINS, 0, min<int>(retired.size(), 4)); 
+    options->setLimits(OptionId::MAIN_VILLAINS, 0, 9); 
+    options->setLimits(OptionId::LESSER_VILLAINS, 0, 8); 
+    options->setLimits(OptionId::ALLIES, 0, 6); 
+    options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+    int numRetired = options->getIntValue(OptionId::RETIRED_VILLAINS);
+    int numMain = options->getIntValue(OptionId::MAIN_VILLAINS);
+    int numLesser = options->getIntValue(OptionId::LESSER_VILLAINS);
+    int numAllies = options->getIntValue(OptionId::ALLIES);
     vector<VillainInfo> mainVillains;
-    while (mainVillains.size() < setup.counters[0].value)
+    while (mainVillains.size() < numMain)
       append(mainVillains, random.permutation(getMainVillains()));
-    mainVillains.resize(setup.counters[0].value);
+    mainVillains.resize(numMain);
     vector<VillainInfo> lesserVillains;
-    while (lesserVillains.size() < setup.counters[2].value)
+    while (lesserVillains.size() < numLesser)
       append(lesserVillains, random.permutation(getLesserVillains()));
-    lesserVillains.resize(setup.counters[2].value);
+    lesserVillains.resize(numLesser);
     vector<VillainInfo> allies;
-    while (allies.size() < setup.counters[3].value)
+    while (allies.size() < numAllies)
       append(allies, random.permutation(getAllies()));
-    allies.resize(setup.counters[3].value);
+    allies.resize(numAllies);
     Campaign campaign(size);
     if (!worldName.empty())
       campaign.worldName = worldName;
@@ -221,7 +225,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, const vector<RetiredSit
     for (int i : Range(numRetired)) {
       Vec2 pos = random.choose(freePos);
       removeElement(freePos, pos);
-      campaign.sites[pos].dweller = random.choose(retired);
+      campaign.sites[pos].dweller = retired[i];
     }
     for (int i : All(lesserVillains)) {
       Vec2 pos = random.choose(freePos);
@@ -244,23 +248,12 @@ optional<Campaign> Campaign::prepareCampaign(View* view, const vector<RetiredSit
     while (1) {
       bool reroll = false;
       campaign.refreshInfluencePos();
-      CampaignAction action = view->prepareCampaign(campaign, setup);
+      CampaignAction action = view->prepareCampaign(campaign, options);
       switch (action.getId()) {
         case CampaignActionId::REROLL_MAP:
             reroll = true; break;
         case CampaignActionId::CANCEL:
             return none;
-        case CampaignActionId::WORLD_NAME:
-            if (auto name = view->getText("Enter world name", worldName, 15,
-                  "Leave blank to use a random name.")) {
-              if (!name->empty())
-                campaign.worldName = worldName = *name;
-              else {
-                worldName = "";
-                campaign.worldName = worldNameGen();
-              }
-            }
-            break;
         case CampaignActionId::CHOOSE_SITE:
             if (campaign.playerPos)
               campaign.clearSite(*campaign.playerPos);
