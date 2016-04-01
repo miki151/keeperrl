@@ -838,8 +838,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
     for (auto& item : info.inventory)
       list.addElem(getItemLine(item, [=](Rectangle butBounds) {
             if (auto choice = getItemChoice(item, butBounds.getBottomLeft() + Vec2(50, 0), false))
-              callbacks.input({UserInputId::INVENTORY_ITEM,
-                  InventoryItemInfo{item.ids, *choice}});}));
+              callbacks.input({UserInputId::INVENTORY_ITEM, InventoryItemInfo{item.ids, *choice}});}));
   }
   return gui.margins(
       gui.scrollable(list.buildVerticalList(), &inventoryScroll), -5, 0, 0, 0);
