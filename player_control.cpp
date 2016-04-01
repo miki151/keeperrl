@@ -971,7 +971,7 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<Cr
     if (!groups.count(c->getSpeciesName()))
       groups[c->getSpeciesName()] = { c->getUniqueId(), c->getSpeciesName(), c->getViewObject().id(), 0};
     ++groups[c->getSpeciesName()].count;
-    if (chosenCreature == c->getUniqueId() && !chosenTeam)
+    if (chosenCreature == c->getUniqueId() && !getChosenTeam())
       groups[c->getSpeciesName()].highlight = true;
 
   }
@@ -1024,10 +1024,10 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.chosen.reset();
   if (chosenCreature)
     if (Creature* c = getCreature(*chosenCreature)) {
-      if (!chosenTeam)
+      if (!getChosenTeam())
         info.chosen = {*chosenCreature, getPlayerInfos(getMinionsLike(c))};
       else
-        info.chosen = {*chosenCreature, getPlayerInfos(getTeams().getMembers(*chosenTeam)), *chosenTeam};
+        info.chosen = {*chosenCreature, getPlayerInfos(getTeams().getMembers(*getChosenTeam())), *getChosenTeam()};
     }
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemyGroups = getEnemyGroups();
@@ -1046,7 +1046,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
       info.teams.back().members.push_back(c->getUniqueId());
     info.teams.back().active = getTeams().isActive(team);
     info.teams.back().id = team;
-    if (chosenTeam == team)
+    if (getChosenTeam() == team)
       info.teams.back().highlight = true;
   }
   info.techButtons.clear();
@@ -1329,6 +1329,17 @@ Collective* PlayerControl::getVillain(int num) {
   return concat(getKnownVillains(VillainType::MAIN), getKnownVillains(VillainType::LESSER))[num];
 }
 
+optional<TeamId> PlayerControl::getChosenTeam() const {
+  if (chosenTeam && getTeams().exists(*chosenTeam))
+    return chosenTeam;
+  else
+    return none;
+}
+
+void PlayerControl::setChosenTeam(optional<TeamId> team) {
+  chosenTeam = team;
+}
+
 void PlayerControl::processInput(View* view, UserInput input) {
   if (retired)
     return;
@@ -1362,18 +1373,18 @@ void PlayerControl::processInput(View* view, UserInput input) {
             getTeams().create({c});
         break;
     case UserInputId::CANCEL_TEAM:
-        if (chosenTeam == input.get<TeamId>()) {
-          chosenTeam = none;
+        if (getChosenTeam() == input.get<TeamId>()) {
+          setChosenTeam(none);
           chosenCreature = none;
         }
         getTeams().cancel(input.get<TeamId>());
         break;
     case UserInputId::SELECT_TEAM:
-        if (chosenTeam == input.get<TeamId>()) {
-          chosenTeam = none;
+        if (getChosenTeam() == input.get<TeamId>()) {
+          setChosenTeam(none);
           chosenCreature = none;
         } else {
-          chosenTeam = input.get<TeamId>();
+          setChosenTeam(input.get<TeamId>());
           chosenCreature = getTeams().getLeader(input.get<TeamId>())->getUniqueId();
         }
         break;
@@ -1404,23 +1415,23 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
     case UserInputId::CREATURE_GROUP_BUTTON: 
         if (Creature* c = getCreature(input.get<int>()))
-          if (!chosenCreature || chosenTeam || !getCreature(*chosenCreature) ||
+          if (!chosenCreature || getChosenTeam() || !getCreature(*chosenCreature) ||
               getCreature(*chosenCreature)->getSpeciesName() != c->getSpeciesName()) {
-            chosenTeam = none;
+            setChosenTeam(none);
             chosenCreature = input.get<int>();
             break;
           }
-        chosenTeam = none;
+        setChosenTeam(none);
         chosenCreature = none;
         break;
     case UserInputId::CREATURE_BUTTON:
         if (Creature* c = getCreature(input.get<int>())) {
           chosenCreature = input.get<int>();
-          if (chosenTeam && !getTeams().contains(*chosenTeam, c))
-            chosenTeam = none;
+          if (getChosenTeam() && !getTeams().contains(*getChosenTeam(), c))
+            setChosenTeam(none);
         } else {
           chosenCreature = none;
-          chosenTeam = none;
+          setChosenTeam(none);
         }
         break;
     case UserInputId::CREATURE_TASK_ACTION:
@@ -1431,13 +1442,13 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::CREATURE_CONTROL:
         if (Creature* c = getCreature(input.get<int>())) {
-          if (chosenTeam && getTeams().exists(*chosenTeam)) {
-            getTeams().setLeader(*chosenTeam, c);
-            commandTeam(*chosenTeam);
+          if (getChosenTeam() && getTeams().exists(*getChosenTeam())) {
+            getTeams().setLeader(*getChosenTeam(), c);
+            commandTeam(*getChosenTeam());
           } else
             controlSingle(c);
           chosenCreature = none;
-          chosenTeam = none;
+          setChosenTeam(none);
         }
         break;
     case UserInputId::CREATURE_RENAME:
@@ -1497,8 +1508,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
         if (Creature* c = getCreature(info.creatureId))
           if (getTeams().exists(info.team) && getTeams().contains(info.team, c)) {
             getTeams().remove(info.team, c);
-            if (!getTeams().exists(info.team) && chosenTeam == info.team) {
-              chosenTeam = none;
+            if (!getTeams().exists(info.team) && getChosenTeam() == info.team) {
+              setChosenTeam(none);
               chosenCreature = none;
             } else if (chosenCreature == info.creatureId)
               chosenCreature = getTeams().getLeader(info.team)->getUniqueId();
