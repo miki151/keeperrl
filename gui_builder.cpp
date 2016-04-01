@@ -839,8 +839,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
     for (auto& item : info.inventory)
       list.addElem(getItemLine(item, [=](Rectangle butBounds) {
             if (auto choice = getItemChoice(item, butBounds.getBottomLeft() + Vec2(50, 0), false))
-              callbacks.input({UserInputId::INVENTORY_ITEM,
-                  InventoryItemInfo{item.ids, *choice}});}));
+              callbacks.input({UserInputId::INVENTORY_ITEM, InventoryItemInfo{item.ids, *choice}});}));
   }
   return gui.margins(
       gui.scrollable(list.buildVerticalList(), &inventoryScroll), -5, 0, 0, 0);
@@ -922,7 +921,7 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
               .addElem(gui.topMargin(8, gui.icon(GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
               .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
     }
-    string hint = "Drag and drop minions here to create a new team.";
+    string hint = "Drag and drop minions onto the [new team] button to create a new team. You can drag them both from the map and the menus.";
     lines.addElem(gui.stack(makeVec<PGuiElem>(
           gui.dragListener([this](DragContent content) {
               callbacks.input({UserInputId::CREATE_TEAM, content.get<int>() });}),

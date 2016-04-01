@@ -219,6 +219,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool SERIAL(retired) = false;
   bool SERIAL(payoutWarning) = false;
   optional<UniqueEntity<Creature>::Id> chosenCreature;
+  optional<TeamId> getChosenTeam() const;
+  void setChosenTeam(optional<TeamId>);
   optional<TeamId> chosenTeam;
   unordered_set<Position, CustomHash<Position>> SERIAL(surprises);
   string getMinionName(CreatureId) const;
