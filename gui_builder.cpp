@@ -921,7 +921,7 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
               .addElem(gui.topMargin(8, gui.icon(GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
               .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
     }
-    string hint = "Drag and drop minions here to create a new team.";
+    string hint = "Drag and drop minions onto the [new team] button to create a new team. You can drag them both from the map and the menus.";
     lines.addElem(gui.stack(makeVec<PGuiElem>(
           gui.dragListener([this](DragContent content) {
               callbacks.input({UserInputId::CREATE_TEAM, content.get<int>() });}),
