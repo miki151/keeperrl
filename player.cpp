@@ -296,7 +296,8 @@ void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemActi
   vector<Item*> items = getCreature()->getEquipment().getItems(
       [&](const Item* it) { return contains(itemIds, it->getUniqueId());});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
-  if (items.empty()) // the above assertion fails for unknown reason, so just fail this softly.
+  // the above assertion fails for unknown reason, so just fail this softly.
+  if (items.empty() || (items.size() == 1 && action == ItemAction::DROP_MULTI)) 
     return;
   switch (action) {
     case ItemAction::DROP: tryToPerform(getCreature()->drop(items)); break;
