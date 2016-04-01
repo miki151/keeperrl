@@ -597,7 +597,7 @@ void Player::makeMove() {
     case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
     case UserInputId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(this); break;
     case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
-    case UserInputId::ADD_TO_TEAM: extendedAttackAction(action.get<Creature::Id>()); break;
+    case UserInputId::CREATURE_BUTTON2: extendedAttackAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: model->exitAction(); return;
     default: break;
   }
