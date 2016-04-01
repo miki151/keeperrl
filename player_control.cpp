@@ -1508,11 +1508,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
         if (Creature* c = getCreature(info.creatureId))
           if (getTeams().exists(info.team) && getTeams().contains(info.team, c)) {
             getTeams().remove(info.team, c);
-            if (!getTeams().exists(info.team) && getChosenTeam() == info.team) {
-              setChosenTeam(none);
+            if (getTeams().exists(info.team)) {
+              if (chosenCreature == info.creatureId)
+                chosenCreature = getTeams().getLeader(info.team)->getUniqueId();
+            } else
               chosenCreature = none;
-            } else if (chosenCreature == info.creatureId)
-              chosenCreature = getTeams().getLeader(info.team)->getUniqueId();
           }
         break; }
     case UserInputId::RECT_SELECTION:
