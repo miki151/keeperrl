@@ -1924,7 +1924,7 @@ PGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
     case Options::STRING:
       line.addElemAuto(gui.stack(
           gui.button([=] {
-              if (auto val = getTextInput("Enter " + name, value, 10, "Press escape to cancel.")) {
+              if (auto val = getTextInput("Enter " + name, value, 10, "Leave blank to use a random name.")) {
                 options->setValue(id, *val);
                 onChanged();
               }}),
@@ -1972,7 +1972,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   return gui.stack(
-      gui.preferredSize(600, 660),
+      gui.preferredSize(600, 710),
       gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
 
