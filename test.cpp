@@ -156,11 +156,11 @@ void testRange() {
 void testRange2() {
   vector<int> a;
   const vector<int> b {6,5,4,3,2,1,0};
-  for (int x : Range(6, -1))
+  for (int x : Range(0, 7).reverse())
     a.push_back(x);
   CHECKEQ(a, b);
   a.clear();
-  for (int x : Range(4, 0))
+  for (int x : Range(1, 5).reverse())
     a.push_back(x);
   CHECKEQ(getSubsequence(b, 2, 4), a);
   a.clear();
@@ -172,7 +172,7 @@ void testRange2() {
   for (int x : Range(4, 4))
     a.push_back(x);
   a.clear();
-  for (int x : Range(4, 3))
+  for (int x : Range(4, 5).reverse())
     a.push_back(x);
   CHECK(getOnlyElement(a) == 4);
 }
