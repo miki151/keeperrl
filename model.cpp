@@ -75,27 +75,27 @@ void Model::updateSunlightMovement() {
 }
 
 void Model::update(double totalTime) {
-  Creature* creature = timeQueue->getNextCreature();
-  CHECK(creature) << "No more creatures";
-  //Debug() << creature->getName().the() << " moving now " << creature->getTime();
-  currentTime = creature->getLocalTime();
-  if (currentTime > totalTime)
-    return;
-  while (totalTime > lastTick + 1) {
-    lastTick += 1;
-    tick(lastTick);
-  }
-  if (!creature->isDead()) {
+  if (Creature* creature = timeQueue->getNextCreature()) {
+    currentTime = creature->getLocalTime();
+    if (currentTime > totalTime)
+      return;
+    while (totalTime > lastTick + 1) {
+      lastTick += 1;
+      tick(lastTick);
+    }
+    if (!creature->isDead()) {
 #ifndef RELEASE
-    CreatureAction::checkUsage(true);
+      CreatureAction::checkUsage(true);
 #endif
-    creature->makeMove();
+      creature->makeMove();
 #ifndef RELEASE
-    CreatureAction::checkUsage(false);
+      CreatureAction::checkUsage(false);
 #endif
-  }
-  if (!creature->isDead() && creature->getLevel()->getModel() == this)
-    CHECK(creature->getPosition().getCreature() == creature);
+    }
+    if (!creature->isDead() && creature->getLevel()->getModel() == this)
+      CHECK(creature->getPosition().getCreature() == creature);
+  } else
+    currentTime = totalTime;
 }
 
 void Model::tick(double time) {
