@@ -184,7 +184,6 @@ class CreatureAttributes {
   double SERIAL(courage) = 1;
   bool SERIAL(carryAnything) = false;
   bool SERIAL(invincible) = false;
-  bool SERIAL(worshipped) = false;
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
   double SERIAL(attributeGain) = 0.5;

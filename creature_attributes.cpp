@@ -34,7 +34,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, chatReactionHostile, barehandedDamage, barehandedAttack, attackEffect, passiveAttack, gender);
   serializeAll(ar, bodyParts, injuredBodyParts, lostBodyParts, innocent, uncorporal, fireCreature, breathing);
   serializeAll(ar, humanoid, animal, undead, notLiving, brain, isFood, stationary, noSleep, cantEquip, courage);
-  serializeAll(ar, carryAnything, invincible, worshipped, noChase, isSpecial, attributeGain, skills, spells);
+  serializeAll(ar, carryAnything, invincible, noChase, isSpecial, attributeGain, skills, spells);
   serializeAll(ar, permanentEffects, lastingEffects, minionTasks, attrIncrease, recruitmentCost, dyingSound);
   serializeAll(ar, noDyingSound, noAttackSound);
 }

@@ -503,11 +503,10 @@ PGame MainLoop::loadGame(string file, bool erase) {
         game = loadGameFromFile(userPath + "/" + file, erase);});
   if (game) {
     game->setView(view);
+    game->setOptions(options);
   } else
     view->presentText("Sorry", "This save file is corrupted :(");
   Square::progressMeter = nullptr;
-  game->setOptions(options);
-  game->setView(view);
   return game;
 }
 
@@ -544,12 +543,12 @@ PGame MainLoop::adventurerGame() {
     if (savedGame->download)
       if (!downloadGame(savedGame->filename))
         return nullptr;
-    PGame game = loadGame(savedGame->filename, false);
-    game->landHeroPlayer();
-    return game;
+    if (PGame game = loadGame(savedGame->filename, false)) {
+      game->landHeroPlayer();
+      return game;
+    }
   }
-  else
-    return nullptr;
+  return nullptr;
 }
 
 PGame MainLoop::loadPrevious(bool erase) {
