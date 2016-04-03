@@ -277,7 +277,14 @@ Position Level::getLandingSquare(StairKey key, Vec2 travelDir) const {
 }
 
 bool Level::landCreature(StairKey key, PCreature creature, Vec2 travelDir) {
-  return landCreature({getLandingSquare(key, travelDir)}, std::move(creature));
+  Position bestLanding = getLandingSquare(key, travelDir);
+  if (landCreature({bestLanding}, creature.get()) ||
+      landCreature(bestLanding.getRectangle(Rectangle::centered(Vec2(0, 0), 10)), creature.get()) ||
+      landCreature(landingSquares.at(key), creature.get())) {
+    model->addCreature(std::move(creature));
+    return true;
+  } else
+    return false;
 }
 
 bool Level::landCreature(vector<Position> landing, PCreature creature) {

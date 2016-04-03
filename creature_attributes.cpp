@@ -331,12 +331,12 @@ bool CreatureAttributes::considerTimeout(LastingEffect effect, double globalTime
 }
   
 bool CreatureAttributes::considerAffecting(LastingEffect effect, double globalTime, double timeout) {
+  bool ret = false;
   if (lastingEffects[effect] < globalTime + timeout) {
+    ret = !isAffected(effect, globalTime);
     lastingEffects[effect] = globalTime + timeout;
-    if (!isAffected(effect, globalTime))
-      return true;
   }
-  return false;
+  return ret;
 }
 
 void CreatureAttributes::looseBodyPart(BodyPart part) {
