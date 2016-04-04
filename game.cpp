@@ -212,7 +212,7 @@ optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
           return exitInfo;
       }
     }
-    if (model->getTime() > totalTime)
+    if (model->getTime() >= totalTime)
       return none;
     model->update(totalTime);
     if (exitInfo)

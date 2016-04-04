@@ -2442,9 +2442,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.minionTasks.setValue(MinionTask::EXPLORE, 1);
           c.minionTasks.setValue(MinionTask::LAIR, 1);
-          c.name->setGroup("flock");
           c.noDyingSound = true;
-          c.noChase = true;
           c.name = "vulture";);
     case CreatureId::WOLF: 
       return CATTR(

@@ -608,6 +608,12 @@ void Player::makeMove() {
     case UserInputId::CREATURE_BUTTON2: extendedAttackAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
     case UserInputId::TRANSFER: getGame()->transferAction(getTeam()); return;
+#ifndef RELEASE
+    case UserInputId::CHEAT_ATTRIBUTES:
+      getCreature()->getAttributes().setBaseAttr(AttrType::STRENGTH, 80);
+      getCreature()->getAttributes().setBaseAttr(AttrType::DEXTERITY, 80);
+      break;
+#endif
     default: break;
   }
   if (getCreature()->isAffected(LastingEffect::SLEEP)) {

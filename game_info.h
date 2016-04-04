@@ -217,6 +217,11 @@ class VillageInfo {
       optional<string> HASH(disabledReason);
       HASH_ALL(action, disabledReason);
     };
+    struct TriggerInfo {
+      string HASH(name);
+      double HASH(value);
+      HASH_ALL(name, value);
+    };
     vector<ActionInfo> HASH(actions);
     vector<TriggerInfo> triggers;
     HASH_ALL(name, tribeName, access, state, actions);

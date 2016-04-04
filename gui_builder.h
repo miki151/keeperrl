@@ -151,7 +151,7 @@ class GuiBuilder {
   vector<PGuiElem> joinLists(vector<PGuiElem>&&, vector<PGuiElem>&&);
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width);
-  void showAttackTriggers(const vector<TriggerInfo>&, Vec2 pos);
+  void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
   PGuiElem getVillageActionButton(int villageIndex, VillageInfo::Village::ActionInfo);
   PGuiElem getVillageStateLabel(VillageInfo::Village::State);

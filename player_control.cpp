@@ -835,27 +835,49 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   return ret;
 }
 
+static string getTriggerLabel(const AttackTrigger& trigger) {
+  switch (trigger.getId()) {
+    case AttackTriggerId::SELF_VICTIMS: return "Killed tribe members";
+    case AttackTriggerId::GOLD: return "Gold";
+    case AttackTriggerId::STOLEN_ITEMS: return "Item theft";
+    case AttackTriggerId::ROOM_BUILT:
+      switch (trigger.get<SquareType>().getId()) {
+        case SquareId::THRONE: return "Throne";
+        case SquareId::IMPALED_HEAD: return "Impaled heads";
+        default: FAIL << "Unsupported ROOM_BUILT type"; return "";
+      }
+    case AttackTriggerId::POWER: return "Keeper's power";
+    case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
+    case AttackTriggerId::TIMER: return "Time";
+    case AttackTriggerId::ENTRY: return "Entry";
+  }
+}
+
 VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const {
   VillageInfo::Village info;
   info.name = col->getName().getShort();
   info.tribeName = col->getName().getRace();
+  info.triggers.clear();
   if (getGame()->isSingleModel()) {
     if (!knownVillainLocations.count(col))
       info.access = VillageInfo::Village::NO_LOCATION;
     else {
       info.access = VillageInfo::Village::LOCATION;
-      info.triggers = col->getTriggers(getCollective());
+      for (auto& trigger : col->getTriggers(getCollective()))
+        info.triggers.push_back({getTriggerLabel(trigger.trigger), trigger.value});
     }
   } else if (!getGame()->isVillainActive(col))
     info.access = VillageInfo::Village::INACTIVE;
   else {
     info.access = VillageInfo::Village::ACTIVE;
-    info.triggers = col->getTriggers(getCollective());
+    for (auto& trigger : col->getTriggers(getCollective()))
+      info.triggers.push_back({getTriggerLabel(trigger.trigger), trigger.value});
   }
   bool hostile = col->getTribe()->isEnemy(getCollective()->getTribe());
-  if (col->isConquered())
+  if (col->isConquered()) {
     info.state = info.CONQUERED;
-  else if (hostile)
+    info.triggers.clear();
+  } else if (hostile)
     info.state = info.HOSTILE;
   else {
     info.state = info.FRIENDLY;

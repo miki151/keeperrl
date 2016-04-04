@@ -801,6 +801,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
         gui.button(getButtonCallback(UserInputId::SWAP_TEAM), {Keyboard::S}, true),
         gui.labelHighlight("[S] ", colors[ColorId::LIGHT_BLUE]),
         getTooltip({"Switch control to a different team member."})));
+  line.addElem(gui.button(getButtonCallback(UserInputId::CHEAT_ATTRIBUTES), {Keyboard::Y}), 1);
   list.addElem(line.buildHorizontalList());
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
@@ -1260,35 +1261,17 @@ PGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageInfo::Villa
       }
 }
 
-static string getTriggerLabel(const AttackTrigger& trigger) {
-  switch (trigger.getId()) {
-    case AttackTriggerId::SELF_VICTIMS: return "Killed tribe members";
-    case AttackTriggerId::GOLD: return "Gold";
-    case AttackTriggerId::STOLEN_ITEMS: return "Item theft";
-    case AttackTriggerId::ROOM_BUILT:
-      switch (trigger.get<SquareType>().getId()) {
-        case SquareId::THRONE: return "Throne";
-        case SquareId::IMPALED_HEAD: return "Impaled heads";
-        default: FAIL << "Unsupported ROOM_BUILT type"; return "";
-      }
-    case AttackTriggerId::POWER: return "Keeper's power";
-    case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
-    case AttackTriggerId::TIMER: return "Time";
-    case AttackTriggerId::ENTRY: return "Entry";
-  }
-}
-
 static sf::Color getTriggerColor(double value) {
   return sf::Color(255, max<int>(0, 255 - value * 500 * 255), max<int>(0, 255 - value * 500 * 255));
 }
 
-void GuiBuilder::showAttackTriggers(const vector<TriggerInfo>& triggers, Vec2 pos) {
+void GuiBuilder::showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>& triggers, Vec2 pos) {
   vector<PGuiElem> elems;
   for (auto& trigger : triggers)
 #ifdef RELEASE
     if (trigger.value > 0)
 #endif
-    elems.push_back(gui.label(getTriggerLabel(trigger.trigger)
+    elems.push_back(gui.label(trigger.name
 #ifndef RELEASE
           + " " + toString(trigger.value)
 #endif
@@ -1337,11 +1320,12 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
         lines.addElem(gui.leftMargin(40, gui.label("Outside influence zone", colors[ColorId::GRAY])));
       GuiFactory::ListBuilder line(gui);
       line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
-      vector<TriggerInfo> triggers = elem.triggers;
+      vector<VillageInfo::Village::TriggerInfo> triggers = elem.triggers;
       sort(triggers.begin(), triggers.end(),
-          [] (const TriggerInfo& t1, const TriggerInfo& t2) { return t1.value > t2.value;});
+          [] (const VillageInfo::Village::TriggerInfo& t1, const VillageInfo::Village::TriggerInfo& t2) {
+              return t1.value > t2.value;});
   #ifdef RELEASE
-      triggers = filter(triggers, [](const TriggerInfo& t) { return t.value > 0;});
+      triggers = filter(triggers, [](const VillageInfo::Village::TriggerInfo& t) { return t.value > 0;});
   #endif
       if (!triggers.empty())
         line.addElemAuto(gui.stack(

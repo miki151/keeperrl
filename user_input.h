@@ -79,6 +79,7 @@ enum class UserInputId {
     CAST_SPELL,
     CONSUME,
     INVENTORY_ITEM,
+    CHEAT_ATTRIBUTES
 };
 
 struct BuildingInfo {
