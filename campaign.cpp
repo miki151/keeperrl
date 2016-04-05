@@ -142,6 +142,11 @@ bool Campaign::SiteInfo::isEnemy() const {
   return getRetired() || (getVillain() && getVillain()->hostile);
 }
 
+void Campaign::SiteInfo::setBlocked() {
+  blocked = true;
+  viewId.push_back(Random.choose({ViewId::MAP_MOUNTAIN, ViewId::CANIF_TREE, ViewId::DECID_TREE}, {3, 1, 1}));
+}
+
 bool Campaign::isInInfluence(Vec2 pos) const {
   return influencePos.count(pos);
 }
@@ -181,8 +186,8 @@ int Campaign::getNumRetVillains() const {
 
 optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, const vector<RetiredSiteInfo>& retired,
     function<string()> worldNameGen, RandomGen& random) {
-  Vec2 size(8, 5);
-  int numBlocked = random.get(4, 8);
+  Vec2 size(16, 9);
+  int numBlocked = 0.6 * size.x * size.y;
   string worldName;
   while (1) {
     options->setLimits(OptionId::RETIRED_VILLAINS, 0, min<int>(retired.size(), 4)); 
@@ -242,8 +247,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, const
         break;
       Vec2 pos = random.choose(freePos);
       removeElement(freePos, pos);
-      campaign.sites[pos].blocked = true;
-      campaign.sites[pos].viewId.push_back(ViewId::MAP_MOUNTAIN);
+      campaign.sites[pos].setBlocked();
     }
     while (1) {
       bool reroll = false;

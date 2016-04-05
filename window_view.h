@@ -209,15 +209,17 @@ class WindowView: public View {
   void getBlockingGui(Semaphore&, PGuiElem, Vec2 origin);
 
   template<typename T>
-  T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, Vec2 origin) {
+  T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, optional<Vec2> origin = none) {
     RenderLock lock(renderMutex);
     TempClockPause pause(clock);
     if (blockingElems.empty()) {
       blockingElems.push_back(gui.darken());
       blockingElems.back()->setBounds(renderer.getSize());
     }
+    if (!origin)
+      origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
     blockingElems.push_back(std::move(elem));
-    blockingElems.back()->setPreferredBounds(origin);
+    blockingElems.back()->setPreferredBounds(*origin);
     if (currentThreadId() == renderThreadId) {
       while (queue.isEmpty())
         refreshView();

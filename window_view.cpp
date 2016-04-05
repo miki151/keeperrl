@@ -810,22 +810,19 @@ optional<UniqueEntity<Item>::Id> WindowView::chooseTradeItem(const string& title
 
 optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, optional<Vec2> current) {
   SyncQueue<optional<Vec2>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, current),
-      Vec2(rightBarWidthCollective + 30, 160));
+  return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, current));
 }
 
 CampaignAction WindowView::prepareCampaign(const Campaign& campaign, Options* options) {
   SyncQueue<CampaignAction> returnQueue;
   optional<Vec2> embarkPos;
-  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, embarkPos),
-      Vec2(rightBarWidthCollective + 30, 160));
+  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, embarkPos));
 }
 
 optional<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,
     const vector<CreatureInfo>& creatures, const string& cancelText) {
   SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawTeamLeaderMenu(returnQueue, title, creatures, cancelText),
-      Vec2(rightBarWidthCollective + 30, 160));
+  return getBlockingGui(returnQueue, guiBuilder.drawTeamLeaderMenu(returnQueue, title, creatures, cancelText));
 }
 
 void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, Vec2 origin) {

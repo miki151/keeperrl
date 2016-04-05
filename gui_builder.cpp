@@ -1805,7 +1805,8 @@ PGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id
 
 PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>& marked, function<bool(Vec2)> activeFun,
     function<void(Vec2)> clickFun){
-  int iconSize = 48;
+  int iconScale = 2;
+  int iconSize = 24 * iconScale;;
   auto rows = gui.getListBuilder(iconSize);
   auto& sites = c.getSites();
   for (int y : sites.getBounds().getYRange()) {
@@ -1813,46 +1814,44 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>& marked,
     for (int x : sites.getBounds().getXRange()) {
       vector<PGuiElem> v;
       for (int i : All(sites[x][y].viewId))
-        v.push_back(gui.viewObject(sites[x][y].viewId[i], 2));
+        v.push_back(gui.topMargin(i > 0 ? -3 * iconScale : 0, gui.viewObject(sites[x][y].viewId[i], iconScale)));
       columns.addElem(gui.stack(std::move(v)));
     }
-    rows.addElem(columns.buildHorizontalList());
-  }
-  auto rows2 = gui.getListBuilder(iconSize);
-  for (int y : sites.getBounds().getYRange()) {
-    auto columns = gui.getListBuilder(iconSize);
+    auto columns2 = gui.getListBuilder(iconSize);
     for (int x : sites.getBounds().getXRange()) {
       Vec2 pos(x, y);
       vector<PGuiElem> elem;
       if (auto id = sites[x][y].getDwellerViewId()) {
         if (c.getPlayerPos() && c.isInInfluence(pos))
-          elem.push_back(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2,
+          elem.push_back(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale,
                 sites[pos].isEnemy() ? colors[ColorId::RED] : colors[ColorId::GREEN]));
         if (activeFun(pos))
           elem.push_back(gui.stack(
                 gui.button([pos, clickFun] { clickFun(pos); }),
-                gui.mouseHighlight2(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2))));
-        elem.push_back(gui.conditional(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2),
+                gui.mouseHighlight2(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale))));
+        elem.push_back(gui.topMargin(1 * iconScale,
+              gui.viewObject(ViewId::ROUND_SHADOW, iconScale, sf::Color(255, 255, 255, 160))));
+        elem.push_back(gui.conditional(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale),
               [&marked, pos] { return marked == pos;}));
-        elem.push_back(gui.topMargin(-6, gui.viewObject(*id, 2)));
+        elem.push_back(gui.topMargin(-2 * iconScale, gui.viewObject(*id, iconScale)));
         if (c.isDefeated(pos))
-          elem.push_back(gui.viewObject(ViewId::TERROR_TRAP, 2));
+          elem.push_back(gui.viewObject(ViewId::TERROR_TRAP, iconScale));
       } else {
         if (activeFun(pos))
           elem.push_back(gui.stack(
                 gui.button([pos, clickFun] { clickFun(pos); }),
-                gui.mouseHighlight2(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, 2))));
-        elem.push_back(gui.conditional(gui.viewObject(ViewId::CREATURE_HIGHLIGHT, 2),
+                gui.mouseHighlight2(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale))));
+        elem.push_back(gui.conditional(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale),
               [&marked, pos] { return marked == pos;}));
       }
       if (auto desc = sites[x][y].getDwellerDescription())
         elem.push_back(gui.tooltip({*desc}, 0));
-      columns.addElem(gui.stack(std::move(elem)));
+      columns2.addElem(gui.stack(std::move(elem)));
     }
-    rows2.addElem(columns.buildHorizontalList());
+    rows.addElem(gui.stack(columns.buildHorizontalList(), columns2.buildHorizontalList()));
   }
   return //gui.miniWindow(gui.margins(
-    gui.stack(rows.buildVerticalList(), rows2.buildVerticalList())
+    rows.buildVerticalList()
   //      , 15))
     ;
 }
@@ -1955,7 +1954,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   return gui.stack(
-      gui.preferredSize(600, 710),
+      gui.preferredSize(1100, 1000),
       gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
 

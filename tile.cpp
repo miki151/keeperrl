@@ -551,6 +551,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::FOG_OF_WAR, getWaterTile("empty", "fogofwar"));
     Tile::addTile(ViewId::CREATURE_HIGHLIGHT, sprite("creature_highlight"));
     Tile::addTile(ViewId::SQUARE_HIGHLIGHT, sprite("square_highlight"));
+    Tile::addTile(ViewId::ROUND_SHADOW, sprite("round_shadow"));
     Tile::addTile(ViewId::FOG_OF_WAR_CORNER, sprite("fogofwar")
         .addConnection({Dir::NE}, byName("fogofwarcornne"))
         .addConnection({Dir::NW}, byName("fogofwarcornnw"))
@@ -822,6 +823,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::FOG_OF_WAR, symbol(' ', ColorId::WHITE));
     Tile::addSymbol(ViewId::CREATURE_HIGHLIGHT, symbol(' ', ColorId::WHITE));
     Tile::addSymbol(ViewId::SQUARE_HIGHLIGHT, symbol(' ', ColorId::WHITE));
+    Tile::addSymbol(ViewId::ROUND_SHADOW, symbol(' ', ColorId::WHITE));
     Tile::addSymbol(ViewId::FOG_OF_WAR_CORNER, symbol(' ', ColorId::WHITE));
     Tile::addSymbol(ViewId::SPECIAL_BLBN, symbol('B', ColorId::PURPLE));
     Tile::addSymbol(ViewId::SPECIAL_BLBW, symbol('B', ColorId::LIGHT_RED));
@@ -853,8 +855,7 @@ void Tile::initialize(Renderer& renderer, bool useTiles) {
 }
 
 const Tile& Tile::getTile(ViewId id, bool sprite) {
-  if (sprite) {
-    CHECK(tiles[id]);
+  if (sprite && tiles[id]) {
     return *tiles[id];
   }
   else {

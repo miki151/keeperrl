@@ -358,6 +358,8 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Vec2 sz = Renderer::tileSize[coord.texNum];
   Vec2 off = getOffset(Renderer::nominalSize - sz, scale);
+  if (sz.y > nominalSize.y)
+    off.y *= 2;
   drawSprite(pos + off, coord.pos.mult(sz), sz, tiles.at(coord.texNum), sz * scale, color);
 }
 
