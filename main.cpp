@@ -192,9 +192,11 @@ int main(int argc, char* argv[]) {
   string userPath;
   if (vars.count("user_dir"))
     userPath = vars["user_dir"].as<string>();
+#ifndef WINDOWS
   else
   if (const char* localPath = std::getenv("XDG_DATA_HOME"))
     userPath = localPath + string("/KeeperRL");
+#endif
   else
     userPath = USER_DIR;
   Debug() << "Data path: " << dataPath;

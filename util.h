@@ -170,7 +170,9 @@ class Vec2 {
 
   typedef function<Vec2(Vec2)> LinearMap;
 
-  SERIALIZE_ALL(x, y);
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+   
   HASH_ALL(x, y);
 };
 

@@ -318,6 +318,13 @@ bool Rectangle::operator != (const Rectangle& r) const {
   return !(*this == r);
 }
 
+template <class Archive>
+void Vec2::serialize(Archive& ar, const unsigned int) {
+  serializeAll(ar, x, y);
+}
+
+SERIALIZABLE(Vec2);
+
 bool Vec2::inRectangle(int px, int py, int kx, int ky) const {
   return x >= px && x < kx && y >= py && y < ky;
 }
