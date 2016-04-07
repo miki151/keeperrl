@@ -49,9 +49,7 @@ vector<MainLoop::SaveFileInfo> MainLoop::getSaveFiles(const string& path, const 
 
 static string getDateString(time_t t) {
   char buf[100];
-  struct tm timeinfo;
-  localtime_s(&timeinfo, &t);
-  strftime(buf, sizeof(buf), "%c", &timeinfo);
+  strftime(buf, sizeof(buf), "%c", std::localtime(&t));
   return buf;
 }
 

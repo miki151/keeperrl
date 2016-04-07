@@ -1166,15 +1166,16 @@ void PlayerControl::onMoved(Creature* c) {
 }
 
 void PlayerControl::updateKnownLocations(const Position& pos) {
-  if (const Location* loc = pos.getLocation())
-    if (!knownLocations.count(loc)) {
-      knownLocations.insert(loc);
-      if (auto name = loc->getName())
-        addMessage(PlayerMessage("Your minions discover the location of " + *name, MessagePriority::HIGH)
-            .setLocation(loc));
-      else if (loc->isMarkedAsSurprise())
-        addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
-    }
+  if (pos.getModel() == getModel())
+    if (const Location* loc = pos.getLocation())
+      if (!knownLocations.count(loc)) {
+        knownLocations.insert(loc);
+        if (auto name = loc->getName())
+          addMessage(PlayerMessage("Your minions discover the location of " + *name, MessagePriority::HIGH)
+              .setLocation(loc));
+        else if (loc->isMarkedAsSurprise())
+          addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
+      }
   for (const Collective* col : getGame()->getCollectives())
     if (col != getCollective() && col->getTerritory().contains(pos)) {
       knownVillains.insert(col);
