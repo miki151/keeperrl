@@ -167,9 +167,9 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
       inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
       break;
     case GameInfo::InfoType::BAND:
-      if (collectiveTab == CollectiveTab::MINIONS)
+/*      if (collectiveTab == CollectiveTab::MINIONS)
         inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
-      else
+      else*/
       if (collectiveTab == CollectiveTab::TECHNOLOGY && activeLibrary)
         inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo{pos, *activeLibrary}));
       else
@@ -182,7 +182,8 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
           inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo{pos, *activeBuilding}));
         else
           inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
-      }
+      } else
+        inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
     default:
       break;
   }
