@@ -138,7 +138,7 @@ void WindowView::initialize() {
       [this] { refreshInput = true;},
       bindMethod(&WindowView::mapCreatureDragFun, this)}, clock, options );
   minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
-  minimapDecoration = gui.stack(gui.border2(), gui.rectangle(colors[ColorId::BLACK]));
+  minimapDecoration = gui.stack(gui.rectangle(colors[ColorId::BLACK]), gui.miniWindow());
   resetMapBounds();
   guiBuilder.setMapGui(mapGui);
 }
