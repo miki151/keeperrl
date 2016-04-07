@@ -119,7 +119,7 @@ class Player : public Controller, public CreatureView {
   bool updateView = true;
   void retireMessages();
   vector<PlayerMessage> SERIAL(messages);
-  vector<string> SERIAL(messageHistory);
+  vector<PlayerMessage> SERIAL(messageHistory);
   string getRemainingString(LastingEffect) const;
   vector<ItemInfo> getItemInfos(const vector<Item*>&) const;
   ItemInfo getItemInfo(const vector<Item*>&) const;

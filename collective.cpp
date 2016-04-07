@@ -1019,7 +1019,7 @@ bool Collective::hasMinionDebt() const {
 void Collective::makePayouts() {
   if (int numPay = getNextSalaries())
     control->addMessage(PlayerMessage("Payout time: " + toString(numPay) + " gold",
-          PlayerMessage::HIGH));
+          MessagePriority::HIGH));
   for (Creature* c : creatures)
     if (minionPayment.getMaybe(c)) {
       minionPayment.getOrFail(c).debt += getPaymentAmount(c);
@@ -1325,9 +1325,9 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
     decreaseMoraleForKill(killer, victim);
     if (killer)
       control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
-            PlayerMessage::HIGH).setPosition(victim->getPosition()));
+            MessagePriority::HIGH).setPosition(victim->getPosition()));
     else
-      control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", PlayerMessage::HIGH)
+      control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", MessagePriority::HIGH)
           .setPosition(victim->getPosition()));
   }
   removeCreature(victim);
@@ -1461,7 +1461,7 @@ void Collective::updateEfficiency(Position pos, SquareType type) {
 static const int alarmTime = 100;
 
 void Collective::onAlarm(Position pos) {
-  control->addMessage(PlayerMessage("An alarm goes off.", PlayerMessage::HIGH).setPosition(pos));
+  control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(pos));
   alarmInfo = {getGlobalTime() + alarmTime, pos };
   for (Creature* c : byTrait[MinionTrait::FIGHTER])
     if (c->isAffected(LastingEffect::SLEEP))
@@ -2008,7 +2008,7 @@ void Collective::onTrapDisarm(const Creature* who, Position pos) {
   if (constructions->containsTrap(pos)) {
     control->addMessage(PlayerMessage(who->getName().a() + " disarms a " 
           + Item::getTrapName(constructions->getTrap(pos).getType()) + " trap.",
-          PlayerMessage::HIGH).setPosition(pos));
+          MessagePriority::HIGH).setPosition(pos));
     constructions->getTrap(pos).reset();
   }
 }

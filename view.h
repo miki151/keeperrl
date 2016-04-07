@@ -52,6 +52,8 @@ class ListElem {
   ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
 
   ListElem& setTip(const string&);
+  ListElem& setMessagePriority(MessagePriority);
+  optional<MessagePriority> getMessagePriority() const;
 
   const string& getText() const;
   const string& getSecondColumn() const;
@@ -68,6 +70,7 @@ class ListElem {
   string tooltip;
   ElemMod mod;
   optional<UserInputId> action;
+  optional<MessagePriority> messagePriority;
 };
 
 enum class GameTypeChoice {

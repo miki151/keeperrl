@@ -237,7 +237,7 @@ void Player::applyItem(vector<Item*> items) {
 
 void Player::throwItem(vector<Item*> items, optional<Vec2> dir) {
   if (items[0]->getClass() == ItemClass::AMMO && getGame()->getOptions()->getBoolValue(OptionId::HINTS))
-    privateMessage(PlayerMessage("To fire arrows equip a bow and use alt + direction key", PlayerMessage::CRITICAL));
+    privateMessage(PlayerMessage("To fire arrows equip a bow and use alt + direction key", MessagePriority::CRITICAL));
   if (!dir) {
     auto cDir = getView()->chooseDirection("Which direction do you want to throw?");
     if (!cDir)
@@ -648,7 +648,7 @@ void Player::makeMove() {
 }
 
 void Player::showHistory() {
-  getView()->presentList("Message history:", ListElem::convert(messageHistory), true);
+  PlayerMessage::presentMessages(getView(), messageHistory);
 }
 
 static string getForceMovementQuestion(Position pos, const Creature* creature) {
@@ -690,11 +690,11 @@ void Player::privateMessage(const PlayerMessage& message) {
   if (auto title = message.getAnnouncementTitle())
     getView()->presentText(*title, message.getText());
   else {
-    messageHistory.push_back(message.getText());
+    messageHistory.push_back(message);
     if (!messages.empty() && messages.back().getFreshness() < 1)
       messages.clear();
     messages.emplace_back(message);
-    if (message.getPriority() == PlayerMessage::CRITICAL)
+    if (message.getPriority() == MessagePriority::CRITICAL)
       getView()->presentText("Important!", message.getText());
   }
 }

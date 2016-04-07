@@ -65,7 +65,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum, payoutWarning);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
   serializeAll(ar, knownVillains, knownVillainLocations, notifiedConquered, visibilityMap, warningTimes);
-  serializeAll(ar, lastWarningTime);
+  serializeAll(ar, lastWarningTime, messageHistory);
 }
 
 SERIALIZABLE(PlayerControl);
@@ -1132,14 +1132,15 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
 
 void PlayerControl::addMessage(const PlayerMessage& msg) {
   messages.push_back(msg);
+  messageHistory.push_back(msg);
 }
 
 void PlayerControl::addImportantLongMessage(const string& msg, optional<Position> pos) {
   if (Creature* c = getControlled())
-    c->playerMessage(PlayerMessage(msg, PlayerMessage::CRITICAL));
+    c->playerMessage(PlayerMessage(msg, MessagePriority::CRITICAL));
   for (string s : removeEmpty(split(msg, {'.'}))) {
     trim(s);
-    auto msg = PlayerMessage(s, PlayerMessage::CRITICAL);
+    auto msg = PlayerMessage(s, MessagePriority::CRITICAL);
     if (pos)
       msg.setPosition(*pos);
     addMessage(msg);
@@ -1169,7 +1170,7 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
     if (!knownLocations.count(loc)) {
       knownLocations.insert(loc);
       if (auto name = loc->getName())
-        addMessage(PlayerMessage("Your minions discover the location of " + *name, PlayerMessage::HIGH)
+        addMessage(PlayerMessage("Your minions discover the location of " + *name, MessagePriority::HIGH)
             .setLocation(loc));
       else if (loc->isMarkedAsSurprise())
         addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
@@ -1631,6 +1632,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::IGNORE_RANSOM:
         handleRansom(false);
         break;
+    case UserInputId::SHOW_HISTORY:
+        PlayerMessage::presentMessages(getView(), messageHistory);
+        break;
     case UserInputId::BUTTON_RELEASE:
         if (rectSelection) {
           selection = rectSelection->deselect ? DESELECT : SELECT;
@@ -1848,7 +1852,7 @@ void PlayerControl::considerNightfallMessage() {
   if (getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
     if (!isNight) {
       addMessage(PlayerMessage("Night is falling. Killing enemies in their sleep yields double mana.",
-            PlayerMessage::HIGH));
+            MessagePriority::HIGH));
       isNight = true;
     }
   } else
@@ -1860,7 +1864,7 @@ void PlayerControl::considerWarning() {
   if (time > lastWarningTime + anyWarningFrequency)
     for (Warning w : ENUM_ALL(Warning))
       if (getCollective()->isWarning(w) && (warningTimes[w] == 0 || time > warningTimes[w] + warningFrequency)) {
-        addMessage(PlayerMessage(getWarningText(w), PlayerMessage::HIGH));
+        addMessage(PlayerMessage(getWarningText(w), MessagePriority::HIGH));
         lastWarningTime = warningTimes[w] = time;
         break;
       }
@@ -1890,7 +1894,7 @@ void PlayerControl::update() {
               for (auto team : getTeams().getActive(controlled)) {
                 getTeams().add(team, c);
                 controlled->playerMessage(PlayerMessage(c->getName().a() + " joins your team.",
-                      PlayerMessage::HIGH));
+                      MessagePriority::HIGH));
                 break;
               }
         } else  
@@ -1947,7 +1951,7 @@ void PlayerControl::tick() {
   if (getGame()->getOptions()->getBoolValue(OptionId::HINTS) && time > hintFrequency) {
     int numHint = int(time) / hintFrequency - 1;
     if (numHint < hints.size() && !hints[numHint].empty()) {
-      addMessage(PlayerMessage(hints[numHint], PlayerMessage::HIGH));
+      addMessage(PlayerMessage(hints[numHint], MessagePriority::HIGH));
       hints[numHint] = "";
     }
   }

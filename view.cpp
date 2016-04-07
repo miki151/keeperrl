@@ -42,6 +42,15 @@ ListElem& ListElem::setTip(const string& s) {
   return *this;
 }
 
+ListElem& ListElem::setMessagePriority(MessagePriority p) {
+  messagePriority = p;
+  return *this;
+}
+
+optional<MessagePriority> ListElem::getMessagePriority() const {
+  return messagePriority;
+}
+
 const string& ListElem::getText() const {
   return text;
 }

@@ -221,6 +221,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   unordered_set<Position, CustomHash<Position>> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
+  vector<PlayerMessage> SERIAL(messageHistory);
   vector<CollectiveAttack> SERIAL(newAttacks);
   vector<CollectiveAttack> SERIAL(ransomAttacks);
   EnumMap<CollectiveWarning, double> SERIAL(warningTimes);

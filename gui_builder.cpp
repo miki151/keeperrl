@@ -956,17 +956,18 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
   list.addElem(gui.label("Teams: ", colors[ColorId::WHITE]));
   list.addElemAuto(drawTeams(info));
   list.addElem(gui.empty());
-  list.addElem(gui.horizontalList(makeVec<PGuiElem>(
-          gui.stack(
+  list.addElem(gui.stack(
             gui.uiHighlightConditional([=] { return showTasks;}),
             gui.label("Show tasks"),
-            gui.button([this] { closeOverlayWindows(); showTasks = !showTasks; })),
-          gui.stack(makeVec<PGuiElem>(
+            gui.button([this] { closeOverlayWindows(); showTasks = !showTasks; })));
+  list.addElem(gui.stack(makeVec<PGuiElem>(
             getHintCallback({"Morale affects minion's productivity and chances of fleeing from battle."}),
             gui.uiHighlightConditional([=] { return morale;}),
             gui.label("Show morale"),
-            gui.button([this] { morale = !morale; })))
-      ), 120));
+            gui.button([this] { morale = !morale; }))));
+  list.addElem(gui.stack(
+            gui.label("Show message history"),
+            gui.button(getButtonCallback(UserInputId::SHOW_HISTORY))));
   list.addElem(gui.empty());
   if (!info.enemyGroups.empty()) {
     list.addElem(gui.label("Enemies:", colors[ColorId::WHITE]));
@@ -1133,14 +1134,16 @@ static Color makeBlack(const Color& col, double freshness) {
   return Color(col.r * amount, col.g * amount, col.b * amount);
 }
 
-static Color getMessageColor(const PlayerMessage& msg) {
-  Color color;
-  switch (msg.getPriority()) {
-    case PlayerMessage::NORMAL: color = colors[ColorId::WHITE]; break;
-    case PlayerMessage::HIGH: color = colors[ColorId::ORANGE]; break;
-    case PlayerMessage::CRITICAL: color = colors[ColorId::RED]; break;
+static Color getMessageColor(MessagePriority priority) {
+  switch (priority) {
+    case MessagePriority::NORMAL: return colors[ColorId::WHITE];
+    case MessagePriority::HIGH: return colors[ColorId::ORANGE];
+    case MessagePriority::CRITICAL: return colors[ColorId::RED];
   }
-  return makeBlack(color, msg.getFreshness());
+}
+
+static Color getMessageColor(const PlayerMessage& msg) {
+  return makeBlack(getMessageColor(msg.getPriority()), msg.getFreshness());
 }
 
 const int messageArrowLength = 15;
@@ -1466,6 +1469,8 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
       case ListElem::TEXT:
       case ListElem::NORMAL: color = gui.text; break;
     }
+    if (auto p = options[i].getMessagePriority())
+      color = getMessageColor(*p);
     vector<PGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType, columnWidth);
     if (options.size() == 1 && label1.size() > 1) { // hacky way of checking that we display a wall of text
       append(heights, vector<int>(label1.size(), listLineHeight));

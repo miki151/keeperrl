@@ -88,4 +88,5 @@ enum class ItemIndex;
 enum class CollectiveWarning;
 enum class SoundId;
 
+enum class MessagePriority;
 #endif

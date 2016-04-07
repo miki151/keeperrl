@@ -98,8 +98,8 @@ class BoulderController : public Monster {
               stopped = false;
               getCreature()->getGame()->onTrapTrigger(getCreature()->getPosition());
               getCreature()->monsterMessage(
-                  PlayerMessage("The boulder starts rolling.", PlayerMessage::CRITICAL),
-                  PlayerMessage("You hear a heavy boulder rolling.", PlayerMessage::CRITICAL));
+                  PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL),
+                  PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
               return;
             } else {
               other->you(MsgType::DISARM_TRAP, "");
