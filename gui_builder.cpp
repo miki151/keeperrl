@@ -916,16 +916,26 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
               gui.uiHighlightConditional([team] () { return team.highlight; }),
               gui.uiHighlightMouseOver(),
               gui.dragListener([this, team](DragContent content) {
-                callbacks.input({UserInputId::ADD_TO_TEAM,
-                    TeamCreatureInfo{team.id, content.get<UniqueEntity<Creature>::Id>()}});}),
+                  UserInputId id;
+                  switch (content.getId()) {
+                    case DragContentId::CREATURE: id = UserInputId::ADD_TO_TEAM; break;
+                    case DragContentId::CREATURE_GROUP: id = UserInputId::ADD_GROUP_TO_TEAM; break;
+                  }
+                  callbacks.input({id, TeamCreatureInfo{team.id, content.get<UniqueEntity<Creature>::Id>()}});}),
               gui.getListBuilder(22)
               .addElem(gui.topMargin(8, gui.icon(GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
               .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
     }
-    string hint = "Drag and drop minions onto the [new team] button to create a new team. You can drag them both from the map and the menus.";
+    string hint = "Drag and drop minions onto the [new team] button to create a new team. "
+      "You can drag them both from the map and the menus.";
     lines.addElem(gui.stack(makeVec<PGuiElem>(
           gui.dragListener([this](DragContent content) {
-              callbacks.input({UserInputId::CREATE_TEAM, content.get<UniqueEntity<Creature>::Id>() });}),
+              UserInputId id;
+              switch (content.getId()) {
+                case DragContentId::CREATURE: id = UserInputId::CREATE_TEAM; break;
+                case DragContentId::CREATURE_GROUP: id = UserInputId::CREATE_TEAM_FROM_GROUP; break;
+              }
+              callbacks.input({id, content.get<UniqueEntity<Creature>::Id>() });}),
           gui.uiHighlightMouseOver(),
           getHintCallback({hint}),
           gui.button([this, hint] { callbacks.info(hint); }),
@@ -951,6 +961,10 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
     widths.push_back(200);
     list.addElem(gui.leftMargin(20, gui.stack(
         gui.button(getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, elem.creatureId})),
+        gui.dragSource({DragContentId::CREATURE_GROUP, elem.creatureId},
+            [=]{ return gui.getListBuilder(10)
+                .addElemAuto(gui.label(toString(elem.count) + " "))
+                .addElem(gui.viewObject(elem.viewId)).buildHorizontalList();}),
         gui.horizontalList(std::move(line), widths))));
   }
   list.addElem(gui.label("Teams: ", colors[ColorId::WHITE]));

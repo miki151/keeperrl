@@ -6,11 +6,12 @@
 #include "unique_entity.h"
 
 enum class DragContentId {
-  CREATURE
+  CREATURE,
+  CREATURE_GROUP,
 };
 
-class DragContent : public EnumVariant<DragContentId, TYPES(UniqueEntity<Creature>::Id),
-    ASSIGN(UniqueEntity<Creature>::Id, DragContentId::CREATURE)> {
+class DragContent : public EnumVariant<DragContentId, TYPES(UniqueEntity<Creature>::Id, TeamId),
+    ASSIGN(UniqueEntity<Creature>::Id, DragContentId::CREATURE, DragContentId::CREATURE_GROUP)> {
   using EnumVariant::EnumVariant;
 };
 

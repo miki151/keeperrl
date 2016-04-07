@@ -1455,6 +1455,19 @@ void PlayerControl::processInput(View* view, UserInput input) {
           if (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader())
             getTeams().create({c});
         break;
+    case UserInputId::CREATE_TEAM_FROM_GROUP:
+        if (Creature* creature = getCreature(input.get<Creature::Id>())) {
+          vector<Creature*> group = getMinionsLike(creature);
+          optional<TeamId> team;
+          for (Creature* c : group)
+            if (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader()) {
+              if (!team)
+                team = getTeams().create({c});
+              else
+                getTeams().add(*team, c);
+            }
+        }
+        break;
     case UserInputId::CANCEL_TEAM:
         if (getChosenTeam() == input.get<TeamId>()) {
           setChosenTeam(none);
@@ -1578,6 +1591,16 @@ void PlayerControl::processInput(View* view, UserInput input) {
           if (Creature* c = Position(v, getCollective()->getLevel()).getCreature())
             setScrollPos(c->getPosition());
         break;
+    case UserInputId::ADD_GROUP_TO_TEAM: {
+        auto info = input.get<TeamCreatureInfo>();
+        if (Creature* creature = getCreature(info.creatureId)) {
+          vector<Creature*> group = getMinionsLike(creature);
+          for (Creature* c : group)
+            if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) &&
+                (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader()))
+              getTeams().add(info.team, c);
+        }
+        break; }
     case UserInputId::ADD_TO_TEAM: {
         auto info = input.get<TeamCreatureInfo>();
         if (Creature* c = getCreature(info.creatureId))
