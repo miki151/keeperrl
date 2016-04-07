@@ -1718,7 +1718,9 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.skills.insert(SkillId::HEALING);
           c.chatReactionFriendly = "curses all elves";
           c.chatReactionHostile = "\"Die!\"";
-          c.name = "orc shaman";);
+          c.name = "orc shaman";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
+          );
     case CreatureId::HARPY:
       return CATTR(
           c.viewId = ViewId::HARPY;

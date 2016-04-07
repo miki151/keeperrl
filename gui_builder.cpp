@@ -1007,8 +1007,8 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info
   int margin = 20;
   append(lines, std::move(freeLines));
   ret.push_back({gui.conditional(gui.miniWindow(
-        gui.margins(gui.verticalList(std::move(lines), lineHeight), margin)),
-        [this] { return showTasks; }),
+        gui.margins(gui.scrollable(gui.verticalList(std::move(lines), lineHeight), &tasksScroll, &scrollbarsHeld),
+          margin)), [this] { return showTasks; }),
       Vec2(taskMapWindowWidth, info.taskMap.size() * lineHeight + 2 * margin),
       OverlayInfo::TOP_RIGHT});
 }

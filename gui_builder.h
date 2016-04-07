@@ -176,6 +176,7 @@ class GuiBuilder {
   double minionsScroll = 0;
   double lyingItemsScroll = 0;
   double villagesScroll = 0;
+  double tasksScroll = 0;
   int itemIndex = -1;
   int numSeenVillains = -1;
   bool playerOverlayFocused = false;

@@ -444,6 +444,7 @@ void WindowView::rebuildGui() {
           break;
       }
       tempGuiElems.push_back(std::move(overlay.elem));
+      height = min(height, renderer.getSize().y - pos.y);
       tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(width, height)));
       Debug() << "Overlay " << overlay.alignment << " bounds " << tempGuiElems.back()->getBounds();
     }
