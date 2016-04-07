@@ -1,7 +1,7 @@
 #ifndef _EVENT_GENERATOR_H
 #define _EVENT_GENERATOR_H
 
-#include <util.h>
+#include "util.h"
 
 template <typename Listener>
 class EventGenerator {

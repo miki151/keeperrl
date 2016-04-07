@@ -393,7 +393,7 @@ optional<TribeId> Position::getForbiddenTribe() const {
   if (isValid())
     return getSquare()->getForbiddenTribe();
   else
-    return nullptr;
+    return none;
 }
 
 vector<Position> Position::getVisibleTiles(VisionId vision) {

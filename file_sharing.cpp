@@ -146,7 +146,9 @@ optional<string> FileSharing::download(const string& filename, const string& dir
   if (CURL *curl = curl_easy_init()) {
     string path = dir + "/" + filename;
     Debug() << "Downloading to " << path;
-    if (FILE *fp = fopen(path.c_str(), "wb")) {
+    FILE* fp = nullptr;
+    fopen_s(&fp, path.c_str(), "wb");
+    if (fp) {
       curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/uploads/" + filename).c_str());
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToFile);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
