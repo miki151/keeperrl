@@ -224,8 +224,8 @@ class VillageInfo {
       HASH_ALL(name, value);
     };
     vector<ActionInfo> HASH(actions);
-    vector<TriggerInfo> triggers;
-    HASH_ALL(name, tribeName, access, state, actions);
+    vector<TriggerInfo> HASH(triggers);
+    HASH_ALL(name, tribeName, access, state, actions, triggers);
   };
   vector<Village> HASH(villages);
   int HASH(numMainVillains);
