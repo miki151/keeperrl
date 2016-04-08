@@ -96,6 +96,7 @@ class VillageControl : public CollectiveControl {
   int SERIAL(stolenItemCount) = 0;
   map<TeamId, int> SERIAL(attackSizes);
   bool SERIAL(entries) = false;
+  double SERIAL(maxEnemyPower) = 0;
 };
 
 #endif

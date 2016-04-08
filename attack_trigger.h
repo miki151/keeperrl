@@ -12,7 +12,8 @@ RICH_ENUM(AttackTriggerId,
   STOLEN_ITEMS,
   ROOM_BUILT,
   TIMER,
-  ENTRY
+  ENTRY,
+  FINISH_OFF
 );
 
 typedef EnumVariant<AttackTriggerId, TYPES(int, SquareType),

@@ -35,24 +35,14 @@ SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
 
 template <class Archive>
 void VillageControl::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(CollectiveControl)
-    & SVAR(villain)
-    & SVAR(victims)
-    & SVAR(myItems)
-    & SVAR(stolenItemCount)
-    & SVAR(attackSizes)
-    & SVAR(entries);
+  ar& SUBCLASS(CollectiveControl);
+  serializeAll(ar, villain, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower);
 }
 
 SERIALIZABLE(VillageControl);
 template <class Archive>
 void VillageControl::Villain::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(minPopulation)
-    & SVAR(minTeamSize)
-    & SVAR(triggers)
-    & SVAR(behaviour)
-    & SVAR(welcomeMessage)
-    & SVAR(ransom);
+  serializeAll(ar, minPopulation, minTeamSize, triggers, behaviour, welcomeMessage, ransom);
 }
 
 VillageControl::VillageControl(Collective* col, optional<Villain> v) : CollectiveControl(col), villain(v) {
@@ -179,6 +169,8 @@ void VillageControl::update() {
   considerWelcomeMessage();
   considerCancellingAttack();
   checkEntries();
+  if (Collective* enemy = getEnemyCollective())
+    maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
   vector<Creature*> allMembers = getCollective()->getCreatures();
   for (auto team : getCollective()->getTeams().getAll()) {
     for (const Creature* c : getCollective()->getTeams().getMembers(team))
@@ -294,13 +286,21 @@ static double getRoomProb(SquareId id) {
   }
 }
 
+static double getFinishOffProb(double maxPower, double currentPower, double selfPower) {
+  if (maxPower < selfPower || currentPower * 2 >= maxPower)
+    return 0;
+  double minProb = 0.25;
+  return 1 - 2 * (currentPower / maxPower) * (1 - minProb);
+}
+
 double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const VillageControl* self) const {
   double powerMaxProb = 1.0 / 10000; // rather small chance that they attack just because you are strong
   double victimsMaxProb = 1.0 / 500;
   double populationMaxProb = 1.0 / 500;
-  double goldMaxProb = 1.0 / 500;
+  double goldMaxProb = 1.0 / 1000;
   double stolenMaxProb = 1.0 / 300;
   double entryMaxProb = 1.0 / 20.0;
+  double finishOffMaxProb = 1.0 / 1000;
   if (Collective* collective = self->getEnemyCollective())
     switch (trigger.getId()) {
       case AttackTriggerId::TIMER: 
@@ -311,6 +311,9 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
       case AttackTriggerId::POWER: 
         return powerMaxProb *
             powerClosenessFun(self->getCollective()->getDangerLevel(), collective->getDangerLevel());
+      case AttackTriggerId::FINISH_OFF:
+        return finishOffMaxProb * getFinishOffProb(self->maxEnemyPower, collective->getDangerLevel(),
+            self->getCollective()->getDangerLevel());
       case AttackTriggerId::SELF_VICTIMS:
         return victimsMaxProb * victimsFun(self->victims, 0);
       case AttackTriggerId::ENEMY_POPULATION:

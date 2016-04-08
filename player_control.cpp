@@ -847,6 +847,7 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
         default: FAIL << "Unsupported ROOM_BUILT type"; return "";
       }
     case AttackTriggerId::POWER: return "Keeper's power";
+    case AttackTriggerId::FINISH_OFF: return "Finishing off";
     case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
     case AttackTriggerId::TIMER: return "Time";
     case AttackTriggerId::ENTRY: return "Entry";
@@ -1118,7 +1119,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   for (const Task* task : getCollective()->getTaskMap().getAllTasks()) {
     optional<UniqueEntity<Creature>::Id> creature;
     if (const Creature *c = getCollective()->getTaskMap().getOwner(task)) {
-      CHECK(contains(getCollective()->getCreatures(), c));
+      CHECK(c == getCollective()->getLeader() || contains(getCollective()->getCreaturesAnyOf(
+        {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER}), c)) << c->getName().bare();
       creature = c->getUniqueId();
     }
     info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
