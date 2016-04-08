@@ -41,16 +41,17 @@ Text& Renderer::getTextObject() {
     return t2;
 }
 
-int Renderer::getUnicodeLength(String s, FontId font) {
+int Renderer::getUnicodeLength(String s, FontId font, int size) {
   Text& t = getTextObject();
   t.setFont(getFont(font));
   t.setCharacterSize(textSize);
   t.setString(s);
+  t.setCharacterSize(size);
   return t.getLocalBounds().width;
 }
 
-int Renderer::getTextLength(string s) {
-  return getUnicodeLength(toUnicode(s), FontId::TEXT_FONT);
+int Renderer::getTextLength(string s, int size) {
+  return getUnicodeLength(toUnicode(s), FontId::TEXT_FONT, size);
 }
 
 Font& Renderer::getFont(Renderer::FontId id) {

@@ -40,8 +40,11 @@ class Campaign {
     ViewId SERIAL(viewId);
     EnemyId SERIAL(enemyId);
     string SERIAL(name);
-    bool SERIAL(hostile);
-    SERIALIZE_ALL(viewId, name, enemyId, hostile);
+    enum Type { ALLY, LESSER, MAIN};
+    string getDescription() const;
+    bool isEnemy() const;
+    Type SERIAL(type);
+    SERIALIZE_ALL(viewId, name, enemyId, type);
   };
   struct PlayerInfo {
     ViewId SERIAL(viewId);
@@ -49,7 +52,6 @@ class Campaign {
   };
   typedef MainLoop::RetiredSiteInfo RetiredSiteInfo;
   struct SiteInfo {
-    string SERIAL(description);
     vector<ViewId> SERIAL(viewId);
     optional<variant<VillainInfo, RetiredSiteInfo, PlayerInfo>> SERIAL(dweller);
     optional<VillainInfo> getVillain() const;
@@ -62,7 +64,7 @@ class Campaign {
     void setBlocked();
     optional<ViewId> getDwellerViewId() const;
     optional<string> getDwellerDescription() const;
-    SERIALIZE_ALL(description, viewId, dweller, blocked);
+    SERIALIZE_ALL(viewId, dweller, blocked);
   };
 
   const Table<SiteInfo>& getSites() const;
@@ -88,6 +90,7 @@ class Campaign {
   string SERIAL(worldName);
   Table<bool> SERIAL(defeated);
   set<Vec2> SERIAL(influencePos);
+  int SERIAL(influenceSize);
 };
 
 

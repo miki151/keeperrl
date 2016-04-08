@@ -504,7 +504,7 @@ PGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   if (!item.name.empty())
     line.addElemAuto(gui.label(item.name, color));
   else
-    line.addElem(gui.empty(), 130);
+    line.addSpace(130);
   for (auto& elem : line.getAllElems())
     elem = gui.stack(gui.buttonRect(onClick), std::move(elem), getTooltip(getItemHint(item)));
   if (item.owner) {
@@ -805,7 +805,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   list.addElem(line.buildHorizontalList());
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
-  list.addElem(gui.empty());
+  list.addSpace();
   if (!info.team.empty()) {
     const int numPerLine = 6;
     vector<int> widths { 60 };
@@ -823,7 +823,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
     }
     if (!currentLine.empty())
       list.addElem(gui.horizontalList(std::move(currentLine), widths));
-    list.addElem(gui.empty());
+    list.addSpace();
   }
   for (auto& elem : drawSkillsList(info))
     list.addElem(std::move(elem));
@@ -832,7 +832,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
     list.addElem(gui.label("Spells", colors[ColorId::YELLOW]));
     for (auto& elem : spells)
       list.addElem(std::move(elem), spellIconSize.y);
-    list.addElem(gui.empty());
+    list.addSpace();
   }
   if (!info.inventory.empty()) {
     list.addElem(gui.label("Inventory", colors[ColorId::YELLOW]));
@@ -969,7 +969,7 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
   }
   list.addElem(gui.label("Teams: ", colors[ColorId::WHITE]));
   list.addElemAuto(drawTeams(info));
-  list.addElem(gui.empty());
+  list.addSpace();
   list.addElem(gui.stack(
             gui.uiHighlightConditional([=] { return showTasks;}),
             gui.label("Show tasks"),
@@ -982,7 +982,7 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
   list.addElem(gui.stack(
             gui.label("Show message history"),
             gui.button(getButtonCallback(UserInputId::SHOW_HISTORY))));
-  list.addElem(gui.empty());
+  list.addSpace();
   if (!info.enemyGroups.empty()) {
     list.addElem(gui.label("Enemies:", colors[ColorId::WHITE]));
     for (auto& elem : info.enemyGroups){
@@ -1315,7 +1315,7 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
       lines.addElem(gui.leftMargin(titleMargin, gui.label("Main villains:")), titleLineHeight);
     for (int i : All(info.villages)) {
       if (i == info.numMainVillains) {
-        lines.addElem(gui.empty());
+        lines.addSpace();
         lines.addElem(gui.leftMargin(titleMargin, gui.label("Lesser villains:")), titleLineHeight);
       }
       auto& elem = info.villages[i];
@@ -1326,7 +1326,7 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
         header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, i})),
           gui.getListBuilder()
               .addElemAuto(gui.labelHighlight(title))
-              .addElem(gui.empty(), 7)
+              .addSpace(7)
               .addElemAuto(gui.labelUnicode(String(L'➚'))).buildHorizontalList());
       else
         header = gui.label(title);
@@ -1410,26 +1410,9 @@ Rectangle GuiBuilder::getMenuPosition(MenuType type, int numElems) {
   return Rectangle(xSpacing, ySpacing + yOffset, xSpacing + windowWidth, renderer.getSize().y - ySpacing + yOffset);
 }
 
-
-vector<string> GuiBuilder::breakText(const string& text, int maxWidth) {
-  if (text.empty())
-    return {""};
-  vector<string> rows;
-  for (string line : split(text, {'\n'})) {
-    rows.push_back("");
-    for (string word : split(line, {' '}))
-      if (renderer.getTextLength(rows.back() + ' ' + word) <= maxWidth)
-        rows.back().append((rows.back().size() > 0 ? " " : "") + word);
-      else
-        rows.push_back(word);
-  }
-  return rows;
-}
-
-
 vector<PGuiElem> GuiBuilder::getMultiLine(const string& text, Color color, MenuType menuType, int maxWidth) {
   vector<PGuiElem> ret;
-  for (const string& s : breakText(text, maxWidth)) {
+  for (const string& s : gui.breakText(text, maxWidth)) {
     if (menuType != MenuType::MAIN)
       ret.push_back(gui.label(s, color));
     else
@@ -1889,7 +1872,7 @@ PGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
                 gui.labelHighlight("[Confirm]", colors[ColorId::LIGHT_BLUE])),
             gui.label("[Confirm]", colors[ColorId::LIGHT_GRAY]),
             [&] { return !!sitePos; }))
-        .addElem(gui.empty(), 10)
+        .addSpace(10)
         .addElemAuto(
             gui.stack(
                 gui.button([&queue] { queue.push(none); }, {Keyboard::Escape}, true),
@@ -1906,7 +1889,7 @@ PGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncreas
                 gui.labelHighlight("[+]", colors[ColorId::LIGHT_BLUE]),
                 gui.button([callback] { callback(1); }))
           : gui.label("[+]", colors[ColorId::GRAY]))
-      .addElem(gui.empty(), 10)
+      .addSpace(10)
       .addElemAuto(canDecrease
           ? gui.stack(
                 gui.labelHighlight("[-]", colors[ColorId::LIGHT_BLUE]),
@@ -1919,8 +1902,8 @@ PGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
   auto line = gui.getListBuilder();
   string value = options->getValueString(id);
   string name = options->getName(id);
-  line.addElem(gui.label(name + ": " + value), 300);
-  line.addElem(gui.empty(), 30);
+  line.addElem(gui.label(name + ": " + value), 220);
+  line.addSpace(30);
   switch (options->getType(id)) {
     case Options::STRING:
       line.addElemAuto(gui.stack(
@@ -1944,16 +1927,27 @@ PGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
   return line.buildHorizontalList();
 }
 
+static const char campaignWelcome[] =
+    "Welcome to the campaign mode! "
+    "The world, which you see below, is made up of smaller sites. Pick one, and build your base there. "
+    "There are hostile and friendly tribes on the map. "
+    "You can travel to other sites by creating a team and using the travel command.\n\n"
+    "The highlighted tribes are in your influence zone, which means that you can currently interact with them "
+    "(trade, recruit, attack or be attacked). "
+    "As you conquer more enemies, your influence zone grows.\n\n"
+    "To win the game, conquer all main villains.";
+
 PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign, Options* options,
     optional<Vec2>& embarkPos) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label("Campaign setup")));
-  lines.addElem(gui.empty());
+  lines.addSpace();
   lines.addElem(gui.label("World name: " + campaign.getWorldName()));
   for (OptionId id : options->getOptions(OptionSet::CAMPAIGN))
-    lines.addElem(drawOptionElem(options, id, [&queue] { queue.push(CampaignActionId::REROLL_MAP);}));
-  lines.addElem(gui.empty(), 15);
+    lines.addElem(drawOptionElem(options, id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});}));
+  lines.addSpace(15);
   lines.addElem(gui.centerHoriz(gui.label("Choose embark site:")));
+  lines.addSpace(15);
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, embarkPos,
         [&campaign](Vec2 pos) { return campaign.getSites()[pos].canEmbark(); },
         [&campaign, &queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
@@ -1967,14 +1961,19 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
                 gui.labelHighlight("[Confirm]", colors[ColorId::LIGHT_BLUE])),
             gui.label("[Confirm]", colors[ColorId::LIGHT_GRAY]),
             [&campaign] { return !!campaign.getPlayerPos(); }))
-        .addElem(gui.empty(), 10)
+        .addSpace(10)
         .addElemAuto(
             gui.stack(
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
+  PGuiElem interior = gui.stack(
+      gui.topMargin(2 * legendLineHeight, gui.leftMargin(500,
+          gui.labelMultiLine(campaignWelcome, 17, Renderer::smallTextSize, colors[ColorId::WHITE]))),
+      lines.buildVerticalList()
+  );
   return gui.stack(
-      gui.preferredSize(1100, 1000),
-      gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(CampaignActionId::CANCEL); }));
+      gui.preferredSize(1100, 900),
+      gui.window(gui.margins(std::move(interior), 20), [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
 
 PGuiElem GuiBuilder::drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
@@ -2018,7 +2017,7 @@ PGuiElem GuiBuilder::drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::
     lines.addElem(gui.label(warning, colors[ColorId::RED]));
     budget.second = -1;
   }
-  lines.addElem(gui.empty(), 10);
+  lines.addSpace(10);
   for (PGuiElem& elem : drawRecruitList(creatures,
         [&queue] (optional<UniqueEntity<Creature>::Id> a) { queue.push(a);}, budget.second))
     lines.addElem(std::move(elem));

@@ -41,6 +41,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::RETIRED_VILLAINS, 1},
   {OptionId::LESSER_VILLAINS, 3},
   {OptionId::ALLIES, 2},
+  {OptionId::INFLUENCE_SIZE, 3},
 };
 
 const map<OptionId, string> names {
@@ -66,15 +67,13 @@ const map<OptionId, string> names {
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
   {OptionId::ALLIES, "Allies"},
+  {OptionId::INFLUENCE_SIZE, "Min. tribes in influence zone"},
 };
 
 const map<OptionId, string> hints {
   {OptionId::HINTS, "Display some extra helpful information during the game."},
   {OptionId::ASCII, "Switch to old school roguelike graphics."},
-  {OptionId::MUSIC, ""},
-  {OptionId::SOUND, ""},
   {OptionId::KEEP_SAVEFILES, "Don't remove the save file when a game is loaded."},
-  {OptionId::SHOW_MAP, ""},
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
   {OptionId::FULLSCREEN_RESOLUTION, "Choose resolution for fullscreen mode."},
   {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
@@ -84,16 +83,6 @@ const map<OptionId, string> hints {
     "The save file will be used to recover in case of a crash."},
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
     "using alt + letter."},
-  {OptionId::FAST_IMMIGRATION, ""},
-  {OptionId::STARTING_RESOURCE, ""},
-  {OptionId::START_WITH_NIGHT, ""},
-  {OptionId::KEEPER_NAME, ""},
-  {OptionId::KEEPER_SEED, ""},
-  {OptionId::ADVENTURER_NAME, ""},
-  {OptionId::MAIN_VILLAINS, ""},
-  {OptionId::RETIRED_VILLAINS, ""},
-  {OptionId::LESSER_VILLAINS, ""},
-  {OptionId::ALLIES, ""},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -131,7 +120,8 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::MAIN_VILLAINS,
       OptionId::RETIRED_VILLAINS,
       OptionId::LESSER_VILLAINS,
-      OptionId::ALLIES
+      OptionId::ALLIES,
+      //OptionId::INFLUENCE_SIZE
   }},
 };
 
@@ -267,6 +257,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::MAIN_VILLAINS:
     case OptionId::LESSER_VILLAINS:
     case OptionId::RETIRED_VILLAINS:
+    case OptionId::INFLUENCE_SIZE:
     case OptionId::ALLIES: return toString(getIntValue(id));
   }
 }
@@ -322,8 +313,9 @@ bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
   vector<ListElem> options;
   options.emplace_back("Change settings:", ListElem::TITLE);
   for (OptionId option : optionSets.at(set))
-    options.push_back(ListElem(names.at(option),
-          getValueString(option)).setTip(hints.at(option)));
+    if (hints.count(option))
+      options.push_back(ListElem(names.at(option),
+            getValueString(option)).setTip(hints.at(option)));
   options.emplace_back("Done");
   if (lastIndex == -1)
     lastIndex = optionSets.at(set).size();
@@ -341,8 +333,9 @@ void Options::handle(View* view, OptionSet set, int lastIndex) {
   vector<ListElem> options;
   options.emplace_back("Change settings:", ListElem::TITLE);
   for (OptionId option : optionSets.at(set))
-    options.push_back(ListElem(names.at(option),
-          getValueString(option)).setTip(hints.at(option)));
+    if (hints.count(option))
+      options.push_back(ListElem(names.at(option),
+            getValueString(option)).setTip(hints.at(option)));
   options.emplace_back("Done");
   auto index = view->chooseFromList("", options, lastIndex, getMenuType(set));
   if (!index || (*index) == optionSets.at(set).size())

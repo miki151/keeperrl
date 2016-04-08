@@ -399,6 +399,54 @@ PGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
         }, width));
 }
 
+static vector<string> breakText(Renderer& renderer, const string& text, int maxWidth, int size = Renderer::textSize) {
+  if (text.empty())
+    return {""};
+  vector<string> rows;
+  for (string line : split(text, {'\n'})) {
+    rows.push_back("");
+    for (string word : split(line, {' '}))
+      if (renderer.getTextLength(rows.back() + ' ' + word, size) <= maxWidth)
+        rows.back().append((rows.back().size() > 0 ? " " : "") + word);
+      else
+        rows.push_back(word);
+  }
+  return rows;
+}
+
+vector<string> GuiFactory::breakText(const string& text, int maxWidth) {
+  return ::breakText(renderer, text, maxWidth);
+}
+
+class LabelMultiLine : public GuiElem {
+  public:
+  LabelMultiLine(const string& t, int line, int sz, Color c) : text(t), size(sz), color(c), lineHeight(line) {
+  }
+
+  virtual void render(Renderer& renderer) override {
+    vector<string> lines = breakText(renderer, text, getBounds().getW(), size);
+    int height = getBounds().getPY();
+    for (int i : All(lines)) {
+      renderer.drawText(color, getBounds().getPX(), height, lines[i],
+          Renderer::NONE, size);
+      if (!lines[i].empty())
+        height += lineHeight;
+      else
+        height += lineHeight / 3;
+    }
+  }
+
+  private:
+  string text;
+  int size;
+  Color color;
+  int lineHeight;
+};
+
+PGuiElem GuiFactory::labelMultiLine(const string& s, int lineHeight, int size, Color c) {
+  return PGuiElem(new LabelMultiLine(s, lineHeight, size, c));
+}
+
 static void lighten(Color& c) {
   if (3 * 255 - c.r - c.g - c.b < 75)
     c = colors[ColorId::YELLOW];
@@ -901,6 +949,16 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElem(PGuiElem elem, int siz
     size = defaultSize;
   }
   elems.push_back(std::move(elem));
+  sizes.push_back(size);
+  return *this;
+}
+
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addSpace(int size) {
+  if (size == 0) {
+    CHECK(defaultSize > 0);
+    size = defaultSize;
+  }
+  elems.push_back(gui.empty());
   sizes.push_back(size);
   return *this;
 }

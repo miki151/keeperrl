@@ -54,6 +54,8 @@ class GuiFactory {
   void loadFreeImages(const string& path);
   void loadNonFreeImages(const string& path);
 
+  vector<string> breakText(const string& text, int maxWidth);
+
   DragContainer& getDragContainer();
   void propagateEvent(const Event&, vector<GuiElem*>);
 
@@ -80,6 +82,7 @@ class GuiFactory {
     public:
     ListBuilder(GuiFactory&, int defaultSize = 0);
     ListBuilder& addElem(PGuiElem, int size = 0);
+    ListBuilder& addSpace(int size = 0);
     ListBuilder& addElemAuto(PGuiElem);
     ListBuilder& addBackElemAuto(PGuiElem);
     ListBuilder& addBackElem(PGuiElem, int size = 0);
@@ -126,6 +129,7 @@ class GuiFactory {
   PGuiElem label(const string&, function<Color()>, char hotkey = 0);
   PGuiElem labelFun(function<string()>, function<Color()>);
   PGuiElem labelFun(function<string()>, Color = colors[ColorId::WHITE]);
+  PGuiElem labelMultiLine(const string&, int lineHeight, int size, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, Color = colors[ColorId::WHITE]);
   PGuiElem variableLabel(function<string()>,

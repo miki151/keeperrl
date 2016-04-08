@@ -104,8 +104,8 @@ class Renderer {
   const static int textSize = 19;
   const static int smallTextSize = 14;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
-  int getTextLength(string s);
-  int getUnicodeLength(String s, FontId = SYMBOL_FONT);
+  int getTextLength(string s, int size = textSize);
+  int getUnicodeLength(String s, FontId = SYMBOL_FONT, int size = textSize);
   enum CenterType { NONE, HOR, VER, HOR_VER };
   void drawText(FontId, int size, Color, int x, int y, String, CenterType center = NONE);
   void drawTextWithHotkey(Color, int x, int y, const string&, char key);

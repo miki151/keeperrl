@@ -103,11 +103,13 @@ enum class CampaignActionId {
   CANCEL,
   CHOOSE_SITE,
   REROLL_MAP,
-  CONFIRM
+  CONFIRM,
+  UPDATE_OPTION
 };
 
-class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2),
-  ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE)> {
+class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2, OptionId),
+  ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE),
+  ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION)> {
     using EnumVariant::EnumVariant;
 };
 

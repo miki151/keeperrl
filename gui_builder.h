@@ -223,7 +223,6 @@ class GuiBuilder {
   vector<PGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);
   PGuiElem menuElemMargins(PGuiElem);
   PGuiElem getHighlight(MenuType, const string& label, int height);
-  vector<string> breakText(const string& text, int maxWidth);
   string getPlayerTitle(PlayerInfo&);
   Event::KeyEvent getHotkeyEvent(char);
   MapGui* mapGui = nullptr;
