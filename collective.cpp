@@ -1152,7 +1152,7 @@ void Collective::considerSendingGuardian() {
 }
 
 void Collective::update(bool currentlyActive) {
-  control->update();
+  control->update(currentlyActive);
   if (currentlyActive == config->activeImmigrantion(getGame()) &&
       Random.rollD(1.0 / config->getImmigrantFrequency()))
     considerImmigration();

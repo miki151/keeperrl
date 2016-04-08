@@ -14,7 +14,7 @@ struct TriggerInfo;
 class CollectiveControl {
   public:
   CollectiveControl(Collective*);
-  virtual void update();
+  virtual void update(bool currentlyActive);
   virtual void tick();
   virtual void onMemberKilled(const Creature* victim, const Creature* killer);
   virtual void onOtherKilled(const Creature* victim, const Creature* killer);

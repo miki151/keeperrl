@@ -165,7 +165,7 @@ void VillageControl::checkEntries() {
               entries = true;
 }
 
-void VillageControl::update() {
+void VillageControl::update(bool currentlyActive) {
   considerWelcomeMessage();
   considerCancellingAttack();
   checkEntries();
@@ -181,7 +181,7 @@ void VillageControl::update() {
     return;
   }
   double updateFreq = 0.1;
-  if (Random.roll(1 / updateFreq))
+  if ((!currentlyActive || getCollective()->getGame()->isSingleModel()) && Random.roll(1 / updateFreq))
     if (villain) {
       double prob = villain->getAttackProbability(this) / updateFreq;
       if (prob > 0 && Random.roll(1 / prob)) {

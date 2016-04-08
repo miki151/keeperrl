@@ -1896,7 +1896,7 @@ void PlayerControl::considerWarning() {
       }
 }
 
-void PlayerControl::update() {
+void PlayerControl::update(bool currentlyActive) {
   for (const Collective* col : getGame()->getVillains(VillainType::MAIN))
     if (col->isConquered() && !notifiedConquered.count(col)) {
       addImportantLongMessage("You have exterminated the armed forces of " + col->getName().getFull() + ".");

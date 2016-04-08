@@ -107,7 +107,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void onConstructed(Position, const SquareType&) override;
   virtual void onNoEnemies() override;
   virtual void tick() override;
-  virtual void update() override;
+  virtual void update(bool currentlyActive) override;
 
   private:
 

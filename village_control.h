@@ -71,7 +71,7 @@ class VillageControl : public CollectiveControl {
   VillageControl(Collective*, optional<Villain>);
 
   protected:
-  virtual void update() override;
+  virtual void update(bool currentlyActive) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
   virtual void onRansomPaid() override;

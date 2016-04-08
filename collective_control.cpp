@@ -20,7 +20,7 @@ Collective* CollectiveControl::getCollective() const {
 void CollectiveControl::onMoved(Creature*) {
 }
 
-void CollectiveControl::update() {
+void CollectiveControl::update(bool currentlyActive) {
 }
 
 void CollectiveControl::tick() {
