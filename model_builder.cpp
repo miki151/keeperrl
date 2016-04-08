@@ -199,7 +199,7 @@ static vector<EnemyInfo> getTower(RandomGen& random) {
         c.minPopulation = 0;
         c.minTeamSize = 1;
         c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE},
-            {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
+            {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD}, AttackTriggerId::FINISH_OFF);
         c.behaviour = VillageBehaviour(VillageBehaviourId::CAMP_AND_SPAWN,
           CreatureFactory::elementals(TribeId::getHuman()));
         c.ransom = make_pair(0.5, random.get(200, 400));)}, LevelInfo{ExtraLevelId::TOWER, towerKey})
@@ -278,7 +278,8 @@ static vector<EnemyInfo> getWarriorCastle(RandomGen& random) {
           c.minPopulation = 6;
           c.minTeamSize = 5;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
-            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
+            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
+            AttackTriggerId::FINISH_OFF);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.8, random.get(500, 700));)})
   };
@@ -325,7 +326,8 @@ static vector<EnemyInfo> getLizardVillage(RandomGen& random) {
           c.minPopulation = 4;
           c.minTeamSize = 4;
           c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS},
-            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
+            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
+            AttackTriggerId::FINISH_OFF);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);)})
   };
 }
@@ -357,10 +359,10 @@ static vector<EnemyInfo> getElvenVillage(RandomGen& random) {
   };
 }
 
-static vector<EnemyInfo> getAntNest(RandomGen& random) {
+static vector<EnemyInfo> getAntNest(RandomGen& random, bool closedOff) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
-      c.type = SettlementType::ANT_NEST;
+      c.type = closedOff ? SettlementType::ANT_NEST : SettlementType::MINETOWN;
       c.creatures = CreatureFactory::antNest(TribeId::getAnt());
       c.numCreatures = random.get(9, 14);
       c.location = new Location(true);
@@ -408,7 +410,8 @@ static vector<EnemyInfo> getDwarfTown(RandomGen& random) {
           c.minPopulation = 3;
           c.minTeamSize = 4;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
-            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
+            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
+            AttackTriggerId::FINISH_OFF);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 3);
           c.ransom = make_pair(0.8, random.get(1200, 1600));)})
   };
@@ -448,7 +451,8 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random) {
           c.minPopulation = 12;
           c.minTeamSize = 10;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
-            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
+            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
+            AttackTriggerId::FINISH_OFF);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.9, random.get(1400, 2000));)})};
   if (stairKey)
@@ -597,7 +601,8 @@ static vector<EnemyInfo> getGreenDragon(RandomGen& random) {
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 20}, AttackTriggerId::STOLEN_ITEMS);
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 20}, AttackTriggerId::STOLEN_ITEMS,
+              AttackTriggerId::FINISH_OFF);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 7);
             c.welcomeMessage = VillageControl::DRAGON_WELCOME;)})
   };
@@ -636,7 +641,8 @@ static vector<EnemyInfo> getRedDragon(RandomGen& random) {
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 25}, AttackTriggerId::STOLEN_ITEMS);
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 25}, AttackTriggerId::STOLEN_ITEMS,
+              AttackTriggerId::FINISH_OFF);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 12);
             c.welcomeMessage = VillageControl::DRAGON_WELCOME;)})
   };
@@ -1031,7 +1037,7 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, const string& boardText
         getDarkElvenMines(random)}));
   append(ret, getVaults(random));
   if (random.roll(4))
-    append(ret, getAntNest(random));
+    append(ret, getAntNest(random, true));
   append(ret, getHumanCastle(random));
   append(ret, random.choose({
         getFriendlyCave(random, CreatureId::ORC),
@@ -1097,7 +1103,7 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
   BiomeId biomeId;
   switch (enemyId) {
     case EnemyId::ANTS:
-      append(enemyInfo, getAntNest(random)); break;
+      append(enemyInfo, getAntNest(random, false)); break;
     case EnemyId::ORC_VILLAGE:
       append(enemyInfo, getOrcTown(random)); break;
     case EnemyId::VILLAGE:
