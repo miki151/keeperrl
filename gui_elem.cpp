@@ -1921,14 +1921,22 @@ void GuiFactory::loadFreeImages(const string& path) {
   textures[TexId::VERT_BAR].setRepeated(true);
   CHECK(textures[TexId::HORI_BAR].loadFromFile(path + "/ui/horibar.png"));
   textures[TexId::HORI_BAR].setRepeated(true);
-  CHECK(textures[TexId::HORI_BAR_MINI].loadFromFile(path + "/ui/horibarmini.png"));
-  textures[TexId::HORI_BAR_MINI].setRepeated(true);
   CHECK(textures[TexId::CORNER_TOP_LEFT].loadFromFile(path + "/ui/cornerTOPL.png"));
   CHECK(textures[TexId::CORNER_TOP_RIGHT].loadFromFile(path + "/ui/cornerTOPR.png"));
   CHECK(textures[TexId::CORNER_BOTTOM_RIGHT].loadFromFile(path + "/ui/cornerBOTTOMR.png"));
+
+  CHECK(textures[TexId::HORI_BAR_MINI].loadFromFile(path + "/ui/horibarmini.png"));
+  textures[TexId::HORI_BAR_MINI].setRepeated(true);
   CHECK(textures[TexId::VERT_BAR_MINI].loadFromFile(path + "/ui/vertbarmini.png"));
   textures[TexId::VERT_BAR_MINI].setRepeated(true);
-  CHECK(textures[TexId::CORNER_MINI].loadFromFile(path + "/ui/cornersmall.png"));
+  CHECK(textures[TexId::CORNER_MINI].loadFromFile(path + "/ui/cornermini.png"));
+
+  CHECK(textures[TexId::HORI_BAR_MINI2].loadFromFile(path + "/ui/horibarmini2.png"));
+  textures[TexId::HORI_BAR_MINI2].setRepeated(true);
+  CHECK(textures[TexId::VERT_BAR_MINI2].loadFromFile(path + "/ui/vertbarmini2.png"));
+  textures[TexId::VERT_BAR_MINI2].setRepeated(true);
+  CHECK(textures[TexId::CORNER_MINI2].loadFromFile(path + "/ui/cornermini2.png"));
+
   CHECK(textures[TexId::SCROLL_UP].loadFromFile(path + "/ui/up.png"));
   CHECK(textures[TexId::SCROLL_DOWN].loadFromFile(path + "/ui/down.png"));
   CHECK(textures[TexId::WINDOW_CORNER].loadFromFile(path + "/ui/corner1.png"));
@@ -2121,6 +2129,18 @@ PGuiElem GuiFactory::miniBorder() {
         sprite(get(TexId::CORNER_MINI), Alignment::BOTTOM_LEFT, true, false),
         sprite(get(TexId::CORNER_MINI), Alignment::TOP_RIGHT, false, true),
         sprite(get(TexId::CORNER_MINI), Alignment::TOP_LEFT, false, false)));
+}
+
+PGuiElem GuiFactory::miniBorder2() {
+  return stack(makeVec<PGuiElem>(
+        sprite(get(TexId::HORI_BAR_MINI2), Alignment::BOTTOM, false, false),
+        sprite(get(TexId::HORI_BAR_MINI2), Alignment::TOP, true, false),
+        sprite(get(TexId::VERT_BAR_MINI2), Alignment::RIGHT, false, false),
+        sprite(get(TexId::VERT_BAR_MINI2), Alignment::LEFT, false, true),
+        sprite(get(TexId::CORNER_MINI2), Alignment::BOTTOM_RIGHT, true, true),
+        sprite(get(TexId::CORNER_MINI2), Alignment::BOTTOM_LEFT, true, false),
+        sprite(get(TexId::CORNER_MINI2), Alignment::TOP_RIGHT, false, true),
+        sprite(get(TexId::CORNER_MINI2), Alignment::TOP_LEFT, false, false)));
 }
 
 PGuiElem GuiFactory::miniWindow(PGuiElem content, function<void()> onExitButton) {

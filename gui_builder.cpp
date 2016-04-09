@@ -1816,7 +1816,14 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>& marked,
     for (int x : sites.getBounds().getXRange()) {
       vector<PGuiElem> v;
       for (int i : All(sites[x][y].viewId))
-        v.push_back(gui.topMargin(i > 0 ? -3 * iconScale : 0, gui.viewObject(sites[x][y].viewId[i], iconScale)));
+        if (i == 0)
+          v.push_back(gui.viewObject(sites[x][y].viewId[i], iconScale));
+        else {
+          if (sites[x][y].viewId[i] == ViewId::CANIF_TREE || sites[x][y].viewId[i] == ViewId::DECID_TREE)
+            v.push_back(gui.topMargin(1 * iconScale,
+                  gui.viewObject(ViewId::ROUND_SHADOW, iconScale, sf::Color(255, 255, 255, 160))));
+          v.push_back(gui.topMargin(-2 * iconScale, gui.viewObject(sites[x][y].viewId[i], iconScale)));
+        }
       columns.addElem(gui.stack(std::move(v)));
     }
     auto columns2 = gui.getListBuilder(iconSize);
@@ -1852,10 +1859,9 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>& marked,
     }
     rows.addElem(gui.stack(columns.buildHorizontalList(), columns2.buildHorizontalList()));
   }
-  return //gui.miniWindow(gui.margins(
-    rows.buildVerticalList()
-  //      , 15))
-    ;
+  return gui.stack(
+    gui.miniBorder2(),
+    gui.margins(rows.buildVerticalList(), 8));
 }
 
 PGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const string& message,
@@ -1972,7 +1978,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
       lines.buildVerticalList()
   );
   return gui.stack(
-      gui.preferredSize(1100, 900),
+      gui.preferredSize(1100, 920),
       gui.window(gui.margins(std::move(interior), 20), [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
 
