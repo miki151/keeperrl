@@ -134,7 +134,7 @@ class RoomMaker : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     int spaceBetween = 0;
-    Table<int> taken(area.getKX(), area.getKY());
+    Table<int> taken(area.right(), area.bottom());
     for (Vec2 v : area)
       taken[v] = squareType && *squareType != builder->getType(v);
     for (int i : Range(numRooms)) {
@@ -143,8 +143,8 @@ class RoomMaker : public LevelMaker {
       int cnt = 100;
       do {
         k = Vec2(builder->getRandom().get(minSize, maxSize), builder->getRandom().get(minSize, maxSize));
-        p = Vec2(area.getPX() + spaceBetween + builder->getRandom().get(area.getW() - k.x - 2 * spaceBetween),
-                 area.getPY() + spaceBetween + builder->getRandom().get(area.getH() - k.y - 2 * spaceBetween));
+        p = Vec2(area.left() + spaceBetween + builder->getRandom().get(area.width() - k.x - 2 * spaceBetween),
+                 area.top() + spaceBetween + builder->getRandom().get(area.height() - k.y - 2 * spaceBetween));
         good = true;
         for (Vec2 v : Rectangle(k.x + 2 * spaceBetween, k.y + 2 * spaceBetween))
           if (taken[p + v - Vec2(spaceBetween,spaceBetween)]) {
@@ -360,13 +360,13 @@ class Creatures : public LevelMaker {
       builder->addLocation(loc, area);
       actorFactory = MonsterAIFactory::stayInLocation(loc);
     }
-    Table<char> taken(area.getKX(), area.getKY());
+    Table<char> taken(area.right(), area.bottom());
     for (int i : Range(numCreature)) {
       PCreature creature = cfactory.random(*actorFactory);
       Vec2 pos;
       int numTries = 100;
       do {
-        pos = Vec2(builder->getRandom().get(area.getPX(), area.getKX()), builder->getRandom().get(area.getPY(), area.getKY()));
+        pos = Vec2(builder->getRandom().get(area.left(), area.right()), builder->getRandom().get(area.top(), area.bottom()));
       } while (--numTries > 0 && (!builder->canPutCreature(pos, creature.get())
           || (!onPred.apply(builder, pos))));
       checkGen(numTries > 0);
@@ -397,8 +397,8 @@ class Items : public LevelMaker {
     for (int i : Range(numItem)) {
       Vec2 pos;
       do {
-        pos = Vec2(builder->getRandom().get(area.getPX(), area.getKX()), builder->getRandom().get(area.getPY(),
-              area.getKY()));
+        pos = Vec2(builder->getRandom().get(area.left(), area.right()), builder->getRandom().get(area.top(),
+              area.bottom()));
       } while (builder->getType(pos) != onType);
       builder->putItems(pos, factory.random());
     }
@@ -417,18 +417,18 @@ class River : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     int wind = 5;
-    int middle = (area.getPX() + area.getKX()) / 2;
+    int middle = (area.left() + area.right()) / 2;
     int px = builder->getRandom().get(middle - wind, middle + width);
-    int kx = px + builder->getRandom().get(-wind, wind); // builder->getRandom().get(area.getPX(), area.getKX()) - width;
+    int kx = px + builder->getRandom().get(-wind, wind); // builder->getRandom().get(area.left(), area.right()) - width;
     if (kx < 0)
       kx = 0;
-    if (kx >= area.getKX() - width)
-      kx = area.getKX() - width - 1;
+    if (kx >= area.right() - width)
+      kx = area.right() - width - 1;
     int tot = 5;
     for (int h : Range(tot)) {
-      int height = area.getPY() * (tot - h) / tot + area.getKY() * h / tot;
-      int height2 = area.getPY() * (tot - h - 1) / tot + area.getKY() * (h + 1) / tot;
-      vector<Vec2> line = straightLine(px, height, kx, (h == tot - 1) ? area.getKY() : height2);
+      int height = area.top() * (tot - h) / tot + area.bottom() * h / tot;
+      int height2 = area.top() * (tot - h - 1) / tot + area.bottom() * (h + 1) / tot;
+      vector<Vec2> line = straightLine(px, height, kx, (h == tot - 1) ? area.bottom() : height2);
       for (Vec2 v : line)
         for (int i : Range(width))
           builder->putSquare(v + Vec2(i, 0), squareType, SquareAttrib::RIVER);
@@ -436,8 +436,8 @@ class River : public LevelMaker {
       kx = px + builder->getRandom().get(-wind, wind);
       if (kx < 0)
         kx = 0;
-      if (kx >= area.getKX() - width)
-        kx = area.getKX() - width - 1;
+      if (kx >= area.right() - width)
+        kx = area.right() - width - 1;
     }
   }
 
@@ -571,10 +571,10 @@ class Blob : public LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     vector<Vec2> squares;
     Table<char> isInside(area, 0);
-    Vec2 center((area.getKX() + area.getPX()) / 2, (area.getKY() + area.getPY()) / 2);
+    Vec2 center((area.right() + area.left()) / 2, (area.bottom() + area.top()) / 2);
     squares.push_back(center);
     isInside[center] = 1;
-    int maxSquares = area.getW() * area.getH() * insideRatio;
+    int maxSquares = area.width() * area.height() * insideRatio;
     int numSquares = 0;
     bool done = false;
     while (!done) {
@@ -582,9 +582,9 @@ class Blob : public LevelMaker {
       for (Vec2 next : pos.neighbors4(builder->getRandom())) {
         if (next.inRectangle(area.minusMargin(1)) && !isInside[next]) {
           Vec2 proj = next - center;
-          proj.y *= area.getW();
-          proj.y /= area.getH();
-          if (builder->getRandom().getDouble() <= 1. - proj.lengthD() / (area.getW() / 2)) {
+          proj.y *= area.width();
+          proj.y /= area.height();
+          if (builder->getRandom().getDouble() <= 1. - proj.lengthD() / (area.width() / 2)) {
             isInside[next] = 1;
             squares.push_back(next);
             if (++numSquares >= maxSquares)
@@ -713,8 +713,8 @@ class Buildings : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     Table<bool> filled(area);
-    int width = area.getW();
-    int height = area.getH();
+    int width = area.width();
+    int height = area.height();
     for (Vec2 v : area)
       filled[v] =  0;
     int sizeVar = 1;
@@ -735,16 +735,16 @@ class Buildings : public LevelMaker {
         spaceOk = true;
         w = builder->getRandom().get(minSize, maxSize);
         h = builder->getRandom().get(minSize, maxSize);
-        if (nextw > -1 && nextw + w < area.getKX()) {
+        if (nextw > -1 && nextw + w < area.right()) {
           px = nextw;
           nextw = -1;
         } else
-          px = area.getPX() + builder->getRandom().get(width - w - 2 * spaceBetween + 1) + spaceBetween;
+          px = area.left() + builder->getRandom().get(width - w - 2 * spaceBetween + 1) + spaceBetween;
         if (!align)
-          py = area.getPY() + builder->getRandom().get(height - h - 2 * spaceBetween + 1) + spaceBetween;
+          py = area.top() + builder->getRandom().get(height - h - 2 * spaceBetween + 1) + spaceBetween;
         else {
-          py = area.getPY() + (buildingRow == 1 ? alignHeight - h - 1 : alignHeight + 2);
-          if (py + h >= area.getKY() || py < area.getPY()) {
+          py = area.top() + (buildingRow == 1 ? alignHeight - h - 1 : alignHeight + 2);
+          if (py + h >= area.bottom() || py < area.top()) {
             spaceOk = false;
             continue;
           }
@@ -786,11 +786,11 @@ class Buildings : public LevelMaker {
           builder->addAttrib(v, SquareAttrib::EMPTY_ROOM);
     }
     if (align)
-      for (Vec2 v : Rectangle(area.getPX() + area.getW() / 3, area.getPY() + alignHeight,
-            area.getKX() - area.getW() / 3, area.getPY() + alignHeight + 2))
+      for (Vec2 v : Rectangle(area.left() + area.width() / 3, area.top() + alignHeight,
+            area.right() - area.width() / 3, area.top() + alignHeight + 2))
         builder->addAttrib(v, SquareAttrib::BUILDINGS_CENTER);
     if (roadConnection)
-      builder->putSquare(Vec2((area.getPX() + area.getKX()) / 2, area.getPY() + alignHeight),
+      builder->putSquare(Vec2((area.left() + area.right()) / 2, area.top() + alignHeight),
           SquareId::ROAD, SquareAttrib::CONNECT_ROAD);
   }
 
@@ -811,15 +811,15 @@ class BorderGuard : public LevelMaker {
   BorderGuard(LevelMaker* inside, SquareType _type = SquareId::BORDER_GUARD) : type(_type), insideMaker(inside) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    for (int i : Range(area.getPX(), area.getKX())) {
-      builder->putSquare(Vec2(i, area.getPY()), type);
-      builder->putSquare(Vec2(i, area.getKY() - 1), type);
+    for (int i : Range(area.left(), area.right())) {
+      builder->putSquare(Vec2(i, area.top()), type);
+      builder->putSquare(Vec2(i, area.bottom() - 1), type);
     }
-    for (int i : Range(area.getPY(), area.getKY())) {
-      builder->putSquare(Vec2(area.getPX(), i), type);
-      builder->putSquare(Vec2(area.getKX() - 1, i), type);
+    for (int i : Range(area.top(), area.bottom())) {
+      builder->putSquare(Vec2(area.left(), i), type);
+      builder->putSquare(Vec2(area.right() - 1, i), type);
     }
-    insideMaker->make(builder, Rectangle(area.getPX() + 1, area.getPY() + 1, area.getKX() - 1, area.getKY() - 1));
+    insideMaker->make(builder, Rectangle(area.left() + 1, area.top() + 1, area.right() - 1, area.bottom() - 1));
   }
 
   private:
@@ -849,21 +849,21 @@ class MakerQueue : public LevelMaker {
 class PredicatePrecalc {
   public:
   PredicatePrecalc(const Predicate& predicate, LevelBuilder* builder, Rectangle area)
-      : counts(Rectangle(area.getTopLeft(), area.getBottomRight() + Vec2(1, 1))) {
-    int px = counts.getBounds().getPX();
-    int py = counts.getBounds().getPY();
-    for (int x : Range(px, counts.getBounds().getKX()))
+      : counts(Rectangle(area.topLeft(), area.bottomRight() + Vec2(1, 1))) {
+    int px = counts.getBounds().left();
+    int py = counts.getBounds().top();
+    for (int x : Range(px, counts.getBounds().right()))
       counts[x][py] = 0;
-    for (int y : Range(py, counts.getBounds().getKY()))
+    for (int y : Range(py, counts.getBounds().bottom()))
       counts[px][y] = 0;
-    for (Vec2 v : Rectangle(area.getTopLeft() + Vec2(1, 1), counts.getBounds().getBottomRight()))
+    for (Vec2 v : Rectangle(area.topLeft() + Vec2(1, 1), counts.getBounds().bottomRight()))
       counts[v] = (predicate.apply(builder, v - Vec2(1, 1)) ? 1 : 0) +
         counts[v.x - 1][v.y] + counts[v.x][v.y - 1] -counts[v.x - 1][v.y - 1];
   }
 
   int getCount(Rectangle area) const {
-    return counts[area.getBottomRight()] + counts[area.getTopLeft()]
-      -counts[area.getBottomLeft()] - counts[area.getTopRight()];
+    return counts[area.bottomRight()] + counts[area.topLeft()]
+      -counts[area.bottomLeft()] - counts[area.topRight()];
   }
 
   private:
@@ -907,7 +907,7 @@ class RandomLocations : public LevelMaker {
       bool apply(Rectangle rect) const {
         int numFirst = pred1.getCount(rect);
         int numSecond = pred2.getCount(rect);
-        return numSecond >= minSecond && numSecond < maxSecond && numSecond + numFirst == rect.getW() * rect.getH();
+        return numSecond >= minSecond && numSecond < maxSecond && numSecond + numFirst == rect.width() * rect.height();
       }
 
       private:
@@ -978,15 +978,15 @@ class RandomLocations : public LevelMaker {
       int height = sizes[i].second;
       if (contains({LevelBuilder::CW1, LevelBuilder::CW3}, maps[i]))
         std::swap(width, height);
-      CHECK(width <= area.getW() && height <= area.getH());
+      CHECK(width <= area.width() && height <= area.height());
       int px;
       int py;
       int cnt = 1000;
       bool ok;
       do {
         ok = true;
-        px = area.getPX() + builder->getRandom().get(area.getW() - width);
-        py = area.getPY() + builder->getRandom().get(area.getH() - height);
+        px = area.left() + builder->getRandom().get(area.width() - width);
+        py = area.top() + builder->getRandom().get(area.height() - height);
         for (int j : Range(i))
           if ((maxDistance.count({insideMakers[j].get(), insideMakers[i].get()}) && 
                 maxDistance[{insideMakers[j].get(), insideMakers[i].get()}] <
@@ -1036,12 +1036,12 @@ class Margin : public LevelMaker {
       :left(_left) ,top(_top), right(_right), bottom(_bottom), inside(in) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    CHECK(area.getW() > left + right && area.getH() > top + bottom);
+    CHECK(area.width() > left + right && area.height() > top + bottom);
     inside->make(builder, Rectangle(
-          area.getPX() + left,
-          area.getPY() + top,
-          area.getKX() - right,
-          area.getKY() - bottom));
+          area.left() + left,
+          area.top() + top,
+          area.right() - right,
+          area.bottom() - bottom));
   }
 
   private:
@@ -1059,7 +1059,7 @@ void addAvg(int x, int y, const Table<double>& wys, double& avg, int& num) {
 
 Table<double> genNoiseMap(RandomGen& random, Rectangle area, vector<int> cornerLevels, double varianceMult) {
   int width = 1;
-  while (width < area.getW() - 1 || width < area.getH() - 1)
+  while (width < area.width() - 1 || width < area.height() - 1)
     width *= 2;
   width /= 2;
   ++width;
@@ -1105,16 +1105,16 @@ Table<double> genNoiseMap(RandomGen& random, Rectangle area, vector<int> cornerL
     variance *= varianceMult;
   }
   Table<double> ret(area);
-  Vec2 offset(area.getPX(), area.getPY());
+  Vec2 offset(area.left(), area.top());
   for (Vec2 v : area) {
-    Vec2 lv((v.x - offset.x) * width / area.getW(), (v.y - offset.y) * width / area.getH());
+    Vec2 lv((v.x - offset.x) * width / area.width(), (v.y - offset.y) * width / area.height());
     ret[v] = wys[lv];
   }
   return ret;
 }
 
 void raiseLocalMinima(Table<double>& t) {
-  Vec2 minPos = t.getBounds().getTopLeft();
+  Vec2 minPos = t.getBounds().topLeft();
   for (Vec2 v : t.getBounds())
     if (t[v] < t[minPos])
       minPos = v;
@@ -1286,8 +1286,8 @@ class TransferPos : public LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     bool found = false;
     for (Vec2 pos : area)
-      if (((pos.x - area.getPX() < width) || (pos.y - area.getPY() < width) ||
-          (area.getKX() - pos.x <= width) || (area.getKY() - pos.y <= width)) &&
+      if (((pos.x - area.left() < width) || (pos.y - area.top() < width) ||
+          (area.right() - pos.x <= width) || (area.bottom() - pos.y <= width)) &&
           predicate.apply(builder, pos)) {
         builder->getSquare(pos)->setLandingLink(stairKey);
         found = true;
@@ -1461,43 +1461,43 @@ class Division : public LevelMaker {
       : vRatio(_vRatio), hRatio(-1), upperLeft(_top), lowerLeft(_bottom), wall(_wall) {}
 
   void makeHorizDiv(LevelBuilder* builder, Rectangle area) {
-    int hDiv = area.getPX() + min(area.getW() - 1, max(1, (int) (hRatio * area.getW())));
+    int hDiv = area.left() + min(area.width() - 1, max(1, (int) (hRatio * area.width())));
     if (upperLeft)
-      upperLeft->make(builder, Rectangle(area.getPX(), area.getPY(), hDiv, area.getKY()));
+      upperLeft->make(builder, Rectangle(area.left(), area.top(), hDiv, area.bottom()));
     if (upperRight)
-      upperRight->make(builder, Rectangle(hDiv + (wall ? 1 : 0), area.getPY(), area.getKX(), area.getKY()));
+      upperRight->make(builder, Rectangle(hDiv + (wall ? 1 : 0), area.top(), area.right(), area.bottom()));
     if (wall)
-      for (int i : Range(area.getPY(), area.getKY()))
+      for (int i : Range(area.top(), area.bottom()))
         builder->putSquare(Vec2(hDiv, i), *wall);
   }
 
   void makeVertDiv(LevelBuilder* builder, Rectangle area) {
-    int vDiv = area.getPY() + min(area.getH() - 1, max(1, (int) (vRatio * area.getH())));
+    int vDiv = area.top() + min(area.height() - 1, max(1, (int) (vRatio * area.height())));
     if (upperLeft)
-      upperLeft->make(builder, Rectangle(area.getPX(), area.getPY(), area.getKX(), vDiv));
+      upperLeft->make(builder, Rectangle(area.left(), area.top(), area.right(), vDiv));
     if (lowerLeft)
-      lowerLeft->make(builder, Rectangle(area.getPX(), vDiv + (wall ? 1 : 0), area.getKX(), area.getKY()));
+      lowerLeft->make(builder, Rectangle(area.left(), vDiv + (wall ? 1 : 0), area.right(), area.bottom()));
     if (wall)
-      for (int i : Range(area.getPX(), area.getKX()))
+      for (int i : Range(area.left(), area.right()))
         builder->putSquare(Vec2(i, vDiv), *wall);
   }
 
   void makeDiv(LevelBuilder* builder, Rectangle area) {
-    int vDiv = area.getPY() + min(area.getH() - 1, max(1, (int) (vRatio * area.getH())));
-    int hDiv = area.getPX() + min(area.getW() - 1, max(1, (int) (hRatio * area.getW())));
+    int vDiv = area.top() + min(area.height() - 1, max(1, (int) (vRatio * area.height())));
+    int hDiv = area.left() + min(area.width() - 1, max(1, (int) (hRatio * area.width())));
     int wallSpace = wall ? 1 : 0;
     if (upperLeft)
-      upperLeft->make(builder, Rectangle(area.getPX(), area.getPY(), hDiv, vDiv));
+      upperLeft->make(builder, Rectangle(area.left(), area.top(), hDiv, vDiv));
     if (upperRight)
-      upperRight->make(builder, Rectangle(hDiv + wallSpace, area.getPY(), area.getKX(), vDiv));
+      upperRight->make(builder, Rectangle(hDiv + wallSpace, area.top(), area.right(), vDiv));
     if (lowerLeft)
-      lowerLeft->make(builder, Rectangle(area.getPX(), vDiv + wallSpace, hDiv, area.getKY()));
+      lowerLeft->make(builder, Rectangle(area.left(), vDiv + wallSpace, hDiv, area.bottom()));
     if (lowerRight)
-      lowerRight->make(builder, Rectangle(hDiv + wallSpace, vDiv + wallSpace, area.getKX(), area.getKY()));
+      lowerRight->make(builder, Rectangle(hDiv + wallSpace, vDiv + wallSpace, area.right(), area.bottom()));
     if (wall) {
-      for (int i : Range(area.getPY(), area.getKY()))
+      for (int i : Range(area.top(), area.bottom()))
         builder->putSquare(Vec2(hDiv, i), *wall);
-      for (int i : Range(area.getPX(), area.getKX()))
+      for (int i : Range(area.left(), area.right()))
         builder->putSquare(Vec2(i, vDiv), *wall);
     }
   }
@@ -1526,7 +1526,7 @@ class Circle : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     Vec2 center = area.middle();
-    double r = min(area.getH(), area.getW()) / 2 - 1;
+    double r = min(area.height(), area.width()) / 2 - 1;
     Vec2 lastPos;
     for (double a = 0; a < 3.1415 * 2; a += builder->getRandom().getDouble() * r / 10) {
       Vec2 pos = center + Vec2(sin(a) * r, cos(a) * r);
@@ -1548,10 +1548,10 @@ class AreaCorners : public LevelMaker {
 
   vector<Rectangle> getCorners(Rectangle area) {
     return {
-      Rectangle(area.getTopLeft(), area.getTopLeft() + size),
-      Rectangle(area.getTopRight() - Vec2(size.x, 0), area.getTopRight() + Vec2(0, size.y)),
-      Rectangle(area.getBottomLeft() - Vec2(0, size.y), area.getBottomLeft() + Vec2(size.x, 0)),
-      Rectangle(area.getBottomRight() - size, area.getBottomRight())};
+      Rectangle(area.topLeft(), area.topLeft() + size),
+      Rectangle(area.topRight() - Vec2(size.x, 0), area.topRight() + Vec2(0, size.y)),
+      Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomLeft() + Vec2(size.x, 0)),
+      Rectangle(area.bottomRight() - size, area.bottomRight())};
   }
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1575,7 +1575,7 @@ class CastleExit : public LevelMaker {
     : guardTribe(_guardTribe), building(_building), guardId(_guardId) {}
   
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    Vec2 loc(area.getKX() - 1, area.middle().y);
+    Vec2 loc(area.right() - 1, area.middle().y);
     builder->putSquare(loc + Vec2(2, 0), building.floorInside);
     builder->putSquare(loc + Vec2(2, 0), building.door, SquareAttrib::CONNECT_ROAD);
     vector<Vec2> walls { Vec2(1, -2), Vec2(2, -2), Vec2(2, -1), Vec2(2, 1), Vec2(2, 2), Vec2(1, 2)};
@@ -2284,14 +2284,14 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
 }
 
 Vec2 LevelMaker::getRandomExit(RandomGen& random, Rectangle rect, int minCornerDist) {
-  CHECK(rect.getW() > 2 * minCornerDist && rect.getH() > 2 * minCornerDist);
+  CHECK(rect.width() > 2 * minCornerDist && rect.height() > 2 * minCornerDist);
   int w1 = random.get(2);
   int w2 = random.get(2);
-  int d1 = random.get(minCornerDist, rect.getW() - minCornerDist);
-  int d2 = random.get(minCornerDist, rect.getH() - minCornerDist);
+  int d1 = random.get(minCornerDist, rect.width() - minCornerDist);
+  int d2 = random.get(minCornerDist, rect.height() - minCornerDist);
   return Vec2(
-        rect.getPX() + d1 * w1 + (1 - w1) * w2 * (rect.getW() - 1),
-        rect.getPY() + d2 * (1 - w1) + w1 * w2 * (rect.getH() - 1));
+        rect.left() + d1 * w1 + (1 - w1) * w2 * (rect.width() - 1),
+        rect.top() + d2 * (1 - w1) + w1 * w2 * (rect.height() - 1));
 }
 
 class SpecificArea : public LevelMaker {
@@ -2313,17 +2313,17 @@ PLevelMaker LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory 
   queue->addMaker(new Empty(SquareId::BLACK_FLOOR));
   queue->addMaker(new SetCovered());
   Rectangle leaderSpawn(
-          Level::getSplashVisibleBounds().getKX() + 1, Level::getSplashVisibleBounds().middle().y,
-          Level::getSplashVisibleBounds().getKX() + 2, Level::getSplashVisibleBounds().middle().y + 1);
+          Level::getSplashVisibleBounds().right() + 1, Level::getSplashVisibleBounds().middle().y,
+          Level::getSplashVisibleBounds().right() + 2, Level::getSplashVisibleBounds().middle().y + 1);
   Rectangle heroSpawn(
-          Level::getSplashVisibleBounds().getKX() + 2, Level::getSplashVisibleBounds().middle().y - 1,
-          Level::getSplashBounds().getKX(), Level::getSplashVisibleBounds().middle().y + 2);
+          Level::getSplashVisibleBounds().right() + 2, Level::getSplashVisibleBounds().middle().y - 1,
+          Level::getSplashBounds().right(), Level::getSplashVisibleBounds().middle().y + 2);
   Rectangle monsterSpawn1(
-          Level::getSplashVisibleBounds().getPX(), 0,
-          Level::getSplashVisibleBounds().getKX(), Level::getSplashVisibleBounds().getPY() - 1);
+          Level::getSplashVisibleBounds().left(), 0,
+          Level::getSplashVisibleBounds().right(), Level::getSplashVisibleBounds().top() - 1);
   Rectangle monsterSpawn2(
-          Level::getSplashVisibleBounds().getPX(), Level::getSplashVisibleBounds().getKY() + 2,
-          Level::getSplashVisibleBounds().getKX(), Level::getSplashBounds().getKY());
+          Level::getSplashVisibleBounds().left(), Level::getSplashVisibleBounds().bottom() + 2,
+          Level::getSplashVisibleBounds().right(), Level::getSplashBounds().bottom());
   queue->addMaker(new SpecificArea(leaderSpawn, new Creatures(heroLeader, 1,MonsterAIFactory::splashHeroes(true))));
   queue->addMaker(new SpecificArea(heroSpawn, new Creatures(heroes, 22, MonsterAIFactory::splashHeroes(false))));
   queue->addMaker(new SpecificArea(monsterSpawn1, new Creatures(monsters, 17, MonsterAIFactory::splashMonsters())));
@@ -2420,7 +2420,7 @@ class SokobanMaker : public LevelMaker {
 found:
     int length = 7;
     middleLine = start.x;
-    workArea = Rectangle(area.getTopLeft(), Vec2(start.x + length, area.getKY()));
+    workArea = Rectangle(area.topLeft(), Vec2(start.x + length, area.bottom()));
     for (int i : Range(1, length + 1)) {
       Vec2 pos = start + Vec2(i, 0);
       builder->putSquare(pos, SquareId::FLOOR);

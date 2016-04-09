@@ -79,7 +79,7 @@ void Location::setBounds(Rectangle b) {
   for (Vec2 v : squares)
     table[v] = true;
   middle = b.middle();
-  bottomRight = b.getBottomRight();
+  bottomRight = b.bottomRight();
 }
 
 void Location::setLevel(Level* l) {

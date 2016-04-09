@@ -233,20 +233,20 @@ class Rectangle {
   static Rectangle boundingBox(const vector<Vec2>& v);
   static Rectangle centered(Vec2 center, int radius);
 
-  int getPX() const;
-  int getPY() const;
-  int getKX() const;
-  int getKY() const;
-  int getW() const;
-  int getH() const;
+  int left() const;
+  int top() const;
+  int right() const;
+  int bottom() const;
+  int width() const;
+  int height() const;
   Vec2 getSize() const;
   Range getYRange() const;
   Range getXRange() const;
 
-  Vec2 getTopLeft() const;
-  Vec2 getBottomRight() const;
-  Vec2 getTopRight() const;
-  Vec2 getBottomLeft() const;
+  Vec2 topLeft() const;
+  Vec2 bottomRight() const;
+  Vec2 topRight() const;
+  Vec2 bottomLeft() const;
 
   bool intersects(const Rectangle& other) const;
   bool contains(const Rectangle& other) const;
@@ -440,7 +440,7 @@ class RandomGen {
 extern RandomGen Random;
 
 inline Debug& operator <<(Debug& d, Rectangle rect) {
-  return d << "(" << rect.getPX() << "," << rect.getPY() << ") (" << rect.getKX() << "," << rect.getKY() << ")";
+  return d << "(" << rect.left() << "," << rect.top() << ") (" << rect.right() << "," << rect.bottom() << ")";
 }
 
 
@@ -525,7 +525,7 @@ class Table {
 #ifdef RELEASE
     return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
 #else
-    Vec2 v = vAbs - bounds.getTopLeft();
+    Vec2 v = vAbs - bounds.topLeft();
     CHECK(vAbs.inRectangle(bounds)) <<
         "Table index out of bounds " << bounds << " " << vAbs;
     return mem[v.x * bounds.h + v.y];
@@ -536,7 +536,7 @@ class Table {
 #ifdef RELEASE
     return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
 #else
-    Vec2 v = vAbs - bounds.getTopLeft();
+    Vec2 v = vAbs - bounds.topLeft();
     CHECK(vAbs.inRectangle(bounds)) <<
         "Table index out of bounds " << bounds << " " << vAbs;
     return mem[v.x * bounds.h + v.y];
@@ -553,7 +553,7 @@ class Table {
   template <class Archive> 
   void load(Archive& ar, const unsigned int version) {
     ar >> BOOST_SERIALIZATION_NVP(bounds);
-    mem.reset(new T[bounds.getW() * bounds.getH()]);
+    mem.reset(new T[bounds.width() * bounds.height()]);
     for (Vec2 v : bounds)
       ar >> boost::serialization::make_nvp("Elem", (*this)[v]);
   }

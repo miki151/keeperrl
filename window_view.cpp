@@ -215,11 +215,11 @@ void WindowView::reset() {
 void WindowView::displayOldSplash() {
   Rectangle menuPosition = guiBuilder.getMenuPosition(MenuType::MAIN_NO_TILES, 0);
   int margin = 10;
-  renderer.drawImage(renderer.getSize().x / 2 - 415, menuPosition.getKY() + margin,
+  renderer.drawImage(renderer.getSize().x / 2 - 415, menuPosition.bottom() + margin,
       gui.get(GuiFactory::TexId::SPLASH1));
   Texture& splash2 = gui.get(GuiFactory::TexId::SPLASH2);
   renderer.drawImage((renderer.getSize().x - splash2.getSize().x) / 2,
-      menuPosition.getPY() - splash2.getSize().y - margin, splash2);
+      menuPosition.top() - splash2.getSize().y - margin, splash2);
 }
 
 void WindowView::displayMenuSplash2() {
@@ -254,10 +254,10 @@ void WindowView::displayAutosaveSplash(const ProgressMeter& meter) {
       refreshScreen(false);
       window->render(renderer);
       double progress = meter.getProgress();
-      Rectangle bar(progressBar.getTopLeft(), Vec2(1 + progressBar.getPX() * (1.0 - progress) +
-            progressBar.getKX() * progress, progressBar.getKY()));
+      Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
+            progressBar.right() * progress, progressBar.bottom()));
       renderer.drawFilledRectangle(bar, transparency(colors[ColorId::DARK_GREEN], 50));
-      renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.getPY() + 20, "Autosaving", Renderer::HOR);
+      renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.top() + 20, "Autosaving", Renderer::HOR);
       renderer.drawAndClearBuffer();
       sf::sleep(sf::milliseconds(30));
       Event event;
@@ -302,7 +302,7 @@ void WindowView::displaySplash(const ProgressMeter& meter, SplashType type, func
             (renderer.getSize().y - loadingSplash.getSize().y) / 2, loadingSplash);
       renderer.drawText(colors[ColorId::WHITE], textPos.x, textPos.y, text, Renderer::HOR);
       if (cancelFun)
-        renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.getPX(), cancelBut.getPY(), cancelText);
+        renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.left(), cancelBut.top(), cancelText);
       renderer.drawAndClearBuffer();
       sf::sleep(sf::milliseconds(30));
       Event event;
@@ -370,17 +370,17 @@ void WindowView::rebuildGui() {
         bottom = gui.empty();
         rightBarWidth = 0;
         bottomBarHeight = 0;
-        if (getMapGuiBounds().getPX() > 0) {
+        if (getMapGuiBounds().left() > 0) {
           tempGuiElems.push_back(gui.rectangle(colors[ColorId::BLACK]));
-          tempGuiElems.back()->setBounds(Rectangle(0, 0, getMapGuiBounds().getPX(), renderer.getSize().y));
+          tempGuiElems.back()->setBounds(Rectangle(0, 0, getMapGuiBounds().left(), renderer.getSize().y));
           tempGuiElems.push_back(gui.rectangle(colors[ColorId::BLACK]));
-          tempGuiElems.back()->setBounds(Rectangle(Vec2(getMapGuiBounds().getKX(), 0), renderer.getSize()));
+          tempGuiElems.back()->setBounds(Rectangle(Vec2(getMapGuiBounds().right(), 0), renderer.getSize()));
         }
-        if (getMapGuiBounds().getPY() > 0) {
+        if (getMapGuiBounds().top() > 0) {
           tempGuiElems.push_back(gui.rectangle(colors[ColorId::BLACK]));
-          tempGuiElems.back()->setBounds(Rectangle(0, 0, renderer.getSize().x, getMapGuiBounds().getPY()));
+          tempGuiElems.back()->setBounds(Rectangle(0, 0, renderer.getSize().x, getMapGuiBounds().top()));
           tempGuiElems.push_back(gui.rectangle(colors[ColorId::BLACK]));
-          tempGuiElems.back()->setBounds(Rectangle(Vec2(0, getMapGuiBounds().getKY()), renderer.getSize()));
+          tempGuiElems.back()->setBounds(Rectangle(Vec2(0, getMapGuiBounds().bottom()), renderer.getSize()));
         }
         break;
     case GameInfo::InfoType::PLAYER:
@@ -852,7 +852,7 @@ void WindowView::presentHighscores(const vector<HighscoreList>& list) {
   bool online = false;
   vector<double> scrollPos(list.size(), 0);
   getBlockingGui(sem, guiBuilder.drawHighscores(list, sem, tabNum, scrollPos, online),
-      guiBuilder.getMenuPosition(MenuType::NORMAL, 0).getTopLeft());
+      guiBuilder.getMenuPosition(MenuType::NORMAL, 0).topLeft());
 }
 
 PGuiElem WindowView::drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index) {
@@ -1101,7 +1101,7 @@ void WindowView::switchTiles() {
   if (currentTileLayout.layouts.size() <= index)
     index = 0;
   while (gameInfo.infoType == GameInfo::InfoType::SPECTATOR && useTiles &&
-      renderer.getSize().x < Level::getSplashVisibleBounds().getW() *
+      renderer.getSize().x < Level::getSplashVisibleBounds().width() *
       currentTileLayout.layouts[index].getSquareSize().x && index < currentTileLayout.layouts.size() - 1)
     ++index;
   mapLayout = &currentTileLayout.layouts[index];

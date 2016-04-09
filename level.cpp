@@ -52,7 +52,7 @@ Level::~Level() {}
 Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& n,
     Table<CoverInfo> covers, LevelId id) 
     : squares(std::move(s)), oldSquares(squares.getBounds()), locations(l), model(m), 
-      name(n), coverInfo(std::move(covers)), bucketMap(squares.getBounds().getW(), squares.getBounds().getH(),
+      name(n), coverInfo(std::move(covers)), bucketMap(squares.getBounds().width(), squares.getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares.getBounds(), 0), lightCapAmount(squares.getBounds(), 1),
       levelId(id) {
   for (Vec2 pos : squares.getBounds()) {
@@ -255,15 +255,15 @@ bool Level::landCreature(StairKey key, PCreature creature) {
 }
 
 static Vec2 projectOnBorders(Rectangle area, Vec2 d) {
-  Vec2 center = Vec2((area.getPX() + area.getKX()) / 2, (area.getPY() + area.getKY()) / 2);
+  Vec2 center = Vec2((area.left() + area.right()) / 2, (area.top() + area.bottom()) / 2);
   if (d.x == 0) {
-    return Vec2(center.x, d.y > 0 ? area.getKY() - 1 : area.getPY());
+    return Vec2(center.x, d.y > 0 ? area.bottom() - 1 : area.top());
   }
-  int cy = d.y * area.getW() / 2 / abs(d.x);
-  if (center.y + cy >= area.getPY() && center.y + cy < area.getKY())
-    return Vec2(d.x > 0 ? area.getKX() - 1 : area.getPX(), center.y + cy);
-  int cx = d.x * area.getH() / 2 / abs(d.y);
-  return Vec2(center.x + cx, d.y > 0 ? area.getKY() - 1: area.getPY());
+  int cy = d.y * area.width() / 2 / abs(d.x);
+  if (center.y + cy >= area.top() && center.y + cy < area.bottom())
+    return Vec2(d.x > 0 ? area.right() - 1 : area.left(), center.y + cy);
+  int cx = d.x * area.height() / 2 / abs(d.y);
+  return Vec2(center.x + cx, d.y > 0 ? area.bottom() - 1: area.top());
 }
 
 Position Level::getLandingSquare(StairKey key, Vec2 travelDir) const {

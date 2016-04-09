@@ -838,7 +838,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
     list.addElem(gui.label("Inventory", colors[ColorId::YELLOW]));
     for (auto& item : info.inventory)
       list.addElem(getItemLine(item, [=](Rectangle butBounds) {
-            if (auto choice = getItemChoice(item, butBounds.getBottomLeft() + Vec2(50, 0), false))
+            if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), false))
               callbacks.input({UserInputId::INVENTORY_ITEM, InventoryItemInfo{item.ids, *choice}});}));
   }
   return gui.margins(
@@ -1348,7 +1348,7 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
         line.addElemAuto(gui.stack(
             gui.labelHighlight("Triggers", colors[ColorId::RED]),
             gui.buttonRect([this, triggers](Rectangle bounds) {
-                showAttackTriggers(triggers, bounds.getTopRight() + Vec2(20, 0));})));
+                showAttackTriggers(triggers, bounds.topRight() + Vec2(20, 0));})));
       lines.addElem(line.buildHorizontalList());
       for (auto action : elem.actions)
         lines.addElem(gui.margins(getVillageActionButton(i, action), 40, 0, 0, 0));
@@ -1377,7 +1377,7 @@ Rectangle GuiBuilder::getMinionMenuPosition() {
 Rectangle GuiBuilder::getEquipmentMenuPosition(int height) {
   Rectangle minionMenu = getMinionMenuPosition();
   int width = 340;
-  Vec2 origin = minionMenu.getTopRight() + Vec2(-100, 200);
+  Vec2 origin = minionMenu.topRight() + Vec2(-100, 200);
   origin.x = min(origin.x, renderer.getSize().x - width);
   return Rectangle(origin, origin + Vec2(width, height)).intersection(Rectangle(Vec2(0, 0), renderer.getSize()));
 }
@@ -1455,7 +1455,7 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
     if (!elem.getSecondColumn().empty())
       secColumnWidth = max(secColumnWidth, 80 + renderer.getTextLength(elem.getSecondColumn()));
   }
-  columnWidth = min(columnWidth, getMenuPosition(menuType, options.size()).getW() - secColumnWidth - 140);
+  columnWidth = min(columnWidth, getMenuPosition(menuType, options.size()).width() - secColumnWidth - 140);
   if (menuType == MenuType::MAIN)
     columnWidth = 1000000;
   for (int i : All(options)) {
@@ -1640,7 +1640,7 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                         return colors[(retAction.lock[task.task] ^ task.locked) ?
                             ColorId::LIGHT_GRAY : ColorId::GREEN];})))).buildHorizontalList());
           }
-          drawMiniMenu(std::move(tasks), exit, bounds.getBottomLeft(), 200);
+          drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 200);
           callbacks.input({UserInputId::CREATURE_TASK_ACTION, retAction});
         }));
 }
@@ -1663,7 +1663,7 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minio
   vector<PGuiElem> itemElems = drawItemMenu(items,
       [=](Rectangle butBounds, optional<int> index) {
         const ItemInfo& item = items[*index];
-        if (auto choice = getItemChoice(item, butBounds.getBottomLeft() + Vec2(50, 0), true))
+        if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), true))
           callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
               EquipmentActionInfo{minion.creatureId, item.ids, item.slot, *choice}});
       });

@@ -122,7 +122,7 @@ void Renderer::drawImage(int px, int py, const Texture& image, double scale) {
 }
 
 void Renderer::drawImage(Rectangle target, Rectangle source, const Texture& image) {
-  drawSprite(target.getTopLeft(), source.getTopLeft(), source.getSize(), image, target.getSize());
+  drawSprite(target.topLeft(), source.topLeft(), source.getSize(), image, target.getSize());
 }
 
 void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, double scale) {
@@ -170,8 +170,8 @@ void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t, Ve
 void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline) {
   addRenderElem([this, t, color, outline] {
       static RectangleShape r;
-      r.setSize(Vector2f(t.getW(), t.getH()));
-      r.setPosition(t.getPX(), t.getPY());
+      r.setSize(Vector2f(t.width(), t.height()));
+      r.setPosition(t.left(), t.top());
       r.setFillColor(color);
       if (outline) {
         r.setOutlineThickness(-2);
@@ -191,10 +191,10 @@ Vector2f getV(Vec2 v) {
 }
 
 void Renderer::addQuad(const Rectangle& r, Color color) {
-  quads.push_back(Vertex(getV(r.getTopLeft()), color));
-  quads.push_back(Vertex(getV(r.getTopRight()), color));
-  quads.push_back(Vertex(getV(r.getBottomRight()), color));
-  quads.push_back(Vertex(getV(r.getBottomLeft()), color));
+  quads.push_back(Vertex(getV(r.topLeft()), color));
+  quads.push_back(Vertex(getV(r.topRight()), color));
+  quads.push_back(Vertex(getV(r.bottomRight()), color));
+  quads.push_back(Vertex(getV(r.bottomLeft()), color));
 }
 
 void Renderer::drawQuads() {
