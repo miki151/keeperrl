@@ -241,7 +241,7 @@ void Game::tick(double time) {
     bool conquered = true;
     for (Collective* col : getCollectives()) {
       conquered &= col->isConquered() || col->getVillainType() != VillainType::MAIN;
-      if (col->isConquered() && campaign)
+      if (col->isConquered() && campaign && col->getVillainType())
         campaign->setDefeated(getModelCoords(col->getLevel()->getModel()));
     }
     if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
