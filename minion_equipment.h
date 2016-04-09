@@ -28,11 +28,12 @@ class MinionEquipment {
 
   static bool isItemUseful(const Item*);
   bool needs(const Creature* c, const Item* it, bool noLimit = false, bool replacement = false) const;
-  const Creature* getOwner(const Item*) const;
+  optional<UniqueEntity<Creature>::Id> getOwner(const Item*) const;
+  bool isOwner(const Item*, const Creature*) const;
   void own(const Creature*, const Item*);
   void discard(const Item*);
   void discard(UniqueEntity<Item>::Id);
-  void updateOwners(const vector<Item*>);
+  void updateOwners(const vector<Item*>, const vector<Creature*>&);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -49,7 +50,7 @@ class MinionEquipment {
   int getEquipmentLimit(EquipmentType type) const;
   bool isItemAppropriate(const Creature*, const Item*) const;
 
-  EntityMap<Item, const Creature*> SERIAL(owners);
+  EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
   set<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>> SERIAL(locked);
 };
 

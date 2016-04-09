@@ -445,7 +445,7 @@ void PlayerControl::addConsumableItem(Creature* creature) {
   double scrollPos = 0;
   while (1) {
     const Item* chosenItem = chooseEquipmentItem(creature, {}, [&](const Item* it) {
-        return getCollective()->getMinionEquipment().getOwner(it) != creature && !it->canEquip()
+        return !getCollective()->getMinionEquipment().isOwner(it, creature) && !it->canEquip()
         && getCollective()->getMinionEquipment().needs(creature, it, true); }, &scrollPos);
     if (chosenItem)
       getCollective()->ownItem(creature, chosenItem);
@@ -457,11 +457,12 @@ void PlayerControl::addConsumableItem(Creature* creature) {
 void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
   vector<Item*> currentItems = creature->getEquipment().getItem(slot);
   const Item* chosenItem = chooseEquipmentItem(creature, currentItems, [&](const Item* it) {
-      return getCollective()->getMinionEquipment().getOwner(it) != creature
+      return !getCollective()->getMinionEquipment().isOwner(it, creature)
       && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slot; });
   if (chosenItem) {
-    if (Creature* c = const_cast<Creature*>(getCollective()->getMinionEquipment().getOwner(chosenItem)))
-      c->removeEffect(LastingEffect::SLEEP);
+    if (auto creatureId = getCollective()->getMinionEquipment().getOwner(chosenItem))
+      if (Creature* c = getCreature(*creatureId))
+        c->removeEffect(LastingEffect::SLEEP);
     if (chosenItem->getEquipmentSlot() != EquipmentSlot::WEAPON
         || creature->isEquipmentAppropriate(chosenItem)
         || getView()->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " +
@@ -570,7 +571,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   for (auto slot : Equipment::slotTitles)
     slots.push_back(slot.first);
   vector<Item*> ownedItems = getCollective()->getAllItems([this, creature](const Item* it) {
-      return getCollective()->getMinionEquipment().getOwner(it) == creature; });
+      return getCollective()->getMinionEquipment().isOwner(it, creature); });
   vector<Item*> slotItems;
   vector<EquipmentSlot> slotIndex;
   for (auto slot : slots) {
@@ -625,7 +626,7 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
     return nullptr;
   vector<pair<string, vector<Item*>>> usedStacks = Item::stackItems(usedItems,
       [&](const Item* it) {
-        const Creature* c = NOTNULL(getCollective()->getMinionEquipment().getOwner(it));
+        const Creature* c = getCreature(*getCollective()->getMinionEquipment().getOwner(it));
         return " owned by " + c->getName().a() + " (level " + toString(c->getAttributes().getExpLevel()) + ")";});
   vector<Item*> allStacked;
   vector<ItemInfo> options;
@@ -633,8 +634,9 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
     options.push_back(getItemInfo({it}, true, false, false));
   for (auto elem : concat(Item::stackItems(availableItems), usedStacks)) {
     options.emplace_back(getItemInfo(elem.second, false, false, false));
-    if (const Creature* c = getCollective()->getMinionEquipment().getOwner(elem.second.at(0)))
-      options.back().owner = CreatureInfo(c);
+    if (auto creatureId = getCollective()->getMinionEquipment().getOwner(elem.second.at(0)))
+      if (const Creature* c = getCreature(*creatureId))
+        options.back().owner = CreatureInfo(c);
     allStacked.push_back(elem.second.front());
   }
   auto creatureId = creature->getUniqueId();

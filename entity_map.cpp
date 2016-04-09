@@ -113,5 +113,6 @@ SERIALIZABLE_TMPL(EntityMap, Creature, Collective::CurrentTaskInfo);
 SERIALIZABLE_TMPL(EntityMap, Creature, Collective::MinionPaymentInfo);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<AttractionInfo>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<Position>);
+SERIALIZABLE_TMPL(EntityMap, Creature, Creature*);
 SERIALIZABLE_TMPL(EntityMap, Task, double);
-SERIALIZABLE_TMPL(EntityMap, Item, const Creature*);
+SERIALIZABLE_TMPL(EntityMap, Item, Creature::Id);

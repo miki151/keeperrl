@@ -386,7 +386,7 @@ const vector<Creature*>& Collective::getCreatures() const {
 MoveInfo Collective::getDropItems(Creature *c) {
   if (territory->contains(c->getPosition())) {
     vector<Item*> items = c->getEquipment().getItems([this, c](const Item* item) {
-        return minionEquipment->isItemUseful(item) && minionEquipment->getOwner(item) != c; });
+        return minionEquipment->isItemUseful(item) && !minionEquipment->isOwner(item, c); });
     if (!items.empty())
       return c->drop(items);
   }
@@ -618,11 +618,11 @@ PTask Collective::getEquipmentTask(Creature* c) {
       tasks.push_back(Task::equipItem(it));
   for (Position v : getAllSquares(equipmentStorage)) {
     vector<Item*> it = filter(v.getItems(ItemIndex::MINION_EQUIPMENT), 
-        [this, c] (const Item* it) { return minionEquipment->getOwner(it) == c && it->canEquip(); });
+        [this, c] (const Item* it) { return minionEquipment->isOwner(it, c) && it->canEquip(); });
     if (!it.empty())
       tasks.push_back(Task::pickAndEquipItem(this, v, it[0]));
     it = filter(v.getItems(ItemIndex::MINION_EQUIPMENT), 
-        [this, c] (const Item* it) { return minionEquipment->getOwner(it) == c; });
+        [this, c] (const Item* it) { return minionEquipment->isOwner(it, c); });
     if (!it.empty())
       tasks.push_back(Task::pickItem(this, v, it));
   }
@@ -1231,7 +1231,7 @@ void Collective::tick() {
           fetchItems(pos, elem);
     }
   if (config->getManageEquipment() && Random.roll(10))
-    minionEquipment->updateOwners(getAllItems(true));
+    minionEquipment->updateOwners(getAllItems(true), getCreatures());
 }
 
 const vector<Creature*>& Collective::getCreatures(MinionTrait trait) const {
@@ -1579,7 +1579,7 @@ Item* Collective::getWorstItem(const Creature* c, vector<Item*> items) const {
 void Collective::autoEquipment(Creature* creature, bool replace) {
   map<EquipmentSlot, vector<Item*>> slots;
   vector<Item*> myItems = filter(getAllItems(ItemIndex::CAN_EQUIP), [&](const Item* it) {
-      return minionEquipment->getOwner(it) == creature;});
+      return minionEquipment->isOwner(it, creature);});
   for (Item* it : myItems) {
     EquipmentSlot slot = it->getEquipmentSlot();
     if (slots[slot].size() < creature->getEquipment().getMaxItems(slot)) {

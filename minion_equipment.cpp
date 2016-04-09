@@ -83,20 +83,25 @@ bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit, boo
     return false;
 }
 
-const Creature* MinionEquipment::getOwner(const Item* it) const {
-  if (auto owner = owners.getMaybe(it))
-    return *owner;
-  else
-    return nullptr;
+optional<Creature::Id> MinionEquipment::getOwner(const Item* it) const {
+  return owners.getMaybe(it);
 }
 
-void MinionEquipment::updateOwners(const vector<Item*> items) {
-  for (const Item* item : items)
-    if (auto owner = owners.getMaybe(item)) {
-      const Creature* c = *owner;
-      if (c->isDead() || !needs(c, item, true, true))
-        discard(item);
-    }
+bool MinionEquipment::isOwner(const Item* it, const Creature* c) const {
+  return getOwner(it) == c->getUniqueId();
+}
+
+void MinionEquipment::updateOwners(const vector<Item*> items, const vector<Creature*>& creatures) {
+  EntityMap<Creature, Creature*> index;
+  for (Creature* c : creatures)
+    index.set(c, c);
+  for (const Item* item : items) {
+    if (auto owner = owners.getMaybe(item))
+      if (optional<Creature*> c = index.getMaybe(*owner))
+        if (!(*c)->isDead() && needs(*c, item, true, true))
+          continue;
+    discard(item);
+  }
 }
 
 void MinionEquipment::discard(const Item* it) {
@@ -105,13 +110,13 @@ void MinionEquipment::discard(const Item* it) {
 
 void MinionEquipment::discard(UniqueEntity<Item>::Id id) {
   if (auto owner = owners.getMaybe(id)) {
-    locked.erase(make_pair((*owner)->getUniqueId(), id));
+    locked.erase(make_pair(*owner, id));
     owners.erase(id);
   }
 }
 
 void MinionEquipment::own(const Creature* c, const Item* it) {
-  owners.set(it, c);
+  owners.set(it, c->getUniqueId());
 }
 
 bool MinionEquipment::isItemAppropriate(const Creature* c, const Item* it) const {
