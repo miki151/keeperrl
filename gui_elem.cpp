@@ -2143,6 +2143,11 @@ PGuiElem GuiFactory::miniBorder2() {
         sprite(get(TexId::CORNER_MINI2), Alignment::TOP_LEFT, false, false)));
 }
 
+PGuiElem GuiFactory::miniWindow2(PGuiElem content, function<void()> onExitButton) {
+  return stack(fullScreen(darken()),
+      miniWindow(margins(std::move(content), 15), onExitButton));
+}
+
 PGuiElem GuiFactory::miniWindow(PGuiElem content, function<void()> onExitButton) {
   auto ret = makeVec<PGuiElem>(
         stopMouseMovement(),

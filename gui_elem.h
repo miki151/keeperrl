@@ -226,11 +226,10 @@ class GuiFactory {
   PGuiElem highlight(double height);
   PGuiElem highlightDouble();
   PGuiElem mainMenuHighlight();
-  PGuiElem insideBackground(PGuiElem content);
   PGuiElem window(PGuiElem content, function<void()> onExitButton);
   PGuiElem miniWindow();
   PGuiElem miniWindow(PGuiElem content, function<void()> onExitButton = nullptr);
-  PGuiElem mapWindow(PGuiElem content);
+  PGuiElem miniWindow2(PGuiElem content, function<void()> onExitButton = nullptr);
   PGuiElem miniBorder();
   PGuiElem miniBorder2();
   PGuiElem border2();

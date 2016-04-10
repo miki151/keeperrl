@@ -7,6 +7,7 @@
 #include "progress_meter.h"
 #include "options.h"
 #include "name_generator.h"
+#include "retired_games.h"
 
 template <class Archive> 
 void Campaign::serialize(Archive& ar, const unsigned int version) { 
@@ -32,7 +33,7 @@ optional<Vec2> Campaign::getPlayerPos() const {
   return playerPos;
 }
 
-Campaign::Campaign(Vec2 size) : sites(size, {}), defeated(size, false) {
+Campaign::Campaign(Table<SiteInfo> s) : sites(s), defeated(sites.getBounds(), false) {
 }
 
 const string& Campaign::getWorldName() const {
@@ -116,9 +117,9 @@ optional<Campaign::PlayerInfo> Campaign::SiteInfo::getPlayer() const {
   return none;
 }
 
-optional<Campaign::RetiredSiteInfo> Campaign::SiteInfo::getRetired() const {
+optional<Campaign::RetiredInfo> Campaign::SiteInfo::getRetired() const {
   if (dweller)
-    if (const RetiredSiteInfo* info = boost::get<RetiredSiteInfo>(&(*dweller)))
+    if (const RetiredInfo* info = boost::get<RetiredInfo>(&(*dweller)))
       return *info;
   return none;
 }
@@ -134,8 +135,8 @@ optional<string> Campaign::SiteInfo::getDwellerDescription() const {
     return string("This is your home site");
   if (const VillainInfo* info = boost::get<VillainInfo>(&(*dweller)))
     return info->name + " (" + info->getDescription() + ")";
-  if (const RetiredSiteInfo* info = boost::get<RetiredSiteInfo>(&(*dweller)))
-    return info->name + " (hostile)";
+  if (const RetiredInfo* info = boost::get<RetiredInfo>(&(*dweller)))
+    return info->gameInfo.getName() + " (hostile)";
   return none;
 }
 
@@ -146,8 +147,8 @@ optional<ViewId> Campaign::SiteInfo::getDwellerViewId() const {
     return info->viewId;
   if (const VillainInfo* info = boost::get<VillainInfo>(&(*dweller)))
     return info->viewId;
-  if (const RetiredSiteInfo* info = boost::get<RetiredSiteInfo>(&(*dweller)))
-    return info->viewId;
+  if (const RetiredInfo* info = boost::get<RetiredInfo>(&(*dweller)))
+    return info->gameInfo.getViewId();
   return none;
 }
 
@@ -198,20 +199,34 @@ int Campaign::getNumRetVillains() const {
   return ret;
 }
 
-optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, const vector<RetiredSiteInfo>& retired,
-    function<string()> worldNameGen, RandomGen& random) {
+static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, Vec2 size, int numBlocked) {
+  Table<Campaign::SiteInfo> ret(size, {});
+  for (Vec2 v : ret.getBounds())
+    ret[v].viewId = {ViewId::GRASS};
+  vector<Vec2> freePos = ret.getBounds().getAllSquares();
+  for (int i : Range(numBlocked)) {
+    Vec2 pos = random.choose(freePos);
+    removeElement(freePos, pos);
+    ret[pos].setBlocked();
+  }
+  return ret;
+}
+
+optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, RetiredGames&& retired,
+    RandomGen& random) {
   Vec2 size(16, 9);
   int numBlocked = 0.6 * size.x * size.y;
-  string worldName;
+  Table<SiteInfo> terrain = getTerrain(random, size, numBlocked);
+  string worldName = NameGenerator::get(NameGeneratorId::WORLD)->getNext();
+  options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
   while (1) {
-    options->setLimits(OptionId::RETIRED_VILLAINS, 0, min<int>(retired.size(), 4)); 
+    //options->setLimits(OptionId::RETIRED_VILLAINS, 0, min<int>(retired.size(), 4)); 
     options->setLimits(OptionId::MAIN_VILLAINS, 0, 9); 
     options->setLimits(OptionId::LESSER_VILLAINS, 0, 8); 
     options->setLimits(OptionId::ALLIES, 0, 6); 
     options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6); 
-    options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
-    int numRetired = options->getIntValue(OptionId::RETIRED_VILLAINS);
-    int numMain = options->getIntValue(OptionId::MAIN_VILLAINS);
+    int numRetired = min(retired.getNumActive(), options->getIntValue(OptionId::MAIN_VILLAINS));
+    int numMain = options->getIntValue(OptionId::MAIN_VILLAINS) - numRetired;
     int numLesser = options->getIntValue(OptionId::LESSER_VILLAINS);
     int numAllies = options->getIntValue(OptionId::ALLIES);
     vector<VillainInfo> mainVillains;
@@ -226,13 +241,8 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, const
     while (allies.size() < numAllies)
       append(allies, random.permutation(getAllies()));
     allies.resize(numAllies);
-    Campaign campaign(size);
-    if (!worldName.empty())
-      campaign.worldName = worldName;
-    else
-      campaign.worldName = worldNameGen();
-    for (Vec2 v : Rectangle(size))
-      campaign.clearSite(v);
+    Campaign campaign(terrain);
+    campaign.worldName = worldName;
     vector<Vec2> freePos;
     for (Vec2 v : Rectangle(size))
       if (campaign.sites[v].canEmbark())
@@ -245,7 +255,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, const
     for (int i : Range(numRetired)) {
       Vec2 pos = random.choose(freePos);
       removeElement(freePos, pos);
-      campaign.sites[pos].dweller = retired[i];
+      campaign.sites[pos].dweller = RetiredInfo{retired.getActiveGames()[i], retired.getActiveFiles()[i]};
     }
     for (int i : All(lesserVillains)) {
       Vec2 pos = random.choose(freePos);
@@ -257,26 +267,23 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, const
       removeElement(freePos, pos);
       campaign.sites[pos].dweller = allies[i];
     }
-    for (int i : Range(numBlocked)) {
-      if (freePos.size() <= 1)
-        break;
-      Vec2 pos = random.choose(freePos);
-      removeElement(freePos, pos);
-      campaign.sites[pos].setBlocked();
-    }
     while (1) {
-      bool reroll = false;
+      bool updateMap = false;
       campaign.influenceSize = options->getIntValue(OptionId::INFLUENCE_SIZE);
       campaign.refreshInfluencePos();
-      CampaignAction action = view->prepareCampaign(campaign, options);
+      CampaignAction action = view->prepareCampaign(campaign, options, retired);
       switch (action.getId()) {
         case CampaignActionId::REROLL_MAP:
-            reroll = true; break;
+            terrain = getTerrain(random, size, numBlocked);
+            worldName = NameGenerator::get(NameGeneratorId::WORLD)->getNext();
+            options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+        case CampaignActionId::UPDATE_MAP:
+            updateMap = true; break;
         case CampaignActionId::UPDATE_OPTION:
             switch (action.get<OptionId>()) {
               case OptionId::KEEPER_NAME:
               case OptionId::INFLUENCE_SIZE: break;
-              default: reroll = true; break;
+              default: updateMap = true; break;
             }
             break;
         case CampaignActionId::CANCEL:
@@ -290,7 +297,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, const
         case CampaignActionId::CONFIRM:
             return campaign;
       }
-      if (reroll)
+      if (updateMap)
         break;
     }
   }

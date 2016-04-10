@@ -31,6 +31,7 @@ class MapGui;
 class CampaignAction;
 class Campaign;
 struct CampaignSetupInfo;
+class RetiredGames;
 
 RICH_ENUM(CollectiveTab,
   BUILDINGS,
@@ -83,7 +84,8 @@ class GuiBuilder {
       const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos);
   PGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
       pair<ViewId, int> budget, const vector<ItemInfo>&, double* scrollPos);
-  PGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, Options*, optional<Vec2>& embark);
+  PGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, Options*, RetiredGames&,
+      optional<Vec2>& embark, bool& retiredMenu);
   PGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
   PGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>& markedPos, function<bool(Vec2)> activeFun,
@@ -160,6 +162,7 @@ class GuiBuilder {
   PGuiElem drawTeams(CollectiveInfo&);
   PGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
   PGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged);
+  GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, bool active);
   PGuiElem teamCache;
   int teamHash = 0;
   optional<string> activeGroup;
@@ -218,6 +221,7 @@ class GuiBuilder {
   PGuiElem getItemLine(const ItemInfo&, function<void(Rectangle)> onClick,
       function<void()> onMultiClick = nullptr);
   vector<string> getItemHint(const ItemInfo&);
+  PGuiElem drawMinionAndLevel(ViewId viewId, int level, int iconMult);
   bool morale = true;
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
   vector<PGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);

@@ -23,6 +23,7 @@
 #include "options.h"
 #include "map_gui.h"
 #include "campaign.h"
+#include "retired_games.h"
 
 using sf::Color;
 using sf::String;
@@ -889,6 +890,12 @@ static map<string, CreatureMapElem> getCreatureMap(const vector<CreatureInfo>& c
   return creatureMap;
 }
 
+PGuiElem GuiBuilder::drawMinionAndLevel(ViewId viewId, int level, int iconMult) {
+  return gui.stack(makeVec<PGuiElem>(
+        gui.viewObject(viewId, iconMult),
+        gui.label(toString(level), 12 * iconMult)));
+}
+
 PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
   int newHash = info.getHash();
   if (newHash != teamHash) {
@@ -901,9 +908,7 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
       vector<PGuiElem> currentLine;
       for (auto member : team.members) {
         auto& memberInfo = info.getMinion(member);
-        currentLine.push_back(gui.stack(makeVec<PGuiElem>(
-                gui.viewObject(memberInfo.viewId),
-                gui.label(toString(memberInfo.expLevel), 12))));
+        currentLine.push_back(drawMinionAndLevel(memberInfo.viewId, memberInfo.expLevel, 1));
         if (currentLine.size() >= numPerLine)
           teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
       }
@@ -1884,7 +1889,7 @@ PGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
                 gui.button([&queue] { queue.push(none); }, {Keyboard::Escape}, true),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   return gui.stack(
-      gui.preferredSize(500, 500),
+      gui.preferredSize(1000, 600),
       gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
 }
 
@@ -1943,14 +1948,42 @@ static const char campaignWelcome[] =
     "As you conquer more enemies, your influence zone grows.\n\n"
     "To win the game, conquer all main villains.";
 
+GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, function<void()> reloadCampaign,
+    bool active) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  vector<SavedGameInfo> allGames = retired.getAllGames();
+  for (int i : All(allGames))
+    if (retired.isActive(i) == active) {
+      auto header = gui.getListBuilder();
+      if (retired.isActive(i))
+        header.addElem(gui.stack(
+              gui.labelUnicode(String(L'✘'), colors[ColorId::RED]),
+              gui.button([i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();})), 15);
+      header.addElem(gui.label(allGames[i].getName()), 150);
+      for (auto& minion : allGames[i].getMinions())
+        header.addElem(drawMinionAndLevel(minion.viewId, minion.level, 1), 25);
+      header.addSpace(40);
+      PGuiElem line = header.buildHorizontalList();
+      if (!retired.isActive(i))
+        line = gui.stack(
+            gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
+            std::move(line),
+            gui.button([i, reloadCampaign, &retired] { retired.setActive(i, true); reloadCampaign();}));
+      lines.addElem(std::move(line));
+    }
+  return lines;
+}
+
 PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign, Options* options,
-    optional<Vec2>& embarkPos) {
+    RetiredGames& retiredGames, optional<Vec2>& embarkPos, bool& retiredMenu) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label("Campaign setup")));
   lines.addSpace();
-  lines.addElem(gui.label("World name: " + campaign.getWorldName()));
+  int optionMargin = 50;
+  lines.addElem(gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())));
   for (OptionId id : options->getOptions(OptionSet::CAMPAIGN))
-    lines.addElem(drawOptionElem(options, id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});}));
+    lines.addElem(gui.leftMargin(optionMargin, drawOptionElem(options, id,
+            [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});})));
   lines.addSpace(15);
   lines.addElem(gui.centerHoriz(gui.label("Choose embark site:")));
   lines.addSpace(15);
@@ -1972,13 +2005,27 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
             gui.stack(
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
-  PGuiElem interior = gui.stack(
-      gui.topMargin(2 * legendLineHeight, gui.leftMargin(500,
-          gui.labelMultiLine(campaignWelcome, 17, Renderer::smallTextSize, colors[ColorId::WHITE]))),
-      lines.buildVerticalList()
-  );
+  int retiredPosX = 570;
+  int menuPosY = (3 + retiredGames.getNumActive()) * legendLineHeight;
+  PGuiElem interior = gui.stack(makeVec<PGuiElem>(
+      lines.buildVerticalList(),
+      gui.topMargin(3 * legendLineHeight, gui.leftMargin(retiredPosX,
+          drawRetiredGames(retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, true)
+              .addElem(gui.conditional(gui.stack(
+                  gui.button([&retiredMenu] { retiredMenu = !retiredMenu;}),
+                  gui.labelHighlight("[Add]", colors[ColorId::LIGHT_BLUE])),
+                  [&retiredGames] { return retiredGames.getNumActive() < 5;}))
+              .buildVerticalList())),
+      gui.topMargin(2 * legendLineHeight, gui.leftMargin(retiredPosX, gui.label("Retired dungeons: "))),
+      gui.conditional(gui.topMargin(menuPosY, gui.leftMargin(retiredPosX, gui.miniWindow2(
+          drawRetiredGames(retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, false)
+              .buildVerticalList(),
+          [&retiredMenu] { retiredMenu = false;}))),
+          [&retiredMenu] { return retiredMenu;})
+          //gui.labelMultiLine(campaignWelcome, 17, Renderer::smallTextSize, colors[ColorId::WHITE]))),
+  ));
   return gui.stack(
-      gui.preferredSize(1100, 920),
+      gui.preferredSize(1000, 920),
       gui.window(gui.margins(std::move(interior), 20), [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
 

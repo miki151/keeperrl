@@ -815,10 +815,12 @@ optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& cam
   return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, current));
 }
 
-CampaignAction WindowView::prepareCampaign(const Campaign& campaign, Options* options) {
+CampaignAction WindowView::prepareCampaign(const Campaign& campaign, Options* options, RetiredGames& retired) {
   SyncQueue<CampaignAction> returnQueue;
   optional<Vec2> embarkPos;
-  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, embarkPos));
+  bool retiredMenu = false;
+  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, retired,
+        embarkPos, retiredMenu));
 }
 
 optional<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,
