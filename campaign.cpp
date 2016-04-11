@@ -9,12 +9,7 @@
 #include "name_generator.h"
 #include "retired_games.h"
 
-template <class Archive> 
-void Campaign::serialize(Archive& ar, const unsigned int version) { 
-  serializeAll(ar, sites, playerPos, worldName, defeated, influencePos, influenceSize);
-}
 
-SERIALIZABLE(Campaign);
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
 const Table<Campaign::SiteInfo>& Campaign::getSites() const {
@@ -202,7 +197,7 @@ int Campaign::getNumRetVillains() const {
 static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, Vec2 size, int numBlocked) {
   Table<Campaign::SiteInfo> ret(size, {});
   for (Vec2 v : ret.getBounds())
-    ret[v].viewId = {ViewId::GRASS};
+    ret[v].viewId.push_back(ViewId::GRASS);
   vector<Vec2> freePos = ret.getBounds().getAllSquares();
   for (int i : Range(numBlocked)) {
     Vec2 pos = random.choose(freePos);

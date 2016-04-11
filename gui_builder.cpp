@@ -1234,7 +1234,7 @@ void GuiBuilder::drawMessages(vector<OverlayInfo>& ret,
         line.addElemAuto(gui.stack(
               gui.button(getButtonCallback(UserInput(UserInputId::MESSAGE_INFO, message.getUniqueId()))),
               gui.labelHighlight(text, getMessageColor(message))));
-        line.addElemAuto(gui.labelUnicode(String(L'➚'), getMessageColor(message)));
+        line.addElemAuto(gui.labelUnicode(String(sf::Uint32(0x279a)), getMessageColor(message)));
       } else
       line.addElemAuto(gui.stack(
             gui.button(getButtonCallback(UserInput(UserInputId::MESSAGE_INFO, message.getUniqueId()))),
@@ -1332,7 +1332,7 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
           gui.getListBuilder()
               .addElemAuto(gui.labelHighlight(title))
               .addSpace(7)
-              .addElemAuto(gui.labelUnicode(String(L'➚'))).buildHorizontalList());
+              .addElemAuto(gui.labelUnicode(String(sf::Uint32(0x279a)))).buildHorizontalList());
       else
         header = gui.label(title);
       lines.addElem(std::move(header));
@@ -1545,7 +1545,7 @@ PGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
         if (teamId)
           line.addElem(gui.leftMargin(-16, gui.stack(
               gui.button(getButtonCallback({UserInputId::REMOVE_FROM_TEAM, TeamCreatureInfo{*teamId, minionId}})),
-              gui.labelUnicode(String(L'✘'), colors[ColorId::RED]))), 1);
+              gui.labelUnicode(String(sf::Uint32(0x2718)), colors[ColorId::RED]))), 1);
         line.addElemAuto(gui.rightMargin(5, gui.label(minion.getFirstName())));
         if (auto icon = getMoraleIcon(minion.morale))
           line.addElem(gui.topMargin(-2, gui.icon(*icon)), 20);
@@ -1641,7 +1641,7 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                     gui.button([&exit, &retAction, task] {
                       retAction.lock.toggle(task.task);
                     }),
-                    gui.rightMargin(20, gui.labelUnicode(String(L'✓'), [&retAction, task] {
+                    gui.rightMargin(20, gui.labelUnicode(String(sf::Uint32(0x2713)), [&retAction, task] {
                         return colors[(retAction.lock[task.task] ^ task.locked) ?
                             ColorId::LIGHT_GRAY : ColorId::GREEN];})))).buildHorizontalList());
           }
@@ -1957,7 +1957,7 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
       auto header = gui.getListBuilder();
       if (retired.isActive(i))
         header.addElem(gui.stack(
-              gui.labelUnicode(String(L'✘'), colors[ColorId::RED]),
+              gui.labelUnicode(String(sf::Uint32(0x2718)), colors[ColorId::RED]),
               gui.button([i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();})), 15);
       header.addElem(gui.label(allGames[i].getName()), 150);
       for (auto& minion : allGames[i].getMinions())
