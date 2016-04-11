@@ -130,22 +130,20 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> 
 void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, double mult, Vec2 from,
     int limit) {
   reversed = true;
-  function<bool(Vec2, Vec2)> comparator = [=](Vec2 pos1, Vec2 pos2) {
-    return distanceTable.getDistance(pos1) + lengthFun(from - pos1) 
-      > distanceTable.getDistance(pos2) + lengthFun(from - pos2); };
-
-  priority_queue<Vec2, vector<Vec2>, decltype(comparator)> q(comparator) ;
+  function<QueueElem(Vec2)> makeElem = [&](Vec2 pos)->QueueElem { return {pos, distanceTable.getDistance(pos)
+      + lengthFun(from - pos)};};
+  priority_queue<QueueElem, vector<QueueElem>> q;
   for (Vec2 v : bounds) {
     double dist = distanceTable.getDistance(v);
     if (dist <= limit) {
       distanceTable.setDistance(v, mult * dist);
-      q.push(v);
+      q.push(makeElem(v));
     }
   }
   int numPopped = 0;
   while (!q.empty()) {
     ++numPopped;
-    Vec2 pos = q.top();
+    Vec2 pos = q.top().pos;
     if (from == pos) {
       Debug() << "Rev shortest path from " << " from " << target << " " << numPopped << " visited";
       constructPath(pos, true);
@@ -157,7 +155,7 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2
         if (distanceTable.getDistance(pos + dir) > distanceTable.getDistance(pos) + entryFun(pos + dir) && 
             distanceTable.getDistance(pos + dir) < 0) {
           distanceTable.setDistance(pos + dir, distanceTable.getDistance(pos) + entryFun(pos + dir));
-          q.push(pos + dir);
+          q.push(makeElem(pos + dir));
         }
       }
   }
