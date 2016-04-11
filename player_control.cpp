@@ -344,11 +344,21 @@ void PlayerControl::onControlledKilled() {
 }
 
 bool PlayerControl::swapTeam() {
-  if (auto team = getCurrentTeam())
-    if (getTeams().getMembers(*team).size() > 1) {
-      getControlled()->popController();
-      getTeams().rotateLeader(*team);
-      commandTeam(*team);
+  if (auto teamId = getCurrentTeam())
+    if (getTeams().getMembers(*teamId).size() > 1) {
+      vector<CreatureInfo> team;
+      TeamId currentTeam = *getCurrentTeam();
+      for (Creature* c : getTeams().getMembers(currentTeam))
+        if (!c->isPlayer())
+          team.push_back(c);
+      if (team.empty())
+        return false;
+      if (auto newLeader = getView()->chooseTeamLeader("Choose new team leader:", team, "Cancel"))
+        if (Creature* c = getCreature(*newLeader)) {
+          getControlled()->popController();
+          getTeams().setLeader(*teamId, c);
+          commandTeam(*teamId);
+        }
       return true;
     }
   return false;
