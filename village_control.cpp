@@ -33,17 +33,13 @@ typedef EnumVariant<AttackTriggerId, TYPES(int),
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
 
-template <class Archive>
-void VillageControl::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(CollectiveControl);
-  serializeAll(ar, villain, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower);
-}
 
-SERIALIZABLE(VillageControl);
 template <class Archive>
 void VillageControl::Villain::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, minPopulation, minTeamSize, triggers, behaviour, welcomeMessage, ransom);
 }
+
+SERIALIZABLE(VillageControl::Villain);
 
 VillageControl::VillageControl(Collective* col, optional<Villain> v) : CollectiveControl(col), villain(v) {
   for (Position v : col->getTerritory().getAll())

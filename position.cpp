@@ -110,7 +110,7 @@ bool Position::operator < (const Position& p) const {
   if (!isValid())
     return p.isValid();
   if (!p.isValid())
-    return true;
+    return false;
   if (level->getUniqueId() == p.level->getUniqueId())
     return coord < p.coord;
   else
