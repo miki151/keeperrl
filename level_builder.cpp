@@ -143,21 +143,21 @@ static Vec2::LinearMap identity() {
 
 static Vec2::LinearMap deg90(Rectangle bounds) {
   return [bounds](Vec2 v) {
-    v -= bounds.getTopLeft();
-    return bounds.getTopLeft() + Vec2(v.y, v.x);
+    v -= bounds.topLeft();
+    return bounds.topLeft() + Vec2(v.y, v.x);
   };
 }
 
 static Vec2::LinearMap deg180(Rectangle bounds) {
   return [bounds](Vec2 v) {
-    return bounds.getTopLeft() - v + bounds.getBottomRight() - Vec2(1, 1);
+    return bounds.topLeft() - v + bounds.bottomRight() - Vec2(1, 1);
   };
 }
 
 static Vec2::LinearMap deg270(Rectangle bounds) {
   return [bounds](Vec2 v) {
-    v -= bounds.getTopRight() - Vec2(1, 0);
-    return bounds.getTopLeft() + Vec2(v.y, -v.x);
+    v -= bounds.topRight() - Vec2(1, 0);
+    return bounds.topLeft() + Vec2(v.y, -v.x);
   };
 }
 

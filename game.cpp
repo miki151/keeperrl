@@ -135,6 +135,7 @@ void Game::prepareRetirement() {
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->limitKnownTilesToModel();
   playerControl->getKeeper()->modViewObject().setId(ViewId::RETIRED_KEEPER);
+  playerControl = nullptr;
   playerCollective->setControl(PCollectiveControl(
         new VillageControl(playerCollective, CONSTRUCT(VillageControl::Villain,
           c.minPopulation = 6;
@@ -156,8 +157,6 @@ void Game::prepareRetirement() {
   // So we don't have references to creatures in another model.
   for (Creature* c : mainModel->getAllCreatures())
     c->clearLastAttacker();
-  playerCollective = nullptr;
-  playerControl = nullptr;
   TribeId::switchForSerialization(TribeId::getKeeper(), TribeId::getRetiredKeeper());
 }
 

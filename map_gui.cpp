@@ -233,8 +233,8 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
     default: break;
   }
   if (softCenter) {
-    softCenter->x = max(0.0, min<double>(softCenter->x, levelBounds.getKX()));
-    softCenter->y = max(0.0, min<double>(softCenter->y, levelBounds.getKY()));
+    softCenter->x = max(0.0, min<double>(softCenter->x, levelBounds.right()));
+    softCenter->y = max(0.0, min<double>(softCenter->y, levelBounds.bottom()));
   }
   return false;
 }
@@ -291,8 +291,8 @@ bool MapGui::onMouseMove(Vec2 v) {
     mouseOffset.y = double(v.y - lastMousePos.y) / layout->getSquareSize().y;
     mouseOffset.x = min(mouseOffset.x, center.x);
     mouseOffset.y = min(mouseOffset.y, center.y);
-    mouseOffset.x = max(mouseOffset.x, center.x - levelBounds.getKX());
-    mouseOffset.y = max(mouseOffset.y, center.y - levelBounds.getKY());
+    mouseOffset.x = max(mouseOffset.x, center.x - levelBounds.right());
+    mouseOffset.y = max(mouseOffset.y, center.y - levelBounds.bottom());
     callbacks.refreshFun();
   }
   return false;
@@ -549,8 +549,8 @@ bool MapGui::isCentered() const {
 
 void MapGui::setCenter(double x, double y) {
   center = {x, y};
-  center.x = max(0.0, min<double>(center.x, levelBounds.getKX()));
-  center.y = max(0.0, min<double>(center.y, levelBounds.getKY()));
+  center.x = max(0.0, min<double>(center.x, levelBounds.right()));
+  center.y = max(0.0, min<double>(center.y, levelBounds.bottom()));
   softCenter = none;
 }
 
@@ -568,7 +568,7 @@ void MapGui::drawHint(Renderer& renderer, Color color, const vector<string>& tex
   int width = 0;
   for (auto& s : text)
     width = max(width, renderer.getTextLength(s) + 110);
-  Vec2 pos(getBounds().getKX() - width, getBounds().getKY() - height);
+  Vec2 pos(getBounds().right() - width, getBounds().bottom() - height);
   renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, Color(0, 0, 0, 150));
   for (int i : All(text))
     renderer.drawText(color, pos.x + 10, pos.y + 1 + i * lineHeight, text[i]);
@@ -647,11 +647,11 @@ Vec2 MapGui::projectOnScreen(Vec2 wpos, int curTime) {
 
 void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   for (Vec2 wpos : allTiles)
     if (auto& index = objects[wpos])
       if (index->hasAnyHighlight()) {
-        Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
+        Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
         for (HighlightType highlight : ENUM_ALL(HighlightType))
           if (index->getHighlight(highlight) > 0)
             switch (highlight) {
@@ -693,14 +693,14 @@ void MapGui::renderAnimations(Renderer& renderer, int currentTimeReal) {
 MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size, int currentTimeReal) {
   HighlightedInfo ret {};
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   if (auto mousePos = getMousePos())
     if (mouseUI) {
       ret.tilePos = layout->projectOnMap(getBounds(), getScreenPos(), *mousePos);
       if (!buttonViewId && ret.tilePos->inRectangle(objects.getBounds()))
         for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
             .intersection(objects.getBounds())) {
-          Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
+          Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
           if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::CREATURE)) {
             const ViewObject& object = objects[wpos]->getObject(ViewLayer::CREATURE);
             Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal);
@@ -719,16 +719,16 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size
 
 void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& highlightedInfo,int currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   renderer.drawFilledRectangle(getBounds(), colors[ColorId::BLACK]);
   renderer.drawFilledRectangle(Rectangle(
-        projectOnScreen(levelBounds.getTopLeft(), currentTimeReal),
-        projectOnScreen(levelBounds.getBottomRight(), currentTimeReal)), colors[ColorId::BLACK]);
+        projectOnScreen(levelBounds.topLeft(), currentTimeReal),
+        projectOnScreen(levelBounds.bottomRight(), currentTimeReal)), colors[ColorId::BLACK]);
   fogOfWar.clear();
   creatureMap.clear();
   for (ViewLayer layer : layout->getLayers()) {
     for (Vec2 wpos : allTiles) {
-      Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
+      Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
       if (!objects[wpos] || objects[wpos]->noObjects()) {
         if (layer == layout->getLayers().back()) {
           if (wpos.inRectangle(levelBounds))
@@ -765,7 +765,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
       if (!buttonViewId && highlightedInfo.creaturePos)
         drawCreatureHighlight(renderer, *highlightedInfo.creaturePos, size, colors[ColorId::ALMOST_WHITE]);
       if (highlightedInfo.tilePos)
-        drawSquareHighlight(renderer, topLeftCorner + (*highlightedInfo.tilePos - allTiles.getTopLeft()).mult(size),
+        drawSquareHighlight(renderer, topLeftCorner + (*highlightedInfo.tilePos - allTiles.topLeft()).mult(size),
             size);
     }
     if (!spriteMode)
@@ -792,10 +792,10 @@ void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
 
 void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, int currentTimeReal, Vec2 pos, Vec2 size) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   for (Vec2 v : concat({pos}, pos.neighbors8()))
     if (v.inRectangle(objects.getBounds()) && (!objects[v] || objects[v]->noObjects())) {
-      drawSquareHighlight(renderer, topLeftCorner + (pos - allTiles.getTopLeft()).mult(size), size);
+      drawSquareHighlight(renderer, topLeftCorner + (pos - allTiles.topLeft()).mult(size), size);
       break;
     }
 }

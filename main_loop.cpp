@@ -20,6 +20,9 @@
 #include "model.h"
 #include "clock.h"
 #include "view_id.h"
+#include "saved_game_info.h"
+#include "retired_games.h"
+#include "save_file_info.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
     const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin, bool singleThread,
@@ -28,7 +31,7 @@ MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& 
         highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread), forceGame(force) {
 }
 
-vector<MainLoop::SaveFileInfo> MainLoop::getSaveFiles(const string& path, const string& suffix) {
+vector<SaveFileInfo> MainLoop::getSaveFiles(const string& path, const string& suffix) {
   vector<SaveFileInfo> ret;
   DIR* dir = opendir(path.c_str());
   CHECK(dir) << "Couldn't open " + path;
@@ -75,8 +78,10 @@ static T loadGameUsing(const string& filename, bool eraseFile) {
   try {
     InputType input(filename.c_str());
     string discard;
+    SavedGameInfo discard2;
     int version;
-    input.getArchive() >>BOOST_SERIALIZATION_NVP(version) >> BOOST_SERIALIZATION_NVP(discard);
+    input.getArchive() >>BOOST_SERIALIZATION_NVP(version) >> BOOST_SERIALIZATION_NVP(discard)
+      >> BOOST_SERIALIZATION_NVP(discard2);
     Serialization::registerTypes(input.getArchive(), version);
     input.getArchive() >> BOOST_SERIALIZATION_NVP(obj);
   } catch (boost::archive::archive_exception& ex) {
@@ -112,19 +117,23 @@ string stripNonAscii(string s) {
 
 static void saveGame(PGame& game, const string& path) {
   CompressedOutput out(path);
-  Serialization::registerTypes(out.getArchive(), saveVersion);
   string name = game->getGameDisplayName();
+  SavedGameInfo savedInfo(game.get());
   out.getArchive() << BOOST_SERIALIZATION_NVP(saveVersion) << BOOST_SERIALIZATION_NVP(name)
-      << BOOST_SERIALIZATION_NVP(game);
+      << BOOST_SERIALIZATION_NVP(savedInfo);
+  Serialization::registerTypes(out.getArchive(), saveVersion);
+  out.getArchive() << BOOST_SERIALIZATION_NVP(game);
 }
 
 static void saveMainModel(PGame& game, const string& path) {
   CompressedOutput out(path);
-  Serialization::registerTypes(out.getArchive(), saveVersion);
   string name = game->getGameDisplayName();
   game->prepareRetirement();
+  SavedGameInfo savedInfo(game.get());
   out.getArchive() << BOOST_SERIALIZATION_NVP(saveVersion) << BOOST_SERIALIZATION_NVP(name)
-      << BOOST_SERIALIZATION_NVP(game->getMainModel());
+      << BOOST_SERIALIZATION_NVP(savedInfo);
+  Serialization::registerTypes(out.getArchive(), saveVersion);
+  out.getArchive() << BOOST_SERIALIZATION_NVP(game->getMainModel());
   game->doneRetirement();
 }
 
@@ -230,7 +239,7 @@ void MainLoop::getDownloadOptions(const vector<FileSharing::GameInfo>& games,
     }
 }
 
-optional<MainLoop::SaveFileInfo> MainLoop::chooseSaveFile(const vector<ListElem>& options,
+optional<SaveFileInfo> MainLoop::chooseSaveFile(const vector<ListElem>& options,
     const vector<SaveFileInfo>& allFiles, string noSaveMsg, View* view) {
   if (options.empty()) {
     view->presentText("", noSaveMsg);
@@ -281,20 +290,22 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
   }
 }
 
-vector<MainLoop::RetiredSiteInfo> MainLoop::getRetiredSites() {
-  vector<RetiredSiteInfo> ret;
-  for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE))) {
-    if (isCompatible(getSaveVersion(info)))
-      ret.push_back({info, ViewId::RETIRED_KEEPER, getNameAndVersion(userPath + "/" + info.filename)->first});
-  }
-  return ret;
+RetiredGames MainLoop::getRetiredGames() {
+  vector<SavedGameInfo> savedGames;
+  vector<SaveFileInfo> files;
+  for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
+    if (isCompatible(getSaveVersion(info))) {
+      if (auto saved = getSavedGameInfo(userPath + "/" + info.filename)) {
+        savedGames.push_back(*saved);
+        files.push_back(info);
+      }
+    }
+  return RetiredGames(savedGames, files);
 }
 
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   random.init(Random.get(1234567));
-  vector<RetiredSiteInfo> retired = getRetiredSites();
-  optional<Campaign> campaign = Campaign::prepareCampaign(view, options, retired,
-      []{ return NameGenerator::get(NameGeneratorId::WORLD)->getNext(); }, random);
+  optional<Campaign> campaign = Campaign::prepareCampaign(view, options, getRetiredGames(), random);
   if (!campaign)
     return nullptr;
   return Game::campaignGame(keeperCampaign(*campaign, random), *campaign->getPlayerPos(),
@@ -468,10 +479,10 @@ Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
             //ret[v] = ModelBuilder::quickModel(nullptr, random, options);
             models[v] = ModelBuilder::campaignSiteModel(nullptr, random, options, "pok", villain->enemyId);
           else if (auto retired = sites[v].getRetired()) {
-            if (PModel m = loadModelFromFile(userPath + "/" + retired->save.filename, false))
+            if (PModel m = loadModelFromFile(userPath + "/" + retired->fileInfo.filename, false))
               models[v] = std::move(m);
             else {
-              failedToLoad = retired->save.filename;
+              failedToLoad = retired->fileInfo.filename;
               campaign.clearSite(v);
             }
           }

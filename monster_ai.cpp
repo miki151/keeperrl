@@ -841,7 +841,7 @@ class SingleTask : public Behaviour {
 };
 
 const static Vec2 splashTarget = Level::getSplashBounds().middle() - Vec2(3, 0);
-const static Vec2 splashLeaderPos = Vec2(Level::getSplashVisibleBounds().getKX(),
+const static Vec2 splashLeaderPos = Vec2(Level::getSplashVisibleBounds().right(),
     Level::getSplashBounds().middle().y) - Vec2(4, 0);
 
 class SplashHeroes : public Behaviour {
@@ -992,9 +992,9 @@ class SplashItems : public TaskCallback {
       iff >> s;
       for (int j : Range(sz.x)) {
         if (s[j] == '1')
-          targetsGold.push_back(Level::getSplashVisibleBounds().getTopLeft() + Vec2(j, i));
+          targetsGold.push_back(Level::getSplashVisibleBounds().topLeft() + Vec2(j, i));
         else if (s[j] == '2')
-          targetsCorpse.push_back(Level::getSplashVisibleBounds().getTopLeft() + Vec2(j, i));
+          targetsCorpse.push_back(Level::getSplashVisibleBounds().topLeft() + Vec2(j, i));
       }
     }
   }

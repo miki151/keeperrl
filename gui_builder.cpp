@@ -23,6 +23,7 @@
 #include "options.h"
 #include "map_gui.h"
 #include "campaign.h"
+#include "retired_games.h"
 
 using sf::Color;
 using sf::String;
@@ -838,7 +839,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
     list.addElem(gui.label("Inventory", colors[ColorId::YELLOW]));
     for (auto& item : info.inventory)
       list.addElem(getItemLine(item, [=](Rectangle butBounds) {
-            if (auto choice = getItemChoice(item, butBounds.getBottomLeft() + Vec2(50, 0), false))
+            if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), false))
               callbacks.input({UserInputId::INVENTORY_ITEM, InventoryItemInfo{item.ids, *choice}});}));
   }
   return gui.margins(
@@ -889,6 +890,12 @@ static map<string, CreatureMapElem> getCreatureMap(const vector<CreatureInfo>& c
   return creatureMap;
 }
 
+PGuiElem GuiBuilder::drawMinionAndLevel(ViewId viewId, int level, int iconMult) {
+  return gui.stack(makeVec<PGuiElem>(
+        gui.viewObject(viewId, iconMult),
+        gui.label(toString(level), 12 * iconMult)));
+}
+
 PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
   int newHash = info.getHash();
   if (newHash != teamHash) {
@@ -901,9 +908,7 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
       vector<PGuiElem> currentLine;
       for (auto member : team.members) {
         auto& memberInfo = info.getMinion(member);
-        currentLine.push_back(gui.stack(makeVec<PGuiElem>(
-                gui.viewObject(memberInfo.viewId),
-                gui.label(toString(memberInfo.expLevel), 12))));
+        currentLine.push_back(drawMinionAndLevel(memberInfo.viewId, memberInfo.expLevel, 1));
         if (currentLine.size() >= numPerLine)
           teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
       }
@@ -1348,7 +1353,7 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
         line.addElemAuto(gui.stack(
             gui.labelHighlight("Triggers", colors[ColorId::RED]),
             gui.buttonRect([this, triggers](Rectangle bounds) {
-                showAttackTriggers(triggers, bounds.getTopRight() + Vec2(20, 0));})));
+                showAttackTriggers(triggers, bounds.topRight() + Vec2(20, 0));})));
       lines.addElem(line.buildHorizontalList());
       for (auto action : elem.actions)
         lines.addElem(gui.margins(getVillageActionButton(i, action), 40, 0, 0, 0));
@@ -1377,7 +1382,7 @@ Rectangle GuiBuilder::getMinionMenuPosition() {
 Rectangle GuiBuilder::getEquipmentMenuPosition(int height) {
   Rectangle minionMenu = getMinionMenuPosition();
   int width = 340;
-  Vec2 origin = minionMenu.getTopRight() + Vec2(-100, 200);
+  Vec2 origin = minionMenu.topRight() + Vec2(-100, 200);
   origin.x = min(origin.x, renderer.getSize().x - width);
   return Rectangle(origin, origin + Vec2(width, height)).intersection(Rectangle(Vec2(0, 0), renderer.getSize()));
 }
@@ -1455,7 +1460,7 @@ PGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
     if (!elem.getSecondColumn().empty())
       secColumnWidth = max(secColumnWidth, 80 + renderer.getTextLength(elem.getSecondColumn()));
   }
-  columnWidth = min(columnWidth, getMenuPosition(menuType, options.size()).getW() - secColumnWidth - 140);
+  columnWidth = min(columnWidth, getMenuPosition(menuType, options.size()).width() - secColumnWidth - 140);
   if (menuType == MenuType::MAIN)
     columnWidth = 1000000;
   for (int i : All(options)) {
@@ -1640,7 +1645,7 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                         return colors[(retAction.lock[task.task] ^ task.locked) ?
                             ColorId::LIGHT_GRAY : ColorId::GREEN];})))).buildHorizontalList());
           }
-          drawMiniMenu(std::move(tasks), exit, bounds.getBottomLeft(), 200);
+          drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 200);
           callbacks.input({UserInputId::CREATURE_TASK_ACTION, retAction});
         }));
 }
@@ -1663,7 +1668,7 @@ vector<PGuiElem> GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minio
   vector<PGuiElem> itemElems = drawItemMenu(items,
       [=](Rectangle butBounds, optional<int> index) {
         const ItemInfo& item = items[*index];
-        if (auto choice = getItemChoice(item, butBounds.getBottomLeft() + Vec2(50, 0), true))
+        if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), true))
           callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
               EquipmentActionInfo{minion.creatureId, item.ids, item.slot, *choice}});
       });
@@ -1816,7 +1821,14 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>& marked,
     for (int x : sites.getBounds().getXRange()) {
       vector<PGuiElem> v;
       for (int i : All(sites[x][y].viewId))
-        v.push_back(gui.topMargin(i > 0 ? -3 * iconScale : 0, gui.viewObject(sites[x][y].viewId[i], iconScale)));
+        if (i == 0)
+          v.push_back(gui.viewObject(sites[x][y].viewId[i], iconScale));
+        else {
+          if (sites[x][y].viewId[i] == ViewId::CANIF_TREE || sites[x][y].viewId[i] == ViewId::DECID_TREE)
+            v.push_back(gui.topMargin(1 * iconScale,
+                  gui.viewObject(ViewId::ROUND_SHADOW, iconScale, sf::Color(255, 255, 255, 160))));
+          v.push_back(gui.topMargin(-2 * iconScale, gui.viewObject(sites[x][y].viewId[i], iconScale)));
+        }
       columns.addElem(gui.stack(std::move(v)));
     }
     auto columns2 = gui.getListBuilder(iconSize);
@@ -1852,10 +1864,9 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>& marked,
     }
     rows.addElem(gui.stack(columns.buildHorizontalList(), columns2.buildHorizontalList()));
   }
-  return //gui.miniWindow(gui.margins(
-    rows.buildVerticalList()
-  //      , 15))
-    ;
+  return gui.stack(
+    gui.miniBorder2(),
+    gui.margins(rows.buildVerticalList(), 8));
 }
 
 PGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const string& message,
@@ -1878,7 +1889,7 @@ PGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
                 gui.button([&queue] { queue.push(none); }, {Keyboard::Escape}, true),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   return gui.stack(
-      gui.preferredSize(500, 500),
+      gui.preferredSize(1000, 600),
       gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
 }
 
@@ -1937,14 +1948,42 @@ static const char campaignWelcome[] =
     "As you conquer more enemies, your influence zone grows.\n\n"
     "To win the game, conquer all main villains.";
 
+GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, function<void()> reloadCampaign,
+    bool active) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  vector<SavedGameInfo> allGames = retired.getAllGames();
+  for (int i : All(allGames))
+    if (retired.isActive(i) == active) {
+      auto header = gui.getListBuilder();
+      if (retired.isActive(i))
+        header.addElem(gui.stack(
+              gui.labelUnicode(String(L'✘'), colors[ColorId::RED]),
+              gui.button([i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();})), 15);
+      header.addElem(gui.label(allGames[i].getName()), 150);
+      for (auto& minion : allGames[i].getMinions())
+        header.addElem(drawMinionAndLevel(minion.viewId, minion.level, 1), 25);
+      header.addSpace(40);
+      PGuiElem line = header.buildHorizontalList();
+      if (!retired.isActive(i))
+        line = gui.stack(
+            gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
+            std::move(line),
+            gui.button([i, reloadCampaign, &retired] { retired.setActive(i, true); reloadCampaign();}));
+      lines.addElem(std::move(line));
+    }
+  return lines;
+}
+
 PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign, Options* options,
-    optional<Vec2>& embarkPos) {
+    RetiredGames& retiredGames, optional<Vec2>& embarkPos, bool& retiredMenu) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label("Campaign setup")));
   lines.addSpace();
-  lines.addElem(gui.label("World name: " + campaign.getWorldName()));
+  int optionMargin = 50;
+  lines.addElem(gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())));
   for (OptionId id : options->getOptions(OptionSet::CAMPAIGN))
-    lines.addElem(drawOptionElem(options, id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});}));
+    lines.addElem(gui.leftMargin(optionMargin, drawOptionElem(options, id,
+            [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});})));
   lines.addSpace(15);
   lines.addElem(gui.centerHoriz(gui.label("Choose embark site:")));
   lines.addSpace(15);
@@ -1966,13 +2005,27 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
             gui.stack(
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
-  PGuiElem interior = gui.stack(
-      gui.topMargin(2 * legendLineHeight, gui.leftMargin(500,
-          gui.labelMultiLine(campaignWelcome, 17, Renderer::smallTextSize, colors[ColorId::WHITE]))),
-      lines.buildVerticalList()
-  );
+  int retiredPosX = 570;
+  int menuPosY = (3 + retiredGames.getNumActive()) * legendLineHeight;
+  PGuiElem interior = gui.stack(makeVec<PGuiElem>(
+      lines.buildVerticalList(),
+      gui.topMargin(3 * legendLineHeight, gui.leftMargin(retiredPosX,
+          drawRetiredGames(retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, true)
+              .addElem(gui.conditional(gui.stack(
+                  gui.button([&retiredMenu] { retiredMenu = !retiredMenu;}),
+                  gui.labelHighlight("[Add]", colors[ColorId::LIGHT_BLUE])),
+                  [&retiredGames] { return retiredGames.getNumActive() < 5;}))
+              .buildVerticalList())),
+      gui.topMargin(2 * legendLineHeight, gui.leftMargin(retiredPosX, gui.label("Retired dungeons: "))),
+      gui.conditional(gui.topMargin(menuPosY, gui.leftMargin(retiredPosX, gui.miniWindow2(
+          drawRetiredGames(retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, false)
+              .buildVerticalList(),
+          [&retiredMenu] { retiredMenu = false;}))),
+          [&retiredMenu] { return retiredMenu;})
+          //gui.labelMultiLine(campaignWelcome, 17, Renderer::smallTextSize, colors[ColorId::WHITE]))),
+  ));
   return gui.stack(
-      gui.preferredSize(1100, 900),
+      gui.preferredSize(1000, 920),
       gui.window(gui.margins(std::move(interior), 20), [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
 

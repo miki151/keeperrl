@@ -12,6 +12,8 @@
 using namespace boost::program_options;
 using namespace boost::archive;
 
+#ifdef PARSE_GAME
+
 int main(int argc, char* argv[]) {
   options_description flags("Flags");
   flags.add_options()
@@ -33,3 +35,5 @@ int main(int argc, char* argv[]) {
   if (vars.count("version"))
     std::cout << info->second << endl;
 }
+
+#endif

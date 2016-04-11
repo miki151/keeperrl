@@ -486,11 +486,11 @@ Vec2 Rectangle::middle() const {
   return Vec2((px + kx) / 2, (py + ky) / 2);
 }
 
-int Rectangle::getPX() const {
+int Rectangle::left() const {
   return px;
 }
 
-int Rectangle::getPY() const {
+int Rectangle::top() const {
   return py;
 }
 
@@ -502,19 +502,19 @@ Range Rectangle::getYRange() const {
   return Range(py, ky);
 }
 
-int Rectangle::getKX() const {
+int Rectangle::right() const {
   return kx;
 }
 
-int Rectangle::getKY() const {
+int Rectangle::bottom() const {
   return ky;
 }
 
-int Rectangle::getW() const {
+int Rectangle::width() const {
   return w;
 }
 
-int Rectangle::getH() const {
+int Rectangle::height() const {
   return h;
 }
 
@@ -522,19 +522,19 @@ Vec2 Rectangle::getSize() const {
   return Vec2(w, h);
 }
 
-Vec2 Rectangle::getTopLeft() const {
+Vec2 Rectangle::topLeft() const {
   return Vec2(px, py);
 }
 
-Vec2 Rectangle::getBottomRight() const {
+Vec2 Rectangle::bottomRight() const {
   return Vec2(kx, ky);
 }
 
-Vec2 Rectangle::getTopRight() const {
+Vec2 Rectangle::topRight() const {
   return Vec2(kx, py);
 }
 
-Vec2 Rectangle::getBottomLeft() const {
+Vec2 Rectangle::bottomLeft() const {
   return Vec2(px, ky);
 }
 
@@ -551,7 +551,7 @@ Rectangle Rectangle::intersection(const Rectangle& other) const {
 }
 
 Rectangle Rectangle::translate(Vec2 v) const {
-  return Rectangle(getTopLeft() + v, getBottomRight() + v);
+  return Rectangle(topLeft() + v, bottomRight() + v);
 }
 
 Rectangle Rectangle::minusMargin(int margin) const {

@@ -13,6 +13,8 @@ class Jukebox;
 class ListElem;
 class Campaign;
 class Model;
+class RetiredGames;
+struct SaveFileInfo;
 
 class MainLoop {
   public:
@@ -24,23 +26,9 @@ class MainLoop {
 
   static int getAutosaveFreq();
 
-  struct SaveFileInfo {
-    string SERIAL(filename);
-    time_t SERIAL(date);
-    bool SERIAL(download);
-    SERIALIZE_ALL(filename, date, download);
-  };
-
-  struct RetiredSiteInfo {
-    MainLoop::SaveFileInfo SERIAL(save);
-    ViewId SERIAL(viewId);
-    string SERIAL(name);
-    SERIALIZE_ALL(save, viewId, name);
-  };
-
   private:
 
-  vector<RetiredSiteInfo> getRetiredSites();
+  RetiredGames getRetiredGames();
   int getSaveVersion(const SaveFileInfo& save);
   void uploadFile(const string& path);
   void saveUI(PGame&, GameSaveType type, SplashType splashType);

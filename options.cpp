@@ -118,7 +118,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
   {OptionSet::CAMPAIGN, {
       OptionId::KEEPER_NAME,
       OptionId::MAIN_VILLAINS,
-      OptionId::RETIRED_VILLAINS,
+      //OptionId::RETIRED_VILLAINS,
       OptionId::LESSER_VILLAINS,
       OptionId::ALLIES,
       //OptionId::INFLUENCE_SIZE

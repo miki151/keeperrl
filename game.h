@@ -23,7 +23,6 @@ class Game {
   static PGame campaignGame(Table<PModel>&&, Vec2 basePos, const string& playerName, const Campaign&);
   static PGame splashScreen(PModel&&);
 
-
   enum class ExitId { SAVE, QUIT };
 
   class ExitInfo : public EnumVariant<ExitId, TYPES(GameSaveType), ASSIGN(GameSaveType, ExitId::SAVE)> {

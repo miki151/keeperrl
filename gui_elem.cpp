@@ -291,7 +291,7 @@ PGuiElem GuiFactory::rectangle(Color color, optional<Color> borderColor) {
 PGuiElem GuiFactory::repeatedPattern(Texture& tex) {
   return PGuiElem(new DrawCustom(
         [&tex] (Renderer& r, Rectangle bounds) {
-          r.drawSprite(bounds.getTopLeft(), bounds.getTopLeft(), Vec2(bounds.getW(), bounds.getH()), tex);
+          r.drawSprite(bounds.topLeft(), bounds.topLeft(), Vec2(bounds.width(), bounds.height()), tex);
         }));
 }
 
@@ -299,7 +299,7 @@ PGuiElem GuiFactory::sprite(Texture& tex, double height) {
   return PGuiElem(new DrawCustom(
         [&tex, height] (Renderer& r, Rectangle bounds) {
           Vec2 size(tex.getSize().x, tex.getSize().y);
-          r.drawSprite(bounds.getTopLeft(), Vec2(0, 0), size, tex, Color(255, 255, 255, 255),
+          r.drawSprite(bounds.topLeft(), Vec2(0, 0), size, tex, Color(255, 255, 255, 255),
               Vec2(height * size.x / size.y, height));
         }));
 }
@@ -314,64 +314,64 @@ PGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFli
           Vec2 pos;
           switch (align) {
             case Alignment::TOP:
-              pos = bounds.getTopLeft() + offset;
-              size = Vec2(bounds.getW() - 2 * offset.x, size.y);
+              pos = bounds.topLeft() + offset;
+              size = Vec2(bounds.width() - 2 * offset.x, size.y);
               break;
             case Alignment::BOTTOM:
-              pos = bounds.getBottomLeft() + Vec2(0, -size.y) + offset;
-              size = Vec2(bounds.getW() - 2 * offset.x, size.y);
+              pos = bounds.bottomLeft() + Vec2(0, -size.y) + offset;
+              size = Vec2(bounds.width() - 2 * offset.x, size.y);
               break;
             case Alignment::RIGHT:
-              pos = bounds.getTopRight() + Vec2(-size.x, 0) + offset;
-              size = Vec2(size.x, bounds.getH() - 2 * offset.y);
+              pos = bounds.topRight() + Vec2(-size.x, 0) + offset;
+              size = Vec2(size.x, bounds.height() - 2 * offset.y);
               break;
             case Alignment::LEFT:
-              pos = bounds.getTopLeft() + offset;
-              size = Vec2(size.x, bounds.getH() - 2 * offset.y);
+              pos = bounds.topLeft() + offset;
+              size = Vec2(size.x, bounds.height() - 2 * offset.y);
               break;
             case Alignment::TOP_LEFT:
-              pos = bounds.getTopLeft() + offset;
+              pos = bounds.topLeft() + offset;
               break;
             case Alignment::TOP_RIGHT:
-              pos = bounds.getTopRight() - Vec2(size.x, 0) + offset;
+              pos = bounds.topRight() - Vec2(size.x, 0) + offset;
               break;
             case Alignment::BOTTOM_RIGHT:
-              pos = bounds.getBottomRight() - size + offset;
+              pos = bounds.bottomRight() - size + offset;
               break;
             case Alignment::BOTTOM_LEFT:
-              pos = bounds.getBottomLeft() - Vec2(0, size.y) + offset;
+              pos = bounds.bottomLeft() - Vec2(0, size.y) + offset;
               break;
             case Alignment::CENTER:
               pos = bounds.middle() - Vec2(size.x / 2, size.y / 2) + offset;
               break;
             case Alignment::TOP_CENTER:
-              pos = (bounds.getTopLeft() + bounds.getTopRight()) / 2 - Vec2(size.x / 2, 0) + offset;
+              pos = (bounds.topLeft() + bounds.topRight()) / 2 - Vec2(size.x / 2, 0) + offset;
               break;
             case Alignment::LEFT_CENTER:
-              pos = (bounds.getTopLeft() + bounds.getBottomLeft()) / 2 - Vec2(0, size.y / 2) + offset;
+              pos = (bounds.topLeft() + bounds.bottomLeft()) / 2 - Vec2(0, size.y / 2) + offset;
               break;
             case Alignment::BOTTOM_CENTER:
-              pos = (bounds.getBottomLeft() + bounds.getBottomRight()) / 2 - Vec2(size.x / 2, size.y) + offset;
+              pos = (bounds.bottomLeft() + bounds.bottomRight()) / 2 - Vec2(size.x / 2, size.y) + offset;
               break;
             case Alignment::RIGHT_CENTER:
-              pos = (bounds.getTopRight() + bounds.getBottomRight()) / 2 - Vec2(size.x, size.y / 2) + offset;
+              pos = (bounds.topRight() + bounds.bottomRight()) / 2 - Vec2(size.x, size.y / 2) + offset;
               break;
             case Alignment::VERTICAL_CENTER:
-              pos = (bounds.getTopLeft() + bounds.getTopRight()) / 2 - Vec2(size.x / 2, 0) + offset;
-              size = Vec2(size.x, bounds.getH() - 2 * offset.y);
+              pos = (bounds.topLeft() + bounds.topRight()) / 2 - Vec2(size.x / 2, 0) + offset;
+              size = Vec2(size.x, bounds.height() - 2 * offset.y);
               break;
             case Alignment::LEFT_STRETCHED:
-              stretchSize = size * (double(bounds.getH()) / size.y);
-              pos = (bounds.getTopLeft() + bounds.getBottomLeft()) / 2 - Vec2(0, stretchSize->y / 2) + offset;
+              stretchSize = size * (double(bounds.height()) / size.y);
+              pos = (bounds.topLeft() + bounds.bottomLeft()) / 2 - Vec2(0, stretchSize->y / 2) + offset;
               break;
             case Alignment::RIGHT_STRETCHED:
-              stretchSize = size * (double(bounds.getH()) / size.y);
-              pos = (bounds.getTopRight() + bounds.getBottomRight()) / 2
+              stretchSize = size * (double(bounds.height()) / size.y);
+              pos = (bounds.topRight() + bounds.bottomRight()) / 2
                   - Vec2(stretchSize->x, stretchSize->y / 2) + offset;
               break;
             case Alignment::CENTER_STRETCHED:
-              stretchSize = size * (double(bounds.getH()) / size.y);
-              pos = (bounds.getTopRight() + bounds.getTopLeft()) / 2 - Vec2(stretchSize->x / 2, 0) + offset;
+              stretchSize = size * (double(bounds.height()) / size.y);
+              pos = (bounds.topRight() + bounds.topLeft()) / 2 - Vec2(stretchSize->x / 2, 0) + offset;
           }
           if (vFlip) {
             if (stretchSize)
@@ -394,8 +394,8 @@ PGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
-            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, 0);
-          r.drawTextWithHotkey(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, hotkey);
+            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, 0);
+          r.drawTextWithHotkey(c, bounds.topLeft().x, bounds.topLeft().y, s, hotkey);
         }, width));
 }
 
@@ -424,10 +424,10 @@ class LabelMultiLine : public GuiElem {
   }
 
   virtual void render(Renderer& renderer) override {
-    vector<string> lines = breakText(renderer, text, getBounds().getW(), size);
-    int height = getBounds().getPY();
+    vector<string> lines = breakText(renderer, text, getBounds().width(), size);
+    int height = getBounds().top();
     for (int i : All(lines)) {
-      renderer.drawText(color, getBounds().getPX(), height, lines[i],
+      renderer.drawText(color, getBounds().left(), height, lines[i],
           Renderer::NONE, size);
       if (!lines[i].empty())
         height += lineHeight;
@@ -463,11 +463,11 @@ PGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
-            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, 0);
+            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, 0);
           Color c1(c);
           if (r.getMousePos().inRectangle(bounds))
             lighten(c1);
-          r.drawTextWithHotkey(c1, bounds.getTopLeft().x, bounds.getTopLeft().y, s, hotkey);
+          r.drawTextWithHotkey(c1, bounds.topLeft().x, bounds.topLeft().y, s, hotkey);
         }, width));
 }
 
@@ -476,8 +476,8 @@ PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hot
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
-            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s);
-          r.drawTextWithHotkey(colorFun(), bounds.getTopLeft().x, bounds.getTopLeft().y, s, hotkey);
+            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s);
+          r.drawTextWithHotkey(colorFun(), bounds.topLeft().x, bounds.topLeft().y, s, hotkey);
         }, width));
 }
 
@@ -486,8 +486,8 @@ PGuiElem GuiFactory::labelFun(function<string()> textFun, function<Color()> colo
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
-            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, textFun());
-          r.drawText(colorFun(), bounds.getTopLeft().x, bounds.getTopLeft().y, textFun());
+            bounds.topLeft().x + 1, bounds.topLeft().y + 2, textFun());
+          r.drawText(colorFun(), bounds.topLeft().x, bounds.topLeft().y, textFun());
         }, width));
 }
 
@@ -496,8 +496,8 @@ PGuiElem GuiFactory::labelFun(function<string()> textFun, Color color) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
-            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, textFun());
-          r.drawText(color, bounds.getTopLeft().x, bounds.getTopLeft().y, textFun());
+            bounds.topLeft().x + 1, bounds.topLeft().y + 2, textFun());
+          r.drawText(color, bounds.topLeft().x, bounds.topLeft().y, textFun());
         }, width));
 }
 
@@ -506,21 +506,21 @@ PGuiElem GuiFactory::label(const string& s, int size, Color c) {
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),
-            bounds.getTopLeft().x + 1, bounds.getTopLeft().y + 2, s, Renderer::NONE, size);
-          r.drawText(c, bounds.getTopLeft().x, bounds.getTopLeft().y, s, Renderer::NONE, size);
+            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, Renderer::NONE, size);
+          r.drawText(c, bounds.topLeft().x, bounds.topLeft().y, s, Renderer::NONE, size);
         }, width));
 }
 
 static Vec2 getTextPos(Rectangle bounds, Renderer::CenterType center) {
   switch (center) {
     case Renderer::HOR:
-      return Vec2(bounds.middle().x, bounds.getTopLeft().y);
+      return Vec2(bounds.middle().x, bounds.topLeft().y);
     case Renderer::VER:
-      return Vec2(bounds.getTopLeft().x, bounds.middle().y);
+      return Vec2(bounds.topLeft().x, bounds.middle().y);
     case Renderer::HOR_VER:
       return bounds.middle();
     default:
-      return bounds.getTopLeft();
+      return bounds.topLeft();
   }
 }
 
@@ -558,7 +558,7 @@ PGuiElem GuiFactory::labelUnicode(const String& s, function<Color()> color, int 
           Color c = color();
           if (r.getMousePos().inRectangle(bounds))
             lighten(c);
-          r.drawText(fontId, size, c, bounds.getTopLeft().x, bounds.getTopLeft().y, s);
+          r.drawText(fontId, size, c, bounds.topLeft().x, bounds.topLeft().y, s);
         }, width));
 }
 
@@ -567,8 +567,8 @@ class MainMenuLabel : public GuiElem {
   MainMenuLabel(const string& s, Color c, double vPad) : text(s), color(c), vPadding(vPad) {}
 
   virtual void render(Renderer& renderer) override {
-    int size = (0.9 - 2 * vPadding) * getBounds().getH();
-    double height = getBounds().getPY() + vPadding * getBounds().getH();
+    int size = (0.9 - 2 * vPadding) * getBounds().height();
+    double height = getBounds().top() + vPadding * getBounds().height();
     renderer.drawText(color, getBounds().middle().x, height - size / 11, text, Renderer::HOR, size);
   }
 
@@ -817,8 +817,8 @@ class AlignmentGui : public GuiLayout {
   virtual Rectangle getElemBounds(int num) override {
     switch (alignment) {
       case GuiFactory::Alignment::TOP_RIGHT:
-        return Rectangle(getBounds().getTopRight() + size.mult(Vec2(-1, 0)),
-            getBounds().getTopRight() + size.mult(Vec2(0, 1)));
+        return Rectangle(getBounds().topRight() + size.mult(Vec2(-1, 0)),
+            getBounds().topRight() + size.mult(Vec2(0, 1)));
       default: FAIL << "Unhandled";
     }
     return Rectangle();
@@ -870,7 +870,7 @@ class VerticalList : public GuiLayout {
 
   Rectangle getBackPosition(int num) {
     int height = std::accumulate(heights.begin() + num + 1, heights.end(), 0);
-    return Rectangle(getBounds().getBottomLeft() - Vec2(0, height + heights[num]), getBounds().getBottomRight() 
+    return Rectangle(getBounds().bottomLeft() - Vec2(0, height + heights[num]), getBounds().bottomRight() 
         - Vec2(0, height));
   }
 
@@ -878,17 +878,17 @@ class VerticalList : public GuiLayout {
     if (num >= heights.size() - numAlignBack)
       return getBackPosition(num);
     int height = std::accumulate(heights.begin(), heights.begin() + num, 0);
-    return Rectangle(getBounds().getTopLeft() + Vec2(0, height), getBounds().getTopRight() 
+    return Rectangle(getBounds().topLeft() + Vec2(0, height), getBounds().topRight() 
         + Vec2(0, height + heights[num]));
   }
 
   void renderPart(Renderer& r, int scrollPos) {
     int totHeight = 0;
     for (int i : Range(scrollPos, heights.size())) {
-      if (totHeight + elems[i]->getBounds().getH() > getBounds().getH())
+      if (totHeight + elems[i]->getBounds().height() > getBounds().height())
         break;
       elems[i]->render(r);
-      totHeight += elems[i]->getBounds().getH();
+      totHeight += elems[i]->getBounds().height();
     }
   }
 
@@ -1045,9 +1045,9 @@ class VerticalListFit : public GuiLayout {
   }
 
   virtual Rectangle getElemBounds(int num) override {
-    int elemHeight = double(getBounds().getH()) / (double(elems.size()) * (1.0 + spacing) - spacing);
-    return Rectangle(getBounds().getTopLeft() + Vec2(0, num * (elemHeight * (1.0 + spacing))), 
-        getBounds().getTopRight() + Vec2(0, num * (elemHeight * (1.0 + spacing)) + elemHeight));
+    int elemHeight = double(getBounds().height()) / (double(elems.size()) * (1.0 + spacing) - spacing);
+    return Rectangle(getBounds().topLeft() + Vec2(0, num * (elemHeight * (1.0 + spacing))), 
+        getBounds().topRight() + Vec2(0, num * (elemHeight * (1.0 + spacing)) + elemHeight));
   }
 
   protected:
@@ -1066,9 +1066,9 @@ class HorizontalListFit : public GuiLayout {
   }
 
   virtual Rectangle getElemBounds(int num) override {
-    int elemHeight = double(getBounds().getW()) / (double(elems.size()) * (1.0 + spacing) - spacing);
-    return Rectangle(getBounds().getTopLeft() + Vec2(num * (elemHeight * (1.0 + spacing)), 0), 
-        getBounds().getBottomLeft() + Vec2(num * (elemHeight * (1.0 + spacing)) + elemHeight, 0));
+    int elemHeight = double(getBounds().width()) / (double(elems.size()) * (1.0 + spacing) - spacing);
+    return Rectangle(getBounds().topLeft() + Vec2(num * (elemHeight * (1.0 + spacing)), 0), 
+        getBounds().bottomLeft() + Vec2(num * (elemHeight * (1.0 + spacing)) + elemHeight, 0));
   }
 
   protected:
@@ -1086,7 +1086,7 @@ class HorizontalList : public VerticalList {
 
   Rectangle getBackPosition(int num) {
     int height = std::accumulate(heights.begin() + num + 1, heights.end(), 0);
-    return Rectangle(getBounds().getTopRight() - Vec2(height + heights[num], 0), getBounds().getBottomRight() 
+    return Rectangle(getBounds().topRight() - Vec2(height + heights[num], 0), getBounds().bottomRight() 
         - Vec2(height, 0));
   }
 
@@ -1094,7 +1094,7 @@ class HorizontalList : public VerticalList {
     if (num >= heights.size() - numAlignBack)
       return getBackPosition(num);
     int height = std::accumulate(heights.begin(), heights.begin() + num, 0);
-    return Rectangle(getBounds().getTopLeft() + Vec2(height, 0), getBounds().getBottomLeft() 
+    return Rectangle(getBounds().topLeft() + Vec2(height, 0), getBounds().bottomLeft() 
         + Vec2(height + heights[num], 0));
   }
 
@@ -1125,9 +1125,9 @@ class VerticalAspect : public GuiLayout {
 
   virtual Rectangle getElemBounds(int num) override {
     CHECK(num == 0);
-    double width = ratio * getBounds().getH();
-    return Rectangle((getBounds().getTopLeft() + getBounds().getTopRight()) / 2 - Vec2(width / 2, 0),
-        (getBounds().getBottomLeft() + getBounds().getBottomRight()) / 2 + Vec2(width / 2, 0));
+    double width = ratio * getBounds().height();
+    return Rectangle((getBounds().topLeft() + getBounds().topRight()) / 2 - Vec2(width / 2, 0),
+        (getBounds().bottomLeft() + getBounds().bottomRight()) / 2 + Vec2(width / 2, 0));
   }
 
   private:
@@ -1151,8 +1151,8 @@ class CenterHoriz : public GuiLayout {
   }
 
   virtual Rectangle getElemBounds(int num) override {
-    int center = (getBounds().getPX() + getBounds().getKX()) / 2;
-    return Rectangle(center - width / 2, getBounds().getPY(), center + width / 2, getBounds().getKY());
+    int center = (getBounds().left() + getBounds().right()) / 2;
+    return Rectangle(center - width / 2, getBounds().top(), center + width / 2, getBounds().bottom());
   }
 
   private:
@@ -1175,24 +1175,24 @@ class MarginGui : public GuiLayout {
     if (num == 0)
       switch (type) { // the margin
         case GuiFactory::TOP:
-          return Rectangle(getBounds().getTopLeft(), getBounds().getTopRight() + Vec2(0, width));
+          return Rectangle(getBounds().topLeft(), getBounds().topRight() + Vec2(0, width));
         case GuiFactory::LEFT:
-          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomLeft() + Vec2(width, 0));
+          return Rectangle(getBounds().topLeft(), getBounds().bottomLeft() + Vec2(width, 0));
         case GuiFactory::RIGHT:
-          return Rectangle(getBounds().getTopRight() - Vec2(width, 0), getBounds().getBottomRight());
+          return Rectangle(getBounds().topRight() - Vec2(width, 0), getBounds().bottomRight());
         case GuiFactory::BOTTOM:
-          return Rectangle(getBounds().getBottomLeft() - Vec2(0, width), getBounds().getBottomRight());
+          return Rectangle(getBounds().bottomLeft() - Vec2(0, width), getBounds().bottomRight());
       }
     else
       switch (type) { // the remainder
         case GuiFactory::TOP:
-          return Rectangle(getBounds().getTopLeft() + Vec2(0, width), getBounds().getBottomRight());
+          return Rectangle(getBounds().topLeft() + Vec2(0, width), getBounds().bottomRight());
         case GuiFactory::LEFT:
-          return Rectangle(getBounds().getTopLeft() + Vec2(width, 0), getBounds().getBottomRight());
+          return Rectangle(getBounds().topLeft() + Vec2(width, 0), getBounds().bottomRight());
         case GuiFactory::RIGHT:
-          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(width, 0));
+          return Rectangle(getBounds().topLeft(), getBounds().bottomRight() - Vec2(width, 0));
         case GuiFactory::BOTTOM:
-          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(0, width));
+          return Rectangle(getBounds().topLeft(), getBounds().bottomRight() - Vec2(0, width));
       }
   }
 
@@ -1269,29 +1269,29 @@ class MarginFit : public GuiLayout {
 
   virtual Rectangle getElemBounds(int num) override {
     CHECK(num == 0 || num == 1);
-    int w = getBounds().getW();
-    int h = getBounds().getH();
+    int w = getBounds().width();
+    int h = getBounds().height();
     if (num == 0)
       switch (type) { // the margin
         case GuiFactory::TOP:
-          return Rectangle(getBounds().getTopLeft(), getBounds().getTopRight() + Vec2(0, width * h));
+          return Rectangle(getBounds().topLeft(), getBounds().topRight() + Vec2(0, width * h));
         case GuiFactory::LEFT:
-          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomLeft() + Vec2(width * w, 0));
+          return Rectangle(getBounds().topLeft(), getBounds().bottomLeft() + Vec2(width * w, 0));
         case GuiFactory::RIGHT:
-          return Rectangle(getBounds().getTopRight() - Vec2(width * w, 0), getBounds().getBottomRight());
+          return Rectangle(getBounds().topRight() - Vec2(width * w, 0), getBounds().bottomRight());
         case GuiFactory::BOTTOM:
-          return Rectangle(getBounds().getBottomLeft() - Vec2(0, width * h), getBounds().getBottomRight());
+          return Rectangle(getBounds().bottomLeft() - Vec2(0, width * h), getBounds().bottomRight());
       }
     else
       switch (type) { // the remainder
         case GuiFactory::TOP:
-          return Rectangle(getBounds().getTopLeft() + Vec2(0, width * h), getBounds().getBottomRight());
+          return Rectangle(getBounds().topLeft() + Vec2(0, width * h), getBounds().bottomRight());
         case GuiFactory::LEFT:
-          return Rectangle(getBounds().getTopLeft() + Vec2(width * w, 0), getBounds().getBottomRight());
+          return Rectangle(getBounds().topLeft() + Vec2(width * w, 0), getBounds().bottomRight());
         case GuiFactory::RIGHT:
-          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(width * w, 0));
+          return Rectangle(getBounds().topLeft(), getBounds().bottomRight() - Vec2(width * w, 0));
         case GuiFactory::BOTTOM:
-          return Rectangle(getBounds().getTopLeft(), getBounds().getBottomRight() - Vec2(0, width * h));
+          return Rectangle(getBounds().topLeft(), getBounds().bottomRight() - Vec2(0, width * h));
       }
   }
 
@@ -1310,8 +1310,8 @@ class Margins : public GuiLayout {
       : GuiLayout(makeVec<PGuiElem>(std::move(content))), left(l), top(t), right(r), bottom(b) {}
 
   virtual Rectangle getElemBounds(int num) override {
-    return Rectangle(getBounds().getPX() + left, getBounds().getPY() + top,
-        getBounds().getKX() - right, getBounds().getKY() - bottom);
+    return Rectangle(getBounds().left() + left, getBounds().top() + top,
+        getBounds().right() - right, getBounds().bottom() - bottom);
   }
 
   optional<int> getPreferredWidth() override {
@@ -1419,9 +1419,9 @@ class ViewObjectGui : public GuiElem {
   
   virtual void render(Renderer& renderer) override {
     if (ViewObject* obj = boost::get<ViewObject>(&object))
-      renderer.drawViewObject(getBounds().getTopLeft(), *obj, true, scale, color);
+      renderer.drawViewObject(getBounds().topLeft(), *obj, true, scale, color);
     else
-      renderer.drawViewObject(getBounds().getTopLeft(), boost::get<ViewId>(object), true, scale, color);
+      renderer.drawViewObject(getBounds().topLeft(), boost::get<ViewId>(object), true, scale, color);
   }
 
   private:
@@ -1482,11 +1482,11 @@ class TranslateGui : public GuiLayout {
   public:
   TranslateGui(PGuiElem e, Vec2 v, Rectangle nSize)
       : GuiLayout(makeVec<PGuiElem>(std::move(e))), vec(v), newSize(nSize) {
-    CHECK(newSize.getTopLeft() == Vec2(0, 0));
+    CHECK(newSize.topLeft() == Vec2(0, 0));
   }
 
   virtual Rectangle getElemBounds(int num) override {
-    return Rectangle(getBounds().getTopLeft(), newSize.getBottomRight()).translate(vec);
+    return Rectangle(getBounds().topLeft(), newSize.bottomRight()).translate(vec);
   }
 
   private:
@@ -1674,7 +1674,7 @@ class Tooltip : public GuiElem {
         Vec2 size(0, text.size() * tooltipLineHeight + 2 * tooltipVMargin);
         for (const string& t : text)
           size.x = max(size.x, r.getTextLength(t) + 2 * tooltipHMargin);
-        Vec2 pos = getBounds().getBottomLeft() + tooltipOffset;
+        Vec2 pos = getBounds().bottomLeft() + tooltipOffset;
         pos.x = min(pos.x, r.getSize().x - size.x);
         pos.y = min(pos.y, r.getSize().y - size.y);
         r.setTopLayer();
@@ -1730,25 +1730,25 @@ class ScrollBar : public GuiLayout {
 
   double calcPos(int mouseHeight) {
     return max(0.0, min(1.0, 
-          double(mouseHeight - getBounds().getPY() - vMargin - buttonSize.y / 2)
-              / (getBounds().getH() - 2 * vMargin - buttonSize.y)));
+          double(mouseHeight - getBounds().top() - vMargin - buttonSize.y / 2)
+              / (getBounds().height() - 2 * vMargin - buttonSize.y)));
   }
 
   int scrollLength() {
-    return max(1, content->getLastTopElem(getBounds().getH()));
+    return max(1, content->getLastTopElem(getBounds().height()));
   }
 
   int calcButHeight() {
-    int ret = min<double>(getBounds().getKY() - buttonSize.y / 2 - vMargin,
-        double(getBounds().getPY()) + buttonSize.y / 2 + vMargin + *scrollPos
-            * double(getBounds().getH() - buttonSize.y - 2 * vMargin)
+    int ret = min<double>(getBounds().bottom() - buttonSize.y / 2 - vMargin,
+        double(getBounds().top()) + buttonSize.y / 2 + vMargin + *scrollPos
+            * double(getBounds().height() - buttonSize.y - 2 * vMargin)
             / double(scrollLength()));
     return ret;
   }
 
   virtual bool onMouseWheel(Vec2 v, bool up) override {
-    if (v.inRectangle(Rectangle(Vec2(content->getBounds().getPX(), getBounds().getPY()),
-        getBounds().getBottomRight()))) {
+    if (v.inRectangle(Rectangle(Vec2(content->getBounds().left(), getBounds().top()),
+        getBounds().bottomRight()))) {
       if (up)
         *scrollPos = max<double>(0, *scrollPos - 1);
       else
@@ -1764,9 +1764,9 @@ class ScrollBar : public GuiLayout {
       return true;
     } else
     if (v.inRectangle(getBounds())) {
-      if (v.y <= getBounds().getPY() + vMargin)
+      if (v.y <= getBounds().top() + vMargin)
         *scrollPos = max<double>(0, *scrollPos - 1);
-      else if (v.y >= getBounds().getKY() - vMargin)
+      else if (v.y >= getBounds().bottom() - vMargin)
         *scrollPos = min<double>(scrollLength(), *scrollPos + 1);
       else
         *scrollPos = scrollLength() * calcPos(v.y);
@@ -1786,7 +1786,7 @@ class ScrollBar : public GuiLayout {
   }
 
   virtual bool isVisible(int num) override {
-    return getBounds().getH() < contentHeight;
+    return getBounds().height() < contentHeight;
   }
 
   private:
@@ -1822,11 +1822,11 @@ class Scrollable : public GuiElem {
   }
 
   double getScrollPos() {
-    return min<double>(*scrollPos, content->getLastTopElem(getBounds().getH()));
+    return min<double>(*scrollPos, content->getLastTopElem(getBounds().height()));
   }
 
   void onRefreshBounds() override {
-    int lastTopElem = content->getLastTopElem(getBounds().getH());
+    int lastTopElem = content->getLastTopElem(getBounds().height());
     int offset = getScrollOffset();
     if (*scrollPos > lastTopElem)
       *scrollPos = lastTopElem;
@@ -1839,13 +1839,13 @@ class Scrollable : public GuiElem {
   }
 
   virtual bool onLeftClick(Vec2 v) override {
-    if (v.y >= getBounds().getPY() && v.y < getBounds().getKY())
+    if (v.y >= getBounds().top() && v.y < getBounds().bottom())
       return content->onLeftClick(v);
     return false;
   }
 
   virtual bool onRightClick(Vec2 v) override {
-    if (v.y >= getBounds().getPY() && v.y < getBounds().getKY())
+    if (v.y >= getBounds().top() && v.y < getBounds().bottom())
       return content->onRightClick(v);
     return false;
   }
@@ -1921,14 +1921,22 @@ void GuiFactory::loadFreeImages(const string& path) {
   textures[TexId::VERT_BAR].setRepeated(true);
   CHECK(textures[TexId::HORI_BAR].loadFromFile(path + "/ui/horibar.png"));
   textures[TexId::HORI_BAR].setRepeated(true);
-  CHECK(textures[TexId::HORI_BAR_MINI].loadFromFile(path + "/ui/horibarmini.png"));
-  textures[TexId::HORI_BAR_MINI].setRepeated(true);
   CHECK(textures[TexId::CORNER_TOP_LEFT].loadFromFile(path + "/ui/cornerTOPL.png"));
   CHECK(textures[TexId::CORNER_TOP_RIGHT].loadFromFile(path + "/ui/cornerTOPR.png"));
   CHECK(textures[TexId::CORNER_BOTTOM_RIGHT].loadFromFile(path + "/ui/cornerBOTTOMR.png"));
+
+  CHECK(textures[TexId::HORI_BAR_MINI].loadFromFile(path + "/ui/horibarmini.png"));
+  textures[TexId::HORI_BAR_MINI].setRepeated(true);
   CHECK(textures[TexId::VERT_BAR_MINI].loadFromFile(path + "/ui/vertbarmini.png"));
   textures[TexId::VERT_BAR_MINI].setRepeated(true);
-  CHECK(textures[TexId::CORNER_MINI].loadFromFile(path + "/ui/cornersmall.png"));
+  CHECK(textures[TexId::CORNER_MINI].loadFromFile(path + "/ui/cornermini.png"));
+
+  CHECK(textures[TexId::HORI_BAR_MINI2].loadFromFile(path + "/ui/horibarmini2.png"));
+  textures[TexId::HORI_BAR_MINI2].setRepeated(true);
+  CHECK(textures[TexId::VERT_BAR_MINI2].loadFromFile(path + "/ui/vertbarmini2.png"));
+  textures[TexId::VERT_BAR_MINI2].setRepeated(true);
+  CHECK(textures[TexId::CORNER_MINI2].loadFromFile(path + "/ui/cornermini2.png"));
+
   CHECK(textures[TexId::SCROLL_UP].loadFromFile(path + "/ui/up.png"));
   CHECK(textures[TexId::SCROLL_DOWN].loadFromFile(path + "/ui/down.png"));
   CHECK(textures[TexId::WINDOW_CORNER].loadFromFile(path + "/ui/corner1.png"));
@@ -2073,10 +2081,10 @@ PGuiElem GuiFactory::scrollable(PGuiElem content, double* scrollPos, int* held) 
         getScrollButton(), list, getScrollButtonSize(), scrollBarMargin, scrollPos, contentHeight, held));
   PGuiElem barButtons = getScrollbar();
   barButtons = conditional2(std::move(barButtons), [=] (GuiElem* e) {
-      return e->getBounds().getH() < contentHeight;});
+      return e->getBounds().height() < contentHeight;});
   return maybeMargin(stack(std::move(barButtons), std::move(bar)),
         std::move(scrollable), scrollbarWidth, RIGHT,
-        [=] (Rectangle bounds) { return bounds.getH() < contentHeight; });
+        [=] (Rectangle bounds) { return bounds.height() < contentHeight; });
 }
 
 PGuiElem GuiFactory::background(Color c) {
@@ -2121,6 +2129,23 @@ PGuiElem GuiFactory::miniBorder() {
         sprite(get(TexId::CORNER_MINI), Alignment::BOTTOM_LEFT, true, false),
         sprite(get(TexId::CORNER_MINI), Alignment::TOP_RIGHT, false, true),
         sprite(get(TexId::CORNER_MINI), Alignment::TOP_LEFT, false, false)));
+}
+
+PGuiElem GuiFactory::miniBorder2() {
+  return stack(makeVec<PGuiElem>(
+        sprite(get(TexId::HORI_BAR_MINI2), Alignment::BOTTOM, false, false),
+        sprite(get(TexId::HORI_BAR_MINI2), Alignment::TOP, true, false),
+        sprite(get(TexId::VERT_BAR_MINI2), Alignment::RIGHT, false, false),
+        sprite(get(TexId::VERT_BAR_MINI2), Alignment::LEFT, false, true),
+        sprite(get(TexId::CORNER_MINI2), Alignment::BOTTOM_RIGHT, true, true),
+        sprite(get(TexId::CORNER_MINI2), Alignment::BOTTOM_LEFT, true, false),
+        sprite(get(TexId::CORNER_MINI2), Alignment::TOP_RIGHT, false, true),
+        sprite(get(TexId::CORNER_MINI2), Alignment::TOP_LEFT, false, false)));
+}
+
+PGuiElem GuiFactory::miniWindow2(PGuiElem content, function<void()> onExitButton) {
+  return stack(fullScreen(darken()),
+      miniWindow(margins(std::move(content), 15), onExitButton));
 }
 
 PGuiElem GuiFactory::miniWindow(PGuiElem content, function<void()> onExitButton) {

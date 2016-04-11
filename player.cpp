@@ -578,8 +578,8 @@ void Player::makeMove() {
         if (!wasJustTravelling) {
           target = newPos;
 /*          Vec2 t = action.get<Vec2>();
-          t = Vec2(min(getCreature()->getLevel()->getBounds().getKX() - 1, max(0, t.x)),
-              min(getCreature()->getLevel()->getBounds().getKY() - 1, max(0, t.y)));*/
+          t = Vec2(min(getCreature()->getLevel()->getBounds().right() - 1, max(0, t.x)),
+              min(getCreature()->getLevel()->getBounds().bottom() - 1, max(0, t.y)));*/
         }
       }
       break;

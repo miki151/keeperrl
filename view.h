@@ -33,6 +33,7 @@ struct CreatureInfo;
 class Sound;
 class Campaign;
 class Options;
+class RetiredGames;
 
 enum class SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING, AUTOSAVING };
 
@@ -103,6 +104,7 @@ enum class CampaignActionId {
   CANCEL,
   CHOOSE_SITE,
   REROLL_MAP,
+  UPDATE_MAP,
   CONFIRM,
   UPDATE_OPTION
 };
@@ -193,7 +195,7 @@ class View {
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
 
-  virtual CampaignAction prepareCampaign(const Campaign&, Options*) = 0;
+  virtual CampaignAction prepareCampaign(const Campaign&, Options*, RetiredGames&) = 0;
 
   virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) = 0;

@@ -195,6 +195,9 @@ class GuiFactory {
     HORI_BAR_MINI,
     VERT_BAR_MINI,
     CORNER_MINI,
+    HORI_BAR_MINI2,
+    VERT_BAR_MINI2,
+    CORNER_MINI2,
     CORNER_TOP_LEFT,
     CORNER_TOP_RIGHT,
     CORNER_BOTTOM_RIGHT,
@@ -223,12 +226,12 @@ class GuiFactory {
   PGuiElem highlight(double height);
   PGuiElem highlightDouble();
   PGuiElem mainMenuHighlight();
-  PGuiElem insideBackground(PGuiElem content);
   PGuiElem window(PGuiElem content, function<void()> onExitButton);
   PGuiElem miniWindow();
   PGuiElem miniWindow(PGuiElem content, function<void()> onExitButton = nullptr);
-  PGuiElem mapWindow(PGuiElem content);
+  PGuiElem miniWindow2(PGuiElem content, function<void()> onExitButton = nullptr);
   PGuiElem miniBorder();
+  PGuiElem miniBorder2();
   PGuiElem border2();
   PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight);
   PGuiElem invisible(PGuiElem content);
