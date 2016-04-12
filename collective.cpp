@@ -2221,6 +2221,7 @@ double Collective::getTechCost(Technology* t) {
 
 void Collective::acquireTech(Technology* tech, bool free) {
   technologies.push_back(tech->getId());
+  Technology::onAcquired(tech->getId(), this);
   if (free)
     ++numFreeTech;
   if (hasLeader())

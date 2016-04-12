@@ -2089,21 +2089,6 @@ View* PlayerControl::getView() const {
   return getGame()->getView();
 }
 
-void PlayerControl::uncoverRandomLocation() {
-  FAIL << "Fix this";
- /* const Location* location = nullptr;
-  for (auto loc : randomPermutation(getLevel()->getAllLocations()))
-    if (!getCollective()->isKnownSquare(loc->getMiddle())) {
-      location = loc;
-      break;
-    }
-  double radius = 8.5;
-  if (location)
-    for (Vec2 v : location->getMiddle().circle(radius))
-      if (getLevel()->inBounds(v))
-        getCollective()->addKnownTile(Position(v, getLevel()));*/
-}
-
 void PlayerControl::addAttack(const CollectiveAttack& attack) {
   newAttacks.push_back(attack);
 }
