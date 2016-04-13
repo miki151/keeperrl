@@ -1157,8 +1157,8 @@ class TransferTo : public Task {
   virtual MoveInfo getMove(Creature* c) override {
     if (!target)
       target = c->getGame()->getTransferPos(model, c->getPosition().getModel());
-    if (c->getPosition() == target) {
-      return c->wait().append([=] (Creature* c) { setDone(); c->getGame()->transferCreatures({c}, model); });
+    if (c->getPosition() == target && c->getGame()->canTransferCreature(c, model)) {
+      return c->wait().append([=] (Creature* c) { setDone(); c->getGame()->transferCreature(c, model); });
     } else
       return c->moveTowards(*target);
   }

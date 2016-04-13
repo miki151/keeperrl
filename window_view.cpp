@@ -58,11 +58,13 @@ View* WindowView::createDefaultView(ViewParams params) {
 }
 
 View* WindowView::createLoggingView(OutputArchive& of, ViewParams params) {
-  return new LoggingView(of, new WindowView(params));
+  return createDefaultView(params);
+  //return new LoggingView(of, new WindowView(params));
 }
 
 View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
-  return new ReplayView(ifs, new WindowView(params));
+  return createDefaultView(params);
+  //return new ReplayView(ifs, new WindowView(params));
 }
 
 int rightBarWidthCollective = 330;
@@ -827,6 +829,11 @@ optional<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& 
     const vector<CreatureInfo>& creatures, const string& cancelText) {
   SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawTeamLeaderMenu(returnQueue, title, creatures, cancelText));
+}
+
+bool WindowView::creaturePrompt(const string& title, const vector<CreatureInfo>& creatures) {
+  SyncQueue<bool> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawCreaturePrompt(returnQueue, title, creatures));
 }
 
 void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, Vec2 origin) {

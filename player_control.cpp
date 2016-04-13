@@ -374,7 +374,9 @@ void PlayerControl::leaveControl() {
   if (controlled->isPlayer())
     controlled->popController();
   for (TeamId team : getTeams().getActive(controlled)) {
-    getGame()->transferCreatures(getTeams().getMembers(team), getCollective()->getLevel()->getModel());
+    for (Creature* c : getTeams().getMembers(team))
+//      if (getGame()->canTransferCreature(c, getCollective()->getLevel()->getModel()))
+        getGame()->transferCreature(c, getCollective()->getLevel()->getModel());
     if (!getTeams().isPersistent(team)) {
       if (getTeams().getMembers(team).size() == 1)
         getTeams().cancel(team);
@@ -940,7 +942,9 @@ void PlayerControl::handleRecruiting(Collective* ally) {
   for (auto& stack : Creature::stack(recruited))
     getCollective()->addNewCreatureMessage(stack);
   if (!transfers.empty())
-    getGame()->transferCreatures(transfers, getModel());
+    for (Creature* c : transfers)
+//      if (getGame()->canTransferCreature(c, getCollective()->getLevel()->getModel()))
+        getGame()->transferCreature(c, getModel());
 }
 
 void PlayerControl::handleTrading(Collective* ally) {

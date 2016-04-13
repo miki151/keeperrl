@@ -94,6 +94,7 @@ class WindowView: public View {
   virtual CampaignAction prepareCampaign(const Campaign&, Options*, RetiredGames&) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) override;
+  virtual bool creaturePrompt(const string& title, const vector<CreatureInfo>&) override;
  
   private:
 

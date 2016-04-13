@@ -89,7 +89,9 @@ void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& ite
 
 void VillageControl::launchAttack(vector<Creature*> attackers) {
   if (Collective* enemy = getEnemyCollective()) {
-    getCollective()->getGame()->transferCreatures(attackers, enemy->getLevel()->getModel());
+    for (Creature* c : attackers)
+//      if (getCollective()->getGame()->canTransferCreature(c, enemy->getLevel()->getModel()))
+        getCollective()->getGame()->transferCreature(c, enemy->getLevel()->getModel());
     optional<int> ransom;
     int hisGold = enemy->numResource(CollectiveResourceId::GOLD);
     if (villain->ransom && hisGold >= villain->ransom->second)

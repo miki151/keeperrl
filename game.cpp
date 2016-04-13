@@ -147,13 +147,13 @@ void Game::prepareRetirement() {
   for (Collective* col : models[baseModel]->getCollectives())
     for (Creature* c : col->getCreatures())
       if (c->getPosition().getModel() != mainModel)
-        transferCreatures({c}, mainModel);
+        transferCreature(c, mainModel);
   for (Vec2 v : models.getBounds())
     if (models[v] && v != baseModel)
       for (Collective* col : models[v]->getCollectives())
         for (Creature* c : col->getCreatures())
           if (c->getPosition().getModel() == mainModel)
-            transferCreatures({c}, models[v].get());
+            transferCreature(c, models[v].get());
   // So we don't have references to creatures in another model.
   for (Creature* c : mainModel->getAllCreatures())
     c->clearLastAttacker();
@@ -304,12 +304,14 @@ Position Game::getTransferPos(Model* from, Model* to) const {
       getModelCoords(from) - getModelCoords(to));
 }
 
-void Game::transferCreatures(vector<Creature*> creatures, Model* to) {
-  for (Creature* c : creatures) {
-    Model* from = c->getLevel()->getModel();
-    if (from != to)
-      to->transferCreature(from->extractCreature(c), getModelCoords(from) - getModelCoords(to));
-  }
+void Game::transferCreature(Creature* c, Model* to) {
+  Model* from = c->getLevel()->getModel();
+  if (from != to)
+    to->transferCreature(from->extractCreature(c), getModelCoords(from) - getModelCoords(to));
+}
+
+bool Game::canTransferCreature(Creature* c, Model* to) {
+  return to->canTransferCreature(c, getModelCoords(c->getLevel()->getModel()) - getModelCoords(to));
 }
 
 Vec2 Game::getModelCoords(const Model* m) const {
@@ -320,13 +322,22 @@ Vec2 Game::getModelCoords(const Model* m) const {
   return Vec2();
 }
 
-void Game::transferAction(const vector<Creature*>& creatures) {
+void Game::transferAction(vector<Creature*> creatures) {
   if (!campaign)
     return;
   if (auto dest = view->chooseSite("Choose destination site:", *campaign,
         getModelCoords(creatures[0]->getLevel()->getModel()))) {
-    CHECK(models[*dest]);
-    transferCreatures(creatures, models[*dest].get());
+    Model* to = NOTNULL(models[*dest].get());
+    vector<CreatureInfo> cant;
+    for (Creature* c : copyOf(creatures))
+      if (!canTransferCreature(c, to)) {
+        cant.push_back(c);
+        removeElement(creatures,c );
+      }
+    if (!cant.empty() && !view->creaturePrompt("These minions can not travel due to sunlight. Continue?", cant))
+      return;
+    for (Creature* c : creatures)
+      transferCreature(c, models[*dest].get());
     wasTransfered = true;
   }
 }

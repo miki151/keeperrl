@@ -36,8 +36,9 @@ class Game {
   void setView(View*);
   View* getView() const;
   void exitAction();
-  void transferAction(const vector<Creature*>&);
-  void transferCreatures(vector<Creature*>, Model* to);
+  void transferAction(vector<Creature*>);
+  void transferCreature(Creature*, Model* to);
+  bool canTransferCreature(Creature*, Model* to);
   Position getTransferPos(Model* from, Model* to) const;
   string getGameIdentifier() const;
   string getGameDisplayName() const;

@@ -79,6 +79,7 @@ class Model {
 
   PCreature extractCreature(Creature*);
   void transferCreature(PCreature, Vec2 travelDir);
+  bool canTransferCreature(Creature*, Vec2 travelDir);
 
   Model();
 
