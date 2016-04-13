@@ -27,6 +27,7 @@
 #include "territory.h"
 #include "game.h"
 #include "collective_name.h"
+#include "lasting_effect.h"
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;

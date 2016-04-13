@@ -42,6 +42,7 @@
 #include "sound.h"
 #include "trigger.h"
 #include "creature_listener.h"
+#include "lasting_effect.h"
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
@@ -672,132 +673,9 @@ bool Creature::knowsHiding(const Creature* c) const {
   return knownHiding.contains(c);
 }
 
-bool Creature::affects(LastingEffect effect) const {
-  switch (effect) {
-    case LastingEffect::RAGE:
-    case LastingEffect::PANIC: return !isAffected(LastingEffect::SLEEP);
-    case LastingEffect::POISON: return !isAffected(LastingEffect::POISON_RESISTANT) && !attributes->isNotLiving();
-    case LastingEffect::TIED_UP:
-    case LastingEffect::ENTANGLED: return attributes->isCorporal();
-    default: return true;
-  }
-}
-
-void Creature::onAffected(LastingEffect effect, bool msg) {
-  switch (effect) {
-    case LastingEffect::FLYING:
-      if (msg) you(MsgType::ARE, "flying!");
-      break;
-    case LastingEffect::PREGNANT:
-      if (msg) you(MsgType::ARE, "pregnant!");
-      break;
-    case LastingEffect::STUNNED:
-      if (msg) you(MsgType::ARE, "stunned");
-      break;
-    case LastingEffect::PANIC:
-      removeEffect(LastingEffect::RAGE, false);
-      if (msg) you(MsgType::PANIC, "");
-      break;
-    case LastingEffect::RAGE:
-      removeEffect(LastingEffect::PANIC, false);
-      if (msg) you(MsgType::RAGE, "");
-      break;
-    case LastingEffect::HALLU: 
-      if (!isBlind() && msg)
-        playerMessage("The world explodes into colors!");
-      break;
-    case LastingEffect::BLIND:
-      if (msg) you(MsgType::ARE, "blind!");
-      modViewObject().setModifier(ViewObject::Modifier::BLIND);
-      break;
-    case LastingEffect::INVISIBLE:
-      if (!isBlind() && msg)
-        you(MsgType::TURN_INVISIBLE, "");
-      modViewObject().setModifier(ViewObject::Modifier::INVISIBLE);
-      break;
-    case LastingEffect::POISON:
-      if (msg) you(MsgType::ARE, "poisoned");
-      modViewObject().setModifier(ViewObject::Modifier::POISONED);
-      break;
-    case LastingEffect::STR_BONUS: if (msg) you(MsgType::FEEL, "stronger"); break;
-    case LastingEffect::DEX_BONUS: if (msg) you(MsgType::FEEL, "more agile"); break;
-    case LastingEffect::SPEED: 
-      if (msg) you(MsgType::ARE, "moving faster");
-      removeEffect(LastingEffect::SLOWED, false);
-      break;
-    case LastingEffect::SLOWED: 
-      if (msg) you(MsgType::ARE, "moving more slowly");
-      removeEffect(LastingEffect::SPEED, false);
-      break;
-    case LastingEffect::TIED_UP: if (msg) you(MsgType::ARE, "tied up"); break;
-    case LastingEffect::ENTANGLED: if (msg) you(MsgType::ARE, "entangled in a web"); break;
-    case LastingEffect::SLEEP: if (msg) you(MsgType::FALL_ASLEEP, ""); break;
-    case LastingEffect::POISON_RESISTANT:
-      if (msg) you(MsgType::ARE, "now poison resistant");
-      removeEffect(LastingEffect::POISON, true);
-      break;
-    case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "now fire resistant"); break;
-    case LastingEffect::INSANITY: if (msg) you(MsgType::BECOME, "insane"); break;
-    case LastingEffect::MAGIC_SHIELD: if (msg) you(MsgType::FEEL, "protected"); break;
-    case LastingEffect::DARKNESS_SOURCE: break;
-  }
-}
-
-void Creature::onRemoved(LastingEffect effect, bool msg) {
-  switch (effect) {
-    case LastingEffect::POISON:
-      if (msg)
-        you(MsgType::ARE, "cured from poisoning");
-      modViewObject().removeModifier(ViewObject::Modifier::POISONED);
-      break;
-    default: onTimedOut(effect, msg); break;
-  }
-}
-
-void Creature::onTimedOut(LastingEffect effect, bool msg) {
-  switch (effect) {
-    case LastingEffect::STUNNED: break;
-    case LastingEffect::SLOWED: if (msg) you(MsgType::ARE, "moving faster again"); break;
-    case LastingEffect::SLEEP: if (msg) you(MsgType::WAKE_UP, ""); break;
-    case LastingEffect::SPEED: if (msg) you(MsgType::ARE, "moving more slowly again"); break;
-    case LastingEffect::STR_BONUS: if (msg) you(MsgType::ARE, "weaker again"); break;
-    case LastingEffect::DEX_BONUS: if (msg) you(MsgType::ARE, "less agile again"); break;
-    case LastingEffect::PANIC:
-    case LastingEffect::RAGE:
-    case LastingEffect::HALLU: if (msg) playerMessage("Your mind is clear again"); break;
-    case LastingEffect::ENTANGLED: if (msg) you(MsgType::BREAK_FREE, "the web"); break;
-    case LastingEffect::TIED_UP: if (msg) you(MsgType::BREAK_FREE, ""); break;
-    case LastingEffect::BLIND:
-      if (msg) 
-        you("can see again");
-      modViewObject().removeModifier(ViewObject::Modifier::BLIND);
-      break;
-    case LastingEffect::INVISIBLE:
-      if (msg)
-        you(MsgType::TURN_VISIBLE, "");
-      modViewObject().removeModifier(ViewObject::Modifier::INVISIBLE);
-      break;
-    case LastingEffect::POISON:
-      if (msg)
-        you(MsgType::ARE, "no longer poisoned");
-      modViewObject().removeModifier(ViewObject::Modifier::POISONED);
-      break;
-    case LastingEffect::POISON_RESISTANT: if (msg) you(MsgType::ARE, "no longer poison resistant"); break;
-    case LastingEffect::FIRE_RESISTANT: if (msg) you(MsgType::ARE, "no longer fire resistant"); break;
-    case LastingEffect::FLYING:
-      if (msg) you(MsgType::FALL, "on the " + getPosition().getName());
-      bleed(0.1);
-      break;
-    case LastingEffect::INSANITY: if (msg) you(MsgType::BECOME, "sane again"); break;
-    case LastingEffect::MAGIC_SHIELD: if (msg) you(MsgType::FEEL, "less protected"); break;
-    case LastingEffect::PREGNANT: break;
-    case LastingEffect::DARKNESS_SOURCE: break;
-  } 
-}
-
 void Creature::addEffect(LastingEffect effect, double time, bool msg) {
-  if (affects(effect) && attributes->considerAffecting(effect, getGlobalTime(), time))
-    onAffected(effect, msg);
+  if (LastingEffects::affects(this, effect) && attributes->considerAffecting(effect, getGlobalTime(), time))
+    LastingEffects::onAffected(this, effect, msg);
 }
 
 void Creature::removeEffect(LastingEffect effect, bool msg) {
@@ -805,19 +683,19 @@ void Creature::removeEffect(LastingEffect effect, bool msg) {
     return;
   attributes->clearLastingEffect(effect);
   if (!isAffected(effect))
-    onRemoved(effect, msg);
+    LastingEffects::onRemoved(this, effect, msg);
 }
 
 void Creature::addPermanentEffect(LastingEffect effect, bool msg) {
   if (!isAffected(effect))
-    onAffected(effect, msg);
+    LastingEffects::onAffected(this, effect, msg);
   attributes->addPermanentEffect(effect);
 }
 
 void Creature::removePermanentEffect(LastingEffect effect, bool msg) {
   attributes->removePermanentEffect(effect);
   if (!isAffected(effect))
-    onRemoved(effect, msg);
+    LastingEffects::onRemoved(this, effect, msg);
 }
 
 bool Creature::isAffected(LastingEffect effect) const {
@@ -832,8 +710,6 @@ bool Creature::isBlind() const {
 bool Creature::isDarknessSource() const {
   return isAffected(LastingEffect::DARKNESS_SOURCE);
 }
-
-int attrBonus = 3;
 
 map<BodyPart, int> dexPenalty {
   {BodyPart::ARM, 2},
@@ -861,8 +737,6 @@ int Creature::getAttr(AttrType type) const {
     case AttrType::STRENGTH:
         if (health < 1)
           def *= 0.666 + health / 3;
-        if (isAffected(LastingEffect::STR_BONUS))
-          def += CHECK_RANGE(attrBonus, -10000000, 10000000, getName().bare());
         for (auto elem : strPenalty)
           def -= elem.second * (attributes->numInjured(elem.first) + attributes->numLost(elem.first));
         def -= simulAttackPen(numAttacksThisTurn);
@@ -870,8 +744,6 @@ int Creature::getAttr(AttrType type) const {
     case AttrType::DEXTERITY:
         if (health < 1)
           def *= 0.666 + health / 3;
-        if (isAffected(LastingEffect::DEX_BONUS))
-          def += attrBonus;
         for (auto elem : dexPenalty)
           def -= elem.second * (attributes->numInjured(elem.first) + attributes->numLost(elem.first));
         def -= simulAttackPen(numAttacksThisTurn);
@@ -880,13 +752,10 @@ int Creature::getAttr(AttrType type) const {
         double totWeight = getInventoryWeight();
         if (!attributes->canCarryAnything() && totWeight > getAttr(AttrType::STRENGTH))
           def -= 20.0 * totWeight / def;
-        if (isAffected(LastingEffect::SLOWED))
-          def /= 1.5;
-        if (isAffected(LastingEffect::SPEED))
-          def *= 1.5;
         CHECK(def > 0);
         break;}
   }
+  LastingEffects::modifyAttr(this, type, def);
   return max(0, def);
 }
 
@@ -908,30 +777,14 @@ int Creature::getModifier(ModifierType type) const {
     case ModifierType::FIRED_DAMAGE: 
     case ModifierType::THROWN_DAMAGE: 
         def += getAttr(AttrType::DEXTERITY);
-        if (isAffected(LastingEffect::PANIC))
-          def -= attrBonus;
-        if (isAffected(LastingEffect::RAGE))
-          def += attrBonus;
         break;
     case ModifierType::DAMAGE: 
         def += getAttr(AttrType::STRENGTH);
         if (!getWeapon())
           def += attributes->getBarehandedDamage();
-        if (isAffected(LastingEffect::PANIC))
-          def -= attrBonus;
-        if (isAffected(LastingEffect::RAGE))
-          def += attrBonus;
         break;
     case ModifierType::DEFENSE: 
         def += getAttr(AttrType::STRENGTH);
-        if (isAffected(LastingEffect::PANIC))
-          def += attrBonus;
-        if (isAffected(LastingEffect::RAGE))
-          def -= attrBonus;
-        if (isAffected(LastingEffect::SLEEP))
-          def *= 0.66;
-        if (isAffected(LastingEffect::MAGIC_SHIELD))
-          def += 20;
         break;
     case ModifierType::FIRED_ACCURACY: 
     case ModifierType::THROWN_ACCURACY: 
@@ -940,14 +793,13 @@ int Creature::getModifier(ModifierType type) const {
     case ModifierType::ACCURACY: 
         def += accuracyBonus();
         def += getAttr(AttrType::DEXTERITY);
-        if (isAffected(LastingEffect::SLEEP))
-          def = 0;
         break;
     case ModifierType::INV_LIMIT:
         if (attributes->canCarryAnything())
           return 1000000;
         return getAttr(AttrType::STRENGTH) * 2;
   }
+  LastingEffects::modifyMod(this, type, def);
   return max(0, def);
 }
 
@@ -1058,7 +910,7 @@ void Creature::tick() {
   double globalTime = getGlobalTime();
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (attributes->considerTimeout(effect, globalTime))
-      onTimedOut(effect, true);
+      LastingEffects::onTimedOut(this, effect, true);
   if (isAffected(LastingEffect::POISON)) {
     bleed(1.0 / 60);
     playerMessage("You feel poison flowing in your veins.");
@@ -2150,23 +2002,7 @@ vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
   }
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect)) {
-      string name;
-      switch (effect) {
-        case LastingEffect::INVISIBLE: name = "Invisible"; break;
-        case LastingEffect::PANIC: name = "Panic"; break;
-        case LastingEffect::RAGE: name = "Enraged"; break;
-        case LastingEffect::HALLU: name = "Hallucinating"; break;
-        case LastingEffect::STR_BONUS: name = "Strength bonus"; break;
-        case LastingEffect::DEX_BONUS: name = "Dexterity bonus"; break;
-        case LastingEffect::SPEED: name = "Speed bonus"; break;
-        case LastingEffect::POISON_RESISTANT: name = "Poison resistant"; break;
-        case LastingEffect::FIRE_RESISTANT: name = "Fire resistant"; break;
-        case LastingEffect::FLYING: name = "Flying"; break;
-        case LastingEffect::MAGIC_SHIELD: name = "Magic shield"; break;
-        case LastingEffect::DARKNESS_SOURCE: name = "Source of darkness"; break;
-        case LastingEffect::PREGNANT: name = "Pregnant"; break;
-        default: continue;
-      }
+      string name = LastingEffects::getGoodAdjective(effect);
       ret.push_back({name, Effect::getDescription(effect)});
       if (!attributes->isAffectedPermanently(effect))
         ret.back().name += "  " + attributes->getRemainingString(effect, getGlobalTime());
@@ -2196,16 +2032,7 @@ vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
       ret.push_back({getPlural("Lost " + attributes->getBodyPartName(part), num), ""});
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect)) {
-      string name;
-      switch (effect) {
-        case LastingEffect::POISON: name = "Poisoned"; break;
-        case LastingEffect::SLEEP: name = "Sleeping"; break;
-        case LastingEffect::ENTANGLED: name = "Entangled"; break;
-        case LastingEffect::TIED_UP: name = "Tied up"; break;
-        case LastingEffect::SLOWED: name = "Slowed"; break;
-        case LastingEffect::INSANITY: name = "Insane"; break;
-        default: continue;
-      }
+      string name = LastingEffects::getBadAdjective(effect);
       ret.push_back({name, Effect::getDescription(effect)});
       if (!attributes->isAffectedPermanently(effect))
         ret.back().name += "  " + attributes->getRemainingString(effect, getGlobalTime());

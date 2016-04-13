@@ -1682,7 +1682,7 @@ void Collective::onWhippingDone(Creature* whipped, Position pos) {
 }
 
 bool Collective::canWhip(Creature* c) const {
-  return c->affects(LastingEffect::ENTANGLED);
+  return LastingEffects::affects(c, LastingEffect::ENTANGLED);
 }
 
 void Collective::orderWhipping(Creature* whipped) {

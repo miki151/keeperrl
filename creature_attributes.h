@@ -31,6 +31,7 @@
 #include "skill.h"
 #include "modifier_type.h"
 #include "sound.h"
+#include "lasting_effect.h"
 
 // WTF is this defined
 #undef HUGE
