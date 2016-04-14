@@ -2123,8 +2123,8 @@ void Collective::onAppliedSquare(Position pos) {
   }
   if (getSquares(SquareId::LIBRARY).count(pos)) {
     addMana(0.2);
-    if (Random.rollD(60.0 / (getEfficiency(pos))) && !getAvailableSpells().empty())
-      c->getAttributes().getSpellMap().add(Random.choose(getAvailableSpells()));
+    if (Random.rollD(60.0 / (getEfficiency(pos))) && !Technology::getAvailableSpells(this).empty())
+      c->getAttributes().getSpellMap().add(Random.choose(Technology::getAvailableSpells(this)));
   }
   if (getSquares(SquareId::TRAINING_ROOM).count(pos))
     c->getAttributes().exerciseAttr(Random.choose<AttrType>(), getEfficiency(pos));
@@ -2148,61 +2148,6 @@ void Collective::onAppliedSquare(Position pos) {
     }
 }
 
-struct SpellLearningInfo {
-  SpellId id;
-  TechId techId;
-};
-
-static vector<SpellLearningInfo> spellLearning {
-    { SpellId::HEALING, TechId::SPELLS },
-    { SpellId::SUMMON_INSECTS, TechId::SPELLS},
-    { SpellId::DECEPTION, TechId::SPELLS},
-    { SpellId::SPEED_SELF, TechId::SPELLS},
-    { SpellId::STUN_RAY, TechId::SPELLS},
-    { SpellId::MAGIC_SHIELD, TechId::SPELLS_ADV},
-    { SpellId::STR_BONUS, TechId::SPELLS_ADV},
-    { SpellId::DEX_BONUS, TechId::SPELLS_ADV},
-    { SpellId::FIRE_SPHERE_PET, TechId::SPELLS_ADV},
-    { SpellId::TELEPORT, TechId::SPELLS_ADV},
-    { SpellId::CURE_POISON, TechId::SPELLS_ADV},
-    { SpellId::INVISIBILITY, TechId::SPELLS_MAS},
-    { SpellId::BLAST, TechId::SPELLS_MAS},
-    { SpellId::WORD_OF_POWER, TechId::SPELLS_MAS},
-    { SpellId::PORTAL, TechId::SPELLS_MAS},
-    { SpellId::METEOR_SHOWER, TechId::SPELLS_MAS},
-};
-
-vector<Spell*> Collective::getSpellLearning(const Technology* tech) {
-  vector<Spell*> ret;
-  for (auto elem : spellLearning)
-    if (Technology::get(elem.techId) == tech)
-      ret.push_back(Spell::get(elem.id));
-  return ret;
-}
-
-vector<Spell*> Collective::getAvailableSpells() const {
-  vector<Spell*> ret;
-  for (auto elem : spellLearning)
-    if (hasTech(elem.techId))
-      ret.push_back(Spell::get(elem.id));
-  return ret;
-}
-
-vector<Spell*> Collective::getAllSpells() const {
-  vector<Spell*> ret;
-  for (auto elem : spellLearning)
-    ret.push_back(Spell::get(elem.id));
-  return ret;
-}
-
-TechId Collective::getNeededTech(Spell* spell) const {
-  for (auto elem : spellLearning)
-    if (elem.id == spell->getId())
-      return elem.techId;
-  FAIL << "Spell not found";
-  return TechId(0);
-}
-
 double Collective::getDangerLevel() const {
   double ret = 0;
   for (const Creature* c : getCreatures({MinionTrait::FIGHTER}))
@@ -2224,10 +2169,6 @@ void Collective::acquireTech(Technology* tech, bool free) {
   Technology::onAcquired(tech->getId(), this);
   if (free)
     ++numFreeTech;
-  if (hasLeader())
-    for (auto elem : spellLearning)
-      if (Technology::get(elem.techId) == tech)
-        getLeader()->getAttributes().getSpellMap().add(Spell::get(elem.id));
 }
 
 vector<Technology*> Collective::getTechnologies() const {

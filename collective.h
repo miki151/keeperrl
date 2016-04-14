@@ -34,7 +34,6 @@ class Level;
 class Trigger;
 struct ImmigrantInfo;
 struct AttractionInfo;
-class Spell;
 class MinionEquipment;
 class TaskMap;
 class KnownTiles;
@@ -191,10 +190,6 @@ class Collective : public TaskCallback, public CreatureListener {
   void acquireTech(Technology*, bool free = false);
   vector<Technology*> getTechnologies() const;
   double getTechCost(Technology*);
-  static vector<Spell*> getSpellLearning(const Technology*);
-  vector<Spell*> getAllSpells() const;
-  vector<Spell*> getAvailableSpells() const;
-  TechId getNeededTech(Spell*) const;
   bool addKnownTile(Position);
 
   const EntitySet<Creature>& getKills() const;

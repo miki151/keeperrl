@@ -22,6 +22,9 @@
 #include "square_factory.h"
 #include "square.h"
 #include "cost_info.h"
+#include "spell.h"
+#include "creature.h"
+#include "creature_attributes.h"
 
 void Technology::init() {
   Technology::set(TechId::ALCHEMY, new Technology(
@@ -134,27 +137,6 @@ static vector<Vec2> cutShape(Rectangle rect) {
         v != rect.bottomRight() - Vec2(1, 1))
       ret.push_back(v);
   return ret;
-
-/*  Table<bool> t(rect, true);
-  for (int i : Range(rect.width() * rect.height() / 4))
-    for (Vec2 v : Random.permutation(rect.getAllSquares()))
-      if (t[v]) {
-        bool ok = false;
-        for (Vec2 w : v.neighbors4())
-          if (!w.inRectangle(rect) || !t[w]) {
-            ok = true;
-            break;
-          }
-        if (ok) {
-          t[v] = false;
-          break;
-        }
-      }
-  vector<Vec2> ret;
-  for (Vec2 v : rect)
-    if (t[v])
-      ret.push_back(v);
-  return ret;*/
 }
 
 
@@ -182,6 +164,30 @@ static void addResources(Collective* col, int numGold, int numIron, int numStone
     addResource(col, SquareId::STONE, maxDist);
 }
 
+struct SpellLearningInfo {
+  SpellId id;
+  TechId techId;
+};
+
+static vector<SpellLearningInfo> spellLearning {
+    { SpellId::HEALING, TechId::SPELLS },
+    { SpellId::SUMMON_INSECTS, TechId::SPELLS},
+    { SpellId::DECEPTION, TechId::SPELLS},
+    { SpellId::SPEED_SELF, TechId::SPELLS},
+    { SpellId::STUN_RAY, TechId::SPELLS},
+    { SpellId::MAGIC_SHIELD, TechId::SPELLS_ADV},
+    { SpellId::STR_BONUS, TechId::SPELLS_ADV},
+    { SpellId::DEX_BONUS, TechId::SPELLS_ADV},
+    { SpellId::FIRE_SPHERE_PET, TechId::SPELLS_ADV},
+    { SpellId::TELEPORT, TechId::SPELLS_ADV},
+    { SpellId::CURE_POISON, TechId::SPELLS_ADV},
+    { SpellId::INVISIBILITY, TechId::SPELLS_MAS},
+    { SpellId::BLAST, TechId::SPELLS_MAS},
+    { SpellId::WORD_OF_POWER, TechId::SPELLS_MAS},
+    { SpellId::PORTAL, TechId::SPELLS_MAS},
+    { SpellId::METEOR_SHOWER, TechId::SPELLS_MAS},
+};
+
 void Technology::onAcquired(TechId id, Collective* col) {
   switch (id) {
     case TechId::GEOLOGY1: addResources(col, 0, 2, 1, 25); break;
@@ -189,5 +195,33 @@ void Technology::onAcquired(TechId id, Collective* col) {
     case TechId::GEOLOGY3: addResources(col, 4, 6, 3, 70); break;
     default: break;
   } 
+  if (col->hasLeader())
+    for (auto elem : spellLearning)
+      if (elem.techId == id)
+        col->getLeader()->getAttributes().getSpellMap().add(Spell::get(elem.id));
+}
+
+vector<Spell*> Technology::getSpellLearning(TechId tech) {
+  vector<Spell*> ret;
+  for (auto elem : spellLearning)
+    if (elem.techId == tech)
+      ret.push_back(Spell::get(elem.id));
+  return ret;
+}
+
+vector<Spell*> Technology::getAvailableSpells(const Collective* col) {
+  vector<Spell*> ret;
+  for (auto elem : spellLearning)
+    if (col->hasTech(elem.techId))
+      ret.push_back(Spell::get(elem.id));
+  return ret;
+}
+
+TechId Technology::getNeededTech(Spell* spell) {
+  for (auto elem : spellLearning)
+    if (elem.id == spell->getId())
+      return elem.techId;
+  FAIL << "Spell not found";
+  return TechId(0);
 }
 
