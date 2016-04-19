@@ -312,10 +312,12 @@ bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
     return true;
   vector<ListElem> options;
   options.emplace_back("Change settings:", ListElem::TITLE);
-  for (OptionId option : optionSets.at(set))
+  for (OptionId option : optionSets.at(set)) {
+    options.push_back(ListElem(names.at(option),
+        getValueString(option)));
     if (hints.count(option))
-      options.push_back(ListElem(names.at(option),
-            getValueString(option)).setTip(hints.at(option)));
+      options.back().setTip(hints.at(option));
+  }
   options.emplace_back("Done");
   if (lastIndex == -1)
     lastIndex = optionSets.at(set).size();
@@ -332,10 +334,12 @@ bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
 void Options::handle(View* view, OptionSet set, int lastIndex) {
   vector<ListElem> options;
   options.emplace_back("Change settings:", ListElem::TITLE);
-  for (OptionId option : optionSets.at(set))
+  for (OptionId option : optionSets.at(set)) {
+    options.push_back(ListElem(names.at(option),
+      getValueString(option)));
     if (hints.count(option))
-      options.push_back(ListElem(names.at(option),
-            getValueString(option)).setTip(hints.at(option)));
+      options.back().setTip(hints.at(option));
+  }
   options.emplace_back("Done");
   auto index = view->chooseFromList("", options, lastIndex, getMenuType(set));
   if (!index || (*index) == optionSets.at(set).size())
