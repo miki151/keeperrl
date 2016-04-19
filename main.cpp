@@ -49,6 +49,14 @@
 #include "stack_printer.h"
 #endif
 
+#ifdef VSTUDIO
+#include <steam_api.h>
+namespace Windows {
+#include <Windows.h>
+}
+
+#endif
+
 #ifndef DATA_DIR
 #define DATA_DIR "."
 #endif
@@ -137,14 +145,61 @@ static void fail() {
   *((int*) 0x1234) = 0; // best way to fail
 }
 
-int main(int argc, char* argv[]) {
-#ifndef VSTUDIO
-  StackPrinter::initialize(argv[0], time(0));
-#endif
+int keeperMain(const variables_map&);
+options_description getOptions();
+
+#ifdef VSTUDIO
+
+void miniDumpFunction(unsigned int nExceptionCode, EXCEPTION_POINTERS *pException) {
+  SteamAPI_SetMiniDumpComment("Minidump comment: SteamworksExample.exe\n");
+  SteamAPI_WriteMiniDump(nExceptionCode, pException, 123);
+}
+
+LONG WINAPI miniDumpFunction2(EXCEPTION_POINTERS *ExceptionInfo) {
+  miniDumpFunction(123, ExceptionInfo);
+  return EXCEPTION_EXECUTE_HANDLER;
+}
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
   std::set_terminate(fail);
+  SetUnhandledExceptionFilter(miniDumpFunction2);
+  //_set_se_translator(miniDumpFunction);
+  variables_map vars;
+  vector<string> args;
+  try {
+    args = split_winmain(lpCmdLine);
+    store(command_line_parser(args).options(getOptions()).run(), vars);
+  }
+  catch (boost::exception& ex) {
+    std::cout << "Bad command line flags.";
+  }
+  if (vars.count("steam")) {
+    if (SteamAPI_RestartAppIfNecessary(329970))
+      FAIL << "Init failure";
+    if (!SteamAPI_Init()) {
+      Windows::MessageBox(NULL, "Steam is not running. If you'd like to run the game without Steam, run the standalone exe binary.", "Failure", MB_OK);
+      FAIL << "Steam is not running";
+    }
+  }
+  /*if (IsDebuggerPresent()) {
+    keeperMain(vars);
+  }*/
+
+  //try {
+    keeperMain(vars);
+  //}
+  /*catch (...) {
+    return -1;
+  }*/
+    return 0;
+}
+#endif
+
+static options_description getOptions() {
   options_description flags("Flags");
   flags.add_options()
     ("help", "Print help")
+    ("steam", "Run with Steam")
     ("single_thread", "Use a single thread for rendering and game logic")
     ("user_dir", value<string>(), "Directory for options and save files")
     ("data_dir", value<string>(), "Directory containing the game data")
@@ -160,10 +215,22 @@ int main(int argc, char* argv[]) {
     ("seed", value<int>(), "Use given seed")
     ("record", value<string>(), "Record game to file")
     ("replay", value<string>(), "Replay game from file");
+  return flags;
+}
+
+#ifndef VSTUDIO
+int main(int argc, char* argv[]) {
+  StackPrinter::initialize(argv[0], time(0));
+  std::set_terminate(fail);
   variables_map vars;
-  store(parse_command_line(argc, argv, flags), vars);
+  store(parse_command_line(argc, argv, getOptions()), vars);
+  keeperMain(vars);
+}
+#endif
+
+static int keeperMain(const variables_map& vars) {
   if (vars.count("help")) {
-    std::cout << flags << endl;
+    std::cout << getOptions() << endl;
     return 0;
   }
   if (vars.count("run_tests")) {
