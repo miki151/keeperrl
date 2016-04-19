@@ -200,6 +200,8 @@ class View {
   virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) = 0;
 
+  virtual bool creaturePrompt(const string& title, const vector<CreatureInfo>&) = 0;
+
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/

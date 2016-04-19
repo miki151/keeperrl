@@ -798,7 +798,8 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions[SquareId::MINION_STATUE] = 35;
               c.constructions[SquareId::THRONE] = 100;
               c.constructions[SquareId::MOUNTAIN] = 15;
-              c.constructions[SquareId::RITUAL_ROOM] = 10;));
+              c.constructions[SquareId::RITUAL_ROOM] = 10;
+              ));
     case SquareId::BLACK_FLOOR:
         return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND, "Floor"),
             CONSTRUCT(Square::Params,
@@ -879,7 +880,11 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::Modifier::CASTS_SHADOW),
           CONSTRUCT(Square::Params,
             c.name = "mountain";
-            c.constructions[SquareId::FLOOR] = Random.get(3, 8);));
+            c.constructions[SquareId::FLOOR] = Random.get(3, 8);
+            c.constructions[SquareId::IRON_ORE] = 1;
+            c.constructions[SquareId::GOLD_ORE] = 1;
+            c.constructions[SquareId::STONE] = 1;
+            ));
     case SquareId::HILL:
         return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND, "Hill"),
           CONSTRUCT(Square::Params,

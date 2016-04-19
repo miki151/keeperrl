@@ -193,7 +193,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void addToMemory(Position);
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void tryLockingDoor(Position);
-  void uncoverRandomLocation();
   Creature* getControlled() const;
   optional<TeamId> getCurrentTeam() const;
   CollectiveTeams& getTeams();

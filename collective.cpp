@@ -1682,7 +1682,7 @@ void Collective::onWhippingDone(Creature* whipped, Position pos) {
 }
 
 bool Collective::canWhip(Creature* c) const {
-  return c->affects(LastingEffect::ENTANGLED);
+  return LastingEffects::affects(c, LastingEffect::ENTANGLED);
 }
 
 void Collective::orderWhipping(Creature* whipped) {
@@ -2221,6 +2221,7 @@ double Collective::getTechCost(Technology* t) {
 
 void Collective::acquireTech(Technology* tech, bool free) {
   technologies.push_back(tech->getId());
+  Technology::onAcquired(tech->getId(), this);
   if (free)
     ++numFreeTech;
   if (hasLeader())

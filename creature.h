@@ -247,7 +247,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void addPermanentEffect(LastingEffect, bool msg = true);
   void removePermanentEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
-  bool affects(LastingEffect effect) const;
   bool hasFreeMovement() const;
   bool isFireResistant() const;
   bool isDarknessSource() const;
@@ -274,9 +273,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   private:
 
-  void onAffected(LastingEffect effect, bool msg);
-  void onRemoved(LastingEffect effect, bool msg);
-  void onTimedOut(LastingEffect effect, bool msg);
   CreatureAction moveTowards(Position, bool away, bool stepOnTile);
   double getInventoryWeight() const;
   Item* getAmmo() const;

@@ -2256,11 +2256,6 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   }*/
   int maxDist = 1000;
   int maxDist2 = 1000;
-  if (keeperSpawn) {
-    addResources(random, locations, random.get(4, 6), 1, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE, startingPos);
-    addResources(random, locations, random.get(3, 6), 2, 5, 10, maxDist, maxDist2, SquareId::STONE, startingPos);
-    addResources(random, locations, random.get(7, 12), 4, 5, 10, maxDist, maxDist2, SquareId::IRON_ORE, startingPos);
-  }
   int mapBorder = 30;
   int locationMargin = 10;
   queue->addMaker(new Empty(SquareId::WATER));

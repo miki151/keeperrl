@@ -344,11 +344,21 @@ void PlayerControl::onControlledKilled() {
 }
 
 bool PlayerControl::swapTeam() {
-  if (auto team = getCurrentTeam())
-    if (getTeams().getMembers(*team).size() > 1) {
-      getControlled()->popController();
-      getTeams().rotateLeader(*team);
-      commandTeam(*team);
+  if (auto teamId = getCurrentTeam())
+    if (getTeams().getMembers(*teamId).size() > 1) {
+      vector<CreatureInfo> team;
+      TeamId currentTeam = *getCurrentTeam();
+      for (Creature* c : getTeams().getMembers(currentTeam))
+        if (!c->isPlayer())
+          team.push_back(c);
+      if (team.empty())
+        return false;
+      if (auto newLeader = getView()->chooseTeamLeader("Choose new team leader:", team, "Cancel"))
+        if (Creature* c = getCreature(*newLeader)) {
+          getControlled()->popController();
+          getTeams().setLeader(*teamId, c);
+          commandTeam(*teamId);
+        }
       return true;
     }
   return false;
@@ -364,7 +374,9 @@ void PlayerControl::leaveControl() {
   if (controlled->isPlayer())
     controlled->popController();
   for (TeamId team : getTeams().getActive(controlled)) {
-    getGame()->transferCreatures(getTeams().getMembers(team), getCollective()->getLevel()->getModel());
+    for (Creature* c : getTeams().getMembers(team))
+//      if (getGame()->canTransferCreature(c, getCollective()->getLevel()->getModel()))
+        getGame()->transferCreature(c, getCollective()->getLevel()->getModel());
     if (!getTeams().isPersistent(team)) {
       if (getTeams().getMembers(team).size() == 1)
         getTeams().cancel(team);
@@ -930,7 +942,9 @@ void PlayerControl::handleRecruiting(Collective* ally) {
   for (auto& stack : Creature::stack(recruited))
     getCollective()->addNewCreatureMessage(stack);
   if (!transfers.empty())
-    getGame()->transferCreatures(transfers, getModel());
+    for (Creature* c : transfers)
+//      if (getGame()->canTransferCreature(c, getCollective()->getLevel()->getModel()))
+        getGame()->transferCreature(c, getModel());
 }
 
 void PlayerControl::handleTrading(Collective* ally) {
@@ -2077,21 +2091,6 @@ Game* PlayerControl::getGame() const {
 
 View* PlayerControl::getView() const {
   return getGame()->getView();
-}
-
-void PlayerControl::uncoverRandomLocation() {
-  FAIL << "Fix this";
- /* const Location* location = nullptr;
-  for (auto loc : randomPermutation(getLevel()->getAllLocations()))
-    if (!getCollective()->isKnownSquare(loc->getMiddle())) {
-      location = loc;
-      break;
-    }
-  double radius = 8.5;
-  if (location)
-    for (Vec2 v : location->getMiddle().circle(radius))
-      if (getLevel()->inBounds(v))
-        getCollective()->addKnownTile(Position(v, getLevel()));*/
 }
 
 void PlayerControl::addAttack(const CollectiveAttack& attack) {
