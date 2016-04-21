@@ -2001,12 +2001,12 @@ vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
     ret.push_back({"+" + toString(attributes->getBarehandedDamage()) + " unarmed attack", ""});
   }
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
-    if (isAffected(effect)) {
-      string name = LastingEffects::getGoodAdjective(effect);
-      ret.push_back({name, Effect::getDescription(effect)});
-      if (!attributes->isAffectedPermanently(effect))
-        ret.back().name += "  " + attributes->getRemainingString(effect, getGlobalTime());
-    }
+    if (isAffected(effect))
+      if (auto name = LastingEffects::getGoodAdjective(effect)) {
+        ret.push_back({ *name, Effect::getDescription(effect) });
+        if (!attributes->isAffectedPermanently(effect))
+          ret.back().name += "  " + attributes->getRemainingString(effect, getGlobalTime());
+      }
   if (attributes->isUndead())
     ret.push_back({"Undead",
         "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
@@ -2031,12 +2031,12 @@ vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
     if (int num = attributes->numLost(part))
       ret.push_back({getPlural("Lost " + attributes->getBodyPartName(part), num), ""});
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
-    if (isAffected(effect)) {
-      string name = LastingEffects::getBadAdjective(effect);
-      ret.push_back({name, Effect::getDescription(effect)});
-      if (!attributes->isAffectedPermanently(effect))
-        ret.back().name += "  " + attributes->getRemainingString(effect, getGlobalTime());
-    }
+    if (isAffected(effect))
+      if (auto name = LastingEffects::getBadAdjective(effect)) {
+        ret.push_back({ *name, Effect::getDescription(effect) });
+        if (!attributes->isAffectedPermanently(effect))
+          ret.back().name += "  " + attributes->getRemainingString(effect, getGlobalTime());
+      }
   if (isBlind())
     ret.push_back({"Blind" + (isAffected(LastingEffect::BLIND) ?
           (" " + attributes->getRemainingString(LastingEffect::BLIND, getGlobalTime())) : ""), ""});

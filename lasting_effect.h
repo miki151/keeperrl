@@ -36,8 +36,8 @@ class LastingEffects {
   static void onTimedOut(Creature*, LastingEffect, bool msg);
   static void modifyAttr(const Creature*, AttrType, int&);
   static void modifyMod(const Creature*, ModifierType, int&);
-  static string getGoodAdjective(LastingEffect);
-  static string getBadAdjective(LastingEffect);
+  static optional<string> getGoodAdjective(LastingEffect);
+  static optional<string> getBadAdjective(LastingEffect);
 };
 
 
