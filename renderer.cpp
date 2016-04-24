@@ -323,7 +323,7 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
 }
 
 Color Renderer::getBleedingColor(const ViewObject& object) {
-  double bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING);
+  double bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING).get_value_or(0);
   if (bleeding > 0)
     bleeding = 0.3 + bleeding * 0.7;
   return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));

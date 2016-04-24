@@ -408,7 +408,8 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
   if (object.hasModifier(ViewObject::Modifier::PLAYER))
     drawCreatureHighlight(renderer, pos, sz, colors[ColorId::ALMOST_WHITE]);
   if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && showMorale)
-    drawCreatureHighlight(renderer, pos, sz, getMoraleColor(object.getAttribute(ViewObject::Attribute::MORALE)));
+    if (auto morale = object.getAttribute(ViewObject::Attribute::MORALE))
+      drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));
   if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT) && (curTime / 1000) % 2) {
     drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
   } else
@@ -451,11 +452,11 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       color = transparency(color, 150);
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
     color = transparency(color, 100);
-  double waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH);
-  if (waterDepth > 0) {
-    int val = max(0.0, 255.0 - min(2.0, waterDepth) * 60);
-    color = Color(val, val, val);
-  }
+  if (auto waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH))
+    if (*waterDepth > 0) {
+      int val = max(0.0, 255.0 - min(2.0, *waterDepth) * 60);
+      color = Color(val, val, val);
+    }
   if (spriteMode && tile.hasSpriteCoord()) {
     DirSet dirs;
     DirSet borderDirs;
@@ -505,11 +506,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if ((object.layer() == ViewLayer::FLOOR || object.layer() == ViewLayer::FLOOR_BACKGROUND) && 
         shadowed.count(tilePos) && !tile.noShadow)
       renderer.drawTile(pos, shortShadow, size, sf::Color(255, 255, 255, 170));
-    if (object.getAttribute(ViewObject::Attribute::BURNING) > 0) {
-      static auto fire1 = renderer.getTileCoord("fire1");
-      static auto fire2 = renderer.getTileCoord("fire2");
-      renderer.drawTile(pos, Random.choose({fire1, fire2}), size);
-    }
+    if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
+      if (*burningVal > 0) {
+        static auto fire1 = renderer.getTileCoord("fire1");
+        static auto fire2 = renderer.getTileCoord("fire2");
+        renderer.drawTile(pos, Random.choose({fire1, fire2}), size);
+      }
     static auto key = renderer.getTileCoord("key");
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos, key, size);
@@ -522,14 +524,14 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (!buttonViewId)
       if (auto id = object.getCreatureId())
         creatureMap.push_back(CreatureInfo{Rectangle(tilePos, tilePos + size), *id, object.id()});
-    double burningVal = object.getAttribute(ViewObject::Attribute::BURNING);
-    if (burningVal > 0) {
-      renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'ѡ',
-          Renderer::HOR);
-      if (burningVal > 0.5)
-        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'Ѡ',
-          Renderer::HOR);
-    }
+    if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
+      if (*burningVal > 0) {
+        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'ѡ',
+            Renderer::HOR);
+        if (*burningVal > 0.5)
+          renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'Ѡ',
+              Renderer::HOR);
+      }
   }
 }
 

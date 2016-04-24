@@ -40,6 +40,7 @@ class ViewObject {
   typedef ViewObjectModifier Modifier;
   typedef ViewObjectAttribute Attribute;
   ViewObject(ViewId id, ViewLayer l, const string& description);
+  ViewObject(ViewId id, ViewLayer l);
 
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
@@ -51,10 +52,10 @@ class ViewObject {
   optional<Dir> getAttachmentDir() const;
 
   ViewObject& setAttribute(Attribute, double);
-  double getAttribute(Attribute) const;
+  optional<double> getAttribute(Attribute) const;
 
   vector<string> getLegend() const;
-  string getDescription() const;
+  const char* getDescription() const;
 
   ViewLayer layer() const;
   ViewId id() const;
@@ -90,12 +91,13 @@ class ViewObject {
 
   private:
   string getAttributeString(Attribute) const;
+  const char* getDefaultDescription() const;
   enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
   EnumSet<Modifier> SERIAL(modifiers);
-  EnumMap<Attribute, double> SERIAL(attributes);
+  EnumMap<Attribute, optional<double>> SERIAL(attributes);
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);
-  string SERIAL(description);
+  optional<string> SERIAL(description);
   optional<Dir> SERIAL(attachmentDir);
   Vec2 SERIAL(position) = Vec2(-1, -1);
   optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);

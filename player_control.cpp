@@ -1218,7 +1218,7 @@ ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
         return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, Item::getTrapName(type) + " trap");
     }
   FAIL << "trap not found" << int(type);
-  return ViewObject(ViewId::EMPTY, ViewLayer::LARGE_ITEM, "Unarmed trap");
+  return ViewObject(ViewId::EMPTY, ViewLayer::LARGE_ITEM);
 }
 
 static const ViewObject& getConstructionObject(SquareType type) {

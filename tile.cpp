@@ -888,16 +888,16 @@ Color Tile::getColor(const ViewObject& object) {
   if (object.hasModifier(ViewObject::Modifier::PLANNED)) {
     return Color((color.r) / 2, (color.g) / 2, (color.b) / 2);
   }
-  double bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING);
-  if (bleeding > 0) {
-    bleeding = 0.5 + bleeding / 2;
-    bleeding = min(1., bleeding);
-    return Color(
-        (1 - bleeding) * color.r + bleeding * 255,
-        (1 - bleeding) * color.g,
-        (1 - bleeding) * color.b);
-  } else
-    return color;
+  if (auto bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING))
+    if (*bleeding > 0) {
+      *bleeding = 0.5 + *bleeding / 2;
+      *bleeding = min(1., *bleeding);
+      return Color(
+          (1 - *bleeding) * color.r + *bleeding * 255,
+          (1 - *bleeding) * color.g,
+          (1 - *bleeding) * color.b);
+  }
+  return color;
 }
 
 Tile Tile::addCorner(DirSet corner, DirSet borders, TileCoord coord) {
