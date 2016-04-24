@@ -83,7 +83,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
     template <class Archive> 
     void serialize(Archive& ar, const unsigned int version);
   };
-  void addMoraleOverride(PMoraleOverride);
+  void setMoraleOverride(PMoraleOverride);
 
   void take(PItem item);
   void take(vector<PItem> item);
@@ -304,7 +304,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   mutable double SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
   int SERIAL(numAttacksThisTurn) = 0;
-  vector<PMoraleOverride> SERIAL(moraleOverrides);
+  PMoraleOverride SERIAL(moraleOverride);
   void updateVisibleCreatures();
   vector<Position> visibleEnemies;
   vector<Position> visibleCreatures;

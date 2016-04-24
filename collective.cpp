@@ -188,7 +188,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   for (const Item* item : c->getEquipment().getItems())
     minionEquipment->own(c, item);
   if (traits[MinionTrait::FIGHTER]) {
-    c->addMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this)));
+    c->setMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this)));
   }
 }
 
@@ -211,6 +211,7 @@ void Collective::removeCreature(Creature* c) {
   for (MinionTrait t : ENUM_ALL(MinionTrait))
     if (contains(byTrait[t], c))
       removeElement(byTrait[t], c);
+  c->setMoraleOverride(nullptr);
 }
 
 void Collective::banishCreature(Creature* c) {
@@ -2162,6 +2163,7 @@ int Collective::getMaxPopulation() const {
 template <class Archive>
 void Collective::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, LeaderControlOverride);
+  REGISTER_TYPE(ar, Collective);
 }
 
 REGISTER_TYPES(Collective::registerTypes);
