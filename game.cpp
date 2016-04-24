@@ -261,7 +261,7 @@ void Game::tick(double time) {
 void Game::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
 #ifdef RELEASE
-  bool canRetire = playerControl && won && !getPlayer();
+  bool canRetire = playerControl && !getPlayer();
 #else
   bool canRetire = playerControl && !getPlayer();
 #endif

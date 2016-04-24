@@ -578,7 +578,7 @@ PGame MainLoop::loadPrevious(bool erase) {
 
 bool MainLoop::eraseSave(Options* options) {
 #ifdef RELEASE
-  return !options->getBoolValue(OptionId::KEEP_SAVEFILES);
+  return false;// !options->getBoolValue(OptionId::KEEP_SAVEFILES);
 #endif
   return false;
 }

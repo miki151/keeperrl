@@ -30,7 +30,6 @@ class Options;
 class MapGui;
 class CampaignAction;
 class Campaign;
-struct CampaignSetupInfo;
 class RetiredGames;
 
 RICH_ENUM(CollectiveTab,

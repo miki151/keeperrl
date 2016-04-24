@@ -20,6 +20,8 @@
 
 template <class Archive> 
 void ViewObject::serialize(Archive& ar, const unsigned int version) {
+  string description;
+  EnumSet<Modifier> modifiers;
   ar& SVAR(resource_id)
     & SVAR(viewLayer)
     & SVAR(description)
@@ -36,9 +38,9 @@ SERIALIZABLE(ViewObject);
 SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
 ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
-    : resource_id(id), viewLayer(l), description(d) {
-  if (islower(description[0]))
-    description[0] = toupper(description[0]);
+    : resource_id(id), viewLayer(l)/*, description(d)*/ {
+  /*if (islower(description[0]))
+    description[0] = toupper(description[0]);*/
   for (Attribute attr : {
       Attribute::ATTACK,
       Attribute::DEFENSE,
@@ -125,17 +127,17 @@ int ViewObject::MovementQueue::makeGoodIndex(int index) const {
 }
 
 ViewObject& ViewObject::setModifier(Modifier mod) {
-  modifiers[mod] = true;
+  //modifiers[mod] = true;
   return *this;
 }
 
 ViewObject& ViewObject::removeModifier(Modifier mod) {
-  modifiers[mod] = false;
+  //modifiers[mod] = false;
   return *this;
 }
 
 bool ViewObject::hasModifier(Modifier mod) const {
-  return modifiers[mod];
+  return false;// modifiers[mod];
 }
 
 ViewObject& ViewObject::setAttribute(Attribute attr, double d) {
@@ -148,11 +150,11 @@ double ViewObject::getAttribute(Attribute attr) const {
 }
 
 void ViewObject::setDescription(const string& s) {
-  description = s;
+  //description = s;
 }
 
 string ViewObject::getDescription() const {
-  return description;
+  return "";// description;
 }
 
 ViewObject&  ViewObject::setAttachmentDir(Dir dir) {
@@ -176,7 +178,7 @@ void ViewObject::setAdjectives(const vector<string>& adj) {
 }
 
 vector<string> ViewObject::getLegend() const {
-  vector<string> ret { description };
+  vector<string> ret { "pok" };
   if (getAttribute(Attribute::LEVEL) > -1)
     ret[0] = ret[0] + ", level " + getAttributeString(Attribute::LEVEL);
   if (getAttribute(Attribute::EFFICIENCY) > -1)

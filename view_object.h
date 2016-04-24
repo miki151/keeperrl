@@ -91,11 +91,11 @@ class ViewObject {
   private:
   string getAttributeString(Attribute) const;
   enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
-  EnumSet<Modifier> SERIAL(modifiers);
+  //EnumSet<Modifier> SERIAL(modifiers);
   EnumMap<Attribute, double> SERIAL(attributes);
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);
-  string SERIAL(description);
+  //string SERIAL(description);
   optional<Dir> SERIAL(attachmentDir);
   Vec2 SERIAL(position) = Vec2(-1, -1);
   optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
