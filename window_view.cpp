@@ -766,7 +766,7 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, double* scro
   SyncQueue<optional<int>> returnQueue;
   addReturnDialog<optional<int>>(returnQueue, [=] ()-> optional<int> {
     double* scrollPos = scrollPos1;
-    double localScrollPos;
+    double localScrollPos = 0;
     if (!scrollPos)
       scrollPos = &localScrollPos;
     optional<optional<int>> retVal;
