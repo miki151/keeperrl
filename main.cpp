@@ -51,9 +51,9 @@
 
 #ifdef VSTUDIO
 #include <steam_api.h>
-namespace Windows {
 #include <Windows.h>
-}
+#include <dbghelp.h>
+#include <tchar.h>
 
 #endif
 
@@ -151,6 +151,26 @@ static options_description getOptions();
 #ifdef VSTUDIO
 
 void miniDumpFunction(unsigned int nExceptionCode, EXCEPTION_POINTERS *pException) {
+  HANDLE hFile = CreateFile(_T("KeeperRL.dmp"), GENERIC_READ | GENERIC_WRITE,
+    0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  if ((hFile != NULL) && (hFile != INVALID_HANDLE_VALUE)) {
+    MINIDUMP_EXCEPTION_INFORMATION mdei;
+    mdei.ThreadId = GetCurrentThreadId();
+    mdei.ExceptionPointers = pException;
+    mdei.ClientPointers = FALSE;
+    MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)(
+      MiniDumpWithDataSegs |
+      MiniDumpWithHandleData |
+      MiniDumpWithIndirectlyReferencedMemory |
+      MiniDumpWithThreadInfo |
+      MiniDumpWithUnloadedModules);
+    BOOL rv = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
+      hFile, mdt, (pException != nullptr) ? &mdei : nullptr, nullptr, nullptr);
+    CloseHandle(hFile);
+  }
+}
+
+void miniDumpFunction3(unsigned int nExceptionCode, EXCEPTION_POINTERS *pException) {
   SteamAPI_SetMiniDumpComment("Minidump comment: SteamworksExample.exe\n");
   SteamAPI_WriteMiniDump(nExceptionCode, pException, 123);
 }
@@ -177,7 +197,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (SteamAPI_RestartAppIfNecessary(329970))
       FAIL << "Init failure";
     if (!SteamAPI_Init()) {
-      Windows::MessageBox(NULL, "Steam is not running. If you'd like to run the game without Steam, run the standalone exe binary.", "Failure", MB_OK);
+      MessageBox(NULL, "Steam is not running. If you'd like to run the game without Steam, run the standalone exe binary.", "Failure", MB_OK);
       FAIL << "Steam is not running";
     }
   }

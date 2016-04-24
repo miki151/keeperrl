@@ -25,8 +25,10 @@ bool KnownTiles::isKnown(Position pos) const {
 };
 
 void KnownTiles::limitToModel(const Model* m) {
-  for (Position p : copyOf(border))
-    if (p.getModel() != m)
-      border.erase(p);
+  set<Position> copy;
+  for (Position p : border)
+    if (p.getModel() == m)
+      copy.insert(p);
+  border = copy;
   known.limitToModel(m);
 }
