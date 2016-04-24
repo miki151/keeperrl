@@ -194,7 +194,7 @@ bool CreatureAttributes::isHumanoid() const {
 string CreatureAttributes::bodyDescription() const {
   vector<string> ret;
   bool anyLimbs = false;
-  auto listParts = {BodyPart::ARM, BodyPart::LEG, BodyPart::WING};
+  vector<BodyPart> listParts = {BodyPart::ARM, BodyPart::LEG, BodyPart::WING};
   if (*humanoid)
     listParts = {BodyPart::WING};
   for (BodyPart part : listParts)

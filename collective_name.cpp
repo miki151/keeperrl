@@ -17,7 +17,7 @@ CollectiveName::CollectiveName(optional<string> race, optional<string> location,
   if (location && race)
     fullName = capitalFirst(*race) + " of " + *location;
   else if (auto first = leader->getName().first())
-    fullName = *first + " the " + leader->getName().bare();
+    fullName = leader->getName().title();
   else if (race)
     fullName = capitalFirst(*race);
   else
