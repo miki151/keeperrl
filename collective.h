@@ -34,7 +34,6 @@ class Level;
 class Trigger;
 struct ImmigrantInfo;
 struct AttractionInfo;
-class Spell;
 class MinionEquipment;
 class TaskMap;
 class KnownTiles;
@@ -122,21 +121,6 @@ class Collective : public TaskCallback, public CreatureListener {
   void setWarning(Warning, bool state = true);
   bool isWarning(Warning) const;
 
-  struct ResourceInfo;
-  struct MinionTaskInfo;
-
-  map<MinionTask, MinionTaskInfo> getTaskInfo() const;
-
-  struct ResourceInfo {
-    vector<SquareType> storageType;
-    optional<ItemIndex> itemIndex;
-    ItemId itemId;
-    string name;
-    bool dontDisplay;
-  };
-
-  const static map<ResourceId, ResourceInfo> resourceInfo;
-
   int numResource(ResourceId) const;
   int numResourcePlusDebt(ResourceId) const;
   bool hasResource(const CostInfo&) const;
@@ -159,7 +143,6 @@ class Collective : public TaskCallback, public CreatureListener {
   static void sortByEquipmentValue(vector<Item*>&);
   static SquareType getHatcheryType(TribeId);
 
-  static vector<SquareType> getEquipmentStorageSquares();
   vector<pair<Item*, Position>> getTrapItems(TrapType, const vector<Position>&) const;
 
   void orderExecution(Creature*);
@@ -191,10 +174,6 @@ class Collective : public TaskCallback, public CreatureListener {
   void acquireTech(Technology*, bool free = false);
   vector<Technology*> getTechnologies() const;
   double getTechCost(Technology*);
-  static vector<Spell*> getSpellLearning(const Technology*);
-  vector<Spell*> getAllSpells() const;
-  vector<Spell*> getAvailableSpells() const;
-  TechId getNeededTech(Spell*) const;
   bool addKnownTile(Position);
 
   const EntitySet<Creature>& getKills() const;
@@ -202,10 +181,6 @@ class Collective : public TaskCallback, public CreatureListener {
 
   MinionEquipment& getMinionEquipment();
   const MinionEquipment& getMinionEquipment() const;
-
-  struct DormInfo;
-  static const EnumMap<SpawnType, DormInfo>& getDormInfo();
-  static optional<SquareType> getSecondarySquare(SquareType);
 
   struct MinionPaymentInfo {
     int SERIAL(salary);

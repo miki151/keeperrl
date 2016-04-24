@@ -4,6 +4,8 @@
 
 void CreatureListener::subscribeToCreature(Creature* c) {
   creatures.push_back(c->eventGenerator.get());
+  // hacky check to make sure no other Collective is subscribed to Creature
+  CHECK(c->eventGenerator->getListeners().empty());
   c->eventGenerator->addListener(this);
 }
  

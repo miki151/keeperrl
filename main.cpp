@@ -145,8 +145,8 @@ static void fail() {
   *((int*) 0x1234) = 0; // best way to fail
 }
 
-int keeperMain(const variables_map&);
-options_description getOptions();
+static int keeperMain(const variables_map&);
+static options_description getOptions();
 
 #ifdef VSTUDIO
 

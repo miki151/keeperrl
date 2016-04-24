@@ -71,6 +71,12 @@ struct ImmigrantInfo {
   void serialize(Archive& ar, const unsigned int version);
 };
 
+struct BirthSpawn {
+  CreatureId id;
+  double frequency;
+  optional<TechId> tech;
+};
+
 struct PopulationIncrease {
   SquareApplyType SERIAL(type);
   double SERIAL(increasePerSquare);
@@ -88,6 +94,32 @@ struct GuardianInfo {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
+};
+
+struct DormInfo {
+  SquareType dormType;
+  optional<SquareType> getBedType() const;
+  optional<CollectiveWarning> warning;
+};
+
+struct ResourceInfo {
+  vector<SquareType> storageType;
+  optional<ItemIndex> itemIndex;
+  ItemId itemId;
+  string name;
+  bool dontDisplay;
+};
+
+struct MinionTaskInfo {
+  enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME, EAT, SPIDER } type;
+  MinionTaskInfo(vector<SquareType>, const string& description, optional<CollectiveWarning> = none, double cost = 0,
+      bool centerOnly = false);
+  MinionTaskInfo(Type, const string& description, optional<CollectiveWarning> = none);
+  vector<SquareType> squares;
+  string description;
+  optional<CollectiveWarning> warning;
+  double cost = 0;
+  bool centerOnly = false;
 };
 
 class CollectiveConfig {
@@ -121,8 +153,18 @@ class CollectiveConfig {
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
+  vector<BirthSpawn> getBirthSpawns() const;
 
   bool activeImmigrantion(const Game*) const;
+  const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
+  static optional<SquareType> getSecondarySquare(SquareType);
+  unordered_set<SquareType> getEfficiencySquares() const;
+  vector<SquareType> getRoomsNeedingLight() const;
+  int getTaskDuration(const Creature*, MinionTask) const;
+  static const map<CollectiveResourceId, ResourceInfo>& getResourceInfo();
+  map<MinionTask, MinionTaskInfo> getTaskInfo() const;
+  static const vector<SquareType>& getEquipmentStorage();
+  static const vector<SquareType>& getResourceStorage();
 
   SERIALIZATION_DECL(CollectiveConfig);
 

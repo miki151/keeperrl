@@ -39,6 +39,9 @@ RICH_ENUM(TechId,
   GEOLOGY3
 );
 
+class Spell;
+class Collective;
+
 class Technology : public Singleton<Technology, TechId> {
   public:
   Technology(const string& name, const string& description, int cost, const vector<TechId>& prerequisites = {},
@@ -51,6 +54,9 @@ class Technology : public Singleton<Technology, TechId> {
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
   static vector<Technology*> getNextTechs(const vector<Technology*>& current);
+  static vector<Spell*> getSpellLearning(TechId tech);
+  static vector<Spell*> getAvailableSpells(const Collective*);
+  static TechId getNeededTech(Spell*);
 
   static void onAcquired(TechId, Collective*);
 

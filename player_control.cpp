@@ -58,6 +58,7 @@
 #include "game.h"
 #include "collective_name.h"
 #include "creature_attributes.h"
+#include "collective_config.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -666,13 +667,14 @@ void PlayerControl::handlePersonalSpells(View* view) {
   vector<ListElem> options {
       ListElem("The Keeper can learn spells for use in combat and other situations. ", ListElem::TITLE),
       ListElem("You can cast them with 's' when you are in control of the Keeper.", ListElem::TITLE)};
-  vector<Spell*> knownSpells = getCollective()->getAvailableSpells();
-  for (auto spell : getCollective()->getAllSpells()) {
+  vector<Spell*> knownSpells = Technology::getAvailableSpells(getCollective());
+  for (SpellId spellId : ENUM_ALL(SpellId)) {
+    Spell* spell = Spell::get(spellId);
     ListElem::ElemMod mod = ListElem::NORMAL;
     string suff;
     if (!contains(knownSpells, spell)) {
       mod = ListElem::INACTIVE;
-      suff = requires(getCollective()->getNeededTech(spell));
+      suff = requires(Technology::getNeededTech(spell));
     }
     options.push_back(ListElem(spell->getName() + suff, mod).setTip(spell->getDescription()));
   }
@@ -724,7 +726,7 @@ void PlayerControl::handleLibrary(View* view) {
 typedef CollectiveInfo::Button Button;
 
 optional<pair<ViewId, int>> PlayerControl::getCostObj(CostInfo cost) const {
-  if (cost.value > 0 && !Collective::resourceInfo.at(cost.id).dontDisplay)
+  if (cost.value > 0 && !CollectiveConfig::getResourceInfo().at(cost.id).dontDisplay)
     return make_pair(getResourceViewId(cost.id), cost.value);
   else
     return none;
@@ -777,10 +779,10 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
              if (int num = getCollective()->getSquares(elem.type).size())
                description = "[" + toString(num) + "]";
            int availableNow = !elem.cost.value ? 1 : getCollective()->numResource(elem.cost.id) / elem.cost.value;
-           if (Collective::resourceInfo.at(elem.cost.id).dontDisplay && availableNow)
+           if (CollectiveConfig::getResourceInfo().at(elem.cost.id).dontDisplay && availableNow)
              description += " (" + toString(availableNow) + " available)";
-           if (Collective::getSecondarySquare(elem.type))
-             viewId = getSquareViewId(*Collective::getSecondarySquare(elem.type));
+           if (auto square = CollectiveConfig::getSecondarySquare(elem.type))
+             viewId = getSquareViewId(*square);
            buttons.push_back({viewId, elem.name,
                getCostObj(getRoomCost(elem.type, elem.cost, elem.costExponent)),
                description,
@@ -949,7 +951,7 @@ void PlayerControl::handleRecruiting(Collective* ally) {
 
 void PlayerControl::handleTrading(Collective* ally) {
   double scrollPos = 0;
-  vector<Position> storage = getCollective()->getAllSquares(getCollective()->getEquipmentStorageSquares());
+  vector<Position> storage = getCollective()->getAllSquares(CollectiveConfig::getEquipmentStorage());
   if (storage.empty()) {
     getView()->presentText("Information", "You need a storage room for equipment in order to trade.");
     return;
@@ -1110,7 +1112,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemyGroups = getEnemyGroups();
   info.numResource.clear();
-  for (auto elem : getCollective()->resourceInfo)
+  for (auto elem : CollectiveConfig::getResourceInfo())
     if (!elem.second.dontDisplay)
       info.numResource.push_back(
           {getResourceViewId(elem.first), getCollective()->numResourcePlusDebt(elem.first), elem.second.name});

@@ -186,7 +186,7 @@ void LastingEffects::modifyMod(const Creature* c, ModifierType type, int& value)
   }
 }
 
-optional<string> LastingEffects::getGoodAdjective(LastingEffect effect) {
+const char* LastingEffects::getGoodAdjective(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::INVISIBLE: return "Invisible";
     case LastingEffect::PANIC: return "Panic";
@@ -201,11 +201,11 @@ optional<string> LastingEffects::getGoodAdjective(LastingEffect effect) {
     case LastingEffect::MAGIC_SHIELD: return "Magic shield";
     case LastingEffect::DARKNESS_SOURCE: return "Source of darkness";
     case LastingEffect::PREGNANT: return "Pregnant";
-    default: return none;
+    default: return nullptr;
   }
 }
 
-optional<string> LastingEffects::getBadAdjective(LastingEffect effect) {
+const char* LastingEffects::getBadAdjective(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::POISON: return "Poisoned";
     case LastingEffect::SLEEP: return "Sleeping";
@@ -213,6 +213,6 @@ optional<string> LastingEffects::getBadAdjective(LastingEffect effect) {
     case LastingEffect::TIED_UP: return "Tied up";
     case LastingEffect::SLOWED: return "Slowed";
     case LastingEffect::INSANITY: return "Insane";
-    default: return none;
+    default: return nullptr;
   }
 }

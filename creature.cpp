@@ -56,7 +56,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, attributes, position, localTime, equipment, shortestPath, knownHiding, tribe, health, morale);
   serializeAll(ar, deathTime, collapsed, hidden, lastAttacker, deathReason, swapPositionCooldown);
   serializeAll(ar, unknownAttackers, privateEnemies, holding, controller, controllerStack, creatureVisions, kills);
-  serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverrides);
+  serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverride);
   serializeAll(ar, vision, personalEvents, lastCombatTime, eventGenerator);
 }
 
@@ -1218,8 +1218,8 @@ double Creature::getHealth() const {
 }
 
 double Creature::getMorale() const {
-  for (auto& elem : moraleOverrides)
-    if (auto ret = elem->getMorale(this))
+  if (moraleOverride)
+    if (auto ret = moraleOverride->getMorale(this))
       return *ret;
   return morale;
 }
@@ -1228,8 +1228,8 @@ void Creature::addMorale(double val) {
   morale = min(1.0, max(-1.0, morale + val));
 }
 
-void Creature::addMoraleOverride(PMoraleOverride mod) {
-  moraleOverrides.push_back(std::move(mod));
+void Creature::setMoraleOverride(PMoraleOverride mod) {
+  moraleOverride = std::move(mod);
 }
 
 string attrStr(bool strong, bool agile, bool fast) {
@@ -2002,8 +2002,8 @@ vector<Creature::AdjectiveInfo> Creature::getGoodAdjectives() const {
   }
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
-      if (auto name = LastingEffects::getGoodAdjective(effect)) {
-        ret.push_back({ *name, Effect::getDescription(effect) });
+      if (const char* name = LastingEffects::getGoodAdjective(effect)) {
+        ret.push_back({ name, Effect::getDescription(effect) });
         if (!attributes->isAffectedPermanently(effect))
           ret.back().name += "  " + attributes->getRemainingString(effect, getGlobalTime());
       }
@@ -2032,8 +2032,8 @@ vector<Creature::AdjectiveInfo> Creature::getBadAdjectives() const {
       ret.push_back({getPlural("Lost " + attributes->getBodyPartName(part), num), ""});
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
-      if (auto name = LastingEffects::getBadAdjective(effect)) {
-        ret.push_back({ *name, Effect::getDescription(effect) });
+      if (const char* name = LastingEffects::getBadAdjective(effect)) {
+        ret.push_back({ name, Effect::getDescription(effect) });
         if (!attributes->isAffectedPermanently(effect))
           ret.back().name += "  " + attributes->getRemainingString(effect, getGlobalTime());
       }
