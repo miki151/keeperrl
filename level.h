@@ -50,10 +50,7 @@ RICH_ENUM(VisionId,
 struct CoverInfo {
   bool SERIAL(covered);
   double SERIAL(sunlight);
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(covered) & SVAR(sunlight);
-  }
+  SERIALIZE_ALL(covered, sunlight);
 };
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
