@@ -502,7 +502,7 @@ PGuiElem GuiFactory::labelFun(function<string()> textFun, Color color) {
 }
 
 PGuiElem GuiFactory::label(const string& s, int size, Color c) {
-  auto width = [=] { return renderer.getTextLength(s); };
+  auto width = [=] { return renderer.getTextLength(s, size); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(transparency(colors[ColorId::BLACK], 100),

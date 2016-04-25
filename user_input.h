@@ -29,6 +29,7 @@ enum class UserInputId {
     IDLE,
     REFRESH,
     DRAW_LEVEL_MAP,
+    DRAW_WORLD_MAP,
     EXIT,
     MESSAGE_INFO,
 // real-time actions

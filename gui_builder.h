@@ -87,8 +87,7 @@ class GuiBuilder {
       optional<Vec2>& embark, bool& retiredMenu);
   PGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
-  PGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>& markedPos, function<bool(Vec2)> activeFun,
-      function<void(Vec2)> clickFun);
+  PGuiElem drawWorldmap(Semaphore& sem, const Campaign&);
   PGuiElem drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       const vector<CreatureInfo>&, const string& cancelText);
   PGuiElem drawCreaturePrompt(SyncQueue<bool>&, const string& title, const vector<CreatureInfo>& creatures);
@@ -123,6 +122,8 @@ class GuiBuilder {
   void setMapGui(MapGui*);
 
   private:
+  PGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>* markedPos, function<bool(Vec2)> activeFun,
+      function<void(Vec2)> clickFun);
   Renderer& renderer;
   GuiFactory& gui;
   Clock* clock;

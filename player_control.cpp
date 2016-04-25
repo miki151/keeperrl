@@ -1528,6 +1528,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
         break;*/
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
+    case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
     case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
     case UserInputId::CREATURE_GROUP_BUTTON: 
         if (Creature* c = getCreature(input.get<Creature::Id>()))

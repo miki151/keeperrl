@@ -249,7 +249,7 @@ class GuiFactory {
   Color inactiveText;
 
   enum IconId {
-    WORKSHOP,
+    WORLD_MAP,
     LIBRARY,
     DIPLOMACY,
     HELP,

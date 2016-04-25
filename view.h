@@ -204,6 +204,8 @@ class View {
 
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) = 0;
 
+  virtual void presentWorldmap(const Campaign&) = 0;
+
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;
 

@@ -322,6 +322,10 @@ Vec2 Game::getModelCoords(const Model* m) const {
   return Vec2();
 }
 
+void Game::presentWorldmap() {
+  view->presentWorldmap(*campaign);
+}
+
 void Game::transferAction(vector<Creature*> creatures) {
   if (!campaign)
     return;

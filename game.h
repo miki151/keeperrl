@@ -37,6 +37,7 @@ class Game {
   View* getView() const;
   void exitAction();
   void transferAction(vector<Creature*>);
+  void presentWorldmap();
   void transferCreature(Creature*, Model* to);
   bool canTransferCreature(Creature*, Model* to);
   Position getTransferPos(Model* from, Model* to) const;

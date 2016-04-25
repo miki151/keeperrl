@@ -67,8 +67,8 @@ View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
   //return new ReplayView(ifs, new WindowView(params));
 }
 
-int rightBarWidthCollective = 330;
-int rightBarWidthPlayer = 330;
+int rightBarWidthCollective = 344;
+int rightBarWidthPlayer = 344;
 int bottomBarHeightCollective = 62;
 int bottomBarHeightPlayer = 62;
 
@@ -817,6 +817,11 @@ optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& cam
   return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, current));
 }
 
+void WindowView::presentWorldmap(const Campaign& campaign) {
+  Semaphore sem;
+  return getBlockingGui(sem, guiBuilder.drawWorldmap(sem, campaign));
+}
+
 CampaignAction WindowView::prepareCampaign(const Campaign& campaign, Options* options, RetiredGames& retired) {
   SyncQueue<CampaignAction> returnQueue;
   optional<Vec2> embarkPos;
@@ -836,15 +841,17 @@ bool WindowView::creaturePrompt(const string& title, const vector<CreatureInfo>&
   return getBlockingGui(returnQueue, guiBuilder.drawCreaturePrompt(returnQueue, title, creatures));
 }
 
-void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, Vec2 origin) {
+void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, optional<Vec2> origin) {
   RenderLock lock(renderMutex);
   TempClockPause pause(clock);
+  if (!origin)
+    origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
   if (blockingElems.empty()) {
     blockingElems.push_back(gui.darken());
     blockingElems.back()->setBounds(renderer.getSize());
   }
   blockingElems.push_back(std::move(elem));
-  blockingElems.back()->setPreferredBounds(origin);
+  blockingElems.back()->setPreferredBounds(*origin);
   lock.unlock();
   if (currentThreadId() == renderThreadId)
     while (!sem.get())

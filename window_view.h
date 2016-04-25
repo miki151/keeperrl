@@ -91,6 +91,7 @@ class WindowView: public View {
   virtual void continueClock() override;
   virtual void addSound(const Sound&) override;
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current) override;
+  virtual void presentWorldmap(const Campaign&) override;
   virtual CampaignAction prepareCampaign(const Campaign&, Options*, RetiredGames&) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) override;
@@ -207,7 +208,7 @@ class WindowView: public View {
     bool cont = false;
   };
 
-  void getBlockingGui(Semaphore&, PGuiElem, Vec2 origin);
+  void getBlockingGui(Semaphore&, PGuiElem, optional<Vec2> origin = none);
 
   template<typename T>
   T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, optional<Vec2> origin = none) {
