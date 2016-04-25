@@ -243,14 +243,18 @@ class Square : public Renderable {
   virtual void onEnterSpecial(Creature*) {}
   virtual void tickSpecial() {}
   virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
-  HeapAllocated<Inventory> SERIAL(inventory);
   string SERIAL(name);
   void addTraitForTribe(TribeId, MovementTrait);
   void removeTraitForTribe(TribeId, MovementTrait);
   void setDirty();
 
+  Inventory& getInventory();
+  const Inventory& getInventory() const;
+  bool inventoryEmpty() const;
+
   private:
   Item* getTopItem() const;
+  mutable unique_ptr<Inventory> SERIAL(inventoryPtr);
 
   /** Checks if this square can be destroyed by member of the tribe.*/
   bool canDestroy(TribeId) const;

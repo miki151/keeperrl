@@ -42,7 +42,7 @@
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
   ar& SUBCLASS(Renderable)
-    & SVAR(inventory)
+    & SVAR(inventoryPtr)
     & SVAR(name)
     & SVAR(level)
     & SVAR(position)
@@ -197,7 +197,7 @@ void Square::setCreature(Creature* c) {
 
 void Square::setLevel(Level* l) {
   level = l;
-  if (ticking || !inventory->isEmpty())
+  if (ticking || !inventoryEmpty())
     level->addTickingSquare(position);
 }
 
@@ -242,11 +242,11 @@ void Square::updateMovement() {
 
 void Square::tick() {
   setDirty();
-  if (!inventory->isEmpty())
-    for (Item* item : inventory->getItems()) {
+  if (!inventoryEmpty())
+    for (Item* item : getInventory().getItems()) {
       item->tick(Position(position, level));
       if (item->isDiscarded())
-        inventory->removeItem(item);
+        getInventory().removeItem(item);
     }
   poisonGas->tick(getPosition2());
   if (creature && poisonGas->getAmount() > 0.2) {
@@ -395,7 +395,8 @@ void Square::getViewIndex(ViewIndex& ret, TribeId tribe) const {
     return;
   }
   double fireSize = 0;
-  for (Item* it : inventory->getItems())
+  if (!inventoryEmpty())
+    for (Item* it : getInventory().getItems())
     fireSize = max(fireSize, it->getFireSize());
   fireSize = max(fireSize, fire->getSize());
   if (backgroundObject)
@@ -430,11 +431,11 @@ void Square::dropItems(vector<PItem> items) {
   if (level)  // if level == null, then it's being constructed, square will be added later
     level->addTickingSquare(getPosition());
   for (PItem& it : items)
-    inventory->addItem(std::move(it));
+    getInventory().addItem(std::move(it));
 }
 
 bool Square::hasItem(Item* it) const {
-  return inventory->hasItem(it);
+  return !inventoryEmpty() && getInventory().hasItem(it);
 }
 
 Creature* Square::getCreature() {
@@ -509,32 +510,43 @@ int Square::getStrength() const {
 }
 
 Item* Square::getTopItem() const {
-  if (!inventory->isEmpty())
-    return inventory->getItems().back();
+  if (!inventoryEmpty())
+    return getInventory().getItems().back();
   else
     return nullptr;
 }
 
 vector<Item*> Square::getItems(function<bool (Item*)> predicate) const {
-  return inventory->getItems(predicate);
+  if (!inventoryEmpty())
+    return getInventory().getItems(predicate);
+  else
+    return {};
 }
 
+static vector<Item*> empty;
+
 const vector<Item*>& Square::getItems() const {
-  return inventory->getItems();
+  if (!inventoryEmpty())
+    return getInventory().getItems();
+  else
+    return empty;
 }
 
 const vector<Item*>& Square::getItems(ItemIndex index) const {
-  return inventory->getItems(index);
+  if (!inventoryEmpty())
+    return getInventory().getItems(index);
+  else
+    return empty;
 }
 
 PItem Square::removeItem(Item* it) {
   setDirty();
-  return inventory->removeItem(it);
+  return getInventory().removeItem(it);
 }
 
 vector<PItem> Square::removeItems(vector<Item*> it) {
   setDirty();
-  return inventory->removeItems(it);
+  return getInventory().removeItems(it);
 }
 
 void Square::setDirty() {
@@ -589,8 +601,25 @@ optional<SquareApplyType> Square::getApplyType(const Creature* c) const {
   return none;
 }
 
+Inventory& Square::getInventory() {
+  if (!inventoryPtr)
+    inventoryPtr.reset(new Inventory());
+  return *inventoryPtr;
+}
+
+const Inventory& Square::getInventory() const {
+  if (!inventoryPtr)
+    inventoryPtr.reset(new Inventory());
+  return *inventoryPtr;
+}
+
+bool Square::inventoryEmpty() const {
+  return !inventoryPtr || inventoryPtr->isEmpty();
+}
+
 void Square::clearItemIndex(ItemIndex index) {
-  inventory->clearIndex(index);
+  if (!inventoryEmpty())
+    getInventory().clearIndex(index);
 }
 
 void Square::apply(Creature* c) {
