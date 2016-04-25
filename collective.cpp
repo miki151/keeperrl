@@ -63,11 +63,11 @@ SERIALIZABLE(Collective);
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective);
 
 void Collective::setWarning(Warning w, bool state) {
-  warnings[w] = state;
+  warnings.set(w, state);
 }
 
 bool Collective::isWarning(Warning w) const {
-  return warnings[w];
+  return warnings.contains(w);
 }
 
 ItemPredicate Collective::unMarkedItems() const {
@@ -172,7 +172,7 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 }
 
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
-  if (!traits[MinionTrait::FARM_ANIMAL])
+  if (!traits.contains(MinionTrait::FARM_ANIMAL))
     c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
   if (!leader)
     leader = c;
@@ -187,7 +187,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     bySpawnType[*spawnType].push_back(c);
   for (const Item* item : c->getEquipment().getItems())
     minionEquipment->own(c, item);
-  if (traits[MinionTrait::FIGHTER]) {
+  if (traits.contains(MinionTrait::FIGHTER)) {
     c->setMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this)));
   }
 }
@@ -746,7 +746,7 @@ void Collective::considerBuildingBeds() {
       if (neededBeds > 0)
         bedsWarning |= tryBuildingBeds(spawnType, neededBeds) < neededBeds;
     }
-  warnings[Warning::BEDS] = bedsWarning;
+  warnings.set(Warning::BEDS, bedsWarning);
 }
 
 bool Collective::considerImmigrant(const ImmigrantInfo& info) {

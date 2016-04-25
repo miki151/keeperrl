@@ -1178,7 +1178,7 @@ class EnumMap {
 };
 
 template<class T>
-class EnumSet : public EnumMap<T, char> {
+class EnumSet {
   public:
   EnumSet() {}
 
@@ -1190,40 +1190,62 @@ class EnumSet : public EnumMap<T, char> {
   EnumSet(initializer_list<char> il) {
     CHECK(il.size() == EnumInfo<T>::size);
     int cnt = 0;
-    for (int i : il)
-      (*this)[T(cnt++)] = i;
+    for (int i : il) {
+      if (i)
+        insert(T(cnt));
+      ++cnt;
+    }
+  }
+
+  bool contains(T elem) const {
+    return elems.test(size_t(elem));
   }
 
   void insert(T elem) {
-    (*this)[elem] = 1;
+    elems.set(size_t(elem));
   }
 
   void toggle(T elem) {
-    (*this)[elem] = !(*this)[elem];
+    elems.flip(size_t(elem));
   }
 
   void erase(T elem) {
-    (*this)[elem] = 0;
+    elems.reset(size_t(elem));
   }
 
+  void set(T elem, bool state) {
+    elems.set(size_t(elem), state);
+  }
+
+  void clear() {
+    elems.reset();
+  }
+
+  bool operator == (const EnumSet& o) const {
+    return elems == o.elems;
+  }
+
+  bool operator != (const EnumSet& o) const {
+    return elems != o.elems;
+  }
+
+  typedef std::bitset<EnumInfo<T>::size> Bitset;
+
   EnumSet sum(const EnumSet& other) const {
-    EnumSet ret(other);
-    for (T elem : *this)
-      ret.insert(elem);
+    EnumSet<T> ret(other);
+    ret.elems |= elems;
     return ret;
   }
 
   EnumSet intersection(const EnumSet& other) const {
-    EnumSet ret;
-    for (T elem : *this)
-      if (other[elem])
-        ret.insert(elem);
+    EnumSet<T> ret(other);
+    ret.elems &= elems;
     return ret;
   }
 
   static EnumSet<T> fullSet() {
     EnumSet<T> ret;
-    ret.clear(1);
+    ret.elems.flip();
     return ret;
   }
 
@@ -1234,7 +1256,7 @@ class EnumSet : public EnumMap<T, char> {
     }
 
     void goForward() {
-      while (ind < EnumInfo<T>::size && !set[T(ind)])
+      while (ind < EnumInfo<T>::size && !set.contains(T(ind)))
         ++ind;
     }
 
@@ -1266,12 +1288,23 @@ class EnumSet : public EnumMap<T, char> {
   }
 
   int getHash() const {
-    int ret = 0;
-    for (const T& elem : *this) {
-      ret = ret * 79146198 + combineHash(elem);
-    }
-    return ret;
+    return hash<Bitset>()(elems);
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    vector<T> SERIAL(tmp);
+    for (T elem : *this)
+      tmp.push_back(elem);
+    ar & SVAR(tmp);
+    for (T elem : tmp) {
+      CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
+      insert(elem);
+    }
+  }
+
+  private:
+  Bitset elems;
 };
 
 template <class T>

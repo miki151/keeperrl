@@ -44,12 +44,12 @@ MovementSet& MovementSet::setSunlight(bool state) {
 }
 
 MovementSet& MovementSet::addTrait(MovementTrait trait) {
-  traits[trait] = true;
+  traits.insert(trait);
   return *this;
 }
 
 MovementSet& MovementSet::removeTrait(MovementTrait trait) {
-  traits[trait] = false;
+  traits.erase(trait);
   return *this;
 }
 
@@ -58,7 +58,7 @@ MovementSet& MovementSet::addTraitForTribe(TribeId tribe, MovementTrait trait) {
     tribeOverrides = {tribe, {trait}};
   else {
     CHECK(tribeOverrides->first == tribe);
-    tribeOverrides->second[trait] = true;
+    tribeOverrides->second.insert(trait);
   }
   return *this;
 }
@@ -66,13 +66,13 @@ MovementSet& MovementSet::addTraitForTribe(TribeId tribe, MovementTrait trait) {
 MovementSet& MovementSet::removeTraitForTribe(TribeId tribe, MovementTrait trait) {
   if (tribeOverrides) {
     CHECK(tribeOverrides->first == tribe);
-    tribeOverrides->second[trait] = false;
+    tribeOverrides->second.erase(trait);
   }
   return *this;
 }
 
 MovementSet& MovementSet::addForcibleTrait(MovementTrait trait) {
-  forcibleTraits[trait] = true;
+  forcibleTraits.insert(trait);
   return *this;
 }
 

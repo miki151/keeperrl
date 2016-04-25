@@ -25,7 +25,7 @@ RandomGen& LevelBuilder::getRandom() {
 bool LevelBuilder::hasAttrib(Vec2 posT, SquareAttrib attr) {
   Vec2 pos = transform(posT);
   CHECK(squares[pos] != nullptr);
-  return attrib[pos][attr];
+  return attrib[pos].contains(attr);
 }
 
 void LevelBuilder::addAttrib(Vec2 pos, SquareAttrib attr) {

@@ -1642,7 +1642,7 @@ PGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                       retAction.lock.toggle(task.task);
                     }),
                     gui.rightMargin(20, gui.labelUnicode(String(sf::Uint32(0x2713)), [&retAction, task] {
-                        return colors[(retAction.lock[task.task] ^ task.locked) ?
+                        return colors[(retAction.lock.contains(task.task) ^ task.locked) ?
                             ColorId::LIGHT_GRAY : ColorId::GREEN];})))).buildHorizontalList());
           }
           drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 200);

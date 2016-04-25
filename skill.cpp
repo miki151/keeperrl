@@ -143,7 +143,7 @@ void Skillset::erase(SkillId s) {
 
 bool Skillset::hasDiscrete(SkillId s) const {
   CHECK(Skill::get(s)->isDiscrete());
-  return discrete[s];
+  return discrete.contains(s);
 }
 
 double Skillset::getValue(SkillId s) const {

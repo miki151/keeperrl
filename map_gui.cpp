@@ -53,7 +53,7 @@ void MapGui::ViewIdMap::add(Vec2 pos, ViewId id) {
 }
 
 bool MapGui::ViewIdMap::has(Vec2 pos, ViewId id) {
-  return ids.getValue(pos)[id];
+  return ids.getValue(pos).contains(id);
 }
 
 void MapGui::ViewIdMap::clear() {

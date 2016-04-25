@@ -23,7 +23,7 @@ MovementType::MovementType(TribeId tr, EnumSet<MovementTrait> t) : traits(t), tr
 }
 
 bool MovementType::hasTrait(MovementTrait t) const {
-  return traits[t];
+  return traits.contains(t);
 }
 
 bool MovementType::operator == (const MovementType& o) const {

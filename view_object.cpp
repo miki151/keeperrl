@@ -120,17 +120,17 @@ int ViewObject::MovementQueue::makeGoodIndex(int index) const {
 }
 
 ViewObject& ViewObject::setModifier(Modifier mod) {
-  modifiers[mod] = true;
+  modifiers.insert(mod);
   return *this;
 }
 
 ViewObject& ViewObject::removeModifier(Modifier mod) {
-  modifiers[mod] = false;
+  modifiers.erase(mod);
   return *this;
 }
 
 bool ViewObject::hasModifier(Modifier mod) const {
-  return modifiers[mod];
+  return modifiers.contains(mod);
 }
 
 ViewObject& ViewObject::setAttribute(Attribute attr, double d) {
