@@ -51,6 +51,13 @@ optional<UniqueEntity<Creature>::Id> ViewObject::getCreatureId() const {
   return creatureId;
 }
 
+ViewObject::MovementInfo::MovementInfo(Vec2 dir, double b, double e, Type t) : direction(dir), tBegin(b), tEnd(e),
+  type(t) {
+}
+
+ViewObject::MovementInfo::MovementInfo() {
+}
+
 void ViewObject::addMovementInfo(MovementInfo info) {
   movementQueue.add(info);
 }
@@ -138,7 +145,7 @@ ViewObject& ViewObject::setAttribute(Attribute attr, double d) {
   return *this;
 }
 
-optional<double> ViewObject::getAttribute(Attribute attr) const {
+optional<float> ViewObject::getAttribute(Attribute attr) const {
   return attributes[attr];
 }
 

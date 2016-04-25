@@ -891,7 +891,7 @@ Color Tile::getColor(const ViewObject& object) {
   if (auto bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING))
     if (*bleeding > 0) {
       *bleeding = 0.5 + *bleeding / 2;
-      *bleeding = min(1., *bleeding);
+      *bleeding = min(1.0f, *bleeding);
       return Color(
           (1 - *bleeding) * color.r + *bleeding * 255,
           (1 - *bleeding) * color.g,

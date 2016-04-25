@@ -454,7 +454,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     color = transparency(color, 100);
   if (auto waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH))
     if (*waterDepth > 0) {
-      int val = max(0.0, 255.0 - min(2.0, *waterDepth) * 60);
+      int val = max(0.0, 255.0 - min(2.0f, *waterDepth) * 60);
       color = Color(val, val, val);
     }
   if (spriteMode && tile.hasSpriteCoord()) {

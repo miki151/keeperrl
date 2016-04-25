@@ -52,7 +52,7 @@ class ViewObject {
   optional<Dir> getAttachmentDir() const;
 
   ViewObject& setAttribute(Attribute, double);
-  optional<double> getAttribute(Attribute) const;
+  optional<float> getAttribute(Attribute) const;
 
   vector<string> getLegend() const;
   const char* getDescription() const;
@@ -68,10 +68,13 @@ class ViewObject {
   void setDescription(const string&);
 
   struct MovementInfo {
+    enum Type { MOVE, ATTACK };
+    MovementInfo(Vec2, double, double, Type);
+    MovementInfo();
     Vec2 direction;
-    double tBegin;
-    double tEnd;
-    enum { MOVE, ATTACK } type;
+    float tBegin;
+    float tEnd;
+    Type type;
   };
 
   void addMovementInfo(MovementInfo);
@@ -94,7 +97,7 @@ class ViewObject {
   const char* getDefaultDescription() const;
   enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
   EnumSet<Modifier> SERIAL(modifiers);
-  EnumMap<Attribute, optional<double>> SERIAL(attributes);
+  EnumMap<Attribute, optional<float>> SERIAL(attributes);
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);
   optional<string> SERIAL(description);
