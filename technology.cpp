@@ -209,6 +209,13 @@ vector<Spell*> Technology::getSpellLearning(TechId tech) {
   return ret;
 }
 
+vector<Spell*> Technology::getAllKeeperSpells() {
+  vector<Spell*> ret;
+  for (auto elem : spellLearning)
+    ret.push_back(Spell::get(elem.id));
+  return ret;
+}
+
 vector<Spell*> Technology::getAvailableSpells(const Collective* col) {
   vector<Spell*> ret;
   for (auto elem : spellLearning)

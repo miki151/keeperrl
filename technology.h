@@ -56,6 +56,7 @@ class Technology : public Singleton<Technology, TechId> {
   static vector<Technology*> getNextTechs(const vector<Technology*>& current);
   static vector<Spell*> getSpellLearning(TechId tech);
   static vector<Spell*> getAvailableSpells(const Collective*);
+  static vector<Spell*> getAllKeeperSpells();
   static TechId getNeededTech(Spell*);
 
   static void onAcquired(TechId, Collective*);

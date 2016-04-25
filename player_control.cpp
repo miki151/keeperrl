@@ -668,8 +668,7 @@ void PlayerControl::handlePersonalSpells(View* view) {
       ListElem("The Keeper can learn spells for use in combat and other situations. ", ListElem::TITLE),
       ListElem("You can cast them with 's' when you are in control of the Keeper.", ListElem::TITLE)};
   vector<Spell*> knownSpells = Technology::getAvailableSpells(getCollective());
-  for (SpellId spellId : ENUM_ALL(SpellId)) {
-    Spell* spell = Spell::get(spellId);
+  for (Spell* spell : Technology::getAllKeeperSpells()) {
     ListElem::ElemMod mod = ListElem::NORMAL;
     string suff;
     if (!contains(knownSpells, spell)) {
