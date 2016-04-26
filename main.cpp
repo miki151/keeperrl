@@ -314,7 +314,7 @@ static int keeperMain(const variables_map& vars) {
   if (vars.count("replay")) {
     string fname = vars["replay"].as<string>();
     Debug() << "Reading from " << fname;
-    input.reset(new CompressedInput(fname));
+    input.reset(new CompressedInput(fname.c_str()));
     input->getArchive() >> seed;
     Random.init(seed);
     view.reset(WindowView::createReplayView(input->getArchive(),
@@ -322,7 +322,7 @@ static int keeperMain(const variables_map& vars) {
   } else {
     if (vars.count("record")) {
       string fname = vars["record"].as<string>();
-      output.reset(new CompressedOutput(fname));
+      output.reset(new CompressedOutput(fname.c_str()));
       output->getArchive() << seed;
       Debug() << "Writing to " << fname;
       view.reset(WindowView::createLoggingView(output->getArchive(),

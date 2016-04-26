@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "file_sharing.h"
 #include "progress_meter.h"
+#include "save_file_info.h"
+#include "parse_game.h"
 
 #include <curl/curl.h>
 
@@ -82,6 +84,11 @@ optional<string> FileSharing::uploadRetired(const string& path, ProgressMeter& m
   return curlUpload(path.c_str(), (uploadUrl + "/upload2.php").c_str());
 }
 
+optional<string> FileSharing::uploadSite(const string& path, ProgressMeter& meter) {
+  progressFun = [&] (double p) { meter.setProgress(p);};
+  return curlUpload(path.c_str(), (uploadUrl + "/upload_site.php").c_str());
+}
+
 void FileSharing::uploadHighscores(const string& path) {
   progressFun = [] (double p) {};
   curlUpload(path.c_str(), (uploadUrl + "/upload_scores2.php").c_str());
@@ -120,7 +127,7 @@ static vector<FileSharing::GameInfo> parseGames(const string& s) {
 }
 
 vector<FileSharing::GameInfo> FileSharing::listGames() {
-  if(CURL* curl = curl_easy_init()) {
+  if (CURL* curl = curl_easy_init()) {
     curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_games2.php").c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
@@ -129,6 +136,44 @@ vector<FileSharing::GameInfo> FileSharing::listGames() {
     curl_easy_perform(curl);
     curl_easy_cleanup(curl);
     return parseGames(ret);
+  }
+  return {};
+}
+
+static vector<FileSharing::SiteInfo> parseSites(const string& s) {
+  std::stringstream iss(s);
+  vector<FileSharing::SiteInfo> ret;
+  while (!!iss) {
+    char buf[300];
+    iss.getline(buf, 300);
+    if (!iss)
+      break;
+    Debug() << "Parsing " << string(buf);
+    vector<string> fields = split(buf, {','});
+    if (fields.size() < 5)
+      continue;
+    Debug() << "Parsed " << fields;
+    ret.emplace_back();
+    ret.back().version = fromString<int>(fields[4]);
+    ret.back().fileInfo.filename = fields[1];
+    ret.back().fileInfo.date = fromString<int>(fields[2]);
+    ret.back().fileInfo.download = true;
+    TextInput input(fields[3]);
+    input.getArchive() >> ret.back().gameInfo;
+  }
+  return ret;
+}
+
+vector<FileSharing::SiteInfo> FileSharing::listSites() {
+  if (CURL* curl = curl_easy_init()) {
+    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_sites.php").c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+    string ret;
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
+    curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+    return parseSites(ret);
   }
   return {};
 }

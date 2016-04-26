@@ -69,6 +69,7 @@ class Game {
   bool isTurnBased();
   bool isSingleModel() const;
   bool isVillainActive(const Collective*);
+  SavedGameInfo getSavedGameInfo() const;
 
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
   void killCreature(Creature*, Creature* attacker);

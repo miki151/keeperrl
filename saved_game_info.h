@@ -6,7 +6,6 @@
 
 class SavedGameInfo {
   public:
-  SavedGameInfo(const Game*);
 
   struct MinionInfo {
     ViewId SERIAL(viewId);
@@ -14,6 +13,7 @@ class SavedGameInfo {
     SERIALIZE_ALL(viewId, level);
   };
 
+  SavedGameInfo(const vector<MinionInfo>& minions, double dangerLevel, const string& name);
   const vector<MinionInfo>& getMinions() const;
   double getDangerLevel() const;
   const string& getName() const;

@@ -1990,7 +1990,9 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
       header.addElem(gui.label(allGames[i].getName()), 150);
       for (auto& minion : allGames[i].getMinions())
         header.addElem(drawMinionAndLevel(minion.viewId, minion.level, 1), 25);
-      header.addSpace(40);
+      header.addSpace(7);
+      if (retired.getAllFiles()[i].download)
+        header.addElemAuto(gui.label("(cloud)"));
       PGuiElem line = header.buildHorizontalList();
       if (!retired.isActive(i))
         line = gui.stack(

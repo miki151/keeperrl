@@ -20,6 +20,8 @@ int main(int argc, char* argv[]) {
     ("help", "Print help")
     ("input", value<string>(), "Path a KeeperRL save file")
     ("display_name", "Print display name of the save file")
+    ("serial_info", "Print serialized game info of the save file")
+    ("info", "Print game info of the save file")
     ("version", "Print version the save file");
   variables_map vars;
   store(parse_command_line(argc, argv, flags), vars);
@@ -34,6 +36,18 @@ int main(int argc, char* argv[]) {
     std::cout << info->first << endl;
   if (vars.count("version"))
     std::cout << info->second << endl;
+  if (vars.count("serial_info")) {
+    auto savedInfo = getSavedGameInfo(path);
+    TextOutput output;
+    output.getArchive() << *savedInfo;
+    std::cout << output.getStream().str() << endl;
+  }
+  if (vars.count("info")) {
+    auto savedInfo = getSavedGameInfo(path);
+    std::cout << savedInfo->getName() << endl;
+    for (auto& minion : savedInfo->getMinions())
+      std::cout << EnumInfo<ViewId>::getString(minion.viewId) << " level " << minion.level << endl;
+  }
 }
 
 #endif

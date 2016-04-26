@@ -3,10 +3,13 @@
 
 #include "util.h"
 #include "saved_game_info.h"
+#include "gzstream.h"
 
 typedef StreamCombiner<ogzstream, OutputArchive> CompressedOutput;
 typedef StreamCombiner<igzstream, InputArchive> CompressedInput;
 typedef StreamCombiner<igzstream, InputArchive2> CompressedInput2;
+typedef StreamCombiner<ostringstream, text_oarchive> TextOutput;
+typedef StreamCombiner<istringstream, text_iarchive> TextInput;
 
 template <typename InputType>
 optional<pair<string, int>> getNameAndVersionUsing(const string& filename) {

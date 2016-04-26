@@ -589,3 +589,27 @@ void Game::cancelPlayer(Creature* c) {
   CHECK(c == player);
   player = nullptr;
 }
+
+static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
+  SavedGameInfo::MinionInfo ret;
+  ret.level = c->getAttributes().getExpLevel();
+  ret.viewId = c->getViewObject().id();
+  return ret;
+}
+
+SavedGameInfo Game::getSavedGameInfo() const {
+  Collective* col = getPlayerCollective();
+  vector<Creature*> creatures = col->getCreatures();
+  CHECK(!creatures.empty());
+  Creature* leader = col->getLeader();
+  CHECK(!leader->isDead());
+  sort(creatures.begin(), creatures.end(), [leader] (const Creature* c1, const Creature* c2) {
+    return c1 == leader || (c2 != leader && c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel());});
+  CHECK(creatures[0] == leader);
+  creatures.resize(min<int>(creatures.size(), 4));
+  vector<SavedGameInfo::MinionInfo> minions;
+  for (Creature* c : creatures)
+    minions.push_back(getMinionInfo(c));
+  return SavedGameInfo(minions, col->getDangerLevel(), *leader->getName().first());
+}
+

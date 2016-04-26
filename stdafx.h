@@ -123,6 +123,8 @@ using std::ifstream;
 using std::istream;
 using std::ostream;
 using std::stringstream;
+using std::istringstream;
+using std::ostringstream;
 using std::endl;
 using std::priority_queue;
 using std::make_pair;

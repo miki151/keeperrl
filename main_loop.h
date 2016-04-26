@@ -2,7 +2,6 @@
 #define _MAIN_LOOP_H
 
 #include "util.h"
-#include "gzstream.h"
 #include "file_sharing.h"
 
 class View;
@@ -30,7 +29,7 @@ class MainLoop {
 
   RetiredGames getRetiredGames();
   int getSaveVersion(const SaveFileInfo& save);
-  void uploadFile(const string& path);
+  void uploadFile(const string& path, GameSaveType);
   void saveUI(PGame&, GameSaveType type, SplashType splashType);
   void getSaveOptions(const vector<FileSharing::GameInfo>&, const vector<pair<GameSaveType, string>>&,
       vector<ListElem>& options, vector<SaveFileInfo>& allFiles);

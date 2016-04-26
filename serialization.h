@@ -111,12 +111,17 @@ class Serialization {
 template <class T, class U>
 class StreamCombiner {
   public:
-  StreamCombiner(const string& filename) : stream(filename.c_str()), archive(stream) {
+  template <typename ...Args>
+  StreamCombiner(Args... args) : stream(args...), archive(stream) {
  //   CHECK(stream.good()) << "File not found: " << filename;
   }
 
   U& getArchive() {
     return archive;
+  }
+
+  T& getStream() {
+    return stream;
   }
 
   private:

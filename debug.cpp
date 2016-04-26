@@ -104,8 +104,8 @@ Debug& Debug::operator<<(const vector<T>& container){
 template<class T>
 Debug& Debug::operator<<(const vector<vector<T> >& container){
   (*this) << "{";
-  for (int i : Range(container[0].size())) {
-    for (int j : Range(container.size())) {
+  for (int i = 0; i < container[0].size(); ++i) {
+    for (int j = 0; j < container[0].size(); ++i) {
       (*this) << container[j][i] << ",";
     }
     (*this) << '\n';

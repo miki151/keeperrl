@@ -1,35 +1,15 @@
 #include "stdafx.h"
 #include "saved_game_info.h"
-#include "game.h"
-#include "collective.h"
-#include "creature.h"
-#include "creature_attributes.h"
 
 SERIALIZE_DEF(SavedGameInfo, minions, dangerLevel, name);
+#ifdef PARSE_GAME
+template void SavedGameInfo::serialize(text_oarchive&, unsigned);
+#endif
 
 SERIALIZATION_CONSTRUCTOR_IMPL(SavedGameInfo);
 
-static SavedGameInfo::MinionInfo getInfo(const Creature* c) {
-  SavedGameInfo::MinionInfo ret;
-  ret.level = c->getAttributes().getExpLevel();
-  ret.viewId = c->getViewObject().id();
-  return ret;
-}
-
-SavedGameInfo::SavedGameInfo(const Game* g) {
-  Collective* col = g->getPlayerCollective();
-  dangerLevel = col->getDangerLevel();
-  vector<Creature*> creatures = col->getCreatures();
-  CHECK(!creatures.empty());
-  Creature* leader = col->getLeader();
-  CHECK(!leader->isDead());
-  sort(creatures.begin(), creatures.end(), [leader] (const Creature* c1, const Creature* c2) {
-    return c1 == leader || (c2 != leader && c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel());});
-  CHECK(creatures[0] == leader);
-  creatures.resize(min<int>(creatures.size(), 4));
-  for (Creature* c : creatures)
-    minions.push_back(getInfo(c));
-  name = *leader->getName().first();
+SavedGameInfo::SavedGameInfo(const vector<MinionInfo>& m, double d, const string& n) : minions(m), dangerLevel(d),
+  name(n) {
 }
 
 const vector<SavedGameInfo::MinionInfo>& SavedGameInfo::getMinions() const {
