@@ -2048,6 +2048,8 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
   int menuPosY = (3 + retiredGames.getNumActive()) * legendLineHeight;
   GuiFactory::ListBuilder retiredList = drawRetiredGames(retiredGames,
       [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, false);
+  if (retiredList.isEmpty())
+    retiredList.addElem(gui.label("No retired dungeons found :("));
   PGuiElem interior = gui.stack(makeVec<PGuiElem>(
       lines.buildVerticalList(),
       gui.topMargin(2 * legendLineHeight + 10, gui.leftMargin(retiredPosX,

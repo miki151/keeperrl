@@ -222,6 +222,7 @@ PCreature CreatureFactory::getGuardingBoulder(TribeId tribe) {
             c.noSleep = true;
             c.stationary = true;
             c.invincible = true;
+            c.noDyingSound = true;
             c.breathing = false;
             c.brain = false;
             c.name = "boulder";
@@ -303,6 +304,7 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
             c.stationary = true;
             c.invincible = true;
             c.breathing = false;
+            c.noDyingSound = true;
             c.brain = false;
             c.name = "boulder";), tribe, ControllerFactory([](Creature* c) { 
               return new SokobanController(c); })));
