@@ -1992,7 +1992,9 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
         header.addElem(drawMinionAndLevel(minion.viewId, minion.level, 1), 25);
       header.addSpace(7);
       if (retired.getAllFiles()[i].download)
-        header.addElemAuto(gui.label("(cloud)"));
+        header.addElemAuto(gui.stack(
+            gui.label("(cloud)"),
+            gui.tooltip({"The file will be downloaded from keeperrl.com"})));
       PGuiElem line = header.buildHorizontalList();
       if (!retired.isActive(i))
         line = gui.stack(
@@ -2039,6 +2041,8 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   int retiredPosX = 570;
   int menuPosY = (3 + retiredGames.getNumActive()) * legendLineHeight;
+  GuiFactory::ListBuilder retiredList = drawRetiredGames(retiredGames,
+      [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, false);
   PGuiElem interior = gui.stack(makeVec<PGuiElem>(
       lines.buildVerticalList(),
       gui.topMargin(2 * legendLineHeight + 10, gui.leftMargin(retiredPosX,
@@ -2049,10 +2053,10 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
                   [&retiredGames] { return retiredGames.getNumActive() < 5;}))
               .buildVerticalList())),
       gui.topMargin(legendLineHeight + 10, gui.leftMargin(retiredPosX, gui.label("Retired dungeons: "))),
-      gui.conditional(gui.topMargin(menuPosY, gui.leftMargin(retiredPosX, gui.miniWindow2(
-          drawRetiredGames(retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, false)
-              .buildVerticalList(),
-          [&retiredMenu] { retiredMenu = false;}))),
+      gui.conditional(gui.topMargin(menuPosY, gui.leftMargin(retiredPosX - 20,
+            gui.setWidth(380, gui.setHeight(retiredList.getSize() + 30,
+              gui.miniWindow2(gui.scrollable(retiredList.buildVerticalList()),
+          [&retiredMenu] { retiredMenu = false;}))))),
           [&retiredMenu] { return retiredMenu;})
           //gui.labelMultiLine(campaignWelcome, 17, Renderer::smallTextSize, colors[ColorId::WHITE]))),
   ));

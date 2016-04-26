@@ -1355,6 +1355,42 @@ PGuiElem GuiFactory::topMargin(int size, PGuiElem content) {
   return PGuiElem(new Margins(std::move(content), 0, size, 0, 0));
 }
 
+class SetHeight : public GuiLayout {
+  public:
+  SetHeight(PGuiElem content, int h)
+      : GuiLayout(makeVec<PGuiElem>(std::move(content))), height(h) {}
+
+  virtual Rectangle getElemBounds(int num) override {
+    return Rectangle(getBounds().left(), getBounds().top(),
+        getBounds().right(), getBounds().top() + height);
+  }
+
+  private:
+  int height;
+};
+
+PGuiElem GuiFactory::setHeight(int height, PGuiElem content) {
+  return PGuiElem(new SetHeight(std::move(content), height));
+}
+
+class SetWidth : public GuiLayout {
+  public:
+  SetWidth(PGuiElem content, int w)
+      : GuiLayout(makeVec<PGuiElem>(std::move(content))), width(w) {}
+
+  virtual Rectangle getElemBounds(int num) override {
+    return Rectangle(getBounds().left(), getBounds().top(),
+        getBounds().left() + width, getBounds().bottom());
+  }
+
+  private:
+  int width;
+};
+
+PGuiElem GuiFactory::setWidth(int width, PGuiElem content) {
+  return PGuiElem(new SetWidth(std::move(content), width));
+}
+
 PGuiElem GuiFactory::bottomMargin(int size, PGuiElem content) {
   return PGuiElem(new Margins(std::move(content), 0, 0, 0, size));
 }

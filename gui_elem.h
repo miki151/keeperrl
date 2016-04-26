@@ -111,6 +111,8 @@ class GuiFactory {
   PGuiElem verticalAspect(PGuiElem, double ratio);
   PGuiElem empty();
   PGuiElem preferredSize(int width, int height);
+  PGuiElem setHeight(int height, PGuiElem);
+  PGuiElem setWidth(int width, PGuiElem);
   enum MarginType { TOP, LEFT, RIGHT, BOTTOM};
   PGuiElem margin(PGuiElem top, PGuiElem rest, int height, MarginType);
   PGuiElem marginAuto(PGuiElem top, PGuiElem rest, MarginType);
