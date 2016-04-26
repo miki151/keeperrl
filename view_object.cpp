@@ -77,7 +77,7 @@ Vec2 ViewObject::getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creatu
   if (controlledId > *creatureId)
     return movementQueue.getTotalMovement(tBegin, tEnd);
   else
-    return movementQueue.getTotalMovement(tBegin - 0.00000001, tEnd);
+    return movementQueue.getTotalMovement(tBegin - 0.001, tEnd);
 }
 
 void ViewObject::clearMovementInfo() {

@@ -390,8 +390,8 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   } else if (object.hasAnyMovementInfo() && !screenMovement) {
     ViewObject::MovementInfo info = object.getLastMovementInfo();
     dir = info.direction;
-    if (info.direction.length8() == 0 || time >= info.tEnd || time <= info.tBegin)
-      return Vec2(0, 0);
+/*    if (info.direction.length8() == 0 || time >= info.tEnd + 0.001 || time <= info.tBegin - 0.001)
+      return Vec2(0, 0);*/
     state = (time - info.tBegin) / (info.tEnd - info.tBegin);
     double minStopTime = 0.2;
     state = min(1.0, max(0.0, (state - minStopTime) / (1.0 - 2 * minStopTime)));
