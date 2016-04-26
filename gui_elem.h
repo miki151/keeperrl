@@ -131,7 +131,8 @@ class GuiFactory {
   PGuiElem label(const string&, function<Color()>, char hotkey = 0);
   PGuiElem labelFun(function<string()>, function<Color()>);
   PGuiElem labelFun(function<string()>, Color = colors[ColorId::WHITE]);
-  PGuiElem labelMultiLine(const string&, int lineHeight, int size, Color = colors[ColorId::WHITE]);
+  PGuiElem labelMultiLine(const string&, int lineHeight, int size = Renderer::textSize,
+      Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, Color = colors[ColorId::WHITE]);
   PGuiElem variableLabel(function<string()>,
