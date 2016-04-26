@@ -826,8 +826,9 @@ CampaignAction WindowView::prepareCampaign(const Campaign& campaign, Options* op
   SyncQueue<CampaignAction> returnQueue;
   optional<Vec2> embarkPos;
   bool retiredMenu = false;
+  bool helpText = false;
   return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, retired,
-        embarkPos, retiredMenu));
+        embarkPos, retiredMenu, helpText));
 }
 
 optional<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,

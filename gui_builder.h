@@ -84,7 +84,7 @@ class GuiBuilder {
   PGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
       pair<ViewId, int> budget, const vector<ItemInfo>&, double* scrollPos);
   PGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, Options*, RetiredGames&,
-      optional<Vec2>& embark, bool& retiredMenu);
+      optional<Vec2>& embark, bool& retiredMenu, bool& helpText);
   PGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
   PGuiElem drawWorldmap(Semaphore& sem, const Campaign&);

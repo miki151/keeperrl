@@ -2007,9 +2007,13 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
 }
 
 PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign, Options* options,
-    RetiredGames& retiredGames, optional<Vec2>& embarkPos, bool& retiredMenu) {
+    RetiredGames& retiredGames, optional<Vec2>& embarkPos, bool& retiredMenu, bool& helpText) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
-  lines.addElem(gui.centerHoriz(gui.label("Campaign setup")));
+  lines.addElem(gui.centerHoriz(gui.getListBuilder()
+        .addElemAuto(gui.label("Campaign Setup"))
+        .addElemAuto(gui.stack(
+            gui.labelHighlight("   [Help]", colors[ColorId::LIGHT_BLUE]),
+            gui.button([&] { helpText = true; }))).buildHorizontalList()));
   lines.addSpace(10);
   int optionMargin = 50;
   lines.addElem(gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())));
@@ -2040,6 +2044,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   int retiredPosX = 570;
+  int helpPosX = 300;
   int menuPosY = (3 + retiredGames.getNumActive()) * legendLineHeight;
   GuiFactory::ListBuilder retiredList = drawRetiredGames(retiredGames,
       [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, false);
@@ -2057,9 +2062,12 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
             gui.setWidth(380, gui.setHeight(retiredList.getSize() + 30,
               gui.miniWindow2(gui.scrollable(retiredList.buildVerticalList()),
           [&retiredMenu] { retiredMenu = false;}))))),
-          [&retiredMenu] { return retiredMenu;})
-          //gui.labelMultiLine(campaignWelcome, 17, Renderer::smallTextSize, colors[ColorId::WHITE]))),
-  ));
+          [&retiredMenu] { return retiredMenu;}),
+      gui.conditional(gui.margins(gui.miniWindow2(gui.margins(
+              gui.labelMultiLine(campaignWelcome, legendLineHeight), 10),
+          [&helpText] { helpText = false;}), 100, 50, 100, 370),
+          [&helpText] { return helpText;})
+      ));
   return gui.stack(
       gui.preferredSize(1000, 850),
       gui.window(gui.margins(std::move(interior), 20), [&queue] { queue.push(CampaignActionId::CANCEL); }));
