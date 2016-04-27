@@ -247,13 +247,15 @@ class GameInfo {
   enum class InfoType { PLAYER, BAND, SPECTATOR} HASH(infoType) = InfoType::PLAYER;
   int HASH(time);
 
+  bool HASH(singleModel);
+
   CollectiveInfo HASH(collectiveInfo);
   PlayerInfo HASH(playerInfo);
   VillageInfo HASH(villageInfo);
   GameSunlightInfo HASH(sunlightInfo);
 
   vector<PlayerMessage> HASH(messageBuffer);
-  HASH_ALL(infoType, time, collectiveInfo, playerInfo, villageInfo, sunlightInfo, messageBuffer);
+  HASH_ALL(infoType, time, collectiveInfo, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel);
 };
 
 #endif

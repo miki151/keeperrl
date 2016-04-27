@@ -316,7 +316,9 @@ const char* GuiBuilder::getCurrentGameSpeedName() const {
     return getGameSpeedName(gameSpeed);
 }
 
-PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, VillageInfo& villageInfo) {
+PGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
+  CollectiveInfo& collectiveInfo = info.collectiveInfo;
+  VillageInfo& villageInfo = info.villageInfo;
   vector<PGuiElem> buttons = makeVec<PGuiElem>(
       gui.icon(gui.BUILDING),
       gui.icon(gui.MINION),
@@ -324,27 +326,26 @@ PGuiElem GuiBuilder::drawRightBandInfo(CollectiveInfo& info, VillageInfo& villag
       gui.stack(gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::YELLOW]),
                     [=] { return numSeenVillains < villageInfo.villages.size();}),
                 gui.icon(gui.DIPLOMACY)),
-      gui.icon(gui.HELP),
-      gui.icon(gui.WORLD_MAP)
-      );
-  for (int i : All(buttons))
-    if (i < buttons.size() - 1) {
-      buttons[i] = gui.stack(
-          gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
-            [this, i] { return int(collectiveTab) == i;}),
-          std::move(buttons[i]),
-          gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }));
-    }
-  buttons.back() = gui.stack(
+      gui.icon(gui.HELP)
+  );
+  for (int i : All(buttons)) {
+    buttons[i] = gui.stack(
+        gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
+          [this, i] { return int(collectiveTab) == i;}),
+        std::move(buttons[i]),
+        gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }));
+  }
+  if (!info.singleModel)
+    buttons.push_back(gui.stack(
           gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
             [this] { return false;}),
-          std::move(buttons.back()),
-          gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP)));
+          gui.icon(gui.WORLD_MAP),
+          gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP))));
   vector<pair<CollectiveTab, PGuiElem>> elems = makeVec<pair<CollectiveTab, PGuiElem>>(
-      make_pair(CollectiveTab::MINIONS, drawMinions(info)),
-      make_pair(CollectiveTab::BUILDINGS, drawBuildings(info)),
+      make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo)),
+      make_pair(CollectiveTab::BUILDINGS, drawBuildings(collectiveInfo)),
       make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp()),
-      make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(info)),
+      make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(collectiveInfo)),
       make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
   vector<PGuiElem> tabs;
   for (auto& elem : elems) {

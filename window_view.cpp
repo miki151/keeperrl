@@ -393,7 +393,7 @@ void WindowView::rebuildGui() {
         guiBuilder.drawPlayerOverlay(overlays, gameInfo.playerInfo);
         break;
     case GameInfo::InfoType::BAND:
-        right = guiBuilder.drawRightBandInfo(gameInfo.collectiveInfo, gameInfo.villageInfo);
+        right = guiBuilder.drawRightBandInfo(gameInfo);
         guiBuilder.drawBandOverlay(overlays, gameInfo.collectiveInfo);
         bottom = guiBuilder.drawBottomBandInfo(gameInfo);
         rightBarWidth = rightBarWidthCollective;

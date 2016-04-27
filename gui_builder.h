@@ -60,7 +60,7 @@ class GuiBuilder {
   PGuiElem drawRightPlayerInfo(PlayerInfo&);
   PGuiElem drawPlayerHelp(PlayerInfo&);
   PGuiElem drawPlayerInventory(PlayerInfo&);
-  PGuiElem drawRightBandInfo(CollectiveInfo&, VillageInfo&);
+  PGuiElem drawRightBandInfo(GameInfo&);
   PGuiElem drawTechnology(CollectiveInfo&);
   PGuiElem drawMinions(CollectiveInfo&);
   PGuiElem drawBottomBandInfo(GameInfo&);

@@ -1078,6 +1078,7 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
+  gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.villageInfo.villages.clear();
   gameInfo.villageInfo.totalMain = 0;
   gameInfo.villageInfo.numConquered = 0;

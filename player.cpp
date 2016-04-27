@@ -862,6 +862,7 @@ optional<SquareApplyType> Player::getUsableSquareApplyType() const {
 
 void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.messageBuffer = messages;
+  gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
