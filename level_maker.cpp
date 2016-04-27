@@ -641,7 +641,7 @@ class Lake : public Blob {
   public:
   Lake(bool s = true) : sand(s) {}
   virtual void addSquare(LevelBuilder* builder, Vec2 pos, int edgeDist) override {
-    if (sand && edgeDist == 1)
+    if (sand && edgeDist == 1 && builder->getType(pos).getId() != SquareId::WATER)
       builder->putSquare(pos, SquareId::SAND, SquareAttrib::LAKE);
     else
       builder->putSquare(pos, SquareFactory::getWater(double(edgeDist) / 2), SquareId::WATER, SquareAttrib::LAKE);
@@ -2242,13 +2242,15 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
           lowlandPred);
       locations->setMaxDistanceLast(cottage.maker, 13);
     }
- /* for (int i : Range(random.get(1, 4)))
-    locations->add(new Lake(), {20, 20}, Predicate::attrib(SquareAttrib::LOWLAND));*/
-/*  for (int i : Range(random.get(3, 6))) {
-    locations->add(new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE), 
-        {random.get(5, 30), random.get(5, 30)}, Predicate::type(SquareId::MOUNTAIN));
+  if (biomeId == BiomeId::GRASSLAND || biomeId == BiomeId::FORREST)
+    for (int i : Range(random.get(0, 3)))
+      locations->add(new Lake(), {random.get(20, 30), random.get(20, 30)}, Predicate::attrib(SquareAttrib::LOWLAND));
+  if (biomeId == BiomeId::MOUNTAIN)
+    for (int i : Range(random.get(3, 6))) {
+      locations->add(new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE), 
+          {random.get(10, 30), random.get(10, 30)}, Predicate::type(SquareId::MOUNTAIN));
   //  locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
-  }*/
+  }
 /*  for (int i : Range(random.get(3, 5))) {
     locations->add(new UniformBlob(SquareId::FLOOR, none), 
         {random.get(5, 12), random.get(5, 12)}, Predicate::type(SquareId::MOUNTAIN));
