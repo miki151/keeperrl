@@ -155,7 +155,7 @@ class WindowView: public View {
   SyncQueue<UserInput> inputQueue;
 
   bool gameReady = false;
-  bool uiLock = false;
+  atomic<bool> uiLock = false;
   atomic<bool> refreshInput;
   atomic<bool> wasRendered;
 

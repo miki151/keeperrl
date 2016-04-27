@@ -74,7 +74,10 @@ void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<boo
   view->initialize();
   options->setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
   initialized = true;
-  while (!finished) {
+  Intervalometer meter(1000 / 60);
+  while (!finished) {    
+    while (!meter.getCount(view->getTimeMilliAbsolute())) {
+    }
     view->refreshView();
   }
 }
@@ -197,7 +200,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (SteamAPI_RestartAppIfNecessary(329970))
       FAIL << "Init failure";
     if (!SteamAPI_Init()) {
-      MessageBox(NULL, "Steam is not running. If you'd like to run the game without Steam, run the standalone exe binary.", "Failure", MB_OK);
+      MessageBox(NULL, TEXT("Steam is not running. If you'd like to run the game without Steam, run the standalone exe binary."), TEXT("Failure"), MB_OK);
       FAIL << "Steam is not running";
     }
   }
