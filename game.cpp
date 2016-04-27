@@ -338,7 +338,7 @@ void Game::transferAction(vector<Creature*> creatures) {
         cant.push_back(c);
         removeElement(creatures,c );
       }
-    if (!cant.empty() && !view->creaturePrompt("These minions can not travel due to sunlight. Continue?", cant))
+    if (!cant.empty() && !view->creaturePrompt("These minions won't travel due to sunlight. Continue?", cant))
       return;
     for (Creature* c : creatures)
       transferCreature(c, models[*dest].get());
