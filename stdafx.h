@@ -23,6 +23,7 @@
 #include <string>
 #include <cstdlib>
 #include <memory>
+#include <bitset>
 #include "ctype.h"
 #include <cstring>
 #include <time.h>
@@ -116,6 +117,7 @@ using std::pair;
 using std::tuple;
 using std::out_of_range;
 using std::unordered_map;
+using std::bitset;
 using std::min;
 using std::max;
 using std::ofstream;
