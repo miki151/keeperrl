@@ -74,7 +74,7 @@ class Magma : public Square {
       CONSTRUCT(Square::Params,
         c.name = name;
         c.vision = VisionId::NORMAL;
-        c.constructions[SquareId::BRIDGE] = 20;
+        c.constructions = ConstructionsId::BRIDGE;
         c.movementSet = MovementSet()
             .addTrait(MovementTrait::FLY)
             .addForcibleTrait(MovementTrait::WALK);)) {}
@@ -105,7 +105,7 @@ class Water : public Square {
           CONSTRUCT(Square::Params,
             c.name = name;
             c.vision = VisionId::NORMAL;
-            c.constructions[SquareId::BRIDGE] = 20;
+            c.constructions = ConstructionsId::BRIDGE;
             c.movementSet = getMovement(_depth);
           )) {}
 
@@ -249,8 +249,7 @@ class Fountain : public Square {
 
 class Tree : public Square {
   public:
-  Tree(const ViewObject& object, const string& name, VisionId vision, int _numWood,
-      map<SquareId, int> construct, CreatureId c) : Square(object,
+  Tree(const ViewObject& object, const string& name, VisionId vision, int _numWood, CreatureId c) : Square(object,
         CONSTRUCT(Square::Params,
           c.name = name;
           c.vision = vision;
@@ -259,7 +258,7 @@ class Tree : public Square {
           c.canDestroy = true;
           c.flamability = 0.4;
           c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
-          c.constructions = construct;)), numWood(_numWood), creature(c) {}
+          c.constructions = ConstructionsId::CUT_TREE;)), numWood(_numWood), creature(c) {}
 
   virtual void destroy() override {
     getLevel()->globalMessage(getPosition(), "The tree falls.");
@@ -566,24 +565,24 @@ class CreatureAltar : public Altar {
   const Creature* SERIAL(creature);
 };
 
-class ConstructionDropItems : public Square {
+class MountainOre : public Square {
   public:
-  ConstructionDropItems(const ViewObject& object, const string& name,
-      map<SquareId, int> constructions, vector<PItem> _items) : Square(object,
+  MountainOre(const ViewObject& object, const string& name, ItemId ore, int dropped) : Square(object,
         CONSTRUCT(Square::Params,
           c.name = name;
-          c.constructions = constructions;)),
-      items(std::move(_items)) {}
+          c.constructions = ConstructionsId::MINING_ORE;)),
+      oreId(ore), numDropped(dropped) {}
 
   virtual void onConstructNewSquare(Square* s) override {
-    s->dropItems(std::move(items));
+    s->dropItems(ItemFactory::fromId(oreId, numDropped));
   }
 
-  SERIALIZE_ALL2(Square, items);
-  SERIALIZATION_CONSTRUCTOR(ConstructionDropItems);
+  SERIALIZE_ALL2(Square, oreId, numDropped);
+  SERIALIZATION_CONSTRUCTOR(MountainOre);
 
   private:
-  vector<PItem> SERIAL(items);
+  ItemId SERIAL(oreId);
+  int SERIAL(numDropped);
 };
 
 class Torch : public Furniture {
@@ -742,7 +741,7 @@ void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Torch);
   REGISTER_TYPE(ar, Grave);
   REGISTER_TYPE(ar, CreatureAltar);
-  REGISTER_TYPE(ar, ConstructionDropItems);
+  REGISTER_TYPE(ar, MountainOre);
   REGISTER_TYPE(ar, Hatchery);
   REGISTER_TYPE(ar, Crops);
   REGISTER_TYPE(ar, NoticeBoard);
@@ -768,34 +767,8 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.name = "floor";
               c.vision = VisionId::NORMAL;
               c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
-              c.constructions[SquareId::TREASURE_CHEST] = 10;
-              c.constructions[SquareId::DORM] = 10;
-              c.constructions[SquareId::TRIBE_DOOR] = 10;
-              c.constructions[SquareId::TRAINING_ROOM] = 10;
-              c.constructions[SquareId::LIBRARY] = 10;
-              c.constructions[SquareId::HATCHERY] = 10;
-              c.constructions[SquareId::STOCKPILE] = 1;
-              c.constructions[SquareId::STOCKPILE_EQUIP] = 1;
-              c.constructions[SquareId::STOCKPILE_RES] = 1;
-              c.constructions[SquareId::CEMETERY] = 10;
-              c.constructions[SquareId::WORKSHOP] = 10;
-              c.constructions[SquareId::FORGE] = 10;
-              c.constructions[SquareId::LABORATORY] = 10;
-              c.constructions[SquareId::JEWELER] = 10;
-              c.constructions[SquareId::PRISON] = 10;
-              c.constructions[SquareId::TORTURE_TABLE] = 10;
-              c.constructions[SquareId::BEAST_LAIR] = 10;
-              c.constructions[SquareId::IMPALED_HEAD] = 5;
-              c.constructions[SquareId::WHIPPING_POST] = 5;
-              c.constructions[SquareId::BARRICADE] = 20;
-              c.constructions[SquareId::TORCH] = 5;
-              c.constructions[SquareId::EYEBALL] = 5;
-              c.constructions[SquareId::CREATURE_ALTAR] = 35;
-              c.constructions[SquareId::MINION_STATUE] = 35;
-              c.constructions[SquareId::THRONE] = 100;
-              c.constructions[SquareId::MOUNTAIN] = 15;
-              c.constructions[SquareId::RITUAL_ROOM] = 10;
-              ));
+              c.constructions = ConstructionsId::DUNGEON_ROOMS;
+            ));
     case SquareId::BLACK_FLOOR:
         return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND, "Floor"),
             CONSTRUCT(Square::Params,
@@ -814,8 +787,8 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.name = "grass";
               c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
               c.vision = VisionId::NORMAL;
-              c.constructions[SquareId::EYEBALL] = 5;
-              c.constructions[SquareId::IMPALED_HEAD] = 5;));
+              c.constructions = ConstructionsId::OUTDOOR_INSTALLATIONS;
+            ));
     case SquareId::CROPS:
         return new Crops(ViewObject(Random.choose({ViewId::CROPS, ViewId::CROPS2}), ViewLayer::FLOOR_BACKGROUND),
             CONSTRUCT(Square::Params,
@@ -840,22 +813,17 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::Modifier::CASTS_SHADOW),
             CONSTRUCT(Square::Params,
               c.name = "wall";
-              c.constructions[SquareId::FLOOR] = Random.get(3, 8);));
+              c.constructions = ConstructionsId::MINING;
+            ));
     case SquareId::GOLD_ORE:
-        return new ConstructionDropItems(ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), "gold ore",
-            {{SquareId::FLOOR, Random.get(30, 80)}},
-            ItemFactory::fromId(ItemId::GOLD_PIECE, Random.get(18, 40)));
+        return new MountainOre(ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR)
+            .setModifier(ViewObject::Modifier::CASTS_SHADOW), "gold ore", ItemId::GOLD_PIECE, Random.get(18, 40));
     case SquareId::IRON_ORE:
-        return new ConstructionDropItems(ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), "iron ore",
-            {{SquareId::FLOOR, Random.get(15, 40)}},
-            ItemFactory::fromId(ItemId::IRON_ORE, Random.get(18, 40)));
+        return new MountainOre(ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR)
+            .setModifier(ViewObject::Modifier::CASTS_SHADOW), "iron ore", ItemId::IRON_ORE, Random.get(18, 40));
     case SquareId::STONE:
-        return new ConstructionDropItems(ViewObject(ViewId::STONE, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), "granite",
-            {{SquareId::FLOOR, Random.get(30, 80)}},
-            ItemFactory::fromId(ItemId::ROCK, Random.get(18, 40)));
+        return new MountainOre(ViewObject(ViewId::STONE, ViewLayer::FLOOR)
+            .setModifier(ViewObject::Modifier::CASTS_SHADOW), "granite", ItemId::ROCK, Random.get(18, 40));
     case SquareId::WOOD_WALL:
         return new Square(ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR)
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params,
@@ -875,18 +843,14 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::Modifier::CASTS_SHADOW),
           CONSTRUCT(Square::Params,
             c.name = "mountain";
-            c.constructions[SquareId::FLOOR] = Random.get(3, 8);
-            c.constructions[SquareId::IRON_ORE] = 1;
-            c.constructions[SquareId::GOLD_ORE] = 1;
-            c.constructions[SquareId::STONE] = 1;
+            c.constructions = ConstructionsId::MOUNTAIN_GEN_ORES;
             ));
     case SquareId::HILL:
         return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND),
           CONSTRUCT(Square::Params,
             c.name = "hill";
             c.vision = VisionId::NORMAL;
-            c.constructions[SquareId::EYEBALL] = 5;
-            c.constructions[SquareId::IMPALED_HEAD] = 5;
+            c.constructions = ConstructionsId::OUTDOOR_INSTALLATIONS;
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);));
     case SquareId::WATER:
         return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND), "water", 100);
@@ -903,16 +867,14 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::CANIF_TREE:
         return new Tree(ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR)
                 .setModifier(ViewObject::Modifier::ROUND_SHADOW), "tree", VisionId::ELF,
-            Random.get(25, 40), {{SquareId::TREE_TRUNK, 20}}, s.get<CreatureId>());
+            Random.get(25, 40), s.get<CreatureId>());
     case SquareId::DECID_TREE:
         return new Tree(ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR)
                 .setModifier(ViewObject::Modifier::ROUND_SHADOW),
-            "tree", VisionId::ELF, Random.get(25, 40), {{SquareId::TREE_TRUNK, 20}},
-            s.get<CreatureId>());
+            "tree", VisionId::ELF, Random.get(25, 40), s.get<CreatureId>());
     case SquareId::BUSH:
         return new Tree(ViewObject(ViewId::BUSH, ViewLayer::FLOOR), "bush",
-            VisionId::NORMAL, Random.get(5, 10), {{SquareId::TREE_TRUNK, 10}},
-            s.get<CreatureId>());
+            VisionId::NORMAL, Random.get(5, 10), s.get<CreatureId>());
     case SquareId::TREE_TRUNK:
         return new Square(ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR),
           CONSTRUCT(Square::Params,
@@ -933,7 +895,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.name = "floor";
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.canDestroy = true;
-            c.constructions[SquareId::BED] = 10;
+            c.constructions = ConstructionsId::BED;
             c.vision = VisionId::NORMAL;));
     case SquareId::TORCH: return new Torch(ViewObject(ViewId::TORCH, ViewLayer::FLOOR), "torch");
     case SquareId::STOCKPILE:
@@ -976,7 +938,7 @@ Square* SquareFactory::getPtr(SquareType s) {
           CONSTRUCT(Square::Params,
             c.name = "floor";
             c.canDestroy = true;
-            c.constructions[SquareId::BEAST_CAGE] = 10;
+            c.constructions = ConstructionsId::BEAST_CAGE;
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.vision = VisionId::NORMAL;));
     case SquareId::TRAINING_ROOM:
@@ -1064,7 +1026,7 @@ Square* SquareFactory::getPtr(SquareType s) {
           CONSTRUCT(Square::Params,
             c.name = "floor";
             c.canDestroy = true;
-            c.constructions[SquareId::GRAVE] = 10;
+            c.constructions = ConstructionsId::GRAVE;
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.vision = VisionId::NORMAL;));
     case SquareId::GRAVE:

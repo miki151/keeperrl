@@ -38,6 +38,19 @@ class MovementType;
 class MovementSet;
 class ViewObject;
 
+enum class ConstructionsId {
+  DUNGEON_ROOMS,
+  BRIDGE,
+  OUTDOOR_INSTALLATIONS,
+  CUT_TREE,
+  MINING_ORE,
+  MINING,
+  MOUNTAIN_GEN_ORES,
+  BED,
+  BEAST_CAGE,
+  GRAVE,
+};
+
 class Square : public Renderable {
   public:
   struct Params {
@@ -46,7 +59,7 @@ class Square : public Renderable {
     bool canHide;
     int strength;
     double flamability;
-    map<SquareId, int> constructions;
+    optional<ConstructionsId> constructions;
     bool ticking;
     HeapAllocated<MovementSet> movementSet;
     bool canDestroy;
@@ -271,7 +284,13 @@ class Square : public Renderable {
   optional<StairKey> SERIAL(landingLink);
   HeapAllocated<Fire> SERIAL(fire);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
-  map<SquareId, int> SERIAL(constructions);
+  optional<ConstructionsId> SERIAL(constructions);
+  struct CurrentConstruction {
+    SquareId SERIAL(id);
+    short int SERIAL(turnsRemaining);
+    SERIALIZE_ALL(id, turnsRemaining);
+  };
+  optional<CurrentConstruction> SERIAL(currentConstruction);
   bool SERIAL(ticking);
   HeapAllocated<MovementSet> SERIAL(movementSet);
   void updateMovement();

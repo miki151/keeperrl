@@ -57,6 +57,7 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(fire)
     & SVAR(poisonGas)
     & SVAR(constructions)
+    & SVAR(currentConstruction)
     & SVAR(ticking)
     & SVAR(movementSet)
     & SVAR(updateViewIndex)
@@ -140,14 +141,80 @@ void Square::addTravelDir(Vec2 dir) {
     travelDir.push_back(dir);
 }
 
+static optional<short int> getConstructionTime(ConstructionsId id, SquareId square) {
+  switch (id) {
+    case ConstructionsId::BRIDGE:
+      return square == SquareId::BRIDGE ? 20 : optional<short int>(none);
+    case ConstructionsId::CUT_TREE:
+      return square == SquareId::TREE_TRUNK ? 20 : optional<short int>(none);
+    case ConstructionsId::BED:
+      return square == SquareId::BED ? 10 : optional<short int>(none);
+    case ConstructionsId::BEAST_CAGE:
+      return square == SquareId::BEAST_CAGE ? 10 : optional<short int>(none);
+    case ConstructionsId::GRAVE:
+      return square == SquareId::GRAVE ? 10 : optional<short int>(none);
+    case ConstructionsId::MINING:
+      return square == SquareId::FLOOR ? Random.get(3, 8) : optional<short int>(none);
+    case ConstructionsId::MINING_ORE:
+      return square == SquareId::FLOOR ? Random.get(25, 50) : optional<short int>(none);
+    case ConstructionsId::OUTDOOR_INSTALLATIONS:
+      switch (square) {
+        case SquareId::IMPALED_HEAD:
+        case SquareId::EYEBALL: return 5;
+        default: return none;
+      }
+    case ConstructionsId::MOUNTAIN_GEN_ORES:
+      switch (square) {
+        case SquareId::FLOOR: return Random.get(3, 8);
+        case SquareId::IRON_ORE:
+        case SquareId::STONE:
+        case SquareId::GOLD_ORE: return 1;
+        default: return none;
+      }
+    case ConstructionsId::DUNGEON_ROOMS:
+      switch (square) {
+        case SquareId::TREASURE_CHEST: return 10;
+        case SquareId::DORM: return 10;
+        case SquareId::TRIBE_DOOR: return 10;
+        case SquareId::TRAINING_ROOM: return 10;
+        case SquareId::LIBRARY: return 10;
+        case SquareId::HATCHERY: return 10;
+        case SquareId::STOCKPILE: return 1;
+        case SquareId::STOCKPILE_EQUIP: return 1;
+        case SquareId::STOCKPILE_RES: return 1;
+        case SquareId::CEMETERY: return 10;
+        case SquareId::WORKSHOP: return 10;
+        case SquareId::FORGE: return 10;
+        case SquareId::LABORATORY: return 10;
+        case SquareId::JEWELER: return 10;
+        case SquareId::PRISON: return 10;
+        case SquareId::TORTURE_TABLE: return 10;
+        case SquareId::BEAST_LAIR: return 10;
+        case SquareId::IMPALED_HEAD: return 5;
+        case SquareId::WHIPPING_POST: return 5;
+        case SquareId::BARRICADE: return 20;
+        case SquareId::TORCH: return 5;
+        case SquareId::EYEBALL: return 5;
+        case SquareId::CREATURE_ALTAR: return 35;
+        case SquareId::MINION_STATUE: return 35;
+        case SquareId::THRONE: return 100;
+        case SquareId::MOUNTAIN: return 15;
+        case SquareId::RITUAL_ROOM: return 10;
+        default: return none;
+      }
+  }
+}
+
 bool Square::canConstruct(const SquareType& type) const {
-  return constructions.count(type.getId());
+  return constructions && getConstructionTime(*constructions, type.getId());
 }
 
 bool Square::construct(const SquareType& type) {
   setDirty();
   CHECK(canConstruct(type));
-  if (--constructions[type.getId()] <= 0) {
+  if (!currentConstruction || currentConstruction->id != type.getId())
+    currentConstruction = CurrentConstruction{type.getId(), *getConstructionTime(*constructions, type.getId())};
+  if (--currentConstruction->turnsRemaining <= 0) {
     level->replaceSquare(position, SquareFactory::get(type));
     return true;
   } else
@@ -215,7 +282,7 @@ bool Square::isUnavailable() const {
 
 void Square::setUnavailable() {
   unavailable = true;
-  constructions.clear();
+  constructions.reset();
   movementSet->clear();
 }
 
