@@ -1783,7 +1783,8 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             getView()->addSound(SoundId::DIG_MARK);
             selection = SELECT;
           } else
-            if (position.canConstruct(SquareId::FLOOR) || !getCollective()->isKnownSquare(position)) {
+            if (position.canConstruct(SquareId::FLOOR) ||
+                (!getCollective()->isKnownSquare(position) && !position.isUnavailable())) {
               getCollective()->dig(position);
               getView()->addSound(SoundId::DIG_MARK);
               selection = SELECT;

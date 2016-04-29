@@ -303,6 +303,10 @@ bool Position::isDestroyable() const {
   return isValid() && getSquare()->isDestroyable();
 }
 
+bool Position::isUnavailable() const {
+  return !isValid() || getSquare()->isUnavailable();
+}
+
 bool Position::canEnterEmpty(const Creature* c) const {
   return isValid() && getSquare()->canEnterEmpty(c);
 }

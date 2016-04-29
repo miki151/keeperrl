@@ -74,6 +74,7 @@ class Position {
   bool canConstruct(const SquareType&) const;
   bool canDestroy(const Creature*) const;
   bool isDestroyable() const;
+  bool isUnavailable() const;
   void dropItem(PItem);
   void dropItems(vector<PItem>);
   void destroyBy(Creature* c);
