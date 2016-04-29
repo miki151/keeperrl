@@ -29,7 +29,7 @@ class ViewObject;
 
 class Trigger {
   public:
-  virtual optional<ViewObject> getViewObject(TribeId) const;
+  virtual optional<ViewObject> getViewObject(const Creature* viewer) const;
   virtual ~Trigger();
 
   virtual void onCreatureEnter(Creature* c);

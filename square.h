@@ -215,7 +215,7 @@ class Square : public Renderable {
   bool sunlightBurns() const;
 
   void setBackground(const Square*);
-  void getViewIndex(ViewIndex&, TribeId) const;
+  void getViewIndex(ViewIndex&, const Creature* viewer) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
   bool itemBounces(Item* item, VisionId) const;
@@ -295,7 +295,7 @@ class Square : public Renderable {
   HeapAllocated<MovementSet> SERIAL(movementSet);
   void updateMovement();
   bool SERIAL(updateMemory) = true;
-  mutable bool SERIAL(updateViewIndex) = true;
+  mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);
   unique_ptr<ViewIndex> SERIAL(viewIndex);
   bool SERIAL(destroyable) = false;
   optional<TribeId> SERIAL(owner);

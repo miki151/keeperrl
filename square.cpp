@@ -60,7 +60,7 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(currentConstruction)
     & SVAR(ticking)
     & SVAR(movementSet)
-    & SVAR(updateViewIndex)
+    & SVAR(lastViewer)
     & SVAR(updateMemory)
     & SVAR(viewIndex)
     & SVAR(destroyable)
@@ -70,7 +70,6 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(applySound);
   if (progressMeter)
     progressMeter->addProgress();
-  updateViewIndex = true;
   updateMemory = true;
 }
 
@@ -456,11 +455,13 @@ void Square::setBackground(const Square* square) {
   }
 }
 
-void Square::getViewIndex(ViewIndex& ret, TribeId tribe) const {
-  if (!updateViewIndex) {
+void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
+  if ((!viewer && lastViewer) || (viewer && lastViewer == viewer->getUniqueId())) {
     ret = *viewIndex;
     return;
   }
+  // viewer is null only in Spectator mode, so setting a random id to lastViewer is ok
+  lastViewer = viewer ? viewer->getUniqueId() : Creature::Id();
   double fireSize = 0;
   if (!inventoryEmpty())
     for (Item* it : getInventory().getItems())
@@ -470,7 +471,7 @@ void Square::getViewIndex(ViewIndex& ret, TribeId tribe) const {
     ret.insert(*backgroundObject.get());
   ret.insert(getViewObject());
   for (const PTrigger& t : triggers)
-    if (auto obj = t->getViewObject(tribe))
+    if (auto obj = t->getViewObject(viewer))
       ret.insert(copyOf(*obj).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (Item* it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
@@ -478,7 +479,6 @@ void Square::getViewIndex(ViewIndex& ret, TribeId tribe) const {
     ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas->getAmount()));
   if (unavailable)
     ret.setHighlight(HighlightType::UNAVAILABLE);
-  updateViewIndex = false;
   *viewIndex = ret;
 }
 
@@ -618,7 +618,7 @@ vector<PItem> Square::removeItems(vector<Item*> it) {
 
 void Square::setDirty() {
   updateMemory = true;
-  updateViewIndex = true;
+  lastViewer.reset();
 }
 
 void Square::setMemoryUpdated() {

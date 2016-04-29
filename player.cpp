@@ -521,7 +521,7 @@ void Player::makeMove() {
     updateView = false;
     for (Position pos : getCreature()->getVisibleTiles()) {
       ViewIndex index;
-      pos.getViewIndex(index, getCreature()->getTribeId());
+      pos.getViewIndex(index, getCreature());
       levelMemory->update(pos, index);
     }
     MEASURE(
@@ -740,7 +740,7 @@ void Player::you(MsgType type, const string& param) {
     case MsgType::GET_HIT_NODAMAGE: msg = "The " + param + " is harmless."; break;
     case MsgType::COLLAPSE: msg = "You collapse."; break;
     case MsgType::TRIGGER_TRAP: msg = "You trigger something."; break;
-    case MsgType::DISARM_TRAP: msg = "You disarm the trap."; break;
+    case MsgType::DISARM_TRAP: msg = "You disarm the " + param; break;
     case MsgType::ATTACK_SURPRISE: msg = "You sneak attack " + param; break;
     case MsgType::BITE: msg = "You bite " + param; break;
     case MsgType::PANIC:
@@ -810,7 +810,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   bool canSee = getCreature()->canSee(pos);
   Position position = getCreature()->getPosition().withCoord(pos);
   if (canSee)
-    position.getViewIndex(index, getCreature()->getTribeId());
+    position.getViewIndex(index, getCreature());
   else
     index.setHiddenId(position.getViewObject().id());
   if (!canSee)

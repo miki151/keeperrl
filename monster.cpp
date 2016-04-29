@@ -110,7 +110,7 @@ void Monster::you(MsgType type, const string& param) {
     case MsgType::COLLAPSE: msg = getCreature()->getName().the() + " collapses."; break;
     case MsgType::FALL: msg = getCreature()->getName().the() + " falls " + param; break;
     case MsgType::TRIGGER_TRAP: msg = getCreature()->getName().the() + " triggers something."; break;
-    case MsgType::DISARM_TRAP: msg = getCreature()->getName().the() + " disarms a trap."; break;
+    case MsgType::DISARM_TRAP: msg = getCreature()->getName().the() + " disarms a " + param; break;
     case MsgType::PANIC: msg = getCreature()->getName().the() + " panics."; break;
     case MsgType::RAGE: msg = getCreature()->getName().the() + " is enraged."; break;
     case MsgType::BITE: msg = getCreature()->getName().the() + addName(" bites", param); break;

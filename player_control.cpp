@@ -1232,7 +1232,7 @@ static const ViewObject& getConstructionObject(SquareType type) {
 
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
   if (canSee)
-    pos.getViewIndex(index, getTribeId());
+    pos.getViewIndex(index, getCollective()->getLeader()); // use the leader as a generic viewer
   else
     index.setHiddenId(pos.getViewObject().id());
   if (const Creature* c = pos.getCreature())
@@ -2103,7 +2103,7 @@ void PlayerControl::addAttack(const CollectiveAttack& attack) {
 
 void PlayerControl::updateSquareMemory(Position pos) {
   ViewIndex index;
-  pos.getViewIndex(index, getTribeId());
+  pos.getViewIndex(index, getCollective()->getLeader()); // use the leader as a generic viewer
   memory->update(pos, index);
 }
 

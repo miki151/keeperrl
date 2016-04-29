@@ -49,7 +49,7 @@ Trigger::~Trigger() {}
 Trigger::Trigger(const ViewObject& obj, Position p): viewObject(obj), position(p) {
 }
 
-optional<ViewObject> Trigger::getViewObject(TribeId) const {
+optional<ViewObject> Trigger::getViewObject(const Creature*) const {
   return viewObject;
 }
 
@@ -153,8 +153,9 @@ class Trap : public Trigger {
       : Trigger(obj, position), effect(_effect), tribe(_tribe), alwaysVisible(visible) {
   }
 
-  virtual optional<ViewObject> getViewObject(TribeId t) const override {
-    if (alwaysVisible || t == tribe)
+  virtual optional<ViewObject> getViewObject(const Creature* viewer) const override {
+    if (!viewer || alwaysVisible || !viewer->getGame()->getTribe(tribe)->isEnemy(viewer)
+        || viewer->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS))
       return viewObject;
     else
       return none;
@@ -165,14 +166,14 @@ class Trap : public Trigger {
   }
 
   virtual void onCreatureEnter(Creature* c) override {
-    if (c->getTribeId() != tribe) {
+    if (c->getGame()->getTribe(tribe)->isEnemy(c)) {
       if (!c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
         if (!alwaysVisible)
           c->you(MsgType::TRIGGER_TRAP, "");
         Effect::applyToCreature(c, effect, EffectStrength::NORMAL);
         position.getGame()->onTrapTrigger(c->getPosition());
       } else {
-        c->you(MsgType::DISARM_TRAP, "");
+        c->you(MsgType::DISARM_TRAP, Effect::getName(effect) + " trap");
         position.getGame()->onTrapDisarm(c->getPosition(), c);
       }
       c->getPosition().removeTrigger(this);

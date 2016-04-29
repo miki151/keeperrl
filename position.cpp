@@ -227,9 +227,9 @@ string Position::getName() const {
     return "";
 }
 
-void Position::getViewIndex(ViewIndex& index, const TribeId& tribe) const {
+void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
   if (isValid())
-    getSquare()->getViewIndex(index, tribe);
+    getSquare()->getViewIndex(index, viewer);
 }
 
 vector<Trigger*> Position::getTriggers() const {

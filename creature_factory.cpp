@@ -102,7 +102,7 @@ class BoulderController : public Monster {
                   PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
               return;
             } else {
-              other->you(MsgType::DISARM_TRAP, "");
+              other->you(MsgType::DISARM_TRAP, "boulder trap");
               getCreature()->getGame()->onTrapDisarm(getCreature()->getPosition(), other);
               getCreature()->die();
               return;
