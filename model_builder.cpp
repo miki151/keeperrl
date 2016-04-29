@@ -1147,6 +1147,8 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
       append(enemyInfo, getCyclops(random)); break;
     case EnemyId::HYDRA:
       append(enemyInfo, getHydra(random)); break;
+    case EnemyId::CEMETERY:
+      append(enemyInfo, getCemetery(random)); break;
     case EnemyId::FRIENDLY_CAVE:
       append(enemyInfo, getFriendlyCave(random,
             random.choose({CreatureId::ORC, CreatureId::HARPY, CreatureId::OGRE})));
@@ -1184,6 +1186,9 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
       break;
     case EnemyId::BANDITS:
       biomeId = random.choose<BiomeId>();
+      break;
+    case EnemyId::CEMETERY:
+      biomeId = random.choose({BiomeId::GRASSLAND, BiomeId::FORREST});
       break;
   }
   return tryModel(meter, random, options, 170, siteName, enemyInfo, false, biomeId);

@@ -64,6 +64,7 @@ static vector<Campaign::VillainInfo> getLesserVillains() {
       {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", TribeType::LESSER},
       {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", TribeType::LESSER},
       {ViewId::ANT_QUEEN, EnemyId::ANTS, "Ants", TribeType::LESSER},
+      {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", TribeType::LESSER},
   };
 }
 

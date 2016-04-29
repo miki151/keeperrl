@@ -28,6 +28,7 @@ RICH_ENUM(EnemyId,
   SHELOB,
   HYDRA,
   ANTS,
+  CEMETERY,
 
   DARK_ELVES,
   GNOMES,

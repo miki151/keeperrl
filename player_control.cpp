@@ -1935,8 +1935,9 @@ void PlayerControl::update(bool currentlyActive) {
           addedCreatures.push_back(c);
           getCollective()->addCreature(c, {MinionTrait::FIGHTER});
           if (Creature* controlled = getControlled())
-            if (getCollective()->hasTrait(controlled, MinionTrait::FIGHTER) &&
-                c->getPosition().isSameLevel(controlled->getPosition()))
+            if ((getCollective()->hasTrait(controlled, MinionTrait::FIGHTER)
+                  || controlled == getCollective()->getLeader())
+                && c->getPosition().isSameLevel(controlled->getPosition()))
               for (auto team : getTeams().getActive(controlled)) {
                 getTeams().add(team, c);
                 controlled->playerMessage(PlayerMessage(c->getName().a() + " joins your team.",
