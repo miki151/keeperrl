@@ -343,7 +343,7 @@ static int keeperMain(const variables_map& vars) {
   }
   Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
-  FileSharing fileSharing(uploadUrl);
+  FileSharing fileSharing(uploadUrl, options);
   fileSharing.init();
   Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
   GameEvents gameEvents(fileSharing);

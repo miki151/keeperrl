@@ -7,23 +7,19 @@
 Highscores::Highscores(const string& local, FileSharing& sharing, Options* o)
     : localPath(local), fileSharing(sharing), options(o) {
   localScores = fromFile(localPath);
-  if (options->getBoolValue(OptionId::ONLINE)) {
-    remoteScores = fromString(fileSharing.downloadHighscores());
-    thread t([=] { fileSharing.uploadHighscores(localPath); });
-    t.detach();
-  }
+  remoteScores = fromString(fileSharing.downloadHighscores());
+  thread t([=] { fileSharing.uploadHighscores(localPath); });
+  t.detach();
 }
 
 void Highscores::add(Score s) {
   localScores.push_back(s);
   sortScores(localScores);
   saveToFile(localScores, localPath);
-  if (options->getBoolValue(OptionId::ONLINE)) {
-    remoteScores.push_back(s);
-    sortScores(remoteScores);
-    thread t([=] { fileSharing.uploadHighscores(localPath); });
-    t.detach();
-  }
+  remoteScores.push_back(s);
+  sortScores(remoteScores);
+  thread t([=] { fileSharing.uploadHighscores(localPath); });
+  t.detach();
 }
 
 void Highscores::sortScores(vector<Score>& scores) {
@@ -136,15 +132,13 @@ void Highscores::present(View* view, optional<Score> lastAdded) const {
       [] (const Score& s) { return s.gameType == s.ADVENTURER;}), lastAdded, lists.back().SCORE)); 
   lists.push_back(fillScores("Fastest wins", filter(localScores,
       [] (const Score& s) { return s.gameType == s.KEEPER && s.gameWon == true;}), lastAdded, lists.back().TURNS)); 
- // if (options->getBoolValue(OptionId::ONLINE)) {
-    lists.push_back(fillScores("Keepers", filter(remoteScores,
-            [] (const Score& s) { return s.gameType == s.KEEPER;}), lastAdded, lists.back().SCORE)); 
-    lists.push_back(fillScores("Adventurers", filter(remoteScores,
-            [] (const Score& s) { return s.gameType == s.ADVENTURER;}), lastAdded, lists.back().SCORE)); 
-    lists.push_back(fillScores("Fastest wins", filter(remoteScores,
-            [] (const Score& s) { return s.gameType == s.KEEPER && s.gameWon == true;}),
+  lists.push_back(fillScores("Keepers", filter(remoteScores,
+      [] (const Score& s) { return s.gameType == s.KEEPER;}), lastAdded, lists.back().SCORE)); 
+  lists.push_back(fillScores("Adventurers", filter(remoteScores,
+      [] (const Score& s) { return s.gameType == s.ADVENTURER;}), lastAdded, lists.back().SCORE)); 
+  lists.push_back(fillScores("Fastest wins", filter(remoteScores,
+      [] (const Score& s) { return s.gameType == s.KEEPER && s.gameWon == true;}),
           lastAdded, lists.back().TURNS)); 
- // }
   view->presentHighscores(lists);
 }
 

@@ -11,7 +11,7 @@ class GameEvents;
 
 class FileSharing {
   public:
-  FileSharing(const string& uploadUrl);
+  FileSharing(const string& uploadUrl, Options&);
 
   void init();
 
@@ -44,6 +44,7 @@ class FileSharing {
   
   private:
   string uploadUrl;
+  Options& options;
 };
 
 #endif

@@ -54,7 +54,7 @@ const map<OptionId, string> names {
   {OptionId::FULLSCREEN, "Fullscreen"},
   {OptionId::FULLSCREEN_RESOLUTION, "Fullscreen resolution"},
   {OptionId::ZOOM_UI, "Zoom in UI"},
-  {OptionId::ONLINE, "Online exchange of dungeons and highscores"},
+  {OptionId::ONLINE, "Online features"},
   {OptionId::AUTOSAVE, "Autosave"},
   {OptionId::WASD_SCROLLING, "WASD scrolling"},
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
@@ -78,7 +78,7 @@ const map<OptionId, string> hints {
   {OptionId::FULLSCREEN_RESOLUTION, "Choose resolution for fullscreen mode."},
   {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
       "Use you have a large resolution screen and things appear too small."},
-  {OptionId::ONLINE, "Upload your highscores and retired dungeons to keeperrl.com."},
+  {OptionId::ONLINE, "Enable online features, like dungeon sharing and highscores."},
   {OptionId::AUTOSAVE, "Autosave the game every " + toString(MainLoop::getAutosaveFreq()) + " turns. "
     "The save file will be used to recover in case of a crash."},
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "

@@ -3,10 +3,11 @@
 #include "progress_meter.h"
 #include "save_file_info.h"
 #include "parse_game.h"
+#include "options.h"
 
 #include <curl/curl.h>
 
-FileSharing::FileSharing(const string& url) : uploadUrl(url) {
+FileSharing::FileSharing(const string& url, Options& o) : uploadUrl(url), options(o) {
 }
 
 static function<void(double)> progressFun;
@@ -78,18 +79,24 @@ static optional<string> curlUpload(const char* path, const char* url) {
 }
 
 optional<string> FileSharing::uploadRetired(const string& path, ProgressMeter& meter) {
+  if (!options.getBoolValue(OptionId::ONLINE))
+    return none;
   progressFun = [&] (double p) { meter.setProgress(p);};
   return curlUpload(path.c_str(), (uploadUrl + "/upload2.php").c_str());
 }
 
 optional<string> FileSharing::uploadSite(const string& path, ProgressMeter& meter) {
+  if (!options.getBoolValue(OptionId::ONLINE))
+    return none;
   progressFun = [&] (double p) { meter.setProgress(p);};
   return curlUpload(path.c_str(), (uploadUrl + "/upload_site.php").c_str());
 }
 
 void FileSharing::uploadHighscores(const string& path) {
-  progressFun = [] (double p) {};
-  curlUpload(path.c_str(), (uploadUrl + "/upload_scores2.php").c_str());
+  if (options.getBoolValue(OptionId::ONLINE)) {
+    progressFun = [] (double p) {};
+    curlUpload(path.c_str(), (uploadUrl + "/upload_scores2.php").c_str());
+  }
 }
 
 void FileSharing::init() {
@@ -97,30 +104,33 @@ void FileSharing::init() {
 }
 
 void FileSharing::uploadGameEvent(const map<string, string>& data) {
-  string params;
-  for (auto& elem : data) {
-    if (!params.empty())
-      params += "&";
-    params += elem.first + "=" + elem.second;
-  }
-  if (CURL* curl = curl_easy_init()) {
-    string ret;
-    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/game_event.php").c_str());
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, params.c_str());
-    CURLcode res = curl_easy_perform(curl);
+  if (options.getBoolValue(OptionId::ONLINE)) {
+    string params;
+    for (auto& elem : data) {
+      if (!params.empty())
+        params += "&";
+      params += elem.first + "=" + elem.second;
+    }
+    if (CURL* curl = curl_easy_init()) {
+      string ret;
+      curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/game_event.php").c_str());
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, params.c_str());
+      CURLcode res = curl_easy_perform(curl);
+    }
   }
 }
 
 string FileSharing::downloadHighscores() {
   string ret;
-  if(CURL* curl = curl_easy_init()) {
-    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/highscores2.php").c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
-    curl_easy_perform(curl);
-    curl_easy_cleanup(curl);
-  }
+  if (options.getBoolValue(OptionId::ONLINE))
+    if(CURL* curl = curl_easy_init()) {
+      curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/highscores2.php").c_str());
+      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
+      curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+      curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
+      curl_easy_perform(curl);
+      curl_easy_cleanup(curl);
+    }
   return ret;
 }
 
@@ -184,6 +194,8 @@ static vector<FileSharing::SiteInfo> parseSites(const string& s) {
 }
 
 vector<FileSharing::SiteInfo> FileSharing::listSites() {
+  if (!options.getBoolValue(OptionId::ONLINE))
+    return {};
   if (CURL* curl = curl_easy_init()) {
     curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_sites.php").c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
@@ -206,6 +218,8 @@ static size_t writeToFile(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 }
 
 optional<string> FileSharing::download(const string& filename, const string& dir, ProgressMeter& meter) {
+  if (!options.getBoolValue(OptionId::ONLINE))
+    return string("Downloading not enabled!");
   progressFun = [&] (double p) { meter.setProgress(p);};
   if (CURL *curl = curl_easy_init()) {
     string path = dir + "/" + filename;

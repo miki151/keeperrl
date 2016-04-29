@@ -179,8 +179,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
         Square::progressMeter = &meter;
         MEASURE(saveGame(game, path), "saving time")});
   Square::progressMeter = nullptr;
-  if (contains({GameSaveType::RETIRED_SINGLE, GameSaveType::RETIRED_SITE}, type) &&
-      options->getBoolValue(OptionId::ONLINE))
+  if (contains({GameSaveType::RETIRED_SINGLE, GameSaveType::RETIRED_SITE}, type))
     uploadFile(path, type);
 }
 
@@ -544,14 +543,12 @@ PGame MainLoop::adventurerGame() {
   vector<ListElem> elems;
   vector<SaveFileInfo> files;
   vector<FileSharing::GameInfo> games;
-  if (options->getBoolValue(OptionId::ONLINE))
-    append(games, fileSharing->listGames());
+  append(games, fileSharing->listGames());
   sort(games.begin(), games.end(), [] (const FileSharing::GameInfo& a, const FileSharing::GameInfo& b) {
       return a.totalGames > b.totalGames || (a.totalGames == b.totalGames && a.time > b.time); });
   getSaveOptions(games, {
       {GameSaveType::RETIRED_SINGLE, "Retired local games:"}}, elems, files);
-  if (options->getBoolValue(OptionId::ONLINE))
-    getDownloadOptions(games, elems, files, "Retired online games:");
+  getDownloadOptions(games, elems, files, "Retired online games:");
   optional<SaveFileInfo> savedGame = chooseSaveFile(elems, files, "No retired games found.", view);
   if (savedGame) {
     if (savedGame->download)
