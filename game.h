@@ -6,6 +6,7 @@
 #include "tribe.h"
 #include "enum_variant.h"
 #include "campaign.h"
+#include "game_events.h"
 
 class Options;
 class Highscores;
@@ -13,6 +14,7 @@ class View;
 class Statistics;
 class PlayerControl;
 class CreatureView;
+class GameEvents;
 
 enum class VillainType { MAIN, LESSER, PLAYER };
 enum class GameSaveType { ADVENTURER, KEEPER, RETIRED_SINGLE, RETIRED_SITE, AUTOSAVE };
@@ -31,9 +33,7 @@ class Game {
 
   optional<ExitInfo> update(double timeDiff);
   Options* getOptions();
-  void setOptions(Options*);
-  void setHighscores(Highscores*);
-  void setView(View*);
+  void initialize(Options*, Highscores*, View*, GameEvents*);
   View* getView() const;
   void exitAction();
   void transferAction(vector<Creature*>);
@@ -91,6 +91,8 @@ class Game {
   void prepareRetirement();
   void doneRetirement();
 
+  GameEvents popGameEvents();
+
   ~Game();
 
   SERIALIZATION_DECL(Game);
@@ -103,10 +105,12 @@ class Game {
   Model* getCurrentModel() const;
   Vec2 getModelCoords(const Model*) const;
   optional<ExitInfo> updateModel(Model*, double totalTime);
+  string getPlayerName() const;
 
   string SERIAL(worldName);
   SunlightInfo sunlightInfo;
   Table<PModel> SERIAL(models);
+  Table<bool> SERIAL(visited);
   map<Model*, double> SERIAL(localTime);
   Vec2 SERIAL(baseModel);
   View* view;
@@ -132,6 +136,7 @@ class Game {
   optional<Campaign> SERIAL(campaign);
   bool wasTransfered = false;
   Creature* SERIAL(player) = nullptr;
+  GameEvents* gameEvents;
 };
 
 

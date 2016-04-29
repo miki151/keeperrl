@@ -41,8 +41,6 @@ static optional<string> curlUpload(const char* path, const char* url) {
   struct curl_httppost *formpost=NULL;
   struct curl_httppost *lastptr=NULL;
 
-  curl_global_init(CURL_GLOBAL_ALL);
-
   curl_formadd(&formpost,
       &lastptr,
       CURLFORM_COPYNAME, "fileToUpload",
@@ -55,7 +53,7 @@ static optional<string> curlUpload(const char* path, const char* url) {
       CURLFORM_COPYCONTENTS, "send",
       CURLFORM_END);
 
-  if(CURL* curl = curl_easy_init()) {
+  if (CURL* curl = curl_easy_init()) {
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     string ret;
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
@@ -67,7 +65,7 @@ static optional<string> curlUpload(const char* path, const char* url) {
     // Install the callback function
     curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
     CURLcode res = curl_easy_perform(curl);
-    if(res != CURLE_OK)
+    if (res != CURLE_OK)
       ret = string("Upload failed: ") + curl_easy_strerror(res);
     curl_easy_cleanup(curl);
     curl_formfree(formpost);
@@ -92,6 +90,25 @@ optional<string> FileSharing::uploadSite(const string& path, ProgressMeter& mete
 void FileSharing::uploadHighscores(const string& path) {
   progressFun = [] (double p) {};
   curlUpload(path.c_str(), (uploadUrl + "/upload_scores2.php").c_str());
+}
+
+void FileSharing::init() {
+  curl_global_init(CURL_GLOBAL_ALL);
+}
+
+void FileSharing::uploadGameEvent(const map<string, string>& data) {
+  string params;
+  for (auto& elem : data) {
+    if (!params.empty())
+      params += "&";
+    params += elem.first + "=" + elem.second;
+  }
+  if (CURL* curl = curl_easy_init()) {
+    string ret;
+    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/game_event.php").c_str());
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, params.c_str());
+    CURLcode res = curl_easy_perform(curl);
+  }
 }
 
 string FileSharing::downloadHighscores() {
@@ -150,15 +167,17 @@ static vector<FileSharing::SiteInfo> parseSites(const string& s) {
       break;
     Debug() << "Parsing " << string(buf);
     vector<string> fields = split(buf, {','});
-    if (fields.size() < 5)
+    if (fields.size() < 6)
       continue;
     Debug() << "Parsed " << fields;
     ret.emplace_back();
-    ret.back().version = fromString<int>(fields[4]);
-    ret.back().fileInfo.filename = fields[1];
-    ret.back().fileInfo.date = fromString<int>(fields[2]);
+    ret.back().fileInfo.filename = fields[0];
+    ret.back().fileInfo.date = fromString<int>(fields[1]);
+    ret.back().wonGames = fromString<int>(fields[2]);
+    ret.back().totalGames = fromString<int>(fields[3]);
+    ret.back().version = fromString<int>(fields[5]);
     ret.back().fileInfo.download = true;
-    TextInput input(fields[3]);
+    TextInput input(fields[4]);
     input.getArchive() >> ret.back().gameInfo;
   }
   return ret;

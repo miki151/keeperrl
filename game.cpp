@@ -22,12 +22,14 @@
 #include "creature_attributes.h"
 #include "name_generator.h"
 #include "campaign.h"
+#include "game_events.h"
+#include "save_file_info.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) { 
   serializeAll(ar, villainsByType, collectives, lastTick, playerControl, playerCollective, won, currentTime);
   serializeAll(ar, worldName, musicType, portals, statistics, spectator, tribes, gameIdentifier, player);
-  serializeAll(ar, gameDisplayName, finishCurrentMusic, models, baseModel, campaign, localTime);
+  serializeAll(ar, gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime);
   if (Archive::is_loading::value)
     sunlightInfo.update(currentTime);
 }
@@ -46,8 +48,12 @@ static string getNewIdSuffix() {
   return ret;
 }
 
+static string getGameId(SaveFileInfo info) {
+  return info.filename.substr(0, info.filename.size() - 4);
+}
+
 Game::Game(const string& world, const string& player, Table<PModel>&& m, Vec2 basePos, optional<Campaign> c)
-    : worldName(world), models(std::move(m)), baseModel(basePos),
+    : worldName(world), models(std::move(m)), visited(models.getBounds(), false), baseModel(basePos),
       tribes(Tribe::generateTribes()), musicType(MusicType::PEACEFUL), campaign(c) {
   sunlightInfo.update(currentTime);
   gameIdentifier = player + "_" + worldName + getNewIdSuffix();
@@ -240,8 +246,13 @@ void Game::tick(double time) {
     bool conquered = true;
     for (Collective* col : getCollectives()) {
       conquered &= col->isConquered() || col->getVillainType() != VillainType::MAIN;
-      if (col->isConquered() && campaign && col->getVillainType())
-        campaign->setDefeated(getModelCoords(col->getLevel()->getModel()));
+      if (col->isConquered() && campaign && col->getVillainType()) {
+        Vec2 coords = getModelCoords(col->getLevel()->getModel());
+        if (!campaign->isDefeated(coords))
+          if (auto retired = campaign->getSites()[coords].getRetired())
+            gameEvents->addRetiredConquered(getGameId(retired->fileInfo), getPlayerName());
+        campaign->setDefeated(coords);
+      }
     }
     if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
       playerControl->onConqueredLand();
@@ -336,13 +347,21 @@ void Game::transferAction(vector<Creature*> creatures) {
     for (Creature* c : copyOf(creatures))
       if (!canTransferCreature(c, to)) {
         cant.push_back(c);
-        removeElement(creatures,c );
+        removeElement(creatures, c);
       }
-    if (!cant.empty() && !view->creaturePrompt("These minions won't travel due to sunlight. Continue?", cant))
+    if (!cant.empty() && !view->creaturePrompt("These minions will be left behind due to sunlight.", cant))
       return;
-    for (Creature* c : creatures)
-      transferCreature(c, models[*dest].get());
-    wasTransfered = true;
+    if (!creatures.empty()) {
+      for (Creature* c : creatures)
+        transferCreature(c, models[*dest].get());
+      if (!visited[*dest]) {
+        visited[*dest] = true;
+        if (auto retired = campaign->getSites()[*dest].getRetired())
+          gameEvents->addRetiredLoaded(getGameId(retired->fileInfo), getPlayerName());
+
+      }
+      wasTransfered = true;
+    }
   }
 }
 
@@ -539,12 +558,11 @@ Options* Game::getOptions() {
   return options;
 }
 
-void Game::setOptions(Options* o) {
+void Game::initialize(Options* o, Highscores* h, View* v, GameEvents* e) {
   options = o;
-}
-
-void Game::setHighscores(Highscores* h) {
   highscores = h;
+  view = v;
+  gameEvents = e;
 }
 
 const string& Game::getWorldName() const {
@@ -570,10 +588,6 @@ const vector<Collective*>& Game::getCollectives() const {
   return collectives;
 }
 
-void Game::setView(View* v) {
-  view = v;
-}
-
 void Game::setPlayer(Creature* c) {
   player = c;
 }
@@ -597,6 +611,10 @@ static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
   return ret;
 }
 
+string Game::getPlayerName() const {
+  return *getPlayerCollective()->getLeader()->getName().first();
+}
+
 SavedGameInfo Game::getSavedGameInfo() const {
   Collective* col = getPlayerCollective();
   vector<Creature*> creatures = col->getCreatures();
@@ -604,12 +622,13 @@ SavedGameInfo Game::getSavedGameInfo() const {
   Creature* leader = col->getLeader();
   CHECK(!leader->isDead());
   sort(creatures.begin(), creatures.end(), [leader] (const Creature* c1, const Creature* c2) {
-    return c1 == leader || (c2 != leader && c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel());});
+      return c1 == leader
+        || (c2 != leader && c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel());});
   CHECK(creatures[0] == leader);
   creatures.resize(min<int>(creatures.size(), 4));
   vector<SavedGameInfo::MinionInfo> minions;
   for (Creature* c : creatures)
     minions.push_back(getMinionInfo(c));
-  return SavedGameInfo(minions, col->getDangerLevel(), *leader->getName().first());
+  return SavedGameInfo(minions, col->getDangerLevel(), getPlayerName());
 }
 

@@ -24,10 +24,10 @@
 #include "retired_games.h"
 #include "save_file_info.h"
 
-MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
+MainLoop::MainLoop(View* v, Highscores* h, GameEvents* gameE, FileSharing* fSharing, const string& freePath,
     const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin, bool singleThread,
     optional<GameTypeChoice> force)
-      : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
+      : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j), gameEvents(gameE),
         highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread), forceGame(force) {
 }
 
@@ -261,7 +261,7 @@ int MainLoop::getAutosaveFreq() {
 
 void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
   view->reset();
-  game->setView(view);
+  game->initialize(options, highscores, view, gameEvents);
   const int stepTimeMilli = 3;
   Intervalometer meter(stepTimeMilli);
   double lastMusicUpdate = -1000;
@@ -293,29 +293,17 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
   }
 }
 
-static bool containsFilename(const vector<SaveFileInfo>& files, const string& filename) {
-  for (auto& elem : files)
-    if (elem.filename == filename)
-      return true;
-  return false;
-}
-
 RetiredGames MainLoop::getRetiredGames() {
-  vector<SavedGameInfo> savedGames;
-  vector<SaveFileInfo> files;
+  RetiredGames ret;
   for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
-    if (isCompatible(getSaveVersion(info))) {
-      if (auto saved = getSavedGameInfo(userPath + "/" + info.filename)) {
-        savedGames.push_back(*saved);
-        files.push_back(info);
-      }
-    }
+    if (isCompatible(getSaveVersion(info)))
+      if (auto saved = getSavedGameInfo(userPath + "/" + info.filename))
+        ret.addLocal(*saved, info);
   for (auto& elem : fileSharing->listSites())
-    if (isCompatible(elem.version) && !containsFilename(files, elem.fileInfo.filename)) {
-      savedGames.push_back(elem.gameInfo);
-      files.push_back(elem.fileInfo);
-    }
-  return RetiredGames(savedGames, files);
+    if (isCompatible(elem.version))
+      ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames);
+  ret.sort();
+  return ret;
 }
 
 PGame MainLoop::prepareCampaign(RandomGen& random) {
@@ -377,8 +365,6 @@ void MainLoop::playGameChoice() {
       forceGame.reset();
     if (game) {
       Random = std::move(random);
-      game->setOptions(options);
-      game->setHighscores(highscores);
       playGame(std::move(game), true, false);
     }
     view->reset();
@@ -532,10 +518,7 @@ PGame MainLoop::loadGame(string file, bool erase) {
         Square::progressMeter = &meter;
         Debug() << "Loading from " << file;
         game = loadGameFromFile(userPath + "/" + file, erase);});
-  if (game) {
-    game->setView(view);
-    game->setOptions(options);
-  } else
+  if (!game)
     view->presentText("Sorry", "This save file is corrupted :(");
   Square::progressMeter = nullptr;
   return game;

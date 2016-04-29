@@ -44,6 +44,7 @@
 #include "vision.h"
 #include "model_builder.h"
 #include "sound_library.h"
+#include "game_events.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -343,14 +344,16 @@ static int keeperMain(const variables_map& vars) {
   Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl);
+  fileSharing.init();
   Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
+  GameEvents gameEvents(fileSharing);
   optional<GameTypeChoice> forceGame;
   if (vars.count("force_keeper"))
     forceGame = GameTypeChoice::KEEPER;
   else if (vars.count("quick_level"))
     forceGame = GameTypeChoice::QUICK_LEVEL;
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, gameFinished,
-      useSingleThread, forceGame);
+  MainLoop loop(view.get(), &highscores, &gameEvents, &fileSharing, freeDataPath, userPath, &options, &jukebox,
+      gameFinished, useSingleThread, forceGame);
   if (vars.count("worldgen_test")) {
     loop.modelGenTest(vars["worldgen_test"].as<int>(), Random, &options);
     return 0;

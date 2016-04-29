@@ -247,10 +247,11 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
       removeElement(freePos, pos);
       campaign.sites[pos].dweller = mainVillains[i];
     }
+    vector<RetiredGames::RetiredGame> activeGames = retired.getActiveGames();
     for (int i : Range(numRetired)) {
       Vec2 pos = random.choose(freePos);
       removeElement(freePos, pos);
-      campaign.sites[pos].dweller = RetiredInfo{retired.getActiveGames()[i], retired.getActiveFiles()[i]};
+      campaign.sites[pos].dweller = RetiredInfo{activeGames[i].gameInfo, activeGames[i].fileInfo};
     }
     for (int i : All(lesserVillains)) {
       Vec2 pos = random.choose(freePos);

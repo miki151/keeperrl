@@ -7,21 +7,31 @@
 
 class RetiredGames {
   public:
-  RetiredGames(const vector<SavedGameInfo>&, const vector<SaveFileInfo>&);
-  const vector<SavedGameInfo>& getAllGames() const;
-  const vector<SaveFileInfo>& getAllFiles() const;
+  void addLocal(const SavedGameInfo&, const SaveFileInfo&);
+  void addOnline(const SavedGameInfo&, const SaveFileInfo&, int numTotal, int numWon);
+
+  void sort();
+
+  struct RetiredGame {
+    SavedGameInfo gameInfo;
+    SaveFileInfo fileInfo;
+    int numTotal;
+    int numWon;
+  };
+
+  const vector<RetiredGame>& getAllGames() const;
+  vector<RetiredGame> getActiveGames() const;
 
   int getNumActive() const;
-  vector<SavedGameInfo> getActiveGames() const;
-  vector<SaveFileInfo> getActiveFiles() const;
+  int getNumLocal() const;
 
   void setActive(int num, bool);
   bool isActive(int num) const;
 
   private:
-  vector<SavedGameInfo> games;
-  vector<SaveFileInfo> files;
+  vector<RetiredGame> games;
   set<int> active;
+  int numLocal = 0;
 };
 
 #endif

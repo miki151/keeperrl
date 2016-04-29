@@ -1980,23 +1980,28 @@ static const char campaignWelcome[] =
 GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, function<void()> reloadCampaign,
     bool active) {
   auto lines = gui.getListBuilder(legendLineHeight);
-  vector<SavedGameInfo> allGames = retired.getAllGames();
-  for (int i : All(allGames))
+  vector<RetiredGames::RetiredGame> allGames = retired.getAllGames();
+  for (int i : All(allGames)) {
+    if (i == retired.getNumLocal() && !active)
+      lines.addElem(gui.label("Online dungeons:", colors[ColorId::YELLOW]));
     if (retired.isActive(i) == active) {
       auto header = gui.getListBuilder();
       if (retired.isActive(i))
         header.addElem(gui.stack(
               gui.labelUnicode(String(sf::Uint32(0x2718)), colors[ColorId::RED]),
               gui.button([i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();})), 15);
-      header.addElem(gui.label(allGames[i].getName()), 150);
-      for (auto& minion : allGames[i].getMinions())
+      header.addElem(gui.label(allGames[i].gameInfo.getName()), 170);
+      for (auto& minion : allGames[i].gameInfo.getMinions())
         header.addElem(drawMinionAndLevel(minion.viewId, minion.level, 1), 25);
-      header.addSpace(7);
-      if (retired.getAllFiles()[i].download)
+      header.addSpace(20);
+      if (allGames[i].numTotal > 0 && !active)
         header.addElemAuto(gui.stack(
-            gui.label("(cloud)"),
-            gui.tooltip({"The file will be downloaded from keeperrl.com"})));
+          gui.tooltip({"Number of times this dungeon has been conquered over how many times it has been loaded."}),
+          gui.label("Conquer rate: " + toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal))));
       PGuiElem line = header.buildHorizontalList();
+      if (allGames[i].numTotal > 0 && active)
+        line = gui.stack(std::move(line), gui.tooltip({
+              "Conquer rate: " + toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal)}));
       if (!retired.isActive(i))
         line = gui.stack(
             gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
@@ -2004,6 +2009,7 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
             gui.button([i, reloadCampaign, &retired] { retired.setActive(i, true); reloadCampaign();}));
       lines.addElem(std::move(line));
     }
+  }
   return lines;
 }
 
@@ -2045,6 +2051,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   int retiredPosX = 570;
+  int retiredMenuX = retiredPosX - 120;
   int helpPosX = 300;
   int menuPosY = (3 + retiredGames.getNumActive()) * legendLineHeight;
   GuiFactory::ListBuilder retiredList = drawRetiredGames(retiredGames,
@@ -2061,8 +2068,8 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
                   [&retiredGames] { return retiredGames.getNumActive() < 5;}))
               .buildVerticalList())),
       gui.topMargin(legendLineHeight + 10, gui.leftMargin(retiredPosX, gui.label("Retired dungeons: "))),
-      gui.conditional(gui.topMargin(menuPosY, gui.leftMargin(retiredPosX - 20,
-            gui.setWidth(380, gui.setHeight(retiredList.getSize() + 30,
+      gui.conditional(gui.topMargin(menuPosY, gui.leftMargin(retiredMenuX,
+            gui.setWidth(480, gui.setHeight(retiredList.getSize() + 30,
               gui.miniWindow2(gui.scrollable(retiredList.buildVerticalList()),
           [&retiredMenu] { retiredMenu = false;}))))),
           [&retiredMenu] { return retiredMenu;}),
