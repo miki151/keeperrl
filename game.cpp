@@ -140,6 +140,12 @@ void Game::prepareRetirement() {
     }
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->limitKnownTilesToModel();
+  vector<Position> locationPos = playerCollective->getAllSquares({SquareId::LIBRARY});
+  if (locationPos.empty())
+    locationPos = playerCollective->getTerritory().getAll();
+  if (!locationPos.empty())
+    playerCollective->getLevel()->addMarkedLocation(Rectangle::boundingBox(transform2<Vec2>(locationPos, 
+      [](const Position& p) { return p.getCoord();})));
   playerControl->getKeeper()->modViewObject().setId(ViewId::RETIRED_KEEPER);
   playerControl = nullptr;
   playerCollective->setControl(PCollectiveControl(
