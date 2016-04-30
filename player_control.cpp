@@ -630,7 +630,8 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   getCollective()->sortByEquipmentValue(allItems);
   for (Item* item : allItems)
     if (!contains(currentItems, item)) {
-      if (getCollective()->getMinionEquipment().getOwner(item))
+      auto owner = getCollective()->getMinionEquipment().getOwner(item);
+      if (owner && getCreature(*owner))
         usedItems.push_back(item);
       else
         availableItems.push_back(item);

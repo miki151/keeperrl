@@ -160,7 +160,7 @@ static vector<EnemyInfo> getDarkElvenMines(RandomGen& random) {
             c.id = CreatureId::DARK_ELF_WARRIOR;
             c.frequency = 3;
             c.traits = LIST(MinionTrait::FIGHTER);),
-          }).allowRecruiting(4), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}),
+          }).allowRecruiting(2), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}),
     noVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::SMALL_MINETOWN;
       c.creatures = CreatureFactory::darkElfEntrance(TribeId::getDarkElf());

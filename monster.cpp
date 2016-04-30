@@ -139,6 +139,7 @@ void Monster::you(MsgType type, const string& param) {
           msg = getCreature()->getName().the() + " breaks free";
         else
           msg = getCreature()->getName().the() + " breaks free from " + param;
+        break;
     case MsgType::PRAY: msg = getCreature()->getName().the() + " prays to " + param; break;
     case MsgType::SACRIFICE: msg = getCreature()->getName().the() + " makes a sacrifice to " + param; break;
     case MsgType::HIT: msg = getCreature()->getName().the() + addName(" hits", param); break;
