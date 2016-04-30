@@ -1537,7 +1537,7 @@ void Collective::onWhippingDone(Creature* whipped, Position pos) {
 }
 
 bool Collective::canWhip(Creature* c) const {
-  return LastingEffects::affects(c, LastingEffect::ENTANGLED);
+  return LastingEffects::affects(c, LastingEffect::ENTANGLED) && !hasTrait(c, MinionTrait::FARM_ANIMAL);
 }
 
 void Collective::orderWhipping(Creature* whipped) {

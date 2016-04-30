@@ -1137,11 +1137,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.taskMap.clear();
   for (const Task* task : getCollective()->getTaskMap().getAllTasks()) {
     optional<UniqueEntity<Creature>::Id> creature;
-    if (const Creature *c = getCollective()->getTaskMap().getOwner(task)) {
-      CHECK(c == getCollective()->getLeader() || contains(getCollective()->getCreaturesAnyOf(
-        {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER}), c)) << c->getName().bare();
+    if (const Creature *c = getCollective()->getTaskMap().getOwner(task))
       creature = c->getUniqueId();
-    }
     info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
   }
   for (auto& elem : ransomAttacks) {
