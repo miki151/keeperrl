@@ -56,6 +56,8 @@ class Game {
   Creature* getPlayer() const;
   void cancelPlayer(Creature*);
 
+  int getModelDistance(const Collective* c1, const Collective* c2) const;
+
   const vector<Collective*>& getVillains(VillainType) const;
   const vector<Collective*>& getCollectives() const;
 

@@ -300,6 +300,7 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
   double stolenMaxProb = 1.0 / 300;
   double entryMaxProb = 1.0 / 20.0;
   double finishOffMaxProb = 1.0 / 1000;
+  double proximityMaxProb = 1.0 / 5000;
   if (Collective* collective = self->getEnemyCollective())
     switch (trigger.getId()) {
       case AttackTriggerId::TIMER: 
@@ -325,6 +326,12 @@ double VillageControl::Villain::getTriggerValue(const Trigger& trigger, const Vi
           * stolenItemsFun(self->stolenItemCount);
       case AttackTriggerId::ENTRY:
         return entryMaxProb * self->entries;
+      case AttackTriggerId::PROXIMITY:
+        if (!collective->getGame()->isSingleModel() &&
+            collective->getGame()->getModelDistance(collective, self->getCollective()) <= 1)
+          return proximityMaxProb;
+        else
+          return 0;
     }
   return 0;
 }

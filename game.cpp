@@ -331,6 +331,10 @@ bool Game::canTransferCreature(Creature* c, Model* to) {
   return to->canTransferCreature(c, getModelCoords(c->getLevel()->getModel()) - getModelCoords(to));
 }
 
+int Game::getModelDistance(const Collective* c1, const Collective* c2) const {
+  return getModelCoords(c1->getLevel()->getModel()).dist8(getModelCoords(c2->getLevel()->getModel()));
+}
+ 
 Vec2 Game::getModelCoords(const Model* m) const {
   for (Vec2 v : models.getBounds())
     if (models[v].get() == m)

@@ -198,7 +198,7 @@ static vector<EnemyInfo> getTower(RandomGen& random, bool mark) {
       {CONSTRUCT(VillainInfo,
         c.minPopulation = 0;
         c.minTeamSize = 1;
-        c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE},
+        c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, AttackTriggerId::PROXIMITY,
             {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD}, AttackTriggerId::FINISH_OFF);
         c.behaviour = VillageBehaviour(VillageBehaviourId::CAMP_AND_SPAWN,
           CreatureFactory::elementals(TribeId::getHuman()));
@@ -279,7 +279,7 @@ static vector<EnemyInfo> getWarriorCastle(RandomGen& random, bool mark) {
           c.minTeamSize = 5;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
             AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
-            AttackTriggerId::FINISH_OFF);
+            AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.8, random.get(500, 700));)})
   };
@@ -327,7 +327,7 @@ static vector<EnemyInfo> getLizardVillage(RandomGen& random, bool mark) {
           c.minTeamSize = 4;
           c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS},
             AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
-            AttackTriggerId::FINISH_OFF);
+            AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);)})
   };
 }
@@ -411,7 +411,7 @@ static vector<EnemyInfo> getDwarfTown(RandomGen& random, bool mark) {
           c.minTeamSize = 4;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
             AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
-            AttackTriggerId::FINISH_OFF);
+            AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 3);
           c.ransom = make_pair(0.8, random.get(1200, 1600));)})
   };
@@ -452,7 +452,7 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random, bool mark) {
           c.minTeamSize = 10;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
             AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
-            AttackTriggerId::FINISH_OFF);
+            AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.9, random.get(1400, 2000));)})};
   if (stairKey)
@@ -602,7 +602,7 @@ static vector<EnemyInfo> getGreenDragon(RandomGen& random, bool mark) {
             c.minPopulation = 0;
             c.minTeamSize = 1;
             c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 20}, AttackTriggerId::STOLEN_ITEMS,
-              AttackTriggerId::FINISH_OFF);
+              AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 7);
             c.welcomeMessage = VillageControl::DRAGON_WELCOME;)})
   };
@@ -642,7 +642,7 @@ static vector<EnemyInfo> getRedDragon(RandomGen& random, bool mark) {
             c.minPopulation = 0;
             c.minTeamSize = 1;
             c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 25}, AttackTriggerId::STOLEN_ITEMS,
-              AttackTriggerId::FINISH_OFF);
+              AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 12);
             c.welcomeMessage = VillageControl::DRAGON_WELCOME;)})
   };
@@ -663,7 +663,7 @@ static vector<EnemyInfo> getCyclops(RandomGen& random, bool mark) {
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 13});
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 13}, AttackTriggerId::PROXIMITY);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 4);)})
   };
 }

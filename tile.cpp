@@ -474,7 +474,12 @@ class TileCoordLookup {
     Tile::addTile(ViewId::POTION4, sprite("potion4"));
     Tile::addTile(ViewId::POTION5, sprite("potion5"));
     Tile::addTile(ViewId::POTION6, sprite("potion6"));
-    Tile::addTile(ViewId::MUSHROOM, sprite("mushroom1"));
+    Tile::addTile(ViewId::MUSHROOM1, sprite("mushroom1"));
+    Tile::addTile(ViewId::MUSHROOM2, sprite("mushroom2"));
+    Tile::addTile(ViewId::MUSHROOM3, sprite("mushroom3"));
+    Tile::addTile(ViewId::MUSHROOM4, sprite("mushroom4"));
+    Tile::addTile(ViewId::MUSHROOM5, sprite("mushroom5"));
+    Tile::addTile(ViewId::MUSHROOM6, sprite("mushroom6"));
     Tile::addTile(ViewId::KEY, sprite("key"));
     Tile::addTile(ViewId::FOUNTAIN, sprite("fountain").setNoShadow());
     Tile::addTile(ViewId::GOLD, sprite("gold").setNoShadow());
@@ -758,7 +763,12 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::POTION4, symbol("!", ColorId::VIOLET));
     Tile::addSymbol(ViewId::POTION5, symbol("!", ColorId::DARK_BROWN));
     Tile::addSymbol(ViewId::POTION6, symbol("!", ColorId::LIGHT_GRAY));
-    Tile::addSymbol(ViewId::MUSHROOM, symbol(0x22c6, ColorId::PINK, true));
+    Tile::addSymbol(ViewId::MUSHROOM1, symbol(0x22c6, ColorId::PINK, true));
+    Tile::addSymbol(ViewId::MUSHROOM2, symbol(0x22c6, ColorId::YELLOW, true));
+    Tile::addSymbol(ViewId::MUSHROOM3, symbol(0x22c6, ColorId::PURPLE, true));
+    Tile::addSymbol(ViewId::MUSHROOM4, symbol(0x22c6, ColorId::BROWN, true));
+    Tile::addSymbol(ViewId::MUSHROOM5, symbol(0x22c6, ColorId::LIGHT_GRAY, true));
+    Tile::addSymbol(ViewId::MUSHROOM6, symbol(0x22c6, ColorId::ORANGE, true));
     Tile::addSymbol(ViewId::KEY, symbol("*", ColorId::YELLOW));
     Tile::addSymbol(ViewId::FOUNTAIN, symbol("0", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::GOLD, symbol("$", ColorId::YELLOW));

@@ -589,6 +589,19 @@ ItemFactory ItemFactory::scrolls() {
       {{ItemId::SCROLL, EffectId::PORTAL}, 1 }});
 }
 
+static ViewId getMushroomViewId(EffectType e) {
+  if (e.getId() == EffectId::LASTING)
+    switch (e.get<LastingEffect>()) {
+      case LastingEffect::STR_BONUS: return ViewId::MUSHROOM1;
+      case LastingEffect::DEX_BONUS: return ViewId::MUSHROOM2;
+      case LastingEffect::PANIC: return ViewId::MUSHROOM3;
+      case LastingEffect::HALLU: return ViewId::MUSHROOM4;
+      case LastingEffect::RAGE: return ViewId::MUSHROOM5;
+      default: break;
+    }
+  return ViewId::MUSHROOM6;
+}
+
 ItemFactory ItemFactory::mushrooms(bool onlyGood) {
   return ItemFactory({
       {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::STR_BONUS)}, 1 },
@@ -1217,7 +1230,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.uses = 1;); 
     case ItemId::MUSHROOM: return ITATTR(
             EffectType effect = item.get<EffectType>();
-            i.viewId = ViewId::MUSHROOM;
+            i.viewId = getMushroomViewId(effect);
             i.shortName = Effect::getName(effect);
             i.name = *i.shortName + " mushroom";
             i.blindName = "mushroom";

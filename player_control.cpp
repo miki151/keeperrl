@@ -867,6 +867,7 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
     case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
     case AttackTriggerId::TIMER: return "Time";
     case AttackTriggerId::ENTRY: return "Entry";
+    case AttackTriggerId::PROXIMITY: return "Proximity";
   }
 }
 

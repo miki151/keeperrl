@@ -277,6 +277,7 @@ ViewLayer ViewObject::layer() const {
 static vector<ViewId> creatureIds {
   ViewId::PLAYER,
   ViewId::KEEPER,
+  ViewId::RETIRED_KEEPER,
   ViewId::ELF,
   ViewId::ELF_ARCHER,
   ViewId::ELF_CHILD,
@@ -406,7 +407,12 @@ static vector<ViewId> itemIds {
   ViewId::ROCK,
   ViewId::IRON_ROCK,
   ViewId::WOOD_PLANK,
-  ViewId::MUSHROOM, 
+  ViewId::MUSHROOM1, 
+  ViewId::MUSHROOM2,
+  ViewId::MUSHROOM3,
+  ViewId::MUSHROOM4,
+  ViewId::MUSHROOM5,
+  ViewId::MUSHROOM6 
 };
 
 static bool hallu = false;
