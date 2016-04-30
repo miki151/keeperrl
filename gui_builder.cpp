@@ -916,7 +916,7 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
       auto teamLine = gui.getListBuilder(legendLineHeight);
       vector<PGuiElem> currentLine;
       for (auto member : team.members) {
-        auto& memberInfo = info.getMinion(member);
+        auto& memberInfo = *info.getMinion(member);
         currentLine.push_back(drawMinionAndLevel(memberInfo.viewId, memberInfo.expLevel, 1));
         if (currentLine.size() >= numPerLine)
           teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
@@ -1023,15 +1023,18 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info
     return;
   vector<PGuiElem> lines;
   vector<PGuiElem> freeLines;
-  for (auto& elem : info.taskMap)
+  for (auto& elem : info.taskMap) {
     if (elem.creature)
-      lines.push_back(gui.horizontalList(makeVec<PGuiElem>(
-            gui.viewObject(info.getMinion(*elem.creature).viewId),
-            gui.label(elem.name, colors[elem.priority ? ColorId::GREEN : ColorId::WHITE])), 35));
-    else
-      freeLines.push_back(gui.horizontalList(makeVec<PGuiElem>(
+      if (auto minion = info.getMinion(*elem.creature)) {
+        lines.push_back(gui.horizontalList(makeVec<PGuiElem>(
+                gui.viewObject(minion->viewId),
+                gui.label(elem.name, colors[elem.priority ? ColorId::GREEN : ColorId::WHITE])), 35));
+        continue;
+      }
+    freeLines.push_back(gui.horizontalList(makeVec<PGuiElem>(
             gui.empty(),
             gui.label(elem.name, colors[elem.priority ? ColorId::GREEN : ColorId::WHITE])), 35));
+  }
   int lineHeight = 25;
   int margin = 20;
   append(lines, std::move(freeLines));

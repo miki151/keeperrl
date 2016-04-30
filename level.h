@@ -189,10 +189,8 @@ class Level {
   /** Returns the player creature.*/
   Creature* getPlayer() const;
 
-  /** Returns name of the given location. Returns nullptr if none. */
-  const Location* getLocation(Vec2) const;
-
   const vector<Location*> getAllLocations() const;
+  void addMarkedLocation(Rectangle bounds);
 
   CoverInfo getCoverInfo(Vec2) const;
 

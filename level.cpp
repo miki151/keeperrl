@@ -196,6 +196,12 @@ const vector<Location*> Level::getAllLocations() const {
   return locations;
 }
 
+void Level::addMarkedLocation(Rectangle bounds) {
+  locations.push_back(new Location(true));
+  locations.back()->setBounds(bounds);
+  locations.back()->setLevel(this);
+}
+
 CoverInfo Level::getCoverInfo(Vec2 pos) const {
   return coverInfo[pos];
 }

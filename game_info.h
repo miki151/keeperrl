@@ -174,7 +174,8 @@ class CollectiveInfo {
     HASH_ALL(id, members, active, highlight);
   };
   vector<Team> HASH(teams);
-  CreatureInfo& getMinion(UniqueEntity<Creature>::Id);
+  CreatureInfo* getMinion(UniqueEntity<Creature>::Id);
+  bool hasMinion(UniqueEntity<Creature>::Id);
   int HASH(nextPayout);
   int HASH(payoutTimeRemaining);
 
