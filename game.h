@@ -70,6 +70,7 @@ class Game {
   bool isGameOver() const;
   bool isTurnBased();
   bool isSingleModel() const;
+  const Campaign& getCampaign() const;
   bool isVillainActive(const Collective*);
   SavedGameInfo getSavedGameInfo() const;
 

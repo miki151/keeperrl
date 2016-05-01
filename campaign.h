@@ -79,12 +79,11 @@ class Campaign {
   static optional<Campaign> prepareCampaign(View*, Options*, RetiredGames&&, RandomGen&);
   optional<Vec2> getPlayerPos() const;
   const string& getWorldName() const;
-  int getNumGenVillains() const;
-  int getNumRetVillains() const;
   bool isDefeated(Vec2) const;
   void setDefeated(Vec2);
   bool canTravelTo(Vec2) const;
   bool isInInfluence(Vec2) const;
+  int getNumNonEmpty() const;
 
   SERIALIZATION_DECL(Campaign);
 

@@ -100,6 +100,10 @@ bool Game::isTurnBased() {
   return !spectator && (!playerControl || playerControl->isTurnBased());
 }
 
+const Campaign& Game::getCampaign() const {
+  return *campaign;
+}
+
 bool Game::isSingleModel() const {
   return models.getBounds().getSize() == Vec2(1, 1);
 }
@@ -639,6 +643,9 @@ SavedGameInfo Game::getSavedGameInfo() const {
   vector<SavedGameInfo::MinionInfo> minions;
   for (Creature* c : creatures)
     minions.push_back(getMinionInfo(c));
-  return SavedGameInfo(minions, col->getDangerLevel(), getPlayerName());
+  int numSites = 1;
+  if (campaign)
+    numSites = campaign->getNumNonEmpty();
+  return SavedGameInfo(minions, col->getDangerLevel(), getPlayerName(), numSites);
 }
 

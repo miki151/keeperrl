@@ -179,18 +179,10 @@ void Campaign::refreshInfluencePos() {
   }
 }
 
-int Campaign::getNumGenVillains() const {
+int Campaign::getNumNonEmpty() const {
   int ret = 0;
   for (Vec2 v : sites.getBounds())
-    if (sites[v].getVillain())
-      ++ret;
-  return ret;
-}
-
-int Campaign::getNumRetVillains() const {
-  int ret = 0;
-  for (Vec2 v : sites.getBounds())
-    if (sites[v].getRetired())
+    if (!sites[v].isEmpty())
       ++ret;
   return ret;
 }

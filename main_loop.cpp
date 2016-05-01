@@ -56,7 +56,7 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static const int saveVersion = 600;
+static const int saveVersion = 700;
 
 static bool isCompatible(int loadedVersion) {
   return loadedVersion > 2 && loadedVersion <= saveVersion && loadedVersion / 100 == saveVersion / 100;
@@ -166,19 +166,30 @@ string MainLoop::getSavePath(PGame& game, GameSaveType gameType) {
   return userPath + "/" + stripNonAscii(game->getGameIdentifier()) + getSaveSuffix(gameType);
 }
 
+const int singleModelGameSaveTime = 100000;
+
 void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
   string path = getSavePath(game, type);
+  int saveTime = 0;
+  if (game->isSingleModel() || type == GameSaveType::RETIRED_SITE)
+    saveTime = singleModelGameSaveTime;
+  else
+    saveTime = game->getCampaign().getNumNonEmpty();
   if (type == GameSaveType::RETIRED_SITE)
-    doWithSplash(splashType, 62500,
+    doWithSplash(splashType, saveTime,
         [&] (ProgressMeter& meter) {
         Square::progressMeter = &meter;
         MEASURE(saveMainModel(game, path), "saving time")});
   else
-    doWithSplash(splashType, 62500,
+    doWithSplash(splashType, saveTime,
         [&] (ProgressMeter& meter) {
-        Square::progressMeter = &meter;
+        if (game->isSingleModel())
+          Square::progressMeter = &meter;
+        else
+          Model::progressMeter = &meter;
         MEASURE(saveGame(game, path), "saving time")});
   Square::progressMeter = nullptr;
+  Model::progressMeter = nullptr;
   if (contains({GameSaveType::RETIRED_SINGLE, GameSaveType::RETIRED_SITE}, type))
     uploadFile(path, type);
 }
@@ -472,10 +483,12 @@ Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
     }
   optional<string> failedToLoad;
   NameGenerator::init(dataFreePath + "/names");
-  doWithSplash(SplashType::CREATING, campaign.getSites().getHeight() * campaign.getSites().getWidth(),
+  int numSites = campaign.getNumNonEmpty();
+  doWithSplash(SplashType::CREATING, numSites,
       [&sites, &models, this, &random, &campaign, &failedToLoad] (ProgressMeter& meter) {
         for (Vec2 v : sites.getBounds()) {
-          meter.addProgress();
+          if (!sites[v].isEmpty())
+            meter.addProgress();
           if (v == campaign.getPlayerPos()) {
             models[v] = ModelBuilder::campaignBaseModel(nullptr, random, options, "pok");
             //ret[v] = ModelBuilder::quickModel(nullptr, random, options);
@@ -501,7 +514,7 @@ Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
 PModel MainLoop::keeperSingleMap(RandomGen& random) {
   PModel model;
   NameGenerator::init(dataFreePath + "/names");
-  doWithSplash(SplashType::CREATING, 166000,
+  doWithSplash(SplashType::CREATING, 300000,
       [&model, this, &random] (ProgressMeter& meter) {
         model = ModelBuilder::singleMapModel(&meter, random, options,
             NameGenerator::get(NameGeneratorId::WORLD)->getNext());
@@ -511,10 +524,19 @@ PModel MainLoop::keeperSingleMap(RandomGen& random) {
 }
 
 PGame MainLoop::loadGame(string file, bool erase) {
+  SavedGameInfo info = *getSavedGameInfo(file);
+  int loadTime = 0;
+  if (info.getNumSites() == 1)
+    loadTime = 100000;
+  else
+    loadTime = info.getNumSites();
   PGame game;
-  doWithSplash(SplashType::LOADING, 62500,
+  doWithSplash(SplashType::LOADING, loadTime,
       [&] (ProgressMeter& meter) {
-        Square::progressMeter = &meter;
+        if (info.getNumSites() == 1)
+          Square::progressMeter = &meter;
+        else
+          Model::progressMeter = &meter;
         Debug() << "Loading from " << file;
         game = loadGameFromFile(userPath + "/" + file, erase);});
   if (!game)

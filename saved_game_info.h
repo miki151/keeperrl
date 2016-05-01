@@ -13,11 +13,12 @@ class SavedGameInfo {
     SERIALIZE_ALL(viewId, level);
   };
 
-  SavedGameInfo(const vector<MinionInfo>& minions, double dangerLevel, const string& name);
+  SavedGameInfo(const vector<MinionInfo>& minions, double dangerLevel, const string& name, int numSites);
   const vector<MinionInfo>& getMinions() const;
   double getDangerLevel() const;
   const string& getName() const;
   ViewId getViewId() const;
+  int getNumSites() const;
 
   SERIALIZATION_DECL(SavedGameInfo);
 
@@ -25,6 +26,7 @@ class SavedGameInfo {
   vector<MinionInfo> SERIAL(minions);
   double SERIAL(dangerLevel);
   string SERIAL(name);
+  int SERIAL(numSites);
 };
 
 

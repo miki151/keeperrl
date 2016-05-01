@@ -50,6 +50,9 @@ class Model {
     Returns the total logical time elapsed.*/
   void update(double totalTime);
 
+  /** For displaying progress while loading/saving the game.*/
+  static ProgressMeter* progressMeter;
+
   /** Returns the level that the stairs lead to. */
   Level* getLinkedLevel(Level* from, StairKey) const;
 
