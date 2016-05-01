@@ -320,6 +320,8 @@ map<MinionTask, MinionTaskInfo> CollectiveConfig::getTaskInfo() const {
     {MinionTask::EAT, {MinionTaskInfo::EAT, "eating"}},
     {MinionTask::GRAVE, {{SquareId::GRAVE}, "sleeping", CollectiveWarning::GRAVES}},
     {MinionTask::LAIR, {{SquareId::BEAST_CAGE}, "sleeping"}},
+    {MinionTask::LAIR, {{SquareId::BEAST_CAGE}, "sleeping"}},
+    {MinionTask::THRONE, {{SquareId::THRONE}, "throne"}},
     {MinionTask::STUDY, {{SquareId::LIBRARY}, "studying", CollectiveWarning::LIBRARY, 1}},
     {MinionTask::PRISON, {{SquareId::PRISON}, "prison", CollectiveWarning::NO_PRISON}},
     {MinionTask::TORTURE, {{SquareId::TORTURE_TABLE}, "torture ordered",

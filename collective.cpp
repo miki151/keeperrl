@@ -1981,6 +1981,9 @@ void Collective::onAppliedSquare(Position pos) {
     if (Random.rollD(60.0 / (getEfficiency(pos))) && !Technology::getAvailableSpells(this).empty())
       c->getAttributes().getSpellMap().add(Random.choose(Technology::getAvailableSpells(this)));
   }
+  if (getSquares(SquareId::THRONE).count(pos) && c == getLeader()) {
+    addMana(0.2);
+  }
   if (getSquares(SquareId::TRAINING_ROOM).count(pos))
     c->getAttributes().exerciseAttr(Random.choose<AttrType>(), getEfficiency(pos));
   if (contains(getAllSquares(workshopSquares), pos))

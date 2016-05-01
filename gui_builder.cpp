@@ -1600,6 +1600,7 @@ static string getTaskText(MinionTask option) {
     case MinionTask::COPULATE: return "Copulating";
     case MinionTask::CONSUME: return "Absorbing";
     case MinionTask::SPIDER: return "Spider";
+    case MinionTask::THRONE: return "Throne";
   }
 }
 
