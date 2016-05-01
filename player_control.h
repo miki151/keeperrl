@@ -115,6 +115,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   void considerNightfallMessage();
   void considerWarning();
+  void considerAlliedCreaturesJoining();
 
   Level* getLevel();
   TribeId getTribeId() const;
