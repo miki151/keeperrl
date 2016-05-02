@@ -22,6 +22,20 @@
 #include "player_message.h"
 
 template<typename T>
+void UniqueEntity<T>::offsetForSerialization(long long o) {
+  CHECK(o != 0);
+  offset = o;
+}
+
+template<typename T>
+void UniqueEntity<T>::clearOffset() {
+  offset = 0;
+}
+
+template<typename T>
+long long UniqueEntity<T>::offset = 0;
+
+template<typename T>
 UniqueEntity<T>::Id::Id() {
   key = Random.getLL();
 }
@@ -54,7 +68,9 @@ int UniqueEntity<T>::Id::getHash() const {
 template<typename T>
 template <class Archive> 
 void UniqueEntity<T>::Id::serialize(Archive& ar, const unsigned int version) {
+  key += offset;
   serializeAll(ar, key);
+  key -= offset;
 }
 
 template<typename T>

@@ -40,8 +40,12 @@ class UniqueEntity {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
+  static void offsetForSerialization(long long offset);
+  static void clearOffset();
+
   private:
   Id SERIAL(id);
+  static long long offset;
 };
 
 #endif

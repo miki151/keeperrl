@@ -174,10 +174,12 @@ void Game::prepareRetirement() {
   for (Creature* c : mainModel->getAllCreatures())
     c->clearLastAttacker();
   TribeId::switchForSerialization(TribeId::getKeeper(), TribeId::getRetiredKeeper());
+  UniqueEntity<Item>::offsetForSerialization(Random.getLL());
 }
 
 void Game::doneRetirement() {
   TribeId::clearSwitch();
+  UniqueEntity<Item>::clearOffset();
 }
 
 optional<Game::ExitInfo> Game::update(double timeDiff) {

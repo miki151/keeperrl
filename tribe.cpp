@@ -229,6 +229,8 @@ void TribeId::serialize(Archive& ar, const unsigned int version) {
   if (serialSwitch && *this == serialSwitch->first)
     *this = serialSwitch->second;
   serializeAll(ar, key);
+  if (serialSwitch && *this == serialSwitch->second)
+    *this = serialSwitch->first;
 }
 
 SERIALIZABLE(TribeId);
