@@ -30,6 +30,9 @@ string toString(const T& t) {
   return ss.str();
 }
 
+class ParsingException {
+};
+
 template <class T>
 T fromString(const string& s) {
   std::stringstream ss(s);
@@ -284,7 +287,7 @@ class Rectangle {
   SERIALIZATION_DECL(Rectangle);
 
   private:
-  int px, py, kx, ky, w, h;
+  int px = 0, py = 0, kx = 0, ky = 0, w = 0, h = 0;
 };
 
 template <class T>

@@ -180,15 +180,22 @@ static vector<FileSharing::SiteInfo> parseSites(const string& s) {
     if (fields.size() < 6)
       continue;
     Debug() << "Parsed " << fields;
-    ret.emplace_back();
-    ret.back().fileInfo.filename = fields[0];
-    ret.back().fileInfo.date = fromString<int>(fields[1]);
-    ret.back().wonGames = fromString<int>(fields[2]);
-    ret.back().totalGames = fromString<int>(fields[3]);
-    ret.back().version = fromString<int>(fields[5]);
-    ret.back().fileInfo.download = true;
-    TextInput input(fields[4]);
-    input.getArchive() >> ret.back().gameInfo;
+    FileSharing::SiteInfo elem;
+    elem.fileInfo.filename = fields[0];
+    try {
+      elem.fileInfo.date = fromString<int>(fields[1]);
+      elem.wonGames = fromString<int>(fields[2]);
+      elem.totalGames = fromString<int>(fields[3]);
+      elem.version = fromString<int>(fields[5]);
+      elem.fileInfo.download = true;
+      TextInput input(fields[4]);
+      input.getArchive() >> elem.gameInfo;
+    } catch (boost::archive::archive_exception ex) {
+      continue;
+    } catch (ParsingException e) {
+      continue;
+    }
+    ret.push_back(elem);
   }
   return ret;
 }
