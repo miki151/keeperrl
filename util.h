@@ -30,6 +30,9 @@ string toString(const T& t) {
   return ss.str();
 }
 
+class ParsingException {
+};
+
 template <class T>
 T fromString(const string& s) {
   std::stringstream ss(s);
