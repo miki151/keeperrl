@@ -186,7 +186,6 @@ LONG WINAPI miniDumpFunction2(EXCEPTION_POINTERS *ExceptionInfo) {
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
   std::set_terminate(fail);
-  SetUnhandledExceptionFilter(miniDumpFunction2);
   //_set_se_translator(miniDumpFunction);
   variables_map vars;
   vector<string> args;
@@ -197,6 +196,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   catch (boost::exception& ex) {
     std::cout << "Bad command line flags.";
   }
+  if (!vars.count("no_minidump"))
+    SetUnhandledExceptionFilter(miniDumpFunction2);
   if (vars.count("steam")) {
     if (SteamAPI_RestartAppIfNecessary(329970))
       FAIL << "Init failure";
@@ -204,6 +205,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
       MessageBox(NULL, TEXT("Steam is not running. If you'd like to run the game without Steam, run the standalone exe binary."), TEXT("Failure"), MB_OK);
       FAIL << "Steam is not running";
     }
+    std::ofstream("steam_id") << SteamUser()->GetSteamID().ConvertToUint64() << std::endl;
   }
   /*if (IsDebuggerPresent()) {
     keeperMain(vars);
@@ -224,6 +226,7 @@ static options_description getOptions() {
   flags.add_options()
     ("help", "Print help")
     ("steam", "Run with Steam")
+    ("no_minidump", "Don't write minidumps when crashed.")
     ("single_thread", "Use a single thread for rendering and game logic")
     ("user_dir", value<string>(), "Directory for options and save files")
     ("data_dir", value<string>(), "Directory containing the game data")
