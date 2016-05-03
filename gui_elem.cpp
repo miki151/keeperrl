@@ -811,14 +811,31 @@ class KeyHandler : public GuiElem {
 
 class AlignmentGui : public GuiLayout {
   public:
-  AlignmentGui(PGuiElem e, Vec2 sz, GuiFactory::Alignment align)
+  AlignmentGui(PGuiElem e, GuiFactory::Alignment align, optional<Vec2> sz)
       : GuiLayout(makeVec<PGuiElem>(std::move(e))), alignment(align), size(sz) {}
+
+  int getWidth() {
+    if (size)
+      return size->x;
+    else
+      return *elems[0]->getPreferredWidth();
+  }
+
+  int getHeight() {
+    if (size)
+      return size->y;
+    else
+      return *elems[0]->getPreferredHeight();
+  }
 
   virtual Rectangle getElemBounds(int num) override {
     switch (alignment) {
+      case GuiFactory::Alignment::BOTTOM:
+        return Rectangle(getBounds().left(), getBounds().bottom() - getHeight(),
+            getBounds().right(), getBounds().bottom());
       case GuiFactory::Alignment::TOP_RIGHT:
-        return Rectangle(getBounds().topRight() + size.mult(Vec2(-1, 0)),
-            getBounds().topRight() + size.mult(Vec2(0, 1)));
+        return Rectangle(getBounds().right() - getWidth(), getBounds().top(), getBounds().right(),
+            getBounds().top() + getHeight());
       default: FAIL << "Unhandled";
     }
     return Rectangle();
@@ -826,11 +843,11 @@ class AlignmentGui : public GuiLayout {
 
   private:
   GuiFactory::Alignment alignment;
-  Vec2 size;
+  optional<Vec2> size;
 };
 
-PGuiElem GuiFactory::alignment(PGuiElem content, Vec2 size, GuiFactory::Alignment alignment) {
-  return PGuiElem(new AlignmentGui(std::move(content), size, alignment));
+PGuiElem GuiFactory::alignment(GuiFactory::Alignment alignment, PGuiElem content, optional<Vec2> size) {
+  return PGuiElem(new AlignmentGui(std::move(content), alignment, size));
 }
  
 PGuiElem GuiFactory::keyHandler(function<void(Event::KeyEvent)> fun, bool capture) {
@@ -2207,7 +2224,7 @@ PGuiElem GuiFactory::miniWindow() {
 PGuiElem GuiFactory::window(PGuiElem content, function<void()> onExitButton) {
   return stack(makeVec<PGuiElem>(
         stopMouseMovement(),
-        alignment(button(onExitButton, {sf::Keyboard::Escape}, true), Vec2(38, 38), Alignment::TOP_RIGHT),
+        alignment(Alignment::TOP_RIGHT, button(onExitButton, {sf::Keyboard::Escape}, true), Vec2(38, 38)),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
         margins(std::move(content), 20, 35, 30, 30),

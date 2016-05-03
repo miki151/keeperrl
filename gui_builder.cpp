@@ -2020,20 +2020,16 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
 PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign, Options* options,
     RetiredGames& retiredGames, optional<Vec2>& embarkPos, bool& retiredMenu, bool& helpText) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
-  lines.addElem(gui.centerHoriz(gui.getListBuilder()
-        .addElemAuto(gui.label("Campaign Setup"))
-        .addElemAuto(gui.stack(
-            gui.labelHighlight("   [Help]", colors[ColorId::LIGHT_BLUE]),
-            gui.button([&] { helpText = true; }))).buildHorizontalList()));
-  lines.addSpace(10);
   int optionMargin = 50;
-  lines.addElem(gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())));
+  lines.addElem(gui.stack(
+      gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())),
+      gui.centerHoriz(gui.stack(
+            gui.labelHighlight("[Help]", colors[ColorId::LIGHT_BLUE]),
+            gui.button([&] { helpText = true; })))));
   for (OptionId id : options->getOptions(OptionSet::CAMPAIGN))
     lines.addElem(gui.leftMargin(optionMargin, drawOptionElem(options, id,
             [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});})));
   lines.addSpace(15);
-  lines.addElem(gui.centerHoriz(gui.label("Choose embark site:")));
-  lines.addSpace(10);
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, &embarkPos,
         [&campaign](Vec2 pos) { return campaign.getSites()[pos].canEmbark(); },
         [&campaign, &queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
@@ -2054,37 +2050,38 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
             gui.stack(
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
-  int retiredPosX = 570;
-  int retiredMenuX = retiredPosX - 120;
+  int retiredPosX = 600;
+  int retiredMenuX = 380;
   int helpPosX = 300;
-  int menuPosY = (3 + retiredGames.getNumActive()) * legendLineHeight;
+  int menuPosY = 5 * legendLineHeight;
   GuiFactory::ListBuilder retiredList = drawRetiredGames(retiredGames,
       [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, false);
   if (retiredList.isEmpty())
     retiredList.addElem(gui.label("No retired dungeons found :("));
   PGuiElem interior = gui.stack(makeVec<PGuiElem>(
       lines.buildVerticalList(),
-      gui.topMargin(2 * legendLineHeight + 10, gui.leftMargin(retiredPosX,
+      gui.setHeight(5 * legendLineHeight, gui.alignment(GuiFactory::Alignment::BOTTOM, gui.leftMargin(retiredPosX,
           drawRetiredGames(retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, true)
-              .addElem(gui.conditional(gui.stack(
-                  gui.button([&retiredMenu] { retiredMenu = !retiredMenu;}),
-                  gui.labelHighlight("[Add]", colors[ColorId::LIGHT_BLUE])),
-                  [&retiredGames] { return retiredGames.getNumActive() < 5;}))
-              .buildVerticalList())),
-      gui.topMargin(legendLineHeight + 10, gui.leftMargin(retiredPosX, gui.label("Retired dungeons: "))),
+              .addElem(gui.conditional(
+                  gui.stack(
+                      gui.button([&retiredMenu] { retiredMenu = !retiredMenu;}),
+                      gui.labelHighlight("[Add retired dungeon]", colors[ColorId::LIGHT_BLUE])),
+                  gui.label("[Add retired dungeon]", colors[ColorId::GRAY]),
+                  [&retiredGames] { return retiredGames.getNumActive() < 4;}))
+              .buildVerticalList()))),
       gui.conditional(gui.topMargin(menuPosY, gui.leftMargin(retiredMenuX,
-            gui.setWidth(480, gui.setHeight(retiredList.getSize() + 30,
+            gui.setWidth(550, gui.setHeight(retiredList.getSize() + 30,
               gui.miniWindow2(gui.scrollable(retiredList.buildVerticalList()),
           [&retiredMenu] { retiredMenu = false;}))))),
           [&retiredMenu] { return retiredMenu;}),
       gui.conditional(gui.margins(gui.miniWindow2(gui.margins(
               gui.labelMultiLine(campaignWelcome, legendLineHeight), 10),
-          [&helpText] { helpText = false;}), 100, 50, 100, 370),
+          [&helpText] { helpText = false;}), 100, 50, 100, 280),
           [&helpText] { return helpText;})
       ));
   return gui.stack(
-      gui.preferredSize(1000, 850),
-      gui.window(gui.margins(std::move(interior), 20), [&queue] { queue.push(CampaignActionId::CANCEL); }));
+      gui.preferredSize(1000, 720),
+      gui.window(gui.margins(std::move(interior), 5), [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
 
 PGuiElem GuiBuilder::drawCreaturePrompt(SyncQueue<bool>& queue, const string& title,

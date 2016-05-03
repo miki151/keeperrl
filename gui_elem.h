@@ -173,7 +173,7 @@ class GuiFactory {
   PGuiElem darken();
   PGuiElem stopMouseMovement();
   PGuiElem fullScreen(PGuiElem);
-  PGuiElem alignment(PGuiElem, Vec2 size, GuiFactory::Alignment);
+  PGuiElem alignment(GuiFactory::Alignment, PGuiElem, optional<Vec2> size = none);
   PGuiElem dragSource(DragContent, function<PGuiElem()>);
   PGuiElem dragListener(function<void(DragContent)>);
 
