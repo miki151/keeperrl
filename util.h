@@ -1521,8 +1521,8 @@ class AsyncLoop {
   ~AsyncLoop();
 
   private:
-  thread t;
   std::atomic<bool> done;
+  thread t;
 };
 
 template <typename T, typename... Args>
