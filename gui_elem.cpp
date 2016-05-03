@@ -1491,6 +1491,11 @@ PGuiElem GuiFactory::viewObject(ViewId id, double scale, Color color) {
   return PGuiElem(new ViewObjectGui(id, scale, color));
 }
 
+PGuiElem GuiFactory::asciiBackground(ViewId id) {
+  return PGuiElem(
+      new DrawCustom([=] (Renderer& renderer, Rectangle bounds) { renderer.drawAsciiBackground(id, bounds);}));
+}
+
 class DragSource : public GuiElem {
   public:
   DragSource(DragContainer& c, DragContent d, function<PGuiElem()> g) : container(c), content(d), gui(g) {}

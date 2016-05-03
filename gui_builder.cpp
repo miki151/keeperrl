@@ -1833,7 +1833,8 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
     auto columns = gui.getListBuilder(iconSize);
     for (int x : sites.getBounds().getXRange()) {
       vector<PGuiElem> v;
-      for (int i : All(sites[x][y].viewId))
+      for (int i : All(sites[x][y].viewId)) {
+        v.push_back(gui.asciiBackground(sites[x][y].viewId[i]));
         if (i == 0)
           v.push_back(gui.viewObject(sites[x][y].viewId[i], iconScale));
         else {
@@ -1842,6 +1843,7 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
                   gui.viewObject(ViewId::ROUND_SHADOW, iconScale, sf::Color(255, 255, 255, 160))));
           v.push_back(gui.topMargin(-2 * iconScale, gui.viewObject(sites[x][y].viewId[i], iconScale)));
         }
+      }
       columns.addElem(gui.stack(std::move(v)));
     }
     auto columns2 = gui.getListBuilder(iconSize);
@@ -1849,6 +1851,7 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
       Vec2 pos(x, y);
       vector<PGuiElem> elem;
       if (auto id = sites[x][y].getDwellerViewId()) {
+        elem.push_back(gui.asciiBackground(*id));
         if (c.getPlayerPos() && c.isInInfluence(pos))
           elem.push_back(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale,
                 sites[pos].isEnemy() ? colors[ColorId::RED] : colors[ColorId::GREEN]));

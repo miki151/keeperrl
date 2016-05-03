@@ -378,7 +378,7 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale,
   if (tile.hasSpriteCoord())
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), scale, color * tile.color);
   else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale, tile.color,
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale, color * tile.color,
         pos.x + scale * nominalSize.x / 2, pos.y, tile.text, HOR);
 }
 
@@ -387,7 +387,8 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Co
   if (tile.hasSpriteCoord())
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color);
   else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, tile.color, pos.x, pos.y, tile.text);
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, color * tile.color, pos.x, pos.y,
+        tile.text);
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, Vec2 size) {
@@ -400,6 +401,11 @@ void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object) {
   drawViewObject(pos, object.id(), getBleedingColor(object));
+}
+
+void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {
+  if (!Tile::getTile(id, true).hasSpriteCoord())
+    drawFilledRectangle(bounds, colors[ColorId::BLACK]);
 }
 
 const static string imageSuf = ".png";
