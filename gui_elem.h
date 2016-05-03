@@ -145,7 +145,7 @@ class GuiFactory {
       Renderer::FontId = Renderer::SYMBOL_FONT);
   PGuiElem viewObject(const ViewObject&, double scale = 1, Color = colors[ColorId::WHITE]);
   PGuiElem viewObject(ViewId, double scale = 1, Color = colors[ColorId::WHITE]);
-  PGuiElem drawCustom(function<void(Renderer&, Rectangle)>);
+  PGuiElem asciiBackground(ViewId);
   PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
   PGuiElem centerHoriz(PGuiElem, int width = -1);
   PGuiElem onRenderedAction(function<void()>);
@@ -173,7 +173,7 @@ class GuiFactory {
   PGuiElem darken();
   PGuiElem stopMouseMovement();
   PGuiElem fullScreen(PGuiElem);
-  PGuiElem alignment(PGuiElem, Vec2 size, GuiFactory::Alignment);
+  PGuiElem alignment(GuiFactory::Alignment, PGuiElem, optional<Vec2> size = none);
   PGuiElem dragSource(DragContent, function<PGuiElem()>);
   PGuiElem dragListener(function<void(DragContent)>);
 

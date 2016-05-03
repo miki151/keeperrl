@@ -89,3 +89,8 @@ SERIALIZABLE_TMPL(UniqueEntity, Item);
 SERIALIZABLE_TMPL(UniqueEntity, Creature);
 SERIALIZABLE_TMPL(UniqueEntity, Task);
 SERIALIZABLE_TMPL(UniqueEntity, PlayerMessage);
+
+template void UniqueEntity<Creature>::Id::serialize(InputArchive&, unsigned);
+template void UniqueEntity<Creature>::Id::serialize(OutputArchive&, unsigned);
+template void UniqueEntity<Creature>::Id::serialize(InputArchive2&, unsigned);
+

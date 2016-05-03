@@ -236,6 +236,7 @@ static options_description getOptions() {
     ("worldgen_test", value<int>(), "Test how often world generation fails")
     ("force_keeper", "Skip main menu and force keeper mode")
     ("logging", "Log to log.out")
+    ("free_mode", "Run in free ascii mode")
 #ifndef RELEASE
     ("quick_level", "")
 #endif
@@ -282,7 +283,7 @@ static int keeperMain(const variables_map& vars) {
   string freeDataPath = dataPath + "/data_free";
   string paidDataPath = dataPath + "/data";
   string contribDataPath = dataPath + "/data_contrib";
-  tilesPresent = !!opendir(paidDataPath.c_str());
+  tilesPresent = !vars.count("free_mode") && !!opendir(paidDataPath.c_str());
   string userPath;
   if (vars.count("user_dir"))
     userPath = vars["user_dir"].as<string>();
