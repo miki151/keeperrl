@@ -7,10 +7,10 @@ GameEvents::GameEvents(FileSharing& f) : fileSharing(f) {
 }
 
 void GameEvents::uploadEvent(const map<string, string>& data) {
-  thread t([=] {
+//  thread t([=] {
       fileSharing.uploadGameEvent(data);
-      });
-  t.detach();
+//      });
+//  t.detach();
 }
 
 void GameEvents::addRetiredLoaded(const string& retiredId, const string& playerName) {

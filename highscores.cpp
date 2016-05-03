@@ -18,8 +18,10 @@ void Highscores::add(Score s) {
   saveToFile(localScores, localPath);
   remoteScores.push_back(s);
   sortScores(remoteScores);
-  thread t([=] { fileSharing.uploadHighscores(localPath); });
-  t.detach();
+//  thread t([=] {
+      fileSharing.uploadHighscores(localPath);
+  //});
+//  t.detach();
 }
 
 void Highscores::sortScores(vector<Score>& scores) {
