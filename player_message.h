@@ -6,14 +6,16 @@
 #include "position.h"
 
 class Location;
+class View;
+
+enum class MessagePriority { NORMAL, HIGH, CRITICAL };
 
 class PlayerMessage : public UniqueEntity<PlayerMessage> {
   public:
-  enum Priority { NORMAL, HIGH, CRITICAL };
+  PlayerMessage(const string&, MessagePriority = MessagePriority::NORMAL);
+  PlayerMessage(const char*, MessagePriority = MessagePriority::NORMAL);
 
-  PlayerMessage(const string&, Priority = NORMAL);
-  PlayerMessage(const char*, Priority = NORMAL);
-
+  static void presentMessages(View*, const vector<PlayerMessage>&);
   static PlayerMessage announcement(const string& title, const string& text);
 
   PlayerMessage& setPosition(Position);
@@ -29,18 +31,19 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
   bool isClickable() const;
 
   string getText() const;
-  Priority getPriority() const;
+  MessagePriority getPriority() const;
   double getFreshness() const;
   void setFreshness(double);
 
   int getHash() const;
+
   
   SERIALIZATION_DECL(PlayerMessage);
 
   private:
   PlayerMessage(const string& title, const string& text);
   string SERIAL(text);
-  Priority SERIAL(priority);
+  MessagePriority SERIAL(priority);
   double SERIAL(freshness);
   optional<string> SERIAL(announcementTitle);
   optional<Position> SERIAL(position);

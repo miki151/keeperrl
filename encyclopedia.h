@@ -18,12 +18,10 @@
 
 class View;
 class Technology;
-class Deity;
 
 class Encyclopedia {
   public:
   void present(View*, int lastInd = 0);
-  void deity(View* view, const Deity* d);
 };
 
 #endif

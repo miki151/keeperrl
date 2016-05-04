@@ -30,17 +30,18 @@ class Creature;
 class Item;
 class ListElem;
 struct ItemInfo;
+class Game;
 
 class Player : public Controller, public CreatureView {
   public:
   virtual ~Player();
 
-  static ControllerFactory getFactory(Model*, MapMemory* levelMemory);
+  static ControllerFactory getFactory(MapMemory* levelMemory);
 
   SERIALIZATION_DECL(Player);
 
   protected:
-  Player(Creature*, Model*, bool greeting, MapMemory* levelMemory);
+  Player(Creature*, bool greeting, MapMemory*);
 
   virtual void moveAction(Vec2 direction);
 
@@ -52,7 +53,7 @@ class Player : public Controller, public CreatureView {
   virtual optional<MovementInfo> getMovementInfo() const override;
   virtual const Level* getLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
-  virtual double getTime() const override;
+  virtual double getLocalTime() const override;
   virtual bool isPlayerView() const override;
 
   // from Controller
@@ -64,23 +65,26 @@ class Player : public Controller, public CreatureView {
   virtual void you(MsgType type, const vector<string>& param) override;
   virtual void you(const string& param) override;
   virtual void privateMessage(const PlayerMessage& message) override;
-  virtual void learnLocation(const Location*) override;
   virtual void onBump(Creature*) override;
   virtual void onDisplaced() override;
 
   // overridden by subclasses
   virtual bool unpossess();
+  virtual bool swapTeam();
   virtual void onFellAsleep();
   virtual vector<Creature*> getTeam() const;
 
   MapMemory* SERIAL(levelMemory);
-  Model* SERIAL(model);
   void showHistory();
+  Game* getGame() const;
+  View* getView() const;
 
   private:
-  REGISTER_HANDLER(ThrowEvent, const Level*, const Creature*, const Item*, const vector<Vec2>& trajectory);
+  REGISTER_HANDLER(ThrowEvent, const Level*, const Item*, const vector<Vec2>& trajectory);
   REGISTER_HANDLER(ExplosionEvent, Position);
 
+  void considerAdventurerMusic();
+  void considerKeeperDirectionMessage();
   bool tryToPerform(CreatureAction);
   void extendedAttackAction(UniqueEntity<Creature>::Id);
   void extendedAttackAction(Creature* other);
@@ -112,13 +116,11 @@ class Player : public Controller, public CreatureView {
   Vec2 SERIAL(travelDir);
   optional<Position> SERIAL(target);
   const Location* SERIAL(lastLocation) = nullptr;
-  vector<const Creature*> SERIAL(specialCreatures);
   bool SERIAL(displayGreeting);
-  vector<EpithetId> SERIAL(usedEpithets);
   bool updateView = true;
   void retireMessages();
   vector<PlayerMessage> SERIAL(messages);
-  vector<string> SERIAL(messageHistory);
+  vector<PlayerMessage> SERIAL(messageHistory);
   string getRemainingString(LastingEffect) const;
   vector<ItemInfo> getItemInfos(const vector<Item*>&) const;
   ItemInfo getItemInfo(const vector<Item*>&) const;
@@ -126,11 +128,11 @@ class Player : public Controller, public CreatureView {
   ItemInfo getApplySquareInfo(const string& question, ViewId viewId) const;
   optional<SquareApplyType> getUsableSquareApplyType() const;
   struct TimePosInfo {
-    Vec2 pos;
+    Position pos;
     double time;
   };
-  TimePosInfo currentTimePos = {Vec2(-1, -1), 0.0};
-  TimePosInfo previousTimePos = {Vec2(-1, -1), 0.0};
+  optional<TimePosInfo> currentTimePos;
+  optional<TimePosInfo> previousTimePos;
 };
 
 #endif

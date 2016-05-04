@@ -20,11 +20,11 @@ struct CreatureInfo {
   ViewId HASH(viewId);
   UniqueEntity<Creature>::Id HASH(uniqueId);
   string HASH(name);
-  string HASH(speciesName);
+  string HASH(stackName);
   int HASH(expLevel);
   double HASH(morale); 
   optional<pair<ViewId, int>> HASH(cost);
-  HASH_ALL(viewId, uniqueId, name, speciesName, expLevel, morale, cost);
+  HASH_ALL(viewId, uniqueId, name, stackName, expLevel, morale, cost);
 };
 
 
@@ -71,6 +71,7 @@ class PlayerInfo {
   vector<SkillInfo> HASH(skills);
   string HASH(firstName);
   string HASH(name);
+  string HASH(title);
   int HASH(level);
   vector<string> HASH(adjectives);
   string description;
@@ -115,7 +116,7 @@ class PlayerInfo {
     TORTURE,
   };
   vector<Action> HASH(actions);
-  HASH_ALL(attributes, skills, firstName, name, level, adjectives, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions);
+  HASH_ALL(attributes, skills, firstName, name, title, level, adjectives, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions);
 };
 
 
@@ -173,7 +174,8 @@ class CollectiveInfo {
     HASH_ALL(id, members, active, highlight);
   };
   vector<Team> HASH(teams);
-  CreatureInfo& getMinion(UniqueEntity<Creature>::Id);
+  CreatureInfo* getMinion(UniqueEntity<Creature>::Id);
+  bool hasMinion(UniqueEntity<Creature>::Id);
   int HASH(nextPayout);
   int HASH(payoutTimeRemaining);
 
@@ -184,13 +186,6 @@ class CollectiveInfo {
     HASH_ALL(viewId, name, hotkey);
   };
   vector<TechButton> HASH(techButtons);
-
-  struct Deity {
-    string HASH(name);
-    double HASH(standing);
-    HASH_ALL(name, standing);
-  };
-  vector<Deity> HASH(deities);
 
   struct Task {
     string HASH(name);
@@ -208,7 +203,7 @@ class CollectiveInfo {
   };
   optional<Ransom> HASH(ransom);
 
-  HASH_ALL(warning, buildings, minionButtons, libraryButtons, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosen, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, deities, taskMap, ransom);
+  HASH_ALL(warning, buildings, minionButtons, libraryButtons, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosen, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom);
 };
 
 class VillageInfo {
@@ -216,11 +211,22 @@ class VillageInfo {
   struct Village {
     string HASH(name);
     string HASH(tribeName);
-    bool HASH(knownLocation);
+    enum Access { ACTIVE, INACTIVE, LOCATION, NO_LOCATION };
+    Access HASH(access);
     enum State { FRIENDLY, HOSTILE, CONQUERED } HASH(state);
-    vector<VillageAction> HASH(actions);
-    vector<TriggerInfo> triggers;
-    HASH_ALL(name, tribeName, knownLocation, state, actions);
+    struct ActionInfo {
+      VillageAction HASH(action);
+      optional<string> HASH(disabledReason);
+      HASH_ALL(action, disabledReason);
+    };
+    struct TriggerInfo {
+      string HASH(name);
+      double HASH(value);
+      HASH_ALL(name, value);
+    };
+    vector<ActionInfo> HASH(actions);
+    vector<TriggerInfo> HASH(triggers);
+    HASH_ALL(name, tribeName, access, state, actions, triggers);
   };
   vector<Village> HASH(villages);
   int HASH(numMainVillains);
@@ -242,13 +248,15 @@ class GameInfo {
   enum class InfoType { PLAYER, BAND, SPECTATOR} HASH(infoType) = InfoType::PLAYER;
   int HASH(time);
 
+  bool HASH(singleModel);
+
   CollectiveInfo HASH(collectiveInfo);
   PlayerInfo HASH(playerInfo);
   VillageInfo HASH(villageInfo);
   GameSunlightInfo HASH(sunlightInfo);
 
   vector<PlayerMessage> HASH(messageBuffer);
-  HASH_ALL(infoType, time, collectiveInfo, playerInfo, villageInfo, sunlightInfo, messageBuffer);
+  HASH_ALL(infoType, time, collectiveInfo, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel);
 };
 
 #endif

@@ -29,13 +29,11 @@
 #include "options.h"
 #include "technology.h"
 #include "music.h"
-#include "pantheon.h"
 #include "test.h"
 #include "tile.h"
 #include "spell.h"
 #include "window_view.h"
 #include "file_sharing.h"
-#include "stack_printer.h"
 #include "highscores.h"
 #include "main_loop.h"
 #include "dirent.h"
@@ -46,6 +44,19 @@
 #include "vision.h"
 #include "model_builder.h"
 #include "sound_library.h"
+#include "game_events.h"
+
+#ifndef VSTUDIO
+#include "stack_printer.h"
+#endif
+
+#ifdef VSTUDIO
+#include <steam_api.h>
+#include <Windows.h>
+#include <dbghelp.h>
+#include <tchar.h>
+
+#endif
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -62,8 +73,12 @@ using namespace boost::archive;
 
 void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<bool>& initialized) {
   view->initialize();
+  options->setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
   initialized = true;
-  while (!finished) {
+  Intervalometer meter(1000 / 60);
+  while (!finished) {    
+    while (!meter.getCount(view->getTimeMilliAbsolute())) {
+    }
     view->refreshView();
   }
 }
@@ -134,12 +149,81 @@ static void fail() {
   *((int*) 0x1234) = 0; // best way to fail
 }
 
-int main(int argc, char* argv[]) {
-  StackPrinter::initialize(argv[0], time(0));
+static int keeperMain(const variables_map&);
+static options_description getOptions();
+
+#ifdef VSTUDIO
+
+void miniDumpFunction(unsigned int nExceptionCode, EXCEPTION_POINTERS *pException) {
+  HANDLE hFile = CreateFile(_T("KeeperRL.dmp"), GENERIC_READ | GENERIC_WRITE,
+    0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  if ((hFile != NULL) && (hFile != INVALID_HANDLE_VALUE)) {
+    MINIDUMP_EXCEPTION_INFORMATION mdei;
+    mdei.ThreadId = GetCurrentThreadId();
+    mdei.ExceptionPointers = pException;
+    mdei.ClientPointers = FALSE;
+    MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)(
+      MiniDumpWithDataSegs |
+      MiniDumpWithHandleData |
+      MiniDumpWithIndirectlyReferencedMemory |
+      MiniDumpWithThreadInfo |
+      MiniDumpWithUnloadedModules);
+    BOOL rv = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
+      hFile, mdt, (pException != nullptr) ? &mdei : nullptr, nullptr, nullptr);
+    CloseHandle(hFile);
+  }
+}
+
+void miniDumpFunction3(unsigned int nExceptionCode, EXCEPTION_POINTERS *pException) {
+  SteamAPI_SetMiniDumpComment("Minidump comment: SteamworksExample.exe\n");
+  SteamAPI_WriteMiniDump(nExceptionCode, pException, 123);
+}
+
+LONG WINAPI miniDumpFunction2(EXCEPTION_POINTERS *ExceptionInfo) {
+  miniDumpFunction(123, ExceptionInfo);
+  return EXCEPTION_EXECUTE_HANDLER;
+}
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
   std::set_terminate(fail);
+  SetUnhandledExceptionFilter(miniDumpFunction2);
+  //_set_se_translator(miniDumpFunction);
+  variables_map vars;
+  vector<string> args;
+  try {
+    args = split_winmain(lpCmdLine);
+    store(command_line_parser(args).options(getOptions()).run(), vars);
+  }
+  catch (boost::exception& ex) {
+    std::cout << "Bad command line flags.";
+  }
+  if (vars.count("steam")) {
+    if (SteamAPI_RestartAppIfNecessary(329970))
+      FAIL << "Init failure";
+    if (!SteamAPI_Init()) {
+      MessageBox(NULL, TEXT("Steam is not running. If you'd like to run the game without Steam, run the standalone exe binary."), TEXT("Failure"), MB_OK);
+      FAIL << "Steam is not running";
+    }
+  }
+  /*if (IsDebuggerPresent()) {
+    keeperMain(vars);
+  }*/
+
+  //try {
+    keeperMain(vars);
+  //}
+  /*catch (...) {
+    return -1;
+  }*/
+    return 0;
+}
+#endif
+
+static options_description getOptions() {
   options_description flags("Flags");
   flags.add_options()
     ("help", "Print help")
+    ("steam", "Run with Steam")
     ("single_thread", "Use a single thread for rendering and game logic")
     ("user_dir", value<string>(), "Directory for options and save files")
     ("data_dir", value<string>(), "Directory containing the game data")
@@ -149,16 +233,29 @@ int main(int argc, char* argv[]) {
     ("worldgen_test", value<int>(), "Test how often world generation fails")
     ("force_keeper", "Skip main menu and force keeper mode")
     ("logging", "Log to log.out")
+    ("free_mode", "Run in free ascii mode")
 #ifndef RELEASE
     ("quick_level", "")
 #endif
     ("seed", value<int>(), "Use given seed")
     ("record", value<string>(), "Record game to file")
     ("replay", value<string>(), "Replay game from file");
+  return flags;
+}
+
+#ifndef VSTUDIO
+int main(int argc, char* argv[]) {
+  StackPrinter::initialize(argv[0], time(0));
+  std::set_terminate(fail);
   variables_map vars;
-  store(parse_command_line(argc, argv, flags), vars);
+  store(parse_command_line(argc, argv, getOptions()), vars);
+  keeperMain(vars);
+}
+#endif
+
+static int keeperMain(const variables_map& vars) {
   if (vars.count("help")) {
-    std::cout << flags << endl;
+    std::cout << getOptions() << endl;
     return 0;
   }
   if (vars.count("run_tests")) {
@@ -174,7 +271,6 @@ int main(int argc, char* argv[]) {
   Skill::init();
   Technology::init();
   Spell::init();
-  Epithet::init();
   Vision::init();
   string dataPath;
   if (vars.count("data_dir"))
@@ -184,13 +280,15 @@ int main(int argc, char* argv[]) {
   string freeDataPath = dataPath + "/data_free";
   string paidDataPath = dataPath + "/data";
   string contribDataPath = dataPath + "/data_contrib";
-  tilesPresent = !!opendir(paidDataPath.c_str());
+  tilesPresent = !vars.count("free_mode") && !!opendir(paidDataPath.c_str());
   string userPath;
   if (vars.count("user_dir"))
     userPath = vars["user_dir"].as<string>();
+#ifndef WINDOWS
   else
   if (const char* localPath = std::getenv("XDG_DATA_HOME"))
     userPath = localPath + string("/KeeperRL");
+#endif
   else
     userPath = USER_DIR;
   Debug() << "Data path: " << dataPath;
@@ -205,7 +303,6 @@ int main(int argc, char* argv[]) {
   if (vars.count("override_settings"))
     overrideSettings = vars["override_settings"].as<string>();
   Options options(userPath + "/options.txt", overrideSettings);
-  options.setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   Random.init(seed);
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
@@ -222,7 +319,7 @@ int main(int argc, char* argv[]) {
   if (vars.count("replay")) {
     string fname = vars["replay"].as<string>();
     Debug() << "Reading from " << fname;
-    input.reset(new CompressedInput(fname));
+    input.reset(new CompressedInput(fname.c_str()));
     input->getArchive() >> seed;
     Random.init(seed);
     view.reset(WindowView::createReplayView(input->getArchive(),
@@ -230,7 +327,7 @@ int main(int argc, char* argv[]) {
   } else {
     if (vars.count("record")) {
       string fname = vars["record"].as<string>();
-      output.reset(new CompressedOutput(fname));
+      output.reset(new CompressedOutput(fname.c_str()));
       output->getArchive() << seed;
       Debug() << "Writing to " << fname;
       view.reset(WindowView::createLoggingView(output->getArchive(),
@@ -247,15 +344,17 @@ int main(int argc, char* argv[]) {
   }
   Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
-  FileSharing fileSharing(uploadUrl);
+  FileSharing fileSharing(uploadUrl, options);
+  fileSharing.init();
   Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
+  GameEvents gameEvents(fileSharing);
   optional<GameTypeChoice> forceGame;
   if (vars.count("force_keeper"))
     forceGame = GameTypeChoice::KEEPER;
   else if (vars.count("quick_level"))
     forceGame = GameTypeChoice::QUICK_LEVEL;
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, gameFinished,
-      useSingleThread, forceGame);
+  MainLoop loop(view.get(), &highscores, &gameEvents, &fileSharing, freeDataPath, userPath, &options, &jukebox,
+      gameFinished, useSingleThread, forceGame);
   if (vars.count("worldgen_test")) {
     loop.modelGenTest(vars["worldgen_test"].as<int>(), Random, &options);
     return 0;

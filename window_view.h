@@ -63,7 +63,7 @@ class WindowView: public View {
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, double* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
-  virtual GameTypeChoice chooseGameType() override;
+  virtual optional<GameTypeChoice> chooseGameType() override;
   virtual optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
@@ -90,7 +90,13 @@ class WindowView: public View {
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
   virtual void addSound(const Sound&) override;
-  
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current) override;
+  virtual void presentWorldmap(const Campaign&) override;
+  virtual CampaignAction prepareCampaign(const Campaign&, Options*, RetiredGames&) override;
+  virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
+      const string& cancelText) override;
+  virtual bool creaturePrompt(const string& title, const vector<CreatureInfo>&) override;
+ 
   private:
 
   Renderer& renderer;
@@ -109,7 +115,7 @@ class WindowView: public View {
       vector<sf::Event::KeyEvent> shortCuts);
   optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
-  PGuiElem drawGameChoices(optional<GameTypeChoice>& choice, optional<GameTypeChoice>& index);
+  PGuiElem drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
   int lastGuiHash = 0;
@@ -149,7 +155,7 @@ class WindowView: public View {
   SyncQueue<UserInput> inputQueue;
 
   bool gameReady = false;
-  bool uiLock = false;
+  atomic<bool> uiLock;
   atomic<bool> refreshInput;
   atomic<bool> wasRendered;
 
@@ -202,18 +208,20 @@ class WindowView: public View {
     bool cont = false;
   };
 
-  void getBlockingGui(Semaphore&, PGuiElem, Vec2 origin);
+  void getBlockingGui(Semaphore&, PGuiElem, optional<Vec2> origin = none);
 
   template<typename T>
-  T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, Vec2 origin) {
+  T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, optional<Vec2> origin = none) {
     RenderLock lock(renderMutex);
     TempClockPause pause(clock);
     if (blockingElems.empty()) {
       blockingElems.push_back(gui.darken());
       blockingElems.back()->setBounds(renderer.getSize());
     }
+    if (!origin)
+      origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
     blockingElems.push_back(std::move(elem));
-    blockingElems.back()->setPreferredBounds(origin);
+    blockingElems.back()->setPreferredBounds(*origin);
     if (currentThreadId() == renderThreadId) {
       while (queue.isEmpty())
         refreshView();

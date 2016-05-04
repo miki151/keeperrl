@@ -19,10 +19,12 @@
 #include "serialization.h"
 
 typedef int TeamId;
+typedef long long LevelId;
 
 enum class MusicType;
 enum class SunlightState;
-
+enum class GameSaveType;
+enum class EnemyId;
 enum class CollectiveResourceId;
 enum class CollectiveConfigId;
 enum class MsgType;
@@ -36,6 +38,7 @@ enum class EquipmentSlot;
 enum class SplashType;
 enum class GameTypeChoice;
 enum class MenuType;
+enum class OptionId;
 
 enum class MovementTrait;
 enum class SpawnType;
@@ -63,6 +66,7 @@ enum class StairLook;
 
 enum class SettlementType;
 enum class VillainType;
+enum class BiomeId;
 
 enum class ViewId;
 
@@ -72,20 +76,17 @@ enum class EffectId;
 enum class AnimationId;
 
 enum class SpellId;
-enum class TribeId;
 enum class TechId;
 enum class SkillId;
 enum class VisionId;
 
 enum class LastingEffect;
 
-enum class DeityHabitat;
-
 enum class NameGeneratorId;
-enum class EpithetId;
 enum class ItemIndex;
 
 enum class CollectiveWarning;
 enum class SoundId;
 
+enum class MessagePriority;
 #endif

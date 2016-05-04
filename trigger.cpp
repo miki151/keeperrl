@@ -23,12 +23,13 @@
 #include "view_id.h"
 #include "view_object.h"
 #include "item_factory.h"
-#include "model.h"
+#include "game.h"
 #include "attack.h"
 #include "player_message.h"
 #include "tribe.h"
 #include "skill.h"
 #include "modifier_type.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {
@@ -48,7 +49,7 @@ Trigger::~Trigger() {}
 Trigger::Trigger(const ViewObject& obj, Position p): viewObject(obj), position(p) {
 }
 
-optional<ViewObject> Trigger::getViewObject(const Tribe*) const {
+optional<ViewObject> Trigger::getViewObject(const Creature*) const {
   return viewObject;
 }
 
@@ -63,7 +64,7 @@ double Trigger::getLightEmission() const {
 bool Trigger::interceptsFlyingItem(Item* it) const { return false; }
 void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, VisionId) {}
 bool Trigger::isDangerous(const Creature* c) const { return false; }
-void Trigger::tick(double time) {}
+void Trigger::tick() {}
 
 namespace {
 
@@ -78,21 +79,13 @@ class Portal : public Trigger {
   }
 
   Portal* getOther() const {
-    if (otherPortal)
+    if (auto otherPortal = position.getGame()->getOtherPortal(position))
       return getOther(*otherPortal);
     return nullptr;
   }
 
   Portal(const ViewObject& obj, Position position) : Trigger(obj, position) {
-    if (auto danglingPortal = position.getModel()->getDanglingPortal())
-      if (Portal* previous = getOther(*danglingPortal)) {
-        otherPortal = danglingPortal;
-        previous->otherPortal = position;
-        position.getModel()->resetDanglingPortal();
-        startTime = previous->startTime = -1;
-        return;
-      }
-    position.getModel()->setDanglingPortal(position);
+    position.getGame()->registerPortal(position);
   }
 
   virtual void onCreatureEnter(Creature* c) override {
@@ -127,7 +120,9 @@ class Portal : public Trigger {
     NOTNULL(getOther())->position.throwItem(std::move(it), a, remainingDist, dir, vision);
   }
 
-  virtual void tick(double time) override {
+  virtual void tick() override {
+    position.getGame()->registerPortal(position);
+    double time = position.getGame()->getGlobalTime();
     if (startTime == -1)
       startTime = time;
     if (time - startTime >= 30) {
@@ -136,14 +131,12 @@ class Portal : public Trigger {
     }
   }
 
-  SERIALIZE_ALL2(Trigger, startTime, active, otherPortal);
-
+  SERIALIZE_ALL2(Trigger, startTime, active);
   SERIALIZATION_CONSTRUCTOR(Portal);
 
   private:
   double SERIAL(startTime) = 1000000;
   bool SERIAL(active) = true;
-  optional<Position> SERIAL(otherPortal);
 };
 
 }
@@ -156,31 +149,32 @@ namespace {
 
 class Trap : public Trigger {
   public:
-  Trap(const ViewObject& obj, Position position, EffectType _effect, Tribe* _tribe, bool visible)
+  Trap(const ViewObject& obj, Position position, EffectType _effect, TribeId _tribe, bool visible)
       : Trigger(obj, position), effect(_effect), tribe(_tribe), alwaysVisible(visible) {
   }
 
-  virtual optional<ViewObject> getViewObject(const Tribe* t) const override {
-    if (alwaysVisible || t == tribe)
+  virtual optional<ViewObject> getViewObject(const Creature* viewer) const override {
+    if (!viewer || alwaysVisible || !viewer->getGame()->getTribe(tribe)->isEnemy(viewer)
+        || viewer->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS))
       return viewObject;
     else
       return none;
   }
 
   virtual bool isDangerous(const Creature* c) const override {
-    return c->getTribe() != tribe;
+    return c->getTribeId() != tribe;
   }
 
   virtual void onCreatureEnter(Creature* c) override {
-    if (c->getTribe() != tribe) {
-      if (!c->hasSkill(Skill::get(SkillId::DISARM_TRAPS))) {
+    if (c->getGame()->getTribe(tribe)->isEnemy(c)) {
+      if (!c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
         if (!alwaysVisible)
           c->you(MsgType::TRIGGER_TRAP, "");
         Effect::applyToCreature(c, effect, EffectStrength::NORMAL);
-        position.getModel()->onTrapTrigger(c->getPosition());
+        position.getGame()->onTrapTrigger(c->getPosition());
       } else {
-        c->you(MsgType::DISARM_TRAP, "");
-        position.getModel()->onTrapDisarm(c->getPosition(), c);
+        c->you(MsgType::DISARM_TRAP, Effect::getName(effect) + " trap");
+        position.getGame()->onTrapDisarm(c->getPosition(), c);
       }
       c->getPosition().removeTrigger(this);
     }
@@ -191,13 +185,13 @@ class Trap : public Trigger {
 
   private:
   EffectType SERIAL(effect);
-  Tribe* SERIAL(tribe);
+  TribeId SERIAL(tribe);
   bool SERIAL(alwaysVisible);
 };
 
 }
 
-PTrigger Trigger::getTrap(const ViewObject& obj, Position pos, EffectType e, Tribe* tribe, bool alwaysVisible) {
+PTrigger Trigger::getTrap(const ViewObject& obj, Position pos, EffectType e, TribeId tribe, bool alwaysVisible) {
   return PTrigger(new Trap(obj, pos, std::move(e), tribe, alwaysVisible));
 }
 
@@ -236,10 +230,10 @@ namespace {
 class MeteorShower : public Trigger {
   public:
   MeteorShower(Creature* c, double duration) : Trigger(c->getPosition()), creature(c),
-      endTime(creature->getTime() + duration) {}
+      endTime(creature->getGlobalTime() + duration) {}
 
-  virtual void tick(double time) override {
-    if (time >= endTime || creature->isDead()) {
+  virtual void tick() override {
+    if (position.getGame()->getGlobalTime() >= endTime || (creature && creature->isDead())) {
       position.removeTrigger(this);
       return;
     } else
@@ -265,11 +259,12 @@ class MeteorShower : public Trigger {
     return true;
   }
 
-  SERIALIZE_ALL2(Trigger, creature, endTime);
+  SERIALIZE_ALL2(Trigger, endTime);
   SERIALIZATION_CONSTRUCTOR(MeteorShower);
 
   private:
-  Creature* SERIAL(creature);
+  Creature* creature = nullptr; // Not serializing cause it might potentially cause a crash when saving a
+      // single model in campaign mode.
   double SERIAL(endTime);
 };
 

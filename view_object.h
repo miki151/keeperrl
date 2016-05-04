@@ -33,13 +33,14 @@ RICH_ENUM(ViewLayer,
 
 RICH_ENUM(ViewObjectModifier, BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
     ROUND_SHADOW, TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, SLEEPING, ROAD, NO_UP_MOVEMENT, REMEMBER);
-RICH_ENUM(ViewObjectAttribute, BLEEDING, BURNING, HEIGHT, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY, MORALE);
+RICH_ENUM(ViewObjectAttribute, BLEEDING, BURNING, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY, MORALE);
 
 class ViewObject {
   public:
   typedef ViewObjectModifier Modifier;
   typedef ViewObjectAttribute Attribute;
   ViewObject(ViewId id, ViewLayer l, const string& description);
+  ViewObject(ViewId id, ViewLayer l);
 
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
@@ -51,10 +52,10 @@ class ViewObject {
   optional<Dir> getAttachmentDir() const;
 
   ViewObject& setAttribute(Attribute, double);
-  double getAttribute(Attribute) const;
+  optional<float> getAttribute(Attribute) const;
 
   vector<string> getLegend() const;
-  string getDescription() const;
+  const char* getDescription() const;
 
   ViewLayer layer() const;
   ViewId id() const;
@@ -64,15 +65,20 @@ class ViewObject {
   int getPositionHash() const;
 
   void setAdjectives(const vector<string>&);
+  void setDescription(const string&);
 
   struct MovementInfo {
+    enum Type { MOVE, ATTACK };
+    MovementInfo(Vec2, double, double, Type);
+    MovementInfo();
     Vec2 direction;
-    double tBegin;
-    double tEnd;
-    enum { MOVE, ATTACK } type;
+    float tBegin;
+    float tEnd;
+    Type type;
   };
 
   void addMovementInfo(MovementInfo);
+  void clearMovementInfo();
   bool hasAnyMovementInfo() const;
   MovementInfo getLastMovementInfo() const;
   Vec2 getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creature>::Id controlledId) const;
@@ -88,12 +94,13 @@ class ViewObject {
 
   private:
   string getAttributeString(Attribute) const;
+  const char* getDefaultDescription() const;
   enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
   EnumSet<Modifier> SERIAL(modifiers);
-  EnumMap<Attribute, double> SERIAL(attributes);
+  EnumMap<Attribute, optional<float>> SERIAL(attributes);
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);
-  string SERIAL(description);
+  optional<string> SERIAL(description);
   optional<Dir> SERIAL(attachmentDir);
   Vec2 SERIAL(position) = Vec2(-1, -1);
   optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
@@ -105,6 +112,7 @@ class ViewObject {
     const MovementInfo& getLast() const;
     Vec2 getTotalMovement(double tBegin, double tEnd) const;
     bool hasAny() const;
+    void clear();
 
     private:
     int makeGoodIndex(int index) const;

@@ -7,6 +7,7 @@ class StairKey {
   static StairKey getNew();
   static StairKey heroSpawn();
   static StairKey keeperSpawn();
+  static StairKey transferLanding();
 
   bool operator == (const StairKey&) const;
 

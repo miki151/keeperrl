@@ -43,7 +43,6 @@ void Serialization::registerTypes(Archive& ar, int version) {
   ItemFactory::registerTypes(ar, version);
   SquareFactory::registerTypes(ar, version);
   MonsterAI::registerTypes(ar, version);
-  Effect::registerTypes(ar, version);
   REGISTER_TYPE(ar, Player);
   REGISTER_TYPE(ar, Monster);
   REGISTER_TYPE(ar, RangedWeapon);

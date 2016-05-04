@@ -13,15 +13,19 @@ class SquareType;
 class MovementType;
 struct CoverInfo;
 class Attack;
+class Game;
+class TribeId;
 
 class Position {
   public:
   Position(Vec2, Level*);
   static vector<Position> getAll(Level*, Rectangle);
   Model* getModel() const;
+  Game* getGame() const;
   int dist8(const Position&) const;
   bool isSameLevel(const Position&) const;
   bool isSameLevel(const Level*) const;
+  bool isSameModel(const Position&) const;
   Vec2 getDir(const Position&) const;
   Creature* getCreature() const;
   void removeCreature();
@@ -57,7 +61,7 @@ class Position {
   void onApply(Creature*);
   double getApplyTime() const;
   bool canHide() const;
-  void getViewIndex(ViewIndex&, const Tribe*) const;
+  void getViewIndex(ViewIndex&, const Creature* viewer) const;
   vector<Trigger*> getTriggers() const;
   PTrigger removeTrigger(Trigger*);
   vector<PTrigger> removeTriggers();
@@ -70,6 +74,7 @@ class Position {
   bool canConstruct(const SquareType&) const;
   bool canDestroy(const Creature*) const;
   bool isDestroyable() const;
+  bool isUnavailable() const;
   void dropItem(PItem);
   void dropItems(vector<PItem>);
   void destroyBy(Creature* c);
@@ -83,10 +88,10 @@ class Position {
   bool needsMemoryUpdate() const;
   void setMemoryUpdated();
   const ViewObject& getViewObject() const;
-  void forbidMovementForTribe(const Tribe*);
-  void allowMovementForTribe(const Tribe*);
-  bool isTribeForbidden(const Tribe*) const;
-  const Tribe* getForbiddenTribe() const;
+  void forbidMovementForTribe(TribeId);
+  void allowMovementForTribe(TribeId);
+  bool isTribeForbidden(TribeId) const;
+  optional<TribeId> getForbiddenTribe() const;
   void addPoisonGas(double amount);
   double getPoisonGasAmount() const;
   CoverInfo getCoverInfo() const;
@@ -120,5 +125,11 @@ class Position {
   Level* SERIAL(level) = nullptr;
 };
 
+template <>
+inline string toString(const Position& t) {
+	stringstream ss;
+	ss << toString(t.getCoord());
+	return ss.str();
+}
 
 #endif

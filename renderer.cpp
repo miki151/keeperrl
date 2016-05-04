@@ -41,16 +41,17 @@ Text& Renderer::getTextObject() {
     return t2;
 }
 
-int Renderer::getUnicodeLength(String s, FontId font) {
+int Renderer::getUnicodeLength(String s, FontId font, int size) {
   Text& t = getTextObject();
   t.setFont(getFont(font));
   t.setCharacterSize(textSize);
   t.setString(s);
+  t.setCharacterSize(size);
   return t.getLocalBounds().width;
 }
 
-int Renderer::getTextLength(string s) {
-  return getUnicodeLength(toUnicode(s), FontId::TEXT_FONT);
+int Renderer::getTextLength(string s, int size) {
+  return getUnicodeLength(toUnicode(s), FontId::TEXT_FONT, size);
 }
 
 Font& Renderer::getFont(Renderer::FontId id) {
@@ -121,7 +122,7 @@ void Renderer::drawImage(int px, int py, const Texture& image, double scale) {
 }
 
 void Renderer::drawImage(Rectangle target, Rectangle source, const Texture& image) {
-  drawSprite(target.getTopLeft(), source.getTopLeft(), source.getSize(), image, target.getSize());
+  drawSprite(target.topLeft(), source.topLeft(), source.getSize(), image, target.getSize());
 }
 
 void Renderer::drawImage(int px, int py, int kx, int ky, const Texture& t, double scale) {
@@ -169,8 +170,8 @@ void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t, Ve
 void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline) {
   addRenderElem([this, t, color, outline] {
       static RectangleShape r;
-      r.setSize(Vector2f(t.getW(), t.getH()));
-      r.setPosition(t.getPX(), t.getPY());
+      r.setSize(Vector2f(t.width(), t.height()));
+      r.setPosition(t.left(), t.top());
       r.setFillColor(color);
       if (outline) {
         r.setOutlineThickness(-2);
@@ -190,10 +191,10 @@ Vector2f getV(Vec2 v) {
 }
 
 void Renderer::addQuad(const Rectangle& r, Color color) {
-  quads.push_back(Vertex(getV(r.getTopLeft()), color));
-  quads.push_back(Vertex(getV(r.getTopRight()), color));
-  quads.push_back(Vertex(getV(r.getBottomRight()), color));
-  quads.push_back(Vertex(getV(r.getBottomLeft()), color));
+  quads.push_back(Vertex(getV(r.topLeft()), color));
+  quads.push_back(Vertex(getV(r.topRight()), color));
+  quads.push_back(Vertex(getV(r.bottomRight()), color));
+  quads.push_back(Vertex(getV(r.bottomLeft()), color));
 }
 
 void Renderer::drawQuads() {
@@ -322,7 +323,7 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
 }
 
 Color Renderer::getBleedingColor(const ViewObject& object) {
-  double bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING);
+  double bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING).get_value_or(0);
   if (bleeding > 0)
     bleeding = 0.3 + bleeding * 0.7;
   return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
@@ -358,6 +359,8 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Vec2 sz = Renderer::tileSize[coord.texNum];
   Vec2 off = getOffset(Renderer::nominalSize - sz, scale);
+  if (sz.y > nominalSize.y)
+    off.y *= 2;
   drawSprite(pos + off, coord.pos.mult(sz), sz, tiles.at(coord.texNum), sz * scale, color);
 }
 
@@ -366,8 +369,8 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
   if (tile.hasSpriteCoord())
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), 1, color * tile.color);
   else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, pos.x, pos.y,
-        tile.text);
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, pos.x + nominalSize.x / 2,
+        pos.y, tile.text, HOR);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
@@ -375,8 +378,8 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale,
   if (tile.hasSpriteCoord())
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), scale, color * tile.color);
   else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale, tile.color, pos.x, pos.y,
-        tile.text);
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale, color * tile.color,
+        pos.x + scale * nominalSize.x / 2, pos.y, tile.text, HOR);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Color color) {
@@ -384,19 +387,25 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Co
   if (tile.hasSpriteCoord())
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color);
   else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, tile.color, pos.x, pos.y, tile.text);
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, color * tile.color, pos.x, pos.y,
+        tile.text);
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, Vec2 size) {
   drawViewObject(pos, object.id(), useSprite, size, getBleedingColor(object));
 }
 
-void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, double scale) {
-  drawViewObject(pos, object.id(), useSprite, scale, getBleedingColor(object));
+void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, double scale, Color color) {
+  drawViewObject(pos, object.id(), useSprite, scale, getBleedingColor(object) * color);
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object) {
   drawViewObject(pos, object.id(), getBleedingColor(object));
+}
+
+void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {
+  if (!Tile::getTile(id, true).hasSpriteCoord())
+    drawFilledRectangle(bounds, colors[ColorId::BLACK]);
 }
 
 const static string imageSuf = ".png";

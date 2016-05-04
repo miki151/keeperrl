@@ -41,8 +41,6 @@ class Controller {
   virtual void onItemsGiven(vector<Item*> items, const Creature* from) { }
   virtual void onDisplaced() {}
 
-  virtual void learnLocation(const Location*) { }
-
   virtual void makeMove() = 0;
   virtual void sleeping() {}
 
@@ -57,8 +55,7 @@ class Controller {
   SERIALIZATION_DECL(Controller);
 
   protected:
-  Creature* getCreature();
-  const Creature* getCreature() const;
+  Creature* getCreature() const;
 
   private:
   Creature* SERIAL(creature);

@@ -12,7 +12,7 @@ class Spectator : public CreatureView {
   virtual Vec2 getPosition() const override;
   virtual optional<MovementInfo> getMovementInfo() const override;
   virtual const Level* getLevel() const override;
-  virtual double getTime() const override;
+  virtual double getLocalTime() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual bool isPlayerView() const override;
 

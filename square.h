@@ -21,6 +21,7 @@
 #include "renderable.h"
 #include "stair_key.h"
 #include "position.h"
+#include "tribe.h"
 
 class Level;
 class Creature;
@@ -37,6 +38,19 @@ class MovementType;
 class MovementSet;
 class ViewObject;
 
+enum class ConstructionsId {
+  DUNGEON_ROOMS,
+  BRIDGE,
+  OUTDOOR_INSTALLATIONS,
+  CUT_TREE,
+  MINING_ORE,
+  MINING,
+  MOUNTAIN_GEN_ORES,
+  BED,
+  BEAST_CAGE,
+  GRAVE,
+};
+
 class Square : public Renderable {
   public:
   struct Params {
@@ -45,11 +59,11 @@ class Square : public Renderable {
     bool canHide;
     int strength;
     double flamability;
-    map<SquareId, int> constructions;
+    optional<ConstructionsId> constructions;
     bool ticking;
     HeapAllocated<MovementSet> movementSet;
     bool canDestroy;
-    const Tribe* owner;
+    optional<TribeId> owner;
     optional<SoundId> applySound;
   };
   Square(const ViewObject&, Params);
@@ -73,9 +87,6 @@ class Square : public Renderable {
 
   /** Returns radius of emitted light (0 if none).*/
   virtual double getLightEmission() const;
-
-  /** Sets the height of the square.*/
-  void setHeight(double height);
 
   /** Adds direction for auto-traveling. \paramname{dir} must point to next square on path.*/
   void addTravelDir(Vec2 dir);
@@ -194,7 +205,7 @@ class Square : public Renderable {
   
   /** Triggers all time-dependent processes like burning. Calls tick() for items if present.
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
-  void tick(double time);
+  void tick();
   void updateSunlightMovement(bool isSunlight);
 
   virtual bool canLock() const { return false; }
@@ -204,10 +215,10 @@ class Square : public Renderable {
   bool sunlightBurns() const;
 
   void setBackground(const Square*);
-  void getViewIndex(ViewIndex&, const Tribe*) const;
+  void getViewIndex(ViewIndex&, const Creature* viewer) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
-  virtual bool itemBounces(Item* item, VisionId) const;
+  bool itemBounces(Item* item, VisionId) const;
   void onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, VisionId);
   const vector<Item*>& getItems() const;
   vector<Item*> getItems(function<bool (Item*)> predicate) const;
@@ -221,10 +232,10 @@ class Square : public Renderable {
   virtual double getApplyTime() const { return 1.0; }
   optional<SquareApplyType> getApplyType(const Creature*) const;
 
-  void forbidMovementForTribe(const Tribe*);
-  void allowMovementForTribe(const Tribe*);
-  bool isTribeForbidden(const Tribe*) const;
-  const Tribe* getForbiddenTribe() const;
+  void forbidMovementForTribe(TribeId);
+  void allowMovementForTribe(TribeId);
+  bool isTribeForbidden(TribeId) const;
+  optional<TribeId> getForbiddenTribe() const;
  
   virtual ~Square();
 
@@ -243,19 +254,23 @@ class Square : public Renderable {
   protected:
   void onEnter(Creature*);
   virtual void onEnterSpecial(Creature*) {}
-  virtual void tickSpecial(double time) {}
+  virtual void tickSpecial() {}
   virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
-  HeapAllocated<Inventory> SERIAL(inventory);
   string SERIAL(name);
-  void addTraitForTribe(const Tribe*, MovementTrait);
-  void removeTraitForTribe(const Tribe*, MovementTrait);
+  void addTraitForTribe(TribeId, MovementTrait);
+  void removeTraitForTribe(TribeId, MovementTrait);
   void setDirty();
+
+  Inventory& getInventory();
+  const Inventory& getInventory() const;
+  bool inventoryEmpty() const;
 
   private:
   Item* getTopItem() const;
+  mutable unique_ptr<Inventory> SERIAL(inventoryPtr);
 
   /** Checks if this square can be destroyed by member of the tribe.*/
-  bool canDestroy(const Tribe*) const;
+  bool canDestroy(TribeId) const;
 
   Level* SERIAL(level) = nullptr;
   Vec2 SERIAL(position);
@@ -265,21 +280,26 @@ class Square : public Renderable {
   optional<VisionId> SERIAL(vision);
   bool SERIAL(hide);
   int SERIAL(strength);
-  double SERIAL(height);
   vector<Vec2> SERIAL(travelDir);
   optional<StairKey> SERIAL(landingLink);
   HeapAllocated<Fire> SERIAL(fire);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
-  map<SquareId, int> SERIAL(constructions);
+  optional<ConstructionsId> SERIAL(constructions);
+  struct CurrentConstruction {
+    SquareId SERIAL(id);
+    short int SERIAL(turnsRemaining);
+    SERIALIZE_ALL(id, turnsRemaining);
+  };
+  optional<CurrentConstruction> SERIAL(currentConstruction);
   bool SERIAL(ticking);
   HeapAllocated<MovementSet> SERIAL(movementSet);
   void updateMovement();
   bool SERIAL(updateMemory) = true;
-  mutable bool SERIAL(updateViewIndex) = true;
+  mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);
   unique_ptr<ViewIndex> SERIAL(viewIndex);
   bool SERIAL(destroyable) = false;
-  const Tribe* SERIAL(owner);
-  const Tribe* SERIAL(forbiddenTribe) = nullptr;
+  optional<TribeId> SERIAL(owner);
+  optional<TribeId> SERIAL(forbiddenTribe);
   bool SERIAL(unavailable) = false;
   optional<SoundId> SERIAL(applySound);
 };

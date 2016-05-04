@@ -23,11 +23,14 @@
 #include <string>
 #include <cstdlib>
 #include <memory>
+#include <bitset>
 #include "ctype.h"
 #include <cstring>
 #include <time.h>
-#include <cstdlib>
+#ifndef VSTUDIO
 #include <sys/time.h>
+#endif
+#include <cstdlib>
 #include <typeinfo>
 #include <unordered_set>
 #include <unordered_map>
@@ -36,6 +39,7 @@
 #include <stack>
 #include <stdexcept>
 #include <tuple>
+#include <numeric>
 
 // Use boost threads on OSX to use the main thread for rendering
 // and set a large stack size for the model thread.
@@ -113,6 +117,7 @@ using std::pair;
 using std::tuple;
 using std::out_of_range;
 using std::unordered_map;
+using std::bitset;
 using std::min;
 using std::max;
 using std::ofstream;
@@ -120,6 +125,8 @@ using std::ifstream;
 using std::istream;
 using std::ostream;
 using std::stringstream;
+using std::istringstream;
+using std::ostringstream;
 using std::endl;
 using std::priority_queue;
 using std::make_pair;

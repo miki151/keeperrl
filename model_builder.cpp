@@ -21,9 +21,12 @@
 #include "model.h"
 #include "level_builder.h"
 #include "monster_ai.h"
+#include "game.h"
+#include "campaign.h"
+#include "creature_name.h"
 
-static Location* getVillageLocation(bool markSurprise = false) {
-  return new Location(NameGenerator::get(NameGeneratorId::TOWN)->getNext(), "", markSurprise);
+static Location* getVillageLocation(bool markSurprise) {
+  return new Location(NameGenerator::get(NameGeneratorId::TOWN)->getNext(), markSurprise);
 }
 
 typedef VillageControl::Villain VillainInfo;
@@ -44,28 +47,28 @@ struct LevelInfo {
 struct EnemyInfo {
   SettlementInfo settlement;
   CollectiveConfig config;
-  vector<VillainInfo> villains;
+  optional<VillainInfo> villain;
   optional<LevelInfo> extraLevel;
   optional<VillainType> villainType;
 };
 
-static EnemyInfo mainVillain(SettlementInfo settlement, CollectiveConfig config, vector<VillainInfo> villains = {},
-    optional<LevelInfo> extraLevel = none) {
-  return EnemyInfo{settlement, config, villains, extraLevel, VillainType::MAIN};
+static EnemyInfo mainVillain(SettlementInfo settlement, CollectiveConfig config,
+    optional<VillainInfo> villain = none, optional<LevelInfo> extraLevel = none) {
+  return EnemyInfo{settlement, config, villain, extraLevel, VillainType::MAIN};
 }
 
 static EnemyInfo lesserVillain(SettlementInfo settlement, CollectiveConfig config,
-    vector<VillainInfo> villains = {}, optional<LevelInfo> extraLevel = none) {
-  return EnemyInfo{settlement, config, villains, extraLevel, VillainType::LESSER};
+    optional<VillainInfo> villain = none, optional<LevelInfo> extraLevel = none) {
+  return EnemyInfo{settlement, config, villain, extraLevel, VillainType::LESSER};
 }
 
 static EnemyInfo noVillain(SettlementInfo settlement, CollectiveConfig config,
-    vector<VillainInfo> villains = {}, optional<LevelInfo> extraLevel = none) {
-  return EnemyInfo{settlement, config, villains, extraLevel, none};
+    optional<VillainInfo> villain = none, optional<LevelInfo> extraLevel = none) {
+  return EnemyInfo{settlement, config, villain, extraLevel, none};
 }
 
-static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* tribe, int num,
-    optional<ItemFactory> itemFactory = none, vector<VillainInfo> villains = {}) {
+static EnemyInfo getVault(SettlementType type, CreatureFactory factory, TribeId tribe, int num,
+    optional<ItemFactory> itemFactory = none, optional<VillainInfo> villain = none) {
   return noVillain(CONSTRUCT(SettlementInfo,
       c.type = type;
       c.creatures = factory;
@@ -74,12 +77,12 @@ static EnemyInfo getVault(SettlementType type, CreatureFactory factory, Tribe* t
       c.tribe = tribe;
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = itemFactory;), CollectiveConfig::noImmigrants(),
-    villains);
+    villain);
 }
 
-static EnemyInfo getVault(SettlementType type, CreatureId id, Tribe* tribe, int num,
-    optional<ItemFactory> itemFactory = none, vector<VillainInfo> villains = {}) {
-  return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, villains);
+static EnemyInfo getVault(SettlementType type, CreatureId id, TribeId tribe, int num,
+    optional<ItemFactory> itemFactory = none, optional<VillainInfo> villain = none) {
+  return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, villain);
 }
 
 struct FriendlyVault {
@@ -95,120 +98,125 @@ static vector<FriendlyVault> friendlyVaults {
   {CreatureId::VAMPIRE, 2, 5},
 };
 
-static vector<EnemyInfo> getVaults(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getVaults(RandomGen& random) {
   vector<EnemyInfo> ret {
- /*   getVault(SettlementType::VAULT, CreatureFactory::insects(tribeSet.monster.get()),
-        tribeSet.monster.get(), random.get(6, 12)),*/
-    getVault(SettlementType::VAULT, CreatureId::RAT, tribeSet.pest.get(), random.get(3, 8),
+ /*   getVault(SettlementType::VAULT, CreatureFactory::insects(TribeId::getMonster()),
+        TribeId::getMonster(), random.get(6, 12)),*/
+    getVault(SettlementType::VAULT, CreatureId::RAT, TribeId::getPest(), random.get(3, 8),
         ItemFactory::armory()),
   };
   for (int i : Range(random.get(1, 3))) {
     FriendlyVault v = random.choose(friendlyVaults);
-    ret.push_back(getVault(SettlementType::VAULT, v.id, tribeSet.keeper.get(), random.get(v.min, v.max)));
+    ret.push_back(getVault(SettlementType::VAULT, v.id, TribeId::getKeeper(), random.get(v.min, v.max)));
   }
   return ret;
 }
 
-static vector<EnemyInfo> getGnomishMines(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getGnomishMines(RandomGen& random, bool mark) {
   StairKey gnomeKey = StairKey::getNew();
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::MINETOWN;
-      c.creatures = CreatureFactory::gnomeVillage(tribeSet.gnomish.get());
+      c.creatures = CreatureFactory::gnomeVillage(TribeId::getGnome());
       c.numCreatures = random.get(12, 24);
-      c.location = getVillageLocation();
-      c.tribe = tribeSet.gnomish.get();
+      c.location = getVillageLocation(false);
+      c.tribe = TribeId::getGnome();
+      c.race = "gnomes";
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = ItemFactory::gnomeShop();
       c.outsideFeatures = SquareFactory::dungeonOutside();
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
       CollectiveConfig::noImmigrants(), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}),
     noVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::SMALL_MINETOWN;
-      c.creatures = CreatureFactory::gnomeEntrance(tribeSet.gnomish.get());
+      c.creatures = CreatureFactory::gnomeEntrance(TribeId::getGnome());
       c.numCreatures = random.get(3, 7);
-      c.location = new Location(true);
-      c.tribe = tribeSet.gnomish.get();
+      c.location = new Location(mark);
+      c.tribe = TribeId::getGnome();
+      c.race = "gnomes";
       c.buildingId = BuildingId::DUNGEON;
       c.downStairs = {gnomeKey};
       c.outsideFeatures = SquareFactory::dungeonOutside();
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
       CollectiveConfig::noImmigrants(), {})
   };
 }
 
-static vector<EnemyInfo> getDarkElvenMines(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getDarkElvenMines(RandomGen& random, bool mark) {
   StairKey gnomeKey = StairKey::getNew();
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::MINETOWN;
-      c.creatures = CreatureFactory::darkElfVillage(tribeSet.darkElven.get());
+      c.creatures = CreatureFactory::darkElfVillage(TribeId::getDarkElf());
       c.numCreatures = random.get(14, 16);
-      c.location = getVillageLocation();
-      c.tribe = tribeSet.darkElven.get();
+      c.location = getVillageLocation(false);
+      c.tribe = TribeId::getDarkElf();
+      c.race = "dark elves";
       c.buildingId = BuildingId::DUNGEON;
       c.outsideFeatures = SquareFactory::dungeonOutside();
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
       CollectiveConfig::withImmigrants(0.002, 15, {
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::DARK_ELF_WARRIOR;
             c.frequency = 3;
             c.traits = LIST(MinionTrait::FIGHTER);),
-          }).allowRecruiting(4), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}),
+          }).allowRecruiting(2), {}, LevelInfo{ExtraLevelId::GNOMISH_MINES, gnomeKey}),
     noVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::SMALL_MINETOWN;
-      c.creatures = CreatureFactory::darkElfEntrance(tribeSet.darkElven.get());
+      c.creatures = CreatureFactory::darkElfEntrance(TribeId::getDarkElf());
       c.numCreatures = random.get(3, 7);
-      c.location = new Location(true);
-      c.tribe = tribeSet.darkElven.get();
+      c.location = new Location(mark);
+      c.tribe = TribeId::getDarkElf();
+      c.race = "dark elves";
       c.buildingId = BuildingId::DUNGEON;
       c.downStairs = {gnomeKey};
       c.outsideFeatures = SquareFactory::dungeonOutside();
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
       CollectiveConfig::noImmigrants(), {})
   };
 }
 
-static vector<EnemyInfo> getTower(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getTower(RandomGen& random, bool mark) {
   StairKey towerKey = StairKey::getNew();
   return {
     noVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::TOWER;
-      c.location = new Location();
-      c.tribe = tribeSet.human.get();
+      c.location = new Location(mark);
+      c.tribe = TribeId::getHuman();
       c.upStairs = {towerKey};
       c.buildingId = BuildingId::BRICK;),
       CollectiveConfig::noImmigrants(), {}),
     mainVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::TOWER;
-      c.creatures = CreatureFactory::singleType(tribeSet.human.get(), CreatureId::ELEMENTALIST);
+      c.creatures = CreatureFactory::singleType(TribeId::getHuman(), CreatureId::ELEMENTALIST);
       c.numCreatures = 1;
-      c.location = new Location(true);
-      c.tribe = tribeSet.human.get();
+      c.location = new Location(false);
+      c.tribe = TribeId::getHuman();
       c.buildingId = BuildingId::BRICK;
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
       CollectiveConfig::noImmigrants().setLeaderAsFighter(),
       {CONSTRUCT(VillainInfo,
         c.minPopulation = 0;
         c.minTeamSize = 1;
-        c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE},
-            {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
+        c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, AttackTriggerId::PROXIMITY,
+            {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD}, AttackTriggerId::FINISH_OFF);
         c.behaviour = VillageBehaviour(VillageBehaviourId::CAMP_AND_SPAWN,
-          CreatureFactory::elementals(tribeSet.human.get()));
+          CreatureFactory::elementals(TribeId::getHuman()));
         c.ransom = make_pair(0.5, random.get(200, 400));)}, LevelInfo{ExtraLevelId::TOWER, towerKey})
   };
 }
 
-static vector<EnemyInfo> getOrcTown(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getOrcTown(RandomGen& random, bool mark) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::VILLAGE;
-      c.creatures = CreatureFactory::orcTown(tribeSet.greenskins.get());
+      c.creatures = CreatureFactory::orcTown(TribeId::getGreenskin());
       c.numCreatures = random.get(12, 16);
-      c.location = getVillageLocation();
-      c.tribe = tribeSet.greenskins.get();
+      c.location = getVillageLocation(mark);
+      c.tribe = TribeId::getGreenskin();
+      c.race = "greenskins";
       c.buildingId = BuildingId::BRICK;
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());
       c.outsideFeatures = SquareFactory::villageOutside();),
       CollectiveConfig::withImmigrants(0.003, 16, {
           CONSTRUCT(ImmigrantInfo,
@@ -223,17 +231,17 @@ static vector<EnemyInfo> getOrcTown(RandomGen& random, TribeSet& tribeSet) {
   };
 }
 
-static vector<EnemyInfo> getFriendlyCave(RandomGen& random, TribeSet& tribeSet, CreatureId creature) {
+static vector<EnemyInfo> getFriendlyCave(RandomGen& random, CreatureId creature, bool mark) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::CAVE;
-      c.creatures = CreatureFactory::singleType(tribeSet.greenskins.get(), creature);
+      c.creatures = CreatureFactory::singleType(TribeId::getGreenskin(), creature);
       c.numCreatures = random.get(4, 8);
-      c.location = new Location(true);
-      c.tribe = tribeSet.greenskins.get();
+      c.location = new Location(mark);
+      c.tribe = TribeId::getGreenskin();
       c.buildingId = BuildingId::DUNGEON;
       c.closeToPlayer = true;
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());
       c.outsideFeatures = SquareFactory::villageOutside();),
       CollectiveConfig::withImmigrants(0.003, 10, {
           CONSTRUCT(ImmigrantInfo,
@@ -245,19 +253,20 @@ static vector<EnemyInfo> getFriendlyCave(RandomGen& random, TribeSet& tribeSet, 
   };
 }
 
-static vector<EnemyInfo> getWarriorCastle(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getWarriorCastle(RandomGen& random, bool mark) {
   return {
     mainVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::CASTLE2;
-      c.creatures = CreatureFactory::vikingTown(tribeSet.human.get());
+      c.creatures = CreatureFactory::vikingTown(TribeId::getHuman());
       c.numCreatures = random.get(12, 16);
-      c.location = getVillageLocation();
-      c.tribe = tribeSet.human.get();
+      c.location = getVillageLocation(mark);
+      c.tribe = TribeId::getHuman();
+      c.race = "humans";
       c.buildingId = BuildingId::WOOD_CASTLE;
       c.stockpiles = LIST({StockpileInfo::GOLD, 800});
       c.guardId = CreatureId::WARRIOR;
       c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::BEAST_MUT);
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());
       c.outsideFeatures = SquareFactory::castleOutside();),
       CollectiveConfig::withImmigrants(0.003, 16, {
           CONSTRUCT(ImmigrantInfo,
@@ -269,40 +278,43 @@ static vector<EnemyInfo> getWarriorCastle(RandomGen& random, TribeSet& tribeSet)
           c.minPopulation = 6;
           c.minTeamSize = 5;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
-            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
+            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
+            AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.8, random.get(500, 700));)})
   };
 }
 
-static vector<EnemyInfo> getHumanVillage(RandomGen& random, TribeSet& tribeSet, const string& boardText) {
+static vector<EnemyInfo> getHumanVillage(RandomGen& random, const string& boardText, bool mark) {
   return {
     mainVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::VILLAGE;
-      c.creatures = CreatureFactory::humanVillage(tribeSet.human.get());
+      c.creatures = CreatureFactory::humanVillage(TribeId::getHuman());
       c.numCreatures = random.get(12, 20);
-      c.location = getVillageLocation();
-      c.tribe = tribeSet.human.get();
+      c.location = getVillageLocation(mark);
+      c.tribe = TribeId::getHuman();
+      c.race = "humans";
       c.buildingId = BuildingId::WOOD;
       c.shopFactory = ItemFactory::armory();
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());
       c.outsideFeatures = SquareFactory::villageOutside(boardText);
       ), CollectiveConfig::noImmigrants().setGhostSpawns(0.1, 4), {})
   };
 }
 
-static vector<EnemyInfo> getLizardVillage(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getLizardVillage(RandomGen& random, bool mark) {
   return {
     mainVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::VILLAGE;
-      c.creatures = CreatureFactory::lizardTown(tribeSet.lizard.get());
+      c.creatures = CreatureFactory::lizardTown(TribeId::getLizard());
       c.numCreatures = random.get(8, 14);
-      c.location = getVillageLocation();
-      c.tribe = tribeSet.lizard.get();
+      c.location = getVillageLocation(mark);
+      c.tribe = TribeId::getLizard();
+      c.race = "lizardmen";
       c.buildingId = BuildingId::MUD;
       c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::HUMANOID_MUT);
       c.shopFactory = ItemFactory::mushrooms();
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());
       c.outsideFeatures = SquareFactory::villageOutside();),
       CollectiveConfig::withImmigrants(0.007, 15, {
           CONSTRUCT(ImmigrantInfo,
@@ -314,23 +326,25 @@ static vector<EnemyInfo> getLizardVillage(RandomGen& random, TribeSet& tribeSet)
           c.minPopulation = 4;
           c.minTeamSize = 4;
           c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS},
-            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
+            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
+            AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);)})
   };
 }
 
-static vector<EnemyInfo> getElvenVillage(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getElvenVillage(RandomGen& random, bool mark) {
   return {
     mainVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::VILLAGE2;
-      c.creatures = CreatureFactory::elvenVillage(tribeSet.elven.get());
+      c.creatures = CreatureFactory::elvenVillage(TribeId::getElf());
       c.numCreatures = random.get(11, 18);
-      c.location = getVillageLocation();
-      c.tribe = tribeSet.elven.get();
+      c.location = getVillageLocation(mark);
+      c.tribe = TribeId::getElf();
+      c.race = "elves";
       c.stockpiles = LIST({StockpileInfo::GOLD, 800});
       c.buildingId = BuildingId::WOOD;
       c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
       CollectiveConfig::withImmigrants(0.002, 18, {
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::ELF_ARCHER;
@@ -345,14 +359,15 @@ static vector<EnemyInfo> getElvenVillage(RandomGen& random, TribeSet& tribeSet) 
   };
 }
 
-static vector<EnemyInfo> getAntNest(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getAntNest(RandomGen& random, bool closedOff, bool mark) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
-      c.type = SettlementType::ANT_NEST;
-      c.creatures = CreatureFactory::antNest(tribeSet.ants.get());
+      c.type = closedOff ? SettlementType::ANT_NEST : SettlementType::MINETOWN;
+      c.creatures = CreatureFactory::antNest(TribeId::getAnt());
       c.numCreatures = random.get(9, 14);
-      c.location = new Location(true);
-      c.tribe = tribeSet.ants.get();
+      c.location = new Location(mark);
+      c.tribe = TribeId::getAnt();
+      c.race = "ants";
       c.buildingId = BuildingId::DUNGEON;),
       CollectiveConfig::withImmigrants(0.002, 15, {
           CONSTRUCT(ImmigrantInfo,
@@ -371,19 +386,20 @@ static vector<EnemyInfo> getAntNest(RandomGen& random, TribeSet& tribeSet) {
   };
 }
 
-static vector<EnemyInfo> getDwarfTown(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getDwarfTown(RandomGen& random, bool mark) {
   return {
     mainVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::MINETOWN;
-      c.creatures = CreatureFactory::dwarfTown(tribeSet.dwarven.get());
+      c.creatures = CreatureFactory::dwarfTown(TribeId::getDwarf());
       c.numCreatures = random.get(9, 14);
-      c.location = getVillageLocation(true);
-      c.tribe = tribeSet.dwarven.get();
+      c.location = getVillageLocation(mark);
+      c.tribe = TribeId::getDwarf();
+      c.race = "dwarves";
       c.buildingId = BuildingId::DUNGEON;
       c.stockpiles = LIST({StockpileInfo::GOLD, 1000}, {StockpileInfo::MINERALS, 600});
       c.shopFactory = ItemFactory::dwarfShop();
       c.outsideFeatures = SquareFactory::dungeonOutside();
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
       CollectiveConfig::withImmigrants(0.002, 15, {
           CONSTRUCT(ImmigrantInfo,
             c.id = CreatureId::DWARF;
@@ -394,30 +410,32 @@ static vector<EnemyInfo> getDwarfTown(RandomGen& random, TribeSet& tribeSet) {
           c.minPopulation = 3;
           c.minTeamSize = 4;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
-            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
+            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
+            AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 3);
           c.ransom = make_pair(0.8, random.get(1200, 1600));)})
   };
 }
 
-static vector<EnemyInfo> getHumanCastle(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getHumanCastle(RandomGen& random, bool mark) {
   optional<StairKey> stairKey;
   if (random.roll(4))
     stairKey = StairKey::getNew();
   vector<EnemyInfo> ret {
     mainVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::CASTLE;
-      c.creatures = CreatureFactory::humanCastle(tribeSet.human.get());
+      c.creatures = CreatureFactory::humanCastle(TribeId::getHuman());
       c.numCreatures = random.get(20, 26);
-      c.location = getVillageLocation();
-      c.tribe = tribeSet.human.get();
+      c.location = getVillageLocation(mark);
+      c.tribe = TribeId::getHuman();
+      c.race = "humans";
       c.stockpiles = LIST({StockpileInfo::GOLD, 700});
       c.buildingId = BuildingId::BRICK;
       c.guardId = CreatureId::CASTLE_GUARD;
       if (stairKey)
         c.downStairs = { *stairKey };
       c.shopFactory = ItemFactory::villageShop();
-      c.furniture = SquareFactory::castleFurniture(tribeSet.pest.get());
+      c.furniture = SquareFactory::castleFurniture(TribeId::getPest());
       c.outsideFeatures = SquareFactory::castleOutside();),
       CollectiveConfig::withImmigrants(0.003, 26, {
           CONSTRUCT(ImmigrantInfo,
@@ -433,17 +451,19 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random, TribeSet& tribeSet) {
           c.minPopulation = 12;
           c.minTeamSize = 10;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
-            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
+            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
+            AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
           c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.9, random.get(1400, 2000));)})};
   if (stairKey)
     ret.push_back(
         lesserVillain(CONSTRUCT(SettlementInfo,
-            c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::MINOTAUR);
+            c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::MINOTAUR);
             c.numCreatures = 1;
             c.location = new Location("maze");
-            c.tribe = tribeSet.monster.get();
-            c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());
+            c.tribe = TribeId::getMonster();
+            c.race = "monsters";
+            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());
             if (stairKey)
               c.upStairs = { *stairKey };
             c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {},
@@ -451,28 +471,30 @@ static vector<EnemyInfo> getHumanCastle(RandomGen& random, TribeSet& tribeSet) {
   return ret;
 }
 
-static vector<EnemyInfo> getWitchHouse(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getWitchHouse(RandomGen& random, bool mark) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::WITCH_HOUSE;
-      c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::WITCH);
+      c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::WITCH);
       c.numCreatures = 1;
-      c.location = new Location();
-      c.tribe = tribeSet.monster.get();
+      c.location = new Location(mark);
+      c.tribe = TribeId::getMonster();
+      c.race = "witch";
       c.buildingId = BuildingId::WOOD;
       c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);
       c.furniture = SquareFactory::single(SquareId::CAULDRON);), CollectiveConfig::noImmigrants(), {})
   };
 }
 
-static vector<EnemyInfo> getEntTown(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getEntTown(RandomGen& random, bool mark) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::FOREST;
-      c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::ENT);
+      c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::ENT);
       c.numCreatures = random.get(7, 13);
-      c.location = new Location();
-      c.tribe = tribeSet.monster.get();
+      c.location = new Location(mark);
+      c.tribe = TribeId::getMonster();
+      c.race = "ents";
       c.buildingId = BuildingId::WOOD;),
       CollectiveConfig::withImmigrants(0.003, 15, {
           CONSTRUCT(ImmigrantInfo,
@@ -482,14 +504,15 @@ static vector<EnemyInfo> getEntTown(RandomGen& random, TribeSet& tribeSet) {
   };
 }
 
-static vector<EnemyInfo> getDriadTown(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getDriadTown(RandomGen& random, bool mark) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::FOREST;
-      c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::DRIAD);
+      c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::DRIAD);
       c.numCreatures = random.get(7, 13);
-      c.location = new Location();
-      c.tribe = tribeSet.monster.get();
+      c.location = new Location(mark);
+      c.tribe = TribeId::getMonster();
+      c.race = "driads";
       c.buildingId = BuildingId::WOOD;),
       CollectiveConfig::withImmigrants(0.003, 15, {
           CONSTRUCT(ImmigrantInfo,
@@ -499,38 +522,41 @@ static vector<EnemyInfo> getDriadTown(RandomGen& random, TribeSet& tribeSet) {
   };
 }
 
-static vector<EnemyInfo> getCemetery(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getCemetery(RandomGen& random, bool mark) {
   StairKey cryptKey = StairKey::getNew();
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CEMETERY;
-          c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::ZOMBIE);
+          c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::ZOMBIE);
           c.numCreatures = random.get(8, 12);
           c.location = new Location("cemetery");
-          c.tribe = tribeSet.monster.get();
-          c.furniture = SquareFactory::cryptCoffins(tribeSet.keeper.get());
+          c.tribe = TribeId::getMonster();
+          c.race = "undead";
+          c.furniture = SquareFactory::cryptCoffins(TribeId::getKeeper());
           c.upStairs = { cryptKey };
           c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {},
        LevelInfo{ExtraLevelId::CRYPT, cryptKey}),
     noVillain(CONSTRUCT(SettlementInfo,
           c.type = SettlementType::CEMETERY;
-          c.creatures = CreatureFactory::singleType(tribeSet.monster.get(), CreatureId::ZOMBIE);
+          c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::ZOMBIE);
           c.numCreatures = 1;
-          c.location = new Location("cemetery");
-          c.tribe = tribeSet.monster.get();
+          c.location = new Location("cemetery", mark);
+          c.race = "undead";
+          c.tribe = TribeId::getMonster();
           c.downStairs = { cryptKey };
           c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {})
   };
 }
 
-static vector<EnemyInfo> getBanditCave(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getBanditCave(RandomGen& random, bool mark) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::CAVE;
-      c.creatures = CreatureFactory::singleType(tribeSet.bandit.get(), CreatureId::BANDIT);
+      c.creatures = CreatureFactory::singleType(TribeId::getBandit(), CreatureId::BANDIT);
       c.numCreatures = random.get(4, 9);
-      c.location = new Location();
-      c.tribe = tribeSet.bandit.get();
+      c.location = new Location(mark);
+      c.tribe = TribeId::getBandit();
+      c.race = "bandits";
       c.buildingId = BuildingId::DUNGEON;),
       CollectiveConfig::withImmigrants(0.001, 10, {
           CONSTRUCT(ImmigrantInfo,
@@ -547,46 +573,50 @@ static vector<EnemyInfo> getBanditCave(RandomGen& random, TribeSet& tribeSet) {
   };
 }
 
-static vector<EnemyInfo> getShelob(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getShelob(RandomGen& random, bool mark) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::CAVE;
-      c.creatures = CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::SHELOB);
+      c.creatures = CreatureFactory::singleType(TribeId::getHostile(), CreatureId::SHELOB);
       c.numCreatures = 1;
+      c.race = "giant spider";
       c.buildingId = BuildingId::DUNGEON;
-      c.location = new Location(true);
-      c.tribe = tribeSet.killEveryone.get();), CollectiveConfig::noImmigrants().setLeaderAsFighter(), {})
+      c.location = new Location(mark);
+      c.tribe = TribeId::getHostile();), CollectiveConfig::noImmigrants().setLeaderAsFighter(), {})
   };
 }
 
-static vector<EnemyInfo> getGreenDragon(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getGreenDragon(RandomGen& random, bool mark) {
   return {
     mainVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::CAVE;
-      c.creatures = CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::GREEN_DRAGON);
+      c.creatures = CreatureFactory::singleType(TribeId::getHostile(), CreatureId::GREEN_DRAGON);
       c.numCreatures = 1;
-      c.location = new Location(true);
-      c.tribe = tribeSet.killEveryone.get();
+      c.location = new Location(mark);
+      c.tribe = TribeId::getHostile();
+      c.race = "dragon";
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = ItemFactory::dragonCave();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
           .setGhostSpawns(0.03, 1),
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 20}, AttackTriggerId::STOLEN_ITEMS);
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 20}, AttackTriggerId::STOLEN_ITEMS,
+              AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 7);
             c.welcomeMessage = VillageControl::DRAGON_WELCOME;)})
   };
 }
 
-static vector<EnemyInfo> getHydra(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getHydra(RandomGen& random, bool mark) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::SWAMP;
-      c.creatures = CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::HYDRA);
+      c.creatures = CreatureFactory::singleType(TribeId::getHostile(), CreatureId::HYDRA);
       c.numCreatures = 1;
-      c.location = new Location(true);
-      c.tribe = tribeSet.killEveryone.get();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
+      c.race = "hydra";
+      c.location = new Location(mark);
+      c.tribe = TribeId::getHostile();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
           .setGhostSpawns(0.03, 1),
     { /*CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
@@ -596,76 +626,81 @@ static vector<EnemyInfo> getHydra(RandomGen& random, TribeSet& tribeSet) {
   };
 }
 
-static vector<EnemyInfo> getRedDragon(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getRedDragon(RandomGen& random, bool mark) {
   return {
     mainVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::CAVE;
-      c.creatures = CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::RED_DRAGON);
+      c.creatures = CreatureFactory::singleType(TribeId::getHostile(), CreatureId::RED_DRAGON);
       c.numCreatures = 1;
-      c.location = new Location(true);
-      c.tribe = tribeSet.killEveryone.get();
+      c.location = new Location(mark);
+      c.race = "dragon";
+      c.tribe = TribeId::getHostile();
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = ItemFactory::dragonCave();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
           .setGhostSpawns(0.03, 1),
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 25}, AttackTriggerId::STOLEN_ITEMS);
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 25}, AttackTriggerId::STOLEN_ITEMS,
+              AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 12);
             c.welcomeMessage = VillageControl::DRAGON_WELCOME;)})
   };
 }
 
-static vector<EnemyInfo> getCyclops(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getCyclops(RandomGen& random, bool mark) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::CAVE;
-      c.creatures = CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::CYCLOPS);
+      c.creatures = CreatureFactory::singleType(TribeId::getHostile(), CreatureId::CYCLOPS);
       c.numCreatures = 1;
-      c.location = new Location(true);
-      c.tribe = tribeSet.killEveryone.get();
+      c.location = new Location(mark);
+      c.race = "cyclops";
+      c.tribe = TribeId::getHostile();
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = ItemFactory::mushrooms(true);), CollectiveConfig::noImmigrants().setLeaderAsFighter()
           .setGhostSpawns(0.03, 1),
     { CONSTRUCT(VillainInfo,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 13});
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 13}, AttackTriggerId::PROXIMITY);
             c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_MEMBERS, 4);)})
   };
 }
 
-static vector<EnemyInfo> getCottage(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getCottage(RandomGen& random, bool mark) {
   return {
     noVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::COTTAGE;
-      c.creatures = CreatureFactory::humanPeaceful(tribeSet.human.get());
+      c.creatures = CreatureFactory::humanPeaceful(TribeId::getHuman());
       c.numCreatures = random.get(3, 7);
-      c.location = new Location();
-      c.tribe = tribeSet.human.get();
+      c.location = new Location(mark);
+      c.tribe = TribeId::getHuman();
+      c.race = "humans";
       c.buildingId = BuildingId::WOOD;
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());),
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
       CollectiveConfig::noImmigrants().setGuardian({CreatureId::WITCHMAN, 0.001, 1, 2}), {})
   };
 }
 
-static vector<EnemyInfo> getKoboldCave(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getKoboldCave(RandomGen& random, bool mark) {
   return {
     noVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::SMALL_MINETOWN;
-      c.creatures = CreatureFactory::koboldVillage(tribeSet.dwarven.get());
+      c.creatures = CreatureFactory::koboldVillage(TribeId::getDwarf());
       c.numCreatures = random.get(3, 7);
-      c.location = new Location(true);
-      c.tribe = tribeSet.dwarven.get();
+      c.location = new Location(mark);    
+      c.race = "kobolds";
+      c.tribe = TribeId::getDwarf();
       c.buildingId = BuildingId::DUNGEON;
       c.stockpiles = LIST({StockpileInfo::MINERALS, 300});
  /*     c.outsideFeatures = SquareFactory::dungeonOutside();
-      c.furniture = SquareFactory::roomFurniture(tribeSet.pest.get());*/),
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());*/),
       CollectiveConfig::noImmigrants(), {})
   };
 }
 
-/*static vector<EnemyInfo> getIslandVault(RandomGen& random, TribeSet& tribeSet) {
+/*static vector<EnemyInfo> getIslandVault(RandomGen& random) {
   return {
     lesserVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::ISLAND_VAULT;
@@ -675,70 +710,25 @@ static vector<EnemyInfo> getKoboldCave(RandomGen& random, TribeSet& tribeSet) {
   };
 }*/
 
-static vector<EnemyInfo> getSokobanEntry(RandomGen& random, TribeSet& tribeSet) {
+static vector<EnemyInfo> getSokobanEntry(RandomGen& random, SettlementType entryType, bool mark) {
   StairKey link = StairKey::getNew();
   return {
     noVillain(CONSTRUCT(SettlementInfo,
-      c.type = SettlementType::ISLAND_VAULT;
-      c.location = new Location(true);
+      c.type = entryType;
+      c.location = new Location(mark);
       c.buildingId = BuildingId::DUNGEON;
       c.upStairs = {link};), CollectiveConfig::noImmigrants(), {}),
     noVillain(CONSTRUCT(SettlementInfo,
       c.type = SettlementType::ISLAND_VAULT;
       c.neutralCreatures = make_pair(
-          CreatureFactory::singleType(tribeSet.killEveryone.get(), CreatureId::SOKOBAN_BOULDER), 0);
-      c.creatures = CreatureFactory::singleType(tribeSet.keeper.get(), CreatureId::SPECIAL_HL);
+          CreatureFactory::singleType(TribeId::getHostile(), CreatureId::SOKOBAN_BOULDER), 0);
+      c.creatures = CreatureFactory::singleType(TribeId::getKeeper(), CreatureId::SPECIAL_HL);
       c.numCreatures = 1;
-      c.tribe = tribeSet.keeper.get();
-      c.location = new Location();
+      c.tribe = TribeId::getKeeper();
+      c.location = new Location(false);
       c.buildingId = BuildingId::DUNGEON;
       c.downStairs = {link};), CollectiveConfig::noImmigrants(), {}, LevelInfo{ExtraLevelId::SOKOBAN, link}),
   };
-}
-
-static vector<EnemyInfo> getEnemyInfo(RandomGen& random, TribeSet& tribeSet, const string& boardText) {
-  vector<EnemyInfo> ret;
-  for (int i : Range(random.get(5, 9)))
-    append(ret, getCottage(random, tribeSet));
-  for (int i : Range(random.get(1, 3))) {
-    append(ret, getKoboldCave(random, tribeSet));
-  }
-  for (int i : Range(random.get(1, 3)))
-    append(ret, getBanditCave(random, tribeSet));
-  append(ret, getSokobanEntry(random, tribeSet));
-  append(ret, random.choose({
-        getGnomishMines(random, tribeSet),
-        getDarkElvenMines(random, tribeSet)}));
-  append(ret, getVaults(random, tribeSet));
-  if (random.roll(4))
-    append(ret, getAntNest(random, tribeSet));
-  append(ret, getHumanCastle(random, tribeSet));
-  append(ret, random.choose({
-        getFriendlyCave(random, tribeSet, CreatureId::ORC),
-        getFriendlyCave(random, tribeSet, CreatureId::OGRE),
-        getFriendlyCave(random, tribeSet, CreatureId::HARPY)}));
-  for (auto& infos : random.chooseN(3, {
-        getTower(random, tribeSet),
-        getWarriorCastle(random, tribeSet),
-        getLizardVillage(random, tribeSet),
-        getElvenVillage(random, tribeSet),
-        getDwarfTown(random, tribeSet),
-        getHumanVillage(random, tribeSet, boardText)}))
-    append(ret, infos);
-  for (auto& infos : random.chooseN(3, {
-        getGreenDragon(random, tribeSet),
-        getShelob(random, tribeSet),
-        getHydra(random, tribeSet),
-        getRedDragon(random, tribeSet),
-        getCyclops(random, tribeSet),
-        getDriadTown(random, tribeSet),
-        getEntTown(random, tribeSet)}))
-    append(ret, infos);
-  for (auto& infos : random.chooseN(1, {
-        getWitchHouse(random, tribeSet),
-        getCemetery(random, tribeSet)}))
-    append(ret, infos);
-  return ret;
 }
 
 int ModelBuilder::getPigstyPopulationIncrease() {
@@ -922,138 +912,37 @@ static map<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
  
 }
 
-PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random,
-    Options* options, View* view) {
-  Model* m = new Model(view, "quick", TribeSet());
-  m->setOptions(options);
+static EnumSet<MinionTrait> getImpTraits() {
+  return {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT};
+}
+
+PModel ModelBuilder::tryQuickModel(ProgressMeter* meter, RandomGen& random, Options* options, int width) {
+  Model* m = new Model();
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   Level* top = m->buildLevel(
-      LevelBuilder(meter, random, 28, 14, "Quick", false),
+      LevelBuilder(meter, random, width, width, "Quick", false),
       LevelMaker::quickLevel(random));
   m->calculateStairNavigation();
   m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet->keeper.get())
+        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::getKeeper())
       .setLevel(top)
       .setCredit(getKeeperCredit(true))
       .build());
- 
-  m->playerCollective = m->collectives.back().get();
-  m->playerControl = new PlayerControl(m->playerCollective, m, top);
-  m->playerCollective->setControl(PCollectiveControl(m->playerControl));
-  PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, m->tribeSet->keeper.get(),
-      MonsterAIFactory::collective(m->playerCollective));
-  if (!keeperName.empty())
-    c->setFirstName(keeperName);
-  m->gameIdentifier = *c->getFirstName() + "_" + m->worldName;
-  m->gameDisplayName = *c->getFirstName() + " of " + m->worldName;
-  Creature* ref = c.get();
-  top->landCreature(StairKey::keeperSpawn(), c.get());
-  m->addCreature(std::move(c));
-  m->playerControl->addKeeper(ref);
   vector<CreatureId> ids {
     CreatureId::DONKEY,
-    CreatureId::DONKEY,
-    CreatureId::DONKEY,
-    CreatureId::DONKEY,
-    CreatureId::DONKEY,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
-    CreatureId::SPECIAL_BL,
-    CreatureId::SPECIAL_BM,
-    CreatureId::SPECIAL_HL,
-    CreatureId::SPECIAL_HM,
   };
   for (auto elem : ids) {
-    PCreature c = CreatureFactory::fromId(elem, m->tribeSet->keeper.get(),
+    PCreature c = CreatureFactory::fromId(elem, TribeId::getKeeper(),
         MonsterAIFactory::monster());
     top->landCreature(StairKey::keeperSpawn(), c.get());
 //    m->playerCollective->addCreature(c.get(), {MinionTrait::FIGHTER});
     m->addCreature(std::move(c));
   }
-  for (int i : Range(4)) {
-    PCreature c = CreatureFactory::fromId(CreatureId::IMP, m->tribeSet->keeper.get(),
-        MonsterAIFactory::collective(m->playerCollective));
-    top->landCreature(StairKey::keeperSpawn(), c.get());
-    m->playerControl->addImp(c.get());
-    m->addCreature(std::move(c));
-  }
   return PModel(m);
 }
 
-PModel ModelBuilder::quickModel(ProgressMeter* meter, RandomGen& random,
-    Options* options, View* view) {
-  for (int i : Range(5000)) {
-    try {
-      meter->reset();
-      return tryQuickModel(meter, random, options, view);
-    } catch (LevelGenException ex) {
-      Debug() << "Retrying level gen";
-    }
-  }
-  FAIL << "Couldn't generate a level";
-  return nullptr;
-}
-
-void ModelBuilder::measureModelGen(int numTries, RandomGen& random, Options* options) {
-  int numSuccess = 0;
-  int maxT = 0;
-  int minT = 1000000;
-  double sumT = 0;
-  for (int i : Range(numTries))
-    try {
-      sf::Clock c;
-      tryCollectiveModel(nullptr, random, options, nullptr, "pok");
-      int millis = c.getElapsedTime().asMilliseconds();
-      sumT += millis;
-      maxT = max(maxT, millis);
-      minT = min(minT, millis);
-      ++numSuccess;
-    } catch (LevelGenException ex) {
-    }
-  std::cout << numSuccess << " / " << numTries << " gens successful.\nMinT: " << minT << "\nMaxT: " << maxT <<
-      "\nAvgT: " << sumT / numSuccess << std::endl;
-}
-
-PModel ModelBuilder::collectiveModel(ProgressMeter* meter, RandomGen& random,
-    Options* options, View* view, const string& worldName) {
-  for (int i : Range(10)) {
-    try {
-      meter->reset();
-      return tryCollectiveModel(meter, random, options, view, worldName);
-    } catch (LevelGenException ex) {
-      Debug() << "Retrying level gen";
-    }
-  }
-  FAIL << "Couldn't generate a level";
-  return nullptr;
-}
-
-static string getNewIdSuffix() {
-  vector<char> chars;
-  for (char c : Range(128))
-    if (isalnum(c))
-      chars.push_back(c);
-  string ret;
-  for (int i : Range(4))
-    ret += Random.choose(chars);
-  return ret;
+PModel ModelBuilder::quickModel(ProgressMeter* meter, RandomGen& random, Options* options) {
+  return tryBuilding(meter, 5000, [=, &random] { return tryQuickModel(meter, random, options, 40); });
 }
 
 Level* ModelBuilder::makeExtraLevel(ProgressMeter* meter, RandomGen& random, Model* model,
@@ -1071,11 +960,11 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter* meter, RandomGen& random, Mod
             LevelMaker::towerLevel(random,
                 CONSTRUCT(SettlementInfo,
                   c.type = SettlementType::TOWER;
-                  c.creatures = CreatureFactory::singleType(model->tribeSet->human.get(), random.choose(LIST(
+                  c.creatures = CreatureFactory::singleType(TribeId::getHuman(), random.choose(LIST(
                       CreatureId::WATER_ELEMENTAL, CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL,
                       CreatureId::EARTH_ELEMENTAL)));
                   c.numCreatures = random.get(1, 3);
-                  c.location = new Location();
+                  c.location = new Location(false);
                   c.upStairs = {upLink};
                   c.downStairs = {downLink};
                   c.furniture = SquareFactory::single(SquareId::TORCH);
@@ -1103,11 +992,10 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter* meter, RandomGen& random, Mod
         StairKey downLink = StairKey::getNew();
         model->buildLevel(
             LevelBuilder(meter, random, 60, 40, "Mines lvl " + toString(i + 1)),
-            LevelMaker::roomLevel(random, CreatureFactory::gnomishMines(settlement.tribe,
-                    model->tribeSet->monster.get(), 0),
+            LevelMaker::roomLevel(random, CreatureFactory::gnomishMines(settlement.tribe, TribeId::getMonster(), 0),
                 CreatureFactory::waterCreatures(settlement.tribe),
                 CreatureFactory::lavaCreatures(settlement.tribe), {upLink}, {downLink},
-                SquareFactory::roomFurniture(model->tribeSet->pest.get())));
+                SquareFactory::roomFurniture(TribeId::getPest())));
         upLink = downLink;
       }
       settlement.upStairs = {upLink};
@@ -1117,13 +1005,15 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter* meter, RandomGen& random, Mod
       }
     case ExtraLevelId::SOKOBAN:
       settlement.downStairs = {levelInfo.stairKey};
-      for (int i : Range(5000))
+      for (int i : Range(5000)) {
         try {
           return model->buildLevel(
               LevelBuilder(meter, random, 28, 14, "Sokoban"),
               LevelMaker::sokobanLevel(random, settlement));
         } catch (LevelGenException ex) {
+          Debug() << "Retrying";
         }
+      }
       throw LevelGenException();
   }
 }
@@ -1132,13 +1022,269 @@ static string getBoardText(const string& keeperName, const string& dukeName) {
   return dukeName + " will reward a daring hero 150 florens for slaying " + keeperName + " the Keeper.";
 }
 
-PModel ModelBuilder::tryCollectiveModel(ProgressMeter* meter, RandomGen& random,
-    Options* options, View* view, const string& worldName) {
-  Model* m = new Model(view, worldName, TribeSet());
-  m->setOptions(options);
+static vector<EnemyInfo> getEnemyInfo(RandomGen& random, const string& boardText) {
+  vector<EnemyInfo> ret;
+  for (int i : Range(random.get(5, 9)))
+    append(ret, getCottage(random, true));
+  for (int i : Range(random.get(1, 3))) {
+    append(ret, getKoboldCave(random, true));
+  }
+  for (int i : Range(random.get(1, 3)))
+    append(ret, getBanditCave(random, true));
+  append(ret, getSokobanEntry(random, SettlementType::ISLAND_VAULT, true));
+  append(ret, random.choose({
+        getGnomishMines(random, true),
+        getDarkElvenMines(random, true)}));
+  append(ret, getVaults(random));
+  if (random.roll(4))
+    append(ret, getAntNest(random, true, true));
+  append(ret, getHumanCastle(random, true));
+  append(ret, random.choose({
+        getFriendlyCave(random, CreatureId::ORC, true),
+        getFriendlyCave(random, CreatureId::OGRE, true),
+        getFriendlyCave(random, CreatureId::HARPY, true)}));
+  for (auto& infos : random.chooseN(3, {
+        getTower(random, true),
+        getWarriorCastle(random, true),
+        getLizardVillage(random, true),
+        getElvenVillage(random, true),
+        getDwarfTown(random, true),
+        getHumanVillage(random, boardText, true)}))
+    append(ret, infos);
+  for (auto& infos : random.chooseN(3, {
+        getGreenDragon(random, true),
+        getShelob(random, true),
+        getHydra(random, true),
+        getRedDragon(random, true),
+        getCyclops(random, true),
+        getDriadTown(random, true),
+        getEntTown(random, true)}))
+    append(ret, infos);
+  for (auto& infos : random.chooseN(1, {
+        getWitchHouse(random, false),
+        getCemetery(random, true)}))
+    append(ret, infos);
+  return ret;
+}
+
+PModel ModelBuilder::singleMapModel(ProgressMeter* meter, RandomGen& random,
+    Options* options, const string& worldName) {
+  PModel ret = tryBuilding(meter, 10, [=, &random] {
+      return tryModel(meter, random, options, 360, worldName,
+          getEnemyInfo(random, getBoardText(options->getStringValue(OptionId::KEEPER_NAME),
+            "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext())), true, BiomeId::GRASSLAND);});
+  return ret;
+}
+
+PModel ModelBuilder::tryCampaignBaseModel(ProgressMeter* meter, RandomGen& random,
+    Options* options, const string& siteName) {
+  vector<EnemyInfo> enemyInfo;
+ // append(enemyInfo, getBanditCave(random));
+  /*      append(enemyInfo, getSokobanEntry(random));
+        append(enemyInfo, random.choose({
+          getFriendlyCave(random, CreatureId::ORC),
+          getFriendlyCave(random, CreatureId::OGRE),
+          getFriendlyCave(random, CreatureId::HARPY)}));*/
+  /*      append(enemyInfo, random.choose({
+          getGreenDragon(random),
+          getShelob(random),
+          getHydra(random),
+          getRedDragon(random),
+          getCyclops(random),
+          getDriadTown(random),
+          getEntTown(random)}));*/
+  PModel ret = tryModel(meter, random, options, 210, siteName, enemyInfo, true, BiomeId::MOUNTAIN);
+  return ret;
+}
+
+PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& random,
+    Options* options, const string& siteName, EnemyId enemyId) {
+  vector<EnemyInfo> enemyInfo;
+  BiomeId biomeId;
+  switch (enemyId) {
+    case EnemyId::ANTS:
+      append(enemyInfo, getAntNest(random, false, true)); break;
+    case EnemyId::ORC_VILLAGE:
+      append(enemyInfo, getOrcTown(random, true)); break;
+    case EnemyId::VILLAGE:
+      append(enemyInfo, getHumanVillage(random, getBoardText(options->getStringValue(OptionId::KEEPER_NAME),
+            "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext()), true)); break;
+    case EnemyId::WARRIORS:
+      append(enemyInfo, getWarriorCastle(random, true)); break;
+    case EnemyId::KNIGHTS:
+      append(enemyInfo, getHumanCastle(random, true));
+      for (int i : Range(random.get(3, 5)))
+        append(enemyInfo, getCottage(random, false));
+      break;
+    case EnemyId::RED_DRAGON:
+      append(enemyInfo, getRedDragon(random, true)); break;
+    case EnemyId::GREEN_DRAGON:
+      append(enemyInfo, getGreenDragon(random, true)); break;
+    case EnemyId::DWARVES:
+      append(enemyInfo, getDwarfTown(random, true));
+      for (int i : Range(random.get(1, 3)))
+        append(enemyInfo, getKoboldCave(random, true));
+      break;
+    case EnemyId::ELVES:
+      append(enemyInfo, getElvenVillage(random, true)); break;
+    case EnemyId::ELEMENTALIST:
+      append(enemyInfo, getTower(random, true)); break;
+    case EnemyId::BANDITS:
+      append(enemyInfo, getBanditCave(random, true)); break;
+    case EnemyId::LIZARDMEN:
+      append(enemyInfo, getLizardVillage(random, true)); break;
+    case EnemyId::DARK_ELVES:
+      append(enemyInfo, getDarkElvenMines(random, true)); break;
+    case EnemyId::GNOMES:
+      append(enemyInfo, getGnomishMines(random, true)); break;
+    case EnemyId::ENTS:
+      append(enemyInfo, getEntTown(random, true)); break;
+    case EnemyId::DRIADS:
+      append(enemyInfo, getDriadTown(random, true)); break;
+    case EnemyId::SHELOB:
+      append(enemyInfo, getShelob(random, true)); break;
+    case EnemyId::CYCLOPS:
+      append(enemyInfo, getCyclops(random, true)); break;
+    case EnemyId::HYDRA:
+      append(enemyInfo, getHydra(random, true)); break;
+    case EnemyId::CEMETERY:
+      append(enemyInfo, getCemetery(random, true)); break;
+    case EnemyId::FRIENDLY_CAVE:
+      append(enemyInfo, getFriendlyCave(random,
+            random.choose({CreatureId::ORC, CreatureId::HARPY, CreatureId::OGRE}), true));
+      break;
+    case EnemyId::SOKOBAN:
+      append(enemyInfo, getSokobanEntry(random, SettlementType::ISLAND_VAULT_DOOR, true));
+      break;
+  }
+  switch (enemyId) {
+    case EnemyId::KNIGHTS:
+    case EnemyId::WARRIORS:
+    case EnemyId::ELEMENTALIST:
+    case EnemyId::LIZARDMEN:
+    case EnemyId::HYDRA:
+    case EnemyId::VILLAGE:
+    case EnemyId::ORC_VILLAGE:
+      biomeId = BiomeId::GRASSLAND;
+      break;
+    case EnemyId::RED_DRAGON:
+    case EnemyId::GREEN_DRAGON:
+    case EnemyId::DWARVES:
+    case EnemyId::DARK_ELVES:
+    case EnemyId::FRIENDLY_CAVE:
+    case EnemyId::SOKOBAN:
+    case EnemyId::GNOMES:
+    case EnemyId::CYCLOPS:
+    case EnemyId::SHELOB:
+    case EnemyId::ANTS:
+      biomeId = BiomeId::MOUNTAIN;
+      break;
+    case EnemyId::ELVES:
+    case EnemyId::DRIADS:
+    case EnemyId::ENTS:
+      biomeId = BiomeId::FORREST;
+      break;
+    case EnemyId::BANDITS:
+      biomeId = random.choose<BiomeId>();
+      break;
+    case EnemyId::CEMETERY:
+      biomeId = random.choose({BiomeId::GRASSLAND, BiomeId::FORREST});
+      break;
+  }
+  return tryModel(meter, random, options, 170, siteName, enemyInfo, false, biomeId);
+}
+
+PModel ModelBuilder::tryBuilding(ProgressMeter* meter, int numTries, function<PModel()> buildFun) {
+  for (int i : Range(numTries)) {
+    try {
+      if (meter)
+        meter->reset();
+      return buildFun();
+    } catch (LevelGenException ex) {
+      Debug() << "Retrying level gen";
+    }
+  }
+  FAIL << "Couldn't generate a level";
+  return nullptr;
+
+}
+
+PModel ModelBuilder::campaignBaseModel(ProgressMeter* meter, RandomGen& random,
+    Options* options, const string& siteName) {
+  return tryBuilding(meter, 20, [=, &random] {
+      return tryCampaignBaseModel(meter, random, options, siteName); });
+}
+
+PModel ModelBuilder::campaignSiteModel(ProgressMeter* meter, RandomGen& random,
+    Options* options, const string& siteName, EnemyId enemyId) {
+  return tryBuilding(meter, 20, [=, &random] {
+      return tryCampaignSiteModel(meter, random, options, siteName, enemyId); });
+}
+
+void ModelBuilder::measureSiteGen(int numTries, RandomGen& random, Options* options) {
+  for (EnemyId id : {EnemyId::SOKOBAN}) {
+//  for (EnemyId id : ENUM_ALL(EnemyId)) {
+    std::cout << "Measuring " << EnumInfo<EnemyId>::getString(id) << std::endl;
+    measureModelGen(numTries, [&] {
+      tryCampaignSiteModel(nullptr, random, options, "", id); });
+  }
+}
+
+void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
+  int numSuccess = 0;
+  int maxT = 0;
+  int minT = 1000000;
+  double sumT = 0;
+  for (int i : Range(numTries)) {
+    try {
+      sf::Clock c;
+      genFun();
+      int millis = c.getElapsedTime().asMilliseconds();
+      sumT += millis;
+      maxT = max(maxT, millis);
+      minT = min(minT, millis);
+      ++numSuccess;
+      std::cout << ".";
+      std::cout.flush();
+    } catch (LevelGenException ex) {
+      std::cout << "x";
+      std::cout.flush();
+    }
+  }
+  std::cout << numSuccess << " / " << numTries << " gens successful.\nMinT: " << minT << "\nMaxT: " << maxT <<
+      "\nAvgT: " << sumT / numSuccess << std::endl;
+}
+
+void ModelBuilder::spawnKeeper(Model* m, Options* options) {
+  Level* level = m->levels[0].get();
+  PCreature keeper = CreatureFactory::fromId(CreatureId::KEEPER, TribeId::getKeeper());
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
-  vector<EnemyInfo> enemyInfo = getEnemyInfo(random, *m->tribeSet, getBoardText(keeperName,
-        "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext()));
+  if (!keeperName.empty())
+    keeper->getName().setFirst(keeperName);
+  Creature* keeperRef = keeper.get();
+  level->landCreature(StairKey::keeperSpawn(), keeperRef);
+  m->addCreature(std::move(keeper));
+  m->collectives.push_back(CollectiveBuilder(
+        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::getKeeper())
+      .setLevel(level)
+      .addCreature(keeperRef)
+      .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
+      .build());
+  Collective* playerCollective = m->collectives.back().get();
+  playerCollective->setVillainType(VillainType::PLAYER);
+  playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, level)));
+  for (int i : Range(4)) {
+    PCreature c = CreatureFactory::fromId(CreatureId::IMP, TribeId::getKeeper(),
+        MonsterAIFactory::collective(playerCollective));
+    level->landCreature(StairKey::keeperSpawn(), c.get());
+    playerCollective->addCreature(c.get(), getImpTraits());
+    m->addCreature(std::move(c));
+  }
+}
+
+PModel ModelBuilder::tryModel(ProgressMeter* meter, RandomGen& random, Options* options, int width,
+    const string& levelName, vector<EnemyInfo> enemyInfo, bool keeperSpawn, BiomeId biomeId) {
+  Model* m = new Model();
   vector<SettlementInfo> settlements;
   vector<pair<LevelInfo, SettlementInfo>> extraSettlements;
   for (auto& elem : enemyInfo) {
@@ -1149,68 +1295,41 @@ PModel ModelBuilder::tryCollectiveModel(ProgressMeter* meter, RandomGen& random,
       extraSettlements.emplace_back(*elem.extraLevel, elem.settlement);
   }
   Level* top = m->buildLevel(
-      LevelBuilder(meter, random, 360, 360, "Wilderness", false),
-      LevelMaker::topLevel(random, CreatureFactory::forrest(m->tribeSet->wildlife.get()), settlements));
+      LevelBuilder(meter, random, width, width, levelName, false),
+      LevelMaker::topLevel(random, CreatureFactory::forrest(TribeId::getWildlife()), settlements, width, keeperSpawn,
+          biomeId));
   for (auto& elem : extraSettlements)
     makeExtraLevel(meter, random, m, elem.first, elem.second);
   m->calculateStairNavigation();
-  m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), m->tribeSet->keeper.get())
-      .setLevel(top)
-      .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
-      .build());
- 
-  m->playerCollective = m->collectives.back().get();
-  m->playerControl = new PlayerControl(m->playerCollective, m, top);
-  m->playerCollective->setControl(PCollectiveControl(m->playerControl));
-  PCreature c = CreatureFactory::fromId(CreatureId::KEEPER, m->tribeSet->keeper.get(),
-      MonsterAIFactory::collective(m->playerCollective));
-  if (!keeperName.empty())
-    c->setFirstName(keeperName);
-  m->gameIdentifier = *c->getFirstName() + "_" + m->worldName + getNewIdSuffix();
-  m->gameDisplayName = *c->getFirstName() + " of " + m->worldName;
-  Creature* ref = c.get();
-  top->landCreature(StairKey::keeperSpawn(), c.get());
-  m->addCreature(std::move(c));
-  m->playerControl->addKeeper(ref);
-  for (int i : Range(4)) {
-    PCreature c = CreatureFactory::fromId(CreatureId::IMP, m->tribeSet->keeper.get(),
-        MonsterAIFactory::collective(m->playerCollective));
-    top->landCreature(StairKey::keeperSpawn(), c.get());
-    m->playerControl->addImp(c.get());
-    m->addCreature(std::move(c));
-  }
   for (int i : All(enemyInfo)) {
     if (!enemyInfo[i].settlement.collective->hasCreatures())
       continue;
     PVillageControl control;
     Location* location = enemyInfo[i].settlement.location;
     if (auto name = location->getName())
-      enemyInfo[i].settlement.collective->setName(*name);
+      enemyInfo[i].settlement.collective->setLocationName(*name);
+    if (auto race = enemyInfo[i].settlement.race)
+      enemyInfo[i].settlement.collective->setRaceName(*race);
     PCollective collective = enemyInfo[i].settlement.collective->addSquares(location->getAllSquares()).build();
-    if (!enemyInfo[i].villains.empty())
-      getOnlyElement(enemyInfo[i].villains).collective = m->playerCollective;
-    control.reset(new VillageControl(collective.get(), enemyInfo[i].villains));
+    control.reset(new VillageControl(collective.get(), enemyInfo[i].villain));
     if (enemyInfo[i].villainType)
-      m->villainsByType[*enemyInfo[i].villainType].push_back(collective.get());
-    m->allVillains.push_back(collective.get());
+      collective->setVillainType(*enemyInfo[i].villainType);
     collective->setControl(std::move(control));
     m->collectives.push_back(std::move(collective));
   }
   return PModel(m);
 }
 
-PModel ModelBuilder::splashModel(ProgressMeter* meter, View* view, const string& splashPath) {
-  Model* m = new Model(view, "", TribeSet());
+PModel ModelBuilder::splashModel(ProgressMeter* meter, const string& splashPath) {
+  Model* m = new Model();
   Level* l = m->buildLevel(
-      LevelBuilder(meter, Random, Level::getSplashBounds().getW(), Level::getSplashBounds().getH(), "Splash",
+      LevelBuilder(meter, Random, Level::getSplashBounds().width(), Level::getSplashBounds().height(), "Splash",
           false),
       LevelMaker::splashLevel(
-          CreatureFactory::splashLeader(m->tribeSet->human.get()),
-          CreatureFactory::splashHeroes(m->tribeSet->human.get()),
-          CreatureFactory::splashMonsters(m->tribeSet->keeper.get()),
-          CreatureFactory::singleType(m->tribeSet->keeper.get(), CreatureId::IMP), splashPath));
-  m->spectator.reset(new Spectator(l));
+          CreatureFactory::splashLeader(TribeId::getHuman()),
+          CreatureFactory::splashHeroes(TribeId::getHuman()),
+          CreatureFactory::splashMonsters(TribeId::getKeeper()),
+          CreatureFactory::singleType(TribeId::getKeeper(), CreatureId::IMP), splashPath));
   return PModel(m);
 }
 

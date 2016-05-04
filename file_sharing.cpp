@@ -1,10 +1,13 @@
 #include "stdafx.h"
 #include "file_sharing.h"
 #include "progress_meter.h"
+#include "save_file_info.h"
+#include "parse_game.h"
+#include "options.h"
 
 #include <curl/curl.h>
 
-FileSharing::FileSharing(const string& url) : uploadUrl(url) {
+FileSharing::FileSharing(const string& url, Options& o) : uploadUrl(url), options(o) {
 }
 
 static function<void(double)> progressFun;
@@ -39,8 +42,6 @@ static optional<string> curlUpload(const char* path, const char* url) {
   struct curl_httppost *formpost=NULL;
   struct curl_httppost *lastptr=NULL;
 
-  curl_global_init(CURL_GLOBAL_ALL);
-
   curl_formadd(&formpost,
       &lastptr,
       CURLFORM_COPYNAME, "fileToUpload",
@@ -53,7 +54,7 @@ static optional<string> curlUpload(const char* path, const char* url) {
       CURLFORM_COPYCONTENTS, "send",
       CURLFORM_END);
 
-  if(CURL* curl = curl_easy_init()) {
+  if (CURL* curl = curl_easy_init()) {
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     string ret;
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
@@ -65,7 +66,7 @@ static optional<string> curlUpload(const char* path, const char* url) {
     // Install the callback function
     curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
     CURLcode res = curl_easy_perform(curl);
-    if(res != CURLE_OK)
+    if (res != CURLE_OK)
       ret = string("Upload failed: ") + curl_easy_strerror(res);
     curl_easy_cleanup(curl);
     curl_formfree(formpost);
@@ -78,25 +79,58 @@ static optional<string> curlUpload(const char* path, const char* url) {
 }
 
 optional<string> FileSharing::uploadRetired(const string& path, ProgressMeter& meter) {
+  if (!options.getBoolValue(OptionId::ONLINE))
+    return none;
   progressFun = [&] (double p) { meter.setProgress(p);};
   return curlUpload(path.c_str(), (uploadUrl + "/upload2.php").c_str());
 }
 
+optional<string> FileSharing::uploadSite(const string& path, ProgressMeter& meter) {
+  if (!options.getBoolValue(OptionId::ONLINE))
+    return none;
+  progressFun = [&] (double p) { meter.setProgress(p);};
+  return curlUpload(path.c_str(), (uploadUrl + "/upload_site.php").c_str());
+}
+
 void FileSharing::uploadHighscores(const string& path) {
-  progressFun = [] (double p) {};
-  curlUpload(path.c_str(), (uploadUrl + "/upload_scores2.php").c_str());
+  if (options.getBoolValue(OptionId::ONLINE)) {
+    progressFun = [] (double p) {};
+    curlUpload(path.c_str(), (uploadUrl + "/upload_scores2.php").c_str());
+  }
+}
+
+void FileSharing::init() {
+  curl_global_init(CURL_GLOBAL_ALL);
+}
+
+void FileSharing::uploadGameEvent(const map<string, string>& data) {
+  if (options.getBoolValue(OptionId::ONLINE)) {
+    string params;
+    for (auto& elem : data) {
+      if (!params.empty())
+        params += "&";
+      params += elem.first + "=" + elem.second;
+    }
+    if (CURL* curl = curl_easy_init()) {
+      string ret;
+      curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/game_event.php").c_str());
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, params.c_str());
+      CURLcode res = curl_easy_perform(curl);
+    }
+  }
 }
 
 string FileSharing::downloadHighscores() {
   string ret;
-  if(CURL* curl = curl_easy_init()) {
-    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/highscores2.php").c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
-    curl_easy_perform(curl);
-    curl_easy_cleanup(curl);
-  }
+  if (options.getBoolValue(OptionId::ONLINE))
+    if(CURL* curl = curl_easy_init()) {
+      curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/highscores2.php").c_str());
+      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
+      curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+      curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
+      curl_easy_perform(curl);
+      curl_easy_cleanup(curl);
+    }
   return ret;
 }
 
@@ -120,7 +154,7 @@ static vector<FileSharing::GameInfo> parseGames(const string& s) {
 }
 
 vector<FileSharing::GameInfo> FileSharing::listGames() {
-  if(CURL* curl = curl_easy_init()) {
+  if (CURL* curl = curl_easy_init()) {
     curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_games2.php").c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
@@ -129,6 +163,55 @@ vector<FileSharing::GameInfo> FileSharing::listGames() {
     curl_easy_perform(curl);
     curl_easy_cleanup(curl);
     return parseGames(ret);
+  }
+  return {};
+}
+
+static vector<FileSharing::SiteInfo> parseSites(const string& s) {
+  std::stringstream iss(s);
+  vector<FileSharing::SiteInfo> ret;
+  while (!!iss) {
+    char buf[300];
+    iss.getline(buf, 300);
+    if (!iss)
+      break;
+    Debug() << "Parsing " << string(buf);
+    vector<string> fields = split(buf, {','});
+    if (fields.size() < 6)
+      continue;
+    Debug() << "Parsed " << fields;
+    FileSharing::SiteInfo elem;
+    elem.fileInfo.filename = fields[0];
+    try {
+      elem.fileInfo.date = fromString<int>(fields[1]);
+      elem.wonGames = fromString<int>(fields[2]);
+      elem.totalGames = fromString<int>(fields[3]);
+      elem.version = fromString<int>(fields[5]);
+      elem.fileInfo.download = true;
+      TextInput input(fields[4]);
+      input.getArchive() >> elem.gameInfo;
+    } catch (boost::archive::archive_exception ex) {
+      continue;
+    } catch (ParsingException e) {
+      continue;
+    }
+    ret.push_back(elem);
+  }
+  return ret;
+}
+
+vector<FileSharing::SiteInfo> FileSharing::listSites() {
+  if (!options.getBoolValue(OptionId::ONLINE))
+    return {};
+  if (CURL* curl = curl_easy_init()) {
+    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_sites.php").c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+    string ret;
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
+    curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+    return parseSites(ret);
   }
   return {};
 }
@@ -142,11 +225,13 @@ static size_t writeToFile(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 }
 
 optional<string> FileSharing::download(const string& filename, const string& dir, ProgressMeter& meter) {
+  if (!options.getBoolValue(OptionId::ONLINE))
+    return string("Downloading not enabled!");
   progressFun = [&] (double p) { meter.setProgress(p);};
   if (CURL *curl = curl_easy_init()) {
     string path = dir + "/" + filename;
     Debug() << "Downloading to " << path;
-    if (FILE *fp = fopen(path.c_str(), "wb")) {
+    if (FILE* fp = fopen(path.c_str(), "wb")) {
       curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/uploads/" + filename).c_str());
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToFile);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);

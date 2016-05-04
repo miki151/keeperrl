@@ -27,10 +27,7 @@ void MapMemory::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(MapMemory);
 
-SERIALIZATION_CONSTRUCTOR_IMPL(MapMemory);
-
-MapMemory::MapMemory(const vector<Level*>& levels) : table(levels) {
-}
+MapMemory::MapMemory() {}
 
 void MapMemory::addObject(Position pos, const ViewObject& obj) {
   CHECK(pos.isValid());
@@ -42,23 +39,21 @@ void MapMemory::addObject(Position pos, const ViewObject& obj) {
 }
 
 optional<ViewIndex>& MapMemory::getViewIndex(Position pos) {
-  return (*table)[pos];
+  return table->getOrInit(pos);
 }
 
 const optional<ViewIndex>& MapMemory::getViewIndex(Position pos) const {
-  static optional<ViewIndex> empty;
-  if (!table->isValid(pos))
-    return empty;
-  return (*table)[pos];
+  return table->get(pos);
 }
 
-void MapMemory::update(Position pos, const ViewIndex& index) {
+void MapMemory::update(Position pos, const ViewIndex& index1) {
   CHECK(pos.isValid());
-  getViewIndex(pos) = index;
-  getViewIndex(pos)->setHighlight(HighlightType::MEMORY);
-  if (getViewIndex(pos)->hasObject(ViewLayer::CREATURE) && 
-      !getViewIndex(pos)->getObject(ViewLayer::CREATURE).hasModifier(ViewObjectModifier::REMEMBER))
-    getViewIndex(pos)->removeObject(ViewLayer::CREATURE);
+  auto& index = getViewIndex(pos); 
+  index = index1;
+  index->setHighlight(HighlightType::MEMORY);
+  if (index->hasObject(ViewLayer::CREATURE) && 
+      !index->getObject(ViewLayer::CREATURE).hasModifier(ViewObjectModifier::REMEMBER))
+    index->removeObject(ViewLayer::CREATURE);
   updateUpdated(pos);
 }
 

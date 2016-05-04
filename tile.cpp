@@ -285,7 +285,7 @@ class TileCoordLookup {
   }
 
   void genTiles() {
-    Tile::addTile(ViewId::UNKNOWN_MONSTER, symbol("?", ColorId::LIGHT_GREEN));
+    Tile::addTile(ViewId::UNKNOWN_MONSTER, sprite("unknown"));
     Tile::addTile(ViewId::DIG_MARK, sprite("dig_mark"));
     Tile::addTile(ViewId::FORBID_ZONE, sprite("dig_mark").setColor(colors[ColorId::RED]));
     Tile::addTile(ViewId::DESTROY_BUTTON, sprite("remove"));
@@ -299,6 +299,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BURNT_TREE, sprite("treeburnt").setNoShadow());
     Tile::addTile(ViewId::PLAYER, sprite("adventurer"));
     Tile::addTile(ViewId::KEEPER, sprite("keeper"));
+    Tile::addTile(ViewId::RETIRED_KEEPER, sprite("retired_keeper"));
     Tile::addTile(ViewId::ELF, sprite("elf male"));
     Tile::addTile(ViewId::ELF_WOMAN, sprite("elf female"));
     Tile::addTile(ViewId::ELF_ARCHER, sprite("elf archer"));
@@ -309,7 +310,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::DARK_ELF_WARRIOR, sprite("dark_elf_warrior"));
     Tile::addTile(ViewId::DARK_ELF_CHILD, sprite("dark_elf_kid"));
     Tile::addTile(ViewId::DARK_ELF_LORD, sprite("dark_elf_lord"));
-    Tile::addTile(ViewId::DRIAD, sprite("driada"));
+    Tile::addTile(ViewId::DRIAD, sprite("driad"));
     Tile::addTile(ViewId::KOBOLD, sprite("kobold"));
     Tile::addTile(ViewId::LIZARDMAN, sprite("lizardman"));
     Tile::addTile(ViewId::LIZARDLORD, sprite("lizardlord"));
@@ -342,6 +343,9 @@ class TileCoordLookup {
     Tile::addTile(ViewId::CROPS2, sprite("wheatfield2"));
     Tile::addTile(ViewId::MOUNTAIN, getMountainTile(sprite("mountain_ted").setNoShadow(), "mountain"));
     Tile::addTile(ViewId::WALL, getWallTile("wall"));
+    Tile::addTile(ViewId::MAP_MOUNTAIN1, sprite("map_mountain1"));
+    Tile::addTile(ViewId::MAP_MOUNTAIN2, sprite("map_mountain2"));
+    Tile::addTile(ViewId::MAP_MOUNTAIN3, sprite("map_mountain3"));
     Tile::addTile(ViewId::GOLD_ORE, getMountainTile(sprite("gold_ore").addBackground(byName("mountain_ted"))
           .setNoShadow(), "mountain"));
     Tile::addTile(ViewId::IRON_ORE, getMountainTile(sprite("iron_ore").addBackground(byName("mountain_ted"))
@@ -361,6 +365,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::MINION_STATUE, sprite("statue").setNoShadow());
     Tile::addTile(ViewId::THRONE, sprite("throne").setNoShadow());
     Tile::addTile(ViewId::ORC, sprite("orc"));
+    Tile::addTile(ViewId::ORC_CAPTAIN, sprite("orc_captain"));
     Tile::addTile(ViewId::ORC_SHAMAN, sprite("orcshaman"));
     Tile::addTile(ViewId::HARPY, sprite("harpy"));
     Tile::addTile(ViewId::DOPPLEGANGER, sprite("dopple"));
@@ -469,7 +474,12 @@ class TileCoordLookup {
     Tile::addTile(ViewId::POTION4, sprite("potion4"));
     Tile::addTile(ViewId::POTION5, sprite("potion5"));
     Tile::addTile(ViewId::POTION6, sprite("potion6"));
-    Tile::addTile(ViewId::MUSHROOM, sprite("mushroom1"));
+    Tile::addTile(ViewId::MUSHROOM1, sprite("mushroom1"));
+    Tile::addTile(ViewId::MUSHROOM2, sprite("mushroom2"));
+    Tile::addTile(ViewId::MUSHROOM3, sprite("mushroom3"));
+    Tile::addTile(ViewId::MUSHROOM4, sprite("mushroom4"));
+    Tile::addTile(ViewId::MUSHROOM5, sprite("mushroom5"));
+    Tile::addTile(ViewId::MUSHROOM6, sprite("mushroom6"));
     Tile::addTile(ViewId::KEY, sprite("key"));
     Tile::addTile(ViewId::FOUNTAIN, sprite("fountain").setNoShadow());
     Tile::addTile(ViewId::GOLD, sprite("gold").setNoShadow());
@@ -548,6 +558,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::FOG_OF_WAR, getWaterTile("empty", "fogofwar"));
     Tile::addTile(ViewId::CREATURE_HIGHLIGHT, sprite("creature_highlight"));
     Tile::addTile(ViewId::SQUARE_HIGHLIGHT, sprite("square_highlight"));
+    Tile::addTile(ViewId::ROUND_SHADOW, sprite("round_shadow"));
     Tile::addTile(ViewId::FOG_OF_WAR_CORNER, sprite("fogofwar")
         .addConnection({Dir::NE}, byName("fogofwarcornne"))
         .addConnection({Dir::NW}, byName("fogofwarcornnw"))
@@ -584,6 +595,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::DIG_MARK, symbol(" ", ColorId::BLACK));
     Tile::addSymbol(ViewId::PLAYER, symbol("@", ColorId::WHITE));
     Tile::addSymbol(ViewId::KEEPER, symbol("@", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::RETIRED_KEEPER, symbol("@", ColorId::BLUE));
     Tile::addSymbol(ViewId::UNKNOWN_MONSTER, symbol("?", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF, symbol("@", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF_WOMAN, symbol("@", ColorId::LIGHT_GREEN));
@@ -622,6 +634,9 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::MUD_WALL, symbol("#", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::WALL, symbol("#", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::MOUNTAIN, symbol("#", ColorId::DARK_GRAY));
+    Tile::addSymbol(ViewId::MAP_MOUNTAIN1, symbol("^", ColorId::DARK_GRAY));
+    Tile::addSymbol(ViewId::MAP_MOUNTAIN2, symbol("^", ColorId::GRAY));
+    Tile::addSymbol(ViewId::MAP_MOUNTAIN3, symbol("^", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::GOLD_ORE, symbol("⁂", ColorId::YELLOW, true));
     Tile::addSymbol(ViewId::IRON_ORE, symbol("⁂", ColorId::DARK_BROWN, true));
     Tile::addSymbol(ViewId::STONE, symbol("⁂", ColorId::LIGHT_GRAY, true));
@@ -634,6 +649,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::MINION_STATUE, symbol("&", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::THRONE, symbol("Ω", ColorId::YELLOW));
     Tile::addSymbol(ViewId::ORC, symbol("o", ColorId::DARK_BLUE));
+    Tile::addSymbol(ViewId::ORC_CAPTAIN, symbol("o", ColorId::PURPLE));
     Tile::addSymbol(ViewId::ORC_SHAMAN, symbol("o", ColorId::YELLOW));
     Tile::addSymbol(ViewId::HARPY, symbol("R", ColorId::YELLOW));
     Tile::addSymbol(ViewId::DOPPLEGANGER, symbol("&", ColorId::YELLOW));
@@ -747,7 +763,12 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::POTION4, symbol("!", ColorId::VIOLET));
     Tile::addSymbol(ViewId::POTION5, symbol("!", ColorId::DARK_BROWN));
     Tile::addSymbol(ViewId::POTION6, symbol("!", ColorId::LIGHT_GRAY));
-    Tile::addSymbol(ViewId::MUSHROOM, symbol(0x22c6, ColorId::PINK, true));
+    Tile::addSymbol(ViewId::MUSHROOM1, symbol(0x22c6, ColorId::PINK, true));
+    Tile::addSymbol(ViewId::MUSHROOM2, symbol(0x22c6, ColorId::YELLOW, true));
+    Tile::addSymbol(ViewId::MUSHROOM3, symbol(0x22c6, ColorId::PURPLE, true));
+    Tile::addSymbol(ViewId::MUSHROOM4, symbol(0x22c6, ColorId::BROWN, true));
+    Tile::addSymbol(ViewId::MUSHROOM5, symbol(0x22c6, ColorId::LIGHT_GRAY, true));
+    Tile::addSymbol(ViewId::MUSHROOM6, symbol(0x22c6, ColorId::ORANGE, true));
     Tile::addSymbol(ViewId::KEY, symbol("*", ColorId::YELLOW));
     Tile::addSymbol(ViewId::FOUNTAIN, symbol("0", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::GOLD, symbol("$", ColorId::YELLOW));
@@ -815,7 +836,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::FETCH_ICON, symbol(0x1f44b, ColorId::LIGHT_BROWN, true));
     Tile::addSymbol(ViewId::FOG_OF_WAR, symbol(' ', ColorId::WHITE));
     Tile::addSymbol(ViewId::CREATURE_HIGHLIGHT, symbol(' ', ColorId::WHITE));
-    Tile::addSymbol(ViewId::SQUARE_HIGHLIGHT, symbol(' ', ColorId::WHITE));
+    Tile::addSymbol(ViewId::SQUARE_HIGHLIGHT, symbol(0x26f6, ColorId::WHITE, true));
+    Tile::addSymbol(ViewId::ROUND_SHADOW, symbol(' ', ColorId::WHITE));
     Tile::addSymbol(ViewId::FOG_OF_WAR_CORNER, symbol(' ', ColorId::WHITE));
     Tile::addSymbol(ViewId::SPECIAL_BLBN, symbol('B', ColorId::PURPLE));
     Tile::addSymbol(ViewId::SPECIAL_BLBW, symbol('B', ColorId::LIGHT_RED));
@@ -847,8 +869,7 @@ void Tile::initialize(Renderer& renderer, bool useTiles) {
 }
 
 const Tile& Tile::getTile(ViewId id, bool sprite) {
-  if (sprite) {
-    CHECK(tiles[id]);
+  if (sprite && tiles[id]) {
     return *tiles[id];
   }
   else {
@@ -877,16 +898,16 @@ Color Tile::getColor(const ViewObject& object) {
   if (object.hasModifier(ViewObject::Modifier::PLANNED)) {
     return Color((color.r) / 2, (color.g) / 2, (color.b) / 2);
   }
-  double bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING);
-  if (bleeding > 0) {
-    bleeding = 0.5 + bleeding / 2;
-    bleeding = min(1., bleeding);
-    return Color(
-        (1 - bleeding) * color.r + bleeding * 255,
-        (1 - bleeding) * color.g,
-        (1 - bleeding) * color.b);
-  } else
-    return color;
+  if (auto bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING))
+    if (*bleeding > 0) {
+      *bleeding = 0.5 + *bleeding / 2;
+      *bleeding = min(1.0f, *bleeding);
+      return Color(
+          (1 - *bleeding) * color.r + *bleeding * 255,
+          (1 - *bleeding) * color.g,
+          (1 - *bleeding) * color.b);
+  }
+  return color;
 }
 
 Tile Tile::addCorner(DirSet corner, DirSet borders, TileCoord coord) {

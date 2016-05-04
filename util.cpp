@@ -26,6 +26,10 @@ int RandomGen::get(int max) {
   return get(0, max);
 }
 
+long long RandomGen::getLL() {
+  return uniform_int_distribution<long long>(-(1LL << 62), 1LL << 62)(generator);
+}
+
 int RandomGen::get(Range r) {
   return get(r.getStart(), r.getEnd());
 }
@@ -81,53 +85,9 @@ double RandomGen::getDouble(double a, double b) {
 
 RandomGen Random;
 
-template string toString<int>(const int&);
-template string toString<unsigned int>(const unsigned int&);
-template string toString<size_t>(const size_t&);
-template string toString<char>(const char&);
-template string toString<double>(const double&);
-//template string toString<Vec2>(const Vec2&);
-
-template int fromString<int>(const string&);
-template double fromString<double>(const string&);
-
 template optional<int> fromStringSafe<int>(const string&);
 template optional<double> fromStringSafe<double>(const string&);
 
-template <class T>
-string toString(const T& t){
-  stringstream ss;
-  ss << t;
-  return ss.str();
-}
-
-template <>
-string toString(const Vec2& t){
-  stringstream ss;
-  ss << "(" << t.x << "," << t.y << ")";
-  return ss.str();
-}
-
-template <>
-string toString(const Position& t){
-  stringstream ss;
-  ss << "(" << t.getCoord().x << "," << t.getCoord().y << ")";
-  return ss.str();
-}
-
-template <>
-string toString(const bool& t){
-  return t ? "true" : "false";
-}
-
-template <class T>
-T fromString(const string& s){
-  std::stringstream ss(s);
-  T t;
-  ss >> t;
-  CHECK(ss) << "Error parsing " << s << " to " << typeid(T).name();
-  return t;
-}
 
 template <class T>
 optional<T> fromStringSafe(const string& s){
@@ -358,6 +318,13 @@ bool Rectangle::operator != (const Rectangle& r) const {
   return !(*this == r);
 }
 
+template <class Archive>
+void Vec2::serialize(Archive& ar, const unsigned int) {
+  serializeAll(ar, x, y);
+}
+
+SERIALIZABLE(Vec2);
+
 bool Vec2::inRectangle(int px, int py, int kx, int ky) const {
   return x >= px && x < kx && y >= py && y < ky;
 }
@@ -519,11 +486,11 @@ Vec2 Rectangle::middle() const {
   return Vec2((px + kx) / 2, (py + ky) / 2);
 }
 
-int Rectangle::getPX() const {
+int Rectangle::left() const {
   return px;
 }
 
-int Rectangle::getPY() const {
+int Rectangle::top() const {
   return py;
 }
 
@@ -535,19 +502,19 @@ Range Rectangle::getYRange() const {
   return Range(py, ky);
 }
 
-int Rectangle::getKX() const {
+int Rectangle::right() const {
   return kx;
 }
 
-int Rectangle::getKY() const {
+int Rectangle::bottom() const {
   return ky;
 }
 
-int Rectangle::getW() const {
+int Rectangle::width() const {
   return w;
 }
 
-int Rectangle::getH() const {
+int Rectangle::height() const {
   return h;
 }
 
@@ -555,19 +522,19 @@ Vec2 Rectangle::getSize() const {
   return Vec2(w, h);
 }
 
-Vec2 Rectangle::getTopLeft() const {
+Vec2 Rectangle::topLeft() const {
   return Vec2(px, py);
 }
 
-Vec2 Rectangle::getBottomRight() const {
+Vec2 Rectangle::bottomRight() const {
   return Vec2(kx, ky);
 }
 
-Vec2 Rectangle::getTopRight() const {
+Vec2 Rectangle::topRight() const {
   return Vec2(kx, py);
 }
 
-Vec2 Rectangle::getBottomLeft() const {
+Vec2 Rectangle::bottomLeft() const {
   return Vec2(px, ky);
 }
 
@@ -584,7 +551,7 @@ Rectangle Rectangle::intersection(const Rectangle& other) const {
 }
 
 Rectangle Rectangle::translate(Vec2 v) const {
-  return Rectangle(getTopLeft() + v, getBottomRight() + v);
+  return Rectangle(topLeft() + v, bottomRight() + v);
 }
 
 Rectangle Rectangle::minusMargin(int margin) const {
@@ -621,7 +588,9 @@ Range::Range(int a, int b) : start(a), finish(b) {
 Range::Range(int a) : Range(0, a) {}
 
 Range Range::reverse() {
-  return Range(finish - 1, start - 1);
+  Range r(finish - 1, start - 1);
+  r.increment = -1;
+  return r;
 }
 
 Range Range::shorten(int r) {
@@ -647,14 +616,17 @@ int Range::getEnd() const {
 }
 
 Range::Iter Range::begin() {
-  return Iter(start, start, finish);
+  if ((increment > 0 && start < finish) || (increment < 0 && start > finish))
+    return Iter(start, start, finish, increment);
+  else
+    return end();
 }
 
 Range::Iter Range::end() {
-  return Iter(finish, start, finish);
+  return Iter(finish, start, finish, increment);
 }
 
-Range::Iter::Iter(int i, int a, int b) : ind(i), min(a), max(b), increment(a < b ? 1 : -1) {}
+Range::Iter::Iter(int i, int a, int b, int inc) : ind(i), min(a), max(b), increment(inc) {}
 
 int Range::Iter::operator* () const {
   return ind;
@@ -673,7 +645,8 @@ const Range::Iter& Range::Iter::operator++ () {
 template <class Archive> 
 void Range::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(start)
-    & SVAR(finish);
+    & SVAR(finish)
+    & SVAR(increment);
 }
 
 SERIALIZABLE(Range);
@@ -734,6 +707,8 @@ string noCapitalFirst(string s) {
 }
 
 string makeSentence(string s) {
+  if (s.empty())
+    return s;
   s = capitalFirst(s);
   if (s.size() > 1 && s[0] == '\"' && islower(s[1]))
     s[1] = toupper(s[1]);

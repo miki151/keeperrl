@@ -25,7 +25,7 @@ RandomGen& LevelBuilder::getRandom() {
 bool LevelBuilder::hasAttrib(Vec2 posT, SquareAttrib attr) {
   Vec2 pos = transform(posT);
   CHECK(squares[pos] != nullptr);
-  return attrib[pos][attr];
+  return attrib[pos].contains(attr);
 }
 
 void LevelBuilder::addAttrib(Vec2 pos, SquareAttrib attr) {
@@ -118,22 +118,16 @@ bool LevelBuilder::canPutCreature(Vec2 posT, Creature* c) {
   return true;
 }
 
-void LevelBuilder::setMessage(const string& message) {
-  entryMessage = message;
-}
-
 void LevelBuilder::setNoDiagonalPassing() {
   noDiagonalPassing = true;
 }
 
-PLevel LevelBuilder::build(Model* m, LevelMaker* maker, int levelId) {
+PLevel LevelBuilder::build(Model* m, LevelMaker* maker, LevelId levelId) {
   CHECK(mapStack.empty());
   maker->make(this, squares.getBounds());
-  for (Vec2 v : heightMap.getBounds()) {
-    squares[v]->setHeight(heightMap[v]);
+  for (Vec2 v : squares.getBounds())
     squares[v]->dropItems(std::move(items[v]));
-  }
-  PLevel l(new Level(std::move(squares), m, locations, entryMessage, name, std::move(coverInfo), levelId));
+  PLevel l(new Level(std::move(squares), m, locations, name, std::move(coverInfo), levelId));
   for (pair<PCreature, Vec2>& c : creatures) {
     l->addCreature(c.second, std::move(c.first));
   }
@@ -149,21 +143,21 @@ static Vec2::LinearMap identity() {
 
 static Vec2::LinearMap deg90(Rectangle bounds) {
   return [bounds](Vec2 v) {
-    v -= bounds.getTopLeft();
-    return bounds.getTopLeft() + Vec2(v.y, v.x);
+    v -= bounds.topLeft();
+    return bounds.topLeft() + Vec2(v.y, v.x);
   };
 }
 
 static Vec2::LinearMap deg180(Rectangle bounds) {
   return [bounds](Vec2 v) {
-    return bounds.getTopLeft() - v + bounds.getBottomRight() - Vec2(1, 1);
+    return bounds.topLeft() - v + bounds.bottomRight() - Vec2(1, 1);
   };
 }
 
 static Vec2::LinearMap deg270(Rectangle bounds) {
   return [bounds](Vec2 v) {
-    v -= bounds.getTopRight() - Vec2(1, 0);
-    return bounds.getTopLeft() + Vec2(v.y, -v.x);
+    v -= bounds.topRight() - Vec2(1, 0);
+    return bounds.topLeft() + Vec2(v.y, -v.x);
   };
 }
 

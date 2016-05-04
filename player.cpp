@@ -20,10 +20,9 @@
 #include "level.h"
 #include "ranged_weapon.h"
 #include "name_generator.h"
-#include "model.h"
+#include "game.h"
 #include "options.h"
 #include "creature.h"
-#include "pantheon.h"
 #include "item_factory.h"
 #include "effect.h"
 #include "view_id.h"
@@ -34,22 +33,24 @@
 #include "game_info.h"
 #include "equipment.h"
 #include "spell.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "view.h"
 #include "view_index.h"
+#include "music.h"
+#include "model.h"
+#include "collective.h"
+#include "territory.h"
+#include "creature_attributes.h"
 
-template <class Archive> 
+template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(Controller)
     & SVAR(travelling)
     & SVAR(travelDir)
     & SVAR(target)
     & SVAR(lastLocation)
-    & SVAR(specialCreatures)
     & SVAR(displayGreeting)
     & SVAR(levelMemory)
-    & SVAR(usedEpithets)
-    & SVAR(model)
     & SVAR(messages)
     & SVAR(messageHistory);
 }
@@ -58,38 +59,33 @@ SERIALIZABLE(Player);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
-Player::Player(Creature* c, Model* m, bool greeting, MapMemory* memory) :
-    Controller(c), levelMemory(memory), model(m), displayGreeting(greeting) {
+Player::Player(Creature* c, bool greeting, MapMemory* memory) :
+    Controller(c), levelMemory(memory), displayGreeting(greeting) {
 }
 
 Player::~Player() {
 }
 
-void Player::onThrowEvent(const Level* l, const Creature* thrower, const Item* item, const vector<Vec2>& trajectory) {
+void Player::onThrowEvent(const Level* l, const Item* item, const vector<Vec2>& trajectory) {
   if (getCreature()->getPosition().isSameLevel(l))
     for (Vec2 v : trajectory)
       if (getCreature()->canSee(v)) {
-        model->getView()->animateObject(trajectory, item->getViewObject());
+        getView()->animateObject(trajectory, item->getViewObject());
         return;
       }
-}
-
-void Player::learnLocation(const Location* loc) {
-  for (Position v : loc->getAllSquares())
-    levelMemory->addObject(v, v.getViewObject());
 }
 
 void Player::onExplosionEvent(Position pos) {
   if (getCreature()->getPosition().isSameLevel(pos)) {
     if (getCreature()->canSee(pos))
-      model->getView()->animation(pos.getCoord(), AnimationId::EXPLOSION);
+      getView()->animation(pos.getCoord(), AnimationId::EXPLOSION);
     else
       privateMessage("BOOM!");
   }
 }
 
-ControllerFactory Player::getFactory(Model *m, MapMemory* levelMemory) {
-  return ControllerFactory([=](Creature* c) { return new Player(c, m, true, levelMemory);});
+ControllerFactory Player::getFactory(MapMemory* levelMemory) {
+  return ControllerFactory([=](Creature* c) { return new Player(c, true, levelMemory);});
 }
 
 static string getSlotSuffix(EquipmentSlot slot) {
@@ -102,22 +98,22 @@ void Player::onBump(Creature*) {
 
 string Player::getInventoryItemName(const Item* item, bool plural) const {
   if (getCreature()->getEquipment().isEquiped(item))
-    return item->getNameAndModifiers(plural, getCreature()->isBlind()) + " " 
+    return item->getNameAndModifiers(plural, getCreature()) + " "
       + getSlotSuffix(item->getEquipmentSlot());
   else
-    return item->getNameAndModifiers(plural, getCreature()->isBlind());
+    return item->getNameAndModifiers(plural, getCreature());
 }
 
 void Player::getItemNames(vector<Item*> items, vector<ListElem>& names, vector<vector<Item*> >& groups,
     ItemPredicate predicate) {
-  map<string, vector<Item*> > ret = groupBy<Item*, string>(items, 
+  map<string, vector<Item*> > ret = groupBy<Item*, string>(items,
       [this] (Item* const& item) { return getInventoryItemName(item, false); });
   for (auto elem : ret) {
     if (elem.second.size() == 1)
       names.push_back(ListElem(getInventoryItemName(elem.second[0], false),
           predicate(elem.second[0]) ? ListElem::NORMAL : ListElem::INACTIVE).setTip(elem.second[0]->getDescription()));
     else
-      names.push_back(ListElem(toString<int>(elem.second.size()) + " " 
+      names.push_back(ListElem(toString<int>(elem.second.size()) + " "
             + getInventoryItemName(elem.second[0], true),
           predicate(elem.second[0]) ? ListElem::NORMAL : ListElem::INACTIVE).setTip(elem.second[0]->getDescription()));
     groups.push_back(elem.second);
@@ -149,7 +145,7 @@ void Player::pickUpItemAction(int numStack, bool multi) {
   if (numStack < stacks.size()) {
     vector<Item*> items = stacks[numStack];
     if (multi && items.size() > 1) {
-      auto num = model->getView()->getNumber("Pick up how many " + items[0]->getName(true) + "?", 1, items.size());
+      auto num = getView()->getNumber("Pick up how many " + items[0]->getName(true) + "?", 1, items.size());
       if (!num)
         return;
       items = getPrefix(items, *num);
@@ -210,12 +206,12 @@ vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, op
       getCreature()->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
   vector<ListElem> names;
   vector<vector<Item*> > groups;
-  for (auto elem : typeDisplayOrder) 
+  for (auto elem : typeDisplayOrder)
     if (typeGroups[elem].size() > 0) {
       names.push_back(ListElem(getText(elem), ListElem::TITLE));
       getItemNames(typeGroups[elem], names, groups, predicate);
     }
-  optional<int> index = model->getView()->chooseFromList(text, names, 0, MenuType::NORMAL, nullptr, exitAction);
+  optional<int> index = getView()->chooseFromList(text, names, 0, MenuType::NORMAL, nullptr, exitAction);
   if (index)
     return groups[*index];
   return vector<Item*>();
@@ -229,7 +225,7 @@ void Player::applyItem(vector<Item*> items) {
   if (items[0]->getApplyTime() > 1) {
     for (const Creature* c : getCreature()->getVisibleEnemies())
       if (getCreature()->getPosition().dist8(c->getPosition()) < 3) { 
-        if (!model->getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " + 
+        if (!getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " + 
             toString(items[0]->getApplyTime()) + " turns. Are you sure you want to continue?"))
           return;
         else
@@ -240,10 +236,10 @@ void Player::applyItem(vector<Item*> items) {
 }
 
 void Player::throwItem(vector<Item*> items, optional<Vec2> dir) {
-  if (items[0]->getClass() == ItemClass::AMMO && model->getOptions()->getBoolValue(OptionId::HINTS))
-    privateMessage(PlayerMessage("To fire arrows equip a bow and use alt + direction key", PlayerMessage::CRITICAL));
+  if (items[0]->getClass() == ItemClass::AMMO && getGame()->getOptions()->getBoolValue(OptionId::HINTS))
+    privateMessage(PlayerMessage("To fire arrows equip a bow and use alt + direction key", MessagePriority::CRITICAL));
   if (!dir) {
-    auto cDir = model->getView()->chooseDirection("Which direction do you want to throw?");
+    auto cDir = getView()->chooseDirection("Which direction do you want to throw?");
     if (!cDir)
       return;
     dir = *cDir;
@@ -261,7 +257,7 @@ void Player::consumeAction() {
     tryToPerform(actions[0]);
   } else
   if (actions.size() > 1) {
-    auto dir = model->getView()->chooseDirection("Which direction?");
+    auto dir = getView()->chooseDirection("Which direction?");
     if (!dir)
       return;
     if (Creature* c = getCreature()->getPosition().plus(*dir).getCreature())
@@ -296,19 +292,20 @@ void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemActi
   vector<Item*> items = getCreature()->getEquipment().getItems(
       [&](const Item* it) { return contains(itemIds, it->getUniqueId());});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
-  if (items.empty()) // the above assertion fails for unknown reason, so just fail this softly.
+  // the above assertion fails for unknown reason, so just fail this softly.
+  if (items.empty() || (items.size() == 1 && action == ItemAction::DROP_MULTI)) 
     return;
   switch (action) {
     case ItemAction::DROP: tryToPerform(getCreature()->drop(items)); break;
     case ItemAction::DROP_MULTI:
-      if (auto num = model->getView()->getNumber("Drop how many " + items[0]->getName(true) + "?", 1, items.size()))
+      if (auto num = getView()->getNumber("Drop how many " + items[0]->getName(true) + "?", 1, items.size()))
         tryToPerform(getCreature()->drop(getPrefix(items, *num))); break;
     case ItemAction::THROW: throwItem(items); break;
     case ItemAction::APPLY: applyItem(items); break;
     case ItemAction::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
     case ItemAction::GIVE: giveAction(items); break;
     case ItemAction::EQUIP: 
-      if (getCreature()->isEquipmentAppropriate(items[0]) || model->getView()->yesOrNoPrompt(
+      if (getCreature()->isEquipmentAppropriate(items[0]) || getView()->yesOrNoPrompt(
           items[0]->getTheName() + " is too heavy and will incur an accuracy penalty. Do you want to continue?"))
         tryToPerform(getCreature()->equip(items[0])); break;
     default: FAIL << "Unhandled item action " << int(action);
@@ -320,12 +317,12 @@ void Player::hideAction() {
 }
 
 bool Player::interruptedByEnemy() {
-  vector<const Creature*> enemies = getCreature()->getVisibleEnemies();
+  vector<Creature*> enemies = getCreature()->getVisibleEnemies();
   vector<string> ignoreCreatures { "a boar" ,"a deer", "a fox", "a vulture", "a rat", "a jackal", "a boulder" };
   if (enemies.size() > 0) {
-    for (const Creature* c : enemies)
+    for (Creature* c : enemies)
       if (!contains(ignoreCreatures, c->getName().a())) {
-        model->getView()->updateView(this, false);
+        getView()->updateView(this, false);
         privateMessage("You notice " + c->getName().a());
         return true;
       }
@@ -335,7 +332,7 @@ bool Player::interruptedByEnemy() {
 
 void Player::travelAction() {
   updateView = true;
-  if (!getCreature()->move(travelDir) || model->getView()->travelInterrupt() || interruptedByEnemy()) {
+  if (!getCreature()->move(travelDir) || getView()->travelInterrupt() || interruptedByEnemy()) {
     travelling = false;
     return;
   }
@@ -364,7 +361,7 @@ void Player::travelAction() {
 void Player::targetAction() {
   updateView = true;
   CHECK(target);
-  if (getCreature()->getPosition() == *target || model->getView()->travelInterrupt()) {
+  if (getCreature()->getPosition() == *target || getView()->travelInterrupt()) {
     target = none;
     return;
   }
@@ -383,9 +380,9 @@ void Player::payDebtAction() {
         vector<Item*> gold = getCreature()->getGold(debt);
         if (gold.size() < debt) {
           privateMessage("You don't have enough gold to pay.");
-        } else if (model->getView()->yesOrNoPrompt("Buy items for " + toString(debt) + " zorkmids?")) {
-          privateMessage("You pay " + c->getName().the() + " " + toString(debt) + " zorkmids.");
-          getCreature()->give(c, gold);
+        } else if (getView()->yesOrNoPrompt("Buy items for " + toString(debt) + " gold?")) {
+          if (tryToPerform(getCreature()->give(c, gold)))
+            privateMessage("You pay " + c->getName().the() + " " + toString(debt) + " gold.");
         }
       } else {
         Debug() << "No debt " << c->getName().bare();
@@ -395,7 +392,7 @@ void Player::payDebtAction() {
 
 void Player::giveAction(vector<Item*> items) {
   if (items.size() > 1) {
-    if (auto num = model->getView()->getNumber("Give how many " + items[0]->getName(true) + "?", 1, items.size()))
+    if (auto num = getView()->getNumber("Give how many " + items[0]->getName(true) + "?", 1, items.size()))
       items = getPrefix(items, *num);
     else
       return;
@@ -404,10 +401,10 @@ void Player::giveAction(vector<Item*> items) {
   for (Position pos : getCreature()->getPosition().neighbors8())
     if (Creature* c = pos.getCreature())
       creatures.push_back(c);
-  if (creatures.size() == 1 && model->getView()->yesOrNoPrompt("Give " + items[0]->getTheName(items.size() > 1) +
+  if (creatures.size() == 1 && getView()->yesOrNoPrompt("Give " + items[0]->getTheName(items.size() > 1) +
         " to " + creatures[0]->getName().the() + "?"))
     tryToPerform(getCreature()->give(creatures[0], items));
-  else if (auto dir = model->getView()->chooseDirection("Give whom?"))
+  else if (auto dir = getView()->chooseDirection("Give whom?"))
     if (Creature* whom = getCreature()->getPosition().plus(*dir).getCreature())
       tryToPerform(getCreature()->give(whom, items));
 }
@@ -422,7 +419,7 @@ void Player::chatAction(optional<Vec2> dir) {
   } else
   if (creatures.size() > 1 || dir) {
     if (!dir)
-      dir = model->getView()->chooseDirection("Which direction?");
+      dir = getView()->chooseDirection("Which direction?");
     if (!dir)
       return;
     if (Creature* c = getCreature()->getPosition().plus(*dir).getCreature())
@@ -438,7 +435,7 @@ void Player::spellAction(SpellId id) {
   Spell* spell = Spell::get(id);
   if (!spell->isDirected())
     tryToPerform(getCreature()->castSpell(spell));
-  else if (auto dir = model->getView()->chooseDirection("Which direction?"))
+  else if (auto dir = getView()->chooseDirection("Which direction?"))
     tryToPerform(getCreature()->castSpell(spell, *dir));
 }
 
@@ -452,7 +449,7 @@ void Player::sleeping() {
   else
     ViewObject::setHallu(false);
   MEASURE(
-      model->getView()->updateView(this, false),
+      getView()->updateView(this, false),
       "level render time");
 }
 
@@ -483,7 +480,7 @@ void Player::extendedAttackAction(Creature::Id id) {
 
 void Player::extendedAttackAction(Creature* other) {
   vector<ListElem> elems;
-  vector<AttackLevel> levels = getCreature()->getAttackLevels();
+  vector<AttackLevel> levels = getCreature()->getAttributes().getAttackLevels();
   for (auto level : levels)
     switch (level) {
       case AttackLevel::LOW: elems.push_back(ListElem("Low").setTip("Aim at lower parts of the body.")); break;
@@ -492,7 +489,7 @@ void Player::extendedAttackAction(Creature* other) {
     }
   elems.push_back(ListElem("Wild").setTip("+20\% damage, -20\% accuracy, +50\% time spent."));
   elems.push_back(ListElem("Swift").setTip("-20\% damage, +20\% accuracy, -30\% time spent."));
-  if (auto ind = model->getView()->chooseFromList("Choose attack parameters:", elems)) {
+  if (auto ind = getView()->chooseFromList("Choose attack parameters:", elems)) {
     if (*ind < levels.size())
       getCreature()->attack(other, CONSTRUCT(Creature::AttackParams, c.level = levels[*ind];)).perform(getCreature());
     else
@@ -508,6 +505,13 @@ void Player::retireMessages() {
 }
 
 void Player::makeMove() {
+  if (!getGame()->getPlayerCollective()) {
+    considerAdventurerMusic();
+    considerKeeperDirectionMessage();
+  }
+  if (currentTimePos && currentTimePos->pos.getLevel() != getCreature()->getLevel()) {
+    previousTimePos = currentTimePos = none;
+  }
   vector<Vec2> squareDirs = getCreature()->getPosition().getTravelDir();
   if (getCreature()->isAffected(LastingEffect::HALLU))
     ViewObject::setHallu(true);
@@ -517,27 +521,27 @@ void Player::makeMove() {
     updateView = false;
     for (Position pos : getCreature()->getVisibleTiles()) {
       ViewIndex index;
-      pos.getViewIndex(index, getCreature()->getTribe());
+      pos.getViewIndex(index, getCreature());
       levelMemory->update(pos, index);
     }
     MEASURE(
-        model->getView()->updateView(this, false),
+        getView()->updateView(this, false),
         "level render time");
   } else
-    model->getView()->refreshView();
+    getView()->refreshView();
   if (displayTravelInfo && getCreature()->getPosition().getName() == "road" 
-      && model->getOptions()->getBoolValue(OptionId::HINTS)) {
-    model->getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
+      && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
+    getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
   }
-  if (displayGreeting && model->getOptions()->getBoolValue(OptionId::HINTS)) {
-    CHECK(getCreature()->getFirstName());
-    model->getView()->presentText("", "Dear " + *getCreature()->getFirstName() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + model->getWorldName() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
-    model->getView()->presentText("", "Judging by the corpses lying around here, you suspect that new circumstances may have arisen.");
+  if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
+    CHECK(getCreature()->getName().first());
+    getView()->presentText("", "Dear " + *getCreature()->getName().first() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + getGame()->getWorldName() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
+    getView()->presentText("", "Judging by the corpses lying around here, you suspect that new circumstances may have arisen.");
     displayGreeting = false;
-    model->getView()->updateView(this, false);
+    getView()->updateView(this, false);
   }
-  UserInput action = model->getView()->getAction();
+  UserInput action = getView()->getAction();
   if (travelling && action.getId() == UserInputId::IDLE)
     travelAction();
   else if (target && action.getId() == UserInputId::IDLE)
@@ -552,7 +556,7 @@ void Player::makeMove() {
       retireMessages();
       travelling = false;
       target = none;
-      model->getView()->resetCenter();
+      getView()->resetCenter();
     }
     updateView = true;
   }
@@ -574,8 +578,8 @@ void Player::makeMove() {
         if (!wasJustTravelling) {
           target = newPos;
 /*          Vec2 t = action.get<Vec2>();
-          t = Vec2(min(getCreature()->getLevel()->getBounds().getKX() - 1, max(0, t.x)),
-              min(getCreature()->getLevel()->getBounds().getKY() - 1, max(0, t.y)));*/
+          t = Vec2(min(getCreature()->getLevel()->getBounds().right() - 1, max(0, t.x)),
+              min(getCreature()->getLevel()->getBounds().bottom() - 1, max(0, t.y)));*/
         }
       }
       break;
@@ -594,11 +598,22 @@ void Player::makeMove() {
       if (unpossess())
         return;
       break;
+    case UserInputId::SWAP_TEAM:
+      if (swapTeam())
+        return;
+      break;
     case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
-    case UserInputId::DRAW_LEVEL_MAP: model->getView()->drawLevelMap(this); break;
+    case UserInputId::DRAW_LEVEL_MAP: getView()->drawLevelMap(this); break;
     case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
-    case UserInputId::ADD_TO_TEAM: extendedAttackAction(action.get<Creature::Id>()); break;
-    case UserInputId::EXIT: model->exitAction(); return;
+    case UserInputId::CREATURE_BUTTON2: extendedAttackAction(action.get<Creature::Id>()); break;
+    case UserInputId::EXIT: getGame()->exitAction(); return;
+    case UserInputId::TRANSFER: getGame()->transferAction(getTeam()); return;
+#ifndef RELEASE
+    case UserInputId::CHEAT_ATTRIBUTES:
+      getCreature()->getAttributes().setBaseAttr(AttrType::STRENGTH, 80);
+      getCreature()->getAttributes().setBaseAttr(AttrType::DEXTERITY, 80);
+      break;
+#endif
     default: break;
   }
   if (getCreature()->isAffected(LastingEffect::SLEEP)) {
@@ -623,16 +638,17 @@ void Player::makeMove() {
       break;
     }
   }
-  if (!getCreature()->isDead()) {
-    if (getCreature()->getTime() > currentTimePos.time) {
+  if (!getCreature()->isDead() && (!currentTimePos || getCreature()->getLocalTime() > currentTimePos->time)) {
+    if (currentTimePos /*&& (!previousTimePos || currentTimePos->pos.isSameLevel(previousTimePos->pos))*/)
       previousTimePos = currentTimePos;
-      currentTimePos = { getCreature()->getPosition().getCoord(), getCreature()->getTime()};
-    }
+    else
+      previousTimePos = none;
+    currentTimePos = { getCreature()->getPosition(), getCreature()->getLocalTime()};
   }
 }
 
 void Player::showHistory() {
-  model->getView()->presentList("Message history:", ListElem::convert(messageHistory), true);
+  PlayerMessage::presentMessages(getView(), messageHistory);
 }
 
 static string getForceMovementQuestion(Position pos, const Creature* creature) {
@@ -644,7 +660,7 @@ static string getForceMovementQuestion(Position pos, const Creature* creature) {
     return "The water is very deep, are you sure?";
   else if (pos.sunlightBurns() && creature->getMovementType().isSunlightVulnerable())
     return "Walk into the sunlight?";
-  else if (pos.isTribeForbidden(creature->getTribe()))
+  else if (pos.isTribeForbidden(creature->getTribeId()))
     return "Walk into the forbidden zone?";
   else
     return "Walk into the " + pos.getName() + "?";
@@ -656,7 +672,7 @@ void Player::moveAction(Vec2 dir) {
   if (auto action = getCreature()->forceMove(dir)) {
     string nextQuestion = getForceMovementQuestion(getCreature()->getPosition().plus(dir), getCreature());
     string hereQuestion = getForceMovementQuestion(getCreature()->getPosition(), getCreature());
-    if (hereQuestion == nextQuestion || model->getView()->yesOrNoPrompt(nextQuestion, true))
+    if (hereQuestion == nextQuestion || getView()->yesOrNoPrompt(nextQuestion, true))
       action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());
@@ -672,14 +688,14 @@ void Player::privateMessage(const PlayerMessage& message) {
   if (message.getText().size() < 2)
     return;
   if (auto title = message.getAnnouncementTitle())
-    model->getView()->presentText(*title, message.getText());
+    getView()->presentText(*title, message.getText());
   else {
-    messageHistory.push_back(message.getText());
+    messageHistory.push_back(message);
     if (!messages.empty() && messages.back().getFreshness() < 1)
       messages.clear();
     messages.emplace_back(message);
-    if (message.getPriority() == PlayerMessage::CRITICAL)
-      model->getView()->presentText("Important!", message.getText());
+    if (message.getPriority() == MessagePriority::CRITICAL)
+      getView()->presentText("Important!", message.getText());
   }
 }
 
@@ -724,7 +740,7 @@ void Player::you(MsgType type, const string& param) {
     case MsgType::GET_HIT_NODAMAGE: msg = "The " + param + " is harmless."; break;
     case MsgType::COLLAPSE: msg = "You collapse."; break;
     case MsgType::TRIGGER_TRAP: msg = "You trigger something."; break;
-    case MsgType::DISARM_TRAP: msg = "You disarm the trap."; break;
+    case MsgType::DISARM_TRAP: msg = "You disarm the " + param; break;
     case MsgType::ATTACK_SURPRISE: msg = "You sneak attack " + param; break;
     case MsgType::BITE: msg = "You bite " + param; break;
     case MsgType::PANIC:
@@ -766,55 +782,67 @@ const Level* Player::getLevel() const {
   return getCreature()->getLevel();
 }
 
+Game* Player::getGame() const {
+  return getCreature()->getGame();
+}
+
+View* Player::getView() const {
+  return getGame()->getView();
+}
+
 Vec2 Player::getPosition() const {
   return getCreature()->getPosition().getCoord();
 }
 
 optional<CreatureView::MovementInfo> Player::getMovementInfo() const {
-  if (previousTimePos.pos.x > -1)
-    return MovementInfo({previousTimePos.pos, currentTimePos.pos, previousTimePos.time,
+  if (previousTimePos && currentTimePos)
+    return MovementInfo({previousTimePos->pos.getCoord(), currentTimePos->pos.getCoord(), previousTimePos->time,
         getCreature()->getUniqueId()});
   else
     return none;
 }
 
 void Player::onDisplaced() {
-  currentTimePos.pos = getCreature()->getPosition().getCoord();
+  currentTimePos->pos = getCreature()->getPosition();
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   bool canSee = getCreature()->canSee(pos);
   Position position = getCreature()->getPosition().withCoord(pos);
   if (canSee)
-    position.getViewIndex(index, getCreature()->getTribe());
+    position.getViewIndex(index, getCreature());
   else
     index.setHiddenId(position.getViewObject().id());
   if (!canSee)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
-  if (position.isTribeForbidden(getCreature()->getTribe()))
+  if (position.isTribeForbidden(getCreature()->getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   if (const Creature* c = position.getCreature()) {
     if (getCreature()->canSee(c) || c == getCreature()) {
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));
       if (contains(getTeam(), c))
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
-    } else if (contains(getCreature()->getUnknownAttacker(), c))
+    } else if (getCreature()->isUnknownAttacker(c))
       index.insert(copyOf(ViewObject::unknownMonster()));
   }
  /* if (pos == getCreature()->getPosition() && index.hasObject(ViewLayer::CREATURE))
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);*/
-  
+
 }
 
 void Player::onKilled(const Creature* attacker) {
-  model->getView()->updateView(this, false);
-  if (model->getView()->yesOrNoPrompt("Display message history?"))
+  getView()->updateView(this, false);
+  if (getView()->yesOrNoPrompt("Display message history?"))
     showHistory();
-  model->gameOver(getCreature(), getCreature()->getKills().size(), "monsters", getCreature()->getPoints());
+  getGame()->gameOver(getCreature(), getCreature()->getKills().getSize(), "monsters", getCreature()->getPoints());
 }
 
 bool Player::unpossess() {
+  return false;
+}
+
+bool Player::swapTeam() {
   return false;
 }
 
@@ -822,7 +850,7 @@ void Player::onFellAsleep() {
 }
 
 vector<Creature*> Player::getTeam() const {
-  return {};
+  return {getCreature()};
 }
 
 optional<SquareApplyType> Player::getUsableSquareApplyType() const {
@@ -834,11 +862,12 @@ optional<SquareApplyType> Player::getUsableSquareApplyType() const {
 
 void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.messageBuffer = messages;
+  gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
-  Model::SunlightInfo sunlightInfo = model->getSunlightInfo();
+  SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
-  gameInfo.sunlightInfo.timeRemaining = sunlightInfo.timeRemaining;
-  gameInfo.time = getCreature()->getTime();
+  gameInfo.sunlightInfo.timeRemaining = sunlightInfo.getTimeRemaining();
+  gameInfo.time = getCreature()->getGame()->getGlobalTime();
   PlayerInfo& info = gameInfo.playerInfo;
   info.readFrom(getCreature());
   info.team.clear();
@@ -857,7 +886,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.inventory.clear();
   map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
       getCreature()->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
-  for (auto elem : typeDisplayOrder) 
+  for (auto elem : typeDisplayOrder)
     if (typeGroups[elem].size() > 0)
       append(info.inventory, getItemInfos(typeGroups[elem]));
 }
@@ -873,8 +902,8 @@ ItemInfo Player::getApplySquareInfo(const string& question, ViewId viewId) const
 
 ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(getCreature()->isBlind());
-    c.fullName = stack[0]->getNameAndModifiers(false, getCreature()->isBlind());
+    c.name = stack[0]->getShortName(getCreature());
+    c.fullName = stack[0]->getNameAndModifiers(false, getCreature());
     c.description = getCreature()->isBlind() ? "" : stack[0]->getDescription();
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
@@ -884,7 +913,7 @@ ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
 }
 
 vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
-  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items, 
+  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
       [this] (Item* const& item) { return getInventoryItemName(item, false); });
   vector<ItemInfo> ret;
   for (auto elem : stacks)
@@ -897,10 +926,30 @@ vector<Vec2> Player::getVisibleEnemies() const {
       [](const Creature* c) { return c->getPosition().getCoord(); });
 }
 
-double Player::getTime() const {
-  return getCreature()->getTime();
+double Player::getLocalTime() const {
+  return getCreature()->getLocalTime();
 }
 
 bool Player::isPlayerView() const {
   return true;
+}
+
+void Player::considerAdventurerMusic() {
+  for (Collective* col : getCreature()->getPosition().getModel()->getCollectives())
+    if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&
+        col->getTerritory().contains(getCreature()->getPosition())) {
+      getGame()->setCurrentMusic(MusicType::ADV_BATTLE, true);
+      return;
+    }
+  getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL, false);
+}
+
+void Player::considerKeeperDirectionMessage() {
+  for (Collective* col : getCreature()->getPosition().getModel()->getCollectives())
+    if (col->getVillainType() == VillainType::MAIN && !col->isConquered() && col->getLeader() &&
+        !col->getLeader()->isDead() && col->getLeader()->getPosition().isSameLevel(getLevel()) &&
+        Random.roll(30) && !col->getTerritory().contains(getCreature()->getPosition()))
+      getCreature()->playerMessage("You sense horrible evil in the " +
+            getCardinalName(getCreature()->getPosition().getDir(col->getLeader()->getPosition())
+                .getBearing().getCardinalDir()));
 }

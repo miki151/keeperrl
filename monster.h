@@ -42,7 +42,6 @@ class Monster : public Controller {
 
   private:
   PMonsterAI SERIAL(monsterAI);
-  vector<const Creature*> SERIAL(enemies);
 };
 
 #endif

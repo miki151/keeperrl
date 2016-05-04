@@ -28,29 +28,6 @@ enum class EffectId {
     LASTING,
 };
 
-RICH_ENUM(LastingEffect,
-    SLEEP,
-    PANIC,
-    RAGE,
-    SLOWED,
-    SPEED,
-    STR_BONUS,
-    DEX_BONUS,
-    HALLU,
-    BLIND,
-    INVISIBLE,
-    POISON,
-    ENTANGLED,
-    TIED_UP,
-    STUNNED,
-    POISON_RESISTANT,
-    FIRE_RESISTANT,
-    FLYING,
-    INSANITY,
-    MAGIC_SHIELD,
-    DARKNESS_SOURCE
-);
-
 class EffectType : public EnumVariant<EffectId, TYPES(LastingEffect, CreatureId),
         ASSIGN(LastingEffect, EffectId::LASTING),
         ASSIGN(CreatureId, EffectId::SUMMON)> {

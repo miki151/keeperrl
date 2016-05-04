@@ -7,6 +7,7 @@
 #include "item.h"
 #include "view_id.h"
 #include "location.h"
+#include "model.h"
 
 template <class Archive> 
 void Position::serialize(Archive& ar, const unsigned int version) {
@@ -29,7 +30,17 @@ Level* Position::getLevel() const {
 }
 
 Model* Position::getModel() const {
-  return level->getModel();
+  if (isValid())
+    return level->getModel();
+  else
+    return nullptr;
+}
+
+Game* Position::getGame() const {
+  if (isValid())
+    return level->getModel()->getGame();
+  else
+    return nullptr;
 }
 
 Position::Position(Vec2 v, Level* l) : coord(v), level(l) {
@@ -45,6 +56,10 @@ int Position::dist8(const Position& pos) const {
 
 bool Position::isSameLevel(const Position& p) const {
   return isValid() && level == p.level;
+}
+
+bool Position::isSameModel(const Position& p) const {
+  return isValid() && p.isValid() && getModel() == p.getModel();
 }
 
 bool Position::isSameLevel(const Level* l) const {
@@ -92,10 +107,10 @@ Position& Position::operator = (const Position& o) {
 }
 
 bool Position::operator < (const Position& p) const {
-  if (!isValid())
-    return p.isValid();
-  if (!p.isValid())
-    return true;
+  if (!level)
+    return !!p.level;
+  if (!p.level)
+    return false;
   if (level->getUniqueId() == p.level->getUniqueId())
     return coord < p.coord;
   else
@@ -205,15 +220,16 @@ bool Position::canHide() const {
 }
 
 string Position::getName() const {
+  getSquare()->hasItem( nullptr);
   if (isValid())
     return getSquare()->getName();
   else
     return "";
 }
 
-void Position::getViewIndex(ViewIndex& index, const Tribe* tribe) const {
+void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
   if (isValid())
-    getSquare()->getViewIndex(index, tribe);
+    getSquare()->getViewIndex(index, viewer);
 }
 
 vector<Trigger*> Position::getTriggers() const {
@@ -285,6 +301,10 @@ bool Position::canDestroy(const Creature* c) const {
 
 bool Position::isDestroyable() const {
   return isValid() && getSquare()->isDestroyable();
+}
+
+bool Position::isUnavailable() const {
+  return !isValid() || getSquare()->isUnavailable();
 }
 
 bool Position::canEnterEmpty(const Creature* c) const {
@@ -359,25 +379,25 @@ const ViewObject& Position::getViewObject() const {
   }
 }
 
-void Position::forbidMovementForTribe(const Tribe* t) {
+void Position::forbidMovementForTribe(TribeId t) {
   if (isValid())
     getSquare()->forbidMovementForTribe(t);
 }
 
-void Position::allowMovementForTribe(const Tribe* t) {
+void Position::allowMovementForTribe(TribeId t) {
   if (isValid())
     getSquare()->allowMovementForTribe(t);
 }
 
-bool Position::isTribeForbidden(const Tribe* t) const {
+bool Position::isTribeForbidden(TribeId t) const {
   return isValid() && getSquare()->isTribeForbidden(t);
 }
 
-const Tribe* Position::getForbiddenTribe() const {
+optional<TribeId> Position::getForbiddenTribe() const {
   if (isValid())
     return getSquare()->getForbiddenTribe();
   else
-    return nullptr;
+    return none;
 }
 
 vector<Position> Position::getVisibleTiles(VisionId vision) {
@@ -477,8 +497,9 @@ void Position::moveCreature(Position pos) {
   CHECK(isValid());
   if (isSameLevel(pos))
     level->moveCreature(getCreature(), getDir(pos));
-  else
+  else if (isSameModel(pos))
     level->changeLevel(pos, getCreature());
+  else pos.getLevel()->landCreature({pos}, getModel()->extractCreature(getCreature()));
 }
 
 void Position::moveCreature(Vec2 direction) {

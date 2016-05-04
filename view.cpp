@@ -20,12 +20,13 @@
 #include "spell.h"
 #include "item.h"
 #include "game_info.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "skill.h"
 #include "modifier_type.h"
 #include "view_id.h"
 #include "level.h"
 #include "position.h"
+#include "creature_attributes.h"
 
 ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
@@ -39,6 +40,15 @@ ListElem::ListElem(const char* s, ElemMod m, optional<UserInputId> a) : text(s),
 ListElem& ListElem::setTip(const string& s) {
   tooltip = s;
   return *this;
+}
+
+ListElem& ListElem::setMessagePriority(MessagePriority p) {
+  messagePriority = p;
+  return *this;
+}
+
+optional<MessagePriority> ListElem::getMessagePriority() const {
+  return messagePriority;
 }
 
 const string& ListElem::getText() const {
@@ -81,10 +91,10 @@ CreatureInfo::CreatureInfo(const Creature* c)
     : viewId(c->getViewObject().id()),
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
-      speciesName(c->getSpeciesName()),
-      expLevel(c->getExpLevel()),
+      stackName(c->getName().stack()),
+      expLevel(c->getAttributes().getExpLevel()),
       morale(c->getMorale()),
-      cost({ViewId::GOLD, c->getRecruitmentCost()}){
+      cost({ViewId::GOLD, c->getAttributes().getRecruitmentCost()}){
 }
 
 string PlayerInfo::getFirstName() const {
@@ -95,31 +105,25 @@ string PlayerInfo::getFirstName() const {
 }
 
 string PlayerInfo::getTitle() const {
-  string title = name;
-  for (int i : All(adjectives)) {
-    title = adjectives[i] + " " + title;
-    break; // only use the first one
-  }
-  if (!firstName.empty())
-    title = firstName + " the " + title;
-  return capitalFirst(title);
+  return title;
 }
 
 vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
   vector<PlayerInfo::SkillInfo> ret;
-  for (auto skill : c->getDiscreteSkills())
+  for (auto skill : c->getAttributes().getSkills().getAllDiscrete())
     ret.push_back(PlayerInfo::SkillInfo{Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
   for (SkillId id : ENUM_ALL(SkillId))
-    if (!Skill::get(id)->isDiscrete() && c->getSkillValue(Skill::get(id)) > 0)
+    if (!Skill::get(id)->isDiscrete() && c->getAttributes().getSkills().getValue(id) > 0)
       ret.push_back(PlayerInfo::SkillInfo{Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
   return ret;
 }
 
 void PlayerInfo::readFrom(const Creature* c) {
-  firstName = c->getFirstName().get_value_or("");
+  firstName = c->getName().first().get_value_or("");
   name = c->getName().bare();
+  title = c->getName().title();
   adjectives = c->getMainAdjectives();
-  description = capitalFirst(c->getDescription());
+  description = capitalFirst(c->getAttributes().getDescription());
   Item* weapon = c->getWeapon();
   weaponName = weapon ? weapon->getName() : "";
   viewId = c->getViewObject().id();
@@ -164,7 +168,7 @@ void PlayerInfo::readFrom(const Creature* c) {
       c->getExpLevel(), 0,
       "Describes general combat value of the creature."}*/
   };
-  level = c->getExpLevel();
+  level = c->getAttributes().getExpLevel();
   skills = getSkillNames(c);
   effects.clear();
   for (auto& adj : c->getBadAdjectives())
@@ -172,7 +176,7 @@ void PlayerInfo::readFrom(const Creature* c) {
   for (auto& adj : c->getGoodAdjectives())
     effects.push_back({adj.name, adj.help, false});
   spells.clear();
-  for (::Spell* spell : c->getSpells()) {
+  for (::Spell* spell : c->getAttributes().getSpellMap().getAll()) {
     bool ready = c->isReady(spell);
     spells.push_back({
         spell->getId(),
@@ -182,11 +186,10 @@ void PlayerInfo::readFrom(const Creature* c) {
   }
 }
 
-CreatureInfo& CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) {
+CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) {
   for (auto& elem : minions)
     if (elem.uniqueId == id)
-      return elem;
-  FAIL << "Minion not found " << id;
-  return minions[0];
+      return &elem;
+  return nullptr;
 }
 

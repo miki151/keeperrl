@@ -102,9 +102,10 @@ class Renderer {
   bool isFullscreen();
   static vector<string> getFullscreenResolutions();
   const static int textSize = 19;
+  const static int smallTextSize = 14;
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
-  int getTextLength(string s);
-  int getUnicodeLength(String s, FontId = SYMBOL_FONT);
+  int getTextLength(string s, int size = textSize);
+  int getUnicodeLength(String s, FontId = SYMBOL_FONT, int size = textSize);
   enum CenterType { NONE, HOR, VER, HOR_VER };
   void drawText(FontId, int size, Color, int x, int y, String, CenterType center = NONE);
   void drawTextWithHotkey(Color, int x, int y, const string&, char key);
@@ -122,11 +123,12 @@ class Renderer {
   void drawFilledRectangle(const Rectangle&, Color, optional<Color> outline = none);
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline = none);
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, Vec2 size);
-  void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1);
+  void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawViewObject(Vec2 pos, const ViewObject&);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, Vec2 size, Color = colors[ColorId::WHITE]);
   void drawViewObject(Vec2 pos, ViewId, Color = colors[ColorId::WHITE]);
+  void drawAsciiBackground(ViewId, Rectangle bounds);
   void drawTile(Vec2 pos, TileCoord coord, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = colors[ColorId::WHITE], bool hFlip = false,
       bool vFlip = false);

@@ -1,15 +1,21 @@
 #include "stdafx.h"
 #include "player_message.h"
 #include "location.h"
+#include "view.h"
 
-PlayerMessage::PlayerMessage(const string& t, Priority p) : text(makeSentence(t)), priority(p), freshness(1) {}
-PlayerMessage::PlayerMessage(const char* t, Priority p) : text(makeSentence(t)), priority(p), freshness(1) {}
+PlayerMessage::PlayerMessage(const string& t, MessagePriority p) : text(makeSentence(t)), priority(p), freshness(1) {}
+PlayerMessage::PlayerMessage(const char* t, MessagePriority p) : text(makeSentence(t)), priority(p), freshness(1) {}
 
-PlayerMessage::PlayerMessage(const string& title, const string& t) : text(t), priority(NORMAL), 
+PlayerMessage::PlayerMessage(const string& title, const string& t) : text(t), priority(MessagePriority::NORMAL), 
     announcementTitle(title) {}
 
 PlayerMessage PlayerMessage::announcement(const string& title, const string& text) {
   return PlayerMessage(title, text);
+}
+
+void PlayerMessage::presentMessages(View* view, const vector<PlayerMessage>& messages) {
+  view->presentList("Message history", transform2<ListElem>(messages,
+        [](const PlayerMessage& msg) { return ListElem(msg.text).setMessagePriority(msg.priority);}));
 }
 
 optional<string> PlayerMessage::getAnnouncementTitle() const {
@@ -30,7 +36,7 @@ void PlayerMessage::setFreshness(double val) {
   freshness = val;
 }
 
-PlayerMessage::Priority PlayerMessage::getPriority() const {
+MessagePriority PlayerMessage::getPriority() const {
   return priority;
 }
 

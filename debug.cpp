@@ -31,8 +31,12 @@ namespace boost {
 }
 
 
-Debug::Debug(DebugType t, const string& msg, int line) 
-    : out((string[]) { "INFO ", "FATAL "}[t] + msg + ":" + toString(line) + " "), type(t) {
+Debug::Debug(DebugType t, const string& msg, int line) : type(t) {
+	if (t == DebugType::FATAL)
+		out = "FATAL";
+	else
+		out = "INFO";
+	out += msg + ":" + toString(line) + " ";
 }
 
 static ofstream output;
@@ -62,6 +66,10 @@ Debug& Debug::operator <<(const string& msg) {
   return *this;
 }
 Debug& Debug::operator <<(const int msg) {
+  add(toString(msg));
+  return *this;
+}
+Debug& Debug::operator <<(const long long msg) {
   add(toString(msg));
   return *this;
 }
@@ -96,8 +104,8 @@ Debug& Debug::operator<<(const vector<T>& container){
 template<class T>
 Debug& Debug::operator<<(const vector<vector<T> >& container){
   (*this) << "{";
-  for (int i : Range(container[0].size())) {
-    for (int j : Range(container.size())) {
+  for (int i = 0; i < container[0].size(); ++i) {
+    for (int j = 0; j < container[0].size(); ++i) {
       (*this) << container[j][i] << ",";
     }
     (*this) << '\n';

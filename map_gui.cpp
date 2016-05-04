@@ -53,7 +53,7 @@ void MapGui::ViewIdMap::add(Vec2 pos, ViewId id) {
 }
 
 bool MapGui::ViewIdMap::has(Vec2 pos, ViewId id) {
-  return ids.getValue(pos)[id];
+  return ids.getValue(pos).contains(id);
 }
 
 void MapGui::ViewIdMap::clear() {
@@ -70,12 +70,12 @@ void MapGui::clearButtonViewId() {
 
 void MapGui::highlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
   for (auto& id : ids)
-    ++teamHighlight[id];
+    ++teamHighlight.getOrInit(id);
 }
 
 void MapGui::unhighlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
   for (auto& id : ids)
-    CHECK(--teamHighlight[id] >= 0);
+    CHECK(--teamHighlight.getOrFail(id) >= 0);
 }
 
 Vec2 MapGui::getScreenPos() const {
@@ -233,8 +233,8 @@ bool MapGui::onKeyPressed2(Event::KeyEvent key) {
     default: break;
   }
   if (softCenter) {
-    softCenter->x = max(0.0, min<double>(softCenter->x, levelBounds.getKX()));
-    softCenter->y = max(0.0, min<double>(softCenter->y, levelBounds.getKY()));
+    softCenter->x = max(0.0, min<double>(softCenter->x, levelBounds.right()));
+    softCenter->y = max(0.0, min<double>(softCenter->y, levelBounds.bottom()));
   }
   return false;
 }
@@ -291,8 +291,8 @@ bool MapGui::onMouseMove(Vec2 v) {
     mouseOffset.y = double(v.y - lastMousePos.y) / layout->getSquareSize().y;
     mouseOffset.x = min(mouseOffset.x, center.x);
     mouseOffset.y = min(mouseOffset.y, center.y);
-    mouseOffset.x = max(mouseOffset.x, center.x - levelBounds.getKX());
-    mouseOffset.y = max(mouseOffset.y, center.y - levelBounds.getKY());
+    mouseOffset.x = max(mouseOffset.x, center.x - levelBounds.right());
+    mouseOffset.y = max(mouseOffset.y, center.y - levelBounds.bottom());
     callbacks.refreshFun();
   }
   return false;
@@ -390,8 +390,8 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   } else if (object.hasAnyMovementInfo() && !screenMovement) {
     ViewObject::MovementInfo info = object.getLastMovementInfo();
     dir = info.direction;
-    if (info.direction.length8() == 0 || time >= info.tEnd || time <= info.tBegin)
-      return Vec2(0, 0);
+/*    if (info.direction.length8() == 0 || time >= info.tEnd + 0.001 || time <= info.tBegin - 0.001)
+      return Vec2(0, 0);*/
     state = (time - info.tBegin) / (info.tEnd - info.tBegin);
     double minStopTime = 0.2;
     state = min(1.0, max(0.0, (state - minStopTime) / (1.0 - 2 * minStopTime)));
@@ -408,7 +408,8 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
   if (object.hasModifier(ViewObject::Modifier::PLAYER))
     drawCreatureHighlight(renderer, pos, sz, colors[ColorId::ALMOST_WHITE]);
   if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && showMorale)
-    drawCreatureHighlight(renderer, pos, sz, getMoraleColor(object.getAttribute(ViewObject::Attribute::MORALE)));
+    if (auto morale = object.getAttribute(ViewObject::Attribute::MORALE))
+      drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));
   if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT) && (curTime / 1000) % 2) {
     drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
   } else
@@ -422,7 +423,7 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
 }
 
 Color MapGui::getCreatureHighlight(UniqueEntity<Creature>::Id creature, int curTime) {
-  if (teamHighlight[creature] > 0)
+  if (teamHighlight.getMaybe(creature).get_value_or(0) > 0)
     return colors[ColorId::YELLOW];
   else
     return Color(0, 0, 0, 0);
@@ -451,11 +452,11 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       color = transparency(color, 150);
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
     color = transparency(color, 100);
-  double waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH);
-  if (waterDepth > 0) {
-    int val = max(0.0, 255.0 - min(2.0, waterDepth) * 60);
-    color = Color(val, val, val);
-  }
+  if (auto waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH))
+    if (*waterDepth > 0) {
+      int val = max(0.0, 255.0 - min(2.0f, *waterDepth) * 60);
+      color = Color(val, val, val);
+    }
   if (spriteMode && tile.hasSpriteCoord()) {
     DirSet dirs;
     DirSet borderDirs;
@@ -505,11 +506,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if ((object.layer() == ViewLayer::FLOOR || object.layer() == ViewLayer::FLOOR_BACKGROUND) && 
         shadowed.count(tilePos) && !tile.noShadow)
       renderer.drawTile(pos, shortShadow, size, sf::Color(255, 255, 255, 170));
-    if (object.getAttribute(ViewObject::Attribute::BURNING) > 0) {
-      static auto fire1 = renderer.getTileCoord("fire1");
-      static auto fire2 = renderer.getTileCoord("fire2");
-      renderer.drawTile(pos, Random.choose({fire1, fire2}), size);
-    }
+    if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
+      if (*burningVal > 0) {
+        static auto fire1 = renderer.getTileCoord("fire1");
+        static auto fire2 = renderer.getTileCoord("fire2");
+        renderer.drawTile(pos, Random.choose({fire1, fire2}), size);
+      }
     static auto key = renderer.getTileCoord("key");
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos, key, size);
@@ -522,14 +524,14 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (!buttonViewId)
       if (auto id = object.getCreatureId())
         creatureMap.push_back(CreatureInfo{Rectangle(tilePos, tilePos + size), *id, object.id()});
-    double burningVal = object.getAttribute(ViewObject::Attribute::BURNING);
-    if (burningVal > 0) {
-      renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'ѡ',
-          Renderer::HOR);
-      if (burningVal > 0.5)
-        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'Ѡ',
-          Renderer::HOR);
-    }
+    if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
+      if (*burningVal > 0) {
+        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'ѡ',
+            Renderer::HOR);
+        if (*burningVal > 0.5)
+          renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'Ѡ',
+              Renderer::HOR);
+      }
   }
 }
 
@@ -539,6 +541,8 @@ void MapGui::resetScrolling() {
 
 void MapGui::clearCenter() {
   center = mouseOffset = {0.0, 0.0};
+  softCenter = none;
+  screenMovement = none;
 }
 
 bool MapGui::isCentered() const {
@@ -547,8 +551,9 @@ bool MapGui::isCentered() const {
 
 void MapGui::setCenter(double x, double y) {
   center = {x, y};
-  center.x = max(0.0, min<double>(center.x, levelBounds.getKX()));
-  center.y = max(0.0, min<double>(center.y, levelBounds.getKY()));
+  center.x = max(0.0, min<double>(center.x, levelBounds.right()));
+  center.y = max(0.0, min<double>(center.y, levelBounds.bottom()));
+  softCenter = none;
 }
 
 void MapGui::setCenter(Vec2 v) {
@@ -565,7 +570,7 @@ void MapGui::drawHint(Renderer& renderer, Color color, const vector<string>& tex
   int width = 0;
   for (auto& s : text)
     width = max(width, renderer.getTextLength(s) + 110);
-  Vec2 pos(getBounds().getKX() - width, getBounds().getKY() - height);
+  Vec2 pos(getBounds().right() - width, getBounds().bottom() - height);
   renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, Color(0, 0, 0, 150));
   for (int i : All(text))
     renderer.drawText(color, pos.x + 10, pos.y + 1 + i * lineHeight, text[i]);
@@ -644,11 +649,11 @@ Vec2 MapGui::projectOnScreen(Vec2 wpos, int curTime) {
 
 void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   for (Vec2 wpos : allTiles)
     if (auto& index = objects[wpos])
       if (index->hasAnyHighlight()) {
-        Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
+        Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
         for (HighlightType highlight : ENUM_ALL(HighlightType))
           if (index->getHighlight(highlight) > 0)
             switch (highlight) {
@@ -690,14 +695,14 @@ void MapGui::renderAnimations(Renderer& renderer, int currentTimeReal) {
 MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size, int currentTimeReal) {
   HighlightedInfo ret {};
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   if (auto mousePos = getMousePos())
     if (mouseUI) {
       ret.tilePos = layout->projectOnMap(getBounds(), getScreenPos(), *mousePos);
       if (!buttonViewId && ret.tilePos->inRectangle(objects.getBounds()))
         for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
             .intersection(objects.getBounds())) {
-          Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
+          Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
           if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::CREATURE)) {
             const ViewObject& object = objects[wpos]->getObject(ViewLayer::CREATURE);
             Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal);
@@ -716,16 +721,16 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size
 
 void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& highlightedInfo,int currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   renderer.drawFilledRectangle(getBounds(), colors[ColorId::BLACK]);
   renderer.drawFilledRectangle(Rectangle(
-        projectOnScreen(levelBounds.getTopLeft(), currentTimeReal),
-        projectOnScreen(levelBounds.getBottomRight(), currentTimeReal)), colors[ColorId::BLACK]);
+        projectOnScreen(levelBounds.topLeft(), currentTimeReal),
+        projectOnScreen(levelBounds.bottomRight(), currentTimeReal)), colors[ColorId::BLACK]);
   fogOfWar.clear();
   creatureMap.clear();
   for (ViewLayer layer : layout->getLayers()) {
     for (Vec2 wpos : allTiles) {
-      Vec2 pos = topLeftCorner + (wpos - allTiles.getTopLeft()).mult(size);
+      Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
       if (!objects[wpos] || objects[wpos]->noObjects()) {
         if (layer == layout->getLayers().back()) {
           if (wpos.inRectangle(levelBounds))
@@ -762,7 +767,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
       if (!buttonViewId && highlightedInfo.creaturePos)
         drawCreatureHighlight(renderer, *highlightedInfo.creaturePos, size, colors[ColorId::ALMOST_WHITE]);
       if (highlightedInfo.tilePos)
-        drawSquareHighlight(renderer, topLeftCorner + (*highlightedInfo.tilePos - allTiles.getTopLeft()).mult(size),
+        drawSquareHighlight(renderer, topLeftCorner + (*highlightedInfo.tilePos - allTiles.topLeft()).mult(size),
             size);
     }
     if (!spriteMode)
@@ -789,10 +794,10 @@ void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
 
 void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, int currentTimeReal, Vec2 pos, Vec2 size) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.getTopLeft(), currentTimeReal);
+  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   for (Vec2 v : concat({pos}, pos.neighbors8()))
     if (v.inRectangle(objects.getBounds()) && (!objects[v] || objects[v]->noObjects())) {
-      drawSquareHighlight(renderer, topLeftCorner + (pos - allTiles.getTopLeft()).mult(size), size);
+      drawSquareHighlight(renderer, topLeftCorner + (pos - allTiles.topLeft()).mult(size), size);
       break;
     }
 }
@@ -858,8 +863,16 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
     objects[pos] = none;
   displayScrollHint = view->isPlayerView() && !lockedView;
-  if (!isCentered() || (view->isPlayerView() && lockedView))
+  if (currentLevel != level) {
+    screenMovement = none;
+    clearCenter();
     setCenter(view->getPosition());
+    currentLevel = level;
+    mouseOffset = {0, 0};
+  }
+  if (!isCentered() || (view->isPlayerView() && lockedView) || currentLevel != level) {
+    setCenter(view->getPosition());
+  }
   keyScrolling = !view->isPlayerView();
   for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos())) 
     if (level->inBounds(pos)) {
@@ -868,7 +881,7 @@ void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool 
       if (objects[pos]->hasObject(ViewLayer::FLOOR) || objects[pos]->hasObject(ViewLayer::FLOOR_BACKGROUND))
         objects[pos]->setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
     }
-  currentTimeGame = smoothMovement ? view->getTime() : 1000000000;
+  currentTimeGame = smoothMovement ? view->getLocalTime() : 1000000000;
   if (smoothMovement) {
     if (auto movement = view->getMovementInfo()) {
       if (!screenMovement || screenMovement->startTimeGame != movement->prevTime) {

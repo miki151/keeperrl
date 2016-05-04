@@ -7,13 +7,13 @@ class Renderable {
   public:
   Renderable(const ViewObject&);
   const ViewObject& getViewObject() const;
+  ViewObject& modViewObject();
 
   SERIALIZATION_DECL(Renderable);
 
   ~Renderable();
 
   protected:
-  ViewObject& modViewObject();
   void setViewObject(const ViewObject&);
 
   private:

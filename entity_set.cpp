@@ -54,8 +54,18 @@ bool EntitySet<T>::empty() const {
 }
 
 template <class T>
+int EntitySet<T>::getSize() const {
+  return elems.size();
+}
+
+template <class T>
 void EntitySet<T>::insert(typename UniqueEntity<T>::Id e) {
   elems.insert(e);
+}
+
+template <class T>
+void EntitySet<T>::clear() {
+  elems.clear();
 }
 
 template <class T>
@@ -92,6 +102,5 @@ ItemPredicate EntitySet<Item>::containsPredicate() const {
 SERIALIZABLE_TMPL(EntitySet, Item);
 SERIALIZABLE_TMPL(EntitySet, Task);
 SERIALIZABLE_TMPL(EntitySet, Creature);
-SERIALIZABLE_TMPL(EntitySet, Level);
 
 

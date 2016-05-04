@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "stair_key.h"
 
-int StairKey::numKeys = 2;
+int StairKey::numKeys = 3;
 
 StairKey StairKey::getNew() {
   return numKeys++;
@@ -13,6 +13,10 @@ StairKey StairKey::heroSpawn() {
 
 StairKey StairKey::keeperSpawn() {
   return StairKey(1);
+}
+
+StairKey StairKey::transferLanding() {
+  return StairKey(2);
 }
 
 bool StairKey::operator == (const StairKey& o) const {

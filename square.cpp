@@ -23,7 +23,7 @@
 #include "view_object.h"
 #include "trigger.h"
 #include "progress_meter.h"
-#include "model.h"
+#include "game.h"
 #include "vision.h"
 #include "player_message.h"
 #include "square_type.h"
@@ -32,16 +32,17 @@
 #include "poison_gas.h"
 #include "fire.h"
 #include "tribe.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "movement_type.h"
 #include "movement_set.h"
 #include "view.h"
 #include "sound.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
   ar& SUBCLASS(Renderable)
-    & SVAR(inventory)
+    & SVAR(inventoryPtr)
     & SVAR(name)
     & SVAR(level)
     & SVAR(position)
@@ -51,15 +52,15 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(vision)
     & SVAR(hide)
     & SVAR(strength)
-    & SVAR(height)
     & SVAR(travelDir)
     & SVAR(landingLink)
     & SVAR(fire)
     & SVAR(poisonGas)
     & SVAR(constructions)
+    & SVAR(currentConstruction)
     & SVAR(ticking)
     & SVAR(movementSet)
-    & SVAR(updateViewIndex)
+    & SVAR(lastViewer)
     & SVAR(updateMemory)
     & SVAR(viewIndex)
     & SVAR(destroyable)
@@ -69,7 +70,6 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(applySound);
   if (progressMeter)
     progressMeter->addProgress();
-  updateViewIndex = true;
   updateMemory = true;
 }
 
@@ -93,8 +93,9 @@ void Square::putCreature(Creature* c) {
   //CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
   setCreature(c);
   onEnter(c);
-  if (c->isStationary())
+  if (c->getAttributes().isStationary())
     level->addTickingSquare(position);
+  c->onMoved();
 }
 
 void Square::setPosition(Vec2 v) {
@@ -134,32 +135,93 @@ double Square::getLightEmission() const {
   return sum;
 }
 
-void Square::setHeight(double h) {
-  modViewObject().setAttribute(ViewObject::Attribute::HEIGHT, h);
-  height = h;
-}
-
 void Square::addTravelDir(Vec2 dir) {
   if (!findElement(travelDir, dir))
     travelDir.push_back(dir);
 }
 
+static optional<short int> getConstructionTime(ConstructionsId id, SquareId square) {
+  switch (id) {
+    case ConstructionsId::BRIDGE:
+      return square == SquareId::BRIDGE ? 20 : optional<short int>(none);
+    case ConstructionsId::CUT_TREE:
+      return square == SquareId::TREE_TRUNK ? 20 : optional<short int>(none);
+    case ConstructionsId::BED:
+      return square == SquareId::BED ? 10 : optional<short int>(none);
+    case ConstructionsId::BEAST_CAGE:
+      return square == SquareId::BEAST_CAGE ? 10 : optional<short int>(none);
+    case ConstructionsId::GRAVE:
+      return square == SquareId::GRAVE ? 10 : optional<short int>(none);
+    case ConstructionsId::MINING:
+      return square == SquareId::FLOOR ? Random.get(3, 8) : optional<short int>(none);
+    case ConstructionsId::MINING_ORE:
+      return square == SquareId::FLOOR ? Random.get(25, 50) : optional<short int>(none);
+    case ConstructionsId::OUTDOOR_INSTALLATIONS:
+      switch (square) {
+        case SquareId::IMPALED_HEAD:
+        case SquareId::EYEBALL: return 5;
+        default: return none;
+      }
+    case ConstructionsId::MOUNTAIN_GEN_ORES:
+      switch (square) {
+        case SquareId::FLOOR: return Random.get(3, 8);
+        case SquareId::IRON_ORE:
+        case SquareId::STONE:
+        case SquareId::GOLD_ORE: return 1;
+        default: return none;
+      }
+    case ConstructionsId::DUNGEON_ROOMS:
+      switch (square) {
+        case SquareId::TREASURE_CHEST: return 10;
+        case SquareId::DORM: return 10;
+        case SquareId::TRIBE_DOOR: return 10;
+        case SquareId::TRAINING_ROOM: return 10;
+        case SquareId::LIBRARY: return 10;
+        case SquareId::HATCHERY: return 10;
+        case SquareId::STOCKPILE: return 1;
+        case SquareId::STOCKPILE_EQUIP: return 1;
+        case SquareId::STOCKPILE_RES: return 1;
+        case SquareId::CEMETERY: return 10;
+        case SquareId::WORKSHOP: return 10;
+        case SquareId::FORGE: return 10;
+        case SquareId::LABORATORY: return 10;
+        case SquareId::JEWELER: return 10;
+        case SquareId::PRISON: return 10;
+        case SquareId::TORTURE_TABLE: return 10;
+        case SquareId::BEAST_LAIR: return 10;
+        case SquareId::IMPALED_HEAD: return 5;
+        case SquareId::WHIPPING_POST: return 5;
+        case SquareId::BARRICADE: return 20;
+        case SquareId::TORCH: return 5;
+        case SquareId::EYEBALL: return 5;
+        case SquareId::CREATURE_ALTAR: return 35;
+        case SquareId::MINION_STATUE: return 35;
+        case SquareId::THRONE: return 100;
+        case SquareId::MOUNTAIN: return 15;
+        case SquareId::RITUAL_ROOM: return 10;
+        default: return none;
+      }
+  }
+}
+
 bool Square::canConstruct(const SquareType& type) const {
-  return constructions.count(type.getId());
+  return constructions && getConstructionTime(*constructions, type.getId());
 }
 
 bool Square::construct(const SquareType& type) {
   setDirty();
   CHECK(canConstruct(type));
-  if (--constructions[type.getId()] <= 0) {
+  if (!currentConstruction || currentConstruction->id != type.getId())
+    currentConstruction = CurrentConstruction{type.getId(), *getConstructionTime(*constructions, type.getId())};
+  if (--currentConstruction->turnsRemaining <= 0) {
     level->replaceSquare(position, SquareFactory::get(type));
     return true;
   } else
     return false;
 }
 
-bool Square::canDestroy(const Tribe* tribe) const {
-  return isDestroyable() && tribe != owner && !fire->isBurning();
+bool Square::canDestroy(TribeId tribe) const {
+  return isDestroyable() && owner != tribe && !fire->isBurning();
 }
 
 bool Square::isDestroyable() const {
@@ -170,14 +232,14 @@ void Square::destroy() {
   CHECK(isDestroyable());
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " is destroyed.");
-  level->getModel()->getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
-  level->getModel()->onSquareDestroyed(getPosition2());
+  level->getGame()->getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
+  level->getGame()->onSquareDestroyed(getPosition2());
   getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 
 bool Square::canDestroy(const Creature* c) const {
-  return canDestroy(c->getTribe())
-    || (isDestroyable() && c->isInvincible()); // so that boulders destroy keeper doors
+  return canDestroy(c->getTribeId())
+    || (isDestroyable() && c->getAttributes().isInvincible()); // so that boulders destroy keeper doors
 }
 
 void Square::destroyBy(Creature* c) {
@@ -187,7 +249,7 @@ void Square::destroyBy(Creature* c) {
 void Square::burnOut() {
   setDirty();
   getLevel()->globalMessage(getPosition(), "The " + getName() + " burns down.");
-  level->getModel()->onSquareDestroyed(getPosition2());
+  level->getGame()->onSquareDestroyed(getPosition2());
   getLevel()->removeSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
 }
 
@@ -201,7 +263,7 @@ void Square::setCreature(Creature* c) {
 
 void Square::setLevel(Level* l) {
   level = l;
-  if (ticking || !inventory->isEmpty())
+  if (ticking || !inventoryEmpty())
     level->addTickingSquare(position);
 }
 
@@ -219,7 +281,7 @@ bool Square::isUnavailable() const {
 
 void Square::setUnavailable() {
   unavailable = true;
-  constructions.clear();
+  constructions.reset();
   movementSet->clear();
 }
 
@@ -244,13 +306,13 @@ void Square::updateMovement() {
   }
 }
 
-void Square::tick(double time) {
+void Square::tick() {
   setDirty();
-  if (!inventory->isEmpty())
-    for (Item* item : inventory->getItems()) {
-      item->tick(time, Position(position, level));
+  if (!inventoryEmpty())
+    for (Item* item : getInventory().getItems()) {
+      item->tick(Position(position, level));
       if (item->isDiscarded())
-        inventory->removeItem(item);
+        getInventory().removeItem(item);
     }
   poisonGas->tick(getPosition2());
   if (creature && poisonGas->getAmount() > 0.2) {
@@ -277,10 +339,10 @@ void Square::tick(double time) {
       t->setOnFire(fire->getSize());
   }
   for (Trigger* t : extractRefs(triggers))
-    t->tick(time);
-  if (creature && creature->isStationary())
+    t->tick();
+  if (creature && creature->getAttributes().isStationary())
     level->updateConnectivity(position);
-  tickSpecial(time);
+  tickSpecial();
 }
 
 bool Square::itemLands(vector<Item*> item, const Attack& attack) const {
@@ -302,7 +364,7 @@ bool Square::itemLands(vector<Item*> item, const Attack& attack) const {
 }
 
 bool Square::itemBounces(Item* item, VisionId v) const {
-  return !canSeeThru(v);
+  return !unavailable && !canSeeThru(v);
 }
 
 void Square::onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, VisionId vision) {
@@ -326,8 +388,9 @@ void Square::onItemLands(vector<PItem> item, const Attack& attack, int remaining
 
 bool Square::canNavigate(const MovementType& type1) const {
   MovementType type(type1);
-  return canEnterEmpty(type) || (canDestroy(type.getTribe()) && !canEnterEmpty(type.setForced())) || 
-      (creature && creature->isStationary() && type.getTribe() != creature->getTribe());
+  return canEnterEmpty(type) || 
+    ((isDestroyable() && (!type.getTribe() || canDestroy(*type.getTribe()))) && !canEnterEmpty(type.setForced())) || 
+    (creature && creature->getAttributes().isStationary() && type.getTribe() != creature->getTribeId());
 }
 
 bool Square::canEnter(const MovementType& movement) const {
@@ -335,7 +398,7 @@ bool Square::canEnter(const MovementType& movement) const {
 }
 
 bool Square::canEnterEmpty(const MovementType& movement) const {
-  if (creature && creature->isStationary())
+  if (creature && creature->getAttributes().isStationary())
     return false;
   if (!movement.isForced() && forbiddenTribe && forbiddenTribe == movement.getTribe())
     return false;
@@ -392,20 +455,23 @@ void Square::setBackground(const Square* square) {
   }
 }
 
-void Square::getViewIndex(ViewIndex& ret, const Tribe* tribe) const {
-  if (!updateViewIndex) {
+void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
+  if ((!viewer && lastViewer) || (viewer && lastViewer == viewer->getUniqueId())) {
     ret = *viewIndex;
     return;
   }
+  // viewer is null only in Spectator mode, so setting a random id to lastViewer is ok
+  lastViewer = viewer ? viewer->getUniqueId() : Creature::Id();
   double fireSize = 0;
-  for (Item* it : inventory->getItems())
+  if (!inventoryEmpty())
+    for (Item* it : getInventory().getItems())
     fireSize = max(fireSize, it->getFireSize());
   fireSize = max(fireSize, fire->getSize());
   if (backgroundObject)
     ret.insert(*backgroundObject.get());
   ret.insert(getViewObject());
   for (const PTrigger& t : triggers)
-    if (auto obj = t->getViewObject(tribe))
+    if (auto obj = t->getViewObject(viewer))
       ret.insert(copyOf(*obj).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (Item* it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
@@ -413,7 +479,6 @@ void Square::getViewIndex(ViewIndex& ret, const Tribe* tribe) const {
     ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas->getAmount()));
   if (unavailable)
     ret.setHighlight(HighlightType::UNAVAILABLE);
-  updateViewIndex = false;
   *viewIndex = ret;
 }
 
@@ -433,11 +498,11 @@ void Square::dropItems(vector<PItem> items) {
   if (level)  // if level == null, then it's being constructed, square will be added later
     level->addTickingSquare(getPosition());
   for (PItem& it : items)
-    inventory->addItem(std::move(it));
+    getInventory().addItem(std::move(it));
 }
 
 bool Square::hasItem(Item* it) const {
-  return inventory->hasItem(it);
+  return !inventoryEmpty() && getInventory().hasItem(it);
 }
 
 Creature* Square::getCreature() {
@@ -486,7 +551,7 @@ void Square::removeCreature() {
   CHECK(creature);
   Creature* tmp = creature;
   creature = nullptr;
-  if (tmp->isStationary())
+  if (tmp->getAttributes().isStationary())
     level->updateConnectivity(position);
 }
 
@@ -512,37 +577,48 @@ int Square::getStrength() const {
 }
 
 Item* Square::getTopItem() const {
-  if (!inventory->isEmpty())
-    return inventory->getItems().back();
+  if (!inventoryEmpty())
+    return getInventory().getItems().back();
   else
     return nullptr;
 }
 
 vector<Item*> Square::getItems(function<bool (Item*)> predicate) const {
-  return inventory->getItems(predicate);
+  if (!inventoryEmpty())
+    return getInventory().getItems(predicate);
+  else
+    return {};
 }
 
+static vector<Item*> empty;
+
 const vector<Item*>& Square::getItems() const {
-  return inventory->getItems();
+  if (!inventoryEmpty())
+    return getInventory().getItems();
+  else
+    return empty;
 }
 
 const vector<Item*>& Square::getItems(ItemIndex index) const {
-  return inventory->getItems(index);
+  if (!inventoryEmpty())
+    return getInventory().getItems(index);
+  else
+    return empty;
 }
 
 PItem Square::removeItem(Item* it) {
   setDirty();
-  return inventory->removeItem(it);
+  return getInventory().removeItem(it);
 }
 
 vector<PItem> Square::removeItems(vector<Item*> it) {
   setDirty();
-  return inventory->removeItems(it);
+  return getInventory().removeItems(it);
 }
 
 void Square::setDirty() {
   updateMemory = true;
-  updateViewIndex = true;
+  lastViewer.reset();
 }
 
 void Square::setMemoryUpdated() {
@@ -553,35 +629,35 @@ bool Square::needsMemoryUpdate() const {
   return updateMemory;
 }
 
-void Square::addTraitForTribe(const Tribe* tribe, MovementTrait trait) {
+void Square::addTraitForTribe(TribeId tribe, MovementTrait trait) {
   movementSet->addTraitForTribe(tribe, trait);
   level->updateConnectivity(position);
 }
 
-void Square::removeTraitForTribe(const Tribe* tribe, MovementTrait trait) {
+void Square::removeTraitForTribe(TribeId tribe, MovementTrait trait) {
   movementSet->removeTraitForTribe(tribe, trait);
   level->updateConnectivity(position);
 }
 
-void Square::forbidMovementForTribe(const Tribe* tribe) {
+void Square::forbidMovementForTribe(TribeId tribe) {
   CHECK(!forbiddenTribe || forbiddenTribe == tribe);
   forbiddenTribe = tribe;
   level->updateConnectivity(position);
   setDirty();
 }
 
-void Square::allowMovementForTribe(const Tribe* tribe) {
+void Square::allowMovementForTribe(TribeId tribe) {
   CHECK(!forbiddenTribe || forbiddenTribe == tribe);
-  forbiddenTribe = nullptr;
+  forbiddenTribe = none;
   level->updateConnectivity(position);
   setDirty();
 }
 
-bool Square::isTribeForbidden(const Tribe* tribe) const {
+bool Square::isTribeForbidden(TribeId tribe) const {
   return forbiddenTribe == tribe;
 }
 
-const Tribe* Square::getForbiddenTribe() const {
+optional<TribeId> Square::getForbiddenTribe() const {
   return forbiddenTribe;
 }
 
@@ -592,8 +668,25 @@ optional<SquareApplyType> Square::getApplyType(const Creature* c) const {
   return none;
 }
 
+Inventory& Square::getInventory() {
+  if (!inventoryPtr)
+    inventoryPtr.reset(new Inventory());
+  return *inventoryPtr;
+}
+
+const Inventory& Square::getInventory() const {
+  if (!inventoryPtr)
+    inventoryPtr.reset(new Inventory());
+  return *inventoryPtr;
+}
+
+bool Square::inventoryEmpty() const {
+  return !inventoryPtr || inventoryPtr->isEmpty();
+}
+
 void Square::clearItemIndex(ItemIndex index) {
-  inventory->clearIndex(index);
+  if (!inventoryEmpty())
+    getInventory().clearIndex(index);
 }
 
 void Square::apply(Creature* c) {

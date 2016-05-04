@@ -37,6 +37,11 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::KEEPER_NAME, string("")},
   {OptionId::KEEPER_SEED, string("")},
   {OptionId::ADVENTURER_NAME, string("")},
+  {OptionId::MAIN_VILLAINS, 4},
+  {OptionId::RETIRED_VILLAINS, 1},
+  {OptionId::LESSER_VILLAINS, 3},
+  {OptionId::ALLIES, 2},
+  {OptionId::INFLUENCE_SIZE, 3},
 };
 
 const map<OptionId, string> names {
@@ -49,7 +54,7 @@ const map<OptionId, string> names {
   {OptionId::FULLSCREEN, "Fullscreen"},
   {OptionId::FULLSCREEN_RESOLUTION, "Fullscreen resolution"},
   {OptionId::ZOOM_UI, "Zoom in UI"},
-  {OptionId::ONLINE, "Online exchange of dungeons and highscores"},
+  {OptionId::ONLINE, "Online features"},
   {OptionId::AUTOSAVE, "Autosave"},
   {OptionId::WASD_SCROLLING, "WASD scrolling"},
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
@@ -58,30 +63,26 @@ const map<OptionId, string> names {
   {OptionId::KEEPER_NAME, "Keeper's name"},
   {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::ADVENTURER_NAME, "Adventurer's name"},
+  {OptionId::MAIN_VILLAINS, "Main villains"},
+  {OptionId::RETIRED_VILLAINS, "Retired villains"},
+  {OptionId::LESSER_VILLAINS, "Lesser villains"},
+  {OptionId::ALLIES, "Allies"},
+  {OptionId::INFLUENCE_SIZE, "Min. tribes in influence zone"},
 };
 
 const map<OptionId, string> hints {
   {OptionId::HINTS, "Display some extra helpful information during the game."},
   {OptionId::ASCII, "Switch to old school roguelike graphics."},
-  {OptionId::MUSIC, ""},
-  {OptionId::SOUND, ""},
   {OptionId::KEEP_SAVEFILES, "Don't remove the save file when a game is loaded."},
-  {OptionId::SHOW_MAP, ""},
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
   {OptionId::FULLSCREEN_RESOLUTION, "Choose resolution for fullscreen mode."},
   {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
       "Use you have a large resolution screen and things appear too small."},
-  {OptionId::ONLINE, "Upload your highscores and retired dungeons to keeperrl.com."},
+  {OptionId::ONLINE, "Enable online features, like dungeon sharing and highscores."},
   {OptionId::AUTOSAVE, "Autosave the game every " + toString(MainLoop::getAutosaveFreq()) + " turns. "
     "The save file will be used to recover in case of a crash."},
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
     "using alt + letter."},
-  {OptionId::FAST_IMMIGRATION, ""},
-  {OptionId::STARTING_RESOURCE, ""},
-  {OptionId::START_WITH_NIGHT, ""},
-  {OptionId::KEEPER_NAME, ""},
-  {OptionId::KEEPER_SEED, ""},
-  {OptionId::ADVENTURER_NAME, ""},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -114,12 +115,37 @@ const map<OptionSet, vector<OptionId>> optionSets {
   {OptionSet::ADVENTURER, {
       OptionId::ADVENTURER_NAME,
   }},
+  {OptionSet::CAMPAIGN, {
+      OptionId::KEEPER_NAME,
+      OptionId::MAIN_VILLAINS,
+      //OptionId::RETIRED_VILLAINS,
+      OptionId::LESSER_VILLAINS,
+      OptionId::ALLIES,
+      //OptionId::INFLUENCE_SIZE
+  }},
 };
 
 map<OptionId, Options::Trigger> triggers;
 
 void Options::addTrigger(OptionId id, Trigger trigger) {
   triggers[id] = trigger;
+}
+
+const string& Options::getName(OptionId id) {
+  return names.at(id);
+}
+
+Options::Type Options::getType(OptionId id) {
+  switch (id) {
+    case OptionId::ADVENTURER_NAME:
+    case OptionId::KEEPER_SEED:
+    case OptionId::KEEPER_NAME: return Options::STRING;
+    default: return Options::INT;
+  }
+}
+
+vector<OptionId> Options::getOptions(OptionSet set) {
+  return optionSets.at(set);
 }
 
 static EnumMap<OptionId, optional<Options::Value>> parseOverrides(const string& s) {
@@ -146,7 +172,8 @@ Options::Options(const string& path, const string& _overrides)
 Options::Value Options::getValue(OptionId id) {
   if (overrides[id])
     return *overrides[id];
-  return readValues()[id];
+  readValues();
+  return (*values)[id];
 }
 
 bool Options::getBoolValue(OptionId id) {
@@ -154,11 +181,30 @@ bool Options::getBoolValue(OptionId id) {
 }
 
 string Options::getStringValue(OptionId id) {
-  return getValueString(id, getValue(id));
+  return getValueString(id);
 }
 
 int Options::getChoiceValue(OptionId id) {
   return boost::get<int>(getValue(id));
+}
+
+int Options::getIntValue(OptionId id) {
+  int v = boost::get<int>(getValue(id));
+  if (limits[id]) {
+    if (v > limits[id]->second)
+      return limits[id]->second;
+    if (v < limits[id]->first)
+      return limits[id]->first;
+  }
+  return v;
+}
+
+void Options::setLimits(OptionId id, int minV, int maxV) {
+  limits[id] = make_pair(minV, maxV);
+}
+
+optional<pair<int, int>> Options::getLimits(OptionId id) {
+  return limits[id];
 }
 
 void Options::setValue(OptionId id, Value value) {
@@ -181,7 +227,8 @@ static string getYesNo(const Options::Value& value) {
   return boost::get<int>(value) ? "yes" : "no";
 }
 
-string Options::getValueString(OptionId id, Options::Value value) {
+string Options::getValueString(OptionId id) {
+  Value value = getValue(id);
   switch (id) {
     case OptionId::HINTS:
     case OptionId::ASCII:
@@ -207,6 +254,11 @@ string Options::getValueString(OptionId id, Options::Value value) {
           return val;
         }
     case OptionId::FULLSCREEN_RESOLUTION: return choices[id][boost::get<int>(value)];
+    case OptionId::MAIN_VILLAINS:
+    case OptionId::LESSER_VILLAINS:
+    case OptionId::RETIRED_VILLAINS:
+    case OptionId::INFLUENCE_SIZE:
+    case OptionId::ALLIES: return toString(getIntValue(id));
   }
 }
 
@@ -260,9 +312,12 @@ bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
     return true;
   vector<ListElem> options;
   options.emplace_back("Change settings:", ListElem::TITLE);
-  for (OptionId option : optionSets.at(set))
+  for (OptionId option : optionSets.at(set)) {
     options.push_back(ListElem(names.at(option),
-          getValueString(option, getValue(option))).setTip(hints.at(option)));
+        getValueString(option)));
+    if (hints.count(option))
+      options.back().setTip(hints.at(option));
+  }
   options.emplace_back("Done");
   if (lastIndex == -1)
     lastIndex = optionSets.at(set).size();
@@ -279,9 +334,12 @@ bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
 void Options::handle(View* view, OptionSet set, int lastIndex) {
   vector<ListElem> options;
   options.emplace_back("Change settings:", ListElem::TITLE);
-  for (OptionId option : optionSets.at(set))
+  for (OptionId option : optionSets.at(set)) {
     options.push_back(ListElem(names.at(option),
-          getValueString(option, getValue(option))).setTip(hints.at(option)));
+      getValueString(option)));
+    if (hints.count(option))
+      options.back().setTip(hints.at(option));
+  }
   options.emplace_back("Done");
   auto index = view->chooseFromList("", options, lastIndex, getMenuType(set));
   if (!index || (*index) == optionSets.at(set).size())
@@ -291,7 +349,7 @@ void Options::handle(View* view, OptionSet set, int lastIndex) {
   handle(view, set, *index);
 }
 
-const EnumMap<OptionId, Options::Value>& Options::readValues() {
+void Options::readValues() {
   if (!values) {
     values = defaults;
     ifstream in(filename);
@@ -314,7 +372,6 @@ const EnumMap<OptionId, Options::Value>& Options::readValues() {
         (*values)[optionId] = *val;
     }
   }
-  return *values;
 }
 
 void Options::writeValues() {

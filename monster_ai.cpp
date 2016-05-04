@@ -26,10 +26,12 @@
 #include "equipment.h"
 #include "spell.h"
 #include "event.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "skill.h"
 #include "modifier_type.h"
 #include "task.h"
+#include "game.h"
+#include "creature_attributes.h"
 
 class Behaviour {
   public:
@@ -80,7 +82,7 @@ Creature* Behaviour::getClosestEnemy() {
   Creature* result = nullptr;
   for (const Creature* other : creature->getVisibleEnemies()) {
     int curDist = other->getPosition().dist8(creature->getPosition());
-    if (curDist < dist && (!other->dontChase() || curDist == 1)) {
+    if (curDist < dist && (!other->getAttributes().dontChase() || curDist == 1)) {
       result = const_cast<Creature*>(other);
       dist = creature->getPosition().dist8(other->getPosition());
     }
@@ -100,7 +102,7 @@ Item* Behaviour::getBestWeapon() {
 }
 
 MoveInfo Behaviour::tryEffect(EffectType type, double maxTurns) {
-  for (Spell* spell : creature->getSpells()) {
+  for (Spell* spell : creature->getAttributes().getSpellMap().getAll()) {
    if (spell->hasEffect(type))
       if (auto action = creature->castSpell(spell))
         return { 1, action };
@@ -109,12 +111,12 @@ MoveInfo Behaviour::tryEffect(EffectType type, double maxTurns) {
   for (Item* item : items)
     if (item->getApplyTime() <= maxTurns)
       if (auto action = creature->applyItem(item))
-        return { 1, action};
+        return MoveInfo(1, action);
   return NoMove;
 }
 
 MoveInfo Behaviour::tryEffect(DirEffectType type, Vec2 dir) {
-  for (Spell* spell : creature->getSpells()) {
+  for (Spell* spell : creature->getAttributes().getSpellMap().getAll()) {
     if (spell->hasEffect(type))
       if (auto action = creature->castSpell(spell, dir))
         return { 1, action };
@@ -135,16 +137,16 @@ class Heal : public Behaviour {
   }
 
   virtual MoveInfo getMove() {
-    if (creature->hasSkill(Skill::get(SkillId::HEALING))) {
+    if (creature->getAttributes().getSkills().hasDiscrete(SkillId::HEALING)) {
       int healingRadius = 2;
       for (Position pos : creature->getPosition().getRectangle(
             Rectangle(-healingRadius, -healingRadius, healingRadius + 1, healingRadius + 1)))
         if (const Creature* other = pos.getCreature())
           if (creature->isFriend(other))
             if (auto action = creature->heal(creature->getPosition().getDir(other->getPosition())))
-              return {0.5, action};
+              return MoveInfo(0.5, action);
     }
-    if (!creature->isHumanoid())
+    if (!creature->getAttributes().isHumanoid())
       return NoMove;
     if (creature->isAffected(LastingEffect::POISON)) {
       if (MoveInfo move = tryEffect(EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT), 1))
@@ -163,7 +165,7 @@ class Heal : public Behaviour {
         if (creature->isFriend(c) && c->getHealth() < 1)
           for (Item* item : creature->getEquipment().getItems(Item::effectPredicate(EffectId::HEAL)))
             if (auto action = creature->give(c, {item}))
-              return { 0.5, action};
+              return MoveInfo(0.5, action);
     return NoMove;
   }
 
@@ -324,7 +326,7 @@ class Fighter : public Behaviour {
   }
 
   double getMoraleBonus() {
-    return creature->getCourage() * pow(2.0, creature->getMorale());
+    return creature->getAttributes().getCourage() * pow(2.0, creature->getMorale());
   }
 
   virtual MoveInfo getMove() override {
@@ -342,13 +344,13 @@ class Fighter : public Behaviour {
       weight = min(1.0, max(0.0, weight));
       if (creature->isAffected(LastingEffect::PANIC))
         weight = 1;
-      if (other->isAffected(LastingEffect::SLEEP) || other->isStationary())
+      if (other->isAffected(LastingEffect::SLEEP) || other->getAttributes().isStationary())
         weight = 0;
       Debug() << creature->getName().bare() << " panic weight " << weight;
       if (weight >= 0.5) {
         double dist = creature->getPosition().dist8(other->getPosition());
         if (dist < 7) {
-          if (dist == 1 && creature->isHumanoid())
+          if (dist == 1 && creature->getAttributes().isHumanoid())
             creature->surrender(other);
           if (MoveInfo move = getPanicMove(other, weight))
             return move;
@@ -372,7 +374,7 @@ class Fighter : public Behaviour {
       return {weight, action.prepend([=](Creature* creature) {
         creature->setInCombat();
         other->setInCombat();
-        lastSeen = {creature->getPosition(), creature->getTime(), LastSeen::PANIC, other};
+        lastSeen = {creature->getPosition(), creature->getGlobalTime(), LastSeen::PANIC, other->getUniqueId()};
       })};
     else
       return NoMove;
@@ -392,7 +394,7 @@ class Fighter : public Behaviour {
           EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)},
           item->getEffectType()))
       return 1;
-    if (item->getClass() == ItemClass::AMMO && creature->getSkillValue(Skill::get(SkillId::ARCHERY)) > 0)
+    if (item->getClass() == ItemClass::AMMO && creature->getAttributes().getSkills().getValue(SkillId::ARCHERY) > 0)
       return 0.1;
     if (!creature->isEquipmentAppropriate(item))
       return 0;
@@ -475,7 +477,7 @@ class Fighter : public Behaviour {
     if (auto lastSeen = getLastSeen()) {
       double lastSeenTimeout = 20;
       if (!lastSeen->pos.isSameLevel(creature->getPosition()) ||
-          lastSeen->time < creature->getTime() - lastSeenTimeout ||
+          lastSeen->time < creature->getGlobalTime() - lastSeenTimeout ||
           lastSeen->pos == creature->getPosition()) {
         lastSeen = none;
         return NoMove;
@@ -498,12 +500,12 @@ class Fighter : public Behaviour {
   MoveInfo getAttackMove(Creature* other, bool chase) {
     int distance = 10000;
     CHECK(other);
-    if (other->isInvincible())
+    if (other->getAttributes().isInvincible())
       return NoMove;
     Debug() << creature->getName().bare() << " enemy " << other->getName().bare();
     Vec2 enemyDir = creature->getPosition().getDir(other->getPosition());
     distance = enemyDir.length8();
-    if (creature->isHumanoid() && !creature->getWeapon()) {
+    if (creature->getAttributes().isHumanoid() && !creature->getWeapon()) {
       if (Item* weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
           return {3.0 / (2.0 + distance), action.prepend([=](Creature* creature) {
@@ -531,15 +533,15 @@ class Fighter : public Behaviour {
         if (MoveInfo move = getThrowMove(enemyDir))
           return move;
       }
-      if (chase && !other->dontChase() && !isChaseFrozen(other)) {
+      if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
         if (auto action = creature->moveTowards(other->getPosition()))
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=](Creature* creature) {
             creature->setInCombat();
             other->setInCombat();
-            lastSeen = {other->getPosition(), creature->getTime(), LastSeen::ATTACK, other};
-            if (!chaseFreeze.count(other) || other->getTime() > chaseFreeze.at(other).second)
-              chaseFreeze[other] = make_pair(other->getTime() + 20, other->getTime() + 70);
+            lastSeen = {other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
+            if (!chaseFreeze.count(other) || other->getGlobalTime() > chaseFreeze.at(other).second)
+              chaseFreeze[other] = make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70);
           })};
       }
     }
@@ -563,43 +565,29 @@ class Fighter : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Fighter);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Behaviour)
-      & SVAR(maxPowerRatio)
-      & SVAR(chase)
-      & SVAR(lastSeen);
-  }
+  SERIALIZE_ALL2(Behaviour, maxPowerRatio, chase, lastSeen);
 
   private:
   double SERIAL(maxPowerRatio);
   bool SERIAL(chase);
   struct LastSeen {
-    Position pos;
-    double time;
-    enum { ATTACK, PANIC} type;
-    const Creature* creature;
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-      ar& BOOST_SERIALIZATION_NVP(pos)
-        & BOOST_SERIALIZATION_NVP(time)
-        & BOOST_SERIALIZATION_NVP(type)
-        & BOOST_SERIALIZATION_NVP(creature);
-    }
+    Position SERIAL(pos);
+    double SERIAL(time);
+    enum { ATTACK, PANIC} SERIAL(type);
+    Creature::Id SERIAL(creature);
+    SERIALIZE_ALL(pos, time, type, creature);
   };
   optional<LastSeen> SERIAL(lastSeen);
   optional<LastSeen>& getLastSeen() {
-    if (lastSeen && lastSeen->creature->isDead())
+    if (lastSeen && !creature->getLevel()->containsCreature(lastSeen->creature))
       lastSeen.reset();
     return lastSeen;
   }
   map<const Creature*, pair<double, double>> chaseFreeze;
 
   bool isChaseFrozen(const Creature* c) {
-    return chaseFreeze.count(c) && chaseFreeze.at(c).first <= c->getTime()
-      && chaseFreeze.at(c).second >= c->getTime();
+    return chaseFreeze.count(c) && chaseFreeze.at(c).first <= c->getGlobalTime()
+      && chaseFreeze.at(c).second >= c->getGlobalTime();
   }
 };
 
@@ -695,9 +683,9 @@ class DieTime : public Behaviour {
   DieTime(Creature* c, double t) : Behaviour(c), dieTime(t) {}
 
   virtual MoveInfo getMove() override {
-    if (creature->getTime() > dieTime) {
+    if (creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
-        if (creature->isNotLiving() && creature->isCorporal())
+        if (creature->getAttributes().isNotLiving() && creature->getAttributes().isCorporal())
           creature->you(MsgType::FALL, "apart");
         creature->die(nullptr, false, false);
       })};
@@ -720,16 +708,16 @@ class DieTime : public Behaviour {
 class Summoned : public GuardTarget {
   public:
   Summoned(Creature* c, Creature* _target, double minDist, double maxDist, double ttl) 
-      : GuardTarget(c, minDist, maxDist), target(_target), dieTime(target->getTime() + ttl) {
+      : GuardTarget(c, minDist, maxDist), target(_target), dieTime(target->getGlobalTime() + ttl) {
   }
 
   virtual ~Summoned() {
   }
 
   virtual MoveInfo getMove() override {
-    if (target->isDead() || creature->getTime() > dieTime) {
+    if (target->isDead() || creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
-        if (creature->isNotLiving() && !creature->isCorporal())
+        if (creature->getAttributes().isNotLiving() && !creature->getAttributes().isCorporal())
           creature->you(MsgType::FALL, "apart");
         creature->die(nullptr, false, false);
       })};
@@ -759,10 +747,10 @@ class Thief : public Behaviour {
   Thief(Creature* c) : Behaviour(c) {}
  
   virtual MoveInfo getMove() override {
-    if (!creature->hasSkill(Skill::get(SkillId::STEALING)))
+    if (!creature->getAttributes().getSkills().hasDiscrete(SkillId::STEALING))
       return NoMove;
-    for (const Creature* other : robbed) {
-      if (creature->canSee(other)) {
+    for (const Creature* other : creature->getVisibleEnemies()) {
+      if (robbed.contains(other)) {
         if (MoveInfo teleMove = tryEffect(EffectId::TELEPORT, 1))
           return teleMove;
         if (auto action = creature->moveAway(other->getPosition()))
@@ -771,7 +759,7 @@ class Thief : public Behaviour {
     }
     for (Position pos : creature->getPosition().neighbors8(Random)) {
       const Creature* other = pos.getCreature();
-      if (other && !contains(robbed, other)) {
+      if (other && !robbed.contains(other)) {
         vector<Item*> allGold;
         for (Item* it : other->getEquipment().getItems())
           if (it->getClass() == ItemClass::GOLD)
@@ -780,7 +768,7 @@ class Thief : public Behaviour {
           if (auto action = creature->stealFrom(creature->getPosition().getDir(other->getPosition()), allGold))
           return {1.0, action.append([=](Creature* creature) {
             other->playerMessage(creature->getName().the() + " steals all your gold!");
-            robbed.push_back(other);
+            robbed.insert(other);
           })};
       }
     }
@@ -788,14 +776,10 @@ class Thief : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Thief);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(robbed);
-  }
+  SERIALIZE_ALL2(Behaviour, robbed);
 
   private:
-  vector<const Creature*> SERIAL(robbed);
+  EntitySet<Creature> SERIAL(robbed);
 };
 
 class ByCollective : public Behaviour {
@@ -857,7 +841,7 @@ class SingleTask : public Behaviour {
 };
 
 const static Vec2 splashTarget = Level::getSplashBounds().middle() - Vec2(3, 0);
-const static Vec2 splashLeaderPos = Vec2(Level::getSplashVisibleBounds().getKX(),
+const static Vec2 splashLeaderPos = Vec2(Level::getSplashVisibleBounds().right(),
     Level::getSplashBounds().middle().y) - Vec2(4, 0);
 
 class SplashHeroes : public Behaviour {
@@ -865,7 +849,7 @@ class SplashHeroes : public Behaviour {
   SplashHeroes(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    creature->setCourage(100);
+    creature->getAttributes().setCourage(100);
     if (!started && creature->getPosition().withCoord(splashLeaderPos).getCreature())
       started = true;
     if (!started)
@@ -894,7 +878,7 @@ class SplashHeroLeader : public Behaviour {
   SplashHeroLeader(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    creature->setCourage(100);
+    creature->getAttributes().setCourage(100);
     Vec2 pos = creature->getPosition().getCoord();
     if (started)
       return creature->moveTowards(creature->getPosition().withCoord(splashTarget));
@@ -928,7 +912,7 @@ class SplashMonsters : public Behaviour {
   SplashMonsters(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    creature->setCourage(100);
+    creature->getAttributes().setCourage(100);
     if (!initialPos)
       initialPos = creature->getPosition().getCoord();
     vector<Creature*> heroes;
@@ -1008,9 +992,9 @@ class SplashItems : public TaskCallback {
       iff >> s;
       for (int j : Range(sz.x)) {
         if (s[j] == '1')
-          targetsGold.push_back(Level::getSplashVisibleBounds().getTopLeft() + Vec2(j, i));
+          targetsGold.push_back(Level::getSplashVisibleBounds().topLeft() + Vec2(j, i));
         else if (s[j] == '2')
-          targetsCorpse.push_back(Level::getSplashVisibleBounds().getTopLeft() + Vec2(j, i));
+          targetsCorpse.push_back(Level::getSplashVisibleBounds().topLeft() + Vec2(j, i));
       }
     }
   }
@@ -1145,7 +1129,7 @@ void MonsterAI::makeMove() {
     if (pickItems) {
       for (auto elem : Item::stackItems(creature->getPickUpOptions())) {
         Item* item = elem.second[0];
-        if (!item->getShopkeeper() && creature->pickUp(elem.second))
+        if (!item->isOrWasForSale() && creature->pickUp(elem.second))
           moves.emplace_back(
               MoveInfo({ behaviours[i]->itemValue(item) * weights[i], creature->pickUp(elem.second)}),
               weights[i]);

@@ -33,8 +33,14 @@ RICH_ENUM(TechId,
   ARCHERY,
   SPELLS,
   SPELLS_ADV,
-  SPELLS_MAS
+  SPELLS_MAS,
+  GEOLOGY1,
+  GEOLOGY2,
+  GEOLOGY3
 );
+
+class Spell;
+class Collective;
 
 class Technology : public Singleton<Technology, TechId> {
   public:
@@ -47,8 +53,13 @@ class Technology : public Singleton<Technology, TechId> {
   static vector<Technology*> getSorted();
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
-
   static vector<Technology*> getNextTechs(const vector<Technology*>& current);
+  static vector<Spell*> getSpellLearning(TechId tech);
+  static vector<Spell*> getAvailableSpells(const Collective*);
+  static vector<Spell*> getAllKeeperSpells();
+  static TechId getNeededTech(Spell*);
+
+  static void onAcquired(TechId, Collective*);
 
   static void init();
 

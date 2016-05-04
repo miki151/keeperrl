@@ -21,7 +21,7 @@
 #include "attack.h"
 #include "modifier_type.h"
 #include "view.h"
-#include "model.h"
+#include "game.h"
 #include "sound.h"
 
 template <class Archive> 
@@ -36,6 +36,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon);
 RangedWeapon::RangedWeapon(const ItemAttributes& attr) : Item(attr) {}
 
 void RangedWeapon::fire(Creature* c, PItem ammo, Vec2 dir) {
+  c->getGame()->getView()->addSound(SoundId::SHOOT_BOW);
   int toHitVariance = 10;
   int attackVariance = 15;
   int toHit = Random.get(-toHitVariance, toHitVariance) + 
@@ -49,6 +50,5 @@ void RangedWeapon::fire(Creature* c, PItem ammo, Vec2 dir) {
   Attack attack(c, Random.choose({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
       AttackType::SHOOT, toHit, damage, false, none);
   c->getPosition().throwItem(std::move(ammo), attack, 20, dir, c->getVision());
-  c->getModel()->getView()->addSound(SoundId::SHOOT_BOW);
 }
 

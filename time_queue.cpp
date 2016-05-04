@@ -20,9 +20,7 @@
 
 template <class Archive> 
 void TimeQueue::serialize(Archive& ar, const unsigned int version) { 
-  ar& SVAR(creatures)
-    & SVAR(queue)
-    & SVAR(dead);
+  serializeAll(ar, creatures, queue, dead);
 }
 
 SERIALIZABLE(TimeQueue);
@@ -42,7 +40,8 @@ TimeQueue::TimeQueue() : queue([](QElem e1, QElem e2) {
 }
 
 void TimeQueue::addCreature(PCreature c) {
-  queue.push({c.get(), c->getTime()});
+  queue.push({c.get(), c->getLocalTime()});
+  dead.erase(c.get());
   creatures.push_back(std::move(c));
 }
   
@@ -68,23 +67,23 @@ vector<Creature*> TimeQueue::getAllCreatures() const {
 }
 
 void TimeQueue::removeDead() {
-  while (!queue.empty() && dead.count(queue.top().creature))
+  while (!queue.empty() && dead.contains(queue.top().creature))
     queue.pop();
 }
 
 Creature* TimeQueue::getMinCreature() {
-  CHECK(creatures.size() > 0);
+  if (creatures.empty())
+    return nullptr;
   removeDead();
   QElem elem = queue.top();
-  if (elem.time == elem.creature->getTime())
-    return elem.creature;
-  else {
+  while (elem.time != elem.creature->getLocalTime()) {
+    CHECK(elem.time < elem.creature->getLocalTime());
     queue.pop();
     removeDead();
-    queue.push({elem.creature, elem.creature->getTime()});
-    CHECK(queue.top().creature->getTime() == queue.top().time);
-    return queue.top().creature;
+    queue.push({elem.creature, elem.creature->getLocalTime()});
+    elem = queue.top();
   }
+  return elem.creature;
 }
 
 Creature* TimeQueue::getNextCreature() {
@@ -92,9 +91,3 @@ Creature* TimeQueue::getNextCreature() {
   return c;
 }
 
-double TimeQueue::getCurrentTime() {
-  if (creatures.size() > 0) 
-    return getMinCreature()->getTime();
-  else
-    return 0;
-}
