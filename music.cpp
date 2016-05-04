@@ -28,7 +28,10 @@ Jukebox::Jukebox(Options* options, vector<pair<MusicType, string>> tracks, int m
     byType[tracks[i].first].push_back(i);
   }
   options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { toggle(turnOn); });
-  refreshLoop.emplace([this] { refresh(); sf::sleep(sf::milliseconds(200)); });
+  refreshLoop.emplace([this] {
+    refresh();
+    sf::sleep(sf::milliseconds(200));
+});
 }
 
 int Jukebox::getMaxVolume(int track) {
@@ -76,11 +79,11 @@ MusicType Jukebox::getCurrentType() {
 const int volumeDec = 10;
 
 void Jukebox::setType(MusicType c, bool now) {
+  MusicLock lock(musicMutex);
   if (!now)
     nextType = c;
   else {
     nextType.reset();
-    MusicLock lock(musicMutex);
     if (byType[c].empty())
       return;
     if (getCurrentType() != c)

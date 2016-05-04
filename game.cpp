@@ -131,7 +131,8 @@ PModel& Game::getMainModel() {
   return models[baseModel];
 }
 
-void Game::prepareRetirement() {
+void Game::prepareSiteRetirement() {
+  CHECK(!isSingleModel());
   Model* mainModel = models[baseModel].get();
   for (Vec2 v : models.getBounds())
     if (models[v]) {
@@ -175,6 +176,22 @@ void Game::prepareRetirement() {
     c->clearLastAttacker();
   TribeId::switchForSerialization(TribeId::getKeeper(), TribeId::getRetiredKeeper());
   UniqueEntity<Item>::offsetForSerialization(Random.getLL());
+}
+
+void Game::prepareSingleMapRetirement() {
+  CHECK(isSingleModel());
+  playerCollective->getLevel()->clearLocations();
+  vector<Position> locationPos = playerCollective->getAllSquares({SquareId::LIBRARY});
+  if (locationPos.empty())
+    locationPos = playerCollective->getTerritory().getAll();
+  if (!locationPos.empty())
+    playerCollective->getLevel()->addMarkedLocation(Rectangle::boundingBox(transform2<Vec2>(locationPos, 
+      [](const Position& p) { return p.getCoord();})));
+  playerControl->getKeeper()->modViewObject().setId(ViewId::RETIRED_KEEPER);
+  playerControl = nullptr;
+  playerCollective->setVillainType(VillainType::MAIN);
+  playerCollective->setControl(PCollectiveControl(
+        new VillageControl(playerCollective, none)));
 }
 
 void Game::doneRetirement() {
@@ -441,7 +458,7 @@ void Game::landHeroPlayer() {
   if (!advName.empty())
     player->getName().setFirst(advName);
   Level* target = models[0][0]->getTopLevel();
-  CHECK(target->landCreature(target->getAllPositions(), std::move(player))) << "No place to spawn player";
+  CHECK(target->landCreature(StairKey::heroSpawn(), std::move(player))) << "No place to spawn player";
 }
 
 string Game::getGameDisplayName() const {

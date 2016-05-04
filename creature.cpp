@@ -376,6 +376,11 @@ void Creature::onMoved() {
     l->onMoved(this);
 }
 
+void Creature::removeFromCollective() {
+  for (CreatureListener* l : eventGenerator->getListeners())
+    l->onRemoveFromCollective(this);
+}
+
 CreatureAction Creature::wait() const {
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " waiting";

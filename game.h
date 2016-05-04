@@ -91,7 +91,8 @@ class Game {
   void onEquip(const Creature*, const Item*);
 
   PModel& getMainModel();
-  void prepareRetirement();
+  void prepareSiteRetirement();
+  void prepareSingleMapRetirement();
   void doneRetirement();
 
   GameEvents popGameEvents();

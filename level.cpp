@@ -196,6 +196,10 @@ const vector<Location*> Level::getAllLocations() const {
   return locations;
 }
 
+void Level::clearLocations() {
+  locations.clear();
+}
+
 void Level::addMarkedLocation(Rectangle bounds) {
   locations.push_back(new Location(true));
   locations.back()->setBounds(bounds);

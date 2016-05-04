@@ -19,6 +19,7 @@ class CreatureListener {
   virtual void onKilled(Creature* victim, Creature* attacker) {}
   virtual void onKilledSomeone(Creature* attacker, Creature* victim) {}
   virtual void onMoved(Creature*) {}
+  virtual void onRemoveFromCollective(Creature*) {}
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
