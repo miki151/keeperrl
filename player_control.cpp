@@ -1915,32 +1915,6 @@ void PlayerControl::considerWarning() {
       }
 }
 
-void PlayerControl::considerAlliedCreaturesJoining() {
-  vector<Creature*> addedCreatures;
-  Creature* controlled = getControlled();
-  for (Collective* col : getGame()->getCollectives())
-    if (col != getCollective() && col->getTribeId() == getCollective()->getTribeId() &&
-        (col->getLevel() == getLevel() || (controlled && controlled->getLevel() == col->getLevel())))
-      for (Creature* c : col->getCreatures()) {
-        CHECK(!contains(getCreatures(), c)) << c->getName().bare();
-        if (c->getAttributes().getSpawnType() && canSee(c)) {
-          col->recruit(c, getCollective());
-          addedCreatures.push_back(c);
-          if (controlled && (getCollective()->hasTrait(controlled, MinionTrait::FIGHTER)
-                || controlled == getCollective()->getLeader())
-              && c->getPosition().isSameLevel(controlled->getPosition()))
-            for (auto team : getTeams().getActive(controlled)) {
-              getTeams().add(team, c);
-              controlled->playerMessage(PlayerMessage(c->getName().a() + " joins your team.",
-                    MessagePriority::HIGH));
-              break;
-            }
-        }
-      }
-  if (!addedCreatures.empty())
-    getCollective()->addNewCreatureMessage(addedCreatures);
-}
-
 void PlayerControl::update(bool currentlyActive) {
   for (const Collective* col :
       concat(getGame()->getVillains(VillainType::MAIN), getGame()->getVillains(VillainType::LESSER)))
@@ -1949,10 +1923,34 @@ void PlayerControl::update(bool currentlyActive) {
       notifiedConquered.insert(col);
     }
   updateVisibleCreatures();
-  considerAlliedCreaturesJoining();
-  for (Creature* c : getLevel()->getAllCreatures()) 
-    if (c->getTribeId() == getTribeId()  && c->getAttributes().isMinionFood() && !contains(getCreatures(), c))
-      getCollective()->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
+  vector<Creature*> addedCreatures;
+  vector<Level*> currentLevels {getLevel()};
+  if (Creature* c = getControlled())
+    if (!contains(currentLevels, c->getLevel()))
+      currentLevels.push_back(c->getLevel());
+  for (Level* l : currentLevels)
+    for (Creature* c : l->getAllCreatures()) 
+      if (c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
+        if (c->getAttributes().getSpawnType() && !contains(getCreatures(), c) && !getCollective()->wasBanished(c)) {
+          addedCreatures.push_back(c);
+          getCollective()->addCreature(c, {MinionTrait::FIGHTER});
+          if (Creature* controlled = getControlled())
+            if ((getCollective()->hasTrait(controlled, MinionTrait::FIGHTER)
+                  || controlled == getCollective()->getLeader())
+                && c->getPosition().isSameLevel(controlled->getPosition()))
+              for (auto team : getTeams().getActive(controlled)) {
+                getTeams().add(team, c);
+                controlled->playerMessage(PlayerMessage(c->getName().a() + " joins your team.",
+                      MessagePriority::HIGH));
+                break;
+              }
+        } else  
+          if (c->getAttributes().isMinionFood() && !contains(getCreatures(), c))
+            getCollective()->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
+      }
+  if (!addedCreatures.empty()) {
+    getCollective()->addNewCreatureMessage(addedCreatures);
+  }
 }
 
 bool PlayerControl::isConsideredAttacking(const Creature* c) {
