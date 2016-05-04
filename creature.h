@@ -268,6 +268,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool wasInCombat(double numLastTurns) const;
   void onKilled(Creature* victim);
   void onMoved();
+  void removeFromCollective();
 
   void addSound(const Sound&) const;
 

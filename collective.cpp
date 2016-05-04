@@ -180,6 +180,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 /*  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
       c->getPosition().getLevel()->getName() << " " << c->getName().bare();*/
   creatures.push_back(c);
+  c->removeFromCollective();
   subscribeToCreature(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
@@ -1276,6 +1277,10 @@ bool Collective::isKnownSquare(Position pos) const {
 
 void Collective::onMoved(Creature* c) {
   control->onMoved(c);
+}
+
+void Collective::onRemoveFromCollective(Creature* c) {
+  removeCreature(c);
 }
 
 bool Collective::hasEfficiency(Position pos) const {

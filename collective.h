@@ -244,6 +244,7 @@ class Collective : public TaskCallback, public CreatureListener {
   virtual void onKilled(Creature* victim, Creature* killer) override;
   virtual void onKilledSomeone(Creature* killer, Creature* victim) override;
   virtual void onMoved(Creature*) override;
+  virtual void onRemoveFromCollective(Creature*) override;
 
   private:
   friend class CollectiveBuilder;
