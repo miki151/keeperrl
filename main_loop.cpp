@@ -128,13 +128,11 @@ static void saveGame(PGame& game, const string& path) {
 static void saveMainModel(PGame& game, const string& path) {
   CompressedOutput out(path.c_str());
   string name = game->getGameDisplayName();
-  game->prepareRetirement();
   SavedGameInfo savedInfo = game->getSavedGameInfo();
   out.getArchive() << BOOST_SERIALIZATION_NVP(saveVersion) << BOOST_SERIALIZATION_NVP(name)
       << BOOST_SERIALIZATION_NVP(savedInfo);
   Serialization::registerTypes(out.getArchive(), saveVersion);
   out.getArchive() << BOOST_SERIALIZATION_NVP(game->getMainModel());
-  game->doneRetirement();
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
@@ -283,8 +281,20 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
       step = min(1.0, double(meter.getCount(view->getTimeMilli())) * gameTimeStep);
     }
     if (auto exitInfo = game->update(step)) {
-      if (exitInfo->getId() == Game::ExitId::SAVE)
+      if (exitInfo->getId() == Game::ExitId::SAVE) {
+        bool retired = false;
+        if (exitInfo->get<GameSaveType>() == GameSaveType::RETIRED_SITE) {
+          game->prepareSiteRetirement();
+          retired = true;
+        }
+        if (exitInfo->get<GameSaveType>() == GameSaveType::RETIRED_SINGLE) {
+          game->prepareSingleMapRetirement();
+          retired = true;
+        }
         saveUI(game, exitInfo->get<GameSaveType>(), SplashType::SAVING);
+        if (retired)
+          game->doneRetirement();
+      }
       eraseAutosave(game);
       return;
     }
@@ -577,6 +587,7 @@ PGame MainLoop::adventurerGame() {
       if (!downloadGame(savedGame->filename))
         return nullptr;
     if (PGame game = loadGame(savedGame->filename, false)) {
+      game->initialize(options, highscores, view, gameEvents);
       game->landHeroPlayer();
       return game;
     }

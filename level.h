@@ -191,6 +191,7 @@ class Level {
 
   const vector<Location*> getAllLocations() const;
   void addMarkedLocation(Rectangle bounds);
+  void clearLocations();
 
   CoverInfo getCoverInfo(Vec2) const;
 
