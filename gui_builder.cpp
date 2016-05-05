@@ -1976,13 +1976,13 @@ PGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
 
 static const char campaignWelcome[] =
     "Welcome to the campaign mode! "
-    "The world, which you see below, is made up of smaller sites. Pick one, and build your base there. "
-    "There are hostile and friendly tribes on the map. "
+    "The world, which you see below, is made up of smaller maps. Pick one, and build your base there. "
+    "There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" "
+    "to win the game. Make sure you add a few retired dungeons created by other players."
     "You can travel to other sites by creating a team and using the travel command.\n\n"
     "The highlighted tribes are in your influence zone, which means that you can currently interact with them "
     "(trade, recruit, attack or be attacked). "
-    "As you conquer more enemies, your influence zone grows.\n\n"
-    "To win the game, conquer all main villains.";
+    "As you conquer more enemies, your influence zone grows.\n\n";
 
 GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, function<void()> reloadCampaign,
     bool active) {
@@ -2032,11 +2032,12 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
   for (OptionId id : options->getOptions(OptionSet::CAMPAIGN))
     lines.addElem(gui.leftMargin(optionMargin, drawOptionElem(options, id,
             [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});})));
-  lines.addSpace(15);
+  lines.addSpace(10);
+  lines.addElem(gui.centerHoriz(gui.label("Choose the location of your base:")));
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, &embarkPos,
         [&campaign](Vec2 pos) { return campaign.getSites()[pos].canEmbark(); },
         [&campaign, &queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
-  lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
+  lines.addBackElem(gui.topMargin(10, gui.centerHoriz(gui.getListBuilder()
         .addElemAuto(gui.conditional(
             gui.stack(
                 gui.button([&] { queue.push(CampaignActionId::CONFIRM); }),
@@ -2052,7 +2053,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
         .addElemAuto(
             gui.stack(
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, {Keyboard::Escape}),
-                gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
+                gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList())));
   int retiredPosX = 600;
   int retiredMenuX = 380;
   int helpPosX = 300;
@@ -2083,7 +2084,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
           [&helpText] { return helpText;})
       ));
   return gui.stack(
-      gui.preferredSize(1000, 720),
+      gui.preferredSize(1000, 735),
       gui.window(gui.margins(std::move(interior), 5), [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
 
