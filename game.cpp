@@ -470,7 +470,7 @@ string Game::getGameIdentifier() const {
 }
 
 void Game::onKilledLeader(const Collective* victim, const Creature* leader) {
-  if (isSingleModel() && victim->getVillainType() == VillainType::MAIN) {
+  if (victim == playerCollective && isSingleModel() && victim->getVillainType() == VillainType::MAIN) {
     if (Creature* c = getPlayer())
       killedKeeper(*c->getName().first(), c->getName().title(), worldName, c->getKills().getSize(), c->getPoints());
   }
