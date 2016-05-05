@@ -2115,7 +2115,7 @@ PGuiElem GuiBuilder::drawCreaturePrompt(SyncQueue<bool>& queue, const string& ti
   int height = 2 * margin + lines.getSize() + 30;
   return gui.stack(
       gui.preferredSize(2 * margin + windowWidth, height),
-      gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
+      gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(false); }));
 
 }
 
