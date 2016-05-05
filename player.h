@@ -21,6 +21,7 @@
 #include "controller.h"
 #include "user_input.h"
 #include "creature_view.h"
+#include "map_memory.h"
 #include "position.h"
 
 class View;

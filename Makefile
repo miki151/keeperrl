@@ -17,7 +17,7 @@ endif
 
 ifdef OSX
 LDFLAGS = -Wl
-CFLAGS += -stdlib=libc++ -DOSX -m32 -mmacosx-version-min=10.7
+CFLAGS += -stdlib=libc++ -DOSX -mmacosx-version-min=10.7
 CFLAGS += -DTEXT_SERIALIZATION
 else
 LDFLAGS = -Wl,-rpath=$(RPATH) -static-libstdc++
@@ -88,7 +88,7 @@ DEPS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.d))
 ##############################################################################
 
 
-all: check_serial gen_version $(NAME)
+all: gen_version $(NAME)
 
 stdafx.h.gch: stdafx.h
 	$(CC) -x c++-header $< -MMD $(CFLAGS) -o $@
