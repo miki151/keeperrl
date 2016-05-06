@@ -2074,7 +2074,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
                   [&retiredGames] { return retiredGames.getNumActive() < 4;}))
               .buildVerticalList()))),
       gui.conditional(gui.topMargin(menuPosY, gui.leftMargin(retiredMenuX,
-            gui.setWidth(550, gui.setHeight(retiredList.getSize() + 30,
+            gui.setWidth(550, gui.setHeight(min(500, retiredList.getSize() + 30),
               gui.miniWindow2(gui.scrollable(retiredList.buildVerticalList()),
           [&retiredMenu] { retiredMenu = false;}))))),
           [&retiredMenu] { return retiredMenu;}),
