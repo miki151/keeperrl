@@ -90,7 +90,9 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::HINTS,
       OptionId::ASCII,
       OptionId::MUSIC,
+#ifndef DISABLE_SFX
       OptionId::SOUND,
+#endif
       OptionId::FULLSCREEN,
       OptionId::FULLSCREEN_RESOLUTION,
       OptionId::ZOOM_UI,
