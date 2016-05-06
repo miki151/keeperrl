@@ -362,8 +362,10 @@ void WindowView::rebuildGui() {
   int bottomBarHeight = 0;
   int rightBottomMargin = 30;
   tempGuiElems.clear();
-  tempGuiElems.push_back(gui.mouseWheel([this](bool up) { zoom(up ? -1 : 1); }));
-  tempGuiElems.back()->setBounds(getMapGuiBounds());
+  if (!options->getIntValue(OptionId::DISABLE_MOUSE_WHEEL)) {
+    tempGuiElems.push_back(gui.mouseWheel([this](bool up) { zoom(up ? -1 : 1); }));
+    tempGuiElems.back()->setBounds(getMapGuiBounds());
+  }
   tempGuiElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)));
   tempGuiElems.back()->setBounds(getMapGuiBounds());
   switch (gameInfo.infoType) {
