@@ -284,7 +284,10 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
             campaign.sites[*campaign.playerPos].dweller = PlayerInfo{ViewId::KEEPER};
             break;
         case CampaignActionId::CONFIRM:
-            return campaign;
+            if (numRetired > 0 ||
+                retired.getAllGames().empty() ||
+                view->yesOrNoPrompt("Imps are going to be sad if you don't add any retired dungeons. Continue?"))
+              return campaign;
       }
       if (updateMap)
         break;

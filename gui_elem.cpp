@@ -471,6 +471,27 @@ PGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
         }, width));
 }
 
+static Color blinking(Color c1, Color c2, int period, int state) {
+  double s = (state % period) / (double) period;
+  double c = (cos(s * 2 * M_PI) + 1) / 2;
+  return Color(c1.r * c + c2.r * (1 - c), c1.g * c + c2.g * (1 - c), c1.b * c + c2.b * (1 - c));
+}
+
+PGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2) {
+  int period = 700;
+  auto width = [=] { return renderer.getTextLength(s); };
+  return PGuiElem(new DrawCustom(
+        [=] (Renderer& r, Rectangle bounds) {
+          Color c = blinking(c1, c2, period, clock->getRealMillis());
+          r.drawText(transparency(colors[ColorId::BLACK], 100),
+            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s);
+          Color c1(c);
+          if (r.getMousePos().inRectangle(bounds))
+            lighten(c1);
+          r.drawText(c1, bounds.topLeft().x, bounds.topLeft().y, s);
+        }, width));
+}
+
 PGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hotkey) {
   auto width = [=] { return renderer.getTextLength(s); };
   return PGuiElem(new DrawCustom(

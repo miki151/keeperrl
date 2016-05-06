@@ -28,6 +28,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::FULLSCREEN, 0},
   {OptionId::FULLSCREEN_RESOLUTION, 0},
   {OptionId::ZOOM_UI, 0},
+  {OptionId::DISABLE_MOUSE_WHEEL, 0},
   {OptionId::ONLINE, 1},
   {OptionId::AUTOSAVE, 1},
   {OptionId::WASD_SCROLLING, 0},
@@ -54,6 +55,7 @@ const map<OptionId, string> names {
   {OptionId::FULLSCREEN, "Fullscreen"},
   {OptionId::FULLSCREEN_RESOLUTION, "Fullscreen resolution"},
   {OptionId::ZOOM_UI, "Zoom in UI"},
+  {OptionId::DISABLE_MOUSE_WHEEL, "Disable mouse wheel scrolling"},
   {OptionId::ONLINE, "Online features"},
   {OptionId::AUTOSAVE, "Autosave"},
   {OptionId::WASD_SCROLLING, "WASD scrolling"},
@@ -96,6 +98,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::FULLSCREEN,
       OptionId::FULLSCREEN_RESOLUTION,
       OptionId::ZOOM_UI,
+      OptionId::DISABLE_MOUSE_WHEEL,
       OptionId::ONLINE,
       OptionId::AUTOSAVE,
       OptionId::WASD_SCROLLING,
@@ -245,17 +248,24 @@ string Options::getValueString(OptionId id) {
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
     case OptionId::ZOOM_UI:
+    case OptionId::DISABLE_MOUSE_WHEEL:
     case OptionId::START_WITH_NIGHT: return getYesNo(value);
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_SEED:
     case OptionId::KEEPER_NAME: {
-        string val = boost::get<string>(value);
-        if (val.empty())
-          return defaultStrings[id];
-        else
-          return val;
-        }
-    case OptionId::FULLSCREEN_RESOLUTION: return choices[id][boost::get<int>(value)];
+      string val = boost::get<string>(value);
+      if (val.empty())
+        return defaultStrings[id];
+      else
+        return val;
+      }
+    case OptionId::FULLSCREEN_RESOLUTION: {
+      int val = boost::get<int>(value);
+      if (val >= 0 && val < choices[id].size())
+        return choices[id][val];
+      else
+        return "";
+    }
     case OptionId::MAIN_VILLAINS:
     case OptionId::LESSER_VILLAINS:
     case OptionId::RETIRED_VILLAINS:
