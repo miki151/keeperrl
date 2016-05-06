@@ -251,13 +251,19 @@ string Options::getValueString(OptionId id) {
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_SEED:
     case OptionId::KEEPER_NAME: {
-        string val = boost::get<string>(value);
-        if (val.empty())
-          return defaultStrings[id];
-        else
-          return val;
-        }
-    case OptionId::FULLSCREEN_RESOLUTION: return choices[id][boost::get<int>(value)];
+      string val = boost::get<string>(value);
+      if (val.empty())
+        return defaultStrings[id];
+      else
+        return val;
+      }
+    case OptionId::FULLSCREEN_RESOLUTION: {
+      int val = boost::get<int>(value);
+      if (val >= 0 && val < choices[id].size())
+        return choices[id][val];
+      else
+        return "";
+    }
     case OptionId::MAIN_VILLAINS:
     case OptionId::LESSER_VILLAINS:
     case OptionId::RETIRED_VILLAINS:
