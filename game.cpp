@@ -653,7 +653,7 @@ SavedGameInfo Game::getSavedGameInfo() const {
   vector<Creature*> creatures = col->getCreatures();
   CHECK(!creatures.empty());
   Creature* leader = col->getLeader();
-  CHECK(!leader->isDead());
+//  CHECK(!leader->isDead());
   sort(creatures.begin(), creatures.end(), [leader] (const Creature* c1, const Creature* c2) {
       return c1 == leader
         || (c2 != leader && c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel());});
