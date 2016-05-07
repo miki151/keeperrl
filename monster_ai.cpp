@@ -240,6 +240,7 @@ class MoveRandomly : public Behaviour {
   void serialize(Archive& ar, const unsigned int version) {
     deque<Position> SERIAL(obsolete);
     int SERIAL(obsolete2);
+    ar & SUBCLASS(Behaviour);
     serializeAll(ar, obsolete, obsolete2);
   }
 
