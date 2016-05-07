@@ -128,10 +128,10 @@ class ReplayView : public View {
       return delegate->chooseTeamLeader(title, c, cancelText);
     }
 
-    virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {
+/*    virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {
  //     if (delegate)
  //       delegate->displaySplash(m, type, cancelFun);
-    }
+    }*/
 
     virtual void clearSplash() override {
  //     if (delegate)

@@ -41,8 +41,10 @@ class MainLoop {
   optional<SaveFileInfo> chooseSaveFile(const vector<ListElem>& options, const vector<SaveFileInfo>& allFiles,
       string noSaveMsg, View*);
 
-  void doWithSplash(SplashType, int totalProgress, function<void(ProgressMeter&)> fun,
+  void doWithSplash(SplashType, const string& text, int totalProgress, function<void(ProgressMeter&)> fun,
     function<void()> cancelFun = nullptr);
+
+  void doWithSplash(SplashType, const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
 
   PGame prepareCampaign(RandomGen&);
   PGame prepareSingleMap(RandomGen&);

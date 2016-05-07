@@ -35,7 +35,7 @@ class Campaign;
 class Options;
 class RetiredGames;
 
-enum class SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING, AUTOSAVING };
+enum class SplashType { BIG, AUTOSAVING, SMALL };
 
 class ListElem {
   public:
@@ -127,7 +127,8 @@ class View {
   virtual void reset() = 0;
 
   /** Displays a splash screen in an active loop until \paramname{ready} is set to true in another thread.*/
-  virtual void displaySplash(const ProgressMeter&, SplashType type, function<void()> cancelFun = nullptr) = 0;
+  virtual void displaySplash(const ProgressMeter*, const string& text, SplashType type,
+      function<void()> cancelFun = nullptr) = 0;
 
   virtual void clearSplash() = 0;
 
