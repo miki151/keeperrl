@@ -195,8 +195,7 @@ class Rest : public Behaviour {
 
 class MoveRandomly : public Behaviour {
   public:
-  MoveRandomly(Creature* c, int _memSize) 
-      : Behaviour(c), memSize(_memSize) {}
+  MoveRandomly(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() {
     if (!visited(creature->getPosition()))
@@ -239,12 +238,14 @@ class MoveRandomly : public Behaviour {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(memory) & SVAR(memSize);
+    deque<Position> SERIAL(obsolete);
+    int SERIAL(obsolete2);
+    serializeAll(ar, obsolete, obsolete2);
   }
 
   private:
-  deque<Position> SERIAL(memory);
-  int SERIAL(memSize);
+  deque<Position> memory;
+  const int memSize = 3;
 };
 
 class StayInPigsty : public Behaviour {
@@ -1177,7 +1178,7 @@ MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
         new Heal(c),
         new Fighter(c, 0.6, true),
         new ByCollective(c, col),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c)}, {3, 1})},
         { 10, 6, 5, 2, 1}, false);
       });
 }
@@ -1196,7 +1197,7 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(Location* l, bool moveRandomly
         weights.push_back(1);
       }
       if (moveRandomly) {
-        actors.push_back(new MoveRandomly(c, 3));
+        actors.push_back(new MoveRandomly(c));
         weights.push_back(1);
       } else {
         actors.push_back(new Wait(c));
@@ -1216,7 +1217,7 @@ MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t) {
         new Heal(c),
         new Fighter(c, 0.6, false),
         new SingleTask(c, PTask(task)),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c)}, {3, 1})},
         { 6, 5, 2, 1}, true);
       });
 }
@@ -1225,7 +1226,7 @@ MonsterAIFactory MonsterAIFactory::wildlifeNonPredator() {
   return MonsterAIFactory([](Creature* c) {
       return new MonsterAI(c, {
           new Fighter(c, 1.2, false),
-          new MoveRandomly(c, 3)},
+          new MoveRandomly(c)},
           {5, 1});
       });
 }
@@ -1233,7 +1234,7 @@ MonsterAIFactory MonsterAIFactory::wildlifeNonPredator() {
 MonsterAIFactory MonsterAIFactory::moveRandomly() {
   return MonsterAIFactory([](Creature* c) {
       return new MonsterAI(c, {
-          new MoveRandomly(c, 3)},
+          new MoveRandomly(c)},
           {1});
       });
 }
@@ -1260,7 +1261,7 @@ MonsterAIFactory MonsterAIFactory::scavengerBird(Position corpsePos) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
           new BirdFlyAway(c, 3),
-          new MoveRandomly(c, 3),
+          new MoveRandomly(c),
           new GuardSquare(c, corpsePos, 1, 2)},
           {1, 1, 2});
       });
@@ -1282,7 +1283,7 @@ MonsterAIFactory MonsterAIFactory::summoned(Creature* leader, int ttl) {
           new AvoidFire(c),
           new Heal(c),
           new Fighter(c, 0.6, true),
-          new MoveRandomly(c, 3),
+          new MoveRandomly(c),
           new GoldLust(c)},
           { 6, 5, 4, 3, 1, 1 });
       });
@@ -1295,7 +1296,7 @@ MonsterAIFactory MonsterAIFactory::dieTime(double dieTime) {
           new AvoidFire(c),
           new Heal(c),
           new Fighter(c, 0.6, true),
-          new MoveRandomly(c, 3),
+          new MoveRandomly(c),
           new GoldLust(c)},
           { 6, 5, 4, 3, 1, 1 });
       });
@@ -1307,7 +1308,7 @@ MonsterAIFactory MonsterAIFactory::splashHeroes(bool leader) {
         leader ? (Behaviour*)new SplashHeroLeader(c) : (Behaviour*)new SplashHeroes(c),
         new Heal(c),
         new Fighter(c, 0.6, true),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c)}, {3, 1})},
         { 6, 5, 2, 1}, false);
       });
 }
@@ -1318,7 +1319,7 @@ MonsterAIFactory MonsterAIFactory::splashMonsters() {
         new SplashMonsters(c),
         new Heal(c),
         new Fighter(c, 0.6, true),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c)}, {3, 1})},
         { 6, 5, 2, 1}, false);
       });
 }
@@ -1329,7 +1330,7 @@ MonsterAIFactory MonsterAIFactory::splashImps(const string& splashPath) {
         new SplashImps(c, splashPath),
         new Heal(c),
         new Fighter(c, 0.6, true),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c, 3)}, {3, 1})},
+        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c)}, {3, 1})},
         { 6, 5, 2, 1}, false);
       });
 }
