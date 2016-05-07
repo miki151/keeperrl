@@ -276,7 +276,7 @@ vector<ItemAction> Player::getItemActions(const vector<Item*>& item) const {
   else {
     for (Position v : getCreature()->getPosition().neighbors8())
       if (Creature* c = v.getCreature())
-        if (getCreature()->isFriend(c) && c->canTakeItems(item)) {
+        if (getCreature()->isFriend(c)/* && c->canTakeItems(item)*/) {
           actions.push_back(ItemAction::GIVE);
           break;
         }
