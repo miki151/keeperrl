@@ -141,9 +141,9 @@ class LoggingView : public View {
       delegate->reset();
     }
 
-    virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {
-      delegate->displaySplash(m, type, cancelFun);
-    }
+/*    virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {
+      delegate->displaySplash(m, type, cancelFun);*
+    }*/
 
     virtual void clearSplash() override {
       delegate->clearSplash();

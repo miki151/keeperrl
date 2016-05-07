@@ -26,7 +26,7 @@ class FileSharing {
     int wonGames;
     int version;
   };
-  vector<GameInfo> listGames();
+  optional<vector<GameInfo>> listGames();
   struct SiteInfo {
     SavedGameInfo gameInfo;
     SaveFileInfo fileInfo;
@@ -34,7 +34,7 @@ class FileSharing {
     int wonGames;
     int version;
   };
-  vector<SiteInfo> listSites();
+  optional<vector<SiteInfo>> listSites();
   optional<string> download(const string& filename, const string& dir, ProgressMeter&);
   void uploadHighscores(const string& path);
   void uploadGameEvent(const map<string, string>&);

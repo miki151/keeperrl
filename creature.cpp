@@ -280,7 +280,7 @@ int Creature::getDebt(const Creature* debtor) const {
 }
 
 bool Creature::canTakeItems(const vector<Item*>& items) const {
-  return attributes->isHumanoid();
+  return attributes->isHumanoid() && canCarry(items);
 }
 
 void Creature::takeItems(vector<PItem> items, const Creature* from) {
@@ -466,13 +466,17 @@ string Creature::getPluralAName(Item* item, int num) const {
     return toString(num) + " " + item->getAName(true, this);
 }
 
-CreatureAction Creature::pickUp(const vector<Item*>& items) const {
-  if (!attributes->isHumanoid())
-    return CreatureAction("You can't pick up anything!");
+bool Creature::canCarry(const vector<Item*>& items) const {
   double weight = getInventoryWeight();
   for (Item* it : items)
     weight += it->getWeight();
-  if (weight > 2 * getModifier(ModifierType::INV_LIMIT))
+  return weight <= 2 * getModifier(ModifierType::INV_LIMIT);
+}
+
+CreatureAction Creature::pickUp(const vector<Item*>& items) const {
+  if (!attributes->isHumanoid())
+    return CreatureAction("You can't pick up anything!");
+  if (!canCarry(items))
     return CreatureAction("You are carrying too much to pick this up.");
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " pickup ";
@@ -1433,7 +1437,8 @@ void Creature::surrender(const Creature* to) {
 
 CreatureAction Creature::give(Creature* whom, vector<Item*> items) {
   if (!attributes->isHumanoid() || !whom->canTakeItems(items))
-    return CreatureAction(getName().the() + " can't take this item.");
+    return CreatureAction(whom->getName().the() + (items.size() == 1 ? " can't take this item."
+        : " can't take these items."));
   return CreatureAction(this, [=](Creature* self) {
     for (auto stack : stackItems(items)) {
       monsterMessage(getName().the() + " gives " + getPluralAName(stack[0], stack.size()) + " to " +

@@ -145,7 +145,7 @@ int MainLoop::getSaveVersion(const SaveFileInfo& save) {
 void MainLoop::uploadFile(const string& path, GameSaveType type) {
   atomic<bool> cancelled(false);
   optional<string> error;
-  doWithSplash(SplashType::UPLOADING, 1,
+  doWithSplash(SplashType::BIG, "Uploading " + path + "...", 1,
       [&] (ProgressMeter& meter) {
         if (type == GameSaveType::RETIRED_SINGLE)
           error = fileSharing->uploadRetired(path, meter);
@@ -174,12 +174,12 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
   else
     saveTime = game->getCampaign().getNumNonEmpty();
   if (type == GameSaveType::RETIRED_SITE)
-    doWithSplash(splashType, saveTime,
+    doWithSplash(splashType, "Retiring site...", saveTime,
         [&] (ProgressMeter& meter) {
         Square::progressMeter = &meter;
         MEASURE(saveMainModel(game, path), "saving time")});
   else
-    doWithSplash(splashType, saveTime,
+    doWithSplash(splashType, "Saving game...", saveTime,
         [&] (ProgressMeter& meter) {
         if (game->isSingleModel())
           Square::progressMeter = &meter;
@@ -291,7 +291,7 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
           game->prepareSingleMapRetirement();
           retired = true;
         }
-        saveUI(game, exitInfo->get<GameSaveType>(), SplashType::SAVING);
+        saveUI(game, exitInfo->get<GameSaveType>(), SplashType::BIG);
         if (retired)
           game->doneRetirement();
       }
@@ -319,9 +319,15 @@ RetiredGames MainLoop::getRetiredGames() {
     if (isCompatible(getSaveVersion(info)))
       if (auto saved = getSavedGameInfo(userPath + "/" + info.filename))
         ret.addLocal(*saved, info);
-  for (auto& elem : fileSharing->listSites())
-    if (isCompatible(elem.version))
-      ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames);
+  optional<vector<FileSharing::SiteInfo>> onlineSites;
+  doWithSplash(SplashType::SMALL, "Fetching list of retired dungeons from the server...",
+      [&] { onlineSites = fileSharing->listSites(); }, [&] { fileSharing->cancel(); });
+  if (onlineSites) {
+    for (auto& elem : *onlineSites)
+      if (isCompatible(elem.version))
+        ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames);
+  } else
+    view->presentText("", "Failed to fetch list of retired dungeons from the server.");
   ret.sort();
   return ret;
 }
@@ -452,10 +458,10 @@ void MainLoop::start(bool tilesPresent) {
   }
 }
 
-void MainLoop::doWithSplash(SplashType type, int totalProgress, function<void(ProgressMeter&)> fun,
-    function<void()> cancelFun) {
+void MainLoop::doWithSplash(SplashType type, const string& text, int totalProgress,
+    function<void(ProgressMeter&)> fun, function<void()> cancelFun) {
   ProgressMeter meter(1.0 / totalProgress);
-  view->displaySplash(meter, type, cancelFun);
+  view->displaySplash(&meter, text, type, cancelFun);
   if (useSingleThread) {
     // A bit confusing, but the flag refers to using a single thread for rendering and gameplay.
     // This forces us to build the world on an extra thread to be able to display a progress bar.
@@ -468,10 +474,24 @@ void MainLoop::doWithSplash(SplashType type, int totalProgress, function<void(Pr
   }
 }
 
+void MainLoop::doWithSplash(SplashType type, const string& text, function<void()> fun, function<void()> cancelFun) {
+  view->displaySplash(nullptr, text, type, cancelFun);
+  if (useSingleThread) {
+    // A bit confusing, but the flag refers to using a single thread for rendering and gameplay.
+    // This forces us to build the world on an extra thread to be able to display a progress bar.
+    thread t([fun, this] { fun(); view->clearSplash(); });
+    view->refreshView();
+    t.join();
+  } else {
+    fun();
+    view->clearSplash();
+  }
+}
+
 PModel MainLoop::quickGame(RandomGen& random) {
   PModel model;
   NameGenerator::init(dataFreePath + "/names");
-  doWithSplash(SplashType::CREATING, 166000,
+  doWithSplash(SplashType::BIG, "Generating map...", 166000,
       [&model, this, &random] (ProgressMeter& meter) {
         model = ModelBuilder::quickModel(&meter, random, options);
       });
@@ -494,7 +514,7 @@ Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
   optional<string> failedToLoad;
   NameGenerator::init(dataFreePath + "/names");
   int numSites = campaign.getNumNonEmpty();
-  doWithSplash(SplashType::CREATING, numSites,
+  doWithSplash(SplashType::BIG, "Generating map...", numSites,
       [&sites, &models, this, &random, &campaign, &failedToLoad] (ProgressMeter& meter) {
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
@@ -524,7 +544,7 @@ Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
 PModel MainLoop::keeperSingleMap(RandomGen& random) {
   PModel model;
   NameGenerator::init(dataFreePath + "/names");
-  doWithSplash(SplashType::CREATING, 300000,
+  doWithSplash(SplashType::BIG, "Generating map...", 300000,
       [&model, this, &random] (ProgressMeter& meter) {
         model = ModelBuilder::singleMapModel(&meter, random, options,
             NameGenerator::get(NameGeneratorId::WORLD)->getNext());
@@ -541,7 +561,7 @@ PGame MainLoop::loadGame(string file, bool erase) {
   else
     loadTime = info.getNumSites();
   PGame game;
-  doWithSplash(SplashType::LOADING, loadTime,
+  doWithSplash(SplashType::BIG, "Loading " + file + "...", loadTime,
       [&] (ProgressMeter& meter) {
         if (info.getNumSites() == 1)
           Square::progressMeter = &meter;
@@ -558,7 +578,7 @@ PGame MainLoop::loadGame(string file, bool erase) {
 bool MainLoop::downloadGame(const string& filename) {
   atomic<bool> cancelled(false);
   optional<string> error;
-  doWithSplash(SplashType::DOWNLOADING, 1,
+  doWithSplash(SplashType::BIG, "Downloading " + filename + "...", 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->download(filename, userPath, meter);
       },
@@ -575,7 +595,13 @@ PGame MainLoop::adventurerGame() {
   vector<ListElem> elems;
   vector<SaveFileInfo> files;
   vector<FileSharing::GameInfo> games;
-  append(games, fileSharing->listGames());
+  optional<vector<FileSharing::GameInfo>> onlineGames;
+  doWithSplash(SplashType::SMALL, "Fetching list of retired dungeons from the server...",
+      [&] { onlineGames = fileSharing->listGames(); }, [&] { fileSharing->cancel(); });
+  if (onlineGames)
+    games = *onlineGames;
+  else
+    view->presentText("", "Failed to fetch list of retired dungeons from the server.");
   sort(games.begin(), games.end(), [] (const FileSharing::GameInfo& a, const FileSharing::GameInfo& b) {
       return a.totalGames > b.totalGames || (a.totalGames == b.totalGames && a.time > b.time); });
   getSaveOptions(games, {

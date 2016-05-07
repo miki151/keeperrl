@@ -279,6 +279,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Item* getAmmo() const;
   void updateViewObject();
   void spendTime(double time);
+  bool canCarry(const vector<Item*>&) const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);

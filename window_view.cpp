@@ -244,79 +244,105 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
       Renderer::NONE, 16);
 }
 
-void WindowView::displayAutosaveSplash(const ProgressMeter& meter) {
-  splashDone = false;
-  renderDialog.push([=, &meter] {
-    PGuiElem window = gui.miniWindow(gui.empty(), []{});
-    Vec2 windowSize(440, 70);
-    Rectangle bounds((renderer.getSize() - windowSize) / 2, (renderer.getSize() + windowSize) / 2);
-    Rectangle progressBar(bounds.minusMargin(15));
-    window->setBounds(bounds);
-    while (!splashDone) {
-      refreshScreen(false);
-      window->render(renderer);
-      double progress = meter.getProgress();
-      Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
-            progressBar.right() * progress, progressBar.bottom()));
-      renderer.drawFilledRectangle(bar, transparency(colors[ColorId::DARK_GREEN], 50));
-      renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.top() + 20, "Autosaving", Renderer::HOR);
-      renderer.drawAndClearBuffer();
-      sf::sleep(sf::milliseconds(30));
-      Event event;
-      while (renderer.pollEvent(event)) {
-        propagateEvent(event, {});
-        if (event.type == Event::Resized) {
-          resize(event.size.width, event.size.height);
-        }
+void WindowView::getAutosaveSplash(const ProgressMeter& meter) {
+  PGuiElem window = gui.miniWindow(gui.empty(), []{});
+  Vec2 windowSize(440, 70);
+  Rectangle bounds((renderer.getSize() - windowSize) / 2, (renderer.getSize() + windowSize) / 2);
+  Rectangle progressBar(bounds.minusMargin(15));
+  window->setBounds(bounds);
+  while (!splashDone) {
+    refreshScreen(false);
+    window->render(renderer);
+    double progress = meter.getProgress();
+    Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
+          progressBar.right() * progress, progressBar.bottom()));
+    renderer.drawFilledRectangle(bar, transparency(colors[ColorId::DARK_GREEN], 50));
+    renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.top() + 20, "Autosaving", Renderer::HOR);
+    renderer.drawAndClearBuffer();
+    sf::sleep(sf::milliseconds(30));
+    Event event;
+    while (renderer.pollEvent(event)) {
+      propagateEvent(event, {});
+      if (event.type == Event::Resized) {
+        resize(event.size.width, event.size.height);
       }
     }
-    splashDone = false;
-    renderDialog.pop();
-  });
+  }
 }
 
-void WindowView::displaySplash(const ProgressMeter& meter, SplashType type, function<void()> cancelFun) {
-  RenderLock lock(renderMutex);
-  string text;
-  switch (type) {
-    case SplashType::CREATING: text = "Creating a new world, just for you..."; break;
-    case SplashType::LOADING: text = "Loading the game..."; break;
-    case SplashType::SAVING: text = "Saving the game..."; break;
-    case SplashType::UPLOADING: text = "Uploading the map..."; break;
-    case SplashType::DOWNLOADING: text = "Downloading the map..."; break;
-    case SplashType::AUTOSAVING: displayAutosaveSplash(meter); return;
-  }
-  splashDone = false;
-  renderDialog.push([=, &meter] {
-    int t0 = clock->getRealMillis();
-    int mouthMillis = 400;
-    Texture& loadingSplash = gui.get(GuiFactory::TexId::LOADING_SPLASH);
-    string cancelText = "[cancel]";
-    while (!splashDone) {
-      Vec2 textPos = useTiles ? Vec2(renderer.getSize().x / 2, renderer.getSize().y * 0.5)
-        : Vec2(renderer.getSize().x / 2, renderer.getSize().y - 60);
-      Rectangle cancelBut(textPos.x - renderer.getTextLength(cancelText) / 2, textPos.y + 30,
-        textPos.x + renderer.getTextLength(cancelText) / 2, textPos.y + 60);
-      if (useTiles)
-        drawMenuBackground(meter.getProgress(), min(1.0, double(clock->getRealMillis() - t0) / mouthMillis));
-      else
-        renderer.drawImage((renderer.getSize().x - loadingSplash.getSize().x) / 2,
-            (renderer.getSize().y - loadingSplash.getSize().y) / 2, loadingSplash);
-      renderer.drawText(colors[ColorId::WHITE], textPos.x, textPos.y, text, Renderer::HOR);
-      if (cancelFun)
-        renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.left(), cancelBut.top(), cancelText);
-      renderer.drawAndClearBuffer();
-      sf::sleep(sf::milliseconds(30));
-      Event event;
-      while (renderer.pollEvent(event)) {
-        if (event.type == Event::Resized) {
-          resize(event.size.width, event.size.height);
-        }
-        if (event.type == Event::MouseButtonPressed && cancelFun) {
-          if (Vec2(event.mouseButton.x, event.mouseButton.y).inRectangle(cancelBut))
-            cancelFun();
-        }
+void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) {
+  PGuiElem window = gui.miniWindow(gui.empty(), []{});
+  Vec2 windowSize(500, 90);
+  string cancelText = "[cancel]";
+  Rectangle bounds((renderer.getSize() - windowSize) / 2, (renderer.getSize() + windowSize) / 2);
+  Rectangle progressBar(bounds.minusMargin(15));
+  window->setBounds(bounds);
+  while (!splashDone) {
+    refreshScreen(false);
+    window->render(renderer);
+    renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.top() + 20, text, Renderer::HOR);
+    Rectangle cancelBut(bounds.middle().x - renderer.getTextLength(cancelText) / 2, bounds.top() + 50,
+        bounds.middle().x + renderer.getTextLength(cancelText) / 2, bounds.top() + 80);
+    if (cancelFun)
+      renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.left(), cancelBut.top(), cancelText);
+    renderer.drawAndClearBuffer();
+    sf::sleep(sf::milliseconds(30));
+    Event event;
+    while (renderer.pollEvent(event)) {
+      propagateEvent(event, {});
+      if (event.type == Event::Resized) {
+        resize(event.size.width, event.size.height);
       }
+      if (event.type == Event::MouseButtonPressed && cancelFun) {
+        if (Vec2(event.mouseButton.x, event.mouseButton.y).inRectangle(cancelBut))
+          cancelFun();
+      }
+    }
+  }
+}
+
+void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, function<void()> cancelFun) {
+  int t0 = clock->getRealMillis();
+  int mouthMillis = 400;
+  Texture& loadingSplash = gui.get(GuiFactory::TexId::LOADING_SPLASH);
+  string cancelText = "[cancel]";
+  while (!splashDone) {
+    Vec2 textPos = useTiles ? Vec2(renderer.getSize().x / 2, renderer.getSize().y * 0.5)
+      : Vec2(renderer.getSize().x / 2, renderer.getSize().y - 60);
+    Rectangle cancelBut(textPos.x - renderer.getTextLength(cancelText) / 2, textPos.y + 30,
+        textPos.x + renderer.getTextLength(cancelText) / 2, textPos.y + 60);
+    if (useTiles)
+      drawMenuBackground(meter.getProgress(), min(1.0, double(clock->getRealMillis() - t0) / mouthMillis));
+    else
+      renderer.drawImage((renderer.getSize().x - loadingSplash.getSize().x) / 2,
+          (renderer.getSize().y - loadingSplash.getSize().y) / 2, loadingSplash);
+    renderer.drawText(colors[ColorId::WHITE], textPos.x, textPos.y, text, Renderer::HOR);
+    if (cancelFun)
+      renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.left(), cancelBut.top(), cancelText);
+    renderer.drawAndClearBuffer();
+    sf::sleep(sf::milliseconds(30));
+    Event event;
+    while (renderer.pollEvent(event)) {
+      if (event.type == Event::Resized) {
+        resize(event.size.width, event.size.height);
+      }
+      if (event.type == Event::MouseButtonPressed && cancelFun) {
+        if (Vec2(event.mouseButton.x, event.mouseButton.y).inRectangle(cancelBut))
+          cancelFun();
+      }
+    }
+  }
+}
+
+void WindowView::displaySplash(const ProgressMeter* meter, const string& text, SplashType type,
+    function<void()> cancelFun) {
+  RenderLock lock(renderMutex);
+  splashDone = false;
+  renderDialog.push([=] {
+    switch (type) {
+      case SplashType::BIG: getBigSplash(*meter, text, cancelFun); break;
+      case SplashType::AUTOSAVING: getAutosaveSplash(*meter); break;
+      case SplashType::SMALL: getSmallSplash(text, cancelFun); break;
     }
     splashDone = false;
     renderDialog.pop();

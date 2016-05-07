@@ -15,10 +15,12 @@ static function<void(double)> progressFun;
 static atomic<bool> cancel(false);
 
 int progressFunction(void* ptr, double totalDown, double nowDown, double totalUp, double nowUp) {
-  if (totalUp > 0)
-    progressFun(nowUp / totalUp);
-  if (totalDown > 0)
-    progressFun(nowDown / totalDown);
+  if (progressFun) {
+    if (totalUp > 0)
+      progressFun(nowUp / totalUp);
+    if (totalDown > 0)
+      progressFun(nowDown / totalDown);
+  }
   if (cancel) {
     cancel = false;
     return 1;
@@ -153,18 +155,26 @@ static vector<FileSharing::GameInfo> parseGames(const string& s) {
   return ret;
 }
 
-vector<FileSharing::GameInfo> FileSharing::listGames() {
+optional<vector<FileSharing::GameInfo>> FileSharing::listGames() {
+  if (!options.getBoolValue(OptionId::ONLINE))
+    return {};
   if (CURL* curl = curl_easy_init()) {
     curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_games2.php").c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
+    // Internal CURL progressmeter must be disabled if we provide our own callback
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
+    // Install the callback function
+    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
     string ret;
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
-    curl_easy_perform(curl);
+    CURLcode res = curl_easy_perform(curl);
     curl_easy_cleanup(curl);
+    if (res != CURLE_OK)
+      return none;
     return parseGames(ret);
   }
-  return {};
+  return none;
 }
 
 static vector<FileSharing::SiteInfo> parseSites(const string& s) {
@@ -200,20 +210,26 @@ static vector<FileSharing::SiteInfo> parseSites(const string& s) {
   return ret;
 }
 
-vector<FileSharing::SiteInfo> FileSharing::listSites() {
+optional<vector<FileSharing::SiteInfo>> FileSharing::listSites() {
   if (!options.getBoolValue(OptionId::ONLINE))
     return {};
   if (CURL* curl = curl_easy_init()) {
     curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_sites.php").c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
+    // Internal CURL progressmeter must be disabled if we provide our own callback
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
+    // Install the callback function
+    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
     string ret;
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
-    curl_easy_perform(curl);
+    CURLcode res = curl_easy_perform(curl);
     curl_easy_cleanup(curl);
+    if (res != CURLE_OK)
+      return none;
     return parseSites(ret);
   }
-  return {};
+  return none;
 }
 
 void FileSharing::cancel() {
