@@ -123,6 +123,9 @@ gen_version:
 	bash ./gen_version.sh
 endif
 
+parse_game:
+	clang++ -std=c++11 -g gzstream.cpp parse_game.cpp util.cpp debug.cpp saved_game_info.cpp -o parse_game -lboost_program_options -lpthread -lboost_serialization -DPARSE_GAME -lz
+
 clean:
 	$(RM) $(OBJDIR)/*.o
 	$(RM) $(OBJDIR)/*.d
