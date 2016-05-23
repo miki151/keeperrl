@@ -576,7 +576,7 @@ static ItemInfo getTradeItemInfo(const vector<Item*>& stack, int budget) {
 
 
 void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
-  if (!creature->getAttributes().isHumanoid())
+  if (!creature->getBody().isHumanoid())
     return;
   int index = 0;
   double scrollPos = 0;
@@ -1866,7 +1866,7 @@ void PlayerControl::addToMemory(Position pos) {
 void PlayerControl::checkKeeperDanger() {
   Creature* controlled = getControlled();
   if (!getKeeper()->isDead() && controlled != getKeeper()) { 
-    if ((getKeeper()->wasInCombat(5) || getKeeper()->getHealth() < 1)
+    if ((getKeeper()->wasInCombat(5) || getKeeper()->getBody().isWounded())
         && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 50) {
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
       if (getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {
@@ -1945,7 +1945,7 @@ void PlayerControl::update(bool currentlyActive) {
                 break;
               }
         } else  
-          if (c->getAttributes().isMinionFood() && !contains(getCreatures(), c))
+          if (c->getBody().isMinionFood() && !contains(getCreatures(), c))
             getCollective()->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
       }
   if (!addedCreatures.empty()) {

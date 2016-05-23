@@ -164,7 +164,7 @@ class Chest : public Square {
   }
 
   virtual bool canApply(const Creature* c) const override {
-    return c->getAttributes().isHumanoid();
+    return c->getBody().isHumanoid();
   }
 
   virtual optional<SquareApplyType> getApplyType() const override { 
@@ -456,7 +456,7 @@ class Grave : public Bed {
   Grave(const ViewObject& object, const string& name) : Bed(object, name, 0) {}
 
   virtual bool canApply(const Creature* c) const override {
-    return c->getAttributes().isUndead();
+    return c->getBody().isUndead();
   }
 
   virtual optional<SquareApplyType> getApplyType() const override { 
@@ -464,7 +464,7 @@ class Grave : public Bed {
   }
 
   virtual void onApply(Creature* c) override {
-    CHECK(c->getAttributes().isUndead());
+    CHECK(c->getBody().isUndead());
     Bed::onApply(c);
   }
 
@@ -485,7 +485,7 @@ class Altar : public Square {
   }
 
   virtual bool canApply(const Creature* c) const override {
-    return c->getAttributes().isHumanoid();
+    return c->getBody().isHumanoid();
   }
 
   virtual optional<SquareApplyType> getApplyType() const override { 
@@ -535,7 +535,7 @@ class CreatureAltar : public Altar {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    if (c->getAttributes().isHumanoid()) {
+    if (c->getBody().isHumanoid()) {
       c->playerMessage("This is a shrine to " + creature->getName().bare());
       c->playerMessage(creature->getAttributes().getDescription());
     }
@@ -612,7 +612,7 @@ class Hatchery : public Square {
     if (getCreature() || !Random.roll(10) || getPoisonGasAmount() > 0)
       return;
     for (Position v : getPosition2().neighbors8())
-      if (v.getCreature() && v.getCreature()->getAttributes().isMinionFood())
+      if (v.getCreature() && v.getCreature()->getBody().isMinionFood())
         return;
     if (Random.roll(5)) {
       PCreature pig = creature.random(

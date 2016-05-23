@@ -30,6 +30,8 @@
 #include "skill.h"
 #include "modifier_type.h"
 #include "creature_attributes.h"
+#include "attack_level.h"
+#include "attack_type.h"
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {

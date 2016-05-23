@@ -323,10 +323,13 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
 }
 
 Color Renderer::getBleedingColor(const ViewObject& object) {
-  double bleeding = object.getAttribute(ViewObject::Attribute::BLEEDING).get_value_or(0);
+  double bleeding = object.getAttribute(ViewObject::Attribute::WOUNDED).get_value_or(0);
   if (bleeding > 0)
     bleeding = 0.3 + bleeding * 0.7;
-  return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
+  if (object.hasModifier(ViewObject::Modifier::SPIRIT_DAMAGE))
+    return Color(255, 255, 255, 80 + max(0., (1 - bleeding) * (255 - 80)));
+  else
+    return Color(255, max(0., (1 - bleeding) * 255), max(0., (1 - bleeding) * 255));
 }
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool hFlip, bool vFlip) {

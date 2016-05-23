@@ -23,6 +23,8 @@
 #include "view.h"
 #include "game.h"
 #include "sound.h"
+#include "attack_level.h"
+#include "attack_type.h"
 
 template <class Archive> 
 void RangedWeapon::serialize(Archive& ar, const unsigned int version) {

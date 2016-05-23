@@ -550,7 +550,7 @@ PTask Collective::getEquipmentTask(Creature* c) {
 }
 
 PTask Collective::getHealingTask(Creature* c) {
-  if (c->getHealth() < 1 && c->getAttributes().canSleep() && !c->isAffected(LastingEffect::POISON))
+  if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
     for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE, MinionTask::LAIR})
       if (c->getAttributes().getMinionTasks().getValue(t) > 0) {
         vector<Position> positions = getAllSquares(config->getTaskInfo().at(t).squares);
@@ -1422,8 +1422,7 @@ vector<pair<Item*, Position>> Collective::getTrapItems(TrapType type, const vect
 
 bool Collective::usesEquipment(const Creature* c) const {
   return config->getManageEquipment()
-    && c->getAttributes().isHumanoid() 
-    && !hasTrait(c, MinionTrait::NO_EQUIPMENT)
+    && c->getBody().isHumanoid() && !hasTrait(c, MinionTrait::NO_EQUIPMENT)
     && !hasTrait(c, MinionTrait::PRISONER);
 }
 
@@ -1837,7 +1836,7 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
 }
 
 void Collective::onSurrender(Creature* who) {
-  if (!contains(getCreatures(), who) && who->getAttributes().isHumanoid())
+  if (!contains(getCreatures(), who) && who->getBody().isHumanoid())
     surrendering.insert(who);
 }
 

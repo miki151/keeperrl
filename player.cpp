@@ -41,6 +41,7 @@
 #include "collective.h"
 #include "territory.h"
 #include "creature_attributes.h"
+#include "attack_level.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -480,7 +481,7 @@ void Player::extendedAttackAction(Creature::Id id) {
 
 void Player::extendedAttackAction(Creature* other) {
   vector<ListElem> elems;
-  vector<AttackLevel> levels = getCreature()->getAttributes().getAttackLevels();
+  vector<AttackLevel> levels = getCreature()->getBody().getAttackLevels();
   for (auto level : levels)
     switch (level) {
       case AttackLevel::LOW: elems.push_back(ListElem("Low").setTip("Aim at lower parts of the body.")); break;

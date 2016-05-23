@@ -28,6 +28,7 @@
 #include "game.h"
 #include "collective_name.h"
 #include "lasting_effect.h"
+#include "body.h"
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
@@ -110,7 +111,8 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
 void VillageControl::considerCancellingAttack() {
   for (auto team : getCollective()->getTeams().getAll()) {
     vector<Creature*> members = getCollective()->getTeams().getMembers(team);
-    if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 && members[0]->getHealth() < 0.5)) {
+    if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
+          members[0]->getBody().isSeriouslyWounded())) {
       for (Creature* c : members)
         getCollective()->cancelTask(c);
       getCollective()->getTeams().cancel(team);

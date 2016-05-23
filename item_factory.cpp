@@ -133,7 +133,7 @@ class AmuletOfHealing : public Item {
 class Telepathy : public CreatureVision {
   public:
   virtual bool canSee(const Creature* c1, const Creature* c2) override {
-    return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getAttributes().hasBrain();
+    return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain();
   }
 
   SERIALIZE_SUBCLASS(CreatureVision);
@@ -1307,6 +1307,12 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::OTHER;
             i.price = 0;
             i.resourceId = CollectiveResourceId::WOOD;
+            i.weight = 5;);
+    case ItemId::BONE: return ITATTR(
+            i.viewId = ViewId::BONE;
+            i.name = "bone";
+            i.itemClass = ItemClass::OTHER;
+            i.price = 0;
             i.weight = 5;);
     case ItemId::GOLD_PIECE: return ITATTR(
             i.viewId = ViewId::GOLD;

@@ -146,7 +146,7 @@ class Heal : public Behaviour {
             if (auto action = creature->heal(creature->getPosition().getDir(other->getPosition())))
               return MoveInfo(0.5, action);
     }
-    if (!creature->getAttributes().isHumanoid())
+    if (!creature->getBody().isHumanoid())
       return NoMove;
     if (creature->isAffected(LastingEffect::POISON)) {
       if (MoveInfo move = tryEffect(EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT), 1))
@@ -154,15 +154,15 @@ class Heal : public Behaviour {
       if (MoveInfo move = tryEffect(EffectType(EffectId::CURE_POISON), 1))
         return move;
     }
-    if (creature->getHealth() < 1) {
+    if (creature->getBody().canHeal()) {
       if (MoveInfo move = tryEffect(EffectId::HEAL, 1))
-        return move.withValue(min(1.0, 1.5 - creature->getHealth()));
+        return move.withValue(min(1.0, 1.5 - creature->getBody().getHealth()));
       if (MoveInfo move = tryEffect(EffectId::HEAL, 3))
-        return move.withValue(0.5 * min(1.0, 1.5 - creature->getHealth()));
+        return move.withValue(0.5 * min(1.0, 1.5 - creature->getBody().getHealth()));
     }
     for (Position pos : creature->getPosition().neighbors8())
       if (Creature* c = pos.getCreature())
-        if (creature->isFriend(c) && c->getHealth() < 1)
+        if (creature->isFriend(c) && c->getBody().canHeal())
           for (Item* item : creature->getEquipment().getItems(Item::effectPredicate(EffectId::HEAL)))
             if (auto action = creature->give(c, {item}))
               return MoveInfo(0.5, action);
@@ -340,7 +340,11 @@ class Fighter : public Behaviour {
         myDamage += weapon->getModifier(ModifierType::DAMAGE);
       double powerRatio = getMoraleBonus() * myDamage / other->getModifier(ModifierType::DAMAGE);
       bool significantEnemy = myDamage < 5 * other->getModifier(ModifierType::DAMAGE);
-      double weight = 1. - creature->getHealth() * 0.9;
+      double weight = 0.1;
+      if (creature->getBody().isWounded())
+        weight += 0.4;
+      if (creature->getBody().isSeriouslyWounded())
+        weight += 0.5;
       if (powerRatio < maxPowerRatio)
         weight += 2 - powerRatio * 2;
       weight = min(1.0, max(0.0, weight));
@@ -352,7 +356,7 @@ class Fighter : public Behaviour {
       if (weight >= 0.5) {
         double dist = creature->getPosition().dist8(other->getPosition());
         if (dist < 7) {
-          if (dist == 1 && creature->getAttributes().isHumanoid())
+          if (dist == 1 && creature->getBody().isHumanoid())
             creature->surrender(other);
           if (MoveInfo move = getPanicMove(other, weight))
             return move;
@@ -507,7 +511,7 @@ class Fighter : public Behaviour {
     Debug() << creature->getName().bare() << " enemy " << other->getName().bare();
     Vec2 enemyDir = creature->getPosition().getDir(other->getPosition());
     distance = enemyDir.length8();
-    if (creature->getAttributes().isHumanoid() && !creature->getWeapon()) {
+    if (creature->getBody().isHumanoid() && !creature->getWeapon()) {
       if (Item* weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
           return {3.0 / (2.0 + distance), action.prepend([=](Creature* creature) {
@@ -687,8 +691,6 @@ class DieTime : public Behaviour {
   virtual MoveInfo getMove() override {
     if (creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
-        if (creature->getAttributes().isNotLiving() && creature->getAttributes().isCorporal())
-          creature->you(MsgType::FALL, "apart");
         creature->die(nullptr, false, false);
       })};
     }
@@ -719,8 +721,6 @@ class Summoned : public GuardTarget {
   virtual MoveInfo getMove() override {
     if (target->isDead() || creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
-        if (creature->getAttributes().isNotLiving() && !creature->getAttributes().isCorporal())
-          creature->you(MsgType::FALL, "apart");
         creature->die(nullptr, false, false);
       })};
     }
@@ -1071,7 +1071,7 @@ class AvoidFire : public Behaviour {
   using Behaviour::Behaviour;
 
   virtual MoveInfo getMove() override {
-    if (creature->getPosition().isBurning() && !creature->isFireResistant()) {
+    if (creature->getPosition().isBurning() && !creature->isAffected(LastingEffect::FIRE_RESISTANT)) {
       for (Position pos : creature->getPosition().neighbors8(Random))
         if (!pos.isBurning())
           if (auto action = creature->move(pos))
