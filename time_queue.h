@@ -26,27 +26,17 @@ class TimeQueue {
   TimeQueue();
   Creature* getNextCreature();
   vector<Creature*> getAllCreatures() const;
-  void addCreature(PCreature c);
-  PCreature removeCreature(Creature* c);
+  void addCreature(PCreature);
+  PCreature removeCreature(Creature*);
+  void beforeUpdateTime(Creature*);
+  void afterUpdateTime(Creature*);
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  void removeDead();
-  Creature* getMinCreature();
-
   vector<PCreature> SERIAL(creatures);
-
-  struct QElem {
-    Creature* creature;
-    double time;
-
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version);
-  };
-  priority_queue<QElem, vector<QElem>, function<bool(QElem, QElem)>> SERIAL(queue);
-  EntitySet<Creature> SERIAL(dead);
+  set<Creature*, function<bool(const Creature*, const Creature*)>> queue;
 };
 
 #endif

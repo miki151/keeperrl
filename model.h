@@ -93,6 +93,9 @@ class Model {
   void lockSerialization();
   void clearDeadCreatures();
 
+  void beforeUpdateTime(Creature*);
+  void afterUpdateTime(Creature*);
+
   private:
 
   friend class ModelBuilder;

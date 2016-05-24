@@ -230,5 +230,13 @@ bool Model::canTransferCreature(Creature* c, Vec2 travelDir) {
 
 vector<Creature*> Model::getAllCreatures() const { 
   return timeQueue->getAllCreatures();
-
 }
+
+void Model::beforeUpdateTime(Creature* c) {
+  timeQueue->beforeUpdateTime(c);
+}
+
+void Model::afterUpdateTime(Creature* c) {
+  timeQueue->afterUpdateTime(c);
+}
+

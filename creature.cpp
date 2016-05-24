@@ -45,6 +45,7 @@
 #include "lasting_effect.h"
 #include "attack_type.h"
 #include "attack_level.h"
+#include "model.h"
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
@@ -219,7 +220,12 @@ const EntitySet<Creature>& Creature::getKills() const {
 }
 
 void Creature::spendTime(double t) {
+  Model* m = position.getModel();
+  if (m)
+    m->beforeUpdateTime(this);
   localTime += 100.0 * t / (double) getAttr(AttrType::SPEED);
+  if (m)
+    m->afterUpdateTime(this);
   hidden = false;
 }
 
@@ -882,7 +888,12 @@ double Creature::getGlobalTime() const {
 }
 
 void Creature::setLocalTime(double t) {
+  Model* m = position.getModel();
+  if (m)
+    m->beforeUpdateTime(this);
   localTime = t;
+  if (m)
+    m->afterUpdateTime(this);
   modViewObject().clearMovementInfo();
 }
 
