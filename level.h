@@ -131,8 +131,8 @@ class Level {
   vector<Position> getAllPositions() const;
   //@}
 
-  void replaceSquare(Vec2 pos, PSquare square, bool storePrevious = true);
-  void removeSquare(Vec2 pos, PSquare defaultSquare);
+  void replaceSquare(Position, PSquare square, bool storePrevious = true);
+  void removeSquare(Position, PSquare defaultSquare);
 
   /** The given square's method Square::tick() will be called every turn. */
   void addTickingSquare(Vec2 pos);

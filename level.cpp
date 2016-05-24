@@ -56,7 +56,7 @@ Level::Level(Table<PSquare> s, Model* m, vector<Location*> l, const string& n,
       FieldOfView::sightRange), lightAmount(squares.getBounds(), 0), lightCapAmount(squares.getBounds(), 1),
       levelId(id) {
   for (Vec2 pos : squares.getBounds()) {
-    squares[pos]->setLevel(this);
+    squares[pos]->onAddedToLevel(Position(pos, this));
     optional<StairKey> link = squares[pos]->getLandingLink();
     if (link)
       landingSquares[*link].push_back(Position(pos, this));
@@ -132,30 +132,29 @@ void Level::addDarknessSource(Vec2 pos, double radius, int numDarkness) {
   }
 }
 
-void Level::removeSquare(Vec2 pos, PSquare defaultSquare) {
-  if (!oldSquares[pos])
+void Level::removeSquare(Position pos, PSquare defaultSquare) {
+  if (!oldSquares[pos.getCoord()])
     replaceSquare(pos, std::move(defaultSquare), false);
   else
-    replaceSquare(pos, std::move(oldSquares[pos]), false);
+    replaceSquare(pos, std::move(oldSquares[pos.getCoord()]), false);
 }
 
-void Level::replaceSquare(Vec2 pos, PSquare square, bool storePrevious) {
-  squares[pos]->onConstructNewSquare(square.get());
+void Level::replaceSquare(Position position, PSquare square, bool storePrevious) {
+  Vec2 pos = position.getCoord();
+  squares[pos]->onConstructNewSquare(position, square.get());
   Creature* c = squares[pos]->getCreature();
   if (c)
-    squares[pos]->removeCreature();
+    squares[pos]->removeCreature(position);
   for (Item* it : copyOf(squares[pos]->getItems()))
-    square->dropItem(squares[pos]->removeItem(it));
+    square->dropItem(position, squares[pos]->removeItem(it));
   addLightSource(pos, squares[pos]->getLightEmission(), -1);
-  square->setPosition(pos);
-  square->setLevel(this);
   if (squares[pos]->isUnavailable())
     square->setUnavailable();
-  for (PTrigger& t : squares[pos]->removeTriggers())
-    square->addTrigger(std::move(t));
+  for (PTrigger& t : squares[pos]->removeTriggers(position))
+    square->addTrigger(position, std::move(t));
   square->setBackground(squares[pos].get());
   if (auto tribe = squares[pos]->getForbiddenTribe())
-    square->forbidMovementForTribe(*tribe);
+    square->forbidMovementForTribe(position, *tribe);
   if (storePrevious)
     oldSquares[pos] = std::move(squares[pos]);
   squares[pos] = std::move(square);
@@ -349,12 +348,13 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
         trajectory.pop_back();
         GlobalEvents.addThrowEvent(this, item[0].get(), trajectory);
         if (!item[0]->isDiscarded())
-          getSafeSquare(v - direction)->dropItems(std::move(item));
+          getSafeSquare(v - direction)->dropItems(Position(v - direction, this), std::move(item));
         return;
     }
     if (++cnt > maxDist || getSafeSquare(v)->itemLands(extractRefs(item), attack)) {
       GlobalEvents.addThrowEvent(this, item[0].get(), trajectory);
-      getSafeSquare(v)->onItemLands(std::move(item), attack, maxDist - cnt - 1, direction, vision);
+      getSafeSquare(v)->onItemLands(Position(v, this), std::move(item), attack, maxDist - cnt - 1, direction,
+          vision);
       return;
     }
   }
@@ -498,7 +498,7 @@ void Level::moveCreature(Creature* creature, Vec2 direction) {
 
 void Level::unplaceCreature(Creature* creature, Vec2 pos) {
   bucketMap->removeElement(pos, creature);
-  getSafeSquare(pos)->removeCreature();
+  getSafeSquare(pos)->removeCreature(Position(pos, this));
   if (creature->isDarknessSource())   
     addDarknessSource(pos, darknessRadius, -1);
 }
@@ -561,7 +561,7 @@ void Level::addTickingSquare(Vec2 pos) {
 
 void Level::tick() {
   for (Vec2 pos : tickingSquares)
-    squares[pos]->tick();
+    squares[pos]->tick(Position(pos, this));
 }
 
 bool Level::inBounds(Vec2 pos) const {

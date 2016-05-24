@@ -94,13 +94,6 @@ class Square : public Renderable {
   /** Returns auto-travel directions pointing to the next squares on the path.*/
   const vector<Vec2>& getTravelDir() const;
 
-  /** Sets the square's position on the level.*/
-  void setPosition(Vec2 v);
-
-  /** Returns the square's position on the level.*/
-  Vec2 getPosition() const;
-  Position getPosition2() const;
-
   //@{
   /** Checks if this creature can enter the square at the moment. Takes account other creatures on the square.*/
   bool canEnter(const Creature*) const;
@@ -121,7 +114,7 @@ class Square : public Renderable {
   bool canSeeThru() const;
 
   /** Sets if this square obstructs view.*/
-  void setVision(VisionId);
+  void setVision(Position, VisionId);
 
   /** Checks if the player can hide behind this square.*/
   bool canHide() const;
@@ -137,25 +130,25 @@ class Square : public Renderable {
 
   /** Called when something is destroying this square (may take a few turns to destroy).*/
   virtual void destroyBy(Creature* c);
-  virtual void destroy();
+  virtual void destroy(Position);
 
   /** Called when this square is burned completely.*/
-  virtual void burnOut();
+  virtual void burnOut(Position);
 
   /** Exposes the square and objects on it to fire.*/
-  void setOnFire(double amount);
+  void setOnFire(Position, double amount);
 
   /** Returns whether the square is currently on fire.*/
   bool isBurning() const;
 
   /** Adds some poison gas to the square.*/
-  void addPoisonGas(double amount);
+  void addPoisonGas(Position, double amount);
 
   /** Returns the amount of poison gas on this square.*/
   double getPoisonGasAmount() const;
 
   /** Sets the level this square is on.*/
-  void setLevel(Level*);
+  void onAddedToLevel(Position);
 
   /** Puts a creature on the square.*/
   void putCreature(Creature*);
@@ -164,7 +157,7 @@ class Square : public Renderable {
   void setCreature(Creature*);
 
   /** Removes the creature from the square.*/
-  void removeCreature();
+  void removeCreature(Position);
 
   //@{
   /** Returns the creature from the square.*/
@@ -173,21 +166,22 @@ class Square : public Renderable {
   //@}
 
   /** Adds a trigger to the square.*/
-  void addTrigger(PTrigger);
+  void addTrigger(Position, PTrigger);
 
   /** Returns all triggers.*/
   vector<Trigger*> getTriggers() const;
 
   /** Removes the trigger from the square.*/
-  PTrigger removeTrigger(Trigger*);
+  PTrigger removeTrigger(Position, Trigger*);
 
   /** Removes all triggers from the square.*/
-  vector<PTrigger> removeTriggers();
+  vector<PTrigger> removeTriggers(Position);
 
   //@{
   /** Drops item or items on the square. The square assumes ownership.*/
-  void dropItem(PItem);
-  virtual void dropItems(vector<PItem>);
+  void dropItem(Position, PItem);
+  virtual void dropItems(Position, vector<PItem>);
+  void dropItemsLevelGen(vector<PItem>);
   //@}
 
   /** Checks if a given item is present on the square.*/
@@ -198,28 +192,26 @@ class Square : public Renderable {
 
   /** Constructs another square. The construction might finish after several attempts.
     Returns true if construction was finishd.*/
-  bool construct(const SquareType&);
+  bool construct(Position, const SquareType&);
 
   /** Called just before swapping the old square for the new constructed one.*/
-  virtual void onConstructNewSquare(Square* newSquare) {}
+  virtual void onConstructNewSquare(Position, Square* newSquare) {}
   
   /** Triggers all time-dependent processes like burning. Calls tick() for items if present.
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
-  void tick();
+  void tick(Position);
   void updateSunlightMovement(bool isSunlight);
 
   virtual bool canLock() const { return false; }
   virtual bool isLocked() const { FAIL << "BAD"; return false; }
-  virtual void lock() { FAIL << "BAD"; }
-
-  bool sunlightBurns() const;
+  virtual void lock(Position) { FAIL << "BAD"; }
 
   void setBackground(const Square*);
   void getViewIndex(ViewIndex&, const Creature* viewer) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
   bool itemBounces(Item* item, VisionId) const;
-  void onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, VisionId);
+  void onItemLands(Position, vector<PItem>, const Attack&, int remainingDist, Vec2 dir, VisionId);
   const vector<Item*>& getItems() const;
   vector<Item*> getItems(function<bool (Item*)> predicate) const;
   const vector<Item*>& getItems(ItemIndex) const;
@@ -232,8 +224,8 @@ class Square : public Renderable {
   virtual double getApplyTime() const { return 1.0; }
   optional<SquareApplyType> getApplyType(const Creature*) const;
 
-  void forbidMovementForTribe(TribeId);
-  void allowMovementForTribe(TribeId);
+  void forbidMovementForTribe(Position, TribeId);
+  void allowMovementForTribe(Position, TribeId);
   bool isTribeForbidden(TribeId) const;
   optional<TribeId> getForbiddenTribe() const;
  
@@ -245,8 +237,6 @@ class Square : public Renderable {
   bool needsMemoryUpdate() const;
   void setMemoryUpdated();
 
-  Level* getLevel();
-  const Level* getLevel() const;
   void clearItemIndex(ItemIndex);
 
   SERIALIZATION_DECL(Square);
@@ -254,11 +244,11 @@ class Square : public Renderable {
   protected:
   void onEnter(Creature*);
   virtual void onEnterSpecial(Creature*) {}
-  virtual void tickSpecial() {}
+  virtual void tickSpecial(Position) {}
   virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
   string SERIAL(name);
-  void addTraitForTribe(TribeId, MovementTrait);
-  void removeTraitForTribe(TribeId, MovementTrait);
+  void addTraitForTribe(Position, TribeId, MovementTrait);
+  void removeTraitForTribe(Position, TribeId, MovementTrait);
   void setDirty();
 
   Inventory& getInventory();
@@ -272,8 +262,6 @@ class Square : public Renderable {
   /** Checks if this square can be destroyed by member of the tribe.*/
   bool canDestroy(TribeId) const;
 
-  Level* SERIAL(level) = nullptr;
-  Vec2 SERIAL(position);
   Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);
   PViewObject SERIAL(backgroundObject);
@@ -293,7 +281,7 @@ class Square : public Renderable {
   optional<CurrentConstruction> SERIAL(currentConstruction);
   bool SERIAL(ticking);
   HeapAllocated<MovementSet> SERIAL(movementSet);
-  void updateMovement();
+  void updateMovement(Position);
   bool SERIAL(updateMemory) = true;
   mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);
   unique_ptr<ViewIndex> SERIAL(viewIndex);

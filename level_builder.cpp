@@ -61,7 +61,6 @@ void LevelBuilder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<Squ
     progressMeter->addProgress();
   Vec2 pos = transform(posT);
   CHECK(type[pos].getId() != SquareId::STAIRS) << "Attempted to overwrite stairs";
-  square->setPosition(pos);
   if (squares[pos])
     square->setBackground(squares[pos].get());
   squares[pos] = std::move(square);
@@ -126,7 +125,7 @@ PLevel LevelBuilder::build(Model* m, LevelMaker* maker, LevelId levelId) {
   CHECK(mapStack.empty());
   maker->make(this, squares.getBounds());
   for (Vec2 v : squares.getBounds())
-    squares[v]->dropItems(std::move(items[v]));
+    squares[v]->dropItemsLevelGen(std::move(items[v]));
   PLevel l(new Level(std::move(squares), m, locations, name, std::move(coverInfo), levelId));
   for (pair<PCreature, Vec2>& c : creatures) {
     l->addCreature(c.second, std::move(c.first));

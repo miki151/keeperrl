@@ -60,7 +60,7 @@ class Staircase : public Square {
   }
 
   virtual void onApply(Creature* c) override {
-    getLevel()->changeLevel(*getLandingLink(), c);
+    c->getLevel()->changeLevel(*getLandingLink(), c);
   }
 
   SERIALIZE_SUBCLASS(Square);
@@ -88,9 +88,9 @@ class Magma : public Square {
     }
   }
 
-  virtual void dropItems(vector<PItem> items) override {
+  virtual void dropItems(Position position, vector<PItem> items) override {
     for (auto elem : Item::stackItems(extractRefs(items)))
-      getLevel()->globalMessage(getPosition(), elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
+      position.globalMessage(elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
             "burns", "burn") + " in the magma.");
   }
 
@@ -118,9 +118,9 @@ class Water : public Square {
     }
   }
 
-  virtual void dropItems(vector<PItem> items) override {
+  virtual void dropItems(Position position, vector<PItem> items) override {
     for (auto elem : Item::stackItems(extractRefs(items)))
-      getLevel()->globalMessage(getPosition(), elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
+      position.globalMessage(elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
             "sinks", "sink") + " in the water.", "You hear a splash.");
   }
 
@@ -158,9 +158,9 @@ class Chest : public Square {
     c->playerMessage(string("There is a ") + (opened ? " opened " : "") + getName() + " here");
   }
 
-  virtual void onConstructNewSquare(Square* s) override {
+  virtual void onConstructNewSquare(Position position, Square* s) override {
     if (!opened)
-      s->dropItems(itemFactory.random());
+      s->dropItems(position, itemFactory.random());
   }
 
   virtual bool canApply(const Creature* c) const override {
@@ -182,7 +182,7 @@ class Chest : public Square {
     if (chestInfo.creature && chestInfo.creatureChance > 0 && Random.roll(1 / chestInfo.creatureChance)) {
       int numR = chestInfo.numCreatures;
       CreatureFactory factory(*chestInfo.creature);
-      for (Position v : getPosition2().neighbors8(Random)) {
+      for (Position v : c->getPosition().neighbors8(Random)) {
         PCreature rat = factory.random();
         if (v.canEnter(rat.get())) {
           v.addCreature(std::move(rat));
@@ -197,8 +197,8 @@ class Chest : public Square {
     }
     c->playerMessage(msgItem);
     vector<PItem> items = itemFactory.random();
-    GlobalEvents.addItemsAppearedEvent(getPosition2(), extractRefs(items));
-    getPosition2().dropItems(std::move(items));
+    GlobalEvents.addItemsAppearedEvent(c->getPosition(), extractRefs(items));
+    c->getPosition().dropItems(std::move(items));
   }
 
   SERIALIZE_ALL2(Square, chestInfo, msgItem, msgMonster, msgGold, opened, itemFactory, openedObject);
@@ -260,26 +260,26 @@ class Tree : public Square {
           c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
           c.constructions = ConstructionsId::CUT_TREE;)), numWood(_numWood), creature(c) {}
 
-  virtual void destroy() override {
-    getLevel()->globalMessage(getPosition(), "The tree falls.");
-    getLevel()->replaceSquare(getPosition(), SquareFactory::get(SquareId::TREE_TRUNK));
+  virtual void destroy(Position position) override {
+    position.globalMessage("The tree falls.");
+    position.getLevel()->replaceSquare(position, SquareFactory::get(SquareId::TREE_TRUNK));
   }
 
-  virtual void onConstructNewSquare(Square* s) override {
+  virtual void onConstructNewSquare(Position position, Square* s) override {
     if (numWood > 0) {
-      s->dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
-      getLevel()->getModel()->addWoodCount(numWood);
-      int numCut = getLevel()->getModel()->getWoodCount();
+      position.dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
+      position.getModel()->addWoodCount(numWood);
+      int numCut = position.getModel()->getWoodCount();
       if (numCut > 1500 && Random.roll(max(150, (3000 - numCut) / 5))) {
         CreatureFactory f = CreatureFactory::singleType(TribeId::getHostile(), creature);
-        Effect::summon(getPosition2(), f, 1, 100000);
+        Effect::summon(position, f, 1, 100000);
       }
     }
   }
 
-  virtual void burnOut() override {
+  virtual void burnOut(Position pos) override {
     numWood = 0;
-    getLevel()->replaceSquare(getPosition(), SquareFactory::get(SquareId::BURNT_TREE));
+    pos.getLevel()->replaceSquare(pos, SquareFactory::get(SquareId::BURNT_TREE));
   }
 
   SERIALIZE_ALL2(Square, creature, numWood);
@@ -354,14 +354,14 @@ class TribeDoor : public Door {
     return locked;
   }
 
-  virtual void lock() override {
+  virtual void lock(Position pos) override {
     locked = !locked;
     if (locked) {
       modViewObject().setModifier(ViewObject::Modifier::LOCKED);
-      removeTraitForTribe(tribe, MovementTrait::WALK);
+      removeTraitForTribe(pos, tribe, MovementTrait::WALK);
     } else {
       modViewObject().removeModifier(ViewObject::Modifier::LOCKED);
-      addTraitForTribe(tribe, MovementTrait::WALK);
+      addTraitForTribe(pos, tribe, MovementTrait::WALK);
     }
     setDirty();
   }
@@ -439,10 +439,10 @@ class Bed : public Furniture {
 
   virtual void onApply(Creature* c) override {
     Effect::applyToCreature(c, {EffectId::LASTING, LastingEffect::SLEEP}, EffectStrength::STRONG);
-    getLevel()->addTickingSquare(getPosition());
+    c->getPosition().getLevel()->addTickingSquare(c->getPosition().getCoord());
   }
 
-  virtual void tickSpecial() override {
+  virtual void tickSpecial(Position) override {
     if (getCreature() && getCreature()->isAffected(LastingEffect::SLEEP))
       getCreature()->heal(0.005);
   }
@@ -573,8 +573,8 @@ class MountainOre : public Square {
           c.constructions = ConstructionsId::MINING_ORE;)),
       oreId(ore), numDropped(dropped) {}
 
-  virtual void onConstructNewSquare(Square* s) override {
-    s->dropItems(ItemFactory::fromId(oreId, numDropped));
+  virtual void onConstructNewSquare(Position pos, Square* s) override {
+    pos.dropItems(ItemFactory::fromId(oreId, numDropped));
   }
 
   SERIALIZE_ALL2(Square, oreId, numDropped);
@@ -608,17 +608,17 @@ class Hatchery : public Square {
         c.ticking = true;)),
     creature(c) {}
 
-  virtual void tickSpecial() override {
+  virtual void tickSpecial(Position pos) override {
     if (getCreature() || !Random.roll(10) || getPoisonGasAmount() > 0)
       return;
-    for (Position v : getPosition2().neighbors8())
+    for (Position v : pos.neighbors8())
       if (v.getCreature() && v.getCreature()->getBody().isMinionFood())
         return;
     if (Random.roll(5)) {
       PCreature pig = creature.random(
-          MonsterAIFactory::stayInPigsty(getPosition2(), SquareApplyType::PIGSTY));
+          MonsterAIFactory::stayInPigsty(pos, SquareApplyType::PIGSTY));
       if (canEnter(pig.get()))
-        getLevel()->addCreature(getPosition(), std::move(pig));
+        pos.addCreature(std::move(pig));
     }
   }
 
@@ -700,15 +700,15 @@ class SokobanHole : public Square {
 
   virtual void onEnterSpecial(Creature* c) override {
     if (c->getAttributes().isStationary()) {
-      getPosition2().globalMessage(c->getName().the() + " fills the " + getName());
+      c->getPosition().globalMessage(c->getName().the() + " fills the " + getName());
       c->die(nullptr, false, false);
-      getLevel()->replaceSquare(getPosition(), SquareFactory::get(SquareId::FLOOR));
+      c->getPosition().getLevel()->replaceSquare(c->getPosition(), SquareFactory::get(SquareId::FLOOR));
     } else {
       if (!c->isAffected(LastingEffect::FLYING))
         c->you(MsgType::FALL, "into the " + getName() + "!");
       else
         c->you(MsgType::ARE, "sucked into the " + getName() + "!");
-      getLevel()->changeLevel(stairKey, c);
+      c->getPosition().getLevel()->changeLevel(stairKey, c);
     }
   }
 

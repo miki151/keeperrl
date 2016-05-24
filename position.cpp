@@ -89,7 +89,7 @@ Creature* Position::getCreature() const {
 
 void Position::removeCreature() {
   CHECK(isValid());
-  getSquare()->removeCreature();
+  getSquare()->removeCreature(*this);
 }
 
 bool Position::operator == (const Position& o) const {
@@ -241,19 +241,19 @@ vector<Trigger*> Position::getTriggers() const {
 
 PTrigger Position::removeTrigger(Trigger* trigger) {
   CHECK(isValid());
-  return getSquare()->removeTrigger(trigger);
+  return getSquare()->removeTrigger(*this, trigger);
 }
 
 vector<PTrigger> Position::removeTriggers() {
   if (isValid())
-    return getSquare()->removeTriggers();
+    return getSquare()->removeTriggers(*this);
   else
     return {};
 }
 
 void Position::addTrigger(PTrigger t) {
   if (isValid())
-    getSquare()->addTrigger(std::move(t));
+    getSquare()->addTrigger(*this, std::move(t));
 }
 
 const vector<Item*>& Position::getItems() const {
@@ -317,12 +317,12 @@ bool Position::canEnterEmpty(const MovementType& t) const {
 
 void Position::dropItem(PItem item) {
   if (isValid())
-    getSquare()->dropItem(std::move(item));
+    getSquare()->dropItem(*this, std::move(item));
 }
 
 void Position::dropItems(vector<PItem> v) {
   if (isValid())
-    getSquare()->dropItems(std::move(v));
+    getSquare()->dropItems(*this, std::move(v));
 }
 
 void Position::destroyBy(Creature* c) {
@@ -332,11 +332,11 @@ void Position::destroyBy(Creature* c) {
 
 void Position::destroy() {
   if (isValid())
-    getSquare()->destroy();
+    getSquare()->destroy(*this);
 }
 
 bool Position::construct(const SquareType& type) {
-  return isValid() && getSquare()->construct(type);
+  return isValid() && getSquare()->construct(*this, type);
 }
 
 bool Position::canLock() const {
@@ -349,7 +349,7 @@ bool Position::isLocked() const {
 
 void Position::lock() {
   if (isValid())
-    getSquare()->lock();
+    getSquare()->lock(*this);
 }
 
 bool Position::isBurning() const {
@@ -358,7 +358,7 @@ bool Position::isBurning() const {
 
 void Position::setOnFire(double amount) {
   if (isValid())
-    getSquare()->setOnFire(amount);
+    getSquare()->setOnFire(*this, amount);
 }
 
 bool Position::needsMemoryUpdate() const {
@@ -381,12 +381,12 @@ const ViewObject& Position::getViewObject() const {
 
 void Position::forbidMovementForTribe(TribeId t) {
   if (isValid())
-    getSquare()->forbidMovementForTribe(t);
+    getSquare()->forbidMovementForTribe(*this, t);
 }
 
 void Position::allowMovementForTribe(TribeId t) {
   if (isValid())
-    getSquare()->allowMovementForTribe(t);
+    getSquare()->allowMovementForTribe(*this, t);
 }
 
 bool Position::isTribeForbidden(TribeId t) const {
@@ -410,7 +410,7 @@ vector<Position> Position::getVisibleTiles(VisionId vision) {
 
 void Position::addPoisonGas(double amount) {
   if (isValid())
-    getSquare()->addPoisonGas(amount);
+    getSquare()->addPoisonGas(*this, amount);
 }
 
 double Position::getPoisonGasAmount() const {
@@ -428,7 +428,7 @@ CoverInfo Position::getCoverInfo() const {
 }
 
 bool Position::sunlightBurns() const {
-  return isValid() && getSquare()->sunlightBurns();
+  return isValid() && level->isInSunlight(coord);
 }
 
 void Position::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId vision) {

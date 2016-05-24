@@ -1421,7 +1421,7 @@ class ShopMaker : public LevelMaker {
     builder->putSquare(pos[builder->getRandom().get(pos.size())], SquareId::TORCH);
     for (int i : Range(numItems)) {
       Vec2 v = pos[builder->getRandom().get(pos.size())];
-      builder->getSquare(v)->dropItems(factory.random());
+      builder->getSquare(v)->dropItemsLevelGen(factory.random());
     }
   }
 
@@ -1518,27 +1518,6 @@ class Division : public LevelMaker {
   LevelMaker *lowerLeft = nullptr;
   LevelMaker *lowerRight = nullptr;
   optional<SquareType> wall;
-};
-
-class Circle : public LevelMaker {
-  public:
-  Circle(ItemId _item) : item(_item) {}
-
-  virtual void make(LevelBuilder* builder, Rectangle area) override {
-    Vec2 center = area.middle();
-    double r = min(area.height(), area.width()) / 2 - 1;
-    Vec2 lastPos;
-    for (double a = 0; a < 3.1415 * 2; a += builder->getRandom().getDouble() * r / 10) {
-      Vec2 pos = center + Vec2(sin(a) * r, cos(a) * r);
-      if (pos != lastPos) {
-        builder->getSquare(pos)->dropItem(ItemFactory::fromId(item));
-        lastPos = pos;
-      }
-    }
-  }
-
-  private:
-  ItemId item;
 };
 
 class AreaCorners : public LevelMaker {
