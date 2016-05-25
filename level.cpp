@@ -40,7 +40,7 @@ template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, squares, oldSquares, landingSquares, locations, tickingSquares, creatures, model, fieldOfView);
   serializeAll(ar, name, backgroundLevel, backgroundOffset, coverInfo, bucketMap, sectors, lightAmount);
-  serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds);
+  serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds, background);
 }  
 
 SERIALIZABLE(Level);
@@ -152,7 +152,8 @@ void Level::replaceSquare(Position position, PSquare square, bool storePrevious)
     square->setUnavailable();
   for (PTrigger& t : squares[pos]->removeTriggers(position))
     square->addTrigger(position, std::move(t));
-  square->setBackground(squares[pos].get());
+  if (auto backgroundObj = squares[pos]->extractBackground())
+    background[pos] = backgroundObj;
   if (auto tribe = squares[pos]->getForbiddenTribe())
     square->forbidMovementForTribe(position, *tribe);
   if (storePrevious)
@@ -615,5 +616,9 @@ void Level::updateSunlightMovement() {
   for (Vec2 v : getBounds())
     squares[v]->updateSunlightMovement(isInSunlight(v));
   sectors.clear();
+}
+
+const optional<ViewObject>& Level::getBackgroundObject(Vec2 pos) const {
+  return background[pos];
 }
 

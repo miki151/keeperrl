@@ -206,7 +206,7 @@ class Square : public Renderable {
   virtual bool isLocked() const { FAIL << "BAD"; return false; }
   virtual void lock(Position) { FAIL << "BAD"; }
 
-  void setBackground(const Square*);
+  optional<ViewObject> extractBackground() const;
   void getViewIndex(ViewIndex&, const Creature* viewer) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
@@ -264,7 +264,6 @@ class Square : public Renderable {
 
   Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);
-  PViewObject SERIAL(backgroundObject);
   optional<VisionId> SERIAL(vision);
   bool SERIAL(hide);
   int SERIAL(strength);

@@ -46,7 +46,6 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(name)
     & SVAR(creature)
     & SVAR(triggers)
-    & SVAR(backgroundObject)
     & SVAR(vision)
     & SVAR(hide)
     & SVAR(strength)
@@ -418,14 +417,12 @@ bool Square::isBurning() const {
   return fire->isBurning();
 }
 
-void Square::setBackground(const Square* square) {
-  setDirty();
-  if (getViewObject().layer() != ViewLayer::FLOOR_BACKGROUND) {
-    const ViewObject& obj = square->backgroundObject ? (*square->backgroundObject.get()) : square->getViewObject();
-    if (obj.layer() == ViewLayer::FLOOR_BACKGROUND) {
-      backgroundObject.reset(new ViewObject(obj));
-    }
-  }
+optional<ViewObject> Square::extractBackground() const {
+  const ViewObject& obj = getViewObject();
+  if (obj.layer() == ViewLayer::FLOOR_BACKGROUND)
+    return obj;
+  else
+    return none;
 }
 
 void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
@@ -440,8 +437,6 @@ void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
     for (Item* it : getInventory().getItems())
     fireSize = max(fireSize, it->getFireSize());
   fireSize = max(fireSize, fire->getSize());
-  if (backgroundObject)
-    ret.insert(*backgroundObject.get());
   ret.insert(getViewObject());
   for (const PTrigger& t : triggers)
     if (auto obj = t->getViewObject(viewer))

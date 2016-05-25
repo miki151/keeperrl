@@ -216,6 +216,8 @@ class Level {
   void updateConnectivity(Vec2);
   void updateSunlightMovement();
 
+  const optional<ViewObject>& getBackgroundObject(Vec2) const;
+
   LevelId getUniqueId() const;
 
   /** Class used to initialize a level object.*/
@@ -229,6 +231,7 @@ class Level {
   Vec2 transform(Vec2);
   Table<PSquare> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
+  Table<optional<ViewObject>> SERIAL(background);
   unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
   vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
@@ -250,7 +253,7 @@ class Level {
   Sectors& getSectors(const MovementType&) const;
   
   friend class LevelBuilder;
-  Level(Table<PSquare> s, Model*, vector<Location*>, const string& name, Table<CoverInfo> coverInfo, LevelId);
+  Level(Table<PSquare>, Model*, vector<Location*>, const string& name, Table<CoverInfo> coverInfo, LevelId);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);

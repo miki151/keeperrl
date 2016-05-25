@@ -7,9 +7,10 @@
 #include "creature.h"
 #include "level_maker.h"
 #include "collective_builder.h"
+#include "view_object.h"
 
 LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int height, const string& n, bool covered)
-  : squares(width, height), heightMap(width, height, 0),
+  : squares(width, height), background(width, height), heightMap(width, height, 0),
     coverInfo(width, height, {covered, covered ? 0.0 : 1.0}), attrib(width, height),
     type(width, height, SquareType(SquareId(0))), items(width, height), name(n), progressMeter(meter), random(r) {
 }
@@ -62,7 +63,8 @@ void LevelBuilder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<Squ
   Vec2 pos = transform(posT);
   CHECK(type[pos].getId() != SquareId::STAIRS) << "Attempted to overwrite stairs";
   if (squares[pos])
-    square->setBackground(squares[pos].get());
+    if (auto backgroundObj = squares[pos]->extractBackground())
+      background[pos] = backgroundObj;
   squares[pos] = std::move(square);
   for (SquareAttrib at : attr)
     attrib[pos].insert(at);
@@ -102,7 +104,7 @@ void LevelBuilder::putCreature(Vec2 pos, PCreature creature) {
 
 void LevelBuilder::putItems(Vec2 posT, vector<PItem> it) {
   Vec2 pos = transform(posT);
-  CHECK(squares[pos]->canEnterEmpty(MovementType({MovementTrait::WALK})));
+  CHECK(squares[pos]->canEnterEmpty(MovementType(MovementTrait::WALK)));
   append(items[pos], std::move(it));
 }
 
@@ -127,6 +129,7 @@ PLevel LevelBuilder::build(Model* m, LevelMaker* maker, LevelId levelId) {
   for (Vec2 v : squares.getBounds())
     squares[v]->dropItemsLevelGen(std::move(items[v]));
   PLevel l(new Level(std::move(squares), m, locations, name, std::move(coverInfo), levelId));
+  l->background = background;
   for (pair<PCreature, Vec2>& c : creatures) {
     l->addCreature(c.second, std::move(c.first));
   }

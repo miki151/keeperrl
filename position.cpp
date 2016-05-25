@@ -8,6 +8,7 @@
 #include "view_id.h"
 #include "location.h"
 #include "model.h"
+#include "view_index.h"
 
 template <class Archive> 
 void Position::serialize(Archive& ar, const unsigned int version) {
@@ -228,8 +229,12 @@ string Position::getName() const {
 }
 
 void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
-  if (isValid())
+  if (isValid()) {
     getSquare()->getViewIndex(index, viewer);
+    if (!index.hasObject(ViewLayer::FLOOR_BACKGROUND))
+      if (auto& obj = level->getBackgroundObject(coord))
+        index.insert(*obj);
+  }
 }
 
 vector<Trigger*> Position::getTriggers() const {

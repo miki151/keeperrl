@@ -115,6 +115,7 @@ class LevelBuilder {
   bool isInSunlight(Vec2);
   Vec2 transform(Vec2);
   Table<PSquare> squares;
+  Table<optional<ViewObject>> background;
   Table<double> heightMap;
   Table<double> dark;
   vector<Location*> locations;

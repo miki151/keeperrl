@@ -36,7 +36,7 @@ class TimeQueue {
 
   private:
   vector<PCreature> SERIAL(creatures);
-  set<Creature*, function<bool(const Creature*, const Creature*)>> queue;
+  set<Creature*, function<bool(const Creature*, const Creature*)>> SERIAL(queue);
 };
 
 #endif
