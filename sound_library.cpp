@@ -7,7 +7,11 @@
 using sf::Music;
 
 SoundLibrary::SoundLibrary(Options* options, const string& path) {
+#ifdef DISABLE_SFX
+  on = false;
+#else
   on = options->getBoolValue(OptionId::SOUND);
+#endif
   options->addTrigger(OptionId::SOUND, [this](bool turnOn) { on = turnOn; });
   for (SoundId id : ENUM_ALL(SoundId))
     addSounds(id, path + "/" + toLower(EnumInfo<SoundId>::getString(id)));
