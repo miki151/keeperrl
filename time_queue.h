@@ -23,7 +23,6 @@ class Creature;
 
 class TimeQueue {
   public:
-  TimeQueue();
   Creature* getNextCreature();
   vector<Creature*> getAllCreatures() const;
   void addCreature(PCreature);
@@ -35,8 +34,10 @@ class TimeQueue {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
+  typedef set<Creature*, function<bool(const Creature*, const Creature*)>> Queue;
+  Queue& getQueue();
   vector<PCreature> SERIAL(creatures);
-  set<Creature*, function<bool(const Creature*, const Creature*)>> SERIAL(queue);
+  optional<Queue> SERIAL(queue);
 };
 
 #endif

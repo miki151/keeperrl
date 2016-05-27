@@ -17,28 +17,37 @@
 
 #include "time_queue.h"
 #include "creature.h"
+#include "view_object.h"
 
 template <class Archive> 
 void TimeQueue::serialize(Archive& ar, const unsigned int version) { 
-  serializeAll(ar, creatures, queue);
+  serializeAll(ar, creatures);
 }
 
 SERIALIZABLE(TimeQueue);
 
-TimeQueue::TimeQueue() : queue([](const Creature* c1, const Creature* c2) {
-    return c1->getLocalTime() < c2->getLocalTime() ||
-    (c1->getLocalTime() == c2->getLocalTime() && c1->getUniqueId() > c2->getUniqueId());}) {
+void TimeQueue::addCreature(PCreature c) {
+  getQueue().insert(c.get());
+  creatures.push_back(std::move(c));
 }
 
-void TimeQueue::addCreature(PCreature c) {
-  queue.insert(c.get());
-  creatures.push_back(std::move(c));
+// Queue is initialized in a lazy manner because during deserialization the comparator doesn't 
+// work, as the Creatures are still being deserialized.
+TimeQueue::Queue& TimeQueue::getQueue() {
+  if (!queue) {
+    queue.emplace([](const Creature* c1, const Creature* c2) {
+        return c1->getLocalTime() < c2->getLocalTime() ||
+          (c1->getLocalTime() == c2->getLocalTime() && c1->getUniqueId() > c2->getUniqueId());});
+    for (PCreature& c : creatures)
+      queue->insert(c.get());
+  }
+  return *queue;
 }
   
 PCreature TimeQueue::removeCreature(Creature* cRef) {
   for (int i : All(creatures))
     if (creatures[i].get() == cRef) {
-      queue.erase(cRef);
+      getQueue().erase(cRef);
       PCreature ret = std::move(creatures[i]);
       creatures.erase(creatures.begin() + i);
       return ret;
@@ -55,14 +64,14 @@ Creature* TimeQueue::getNextCreature() {
   if (creatures.empty())
     return nullptr;
   else
-    return *queue.begin();
+    return *getQueue().begin();
 }
 
 void TimeQueue::beforeUpdateTime(Creature* c) {
-  queue.erase(c);
+  getQueue().erase(c);
 }
 
 void TimeQueue::afterUpdateTime(Creature* c) {
-  queue.insert(c);
+  getQueue().insert(c);
 }
 
