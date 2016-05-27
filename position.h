@@ -94,13 +94,12 @@ class Position {
   optional<TribeId> getForbiddenTribe() const;
   void addPoisonGas(double amount);
   double getPoisonGasAmount() const;
-  CoverInfo getCoverInfo() const;
+  bool isCovered() const;
   bool sunlightBurns() const;
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   bool canNavigate(const MovementType&) const;
   vector<Position> getVisibleTiles(VisionId);
-  const vector<Vec2>& getTravelDir() const;
   int getStrength() const;
   bool canSeeThru(VisionId) const;
   bool isVisibleBy(const Creature*);
@@ -120,7 +119,8 @@ class Position {
   int getHash() const;
 
   private:
-  Square* getSquare() const;
+  Square* modSquare() const;
+  const Square* getSquare() const;
   Vec2 SERIAL(coord);
   Level* SERIAL(level) = nullptr;
 };

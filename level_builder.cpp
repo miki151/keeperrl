@@ -9,9 +9,12 @@
 #include "collective_builder.h"
 #include "view_object.h"
 
-LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int height, const string& n, bool covered)
-  : squares(width, height), background(width, height), heightMap(width, height, 0),
-    coverInfo(width, height, {covered, covered ? 0.0 : 1.0}), attrib(width, height),
+LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int height, const string& n, bool covered,
+    optional<double> defaultLight)
+  : squares(Rectangle(width, height)), background(width, height), unavailable(width, height, false),
+    heightMap(width, height, 0), coverOverride(width, height),
+    sunlight(width, height, defaultLight ? *defaultLight : (covered ? 0.0 : 1.0)),
+    allCovered(covered), attrib(width, height),
     type(width, height, SquareType(SquareId(0))), items(width, height), name(n), progressMeter(meter), random(r) {
 }
 
@@ -25,7 +28,6 @@ RandomGen& LevelBuilder::getRandom() {
 
 bool LevelBuilder::hasAttrib(Vec2 posT, SquareAttrib attr) {
   Vec2 pos = transform(posT);
-  CHECK(squares[pos] != nullptr);
   return attrib[pos].contains(attr);
 }
 
@@ -37,43 +39,41 @@ void LevelBuilder::removeAttrib(Vec2 pos, SquareAttrib attr) {
   attrib[transform(pos)].erase(attr);
 }
 
-Square* LevelBuilder::getSquare(Vec2 pos) {
-  return squares[transform(pos)].get();
+const Square* LevelBuilder::getSquare(Vec2 pos) {
+  return squares.getReadonly(transform(pos));
 }
-    
+
+Square* LevelBuilder::modSquare(Vec2 pos) {
+  return squares.getSquare(transform(pos));
+}
+   
 const SquareType& LevelBuilder::getType(Vec2 pos) {
   return type[transform(pos)];
 }
 
-void LevelBuilder::putSquare(Vec2 pos, SquareType t, optional<SquareAttrib> at) {
-  putSquare(pos, SquareFactory::get(t), t, at);
+void LevelBuilder::putSquare(Vec2 pos, SquareType t, optional<SquareAttrib> attr) {
+  putSquare(pos, t, attr ? vector<SquareAttrib>({*attr}) : vector<SquareAttrib>());
 }
 
-void LevelBuilder::putSquare(Vec2 pos, SquareType t, vector<SquareAttrib> at) {
-  putSquare(pos, SquareFactory::get(t), t, at);
-}
-
-void LevelBuilder::putSquare(Vec2 pos, PSquare square, SquareType t, optional<SquareAttrib> attr) {
-  putSquare(pos, std::move(square), t, attr ? vector<SquareAttrib>({*attr}) : vector<SquareAttrib>());
-}
-
-void LevelBuilder::putSquare(Vec2 posT, PSquare square, SquareType t, vector<SquareAttrib> attr) {
+void LevelBuilder::putSquare(Vec2 posT, SquareType t, vector<SquareAttrib> attr) {
   if (progressMeter)
     progressMeter->addProgress();
   Vec2 pos = transform(posT);
   CHECK(type[pos].getId() != SquareId::STAIRS) << "Attempted to overwrite stairs";
-  if (squares[pos])
-    if (auto backgroundObj = squares[pos]->extractBackground())
+  bool wasCovered = false;
+  if (const Square* square = squares.getReadonly(pos)) {
+    wasCovered = square->isCovered();
+    if (auto backgroundObj = square->extractBackground())
       background[pos] = backgroundObj;
-  squares[pos] = std::move(square);
+  }
+  squares.putSquare(pos, t);
   for (SquareAttrib at : attr)
     attrib[pos].insert(at);
   type[pos] = t;
-  squares[pos]->updateSunlightMovement(isInSunlight(pos));
-}
-
-bool LevelBuilder::isInSunlight(Vec2 pos) {
-  return !coverInfo[pos].covered;
+  if (coverOverride[pos])
+    squares.getSquare(pos)->setCovered(*coverOverride[pos]);
+  else if (allCovered || wasCovered)
+    squares.getSquare(pos)->setCovered(true);
 }
 
 Rectangle LevelBuilder::toGlobalCoordinates(Rectangle area) {
@@ -104,13 +104,13 @@ void LevelBuilder::putCreature(Vec2 pos, PCreature creature) {
 
 void LevelBuilder::putItems(Vec2 posT, vector<PItem> it) {
   Vec2 pos = transform(posT);
-  CHECK(squares[pos]->canEnterEmpty(MovementType(MovementTrait::WALK)));
+  CHECK(squares.getReadonly(pos)->canEnterEmpty(MovementType(MovementTrait::WALK)));
   append(items[pos], std::move(it));
 }
 
 bool LevelBuilder::canPutCreature(Vec2 posT, Creature* c) {
   Vec2 pos = transform(posT);
-  if (!squares[pos]->canEnter(c))
+  if (!squares.getReadonly(pos)->canEnter(c))
     return false;
   for (pair<PCreature, Vec2>& c : creatures) {
     if (c.second == pos)
@@ -127,9 +127,11 @@ PLevel LevelBuilder::build(Model* m, LevelMaker* maker, LevelId levelId) {
   CHECK(mapStack.empty());
   maker->make(this, squares.getBounds());
   for (Vec2 v : squares.getBounds())
-    squares[v]->dropItemsLevelGen(std::move(items[v]));
-  PLevel l(new Level(std::move(squares), m, locations, name, std::move(coverInfo), levelId));
+    if (!items[v].empty())
+      squares.getSquare(v)->dropItemsLevelGen(std::move(items[v]));
+  PLevel l(new Level(std::move(squares), m, locations, name, sunlight, levelId));
   l->background = background;
+  l->unavailable = unavailable;
   for (pair<PCreature, Vec2>& c : creatures) {
     l->addCreature(c.second, std::move(c.first));
   }
@@ -183,9 +185,17 @@ Vec2 LevelBuilder::transform(Vec2 v) {
   return v;
 }
 
-void LevelBuilder::setCoverInfo(Vec2 pos, CoverInfo info) {
-  coverInfo[transform(pos)] = info;
-  if (squares[pos])
-    squares[pos]->updateSunlightMovement(isInSunlight(pos));
+void LevelBuilder::setCoverOverride(Vec2 posT, bool covered) {
+  Vec2 pos = transform(posT);
+  coverOverride[pos] = covered;
+  if (Square* square = squares.getSquare(pos))
+    square->setCovered(covered);
 }
 
+void LevelBuilder::setSunlight(Vec2 pos, double s) {
+  sunlight[pos] = s;
+}
+
+void LevelBuilder::setUnavailable(Vec2 pos) {
+  unavailable[transform(pos)] = true;
+}

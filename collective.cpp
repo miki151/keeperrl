@@ -411,13 +411,13 @@ optional<Position> Collective::getTileToExplore(const Creature* c, MinionTask ta
     case MinionTask::EXPLORE_CAVES:
       if (auto pos = getRandomCloseTile(c->getPosition(), border,
             [this, c](Position p) {
-                return p.isSameLevel(level) && p.getCoverInfo().sunlight < 1 &&
+                return p.isSameLevel(level) && p.isCovered() &&
                     (!c->getPosition().isSameLevel(level) || c->isSameSector(p));}))
         return pos;
     case MinionTask::EXPLORE:
     case MinionTask::EXPLORE_NOCTURNAL:
       return getRandomCloseTile(c->getPosition(), border,
-          [this, c](Position pos) { return pos.isSameLevel(level) && !pos.getCoverInfo().covered
+          [this, c](Position pos) { return pos.isSameLevel(level) && !pos.isCovered()
               && (!c->getPosition().isSameLevel(level) || c->isSameSector(pos));});
     default: FAIL << "Unrecognized explore task: " << int(task);
   }

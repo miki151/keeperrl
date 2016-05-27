@@ -244,6 +244,7 @@ class Connector : public LevelMaker {
           switch (oldType.getId()) {
             case SquareId::ABYSS:
             case SquareId::WATER:
+            case SquareId::WATER_WITH_DEPTH:
             case SquareId::MAGMA:
               newType = SquareId::BRIDGE;
               break;
@@ -263,9 +264,6 @@ class Connector : public LevelMaker {
           builder->getType(v) == SquareId::DOOR) {
         if (!path.isReachable(v))
           failGen();
-        builder->getSquare(v)->addTravelDir(path.getNextMove(v) - v);
-        if (prev.x > -100)
-          builder->getSquare(v)->addTravelDir(prev - v);
       }
       prev = v;
     }
@@ -546,7 +544,7 @@ class MountainRiver : public LevelMaker {
             if (depth == 0)
               builder->putSquare(v, SquareId::SAND, SquareAttrib::RIVER);
             else
-              builder->putSquare(v, SquareFactory::getWater(depth), SquareId::WATER, SquareAttrib::RIVER);
+              builder->putSquare(v, {SquareId::WATER_WITH_DEPTH, depth}, SquareAttrib::RIVER);
           } else
             builder->putSquare(v, SquareId::WATER, SquareAttrib::RIVER);
 
@@ -644,7 +642,7 @@ class Lake : public Blob {
     if (sand && edgeDist == 1 && builder->getType(pos).getId() != SquareId::WATER)
       builder->putSquare(pos, SquareId::SAND, SquareAttrib::LAKE);
     else
-      builder->putSquare(pos, SquareFactory::getWater(double(edgeDist) / 2), SquareId::WATER, SquareAttrib::LAKE);
+      builder->putSquare(pos, {SquareId::WATER_WITH_DEPTH, double(edgeDist) / 2}, SquareAttrib::LAKE);
   }
 
   private:
@@ -767,7 +765,7 @@ class Buildings : public LevelMaker {
       for (Vec2 v : Rectangle(w + 1, h + 1)) {
         filled[Vec2(px, py) + v] = true;
         builder->putSquare(Vec2(px, py) + v, building.wall);
-        builder->setCoverInfo(Vec2(px, py) + v, {true, 1.0});
+        builder->setCoverOverride(Vec2(px, py) + v, true);
       }
       for (Vec2 v : Rectangle(w - 1, h - 1)) {
         builder->putSquare(Vec2(px + 1, py + 1) + v, building.floorInside, SquareAttrib::ROOM);
@@ -1167,12 +1165,12 @@ class Mountains : public LevelMaker {
       builder->setHeightMap(v, wys[v]);
       if (wys[v] > cutOffValSnow) {
         builder->putSquare(v, types[0], SquareAttrib::GLACIER);
-        builder->setCoverInfo(v, {true, 0.0});
+        builder->setSunlight(v, 0.0);
         ++gCnt;
       }
       else if (wys[v] > cutOffVal) {
         builder->putSquare(v, types[1], SquareAttrib::MOUNTAIN);
-        builder->setCoverInfo(v, {true, 1. - (wys[v] - cutOffVal) / (cutOffValSnow - cutOffVal)});
+        builder->setSunlight(v, 1. - (wys[v] - cutOffVal) / (cutOffValSnow - cutOffVal));
         ++mCnt;
       }
       else if (wys[v] > cutOffValHill) {
@@ -1249,12 +1247,8 @@ class Roads : public LevelMaker {
         SquareType roadType = getRoadType(builder, v);
         if (v != p2 && v != p1 && builder->getType(v) != roadType)
           builder->putSquare(v, roadType);
-        if (prev.x > -1)
-          builder->getSquare(v)->addTravelDir(prev - v);
-        builder->getSquare(v)->addTravelDir(path.getNextMove(v) - v);
         prev = v;
       }
-      builder->getSquare(p1)->addTravelDir(prev - p1);
     }
   }
 
@@ -1270,7 +1264,7 @@ class StartingPos : public LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (Vec2 pos : area)
       if (predicate.apply(builder, pos))
-        builder->getSquare(pos)->setLandingLink(stairKey);
+        builder->modSquare(pos)->setLandingLink(stairKey);
   }
 
   private:
@@ -1289,7 +1283,7 @@ class TransferPos : public LevelMaker {
       if (((pos.x - area.left() < width) || (pos.y - area.top() < width) ||
           (area.right() - pos.x <= width) || (area.bottom() - pos.y <= width)) &&
           predicate.apply(builder, pos)) {
-        builder->getSquare(pos)->setLandingLink(stairKey);
+        builder->modSquare(pos)->setLandingLink(stairKey);
         found = true;
       }
     checkGen(found);
@@ -1421,7 +1415,7 @@ class ShopMaker : public LevelMaker {
     builder->putSquare(pos[builder->getRandom().get(pos.size())], SquareId::TORCH);
     for (int i : Range(numItems)) {
       Vec2 v = pos[builder->getRandom().get(pos.size())];
-      builder->getSquare(v)->dropItemsLevelGen(factory.random());
+      builder->putItems(v, factory.random());
     }
   }
 
@@ -1578,14 +1572,6 @@ class CastleExit : public LevelMaker {
   CreatureId guardId;
 };
 
-class SetCovered : public LevelMaker {
-  public:
-  virtual void make(LevelBuilder* builder, Rectangle area) override {
-    for (Vec2 v : area)
-      builder->setCoverInfo(v, {true, 1.0});
-  }
-};
-
 class AddMapBorder : public LevelMaker {
   public:
   AddMapBorder(int w) : width(w) {}
@@ -1593,7 +1579,7 @@ class AddMapBorder : public LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (Vec2 v : area)
       if (!v.inRectangle(area.minusMargin(width)))
-        builder->getSquare(v)->setUnavailable();
+        builder->setUnavailable(v);
   }
 
   private:
@@ -2287,7 +2273,6 @@ PLevelMaker LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory 
     CreatureFactory imps, const string& splashPath) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::BLACK_FLOOR));
-  queue->addMaker(new SetCovered());
   Rectangle leaderSpawn(
           Level::getSplashVisibleBounds().right() + 1, Level::getSplashVisibleBounds().middle().y,
           Level::getSplashVisibleBounds().right() + 2, Level::getSplashVisibleBounds().middle().y + 1);

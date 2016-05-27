@@ -364,8 +364,10 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
           gui.labelFun([this] { return getCurrentGameSpeedName();},
               [this] { return colors[clock->isPaused() ? ColorId::RED : ColorId::WHITE]; })), 60),
       gui.button([&] { gameSpeedDialogOpen = !gameSpeedDialogOpen; })));
+  int modifiedSquares = info.modifiedSquares;
+  int totalSquares = info.totalSquares;
   bottomLine.push_back(
-      gui.labelFun([this]()->string { return "FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()); },
+      gui.labelFun([=]()->string { return "FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()) + " SMOD " + toString(modifiedSquares) + "/" + toString(totalSquares); },
       colors[ColorId::WHITE]));
   PGuiElem bottomElem = gui.horizontalList(std::move(bottomLine), 160);
   main = gui.margin(gui.margins(std::move(bottomElem), 25, 0, 0, 0),

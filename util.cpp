@@ -518,6 +518,10 @@ int Rectangle::height() const {
   return h;
 }
 
+int Rectangle::area() const {
+  return w * h;
+}
+
 Vec2 Rectangle::getSize() const {
   return Vec2(w, h);
 }

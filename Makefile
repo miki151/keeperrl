@@ -34,7 +34,7 @@ endif
 ifdef RELEASE
 CFLAGS += -DRELEASE
 else
-CFLAGS += -g
+CFLAGS += -g -fsanitize=address
 endif
 
 ifdef DBG

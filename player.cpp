@@ -332,7 +332,7 @@ bool Player::interruptedByEnemy() {
 }
 
 void Player::travelAction() {
-  updateView = true;
+/*  updateView = true;
   if (!getCreature()->move(travelDir) || getView()->travelInterrupt() || interruptedByEnemy()) {
     travelling = false;
     return;
@@ -356,7 +356,7 @@ void Player::travelAction() {
     Debug() << "Stopped by bad travel data";
     return;
   }
-  travelDir = squareDirs[(*myIndex + 1) % 2];
+  travelDir = squareDirs[(*myIndex + 1) % 2];*/
 }
 
 void Player::targetAction() {
@@ -513,7 +513,6 @@ void Player::makeMove() {
   if (currentTimePos && currentTimePos->pos.getLevel() != getCreature()->getLevel()) {
     previousTimePos = currentTimePos = none;
   }
-  vector<Vec2> squareDirs = getCreature()->getPosition().getTravelDir();
   if (getCreature()->isAffected(LastingEffect::HALLU))
     ViewObject::setHallu(true);
   else
@@ -626,13 +625,13 @@ void Player::makeMove() {
       if (Creature* other = getCreature()->getPosition().plus(dir).getCreature())
         extendedAttackAction(other);
       else {
-        vector<Vec2> squareDirs = getCreature()->getPosition().getTravelDir();
+/*        vector<Vec2> squareDirs = getCreature()->getPosition().getTravelDir();
         if (findElement(squareDirs, dir)) {
           travelDir = dir;
           lastLocation = getCreature()->getPosition().getLocation();
           travelling = true;
           travelAction();
-        }
+        }*/
       }
     } else {
       moveAction(dir);

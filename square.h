@@ -75,7 +75,7 @@ class Square : public Renderable {
   string getName() const;
 
   /** Sets the square name.*/
-  void setName(const string&);
+  void setName(Position, const string&);
 
   /** Links this square as point of entry from another level.
     * \param direction direction where the creature is coming from
@@ -87,12 +87,6 @@ class Square : public Renderable {
 
   /** Returns radius of emitted light (0 if none).*/
   virtual double getLightEmission() const;
-
-  /** Adds direction for auto-traveling. \paramname{dir} must point to next square on path.*/
-  void addTravelDir(Vec2 dir);
-
-  /** Returns auto-travel directions pointing to the next squares on the path.*/
-  const vector<Vec2>& getTravelDir() const;
 
   //@{
   /** Checks if this creature can enter the square at the moment. Takes account other creatures on the square.*/
@@ -129,7 +123,7 @@ class Square : public Renderable {
   bool canDestroy(const Creature*) const;
 
   /** Called when something is destroying this square (may take a few turns to destroy).*/
-  virtual void destroyBy(Creature* c);
+  virtual void destroyBy(Position, Creature* c);
   virtual void destroy(Position);
 
   /** Called when this square is burned completely.*/
@@ -148,7 +142,7 @@ class Square : public Renderable {
   double getPoisonGasAmount() const;
 
   /** Sets the level this square is on.*/
-  void onAddedToLevel(Position);
+  void onAddedToLevel(Position) const;
 
   /** Puts a creature on the square.*/
   void putCreature(Creature*);
@@ -159,11 +153,8 @@ class Square : public Renderable {
   /** Removes the creature from the square.*/
   void removeCreature(Position);
 
-  //@{
   /** Returns the creature from the square.*/
-  Creature* getCreature();
-  const Creature* getCreature() const;
-  //@}
+  Creature* getCreature() const;
 
   /** Adds a trigger to the square.*/
   void addTrigger(Position, PTrigger);
@@ -195,12 +186,13 @@ class Square : public Renderable {
   bool construct(Position, const SquareType&);
 
   /** Called just before swapping the old square for the new constructed one.*/
-  virtual void onConstructNewSquare(Position, Square* newSquare) {}
+  virtual void onConstructNewSquare(Position, Square* newSquare) const {}
   
   /** Triggers all time-dependent processes like burning. Calls tick() for items if present.
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
   void tick(Position);
-  void updateSunlightMovement(bool isSunlight);
+  void setCovered(bool);
+  bool isCovered() const;
 
   virtual bool canLock() const { return false; }
   virtual bool isLocked() const { FAIL << "BAD"; return false; }
@@ -215,8 +207,8 @@ class Square : public Renderable {
   const vector<Item*>& getItems() const;
   vector<Item*> getItems(function<bool (Item*)> predicate) const;
   const vector<Item*>& getItems(ItemIndex) const;
-  PItem removeItem(Item*);
-  vector<PItem> removeItems(vector<Item*>);
+  PItem removeItem(Position, Item*);
+  vector<PItem> removeItems(Position, vector<Item*>);
 
   virtual optional<SquareApplyType> getApplyType() const { return none; }
   virtual bool canApply(const Creature*) const { return true; }
@@ -230,9 +222,6 @@ class Square : public Renderable {
   optional<TribeId> getForbiddenTribe() const;
  
   virtual ~Square();
-
-  void setUnavailable();
-  bool isUnavailable() const;
 
   bool needsMemoryUpdate() const;
   void setMemoryUpdated();
@@ -249,7 +238,7 @@ class Square : public Renderable {
   string SERIAL(name);
   void addTraitForTribe(Position, TribeId, MovementTrait);
   void removeTraitForTribe(Position, TribeId, MovementTrait);
-  void setDirty();
+  void setDirty(Position);
 
   Inventory& getInventory();
   const Inventory& getInventory() const;
@@ -267,7 +256,6 @@ class Square : public Renderable {
   optional<VisionId> SERIAL(vision);
   bool SERIAL(hide);
   int SERIAL(strength);
-  vector<Vec2> SERIAL(travelDir);
   optional<StairKey> SERIAL(landingLink);
   HeapAllocated<Fire> SERIAL(fire);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
@@ -281,13 +269,11 @@ class Square : public Renderable {
   bool SERIAL(ticking);
   HeapAllocated<MovementSet> SERIAL(movementSet);
   void updateMovement(Position);
-  bool SERIAL(updateMemory) = true;
   mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);
   unique_ptr<ViewIndex> SERIAL(viewIndex);
   bool SERIAL(destroyable) = false;
   optional<TribeId> SERIAL(owner);
   optional<TribeId> SERIAL(forbiddenTribe);
-  bool SERIAL(unavailable) = false;
   optional<SoundId> SERIAL(applySound);
 };
 

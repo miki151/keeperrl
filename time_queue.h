@@ -37,7 +37,7 @@ class TimeQueue {
   typedef set<Creature*, function<bool(const Creature*, const Creature*)>> Queue;
   Queue& getQueue();
   vector<PCreature> SERIAL(creatures);
-  optional<Queue> SERIAL(queue);
+  optional<Queue> queue;
 };
 
 #endif

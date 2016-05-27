@@ -1120,6 +1120,11 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
           {getResourceViewId(elem.first), getCollective()->numResourcePlusDebt(elem.first), elem.second.name});
   info.warning = "";
   gameInfo.time = getCollective()->getGame()->getGlobalTime();
+  gameInfo.modifiedSquares = gameInfo.totalSquares = 0;
+  for (Collective* col : getCollective()->getGame()->getCollectives()) {
+    gameInfo.modifiedSquares += col->getLevel()->getNumModifiedSquares();
+    gameInfo.totalSquares += col->getLevel()->getBounds().area();
+  }
   info.teams.clear();
   for (int i : All(getTeams().getAll())) {
     TeamId team = getTeams().getAll()[i];

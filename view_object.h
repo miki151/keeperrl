@@ -58,6 +58,8 @@ class ViewObject {
   vector<string> getLegend() const;
   const char* getDescription() const;
 
+  void setIndoors(bool);
+
   ViewLayer layer() const;
   ViewId id() const;
   void setId(ViewId);
@@ -106,6 +108,7 @@ class ViewObject {
   Vec2 SERIAL(position) = Vec2(-1, -1);
   optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
   vector<string> SERIAL(adjectives);
+  optional<bool> indoors;
 
   class MovementQueue {
     public:

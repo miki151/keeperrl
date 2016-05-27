@@ -191,7 +191,7 @@ class Corpse : public Item {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))
         Effect::applyToPosition(position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
-          !position.getCoverInfo().covered && Random.roll(35)) {
+          !position.isCovered() && Random.roll(35)) {
         for (Position v : position.neighbors8(Random)) {
           PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE, TribeId::getPest(),
                     MonsterAIFactory::scavengerBird(v));

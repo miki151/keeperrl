@@ -1233,7 +1233,7 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
 }
 
 CreatureAction Creature::flyAway() const {
-  if (!isAffected(LastingEffect::FLYING) || getPosition().getCoverInfo().covered)
+  if (!isAffected(LastingEffect::FLYING) || getPosition().isCovered())
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " fly away";
@@ -1552,7 +1552,8 @@ MovementType Creature::getMovementType() const {
       getBody().canWade()})
     .setForced(isBlind() || isHeld() || forceMovement)
     .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT))
-    .setSunlightVulnerable(getBody().isSunlightVulnerable() && !isAffected(LastingEffect::DARKNESS_SOURCE));
+    .setSunlightVulnerable(getBody().isSunlightVulnerable() && !isAffected(LastingEffect::DARKNESS_SOURCE)
+        && (!getGame() || getGame()->getSunlightInfo().getState() == SunlightState::DAY));
 }
 
 int Creature::getDifficultyPoints() const {

@@ -245,6 +245,7 @@ class Rectangle {
   Vec2 getSize() const;
   Range getYRange() const;
   Range getXRange() const;
+  int area() const;
 
   Vec2 topLeft() const;
   Vec2 bottomRight() const;

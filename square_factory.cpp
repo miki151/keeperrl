@@ -158,9 +158,11 @@ class Chest : public Square {
     c->playerMessage(string("There is a ") + (opened ? " opened " : "") + getName() + " here");
   }
 
-  virtual void onConstructNewSquare(Position position, Square* s) override {
-    if (!opened)
-      s->dropItems(position, itemFactory.random());
+  virtual void onConstructNewSquare(Position position, Square* s) const override {
+    if (!opened) {
+      ItemFactory f(itemFactory);
+      s->dropItems(position, f.random());
+    }
   }
 
   virtual bool canApply(const Creature* c) const override {
@@ -265,7 +267,7 @@ class Tree : public Square {
     position.getLevel()->replaceSquare(position, SquareFactory::get(SquareId::TREE_TRUNK));
   }
 
-  virtual void onConstructNewSquare(Position position, Square* s) override {
+  virtual void onConstructNewSquare(Position position, Square* s) const override {
     if (numWood > 0) {
       position.dropItems(ItemFactory::fromId(ItemId::WOOD_PLANK, numWood));
       position.getModel()->addWoodCount(numWood);
@@ -338,10 +340,10 @@ class TribeDoor : public Door {
       tribe(t), destructionStrength(destStrength) {
   }
 
-  virtual void destroyBy(Creature* c) override {
+  virtual void destroyBy(Position pos, Creature* c) override {
     destructionStrength -= c->getAttr(AttrType::STRENGTH);
     if (destructionStrength <= 0) {
-      Door::destroyBy(c);
+      Door::destroyBy(pos, c);
     } else
       c->addSound(SoundId::BANG_DOOR);
   }
@@ -363,7 +365,7 @@ class TribeDoor : public Door {
       modViewObject().removeModifier(ViewObject::Modifier::LOCKED);
       addTraitForTribe(pos, tribe, MovementTrait::WALK);
     }
-    setDirty();
+    setDirty(pos);
   }
 
   SERIALIZE_ALL2(Door, tribe, destructionStrength, locked);
@@ -387,10 +389,10 @@ class Barricade : public Square {
       destructionStrength(destStrength) {
   }
 
-  virtual void destroyBy(Creature* c) override {
+  virtual void destroyBy(Position pos, Creature* c) override {
     destructionStrength -= c->getAttr(AttrType::STRENGTH);
     if (destructionStrength <= 0) {
-      Square::destroyBy(c);
+      Square::destroyBy(pos, c);
     }
   }
 
@@ -541,7 +543,7 @@ class CreatureAltar : public Altar {
     }
   }
 
-  virtual void destroyBy(Creature* c) override {
+  virtual void destroyBy(Position pos, Creature* c) override {
   //  GlobalEvents.addWorshipCreatureEvent(c, creature, WorshipType::DESTROY_ALTAR);
   //  Altar::destroyBy(c);
   }
@@ -570,10 +572,11 @@ class MountainOre : public Square {
   MountainOre(const ViewObject& object, const string& name, ItemId ore, int dropped) : Square(object,
         CONSTRUCT(Square::Params,
           c.name = name;
+          c.movementSet->setCovered(true);
           c.constructions = ConstructionsId::MINING_ORE;)),
       oreId(ore), numDropped(dropped) {}
 
-  virtual void onConstructNewSquare(Position pos, Square* s) override {
+  virtual void onConstructNewSquare(Position pos, Square* s) const override {
     pos.dropItems(ItemFactory::fromId(oreId, numDropped));
   }
 
@@ -719,10 +722,6 @@ class SokobanHole : public Square {
   StairKey SERIAL(stairKey);
 };
 
-PSquare SquareFactory::getAltar(Creature* creature) {
-  return PSquare(new CreatureAltar(ViewObject(ViewId::ALTAR, ViewLayer::FLOOR), creature));
-}
-
 template <class Archive>
 void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Laboratory);
@@ -843,6 +842,7 @@ Square* SquareFactory::getPtr(SquareType s) {
             .setModifier(ViewObject::Modifier::CASTS_SHADOW),
           CONSTRUCT(Square::Params,
             c.name = "mountain";
+            c.movementSet->setCovered(true);
             c.constructions = ConstructionsId::MOUNTAIN_GEN_ORES;
             ));
     case SquareId::HILL:
@@ -854,6 +854,8 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);));
     case SquareId::WATER:
         return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND), "water", 100);
+    case SquareId::WATER_WITH_DEPTH:
+        return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND), "water", s.get<double>());
     case SquareId::MAGMA: 
         return new Magma(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR), "magma");
     case SquareId::ABYSS: 
@@ -1061,11 +1063,6 @@ Square* SquareFactory::getPtr(SquareType s) {
   }
   return 0;
 }
-
- 
-PSquare SquareFactory::getWater(double depth) {
-  return PSquare(new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND), "water", depth));
-} 
 
 SquareFactory::SquareFactory(const vector<SquareType>& s, const vector<double>& w) : squares(s), weights(w) {
 }

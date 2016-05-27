@@ -25,8 +25,6 @@ class StairKey;
 class SquareFactory {
   public:
   static PSquare get(SquareType);
-  static PSquare getAltar(Creature*);
-  static PSquare getWater(double depth);
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);

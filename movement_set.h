@@ -14,7 +14,8 @@ class MovementSet {
 
   MovementSet& setOnFire(bool);
   bool isOnFire() const;
-  MovementSet& setSunlight(bool = true);
+  MovementSet& setCovered(bool);
+  bool isCovered() const;
   
   MovementSet& addTrait(MovementTrait);
   MovementSet& removeTrait(MovementTrait);
@@ -29,7 +30,7 @@ class MovementSet {
   
   private:
   bool SERIAL(onFire) = false;
-  bool SERIAL(sunlight) = false;
+  bool SERIAL(covered) = false;
   typedef EnumSet<MovementTrait> TribeSet;
   TribeSet SERIAL(traits);
   TribeSet SERIAL(forcibleTraits);

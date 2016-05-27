@@ -149,6 +149,10 @@ optional<float> ViewObject::getAttribute(Attribute attr) const {
   return attributes[attr];
 }
 
+void ViewObject::setIndoors(bool state) {
+  indoors = state;
+}
+
 void ViewObject::setDescription(const string& s) {
   description = s;
 }
@@ -262,6 +266,8 @@ vector<string> ViewObject::getLegend() const {
     ret.push_back("Planned");
   if (hasModifier(Modifier::SLEEPING))
     ret.push_back("Sleeping");
+  if (indoors)
+    ret.push_back(*indoors ? "Indoors" : "Outdoors");
   if (position.x > -1)
     ret.push_back(toString(position.x) + ", " + toString(position.y));
   if (!!attributes[Attribute::MORALE])

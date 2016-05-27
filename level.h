@@ -24,6 +24,7 @@
 #include "sectors.h"
 #include "stair_key.h"
 #include "entity_set.h"
+#include "square_array.h"
 
 class Model;
 class Square;
@@ -46,12 +47,6 @@ RICH_ENUM(VisionId,
   NIGHT,
   NORMAL
 );
-
-struct CoverInfo {
-  bool SERIAL(covered);
-  double SERIAL(sunlight);
-  SERIALIZE_ALL(covered, sunlight);
-};
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level {
@@ -193,8 +188,6 @@ class Level {
   void addMarkedLocation(Rectangle bounds);
   void clearLocations();
 
-  CoverInfo getCoverInfo(Vec2) const;
-
   const Model* getModel() const;
   Model* getModel();
   Game* getGame() const;
@@ -217,6 +210,10 @@ class Level {
   void updateSunlightMovement();
 
   const optional<ViewObject>& getBackgroundObject(Vec2) const;
+  int getNumModifiedSquares() const;
+  void setSquareMemoryDirty(Vec2, bool dirty);
+  bool isSquareMemoryDirty(Vec2) const;
+  bool isUnavailable(Vec2) const;
 
   LevelId getUniqueId() const;
 
@@ -227,11 +224,13 @@ class Level {
   private:
   friend class Position;
   const Square* getSafeSquare(Vec2) const;
-  Square* getSafeSquare(Vec2);
+  Square* modSafeSquare(Vec2);
   Vec2 transform(Vec2);
-  Table<PSquare> SERIAL(squares);
+  SquareArray SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
   Table<optional<ViewObject>> SERIAL(background);
+  Table<bool> SERIAL(squareMemoryDirty);
+  Table<bool> SERIAL(unavailable);
   unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
   vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
@@ -245,7 +244,7 @@ class Level {
   string SERIAL(name);
   const Level* SERIAL(backgroundLevel) = nullptr;
   Vec2 SERIAL(backgroundOffset);
-  Table<CoverInfo> SERIAL(coverInfo);
+  Table<double> SERIAL(sunlight);
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
@@ -253,7 +252,7 @@ class Level {
   Sectors& getSectors(const MovementType&) const;
   
   friend class LevelBuilder;
-  Level(Table<PSquare>, Model*, vector<Location*>, const string& name, Table<CoverInfo> coverInfo, LevelId);
+  Level(SquareArray, Model*, vector<Location*>, const string& name, Table<double> sunlight, LevelId);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);

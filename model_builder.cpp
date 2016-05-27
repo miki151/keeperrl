@@ -1324,7 +1324,7 @@ PModel ModelBuilder::splashModel(ProgressMeter* meter, const string& splashPath)
   Model* m = new Model();
   Level* l = m->buildLevel(
       LevelBuilder(meter, Random, Level::getSplashBounds().width(), Level::getSplashBounds().height(), "Splash",
-          false),
+        true, 1.0),
       LevelMaker::splashLevel(
           CreatureFactory::splashLeader(TribeId::getHuman()),
           CreatureFactory::splashHeroes(TribeId::getHuman()),
