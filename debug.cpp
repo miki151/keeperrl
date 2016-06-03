@@ -17,7 +17,7 @@
 
 #include "debug.h"
 #include "util.h"
-
+#include "renderer.h"
 
 static void fail() {
   *((int*) 0x1234) = 0; // best way to fail
@@ -25,18 +25,18 @@ static void fail() {
 
 namespace boost {
   void assertion_failed(char const * expr, char const * function, char const * file, long line) {
-    (ofstream("stacktrace.out") << "Assertion at " << file << ":" << line << std::endl).flush();
+    FAIL << "Assertion at " << file << ":" << (int)line;
     fail();
   }
 }
 
 
 Debug::Debug(DebugType t, const string& msg, int line) : type(t) {
-	if (t == DebugType::FATAL)
-		out = "FATAL";
-	else
-		out = "INFO";
-	out += msg + ":" + toString(line) + " ";
+  if (t == DebugType::FATAL)
+    out = "FATAL";
+  else
+    out = "INFO";
+  out += msg + ":" + toString(line) + " ";
 }
 
 static ofstream output;
@@ -46,6 +46,12 @@ void Debug::init(bool log) {
     output.open("log.out");
 }
 
+static Renderer* renderer;
+
+void Debug::initRenderer(Renderer& r) {
+  renderer = &r;
+}
+
 void Debug::add(const string& a) {
   out += a;
 }
@@ -53,6 +59,8 @@ void Debug::add(const string& a) {
 Debug::~Debug() {
   if (type == DebugType::FATAL) {
     (ofstream("stacktrace.out") << out << endl).flush();
+    if (renderer)
+      renderer->showError(out);
     fail();
   } else {
     if (output) {

@@ -1,9 +1,8 @@
 #ifndef _SOUND_LIBRARY
 #define _SOUND_LIBRARY
 
-#include <SFML/Audio/Music.hpp>
-
 #include "sound.h"
+#include "SDL2/SDL_mixer.h"
 
 class Options;
 
@@ -14,7 +13,7 @@ class SoundLibrary {
 
   private:
   void addSounds(SoundId, const string& path);
-  EnumMap<SoundId, vector<unique_ptr<sf::Music>>> sounds;
+  EnumMap<SoundId, vector<Mix_Chunk*>> sounds;
   bool on;
 };
 

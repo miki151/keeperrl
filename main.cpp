@@ -24,6 +24,7 @@
 #include <boost/filesystem.hpp>
 
 #include <exception>
+#include <SDL2/SDL_mixer.h>
 
 #include "view.h"
 #include "options.h"
@@ -256,6 +257,12 @@ int main(int argc, char* argv[]) {
 }
 #endif
 
+static void initSDLMixer() {
+  int flags = MIX_INIT_OGG;
+  CHECK((Mix_Init(flags) & flags) == flags) << Mix_GetError();
+  CHECK(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) == 0) << Mix_GetError();
+}
+
 static int keeperMain(const variables_map& vars) {
   if (vars.count("help")) {
     std::cout << getOptions() << endl;
@@ -265,7 +272,7 @@ static int keeperMain(const variables_map& vars) {
     testAll();
     return 0;
   }
-  bool useSingleThread = vars.count("single_thread");
+  bool useSingleThread = true;//vars.count("single_thread");
   unique_ptr<View> view;
   unique_ptr<CompressedInput> input;
   unique_ptr<CompressedOutput> output;
@@ -309,6 +316,8 @@ static int keeperMain(const variables_map& vars) {
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   Random.init(seed);
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
+  Debug::initRenderer(renderer);
+  initSDLMixer();
   SoundLibrary* soundLibrary = nullptr;
   Clock clock;
   GuiFactory guiFactory(renderer, &clock, &options);

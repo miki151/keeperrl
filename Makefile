@@ -34,7 +34,11 @@ endif
 ifdef RELEASE
 CFLAGS += -DRELEASE
 else
-CFLAGS += -g -fsanitize=address
+CFLAGS += -g
+endif
+
+ifdef SANITIZE_ADDRESS
+CFLAGS += -fsanitize=address
 endif
 
 ifdef DBG
@@ -79,7 +83,7 @@ endif
 
 SRCS = $(shell ls -t *.cpp)
 
-LIBS = -L/usr/lib/x86_64-linux-gnu -lsfml-audio -lsfml-graphics -lsfml-window -lsfml-system $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}
+LIBS = -L/usr/lib/x86_64-linux-gnu -lGL -lSDL2 -lSDL2_mixer -lSDL2_ttf -lSDL2_image $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}
 
 
 OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))

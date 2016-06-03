@@ -16,9 +16,8 @@
 #ifndef _JUKEBOX_H
 #define _JUKEBOX_H
 
-#include <SFML/Audio/Music.hpp>
-
 #include "util.h"
+#include <SDL2/SDL_mixer.h>
 
 class Options;
 
@@ -41,7 +40,7 @@ class Jukebox {
   typedef std::unique_lock<std::recursive_mutex> MusicLock;
   std::recursive_mutex musicMutex;
 
-  unique_ptr<sf::Music[]> music;
+  vector<Mix_Music*> music;
   map<MusicType, vector<int>> byType;
   int current = 0;
   int currentPlaying = 0;

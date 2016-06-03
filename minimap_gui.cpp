@@ -22,10 +22,14 @@
 #include "renderer.h"
 #include "map_memory.h"
 #include "view_index.h"
+#include <SDL2/SDL.h>
 
 void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
-  mapBufferTex.update(mapBuffer);
-  renderer.drawImage(target, info.bounds, mapBufferTex);
+  if (!mapBufferTex)
+    mapBufferTex.emplace(mapBuffer);
+  else
+    mapBufferTex->loadFrom(mapBuffer);
+  renderer.drawImage(target, info.bounds, *mapBufferTex);
   Vec2 topLeft = target.topLeft();
   double scale = min(double(target.width()) / info.bounds.width(),
       double(target.width()) / info.bounds.height());
@@ -60,9 +64,8 @@ void MinimapGui::render(Renderer& r) {
   renderMap(r, getBounds());
 }
 
-MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
-  mapBuffer.create(Level::getMaxBounds().width(), Level::getMaxBounds().height());
-  mapBufferTex.loadFromImage(mapBuffer);
+MinimapGui::MinimapGui(Renderer& r, function<void()> f) : clickFun(f), renderer(r) {
+  mapBuffer = Renderer::createSurface(Level::getMaxBounds().width(), Level::getMaxBounds().height());
 }
 
 void MinimapGui::clear() {
@@ -84,13 +87,12 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
   info.locations.clear();
   const MapMemory& memory = creature->getMemory();
   if (currentLevel != level) {
-    mapBuffer.create(Level::getMaxBounds().width(), Level::getMaxBounds().height());
+    int col = SDL_MapRGBA(mapBuffer->format, 0, 0, 0, 1);
+    SDL_FillRect(mapBuffer, nullptr, col);
     info.roads.clear();
     for (Position v : level->getAllPositions()) {
-      if (!memory.getViewIndex(v))
-        mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, colors[ColorId::BLACK]);
-      else {
-        mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, Tile::getColor(v.getViewObject()));
+      if (memory.getViewIndex(v)) {
+        Renderer::putPixel(mapBuffer, v.getCoord(), Tile::getColor(v.getViewObject()));
         if (v.getViewObject().hasModifier(ViewObject::Modifier::ROAD))
           info.roads.insert(v.getCoord());
       }
@@ -98,8 +100,8 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
     currentLevel = level;
   }
   for (Position v : memory.getUpdated(level)) {
-    CHECK(v.getCoord().inRectangle(Vec2(mapBuffer.getSize().x, mapBuffer.getSize().y))) << v.getCoord();
-    mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, Tile::getColor(v.getViewObject()));
+    CHECK(v.getCoord().inRectangle(Vec2(mapBuffer->w, mapBuffer->h))) << v.getCoord();
+    Renderer::putPixel(mapBuffer, v.getCoord(), Tile::getColor(v.getViewObject()));
     if (v.getViewObject().hasModifier(ViewObject::Modifier::ROAD))
       info.roads.insert(v.getCoord());
   }
@@ -140,10 +142,10 @@ void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Rend
     r.drawAndClearBuffer();
     Event event;
     while (r.pollEvent(event)) {
-      if (event.type == Event::KeyPressed)
+      if (event.type == SDL_KEYDOWN)
         return;
-      if (event.type == Event::MouseButtonPressed) {
-        clickFun(double(event.mouseButton.x) / scale, double(event.mouseButton.y) / scale);
+      if (event.type == SDL_MOUSEBUTTONDOWN) {
+        clickFun(double(event.button.x) / scale, double(event.button.y) / scale);
         return;
       }
     }

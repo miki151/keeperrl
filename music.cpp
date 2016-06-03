@@ -16,21 +16,18 @@
 #include "stdafx.h"
 #include "music.h"
 #include "options.h"
-#include <SFML/System.hpp>
-
-using sf::Music;
 
 Jukebox::Jukebox(Options* options, vector<pair<MusicType, string>> tracks, int maxVol, map<MusicType, int> maxV)
     : numTracks(tracks.size()), maxVolume(maxVol), maxVolumes(maxV) {
-  music.reset(new Music[numTracks]);
+  music.resize(numTracks);
   for (int i : All(tracks)) {
-    music[i].openFromFile(tracks[i].second);
+    CHECK(music[i] = Mix_LoadMUS(tracks[i].second.c_str())) << Mix_GetError();
     byType[tracks[i].first].push_back(i);
   }
   options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { toggle(turnOn); });
   refreshLoop.emplace([this] {
     refresh();
-    sf::sleep(sf::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 });
 }
 
@@ -52,10 +49,10 @@ void Jukebox::toggle(bool state) {
   if (on) {
     current = Random.choose(byType[getCurrentType()]);
     currentPlaying = current;
-    music[current].setVolume(getMaxVolume(current));
-    music[current].play();
+    Mix_VolumeMusic(getMaxVolume(current));
+    CHECK(Mix_PlayMusic(music[current], 1) == 0) << Mix_GetError();
   } else
-    music[current].stop();
+    Mix_FadeOutMusic(2000);
 }
 
 void Jukebox::setCurrent(MusicType c) {
@@ -96,22 +93,21 @@ void Jukebox::refresh() {
   if (!on || !numTracks)
     return;
   if (current != currentPlaying) {
-    if (music[currentPlaying].getVolume() == 0) {
-      music[currentPlaying].stop();
+    if (!Mix_PlayingMusic()) {
       currentPlaying = current;
-      music[currentPlaying].setVolume(getMaxVolume(currentPlaying));
-      music[currentPlaying].play();
+      Mix_VolumeMusic(getMaxVolume(currentPlaying));
+      Mix_PlayMusic(music[currentPlaying], 1);
     } else
-      music[currentPlaying].setVolume(max(0.0f, music[currentPlaying].getVolume() - volumeDec));
+      Mix_FadeOutMusic(2000);
   } else
-  if (music[current].getStatus() == sf::SoundSource::Stopped) {
+  if (!Mix_PlayingMusic()) {
     if (nextType) {
       setCurrent(*nextType);
       nextType.reset();
     } else
       continueCurrent();
     currentPlaying = current;
-    music[current].play();
-    music[current].setVolume(getMaxVolume(current));
+    Mix_VolumeMusic(getMaxVolume(current));
+    Mix_PlayMusic(music[current], 1);
   }
 }

@@ -40,6 +40,7 @@
 #include <stdexcept>
 #include <tuple>
 #include <numeric>
+#include <chrono>
 
 // Use boost threads on OSX to use the main thread for rendering
 // and set a large stack size for the model thread.

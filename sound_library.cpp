@@ -4,8 +4,6 @@
 #include "sound.h"
 #include "options.h"
 
-using sf::Music;
-
 SoundLibrary::SoundLibrary(Options* options, const string& path) {
 #ifdef DISABLE_SFX
   on = false;
@@ -24,8 +22,7 @@ void SoundLibrary::addSounds(SoundId id, const string& path) {
   while (dirent* ent = readdir(dir)) {
     string name(ent->d_name);
     if (endsWith(name, ".ogg")) {
-      sounds[id].emplace_back(new Music());
-      CHECK(sounds[id].back()->openFromFile(path + "/" + name));
+      sounds[id].push_back(Mix_LoadWAV((path + "/" + name).c_str()));
     }
   }
 }
@@ -35,7 +32,7 @@ void SoundLibrary::playSound(const Sound& s) {
     return;
   if (int numSounds = sounds[s.getId()].size()) {
     int ind = Random.get(numSounds);
-    sounds[s.getId()][ind]->setPitch(s.getPitch());
-    sounds[s.getId()][ind]->play();
+//    sounds[s.getId()][ind]->setPitch(s.getPitch());
+    Mix_PlayChannel(-1, sounds[s.getId()][ind], 0);
   }
 }

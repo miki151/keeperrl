@@ -96,7 +96,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::SOUND,
 #endif
       OptionId::FULLSCREEN,
-      OptionId::FULLSCREEN_RESOLUTION,
+  //    OptionId::FULLSCREEN_RESOLUTION,
       OptionId::ZOOM_UI,
       OptionId::DISABLE_MOUSE_WHEEL,
       OptionId::ONLINE,

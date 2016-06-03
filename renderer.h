@@ -16,23 +16,21 @@
 #ifndef _RENDERER_H
 #define _RENDERER_H
 
-#include <SFML/Graphics.hpp>
-
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_opengl.h>
 #include "util.h"
 
-using sf::Font;
-using sf::Color;
-using sf::String;
-using sf::Image;
-using sf::Sprite;
-using sf::Texture;
-using sf::RenderWindow;
-using sf::RenderTarget;
-using sf::Vertex;
-using sf::Event;
+struct Color : public SDL_Color {
+  Color(Uint8, Uint8, Uint8, Uint8 = 255);
+  static Color f(double, double, double, double = 1.0);
+  Color operator* (Color);
+  Color();
+  void applyGl() const;
+};
 
 RICH_ENUM(ColorId,
-  WHITE,
+    WHITE,
   MAIN_MENU_ON,
   MAIN_MENU_OFF,
   YELLOW,
@@ -80,6 +78,35 @@ enum class SpriteId {
 
 class ViewObject;
 
+typedef SDL_Event Event;
+typedef SDL_EventType EventType;
+
+
+class Texture {
+  public:
+  Texture(const Texture&) = delete;
+  Texture(Texture&&);
+  Texture& operator = (Texture&&);
+  Texture(const string& path);
+  Texture(const string& path, int px, int py, int kx, int ky);
+  explicit Texture(SDL_Surface*);
+  static optional<Texture> loadMaybe(const string& path);
+
+  void loadFrom(SDL_Surface*);
+  const Vec2& getSize() const;
+
+  ~Texture();
+
+  private:
+  friend class Renderer;
+  void render(Vec2 screenP, Vec2 screenK, Vec2 srcP, Vec2 srck, optional<Color> = none,
+      bool vFlip = false, bool hFlip = false) const;
+  void addTexCoord(int x, int y) const;
+  optional<GLuint> texId;
+  Vec2 size;
+  string path;
+};
+
 class Renderer {
   public: 
   class TileCoord {
@@ -100,24 +127,23 @@ class Renderer {
   void setZoom(int);
   void initialize();
   bool isFullscreen();
+  void showError(const string&);
   static vector<string> getFullscreenResolutions();
   const static int textSize = 19;
   const static int smallTextSize = 14;
+  static SDL_Surface* createSurface(int w, int h);
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
-  int getTextLength(string s, int size = textSize);
-  int getUnicodeLength(String s, FontId = SYMBOL_FONT, int size = textSize);
+  int getTextLength(const string& s, int size = textSize, FontId = SYMBOL_FONT);
   enum CenterType { NONE, HOR, VER, HOR_VER };
-  void drawText(FontId, int size, Color, int x, int y, String, CenterType center = NONE);
+  void drawText(FontId, int size, Color, int x, int y, const string&, CenterType center = NONE);
   void drawTextWithHotkey(Color, int x, int y, const string&, char key);
-  void drawText(Color, int x, int y, string, CenterType center = NONE, int size = textSize);
+  void drawText(Color, int x, int y, const string&, CenterType center = NONE, int size = textSize);
   void drawText(Color, int x, int y, const char* c, CenterType center = NONE, int size = textSize);
-  void drawImage(int px, int py, const Texture&, double scale = 1);
+  void drawImage(int px, int py, const Texture&, double scale = 1, optional<Color> = none);
   void drawImage(int px, int py, int kx, int ky, const Texture&, double scale = 1);
   void drawImage(Rectangle target, Rectangle source, const Texture&);
-  void drawSprite(Vec2 pos, Vec2 spos, Vec2 size, const Texture&, optional<Color> color,
-      optional<Vec2> stretchSize = none);
-  void drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture&, Vec2 targetSize = Vec2(-1, -1),
-      optional<Color> color = none);
+  void drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture&, optional<Vec2> targetSize = none,
+      optional<Color> color = none, bool vFlip = false, bool hFLip = false);
   void drawSprite(int x, int y, SpriteId, optional<Color> color = none);
   void drawSprite(Vec2 pos, Vec2 stretchSize, const Texture&);
   void drawFilledRectangle(const Rectangle&, Color, optional<Color> outline = none);
@@ -139,14 +165,12 @@ class Renderer {
   bool loadTilesFromDir(const string& path, Vec2 size);
   bool loadTilesFromDir(const string& path, vector<Texture>&, Vec2 size, int setWidth);
   bool loadAltTilesFromDir(const string& path, Vec2 altSize);
-  bool loadTilesFromFile(const string& path, Vec2 size);
-  static String toUnicode(const string&);
 
   void drawAndClearBuffer();
   void resize(int width, int height);
-  bool pollEvent(Event&, Event::EventType);
+  bool pollEvent(Event&, EventType);
   bool pollEvent(Event&);
-  void flushEvents(Event::EventType);
+  void flushEvents(EventType);
   void waitEvent(Event&);
   Vec2 getMousePos();
 
@@ -163,7 +187,11 @@ class Renderer {
   vector<Texture> tiles;
   vector<Texture> altTiles;
 
+  static void putPixel(SDL_Surface*, Vec2, Color);
+
   private:
+  friend class Texture;
+  optional<Texture> textTexture;
   Renderer(const Renderer&);
   vector<Vec2> altTileSize;
   vector<Vec2> tileSize;
@@ -175,27 +203,31 @@ class Renderer {
   void zoomMousePos(Event&);
   void updateResolution();
   Event getRandomEvent();
-  RenderWindow display;
+  void initOpenGL();
+  SDL_Window* window;
+  int width, height;
   bool monkey = false;
   deque<Event> eventQueue;
   bool genReleaseEvent = false;
   void addRenderElem(function<void()>);
-  sf::Text& getTextObject();
+  //sf::Text& getTextObject();
   stack<int> layerStack;
   int currentLayer = 0;
   array<vector<function<void()>>, 2> renderList;
-  vector<Vertex> quads;
+//  vector<Vertex> quads;
   Vec2 mousePos;
   struct FontSet {
-    Font textFont;
-    Font tileFont;
-    Font symbolFont;
-  } fonts, fontsOtherThread;
-  Font& getFont(Renderer::FontId);
+    TTF_Font* textFont;
+    TTF_Font* symbolFont;
+  };
+  map<int, FontSet> fonts;
+  void loadFonts(const string& fontPath, int size, FontSet&);
+  TTF_Font* getFont(Renderer::FontId, int size);
   optional<thread::id> renderThreadId;
   bool fullscreen;
   int fullscreenMode;
   int zoom = 1;
+  string fontPath;
 };
 
 #endif

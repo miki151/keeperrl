@@ -21,6 +21,7 @@
 #include "gui_elem.h"
 #include "game_info.h"
 #include "user_input.h"
+#include "clock.h"
 
 class Clock;
 class MinionAction;
@@ -46,7 +47,7 @@ class GuiBuilder {
   struct Callbacks {
     function<void(UserInput)> input;
     function<void(const vector<string>&)> hint;
-    function<void(sf::Event::KeyEvent)> keyboard;
+    function<void(SDL_Keysym)> keyboard;
     function<void()> refreshScreen;
     function<void(const string&)> info;
   };
@@ -205,7 +206,7 @@ class GuiBuilder {
     int lastFps = 0;
     int curSec = -1;
     int curFps = 0;
-    sf::Clock clock;
+    Clock clock;
   } fpsCounter, upsCounter;
 
   vector<PGuiElem> drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab);
@@ -218,18 +219,18 @@ class GuiBuilder {
   void drawBuildingsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
-  PGuiElem getStandingGui(double standing);
   PGuiElem getItemLine(const ItemInfo&, function<void(Rectangle)> onClick,
       function<void()> onMultiClick = nullptr);
   vector<string> getItemHint(const ItemInfo&);
   PGuiElem drawMinionAndLevel(ViewId viewId, int level, int iconMult);
+  vector<SDL_Keysym> getConfirmationKeys();
   bool morale = true;
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
   vector<PGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);
   PGuiElem menuElemMargins(PGuiElem);
   PGuiElem getHighlight(MenuType, const string& label, int height);
   string getPlayerTitle(PlayerInfo&);
-  Event::KeyEvent getHotkeyEvent(char);
+  SDL_KeyboardEvent getHotkeyEvent(char);
   MapGui* mapGui = nullptr;
 };
 

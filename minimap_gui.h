@@ -26,7 +26,7 @@ class Renderer;
 class MinimapGui : public GuiElem {
   public:
 
-  MinimapGui(function<void()> clickFun);
+  MinimapGui(Renderer&, function<void()> clickFun);
 
   void update(const Level* level, Rectangle bounds, const CreatureView* creature, bool printLocations = false);
   void presentMap(const CreatureView*, Rectangle bounds, Renderer&, function<void(double, double)> clickFun);
@@ -54,9 +54,10 @@ class MinimapGui : public GuiElem {
 
   function<void()> clickFun;
 
-  sf::Texture mapBufferTex;
-  sf::Image mapBuffer;
+  SDL_Surface* mapBuffer;
+  optional<Texture> mapBufferTex;
   const Level* currentLevel = nullptr;
+  Renderer& renderer;
 };
 
 #endif

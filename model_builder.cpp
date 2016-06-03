@@ -1,5 +1,3 @@
-#include <SFML/Graphics.hpp>
-
 #include "stdafx.h"
 #include "model_builder.h"
 #include "level.h"
@@ -1237,9 +1235,10 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
   double sumT = 0;
   for (int i : Range(numTries)) {
     try {
-      sf::Clock c;
+      // FIX this
+//      sf::Clock c;
       genFun();
-      int millis = c.getElapsedTime().asMilliseconds();
+      int millis = 0;//c.getElapsedTime().asMilliseconds();
       sumT += millis;
       maxT = max(maxT, millis);
       minT = min(minT, millis);
