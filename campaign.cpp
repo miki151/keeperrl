@@ -209,7 +209,11 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
   options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
   while (1) {
     //options->setLimits(OptionId::RETIRED_VILLAINS, 0, min<int>(retired.size(), 4)); 
+#ifdef RELEASE
     options->setLimits(OptionId::MAIN_VILLAINS, 1, 4); 
+#else
+    options->setLimits(OptionId::MAIN_VILLAINS, 0, 4); 
+#endif
     options->setLimits(OptionId::LESSER_VILLAINS, 0, 6); 
     options->setLimits(OptionId::ALLIES, 0, 4); 
     options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6); 

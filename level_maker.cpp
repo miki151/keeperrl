@@ -364,9 +364,9 @@ class Creatures : public LevelMaker {
       Vec2 pos;
       int numTries = 100;
       do {
-        pos = Vec2(builder->getRandom().get(area.left(), area.right()), builder->getRandom().get(area.top(), area.bottom()));
-      } while (--numTries > 0 && (!builder->canPutCreature(pos, creature.get())
-          || (!onPred.apply(builder, pos))));
+        pos = Vec2(builder->getRandom().get(area.left(), area.right()),
+            builder->getRandom().get(area.top(), area.bottom()));
+      } while (--numTries > 0 && (!builder->canPutCreature(pos, creature.get()) || (!onPred.apply(builder, pos))));
       checkGen(numTries > 0);
       if (collective) {
         collective->addCreature(creature.get());
@@ -1609,6 +1609,7 @@ PLevelMaker LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
   BuildingInfo building = getBuildingInfo(info);
   queue->addMaker(new Empty(SquareId::MOUNTAIN));
+  queue->addMaker(new LocationMaker(info.location));
   queue->addMaker(new RoomMaker(random.get(8, 15), 3, 5, SquareId::MOUNTAIN,
         SquareType(SquareId::MOUNTAIN)));
   queue->addMaker(new Connector(building.door, 0.75));
@@ -1619,7 +1620,7 @@ PLevelMaker LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
   for (StairKey key : info.upStairs)
     queue->addMaker(new Stairs(StairInfo::Direction::UP, key, Predicate::type(SquareId::FLOOR)));
   if (info.creatures)
-    queue->addMaker(new Creatures(*info.creatures, info.numCreatures));
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareId::FLOOR, 5, 10));
   return PLevelMaker(new BorderGuard(queue, SquareId::MOUNTAIN));
 }
