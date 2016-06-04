@@ -17,11 +17,15 @@
 #include "music.h"
 #include "options.h"
 
-Jukebox::Jukebox(Options* options, vector<pair<MusicType, string>> tracks, int maxVol, map<MusicType, int> maxV)
-    : numTracks(tracks.size()), maxVolume(maxVol), maxVolumes(maxV) {
+#include <cAudio/cAudio.h>
+
+Jukebox::Jukebox(Options* options, cAudio::IAudioManager* audio, vector<pair<MusicType, string>> tracks,
+    float maxVol, map<MusicType, float> maxV)
+    : numTracks(tracks.size()), maxVolume(maxVol), maxVolumes(maxV), cAudio(audio) {
   music.resize(numTracks);
   for (int i : All(tracks)) {
-    CHECK(music[i] = Mix_LoadMUS(tracks[i].second.c_str())) << Mix_GetError();
+    CHECK(music[i] = cAudio->create(tracks[i].second.c_str(), tracks[i].second.c_str()))
+      << "Failed to load track " << tracks[i].second;
     byType[tracks[i].first].push_back(i);
   }
   options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { toggle(turnOn); });
@@ -31,7 +35,7 @@ Jukebox::Jukebox(Options* options, vector<pair<MusicType, string>> tracks, int m
 });
 }
 
-int Jukebox::getMaxVolume(int track) {
+float Jukebox::getMaxVolume(int track) {
   auto type = getCurrentType();
   if (maxVolumes.count(type))
     return maxVolumes.at(type);
@@ -49,10 +53,10 @@ void Jukebox::toggle(bool state) {
   if (on) {
     current = Random.choose(byType[getCurrentType()]);
     currentPlaying = current;
-    Mix_VolumeMusic(getMaxVolume(current));
-    CHECK(Mix_PlayMusic(music[current], 1) == 0) << Mix_GetError();
+    music[current]->setVolume(getMaxVolume(current));
+    CHECK(music[current]->play2d()) << "Failed to play track.";
   } else
-    Mix_FadeOutMusic(2000);
+    music[current]->stop();
 }
 
 void Jukebox::setCurrent(MusicType c) {
@@ -73,7 +77,7 @@ MusicType Jukebox::getCurrentType() {
   return MusicType::PEACEFUL;
 }
 
-const int volumeDec = 10;
+const float volumeDec = 0.1f;
 
 void Jukebox::setType(MusicType c, bool now) {
   MusicLock lock(musicMutex);
@@ -93,21 +97,21 @@ void Jukebox::refresh() {
   if (!on || !numTracks)
     return;
   if (current != currentPlaying) {
-    if (!Mix_PlayingMusic()) {
+    if (!music[currentPlaying]->isPlaying() || music[currentPlaying]->getVolume() == 0) {
       currentPlaying = current;
-      Mix_VolumeMusic(getMaxVolume(currentPlaying));
-      Mix_PlayMusic(music[currentPlaying], 1);
+      music[current]->setVolume(getMaxVolume(current));
+      CHECK(music[current]->play2d()) << "Failed to play track.";
     } else
-      Mix_FadeOutMusic(2000);
+      music[currentPlaying]->setVolume(max(0.0f, music[currentPlaying]->getVolume() - volumeDec));
   } else
-  if (!Mix_PlayingMusic()) {
+  if (!music[currentPlaying]->isPlaying()) {
     if (nextType) {
       setCurrent(*nextType);
       nextType.reset();
     } else
       continueCurrent();
     currentPlaying = current;
-    Mix_VolumeMusic(getMaxVolume(current));
-    Mix_PlayMusic(music[current], 1);
+    music[current]->setVolume(getMaxVolume(current));
+    CHECK(music[current]->play2d()) << "Failed to play track.";
   }
 }

@@ -59,6 +59,8 @@
 
 #endif
 
+#include <cAudio/cAudio.h>
+
 #ifndef DATA_DIR
 #define DATA_DIR "."
 #endif
@@ -103,12 +105,12 @@ void initializeRendererTiles(Renderer& r, const string& path) {
 //  r.loadAltTilesFromDir(path + "/orig30_scaled", Vec2(45, 45));
 }
 
-static int getMaxVolume() {
-  return 70;
+static float getMaxVolume() {
+  return 0.7;
 }
 
-static map<MusicType, int> getMaxVolumes() {
-  return {{MusicType::ADV_BATTLE, 40}, {MusicType::ADV_PEACEFUL, 40}};
+static map<MusicType, float> getMaxVolumes() {
+  return {{MusicType::ADV_BATTLE, 0.4}, {MusicType::ADV_PEACEFUL, 0.4}};
 }
 
 vector<pair<MusicType, string>> getMusicTracks(const string& path) {
@@ -257,12 +259,6 @@ int main(int argc, char* argv[]) {
 }
 #endif
 
-static void initSDLMixer() {
-  int flags = MIX_INIT_OGG;
-  CHECK((Mix_Init(flags) & flags) == flags) << Mix_GetError();
-  CHECK(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) == 0) << Mix_GetError();
-}
-
 static int keeperMain(const variables_map& vars) {
   if (vars.count("help")) {
     std::cout << getOptions() << endl;
@@ -317,14 +313,14 @@ static int keeperMain(const variables_map& vars) {
   Random.init(seed);
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
   Debug::initRenderer(renderer);
-  initSDLMixer();
   SoundLibrary* soundLibrary = nullptr;
+  cAudio::IAudioManager* cAudio = cAudio::createAudioManager(true);
   Clock clock;
   GuiFactory guiFactory(renderer, &clock, &options);
   guiFactory.loadFreeImages(freeDataPath + "/images");
   if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
-    soundLibrary = new SoundLibrary(&options, paidDataPath + "/sound");
+    soundLibrary = new SoundLibrary(&options, cAudio, paidDataPath + "/sound");
   }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
@@ -355,7 +351,7 @@ static int keeperMain(const variables_map& vars) {
     viewInitialized = true;
   }
   Tile::initialize(renderer, tilesPresent);
-  Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
+  Jukebox jukebox(&options, cAudio, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options);
   fileSharing.init();
   Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);

@@ -17,15 +17,20 @@
 #define _JUKEBOX_H
 
 #include "util.h"
-#include <SDL2/SDL_mixer.h>
 
 class Options;
 
 enum class MusicType { INTRO, MAIN, PEACEFUL, BATTLE, NIGHT, ADV_PEACEFUL, ADV_BATTLE };
 
+namespace cAudio {
+  class IAudioManager;
+  class IAudioSource;
+};
+
 class Jukebox {
   public:
-  Jukebox(Options*, vector<pair<MusicType, string>> tracks, int maxVolume, map<MusicType, int> maxVolumes);
+  Jukebox(Options*, cAudio::IAudioManager*, vector<pair<MusicType, string>> tracks, float maxVolume,
+      map<MusicType, float> maxVolumes);
 
   void setType(MusicType, bool now);
   void toggle(bool on);
@@ -40,17 +45,18 @@ class Jukebox {
   typedef std::unique_lock<std::recursive_mutex> MusicLock;
   std::recursive_mutex musicMutex;
 
-  vector<Mix_Music*> music;
+  vector<cAudio::IAudioSource*> music;
   map<MusicType, vector<int>> byType;
   int current = 0;
   int currentPlaying = 0;
   bool on = false;
   int numTracks = 0;
-  int getMaxVolume(int track);
-  int maxVolume;
-  map<MusicType, int> maxVolumes;
+  float getMaxVolume(int track);
+  float maxVolume;
+  map<MusicType, float> maxVolumes;
   optional<MusicType> nextType;
   optional<AsyncLoop> refreshLoop;
+  cAudio::IAudioManager* cAudio;
 };
 
 #endif
