@@ -158,6 +158,7 @@ class Renderer {
   void drawTile(Vec2 pos, TileCoord coord, double scale = 1, Color = colors[ColorId::WHITE]);
   void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = colors[ColorId::WHITE], bool hFlip = false,
       bool vFlip = false);
+  void setScissor(optional<Rectangle>);
   void addQuad(const Rectangle&, Color);
   void drawQuads();
   static Color getBleedingColor(const ViewObject&);
@@ -228,6 +229,8 @@ class Renderer {
   int fullscreenMode;
   int zoom = 1;
   string fontPath;
+  optional<Rectangle> scissor;
+  void setGlScissor(optional<Rectangle>);
 };
 
 #endif

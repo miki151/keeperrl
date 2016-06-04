@@ -365,7 +365,25 @@ void Renderer::drawQuads() {
   }*/
 }
 
+void Renderer::setScissor(optional<Rectangle> s) {
+  scissor = s;
+}
+
+void Renderer::setGlScissor(optional<Rectangle> s) {
+  if (s != scissor) {
+    if (s) {
+      glScissor(s->left(), getSize().y - s->bottom(), s->width(), s->height());
+      glEnable(GL_SCISSOR_TEST);
+    }
+    else
+      glDisable(GL_SCISSOR_TEST);    
+    scissor = s;
+  }
+}
+
 void Renderer::addRenderElem(function<void()> f) {
+  optional<Rectangle> thisScissor = scissor;
+  f = [f, thisScissor, this] { setGlScissor(thisScissor); f(); };
   renderList[currentLayer].push_back(f);
 }
 
@@ -618,6 +636,7 @@ void Renderer::drawAndClearBuffer() {
       elem();
     renderList[i].clear();
   }
+  setGlScissor(none);
   SDL_GL_SwapWindow(window);  
   glClear(GL_COLOR_BUFFER_BIT);
   glClearColor(0.0, 0.0, 0.0, 0.0);

@@ -183,6 +183,7 @@ class GuiFactory {
   PGuiElem alignment(GuiFactory::Alignment, PGuiElem, optional<Vec2> size = none);
   PGuiElem dragSource(DragContent, function<PGuiElem()>);
   PGuiElem dragListener(function<void(DragContent)>);
+  PGuiElem renderInBounds(PGuiElem);
 
   enum class TexId {
     SCROLLBAR,

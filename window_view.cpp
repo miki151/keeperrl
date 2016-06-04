@@ -78,7 +78,6 @@ Rectangle WindowView::getMinimapBounds() const {
 
 void WindowView::resetMapBounds() {
   mapGui->setBounds(getMapGuiBounds());
-  minimapGui->setBounds(getMinimapBounds());
   minimapDecoration->setBounds(getMinimapBounds().minusMargin(-6));
 }
 
@@ -123,7 +122,8 @@ void WindowView::initialize() {
       [this] { refreshInput = true;},
       bindMethod(&WindowView::mapCreatureDragFun, this)}, clock, options );
   minimapGui = new MinimapGui(renderer, [this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
-  minimapDecoration = gui.stack(gui.rectangle(colors[ColorId::BLACK]), gui.miniWindow());
+  minimapDecoration = gui.stack(gui.rectangle(colors[ColorId::BLACK]), gui.miniWindow(),
+      gui.margins(gui.renderInBounds(PGuiElem(minimapGui)), 6));
   resetMapBounds();
   guiBuilder.setMapGui(mapGui);
 }
@@ -469,7 +469,7 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
     return concat({mapGui}, extractRefs(tempGuiElems));
   vector<GuiElem*> ret = concat(extractRefs(tempGuiElems), extractRefs(blockingElems));
   if (gameReady)
-    ret = concat(concat({mapGui}, ret), {minimapDecoration.get(), minimapGui});
+    ret = concat(concat({mapGui}, ret), {minimapDecoration.get()});
   return ret;
 }
 
@@ -520,7 +520,7 @@ void WindowView::updateMinimap(const CreatureView* creature) {
   Vec2 rad(40, 40);
   Vec2 playerPos = mapGui->getScreenPos().div(mapLayout->getSquareSize());
   Rectangle bounds(playerPos - rad, playerPos + rad);
-  minimapGui->update(level, bounds, creature);
+  minimapGui->update(level, bounds, creature, true);
 }
 
 void WindowView::updateView(const CreatureView* view, bool noRefresh) {

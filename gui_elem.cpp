@@ -611,6 +611,7 @@ PGuiElem GuiFactory::mainMenuLabel(const string& s, double vPadding, Color c) {
 class GuiLayout : public GuiElem {
   public:
   GuiLayout(vector<PGuiElem> e) : elems(std::move(e)) {}
+  GuiLayout(PGuiElem e) { elems.push_back(std::move(e)); }
 
   virtual bool onLeftClick(Vec2 pos) override {
     for (int i : AllReverse(elems))
@@ -834,6 +835,21 @@ class KeyHandler : public GuiElem {
   function<void(SDL_Keysym)> fun;
   bool capture;
 };
+
+class RenderInBounds : public GuiLayout {
+  public:
+  RenderInBounds(PGuiElem e) : GuiLayout(std::move(e)) {}
+
+  virtual void render(Renderer& r) override {
+    r.setScissor(getBounds());
+    elems[0]->render(r);
+    r.setScissor(none);
+  }
+};
+
+PGuiElem GuiFactory::renderInBounds(PGuiElem elem) {
+  return PGuiElem(new RenderInBounds(std::move(elem)));
+}
 
 class AlignmentGui : public GuiLayout {
   public:
