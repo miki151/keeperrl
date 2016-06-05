@@ -41,6 +41,7 @@ class Behaviour {
   virtual double itemValue(const Item*) { return 0; }
   Item* getBestWeapon();
   Creature* getClosestEnemy();
+  Creature* getClosestCreature();
   MoveInfo tryEffect(EffectType, double maxTurns);
   MoveInfo tryEffect(DirEffectType, Vec2);
 
@@ -80,13 +81,24 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Behaviour);
 Creature* Behaviour::getClosestEnemy() {
   int dist = 1000000000;
   Creature* result = nullptr;
-  for (const Creature* other : creature->getVisibleEnemies()) {
+  for (Creature* other : creature->getVisibleEnemies()) {
     int curDist = other->getPosition().dist8(creature->getPosition());
     if (curDist < dist && (!other->getAttributes().dontChase() || curDist == 1)) {
-      result = const_cast<Creature*>(other);
+      result = other;
       dist = creature->getPosition().dist8(other->getPosition());
     }
   }
+  return result;
+}
+
+Creature* Behaviour::getClosestCreature() {
+  int dist = 1000000000;
+  Creature* result = nullptr;
+  for (Creature* other : creature->getVisibleCreatures())
+    if (other != creature && other->getPosition().dist8(creature->getPosition()) < dist) {
+      result = other;
+      dist = creature->getPosition().dist8(other->getPosition());
+    }
   return result;
 }
 
@@ -319,6 +331,23 @@ class GoldLust : public Behaviour {
   }
 };
 
+class Wildlife : public Behaviour {
+  public:
+  Wildlife(Creature* c) : Behaviour(c) {}
+
+  virtual MoveInfo getMove() override {
+    if (Creature* other = getClosestCreature()) {
+      int dist = creature->getPosition().dist8(other->getPosition());
+      if (dist == 1)
+        return creature->attack(other);
+      if (dist < 7)
+        // pathfinding is expensive so only do it when running away from the player
+        return creature->moveAway(other->getPosition(), other->isPlayer());
+    }
+    return NoMove;
+  }
+};
+
 class Fighter : public Behaviour {
   public:
   Fighter(Creature* c, double powerR, bool _chase) : Behaviour(c), maxPowerRatio(powerR), chase(_chase) {
@@ -332,8 +361,7 @@ class Fighter : public Behaviour {
   }
 
   virtual MoveInfo getMove() override {
-    Creature* other = getClosestEnemy();
-    if (other != nullptr) {
+    if (Creature* other = getClosestEnemy()) {
       double myDamage = creature->getModifier(ModifierType::DAMAGE);
       Item* weapon = getBestWeapon();
       if (!creature->getWeapon() && weapon)
@@ -1227,8 +1255,9 @@ MonsterAIFactory MonsterAIFactory::wildlifeNonPredator() {
   return MonsterAIFactory([](Creature* c) {
       return new MonsterAI(c, {
           new Fighter(c, 1.2, false),
+          new Wildlife(c),
           new MoveRandomly(c)},
-          {5, 1});
+          {5, 6, 1});
       });
 }
 

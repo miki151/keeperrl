@@ -2113,6 +2113,16 @@ static LevelMaker* getForrest(BiomeId id) {
   }
 }
 
+static LevelMaker* getForrestCreatures(CreatureFactory factory, int levelWidth, BiomeId biome) {
+  int div;
+  switch (biome) {
+    case BiomeId::FORREST: div = 1000; break;
+    case BiomeId::GRASSLAND:
+    case BiomeId::MOUNTAIN: div = 4000; break;
+  }
+  return new Creatures(factory, levelWidth * levelWidth / div, MonsterAIFactory::wildlifeNonPredator());
+}
+
 PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreatures,
     vector<SettlementInfo> settlements, int width, bool keeperSpawn, BiomeId biomeId) {
   MakerQueue* queue = new MakerQueue();
@@ -2243,6 +2253,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   queue->addMaker(new Margin(mapBorder + locationMargin, locations2));
   queue->addMaker(new Items(ItemFactory::mushrooms(), SquareId::GRASS, width / 10, width / 5));
   queue->addMaker(new AddMapBorder(mapBorder));
+  queue->addMaker(getForrestCreatures(forrestCreatures, width - 2 * mapBorder, biomeId));
   return PLevelMaker(new BorderGuard(queue));
 }
 
