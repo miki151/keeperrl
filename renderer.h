@@ -17,7 +17,6 @@
 #define _RENDERER_H
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_opengl.h>
 #include "util.h"
 
@@ -81,6 +80,7 @@ class ViewObject;
 typedef SDL_Event Event;
 typedef SDL_EventType EventType;
 
+struct sth_stash;
 
 class Texture {
   public:
@@ -133,7 +133,8 @@ class Renderer {
   const static int smallTextSize = 14;
   static SDL_Surface* createSurface(int w, int h);
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
-  int getTextLength(const string& s, int size = textSize, FontId = SYMBOL_FONT);
+  int getTextLength(const string& s, int size = textSize, FontId = TEXT_FONT);
+  Vec2 getTextSize(const string& s, int size = textSize, FontId = TEXT_FONT);
   enum CenterType { NONE, HOR, VER, HOR_VER };
   void drawText(FontId, int size, Color, int x, int y, const string&, CenterType center = NONE);
   void drawTextWithHotkey(Color, int x, int y, const string&, char key);
@@ -218,17 +219,17 @@ class Renderer {
 //  vector<Vertex> quads;
   Vec2 mousePos;
   struct FontSet {
-    TTF_Font* textFont;
-    TTF_Font* symbolFont;
+    int textFont;
+    int symbolFont;
   };
-  map<int, FontSet> fonts;
-  void loadFonts(const string& fontPath, int size, FontSet&);
-  TTF_Font* getFont(Renderer::FontId, int size);
+  FontSet fonts;
+  sth_stash* fontStash;
+  void loadFonts(const string& fontPath, FontSet&);
+  int getFont(Renderer::FontId);
   optional<thread::id> renderThreadId;
   bool fullscreen;
   int fullscreenMode;
   int zoom = 1;
-  string fontPath;
   optional<Rectangle> scissor;
   void setGlScissor(optional<Rectangle>);
 };

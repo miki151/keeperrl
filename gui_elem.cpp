@@ -578,7 +578,7 @@ PGuiElem GuiFactory::labelUnicode(const string& s, Color color, int size, Render
 }
 
 PGuiElem GuiFactory::labelUnicode(const string& s, function<Color()> color, int size, Renderer::FontId fontId) {
-  auto width = [=] { return renderer.getTextLength(s); };
+  auto width = [=] { return renderer.getTextLength(s, size, fontId); };
   return PGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           Color c = color();

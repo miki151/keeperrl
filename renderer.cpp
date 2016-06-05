@@ -19,7 +19,8 @@
 #include "tile.h"
 #include "dirent.h"
 
-#include <SDL2/SDL_ttf.h>
+#include "fontstash.h"
+
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_opengl.h>
 
@@ -225,24 +226,30 @@ void Texture::render(Vec2 a, Vec2 b, Vec2 p, Vec2 k, optional<Color> color, bool
   checkOpenglError();
 }
 
-int Renderer::getTextLength(const string& s, int size, FontId font) {
-  int w, h;
-  TTF_SizeUTF8(getFont(font, size), s.c_str(), &w, &h);
-  return w;
+static float sizeConv(int size) {
+  return 1.15 * (float)size;
 }
 
-TTF_Font* Renderer::getFont(Renderer::FontId id, int size) {
+int Renderer::getTextLength(const string& s, int size, FontId font) {
+  return getTextSize(s, size, font).x;
+}
+
+Vec2 Renderer::getTextSize(const string& s, int size, FontId id) {
+  float minx, maxx, miny, maxy;
+  int font = getFont(id);
+  sth_dim_text(fontStash, font, sizeConv(size), s.c_str(), &minx, &miny, &maxx, &maxy);
+  float height;
+  sth_vmetrics(fontStash, font, sizeConv(size), nullptr, nullptr, &height);
+  return Vec2(maxx - minx, height);
+}
+
+int Renderer::getFont(Renderer::FontId id) {
 //  vector<FontSet>& fontSet = currentThreadId() == *renderThreadId ? fonts : fontsOtherThread;
-  map<int, FontSet>& fontSet = fonts;
-  if (!fontSet.count(size)) {
-    FontSet set;
-    loadFonts(fontPath, size, set);
-    fontSet[size] = set;
-  }
+  FontSet& fontSet = fonts;
   switch (id) {
     case Renderer::TILE_FONT:
-    case Renderer::TEXT_FONT: return NOTNULL(fontSet.at(size).textFont);
-    case Renderer::SYMBOL_FONT: return NOTNULL(fontSet.at(size).symbolFont);
+    case Renderer::TEXT_FONT: return fontSet.textFont;
+    case Renderer::SYMBOL_FONT: return fontSet.symbolFont;
   }
 }
 
@@ -251,31 +258,25 @@ void Renderer::drawText(FontId id, int size, Color color, int x, int y, const st
     addRenderElem([this, s, center, size, color, x, y, id] {
         int ox = 0;
         int oy = 0;
-        int width, height;
-        TTF_SizeUTF8(getFont(id, size), s.c_str(), &width, &height);
+        Vec2 dim = getTextSize(s, size, id);
         switch (center) {
           case HOR:
-            ox -= width / 2;
+            ox -= dim.x / 2;
             break;
           case VER:
-            oy -= height / 2;
+            oy -= dim.y / 2;
             break;
           case HOR_VER:
-            ox -= width / 2;
-            oy -= height / 2;
+            ox -= dim.x / 2;
+            oy -= dim.y / 2;
             break;
           default:
             break;
         }
-        SDL_Surface* res = TTF_RenderUTF8_Blended(getFont(id, size), s.c_str(), Color(255, 255, 255));
-        CHECK(res) << TTF_GetError();
-        if (!textTexture)
-          textTexture.emplace(res);
-        else
-          textTexture->loadFrom(res);
-        Vec2 p(ox + x, oy + y);
-        textTexture->render(p, p + textTexture->getSize(), Vec2(0, 0), textTexture->getSize(), color);
-        SDL_FreeSurface(res);
+        sth_begin_draw(fontStash);
+        color.applyGl();
+        sth_draw_text(fontStash, getFont(id), sizeConv(size), ox + x, oy + y + (dim.y * 0.9), s.c_str(), nullptr);
+        sth_end_draw(fontStash);
     });
 }
 
@@ -442,7 +443,6 @@ void Renderer::initOpenGL() {
 }
 
 void Renderer::initialize() {
-  CHECK(TTF_Init() == 0) << TTF_GetError();
   if (!renderThreadId)
     renderThreadId = currentThreadId();
   else
@@ -458,16 +458,19 @@ vector<string> Renderer::getFullscreenResolutions() {
 void Renderer::printSystemInfo(ostream& out) {
 }
 
-void Renderer::loadFonts(const string& fontPath, int size, FontSet& fonts) {
-  CHECK(fonts.textFont = TTF_OpenFont((fontPath + "/Lato-Bol.ttf").c_str(), size)) << TTF_GetError();
-  CHECK(fonts.symbolFont = TTF_OpenFont((fontPath + "/Symbola.ttf").c_str(), size)) << TTF_GetError();
+void Renderer::loadFonts(const string& fontPath, FontSet& fonts) {
+  CHECK(fontStash = sth_create(512, 512)) << "Error initializing fonts";
+  fonts.textFont = sth_add_font(fontStash, (fontPath + "/Lato-Bol.ttf").c_str());
+  fonts.symbolFont = sth_add_font(fontStash, (fontPath + "/Symbola.ttf").c_str());
+  CHECK(fonts.textFont >= 0) << "Error loading " << fontPath + "/Lato-Bol.ttf";
+  CHECK(fonts.symbolFont >= 0) << "Error loading " << fontPath + "/Symbola.ttf";
 }
 
 void Renderer::showError(const string& s) {
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", s.c_str(), window);
 }
 
-Renderer::Renderer(const string& title, Vec2 nominal, const string& fontP) : nominalSize(nominal), fontPath(fontP) {
+Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : nominalSize(nominal) {
   CHECK(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL_GetError();
   SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
   SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
@@ -476,6 +479,7 @@ Renderer::Renderer(const string& title, Vec2 nominal, const string& fontP) : nom
   CHECK(SDL_GL_CreateContext(window)) << SDL_GetError();
   SDL_GetWindowSize(window, &width, &height);
   initOpenGL();
+  loadFonts(fontPath, fonts);
 }
 
 Vec2 getOffset(Vec2 sizeDiff, double scale) {

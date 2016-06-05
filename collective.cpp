@@ -510,7 +510,7 @@ vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) {
 }
 
 bool Collective::isConquered() const {
-  return getCreatures({MinionTrait::FIGHTER}).empty() && !hasLeader();
+  return getCreatures(MinionTrait::FIGHTER).empty() && !hasLeader();
 }
 
 void Collective::orderConsumption(Creature* consumer, Creature* who) {
@@ -2012,7 +2012,7 @@ void Collective::onAppliedSquare(Position pos) {
 
 double Collective::getDangerLevel() const {
   double ret = 0;
-  for (const Creature* c : getCreatures({MinionTrait::FIGHTER}))
+  for (const Creature* c : getCreatures(MinionTrait::FIGHTER))
     ret += c->getDifficultyPoints();
   ret += getSquares(SquareId::IMPALED_HEAD).size() * 150;
   return ret;
