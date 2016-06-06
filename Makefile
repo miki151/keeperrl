@@ -6,6 +6,8 @@ endif
 
 CFLAGS = -Wall -std=c++11 -Wno-sign-compare -Wno-unused-variable -Wno-unused-function -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare
 
+CLANG = true
+
 ifdef CLANG
 CC = clang++
 LD = clang++
@@ -15,13 +17,16 @@ CC = g++
 LD = g++
 endif
 
+
 ifdef OSX
-LDFLAGS = -Wl
+LDFLAGS += -Wl
 CFLAGS += -stdlib=libc++ -DOSX -mmacosx-version-min=10.7
 CFLAGS += -DTEXT_SERIALIZATION
 else
 LDFLAGS = -Wl,-rpath=$(RPATH) -static-libstdc++
 endif
+
+LDFLAGS += -fuse-ld=gold
 
 ifdef DATA_DIR
 CFLAGS += -DDATA_DIR=\"$(DATA_DIR)\"
