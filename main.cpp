@@ -94,8 +94,28 @@ static thread::attributes getAttributes() {
   attr.set_stack_size(4096 * 4000);
   return attr;
 }
-#endif
 
+static void runGame(function<void()> game, function<void()> render, bool singleThread) {
+  if (singleThread)
+    game();
+  else {
+    thread t(getAttributes(), game);
+    render();
+  }
+}
+
+#else
+static void runGame(function<void()> game, function<void()> render, bool singleThread) {
+  if (singleThread)
+    game();
+  else {
+    thread t(render);
+    game();
+    t.join();
+  }
+}
+
+#endif
 void initializeRendererTiles(Renderer& r, const string& path) {
   r.loadTilesFromDir(path + "/orig16", Vec2(16, 16));
 //  r.loadAltTilesFromDir(path + "/orig16_scaled", Vec2(24, 24));
@@ -373,15 +393,12 @@ static int keeperMain(const variables_map& vars) {
     systemInfo << "KeeperRL version " << BUILD_VERSION << " " << BUILD_DATE << std::endl;
     renderer.printSystemInfo(systemInfo);
     loop.start(tilesPresent); };
-  auto render = [&] { if (!useSingleThread) renderLoop(view.get(), &options, gameFinished, viewInitialized); };
-#ifdef OSX // see thread comment in stdafx.h
-  thread t(getAttributes(), game);
-  render();
-#else
-  thread t(render);
-  game();
-#endif
-  t.join();
+  auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };
+  try {
+    runGame(game, render, useSingleThread);
+  } catch (GameExitException ex) {
+  }
+  cAudio::destroyAudioManager(cAudio);
   return 0;
 }
 

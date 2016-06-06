@@ -115,6 +115,8 @@ class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2, OptionId
     using EnumVariant::EnumVariant;
 };
 
+class GameExitException {};
+
 class View {
   public:
   View();

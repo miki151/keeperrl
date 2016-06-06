@@ -1154,7 +1154,7 @@ bool WindowView::isClockStopped() {
 
 bool WindowView::considerResizeEvent(SDL_Event& event) {
   if (event.type == SDL_QUIT)
-    exit(0);
+    throw GameExitException();
   if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
     resize(event.window.data1, event.window.data2);
     return true;
