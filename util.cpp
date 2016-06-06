@@ -808,8 +808,12 @@ AsyncLoop::AsyncLoop(function<void()> init, function<void()> loop)
     : done(false), t([=] { init(); while (!done) { loop(); }}) {
 }
 
-AsyncLoop::~AsyncLoop() {
+void AsyncLoop::finish() {
   done = true;
+}
+
+AsyncLoop::~AsyncLoop() {
+  finish();
   t.join();
 }
 

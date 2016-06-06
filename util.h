@@ -1526,6 +1526,7 @@ class AsyncLoop {
   public:
   AsyncLoop(function<void()> init, function<void()> loop);
   AsyncLoop(function<void()>);
+  void finish();
   ~AsyncLoop();
 
   private:

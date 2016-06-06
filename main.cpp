@@ -45,7 +45,6 @@
 #include "vision.h"
 #include "model_builder.h"
 #include "sound_library.h"
-#include "game_events.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -332,7 +331,7 @@ static int keeperMain(const variables_map& vars) {
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   Random.init(seed);
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
-  Debug::initRenderer(renderer);
+  Debug::setErrorCallback([&renderer](const string& s) { renderer.showError(s);});
   SoundLibrary* soundLibrary = nullptr;
   cAudio::IAudioManager* cAudio = cAudio::createAudioManager(true);
   Clock clock;
@@ -375,13 +374,12 @@ static int keeperMain(const variables_map& vars) {
   FileSharing fileSharing(uploadUrl, options);
   fileSharing.init();
   Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
-  GameEvents gameEvents(fileSharing);
   optional<GameTypeChoice> forceGame;
   if (vars.count("force_keeper"))
     forceGame = GameTypeChoice::KEEPER;
   else if (vars.count("quick_level"))
     forceGame = GameTypeChoice::QUICK_LEVEL;
-  MainLoop loop(view.get(), &highscores, &gameEvents, &fileSharing, freeDataPath, userPath, &options, &jukebox,
+  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox,
       gameFinished, useSingleThread, forceGame);
   if (vars.count("worldgen_test")) {
     loop.modelGenTest(vars["worldgen_test"].as<int>(), Random, &options);

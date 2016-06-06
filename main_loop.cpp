@@ -24,10 +24,10 @@
 #include "retired_games.h"
 #include "save_file_info.h"
 
-MainLoop::MainLoop(View* v, Highscores* h, GameEvents* gameE, FileSharing* fSharing, const string& freePath,
+MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
     const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin, bool singleThread,
     optional<GameTypeChoice> force)
-      : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j), gameEvents(gameE),
+      : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
         highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread), forceGame(force) {
 }
 
@@ -269,7 +269,7 @@ int MainLoop::getAutosaveFreq() {
 
 void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
   view->reset();
-  game->initialize(options, highscores, view, gameEvents);
+  game->initialize(options, highscores, view, fileSharing);
   const int stepTimeMilli = 3;
   Intervalometer meter(stepTimeMilli);
   double lastMusicUpdate = -1000;
@@ -613,7 +613,7 @@ PGame MainLoop::adventurerGame() {
       if (!downloadGame(savedGame->filename))
         return nullptr;
     if (PGame game = loadGame(savedGame->filename, false)) {
-      game->initialize(options, highscores, view, gameEvents);
+      game->initialize(options, highscores, view, fileSharing);
       game->landHeroPlayer();
       return game;
     }

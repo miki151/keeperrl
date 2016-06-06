@@ -22,14 +22,14 @@
 #include "creature_attributes.h"
 #include "name_generator.h"
 #include "campaign.h"
-#include "game_events.h"
 #include "save_file_info.h"
+#include "file_sharing.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) { 
   serializeAll(ar, villainsByType, collectives, lastTick, playerControl, playerCollective, won, currentTime);
   serializeAll(ar, worldName, musicType, portals, statistics, spectator, tribes, gameIdentifier, player);
-  serializeAll(ar, gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime);
+  serializeAll(ar, gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
     sunlightInfo.update(currentTime);
 }
@@ -73,6 +73,9 @@ Game::Game(const string& world, const string& player, Table<PModel>&& m, Vec2 ba
       m->setGame(this);
       m->updateSunlightMovement();
     }
+  turnEvents = {0, 500};
+  for (int i : Range(200))
+    turnEvents.insert(1000 * (i + 1));
 }
 
 Game::~Game() {}
@@ -93,6 +96,7 @@ PGame Game::splashScreen(PModel&& model) {
   t[0][0] = std::move(model);
   PGame game(new Game("", "", std::move(t), Vec2(0, 0)));
   game->spectator.reset(new Spectator(game->models[0][0]->getTopLevel()));
+  game->turnEvents.clear();
   return game;
 }
 
@@ -264,6 +268,11 @@ bool Game::isVillainActive(const Collective* col) {
 }
 
 void Game::tick(double time) {
+  if (!turnEvents.empty() && time > *turnEvents.begin()) {
+    int turn = *turnEvents.begin();
+    uploadEvent("turn", {{"turn", toString(turn)}});
+    turnEvents.erase(turn);
+  }
   auto previous = sunlightInfo.getState();
   sunlightInfo.update(currentTime);
   if (previous != sunlightInfo.getState())
@@ -279,7 +288,9 @@ void Game::tick(double time) {
         Vec2 coords = getModelCoords(col->getLevel()->getModel());
         if (!campaign->isDefeated(coords))
           if (auto retired = campaign->getSites()[coords].getRetired())
-            gameEvents->addRetiredConquered(getGameId(retired->fileInfo), getPlayerName());
+            uploadEvent("retiredConquered", {
+                {"retiredId", getGameId(retired->fileInfo)},
+                {"playerName", getPlayerName()}});
         campaign->setDefeated(coords);
       }
     }
@@ -390,7 +401,9 @@ void Game::transferAction(vector<Creature*> creatures) {
       if (!visited[*dest]) {
         visited[*dest] = true;
         if (auto retired = campaign->getSites()[*dest].getRetired())
-          gameEvents->addRetiredLoaded(getGameId(retired->fileInfo), getPlayerName());
+            uploadEvent("retiredLoaded", {
+                {"retiredId", getGameId(retired->fileInfo)},
+                {"playerName", getPlayerName()}});
 
       }
       wasTransfered = true;
@@ -591,11 +604,11 @@ Options* Game::getOptions() {
   return options;
 }
 
-void Game::initialize(Options* o, Highscores* h, View* v, GameEvents* e) {
+void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f) {
   options = o;
   highscores = h;
   view = v;
-  gameEvents = e;
+  fileSharing = f;
 }
 
 const string& Game::getWorldName() const {
@@ -666,5 +679,12 @@ SavedGameInfo Game::getSavedGameInfo() const {
   if (campaign)
     numSites = campaign->getNumNonEmpty();
   return SavedGameInfo(minions, col->getDangerLevel(), getPlayerName(), numSites);
+}
+
+void Game::uploadEvent(const string& name, const map<string, string>& m) {
+  auto values = m;
+  values["eventType"] = name;
+  values["gameId"] = getGameIdentifier();
+  fileSharing->uploadGameEvent(values);
 }
 

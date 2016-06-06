@@ -17,7 +17,6 @@
 
 #include "debug.h"
 #include "util.h"
-#include "renderer.h"
 
 static void fail() {
   *((int*) 0x1234) = 0; // best way to fail
@@ -46,10 +45,10 @@ void Debug::init(bool log) {
     output.open("log.out");
 }
 
-static Renderer* renderer;
+static function<void(const string&)> errorCallback;
 
-void Debug::initRenderer(Renderer& r) {
-  renderer = &r;
+void Debug::setErrorCallback(function<void(const string&)> error) {
+  errorCallback = error;
 }
 
 void Debug::add(const string& a) {
@@ -59,8 +58,8 @@ void Debug::add(const string& a) {
 Debug::~Debug() {
   if (type == DebugType::FATAL) {
     (ofstream("stacktrace.out") << out << endl).flush();
-    if (renderer)
-      renderer->showError(out);
+    if (errorCallback)
+      errorCallback(out);
     fail();
   } else {
     if (output) {

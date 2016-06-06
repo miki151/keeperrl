@@ -8,8 +8,7 @@ Highscores::Highscores(const string& local, FileSharing& sharing, Options* o)
     : localPath(local), fileSharing(sharing), options(o) {
   localScores = fromFile(localPath);
   remoteScores = fromString(fileSharing.downloadHighscores());
-  thread t([=] { fileSharing.uploadHighscores(localPath); });
-  t.detach();
+  fileSharing.uploadHighscores(localPath);
 }
 
 void Highscores::add(Score s) {
@@ -18,10 +17,7 @@ void Highscores::add(Score s) {
   saveToFile(localScores, localPath);
   remoteScores.push_back(s);
   sortScores(remoteScores);
-//  thread t([=] {
-      fileSharing.uploadHighscores(localPath);
-  //});
-//  t.detach();
+  fileSharing.uploadHighscores(localPath);
 }
 
 void Highscores::sortScores(vector<Score>& scores) {
