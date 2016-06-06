@@ -109,7 +109,7 @@ static void blast(Creature* who, Position position, Vec2 direction, int maxDista
   for (auto elem : Item::stackItems(position.getItems())) {
     position.throwItem(
         position.removeItems(elem.second),
-        Attack(who, Random.choose({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
+        Attack(who, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
           elem.second[0]->getAttackType(), 15, 15, false), maxDistance, direction, VisionId::NORMAL);
   }
   if (damage && position.isDestroyable())
@@ -187,7 +187,7 @@ static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improv
 static void enhanceWeapon(Creature* c, int mod = 1, const string msg = "is improved") {
   if (Item* item = c->getWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
-    item->addModifier(Random.choose({ModifierType::ACCURACY, ModifierType::DAMAGE}), mod);
+    item->addModifier(Random.choose(ModifierType::ACCURACY, ModifierType::DAMAGE), mod);
   }
 }
 

@@ -970,7 +970,7 @@ class RandomLocations : public LevelMaker {
     vector<LevelBuilder::Rot> maps;
     for (int i : All(insideMakers))
       maps.push_back(builder->getRandom().choose(
-            {LevelBuilder::CW0, LevelBuilder::CW1, LevelBuilder::CW2, LevelBuilder::CW3}));
+            LevelBuilder::CW0, LevelBuilder::CW1, LevelBuilder::CW2, LevelBuilder::CW3));
     for (int i : All(insideMakers)) {
       int width = sizes[i].first;
       int height = sizes[i].second;
@@ -1736,6 +1736,30 @@ MakerQueue* cottage(SettlementInfo info) {
    return queue;
 }
 
+MakerQueue* forrestCottage(SettlementInfo info) {
+  BuildingInfo building = getBuildingInfo(info);
+  MakerQueue* queue = new MakerQueue();
+  MakerQueue* room = getElderRoom(info);
+  for (StairKey key : info.upStairs)
+    room->addMaker(new Stairs(StairInfo::Direction::UP, key, Predicate::type(building.floorInside), none));
+  for (StairKey key : info.downStairs)
+    room->addMaker(new Stairs(StairInfo::Direction::DOWN, key, Predicate::type(building.floorInside), none));
+  if (info.furniture)
+    room->addMaker(new DungeonFeatures(Predicate::type(building.floorInside), 0.3, *info.furniture));
+  if (info.outsideFeatures)
+    room->addMaker(new DungeonFeatures(Predicate::type(building.floorOutside), 0.1, *info.outsideFeatures));
+  queue->addMaker(new Buildings(1, 3, 3, 4, building, false, {room}, false));
+  queue->addMaker(new LocationMaker(info.location));
+  if (info.creatures)
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, 
+          Predicate::type(building.floorOutside)));
+  if (info.neutralCreatures)
+    queue->addMaker(
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
+          Predicate::type(building.floorOutside)));
+   return queue;
+}
+
 MakerQueue* castle(RandomGen& random, SettlementInfo info) {
   BuildingInfo building = getBuildingInfo(info);
   LevelMaker* castleRoom = new BorderGuard(new Empty(building.floorInside, SquareAttrib::EMPTY_ROOM),
@@ -1857,6 +1881,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::CEMETERY:
     case SettlementType::SWAMP: return {random.get(12, 16), random.get(12, 16)};
     case SettlementType::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
+    case SettlementType::FORREST_COTTAGE: return {15, 15};
     case SettlementType::FOREST: return {18, 13};
     case SettlementType::VILLAGE2: return {20, 20};
     case SettlementType::VILLAGE:
@@ -1877,6 +1902,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
 RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
   switch (type) {
     case SettlementType::FOREST:
+    case SettlementType::FORREST_COTTAGE:
     case SettlementType::VILLAGE2:
       return Predicate::andPred(
           Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)),
@@ -2116,9 +2142,9 @@ static LevelMaker* getForrest(BiomeId id) {
 static LevelMaker* getForrestCreatures(CreatureFactory factory, int levelWidth, BiomeId biome) {
   int div;
   switch (biome) {
-    case BiomeId::FORREST: div = 1000; break;
+    case BiomeId::FORREST: div = 2000; break;
     case BiomeId::GRASSLAND:
-    case BiomeId::MOUNTAIN: div = 4000; break;
+    case BiomeId::MOUNTAIN: div = 7000; break;
   }
   return new Creatures(factory, levelWidth * levelWidth / div, MonsterAIFactory::wildlifeNonPredator());
 }
@@ -2150,6 +2176,9 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
       case SettlementType::COTTAGE:
           queue = cottage(settlement);
           cottages.push_back({queue, settlement.collective});
+          break;
+      case SettlementType::FORREST_COTTAGE:
+          queue = forrestCottage(settlement);
           break;
       case SettlementType::TOWER:
           queue = tower(random, settlement, true);
@@ -2329,11 +2358,11 @@ static LevelMaker* underground(RandomGen& random, CreatureFactory waterFactory, 
     queue->addMaker(new RandomLocations(vCavern, sizes, Predicate::alwaysTrue(), false));
   }
   switch (random.get(1, 3)) {
-    case 1: queue->addMaker(new River(3, random.choose({SquareId::WATER, SquareId::MAGMA})));
+    case 1: queue->addMaker(new River(3, random.choose(SquareId::WATER, SquareId::MAGMA)));
             break;
     case 2:{
           int numLakes = sqrt(random.get(1, 100));
-          SquareType lakeType = random.choose({SquareId::WATER, SquareId::MAGMA});
+          SquareType lakeType = random.choose(SquareId::WATER, SquareId::MAGMA);
           vector<pair<int, int>> sizes;
           for (int i : Range(numLakes)) {
             int size = random.get(6, 20);

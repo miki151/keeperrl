@@ -2017,11 +2017,11 @@ void GuiFactory::loadFreeImages(const string& path) {
   textures.emplace(TexId::MAIN_MENU_HIGHLIGHT, path + "/ui/menu_highlight.png");
   textures.emplace(TexId::SPLASH1, path + "/splash2f.png");
   textures.emplace(TexId::SPLASH2, path + "/splash2e.png");
-  textures.emplace(TexId::LOADING_SPLASH, path + "/" + Random.choose(LIST(
+  textures.emplace(TexId::LOADING_SPLASH, path + "/" + Random.choose(
             "splash2a.png",
             "splash2b.png",
             "splash2c.png",
-            "splash2d.png")));
+            "splash2d.png"));
   textures.emplace(TexId::UI_HIGHLIGHT, path + "/ui/ui_highlight.png");
   const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i)

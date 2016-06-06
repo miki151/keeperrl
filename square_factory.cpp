@@ -789,7 +789,7 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.constructions = ConstructionsId::OUTDOOR_INSTALLATIONS;
             ));
     case SquareId::CROPS:
-        return new Crops(ViewObject(Random.choose({ViewId::CROPS, ViewId::CROPS2}), ViewLayer::FLOOR_BACKGROUND),
+        return new Crops(ViewObject(Random.choose(ViewId::CROPS, ViewId::CROPS2), ViewLayer::FLOOR_BACKGROUND),
             CONSTRUCT(Square::Params,
               c.name = "wheat";
               c.vision = VisionId::NORMAL;

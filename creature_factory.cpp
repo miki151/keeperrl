@@ -761,7 +761,7 @@ CreatureFactory CreatureFactory::humanCastle(TribeId tribe) {
 static optional<pair<CreatureFactory, CreatureFactory>> splashFactories;
 
 void CreatureFactory::initSplash(TribeId tribe) {
-  splashFactories = Random.choose<optional<pair<CreatureFactory, CreatureFactory>>>( {
+  splashFactories = Random.choose(
       make_pair(CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {}),
         CreatureFactory::singleType(tribe, CreatureId::AVATAR)),
       make_pair(CreatureFactory(tribe, { CreatureId::WARRIOR}, { 1}, {}),
@@ -771,8 +771,8 @@ void CreatureFactory::initSplash(TribeId tribe) {
       make_pair(CreatureFactory(tribe, { CreatureId::DWARF}, { 1}, {}),
         CreatureFactory::singleType(tribe, CreatureId::DWARF_BARON)),
       make_pair(CreatureFactory(tribe, { CreatureId::LIZARDMAN}, { 1}, {}),
-        CreatureFactory::singleType(tribe, CreatureId::LIZARDLORD)),
-      });
+        CreatureFactory::singleType(tribe, CreatureId::LIZARDLORD))
+      );
 }
 
 CreatureFactory CreatureFactory::splashHeroes(TribeId tribe) {
@@ -809,6 +809,12 @@ CreatureFactory CreatureFactory::elvenVillage(TribeId tribe) {
   return ret;
 }
 
+CreatureFactory CreatureFactory::elvenCottage(TribeId tribe) {
+  return CreatureFactory(tribe, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
+      CreatureId::COW, CreatureId::DOG },
+      { 2, 2, 1, 1, 0}, {CreatureId::ELF_ARCHER});
+}
+
 CreatureFactory CreatureFactory::forrest(TribeId tribe) {
   return CreatureFactory(tribe,
       { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR },
@@ -833,6 +839,10 @@ CreatureFactory CreatureFactory::lizardTown(TribeId tribe) {
 
 CreatureFactory CreatureFactory::dwarfTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1},{ CreatureId::DWARF_BARON});
+}
+
+CreatureFactory CreatureFactory::dwarfCave(TribeId tribe) {
+  return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1});
 }
 
 CreatureFactory CreatureFactory::antNest(TribeId tribe) {
@@ -1051,7 +1061,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
       c->take(ItemFactory::fromId(ItemId::ARROW, Random.get(20, 36)));
     }
     c->take(ItemFactory::fromId(Random.choose(
-            {ItemId::SPECIAL_SWORD, ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER})));
+            ItemId::SPECIAL_SWORD, ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER)));
   }
   return c;
 }
@@ -1358,7 +1368,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.name = "archer";);
     case CreatureId::PESEANT: 
       return CATTR(
-          c.viewId = Random.choose({ViewId::PESEANT, ViewId::PESEANT_WOMAN});
+          c.viewId = Random.choose(ViewId::PESEANT, ViewId::PESEANT_WOMAN);
           c.attr[AttrType::SPEED] = 80;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.attr[AttrType::STRENGTH] = 14;
@@ -1782,7 +1792,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.name = "lizardman chief";);
     case CreatureId::ELF: 
       return CATTR(
-          c.viewId = Random.choose({ViewId::ELF, ViewId::ELF_WOMAN});
+          c.viewId = Random.choose(ViewId::ELF, ViewId::ELF_WOMAN);
           c.attr[AttrType::SPEED] = 100;
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.attr[AttrType::STRENGTH] = 11;
@@ -1852,7 +1862,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.name = "elf lord";);
     case CreatureId::DARK_ELF:
       return CATTR(
-          c.viewId = Random.choose({ViewId::DARK_ELF, ViewId::DARK_ELF_WOMAN});
+          c.viewId = Random.choose(ViewId::DARK_ELF, ViewId::DARK_ELF_WOMAN);
           c.attr[AttrType::SPEED] = 100;
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.attr[AttrType::STRENGTH] = 11;
@@ -2403,7 +2413,7 @@ PCreature CreatureFactory::getGhost(Creature* creature) {
 }
 
 ItemType randomHealing() {
-  return Random.choose({ItemType(ItemId::POTION, EffectId::HEAL), ItemType(ItemId::FIRST_AID_KIT)});
+  return Random.choose(ItemType(ItemId::POTION, EffectId::HEAL), ItemType(ItemId::FIRST_AID_KIT));
 }
 
 ItemType randomBackup() {
@@ -2582,7 +2592,7 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::MUMMY_LORD: 
       return ItemList()
         .add(ItemId::GOLD_PIECE, Random.get(100, 200)).add(
-            Random.choose({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER, ItemId::SPECIAL_SWORD}));
+            Random.choose(ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER, ItemId::SPECIAL_SWORD));
     case CreatureId::WITCH: 
       return ItemList()
         .add(ItemId::KNIFE)

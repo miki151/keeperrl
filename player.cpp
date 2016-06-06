@@ -807,7 +807,7 @@ void Player::onDisplaced() {
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  bool canSee = getCreature()->canSee(pos);
+  bool canSee = getCreature()->canSee(pos) || getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);
   Position position = getCreature()->getPosition().withCoord(pos);
   if (canSee)
     position.getViewIndex(index, getCreature());

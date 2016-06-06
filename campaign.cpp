@@ -154,8 +154,8 @@ bool Campaign::SiteInfo::isEnemy() const {
 
 void Campaign::SiteInfo::setBlocked() {
   blocked = true;
-  viewId.push_back(Random.choose({ViewId::MAP_MOUNTAIN1, ViewId::MAP_MOUNTAIN2, ViewId::MAP_MOUNTAIN3,
-        ViewId::CANIF_TREE, ViewId::DECID_TREE}));
+  viewId.push_back(Random.choose(ViewId::MAP_MOUNTAIN1, ViewId::MAP_MOUNTAIN2, ViewId::MAP_MOUNTAIN3,
+        ViewId::CANIF_TREE, ViewId::DECID_TREE));
 }
 
 bool Campaign::isInInfluence(Vec2 pos) const {

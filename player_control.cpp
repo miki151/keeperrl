@@ -2014,7 +2014,7 @@ bool PlayerControl::canSee(const Creature* c) const {
 }
 
 bool PlayerControl::canSee(Position pos) const {
-  if (seeEverything)
+  if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
     return true;
   if (visibilityMap->isVisible(pos))
       return true;

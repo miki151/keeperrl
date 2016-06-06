@@ -170,12 +170,14 @@ class CreatureFactory {
   static CreatureFactory gnomeEntrance(TribeId);
   static CreatureFactory humanCastle(TribeId);
   static CreatureFactory elvenVillage(TribeId);
+  static CreatureFactory elvenCottage(TribeId);
   static CreatureFactory darkElfVillage(TribeId);
   static CreatureFactory darkElfEntrance(TribeId);
   static CreatureFactory forrest(TribeId);
   static CreatureFactory crypt(TribeId);
   static SingleCreature coffins(TribeId);
   static CreatureFactory dwarfTown(TribeId);
+  static CreatureFactory dwarfCave(TribeId);
   static CreatureFactory antNest(TribeId);
   static CreatureFactory vikingTown(TribeId);
   static CreatureFactory lizardTown(TribeId);

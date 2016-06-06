@@ -508,7 +508,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       if (*burningVal > 0) {
         static auto fire1 = renderer.getTileCoord("fire1");
         static auto fire2 = renderer.getTileCoord("fire2");
-        renderer.drawTile(pos, Random.choose({fire1, fire2}), size);
+        renderer.drawTile(pos, Random.choose(fire1, fire2), size);
       }
     static auto key = renderer.getTileCoord("key");
     if (object.hasModifier(ViewObject::Modifier::LOCKED))

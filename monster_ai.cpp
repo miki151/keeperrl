@@ -181,11 +181,8 @@ class Heal : public Behaviour {
     return NoMove;
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour);
-  }
 
+  SERIALIZE_SUBCLASS(Behaviour);
   SERIALIZATION_CONSTRUCTOR(Heal);
 };
 
@@ -198,11 +195,7 @@ class Rest : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Rest);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour);
-  }
+  SERIALIZE_SUBCLASS(Behaviour);
 };
 
 class MoveRandomly : public Behaviour {
@@ -247,14 +240,7 @@ class MoveRandomly : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(MoveRandomly);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    deque<Position> SERIAL(obsolete);
-    int SERIAL(obsolete2);
-    ar & SUBCLASS(Behaviour);
-    serializeAll(ar, obsolete, obsolete2);
-  }
+  SERIALIZE_SUBCLASS(Behaviour);
 
   private:
   deque<Position> memory;
@@ -277,11 +263,7 @@ class StayInPigsty : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(StayInPigsty);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(origin) & SVAR(type);
-  }
+  SERIALIZE_ALL2(Behaviour, origin, type);
 
   private:
   Position SERIAL(origin);
@@ -302,11 +284,7 @@ class BirdFlyAway : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(BirdFlyAway);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(maxDist);
-  }
+  SERIALIZE_ALL2(Behaviour, maxDist);
 
   private:
   double SERIAL(maxDist);
@@ -324,11 +302,7 @@ class GoldLust : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(GoldLust);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour);
-  }
+  SERIALIZE_SUBCLASS(Behaviour);
 };
 
 class Wildlife : public Behaviour {
@@ -346,6 +320,9 @@ class Wildlife : public Behaviour {
     }
     return NoMove;
   }
+
+  SERIALIZATION_CONSTRUCTOR(Wildlife);
+  SERIALIZE_SUBCLASS(Behaviour);
 };
 
 class Fighter : public Behaviour {
@@ -630,11 +607,7 @@ class GuardTarget : public Behaviour {
   GuardTarget(Creature* c, double minD, double maxD) : Behaviour(c), minDist(minD), maxDist(maxD) {}
 
   SERIALIZATION_CONSTRUCTOR(GuardTarget);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(minDist) & SVAR(maxDist);
-  }
+  SERIALIZE_ALL2(Behaviour, minDist, maxDist);
 
   protected:
   MoveInfo getMoveTowards(Position target) {
@@ -666,11 +639,7 @@ class GuardArea : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(GuardArea);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(location);
-  }
+  SERIALIZE_ALL2(Behaviour, location);
 
   private:
   const Location* SERIAL(location);
@@ -686,11 +655,7 @@ class GuardSquare : public GuardTarget {
   }
 
   SERIALIZATION_CONSTRUCTOR(GuardSquare);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(GuardTarget) & SVAR(pos);
-  }
+  SERIALIZE_ALL2(GuardTarget, pos);
 
   private:
   Position SERIAL(pos);
@@ -705,11 +670,7 @@ class Wait : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Wait);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour);
-  }
+  SERIALIZE_SUBCLASS(Behaviour);
 };
 
 class DieTime : public Behaviour {
@@ -726,12 +687,7 @@ class DieTime : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(DieTime);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Behaviour)
-      & SVAR(dieTime);
-  }
+  SERIALIZE_ALL2(Behaviour, dieTime);
 
   private:
   double SERIAL(dieTime);
@@ -759,13 +715,7 @@ class Summoned : public GuardTarget {
   }
 
   SERIALIZATION_CONSTRUCTOR(Summoned);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(GuardTarget)
-      & SVAR(target) 
-      & SVAR(dieTime);
-  }
+  SERIALIZE_ALL2(GuardTarget, target, dieTime);
 
   private:
   Creature* SERIAL(target);
@@ -821,11 +771,7 @@ class ByCollective : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(ByCollective);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(collective);
-  }
+  SERIALIZE_ALL2(Behaviour, collective);
 
   private:
   Collective* SERIAL(collective);
@@ -840,11 +786,7 @@ class ChooseRandom : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(ChooseRandom);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(behaviours) & SVAR(weights);
-  }
+  SERIALIZE_ALL2(Behaviour, behaviours, weights);
 
   private:
   vector<Behaviour*> SERIAL(behaviours);
@@ -860,11 +802,7 @@ class SingleTask : public Behaviour {
   };
 
   SERIALIZATION_CONSTRUCTOR(SingleTask);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour) & SVAR(task);
-  }
+  SERIALIZE_ALL2(Behaviour, task);
 
   private:
   PTask SERIAL(task);
@@ -893,11 +831,7 @@ class SplashHeroes : public Behaviour {
   };
 
   SERIALIZATION_CONSTRUCTOR(SplashHeroes);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour);
-  }
+  SERIALIZE_SUBCLASS(Behaviour);
 
   private:
   bool started = false;
@@ -926,11 +860,7 @@ class SplashHeroLeader : public Behaviour {
   };
 
   SERIALIZATION_CONSTRUCTOR(SplashHeroLeader);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour);
-  }
+  SERIALIZE_SUBCLASS(Behaviour);
 
   private:
 
@@ -965,11 +895,7 @@ class SplashMonsters : public Behaviour {
   };
 
   SERIALIZATION_CONSTRUCTOR(SplashMonsters);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour);
-  }
+  SERIALIZE_SUBCLASS(Behaviour);
 
   private:
   optional<Vec2> initialPos;
@@ -1082,11 +1008,7 @@ class SplashImps : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(SplashImps);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour);
-  }
+  SERIALIZE_SUBCLASS(Behaviour);
 
   private:
   optional<Vec2> initialPos;
@@ -1112,11 +1034,7 @@ class AvoidFire : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(AvoidFire);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Behaviour);
-  }
+  SERIALIZE_SUBCLASS(Behaviour);
 };
 
 template <class Archive>
@@ -1126,6 +1044,7 @@ void MonsterAI::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, MoveRandomly);
   REGISTER_TYPE(ar, BirdFlyAway);
   REGISTER_TYPE(ar, GoldLust);
+  REGISTER_TYPE(ar, Wildlife);
   REGISTER_TYPE(ar, Fighter);
   REGISTER_TYPE(ar, GuardTarget);
   REGISTER_TYPE(ar, GuardArea);

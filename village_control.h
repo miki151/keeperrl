@@ -86,6 +86,7 @@ class VillageControl : public CollectiveControl {
   void checkEntries();
   bool isEnemy(const Creature*);
   Collective* getEnemyCollective() const;
+  bool canPerformAttack(bool currentlyActive);
 
   REGISTER_HANDLER(PickupEvent, const Creature*, const vector<Item*>&);
 

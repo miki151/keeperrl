@@ -681,6 +681,21 @@ static vector<EnemyInfo> getCottage(RandomGen& random, bool mark) {
   };
 }
 
+static vector<EnemyInfo> getElvenCottage(RandomGen& random, bool mark) {
+  return {
+    noVillain(CONSTRUCT(SettlementInfo,
+      c.type = SettlementType::FORREST_COTTAGE;
+      c.creatures = CreatureFactory::elvenCottage(TribeId::getElf());
+      c.numCreatures = random.get(3, 7);
+      c.location = new Location(mark);
+      c.tribe = TribeId::getElf();
+      c.race = "elves";
+      c.buildingId = BuildingId::WOOD;
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
+      CollectiveConfig::noImmigrants(), {})
+  };
+}
+
 static vector<EnemyInfo> getKoboldCave(RandomGen& random, bool mark) {
   return {
     noVillain(CONSTRUCT(SettlementInfo,
@@ -695,6 +710,30 @@ static vector<EnemyInfo> getKoboldCave(RandomGen& random, bool mark) {
  /*     c.outsideFeatures = SquareFactory::dungeonOutside();
       c.furniture = SquareFactory::roomFurniture(TribeId::getPest());*/),
       CollectiveConfig::noImmigrants(), {})
+  };
+}
+
+static vector<EnemyInfo> getDwarfCave(RandomGen& random, bool mark) {
+  return {
+    noVillain(CONSTRUCT(SettlementInfo,
+      c.type = SettlementType::SMALL_MINETOWN;
+      c.creatures = CreatureFactory::dwarfCave(TribeId::getDwarf());
+      c.numCreatures = random.get(2, 5);
+      c.location = new Location(mark);    
+      c.race = "dwarves";
+      c.tribe = TribeId::getDwarf();
+      c.buildingId = BuildingId::DUNGEON;
+      c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 300},
+          StockpileInfo{StockpileInfo::GOLD, 300}));
+      c.outsideFeatures = SquareFactory::dungeonOutside();
+      c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
+      CollectiveConfig::noImmigrants(),
+      CONSTRUCT(VillainInfo,
+        c.minPopulation = 0;
+        c.minTeamSize = 1;
+        c.triggers = LIST(AttackTriggerId::SELF_VICTIMS, AttackTriggerId::STOLEN_ITEMS);
+        c.behaviour = VillageBehaviourId::KILL_LEADER;
+        c.ransom = make_pair(0.5, random.get(200, 400));))
   };
 }
 
@@ -958,9 +997,9 @@ Level* ModelBuilder::makeExtraLevel(ProgressMeter* meter, RandomGen& random, Mod
             LevelMaker::towerLevel(random,
                 CONSTRUCT(SettlementInfo,
                   c.type = SettlementType::TOWER;
-                  c.creatures = CreatureFactory::singleType(TribeId::getHuman(), random.choose(LIST(
+                  c.creatures = CreatureFactory::singleType(TribeId::getHuman(), random.choose(
                       CreatureId::WATER_ELEMENTAL, CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL,
-                      CreatureId::EARTH_ELEMENTAL)));
+                      CreatureId::EARTH_ELEMENTAL));
                   c.numCreatures = random.get(1, 3);
                   c.location = new Location(false);
                   c.upStairs = {upLink};
@@ -1030,17 +1069,17 @@ static vector<EnemyInfo> getEnemyInfo(RandomGen& random, const string& boardText
   for (int i : Range(random.get(1, 3)))
     append(ret, getBanditCave(random, true));
   append(ret, getSokobanEntry(random, SettlementType::ISLAND_VAULT, true));
-  append(ret, random.choose({
+  append(ret, random.choose(
         getGnomishMines(random, true),
-        getDarkElvenMines(random, true)}));
+        getDarkElvenMines(random, true)));
   append(ret, getVaults(random));
   if (random.roll(4))
     append(ret, getAntNest(random, true, true));
   append(ret, getHumanCastle(random, true));
-  append(ret, random.choose({
+  append(ret, random.choose(
         getFriendlyCave(random, CreatureId::ORC, true),
         getFriendlyCave(random, CreatureId::OGRE, true),
-        getFriendlyCave(random, CreatureId::HARPY, true)}));
+        getFriendlyCave(random, CreatureId::HARPY, true)));
   for (auto& infos : random.chooseN(3, {
         getTower(random, true),
         getWarriorCastle(random, true),
@@ -1074,9 +1113,28 @@ PModel ModelBuilder::singleMapModel(ProgressMeter* meter, RandomGen& random,
   return ret;
 }
 
+static void addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId, RandomGen& random) {
+  switch (biomeId) {
+    case BiomeId::GRASSLAND:
+      for (int i : Range(random.get(3, 5)))
+        append(enemyInfo, getCottage(random, false));
+      break;
+    case BiomeId::MOUNTAIN:
+      for (int i : Range(random.get(1, 4)))
+        append(enemyInfo, random.choose(getKoboldCave(random, false), getDwarfCave(random, false)));
+      break;
+    case BiomeId::FORREST:
+      for (int i : Range(random.get(3, 5)))
+        append(enemyInfo, getElvenCottage(random, false));
+      break;
+  }
+}
+
 PModel ModelBuilder::tryCampaignBaseModel(ProgressMeter* meter, RandomGen& random,
     Options* options, const string& siteName) {
   vector<EnemyInfo> enemyInfo;
+  BiomeId biome = BiomeId::MOUNTAIN;
+  addMapVillains(enemyInfo, biome, random);
  // append(enemyInfo, getBanditCave(random));
   /*      append(enemyInfo, getSokobanEntry(random));
         append(enemyInfo, random.choose({
@@ -1091,14 +1149,40 @@ PModel ModelBuilder::tryCampaignBaseModel(ProgressMeter* meter, RandomGen& rando
           getCyclops(random),
           getDriadTown(random),
           getEntTown(random)}));*/
-  PModel ret = tryModel(meter, random, options, 210, siteName, enemyInfo, true, BiomeId::MOUNTAIN);
+  PModel ret = tryModel(meter, random, options, 210, siteName, enemyInfo, true, biome);
   return ret;
+}
+
+static BiomeId getBiome(EnemyId enemyId, RandomGen& random) {
+  switch (enemyId) {
+    case EnemyId::KNIGHTS:
+    case EnemyId::WARRIORS:
+    case EnemyId::ELEMENTALIST:
+    case EnemyId::LIZARDMEN:
+    case EnemyId::HYDRA:
+    case EnemyId::VILLAGE:
+    case EnemyId::ORC_VILLAGE: return BiomeId::GRASSLAND;
+    case EnemyId::RED_DRAGON:
+    case EnemyId::GREEN_DRAGON:
+    case EnemyId::DWARVES:
+    case EnemyId::DARK_ELVES:
+    case EnemyId::FRIENDLY_CAVE:
+    case EnemyId::SOKOBAN:
+    case EnemyId::GNOMES:
+    case EnemyId::CYCLOPS:
+    case EnemyId::SHELOB:
+    case EnemyId::ANTS: return BiomeId::MOUNTAIN;
+    case EnemyId::ELVES:
+    case EnemyId::DRIADS:
+    case EnemyId::ENTS: return BiomeId::FORREST;
+    case EnemyId::BANDITS: return random.choose<BiomeId>();
+    case EnemyId::CEMETERY: return random.choose(BiomeId::GRASSLAND, BiomeId::FORREST);
+  }
 }
 
 PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& random,
     Options* options, const string& siteName, EnemyId enemyId) {
   vector<EnemyInfo> enemyInfo;
-  BiomeId biomeId;
   switch (enemyId) {
     case EnemyId::ANTS:
       append(enemyInfo, getAntNest(random, false, true)); break;
@@ -1110,19 +1194,13 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
     case EnemyId::WARRIORS:
       append(enemyInfo, getWarriorCastle(random, true)); break;
     case EnemyId::KNIGHTS:
-      append(enemyInfo, getHumanCastle(random, true));
-      for (int i : Range(random.get(3, 5)))
-        append(enemyInfo, getCottage(random, false));
-      break;
+      append(enemyInfo, getHumanCastle(random, true)); break;
     case EnemyId::RED_DRAGON:
       append(enemyInfo, getRedDragon(random, true)); break;
     case EnemyId::GREEN_DRAGON:
       append(enemyInfo, getGreenDragon(random, true)); break;
     case EnemyId::DWARVES:
-      append(enemyInfo, getDwarfTown(random, true));
-      for (int i : Range(random.get(1, 3)))
-        append(enemyInfo, getKoboldCave(random, true));
-      break;
+      append(enemyInfo, getDwarfTown(random, true)); break;
     case EnemyId::ELVES:
       append(enemyInfo, getElvenVillage(random, true)); break;
     case EnemyId::ELEMENTALIST:
@@ -1149,46 +1227,14 @@ PModel ModelBuilder::tryCampaignSiteModel(ProgressMeter* meter, RandomGen& rando
       append(enemyInfo, getCemetery(random, true)); break;
     case EnemyId::FRIENDLY_CAVE:
       append(enemyInfo, getFriendlyCave(random,
-            random.choose({CreatureId::ORC, CreatureId::HARPY, CreatureId::OGRE}), true));
+            random.choose(CreatureId::ORC, CreatureId::HARPY, CreatureId::OGRE), true));
       break;
     case EnemyId::SOKOBAN:
       append(enemyInfo, getSokobanEntry(random, SettlementType::ISLAND_VAULT_DOOR, true));
       break;
   }
-  switch (enemyId) {
-    case EnemyId::KNIGHTS:
-    case EnemyId::WARRIORS:
-    case EnemyId::ELEMENTALIST:
-    case EnemyId::LIZARDMEN:
-    case EnemyId::HYDRA:
-    case EnemyId::VILLAGE:
-    case EnemyId::ORC_VILLAGE:
-      biomeId = BiomeId::GRASSLAND;
-      break;
-    case EnemyId::RED_DRAGON:
-    case EnemyId::GREEN_DRAGON:
-    case EnemyId::DWARVES:
-    case EnemyId::DARK_ELVES:
-    case EnemyId::FRIENDLY_CAVE:
-    case EnemyId::SOKOBAN:
-    case EnemyId::GNOMES:
-    case EnemyId::CYCLOPS:
-    case EnemyId::SHELOB:
-    case EnemyId::ANTS:
-      biomeId = BiomeId::MOUNTAIN;
-      break;
-    case EnemyId::ELVES:
-    case EnemyId::DRIADS:
-    case EnemyId::ENTS:
-      biomeId = BiomeId::FORREST;
-      break;
-    case EnemyId::BANDITS:
-      biomeId = random.choose<BiomeId>();
-      break;
-    case EnemyId::CEMETERY:
-      biomeId = random.choose({BiomeId::GRASSLAND, BiomeId::FORREST});
-      break;
-  }
+  BiomeId biomeId = getBiome(enemyId, random);
+  addMapVillains(enemyInfo, biomeId, random);
   return tryModel(meter, random, options, 170, siteName, enemyInfo, false, biomeId);
 }
 
