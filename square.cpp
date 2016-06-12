@@ -61,7 +61,9 @@ void Square::serialize(Archive& ar, const unsigned int version) {
     & SVAR(destroyable)
     & SVAR(owner)
     & SVAR(forbiddenTribe)
-    & SVAR(applySound);
+    & SVAR(applySound)
+    & SVAR(applyType)
+    & SVAR(applyTime);
   if (progressMeter)
     progressMeter->addProgress();
 }
@@ -76,7 +78,7 @@ Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
     fire(p.strength, p.flamability), constructions(p.constructions), ticking(p.ticking),
     movementSet(p.movementSet), viewIndex(new ViewIndex()), destroyable(p.canDestroy), owner(p.owner),
-    applySound(p.applySound) {
+    applySound(p.applySound), applyType(p.applyType), applyTime(p.applyTime.get_value_or(1)) {
   modViewObject().setIndoors(isCovered());
 }
 
@@ -601,11 +603,19 @@ optional<TribeId> Square::getForbiddenTribe() const {
   return forbiddenTribe;
 }
 
+optional<SquareApplyType> Square::getApplyType() const {
+  return applyType;
+}
+
 optional<SquareApplyType> Square::getApplyType(const Creature* c) const {
   if (auto ret = getApplyType())
     if (canApply(c))
       return ret;
   return none;
+}
+
+double Square::getApplyTime() const {
+  return applyTime;
 }
 
 Inventory& Square::getInventory() {

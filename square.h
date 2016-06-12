@@ -65,6 +65,8 @@ class Square : public Renderable {
     bool canDestroy;
     optional<TribeId> owner;
     optional<SoundId> applySound;
+    optional<SquareApplyType> applyType;
+    optional<double> applyTime;
   };
   Square(const ViewObject&, Params);
 
@@ -206,12 +208,12 @@ class Square : public Renderable {
   PItem removeItem(Position, Item*);
   vector<PItem> removeItems(Position, vector<Item*>);
 
-  virtual optional<SquareApplyType> getApplyType() const { return none; }
   virtual bool canApply(const Creature*) const { return true; }
   void apply(Creature*);
   void apply(Position);
-  virtual double getApplyTime() const { return 1.0; }
+  optional<SquareApplyType> getApplyType() const;
   optional<SquareApplyType> getApplyType(const Creature*) const;
+  double getApplyTime() const;
 
   void forbidMovementForTribe(Position, TribeId);
   void allowMovementForTribe(Position, TribeId);
@@ -273,6 +275,8 @@ class Square : public Renderable {
   optional<TribeId> SERIAL(owner);
   optional<TribeId> SERIAL(forbiddenTribe);
   optional<SoundId> SERIAL(applySound);
+  optional<SquareApplyType> SERIAL(applyType);
+  double SERIAL(applyTime);
 };
 
 #endif
