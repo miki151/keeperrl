@@ -9,6 +9,9 @@
 #include "location.h"
 #include "model.h"
 #include "view_index.h"
+#include "sound.h"
+#include "game.h"
+#include "view.h"
 
 template <class Archive> 
 void Position::serialize(Archive& ar, const unsigned int version) {
@@ -203,14 +206,25 @@ optional<SquareApplyType> Position::getApplyType(const Creature* c) const {
   return isValid() ? getSquare()->getApplyType(c) : none;
 }
 
-void Position::onApply(Creature* c) {
+void Position::apply(Creature* c) {
   if (isValid())
     modSquare()->apply(c);
+}
+
+void Position::apply() {
+  if (isValid())
+    modSquare()->apply(*this);
 }
 
 double Position::getApplyTime() const {
   CHECK(isValid());
   return getSquare()->getApplyTime();
+}
+
+void Position::addSound(const Sound& sound1) const {
+  Sound sound(sound1);
+  sound.setPosition(*this);
+  getGame()->getView()->addSound(sound);
 }
 
 bool Position::canHide() const {
@@ -350,19 +364,6 @@ void Position::destroy() {
 
 bool Position::construct(const SquareType& type) {
   return !isUnavailable() && modSquare()->construct(*this, type);
-}
-
-bool Position::canLock() const {
-  return !isUnavailable() && getSquare()->canLock();
-}
-
-bool Position::isLocked() const {
-  return !isUnavailable() && getSquare()->isLocked();
-}
-
-void Position::lock() {
-  if (isValid())
-    modSquare()->lock(*this);
 }
 
 bool Position::isBurning() const {

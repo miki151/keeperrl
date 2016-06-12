@@ -194,10 +194,6 @@ class Square : public Renderable {
   void setCovered(bool);
   bool isCovered() const;
 
-  virtual bool canLock() const { return false; }
-  virtual bool isLocked() const { FAIL << "BAD"; return false; }
-  virtual void lock(Position) { FAIL << "BAD"; }
-
   optional<ViewObject> extractBackground() const;
   void getViewIndex(ViewIndex&, const Creature* viewer) const;
 
@@ -213,6 +209,7 @@ class Square : public Renderable {
   virtual optional<SquareApplyType> getApplyType() const { return none; }
   virtual bool canApply(const Creature*) const { return true; }
   void apply(Creature*);
+  void apply(Position);
   virtual double getApplyTime() const { return 1.0; }
   optional<SquareApplyType> getApplyType(const Creature*) const;
 
@@ -235,6 +232,7 @@ class Square : public Renderable {
   virtual void onEnterSpecial(Creature*) {}
   virtual void tickSpecial(Position) {}
   virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
+  virtual void onApply(Position) { Debug(FATAL) << "Bad square applied"; }
   string SERIAL(name);
   void addTraitForTribe(Position, TribeId, MovementTrait);
   void removeTraitForTribe(Position, TribeId, MovementTrait);

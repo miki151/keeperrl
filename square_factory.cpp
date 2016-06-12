@@ -348,15 +348,15 @@ class TribeDoor : public Door {
       c->addSound(SoundId::BANG_DOOR);
   }
 
-  virtual bool canLock() const override {
-    return true;
+  virtual optional<SquareApplyType> getApplyType() const override {
+    return SquareApplyType::LOCK;
   }
 
-  virtual bool isLocked() const override {
-    return locked;
+  virtual void onApply(Creature* c) override {
+    onApply(c->getPosition());
   }
 
-  virtual void lock(Position pos) override {
+  virtual void onApply(Position pos) override {
     locked = !locked;
     if (locked) {
       modViewObject().setModifier(ViewObject::Modifier::LOCKED);

@@ -634,3 +634,9 @@ void Square::apply(Creature* c) {
     c->addSound(*applySound);
   onApply(c);
 }
+
+void Square::apply(Position pos) {
+  if (applySound)
+    pos.addSound(*applySound);
+  onApply(pos);
+}

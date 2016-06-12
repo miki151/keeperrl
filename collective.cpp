@@ -1714,8 +1714,8 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
 }
 
 bool Collective::tryLockingDoor(Position pos) {
-  if (territory->contains(pos) && pos.canLock()) {
-    pos.lock();
+  if (territory->contains(pos) && pos.getApplyType() == SquareApplyType::LOCK) {
+    pos.apply();
     return true;
   }
   return false;

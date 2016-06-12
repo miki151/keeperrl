@@ -15,6 +15,7 @@ struct CoverInfo;
 class Attack;
 class Game;
 class TribeId;
+class Sound;
 
 class Position {
   public:
@@ -58,8 +59,10 @@ class Position {
   bool canEnterEmpty(const MovementType&) const;
   optional<SquareApplyType> getApplyType() const;
   optional<SquareApplyType> getApplyType(const Creature*) const;
-  void onApply(Creature*);
+  void apply(Creature*);
+  void apply();
   double getApplyTime() const;
+  void addSound(const Sound&) const;
   bool canHide() const;
   void getViewIndex(ViewIndex&, const Creature* viewer) const;
   vector<Trigger*> getTriggers() const;
@@ -80,9 +83,6 @@ class Position {
   void destroyBy(Creature* c);
   void destroy();
   bool construct(const SquareType&);
-  bool canLock() const;
-  bool isLocked() const;
-  void lock();
   bool isBurning() const;
   void setOnFire(double amount);
   bool needsMemoryUpdate() const;

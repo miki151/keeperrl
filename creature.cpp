@@ -635,7 +635,7 @@ CreatureAction Creature::applySquare() const {
   if (getPosition().getApplyType(this))
     return CreatureAction(this, [=](Creature* self) {
       Debug() << getName().the() << " applying " << getPosition().getName();
-      self->getPosition().onApply(self);
+      self->getPosition().apply(self);
       self->spendTime(self->getPosition().getApplyTime());
     });
   else
