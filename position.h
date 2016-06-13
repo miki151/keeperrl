@@ -2,6 +2,7 @@
 #define _POSITION_H
 
 #include "util.h"
+#include "stair_key.h"
 
 class Square;
 class Level;
@@ -35,6 +36,7 @@ class Position {
   Position withCoord(Vec2 newCoord) const;
   Vec2 getCoord() const;
   Level* getLevel() const;
+  optional<StairKey> getLandingLink() const;
  
   bool isValid() const;
   bool operator == (const Position&) const;

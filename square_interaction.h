@@ -4,7 +4,8 @@
 #include "util.h"
 
 enum class SquareInteraction {
-  KEEPER_BOARD
+  KEEPER_BOARD,
+  STAIRS
 };
 
 class Position;

@@ -40,33 +40,6 @@
 #include "creature_attributes.h"
 #include "square_interaction.h"
 
-class Staircase : public Square {
-  public:
-  Staircase(const ViewObject& obj, const string& name, StairKey key) : Square(obj,
-      CONSTRUCT(Square::Params,
-        c.name = name;
-        c.vision = VisionId::NORMAL;
-        c.canHide = true;
-        c.strength = 10000;
-        c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
-        c.applyType = SquareApplyType::USE_STAIRS;
-        )) {
-    setLandingLink(key);
-  }
-
-  virtual void onEnterSpecial(Creature* c) override {
-    c->playerMessage("There are " + getName() + " here.");
-  }
-
-  virtual void onApply(Creature* c) override {
-    c->getLevel()->changeLevel(*getLandingLink(), c);
-  }
-
-  SERIALIZE_SUBCLASS(Square);
-  SERIALIZATION_CONSTRUCTOR(Staircase);
-
-};
-
 class Magma : public Square {
   public:
   Magma(const ViewObject& object, const string& name) : Square(object,
@@ -699,7 +672,6 @@ class SokobanHole : public Square {
 template <class Archive>
 void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Laboratory);
-  REGISTER_TYPE(ar, Staircase);
   REGISTER_TYPE(ar, Magma);
   REGISTER_TYPE(ar, Water);
   REGISTER_TYPE(ar, Chest);
@@ -728,8 +700,18 @@ PSquare SquareFactory::get(SquareType s) {
 }
 
 static Square* getStairs(const StairInfo& info) {
-  return new Staircase(ViewObject(info.direction == info.UP ? ViewId::UP_STAIRCASE : ViewId::DOWN_STAIRCASE,
-        ViewLayer::FLOOR), "stairs", info.key);
+  Square* ret = new Square(ViewObject(info.direction == info.UP ? ViewId::UP_STAIRCASE : ViewId::DOWN_STAIRCASE,
+        ViewLayer::FLOOR), 
+      CONSTRUCT(Square::Params,
+        c.name = "stairs";
+        c.vision = VisionId::NORMAL;
+        c.canHide = true;
+        c.strength = 10000;
+        c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
+        c.interaction = SquareInteraction::STAIRS;
+        ));
+  ret->setLandingLink(info.key);
+  return ret;
 }
  
 Square* SquareFactory::getPtr(SquareType s) {

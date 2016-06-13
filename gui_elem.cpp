@@ -410,7 +410,7 @@ static vector<string> breakWord(Renderer& renderer, string word, int maxWidth, i
     int maxSubstr = 0;
     for (int i : Range(word.size()))
       if (renderer.getTextLength(word.substr(0, i + 1), size) <= maxWidth)
-        maxSubstr = i;
+        maxSubstr = i + 1;
     CHECK(maxSubstr > 0) << "Couldn't fit single character in line " << word << " line width " << maxWidth;
     ret.push_back(word.substr(0, maxSubstr));
     word = word.substr(maxSubstr);

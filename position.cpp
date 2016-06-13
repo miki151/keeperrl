@@ -80,6 +80,13 @@ Vec2 Position::getDir(const Position& p) const {
   return p.coord - coord;
 }
 
+optional<StairKey> Position::getLandingLink() const {
+  if (isValid())
+    return getSquare()->getLandingLink();
+  else
+    return none;
+}
+
 Square* Position::modSquare() const {
   CHECK(isValid());
   return level->modSafeSquare(coord);
