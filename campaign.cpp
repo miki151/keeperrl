@@ -299,3 +299,25 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
   }
 }
 
+map<string, string> Campaign::getParameters() const {
+  int numMain = 0;
+  int numLesser = 0;
+  int numAlly = 0;
+  int numRetired = 0;
+  for (Vec2 v : sites.getBounds())
+    if (sites[v].getRetired())
+      ++numRetired;
+    else if (auto villain = sites[v].getVillain())
+      switch (villain->type) {
+        case VillainInfo::ALLY: ++numAlly; break;
+        case VillainInfo::MAIN: ++numMain; break;
+        case VillainInfo::LESSER: ++numLesser; break;
+      }
+  return {
+    {"main", toString(numMain)},
+    {"lesser", toString(numLesser)},
+    {"allies", toString(numAlly)},
+    {"retired", toString(numRetired)},
+  };
+}
+

@@ -85,6 +85,8 @@ class Campaign {
   bool isInInfluence(Vec2) const;
   int getNumNonEmpty() const;
 
+  map<string, string> getParameters() const;
+
   SERIALIZATION_DECL(Campaign);
 
   private:

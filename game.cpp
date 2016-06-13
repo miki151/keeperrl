@@ -270,7 +270,13 @@ bool Game::isVillainActive(const Collective* col) {
 void Game::tick(double time) {
   if (!turnEvents.empty() && time > *turnEvents.begin()) {
     int turn = *turnEvents.begin();
-    uploadEvent("turn", {{"turn", toString(turn)}, {"gameType", isSingleModel() ? "single" : "campaign"}});
+    if (turn == 0) {
+      if (campaign)
+        uploadEvent("campaignStarted", campaign->getParameters());
+      else
+        uploadEvent("singleStarted", {});
+    } else
+      uploadEvent("turn", {{"turn", toString(turn)}});
     turnEvents.erase(turn);
   }
   auto previous = sunlightInfo.getState();
