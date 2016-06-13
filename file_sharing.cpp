@@ -7,8 +7,9 @@
 
 #include <curl/curl.h>
 
-FileSharing::FileSharing(const string& url, Options& o) : uploadUrl(url), options(o),
-    uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)) {
+FileSharing::FileSharing(const string& url, Options& o, long long id) : uploadUrl(url), options(o),
+    uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)), installId(id) {
+  curl_global_init(CURL_GLOBAL_ALL);
 }
 
 FileSharing::~FileSharing() {
@@ -111,10 +112,6 @@ void FileSharing::uploadHighscores(const string& path) {
     });
 }
 
-void FileSharing::init() {
-  curl_global_init(CURL_GLOBAL_ALL);
-}
-
 void FileSharing::uploadingLoop() {
   function<void()> uploadFun = uploadQueue.pop();
   if (uploadFun)
@@ -123,7 +120,9 @@ void FileSharing::uploadingLoop() {
     uploadLoop.finish();
 }
 
-void FileSharing::uploadGameEvent(const GameEvent& data) {
+void FileSharing::uploadGameEvent(const GameEvent& data1) {
+  GameEvent data(data1);
+  data.emplace("installId", toString(installId));
   if (options.getBoolValue(OptionId::ONLINE))
     uploadGameEventImpl(data, 5);
 }

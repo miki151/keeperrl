@@ -7,13 +7,10 @@
 #include "saved_game_info.h"
 
 class ProgressMeter;
-class GameEvents;
 
 class FileSharing {
   public:
-  FileSharing(const string& uploadUrl, Options&);
-
-  void init();
+  FileSharing(const string& uploadUrl, Options&, long long installId);
 
   optional<string> uploadRetired(const string& path, ProgressMeter&);
   optional<string> uploadSite(const string& path, ProgressMeter&);
@@ -59,6 +56,7 @@ class FileSharing {
   AsyncLoop uploadLoop;
   void uploadingLoop();
   void uploadGameEventImpl(const GameEvent&, int tries);
+  long long installId;
 };
 
 #endif

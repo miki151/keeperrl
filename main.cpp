@@ -278,6 +278,17 @@ int main(int argc, char* argv[]) {
 }
 #endif
 
+static long long getInstallId(const string& path, RandomGen& random) {
+  long long ret;
+  if (ifstream in = ifstream(path))
+    in >> ret;
+  else {
+    ret = random.getLL();
+    ofstream(path) << ret;
+  }
+  return ret;
+}
+
 static int keeperMain(const variables_map& vars) {
   if (vars.count("help")) {
     std::cout << getOptions() << endl;
@@ -330,6 +341,7 @@ static int keeperMain(const variables_map& vars) {
   Options options(userPath + "/options.txt", overrideSettings);
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   Random.init(seed);
+  long long installId = getInstallId(userPath + "/installId.txt", Random);
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
   Debug::setErrorCallback([&renderer](const string& s) { renderer.showError(s);});
   SoundLibrary* soundLibrary = nullptr;
@@ -371,8 +383,7 @@ static int keeperMain(const variables_map& vars) {
   }
   Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(&options, cAudio, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
-  FileSharing fileSharing(uploadUrl, options);
-  fileSharing.init();
+  FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
   optional<GameTypeChoice> forceGame;
   if (vars.count("force_keeper"))
