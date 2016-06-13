@@ -12,6 +12,7 @@
 #include "sound.h"
 #include "game.h"
 #include "view.h"
+#include "square_interaction.h"
 
 template <class Archive> 
 void Position::serialize(Archive& ar, const unsigned int version) {
@@ -199,11 +200,20 @@ const Location* Position::getLocation() const {
 } 
 
 optional<SquareApplyType> Position::getApplyType() const {
-  return isValid() ? getSquare()->getApplyType() : none;
+  if (isValid()) {
+    if (auto inter = getSquare()->getInteraction())
+      return SquareInteractions::getApplyType(*inter);
+    else
+      return getSquare()->getApplyType();
+  } else
+    return none;
 }
 
 optional<SquareApplyType> Position::getApplyType(const Creature* c) const {
-  return isValid() ? getSquare()->getApplyType(c) : none;
+  if (auto ret = getApplyType())
+    if (getSquare()->canApply(c))
+      return ret;
+  return none;
 }
 
 void Position::apply(Creature* c) {

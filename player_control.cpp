@@ -196,6 +196,8 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(TribeId tribe) {
     BuildInfo({{SquareId::BARRICADE, tribe}, {ResourceId::WOOD, 20}, "Barricade"},
       {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "", 0, "Installations"),
     BuildInfo(BuildInfo::TORCH, "Place it on tiles next to a wall.", 'c', "Installations"),
+    BuildInfo({SquareId::KEEPER_BOARD, {ResourceId::WOOD, 80}, "Message board"}, {},
+        "A board where you can leave a message for other players.", 0, "Installations"),
     BuildInfo({SquareId::EYEBALL, {ResourceId::MANA, 10}, "Eyeball"}, {},
       "Makes the area around it visible.", 0, "Installations"),
     BuildInfo({SquareId::MINION_STATUE, {ResourceId::GOLD, 300}, "Statue", false, false}, {},

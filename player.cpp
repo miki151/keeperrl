@@ -128,7 +128,7 @@ static string getSquareQuestion(SquareApplyType type, string name) {
     case SquareApplyType::DRINK: return "drink from " + name;
     case SquareApplyType::PRAY: return "pray at " + name;
     case SquareApplyType::SLEEP: return "sleep on " + name;
-    case SquareApplyType::NOTICE_BOARD: return "read " + name;
+    case SquareApplyType::NOTICE_BOARD: return "view " + name;
     default: break;
   }
   return "";

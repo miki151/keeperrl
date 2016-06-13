@@ -404,6 +404,20 @@ PGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
         }, width));
 }
 
+static vector<string> breakWord(Renderer& renderer, string word, int maxWidth, int size) {
+  vector<string> ret;
+  while (!word.empty()) {
+    int maxSubstr = 0;
+    for (int i : Range(word.size()))
+      if (renderer.getTextLength(word.substr(0, i + 1), size) <= maxWidth)
+        maxSubstr = i;
+    CHECK(maxSubstr > 0) << "Couldn't fit single character in line " << word << " line width " << maxWidth;
+    ret.push_back(word.substr(0, maxSubstr));
+    word = word.substr(maxSubstr);
+  }
+  return ret;
+}
+
 static vector<string> breakText(Renderer& renderer, const string& text, int maxWidth, int size = Renderer::textSize) {
   if (text.empty())
     return {""};
@@ -411,10 +425,11 @@ static vector<string> breakText(Renderer& renderer, const string& text, int maxW
   for (string line : split(text, {'\n'})) {
     rows.push_back("");
     for (string word : split(line, {' '}))
-      if (renderer.getTextLength(rows.back() + ' ' + word, size) <= maxWidth)
-        rows.back().append((rows.back().size() > 0 ? " " : "") + word);
-      else
-        rows.push_back(word);
+      for (string subword : breakWord(renderer, word, maxWidth, size))
+        if (renderer.getTextLength(rows.back() + ' ' + subword, size) <= maxWidth)
+          rows.back().append((rows.back().size() > 0 ? " " : "") + subword);
+        else
+          rows.push_back(subword);
   }
   return rows;
 }
@@ -423,13 +438,13 @@ vector<string> GuiFactory::breakText(const string& text, int maxWidth) {
   return ::breakText(renderer, text, maxWidth);
 }
 
-class LabelMultiLine : public GuiElem {
+class VariableLabel : public GuiElem {
   public:
-  LabelMultiLine(const string& t, int line, int sz, Color c) : text(t), size(sz), color(c), lineHeight(line) {
+  VariableLabel(function<string()> t, int line, int sz, Color c) : text(t), size(sz), color(c), lineHeight(line) {
   }
 
   virtual void render(Renderer& renderer) override {
-    vector<string> lines = breakText(renderer, text, getBounds().width(), size);
+    vector<string> lines = breakText(renderer, text(), getBounds().width(), size);
     int height = getBounds().top();
     for (int i : All(lines)) {
       renderer.drawText(color, getBounds().left(), height, lines[i],
@@ -442,14 +457,14 @@ class LabelMultiLine : public GuiElem {
   }
 
   private:
-  string text;
+  function<string()> text;
   int size;
   Color color;
   int lineHeight;
 };
 
 PGuiElem GuiFactory::labelMultiLine(const string& s, int lineHeight, int size, Color c) {
-  return PGuiElem(new LabelMultiLine(s, lineHeight, size, c));
+  return PGuiElem(new VariableLabel([=]{ return s;}, lineHeight, size, c));
 }
 
 static void lighten(Color& c) {
@@ -563,14 +578,8 @@ PGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s,
   return centeredLabel(center, s, Renderer::textSize, c);
 }
 
-PGuiElem GuiFactory::variableLabel(function<string()> fun, Renderer::CenterType center, int size, Color c) {
-  return PGuiElem(new DrawCustom(
-        [=] (Renderer& r, Rectangle bounds) {
-          string s = fun();
-          Vec2 pos = getTextPos(bounds, center);
-          r.drawText(transparency(colors[ColorId::BLACK], 100), pos.x + 1, pos.y + 2, s, center, size);
-          r.drawText(c, pos.x, pos.y, s, center, size);
-        }));
+PGuiElem GuiFactory::variableLabel(function<string()> fun, int lineHeight, int size, Color color) {
+  return PGuiElem(new VariableLabel(fun, lineHeight, size, color));
 }
 
 PGuiElem GuiFactory::labelUnicode(const string& s, Color color, int size, Renderer::FontId fontId) {

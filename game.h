@@ -78,6 +78,7 @@ class Game {
 
   optional<Position> getOtherPortal(Position) const;
   void registerPortal(Position);
+  void handleMessageBoard(Position, Creature*);
 
   void onTechBookRead(Technology*);
   void onAlarm(Position);

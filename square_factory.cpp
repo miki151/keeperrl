@@ -38,6 +38,7 @@
 #include "view.h"
 #include "sound.h"
 #include "creature_attributes.h"
+#include "square_interaction.h"
 
 class Staircase : public Square {
   public:
@@ -626,10 +627,10 @@ class Laboratory : public Furniture {
 class NoticeBoard : public Furniture {
   public:
   NoticeBoard(ViewObject object, const string& t)
-      : Furniture(object, "notice board", 1, SquareApplyType::NOTICE_BOARD), text(t) {}
+      : Furniture(object, "message board", 1, SquareApplyType::NOTICE_BOARD), text(t) {}
 
   virtual void onApply(Creature* c) override {
-    c->playerMessage(PlayerMessage::announcement("The notice board reads:", text));
+    c->playerMessage(PlayerMessage::announcement("The message board reads:", text));
   }
 
   SERIALIZE_ALL2(Furniture, text);
@@ -925,6 +926,15 @@ Square* SquareFactory::getPtr(SquareType s) {
     case SquareId::NOTICE_BOARD:
         return new NoticeBoard(ViewObject(ViewId::NOTICE_BOARD, ViewLayer::FLOOR), 
             s.get<string>());
+    case SquareId::KEEPER_BOARD:
+        return new Square(ViewObject(ViewId::NOTICE_BOARD, ViewLayer::FLOOR),
+            CONSTRUCT(Square::Params,
+              c.name = "message board";
+              c.canDestroy = true;
+              c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
+              c.vision = VisionId::NORMAL;
+              c.interaction = SquareInteraction::KEEPER_BOARD;));
+
     case SquareId::SOKOBAN_HOLE:
         return new SokobanHole(ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR), "hole",
             s.get<StairKey>());

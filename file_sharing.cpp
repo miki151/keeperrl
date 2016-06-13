@@ -164,99 +164,105 @@ string FileSharing::downloadHighscores() {
   return ret;
 }
 
-static vector<FileSharing::GameInfo> parseGames(const string& s) {
+template<typename Elem>
+static vector<Elem> parseLines(const string& s, function<optional<Elem>(const vector<string>&)> parseLine) {
   std::stringstream iss(s);
-  vector<FileSharing::GameInfo> ret;
+  vector<Elem> ret;
   while (!!iss) {
-    char buf[100];
-    iss.getline(buf, 100);
+    char buf[10000];
+    iss.getline(buf, 10000);
     if (!iss)
       break;
     Debug() << "Parsing " << string(buf);
-    vector<string> fields = split(buf, {','});
-    if (fields.size() < 6)
-      continue;
-    Debug() << "Parsed " << fields;
-    ret.push_back({fields[0], fields[1], fromString<int>(fields[2]), fromString<int>(fields[3]),
-        fromString<int>(fields[4]), fromString<int>(fields[5])});
+    if (auto elem = parseLine(split(buf, {','})))
+      ret.push_back(*elem);
   }
   return ret;
+
+}
+
+static optional<FileSharing::GameInfo> parseGame(const vector<string>& fields) {
+  if (fields.size() >= 6) {
+    Debug() << "Parsed " << fields;
+    try {
+      return FileSharing::GameInfo{fields[0], fields[1], fromString<int>(fields[2]), fromString<int>(fields[3]),
+        fromString<int>(fields[4]), fromString<int>(fields[5])};
+    } catch (ParsingException e) {
+    }
+  }
+  return none;
+}
+
+static optional<string> downloadContent(const string& url) {
+  if (CURL* curl = curl_easy_init()) {
+    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(url).c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
+    // Internal CURL progressmeter must be disabled if we provide our own callback
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
+    // Install the callback function
+    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
+    string ret;
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
+    CURLcode res = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+    if (res == CURLE_OK)
+      return ret;
+  }
+  return none;
 }
 
 optional<vector<FileSharing::GameInfo>> FileSharing::listGames() {
   if (!options.getBoolValue(OptionId::ONLINE))
     return {};
-  if (CURL* curl = curl_easy_init()) {
-    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_games2.php").c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
-    // Internal CURL progressmeter must be disabled if we provide our own callback
-    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
-    // Install the callback function
-    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
-    string ret;
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
-    CURLcode res = curl_easy_perform(curl);
-    curl_easy_cleanup(curl);
-    if (res != CURLE_OK)
-      return none;
-    return parseGames(ret);
-  }
-  return none;
+  if (auto content = downloadContent(uploadUrl + "/get_games2.php"))
+    return parseLines<FileSharing::GameInfo>(*content, parseGame);
+  else
+    return none;
 }
 
-static vector<FileSharing::SiteInfo> parseSites(const string& s) {
-  std::stringstream iss(s);
-  vector<FileSharing::SiteInfo> ret;
-  while (!!iss) {
-    char buf[300];
-    iss.getline(buf, 300);
-    if (!iss)
-      break;
-    Debug() << "Parsing " << string(buf);
-    vector<string> fields = split(buf, {','});
-    if (fields.size() < 6)
-      continue;
-    Debug() << "Parsed " << fields;
-    FileSharing::SiteInfo elem;
-    elem.fileInfo.filename = fields[0];
-    try {
-      elem.fileInfo.date = fromString<int>(fields[1]);
-      elem.wonGames = fromString<int>(fields[2]);
-      elem.totalGames = fromString<int>(fields[3]);
-      elem.version = fromString<int>(fields[5]);
-      elem.fileInfo.download = true;
-      TextInput input(fields[4]);
-      input.getArchive() >> elem.gameInfo;
-    } catch (boost::archive::archive_exception ex) {
-      continue;
-    } catch (ParsingException e) {
-      continue;
-    }
-    ret.push_back(elem);
+static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
+  if (fields.size() < 6)
+    return none;
+  Debug() << "Parsed " << fields;
+  FileSharing::SiteInfo elem;
+  elem.fileInfo.filename = fields[0];
+  try {
+    elem.fileInfo.date = fromString<int>(fields[1]);
+    elem.wonGames = fromString<int>(fields[2]);
+    elem.totalGames = fromString<int>(fields[3]);
+    elem.version = fromString<int>(fields[5]);
+    elem.fileInfo.download = true;
+    TextInput input(fields[4]);
+    input.getArchive() >> elem.gameInfo;
+  } catch (boost::archive::archive_exception ex) {
+    return none;
+  } catch (ParsingException e) {
+    return none;
   }
-  return ret;
+  return elem;
 }
 
 optional<vector<FileSharing::SiteInfo>> FileSharing::listSites() {
   if (!options.getBoolValue(OptionId::ONLINE))
     return {};
-  if (CURL* curl = curl_easy_init()) {
-    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/get_sites.php").c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
-    // Internal CURL progressmeter must be disabled if we provide our own callback
-    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
-    // Install the callback function
-    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
-    string ret;
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
-    CURLcode res = curl_easy_perform(curl);
-    curl_easy_cleanup(curl);
-    if (res != CURLE_OK)
-      return none;
-    return parseSites(ret);
-  }
+  if (auto content = downloadContent(uploadUrl + "/get_sites.php"))
+    return parseLines<FileSharing::SiteInfo>(*content, parseSite);
+  else
+    return none;
+}
+
+static optional<FileSharing::BoardMessage> parseBoardMessage(const vector<string>& fields) {
+  if (fields.size() >= 2)
+    return FileSharing::BoardMessage{fields[0], fields[1]};
+  else
+    return none;
+}
+
+optional<vector<FileSharing::BoardMessage>> FileSharing::getBoardMessages(int boardId) {
+  if (options.getBoolValue(OptionId::ONLINE))
+    if (auto content = downloadContent(uploadUrl + "/get_messages.php?boardId=" + toString(boardId)))
+      return parseLines<FileSharing::BoardMessage>(*content, parseBoardMessage);
   return none;
 }
 

@@ -38,32 +38,14 @@
 #include "view.h"
 #include "sound.h"
 #include "creature_attributes.h"
+#include "square_interaction.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
-  ar& SUBCLASS(Renderable)
-    & SVAR(inventoryPtr)
-    & SVAR(name)
-    & SVAR(creature)
-    & SVAR(triggers)
-    & SVAR(vision)
-    & SVAR(hide)
-    & SVAR(strength)
-    & SVAR(landingLink)
-    & SVAR(fire)
-    & SVAR(poisonGas)
-    & SVAR(constructions)
-    & SVAR(currentConstruction)
-    & SVAR(ticking)
-    & SVAR(movementSet)
-    & SVAR(lastViewer)
-    & SVAR(viewIndex)
-    & SVAR(destroyable)
-    & SVAR(owner)
-    & SVAR(forbiddenTribe)
-    & SVAR(applySound)
-    & SVAR(applyType)
-    & SVAR(applyTime);
+  ar& SUBCLASS(Renderable);
+  serializeAll(ar, inventoryPtr, name, creature, triggers, vision, hide, strength, landingLink, fire, poisonGas);
+  serializeAll(ar, constructions, currentConstruction, ticking, movementSet, lastViewer, viewIndex, destroyable);
+  serializeAll(ar, forbiddenTribe, applySound, applyType, applyTime, interaction, owner);
   if (progressMeter)
     progressMeter->addProgress();
 }
@@ -78,7 +60,8 @@ Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), strength(p.strength),
     fire(p.strength, p.flamability), constructions(p.constructions), ticking(p.ticking),
     movementSet(p.movementSet), viewIndex(new ViewIndex()), destroyable(p.canDestroy), owner(p.owner),
-    applySound(p.applySound), applyType(p.applyType), applyTime(p.applyTime.get_value_or(1)) {
+    applySound(p.applySound), applyType(p.applyType), applyTime(p.applyTime.get_value_or(1)),
+    interaction(p.interaction) {
   modViewObject().setIndoors(isCovered());
 }
 
@@ -138,6 +121,7 @@ static optional<short int> getConstructionTime(ConstructionsId id, SquareId squa
       switch (square) {
         case SquareId::IMPALED_HEAD:
         case SquareId::EYEBALL: return 5;
+        case SquareId::KEEPER_BOARD: return 15;
         default: return none;
       }
     case ConstructionsId::MOUNTAIN_GEN_ORES:
@@ -177,6 +161,7 @@ static optional<short int> getConstructionTime(ConstructionsId id, SquareId squa
         case SquareId::THRONE: return 100;
         case SquareId::MOUNTAIN: return 15;
         case SquareId::RITUAL_ROOM: return 10;
+        case SquareId::KEEPER_BOARD: return 15;
         default: return none;
       }
   }
@@ -595,6 +580,10 @@ void Square::allowMovementForTribe(Position pos, TribeId tribe) {
   setDirty(pos);
 }
 
+optional<SquareInteraction> Square::getInteraction() const {
+  return interaction;
+}
+
 bool Square::isTribeForbidden(TribeId tribe) const {
   return forbiddenTribe == tribe;
 }
@@ -605,13 +594,6 @@ optional<TribeId> Square::getForbiddenTribe() const {
 
 optional<SquareApplyType> Square::getApplyType() const {
   return applyType;
-}
-
-optional<SquareApplyType> Square::getApplyType(const Creature* c) const {
-  if (auto ret = getApplyType())
-    if (canApply(c))
-      return ret;
-  return none;
 }
 
 double Square::getApplyTime() const {
@@ -642,7 +624,10 @@ void Square::clearItemIndex(ItemIndex index) {
 void Square::apply(Creature* c) {
   if (applySound)
     c->addSound(*applySound);
-  onApply(c);
+  if (interaction)
+    SquareInteractions::apply(*interaction, c->getPosition(), c);
+  else
+    onApply(c);
 }
 
 void Square::apply(Position pos) {

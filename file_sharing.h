@@ -41,6 +41,12 @@ class FileSharing {
   void uploadGameEvent(const GameEvent&);
   void uploadHighscores(const string& path);
 
+  struct BoardMessage {
+    string text;
+    string author;
+  };
+  optional<vector<BoardMessage>> getBoardMessages(int boardId);
+
   string downloadHighscores();
 
   void cancel();

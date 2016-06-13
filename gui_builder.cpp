@@ -2226,11 +2226,12 @@ Rectangle GuiBuilder::getTextInputPosition() {
 }
 
 PGuiElem GuiBuilder::getTextContent(const string& title, const string& value, const string& hint) {
-  vector<PGuiElem> lines = makeVec<PGuiElem>(
-      gui.variableLabel([&] { return title + ":  " + value + "_"; }));
+  auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(
+      gui.variableLabel([&] { return title + ":  " + value + "_"; }, legendLineHeight), 3 * legendLineHeight);
   if (!hint.empty())
-    lines.push_back(gui.label(hint, gui.inactiveText));
-  return gui.verticalList(std::move(lines), 40);
+    lines.addElem(gui.label(hint, gui.inactiveText));
+  return lines.buildVerticalList();
 }
 
 optional<string> GuiBuilder::getTextInput(const string& title, const string& value, int maxLength,

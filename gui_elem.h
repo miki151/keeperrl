@@ -142,8 +142,8 @@ class GuiFactory {
       Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, Color = colors[ColorId::WHITE]);
-  PGuiElem variableLabel(function<string()>,
-      Renderer::CenterType = Renderer::NONE, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
+  PGuiElem variableLabel(function<string()>, int lineHeight, int size = Renderer::textSize,
+      Color = colors[ColorId::WHITE]);
   PGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_ON]);
   PGuiElem mainMenuLabelBg(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_OFF]);
   PGuiElem labelUnicode(const string&, Color = colors[ColorId::WHITE], int size = Renderer::textSize,

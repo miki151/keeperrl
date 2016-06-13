@@ -235,6 +235,8 @@ int Renderer::getTextLength(const string& s, int size, FontId font) {
 }
 
 Vec2 Renderer::getTextSize(const string& s, int size, FontId id) {
+  if (s.empty())
+    return Vec2(0, 0);
   float minx, maxx, miny, maxy;
   int font = getFont(id);
   sth_dim_text(fontStash, font, sizeConv(size), s.c_str(), &minx, &miny, &maxx, &maxy);

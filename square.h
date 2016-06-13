@@ -67,6 +67,7 @@ class Square : public Renderable {
     optional<SoundId> applySound;
     optional<SquareApplyType> applyType;
     optional<double> applyTime;
+    optional<SquareInteraction> interaction;
   };
   Square(const ViewObject&, Params);
 
@@ -212,8 +213,8 @@ class Square : public Renderable {
   void apply(Creature*);
   void apply(Position);
   optional<SquareApplyType> getApplyType() const;
-  optional<SquareApplyType> getApplyType(const Creature*) const;
   double getApplyTime() const;
+  optional<SquareInteraction> getInteraction() const;
 
   void forbidMovementForTribe(Position, TribeId);
   void allowMovementForTribe(Position, TribeId);
@@ -277,6 +278,7 @@ class Square : public Renderable {
   optional<SoundId> SERIAL(applySound);
   optional<SquareApplyType> SERIAL(applyType);
   double SERIAL(applyTime);
+  optional<SquareInteraction> SERIAL(interaction);
 };
 
 #endif

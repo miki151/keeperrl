@@ -688,3 +688,39 @@ void Game::uploadEvent(const string& name, const map<string, string>& m) {
   fileSharing->uploadGameEvent(values);
 }
 
+void Game::handleMessageBoard(Position pos, Creature* c) {
+  int boardId = pos.getHash();
+  vector<ListElem> options;
+  atomic<bool> cancelled(false);
+  view->displaySplash(nullptr, "Fetching board contents...", SplashType::SMALL, [&] {
+      cancelled = true;
+      fileSharing->cancel();
+      });
+  optional<vector<FileSharing::BoardMessage>> messages;
+  thread t([&] { messages = fileSharing->getBoardMessages(boardId); view->clearSplash(); });
+  view->refreshView();
+  t.join();
+  if (!messages || cancelled) {
+    view->presentText("", "Couldn't download board contents. Please check your internet connection.");
+    return;
+  }
+  for (auto message : *messages) {
+    options.emplace_back(message.author + " wrote:", ListElem::TITLE);
+    options.emplace_back("\"" + message.text + "\"", ListElem::TEXT);
+  }
+  if (messages->empty())
+    options.emplace_back("The board is empty.", ListElem::TITLE);
+  options.emplace_back("", ListElem::TEXT);
+  options.emplace_back("[Write something]");
+  if (auto index = view->chooseFromList("", options))
+    if (auto text = view->getText("Enter message", "", 80)) {
+      if (text->size() >= 2)
+        uploadEvent("boardMessage", {
+            {"boardId", toString(pos.getHash())},
+            {"author", c->getName().title()},
+            {"text", *text}});
+      else
+        view->presentText("", "The message was too short.");
+    }
+}
+
