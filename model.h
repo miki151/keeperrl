@@ -61,6 +61,7 @@ class Model {
 
   /** Adds new creature to the queue. Assumes this creature has already been added to a level. */
   void addCreature(PCreature, double delay = 0);
+  void landHeroPlayer(const string& name, int handicap);
 
   bool isTurnBased();
 
@@ -101,7 +102,6 @@ class Model {
   friend class ModelBuilder;
 
   PCreature makePlayer(int handicap);
-  void landHeroPlayer();
   Level* buildLevel(LevelBuilder&&, PLevelMaker);
   Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
 

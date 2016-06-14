@@ -49,7 +49,6 @@ class Game {
   const Statistics& getStatistics() const;
   Tribe* getTribe(TribeId) const;
   double getGlobalTime() const;
-  void landHeroPlayer();
   Collective* getPlayerCollective() const;
   void setPlayer(Creature*);
   Creature* getPlayer() const;
@@ -109,6 +108,7 @@ class Game {
   optional<ExitInfo> updateModel(Model*, double totalTime);
   string getPlayerName() const;
   void uploadEvent(const string& name, const map<string, string>&);
+  void checkConquered();
 
   string SERIAL(worldName);
   SunlightInfo sunlightInfo;

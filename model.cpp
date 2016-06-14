@@ -240,3 +240,18 @@ void Model::afterUpdateTime(Creature* c) {
   timeQueue->afterUpdateTime(c);
 }
 
+void Model::landHeroPlayer(const string& advName, int handicap) {
+  PCreature player = CreatureFactory::getAdventurer(handicap);
+  if (!advName.empty())
+    player->getName().setFirst(advName);
+  Level* target = getTopLevel();
+  vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
+  for (Position pos : landing)
+    if (pos.canEnter(player.get())) {
+      CHECK(target->landCreature(landing, std::move(player))) << "No place to spawn player";
+      return;
+    }
+  CHECK(target->landCreature(target->getAllPositions(), std::move(player))) << "No place to spawn player";
+}
+
+

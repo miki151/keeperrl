@@ -2011,7 +2011,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
   lines.addSpace(10);
   lines.addElem(gui.centerHoriz(gui.label("Choose the location of your base:")));
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, &embarkPos,
-        [&campaign](Vec2 pos) { return campaign.getSites()[pos].canEmbark(); },
+        [&campaign](Vec2 pos) { return campaign.canEmbark(pos); },
         [&campaign, &queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
   lines.addBackElem(gui.topMargin(10, gui.centerHoriz(gui.getListBuilder()
         .addElemAuto(gui.conditional(

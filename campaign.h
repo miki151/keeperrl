@@ -49,7 +49,7 @@ class Campaign {
     Type SERIAL(type);
     SERIALIZE_ALL(viewId, name, enemyId, type);
   };
-  struct PlayerInfo {
+  struct KeeperInfo {
     ViewId SERIAL(viewId);
     SERIALIZE_ALL(viewId);
   };
@@ -60,23 +60,24 @@ class Campaign {
   };
   struct SiteInfo {
     vector<ViewId> SERIAL(viewId);
-    optional<variant<VillainInfo, RetiredInfo, PlayerInfo>> SERIAL(dweller);
+    optional<variant<VillainInfo, RetiredInfo, KeeperInfo>> SERIAL(dweller);
     optional<VillainInfo> getVillain() const;
     optional<RetiredInfo> getRetired() const;
-    optional<PlayerInfo> getPlayer() const;
+    optional<KeeperInfo> getKeeper() const;
     bool isEnemy() const;
     bool isEmpty() const;
     bool SERIAL(blocked) = false;
-    bool canEmbark() const;
     void setBlocked();
     optional<ViewId> getDwellerViewId() const;
     optional<string> getDwellerDescription() const;
     SERIALIZE_ALL(viewId, dweller, blocked);
   };
 
+  enum Type { ADVENTURER, KEEPER};
+
   const Table<SiteInfo>& getSites() const;
   void clearSite(Vec2);
-  static optional<Campaign> prepareCampaign(View*, Options*, RetiredGames&&, RandomGen&);
+  static optional<Campaign> prepareCampaign(View*, Options*, RetiredGames&&, RandomGen&, Type);
   optional<Vec2> getPlayerPos() const;
   const string& getWorldName() const;
   bool isDefeated(Vec2) const;
@@ -84,6 +85,8 @@ class Campaign {
   bool canTravelTo(Vec2) const;
   bool isInInfluence(Vec2) const;
   int getNumNonEmpty() const;
+  bool canEmbark(Vec2) const;
+  Type getType() const;
 
   map<string, string> getParameters() const;
 
@@ -98,6 +101,7 @@ class Campaign {
   Table<bool> SERIAL(defeated);
   set<Vec2> SERIAL(influencePos);
   int SERIAL(influenceSize);
+  Type SERIAL(type);
 };
 
 

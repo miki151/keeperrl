@@ -333,12 +333,27 @@ RetiredGames MainLoop::getRetiredGames() {
 }
 
 PGame MainLoop::prepareCampaign(RandomGen& random) {
-  random.init(Random.get(1234567));
-  optional<Campaign> campaign = Campaign::prepareCampaign(view, options, getRetiredGames(), random);
-  if (!campaign)
-    return nullptr;
-  return Game::campaignGame(keeperCampaign(*campaign, random), *campaign->getPlayerPos(),
-      options->getStringValue(OptionId::KEEPER_NAME), *campaign);
+  if (auto choice = view->chooseGameType()) {
+    random.init(Random.get(1234567));
+    switch (*choice) {
+      case GameTypeChoice::KEEPER:
+        if (auto campaign = Campaign::prepareCampaign(view, options, getRetiredGames(), random, Campaign::KEEPER))
+          return Game::campaignGame(prepareCampaignModels(*campaign, random), *campaign->getPlayerPos(),
+            options->getStringValue(OptionId::KEEPER_NAME), *campaign);
+        break;
+      case GameTypeChoice::ADVENTURER:
+        if (auto campaign = Campaign::prepareCampaign(view, options, getRetiredGames(), random,
+              Campaign::ADVENTURER)) {
+          PGame ret = Game::campaignGame(prepareCampaignModels(*campaign, random), *campaign->getPlayerPos(),
+              options->getStringValue(OptionId::KEEPER_NAME), *campaign);
+          ret->getMainModel()->landHeroPlayer(options->getStringValue(OptionId::KEEPER_NAME), 0);
+          return ret;
+        }
+        break;
+      default: FAIL << "Bad campaign mode";
+    }
+  }
+  return nullptr;
 }
 
 PGame MainLoop::prepareSingleMap(RandomGen& random) {
@@ -503,7 +518,7 @@ void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
   ModelBuilder::measureSiteGen(numTries, Random, options);
 }
 
-Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
+Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& random) {
   Table<PModel> models(campaign.getSites().getBounds());
   auto& sites = campaign.getSites();
   for (Vec2 v : sites.getBounds())
@@ -519,12 +534,10 @@ Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
             meter.addProgress();
-          if (v == campaign.getPlayerPos()) {
+          if (sites[v].getKeeper()) {
             models[v] = ModelBuilder::campaignBaseModel(nullptr, random, options, "pok");
-            //ret[v] = ModelBuilder::quickModel(nullptr, random, options);
             ModelBuilder::spawnKeeper(models[v].get(), options);
           } else if (auto villain = sites[v].getVillain())
-            //ret[v] = ModelBuilder::quickModel(nullptr, random, options);
             models[v] = ModelBuilder::campaignSiteModel(nullptr, random, options, "pok", villain->enemyId);
           else if (auto retired = sites[v].getRetired()) {
             if (PModel m = loadModelFromFile(userPath + "/" + retired->fileInfo.filename))
@@ -614,7 +627,11 @@ PGame MainLoop::adventurerGame() {
         return nullptr;
     if (PGame game = loadGame(savedGame->filename, false)) {
       game->initialize(options, highscores, view, fileSharing);
-      game->landHeroPlayer();
+      CHECK(game->isSingleModel());
+      auto handicap = view->getNumber("Choose handicap (your adventurer's strength and dexterity increase)",
+          0, 20, 5);
+      game->getMainModel()->landHeroPlayer(options->getStringValue(OptionId::ADVENTURER_NAME),
+          handicap.get_value_or(0));
       return game;
     }
   }

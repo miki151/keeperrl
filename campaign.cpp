@@ -16,8 +16,11 @@ const Table<Campaign::SiteInfo>& Campaign::getSites() const {
   return sites;
 }
 
-bool Campaign::SiteInfo::canEmbark() const {
-  return !dweller && !blocked;
+bool Campaign::canEmbark(Vec2 pos) const {
+  switch (type) {
+    case ADVENTURER: return !!sites[pos].dweller;
+    case KEEPER: return !sites[pos].dweller && !sites[pos].blocked;
+  }
 }
 
 bool Campaign::canTravelTo(Vec2 pos) const {
@@ -106,9 +109,9 @@ optional<Campaign::VillainInfo> Campaign::SiteInfo::getVillain() const {
   return none;
 }
 
-optional<Campaign::PlayerInfo> Campaign::SiteInfo::getPlayer() const {
+optional<Campaign::KeeperInfo> Campaign::SiteInfo::getKeeper() const {
   if (dweller)
-    if (const PlayerInfo* info = boost::get<PlayerInfo>(&(*dweller)))
+    if (const KeeperInfo* info = boost::get<KeeperInfo>(&(*dweller)))
       return *info;
   return none;
 }
@@ -127,7 +130,7 @@ bool Campaign::SiteInfo::isEmpty() const {
 optional<string> Campaign::SiteInfo::getDwellerDescription() const {
   if (!dweller)
     return none;
-  if (const PlayerInfo* info = boost::get<PlayerInfo>(&(*dweller)))
+  if (const KeeperInfo* info = boost::get<KeeperInfo>(&(*dweller)))
     return string("This is your home site");
   if (const VillainInfo* info = boost::get<VillainInfo>(&(*dweller)))
     return info->name + " (" + info->getDescription() + ")";
@@ -139,7 +142,7 @@ optional<string> Campaign::SiteInfo::getDwellerDescription() const {
 optional<ViewId> Campaign::SiteInfo::getDwellerViewId() const {
   if (!dweller)
     return none;
-  if (const PlayerInfo* info = boost::get<PlayerInfo>(&(*dweller)))
+  if (const KeeperInfo* info = boost::get<KeeperInfo>(&(*dweller)))
     return info->viewId;
   if (const VillainInfo* info = boost::get<VillainInfo>(&(*dweller)))
     return info->viewId;
@@ -201,7 +204,7 @@ static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, Vec2 size, int nu
 }
 
 optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, RetiredGames&& retired,
-    RandomGen& random) {
+    RandomGen& random, Type type) {
   Vec2 size(16, 9);
   int numBlocked = 0.6 * size.x * size.y;
   Table<SiteInfo> terrain = getTerrain(random, size, numBlocked);
@@ -234,10 +237,11 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
       append(allies, random.permutation(getAllies()));
     allies.resize(numAllies);
     Campaign campaign(terrain);
+    campaign.type = type;
     campaign.worldName = worldName;
     vector<Vec2> freePos;
     for (Vec2 v : Rectangle(size))
-      if (campaign.sites[v].canEmbark())
+      if (!campaign.sites[v].blocked)
         freePos.push_back(v);
     for (int i : All(mainVillains)) {
       Vec2 pos = random.choose(freePos);
@@ -282,13 +286,20 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
         case CampaignActionId::CANCEL:
             return none;
         case CampaignActionId::CHOOSE_SITE:
-            if (campaign.playerPos)
-              campaign.clearSite(*campaign.playerPos);
-            campaign.playerPos = action.get<Vec2>();
-            campaign.sites[*campaign.playerPos].dweller = PlayerInfo{ViewId::KEEPER};
+            switch (type) {
+              case KEEPER:
+                if (campaign.playerPos)
+                  campaign.clearSite(*campaign.playerPos);
+                campaign.playerPos = action.get<Vec2>();
+                campaign.sites[*campaign.playerPos].dweller = KeeperInfo{ViewId::KEEPER};
+                break;
+              case ADVENTURER:
+                campaign.playerPos = action.get<Vec2>();
+                break;
+            }
             break;
         case CampaignActionId::CONFIRM:
-            if (numRetired > 0 ||
+            if (numRetired > 0 || type != KEEPER ||
                 retired.getAllGames().empty() ||
                 view->yesOrNoPrompt("Imps are going to be sad if you don't add any retired dungeons. Continue?"))
               return campaign;
@@ -318,6 +329,10 @@ map<string, string> Campaign::getParameters() const {
     {"lesser", toString(numLesser)},
     {"allies", toString(numAlly)},
     {"retired", toString(numRetired)},
+    {"type", type == KEEPER ? "keeper" : "adventurer"}
   };
 }
 
+Campaign::Type Campaign::getType() const {
+  return type;
+}

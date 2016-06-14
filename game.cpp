@@ -267,6 +267,28 @@ bool Game::isVillainActive(const Collective* col) {
   return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
 }
 
+void Game::checkConquered() {
+  bool conquered = true;
+  for (Collective* col : getCollectives()) {
+    conquered &= col->isConquered() || col->getVillainType() != VillainType::MAIN;
+    if (col->isConquered() && campaign && col->getVillainType()) {
+      Vec2 coords = getModelCoords(col->getLevel()->getModel());
+      if (!campaign->isDefeated(coords))
+        if (auto retired = campaign->getSites()[coords].getRetired())
+          uploadEvent("retiredConquered", {
+              {"retiredId", getGameId(retired->fileInfo)},
+              {"playerName", getPlayerName()}});
+      campaign->setDefeated(coords);
+    }
+  }
+  if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
+    if (playerControl)
+      playerControl->onConqueredLand();
+    won = true;
+  }
+
+}
+
 void Game::tick(double time) {
   if (!turnEvents.empty() && time > *turnEvents.begin()) {
     int turn = *turnEvents.begin();
@@ -286,25 +308,7 @@ void Game::tick(double time) {
       if (Model* m = models[v].get())
         m->updateSunlightMovement();
   Debug() << "Global time " << time;
-  if (playerControl) {
-    bool conquered = true;
-    for (Collective* col : getCollectives()) {
-      conquered &= col->isConquered() || col->getVillainType() != VillainType::MAIN;
-      if (col->isConquered() && campaign && col->getVillainType()) {
-        Vec2 coords = getModelCoords(col->getLevel()->getModel());
-        if (!campaign->isDefeated(coords))
-          if (auto retired = campaign->getSites()[coords].getRetired())
-            uploadEvent("retiredConquered", {
-                {"retiredId", getGameId(retired->fileInfo)},
-                {"playerName", getPlayerName()}});
-        campaign->setDefeated(coords);
-      }
-    }
-    if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
-      playerControl->onConqueredLand();
-      won = true;
-    }
-  }
+  checkConquered();
   for (Collective* col : collectives) {
     if (isVillainActive(col))
       col->update(col->getLevel()->getModel() == getCurrentModel());
@@ -468,16 +472,6 @@ void Game::onAlarm(Position pos) {
       c->playerMessage("An alarm sounds in the " + 
           getCardinalName(c->getPosition().getDir(pos).getBearing().getCardinalDir()));
   }
-}
-
-void Game::landHeroPlayer() {
-  auto handicap = view->getNumber("Choose handicap (your adventurer's strength and dexterity increase)", 0, 20, 5);
-  PCreature player = CreatureFactory::getAdventurer(handicap.get_value_or(0));
-  string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
-  if (!advName.empty())
-    player->getName().setFirst(advName);
-  Level* target = models[0][0]->getTopLevel();
-  CHECK(target->landCreature(StairKey::heroSpawn(), std::move(player))) << "No place to spawn player";
 }
 
 string Game::getGameDisplayName() const {
@@ -668,23 +662,25 @@ string Game::getPlayerName() const {
 }
 
 SavedGameInfo Game::getSavedGameInfo() const {
-  Collective* col = getPlayerCollective();
-  vector<Creature*> creatures = col->getCreatures();
-  CHECK(!creatures.empty());
-  Creature* leader = col->getLeader();
-//  CHECK(!leader->isDead());
-  sort(creatures.begin(), creatures.end(), [leader] (const Creature* c1, const Creature* c2) {
-      return c1 == leader
-        || (c2 != leader && c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel());});
-  CHECK(creatures[0] == leader);
-  creatures.resize(min<int>(creatures.size(), 4));
-  vector<SavedGameInfo::MinionInfo> minions;
-  for (Creature* c : creatures)
-    minions.push_back(getMinionInfo(c));
   int numSites = 1;
   if (campaign)
     numSites = campaign->getNumNonEmpty();
-  return SavedGameInfo(minions, col->getDangerLevel(), getPlayerName(), numSites);
+  if (Collective* col = getPlayerCollective()) {
+    vector<Creature*> creatures = col->getCreatures();
+    CHECK(!creatures.empty());
+    Creature* leader = col->getLeader();
+    //  CHECK(!leader->isDead());
+    sort(creatures.begin(), creatures.end(), [leader] (const Creature* c1, const Creature* c2) {
+        return c1 == leader
+        || (c2 != leader && c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel());});
+    CHECK(creatures[0] == leader);
+    creatures.resize(min<int>(creatures.size(), 4));
+    vector<SavedGameInfo::MinionInfo> minions;
+    for (Creature* c : creatures)
+      minions.push_back(getMinionInfo(c));
+    return SavedGameInfo(minions, col->getDangerLevel(), getPlayerName(), numSites);
+  } else
+    return SavedGameInfo({getMinionInfo(getPlayer())}, 0, getPlayer()->getName().bare(), numSites);
 }
 
 void Game::uploadEvent(const string& name, const map<string, string>& m) {
