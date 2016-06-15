@@ -1925,7 +1925,7 @@ PGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
   auto line = gui.getListBuilder();
   string value = options->getValueString(id);
   string name = options->getName(id);
-  line.addElem(gui.label(name + ": " + value), 220);
+  line.addElem(gui.label(name + ": " + value), 280);
   line.addSpace(30);
   switch (options->getType(id)) {
     case Options::STRING:
@@ -1949,16 +1949,6 @@ PGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
   }
   return line.buildHorizontalList();
 }
-
-static const char campaignWelcome[] =
-    "Welcome to the campaign mode! "
-    "The world, which you see below, is made up of smaller maps. Pick one, and build your base there. "
-    "There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" "
-    "to win the game. Make sure you add a few retired dungeons created by other players."
-    "You can travel to other sites by creating a team and using the travel command.\n\n"
-    "The highlighted tribes are in your influence zone, which means that you can currently interact with them "
-    "(trade, recruit, attack or be attacked). "
-    "As you conquer more enemies, your influence zone grows.\n\n";
 
 GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, function<void()> reloadCampaign,
     bool active) {
@@ -2005,11 +1995,11 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
       gui.centerHoriz(gui.stack(
             gui.labelHighlight("[Help]", colors[ColorId::LIGHT_BLUE]),
             gui.button([&] { helpText = true; })))));
-  for (OptionId id : options->getOptions(OptionSet::CAMPAIGN))
+  for (OptionId id : campaign.getOptions(options))
     lines.addElem(gui.leftMargin(optionMargin, drawOptionElem(options, id,
             [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});})));
   lines.addSpace(10);
-  lines.addElem(gui.centerHoriz(gui.label("Choose the location of your base:")));
+  lines.addElem(gui.centerHoriz(gui.label(campaign.getSiteChoiceTitle())));
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, &embarkPos,
         [&campaign](Vec2 pos) { return campaign.canEmbark(pos); },
         [&campaign, &queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
@@ -2055,7 +2045,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
           [&retiredMenu] { retiredMenu = false;}))))),
           [&retiredMenu] { return retiredMenu;}),
       gui.conditional(gui.margins(gui.miniWindow2(gui.margins(
-              gui.labelMultiLine(campaignWelcome, legendLineHeight), 10),
+              gui.labelMultiLine(campaign.getIntroText(), legendLineHeight), 10),
           [&helpText] { helpText = false;}), 100, 50, 100, 280),
           [&helpText] { return helpText;})
       ));

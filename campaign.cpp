@@ -336,3 +336,41 @@ map<string, string> Campaign::getParameters() const {
 Campaign::Type Campaign::getType() const {
   return type;
 }
+
+vector<OptionId> Campaign::getOptions(Options* options) const {
+  switch (type) {
+    case KEEPER: return options->getOptions(OptionSet::CAMPAIGN);
+    case ADVENTURER: return options->getOptions(OptionSet::ADVENTURER_CAMPAIGN);
+  }
+}
+
+const char* Campaign::getSiteChoiceTitle() const {
+   switch (type) {
+    case KEEPER: return "Choose the location of your base:";
+    case ADVENTURER: return "Choose a location to start your adventure:";
+  }
+}
+
+const char* Campaign::getIntroText() const {
+   switch (type) {
+    case KEEPER:
+      return
+        "Welcome to the campaign mode! "
+        "The world, which you see below, is made up of smaller maps. Pick one, and build your base there. "
+        "There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" "
+        "to win the game. Make sure you add a few retired dungeons created by other players."
+        "You can travel to other sites by creating a team and using the travel command.\n\n"
+        "The highlighted tribes are in your influence zone, which means that you can currently interact with them "
+        "(trade, recruit, attack or be attacked). "
+        "As you conquer more enemies, your influence zone grows.\n\n";
+    case ADVENTURER:
+      return
+        "Welcome to the campaign mode! "
+        "The world, which you see below, is made up of smaller maps. Pick one to start your adventure there. "
+        "There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" "
+        "to win the game. Make sure you add a few retired dungeons created by other players."
+        "You can travel to other sites by using the travel command.\n\n"
+        "The highlighted tribes are in your influence zone, which means that you can currently travel there. "
+        "As you conquer more enemies, your influence zone grows.\n\n";
+   }
+}

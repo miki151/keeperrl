@@ -89,6 +89,9 @@ class Campaign {
   Type getType() const;
 
   map<string, string> getParameters() const;
+  vector<OptionId> getOptions(Options*) const;
+  const char* getSiteChoiceTitle() const;
+  const char* getIntroText() const;
 
   SERIALIZATION_DECL(Campaign);
 

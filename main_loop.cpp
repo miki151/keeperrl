@@ -345,8 +345,8 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
         if (auto campaign = Campaign::prepareCampaign(view, options, getRetiredGames(), random,
               Campaign::ADVENTURER)) {
           PGame ret = Game::campaignGame(prepareCampaignModels(*campaign, random), *campaign->getPlayerPos(),
-              options->getStringValue(OptionId::KEEPER_NAME), *campaign);
-          ret->getMainModel()->landHeroPlayer(options->getStringValue(OptionId::KEEPER_NAME), 0);
+              options->getStringValue(OptionId::ADVENTURER_NAME), *campaign);
+          ret->getMainModel()->landHeroPlayer(options->getStringValue(OptionId::ADVENTURER_NAME), 0);
           return ret;
         }
         break;
