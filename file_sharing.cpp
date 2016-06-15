@@ -95,7 +95,7 @@ optional<string> FileSharing::uploadRetired(const string& path, ProgressMeter& m
   if (!options.getBoolValue(OptionId::ONLINE))
     return none;
   static ProgressCallback callback = [&] (double p) { meter.setProgress(p);};
-  return curlUpload(path.c_str(), (uploadUrl + "/upload2.php").c_str(), &callback, 0);
+  return curlUpload(path.c_str(), (uploadUrl + "/upload.php").c_str(), &callback, 0);
 }
 
 optional<string> FileSharing::uploadSite(const string& path, ProgressMeter& meter) {
@@ -108,7 +108,7 @@ optional<string> FileSharing::uploadSite(const string& path, ProgressMeter& mete
 void FileSharing::uploadHighscores(const string& path) {
   if (options.getBoolValue(OptionId::ONLINE))
     uploadQueue.push([this, path] {
-      curlUpload(path.c_str(), (uploadUrl + "/upload_scores2.php").c_str(), nullptr, 5);
+      curlUpload(path.c_str(), (uploadUrl + "/upload_scores.php").c_str(), nullptr, 5);
     });
 }
 
@@ -138,7 +138,7 @@ void FileSharing::uploadGameEventImpl(const GameEvent& data, int tries) {
       }
       if (CURL* curl = curl_easy_init()) {
         string ret;
-        curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/game_event2.php").c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/game_event.php").c_str());
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, params.c_str());
         CURLcode res = curl_easy_perform(curl);
@@ -153,7 +153,7 @@ string FileSharing::downloadHighscores() {
   string ret;
   if (options.getBoolValue(OptionId::ONLINE))
     if(CURL* curl = curl_easy_init()) {
-      curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/highscores2.php").c_str());
+      curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/highscores.php").c_str());
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
       curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
@@ -214,7 +214,7 @@ static optional<string> downloadContent(const string& url) {
 optional<vector<FileSharing::GameInfo>> FileSharing::listGames() {
   if (!options.getBoolValue(OptionId::ONLINE))
     return {};
-  if (auto content = downloadContent(uploadUrl + "/get_games2.php"))
+  if (auto content = downloadContent(uploadUrl + "/get_games.php"))
     return parseLines<FileSharing::GameInfo>(*content, parseGame);
   else
     return none;

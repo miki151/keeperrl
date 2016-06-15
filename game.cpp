@@ -658,7 +658,10 @@ static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
 }
 
 string Game::getPlayerName() const {
-  return *getPlayerCollective()->getLeader()->getName().first();
+  if (playerCollective)
+    return *playerCollective->getLeader()->getName().first();
+  else
+    return *getPlayer()->getName().first();
 }
 
 SavedGameInfo Game::getSavedGameInfo() const {
