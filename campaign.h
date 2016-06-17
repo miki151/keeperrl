@@ -70,6 +70,9 @@ class Campaign {
   private:
   void refreshInfluencePos();
   Campaign(Table<SiteInfo>);
+  vector<VillainInfo> getMainVillains();
+  vector<VillainInfo> getLesserVillains();
+  vector<VillainInfo> getAllies();
   Table<SiteInfo> SERIAL(sites);
   optional<Vec2> SERIAL(playerPos);
   string SERIAL(worldName);

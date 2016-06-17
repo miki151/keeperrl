@@ -44,40 +44,75 @@ void Campaign::clearSite(Vec2 v) {
   sites[v].viewId = {ViewId::GRASS};
 }
 
-static vector<Campaign::VillainInfo> getMainVillains() {
-  return {
-      {ViewId::AVATAR, EnemyId::KNIGHTS, "Knights", VillainType::MAIN},
-      {ViewId::ELF_LORD, EnemyId::ELVES, "Elves", VillainType::MAIN},
-      {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", VillainType::MAIN},
-      {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", VillainType::MAIN},
-      {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "Elementalist", VillainType::MAIN},
-      {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
-      {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::MAIN},
-      {ViewId::SHAMAN, EnemyId::WARRIORS, "Warriors", VillainType::MAIN},
-  };
+vector<Campaign::VillainInfo> Campaign::getMainVillains() {
+  switch (type) {
+    case KEEPER:
+      return {
+        {ViewId::AVATAR, EnemyId::KNIGHTS, "Knights", VillainType::MAIN},
+        {ViewId::ELF_LORD, EnemyId::ELVES, "Elves", VillainType::MAIN},
+        {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", VillainType::MAIN},
+        {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", VillainType::MAIN},
+        {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "Elementalist", VillainType::MAIN},
+        {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
+        {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::MAIN},
+        {ViewId::SHAMAN, EnemyId::WARRIORS, "Warriors", VillainType::MAIN},
+      };
+    case ADVENTURER:
+      return {
+        {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", VillainType::MAIN},
+        {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
+        {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::MAIN},
+        {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::MAIN},
+        {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::MAIN},
+        {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::MAIN},
+        {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::MAIN},
+      };
+  }
 }
 
-static vector<Campaign::VillainInfo> getLesserVillains() {
-  return {
-      {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", VillainType::LESSER},
-      {ViewId::ENT, EnemyId::ENTS, "Tree spirits", VillainType::LESSER},
-      {ViewId::DRIAD, EnemyId::DRIADS, "Driads", VillainType::LESSER},
-      {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
-      {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::LESSER},
-      {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::LESSER},
-      {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::LESSER},
-      {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", VillainType::LESSER},
-  };
+vector<Campaign::VillainInfo> Campaign::getLesserVillains() {
+  switch (type) {
+    case KEEPER:
+      return {
+        {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", VillainType::LESSER},
+        {ViewId::ENT, EnemyId::ENTS, "Tree spirits", VillainType::LESSER},
+        {ViewId::DRIAD, EnemyId::DRIADS, "Driads", VillainType::LESSER},
+        {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
+        {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::LESSER},
+        {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::LESSER},
+        {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::LESSER},
+        {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", VillainType::LESSER},
+      };
+    case ADVENTURER:
+      return {
+        {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", VillainType::LESSER},
+        {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
+        {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::LESSER},
+        {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::LESSER},
+        {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::LESSER},
+        {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", VillainType::LESSER},
+      };
+  }
 }
 
-static vector<Campaign::VillainInfo> getAllies() {
-  return {
-      {ViewId::UNKNOWN_MONSTER, EnemyId::FRIENDLY_CAVE, "Unknown", VillainType::ALLY},
-      {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "Unknown", VillainType::ALLY},
-      {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::ALLY},
-      {ViewId::GNOME_BOSS, EnemyId::GNOMES, "Gnomes", VillainType::ALLY},
-      {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::ALLY},
-  };
+vector<Campaign::VillainInfo> Campaign::getAllies() {
+  switch (type) {
+    case KEEPER:
+      return {
+        {ViewId::UNKNOWN_MONSTER, EnemyId::FRIENDLY_CAVE, "Unknown", VillainType::ALLY},
+        {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "Unknown", VillainType::ALLY},
+        {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::ALLY},
+        {ViewId::GNOME_BOSS, EnemyId::GNOMES, "Gnomes", VillainType::ALLY},
+        {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::ALLY},
+      };
+    case ADVENTURER:
+      return {
+        {ViewId::AVATAR, EnemyId::KNIGHTS, "Knights", VillainType::ALLY},
+        {ViewId::ELF_LORD, EnemyId::ELVES, "Elves", VillainType::ALLY},
+        {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", VillainType::ALLY},
+        {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::ALLY},
+      };
+  }
 }
 
 bool Campaign::isDefeated(Vec2 pos) const {
@@ -224,18 +259,18 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
     int numLesser = options->getIntValue(OptionId::LESSER_VILLAINS);
     int numAllies = options->getIntValue(OptionId::ALLIES);
     vector<VillainInfo> mainVillains;
+    Campaign campaign(terrain);
     while (mainVillains.size() < numMain)
-      append(mainVillains, random.permutation(getMainVillains()));
+      append(mainVillains, random.permutation(campaign.getMainVillains()));
     mainVillains.resize(numMain);
     vector<VillainInfo> lesserVillains;
     while (lesserVillains.size() < numLesser)
-      append(lesserVillains, random.permutation(getLesserVillains()));
+      append(lesserVillains, random.permutation(campaign.getLesserVillains()));
     lesserVillains.resize(numLesser);
     vector<VillainInfo> allies;
     while (allies.size() < numAllies)
-      append(allies, random.permutation(getAllies()));
+      append(allies, random.permutation(campaign.getAllies()));
     allies.resize(numAllies);
-    Campaign campaign(terrain);
     campaign.type = type;
     campaign.worldName = worldName;
     vector<Vec2> freePos;
