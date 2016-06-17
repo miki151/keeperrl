@@ -73,6 +73,7 @@ class Model {
   vector<Collective*> getCollectives() const;
   vector<Creature*> getAllCreatures() const;
   vector<Level*> getLevels() const;
+  Collective* getPlayerCollective() const;
 
   Level* getTopLevel() const;
 
@@ -103,11 +104,13 @@ class Model {
 
   PCreature makePlayer(int handicap);
   Level* buildLevel(LevelBuilder&&, PLevelMaker);
+  Level* buildTopLevel(LevelBuilder&&, PLevelMaker);
   Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
 
   vector<PLevel> SERIAL(levels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
+  Collective* SERIAL(playerCollective) = nullptr;
   Game* SERIAL(game) = nullptr;
   double SERIAL(lastTick) = 0;
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
@@ -118,6 +121,7 @@ class Model {
   optional<StairKey> getStairsBetween(const Level* from, const Level* to);
   map<pair<const Level*, const Level*>, StairKey> SERIAL(stairNavigation);
   bool serializationLocked = false;
+  Level* SERIAL(topLevel) = nullptr;
 };
 
 #endif

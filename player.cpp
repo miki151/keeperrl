@@ -42,6 +42,7 @@
 #include "territory.h"
 #include "creature_attributes.h"
 #include "attack_level.h"
+#include "villain_type.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {

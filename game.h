@@ -15,7 +15,6 @@ class PlayerControl;
 class CreatureView;
 class FileSharing;
 
-enum class VillainType { MAIN, LESSER, PLAYER };
 enum class GameSaveType { ADVENTURER, KEEPER, RETIRED_SINGLE, RETIRED_SITE, AUTOSAVE };
 
 class Game {

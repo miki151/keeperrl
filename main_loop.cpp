@@ -415,7 +415,8 @@ void MainLoop::playGameChoice() {
 void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
-  playGame(Game::splashScreen(ModelBuilder::splashModel(&meter, dataFreePath + "/splash.txt")), false, true);
+  playGame(Game::splashScreen(ModelBuilder(&meter, Random, options)
+        .splashModel(dataFreePath + "/splash.txt")), false, true);
 }
 
 void MainLoop::showCredits(const string& path, View* view) {
@@ -507,15 +508,16 @@ PModel MainLoop::quickGame(RandomGen& random) {
   PModel model;
   NameGenerator::init(dataFreePath + "/names");
   doWithSplash(SplashType::BIG, "Generating map...", 166000,
-      [&model, this, &random] (ProgressMeter& meter) {
-        model = ModelBuilder::quickModel(&meter, random, options);
+      [&] (ProgressMeter& meter) {
+        model = ModelBuilder(&meter, random, options).quickModel();
       });
   return model;
 }
 
 void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
   NameGenerator::init(dataFreePath + "/names");
-  ModelBuilder::measureSiteGen(numTries, Random, options);
+  ProgressMeter meter(1);
+  ModelBuilder(&meter, random, options).measureSiteGen(numTries);
 }
 
 Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& random) {
@@ -530,15 +532,16 @@ Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& ran
   NameGenerator::init(dataFreePath + "/names");
   int numSites = campaign.getNumNonEmpty();
   doWithSplash(SplashType::BIG, "Generating map...", numSites,
-      [&sites, &models, this, &random, &campaign, &failedToLoad] (ProgressMeter& meter) {
+      [&] (ProgressMeter& meter) {
+        ModelBuilder modelBuilder(nullptr, random, options);
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
             meter.addProgress();
           if (sites[v].getKeeper()) {
-            models[v] = ModelBuilder::campaignBaseModel(nullptr, random, options, "pok");
-            ModelBuilder::spawnKeeper(models[v].get(), options);
+            models[v] = modelBuilder.campaignBaseModel("Campaign base site");
+            modelBuilder.spawnKeeper(models[v].get());
           } else if (auto villain = sites[v].getVillain())
-            models[v] = ModelBuilder::campaignSiteModel(nullptr, random, options, "pok", villain->enemyId);
+            models[v] = modelBuilder.campaignSiteModel("Campaign enemy site", villain->enemyId, villain->type);
           else if (auto retired = sites[v].getRetired()) {
             if (PModel m = loadModelFromFile(userPath + "/" + retired->fileInfo.filename))
               models[v] = std::move(m);
@@ -558,10 +561,10 @@ PModel MainLoop::keeperSingleMap(RandomGen& random) {
   PModel model;
   NameGenerator::init(dataFreePath + "/names");
   doWithSplash(SplashType::BIG, "Generating map...", 300000,
-      [&model, this, &random] (ProgressMeter& meter) {
-        model = ModelBuilder::singleMapModel(&meter, random, options,
-            NameGenerator::get(NameGeneratorId::WORLD)->getNext());
-        ModelBuilder::spawnKeeper(model.get(), options);
+      [&] (ProgressMeter& meter) {
+        ModelBuilder modelBuilder(&meter, random, options);
+        model = modelBuilder.singleMapModel(NameGenerator::get(NameGeneratorId::WORLD)->getNext());
+        modelBuilder.spawnKeeper(model.get());
       });
   return model;
 }

@@ -202,9 +202,10 @@ void Level::clearLocations() {
 }
 
 void Level::addMarkedLocation(Rectangle bounds) {
-  locations.push_back(new Location(true));
+  locations.push_back(new Location());
   locations.back()->setBounds(bounds);
   locations.back()->setLevel(this);
+  locations.back()->setSurprise();
 }
 
 const Model* Level::getModel() const {

@@ -59,6 +59,7 @@
 #include "collective_name.h"
 #include "creature_attributes.h"
 #include "collective_config.h"
+#include "villain_type.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {

@@ -75,6 +75,10 @@ vector<Collective*> Model::getCollectives() const {
   return extractRefs(collectives);
 }
 
+Collective* Model::getPlayerCollective() const {
+  return playerCollective;
+}
+
 void Model::updateSunlightMovement() {
   for (PLevel& l : levels)
     l->updateSunlightMovement();
@@ -127,6 +131,12 @@ Level* Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
   return levels.back().get();
 }
 
+Level* Model::buildTopLevel(LevelBuilder&& b, PLevelMaker maker) {
+  Level* ret = buildLevel(std::move(b), std::move(maker));
+  topLevel = ret;
+  return ret;
+}
+
 Model::Model() {
   clearDeadCreatures();
 }
@@ -171,8 +181,8 @@ void Model::calculateStairNavigation() {
     for (const Level* l1 : getLevels())
       if (li != l1)
         for (const Level* l2 : getLevels())
-          if (l2 != l1 && l2 != li && !stairNavigation.count(make_pair(l1, l2)) && stairNavigation.count(make_pair(li, l2)) &&
-              stairNavigation.count(make_pair(l1, li)))
+          if (l2 != l1 && l2 != li && !stairNavigation.count(make_pair(l1, l2)) &&
+              stairNavigation.count(make_pair(li, l2)) && stairNavigation.count(make_pair(l1, li)))
             stairNavigation[make_pair(l1, l2)] = stairNavigation.at(make_pair(l1, li));
   for (const Level* l1 : getLevels())
     for (const Level* l2 : getLevels())
@@ -190,7 +200,7 @@ optional<StairKey> Model::getStairsBetween(const Level* from, const Level* to) {
 
 optional<Position> Model::getStairs(const Level* from, const Level* to) {
   CHECK(from != to);
-  if (!contains(getLevels(), from) || ! contains(getLevels(), to) || !stairNavigation.count({from, to}))
+  if (!contains(getLevels(), from) || !contains(getLevels(), to) || !stairNavigation.count({from, to}))
     return none;
   return Random.choose(from->getLandingSquares(stairNavigation.at({from, to})));
 }
@@ -200,7 +210,7 @@ vector<Level*> Model::getLevels() const {
 }
 
 Level* Model::getTopLevel() const {
-  return levels[0].get();
+  return topLevel;
 }
 
 void Model::killCreature(Creature* c, Creature* attacker) {

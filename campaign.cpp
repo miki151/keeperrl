@@ -2,12 +2,13 @@
 #include "campaign.h"
 #include "view.h"
 #include "view_id.h"
-#include "model_builder.h"
 #include "model.h"
 #include "progress_meter.h"
 #include "options.h"
 #include "name_generator.h"
 #include "retired_games.h"
+#include "villain_type.h"
+#include "enemy_factory.h"
 
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
@@ -43,41 +44,39 @@ void Campaign::clearSite(Vec2 v) {
   sites[v].viewId = {ViewId::GRASS};
 }
 
-typedef Campaign::VillainInfo::Type TribeType;
-
 static vector<Campaign::VillainInfo> getMainVillains() {
   return {
-      {ViewId::AVATAR, EnemyId::KNIGHTS, "Knights", TribeType::MAIN},
-      {ViewId::ELF_LORD, EnemyId::ELVES, "Elves", TribeType::MAIN},
-      {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", TribeType::MAIN},
-      {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", TribeType::MAIN},
-      {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "Elementalist", TribeType::MAIN},
-      {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", TribeType::MAIN},
-      {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", TribeType::MAIN},
-      {ViewId::SHAMAN, EnemyId::WARRIORS, "Warriors", TribeType::MAIN},
+      {ViewId::AVATAR, EnemyId::KNIGHTS, "Knights", VillainType::MAIN},
+      {ViewId::ELF_LORD, EnemyId::ELVES, "Elves", VillainType::MAIN},
+      {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", VillainType::MAIN},
+      {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", VillainType::MAIN},
+      {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "Elementalist", VillainType::MAIN},
+      {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
+      {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::MAIN},
+      {ViewId::SHAMAN, EnemyId::WARRIORS, "Warriors", VillainType::MAIN},
   };
 }
 
 static vector<Campaign::VillainInfo> getLesserVillains() {
   return {
-      {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", TribeType::LESSER},
-      {ViewId::ENT, EnemyId::ENTS, "Tree spirits", TribeType::LESSER},
-      {ViewId::DRIAD, EnemyId::DRIADS, "Driads", TribeType::LESSER},
-      {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", TribeType::LESSER},
-      {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", TribeType::LESSER},
-      {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", TribeType::LESSER},
-      {ViewId::ANT_QUEEN, EnemyId::ANTS, "Ants", TribeType::LESSER},
-      {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", TribeType::LESSER},
+      {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", VillainType::LESSER},
+      {ViewId::ENT, EnemyId::ENTS, "Tree spirits", VillainType::LESSER},
+      {ViewId::DRIAD, EnemyId::DRIADS, "Driads", VillainType::LESSER},
+      {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
+      {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::LESSER},
+      {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::LESSER},
+      {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::LESSER},
+      {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", VillainType::LESSER},
   };
 }
 
 static vector<Campaign::VillainInfo> getAllies() {
   return {
-      {ViewId::UNKNOWN_MONSTER, EnemyId::FRIENDLY_CAVE, "Unknown", TribeType::ALLY},
-      {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "Unknown", TribeType::ALLY},
-      {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", TribeType::ALLY},
-      {ViewId::GNOME_BOSS, EnemyId::GNOMES, "Gnomes", TribeType::ALLY},
-      {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", TribeType::ALLY},
+      {ViewId::UNKNOWN_MONSTER, EnemyId::FRIENDLY_CAVE, "Unknown", VillainType::ALLY},
+      {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "Unknown", VillainType::ALLY},
+      {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::ALLY},
+      {ViewId::GNOME_BOSS, EnemyId::GNOMES, "Gnomes", VillainType::ALLY},
+      {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::ALLY},
   };
 }
 
@@ -91,14 +90,14 @@ void Campaign::setDefeated(Vec2 pos) {
 }
 
 bool Campaign::VillainInfo::isEnemy() const {
-  return type != ALLY;
+  return type != VillainType::ALLY;
 }
 
 string Campaign::VillainInfo::getDescription() const {
   switch (type) {
-    case ALLY: return "ally";
-    case MAIN: return "main villain";
-    case LESSER: return "lesser villain";
+    case VillainType::ALLY: return "ally";
+    case VillainType::MAIN: return "main villain";
+    case VillainType::LESSER: return "lesser villain";
   }
 }
 
@@ -320,9 +319,9 @@ map<string, string> Campaign::getParameters() const {
       ++numRetired;
     else if (auto villain = sites[v].getVillain())
       switch (villain->type) {
-        case VillainInfo::ALLY: ++numAlly; break;
-        case VillainInfo::MAIN: ++numMain; break;
-        case VillainInfo::LESSER: ++numLesser; break;
+        case VillainType::ALLY: ++numAlly; break;
+        case VillainType::MAIN: ++numMain; break;
+        case VillainType::LESSER: ++numLesser; break;
       }
   return {
     {"main", toString(numMain)},

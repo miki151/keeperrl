@@ -10,43 +10,15 @@ class ProgressMeter;
 class Options;
 class RetiredGames;
 
-RICH_ENUM(EnemyId,
-  KNIGHTS,
-  WARRIORS,
-  DWARVES,
-  ELVES,
-  ELEMENTALIST,
-  LIZARDMEN,
-  RED_DRAGON,
-  GREEN_DRAGON,
-
-  VILLAGE,
-  BANDITS,
-  ENTS,
-  DRIADS,
-  CYCLOPS,
-  SHELOB,
-  HYDRA,
-  ANTS,
-  CEMETERY,
-
-  DARK_ELVES,
-  GNOMES,
-  FRIENDLY_CAVE,
-  ORC_VILLAGE,
-  SOKOBAN
-);
-
 class Campaign {
   public:
   struct VillainInfo {
     ViewId SERIAL(viewId);
     EnemyId SERIAL(enemyId);
     string SERIAL(name);
-    enum Type { ALLY, LESSER, MAIN};
     string getDescription() const;
     bool isEnemy() const;
-    Type SERIAL(type);
+    VillainType SERIAL(type);
     SERIALIZE_ALL(viewId, name, enemyId, type);
   };
   struct KeeperInfo {

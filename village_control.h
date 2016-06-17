@@ -20,55 +20,16 @@
 #include "collective_control.h"
 #include "enum_variant.h"
 #include "entity_set.h"
-#include "creature_factory.h"
-#include "attack_trigger.h"
+#include "village_behaviour.h"
 
 class Task;
 
-enum class VillageBehaviourId {
-  KILL_LEADER,
-  KILL_MEMBERS,
-  STEAL_GOLD,
-  CAMP_AND_SPAWN,
-};
-
-typedef EnumVariant<VillageBehaviourId, TYPES(int, CreatureFactory),
-        ASSIGN(int, VillageBehaviourId::KILL_MEMBERS),
-        ASSIGN(CreatureFactory, VillageBehaviourId::CAMP_AND_SPAWN)> VillageBehaviour;
-
 class VillageControl : public CollectiveControl {
   public:
-  typedef VillageBehaviour Behaviour;
-  typedef AttackTrigger Trigger;
 
-  enum WelcomeMessage {
-    DRAGON_WELCOME,
-  };
+  friend struct VillageBehaviour;
 
-  enum ItemTheftMessage {
-    DRAGON_THEFT,
-  };
-
-  struct Villain {
-    int SERIAL(minPopulation);
-    int SERIAL(minTeamSize);
-    vector<Trigger> SERIAL(triggers);
-    Behaviour SERIAL(behaviour);
-    optional<WelcomeMessage> SERIAL(welcomeMessage);
-    optional<pair<double, int>> SERIAL(ransom);
-
-    PTask getAttackTask(VillageControl* self);
-    double getAttackProbability(const VillageControl* self) const;
-    double getTriggerValue(const Trigger&, const VillageControl* self) const;
-    bool contains(const Creature*);
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-  };
-
-  friend struct Villain;
-
-  VillageControl(Collective*, optional<Villain>);
+  VillageControl(Collective*, optional<VillageBehaviour>);
 
   protected:
   virtual void update(bool currentlyActive) override;
@@ -90,7 +51,7 @@ class VillageControl : public CollectiveControl {
 
   REGISTER_HANDLER(PickupEvent, const Creature*, const vector<Item*>&);
 
-  optional<Villain> SERIAL(villain);
+  optional<VillageBehaviour> SERIAL(villain);
 
   double SERIAL(victims) = 0;
   EntitySet<Item> SERIAL(myItems);
