@@ -273,6 +273,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Item* getAmmo() const;
   void spendTime(double time);
   bool canCarry(const vector<Item*>&) const;
+  TribeSet getFriendlyTribes() const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);

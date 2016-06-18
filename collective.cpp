@@ -1880,8 +1880,8 @@ void Collective::handleSurprise(Position pos) {
     if (Creature* other = v.getCreature())
       if (hasTrait(other, MinionTrait::FIGHTER) && other->getPosition().dist8(pos) > 1) {
         for (Position dest : pos.neighbors8(Random))
-          if (getLevel()->canMoveCreature(other, other->getPosition().getDir(dest))) {
-            getLevel()->moveCreature(other, other->getPosition().getDir(dest));
+          if (other->getPosition().canMoveCreature(dest)) {
+            other->getPosition().moveCreature(dest);
             other->playerMessage("Surprise!");
             if (!wasMsg) {
               c->playerMessage("Surprise!");

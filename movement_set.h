@@ -31,10 +31,9 @@ class MovementSet {
   private:
   bool SERIAL(onFire) = false;
   bool SERIAL(covered) = false;
-  typedef EnumSet<MovementTrait> TribeSet;
-  TribeSet SERIAL(traits);
-  TribeSet SERIAL(forcibleTraits);
-  optional<pair<TribeId, TribeSet>> SERIAL(tribeOverrides);
+  EnumSet<MovementTrait> SERIAL(traits);
+  EnumSet<MovementTrait> SERIAL(forcibleTraits);
+  optional<pair<TribeId, EnumSet<MovementTrait>>> SERIAL(tribeOverrides);
 };
 
 

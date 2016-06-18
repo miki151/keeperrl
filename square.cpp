@@ -183,8 +183,8 @@ bool Square::construct(Position position, const SquareType& type) {
     return false;
 }
 
-bool Square::canDestroy(TribeId tribe) const {
-  return isDestroyable() && owner != tribe && !fire->isBurning();
+bool Square::canDestroy(const MovementType& movement) const {
+  return isDestroyable() && (!owner || !movement.isCompatible(*owner)) && !fire->isBurning();
 }
 
 bool Square::isDestroyable() const {
@@ -201,7 +201,7 @@ void Square::destroy(Position position) {
 }
 
 bool Square::canDestroy(const Creature* c) const {
-  return canDestroy(c->getTribeId())
+  return canDestroy(c->getMovementType())
     || (isDestroyable() && c->getAttributes().isInvincible()); // so that boulders destroy keeper doors
 }
 
@@ -328,11 +328,14 @@ void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack,
     dropItems(pos, std::move(item));
 }
 
-bool Square::canNavigate(const MovementType& type1) const {
-  MovementType type(type1);
+bool Square::canNavigate(const MovementType& type) const {
+  MovementType typeForced(type);
+  typeForced.setForced();
   return canEnterEmpty(type) || 
-    ((isDestroyable() && (!type.getTribe() || canDestroy(*type.getTribe()))) && !canEnterEmpty(type.setForced())) || 
-    (creature && creature->getAttributes().isStationary() && type.getTribe() != creature->getTribeId());
+    // for destroying doors, etc, but not entering forbidden zone
+    (canDestroy(type) && !canEnterEmpty(typeForced)) ||
+    // for navigating through hostile boulders
+    (creature && creature->getAttributes().isStationary() && !type.isCompatible(creature->getTribeId()));
 }
 
 bool Square::canEnter(const MovementType& movement) const {
@@ -342,7 +345,7 @@ bool Square::canEnter(const MovementType& movement) const {
 bool Square::canEnterEmpty(const MovementType& movement) const {
   if (creature && creature->getAttributes().isStationary())
     return false;
-  if (!movement.isForced() && forbiddenTribe && forbiddenTribe == movement.getTribe())
+  if (!movement.isForced() && forbiddenTribe && movement.isCompatible(*forbiddenTribe))
     return false;
   return movementSet->canEnter(movement);
 }

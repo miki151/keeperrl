@@ -19,7 +19,7 @@ bool MovementSet::canEnter(const MovementType& movementType) const {
     if ((!covered && movementType.isSunlightVulnerable()) || (onFire && !movementType.isFireResistant()))
       return false;
   }
-  EnumSet<MovementTrait> rightTraits = (tribeOverrides && movementType.getTribe() == tribeOverrides->first) ?
+  EnumSet<MovementTrait> rightTraits = (tribeOverrides && movementType.isCompatible(tribeOverrides->first)) ?
       tribeOverrides->second : traits;
   if (movementType.isForced())
     rightTraits = rightTraits.sum(forcibleTraits);

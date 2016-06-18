@@ -1544,8 +1544,15 @@ CreatureName& Creature::getName() {
   return attributes->getName();
 }
 
+TribeSet Creature::getFriendlyTribes() const {
+  if (Game* game = getGame())
+    return game->getTribe(tribe)->getFriendlyTribes();
+  else
+    return TribeSet().insert(tribe);
+}
+
 MovementType Creature::getMovementType() const {
-  return MovementType(getTribeId(), {
+  return MovementType(getFriendlyTribes(), {
       true,
       isAffected(LastingEffect::FLYING),
       attributes->getSkills().hasDiscrete(SkillId::SWIMMING),

@@ -250,7 +250,7 @@ class Square : public Renderable {
   mutable unique_ptr<Inventory> SERIAL(inventoryPtr);
 
   /** Checks if this square can be destroyed by member of the tribe.*/
-  bool canDestroy(TribeId) const;
+  bool canDestroy(const MovementType&) const;
 
   Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);

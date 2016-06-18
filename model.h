@@ -25,18 +25,9 @@
 
 class Level;
 class ProgressMeter;
-class Options;
-class CreatureView;
-class Trigger;
-class Highscores;
-class Technology;
-class View;
 class LevelMaker;
-struct SettlementInfo;
 class LevelBuilder;
 class TimeQueue;
-class Statistics;
-struct TribeSet;
 class StairKey;
 class Game;
 
@@ -105,7 +96,6 @@ class Model {
   PCreature makePlayer(int handicap);
   Level* buildLevel(LevelBuilder&&, PLevelMaker);
   Level* buildTopLevel(LevelBuilder&&, PLevelMaker);
-  Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
 
   vector<PLevel> SERIAL(levels);
   PLevel SERIAL(cemetery);
