@@ -32,7 +32,6 @@
 #include "equipment.h"
 #include "minion_task_map.h"
 #include "spell_map.h"
-#include "event.h"
 #include "tribe.h"
 #include "square_type.h"
 #include "monster_ai.h"
@@ -237,7 +236,7 @@ class SokobanController : public Monster {
   private:
 };
 
-PCreature CreatureFactory::getAdventurer(int handicap) {
+PCreature CreatureFactory::getAdventurer(Model* m, int handicap) {
   MapMemory* levelMemory = new MapMemory();
   PCreature player = CreatureFactory::addInventory(
       PCreature(new Creature(TribeId::getAdventurer(),
@@ -250,7 +249,8 @@ PCreature CreatureFactory::getAdventurer(int handicap) {
           c.barehandedDamage = 5;
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
-          c.skills.insert(SkillId::AMBUSH);), Player::getFactory(levelMemory))), {
+          c.name->useFullTitle();
+          c.skills.insert(SkillId::AMBUSH);), Player::getFactory(m, levelMemory))), {
       ItemId::FIRST_AID_KIT,
       ItemId::SWORD,
       ItemId::KNIFE,
@@ -456,7 +456,7 @@ class KamikazeController : public Monster {
 class ShopkeeperController : public Monster {
   public:
   ShopkeeperController(Creature* c, Location* area)
-      : Monster(c, MonsterAIFactory::stayInLocation(area)), shopArea(area) {
+      : Monster(c, MonsterAIFactory::stayInLocation(area)), events(this), shopArea(area) {
   }
 
   virtual void makeMove() override {
@@ -465,6 +465,7 @@ class ShopkeeperController : public Monster {
       return;
     }
     if (firstMove) {
+      events.subscribeTo(getCreature()->getPosition().getModel());
       for (Position v : shopArea->getAllSquares()) {
         for (Item* item : v.getItems())
           item->setShopkeeper(getCreature());
@@ -520,7 +521,7 @@ class ShopkeeperController : public Monster {
       unpaidItems.erase(from);
   }
   
-  REGISTER_HANDLER(ItemsAppearedEvent, Position position, const vector<Item*>& items) {
+  void onItemsAppearedEvent(Position position, const vector<Item*>& items) {
     if (shopArea->contains(position)) {
       for (Item* it : items) {
         it->setShopkeeper(getCreature());
@@ -529,7 +530,7 @@ class ShopkeeperController : public Monster {
     }
   }
 
-  REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items) {
+  void onPickedUpEvent(Creature* c, const vector<Item*>& items) {
     if (shopArea->contains(c->getPosition())) {
       for (const Item* item : items)
         if (item->isShopkeeper(getCreature())) {
@@ -539,7 +540,7 @@ class ShopkeeperController : public Monster {
     }
   }
 
-  REGISTER_HANDLER(DropEvent, const Creature* c, const vector<Item*>& items) {
+  void onDroppedEvent(Creature* c, const vector<Item*>& items) {
     if (shopArea->contains(c->getPosition())) {
       for (const Item* item : items)
         if (item->isShopkeeper(getCreature())) {
@@ -550,6 +551,32 @@ class ShopkeeperController : public Monster {
     }
   }
 
+  // just for kicks lets see how handling events looks if you don't want to derivce from EventListener
+  class EventProxy : public EventListener {
+    public:
+    EventProxy(ShopkeeperController* c) : shopkeeper(c) {}
+
+    virtual void onItemsAppearedEvent(Position position, const vector<Item*>& items) override {
+      shopkeeper->onItemsAppearedEvent(position, items);
+    }
+
+    virtual void onPickedUpEvent(Creature* c, const vector<Item*>& items) override {
+      shopkeeper->onPickedUpEvent(c, items);
+    }
+
+    virtual void onDroppedEvent(Creature* c, const vector<Item*>& items) override {
+      shopkeeper->onDroppedEvent(c, items);
+    }
+
+    SERIALIZATION_CONSTRUCTOR(EventProxy);
+    SERIALIZE_ALL(shopkeeper);
+
+    private:
+    ShopkeeperController* SERIAL(shopkeeper);
+  };
+
+  EventProxy SERIAL(events);
+
   virtual int getDebt(const Creature* debtor) const override {
     if (debt.count(debtor)) {
       return debt.at(debtor);
@@ -559,7 +586,7 @@ class ShopkeeperController : public Monster {
     }
   }
 
-  SERIALIZE_ALL2(Monster, prevCreatures, debt, thiefCount, thieves, unpaidItems, shopArea, firstMove);
+  SERIALIZE_ALL2(Monster, prevCreatures, debt, thiefCount, thieves, unpaidItems, shopArea, firstMove, events);
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
 
   private:

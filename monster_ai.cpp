@@ -25,7 +25,6 @@
 #include "player_message.h"
 #include "equipment.h"
 #include "spell.h"
-#include "event.h"
 #include "creature_name.h"
 #include "skill.h"
 #include "modifier_type.h"

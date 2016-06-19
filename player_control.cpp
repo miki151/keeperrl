@@ -63,7 +63,7 @@
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(CollectiveControl);
+  ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum, payoutWarning);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
   serializeAll(ar, knownVillains, knownVillainLocations, notifiedConquered, visibilityMap, warningTimes);
@@ -279,7 +279,8 @@ static vector<string> getHints() {
   };
 }
 
-PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(col), hints(getHints()) {
+PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(col),
+    EventListener(level->getModel()), hints(getHints()) {
   bool hotkeys[128] = {0};
   for (BuildInfo info : getBuildInfo(TribeId::getKeeper())) {
     if (info.hotkey) {
@@ -1177,10 +1178,10 @@ void PlayerControl::addImportantLongMessage(const string& msg, optional<Position
 
 void PlayerControl::initialize() {
   for (Creature* c : getCreatures())
-    onMoved(c);
+    onMovedEvent(c);
 }
 
-void PlayerControl::onMoved(Creature* c) {
+void PlayerControl::onMovedEvent(Creature* c) {
   if (contains(getCreatures(), c)) {
     vector<Position> visibleTiles = c->getVisibleTiles();
     visibilityMap->update(c, visibleTiles);
@@ -1319,8 +1320,8 @@ int PlayerControl::getImpCost() const {
 
 class MinionController : public Player {
   public:
-  MinionController(Creature* c, MapMemory* memory, PlayerControl* ctrl)
-      : Player(c, false, memory), control(ctrl) {}
+  MinionController(Creature* c, Model* m, MapMemory* memory, PlayerControl* ctrl)
+      : Player(c, m, false, memory), control(ctrl) {}
 
   virtual void onKilled(const Creature* attacker) override {
     getGame()->getView()->updateView(this, false);
@@ -1401,7 +1402,7 @@ void PlayerControl::commandTeam(TeamId team) {
   if (getControlled())
     leaveControl();
   Creature* c = getTeams().getLeader(team);
-  c->pushController(PController(new MinionController(c, memory.get(), this)));
+  c->pushController(PController(new MinionController(c, getModel(), memory.get(), this)));
   getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
   getView()->resetCenter();
@@ -2035,7 +2036,7 @@ bool PlayerControl::isEnemy(const Creature* c) const {
   return getKeeper() && getKeeper()->isEnemy(c);
 }
 
-void PlayerControl::onPickupEvent(const Creature* c, const vector<Item*>& items) {
+void PlayerControl::onPickedUpEvent(Creature* c, const vector<Item*>& items) {
   if (c == getControlled() && !getCollective()->hasTrait(c, MinionTrait::WORKER))
     getCollective()->ownItems(c, items);
 }
@@ -2062,9 +2063,8 @@ void PlayerControl::onTechBookRead(Technology* tech) {
   }
 }
 
-void PlayerControl::onConqueredLand() {
-  if (getKeeper()->isDead())
-    return;
+void PlayerControl::onWonGameEvent() {
+  CHECK(!getKeeper()->isDead());
   getGame()->conquered(*getKeeper()->getName().first(), getCollective()->getKills().getSize(),
       getCollective()->getDangerLevel() + getCollective()->getPoints());
   getView()->presentText("", "When you are ready, retire your dungeon and share it online. "

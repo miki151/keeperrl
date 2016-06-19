@@ -522,14 +522,14 @@ void ModelBuilder::spawnKeeper(Model* m) {
       .addCreature(keeperRef)
       .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
       .build());
-  m->playerCollective = m->collectives.back().get();
-  m->playerCollective->setControl(PCollectiveControl(new PlayerControl(m->playerCollective, level)));
-
+  Collective* playerCollective = m->collectives.back().get();
+  playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, level)));
+  playerCollective->setVillainType(VillainType::PLAYER);
   for (int i : Range(4)) {
     PCreature c = CreatureFactory::fromId(CreatureId::IMP, TribeId::getKeeper(),
-        MonsterAIFactory::collective(m->playerCollective));
+        MonsterAIFactory::collective(playerCollective));
     level->landCreature(StairKey::keeperSpawn(), c.get());
-    m->playerCollective->addCreature(c.get(), getImpTraits());
+    playerCollective->addCreature(c.get(), getImpTraits());
     m->addCreature(std::move(c));
   }
 }

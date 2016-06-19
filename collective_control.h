@@ -18,7 +18,6 @@ class CollectiveControl {
   virtual void tick();
   virtual void onMemberKilled(const Creature* victim, const Creature* killer);
   virtual void onOtherKilled(const Creature* victim, const Creature* killer);
-  virtual void onMoved(Creature*);
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAttack(const CollectiveAttack&) {}
   virtual void onConstructed(Position, const SquareType&) {}

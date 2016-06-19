@@ -22,6 +22,8 @@
 #include "position.h"
 #include "tribe.h"
 #include "enum_variant.h"
+#include "event_generator.h"
+#include "event_listener.h"
 
 class Level;
 class ProgressMeter;
@@ -64,14 +66,13 @@ class Model {
   vector<Collective*> getCollectives() const;
   vector<Creature*> getAllCreatures() const;
   vector<Level*> getLevels() const;
-  Collective* getPlayerCollective() const;
 
   Level* getTopLevel() const;
 
   void addWoodCount(int);
   int getWoodCount() const;
 
-  void killCreature(Creature* victim, Creature* attacker);
+  void killCreature(Creature* victim);
   void updateSunlightMovement();
 
   PCreature extractCreature(Creature*);
@@ -89,6 +90,9 @@ class Model {
   void beforeUpdateTime(Creature*);
   void afterUpdateTime(Creature*);
 
+  typedef function<void(EventListener*)> EventFun;
+  void addEvent(EventFun);
+
   private:
 
   friend class ModelBuilder;
@@ -100,7 +104,6 @@ class Model {
   vector<PLevel> SERIAL(levels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
-  Collective* SERIAL(playerCollective) = nullptr;
   Game* SERIAL(game) = nullptr;
   double SERIAL(lastTick) = 0;
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
@@ -112,6 +115,8 @@ class Model {
   map<pair<const Level*, const Level*>, StairKey> SERIAL(stairNavigation);
   bool serializationLocked = false;
   Level* SERIAL(topLevel) = nullptr;
+  friend class EventListener;
+  HeapAllocated<EventGenerator<EventListener>> SERIAL(eventGenerator);
 };
 
 #endif

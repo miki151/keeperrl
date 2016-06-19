@@ -6,6 +6,7 @@
 #include "tribe.h"
 #include "enum_variant.h"
 #include "campaign.h"
+#include "position.h"
 
 class Options;
 class Highscores;
@@ -14,6 +15,8 @@ class Statistics;
 class PlayerControl;
 class CreatureView;
 class FileSharing;
+class Technology;
+class EventListener;
 
 enum class GameSaveType { ADVENTURER, KEEPER, RETIRED_SINGLE, RETIRED_SITE, AUTOSAVE };
 
@@ -80,7 +83,6 @@ class Game {
 
   void onTechBookRead(Technology*);
   void onAlarm(Position);
-  void onKilledLeader(const Collective*, const Creature*);
   void onTorture(const Creature* who, const Creature* torturer);
   void onSurrender(Creature* who, const Creature* to);
   void onTrapTrigger(Position);
@@ -92,6 +94,9 @@ class Game {
   void prepareSiteRetirement();
   void prepareSingleMapRetirement();
   void doneRetirement();
+
+  typedef function<void(EventListener*)> EventFun;
+  void addEvent(EventFun);
 
   ~Game();
 
@@ -140,6 +145,7 @@ class Game {
   Creature* SERIAL(player) = nullptr;
   FileSharing* fileSharing;
   set<int> SERIAL(turnEvents);
+  friend class GameListener;
 };
 
 

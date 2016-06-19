@@ -17,12 +17,12 @@
 #define _PLAYER_H
 
 #include "creature_action.h"
-#include "event.h"
 #include "controller.h"
 #include "user_input.h"
 #include "creature_view.h"
 #include "map_memory.h"
 #include "position.h"
+#include "event_listener.h"
 
 class View;
 class Model;
@@ -32,16 +32,16 @@ class ListElem;
 struct ItemInfo;
 class Game;
 
-class Player : public Controller, public CreatureView {
+class Player : public Controller, public CreatureView, public EventListener {
   public:
   virtual ~Player();
 
-  static ControllerFactory getFactory(MapMemory* levelMemory);
+  static ControllerFactory getFactory(Model*, MapMemory* levelMemory);
 
   SERIALIZATION_DECL(Player);
 
   protected:
-  Player(Creature*, bool greeting, MapMemory*);
+  Player(Creature*, Model*, bool adventurer, MapMemory*);
 
   virtual void moveAction(Vec2 direction);
 
@@ -68,6 +68,11 @@ class Player : public Controller, public CreatureView {
   virtual void onBump(Creature*) override;
   virtual void onDisplaced() override;
 
+  // from EventListener
+  virtual void onThrownEvent(Level*, const vector<Item*>&, const vector<Vec2>& trajectory) override;
+  virtual void onExplosionEvent(Position) override;
+  virtual void onWonGameEvent() override;
+
   // overridden by subclasses
   virtual bool unpossess();
   virtual bool swapTeam();
@@ -79,12 +84,9 @@ class Player : public Controller, public CreatureView {
   Game* getGame() const;
   View* getView() const;
 
-  private:
-  REGISTER_HANDLER(ThrowEvent, const Level*, const Item*, const vector<Vec2>& trajectory);
-  REGISTER_HANDLER(ExplosionEvent, Position);
 
+  private:
   void considerAdventurerMusic();
-  void considerKeeperDirectionMessage();
   bool tryToPerform(CreatureAction);
   void extendedAttackAction(UniqueEntity<Creature>::Id);
   void extendedAttackAction(Creature* other);
@@ -116,6 +118,7 @@ class Player : public Controller, public CreatureView {
   Vec2 SERIAL(travelDir);
   optional<Position> SERIAL(target);
   const Location* SERIAL(lastLocation) = nullptr;
+  bool SERIAL(adventurer);
   bool SERIAL(displayGreeting);
   bool updateView = true;
   void retireMessages();

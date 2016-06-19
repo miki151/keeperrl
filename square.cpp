@@ -39,6 +39,7 @@
 #include "sound.h"
 #include "creature_attributes.h"
 #include "square_interaction.h"
+#include "event_listener.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -74,7 +75,8 @@ void Square::putCreature(Creature* c) {
   onEnter(c);
   if (c->getAttributes().isStationary())
     c->getPosition().getLevel()->addTickingSquare(c->getPosition().getCoord());
-  c->onMoved();
+  if (Game* game = c->getGame())
+    game->addEvent([&](EventListener* l) { l->onMovedEvent(c);});
 }
 
 string Square::getName() const {

@@ -29,7 +29,6 @@
 #include "attack.h"
 #include "player_message.h"
 #include "vision.h"
-#include "event.h"
 #include "bucket_map.h"
 #include "creature_name.h"
 #include "sunlight_info.h"
@@ -345,13 +344,13 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
     if (getSafeSquare(v)->itemBounces(item[0].get(), vision)) {
         item[0]->onHitSquareMessage(Position(v, this), item.size());
         trajectory.pop_back();
-        GlobalEvents.addThrowEvent(this, item[0].get(), trajectory);
+        getGame()->addEvent([&](EventListener* l) { l->onThrownEvent(this, extractRefs(item), trajectory);});
         if (!item[0]->isDiscarded())
           modSafeSquare(v - direction)->dropItems(Position(v - direction, this), std::move(item));
         return;
     }
     if (++cnt > maxDist || getSafeSquare(v)->itemLands(extractRefs(item), attack)) {
-      GlobalEvents.addThrowEvent(this, item[0].get(), trajectory);
+      getGame()->addEvent([&](EventListener* l) { l->onThrownEvent(this, extractRefs(item), trajectory);});
       modSafeSquare(v)->onItemLands(Position(v, this), std::move(item), attack, maxDist - cnt - 1, direction,
           vision);
       return;
@@ -359,9 +358,9 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
   }
 }
 
-void Level::killCreature(Creature* creature, Creature* attacker) {
+void Level::killCreature(Creature* creature) {
   eraseCreature(creature, creature->getPosition().getCoord());
-  getModel()->killCreature(creature, attacker);
+  getModel()->killCreature(creature);
 }
 
 void Level::removeCreature(Creature* creature) {

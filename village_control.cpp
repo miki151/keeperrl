@@ -35,7 +35,8 @@ typedef EnumVariant<AttackTriggerId, TYPES(int),
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
 
-VillageControl::VillageControl(Collective* col, optional<VillageBehaviour> v) : CollectiveControl(col), villain(v) {
+VillageControl::VillageControl(Collective* col, optional<VillageBehaviour> v) : CollectiveControl(col),
+    EventListener(col->getLevel()->getModel()), villain(v) {
   for (Position v : col->getTerritory().getAll())
     for (Item* it : v.getItems())
       myItems.insert(it);
@@ -63,7 +64,7 @@ void VillageControl::onMemberKilled(const Creature* victim, const Creature* kill
     victims += 1;
 }
 
-void VillageControl::onPickupEvent(const Creature* who, const vector<Item*>& items) {
+void VillageControl::onPickedUpEvent(Creature* who, const vector<Item*>& items) {
   if (getCollective()->getTerritory().contains(who->getPosition()))
     if (isEnemy(who) && villain)
       if (contains(villain->triggers, AttackTriggerId::STOLEN_ITEMS)) {

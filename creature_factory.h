@@ -200,7 +200,7 @@ class CreatureFactory {
   static PCreature getGuardingBoulder(TribeId);
   static PCreature getGhost(Creature*);
   static PCreature getIllusion(Creature*);
-  static PCreature getAdventurer(int handicap);
+  static PCreature getAdventurer(Model*, int handicap);
 
   static PCreature addInventory(PCreature c, const vector<ItemType>& items);
   static CreatureAttributes getKrakenAttributes(ViewId);

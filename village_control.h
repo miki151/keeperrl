@@ -16,15 +16,15 @@
 #ifndef _VILLAGE_CONTROL_H
 #define _VILLAGE_CONTROL_H
 
-#include "event.h"
 #include "collective_control.h"
 #include "enum_variant.h"
 #include "entity_set.h"
 #include "village_behaviour.h"
+#include "event_listener.h"
 
 class Task;
 
-class VillageControl : public CollectiveControl {
+class VillageControl : public CollectiveControl, public EventListener {
   public:
 
   friend struct VillageBehaviour;
@@ -37,6 +37,7 @@ class VillageControl : public CollectiveControl {
   virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
   virtual void onRansomPaid() override;
   virtual vector<TriggerInfo> getTriggers(const Collective* against) const override;
+  virtual void onPickedUpEvent(Creature*, const vector<Item*>&) override;
 
   SERIALIZATION_DECL(VillageControl);
 
@@ -49,7 +50,6 @@ class VillageControl : public CollectiveControl {
   Collective* getEnemyCollective() const;
   bool canPerformAttack(bool currentlyActive);
 
-  REGISTER_HANDLER(PickupEvent, const Creature*, const vector<Item*>&);
 
   optional<VillageBehaviour> SERIAL(villain);
 

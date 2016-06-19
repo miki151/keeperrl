@@ -28,7 +28,6 @@
 #include "monster_ai.h"
 #include "player_message.h"
 #include "square_apply_type.h"
-#include "event.h"
 #include "tribe.h"
 #include "creature_name.h"
 #include "modifier_type.h"
@@ -39,6 +38,8 @@
 #include "sound.h"
 #include "creature_attributes.h"
 #include "square_interaction.h"
+#include "game.h"
+#include "event_listener.h"
 
 class Magma : public Square {
   public:
@@ -163,7 +164,8 @@ class Chest : public Square {
     } else {
       c->playerMessage(msgItem);
       vector<PItem> items = itemFactory.random();
-      GlobalEvents.addItemsAppearedEvent(c->getPosition(), extractRefs(items));
+      c->getGame()->addEvent([&](EventListener* l) {
+          l->onItemsAppearedEvent(c->getPosition(),  extractRefs(items));});
       c->getPosition().dropItems(std::move(items));
     }
     c->getLevel()->replaceSquare(c->getPosition(), SquareFactory::get(openedId));

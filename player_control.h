@@ -18,15 +18,14 @@
 
 #include "creature_view.h"
 #include "entity_set.h"
-#include "event.h"
 #include "collective_control.h"
-#include "event.h"
 #include "cost_info.h"
 #include "game_info.h"
 #include "square_type.h"
 #include "map_memory.h"
 #include "position.h"
 #include "collective_warning.h"
+#include "event_listener.h"
 
 class Model;
 class Technology;
@@ -42,13 +41,11 @@ struct TaskActionInfo;
 struct EquipmentActionInfo;
 struct TeamCreatureInfo;
 
-class PlayerControl : public CreatureView, public CollectiveControl {
+class PlayerControl : public CreatureView, public CollectiveControl, public EventListener {
   public:
   PlayerControl(Collective*, Level*);
   ~PlayerControl();
   void addImportantLongMessage(const string&, optional<Position> = none);
-
-  void onConqueredLand();
 
   void processInput(View* view, UserInput);
   MoveInfo getMove(Creature* c);
@@ -101,7 +98,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual bool isPlayerView() const override;
 
   // from CollectiveControl
-  virtual void onMoved(Creature*) override;
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
@@ -110,10 +106,12 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void tick() override;
   virtual void update(bool currentlyActive) override;
 
+  // from EventListener
+  virtual void onMovedEvent(Creature*) override;
+  virtual void onPickedUpEvent(Creature*, const vector<Item*>&) override;
+  virtual void onWonGameEvent() override;
+
   private:
-
-  REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
-
   void considerNightfallMessage();
   void considerWarning();
 

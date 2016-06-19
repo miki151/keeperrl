@@ -23,7 +23,7 @@
 #include "square_type.h"
 #include "attack_trigger.h"
 #include "collective_warning.h"
-#include "creature_listener.h"
+#include "event_listener.h"
 #include "entity_map.h"
 
 class CollectiveAttack;
@@ -47,7 +47,7 @@ struct TriggerInfo;
 class Territory;
 class CollectiveName;
 
-class Collective : public TaskCallback, public CreatureListener {
+class Collective : public TaskCallback, public EventListener {
   public:
   void addCreature(Creature*, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
@@ -228,7 +228,7 @@ class Collective : public TaskCallback, public CreatureListener {
   // From Task::Callback
   virtual void onAppliedItem(Position, Item* item) override;
   virtual void onAppliedItemCancel(Position) override;
-  virtual void onPickedUp(Position, EntitySet<Item>) override;
+  virtual void onTaskPickedUp(Position, EntitySet<Item>) override;
   virtual void onCantPickItem(EntitySet<Item> items) override;
   virtual void onConstructed(Position, const SquareType&) override;
   virtual void onTorchBuilt(Position, Trigger*) override;
@@ -240,11 +240,8 @@ class Collective : public TaskCallback, public CreatureListener {
   virtual bool isConstructionReachable(Position) override;
   virtual void onWhippingDone(Creature* whipped, Position postPosition) override;
 
-  // From CreatureListener
-  virtual void onKilled(Creature* victim, Creature* killer) override;
-  virtual void onKilledSomeone(Creature* killer, Creature* victim) override;
-  virtual void onMoved(Creature*) override;
-  virtual void onRemoveFromCollective(Creature*) override;
+  // From EventListener
+  virtual void onKilledEvent(Creature* victim, Creature* killer) override;
 
   private:
   friend class CollectiveBuilder;
@@ -255,6 +252,8 @@ class Collective : public TaskCallback, public CreatureListener {
   void makePayouts();
   void cashPayouts();
   void removeCreature(Creature*);
+  void onMinionKilled(Creature* victim, Creature* killer);
+  void onKilledSomeone(Creature* victim, Creature* killer);
 
   const vector<ItemFetchInfo>& getFetchInfo() const;
   void fetchItems(Position, const ItemFetchInfo&);

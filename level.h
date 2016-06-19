@@ -97,7 +97,7 @@ class Level {
   optional<Position> getStairsTo(const Level*) const;
 
   /** Removes the creature from \paramname{position} from the level and model. The creature object is retained.*/
-  void killCreature(Creature* victim, Creature* attacker);
+  void killCreature(Creature* victim);
 
   void removeCreature(Creature*);
 

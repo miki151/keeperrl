@@ -221,7 +221,7 @@ class PickItem : public Task {
         return {1.0, action.append([=](Creature* c) {
           pickedUp = true;
           onPickedUp();
-          callback->onPickedUp(position, hereItems);
+          callback->onTaskPickedUp(position, hereItems);
         })}; 
       else {
         callback->onCantPickItem(items);

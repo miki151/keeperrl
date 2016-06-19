@@ -50,7 +50,7 @@ template <class Archive>
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   serializeAll(ar, levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
-  serializeAll(ar, stairNavigation, cemetery);
+  serializeAll(ar, stairNavigation, cemetery, topLevel, eventGenerator);
   if (progressMeter)
     progressMeter->addProgress();
 }
@@ -73,10 +73,6 @@ int Model::getWoodCount() const {
 
 vector<Collective*> Model::getCollectives() const {
   return extractRefs(collectives);
-}
-
-Collective* Model::getPlayerCollective() const {
-  return playerCollective;
 }
 
 void Model::updateSunlightMovement() {
@@ -213,10 +209,7 @@ Level* Model::getTopLevel() const {
   return topLevel;
 }
 
-void Model::killCreature(Creature* c, Creature* attacker) {
-  if (attacker)
-    attacker->onKilled(c);
-  c->getTribe()->onMemberKilled(c, attacker);
+void Model::killCreature(Creature* c) {
   deadCreatures.push_back(timeQueue->removeCreature(c));
   cemetery->landCreature(cemetery->getAllPositions(), c);
 }
@@ -251,7 +244,7 @@ void Model::afterUpdateTime(Creature* c) {
 }
 
 void Model::landHeroPlayer(const string& advName, int handicap) {
-  PCreature player = CreatureFactory::getAdventurer(handicap);
+  PCreature player = CreatureFactory::getAdventurer(this, handicap);
   if (!advName.empty())
     player->getName().setFirst(advName);
   Level* target = getTopLevel();
@@ -264,4 +257,8 @@ void Model::landHeroPlayer(const string& advName, int handicap) {
   CHECK(target->landCreature(target->getAllPositions(), std::move(player))) << "No place to spawn player";
 }
 
+void Model::addEvent(EventFun fun) {
+  for (EventListener* l : eventGenerator->getListeners())
+    fun(l);
+}
 

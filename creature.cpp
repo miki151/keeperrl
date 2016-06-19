@@ -41,7 +41,6 @@
 #include "view.h"
 #include "sound.h"
 #include "trigger.h"
-#include "creature_listener.h"
 #include "lasting_effect.h"
 #include "attack_type.h"
 #include "attack_level.h"
@@ -60,7 +59,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, deathTime, hidden, lastAttacker, deathReason, swapPositionCooldown);
   serializeAll(ar, unknownAttackers, privateEnemies, holding, controller, controllerStack, creatureVisions, kills);
   serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverride);
-  serializeAll(ar, vision, personalEvents, lastCombatTime, eventGenerator);
+  serializeAll(ar, vision, personalEvents, lastCombatTime);
 }
 
 SERIALIZABLE(Creature);
@@ -382,16 +381,6 @@ void Creature::makeMove() {
   getBody().affectPosition(position);
 }
 
-void Creature::onMoved() {
-  for (CreatureListener* l : eventGenerator->getListeners())
-    l->onMoved(this);
-}
-
-void Creature::removeFromCollective() {
-  for (CreatureListener* l : eventGenerator->getListeners())
-    l->onRemoveFromCollective(this);
-}
-
 CreatureAction Creature::wait() const {
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " waiting";
@@ -498,7 +487,7 @@ CreatureAction Creature::pickUp(const vector<Item*>& items) const {
     self->equipment->addItems(self->getPosition().removeItems(items));
     if (getInventoryWeight() > getModifier(ModifierType::INV_LIMIT))
       playerMessage("You are overloaded.");
-    GlobalEvents.addPickupEvent(this, items);
+    getGame()->addEvent([&] (EventListener* l) { l->onPickedUpEvent(self, items);});
     self->spendTime(1);
   });
 }
@@ -518,10 +507,9 @@ CreatureAction Creature::drop(const vector<Item*>& items) const {
       monsterMessage(getName().the() + " drops " + getPluralAName(stack[0], stack.size()));
       playerMessage("You drop " + getPluralTheName(stack[0], stack.size()));
     }
-    for (auto item : items) {
+    for (auto item : items)
       self->getPosition().dropItem(self->equipment->removeItem(item));
-    }
-    GlobalEvents.addDropEvent(this, items);
+    getGame()->addEvent([&] (EventListener* l) { l->onDroppedEvent(self, items);});
     self->spendTime(1);
   });
 }
@@ -817,8 +805,7 @@ void Creature::onKilled(Creature* victim) {
   double levelDiff = victim->attributes->getExpLevel() - attributes->getExpLevel();
   attributes->increaseExpLevel(max(minLevelGain, min(maxLevelGain, 
       (maxLevelGain - equalLevelGain) * levelDiff / maxLevelDiff + equalLevelGain)));
-  for (CreatureListener* l : eventGenerator->getListeners())
-    l->onKilledSomeone(this, victim);
+  kills.insert(victim);
 }
 
 double Creature::getInventoryWeight() const {
@@ -1216,16 +1203,16 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   lastAttacker = attacker;
   Debug() << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   controller->onKilled(attacker);
-  if (attacker)
-    attacker->kills.insert(this);
   if (dropInventory)
     for (PItem& item : equipment->removeAllItems())
       getPosition().dropItem(std::move(item));
   if (dropInventory && dCorpse)
     getPosition().dropItems(getBody().getCorpseItem(getName().bare(), getUniqueId()));
-  for (CreatureListener* l : eventGenerator->getListeners())
-    l->onKilled(this, attacker);
-  getLevel()->killCreature(this, attacker);
+  getGame()->addEvent([&] (EventListener* l) { l->onKilledEvent(this, attacker);});
+  if (attacker)
+    attacker->onKilled(this);
+  getTribe()->onMemberKilled(this, attacker);
+  getLevel()->killCreature(this);
   if (attributes->isInnocent())
     getGame()->getStatistics().add(StatId::INNOCENT_KILLED);
   getGame()->getStatistics().add(StatId::DEATH);

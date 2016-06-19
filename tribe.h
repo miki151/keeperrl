@@ -20,7 +20,6 @@
 #include <set>
 
 #include "enums.h"
-#include "event.h"
 #include "singleton.h"
 #include "entity_map.h"
 
@@ -79,7 +78,7 @@ class TribeSet {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  bitset<32> elems;
+  bitset<32> SERIAL(elems);
 };
 
 class Tribe {

@@ -63,12 +63,13 @@ Game::Game(const string& world, const string& player, Table<PModel>&& m, Vec2 ba
     if (Model* m = models[v].get()) {
       for (Collective* c : m->getCollectives()) {
         collectives.push_back(c);
-        if (auto type = c->getVillainType())
+        if (auto type = c->getVillainType()) {
           villainsByType[*type].push_back(c);
-      }
-      if (Collective* c = m->getPlayerCollective()) {
-        playerControl = NOTNULL(dynamic_cast<PlayerControl*>(c->getControl()));
-        playerCollective = c;
+          if (*type == VillainType::PLAYER) {
+            playerControl = NOTNULL(dynamic_cast<PlayerControl*>(c->getControl()));
+            playerCollective = c;
+          }
+        }
       }
       m->setGame(this);
       m->updateSunlightMovement();
@@ -282,8 +283,7 @@ void Game::checkConquered() {
     }
   }
   if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
-    if (playerControl)
-      playerControl->onConqueredLand();
+    addEvent([](EventListener* l) { l->onWonGameEvent(); });
     won = true;
   }
 
@@ -482,13 +482,6 @@ string Game::getGameIdentifier() const {
   return gameIdentifier;
 }
 
-void Game::onKilledLeader(const Collective* victim, const Creature* leader) {
-  if (victim == playerCollective && isSingleModel() && victim->getVillainType() == VillainType::MAIN) {
-    if (Creature* c = getPlayer())
-      killedKeeper(*c->getName().first(), c->getName().title(), worldName, c->getKills().getSize(), c->getPoints());
-  }
-}
-
 void Game::onTorture(const Creature* who, const Creature* torturer) {
   for (Collective* col : getCollectives())
     if (contains(col->getCreatures(), torturer))
@@ -529,9 +522,23 @@ View* Game::getView() const {
   return view;
 }
 
+static Highscores::Score::GameType getGameType(bool singleModel, bool keeper) {
+  if (singleModel) {
+    if (keeper)
+      return Highscores::Score::KEEPER;
+    else
+      return Highscores::Score::ADVENTURER;
+  } else {
+    if (keeper)
+      return Highscores::Score::KEEPER_CAMPAIGN;
+    else
+      return Highscores::Score::ADVENTURER_CAMPAIGN;
+  }
+}
+
 void Game::conquered(const string& title, int numKills, int points) {
   string text= "You have conquered this land. You killed " + toString(numKills) +
-      " innocent beings and scored " + toString(points) +
+      " enemies and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
   for (string stat : statistics->getText())
     text += stat + "\n";
@@ -544,28 +551,7 @@ void Game::conquered(const string& title, int numKills, int points) {
         c.gameResult = "achieved world domination";
         c.gameWon = true;
         c.turns = getGlobalTime();
-        c.gameType = Highscores::Score::KEEPER;
-  );
-  highscores->add(score);
-  highscores->present(view, score);
-}
-
-void Game::killedKeeper(const string& title, const string& keeper, const string& land, int numKills, int points) {
-  string text= "You have freed this land from the bloody reign of " + keeper + 
-      ". You killed " + toString(numKills) + " enemies and scored " + toString(points) +
-      " points. Thank you for playing KeeperRL alpha.\n \n";
-  for (string stat : statistics->getText())
-    text += stat + "\n";
-  view->presentText("Victory", text);
-  Highscores::Score score = CONSTRUCT(Highscores::Score,
-        c.worldName = getWorldName();
-        c.points = points;
-        c.gameId = getGameIdentifier();
-        c.playerName = title;
-        c.gameResult = "freed his land from " + keeper;
-        c.gameWon = true;
-        c.turns = getGlobalTime();
-        c.gameType = Highscores::Score::ADVENTURER;
+        c.gameType = getGameType(isSingleModel(), !!playerControl);
   );
   highscores->add(score);
   highscores->present(view, score);
@@ -593,7 +579,7 @@ void Game::gameOver(const Creature* creature, int numKills, const string& enemie
         c.gameResult = creature->getDeathReason().get_value_or("");
         c.gameWon = false;
         c.turns = getGlobalTime();
-        c.gameType = playerControl ? Highscores::Score::KEEPER : Highscores::Score::ADVENTURER;
+        c.gameType = getGameType(isSingleModel(), !!playerControl);
   );
   highscores->add(score);
   highscores->present(view, score);
@@ -727,5 +713,11 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
       else
         view->presentText("", "The message was too short.");
     }
+}
+
+void Game::addEvent(EventFun fun) {
+  for (Vec2 v : models.getBounds())
+    if (models[v])
+      models[v]->addEvent(fun);
 }
 

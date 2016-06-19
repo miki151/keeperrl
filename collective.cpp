@@ -49,7 +49,7 @@ struct Collective::ItemFetchInfo {
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(TaskCallback)
-    & SUBCLASS(CreatureListener);
+    & SUBCLASS(EventListener);
   serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType, mySquares);
   serializeAll(ar, mySquares2, territory, squareEfficiency, alarmInfo, markedItems, constructions, minionEquipment);
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
@@ -91,7 +91,7 @@ const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
 
 Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
     const CollectiveName& n) 
-  : credit(_credit), control(CollectiveControl::idle(this)),
+  : EventListener(l->getModel()), credit(_credit), control(CollectiveControl::idle(this)),
     tribe(t), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
 }
 
@@ -177,11 +177,11 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!leader)
     leader = c;
   CHECK(c->getTribeId() == tribe);
-/*  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
-      c->getPosition().getLevel()->getName() << " " << c->getName().bare();*/
+  if (Game* game = getGame())
+    for (Collective* col : getGame()->getCollectives())
+      if (contains(col->getCreatures(), c))
+        col->removeCreature(c);
   creatures.push_back(c);
-  c->removeFromCollective();
-  subscribeToCreature(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
   if (auto spawnType = c->getAttributes().getSpawnType())
@@ -195,7 +195,6 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 
 void Collective::removeCreature(Creature* c) {
   removeElement(creatures, c);
-  unsubscribeFromCreature(c);
   if (config->getNumGhostSpawns() > 0 || config->getGuardianInfo())
     deadCreatures.push_back(c);
   minionAttraction.erase(c);
@@ -1176,16 +1175,20 @@ void Collective::decreaseMoraleForBanishing(const Creature*) {
 void Collective::onKillCancelled(Creature* c) {
 }
 
-void Collective::onKilled(Creature* victim, Creature* killer) {
-  CHECK(contains(creatures, victim));
+void Collective::onKilledEvent(Creature* victim, Creature* killer) {
+  if (contains(creatures, victim))
+    onMinionKilled(victim, killer);
+  if (contains(creatures, killer))
+    onKilledSomeone(killer, victim);
+}
+
+void Collective::onMinionKilled(Creature* victim, Creature* killer) {
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer))
     returnResource({ResourceId::PRISONER_HEAD, 1});
-  if (victim == leader) {
-    getGame()->onKilledLeader(this, victim);
+  if (victim == leader)
     for (Creature* c : getCreatures(MinionTrait::SUMMONED)) // shortcut to get rid of summons when summonner dies
       c->disappear().perform(c);
-  }
   if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
     decreaseMoraleForKill(killer, victim);
     if (killer)
@@ -1196,11 +1199,9 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
           .setPosition(victim->getPosition()));
   }
   removeCreature(victim);
-  //control->onOtherKilled(victim, killer); TODO: implement
 }
 
 void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
-  CHECK(contains(creatures, killer));
   if (victim->getTribe() != getTribe()) {
     addMana(getKillManaScore(victim));
     addMoraleForKill(killer, victim);
@@ -1273,14 +1274,6 @@ void Collective::changeSquareType(Position pos, SquareType from, SquareType to) 
 
 bool Collective::isKnownSquare(Position pos) const {
   return knownTiles->isKnown(pos);
-}
-
-void Collective::onMoved(Creature* c) {
-  control->onMoved(c);
-}
-
-void Collective::onRemoveFromCollective(Creature* c) {
-  removeCreature(c);
 }
 
 bool Collective::hasEfficiency(Position pos) const {
@@ -1892,7 +1885,7 @@ void Collective::handleSurprise(Position pos) {
       }
 }
 
-void Collective::onPickedUp(Position pos, EntitySet<Item> items) {
+void Collective::onTaskPickedUp(Position pos, EntitySet<Item> items) {
   for (auto id : items)
     unmarkItem(id);
 }

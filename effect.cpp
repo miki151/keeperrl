@@ -30,7 +30,6 @@
 #include "attack.h"
 #include "player_message.h"
 #include "equipment.h"
-#include "event.h"
 #include "creature_attributes.h"
 #include "creature_name.h"
 #include "position_map.h"
@@ -38,6 +37,7 @@
 #include "attack_level.h"
 #include "attack_type.h"
 #include "body.h"
+#include "event_listener.h"
 
 vector<int> healingPoints { 5, 15, 40};
 vector<int> sleepTime { 15, 80, 200};
@@ -122,7 +122,7 @@ static void blast(Creature* c, Vec2 direction, int range) {
 }
 
 static void wordOfPower(Creature* c, int strength) {
-  GlobalEvents.addExplosionEvent(c->getPosition());
+  c->getGame()->addEvent([&](EventListener* l) { l->onExplosionEvent(c->getPosition());});
   for (Vec2 v : Vec2::directions8(Random))
     blast(c, c->getPosition().plus(v), v, wordOfPowerDist[strength], true);
 }

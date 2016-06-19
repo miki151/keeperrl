@@ -128,12 +128,18 @@ void Highscores::present(View* view, optional<Score> lastAdded) const {
       lastAdded, lists.back().SCORE)); 
   lists.push_back(fillScores("Adventurers", filter(localScores,
       [] (const Score& s) { return s.gameType == s.ADVENTURER;}), lastAdded, lists.back().SCORE)); 
+  lists.push_back(fillScores("Campaign", filter(localScores,
+          [] (const Score& s) { return s.gameType == s.KEEPER_CAMPAIGN || s.gameType == s.ADVENTURER_CAMPAIGN;}),
+        lastAdded, lists.back().SCORE)); 
   lists.push_back(fillScores("Fastest wins", filter(localScores,
       [] (const Score& s) { return s.gameType == s.KEEPER && s.gameWon == true;}), lastAdded, lists.back().TURNS)); 
   lists.push_back(fillScores("Keepers", filter(remoteScores,
       [] (const Score& s) { return s.gameType == s.KEEPER;}), lastAdded, lists.back().SCORE)); 
   lists.push_back(fillScores("Adventurers", filter(remoteScores,
       [] (const Score& s) { return s.gameType == s.ADVENTURER;}), lastAdded, lists.back().SCORE)); 
+  lists.push_back(fillScores("Campaign", filter(remoteScores,
+      [] (const Score& s) { return s.gameType == s.KEEPER_CAMPAIGN || s.gameType == s.ADVENTURER_CAMPAIGN;}),
+        lastAdded, lists.back().SCORE)); 
   lists.push_back(fillScores("Fastest wins", filter(remoteScores,
       [] (const Score& s) { return s.gameType == s.KEEPER && s.gameWon == true;}),
           lastAdded, lists.back().TURNS)); 

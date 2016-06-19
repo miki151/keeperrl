@@ -260,8 +260,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void setInCombat();
   bool wasInCombat(double numLastTurns) const;
   void onKilled(Creature* victim);
-  void onMoved();
-  void removeFromCollective();
 
   void addSound(const Sound&) const;
   void updateViewObject();
@@ -307,9 +305,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   vector<string> SERIAL(personalEvents);
   bool forceMovement = false;
   optional<double> SERIAL(lastCombatTime);
-
-  friend class CreatureListener;
-  HeapAllocated<EventGenerator<CreatureListener>> SERIAL(eventGenerator);
 };
 
 struct AdjectiveInfo {

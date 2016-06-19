@@ -46,33 +46,27 @@
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(Controller)
-    & SVAR(travelling)
-    & SVAR(travelDir)
-    & SVAR(target)
-    & SVAR(lastLocation)
-    & SVAR(displayGreeting)
-    & SVAR(levelMemory)
-    & SVAR(messages)
-    & SVAR(messageHistory);
+  ar& SUBCLASS(Controller) & SUBCLASS(EventListener);
+  serializeAll(ar, travelling, travelDir, target, lastLocation, displayGreeting, levelMemory, messages);
+  serializeAll(ar, messageHistory, adventurer);
 }
 
 SERIALIZABLE(Player);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
-Player::Player(Creature* c, bool greeting, MapMemory* memory) :
-    Controller(c), levelMemory(memory), displayGreeting(greeting) {
+Player::Player(Creature* c, Model* m, bool adv, MapMemory* memory) :
+    Controller(c), EventListener(m), levelMemory(memory), adventurer(adv), displayGreeting(adventurer) {
 }
 
 Player::~Player() {
 }
 
-void Player::onThrowEvent(const Level* l, const Item* item, const vector<Vec2>& trajectory) {
+void Player::onThrownEvent(Level* l, const vector<Item*>& item, const vector<Vec2>& trajectory) {
   if (getCreature()->getPosition().isSameLevel(l))
     for (Vec2 v : trajectory)
       if (getCreature()->canSee(v)) {
-        getView()->animateObject(trajectory, item->getViewObject());
+        getView()->animateObject(trajectory, item[0]->getViewObject());
         return;
       }
 }
@@ -86,8 +80,8 @@ void Player::onExplosionEvent(Position pos) {
   }
 }
 
-ControllerFactory Player::getFactory(MapMemory* levelMemory) {
-  return ControllerFactory([=](Creature* c) { return new Player(c, true, levelMemory);});
+ControllerFactory Player::getFactory(Model* m, MapMemory* levelMemory) {
+  return ControllerFactory([=](Creature* c) { return new Player(c, m, true, levelMemory);});
 }
 
 static string getSlotSuffix(EquipmentSlot slot) {
@@ -507,10 +501,8 @@ void Player::retireMessages() {
 }
 
 void Player::makeMove() {
-  if (!getGame()->getPlayerCollective()) {
+  if (adventurer)
     considerAdventurerMusic();
-    considerKeeperDirectionMessage();
-  }
   if (currentTimePos && currentTimePos->pos.getLevel() != getCreature()->getLevel()) {
     previousTimePos = currentTimePos = none;
   }
@@ -537,6 +529,7 @@ void Player::makeMove() {
   }
   if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     CHECK(getCreature()->getName().first());
+    getView()->updateView(this, true);
     getView()->presentText("", "Dear " + *getCreature()->getName().first() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + getGame()->getWorldName() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
     getView()->presentText("", "Judging by the corpses lying around here, you suspect that new circumstances may have arisen.");
     displayGreeting = false;
@@ -945,12 +938,9 @@ void Player::considerAdventurerMusic() {
   getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL, false);
 }
 
-void Player::considerKeeperDirectionMessage() {
-  for (Collective* col : getCreature()->getPosition().getModel()->getCollectives())
-    if (col->getVillainType() == VillainType::MAIN && !col->isConquered() && col->getLeader() &&
-        !col->getLeader()->isDead() && col->getLeader()->getPosition().isSameLevel(getLevel()) &&
-        Random.roll(30) && !col->getTerritory().contains(getCreature()->getPosition()))
-      getCreature()->playerMessage("You sense horrible evil in the " +
-            getCardinalName(getCreature()->getPosition().getDir(col->getLeader()->getPosition())
-                .getBearing().getCardinalDir()));
+void Player::onWonGameEvent() {
+  if (adventurer)
+    getGame()->conquered(*getCreature()->getName().first(), getCreature()->getKills().getSize(),
+        getCreature()->getPoints());
 }
+
