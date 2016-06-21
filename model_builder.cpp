@@ -22,6 +22,7 @@
 #include "villain_type.h"
 #include "enemy_factory.h"
 #include "location.h"
+#include "event_proxy.h"
 
 ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o) : random(r), meter(m), options(o),
   enemyFactory(EnemyFactory(random)) {

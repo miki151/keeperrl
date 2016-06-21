@@ -38,7 +38,8 @@ T fromString(const string& s) {
   std::stringstream ss(s);
   T t;
   ss >> t;
-  CHECK(ss) << "Error parsing " << s << " to " << typeid(T).name();
+  if (!ss)
+    throw ParsingException();
   return t;
 }
 

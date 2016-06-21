@@ -29,6 +29,7 @@
 #include "collective_name.h"
 #include "lasting_effect.h"
 #include "body.h"
+#include "event_proxy.h"
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
@@ -36,7 +37,7 @@ typedef EnumVariant<AttackTriggerId, TYPES(int),
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
 
 VillageControl::VillageControl(Collective* col, optional<VillageBehaviour> v) : CollectiveControl(col),
-    EventListener(col->getLevel()->getModel()), villain(v) {
+    eventProxy(this, col->getLevel()->getModel()), villain(v) {
   for (Position v : col->getTerritory().getAll())
     for (Item* it : v.getItems())
       myItems.insert(it);
@@ -64,21 +65,29 @@ void VillageControl::onMemberKilled(const Creature* victim, const Creature* kill
     victims += 1;
 }
 
-void VillageControl::onPickedUpEvent(Creature* who, const vector<Item*>& items) {
-  if (getCollective()->getTerritory().contains(who->getPosition()))
-    if (isEnemy(who) && villain)
-      if (contains(villain->triggers, AttackTriggerId::STOLEN_ITEMS)) {
-        bool wasTheft = false;
-        for (const Item* it : items)
-          if (myItems.contains(it)) {
-            wasTheft = true;
-            ++stolenItemCount;
-            myItems.erase(it);
+void VillageControl::onEvent(const GameEvent& event) {
+  switch (event.getId()) {
+    case EventId::PICKED_UP: {
+      auto info = event.get<EventInfo::ItemsHandled>();
+      if (getCollective()->getTerritory().contains(info.creature->getPosition()))
+        if (isEnemy(info.creature) && villain)
+          if (contains(villain->triggers, AttackTriggerId::STOLEN_ITEMS)) {
+            bool wasTheft = false;
+            for (const Item* it : info.items)
+              if (myItems.contains(it)) {
+                wasTheft = true;
+                ++stolenItemCount;
+                myItems.erase(it);
+              }
+            if (getCollective()->hasLeader() && wasTheft) {
+              info.creature->playerMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
+            }
           }
-        if (getCollective()->hasLeader() && wasTheft) {
-          who->playerMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
-        }
     }
+    break;
+    default:
+    break;
+  }
 }
 
 void VillageControl::launchAttack(vector<Creature*> attackers) {

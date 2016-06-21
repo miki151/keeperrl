@@ -283,7 +283,7 @@ void Game::checkConquered() {
     }
   }
   if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
-    addEvent([](EventListener* l) { l->onWonGameEvent(); });
+    addEvent(EventId::WON_GAME);
     won = true;
   }
 
@@ -454,68 +454,12 @@ const SunlightInfo& Game::getSunlightInfo() const {
   return sunlightInfo;
 }
 
-
-void Game::onTechBookRead(Technology* tech) {
-  if (playerControl)
-    playerControl->onTechBookRead(tech);
-}
-
-void Game::onAlarm(Position pos) {
-  Model* model = pos.getModel();
-  for (auto& col : model->getCollectives())
-    if (col->getTerritory().contains(pos))
-      col->onAlarm(pos);
-  if (const Creature* c = getPlayer()) {
-    if (pos == c->getPosition())
-      c->playerMessage("An alarm sounds near you.");
-    else if (pos.isSameLevel(c->getPosition()))
-      c->playerMessage("An alarm sounds in the " + 
-          getCardinalName(c->getPosition().getDir(pos).getBearing().getCardinalDir()));
-  }
-}
-
 string Game::getGameDisplayName() const {
   return gameDisplayName;
 }
 
 string Game::getGameIdentifier() const {
   return gameIdentifier;
-}
-
-void Game::onTorture(const Creature* who, const Creature* torturer) {
-  for (Collective* col : getCollectives())
-    if (contains(col->getCreatures(), torturer))
-      col->onTorture(who, torturer);
-}
-
-void Game::onSurrender(Creature* who, const Creature* to) {
-  for (auto& col : collectives)
-    if (contains(col->getCreatures(), to))
-      col->onSurrender(who);
-}
-
-void Game::onTrapTrigger(Position pos) {
-  for (auto& col : collectives)
-    if (col->getTerritory().contains(pos))
-      col->onTrapTrigger(pos);
-}
-
-void Game::onTrapDisarm(Position pos, const Creature* who) {
-  for (auto& col : collectives)
-    if (col->getTerritory().contains(pos))
-      col->onTrapDisarm(who, pos);
-}
-
-void Game::onSquareDestroyed(Position pos) {
-  for (auto& col : collectives)
-    if (col->getTerritory().contains(pos))
-      col->onSquareDestroyed(pos);
-}
-
-void Game::onEquip(const Creature* c, const Item* it) {
-  for (auto& col : collectives)
-    if (contains(col->getCreatures(), c))
-      col->onEquip(c, it);
 }
 
 View* Game::getView() const {
@@ -715,9 +659,9 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
     }
 }
 
-void Game::addEvent(EventFun fun) {
+void Game::addEvent(const GameEvent& e) {
   for (Vec2 v : models.getBounds())
     if (models[v])
-      models[v]->addEvent(fun);
+      models[v]->addEvent(e);
 }
 

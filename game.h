@@ -17,6 +17,7 @@ class CreatureView;
 class FileSharing;
 class Technology;
 class EventListener;
+class GameEvent;
 
 enum class GameSaveType { ADVENTURER, KEEPER, RETIRED_SINGLE, RETIRED_SITE, AUTOSAVE };
 
@@ -81,22 +82,13 @@ class Game {
   void registerPortal(Position);
   void handleMessageBoard(Position, Creature*);
 
-  void onTechBookRead(Technology*);
-  void onAlarm(Position);
-  void onTorture(const Creature* who, const Creature* torturer);
-  void onSurrender(Creature* who, const Creature* to);
-  void onTrapTrigger(Position);
-  void onTrapDisarm(Position, const Creature*);
-  void onSquareDestroyed(Position);
-  void onEquip(const Creature*, const Item*);
-
   PModel& getMainModel();
   void prepareSiteRetirement();
   void prepareSingleMapRetirement();
   void doneRetirement();
 
   typedef function<void(EventListener*)> EventFun;
-  void addEvent(EventFun);
+  void addEvent(const GameEvent&);
 
   ~Game();
 

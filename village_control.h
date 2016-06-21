@@ -23,8 +23,10 @@
 #include "event_listener.h"
 
 class Task;
+template <typename T>
+class EventProxy;
 
-class VillageControl : public CollectiveControl, public EventListener {
+class VillageControl : public CollectiveControl {
   public:
 
   friend struct VillageBehaviour;
@@ -37,11 +39,14 @@ class VillageControl : public CollectiveControl, public EventListener {
   virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
   virtual void onRansomPaid() override;
   virtual vector<TriggerInfo> getTriggers(const Collective* against) const override;
-  virtual void onPickedUpEvent(Creature*, const vector<Item*>&) override;
 
   SERIALIZATION_DECL(VillageControl);
 
   private:
+  HeapAllocated<EventProxy<VillageControl>> SERIAL(eventProxy);
+  friend EventProxy<VillageControl>;
+  void onEvent(const GameEvent&);
+
   void launchAttack(vector<Creature*> attackers);
   void considerWelcomeMessage();
   void considerCancellingAttack();

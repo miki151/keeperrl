@@ -31,8 +31,10 @@ class Item;
 class ListElem;
 struct ItemInfo;
 class Game;
+template <typename T>
+class EventProxy;
 
-class Player : public Controller, public CreatureView, public EventListener {
+class Player : public Controller, public CreatureView {
   public:
   virtual ~Player();
 
@@ -68,11 +70,6 @@ class Player : public Controller, public CreatureView, public EventListener {
   virtual void onBump(Creature*) override;
   virtual void onDisplaced() override;
 
-  // from EventListener
-  virtual void onThrownEvent(Level*, const vector<Item*>&, const vector<Vec2>& trajectory) override;
-  virtual void onExplosionEvent(Position) override;
-  virtual void onWonGameEvent() override;
-
   // overridden by subclasses
   virtual bool unpossess();
   virtual bool swapTeam();
@@ -84,8 +81,11 @@ class Player : public Controller, public CreatureView, public EventListener {
   Game* getGame() const;
   View* getView() const;
 
-
   private:
+  HeapAllocated<EventProxy<Player>> SERIAL(eventProxy);
+  friend EventProxy<Player>;
+  void onEvent(const GameEvent&);
+
   void considerAdventurerMusic();
   bool tryToPerform(CreatureAction);
   void extendedAttackAction(UniqueEntity<Creature>::Id);

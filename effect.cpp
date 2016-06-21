@@ -122,7 +122,7 @@ static void blast(Creature* c, Vec2 direction, int range) {
 }
 
 static void wordOfPower(Creature* c, int strength) {
-  c->getGame()->addEvent([&](EventListener* l) { l->onExplosionEvent(c->getPosition());});
+  c->getGame()->addEvent({EventId::EXPLOSION, c->getPosition()});
   for (Vec2 v : Vec2::directions8(Random))
     blast(c, c->getPosition().plus(v), v, wordOfPowerDist[strength], true);
 }
@@ -272,7 +272,7 @@ static void acid(Creature* c) {
 }
 
 static void alarm(Creature* c) {
-  c->getGame()->onAlarm(c->getPosition());
+  c->getGame()->addEvent({EventId::ALARM, c->getPosition()});
 }
 
 static void teleEnemies(Creature* c) { // handled by Collective

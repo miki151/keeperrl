@@ -261,6 +261,8 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
     int numAllies = options->getIntValue(OptionId::ALLIES);
     vector<VillainInfo> mainVillains;
     Campaign campaign(terrain);
+    campaign.type = type;
+    campaign.worldName = worldName;
     while (mainVillains.size() < numMain)
       append(mainVillains, random.permutation(campaign.getMainVillains()));
     mainVillains.resize(numMain);
@@ -272,8 +274,6 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
     while (allies.size() < numAllies)
       append(allies, random.permutation(campaign.getAllies()));
     allies.resize(numAllies);
-    campaign.type = type;
-    campaign.worldName = worldName;
     vector<Vec2> freePos;
     for (Vec2 v : Rectangle(size))
       if (!campaign.sites[v].blocked)

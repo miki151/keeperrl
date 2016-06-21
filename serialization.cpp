@@ -36,6 +36,7 @@
 #include "map_memory.h"
 #include "visibility_map.h"
 #include "view_index.h"
+#include "event_proxy.h"
 
 template <class Archive>
 void Serialization::registerTypes(Archive& ar, int version) {
@@ -49,6 +50,10 @@ void Serialization::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, PlayerControl);
   REGISTER_TYPE(ar, VillageControl);
   REGISTER_TYPE(ar, DoNothingController);
+  REGISTER_TYPE(ar, EventProxy<Collective>);
+  REGISTER_TYPE(ar, EventProxy<PlayerControl>);
+  REGISTER_TYPE(ar, EventProxy<Player>);
+  REGISTER_TYPE(ar, EventProxy<VillageControl>);
   Trigger::registerTypes(ar, version);
   Task::registerTypes(ar, version);
   PlayerControl::registerTypes(ar, version);

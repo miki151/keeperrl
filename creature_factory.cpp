@@ -42,6 +42,7 @@
 #include "attack_type.h"
 #include "attack_level.h"
 #include "attack.h"
+#include "event_proxy.h"
 
 template <class Archive> 
 void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
@@ -90,14 +91,15 @@ class BoulderController : public Monster {
             if (!other->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
               direction = v;
               stopped = false;
-              getCreature()->getGame()->onTrapTrigger(getCreature()->getPosition());
+              getCreature()->getGame()->addEvent({EventId::TRAP_TRIGGERED, getCreature()->getPosition()});
               getCreature()->monsterMessage(
                   PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL),
                   PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
               return;
             } else {
               other->you(MsgType::DISARM_TRAP, "boulder trap");
-              getCreature()->getGame()->onTrapDisarm(getCreature()->getPosition(), other);
+              getCreature()->getGame()->addEvent({EventId::TRAP_DISARMED,
+                  EventInfo::TrapDisarmed{getCreature()->getPosition(), other}});
               getCreature()->die();
               return;
             }
@@ -456,7 +458,7 @@ class KamikazeController : public Monster {
 class ShopkeeperController : public Monster {
   public:
   ShopkeeperController(Creature* c, Location* area)
-      : Monster(c, MonsterAIFactory::stayInLocation(area)), events(this), shopArea(area) {
+      : Monster(c, MonsterAIFactory::stayInLocation(area)), eventProxy(this), shopArea(area) {
   }
 
   virtual void makeMove() override {
@@ -465,7 +467,7 @@ class ShopkeeperController : public Monster {
       return;
     }
     if (firstMove) {
-      events.subscribeTo(getCreature()->getPosition().getModel());
+      eventProxy.subscribeTo(getCreature()->getPosition().getModel());
       for (Position v : shopArea->getAllSquares()) {
         for (Item* item : v.getItems())
           item->setShopkeeper(getCreature());
@@ -521,61 +523,47 @@ class ShopkeeperController : public Monster {
       unpaidItems.erase(from);
   }
   
-  void onItemsAppearedEvent(Position position, const vector<Item*>& items) {
-    if (shopArea->contains(position)) {
-      for (Item* it : items) {
-        it->setShopkeeper(getCreature());
-        position.clearItemIndex(ItemIndex::FOR_SALE);
-      }
-    }
-  }
-
-  void onPickedUpEvent(Creature* c, const vector<Item*>& items) {
-    if (shopArea->contains(c->getPosition())) {
-      for (const Item* item : items)
-        if (item->isShopkeeper(getCreature())) {
-          debt[c] += item->getPrice();
-          unpaidItems[c].insert(item);
+  void onEvent(const GameEvent& event) {
+    switch (event.getId()) {
+      case EventId::ITEMS_APPEARED: {
+          auto info = event.get<EventInfo::ItemsAppeared>();
+          if (shopArea->contains(info.position)) {
+           for (Item* it : info.items) {
+             it->setShopkeeper(getCreature());
+             info.position.clearItemIndex(ItemIndex::FOR_SALE);
+           }
+         }
         }
-    }
-  }
-
-  void onDroppedEvent(Creature* c, const vector<Item*>& items) {
-    if (shopArea->contains(c->getPosition())) {
-      for (const Item* item : items)
-        if (item->isShopkeeper(getCreature())) {
-          if ((debt[c] -= item->getPrice()) <= 0)
-            debt.erase(c);
-          unpaidItems[c].erase(item);
+        break;
+      case EventId::PICKED_UP: {
+          auto info = event.get<EventInfo::ItemsHandled>();
+          if (shopArea->contains(info.creature->getPosition())) {
+            for (const Item* item : info.items)
+              if (item->isShopkeeper(getCreature())) {
+                debt[info.creature] += item->getPrice();
+                unpaidItems[info.creature].insert(item);
+              }
+          }
         }
+        break;
+      case EventId::DROPPED: {
+          auto info = event.get<EventInfo::ItemsHandled>();
+          if (shopArea->contains(info.creature->getPosition())) {
+            for (const Item* item : info.items)
+              if (item->isShopkeeper(getCreature())) {
+                if ((debt[info.creature] -= item->getPrice()) <= 0)
+                  debt.erase(info.creature);
+                unpaidItems[info.creature].erase(item);
+              }
+          }
+        }
+        break;
+      default:
+        break;
     }
   }
 
-  // just for kicks lets see how handling events looks if you don't want to derivce from EventListener
-  class EventProxy : public EventListener {
-    public:
-    EventProxy(ShopkeeperController* c) : shopkeeper(c) {}
-
-    virtual void onItemsAppearedEvent(Position position, const vector<Item*>& items) override {
-      shopkeeper->onItemsAppearedEvent(position, items);
-    }
-
-    virtual void onPickedUpEvent(Creature* c, const vector<Item*>& items) override {
-      shopkeeper->onPickedUpEvent(c, items);
-    }
-
-    virtual void onDroppedEvent(Creature* c, const vector<Item*>& items) override {
-      shopkeeper->onDroppedEvent(c, items);
-    }
-
-    SERIALIZATION_CONSTRUCTOR(EventProxy);
-    SERIALIZE_ALL(shopkeeper);
-
-    private:
-    ShopkeeperController* SERIAL(shopkeeper);
-  };
-
-  EventProxy SERIAL(events);
+  EventProxy<ShopkeeperController> SERIAL(eventProxy);
 
   virtual int getDebt(const Creature* debtor) const override {
     if (debt.count(debtor)) {
@@ -586,7 +574,7 @@ class ShopkeeperController : public Monster {
     }
   }
 
-  SERIALIZE_ALL2(Monster, prevCreatures, debt, thiefCount, thieves, unpaidItems, shopArea, firstMove, events);
+  SERIALIZE_ALL2(Monster, prevCreatures, debt, thiefCount, thieves, unpaidItems, shopArea, firstMove, eventProxy);
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
 
   private:
@@ -692,6 +680,7 @@ void CreatureFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, KrakenController);
   REGISTER_TYPE(ar, KamikazeController);
   REGISTER_TYPE(ar, ShopkeeperController);
+  REGISTER_TYPE(ar, EventProxy<ShopkeeperController>);
   REGISTER_TYPE(ar, IllusionController);
 }
 

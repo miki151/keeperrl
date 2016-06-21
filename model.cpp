@@ -257,8 +257,8 @@ void Model::landHeroPlayer(const string& advName, int handicap) {
   CHECK(target->landCreature(target->getAllPositions(), std::move(player))) << "No place to spawn player";
 }
 
-void Model::addEvent(EventFun fun) {
+void Model::addEvent(const GameEvent& e) {
   for (EventListener* l : eventGenerator->getListeners())
-    fun(l);
+    l->onEvent(e);
 }
 

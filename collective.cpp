@@ -36,6 +36,7 @@
 #include "gender.h"
 #include "collective_name.h"
 #include "creature_attributes.h"
+#include "event_proxy.h"
 
 struct Collective::ItemFetchInfo {
   ItemIndex index;
@@ -48,8 +49,7 @@ struct Collective::ItemFetchInfo {
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(TaskCallback)
-    & SUBCLASS(EventListener);
+  ar& SUBCLASS(TaskCallback);
   serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType, mySquares);
   serializeAll(ar, mySquares2, territory, squareEfficiency, alarmInfo, markedItems, constructions, minionEquipment);
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
@@ -91,7 +91,7 @@ const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
 
 Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
     const CollectiveName& n) 
-  : EventListener(l->getModel()), credit(_credit), control(CollectiveControl::idle(this)),
+  : eventProxy(this, l->getModel()), credit(_credit), control(CollectiveControl::idle(this)),
     tribe(t), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
 }
 
@@ -1175,11 +1175,86 @@ void Collective::decreaseMoraleForBanishing(const Creature*) {
 void Collective::onKillCancelled(Creature* c) {
 }
 
-void Collective::onKilledEvent(Creature* victim, Creature* killer) {
-  if (contains(creatures, victim))
-    onMinionKilled(victim, killer);
-  if (contains(creatures, killer))
-    onKilledSomeone(killer, victim);
+void Collective::onEvent(const GameEvent& event) {
+  switch (event.getId()) {
+    case EventId::ALARM: {
+        Position pos = event.get<Position>();
+        static const int alarmTime = 100;
+        if (getTerritory().contains(pos)) {
+          control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(pos));
+          alarmInfo = {getGlobalTime() + alarmTime, pos };
+          for (Creature* c : byTrait[MinionTrait::FIGHTER])
+            if (c->isAffected(LastingEffect::SLEEP))
+              c->removeEffect(LastingEffect::SLEEP);
+        }
+      }
+      break;
+    case EventId::KILLED: {
+        Creature* victim = event.get<EventInfo::Attacked>().victim;
+        Creature* killer = event.get<EventInfo::Attacked>().attacker;
+        if (contains(creatures, victim))
+          onMinionKilled(victim, killer);
+        if (contains(creatures, killer))
+          onKilledSomeone(killer, victim);
+      }
+      break;
+    case EventId::TORTURED:
+      if (contains(creatures, event.get<EventInfo::Attacked>().attacker))
+        returnResource({ResourceId::MANA, 1});
+      break;
+    case EventId::SURRENDERED: {
+        Creature* victim = event.get<EventInfo::Attacked>().victim;
+        Creature* attacker = event.get<EventInfo::Attacked>().attacker;
+        if (contains(getCreatures(), attacker) && !contains(getCreatures(), victim) &&
+            victim->getBody().isHumanoid())
+          surrendering.insert(victim);
+      }
+      break;
+    case EventId::TRAP_TRIGGERED: {
+        Position pos = event.get<Position>();
+        if (constructions->containsTrap(pos)) {
+          constructions->getTrap(pos).reset();
+          if (constructions->getTrap(pos).getType() == TrapType::SURPRISE)
+            handleSurprise(pos);
+        }
+      }
+      break;
+    case EventId::TRAP_DISARMED: {
+        Position pos = event.get<EventInfo::TrapDisarmed>().position;
+        Creature* who = event.get<EventInfo::TrapDisarmed>().creature;
+        if (constructions->containsTrap(pos)) {
+          control->addMessage(PlayerMessage(who->getName().a() + " disarms a " 
+                + Item::getTrapName(constructions->getTrap(pos).getType()) + " trap.",
+                MessagePriority::HIGH).setPosition(pos));
+          constructions->getTrap(pos).reset();
+        }
+      }
+      break;
+    case EventId::SQUARE_DESTROYED: {
+        Position pos = event.get<Position>();
+        if (territory->contains(pos)) {
+          for (auto& elem : mySquares)
+            if (elem.second.count(pos)) {
+              elem.second.erase(pos);
+              if (config->getEfficiencySquares().count(elem.first))
+                updateEfficiency(pos, elem.first);
+            }
+          for (auto& elem : mySquares2)
+            if (elem.second.count(pos))
+              elem.second.erase(pos);
+          mySquares[SquareId::FLOOR].insert(pos);
+          if (constructions->containsSquare(pos))
+            constructions->onSquareDestroyed(pos);
+        }
+      }
+      break;
+    case EventId::EQUIPED:
+      minionEquipment->own(event.get<EventInfo::ItemsHandled>().creature,
+          getOnlyElement(event.get<EventInfo::ItemsHandled>().items));
+      break;
+    default:
+      break;
+  }
 }
 
 void Collective::onMinionKilled(Creature* victim, Creature* killer) {
@@ -1308,16 +1383,6 @@ void Collective::updateEfficiency(Position pos, SquareType type) {
         CHECK(squareEfficiency[v] >=0) << EnumInfo<SquareId>::getString(type.getId());
       }
   }
-}
-
-static const int alarmTime = 100;
-
-void Collective::onAlarm(Position pos) {
-  control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(pos));
-  alarmInfo = {getGlobalTime() + alarmTime, pos };
-  for (Creature* c : byTrait[MinionTrait::FIGHTER])
-    if (c->isAffected(LastingEffect::SLEEP))
-      c->removeEffect(LastingEffect::SLEEP);
 }
 
 MoveInfo Collective::getAlarmMove(Creature* c) {
@@ -1828,43 +1893,6 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
   }
 }
 
-void Collective::onSurrender(Creature* who) {
-  if (!contains(getCreatures(), who) && who->getBody().isHumanoid())
-    surrendering.insert(who);
-}
-
-void Collective::onSquareDestroyed(Position pos) {
-  for (auto& elem : mySquares)
-    if (elem.second.count(pos)) {
-      elem.second.erase(pos);
-      if (config->getEfficiencySquares().count(elem.first))
-        updateEfficiency(pos, elem.first);
-    }
-  for (auto& elem : mySquares2)
-    if (elem.second.count(pos))
-      elem.second.erase(pos);
-  mySquares[SquareId::FLOOR].insert(pos);
-  if (constructions->containsSquare(pos))
-    constructions->onSquareDestroyed(pos);
-}
-
-void Collective::onTrapTrigger(Position pos) {
-  if (constructions->containsTrap(pos)) {
-    constructions->getTrap(pos).reset();
-    if (constructions->getTrap(pos).getType() == TrapType::SURPRISE)
-      handleSurprise(pos);
-  }
-}
-
-void Collective::onTrapDisarm(const Creature* who, Position pos) {
-  if (constructions->containsTrap(pos)) {
-    control->addMessage(PlayerMessage(who->getName().a() + " disarms a " 
-          + Item::getTrapName(constructions->getTrap(pos).getType()) + " trap.",
-          MessagePriority::HIGH).setPosition(pos));
-    constructions->getTrap(pos).reset();
-  }
-}
-
 void Collective::handleSurprise(Position pos) {
   Vec2 rad(8, 8);
   bool wasMsg = false;
@@ -2038,10 +2066,6 @@ int Collective::getPoints() const {
   return points;
 }
 
-void Collective::onEquip(const Creature* c, const Item* it) {
-  minionEquipment->own(c, it);
-}
-
 void Collective::onRansomPaid() {
   control->onRansomPaid();
 }
@@ -2050,10 +2074,6 @@ void Collective::ownItems(const Creature* who, const vector<Item*> items) {
   for (const Item* it : items)
     if (minionEquipment->isItemUseful(it))
       minionEquipment->own(who, it);
-}
-
-void Collective::onTorture(const Creature* who, const Creature* torturer) {
-  returnResource({ResourceId::MANA, 1});
 }
 
 void Collective::onCopulated(Creature* who, Creature* with) {

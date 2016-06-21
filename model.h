@@ -90,8 +90,7 @@ class Model {
   void beforeUpdateTime(Creature*);
   void afterUpdateTime(Creature*);
 
-  typedef function<void(EventListener*)> EventFun;
-  void addEvent(EventFun);
+  void addEvent(const GameEvent&);
 
   private:
 

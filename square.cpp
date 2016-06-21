@@ -76,7 +76,7 @@ void Square::putCreature(Creature* c) {
   if (c->getAttributes().isStationary())
     c->getPosition().getLevel()->addTickingSquare(c->getPosition().getCoord());
   if (Game* game = c->getGame())
-    game->addEvent([&](EventListener* l) { l->onMovedEvent(c);});
+    game->addEvent({EventId::MOVED, c});
 }
 
 string Square::getName() const {
@@ -198,7 +198,7 @@ void Square::destroy(Position position) {
   setDirty(position);
   position.globalMessage("The " + getName() + " is destroyed.");
   position.getGame()->getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
-  position.getGame()->onSquareDestroyed(position);
+  position.getGame()->addEvent({EventId::SQUARE_DESTROYED, position});
   position.getLevel()->removeSquare(position, SquareFactory::get(SquareId::FLOOR));
 }
 
@@ -214,7 +214,7 @@ void Square::destroyBy(Position pos, Creature* c) {
 void Square::burnOut(Position position) {
   setDirty(position);
   position.globalMessage("The " + getName() + " burns down.");
-  position.getGame()->onSquareDestroyed(position);
+  position.getGame()->addEvent({EventId::SQUARE_DESTROYED, position});
   position.getLevel()->removeSquare(position, SquareFactory::get(SquareId::FLOOR));
 }
 

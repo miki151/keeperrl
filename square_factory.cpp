@@ -164,8 +164,8 @@ class Chest : public Square {
     } else {
       c->playerMessage(msgItem);
       vector<PItem> items = itemFactory.random();
-      c->getGame()->addEvent([&](EventListener* l) {
-          l->onItemsAppearedEvent(c->getPosition(),  extractRefs(items));});
+      c->getGame()->addEvent({EventId::ITEMS_APPEARED, EventInfo::ItemsAppeared{c->getPosition(),
+          extractRefs(items)}});
       c->getPosition().dropItems(std::move(items));
     }
     c->getLevel()->replaceSquare(c->getPosition(), SquareFactory::get(openedId));

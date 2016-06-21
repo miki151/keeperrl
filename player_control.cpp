@@ -60,14 +60,15 @@
 #include "creature_attributes.h"
 #include "collective_config.h"
 #include "villain_type.h"
+#include "event_proxy.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
+  ar& SUBCLASS(CollectiveControl);
   serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum, payoutWarning);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
   serializeAll(ar, knownVillains, knownVillainLocations, notifiedConquered, visibilityMap, warningTimes);
-  serializeAll(ar, lastWarningTime, messageHistory);
+  serializeAll(ar, lastWarningTime, messageHistory, eventProxy);
 }
 
 SERIALIZABLE(PlayerControl);
@@ -280,7 +281,7 @@ static vector<string> getHints() {
 }
 
 PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(col),
-    EventListener(level->getModel()), hints(getHints()) {
+    eventProxy(this, level->getModel()), hints(getHints()) {
   bool hotkeys[128] = {0};
   for (BuildInfo info : getBuildInfo(TribeId::getKeeper())) {
     if (info.hotkey) {
@@ -1178,18 +1179,63 @@ void PlayerControl::addImportantLongMessage(const string& msg, optional<Position
 
 void PlayerControl::initialize() {
   for (Creature* c : getCreatures())
-    onMovedEvent(c);
+    onEvent({EventId::MOVED, c});
 }
 
-void PlayerControl::onMovedEvent(Creature* c) {
-  if (contains(getCreatures(), c)) {
-    vector<Position> visibleTiles = c->getVisibleTiles();
-    visibilityMap->update(c, visibleTiles);
-    for (Position pos : visibleTiles) {
-      if (getCollective()->addKnownTile(pos))
-        updateKnownLocations(pos);
-      addToMemory(pos);
-    }
+void PlayerControl::onEvent(const GameEvent& event) {
+  switch (event.getId()) {
+    case EventId::MOVED: {
+        Creature* c = event.get<Creature*>();
+        if (contains(getCreatures(), c)) {
+          vector<Position> visibleTiles = c->getVisibleTiles();
+          visibilityMap->update(c, visibleTiles);
+          for (Position pos : visibleTiles) {
+            if (getCollective()->addKnownTile(pos))
+              updateKnownLocations(pos);
+            addToMemory(pos);
+          }
+        }
+      }
+      break;
+    case EventId::PICKED_UP: {
+        auto info = event.get<EventInfo::ItemsHandled>();
+        if (info.creature == getControlled() && !getCollective()->hasTrait(info.creature, MinionTrait::WORKER))
+          getCollective()->ownItems(info.creature, info.items);
+      }
+      break;
+    case EventId::WON_GAME:
+      CHECK(!getKeeper()->isDead());
+      getGame()->conquered(*getKeeper()->getName().first(), getCollective()->getKills().getSize(),
+          getCollective()->getDangerLevel() + getCollective()->getPoints());
+      getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
+        "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
+      break;
+    case EventId::TECHBOOK_READ: {
+        Technology* tech = event.get<Technology*>();
+        vector<Technology*> nextTechs = Technology::getNextTechs(getCollective()->getTechnologies());
+        if (tech == nullptr) {
+          if (!nextTechs.empty())
+            tech = Random.choose(nextTechs);
+          else
+            tech = Random.choose(Technology::getAll());
+        }
+        if (!contains(getCollective()->getTechnologies(), tech)) {
+          if (!contains(nextTechs, tech))
+            getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
+                + ", but you do not comprehend it.");
+          else {
+            getView()->presentText("Information", "You have acquired the knowledge of " + tech->getName());
+            getCollective()->acquireTech(tech, true);
+          }
+        } else {
+          getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
+              + ", which you already possess.");
+        }
+
+      }
+      break;
+    default:
+      break;
   }
 }
 
@@ -2034,41 +2080,6 @@ TribeId PlayerControl::getTribeId() const {
 
 bool PlayerControl::isEnemy(const Creature* c) const {
   return getKeeper() && getKeeper()->isEnemy(c);
-}
-
-void PlayerControl::onPickedUpEvent(Creature* c, const vector<Item*>& items) {
-  if (c == getControlled() && !getCollective()->hasTrait(c, MinionTrait::WORKER))
-    getCollective()->ownItems(c, items);
-}
-
-void PlayerControl::onTechBookRead(Technology* tech) {
-  vector<Technology*> nextTechs = Technology::getNextTechs(getCollective()->getTechnologies());
-  if (tech == nullptr) {
-    if (!nextTechs.empty())
-      tech = Random.choose(nextTechs);
-    else
-      tech = Random.choose(Technology::getAll());
-  }
-  if (!contains(getCollective()->getTechnologies(), tech)) {
-    if (!contains(nextTechs, tech))
-      getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
-          + ", but you do not comprehend it.");
-    else {
-      getView()->presentText("Information", "You have acquired the knowledge of " + tech->getName());
-      getCollective()->acquireTech(tech, true);
-    }
-  } else {
-    getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
-        + ", which you already possess.");
-  }
-}
-
-void PlayerControl::onWonGameEvent() {
-  CHECK(!getKeeper()->isDead());
-  getGame()->conquered(*getKeeper()->getName().first(), getCollective()->getKills().getSize(),
-      getCollective()->getDangerLevel() + getCollective()->getPoints());
-  getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
-      "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
 }
 
 void PlayerControl::onMemberKilled(const Creature* victim, const Creature* killer) {

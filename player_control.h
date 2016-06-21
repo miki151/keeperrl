@@ -40,8 +40,10 @@ class MinionAction;
 struct TaskActionInfo;
 struct EquipmentActionInfo;
 struct TeamCreatureInfo;
+template <typename T>
+class EventProxy;
 
-class PlayerControl : public CreatureView, public CollectiveControl, public EventListener {
+class PlayerControl : public CreatureView, public CollectiveControl {
   public:
   PlayerControl(Collective*, Level*);
   ~PlayerControl();
@@ -82,7 +84,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
 
-  void onTechBookRead(Technology*);
   vector<Creature*> getTeam(const Creature*);
 
   protected:
@@ -106,12 +107,11 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void tick() override;
   virtual void update(bool currentlyActive) override;
 
-  // from EventListener
-  virtual void onMovedEvent(Creature*) override;
-  virtual void onPickedUpEvent(Creature*, const vector<Item*>&) override;
-  virtual void onWonGameEvent() override;
-
   private:
+  HeapAllocated<EventProxy<PlayerControl>> SERIAL(eventProxy);
+  friend EventProxy<PlayerControl>;
+  void onEvent(const GameEvent&);
+
   void considerNightfallMessage();
   void considerWarning();
 

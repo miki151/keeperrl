@@ -43,12 +43,13 @@
 #include "creature_attributes.h"
 #include "attack_level.h"
 #include "villain_type.h"
+#include "event_proxy.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(Controller) & SUBCLASS(EventListener);
+  ar& SUBCLASS(Controller);
   serializeAll(ar, travelling, travelDir, target, lastLocation, displayGreeting, levelMemory, messages);
-  serializeAll(ar, messageHistory, adventurer);
+  serializeAll(ar, messageHistory, adventurer, eventProxy);
 }
 
 SERIALIZABLE(Player);
@@ -56,27 +57,51 @@ SERIALIZABLE(Player);
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
 Player::Player(Creature* c, Model* m, bool adv, MapMemory* memory) :
-    Controller(c), EventListener(m), levelMemory(memory), adventurer(adv), displayGreeting(adventurer) {
+    Controller(c), levelMemory(memory), eventProxy(this, m), adventurer(adv), displayGreeting(adventurer) {
 }
 
 Player::~Player() {
 }
 
-void Player::onThrownEvent(Level* l, const vector<Item*>& item, const vector<Vec2>& trajectory) {
-  if (getCreature()->getPosition().isSameLevel(l))
-    for (Vec2 v : trajectory)
-      if (getCreature()->canSee(v)) {
-        getView()->animateObject(trajectory, item[0]->getViewObject());
-        return;
+void Player::onEvent(const GameEvent& event) {
+  switch (event.getId()) {
+    case EventId::ITEMS_THROWN: {
+        auto info = event.get<EventInfo::ItemsThrown>();
+        if (getCreature()->getPosition().isSameLevel(info.level))
+          for (Vec2 v : info.trajectory)
+            if (getCreature()->canSee(v)) {
+              getView()->animateObject(info.trajectory, info.items[0]->getViewObject());
+              return;
+            }
       }
-}
-
-void Player::onExplosionEvent(Position pos) {
-  if (getCreature()->getPosition().isSameLevel(pos)) {
-    if (getCreature()->canSee(pos))
-      getView()->animation(pos.getCoord(), AnimationId::EXPLOSION);
-    else
-      privateMessage("BOOM!");
+      break;
+    case EventId::EXPLOSION: {
+        Position pos = event.get<Position>();
+        if (getCreature()->getPosition().isSameLevel(pos)) {
+          if (getCreature()->canSee(pos))
+            getView()->animation(pos.getCoord(), AnimationId::EXPLOSION);
+          else
+            privateMessage("BOOM!");
+        }
+      }
+      break;
+    case EventId::ALARM: {
+        Position pos = event.get<Position>();
+        Position myPos = getCreature()->getPosition();
+        if (pos == myPos)
+          getCreature()->playerMessage("An alarm sounds near you.");
+        else if (pos.isSameLevel(myPos))
+          getCreature()->playerMessage("An alarm sounds in the " + 
+              getCardinalName(myPos.getDir(pos).getBearing().getCardinalDir()));
+      }
+      break;
+    case EventId::WON_GAME:
+        if (adventurer)
+          getGame()->conquered(*getCreature()->getName().first(), getCreature()->getKills().getSize(),
+              getCreature()->getPoints());
+        break;
+    default:
+      break;
   }
 }
 
@@ -936,11 +961,5 @@ void Player::considerAdventurerMusic() {
       return;
     }
   getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL, false);
-}
-
-void Player::onWonGameEvent() {
-  if (adventurer)
-    getGame()->conquered(*getCreature()->getName().first(), getCreature()->getKills().getSize(),
-        getCreature()->getPoints());
 }
 

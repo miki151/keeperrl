@@ -195,7 +195,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canConsume(const Creature*) const;
   
   void displace(double time, Vec2);
-  void surrender(const Creature* to);
+  void surrender(Creature* to);
   
   virtual void onChat(Creature*);
 

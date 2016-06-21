@@ -487,7 +487,7 @@ CreatureAction Creature::pickUp(const vector<Item*>& items) const {
     self->equipment->addItems(self->getPosition().removeItems(items));
     if (getInventoryWeight() > getModifier(ModifierType::INV_LIMIT))
       playerMessage("You are overloaded.");
-    getGame()->addEvent([&] (EventListener* l) { l->onPickedUpEvent(self, items);});
+    getGame()->addEvent({EventId::PICKED_UP, EventInfo::ItemsHandled{self, items}});
     self->spendTime(1);
   });
 }
@@ -509,7 +509,7 @@ CreatureAction Creature::drop(const vector<Item*>& items) const {
     }
     for (auto item : items)
       self->getPosition().dropItem(self->equipment->removeItem(item));
-    getGame()->addEvent([&] (EventListener* l) { l->onDroppedEvent(self, items);});
+    getGame()->addEvent({EventId::DROPPED, EventInfo::ItemsHandled{self, items}});
     self->spendTime(1);
   });
 }
@@ -569,7 +569,7 @@ CreatureAction Creature::equip(Item* item) const {
     monsterMessage(getName().the() + " equips " + item->getAName());
     item->onEquip(self);
     if (Game* game = getGame())
-      game->onEquip(self, item);
+      game->addEvent({EventId::EQUIPED, EventInfo::ItemsHandled{self, {item}}});
     self->spendTime(1);
   });
 }
@@ -1208,7 +1208,7 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
       getPosition().dropItem(std::move(item));
   if (dropInventory && dCorpse)
     getPosition().dropItems(getBody().getCorpseItem(getName().bare(), getUniqueId()));
-  getGame()->addEvent([&] (EventListener* l) { l->onKilledEvent(this, attacker);});
+  getGame()->addEvent({EventId::KILLED, EventInfo::Attacked{this, attacker}});
   if (attacker)
     attacker->onKilled(this);
   getTribe()->onMemberKilled(this, attacker);
@@ -1252,13 +1252,13 @@ CreatureAction Creature::torture(Creature* other) const {
       other->heal();
     else
       other->die();
-    getGame()->onTorture(other, this);
+    getGame()->addEvent({EventId::TORTURED, EventInfo::Attacked{other, self}});
     self->spendTime(1);
   });
 }
 
-void Creature::surrender(const Creature* to) {
-  getGame()->onSurrender(this, to);
+void Creature::surrender(Creature* to) {
+  getGame()->addEvent({EventId::TORTURED, EventInfo::Attacked{this, to}});
 }
 
 CreatureAction Creature::give(Creature* whom, vector<Item*> items) {

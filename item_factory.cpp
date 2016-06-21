@@ -37,6 +37,7 @@
 #include "item_attributes.h"
 #include "sound.h"
 #include "creature_attributes.h"
+#include "event_listener.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -283,7 +284,7 @@ class TechBook : public Item {
 
   virtual void applySpecial(Creature* c) override {
     if (!read || !!tech) {
-      c->getGame()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
+      c->getGame()->addEvent({EventId::TECHBOOK_READ, tech ? Technology::get(*tech) : nullptr});
       read = true;
     }
   }

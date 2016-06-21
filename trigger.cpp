@@ -32,6 +32,7 @@
 #include "creature_attributes.h"
 #include "attack_level.h"
 #include "attack_type.h"
+#include "event_listener.h"
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {
@@ -173,10 +174,10 @@ class Trap : public Trigger {
         if (!alwaysVisible)
           c->you(MsgType::TRIGGER_TRAP, "");
         Effect::applyToCreature(c, effect, EffectStrength::NORMAL);
-        position.getGame()->onTrapTrigger(c->getPosition());
+        position.getGame()->addEvent({EventId::TRAP_TRIGGERED, c->getPosition()});
       } else {
         c->you(MsgType::DISARM_TRAP, Effect::getName(effect) + " trap");
-        position.getGame()->onTrapDisarm(c->getPosition(), c);
+        position.getGame()->addEvent({EventId::TRAP_DISARMED, EventInfo::TrapDisarmed{c->getPosition(), c}});
       }
       c->getPosition().removeTrigger(this);
     }
