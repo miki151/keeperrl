@@ -149,6 +149,10 @@ optional<float> ViewObject::getAttribute(Attribute attr) const {
   return attributes[attr];
 }
 
+void ViewObject::setIndoors(bool state) {
+  indoors = state;
+}
+
 void ViewObject::setDescription(const string& s) {
   description = s;
 }
@@ -195,7 +199,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::TRAINING_ROOM: return "Training room";
     case ViewId::THRONE: return "Throne";
     case ViewId::WHIPPING_POST: return "Whipping post";
-    case ViewId::NOTICE_BOARD: return "Notice board";
+    case ViewId::NOTICE_BOARD: return "Message board";
     case ViewId::SOKOBAN_HOLE: return "Hole";
     case ViewId::RITUAL_ROOM: return "Ritual room";
     case ViewId::IMPALED_HEAD: return "Impaled head";
@@ -262,6 +266,8 @@ vector<string> ViewObject::getLegend() const {
     ret.push_back("Planned");
   if (hasModifier(Modifier::SLEEPING))
     ret.push_back("Sleeping");
+  if (indoors)
+    ret.push_back(*indoors ? "Indoors" : "Outdoors");
   if (position.x > -1)
     ret.push_back(toString(position.x) + ", " + toString(position.y));
   if (!!attributes[Attribute::MORALE])

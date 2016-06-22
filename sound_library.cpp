@@ -4,9 +4,9 @@
 #include "sound.h"
 #include "options.h"
 
-using sf::Music;
+#include <cAudio/cAudio.h>
 
-SoundLibrary::SoundLibrary(Options* options, const string& path) {
+SoundLibrary::SoundLibrary(Options* options, cAudio::IAudioManager* audio, const string& path) : cAudio(audio) {
 #ifdef DISABLE_SFX
   on = false;
 #else
@@ -24,8 +24,9 @@ void SoundLibrary::addSounds(SoundId id, const string& path) {
   while (dirent* ent = readdir(dir)) {
     string name(ent->d_name);
     if (endsWith(name, ".ogg")) {
-      sounds[id].emplace_back(new Music());
-      CHECK(sounds[id].back()->openFromFile(path + "/" + name));
+      auto sound = cAudio->create(name.c_str(), (path + "/" + name).c_str());
+      CHECK(sound) << "Failed to load sound " << path + "/" + name;
+      sounds[id].push_back(sound);
     }
   }
 }
@@ -36,6 +37,6 @@ void SoundLibrary::playSound(const Sound& s) {
   if (int numSounds = sounds[s.getId()].size()) {
     int ind = Random.get(numSounds);
     sounds[s.getId()][ind]->setPitch(s.getPitch());
-    sounds[s.getId()][ind]->play();
+    sounds[s.getId()][ind]->play2d(false);
   }
 }

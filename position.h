@@ -2,6 +2,7 @@
 #define _POSITION_H
 
 #include "util.h"
+#include "stair_key.h"
 
 class Square;
 class Level;
@@ -15,6 +16,7 @@ struct CoverInfo;
 class Attack;
 class Game;
 class TribeId;
+class Sound;
 
 class Position {
   public:
@@ -34,6 +36,7 @@ class Position {
   Position withCoord(Vec2 newCoord) const;
   Vec2 getCoord() const;
   Level* getLevel() const;
+  optional<StairKey> getLandingLink() const;
  
   bool isValid() const;
   bool operator == (const Position&) const;
@@ -58,8 +61,10 @@ class Position {
   bool canEnterEmpty(const MovementType&) const;
   optional<SquareApplyType> getApplyType() const;
   optional<SquareApplyType> getApplyType(const Creature*) const;
-  void onApply(Creature*);
+  void apply(Creature*);
+  void apply();
   double getApplyTime() const;
+  void addSound(const Sound&) const;
   bool canHide() const;
   void getViewIndex(ViewIndex&, const Creature* viewer) const;
   vector<Trigger*> getTriggers() const;
@@ -80,9 +85,6 @@ class Position {
   void destroyBy(Creature* c);
   void destroy();
   bool construct(const SquareType&);
-  bool canLock() const;
-  bool isLocked() const;
-  void lock();
   bool isBurning() const;
   void setOnFire(double amount);
   bool needsMemoryUpdate() const;
@@ -94,13 +96,12 @@ class Position {
   optional<TribeId> getForbiddenTribe() const;
   void addPoisonGas(double amount);
   double getPoisonGasAmount() const;
-  CoverInfo getCoverInfo() const;
+  bool isCovered() const;
   bool sunlightBurns() const;
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   bool canNavigate(const MovementType&) const;
   vector<Position> getVisibleTiles(VisionId);
-  const vector<Vec2>& getTravelDir() const;
   int getStrength() const;
   bool canSeeThru(VisionId) const;
   bool isVisibleBy(const Creature*);
@@ -120,7 +121,8 @@ class Position {
   int getHash() const;
 
   private:
-  Square* getSquare() const;
+  Square* modSquare() const;
+  const Square* getSquare() const;
   Vec2 SERIAL(coord);
   Level* SERIAL(level) = nullptr;
 };

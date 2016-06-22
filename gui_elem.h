@@ -33,7 +33,7 @@ class GuiElem {
   virtual void onMouseGone() {}
   virtual void onMouseRelease(Vec2) {}
   virtual void onRefreshBounds() {}
-  virtual bool onKeyPressed2(Event::KeyEvent) { return false;}
+  virtual bool onKeyPressed2(SDL_Keysym) { return false;}
   virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
   virtual optional<int> getPreferredWidth() { return none; }
   virtual optional<int> getPreferredHeight() { return none; }
@@ -59,25 +59,31 @@ class GuiFactory {
   DragContainer& getDragContainer();
   void propagateEvent(const Event&, vector<GuiElem*>);
 
-  PGuiElem button(function<void()> fun, Event::KeyEvent, bool capture = false);
+  static bool isShift(const SDL_Keysym&);
+  static bool isAlt(const SDL_Keysym&);
+  static bool isCtrl(const SDL_Keysym&);
+  static bool keyEventEqual(const SDL_Keysym&, const SDL_Keysym&);
+
+  SDL_Keysym getKey(SDL_Keycode);
+  PGuiElem button(function<void()> fun, SDL_Keysym, bool capture = false);
   PGuiElem buttonChar(function<void()> fun, char, bool capture = false);
   PGuiElem button(function<void()> fun);
-  PGuiElem reverseButton(function<void()> fun, vector<Event::KeyEvent> = {}, bool capture = false);
-  PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun, Event::KeyEvent, bool capture = false);
+  PGuiElem reverseButton(function<void()> fun, vector<SDL_Keysym> = {}, bool capture = false);
+  PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun, SDL_Keysym, bool capture = false);
   PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun);
   PGuiElem releaseButton(function<void()> fun);
   PGuiElem releaseButton(function<void(Rectangle buttonBounds)> fun);
-  PGuiElem focusable(PGuiElem content, vector<Event::KeyEvent> focusEvent,
-      vector<Event::KeyEvent> defocusEvent, bool& focused);
+  PGuiElem focusable(PGuiElem content, vector<SDL_Keysym> focusEvent,
+      vector<SDL_Keysym> defocusEvent, bool& focused);
   PGuiElem mouseWheel(function<void(bool)>);
-  PGuiElem keyHandler(function<void(Event::KeyEvent)>, bool capture = false);
-  PGuiElem keyHandler(function<void()>, vector<Event::KeyEvent>, bool capture = false);
+  PGuiElem keyHandler(function<void(SDL_Keysym)>, bool capture = false);
+  PGuiElem keyHandler(function<void()>, vector<SDL_Keysym>, bool capture = false);
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem, PGuiElem);
   PGuiElem external(GuiElem*);
-  PGuiElem rectangle(sf::Color color, optional<sf::Color> borderColor = none);
+  PGuiElem rectangle(Color color, optional<Color> borderColor = none);
   class ListBuilder {
     public:
     ListBuilder(GuiFactory&, int defaultSize = 0);
@@ -136,13 +142,13 @@ class GuiFactory {
       Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = colors[ColorId::WHITE]);
   PGuiElem centeredLabel(Renderer::CenterType, const string&, Color = colors[ColorId::WHITE]);
-  PGuiElem variableLabel(function<string()>,
-      Renderer::CenterType = Renderer::NONE, int size = Renderer::textSize, Color = colors[ColorId::WHITE]);
+  PGuiElem variableLabel(function<string()>, int lineHeight, int size = Renderer::textSize,
+      Color = colors[ColorId::WHITE]);
   PGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_ON]);
   PGuiElem mainMenuLabelBg(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_OFF]);
-  PGuiElem labelUnicode(const String&, Color = colors[ColorId::WHITE], int size = Renderer::textSize,
+  PGuiElem labelUnicode(const string&, Color = colors[ColorId::WHITE], int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
-  PGuiElem labelUnicode(const String&, function<Color()>, int size = Renderer::textSize,
+  PGuiElem labelUnicode(const string&, function<Color()>, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
   PGuiElem viewObject(const ViewObject&, double scale = 1, Color = colors[ColorId::WHITE]);
   PGuiElem viewObject(ViewId, double scale = 1, Color = colors[ColorId::WHITE]);
@@ -177,19 +183,12 @@ class GuiFactory {
   PGuiElem alignment(GuiFactory::Alignment, PGuiElem, optional<Vec2> size = none);
   PGuiElem dragSource(DragContent, function<PGuiElem()>);
   PGuiElem dragListener(function<void(DragContent)>);
+  PGuiElem renderInBounds(PGuiElem);
 
   enum class TexId {
     SCROLLBAR,
     SCROLL_BUTTON,
     BACKGROUND_PATTERN,
-    BORDER_TOP_LEFT,
-    BORDER_TOP_RIGHT,
-    BORDER_BOTTOM_LEFT,
-    BORDER_BOTTOM_RIGHT,
-    BORDER_TOP,
-    BORDER_RIGHT,
-    BORDER_BOTTOM,
-    BORDER_LEFT,
     HORI_CORNER1,
     HORI_CORNER2,
     HORI_LINE,
@@ -236,21 +235,17 @@ class GuiFactory {
   PGuiElem miniWindow2(PGuiElem content, function<void()> onExitButton = nullptr);
   PGuiElem miniBorder();
   PGuiElem miniBorder2();
-  PGuiElem border2();
   PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight);
   PGuiElem invisible(PGuiElem content);
   PGuiElem background(PGuiElem content, Color);
   PGuiElem translucentBackground(PGuiElem content);
   PGuiElem translucentBackground();
-  Color translucentBgColor;
-  void changeBackground(int r, int g, int b);
-  void setBackground(int r, int g, int b);
-  Color background1;
-  Color background2;
-  Color foreground1;
-  Color text;
-  Color titleText;
-  Color inactiveText;
+  Color translucentBgColor = Color(0, 0, 0, 150);
+  Color foreground1 = Color(0x20, 0x5c, 0x4a, 150);
+  Color text = colors[ColorId::WHITE];
+  Color titleText = colors[ColorId::YELLOW];
+  Color inactiveText = colors[ColorId::LIGHT_GRAY];
+  Color background1 = colors[ColorId::BLACK];
 
   enum IconId {
     WORLD_MAP,
@@ -275,7 +270,7 @@ class GuiFactory {
     TEAM_BUTTON_HIGHLIGHT,
   };
 
-  PGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color(255, 255, 255));
+  PGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = colors[ColorId::WHITE]);
   Texture& get(TexId);
   PGuiElem spellIcon(SpellId);
   PGuiElem uiHighlightMouseOver(Color = colors[ColorId::GREEN]);
@@ -289,7 +284,7 @@ class GuiFactory {
   PGuiElem getScrollbar();
   Vec2 getScrollButtonSize();
   Texture& getIconTex(IconId);
-  Event::KeyEvent getHotkeyEvent(char) ;
+  SDL_Keysym getHotkeyEvent(char) ;
 
   map<TexId, Texture> textures;
   vector<Texture> iconTextures;

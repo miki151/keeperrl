@@ -17,6 +17,8 @@
 
 #include "field_of_view.h"
 #include "square.h"
+#include "square_array.h"
+#include "square_type.h"
 
 template <class Archive> 
 void FieldOfView::serialize(Archive& ar, const unsigned int version) {
@@ -41,8 +43,8 @@ SERIALIZABLE(FieldOfView::Visibility);
 SERIALIZATION_CONSTRUCTOR_IMPL(FieldOfView);
 SERIALIZATION_CONSTRUCTOR_IMPL2(FieldOfView::Visibility, Visibility);
 
-FieldOfView::FieldOfView(const Table<PSquare>& s, VisionId v) 
-  : squares(&s), visibility(s.getWidth(), s.getHeight()), vision(v) {
+FieldOfView::FieldOfView(const SquareArray& s, VisionId v) 
+  : squares(&s), visibility(s.getBounds().width(), s.getBounds().height()), vision(v) {
 }
 
 bool FieldOfView::canSee(Vec2 from, Vec2 to) {
@@ -74,19 +76,19 @@ void FieldOfView::Visibility::setVisible(int x, int y) {
 static int totalIter = 0;
 static int numSamples = 0;
 
-FieldOfView::Visibility::Visibility(const Table<PSquare>& squares, VisionId vision, int x, int y) : px(x), py(y) {
+FieldOfView::Visibility::Visibility(const SquareArray& squares, VisionId vision, int x, int y) : px(x), py(y) {
   memset(visible, 0, (2 * sightRange + 1) * (2 * sightRange + 1));
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
-      [&](int px, int py) { return !squares[x + px][y + py]->canSeeThru(vision); },
+      [&](int px, int py) { return !squares.getReadonly(Vec2(x + px, y + py))->canSeeThru(vision); },
       [&](int px, int py) { setVisible(px ,py); });
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
-      [&](int px, int py) { return !squares[x + py][y - px]->canSeeThru(vision); },
+      [&](int px, int py) { return !squares.getReadonly(Vec2(x + py, y - px))->canSeeThru(vision); },
       [&](int px, int py) { setVisible(py, -px); });
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange,2,-1,1,1,1,
-      [&](int px, int py) { return !squares[x - px][y - py]->canSeeThru(vision); },
+      [&](int px, int py) { return !squares.getReadonly(Vec2(x - px, y - py))->canSeeThru(vision); },
       [&](int px, int py) { setVisible(-px, -py); });
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange,2,-1,1,1,1,
-      [&](int px, int py) { return !squares[x - py][y + px]->canSeeThru(vision); },
+      [&](int px, int py) { return !squares.getReadonly(Vec2(x - py, y + px))->canSeeThru(vision); },
       [&](int px, int py) { setVisible(-py, px); });
   setVisible(0, 0);
 /*  ++numSamples;

@@ -22,14 +22,15 @@
 #include "creature_attributes.h"
 #include "name_generator.h"
 #include "campaign.h"
-#include "game_events.h"
 #include "save_file_info.h"
+#include "file_sharing.h"
+#include "villain_type.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) { 
   serializeAll(ar, villainsByType, collectives, lastTick, playerControl, playerCollective, won, currentTime);
   serializeAll(ar, worldName, musicType, portals, statistics, spectator, tribes, gameIdentifier, player);
-  serializeAll(ar, gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime);
+  serializeAll(ar, gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
     sunlightInfo.update(currentTime);
 }
@@ -64,7 +65,7 @@ Game::Game(const string& world, const string& player, Table<PModel>&& m, Vec2 ba
         collectives.push_back(c);
         if (auto type = c->getVillainType()) {
           villainsByType[*type].push_back(c);
-          if (type == VillainType::PLAYER) {
+          if (*type == VillainType::PLAYER) {
             playerControl = NOTNULL(dynamic_cast<PlayerControl*>(c->getControl()));
             playerCollective = c;
           }
@@ -73,6 +74,9 @@ Game::Game(const string& world, const string& player, Table<PModel>&& m, Vec2 ba
       m->setGame(this);
       m->updateSunlightMovement();
     }
+  turnEvents = {0, 500};
+  for (int i : Range(200))
+    turnEvents.insert(1000 * (i + 1));
 }
 
 Game::~Game() {}
@@ -93,6 +97,7 @@ PGame Game::splashScreen(PModel&& model) {
   t[0][0] = std::move(model);
   PGame game(new Game("", "", std::move(t), Vec2(0, 0)));
   game->spectator.reset(new Spectator(game->models[0][0]->getTopLevel()));
+  game->turnEvents.clear();
   return game;
 }
 
@@ -154,12 +159,12 @@ void Game::prepareSiteRetirement() {
   playerControl->getKeeper()->modViewObject().setId(ViewId::RETIRED_KEEPER);
   playerControl = nullptr;
   playerCollective->setControl(PCollectiveControl(
-        new VillageControl(playerCollective, CONSTRUCT(VillageControl::Villain,
+        new VillageControl(playerCollective, CONSTRUCT(VillageBehaviour,
           c.minPopulation = 6;
           c.minTeamSize = 5;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
             AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
-          c.behaviour = VillageBehaviour(VillageBehaviourId::KILL_LEADER);
+          c.attackBehaviour = AttackBehaviourId::KILL_LEADER;
           c.ransom = make_pair(0.8, Random.get(500, 700));))));
   for (Collective* col : models[baseModel]->getCollectives())
     for (Creature* c : col->getCreatures())
@@ -263,7 +268,39 @@ bool Game::isVillainActive(const Collective* col) {
   return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
 }
 
+void Game::checkConquered() {
+  bool conquered = true;
+  for (Collective* col : getCollectives()) {
+    conquered &= col->isConquered() || col->getVillainType() != VillainType::MAIN;
+    if (col->isConquered() && campaign && col->getVillainType()) {
+      Vec2 coords = getModelCoords(col->getLevel()->getModel());
+      if (!campaign->isDefeated(coords))
+        if (auto retired = campaign->getSites()[coords].getRetired())
+          uploadEvent("retiredConquered", {
+              {"retiredId", getGameId(retired->fileInfo)},
+              {"playerName", getPlayerName()}});
+      campaign->setDefeated(coords);
+    }
+  }
+  if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
+    addEvent(EventId::WON_GAME);
+    won = true;
+  }
+
+}
+
 void Game::tick(double time) {
+  if (!turnEvents.empty() && time > *turnEvents.begin()) {
+    int turn = *turnEvents.begin();
+    if (turn == 0) {
+      if (campaign)
+        uploadEvent("campaignStarted", campaign->getParameters());
+      else
+        uploadEvent("singleStarted", {});
+    } else
+      uploadEvent("turn", {{"turn", toString(turn)}});
+    turnEvents.erase(turn);
+  }
   auto previous = sunlightInfo.getState();
   sunlightInfo.update(currentTime);
   if (previous != sunlightInfo.getState())
@@ -271,23 +308,7 @@ void Game::tick(double time) {
       if (Model* m = models[v].get())
         m->updateSunlightMovement();
   Debug() << "Global time " << time;
-  if (playerControl) {
-    bool conquered = true;
-    for (Collective* col : getCollectives()) {
-      conquered &= col->isConquered() || col->getVillainType() != VillainType::MAIN;
-      if (col->isConquered() && campaign && col->getVillainType()) {
-        Vec2 coords = getModelCoords(col->getLevel()->getModel());
-        if (!campaign->isDefeated(coords))
-          if (auto retired = campaign->getSites()[coords].getRetired())
-            gameEvents->addRetiredConquered(getGameId(retired->fileInfo), getPlayerName());
-        campaign->setDefeated(coords);
-      }
-    }
-    if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
-      playerControl->onConqueredLand();
-      won = true;
-    }
-  }
+  checkConquered();
   for (Collective* col : collectives) {
     if (isVillainActive(col))
       col->update(col->getLevel()->getModel() == getCurrentModel());
@@ -390,7 +411,9 @@ void Game::transferAction(vector<Creature*> creatures) {
       if (!visited[*dest]) {
         visited[*dest] = true;
         if (auto retired = campaign->getSites()[*dest].getRetired())
-          gameEvents->addRetiredLoaded(getGameId(retired->fileInfo), getPlayerName());
+            uploadEvent("retiredLoaded", {
+                {"retiredId", getGameId(retired->fileInfo)},
+                {"playerName", getPlayerName()}});
 
       }
       wasTransfered = true;
@@ -431,36 +454,6 @@ const SunlightInfo& Game::getSunlightInfo() const {
   return sunlightInfo;
 }
 
-
-void Game::onTechBookRead(Technology* tech) {
-  if (playerControl)
-    playerControl->onTechBookRead(tech);
-}
-
-void Game::onAlarm(Position pos) {
-  Model* model = pos.getModel();
-  for (auto& col : model->getCollectives())
-    if (col->getTerritory().contains(pos))
-      col->onAlarm(pos);
-  if (const Creature* c = getPlayer()) {
-    if (pos == c->getPosition())
-      c->playerMessage("An alarm sounds near you.");
-    else if (pos.isSameLevel(c->getPosition()))
-      c->playerMessage("An alarm sounds in the " + 
-          getCardinalName(c->getPosition().getDir(pos).getBearing().getCardinalDir()));
-  }
-}
-
-void Game::landHeroPlayer() {
-  auto handicap = view->getNumber("Choose handicap (your adventurer's strength and dexterity increase)", 0, 20, 5);
-  PCreature player = CreatureFactory::getAdventurer(handicap.get_value_or(0));
-  string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
-  if (!advName.empty())
-    player->getName().setFirst(advName);
-  Level* target = models[0][0]->getTopLevel();
-  CHECK(target->landCreature(StairKey::heroSpawn(), std::move(player))) << "No place to spawn player";
-}
-
 string Game::getGameDisplayName() const {
   return gameDisplayName;
 }
@@ -469,56 +462,27 @@ string Game::getGameIdentifier() const {
   return gameIdentifier;
 }
 
-void Game::onKilledLeader(const Collective* victim, const Creature* leader) {
-  if (victim == playerCollective && isSingleModel() && victim->getVillainType() == VillainType::MAIN) {
-    if (Creature* c = getPlayer())
-      killedKeeper(*c->getName().first(), c->getName().title(), worldName, c->getKills().getSize(), c->getPoints());
-  }
-}
-
-void Game::onTorture(const Creature* who, const Creature* torturer) {
-  for (Collective* col : getCollectives())
-    if (contains(col->getCreatures(), torturer))
-      col->onTorture(who, torturer);
-}
-
-void Game::onSurrender(Creature* who, const Creature* to) {
-  for (auto& col : collectives)
-    if (contains(col->getCreatures(), to))
-      col->onSurrender(who);
-}
-
-void Game::onTrapTrigger(Position pos) {
-  for (auto& col : collectives)
-    if (col->getTerritory().contains(pos))
-      col->onTrapTrigger(pos);
-}
-
-void Game::onTrapDisarm(Position pos, const Creature* who) {
-  for (auto& col : collectives)
-    if (col->getTerritory().contains(pos))
-      col->onTrapDisarm(who, pos);
-}
-
-void Game::onSquareDestroyed(Position pos) {
-  for (auto& col : collectives)
-    if (col->getTerritory().contains(pos))
-      col->onSquareDestroyed(pos);
-}
-
-void Game::onEquip(const Creature* c, const Item* it) {
-  for (auto& col : collectives)
-    if (contains(col->getCreatures(), c))
-      col->onEquip(c, it);
-}
-
 View* Game::getView() const {
   return view;
 }
 
+static Highscores::Score::GameType getGameType(bool singleModel, bool keeper) {
+  if (singleModel) {
+    if (keeper)
+      return Highscores::Score::KEEPER;
+    else
+      return Highscores::Score::ADVENTURER;
+  } else {
+    if (keeper)
+      return Highscores::Score::KEEPER_CAMPAIGN;
+    else
+      return Highscores::Score::ADVENTURER_CAMPAIGN;
+  }
+}
+
 void Game::conquered(const string& title, int numKills, int points) {
   string text= "You have conquered this land. You killed " + toString(numKills) +
-      " innocent beings and scored " + toString(points) +
+      " enemies and scored " + toString(points) +
       " points. Thank you for playing KeeperRL alpha.\n \n";
   for (string stat : statistics->getText())
     text += stat + "\n";
@@ -531,28 +495,7 @@ void Game::conquered(const string& title, int numKills, int points) {
         c.gameResult = "achieved world domination";
         c.gameWon = true;
         c.turns = getGlobalTime();
-        c.gameType = Highscores::Score::KEEPER;
-  );
-  highscores->add(score);
-  highscores->present(view, score);
-}
-
-void Game::killedKeeper(const string& title, const string& keeper, const string& land, int numKills, int points) {
-  string text= "You have freed this land from the bloody reign of " + keeper + 
-      ". You killed " + toString(numKills) + " enemies and scored " + toString(points) +
-      " points. Thank you for playing KeeperRL alpha.\n \n";
-  for (string stat : statistics->getText())
-    text += stat + "\n";
-  view->presentText("Victory", text);
-  Highscores::Score score = CONSTRUCT(Highscores::Score,
-        c.worldName = getWorldName();
-        c.points = points;
-        c.gameId = getGameIdentifier();
-        c.playerName = title;
-        c.gameResult = "freed his land from " + keeper;
-        c.gameWon = true;
-        c.turns = getGlobalTime();
-        c.gameType = Highscores::Score::ADVENTURER;
+        c.gameType = getGameType(isSingleModel(), !!playerControl);
   );
   highscores->add(score);
   highscores->present(view, score);
@@ -580,7 +523,7 @@ void Game::gameOver(const Creature* creature, int numKills, const string& enemie
         c.gameResult = creature->getDeathReason().get_value_or("");
         c.gameWon = false;
         c.turns = getGlobalTime();
-        c.gameType = playerControl ? Highscores::Score::KEEPER : Highscores::Score::ADVENTURER;
+        c.gameType = getGameType(isSingleModel(), !!playerControl);
   );
   highscores->add(score);
   highscores->present(view, score);
@@ -591,11 +534,11 @@ Options* Game::getOptions() {
   return options;
 }
 
-void Game::initialize(Options* o, Highscores* h, View* v, GameEvents* e) {
+void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f) {
   options = o;
   highscores = h;
   view = v;
-  gameEvents = e;
+  fileSharing = f;
 }
 
 const string& Game::getWorldName() const {
@@ -645,26 +588,80 @@ static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
 }
 
 string Game::getPlayerName() const {
-  return *getPlayerCollective()->getLeader()->getName().first();
+  if (playerCollective)
+    return *playerCollective->getLeader()->getName().first();
+  else
+    return *getPlayer()->getName().first();
 }
 
 SavedGameInfo Game::getSavedGameInfo() const {
-  Collective* col = getPlayerCollective();
-  vector<Creature*> creatures = col->getCreatures();
-  CHECK(!creatures.empty());
-  Creature* leader = col->getLeader();
-//  CHECK(!leader->isDead());
-  sort(creatures.begin(), creatures.end(), [leader] (const Creature* c1, const Creature* c2) {
-      return c1 == leader
-        || (c2 != leader && c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel());});
-  CHECK(creatures[0] == leader);
-  creatures.resize(min<int>(creatures.size(), 4));
-  vector<SavedGameInfo::MinionInfo> minions;
-  for (Creature* c : creatures)
-    minions.push_back(getMinionInfo(c));
   int numSites = 1;
   if (campaign)
     numSites = campaign->getNumNonEmpty();
-  return SavedGameInfo(minions, col->getDangerLevel(), getPlayerName(), numSites);
+  if (Collective* col = getPlayerCollective()) {
+    vector<Creature*> creatures = col->getCreatures();
+    CHECK(!creatures.empty());
+    Creature* leader = col->getLeader();
+    //  CHECK(!leader->isDead());
+    sort(creatures.begin(), creatures.end(), [leader] (const Creature* c1, const Creature* c2) {
+        return c1 == leader
+        || (c2 != leader && c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel());});
+    CHECK(creatures[0] == leader);
+    creatures.resize(min<int>(creatures.size(), 4));
+    vector<SavedGameInfo::MinionInfo> minions;
+    for (Creature* c : creatures)
+      minions.push_back(getMinionInfo(c));
+    return SavedGameInfo(minions, col->getDangerLevel(), getPlayerName(), numSites);
+  } else
+    return SavedGameInfo({getMinionInfo(getPlayer())}, 0, getPlayer()->getName().bare(), numSites);
+}
+
+void Game::uploadEvent(const string& name, const map<string, string>& m) {
+  auto values = m;
+  values["eventType"] = name;
+  values["gameId"] = getGameIdentifier();
+  fileSharing->uploadGameEvent(values);
+}
+
+void Game::handleMessageBoard(Position pos, Creature* c) {
+  int boardId = pos.getHash();
+  vector<ListElem> options;
+  atomic<bool> cancelled(false);
+  view->displaySplash(nullptr, "Fetching board contents...", SplashType::SMALL, [&] {
+      cancelled = true;
+      fileSharing->cancel();
+      });
+  optional<vector<FileSharing::BoardMessage>> messages;
+  thread t([&] { messages = fileSharing->getBoardMessages(boardId); view->clearSplash(); });
+  view->refreshView();
+  t.join();
+  if (!messages || cancelled) {
+    view->presentText("", "Couldn't download board contents. Please check your internet connection.");
+    return;
+  }
+  for (auto message : *messages) {
+    options.emplace_back(message.author + " wrote:", ListElem::TITLE);
+    options.emplace_back("\"" + message.text + "\"", ListElem::TEXT);
+  }
+  if (messages->empty())
+    options.emplace_back("The board is empty.", ListElem::TITLE);
+  options.emplace_back("", ListElem::TEXT);
+  options.emplace_back("[Write something]");
+  if (auto index = view->chooseFromList("", options))
+    if (auto text = view->getText("Enter message", "", 80)) {
+      if (text->size() >= 2)
+        uploadEvent("boardMessage", {
+            {"boardId", toString(pos.getHash())},
+            {"author", c->getName().title()},
+            {"text", *text}});
+      else
+        view->presentText("", "The message was too short.");
+    }
+}
+
+void Game::addEvent(const GameEvent& e) {
+  for (Vec2 v : models.getBounds())
+    if (models[v])
+      models[v]->addEvent(e);
 }
 

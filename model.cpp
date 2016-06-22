@@ -50,7 +50,7 @@ template <class Archive>
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   serializeAll(ar, levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
-  serializeAll(ar, stairNavigation, cemetery);
+  serializeAll(ar, stairNavigation, cemetery, topLevel, eventGenerator);
   if (progressMeter)
     progressMeter->addProgress();
 }
@@ -127,6 +127,12 @@ Level* Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
   return levels.back().get();
 }
 
+Level* Model::buildTopLevel(LevelBuilder&& b, PLevelMaker maker) {
+  Level* ret = buildLevel(std::move(b), std::move(maker));
+  topLevel = ret;
+  return ret;
+}
+
 Model::Model() {
   clearDeadCreatures();
 }
@@ -171,8 +177,8 @@ void Model::calculateStairNavigation() {
     for (const Level* l1 : getLevels())
       if (li != l1)
         for (const Level* l2 : getLevels())
-          if (l2 != l1 && l2 != li && !stairNavigation.count(make_pair(l1, l2)) && stairNavigation.count(make_pair(li, l2)) &&
-              stairNavigation.count(make_pair(l1, li)))
+          if (l2 != l1 && l2 != li && !stairNavigation.count(make_pair(l1, l2)) &&
+              stairNavigation.count(make_pair(li, l2)) && stairNavigation.count(make_pair(l1, li)))
             stairNavigation[make_pair(l1, l2)] = stairNavigation.at(make_pair(l1, li));
   for (const Level* l1 : getLevels())
     for (const Level* l2 : getLevels())
@@ -190,7 +196,7 @@ optional<StairKey> Model::getStairsBetween(const Level* from, const Level* to) {
 
 optional<Position> Model::getStairs(const Level* from, const Level* to) {
   CHECK(from != to);
-  if (!contains(getLevels(), from) || ! contains(getLevels(), to) || !stairNavigation.count({from, to}))
+  if (!contains(getLevels(), from) || !contains(getLevels(), to) || !stairNavigation.count({from, to}))
     return none;
   return Random.choose(from->getLandingSquares(stairNavigation.at({from, to})));
 }
@@ -200,13 +206,10 @@ vector<Level*> Model::getLevels() const {
 }
 
 Level* Model::getTopLevel() const {
-  return levels[0].get();
+  return topLevel;
 }
 
-void Model::killCreature(Creature* c, Creature* attacker) {
-  if (attacker)
-    attacker->onKilled(c);
-  c->getTribe()->onMemberKilled(c, attacker);
+void Model::killCreature(Creature* c) {
   deadCreatures.push_back(timeQueue->removeCreature(c));
   cemetery->landCreature(cemetery->getAllPositions(), c);
 }
@@ -230,5 +233,32 @@ bool Model::canTransferCreature(Creature* c, Vec2 travelDir) {
 
 vector<Creature*> Model::getAllCreatures() const { 
   return timeQueue->getAllCreatures();
-
 }
+
+void Model::beforeUpdateTime(Creature* c) {
+  timeQueue->beforeUpdateTime(c);
+}
+
+void Model::afterUpdateTime(Creature* c) {
+  timeQueue->afterUpdateTime(c);
+}
+
+void Model::landHeroPlayer(const string& advName, int handicap) {
+  PCreature player = CreatureFactory::getAdventurer(this, handicap);
+  if (!advName.empty())
+    player->getName().setFirst(advName);
+  Level* target = getTopLevel();
+  vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
+  for (Position pos : landing)
+    if (pos.canEnter(player.get())) {
+      CHECK(target->landCreature(landing, std::move(player))) << "No place to spawn player";
+      return;
+    }
+  CHECK(target->landCreature(target->getAllPositions(), std::move(player))) << "No place to spawn player";
+}
+
+void Model::addEvent(const GameEvent& e) {
+  for (EventListener* l : eventGenerator->getListeners())
+    l->onEvent(e);
+}
+

@@ -24,6 +24,7 @@
 #include <boost/filesystem.hpp>
 
 #include <exception>
+#include <SDL2/SDL_mixer.h>
 
 #include "view.h"
 #include "options.h"
@@ -44,7 +45,6 @@
 #include "vision.h"
 #include "model_builder.h"
 #include "sound_library.h"
-#include "game_events.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -57,6 +57,8 @@
 #include <tchar.h>
 
 #endif
+
+#include <cAudio/cAudio.h>
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -91,8 +93,28 @@ static thread::attributes getAttributes() {
   attr.set_stack_size(4096 * 4000);
   return attr;
 }
-#endif
 
+static void runGame(function<void()> game, function<void()> render, bool singleThread) {
+  if (singleThread)
+    game();
+  else {
+    thread t(getAttributes(), game);
+    render();
+  }
+}
+
+#else
+static void runGame(function<void()> game, function<void()> render, bool singleThread) {
+  if (singleThread)
+    game();
+  else {
+    thread t(render);
+    game();
+    t.join();
+  }
+}
+
+#endif
 void initializeRendererTiles(Renderer& r, const string& path) {
   r.loadTilesFromDir(path + "/orig16", Vec2(16, 16));
 //  r.loadAltTilesFromDir(path + "/orig16_scaled", Vec2(24, 24));
@@ -102,12 +124,12 @@ void initializeRendererTiles(Renderer& r, const string& path) {
 //  r.loadAltTilesFromDir(path + "/orig30_scaled", Vec2(45, 45));
 }
 
-static int getMaxVolume() {
-  return 70;
+static float getMaxVolume() {
+  return 0.7;
 }
 
-static map<MusicType, int> getMaxVolumes() {
-  return {{MusicType::ADV_BATTLE, 40}, {MusicType::ADV_PEACEFUL, 40}};
+static map<MusicType, float> getMaxVolumes() {
+  return {{MusicType::ADV_BATTLE, 0.4}, {MusicType::ADV_PEACEFUL, 0.4}};
 }
 
 vector<pair<MusicType, string>> getMusicTracks(const string& path) {
@@ -256,6 +278,17 @@ int main(int argc, char* argv[]) {
 }
 #endif
 
+static long long getInstallId(const string& path, RandomGen& random) {
+  long long ret;
+  if (ifstream in = ifstream(path))
+    in >> ret;
+  else {
+    ret = random.getLL();
+    ofstream(path) << ret;
+  }
+  return ret;
+}
+
 static int keeperMain(const variables_map& vars) {
   if (vars.count("help")) {
     std::cout << getOptions() << endl;
@@ -265,7 +298,7 @@ static int keeperMain(const variables_map& vars) {
     testAll();
     return 0;
   }
-  bool useSingleThread = vars.count("single_thread");
+  bool useSingleThread = true;//vars.count("single_thread");
   unique_ptr<View> view;
   unique_ptr<CompressedInput> input;
   unique_ptr<CompressedOutput> output;
@@ -308,14 +341,17 @@ static int keeperMain(const variables_map& vars) {
   Options options(userPath + "/options.txt", overrideSettings);
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   Random.init(seed);
+  long long installId = getInstallId(userPath + "/installId.txt", Random);
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
+  Debug::setErrorCallback([&renderer](const string& s) { renderer.showError(s);});
   SoundLibrary* soundLibrary = nullptr;
+  cAudio::IAudioManager* cAudio = cAudio::createAudioManager(true);
   Clock clock;
   GuiFactory guiFactory(renderer, &clock, &options);
   guiFactory.loadFreeImages(freeDataPath + "/images");
   if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
-    soundLibrary = new SoundLibrary(&options, paidDataPath + "/sound");
+    soundLibrary = new SoundLibrary(&options, cAudio, paidDataPath + "/sound");
   }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
@@ -346,17 +382,15 @@ static int keeperMain(const variables_map& vars) {
     viewInitialized = true;
   }
   Tile::initialize(renderer, tilesPresent);
-  Jukebox jukebox(&options, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
-  FileSharing fileSharing(uploadUrl, options);
-  fileSharing.init();
+  Jukebox jukebox(&options, cAudio, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
+  FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
-  GameEvents gameEvents(fileSharing);
   optional<GameTypeChoice> forceGame;
   if (vars.count("force_keeper"))
     forceGame = GameTypeChoice::KEEPER;
   else if (vars.count("quick_level"))
     forceGame = GameTypeChoice::QUICK_LEVEL;
-  MainLoop loop(view.get(), &highscores, &gameEvents, &fileSharing, freeDataPath, userPath, &options, &jukebox,
+  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox,
       gameFinished, useSingleThread, forceGame);
   if (vars.count("worldgen_test")) {
     loop.modelGenTest(vars["worldgen_test"].as<int>(), Random, &options);
@@ -368,15 +402,12 @@ static int keeperMain(const variables_map& vars) {
     systemInfo << "KeeperRL version " << BUILD_VERSION << " " << BUILD_DATE << std::endl;
     renderer.printSystemInfo(systemInfo);
     loop.start(tilesPresent); };
-  auto render = [&] { if (!useSingleThread) renderLoop(view.get(), &options, gameFinished, viewInitialized); };
-#ifdef OSX // see thread comment in stdafx.h
-  thread t(getAttributes(), game);
-  render();
-#else
-  thread t(render);
-  game();
-#endif
-  t.join();
+  auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };
+  try {
+    runGame(game, render, useSingleThread);
+  } catch (GameExitException ex) {
+  }
+  cAudio::destroyAudioManager(cAudio);
   return 0;
 }
 

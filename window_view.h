@@ -111,9 +111,7 @@ class WindowView: public View {
   void mapRightClickFun(Vec2);
   Rectangle getTextInputPosition();
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
-      double* scrollPos, optional<UserInputId> exitAction, optional<sf::Event::KeyEvent> exitKey,
-      vector<sf::Event::KeyEvent> shortCuts);
-  optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
+      double* scrollPos);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   PGuiElem drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
@@ -121,7 +119,7 @@ class WindowView: public View {
   int lastGuiHash = 0;
   void drawMap();
   void propagateEvent(const Event& event, vector<GuiElem*>);
-  void keyboardAction(Event::KeyEvent key);
+  void keyboardAction(const SDL_Keysym&);
 
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
@@ -137,7 +135,7 @@ class WindowView: public View {
   void resetMapBounds();
   void switchTiles();
 
-  bool considerResizeEvent(sf::Event&);
+  bool considerResizeEvent(SDL_Event&);
 
   int messageInd = 0;
   std::deque<string> currentMessage = std::deque<string>(3, "");
@@ -211,6 +209,7 @@ class WindowView: public View {
   };
 
   void getBlockingGui(Semaphore&, PGuiElem, optional<Vec2> origin = none);
+  bool isKeyPressed(SDL_Scancode);
 
   template<typename T>
   T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, optional<Vec2> origin = none) {

@@ -32,8 +32,9 @@ RICH_ENUM(ViewLayer,
 );
 
 RICH_ENUM(ViewObjectModifier, BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
-    ROUND_SHADOW, TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, SLEEPING, ROAD, NO_UP_MOVEMENT, REMEMBER);
-RICH_ENUM(ViewObjectAttribute, BLEEDING, BURNING, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY, MORALE);
+    ROUND_SHADOW, TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, SLEEPING, ROAD, NO_UP_MOVEMENT, REMEMBER,
+    SPIRIT_DAMAGE);
+RICH_ENUM(ViewObjectAttribute, WOUNDED, BURNING, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY, MORALE);
 
 class ViewObject {
   public:
@@ -56,6 +57,8 @@ class ViewObject {
 
   vector<string> getLegend() const;
   const char* getDescription() const;
+
+  void setIndoors(bool);
 
   ViewLayer layer() const;
   ViewId id() const;
@@ -105,6 +108,7 @@ class ViewObject {
   Vec2 SERIAL(position) = Vec2(-1, -1);
   optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
   vector<string> SERIAL(adjectives);
+  optional<bool> indoors;
 
   class MovementQueue {
     public:

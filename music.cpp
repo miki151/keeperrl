@@ -16,25 +16,26 @@
 #include "stdafx.h"
 #include "music.h"
 #include "options.h"
-#include <SFML/System.hpp>
 
-using sf::Music;
+#include <cAudio/cAudio.h>
 
-Jukebox::Jukebox(Options* options, vector<pair<MusicType, string>> tracks, int maxVol, map<MusicType, int> maxV)
-    : numTracks(tracks.size()), maxVolume(maxVol), maxVolumes(maxV) {
-  music.reset(new Music[numTracks]);
+Jukebox::Jukebox(Options* options, cAudio::IAudioManager* audio, vector<pair<MusicType, string>> tracks,
+    float maxVol, map<MusicType, float> maxV)
+    : numTracks(tracks.size()), maxVolume(maxVol), maxVolumes(maxV), cAudio(audio) {
+  music.resize(numTracks);
   for (int i : All(tracks)) {
-    music[i].openFromFile(tracks[i].second);
+    CHECK(music[i] = cAudio->create(tracks[i].second.c_str(), tracks[i].second.c_str()))
+      << "Failed to load track " << tracks[i].second;
     byType[tracks[i].first].push_back(i);
   }
   options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { toggle(turnOn); });
   refreshLoop.emplace([this] {
     refresh();
-    sf::sleep(sf::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 });
 }
 
-int Jukebox::getMaxVolume(int track) {
+float Jukebox::getMaxVolume(int track) {
   auto type = getCurrentType();
   if (maxVolumes.count(type))
     return maxVolumes.at(type);
@@ -52,10 +53,10 @@ void Jukebox::toggle(bool state) {
   if (on) {
     current = Random.choose(byType[getCurrentType()]);
     currentPlaying = current;
-    music[current].setVolume(getMaxVolume(current));
-    music[current].play();
+    music[current]->setVolume(getMaxVolume(current));
+    CHECK(music[current]->play2d()) << "Failed to play track.";
   } else
-    music[current].stop();
+    music[current]->stop();
 }
 
 void Jukebox::setCurrent(MusicType c) {
@@ -76,7 +77,7 @@ MusicType Jukebox::getCurrentType() {
   return MusicType::PEACEFUL;
 }
 
-const int volumeDec = 10;
+const float volumeDec = 0.1f;
 
 void Jukebox::setType(MusicType c, bool now) {
   MusicLock lock(musicMutex);
@@ -96,22 +97,21 @@ void Jukebox::refresh() {
   if (!on || !numTracks)
     return;
   if (current != currentPlaying) {
-    if (music[currentPlaying].getVolume() == 0) {
-      music[currentPlaying].stop();
+    if (!music[currentPlaying]->isPlaying() || music[currentPlaying]->getVolume() == 0) {
       currentPlaying = current;
-      music[currentPlaying].setVolume(getMaxVolume(currentPlaying));
-      music[currentPlaying].play();
+      music[current]->setVolume(getMaxVolume(current));
+      CHECK(music[current]->play2d()) << "Failed to play track.";
     } else
-      music[currentPlaying].setVolume(max(0.0f, music[currentPlaying].getVolume() - volumeDec));
+      music[currentPlaying]->setVolume(max(0.0f, music[currentPlaying]->getVolume() - volumeDec));
   } else
-  if (music[current].getStatus() == sf::SoundSource::Stopped) {
+  if (!music[currentPlaying]->isPlaying()) {
     if (nextType) {
       setCurrent(*nextType);
       nextType.reset();
     } else
       continueCurrent();
     currentPlaying = current;
-    music[current].play();
-    music[current].setVolume(getMaxVolume(current));
+    music[current]->setVolume(getMaxVolume(current));
+    CHECK(music[current]->play2d()) << "Failed to play track.";
   }
 }

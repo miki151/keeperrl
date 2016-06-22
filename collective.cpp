@@ -36,6 +36,7 @@
 #include "gender.h"
 #include "collective_name.h"
 #include "creature_attributes.h"
+#include "event_proxy.h"
 
 struct Collective::ItemFetchInfo {
   ItemIndex index;
@@ -48,8 +49,7 @@ struct Collective::ItemFetchInfo {
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(TaskCallback)
-    & SUBCLASS(CreatureListener);
+  ar& SUBCLASS(TaskCallback);
   serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType, mySquares);
   serializeAll(ar, mySquares2, territory, squareEfficiency, alarmInfo, markedItems, constructions, minionEquipment);
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
@@ -91,7 +91,7 @@ const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
 
 Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
     const CollectiveName& n) 
-  : credit(_credit), control(CollectiveControl::idle(this)),
+  : eventProxy(this, l->getModel()), credit(_credit), control(CollectiveControl::idle(this)),
     tribe(t), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
 }
 
@@ -177,11 +177,11 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!leader)
     leader = c;
   CHECK(c->getTribeId() == tribe);
-/*  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
-      c->getPosition().getLevel()->getName() << " " << c->getName().bare();*/
+  if (Game* game = getGame())
+    for (Collective* col : getGame()->getCollectives())
+      if (contains(col->getCreatures(), c))
+        col->removeCreature(c);
   creatures.push_back(c);
-  c->removeFromCollective();
-  subscribeToCreature(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
   if (auto spawnType = c->getAttributes().getSpawnType())
@@ -195,7 +195,6 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 
 void Collective::removeCreature(Creature* c) {
   removeElement(creatures, c);
-  unsubscribeFromCreature(c);
   if (config->getNumGhostSpawns() > 0 || config->getGuardianInfo())
     deadCreatures.push_back(c);
   minionAttraction.erase(c);
@@ -411,13 +410,13 @@ optional<Position> Collective::getTileToExplore(const Creature* c, MinionTask ta
     case MinionTask::EXPLORE_CAVES:
       if (auto pos = getRandomCloseTile(c->getPosition(), border,
             [this, c](Position p) {
-                return p.isSameLevel(level) && p.getCoverInfo().sunlight < 1 &&
+                return p.isSameLevel(level) && p.isCovered() &&
                     (!c->getPosition().isSameLevel(level) || c->isSameSector(p));}))
         return pos;
     case MinionTask::EXPLORE:
     case MinionTask::EXPLORE_NOCTURNAL:
       return getRandomCloseTile(c->getPosition(), border,
-          [this, c](Position pos) { return pos.isSameLevel(level) && !pos.getCoverInfo().covered
+          [this, c](Position pos) { return pos.isSameLevel(level) && !pos.isCovered()
               && (!c->getPosition().isSameLevel(level) || c->isSameSector(pos));});
     default: FAIL << "Unrecognized explore task: " << int(task);
   }
@@ -510,7 +509,7 @@ vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) {
 }
 
 bool Collective::isConquered() const {
-  return getCreatures({MinionTrait::FIGHTER}).empty() && !hasLeader();
+  return getCreatures(MinionTrait::FIGHTER).empty() && !hasLeader();
 }
 
 void Collective::orderConsumption(Creature* consumer, Creature* who) {
@@ -550,7 +549,7 @@ PTask Collective::getEquipmentTask(Creature* c) {
 }
 
 PTask Collective::getHealingTask(Creature* c) {
-  if (c->getHealth() < 1 && c->getAttributes().canSleep() && !c->isAffected(LastingEffect::POISON))
+  if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
     for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE, MinionTask::LAIR})
       if (c->getAttributes().getMinionTasks().getValue(t) > 0) {
         vector<Position> positions = getAllSquares(config->getTaskInfo().at(t).squares);
@@ -1176,16 +1175,95 @@ void Collective::decreaseMoraleForBanishing(const Creature*) {
 void Collective::onKillCancelled(Creature* c) {
 }
 
-void Collective::onKilled(Creature* victim, Creature* killer) {
-  CHECK(contains(creatures, victim));
+void Collective::onEvent(const GameEvent& event) {
+  switch (event.getId()) {
+    case EventId::ALARM: {
+        Position pos = event.get<Position>();
+        static const int alarmTime = 100;
+        if (getTerritory().contains(pos)) {
+          control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(pos));
+          alarmInfo = {getGlobalTime() + alarmTime, pos };
+          for (Creature* c : byTrait[MinionTrait::FIGHTER])
+            if (c->isAffected(LastingEffect::SLEEP))
+              c->removeEffect(LastingEffect::SLEEP);
+        }
+      }
+      break;
+    case EventId::KILLED: {
+        Creature* victim = event.get<EventInfo::Attacked>().victim;
+        Creature* killer = event.get<EventInfo::Attacked>().attacker;
+        if (contains(creatures, victim))
+          onMinionKilled(victim, killer);
+        if (contains(creatures, killer))
+          onKilledSomeone(killer, victim);
+      }
+      break;
+    case EventId::TORTURED:
+      if (contains(creatures, event.get<EventInfo::Attacked>().attacker))
+        returnResource({ResourceId::MANA, 1});
+      break;
+    case EventId::SURRENDERED: {
+        Creature* victim = event.get<EventInfo::Attacked>().victim;
+        Creature* attacker = event.get<EventInfo::Attacked>().attacker;
+        if (contains(getCreatures(), attacker) && !contains(getCreatures(), victim) &&
+            victim->getBody().isHumanoid())
+          surrendering.insert(victim);
+      }
+      break;
+    case EventId::TRAP_TRIGGERED: {
+        Position pos = event.get<Position>();
+        if (constructions->containsTrap(pos)) {
+          constructions->getTrap(pos).reset();
+          if (constructions->getTrap(pos).getType() == TrapType::SURPRISE)
+            handleSurprise(pos);
+        }
+      }
+      break;
+    case EventId::TRAP_DISARMED: {
+        Position pos = event.get<EventInfo::TrapDisarmed>().position;
+        Creature* who = event.get<EventInfo::TrapDisarmed>().creature;
+        if (constructions->containsTrap(pos)) {
+          control->addMessage(PlayerMessage(who->getName().a() + " disarms a " 
+                + Item::getTrapName(constructions->getTrap(pos).getType()) + " trap.",
+                MessagePriority::HIGH).setPosition(pos));
+          constructions->getTrap(pos).reset();
+        }
+      }
+      break;
+    case EventId::SQUARE_DESTROYED: {
+        Position pos = event.get<Position>();
+        if (territory->contains(pos)) {
+          for (auto& elem : mySquares)
+            if (elem.second.count(pos)) {
+              elem.second.erase(pos);
+              if (config->getEfficiencySquares().count(elem.first))
+                updateEfficiency(pos, elem.first);
+            }
+          for (auto& elem : mySquares2)
+            if (elem.second.count(pos))
+              elem.second.erase(pos);
+          mySquares[SquareId::FLOOR].insert(pos);
+          if (constructions->containsSquare(pos))
+            constructions->onSquareDestroyed(pos);
+        }
+      }
+      break;
+    case EventId::EQUIPED:
+      minionEquipment->own(event.get<EventInfo::ItemsHandled>().creature,
+          getOnlyElement(event.get<EventInfo::ItemsHandled>().items));
+      break;
+    default:
+      break;
+  }
+}
+
+void Collective::onMinionKilled(Creature* victim, Creature* killer) {
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer))
     returnResource({ResourceId::PRISONER_HEAD, 1});
-  if (victim == leader) {
-    getGame()->onKilledLeader(this, victim);
+  if (victim == leader)
     for (Creature* c : getCreatures(MinionTrait::SUMMONED)) // shortcut to get rid of summons when summonner dies
       c->disappear().perform(c);
-  }
   if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
     decreaseMoraleForKill(killer, victim);
     if (killer)
@@ -1196,11 +1274,9 @@ void Collective::onKilled(Creature* victim, Creature* killer) {
           .setPosition(victim->getPosition()));
   }
   removeCreature(victim);
-  //control->onOtherKilled(victim, killer); TODO: implement
 }
 
 void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
-  CHECK(contains(creatures, killer));
   if (victim->getTribe() != getTribe()) {
     addMana(getKillManaScore(victim));
     addMoraleForKill(killer, victim);
@@ -1275,14 +1351,6 @@ bool Collective::isKnownSquare(Position pos) const {
   return knownTiles->isKnown(pos);
 }
 
-void Collective::onMoved(Creature* c) {
-  control->onMoved(c);
-}
-
-void Collective::onRemoveFromCollective(Creature* c) {
-  removeCreature(c);
-}
-
 bool Collective::hasEfficiency(Position pos) const {
   return squareEfficiency.count(pos);
 }
@@ -1315,16 +1383,6 @@ void Collective::updateEfficiency(Position pos, SquareType type) {
         CHECK(squareEfficiency[v] >=0) << EnumInfo<SquareId>::getString(type.getId());
       }
   }
-}
-
-static const int alarmTime = 100;
-
-void Collective::onAlarm(Position pos) {
-  control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(pos));
-  alarmInfo = {getGlobalTime() + alarmTime, pos };
-  for (Creature* c : byTrait[MinionTrait::FIGHTER])
-    if (c->isAffected(LastingEffect::SLEEP))
-      c->removeEffect(LastingEffect::SLEEP);
 }
 
 MoveInfo Collective::getAlarmMove(Creature* c) {
@@ -1422,8 +1480,7 @@ vector<pair<Item*, Position>> Collective::getTrapItems(TrapType type, const vect
 
 bool Collective::usesEquipment(const Creature* c) const {
   return config->getManageEquipment()
-    && c->getAttributes().isHumanoid() 
-    && !hasTrait(c, MinionTrait::NO_EQUIPMENT)
+    && c->getBody().isHumanoid() && !hasTrait(c, MinionTrait::NO_EQUIPMENT)
     && !hasTrait(c, MinionTrait::PRISONER);
 }
 
@@ -1715,8 +1772,8 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
 }
 
 bool Collective::tryLockingDoor(Position pos) {
-  if (territory->contains(pos) && pos.canLock()) {
-    pos.lock();
+  if (territory->contains(pos) && pos.getApplyType() == SquareApplyType::LOCK) {
+    pos.apply();
     return true;
   }
   return false;
@@ -1836,43 +1893,6 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
   }
 }
 
-void Collective::onSurrender(Creature* who) {
-  if (!contains(getCreatures(), who) && who->getAttributes().isHumanoid())
-    surrendering.insert(who);
-}
-
-void Collective::onSquareDestroyed(Position pos) {
-  for (auto& elem : mySquares)
-    if (elem.second.count(pos)) {
-      elem.second.erase(pos);
-      if (config->getEfficiencySquares().count(elem.first))
-        updateEfficiency(pos, elem.first);
-    }
-  for (auto& elem : mySquares2)
-    if (elem.second.count(pos))
-      elem.second.erase(pos);
-  mySquares[SquareId::FLOOR].insert(pos);
-  if (constructions->containsSquare(pos))
-    constructions->onSquareDestroyed(pos);
-}
-
-void Collective::onTrapTrigger(Position pos) {
-  if (constructions->containsTrap(pos)) {
-    constructions->getTrap(pos).reset();
-    if (constructions->getTrap(pos).getType() == TrapType::SURPRISE)
-      handleSurprise(pos);
-  }
-}
-
-void Collective::onTrapDisarm(const Creature* who, Position pos) {
-  if (constructions->containsTrap(pos)) {
-    control->addMessage(PlayerMessage(who->getName().a() + " disarms a " 
-          + Item::getTrapName(constructions->getTrap(pos).getType()) + " trap.",
-          MessagePriority::HIGH).setPosition(pos));
-    constructions->getTrap(pos).reset();
-  }
-}
-
 void Collective::handleSurprise(Position pos) {
   Vec2 rad(8, 8);
   bool wasMsg = false;
@@ -1881,8 +1901,8 @@ void Collective::handleSurprise(Position pos) {
     if (Creature* other = v.getCreature())
       if (hasTrait(other, MinionTrait::FIGHTER) && other->getPosition().dist8(pos) > 1) {
         for (Position dest : pos.neighbors8(Random))
-          if (getLevel()->canMoveCreature(other, other->getPosition().getDir(dest))) {
-            getLevel()->moveCreature(other, other->getPosition().getDir(dest));
+          if (other->getPosition().canMoveCreature(dest)) {
+            other->getPosition().moveCreature(dest);
             other->playerMessage("Surprise!");
             if (!wasMsg) {
               c->playerMessage("Surprise!");
@@ -1893,7 +1913,7 @@ void Collective::handleSurprise(Position pos) {
       }
 }
 
-void Collective::onPickedUp(Position pos, EntitySet<Item> items) {
+void Collective::onTaskPickedUp(Position pos, EntitySet<Item> items) {
   for (auto id : items)
     unmarkItem(id);
 }
@@ -2013,7 +2033,7 @@ void Collective::onAppliedSquare(Position pos) {
 
 double Collective::getDangerLevel() const {
   double ret = 0;
-  for (const Creature* c : getCreatures({MinionTrait::FIGHTER}))
+  for (const Creature* c : getCreatures(MinionTrait::FIGHTER))
     ret += c->getDifficultyPoints();
   ret += getSquares(SquareId::IMPALED_HEAD).size() * 150;
   return ret;
@@ -2046,10 +2066,6 @@ int Collective::getPoints() const {
   return points;
 }
 
-void Collective::onEquip(const Creature* c, const Item* it) {
-  minionEquipment->own(c, it);
-}
-
 void Collective::onRansomPaid() {
   control->onRansomPaid();
 }
@@ -2058,10 +2074,6 @@ void Collective::ownItems(const Creature* who, const vector<Item*> items) {
   for (const Item* it : items)
     if (minionEquipment->isItemUseful(it))
       minionEquipment->own(who, it);
-}
-
-void Collective::onTorture(const Creature* who, const Creature* torturer) {
-  returnResource({ResourceId::MANA, 1});
 }
 
 void Collective::onCopulated(Creature* who, Creature* with) {

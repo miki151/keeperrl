@@ -77,6 +77,7 @@ class Debug {
   public:
   Debug(DebugType t = INFO, const string& msg = "", int line = 0);
   static void init(bool log);
+  static void setErrorCallback(function<void(const string&)>);
   Debug& operator <<(const string& msg);
   Debug& operator <<(const int msg);
   Debug& operator <<(const long long msg);

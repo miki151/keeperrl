@@ -8,6 +8,11 @@
 #include "view_id.h"
 #include "location.h"
 #include "model.h"
+#include "view_index.h"
+#include "sound.h"
+#include "game.h"
+#include "view.h"
+#include "square_interaction.h"
 
 template <class Archive> 
 void Position::serialize(Archive& ar, const unsigned int version) {
@@ -75,7 +80,19 @@ Vec2 Position::getDir(const Position& p) const {
   return p.coord - coord;
 }
 
-Square* Position::getSquare() const {
+optional<StairKey> Position::getLandingLink() const {
+  if (isValid())
+    return getSquare()->getLandingLink();
+  else
+    return none;
+}
+
+Square* Position::modSquare() const {
+  CHECK(isValid());
+  return level->modSafeSquare(coord);
+}
+
+const Square* Position::getSquare() const {
   CHECK(isValid());
   return level->getSafeSquare(coord);
 }
@@ -89,7 +106,7 @@ Creature* Position::getCreature() const {
 
 void Position::removeCreature() {
   CHECK(isValid());
-  getSquare()->removeCreature();
+  modSquare()->removeCreature(*this);
 }
 
 bool Position::operator == (const Position& o) const {
@@ -189,30 +206,42 @@ const Location* Position::getLocation() const {
   return nullptr;
 } 
 
-bool Position::canEnter(const Creature* c) const {
-  return isValid() && getSquare()->canEnter(c);
-}
-
-bool Position::canEnter(const MovementType& t) const {
-  return isValid() && getSquare()->canEnter(t);
-}
-
 optional<SquareApplyType> Position::getApplyType() const {
-  return isValid() ? getSquare()->getApplyType() : none;
+  if (isValid()) {
+    if (auto inter = getSquare()->getInteraction())
+      return SquareInteractions::getApplyType(*inter);
+    else
+      return getSquare()->getApplyType();
+  } else
+    return none;
 }
 
 optional<SquareApplyType> Position::getApplyType(const Creature* c) const {
-  return isValid() ? getSquare()->getApplyType(c) : none;
+  if (auto ret = getApplyType())
+    if (getSquare()->canApply(c))
+      return ret;
+  return none;
 }
 
-void Position::onApply(Creature* c) {
+void Position::apply(Creature* c) {
   if (isValid())
-    getSquare()->apply(c);
+    modSquare()->apply(c);
+}
+
+void Position::apply() {
+  if (isValid())
+    modSquare()->apply(*this);
 }
 
 double Position::getApplyTime() const {
   CHECK(isValid());
   return getSquare()->getApplyTime();
+}
+
+void Position::addSound(const Sound& sound1) const {
+  Sound sound(sound1);
+  sound.setPosition(*this);
+  getGame()->getView()->addSound(sound);
 }
 
 bool Position::canHide() const {
@@ -228,8 +257,15 @@ string Position::getName() const {
 }
 
 void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
-  if (isValid())
+  if (isValid()) {
     getSquare()->getViewIndex(index, viewer);
+    if (!index.hasObject(ViewLayer::FLOOR_BACKGROUND))
+      if (auto& obj = level->getBackgroundObject(coord))
+        index.insert(*obj);
+    if (isValid() && isUnavailable())
+      index.setHighlight(HighlightType::UNAVAILABLE);
+
+  }
 }
 
 vector<Trigger*> Position::getTriggers() const {
@@ -241,19 +277,19 @@ vector<Trigger*> Position::getTriggers() const {
 
 PTrigger Position::removeTrigger(Trigger* trigger) {
   CHECK(isValid());
-  return getSquare()->removeTrigger(trigger);
+  return modSquare()->removeTrigger(*this, trigger);
 }
 
 vector<PTrigger> Position::removeTriggers() {
   if (isValid())
-    return getSquare()->removeTriggers();
+    return modSquare()->removeTriggers(*this);
   else
     return {};
 }
 
 void Position::addTrigger(PTrigger t) {
   if (isValid())
-    getSquare()->addTrigger(std::move(t));
+    modSquare()->addTrigger(*this, std::move(t));
 }
 
 const vector<Item*>& Position::getItems() const {
@@ -283,73 +319,68 @@ const vector<Item*>& Position::getItems(ItemIndex index) const {
 
 PItem Position::removeItem(Item* it) {
   CHECK(isValid());
-  return getSquare()->removeItem(it);
+  return modSquare()->removeItem(*this, it);
 }
 
 vector<PItem> Position::removeItems(vector<Item*> it) {
   CHECK(isValid());
-  return getSquare()->removeItems(it);
+  return modSquare()->removeItems(*this, it);
 }
 
 bool Position::canConstruct(const SquareType& type) const {
-  return isValid() && getSquare()->canConstruct(type);
+  return !isUnavailable() && getSquare()->canConstruct(type);
 }
 
 bool Position::canDestroy(const Creature* c) const {
-  return isValid() && getSquare()->canDestroy(c);
+  return !isUnavailable() && getSquare()->canDestroy(c);
 }
 
 bool Position::isDestroyable() const {
-  return isValid() && getSquare()->isDestroyable();
+  return !isUnavailable() && getSquare()->isDestroyable();
 }
 
 bool Position::isUnavailable() const {
-  return !isValid() || getSquare()->isUnavailable();
+  return !isValid() || level->isUnavailable(coord);
+}
+
+bool Position::canEnter(const Creature* c) const {
+  return !isUnavailable() && getSquare()->canEnter(c);
+}
+
+bool Position::canEnter(const MovementType& t) const {
+  return !isUnavailable() && getSquare()->canEnter(t);
 }
 
 bool Position::canEnterEmpty(const Creature* c) const {
-  return isValid() && getSquare()->canEnterEmpty(c);
+  return !isUnavailable() && getSquare()->canEnterEmpty(c);
 }
 
 bool Position::canEnterEmpty(const MovementType& t) const {
-  return isValid() && getSquare()->canEnterEmpty(t);
+  return !isUnavailable() && getSquare()->canEnterEmpty(t);
 }
 
 void Position::dropItem(PItem item) {
   if (isValid())
-    getSquare()->dropItem(std::move(item));
+    modSquare()->dropItem(*this, std::move(item));
 }
 
 void Position::dropItems(vector<PItem> v) {
   if (isValid())
-    getSquare()->dropItems(std::move(v));
+    modSquare()->dropItems(*this, std::move(v));
 }
 
 void Position::destroyBy(Creature* c) {
   if (isValid())
-    getSquare()->destroyBy(c);
+    modSquare()->destroyBy(*this, c);
 }
 
 void Position::destroy() {
   if (isValid())
-    getSquare()->destroy();
+    modSquare()->destroy(*this);
 }
 
 bool Position::construct(const SquareType& type) {
-  return isValid() && getSquare()->construct(type);
-}
-
-bool Position::canLock() const {
-  return isValid() && getSquare()->canLock();
-}
-
-bool Position::isLocked() const {
-  return isValid() && getSquare()->isLocked();
-}
-
-void Position::lock() {
-  if (isValid())
-    getSquare()->lock();
+  return !isUnavailable() && modSquare()->construct(*this, type);
 }
 
 bool Position::isBurning() const {
@@ -358,16 +389,16 @@ bool Position::isBurning() const {
 
 void Position::setOnFire(double amount) {
   if (isValid())
-    getSquare()->setOnFire(amount);
+    modSquare()->setOnFire(*this, amount);
 }
 
 bool Position::needsMemoryUpdate() const {
-  return isValid() && getSquare()->needsMemoryUpdate();
+  return isValid() && level->isSquareMemoryDirty(getCoord());
 }
 
 void Position::setMemoryUpdated() {
   if (isValid())
-    getSquare()->setMemoryUpdated();
+    level->setSquareMemoryDirty(getCoord(), false);
 }
 
 const ViewObject& Position::getViewObject() const {
@@ -380,13 +411,13 @@ const ViewObject& Position::getViewObject() const {
 }
 
 void Position::forbidMovementForTribe(TribeId t) {
-  if (isValid())
-    getSquare()->forbidMovementForTribe(t);
+  if (!isUnavailable())
+    modSquare()->forbidMovementForTribe(*this, t);
 }
 
 void Position::allowMovementForTribe(TribeId t) {
-  if (isValid())
-    getSquare()->allowMovementForTribe(t);
+  if (!isUnavailable())
+    modSquare()->allowMovementForTribe(*this, t);
 }
 
 bool Position::isTribeForbidden(TribeId t) const {
@@ -410,7 +441,7 @@ vector<Position> Position::getVisibleTiles(VisionId vision) {
 
 void Position::addPoisonGas(double amount) {
   if (isValid())
-    getSquare()->addPoisonGas(amount);
+    modSquare()->addPoisonGas(*this, amount);
 }
 
 double Position::getPoisonGasAmount() const {
@@ -420,15 +451,15 @@ double Position::getPoisonGasAmount() const {
     return 0;
 }
 
-CoverInfo Position::getCoverInfo() const {
+bool Position::isCovered() const {
   if (isValid())
-    return level->getCoverInfo(coord);
+    return getSquare()->isCovered();
   else
-    return CoverInfo {};
+    return false;
 }
 
 bool Position::sunlightBurns() const {
-  return isValid() && getSquare()->sunlightBurns();
+  return isValid() && level->isInSunlight(coord);
 }
 
 void Position::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId vision) {
@@ -442,16 +473,7 @@ void Position::throwItem(vector<PItem> item, const Attack& attack, int maxDist, 
 }
 
 bool Position::canNavigate(const MovementType& t) const {
-  return isValid() && getSquare()->canNavigate(t);
-}
-
-const vector<Vec2>& Position::getTravelDir() const {
-  if (isValid())
-    return getSquare()->getTravelDir();
-  else {
-    static vector<Vec2> v;
-    return v;
-  }
+  return !isUnavailable() && getSquare()->canNavigate(t);
 }
 
 int Position::getStrength() const {
@@ -474,7 +496,7 @@ bool Position::isVisibleBy(const Creature* c) {
 
 void Position::clearItemIndex(ItemIndex index) {
   if (isValid())
-    getSquare()->clearItemIndex(index);
+    modSquare()->clearItemIndex(index);
 }
 
 bool Position::isChokePoint(const MovementType& movement) const {
@@ -508,7 +530,7 @@ void Position::moveCreature(Vec2 direction) {
 }
 
 bool Position::canMoveCreature(Vec2 direction) const {
-  return isValid() && level->canMoveCreature(getCreature(), direction);
+  return !isUnavailable() && level->canMoveCreature(getCreature(), direction);
 }
 
 bool Position::canMoveCreature(Position pos) const {

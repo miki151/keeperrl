@@ -28,8 +28,6 @@
 #include "creature_view.h"
 #include "options.h"
 
-using sf::Keyboard;
-
 MapGui::MapGui(Callbacks call, Clock* c, Options* o) : objects(Level::getMaxBounds()), callbacks(call),
     clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
     connectionMap(Level::getMaxBounds()), enemyPositions(Level::getMaxBounds(), false) {
@@ -121,13 +119,13 @@ Color getHighlightColor(HighlightType type, double amount) {
     case HighlightType::FETCH_ITEMS: return transparency(colors[ColorId::YELLOW], 170);
     case HighlightType::RECT_SELECTION: return transparency(colors[ColorId::YELLOW], 90);
     case HighlightType::FOG: return transparency(colors[ColorId::WHITE], 120 * amount);
-    case HighlightType::POISON_GAS: return Color(0, min(255., amount * 500), 0, amount * 140);
+    case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., amount * 500), 0, (Uint8)(amount * 140));
     case HighlightType::MEMORY: return transparency(colors[ColorId::BLACK], 80);
     case HighlightType::NIGHT: return transparency(colors[ColorId::NIGHT_BLUE], amount * 160);
-    case HighlightType::EFFICIENCY: return transparency(Color(255, 0, 0) , 120 * (1 - amount));
-    case HighlightType::PRIORITY_TASK: return transparency(Color(0, 255, 0), 120);
-    case HighlightType::FORBIDDEN_ZONE: return transparency(Color(255, 0, 0), 120);
-    case HighlightType::UNAVAILABLE: return transparency(Color(0, 0, 0), 120);
+    case HighlightType::EFFICIENCY: return Color(255, 0, 0, 120 * (1 - amount));
+    case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 120);
+    case HighlightType::FORBIDDEN_ZONE: return Color(255, 0, 0, 120);
+    case HighlightType::UNAVAILABLE: return Color(0, 0, 0, 120);
   }
 }
 
@@ -185,49 +183,49 @@ void MapGui::softScroll(double x, double y) {
   lastRenderTime = clock->getRealMillis();
 }
 
-bool MapGui::onKeyPressed2(Event::KeyEvent key) {
-  const double scrollDist = key.shift ? 20 : 5;
+bool MapGui::onKeyPressed2(SDL_Keysym key) {
+  const double scrollDist = GuiFactory::isShift(key) ? 20 : 5;
   if (!keyScrolling)
     return false;
-  switch (key.code) {
-    case Keyboard::W:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
+  switch (key.sym) {
+    case SDLK_w:
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
-    case Keyboard::Up:
-    case Keyboard::Numpad8:
+    case SDLK_UP:
+    case SDLK_KP_8:
       softScroll(0, -scrollDist);
       break;
-    case Keyboard::Numpad9:
+    case SDLK_KP_9:
       softScroll(scrollDist, -scrollDist);
       break;
-    case Keyboard::D:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
+    case SDLK_d:
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
-    case Keyboard::Right: 
-    case Keyboard::Numpad6:
+    case SDLK_RIGHT: 
+    case SDLK_KP_6:
       softScroll(scrollDist, 0);
       break;
-    case Keyboard::Numpad3:
+    case SDLK_KP_3:
       softScroll(scrollDist, scrollDist);
       break;
-    case Keyboard::S:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
+    case SDLK_s:
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
-    case Keyboard::Down:
-    case Keyboard::Numpad2:
+    case SDLK_DOWN:
+    case SDLK_KP_2:
       softScroll(0, scrollDist);
       break;
-    case Keyboard::Numpad1:
+    case SDLK_KP_1:
       softScroll(-scrollDist, scrollDist);
       break;
-    case Keyboard::A:
-      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || key.alt)
+    case SDLK_a:
+      if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
-    case Keyboard::Left:
-    case Keyboard::Numpad4:
+    case SDLK_LEFT:
+    case SDLK_KP_4:
       softScroll(-scrollDist, 0);
       break;
-    case Keyboard::Numpad7:
+    case SDLK_KP_7:
       softScroll(-scrollDist, -scrollDist);
       break;
     default: break;
@@ -454,7 +452,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     color = transparency(color, 100);
   if (auto waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH))
     if (*waterDepth > 0) {
-      int val = max(0.0, 255.0 - min(2.0f, *waterDepth) * 60);
+      Uint8 val = max(0.0, 255.0 - min(2.0f, *waterDepth) * 60);
       color = Color(val, val, val);
     }
   if (spriteMode && tile.hasSpriteCoord()) {
@@ -473,14 +471,14 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if ((object.layer() == ViewLayer::CREATURE && object.id() != ViewId::BOULDER)
         || object.hasModifier(ViewObject::Modifier::ROUND_SHADOW)) {
       static auto coord = renderer.getTileCoord("round_shadow");
-      renderer.drawTile(pos + movement, coord, size, sf::Color(255, 255, 255, 160));
+      renderer.drawTile(pos + movement, coord, size, Color(255, 255, 255, 160));
       move.y = -4* size.y / renderer.getNominalSize().y;
     }
     static auto shortShadow = renderer.getTileCoord("short_shadow");
     if (auto background = tile.getBackgroundCoord()) {
       renderer.drawTile(pos, *background, size, color);
       if (shadowed.count(tilePos))
-        renderer.drawTile(pos, shortShadow, size, sf::Color(255, 255, 255, 170));
+        renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
     }
     if (auto dir = object.getAttachmentDir())
       move = getAttachmentOffset(*dir, size);
@@ -505,12 +503,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     }*/
     if ((object.layer() == ViewLayer::FLOOR || object.layer() == ViewLayer::FLOOR_BACKGROUND) && 
         shadowed.count(tilePos) && !tile.noShadow)
-      renderer.drawTile(pos, shortShadow, size, sf::Color(255, 255, 255, 170));
+      renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
     if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
       if (*burningVal > 0) {
         static auto fire1 = renderer.getTileCoord("fire1");
         static auto fire2 = renderer.getTileCoord("fire2");
-        renderer.drawTile(pos, Random.choose({fire1, fire2}), size);
+        renderer.drawTile(pos, Random.choose(fire1, fire2), size);
       }
     static auto key = renderer.getTileCoord("key");
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
@@ -526,10 +524,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         creatureMap.push_back(CreatureInfo{Rectangle(tilePos, tilePos + size), *id, object.id()});
     if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
       if (*burningVal > 0) {
-        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'ѡ',
+        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, u8"ѡ",
             Renderer::HOR);
         if (*burningVal > 0.5)
-          renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, L'Ѡ',
+          renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, u8"Ѡ",
               Renderer::HOR);
       }
   }
@@ -782,14 +780,15 @@ void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Colo
   if (spriteMode)
     renderer.drawViewObject(pos + Vec2(0, size.y / 5), ViewId::CREATURE_HIGHLIGHT, true, size, color);
   else
-    renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent, color);
+    renderer.drawFilledRectangle(Rectangle(pos, pos + size), colors[ColorId::TRANSPARENT], color);
 }
 
 void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
   if (spriteMode)
     renderer.drawViewObject(pos, ViewId::SQUARE_HIGHLIGHT, true, size, colors[ColorId::ALMOST_WHITE]);
   else
-    renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::Transparent, colors[ColorId::LIGHT_GRAY]);
+    renderer.drawFilledRectangle(Rectangle(pos, pos + size), colors[ColorId::TRANSPARENT],
+        colors[ColorId::LIGHT_GRAY]);
 }
 
 void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, int currentTimeReal, Vec2 pos, Vec2 size) {

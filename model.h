@@ -22,21 +22,14 @@
 #include "position.h"
 #include "tribe.h"
 #include "enum_variant.h"
+#include "event_generator.h"
+#include "event_listener.h"
 
 class Level;
 class ProgressMeter;
-class Options;
-class CreatureView;
-class Trigger;
-class Highscores;
-class Technology;
-class View;
 class LevelMaker;
-struct SettlementInfo;
 class LevelBuilder;
 class TimeQueue;
-class Statistics;
-struct TribeSet;
 class StairKey;
 class Game;
 
@@ -61,6 +54,7 @@ class Model {
 
   /** Adds new creature to the queue. Assumes this creature has already been added to a level. */
   void addCreature(PCreature, double delay = 0);
+  void landHeroPlayer(const string& name, int handicap);
 
   bool isTurnBased();
 
@@ -78,7 +72,7 @@ class Model {
   void addWoodCount(int);
   int getWoodCount() const;
 
-  void killCreature(Creature* victim, Creature* attacker);
+  void killCreature(Creature* victim);
   void updateSunlightMovement();
 
   PCreature extractCreature(Creature*);
@@ -93,14 +87,18 @@ class Model {
   void lockSerialization();
   void clearDeadCreatures();
 
+  void beforeUpdateTime(Creature*);
+  void afterUpdateTime(Creature*);
+
+  void addEvent(const GameEvent&);
+
   private:
 
   friend class ModelBuilder;
 
   PCreature makePlayer(int handicap);
-  void landHeroPlayer();
   Level* buildLevel(LevelBuilder&&, PLevelMaker);
-  Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
+  Level* buildTopLevel(LevelBuilder&&, PLevelMaker);
 
   vector<PLevel> SERIAL(levels);
   PLevel SERIAL(cemetery);
@@ -115,6 +113,9 @@ class Model {
   optional<StairKey> getStairsBetween(const Level* from, const Level* to);
   map<pair<const Level*, const Level*>, StairKey> SERIAL(stairNavigation);
   bool serializationLocked = false;
+  Level* SERIAL(topLevel) = nullptr;
+  friend class EventListener;
+  HeapAllocated<EventGenerator<EventListener>> SERIAL(eventGenerator);
 };
 
 #endif

@@ -16,8 +16,6 @@
 #ifndef _MAP_LAYOUT
 #define _MAP_LAYOUT
 
-#include <SFML/Graphics.hpp>
-
 #include "util.h"
 #include "enums.h"
 

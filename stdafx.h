@@ -40,6 +40,7 @@
 #include <stdexcept>
 #include <tuple>
 #include <numeric>
+#include <chrono>
 
 // Use boost threads on OSX to use the main thread for rendering
 // and set a large stack size for the model thread.
@@ -71,6 +72,7 @@
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/variant.hpp>
 #include <boost/serialization/optional.hpp>
+#include <boost/serialization/bitset.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/variant.hpp>
 #include <boost/any.hpp>

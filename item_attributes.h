@@ -23,6 +23,7 @@
 #include "enums.h"
 #include "effect_type.h"
 #include "modifier_type.h"
+#include "attack_type.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 

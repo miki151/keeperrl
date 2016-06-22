@@ -52,6 +52,7 @@ enum class ItemId {
   IRON_ORE,
   GOLD_PIECE,
   WOOD_PLANK,
+  BONE,
 
   RANDOM_TECH_BOOK,
   TECH_BOOK,

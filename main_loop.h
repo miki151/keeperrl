@@ -18,7 +18,7 @@ class GameEvents;
 
 class MainLoop {
   public:
-  MainLoop(View*, Highscores*, GameEvents*, FileSharing*, const string& dataFreePath, const string& userPath,
+  MainLoop(View*, Highscores*, FileSharing*, const string& dataFreePath, const string& userPath,
       Options*, Jukebox*, std::atomic<bool>& finished, bool useSingleThread, optional<GameTypeChoice> forceGame);
 
   void start(bool tilesPresent);
@@ -53,7 +53,7 @@ class MainLoop {
   void splashScreen();
   void showCredits(const string& path, View*);
 
-  Table<PModel> keeperCampaign(Campaign& campaign, RandomGen& random);
+  Table<PModel> prepareCampaignModels(Campaign& campaign, RandomGen& random);
   PModel keeperSingleMap(RandomGen& random);
   PModel quickGame(RandomGen& random);
   PGame adventurerGame();
@@ -71,7 +71,6 @@ class MainLoop {
   string userPath;
   Options* options;
   Jukebox* jukebox;
-  GameEvents* gameEvents;
   Highscores* highscores;
   FileSharing* fileSharing;
   std::atomic<bool>& finished;

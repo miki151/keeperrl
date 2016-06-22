@@ -48,6 +48,7 @@ enum class SquareApplyType;
 enum class SquareId;
 enum class ItemAction;
 enum class WorshipType;
+enum class SquareInteraction;
 
 enum class MinionTask;
 enum class MinionTrait;

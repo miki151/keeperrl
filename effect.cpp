@@ -30,11 +30,14 @@
 #include "attack.h"
 #include "player_message.h"
 #include "equipment.h"
-#include "event.h"
 #include "creature_attributes.h"
 #include "creature_name.h"
 #include "position_map.h"
 #include "sound.h"
+#include "attack_level.h"
+#include "attack_type.h"
+#include "body.h"
+#include "event_listener.h"
 
 vector<int> healingPoints { 5, 15, 40};
 vector<int> sleepTime { 15, 80, 200};
@@ -106,7 +109,7 @@ static void blast(Creature* who, Position position, Vec2 direction, int maxDista
   for (auto elem : Item::stackItems(position.getItems())) {
     position.throwItem(
         position.removeItems(elem.second),
-        Attack(who, Random.choose({AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH}),
+        Attack(who, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
           elem.second[0]->getAttackType(), 15, 15, false), maxDistance, direction, VisionId::NORMAL);
   }
   if (damage && position.isDestroyable())
@@ -119,7 +122,7 @@ static void blast(Creature* c, Vec2 direction, int range) {
 }
 
 static void wordOfPower(Creature* c, int strength) {
-  GlobalEvents.addExplosionEvent(c->getPosition());
+  c->getGame()->addEvent({EventId::EXPLOSION, c->getPosition()});
   for (Vec2 v : Vec2::directions8(Random))
     blast(c, c->getPosition().plus(v), v, wordOfPowerDist[strength], true);
 }
@@ -184,7 +187,7 @@ static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improv
 static void enhanceWeapon(Creature* c, int mod = 1, const string msg = "is improved") {
   if (Item* item = c->getWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
-    item->addModifier(Random.choose({ModifierType::ACCURACY, ModifierType::DAMAGE}), mod);
+    item->addModifier(Random.choose(ModifierType::ACCURACY, ModifierType::DAMAGE), mod);
   }
 }
 
@@ -200,7 +203,7 @@ static void destroyEquipment(Creature* c) {
 }
 
 static void heal(Creature* c, int strength) {
-  if (c->getHealth() < 1 || (strength == int(EffectStrength::STRONG) && c->getAttributes().lostOrInjuredBodyParts()))
+  if (c->getBody().canHeal() || (strength == int(EffectStrength::STRONG) && c->getBody().lostOrInjuredBodyParts()))
     c->heal(1, strength == int(EffectStrength::STRONG));
   else
     c->playerMessage("You feel refreshed.");
@@ -261,8 +264,7 @@ static void teleport(Creature* c) {
 }
 
 static void acid(Creature* c) {
-  c->you(MsgType::ARE, "hurt by the acid");
-  c->bleed(0.2);
+  c->affectByAcid();
   switch (Random.get(2)) {
     case 0 : enhanceArmor(c, -1, "corrodes"); break;
     case 1 : enhanceWeapon(c, -1, "corrodes"); break;
@@ -270,7 +272,7 @@ static void acid(Creature* c) {
 }
 
 static void alarm(Creature* c) {
-  c->getGame()->onAlarm(c->getPosition());
+  c->getGame()->addEvent({EventId::ALARM, c->getPosition()});
 }
 
 static void teleEnemies(Creature* c) { // handled by Collective
@@ -278,13 +280,6 @@ static void teleEnemies(Creature* c) { // handled by Collective
 
 double entangledTime(int strength) {
   return max(5, 30 - strength / 2);
-}
-
-void silverDamage(Creature* c) {
-  if (c->getAttributes().isUndead()) {
-    c->you(MsgType::ARE, "hurt by the silver");
-    c->bleed(Random.getDouble(0.0, 0.15));
-  }
 }
 
 double getDuration(const Creature* c, LastingEffect e, int strength) {
@@ -380,7 +375,7 @@ void Effect::applyToCreature(Creature* c, const EffectType& type, EffectStrength
     case EffectId::TELEPORT: teleport(c); break;
     case EffectId::ROLLING_BOULDER: FAIL << "Not implemented"; break;
     case EffectId::EMIT_POISON_GAS: emitPoisonGas(c->getPosition(), strength, true); break;
-    case EffectId::SILVER_DAMAGE: silverDamage(c); break;
+    case EffectId::SILVER_DAMAGE: c->affectBySilver(); break;
     case EffectId::CURE_POISON: c->removeEffect(LastingEffect::POISON); break;
     case EffectId::METEOR_SHOWER: c->getPosition().addTrigger(Trigger::getMeteorShower(c, 15)); break;
   }

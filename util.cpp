@@ -39,6 +39,10 @@ int RandomGen::get(int min, int max) {
   return uniform_int_distribution<int>(min, max - 1)(generator);
 }
 
+std::string operator "" _s(const char* str, size_t) { 
+  return std::string(str); 
+}
+
 string getCardinalName(Dir d) {
   switch (d) {
     case Dir::N: return "north";
@@ -518,6 +522,10 @@ int Rectangle::height() const {
   return h;
 }
 
+int Rectangle::area() const {
+  return w * h;
+}
+
 Vec2 Rectangle::getSize() const {
   return Vec2(w, h);
 }
@@ -800,8 +808,12 @@ AsyncLoop::AsyncLoop(function<void()> init, function<void()> loop)
     : done(false), t([=] { init(); while (!done) { loop(); }}) {
 }
 
-AsyncLoop::~AsyncLoop() {
+void AsyncLoop::finish() {
   done = true;
+}
+
+AsyncLoop::~AsyncLoop() {
+  finish();
   t.join();
 }
 

@@ -20,7 +20,6 @@
 #include <set>
 
 #include "enums.h"
-#include "event.h"
 #include "singleton.h"
 #include "entity_map.h"
 
@@ -58,12 +57,29 @@ class TribeId {
   SERIALIZATION_DECL(TribeId);
 
   private:
-  typedef long long KeyType;
+  friend class TribeSet;
+  typedef char KeyType;
   TribeId(KeyType key);
   KeyType SERIAL(key);
   static optional<pair<TribeId, TribeId>> serialSwitch;
 };
 
+class TribeSet {
+  public:
+  static TribeSet getFull();
+  void clear();
+  TribeSet& insert(TribeId);
+  TribeSet& erase(TribeId);
+  bool contains(TribeId) const;
+
+  bool operator==(const TribeSet&) const;
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+
+  private:
+  bitset<32> SERIAL(elems);
+};
 
 class Tribe {
   public:
@@ -73,7 +89,7 @@ class Tribe {
   bool isEnemy(const Creature*) const;
   bool isEnemy(const Tribe*) const;
   void addEnemy(Tribe*);
-  void addFriend(Tribe*);
+  const TribeSet& getFriendlyTribes() const;
 
   void onMemberKilled(Creature* member, Creature* killer);
   void onItemsStolen(const Creature* thief);
@@ -85,7 +101,8 @@ class Tribe {
   static Map generateTribes();
 
   private:
-  Tribe(bool diplomatic);
+  Tribe(TribeId, bool diplomatic);
+  static void init(Tribe::Map&, TribeId, bool diplomatic);
   double getStanding(const Creature*) const;
 
   bool SERIAL(diplomatic);
@@ -95,6 +112,8 @@ class Tribe {
 
   EntityMap<Creature, double> SERIAL(standing);
   unordered_set<Tribe*> SERIAL(enemyTribes);
+  TribeSet SERIAL(friendlyTribes);
+  TribeId SERIAL(id);
 };
 
 #endif

@@ -6,6 +6,8 @@ endif
 
 CFLAGS = -Wall -std=c++11 -Wno-sign-compare -Wno-unused-variable -Wno-unused-function -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare
 
+CLANG = true
+
 ifdef CLANG
 CC = clang++
 LD = clang++
@@ -15,13 +17,16 @@ CC = g++
 LD = g++
 endif
 
+
 ifdef OSX
-LDFLAGS = -Wl
+LDFLAGS += -Wl
 CFLAGS += -stdlib=libc++ -DOSX -mmacosx-version-min=10.7
 CFLAGS += -DTEXT_SERIALIZATION
 else
 LDFLAGS = -Wl,-rpath=$(RPATH) -static-libstdc++
 endif
+
+LDFLAGS += -fuse-ld=gold
 
 ifdef DATA_DIR
 CFLAGS += -DDATA_DIR=\"$(DATA_DIR)\"
@@ -35,6 +40,10 @@ ifdef RELEASE
 CFLAGS += -DRELEASE
 else
 CFLAGS += -g
+endif
+
+ifdef SANITIZE_ADDRESS
+CFLAGS += -fsanitize=address
 endif
 
 ifdef DBG
@@ -79,7 +88,7 @@ endif
 
 SRCS = $(shell ls -t *.cpp)
 
-LIBS = -L/usr/lib/x86_64-linux-gnu -lsfml-audio -lsfml-graphics -lsfml-window -lsfml-system $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}
+LIBS = -L/usr/lib/x86_64-linux-gnu -lGL -lSDL2 -lcAudio -lSDL2_image $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}
 
 
 OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))
@@ -122,6 +131,9 @@ ifdef RELEASE
 gen_version:
 	bash ./gen_version.sh
 endif
+
+parse_game:
+	clang++ -std=c++11 -g gzstream.cpp parse_game.cpp util.cpp debug.cpp saved_game_info.cpp -o parse_game -lboost_program_options -lpthread -lboost_serialization -DPARSE_GAME -lz
 
 clean:
 	$(RM) $(OBJDIR)/*.o
