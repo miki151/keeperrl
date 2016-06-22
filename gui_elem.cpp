@@ -473,7 +473,7 @@ PGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
 
 static Color blinking(Color c1, Color c2, int period, int state) {
   double s = (state % period) / (double) period;
-  double c = (cos(s * 2 * M_PI) + 1) / 2;
+  double c = (cos(s * 2 * 3.14159) + 1) / 2;
   return Color(c1.r * c + c2.r * (1 - c), c1.g * c + c2.g * (1 - c), c1.b * c + c2.b * (1 - c));
 }
 
