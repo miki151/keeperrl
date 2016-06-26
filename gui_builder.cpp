@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
+﻿/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
 
  This file is part of KeeperRL.
 
@@ -24,6 +24,9 @@
 #include "map_gui.h"
 #include "campaign.h"
 #include "retired_games.h"
+
+using SDL::SDL_Keysym;
+using SDL::SDL_Keycode;
 
 GuiBuilder::GuiBuilder(Renderer& r, GuiFactory& g, Clock* c, Options* o, Callbacks call)
     : renderer(r), gui(g), clock(c), options(o), callbacks(call), gameSpeed(GameSpeed::NORMAL) {
@@ -361,10 +364,10 @@ static char getHotkeyChar(GuiBuilder::GameSpeed speed) {
 
 static SDL_Keycode getHotkey(GuiBuilder::GameSpeed speed) {
   switch (speed) {
-    case GuiBuilder::GameSpeed::SLOW: return SDLK_1;
-    case GuiBuilder::GameSpeed::NORMAL: return SDLK_2;
-    case GuiBuilder::GameSpeed::FAST: return SDLK_3;
-    case GuiBuilder::GameSpeed::VERY_FAST: return SDLK_4;
+    case GuiBuilder::GameSpeed::SLOW: return SDL::SDLK_1;
+    case GuiBuilder::GameSpeed::NORMAL: return SDL::SDLK_2;
+    case GuiBuilder::GameSpeed::FAST: return SDL::SDLK_3;
+    case GuiBuilder::GameSpeed::VERY_FAST: return SDL::SDLK_4;
   }
 }
 
@@ -381,7 +384,7 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
             else
               clock->pause();
             gameSpeedDialogOpen = false;
-            }, gui.getKey(SDLK_SPACE))));
+            }, gui.getKey(SDL::SDLK_SPACE))));
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
     Color color = colors[speed == gameSpeed ? ColorId::GREEN : ColorId::WHITE];
     lines.push_back(gui.stack(gui.horizontalList(makeVec<PGuiElem>(
@@ -518,7 +521,7 @@ int GuiBuilder::getScrollPos(int index, int count) {
 }
 
 vector<SDL_Keysym> GuiBuilder::getConfirmationKeys() {
-  return {gui.getKey(SDLK_RETURN), gui.getKey(SDLK_KP_ENTER), gui.getKey(SDLK_KP_5)};
+  return {gui.getKey(SDL::SDLK_RETURN), gui.getKey(SDL::SDLK_KP_ENTER), gui.getKey(SDL::SDLK_KP_5)};
 }
 
 void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, PlayerInfo& info) {
@@ -565,13 +568,13 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, PlayerInfo& info) {
                 getConfirmationKeys(), true),
               gui.keyHandler([=] { itemIndex = (itemIndex + 1) % totalElems;
                 lyingItemsScroll = getScrollPos(itemIndex, totalElems - 1);},
-                {gui.getKey(SDLK_DOWN), gui.getKey(SDLK_KP_2)}, true),
+                {gui.getKey(SDL::SDLK_DOWN), gui.getKey(SDL::SDLK_KP_2)}, true),
               gui.keyHandler([=] { itemIndex = (itemIndex + totalElems - 1) % totalElems;
                 lyingItemsScroll = getScrollPos(itemIndex, totalElems - 1); },
-                {gui.getKey(SDLK_UP), gui.getKey(SDLK_KP_8)}, true)),
-            getConfirmationKeys(), {gui.getKey(SDLK_ESCAPE)}, playerOverlayFocused),
+                {gui.getKey(SDL::SDLK_UP), gui.getKey(SDL::SDLK_KP_8)}, true)),
+            getConfirmationKeys(), {gui.getKey(SDL::SDLK_ESCAPE)}, playerOverlayFocused),
           gui.keyHandler([=] { if (!playerOverlayFocused) itemIndex = 0; }, getConfirmationKeys()),
-          gui.keyHandler([=] { itemIndex = -1; }, {gui.getKey(SDLK_ESCAPE)}),
+          gui.keyHandler([=] { itemIndex = -1; }, {gui.getKey(SDL::SDLK_ESCAPE)}),
           gui.margin(
             gui.leftMargin(3, gui.label(title, colors[ColorId::YELLOW])),
             gui.scrollable(gui.verticalList(std::move(lines), legendLineHeight), &lyingItemsScroll),
@@ -593,13 +596,13 @@ struct KeyInfo {
 PGuiElem GuiBuilder::drawPlayerHelp(PlayerInfo& info) {
   vector<PGuiElem> lines;
   vector<KeyInfo> bottomKeys {
-      { "Enter", "Interact or pick up", gui.getKey(SDLK_RETURN)},
-      { "U", "Leave minion", gui.getKey(SDLK_u)},
-      { "C", "Chat with someone", gui.getKey(SDLK_c)},
-      { "H", "Hide", gui.getKey(SDLK_h)},
-      { "P", "Pay debt", gui.getKey(SDLK_p)},
-      { "M", "Message history", gui.getKey(SDLK_m)},
-      { "Space", "Wait", gui.getKey(SDLK_SPACE)},
+      { "Enter", "Interact or pick up", gui.getKey(SDL::SDLK_RETURN)},
+      { "U", "Leave minion", gui.getKey(SDL::SDLK_u)},
+      { "C", "Chat with someone", gui.getKey(SDL::SDLK_c)},
+      { "H", "Hide", gui.getKey(SDL::SDLK_h)},
+      { "P", "Pay debt", gui.getKey(SDL::SDLK_p)},
+      { "M", "Message history", gui.getKey(SDL::SDLK_m)},
+      { "Space", "Wait", gui.getKey(SDL::SDLK_SPACE)},
   };
   vector<string> help = {
       "Move around with number pad.",
@@ -665,7 +668,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
     return none;
   if (itemInfo.actions.size() == 1 && autoDefault)
     return itemInfo.actions[0];
-  renderer.flushEvents(SDL_KEYDOWN);
+  renderer.flushEvents(SDL::SDL_KEYDOWN);
   int contentHeight;
   int choice = -1;
   int index = 0;
@@ -695,23 +698,23 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
       }
       if (choice == -100)
         return none;
-      if (event.type == SDL_MOUSEBUTTONDOWN &&
+      if (event.type == SDL::SDL_MOUSEBUTTONDOWN &&
           !Vec2(event.button.x, event.button.x).inRectangle(stuff->getBounds()))
         return none;
-      if (event.type == SDL_KEYDOWN)
+      if (event.type == SDL::SDL_KEYDOWN)
         switch (event.key.keysym.sym) {
-          case SDLK_KP_8:
-          case SDLK_UP: index = (index - 1 + count) % count; break;
-          case SDLK_KP_2:
-          case SDLK_DOWN: index = (index + 1 + count) % count; break;
-          case SDLK_KP_5:
-          case SDLK_KP_ENTER:
-          case SDLK_RETURN:
+          case SDL::SDLK_KP_8:
+          case SDL::SDLK_UP: index = (index - 1 + count) % count; break;
+          case SDL::SDLK_KP_2:
+          case SDL::SDLK_DOWN: index = (index + 1 + count) % count; break;
+          case SDL::SDLK_KP_5:
+          case SDL::SDLK_KP_ENTER:
+          case SDL::SDLK_RETURN:
               if (index > -1) {
                 if (index < itemInfo.actions.size())
                   return itemInfo.actions[index];
               }
-          case SDLK_ESCAPE: return none;
+          case SDL::SDLK_ESCAPE: return none;
           default: break;
         }
     }
@@ -777,18 +780,18 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   auto line = gui.getListBuilder();
   line.addElemAuto(gui.label("Commands: "));
   line.addElemAuto(gui.stack(
-        gui.button(getButtonCallback(UserInputId::UNPOSSESS), gui.getKey(SDLK_u), true),
+        gui.button(getButtonCallback(UserInputId::UNPOSSESS), gui.getKey(SDL::SDLK_u), true),
         gui.labelHighlight("[U] ", colors[ColorId::LIGHT_BLUE]),
         getTooltip({"Leave minion and order team back to base."})));
   line.addElemAuto(gui.stack(
-        gui.button(getButtonCallback(UserInputId::TRANSFER), gui.getKey(SDLK_t), true),
+        gui.button(getButtonCallback(UserInputId::TRANSFER), gui.getKey(SDL::SDLK_t), true),
         gui.labelHighlight("[T] ", colors[ColorId::LIGHT_BLUE]),
         getTooltip({"Travel to another site."})));
   line.addElemAuto(gui.stack(
-        gui.button(getButtonCallback(UserInputId::SWAP_TEAM), gui.getKey(SDLK_s), true),
+        gui.button(getButtonCallback(UserInputId::SWAP_TEAM), gui.getKey(SDL::SDLK_s), true),
         gui.labelHighlight("[S] ", colors[ColorId::LIGHT_BLUE]),
         getTooltip({"Switch control to a different team member."})));
-  line.addElem(gui.button(getButtonCallback(UserInputId::CHEAT_ATTRIBUTES), gui.getKey(SDLK_y)), 1);
+  line.addElem(gui.button(getButtonCallback(UserInputId::CHEAT_ATTRIBUTES), gui.getKey(SDL::SDLK_y)), 1);
   list.addElem(line.buildHorizontalList());
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
@@ -1083,7 +1086,7 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& in
           gui.leftMargin(minionListWidth + 20, std::move(minionPage)));
       minionsOverlayCache = gui.miniWindow(gui.stack(
           gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}),
-            {gui.getKey(SDLK_ESCAPE)}, true),
+            {gui.getKey(SDL::SDLK_ESCAPE)}, true),
           gui.margins(std::move(menu), margin)));
       minionsOverlayHash = newHash;
     }
@@ -1115,7 +1118,7 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
     string groupName = elem.first;
     ret.push_back({gui.conditionalStopKeys(
           gui.miniWindow(gui.stack(
-              gui.keyHandler([=] { activeGroup = none; }, {gui.getKey(SDLK_ESCAPE)}, true),
+              gui.keyHandler([=] { activeGroup = none; }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
               gui.margins(lines.buildVerticalList(), margin))),
           [=] { return !info.ransom && collectiveTab == CollectiveTab::BUILDINGS &&
                     activeGroup == groupName;}),
@@ -1594,7 +1597,7 @@ vector<PGuiElem> GuiBuilder::drawItemMenu(const vector<ItemInfo>& items, ItemMen
     lines.push_back(getItemLine(items[i], [=] (Rectangle bounds) { callback(bounds, i);} ));
   if (doneBut)
     lines.push_back(gui.stack(
-          gui.button([=] { callback(Rectangle(), none); }, gui.getKey(SDLK_ESCAPE)),
+          gui.button([=] { callback(Rectangle(), none); }, gui.getKey(SDL::SDLK_ESCAPE)),
           gui.centeredLabel(Renderer::HOR, "[done]", colors[ColorId::LIGHT_BLUE])));
   return lines;
 }
@@ -1898,7 +1901,7 @@ PGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
         .addSpace(10)
         .addElemAuto(
             gui.stack(
-                gui.button([&queue] { queue.push(none); }, gui.getKey(SDLK_ESCAPE), true),
+                gui.button([&queue] { queue.push(none); }, gui.getKey(SDL::SDLK_ESCAPE), true),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList()));
   return gui.stack(
       gui.preferredSize(1000, 600),
@@ -2018,7 +2021,7 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
         .addSpace(10)
         .addElemAuto(
             gui.stack(
-                gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, gui.getKey(SDLK_ESCAPE)),
+                gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, gui.getKey(SDL::SDLK_ESCAPE)),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList())));
   int retiredPosX = 600;
   int retiredMenuX = 380;
@@ -2146,7 +2149,7 @@ vector<PGuiElem> GuiBuilder::drawRecruitList(const vector<CreatureInfo>& creatur
     bool canAfford = elem.any.cost->second <= budget;
     ColorId color = canAfford ? ColorId::WHITE : ColorId::GRAY;
     lines.push_back(gui.stack(
-          gui.keyHandler([callback] { callback(none); }, {gui.getKey(SDLK_ESCAPE), gui.getKey(SDLK_RETURN)}),
+          gui.keyHandler([callback] { callback(none); }, {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(SDL::SDLK_RETURN)}),
           canAfford ? gui.button([callback, elem] { callback(elem.any.uniqueId); }) : gui.empty(),
           gui.leftMargin(25, gui.stack(
               canAfford ? gui.mouseHighlight2(gui.highlight(listLineHeight)) : gui.empty(),
@@ -2200,8 +2203,8 @@ PGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
       gui.button([&online] { online = !online; }));
   Vec2 size = getMenuPosition(MenuType::NORMAL, 0).getSize();
   return gui.stack(makeVec<PGuiElem>(gui.preferredSize(size.x, size.y),
-      gui.keyHandler([&tabNum, numTabs] { tabNum = (tabNum + 1) % numTabs; }, {gui.getKey(SDLK_RIGHT)}),
-      gui.keyHandler([&tabNum, numTabs] { tabNum = (tabNum + numTabs - 1) % numTabs; }, {gui.getKey(SDLK_LEFT)}),
+      gui.keyHandler([&tabNum, numTabs] { tabNum = (tabNum + 1) % numTabs; }, {gui.getKey(SDL::SDLK_RIGHT)}),
+      gui.keyHandler([&tabNum, numTabs] { tabNum = (tabNum + numTabs - 1) % numTabs; }, {gui.getKey(SDL::SDLK_LEFT)}),
       gui.window(
         gui.margin(gui.leftMargin(25, std::move(onlineBut)),
         gui.topMargin(30, gui.margin(gui.leftMargin(5, topLine.buildHorizontalListFit()),
@@ -2239,8 +2242,8 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
   stuff = gui.window(std::move(stuff), [&dismiss] { dismiss = true; });
   PGuiElem bg = gui.darken();
   bg->setBounds(renderer.getSize());
-  SDL_StartTextInput();
-  OnExit tmp([]{ SDL_StopTextInput();});
+  SDL::SDL_StartTextInput();
+  OnExit tmp([]{ SDL::SDL_StopTextInput();});
   while (1) {
     callbacks.refreshScreen();
     bg->render(renderer);
@@ -2252,20 +2255,20 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
       gui.propagateEvent(event, {stuff.get()});
       if (dismiss)
         return none;
-      if (event.type == SDL_TEXTINPUT)
+      if (event.type == SDL::SDL_TEXTINPUT)
         if (text.size() < maxLength)
           text += event.text.text;
 /*        if ((isalnum(event.text.unicode) || event.text.unicode == ' ') && text.size() < maxLength)
           text += event.text.unicode;*/
-      if (event.type == SDL_KEYDOWN)
+      if (event.type == SDL::SDL_KEYDOWN)
         switch (event.key.keysym.sym) {
-          case SDLK_BACKSPACE:
+          case SDL::SDLK_BACKSPACE:
               if (!text.empty())
                 text.pop_back();
               break;
-          case SDLK_KP_ENTER:
-          case SDLK_RETURN: return text;
-          case SDLK_ESCAPE: return none;
+          case SDL::SDLK_KP_ENTER:
+          case SDL::SDLK_RETURN: return text;
+          case SDL::SDLK_ESCAPE: return none;
           default: break;
         }
     }

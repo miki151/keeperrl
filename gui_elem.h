@@ -33,7 +33,7 @@ class GuiElem {
   virtual void onMouseGone() {}
   virtual void onMouseRelease(Vec2) {}
   virtual void onRefreshBounds() {}
-  virtual bool onKeyPressed2(SDL_Keysym) { return false;}
+  virtual bool onKeyPressed2(SDL::SDL_Keysym) { return false;}
   virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
   virtual optional<int> getPreferredWidth() { return none; }
   virtual optional<int> getPreferredHeight() { return none; }
@@ -59,25 +59,25 @@ class GuiFactory {
   DragContainer& getDragContainer();
   void propagateEvent(const Event&, vector<GuiElem*>);
 
-  static bool isShift(const SDL_Keysym&);
-  static bool isAlt(const SDL_Keysym&);
-  static bool isCtrl(const SDL_Keysym&);
-  static bool keyEventEqual(const SDL_Keysym&, const SDL_Keysym&);
+  static bool isShift(const SDL::SDL_Keysym&);
+  static bool isAlt(const SDL::SDL_Keysym&);
+  static bool isCtrl(const SDL::SDL_Keysym&);
+  static bool keyEventEqual(const SDL::SDL_Keysym&, const SDL::SDL_Keysym&);
 
-  SDL_Keysym getKey(SDL_Keycode);
-  PGuiElem button(function<void()> fun, SDL_Keysym, bool capture = false);
+  SDL::SDL_Keysym getKey(SDL::SDL_Keycode);
+  PGuiElem button(function<void()> fun, SDL::SDL_Keysym, bool capture = false);
   PGuiElem buttonChar(function<void()> fun, char, bool capture = false);
   PGuiElem button(function<void()> fun);
-  PGuiElem reverseButton(function<void()> fun, vector<SDL_Keysym> = {}, bool capture = false);
-  PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun, SDL_Keysym, bool capture = false);
+  PGuiElem reverseButton(function<void()> fun, vector<SDL::SDL_Keysym> = {}, bool capture = false);
+  PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun, SDL::SDL_Keysym, bool capture = false);
   PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun);
   PGuiElem releaseButton(function<void()> fun);
   PGuiElem releaseButton(function<void(Rectangle buttonBounds)> fun);
-  PGuiElem focusable(PGuiElem content, vector<SDL_Keysym> focusEvent,
-      vector<SDL_Keysym> defocusEvent, bool& focused);
+  PGuiElem focusable(PGuiElem content, vector<SDL::SDL_Keysym> focusEvent,
+      vector<SDL::SDL_Keysym> defocusEvent, bool& focused);
   PGuiElem mouseWheel(function<void(bool)>);
-  PGuiElem keyHandler(function<void(SDL_Keysym)>, bool capture = false);
-  PGuiElem keyHandler(function<void()>, vector<SDL_Keysym>, bool capture = false);
+  PGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
+  PGuiElem keyHandler(function<void()>, vector<SDL::SDL_Keysym>, bool capture = false);
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
@@ -284,7 +284,7 @@ class GuiFactory {
   PGuiElem getScrollbar();
   Vec2 getScrollButtonSize();
   Texture& getIconTex(IconId);
-  SDL_Keysym getHotkeyEvent(char) ;
+  SDL::SDL_Keysym getHotkeyEvent(char) ;
 
   map<TexId, Texture> textures;
   vector<Texture> iconTextures;

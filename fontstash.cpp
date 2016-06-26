@@ -24,16 +24,17 @@
 
 //#include <GL/glew.h>  /* @rlyeh: before including GL. doesnt hurt and makes life better */
 
-#ifdef __MACOSX__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
+#ifdef WINDOWS
+#include <windows.h>
 #endif
 
 /* @rlyeh: removed STB_TRUETYPE_IMPLENTATION. We link it externally */
 #include "stb_truetype.h"
 
 #include "fontstash.h"
+
+using namespace SDL;
+
 
 #define HASH_LUT_SIZE 256
 #define MAX_ROWS 128

@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
+﻿/* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
 
    This file is part of KeeperRL.
 
@@ -27,6 +27,9 @@
 #include "level.h"
 #include "creature_view.h"
 #include "options.h"
+
+using SDL::SDL_Keysym;
+using SDL::SDL_Keycode;
 
 MapGui::MapGui(Callbacks call, Clock* c, Options* o) : objects(Level::getMaxBounds()), callbacks(call),
     clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
@@ -188,44 +191,44 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
   if (!keyScrolling)
     return false;
   switch (key.sym) {
-    case SDLK_w:
+    case SDL::SDLK_w:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
-    case SDLK_UP:
-    case SDLK_KP_8:
+    case SDL::SDLK_UP:
+    case SDL::SDLK_KP_8:
       softScroll(0, -scrollDist);
       break;
-    case SDLK_KP_9:
+    case SDL::SDLK_KP_9:
       softScroll(scrollDist, -scrollDist);
       break;
-    case SDLK_d:
+    case SDL::SDLK_d:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
-    case SDLK_RIGHT: 
-    case SDLK_KP_6:
+    case SDL::SDLK_RIGHT: 
+    case SDL::SDLK_KP_6:
       softScroll(scrollDist, 0);
       break;
-    case SDLK_KP_3:
+    case SDL::SDLK_KP_3:
       softScroll(scrollDist, scrollDist);
       break;
-    case SDLK_s:
+    case SDL::SDLK_s:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
-    case SDLK_DOWN:
-    case SDLK_KP_2:
+    case SDL::SDLK_DOWN:
+    case SDL::SDLK_KP_2:
       softScroll(0, scrollDist);
       break;
-    case SDLK_KP_1:
+    case SDL::SDLK_KP_1:
       softScroll(-scrollDist, scrollDist);
       break;
-    case SDLK_a:
+    case SDL::SDLK_a:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
-    case SDLK_LEFT:
-    case SDLK_KP_4:
+    case SDL::SDLK_LEFT:
+    case SDL::SDLK_KP_4:
       softScroll(-scrollDist, 0);
       break;
-    case SDLK_KP_7:
+    case SDL::SDLK_KP_7:
       softScroll(-scrollDist, -scrollDist);
       break;
     default: break;

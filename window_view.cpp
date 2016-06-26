@@ -36,6 +36,9 @@
 #include "position.h"
 #include "sound_library.h"
 
+using SDL::SDL_Keysym;
+using SDL::SDL_Keycode;
+
 View* WindowView::createDefaultView(ViewParams params) {
   return new WindowView(params);
 }
@@ -132,12 +135,12 @@ void WindowView::mapCreatureDragFun(UniqueEntity<Creature>::Id id, ViewId viewId
   gui.getDragContainer().put({DragContentId::CREATURE, id}, gui.viewObject(viewId), origin);
 }
 
-bool WindowView::isKeyPressed(SDL_Scancode code) {
-  return SDL_GetKeyboardState(nullptr)[code];
+bool WindowView::isKeyPressed(SDL::SDL_Scancode code) {
+  return SDL::SDL_GetKeyboardState(nullptr)[code];
 }
 
 void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
-  if (isKeyPressed(SDL_SCANCODE_LCTRL) || isKeyPressed(SDL_SCANCODE_RCTRL)) {
+  if (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL)) {
     inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON2, id));
   } else {
     inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
@@ -163,9 +166,9 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
         inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo{pos, *activeLibrary}));
       else
       if (collectiveTab == CollectiveTab::BUILDINGS) {
-        if (activeBuilding && (isKeyPressed(SDL_SCANCODE_LSHIFT) || isKeyPressed(SDL_SCANCODE_RSHIFT)))
+        if (activeBuilding && (isKeyPressed(SDL::SDL_SCANCODE_LSHIFT) || isKeyPressed(SDL::SDL_SCANCODE_RSHIFT)))
           inputQueue.push(UserInput(UserInputId::RECT_SELECTION, pos));
-        else if (isKeyPressed(SDL_SCANCODE_LCTRL) || isKeyPressed(SDL_SCANCODE_RCTRL))
+        else if (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL))
           inputQueue.push(UserInput(UserInputId::RECT_DESELECTION, pos));
         else if (activeBuilding)
           inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo{pos, *activeBuilding}));
@@ -276,7 +279,7 @@ void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) 
     while (renderer.pollEvent(event)) {
       propagateEvent(event, {});
       considerResizeEvent(event);
-      if (event.type == SDL_MOUSEBUTTONDOWN && cancelFun) {
+      if (event.type == SDL::SDL_MOUSEBUTTONDOWN && cancelFun) {
         if (Vec2(event.button.x, event.button.y).inRectangle(cancelBut))
           cancelFun();
       }
@@ -307,7 +310,7 @@ void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, fu
     Event event;
     while (renderer.pollEvent(event)) {
       considerResizeEvent(event);
-      if (event.type == SDL_MOUSEBUTTONDOWN && cancelFun) {
+      if (event.type == SDL::SDL_MOUSEBUTTONDOWN && cancelFun) {
         if (Vec2(event.button.x, event.button.y).inRectangle(cancelBut))
           cancelFun();
       }
@@ -455,7 +458,7 @@ void WindowView::rebuildGui() {
     }
   }
   Event ev;
-  ev.type = SDL_MOUSEMOTION;
+  ev.type = SDL::SDL_MOUSEMOTION;
   ev.motion.x = renderer.getMousePos().x;
   ev.motion.y = renderer.getMousePos().y;
   propagateEvent(ev, getClickableGuiElems());
@@ -674,7 +677,7 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
     Event event;
     renderer.waitEvent(event);
     considerResizeEvent(event);
-    if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN) {
+    if (event.type == SDL::SDL_MOUSEMOTION || event.type == SDL::SDL_MOUSEBUTTONDOWN) {
       if (auto pos = mapGui->projectOnMap(renderer.getMousePos())) {
         refreshScreen(false);
         Vec2 middle = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds(), mapGui->getScreenPos())
@@ -697,27 +700,27 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
               wpos.x + mapLayout->getSquareSize().x / 2, wpos.y, arrows[numArrow], Renderer::HOR);
         }
         renderer.drawAndClearBuffer();
-        if (event.type == SDL_MOUSEBUTTONDOWN)
+        if (event.type == SDL::SDL_MOUSEBUTTONDOWN)
           return dir;
       }
-      renderer.flushEvents(SDL_MOUSEMOTION);
+      renderer.flushEvents(SDL::SDL_MOUSEMOTION);
     } else
     refreshScreen();
-    if (event.type == SDL_KEYDOWN)
+    if (event.type == SDL::SDL_KEYDOWN)
       switch (event.key.keysym.sym) {
-        case SDLK_UP:
-        case SDLK_KP_8: refreshScreen(); return Vec2(0, -1);
-        case SDLK_KP_9: refreshScreen(); return Vec2(1, -1);
-        case SDLK_RIGHT:
-        case SDLK_KP_6: refreshScreen(); return Vec2(1, 0);
-        case SDLK_KP_3: refreshScreen(); return Vec2(1, 1);
-        case SDLK_DOWN:
-        case SDLK_KP_2: refreshScreen(); return Vec2(0, 1);
-        case SDLK_KP_1: refreshScreen(); return Vec2(-1, 1);
-        case SDLK_LEFT:
-        case SDLK_KP_4: refreshScreen(); return Vec2(-1, 0);
-        case SDLK_KP_7: refreshScreen(); return Vec2(-1, -1);
-        case SDLK_ESCAPE: refreshScreen(); return none;
+        case SDL::SDLK_UP:
+        case SDL::SDLK_KP_8: refreshScreen(); return Vec2(0, -1);
+        case SDL::SDLK_KP_9: refreshScreen(); return Vec2(1, -1);
+        case SDL::SDLK_RIGHT:
+        case SDL::SDLK_KP_6: refreshScreen(); return Vec2(1, 0);
+        case SDL::SDLK_KP_3: refreshScreen(); return Vec2(1, 1);
+        case SDL::SDLK_DOWN:
+        case SDL::SDLK_KP_2: refreshScreen(); return Vec2(0, 1);
+        case SDL::SDLK_KP_1: refreshScreen(); return Vec2(-1, 1);
+        case SDL::SDLK_LEFT:
+        case SDL::SDLK_KP_4: refreshScreen(); return Vec2(-1, 0);
+        case SDL::SDLK_KP_7: refreshScreen(); return Vec2(-1, -1);
+        case SDL::SDLK_ESCAPE: refreshScreen(); return none;
         default: break;
       }
   } while (1);
@@ -944,26 +947,26 @@ optional<GameTypeChoice> WindowView::chooseGameType() {
         return *choice;
       if (considerResizeEvent(event))
         continue;
-      if (event.type == SDL_KEYDOWN)
+      if (event.type == SDL::SDL_KEYDOWN)
         switch (event.key.keysym.sym) {
-          case SDLK_KP_4:
-          case SDLK_LEFT:
+          case SDL::SDLK_KP_4:
+          case SDL::SDLK_LEFT:
             if (index != GameTypeChoice::KEEPER)
               index = GameTypeChoice::KEEPER;
             else
               index = GameTypeChoice::ADVENTURER;
             break;
-          case SDLK_KP_6:
-          case SDLK_RIGHT:
+          case SDL::SDLK_KP_6:
+          case SDL::SDLK_RIGHT:
             if (index != GameTypeChoice::ADVENTURER)
               index = GameTypeChoice::ADVENTURER;
             else
               index = GameTypeChoice::KEEPER;
             break;
-          case SDLK_KP_5:
-          case SDLK_KP_ENTER:
-          case SDLK_RETURN: if (index) return *index;
-          case SDLK_ESCAPE: return none;
+          case SDL::SDLK_KP_5:
+          case SDL::SDLK_KP_ENTER:
+          case SDL::SDLK_RETURN: if (index) return *index;
+          case SDL::SDLK_ESCAPE: return none;
           default: break;
         }
     }
@@ -985,7 +988,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   TempClockPause pause(clock);
   SyncQueue<optional<int>> returnQueue;
   addReturnDialog<optional<int>>(returnQueue, [=] ()-> optional<int> {
-  renderer.flushEvents(SDL_KEYDOWN);
+  renderer.flushEvents(SDL::SDL_KEYDOWN);
   int contentHeight;
   int choice = -1;
   int count = 0;
@@ -1030,32 +1033,32 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
       std::move(stuff),
       gui.keyHandler([&] (SDL_Keysym key) {
         switch (key.sym) {
-          case SDLK_KP_8:
-          case SDLK_UP:
+          case SDL::SDLK_KP_8:
+          case SDL::SDLK_UP:
             if (count > 0) {
               index = (index - 1 + count) % count;
               *scrollPos = guiBuilder.getScrollPos(optionIndexes[index], options.size());
             } else
               *scrollPos = max<double>(0, *scrollPos - 1);
             break;
-          case SDLK_KP_2:
-          case SDLK_DOWN:
+          case SDL::SDLK_KP_2:
+          case SDL::SDLK_DOWN:
             if (count > 0) {
               index = (index + 1 + count) % count;
               *scrollPos = guiBuilder.getScrollPos(optionIndexes[index], options.size());
             } else
               *scrollPos = min<int>(options.size() - 1, *scrollPos + 1);
             break;
-          case SDLK_KP_5:
-          case SDLK_KP_ENTER:
-          case SDLK_RETURN:
+          case SDL::SDLK_KP_5:
+          case SDL::SDLK_KP_ENTER:
+          case SDL::SDLK_RETURN:
             if (count > 0 && index > -1) {
               CHECK(index < indexes.size()) <<
                   index << " " << indexes.size() << " " << count << " " << options.size();
               callbackRet = indexes[index];
               break;
             }
-          case SDLK_ESCAPE: callbackRet = optional<int>(none);
+          case SDL::SDLK_ESCAPE: callbackRet = optional<int>(none);
           default: break;
         }        
       }, true));
@@ -1152,10 +1155,10 @@ bool WindowView::isClockStopped() {
   return clock->isPaused();
 }
 
-bool WindowView::considerResizeEvent(SDL_Event& event) {
-  if (event.type == SDL_QUIT)
+bool WindowView::considerResizeEvent(Event& event) {
+  if (event.type == SDL::SDL_QUIT)
     throw GameExitException();
-  if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
+  if (event.type == SDL::SDL_WINDOWEVENT && event.window.event == SDL::SDL_WINDOWEVENT_RESIZED) {
     resize(event.window.data1, event.window.data2);
     return true;
   }
@@ -1170,9 +1173,9 @@ void WindowView::processEvents() {
     considerResizeEvent(event);
     if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
       switch (event.type) {
-        case SDL_KEYDOWN:
-        case SDL_MOUSEWHEEL:
-        case SDL_MOUSEBUTTONDOWN:
+        case SDL::SDL_KEYDOWN:
+        case SDL::SDL_MOUSEWHEEL:
+        case SDL::SDL_MOUSEBUTTONDOWN:
           inputQueue.push(UserInput(UserInputId::EXIT));
           return;
         default:break;
@@ -1180,17 +1183,17 @@ void WindowView::processEvents() {
     else
       propagateEvent(event, getClickableGuiElems());
     switch (event.type) {
-      case SDL_KEYDOWN:
+      case SDL::SDL_KEYDOWN:
         if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
-          renderer.flushEvents(SDL_KEYDOWN);
+          renderer.flushEvents(SDL::SDL_KEYDOWN);
         break;
-      case SDL_MOUSEBUTTONDOWN:
+      case SDL::SDL_MOUSEBUTTONDOWN:
         if (event.button.button == SDL_BUTTON_RIGHT)
           guiBuilder.closeOverlayWindows();
         if (event.button.button == SDL_BUTTON_MIDDLE)
           inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP));
         break;
-      case SDL_MOUSEBUTTONUP:
+      case SDL::SDL_MOUSEBUTTONUP:
         if (event.button.button == SDL_BUTTON_LEFT) {
           if (auto building = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS))
             inputQueue.push(UserInput(UserInputId::BUTTON_RELEASE, BuildingInfo{Vec2(0, 0), *building}));
@@ -1208,11 +1211,11 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
   if (gameReady)
     mapGui->setHint({});
   switch (event.type) {
-    case SDL_MOUSEBUTTONUP:
+    case SDL::SDL_MOUSEBUTTONUP:
       // MapGui needs this event otherwise it will sometimes lock the mouse button
       mapGui->onMouseRelease(Vec2(event.button.x, event.button.y));
       break;
-    case SDL_MOUSEBUTTONDOWN:
+    case SDL::SDL_MOUSEBUTTONDOWN:
       lockKeyboard = true;
       break;
     default:break;
@@ -1234,55 +1237,55 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     return;
   lockKeyboard = true;
   switch (key.sym) {
-    case SDLK_z: zoom(0); break;
-    case SDLK_F2: options->handle(this, OptionSet::GENERAL); refreshScreen(); break;
-    case SDLK_SPACE:
+    case SDL::SDLK_z: zoom(0); break;
+    case SDL::SDLK_F2: options->handle(this, OptionSet::GENERAL); refreshScreen(); break;
+    case SDL::SDLK_SPACE:
       inputQueue.push(UserInput(UserInputId::WAIT));
       break;
-    case SDLK_ESCAPE:
+    case SDL::SDLK_ESCAPE:
       if (!guiBuilder.clearActiveButton() && !renderer.isMonkey())
         inputQueue.push(UserInput(UserInputId::EXIT));
       break;
-    case SDLK_UP:
-    case SDLK_KP_8:
+    case SDL::SDLK_UP:
+    case SDL::SDLK_KP_8:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(0, -1)));
       mapGui->onMouseGone();
       break;
-    case SDLK_KP_9:
+    case SDL::SDLK_KP_9:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, -1)));
       mapGui->onMouseGone();
       break;
-    case SDLK_RIGHT: 
-    case SDLK_KP_6:
+    case SDL::SDLK_RIGHT: 
+    case SDL::SDLK_KP_6:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 0)));
       mapGui->onMouseGone();
       break;
-    case SDLK_KP_3:
+    case SDL::SDLK_KP_3:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 1)));
       mapGui->onMouseGone();
       break;
-    case SDLK_DOWN:
-    case SDLK_KP_2:
+    case SDL::SDLK_DOWN:
+    case SDL::SDLK_KP_2:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(0, 1)));
       mapGui->onMouseGone();
       break;
-    case SDLK_KP_1:
+    case SDL::SDLK_KP_1:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 1)));
       mapGui->onMouseGone();
       break;
-    case SDLK_LEFT:
-    case SDLK_KP_4:
+    case SDL::SDLK_LEFT:
+    case SDL::SDLK_KP_4:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 0)));
       mapGui->onMouseGone();
       break;
-    case SDLK_KP_7:
+    case SDL::SDLK_KP_7:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1)));
       mapGui->onMouseGone();
       break;
-    case SDLK_m: inputQueue.push(UserInput(UserInputId::SHOW_HISTORY)); break;
-    case SDLK_h: inputQueue.push(UserInput(UserInputId::HIDE)); break;
-    case SDLK_p: inputQueue.push(UserInput(UserInputId::PAY_DEBT)); break;
-    case SDLK_c:
+    case SDL::SDLK_m: inputQueue.push(UserInput(UserInputId::SHOW_HISTORY)); break;
+    case SDL::SDLK_h: inputQueue.push(UserInput(UserInputId::HIDE)); break;
+    case SDL::SDLK_p: inputQueue.push(UserInput(UserInputId::PAY_DEBT)); break;
+    case SDL::SDLK_c:
       inputQueue.push(UserInput(GuiFactory::isShift(key) ? UserInputId::CONSUME : UserInputId::CHAT));
       break;
     default: break;

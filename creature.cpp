@@ -1676,7 +1676,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::PUNCH: you(MsgType::YOUR, "neck is broken!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the back of the head!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the "_s + 
-                                     Random.choose("back", "neck")); break;
+                                     Random.choose("back"_s, "neck"_s)); break;
           default: FAIL << "Unhandled attack type " << int(type);
         }
         break;

@@ -47,7 +47,7 @@ class GuiBuilder {
   struct Callbacks {
     function<void(UserInput)> input;
     function<void(const vector<string>&)> hint;
-    function<void(SDL_Keysym)> keyboard;
+    function<void(SDL::SDL_Keysym)> keyboard;
     function<void()> refreshScreen;
     function<void(const string&)> info;
   };
@@ -223,14 +223,14 @@ class GuiBuilder {
       function<void()> onMultiClick = nullptr);
   vector<string> getItemHint(const ItemInfo&);
   PGuiElem drawMinionAndLevel(ViewId viewId, int level, int iconMult);
-  vector<SDL_Keysym> getConfirmationKeys();
+  vector<SDL::SDL_Keysym> getConfirmationKeys();
   bool morale = true;
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
   vector<PGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);
   PGuiElem menuElemMargins(PGuiElem);
   PGuiElem getHighlight(MenuType, const string& label, int height);
   string getPlayerTitle(PlayerInfo&);
-  SDL_KeyboardEvent getHotkeyEvent(char);
+  SDL::SDL_KeyboardEvent getHotkeyEvent(char);
   MapGui* mapGui = nullptr;
 };
 

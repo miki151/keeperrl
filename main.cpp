@@ -24,7 +24,7 @@
 #include <boost/filesystem.hpp>
 
 #include <exception>
-#include <SDL2/SDL_mixer.h>
+#include "dirent.h"
 
 #include "view.h"
 #include "options.h"
@@ -37,7 +37,6 @@
 #include "file_sharing.h"
 #include "highscores.h"
 #include "main_loop.h"
-#include "dirent.h"
 #include "clock.h"
 #include "skill.h"
 #include "parse_game.h"
@@ -58,7 +57,7 @@
 
 #endif
 
-#include <cAudio/cAudio.h>
+#include <cAudio.h>
 
 #ifndef DATA_DIR
 #define DATA_DIR "."

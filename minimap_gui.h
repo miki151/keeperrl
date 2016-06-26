@@ -54,7 +54,7 @@ class MinimapGui : public GuiElem {
 
   function<void()> clickFun;
 
-  SDL_Surface* mapBuffer;
+  SDL::SDL_Surface* mapBuffer;
   optional<Texture> mapBufferTex;
   const Level* currentLevel = nullptr;
   Renderer& renderer;

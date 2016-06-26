@@ -16,11 +16,10 @@
 #ifndef _RENDERER_H
 #define _RENDERER_H
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+#include "sdl.h"
 #include "util.h"
 
-struct Color : public SDL_Color {
+struct Color : public SDL::SDL_Color {
   Color(Uint8, Uint8, Uint8, Uint8 = 255);
   static Color f(double, double, double, double = 1.0);
   Color operator* (Color);
@@ -77,9 +76,6 @@ enum class SpriteId {
 
 class ViewObject;
 
-typedef SDL_Event Event;
-typedef SDL_EventType EventType;
-
 struct sth_stash;
 
 class Texture {
@@ -89,10 +85,10 @@ class Texture {
   Texture& operator = (Texture&&);
   Texture(const string& path);
   Texture(const string& path, int px, int py, int kx, int ky);
-  explicit Texture(SDL_Surface*);
+  explicit Texture(SDL::SDL_Surface*);
   static optional<Texture> loadMaybe(const string& path);
 
-  void loadFrom(SDL_Surface*);
+  void loadFrom(SDL::SDL_Surface*);
   const Vec2& getSize() const;
 
   ~Texture();
@@ -102,7 +98,7 @@ class Texture {
   void render(Vec2 screenP, Vec2 screenK, Vec2 srcP, Vec2 srck, optional<Color> = none,
       bool vFlip = false, bool hFlip = false) const;
   void addTexCoord(int x, int y) const;
-  optional<GLuint> texId;
+  optional<SDL::GLuint> texId;
   Vec2 size;
   string path;
 };
@@ -131,7 +127,7 @@ class Renderer {
   static vector<string> getFullscreenResolutions();
   const static int textSize = 19;
   const static int smallTextSize = 14;
-  static SDL_Surface* createSurface(int w, int h);
+  static SDL::SDL_Surface* createSurface(int w, int h);
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(const string& s, int size = textSize, FontId = TEXT_FONT);
   Vec2 getTextSize(const string& s, int size = textSize, FontId = TEXT_FONT);
@@ -189,7 +185,7 @@ class Renderer {
   vector<Texture> tiles;
   vector<Texture> altTiles;
 
-  static void putPixel(SDL_Surface*, Vec2, Color);
+  static void putPixel(SDL::SDL_Surface*, Vec2, Color);
 
   private:
   friend class Texture;
@@ -206,7 +202,7 @@ class Renderer {
   void updateResolution();
   Event getRandomEvent();
   void initOpenGL();
-  SDL_Window* window;
+  SDL::SDL_Window* window;
   int width, height;
   bool monkey = false;
   deque<Event> eventQueue;

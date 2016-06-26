@@ -22,7 +22,10 @@
 #include "spell.h"
 #include "options.h"
 
-#include "SDL2/SDL_image.h"
+#include "sdl.h"
+
+using SDL::SDL_Keysym;
+using SDL::SDL_Keycode;
 
 DEF_UNIQUE_PTR(VerticalList);
 
@@ -59,15 +62,15 @@ class Button : public GuiElem {
 };
 
 bool GuiFactory::isShift(const SDL_Keysym& key) {
-  return key.mod & (KMOD_LSHIFT | KMOD_RSHIFT);
+  return key.mod & (SDL::KMOD_LSHIFT | SDL::KMOD_RSHIFT);
 }
 
 bool GuiFactory::isCtrl(const SDL_Keysym& key) {
-  return key.mod & (KMOD_LCTRL | KMOD_RCTRL);
+  return key.mod & (SDL::KMOD_LCTRL | SDL::KMOD_RCTRL);
 }
 
 bool GuiFactory::isAlt(const SDL_Keysym& key) {
-  return key.mod & (KMOD_LALT | KMOD_RALT);
+  return key.mod & (SDL::KMOD_LALT | SDL::KMOD_RALT);
 }
 
 bool GuiFactory::keyEventEqual(const SDL_Keysym& k1, const SDL_Keysym& k2) {
@@ -99,32 +102,32 @@ class ButtonKey : public Button {
 
 static optional<SDL_Keycode> getKey(char c) {
   switch (c) {
-    case 'a': return SDLK_a;
-    case 'b': return SDLK_b;
-    case 'c': return SDLK_c;
-    case 'd': return SDLK_d;
-    case 'e': return SDLK_e;
-    case 'f': return SDLK_f;
-    case 'g': return SDLK_g;
-    case 'h': return SDLK_h;
-    case 'i': return SDLK_i;
-    case 'j': return SDLK_j;
-    case 'k': return SDLK_k;
-    case 'l': return SDLK_l;
-    case 'm': return SDLK_m;
-    case 'n': return SDLK_n;
-    case 'o': return SDLK_o;
-    case 'p': return SDLK_p;
-    case 'q': return SDLK_q;
-    case 'r': return SDLK_r;
-    case 's': return SDLK_s;
-    case 't': return SDLK_t;
-    case 'u': return SDLK_u;
-    case 'v': return SDLK_v;
-    case 'w': return SDLK_w;
-    case 'x': return SDLK_x;
-    case 'y': return SDLK_y;
-    case 'z': return SDLK_z;
+    case 'a': return SDL::SDLK_a;
+    case 'b': return SDL::SDLK_b;
+    case 'c': return SDL::SDLK_c;
+    case 'd': return SDL::SDLK_d;
+    case 'e': return SDL::SDLK_e;
+    case 'f': return SDL::SDLK_f;
+    case 'g': return SDL::SDLK_g;
+    case 'h': return SDL::SDLK_h;
+    case 'i': return SDL::SDLK_i;
+    case 'j': return SDL::SDLK_j;
+    case 'k': return SDL::SDLK_k;
+    case 'l': return SDL::SDLK_l;
+    case 'm': return SDL::SDLK_m;
+    case 'n': return SDL::SDLK_n;
+    case 'o': return SDL::SDLK_o;
+    case 'p': return SDL::SDLK_p;
+    case 'q': return SDL::SDLK_q;
+    case 'r': return SDL::SDLK_r;
+    case 's': return SDL::SDLK_s;
+    case 't': return SDL::SDLK_t;
+    case 'u': return SDL::SDLK_u;
+    case 'v': return SDL::SDLK_v;
+    case 'w': return SDL::SDLK_w;
+    case 'x': return SDL::SDLK_x;
+    case 'y': return SDL::SDLK_y;
+    case 'z': return SDL::SDLK_z;
     case 0: return none;
   }
   FAIL << "Unrecognized key " << c;
@@ -2027,10 +2030,10 @@ void GuiFactory::loadFreeImages(const string& path) {
   textures.emplace(TexId::SPLASH1, path + "/splash2f.png");
   textures.emplace(TexId::SPLASH2, path + "/splash2e.png");
   textures.emplace(TexId::LOADING_SPLASH, path + "/" + Random.choose(
-            "splash2a.png",
-            "splash2b.png",
-            "splash2c.png",
-            "splash2d.png"));
+            "splash2a.png"_s,
+            "splash2b.png"_s,
+            "splash2c.png"_s,
+            "splash2d.png"_s));
   textures.emplace(TexId::UI_HIGHLIGHT, path + "/ui/ui_highlight.png");
   const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i)
@@ -2207,7 +2210,7 @@ PGuiElem GuiFactory::miniWindow(PGuiElem content, function<void()> onExitButton)
         miniBorder(),
         std::move(content));
   if (onExitButton)
-    ret.push_back(reverseButton(onExitButton, {getKey(SDLK_ESCAPE)}));
+    ret.push_back(reverseButton(onExitButton, {getKey(SDL::SDLK_ESCAPE)}));
   return stack(std::move(ret));
 }
 
@@ -2222,7 +2225,7 @@ PGuiElem GuiFactory::miniWindow() {
 PGuiElem GuiFactory::window(PGuiElem content, function<void()> onExitButton) {
   return stack(makeVec<PGuiElem>(
         stopMouseMovement(),
-        alignment(Alignment::TOP_RIGHT, button(onExitButton, getKey(SDLK_ESCAPE), true), Vec2(38, 38)),
+        alignment(Alignment::TOP_RIGHT, button(onExitButton, getKey(SDL::SDLK_ESCAPE), true), Vec2(38, 38)),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
         margins(std::move(content), 20, 35, 30, 30),
@@ -2327,12 +2330,12 @@ PGuiElem GuiFactory::darken() {
 
 void GuiFactory::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
   switch (event.type) {
-    case SDL_MOUSEBUTTONUP:
+    case SDL::SDL_MOUSEBUTTONUP:
       for (GuiElem* elem : guiElems)
         elem->onMouseRelease(Vec2(event.button.x, event.button.y));
       dragContainer.pop();
       break;
-    case SDL_MOUSEMOTION: {
+    case SDL::SDL_MOUSEMOTION: {
       bool captured = false;
       for (GuiElem* elem : guiElems)
         if (!captured)
@@ -2340,7 +2343,7 @@ void GuiFactory::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
         else
           elem->onMouseGone();
       break;}
-    case SDL_MOUSEBUTTONDOWN: {
+    case SDL::SDL_MOUSEBUTTONDOWN: {
       Vec2 clickPos(event.button.x, event.button.y);
       for (GuiElem* elem : guiElems) {
         if (event.button.button == SDL_BUTTON_RIGHT)
@@ -2352,12 +2355,12 @@ void GuiFactory::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
       }
       }
       break;
-    case SDL_KEYDOWN:
+    case SDL::SDL_KEYDOWN:
       for (GuiElem* elem : guiElems)
         if (elem->onKeyPressed2(event.key.keysym))
           break;
       break;
-    case SDL_MOUSEWHEEL:
+    case SDL::SDL_MOUSEWHEEL:
       for (GuiElem* elem : guiElems)
         if (elem->onMouseWheel(renderer.getMousePos(), event.wheel.y > 0))
           break;

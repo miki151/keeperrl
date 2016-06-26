@@ -22,7 +22,7 @@
 #include "renderer.h"
 #include "map_memory.h"
 #include "view_index.h"
-#include <SDL2/SDL.h>
+#include "sdl.h"
 
 void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
   if (!mapBufferTex)
@@ -142,9 +142,9 @@ void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Rend
     r.drawAndClearBuffer();
     Event event;
     while (r.pollEvent(event)) {
-      if (event.type == SDL_KEYDOWN)
+      if (event.type == SDL::SDL_KEYDOWN)
         return;
-      if (event.type == SDL_MOUSEBUTTONDOWN) {
+      if (event.type == SDL::SDL_MOUSEBUTTONDOWN) {
         clickFun(double(event.button.x) / scale, double(event.button.y) / scale);
         return;
       }

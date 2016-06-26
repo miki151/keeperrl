@@ -119,7 +119,7 @@ class WindowView: public View {
   int lastGuiHash = 0;
   void drawMap();
   void propagateEvent(const Event& event, vector<GuiElem*>);
-  void keyboardAction(const SDL_Keysym&);
+  void keyboardAction(const SDL::SDL_Keysym&);
 
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
@@ -135,7 +135,7 @@ class WindowView: public View {
   void resetMapBounds();
   void switchTiles();
 
-  bool considerResizeEvent(SDL_Event&);
+  bool considerResizeEvent(Event&);
 
   int messageInd = 0;
   std::deque<string> currentMessage = std::deque<string>(3, "");
@@ -209,7 +209,7 @@ class WindowView: public View {
   };
 
   void getBlockingGui(Semaphore&, PGuiElem, optional<Vec2> origin = none);
-  bool isKeyPressed(SDL_Scancode);
+  bool isKeyPressed(SDL::SDL_Scancode);
 
   template<typename T>
   T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, optional<Vec2> origin = none) {
