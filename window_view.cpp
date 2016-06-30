@@ -539,6 +539,7 @@ void WindowView::updateView(const CreatureView* view, bool noRefresh) {
     uiLock = false;
   switchTiles();
   gameInfo = newInfo;
+  rebuildGui();
   mapGui->setSpriteMode(currentTileLayout.sprites);
   bool spectator = gameInfo.infoType == GameInfo::InfoType::SPECTATOR;
   mapGui->updateObjects(view, mapLayout, currentTileLayout.sprites || spectator,
