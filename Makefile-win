@@ -46,13 +46,16 @@ IPATH = -I. -I./extern
 
 CFLAGS += $(IPATH)
 
+CFLAGS += -Ic:\users\michal\keeper_libs\cAudio\cAudio\include
 
-SRCS = $(shell ls *.cpp)
+CFLAGS += -Ic:\users\michal\keeper_libs\cAudio-build\include
+
+SRCS = $(shell ls -t *.cpp)
 
 ifdef AMD64
-LIBS = -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -lfreetype -lfreeglut -lglu32 -lz -lboost_serialization-mgw49-mt-1_57 -lboost_program_options-mgw49-mt-1_57 -lboost_system-mgw49-mt-1_57 -lboost_filesystem-mgw49-mt-1_57 -lglew32 -ljpeg -lopenal32 -lsndfile -lopengl32 -lcurldll -limagehlp
+LIBS = -lmingw32 -lSDL2main -lSDL2 -mwindows -lcAudio -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -lfreetype -lfreeglut -lglu32 -lz -lboost_serialization-mgw49-mt-1_57 -lboost_program_options-mgw49-mt-1_57 -lboost_system-mgw49-mt-1_57 -lboost_filesystem-mgw49-mt-1_57 -lglew32 -ljpeg -lopenal32 -lsndfile -lopengl32 -lcurldll -limagehlp
 else
-LIBS = -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -lfreetype -lglut -lglu32 -lz -lboost_serialization-mgw49-mt-1_56 -lboost_program_options-mgw49-mt-1_56 -lboost_system-mgw49-mt-1_56 -lboost_filesystem-mgw49-mt-1_56 -lglew -ljpeg -lopenal32 -lsndfile -lopengl32 -lcurldll -limagehlp
+LIBS = -lSDL2.dll -lSDL2main -lcAudio -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -lfreetype -lglut -lglu32 -lz -lboost_serialization-mgw49-mt-1_56 -lboost_program_options-mgw49-mt-1_56 -lboost_system-mgw49-mt-1_56 -lboost_filesystem-mgw49-mt-1_56 -lglew -ljpeg -lopenal32 -lsndfile -lopengl32 -lcurldll -limagehlp
 endif
 
 ifdef debug
