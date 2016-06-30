@@ -267,7 +267,11 @@ static options_description getOptions() {
   return flags;
 }
 
+#undef main
+
 #ifndef VSTUDIO
+#include <SDL/SDL.h>
+
 int main(int argc, char* argv[]) {
   StackPrinter::initialize(argv[0], time(0));
   std::set_terminate(fail);
@@ -279,7 +283,8 @@ int main(int argc, char* argv[]) {
 
 static long long getInstallId(const string& path, RandomGen& random) {
   long long ret;
-  if (ifstream in = ifstream(path))
+  ifstream in(path);
+  if (in)
     in >> ret;
   else {
     ret = random.getLL();
@@ -287,6 +292,8 @@ static long long getInstallId(const string& path, RandomGen& random) {
   }
   return ret;
 }
+
+const static string serverVersion = "19";
 
 static int keeperMain(const variables_map& vars) {
   if (vars.count("help")) {
@@ -332,7 +339,7 @@ static int keeperMain(const variables_map& vars) {
   if (vars.count("upload_url"))
     uploadUrl = vars["upload_url"].as<string>();
   else
-    uploadUrl = "http://keeperrl.com/retired";
+    uploadUrl = "http://keeperrl.com/retired/" + serverVersion;
   makeDir(userPath);
   string overrideSettings;
   if (vars.count("override_settings"))
@@ -406,7 +413,8 @@ static int keeperMain(const variables_map& vars) {
     runGame(game, render, useSingleThread);
   } catch (GameExitException ex) {
   }
-  cAudio::destroyAudioManager(cAudio);
+  //jukebox.toggle(false);
+  //cAudio::destroyAudioManager(cAudio);
   return 0;
 }
 
