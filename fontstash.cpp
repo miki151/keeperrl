@@ -24,7 +24,7 @@
 
 //#include <GL/glew.h>  /* @rlyeh: before including GL. doesnt hurt and makes life better */
 
-#ifdef WINDOWS
+#ifdef VSTUDIO
 #include <windows.h>
 #endif
 
