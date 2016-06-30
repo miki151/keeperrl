@@ -1677,6 +1677,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::HIT: you(MsgType::ARE, "hit in the back of the head!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the "_s + 
                                      Random.choose("back"_s, "neck"_s)); break;
+          case AttackType::SPELL: you(MsgType::ARE, "ripped to pieces!"); break;
           default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
@@ -1690,6 +1691,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::PUNCH: you(MsgType::YOUR, "neck is broken!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the head!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the eye!"); break;
+          case AttackType::SPELL: you(MsgType::YOUR, "head is ripped to pieces!"); break;
           default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
@@ -1703,6 +1705,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::CRUSH: you(MsgType::YOUR, "ribs and internal organs are crushed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the chest!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "stomach receives a deadly blow!"); break;
+          case AttackType::SPELL: you(MsgType::ARE, "ripped to pieces!"); break;
           default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
@@ -1715,6 +1718,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::CRUSH: you(MsgType::YOUR, "arm is smashed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the arm!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "arm is broken!"); break;
+          case AttackType::SPELL: you(MsgType::YOUR, "arm is ripped to pieces!"); break;
           default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
@@ -1727,6 +1731,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::CRUSH: you(MsgType::YOUR, "wing is smashed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the wing!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "wing is broken!"); break;
+          case AttackType::SPELL: you(MsgType::YOUR, "wing is ripped to pieces!"); break;
           default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
@@ -1739,6 +1744,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::CRUSH: you(MsgType::YOUR, "knee is crushed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the leg!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "leg is broken!"); break;
+          case AttackType::SPELL: you(MsgType::YOUR, "leg is ripped to pieces!"); break;
           default: FAIL << "Unhandled attack type " << int(type);
         }
         break;
