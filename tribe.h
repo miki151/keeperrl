@@ -20,67 +20,100 @@
 #include <set>
 
 #include "enums.h"
-#include "event.h"
 #include "singleton.h"
+#include "entity_map.h"
 
 class Creature;
 
+class TribeId {
+  public:
+  static TribeId getMonster();
+  static TribeId getPest();
+  static TribeId getWildlife();
+  static TribeId getHuman();
+  static TribeId getElf();
+  static TribeId getDarkElf();
+  static TribeId getDwarf();
+  static TribeId getGnome();
+  static TribeId getAdventurer();
+  static TribeId getBandit();
+  static TribeId getHostile();
+  static TribeId getPeaceful();
+  static TribeId getKeeper();
+  static TribeId getRetiredKeeper();
+  static TribeId getLizard();
+  static TribeId getGreenskin();
+  static TribeId getAnt();
+
+  bool operator == (const TribeId&) const;
+  bool operator != (const TribeId&) const;
+
+  int getHash() const;
+
+  // This is a ridiculous, but effective hack to switch one tribe for another in entire model before retiring a game.
+  static void switchForSerialization(TribeId from, TribeId to);
+  static void clearSwitch();
+
+  SERIALIZATION_DECL(TribeId);
+
+  private:
+  friend class TribeSet;
+  typedef char KeyType;
+  TribeId(KeyType key);
+  KeyType SERIAL(key);
+  static optional<pair<TribeId, TribeId>> serialSwitch;
+};
+
+class TribeSet {
+  public:
+  static TribeSet getFull();
+  void clear();
+  TribeSet& insert(TribeId);
+  TribeSet& erase(TribeId);
+  bool contains(TribeId) const;
+
+  bool operator==(const TribeSet&) const;
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+
+  private:
+  bitset<32> SERIAL(elems);
+};
+
 class Tribe {
   public:
-  double getStanding(const Creature*) const;
+  Tribe(const Tribe&) = delete;
+  Tribe& operator = (Tribe&&) = default;
+  Tribe(Tribe&&) = default;
   bool isEnemy(const Creature*) const;
   bool isEnemy(const Tribe*) const;
-  void makeSlightEnemy(const Creature*);
-  const string& getName() const;
-  void addEnemy(vector<Tribe*>);
-  void addFriend(Tribe*);
-  bool isDiplomatic() const;
+  void addEnemy(Tribe*);
+  const TribeSet& getFriendlyTribes() const;
 
   void onMemberKilled(Creature* member, Creature* killer);
-  void onMemberAttacked(Creature* member, Creature* attacker);
   void onItemsStolen(const Creature* thief);
 
   SERIALIZATION_DECL(Tribe);
 
-  friend struct TribeSet;
+  typedef unordered_map<TribeId, PTribe, CustomHash<TribeId>> Map;
+
+  static Map generateTribes();
 
   private:
-  Tribe(const string& name, bool diplomatic);
+  Tribe(TribeId, bool diplomatic);
+  static void init(Tribe::Map&, TribeId, bool diplomatic);
+  double getStanding(const Creature*) const;
 
   bool SERIAL(diplomatic);
 
   void initStanding(const Creature*);
   double getMultiplier(const Creature* member);
 
-  unordered_map<const Creature*, double> SERIAL(standing);
-  vector<pair<Creature*, Creature*>> SERIAL(attacks);
+  EntityMap<Creature, double> SERIAL(standing);
   unordered_set<Tribe*> SERIAL(enemyTribes);
-  string SERIAL(name);
+  TribeSet SERIAL(friendlyTribes);
+  TribeId SERIAL(id);
 };
-
-struct TribeSet {
-  TribeSet();
-
-  PTribe SERIAL(monster);
-  PTribe SERIAL(pest);
-  PTribe SERIAL(wildlife);
-  PTribe SERIAL(human);
-  PTribe SERIAL(elven);
-  PTribe SERIAL(darkElven);
-  PTribe SERIAL(dwarven);
-  PTribe SERIAL(gnomish);
-  PTribe SERIAL(adventurer);
-  PTribe SERIAL(bandit);
-  PTribe SERIAL(killEveryone);
-  PTribe SERIAL(peaceful);
-  PTribe SERIAL(keeper);
-  PTribe SERIAL(lizard);
-  PTribe SERIAL(greenskins);
-  PTribe SERIAL(ants);
-
-  template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-};
-
 
 #endif

@@ -20,22 +20,14 @@
 
 template <class Archive> 
 void Tribe::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(diplomatic)
-    & SVAR(standing)
-    & SVAR(attacks)
-    & SVAR(enemyTribes)
-    & SVAR(name);
+  serializeAll(ar, diplomatic, standing, enemyTribes, friendlyTribes, id);
 }
 
 SERIALIZABLE(Tribe);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Tribe);
 
-Tribe::Tribe(const string& n, bool d) : diplomatic(d), name(n) {
-}
-
-const string& Tribe::getName() const {
-  return name;
+Tribe::Tribe(TribeId d, bool p) : diplomatic(p), friendlyTribes(TribeSet::getFull()), id(d) {
 }
 
 double Tribe::getStanding(const Creature* c) const {
@@ -43,31 +35,20 @@ double Tribe::getStanding(const Creature* c) const {
     return -1;
   if (c->getTribe() == this)
     return 1;
-  if (standing.count(c)) 
-    return standing.at(c);
+  if (auto res = standing.getMaybe(c)) 
+    return *res;
   return 0;
 }
 
 void Tribe::initStanding(const Creature* c) {
-  standing[c] = getStanding(c);
+  standing.set(c, getStanding(c));
 }
 
-void Tribe::addEnemy(vector<Tribe*> tribes) {
-  for (Tribe* t : tribes) {
-    enemyTribes.insert(t);
-    if (t != this)
-      t->enemyTribes.insert(this);
-  }
-}
-
-void Tribe::addFriend(Tribe* t) {
-  CHECK(t != this);
-  enemyTribes.erase(t);
-  t->enemyTribes.erase(this);
-}
-
-void Tribe::makeSlightEnemy(const Creature* c) {
-  standing[c] = -0.001;
+void Tribe::addEnemy(Tribe* t) {
+  enemyTribes.insert(t);
+  friendlyTribes.erase(t->id);
+  if (t != this)
+    t->enemyTribes.insert(this);
 }
 
 static const double killBonus = 0.1;
@@ -84,20 +65,12 @@ void Tribe::onMemberKilled(Creature* member, Creature* attacker) {
   if (attacker == nullptr)
     return;
   initStanding(attacker);
-  standing[attacker] -= killPenalty * getMultiplier(member);
+  standing.getOrFail(attacker) -= killPenalty * getMultiplier(member);
   for (Tribe* t : enemyTribes)
     if (t->diplomatic) {
       t->initStanding(attacker);
-      t->standing[attacker] += killBonus * getMultiplier(member);
+      t->standing.getOrFail(attacker) += killBonus * getMultiplier(member);
     }
-}
-
-void Tribe::onMemberAttacked(Creature* member, Creature* attacker) {
-  if (contains(attacks, make_pair(member, attacker)))
-    return;
-  attacks.emplace_back(member, attacker);
-  initStanding(attacker);
-  standing[attacker] -= attackPenalty * getMultiplier(member);
 }
 
 bool Tribe::isEnemy(const Creature* c) const {
@@ -108,69 +81,207 @@ bool Tribe::isEnemy(const Tribe* t) const {
   return enemyTribes.count(const_cast<Tribe*>(t));
 }
 
-bool Tribe::isDiplomatic() const {
-  return diplomatic;
+const TribeSet& Tribe::getFriendlyTribes() const {
+  return friendlyTribes;
 }
 
 void Tribe::onItemsStolen(const Creature* attacker) {
   if (diplomatic) {
     initStanding(attacker);
-    standing[attacker] -= thiefPenalty;
+    standing.getOrFail(attacker) -= thiefPenalty;
   }
 }
 
+static void addEnemies(Tribe::Map& map, TribeId tribe, vector<TribeId> ids) {
+  for (TribeId id : ids)
+    map[tribe]->addEnemy(map[id].get());
+}
+
+void Tribe::init(Tribe::Map& map, TribeId id, bool diplomatic) {
+  map[id].reset(new Tribe(id, diplomatic));
+}
+
+Tribe::Map Tribe::generateTribes() {
+  Map ret;
+  init(ret, TribeId::getMonster(), false);
+  init(ret, TribeId::getLizard(), true);
+  init(ret, TribeId::getPest(), false);
+  init(ret, TribeId::getWildlife(), false);
+  init(ret, TribeId::getElf(), true);
+  init(ret, TribeId::getDarkElf(), true);
+  init(ret, TribeId::getHuman(), true);
+  init(ret, TribeId::getDwarf(), true);
+  init(ret, TribeId::getGnome(), true);
+  init(ret, TribeId::getAdventurer(), false);
+  init(ret, TribeId::getKeeper(), false);
+  init(ret, TribeId::getRetiredKeeper(), false);
+  init(ret, TribeId::getGreenskin(), true);
+  init(ret, TribeId::getAnt(), true);
+  init(ret, TribeId::getBandit(), true);
+  init(ret, TribeId::getHostile(), false);
+  init(ret, TribeId::getPeaceful(), false);
+  addEnemies(ret, TribeId::getDwarf(),
+      {TribeId::getBandit()});
+  addEnemies(ret, TribeId::getGnome(),
+      {TribeId::getBandit()});
+  addEnemies(ret, TribeId::getKeeper(), {
+      TribeId::getAdventurer(), TribeId::getElf(), TribeId::getDwarf(), TribeId::getHuman(), TribeId::getLizard(),
+      TribeId::getPest(), TribeId::getMonster(), TribeId::getBandit(), TribeId::getAnt(),
+      TribeId::getRetiredKeeper()});
+  addEnemies(ret, TribeId::getElf(), {
+      TribeId::getDwarf(), TribeId::getBandit() });
+  addEnemies(ret, TribeId::getDarkElf(), {
+      TribeId::getDwarf(), TribeId::getBandit() });
+  addEnemies(ret, TribeId::getHuman(), {
+      TribeId::getLizard(), TribeId::getBandit(), TribeId::getAnt(), TribeId::getDarkElf() });
+  addEnemies(ret, TribeId::getAdventurer(), {
+      TribeId::getMonster(), TribeId::getPest(), TribeId::getBandit(),
+      TribeId::getGreenskin(), TribeId::getAnt(), TribeId::getRetiredKeeper() });
+  addEnemies(ret, TribeId::getMonster(), {
+      TribeId::getWildlife()});
+  addEnemies(ret, TribeId::getHostile(), {
+      TribeId::getGreenskin(), TribeId::getMonster(), TribeId::getLizard(), TribeId::getPest(),
+      TribeId::getWildlife(), TribeId::getElf(), TribeId::getHuman(), TribeId::getDwarf(), TribeId::getGnome(),
+      TribeId::getAdventurer(), TribeId::getKeeper(), TribeId::getBandit(), TribeId::getHostile(),
+      TribeId::getPeaceful(), TribeId::getAnt(), TribeId::getDarkElf()});
+  return ret;
+}
+
+TribeId::TribeId(KeyType k) : key(k) {}
+
+TribeId TribeId::getMonster() {
+  return TribeId(0);
+}
+
+TribeId TribeId::getPest() {
+  return TribeId(1);
+}
+
+TribeId TribeId::getWildlife() {
+  return TribeId(2);
+}
+
+TribeId TribeId::getHuman() {
+  return TribeId(3);
+}
+
+TribeId TribeId::getElf() {
+  return TribeId(4);
+}
+
+TribeId TribeId::getDarkElf() {
+  return TribeId(5);
+}
+
+TribeId TribeId::getDwarf() {
+  return TribeId(6);
+}
+
+TribeId TribeId::getGnome() {
+  return TribeId(7);
+}
+
+TribeId TribeId::getAdventurer() {
+  return TribeId(8);
+}
+
+TribeId TribeId::getBandit() {
+  return TribeId(9);
+}
+
+TribeId TribeId::getHostile() {
+  return TribeId(10);
+}
+
+TribeId TribeId::getPeaceful() {
+  return TribeId(11);
+}
+
+TribeId TribeId::getKeeper() {
+  return TribeId(12);
+}
+
+TribeId TribeId::getRetiredKeeper() {
+  return TribeId(13);
+}
+
+TribeId TribeId::getLizard() {
+  return TribeId(14);
+}
+
+TribeId TribeId::getGreenskin() {
+  return TribeId(15);
+}
+
+TribeId TribeId::getAnt() {
+  return TribeId(16);
+}
+
+optional<pair<TribeId, TribeId>> TribeId::serialSwitch;
+
+void TribeId::switchForSerialization(TribeId from, TribeId to) {
+  serialSwitch = make_pair(from, to);
+}
+
+void TribeId::clearSwitch() {
+  serialSwitch = none;
+}
+
 template <class Archive> 
-void TribeSet::serialize(Archive& ar, const unsigned int version) { 
-  ar& SVAR(monster)
-    & SVAR(pest)
-    & SVAR(wildlife)
-    & SVAR(human)
-    & SVAR(elven)
-    & SVAR(darkElven)
-    & SVAR(dwarven)
-    & SVAR(gnomish)
-    & SVAR(adventurer)
-    & SVAR(bandit)
-    & SVAR(killEveryone)
-    & SVAR(peaceful)
-    & SVAR(keeper)
-    & SVAR(greenskins)
-    & SVAR(ants)
-    & SVAR(lizard);
+void TribeId::serialize(Archive& ar, const unsigned int version) {
+  if (serialSwitch && *this == serialSwitch->first)
+    *this = serialSwitch->second;
+  serializeAll(ar, key);
+  if (serialSwitch && *this == serialSwitch->second)
+    *this = serialSwitch->first;
 }
 
-SERIALIZABLE(TribeSet);
+SERIALIZABLE(TribeId);
 
+SERIALIZATION_CONSTRUCTOR_IMPL(TribeId);
 
-TribeSet::TribeSet() {
-  monster.reset(new Tribe("monsters", false));
-  lizard.reset(new Tribe("lizardmen", true));
-  pest.reset(new Tribe("pests", false));
-  wildlife.reset(new Tribe("wildlife", false));
-  elven.reset(new Tribe("elves", true));
-  darkElven.reset(new Tribe("dark elves", true));
-  human.reset(new Tribe("humans", true));
-  dwarven.reset(new Tribe("dwarves", true));
-  gnomish.reset(new Tribe("gnomes", true));
-  adventurer.reset(new Tribe("player", false));
-  keeper.reset(new Tribe("keeper", false));
-  greenskins.reset(new Tribe("greenskins", true));
-  ants.reset(new Tribe("ants", true));
-  bandit.reset(new Tribe("bandits", true));
-  killEveryone.reset(new Tribe("hostile", false));
-  peaceful.reset(new Tribe("peaceful", false));
-  dwarven->addEnemy({bandit.get()});
-  gnomish->addEnemy({bandit.get()});
-  keeper->addEnemy({adventurer.get(), elven.get(), dwarven.get(), human.get(), lizard.get(), pest.get(),
-      monster.get(), bandit.get(), ants.get() });
-  elven->addEnemy({ dwarven.get(), bandit.get() });
-  darkElven->addEnemy({ dwarven.get(), bandit.get() });
-  human->addEnemy({ lizard.get(), bandit.get(), ants.get(), darkElven.get() });
-  adventurer->addEnemy({ monster.get(), pest.get(), bandit.get(), wildlife.get(), greenskins.get(), ants.get() });
-  monster->addEnemy({wildlife.get()});
-  killEveryone->addEnemy({greenskins.get(), monster.get(), lizard.get(), pest.get(), wildlife.get(), elven.get(),
-      human.get(), dwarven.get(), gnomish.get(), adventurer.get(), keeper.get(), bandit.get(), killEveryone.get(),
-      peaceful.get(), ants.get(), darkElven.get()});
+bool TribeId::operator == (const TribeId& o) const {
+  return key == o.key;
+}
+
+bool TribeId::operator != (const TribeId& o) const {
+  return !(*this == o);
+}
+
+int TribeId::getHash() const {
+  return key;
+}
+
+TribeSet TribeSet::getFull() {
+  TribeSet ret;
+  ret.elems.set();
+  return ret;
+}
+
+void TribeSet::clear() {
+  elems.reset();
+}
+
+TribeSet& TribeSet::insert(TribeId id) {
+  CHECK(id.key >= 0 && id.key < elems.size());
+  elems.set(id.key);
+  return *this;
+}
+
+TribeSet& TribeSet::erase(TribeId id) {
+  CHECK(id.key >= 0 && id.key < elems.size());
+  elems.reset(id.key);
+  return *this;
+}
+
+bool TribeSet::contains(TribeId id) const {
+  CHECK(id.key >= 0 && id.key < elems.size());
+  return elems.test(id.key);
 }
 
 
+bool TribeSet::operator==(const TribeSet& o) const {
+  return elems == o.elems;
+}
+
+SERIALIZE_DEF(TribeSet, elems);

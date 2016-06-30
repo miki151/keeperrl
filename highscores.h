@@ -22,7 +22,7 @@ class Highscores {
     bool gameWon;
     int points;
     int turns;
-    enum GameType { KEEPER, ADVENTURER } gameType;
+    enum GameType { KEEPER, ADVENTURER, KEEPER_CAMPAIGN, ADVENTURER_CAMPAIGN } gameType;
   };
 
   void present(View*, optional<Score> lastAdded = none) const;

@@ -38,7 +38,7 @@ const Level* Spectator::getLevel() const {
   return level;
 }
 
-double Spectator::getTime() const {
+double Spectator::getLocalTime() const {
   return level->getModel()->getTime();
 }
 

@@ -2,8 +2,6 @@
 #define _MAIN_LOOP_H
 
 #include "util.h"
-#include "gzstream.h"
-#include "model.h"
 #include "file_sharing.h"
 
 class View;
@@ -12,11 +10,16 @@ class FileSharing;
 class Options;
 class Jukebox;
 class ListElem;
+class Campaign;
+class Model;
+class RetiredGames;
+struct SaveFileInfo;
+class GameEvents;
 
 class MainLoop {
   public:
-  MainLoop(View*, Highscores*, FileSharing*, const string& dataFreePath, const string& userPath, Options* o,
-      Jukebox* j, std::atomic<bool>& finished, bool useSingleThread, optional<GameTypeChoice> forceGame);
+  MainLoop(View*, Highscores*, FileSharing*, const string& dataFreePath, const string& userPath,
+      Options*, Jukebox*, std::atomic<bool>& finished, bool useSingleThread, optional<GameTypeChoice> forceGame);
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, RandomGen&, Options*);
@@ -25,16 +28,11 @@ class MainLoop {
 
   private:
 
-  struct SaveFileInfo {
-    string filename;
-    time_t date;
-    bool download;
-  };
-
+  RetiredGames getRetiredGames();
   int getSaveVersion(const SaveFileInfo& save);
-  void uploadFile(const string& path);
-  void saveUI(PModel& model, Model::GameType type, SplashType splashType);
-  void getSaveOptions(const vector<FileSharing::GameInfo>&, const vector<pair<Model::GameType, string>>&,
+  void uploadFile(const string& path, GameSaveType);
+  void saveUI(PGame&, GameSaveType type, SplashType splashType);
+  void getSaveOptions(const vector<FileSharing::GameInfo>&, const vector<pair<GameSaveType, string>>&,
       vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
 
   void getDownloadOptions(const vector<FileSharing::GameInfo>&, vector<ListElem>& options,
@@ -43,22 +41,26 @@ class MainLoop {
   optional<SaveFileInfo> chooseSaveFile(const vector<ListElem>& options, const vector<SaveFileInfo>& allFiles,
       string noSaveMsg, View*);
 
-  void doWithSplash(SplashType, int totalProgress, function<void(ProgressMeter&)> fun,
+  void doWithSplash(SplashType, const string& text, int totalProgress, function<void(ProgressMeter&)> fun,
     function<void()> cancelFun = nullptr);
 
-  void playModel(PModel, bool withMusic = true, bool noAutoSave = false);
+  void doWithSplash(SplashType, const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
+
+  PGame prepareCampaign(RandomGen&);
+  PGame prepareSingleMap(RandomGen&);
+  void playGame(PGame&&, bool withMusic, bool noAutoSave);
   void playGameChoice();
   void splashScreen();
   void showCredits(const string& path, View*);
-  void autosave(PModel&);
 
-  PModel keeperGame(RandomGen& random);
+  Table<PModel> prepareCampaignModels(Campaign& campaign, RandomGen& random);
+  PModel keeperSingleMap(RandomGen& random);
   PModel quickGame(RandomGen& random);
-  PModel adventurerGame();
-  PModel loadModel(string file, bool erase);
-  PModel loadPrevious(bool erase);
-  string getSavePath(Model*, Model::GameType);
-  void eraseAutosave(Model*);
+  PGame adventurerGame();
+  PGame loadGame(string file, bool erase);
+  PGame loadPrevious(bool erase);
+  string getSavePath(PGame&, GameSaveType);
+  void eraseAutosave(PGame&);
 
   bool downloadGame(const string& filename);
   static bool eraseSave(Options* options);

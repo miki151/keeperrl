@@ -18,21 +18,24 @@
 #include "debug.h"
 #include "util.h"
 
-
 static void fail() {
   *((int*) 0x1234) = 0; // best way to fail
 }
 
 namespace boost {
   void assertion_failed(char const * expr, char const * function, char const * file, long line) {
-    (ofstream("stacktrace.out") << "Assertion at " << file << ":" << line << std::endl).flush();
+    FAIL << "Assertion at " << file << ":" << (int)line;
     fail();
   }
 }
 
 
-Debug::Debug(DebugType t, const string& msg, int line) 
-    : out((string[]) { "INFO ", "FATAL "}[t] + msg + ":" + toString(line) + " "), type(t) {
+Debug::Debug(DebugType t, const string& msg, int line) : type(t) {
+  if (t == DebugType::FATAL)
+    out = "FATAL";
+  else
+    out = "INFO";
+  out += msg + ":" + toString(line) + " ";
 }
 
 static ofstream output;
@@ -42,6 +45,12 @@ void Debug::init(bool log) {
     output.open("log.out");
 }
 
+static function<void(const string&)> errorCallback;
+
+void Debug::setErrorCallback(function<void(const string&)> error) {
+  errorCallback = error;
+}
+
 void Debug::add(const string& a) {
   out += a;
 }
@@ -49,6 +58,8 @@ void Debug::add(const string& a) {
 Debug::~Debug() {
   if (type == DebugType::FATAL) {
     (ofstream("stacktrace.out") << out << endl).flush();
+    if (errorCallback)
+      errorCallback(out);
     fail();
   } else {
     if (output) {
@@ -65,6 +76,10 @@ Debug& Debug::operator <<(const int msg) {
   add(toString(msg));
   return *this;
 }
+Debug& Debug::operator <<(const long long msg) {
+  add(toString(msg));
+  return *this;
+}
 Debug& Debug::operator <<(const size_t msg) {
   add(toString(msg));
   return *this;
@@ -77,12 +92,7 @@ Debug& Debug::operator <<(const double msg) {
   add(toString(msg));
   return *this;
 }
-Debug& Debug::operator <<(void* msg) {
-  std::stringstream ss;
-  ss << msg;
-  add(ss.str());
-  return *this;
-}
+
 template<class T>
 Debug& Debug::operator<<(const vector<T>& container){
   (*this) << "{";
@@ -96,8 +106,8 @@ Debug& Debug::operator<<(const vector<T>& container){
 template<class T>
 Debug& Debug::operator<<(const vector<vector<T> >& container){
   (*this) << "{";
-  for (int i : Range(container[0].size())) {
-    for (int j : Range(container.size())) {
+  for (int i = 0; i < container[0].size(); ++i) {
+    for (int j = 0; j < container[0].size(); ++i) {
       (*this) << container[j][i] << ",";
     }
     (*this) << '\n';

@@ -30,14 +30,13 @@ class Tile {
   static Color getColor(const ViewObject& object);
 
   static Tile empty();
-  static Tile unicode(sf::Uint32 ch, ColorId, bool sym = false);
   static Tile fromString(const string&, ColorId, bool symbol = false);
   static Tile byCoord(TileCoord);
 
   static void initialize(Renderer&, bool useTiles);
 
   Color color;
-  String text;
+  string text;
   bool symFont = false;
   double translucent = 0;
   bool noShadow = false;

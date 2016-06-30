@@ -30,20 +30,20 @@ void MinionTaskMap::clear() {
 }
 
 double MinionTaskMap::getValue(MinionTask t, bool ignoreTaskLock) const {
-  return (locked[t] && !ignoreTaskLock) ? 0 : tasks[t];
+  return (locked.contains(t) && !ignoreTaskLock) ? 0 : tasks[t];
 }
 
 void MinionTaskMap::toggleLock(MinionTask task) {
-  locked[task] = !locked[task];
+  locked.toggle(task);
 }
 
 bool MinionTaskMap::isLocked(MinionTask task) const {
-  return locked[task];
+  return locked.contains(task);
 }
 
 bool MinionTaskMap::hasAnyTask() const {
   for (MinionTask t : ENUM_ALL(MinionTask))
-    if (tasks[t] > 0 && !locked[t])
+    if (tasks[t] > 0 && !locked.contains(t))
       return true;
   return false;
 }

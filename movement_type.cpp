@@ -5,7 +5,7 @@
 template <class Archive> 
 void MovementType::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(traits)
-    & SVAR(tribe)
+    & SVAR(tribeSet)
     & SVAR(sunlightVulnerable)
     & SVAR(fireResistant)
     & SVAR(forced);
@@ -13,21 +13,21 @@ void MovementType::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(MovementType);
 
-MovementType::MovementType(EnumSet<MovementTrait> t) : traits(t), tribe(nullptr) {
+MovementType::MovementType(EnumSet<MovementTrait> t) : traits(t) {
 }
 
-MovementType::MovementType(MovementTrait t) : traits({t}), tribe(nullptr) {
+MovementType::MovementType(MovementTrait t) : traits({t}) {
 }
 
-MovementType::MovementType(const Tribe* tr, EnumSet<MovementTrait> t) : traits(t), tribe(tr) {
+MovementType::MovementType(TribeSet tr, EnumSet<MovementTrait> t) : traits(t), tribeSet(tr) {
 }
 
 bool MovementType::hasTrait(MovementTrait t) const {
-  return traits[t];
+  return traits.contains(t);
 }
 
 bool MovementType::operator == (const MovementType& o) const {
-  return traits == o.traits && tribe == o.tribe && sunlightVulnerable == o.sunlightVulnerable &&
+  return traits == o.traits && tribeSet == o.tribeSet && sunlightVulnerable == o.sunlightVulnerable &&
       fireResistant == o.fireResistant && forced == o.forced;
 }
 
@@ -41,8 +41,8 @@ namespace std {
   }
 }
 
-const Tribe* MovementType::getTribe() const {
-  return tribe;
+bool MovementType::isCompatible(TribeId id) const {
+  return !tribeSet || tribeSet->contains(id);
 }
 
 MovementType& MovementType::removeTrait(MovementTrait trait) {

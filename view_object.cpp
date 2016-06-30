@@ -37,15 +37,10 @@ SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
 ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
     : resource_id(id), viewLayer(l), description(d) {
-  if (islower(description[0]))
-    description[0] = toupper(description[0]);
-  for (Attribute attr : {
-      Attribute::ATTACK,
-      Attribute::DEFENSE,
-      Attribute::LEVEL,
-      Attribute::WATER_DEPTH,
-      Attribute::EFFICIENCY})
-    setAttribute(attr, -1);
+}
+
+ViewObject::ViewObject(ViewId id, ViewLayer l)
+    : resource_id(id), viewLayer(l) {
 }
 
 void ViewObject::setCreatureId(UniqueEntity<Creature>::Id id) {
@@ -54,6 +49,13 @@ void ViewObject::setCreatureId(UniqueEntity<Creature>::Id id) {
 
 optional<UniqueEntity<Creature>::Id> ViewObject::getCreatureId() const {
   return creatureId;
+}
+
+ViewObject::MovementInfo::MovementInfo(Vec2 dir, double b, double e, Type t) : direction(dir), tBegin(b), tEnd(e),
+  type(t) {
+}
+
+ViewObject::MovementInfo::MovementInfo() {
 }
 
 void ViewObject::addMovementInfo(MovementInfo info) {
@@ -75,7 +77,15 @@ Vec2 ViewObject::getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creatu
   if (controlledId > *creatureId)
     return movementQueue.getTotalMovement(tBegin, tEnd);
   else
-    return movementQueue.getTotalMovement(tBegin - 0.00000001, tEnd);
+    return movementQueue.getTotalMovement(tBegin - 0.001, tEnd);
+}
+
+void ViewObject::clearMovementInfo() {
+  movementQueue.clear();
+}
+
+void ViewObject::MovementQueue::clear() {
+  index = totalMoves = 0;
 }
 
 void ViewObject::MovementQueue::add(MovementInfo info) {
@@ -117,17 +127,17 @@ int ViewObject::MovementQueue::makeGoodIndex(int index) const {
 }
 
 ViewObject& ViewObject::setModifier(Modifier mod) {
-  modifiers[mod] = true;
+  modifiers.insert(mod);
   return *this;
 }
 
 ViewObject& ViewObject::removeModifier(Modifier mod) {
-  modifiers[mod] = false;
+  modifiers.erase(mod);
   return *this;
 }
 
 bool ViewObject::hasModifier(Modifier mod) const {
-  return modifiers[mod];
+  return modifiers.contains(mod);
 }
 
 ViewObject& ViewObject::setAttribute(Attribute attr, double d) {
@@ -135,12 +145,92 @@ ViewObject& ViewObject::setAttribute(Attribute attr, double d) {
   return *this;
 }
 
-double ViewObject::getAttribute(Attribute attr) const {
+optional<float> ViewObject::getAttribute(Attribute attr) const {
   return attributes[attr];
 }
 
-string ViewObject::getDescription() const {
-  return description;
+void ViewObject::setIndoors(bool state) {
+  indoors = state;
+}
+
+void ViewObject::setDescription(const string& s) {
+  description = s;
+}
+
+const char* ViewObject::getDefaultDescription() const {
+  switch (resource_id) {
+    case ViewId::UNKNOWN_MONSTER: return "Unknown creature";
+    case ViewId::ALTAR: return "Shrine";
+    case ViewId::UP_STAIRCASE:
+    case ViewId::DOWN_STAIRCASE: return "Stairs";
+    case ViewId::FLOOR: return "Floor";
+    case ViewId::BRIDGE: return "Bridge";
+    case ViewId::GRASS: return "Grass";
+    case ViewId::CROPS: return "Wheat";
+    case ViewId::MUD: return "Mud";
+    case ViewId::ROAD: return "Road";
+    case ViewId::CASTLE_WALL:
+    case ViewId::MUD_WALL:
+    case ViewId::WALL: return "Wall";
+    case ViewId::GOLD_ORE: return "Gold ore";
+    case ViewId::IRON_ORE: return "Iron ore";
+    case ViewId::STONE: return "Granite";
+    case ViewId::WOOD_WALL: return "Wooden wall";
+    case ViewId::MOUNTAIN: return "Mountain";
+    case ViewId::HILL: return "Hill";
+    case ViewId::WATER: return "Water";
+    case ViewId::MAGMA: return "Magma";
+    case ViewId::SAND: return "Sand";
+    case ViewId::DECID_TREE:
+    case ViewId::CANIF_TREE: return "Tree";
+    case ViewId::BUSH: return "Bush";
+    case ViewId::TREE_TRUNK: return "Tree trunk";
+    case ViewId::BURNT_TREE: return "Burnt tree";
+    case ViewId::BED: return "Bed";
+    case ViewId::DORM: return "Dormitory";
+    case ViewId::TORCH: return "Torch";
+    case ViewId::STOCKPILE1: return "Storage (all)";
+    case ViewId::STOCKPILE2: return "Storage (equipment)";
+    case ViewId::STOCKPILE3: return "Storage (resources)";
+    case ViewId::PRISON: return "Prison";
+    case ViewId::WELL: return "Well";
+    case ViewId::TORTURE_TABLE: return "Torture room";
+    case ViewId::BEAST_CAGE: return "Beast cage";
+    case ViewId::TRAINING_ROOM: return "Training room";
+    case ViewId::THRONE: return "Throne";
+    case ViewId::WHIPPING_POST: return "Whipping post";
+    case ViewId::NOTICE_BOARD: return "Message board";
+    case ViewId::SOKOBAN_HOLE: return "Hole";
+    case ViewId::RITUAL_ROOM: return "Ritual room";
+    case ViewId::IMPALED_HEAD: return "Impaled head";
+    case ViewId::EYEBALL: return "Eyeball";
+    case ViewId::LIBRARY: return "Library";
+    case ViewId::CAULDRON: return "Cauldron";
+    case ViewId::LABORATORY: return "Laboratory";
+    case ViewId::FORGE: return "Forge";
+    case ViewId::WORKSHOP: return "Workshop";
+    case ViewId::JEWELER: return "Jeweler";
+    case ViewId::MINION_STATUE: return "Statue";
+    case ViewId::CREATURE_ALTAR: return "Shrine";
+    case ViewId::FOUNTAIN: return "Fountain";
+    case ViewId::TREASURE_CHEST:
+    case ViewId::CHEST: return "Chest";
+    case ViewId::OPENED_CHEST: return "Opened chest";
+    case ViewId::COFFIN: return "Coffin";
+    case ViewId::CEMETERY: return "Cemetery";
+    case ViewId::GRAVE: return "Grave";
+    case ViewId::DOOR: return "Door";
+    case ViewId::BARRICADE: return "Barricade";
+    case ViewId::BORDER_GUARD: return "Wall";
+    default: return "";
+  }
+}
+
+const char* ViewObject::getDescription() const {
+  if (description)
+    return description->c_str();
+  else
+    return getDefaultDescription();
 }
 
 ViewObject&  ViewObject::setAttachmentDir(Dir dir) {
@@ -154,9 +244,9 @@ optional<Dir> ViewObject::getAttachmentDir() const {
 
 string ViewObject::getAttributeString(Attribute attr) const {
   if (attr == Attribute::EFFICIENCY)
-    return toString<int>(100 * getAttribute(attr)) + "%";
+    return toString<int>(100 * *getAttribute(attr)) + "%";
   else
-    return toString(getAttribute(attr));
+    return toString(*getAttribute(attr));
 }
 
 void ViewObject::setAdjectives(const vector<string>& adj) {
@@ -164,23 +254,24 @@ void ViewObject::setAdjectives(const vector<string>& adj) {
 }
 
 vector<string> ViewObject::getLegend() const {
-  vector<string> ret { description };
-  if (getAttribute(Attribute::LEVEL) > -1)
+  vector<string> ret { string(getDescription()) };
+  if (!!attributes[Attribute::LEVEL])
     ret[0] = ret[0] + ", level " + getAttributeString(Attribute::LEVEL);
-  if (getAttribute(Attribute::EFFICIENCY) > -1)
+  if (!!attributes[Attribute::EFFICIENCY])
     ret[0] = ret[0] + ", efficiency " + getAttributeString(Attribute::EFFICIENCY);
-  if (getAttribute(Attribute::ATTACK) > -1)
+  if (!!attributes[Attribute::ATTACK])
     ret.push_back("Attack " + getAttributeString(Attribute::ATTACK) +
           " defense " + getAttributeString(Attribute::DEFENSE));
   if (hasModifier(Modifier::PLANNED))
     ret.push_back("Planned");
   if (hasModifier(Modifier::SLEEPING))
     ret.push_back("Sleeping");
+  if (indoors)
+    ret.push_back(*indoors ? "Indoors" : "Outdoors");
   if (position.x > -1)
     ret.push_back(toString(position.x) + ", " + toString(position.y));
-#ifndef RELEASE
-  ret.push_back("Morale " + getAttributeString(Attribute::MORALE));
-#endif
+  if (!!attributes[Attribute::MORALE])
+    ret.push_back("Morale " + getAttributeString(Attribute::MORALE));
   append(ret, adjectives);
   return ret;
 }
@@ -192,6 +283,7 @@ ViewLayer ViewObject::layer() const {
 static vector<ViewId> creatureIds {
   ViewId::PLAYER,
   ViewId::KEEPER,
+  ViewId::RETIRED_KEEPER,
   ViewId::ELF,
   ViewId::ELF_ARCHER,
   ViewId::ELF_CHILD,
@@ -321,7 +413,12 @@ static vector<ViewId> itemIds {
   ViewId::ROCK,
   ViewId::IRON_ROCK,
   ViewId::WOOD_PLANK,
-  ViewId::MUSHROOM, 
+  ViewId::MUSHROOM1, 
+  ViewId::MUSHROOM2,
+  ViewId::MUSHROOM3,
+  ViewId::MUSHROOM4,
+  ViewId::MUSHROOM5,
+  ViewId::MUSHROOM6 
 };
 
 static bool hallu = false;
@@ -352,12 +449,12 @@ ViewId ViewObject::id() const {
 }
 
 const ViewObject& ViewObject::unknownMonster() {
-  static ViewObject ret(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Unknown creature");
+  static ViewObject ret(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE);
   return ret;
 }
 
 const ViewObject& ViewObject::empty() {
-  static ViewObject ret(ViewId::BORDER_GUARD, ViewLayer::FLOOR, "");
+  static ViewObject ret(ViewId::BORDER_GUARD, ViewLayer::FLOOR);
   return ret;
 }
 

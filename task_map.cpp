@@ -19,11 +19,6 @@ void TaskMap::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(TaskMap);
 
-SERIALIZATION_CONSTRUCTOR_IMPL(TaskMap);
-
-TaskMap::TaskMap(const vector<Level*>& levels) : reversePositions(levels), marked(levels), highlight(levels) {
-}
-
 Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
   if (Random.roll(20))
     for (Task* t : extractRefs(tasks))
@@ -35,11 +30,12 @@ Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
       if (auto pos = getPosition(task.get())) {
         double dist = pos->dist8(c->getPosition());
         const Creature* owner = getOwner(task.get());
+        optional<double> delayed = delayedTasks.getMaybe(task.get());
         if (!task->isDone() &&
             (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
             (!closest || dist < getPosition(closest)->dist8(c->getPosition()) || isPriorityTask(task.get())) &&
             c->canNavigateTo(*pos) &&
-            (!delayedTasks.count(task->getUniqueId()) || delayedTasks.at(task->getUniqueId()) < c->getTime())) {
+            (!delayed || *delayed < c->getLocalTime())) {
           closest = task.get();
           if (isPriorityTask(task.get()))
             return task.get();
@@ -54,7 +50,7 @@ vector<const Task*> TaskMap::getAllTasks() const {
 
 void TaskMap::freeTaskDelay(Task* t, double d) {
   freeTask(t);
-  delayedTasks[t->getUniqueId()] = d;
+  delayedTasks.set(t, d);
 }
 
 void TaskMap::setPriorityTasks(Position pos) {
@@ -76,7 +72,7 @@ CostInfo TaskMap::removeTask(Task* task) {
     completionCost.erase(task);
   }
   if (auto pos = getPosition(task))
-    marked[*pos] = nullptr;
+    marked.set(*pos, nullptr);
   for (int i : All(tasks))
     if (tasks[i].get() == task) {
       removeIndex(tasks, i);
@@ -85,7 +81,7 @@ CostInfo TaskMap::removeTask(Task* task) {
   if (creatureMap.contains(task))
     creatureMap.erase(task);
   if (positionMap.count(task)) {
-    removeElement(reversePositions[positionMap.at(task)], task);
+    removeElement(reversePositions.getOrFail(positionMap.at(task)), task);
     positionMap.erase(task);
   }
   if (requiredTraits.count(task))
@@ -106,29 +102,29 @@ bool TaskMap::isPriorityTask(const Task* t) const {
 }
 
 bool TaskMap::hasPriorityTasks(Position pos) const {
-  for (Task* task : reversePositions[pos])
+  for (Task* task : reversePositions.get(pos))
     if (isPriorityTask(task))
       return true;
   return false;
 }
 
 Task* TaskMap::getMarked(Position pos) const {
-  return marked[pos];
+  return marked.get(pos);
 }
 
 void TaskMap::markSquare(Position pos, HighlightType h, PTask task) {
-  marked[pos] = task.get();
-  highlight[pos] = h;
+  marked.set(pos, task.get());
+  highlight.set(pos, h);
   addTask(std::move(task), pos);
 }
 
 HighlightType TaskMap::getHighlightType(Position pos) const {
-  return highlight[pos];
+  return highlight.get(pos);
 }
 
 void TaskMap::unmarkSquare(Position pos) {
-  Task* task = marked[pos];
-  marked[pos] = nullptr;
+  Task* task = marked.get(pos);
+  marked.set(pos, nullptr);
   removeTask(task);
 }
 
@@ -151,7 +147,7 @@ Task* TaskMap::getTask(const Creature* c) {
 }
 
 const vector<Task*>& TaskMap::getTasks(Position pos) const {
-  return reversePositions[pos];
+  return reversePositions.get(pos);
 }
 
 Task* TaskMap::addTask(PTask task, const Creature* c) {
@@ -169,7 +165,7 @@ Task* TaskMap::addPriorityTask(PTask task, const Creature* c) {
 Task* TaskMap::addTask(PTask task, Position position, MinionTrait required) {
   positionMap[task.get()] = position;
   requiredTraits[task.get()] = required;
-  reversePositions[position].push_back(task.get());
+  reversePositions.getOrInit(position).push_back(task.get());
   tasks.push_back(std::move(task));
   return tasks.back().get();
 }

@@ -64,7 +64,7 @@ void NameGenerator::init(const string& namesPath) {
   set(NameGeneratorId::AZTEC, new NameGenerator(readLines(namesPath + "/aztec_names.txt")));
   set(NameGeneratorId::CREATURE, new NameGenerator(readLines(namesPath + "/creatures.txt")));
   set(NameGeneratorId::WEAPON, new NameGenerator(readLines(namesPath + "/artifacts.txt")));
-  set(NameGeneratorId::WORLD, new NameGenerator(readLines(namesPath + "/world.txt"), true));
+  set(NameGeneratorId::WORLD, new NameGenerator(readLines(namesPath + "/world.txt")));
   set(NameGeneratorId::TOWN, new NameGenerator(readLines(namesPath + "/town_names.txt")));
   set(NameGeneratorId::DEITY, new NameGenerator(readLines(namesPath + "/gods.txt")));
   set(NameGeneratorId::DWARF, new NameGenerator(readLines(namesPath + "/dwarfs.txt")));

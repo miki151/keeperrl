@@ -13,25 +13,38 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ENTITY_NAME_H
-#define _ENTITY_NAME_H
+#ifndef _CREATURE_NAME_H
+#define _CREATURE_NAME_H
 
-class EntityName {
+#include "util.h"
+
+class CreatureName {
   public:
-  EntityName(const string& name);
-  EntityName(const string& name, const string& plural);
-  EntityName(const char* name);
+  CreatureName(const string& name);
+  CreatureName(const string& name, const string& plural);
+  CreatureName(const char* name);
+  void setFirst(const string&);
+  void setStack(const string&);
+  void setGroup(const string&);
+  void useFullTitle();
+  string stack() const;
+  optional<string> first() const;
   string bare() const;
   string the() const;
   string a() const;
   string plural() const;
   string multiple(int) const;
+  string title() const;
 
-  SERIALIZATION_DECL(EntityName);
+  SERIALIZATION_DECL(CreatureName);
 
   private:
   string SERIAL(name);
   string SERIAL(pluralName);
+  optional<string> SERIAL(stackName);
+  optional<string> SERIAL(firstName);
+  string SERIAL(groupName) = "group";
+  bool SERIAL(fullTitle) = false;
 };
 
 #endif

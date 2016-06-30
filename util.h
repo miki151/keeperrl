@@ -24,10 +24,24 @@
 #include "hashing.h"
 
 template <class T>
-string toString(const T& t);
+string toString(const T& t) {
+  stringstream ss;
+  ss << t;
+  return ss.str();
+}
+
+class ParsingException {
+};
 
 template <class T>
-T fromString(const string& s);
+T fromString(const string& s) {
+  std::stringstream ss(s);
+  T t;
+  ss >> t;
+  if (!ss)
+    throw ParsingException();
+  return t;
+}
 
 template <class T>
 optional<T> fromStringSafe(const string& s);
@@ -53,6 +67,7 @@ DEF_UNIQUE_PTR(Collective);
 DEF_UNIQUE_PTR(CollectiveControl);
 DEF_UNIQUE_PTR(Model);
 DEF_UNIQUE_PTR(Tribe);
+DEF_UNIQUE_PTR(Game);
 
 template <typename T>
 T lambdaConstruct(function<void(T&)> fun) {
@@ -159,9 +174,18 @@ class Vec2 {
 
   typedef function<Vec2(Vec2)> LinearMap;
 
-  SERIALIZE_ALL(x, y);
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+   
   HASH_ALL(x, y);
 };
+
+template <>
+inline string toString(const Vec2& v) {
+  stringstream ss;
+  ss << "(" << v.x << ", " << v.y << ")";
+  return ss.str();
+}
 
 class Range {
   public:
@@ -176,7 +200,7 @@ class Range {
 
   class Iter {
     public:
-    Iter(int ind, int min, int max);
+    Iter(int ind, int min, int max, int increment);
 
     int operator* () const;
     bool operator != (const Iter& other) const;
@@ -198,6 +222,7 @@ class Range {
   private:
   int SERIAL(start);
   int SERIAL(finish);
+  int SERIAL(increment) = 1;
 };
 
 class Rectangle {
@@ -212,20 +237,21 @@ class Rectangle {
   static Rectangle boundingBox(const vector<Vec2>& v);
   static Rectangle centered(Vec2 center, int radius);
 
-  int getPX() const;
-  int getPY() const;
-  int getKX() const;
-  int getKY() const;
-  int getW() const;
-  int getH() const;
+  int left() const;
+  int top() const;
+  int right() const;
+  int bottom() const;
+  int width() const;
+  int height() const;
   Vec2 getSize() const;
   Range getYRange() const;
   Range getXRange() const;
+  int area() const;
 
-  Vec2 getTopLeft() const;
-  Vec2 getBottomRight() const;
-  Vec2 getTopRight() const;
-  Vec2 getBottomLeft() const;
+  Vec2 topLeft() const;
+  Vec2 bottomRight() const;
+  Vec2 topRight() const;
+  Vec2 bottomLeft() const;
 
   bool intersects(const Rectangle& other) const;
   bool contains(const Rectangle& other) const;
@@ -263,7 +289,7 @@ class Rectangle {
   SERIALIZATION_DECL(Rectangle);
 
   private:
-  int px, py, kx, ky, w, h;
+  int px = 0, py = 0, kx = 0, ky = 0, w = 0, h = 0;
 };
 
 template <class T>
@@ -273,7 +299,7 @@ Range All(const T& container) {
 
 template <class T>
 Range AllReverse(const T& container) {
-  return Range(container.size() - 1, -1);
+  return All(container).reverse();
 }
 
 template<typename T>
@@ -307,15 +333,14 @@ class EnumInfo<Name> { \
   }\
 }
 
-
-extern const vector<Vec2> neighbors;
-
+std::string operator "" _s(const char* str, size_t);
 class RandomGen {
   public:
   RandomGen() {}
   RandomGen(RandomGen&) = delete;
   void init(int seed);
   int get(int max);
+  long long getLL();
   int get(int min, int max);
   int get(Range);
   int get(const vector<double>& weights);
@@ -347,11 +372,9 @@ class RandomGen {
     return choose(vector<T>(vi), vector<double>(pi));
   }
 
-  template <typename T>
-  T choose(initializer_list<T> vi) {
-    vector<T> v(vi);
-    vector<double> pi(v.size(), 1);
-    return choose(v, pi);
+  template <typename T, typename... Args>
+  const T& choose(T const& first, T const& second, const Args&... rest) {
+    return chooseImpl(first, 2, second, rest...);
   }
 
   template <typename T>
@@ -413,12 +436,23 @@ class RandomGen {
   private:
   default_random_engine generator;
   std::uniform_real_distribution<double> defaultDist;
+
+  template <typename T>
+  const T& chooseImpl(T const& cur, int total) {
+    return cur;
+  }
+
+  template <typename T, typename... Args>
+  const T& chooseImpl(T const& chosen, int total,  T const& next, const Args&... rest) {
+    const T& nextChosen = roll(total) ? next : chosen;
+    return chooseImpl(nextChosen, total + 1, rest...);
+  }
 };
 
 extern RandomGen Random;
 
 inline Debug& operator <<(Debug& d, Rectangle rect) {
-  return d << "(" << rect.getPX() << "," << rect.getPY() << ") (" << rect.getKX() << "," << rect.getKY() << ")";
+  return d << "(" << rect.left() << "," << rect.top() << ") (" << rect.right() << "," << rect.bottom() << ")";
 }
 
 
@@ -426,6 +460,11 @@ template <class T>
 class Table {
   public:
   Table(Table&& t) = default;
+
+  Table(const Table& t) : Table(t.bounds) {
+    for (int i : Range(bounds.w * bounds.h))
+      mem[i] = t.mem[i];
+  }
 
   Table(int x, int y, int w, int h) : bounds(x, y, x + w, y + h), mem(new T[w * h]) {
   }
@@ -452,6 +491,13 @@ class Table {
   }
 
   Table& operator = (Table&& other) = default;
+  Table& operator = (const Table& other) {
+    bounds = other.bounds;
+    mem.reset(new T[bounds.w * bounds.h]);
+    for (int i : Range(bounds.w * bounds.h))
+      mem[i] = other.mem[i];
+    return *this;
+  }
 
   int getWidth() const {
     return bounds.w;
@@ -491,7 +537,7 @@ class Table {
 #ifdef RELEASE
     return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
 #else
-    Vec2 v = vAbs - bounds.getTopLeft();
+    Vec2 v = vAbs - bounds.topLeft();
     CHECK(vAbs.inRectangle(bounds)) <<
         "Table index out of bounds " << bounds << " " << vAbs;
     return mem[v.x * bounds.h + v.y];
@@ -502,7 +548,7 @@ class Table {
 #ifdef RELEASE
     return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
 #else
-    Vec2 v = vAbs - bounds.getTopLeft();
+    Vec2 v = vAbs - bounds.topLeft();
     CHECK(vAbs.inRectangle(bounds)) <<
         "Table index out of bounds " << bounds << " " << vAbs;
     return mem[v.x * bounds.h + v.y];
@@ -519,7 +565,7 @@ class Table {
   template <class Archive> 
   void load(Archive& ar, const unsigned int version) {
     ar >> BOOST_SERIALIZATION_NVP(bounds);
-    mem.reset(new T[bounds.getW() * bounds.getH()]);
+    mem.reset(new T[bounds.width() * bounds.height()]);
     for (Vec2 v : bounds)
       ar >> boost::serialization::make_nvp("Elem", (*this)[v]);
   }
@@ -1083,6 +1129,7 @@ class EnumMap {
   }
 
   EnumMap(const EnumMap& o) : elems(o.elems) {}
+  EnumMap(EnumMap&& o) : elems(std::move(o.elems)) {}
 
   bool operator == (const EnumMap<T, U>& other) const {
     return elems == other.elems;
@@ -1143,7 +1190,7 @@ class EnumMap {
 };
 
 template<class T>
-class EnumSet : public EnumMap<T, char> {
+class EnumSet {
   public:
   EnumSet() {}
 
@@ -1155,40 +1202,62 @@ class EnumSet : public EnumMap<T, char> {
   EnumSet(initializer_list<char> il) {
     CHECK(il.size() == EnumInfo<T>::size);
     int cnt = 0;
-    for (int i : il)
-      (*this)[T(cnt++)] = i;
+    for (int i : il) {
+      if (i)
+        insert(T(cnt));
+      ++cnt;
+    }
+  }
+
+  bool contains(T elem) const {
+    return elems.test(size_t(elem));
   }
 
   void insert(T elem) {
-    (*this)[elem] = 1;
+    elems.set(size_t(elem));
   }
 
   void toggle(T elem) {
-    (*this)[elem] = !(*this)[elem];
+    elems.flip(size_t(elem));
   }
 
   void erase(T elem) {
-    (*this)[elem] = 0;
+    elems.reset(size_t(elem));
   }
 
+  void set(T elem, bool state) {
+    elems.set(size_t(elem), state);
+  }
+
+  void clear() {
+    elems.reset();
+  }
+
+  bool operator == (const EnumSet& o) const {
+    return elems == o.elems;
+  }
+
+  bool operator != (const EnumSet& o) const {
+    return elems != o.elems;
+  }
+
+  typedef std::bitset<EnumInfo<T>::size> Bitset;
+
   EnumSet sum(const EnumSet& other) const {
-    EnumSet ret(other);
-    for (T elem : *this)
-      ret.insert(elem);
+    EnumSet<T> ret(other);
+    ret.elems |= elems;
     return ret;
   }
 
   EnumSet intersection(const EnumSet& other) const {
-    EnumSet ret;
-    for (T elem : *this)
-      if (other[elem])
-        ret.insert(elem);
+    EnumSet<T> ret(other);
+    ret.elems &= elems;
     return ret;
   }
 
   static EnumSet<T> fullSet() {
     EnumSet<T> ret;
-    ret.clear(1);
+    ret.elems.flip();
     return ret;
   }
 
@@ -1199,7 +1268,7 @@ class EnumSet : public EnumMap<T, char> {
     }
 
     void goForward() {
-      while (ind < EnumInfo<T>::size && !set[T(ind)])
+      while (ind < EnumInfo<T>::size && !set.contains(T(ind)))
         ++ind;
     }
 
@@ -1231,12 +1300,23 @@ class EnumSet : public EnumMap<T, char> {
   }
 
   int getHash() const {
-    int ret = 0;
-    for (const T& elem : *this) {
-      ret = ret * 79146198 + combineHash(elem);
-    }
-    return ret;
+    return hash<Bitset>()(elems);
   }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    vector<T> SERIAL(tmp);
+    for (T elem : *this)
+      tmp.push_back(elem);
+    ar & SVAR(tmp);
+    for (T elem : tmp) {
+      CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
+      insert(elem);
+    }
+  }
+
+  private:
+  Bitset elems;
 };
 
 template <class T>
@@ -1362,6 +1442,14 @@ class HeapAllocated {
     return *elem.get();
   }
 
+  const T* get() const {
+    return elem.get();
+  }
+
+  T* get() {
+    return elem.get();
+  }
+
   HeapAllocated& operator = (const T& t) {
     *elem.get() = t;
     return *this;
@@ -1439,11 +1527,12 @@ class AsyncLoop {
   public:
   AsyncLoop(function<void()> init, function<void()> loop);
   AsyncLoop(function<void()>);
+  void finish();
   ~AsyncLoop();
 
   private:
-  thread t;
   std::atomic<bool> done;
+  thread t;
 };
 
 template <typename T, typename... Args>

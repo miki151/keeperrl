@@ -17,28 +17,21 @@
 #define _MODEL_H
 
 #include "util.h"
+#include "map_memory.h"
 #include "stair_key.h"
 #include "position.h"
+#include "tribe.h"
+#include "enum_variant.h"
+#include "event_generator.h"
+#include "event_listener.h"
 
-class PlayerControl;
 class Level;
 class ProgressMeter;
-class Options;
-class CreatureView;
-class Trigger;
-class Highscores;
-class Technology;
-class View;
 class LevelMaker;
-struct SettlementInfo;
 class LevelBuilder;
 class TimeQueue;
-class Statistics;
-struct TribeSet;
 class StairKey;
-
-enum class SunlightState { DAY, NIGHT};
-enum class VillainType { MAIN, LESSER };
+class Game;
 
 /**
   * Main class that holds all game logic.
@@ -46,148 +39,83 @@ enum class VillainType { MAIN, LESSER };
 class Model {
   public:
   ~Model();
-
-  enum class GameType { ADVENTURER, KEEPER, RETIRED_KEEPER, AUTOSAVE };
-
-
-  class ExitInfo {
-    public:
-    static ExitInfo saveGame(GameType);
-    static ExitInfo abandonGame();
-
-    bool isAbandoned() const;
-    GameType getGameType() const;
-    private:
-    GameType type;
-    bool abandon;
-  };
-
+  
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
-  optional<ExitInfo> update(double totalTime);
+  void update(double totalTime);
+
+  /** For displaying progress while loading/saving the game.*/
+  static ProgressMeter* progressMeter;
 
   /** Returns the level that the stairs lead to. */
   Level* getLinkedLevel(Level* from, StairKey) const;
 
-  Position getStairs(const Level* from, const Level* to);
+  optional<Position> getStairs(const Level* from, const Level* to);
 
   /** Adds new creature to the queue. Assumes this creature has already been added to a level. */
   void addCreature(PCreature, double delay = 0);
-
-  /** Removes creature from the queue. Assumes it has already been removed from its level. */
-  void killCreature(Creature*, Creature* attacker);
-
-  const vector<Collective*>& getVillains(VillainType) const;
-  const vector<Collective*>& getAllVillains() const;
+  void landHeroPlayer(const string& name, int handicap);
 
   bool isTurnBased();
 
-  string getGameIdentifier() const;
-  string getGameDisplayName() const;
-  void exitAction();
   double getTime() const;
-  MusicType getCurrentMusic() const;
-  void setCurrentMusic(MusicType, bool now);
-  bool changeMusicNow() const;
 
-  View* getView();
-  void setView(View*);
-  Options* getOptions();
-  void setOptions(Options*);
-  void setHighscores(Highscores*);
-
-  Statistics& getStatistics();
-  const Statistics& getStatistics() const;
-
+  void setGame(Game*);
+  Game* getGame() const;
   void tick(double time);
-  void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
-  void conquered(const string& title, vector<const Creature*> kills, int points);
-  void killedKeeper(const string& title, const string& keeper, const string& land,
-    vector<const Creature*> kills, int points);
-  bool isGameOver() const;
-  static void showCredits(View*);
-  void retireCollective();
+  vector<Collective*> getCollectives() const;
+  vector<Creature*> getAllCreatures() const;
+  vector<Level*> getLevels() const;
 
-  struct SunlightInfo {
-    double lightAmount;
-    double timeRemaining;
-    SunlightState state;
-    const char* getText();
-  };
-  const SunlightInfo& getSunlightInfo() const;
-
-  const string& getWorldName() const;
-
-  SERIALIZATION_DECL(Model);
-
-  optional<Position> getDanglingPortal();
-  void setDanglingPortal(Position);
-  void resetDanglingPortal();
+  Level* getTopLevel() const;
 
   void addWoodCount(int);
   int getWoodCount() const;
 
-  Tribe* getPestTribe();
-  Tribe* getKillEveryoneTribe();
-  Tribe* getPeacefulTribe();
+  void killCreature(Creature* victim);
+  void updateSunlightMovement();
 
-  void onTechBookRead(Technology*);
-  void onAlarm(Position);
-  void onKilledLeader(const Collective*, const Creature*);
-  void onTorture(const Creature* who, const Creature* torturer);
-  void onSurrender(Creature* who, const Creature* to);
-  void onAttack(Creature* victim, Creature* attacker);
-  void onTrapTrigger(Position);
-  void onTrapDisarm(Position, const Creature*);
-  void onSquareDestroyed(Position);
-  void onEquip(const Creature*, const Item*);
+  PCreature extractCreature(Creature*);
+  void transferCreature(PCreature, Vec2 travelDir);
+  bool canTransferCreature(Creature*, Vec2 travelDir);
 
-  vector<Level*> getLevels() const;
+  Model();
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version);
+
+  void lockSerialization();
+  void clearDeadCreatures();
+
+  void beforeUpdateTime(Creature*);
+  void afterUpdateTime(Creature*);
+
+  void addEvent(const GameEvent&);
 
   private:
-  Model(View* view, const string& worldName, TribeSet&&);
 
   friend class ModelBuilder;
 
-  void updateSunlightInfo();
   PCreature makePlayer(int handicap);
-  const Creature* getPlayer() const;
-  void landHeroPlayer();
   Level* buildLevel(LevelBuilder&&, PLevelMaker);
-  Level* prepareTopLevel(ProgressMeter&, vector<SettlementInfo> settlements);
+  Level* buildTopLevel(LevelBuilder&&, PLevelMaker);
 
-  HeapAllocated<TribeSet> SERIAL(tribeSet);
   vector<PLevel> SERIAL(levels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
-  Collective* SERIAL(playerCollective);
-  map<VillainType, vector<Collective*>> SERIAL(villainsByType);
-  vector<Collective*> SERIAL(allVillains);
-  View* view;
+  Game* SERIAL(game) = nullptr;
+  double SERIAL(lastTick) = 0;
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
-  double SERIAL(lastTick) = -1000;
-  PlayerControl* SERIAL(playerControl) = nullptr;
-  bool SERIAL(won) = false;
-  bool SERIAL(addHero) = false;
   double SERIAL(currentTime) = 0;
-  SunlightInfo sunlightInfo;
-  double lastUpdate = -10;
-  Options* options;
-  Highscores* highscores;
-  string SERIAL(worldName);
-  MusicType SERIAL(musicType);
-  bool SERIAL(finishCurrentMusic) = true;
-  optional<ExitInfo> exitInfo;
-  unique_ptr<CreatureView> SERIAL(spectator);
-  optional<Position> SERIAL(danglingPortal);
   int SERIAL(woodCount) = 0;
-  HeapAllocated<Statistics> SERIAL(statistics);
-  string SERIAL(gameIdentifier);
-  string SERIAL(gameDisplayName);
   void calculateStairNavigation();
   optional<StairKey> getStairsBetween(const Level* from, const Level* to);
   map<pair<const Level*, const Level*>, StairKey> SERIAL(stairNavigation);
+  bool serializationLocked = false;
+  Level* SERIAL(topLevel) = nullptr;
+  friend class EventListener;
+  HeapAllocated<EventGenerator<EventListener>> SERIAL(eventGenerator);
 };
 
 #endif

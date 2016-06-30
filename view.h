@@ -31,8 +31,11 @@ class PlayerInfo;
 struct ItemInfo;
 struct CreatureInfo;
 class Sound;
+class Campaign;
+class Options;
+class RetiredGames;
 
-enum class SplashType { CREATING, LOADING, SAVING, UPLOADING, DOWNLOADING, AUTOSAVING };
+enum class SplashType { BIG, AUTOSAVING, SMALL };
 
 class ListElem {
   public:
@@ -50,6 +53,8 @@ class ListElem {
   ListElem(const string& text, const string& secColumn, ElemMod mod = NORMAL);
 
   ListElem& setTip(const string&);
+  ListElem& setMessagePriority(MessagePriority);
+  optional<MessagePriority> getMessagePriority() const;
 
   const string& getText() const;
   const string& getSecondColumn() const;
@@ -66,14 +71,13 @@ class ListElem {
   string tooltip;
   ElemMod mod;
   optional<UserInputId> action;
+  optional<MessagePriority> messagePriority;
 };
 
 enum class GameTypeChoice {
   KEEPER,
   ADVENTURER,
-  LOAD,
-  BACK,
-  QUICK_LEVEL
+  QUICK_LEVEL,
 };
 
 enum class MenuType {
@@ -96,6 +100,23 @@ struct HighscoreList {
   vector<Elem> scores;
 };
 
+enum class CampaignActionId {
+  CANCEL,
+  CHOOSE_SITE,
+  REROLL_MAP,
+  UPDATE_MAP,
+  CONFIRM,
+  UPDATE_OPTION
+};
+
+class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2, OptionId),
+  ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE),
+  ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION)> {
+    using EnumVariant::EnumVariant;
+};
+
+class GameExitException {};
+
 class View {
   public:
   View();
@@ -108,7 +129,8 @@ class View {
   virtual void reset() = 0;
 
   /** Displays a splash screen in an active loop until \paramname{ready} is set to true in another thread.*/
-  virtual void displaySplash(const ProgressMeter&, SplashType type, function<void()> cancelFun = nullptr) = 0;
+  virtual void displaySplash(const ProgressMeter*, const string& text, SplashType type,
+      function<void()> cancelFun = nullptr) = 0;
 
   virtual void clearSplash() = 0;
 
@@ -144,7 +166,7 @@ class View {
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, double* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
-  virtual GameTypeChoice chooseGameType() = 0;
+  virtual optional<GameTypeChoice> chooseGameType() = 0;
 
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(const string& message) = 0;
@@ -175,6 +197,17 @@ class View {
   virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) = 0;
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
+
+  virtual CampaignAction prepareCampaign(const Campaign&, Options*, RetiredGames&) = 0;
+
+  virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
+      const string& cancelText) = 0;
+
+  virtual bool creaturePrompt(const string& title, const vector<CreatureInfo>&) = 0;
+
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) = 0;
+
+  virtual void presentWorldmap(const Campaign&) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;

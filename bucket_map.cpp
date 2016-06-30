@@ -41,8 +41,8 @@ template<class T>
 vector<T> BucketMap<T>::getElements(Rectangle area) const {
   vector<T> ret;
   Rectangle bArea(
-      area.getPX() / bucketSize, area.getPY() / bucketSize,
-      (area.getKX() - 1) / bucketSize + 1, (area.getKY() - 1) / bucketSize + 1);
+      area.left() / bucketSize, area.top() / bucketSize,
+      (area.right() - 1) / bucketSize + 1, (area.bottom() - 1) / bucketSize + 1);
   if (bArea.intersects(buckets.getBounds()))
     for (Vec2 v : bArea.intersection(buckets.getBounds()))
       for (T elem : buckets[v])

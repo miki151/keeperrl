@@ -62,10 +62,10 @@ class NoDebug {
   public:
   NoDebug& operator <<(const string& msg) { return *this;}
   NoDebug& operator <<(const int msg) {return *this;}
+  NoDebug& operator <<(const long long msg) {return *this;}
   NoDebug& operator <<(const size_t msg) {return *this;}
   NoDebug& operator <<(const char msg) {return *this;}
   NoDebug& operator <<(const double msg) {return *this;}
-  NoDebug& operator <<(void*) {return *this;}
   template<class T>
   NoDebug& operator<<(const vector<T>& container) {return *this;}
   template<class T>
@@ -76,12 +76,13 @@ class Debug {
   public:
   Debug(DebugType t = INFO, const string& msg = "", int line = 0);
   static void init(bool log);
+  static void setErrorCallback(function<void(const string&)>);
   Debug& operator <<(const string& msg);
   Debug& operator <<(const int msg);
+  Debug& operator <<(const long long msg);
   Debug& operator <<(const size_t msg);
   Debug& operator <<(const char msg);
   Debug& operator <<(const double msg);
-  Debug& operator <<(void*);
   template<class T>
   Debug& operator<<(const vector<T>& container);
   template<class T>

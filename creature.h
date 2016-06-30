@@ -22,6 +22,8 @@
 #include "renderable.h"
 #include "movement_type.h"
 #include "position.h"
+#include "event_generator.h"
+#include "entity_set.h"
 
 class Skill;
 class Level;
@@ -39,49 +41,51 @@ class LevelShortestPath;
 class Equipment;
 class Spell;
 class CreatureAttributes;
+class Body;
 class MinionTaskMap;
-class EntityName;
+class CreatureName;
 class Gender;
 class SpellMap;
 class Sound;
+class Game;
+class CreatureListener;
+struct AdjectiveInfo;
 
 class Creature : public Renderable, public UniqueEntity<Creature> {
   public:
-  Creature(Tribe*, const CreatureAttributes&, const ControllerFactory&);
-  Creature(const ViewObject&, Tribe*, const CreatureAttributes&, const ControllerFactory&);
+  Creature(TribeId, const CreatureAttributes&, const ControllerFactory&);
+  Creature(const ViewObject&, TribeId, const CreatureAttributes&, const ControllerFactory&);
   virtual ~Creature();
 
   static vector<vector<Creature*>> stack(const vector<Creature*>&);
 
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void makeMove();
-  double getTime() const;
-  void setTime(double t);
-  void setModel(Model*);
+  double getLocalTime() const;
+  double getGlobalTime() const;
+  void setLocalTime(double t);
   Level* getLevel() const;
-  Model* getModel() const;
-  vector<const Creature*> getVisibleEnemies() const;
+  Game* getGame() const;
+  vector<Creature*> getVisibleEnemies() const;
+  vector<Creature*> getVisibleCreatures() const;
   vector<Position> getVisibleTiles() const;
   void setPosition(Position);
   Position getPosition() const;
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&);
   void heal(double amount = 1, bool replaceLimbs = false);
-  double getHealth() const;
   double getMorale() const;
   void addMorale(double);
   DEF_UNIQUE_PTR(MoraleOverride);
   class MoraleOverride {
     public:
-    virtual optional<double> getMorale() = 0;
+    virtual optional<double> getMorale(const Creature*) = 0;
     virtual ~MoraleOverride() {}
     template <class Archive> 
     void serialize(Archive& ar, const unsigned int version);
   };
-  void addMoraleOverride(PMoraleOverride);
+  void setMoraleOverride(PMoraleOverride);
 
-  double getWeight() const;
-  bool canSleep() const;
   void take(PItem item);
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
@@ -91,14 +95,10 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canSee(Position) const;
   bool canSee(Vec2) const;
   bool isEnemy(const Creature*) const;
-  void tick(double realTime);
+  void tick();
 
-  const EntityName& getName() const;
-  string getSpeciesName() const;
-  string getNameAndTitle() const;
-  optional<string> getFirstName() const;
-  void setFirstName(const string&);
-  string getGroupName(int count) const;
+  const CreatureName& getName() const;
+  CreatureName& getName();
   int getModifier(ModifierType) const;
   int getAttr(AttrType) const;
   static string getAttrName(AttrType);
@@ -109,7 +109,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   const Tribe* getTribe() const;
   Tribe* getTribe();
-  void setTribe(Tribe*);
+  TribeId getTribeId() const;
+  void setTribe(TribeId);
   bool isFriend(const Creature*) const;
   int getDebt(const Creature* debtor) const;
   vector<Item*> getGold(int num) const;
@@ -119,62 +120,28 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   void youHit(BodyPart part, AttackType type) const;
 
-  void dropCorpse();
-  virtual vector<PItem> getCorpse();
-  
   void monsterMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
   void monsterMessage(const PlayerMessage& playerCanSee) const;
   void globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
   void globalMessage(const PlayerMessage& playerCanSee) const;
 
+  const CreatureAttributes& getAttributes() const;
+  CreatureAttributes& getAttributes();
+  const Body& getBody() const;
+  Body& getBody();
   bool isDead() const;
   bool isBlind() const;
-  bool isBleeding() const;
   const Creature* getLastAttacker() const;
+  void clearLastAttacker();
   optional<string> getDeathReason() const;
   double getDeathTime() const;
-  vector<const Creature*> getKills() const;
-  bool isHumanoid() const;
-  bool isAnimal() const;
-  bool isStationary() const;
-  void setStationary();
-  bool isInvincible() const;
-  bool isUndead() const;
-  bool hasBrain() const;
-  bool isNotLiving() const;
-  bool isCorporal() const;
-  bool isWorshipped() const;
-  bool dontChase() const;
-  optional<SpawnType> getSpawnType() const;
-  int getRecruitmentCost() const;
+  const EntitySet<Creature>& getKills() const;
 
   MovementType getMovementType() const;
 
-  int numBodyParts(BodyPart) const;
-  int numLost(BodyPart) const;
-  int numInjured(BodyPart) const;
-  int lostOrInjuredBodyParts() const;
-  int numGood(BodyPart) const;
-  void injureBodyPart(BodyPart part, bool drop);
-  bool isCritical(BodyPart part) const;
-  double getMinDamage(BodyPart part) const;
-
-  double getCourage() const;
-  void setCourage(double);
-  const Gender& getGender() const;
-
   int getDifficultyPoints() const;
-  int getExpLevel() const;
-  void exerciseAttr(AttrType, double value = 1);
-  void increaseExpLevel(double increase);
-
-  string getDescription() const;
-  bool isInnocent() const;
 
   void addSkill(Skill* skill);
-  bool hasSkill(Skill*) const;
-  double getSkillValue(const Skill*) const;
-  const EnumSet<SkillId>& getDiscreteSkills() const;
 
   string getPluralTheName(Item* item, int num) const;
   string getPluralAName(Item* item, int num) const;
@@ -226,16 +193,14 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canCopulateWith(const Creature*) const;
   CreatureAction consume(Creature*) const;
   bool canConsume(const Creature*) const;
-  bool isMinionFood() const;
   
   void displace(double time, Vec2);
-  void surrender(const Creature* to);
+  void surrender(Creature* to);
   
   virtual void onChat(Creature*);
 
-  void learnLocation(const Location*);
-
   Item* getWeapon() const;
+  void dropWeapon();
   vector<vector<Item*>> stackItems(vector<Item*>) const;
 
   CreatureAction moveTowards(Position, bool stepOnTile = false);
@@ -248,10 +213,10 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool atTarget() const;
   void die(Creature* attacker = nullptr, bool dropInventory = true, bool dropCorpse = true);
   void die(const string& reason, bool dropInventory = true, bool dropCorpse = true);
-  void bleed(double severity);
   void setOnFire(double amount);
   void poisonWithGas(double amount);
-  void shineLight();
+  void affectBySilver();
+  void affectByAcid();
   void setHeld(const Creature* holding);
   bool isHeld() const;
 
@@ -265,13 +230,9 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void pushController(PController);
   void setController(PController);
   void popController();
-  void setBoulderSpeed(double);
-  CreatureSize getSize() const;
 
   void addCreatureVision(CreatureVision*);
   void removeCreatureVision(CreatureVision*);
-  void addSpell(Spell*);
-  vector<Spell*> getSpells() const;
   CreatureAction castSpell(Spell*) const;
   CreatureAction castSpell(Spell*, Vec2) const;
   double getSpellDelay(Spell*) const;
@@ -284,84 +245,61 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void addPermanentEffect(LastingEffect, bool msg = true);
   void removePermanentEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
-  bool isAffectedPermanently(LastingEffect) const;
-  bool affects(LastingEffect effect) const;
   bool hasFreeMovement() const;
-  bool isFireResistant() const;
   bool isDarknessSource() const;
 
-  vector<AttackLevel> getAttackLevels() const;
-  bool hasSuicidalAttack() const;
-
-  vector<const Creature*> getUnknownAttacker() const;
-  const MinionTaskMap& getMinionTasks() const;
-  MinionTaskMap& getMinionTasks();
+  bool isUnknownAttacker(const Creature*) const;
   int accuracyBonus() const;
   vector<string> getMainAdjectives() const;
-  struct AdjectiveInfo {
-    string name;
-    string help;
-  };
   vector<AdjectiveInfo> getGoodAdjectives() const;
   vector<AdjectiveInfo> getWeaponAdjective() const;
   vector<AdjectiveInfo> getBadAdjectives() const;
 
   vector<string> popPersonalEvents();
+  void addPersonalEvent(const string&);
   void setInCombat();
   bool wasInCombat(double numLastTurns) const;
-  void onKilled(const Creature* victim);
+  void onKilled(Creature* victim);
 
   void addSound(const Sound&) const;
+  void updateViewObject();
 
   private:
 
-  void onAffected(LastingEffect effect, bool msg);
-  void consumeEffects(const EnumMap<LastingEffect, int>&);
-  void consumeBodyParts(const EnumMap<BodyPart, int>&);
-  void onRemoved(LastingEffect effect, bool msg);
-  void onTimedOut(LastingEffect effect, bool msg);
   CreatureAction moveTowards(Position, bool away, bool stepOnTile);
   double getInventoryWeight() const;
   Item* getAmmo() const;
-  void updateViewObject();
-  AttackType getAttackType() const;
   void spendTime(double time);
-  pair<double, double> getStanding(const Creature* c) const;
+  bool canCarry(const vector<Item*>&) const;
+  TribeSet getFriendlyTribes() const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
-  Model* SERIAL(model) = nullptr;
-  double SERIAL(time) = 1;
+  double SERIAL(localTime) = 1;
   HeapAllocated<Equipment> SERIAL(equipment);
   unique_ptr<LevelShortestPath> SERIAL(shortestPath);
-  unordered_set<const Creature*> SERIAL(knownHiding);
-  Tribe* SERIAL(tribe);
-  double SERIAL(health) = 1;
+  EntitySet<Creature> SERIAL(knownHiding);
+  TribeId SERIAL(tribe);
   double SERIAL(morale) = 0;
   optional<double> SERIAL(deathTime);
-  double SERIAL(lastTick) = 0;
-  bool SERIAL(collapsed) = false;
   bool SERIAL(hidden) = false;
   Creature* SERIAL(lastAttacker) = nullptr;
   optional<string> SERIAL(deathReason);
   int SERIAL(swapPositionCooldown) = 0;
-  vector<const Creature*> SERIAL(unknownAttacker);
-  vector<const Creature*> SERIAL(privateEnemies);
+  EntitySet<Creature> SERIAL(unknownAttackers);
+  EntitySet<Creature> SERIAL(privateEnemies);
   const Creature* SERIAL(holding) = nullptr;
   PController SERIAL(controller);
   vector<PController> SERIAL(controllerStack);
   vector<CreatureVision*> SERIAL(creatureVisions);
-  vector<const Creature*> SERIAL(kills);
+  EntitySet<Creature> SERIAL(kills);
   mutable double SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
   int SERIAL(numAttacksThisTurn) = 0;
-  vector<PMoraleOverride> SERIAL(moraleOverrides);
+  PMoraleOverride SERIAL(moraleOverride);
   void updateVisibleCreatures();
-  const vector<Creature*>& getVisibleCreatures();
-  vector<const Creature*> SERIAL(visibleEnemies);
-  vector<Creature*> SERIAL(visibleCreatures);
-  double getTimeRemaining(LastingEffect) const;
-  string getRemainingString(LastingEffect) const;
+  vector<Position> visibleEnemies;
+  vector<Position> visibleCreatures;
   VisionId SERIAL(vision);
   void updateVision();
   vector<string> SERIAL(personalEvents);
@@ -369,7 +307,10 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   optional<double> SERIAL(lastCombatTime);
 };
 
-enum class AttackLevel { LOW, MIDDLE, HIGH };
+struct AdjectiveInfo {
+  string name;
+  string help;
+};
 
 enum class MsgType {
     FEEL, // better

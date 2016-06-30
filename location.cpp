@@ -33,16 +33,20 @@ void Location::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Location);
 
-Location::Location(const string& _name, const string& desc, bool sup)
-    : name(_name), description(desc), table(Level::getMaxBounds(), false), surprise(sup) {
+Location::Location(const string& _name)
+    : name(_name), table(Level::getMaxBounds(), false) {
 }
 
-Location::Location(bool s) : table(Level::getMaxBounds(), false), surprise(s) {}
+Location::Location() : table(Level::getMaxBounds(), false) {}
 
 Location::Location(Level* l, Rectangle b) : level(l), squares(b.getAllSquares()),
     table(Level::getMaxBounds(), false) {
   for (Vec2 v : squares)
     table[v] = true;
+}
+
+void Location::setSurprise() {
+  surprise = true;
 }
 
 bool Location::isMarkedAsSurprise() const {
@@ -51,10 +55,6 @@ bool Location::isMarkedAsSurprise() const {
 
 const optional<string>& Location::getName() const {
   return name;
-}
-
-string Location::getDescription() const {
-  return *description;
 }
 
 vector<Position> Location::getAllSquares() const {
@@ -79,7 +79,7 @@ void Location::setBounds(Rectangle b) {
   for (Vec2 v : squares)
     table[v] = true;
   middle = b.middle();
-  bottomRight = b.getBottomRight();
+  bottomRight = b.bottomRight();
 }
 
 void Location::setLevel(Level* l) {

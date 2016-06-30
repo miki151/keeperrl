@@ -22,29 +22,33 @@
 #include "renderer.h"
 #include "map_memory.h"
 #include "view_index.h"
+#include "sdl.h"
 
 void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
-  mapBufferTex.update(mapBuffer);
-  renderer.drawImage(target, info.bounds, mapBufferTex);
-  Vec2 topLeft = target.getTopLeft();
-  double scale = min(double(target.getW()) / info.bounds.getW(),
-      double(target.getW()) / info.bounds.getH());
+  if (!mapBufferTex)
+    mapBufferTex.emplace(mapBuffer);
+  else
+    mapBufferTex->loadFrom(mapBuffer);
+  renderer.drawImage(target, info.bounds, *mapBufferTex);
+  Vec2 topLeft = target.topLeft();
+  double scale = min(double(target.width()) / info.bounds.width(),
+      double(target.width()) / info.bounds.height());
   for (Vec2 v : info.roads) {
     Vec2 rrad(1, 1);
-    Vec2 pos = topLeft + (v - info.bounds.getTopLeft()) * scale;
+    Vec2 pos = topLeft + (v - info.bounds.topLeft()) * scale;
     if (pos.inRectangle(target.minusMargin(rrad.x)))
       renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), colors[ColorId::BROWN]);
   }
   Vec2 rad(3, 3);
-  Vec2 player = topLeft + (info.player - info.bounds.getTopLeft()) * scale;
+  Vec2 player = topLeft + (info.player - info.bounds.topLeft()) * scale;
   if (player.inRectangle(target.minusMargin(rad.x)))
     renderer.drawFilledRectangle(Rectangle(player - rad, player + rad), colors[ColorId::BLUE]);
   for (Vec2 pos : info.enemies) {
-    Vec2 v = (pos - info.bounds.getTopLeft()) * scale;
+    Vec2 v = (pos - info.bounds.topLeft()) * scale;
     renderer.drawFilledRectangle(Rectangle(topLeft + v - rad, topLeft + v + rad), colors[ColorId::RED]);
   }
   for (auto loc : info.locations) {
-    Vec2 v = (loc.pos - info.bounds.getTopLeft()) * scale;
+    Vec2 v = (loc.pos - info.bounds.topLeft()) * scale;
     if (loc.text.empty())
       renderer.drawText(colors[ColorId::LIGHT_GREEN], topLeft.x + v.x + 5, topLeft.y + v.y, "?");
     else {
@@ -60,9 +64,8 @@ void MinimapGui::render(Renderer& r) {
   renderMap(r, getBounds());
 }
 
-MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
-  mapBuffer.create(Level::getMaxBounds().getW(), Level::getMaxBounds().getH());
-  mapBufferTex.loadFromImage(mapBuffer);
+MinimapGui::MinimapGui(Renderer& r, function<void()> f) : clickFun(f), renderer(r) {
+  mapBuffer = Renderer::createSurface(Level::getMaxBounds().width(), Level::getMaxBounds().height());
 }
 
 void MinimapGui::clear() {
@@ -84,13 +87,12 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
   info.locations.clear();
   const MapMemory& memory = creature->getMemory();
   if (currentLevel != level) {
-    mapBuffer.create(Level::getMaxBounds().getW(), Level::getMaxBounds().getH());
+    int col = SDL_MapRGBA(mapBuffer->format, 0, 0, 0, 1);
+    SDL_FillRect(mapBuffer, nullptr, col);
     info.roads.clear();
     for (Position v : level->getAllPositions()) {
-      if (!memory.getViewIndex(v))
-        mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, colors[ColorId::BLACK]);
-      else {
-        mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, Tile::getColor(v.getViewObject()));
+      if (memory.getViewIndex(v)) {
+        Renderer::putPixel(mapBuffer, v.getCoord(), Tile::getColor(v.getViewObject()));
         if (v.getViewObject().hasModifier(ViewObject::Modifier::ROAD))
           info.roads.insert(v.getCoord());
       }
@@ -98,8 +100,8 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
     currentLevel = level;
   }
   for (Position v : memory.getUpdated(level)) {
-    CHECK(v.getCoord().inRectangle(Vec2(mapBuffer.getSize().x, mapBuffer.getSize().y))) << v.getCoord();
-    mapBuffer.setPixel(v.getCoord().x, v.getCoord().y, Tile::getColor(v.getViewObject()));
+    CHECK(v.getCoord().inRectangle(Vec2(mapBuffer->w, mapBuffer->h))) << v.getCoord();
+    Renderer::putPixel(mapBuffer, v.getCoord(), Tile::getColor(v.getViewObject()));
     if (v.getViewObject().hasModifier(ViewObject::Modifier::ROAD))
       info.roads.insert(v.getCoord());
   }
@@ -132,18 +134,18 @@ static Vec2 embed(Vec2 levelSize, Vec2 screenSize) {
 void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Renderer& r,
     function<void(double, double)> clickFun) {
   const Level* level = creature->getLevel();
-  double scale = min(double(bounds.getW()) / level->getBounds().getW(),
-      double(bounds.getH()) / level->getBounds().getH());
+  double scale = min(double(bounds.width()) / level->getBounds().width(),
+      double(bounds.height()) / level->getBounds().height());
   while (1) {
     update(level, level->getBounds(), creature, true);
-    renderMap(r, Rectangle(Vec2(0, 0), embed(level->getBounds().getBottomRight(), bounds.getBottomRight())));
+    renderMap(r, Rectangle(Vec2(0, 0), embed(level->getBounds().bottomRight(), bounds.bottomRight())));
     r.drawAndClearBuffer();
     Event event;
     while (r.pollEvent(event)) {
-      if (event.type == Event::KeyPressed)
+      if (event.type == SDL::SDL_KEYDOWN)
         return;
-      if (event.type == Event::MouseButtonPressed) {
-        clickFun(double(event.mouseButton.x) / scale, double(event.mouseButton.y) / scale);
+      if (event.type == SDL::SDL_MOUSEBUTTONDOWN) {
+        clickFun(double(event.button.x) / scale, double(event.button.y) / scale);
         return;
       }
     }

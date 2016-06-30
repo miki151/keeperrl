@@ -18,7 +18,6 @@
 #include "view.h"
 #include "player_control.h"
 #include "collective.h"
-#include "pantheon.h"
 #include "technology.h"
 #include "creature_factory.h"
 #include "creature.h"
@@ -36,7 +35,7 @@ void advance(View* view, const Technology* tech) {
     text += "Requires: " + combine(prerequisites) + "\n";
   if (!allowed.empty())
     text += "Allows research: " + combine(allowed) + "\n";
-  vector<Spell*> spells = Collective::getSpellLearning(tech);
+  vector<Spell*> spells = Technology::getSpellLearning(tech->getId());
   if (!spells.empty())
     text += "Teaches spells: " + combine(spells) + "\n";
   const vector<PlayerControl::RoomInfo>& rooms = filter(PlayerControl::getRoomInfo(), 
@@ -102,47 +101,14 @@ void rooms(View* view, int lastInd = 0) {
 void tribes(View* view, int lastInd = 0) {
 }
 
-void epithet(View* view, const Epithet* epithet) {
-  view->presentText(epithet->getName(), epithet->getDescription());
-}
-
-void deity(View* view, const Deity* d, int lastInd = 0) {
-  vector<ListElem> options { {"Lives in " + d->getHabitatString() +
-      " and is the " + d->getGender().god() + " of:", ListElem::TITLE}};
-  for (EpithetId id : d->getEpithets())
-    options.push_back(Epithet::get(id)->getName());
-  auto index = view->chooseFromList(d->getName(), options, lastInd);
-  if (!index)
-    return;
-  epithet(view, Epithet::get(d->getEpithets()[*index]));
-  deity(view, d, *index);
-}
-
-void Encyclopedia::deity(View* view, const Deity* d) {
-  ::deity(view, d);
-}
-
-void deities(View* view, int lastInd = 0) {
-  vector<ListElem> options;
-  for (Deity* deity : Deity::getDeities())
-    options.push_back(deity->getName());
-  auto index = view->chooseFromList("Deities", options, lastInd);
-  if (!index)
-    return;
-  deity(view, Deity::getDeities()[*index]);
-  deities(view, *index);
-}
-
 void Encyclopedia::present(View* view, int lastInd) {
-  auto index = view->chooseFromList("Choose topic:",
-      {"Advances", /*"Workshop",*/ "Deities", "Skills"}, lastInd);
+  auto index = view->chooseFromList("Choose topic:", {"Advances", "Skills"}, lastInd);
   if (!index)
     return;
   switch (*index) {
     case 0: advances(view); break;
 //    case 1: workshop(view); break;
-    case 1: deities(view); break;
-    case 2: skills(view); break;
+    case 1: skills(view); break;
     default: FAIL << "wfepok";
   }
   present(view, *index);
