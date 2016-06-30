@@ -4,7 +4,7 @@
 
 template<typename Listener>
 EventGenerator<Listener>::~EventGenerator<Listener>() {
-  for (Listener* l : listeners)
+  for (Listener* l : copyOf(listeners))
     l->unsubscribe();
 }
 
