@@ -245,6 +245,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
   Table<SiteInfo> terrain = getTerrain(random, size, numBlocked);
   string worldName = NameGenerator::get(NameGeneratorId::WORLD)->getNext();
   options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+  options->setDefaultString(OptionId::ADVENTURER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
   while (1) {
     //options->setLimits(OptionId::RETIRED_VILLAINS, 0, min<int>(retired.size(), 4)); 
 #ifdef RELEASE
