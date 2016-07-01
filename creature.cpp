@@ -1063,24 +1063,21 @@ bool Creature::takeDamage(const Attack& attack) {
     Debug() << getName().the() << " attacked by " << attacker->getName().the()
       << " damage " << attack.getStrength() << " defense " << defense;
     lastAttacker = attack.getAttacker();
-    double dam = (defense == 0) ? 1 : double(attack.getStrength() - defense) / defense;
-    if (attributes->getBody().takeDamage(attack, this, dam))
-      return true;
-  }
-  if (isAffected(LastingEffect::MAGIC_SHIELD)) {
-    attributes->shortenEffect(LastingEffect::MAGIC_SHIELD, 5);
-    globalMessage("The magic shield absorbs the attack", "");
   }
   if (auto sound = attributes->getAttackSound(attack.getType(), attack.getStrength() > defense))
     addSound(*sound);
   if (attack.getStrength() > defense) {
+    double dam = (defense == 0) ? 1 : double(attack.getStrength() - defense) / defense;
+    if (attributes->getBody().takeDamage(attack, this, dam))
+      return true;
   } else {
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attackType));
     if (attack.getEffect())
       Effect::applyToCreature(this, *attack.getEffect(), EffectStrength::NORMAL);
   }
-  if (isAffected(LastingEffect::SLEEP))
-    removeEffect(LastingEffect::SLEEP);
+  for (LastingEffect effect : ENUM_ALL(LastingEffect))
+    if (isAffected(effect))
+      LastingEffects::onCreatureDamage(this, effect);
   return false;
 }
 

@@ -216,3 +216,18 @@ const char* LastingEffects::getBadAdjective(LastingEffect effect) {
     default: return nullptr;
   }
 }
+
+void LastingEffects::onCreatureDamage(Creature* c, LastingEffect e) {
+  switch (e) {
+    case LastingEffect::SLEEP:
+      c->removeEffect(e);
+      break;
+    case LastingEffect::MAGIC_SHIELD:
+      c->getAttributes().shortenEffect(LastingEffect::MAGIC_SHIELD, 5);
+      c->globalMessage("The magic shield absorbs the attack", "");
+      break;
+    default: break;
+  }
+}
+
+
