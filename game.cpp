@@ -74,7 +74,7 @@ Game::Game(const string& world, const string& player, Table<PModel>&& m, Vec2 ba
       m->setGame(this);
       m->updateSunlightMovement();
     }
-  turnEvents = {0, 500};
+  turnEvents = {0, 10, 50, 100, 300, 500};
   for (int i : Range(200))
     turnEvents.insert(1000 * (i + 1));
 }

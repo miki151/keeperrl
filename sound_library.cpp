@@ -4,7 +4,7 @@
 #include "sound.h"
 #include "options.h"
 
-#include <cAudio.h>
+#include <cAudio/cAudio.h>
 
 SoundLibrary::SoundLibrary(Options* options, cAudio::IAudioManager* audio, const string& path) : cAudio(audio) {
 #ifdef DISABLE_SFX

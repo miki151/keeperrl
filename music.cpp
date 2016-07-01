@@ -17,7 +17,7 @@
 #include "music.h"
 #include "options.h"
 
-#include <cAudio.h>
+#include <cAudio/cAudio.h>
 
 Jukebox::Jukebox(Options* options, cAudio::IAudioManager* audio, vector<pair<MusicType, string>> tracks,
     float maxVol, map<MusicType, float> maxV)

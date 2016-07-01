@@ -24,7 +24,7 @@
 
 class PlayerMessage;
 
-#undef TECHNOLOGY;
+#undef TECHNOLOGY
 
 enum class UserInputId {
 // common
