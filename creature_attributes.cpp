@@ -27,6 +27,8 @@
 
 CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
   fun(*this);
+  for (LastingEffect effect : ENUM_ALL(LastingEffect))
+    lastingEffects[effect] = -500;
 }
 
 CreatureAttributes::~CreatureAttributes() {}
