@@ -413,6 +413,8 @@ void Renderer::putPixel(SDL::SDL_Surface* surface, Vec2 pos, Color color) {
 
 void Renderer::setFullscreen(bool v) {
   fullscreen = v;
+  CHECK(SDL::SDL_SetWindowFullscreen(window, v ? SDL::SDL_WINDOW_FULLSCREEN_DESKTOP : 0) == 0) << SDL::SDL_GetError();
+  initOpenGL();
 }
 
 void Renderer::setFullscreenMode(int v) {
@@ -474,7 +476,7 @@ Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : 
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MINOR_VERSION, 1 );
-  CHECK(window = SDL::SDL_CreateWindow("KeeperRL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720,
+  CHECK(window = SDL::SDL_CreateWindow("KeeperRL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1200, 720,
     SDL::SDL_WINDOW_RESIZABLE | SDL::SDL_WINDOW_SHOWN | SDL::SDL_WINDOW_MAXIMIZED | SDL::SDL_WINDOW_OPENGL)) << SDL::SDL_GetError();
   CHECK(SDL::SDL_GL_CreateContext(window)) << SDL::SDL_GetError();
   SDL_GetWindowSize(window, &width, &height);

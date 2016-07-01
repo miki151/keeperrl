@@ -6,14 +6,14 @@ namespace SDL {
 #include <SDL_opengl.h>
 #include <SDL_image.h>
 #else
-#include <SDL/SDL.h>
-#include <SDL/SDL_opengl.h>
-#include <SDL/SDL_image.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
+#include <SDL2/SDL_image.h>
 #endif
 }
 
-#undef TECHNOLOGY;
-#undef TRANSPARENT;
+#undef TECHNOLOGY
+#undef TRANSPARENT
 
 using SDL::Uint8;
 

@@ -57,7 +57,7 @@
 
 #endif
 
-#include <cAudio.h>
+#include <cAudio/cAudio.h>
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -270,7 +270,7 @@ static options_description getOptions() {
 #undef main
 
 #ifndef VSTUDIO
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 int main(int argc, char* argv[]) {
   StackPrinter::initialize(argv[0], time(0));
@@ -413,8 +413,8 @@ static int keeperMain(const variables_map& vars) {
     runGame(game, render, useSingleThread);
   } catch (GameExitException ex) {
   }
-  //jukebox.toggle(false);
-  //cAudio::destroyAudioManager(cAudio);
+  jukebox.toggle(false);
+  cAudio::destroyAudioManager(cAudio);
   return 0;
 }
 
