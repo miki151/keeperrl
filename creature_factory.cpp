@@ -1186,7 +1186,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::RITUAL, 1);
           c.spawnType = SpawnType::DEMON;
           c.skills.insert(SkillId::CONSUMPTION);
-          c.name = "doppleganger";
+          c.name = "doppelganger";
           );
     case CreatureId::WITCH: 
       return CATTR(
