@@ -19,7 +19,12 @@ class Technology;
 class EventListener;
 class GameEvent;
 
-enum class GameSaveType { ADVENTURER, KEEPER, RETIRED_SINGLE, RETIRED_SITE, AUTOSAVE };
+RICH_ENUM(GameSaveType,
+    ADVENTURER,
+    KEEPER,
+    RETIRED_SINGLE,
+    RETIRED_SITE,
+    AUTOSAVE);
 
 class Game {
   public:
