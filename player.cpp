@@ -545,8 +545,8 @@ void Player::makeMove() {
     MEASURE(
         getView()->updateView(this, false),
         "level render time");
-  } else
-    getView()->refreshView();
+  } 
+  getView()->refreshView();
   if (displayTravelInfo && getCreature()->getPosition().getName() == "road" 
       && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
