@@ -721,7 +721,7 @@ int simulAttackPen(int attackers) {
 }
 
 int Creature::getAttr(AttrType type) const {
-  int def = attributes->getRawAttr(type);
+  int def = getBody().modifyAttr(type, attributes->getRawAttr(type));
   for (Item* item : equipment->getItems())
     if (equipment->isEquiped(item))
       def += CHECK_RANGE(item->getAttr(type), -10000000, 10000000, getName().bare());
