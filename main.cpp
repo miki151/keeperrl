@@ -339,7 +339,7 @@ static int keeperMain(const variables_map& vars) {
   if (vars.count("upload_url"))
     uploadUrl = vars["upload_url"].as<string>();
   else
-    uploadUrl = "http://keeperrl.com/retired/" + serverVersion;
+    uploadUrl = "http://keeperrl.com/~retired/" + serverVersion;
   makeDir(userPath);
   string overrideSettings;
   if (vars.count("override_settings"))
