@@ -18,26 +18,28 @@
 
 #include "util.h"
 #include "entity_set.h"
+#include "entity_map.h"
 
 class Creature;
 
 class TimeQueue {
   public:
+  TimeQueue();
   Creature* getNextCreature();
   vector<Creature*> getAllCreatures() const;
-  void addCreature(PCreature);
+  void addCreature(PCreature, double time);
   PCreature removeCreature(Creature*);
-  void beforeUpdateTime(Creature*);
-  void afterUpdateTime(Creature*);
+  double getTime(const Creature*);
+  void increaseTime(Creature*, double diff);
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
   typedef set<Creature*, function<bool(const Creature*, const Creature*)>> Queue;
-  Queue& getQueue();
   vector<PCreature> SERIAL(creatures);
-  optional<Queue> queue;
+  Queue SERIAL(queue);
+  EntityMap<Creature, double> SERIAL(timeMap);
 };
 
 #endif

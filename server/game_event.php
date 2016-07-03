@@ -62,5 +62,5 @@ if ($eventType == "campaignStarted")
 if ($eventType == "singleStarted")
   addSingleStarted($_POST);
 
-$dbConn->close();
+$conn->close();
 ?>

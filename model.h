@@ -58,7 +58,9 @@ class Model {
 
   bool isTurnBased();
 
-  double getTime() const;
+  double getLocalTime() const;
+  void increaseLocalTime(Creature*, double diff);
+  double getLocalTime(const Creature*);
 
   void setGame(Game*);
   Game* getGame() const;
@@ -86,9 +88,6 @@ class Model {
 
   void lockSerialization();
   void clearDeadCreatures();
-
-  void beforeUpdateTime(Creature*);
-  void afterUpdateTime(Creature*);
 
   void addEvent(const GameEvent&);
 

@@ -55,7 +55,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
   serializeAll(ar, credit, level, minionPayment, pregnancies, nextPayoutTime, minionAttraction, teams, name);
   serializeAll(ar, config, warnings, banished, squaresInUse, equipmentUpdates, deadCreatures, spawnGhosts);
-  serializeAll(ar, lastGuardian, villainType);
+  serializeAll(ar, lastGuardian, villainType, eventProxy);
 }
 
 SERIALIZABLE(Collective);
@@ -1393,7 +1393,7 @@ MoveInfo Collective::getAlarmMove(Creature* c) {
 }
 
 double Collective::getLocalTime() const {
-  return getLevel()->getModel()->getTime();
+  return getLevel()->getModel()->getLocalTime();
 }
 
 double Collective::getGlobalTime() const {

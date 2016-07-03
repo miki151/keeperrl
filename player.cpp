@@ -851,10 +851,12 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
 }
 
 void Player::onKilled(const Creature* attacker) {
+  eventProxy->unsubscribe();
   getView()->updateView(this, false);
   if (getView()->yesOrNoPrompt("Display message history?"))
     showHistory();
-  getGame()->gameOver(getCreature(), getCreature()->getKills().getSize(), "monsters", getCreature()->getPoints());
+  if (adventurer)
+    getGame()->gameOver(getCreature(), getCreature()->getKills().getSize(), "monsters", getCreature()->getPoints());
 }
 
 bool Player::unpossess() {

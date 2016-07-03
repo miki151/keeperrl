@@ -1369,13 +1369,6 @@ class MinionController : public Player {
   MinionController(Creature* c, Model* m, MapMemory* memory, PlayerControl* ctrl)
       : Player(c, m, false, memory), control(ctrl) {}
 
-  virtual void onKilled(const Creature* attacker) override {
-    getGame()->getView()->updateView(this, false);
-    if (getGame()->getView()->yesOrNoPrompt("Display message history?"))
-      showHistory();
-    //creature->popController(); this makes the controller crash if creature committed suicide
-  }
-
   virtual bool swapTeam() override {
     return control->swapTeam();
   }
@@ -1894,7 +1887,7 @@ void PlayerControl::tryLockingDoor(Position pos) {
 }
 
 double PlayerControl::getLocalTime() const {
-  return getModel()->getTime();
+  return getModel()->getLocalTime();
 }
 
 bool PlayerControl::isPlayerView() const {
