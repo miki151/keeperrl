@@ -57,7 +57,7 @@ const CreatureName& CreatureAttributes::getName() const {
 }
 
 double CreatureAttributes::getRawAttr(AttrType type) const {
-  return body->modifyAttr(type, attr[type] + attrIncrease[type]);
+  return attr[type] + attrIncrease[type];
 }
 
 void CreatureAttributes::setBaseAttr(AttrType type, int v) {

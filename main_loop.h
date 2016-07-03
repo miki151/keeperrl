@@ -57,13 +57,13 @@ class MainLoop {
   PModel keeperSingleMap(RandomGen& random);
   PModel quickGame(RandomGen& random);
   PGame adventurerGame();
-  PGame loadGame(string file, bool erase);
-  PGame loadPrevious(bool erase);
+  PGame loadGame(string file);
+  PGame loadPrevious();
   string getSavePath(PGame&, GameSaveType);
-  void eraseAutosave(PGame&);
+  void eraseSaveFile(PGame&, GameSaveType);
 
   bool downloadGame(const string& filename);
-  static bool eraseSave(Options* options);
+  static bool eraseSave();
   static vector<SaveFileInfo> getSaveFiles(const string& path, const string& suffix);
 
   View* view;

@@ -39,7 +39,7 @@ const Level* Spectator::getLevel() const {
 }
 
 double Spectator::getLocalTime() const {
-  return level->getModel()->getTime();
+  return level->getModel()->getLocalTime();
 }
 
 vector<Vec2> Spectator::getVisibleEnemies() const {

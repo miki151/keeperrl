@@ -82,6 +82,7 @@ void Model::updateSunlightMovement() {
 
 void Model::update(double totalTime) {
   if (Creature* creature = timeQueue->getNextCreature()) {
+    CHECK(!creature->isDead());
     currentTime = creature->getLocalTime();
     if (currentTime > totalTime)
       return;
@@ -115,10 +116,9 @@ void Model::tick(double time) {
 }
 
 void Model::addCreature(PCreature c, double delay) {
-  c->setLocalTime(getTime() + 1 + delay + Random.getDouble());
   if (c->isPlayer())
     game->setPlayer(c.get());
-  timeQueue->addCreature(std::move(c));
+  timeQueue->addCreature(std::move(c), getLocalTime() + 1 + delay + Random.getDouble());
 }
 
 Level* Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
@@ -146,8 +146,16 @@ void Model::clearDeadCreatures() {
 Model::~Model() {
 }
 
-double Model::getTime() const {
+double Model::getLocalTime() const {
   return currentTime;
+}
+
+void Model::increaseLocalTime(Creature* c, double diff) {
+  timeQueue->increaseTime(c, diff);
+}
+
+double Model::getLocalTime(const Creature* c) {
+  return timeQueue->getTime(c);
 }
 
 void Model::setGame(Game* g) {
@@ -233,14 +241,6 @@ bool Model::canTransferCreature(Creature* c, Vec2 travelDir) {
 
 vector<Creature*> Model::getAllCreatures() const { 
   return timeQueue->getAllCreatures();
-}
-
-void Model::beforeUpdateTime(Creature* c) {
-  timeQueue->beforeUpdateTime(c);
-}
-
-void Model::afterUpdateTime(Creature* c) {
-  timeQueue->afterUpdateTime(c);
 }
 
 void Model::landHeroPlayer(const string& advName, int handicap) {

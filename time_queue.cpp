@@ -21,33 +21,38 @@
 
 template <class Archive> 
 void TimeQueue::serialize(Archive& ar, const unsigned int version) { 
-  serializeAll(ar, creatures);
+  serializeAll(ar, creatures, timeMap, queue);
 }
 
 SERIALIZABLE(TimeQueue);
 
-void TimeQueue::addCreature(PCreature c) {
-  getQueue().insert(c.get());
+void TimeQueue::addCreature(PCreature c, double time) {
+  timeMap.set(c.get(), time);
+  queue.insert(c.get());
   creatures.push_back(std::move(c));
+}
+
+double TimeQueue::getTime(const Creature* c) {
+  return timeMap.getOrFail(c);
+}
+
+void TimeQueue::increaseTime(Creature* c, double diff) {
+  CHECK(queue.count(c));
+  queue.erase(c);
+  timeMap.getOrFail(c) += diff;
+  queue.insert(c);
 }
 
 // Queue is initialized in a lazy manner because during deserialization the comparator doesn't 
 // work, as the Creatures are still being deserialized.
-TimeQueue::Queue& TimeQueue::getQueue() {
-  if (!queue) {
-    queue.emplace([](const Creature* c1, const Creature* c2) {
-        return c1->getLocalTime() < c2->getLocalTime() ||
-          (c1->getLocalTime() == c2->getLocalTime() && c1->getUniqueId() > c2->getUniqueId());});
-    for (PCreature& c : creatures)
-      queue->insert(c.get());
-  }
-  return *queue;
-}
+TimeQueue::TimeQueue() : queue([this](const Creature* c1, const Creature* c2) {
+        return make_tuple(timeMap.getOrFail(c1), c1->getUniqueId()) <
+            make_tuple(timeMap.getOrFail(c2), c2->getUniqueId()); }) {}
   
 PCreature TimeQueue::removeCreature(Creature* cRef) {
   for (int i : All(creatures))
     if (creatures[i].get() == cRef) {
-      getQueue().erase(cRef);
+      queue.erase(cRef);
       PCreature ret = std::move(creatures[i]);
       creatures.erase(creatures.begin() + i);
       return ret;
@@ -64,14 +69,6 @@ Creature* TimeQueue::getNextCreature() {
   if (creatures.empty())
     return nullptr;
   else
-    return *getQueue().begin();
-}
-
-void TimeQueue::beforeUpdateTime(Creature* c) {
-  getQueue().erase(c);
-}
-
-void TimeQueue::afterUpdateTime(Creature* c) {
-  getQueue().insert(c);
+    return *queue.begin();
 }
 

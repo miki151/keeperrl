@@ -63,7 +63,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void makeMove();
   double getLocalTime() const;
   double getGlobalTime() const;
-  void setLocalTime(double t);
   Level* getLevel() const;
   Game* getGame() const;
   vector<Creature*> getVisibleEnemies() const;
@@ -275,7 +274,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
-  double SERIAL(localTime) = 1;
   HeapAllocated<Equipment> SERIAL(equipment);
   unique_ptr<LevelShortestPath> SERIAL(shortestPath);
   EntitySet<Creature> SERIAL(knownHiding);

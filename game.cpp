@@ -210,7 +210,7 @@ optional<Game::ExitInfo> Game::update(double timeDiff) {
   // Give every model a couple of turns so that things like shopkeepers can initialize.
   for (Vec2 v : models.getBounds())
     if (models[v] && !localTime.count(models[v].get())) {
-      localTime[models[v].get()] = models[v]->getTime() + 2;
+      localTime[models[v].get()] = models[v]->getLocalTime() + 2;
       updateModel(models[v].get(), localTime[models[v].get()]);
     }
   localTime[currentModel] += timeDiff;
@@ -251,7 +251,7 @@ optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
           return exitInfo;
       }
     }
-    if (model->getTime() >= totalTime)
+    if (model->getLocalTime() >= totalTime)
       return none;
     model->update(totalTime);
     if (exitInfo)

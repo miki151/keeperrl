@@ -55,7 +55,7 @@ SERIALIZABLE(Creature::MoraleOverride);
 template <class Archive> 
 void Creature::serialize(Archive& ar, const unsigned int version) { 
   ar & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
-  serializeAll(ar, attributes, position, localTime, equipment, shortestPath, knownHiding, tribe, morale);
+  serializeAll(ar, attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
   serializeAll(ar, deathTime, hidden, lastAttacker, deathReason, swapPositionCooldown);
   serializeAll(ar, unknownAttackers, privateEnemies, holding, controller, controllerStack, creatureVisions, kills);
   serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverride);
@@ -219,13 +219,9 @@ const EntitySet<Creature>& Creature::getKills() const {
 }
 
 void Creature::spendTime(double t) {
-  Model* m = position.getModel();
-  if (m)
-    m->beforeUpdateTime(this);
-  localTime += 100.0 * t / (double) getAttr(AttrType::SPEED);
-  if (m)
-    m->afterUpdateTime(this);
-  hidden = false;
+  if (!isDead())
+    if (Model* m = position.getModel())
+      m->increaseLocalTime(this, 100.0 * t / (double) getAttr(AttrType::SPEED));
 }
 
 CreatureAction Creature::forceMove(Vec2 dir) const {
@@ -725,7 +721,7 @@ int simulAttackPen(int attackers) {
 }
 
 int Creature::getAttr(AttrType type) const {
-  int def = attributes->getRawAttr(type);
+  int def = getBody().modifyAttr(type, attributes->getRawAttr(type));
   for (Item* item : equipment->getItems())
     if (equipment->isEquiped(item))
       def += CHECK_RANGE(item->getAttr(type), -10000000, 10000000, getName().bare());
@@ -864,7 +860,10 @@ void Creature::setPosition(Position pos) {
 }
 
 double Creature::getLocalTime() const {
-  return localTime;
+  if (Model* m = position.getModel())
+    return m->getLocalTime(this);
+  else
+    return 0;
 }
 
 double Creature::getGlobalTime() const {
@@ -872,16 +871,6 @@ double Creature::getGlobalTime() const {
     return g->getGlobalTime();
   else
     return 1;
-}
-
-void Creature::setLocalTime(double t) {
-  Model* m = position.getModel();
-  if (m)
-    m->beforeUpdateTime(this);
-  localTime = t;
-  if (m)
-    m->afterUpdateTime(this);
-  modViewObject().clearMovementInfo();
 }
 
 void Creature::tick() {
