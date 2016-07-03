@@ -1472,7 +1472,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::CREATE_TEAM:
         if (Creature* c = getCreature(input.get<Creature::Id>()))
-          if (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader())
+          if (getCollective()->hasTrait(c, MinionTrait::FIGHTER) || c == getCollective()->getLeader())
             getTeams().create({c});
         break;
     case UserInputId::CREATE_TEAM_FROM_GROUP:
@@ -1480,7 +1480,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           vector<Creature*> group = getMinionsLike(creature);
           optional<TeamId> team;
           for (Creature* c : group)
-            if (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader()) {
+            if (getCollective()->hasTrait(c, MinionTrait::FIGHTER) || c == getCollective()->getLeader()) {
               if (!team)
                 team = getTeams().create({c});
               else
@@ -1618,7 +1618,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           vector<Creature*> group = getMinionsLike(creature);
           for (Creature* c : group)
             if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) &&
-                (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader()))
+                (getCollective()->hasTrait(c, MinionTrait::FIGHTER) || c == getCollective()->getLeader()))
               getTeams().add(info.team, c);
         }
         break; }
@@ -1626,7 +1626,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         auto info = input.get<TeamCreatureInfo>();
         if (Creature* c = getCreature(info.creatureId))
           if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) &&
-              (getCollective()->hasTrait(c, {MinionTrait::FIGHTER}) || c == getCollective()->getLeader()))
+              (getCollective()->hasTrait(c, MinionTrait::FIGHTER) || c == getCollective()->getLeader()))
             getTeams().add(info.team, c);
         break; }
     case UserInputId::REMOVE_FROM_TEAM: {
