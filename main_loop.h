@@ -63,7 +63,7 @@ class MainLoop {
   void eraseSaveFile(PGame&, GameSaveType);
 
   bool downloadGame(const string& filename);
-  static bool eraseSave();
+  bool eraseSave();
   static vector<SaveFileInfo> getSaveFiles(const string& path, const string& suffix);
 
   View* view;
