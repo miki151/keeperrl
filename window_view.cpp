@@ -588,8 +588,8 @@ void WindowView::refreshView() {
     return;
   {
     RenderLock lock(renderMutex);
-    if (!wasRendered && gameReady)
-      rebuildGui();
+/*    if (!wasRendered && gameReady)
+      rebuildGui();*/
     wasRendered = true;
     CHECK(currentThreadId() == renderThreadId);
     if (gameReady || !blockingElems.empty())
