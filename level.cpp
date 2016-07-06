@@ -114,8 +114,10 @@ void Level::addLightSource(Vec2 pos, double radius, int numLight) {
   if (radius > 0) {
     for (Vec2 v : getVisibleTilesNoDarkness(pos, VisionId::NORMAL)) {
       double dist = (v - pos).lengthD();
-      if (dist <= radius)
+      if (dist <= radius) {
         lightAmount[v] += min(1.0, 1 - (dist) / radius) * numLight;
+        setNeedsRenderUpdate(pos, true);
+      }
     }
   }
 }
@@ -126,7 +128,7 @@ void Level::addDarknessSource(Vec2 pos, double radius, int numDarkness) {
       double dist = (v - pos).lengthD();
       if (dist <= radius) {
         lightCapAmount[v] -= min(1.0, 1 - (dist) / radius) * numDarkness;
-      //  squares.getSquare(v)->setCovered(true);
+        setNeedsRenderUpdate(pos, true);
       }
       updateConnectivity(v);
     }

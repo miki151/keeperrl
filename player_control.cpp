@@ -1684,6 +1684,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           }
         break; }
     case UserInputId::RECT_SELECTION:
+        updateSelectionSquares();
         if (rectSelection) {
           rectSelection->corner2 = input.get<Vec2>();
         } else
@@ -1691,6 +1692,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         updateSelectionSquares();
         break;
     case UserInputId::RECT_DESELECTION:
+        updateSelectionSquares();
         if (rectSelection) {
           rectSelection->corner2 = input.get<Vec2>();
         } else
