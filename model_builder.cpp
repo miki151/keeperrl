@@ -339,6 +339,10 @@ static string getBoardText(const string& keeperName, const string& dukeName) {
 }
 
 PModel ModelBuilder::singleMapModel(const string& worldName) {
+  return tryBuilding(10, [&] { return trySingleMapModel(worldName);});
+}
+
+PModel ModelBuilder::trySingleMapModel(const string& worldName) {
   vector<EnemyInfo> enemies;
   for (int i : Range(random.get(5, 9)))
     enemies.push_back(enemyFactory->get(EnemyId::HUMAN_COTTAGE));
@@ -346,7 +350,6 @@ PModel ModelBuilder::singleMapModel(const string& worldName) {
     enemies.push_back(enemyFactory->get(EnemyId::KOBOLD_CAVE));
   for (int i : Range(random.get(1, 3)))
     enemies.push_back(enemyFactory->get(EnemyId::BANDITS).setSurprise());
-  enemies.push_back(enemyFactory->get(EnemyId::SOKOBAN).setSurprise());
   enemies.push_back(enemyFactory->get(random.choose(EnemyId::GNOMES, EnemyId::DARK_ELVES)).setSurprise());
   append(enemies, enemyFactory->getVaults());
   if (random.roll(4))
@@ -373,7 +376,7 @@ PModel ModelBuilder::singleMapModel(const string& worldName) {
         EnemyId::WITCH,
         EnemyId::CEMETERY}))
     enemies.push_back(enemyFactory->get(enemy));
-  return tryBuilding(10, [&] { return tryModel(360, worldName, enemies, true, BiomeId::GRASSLAND);});
+  return tryModel(360, worldName, enemies, true, BiomeId::GRASSLAND);
 }
 
 void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId) {
@@ -475,11 +478,12 @@ PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, 
 }
 
 void ModelBuilder::measureSiteGen(int numTries) {
-  for (EnemyId id : {EnemyId::SOKOBAN}) {
+  measureModelGen(numTries, [this] { trySingleMapModel("pok"); });
+/*  for (EnemyId id : {EnemyId::SOKOBAN}) {
 //  for (EnemyId id : ENUM_ALL(EnemyId)) {
     std::cout << "Measuring " << EnumInfo<EnemyId>::getString(id) << std::endl;
     measureModelGen(numTries, [&] { tryCampaignSiteModel("", id, VillainType::LESSER); });
-  }
+  }*/
 }
 
 void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
@@ -504,8 +508,8 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
       std::cout.flush();
     }
   }
-  std::cout << numSuccess << " / " << numTries << " gens successful.\nMinT: " << minT << "\nMaxT: " << maxT <<
-      "\nAvgT: " << sumT / numSuccess << std::endl;
+  std::cout << std::endl << numSuccess << " / " << numTries << " gens successful.\nMinT: " <<
+    minT << "\nMaxT: " << maxT << "\nAvgT: " << sumT / numSuccess << std::endl;
 }
 
 void ModelBuilder::spawnKeeper(Model* m) {

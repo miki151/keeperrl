@@ -25,6 +25,7 @@ void ConstructionMap::removeSquare(Position pos) {
     --typeCounts[info.getSquareType()];
   squares.erase(pos);
   removeElement(squarePos, pos);
+  pos.setNeedsRenderUpdate(true);
 }
 
 void ConstructionMap::addSquare(Position pos, const ConstructionMap::SquareInfo& info) {
@@ -32,6 +33,7 @@ void ConstructionMap::addSquare(Position pos, const ConstructionMap::SquareInfo&
     squarePos.push_back(pos);
   squares[pos].push_back(info);
   ++typeCounts[info.getSquareType()];
+  pos.setNeedsRenderUpdate(true);
 }
 
 bool ConstructionMap::containsSquare(Position pos) const {
@@ -63,11 +65,13 @@ ConstructionMap::TrapInfo& ConstructionMap::getTrap(Position pos) {
 
 void ConstructionMap::removeTrap(Position pos) {
   traps.erase(pos);
+  pos.setNeedsRenderUpdate(true);
 }
 
 void ConstructionMap::addTrap(Position pos, const TrapInfo& info) {
   CHECK(!containsTrap(pos));
   traps.insert(make_pair(pos, info));
+  pos.setNeedsRenderUpdate(true);
 }
 
 bool ConstructionMap::containsTrap(Position pos) const {
@@ -188,11 +192,13 @@ ConstructionMap::TorchInfo& ConstructionMap::getTorch(Position pos) {
 
 void ConstructionMap::removeTorch(Position pos) {
   torches.erase(pos);
+  pos.setNeedsRenderUpdate(true);
 }
 
 void ConstructionMap::addTorch(Position pos, const TorchInfo& info) {
   CHECK(!containsTorch(pos));
   torches.insert(make_pair(pos, info));
+  pos.setNeedsRenderUpdate(true);
 }
 
 bool ConstructionMap::containsTorch(Position pos) const {

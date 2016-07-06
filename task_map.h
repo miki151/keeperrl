@@ -28,7 +28,6 @@ class TaskMap {
 
   Task* addTaskCost(PTask, Position, CostInfo);
   void markSquare(Position, HighlightType, PTask);
-  void unmarkSquare(Position);
   Task* getMarked(Position) const;
   HighlightType getHighlightType(Position) const;
   CostInfo removeTask(Task*);
@@ -40,8 +39,7 @@ class TaskMap {
   Task* getClosestTask(Creature* c, MinionTrait);
   const map<Task*, CostInfo>& getCompletionCosts() const;
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
+  SERIALIZATION_DECL(TaskMap);
 
   private:
   BiMap<const Creature*, Task*> SERIAL(creatureMap);

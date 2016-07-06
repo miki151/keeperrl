@@ -854,35 +854,42 @@ void MapGui::updateEnemyPositions(const vector<Vec2>& positions) {
     enemyPositions.setValue(v, true);
 }
 
-void MapGui::updateObjects(const CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui,
-    bool moral) {
-  const Level* level = view->getLevel();
+void MapGui::updateObject(Vec2 pos, CreatureView* view) {
+  Level* level = view->getLevel();
+  objects[pos].emplace();
+  view->getViewIndex(pos, *objects[pos]);
+  level->setNeedsRenderUpdate(pos, false);
+  if (objects[pos]->hasObject(ViewLayer::FLOOR) || objects[pos]->hasObject(ViewLayer::FLOOR_BACKGROUND))
+    objects[pos]->setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
+}
+
+void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui, bool moral) {
+  Level* level = view->getLevel();
   levelBounds = view->getLevel()->getBounds();
   updateEnemyPositions(view->getVisibleEnemies());
   mouseUI = ui;
   showMorale = moral;
   layout = mapLayout;
-  for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
-    objects[pos] = none;
   displayScrollHint = view->isPlayerView() && !lockedView;
-  if (currentLevel != level) {
+  if (view != previousView || level != previousLevel)
+    for (Vec2 pos : level->getBounds())
+      updateObject(pos, view);
+  else
+    for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
+      if (level->needsRenderUpdate(pos))
+        updateObject(pos, view);
+  previousView = view;
+  if (previousLevel != level) {
     screenMovement = none;
     clearCenter();
     setCenter(view->getPosition());
-    currentLevel = level;
+    previousLevel = level;
     mouseOffset = {0, 0};
   }
-  if (!isCentered() || (view->isPlayerView() && lockedView) || currentLevel != level) {
+  if (!isCentered() || (view->isPlayerView() && lockedView)) {
     setCenter(view->getPosition());
   }
   keyScrolling = !view->isPlayerView();
-  for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos())) 
-    if (level->inBounds(pos)) {
-      objects[pos].emplace();
-      view->getViewIndex(pos, *objects[pos]);
-      if (objects[pos]->hasObject(ViewLayer::FLOOR) || objects[pos]->hasObject(ViewLayer::FLOOR_BACKGROUND))
-        objects[pos]->setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
-    }
   currentTimeGame = smoothMovement ? view->getLocalTime() : 1000000000;
   if (smoothMovement) {
     if (auto movement = view->getMovementInfo()) {

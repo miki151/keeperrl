@@ -39,7 +39,7 @@ template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, squares, oldSquares, landingSquares, locations, tickingSquares, creatures, model, fieldOfView);
   serializeAll(ar, name, backgroundLevel, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
-  serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, squareMemoryDirty);
+  serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, memoryUpdates);
 }  
 
 SERIALIZABLE(Level);
@@ -50,7 +50,7 @@ Level::~Level() {}
 
 Level::Level(SquareArray s, Model* m, vector<Location*> l, const string& n,
     Table<double> sun, LevelId id) 
-    : squares(std::move(s)), oldSquares(squares.getBounds()), squareMemoryDirty(squares.getBounds(), true),
+    : squares(std::move(s)), oldSquares(squares.getBounds()), memoryUpdates(squares.getBounds(), true),
       locations(l), model(m), 
       name(n), sunlight(sun), bucketMap(squares.getBounds().width(), squares.getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares.getBounds(), 0), lightCapAmount(squares.getBounds(), 1),
@@ -621,12 +621,20 @@ int Level::getNumModifiedSquares() const {
   return squares.getNumModified();
 }
 
-void Level::setSquareMemoryDirty(Vec2 pos, bool dirty) {
-  squareMemoryDirty[pos] = dirty;
+void Level::setNeedsMemoryUpdate(Vec2 pos, bool s) {
+  memoryUpdates[pos] = s;
 }
 
-bool Level::isSquareMemoryDirty(Vec2 pos) const {
-  return squareMemoryDirty[pos];
+bool Level::needsRenderUpdate(Vec2 pos) const {
+  return renderUpdates[pos];
+}
+
+void Level::setNeedsRenderUpdate(Vec2 pos, bool s) {
+  renderUpdates[pos] = s;
+}
+
+bool Level::needsMemoryUpdate(Vec2 pos) const {
+  return memoryUpdates[pos];
 }
 
 bool Level::isUnavailable(Vec2 pos) const {

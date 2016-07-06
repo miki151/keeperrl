@@ -183,40 +183,48 @@ PGuiElem GuiBuilder::drawBuildings(CollectiveInfo& info) {
 }
 
 PGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
-  vector<PGuiElem> lines = drawButtons(info.libraryButtons, CollectiveTab::TECHNOLOGY);
-  for (int i : All(info.techButtons)) {
-    vector<PGuiElem> line;
-    line.push_back(gui.viewObject(info.techButtons[i].viewId));
-    line.push_back(gui.label(info.techButtons[i].name, colors[ColorId::WHITE], info.techButtons[i].hotkey));
-    lines.push_back(gui.stack(gui.buttonChar(
-          getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i)), info.techButtons[i].hotkey),
-          gui.horizontalList(std::move(line), 35)));
+  int hash = combineHash(info.techButtons, info.libraryButtons);
+  if (hash != technologyHash) {
+    technologyHash = hash;
+    vector<PGuiElem> lines = drawButtons(info.libraryButtons, CollectiveTab::TECHNOLOGY);
+    for (int i : All(info.techButtons)) {
+      vector<PGuiElem> line;
+      line.push_back(gui.viewObject(info.techButtons[i].viewId));
+      line.push_back(gui.label(info.techButtons[i].name, colors[ColorId::WHITE], info.techButtons[i].hotkey));
+      lines.push_back(gui.stack(gui.buttonChar(
+              getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i)), info.techButtons[i].hotkey),
+            gui.horizontalList(std::move(line), 35)));
+    }
+    technologyCache = gui.verticalList(std::move(lines), legendLineHeight);
   }
-  return gui.verticalList(std::move(lines), legendLineHeight);
+  return gui.external(technologyCache.get());
 }
 
 PGuiElem GuiBuilder::drawKeeperHelp() {
-  vector<string> helpText {
-    "use mouse to dig and build",
-    "shift selects rectangles",
-    "control deselects",
-    "",
-    "scroll with arrows",
-    "or right mouse button",
-    "shift with arrows scrolls faster",
-    "",
-    "right click on minion",
-    "to control or show information",
-    "",
-    "[space] pause",
-    "[a] and [z] or mouse wheel: zoom",
-    "press mouse wheel: level map",
-    "",
-    "follow the orange hints :-)"};
-  vector<PGuiElem> lines;
-  for (string line : helpText)
-    lines.push_back(gui.label(line, colors[ColorId::LIGHT_BLUE]));
-  return gui.verticalList(std::move(lines), legendLineHeight);
+  if (!keeperHelp) {
+    vector<string> helpText {
+      "use mouse to dig and build",
+        "shift selects rectangles",
+        "control deselects",
+        "",
+        "scroll with arrows",
+        "or right mouse button",
+        "shift with arrows scrolls faster",
+        "",
+        "right click on minion",
+        "to control or show information",
+        "",
+        "[space] pause",
+        "[a] and [z] or mouse wheel: zoom",
+        "press mouse wheel: level map",
+        "",
+        "follow the orange hints :-)"};
+    vector<PGuiElem> lines;
+    for (string line : helpText)
+      lines.push_back(gui.label(line, colors[ColorId::LIGHT_BLUE]));
+    keeperHelp = gui.verticalList(std::move(lines), legendLineHeight);
+  }
+  return gui.external(keeperHelp.get());
 }
 
 int GuiBuilder::FpsCounter::getSec() {
@@ -292,62 +300,67 @@ const char* GuiBuilder::getCurrentGameSpeedName() const {
 }
 
 PGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
-  CollectiveInfo& collectiveInfo = info.collectiveInfo;
-  VillageInfo& villageInfo = info.villageInfo;
-  vector<PGuiElem> buttons = makeVec<PGuiElem>(
-      gui.icon(gui.BUILDING),
-      gui.icon(gui.MINION),
-      gui.icon(gui.LIBRARY),
-      gui.stack(gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::YELLOW]),
-                    [=] { return numSeenVillains < villageInfo.villages.size();}),
-                gui.icon(gui.DIPLOMACY)),
-      gui.icon(gui.HELP)
-  );
-  for (int i : All(buttons)) {
-    buttons[i] = gui.stack(
-        gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
-          [this, i] { return int(collectiveTab) == i;}),
-        std::move(buttons[i]),
-        gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }));
-  }
-  if (!info.singleModel)
-    buttons.push_back(gui.stack(
+  int hash = combineHash(info.collectiveInfo, info.villageInfo, info.modifiedSquares, info.totalSquares);
+  if (hash != rightBandInfoHash) {
+    rightBandInfoHash = hash;
+    CollectiveInfo& collectiveInfo = info.collectiveInfo;
+    VillageInfo& villageInfo = info.villageInfo;
+    vector<PGuiElem> buttons = makeVec<PGuiElem>(
+        gui.icon(gui.BUILDING),
+        gui.icon(gui.MINION),
+        gui.icon(gui.LIBRARY),
+        gui.stack(gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::YELLOW]),
+                      [=] { return numSeenVillains < villageInfo.villages.size();}),
+                  gui.icon(gui.DIPLOMACY)),
+        gui.icon(gui.HELP)
+    );
+    for (int i : All(buttons)) {
+      buttons[i] = gui.stack(
           gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
-            [this] { return false;}),
-          gui.icon(gui.WORLD_MAP),
-          gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP))));
-  vector<pair<CollectiveTab, PGuiElem>> elems = makeVec<pair<CollectiveTab, PGuiElem>>(
-      make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo)),
-      make_pair(CollectiveTab::BUILDINGS, drawBuildings(collectiveInfo)),
-      make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp()),
-      make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(collectiveInfo)),
-      make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
-  vector<PGuiElem> tabs;
-  for (auto& elem : elems) {
-    auto tab = elem.first;
-    tabs.push_back(gui.conditional(std::move(elem.second), [tab, this] { return tab == collectiveTab;}));
+            [this, i] { return int(collectiveTab) == i;}),
+          std::move(buttons[i]),
+          gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }));
+    }
+    if (!info.singleModel)
+      buttons.push_back(gui.stack(
+            gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
+              [this] { return false;}),
+            gui.icon(gui.WORLD_MAP),
+            gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP))));
+    vector<pair<CollectiveTab, PGuiElem>> elems = makeVec<pair<CollectiveTab, PGuiElem>>(
+        make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo)),
+        make_pair(CollectiveTab::BUILDINGS, drawBuildings(collectiveInfo)),
+        make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp()),
+        make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(collectiveInfo)),
+        make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
+    vector<PGuiElem> tabs;
+    for (auto& elem : elems) {
+      auto tab = elem.first;
+      tabs.push_back(gui.conditional(std::move(elem.second), [tab, this] { return tab == collectiveTab;}));
+    }
+    PGuiElem main = gui.stack(std::move(tabs));
+    main = gui.margins(std::move(main), 15, 15, 15, 5);
+    int numButtons = buttons.size();
+    PGuiElem butGui = gui.margins(
+        gui.centerHoriz(gui.horizontalList(std::move(buttons), 50), numButtons * 50), 0, 5, 9, 5);
+    vector<PGuiElem> bottomLine;
+    bottomLine.push_back(gui.stack(
+        gui.horizontalList(makeVec<PGuiElem>(
+            gui.label("speed:"),
+            gui.labelFun([this] { return getCurrentGameSpeedName();},
+                [this] { return colors[clock->isPaused() ? ColorId::RED : ColorId::WHITE]; })), 60),
+        gui.button([&] { gameSpeedDialogOpen = !gameSpeedDialogOpen; })));
+    int modifiedSquares = info.modifiedSquares;
+    int totalSquares = info.totalSquares;
+    bottomLine.push_back(
+        gui.labelFun([=]()->string { return "FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()) + " SMOD " + toString(modifiedSquares) + "/" + toString(totalSquares); },
+        colors[ColorId::WHITE]));
+    PGuiElem bottomElem = gui.horizontalList(std::move(bottomLine), 160);
+    main = gui.margin(gui.margins(std::move(bottomElem), 25, 0, 0, 0),
+        std::move(main), 18, gui.BOTTOM);
+    rightBandInfoCache = gui.margin(std::move(butGui), std::move(main), 55, gui.TOP);
   }
-  PGuiElem main = gui.stack(std::move(tabs));
-  main = gui.margins(std::move(main), 15, 15, 15, 5);
-  int numButtons = buttons.size();
-  PGuiElem butGui = gui.margins(
-      gui.centerHoriz(gui.horizontalList(std::move(buttons), 50), numButtons * 50), 0, 5, 9, 5);
-  vector<PGuiElem> bottomLine;
-  bottomLine.push_back(gui.stack(
-      gui.horizontalList(makeVec<PGuiElem>(
-          gui.label("speed:"),
-          gui.labelFun([this] { return getCurrentGameSpeedName();},
-              [this] { return colors[clock->isPaused() ? ColorId::RED : ColorId::WHITE]; })), 60),
-      gui.button([&] { gameSpeedDialogOpen = !gameSpeedDialogOpen; })));
-  int modifiedSquares = info.modifiedSquares;
-  int totalSquares = info.totalSquares;
-  bottomLine.push_back(
-      gui.labelFun([=]()->string { return "FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()) + " SMOD " + toString(modifiedSquares) + "/" + toString(totalSquares); },
-      colors[ColorId::WHITE]));
-  PGuiElem bottomElem = gui.horizontalList(std::move(bottomLine), 160);
-  main = gui.margin(gui.margins(std::move(bottomElem), 25, 0, 0, 0),
-      std::move(main), 18, gui.BOTTOM);
-  return gui.margin(std::move(butGui), std::move(main), 55, gui.TOP);
+  return gui.external(rightBandInfoCache.get());
 }
 
 GuiBuilder::GameSpeed GuiBuilder::getGameSpeed() const {
@@ -372,34 +385,37 @@ static SDL_Keycode getHotkey(GuiBuilder::GameSpeed speed) {
 }
 
 void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
-  vector<PGuiElem> lines;
-  int keyMargin = 95;
-  lines.push_back(gui.stack(
-        gui.horizontalList(makeVec<PGuiElem>(
-            gui.label("pause"),
-            gui.label("[space]")), keyMargin),
-        gui.button([=] {
+  if (!speedDialog) {
+    vector<PGuiElem> lines;
+    int keyMargin = 95;
+    lines.push_back(gui.stack(
+          gui.horizontalList(makeVec<PGuiElem>(
+              gui.label("pause"),
+              gui.label("[space]")), keyMargin),
+          gui.button([=] {
             if (clock->isPaused())
-              clock->cont();
+            clock->cont();
             else
-              clock->pause();
+            clock->pause();
             gameSpeedDialogOpen = false;
             }, gui.getKey(SDL::SDLK_SPACE))));
-  for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
-    Color color = colors[speed == gameSpeed ? ColorId::GREEN : ColorId::WHITE];
-    lines.push_back(gui.stack(gui.horizontalList(makeVec<PGuiElem>(
-             gui.label(getGameSpeedName(speed), color),
-             gui.label("'" + string(1, getHotkeyChar(speed)) + "' ", color)), keyMargin),
-          gui.button([=] { gameSpeed = speed; gameSpeedDialogOpen = false; clock->cont();},
-            gui.getKey(getHotkey(speed)))));
+    for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
+      Color color = colors[speed == gameSpeed ? ColorId::GREEN : ColorId::WHITE];
+      lines.push_back(gui.stack(gui.horizontalList(makeVec<PGuiElem>(
+                gui.label(getGameSpeedName(speed), color),
+                gui.label("'" + string(1, getHotkeyChar(speed)) + "' ", color)), keyMargin),
+            gui.button([=] { gameSpeed = speed; gameSpeedDialogOpen = false; clock->cont();},
+              gui.getKey(getHotkey(speed)))));
+    }
+    reverse(lines.begin(), lines.end());
+    int margin = 20;
+    Vec2 size(150 + 2 * margin, legendLineHeight * lines.size() - 10 + 2 * margin);
+    PGuiElem dialog = gui.miniWindow(
+        gui.margins(gui.verticalList(std::move(lines), legendLineHeight), margin));
+    speedDialog = {gui.conditional(std::move(dialog), [this] { return gameSpeedDialogOpen; }), size,
+      OverlayInfo::GAME_SPEED};
   }
-  reverse(lines.begin(), lines.end());
-  int margin = 20;
-  Vec2 size(150 + 2 * margin, legendLineHeight * lines.size() - 10 + 2 * margin);
-  PGuiElem dialog = gui.miniWindow(
-      gui.margins(gui.verticalList(std::move(lines), legendLineHeight), margin));
-  overlays.push_back({gui.conditional(std::move(dialog), [this] { return gameSpeedDialogOpen; }), size,
-      OverlayInfo::GAME_SPEED});
+  overlays.push_back({gui.external(speedDialog->elem.get()), speedDialog->size, speedDialog->alignment});
 }
 
 PGuiElem GuiBuilder::getSunlightInfoGui(GameSunlightInfo& sunlightInfo) {
@@ -887,110 +903,110 @@ PGuiElem GuiBuilder::drawMinionAndLevel(ViewId viewId, int level, int iconMult) 
 }
 
 PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
-  int newHash = info.getHash();
-  if (newHash != teamHash) {
-    const int elemWidth = 30;
-    auto lines = gui.getListBuilder(legendLineHeight);
-    for (int i : All(info.teams)) {
-      auto& team = info.teams[i];
-      const int numPerLine = 8;
-      auto teamLine = gui.getListBuilder(legendLineHeight);
-      vector<PGuiElem> currentLine;
-      for (auto member : team.members) {
-        auto& memberInfo = *info.getMinion(member);
-        currentLine.push_back(drawMinionAndLevel(memberInfo.viewId, memberInfo.expLevel, 1));
-        if (currentLine.size() >= numPerLine)
-          teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
-      }
-      if (!currentLine.empty())
+  const int elemWidth = 30;
+  auto lines = gui.getListBuilder(legendLineHeight);
+  for (int i : All(info.teams)) {
+    auto& team = info.teams[i];
+    const int numPerLine = 8;
+    auto teamLine = gui.getListBuilder(legendLineHeight);
+    vector<PGuiElem> currentLine;
+    for (auto member : team.members) {
+      auto& memberInfo = *info.getMinion(member);
+      currentLine.push_back(drawMinionAndLevel(memberInfo.viewId, memberInfo.expLevel, 1));
+      if (currentLine.size() >= numPerLine)
         teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
-      lines.addElemAuto(gui.stack(makeVec<PGuiElem>(
-              gui.mouseOverAction([team, this] { mapGui->highlightTeam(team.members); },
-                [team, this] { mapGui->unhighlightTeam(team.members); }),
-              gui.button(getButtonCallback({UserInputId::SELECT_TEAM, team.id})),
-              gui.uiHighlightConditional([team] () { return team.highlight; }),
-              gui.uiHighlightMouseOver(),
-              gui.dragListener([this, team](DragContent content) {
-                  UserInputId id;
-                  switch (content.getId()) {
-                    case DragContentId::CREATURE: id = UserInputId::ADD_TO_TEAM; break;
-                    case DragContentId::CREATURE_GROUP: id = UserInputId::ADD_GROUP_TO_TEAM; break;
-                  }
-                  callbacks.input({id, TeamCreatureInfo{team.id, content.get<UniqueEntity<Creature>::Id>()}});}),
-              gui.getListBuilder(22)
-              .addElem(gui.topMargin(8, gui.icon(GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
-              .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
     }
-    string hint = "Drag and drop minions onto the [new team] button to create a new team. "
-      "You can drag them both from the map and the menus.";
-    lines.addElem(gui.stack(makeVec<PGuiElem>(
-          gui.dragListener([this](DragContent content) {
-              UserInputId id;
-              switch (content.getId()) {
-                case DragContentId::CREATURE: id = UserInputId::CREATE_TEAM; break;
-                case DragContentId::CREATURE_GROUP: id = UserInputId::CREATE_TEAM_FROM_GROUP; break;
-              }
-              callbacks.input({id, content.get<UniqueEntity<Creature>::Id>() });}),
-          gui.uiHighlightMouseOver(),
-          getHintCallback({hint}),
-          gui.button([this, hint] { callbacks.info(hint); }),
-          gui.label("[new team]", colors[ColorId::WHITE]))));
-    teamCache = lines.buildVerticalList();
-    teamHash = newHash;
+    if (!currentLine.empty())
+      teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
+    lines.addElemAuto(gui.stack(makeVec<PGuiElem>(
+            gui.mouseOverAction([team, this] { mapGui->highlightTeam(team.members); },
+              [team, this] { mapGui->unhighlightTeam(team.members); }),
+            gui.button(getButtonCallback({UserInputId::SELECT_TEAM, team.id})),
+            gui.uiHighlightConditional([team] () { return team.highlight; }),
+            gui.uiHighlightMouseOver(),
+            gui.dragListener([this, team](DragContent content) {
+                UserInputId id;
+                switch (content.getId()) {
+                  case DragContentId::CREATURE: id = UserInputId::ADD_TO_TEAM; break;
+                  case DragContentId::CREATURE_GROUP: id = UserInputId::ADD_GROUP_TO_TEAM; break;
+                }
+                callbacks.input({id, TeamCreatureInfo{team.id, content.get<UniqueEntity<Creature>::Id>()}});}),
+            gui.getListBuilder(22)
+            .addElem(gui.topMargin(8, gui.icon(GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
+            .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
   }
-  return gui.external(teamCache.get());
+  string hint = "Drag and drop minions onto the [new team] button to create a new team. "
+    "You can drag them both from the map and the menus.";
+  lines.addElem(gui.stack(makeVec<PGuiElem>(
+        gui.dragListener([this](DragContent content) {
+            UserInputId id;
+            switch (content.getId()) {
+              case DragContentId::CREATURE: id = UserInputId::CREATE_TEAM; break;
+              case DragContentId::CREATURE_GROUP: id = UserInputId::CREATE_TEAM_FROM_GROUP; break;
+            }
+            callbacks.input({id, content.get<UniqueEntity<Creature>::Id>() });}),
+        gui.uiHighlightMouseOver(),
+        getHintCallback({hint}),
+        gui.button([this, hint] { callbacks.info(hint); }),
+        gui.label("[new team]", colors[ColorId::WHITE]))));
+  return lines.buildVerticalList();
 }
 
 PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
-  auto list = gui.getListBuilder(legendLineHeight);
-  list.addElem(gui.label(info.monsterHeader, colors[ColorId::WHITE]));
-  for (int i : All(info.minionGroups)) {
-    auto& elem = info.minionGroups[i];
-    vector<PGuiElem> line;
-    vector<int> widths;
-    line.push_back(gui.viewObject(elem.viewId));
-    widths.push_back(40);
-    line.push_back(gui.label(toString(elem.count) + "   " + elem.name, colors[ColorId::WHITE]));
-    if (elem.highlight)
-      line.back() = gui.stack(gui.uiHighlight(), std::move(line.back()));
-    widths.push_back(200);
-    list.addElem(gui.leftMargin(20, gui.stack(
-        gui.button(getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, elem.creatureId})),
-        gui.dragSource({DragContentId::CREATURE_GROUP, elem.creatureId},
-            [=]{ return gui.getListBuilder(10)
-                .addElemAuto(gui.label(toString(elem.count) + " "))
-                .addElem(gui.viewObject(elem.viewId)).buildHorizontalList();}),
-        gui.horizontalList(std::move(line), widths))));
-  }
-  list.addElem(gui.label("Teams: ", colors[ColorId::WHITE]));
-  list.addElemAuto(drawTeams(info));
-  list.addSpace();
-  list.addElem(gui.stack(
-            gui.uiHighlightConditional([=] { return showTasks;}),
-            gui.label("Show tasks"),
-            gui.button([this] { closeOverlayWindows(); showTasks = !showTasks; })));
-  list.addElem(gui.stack(makeVec<PGuiElem>(
-            getHintCallback({"Morale affects minion's productivity and chances of fleeing from battle."}),
-            gui.uiHighlightConditional([=] { return morale;}),
-            gui.label("Show morale"),
-            gui.button([this] { morale = !morale; }))));
-  list.addElem(gui.stack(
-            gui.label("Show message history"),
-            gui.button(getButtonCallback(UserInputId::SHOW_HISTORY))));
-  list.addSpace();
-  if (!info.enemyGroups.empty()) {
-    list.addElem(gui.label("Enemies:", colors[ColorId::WHITE]));
-    for (auto& elem : info.enemyGroups){
+  int newHash = info.getHash();
+  if (newHash != minionsHash) {
+    minionsHash = newHash;
+    auto list = gui.getListBuilder(legendLineHeight);
+    list.addElem(gui.label(info.monsterHeader, colors[ColorId::WHITE]));
+    for (int i : All(info.minionGroups)) {
+      auto& elem = info.minionGroups[i];
       vector<PGuiElem> line;
+      vector<int> widths;
       line.push_back(gui.viewObject(elem.viewId));
+      widths.push_back(40);
       line.push_back(gui.label(toString(elem.count) + "   " + elem.name, colors[ColorId::WHITE]));
-      list.addElem(gui.stack(
-          gui.button(getButtonCallback({UserInputId::GO_TO_ENEMY, elem.creatureId})),
-          gui.uiHighlightMouseOver(),
-          gui.horizontalList(std::move(line), 20)));
+      if (elem.highlight)
+        line.back() = gui.stack(gui.uiHighlight(), std::move(line.back()));
+      widths.push_back(200);
+      list.addElem(gui.leftMargin(20, gui.stack(
+          gui.button(getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, elem.creatureId})),
+          gui.dragSource({DragContentId::CREATURE_GROUP, elem.creatureId},
+              [=]{ return gui.getListBuilder(10)
+                  .addElemAuto(gui.label(toString(elem.count) + " "))
+                  .addElem(gui.viewObject(elem.viewId)).buildHorizontalList();}),
+          gui.horizontalList(std::move(line), widths))));
     }
+    list.addElem(gui.label("Teams: ", colors[ColorId::WHITE]));
+    list.addElemAuto(drawTeams(info));
+    list.addSpace();
+    list.addElem(gui.stack(
+              gui.uiHighlightConditional([=] { return showTasks;}),
+              gui.label("Show tasks"),
+              gui.button([this] { closeOverlayWindows(); showTasks = !showTasks; })));
+    list.addElem(gui.stack(makeVec<PGuiElem>(
+              getHintCallback({"Morale affects minion's productivity and chances of fleeing from battle."}),
+              gui.uiHighlightConditional([=] { return morale;}),
+              gui.label("Show morale"),
+              gui.button([this] { morale = !morale; }))));
+    list.addElem(gui.stack(
+              gui.label("Show message history"),
+              gui.button(getButtonCallback(UserInputId::SHOW_HISTORY))));
+    list.addSpace();
+    if (!info.enemyGroups.empty()) {
+      list.addElem(gui.label("Enemies:", colors[ColorId::WHITE]));
+      for (auto& elem : info.enemyGroups){
+        vector<PGuiElem> line;
+        line.push_back(gui.viewObject(elem.viewId));
+        line.push_back(gui.label(toString(elem.count) + "   " + elem.name, colors[ColorId::WHITE]));
+        list.addElem(gui.stack(
+            gui.button(getButtonCallback({UserInputId::GO_TO_ENEMY, elem.creatureId})),
+            gui.uiHighlightMouseOver(),
+            gui.horizontalList(std::move(line), 20)));
+      }
+    }
+    minionsCache = gui.scrollable(list.buildVerticalList(), &minionsScroll, &scrollbarsHeld);
   }
-  return gui.scrollable(list.buildVerticalList(), &minionsScroll, &scrollbarsHeld);
+  return gui.external(minionsCache.get());
 }
 
 bool GuiBuilder::showMorale() const {
@@ -1095,36 +1111,43 @@ void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& in
 }
 
 void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
-  map<string, GuiFactory::ListBuilder> overlaysMap;
-  int margin = 20;
-  for (int i : All(info.buildings)) {
-    auto& elem = info.buildings[i];
-    if (!elem.groupName.empty()) {
-      if (!overlaysMap.count(elem.groupName))
-        overlaysMap.emplace(make_pair(elem.groupName, gui.getListBuilder(legendLineHeight)));
-      overlaysMap.at(elem.groupName).addElem(getButtonLine(elem, i, CollectiveTab::BUILDINGS));
-      ret.push_back({gui.conditional(
-          gui.miniWindow(gui.margins(getButtonLine(elem, i, CollectiveTab::BUILDINGS), margin)),
-          [i, this] { return getActiveButton(CollectiveTab::BUILDINGS) == i;}),
-          Vec2(300, legendLineHeight + 2 * margin), OverlayInfo::TOP_RIGHT});
+  int hash = combineHash(info.buildings);
+  if (buildingsOverlayHash != hash) {
+    buildingsOverlayHash = hash;
+    buildingsOverlayCache.clear();
+    map<string, GuiFactory::ListBuilder> overlaysMap;
+    int margin = 20;
+    for (int i : All(info.buildings)) {
+      auto& elem = info.buildings[i];
+      if (!elem.groupName.empty()) {
+        if (!overlaysMap.count(elem.groupName))
+          overlaysMap.emplace(make_pair(elem.groupName, gui.getListBuilder(legendLineHeight)));
+        overlaysMap.at(elem.groupName).addElem(getButtonLine(elem, i, CollectiveTab::BUILDINGS));
+        buildingsOverlayCache.push_back({gui.conditional(
+              gui.miniWindow(gui.margins(getButtonLine(elem, i, CollectiveTab::BUILDINGS), margin)),
+              [i, this] { return getActiveButton(CollectiveTab::BUILDINGS) == i;}),
+            Vec2(300, legendLineHeight + 2 * margin), OverlayInfo::TOP_RIGHT});
+      }
+    }
+    for (auto& elem : overlaysMap) {
+      auto& lines = elem.second;
+      lines.addElem(gui.stack(
+            gui.centeredLabel(Renderer::HOR, "[close]", colors[ColorId::LIGHT_BLUE]),
+            gui.button([=] { activeGroup = none;})), legendLineHeight);
+      int height = lines.getSize() - 8;
+      string groupName = elem.first;
+      buildingsOverlayCache.push_back({gui.conditionalStopKeys(
+            gui.miniWindow(gui.stack(
+                gui.keyHandler([=] { activeGroup = none; }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+                gui.margins(lines.buildVerticalList(), margin))),
+            [=] { return !info.ransom && collectiveTab == CollectiveTab::BUILDINGS &&
+            activeGroup == groupName;}),
+          Vec2(300 + 2 * margin, height + 2 * margin),
+          OverlayInfo::TOP_RIGHT});
     }
   }
-  for (auto& elem : overlaysMap) {
-    auto& lines = elem.second;
-    lines.addElem(gui.stack(
-        gui.centeredLabel(Renderer::HOR, "[close]", colors[ColorId::LIGHT_BLUE]),
-        gui.button([=] { activeGroup = none;})), legendLineHeight);
-    int height = lines.getSize() - 8;
-    string groupName = elem.first;
-    ret.push_back({gui.conditionalStopKeys(
-          gui.miniWindow(gui.stack(
-              gui.keyHandler([=] { activeGroup = none; }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
-              gui.margins(lines.buildVerticalList(), margin))),
-          [=] { return !info.ransom && collectiveTab == CollectiveTab::BUILDINGS &&
-                    activeGroup == groupName;}),
-      Vec2(300 + 2 * margin, height + 2 * margin),
-      OverlayInfo::TOP_RIGHT});
-  }
+  for (auto& elem : buildingsOverlayCache)
+    ret.push_back({gui.external(elem.elem.get()), elem.size, elem.alignment});
 }
 
 void GuiBuilder::drawBandOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {

@@ -6,11 +6,6 @@ $conn = getDBConn();
 
 function addDBEntry($filename, $displayname, $version) {
   global $conn;
-  // Check connection
-  if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-  } 
-
   $sql = $conn->prepare("INSERT INTO retired_games (filename, display_name, version) VALUES (?, ?, ?)");
   $sql->bind_param("ssi", $filename, $displayname, $version);
 

@@ -526,7 +526,7 @@ void WindowView::updateMinimap(const CreatureView* creature) {
   minimapGui->update(level, bounds, creature, true);
 }
 
-void WindowView::updateView(const CreatureView* view, bool noRefresh) {
+void WindowView::updateView(CreatureView* view, bool noRefresh) {
   if (!wasRendered && currentThreadId() != renderThreadId)
     return;
   GameInfo newInfo;
@@ -588,8 +588,8 @@ void WindowView::refreshView() {
     return;
   {
     RenderLock lock(renderMutex);
-    if (!wasRendered && gameReady)
-      rebuildGui();
+/*    if (!wasRendered && gameReady)
+      rebuildGui();*/
     wasRendered = true;
     CHECK(currentThreadId() == renderThreadId);
     if (gameReady || !blockingElems.empty())

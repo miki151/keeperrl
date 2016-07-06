@@ -393,12 +393,26 @@ void Position::setOnFire(double amount) {
 }
 
 bool Position::needsMemoryUpdate() const {
-  return isValid() && level->isSquareMemoryDirty(getCoord());
+  return isValid() && level->needsMemoryUpdate(getCoord());
 }
 
-void Position::setMemoryUpdated() {
+void Position::setNeedsMemoryUpdate(bool s) {
   if (isValid())
-    level->setSquareMemoryDirty(getCoord(), false);
+    level->setNeedsMemoryUpdate(getCoord(), s);
+}
+
+bool Position::needsRenderUpdate() const {
+  return isValid() && level->needsRenderUpdate(getCoord());
+}
+
+void Position::setNeedsRenderUpdate(bool s) {
+  if (isValid())
+    level->setNeedsRenderUpdate(getCoord(), s);
+}
+
+ViewObject& Position::modViewObject() {
+  CHECK(isValid());
+  return modSquare()->modViewObject();
 }
 
 const ViewObject& Position::getViewObject() const {

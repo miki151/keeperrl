@@ -273,6 +273,7 @@ static bool seeEverything = false;
 const int hintFrequency = 700;
 static vector<string> getHints() {
   return {
+    "Research geology to uncover ores in the mountain.",
     "Morale affects minion productivity and chances of fleeing from battle.",
  //   "You can turn these hints off in the settings (F2).",
     "Killing a leader greatly lowers the morale of his tribe and stops immigration.",
@@ -1301,13 +1302,6 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (!canSeePos)
     if (auto memIndex = getMemory().getViewIndex(position))
     index.mergeFromMemory(*memIndex);
-  if (getCollective()->getTerritory().contains(position)
-      && index.hasObject(ViewLayer::FLOOR_BACKGROUND)
-      && index.getObject(ViewLayer::FLOOR_BACKGROUND).id() == ViewId::FLOOR)
-    index.getObject(ViewLayer::FLOOR_BACKGROUND).setId(ViewId::KEEPER_FLOOR);
-  if (const Creature* c = position.getCreature())
-    if (!getTeams().getActiveNonPersistent(c).empty() && index.hasObject(ViewLayer::CREATURE))
-      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);
   if (getCollective()->isMarked(position))
     index.setHighlight(getCollective()->getMarkHighlight(position));
   if (getCollective()->hasPriorityTasks(position))
@@ -1694,12 +1688,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
           rectSelection->corner2 = input.get<Vec2>();
         } else
           rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = input.get<Vec2>(););
+        updateSelectionSquares();
         break;
     case UserInputId::RECT_DESELECTION:
         if (rectSelection) {
           rectSelection->corner2 = input.get<Vec2>();
         } else
           rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = input.get<Vec2>(); c.deselect = true;);
+        updateSelectionSquares();
         break;
     case UserInputId::BUILD:
         handleSelection(input.get<BuildingInfo>().pos,
@@ -1733,6 +1729,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
             handleSelection(v, getBuildInfo()[input.get<BuildingInfo>().building], true, rectSelection->deselect);
         }
+        updateSelectionSquares();
         rectSelection = none;
         selection = NONE;
         break;
@@ -1740,6 +1737,12 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::IDLE: break;
     default: break;
   }
+}
+
+void PlayerControl::updateSelectionSquares() {
+  if (rectSelection)
+    for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
+      Position(v, getLevel()).setNeedsRenderUpdate(true);
 }
 
 void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle, bool deselectOnly) {
@@ -1905,7 +1908,7 @@ Creature* PlayerControl::getKeeper() {
 void PlayerControl::addToMemory(Position pos) {
   if (!pos.needsMemoryUpdate())
     return;
-  pos.setMemoryUpdated();
+  pos.setNeedsMemoryUpdate(false);
   ViewIndex index;
   getSquareViewIndex(pos, true, index);
   memory->update(pos, index);
@@ -2060,7 +2063,7 @@ bool PlayerControl::canSee(Position pos) const {
   if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
     return true;
   if (visibilityMap->isVisible(pos))
-      return true;
+    return true;
   for (Position v : getCollective()->getSquares(SquareId::EYEBALL))
     if (pos.isSameLevel(v) && getLevel()->canSee(v.getCoord(), pos.getCoord(), VisionId::NORMAL))
       return true;
@@ -2085,11 +2088,7 @@ void PlayerControl::onMemberKilled(const Creature* victim, const Creature* kille
   }
 }
 
-const Level* PlayerControl::getLevel() const {
-  return getCollective()->getLevel();
-}
-
-Level* PlayerControl::getLevel() {
+Level* PlayerControl::getLevel() const {
   return getCollective()->getLevel();
 }
 
@@ -2127,6 +2126,7 @@ void PlayerControl::onConstructed(Position pos, const SquareType& type) {
       getCollective()->addKnownTile(v);
       updateSquareMemory(v);
     }
+    pos.modViewObject().setId(ViewId::KEEPER_FLOOR);
   }
 }
 

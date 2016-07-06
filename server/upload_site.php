@@ -1,18 +1,11 @@
 <?php
 
+include 'db.php';
+
+$conn = getDBConn();
+
 function addDBEntry($filename, $displayname, $version, $save_info) {
-  $servername = "localhost";
-  $username = "retired";
-  $password = "retired123";
-  $dbname = "retired";
-
-  // Create connection
-  $conn = new mysqli($servername, $username, $password, $dbname);
-  // Check connection
-  if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-  } 
-
+  global $conn;
   if (($sql = $conn->prepare("INSERT INTO retired_sites (filename, display_name, save_info, version) VALUES (?, ?, ?, ?)")) != TRUE) {
     echo "Error: " . $conn->error;
     return false;

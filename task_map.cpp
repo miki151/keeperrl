@@ -3,21 +3,9 @@
 #include "creature.h"
 #include "task.h"
 
-template <class Archive>
-void TaskMap::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(tasks)
-    & SVAR(positionMap)
-    & SVAR(reversePositions)
-    & SVAR(creatureMap)
-    & SVAR(marked)
-    & SVAR(completionCost)
-    & SVAR(priorityTasks)
-    & SVAR(delayedTasks)
-    & SVAR(highlight)
-    & SVAR(requiredTraits);
-}
+SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, creatureMap, marked, completionCost, priorityTasks, delayedTasks, highlight, requiredTraits);
 
-SERIALIZABLE(TaskMap);
+SERIALIZATION_CONSTRUCTOR_IMPL(TaskMap);
 
 Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
   if (Random.roll(20))
@@ -56,6 +44,7 @@ void TaskMap::freeTaskDelay(Task* t, double d) {
 void TaskMap::setPriorityTasks(Position pos) {
   for (Task* t : getTasks(pos))
     priorityTasks.insert(t);
+  pos.setNeedsRenderUpdate(true);
 }
 
 Task* TaskMap::addTaskCost(PTask task, Position position, CostInfo cost) {
@@ -71,8 +60,10 @@ CostInfo TaskMap::removeTask(Task* task) {
     cost = completionCost.at(task);
     completionCost.erase(task);
   }
-  if (auto pos = getPosition(task))
+  if (auto pos = getPosition(task)) {
     marked.set(*pos, nullptr);
+    pos->setNeedsRenderUpdate(true);
+  }
   for (int i : All(tasks))
     if (tasks[i].get() == task) {
       removeIndex(tasks, i);
@@ -114,18 +105,13 @@ Task* TaskMap::getMarked(Position pos) const {
 
 void TaskMap::markSquare(Position pos, HighlightType h, PTask task) {
   marked.set(pos, task.get());
+  pos.setNeedsRenderUpdate(true);
   highlight.set(pos, h);
   addTask(std::move(task), pos);
 }
 
 HighlightType TaskMap::getHighlightType(Position pos) const {
   return highlight.get(pos);
-}
-
-void TaskMap::unmarkSquare(Position pos) {
-  Task* task = marked.get(pos);
-  marked.set(pos, nullptr);
-  removeTask(task);
 }
 
 bool TaskMap::hasTask(const Creature* c) const {

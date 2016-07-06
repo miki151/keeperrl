@@ -179,7 +179,7 @@ class ReplayView : public View {
         delegate->continueClock();
     }
 
-    virtual void updateView(const CreatureView* creatureView, bool noRefresh) override {
+    virtual void updateView(CreatureView* creatureView, bool noRefresh) override {
       if (delegate)
         delegate->updateView(creatureView, noRefresh);
     }

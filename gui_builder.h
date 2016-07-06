@@ -136,6 +136,8 @@ class GuiBuilder {
   PGuiElem drawBuildings(CollectiveInfo&);
   PGuiElem buildingsCache;
   int buildingsHash = 0;
+  vector<OverlayInfo> buildingsOverlayCache;
+  int buildingsOverlayHash = 0;
   PGuiElem bottomBandCache;
   PGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
   PGuiElem minionButtonsCache;
@@ -165,8 +167,14 @@ class GuiBuilder {
   PGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
   PGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged);
   GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, bool active);
-  PGuiElem teamCache;
-  int teamHash = 0;
+  PGuiElem minionsCache;
+  int minionsHash = 0;
+  PGuiElem technologyCache;
+  int technologyHash = 0;
+  PGuiElem keeperHelp;
+  optional<OverlayInfo> speedDialog;
+  int rightBandInfoHash = 0;
+  PGuiElem rightBandInfoCache;
   optional<string> activeGroup;
   struct ActiveButton {
     CollectiveTab tab;
