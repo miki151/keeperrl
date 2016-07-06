@@ -211,9 +211,12 @@ class Level {
 
   const optional<ViewObject>& getBackgroundObject(Vec2) const;
   int getNumModifiedSquares() const;
-  void setSquareMemoryDirty(Vec2, bool dirty);
-  bool isSquareMemoryDirty(Vec2) const;
   bool isUnavailable(Vec2) const;
+
+  void setNeedsMemoryUpdate(Vec2, bool);
+  bool needsMemoryUpdate(Vec2) const;
+  bool needsRenderUpdate(Vec2) const;
+  void setNeedsRenderUpdate(Vec2, bool);
 
   LevelId getUniqueId() const;
 
@@ -229,7 +232,8 @@ class Level {
   SquareArray SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
   Table<optional<ViewObject>> SERIAL(background);
-  Table<bool> SERIAL(squareMemoryDirty);
+  Table<bool> SERIAL(memoryUpdates);
+  Table<bool> renderUpdates = Table<bool>(getMaxBounds(), true);
   Table<bool> SERIAL(unavailable);
   unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
   vector<Location*> SERIAL(locations);

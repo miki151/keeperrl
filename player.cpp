@@ -44,12 +44,13 @@
 #include "attack_level.h"
 #include "villain_type.h"
 #include "event_proxy.h"
+#include "visibility_map.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(Controller);
   serializeAll(ar, travelling, travelDir, target, lastLocation, displayGreeting, levelMemory, messages);
-  serializeAll(ar, messageHistory, adventurer, eventProxy);
+  serializeAll(ar, messageHistory, adventurer, eventProxy, visibilityMap);
 }
 
 SERIALIZABLE(Player);
@@ -58,6 +59,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
 Player::Player(Creature* c, Model* m, bool adv, MapMemory* memory) :
     Controller(c), levelMemory(memory), eventProxy(this, m), adventurer(adv), displayGreeting(adventurer) {
+  visibilityMap->update(c, c->getVisibleTiles());
 }
 
 Player::~Player() {
@@ -65,6 +67,10 @@ Player::~Player() {
 
 void Player::onEvent(const GameEvent& event) {
   switch (event.getId()) {
+    case EventId::MOVED: 
+      if (event.get<Creature*>() == getCreature())
+        visibilityMap->update(getCreature(), getCreature()->getVisibleTiles());
+      break;
     case EventId::ITEMS_THROWN: {
         auto info = event.get<EventInfo::ItemsThrown>();
         if (getCreature()->getPosition().isSameLevel(info.level))
@@ -797,7 +803,7 @@ void Player::you(MsgType type, const string& param) {
   privateMessage(msg);
 }
 
-const Level* Player::getLevel() const {
+Level* Player::getLevel() const {
   return getCreature()->getLevel();
 }
 

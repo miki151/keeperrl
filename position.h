@@ -87,9 +87,12 @@ class Position {
   bool construct(const SquareType&);
   bool isBurning() const;
   void setOnFire(double amount);
+  bool needsRenderUpdate() const;
+  void setNeedsRenderUpdate(bool);
   bool needsMemoryUpdate() const;
-  void setMemoryUpdated();
+  void setNeedsMemoryUpdate(bool);
   const ViewObject& getViewObject() const;
+  ViewObject& modViewObject();
   void forbidMovementForTribe(TribeId);
   void allowMovementForTribe(TribeId);
   bool isTribeForbidden(TribeId) const;

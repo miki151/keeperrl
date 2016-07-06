@@ -33,6 +33,7 @@ struct ItemInfo;
 class Game;
 template <typename T>
 class EventProxy;
+class VisibilityMap;
 
 class Player : public Controller, public CreatureView {
   public:
@@ -53,7 +54,7 @@ class Player : public Controller, public CreatureView {
   virtual void refreshGameInfo(GameInfo&) const override;
   virtual Vec2 getPosition() const override;
   virtual optional<MovementInfo> getMovementInfo() const override;
-  virtual const Level* getLevel() const override;
+  virtual Level* getLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getLocalTime() const override;
   virtual bool isPlayerView() const override;
@@ -136,6 +137,7 @@ class Player : public Controller, public CreatureView {
   };
   optional<TimePosInfo> currentTimePos;
   optional<TimePosInfo> previousTimePos;
+  HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
 };
 
 #endif

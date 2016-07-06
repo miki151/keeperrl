@@ -1366,6 +1366,7 @@ double Collective::getEfficiency(Position pos) const {
 const double sizeBase = 0.5;
 
 void Collective::updateEfficiency(Position pos, SquareType type) {
+  pos.setNeedsRenderUpdate(true);
   if (getSquares(type).count(pos)) {
     squareEfficiency[pos] = 0;
     for (Position v : pos.neighbors8())
@@ -1677,7 +1678,7 @@ void Collective::dig(Position pos) {
 }
 
 void Collective::cancelMarkedTask(Position pos) {
-  taskMap->unmarkSquare(pos);
+  taskMap->removeTask(taskMap->getMarked(pos));
 }
 
 bool Collective::isMarked(Position pos) const {
@@ -1767,8 +1768,8 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
   if (auto type = pos.getApplyType())
     mySquares2[*type].insert(pos);
   control->onConstructed(pos, type);
-  if (taskMap->getMarked(pos))
-    taskMap->unmarkSquare(pos);
+  if (Task* task = taskMap->getMarked(pos))
+    taskMap->removeTask(task);
 }
 
 bool Collective::tryLockingDoor(Position pos) {
@@ -1929,6 +1930,7 @@ void Collective::limitKnownTilesToModel() {
 
 bool Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
+    pos.setNeedsRenderUpdate(true);
     knownTiles->addTile(pos);
     if (pos.getLevel() == level)
       if (Task* task = taskMap->getMarked(pos))

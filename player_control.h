@@ -88,7 +88,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   protected:
   // from CreatureView
-  virtual const Level* getLevel() const override;
+  virtual Level* getLevel() const override;
   virtual const MapMemory& getMemory() const override;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
@@ -115,7 +115,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void considerNightfallMessage();
   void considerWarning();
 
-  Level* getLevel();
   TribeId getTribeId() const;
   bool canSee(const Creature*) const;
   bool canSee(Position) const;
@@ -209,6 +208,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
     bool deselect;
   };
   optional<SelectionInfo> rectSelection;
+  void updateSelectionSquares();
   double SERIAL(lastControlKeeperQuestion) = -100;
   int SERIAL(startImpNum) = -1;
   bool SERIAL(payoutWarning) = false;

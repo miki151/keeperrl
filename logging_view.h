@@ -182,7 +182,7 @@ class LoggingView : public View {
       delegate->continueClock();
     }
 
-    virtual void updateView(const CreatureView* creatureView, bool noRefresh) override {
+    virtual void updateView(CreatureView* creatureView, bool noRefresh) override {
       delegate->updateView(creatureView, noRefresh);
     }
 
