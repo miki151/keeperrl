@@ -116,7 +116,7 @@ void Level::addLightSource(Vec2 pos, double radius, int numLight) {
       double dist = (v - pos).lengthD();
       if (dist <= radius) {
         lightAmount[v] += min(1.0, 1 - (dist) / radius) * numLight;
-        setNeedsRenderUpdate(pos, true);
+        setNeedsRenderUpdate(v, true);
       }
     }
   }
@@ -128,7 +128,7 @@ void Level::addDarknessSource(Vec2 pos, double radius, int numDarkness) {
       double dist = (v - pos).lengthD();
       if (dist <= radius) {
         lightCapAmount[v] -= min(1.0, 1 - (dist) / radius) * numDarkness;
-        setNeedsRenderUpdate(pos, true);
+        setNeedsRenderUpdate(v, true);
       }
       updateConnectivity(v);
     }
