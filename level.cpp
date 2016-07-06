@@ -162,6 +162,7 @@ void Level::replaceSquare(Position position, PSquare newSquare, bool storePrevio
   if (storePrevious)
     oldSquares[pos] = squares.extractSquare(pos);
   squares.putSquare(pos, std::move(newSquare));
+  squares.getSquare(pos)->onAddedToLevel(position);
   if (c) {
     squares.getSquare(pos)->setCreature(c);
   }
