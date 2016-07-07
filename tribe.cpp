@@ -47,8 +47,10 @@ void Tribe::initStanding(const Creature* c) {
 void Tribe::addEnemy(Tribe* t) {
   enemyTribes.insert(t);
   friendlyTribes.erase(t->id);
-  if (t != this)
+  if (t != this) {
     t->enemyTribes.insert(this);
+    t->friendlyTribes.erase(id);
+  }
 }
 
 static const double killBonus = 0.1;
