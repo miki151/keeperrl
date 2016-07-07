@@ -52,6 +52,7 @@ class SpriteAnim : public Animation {
       : Animation(frame * f.size()), frames(f), tileNum(tile) {}
 
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
+    return;
     FrameInfo current = frames[min<int>(frames.size() - 1, max(0, int(state * frames.size())))];
     renderer.drawSprite(origin + current.offset, current.origin, current.size, renderer.tiles[tileNum]);
   }
