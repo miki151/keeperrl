@@ -2005,8 +2005,12 @@ void Collective::onAppliedSquare(Position pos) {
   }
   if (getSquares(SquareId::LIBRARY).count(pos)) {
     addMana(0.2);
-    if (Random.rollD(60.0 / (getEfficiency(pos))) && !Technology::getAvailableSpells(this).empty())
-      c->getAttributes().getSpellMap().add(Random.choose(Technology::getAvailableSpells(this)));
+    auto availableSpells = Technology::getAvailableSpells(this);
+    if (Random.rollD(60.0 / (getEfficiency(pos))) && !availableSpells.empty()) {
+      auto spell = Random.choose(Technology::getAvailableSpells(this));
+      c->getAttributes().getSpellMap().add(spell);
+      control->addMessage(c->getName().a() + " learns the spell of " + spell->getName());
+    }
   }
   if (getSquares(SquareId::THRONE).count(pos) && c == getLeader()) {
     addMana(0.2);
