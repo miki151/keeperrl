@@ -104,12 +104,12 @@ static PModel loadModelFromFile(const string& filename) {
   return loadGameUsing<CompressedInput2, PModel>(filename); 
 }
 
-bool isNonAscii(char c) {
-  return !(c>=0 && c <128);
+bool isNotFilename(char c) {
+  return !(tolower(c) >= 'a' && tolower(c) <= 'z') && !isdigit(c) && c != '_';
 }
 
-string stripNonAscii(string s) {
-  s.erase(remove_if(s.begin(),s.end(), isNonAscii), s.end());
+static string stripFilename(string s) {
+  s.erase(remove_if(s.begin(),s.end(), isNotFilename), s.end());
   return s;
 }
 
@@ -159,7 +159,7 @@ void MainLoop::uploadFile(const string& path, GameSaveType type) {
 }
 
 string MainLoop::getSavePath(PGame& game, GameSaveType gameType) {
-  return userPath + "/" + stripNonAscii(game->getGameIdentifier()) + getSaveSuffix(gameType);
+  return userPath + "/" + stripFilename(game->getGameIdentifier()) + getSaveSuffix(gameType);
 }
 
 const int singleModelGameSaveTime = 100000;
