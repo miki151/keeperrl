@@ -33,7 +33,8 @@ using SDL::SDL_Keycode;
 
 MapGui::MapGui(Callbacks call, Clock* c, Options* o) : objects(Level::getMaxBounds()), callbacks(call),
     clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
-    connectionMap(Level::getMaxBounds()), enemyPositions(Level::getMaxBounds(), false) {
+    lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()),
+    enemyPositions(Level::getMaxBounds(), false) {
   clearCenter();
 }
 
@@ -854,13 +855,14 @@ void MapGui::updateEnemyPositions(const vector<Vec2>& positions) {
     enemyPositions.setValue(v, true);
 }
 
-void MapGui::updateObject(Vec2 pos, CreatureView* view) {
+void MapGui::updateObject(Vec2 pos, CreatureView* view, int currentTime) {
   Level* level = view->getLevel();
   objects[pos].emplace();
   view->getViewIndex(pos, *objects[pos]);
   level->setNeedsRenderUpdate(pos, false);
   if (objects[pos]->hasObject(ViewLayer::FLOOR) || objects[pos]->hasObject(ViewLayer::FLOOR_BACKGROUND))
     objects[pos]->setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
+  lastSquareUpdate[pos] = currentTime;
 }
 
 void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui, bool moral) {
@@ -871,13 +873,14 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   showMorale = moral;
   layout = mapLayout;
   displayScrollHint = view->isPlayerView() && !lockedView;
+  int currentTimeReal = clock->getRealMillis();
   if (view != previousView || level != previousLevel)
     for (Vec2 pos : level->getBounds())
-      updateObject(pos, view);
+      updateObject(pos, view, currentTimeReal);
   else
     for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
-      if (level->needsRenderUpdate(pos))
-        updateObject(pos, view);
+      if (level->needsRenderUpdate(pos) || lastSquareUpdate[pos] < currentTimeReal - 1000)
+        updateObject(pos, view, currentTimeReal);
   previousView = view;
   if (previousLevel != level) {
     screenMovement = none;

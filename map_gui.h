@@ -70,7 +70,7 @@ class MapGui : public GuiElem {
   void clearButtonViewId();
 
   private:
-  void updateObject(Vec2, CreatureView*);
+  void updateObject(Vec2, CreatureView*, int currentTime);
   void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, int currentTimeReal,
       const EnumMap<HighlightType, double>&);
   void drawCreatureHighlights(Renderer&, const ViewObject&, Vec2 pos, Vec2 sz, int currentTimeReal);
@@ -131,6 +131,7 @@ class MapGui : public GuiElem {
   } mouseOffset, center;
   const Level* previousLevel = nullptr;
   const CreatureView* previousView = nullptr;
+  Table<optional<int>> lastSquareUpdate;
   optional<Coords> softCenter;
   Vec2 lastMousePos;
   optional<Vec2> lastMouseMove;
