@@ -513,7 +513,7 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
 }
 
 void ModelBuilder::spawnKeeper(Model* m) {
-  Level* level = m->levels[0].get();
+  Level* level = m->getTopLevel();
   PCreature keeper = CreatureFactory::fromId(CreatureId::KEEPER, TribeId::getKeeper());
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   if (!keeperName.empty())
