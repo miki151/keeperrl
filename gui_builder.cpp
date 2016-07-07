@@ -1790,7 +1790,7 @@ PGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion) {
   return gui.margin(list.buildVerticalList(),
       gui.scrollable(gui.verticalList(joinLists(
           std::move(leftLines),
-          drawEquipmentAndConsumables(minion)), legendLineHeight)),
+          drawEquipmentAndConsumables(minion)), legendLineHeight), &minionPageScroll, &scrollbarsHeld),
       topMargin, GuiFactory::TOP);
 }
 
