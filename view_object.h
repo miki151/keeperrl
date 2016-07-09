@@ -36,6 +36,16 @@ RICH_ENUM(ViewObjectModifier, BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISON
     SPIRIT_DAMAGE);
 RICH_ENUM(ViewObjectAttribute, WOUNDED, BURNING, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY, MORALE);
 
+struct MovementInfo {
+  enum Type { MOVE, ATTACK };
+  MovementInfo(Vec2, double, double, Type);
+  MovementInfo();
+  Vec2 direction;
+  float tBegin;
+  float tEnd;
+  Type type;
+};
+
 class ViewObject {
   public:
   typedef ViewObjectModifier Modifier;
@@ -69,16 +79,6 @@ class ViewObject {
 
   void setAdjectives(const vector<string>&);
   void setDescription(const string&);
-
-  struct MovementInfo {
-    enum Type { MOVE, ATTACK };
-    MovementInfo(Vec2, double, double, Type);
-    MovementInfo();
-    Vec2 direction;
-    float tBegin;
-    float tEnd;
-    Type type;
-  };
 
   void addMovementInfo(MovementInfo);
   void clearMovementInfo();

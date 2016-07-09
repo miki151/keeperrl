@@ -51,11 +51,11 @@ optional<UniqueEntity<Creature>::Id> ViewObject::getCreatureId() const {
   return creatureId;
 }
 
-ViewObject::MovementInfo::MovementInfo(Vec2 dir, double b, double e, Type t) : direction(dir), tBegin(b), tEnd(e),
+MovementInfo::MovementInfo(Vec2 dir, double b, double e, Type t) : direction(dir), tBegin(b), tEnd(e),
   type(t) {
 }
 
-ViewObject::MovementInfo::MovementInfo() {
+MovementInfo::MovementInfo() {
 }
 
 void ViewObject::addMovementInfo(MovementInfo info) {
@@ -66,7 +66,7 @@ bool ViewObject::hasAnyMovementInfo() const {
   return movementQueue.hasAny();
 }
 
-ViewObject::MovementInfo ViewObject::getLastMovementInfo() const {
+MovementInfo ViewObject::getLastMovementInfo() const {
   return movementQueue.getLast();
 }
 
@@ -94,7 +94,7 @@ void ViewObject::MovementQueue::add(MovementInfo info) {
   index = makeGoodIndex(index + 1);
 }
 
-const ViewObject::MovementInfo& ViewObject::MovementQueue::getLast() const {
+const MovementInfo& ViewObject::MovementQueue::getLast() const {
   CHECK(hasAny());
   return elems[makeGoodIndex(index - 1)];
 }

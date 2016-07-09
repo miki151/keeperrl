@@ -390,7 +390,7 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     dir = object.getMovementInfo(screenMovement->startTimeGame, screenMovement->endTimeGame,
         screenMovement->creatureId);
   } else if (object.hasAnyMovementInfo() && !screenMovement) {
-    ViewObject::MovementInfo info = object.getLastMovementInfo();
+    MovementInfo info = object.getLastMovementInfo();
     dir = info.direction;
 /*    if (info.direction.length8() == 0 || time >= info.tEnd + 0.001 || time <= info.tBegin - 0.001)
       return Vec2(0, 0);*/
@@ -399,7 +399,7 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     state = min(1.0, max(0.0, (state - minStopTime) / (1.0 - 2 * minStopTime)));
   } else
     return Vec2(0, 0);
-  if (object.getLastMovementInfo().type == ViewObject::MovementInfo::ATTACK)
+  if (object.getLastMovementInfo().type == MovementInfo::ATTACK)
     if (dir.length8() == 1)
       return Vec2(0.8 * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
           (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - getJumpOffset(object, state)) * size.y);

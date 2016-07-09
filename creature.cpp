@@ -272,14 +272,14 @@ CreatureAction Creature::move(Position pos) const {
       self->spendTime(3);
     } else
       self->spendTime(1);
-    self->modViewObject().addMovementInfo({direction, oldTime, getLocalTime(), ViewObject::MovementInfo::MOVE});
+    self->addMovementInfo({direction, oldTime, getLocalTime(), MovementInfo::MOVE});
   });
 }
 
 void Creature::displace(double time, Vec2 dir) {
   position.moveCreature(dir);
   controller->onDisplaced();
-  modViewObject().addMovementInfo({dir, time, time + 1, ViewObject::MovementInfo::MOVE});
+  addMovementInfo({dir, time, time + 1, MovementInfo::MOVE});
 }
 
 int Creature::getDebt(const Creature* debtor) const {
@@ -346,8 +346,8 @@ CreatureAction Creature::swapPosition(Creature* other, bool force) const {
       other->playerMessage("Excuse me!");
     playerMessage("Excuse me!");
     self->position.swapCreatures(other);
-    other->modViewObject().addMovementInfo({-direction, getLocalTime(), other->getLocalTime(),
-        ViewObject::MovementInfo::MOVE});
+    other->addMovementInfo({-direction, getLocalTime(), other->getLocalTime(),
+        MovementInfo::MOVE});
   });
 }
 
@@ -1019,7 +1019,7 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
   double oldTime = getLocalTime();
   if (spend)
     c->spendTime(timeSpent);
-  c->modViewObject().addMovementInfo({dir, oldTime, getLocalTime(), ViewObject::MovementInfo::ATTACK});
+  c->addMovementInfo({dir, oldTime, getLocalTime(), MovementInfo::ATTACK});
   });
 }
 
@@ -1088,6 +1088,7 @@ void Creature::updateViewObject() {
     modViewObject().removeModifier(ViewObject::Modifier::SLEEPING);
   getBody().updateViewObject(modViewObject());
   modViewObject().setDescription(getName().bare());
+  getPosition().setNeedsRenderUpdate(true);
 }
 
 double Creature::getMorale() const {
@@ -1290,6 +1291,11 @@ CreatureAction Creature::placeTorch(Dir attachmentDir, function<void(Trigger*)> 
   });
 }
 
+void Creature::addMovementInfo(const MovementInfo& info) {
+  modViewObject().addMovementInfo(info);
+  getPosition().setNeedsRenderUpdate(true);
+}
+
 CreatureAction Creature::whip(const Position& pos) const {
   Creature* whipped = pos.getCreature();
   if (pos.dist8(position) > 1 || !whipped)
@@ -1300,8 +1306,7 @@ CreatureAction Creature::whip(const Position& pos) const {
     self->spendTime(1);
     if (Random.roll(3)) {
       addSound(SoundId::WHIP);
-      self->modViewObject().addMovementInfo({position.getDir(pos), oldTime, getLocalTime(),
-          ViewObject::MovementInfo::ATTACK});
+      self->addMovementInfo({position.getDir(pos), oldTime, getLocalTime(), MovementInfo::ATTACK});
     }
     if (Random.roll(5))
       whipped->monsterMessage(whipped->getName().the() + " screams!", "You hear a horrible scream!");

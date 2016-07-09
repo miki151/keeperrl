@@ -110,11 +110,6 @@ bool Body::hasHealth() const {
   }
 }
 
-void Body::decreaseHealth(double amount) {
-  if (hasHealth())
-    health -= amount;
-}
-
 double Body::getMinDamage(BodyPart part) const {
   double ret;
   switch (part) {
@@ -425,7 +420,7 @@ void Body::affectPosition(Position position) {
 }
 
 bool Body::takeDamage(const Attack& attack, Creature* creature, double damage) {
-  decreaseHealth(damage);
+  bleed(creature, damage);
   AttackType attackType = attack.getType();
   BodyPart part = attack.inTheBack() && Random.roll(3) ? BodyPart::BACK :
     getBodyPart(attack.getLevel(), creature->isAffected(LastingEffect::FLYING), isCollapsed(creature));
@@ -573,6 +568,7 @@ bool Body::heal(Creature* c, double amount, bool replaceLimbs) {
     if (health == 1) {
       c->you(MsgType::BLEEDING_STOPS, "");
       health = 1;
+      c->updateViewObject();
       return true;
     }
   }
@@ -632,9 +628,11 @@ bool Body::affectByAcid(Creature* c) {
 }
 
 void Body::bleed(Creature* c, double amount) {
-  CHECK_RANGE(amount, 0, 1000000, c->getName().bare());
-  health -= amount;
-  c->updateViewObject();
+  if (hasHealth()) {
+    CHECK_RANGE(amount, 0, 1000000, c->getName().bare());
+    health -= amount;
+    c->updateViewObject();
+  }
 }
 
 bool Body::canWade() const {

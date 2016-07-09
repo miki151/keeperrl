@@ -2306,7 +2306,8 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
     case CreatureId::EARTH_ELEMENTAL:
       return CATTR(
           c.viewId = ViewId::EARTH_ELEMENTAL;
-          c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::LARGE).setWeight(500).setDeathSound(none);
+          c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::LARGE).setWeight(500)
+              .setHumanoidBodyParts().setDeathSound(none);
           c.attr[AttrType::SPEED] = 80;
           c.attr[AttrType::STRENGTH] = 45;
           c.attr[AttrType::DEXTERITY] = 20;

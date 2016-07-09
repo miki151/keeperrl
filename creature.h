@@ -50,6 +50,7 @@ class Sound;
 class Game;
 class CreatureListener;
 struct AdjectiveInfo;
+struct MovementInfo;
 
 class Creature : public Renderable, public UniqueEntity<Creature> {
   public:
@@ -271,6 +272,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void spendTime(double time);
   bool canCarry(const vector<Item*>&) const;
   TribeSet getFriendlyTribes() const;
+  void addMovementInfo(const MovementInfo&);
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
