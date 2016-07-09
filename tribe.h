@@ -38,6 +38,7 @@ class TribeId {
   static TribeId getAdventurer();
   static TribeId getBandit();
   static TribeId getHostile();
+  static TribeId getShelob();
   static TribeId getPeaceful();
   static TribeId getKeeper();
   static TribeId getRetiredKeeper();

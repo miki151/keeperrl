@@ -122,6 +122,7 @@ Tribe::Map Tribe::generateTribes() {
   init(ret, TribeId::getBandit(), true);
   init(ret, TribeId::getHostile(), false);
   init(ret, TribeId::getPeaceful(), false);
+  init(ret, TribeId::getShelob(), false);
   addEnemies(ret, TribeId::getDwarf(),
       {TribeId::getBandit()});
   addEnemies(ret, TribeId::getGnome(),
@@ -141,11 +142,17 @@ Tribe::Map Tribe::generateTribes() {
       TribeId::getGreenskin(), TribeId::getAnt(), TribeId::getRetiredKeeper() });
   addEnemies(ret, TribeId::getMonster(), {
       TribeId::getWildlife()});
+  addEnemies(ret, TribeId::getShelob(), {
+      TribeId::getGreenskin(), TribeId::getMonster(), TribeId::getLizard(), TribeId::getPest(),
+      TribeId::getWildlife(), TribeId::getElf(), TribeId::getHuman(), TribeId::getDwarf(), TribeId::getGnome(),
+      TribeId::getAdventurer(), TribeId::getKeeper(), TribeId::getBandit(),
+      TribeId::getPeaceful(), TribeId::getAnt(), TribeId::getDarkElf(), TribeId::getRetiredKeeper()});
   addEnemies(ret, TribeId::getHostile(), {
       TribeId::getGreenskin(), TribeId::getMonster(), TribeId::getLizard(), TribeId::getPest(),
       TribeId::getWildlife(), TribeId::getElf(), TribeId::getHuman(), TribeId::getDwarf(), TribeId::getGnome(),
       TribeId::getAdventurer(), TribeId::getKeeper(), TribeId::getBandit(), TribeId::getHostile(),
-      TribeId::getPeaceful(), TribeId::getAnt(), TribeId::getDarkElf()});
+      TribeId::getPeaceful(), TribeId::getAnt(), TribeId::getDarkElf(), TribeId::getShelob(),
+      TribeId::getRetiredKeeper()});
   return ret;
 }
 
@@ -217,6 +224,10 @@ TribeId TribeId::getGreenskin() {
 
 TribeId TribeId::getAnt() {
   return TribeId(16);
+}
+
+TribeId TribeId::getShelob() {
+  return TribeId(17);
 }
 
 optional<pair<TribeId, TribeId>> TribeId::serialSwitch;
