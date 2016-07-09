@@ -144,6 +144,9 @@ void Game::prepareSiteRetirement() {
       if (v != baseModel)
         models[v]->lockSerialization();
       else {
+        for (Collective* col : models[v]->getCollectives())
+          if (col->getLeader()->isDead())
+            col->clearLeader();
         models[v]->setGame(nullptr);
         models[v]->clearDeadCreatures();
       }

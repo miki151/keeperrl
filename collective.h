@@ -102,6 +102,7 @@ class Collective : public TaskCallback {
   const Creature* getLeader() const;
   Creature* getLeader();
   bool hasLeader() const;
+  void clearLeader();
 
   const set<Position>& getSquares(SquareType) const;
   const set<Position>& getSquares(SquareApplyType) const;

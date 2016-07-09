@@ -559,6 +559,10 @@ PTask Collective::getHealingTask(Creature* c) {
   return nullptr;
 }
 
+void Collective::clearLeader() {
+  leader = nullptr;
+}
+
 MoveInfo Collective::getTeamMemberMove(Creature* c) {
   for (auto team : teams->getContaining(c))
     if (teams->isActive(team)) {
