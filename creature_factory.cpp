@@ -499,8 +499,7 @@ class ShopkeeperController : public Monster {
           debt.erase(c);
           thieves.insert(c);
           for (Item* item : c->getEquipment().getItems())
-            if (unpaidItems[c].contains(item))
-              item->setShopkeeper(nullptr);
+            item->setShopkeeper(nullptr);
           break;
         }
       }
@@ -515,12 +514,10 @@ class ShopkeeperController : public Monster {
     if ((debt[from] -= paid) <= 0)
       debt.erase(from);
     for (Item* it : from->getEquipment().getItems())
-      if (unpaidItems[from].contains(it) && it->getPrice() <= paid) {
+      if (it->getShopkeeper(from) && it->getPrice() <= paid) {
         it->setShopkeeper(nullptr);
         paid -= it->getPrice();
       }
-    if (unpaidItems[from].empty())
-      unpaidItems.erase(from);
   }
   
   void onEvent(const GameEvent& event) {
@@ -539,10 +536,8 @@ class ShopkeeperController : public Monster {
           auto info = event.get<EventInfo::ItemsHandled>();
           if (shopArea->contains(info.creature->getPosition())) {
             for (const Item* item : info.items)
-              if (item->isShopkeeper(getCreature())) {
+              if (item->isShopkeeper(getCreature()))
                 debt[info.creature] += item->getPrice();
-                unpaidItems[info.creature].insert(item);
-              }
           }
         }
         break;
@@ -553,7 +548,6 @@ class ShopkeeperController : public Monster {
               if (item->isShopkeeper(getCreature())) {
                 if ((debt[info.creature] -= item->getPrice()) <= 0)
                   debt.erase(info.creature);
-                unpaidItems[info.creature].erase(item);
               }
           }
         }
@@ -574,7 +568,7 @@ class ShopkeeperController : public Monster {
     }
   }
 
-  SERIALIZE_ALL2(Monster, prevCreatures, debt, thiefCount, thieves, unpaidItems, shopArea, firstMove, eventProxy);
+  SERIALIZE_ALL2(Monster, prevCreatures, debt, thiefCount, thieves, shopArea, firstMove, eventProxy);
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
 
   private:
@@ -582,7 +576,6 @@ class ShopkeeperController : public Monster {
   unordered_map<const Creature*, int> SERIAL(debt);
   unordered_map<const Creature*, int> SERIAL(thiefCount);
   unordered_set<const Creature*> SERIAL(thieves);
-  unordered_map<const Creature*, EntitySet<Item>> SERIAL(unpaidItems);
   Location* SERIAL(shopArea);
   bool SERIAL(firstMove) = true;
 };
