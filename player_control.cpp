@@ -2129,6 +2129,7 @@ void PlayerControl::onConstructed(Position pos, const SquareType& type) {
       updateSquareMemory(v);
     }
     pos.modViewObject().setId(ViewId::KEEPER_FLOOR);
+    pos.setNeedsRenderUpdate(true);
   }
 }
 

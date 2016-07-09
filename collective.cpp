@@ -2011,9 +2011,14 @@ void Collective::onAppliedSquare(Position pos) {
     addMana(0.2);
     auto availableSpells = Technology::getAvailableSpells(this);
     if (Random.rollD(60.0 / (getEfficiency(pos))) && !availableSpells.empty()) {
-      auto spell = Random.choose(Technology::getAvailableSpells(this));
-      c->getAttributes().getSpellMap().add(spell);
-      control->addMessage(c->getName().a() + " learns the spell of " + spell->getName());
+      for (int i : Range(30)) {
+        Spell* spell = Random.choose(Technology::getAvailableSpells(this));
+        if (!c->getAttributes().getSpellMap().contains(spell)) {
+          c->getAttributes().getSpellMap().add(spell);
+          control->addMessage(c->getName().a() + " learns the spell of " + spell->getName());
+          break;
+        }
+      }
     }
   }
   if (getSquares(SquareId::THRONE).count(pos) && c == getLeader()) {
