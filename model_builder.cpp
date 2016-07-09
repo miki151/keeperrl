@@ -349,20 +349,20 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
   for (int i : Range(random.get(1, 3)))
     enemies.push_back(enemyFactory->get(EnemyId::KOBOLD_CAVE));
   for (int i : Range(random.get(1, 3)))
-    enemies.push_back(enemyFactory->get(EnemyId::BANDITS).setSurprise());
-  enemies.push_back(enemyFactory->get(random.choose(EnemyId::GNOMES, EnemyId::DARK_ELVES)).setSurprise());
+    enemies.push_back(enemyFactory->get(EnemyId::BANDITS).setSurprise().setVillainType(VillainType::LESSER));
+  enemies.push_back(enemyFactory->get(random.choose(EnemyId::GNOMES, EnemyId::DARK_ELVES)).setSurprise().setVillainType(VillainType::ALLY));
   append(enemies, enemyFactory->getVaults());
   if (random.roll(4))
-    enemies.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED).setSurprise());
-  enemies.push_back(enemyFactory->get(EnemyId::KNIGHTS).setSurprise());
-  enemies.push_back(enemyFactory->get(EnemyId::FRIENDLY_CAVE).setSurprise());
+    enemies.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED).setSurprise().setVillainType(VillainType::LESSER));
+  enemies.push_back(enemyFactory->get(EnemyId::KNIGHTS).setSurprise().setVillainType(VillainType::MAIN));
+  enemies.push_back(enemyFactory->get(EnemyId::FRIENDLY_CAVE).setSurprise().setVillainType(VillainType::ALLY));
   for (auto& enemy : random.chooseN(3, {
         EnemyId::ELEMENTALIST,
         EnemyId::WARRIORS,
         EnemyId::ELVES,
         EnemyId::DWARVES,
         EnemyId::VILLAGE}))
-    enemies.push_back(enemyFactory->get(enemy).setSurprise());
+    enemies.push_back(enemyFactory->get(enemy).setSurprise().setVillainType(VillainType::MAIN));
   for (auto& enemy : random.chooseN(3, {
         EnemyId::GREEN_DRAGON,
         EnemyId::SHELOB,
@@ -371,7 +371,7 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
         EnemyId::CYCLOPS,
         EnemyId::DRIADS,
         EnemyId::ENTS}))
-    enemies.push_back(enemyFactory->get(enemy).setSurprise());
+    enemies.push_back(enemyFactory->get(enemy).setSurprise().setVillainType(VillainType::LESSER));
   for (auto& enemy : random.chooseN(1, {
         EnemyId::WITCH,
         EnemyId::CEMETERY}))
