@@ -28,7 +28,7 @@
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) { 
-  serializeAll(ar, villainsByType, collectives, lastTick, playerControl, playerCollective, won, currentTime);
+  serializeAll(ar, villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
   serializeAll(ar, worldName, musicType, portals, statistics, spectator, tribes, gameIdentifier, player);
   serializeAll(ar, gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
@@ -309,11 +309,11 @@ void Game::tick(double time) {
 
 void Game::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
-#ifdef RELEASE
-  bool canRetire = playerControl && won && !getPlayer();
-#else
+//#ifdef RELEASE
+  bool canRetire = playerControl && gameWon() && !getPlayer();
+/*#else
   bool canRetire = playerControl && !getPlayer();
-#endif
+#endif*/
   vector<ListElem> elems { "Save the game",
     {"Retire", canRetire ? ListElem::NORMAL : ListElem::INACTIVE} , "Change options", "Abandon the game" };
   auto ind = view->chooseFromList("Would you like to:", elems);

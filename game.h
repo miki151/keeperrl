@@ -124,7 +124,6 @@ class Game {
   double SERIAL(lastTick) = 0;
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
-  bool SERIAL(won) = false;
   map<VillainType, vector<Collective*>> SERIAL(villainsByType);
   vector<Collective*> SERIAL(collectives);
   MusicType SERIAL(musicType);
