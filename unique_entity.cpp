@@ -38,6 +38,7 @@ long long UniqueEntity<T>::offset = 0;
 template<typename T>
 UniqueEntity<T>::Id::Id() {
   key = Random.getLL();
+  hash = int(key);
 }
 
 template<typename T>
@@ -62,14 +63,14 @@ bool UniqueEntity<T>::Id::operator != (const Id& id) const {
 
 template<typename T>
 int UniqueEntity<T>::Id::getHash() const {
-  return int(key);
+  return hash;
 }
 
 template<typename T>
 template <class Archive> 
 void UniqueEntity<T>::Id::serialize(Archive& ar, const unsigned int version) {
   key += offset;
-  serializeAll(ar, key);
+  serializeAll(ar, key, hash);
   key -= offset;
 }
 
