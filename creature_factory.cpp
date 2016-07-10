@@ -2317,7 +2317,8 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
     case CreatureId::WATER_ELEMENTAL:
       return CATTR(
           c.viewId = ViewId::WATER_ELEMENTAL;
-          c.body = Body::nonHumanoid(Body::Material::WATER, Body::Size::LARGE).setWeight(300).setDeathSound(none);
+          c.body = Body::nonHumanoid(Body::Material::WATER, Body::Size::LARGE).setWeight(300).setHumanoidBodyParts()
+              .setDeathSound(none);
           c.attr[AttrType::SPEED] = 80;
           c.attr[AttrType::STRENGTH] = 45;
           c.attr[AttrType::DEXTERITY] = 20;
