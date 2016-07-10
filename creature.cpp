@@ -1184,6 +1184,7 @@ void Creature::die(const string& reason, bool dropInventory, bool dCorpse) {
 
 void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   CHECK(!isDead());
+  deathTime = getGlobalTime();
   if (dCorpse)
     if (auto sound = getBody().getDeathSound())
       addSound(*sound);
@@ -1203,7 +1204,6 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   if (attributes->isInnocent())
     getGame()->getStatistics().add(StatId::INNOCENT_KILLED);
   getGame()->getStatistics().add(StatId::DEATH);
-  deathTime = getGlobalTime();
 }
 
 CreatureAction Creature::flyAway() const {

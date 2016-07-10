@@ -200,6 +200,13 @@ void Game::prepareSingleMapRetirement() {
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->setControl(PCollectiveControl(
         new VillageControl(playerCollective, none)));
+  for (Collective* col : getCollectives())
+    if (col->getLeader()->isDead())
+      col->clearLeader();
+  for (Creature* c : getMainModel()->getAllCreatures())
+    c->clearLastAttacker();
+  getMainModel()->clearDeadCreatures();
+  player = nullptr;
 }
 
 void Game::doneRetirement() {
@@ -271,27 +278,6 @@ bool Game::isVillainActive(const Collective* col) {
   return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
 }
 
-void Game::checkConquered() {
-  bool conquered = true;
-  for (Collective* col : getCollectives()) {
-    conquered &= col->isConquered() || col->getVillainType() != VillainType::MAIN;
-    if (col->isConquered() && campaign && col->getVillainType()) {
-      Vec2 coords = getModelCoords(col->getLevel()->getModel());
-      if (!campaign->isDefeated(coords))
-        if (auto retired = campaign->getSites()[coords].getRetired())
-          uploadEvent("retiredConquered", {
-              {"retiredId", getGameId(retired->fileInfo)},
-              {"playerName", getPlayerName()}});
-      campaign->setDefeated(coords);
-    }
-  }
-  if (!getVillains(VillainType::MAIN).empty() && conquered && !won) {
-    addEvent(EventId::WON_GAME);
-    won = true;
-  }
-
-}
-
 void Game::tick(double time) {
   if (!turnEvents.empty() && time > *turnEvents.begin()) {
     int turn = *turnEvents.begin();
@@ -311,7 +297,6 @@ void Game::tick(double time) {
       if (Model* m = models[v].get())
         m->updateSunlightMovement();
   Debug() << "Global time " << time;
-  checkConquered();
   for (Collective* col : collectives) {
     if (isVillainActive(col))
       col->update(col->getLevel()->getModel() == getCurrentModel());
@@ -662,9 +647,36 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
     }
 }
 
-void Game::addEvent(const GameEvent& e) {
+bool Game::gameWon() const {
+  for (Collective* col : getCollectives())
+    if (!col->isConquered() && col->getVillainType() == VillainType::MAIN)
+      return false;
+  return true;
+}
+
+void Game::addEvent(const GameEvent& event) {
   for (Vec2 v : models.getBounds())
     if (models[v])
-      models[v]->addEvent(e);
+      models[v]->addEvent(event);
+  switch (event.getId()) {
+    case EventId::CONQUERED_ENEMY: {
+        Collective* col = event.get<Collective*>();
+        if (campaign) {
+          Vec2 coords = getModelCoords(col->getLevel()->getModel());
+          if (!campaign->isDefeated(coords)) {
+            if (auto retired = campaign->getSites()[coords].getRetired())
+              uploadEvent("retiredConquered", {
+                  {"retiredId", getGameId(retired->fileInfo)},
+                  {"playerName", getPlayerName()}});
+            campaign->setDefeated(coords);
+          }
+        }
+        if (col->getVillainType() == VillainType::MAIN && gameWon()) {
+          addEvent(EventId::WON_GAME);
+        }
+      }
+      break;
+    default:break;
+  }
 }
 

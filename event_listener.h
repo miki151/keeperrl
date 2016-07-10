@@ -7,6 +7,7 @@
 
 class Model;
 class Technology;
+class Collective;
 
 enum class EventId {
   MOVED,
@@ -16,6 +17,7 @@ enum class EventId {
   ITEMS_APPEARED,
   ITEMS_THROWN,
   EXPLOSION,
+  CONQUERED_ENEMY,
   WON_GAME,
   TECHBOOK_READ,
   ALARM,
@@ -57,11 +59,13 @@ struct TrapDisarmed {
 
 }
 
-class GameEvent : public EnumVariant<EventId, TYPES(Creature*, Position, Technology*, EventInfo::Attacked,
-    EventInfo::ItemsHandled, EventInfo::ItemsAppeared, EventInfo::ItemsThrown, EventInfo::TrapDisarmed),
+class GameEvent : public EnumVariant<EventId, TYPES(Creature*, Position, Technology*, Collective*,
+    EventInfo::Attacked, EventInfo::ItemsHandled, EventInfo::ItemsAppeared, EventInfo::ItemsThrown,
+    EventInfo::TrapDisarmed),
     ASSIGN(Creature*, EventId::MOVED),
     ASSIGN(Position, EventId::EXPLOSION, EventId::ALARM, EventId::TRAP_TRIGGERED, EventId::SQUARE_DESTROYED),
     ASSIGN(Technology*, EventId::TECHBOOK_READ),
+    ASSIGN(Collective*, EventId::CONQUERED_ENEMY),
     ASSIGN(EventInfo::Attacked, EventId::KILLED, EventId::TORTURED, EventId::SURRENDERED),
     ASSIGN(EventInfo::ItemsHandled, EventId::PICKED_UP, EventId::DROPPED, EventId::EQUIPED),
     ASSIGN(EventInfo::ItemsAppeared, EventId::ITEMS_APPEARED),

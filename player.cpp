@@ -45,6 +45,7 @@
 #include "villain_type.h"
 #include "event_proxy.h"
 #include "visibility_map.h"
+#include "collective_name.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -95,10 +96,18 @@ void Player::onEvent(const GameEvent& event) {
         Position pos = event.get<Position>();
         Position myPos = getCreature()->getPosition();
         if (pos == myPos)
-          getCreature()->playerMessage("An alarm sounds near you.");
+          privateMessage("An alarm sounds near you.");
         else if (pos.isSameLevel(myPos))
-          getCreature()->playerMessage("An alarm sounds in the " + 
+          privateMessage("An alarm sounds in the " + 
               getCardinalName(myPos.getDir(pos).getBearing().getCardinalDir()));
+      }
+      break;
+    case EventId::CONQUERED_ENEMY:
+      if (adventurer) {
+        Collective* col = event.get<Collective*>();
+        if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER)
+          privateMessage(PlayerMessage("The tribe of " + col->getName().getFull() + " is destroyed.",
+                MessagePriority::HIGH));
       }
       break;
     case EventId::WON_GAME:
@@ -185,7 +194,7 @@ bool Player::tryToPerform(CreatureAction action) {
   if (action)
     action.perform(getCreature());
   else
-    getCreature()->playerMessage(action.getFailedReason());
+    privateMessage(action.getFailedReason());
   return !!action;
 }
 
@@ -710,17 +719,20 @@ bool Player::isPlayer() const {
 }
 
 void Player::privateMessage(const PlayerMessage& message) {
-  if (message.getText().size() < 2)
-    return;
-  if (auto title = message.getAnnouncementTitle())
-    getView()->presentText(*title, message.getText());
-  else {
-    messageHistory.push_back(message);
-    if (!messages.empty() && messages.back().getFreshness() < 1)
-      messages.clear();
-    messages.emplace_back(message);
-    if (message.getPriority() == MessagePriority::CRITICAL)
-      getView()->presentText("Important!", message.getText());
+  if (View* view = getView()) {
+    if (message.getText().size() < 2)
+      return;
+    if (auto title = message.getAnnouncementTitle())
+      view->presentText(*title, message.getText());
+    else {
+      messageHistory.push_back(message);
+      if (!messages.empty() && messages.back().getFreshness() < 1)
+        messages.clear();
+      messages.emplace_back(message);
+      if (message.getPriority() == MessagePriority::CRITICAL)
+        view->presentText("Important!", message.getText());
+    }
+    view->updateView(this, false);
   }
 }
 
@@ -812,7 +824,10 @@ Game* Player::getGame() const {
 }
 
 View* Player::getView() const {
-  return getGame()->getView();
+  if (Game* game = getGame())
+    return game->getView();
+  else
+    return nullptr;
 }
 
 Vec2 Player::getPosition() const {

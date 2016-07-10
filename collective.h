@@ -263,7 +263,6 @@ class Collective : public TaskCallback {
 
   bool isItemNeeded(const Item*) const;
   void addProducesMessage(const Creature*, const vector<PItem>&);
-  int getNumKilled(double afterT);
   
   HeapAllocated<MinionEquipment> SERIAL(minionEquipment);
   EnumMap<ResourceId, int> SERIAL(credit);
@@ -302,14 +301,12 @@ class Collective : public TaskCallback {
   bool considerImmigrant(const ImmigrantInfo&);
   void considerBuildingBeds();
   bool considerNonSpawnImmigrant(const ImmigrantInfo&, vector<PCreature>);
-  void considerSpawningGhosts();
   vector<Position> getSpawnPos(const vector<Creature*>&);
   void considerImmigration();
   int tryBuildingBeds(SpawnType spawnType, int numBeds);
   void considerBirths();
   void considerWeaponWarning();
   void considerMoraleWarning();
-  void considerSendingGuardian();
   void decayMorale();
   vector<Creature*> SERIAL(creatures);
   Creature* SERIAL(leader) = nullptr;
@@ -360,9 +357,6 @@ class Collective : public TaskCallback {
   HeapAllocated<CollectiveConfig> SERIAL(config);
   EntitySet<Creature> SERIAL(banished);
   EntitySet<Creature> SERIAL(equipmentUpdates);
-  vector<Creature*> SERIAL(deadCreatures);
-  optional<double> SERIAL(spawnGhosts);
-  Creature* SERIAL(lastGuardian) = nullptr;
   optional<VillainType> SERIAL(villainType);
 };
 

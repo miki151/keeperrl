@@ -69,6 +69,7 @@ class Game {
 
   const SunlightInfo& getSunlightInfo() const;
   const string& getWorldName() const;
+  bool gameWon() const;
 
   void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, int numKills, int points);
@@ -109,7 +110,6 @@ class Game {
   optional<ExitInfo> updateModel(Model*, double totalTime);
   string getPlayerName() const;
   void uploadEvent(const string& name, const map<string, string>&);
-  void checkConquered();
 
   string SERIAL(worldName);
   SunlightInfo sunlightInfo;

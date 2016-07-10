@@ -67,7 +67,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl);
   serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum, payoutWarning);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
-  serializeAll(ar, knownVillains, knownVillainLocations, notifiedConquered, visibilityMap, warningTimes);
+  serializeAll(ar, knownVillains, knownVillainLocations, visibilityMap, warningTimes);
   serializeAll(ar, lastWarningTime, messageHistory, eventProxy);
 }
 
@@ -1204,6 +1204,12 @@ void PlayerControl::onEvent(const GameEvent& event) {
           getCollective()->ownItems(info.creature, info.items);
       }
       break;
+    case EventId::CONQUERED_ENEMY: {
+        Collective* col = event.get<Collective*>();
+        if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER)
+          addImportantLongMessage("The tribe of " + col->getName().getFull() + " is destroyed.");
+      }
+      break;
     case EventId::WON_GAME:
       CHECK(!getKeeper()->isDead());
       getGame()->conquered(*getKeeper()->getName().first(), getCollective()->getKills().getSize(),
@@ -1969,12 +1975,6 @@ void PlayerControl::considerWarning() {
 }
 
 void PlayerControl::update(bool currentlyActive) {
-  for (const Collective* col :
-      concat(getGame()->getVillains(VillainType::MAIN), getGame()->getVillains(VillainType::LESSER)))
-    if (col->isConquered() && !notifiedConquered.count(col)) {
-      addImportantLongMessage("You have exterminated the armed forces of " + col->getName().getFull() + ".");
-      notifiedConquered.insert(col);
-    }
   updateVisibleCreatures();
   vector<Creature*> addedCreatures;
   vector<Level*> currentLevels {getLevel()};

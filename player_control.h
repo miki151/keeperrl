@@ -228,7 +228,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   optional<PlayerMessage> findMessage(PlayerMessage::Id);
   void updateVisibleCreatures();
   vector<Vec2> SERIAL(visibleEnemies);
-  unordered_set<const Collective*> SERIAL(notifiedConquered);
   HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
   set<const Location*> SERIAL(knownLocations);
   set<const Collective*> SERIAL(knownVillains);

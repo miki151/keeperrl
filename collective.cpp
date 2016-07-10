@@ -54,8 +54,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, mySquares2, territory, squareEfficiency, alarmInfo, markedItems, constructions, minionEquipment);
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
   serializeAll(ar, credit, level, minionPayment, pregnancies, nextPayoutTime, minionAttraction, teams, name);
-  serializeAll(ar, config, warnings, banished, squaresInUse, equipmentUpdates, deadCreatures, spawnGhosts);
-  serializeAll(ar, lastGuardian, villainType, eventProxy);
+  serializeAll(ar, config, warnings, banished, squaresInUse, equipmentUpdates);
+  serializeAll(ar, villainType, eventProxy);
 }
 
 SERIALIZABLE(Collective);
@@ -195,8 +195,6 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 
 void Collective::removeCreature(Creature* c) {
   removeElement(creatures, c);
-  if (config->getNumGhostSpawns() > 0 || config->getGuardianInfo())
-    deadCreatures.push_back(c);
   minionAttraction.erase(c);
   if (Task* task = taskMap->getTask(c)) {
     if (!task->canTransfer())
@@ -977,55 +975,11 @@ void Collective::decayMorale() {
     c->addMorale(-c->getMorale() * 0.0008);
 }
 
-void Collective::considerSpawningGhosts() {
-  if (deadCreatures.empty() || config->getNumGhostSpawns() == 0)
-    return;
-  if (spawnGhosts && *spawnGhosts <= getGlobalTime()) {
-    for (Creature* dead : getPrefix(Random.permutation(deadCreatures),
-          min<int>(config->getNumGhostSpawns(), deadCreatures.size())))
-      addCreatureInTerritory(CreatureFactory::getGhost(dead), {});
-    spawnGhosts = 1000000;
-  } else
-  if (!spawnGhosts) {
-    if (Random.roll(1.0 / config->getGhostProb()))
-      spawnGhosts = getGlobalTime() + Random.get(250, 500);
-    else
-      spawnGhosts = 1000000;
-  }
-}
-
-int Collective::getNumKilled(double time) {
-  int ret = 0;
-  for (Creature* c : deadCreatures)
-    if (c->getDeathTime() >= time)
-      ++ret;
-  return ret;
-}
-
-void Collective::considerSendingGuardian() {
-  if (auto info = config->getGuardianInfo())
-    if (!getCreatures().empty() && (!lastGuardian || lastGuardian->isDead()) &&
-        Random.roll(1.0 / info->probability)) {
-      vector<Position> enemyPos = getEnemyPositions();
-      if (enemyPos.size() >= info->minEnemies && getNumKilled(getGlobalTime() - 200) >= info->minVictims) {
-        PCreature guardian = CreatureFactory::fromId(info->creature, getTribeId(),
-            MonsterAIFactory::singleTask(Task::chain(
-                Task::kill(this, Random.choose(enemyPos).getCreature()),
-                Task::goTo(Random.choose(territory->getExtended(10, 20))),
-                Task::disappear())));
-        lastGuardian = guardian.get();
-        getLevel()->landCreature(territory->getExtended(10, 20), std::move(guardian));
-      }
-    }
-}
-
 void Collective::update(bool currentlyActive) {
   control->update(currentlyActive);
   if (currentlyActive == config->activeImmigrantion(getGame()) &&
       Random.rollD(1.0 / config->getImmigrantFrequency()))
     considerImmigration();
-  if (isConquered())
-    considerSpawningGhosts();
 }
 
 void Collective::tick() {
@@ -1033,7 +987,6 @@ void Collective::tick() {
   considerBirths();
   decayMorale();
   considerBuildingBeds();
-  considerSendingGuardian();
 /*  if (nextPayoutTime > -1 && time > nextPayoutTime) {
     nextPayoutTime += config->getPayoutTime();
     makePayouts();
@@ -1277,7 +1230,10 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
       control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", MessagePriority::HIGH)
           .setPosition(victim->getPosition()));
   }
+  bool fighterKilled = hasTrait(victim, MinionTrait::FIGHTER) || victim == getLeader();
   removeCreature(victim);
+  if (isConquered() && fighterKilled)
+    getGame()->addEvent({EventId::CONQUERED_ENEMY, this});
 }
 
 void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
