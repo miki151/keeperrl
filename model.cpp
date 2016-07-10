@@ -80,9 +80,24 @@ void Model::updateSunlightMovement() {
     l->updateSunlightMovement();
 }
 
+void Model::checkCreatureConsistency() {
+  EntitySet<Creature> tmp;
+  for (Creature* c : timeQueue->getAllCreatures()) {
+    CHECK(!tmp.contains(c)) << c->getName().bare();
+    tmp.insert(c);
+  }
+  for (PCreature& c : deadCreatures) {
+    CHECK(!tmp.contains(c.get())) << c->getName().bare();
+    tmp.insert(c.get());
+  }
+}
+
 void Model::update(double totalTime) {
   if (Creature* creature = timeQueue->getNextCreature()) {
-    CHECK(!creature->isDead());
+    if (creature->isDead()) {
+      checkCreatureConsistency();
+      FAIL << "Dead: " << creature->getName().bare();
+    }
     currentTime = creature->getLocalTime();
     if (currentTime > totalTime)
       return;

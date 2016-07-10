@@ -115,6 +115,7 @@ class Model {
   Level* SERIAL(topLevel) = nullptr;
   friend class EventListener;
   HeapAllocated<EventGenerator<EventListener>> SERIAL(eventGenerator);
+  void checkCreatureConsistency();
 };
 
 #endif
