@@ -396,6 +396,7 @@ PGame MainLoop::prepareSingleMap(RandomGen& random) {
 
 void MainLoop::playGameChoice() {
   while (1) {
+    playMenuMusic();
     PGame game;
     RandomGen random;
     optional<int> choice = view->chooseFromList("", {
@@ -443,6 +444,10 @@ void MainLoop::showCredits(const string& path, View* view) {
   view->presentList("Credits", lines, false);
 }
 
+void MainLoop::playMenuMusic() {
+  jukebox->setType(MusicType::MAIN, true);
+}
+
 void MainLoop::start(bool tilesPresent) {
   if (options->getBoolValue(OptionId::MUSIC))
     jukebox->toggle(true);
@@ -458,7 +463,7 @@ void MainLoop::start(bool tilesPresent) {
         "More information on the website.");
   int lastIndex = 0;
   while (1) {
-    jukebox->setType(MusicType::MAIN, true);
+    playMenuMusic();
     optional<int> choice;
     if (forceGame)
       choice = 0;

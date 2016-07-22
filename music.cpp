@@ -89,6 +89,7 @@ void Jukebox::setType(MusicType c, bool now) {
 }
 
 void Jukebox::play(int index) {
+  stream.reset();
   stream.reset(new SoundStream(audioDevice, music[current].c_str(), getMaxVolume(current)));
 }
 

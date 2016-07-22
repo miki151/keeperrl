@@ -818,13 +818,18 @@ AsyncLoop::AsyncLoop(function<void()> init, function<void()> loop)
     : done(false), t([=] { init(); while (!done) { loop(); }}) {
 }
 
-void AsyncLoop::finish() {
+void AsyncLoop::setDone() {
   done = true;
 }
 
+void AsyncLoop::finishAndWait() {
+  setDone();
+  if (t.joinable())
+    t.join();
+}
+
 AsyncLoop::~AsyncLoop() {
-  finish();
-  t.join();
+  finishAndWait();
 }
 
 ConstructorFunction::ConstructorFunction(function<void()> fun) {

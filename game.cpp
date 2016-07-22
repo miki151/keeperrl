@@ -435,7 +435,7 @@ void Game::setCurrentMusic(MusicType type, bool now) {
 }
 
 bool Game::changeMusicNow() const {
-  return finishCurrentMusic;
+  return true;
 }
 
 const SunlightInfo& Game::getSunlightInfo() const {

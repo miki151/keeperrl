@@ -53,6 +53,8 @@ class MainLoop {
   void splashScreen();
   void showCredits(const string& path, View*);
 
+  void playMenuMusic();
+
   Table<PModel> prepareCampaignModels(Campaign& campaign, RandomGen& random);
   PModel keeperSingleMap(RandomGen& random);
   PModel quickGame(RandomGen& random);

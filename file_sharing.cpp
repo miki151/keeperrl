@@ -117,7 +117,7 @@ void FileSharing::uploadingLoop() {
   if (uploadFun)
     uploadFun();
   else
-    uploadLoop.finish();
+    uploadLoop.setDone();
 }
 
 void FileSharing::uploadGameEvent(const GameEvent& data1) {

@@ -185,7 +185,7 @@ void SoundStream::loop(double volume) {
 }
 
 SoundStream::~SoundStream() {
-  streamer.finish();
+  streamer.finishAndWait();
   ov_clear(file.get());
   alSourceStop(source.getSource());
   alDeleteBuffers(2, buffers);
