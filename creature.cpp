@@ -222,6 +222,7 @@ void Creature::spendTime(double t) {
   if (!isDead())
     if (Model* m = position.getModel())
       m->increaseLocalTime(this, 100.0 * t / (double) getAttr(AttrType::SPEED));
+  hidden = false;
 }
 
 CreatureAction Creature::forceMove(Vec2 dir) const {
