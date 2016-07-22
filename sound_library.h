@@ -4,22 +4,19 @@
 #include "sound.h"
 
 class Options;
-
-namespace cAudio {
-  class IAudioManager;
-  class IAudioSource;
-};
+class AudioDevice;
+class SoundBuffer;
 
 class SoundLibrary {
   public:
-  SoundLibrary(Options*, cAudio::IAudioManager*, const string& path);
+  SoundLibrary(Options*, AudioDevice&, const string& path);
   void playSound(const Sound&);
 
   private:
   void addSounds(SoundId, const string& path);
-  EnumMap<SoundId, vector<cAudio::IAudioSource*>> sounds;
+  EnumMap<SoundId, vector<SoundBuffer>> sounds;
   bool on;
-  cAudio::IAudioManager* cAudio;
+  AudioDevice& audioDevice;
 };
 
 

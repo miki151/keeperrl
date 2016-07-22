@@ -983,6 +983,6 @@ void Player::considerAdventurerMusic() {
       getGame()->setCurrentMusic(MusicType::ADV_BATTLE, true);
       return;
     }
-  getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL, false);
+  getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL, true);
 }
 

@@ -44,6 +44,7 @@
 #include "vision.h"
 #include "model_builder.h"
 #include "sound_library.h"
+#include "audio_device.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -56,8 +57,6 @@
 #include <tchar.h>
 
 #endif
-
-#include <cAudio/cAudio.h>
 
 #ifndef DATA_DIR
 #define DATA_DIR "."
@@ -351,13 +350,13 @@ static int keeperMain(const variables_map& vars) {
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
   Debug::setErrorCallback([&renderer](const string& s) { renderer.showError(s);});
   SoundLibrary* soundLibrary = nullptr;
-  cAudio::IAudioManager* cAudio = cAudio::createAudioManager(true);
+  AudioDevice audioDevice;
   Clock clock;
   GuiFactory guiFactory(renderer, &clock, &options);
   guiFactory.loadFreeImages(freeDataPath + "/images");
   if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
-    soundLibrary = new SoundLibrary(&options, cAudio, paidDataPath + "/sound");
+    soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath + "/sound");
   }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
@@ -388,7 +387,7 @@ static int keeperMain(const variables_map& vars) {
     viewInitialized = true;
   }
   Tile::initialize(renderer, tilesPresent);
-  Jukebox jukebox(&options, cAudio, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
+  Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
   optional<GameTypeChoice> forceGame;
@@ -414,7 +413,6 @@ static int keeperMain(const variables_map& vars) {
   } catch (GameExitException ex) {
   }
   jukebox.toggle(false);
-  cAudio::destroyAudioManager(cAudio);
   return 0;
 }
 

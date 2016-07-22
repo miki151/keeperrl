@@ -16,16 +16,13 @@
 #include "stdafx.h"
 #include "music.h"
 #include "options.h"
+#include "audio_device.h"
 
-#include <cAudio/cAudio.h>
-
-Jukebox::Jukebox(Options* options, cAudio::IAudioManager* audio, vector<pair<MusicType, string>> tracks,
+Jukebox::Jukebox(Options* options, AudioDevice& audio, vector<pair<MusicType, string>> tracks,
     float maxVol, map<MusicType, float> maxV)
-    : numTracks(tracks.size()), maxVolume(maxVol), maxVolumes(maxV), cAudio(audio) {
-  music.resize(numTracks);
+    : numTracks(tracks.size()), maxVolume(maxVol), maxVolumes(maxV), audioDevice(audio) {
   for (int i : All(tracks)) {
-    CHECK(music[i] = cAudio->create(tracks[i].second.c_str(), tracks[i].second.c_str()))
-      << "Failed to load track " << tracks[i].second;
+    music.emplace_back(tracks[i].second.c_str());
     byType[tracks[i].first].push_back(i);
   }
   options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { toggle(turnOn); });
@@ -53,10 +50,9 @@ void Jukebox::toggle(bool state) {
   if (on) {
     current = Random.choose(byType[getCurrentType()]);
     currentPlaying = current;
-    music[current]->setVolume(getMaxVolume(current));
-    CHECK(music[current]->play2d()) << "Failed to play track.";
+    play(current);
   } else
-    music[current]->stop();
+    stream.reset();
 }
 
 void Jukebox::setCurrent(MusicType c) {
@@ -92,26 +88,28 @@ void Jukebox::setType(MusicType c, bool now) {
   }
 }
 
+void Jukebox::play(int index) {
+  stream.reset(new SoundStream(audioDevice, music[current].c_str(), getMaxVolume(current)));
+}
+
 void Jukebox::refresh() {
   MusicLock lock(musicMutex);
   if (!on || !numTracks)
     return;
   if (current != currentPlaying) {
-    if (!music[currentPlaying]->isPlaying() || music[currentPlaying]->getVolume() == 0) {
+    if (!stream || !stream->isPlaying() || stream->getVolume() == 0) {
       currentPlaying = current;
-      music[current]->setVolume(getMaxVolume(current));
-      CHECK(music[current]->play2d()) << "Failed to play track.";
+      play(current);
     } else
-      music[currentPlaying]->setVolume(max(0.0f, music[currentPlaying]->getVolume() - volumeDec));
+      stream->setVolume(max(0.0, stream->getVolume() - volumeDec));
   } else
-  if (!music[currentPlaying]->isPlaying()) {
+  if (!stream || !stream->isPlaying()) {
     if (nextType) {
       setCurrent(*nextType);
       nextType.reset();
     } else
       continueCurrent();
     currentPlaying = current;
-    music[current]->setVolume(getMaxVolume(current));
-    CHECK(music[current]->play2d()) << "Failed to play track.";
+    play(current);
   }
 }

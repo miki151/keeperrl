@@ -19,23 +19,21 @@
 #include "util.h"
 
 class Options;
+class AudioDevice;
+class SoundStream;
 
 enum class MusicType { INTRO, MAIN, PEACEFUL, BATTLE, NIGHT, ADV_PEACEFUL, ADV_BATTLE };
 
-namespace cAudio {
-  class IAudioManager;
-  class IAudioSource;
-};
-
 class Jukebox {
   public:
-  Jukebox(Options*, cAudio::IAudioManager*, vector<pair<MusicType, string>> tracks, float maxVolume,
+  Jukebox(Options*, AudioDevice&, vector<pair<MusicType, string>> tracks, float maxVolume,
       map<MusicType, float> maxVolumes);
 
   void setType(MusicType, bool now);
   void toggle(bool on);
 
   private:
+  void play(int index);
   void setCurrent(MusicType);
   void continueCurrent();
   bool turnedOff();
@@ -45,7 +43,8 @@ class Jukebox {
   typedef std::unique_lock<std::recursive_mutex> MusicLock;
   std::recursive_mutex musicMutex;
 
-  vector<cAudio::IAudioSource*> music;
+  vector<string> music;
+  unique_ptr<SoundStream> stream;
   map<MusicType, vector<int>> byType;
   int current = 0;
   int currentPlaying = 0;
@@ -56,7 +55,7 @@ class Jukebox {
   map<MusicType, float> maxVolumes;
   optional<MusicType> nextType;
   optional<AsyncLoop> refreshLoop;
-  cAudio::IAudioManager* cAudio;
+  AudioDevice& audioDevice;
 };
 
 #endif

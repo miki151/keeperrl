@@ -88,7 +88,7 @@ endif
 
 SRCS = $(shell ls -t *.cpp)
 
-LIBS = -L/usr/lib/x86_64-linux-gnu -lGL -lSDL2 -lcAudio -lSDL2_image $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}
+LIBS = -L/usr/lib/x86_64-linux-gnu -lGL -lSDL2 -lopenal -lvorbis -lvorbisfile -lSDL2_image $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}
 
 
 OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))
