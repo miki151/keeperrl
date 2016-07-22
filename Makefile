@@ -79,6 +79,7 @@ TOROOT = ./../
 IPATH = -I. -I./extern
 
 CFLAGS += $(IPATH)
+CFLAGS += `pkg-config --cflags sdl2`
 
 ifdef OSX
 BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system -lboost_thread
