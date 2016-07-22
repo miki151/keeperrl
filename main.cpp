@@ -162,9 +162,7 @@ vector<pair<MusicType, string>> getMusicTracks(const string& path) {
     };
 }
 void makeDir(const string& path) {
-  boost::system::error_code code;
-  boost::filesystem::create_directory(path.c_str(), code);
-  CHECK(!code) << code.message();
+  boost::filesystem::create_directories(path.c_str());
 }
 
 static void fail() {
