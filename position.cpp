@@ -412,6 +412,7 @@ void Position::setNeedsRenderUpdate(bool s) {
 
 ViewObject& Position::modViewObject() {
   CHECK(isValid());
+  modSquare()->setDirty(*this);
   return modSquare()->modViewObject();
 }
 

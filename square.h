@@ -227,6 +227,7 @@ class Square : public Renderable {
   void setMemoryUpdated();
 
   void clearItemIndex(ItemIndex);
+  void setDirty(Position);
 
   SERIALIZATION_DECL(Square);
 
@@ -239,7 +240,6 @@ class Square : public Renderable {
   string SERIAL(name);
   void addTraitForTribe(Position, TribeId, MovementTrait);
   void removeTraitForTribe(Position, TribeId, MovementTrait);
-  void setDirty(Position);
 
   Inventory& getInventory();
   const Inventory& getInventory() const;
