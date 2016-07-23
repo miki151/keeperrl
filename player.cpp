@@ -732,7 +732,6 @@ void Player::privateMessage(const PlayerMessage& message) {
       if (message.getPriority() == MessagePriority::CRITICAL)
         view->presentText("Important!", message.getText());
     }
-    view->updateView(this, false);
   }
 }
 
