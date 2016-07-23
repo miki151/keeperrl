@@ -652,9 +652,10 @@ class SokobanHole : public Square {
 
   virtual void onEnterSpecial(Creature* c) override {
     if (c->getAttributes().isStationary()) {
-      c->getPosition().globalMessage(c->getName().the() + " fills the " + getName());
+      Position pos = c->getPosition();
+      pos.globalMessage(c->getName().the() + " fills the " + getName());
+      pos.replaceSquare(SquareFactory::get(SquareId::FLOOR));
       c->die(nullptr, false, false);
-      c->getPosition().getLevel()->replaceSquare(c->getPosition(), SquareFactory::get(SquareId::FLOOR));
     } else {
       if (!c->isAffected(LastingEffect::FLYING))
         c->you(MsgType::FALL, "into the " + getName() + "!");

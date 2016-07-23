@@ -265,7 +265,9 @@ PCreature CreatureFactory::getAdventurer(Model* m, int handicap) {
 }
 
 PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
-  return PCreature(new Creature(tribe, CATTR(
+  ViewObject viewObject(ViewId::BOULDER, ViewLayer::CREATURE);
+  viewObject.setModifier(ViewObjectModifier::NO_UP_MOVEMENT).setModifier(ViewObjectModifier::REMEMBER);
+  return PCreature(new Creature(viewObject, tribe, CATTR(
             c.viewId = ViewId::BOULDER;
             c.attr[AttrType::DEXTERITY] = 1;
             c.attr[AttrType::STRENGTH] = 1000;

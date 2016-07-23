@@ -119,6 +119,7 @@ class Position {
   void swapCreatures(Creature*);
   double getLight() const;
   optional<Position> getStairsTo(Position) const;
+  void replaceSquare(PSquare, bool storePrevious = true);
 
   SERIALIZATION_DECL(Position);
   int getHash() const;

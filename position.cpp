@@ -578,3 +578,9 @@ void Position::putCreature(Creature* c) {
   CHECK(isValid());
   level->putCreature(coord, c);
 }
+
+void Position::replaceSquare(PSquare s, bool storePrevious) {
+  CHECK(isValid());
+  getLevel()->replaceSquare(*this, std::move(s), storePrevious);
+}
+
