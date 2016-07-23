@@ -117,7 +117,6 @@ void Texture::loadFrom(SDL::SDL_Surface* image) {
   if (!texId) {
     texId = 0;
     SDL::glGenTextures(1, &(*texId));
-    std::cout << "Total tex" << ++totalTex << std::endl;
   }
   checkOpenglError();
   SDL::glBindTexture(GL_TEXTURE_2D, (*texId));
