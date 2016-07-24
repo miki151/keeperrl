@@ -24,6 +24,8 @@
 #include "location.h"
 #include "event_proxy.h"
 
+using namespace std::chrono;
+
 ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o) : random(r), meter(m), options(o),
   enemyFactory(EnemyFactory(random)) {
 }
@@ -418,7 +420,7 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName) {
   return ret;
 }
 
-static BiomeId getBiome(EnemyId enemyId, RandomGen& random) {
+static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
   switch (enemyId) {
     case EnemyId::KNIGHTS:
     case EnemyId::WARRIORS:
@@ -442,16 +444,16 @@ static BiomeId getBiome(EnemyId enemyId, RandomGen& random) {
     case EnemyId::ENTS: return BiomeId::FORREST;
     case EnemyId::BANDITS: return random.choose<BiomeId>();
     case EnemyId::CEMETERY: return random.choose(BiomeId::GRASSLAND, BiomeId::FORREST);
-    default: FAIL << "Unimplemented enemy in campaign " << EnumInfo<EnemyId>::getString(enemyId);
-             return BiomeId::FORREST;
+    default: return none;
   }
 }
 
 PModel ModelBuilder::tryCampaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type) {
   vector<EnemyInfo> enemyInfo { enemyFactory->get(enemyId).setVillainType(type).setSurprise()};
-  BiomeId biomeId = getBiome(enemyId, random);
-  addMapVillains(enemyInfo, biomeId);
-  return tryModel(170, siteName, enemyInfo, false, biomeId);
+  auto biomeId = getBiome(enemyId, random);
+  CHECK(biomeId) << "Unimplemented enemy in campaign " << EnumInfo<EnemyId>::getString(enemyId);
+  addMapVillains(enemyInfo, *biomeId);
+  return tryModel(170, siteName, enemyInfo, false, *biomeId);
 }
 
 PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
@@ -479,11 +481,13 @@ PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, 
 
 void ModelBuilder::measureSiteGen(int numTries) {
   measureModelGen(numTries, [this] { trySingleMapModel("pok"); });
-/*  for (EnemyId id : {EnemyId::SOKOBAN}) {
-//  for (EnemyId id : ENUM_ALL(EnemyId)) {
-    std::cout << "Measuring " << EnumInfo<EnemyId>::getString(id) << std::endl;
-    measureModelGen(numTries, [&] { tryCampaignSiteModel("", id, VillainType::LESSER); });
-  }*/
+  //measureModelGen(numTries, [this] { tryCampaignBaseModel("pok"); });
+/*  for (EnemyId id : {EnemyId::SOKOBAN})
+//  for (EnemyId id : ENUM_ALL(EnemyId))
+    if (!!getBiome(id, random)) {
+      std::cout << "Measuring " << EnumInfo<EnemyId>::getString(id) << std::endl;
+      measureModelGen(numTries, [&] { tryCampaignSiteModel("", id, VillainType::LESSER); });
+    }*/
 }
 
 void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
@@ -492,14 +496,9 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
   int minT = 1000000;
   double sumT = 0;
   for (int i : Range(numTries)) {
+    auto time = steady_clock::now();
     try {
-      // FIX this
-//      sf::Clock c;
       genFun();
-      int millis = 0;//c.getElapsedTime().asMilliseconds();
-      sumT += millis;
-      maxT = max(maxT, millis);
-      minT = min(minT, millis);
       ++numSuccess;
       std::cout << ".";
       std::cout.flush();
@@ -507,6 +506,10 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
       std::cout << "x";
       std::cout.flush();
     }
+    int millis = duration_cast<milliseconds>(steady_clock::now() - time).count();
+    sumT += millis;
+    maxT = max(maxT, millis);
+    minT = min(minT, millis);
   }
   std::cout << std::endl << numSuccess << " / " << numTries << " gens successful.\nMinT: " <<
     minT << "\nMaxT: " << maxT << "\nAvgT: " << sumT / numSuccess << std::endl;

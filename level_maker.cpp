@@ -1155,34 +1155,34 @@ class Mountains : public LevelMaker {
     Table<double> wys = genNoiseMap(builder->getRandom(), area, cornerLevels, varianceMult);
     raiseLocalMinima(wys);
     vector<double> values = sortedValues(wys);
-    double cutOffValSand = values[(int)(ratio[0] * double(values.size()))];
-    double cutOffValLand = values[(int)(ratio[1] * double(values.size()))];
-    double cutOffValHill = values[(int)(ratio[2] * double(values.size()))];
-    double cutOffVal = values[(int)(ratio[3] * double(values.size()))];
-    double cutOffValSnow = values[(int)(ratio[4] * double(values.size()))];
+    double cutOffValSand = values[(int)(ratio[0] * double(values.size() - 1))];
+    double cutOffValLand = values[(int)(ratio[1] * double(values.size() - 1))];
+    double cutOffValHill = values[(int)(ratio[2] * double(values.size() - 1))];
+    double cutOffVal = values[(int)(ratio[3] * double(values.size() - 1))];
+    double cutOffValSnow = values[(int)(ratio[4] * double(values.size() - 1))];
     int gCnt = 0, mCnt = 0, hCnt = 0, lCnt = 0, sCnt = 0, wCnt = 0;
     for (Vec2 v : area) {
       builder->setHeightMap(v, wys[v]);
-      if (wys[v] > cutOffValSnow) {
+      if (wys[v] >= cutOffValSnow) {
         builder->putSquare(v, types[0], SquareAttrib::GLACIER);
         builder->setSunlight(v, 0.0);
         ++gCnt;
       }
-      else if (wys[v] > cutOffVal) {
+      else if (wys[v] >= cutOffVal) {
         builder->putSquare(v, types[1], SquareAttrib::MOUNTAIN);
         builder->setSunlight(v, 1. - (wys[v] - cutOffVal) / (cutOffValSnow - cutOffVal));
         ++mCnt;
       }
-      else if (wys[v] > cutOffValHill) {
+      else if (wys[v] >= cutOffValHill) {
         builder->putSquare(v, types[2], SquareAttrib::HILL);
         ++hCnt;
       }
-      else if (wys[v] > cutOffValLand) {
+      else if (wys[v] >= cutOffValLand) {
         builder->putSquare(v, types[3]);
         builder->addAttrib(v, SquareAttrib::LOWLAND);
         ++lCnt;
       }
-      else if (wys[v] > cutOffValSand) {
+      else if (wys[v] >= cutOffValSand) {
         builder->putSquare(v, types[4]);
         builder->addAttrib(v, SquareAttrib::LOWLAND);
         ++sCnt;
@@ -1301,7 +1301,7 @@ class Forrest : public LevelMaker {
       : ratio(_ratio), density(_density), types(_types), probs(_probs), onType(_onType) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    Table<double> wys = genNoiseMap(builder->getRandom(), area, {0, 0, 0, 0, 0}, 0.5);
+    Table<double> wys = genNoiseMap(builder->getRandom(), area, {0, 0, 0, 0, 0}, 0.65);
     vector<double> values = sortedValues(wys);
     double cutoff = values[values.size() * ratio];
     for (Vec2 v : area)
@@ -1909,7 +1909,7 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
           Predicate::attrib(SquareAttrib::FORREST));
     case SettlementType::CAVE:
       return RandomLocations::LocationPredicate(
-          Predicate::type(SquareId::MOUNTAIN), Predicate::type(SquareId::HILL), 5, 15);
+          Predicate::type(SquareId::MOUNTAIN), Predicate::attrib(SquareAttrib::HILL), 5, 15);
     case SettlementType::VAULT:
     case SettlementType::ANT_NEST:
     case SettlementType::SMALL_MINETOWN:
@@ -2110,10 +2110,10 @@ static LevelMaker* getMountains(BiomeId id) {
   switch (id) {
     case BiomeId::GRASSLAND:
     case BiomeId::FORREST:
-      return new Mountains({0.0, 0.0, 0.75, 0.83, 0.95}, 0.45, {0, 1, 0, 0, 0},
+      return new Mountains({0.0, 0.0, 0.78, 0.83, 0.95}, 0.45, {0, 1, 0, 0, 0},
             {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND});
     case BiomeId::MOUNTAIN:
-      return new Mountains({0.0, 0.0, 0.05, 0.28, 0.75}, 0.45, {0, 1, 0, 0, 0},
+      return new Mountains({0.0, 0.0, 0.15, 0.25, 0.75}, 0.45, {0, 1, 0, 0, 0},
             {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND});
   }
 }
@@ -2127,11 +2127,11 @@ static LevelMaker* getForrest(BiomeId id) {
     case BiomeId::MOUNTAIN:
       return new MakerQueue({
           new Forrest(0.7, 0.5, SquareId::GRASS, vegetationLow, probs),
-          new Forrest(0.7, 0.5, SquareId::HILL, vegetationHigh, probs)});
+          new Forrest(0.8, 0.5, SquareId::HILL, vegetationHigh, probs)});
     case BiomeId::GRASSLAND:
       return new MakerQueue({
           new Forrest(0.3, 0.25, SquareId::GRASS, vegetationLow, probs),
-          new Forrest(0.3, 0.25, SquareId::HILL, vegetationHigh, probs)});
+          new Forrest(0.8, 0.25, SquareId::HILL, vegetationHigh, probs)});
     case BiomeId::FORREST:
       return new MakerQueue({
           new Forrest(0.8, 0.5, SquareId::GRASS, vegetationLow, probs),
@@ -2157,7 +2157,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   LevelMaker* startingPos = nullptr;
   if (keeperSpawn) {
     startingPos = new StartingPos(Predicate::alwaysTrue(), StairKey::keeperSpawn());
-    locations->add(startingPos, Vec2(4, 4), Predicate::type(SquareId::HILL));
+    locations->add(startingPos, Vec2(4, 4), RandomLocations::LocationPredicate(
+          Predicate::attrib(SquareAttrib::HILL), Predicate::attrib(SquareAttrib::MOUNTAIN), 1, 8));
   }
   struct CottageInfo {
     LevelMaker* maker;
