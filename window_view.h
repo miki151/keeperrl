@@ -159,8 +159,6 @@ class WindowView: public View {
   atomic<bool> refreshInput;
   atomic<bool> wasRendered;
 
-  typedef std::unique_lock<std::recursive_mutex> RenderLock;
-
   struct TileLayouts {
     vector<MapLayout> layouts;
     bool sprites;
@@ -171,7 +169,7 @@ class WindowView: public View {
 
   function<void()> getButtonCallback(UserInput);
 
-  std::recursive_mutex renderMutex;
+  recursive_mutex renderMutex;
 
   bool lockKeyboard = false;
 
@@ -213,7 +211,7 @@ class WindowView: public View {
 
   template<typename T>
   T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, optional<Vec2> origin = none) {
-    RenderLock lock(renderMutex);
+    RecursiveLock lock(renderMutex);
     TempClockPause pause(clock);
     if (blockingElems.empty()) {
       blockingElems.push_back(gui.darken());

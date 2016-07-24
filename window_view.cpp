@@ -193,7 +193,7 @@ void WindowView::mapRightClickFun(Vec2 pos) {
 }
 
 void WindowView::reset() {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   mapLayout = &currentTileLayout.layouts[0];
   gameReady = false;
   wasRendered = false;
@@ -320,7 +320,7 @@ void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, fu
 
 void WindowView::displaySplash(const ProgressMeter* meter, const string& text, SplashType type,
     function<void()> cancelFun) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   splashDone = false;
   renderDialog.push([=] {
     switch (type) {
@@ -498,7 +498,7 @@ void WindowView::resetCenter() {
 }
 
 void WindowView::addVoidDialog(function<void()> fun) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   Semaphore sem;
   renderDialog.push([this, &sem, fun] {
     fun();
@@ -531,7 +531,7 @@ void WindowView::updateView(CreatureView* view, bool noRefresh) {
     return;
   GameInfo newInfo;
   view->refreshGameInfo(newInfo);
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   wasRendered = false;
   guiBuilder.addUpsCounterTick();
   gameReady = true;
@@ -566,7 +566,7 @@ void WindowView::playSounds(const CreatureView* view) {
 }
 
 void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   if (trajectory.size() >= 2)
     mapGui->addAnimation(
         Animation::thrownObject(
@@ -578,7 +578,7 @@ void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
 }
 
 void WindowView::animation(Vec2 pos, AnimationId id) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   if (currentTileLayout.sprites)
     mapGui->addAnimation(Animation::fromId(id), pos);
 }
@@ -587,7 +587,7 @@ void WindowView::refreshView() {
   if (currentThreadId() != renderThreadId)
     return;
   {
-    RenderLock lock(renderMutex);
+    RecursiveLock lock(renderMutex);
 /*    if (!wasRendered && gameReady)
       rebuildGui();*/
     wasRendered = true;
@@ -617,7 +617,7 @@ void WindowView::drawMap() {
 
 void WindowView::refreshScreen(bool flipBuffer) {
   {
-    RenderLock lock(renderMutex);
+    RecursiveLock lock(renderMutex);
     if (fullScreenTrigger > -1) {
       renderer.setFullscreen(fullScreenTrigger);
       renderer.initialize();
@@ -667,7 +667,7 @@ optional<int> reverseIndexHeight(const vector<ListElem>& options, int height) {
 }
 
 optional<Vec2> WindowView::chooseDirection(const string& message) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   TempClockPause pause(clock);
   gameInfo.messageBuffer = { PlayerMessage(message) };
   SyncQueue<optional<Vec2>> returnQueue;
@@ -757,7 +757,7 @@ optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
 }
 
 optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   TempClockPause pause(clock);
   SyncQueue<optional<string>> returnQueue;
   addReturnDialog<optional<string>>(returnQueue, [=] ()-> optional<string> {
@@ -768,7 +768,7 @@ optional<string> WindowView::getText(const string& title, const string& value, i
 }
 
 optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, double* scrollPos1) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   uiLock = true;
   TempClockPause pause(clock);
   SyncQueue<optional<int>> returnQueue;
@@ -851,7 +851,7 @@ bool WindowView::creaturePrompt(const string& title, const vector<CreatureInfo>&
 }
 
 void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, optional<Vec2> origin) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   TempClockPause pause(clock);
   if (!origin)
     origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
@@ -928,7 +928,7 @@ optional<GameTypeChoice> WindowView::chooseGameType() {
     else
       return none;
   }
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   uiLock = true;
   TempClockPause pause(clock);
   SyncQueue<optional<GameTypeChoice>> returnQueue;
@@ -983,7 +983,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     menuType = MenuType::MAIN_NO_TILES;
   if (options.size() == 0)
     return none;
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   uiLock = true;
   inputQueue.push(UserInputId::REFRESH);
   TempClockPause pause(clock);

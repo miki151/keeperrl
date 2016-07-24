@@ -139,6 +139,10 @@ using std::make_tuple;
 using std::get;
 using std::hash;
 using std::array;
+
+using std::recursive_mutex;
+typedef std::unique_lock<recursive_mutex> RecursiveLock;
+
 #ifdef OSX
 using boost::thread;
 inline thread::id currentThreadId() { return boost::this_thread::get_id(); }

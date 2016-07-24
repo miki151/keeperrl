@@ -13,33 +13,47 @@ AudioDevice::AudioDevice() {
   alcMakeContextCurrent((ALCcontext*)context);
   alDistanceModel(AL_NONE);
   sources.resize(16);
-  alGenSources(sources.size(), sources.data());
   ids.resize(sources.size());
 }
 
 AudioDevice::~AudioDevice() {
-  alDeleteSources(sources.size(), sources.data());
+  RecursiveLock lock(mutex);
+  for (auto source : sources)
+    if (source) {
+      alDeleteSources(1, &*source);
+    }
   alcMakeContextCurrent(NULL);
   alcDestroyContext((ALCcontext*)context);
   alcCloseDevice((ALCdevice*)device);
 }
 
 optional<SoundSource> AudioDevice::getFreeSource() {
+  RecursiveLock lock(mutex);
   for (int i : All(sources)) {
     auto& source = sources[i];
-    ALint state;
-    alGetSourcei(source, AL_SOURCE_STATE, &state);
-    if (state != AL_PLAYING) {
-      alDeleteSources(1, &source); // recreating the source does a better job at cleaning up after streaming
-      alGenSources(1, &source);    // without it the old buffer queue still existed
-      return SoundSource(source, ++ids[i]);
+    if (!source) {
+      source.emplace();
+      alGenSources(1, &*source);
+      return SoundSource(*source, ++ids[i]);
+    } else {
+      ALint state;
+      alGetSourcei(*source, AL_SOURCE_STATE, &state);
+      if (state == AL_STOPPED) {
+        alDeleteSources(1, &*source); // recreating the source does a better job at cleaning up after streaming
+        alGenSources(1, &*source);    // without it the old buffer queue still existed
+        return SoundSource(*source, ++ids[i]);
+      }
     }
   }
   return none;
 } 
 
 void AudioDevice::play(const SoundBuffer& sound, double volume, double pitch) {
+  RecursiveLock lock(mutex);
   if (auto source = getFreeSource()) {
+    ALint state;
+    alGetSourcei(source->getSource(), AL_SOURCE_STATE, &state);
+    CHECK(state == AL_INITIAL);
     alSourcei(source->getSource(), AL_BUFFER, sound.getBufferId());
     alSourcef(source->getSource(), AL_PITCH, pitch);
     alSourcef(source->getSource(), AL_GAIN, volume);
@@ -48,7 +62,8 @@ void AudioDevice::play(const SoundBuffer& sound, double volume, double pitch) {
 }
 
 optional<unsigned int> AudioDevice::retrieveSource(const SoundSource& source) {
-  if (auto index = findElement(sources, source.getSource()))
+  RecursiveLock lock(mutex);
+  if (auto index = findElement(sources, optional<unsigned int>(source.getSource())))
     if (ids[*index] == source.getId())
       return sources[*index];
   return none;
@@ -120,6 +135,7 @@ SoundStream::SoundStream(AudioDevice& device, const char* path, double volume) :
 }
 
 bool SoundStream::isPlaying() const {
+  RecursiveLock lock(audioDevice.mutex);
   if (!startedPlaying)
     return true;
   if (auto sourceId = audioDevice.retrieveSource(source)) {
@@ -131,11 +147,13 @@ bool SoundStream::isPlaying() const {
 }
 
 void SoundStream::setVolume(double v) {
+  RecursiveLock lock(audioDevice.mutex);
   if (auto sourceId = audioDevice.retrieveSource(source))
     alSourcef(*sourceId, AL_GAIN, v);
 }
 
 double SoundStream::getVolume() const {
+  RecursiveLock lock(audioDevice.mutex);
   if (auto sourceId = audioDevice.retrieveSource(source)) {
     float ret;
     alGetSourcef(*sourceId, AL_GAIN, &ret);

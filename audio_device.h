@@ -64,7 +64,8 @@ class AudioDevice {
   optional<unsigned int> retrieveSource(const SoundSource&);
   void *device;
   void *context;
-  vector<unsigned int> sources;
+  vector<optional<unsigned int>> sources;
   vector<int> ids;
+  recursive_mutex mutex;
 };
 
