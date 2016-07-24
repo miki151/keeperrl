@@ -26,6 +26,7 @@ class SoundSource {
   SoundSource& operator = (SoundSource&&);
   SoundSource(SoundSource&&);
   OpenalId getId() const;
+  void destroy();
 
   private:
   optional<OpenalId> id;
