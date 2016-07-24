@@ -230,8 +230,8 @@ void Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
     default: break;
   }
   if (drop)
-    creature->getPosition().dropItem(getBodyPartItem(creature->getAttributes().getName().bare(), part,
-          isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE));
+    if (PItem item = getBodyPartItem(creature->getAttributes().getName().bare(), part))
+      creature->getPosition().dropItem(std::move(item));
 }
 
 template <typename T>
@@ -374,12 +374,12 @@ static int numCorpseItems(Body::Size size) {
   }
 }
 
-PItem Body::getBodyPartItem(const string& name, BodyPart part, ItemClass itemClass) {
+PItem Body::getBodyPartItem(const string& name, BodyPart part) {
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
       return ItemFactory::corpse(name + " " + getBodyPartName(part), name + " " + getBodyPartBone(part),
-        weight / 8, itemClass);
+        weight / 8, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
     case Material::CLAY:
     case Material::ROCK:
       return ItemFactory::fromId(ItemId::ROCK);
@@ -389,7 +389,7 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part, ItemClass itemCla
       return ItemFactory::fromId(ItemId::IRON_ORE);
     case Material::WOOD:
       return ItemFactory::fromId(ItemId::WOOD_PLANK);
-    default: return {};
+    default: return nullptr;
   }
 }
 

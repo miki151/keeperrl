@@ -410,7 +410,7 @@ void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
   double fireSize = 0;
   if (!inventoryEmpty())
     for (Item* it : getInventory().getItems())
-    fireSize = max(fireSize, it->getFireSize());
+      fireSize = max(fireSize, it->getFireSize());
   fireSize = max(fireSize, fire->getSize());
   ret.insert(getViewObject());
   for (const PTrigger& t : triggers)
