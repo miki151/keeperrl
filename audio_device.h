@@ -5,36 +5,37 @@
 struct OggVorbis_File;
 struct vorbis_info;
 
+typedef unsigned int OpenalId;
+
 class SoundBuffer {
   public:
   SoundBuffer(const char* path);
   ~SoundBuffer();
   SoundBuffer(SoundBuffer&&);
 
-  unsigned int getBufferId() const;
+  OpenalId getBufferId() const;
 
   private:
-  optional<unsigned int> bufferId;
+  optional<OpenalId> bufferId;
 };
 
 class SoundSource {
   public:
   SoundSource();
-  SoundSource(unsigned int source, int id);
-
-  unsigned int getSource() const;
-  int getId() const;
+  ~SoundSource();
+  SoundSource& operator = (SoundSource&&);
+  SoundSource(SoundSource&&);
+  OpenalId getId() const;
 
   private:
-  unsigned int source;
-  int id;
+  optional<OpenalId> id;
 };
 
 class AudioDevice;
 
 class SoundStream {
   public:
-  SoundStream(AudioDevice&, const char* path, double volume);
+  SoundStream(const char* path, double volume);
   bool isPlaying() const;
   ~SoundStream();
   void setVolume(double);
@@ -44,10 +45,9 @@ class SoundStream {
   void loop(double volume);
   void init(const char* path);
   SoundSource source;
-  unsigned int buffers[2];
+  OpenalId buffers[2];
   HeapAllocated<OggVorbis_File> file;
   vorbis_info *info;
-  AudioDevice& audioDevice;
   atomic<bool> startedPlaying;
   AsyncLoop streamer;
 };
@@ -60,12 +60,10 @@ class AudioDevice {
 
   private:
   friend SoundStream;
-  optional<SoundSource> getFreeSource();
-  optional<unsigned int> retrieveSource(const SoundSource&);
+  optional<OpenalId> getFreeSource();
   void *device;
   void *context;
-  vector<optional<unsigned int>> sources;
-  vector<int> ids;
+  vector<SoundSource> sources;
   recursive_mutex mutex;
 };
 
