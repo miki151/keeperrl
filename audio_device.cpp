@@ -49,7 +49,7 @@ void AudioDevice::play(const SoundBuffer& sound, double volume, double pitch) {
   if (auto source = getFreeSource()) {
     ALint state;
     alGetSourcei(*source, AL_SOURCE_STATE, &state);
-    CHECK(state == AL_INITIAL);
+    CHECK(state == AL_INITIAL) << state;
     alSourcei(*source, AL_BUFFER, sound.getBufferId());
     alSourcef(*source, AL_PITCH, pitch);
     alSourcef(*source, AL_GAIN, volume);
