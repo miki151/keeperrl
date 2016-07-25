@@ -1857,6 +1857,8 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
         if (c.getPlayerPos() && c.isInInfluence(pos))
           elem.push_back(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale,
                 sites[pos].isEnemy() ? colors[ColorId::RED] : colors[ColorId::GREEN]));
+        if (c.getPlayerPos() == pos && (!marked || !*marked)) // hacky way of checking this is adventurer embark position
+          elem.push_back(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale));
         if (activeFun(pos))
           elem.push_back(gui.stack(
                 gui.button([pos, clickFun] { clickFun(pos); }),
