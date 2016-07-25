@@ -111,6 +111,7 @@ void Jukebox::refresh() {
     } else
       continueCurrent();
     currentPlaying = current;
-    play(current);
+    if (getCurrentType() != MusicType::INTRO)
+      play(current);
   }
 }
