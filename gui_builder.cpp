@@ -857,18 +857,15 @@ PGuiElem GuiBuilder::drawRightPlayerInfo(PlayerInfo& info) {
     gui.icon(gui.HELP));
   for (int i : All(buttons)) {
     buttons[i] = gui.stack(
-        std::move(buttons[i]),
-        gui.button([this, i]() { minionTab = MinionTab(i); }),
         gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
-          [this, i] { return int(minionTab) == i;}));
+          [this, i] { return int(minionTab) == i;}),
+        std::move(buttons[i]),
+        gui.button([this, i]() { minionTab = MinionTab(i); }));
   }
   PGuiElem main;
-  vector<pair<MinionTab, PGuiElem>> elems = makeVec<pair<MinionTab, PGuiElem>>(
-    make_pair(MinionTab::INVENTORY, drawPlayerInventory(info)),
-    make_pair(MinionTab::HELP, drawPlayerHelp(info)));
-  for (auto& elem : elems)
-    if (elem.first == minionTab)
-      main = std::move(elem.second);
+  main = gui.stack(
+      gui.conditional(drawPlayerInventory(info), [this] { return minionTab == MinionTab::INVENTORY;}),
+      gui.conditional(drawPlayerHelp(info), [this] { return minionTab == MinionTab::HELP;}));
   main = gui.margins(std::move(main), 15, 24, 15, 5);
   int numButtons = buttons.size();
   PGuiElem butGui = gui.margins(
@@ -1408,8 +1405,7 @@ Rectangle GuiBuilder::getMenuPosition(MenuType type, int numElems) {
   int yOffset = 0;
   switch (type) {
     case MenuType::YES_NO:
-      ySpacing = (renderer.getSize().y - 200) / 2;
-      yOffset = - ySpacing + 100;
+      ySpacing = (renderer.getSize().y - 250) / 2;
       break;
     case MenuType::MAIN_NO_TILES:
       ySpacing = (renderer.getSize().y - windowHeight) / 2;
@@ -1857,6 +1853,8 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
         if (c.getPlayerPos() && c.isInInfluence(pos))
           elem.push_back(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale,
                 sites[pos].isEnemy() ? colors[ColorId::RED] : colors[ColorId::GREEN]));
+        if (c.getPlayerPos() == pos && (!marked || !*marked)) // hacky way of checking this is adventurer embark position
+          elem.push_back(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale));
         if (activeFun(pos))
           elem.push_back(gui.stack(
                 gui.button([pos, clickFun] { clickFun(pos); }),
@@ -2217,7 +2215,7 @@ PGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
               (!online && tabNum == i) ; }));
     if (i < numTabs)
     topLine.addElem(gui.stack(
-        gui.margins(gui.mouseHighlightClick(gui.mainMenuHighlight(), i, &tabNum), 32, 0, 32, 0),
+        gui.margins(gui.uiHighlightConditional([&tabNum, i] { return tabNum == i;}), 42, 0, 32, 0),
         gui.centeredLabel(Renderer::HOR, list[i].name),
         gui.button([&tabNum, i] { tabNum = i;})));
   }

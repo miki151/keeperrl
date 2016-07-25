@@ -337,7 +337,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
         case CampaignActionId::CONFIRM:
             if (numRetired > 0 || type != KEEPER ||
                 retired.getAllGames().empty() ||
-                view->yesOrNoPrompt("Imps are going to be sad if you don't add any retired dungeons. Continue?"))
+                view->yesOrNoPrompt("The imps are going to be sad if you don't add any retired dungeons. Continue?"))
               return campaign;
       }
       if (updateMap)

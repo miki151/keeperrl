@@ -660,7 +660,7 @@ void Game::addEvent(const GameEvent& event) {
   switch (event.getId()) {
     case EventId::CONQUERED_ENEMY: {
         Collective* col = event.get<Collective*>();
-        if (campaign) {
+        if (campaign && col->getVillainType()) {
           Vec2 coords = getModelCoords(col->getLevel()->getModel());
           if (!campaign->isDefeated(coords)) {
             if (auto retired = campaign->getSites()[coords].getRetired())

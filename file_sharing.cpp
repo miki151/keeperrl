@@ -123,7 +123,7 @@ void FileSharing::uploadingLoop() {
 void FileSharing::uploadGameEvent(const GameEvent& data1) {
   GameEvent data(data1);
   data.emplace("installId", toString(installId));
-  if (options.getBoolValue(OptionId::ONLINE))
+  if (options.getBoolValue(OptionId::ONLINE) && options.getBoolValue(OptionId::GAME_EVENTS))
     uploadGameEventImpl(data, 5);
 }
 
