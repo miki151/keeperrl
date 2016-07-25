@@ -301,10 +301,6 @@ void Game::tick(double time) {
     if (isVillainActive(col))
       col->update(col->getLevel()->getModel() == getCurrentModel());
   }
-  if (musicType == MusicType::PEACEFUL && sunlightInfo.getState() == SunlightState::NIGHT)
-    setCurrentMusic(MusicType::NIGHT, true);
-  else if (musicType == MusicType::NIGHT && sunlightInfo.getState() == SunlightState::DAY)
-    setCurrentMusic(MusicType::PEACEFUL, true);
 }
 
 void Game::exitAction() {
@@ -430,7 +426,10 @@ MusicType Game::getCurrentMusic() const {
 }
 
 void Game::setCurrentMusic(MusicType type, bool now) {
-  musicType = type;
+  if (type == MusicType::PEACEFUL && sunlightInfo.getState() == SunlightState::NIGHT)
+    musicType = MusicType::NIGHT;
+  else
+    musicType = type;
   finishCurrentMusic = now;
 }
 

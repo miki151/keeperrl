@@ -12,61 +12,56 @@ AudioDevice::AudioDevice() {
   CHECK(context = alcCreateContext((ALCdevice*)device, nullptr));
   alcMakeContextCurrent((ALCcontext*)context);
   alDistanceModel(AL_NONE);
-  sources.resize(16);
-  ids.resize(sources.size());
 }
 
 AudioDevice::~AudioDevice() {
   RecursiveLock lock(mutex);
-  for (auto source : sources)
-    if (source) {
-      alDeleteSources(1, &*source);
-    }
+  sources.clear();
   alcMakeContextCurrent(NULL);
   alcDestroyContext((ALCcontext*)context);
   alcCloseDevice((ALCdevice*)device);
 }
 
-optional<SoundSource> AudioDevice::getFreeSource() {
+const int maxSources = 12;
+
+#define AL(X) {X; checkError(__FILE__, __LINE__, #X); }
+
+static void checkError(const char* file, int line, const char* functionName) {
+  ALenum error = alGetError();
+  CHECK(!error) << file << ":" << line << " " << alGetString(error);
+}
+
+optional<OpenalId> AudioDevice::getFreeSource() {
   RecursiveLock lock(mutex);
   for (int i : All(sources)) {
     auto& source = sources[i];
-    if (!source) {
-      source.emplace();
-      alGenSources(1, &*source);
-      return SoundSource(*source, ++ids[i]);
-    } else {
-      ALint state;
-      alGetSourcei(*source, AL_SOURCE_STATE, &state);
-      if (state == AL_STOPPED) {
-        alDeleteSources(1, &*source); // recreating the source does a better job at cleaning up after streaming
-        alGenSources(1, &*source);    // without it the old buffer queue still existed
-        return SoundSource(*source, ++ids[i]);
-      }
+    ALint state;
+    AL(alGetSourcei(source.getId(), AL_SOURCE_STATE, &state));
+    if (state == AL_STOPPED) {
+      // recreating the source does a better job at cleaning up after streaming
+      // without it the old buffer queue still existed
+      source = SoundSource();
+      return source.getId();
     }
   }
-  return none;
+  if (sources.size() < maxSources) {
+    sources.emplace_back();
+    return sources.back().getId();
+  } else
+    return none;
 } 
 
 void AudioDevice::play(const SoundBuffer& sound, double volume, double pitch) {
   RecursiveLock lock(mutex);
   if (auto source = getFreeSource()) {
     ALint state;
-    alGetSourcei(source->getSource(), AL_SOURCE_STATE, &state);
-    CHECK(state == AL_INITIAL);
-    alSourcei(source->getSource(), AL_BUFFER, sound.getBufferId());
-    alSourcef(source->getSource(), AL_PITCH, pitch);
-    alSourcef(source->getSource(), AL_GAIN, volume);
-    alSourcePlay(source->getSource());
+    AL(alGetSourcei(*source, AL_SOURCE_STATE, &state));
+    CHECK(state == AL_INITIAL) << state;
+    AL(alSourcei(*source, AL_BUFFER, sound.getBufferId()));
+    AL(alSourcef(*source, AL_PITCH, pitch));
+    AL(alSourcef(*source, AL_GAIN, volume));
+    AL(alSourcePlay(*source));
   }
-}
-
-optional<unsigned int> AudioDevice::retrieveSource(const SoundSource& source) {
-  RecursiveLock lock(mutex);
-  if (auto index = findElement(sources, optional<unsigned int>(source.getSource())))
-    if (ids[*index] == source.getId())
-      return sources[*index];
-  return none;
 }
 
 static vector<char> readSoundData(OggVorbis_File& file, optional<int> length = none) {
@@ -91,17 +86,17 @@ SoundBuffer::SoundBuffer(const char* path) {
   vorbis_info* info = ov_info(&file, -1);
   ov_raw_seek(&file, 0);
   vector<char> buffer = readSoundData(file);
-  unsigned int id;
-  alGenBuffers(1, &id);
-  alBufferData(id, (info->channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, buffer.data(), buffer.size(),
-      info->rate);
+  OpenalId id;
+  AL(alGenBuffers(1, &id));
+  AL(alBufferData(id, (info->channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, buffer.data(), buffer.size(),
+      info->rate));
   bufferId = id;
   ov_clear(&file);
 }
 
 SoundBuffer::~SoundBuffer() {
   if (bufferId)
-    alDeleteBuffers(1, &(*bufferId));
+    AL(alDeleteBuffers(1, &(*bufferId)));
 }
 
 SoundBuffer::SoundBuffer(SoundBuffer&& o) {
@@ -109,93 +104,100 @@ SoundBuffer::SoundBuffer(SoundBuffer&& o) {
   o.bufferId = none;
 }
 
-unsigned int SoundBuffer::getBufferId() const {
+OpenalId SoundBuffer::getBufferId() const {
   return *bufferId;
 }
 
-SoundSource::SoundSource() : source(1234567), id(7656321) {
+SoundSource::SoundSource() {
+  id.emplace();
+  AL(alGenSources(1, &*id));
 }
 
-SoundSource::SoundSource(unsigned int s, int i) : source(s), id(i) {
+SoundSource::SoundSource(SoundSource&& o) {
+  id = o.id;
+  o.id = none;
 }
 
-unsigned int SoundSource::getSource() const {
-  return source;
+SoundSource& SoundSource::operator = (SoundSource&& o) {
+  if (id)
+    destroy();
+  id = o.id;
+  o.id = none;
+  return *this;
 }
 
-int SoundSource::getId() const {
-  return id;
+SoundSource::~SoundSource() {
+  if (id)
+    destroy();
+}
+
+OpenalId SoundSource::getId() const {
+  return *id;
+}
+
+void SoundSource::destroy() {
+  AL(alDeleteSources(1, &*id));
+  id.reset();
 }
 
 const int streamingBufferSize = 1 * 2 * 2 * 44100;
 
-SoundStream::SoundStream(AudioDevice& device, const char* path, double volume) : source(*device.getFreeSource()),
-      audioDevice(device), startedPlaying(false),
+SoundStream::SoundStream(const char* path, double volume) : startedPlaying(false),
       streamer([path, this]{init(path);}, [volume, this]{loop(volume);}) {
 }
 
 bool SoundStream::isPlaying() const {
-  RecursiveLock lock(audioDevice.mutex);
   if (!startedPlaying)
     return true;
-  if (auto sourceId = audioDevice.retrieveSource(source)) {
-    ALint state;
-    alGetSourcei(*sourceId, AL_SOURCE_STATE, &state);
-    return state == AL_PLAYING;
-  } else
-    return false;
+  ALint state;
+  AL(alGetSourcei(source.getId(), AL_SOURCE_STATE, &state));
+  return state == AL_PLAYING;
 }
 
 void SoundStream::setVolume(double v) {
-  RecursiveLock lock(audioDevice.mutex);
-  if (auto sourceId = audioDevice.retrieveSource(source))
-    alSourcef(*sourceId, AL_GAIN, v);
+  alSourcef(source.getId(), AL_GAIN, v);
 }
 
 double SoundStream::getVolume() const {
-  RecursiveLock lock(audioDevice.mutex);
-  if (auto sourceId = audioDevice.retrieveSource(source)) {
-    float ret;
-    alGetSourcef(*sourceId, AL_GAIN, &ret);
-    return ret;
-  } else
-    return 0;
+  float ret;
+  AL(alGetSourcef(source.getId(), AL_GAIN, &ret));
+  return ret;
 }
 
 void SoundStream::init(const char* path) {
   CHECK(ov_fopen(path, file.get()) == 0) << "Error opening audio file: " << path;
   info = ov_info(file.get(), -1);
-  alGenBuffers(2, buffers);
+  AL(alGenBuffers(2, buffers));
 }
 
 void SoundStream::loop(double volume) {
   int numQueued;
-  alGetSourcei(source.getSource(), AL_BUFFERS_QUEUED, &numQueued);
+  AL(alGetSourcei(source.getId(), AL_BUFFERS_QUEUED, &numQueued));
   if (numQueued == 0) { /*fill and queue initial buffers*/
     vector<char> data = readSoundData(*file, streamingBufferSize);
-    alBufferData(buffers[0], (info->channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data.data(),
-        data.size(), info->rate);
+    AL(alBufferData(buffers[0], (info->channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data.data(),
+        data.size(), info->rate));
     data = readSoundData(*file, streamingBufferSize);
-    alBufferData(buffers[1], (info->channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data.data(),
-        data.size(), info->rate);
-    alSourceQueueBuffers(source.getSource(), 2, buffers);
-    alSourcef(source.getSource(), AL_GAIN, volume);
-    alSourcePlay(source.getSource());
+    AL(alBufferData(buffers[1], (info->channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data.data(),
+        data.size(), info->rate));
+    AL(alSourceQueueBuffers(source.getId(), 2, buffers));
+    AL(alSourcef(source.getId(), AL_GAIN, volume));
+    AL(alSourcePlay(source.getId()));
     startedPlaying = true;
     CHECK(isPlaying());
   } else { /*refill processed buffers*/
     int numProcessed;
-    alGetSourcei(source.getSource(), AL_BUFFERS_PROCESSED, &numProcessed);
+    AL(alGetSourcei(source.getId(), AL_BUFFERS_PROCESSED, &numProcessed));
     while (numProcessed--) {
       vector<char> data = readSoundData(*file, streamingBufferSize);
       if (data.size() == 0)
         break;
       else {
         ALuint buffer;
-        alSourceUnqueueBuffers(source.getSource(), 1, &buffer);
-        alBufferData(buffer, (info->channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data.data(),
-            data.size(), info->rate);
-        alSourceQueueBuffers(source.getSource(), 1, &buffer);
+        AL(alSourceUnqueueBuffers(source.getId(), 1, &buffer));
+        AL(alBufferData(buffer, (info->channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data.data(),
+            data.size(), info->rate));
+        AL(alSourceQueueBuffers(source.getId(), 1, &buffer));
       }
     }
   }
@@ -205,7 +207,7 @@ void SoundStream::loop(double volume) {
 SoundStream::~SoundStream() {
   streamer.finishAndWait();
   ov_clear(file.get());
-  alSourceStop(source.getSource());
-  alDeleteBuffers(2, buffers);
+  source.destroy();
+  AL(alDeleteBuffers(2, buffers));
 }
 
