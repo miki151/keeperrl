@@ -1408,8 +1408,7 @@ Rectangle GuiBuilder::getMenuPosition(MenuType type, int numElems) {
   int yOffset = 0;
   switch (type) {
     case MenuType::YES_NO:
-      ySpacing = (renderer.getSize().y - 200) / 2;
-      yOffset = - ySpacing + 100;
+      ySpacing = (renderer.getSize().y - 250) / 2;
       break;
     case MenuType::MAIN_NO_TILES:
       ySpacing = (renderer.getSize().y - windowHeight) / 2;

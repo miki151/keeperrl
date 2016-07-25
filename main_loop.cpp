@@ -461,6 +461,12 @@ void MainLoop::start(bool tilesPresent) {
         "is the same exact game as the full version. If you'd like to buy the full version, "
         "please visit keeperrl.com.\n \nYou can also get it by donating to any wildlife charity. "
         "More information on the website.");
+  if (options->getIntValue(OptionId::GAME_EVENTS) == 1) {
+    if (view->yesOrNoPrompt("The imps would like to gather statistics while you're playing the game and send them anonymously to the developer. This would be very helpful in designing the game. Do you agree?"))
+      options->setValue(OptionId::GAME_EVENTS, 2);
+    else
+      options->setValue(OptionId::GAME_EVENTS, 0);
+  }
   int lastIndex = 0;
   while (1) {
     playMenuMusic();
