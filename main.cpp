@@ -85,7 +85,7 @@ void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<boo
 
 static bool tilesPresent;
 
-#ifdef OSX // see thread comment in stdafx.h
+#ifdef OSX // threads have a small stack by default on OSX, and we need a larger stack here for level gen
 static thread::attributes getAttributes() {
   thread::attributes attr;
   attr.set_stack_size(4096 * 4000);
@@ -96,8 +96,7 @@ static void runGame(function<void()> game, function<void()> render, bool singleT
   if (singleThread)
     game();
   else {
-    thread t(getAttributes(), game);
-    render();
+    FAIL << "Unimplemented";
   }
 }
 
