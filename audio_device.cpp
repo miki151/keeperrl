@@ -201,7 +201,7 @@ void SoundStream::loop(double volume) {
       }
     }
   }
-  std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  sleep_for(milliseconds(10));
 }
 
 SoundStream::~SoundStream() {

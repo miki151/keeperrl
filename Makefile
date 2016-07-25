@@ -19,9 +19,9 @@ endif
 
 
 ifdef OSX
-LDFLAGS += -Wl
+LDFLAGS += -Wl -L/usr/local/opt/openal-soft/lib
 CFLAGS += -stdlib=libc++ -DOSX -mmacosx-version-min=10.7
-CFLAGS += -DTEXT_SERIALIZATION
+CFLAGS += -DTEXT_SERIALIZATION -I/usr/local/opt/openal-soft/include
 else
 LDFLAGS = -Wl,-rpath=$(RPATH) -static-libstdc++
 endif
@@ -81,14 +81,16 @@ IPATH = -I. -I./extern
 CFLAGS += $(IPATH)
 
 ifdef OSX
-BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system -lboost_thread
+BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system -lboost_thread -lboost_chrono
+OPENGL_LIBS = -framework OpenGL
 else
 BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system
+OPENGL_LIBS = -lGL
 endif
 
 SRCS = $(shell ls -t *.cpp)
 
-LIBS = -L/usr/lib/x86_64-linux-gnu -lGL -lSDL2 -lopenal -lvorbis -lvorbisfile -lSDL2_image $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}
+LIBS = -L/usr/lib/x86_64-linux-gnu $(OPENGL_LIBS) -lSDL2 -lopenal -lvorbis -lvorbisfile -lSDL2_image $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}
 
 
 OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))

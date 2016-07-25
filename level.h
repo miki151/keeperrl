@@ -25,6 +25,7 @@
 #include "stair_key.h"
 #include "entity_set.h"
 #include "square_array.h"
+#include "view_object.h"
 
 class Model;
 class Square;

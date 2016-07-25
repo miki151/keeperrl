@@ -496,7 +496,9 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
   int minT = 1000000;
   double sumT = 0;
   for (int i : Range(numTries)) {
+#ifndef OSX // this triggers some compiler errors OSX, I don't need it there anyway.
     auto time = steady_clock::now();
+#endif
     try {
       genFun();
       ++numSuccess;
@@ -506,10 +508,12 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
       std::cout << "x";
       std::cout.flush();
     }
+#ifndef OSX
     int millis = duration_cast<milliseconds>(steady_clock::now() - time).count();
     sumT += millis;
     maxT = max(maxT, millis);
     minT = min(minT, millis);
+#endif
   }
   std::cout << std::endl << numSuccess << " / " << numTries << " gens successful.\nMinT: " <<
     minT << "\nMaxT: " << maxT << "\nAvgT: " << sumT / numSuccess << std::endl;

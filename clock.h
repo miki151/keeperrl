@@ -10,8 +10,8 @@ class Clock {
   int getRealMillis();
 
   private:
-  std::chrono::steady_clock::time_point pausedTime;
-  optional<std::chrono::steady_clock::time_point> lastPause;
+  steady_clock::time_point pausedTime;
+  optional<steady_clock::time_point> lastPause;
 };
 
 class Intervalometer {

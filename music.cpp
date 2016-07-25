@@ -28,7 +28,7 @@ Jukebox::Jukebox(Options* options, AudioDevice& audio, vector<pair<MusicType, st
   options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { toggle(turnOn); });
   refreshLoop.emplace([this] {
     refresh();
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    sleep_for(milliseconds(200));
 });
 }
 

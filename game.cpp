@@ -285,7 +285,7 @@ void Game::tick(double time) {
       if (campaign)
         uploadEvent("campaignStarted", campaign->getParameters());
       else
-        uploadEvent("singleStarted", {});
+        uploadEvent("singleStarted", map<string, string>());
     } else
       uploadEvent("turn", {{"turn", toString(turn)}});
     turnEvents.erase(turn);
