@@ -249,7 +249,7 @@ void WindowView::getAutosaveSplash(const ProgressMeter& meter) {
     renderer.drawFilledRectangle(bar, transparency(colors[ColorId::DARK_GREEN], 50));
     renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.top() + 20, "Autosaving", Renderer::HOR);
     renderer.drawAndClearBuffer();
-    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    sleep_for(milliseconds(30));
     Event event;
     while (renderer.pollEvent(event)) {
       propagateEvent(event, {});
@@ -274,7 +274,7 @@ void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) 
     if (cancelFun)
       renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.left(), cancelBut.top(), cancelText);
     renderer.drawAndClearBuffer();
-    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    sleep_for(milliseconds(30));
     Event event;
     while (renderer.pollEvent(event)) {
       propagateEvent(event, {});
@@ -306,7 +306,7 @@ void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, fu
     if (cancelFun)
       renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.left(), cancelBut.top(), cancelText);
     renderer.drawAndClearBuffer();
-    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    sleep_for(milliseconds(30));
     Event event;
     while (renderer.pollEvent(event)) {
       considerResizeEvent(event);

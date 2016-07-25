@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "clock.h"
 
-using namespace std::chrono;
-
 int Clock::getMillis() {
   if (lastPause)
     return duration_cast<milliseconds>(*lastPause - pausedTime).count();

@@ -145,9 +145,19 @@ typedef std::unique_lock<recursive_mutex> RecursiveLock;
 
 #ifdef OSX
 using boost::thread;
+using boost::this_thread::sleep_for;
+using boost::chrono::duration;
+using boost::chrono::milliseconds;
+using boost::chrono::steady_clock;
+using boost::chrono::duration_cast;
 inline thread::id currentThreadId() { return boost::this_thread::get_id(); }
 #else
 using std::thread;
+using std::this_thread::sleep_for;
+using std::chrono::duration;
+using std::chrono::milliseconds;
+using std::chrono::steady_clock;
+using std::chrono::duration_cast;
 inline thread::id currentThreadId() { return std::this_thread::get_id(); }
 #endif
 using std::atomic;
