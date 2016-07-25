@@ -857,18 +857,15 @@ PGuiElem GuiBuilder::drawRightPlayerInfo(PlayerInfo& info) {
     gui.icon(gui.HELP));
   for (int i : All(buttons)) {
     buttons[i] = gui.stack(
-        std::move(buttons[i]),
-        gui.button([this, i]() { minionTab = MinionTab(i); }),
         gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
-          [this, i] { return int(minionTab) == i;}));
+          [this, i] { return int(minionTab) == i;}),
+        std::move(buttons[i]),
+        gui.button([this, i]() { minionTab = MinionTab(i); }));
   }
   PGuiElem main;
-  vector<pair<MinionTab, PGuiElem>> elems = makeVec<pair<MinionTab, PGuiElem>>(
-    make_pair(MinionTab::INVENTORY, drawPlayerInventory(info)),
-    make_pair(MinionTab::HELP, drawPlayerHelp(info)));
-  for (auto& elem : elems)
-    if (elem.first == minionTab)
-      main = std::move(elem.second);
+  main = gui.stack(
+      gui.conditional(drawPlayerInventory(info), [this] { return minionTab == MinionTab::INVENTORY;}),
+      gui.conditional(drawPlayerHelp(info), [this] { return minionTab == MinionTab::HELP;}));
   main = gui.margins(std::move(main), 15, 24, 15, 5);
   int numButtons = buttons.size();
   PGuiElem butGui = gui.margins(

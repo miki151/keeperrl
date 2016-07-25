@@ -107,7 +107,7 @@ void Player::onEvent(const GameEvent& event) {
         Collective* col = event.get<Collective*>();
         if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER)
           privateMessage(PlayerMessage("The tribe of " + col->getName().getFull() + " is destroyed.",
-                MessagePriority::HIGH));
+                MessagePriority::CRITICAL));
       }
       break;
     case EventId::WON_GAME:
