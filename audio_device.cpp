@@ -184,7 +184,7 @@ void SoundStream::loop(double volume) {
     AL(alSourcef(source.getId(), AL_GAIN, volume));
     AL(alSourcePlay(source.getId()));
     startedPlaying = true;
-    CHECK(isPlaying());
+    //CHECK(isPlaying()); fails if I unplug/plug the speaker cable...?
   } else { /*refill processed buffers*/
     int numProcessed;
     AL(alGetSourcei(source.getId(), AL_BUFFERS_PROCESSED, &numProcessed));
