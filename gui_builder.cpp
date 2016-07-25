@@ -2218,7 +2218,7 @@ PGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
               (!online && tabNum == i) ; }));
     if (i < numTabs)
     topLine.addElem(gui.stack(
-        gui.margins(gui.mouseHighlightClick(gui.mainMenuHighlight(), i, &tabNum), 32, 0, 32, 0),
+        gui.margins(gui.uiHighlightConditional([&tabNum, i] { return tabNum == i;}), 42, 0, 32, 0),
         gui.centeredLabel(Renderer::HOR, list[i].name),
         gui.button([&tabNum, i] { tabNum = i;})));
   }
