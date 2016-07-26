@@ -491,6 +491,25 @@ void MainLoop::start(bool tilesPresent) {
   }
 }
 
+#ifdef OSX // see thread comment in stdafx.h
+static thread::attributes getAttributes() {
+  thread::attributes attr;
+  attr.set_stack_size(4096 * 4000);
+  return attr;
+}
+
+static thread makeThread(function<void()> fun) {
+  return thread(getAttributes(), fun);
+}
+
+#else
+
+static thread makeThread(function<void()> fun) {
+  return thread(fun);
+}
+
+#endif
+
 void MainLoop::doWithSplash(SplashType type, const string& text, int totalProgress,
     function<void(ProgressMeter&)> fun, function<void()> cancelFun) {
   ProgressMeter meter(1.0 / totalProgress);
@@ -498,7 +517,7 @@ void MainLoop::doWithSplash(SplashType type, const string& text, int totalProgre
   if (useSingleThread) {
     // A bit confusing, but the flag refers to using a single thread for rendering and gameplay.
     // This forces us to build the world on an extra thread to be able to display a progress bar.
-    thread t([fun, &meter, this] { fun(meter); view->clearSplash(); });
+    thread t = makeThread([fun, &meter, this] { fun(meter); view->clearSplash(); });
     view->refreshView();
     t.join();
   } else {
@@ -512,7 +531,7 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
   if (useSingleThread) {
     // A bit confusing, but the flag refers to using a single thread for rendering and gameplay.
     // This forces us to build the world on an extra thread to be able to display a progress bar.
-    thread t([fun, this] { fun(); view->clearSplash(); });
+    thread t = makeThread([fun, this] { fun(); view->clearSplash(); });
     view->refreshView();
     t.join();
   } else {
