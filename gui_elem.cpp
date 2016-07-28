@@ -2066,7 +2066,7 @@ void GuiFactory::loadNonFreeImages(const string& path) {
   if (auto tex = Texture::loadMaybe(path + "/menu_core.png")) {
     textures.emplace(TexId::MENU_CORE, std::move(*tex));
     textures.emplace(TexId::MENU_MOUTH, path + "/menu_mouth.png");
-  }else {
+  } else {
     textures.emplace(TexId::MENU_CORE, path + "/menu_core_sm.png");
     textures.emplace(TexId::MENU_MOUTH, path + "/menu_mouth_sm.png");
   }

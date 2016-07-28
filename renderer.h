@@ -88,12 +88,13 @@ class Texture {
   explicit Texture(SDL::SDL_Surface*);
   static optional<Texture> loadMaybe(const string& path);
 
-  void loadFrom(SDL::SDL_Surface*);
+  bool loadFrom(SDL::SDL_Surface*);
   const Vec2& getSize() const;
 
   ~Texture();
 
   private:
+  Texture();
   friend class Renderer;
   void render(Vec2 screenP, Vec2 screenK, Vec2 srcP, Vec2 srck, optional<Color> = none,
       bool vFlip = false, bool hFlip = false) const;

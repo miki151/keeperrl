@@ -113,7 +113,7 @@ Texture::~Texture() {
 
 static int totalTex = 0;
 
-void Texture::loadFrom(SDL::SDL_Surface* image) {
+bool Texture::loadFrom(SDL::SDL_Surface* image) {
   if (!texId) {
     texId = 0;
     SDL::glGenTextures(1, &(*texId));
@@ -144,8 +144,10 @@ void Texture::loadFrom(SDL::SDL_Surface* image) {
   SDL::glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
   checkOpenglError();
   SDL::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->w, image ->h, 0, mode, GL_UNSIGNED_BYTE, image->pixels);
-  checkOpenglError();
+  if (SDL::glGetError() != GL_NO_ERROR)
+    return false;
   size = Vec2(image->w, image->h);
+  return true;
 }
 
 Texture::Texture(const string& path, int px, int py, int w, int h) {
@@ -181,10 +183,14 @@ Texture& Texture::operator = (Texture&& tex) {
 }
 
 optional<Texture> Texture::loadMaybe(const string& path) {
-  if (SDL::SDL_Surface* image= SDL::IMG_Load(path.c_str())) {
-    Texture ret(image);
+  if (SDL::SDL_Surface* image = SDL::IMG_Load(path.c_str())) {
+    Texture ret;
+    bool ok = ret.loadFrom(image);
     SDL::SDL_FreeSurface(image);
-    return std::move(ret);
+    if (ok)
+      return std::move(ret);
+    else
+      return none;
   } else
     return none;
 }
@@ -197,6 +203,9 @@ void Texture::addTexCoord(int x, int y) const {
   SDL::glTexCoord2f((float)x / size.x, (float)y / size.y);
 }
 
+Texture::Texture() {
+}
+  
 void Texture::render(Vec2 a, Vec2 b, Vec2 p, Vec2 k, optional<Color> color, bool vFlip, bool hFlip) const {
   if (vFlip)
     swap(p.y, k.y);
