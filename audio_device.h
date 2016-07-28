@@ -56,6 +56,7 @@ class SoundStream {
 class AudioDevice {
   public:
   AudioDevice();
+  bool initialize();
   ~AudioDevice();
   void play(const SoundBuffer&, double volume, double pitch = 1);
 

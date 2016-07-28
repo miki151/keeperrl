@@ -8,18 +8,26 @@
 #include "audio_device.h"
 
 AudioDevice::AudioDevice() {
-  CHECK(device = alcOpenDevice(nullptr));
-  CHECK(context = alcCreateContext((ALCdevice*)device, nullptr));
-  alcMakeContextCurrent((ALCcontext*)context);
-  alDistanceModel(AL_NONE);
+}
+
+bool AudioDevice::initialize() {
+  if ((device = alcOpenDevice(nullptr))) {
+    CHECK(context = alcCreateContext((ALCdevice*)device, nullptr));
+    alcMakeContextCurrent((ALCcontext*)context);
+    alDistanceModel(AL_NONE);
+    return true;
+  } else
+    return false;
 }
 
 AudioDevice::~AudioDevice() {
-  RecursiveLock lock(mutex);
-  sources.clear();
-  alcMakeContextCurrent(NULL);
-  alcDestroyContext((ALCcontext*)context);
-  alcCloseDevice((ALCdevice*)device);
+  if (device) {
+    RecursiveLock lock(mutex);
+    sources.clear();
+    alcMakeContextCurrent(NULL);
+    alcDestroyContext((ALCcontext*)context);
+    alcCloseDevice((ALCdevice*)device);
+  }
 }
 
 const int maxSources = 12;

@@ -83,8 +83,6 @@ void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<boo
   }
 }
 
-static bool tilesPresent;
-
 #ifdef OSX // threads have a small stack by default on OSX, and we need a larger stack here for level gen
 static thread::attributes getAttributes() {
   thread::attributes attr;
@@ -129,12 +127,12 @@ static map<MusicType, float> getMaxVolumes() {
   return {{MusicType::ADV_BATTLE, 0.4}, {MusicType::ADV_PEACEFUL, 0.4}};
 }
 
-vector<pair<MusicType, string>> getMusicTracks(const string& path) {
-  if (!tilesPresent)
+vector<pair<MusicType, string>> getMusicTracks(const string& path, bool present) {
+  if (!present)
     return {};
   else
     return {
-      {MusicType::INTRO, path + "/intro.ogg"},
+    {MusicType::INTRO, path + "/intro.ogg"},
       {MusicType::MAIN, path + "/main.ogg"},
       {MusicType::PEACEFUL, path + "/peaceful1.ogg"},
       {MusicType::PEACEFUL, path + "/peaceful2.ogg"},
@@ -158,7 +156,7 @@ vector<pair<MusicType, string>> getMusicTracks(const string& path) {
       {MusicType::ADV_PEACEFUL, path + "/adv_peaceful3.ogg"},
       {MusicType::ADV_PEACEFUL, path + "/adv_peaceful4.ogg"},
       {MusicType::ADV_PEACEFUL, path + "/adv_peaceful5.ogg"},
-    };
+  };
 }
 void makeDir(const string& path) {
   boost::filesystem::create_directories(path.c_str());
@@ -320,7 +318,7 @@ static int keeperMain(const variables_map& vars) {
   string freeDataPath = dataPath + "/data_free";
   string paidDataPath = dataPath + "/data";
   string contribDataPath = dataPath + "/data_contrib";
-  tilesPresent = !vars.count("free_mode") && !!opendir(paidDataPath.c_str());
+  bool tilesPresent = !vars.count("free_mode") && !!opendir(paidDataPath.c_str());
   string userPath;
   if (vars.count("user_dir"))
     userPath = vars["user_dir"].as<string>();
@@ -350,12 +348,14 @@ static int keeperMain(const variables_map& vars) {
   Debug::setErrorCallback([&renderer](const string& s) { renderer.showError(s);});
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
+  bool audioOk = audioDevice.initialize();
   Clock clock;
   GuiFactory guiFactory(renderer, &clock, &options);
   guiFactory.loadFreeImages(freeDataPath + "/images");
   if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
-    soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath + "/sound");
+    if (audioOk)
+      soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath + "/sound");
   }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
@@ -386,7 +386,7 @@ static int keeperMain(const variables_map& vars) {
     viewInitialized = true;
   }
   Tile::initialize(renderer, tilesPresent);
-  Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music"), getMaxVolume(), getMaxVolumes());
+  Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && audioOk), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
   optional<GameTypeChoice> forceGame;
