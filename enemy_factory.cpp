@@ -199,7 +199,7 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           random.roll(4) ? LevelConnection{LevelConnection::MAZE, get(EnemyId::MINOTAUR)}
               : optional<LevelConnection>(none));
     case EnemyId::MINOTAUR:
-      EnemyInfo(CONSTRUCT(SettlementInfo,
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::MINOTAUR);
             c.numCreatures = 1;
             c.location = new Location("maze");
