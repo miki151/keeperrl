@@ -12,12 +12,15 @@ AudioDevice::AudioDevice() {
 
 bool AudioDevice::initialize() {
   if ((device = alcOpenDevice(nullptr))) {
-    CHECK(context = alcCreateContext((ALCdevice*)device, nullptr));
-    alcMakeContextCurrent((ALCcontext*)context);
-    alDistanceModel(AL_NONE);
-    return true;
-  } else
-    return false;
+    if ((context = alcCreateContext((ALCdevice*)device, nullptr))) {
+      alcMakeContextCurrent((ALCcontext*)context);
+      alDistanceModel(AL_NONE);
+      return true;
+    }
+  }
+  ALenum error = alGetError();
+  CHECK(!error) << "Failed to initialize audio " << alGetString(error);
+  return false;
 }
 
 AudioDevice::~AudioDevice() {
