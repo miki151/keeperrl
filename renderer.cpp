@@ -101,7 +101,7 @@ static void checkOpenglError() {
 Texture::Texture(const string& fileName){
   SDL::SDL_Surface* image= SDL::IMG_Load(fileName.c_str());
   CHECK(image) << SDL::IMG_GetError();
-  loadFrom(image);
+  CHECK(loadFrom(image));
   SDL::SDL_FreeSurface(image);
   path = fileName;
 }
@@ -161,13 +161,13 @@ Texture::Texture(const string& path, int px, int py, int w, int h) {
   CHECK(sub) << SDL::SDL_GetError();
   CHECK(!SDL_BlitSurface(image, &src, sub, &offset)) << SDL::SDL_GetError();
   SDL::SDL_FreeSurface(image);
-  loadFrom(sub);
+  CHECK(loadFrom(sub));
   SDL::SDL_FreeSurface(sub);
   this->path = path;
 }
 
 Texture::Texture(SDL::SDL_Surface* surface) {
-  loadFrom(surface);
+  CHECK(loadFrom(surface));
 }
 
 Texture::Texture(Texture&& tex) {
@@ -189,10 +189,8 @@ optional<Texture> Texture::loadMaybe(const string& path) {
     SDL::SDL_FreeSurface(image);
     if (ok)
       return std::move(ret);
-    else
-      return none;
-  } else
-    return none;
+  }
+  return none;
 }
 
 const Vec2& Texture::getSize() const {
