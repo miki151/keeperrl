@@ -26,6 +26,8 @@ class TaskCallback {
 
   template <class Archive> 
   void serialize(Archive&, const unsigned int) {}
+
+  virtual ~TaskCallback() {}
 };
 
 #endif

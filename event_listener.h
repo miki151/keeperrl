@@ -80,7 +80,7 @@ class EventListener {
 
   EventListener();
   EventListener(Model*);
-  ~EventListener();
+  virtual ~EventListener();
 
   void subscribeTo(Model*);
   void unsubscribe();

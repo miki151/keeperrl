@@ -18,6 +18,8 @@ class EventProxy : public EventListener {
     owner->onEvent(e);
   }
 
+  virtual ~EventProxy() {}
+
   private:
   T* SERIAL(owner) = nullptr;
 };
