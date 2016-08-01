@@ -319,21 +319,6 @@ inline void serialize(Archive & ar, std::vector<T, Allocator> & t, unsigned int 
   boost::serialization::split_free(ar, t, file_version);
 }
 
-#ifdef CLANG // clang doesn't see the serialization of std::array in boost, for some reason
-#ifndef OSX
-template <class Archive, class T, std::size_t N>
-void serialize(Archive& ar, std::array<T,N>& a, const unsigned int)
-{
-    ar & boost::serialization::make_nvp(
-        "elems",
-        *static_cast<T (*)[N]>(static_cast<void *>(a.data()))
-    );
-
-}
-
-#endif
-#endif
-
 #ifdef DEBUG_STL
 // stl debug dummies
 
