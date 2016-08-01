@@ -37,6 +37,7 @@
 #include "collective_name.h"
 #include "creature_attributes.h"
 #include "event_proxy.h"
+#include "villain_type.h"
 
 struct Collective::ItemFetchInfo {
   ItemIndex index;
@@ -1108,10 +1109,11 @@ vector<Creature*> Collective::getCreatures(EnumSet<MinionTrait> with, EnumSet<Mi
 }
 
 double Collective::getKillManaScore(const Creature* victim) const {
-  int ret = victim->getDifficultyPoints() / 3;
+  return 0;
+/*  int ret = victim->getDifficultyPoints() / 3;
   if (victim->isAffected(LastingEffect::SLEEP))
     ret *= 2;
-  return ret;
+  return ret;*/
 }
 
 void Collective::addMoraleForKill(const Creature* killer, const Creature* victim) {
@@ -1131,6 +1133,15 @@ void Collective::decreaseMoraleForBanishing(const Creature*) {
 
 void Collective::onKillCancelled(Creature* c) {
 }
+
+static int getManaForConquering(VillainType type) {
+  switch (type) {
+    case VillainType::MAIN: return 400;
+    case VillainType::LESSER: return 200;
+    default: return 0;
+  }
+}
+
 
 void Collective::onEvent(const GameEvent& event) {
   switch (event.getId()) {
@@ -1208,6 +1219,12 @@ void Collective::onEvent(const GameEvent& event) {
     case EventId::EQUIPED:
       minionEquipment->own(event.get<EventInfo::ItemsHandled>().creature,
           getOnlyElement(event.get<EventInfo::ItemsHandled>().items));
+      break;
+    case EventId::CONQUERED_ENEMY: {
+        Collective* col = event.get<Collective*>();
+        if (col->getVillainType())
+          addMana(getManaForConquering(*col->getVillainType()));
+      }
       break;
     default:
       break;
