@@ -812,7 +812,7 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addSpace();
-  if (!info.team.empty()) {
+  if (info.team.size() > 1) {
     const int numPerLine = 6;
     vector<int> widths { 60 };
     vector<PGuiElem> currentLine = makeVec<PGuiElem>(
