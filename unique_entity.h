@@ -34,6 +34,7 @@ class UniqueEntity {
 
     private:
     long long SERIAL(key);
+    int SERIAL(hash);
   };
   Id getUniqueId() const;
 

@@ -1,21 +1,22 @@
 #ifndef _SOUND_LIBRARY
 #define _SOUND_LIBRARY
 
-#include <SFML/Audio/Music.hpp>
-
 #include "sound.h"
 
 class Options;
+class AudioDevice;
+class SoundBuffer;
 
 class SoundLibrary {
   public:
-  SoundLibrary(Options*, const string& path);
+  SoundLibrary(Options*, AudioDevice&, const string& path);
   void playSound(const Sound&);
 
   private:
   void addSounds(SoundId, const string& path);
-  EnumMap<SoundId, vector<unique_ptr<sf::Music>>> sounds;
+  EnumMap<SoundId, vector<SoundBuffer>> sounds;
   bool on;
+  AudioDevice& audioDevice;
 };
 
 

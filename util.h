@@ -38,7 +38,8 @@ T fromString(const string& s) {
   std::stringstream ss(s);
   T t;
   ss >> t;
-  CHECK(ss) << "Error parsing " << s << " to " << typeid(T).name();
+  if (!ss)
+    throw ParsingException();
   return t;
 }
 
@@ -245,6 +246,7 @@ class Rectangle {
   Vec2 getSize() const;
   Range getYRange() const;
   Range getXRange() const;
+  int area() const;
 
   Vec2 topLeft() const;
   Vec2 bottomRight() const;
@@ -331,9 +333,7 @@ class EnumInfo<Name> { \
   }\
 }
 
-
-extern const vector<Vec2> neighbors;
-
+std::string operator "" _s(const char* str, size_t);
 class RandomGen {
   public:
   RandomGen() {}
@@ -372,11 +372,9 @@ class RandomGen {
     return choose(vector<T>(vi), vector<double>(pi));
   }
 
-  template <typename T>
-  T choose(initializer_list<T> vi) {
-    vector<T> v(vi);
-    vector<double> pi(v.size(), 1);
-    return choose(v, pi);
+  template <typename T, typename... Args>
+  const T& choose(T const& first, T const& second, const Args&... rest) {
+    return chooseImpl(first, 2, second, rest...);
   }
 
   template <typename T>
@@ -438,6 +436,17 @@ class RandomGen {
   private:
   default_random_engine generator;
   std::uniform_real_distribution<double> defaultDist;
+
+  template <typename T>
+  const T& chooseImpl(T const& cur, int total) {
+    return cur;
+  }
+
+  template <typename T, typename... Args>
+  const T& chooseImpl(T const& chosen, int total,  T const& next, const Args&... rest) {
+    const T& nextChosen = roll(total) ? next : chosen;
+    return chooseImpl(nextChosen, total + 1, rest...);
+  }
 };
 
 extern RandomGen Random;
@@ -1518,6 +1527,8 @@ class AsyncLoop {
   public:
   AsyncLoop(function<void()> init, function<void()> loop);
   AsyncLoop(function<void()>);
+  void setDone();
+  void finishAndWait();
   ~AsyncLoop();
 
   private:

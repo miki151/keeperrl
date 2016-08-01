@@ -4,9 +4,9 @@
 #include "sound.h"
 #include "options.h"
 
-using sf::Music;
+#include "audio_device.h"
 
-SoundLibrary::SoundLibrary(Options* options, const string& path) {
+SoundLibrary::SoundLibrary(Options* options, AudioDevice& audio, const string& path) : audioDevice(audio) {
 #ifdef DISABLE_SFX
   on = false;
 #else
@@ -23,10 +23,8 @@ void SoundLibrary::addSounds(SoundId id, const string& path) {
   vector<string> files;
   while (dirent* ent = readdir(dir)) {
     string name(ent->d_name);
-    if (endsWith(name, ".ogg")) {
-      sounds[id].emplace_back(new Music());
-      CHECK(sounds[id].back()->openFromFile(path + "/" + name));
-    }
+    if (endsWith(name, ".ogg"))
+      sounds[id].emplace_back((path + "/" + name).c_str());
   }
 }
 
@@ -35,7 +33,6 @@ void SoundLibrary::playSound(const Sound& s) {
     return;
   if (int numSounds = sounds[s.getId()].size()) {
     int ind = Random.get(numSounds);
-    sounds[s.getId()][ind]->setPitch(s.getPitch());
-    sounds[s.getId()][ind]->play();
+    audioDevice.play(sounds[s.getId()][ind], 1.0, s.getPitch());
   }
 }

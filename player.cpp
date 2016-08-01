@@ -41,51 +41,87 @@
 #include "collective.h"
 #include "territory.h"
 #include "creature_attributes.h"
+#include "attack_level.h"
+#include "villain_type.h"
+#include "event_proxy.h"
+#include "visibility_map.h"
+#include "collective_name.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(Controller)
-    & SVAR(travelling)
-    & SVAR(travelDir)
-    & SVAR(target)
-    & SVAR(lastLocation)
-    & SVAR(displayGreeting)
-    & SVAR(levelMemory)
-    & SVAR(messages)
-    & SVAR(messageHistory);
+  ar& SUBCLASS(Controller);
+  serializeAll(ar, travelling, travelDir, target, lastLocation, displayGreeting, levelMemory, messages);
+  serializeAll(ar, messageHistory, adventurer, eventProxy, visibilityMap);
 }
 
 SERIALIZABLE(Player);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
-Player::Player(Creature* c, bool greeting, MapMemory* memory) :
-    Controller(c), levelMemory(memory), displayGreeting(greeting) {
+Player::Player(Creature* c, Model* m, bool adv, MapMemory* memory) :
+    Controller(c), levelMemory(memory), eventProxy(this, m), adventurer(adv), displayGreeting(adventurer) {
+  visibilityMap->update(c, c->getVisibleTiles());
 }
 
 Player::~Player() {
 }
 
-void Player::onThrowEvent(const Level* l, const Item* item, const vector<Vec2>& trajectory) {
-  if (getCreature()->getPosition().isSameLevel(l))
-    for (Vec2 v : trajectory)
-      if (getCreature()->canSee(v)) {
-        getView()->animateObject(trajectory, item->getViewObject());
-        return;
+void Player::onEvent(const GameEvent& event) {
+  switch (event.getId()) {
+    case EventId::MOVED: 
+      if (event.get<Creature*>() == getCreature())
+        visibilityMap->update(getCreature(), getCreature()->getVisibleTiles());
+      break;
+    case EventId::ITEMS_THROWN: {
+        auto info = event.get<EventInfo::ItemsThrown>();
+        if (getCreature()->getPosition().isSameLevel(info.level))
+          for (Vec2 v : info.trajectory)
+            if (getCreature()->canSee(v)) {
+              getView()->animateObject(info.trajectory, info.items[0]->getViewObject());
+              return;
+            }
       }
-}
-
-void Player::onExplosionEvent(Position pos) {
-  if (getCreature()->getPosition().isSameLevel(pos)) {
-    if (getCreature()->canSee(pos))
-      getView()->animation(pos.getCoord(), AnimationId::EXPLOSION);
-    else
-      privateMessage("BOOM!");
+      break;
+    case EventId::EXPLOSION: {
+        Position pos = event.get<Position>();
+        if (getCreature()->getPosition().isSameLevel(pos)) {
+          if (getCreature()->canSee(pos))
+            getView()->animation(pos.getCoord(), AnimationId::EXPLOSION);
+          else
+            privateMessage("BOOM!");
+        }
+      }
+      break;
+    case EventId::ALARM: {
+        Position pos = event.get<Position>();
+        Position myPos = getCreature()->getPosition();
+        if (pos == myPos)
+          privateMessage("An alarm sounds near you.");
+        else if (pos.isSameLevel(myPos))
+          privateMessage("An alarm sounds in the " + 
+              getCardinalName(myPos.getDir(pos).getBearing().getCardinalDir()));
+      }
+      break;
+    case EventId::CONQUERED_ENEMY:
+      if (adventurer) {
+        Collective* col = event.get<Collective*>();
+        if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER)
+          privateMessage(PlayerMessage("The tribe of " + col->getName().getFull() + " is destroyed.",
+                MessagePriority::CRITICAL));
+      }
+      break;
+    case EventId::WON_GAME:
+        if (adventurer)
+          getGame()->conquered(*getCreature()->getName().first(), getCreature()->getKills().getSize(),
+              getCreature()->getPoints());
+        break;
+    default:
+      break;
   }
 }
 
-ControllerFactory Player::getFactory(MapMemory* levelMemory) {
-  return ControllerFactory([=](Creature* c) { return new Player(c, true, levelMemory);});
+ControllerFactory Player::getFactory(Model* m, MapMemory* levelMemory) {
+  return ControllerFactory([=](Creature* c) { return new Player(c, m, true, levelMemory);});
 }
 
 static string getSlotSuffix(EquipmentSlot slot) {
@@ -127,7 +163,7 @@ static string getSquareQuestion(SquareApplyType type, string name) {
     case SquareApplyType::DRINK: return "drink from " + name;
     case SquareApplyType::PRAY: return "pray at " + name;
     case SquareApplyType::SLEEP: return "sleep on " + name;
-    case SquareApplyType::NOTICE_BOARD: return "read " + name;
+    case SquareApplyType::NOTICE_BOARD: return "view " + name;
     default: break;
   }
   return "";
@@ -158,7 +194,7 @@ bool Player::tryToPerform(CreatureAction action) {
   if (action)
     action.perform(getCreature());
   else
-    getCreature()->playerMessage(action.getFailedReason());
+    privateMessage(action.getFailedReason());
   return !!action;
 }
 
@@ -331,7 +367,7 @@ bool Player::interruptedByEnemy() {
 }
 
 void Player::travelAction() {
-  updateView = true;
+/*  updateView = true;
   if (!getCreature()->move(travelDir) || getView()->travelInterrupt() || interruptedByEnemy()) {
     travelling = false;
     return;
@@ -355,7 +391,7 @@ void Player::travelAction() {
     Debug() << "Stopped by bad travel data";
     return;
   }
-  travelDir = squareDirs[(*myIndex + 1) % 2];
+  travelDir = squareDirs[(*myIndex + 1) % 2];*/
 }
 
 void Player::targetAction() {
@@ -480,7 +516,7 @@ void Player::extendedAttackAction(Creature::Id id) {
 
 void Player::extendedAttackAction(Creature* other) {
   vector<ListElem> elems;
-  vector<AttackLevel> levels = getCreature()->getAttributes().getAttackLevels();
+  vector<AttackLevel> levels = getCreature()->getBody().getAttackLevels();
   for (auto level : levels)
     switch (level) {
       case AttackLevel::LOW: elems.push_back(ListElem("Low").setTip("Aim at lower parts of the body.")); break;
@@ -505,14 +541,11 @@ void Player::retireMessages() {
 }
 
 void Player::makeMove() {
-  if (!getGame()->getPlayerCollective()) {
+  if (adventurer)
     considerAdventurerMusic();
-    considerKeeperDirectionMessage();
-  }
   if (currentTimePos && currentTimePos->pos.getLevel() != getCreature()->getLevel()) {
     previousTimePos = currentTimePos = none;
   }
-  vector<Vec2> squareDirs = getCreature()->getPosition().getTravelDir();
   if (getCreature()->isAffected(LastingEffect::HALLU))
     ViewObject::setHallu(true);
   else
@@ -527,8 +560,8 @@ void Player::makeMove() {
     MEASURE(
         getView()->updateView(this, false),
         "level render time");
-  } else
-    getView()->refreshView();
+  } 
+  getView()->refreshView();
   if (displayTravelInfo && getCreature()->getPosition().getName() == "road" 
       && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
@@ -536,8 +569,8 @@ void Player::makeMove() {
   }
   if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     CHECK(getCreature()->getName().first());
-    getView()->presentText("", "Dear " + *getCreature()->getName().first() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + getGame()->getWorldName() + ". There is a band of dwarves dwelling in caves under a mountain. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
-    getView()->presentText("", "Judging by the corpses lying around here, you suspect that new circumstances may have arisen.");
+    getView()->updateView(this, true);
+    getView()->presentText("", "Dear " + *getCreature()->getName().first() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + getGame()->getWorldName() + ". This land is swarming with evil, and you need to destroy all of it, like in a bad RPG game. Humans, dwarves and elves are your allies. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
     displayGreeting = false;
     getView()->updateView(this, false);
   }
@@ -625,13 +658,13 @@ void Player::makeMove() {
       if (Creature* other = getCreature()->getPosition().plus(dir).getCreature())
         extendedAttackAction(other);
       else {
-        vector<Vec2> squareDirs = getCreature()->getPosition().getTravelDir();
+/*        vector<Vec2> squareDirs = getCreature()->getPosition().getTravelDir();
         if (findElement(squareDirs, dir)) {
           travelDir = dir;
           lastLocation = getCreature()->getPosition().getLocation();
           travelling = true;
           travelAction();
-        }
+        }*/
       }
     } else {
       moveAction(dir);
@@ -685,17 +718,19 @@ bool Player::isPlayer() const {
 }
 
 void Player::privateMessage(const PlayerMessage& message) {
-  if (message.getText().size() < 2)
-    return;
-  if (auto title = message.getAnnouncementTitle())
-    getView()->presentText(*title, message.getText());
-  else {
-    messageHistory.push_back(message);
-    if (!messages.empty() && messages.back().getFreshness() < 1)
-      messages.clear();
-    messages.emplace_back(message);
-    if (message.getPriority() == MessagePriority::CRITICAL)
-      getView()->presentText("Important!", message.getText());
+  if (View* view = getView()) {
+    if (message.getText().size() < 2)
+      return;
+    if (auto title = message.getAnnouncementTitle())
+      view->presentText(*title, message.getText());
+    else {
+      messageHistory.push_back(message);
+      if (!messages.empty() && messages.back().getFreshness() < 1)
+        messages.clear();
+      messages.emplace_back(message);
+      if (message.getPriority() == MessagePriority::CRITICAL)
+        view->presentText("Important!", message.getText());
+    }
   }
 }
 
@@ -778,7 +813,7 @@ void Player::you(MsgType type, const string& param) {
   privateMessage(msg);
 }
 
-const Level* Player::getLevel() const {
+Level* Player::getLevel() const {
   return getCreature()->getLevel();
 }
 
@@ -787,7 +822,10 @@ Game* Player::getGame() const {
 }
 
 View* Player::getView() const {
-  return getGame()->getView();
+  if (Game* game = getGame())
+    return game->getView();
+  else
+    return nullptr;
 }
 
 Vec2 Player::getPosition() const {
@@ -807,7 +845,7 @@ void Player::onDisplaced() {
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  bool canSee = getCreature()->canSee(pos);
+  bool canSee = getCreature()->canSee(pos) || getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);
   Position position = getCreature()->getPosition().withCoord(pos);
   if (canSee)
     position.getViewIndex(index, getCreature());
@@ -832,10 +870,12 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
 }
 
 void Player::onKilled(const Creature* attacker) {
+  eventProxy->unsubscribe();
   getView()->updateView(this, false);
   if (getView()->yesOrNoPrompt("Display message history?"))
     showHistory();
-  getGame()->gameOver(getCreature(), getCreature()->getKills().getSize(), "monsters", getCreature()->getPoints());
+  if (adventurer)
+    getGame()->gameOver(getCreature(), getCreature()->getKills().getSize(), "monsters", getCreature()->getPoints());
 }
 
 bool Player::unpossess() {
@@ -941,15 +981,6 @@ void Player::considerAdventurerMusic() {
       getGame()->setCurrentMusic(MusicType::ADV_BATTLE, true);
       return;
     }
-  getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL, false);
+  getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL, true);
 }
 
-void Player::considerKeeperDirectionMessage() {
-  for (Collective* col : getCreature()->getPosition().getModel()->getCollectives())
-    if (col->getVillainType() == VillainType::MAIN && !col->isConquered() && col->getLeader() &&
-        !col->getLeader()->isDead() && col->getLeader()->getPosition().isSameLevel(getLevel()) &&
-        Random.roll(30) && !col->getTerritory().contains(getCreature()->getPosition()))
-      getCreature()->playerMessage("You sense horrible evil in the " +
-            getCardinalName(getCreature()->getPosition().getDir(col->getLeader()->getPosition())
-                .getBearing().getCardinalDir()));
-}

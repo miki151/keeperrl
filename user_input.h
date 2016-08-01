@@ -24,6 +24,8 @@
 
 class PlayerMessage;
 
+#undef TECHNOLOGY
+
 enum class UserInputId {
 // common
     IDLE,

@@ -18,7 +18,7 @@ class GameEvents;
 
 class MainLoop {
   public:
-  MainLoop(View*, Highscores*, GameEvents*, FileSharing*, const string& dataFreePath, const string& userPath,
+  MainLoop(View*, Highscores*, FileSharing*, const string& dataFreePath, const string& userPath,
       Options*, Jukebox*, std::atomic<bool>& finished, bool useSingleThread, optional<GameTypeChoice> forceGame);
 
   void start(bool tilesPresent);
@@ -53,17 +53,19 @@ class MainLoop {
   void splashScreen();
   void showCredits(const string& path, View*);
 
-  Table<PModel> keeperCampaign(Campaign& campaign, RandomGen& random);
+  void playMenuMusic();
+
+  Table<PModel> prepareCampaignModels(Campaign& campaign, RandomGen& random);
   PModel keeperSingleMap(RandomGen& random);
   PModel quickGame(RandomGen& random);
   PGame adventurerGame();
-  PGame loadGame(string file, bool erase);
-  PGame loadPrevious(bool erase);
+  PGame loadGame(string file);
+  PGame loadPrevious();
   string getSavePath(PGame&, GameSaveType);
-  void eraseAutosave(PGame&);
+  void eraseSaveFile(PGame&, GameSaveType);
 
   bool downloadGame(const string& filename);
-  static bool eraseSave(Options* options);
+  bool eraseSave();
   static vector<SaveFileInfo> getSaveFiles(const string& path, const string& suffix);
 
   View* view;
@@ -71,7 +73,6 @@ class MainLoop {
   string userPath;
   Options* options;
   Jukebox* jukebox;
-  GameEvents* gameEvents;
   Highscores* highscores;
   FileSharing* fileSharing;
   std::atomic<bool>& finished;

@@ -51,11 +51,11 @@ optional<UniqueEntity<Creature>::Id> ViewObject::getCreatureId() const {
   return creatureId;
 }
 
-ViewObject::MovementInfo::MovementInfo(Vec2 dir, double b, double e, Type t) : direction(dir), tBegin(b), tEnd(e),
+MovementInfo::MovementInfo(Vec2 dir, double b, double e, Type t) : direction(dir), tBegin(b), tEnd(e),
   type(t) {
 }
 
-ViewObject::MovementInfo::MovementInfo() {
+MovementInfo::MovementInfo() {
 }
 
 void ViewObject::addMovementInfo(MovementInfo info) {
@@ -66,7 +66,7 @@ bool ViewObject::hasAnyMovementInfo() const {
   return movementQueue.hasAny();
 }
 
-ViewObject::MovementInfo ViewObject::getLastMovementInfo() const {
+MovementInfo ViewObject::getLastMovementInfo() const {
   return movementQueue.getLast();
 }
 
@@ -94,7 +94,7 @@ void ViewObject::MovementQueue::add(MovementInfo info) {
   index = makeGoodIndex(index + 1);
 }
 
-const ViewObject::MovementInfo& ViewObject::MovementQueue::getLast() const {
+const MovementInfo& ViewObject::MovementQueue::getLast() const {
   CHECK(hasAny());
   return elems[makeGoodIndex(index - 1)];
 }
@@ -149,6 +149,10 @@ optional<float> ViewObject::getAttribute(Attribute attr) const {
   return attributes[attr];
 }
 
+void ViewObject::setIndoors(bool state) {
+  indoors = state;
+}
+
 void ViewObject::setDescription(const string& s) {
   description = s;
 }
@@ -195,7 +199,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::TRAINING_ROOM: return "Training room";
     case ViewId::THRONE: return "Throne";
     case ViewId::WHIPPING_POST: return "Whipping post";
-    case ViewId::NOTICE_BOARD: return "Notice board";
+    case ViewId::NOTICE_BOARD: return "Message board";
     case ViewId::SOKOBAN_HOLE: return "Hole";
     case ViewId::RITUAL_ROOM: return "Ritual room";
     case ViewId::IMPALED_HEAD: return "Impaled head";
@@ -262,6 +266,8 @@ vector<string> ViewObject::getLegend() const {
     ret.push_back("Planned");
   if (hasModifier(Modifier::SLEEPING))
     ret.push_back("Sleeping");
+  if (indoors)
+    ret.push_back(*indoors ? "Indoors" : "Outdoors");
   if (position.x > -1)
     ret.push_back(toString(position.x) + ", " + toString(position.y));
   if (!!attributes[Attribute::MORALE])

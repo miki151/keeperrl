@@ -8,7 +8,7 @@
 #include "creature.h"
 #include "view_index.h"
 
-Spectator::Spectator(const Level* l) : level(l) {
+Spectator::Spectator(Level* l) : level(l) {
 }
 
 const MapMemory& Spectator::getMemory() const {
@@ -34,12 +34,12 @@ optional<CreatureView::MovementInfo> Spectator::getMovementInfo() const {
   return none;
 }
 
-const Level* Spectator::getLevel() const {
+Level* Spectator::getLevel() const {
   return level;
 }
 
 double Spectator::getLocalTime() const {
-  return level->getModel()->getTime();
+  return level->getModel()->getLocalTime();
 }
 
 vector<Vec2> Spectator::getVisibleEnemies() const {
@@ -49,3 +49,4 @@ vector<Vec2> Spectator::getVisibleEnemies() const {
 bool Spectator::isPlayerView() const {
   return false;
 }
+

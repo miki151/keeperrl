@@ -15,7 +15,7 @@ class TaskCallback {
   virtual void onAppliedItem(Position, Item* item) {}
   virtual void onAppliedSquare(Position) {}
   virtual void onAppliedItemCancel(Position) {}
-  virtual void onPickedUp(Position, EntitySet<Item>) {}
+  virtual void onTaskPickedUp(Position, EntitySet<Item>) {}
   virtual void onBrought(Position, EntitySet<Item>) {}
   virtual void onCantPickItem(EntitySet<Item> items) {}
   virtual void onKillCancelled(Creature*) {}
@@ -26,6 +26,8 @@ class TaskCallback {
 
   template <class Archive> 
   void serialize(Archive&, const unsigned int) {}
+
+  virtual ~TaskCallback() {}
 };
 
 #endif

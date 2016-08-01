@@ -15,13 +15,15 @@ void VisibilityMap::update(const Creature* c, vector<Position> visibleTiles) {
   remove(c);
   lastUpdates.set(c, visibleTiles);
   for (Position v : visibleTiles)
-    ++visibilityCount.getOrInit(v);
+    if (++visibilityCount.getOrInit(v) == 1)
+      v.setNeedsRenderUpdate(true);
 }
 
 void VisibilityMap::remove(const Creature* c) {
   if (auto pos = lastUpdates.getMaybe(c))
     for (Position v : *pos)
-      --visibilityCount.getOrFail(v);
+      if (--visibilityCount.getOrFail(v) == 0)
+      v.setNeedsRenderUpdate(true);
   lastUpdates.erase(c);
 }
 

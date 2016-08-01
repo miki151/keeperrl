@@ -65,6 +65,9 @@ class Square : public Renderable {
     bool canDestroy;
     optional<TribeId> owner;
     optional<SoundId> applySound;
+    optional<SquareApplyType> applyType;
+    optional<double> applyTime;
+    optional<SquareInteraction> interaction;
   };
   Square(const ViewObject&, Params);
 
@@ -75,7 +78,7 @@ class Square : public Renderable {
   string getName() const;
 
   /** Sets the square name.*/
-  void setName(const string&);
+  void setName(Position, const string&);
 
   /** Links this square as point of entry from another level.
     * \param direction direction where the creature is coming from
@@ -87,19 +90,6 @@ class Square : public Renderable {
 
   /** Returns radius of emitted light (0 if none).*/
   virtual double getLightEmission() const;
-
-  /** Adds direction for auto-traveling. \paramname{dir} must point to next square on path.*/
-  void addTravelDir(Vec2 dir);
-
-  /** Returns auto-travel directions pointing to the next squares on the path.*/
-  const vector<Vec2>& getTravelDir() const;
-
-  /** Sets the square's position on the level.*/
-  void setPosition(Vec2 v);
-
-  /** Returns the square's position on the level.*/
-  Vec2 getPosition() const;
-  Position getPosition2() const;
 
   //@{
   /** Checks if this creature can enter the square at the moment. Takes account other creatures on the square.*/
@@ -121,7 +111,7 @@ class Square : public Renderable {
   bool canSeeThru() const;
 
   /** Sets if this square obstructs view.*/
-  void setVision(VisionId);
+  void setVision(Position, VisionId);
 
   /** Checks if the player can hide behind this square.*/
   bool canHide() const;
@@ -136,26 +126,26 @@ class Square : public Renderable {
   bool canDestroy(const Creature*) const;
 
   /** Called when something is destroying this square (may take a few turns to destroy).*/
-  virtual void destroyBy(Creature* c);
-  virtual void destroy();
+  virtual void destroyBy(Position, Creature* c);
+  virtual void destroy(Position);
 
   /** Called when this square is burned completely.*/
-  virtual void burnOut();
+  virtual void burnOut(Position);
 
   /** Exposes the square and objects on it to fire.*/
-  void setOnFire(double amount);
+  void setOnFire(Position, double amount);
 
   /** Returns whether the square is currently on fire.*/
   bool isBurning() const;
 
   /** Adds some poison gas to the square.*/
-  void addPoisonGas(double amount);
+  void addPoisonGas(Position, double amount);
 
   /** Returns the amount of poison gas on this square.*/
   double getPoisonGasAmount() const;
 
   /** Sets the level this square is on.*/
-  void setLevel(Level*);
+  void onAddedToLevel(Position) const;
 
   /** Puts a creature on the square.*/
   void putCreature(Creature*);
@@ -164,30 +154,28 @@ class Square : public Renderable {
   void setCreature(Creature*);
 
   /** Removes the creature from the square.*/
-  void removeCreature();
+  void removeCreature(Position);
 
-  //@{
   /** Returns the creature from the square.*/
-  Creature* getCreature();
-  const Creature* getCreature() const;
-  //@}
+  Creature* getCreature() const;
 
   /** Adds a trigger to the square.*/
-  void addTrigger(PTrigger);
+  void addTrigger(Position, PTrigger);
 
   /** Returns all triggers.*/
   vector<Trigger*> getTriggers() const;
 
   /** Removes the trigger from the square.*/
-  PTrigger removeTrigger(Trigger*);
+  PTrigger removeTrigger(Position, Trigger*);
 
   /** Removes all triggers from the square.*/
-  vector<PTrigger> removeTriggers();
+  vector<PTrigger> removeTriggers(Position);
 
   //@{
   /** Drops item or items on the square. The square assumes ownership.*/
-  void dropItem(PItem);
-  virtual void dropItems(vector<PItem>);
+  void dropItem(Position, PItem);
+  virtual void dropItems(Position, vector<PItem>);
+  void dropItemsLevelGen(vector<PItem>);
   //@}
 
   /** Checks if a given item is present on the square.*/
@@ -198,68 +186,60 @@ class Square : public Renderable {
 
   /** Constructs another square. The construction might finish after several attempts.
     Returns true if construction was finishd.*/
-  bool construct(const SquareType&);
+  bool construct(Position, const SquareType&);
 
   /** Called just before swapping the old square for the new constructed one.*/
-  virtual void onConstructNewSquare(Square* newSquare) {}
+  virtual void onConstructNewSquare(Position, Square* newSquare) const {}
   
   /** Triggers all time-dependent processes like burning. Calls tick() for items if present.
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
-  void tick();
-  void updateSunlightMovement(bool isSunlight);
+  void tick(Position);
+  void setCovered(bool);
+  bool isCovered() const;
 
-  virtual bool canLock() const { return false; }
-  virtual bool isLocked() const { FAIL << "BAD"; return false; }
-  virtual void lock() { FAIL << "BAD"; }
-
-  bool sunlightBurns() const;
-
-  void setBackground(const Square*);
+  optional<ViewObject> extractBackground() const;
   void getViewIndex(ViewIndex&, const Creature* viewer) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
   bool itemBounces(Item* item, VisionId) const;
-  void onItemLands(vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir, VisionId);
+  void onItemLands(Position, vector<PItem>, const Attack&, int remainingDist, Vec2 dir, VisionId);
   const vector<Item*>& getItems() const;
   vector<Item*> getItems(function<bool (Item*)> predicate) const;
   const vector<Item*>& getItems(ItemIndex) const;
-  PItem removeItem(Item*);
-  vector<PItem> removeItems(vector<Item*>);
+  PItem removeItem(Position, Item*);
+  vector<PItem> removeItems(Position, vector<Item*>);
 
-  virtual optional<SquareApplyType> getApplyType() const { return none; }
   virtual bool canApply(const Creature*) const { return true; }
   void apply(Creature*);
-  virtual double getApplyTime() const { return 1.0; }
-  optional<SquareApplyType> getApplyType(const Creature*) const;
+  void apply(Position);
+  optional<SquareApplyType> getApplyType() const;
+  double getApplyTime() const;
+  optional<SquareInteraction> getInteraction() const;
 
-  void forbidMovementForTribe(TribeId);
-  void allowMovementForTribe(TribeId);
+  void forbidMovementForTribe(Position, TribeId);
+  void allowMovementForTribe(Position, TribeId);
   bool isTribeForbidden(TribeId) const;
   optional<TribeId> getForbiddenTribe() const;
  
   virtual ~Square();
 
-  void setUnavailable();
-  bool isUnavailable() const;
-
   bool needsMemoryUpdate() const;
   void setMemoryUpdated();
 
-  Level* getLevel();
-  const Level* getLevel() const;
   void clearItemIndex(ItemIndex);
+  void setDirty(Position);
 
   SERIALIZATION_DECL(Square);
 
   protected:
   void onEnter(Creature*);
   virtual void onEnterSpecial(Creature*) {}
-  virtual void tickSpecial() {}
+  virtual void tickSpecial(Position) {}
   virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
+  virtual void onApply(Position) { Debug(FATAL) << "Bad square applied"; }
   string SERIAL(name);
-  void addTraitForTribe(TribeId, MovementTrait);
-  void removeTraitForTribe(TribeId, MovementTrait);
-  void setDirty();
+  void addTraitForTribe(Position, TribeId, MovementTrait);
+  void removeTraitForTribe(Position, TribeId, MovementTrait);
 
   Inventory& getInventory();
   const Inventory& getInventory() const;
@@ -270,17 +250,13 @@ class Square : public Renderable {
   mutable unique_ptr<Inventory> SERIAL(inventoryPtr);
 
   /** Checks if this square can be destroyed by member of the tribe.*/
-  bool canDestroy(TribeId) const;
+  bool canDestroy(const MovementType&) const;
 
-  Level* SERIAL(level) = nullptr;
-  Vec2 SERIAL(position);
   Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);
-  PViewObject SERIAL(backgroundObject);
   optional<VisionId> SERIAL(vision);
   bool SERIAL(hide);
   int SERIAL(strength);
-  vector<Vec2> SERIAL(travelDir);
   optional<StairKey> SERIAL(landingLink);
   HeapAllocated<Fire> SERIAL(fire);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
@@ -293,15 +269,16 @@ class Square : public Renderable {
   optional<CurrentConstruction> SERIAL(currentConstruction);
   bool SERIAL(ticking);
   HeapAllocated<MovementSet> SERIAL(movementSet);
-  void updateMovement();
-  bool SERIAL(updateMemory) = true;
+  void updateMovement(Position);
   mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);
   unique_ptr<ViewIndex> SERIAL(viewIndex);
   bool SERIAL(destroyable) = false;
   optional<TribeId> SERIAL(owner);
   optional<TribeId> SERIAL(forbiddenTribe);
-  bool SERIAL(unavailable) = false;
   optional<SoundId> SERIAL(applySound);
+  optional<SquareApplyType> SERIAL(applyType);
+  double SERIAL(applyTime);
+  optional<SquareInteraction> SERIAL(interaction);
 };
 
 #endif

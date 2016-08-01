@@ -22,8 +22,7 @@
 
 template <class Archive> 
 void Inventory::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(items)
-    & SVAR(itemsCache);
+  serializeAll(ar, items, itemsCache);
 }
 
 Inventory::~Inventory() {}
@@ -33,6 +32,7 @@ SERIALIZABLE(Inventory);
 SERIALIZATION_CONSTRUCTOR_IMPL(Inventory);
 
 void Inventory::addItem(PItem item) {
+  CHECK(!!item) << "Null item dropped";
   itemsCache.push_back(item.get());
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     if (indexes[ind] && getIndexPredicate(ind)(item.get()))

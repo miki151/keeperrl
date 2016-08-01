@@ -6,7 +6,7 @@
 #include "tribe.h"
 #include "enum_variant.h"
 #include "campaign.h"
-#include "game_events.h"
+#include "position.h"
 
 class Options;
 class Highscores;
@@ -14,10 +14,17 @@ class View;
 class Statistics;
 class PlayerControl;
 class CreatureView;
-class GameEvents;
+class FileSharing;
+class Technology;
+class EventListener;
+class GameEvent;
 
-enum class VillainType { MAIN, LESSER, PLAYER };
-enum class GameSaveType { ADVENTURER, KEEPER, RETIRED_SINGLE, RETIRED_SITE, AUTOSAVE };
+RICH_ENUM(GameSaveType,
+    ADVENTURER,
+    KEEPER,
+    RETIRED_SINGLE,
+    RETIRED_SITE,
+    AUTOSAVE);
 
 class Game {
   public:
@@ -33,7 +40,7 @@ class Game {
 
   optional<ExitInfo> update(double timeDiff);
   Options* getOptions();
-  void initialize(Options*, Highscores*, View*, GameEvents*);
+  void initialize(Options*, Highscores*, View*, FileSharing*);
   View* getView() const;
   void exitAction();
   void transferAction(vector<Creature*>);
@@ -50,7 +57,6 @@ class Game {
   const Statistics& getStatistics() const;
   Tribe* getTribe(TribeId) const;
   double getGlobalTime() const;
-  void landHeroPlayer();
   Collective* getPlayerCollective() const;
   void setPlayer(Creature*);
   Creature* getPlayer() const;
@@ -63,6 +69,7 @@ class Game {
 
   const SunlightInfo& getSunlightInfo() const;
   const string& getWorldName() const;
+  bool gameWon() const;
 
   void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, int numKills, int points);
@@ -79,23 +86,15 @@ class Game {
 
   optional<Position> getOtherPortal(Position) const;
   void registerPortal(Position);
-
-  void onTechBookRead(Technology*);
-  void onAlarm(Position);
-  void onKilledLeader(const Collective*, const Creature*);
-  void onTorture(const Creature* who, const Creature* torturer);
-  void onSurrender(Creature* who, const Creature* to);
-  void onTrapTrigger(Position);
-  void onTrapDisarm(Position, const Creature*);
-  void onSquareDestroyed(Position);
-  void onEquip(const Creature*, const Item*);
+  void handleMessageBoard(Position, Creature*);
 
   PModel& getMainModel();
   void prepareSiteRetirement();
   void prepareSingleMapRetirement();
   void doneRetirement();
 
-  GameEvents popGameEvents();
+  typedef function<void(EventListener*)> EventFun;
+  void addEvent(const GameEvent&);
 
   ~Game();
 
@@ -110,6 +109,7 @@ class Game {
   Vec2 getModelCoords(const Model*) const;
   optional<ExitInfo> updateModel(Model*, double totalTime);
   string getPlayerName() const;
+  void uploadEvent(const string& name, const map<string, string>&);
 
   string SERIAL(worldName);
   SunlightInfo sunlightInfo;
@@ -124,7 +124,6 @@ class Game {
   double SERIAL(lastTick) = 0;
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
-  bool SERIAL(won) = false;
   map<VillainType, vector<Collective*>> SERIAL(villainsByType);
   vector<Collective*> SERIAL(collectives);
   MusicType SERIAL(musicType);
@@ -140,7 +139,9 @@ class Game {
   optional<Campaign> SERIAL(campaign);
   bool wasTransfered = false;
   Creature* SERIAL(player) = nullptr;
-  GameEvents* gameEvents;
+  FileSharing* fileSharing;
+  set<int> SERIAL(turnEvents);
+  friend class GameListener;
 };
 
 

@@ -36,22 +36,8 @@
 #include "position.h"
 #include "sound_library.h"
 
-using sf::Color;
-using sf::String;
-using sf::RenderWindow;
-using sf::VideoMode;
-using sf::Text;
-using sf::Font;
-using sf::Event;
-using sf::RectangleShape;
-using sf::CircleShape;
-using sf::Vector2f;
-using sf::Vector2u;
-using sf::Image;
-using sf::Sprite;
-using sf::Texture;
-using sf::Keyboard;
-using sf::Mouse;
+using SDL::SDL_Keysym;
+using SDL::SDL_Keycode;
 
 View* WindowView::createDefaultView(ViewParams params) {
   return new WindowView(params);
@@ -95,7 +81,6 @@ Rectangle WindowView::getMinimapBounds() const {
 
 void WindowView::resetMapBounds() {
   mapGui->setBounds(getMapGuiBounds());
-  minimapGui->setBounds(getMinimapBounds());
   minimapDecoration->setBounds(getMinimapBounds().minusMargin(-6));
 }
 
@@ -103,7 +88,7 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
     options(params.options), clock(params.clock), guiBuilder(renderer, gui, clock, params.options, {
         [this](UserInput input) { inputQueue.push(input);},
         [this](const vector<string>& s) { mapGui->setHint(s);},
-        [this](sf::Event::KeyEvent ev) { keyboardAction(ev);},
+        [this](SDL_Keysym ev) { keyboardAction(ev);},
         [this]() { refreshScreen(false);},
         [this](const string& s) { presentText("", s); },
         }), fullScreenTrigger(-1), fullScreenResolution(-1), zoomUI(-1),
@@ -111,11 +96,11 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
 
 void WindowView::initialize() {
   renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
-  renderer.setFullscreenMode(options->getChoiceValue(OptionId::FULLSCREEN_RESOLUTION));
+//  renderer.setFullscreenMode(options->getChoiceValue(OptionId::FULLSCREEN_RESOLUTION));
   renderer.initialize();
   renderer.setZoom(options->getBoolValue(OptionId::ZOOM_UI) ? 2 : 1);
   options->addTrigger(OptionId::FULLSCREEN, [this] (int on) { fullScreenTrigger = on; });
-  options->addTrigger(OptionId::FULLSCREEN_RESOLUTION, [this] (int index) { fullScreenResolution = index; });
+  //options->addTrigger(OptionId::FULLSCREEN_RESOLUTION, [this] (int index) { fullScreenResolution = index; });
   options->addTrigger(OptionId::ZOOM_UI, [this] (int on) { zoomUI = on; });
   renderThreadId = currentThreadId();
   vector<ViewLayer> allLayers;
@@ -139,8 +124,9 @@ void WindowView::initialize() {
       bindMethod(&WindowView::mapCreatureClickFun, this),
       [this] { refreshInput = true;},
       bindMethod(&WindowView::mapCreatureDragFun, this)}, clock, options );
-  minimapGui = new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
-  minimapDecoration = gui.stack(gui.rectangle(colors[ColorId::BLACK]), gui.miniWindow());
+  minimapGui = new MinimapGui(renderer, [this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
+  minimapDecoration = gui.stack(gui.rectangle(colors[ColorId::BLACK]), gui.miniWindow(),
+      gui.margins(gui.renderInBounds(PGuiElem(minimapGui)), 6));
   resetMapBounds();
   guiBuilder.setMapGui(mapGui);
 }
@@ -149,8 +135,12 @@ void WindowView::mapCreatureDragFun(UniqueEntity<Creature>::Id id, ViewId viewId
   gui.getDragContainer().put({DragContentId::CREATURE, id}, gui.viewObject(viewId), origin);
 }
 
+bool WindowView::isKeyPressed(SDL::SDL_Scancode code) {
+  return SDL::SDL_GetKeyboardState(nullptr)[code];
+}
+
 void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
-  if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl)) {
+  if (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL)) {
     inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON2, id));
   } else {
     inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
@@ -176,9 +166,9 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
         inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo{pos, *activeLibrary}));
       else
       if (collectiveTab == CollectiveTab::BUILDINGS) {
-        if (activeBuilding && (Keyboard::isKeyPressed(Keyboard::LShift) || Keyboard::isKeyPressed(Keyboard::RShift)))
+        if (activeBuilding && (isKeyPressed(SDL::SDL_SCANCODE_LSHIFT) || isKeyPressed(SDL::SDL_SCANCODE_RSHIFT)))
           inputQueue.push(UserInput(UserInputId::RECT_SELECTION, pos));
-        else if (Keyboard::isKeyPressed(Keyboard::LControl) || Keyboard::isKeyPressed(Keyboard::RControl))
+        else if (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL))
           inputQueue.push(UserInput(UserInputId::RECT_DESELECTION, pos));
         else if (activeBuilding)
           inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo{pos, *activeBuilding}));
@@ -203,7 +193,7 @@ void WindowView::mapRightClickFun(Vec2 pos) {
 }
 
 void WindowView::reset() {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   mapLayout = &currentTileLayout.layouts[0];
   gameReady = false;
   wasRendered = false;
@@ -237,7 +227,7 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
   double mouthPos2 = 214 * menuCore.getSize().x / 1920;
   double mouthX = (renderer.getSize().x - (menuMouth.getSize().x + 5) * scale) / 2;
   renderer.drawFilledRectangle(mouthX, mouthPos1 * scale, 1 + mouthX + barState * menuMouth.getSize().x * scale,
-      (mouthPos2 + menuMouth.getSize().y) * scale, sf::Color(60, 76, 48));
+      (mouthPos2 + menuMouth.getSize().y) * scale, Color(60, 76, 48));
   renderer.drawImage((renderer.getSize().x - width) / 2, 0, menuCore, scale);
   renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
   renderer.drawText(colors[ColorId::WHITE], 30, renderer.getSize().y - 40, "Version " BUILD_DATE " " BUILD_VERSION,
@@ -259,13 +249,11 @@ void WindowView::getAutosaveSplash(const ProgressMeter& meter) {
     renderer.drawFilledRectangle(bar, transparency(colors[ColorId::DARK_GREEN], 50));
     renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.top() + 20, "Autosaving", Renderer::HOR);
     renderer.drawAndClearBuffer();
-    sf::sleep(sf::milliseconds(30));
+    sleep_for(milliseconds(30));
     Event event;
     while (renderer.pollEvent(event)) {
       propagateEvent(event, {});
-      if (event.type == Event::Resized) {
-        resize(event.size.width, event.size.height);
-      }
+      considerResizeEvent(event);
     }
   }
 }
@@ -286,15 +274,13 @@ void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) 
     if (cancelFun)
       renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.left(), cancelBut.top(), cancelText);
     renderer.drawAndClearBuffer();
-    sf::sleep(sf::milliseconds(30));
+    sleep_for(milliseconds(30));
     Event event;
     while (renderer.pollEvent(event)) {
       propagateEvent(event, {});
-      if (event.type == Event::Resized) {
-        resize(event.size.width, event.size.height);
-      }
-      if (event.type == Event::MouseButtonPressed && cancelFun) {
-        if (Vec2(event.mouseButton.x, event.mouseButton.y).inRectangle(cancelBut))
+      considerResizeEvent(event);
+      if (event.type == SDL::SDL_MOUSEBUTTONDOWN && cancelFun) {
+        if (Vec2(event.button.x, event.button.y).inRectangle(cancelBut))
           cancelFun();
       }
     }
@@ -320,14 +306,12 @@ void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, fu
     if (cancelFun)
       renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.left(), cancelBut.top(), cancelText);
     renderer.drawAndClearBuffer();
-    sf::sleep(sf::milliseconds(30));
+    sleep_for(milliseconds(30));
     Event event;
     while (renderer.pollEvent(event)) {
-      if (event.type == Event::Resized) {
-        resize(event.size.width, event.size.height);
-      }
-      if (event.type == Event::MouseButtonPressed && cancelFun) {
-        if (Vec2(event.mouseButton.x, event.mouseButton.y).inRectangle(cancelBut))
+      considerResizeEvent(event);
+      if (event.type == SDL::SDL_MOUSEBUTTONDOWN && cancelFun) {
+        if (Vec2(event.button.x, event.button.y).inRectangle(cancelBut))
           cancelFun();
       }
     }
@@ -336,7 +320,7 @@ void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, fu
 
 void WindowView::displaySplash(const ProgressMeter* meter, const string& text, SplashType type,
     function<void()> cancelFun) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   splashDone = false;
   renderDialog.push([=] {
     switch (type) {
@@ -359,12 +343,6 @@ void WindowView::resize(int width, int height) {
   renderer.resize(width, height);
   refreshInput = true;
 }
-
-struct KeyInfo {
-  string keyDesc;
-  string action;
-  Event::KeyEvent event;
-};
 
 void WindowView::close() {
 }
@@ -480,8 +458,9 @@ void WindowView::rebuildGui() {
     }
   }
   Event ev;
-  ev.type = Event::MouseMoved;
-  ev.mouseMove = {renderer.getMousePos().x, renderer.getMousePos().y};
+  ev.type = SDL::SDL_MOUSEMOTION;
+  ev.motion.x = renderer.getMousePos().x;
+  ev.motion.y = renderer.getMousePos().y;
   propagateEvent(ev, getClickableGuiElems());
 }
 
@@ -493,7 +472,7 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
     return concat({mapGui}, extractRefs(tempGuiElems));
   vector<GuiElem*> ret = concat(extractRefs(tempGuiElems), extractRefs(blockingElems));
   if (gameReady)
-    ret = concat(concat({mapGui}, ret), {minimapDecoration.get(), minimapGui});
+    ret = concat(concat({mapGui}, ret), {minimapDecoration.get()});
   return ret;
 }
 
@@ -519,7 +498,7 @@ void WindowView::resetCenter() {
 }
 
 void WindowView::addVoidDialog(function<void()> fun) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   Semaphore sem;
   renderDialog.push([this, &sem, fun] {
     fun();
@@ -544,15 +523,15 @@ void WindowView::updateMinimap(const CreatureView* creature) {
   Vec2 rad(40, 40);
   Vec2 playerPos = mapGui->getScreenPos().div(mapLayout->getSquareSize());
   Rectangle bounds(playerPos - rad, playerPos + rad);
-  minimapGui->update(level, bounds, creature);
+  minimapGui->update(level, bounds, creature, true);
 }
 
-void WindowView::updateView(const CreatureView* view, bool noRefresh) {
+void WindowView::updateView(CreatureView* view, bool noRefresh) {
   if (!wasRendered && currentThreadId() != renderThreadId)
     return;
   GameInfo newInfo;
   view->refreshGameInfo(newInfo);
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   wasRendered = false;
   guiBuilder.addUpsCounterTick();
   gameReady = true;
@@ -560,6 +539,7 @@ void WindowView::updateView(const CreatureView* view, bool noRefresh) {
     uiLock = false;
   switchTiles();
   gameInfo = newInfo;
+  rebuildGui();
   mapGui->setSpriteMode(currentTileLayout.sprites);
   bool spectator = gameInfo.infoType == GameInfo::InfoType::SPECTATOR;
   mapGui->updateObjects(view, mapLayout, currentTileLayout.sprites || spectator,
@@ -586,7 +566,7 @@ void WindowView::playSounds(const CreatureView* view) {
 }
 
 void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   if (trajectory.size() >= 2)
     mapGui->addAnimation(
         Animation::thrownObject(
@@ -598,7 +578,7 @@ void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
 }
 
 void WindowView::animation(Vec2 pos, AnimationId id) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   if (currentTileLayout.sprites)
     mapGui->addAnimation(Animation::fromId(id), pos);
 }
@@ -607,9 +587,9 @@ void WindowView::refreshView() {
   if (currentThreadId() != renderThreadId)
     return;
   {
-    RenderLock lock(renderMutex);
-    if (!wasRendered && gameReady)
-      rebuildGui();
+    RecursiveLock lock(renderMutex);
+/*    if (!wasRendered && gameReady)
+      rebuildGui();*/
     wasRendered = true;
     CHECK(currentThreadId() == renderThreadId);
     if (gameReady || !blockingElems.empty())
@@ -637,7 +617,7 @@ void WindowView::drawMap() {
 
 void WindowView::refreshScreen(bool flipBuffer) {
   {
-    RenderLock lock(renderMutex);
+    RecursiveLock lock(renderMutex);
     if (fullScreenTrigger > -1) {
       renderer.setFullscreen(fullScreenTrigger);
       renderer.initialize();
@@ -687,7 +667,7 @@ optional<int> reverseIndexHeight(const vector<ListElem>& options, int height) {
 }
 
 optional<Vec2> WindowView::chooseDirection(const string& message) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   TempClockPause pause(clock);
   gameInfo.messageBuffer = { PlayerMessage(message) };
   SyncQueue<optional<Vec2>> returnQueue;
@@ -698,7 +678,7 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
     Event event;
     renderer.waitEvent(event);
     considerResizeEvent(event);
-    if (event.type == Event::MouseMoved || event.type == Event::MouseButtonPressed) {
+    if (event.type == SDL::SDL_MOUSEMOTION || event.type == SDL::SDL_MOUSEBUTTONDOWN) {
       if (auto pos = mapGui->projectOnMap(renderer.getMousePos())) {
         refreshScreen(false);
         Vec2 middle = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds(), mapGui->getScreenPos())
@@ -716,32 +696,32 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
           renderer.drawTile(wpos, coords[int(dir.getCardinalDir())], mapLayout->getSquareSize());
         } else {
           int numArrow = int(dir.getCardinalDir());
-          static sf::Uint32 arrows[] = { L'⇑', L'⇓', L'⇒', L'⇐', L'⇗', L'⇖', L'⇘', L'⇙'};
+          static string arrows[] = { u8"⇑", u8"⇓", u8"⇒", u8"⇐", u8"⇗", u8"⇖", u8"⇘", u8"⇙"};
           renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, colors[ColorId::WHITE],
               wpos.x + mapLayout->getSquareSize().x / 2, wpos.y, arrows[numArrow], Renderer::HOR);
         }
         renderer.drawAndClearBuffer();
-        if (event.type == Event::MouseButtonPressed)
+        if (event.type == SDL::SDL_MOUSEBUTTONDOWN)
           return dir;
       }
-      renderer.flushEvents(Event::MouseMoved);
+      renderer.flushEvents(SDL::SDL_MOUSEMOTION);
     } else
     refreshScreen();
-    if (event.type == Event::KeyPressed)
-      switch (event.key.code) {
-        case Keyboard::Up:
-        case Keyboard::Numpad8: refreshScreen(); return Vec2(0, -1);
-        case Keyboard::Numpad9: refreshScreen(); return Vec2(1, -1);
-        case Keyboard::Right:
-        case Keyboard::Numpad6: refreshScreen(); return Vec2(1, 0);
-        case Keyboard::Numpad3: refreshScreen(); return Vec2(1, 1);
-        case Keyboard::Down:
-        case Keyboard::Numpad2: refreshScreen(); return Vec2(0, 1);
-        case Keyboard::Numpad1: refreshScreen(); return Vec2(-1, 1);
-        case Keyboard::Left:
-        case Keyboard::Numpad4: refreshScreen(); return Vec2(-1, 0);
-        case Keyboard::Numpad7: refreshScreen(); return Vec2(-1, -1);
-        case Keyboard::Escape: refreshScreen(); return none;
+    if (event.type == SDL::SDL_KEYDOWN)
+      switch (event.key.keysym.sym) {
+        case SDL::SDLK_UP:
+        case SDL::SDLK_KP_8: refreshScreen(); return Vec2(0, -1);
+        case SDL::SDLK_KP_9: refreshScreen(); return Vec2(1, -1);
+        case SDL::SDLK_RIGHT:
+        case SDL::SDLK_KP_6: refreshScreen(); return Vec2(1, 0);
+        case SDL::SDLK_KP_3: refreshScreen(); return Vec2(1, 1);
+        case SDL::SDLK_DOWN:
+        case SDL::SDLK_KP_2: refreshScreen(); return Vec2(0, 1);
+        case SDL::SDLK_KP_1: refreshScreen(); return Vec2(-1, 1);
+        case SDL::SDLK_LEFT:
+        case SDL::SDLK_KP_4: refreshScreen(); return Vec2(-1, 0);
+        case SDL::SDLK_KP_7: refreshScreen(); return Vec2(-1, -1);
+        case SDL::SDLK_ESCAPE: refreshScreen(); return none;
         default: break;
       }
   } while (1);
@@ -753,7 +733,7 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
 bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {
   int index = defaultNo ? 1 : 0;
   return chooseFromListInternal("", {ListElem(capitalFirst(message), ListElem::TITLE), "Yes", "No"}, index,
-      MenuType::YES_NO, nullptr, none, none, {}) == 0;
+      MenuType::YES_NO, nullptr) == 0;
 }
 
 optional<int> WindowView::getNumber(const string& title, int min, int max, int increments) {
@@ -773,11 +753,11 @@ optional<int> WindowView::getNumber(const string& title, int min, int max, int i
 
 optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
     MenuType type, double* scrollPos, optional<UserInputId> exitAction) {
-  return chooseFromListInternal(title, options, index, type, scrollPos, exitAction, none, {});
+  return chooseFromListInternal(title, options, index, type, scrollPos);
 }
 
 optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   TempClockPause pause(clock);
   SyncQueue<optional<string>> returnQueue;
   addReturnDialog<optional<string>>(returnQueue, [=] ()-> optional<string> {
@@ -788,7 +768,7 @@ optional<string> WindowView::getText(const string& title, const string& value, i
 }
 
 optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, double* scrollPos1) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   uiLock = true;
   TempClockPause pause(clock);
   SyncQueue<optional<int>> returnQueue;
@@ -871,7 +851,7 @@ bool WindowView::creaturePrompt(const string& title, const vector<CreatureInfo>&
 }
 
 void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, optional<Vec2> origin) {
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   TempClockPause pause(clock);
   if (!origin)
     origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
@@ -943,12 +923,12 @@ optional<GameTypeChoice> WindowView::chooseGameType() {
           "Keeper",
           "Adventurer"
           },
-        0, MenuType::MAIN, nullptr, none, none, {}))
+        0, MenuType::MAIN, nullptr))
       return (GameTypeChoice)(*ind);
     else
       return none;
   }
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   uiLock = true;
   TempClockPause pause(clock);
   SyncQueue<optional<GameTypeChoice>> returnQueue;
@@ -968,26 +948,26 @@ optional<GameTypeChoice> WindowView::chooseGameType() {
         return *choice;
       if (considerResizeEvent(event))
         continue;
-      if (event.type == Event::KeyPressed)
-        switch (event.key.code) {
-          case Keyboard::Numpad4:
-          case Keyboard::Left:
+      if (event.type == SDL::SDL_KEYDOWN)
+        switch (event.key.keysym.sym) {
+          case SDL::SDLK_KP_4:
+          case SDL::SDLK_LEFT:
             if (index != GameTypeChoice::KEEPER)
               index = GameTypeChoice::KEEPER;
             else
               index = GameTypeChoice::ADVENTURER;
             break;
-          case Keyboard::Numpad6:
-          case Keyboard::Right:
+          case SDL::SDLK_KP_6:
+          case SDL::SDLK_RIGHT:
             if (index != GameTypeChoice::ADVENTURER)
               index = GameTypeChoice::ADVENTURER;
             else
               index = GameTypeChoice::KEEPER;
             break;
-          case Keyboard::Numpad8:
-          case Keyboard::Numpad5:
-          case Keyboard::Return: if (index) return *index;
-          case Keyboard::Escape: return none;
+          case SDL::SDLK_KP_5:
+          case SDL::SDLK_KP_ENTER:
+          case SDL::SDLK_RETURN: if (index) return *index;
+          case SDL::SDLK_ESCAPE: return none;
           default: break;
         }
     }
@@ -998,19 +978,18 @@ optional<GameTypeChoice> WindowView::chooseGameType() {
 }
 
 optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
-    MenuType menuType, double* scrollPos1, optional<UserInputId> exitAction, optional<Event::KeyEvent> exitKey,
-    vector<Event::KeyEvent> shortCuts) {
+    MenuType menuType, double* scrollPos1) {
   if (!useTiles && menuType == MenuType::MAIN)
     menuType = MenuType::MAIN_NO_TILES;
   if (options.size() == 0)
     return none;
-  RenderLock lock(renderMutex);
+  RecursiveLock lock(renderMutex);
   uiLock = true;
   inputQueue.push(UserInputId::REFRESH);
   TempClockPause pause(clock);
   SyncQueue<optional<int>> returnQueue;
   addReturnDialog<optional<int>>(returnQueue, [=] ()-> optional<int> {
-  renderer.flushEvents(Event::KeyPressed);
+  renderer.flushEvents(SDL::SDL_KEYDOWN);
   int contentHeight;
   int choice = -1;
   int count = 0;
@@ -1053,33 +1032,34 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   optional<optional<int>> callbackRet;
   stuff = gui.stack(
       std::move(stuff),
-      gui.keyHandler([&] (Event::KeyEvent event) {
-        switch (event.code) {
-          case Keyboard::Numpad8:
-          case Keyboard::Up:
+      gui.keyHandler([&] (SDL_Keysym key) {
+        switch (key.sym) {
+          case SDL::SDLK_KP_8:
+          case SDL::SDLK_UP:
             if (count > 0) {
               index = (index - 1 + count) % count;
               *scrollPos = guiBuilder.getScrollPos(optionIndexes[index], options.size());
             } else
               *scrollPos = max<double>(0, *scrollPos - 1);
             break;
-          case Keyboard::Numpad2:
-          case Keyboard::Down:
+          case SDL::SDLK_KP_2:
+          case SDL::SDLK_DOWN:
             if (count > 0) {
               index = (index + 1 + count) % count;
               *scrollPos = guiBuilder.getScrollPos(optionIndexes[index], options.size());
             } else
               *scrollPos = min<int>(options.size() - 1, *scrollPos + 1);
             break;
-          case Keyboard::Numpad5:
-          case Keyboard::Return: 
+          case SDL::SDLK_KP_5:
+          case SDL::SDLK_KP_ENTER:
+          case SDL::SDLK_RETURN:
             if (count > 0 && index > -1) {
               CHECK(index < indexes.size()) <<
                   index << " " << indexes.size() << " " << count << " " << options.size();
               callbackRet = indexes[index];
               break;
             }
-          case Keyboard::Escape: callbackRet = optional<int>(none);
+          case SDL::SDLK_ESCAPE: callbackRet = optional<int>(none);
           default: break;
         }        
       }, true));
@@ -1120,7 +1100,7 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
     if (e.getMod() == ListElem::NORMAL)
       e.setMod(ListElem::TEXT);
   double scrollPos = scrollDown ? options.size() - 1 : 0;
-  chooseFromListInternal(title, conv, -1, menu, &scrollPos, exitAction, none, {});
+  chooseFromListInternal(title, conv, -1, menu, &scrollPos);
 }
 
 void WindowView::zoom(int dir) {
@@ -1176,11 +1156,11 @@ bool WindowView::isClockStopped() {
   return clock->isPaused();
 }
 
-bool WindowView::considerResizeEvent(sf::Event& event) {
-  if (event.type == Event::Closed)
-    exit(0);
-  if (event.type == Event::Resized) {
-    resize(event.size.width, event.size.height);
+bool WindowView::considerResizeEvent(Event& event) {
+  if (event.type == SDL::SDL_QUIT)
+    throw GameExitException();
+  if (event.type == SDL::SDL_WINDOWEVENT && event.window.event == SDL::SDL_WINDOWEVENT_RESIZED) {
+    resize(event.window.data1, event.window.data2);
     return true;
   }
   return false;
@@ -1194,9 +1174,9 @@ void WindowView::processEvents() {
     considerResizeEvent(event);
     if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
       switch (event.type) {
-        case Event::KeyPressed:
-        case Event::MouseWheelMoved:
-        case Event::MouseButtonPressed:
+        case SDL::SDL_KEYDOWN:
+        case SDL::SDL_MOUSEWHEEL:
+        case SDL::SDL_MOUSEBUTTONDOWN:
           inputQueue.push(UserInput(UserInputId::EXIT));
           return;
         default:break;
@@ -1204,18 +1184,18 @@ void WindowView::processEvents() {
     else
       propagateEvent(event, getClickableGuiElems());
     switch (event.type) {
-      case Event::KeyPressed:
+      case SDL::SDL_KEYDOWN:
         if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
-          renderer.flushEvents(Event::KeyPressed);
+          renderer.flushEvents(SDL::SDL_KEYDOWN);
         break;
-      case Event::MouseButtonPressed:
-        if (event.mouseButton.button == sf::Mouse::Right)
+      case SDL::SDL_MOUSEBUTTONDOWN:
+        if (event.button.button == SDL_BUTTON_RIGHT)
           guiBuilder.closeOverlayWindows();
-        if (event.mouseButton.button == sf::Mouse::Middle)
+        if (event.button.button == SDL_BUTTON_MIDDLE)
           inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP));
         break;
-      case Event::MouseButtonReleased:
-        if (event.mouseButton.button == sf::Mouse::Left) {
+      case SDL::SDL_MOUSEBUTTONUP:
+        if (event.button.button == SDL_BUTTON_LEFT) {
           if (auto building = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS))
             inputQueue.push(UserInput(UserInputId::BUTTON_RELEASE, BuildingInfo{Vec2(0, 0), *building}));
           if (auto building = guiBuilder.getActiveButton(CollectiveTab::TECHNOLOGY))
@@ -1232,11 +1212,11 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
   if (gameReady)
     mapGui->setHint({});
   switch (event.type) {
-    case Event::MouseButtonReleased:
+    case SDL::SDL_MOUSEBUTTONUP:
       // MapGui needs this event otherwise it will sometimes lock the mouse button
-      mapGui->onMouseRelease(Vec2(event.mouseButton.x, event.mouseButton.y));
+      mapGui->onMouseRelease(Vec2(event.button.x, event.button.y));
       break;
-    case Event::MouseButtonPressed:
+    case SDL::SDL_MOUSEBUTTONDOWN:
       lockKeyboard = true;
       break;
     default:break;
@@ -1244,69 +1224,71 @@ void WindowView::propagateEvent(const Event& event, vector<GuiElem*> guiElems) {
   gui.propagateEvent(event, guiElems);
 }
 
-UserInputId getDirActionId(const Event::KeyEvent& key) {
-  if (key.control)
+UserInputId getDirActionId(const SDL_Keysym& key) {
+  if (GuiFactory::isCtrl(key))
     return UserInputId::TRAVEL;
-  if (key.alt)
+  if (GuiFactory::isAlt(key))
     return UserInputId::FIRE;
   else
     return UserInputId::MOVE;
 }
 
-void WindowView::keyboardAction(Event::KeyEvent key) {
+void WindowView::keyboardAction(const SDL_Keysym& key) {
   if (lockKeyboard)
     return;
   lockKeyboard = true;
-  switch (key.code) {
-    case Keyboard::Z: zoom(0); break;
-    case Keyboard::F2: options->handle(this, OptionSet::GENERAL); refreshScreen(); break;
-    case Keyboard::Space:
+  switch (key.sym) {
+    case SDL::SDLK_z: zoom(0); break;
+    case SDL::SDLK_F2: options->handle(this, OptionSet::GENERAL); refreshScreen(); break;
+    case SDL::SDLK_SPACE:
       inputQueue.push(UserInput(UserInputId::WAIT));
       break;
-    case Keyboard::Escape:
+    case SDL::SDLK_ESCAPE:
       if (!guiBuilder.clearActiveButton() && !renderer.isMonkey())
         inputQueue.push(UserInput(UserInputId::EXIT));
       break;
-    case Keyboard::Up:
-    case Keyboard::Numpad8:
+    case SDL::SDLK_UP:
+    case SDL::SDLK_KP_8:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(0, -1)));
       mapGui->onMouseGone();
       break;
-    case Keyboard::Numpad9:
+    case SDL::SDLK_KP_9:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, -1)));
       mapGui->onMouseGone();
       break;
-    case Keyboard::Right: 
-    case Keyboard::Numpad6:
+    case SDL::SDLK_RIGHT: 
+    case SDL::SDLK_KP_6:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 0)));
       mapGui->onMouseGone();
       break;
-    case Keyboard::Numpad3:
+    case SDL::SDLK_KP_3:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 1)));
       mapGui->onMouseGone();
       break;
-    case Keyboard::Down:
-    case Keyboard::Numpad2:
+    case SDL::SDLK_DOWN:
+    case SDL::SDLK_KP_2:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(0, 1)));
       mapGui->onMouseGone();
       break;
-    case Keyboard::Numpad1:
+    case SDL::SDLK_KP_1:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 1)));
       mapGui->onMouseGone();
       break;
-    case Keyboard::Left:
-    case Keyboard::Numpad4:
+    case SDL::SDLK_LEFT:
+    case SDL::SDLK_KP_4:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, 0)));
       mapGui->onMouseGone();
       break;
-    case Keyboard::Numpad7:
+    case SDL::SDLK_KP_7:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1)));
       mapGui->onMouseGone();
       break;
-    case Keyboard::M: inputQueue.push(UserInput(UserInputId::SHOW_HISTORY)); break;
-    case Keyboard::H: inputQueue.push(UserInput(UserInputId::HIDE)); break;
-    case Keyboard::P: inputQueue.push(UserInput(UserInputId::PAY_DEBT)); break;
-    case Keyboard::C: inputQueue.push(UserInput(key.shift ? UserInputId::CONSUME : UserInputId::CHAT)); break;
+    case SDL::SDLK_m: inputQueue.push(UserInput(UserInputId::SHOW_HISTORY)); break;
+    case SDL::SDLK_h: inputQueue.push(UserInput(UserInputId::HIDE)); break;
+    case SDL::SDLK_p: inputQueue.push(UserInput(UserInputId::PAY_DEBT)); break;
+    case SDL::SDLK_c:
+      inputQueue.push(UserInput(GuiFactory::isShift(key) ? UserInputId::CONSUME : UserInputId::CHAT));
+      break;
     default: break;
   }
 }

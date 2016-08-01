@@ -30,6 +30,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::ZOOM_UI, 0},
   {OptionId::DISABLE_MOUSE_WHEEL, 0},
   {OptionId::ONLINE, 1},
+  {OptionId::GAME_EVENTS, 1},
   {OptionId::AUTOSAVE, 1},
   {OptionId::WASD_SCROLLING, 0},
   {OptionId::FAST_IMMIGRATION, 0},
@@ -57,6 +58,7 @@ const map<OptionId, string> names {
   {OptionId::ZOOM_UI, "Zoom in UI"},
   {OptionId::DISABLE_MOUSE_WHEEL, "Disable mouse wheel scrolling"},
   {OptionId::ONLINE, "Online features"},
+  {OptionId::GAME_EVENTS, "Anonymous statistics"},
   {OptionId::AUTOSAVE, "Autosave"},
   {OptionId::WASD_SCROLLING, "WASD scrolling"},
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
@@ -81,6 +83,7 @@ const map<OptionId, string> hints {
   {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
       "Use you have a large resolution screen and things appear too small."},
   {OptionId::ONLINE, "Enable online features, like dungeon sharing and highscores."},
+  {OptionId::GAME_EVENTS, "Enable sending anonymous statistics to the developer."},
   {OptionId::AUTOSAVE, "Autosave the game every " + toString(MainLoop::getAutosaveFreq()) + " turns. "
     "The save file will be used to recover in case of a crash."},
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
@@ -96,10 +99,11 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::SOUND,
 #endif
       OptionId::FULLSCREEN,
-      OptionId::FULLSCREEN_RESOLUTION,
+  //    OptionId::FULLSCREEN_RESOLUTION,
       OptionId::ZOOM_UI,
       OptionId::DISABLE_MOUSE_WHEEL,
       OptionId::ONLINE,
+      OptionId::GAME_EVENTS,
       OptionId::AUTOSAVE,
       OptionId::WASD_SCROLLING,
 #ifndef RELEASE
@@ -122,6 +126,14 @@ const map<OptionSet, vector<OptionId>> optionSets {
   }},
   {OptionSet::CAMPAIGN, {
       OptionId::KEEPER_NAME,
+      OptionId::MAIN_VILLAINS,
+      //OptionId::RETIRED_VILLAINS,
+      OptionId::LESSER_VILLAINS,
+      OptionId::ALLIES,
+      //OptionId::INFLUENCE_SIZE
+  }},
+  {OptionSet::ADVENTURER_CAMPAIGN, {
+      OptionId::ADVENTURER_NAME,
       OptionId::MAIN_VILLAINS,
       //OptionId::RETIRED_VILLAINS,
       OptionId::LESSER_VILLAINS,
@@ -247,6 +259,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::FAST_IMMIGRATION:
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
+    case OptionId::GAME_EVENTS:
     case OptionId::ZOOM_UI:
     case OptionId::DISABLE_MOUSE_WHEEL:
     case OptionId::START_WITH_NIGHT: return getYesNo(value);

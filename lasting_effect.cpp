@@ -71,10 +71,10 @@ bool LastingEffects::affects(const Creature* c, LastingEffect effect) {
     case LastingEffect::PANIC:
       return !c->isAffected(LastingEffect::SLEEP);
     case LastingEffect::POISON:
-      return !c->isAffected(LastingEffect::POISON_RESISTANT) && !c->getAttributes().isNotLiving();
+      return !c->isAffected(LastingEffect::POISON_RESISTANT);
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED:
-      return c->getAttributes().isCorporal();
+      return c->getBody().canEntangle();
     default: return true;
   }
 }
@@ -121,8 +121,8 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
     case LastingEffect::POISON_RESISTANT: if (msg) c->you(MsgType::ARE, "no longer poison resistant"); break;
     case LastingEffect::FIRE_RESISTANT: if (msg) c->you(MsgType::ARE, "no longer fire resistant"); break;
     case LastingEffect::FLYING:
-      if (msg) c->you(MsgType::FALL, "on the " + c->getPosition().getName());
-      c->bleed(0.1);
+      if (msg)
+        c->you(MsgType::FALL, "on the " + c->getPosition().getName());
       break;
     case LastingEffect::INSANITY: if (msg) c->you(MsgType::BECOME, "sane again"); break;
     case LastingEffect::MAGIC_SHIELD: if (msg) c->you(MsgType::FEEL, "less protected"); break;
@@ -216,3 +216,18 @@ const char* LastingEffects::getBadAdjective(LastingEffect effect) {
     default: return nullptr;
   }
 }
+
+void LastingEffects::onCreatureDamage(Creature* c, LastingEffect e) {
+  switch (e) {
+    case LastingEffect::SLEEP:
+      c->removeEffect(e);
+      break;
+    case LastingEffect::MAGIC_SHIELD:
+      c->getAttributes().shortenEffect(LastingEffect::MAGIC_SHIELD, 5);
+      c->globalMessage("The magic shield absorbs the attack", "");
+      break;
+    default: break;
+  }
+}
+
+

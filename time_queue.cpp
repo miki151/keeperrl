@@ -17,77 +17,58 @@
 
 #include "time_queue.h"
 #include "creature.h"
+#include "view_object.h"
 
 template <class Archive> 
 void TimeQueue::serialize(Archive& ar, const unsigned int version) { 
-  serializeAll(ar, creatures, queue, dead);
+  serializeAll(ar, creatures, timeMap, queue);
 }
 
 SERIALIZABLE(TimeQueue);
 
-
-template <class Archive> 
-void TimeQueue::QElem::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(creature)
-    & BOOST_SERIALIZATION_NVP(time);
-}
-
-SERIALIZABLE(TimeQueue::QElem);
-
-TimeQueue::TimeQueue() : queue([](QElem e1, QElem e2) {
-    return e1.time > e2.time || (e1.time == e2.time && e1.creature->getUniqueId() > e2.creature->getUniqueId());
-}) {
-}
-
-void TimeQueue::addCreature(PCreature c) {
-  queue.push({c.get(), c->getLocalTime()});
-  dead.erase(c.get());
+void TimeQueue::addCreature(PCreature c, double time) {
+  timeMap.set(c.get(), time);
+  queue.insert(c.get());
   creatures.push_back(std::move(c));
 }
+
+double TimeQueue::getTime(const Creature* c) {
+  return timeMap.getOrFail(c);
+}
+
+void TimeQueue::increaseTime(Creature* c, double diff) {
+  CHECK(queue.count(c));
+  queue.erase(c);
+  timeMap.getOrFail(c) += diff;
+  queue.insert(c);
+}
+
+// Queue is initialized in a lazy manner because during deserialization the comparator doesn't 
+// work, as the Creatures are still being deserialized.
+TimeQueue::TimeQueue() : queue([this](const Creature* c1, const Creature* c2) {
+        return make_tuple(timeMap.getOrFail(c1), c1->getUniqueId()) <
+            make_tuple(timeMap.getOrFail(c2), c2->getUniqueId()); }) {}
   
 PCreature TimeQueue::removeCreature(Creature* cRef) {
-  int ind = -1;
   for (int i : All(creatures))
     if (creatures[i].get() == cRef) {
-      ind = i;
-      break;
+      queue.erase(cRef);
+      PCreature ret = std::move(creatures[i]);
+      creatures.erase(creatures.begin() + i);
+      return ret;
     }
-  CHECK(ind > -1) << "Creature not found";
-  PCreature ret = std::move(creatures[ind]);
-  creatures.erase(creatures.begin() + ind);
-  dead.insert(ret.get());
-  return ret;
+  FAIL << "Creature not found";
+  return nullptr;
 }
 
 vector<Creature*> TimeQueue::getAllCreatures() const {
-  vector<Creature*> ret;
-  for (const PCreature& c : creatures)
-    ret.push_back(c.get());
-  return ret;
-}
-
-void TimeQueue::removeDead() {
-  while (!queue.empty() && dead.contains(queue.top().creature))
-    queue.pop();
-}
-
-Creature* TimeQueue::getMinCreature() {
-  if (creatures.empty())
-    return nullptr;
-  removeDead();
-  QElem elem = queue.top();
-  while (elem.time != elem.creature->getLocalTime()) {
-    CHECK(elem.time < elem.creature->getLocalTime());
-    queue.pop();
-    removeDead();
-    queue.push({elem.creature, elem.creature->getLocalTime()});
-    elem = queue.top();
-  }
-  return elem.creature;
+  return extractRefs(creatures);
 }
 
 Creature* TimeQueue::getNextCreature() {
-  Creature* c = getMinCreature();
-  return c;
+  if (creatures.empty())
+    return nullptr;
+  else
+    return *queue.begin();
 }
 

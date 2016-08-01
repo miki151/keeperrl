@@ -6,7 +6,7 @@
 template <class Archive> 
 void MovementSet::serialize(Archive& ar, const unsigned int version) {
   ar& SVAR(onFire)
-    & SVAR(sunlight)
+    & SVAR(covered)
     & SVAR(traits)
     & SVAR(forcibleTraits)
     & SVAR(tribeOverrides);
@@ -14,17 +14,17 @@ void MovementSet::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(MovementSet);
 
-bool MovementSet::canEnter(const MovementType& creature) const {
-  if (!creature.isForced()) {
-    if ((sunlight && creature.isSunlightVulnerable()) || (onFire && !creature.isFireResistant()))
+bool MovementSet::canEnter(const MovementType& movementType) const {
+  if (!movementType.isForced()) {
+    if ((!covered && movementType.isSunlightVulnerable()) || (onFire && !movementType.isFireResistant()))
       return false;
   }
-  EnumSet<MovementTrait> rightTraits = (tribeOverrides && creature.getTribe() == tribeOverrides->first) ?
+  EnumSet<MovementTrait> rightTraits = (tribeOverrides && movementType.isCompatible(tribeOverrides->first)) ?
       tribeOverrides->second : traits;
-  if (creature.isForced())
+  if (movementType.isForced())
     rightTraits = rightTraits.sum(forcibleTraits);
   for (auto trait : rightTraits)
-    if (creature.hasTrait(trait))
+    if (movementType.hasTrait(trait))
       return true;
   return false;
 }
@@ -38,9 +38,13 @@ bool MovementSet::isOnFire() const {
   return onFire;
 }
 
-MovementSet& MovementSet::setSunlight(bool state) {
-  sunlight = state;
+MovementSet& MovementSet::setCovered(bool state) {
+  covered = state;
   return *this;
+}
+
+bool MovementSet::isCovered() const {
+  return covered;
 }
 
 MovementSet& MovementSet::addTrait(MovementTrait trait) {

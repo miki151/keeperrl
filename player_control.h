@@ -18,15 +18,14 @@
 
 #include "creature_view.h"
 #include "entity_set.h"
-#include "event.h"
 #include "collective_control.h"
-#include "event.h"
 #include "cost_info.h"
 #include "game_info.h"
 #include "square_type.h"
 #include "map_memory.h"
 #include "position.h"
 #include "collective_warning.h"
+#include "event_listener.h"
 
 class Model;
 class Technology;
@@ -41,14 +40,14 @@ class MinionAction;
 struct TaskActionInfo;
 struct EquipmentActionInfo;
 struct TeamCreatureInfo;
+template <typename T>
+class EventProxy;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
   PlayerControl(Collective*, Level*);
   ~PlayerControl();
   void addImportantLongMessage(const string&, optional<Position> = none);
-
-  void onConqueredLand();
 
   void processInput(View* view, UserInput);
   MoveInfo getMove(Creature* c);
@@ -85,12 +84,11 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
 
-  void onTechBookRead(Technology*);
   vector<Creature*> getTeam(const Creature*);
 
   protected:
   // from CreatureView
-  virtual const Level* getLevel() const override;
+  virtual Level* getLevel() const override;
   virtual const MapMemory& getMemory() const override;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
@@ -101,7 +99,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual bool isPlayerView() const override;
 
   // from CollectiveControl
-  virtual void onMoved(Creature*) override;
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
@@ -111,13 +108,13 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void update(bool currentlyActive) override;
 
   private:
-
-  REGISTER_HANDLER(PickupEvent, const Creature* c, const vector<Item*>& items);
+  HeapAllocated<EventProxy<PlayerControl>> SERIAL(eventProxy);
+  friend EventProxy<PlayerControl>;
+  void onEvent(const GameEvent&);
 
   void considerNightfallMessage();
   void considerWarning();
 
-  Level* getLevel();
   TribeId getTribeId() const;
   bool canSee(const Creature*) const;
   bool canSee(Position) const;
@@ -211,6 +208,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
     bool deselect;
   };
   optional<SelectionInfo> rectSelection;
+  void updateSelectionSquares();
   double SERIAL(lastControlKeeperQuestion) = -100;
   int SERIAL(startImpNum) = -1;
   bool SERIAL(payoutWarning) = false;
@@ -230,7 +228,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   optional<PlayerMessage> findMessage(PlayerMessage::Id);
   void updateVisibleCreatures();
   vector<Vec2> SERIAL(visibleEnemies);
-  unordered_set<const Collective*> SERIAL(notifiedConquered);
   HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
   set<const Location*> SERIAL(knownLocations);
   set<const Collective*> SERIAL(knownVillains);

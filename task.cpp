@@ -221,7 +221,7 @@ class PickItem : public Task {
         return {1.0, action.append([=](Creature* c) {
           pickedUp = true;
           onPickedUp();
-          callback->onPickedUp(position, hereItems);
+          callback->onTaskPickedUp(position, hereItems);
         })}; 
       else {
         callback->onCantPickItem(items);
@@ -304,7 +304,7 @@ class EquipItem : public Task {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    CHECK(c->getAttributes().isHumanoid()) << c->getName().bare();
+    CHECK(c->getBody().isHumanoid()) << c->getName().bare();
     if (Item* item = c->getEquipment().getItemById(itemId)) {
       if (auto action = c->equip(item))
         return action.append([=](Creature* c) {setDone();});
@@ -1090,7 +1090,7 @@ class Eat : public Task {
         if (auto move = c->move(pos))
           return move;
       if (Creature* ch = pos.getCreature())
-        if (ch->getAttributes().isMinionFood())
+        if (ch->getBody().isMinionFood())
           if (auto move = c->attack(ch)) {
             return move.append([this, ch, pos] (Creature*) { if (ch->isDead()) position = pos; });
       }

@@ -115,6 +115,8 @@ class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2, OptionId
     using EnumVariant::EnumVariant;
 };
 
+class GameExitException {};
+
 class View {
   public:
   View();
@@ -143,7 +145,7 @@ class View {
 
   /** Reads the game state from \paramname{creatureView}. If \paramname{noRefresh} is set,
       won't trigger screen to refresh.*/
-  virtual void updateView(const CreatureView* creatureView, bool noRefresh) = 0;
+  virtual void updateView(CreatureView*, bool noRefresh) = 0;
 
   /** Draw a blocking view of the whole level.*/
   virtual void drawLevelMap(const CreatureView*) = 0;

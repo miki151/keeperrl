@@ -24,10 +24,10 @@
 #include "retired_games.h"
 #include "save_file_info.h"
 
-MainLoop::MainLoop(View* v, Highscores* h, GameEvents* gameE, FileSharing* fSharing, const string& freePath,
+MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
     const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin, bool singleThread,
     optional<GameTypeChoice> force)
-      : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j), gameEvents(gameE),
+      : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
         highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread), forceGame(force) {
 }
 
@@ -56,7 +56,7 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static const int saveVersion = 700;
+static const int saveVersion = 1100;
 
 static bool isCompatible(int loadedVersion) {
   return loadedVersion > 2 && loadedVersion <= saveVersion && loadedVersion / 100 == saveVersion / 100;
@@ -73,7 +73,7 @@ static string getSaveSuffix(GameSaveType t) {
 }
 
 template <typename InputType, typename T>
-static T loadGameUsing(const string& filename, bool eraseFile) {
+static T loadGameUsing(const string& filename) {
   T obj;
   try {
     InputType input(filename.c_str());
@@ -87,31 +87,29 @@ static T loadGameUsing(const string& filename, bool eraseFile) {
   } catch (boost::archive::archive_exception& ex) {
       return T();
   }
-  if (eraseFile)
-    remove(filename.c_str());
   return obj;
 }
 
-static PGame loadGameFromFile(const string& filename, bool eraseFile) {
-  if (auto game = loadGameUsing<CompressedInput, PGame>(filename, eraseFile))
+static PGame loadGameFromFile(const string& filename) {
+  if (auto game = loadGameUsing<CompressedInput, PGame>(filename))
     return game;
   // Try alternative format that doesn't crash on OSX.
-  return loadGameUsing<CompressedInput2, PGame>(filename, eraseFile); 
+  return loadGameUsing<CompressedInput2, PGame>(filename); 
 }
 
 static PModel loadModelFromFile(const string& filename) {
-  if (auto model = loadGameUsing<CompressedInput, PModel>(filename, false))
+  if (auto model = loadGameUsing<CompressedInput, PModel>(filename))
     return model;
   // Try alternative format that doesn't crash on OSX.
-  return loadGameUsing<CompressedInput2, PModel>(filename, false); 
+  return loadGameUsing<CompressedInput2, PModel>(filename); 
 }
 
-bool isNonAscii(char c) {
-  return !(c>=0 && c <128);
+bool isNotFilename(char c) {
+  return !(tolower(c) >= 'a' && tolower(c) <= 'z') && !isdigit(c) && c != '_';
 }
 
-string stripNonAscii(string s) {
-  s.erase(remove_if(s.begin(),s.end(), isNonAscii), s.end());
+static string stripFilename(string s) {
+  s.erase(remove_if(s.begin(),s.end(), isNotFilename), s.end());
   return s;
 }
 
@@ -161,7 +159,7 @@ void MainLoop::uploadFile(const string& path, GameSaveType type) {
 }
 
 string MainLoop::getSavePath(PGame& game, GameSaveType gameType) {
-  return userPath + "/" + stripNonAscii(game->getGameIdentifier()) + getSaveSuffix(gameType);
+  return userPath + "/" + stripFilename(game->getGameIdentifier()) + getSaveSuffix(gameType);
 }
 
 const int singleModelGameSaveTime = 100000;
@@ -192,8 +190,8 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
     uploadFile(path, type);
 }
 
-void MainLoop::eraseAutosave(PGame& game) {
-  remove(getSavePath(game, GameSaveType::AUTOSAVE).c_str());
+void MainLoop::eraseSaveFile(PGame& game, GameSaveType type) {
+  remove(getSavePath(game, type).c_str());
 }
 
 static string getGameDesc(const FileSharing::GameInfo& game) {
@@ -269,8 +267,8 @@ int MainLoop::getAutosaveFreq() {
 
 void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
   view->reset();
-  game->initialize(options, highscores, view, gameEvents);
-  const int stepTimeMilli = 3;
+  game->initialize(options, highscores, view, fileSharing);
+  const double stepTimeMilli = 3;
   Intervalometer meter(stepTimeMilli);
   double lastMusicUpdate = -1000;
   double lastAutoSave = game->getGlobalTime();
@@ -278,9 +276,18 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
     double step = 1;
     if (!game->isTurnBased()) {
       double gameTimeStep = view->getGameSpeed() / stepTimeMilli;
-      step = min(1.0, double(meter.getCount(view->getTimeMilli())) * gameTimeStep);
+      long long timeMilli = view->getTimeMilli();
+      double count = meter.getCount(timeMilli);
+      //Debug() << "Intervalometer " << timeMilli << " " << count;
+      step = min(1.0, double(count) * gameTimeStep);
     }
+    Debug() << "Time step " << step;
     if (auto exitInfo = game->update(step)) {
+      if (exitInfo->getId() == Game::ExitId::QUIT && eraseSave()) {
+        eraseSaveFile(game, GameSaveType::KEEPER);
+        eraseSaveFile(game, GameSaveType::ADVENTURER);
+        eraseSaveFile(game, GameSaveType::AUTOSAVE);
+      }
       if (exitInfo->getId() == Game::ExitId::SAVE) {
         bool retired = false;
         if (exitInfo->get<GameSaveType>() == GameSaveType::RETIRED_SITE) {
@@ -295,7 +302,6 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
         if (retired)
           game->doneRetirement();
       }
-      eraseAutosave(game);
       return;
     }
     double gameTime = game->getGlobalTime();
@@ -333,12 +339,27 @@ RetiredGames MainLoop::getRetiredGames() {
 }
 
 PGame MainLoop::prepareCampaign(RandomGen& random) {
-  random.init(Random.get(1234567));
-  optional<Campaign> campaign = Campaign::prepareCampaign(view, options, getRetiredGames(), random);
-  if (!campaign)
-    return nullptr;
-  return Game::campaignGame(keeperCampaign(*campaign, random), *campaign->getPlayerPos(),
-      options->getStringValue(OptionId::KEEPER_NAME), *campaign);
+  if (auto choice = view->chooseGameType()) {
+    random.init(Random.get(1234567));
+    switch (*choice) {
+      case GameTypeChoice::KEEPER:
+        if (auto campaign = Campaign::prepareCampaign(view, options, getRetiredGames(), random, Campaign::KEEPER))
+          return Game::campaignGame(prepareCampaignModels(*campaign, random), *campaign->getPlayerPos(),
+            options->getStringValue(OptionId::KEEPER_NAME), *campaign);
+        break;
+      case GameTypeChoice::ADVENTURER:
+        if (auto campaign = Campaign::prepareCampaign(view, options, getRetiredGames(), random,
+              Campaign::ADVENTURER)) {
+          PGame ret = Game::campaignGame(prepareCampaignModels(*campaign, random), *campaign->getPlayerPos(),
+              options->getStringValue(OptionId::ADVENTURER_NAME), *campaign);
+          ret->getMainModel()->landHeroPlayer(options->getStringValue(OptionId::ADVENTURER_NAME), 0);
+          return ret;
+        }
+        break;
+      default: FAIL << "Bad campaign mode";
+    }
+  }
+  return nullptr;
 }
 
 PGame MainLoop::prepareSingleMap(RandomGen& random) {
@@ -375,6 +396,7 @@ PGame MainLoop::prepareSingleMap(RandomGen& random) {
 
 void MainLoop::playGameChoice() {
   while (1) {
+    playMenuMusic();
     PGame game;
     RandomGen random;
     optional<int> choice = view->chooseFromList("", {
@@ -384,7 +406,7 @@ void MainLoop::playGameChoice() {
     switch (*choice) {
       case 0: game = prepareCampaign(random); break;
       case 1: game = prepareSingleMap(random); break;
-      case 2: game = loadPrevious(eraseSave(options)); break;
+      case 2: game = loadPrevious(); break;
       case 3: return;
     }
     if (forceGame != GameTypeChoice::QUICK_LEVEL)
@@ -400,7 +422,8 @@ void MainLoop::playGameChoice() {
 void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
-  playGame(Game::splashScreen(ModelBuilder::splashModel(&meter, dataFreePath + "/splash.txt")), false, true);
+  playGame(Game::splashScreen(ModelBuilder(&meter, Random, options)
+        .splashModel(dataFreePath + "/splash.txt")), false, true);
 }
 
 void MainLoop::showCredits(const string& path, View* view) {
@@ -421,6 +444,10 @@ void MainLoop::showCredits(const string& path, View* view) {
   view->presentList("Credits", lines, false);
 }
 
+void MainLoop::playMenuMusic() {
+  jukebox->setType(MusicType::MAIN, true);
+}
+
 void MainLoop::start(bool tilesPresent) {
   if (options->getBoolValue(OptionId::MUSIC))
     jukebox->toggle(true);
@@ -434,9 +461,15 @@ void MainLoop::start(bool tilesPresent) {
         "is the same exact game as the full version. If you'd like to buy the full version, "
         "please visit keeperrl.com.\n \nYou can also get it by donating to any wildlife charity. "
         "More information on the website.");
+  if (options->getIntValue(OptionId::GAME_EVENTS) == 1) {
+    if (view->yesOrNoPrompt("The imps would like to gather statistics while you're playing the game and send them anonymously to the developer. This would be very helpful in designing the game. Do you agree?"))
+      options->setValue(OptionId::GAME_EVENTS, 2);
+    else
+      options->setValue(OptionId::GAME_EVENTS, 0);
+  }
   int lastIndex = 0;
   while (1) {
-    jukebox->setType(MusicType::MAIN, true);
+    playMenuMusic();
     optional<int> choice;
     if (forceGame)
       choice = 0;
@@ -458,6 +491,25 @@ void MainLoop::start(bool tilesPresent) {
   }
 }
 
+#ifdef OSX // see thread comment in stdafx.h
+static thread::attributes getAttributes() {
+  thread::attributes attr;
+  attr.set_stack_size(4096 * 4000);
+  return attr;
+}
+
+static thread makeThread(function<void()> fun) {
+  return thread(getAttributes(), fun);
+}
+
+#else
+
+static thread makeThread(function<void()> fun) {
+  return thread(fun);
+}
+
+#endif
+
 void MainLoop::doWithSplash(SplashType type, const string& text, int totalProgress,
     function<void(ProgressMeter&)> fun, function<void()> cancelFun) {
   ProgressMeter meter(1.0 / totalProgress);
@@ -465,7 +517,7 @@ void MainLoop::doWithSplash(SplashType type, const string& text, int totalProgre
   if (useSingleThread) {
     // A bit confusing, but the flag refers to using a single thread for rendering and gameplay.
     // This forces us to build the world on an extra thread to be able to display a progress bar.
-    thread t([fun, &meter, this] { fun(meter); view->clearSplash(); });
+    thread t = makeThread([fun, &meter, this] { fun(meter); view->clearSplash(); });
     view->refreshView();
     t.join();
   } else {
@@ -479,7 +531,7 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
   if (useSingleThread) {
     // A bit confusing, but the flag refers to using a single thread for rendering and gameplay.
     // This forces us to build the world on an extra thread to be able to display a progress bar.
-    thread t([fun, this] { fun(); view->clearSplash(); });
+    thread t = makeThread([fun, this] { fun(); view->clearSplash(); });
     view->refreshView();
     t.join();
   } else {
@@ -492,18 +544,19 @@ PModel MainLoop::quickGame(RandomGen& random) {
   PModel model;
   NameGenerator::init(dataFreePath + "/names");
   doWithSplash(SplashType::BIG, "Generating map...", 166000,
-      [&model, this, &random] (ProgressMeter& meter) {
-        model = ModelBuilder::quickModel(&meter, random, options);
+      [&] (ProgressMeter& meter) {
+        model = ModelBuilder(&meter, random, options).quickModel();
       });
   return model;
 }
 
 void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
   NameGenerator::init(dataFreePath + "/names");
-  ModelBuilder::measureSiteGen(numTries, Random, options);
+  ProgressMeter meter(1);
+  ModelBuilder(&meter, random, options).measureSiteGen(numTries);
 }
 
-Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
+Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& random) {
   Table<PModel> models(campaign.getSites().getBounds());
   auto& sites = campaign.getSites();
   for (Vec2 v : sites.getBounds())
@@ -515,17 +568,16 @@ Table<PModel> MainLoop::keeperCampaign(Campaign& campaign, RandomGen& random) {
   NameGenerator::init(dataFreePath + "/names");
   int numSites = campaign.getNumNonEmpty();
   doWithSplash(SplashType::BIG, "Generating map...", numSites,
-      [&sites, &models, this, &random, &campaign, &failedToLoad] (ProgressMeter& meter) {
+      [&] (ProgressMeter& meter) {
+        ModelBuilder modelBuilder(nullptr, random, options);
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
             meter.addProgress();
-          if (v == campaign.getPlayerPos()) {
-            models[v] = ModelBuilder::campaignBaseModel(nullptr, random, options, "pok");
-            //ret[v] = ModelBuilder::quickModel(nullptr, random, options);
-            ModelBuilder::spawnKeeper(models[v].get(), options);
+          if (sites[v].getKeeper()) {
+            models[v] = modelBuilder.campaignBaseModel("Campaign base site");
+            modelBuilder.spawnKeeper(models[v].get());
           } else if (auto villain = sites[v].getVillain())
-            //ret[v] = ModelBuilder::quickModel(nullptr, random, options);
-            models[v] = ModelBuilder::campaignSiteModel(nullptr, random, options, "pok", villain->enemyId);
+            models[v] = modelBuilder.campaignSiteModel("Campaign enemy site", villain->enemyId, villain->type);
           else if (auto retired = sites[v].getRetired()) {
             if (PModel m = loadModelFromFile(userPath + "/" + retired->fileInfo.filename))
               models[v] = std::move(m);
@@ -545,15 +597,15 @@ PModel MainLoop::keeperSingleMap(RandomGen& random) {
   PModel model;
   NameGenerator::init(dataFreePath + "/names");
   doWithSplash(SplashType::BIG, "Generating map...", 300000,
-      [&model, this, &random] (ProgressMeter& meter) {
-        model = ModelBuilder::singleMapModel(&meter, random, options,
-            NameGenerator::get(NameGeneratorId::WORLD)->getNext());
-        ModelBuilder::spawnKeeper(model.get(), options);
+      [&] (ProgressMeter& meter) {
+        ModelBuilder modelBuilder(&meter, random, options);
+        model = modelBuilder.singleMapModel(NameGenerator::get(NameGeneratorId::WORLD)->getNext());
+        modelBuilder.spawnKeeper(model.get());
       });
   return model;
 }
 
-PGame MainLoop::loadGame(string file, bool erase) {
+PGame MainLoop::loadGame(string file) {
   SavedGameInfo info = *getSavedGameInfo(file);
   int loadTime = 0;
   if (info.getNumSites() == 1)
@@ -568,7 +620,7 @@ PGame MainLoop::loadGame(string file, bool erase) {
         else
           Model::progressMeter = &meter;
         Debug() << "Loading from " << file;
-        game = loadGameFromFile(userPath + "/" + file, erase);});
+        game = loadGameFromFile(userPath + "/" + file);});
   if (!game)
     view->presentText("Sorry", "This save file is corrupted :(");
   Square::progressMeter = nullptr;
@@ -612,30 +664,53 @@ PGame MainLoop::adventurerGame() {
     if (savedGame->download)
       if (!downloadGame(savedGame->filename))
         return nullptr;
-    if (PGame game = loadGame(savedGame->filename, false)) {
-      game->initialize(options, highscores, view, gameEvents);
-      game->landHeroPlayer();
+    if (PGame game = loadGame(savedGame->filename)) {
+      game->initialize(options, highscores, view, fileSharing);
+      CHECK(game->isSingleModel());
+      auto handicap = view->getNumber("Choose handicap (your adventurer's strength and dexterity increase)",
+          0, 20, 5);
+      game->getMainModel()->landHeroPlayer(options->getStringValue(OptionId::ADVENTURER_NAME),
+          handicap.get_value_or(0));
       return game;
     }
   }
   return nullptr;
 }
 
-PGame MainLoop::loadPrevious(bool erase) {
+static void changeSaveType(const string& file, GameSaveType newType) {
+  string newFile;
+  for (GameSaveType oldType : ENUM_ALL(GameSaveType)) {
+    string suf = getSaveSuffix(oldType);
+    if (file.substr(file.size() - suf.size()) == suf) {
+      if (oldType == newType)
+        return;
+      newFile = file.substr(0, file.size() - suf.size()) + getSaveSuffix(newType);
+      break;
+    }
+  }
+  CHECK(!newFile.empty());
+  remove(newFile.c_str());
+  rename(file.c_str(), newFile.c_str());
+}
+
+PGame MainLoop::loadPrevious() {
   vector<ListElem> options;
   vector<SaveFileInfo> files;
   getSaveOptions({}, {
       {GameSaveType::AUTOSAVE, "Recovered games:"},
       {GameSaveType::KEEPER, "Keeper games:"},
       {GameSaveType::ADVENTURER, "Adventurer games:"}}, options, files);
-  optional<SaveFileInfo> savedGame = chooseSaveFile(options, files, "No save files found.", view);
-  if (savedGame)
-    return loadGame(savedGame->filename, erase);
-  else
+  optional<SaveFileInfo> savedGame = chooseSaveFile(options, files, "No saved games found.", view);
+  if (savedGame) {
+    PGame ret = loadGame(savedGame->filename);
+    if (eraseSave())
+      changeSaveType(savedGame->filename, GameSaveType::AUTOSAVE);
+    return ret;
+  } else
     return nullptr;
 }
 
-bool MainLoop::eraseSave(Options* options) {
+bool MainLoop::eraseSave() {
 #ifdef RELEASE
   return !options->getBoolValue(OptionId::KEEP_SAVEFILES);
 #endif

@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "event_generator.h"
-#include "creature_listener.h"
+#include "event_listener.h"
 
 template<typename Listener>
 EventGenerator<Listener>::~EventGenerator<Listener>() {
   for (Listener* l : copyOf(listeners))
-    l->unsubscribeFromCreature(this);
+    l->unsubscribe();
 }
 
 template<typename Listener>
@@ -29,4 +29,4 @@ void EventGenerator<Listener>::serialize(Archive& ar, const unsigned int version
   serializeAll(ar, listeners);
 }
 
-SERIALIZABLE_TMPL(EventGenerator, CreatureListener);
+SERIALIZABLE_TMPL(EventGenerator, EventListener);

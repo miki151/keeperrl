@@ -39,6 +39,10 @@ int RandomGen::get(int min, int max) {
   return uniform_int_distribution<int>(min, max - 1)(generator);
 }
 
+std::string operator "" _s(const char* str, size_t) { 
+  return std::string(str); 
+}
+
 string getCardinalName(Dir d) {
   switch (d) {
     case Dir::N: return "north";
@@ -84,6 +88,16 @@ double RandomGen::getDouble(double a, double b) {
 }
 
 RandomGen Random;
+
+template string toString<int>(const int&);
+template string toString<unsigned int>(const unsigned int&);
+//template string toString<size_t>(const size_t&);
+template string toString<char>(const char&);
+template string toString<double>(const double&);
+//template string toString<Vec2>(const Vec2&);
+
+template int fromString<int>(const string&);
+template double fromString<double>(const string&);
 
 template optional<int> fromStringSafe<int>(const string&);
 template optional<double> fromStringSafe<double>(const string&);
@@ -518,6 +532,10 @@ int Rectangle::height() const {
   return h;
 }
 
+int Rectangle::area() const {
+  return w * h;
+}
+
 Vec2 Rectangle::getSize() const {
   return Vec2(w, h);
 }
@@ -800,9 +818,18 @@ AsyncLoop::AsyncLoop(function<void()> init, function<void()> loop)
     : done(false), t([=] { init(); while (!done) { loop(); }}) {
 }
 
-AsyncLoop::~AsyncLoop() {
+void AsyncLoop::setDone() {
   done = true;
-  t.join();
+}
+
+void AsyncLoop::finishAndWait() {
+  setDone();
+  if (t.joinable())
+    t.join();
+}
+
+AsyncLoop::~AsyncLoop() {
+  finishAndWait();
 }
 
 ConstructorFunction::ConstructorFunction(function<void()> fun) {

@@ -49,9 +49,9 @@ class MapGui : public GuiElem {
   virtual bool onMouseMove(Vec2) override;
   virtual void onMouseGone() override;
   virtual void onMouseRelease(Vec2) override;
-  virtual bool onKeyPressed2(Event::KeyEvent) override;
+  virtual bool onKeyPressed2(SDL::SDL_Keysym) override;
 
-  void updateObjects(const CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, bool showMorale);
+  void updateObjects(CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, bool showMorale);
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void setHint(const vector<string>&);
@@ -70,6 +70,7 @@ class MapGui : public GuiElem {
   void clearButtonViewId();
 
   private:
+  void updateObject(Vec2, CreatureView*, int currentTime);
   void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, int currentTimeReal,
       const EnumMap<HighlightType, double>&);
   void drawCreatureHighlights(Renderer&, const ViewObject&, Vec2 pos, Vec2 sz, int currentTimeReal);
@@ -128,7 +129,9 @@ class MapGui : public GuiElem {
     double x;
     double y;
   } mouseOffset, center;
-  const Level* currentLevel = nullptr;
+  const Level* previousLevel = nullptr;
+  const CreatureView* previousView = nullptr;
+  Table<optional<int>> lastSquareUpdate;
   optional<Coords> softCenter;
   Vec2 lastMousePos;
   optional<Vec2> lastMouseMove;

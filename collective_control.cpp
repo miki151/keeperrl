@@ -17,9 +17,6 @@ Collective* CollectiveControl::getCollective() const {
   return NOTNULL(collective);
 }
 
-void CollectiveControl::onMoved(Creature*) {
-}
-
 void CollectiveControl::update(bool currentlyActive) {
 }
 

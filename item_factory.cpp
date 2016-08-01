@@ -37,6 +37,7 @@
 #include "item_attributes.h"
 #include "sound.h"
 #include "creature_attributes.h"
+#include "event_listener.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -133,7 +134,7 @@ class AmuletOfHealing : public Item {
 class Telepathy : public CreatureVision {
   public:
   virtual bool canSee(const Creature* c1, const Creature* c2) override {
-    return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getAttributes().hasBrain();
+    return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain();
   }
 
   SERIALIZE_SUBCLASS(CreatureVision);
@@ -191,7 +192,7 @@ class Corpse : public Item {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))
         Effect::applyToPosition(position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
-          !position.getCoverInfo().covered && Random.roll(35)) {
+          !position.isCovered() && Random.roll(35)) {
         for (Position v : position.neighbors8(Random)) {
           PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE, TribeId::getPest(),
                     MonsterAIFactory::scavengerBird(v));
@@ -283,7 +284,7 @@ class TechBook : public Item {
 
   virtual void applySpecial(Creature* c) override {
     if (!read || !!tech) {
-      c->getGame()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
+      c->getGame()->addEvent({EventId::TECHBOOK_READ, tech ? Technology::get(*tech) : nullptr});
       read = true;
     }
   }
@@ -1307,6 +1308,12 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::OTHER;
             i.price = 0;
             i.resourceId = CollectiveResourceId::WOOD;
+            i.weight = 5;);
+    case ItemId::BONE: return ITATTR(
+            i.viewId = ViewId::BONE;
+            i.name = "bone";
+            i.itemClass = ItemClass::OTHER;
+            i.price = 0;
             i.weight = 5;);
     case ItemId::GOLD_PIECE: return ITATTR(
             i.viewId = ViewId::GOLD;

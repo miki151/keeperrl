@@ -21,6 +21,7 @@
 #include "gui_elem.h"
 #include "game_info.h"
 #include "user_input.h"
+#include "clock.h"
 
 class Clock;
 class MinionAction;
@@ -46,7 +47,7 @@ class GuiBuilder {
   struct Callbacks {
     function<void(UserInput)> input;
     function<void(const vector<string>&)> hint;
-    function<void(sf::Event::KeyEvent)> keyboard;
+    function<void(SDL::SDL_Keysym)> keyboard;
     function<void()> refreshScreen;
     function<void(const string&)> info;
   };
@@ -135,6 +136,8 @@ class GuiBuilder {
   PGuiElem drawBuildings(CollectiveInfo&);
   PGuiElem buildingsCache;
   int buildingsHash = 0;
+  vector<OverlayInfo> buildingsOverlayCache;
+  int buildingsOverlayHash = 0;
   PGuiElem bottomBandCache;
   PGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
   PGuiElem minionButtonsCache;
@@ -164,8 +167,14 @@ class GuiBuilder {
   PGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
   PGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged);
   GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, bool active);
-  PGuiElem teamCache;
-  int teamHash = 0;
+  PGuiElem minionsCache;
+  int minionsHash = 0;
+  PGuiElem technologyCache;
+  int technologyHash = 0;
+  PGuiElem keeperHelp;
+  optional<OverlayInfo> speedDialog;
+  int rightBandInfoHash = 0;
+  PGuiElem rightBandInfoCache;
   optional<string> activeGroup;
   struct ActiveButton {
     CollectiveTab tab;
@@ -181,6 +190,7 @@ class GuiBuilder {
   double lyingItemsScroll = 0;
   double villagesScroll = 0;
   double tasksScroll = 0;
+  double minionPageScroll = 0;
   int itemIndex = -1;
   int numSeenVillains = -1;
   bool playerOverlayFocused = false;
@@ -205,7 +215,7 @@ class GuiBuilder {
     int lastFps = 0;
     int curSec = -1;
     int curFps = 0;
-    sf::Clock clock;
+    Clock clock;
   } fpsCounter, upsCounter;
 
   vector<PGuiElem> drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab);
@@ -218,18 +228,18 @@ class GuiBuilder {
   void drawBuildingsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
-  PGuiElem getStandingGui(double standing);
   PGuiElem getItemLine(const ItemInfo&, function<void(Rectangle)> onClick,
       function<void()> onMultiClick = nullptr);
   vector<string> getItemHint(const ItemInfo&);
   PGuiElem drawMinionAndLevel(ViewId viewId, int level, int iconMult);
+  vector<SDL::SDL_Keysym> getConfirmationKeys();
   bool morale = true;
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
   vector<PGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);
   PGuiElem menuElemMargins(PGuiElem);
   PGuiElem getHighlight(MenuType, const string& label, int height);
   string getPlayerTitle(PlayerInfo&);
-  Event::KeyEvent getHotkeyEvent(char);
+  SDL::SDL_KeyboardEvent getHotkeyEvent(char);
   MapGui* mapGui = nullptr;
 };
 
