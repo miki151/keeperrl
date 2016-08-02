@@ -177,8 +177,6 @@ void VillageControl::update(bool currentlyActive) {
   considerWelcomeMessage();
   considerCancellingAttack();
   checkEntries();
-  if (Collective* enemy = getEnemyCollective())
-    maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
   vector<Creature*> allMembers = getCollective()->getCreatures();
   for (auto team : getCollective()->getTeams().getAll()) {
     for (const Creature* c : getCollective()->getTeams().getMembers(team))
