@@ -177,8 +177,6 @@ void VillageControl::update(bool currentlyActive) {
   considerWelcomeMessage();
   considerCancellingAttack();
   checkEntries();
-  if (Collective* enemy = getEnemyCollective())
-    maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
   vector<Creature*> allMembers = getCollective()->getCreatures();
   for (auto team : getCollective()->getTeams().getAll()) {
     for (const Creature* c : getCollective()->getTeams().getMembers(team))
@@ -191,6 +189,8 @@ void VillageControl::update(bool currentlyActive) {
   double updateFreq = 0.1;
   if (canPerformAttack(currentlyActive) && Random.roll(1 / updateFreq))
     if (villain) {
+      if (Collective* enemy = getEnemyCollective())
+        maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
       double prob = villain->getAttackProbability(this) / updateFreq;
       if (prob > 0 && Random.roll(1 / prob)) {
         vector<Creature*> fighters;
