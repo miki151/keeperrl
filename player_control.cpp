@@ -607,7 +607,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
     append(slotIndex, vector<EquipmentSlot>(items.size(), slot));
     for (Item* item : items) {
       removeElement(ownedItems, item);
-      bool equiped = creature->getEquipment().isEquiped(item);
+      bool equiped = creature->getEquipment().isEquipped(item);
       bool locked = getCollective()->getMinionEquipment().isLocked(creature, item->getUniqueId());
       info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
       info.inventory.back().actions.push_back(locked ? ItemAction::UNLOCK : ItemAction::LOCK);

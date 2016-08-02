@@ -80,7 +80,7 @@ class AmuletOfWarning : public Item {
 
   virtual void specialTick(Position position) override {
     Creature* owner = position.getCreature();
-    if (owner && owner->getEquipment().isEquiped(this)) {
+    if (owner && owner->getEquipment().isEquipped(this)) {
       bool isDanger = false;
       bool isBigDanger = false;
       for (Position v : position.getRectangle(Rectangle(-radius, -radius, radius + 1, radius + 1))) {
@@ -123,7 +123,7 @@ class AmuletOfHealing : public Item {
 
   virtual void specialTick(Position position) override {
     Creature* owner = position.getCreature();
-    if (owner && owner->getEquipment().isEquiped(this))
+    if (owner && owner->getEquipment().isEquipped(this))
         owner->heal(1.0 / 20);
   }
 

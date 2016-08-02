@@ -447,7 +447,7 @@ class Fighter : public Behaviour {
     Item* best = nullptr;
     int damage = 0;
     auto items = creature->getEquipment().getItems([this](Item* item) {
-        return !creature->getEquipment().isEquiped(item);});
+        return !creature->getEquipment().isEquipped(item);});
     for (Item* item : items)
       if (getThrowValue(item) > damage) {
         damage = getThrowValue(item);

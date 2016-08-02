@@ -33,12 +33,13 @@ RICH_ENUM(EquipmentSlot,
 class Equipment : public Inventory {
   public:
   vector<Item*> getItem(EquipmentSlot slot) const;
-  bool isEquiped(const Item*) const;
+  bool isEquipped(const Item*) const;
   bool canEquip(const Item*) const;
   void equip(Item*, EquipmentSlot);
   void unequip(const Item*);
   PItem removeItem(Item*);
   int getMaxItems(EquipmentSlot) const;
+  const vector<Item*>& getAllEquipped() const;
   vector<PItem> removeItems(const vector<Item*>&);
   vector<PItem> removeAllItems();
 
@@ -48,6 +49,7 @@ class Equipment : public Inventory {
 
   private:
   EnumMap<EquipmentSlot, vector<Item*>> SERIAL(items);
+  vector<Item*> SERIAL(equipped);
 };
 
 #endif

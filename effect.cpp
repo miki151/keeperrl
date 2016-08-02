@@ -192,11 +192,7 @@ static void enhanceWeapon(Creature* c, int mod = 1, const string msg = "is impro
 }
 
 static void destroyEquipment(Creature* c) {
-  vector<Item*> equiped;
-  for (Item* item : c->getEquipment().getItems())
-    if (c->getEquipment().isEquiped(item))
-      equiped.push_back(item);
-  Item* dest = Random.choose(equiped);
+  Item* dest = Random.choose(c->getEquipment().getAllEquipped());
   c->you(MsgType::YOUR, dest->getName() + " crumbles to dust.");
   c->steal({dest});
   return;

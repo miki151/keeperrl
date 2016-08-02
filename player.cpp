@@ -133,7 +133,7 @@ void Player::onBump(Creature*) {
 }
 
 string Player::getInventoryItemName(const Item* item, bool plural) const {
-  if (getCreature()->getEquipment().isEquiped(item))
+  if (getCreature()->getEquipment().isEquipped(item))
     return item->getNameAndModifiers(plural, getCreature()) + " "
       + getSlotSuffix(item->getEquipmentSlot());
   else
@@ -949,7 +949,7 @@ ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
     c.viewId = stack[0]->getViewObject().id();
     c.ids = transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();});
     c.actions = getItemActions(stack);
-    c.equiped = getCreature()->getEquipment().isEquiped(stack[0]); );
+    c.equiped = getCreature()->getEquipment().isEquipped(stack[0]); );
 }
 
 vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {

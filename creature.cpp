@@ -572,15 +572,15 @@ CreatureAction Creature::equip(Item* item) const {
 }
 
 CreatureAction Creature::unequip(Item* item) const {
-  if (!equipment->isEquiped(item))
-    return CreatureAction("This item is not equiped.");
+  if (!equipment->isEquipped(item))
+    return CreatureAction("This item is not equipped.");
   if (!getBody().isHumanoid())
     return CreatureAction("You can't remove this item!");
   if (getBody().numGood(BodyPart::ARM) == 0)
     return CreatureAction("You have no healthy arms!");
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " unequip";
-    CHECK(equipment->isEquiped(item)) << "Item not equiped.";
+    CHECK(equipment->isEquipped(item)) << "Item not equipped.";
     EquipmentSlot slot = item->getEquipmentSlot();
     self->equipment->unequip(item);
     playerMessage("You " + string(slot == EquipmentSlot::WEAPON ? " sheathe " : " remove ") +
@@ -723,9 +723,8 @@ int simulAttackPen(int attackers) {
 
 int Creature::getAttr(AttrType type) const {
   int def = getBody().modifyAttr(type, attributes->getRawAttr(type));
-  for (Item* item : equipment->getItems())
-    if (equipment->isEquiped(item))
-      def += CHECK_RANGE(item->getAttr(type), -10000000, 10000000, getName().bare());
+  for (Item* item : equipment->getAllEquipped())
+    def += CHECK_RANGE(item->getAttr(type), -10000000, 10000000, getName().bare());
   switch (type) {
     case AttrType::DEXTERITY:
     case AttrType::STRENGTH:
@@ -751,8 +750,7 @@ int Creature::accuracyBonus() const {
 
 int Creature::getModifier(ModifierType type) const {
   int def = 0;
-  for (Item* item : equipment->getItems())
-    if (equipment->isEquiped(item))
+  for (Item* item : equipment->getAllEquipped())
       def += CHECK_RANGE(item->getModifier(type), -10000000, 10000000, getName().bare());
   for (SkillId skill : ENUM_ALL(SkillId))
     def += CHECK_RANGE(Skill::get(skill)->getModifier(this, type), -10000000, 10000000, getName().bare());

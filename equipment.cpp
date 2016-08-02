@@ -30,7 +30,8 @@ map<EquipmentSlot, string> Equipment::slotTitles = {
 
 template <class Archive> 
 void Equipment::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(Inventory) & SVAR(items);
+  ar & SUBCLASS(Inventory);
+  serializeAll(ar, items, equipped);
 }
 
 SERIALIZABLE(Equipment);
@@ -40,11 +41,12 @@ vector<Item*> Equipment::getItem(EquipmentSlot slot) const {
   return items[slot];
 }
 
-bool Equipment::isEquiped(const Item* item) const {
-  if (!item->canEquip())
-    return false;
-  EquipmentSlot slot = item->getEquipmentSlot();
-  return contains(items[slot], item);
+const vector<Item*>& Equipment::getAllEquipped() const {
+  return equipped;
+}
+
+bool Equipment::isEquipped(const Item* item) const {
+  return item->canEquip() && contains(items[item->getEquipmentSlot()], item);
 }
 
 int Equipment::getMaxItems(EquipmentSlot slot) const {
@@ -55,7 +57,7 @@ int Equipment::getMaxItems(EquipmentSlot slot) const {
 }
 
 bool Equipment::canEquip(const Item* item) const {
-  if (!item->canEquip() || isEquiped(item))
+  if (!item->canEquip() || isEquipped(item))
     return false;
   EquipmentSlot slot = item->getEquipmentSlot();
   return items[slot].size() < getMaxItems(slot);
@@ -63,16 +65,17 @@ bool Equipment::canEquip(const Item* item) const {
 
 void Equipment::equip(Item* item, EquipmentSlot slot) {
   items[slot].push_back(item);
+  equipped.push_back(item);
   CHECK(hasItem(item));
 }
 
 void Equipment::unequip(const Item* item) {
-  EquipmentSlot slot = item->getEquipmentSlot();
-  removeElement(items[slot], item);
+  removeElement(items[item->getEquipmentSlot()], item);
+  removeElement(equipped, item);
 }
 
 PItem Equipment::removeItem(Item* item) {
-  if (isEquiped(item))
+  if (isEquipped(item))
     unequip(item);
   return Inventory::removeItem(item);
 }
@@ -86,6 +89,7 @@ vector<PItem> Equipment::removeItems(const vector<Item*>& items) {
 
 vector<PItem> Equipment::removeAllItems() {
   items.clear();
+  equipped.clear();
   return Inventory::removeAllItems();
 }
 

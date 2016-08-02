@@ -530,7 +530,7 @@ PTask Collective::getEquipmentTask(Creature* c) {
   autoEquipment(c, Random.roll(10));
   vector<PTask> tasks;
   for (Item* it : c->getEquipment().getItems())
-    if (!c->getEquipment().isEquiped(it) && c->getEquipment().canEquip(it))
+    if (!c->getEquipment().isEquipped(it) && c->getEquipment().canEquip(it))
       tasks.push_back(Task::equipItem(it));
   for (Position v : getAllSquares(config->getEquipmentStorage())) {
     vector<Item*> it = filter(v.getItems(ItemIndex::MINION_EQUIPMENT), 
