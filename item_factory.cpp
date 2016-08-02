@@ -25,7 +25,7 @@
 #include "view_object.h"
 #include "view_id.h"
 #include "trigger.h"
-#include "model.h"
+#include "game.h"
 #include "creature.h"
 #include "monster_ai.h"
 #include "name_generator.h"
@@ -36,6 +36,8 @@
 #include "skill.h"
 #include "item_attributes.h"
 #include "sound.h"
+#include "creature_attributes.h"
+#include "event_listener.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -58,7 +60,7 @@ class FireScroll : public Item {
     set = true;
   }
 
-  virtual void specialTick(double time, Position position) override {
+  virtual void specialTick(Position position) override {
     if (set) {
       setOnFire(0.03, position);
       set = false;
@@ -76,7 +78,7 @@ class AmuletOfWarning : public Item {
   public:
   AmuletOfWarning(const ItemAttributes& attr, int r) : Item(attr), radius(r) {}
 
-  virtual void specialTick(double time, Position position) override {
+  virtual void specialTick(Position position) override {
     Creature* owner = position.getCreature();
     if (owner && owner->getEquipment().isEquiped(this)) {
       bool isDanger = false;
@@ -119,30 +121,20 @@ class AmuletOfHealing : public Item {
   public:
   AmuletOfHealing(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void specialTick(double time, Position position) override {
+  virtual void specialTick(Position position) override {
     Creature* owner = position.getCreature();
-    if (owner && owner->getEquipment().isEquiped(this)) {
-      if (lastTick == -1)
-        lastTick = time;
-      else {
-        owner->heal((time - lastTick) / 20);
-      }
-      lastTick = time;
-    } else 
-      lastTick = -1;
+    if (owner && owner->getEquipment().isEquiped(this))
+        owner->heal(1.0 / 20);
   }
 
-  SERIALIZE_ALL2(Item, lastTick);
+  SERIALIZE_SUBCLASS(Item);
   SERIALIZATION_CONSTRUCTOR(AmuletOfHealing);
-
-  private:
-  double SERIAL(lastTick) = -1;
 };
 
 class Telepathy : public CreatureVision {
   public:
   virtual bool canSee(const Creature* c1, const Creature* c2) override {
-    return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->hasBrain();
+    return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain();
   }
 
   SERIALIZE_SUBCLASS(CreatureVision);
@@ -188,7 +180,8 @@ class Corpse : public Item {
     }
   }
 
-  virtual void specialTick(double time, Position position) override {
+  virtual void specialTick(Position position) override {
+    double time = position.getGame()->getGlobalTime();
     if (rottenTime == -1)
       rottenTime = time + rottingTime;
     if (time >= rottenTime && !rotten) {
@@ -199,10 +192,10 @@ class Corpse : public Item {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))
         Effect::applyToPosition(position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
-          !position.getCoverInfo().covered && Random.roll(35)) {
+          !position.isCovered() && Random.roll(35)) {
         for (Position v : position.neighbors8(Random)) {
-          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE,
-              position.getModel()->getPestTribe(), MonsterAIFactory::scavengerBird(v));
+          PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE, TribeId::getPest(),
+                    MonsterAIFactory::scavengerBird(v));
           if (v.canEnter(vulture.get())) {
             v.addCreature(std::move(vulture));
             v.globalMessage("A vulture lands near " + getTheName());
@@ -259,7 +252,7 @@ class Potion : public Item {
     }
   }
 
-  virtual void specialTick(double time, Position position) override {
+  virtual void specialTick(Position position) override {
     heat = max(0., heat - 0.005);
   }
 
@@ -291,7 +284,7 @@ class TechBook : public Item {
 
   virtual void applySpecial(Creature* c) override {
     if (!read || !!tech) {
-      c->getModel()->onTechBookRead(tech ? Technology::get(*tech) : nullptr);
+      c->getGame()->addEvent({EventId::TECHBOOK_READ, tech ? Technology::get(*tech) : nullptr});
       read = true;
     }
   }
@@ -313,7 +306,7 @@ class TrapItem : public Item {
   virtual void applySpecial(Creature* c) override {
     if (!alwaysVisible)
       c->you(MsgType::SET_UP_TRAP, "");
-    c->getPosition().addTrigger(Trigger::getTrap(trapObject, c->getPosition(), effect, c->getTribe(),
+    c->getPosition().addTrigger(Trigger::getTrap(trapObject, c->getPosition(), effect, c->getTribeId(),
           alwaysVisible));
     discarded = true;
   }
@@ -597,6 +590,19 @@ ItemFactory ItemFactory::scrolls() {
       {{ItemId::SCROLL, EffectId::PORTAL}, 1 }});
 }
 
+static ViewId getMushroomViewId(EffectType e) {
+  if (e.getId() == EffectId::LASTING)
+    switch (e.get<LastingEffect>()) {
+      case LastingEffect::STR_BONUS: return ViewId::MUSHROOM1;
+      case LastingEffect::DEX_BONUS: return ViewId::MUSHROOM2;
+      case LastingEffect::PANIC: return ViewId::MUSHROOM3;
+      case LastingEffect::HALLU: return ViewId::MUSHROOM4;
+      case LastingEffect::RAGE: return ViewId::MUSHROOM5;
+      default: break;
+    }
+  return ViewId::MUSHROOM6;
+}
+
 ItemFactory ItemFactory::mushrooms(bool onlyGood) {
   return ItemFactory({
       {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::STR_BONUS)}, 1 },
@@ -692,6 +698,7 @@ int getEffectPrice(EffectType type) {
           case LastingEffect::POISON: return 100;
           case LastingEffect::INVISIBLE: return 120;
           case LastingEffect::DARKNESS_SOURCE:
+          case LastingEffect::PREGNANT:
           case LastingEffect::FLYING: return 130;
         }
     case EffectId::ACID:
@@ -1224,7 +1231,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.uses = 1;); 
     case ItemId::MUSHROOM: return ITATTR(
             EffectType effect = item.get<EffectType>();
-            i.viewId = ViewId::MUSHROOM;
+            i.viewId = getMushroomViewId(effect);
             i.shortName = Effect::getName(effect);
             i.name = *i.shortName + " mushroom";
             i.blindName = "mushroom";
@@ -1301,6 +1308,12 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::OTHER;
             i.price = 0;
             i.resourceId = CollectiveResourceId::WOOD;
+            i.weight = 5;);
+    case ItemId::BONE: return ITATTR(
+            i.viewId = ViewId::BONE;
+            i.name = "bone";
+            i.itemClass = ItemClass::OTHER;
+            i.price = 0;
             i.weight = 5;);
     case ItemId::GOLD_PIECE: return ITATTR(
             i.viewId = ViewId::GOLD;

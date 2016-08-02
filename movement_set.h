@@ -14,12 +14,13 @@ class MovementSet {
 
   MovementSet& setOnFire(bool);
   bool isOnFire() const;
-  MovementSet& setSunlight(bool = true);
+  MovementSet& setCovered(bool);
+  bool isCovered() const;
   
   MovementSet& addTrait(MovementTrait);
   MovementSet& removeTrait(MovementTrait);
-  MovementSet& addTraitForTribe(const Tribe*, MovementTrait);
-  MovementSet& removeTraitForTribe(const Tribe*, MovementTrait);
+  MovementSet& addTraitForTribe(TribeId, MovementTrait);
+  MovementSet& removeTraitForTribe(TribeId, MovementTrait);
   MovementSet& addForcibleTrait(MovementTrait);
 
   void clear();
@@ -29,11 +30,10 @@ class MovementSet {
   
   private:
   bool SERIAL(onFire) = false;
-  bool SERIAL(sunlight) = false;
-  typedef EnumSet<MovementTrait> TribeSet;
-  TribeSet SERIAL(traits);
-  TribeSet SERIAL(forcibleTraits);
-  optional<pair<const Tribe*, TribeSet>> SERIAL(tribeOverrides);
+  bool SERIAL(covered) = false;
+  EnumSet<MovementTrait> SERIAL(traits);
+  EnumSet<MovementTrait> SERIAL(forcibleTraits);
+  optional<pair<TribeId, EnumSet<MovementTrait>>> SERIAL(tribeOverrides);
 };
 
 

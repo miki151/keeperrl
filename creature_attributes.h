@@ -24,36 +24,19 @@
 #include "gender.h"
 #include "effect.h"
 #include "minion_task.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "view_object.h"
 #include "spell_map.h"
 #include "minion_task_map.h"
 #include "skill.h"
 #include "modifier_type.h"
-#include "sound.h"
+#include "lasting_effect.h"
+#include "body.h"
 
-// WTF is this defined
-#undef HUGE
-
-enum class CreatureSize {
-  SMALL,
-  MEDIUM,
-  LARGE,
-  HUGE
-};
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);
 }
-
-RICH_ENUM(BodyPart,
-  HEAD,
-  TORSO,
-  ARM,
-  WING,
-  LEG,
-  BACK
-);
 
 enum class SpawnType;
 
@@ -62,6 +45,7 @@ enum class SpawnType;
 struct SpellInfo;
 class MinionTaskMap;
 class SpellMap;
+class Body;
 
 class CreatureAttributes {
   public:
@@ -70,76 +54,79 @@ class CreatureAttributes {
   ~CreatureAttributes();
   SERIALIZATION_DECL(CreatureAttributes);
 
-  BodyPart getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
-  CreatureSize getSize() const;
-  BodyPart armOrWing() const;
+  Body& getBody();
+  const Body& getBody() const;
+  const CreatureName& getName() const;
+  CreatureName& getName();
   double getRawAttr(AttrType) const;
-  int numBodyParts(BodyPart) const;
-  int numLost(BodyPart) const;
-  int lostOrInjuredBodyParts() const;
-  int numInjured(BodyPart) const;
-  int numGood(BodyPart) const;
+  void setBaseAttr(AttrType, int);
   double getCourage() const;
   void setCourage(double);
   const Gender& getGender() const;
-  bool hasBrain() const;
   double getExpLevel() const;
   void increaseExpLevel(double increase);
   void exerciseAttr(AttrType, double value);
-  string getNameAndTitle() const;
-  string getSpeciesName() const;
-  bool isHumanoid() const;
-  vector<AttackLevel> getAttackLevels() const;
-  AttackLevel getRandomAttackLevel() const;
   string bodyDescription() const;
-  string getBodyPartName(BodyPart) const;
   SpellMap& getSpellMap();
   const SpellMap& getSpellMap() const;
-  optional<Sound> getDeathSound() const;
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
+  bool isStationary() const;
+  void setStationary(bool);
+  bool isInvincible() const;
+  int getRecruitmentCost() const;
+  Skillset& getSkills();
+  const Skillset& getSkills() const;
+  ViewObject createViewObject() const;
+  const optional<ViewObject>& getIllusionViewObject() const;
+  bool canEquip() const;
+  void chatReaction(Creature* me, Creature* other);
+  string getDescription() const;
+  bool isAffected(LastingEffect, double globalTime) const;
+  bool isAffectedPermanently(LastingEffect) const;
+  string getRemainingString(LastingEffect, double time) const;
+  void shortenEffect(LastingEffect, double time);
+  void clearLastingEffect(LastingEffect);
+  void addPermanentEffect(LastingEffect);
+  void removePermanentEffect(LastingEffect);
+  bool considerTimeout(LastingEffect, double globalTime);
+  bool considerAffecting(LastingEffect, double globalTime, double timeout);
+  bool canCarryAnything() const;
+  int getBarehandedDamage() const;
+  AttackType getAttackType(const Item* weapon) const;
+  optional<EffectType> getAttackEffect() const;
+  bool canSleep() const;
+  bool isInnocent() const;
+  void consume(Creature* self, const CreatureAttributes& other);
+  optional<SpawnType> getSpawnType() const; 
+  const MinionTaskMap& getMinionTasks() const;
+  MinionTaskMap& getMinionTasks();
+  bool dontChase() const;
 
+  friend class CreatureFactory;
 
+  private:
+  void consumeEffects(const EnumMap<LastingEffect, int>&);
   MustInitialize<ViewId> SERIAL(viewId);
   optional<ViewObject> SERIAL(illusionViewObject);
-  MustInitialize<EntityName> SERIAL(name);
+  MustInitialize<CreatureName> SERIAL(name);
   EnumMap<AttrType, int> SERIAL(attr);
-  MustInitialize<CreatureSize> SERIAL(size);
-  MustInitialize<double> SERIAL(weight);
+  HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);
-  optional<string> SERIAL(firstName);
-  optional<string> SERIAL(speciesName);
   int SERIAL(barehandedDamage) = 0;
   optional<AttackType> SERIAL(barehandedAttack);
   optional<EffectType> SERIAL(attackEffect);
-  bool SERIAL(harmlessApply) = false; // apply the attack effect even if attack was harmless
   optional<EffectType> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::male;
-  EnumMap<BodyPart, int> SERIAL(bodyParts) { 
-    { BodyPart::ARM, 2},
-    { BodyPart::LEG, 2},
-    { BodyPart::HEAD, 1}};
-  EnumMap<BodyPart, int> SERIAL(injuredBodyParts);
-  EnumMap<BodyPart, int> SERIAL(lostBodyParts);
   optional<SpawnType> SERIAL(spawnType);
   bool SERIAL(innocent) = false;
-  bool SERIAL(uncorporal) = false;
-  bool SERIAL(fireCreature) = false;
-  bool SERIAL(breathing) = true;
-  MustInitialize<bool> SERIAL(humanoid);
   bool SERIAL(animal) = false;
-  bool SERIAL(undead) = false;
-  bool SERIAL(notLiving) = false;
-  bool SERIAL(brain) = true;
-  bool SERIAL(isFood) = false;
   bool SERIAL(stationary) = false;
-  bool SERIAL(noSleep) = false;
   bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;
   bool SERIAL(carryAnything) = false;
   bool SERIAL(invincible) = false;
-  bool SERIAL(worshipped) = false;
-  bool SERIAL(dontChase) = false;
+  bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
   double SERIAL(attributeGain) = 0.5;
   int SERIAL(recruitmentCost) = 0;
@@ -148,10 +135,7 @@ class CreatureAttributes {
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
   MinionTaskMap SERIAL(minionTasks);
-  string SERIAL(groupName) = "group";
   EnumMap<AttrType, double> SERIAL(attrIncrease);
-  optional<SoundId> SERIAL(dyingSound);
-  bool SERIAL(noDyingSound) = false;
   bool SERIAL(noAttackSound) = false;
 };
 

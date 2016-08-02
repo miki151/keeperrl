@@ -38,8 +38,8 @@ class CreatureView {
     UniqueEntity<Creature>::Id creatureId;
   };
   virtual optional<MovementInfo> getMovementInfo() const = 0;
-  virtual const Level* getLevel() const = 0;
-  virtual double getTime() const = 0;
+  virtual Level* getLevel() const = 0;
+  virtual double getLocalTime() const = 0;
   virtual vector<Vec2> getVisibleEnemies() const = 0;
 
   virtual ~CreatureView() {}

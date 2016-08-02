@@ -3,9 +3,10 @@
 #include "effect.h"
 #include "creature.h"
 #include "player_message.h"
-#include "entity_name.h"
+#include "creature_name.h"
 #include "creature_factory.h"
 #include "sound.h"
+#include "lasting_effect.h"
 
 const string& Spell::getName() const {
   return name;

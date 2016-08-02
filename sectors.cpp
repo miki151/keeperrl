@@ -158,8 +158,8 @@ void Sectors::remove(Vec2 pos) {
 using namespace std;
 
 void Sectors::dump() {
-  for (int i : Range(bounds.getH())) {
-    for (int j : Range(bounds.getW()))
+  for (int i : Range(bounds.height())) {
+    for (int j : Range(bounds.width()))
       cout << sectors[j][i] << " ";
     cout << endl;
   }

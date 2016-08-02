@@ -17,6 +17,8 @@
 #define _TIME_QUEUE_H
 
 #include "util.h"
+#include "entity_set.h"
+#include "entity_map.h"
 
 class Creature;
 
@@ -25,28 +27,19 @@ class TimeQueue {
   TimeQueue();
   Creature* getNextCreature();
   vector<Creature*> getAllCreatures() const;
-  void addCreature(PCreature c);
-  PCreature removeCreature(Creature* c);
-  double getCurrentTime();
+  void addCreature(PCreature, double time);
+  PCreature removeCreature(Creature*);
+  double getTime(const Creature*);
+  void increaseTime(Creature*, double diff);
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  void removeDead();
-  Creature* getMinCreature();
-
+  typedef set<Creature*, function<bool(const Creature*, const Creature*)>> Queue;
   vector<PCreature> SERIAL(creatures);
-
-  struct QElem {
-    Creature* creature;
-    double time;
-
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version);
-  };
-  priority_queue<QElem, vector<QElem>, function<bool(QElem, QElem)>> SERIAL(queue);
-  unordered_set<Creature*> SERIAL(dead);
+  Queue SERIAL(queue);
+  EntityMap<Creature, double> SERIAL(timeMap);
 };
 
 #endif

@@ -23,12 +23,12 @@ class Level;
 
 class Location {
   public:
-  Location(const string& name, const string& description, bool surprise = false);
-  Location(bool surprise = false);
+  Location(const string& name);
+  Location();
   Location(Level* l, Rectangle bounds);
   const optional<string>& getName() const;
-  string getDescription() const;
   bool isMarkedAsSurprise() const;
+  void setSurprise();
   void setBounds(Rectangle);
   bool contains(Position) const;
   Position getMiddle() const;

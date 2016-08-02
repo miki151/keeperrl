@@ -50,20 +50,20 @@ class WindowView: public View {
   WindowView(ViewParams); 
   virtual void initialize() override;
   virtual void reset() override;
-  virtual void displaySplash(const ProgressMeter&, SplashType, function<void()> cancelFun) override;
+  virtual void displaySplash(const ProgressMeter*, const string&, SplashType, function<void()> cancelFun) override;
   virtual void clearSplash() override;
 
   virtual void close() override;
 
   virtual void refreshView() override;
-  virtual void updateView(const CreatureView*, bool noRefresh) override;
+  virtual void updateView(CreatureView*, bool noRefresh) override;
   virtual void drawLevelMap(const CreatureView*) override;
   virtual void setScrollPos(Vec2 pos) override;
   virtual void resetCenter() override;
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, double* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
-  virtual GameTypeChoice chooseGameType() override;
+  virtual optional<GameTypeChoice> chooseGameType() override;
   virtual optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
@@ -90,7 +90,13 @@ class WindowView: public View {
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
   virtual void addSound(const Sound&) override;
-  
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current) override;
+  virtual void presentWorldmap(const Campaign&) override;
+  virtual CampaignAction prepareCampaign(const Campaign&, Options*, RetiredGames&) override;
+  virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
+      const string& cancelText) override;
+  virtual bool creaturePrompt(const string& title, const vector<CreatureInfo>&) override;
+ 
   private:
 
   Renderer& renderer;
@@ -105,22 +111,22 @@ class WindowView: public View {
   void mapRightClickFun(Vec2);
   Rectangle getTextInputPosition();
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
-      double* scrollPos, optional<UserInputId> exitAction, optional<sf::Event::KeyEvent> exitKey,
-      vector<sf::Event::KeyEvent> shortCuts);
-  optional<UserInputId> getSimpleInput(sf::Event::KeyEvent key);
+      double* scrollPos);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
-  PGuiElem drawGameChoices(optional<GameTypeChoice>& choice, optional<GameTypeChoice>& index);
+  PGuiElem drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index);
   PGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
   int lastGuiHash = 0;
   void drawMap();
   void propagateEvent(const Event& event, vector<GuiElem*>);
-  void keyboardAction(Event::KeyEvent key);
+  void keyboardAction(const SDL::SDL_Keysym&);
 
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();
-  void displayAutosaveSplash(const ProgressMeter&);
+  void getAutosaveSplash(const ProgressMeter&);
+  void getBigSplash(const ProgressMeter&, const string& text, function<void()> cancelFun);
+  void getSmallSplash(const string& text, function<void()> cancelFun);
 
   void zoom(int dir);
   void resize(int width, int height);
@@ -129,7 +135,7 @@ class WindowView: public View {
   void resetMapBounds();
   void switchTiles();
 
-  bool considerResizeEvent(sf::Event&);
+  bool considerResizeEvent(Event&);
 
   int messageInd = 0;
   std::deque<string> currentMessage = std::deque<string>(3, "");
@@ -149,11 +155,9 @@ class WindowView: public View {
   SyncQueue<UserInput> inputQueue;
 
   bool gameReady = false;
-  bool uiLock = false;
+  atomic<bool> uiLock;
   atomic<bool> refreshInput;
   atomic<bool> wasRendered;
-
-  typedef std::unique_lock<std::recursive_mutex> RenderLock;
 
   struct TileLayouts {
     vector<MapLayout> layouts;
@@ -165,7 +169,7 @@ class WindowView: public View {
 
   function<void()> getButtonCallback(UserInput);
 
-  std::recursive_mutex renderMutex;
+  recursive_mutex renderMutex;
 
   bool lockKeyboard = false;
 
@@ -202,18 +206,21 @@ class WindowView: public View {
     bool cont = false;
   };
 
-  void getBlockingGui(Semaphore&, PGuiElem, Vec2 origin);
+  void getBlockingGui(Semaphore&, PGuiElem, optional<Vec2> origin = none);
+  bool isKeyPressed(SDL::SDL_Scancode);
 
   template<typename T>
-  T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, Vec2 origin) {
-    RenderLock lock(renderMutex);
+  T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, optional<Vec2> origin = none) {
+    RecursiveLock lock(renderMutex);
     TempClockPause pause(clock);
     if (blockingElems.empty()) {
       blockingElems.push_back(gui.darken());
       blockingElems.back()->setBounds(renderer.getSize());
     }
+    if (!origin)
+      origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
     blockingElems.push_back(std::move(elem));
-    blockingElems.back()->setPreferredBounds(origin);
+    blockingElems.back()->setPreferredBounds(*origin);
     if (currentThreadId() == renderThreadId) {
       while (queue.isEmpty())
         refreshView();

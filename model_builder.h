@@ -7,30 +7,46 @@ class Level;
 class Model;
 class ProgressMeter;
 class Options;
-class View;
 struct SettlementInfo;
-struct LevelInfo;
+struct EnemyInfo;
+class EnemyFactory;
 
 class ModelBuilder {
   public:
+  ModelBuilder(ProgressMeter*, RandomGen&, Options*);
+  PModel singleMapModel(const string& worldName);
+  PModel campaignBaseModel(const string& siteName);
+  PModel campaignSiteModel(const string& siteName, EnemyId, VillainType);
 
-  /** Generates levels and all game entities for a collective game. */
-  static PModel collectiveModel(ProgressMeter*, RandomGen&, Options*, View*, const string& worldName);
-  static void measureModelGen(int numTries, RandomGen&, Options*);
+  void measureModelGen(int numTries, function<void()> genFun);
+  void measureSiteGen(int numTries);
 
-  static PModel quickModel(ProgressMeter*, RandomGen&, Options*, View*);
+  PModel quickModel();
 
-  static PModel splashModel(ProgressMeter*, View*, const string& splashPath);
+  PModel splashModel(const string& splashPath);
+
+  void spawnKeeper(Model*);
 
   static int getPigstyPopulationIncrease();
   static int getStatuePopulationIncrease();
   static int getThronePopulationIncrease();
 
-  private:
-  static PModel tryCollectiveModel(ProgressMeter*, RandomGen&, Options*, View*, const string& worldName);
-  static PModel tryQuickModel(ProgressMeter*, RandomGen&, Options*, View*);
-  static Level* makeExtraLevel(ProgressMeter*, RandomGen&, Model*, const LevelInfo&, const SettlementInfo&);
+  ~ModelBuilder();
 
+  private:
+  PModel trySingleMapModel(const string& worldName);
+  PModel tryCampaignBaseModel(const string& siteName);
+  PModel tryCampaignSiteModel(const string& siteName, EnemyId, VillainType);
+  PModel tryModel(int width, const string& levelName, vector<EnemyInfo>,
+      bool keeperSpawn, BiomeId);
+  PModel tryQuickModel(int width);
+  SettlementInfo& makeExtraLevel(Model*, EnemyInfo&);
+  PModel tryBuilding(int numTries, function<PModel()> buildFun);
+  void addMapVillains(vector<EnemyInfo>&, BiomeId);
+  RandomGen& random;
+  ProgressMeter* meter;
+  Options* options;
+  HeapAllocated<EnemyFactory> enemyFactory;
 };
 
 

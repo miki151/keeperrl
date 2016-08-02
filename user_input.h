@@ -22,22 +22,27 @@
 #include "village_action.h"
 #include "minion_task.h"
 
+class PlayerMessage;
+
+#undef TECHNOLOGY
+
 enum class UserInputId {
 // common
     IDLE,
     REFRESH,
     DRAW_LEVEL_MAP,
+    DRAW_WORLD_MAP,
     EXIT,
     MESSAGE_INFO,
 // real-time actions
     BUILD,
     TILE_CLICK,
     LIBRARY,
-    DEITIES,
     RECT_SELECTION,
     RECT_DESELECTION,
     BUTTON_RELEASE,
     ADD_TO_TEAM,
+    ADD_GROUP_TO_TEAM,
     REMOVE_FROM_TEAM,
     CREATURE_BUTTON,
     CREATURE_BUTTON2,
@@ -52,6 +57,7 @@ enum class UserInputId {
     CREATURE_TORTURE,
     GO_TO_ENEMY,
     CREATE_TEAM,
+    CREATE_TEAM_FROM_GROUP,
     CANCEL_TEAM,
     SELECT_TEAM,
     ACTIVATE_TEAM,
@@ -73,9 +79,12 @@ enum class UserInputId {
     CHAT,
     WAIT,
     UNPOSSESS,
+    TRANSFER,
+    SWAP_TEAM,
     CAST_SPELL,
     CONSUME,
     INVENTORY_ITEM,
+    CHEAT_ATTRIBUTES
 };
 
 struct BuildingInfo {
@@ -125,31 +134,36 @@ struct RenameActionInfo {
 
 enum class SpellId;
 
-class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, InventoryItemInfo, Vec2, TeamCreatureInfo,
-    SpellId, VillageActionInfo, TaskActionInfo, EquipmentActionInfo, RenameActionInfo),
+class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
+    UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
+    TaskActionInfo, EquipmentActionInfo, RenameActionInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::LIBRARY,
             UserInputId::BUTTON_RELEASE),
-        ASSIGN(int,
-            UserInputId::TECHNOLOGY,
-            UserInputId::DEITIES,
+        ASSIGN(UniqueEntity<Creature>::Id,
             UserInputId::CREATURE_BUTTON,
+            UserInputId::CREATE_TEAM,
+            UserInputId::CREATE_TEAM_FROM_GROUP,
             UserInputId::CREATURE_BUTTON2,
             UserInputId::CREATURE_GROUP_BUTTON,
             UserInputId::CREATURE_CONTROL,
+            UserInputId::CREATURE_BANISH,
+            UserInputId::CREATURE_WHIP,
             UserInputId::CREATURE_EXECUTE,
             UserInputId::CREATURE_TORTURE,
-            UserInputId::CREATURE_WHIP,
-            UserInputId::CREATURE_BANISH,
-            UserInputId::GO_TO_ENEMY,
-            UserInputId::CREATE_TEAM,
+            UserInputId::GO_TO_ENEMY
+            ),
+        ASSIGN(UniqueEntity<PlayerMessage>::Id,
+            UserInputId::MESSAGE_INFO
+            ),
+        ASSIGN(int,
+            UserInputId::TECHNOLOGY,
             UserInputId::CANCEL_TEAM,
             UserInputId::ACTIVATE_TEAM,
             UserInputId::SELECT_TEAM,
             UserInputId::PICK_UP_ITEM,
             UserInputId::PICK_UP_ITEM_MULTI,
-            UserInputId::MESSAGE_INFO,
             UserInputId::GO_TO_VILLAGE),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM),
@@ -163,6 +177,7 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Inven
             UserInputId::RECT_DESELECTION),
         ASSIGN(TeamCreatureInfo,
             UserInputId::ADD_TO_TEAM,
+            UserInputId::ADD_GROUP_TO_TEAM,
             UserInputId::REMOVE_FROM_TEAM),
         ASSIGN(SpellId,
             UserInputId::CAST_SPELL),

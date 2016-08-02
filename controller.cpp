@@ -72,11 +72,7 @@ void DoNothingController::makeMove() {
 void DoNothingController::onBump(Creature* c) {
 }
 
-Creature* Controller::getCreature() {
-  return creature;
-}
-
-const Creature* Controller::getCreature() const {
+Creature* Controller::getCreature() const {
   return creature;
 }
 

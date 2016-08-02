@@ -17,7 +17,8 @@ RICH_ENUM(SquareApplyType,
   WELL,
   THRONE,
   WHIPPING,
-  NOTICE_BOARD
+  NOTICE_BOARD,
+  LOCK
 );
 
 

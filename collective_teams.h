@@ -27,12 +27,12 @@ class CollectiveTeams {
   void add(TeamId, Creature*);
   void remove(TeamId, Creature*);
   void setLeader(TeamId, Creature*);
+  void rotateLeader(TeamId);
   void activate(TeamId);
   void deactivate(TeamId);
   TeamId create(vector<Creature*>);
   TeamId createPersistent(vector<Creature*>);
-  const Creature* getLeader(TeamId) const;
-  Creature* getLeader(TeamId);
+  Creature* getLeader(TeamId) const;
   const vector<Creature*>& getMembers(TeamId) const;
   vector<Creature*> getMembers(TeamId);
   vector<TeamId> getContaining(const Creature*) const;
@@ -52,10 +52,7 @@ class CollectiveTeams {
     vector<Creature*> SERIAL(creatures);
     bool SERIAL(active);
     bool SERIAL(persistent);
-    template<class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-      ar & SVAR(creatures) & SVAR(active) & SVAR(persistent);
-    }
+    SERIALIZE_ALL(creatures, active, persistent);
   };
   map<TeamId, TeamInfo> SERIAL(teamInfo);
   TeamId SERIAL(nextId) = 1;

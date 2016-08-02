@@ -16,7 +16,6 @@
 #include "stdafx.h"
 
 #include "level_maker.h"
-#include "pantheon.h"
 #include "item_factory.h"
 #include "square.h"
 #include "collective_builder.h"
@@ -135,7 +134,7 @@ class RoomMaker : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     int spaceBetween = 0;
-    Table<int> taken(area.getKX(), area.getKY());
+    Table<int> taken(area.right(), area.bottom());
     for (Vec2 v : area)
       taken[v] = squareType && *squareType != builder->getType(v);
     for (int i : Range(numRooms)) {
@@ -144,8 +143,8 @@ class RoomMaker : public LevelMaker {
       int cnt = 100;
       do {
         k = Vec2(builder->getRandom().get(minSize, maxSize), builder->getRandom().get(minSize, maxSize));
-        p = Vec2(area.getPX() + spaceBetween + builder->getRandom().get(area.getW() - k.x - 2 * spaceBetween),
-                 area.getPY() + spaceBetween + builder->getRandom().get(area.getH() - k.y - 2 * spaceBetween));
+        p = Vec2(area.left() + spaceBetween + builder->getRandom().get(area.width() - k.x - 2 * spaceBetween),
+                 area.top() + spaceBetween + builder->getRandom().get(area.height() - k.y - 2 * spaceBetween));
         good = true;
         for (Vec2 v : Rectangle(k.x + 2 * spaceBetween, k.y + 2 * spaceBetween))
           if (taken[p + v - Vec2(spaceBetween,spaceBetween)]) {
@@ -245,6 +244,7 @@ class Connector : public LevelMaker {
           switch (oldType.getId()) {
             case SquareId::ABYSS:
             case SquareId::WATER:
+            case SquareId::WATER_WITH_DEPTH:
             case SquareId::MAGMA:
               newType = SquareId::BRIDGE;
               break;
@@ -264,9 +264,6 @@ class Connector : public LevelMaker {
           builder->getType(v) == SquareId::DOOR) {
         if (!path.isReachable(v))
           failGen();
-        builder->getSquare(v)->addTravelDir(path.getNextMove(v) - v);
-        if (prev.x > -100)
-          builder->getSquare(v)->addTravelDir(prev - v);
       }
       prev = v;
     }
@@ -361,15 +358,15 @@ class Creatures : public LevelMaker {
       builder->addLocation(loc, area);
       actorFactory = MonsterAIFactory::stayInLocation(loc);
     }
-    Table<char> taken(area.getKX(), area.getKY());
+    Table<char> taken(area.right(), area.bottom());
     for (int i : Range(numCreature)) {
       PCreature creature = cfactory.random(*actorFactory);
       Vec2 pos;
       int numTries = 100;
       do {
-        pos = Vec2(builder->getRandom().get(area.getPX(), area.getKX()), builder->getRandom().get(area.getPY(), area.getKY()));
-      } while (--numTries > 0 && (!builder->canPutCreature(pos, creature.get())
-          || (!onPred.apply(builder, pos))));
+        pos = Vec2(builder->getRandom().get(area.left(), area.right()),
+            builder->getRandom().get(area.top(), area.bottom()));
+      } while (--numTries > 0 && (!builder->canPutCreature(pos, creature.get()) || (!onPred.apply(builder, pos))));
       checkGen(numTries > 0);
       if (collective) {
         collective->addCreature(creature.get());
@@ -398,8 +395,8 @@ class Items : public LevelMaker {
     for (int i : Range(numItem)) {
       Vec2 pos;
       do {
-        pos = Vec2(builder->getRandom().get(area.getPX(), area.getKX()), builder->getRandom().get(area.getPY(),
-              area.getKY()));
+        pos = Vec2(builder->getRandom().get(area.left(), area.right()), builder->getRandom().get(area.top(),
+              area.bottom()));
       } while (builder->getType(pos) != onType);
       builder->putItems(pos, factory.random());
     }
@@ -418,18 +415,18 @@ class River : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     int wind = 5;
-    int middle = (area.getPX() + area.getKX()) / 2;
+    int middle = (area.left() + area.right()) / 2;
     int px = builder->getRandom().get(middle - wind, middle + width);
-    int kx = px + builder->getRandom().get(-wind, wind); // builder->getRandom().get(area.getPX(), area.getKX()) - width;
+    int kx = px + builder->getRandom().get(-wind, wind); // builder->getRandom().get(area.left(), area.right()) - width;
     if (kx < 0)
       kx = 0;
-    if (kx >= area.getKX() - width)
-      kx = area.getKX() - width - 1;
+    if (kx >= area.right() - width)
+      kx = area.right() - width - 1;
     int tot = 5;
     for (int h : Range(tot)) {
-      int height = area.getPY() * (tot - h) / tot + area.getKY() * h / tot;
-      int height2 = area.getPY() * (tot - h - 1) / tot + area.getKY() * (h + 1) / tot;
-      vector<Vec2> line = straightLine(px, height, kx, (h == tot - 1) ? area.getKY() : height2);
+      int height = area.top() * (tot - h) / tot + area.bottom() * h / tot;
+      int height2 = area.top() * (tot - h - 1) / tot + area.bottom() * (h + 1) / tot;
+      vector<Vec2> line = straightLine(px, height, kx, (h == tot - 1) ? area.bottom() : height2);
       for (Vec2 v : line)
         for (int i : Range(width))
           builder->putSquare(v + Vec2(i, 0), squareType, SquareAttrib::RIVER);
@@ -437,8 +434,8 @@ class River : public LevelMaker {
       kx = px + builder->getRandom().get(-wind, wind);
       if (kx < 0)
         kx = 0;
-      if (kx >= area.getKX() - width)
-        kx = area.getKX() - width - 1;
+      if (kx >= area.right() - width)
+        kx = area.right() - width - 1;
     }
   }
 
@@ -547,7 +544,7 @@ class MountainRiver : public LevelMaker {
             if (depth == 0)
               builder->putSquare(v, SquareId::SAND, SquareAttrib::RIVER);
             else
-              builder->putSquare(v, SquareFactory::getWater(depth), SquareId::WATER, SquareAttrib::RIVER);
+              builder->putSquare(v, {SquareId::WATER_WITH_DEPTH, depth}, SquareAttrib::RIVER);
           } else
             builder->putSquare(v, SquareId::WATER, SquareAttrib::RIVER);
 
@@ -572,10 +569,10 @@ class Blob : public LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     vector<Vec2> squares;
     Table<char> isInside(area, 0);
-    Vec2 center((area.getKX() + area.getPX()) / 2, (area.getKY() + area.getPY()) / 2);
+    Vec2 center((area.right() + area.left()) / 2, (area.bottom() + area.top()) / 2);
     squares.push_back(center);
     isInside[center] = 1;
-    int maxSquares = area.getW() * area.getH() * insideRatio;
+    int maxSquares = area.width() * area.height() * insideRatio;
     int numSquares = 0;
     bool done = false;
     while (!done) {
@@ -583,9 +580,9 @@ class Blob : public LevelMaker {
       for (Vec2 next : pos.neighbors4(builder->getRandom())) {
         if (next.inRectangle(area.minusMargin(1)) && !isInside[next]) {
           Vec2 proj = next - center;
-          proj.y *= area.getW();
-          proj.y /= area.getH();
-          if (builder->getRandom().getDouble() <= 1. - proj.lengthD() / (area.getW() / 2)) {
+          proj.y *= area.width();
+          proj.y /= area.height();
+          if (builder->getRandom().getDouble() <= 1. - proj.lengthD() / (area.width() / 2)) {
             isInside[next] = 1;
             squares.push_back(next);
             if (++numSquares >= maxSquares)
@@ -642,10 +639,10 @@ class Lake : public Blob {
   public:
   Lake(bool s = true) : sand(s) {}
   virtual void addSquare(LevelBuilder* builder, Vec2 pos, int edgeDist) override {
-    if (sand && edgeDist == 1)
+    if (sand && edgeDist == 1 && builder->getType(pos).getId() != SquareId::WATER)
       builder->putSquare(pos, SquareId::SAND, SquareAttrib::LAKE);
     else
-      builder->putSquare(pos, SquareFactory::getWater(double(edgeDist) / 2), SquareId::WATER, SquareAttrib::LAKE);
+      builder->putSquare(pos, {SquareId::WATER_WITH_DEPTH, double(edgeDist) / 2}, SquareAttrib::LAKE);
   }
 
   private:
@@ -714,8 +711,8 @@ class Buildings : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     Table<bool> filled(area);
-    int width = area.getW();
-    int height = area.getH();
+    int width = area.width();
+    int height = area.height();
     for (Vec2 v : area)
       filled[v] =  0;
     int sizeVar = 1;
@@ -736,16 +733,16 @@ class Buildings : public LevelMaker {
         spaceOk = true;
         w = builder->getRandom().get(minSize, maxSize);
         h = builder->getRandom().get(minSize, maxSize);
-        if (nextw > -1 && nextw + w < area.getKX()) {
+        if (nextw > -1 && nextw + w < area.right()) {
           px = nextw;
           nextw = -1;
         } else
-          px = area.getPX() + builder->getRandom().get(width - w - 2 * spaceBetween + 1) + spaceBetween;
+          px = area.left() + builder->getRandom().get(width - w - 2 * spaceBetween + 1) + spaceBetween;
         if (!align)
-          py = area.getPY() + builder->getRandom().get(height - h - 2 * spaceBetween + 1) + spaceBetween;
+          py = area.top() + builder->getRandom().get(height - h - 2 * spaceBetween + 1) + spaceBetween;
         else {
-          py = area.getPY() + (buildingRow == 1 ? alignHeight - h - 1 : alignHeight + 2);
-          if (py + h >= area.getKY() || py < area.getPY()) {
+          py = area.top() + (buildingRow == 1 ? alignHeight - h - 1 : alignHeight + 2);
+          if (py + h >= area.bottom() || py < area.top()) {
             spaceOk = false;
             continue;
           }
@@ -768,7 +765,7 @@ class Buildings : public LevelMaker {
       for (Vec2 v : Rectangle(w + 1, h + 1)) {
         filled[Vec2(px, py) + v] = true;
         builder->putSquare(Vec2(px, py) + v, building.wall);
-        builder->setCoverInfo(Vec2(px, py) + v, {true, 1.0});
+        builder->setCoverOverride(Vec2(px, py) + v, true);
       }
       for (Vec2 v : Rectangle(w - 1, h - 1)) {
         builder->putSquare(Vec2(px + 1, py + 1) + v, building.floorInside, SquareAttrib::ROOM);
@@ -787,11 +784,11 @@ class Buildings : public LevelMaker {
           builder->addAttrib(v, SquareAttrib::EMPTY_ROOM);
     }
     if (align)
-      for (Vec2 v : Rectangle(area.getPX() + area.getW() / 3, area.getPY() + alignHeight,
-            area.getKX() - area.getW() / 3, area.getPY() + alignHeight + 2))
+      for (Vec2 v : Rectangle(area.left() + area.width() / 3, area.top() + alignHeight,
+            area.right() - area.width() / 3, area.top() + alignHeight + 2))
         builder->addAttrib(v, SquareAttrib::BUILDINGS_CENTER);
     if (roadConnection)
-      builder->putSquare(Vec2((area.getPX() + area.getKX()) / 2, area.getPY() + alignHeight),
+      builder->putSquare(Vec2((area.left() + area.right()) / 2, area.top() + alignHeight),
           SquareId::ROAD, SquareAttrib::CONNECT_ROAD);
   }
 
@@ -812,15 +809,15 @@ class BorderGuard : public LevelMaker {
   BorderGuard(LevelMaker* inside, SquareType _type = SquareId::BORDER_GUARD) : type(_type), insideMaker(inside) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    for (int i : Range(area.getPX(), area.getKX())) {
-      builder->putSquare(Vec2(i, area.getPY()), type);
-      builder->putSquare(Vec2(i, area.getKY() - 1), type);
+    for (int i : Range(area.left(), area.right())) {
+      builder->putSquare(Vec2(i, area.top()), type);
+      builder->putSquare(Vec2(i, area.bottom() - 1), type);
     }
-    for (int i : Range(area.getPY(), area.getKY())) {
-      builder->putSquare(Vec2(area.getPX(), i), type);
-      builder->putSquare(Vec2(area.getKX() - 1, i), type);
+    for (int i : Range(area.top(), area.bottom())) {
+      builder->putSquare(Vec2(area.left(), i), type);
+      builder->putSquare(Vec2(area.right() - 1, i), type);
     }
-    insideMaker->make(builder, Rectangle(area.getPX() + 1, area.getPY() + 1, area.getKX() - 1, area.getKY() - 1));
+    insideMaker->make(builder, Rectangle(area.left() + 1, area.top() + 1, area.right() - 1, area.bottom() - 1));
   }
 
   private:
@@ -850,21 +847,21 @@ class MakerQueue : public LevelMaker {
 class PredicatePrecalc {
   public:
   PredicatePrecalc(const Predicate& predicate, LevelBuilder* builder, Rectangle area)
-      : counts(Rectangle(area.getTopLeft(), area.getBottomRight() + Vec2(1, 1))) {
-    int px = counts.getBounds().getPX();
-    int py = counts.getBounds().getPY();
-    for (int x : Range(px, counts.getBounds().getKX()))
+      : counts(Rectangle(area.topLeft(), area.bottomRight() + Vec2(1, 1))) {
+    int px = counts.getBounds().left();
+    int py = counts.getBounds().top();
+    for (int x : Range(px, counts.getBounds().right()))
       counts[x][py] = 0;
-    for (int y : Range(py, counts.getBounds().getKY()))
+    for (int y : Range(py, counts.getBounds().bottom()))
       counts[px][y] = 0;
-    for (Vec2 v : Rectangle(area.getTopLeft() + Vec2(1, 1), counts.getBounds().getBottomRight()))
+    for (Vec2 v : Rectangle(area.topLeft() + Vec2(1, 1), counts.getBounds().bottomRight()))
       counts[v] = (predicate.apply(builder, v - Vec2(1, 1)) ? 1 : 0) +
         counts[v.x - 1][v.y] + counts[v.x][v.y - 1] -counts[v.x - 1][v.y - 1];
   }
 
   int getCount(Rectangle area) const {
-    return counts[area.getBottomRight()] + counts[area.getTopLeft()]
-      -counts[area.getBottomLeft()] - counts[area.getTopRight()];
+    return counts[area.bottomRight()] + counts[area.topLeft()]
+      -counts[area.bottomLeft()] - counts[area.topRight()];
   }
 
   private:
@@ -908,7 +905,7 @@ class RandomLocations : public LevelMaker {
       bool apply(Rectangle rect) const {
         int numFirst = pred1.getCount(rect);
         int numSecond = pred2.getCount(rect);
-        return numSecond >= minSecond && numSecond < maxSecond && numSecond + numFirst == rect.getW() * rect.getH();
+        return numSecond >= minSecond && numSecond < maxSecond && numSecond + numFirst == rect.width() * rect.height();
       }
 
       private:
@@ -973,21 +970,21 @@ class RandomLocations : public LevelMaker {
     vector<LevelBuilder::Rot> maps;
     for (int i : All(insideMakers))
       maps.push_back(builder->getRandom().choose(
-            {LevelBuilder::CW0, LevelBuilder::CW1, LevelBuilder::CW2, LevelBuilder::CW3}));
+            LevelBuilder::CW0, LevelBuilder::CW1, LevelBuilder::CW2, LevelBuilder::CW3));
     for (int i : All(insideMakers)) {
       int width = sizes[i].first;
       int height = sizes[i].second;
       if (contains({LevelBuilder::CW1, LevelBuilder::CW3}, maps[i]))
         std::swap(width, height);
-      CHECK(width <= area.getW() && height <= area.getH());
+      CHECK(width <= area.width() && height <= area.height());
       int px;
       int py;
       int cnt = 1000;
       bool ok;
       do {
         ok = true;
-        px = area.getPX() + builder->getRandom().get(area.getW() - width);
-        py = area.getPY() + builder->getRandom().get(area.getH() - height);
+        px = area.left() + builder->getRandom().get(area.width() - width);
+        py = area.top() + builder->getRandom().get(area.height() - height);
         for (int j : Range(i))
           if ((maxDistance.count({insideMakers[j].get(), insideMakers[i].get()}) && 
                 maxDistance[{insideMakers[j].get(), insideMakers[i].get()}] <
@@ -1037,60 +1034,17 @@ class Margin : public LevelMaker {
       :left(_left) ,top(_top), right(_right), bottom(_bottom), inside(in) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    CHECK(area.getW() > left + right && area.getH() > top + bottom);
+    CHECK(area.width() > left + right && area.height() > top + bottom);
     inside->make(builder, Rectangle(
-          area.getPX() + left,
-          area.getPY() + top,
-          area.getKX() - right,
-          area.getKY() - bottom));
+          area.left() + left,
+          area.top() + top,
+          area.right() - right,
+          area.bottom() - bottom));
   }
 
   private:
   int left, top, right, bottom;
   LevelMaker* inside;
-};
-
-class Shrine : public LevelMaker {
-  public:
-  Shrine(DeityHabitat _deity, SquareType _floorType, Predicate wallPred, SquareType _newWall,
-      LevelMaker* _locationMaker = nullptr) : deity(_deity), floorType(_floorType),
-      wallPredicate(wallPred), newWall(_newWall), locationMaker(_locationMaker) {}
-
-  virtual void make(LevelBuilder* builder, Rectangle area) override {
-    for (int i : Range(10009)) {
-      Vec2 pos = area.randomVec2();
-      if (!wallPredicate.apply(builder, pos))
-        continue;
-      int numFloor = 0;
-      int numWall = 0;
-      for (Vec2 fl : pos.neighbors8()) {
-        if (builder->getType(fl) == floorType)
-          ++numFloor;
-        if (wallPredicate.apply(builder, fl))
-          ++numWall;
-      }
-      if (numFloor < 3 || numWall < 5) {
-        continue;
-      }
-      builder->putSquare(pos, floorType);
-      builder->putSquare(pos, SquareType(SquareId::ALTAR, deity));
-      for (Vec2 fl : pos.neighbors8())
-        if (wallPredicate.apply(builder, fl))
-          builder->putSquare(fl, newWall);
-      if (locationMaker)
-        locationMaker->make(builder, Rectangle(pos - Vec2(1, 1), pos + Vec2(2, 2)));
-      Debug() << "Created a shrine of " << int(deity);
-      return;
-    }
-    Debug() << "Didn't find a good place for the shrine of " << int(deity);
-  }
-
-  private:
-  DeityHabitat deity;
-  SquareType floorType;
-  Predicate wallPredicate;
-  SquareType newWall;
-  LevelMaker* locationMaker;
 };
 
 void addAvg(int x, int y, const Table<double>& wys, double& avg, int& num) {
@@ -1103,7 +1057,7 @@ void addAvg(int x, int y, const Table<double>& wys, double& avg, int& num) {
 
 Table<double> genNoiseMap(RandomGen& random, Rectangle area, vector<int> cornerLevels, double varianceMult) {
   int width = 1;
-  while (width < area.getW() - 1 || width < area.getH() - 1)
+  while (width < area.width() - 1 || width < area.height() - 1)
     width *= 2;
   width /= 2;
   ++width;
@@ -1149,16 +1103,16 @@ Table<double> genNoiseMap(RandomGen& random, Rectangle area, vector<int> cornerL
     variance *= varianceMult;
   }
   Table<double> ret(area);
-  Vec2 offset(area.getPX(), area.getPY());
+  Vec2 offset(area.left(), area.top());
   for (Vec2 v : area) {
-    Vec2 lv((v.x - offset.x) * width / area.getW(), (v.y - offset.y) * width / area.getH());
+    Vec2 lv((v.x - offset.x) * width / area.width(), (v.y - offset.y) * width / area.height());
     ret[v] = wys[lv];
   }
   return ret;
 }
 
 void raiseLocalMinima(Table<double>& t) {
-  Vec2 minPos = t.getBounds().getTopLeft();
+  Vec2 minPos = t.getBounds().topLeft();
   for (Vec2 v : t.getBounds())
     if (t[v] < t[minPos])
       minPos = v;
@@ -1201,34 +1155,34 @@ class Mountains : public LevelMaker {
     Table<double> wys = genNoiseMap(builder->getRandom(), area, cornerLevels, varianceMult);
     raiseLocalMinima(wys);
     vector<double> values = sortedValues(wys);
-    double cutOffValSand = values[(int)(ratio[0] * double(values.size()))];
-    double cutOffValLand = values[(int)(ratio[1] * double(values.size()))];
-    double cutOffValHill = values[(int)(ratio[2] * double(values.size()))];
-    double cutOffVal = values[(int)(ratio[3] * double(values.size()))];
-    double cutOffValSnow = values[(int)(ratio[4] * double(values.size()))];
+    double cutOffValSand = values[(int)(ratio[0] * double(values.size() - 1))];
+    double cutOffValLand = values[(int)(ratio[1] * double(values.size() - 1))];
+    double cutOffValHill = values[(int)(ratio[2] * double(values.size() - 1))];
+    double cutOffVal = values[(int)(ratio[3] * double(values.size() - 1))];
+    double cutOffValSnow = values[(int)(ratio[4] * double(values.size() - 1))];
     int gCnt = 0, mCnt = 0, hCnt = 0, lCnt = 0, sCnt = 0, wCnt = 0;
     for (Vec2 v : area) {
       builder->setHeightMap(v, wys[v]);
-      if (wys[v] > cutOffValSnow) {
+      if (wys[v] >= cutOffValSnow) {
         builder->putSquare(v, types[0], SquareAttrib::GLACIER);
-        builder->setCoverInfo(v, {true, 0.0});
+        builder->setSunlight(v, 0.0);
         ++gCnt;
       }
-      else if (wys[v] > cutOffVal) {
+      else if (wys[v] >= cutOffVal) {
         builder->putSquare(v, types[1], SquareAttrib::MOUNTAIN);
-        builder->setCoverInfo(v, {true, 1. - (wys[v] - cutOffVal) / (cutOffValSnow - cutOffVal)});
+        builder->setSunlight(v, 1. - (wys[v] - cutOffVal) / (cutOffValSnow - cutOffVal));
         ++mCnt;
       }
-      else if (wys[v] > cutOffValHill) {
+      else if (wys[v] >= cutOffValHill) {
         builder->putSquare(v, types[2], SquareAttrib::HILL);
         ++hCnt;
       }
-      else if (wys[v] > cutOffValLand) {
+      else if (wys[v] >= cutOffValLand) {
         builder->putSquare(v, types[3]);
         builder->addAttrib(v, SquareAttrib::LOWLAND);
         ++lCnt;
       }
-      else if (wys[v] > cutOffValSand) {
+      else if (wys[v] >= cutOffValSand) {
         builder->putSquare(v, types[4]);
         builder->addAttrib(v, SquareAttrib::LOWLAND);
         ++sCnt;
@@ -1293,12 +1247,8 @@ class Roads : public LevelMaker {
         SquareType roadType = getRoadType(builder, v);
         if (v != p2 && v != p1 && builder->getType(v) != roadType)
           builder->putSquare(v, roadType);
-        if (prev.x > -1)
-          builder->getSquare(v)->addTravelDir(prev - v);
-        builder->getSquare(v)->addTravelDir(path.getNextMove(v) - v);
         prev = v;
       }
-      builder->getSquare(p1)->addTravelDir(prev - p1);
     }
   }
 
@@ -1314,12 +1264,35 @@ class StartingPos : public LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (Vec2 pos : area)
       if (predicate.apply(builder, pos))
-        builder->getSquare(pos)->setLandingLink(stairKey);
+        builder->modSquare(pos)->setLandingLink(stairKey);
   }
 
   private:
   Predicate predicate;
   StairKey stairKey;
+};
+
+class TransferPos : public LevelMaker {
+  public:
+
+  TransferPos(Predicate pred, StairKey key, int w) : predicate(pred), stairKey(key), width(w) {}
+
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
+    bool found = false;
+    for (Vec2 pos : area)
+      if (((pos.x - area.left() < width) || (pos.y - area.top() < width) ||
+          (area.right() - pos.x <= width) || (area.bottom() - pos.y <= width)) &&
+          predicate.apply(builder, pos)) {
+        builder->modSquare(pos)->setLandingLink(stairKey);
+        found = true;
+      }
+    checkGen(found);
+  }
+
+  private:
+  Predicate predicate;
+  StairKey stairKey;
+  int width;
 };
 
 class Forrest : public LevelMaker {
@@ -1328,7 +1301,7 @@ class Forrest : public LevelMaker {
       : ratio(_ratio), density(_density), types(_types), probs(_probs), onType(_onType) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    Table<double> wys = genNoiseMap(builder->getRandom(), area, {0, 0, 0, 0, 0}, 0.9);
+    Table<double> wys = genNoiseMap(builder->getRandom(), area, {0, 0, 0, 0, 0}, 0.65);
     vector<double> values = sortedValues(wys);
     double cutoff = values[values.size() * ratio];
     for (Vec2 v : area)
@@ -1427,7 +1400,7 @@ class Stairs : public LevelMaker {
 
 class ShopMaker : public LevelMaker {
   public:
-  ShopMaker(ItemFactory _factory, Tribe* _tribe, int _numItems, BuildingInfo _building)
+  ShopMaker(ItemFactory _factory, TribeId _tribe, int _numItems, BuildingInfo _building)
       : factory(_factory), tribe(_tribe), numItems(_numItems), building(_building) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1442,13 +1415,13 @@ class ShopMaker : public LevelMaker {
     builder->putSquare(pos[builder->getRandom().get(pos.size())], SquareId::TORCH);
     for (int i : Range(numItems)) {
       Vec2 v = pos[builder->getRandom().get(pos.size())];
-      builder->getSquare(v)->dropItems(factory.random());
+      builder->putItems(v, factory.random());
     }
   }
 
   private:
   ItemFactory factory;
-  Tribe* tribe;
+  TribeId tribe;
   int numItems;
   BuildingInfo building;
 };
@@ -1482,43 +1455,43 @@ class Division : public LevelMaker {
       : vRatio(_vRatio), hRatio(-1), upperLeft(_top), lowerLeft(_bottom), wall(_wall) {}
 
   void makeHorizDiv(LevelBuilder* builder, Rectangle area) {
-    int hDiv = area.getPX() + min(area.getW() - 1, max(1, (int) (hRatio * area.getW())));
+    int hDiv = area.left() + min(area.width() - 1, max(1, (int) (hRatio * area.width())));
     if (upperLeft)
-      upperLeft->make(builder, Rectangle(area.getPX(), area.getPY(), hDiv, area.getKY()));
+      upperLeft->make(builder, Rectangle(area.left(), area.top(), hDiv, area.bottom()));
     if (upperRight)
-      upperRight->make(builder, Rectangle(hDiv + (wall ? 1 : 0), area.getPY(), area.getKX(), area.getKY()));
+      upperRight->make(builder, Rectangle(hDiv + (wall ? 1 : 0), area.top(), area.right(), area.bottom()));
     if (wall)
-      for (int i : Range(area.getPY(), area.getKY()))
+      for (int i : Range(area.top(), area.bottom()))
         builder->putSquare(Vec2(hDiv, i), *wall);
   }
 
   void makeVertDiv(LevelBuilder* builder, Rectangle area) {
-    int vDiv = area.getPY() + min(area.getH() - 1, max(1, (int) (vRatio * area.getH())));
+    int vDiv = area.top() + min(area.height() - 1, max(1, (int) (vRatio * area.height())));
     if (upperLeft)
-      upperLeft->make(builder, Rectangle(area.getPX(), area.getPY(), area.getKX(), vDiv));
+      upperLeft->make(builder, Rectangle(area.left(), area.top(), area.right(), vDiv));
     if (lowerLeft)
-      lowerLeft->make(builder, Rectangle(area.getPX(), vDiv + (wall ? 1 : 0), area.getKX(), area.getKY()));
+      lowerLeft->make(builder, Rectangle(area.left(), vDiv + (wall ? 1 : 0), area.right(), area.bottom()));
     if (wall)
-      for (int i : Range(area.getPX(), area.getKX()))
+      for (int i : Range(area.left(), area.right()))
         builder->putSquare(Vec2(i, vDiv), *wall);
   }
 
   void makeDiv(LevelBuilder* builder, Rectangle area) {
-    int vDiv = area.getPY() + min(area.getH() - 1, max(1, (int) (vRatio * area.getH())));
-    int hDiv = area.getPX() + min(area.getW() - 1, max(1, (int) (hRatio * area.getW())));
+    int vDiv = area.top() + min(area.height() - 1, max(1, (int) (vRatio * area.height())));
+    int hDiv = area.left() + min(area.width() - 1, max(1, (int) (hRatio * area.width())));
     int wallSpace = wall ? 1 : 0;
     if (upperLeft)
-      upperLeft->make(builder, Rectangle(area.getPX(), area.getPY(), hDiv, vDiv));
+      upperLeft->make(builder, Rectangle(area.left(), area.top(), hDiv, vDiv));
     if (upperRight)
-      upperRight->make(builder, Rectangle(hDiv + wallSpace, area.getPY(), area.getKX(), vDiv));
+      upperRight->make(builder, Rectangle(hDiv + wallSpace, area.top(), area.right(), vDiv));
     if (lowerLeft)
-      lowerLeft->make(builder, Rectangle(area.getPX(), vDiv + wallSpace, hDiv, area.getKY()));
+      lowerLeft->make(builder, Rectangle(area.left(), vDiv + wallSpace, hDiv, area.bottom()));
     if (lowerRight)
-      lowerRight->make(builder, Rectangle(hDiv + wallSpace, vDiv + wallSpace, area.getKX(), area.getKY()));
+      lowerRight->make(builder, Rectangle(hDiv + wallSpace, vDiv + wallSpace, area.right(), area.bottom()));
     if (wall) {
-      for (int i : Range(area.getPY(), area.getKY()))
+      for (int i : Range(area.top(), area.bottom()))
         builder->putSquare(Vec2(hDiv, i), *wall);
-      for (int i : Range(area.getPX(), area.getKX()))
+      for (int i : Range(area.left(), area.right()))
         builder->putSquare(Vec2(i, vDiv), *wall);
     }
   }
@@ -1541,27 +1514,6 @@ class Division : public LevelMaker {
   optional<SquareType> wall;
 };
 
-class Circle : public LevelMaker {
-  public:
-  Circle(ItemId _item) : item(_item) {}
-
-  virtual void make(LevelBuilder* builder, Rectangle area) override {
-    Vec2 center = area.middle();
-    double r = min(area.getH(), area.getW()) / 2 - 1;
-    Vec2 lastPos;
-    for (double a = 0; a < 3.1415 * 2; a += builder->getRandom().getDouble() * r / 10) {
-      Vec2 pos = center + Vec2(sin(a) * r, cos(a) * r);
-      if (pos != lastPos) {
-        builder->getSquare(pos)->dropItem(ItemFactory::fromId(item));
-        lastPos = pos;
-      }
-    }
-  }
-
-  private:
-  ItemId item;
-};
-
 class AreaCorners : public LevelMaker {
   public:
   AreaCorners(LevelMaker* _maker, Vec2 _size, vector<LevelMaker*> _insideMakers)
@@ -1569,10 +1521,10 @@ class AreaCorners : public LevelMaker {
 
   vector<Rectangle> getCorners(Rectangle area) {
     return {
-      Rectangle(area.getTopLeft(), area.getTopLeft() + size),
-      Rectangle(area.getTopRight() - Vec2(size.x, 0), area.getTopRight() + Vec2(0, size.y)),
-      Rectangle(area.getBottomLeft() - Vec2(0, size.y), area.getBottomLeft() + Vec2(size.x, 0)),
-      Rectangle(area.getBottomRight() - size, area.getBottomRight())};
+      Rectangle(area.topLeft(), area.topLeft() + size),
+      Rectangle(area.topRight() - Vec2(size.x, 0), area.topRight() + Vec2(0, size.y)),
+      Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomLeft() + Vec2(size.x, 0)),
+      Rectangle(area.bottomRight() - size, area.bottomRight())};
   }
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1592,11 +1544,11 @@ class AreaCorners : public LevelMaker {
 
 class CastleExit : public LevelMaker {
   public:
-  CastleExit(Tribe* _guardTribe, BuildingInfo _building, CreatureId _guardId)
+  CastleExit(TribeId _guardTribe, BuildingInfo _building, CreatureId _guardId)
     : guardTribe(_guardTribe), building(_building), guardId(_guardId) {}
   
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    Vec2 loc(area.getKX() - 1, area.middle().y);
+    Vec2 loc(area.right() - 1, area.middle().y);
     builder->putSquare(loc + Vec2(2, 0), building.floorInside);
     builder->putSquare(loc + Vec2(2, 0), building.door, SquareAttrib::CONNECT_ROAD);
     vector<Vec2> walls { Vec2(1, -2), Vec2(2, -2), Vec2(2, -1), Vec2(2, 1), Vec2(2, 2), Vec2(1, 2)};
@@ -1615,17 +1567,9 @@ class CastleExit : public LevelMaker {
   }
 
   private:
-  Tribe* guardTribe;
+  TribeId guardTribe;
   BuildingInfo building;
   CreatureId guardId;
-};
-
-class SetCovered : public LevelMaker {
-  public:
-  virtual void make(LevelBuilder* builder, Rectangle area) override {
-    for (Vec2 v : area)
-      builder->setCoverInfo(v, {true, 1.0});
-  }
 };
 
 class AddMapBorder : public LevelMaker {
@@ -1635,7 +1579,7 @@ class AddMapBorder : public LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (Vec2 v : area)
       if (!v.inRectangle(area.minusMargin(width)))
-        builder->getSquare(v)->setUnavailable();
+        builder->setUnavailable(v);
   }
 
   private:
@@ -1665,6 +1609,7 @@ PLevelMaker LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
   BuildingInfo building = getBuildingInfo(info);
   queue->addMaker(new Empty(SquareId::MOUNTAIN));
+  queue->addMaker(new LocationMaker(info.location));
   queue->addMaker(new RoomMaker(random.get(8, 15), 3, 5, SquareId::MOUNTAIN,
         SquareType(SquareId::MOUNTAIN)));
   queue->addMaker(new Connector(building.door, 0.75));
@@ -1675,7 +1620,7 @@ PLevelMaker LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
   for (StairKey key : info.upStairs)
     queue->addMaker(new Stairs(StairInfo::Direction::UP, key, Predicate::type(SquareId::FLOOR)));
   if (info.creatures)
-    queue->addMaker(new Creatures(*info.creatures, info.numCreatures));
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective));
   queue->addMaker(new Items(ItemFactory::dungeon(), SquareId::FLOOR, 5, 10));
   return PLevelMaker(new BorderGuard(queue, SquareId::MOUNTAIN));
 }
@@ -1780,6 +1725,30 @@ MakerQueue* cottage(SettlementInfo info) {
   if (info.outsideFeatures)
     room->addMaker(new DungeonFeatures(Predicate::type(building.floorOutside), 0.1, *info.outsideFeatures));
   queue->addMaker(new Buildings(1, 2, 5, 7, building, false, {room}, false));
+  queue->addMaker(new LocationMaker(info.location));
+  if (info.creatures)
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, 
+          Predicate::type(building.floorOutside)));
+  if (info.neutralCreatures)
+    queue->addMaker(
+        new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
+          Predicate::type(building.floorOutside)));
+   return queue;
+}
+
+MakerQueue* forrestCottage(SettlementInfo info) {
+  BuildingInfo building = getBuildingInfo(info);
+  MakerQueue* queue = new MakerQueue();
+  MakerQueue* room = getElderRoom(info);
+  for (StairKey key : info.upStairs)
+    room->addMaker(new Stairs(StairInfo::Direction::UP, key, Predicate::type(building.floorInside), none));
+  for (StairKey key : info.downStairs)
+    room->addMaker(new Stairs(StairInfo::Direction::DOWN, key, Predicate::type(building.floorInside), none));
+  if (info.furniture)
+    room->addMaker(new DungeonFeatures(Predicate::type(building.floorInside), 0.3, *info.furniture));
+  if (info.outsideFeatures)
+    room->addMaker(new DungeonFeatures(Predicate::type(building.floorOutside), 0.1, *info.outsideFeatures));
+  queue->addMaker(new Buildings(1, 3, 3, 4, building, false, {room}, false));
   queue->addMaker(new LocationMaker(info.location));
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, 
@@ -1912,8 +1881,9 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::CEMETERY:
     case SettlementType::SWAMP: return {random.get(12, 16), random.get(12, 16)};
     case SettlementType::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
+    case SettlementType::FORREST_COTTAGE: return {15, 15};
     case SettlementType::FOREST: return {18, 13};
-    case SettlementType::VILLAGE2: return {30, 20};
+    case SettlementType::VILLAGE2: return {20, 20};
     case SettlementType::VILLAGE:
     case SettlementType::ANT_NEST:
     case SettlementType::CASTLE: return {30, 20};
@@ -1924,31 +1894,40 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::SPIDER_CAVE: return {12, 12};
     case SettlementType::VAULT: return {10, 10};
     case SettlementType::TOWER: return {5, 5};
-    case SettlementType::ISLAND_VAULT: return {random.get(15, 25), random.get(15, 25)};
+    case SettlementType::ISLAND_VAULT_DOOR:
+    case SettlementType::ISLAND_VAULT: return {6, 6};
   }
 }
 
 RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
   switch (type) {
     case SettlementType::FOREST:
+    case SettlementType::FORREST_COTTAGE:
     case SettlementType::VILLAGE2:
-        return Predicate::andPred(
-            Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)),
-            Predicate::attrib(SquareAttrib::FORREST));
-    case SettlementType::CAVE: return RandomLocations::LocationPredicate(
-        Predicate::type(SquareId::MOUNTAIN), Predicate::type(SquareId::HILL), 5, 15);
+      return Predicate::andPred(
+          Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)),
+          Predicate::attrib(SquareAttrib::FORREST));
+    case SettlementType::CAVE:
+      return RandomLocations::LocationPredicate(
+          Predicate::type(SquareId::MOUNTAIN), Predicate::attrib(SquareAttrib::HILL), 5, 15);
     case SettlementType::VAULT:
     case SettlementType::ANT_NEST:
     case SettlementType::SMALL_MINETOWN:
-    case SettlementType::MINETOWN: return Predicate::type(SquareId::MOUNTAIN);
-    case SettlementType::SPIDER_CAVE: return RandomLocations::LocationPredicate(
-        Predicate::type(SquareId::MOUNTAIN), Predicate::andPred(
-          Predicate::negate(Predicate::attrib(SquareAttrib::LOCATION)),
-          Predicate::attrib(SquareAttrib::CONNECTOR)), 1, 2);
+    case SettlementType::MINETOWN:
+      return Predicate::type(SquareId::MOUNTAIN);
+    case SettlementType::SPIDER_CAVE:
+      return RandomLocations::LocationPredicate(
+          Predicate::type(SquareId::MOUNTAIN), Predicate::andPred(
+            Predicate::negate(Predicate::attrib(SquareAttrib::LOCATION)),
+            Predicate::attrib(SquareAttrib::CONNECTOR)), 1, 2);
     case SettlementType::ISLAND_VAULT:
-        return Predicate::attrib(SquareAttrib::MOUNTAIN);
-    default: return Predicate::andPred(Predicate::attrib(SquareAttrib::LOWLAND),
-                 Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
+      return Predicate::attrib(SquareAttrib::MOUNTAIN);
+    case SettlementType::ISLAND_VAULT_DOOR:
+      return RandomLocations::LocationPredicate(
+          Predicate::attrib(SquareAttrib::MOUNTAIN), Predicate::attrib(SquareAttrib::RIVER), 10, 30);
+    default:
+      return Predicate::andPred(Predicate::attrib(SquareAttrib::LOWLAND),
+          Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
   }
 }
 
@@ -2041,11 +2020,8 @@ static MakerQueue* spiderCaveMaker(SettlementInfo info) {
   return queue;
 }
 
-static LevelMaker* islandVaultMaker(RandomGen& random, SettlementInfo info, bool connection) {
-  MakerQueue* queue = new MakerQueue();
+static LevelMaker* islandVaultMaker(RandomGen& random, SettlementInfo info, bool door) {
   BuildingInfo building = getBuildingInfo(info);
-  queue->addMaker(new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE));
-  RandomLocations* locations = new RandomLocations();
   MakerQueue* inside = new MakerQueue();
   inside->addMaker(new LocationMaker(info.location));
   Predicate featurePred = Predicate::type(building.floorInside);
@@ -2057,18 +2033,17 @@ static LevelMaker* islandVaultMaker(RandomGen& random, SettlementInfo info, bool
     inside->addMaker(new Stairs(StairInfo::Direction::DOWN, key, featurePred));
   for (StairKey key : info.upStairs)
     inside->addMaker(new Stairs(StairInfo::Direction::UP, key, featurePred));
-
-  locations->add(new Margin(1, new MakerQueue({
+  MakerQueue* buildingMaker = new MakerQueue({
       new Empty(building.wall),
       new AddAttrib(SquareAttrib::NO_DIG),
-      new RemoveAttrib(SquareAttrib::LAKE),
-      //new AddAttrib(SquareAttrib::CONNECT_CORRIDOR),
+      new RemoveAttrib(SquareAttrib::CONNECT_CORRIDOR),
       new Margin(1, inside),
-      //new LevelExit(SquareId::DOOR)
-      })),
-      Vec2(random.get(6, 8), random.get(6, 8)), Predicate::type(SquareId::WATER));
-  queue->addMaker(new Margin(3, locations));
-  return queue;
+      });
+  if (door)
+    buildingMaker->addMaker(new LevelExit(SquareId::DOOR));
+  return new MakerQueue({
+        new Empty(SquareId::WATER),
+        new Margin(1, buildingMaker)});
 }
 
 static MakerQueue* dragonCaveMaker(SettlementInfo info) {
@@ -2131,17 +2106,60 @@ LevelMaker* swamp(SettlementInfo info) {
   return queue;
 }
 
-PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreatures,
-    vector<SettlementInfo> settlements) {
-  MakerQueue* queue = new MakerQueue();
+static LevelMaker* getMountains(BiomeId id) {
+  switch (id) {
+    case BiomeId::GRASSLAND:
+    case BiomeId::FORREST:
+      return new Mountains({0.0, 0.0, 0.78, 0.83, 0.95}, 0.45, {0, 1, 0, 0, 0},
+            {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND});
+    case BiomeId::MOUNTAIN:
+      return new Mountains({0.0, 0.0, 0.15, 0.25, 0.75}, 0.45, {0, 1, 0, 0, 0},
+            {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND});
+  }
+}
+
+static LevelMaker* getForrest(BiomeId id) {
   vector<SquareType> vegetationLow {
       getTreesType(SquareId::CANIF_TREE), getTreesType(SquareId::BUSH) };
   vector<SquareType> vegetationHigh { getTreesType(SquareId::DECID_TREE), getTreesType(SquareId::BUSH) };
   vector<double> probs { 2, 1 };
+  switch (id) {
+    case BiomeId::MOUNTAIN:
+      return new MakerQueue({
+          new Forrest(0.7, 0.5, SquareId::GRASS, vegetationLow, probs),
+          new Forrest(0.8, 0.5, SquareId::HILL, vegetationHigh, probs)});
+    case BiomeId::GRASSLAND:
+      return new MakerQueue({
+          new Forrest(0.3, 0.25, SquareId::GRASS, vegetationLow, probs),
+          new Forrest(0.8, 0.25, SquareId::HILL, vegetationHigh, probs)});
+    case BiomeId::FORREST:
+      return new MakerQueue({
+          new Forrest(0.8, 0.5, SquareId::GRASS, vegetationLow, probs),
+          new Forrest(0.8, 0.5, SquareId::HILL, vegetationHigh, probs)});
+  }
+}
+
+static LevelMaker* getForrestCreatures(CreatureFactory factory, int levelWidth, BiomeId biome) {
+  int div;
+  switch (biome) {
+    case BiomeId::FORREST: div = 2000; break;
+    case BiomeId::GRASSLAND:
+    case BiomeId::MOUNTAIN: div = 7000; break;
+  }
+  return new Creatures(factory, levelWidth * levelWidth / div, MonsterAIFactory::wildlifeNonPredator());
+}
+
+PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreatures,
+    vector<SettlementInfo> settlements, int width, bool keeperSpawn, BiomeId biomeId) {
+  MakerQueue* queue = new MakerQueue();
   RandomLocations* locations = new RandomLocations();
   RandomLocations* locations2 = new RandomLocations();
-  LevelMaker* startingPos = new StartingPos(Predicate::type(SquareId::HILL), StairKey::keeperSpawn());
-  locations->add(startingPos, Vec2(4, 4), Predicate::type(SquareId::HILL));
+  LevelMaker* startingPos = nullptr;
+  if (keeperSpawn) {
+    startingPos = new StartingPos(Predicate::alwaysTrue(), StairKey::keeperSpawn());
+    locations->add(startingPos, Vec2(4, 4), RandomLocations::LocationPredicate(
+          Predicate::attrib(SquareAttrib::HILL), Predicate::attrib(SquareAttrib::MOUNTAIN), 1, 8));
+  }
   struct CottageInfo {
     LevelMaker* maker;
     CollectiveBuilder* collective;
@@ -2159,6 +2177,9 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
       case SettlementType::COTTAGE:
           queue = cottage(settlement);
           cottages.push_back({queue, settlement.collective});
+          break;
+      case SettlementType::FORREST_COTTAGE:
+          queue = forrestCottage(settlement);
           break;
       case SettlementType::TOWER:
           queue = tower(random, settlement, true);
@@ -2180,10 +2201,14 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
           break;
       case SettlementType::VAULT:
           queue = vaultMaker(settlement, false);
-          locations->setMaxDistance(startingPos, queue, 100);
+          if (keeperSpawn)
+            locations->setMaxDistance(startingPos, queue, width / 3);
           break;
       case SettlementType::ISLAND_VAULT:
           queue = islandVaultMaker(random, settlement, false);
+          break;
+      case SettlementType::ISLAND_VAULT_DOOR:
+          queue = islandVaultMaker(random, settlement, true);
           break;
       case SettlementType::CAVE:
           queue = dragonCaveMaker(settlement); break;
@@ -2201,11 +2226,13 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
     if (settlement.type == SettlementType::SPIDER_CAVE)
       locations2->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
     else {
-      if (settlement.closeToPlayer) {
-        locations->setMinDistance(startingPos, queue, 25);
-        locations->setMaxDistance(startingPos, queue, 60);
-      } else
-        locations->setMinDistance(startingPos, queue, 70);
+      if (keeperSpawn) {
+        if (settlement.closeToPlayer) {
+          locations->setMinDistance(startingPos, queue, 25);
+          locations->setMaxDistance(startingPos, queue, 60);
+        } else
+          locations->setMinDistance(startingPos, queue, 70);
+      }
       locations->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
     }
   }
@@ -2221,54 +2248,54 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
           lowlandPred);
       locations->setMaxDistanceLast(cottage.maker, 13);
     }
- /* for (int i : Range(random.get(1, 4)))
-    locations->add(new Lake(), {20, 20}, Predicate::attrib(SquareAttrib::LOWLAND));*/
-  for (int i : Range(random.get(3, 6))) {
-    locations->add(new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE), 
-        {random.get(5, 30), random.get(5, 30)}, Predicate::type(SquareId::MOUNTAIN));
- //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
+  if (biomeId == BiomeId::GRASSLAND || biomeId == BiomeId::FORREST)
+    for (int i : Range(random.get(0, 3)))
+      locations->add(new Lake(), {random.get(20, 30), random.get(20, 30)}, Predicate::attrib(SquareAttrib::LOWLAND));
+  if (biomeId == BiomeId::MOUNTAIN)
+    for (int i : Range(random.get(3, 6))) {
+      locations->add(new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE), 
+          {random.get(10, 30), random.get(10, 30)}, Predicate::type(SquareId::MOUNTAIN));
+  //  locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
   }
-  for (int i : Range(random.get(3, 5))) {
+/*  for (int i : Range(random.get(3, 5))) {
     locations->add(new UniformBlob(SquareId::FLOOR, none), 
         {random.get(5, 12), random.get(5, 12)}, Predicate::type(SquareId::MOUNTAIN));
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
-  }
-  int maxDist = 35;
-  int maxDist2 = 80;
-  addResources(random, locations, random.get(4, 6), 1, 5, 10, maxDist, maxDist2, SquareId::GOLD_ORE, startingPos);
-  addResources(random, locations, random.get(3, 6), 2, 5, 10, maxDist, maxDist2, SquareId::STONE, startingPos);
-  addResources(random, locations, random.get(7, 12), 4, 5, 10, maxDist, maxDist2, SquareId::IRON_ORE, startingPos);
+  }*/
+  int maxDist = 1000;
+  int maxDist2 = 1000;
   int mapBorder = 30;
-  int locationMargin = 20;
+  int locationMargin = 10;
   queue->addMaker(new Empty(SquareId::WATER));
-  queue->addMaker(new Mountains({0.0, 0.0, 0.6, 0.68, 0.95}, 0.45, {0, 1, 0, 0, 0},
-        {SquareId::MOUNTAIN, SquareId::MOUNTAIN, SquareId::HILL, SquareId::GRASS, SquareId::SAND}));
+  queue->addMaker(getMountains(biomeId));
+  queue->addMaker(new MountainRiver(1, SquareId::WATER, SquareId::SAND,
+          Predicate::type(SquareId::MOUNTAIN)));
   queue->addMaker(new AddAttrib(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::LOWLAND)));
   queue->addMaker(new AddAttrib(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::HILL)));
-  queue->addMaker(new MountainRiver(2, SquareId::WATER, SquareId::SAND,
-          Predicate::type(SquareId::MOUNTAIN)));
-  queue->addMaker(new Forrest(0.7, 0.5, SquareId::GRASS, vegetationLow, probs));
-  queue->addMaker(new Forrest(0.4, 0.5, SquareId::HILL, vegetationHigh, probs));
+  queue->addMaker(getForrest(biomeId));
   queue->addMaker(new Margin(mapBorder + locationMargin, locations));
   queue->addMaker(new Margin(mapBorder, new Roads(SquareId::FLOOR)));
+  queue->addMaker(new Margin(mapBorder,
+        new TransferPos(Predicate::canEnter(MovementTrait::WALK), StairKey::transferLanding(), 2)));
   queue->addMaker(new Margin(mapBorder, new Connector(SquareId::DOOR, 0, 5,
           Predicate::andPred(Predicate::canEnter({MovementTrait::WALK}),
           Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR)), SquareAttrib::CONNECTOR)));
   queue->addMaker(new Margin(mapBorder + locationMargin, locations2));
-  queue->addMaker(new Items(ItemFactory::mushrooms(), SquareId::GRASS, 30, 60));
+  queue->addMaker(new Items(ItemFactory::mushrooms(), SquareId::GRASS, width / 10, width / 5));
   queue->addMaker(new AddMapBorder(mapBorder));
+  queue->addMaker(getForrestCreatures(forrestCreatures, width - 2 * mapBorder, biomeId));
   return PLevelMaker(new BorderGuard(queue));
 }
 
 Vec2 LevelMaker::getRandomExit(RandomGen& random, Rectangle rect, int minCornerDist) {
-  CHECK(rect.getW() > 2 * minCornerDist && rect.getH() > 2 * minCornerDist);
+  CHECK(rect.width() > 2 * minCornerDist && rect.height() > 2 * minCornerDist);
   int w1 = random.get(2);
   int w2 = random.get(2);
-  int d1 = random.get(minCornerDist, rect.getW() - minCornerDist);
-  int d2 = random.get(minCornerDist, rect.getH() - minCornerDist);
+  int d1 = random.get(minCornerDist, rect.width() - minCornerDist);
+  int d2 = random.get(minCornerDist, rect.height() - minCornerDist);
   return Vec2(
-        rect.getPX() + d1 * w1 + (1 - w1) * w2 * (rect.getW() - 1),
-        rect.getPY() + d2 * (1 - w1) + w1 * w2 * (rect.getH() - 1));
+        rect.left() + d1 * w1 + (1 - w1) * w2 * (rect.width() - 1),
+        rect.top() + d2 * (1 - w1) + w1 * w2 * (rect.height() - 1));
 }
 
 class SpecificArea : public LevelMaker {
@@ -2288,19 +2315,18 @@ PLevelMaker LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory 
     CreatureFactory imps, const string& splashPath) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::BLACK_FLOOR));
-  queue->addMaker(new SetCovered());
   Rectangle leaderSpawn(
-          Level::getSplashVisibleBounds().getKX() + 1, Level::getSplashVisibleBounds().middle().y,
-          Level::getSplashVisibleBounds().getKX() + 2, Level::getSplashVisibleBounds().middle().y + 1);
+          Level::getSplashVisibleBounds().right() + 1, Level::getSplashVisibleBounds().middle().y,
+          Level::getSplashVisibleBounds().right() + 2, Level::getSplashVisibleBounds().middle().y + 1);
   Rectangle heroSpawn(
-          Level::getSplashVisibleBounds().getKX() + 2, Level::getSplashVisibleBounds().middle().y - 1,
-          Level::getSplashBounds().getKX(), Level::getSplashVisibleBounds().middle().y + 2);
+          Level::getSplashVisibleBounds().right() + 2, Level::getSplashVisibleBounds().middle().y - 1,
+          Level::getSplashBounds().right(), Level::getSplashVisibleBounds().middle().y + 2);
   Rectangle monsterSpawn1(
-          Level::getSplashVisibleBounds().getPX(), 0,
-          Level::getSplashVisibleBounds().getKX(), Level::getSplashVisibleBounds().getPY() - 1);
+          Level::getSplashVisibleBounds().left(), 0,
+          Level::getSplashVisibleBounds().right(), Level::getSplashVisibleBounds().top() - 1);
   Rectangle monsterSpawn2(
-          Level::getSplashVisibleBounds().getPX(), Level::getSplashVisibleBounds().getKY() + 2,
-          Level::getSplashVisibleBounds().getKX(), Level::getSplashBounds().getKY());
+          Level::getSplashVisibleBounds().left(), Level::getSplashVisibleBounds().bottom() + 2,
+          Level::getSplashVisibleBounds().right(), Level::getSplashBounds().bottom());
   queue->addMaker(new SpecificArea(leaderSpawn, new Creatures(heroLeader, 1,MonsterAIFactory::splashHeroes(true))));
   queue->addMaker(new SpecificArea(heroSpawn, new Creatures(heroes, 22, MonsterAIFactory::splashHeroes(false))));
   queue->addMaker(new SpecificArea(monsterSpawn1, new Creatures(monsters, 17, MonsterAIFactory::splashMonsters())));
@@ -2333,11 +2359,11 @@ static LevelMaker* underground(RandomGen& random, CreatureFactory waterFactory, 
     queue->addMaker(new RandomLocations(vCavern, sizes, Predicate::alwaysTrue(), false));
   }
   switch (random.get(1, 3)) {
-    case 1: queue->addMaker(new River(3, random.choose({SquareId::WATER, SquareId::MAGMA})));
+    case 1: queue->addMaker(new River(3, random.choose(SquareId::WATER, SquareId::MAGMA)));
             break;
     case 2:{
           int numLakes = sqrt(random.get(1, 100));
-          SquareType lakeType = random.choose({SquareId::WATER, SquareId::MAGMA});
+          SquareType lakeType = random.choose(SquareId::WATER, SquareId::MAGMA);
           vector<pair<int, int>> sizes;
           for (int i : Range(numLakes)) {
             int size = random.get(6, 20);
@@ -2397,14 +2423,14 @@ class SokobanMaker : public LevelMaker {
 found:
     int length = 7;
     middleLine = start.x;
-    workArea = Rectangle(area.getTopLeft(), Vec2(start.x + length, area.getKY()));
+    workArea = Rectangle(area.topLeft(), Vec2(start.x + length, area.bottom()));
     for (int i : Range(1, length + 1)) {
       Vec2 pos = start + Vec2(i, 0);
       builder->putSquare(pos, SquareId::FLOOR);
       boulders.push_back(pos);
     }
     builder->putSquare(start + Vec2(length + 1, 0), SquareId::FLOOR);
-    builder->putSquare(start + Vec2(length + 1, 0), {SquareId::TRIBE_DOOR, (Tribe*)(nullptr)});
+    builder->putSquare(start + Vec2(length + 1, 0), {SquareId::TRIBE_DOOR, TribeId::getHostile()});
     for (Vec2 v : Rectangle::centered(start + Vec2(length + roomRadius + 2, 0), roomRadius))
       builder->putSquare(v, SquareId::FLOOR, SquareAttrib::SOKOBAN_PRIZE);
     set<int> visited;
@@ -2500,6 +2526,8 @@ PLevelMaker LevelMaker::quickLevel(RandomGen&) {
           {new Empty(SquareId::FLOOR)}, {{2, 2}},
           Predicate::type(SquareId::MOUNTAIN)));*/
   queue->addMaker(new StartingPos(Predicate::type(SquareId::GRASS), StairKey::keeperSpawn()));
+  queue->addMaker(new Margin(2,
+        new TransferPos(Predicate::type(SquareId::GRASS), StairKey::transferLanding(), 2)));
   queue->addMaker(new AddMapBorder(2));
   return PLevelMaker(new BorderGuard(queue, SquareId::BLACK_WALL));
 }

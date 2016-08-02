@@ -22,8 +22,7 @@
 
 template <class Archive> 
 void Inventory::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(items)
-    & SVAR(itemsCache);
+  serializeAll(ar, items, itemsCache);
 }
 
 Inventory::~Inventory() {}
@@ -33,6 +32,7 @@ SERIALIZABLE(Inventory);
 SERIALIZATION_CONSTRUCTOR_IMPL(Inventory);
 
 void Inventory::addItem(PItem item) {
+  CHECK(!!item) << "Null item dropped";
   itemsCache.push_back(item.get());
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     if (indexes[ind] && getIndexPredicate(ind)(item.get()))
@@ -117,7 +117,7 @@ function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
     case ItemIndex::RANGED_WEAPON: return [](const Item* it) {
         return it->getClass() == ItemClass::RANGED_WEAPON;};
     case ItemIndex::CAN_EQUIP: return [](const Item* it) {return it->canEquip();};
-    case ItemIndex::FOR_SALE: return [](const Item* it) {return !!it->getShopkeeper();};
+    case ItemIndex::FOR_SALE: return [](const Item* it) {return it->isOrWasForSale();};
   }
 }
 

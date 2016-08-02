@@ -19,8 +19,8 @@ ViewObject& Renderable::modViewObject() {
   return *viewObject.get();
 }
 
-template <class Archive> 
-void Renderable::serialize(Archive& ar, const unsigned int version) { 
+template <class Archive>
+void Renderable::serialize(Archive& ar, const unsigned int version) {
   ar & SVAR(viewObject);
 }
 
@@ -29,4 +29,3 @@ SERIALIZABLE(Renderable);
 void Renderable::setViewObject(const ViewObject& obj) {
   viewObject.reset(new ViewObject(obj));
 }
-

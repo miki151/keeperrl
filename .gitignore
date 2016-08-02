@@ -1,0 +1,11 @@
+*.kep
+*.aut
+*.sit
+*.ret
+*.swp
+*.adv
+version.h
+data
+sound_wav
+stdafx.h.*
+installid.txt

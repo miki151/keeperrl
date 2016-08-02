@@ -60,6 +60,19 @@ class LoggingView : public View {
       delegate->addSound(s);
     }
 
+    virtual optional<Vec2> chooseSite(const string& message, const Campaign& c, optional<Vec2> cur) override {
+      return delegate->chooseSite(message, c, cur);
+    }
+
+    virtual CampaignAction prepareCampaign(const Campaign& c, Options* options, RetiredGames& retired) override {
+      return delegate->prepareCampaign(c, options, retired);
+    }
+
+    virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>& c,
+        const string& cancelText) override {
+      return delegate->chooseTeamLeader(title, c, cancelText);
+    }
+
     virtual double getGameSpeed() override {
       return logAndGet(delegate->getGameSpeed(), LoggingToken::GET_GAME_SPEED);
     }
@@ -78,7 +91,7 @@ class LoggingView : public View {
           LoggingToken::CHOOSE_FROM_LIST);
     }
 
-    virtual GameTypeChoice chooseGameType() override {
+    virtual optional<GameTypeChoice> chooseGameType() override {
       return logAndGet(delegate->chooseGameType(), LoggingToken::CHOOSE_GAME_TYPE);
     }
 
@@ -103,7 +116,7 @@ class LoggingView : public View {
       return logAndGet(delegate->chooseRecruit(title, warning, budget, c, scrollPos), LoggingToken::CHOOSE_RECRUIT);
     }
 
-    virtual optional<UniqueEntity<Creature>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
+    virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
         const vector<ItemInfo>& c, double* scrollPos) override {
       return logAndGet(delegate->chooseTradeItem(title, budget, c, scrollPos), LoggingToken::CHOOSE_TRADE_ITEM);
     }
@@ -128,9 +141,9 @@ class LoggingView : public View {
       delegate->reset();
     }
 
-    virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {
-      delegate->displaySplash(m, type, cancelFun);
-    }
+/*    virtual void displaySplash(const ProgressMeter& m, SplashType type, function<void()> cancelFun) override {
+      delegate->displaySplash(m, type, cancelFun);*
+    }*/
 
     virtual void clearSplash() override {
       delegate->clearSplash();
@@ -169,7 +182,7 @@ class LoggingView : public View {
       delegate->continueClock();
     }
 
-    virtual void updateView(const CreatureView* creatureView, bool noRefresh) override {
+    virtual void updateView(CreatureView* creatureView, bool noRefresh) override {
       delegate->updateView(creatureView, noRefresh);
     }
 

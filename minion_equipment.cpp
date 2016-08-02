@@ -21,6 +21,7 @@
 #include "effect.h"
 #include "equipment.h"
 #include "modifier_type.h"
+#include "creature_attributes.h"
 
 static vector<EffectType> combatConsumables {
     EffectType(EffectId::LASTING, LastingEffect::SPEED),
@@ -36,7 +37,7 @@ static vector<EffectType> combatConsumables {
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(owners) & SVAR(locked);
+  serializeAll(ar, owners, locked);
 }
 
 SERIALIZABLE(MinionEquipment);
@@ -64,7 +65,7 @@ optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const
 
 bool MinionEquipment::isItemUseful(const Item* it) {
   static EnumSet<ItemClass> usefulItems {ItemClass::GOLD, ItemClass::POTION, ItemClass::SCROLL};
-  return getEquipmentType(it) || usefulItems[it->getClass()]
+  return getEquipmentType(it) || usefulItems.contains(it->getClass())
       || (it->getClass() == ItemClass::FOOD && !it->getCorpseInfo());
 }
 
@@ -76,26 +77,31 @@ bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit, boo
     return ((c->canEquip(it) || (replacement && c->canEquipIfEmptySlot(it))) && (isItemAppropriate(c, it) || noLimit))
       || (type == ARCHERY && (c->canEquip(it) ||
         (it->getClass() == ItemClass::AMMO && !c->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON).empty())))
-      || (type == HEALING && !c->isNotLiving()) 
+      || (type == HEALING && c->getBody().hasHealth()) 
       || type == COMBAT_ITEM;
   } else
     return false;
 }
 
-const Creature* MinionEquipment::getOwner(const Item* it) const {
-  if (owners.count(it->getUniqueId()))
-    return owners.at(it->getUniqueId());
-  else
-    return nullptr;
+optional<Creature::Id> MinionEquipment::getOwner(const Item* it) const {
+  return owners.getMaybe(it);
 }
 
-void MinionEquipment::updateOwners(const vector<Item*> items) {
-  for (const Item* item : items)
-    if (owners.count(item->getUniqueId())) {
-      const Creature* c = owners.at(item->getUniqueId());
-      if (c->isDead() || !needs(c, item, true, true))
-        discard(item);
-    }
+bool MinionEquipment::isOwner(const Item* it, const Creature* c) const {
+  return getOwner(it) == c->getUniqueId();
+}
+
+void MinionEquipment::updateOwners(const vector<Item*> items, const vector<Creature*>& creatures) {
+  EntityMap<Creature, Creature*> index;
+  for (Creature* c : creatures)
+    index.set(c, c);
+  for (const Item* item : items) {
+    if (auto owner = owners.getMaybe(item))
+      if (optional<Creature*> c = index.getMaybe(*owner))
+        if (!(*c)->isDead() && needs(*c, item, true, true))
+          continue;
+    discard(item);
+  }
 }
 
 void MinionEquipment::discard(const Item* it) {
@@ -103,14 +109,14 @@ void MinionEquipment::discard(const Item* it) {
 }
 
 void MinionEquipment::discard(UniqueEntity<Item>::Id id) {
-  if (owners.count(id)) {
-    locked.erase(make_pair(owners.at(id)->getUniqueId(), id));
+  if (auto owner = owners.getMaybe(id)) {
+    locked.erase(make_pair(*owner, id));
     owners.erase(id);
   }
 }
 
 void MinionEquipment::own(const Creature* c, const Item* it) {
-  owners[it->getUniqueId()] = c;
+  owners.set(it, c->getUniqueId());
 }
 
 bool MinionEquipment::isItemAppropriate(const Creature* c, const Item* it) const {

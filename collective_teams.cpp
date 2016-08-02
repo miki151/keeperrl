@@ -33,12 +33,15 @@ void CollectiveTeams::setLeader(TeamId team, Creature* c) {
   swap(teamInfo[team].creatures[0], teamInfo[team].creatures[*findElement(teamInfo[team].creatures, c)]);
 }
 
-const Creature* CollectiveTeams::getLeader(TeamId team) const {
-  CHECK(!teamInfo.at(team).creatures.empty());
-  return teamInfo.at(team).creatures[0];
+void CollectiveTeams::rotateLeader(TeamId team) {
+  vector<Creature*> tmp = teamInfo.at(team).creatures;
+  teamInfo.at(team).creatures.clear();
+  for (int i = 1; i < tmp.size(); ++i)
+    teamInfo.at(team).creatures.push_back(tmp[i]);
+  teamInfo.at(team).creatures.push_back(tmp[0]);
 }
 
-Creature* CollectiveTeams::getLeader(TeamId team) {
+Creature* CollectiveTeams::getLeader(TeamId team) const {
   CHECK(!teamInfo.at(team).creatures.empty());
   return teamInfo.at(team).creatures[0];
 }

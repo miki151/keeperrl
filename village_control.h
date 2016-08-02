@@ -16,63 +16,25 @@
 #ifndef _VILLAGE_CONTROL_H
 #define _VILLAGE_CONTROL_H
 
-#include "event.h"
 #include "collective_control.h"
 #include "enum_variant.h"
 #include "entity_set.h"
-#include "creature_factory.h"
-#include "attack_trigger.h"
+#include "village_behaviour.h"
+#include "event_listener.h"
 
 class Task;
-
-enum class VillageBehaviourId {
-  KILL_LEADER,
-  KILL_MEMBERS,
-  STEAL_GOLD,
-  CAMP_AND_SPAWN,
-};
-
-typedef EnumVariant<VillageBehaviourId, TYPES(int, CreatureFactory),
-        ASSIGN(int, VillageBehaviourId::KILL_MEMBERS),
-        ASSIGN(CreatureFactory, VillageBehaviourId::CAMP_AND_SPAWN)> VillageBehaviour;
+template <typename T>
+class EventProxy;
 
 class VillageControl : public CollectiveControl {
   public:
-  typedef VillageBehaviour Behaviour;
-  typedef AttackTrigger Trigger;
 
-  enum WelcomeMessage {
-    DRAGON_WELCOME,
-  };
+  friend struct VillageBehaviour;
 
-  enum ItemTheftMessage {
-    DRAGON_THEFT,
-  };
-
-  struct Villain {
-    int SERIAL(minPopulation);
-    int SERIAL(minTeamSize);
-    Collective* SERIAL(collective);
-    vector<Trigger> SERIAL(triggers);
-    Behaviour SERIAL(behaviour);
-    optional<WelcomeMessage> SERIAL(welcomeMessage);
-    optional<pair<double, int>> SERIAL(ransom);
-
-    PTask getAttackTask(VillageControl* self);
-    double getAttackProbability(const VillageControl* self) const;
-    double getTriggerValue(const Trigger&, const VillageControl* self) const;
-    bool contains(const Creature*);
-
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version);
-  };
-
-  friend struct Villain;
-
-  VillageControl(Collective*, vector<Villain>);
+  VillageControl(Collective*, optional<VillageBehaviour>);
 
   protected:
-  virtual void tick(double time) override;
+  virtual void update(bool currentlyActive) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
   virtual void onRansomPaid() override;
@@ -81,21 +43,27 @@ class VillageControl : public CollectiveControl {
   SERIALIZATION_DECL(VillageControl);
 
   private:
-  void launchAttack(Villain&, vector<Creature*> attackers);
-  optional<Villain&> getVillain(const Creature*);
+  HeapAllocated<EventProxy<VillageControl>> SERIAL(eventProxy);
+  friend EventProxy<VillageControl>;
+  void onEvent(const GameEvent&);
+
+  void launchAttack(vector<Creature*> attackers);
   void considerWelcomeMessage();
   void considerCancellingAttack();
   void checkEntries();
+  bool isEnemy(const Creature*);
+  Collective* getEnemyCollective() const;
+  bool canPerformAttack(bool currentlyActive);
 
-  REGISTER_HANDLER(PickupEvent, const Creature*, const vector<Item*>&);
 
-  vector<Villain> SERIAL(villains);
+  optional<VillageBehaviour> SERIAL(villain);
 
-  map<const Collective*, double> SERIAL(victims);
+  double SERIAL(victims) = 0;
   EntitySet<Item> SERIAL(myItems);
-  map<const Collective*, int> SERIAL(stolenItemCount);
+  int SERIAL(stolenItemCount) = 0;
   map<TeamId, int> SERIAL(attackSizes);
-  set<const Collective*> SERIAL(entries);
+  bool SERIAL(entries) = false;
+  double SERIAL(maxEnemyPower) = 0;
 };
 
 #endif

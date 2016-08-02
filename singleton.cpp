@@ -22,7 +22,6 @@
 #include "clock.h"
 #include "skill.h"
 #include "name_generator.h"
-#include "pantheon.h"
 #include "spell.h"
 
 template<class T, class E>
@@ -72,7 +71,6 @@ SERIALIZABLE_TMPL(Singleton, Technology, TechId);
 SERIALIZABLE_TMPL(Singleton, Skill, SkillId);
 SERIALIZABLE_TMPL(Singleton, Vision, VisionId);
 SERIALIZABLE_TMPL(Singleton, NameGenerator, NameGeneratorId);
-SERIALIZABLE_TMPL(Singleton, Epithet, EpithetId);
 SERIALIZABLE_TMPL(Singleton, Spell, SpellId);
 
 

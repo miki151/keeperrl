@@ -25,6 +25,7 @@ void ConstructionMap::removeSquare(Position pos) {
     --typeCounts[info.getSquareType()];
   squares.erase(pos);
   removeElement(squarePos, pos);
+  pos.setNeedsRenderUpdate(true);
 }
 
 void ConstructionMap::addSquare(Position pos, const ConstructionMap::SquareInfo& info) {
@@ -32,6 +33,7 @@ void ConstructionMap::addSquare(Position pos, const ConstructionMap::SquareInfo&
     squarePos.push_back(pos);
   squares[pos].push_back(info);
   ++typeCounts[info.getSquareType()];
+  pos.setNeedsRenderUpdate(true);
 }
 
 bool ConstructionMap::containsSquare(Position pos) const {
@@ -63,11 +65,13 @@ ConstructionMap::TrapInfo& ConstructionMap::getTrap(Position pos) {
 
 void ConstructionMap::removeTrap(Position pos) {
   traps.erase(pos);
+  pos.setNeedsRenderUpdate(true);
 }
 
 void ConstructionMap::addTrap(Position pos, const TrapInfo& info) {
   CHECK(!containsTrap(pos));
   traps.insert(make_pair(pos, info));
+  pos.setNeedsRenderUpdate(true);
 }
 
 bool ConstructionMap::containsTrap(Position pos) const {
@@ -83,12 +87,12 @@ ConstructionMap::SquareInfo::SquareInfo(SquareType t, CostInfo c) : cost(c), typ
 
 void ConstructionMap::SquareInfo::setBuilt() {
   built = true;
-  task = -1;
+  task = none;
 }
 
 void ConstructionMap::SquareInfo::reset() {
   built = false;
-  task = -1;
+  task = none;
 }
 
 void ConstructionMap::SquareInfo::setTask(UniqueEntity<Task>::Id id) {
@@ -104,11 +108,11 @@ bool ConstructionMap::SquareInfo::isBuilt() const {
 }
 
 bool ConstructionMap::SquareInfo::hasTask() const {
-  return task > -1;
+  return !!task;
 }
 
 UniqueEntity<Task>::Id ConstructionMap::SquareInfo::getTask() const {
-  return task;
+  return *task;
 }
 
 const SquareType& ConstructionMap::SquareInfo::getSquareType() const {
@@ -146,7 +150,7 @@ void ConstructionMap::TrapInfo::setMarked() {
 
 void ConstructionMap::TorchInfo::setBuilt(Trigger* t) {
   built = true;
-  task = -1;
+  task = none;
   trigger = t;
 }
 
@@ -159,11 +163,11 @@ Dir ConstructionMap::TorchInfo::getAttachmentDir() const {
 
 UniqueEntity<Task>::Id ConstructionMap::TorchInfo::getTask() const {
   CHECK(hasTask());
-  return task;
+  return *task;
 }
 
 bool ConstructionMap::TorchInfo::hasTask() const {
-  return task > -1;
+  return !!task;
 }
 
 bool ConstructionMap::TorchInfo::isBuilt() const {
@@ -188,11 +192,13 @@ ConstructionMap::TorchInfo& ConstructionMap::getTorch(Position pos) {
 
 void ConstructionMap::removeTorch(Position pos) {
   torches.erase(pos);
+  pos.setNeedsRenderUpdate(true);
 }
 
 void ConstructionMap::addTorch(Position pos, const TorchInfo& info) {
   CHECK(!containsTorch(pos));
   torches.insert(make_pair(pos, info));
+  pos.setNeedsRenderUpdate(true);
 }
 
 bool ConstructionMap::containsTorch(Position pos) const {
@@ -205,7 +211,7 @@ const map<Position, ConstructionMap::TorchInfo>& ConstructionMap::getTorches() c
 
 template <class Archive>
 void ConstructionMap::SquareInfo::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(cost) & SVAR(built) & SVAR(type) & SVAR(task);
+  serializeAll(ar, cost, built, type, task);
 }
 
 SERIALIZABLE(ConstructionMap::SquareInfo);
@@ -213,7 +219,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::SquareInfo, SquareInfo);
 
 template <class Archive>
 void ConstructionMap::TrapInfo::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(type) & SVAR(armed) & SVAR(marked);
+  serializeAll(ar, type, armed, marked);
 }
 
 SERIALIZABLE(ConstructionMap::TrapInfo);
@@ -221,7 +227,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TrapInfo, TrapInfo);
 
 template <class Archive>
 void ConstructionMap::TorchInfo::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(built) & SVAR(task) & SVAR(attachmentDir) & SVAR(trigger);
+  serializeAll(ar, built, task, attachmentDir, trigger);
 }
 
 SERIALIZABLE(ConstructionMap::TorchInfo);
@@ -229,7 +235,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TorchInfo, TorchInfo);
 
 template <class Archive>
 void ConstructionMap::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(squares) & SVAR(typeCounts) & SVAR(traps) & SVAR(torches);
+  serializeAll(ar, squares, typeCounts, traps, torches);
   if (Archive::is_loading::value)
     squarePos = getKeys(squares);
 }
