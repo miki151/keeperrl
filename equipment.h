@@ -19,7 +19,7 @@
 #include "inventory.h"
 #include "enums.h"
 
-enum class EquipmentSlot {
+RICH_ENUM(EquipmentSlot,
   WEAPON,
   RANGED_WEAPON,
   HELMET,
@@ -27,8 +27,8 @@ enum class EquipmentSlot {
   BODY_ARMOR,
   BOOTS,
   AMULET,
-  RINGS,
-};
+  RINGS
+);
 
 class Equipment : public Inventory {
   public:
@@ -47,7 +47,7 @@ class Equipment : public Inventory {
   static map<EquipmentSlot, string> slotTitles;
 
   private:
-  map<EquipmentSlot, vector<Item*>> SERIAL(items);
+  EnumMap<EquipmentSlot, vector<Item*>> SERIAL(items);
 };
 
 #endif

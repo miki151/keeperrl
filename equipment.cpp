@@ -37,17 +37,14 @@ SERIALIZABLE(Equipment);
 SERIALIZATION_CONSTRUCTOR_IMPL(Equipment);
 
 vector<Item*> Equipment::getItem(EquipmentSlot slot) const {
-  if (items.count(slot) > 0)
-    return items.at(slot);
-  else
-    return {};
+  return items[slot];
 }
 
 bool Equipment::isEquiped(const Item* item) const {
   if (!item->canEquip())
     return false;
   EquipmentSlot slot = item->getEquipmentSlot();
-  return items.count(slot) && contains(items.at(slot), item);
+  return contains(items[slot], item);
 }
 
 int Equipment::getMaxItems(EquipmentSlot slot) const {
@@ -61,7 +58,7 @@ bool Equipment::canEquip(const Item* item) const {
   if (!item->canEquip() || isEquiped(item))
     return false;
   EquipmentSlot slot = item->getEquipmentSlot();
-  return !items.count(slot) || items.at(slot).size() < getMaxItems(slot);
+  return items[slot].size() < getMaxItems(slot);
 }
 
 void Equipment::equip(Item* item, EquipmentSlot slot) {
@@ -71,8 +68,7 @@ void Equipment::equip(Item* item, EquipmentSlot slot) {
 
 void Equipment::unequip(const Item* item) {
   EquipmentSlot slot = item->getEquipmentSlot();
-  CHECK(items.count(slot));
-  removeElement(items.at(slot), item);
+  removeElement(items[slot], item);
 }
 
 PItem Equipment::removeItem(Item* item) {
