@@ -934,36 +934,39 @@ PGuiElem GuiFactory::keyHandler(function<void()> fun, vector<SDL_Keysym> key, bo
   return PGuiElem(new KeyHandler2(fun, key, capture));
 }
 
-class VerticalList : public GuiLayout {
+class ElemList : public GuiLayout {
   public:
-  VerticalList(vector<PGuiElem> e, vector<int> h, int alignBack = 0)
-    : GuiLayout(std::move(e)), heights(h), numAlignBack(alignBack) {
+  ElemList(vector<PGuiElem> e, vector<int> h, int alignBack, bool middleEl)
+    : GuiLayout(std::move(e)), heights(h), numAlignBack(alignBack), middleElem(middleEl) {
     //CHECK(heights.size() > 0);
     CHECK(heights.size() == elems.size());
-  }
-
-  Rectangle getBackPosition(int num) {
-    int height = std::accumulate(heights.begin() + num + 1, heights.end(), 0);
-    return Rectangle(getBounds().bottomLeft() - Vec2(0, height + heights[num]), getBounds().bottomRight() 
-        - Vec2(0, height));
-  }
-
-  virtual Rectangle getElemBounds(int num) override {
-    if (num >= heights.size() - numAlignBack)
-      return getBackPosition(num);
-    int height = std::accumulate(heights.begin(), heights.begin() + num, 0);
-    return Rectangle(getBounds().topLeft() + Vec2(0, height), getBounds().topRight() 
-        + Vec2(0, height + heights[num]));
-  }
-
-  void renderPart(Renderer& r, int scrollPos) {
-    int totHeight = 0;
-    for (int i : Range(scrollPos, heights.size())) {
-      if (totHeight + elems[i]->getBounds().height() > getBounds().height())
-        break;
-      elems[i]->render(r);
-      totHeight += elems[i]->getBounds().height();
+    int sum = 0;
+    for (int h : heights) {
+      accuHeights.push_back(sum);
+      sum += h;
     }
+    accuHeights.push_back(sum);
+  }
+
+  Range getBackPosition(int num, Range bounds) {
+    int height = accuHeights[heights.size()] - accuHeights[num + 1];
+    return Range(bounds.getEnd() - height - heights[num], bounds.getEnd() - height);
+  }
+
+  Range getMiddlePosition(Range bounds) {
+    CHECK(heights.size() > numAlignBack);
+    int height1 = accuHeights[heights.size() - numAlignBack - 1];
+    int height2 = accuHeights[heights.size()] - accuHeights[heights.size() - numAlignBack];
+    return Range(bounds.getStart() + height1, bounds.getEnd() - height2);
+  }
+
+  Range getElemPosition(int num, Range bounds) {
+    if (middleElem && num == heights.size() - numAlignBack - 1)
+      return getMiddlePosition(bounds);
+    if (num >= heights.size() - numAlignBack)
+      return getBackPosition(num, bounds);
+    int height = accuHeights[num];
+    return Range(bounds.getStart() + height, bounds.getStart() + height + heights[num]);
   }
 
   int getLastTopElem(int myHeight) {
@@ -986,6 +989,40 @@ class VerticalList : public GuiLayout {
     return ret;
   }
 
+  int getSize() {
+    return heights.size();
+  }
+
+  int getTotalHeight() {
+    return getElemsHeight(getSize());
+  }
+
+
+  protected:
+  vector<int> heights;
+  vector<int> accuHeights;
+  int numAlignBack;
+  bool middleElem;
+};
+
+class VerticalList : public ElemList {
+  public:
+  using ElemList::ElemList;
+
+  void renderPart(Renderer& r, int scrollPos) {
+    int totHeight = 0;
+    for (int i : Range(scrollPos, heights.size())) {
+      if (totHeight + elems[i]->getBounds().height() > getBounds().height())
+        break;
+      elems[i]->render(r);
+      totHeight += elems[i]->getBounds().height();
+    }
+  }
+
+  virtual Rectangle getElemBounds(int num) override {
+    return Rectangle(getBounds().getXRange(), getElemPosition(num, getBounds().getYRange()));
+  }
+
   optional<int> getPreferredWidth() override {
     for (auto& elem : elems)
       if (auto width = elem->getPreferredWidth())
@@ -996,19 +1033,37 @@ class VerticalList : public GuiLayout {
   optional<int> getPreferredHeight() override {
     return getTotalHeight();
   }
-
-  int getSize() {
-    return heights.size();
-  }
-
-  int getTotalHeight() {
-    return getElemsHeight(getSize());
-  }
-
-  protected:
-  vector<int> heights;
-  int numAlignBack;
 };
+
+PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, int height) {
+  vector<int> heights(e.size(), height);
+  return PGuiElem(new VerticalList(std::move(e), heights, 0, false));
+}
+
+class HorizontalList : public ElemList {
+  public:
+  using ElemList::ElemList;
+
+  virtual Rectangle getElemBounds(int num) override {
+    return Rectangle(getElemPosition(num, getBounds().getXRange()), getBounds().getYRange());
+  }
+
+  optional<int> getPreferredHeight() override {
+    for (auto& elem : elems)
+      if (auto height = elem->getPreferredHeight())
+        return height;
+    return none;
+  }
+
+  optional<int> getPreferredWidth() override {
+    return getTotalHeight();
+  }
+};
+
+PGuiElem GuiFactory::horizontalList(vector<PGuiElem> e, int height) {
+  vector<int> heights(e.size(), height);
+  return PGuiElem(new HorizontalList(std::move(e), heights, 0, false));
+}
 
 GuiFactory::ListBuilder GuiFactory::getListBuilder(int defaultSize) {
   return ListBuilder(*this, defaultSize);
@@ -1018,6 +1073,7 @@ GuiFactory::ListBuilder::ListBuilder(GuiFactory& g, int defSz) : gui(g), default
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElem(PGuiElem elem, int size) {
   CHECK(!backElems);
+  CHECK(!middleElem);
   if (size == 0) {
     CHECK(defaultSize > 0);
     size = defaultSize;
@@ -1028,6 +1084,8 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElem(PGuiElem elem, int siz
 }
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addSpace(int size) {
+  CHECK(!backElems);
+  CHECK(!middleElem);
   if (size == 0) {
     CHECK(defaultSize > 0);
     size = defaultSize;
@@ -1039,9 +1097,16 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addSpace(int size) {
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElemAuto(PGuiElem elem) {
   CHECK(!backElems);
+  CHECK(!middleElem);
   int size = -1;
   elems.push_back(std::move(elem));
   sizes.push_back(size);
+  return *this;
+}
+
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addMiddleElem(PGuiElem elem) {
+  addElem(std::move(elem), 1234);
+  middleElem = true;
   return *this;
 }
 
@@ -1068,6 +1133,10 @@ int GuiFactory::ListBuilder::getSize() const {
   return std::accumulate(sizes.begin(), sizes.end(), 0);
 }
 
+int GuiFactory::ListBuilder::getLength() const {
+  return sizes.size();
+}
+
 bool GuiFactory::ListBuilder::isEmpty() const {
   return sizes.empty();
 }
@@ -1086,16 +1155,14 @@ PGuiElem GuiFactory::ListBuilder::buildVerticalList() {
   for (int i : All(sizes))
     if (sizes[i] == -1)
       sizes[i] = *elems[i]->getPreferredHeight();
-  PGuiElem ret = gui.verticalList(std::move(elems), sizes, backElems);
-  return ret;
+  return PGuiElem(new VerticalList(std::move(elems), sizes, backElems, middleElem));
 }
 
 PGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
   for (int i : All(sizes))
     if (sizes[i] == -1)
       sizes[i] = *elems[i]->getPreferredWidth();
-  PGuiElem ret = gui.horizontalList(std::move(elems), sizes, backElems);
-  return ret;
+  return PGuiElem(new HorizontalList(std::move(elems), sizes, backElems, middleElem));
 }
 
 PGuiElem GuiFactory::ListBuilder::buildHorizontalListFit() {
@@ -1103,13 +1170,9 @@ PGuiElem GuiFactory::ListBuilder::buildHorizontalListFit() {
   return ret;
 }
 
-PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, vector<int> heights, int numAlignBottom) {
-  return PGuiElem(new VerticalList(std::move(e), heights, numAlignBottom));
-}
-
-PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, int height, int numAlignBottom) {
-  vector<int> heights(e.size(), height);
-  return PGuiElem(new VerticalList(std::move(e), heights, numAlignBottom));
+PGuiElem GuiFactory::ListBuilder::buildVerticalListFit() {
+  PGuiElem ret = gui.verticalListFit(std::move(elems), 0);
+  return ret;
 }
 
 class VerticalListFit : public GuiLayout {
@@ -1152,45 +1215,6 @@ class HorizontalListFit : public GuiLayout {
 
 PGuiElem GuiFactory::horizontalListFit(vector<PGuiElem> e, double spacing) {
   return PGuiElem(new HorizontalListFit(std::move(e), spacing));
-}
-
-class HorizontalList : public VerticalList {
-  public:
-  using VerticalList::VerticalList;
-
-  Rectangle getBackPosition(int num) {
-    int height = std::accumulate(heights.begin() + num + 1, heights.end(), 0);
-    return Rectangle(getBounds().topRight() - Vec2(height + heights[num], 0), getBounds().bottomRight() 
-        - Vec2(height, 0));
-  }
-
-  virtual Rectangle getElemBounds(int num) override {
-    if (num >= heights.size() - numAlignBack)
-      return getBackPosition(num);
-    int height = std::accumulate(heights.begin(), heights.begin() + num, 0);
-    return Rectangle(getBounds().topLeft() + Vec2(height, 0), getBounds().bottomLeft() 
-        + Vec2(height + heights[num], 0));
-  }
-
-  optional<int> getPreferredHeight() override {
-    for (auto& elem : elems)
-      if (auto height = elem->getPreferredHeight())
-        return height;
-    return none;
-  }
-
-  optional<int> getPreferredWidth() override {
-    return getTotalHeight();
-  }
-};
-
-PGuiElem GuiFactory::horizontalList(vector<PGuiElem> e, vector<int> widths, int numAlignRight) {
-  return PGuiElem(new HorizontalList(std::move(e), widths, numAlignRight));
-}
-
-PGuiElem GuiFactory::horizontalList(vector<PGuiElem> e, int width, int numAlignRight) {
-  vector<int> widths(e.size(), width);
-  return horizontalList(std::move(e), widths, numAlignRight);
 }
 
 class VerticalAspect : public GuiLayout {

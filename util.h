@@ -234,6 +234,7 @@ class Rectangle {
   Rectangle(Vec2 dim);
   Rectangle(int px, int py, int kx, int ky);
   Rectangle(Vec2 p, Vec2 k);
+  Rectangle(Range xRange, Range yRange);
   static Rectangle boundingBox(const vector<Vec2>& v);
   static Rectangle centered(Vec2 center, int radius);
 

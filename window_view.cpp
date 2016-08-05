@@ -143,8 +143,8 @@ void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
   if (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL)) {
     inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON2, id));
   } else {
-    inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
     guiBuilder.setCollectiveTab(CollectiveTab::MINIONS);
+    inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
   }
 }
 
@@ -783,7 +783,7 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, double* scro
     int menuHeight = lines.size() * guiBuilder.getStandardLineHeight() + 30;
     PGuiElem menu = gui.miniWindow(gui.margins(
             gui.scrollable(gui.verticalList(std::move(lines), guiBuilder.getStandardLineHeight()), scrollPos),
-        15, 15, 15, 15), [&retVal] { retVal = optional<int>(none); });
+        15), [&retVal] { retVal = optional<int>(none); });
     PGuiElem bg2 = gui.darken();
     bg2->setBounds(renderer.getSize());
     while (1) {
