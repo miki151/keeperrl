@@ -66,10 +66,9 @@ struct TrapInfo {
   TrapType SERIAL(trapType);
   EffectType SERIAL(effectType);
   bool SERIAL(alwaysVisible);
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(trapType) & SVAR(effectType) & SVAR(alwaysVisible);
-  }
+  SERIALIZE_ALL(trapType, effectType, alwaysVisible);
+  bool operator == (const TrapInfo& o) const { return trapType == o.trapType && effectType == o.effectType &&
+      alwaysVisible == o.alwaysVisible; }
 };
 
 class ItemType : public EnumVariant<ItemId, TYPES(EffectType, TrapInfo, LastingEffect, TechId),

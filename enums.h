@@ -90,4 +90,5 @@ enum class CollectiveWarning;
 enum class SoundId;
 
 enum class MessagePriority;
+enum class WorkshopType;
 #endif

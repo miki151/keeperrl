@@ -19,6 +19,7 @@
 #include "square_type.h"
 #include "util.h"
 #include "minion_task.h"
+#include "workshops.h"
 
 enum class ItemClass;
 
@@ -107,6 +108,7 @@ struct ResourceInfo {
   optional<ItemIndex> itemIndex;
   ItemId itemId;
   string name;
+  ViewId viewId;
   bool dontDisplay;
 };
 
@@ -154,6 +156,7 @@ class CollectiveConfig {
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
   vector<BirthSpawn> getBirthSpawns() const;
+  Workshops getWorkshops() const;
 
   bool activeImmigrantion(const Game*) const;
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;

@@ -56,7 +56,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
   serializeAll(ar, credit, level, minionPayment, pregnancies, nextPayoutTime, minionAttraction, teams, name);
   serializeAll(ar, config, warnings, banished, squaresInUse, equipmentUpdates);
-  serializeAll(ar, villainType, eventProxy);
+  serializeAll(ar, villainType, eventProxy, workshops);
 }
 
 SERIALIZABLE(Collective);
@@ -93,7 +93,7 @@ const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
 Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
     const CollectiveName& n) 
   : eventProxy(this, l->getModel()), credit(_credit), control(CollectiveControl::idle(this)),
-    tribe(t), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg) {
+    tribe(t), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg), workshops(config->getWorkshops()) {
 }
 
 const CollectiveName& Collective::getName() const {
@@ -2090,6 +2090,14 @@ MinionEquipment& Collective::getMinionEquipment() {
 
 const MinionEquipment& Collective::getMinionEquipment() const {
   return *minionEquipment;
+}
+
+Workshops& Collective::getWorkshops() {
+  return *workshops;
+}
+
+const Workshops& Collective::getWorkshops() const {
+  return *workshops;
 }
 
 int Collective::getSalary(const Creature* c) const {

@@ -472,7 +472,7 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
     return concat({mapGui}, extractRefs(tempGuiElems));
   vector<GuiElem*> ret = concat(extractRefs(tempGuiElems), extractRefs(blockingElems));
   if (gameReady)
-    ret = concat(concat({mapGui}, ret), {minimapDecoration.get()});
+    ret = concat({mapGui, minimapDecoration.get()}, ret);
   return ret;
 }
 

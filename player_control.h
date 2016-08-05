@@ -77,7 +77,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
     vector<Requirement> requirements;
   };
   static vector<RoomInfo> getRoomInfo();
-  static vector<RoomInfo> getWorkshopInfo();
 
   SERIALIZATION_DECL(PlayerControl);
 
@@ -141,14 +140,13 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   VillageInfo::Village getVillageInfo(const Collective* enemy) const;
+  void fillWorkshopInfo(CollectiveInfo&) const;
   vector<BuildInfo> getBuildInfo() const;
   static vector<BuildInfo> getBuildInfo(TribeId);
   static vector<BuildInfo> workshopInfo;
   static vector<BuildInfo> libraryInfo;
   static vector<BuildInfo> minionsInfo;
 
-  ViewId getResourceViewId(CollectiveResourceId id) const;
-  optional<pair<ViewId, int>> getCostObj(CostInfo) const;
   CostInfo getRoomCost(SquareType, CostInfo baseCost, double exponent) const;
 
   typedef CollectiveInfo::TechButton TechButton;
@@ -160,6 +158,11 @@ class PlayerControl : public CreatureView, public CollectiveControl {
     function<void(PlayerControl*, View*)> butFun;
   };
   vector<TechInfo> getTechInfo() const;
+  struct WorkshopInfo {
+    CollectiveInfo::WorkshopButton button;
+    WorkshopType workshopType;
+  };
+  vector<WorkshopInfo> getWorkshopInfo() const;
 
   int getImpCost() const;
   bool canBuildDoor(Position) const;
@@ -213,6 +216,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   int SERIAL(startImpNum) = -1;
   bool SERIAL(payoutWarning) = false;
   optional<UniqueEntity<Creature>::Id> chosenCreature;
+  optional<WorkshopType> chosenWorkshop;
   optional<TeamId> getChosenTeam() const;
   void setChosenTeam(optional<TeamId>);
   optional<TeamId> chosenTeam;

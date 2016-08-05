@@ -62,6 +62,9 @@ enum class UserInputId {
     SELECT_TEAM,
     ACTIVATE_TEAM,
     TECHNOLOGY,
+    WORKSHOP,
+    WORKSHOP_ADD,
+    WORKSHOP_ITEM_ACTION,
     VILLAGE_ACTION,
     GO_TO_VILLAGE,
     PAY_RANSOM,
@@ -126,6 +129,12 @@ struct EquipmentActionInfo {
   SERIALIZE_ALL(creature, ids, slot, action);
 };
 
+struct WorkshopQueuedActionInfo {
+  int SERIAL(itemIndex);
+  ItemAction SERIAL(action);
+  SERIALIZE_ALL(itemIndex, action);
+};
+
 struct RenameActionInfo {
   UniqueEntity<Creature>::Id SERIAL(creature);
   string SERIAL(name);
@@ -136,7 +145,7 @@ enum class SpellId;
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
-    TaskActionInfo, EquipmentActionInfo, RenameActionInfo),
+    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::LIBRARY,
@@ -159,6 +168,8 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             ),
         ASSIGN(int,
             UserInputId::TECHNOLOGY,
+            UserInputId::WORKSHOP,
+            UserInputId::WORKSHOP_ADD,
             UserInputId::CANCEL_TEAM,
             UserInputId::ACTIVATE_TEAM,
             UserInputId::SELECT_TEAM,
@@ -187,6 +198,8 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_TASK_ACTION),
         ASSIGN(EquipmentActionInfo,
             UserInputId::CREATURE_EQUIPMENT_ACTION),
+        ASSIGN(WorkshopQueuedActionInfo,
+            UserInputId::WORKSHOP_ITEM_ACTION),
         ASSIGN(RenameActionInfo,
             UserInputId::CREATURE_RENAME)
         > {

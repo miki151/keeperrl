@@ -190,6 +190,8 @@ class GuiBuilder {
   double lyingItemsScroll = 0;
   double villagesScroll = 0;
   double tasksScroll = 0;
+  double workshopsScroll = 0;
+  double workshopsScroll2 = 0;
   double minionPageScroll = 0;
   int itemIndex = -1;
   int numSeenVillains = -1;
@@ -218,11 +220,14 @@ class GuiBuilder {
     Clock clock;
   } fpsCounter, upsCounter;
 
-  vector<PGuiElem> drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab);
+  GuiFactory::ListBuilder drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab);
   PGuiElem getButtonLine(CollectiveInfo::Button, int num, CollectiveTab);
   void drawMinionsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   PGuiElem minionsOverlayCache;
   int minionsOverlayHash = 0;
+  void drawWorkshopsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
+  PGuiElem workshopsOverlayCache;
+  int workshopsOverlayHash = 0;
   void drawTasksOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   void drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInfo::Ransom&);
   void drawBuildingsOverlay(vector<OverlayInfo>&, CollectiveInfo&);

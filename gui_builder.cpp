@@ -60,9 +60,7 @@ void GuiBuilder::setCollectiveTab(CollectiveTab t) {
   if (collectiveTab != t) {
     collectiveTab = t;
     clearActiveButton();
-    if (t != CollectiveTab::MINIONS) {
-      closeOverlayWindows();
-    }
+    closeOverlayWindows();
   }
 }
 
@@ -73,6 +71,7 @@ CollectiveTab GuiBuilder::getCollectiveTab() const {
 void GuiBuilder::closeOverlayWindows() {
   // send a random id which wont be found
   callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()});
+  callbacks.input({UserInputId::WORKSHOP, -1});
 }
 
 optional<int> GuiBuilder::getActiveButton(CollectiveTab tab) const {
@@ -138,9 +137,8 @@ PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
       line.buildHorizontalList());
 }
 
-vector<PGuiElem> GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab tab) {
-  vector<PGuiElem> elems;
-  vector<PGuiElem> invisible;
+GuiFactory::ListBuilder GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab tab) {
+  auto elems = gui.getListBuilder(legendLineHeight);
   string lastGroup;
   for (int i : All(buttons)) {
     if (!buttons[i].groupName.empty() && buttons[i].groupName != lastGroup) {
@@ -161,41 +159,60 @@ vector<PGuiElem> GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons,
       line.push_back(gui.stack(
           gui.uiHighlightConditional([=] { return activeGroup == lastGroup;}),
           gui.label(lastGroup, colors[ColorId::WHITE], hotkey)));
-      elems.push_back(gui.stack(
+      elems.addElem(gui.stack(
             gui.buttonChar(buttonFun, buttons[i].hotkeyOpensGroup ? buttons[i].hotkey : 0),
             gui.horizontalList(std::move(line), 35)));
     }
     if (buttons[i].groupName.empty())
-      elems.push_back(getButtonLine(buttons[i], i, tab));
+      elems.addElem(getButtonLine(buttons[i], i, tab));
   }
-  elems.push_back(gui.invisible(gui.stack(std::move(invisible))));
   return elems;
 }
 
 PGuiElem GuiBuilder::drawBuildings(CollectiveInfo& info) {
   int newHash = combineHash(info.buildings);
   if (newHash != buildingsHash) {
-    buildingsCache =  gui.scrollable(gui.verticalList(drawButtons(info.buildings, CollectiveTab::BUILDINGS),
-          legendLineHeight), &buildingsScroll, &scrollbarsHeld);
+    buildingsCache =  gui.scrollable(drawButtons(info.buildings, CollectiveTab::BUILDINGS).buildVerticalList(),
+        &buildingsScroll, &scrollbarsHeld);
     buildingsHash = newHash;
   }
   return gui.external(buildingsCache.get());
 }
 
 PGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
-  int hash = combineHash(info.techButtons, info.libraryButtons);
+  int hash = combineHash(info.techButtons, info.workshopButtons, info.libraryButtons);
   if (hash != technologyHash) {
     technologyHash = hash;
-    vector<PGuiElem> lines = drawButtons(info.libraryButtons, CollectiveTab::TECHNOLOGY);
+    auto lines = drawButtons(info.libraryButtons, CollectiveTab::TECHNOLOGY);
+    lines.addSpace(legendLineHeight / 2);
     for (int i : All(info.techButtons)) {
       vector<PGuiElem> line;
       line.push_back(gui.viewObject(info.techButtons[i].viewId));
       line.push_back(gui.label(info.techButtons[i].name, colors[ColorId::WHITE], info.techButtons[i].hotkey));
-      lines.push_back(gui.stack(gui.buttonChar(
-              getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i)), info.techButtons[i].hotkey),
+      lines.addElem(gui.stack(
+            gui.buttonChar([this, i] {
+              closeOverlayWindows();
+              getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i))();
+            }, info.techButtons[i].hotkey),
             gui.horizontalList(std::move(line), 35)));
     }
-    technologyCache = gui.verticalList(std::move(lines), legendLineHeight);
+    lines.addSpace(legendLineHeight / 2);
+    for (int i : All(info.workshopButtons)) {
+      auto line = gui.getListBuilder(35);
+      line.addElem(gui.viewObject(info.workshopButtons[i].viewId));
+      line.addElem(gui.label(info.workshopButtons[i].name, colors[ColorId::WHITE]));
+      PGuiElem elem = line.buildHorizontalList();
+      if (info.workshopButtons[i].active)
+        elem = gui.stack(
+            gui.uiHighlight(colors[ColorId::GREEN]),
+            std::move(elem));
+      lines.addElem(gui.stack(
+          gui.button([this, i] {
+            workshopsScroll2 = workshopsScroll = 0;
+            getButtonCallback(UserInput(UserInputId::WORKSHOP, i))(); }),
+          std::move(elem)));
+    }
+    technologyCache = lines.buildVerticalList();
   }
   return gui.external(technologyCache.get());
 }
@@ -651,6 +668,8 @@ static string getActionText(ItemAction a) {
     case ItemAction::REPLACE: return "replace";
     case ItemAction::LOCK: return "lock";
     case ItemAction::UNLOCK: return "unlock";
+    case ItemAction::REMOVE: return "remove";
+    case ItemAction::CHANGE_NUMBER: return "change number";
   }
 }
 
@@ -1061,28 +1080,101 @@ void GuiBuilder::drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInf
       OverlayInfo::TOP_RIGHT});
 }
 
+void GuiBuilder::drawWorkshopsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
+  int margin = 20;
+  int rightElemMargin = 10;
+  Vec2 size(860, 600);
+  if (info.chosenWorkshop) {
+      auto& options = info.chosenWorkshop->options;
+      auto& queued = info.chosenWorkshop->queued;
+      auto lines = gui.getListBuilder(legendLineHeight);
+      lines.addElem(gui.label("Available:", colors[ColorId::YELLOW]));
+      for (int i : All(options)) {
+        auto& elem = options[i];
+        auto line = gui.getListBuilder();
+        line.addElem(gui.viewObject(elem.viewId), 35);
+        line.addElem(gui.label(elem.name), 10);
+        line.addBackElem(gui.label(toString(elem.number) + "x"), 35);
+        line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
+        lines.addElem(gui.rightMargin(rightElemMargin, gui.stack(
+              gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
+              gui.button(getButtonCallback({UserInputId::WORKSHOP_ADD, i})),
+              line.buildHorizontalList())));
+      }
+      auto lines2 = gui.getListBuilder(legendLineHeight);
+      lines2.addElem(gui.label("In queue:", colors[ColorId::YELLOW]));
+      for (int i : All(queued)) {
+        auto& elem = queued[i];
+        auto line = gui.getListBuilder();
+        line.addElemAuto(gui.stack(    
+            gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
+            gui.buttonRect([=] (Rectangle bounds) {
+                  auto lines = gui.getListBuilder(legendLineHeight);
+                  bool exit = false;
+                  optional<ItemAction> ret;
+                  for (auto action : elem.actions) {
+                    function<void()> buttonFun = [] {};
+                    if (!elem.unavailable)
+                      buttonFun = [&exit, &ret, action] {
+                          ret = action;
+                          exit = true;
+                      };
+                    lines.addElem(gui.stack(
+                          gui.button(buttonFun),
+                          gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
+                          gui.label(getActionText(action))));
+                  }
+                  drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 200);
+                  if (ret)
+                    callbacks.input({UserInputId::WORKSHOP_ITEM_ACTION, 
+                        WorkshopQueuedActionInfo{i, *ret}});
+            }),
+            gui.getListBuilder()
+                .addElem(gui.viewObject(elem.viewId), 35)
+                .addElemAuto(gui.label(elem.name)).buildHorizontalList()));
+        line.addBackElem(gui.stack(
+            gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
+            gui.button(getButtonCallback({UserInputId::WORKSHOP_ITEM_ACTION,
+                WorkshopQueuedActionInfo{i, ItemAction::CHANGE_NUMBER}})),
+            gui.label(toString(elem.number) + "x")), 35);
+        line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
+        lines2.addElem(gui.rightMargin(rightElemMargin, line.buildHorizontalList()));
+      }
+      size.y = min(600, max(lines.getSize(), lines2.getSize()) + 2 * margin);
+    ret.push_back({gui.miniWindow(gui.stack(
+          gui.keyHandler(getButtonCallback({UserInputId::WORKSHOP, info.chosenWorkshop->index}),
+            {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+          gui.getListBuilder(430)
+                .addElem(gui.margins(gui.scrollable(lines.buildVerticalList(), &workshopsScroll, &scrollbarsHeld), 
+                    margin))
+                .addElem(gui.margins(gui.scrollable(lines2.buildVerticalList(), &workshopsScroll2, &scrollbarsHeld),
+                    margin)).buildHorizontalList())),
+        size, OverlayInfo::MINIONS});
+  }
+}
+
 void GuiBuilder::drawMinionsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
   int margin = 20;
   Vec2 size(600, 600);
   int minionListWidth = 220;
   size.x += minionListWidth;
-  if (info.chosen) {
+  if (info.chosenCreature) {
     int newHash = info.getHash();
     if (newHash != minionsOverlayHash) {
       PGuiElem minionPage;
-      auto& minions = info.chosen->creatures;
-      auto current = info.chosen->chosenId;
+      auto& minions = info.chosenCreature->creatures;
+      auto current = info.chosenCreature->chosenId;
       for (int i : All(minions))
         if (minions[i].creatureId == current)
           minionPage = gui.margins(drawMinionPage(minions[i]), 10, 15, 10, 10);
       if (!minionPage)
         return;
       PGuiElem menu;
-      PGuiElem leftSide = drawMinionButtons(minions, current, info.chosen->teamId);
-      if (info.chosen->teamId) {
+      PGuiElem leftSide = drawMinionButtons(minions, current, info.chosenCreature->teamId);
+      if (info.chosenCreature->teamId) {
         auto list = gui.getListBuilder(legendLineHeight);
         list.addElem(gui.stack(
-            gui.button(getButtonCallback({UserInputId::CANCEL_TEAM, *info.chosen->teamId})),
+            gui.button(getButtonCallback({UserInputId::CANCEL_TEAM, *info.chosenCreature->teamId})),
             gui.labelHighlight("[Disband team]", colors[ColorId::LIGHT_BLUE])));
         list.addElem(gui.label("Control a chosen minion to", Renderer::smallTextSize,
               colors[ColorId::LIGHT_GRAY]), Renderer::smallTextSize + 2);
@@ -1151,6 +1243,7 @@ void GuiBuilder::drawBandOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info)
   if (info.ransom)
     drawRansomOverlay(ret, *info.ransom);
   drawMinionsOverlay(ret, info);
+  drawWorkshopsOverlay(ret, info);
   drawTasksOverlay(ret, info);
   drawBuildingsOverlay(ret, info);
 }

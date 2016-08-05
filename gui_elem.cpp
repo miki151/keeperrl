@@ -890,7 +890,10 @@ class AlignmentGui : public GuiLayout {
       case GuiFactory::Alignment::TOP_RIGHT:
         return Rectangle(getBounds().right() - getWidth(), getBounds().top(), getBounds().right(),
             getBounds().top() + getHeight());
-      default: FAIL << "Unhandled";
+      case GuiFactory::Alignment::RIGHT:
+        return Rectangle(getBounds().right() - getWidth(), getBounds().top(), getBounds().right(),
+            getBounds().bottom());
+      default: FAIL << "Unhandled alignment: " << (int)alignment;
     }
     return Rectangle();
   }

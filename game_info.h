@@ -152,13 +152,27 @@ class CollectiveInfo {
   };
   vector<CreatureGroup> HASH(minionGroups);
   vector<CreatureGroup> HASH(enemyGroups);
-  struct ChosenInfo {
+  struct ChosenCreatureInfo {
     UniqueEntity<Creature>::Id HASH(chosenId);
     vector<PlayerInfo> HASH(creatures);
     optional<TeamId> HASH(teamId);
     HASH_ALL(chosenId, creatures, teamId);
   };
-  optional<ChosenInfo> HASH(chosen);
+  optional<ChosenCreatureInfo> HASH(chosenCreature);
+  struct WorkshopButton {
+    string HASH(name);
+    ViewId HASH(viewId);
+    bool HASH(active);
+    HASH_ALL(name, viewId, active);
+  };
+  vector<WorkshopButton> HASH(workshopButtons);
+  struct ChosenWorkshopInfo {
+    vector<ItemInfo> HASH(options);
+    vector<ItemInfo> HASH(queued);
+    int HASH(index);
+    HASH_ALL(index, options, queued);
+  };
+  optional<ChosenWorkshopInfo> HASH(chosenWorkshop);
   struct Resource {
     ViewId HASH(viewId);
     int HASH(count);
@@ -183,7 +197,8 @@ class CollectiveInfo {
     ViewId HASH(viewId);
     string HASH(name);
     char HASH(hotkey);
-    HASH_ALL(viewId, name, hotkey);
+    bool HASH(active);
+    HASH_ALL(viewId, name, hotkey, active);
   };
   vector<TechButton> HASH(techButtons);
 
@@ -203,7 +218,7 @@ class CollectiveInfo {
   };
   optional<Ransom> HASH(ransom);
 
-  HASH_ALL(warning, buildings, minionButtons, libraryButtons, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosen, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom);
+  HASH_ALL(warning, buildings, minionButtons, libraryButtons, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, chosenWorkshop, workshopButtons);
 };
 
 class VillageInfo {

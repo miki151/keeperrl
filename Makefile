@@ -88,6 +88,8 @@ BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -l
 OPENGL_LIBS = -lGL
 endif
 
+LDFLAGS += -L/usr/local/lib
+
 SRCS = $(shell ls -t *.cpp)
 
 LIBS = -L/usr/lib/x86_64-linux-gnu $(OPENGL_LIBS) -lSDL2 -lopenal -lvorbis -lvorbisfile -lSDL2_image $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}

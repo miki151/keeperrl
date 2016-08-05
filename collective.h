@@ -48,6 +48,7 @@ class Territory;
 class CollectiveName;
 template <typename T>
 class EventProxy;
+class Workshops;
 
 class Collective : public TaskCallback {
   public:
@@ -184,6 +185,9 @@ class Collective : public TaskCallback {
 
   MinionEquipment& getMinionEquipment();
   const MinionEquipment& getMinionEquipment() const;
+
+  Workshops& getWorkshops();
+  const Workshops& getWorkshops() const;
 
   struct MinionPaymentInfo {
     int SERIAL(salary);
@@ -358,6 +362,7 @@ class Collective : public TaskCallback {
   EntitySet<Creature> SERIAL(banished);
   EntitySet<Creature> SERIAL(equipmentUpdates);
   optional<VillainType> SERIAL(villainType);
+  HeapAllocated<Workshops> SERIAL(workshops);
 };
 
 #endif

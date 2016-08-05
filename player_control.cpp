@@ -61,6 +61,7 @@
 #include "collective_config.h"
 #include "villain_type.h"
 #include "event_proxy.h"
+#include "workshops.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -419,18 +420,6 @@ bool PlayerControl::isTurnBased() {
   return getControlled();
 }
 
-ViewId PlayerControl::getResourceViewId(ResourceId id) const {
-  switch (id) {
-    case ResourceId::CORPSE:
-    case ResourceId::PRISONER_HEAD:
-    case ResourceId::MANA: return ViewId::MANA;
-    case ResourceId::GOLD: return ViewId::GOLD;
-    case ResourceId::WOOD: return ViewId::WOOD_PLANK;
-    case ResourceId::IRON: return ViewId::IRON_ROCK;
-    case ResourceId::STONE: return ViewId::ROCK;
-  }
-}
-
 static vector<ItemType> marketItems {
   {ItemId::POTION, EffectId::HEAL},
   {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
@@ -731,9 +720,10 @@ void PlayerControl::handleLibrary(View* view) {
 
 typedef CollectiveInfo::Button Button;
 
-optional<pair<ViewId, int>> PlayerControl::getCostObj(CostInfo cost) const {
-  if (cost.value > 0 && !CollectiveConfig::getResourceInfo().at(cost.id).dontDisplay)
-    return make_pair(getResourceViewId(cost.id), cost.value);
+static optional<pair<ViewId, int>> getCostObj(CostInfo cost) {
+  auto& resourceInfo = CollectiveConfig::getResourceInfo().at(cost.id);
+  if (cost.value > 0 && !resourceInfo.dontDisplay)
+    return make_pair(resourceInfo.viewId, cost.value);
   else
     return none;
 }
@@ -1085,6 +1075,47 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
   info.minionLimit = getCollective()->getMaxPopulation();
 }
 
+static ItemInfo getWorkshopItem(const Workshops::Item& option) {
+  return CONSTRUCT(ItemInfo,
+      c.name = option.name;
+      c.viewId = option.viewId;
+      c.price = getCostObj(option.cost);
+      c.unavailable = !option.active;
+      c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
+      c.number = option.number;
+    );
+}
+
+void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
+  info.workshopButtons.clear();
+  int index = 0;
+  int i = 0;
+  for (auto& elem : getWorkshopInfo()) {
+    info.workshopButtons.push_back(elem.button);
+    if (chosenWorkshop == elem.workshopType) {
+      index = i;
+      info.workshopButtons.back().active = true;
+    }
+    ++i;
+  }
+  if (chosenWorkshop) {
+    info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
+        transform2<ItemInfo>(getCollective()->getWorkshops().getOptions(*chosenWorkshop), getWorkshopItem),
+        transform2<ItemInfo>(getCollective()->getWorkshops().getQueued(*chosenWorkshop), getWorkshopItem),
+        index
+    };
+  }
+}
+
+vector<PlayerControl::WorkshopInfo> PlayerControl::getWorkshopInfo() const {
+  return {
+    {{"Workshop", ViewId::WORKSHOP, false}, WorkshopType::WORKSHOP},
+    {{"Forge", ViewId::FORGE, false}, WorkshopType::FORGE},
+    {{"Laboratory", ViewId::LABORATORY, false}, WorkshopType::LABORATORY},
+    {{"Jeweler", ViewId::JEWELER, false}, WorkshopType::JEWELER},
+  };
+}
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.villageInfo.villages.clear();
@@ -1109,21 +1140,23 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.buildings = fillButtons(getBuildInfo());
   info.libraryButtons = fillButtons(libraryInfo);
   fillMinions(info);
-  info.chosen.reset();
+  info.chosenCreature.reset();
   if (chosenCreature)
     if (Creature* c = getCreature(*chosenCreature)) {
       if (!getChosenTeam())
-        info.chosen = {*chosenCreature, getPlayerInfos(getMinionsLike(c))};
+        info.chosenCreature = {*chosenCreature, getPlayerInfos(getMinionsLike(c))};
       else
-        info.chosen = {*chosenCreature, getPlayerInfos(getTeams().getMembers(*getChosenTeam())), *getChosenTeam()};
+        info.chosenCreature = {*chosenCreature, getPlayerInfos(getTeams().getMembers(*getChosenTeam())),
+          *getChosenTeam()};
     }
+  fillWorkshopInfo(info);
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemyGroups = getEnemyGroups();
   info.numResource.clear();
   for (auto elem : CollectiveConfig::getResourceInfo())
     if (!elem.second.dontDisplay)
       info.numResource.push_back(
-          {getResourceViewId(elem.first), getCollective()->numResourcePlusDebt(elem.first), elem.second.name});
+          {elem.second.viewId, getCollective()->numResourcePlusDebt(elem.first), elem.second.name});
   info.warning = "";
   gameInfo.time = getCollective()->getGame()->getGlobalTime();
   gameInfo.modifiedSquares = gameInfo.totalSquares = 0;
@@ -1577,6 +1610,39 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
     case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
+    case UserInputId::WORKSHOP: {
+          int index = input.get<int>();
+          auto info = getWorkshopInfo();
+          if (index < 0 || index >= info.size())
+            chosenWorkshop = none;
+          else {
+            WorkshopType type = info[index].workshopType;
+            if (chosenWorkshop == type)
+              chosenWorkshop = none;
+            else
+              chosenWorkshop = type;
+          }
+        }
+        break;
+    case UserInputId::WORKSHOP_ADD: 
+        if (chosenWorkshop)
+          getCollective()->getWorkshops().queue(*chosenWorkshop, input.get<int>());
+        break;
+    case UserInputId::WORKSHOP_ITEM_ACTION: {
+        auto& info = input.get<WorkshopQueuedActionInfo>();
+        if (chosenWorkshop)
+          switch (info.action) {
+            case ItemAction::REMOVE:
+              getCollective()->getWorkshops().unqueue(*chosenWorkshop, info.itemIndex);
+              break;
+            case ItemAction::CHANGE_NUMBER:
+              if (auto number = getView()->getNumber("Choose number of items:", 0, 300, 1))
+                getCollective()->getWorkshops().changeNumber(*chosenWorkshop, info.itemIndex, *number);
+            default:
+              break;
+          }
+        }
+        break;
     case UserInputId::CREATURE_GROUP_BUTTON: 
         if (Creature* c = getCreature(input.get<Creature::Id>()))
           if (!chosenCreature || getChosenTeam() || !getCreature(*chosenCreature) ||
