@@ -17,9 +17,11 @@ RICH_ENUM(AttackTriggerId,
   PROXIMITY
 );
 
-typedef EnumVariant<AttackTriggerId, TYPES(int, SquareType),
+class AttackTrigger : public EnumVariant<AttackTriggerId, TYPES(int, SquareType),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD, AttackTriggerId::TIMER),
-        ASSIGN(SquareType, AttackTriggerId::ROOM_BUILT)> AttackTrigger;
+        ASSIGN(SquareType, AttackTriggerId::ROOM_BUILT)> {
+  using EnumVariant::EnumVariant;
+};
 
 struct TriggerInfo {
   AttackTrigger trigger;

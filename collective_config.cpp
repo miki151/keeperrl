@@ -12,6 +12,7 @@
 #include "workshops.h"
 #include "lasting_effect.h"
 #include "item.h"
+#include "square_type.h"
 
 AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
   : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}
@@ -342,68 +343,80 @@ map<MinionTask, MinionTaskInfo> CollectiveConfig::getTaskInfo() const {
   return ret;
 };
 
-Workshops CollectiveConfig::getWorkshops() const {
+static vector<WorkshopInfo> workshops {
+  {SquareId::WORKSHOP, WorkshopType::WORKSHOP},
+  {SquareId::FORGE, WorkshopType::FORGE},
+  {SquareId::LABORATORY, WorkshopType::LABORATORY},
+  {SquareId::JEWELER, WorkshopType::JEWELER},
+};
+
+const vector<WorkshopInfo>& CollectiveConfig::getWorkshopInfo() const {
+  return workshops;
+}
+
+
+HeapAllocated<Workshops> CollectiveConfig::getWorkshops() const {
   return Workshops({
       {WorkshopType::WORKSHOP, {
-          Workshops::Item::fromType(ItemId::FIRST_AID_KIT, {CollectiveResourceId::WOOD, 20}),
-          Workshops::Item::fromType(ItemId::LEATHER_ARMOR, {CollectiveResourceId::WOOD, 100}),
-          Workshops::Item::fromType(ItemId::LEATHER_HELM, {CollectiveResourceId::WOOD, 30}),
-          Workshops::Item::fromType(ItemId::LEATHER_BOOTS, {CollectiveResourceId::WOOD, 50}),
-          Workshops::Item::fromType(ItemId::LEATHER_GLOVES, {CollectiveResourceId::WOOD, 10}),
-          Workshops::Item::fromType(ItemId::CLUB, {CollectiveResourceId::WOOD, 50}),
-          Workshops::Item::fromType(ItemId::HEAVY_CLUB, {CollectiveResourceId::WOOD, 100}),
-          Workshops::Item::fromType(ItemId::BOW, {CollectiveResourceId::WOOD, 100}),
-          Workshops::Item::fromType(ItemId::ARROW, {CollectiveResourceId::WOOD, 2}, 20),
-          Workshops::Item::fromType(ItemId::BOULDER_TRAP_ITEM, {CollectiveResourceId::WOOD, 100}),
+          Workshops::Item::fromType(ItemId::FIRST_AID_KIT, {CollectiveResourceId::WOOD, 20}, 1),
+          Workshops::Item::fromType(ItemId::LEATHER_ARMOR, {CollectiveResourceId::WOOD, 100}, 6),
+          Workshops::Item::fromType(ItemId::LEATHER_HELM, {CollectiveResourceId::WOOD, 30}, 1),
+          Workshops::Item::fromType(ItemId::LEATHER_BOOTS, {CollectiveResourceId::WOOD, 50}, 2),
+          Workshops::Item::fromType(ItemId::LEATHER_GLOVES, {CollectiveResourceId::WOOD, 10}, 1),
+          Workshops::Item::fromType(ItemId::CLUB, {CollectiveResourceId::WOOD, 50}, 3),
+          Workshops::Item::fromType(ItemId::HEAVY_CLUB, {CollectiveResourceId::WOOD, 100}, 5),
+          Workshops::Item::fromType(ItemId::BOW, {CollectiveResourceId::WOOD, 100}, 13),
+          Workshops::Item::fromType(ItemId::ARROW, {CollectiveResourceId::WOOD, 2}, 5, 20),
+          Workshops::Item::fromType(ItemId::BOULDER_TRAP_ITEM, {CollectiveResourceId::STONE, 250}, 20),
           Workshops::Item::fromType({ItemId::TRAP_ITEM,
-              TrapInfo({TrapType::POISON_GAS, EffectId::EMIT_POISON_GAS})}, {CollectiveResourceId::WOOD, 100}),
+              TrapInfo({TrapType::POISON_GAS, EffectId::EMIT_POISON_GAS})}, {CollectiveResourceId::WOOD, 100}, 10),
           Workshops::Item::fromType({ItemId::TRAP_ITEM,
-              TrapInfo({TrapType::ALARM, EffectId::ALARM})}, {CollectiveResourceId::WOOD, 100}),
+              TrapInfo({TrapType::ALARM, EffectId::ALARM})}, {CollectiveResourceId::WOOD, 100}, 8),
           Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapInfo({TrapType::WEB,
-                EffectType(EffectId::LASTING, LastingEffect::ENTANGLED)})}, {CollectiveResourceId::WOOD, 100}),
+                EffectType(EffectId::LASTING, LastingEffect::ENTANGLED)})}, {CollectiveResourceId::WOOD, 100}, 8),
           Workshops::Item::fromType({ItemId::TRAP_ITEM,
-              TrapInfo({TrapType::SURPRISE, EffectId::TELE_ENEMIES})}, {CollectiveResourceId::WOOD, 100}),
+              TrapInfo({TrapType::SURPRISE, EffectId::TELE_ENEMIES})}, {CollectiveResourceId::WOOD, 100}, 8),
           Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapInfo({TrapType::TERROR,
-                EffectType(EffectId::LASTING, LastingEffect::PANIC)})}, {CollectiveResourceId::WOOD, 100}),
+                EffectType(EffectId::LASTING, LastingEffect::PANIC)})}, {CollectiveResourceId::WOOD, 100}, 8),
       }},
       {WorkshopType::FORGE, {
-          Workshops::Item::fromType(ItemId::SWORD, {CollectiveResourceId::IRON, 100}),
-          Workshops::Item::fromType(ItemId::SPECIAL_SWORD, {CollectiveResourceId::IRON, 1000}),
-          Workshops::Item::fromType(ItemId::CHAIN_ARMOR, {CollectiveResourceId::IRON, 200}),
-          Workshops::Item::fromType(ItemId::IRON_HELM, {CollectiveResourceId::IRON, 80}),
-          Workshops::Item::fromType(ItemId::IRON_BOOTS, {CollectiveResourceId::IRON, 120}),
-          Workshops::Item::fromType(ItemId::WAR_HAMMER, {CollectiveResourceId::IRON, 190}), 
-          Workshops::Item::fromType(ItemId::BATTLE_AXE, {CollectiveResourceId::IRON, 250}),
-          Workshops::Item::fromType(ItemId::SPECIAL_WAR_HAMMER, {CollectiveResourceId::IRON, 1900}), 
-          Workshops::Item::fromType(ItemId::SPECIAL_BATTLE_AXE, {CollectiveResourceId::IRON, 2000}), 
+          Workshops::Item::fromType(ItemId::SWORD, {CollectiveResourceId::IRON, 100}, 10),
+          Workshops::Item::fromType(ItemId::SPECIAL_SWORD, {CollectiveResourceId::IRON, 1000}, 80),
+          Workshops::Item::fromType(ItemId::CHAIN_ARMOR, {CollectiveResourceId::IRON, 200}, 30),
+          Workshops::Item::fromType(ItemId::IRON_HELM, {CollectiveResourceId::IRON, 80}, 8),
+          Workshops::Item::fromType(ItemId::IRON_BOOTS, {CollectiveResourceId::IRON, 120}, 12),
+          Workshops::Item::fromType(ItemId::WAR_HAMMER, {CollectiveResourceId::IRON, 190}, 16), 
+          Workshops::Item::fromType(ItemId::BATTLE_AXE, {CollectiveResourceId::IRON, 250}, 22),
+          Workshops::Item::fromType(ItemId::SPECIAL_WAR_HAMMER, {CollectiveResourceId::IRON, 1900}, 120), 
+          Workshops::Item::fromType(ItemId::SPECIAL_BATTLE_AXE, {CollectiveResourceId::IRON, 2000}, 180), 
       }},
       {WorkshopType::LABORATORY, {
           Workshops::Item::fromType({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SLOWED}},
-              {CollectiveResourceId::MANA, 10}),
+              {CollectiveResourceId::MANA, 10}, 2),
           Workshops::Item::fromType({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SLEEP}},
-              {CollectiveResourceId::MANA, 10}),
-          Workshops::Item::fromType({ItemId::POTION, EffectId::HEAL}, {CollectiveResourceId::MANA, 30}),
+              {CollectiveResourceId::MANA, 10}, 2),
+          Workshops::Item::fromType({ItemId::POTION, EffectId::HEAL}, {CollectiveResourceId::MANA, 30}, 4),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::POISON_RESISTANT}}, {CollectiveResourceId::MANA, 30}),
+              EffectType{EffectId::LASTING, LastingEffect::POISON_RESISTANT}}, {CollectiveResourceId::MANA, 30}, 3),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::POISON}}, {CollectiveResourceId::MANA, 30}),
+              EffectType{EffectId::LASTING, LastingEffect::POISON}}, {CollectiveResourceId::MANA, 30}, 2),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::SPEED}}, {CollectiveResourceId::MANA, 30}),
+              EffectType{EffectId::LASTING, LastingEffect::SPEED}}, {CollectiveResourceId::MANA, 30}, 4),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::BLIND}}, {CollectiveResourceId::MANA, 50}),
+              EffectType{EffectId::LASTING, LastingEffect::BLIND}}, {CollectiveResourceId::MANA, 50}, 4),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::FLYING}}, {CollectiveResourceId::MANA, 80}),
+              EffectType{EffectId::LASTING, LastingEffect::FLYING}}, {CollectiveResourceId::MANA, 80}, 6),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::INVISIBLE}}, {CollectiveResourceId::MANA, 200}),
+              EffectType{EffectId::LASTING, LastingEffect::INVISIBLE}}, {CollectiveResourceId::MANA, 200}, 6),
       }},
       {WorkshopType::JEWELER, {
           Workshops::Item::fromType({ItemId::RING, LastingEffect::POISON_RESISTANT},
-              {CollectiveResourceId::GOLD, 100}),
+              {CollectiveResourceId::GOLD, 100}, 10),
           Workshops::Item::fromType({ItemId::RING, LastingEffect::FIRE_RESISTANT},
-              {CollectiveResourceId::GOLD, 150}),
-          Workshops::Item::fromType(ItemId::WARNING_AMULET, {CollectiveResourceId::GOLD, 150}),
-          Workshops::Item::fromType(ItemId::DEFENSE_AMULET, {CollectiveResourceId::GOLD, 200}),
-          Workshops::Item::fromType(ItemId::HEALING_AMULET, {CollectiveResourceId::GOLD, 300}),
+              {CollectiveResourceId::GOLD, 150}, 10),
+          Workshops::Item::fromType(ItemId::WARNING_AMULET, {CollectiveResourceId::GOLD, 150}, 10),
+          Workshops::Item::fromType(ItemId::DEFENSE_AMULET, {CollectiveResourceId::GOLD, 200}, 10),
+          Workshops::Item::fromType(ItemId::HEALING_AMULET, {CollectiveResourceId::GOLD, 300}, 10),
       }},
   });
 }

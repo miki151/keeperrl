@@ -7,7 +7,6 @@
 #include "item_action.h"
 #include "village_action.h"
 #include "cost_info.h"
-#include "attack_trigger.h"
 #include "view_id.h"
 #include "player_message.h"
 
@@ -44,7 +43,8 @@ struct ItemInfo {
   optional<CreatureInfo> HASH(owner);
   enum Type {EQUIPMENT, CONSUMABLE, OTHER} HASH(type);
   optional<pair<ViewId, int>> HASH(price);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price);
+  double HASH(productionState);
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState);
 };
 
 

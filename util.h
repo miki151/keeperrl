@@ -1122,6 +1122,42 @@ class DirSet {
   ContentType content = 0;
 };
 
+template <class T>
+class EnumAll {
+  public:
+  class Iter {
+    public:
+    Iter(int num) : ind(num) {
+    }
+
+    T operator* () const {
+      return T(ind);
+    }
+
+    bool operator != (const Iter& other) const {
+      return ind != other.ind;
+    }
+
+    const Iter& operator++ () {
+      ++ind;
+      return *this;
+    }
+
+    private:
+    int ind;
+  };
+
+  Iter begin() {
+    return Iter(0);
+  }
+
+  Iter end() {
+    return Iter(EnumInfo<T>::size);
+  }
+};
+
+#define ENUM_ALL(X) EnumAll<X>()
+
 template<class T, class U>
 class EnumMap {
   public:
@@ -1173,6 +1209,14 @@ class EnumMap {
   U& operator[](T elem) {
     CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
     return elems[int(elem)];
+  }
+
+  template <typename V, typename Fun>
+  EnumMap<T, V> mapValues(Fun fun) const {
+    EnumMap<T, V> ret;
+    for (T t : EnumAll<T>())
+      ret[t] = fun((*this)[t]);
+    return ret;
   }
 
   template <class Archive> 
@@ -1319,42 +1363,6 @@ class EnumSet {
   private:
   Bitset elems;
 };
-
-template <class T>
-class EnumAll {
-  public:
-  class Iter {
-    public:
-    Iter(int num) : ind(num) {
-    }
-
-    T operator* () const {
-      return T(ind);
-    }
-
-    bool operator != (const Iter& other) const {
-      return ind != other.ind;
-    }
-
-    const Iter& operator++ () {
-      ++ind;
-      return *this;
-    }
-
-    private:
-    int ind;
-  };
-
-  Iter begin() {
-    return Iter(0);
-  }
-
-  Iter end() {
-    return Iter(EnumInfo<T>::size);
-  }
-};
-
-#define ENUM_ALL(X) EnumAll<X>()
 
 template <typename U, typename V>
 class BiMap {

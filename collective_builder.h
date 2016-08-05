@@ -4,17 +4,18 @@
 #include "enums.h"
 #include "util.h"
 #include "minion_task.h"
-#include "collective_config.h"
 
 class Tribe;
+class TribeId;
 class Level;
 class Creature;
 struct ImmigrantInfo;
 class Position;
+class CollectiveConfig;
 
 class CollectiveBuilder {
   public:
-  CollectiveBuilder(CollectiveConfig, TribeId);
+  CollectiveBuilder(const CollectiveConfig&, TribeId);
   CollectiveBuilder& setLevel(Level*);
   CollectiveBuilder& setCredit(map<CollectiveResourceId, int>);
   CollectiveBuilder& addCreature(Creature*);
@@ -32,8 +33,8 @@ class CollectiveBuilder {
     EnumSet<MinionTrait> traits;
   };
   vector<CreatureInfo> creatures;
-  CollectiveConfig config;
-  TribeId tribe;
+  HeapAllocated<CollectiveConfig> config;
+  HeapAllocated<TribeId> tribe;
   map<CollectiveResourceId, int> credit;
   vector<Vec2> squares;
   optional<string> locationName;

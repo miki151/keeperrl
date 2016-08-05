@@ -1096,7 +1096,7 @@ void GuiBuilder::drawWorkshopsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
               line.buildHorizontalList())));
       }
       auto lines2 = gui.getListBuilder(legendLineHeight);
-      lines2.addElem(gui.label("In queue:", colors[ColorId::YELLOW]));
+      lines2.addElem(gui.label("In production:", colors[ColorId::YELLOW]));
       for (int i : All(queued)) {
         auto& elem = queued[i];
         auto line = gui.getListBuilder();
@@ -1132,7 +1132,10 @@ void GuiBuilder::drawWorkshopsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
                 WorkshopQueuedActionInfo{i, ItemAction::CHANGE_NUMBER}})),
             gui.label(toString(elem.number) + "x")), 35);
         line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
-        lines2.addElem(gui.rightMargin(rightElemMargin, line.buildHorizontalList()));
+        lines2.addElem(gui.stack(
+            gui.bottomMargin(5,
+                gui.progressBar(transparency(colors[ColorId::DARK_GREEN], 128), elem.productionState)),
+            gui.rightMargin(rightElemMargin, line.buildHorizontalList())));
       }
       size.y = min(600, max(lines.getSize(), lines2.getSize()) + 2 * margin);
     ret.push_back({gui.miniWindow(gui.stack(

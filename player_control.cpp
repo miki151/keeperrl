@@ -62,6 +62,7 @@
 #include "villain_type.h"
 #include "event_proxy.h"
 #include "workshops.h"
+#include "attack_trigger.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -1081,6 +1082,7 @@ static ItemInfo getWorkshopItem(const Workshops::Item& option) {
       c.viewId = option.viewId;
       c.price = getCostObj(option.cost);
       c.unavailable = !option.active;
+      c.productionState = option.state;
       c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
       c.number = option.number;
     );
@@ -1100,8 +1102,8 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   }
   if (chosenWorkshop) {
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
-        transform2<ItemInfo>(getCollective()->getWorkshops().getOptions(*chosenWorkshop), getWorkshopItem),
-        transform2<ItemInfo>(getCollective()->getWorkshops().getQueued(*chosenWorkshop), getWorkshopItem),
+        transform2<ItemInfo>(getCollective()->getWorkshops().get(*chosenWorkshop).getOptions(), getWorkshopItem),
+        transform2<ItemInfo>(getCollective()->getWorkshops().get(*chosenWorkshop).getQueued(), getWorkshopItem),
         index
     };
   }
@@ -1626,18 +1628,18 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::WORKSHOP_ADD: 
         if (chosenWorkshop)
-          getCollective()->getWorkshops().queue(*chosenWorkshop, input.get<int>());
+          getCollective()->getWorkshops().get(*chosenWorkshop).queue(input.get<int>());
         break;
     case UserInputId::WORKSHOP_ITEM_ACTION: {
         auto& info = input.get<WorkshopQueuedActionInfo>();
         if (chosenWorkshop)
           switch (info.action) {
             case ItemAction::REMOVE:
-              getCollective()->getWorkshops().unqueue(*chosenWorkshop, info.itemIndex);
+              getCollective()->getWorkshops().get(*chosenWorkshop).unqueue(info.itemIndex);
               break;
             case ItemAction::CHANGE_NUMBER:
-              if (auto number = getView()->getNumber("Choose number of items:", 0, 300, 1))
-                getCollective()->getWorkshops().changeNumber(*chosenWorkshop, info.itemIndex, *number);
+              if (auto number = getView()->getNumber("Change the number of items:", 0, 300, 1))
+                getCollective()->getWorkshops().get(*chosenWorkshop).changeNumber(info.itemIndex, *number);
             default:
               break;
           }

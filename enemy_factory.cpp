@@ -3,6 +3,7 @@
 #include "location.h"
 #include "name_generator.h"
 #include "technology.h"
+#include "attack_trigger.h"
 
 EnemyFactory::EnemyFactory(RandomGen& r) : random(r) {
 }
@@ -604,7 +605,7 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
             c.minPopulation = 0;
             c.minTeamSize = 1;
             c.triggers = LIST(AttackTriggerId::SELF_VICTIMS, AttackTriggerId::STOLEN_ITEMS);
-            c.attackBehaviour = AttackBehaviourId::KILL_LEADER;
+            c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
             c.ransom = make_pair(0.5, random.get(200, 400));));
   }
 }

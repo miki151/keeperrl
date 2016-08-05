@@ -12,16 +12,13 @@
 
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
-#ifndef _COLLECTIVE_H
-#define _COLLECTIVE_H
+#pragma once
 
 #include "move_info.h"
 #include "task_callback.h"
 #include "minion_task.h"
 #include "square_apply_type.h"
 #include "resource_id.h"
-#include "square_type.h"
-#include "attack_trigger.h"
 #include "collective_warning.h"
 #include "event_listener.h"
 #include "entity_map.h"
@@ -30,6 +27,7 @@ class CollectiveAttack;
 class Creature;
 class CollectiveControl;
 class Tribe;
+class TribeId;
 class Level;
 class Trigger;
 struct ImmigrantInfo;
@@ -49,6 +47,7 @@ class CollectiveName;
 template <typename T>
 class EventProxy;
 class Workshops;
+class SquareType;
 
 class Collective : public TaskCallback {
   public:
@@ -317,9 +316,9 @@ class Collective : public TaskCallback {
   EnumMap<MinionTrait, vector<Creature*>> SERIAL(byTrait);
   EnumMap<SpawnType, vector<Creature*>> SERIAL(bySpawnType);
   PCollectiveControl SERIAL(control);
-  TribeId SERIAL(tribe);
+  HeapAllocated<TribeId> SERIAL(tribe);
   Level* SERIAL(level) = nullptr;
-  unordered_map<SquareType, set<Position>> SERIAL(mySquares);
+  HeapAllocated<unordered_map<SquareType, set<Position>>> SERIAL(mySquares);
   unordered_map<SquareApplyType, set<Position>, CustomHash<SquareApplyType>> SERIAL(mySquares2);
   map<Position, int> SERIAL(squareEfficiency);
   HeapAllocated<Territory> SERIAL(territory);
@@ -364,5 +363,3 @@ class Collective : public TaskCallback {
   optional<VillainType> SERIAL(villainType);
   HeapAllocated<Workshops> SERIAL(workshops);
 };
-
-#endif

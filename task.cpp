@@ -38,6 +38,7 @@
 #include "model.h"
 #include "collective_name.h"
 #include "creature_attributes.h"
+#include "square_type.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {

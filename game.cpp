@@ -25,6 +25,8 @@
 #include "save_file_info.h"
 #include "file_sharing.h"
 #include "villain_type.h"
+#include "square_type.h"
+#include "attack_trigger.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) { 
@@ -167,7 +169,7 @@ void Game::prepareSiteRetirement() {
           c.minTeamSize = 5;
           c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
             AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
-          c.attackBehaviour = AttackBehaviourId::KILL_LEADER;
+          c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.8, Random.get(500, 700));))));
   for (Collective* col : models[baseModel]->getCollectives())
     for (Creature* c : col->getCreatures())

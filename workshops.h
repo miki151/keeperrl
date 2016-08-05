@@ -1,0 +1,55 @@
+#pragma once
+
+#include "cost_info.h"
+#include "item_type.h"
+
+RICH_ENUM(WorkshopType,
+    WORKSHOP,
+    FORGE,
+    LABORATORY,
+    JEWELER
+);
+
+class Workshops {
+  public:
+  struct Item {
+    static Item fromType(ItemType, CostInfo, double workNeeded, int batchSize = 1);
+    bool operator == (const Item&) const;
+    ItemType SERIAL(type);
+    string SERIAL(name);
+    ViewId SERIAL(viewId);
+    CostInfo SERIAL(cost);
+    bool SERIAL(active);
+    int SERIAL(number);
+    int SERIAL(batchSize);
+    double SERIAL(workNeeded);
+    double SERIAL(state);
+    SERIALIZE_ALL(type, name, viewId, cost, active, number, batchSize, workNeeded, state);
+  };
+
+  class Type {
+    public:
+    Type(const vector<Item>& options);
+    const vector<Item>& getOptions() const;
+    const vector<Item>& getQueued() const;
+    vector<PItem> addWork(double);
+    void queue(int);
+    void unqueue(int);
+    void changeNumber(int index, int number);
+
+    SERIALIZATION_DECL(Type);
+
+    private:
+    void stackQueue();
+    vector<Item> SERIAL(options);
+    vector<Item> SERIAL(queued);
+  };
+
+  SERIALIZATION_DECL(Workshops);
+  Workshops(const EnumMap<WorkshopType, vector<Item>>&);
+  Type& get(WorkshopType);
+  const Type& get(WorkshopType) const;
+
+  private:
+  EnumMap<WorkshopType, Type> SERIAL(types);
+};

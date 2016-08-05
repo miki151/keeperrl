@@ -40,6 +40,7 @@
 #include "square_interaction.h"
 #include "game.h"
 #include "event_listener.h"
+#include "square_type.h"
 
 class Magma : public Square {
   public:

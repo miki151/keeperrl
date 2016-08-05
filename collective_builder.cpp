@@ -6,8 +6,10 @@
 #include "creature_name.h"
 #include "collective_name.h"
 #include "creature_attributes.h"
+#include "collective_config.h"
+#include "tribe.h"
 
-CollectiveBuilder::CollectiveBuilder(CollectiveConfig cfg, TribeId t)
+CollectiveBuilder::CollectiveBuilder(const CollectiveConfig& cfg, TribeId t)
     : config(cfg), tribe(t) {
 }
 
@@ -27,7 +29,7 @@ CollectiveBuilder& CollectiveBuilder::setRaceName(const string& n) {
 }
 
 CollectiveBuilder& CollectiveBuilder::addCreature(Creature* c) {
-  if (!c->getAttributes().isInnocent() && (!creatures.empty() || config.isLeaderFighter()))
+  if (!c->getAttributes().isInnocent() && (!creatures.empty() || config->isLeaderFighter()))
     creatures.push_back({c, {MinionTrait::FIGHTER}});
   else
     creatures.push_back({c, {}});
@@ -52,7 +54,7 @@ CollectiveBuilder& CollectiveBuilder::addSquares(const vector<Position>& v) {
 
 PCollective CollectiveBuilder::build() {
   CHECK(!creatures.empty());
-  Collective* c = new Collective(NOTNULL(level), config, tribe, credit,
+  Collective* c = new Collective(NOTNULL(level), *config, *tribe, credit,
       CollectiveName(raceName, locationName, creatures[0].creature));
   for (auto& elem : creatures)
     c->addCreature(elem.creature, elem.traits);

@@ -6,22 +6,27 @@
 #include "collective.h"
 #include "game.h"
 #include "collective_name.h"
+#include "attack_trigger.h"
+#include "creature_factory.h"
 
 SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom);
 
+VillageBehaviour::VillageBehaviour() {}
+
+VillageBehaviour::~VillageBehaviour() {}
 
 PTask VillageBehaviour::getAttackTask(VillageControl* self) {
   Collective* enemy = self->getEnemyCollective();
-  switch (attackBehaviour.getId()) {
+  switch (attackBehaviour->getId()) {
     case AttackBehaviourId::KILL_LEADER:
       return Task::attackLeader(enemy);
     case AttackBehaviourId::KILL_MEMBERS:
-      return Task::killFighters(enemy, attackBehaviour.get<int>());
+      return Task::killFighters(enemy, attackBehaviour->get<int>());
     case AttackBehaviourId::STEAL_GOLD:
       return Task::stealFrom(enemy, self->getCollective());
     case AttackBehaviourId::CAMP_AND_SPAWN:
       return Task::campAndSpawn(enemy, self->getCollective(),
-            attackBehaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
+            attackBehaviour->get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
   }
 }
 

@@ -74,6 +74,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&);
   void heal(double amount = 1, bool replaceLimbs = false);
+  /** Morale is in the range [-1:1] **/
   double getMorale() const;
   void addMorale(double);
   DEF_UNIQUE_PTR(MoraleOverride);

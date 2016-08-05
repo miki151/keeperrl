@@ -38,6 +38,8 @@
 #include "creature_attributes.h"
 #include "event_proxy.h"
 #include "villain_type.h"
+#include "workshops.h"
+#include "attack_trigger.h"
 
 struct Collective::ItemFetchInfo {
   ItemIndex index;
@@ -177,7 +179,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
   if (!leader)
     leader = c;
-  CHECK(c->getTribeId() == tribe);
+  CHECK(c->getTribeId() == *tribe);
   if (Game* game = getGame())
     for (Collective* col : getGame()->getCollectives())
       if (contains(col->getCreatures(), c))
@@ -300,11 +302,11 @@ CollectiveControl* Collective::getControl() const {
 }
 
 TribeId Collective::getTribeId() const {
-  return tribe;
+  return *tribe;
 }
 
 Tribe* Collective::getTribe() const {
-  return getGame()->getTribe(tribe);
+  return getGame()->getTribe(*tribe);
 }
 
 const vector<Creature*>& Collective::getCreatures() const {
@@ -448,7 +450,7 @@ PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
         return Task::consume(this, target);
       break;
     case MinionTaskInfo::EAT: {
-      const set<Position>& hatchery = getSquares(getHatcheryType(tribe));
+      const set<Position>& hatchery = getSquares(getHatcheryType(*tribe));
       if (!hatchery.empty())
         return Task::eat(hatchery);
       break;
@@ -1201,7 +1203,7 @@ void Collective::onEvent(const GameEvent& event) {
     case EventId::SQUARE_DESTROYED: {
         Position pos = event.get<Position>();
         if (territory->contains(pos)) {
-          for (auto& elem : mySquares)
+          for (auto& elem : *mySquares)
             if (elem.second.count(pos)) {
               elem.second.erase(pos);
               if (config->getEfficiencySquares().count(elem.first))
@@ -1210,7 +1212,7 @@ void Collective::onEvent(const GameEvent& event) {
           for (auto& elem : mySquares2)
             if (elem.second.count(pos))
               elem.second.erase(pos);
-          mySquares[SquareId::FLOOR].insert(pos);
+          (*mySquares)[SquareId::FLOOR].insert(pos);
           if (constructions->containsSquare(pos))
             constructions->onSquareDestroyed(pos);
         }
@@ -1282,8 +1284,8 @@ vector<Position> Collective::getAllSquares(const vector<SquareType>& types, bool
 
 const set<Position>& Collective::getSquares(SquareType type) const {
   static set<Position> empty;
-  if (mySquares.count(type))
-    return mySquares.at(type);
+  if (mySquares->count(type))
+    return mySquares->at(type);
   else
     return empty;
 }
@@ -1297,7 +1299,7 @@ const set<Position>& Collective::getSquares(SquareApplyType type) const {
 }
 
 vector<SquareType> Collective::getSquareTypes() const {
-  return getKeys(mySquares);
+  return getKeys(*mySquares);
 }
 
 const Territory& Collective::getTerritory() const {
@@ -1307,16 +1309,16 @@ const Territory& Collective::getTerritory() const {
 void Collective::claimSquare(Position pos) {
   territory->insert(pos);
   if (pos.getApplyType() == SquareApplyType::SLEEP)
-    mySquares[SquareId::BED].insert(pos);
+    (*mySquares)[SquareId::BED].insert(pos);
   if (pos.getApplyType() == SquareApplyType::CROPS)
-    mySquares[SquareId::CROPS].insert(pos);
+    (*mySquares)[SquareId::CROPS].insert(pos);
   if (auto type = pos.getApplyType())
     mySquares2[*type].insert(pos);
 }
 
 void Collective::changeSquareType(Position pos, SquareType from, SquareType to) {
-  mySquares[from].erase(pos);
-  mySquares[to].insert(pos);
+  (*mySquares)[from].erase(pos);
+  (*mySquares)[to].insert(pos);
   for (auto& elem : mySquares2)
     if (elem.second.count(pos))
       elem.second.erase(pos);
@@ -1721,7 +1723,7 @@ bool Collective::isConstructionReachable(Position pos) {
 
 void Collective::onConstructed(Position pos, const SquareType& type) {
   CHECK(!getSquares(type).count(pos));
-  for (auto& elem : mySquares)
+  for (auto& elem : *mySquares)
       elem.second.erase(pos);
   if (type.getId() == SquareId::MOUNTAIN) {
     destroySquare(pos);
@@ -1731,7 +1733,7 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
   }
   if (!contains({SquareId::TREE_TRUNK}, type.getId()))
     territory->insert(pos);
-  mySquares[type].insert(pos);
+  (*mySquares)[type].insert(pos);
   if (config->getEfficiencySquares().count(type))
     updateEfficiency(pos, type);
   if (constructions->containsSquare(pos) && !constructions->getSquare(pos).isBuilt())
@@ -1925,51 +1927,12 @@ void Collective::addMana(double value) {
   }
 }
 
-bool Collective::isItemNeeded(const Item* item) const {
-  if (isWarning(Warning::NO_WEAPONS) && item->getClass() == ItemClass::WEAPON)
-    return true;
-  set<TrapType> neededTraps = getNeededTraps();
-  if (!neededTraps.empty() && item->getTrapType() && neededTraps.count(*item->getTrapType()))
-    return true;
-  return false;
-}
-
 void Collective::addProducesMessage(const Creature* c, const vector<PItem>& items) {
   if (items.size() > 1)
     control->addMessage(c->getName().a() + " produces " + toString(items.size())
         + " " + items[0]->getName(true));
   else
     control->addMessage(c->getName().a() + " produces " + items[0]->getAName());
-}
-
-static vector<SquareType> workshopSquares {
-  SquareId::WORKSHOP,
-  SquareId::FORGE,
-  SquareId::JEWELER,
-  SquareId::LABORATORY
-};
-
-struct WorkshopInfo {
-  ItemFactory factory;
-  CostInfo itemCost;
-};
-
-// The production cost is actually not applied ATM.
-static WorkshopInfo getWorkshopInfo(Collective* c, Position pos) {
-  for (auto elem : workshopSquares)
-    if (c->getSquares(elem).count(pos))
-      switch (elem.getId()) {
-        case SquareId::WORKSHOP:
-            return { ItemFactory::workshop(c->getTechnologies()), {CollectiveResourceId::GOLD, 0}};
-        case SquareId::FORGE:
-            return { ItemFactory::forge(c->getTechnologies()), {CollectiveResourceId::IRON, 10}};
-        case SquareId::LABORATORY:
-            return { ItemFactory::laboratory(c->getTechnologies()), {CollectiveResourceId::MANA, 10}};
-        case SquareId::JEWELER:
-            return { ItemFactory::jeweler(c->getTechnologies()), {CollectiveResourceId::GOLD, 5}};
-        default: FAIL << "Bad workshop position ";// << pos;
-      }
-  return { ItemFactory::workshop(c->getTechnologies()),{CollectiveResourceId::GOLD, 5}};
 }
 
 void Collective::onAppliedSquare(Position pos) {
@@ -1999,23 +1962,20 @@ void Collective::onAppliedSquare(Position pos) {
   }
   if (getSquares(SquareId::TRAINING_ROOM).count(pos))
     c->getAttributes().exerciseAttr(Random.choose<AttrType>(), getEfficiency(pos));
-  if (contains(getAllSquares(workshopSquares), pos))
-    if (Random.rollD(40.0 / getEfficiency(pos))) {
-      vector<PItem> items;
-      for (int i : Range(20)) {
-        auto workshopInfo = getWorkshopInfo(this, pos);
-        items = workshopInfo.factory.random();
-        if (isItemNeeded(items[0].get()))
-          break;
+  for (auto& elem : config->getWorkshopInfo())
+    if (getSquares(elem.squareType).count(pos)) {
+      vector<PItem> items =
+          workshops->get(elem.workshopType).addWork(getEfficiency(pos) * (1 + c->getMorale()) / 2);
+      if (!items.empty()) {
+        if (items[0]->getClass() == ItemClass::WEAPON)
+          getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
+        if (items[0]->getClass() == ItemClass::ARMOR)
+          getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
+        if (items[0]->getClass() == ItemClass::POTION)
+          getGame()->getStatistics().add(StatId::POTION_PRODUCED);
+        addProducesMessage(c, items);
+        pos.dropItems(std::move(items));
       }
-      if (items[0]->getClass() == ItemClass::WEAPON)
-        getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
-      if (items[0]->getClass() == ItemClass::ARMOR)
-        getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
-      if (items[0]->getClass() == ItemClass::POTION)
-        getGame()->getStatistics().add(StatId::POTION_PRODUCED);
-      addProducesMessage(c, items);
-      pos.dropItems(std::move(items));
     }
 }
 

@@ -23,7 +23,7 @@ class CollectiveControl {
   virtual void onConstructed(Position, const SquareType&) {}
   virtual void onNoEnemies() {}
   virtual void onRansomPaid() {}
-  virtual vector<TriggerInfo> getTriggers(const Collective* against) const { return {}; }
+  virtual vector<TriggerInfo> getTriggers(const Collective* against) const;
 
   SERIALIZATION_DECL(CollectiveControl);
 

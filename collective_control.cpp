@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "collective_control.h"
 #include "collective.h"
+#include "attack_trigger.h"
 
 template <class Archive>
 void CollectiveControl::serialize(Archive& ar, const unsigned int version) {
@@ -51,6 +52,10 @@ class IdleControl : public CollectiveControl {
     ar & SUBCLASS(CollectiveControl);
   }
 };
+
+vector<TriggerInfo> CollectiveControl::getTriggers(const Collective* against) const {
+  return {};
+}
 
 PCollectiveControl CollectiveControl::idle(Collective* col) {
   return PCollectiveControl(new IdleControl(col));

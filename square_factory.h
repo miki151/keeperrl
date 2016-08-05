@@ -17,10 +17,11 @@
 #define _SQUARE_FACTORY
 
 #include "util.h"
-#include "square_type.h"
 
 class Square;
+class SquareType;
 class StairKey;
+class TribeId;
 
 class SquareFactory {
   public:

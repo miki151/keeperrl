@@ -29,7 +29,7 @@ class EventProxy;
 class VillageControl : public CollectiveControl {
   public:
 
-  friend struct VillageBehaviour;
+  friend class VillageBehaviour;
 
   VillageControl(Collective*, optional<VillageBehaviour>);
 

@@ -24,7 +24,6 @@
 #include "sectors.h"
 #include "stair_key.h"
 #include "entity_set.h"
-#include "square_array.h"
 #include "view_object.h"
 
 class Model;
@@ -42,6 +41,7 @@ class PlayerMessage;
 class CreatureBucketMap;
 class Position;
 class Game;
+class SquareArray;
 
 RICH_ENUM(VisionId,
   ELF,
@@ -230,7 +230,7 @@ class Level {
   const Square* getSafeSquare(Vec2) const;
   Square* modSafeSquare(Vec2);
   Vec2 transform(Vec2);
-  SquareArray SERIAL(squares);
+  HeapAllocated<SquareArray> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
   Table<optional<ViewObject>> SERIAL(background);
   Table<bool> SERIAL(memoryUpdates);

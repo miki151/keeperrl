@@ -25,6 +25,7 @@
 #include "spell.h"
 #include "creature.h"
 #include "creature_attributes.h"
+#include "square_type.h"
 
 void Technology::init() {
   Technology::set(TechId::ALCHEMY, new Technology(

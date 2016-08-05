@@ -133,6 +133,7 @@ class GuiFactory {
   PGuiElem rightMargin(int size, PGuiElem content);
   PGuiElem topMargin(int size, PGuiElem content);
   PGuiElem bottomMargin(int size, PGuiElem content);
+  PGuiElem progressBar(Color, double state);
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem labelHighlight(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem labelHighlightBlink(const string& s, Color, Color);

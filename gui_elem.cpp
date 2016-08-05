@@ -1402,6 +1402,15 @@ PGuiElem GuiFactory::marginFit(PGuiElem top, PGuiElem rest, double width, Margin
   return PGuiElem(new MarginFit(std::move(top), std::move(rest), width, type));
 }
 
+PGuiElem GuiFactory::progressBar(Color c, double state) {
+  return PGuiElem(new DrawCustom([=] (Renderer& r, Rectangle bounds) {
+          int width = bounds.width() * state;
+          if (width > 0)
+            r.drawFilledRectangle(Rectangle(bounds.topLeft(),
+                  Vec2(bounds.left() + width, bounds.bottom())), c);
+        }));
+}
+
 class Margins : public GuiLayout {
   public:
   Margins(PGuiElem content, int l, int t, int r, int b)

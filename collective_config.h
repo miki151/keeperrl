@@ -19,11 +19,11 @@
 #include "square_type.h"
 #include "util.h"
 #include "minion_task.h"
-#include "workshops.h"
 
 enum class ItemClass;
 
 class Game;
+class Workshops;
 
 enum class AttractionId {
   SQUARE,
@@ -124,6 +124,11 @@ struct MinionTaskInfo {
   bool centerOnly = false;
 };
 
+struct WorkshopInfo {
+  SquareId squareType;
+  WorkshopType workshopType;
+};
+
 class CollectiveConfig {
   public:
   static CollectiveConfig keeper(double immigrantFrequency, int payoutTime, double payoutMultiplier,
@@ -156,7 +161,8 @@ class CollectiveConfig {
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
   vector<BirthSpawn> getBirthSpawns() const;
-  Workshops getWorkshops() const;
+  HeapAllocated<Workshops> getWorkshops() const;
+  const vector<WorkshopInfo>& getWorkshopInfo() const;
 
   bool activeImmigrantion(const Game*) const;
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;

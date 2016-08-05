@@ -21,7 +21,6 @@
 #include "collective_control.h"
 #include "cost_info.h"
 #include "game_info.h"
-#include "square_type.h"
 #include "map_memory.h"
 #include "position.h"
 #include "collective_warning.h"
@@ -42,6 +41,7 @@ struct EquipmentActionInfo;
 struct TeamCreatureInfo;
 template <typename T>
 class EventProxy;
+class SquareType;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:

@@ -34,6 +34,7 @@
 #include "sunlight_info.h"
 #include "game.h"
 #include "creature_attributes.h"
+#include "square_array.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -50,13 +51,13 @@ Level::~Level() {}
 
 Level::Level(SquareArray s, Model* m, vector<Location*> l, const string& n,
     Table<double> sun, LevelId id) 
-    : squares(std::move(s)), oldSquares(squares.getBounds()), memoryUpdates(squares.getBounds(), true),
+    : squares(std::move(s)), oldSquares(squares->getBounds()), memoryUpdates(squares->getBounds(), true),
       locations(l), model(m), 
-      name(n), sunlight(sun), bucketMap(squares.getBounds().width(), squares.getBounds().height(),
-      FieldOfView::sightRange), lightAmount(squares.getBounds(), 0), lightCapAmount(squares.getBounds(), 1),
+      name(n), sunlight(sun), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
+      FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id) {
-  for (Vec2 pos : squares.getBounds()) {
-    const Square* square = squares.getReadonly(pos);
+  for (Vec2 pos : squares->getBounds()) {
+    const Square* square = squares->getReadonly(pos);
     square->onAddedToLevel(Position(pos, this));
     if (optional<StairKey> link = square->getLandingLink())
       landingSquares[*link].push_back(Position(pos, this));
@@ -64,9 +65,9 @@ Level::Level(SquareArray s, Model* m, vector<Location*> l, const string& n,
   for (Location *l : locations)
     l->setLevel(this);
   for (VisionId vision : ENUM_ALL(VisionId))
-    fieldOfView[vision] = FieldOfView(squares, vision);
-  for (Vec2 pos : squares.getBounds())
-    addLightSource(pos, squares.getReadonly(pos)->getLightEmission(), 1);
+    fieldOfView[vision] = FieldOfView(*squares, vision);
+  for (Vec2 pos : squares->getBounds())
+    addLightSource(pos, squares->getReadonly(pos)->getLightEmission(), 1);
 }
 
 LevelId Level::getUniqueId() const {
@@ -144,7 +145,7 @@ void Level::removeSquare(Position pos, PSquare defaultSquare) {
 
 void Level::replaceSquare(Position position, PSquare newSquare, bool storePrevious) {
   Vec2 pos = position.getCoord();
-  Square* oldSquare = squares.getSquare(pos);
+  Square* oldSquare = squares->getSquare(pos);
   oldSquare->onConstructNewSquare(position, newSquare.get());
   Creature* c = oldSquare->getCreature();
   if (c)
@@ -160,29 +161,29 @@ void Level::replaceSquare(Position position, PSquare newSquare, bool storePrevio
   if (auto tribe = oldSquare->getForbiddenTribe())
     newSquare->forbidMovementForTribe(position, *tribe);
   if (storePrevious)
-    oldSquares[pos] = squares.extractSquare(pos);
-  squares.putSquare(pos, std::move(newSquare));
-  squares.getSquare(pos)->onAddedToLevel(position);
+    oldSquares[pos] = squares->extractSquare(pos);
+  squares->putSquare(pos, std::move(newSquare));
+  squares->getSquare(pos)->onAddedToLevel(position);
   if (c) {
-    squares.getSquare(pos)->setCreature(c);
+    squares->getSquare(pos)->setCreature(c);
   }
-  addLightSource(pos, squares.getSquare(pos)->getLightEmission(), 1);
+  addLightSource(pos, squares->getSquare(pos)->getLightEmission(), 1);
   updateVisibility(pos);
   updateConnectivity(pos);
 }
 
 void Level::updateVisibility(Vec2 changedSquare) {
   for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
-    addLightSource(pos, squares.getReadonly(pos)->getLightEmission(), -1);
-    if (Creature* c = squares.getReadonly(pos)->getCreature())
+    addLightSource(pos, squares->getReadonly(pos)->getLightEmission(), -1);
+    if (Creature* c = squares->getReadonly(pos)->getCreature())
       if (c->isDarknessSource())
         addDarknessSource(pos, darknessRadius, -1);
   }
   for (VisionId vision : ENUM_ALL(VisionId))
     fieldOfView[vision].squareChanged(changedSquare);
   for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
-    addLightSource(pos, squares.getReadonly(pos)->getLightEmission(), 1);
-    if (Creature* c = squares.getReadonly(pos)->getCreature())
+    addLightSource(pos, squares->getReadonly(pos)->getLightEmission(), 1);
+    if (Creature* c = squares->getReadonly(pos)->getCreature())
       if (c->isDarknessSource())
         addDarknessSource(pos, darknessRadius, 1);
   }
@@ -537,12 +538,12 @@ void Level::setBackgroundLevel(const Level* l, Vec2 offs) {
 
 const Square* Level::getSafeSquare(Vec2 pos) const {
   CHECK(inBounds(pos));
-  return squares.getReadonly(pos);
+  return squares->getReadonly(pos);
 }
 
 Square* Level::modSafeSquare(Vec2 pos) {
   CHECK(inBounds(pos));
-  return squares.getSquare(pos);
+  return squares->getSquare(pos);
 }
 
 Position Level::getPosition(Vec2 pos) const {
@@ -562,7 +563,7 @@ void Level::addTickingSquare(Vec2 pos) {
 
 void Level::tick() {
   for (Vec2 pos : tickingSquares)
-    squares.getSquare(pos)->tick(Position(pos, this));
+    squares->getSquare(pos)->tick(Position(pos, this));
 }
 
 bool Level::inBounds(Vec2 pos) const {
@@ -574,11 +575,11 @@ Rectangle Level::getBounds() const {
 }
 
 int Level::getWidth() const {
-  return squares.getBounds().width();
+  return squares->getBounds().width();
 }
 
 int Level::getHeight() const {
-  return squares.getBounds().height();
+  return squares->getBounds().height();
 }
 
 const string& Level::getName() const {
@@ -621,7 +622,7 @@ const optional<ViewObject>& Level::getBackgroundObject(Vec2 pos) const {
 }
 
 int Level::getNumModifiedSquares() const {
-  return squares.getNumModified();
+  return squares->getNumModified();
 }
 
 void Level::setNeedsMemoryUpdate(Vec2 pos, bool s) {

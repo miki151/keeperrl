@@ -31,6 +31,7 @@
 #include "task.h"
 #include "game.h"
 #include "creature_attributes.h"
+#include "creature_factory.h"
 
 class Behaviour {
   public:
