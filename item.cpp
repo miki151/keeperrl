@@ -289,6 +289,13 @@ string Item::getTheName(bool getPlural, const Creature* owner) const {
   return the + getName(getPlural, owner);
 }
 
+string Item::getPluralName(int count) const {
+  if (count > 1)
+    return toString(count) + " " + getName(true);
+  else
+    return getTheName(false);
+}
+
 string Item::getPluralTheName(int count) const {
   if (count > 1)
     return toString(count) + " " + getTheName(true);

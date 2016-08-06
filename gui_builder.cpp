@@ -364,6 +364,7 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
     auto bottomLine = gui.getListBuilder();
     bottomLine.addElem(gui.stack(
         gui.getListBuilder()
+            .addElem(gui.label("speed:"), 60)
             .addElemAuto(gui.labelFun([this] { return getCurrentGameSpeedName();},
               [this] { return colors[clock->isPaused() ? ColorId::RED : ColorId::WHITE]; })).buildHorizontalList(),
         gui.button([&] { gameSpeedDialogOpen = !gameSpeedDialogOpen; })), 160);
@@ -1088,7 +1089,6 @@ void GuiBuilder::drawWorkshopsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
         auto line = gui.getListBuilder();
         line.addElem(gui.viewObject(elem.viewId), 35);
         line.addElem(gui.label(elem.name), 10);
-        line.addBackElem(gui.label(toString(elem.number) + "x"), 35);
         line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
         lines.addElem(gui.rightMargin(rightElemMargin, gui.stack(
               gui.uiHighlightMouseOver(colors[ColorId::GREEN]),

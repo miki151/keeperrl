@@ -77,7 +77,7 @@ vector<PItem> Workshops::Type::addWork(double amount) {
     if (product.state >= 1) {
       vector<PItem> ret = ItemFactory::fromId(product.type, product.batchSize);
       product.state = 0;
-      changeNumber(0, product.number - product.batchSize);
+      changeNumber(0, product.number - 1);
       return ret;
     }
   }
@@ -92,11 +92,11 @@ Workshops::Item Workshops::Item::fromType(ItemType type, CostInfo cost, double w
   PItem item = ItemFactory::fromId(type);
   return {
     type,
-    item->getName(),
+    item->getPluralName(batchSize),
     item->getViewObject().id(),
     cost,
     true,
-    batchSize,
+    1,
     batchSize,
     workNeeded,
     0

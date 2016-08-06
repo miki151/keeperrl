@@ -55,6 +55,7 @@ class Item : public Renderable, public UniqueEntity<Item> {
   string getNameAndModifiers(bool plural = false, const Creature* owner = nullptr) const;
   string getArtifactName() const;
   string getShortName(const Creature* owner = nullptr, bool noSuffix = false) const;
+  string getPluralName(int count) const;
   string getPluralTheName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 

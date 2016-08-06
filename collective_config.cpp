@@ -367,7 +367,7 @@ HeapAllocated<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemId::CLUB, {CollectiveResourceId::WOOD, 50}, 3),
           Workshops::Item::fromType(ItemId::HEAVY_CLUB, {CollectiveResourceId::WOOD, 100}, 5),
           Workshops::Item::fromType(ItemId::BOW, {CollectiveResourceId::WOOD, 100}, 13),
-          Workshops::Item::fromType(ItemId::ARROW, {CollectiveResourceId::WOOD, 2}, 5, 20),
+          Workshops::Item::fromType(ItemId::ARROW, {CollectiveResourceId::WOOD, 50}, 5, 20),
           Workshops::Item::fromType(ItemId::BOULDER_TRAP_ITEM, {CollectiveResourceId::STONE, 250}, 20),
           Workshops::Item::fromType({ItemId::TRAP_ITEM,
               TrapInfo({TrapType::POISON_GAS, EffectId::EMIT_POISON_GAS})}, {CollectiveResourceId::WOOD, 100}, 10),
