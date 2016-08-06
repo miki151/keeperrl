@@ -293,7 +293,7 @@ string Item::getPluralName(int count) const {
   if (count > 1)
     return toString(count) + " " + getName(true);
   else
-    return getTheName(false);
+    return getName(false);
 }
 
 string Item::getPluralTheName(int count) const {

@@ -30,10 +30,6 @@ RICH_ENUM(MinionTask,
   THRONE
 );
 
-inline vector<MinionTask> getWorkshopTasks() {
-  return {MinionTask::WORKSHOP, MinionTask::FORGE, MinionTask::LABORATORY, MinionTask::JEWELER};
-}
-
 RICH_ENUM(MinionTrait,
   LEADER,
   FIGHTER,

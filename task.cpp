@@ -331,13 +331,16 @@ PTask Task::equipItem(Item* item) {
   return PTask(new EquipItem(item));
 }
 
-static Position chooseRandomClose(Position start, const vector<Position>& squares) {
+static Position chooseRandomClose(Position start, const vector<Position>& squares, Task::SearchType type) {
   CHECK(!squares.empty());
   int minD = 10000;
   int margin = 3;
   vector<Position> close;
-  for (Position v : squares)
+  for (Position v : squares) {
+    if (type == Task::LAZY && v == start)
+      return v;
     minD = min(minD, v.dist8(start));
+  }
   for (Position v : squares)
     if (v.dist8(start) < minD + margin)
       close.push_back(v);
@@ -350,10 +353,10 @@ static Position chooseRandomClose(Position start, const vector<Position>& square
 class BringItem : public PickItem {
   public:
   BringItem(TaskCallback* c, Position position, vector<Item*> items, vector<Position> _target, int retries)
-      : PickItem(c, position, items, retries), target(chooseRandomClose(position, _target)) {}
+      : PickItem(c, position, items, retries), target(chooseRandomClose(position, _target, LAZY)) {}
 
   BringItem(TaskCallback* c, Position position, vector<Item*> items, vector<Position> _target)
-      : PickItem(c, position, items), target(chooseRandomClose(position, _target)) {}
+      : PickItem(c, position, items), target(chooseRandomClose(position, _target, LAZY)) {}
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) {
     return c->drop(it).append([=](Creature* c) {
@@ -448,7 +451,7 @@ PTask Task::applyItem(TaskCallback* c, Position position, Item* item, Position t
 
 class ApplySquare : public Task {
   public:
-  ApplySquare(TaskCallback* c, vector<Position> pos) : positions(pos), callback(c) {}
+  ApplySquare(TaskCallback* c, vector<Position> pos, SearchType t) : positions(pos), callback(c), searchType(t) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (!position) {
@@ -458,7 +461,7 @@ class ApplySquare : public Task {
               return false;
           return !rejectedPosition.count(pos);});
       if (!candidates.empty())
-        position = chooseRandomClose(c->getPosition(), candidates);
+        position = chooseRandomClose(c->getPosition(), candidates, searchType);
       else {
         setDone();
         return NoMove;
@@ -503,11 +506,12 @@ class ApplySquare : public Task {
   int SERIAL(invalidCount) = 5;
   optional<Position> SERIAL(position);
   TaskCallback* SERIAL(callback);
+  SearchType SERIAL(searchType);
 };
 
-PTask Task::applySquare(TaskCallback* c, vector<Position> position) {
+PTask Task::applySquare(TaskCallback* c, vector<Position> position, SearchType searchType) {
   CHECK(position.size() > 0);
-  return PTask(new ApplySquare(c, position));
+  return PTask(new ApplySquare(c, position, searchType));
 }
 
 namespace {

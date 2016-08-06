@@ -314,44 +314,57 @@ MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWa
   CHECK(type != APPLY_SQUARE);
 }
 
-
-map<MinionTask, MinionTaskInfo> CollectiveConfig::getTaskInfo() const {
-  map<MinionTask, MinionTaskInfo> ret {
-    {MinionTask::TRAIN, {{SquareId::TRAINING_ROOM}, "training", CollectiveWarning::TRAINING, 1}},
-    {MinionTask::WORKSHOP, {{SquareId::WORKSHOP}, "workshop", CollectiveWarning::WORKSHOP, 1}},
-    {MinionTask::FORGE, {{SquareId::FORGE}, "forge", none, 1}},
-    {MinionTask::LABORATORY, {{SquareId::LABORATORY}, "lab", none, 1}},
-    {MinionTask::JEWELER, {{SquareId::JEWELER}, "jewellery", none, 1}},
-    {MinionTask::SLEEP, {{SquareId::BED}, "sleeping", CollectiveWarning::BEDS}},
-    {MinionTask::EAT, {MinionTaskInfo::EAT, "eating"}},
-    {MinionTask::GRAVE, {{SquareId::GRAVE}, "sleeping", CollectiveWarning::GRAVES}},
-    {MinionTask::LAIR, {{SquareId::BEAST_CAGE}, "sleeping"}},
-    {MinionTask::LAIR, {{SquareId::BEAST_CAGE}, "sleeping"}},
-    {MinionTask::THRONE, {{SquareId::THRONE}, "throne"}},
-    {MinionTask::STUDY, {{SquareId::LIBRARY}, "studying", CollectiveWarning::LIBRARY, 1}},
-    {MinionTask::PRISON, {{SquareId::PRISON}, "prison", CollectiveWarning::NO_PRISON}},
-    {MinionTask::TORTURE, {{SquareId::TORTURE_TABLE}, "torture ordered",
-                            CollectiveWarning::TORTURE_ROOM, 0, true}},
-    {MinionTask::CROPS, {{SquareId::CROPS}, "crops"}},
-    {MinionTask::RITUAL, {{SquareId::RITUAL_ROOM}, "rituals"}},
-    {MinionTask::COPULATE, {MinionTaskInfo::COPULATE, "copulation"}},
-    {MinionTask::CONSUME, {MinionTaskInfo::CONSUME, "consumption"}},
-    {MinionTask::EXPLORE, {MinionTaskInfo::EXPLORE, "spying"}},
-    {MinionTask::SPIDER, {MinionTaskInfo::SPIDER, "spider"}},
-    {MinionTask::EXPLORE_NOCTURNAL, {MinionTaskInfo::EXPLORE, "spying"}},
-    {MinionTask::EXPLORE_CAVES, {MinionTaskInfo::EXPLORE, "spying"}},
-    {MinionTask::EXECUTE, {{SquareId::PRISON}, "execution ordered", CollectiveWarning::NO_PRISON}}};
-  return ret;
-};
-
 static vector<WorkshopInfo> workshops {
-  {SquareId::WORKSHOP, WorkshopType::WORKSHOP},
-  {SquareId::FORGE, WorkshopType::FORGE},
-  {SquareId::LABORATORY, WorkshopType::LABORATORY},
-  {SquareId::JEWELER, WorkshopType::JEWELER},
+  {SquareId::WORKSHOP, WorkshopType::WORKSHOP, MinionTask::WORKSHOP, "workshop"},
+  {SquareId::FORGE, WorkshopType::FORGE, MinionTask::FORGE, "forge"},
+  {SquareId::LABORATORY, WorkshopType::LABORATORY, MinionTask::LABORATORY, "laboratory"},
+  {SquareId::JEWELER, WorkshopType::JEWELER, MinionTask::JEWELER, "jeweler"},
 };
 
-const vector<WorkshopInfo>& CollectiveConfig::getWorkshopInfo() const {
+optional<WorkshopType> CollectiveConfig::getWorkshopType(MinionTask task) {
+  static optional<EnumMap<MinionTask, optional<WorkshopType>>> map;
+  if (!map) {
+    map.emplace();
+    for (auto& elem : workshops)
+      (*map)[elem.minionTask] = elem.workshopType;
+  }
+  return (*map)[task];
+}
+
+MinionTaskInfo CollectiveConfig::getTaskInfo(MinionTask task) const {
+  switch (task) {
+    case MinionTask::TRAIN: return {{SquareId::TRAINING_ROOM}, "training", CollectiveWarning::TRAINING, 1};
+    case MinionTask::SLEEP: return {{SquareId::BED}, "sleeping", CollectiveWarning::BEDS};
+    case MinionTask::EAT: return {MinionTaskInfo::EAT, "eating"};
+    case MinionTask::GRAVE: return {{SquareId::GRAVE}, "sleeping", CollectiveWarning::GRAVES};
+    case MinionTask::LAIR: return {{SquareId::BEAST_CAGE}, "sleeping"};
+    case MinionTask::THRONE: return {{SquareId::THRONE}, "throne"};
+    case MinionTask::STUDY: return {{SquareId::LIBRARY}, "studying", CollectiveWarning::LIBRARY, 1};
+    case MinionTask::PRISON: return {{SquareId::PRISON}, "prison", CollectiveWarning::NO_PRISON};
+    case MinionTask::TORTURE: return {{SquareId::TORTURE_TABLE}, "torture ordered",
+                                CollectiveWarning::TORTURE_ROOM, 0, true};
+    case MinionTask::CROPS: return {{SquareId::CROPS}, "crops"};
+    case MinionTask::RITUAL: return {{SquareId::RITUAL_ROOM}, "rituals"};
+    case MinionTask::COPULATE: return {MinionTaskInfo::COPULATE, "copulation"};
+    case MinionTask::CONSUME: return {MinionTaskInfo::CONSUME, "consumption"};
+    case MinionTask::EXPLORE: return {MinionTaskInfo::EXPLORE, "spying"};
+    case MinionTask::SPIDER: return {MinionTaskInfo::SPIDER, "spider"};
+    case MinionTask::EXPLORE_NOCTURNAL: return {MinionTaskInfo::EXPLORE, "spying"};
+    case MinionTask::EXPLORE_CAVES: return {MinionTaskInfo::EXPLORE, "spying"};
+    case MinionTask::EXECUTE: return {{SquareId::PRISON}, "execution ordered", CollectiveWarning::NO_PRISON};
+    case MinionTask::WORKSHOP:
+    case MinionTask::FORGE:
+    case MinionTask::LABORATORY:
+    case MinionTask::JEWELER:
+      for (auto& elem : workshops)
+        if (task == elem.minionTask)
+          return MinionTaskInfo({elem.squareType}, elem.taskName, none);
+      break;
+  }
+  return getTaskInfo(task);
+}
+
+const vector<WorkshopInfo>& CollectiveConfig::getWorkshopInfo() {
   return workshops;
 }
 

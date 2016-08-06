@@ -366,7 +366,7 @@ bool Collective::isTaskGood(const Creature* c, MinionTask task, bool ignoreTaskL
   if (c->getAttributes().getMinionTasks().getValue(task, ignoreTaskLock) == 0)
     return false;
   if (auto elem = minionPayment.getMaybe(c))
-    if (elem->debt > 0 && config->getTaskInfo().at(task).cost > 0)
+    if (elem->debt > 0 && config->getTaskInfo(task).cost > 0)
       return false;
   switch (task) {
     case MinionTask::CROPS:
@@ -431,12 +431,17 @@ bool Collective::isMinionTaskPossible(Creature* c, MinionTask task) {
 }
 
 PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
-  MinionTaskInfo info = config->getTaskInfo().at(task);
+  MinionTaskInfo info = config->getTaskInfo(task);
   switch (info.type) {
     case MinionTaskInfo::APPLY_SQUARE: {
       vector<Position> squares = getAllSquares(info.squares, info.centerOnly);
-      if (!squares.empty())
-        return Task::applySquare(this, squares);
+      if (!squares.empty()) {
+        auto searchType = Task::RANDOM_CLOSE;
+        if (auto workshopType = config->getWorkshopType(task))
+          if (workshops->get(*workshopType).isIdle())
+            searchType = Task::LAZY;
+        return Task::applySquare(this, squares, searchType);
+      }
       break;
       }
     case MinionTaskInfo::EXPLORE:
@@ -473,7 +478,7 @@ PTask Collective::getStandardTask(Creature* c) {
   }
   if (auto current = currentTasks.getMaybe(c)) {
     MinionTask task = current->task;
-    MinionTaskInfo info = config->getTaskInfo().at(task);
+    MinionTaskInfo info = config->getTaskInfo(task);
     PTask ret = generateMinionTask(c, task);
     if (info.warning && !territory->isEmpty())
       setWarning(*info.warning, !ret);
@@ -555,9 +560,9 @@ PTask Collective::getHealingTask(Creature* c) {
   if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
     for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE, MinionTask::LAIR})
       if (c->getAttributes().getMinionTasks().getValue(t) > 0) {
-        vector<Position> positions = getAllSquares(config->getTaskInfo().at(t).squares);
+        vector<Position> positions = getAllSquares(config->getTaskInfo(t).squares);
         if (!positions.empty())
-          return Task::applySquare(nullptr, positions);
+          return Task::applySquare(nullptr, positions, Task::LAZY);
       }
   return nullptr;
 }
@@ -1009,9 +1014,11 @@ void Collective::tick() {
       if (info.warning && info.getBedType())
         setWarning(*info.warning, !chooseBedPos(getSquares(info.dormType), getSquares(*info.getBedType())));
     }
-    for (auto elem : config->getTaskInfo())
-      if (!getAllSquares(elem.second.squares).empty() && elem.second.warning)
-        setWarning(*elem.second.warning, false);
+    for (auto minionTask : ENUM_ALL(MinionTask)) {
+      auto elem = config->getTaskInfo(minionTask);
+      if (!getAllSquares(elem.squares).empty() && elem.warning)
+        setWarning(*elem.warning, false);
+    }
   }
   if (config->getEnemyPositions() && Random.roll(5)) {
     vector<Position> enemyPos = getEnemyPositions();
@@ -1794,6 +1801,7 @@ void Collective::updateConstructions() {
     if (!isDelayed(elem.first) && !elem.second.hasTask() && !elem.second.isBuilt())
       constructions->getTorch(elem.first).setTask(taskMap->addTask(
           Task::buildTorch(this, elem.first, elem.second.getAttachmentDir()), elem.first)->getUniqueId());
+  workshops->scheduleItems(this);
 }
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, double delayTime) {
@@ -1941,10 +1949,10 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
 void Collective::onAppliedSquare(Position pos) {
   Creature* c = NOTNULL(pos.getCreature());
   MinionTask currentTask = currentTasks.getOrFail(c).task;
-  if (config->getTaskInfo().at(currentTask).cost > 0) {
+  if (config->getTaskInfo(currentTask).cost > 0) {
     if (nextPayoutTime == -1 && minionPayment.getMaybe(c) && minionPayment.getOrFail(c).salary > 0)
       nextPayoutTime = getLocalTime() + config->getPayoutTime();
-    minionPayment.getOrInit(c).workAmount += config->getTaskInfo().at(currentTask).cost;
+    minionPayment.getOrInit(c).workAmount += config->getTaskInfo(currentTask).cost;
   }
   if (getSquares(SquareId::LIBRARY).count(pos)) {
     addMana(0.2);

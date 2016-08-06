@@ -1084,7 +1084,7 @@ static ItemInfo getWorkshopItem(const Workshops::Item& option) {
       c.viewId = option.viewId;
       c.price = getCostObj(option.cost);
       c.unavailable = !option.active;
-      c.productionState = option.state;
+      c.productionState = option.state.get_value_or(0);
       c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
       c.number = option.number;
     );

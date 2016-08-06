@@ -3,6 +3,7 @@
 #include "item_factory.h"
 #include "view_object.h"
 #include "item.h"
+#include "collective.h"
 
 Workshops::Workshops(const EnumMap<WorkshopType, vector<Item>>& o)
     : types(o.mapValues<Type>([this] (const vector<Item>& v) { return Type(this, v);})) {
@@ -79,14 +80,38 @@ void Workshops::Type::changeNumber(int index, int number) {
 
 static const double prodMult = 0.1;
 
+bool Workshops::Type::isIdle() const {
+  return queued.empty() || !queued[0].state;
+}
+
+void Workshops::scheduleItems(Collective* collective) {
+  for (auto type : ENUM_ALL(WorkshopType))
+    types[type].scheduleItems(collective);
+}
+
+void Workshops::Type::scheduleItems(Collective* collective) {
+  if (queued.empty() || queued[0].state)
+    return;
+  for (int i : All(queued))
+    if (collective->hasResource(queued[i].cost)) {
+      if (i > 0)
+        swap(queued[0], queued[i]);
+      collective->takeResource(queued[0].cost);
+      addCost(-queued[0].cost);
+      queued[0].state = 0;
+      return;
+    }
+}
+
 vector<PItem> Workshops::Type::addWork(double amount) {
-  if (!queued.empty()) {
+  if (!queued.empty() && queued[0].state) {
     auto& product = queued[0];
-    product.state += amount * prodMult / product.workNeeded;
-    if (product.state >= 1) {
+    *product.state += amount * prodMult / product.workNeeded;
+    if (*product.state >= 1) {
       vector<PItem> ret = ItemFactory::fromId(product.type, product.batchSize);
-      product.state = 0;
-      changeNumber(0, product.number - 1);
+      product.state = none;
+      if (!--product.number)
+        queued.erase(queued.begin());
       return ret;
     }
   }
@@ -108,7 +133,7 @@ Workshops::Item Workshops::Item::fromType(ItemType type, CostInfo cost, double w
     1,
     batchSize,
     workNeeded,
-    0
+    none
   };
 }
 

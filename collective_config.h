@@ -127,6 +127,8 @@ struct MinionTaskInfo {
 struct WorkshopInfo {
   SquareId squareType;
   WorkshopType workshopType;
+  MinionTask minionTask;
+  string taskName;
 };
 
 class CollectiveConfig {
@@ -162,7 +164,8 @@ class CollectiveConfig {
   const optional<GuardianInfo>& getGuardianInfo() const;
   vector<BirthSpawn> getBirthSpawns() const;
   unique_ptr<Workshops> getWorkshops() const;
-  const vector<WorkshopInfo>& getWorkshopInfo() const;
+  static const vector<WorkshopInfo>& getWorkshopInfo();
+  static optional<WorkshopType> getWorkshopType(MinionTask);
 
   bool activeImmigrantion(const Game*) const;
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
@@ -171,7 +174,7 @@ class CollectiveConfig {
   vector<SquareType> getRoomsNeedingLight() const;
   int getTaskDuration(const Creature*, MinionTask) const;
   static const map<CollectiveResourceId, ResourceInfo>& getResourceInfo();
-  map<MinionTask, MinionTaskInfo> getTaskInfo() const;
+  MinionTaskInfo getTaskInfo(MinionTask) const;
   static const vector<SquareType>& getEquipmentStorage();
   static const vector<SquareType>& getResourceStorage();
 

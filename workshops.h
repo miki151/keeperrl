@@ -11,6 +11,8 @@ RICH_ENUM(WorkshopType,
     JEWELER
 );
 
+class Collective;
+
 class Workshops {
   public:
   struct Item {
@@ -24,7 +26,7 @@ class Workshops {
     int SERIAL(number);
     int SERIAL(batchSize);
     double SERIAL(workNeeded);
-    double SERIAL(state);
+    optional<double> SERIAL(state);
     SERIALIZE_ALL(type, name, viewId, cost, active, number, batchSize, workNeeded, state);
   };
 
@@ -37,6 +39,8 @@ class Workshops {
     void queue(int);
     void unqueue(int);
     void changeNumber(int index, int number);
+    void scheduleItems(Collective*);
+    bool isIdle() const;
 
     SERIALIZATION_DECL(Type);
 
@@ -54,6 +58,7 @@ class Workshops {
   Type& get(WorkshopType);
   const Type& get(WorkshopType) const;
   int getDebt(CollectiveResourceId) const;
+  void scheduleItems(Collective*);
 
   private:
   EnumMap<WorkshopType, Type> SERIAL(types);

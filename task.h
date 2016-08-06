@@ -45,7 +45,8 @@ class Task : public UniqueEntity<Task> {
   static PTask bringItem(TaskCallback*, Position position, vector<Item*>, vector<Position> target,
       int numRetries = 10);
   static PTask applyItem(TaskCallback*, Position, Item*, Position target);
-  static PTask applySquare(TaskCallback*, vector<Position>);
+  enum SearchType { LAZY, RANDOM_CLOSE };
+  static PTask applySquare(TaskCallback*, vector<Position>, SearchType);
   static PTask pickAndEquipItem(TaskCallback*, Position, Item*);
   static PTask equipItem(Item*);
   static PTask pickItem(TaskCallback*, Position, vector<Item*>);
