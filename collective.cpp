@@ -1404,6 +1404,7 @@ int Collective::numResourcePlusDebt(ResourceId id) const {
   if (id == ResourceId::GOLD)
     for (auto& elem : minionPayment)
       ret -= elem.second.debt;
+  ret -= workshops->getDebt(id);
   return ret;
 }
 

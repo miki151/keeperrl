@@ -2,6 +2,7 @@
 
 #include "cost_info.h"
 #include "item_type.h"
+#include "resource_id.h"
 
 RICH_ENUM(WorkshopType,
     WORKSHOP,
@@ -29,7 +30,7 @@ class Workshops {
 
   class Type {
     public:
-    Type(const vector<Item>& options);
+    Type(Workshops*, const vector<Item>& options);
     const vector<Item>& getOptions() const;
     const vector<Item>& getQueued() const;
     vector<PItem> addWork(double);
@@ -41,15 +42,20 @@ class Workshops {
 
     private:
     void stackQueue();
+    void addCost(CostInfo);
     vector<Item> SERIAL(options);
     vector<Item> SERIAL(queued);
+    Workshops* SERIAL(workshops) = nullptr;
   };
 
   SERIALIZATION_DECL(Workshops);
   Workshops(const EnumMap<WorkshopType, vector<Item>>&);
+  Workshops(const Workshops&) = delete;
   Type& get(WorkshopType);
   const Type& get(WorkshopType) const;
+  int getDebt(CollectiveResourceId) const;
 
   private:
   EnumMap<WorkshopType, Type> SERIAL(types);
+  EnumMap<CollectiveResourceId, int> SERIAL(debt);
 };

@@ -161,7 +161,7 @@ class CollectiveConfig {
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
   vector<BirthSpawn> getBirthSpawns() const;
-  HeapAllocated<Workshops> getWorkshops() const;
+  unique_ptr<Workshops> getWorkshops() const;
   const vector<WorkshopInfo>& getWorkshopInfo() const;
 
   bool activeImmigrantion(const Game*) const;

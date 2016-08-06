@@ -5,7 +5,6 @@
 #include "minion_task.h"
 #include "item_action.h"
 #include "village_action.h"
-#include "cost_info.h"
 #include "view_id.h"
 #include "player_message.h"
 

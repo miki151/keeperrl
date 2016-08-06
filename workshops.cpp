@@ -5,7 +5,7 @@
 #include "item.h"
 
 Workshops::Workshops(const EnumMap<WorkshopType, vector<Item>>& o)
-    : types(o.mapValues<Type>([] (const vector<Item>& v) { return Type(v);})) {
+    : types(o.mapValues<Type>([this] (const vector<Item>& v) { return Type(this, v);})) {
 }
 
 Workshops::Type& Workshops::get(WorkshopType type) {
@@ -17,12 +17,12 @@ const Workshops::Type& Workshops::get(WorkshopType type) const {
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Workshops);
-SERIALIZE_DEF(Workshops, types);
+SERIALIZE_DEF(Workshops, types, debt);
 
-Workshops::Type::Type(const vector<Item>& o) : options(o) {}
+Workshops::Type::Type(Workshops* w, const vector<Item>& o) : options(o), workshops(w) {}
 
 SERIALIZATION_CONSTRUCTOR_IMPL2(Workshops::Type, Type);
-SERIALIZE_DEF(Workshops::Type, options, queued);
+SERIALIZE_DEF(Workshops::Type, options, queued, workshops);
 
 
 const vector<Workshops::Item>& Workshops::Type::getOptions() const {
@@ -43,8 +43,13 @@ void Workshops::Type::stackQueue() {
   queued = tmp;
 }
 
+void Workshops::Type::addCost(CostInfo cost) {
+  workshops->debt[cost.id] += cost.value;
+}
+
 void Workshops::Type::queue(int index) {
   const Item& newElem = options[index];
+  addCost(newElem.cost);
   if (!queued.empty() && queued.back() == newElem)
     queued.back().number += newElem.number;
   else
@@ -53,8 +58,10 @@ void Workshops::Type::queue(int index) {
 }
 
 void Workshops::Type::unqueue(int index) {
-  if (index >= 0 && index < queued.size())
+  if (index >= 0 && index < queued.size()) {
+    addCost(-queued[index].cost);
     queued.erase(queued.begin() + index);
+  }
   stackQueue();
 }
 
@@ -62,9 +69,11 @@ void Workshops::Type::changeNumber(int index, int number) {
   if (number <= 0)
     unqueue(index);
   else {
-    auto& elems = queued;
-    if (index >= 0 && index < elems.size())
-      elems[index].number = number;
+    if (index >= 0 && index < queued.size()) {
+      auto& elem = queued[index];
+      addCost(CostInfo(elem.cost.id, number - elem.number));
+      elem.number = number;
+    }
   }
 }
 
@@ -101,5 +110,9 @@ Workshops::Item Workshops::Item::fromType(ItemType type, CostInfo cost, double w
     workNeeded,
     0
   };
+}
+
+int Workshops::getDebt(CollectiveResourceId resource) const {
+  return debt[resource];
 }
 

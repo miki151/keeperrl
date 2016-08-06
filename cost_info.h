@@ -1,22 +1,18 @@
-#ifndef _COST_INFO_H
-#define _COST_INFO_H
+#pragma once
 
 #include "enums.h"
 #include "util.h"
 
-struct CostInfo {
-  CostInfo() : id(CollectiveResourceId(0)), value(0) {}
-  CostInfo(CollectiveResourceId i, int v) : id(i), value(v) {}
-  CollectiveResourceId SERIAL(id);
-  int SERIAL(value);
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(id) & SVAR(value);
-  }
-  static CostInfo noCost() {
-    return CostInfo{CollectiveResourceId(0), 0};
-  }
+class CostInfo {
+  public:
+  CostInfo(CollectiveResourceId, int amount);
+  static CostInfo noCost();
+
+  CostInfo operator-() const;
+
+  SERIALIZATION_DECL(CostInfo);
+
+  CollectiveResourceId SERIAL(id) = CollectiveResourceId(0);
+  int SERIAL(value) = 0;
 };
 
-
-#endif

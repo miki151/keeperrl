@@ -6,7 +6,7 @@ struct CorpseInfo {
   bool SERIAL(canBeRevived);
   bool SERIAL(hasHead);
   bool SERIAL(isSkeleton);
-  SERIALIZE_ALL(canBeRevived, hasHead, isSkeleton);
+  SERIALIZE_ALL(victim, canBeRevived, hasHead, isSkeleton);
 };
 
 

@@ -40,7 +40,7 @@ class ConstructionMap;
 class Technology;
 class CollectiveConfig;
 class MinionAttraction;
-struct CostInfo;
+class CostInfo;
 struct TriggerInfo;
 class Territory;
 class CollectiveName;
@@ -361,5 +361,5 @@ class Collective : public TaskCallback {
   EntitySet<Creature> SERIAL(banished);
   EntitySet<Creature> SERIAL(equipmentUpdates);
   optional<VillainType> SERIAL(villainType);
-  HeapAllocated<Workshops> SERIAL(workshops);
+  unique_ptr<Workshops> SERIAL(workshops);
 };

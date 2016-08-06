@@ -356,8 +356,8 @@ const vector<WorkshopInfo>& CollectiveConfig::getWorkshopInfo() const {
 }
 
 
-HeapAllocated<Workshops> CollectiveConfig::getWorkshops() const {
-  return Workshops({
+unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
+  return unique_ptr<Workshops>(new Workshops({
       {WorkshopType::WORKSHOP, {
           Workshops::Item::fromType(ItemId::FIRST_AID_KIT, {CollectiveResourceId::WOOD, 20}, 1),
           Workshops::Item::fromType(ItemId::LEATHER_ARMOR, {CollectiveResourceId::WOOD, 100}, 6),
@@ -419,6 +419,6 @@ HeapAllocated<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemId::DEFENSE_AMULET, {CollectiveResourceId::GOLD, 200}, 10),
           Workshops::Item::fromType(ItemId::HEALING_AMULET, {CollectiveResourceId::GOLD, 300}, 10),
       }},
-  });
+  }));
 }
 

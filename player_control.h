@@ -19,7 +19,6 @@
 #include "creature_view.h"
 #include "entity_set.h"
 #include "collective_control.h"
-#include "cost_info.h"
 #include "game_info.h"
 #include "map_memory.h"
 #include "position.h"
@@ -42,6 +41,7 @@ struct TeamCreatureInfo;
 template <typename T>
 class EventProxy;
 class SquareType;
+class CostInfo;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
