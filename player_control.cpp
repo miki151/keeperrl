@@ -63,6 +63,8 @@
 #include "event_proxy.h"
 #include "workshops.h"
 #include "attack_trigger.h"
+#include "view_object.h"
+#include "body.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {

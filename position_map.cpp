@@ -4,6 +4,7 @@
 #include "task.h"
 #include "view_index.h"
 #include "model.h"
+#include "view_object.h"
 
 template <class T>
 PositionMap<T>::PositionMap(const T& def) : defaultVal(def) {

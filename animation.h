@@ -3,7 +3,8 @@
 
 #include "util.h"
 #include "renderer.h"
-#include "view_object.h"
+
+class ViewObject;
 
 class Animation {
   public:

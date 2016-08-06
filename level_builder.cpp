@@ -8,6 +8,7 @@
 #include "level_maker.h"
 #include "collective_builder.h"
 #include "view_object.h"
+#include "item.h"
 
 LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int height, const string& n, bool covered,
     optional<double> defaultLight)

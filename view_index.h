@@ -18,8 +18,9 @@
 
 #include "enums.h"
 #include "util.h"
-#include "view_object.h"
+#include "view_layer.h"
 
+class ViewObject;
 
 RICH_ENUM(HighlightType,
   DIG,

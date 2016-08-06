@@ -169,8 +169,10 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
   int saveTime = 0;
   if (game->isSingleModel() || type == GameSaveType::RETIRED_SITE)
     saveTime = singleModelGameSaveTime;
-  else
-    saveTime = game->getCampaign().getNumNonEmpty();
+  else {
+    auto savedGameInfo = game->getSavedGameInfo();
+    saveTime = savedGameInfo.getNumSites();
+  }
   if (type == GameSaveType::RETIRED_SITE)
     doWithSplash(splashType, "Retiring site...", saveTime,
         [&] (ProgressMeter& meter) {

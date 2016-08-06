@@ -7,31 +7,32 @@
 #include "creature_factory.h"
 #include "sound.h"
 #include "lasting_effect.h"
+#include "effect_type.h"
 
 const string& Spell::getName() const {
   return name;
 }
 
 bool Spell::isDirected() const {
-  return boost::get<DirEffectType>(&effect);
+  return boost::get<DirEffectType>(&*effect);
 }
 
 bool Spell::hasEffect(EffectType t) const {
-  return !isDirected() && boost::get<EffectType>(effect) == t;
+  return !isDirected() && boost::get<EffectType>(*effect) == t;
 }
 
 bool Spell::hasEffect(DirEffectType t) const {
-  return isDirected() && boost::get<DirEffectType>(effect) == t;
+  return isDirected() && boost::get<DirEffectType>(*effect) == t;
 }
 
 EffectType Spell::getEffectType() const {
   CHECK(!isDirected());
-  return boost::get<EffectType>(effect);
+  return boost::get<EffectType>(*effect);
 }
 
 DirEffectType Spell::getDirEffectType() const{
   CHECK(isDirected());
-  return boost::get<DirEffectType>(effect);
+  return boost::get<DirEffectType>(*effect);
 }
 
 int Spell::getDifficulty() const {
@@ -52,9 +53,9 @@ SoundId Spell::getSound() const {
 
 string Spell::getDescription() const {
   if (isDirected())
-    return Effect::getDescription(boost::get<DirEffectType>(effect));
+    return Effect::getDescription(boost::get<DirEffectType>(*effect));
   else
-    return Effect::getDescription(boost::get<EffectType>(effect));
+    return Effect::getDescription(boost::get<EffectType>(*effect));
 }
 
 void Spell::addMessage(Creature* c) {

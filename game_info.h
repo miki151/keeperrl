@@ -1,7 +1,6 @@
 #ifndef _GAME_INFO_H
 #define _GAME_INFO_H
 
-#include "view_object.h"
 #include "unique_entity.h"
 #include "minion_task.h"
 #include "item_action.h"

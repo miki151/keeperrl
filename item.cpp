@@ -27,6 +27,8 @@
 #include "item_attributes.h"
 #include "view.h"
 #include "sound.h"
+#include "item_class.h"
+#include "corpse_info.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -39,16 +41,6 @@ void Item::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Item);
 SERIALIZATION_CONSTRUCTOR_IMPL(Item);
-
-template <class Archive> 
-void Item::CorpseInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(canBeRevived)
-    & BOOST_SERIALIZATION_NVP(hasHead)
-    & BOOST_SERIALIZATION_NVP(isSkeleton);
-}
-
-SERIALIZABLE(Item::CorpseInfo);
-
 
 Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, *attr.name)),
     attributes(attr), fire(*attr.weight, attr.flamability) {
@@ -442,5 +434,9 @@ bool Item::isWieldedTwoHanded() const {
 
 int Item::getMinStrength() const {
   return 10 + getWeight();
+}
+
+optional<CorpseInfo> Item::getCorpseInfo() const {
+  return none;
 }
 

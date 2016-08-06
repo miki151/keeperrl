@@ -18,7 +18,6 @@
 
 #include "util.h"
 #include "debug.h"
-#include "view_object.h"
 #include "user_input.h"
 #include "minion_task.h"
 #include "cost_info.h"

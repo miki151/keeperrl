@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "animation.h"
+#include "view_object.h"
 
 Animation::Animation(double d) : duration(d) {}
 

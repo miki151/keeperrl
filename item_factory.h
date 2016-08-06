@@ -21,11 +21,13 @@
 #include <functional>
 
 #include "util.h"
-#include "item.h"
-#include "item_type.h"
+#include "corpse_info.h"
+#include "item_class.h"
 
 class Item;
 class Technology;
+class ItemType;
+class ItemAttributes;
 
 class ItemFactory {
   public:
@@ -50,7 +52,7 @@ class ItemFactory {
   static PItem fromId(ItemType);
   static vector<PItem> fromId(ItemType, int num);
   static PItem corpse(const string& name, const string& rottenName, double weight, ItemClass = ItemClass::CORPSE,
-      Item::CorpseInfo corpseInfo = {UniqueEntity<Creature>::Id(), false, false, false});
+      CorpseInfo corpseInfo = {UniqueEntity<Creature>::Id(), false, false, false});
   static PItem trapItem(PTrigger trigger, string trapName);
 
   static void init();
@@ -61,16 +63,7 @@ class ItemFactory {
   SERIALIZATION_DECL(ItemFactory);
 
   private:
-  struct ItemInfo {
-    ItemInfo(ItemType _id, double _weight) : id(_id), weight(_weight) {}
-    ItemInfo(ItemType _id, double _weight, int minC, int maxC)
-        : id(_id), weight(_weight), minCount(minC), maxCount(maxC) {}
-
-    ItemType id;
-    double weight;
-    int minCount = 1;
-    int maxCount = 2;
-  };
+  struct ItemInfo;
   ItemFactory(const vector<ItemInfo>&, const vector<ItemType>& unique = vector<ItemType>());
   static ItemAttributes getAttributes(ItemType);
   ItemFactory& addItem(ItemInfo);

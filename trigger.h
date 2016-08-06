@@ -17,8 +17,6 @@
 #define _TRIGGER_H
 
 #include "util.h"
-#include "effect_type.h"
-#include "view_object.h"
 #include "position.h"
 
 class Creature;
@@ -26,6 +24,7 @@ class CreatureView;
 class Attack;
 class Tribe;
 class ViewObject;
+class EffectType;
 
 class Trigger {
   public:
@@ -57,7 +56,7 @@ class Trigger {
   Trigger(Position);
   Trigger(const ViewObject& obj, Position);
 
-  optional<ViewObject> SERIAL(viewObject);
+  unique_ptr<ViewObject> SERIAL(viewObject);
   Position SERIAL(position);
 };
 

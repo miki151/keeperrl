@@ -24,6 +24,10 @@
 #include "body.h"
 #include "attack_level.h"
 #include "attack_type.h"
+#include "view_object.h"
+#include "spell_map.h"
+#include "effect_type.h"
+#include "effect.h"
 
 CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
   fun(*this);
@@ -106,7 +110,7 @@ void CreatureAttributes::exerciseAttr(AttrType t, double value) {
 }
 
 SpellMap& CreatureAttributes::getSpellMap() {
-  return spells;
+  return *spells;
 }
 
 Body& CreatureAttributes::getBody() {
@@ -118,7 +122,7 @@ const Body& CreatureAttributes::getBody() const {
 }
 
 const SpellMap& CreatureAttributes::getSpellMap() const {
-  return spells;
+  return *spells;
 }
 
 optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damage) const {
@@ -139,8 +143,8 @@ string CreatureAttributes::getDescription() const {
   if (!isSpecial)
     return "";
   string attack;
-  if (attackEffect)
-    attack = " It has a " + Effect::getName(*attackEffect) + " attack.";
+  if (*attackEffect)
+    attack = " It has a " + Effect::getName(**attackEffect) + " attack.";
   return body->getDescription() + ". " + attack;
 }
 
@@ -252,8 +256,8 @@ void CreatureAttributes::consume(Creature* self, const CreatureAttributes& other
     consumeAttr(attr[t], other.attr[t], adjectives, getAttrNameMore(t));
   consumeAttr(barehandedDamage, other.barehandedDamage, adjectives, "more dangerous");
   consumeAttr(barehandedAttack, other.barehandedAttack, adjectives, "");
-  consumeAttr(attackEffect, other.attackEffect, adjectives, "");
-  consumeAttr(passiveAttack, other.passiveAttack, adjectives, "");
+  consumeAttr(*attackEffect, *other.attackEffect, adjectives, "");
+  consumeAttr(*passiveAttack, *other.passiveAttack, adjectives, "");
   consumeAttr(gender, other.gender, adjectives);
   consumeAttr(skills, other.skills, adjectives);
   if (!adjectives.empty()) {
@@ -305,7 +309,7 @@ ViewObject CreatureAttributes::createViewObject() const {
 }
 
 const optional<ViewObject>& CreatureAttributes::getIllusionViewObject() const {
-  return illusionViewObject;
+  return *illusionViewObject;
 }
 
 bool CreatureAttributes::canEquip() const {
@@ -342,7 +346,7 @@ int CreatureAttributes::getBarehandedDamage() const {
 }
 
 optional<EffectType> CreatureAttributes::getAttackEffect() const {
-  return attackEffect;
+  return *attackEffect;
 }
 
 bool CreatureAttributes::isInnocent() const {

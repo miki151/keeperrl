@@ -17,6 +17,7 @@
 #include "tile.h"
 #include "gui_elem.h"
 #include "view_id.h"
+#include "view_object.h"
 
 Tile::Tile() {
 }

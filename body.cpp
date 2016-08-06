@@ -11,6 +11,10 @@
 #include "item_factory.h"
 #include "position.h"
 #include "player_message.h"
+#include "view_object.h"
+#include "item_type.h"
+#include "effect.h"
+#include "item.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {

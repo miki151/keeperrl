@@ -20,13 +20,14 @@
 #include "enums.h"
 #include "unique_entity.h"
 #include "renderable.h"
-#include "effect_type.h"
 #include "position.h"
 
 class Level;
 class Attack;
 class Fire;
 class ItemAttributes;
+class EffectType;
+struct CorpseInfo;
 
 RICH_ENUM(TrapType,
   BOULDER,
@@ -35,23 +36,6 @@ RICH_ENUM(TrapType,
   WEB,
   SURPRISE,
   TERROR
-);
-
-RICH_ENUM(ItemClass,
-  WEAPON,
-  RANGED_WEAPON,
-  AMMO,
-  ARMOR,
-  SCROLL,
-  POTION,
-  BOOK,
-  AMULET,
-  RING,
-  TOOL,
-  OTHER,
-  GOLD,
-  FOOD,
-  CORPSE
 );
 
 class Item : public Renderable, public UniqueEntity<Item> {
@@ -126,17 +110,7 @@ class Item : public Renderable, public UniqueEntity<Item> {
   static vector<pair<string, vector<Item*>>> stackItems(vector<Item*>,
       function<string(const Item*)> addSuffix = [](const Item*) { return ""; });
 
-  struct CorpseInfo {
-    UniqueEntity<Creature>::Id victim;
-    bool canBeRevived;
-    bool hasHead;
-    bool isSkeleton;
-
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version);
-  };
-
-  virtual optional<CorpseInfo> getCorpseInfo() const { return none; }
+  virtual optional<CorpseInfo> getCorpseInfo() const;
 
   SERIALIZATION_DECL(Item);
 

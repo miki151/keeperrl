@@ -16,11 +16,11 @@
 #ifndef _TILE_H
 #define _TILE_H
 
-#include "view_object.h"
 #include "renderer.h"
 #include "util.h"
 
 enum class ViewId;
+class ViewObject;
 
 class Tile {
   public:

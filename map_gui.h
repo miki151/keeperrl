@@ -22,10 +22,10 @@
 #include "unique_entity.h"
 #include "view_index.h"
 #include "entity_map.h"
+#include "view_object.h"
 
 class MapMemory;
 class MapLayout;
-class ViewObject;
 class Renderer;
 class CreatureView;
 class Clock;

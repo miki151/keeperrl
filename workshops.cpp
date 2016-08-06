@@ -2,7 +2,7 @@
 #include "workshops.h"
 #include "item_factory.h"
 #include "view_object.h"
-
+#include "item.h"
 
 Workshops::Workshops(const EnumMap<WorkshopType, vector<Item>>& o)
     : types(o.mapValues<Type>([] (const vector<Item>& v) { return Type(v);})) {

@@ -46,6 +46,8 @@
 #include "event_proxy.h"
 #include "visibility_map.h"
 #include "collective_name.h"
+#include "view_object.h"
+#include "body.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {

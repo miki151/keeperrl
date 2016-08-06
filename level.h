@@ -18,13 +18,11 @@
 
 #include "util.h"
 #include "debug.h"
-#include "field_of_view.h"
 #include "unique_entity.h"
 #include "movement_type.h"
 #include "sectors.h"
 #include "stair_key.h"
 #include "entity_set.h"
-#include "view_object.h"
 
 class Model;
 class Square;
@@ -42,6 +40,7 @@ class CreatureBucketMap;
 class Position;
 class Game;
 class SquareArray;
+class FieldOfView;
 
 RICH_ENUM(VisionId,
   ELF,
@@ -232,7 +231,7 @@ class Level {
   Vec2 transform(Vec2);
   HeapAllocated<SquareArray> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
-  Table<optional<ViewObject>> SERIAL(background);
+  HeapAllocated<Table<optional<ViewObject>>> SERIAL(background);
   Table<bool> SERIAL(memoryUpdates);
   Table<bool> renderUpdates = Table<bool>(getMaxBounds(), true);
   Table<bool> SERIAL(unavailable);
@@ -245,7 +244,7 @@ class Level {
   vector<Creature*> SERIAL(creatures);
   EntitySet<Creature> SERIAL(creatureIds);
   Model* SERIAL(model) = nullptr;
-  mutable EnumMap<VisionId, FieldOfView> SERIAL(fieldOfView);
+  mutable HeapAllocated<EnumMap<VisionId, FieldOfView>> SERIAL(fieldOfView);
   string SERIAL(name);
   const Level* SERIAL(backgroundLevel) = nullptr;
   Vec2 SERIAL(backgroundOffset);

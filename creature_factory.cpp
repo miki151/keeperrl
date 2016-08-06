@@ -43,6 +43,9 @@
 #include "attack_level.h"
 #include "attack.h"
 #include "event_proxy.h"
+#include "spell_map.h"
+#include "item_type.h"
+#include "item.h"
 
 template <class Archive> 
 void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
@@ -654,7 +657,7 @@ PCreature CreatureFactory::getIllusion(Creature* creature) {
   return PCreature(new Creature(viewObject, creature->getTribeId(), CATTR(
           c.viewId = ViewId::ROCK; //overriden anyway
           c.illusionViewObject = creature->getViewObject();
-          c.illusionViewObject->removeModifier(ViewObject::Modifier::INVISIBLE);
+          (*c.illusionViewObject)->removeModifier(ViewObject::Modifier::INVISIBLE);
           c.attr[AttrType::SPEED] = 100;
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE).setDeathSound(SoundId::MISSED_ATTACK);
           c.attr[AttrType::STRENGTH] = 1;
@@ -1091,7 +1094,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
           c.name->useFullTitle();
-          c.spells.add(SpellId::HEALING);
+          c.spells->add(SpellId::HEALING);
           c.attributeGain = 1;
           c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.minionTasks.setValue(MinionTask::LABORATORY, 0.01); 
@@ -1355,12 +1358,12 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.courage = 3;
-          c.spells.add(SpellId::HEALING);
-          c.spells.add(SpellId::SPEED_SELF);
-          c.spells.add(SpellId::STR_BONUS);
-          c.spells.add(SpellId::SUMMON_SPIRIT);
-          c.spells.add(SpellId::STUN_RAY);
-          c.spells.add(SpellId::BLAST);
+          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::SPEED_SELF);
+          c.spells->add(SpellId::STR_BONUS);
+          c.spells->add(SpellId::SUMMON_SPIRIT);
+          c.spells->add(SpellId::STUN_RAY);
+          c.spells->add(SpellId::BLAST);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.skills.insert(SkillId::HEALING);
           c.name = "shaman";);
@@ -1521,7 +1524,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           for (SpellId id : Random.chooseN(Random.get(3, 6), {SpellId::WORD_OF_POWER, SpellId::DEX_BONUS,
               SpellId::STR_BONUS, SpellId::MAGIC_SHIELD, SpellId::STUN_RAY, SpellId::DECEPTION, SpellId::DECEPTION,
               SpellId::TELEPORT}))
-            c.spells.add(id);
+            c.spells->add(id);
           c.chatReactionFriendly = c.chatReactionHostile =
               "\"There are times when you simply cannot refuse a drink!\"";
           );
@@ -1812,7 +1815,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
-          c.spells.add(SpellId::HEALING);
+          c.spells->add(SpellId::HEALING);
           c.skills.insert(SkillId::ELF_VISION);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = CreatureName("elf", "elves"););
@@ -1827,7 +1830,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
-          c.spells.add(SpellId::HEALING);
+          c.spells->add(SpellId::HEALING);
           c.skills.setValue(SkillId::ARCHERY, 1);
           c.skills.insert(SkillId::ELF_VISION);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
@@ -1843,7 +1846,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
-          c.spells.add(SpellId::HEALING);
+          c.spells->add(SpellId::HEALING);
           c.skills.insert(SkillId::ELF_VISION);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = CreatureName("elf child", "elf children"););
@@ -1858,17 +1861,17 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
-          c.spells.add(SpellId::HEALING);
+          c.spells->add(SpellId::HEALING);
           c.skills.setValue(SkillId::ARCHERY, 1);
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.skills.insert(SkillId::HEALING);
           c.skills.insert(SkillId::ELF_VISION);
-          c.spells.add(SpellId::HEALING);
-          c.spells.add(SpellId::SPEED_SELF);
-          c.spells.add(SpellId::STR_BONUS);
-          c.spells.add(SpellId::STUN_RAY);
-          c.spells.add(SpellId::BLAST);
+          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::SPEED_SELF);
+          c.spells->add(SpellId::STR_BONUS);
+          c.spells->add(SpellId::STUN_RAY);
+          c.spells->add(SpellId::BLAST);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "elf lord";);
     case CreatureId::DARK_ELF:
@@ -1882,7 +1885,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
-          c.spells.add(SpellId::HEALING);
+          c.spells->add(SpellId::HEALING);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = CreatureName("dark elf", "dark elves"););
@@ -1898,7 +1901,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
-          c.spells.add(SpellId::HEALING);
+          c.spells->add(SpellId::HEALING);
           c.skills.setValue(SkillId::ARCHERY, 0.5);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
@@ -1919,7 +1922,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
-          c.spells.add(SpellId::HEALING);
+          c.spells->add(SpellId::HEALING);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = CreatureName("dark elf child", "dark elf children"););
@@ -1934,17 +1937,17 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
-          c.spells.add(SpellId::HEALING);
+          c.spells->add(SpellId::HEALING);
           c.skills.setValue(SkillId::ARCHERY, 1);
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.skills.insert(SkillId::HEALING);
           c.skills.insert(SkillId::NIGHT_VISION);
-          c.spells.add(SpellId::HEALING);
-          c.spells.add(SpellId::SPEED_SELF);
-          c.spells.add(SpellId::STR_BONUS);
-          c.spells.add(SpellId::STUN_RAY);
-          c.spells.add(SpellId::BLAST);
+          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::SPEED_SELF);
+          c.spells->add(SpellId::STR_BONUS);
+          c.spells->add(SpellId::STUN_RAY);
+          c.spells->add(SpellId::BLAST);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "dark elf lord";);
     case CreatureId::DRIAD: 
@@ -1957,7 +1960,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.chatReactionFriendly = "curses all humans";
           c.chatReactionHostile = "\"Die!\"";
-          c.spells.add(SpellId::HEALING);
+          c.spells->add(SpellId::HEALING);
           c.skills.insert(SkillId::ELF_VISION);
           c.skills.setValue(SkillId::ARCHERY, 1);
           c.name = "driad";);
@@ -2303,7 +2306,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.barehandedAttack = AttackType::HIT;
           c.barehandedDamage = 10;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.spells.add(SpellId::AIR_BLAST);
+          c.spells->add(SpellId::AIR_BLAST);
           c.name = "air elemental";);
     case CreatureId::EARTH_ELEMENTAL:
       return CATTR(

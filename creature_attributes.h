@@ -22,17 +22,12 @@
 #include "util.h"
 #include "skill.h"
 #include "gender.h"
-#include "effect.h"
 #include "minion_task.h"
 #include "creature_name.h"
-#include "view_object.h"
-#include "spell_map.h"
 #include "minion_task_map.h"
 #include "skill.h"
 #include "modifier_type.h"
 #include "lasting_effect.h"
-#include "body.h"
-
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);
@@ -46,6 +41,8 @@ struct SpellInfo;
 class MinionTaskMap;
 class SpellMap;
 class Body;
+class SpellMap;
+class EffectType;
 
 class CreatureAttributes {
   public:
@@ -107,7 +104,7 @@ class CreatureAttributes {
   private:
   void consumeEffects(const EnumMap<LastingEffect, int>&);
   MustInitialize<ViewId> SERIAL(viewId);
-  optional<ViewObject> SERIAL(illusionViewObject);
+  HeapAllocated<optional<ViewObject>> SERIAL(illusionViewObject);
   MustInitialize<CreatureName> SERIAL(name);
   EnumMap<AttrType, int> SERIAL(attr);
   HeapAllocated<Body> SERIAL(body);
@@ -115,8 +112,8 @@ class CreatureAttributes {
   optional<string> SERIAL(chatReactionHostile);
   int SERIAL(barehandedDamage) = 0;
   optional<AttackType> SERIAL(barehandedAttack);
-  optional<EffectType> SERIAL(attackEffect);
-  optional<EffectType> SERIAL(passiveAttack);
+  HeapAllocated<optional<EffectType>> SERIAL(attackEffect);
+  HeapAllocated<optional<EffectType>> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::male;
   optional<SpawnType> SERIAL(spawnType);
   bool SERIAL(innocent) = false;
@@ -131,7 +128,7 @@ class CreatureAttributes {
   double SERIAL(attributeGain) = 0.5;
   int SERIAL(recruitmentCost) = 0;
   Skillset SERIAL(skills);
-  SpellMap SERIAL(spells);
+  HeapAllocated<SpellMap> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
   MinionTaskMap SERIAL(minionTasks);

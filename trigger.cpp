@@ -33,6 +33,7 @@
 #include "attack_level.h"
 #include "attack_type.h"
 #include "event_listener.h"
+#include "item_type.h"
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {
@@ -49,11 +50,14 @@ Trigger::Trigger(Position p) : position(p) {
 
 Trigger::~Trigger() {}
 
-Trigger::Trigger(const ViewObject& obj, Position p): viewObject(obj), position(p) {
+Trigger::Trigger(const ViewObject& obj, Position p): viewObject(new ViewObject(obj)), position(p) {
 }
 
 optional<ViewObject> Trigger::getViewObject(const Creature*) const {
-  return viewObject;
+  if (viewObject)
+    return *viewObject;
+  else
+    return none;
 }
 
 void Trigger::onCreatureEnter(Creature* c) {}
@@ -159,7 +163,7 @@ class Trap : public Trigger {
   virtual optional<ViewObject> getViewObject(const Creature* viewer) const override {
     if (!viewer || alwaysVisible || !viewer->getGame()->getTribe(tribe)->isEnemy(viewer)
         || viewer->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS))
-      return viewObject;
+      return *viewObject;
     else
       return none;
   }

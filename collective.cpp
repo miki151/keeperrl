@@ -40,6 +40,8 @@
 #include "villain_type.h"
 #include "workshops.h"
 #include "attack_trigger.h"
+#include "spell_map.h"
+#include "body.h"
 
 struct Collective::ItemFetchInfo {
   ItemIndex index;

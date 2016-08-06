@@ -45,6 +45,10 @@
 #include "attack_type.h"
 #include "attack_level.h"
 #include "model.h"
+#include "view_object.h"
+#include "spell.h"
+#include "body.h"
+#include "field_of_view.h"
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {

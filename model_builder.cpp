@@ -23,6 +23,8 @@
 #include "enemy_factory.h"
 #include "location.h"
 #include "event_proxy.h"
+#include "view_object.h"
+#include "item.h"
 
 using namespace std::chrono;
 

@@ -13,6 +13,7 @@
 #include "game.h"
 #include "view.h"
 #include "square_interaction.h"
+#include "view_object.h"
 
 template <class Archive> 
 void Position::serialize(Archive& ar, const unsigned int version) {

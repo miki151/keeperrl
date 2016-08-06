@@ -27,6 +27,8 @@
 #include "level.h"
 #include "position.h"
 #include "creature_attributes.h"
+#include "view_object.h"
+#include "spell_map.h"
 
 ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }

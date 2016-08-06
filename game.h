@@ -5,7 +5,6 @@
 #include "sunlight_info.h"
 #include "tribe.h"
 #include "enum_variant.h"
-#include "campaign.h"
 #include "position.h"
 
 class Options;
@@ -18,6 +17,8 @@ class FileSharing;
 class Technology;
 class EventListener;
 class GameEvent;
+class Campaign;
+class SavedGameInfo;
 
 RICH_ENUM(GameSaveType,
     ADVENTURER,
@@ -77,7 +78,6 @@ class Game {
   bool isGameOver() const;
   bool isTurnBased();
   bool isSingleModel() const;
-  const Campaign& getCampaign() const;
   bool isVillainActive(const Collective*);
   SavedGameInfo getSavedGameInfo() const;
 
@@ -101,7 +101,7 @@ class Game {
   SERIALIZATION_DECL(Game);
 
   private:
-  Game(const string& worldName, const string& playerName, Table<PModel>&&, Vec2 basePos, optional<Campaign> = none);
+  Game(const string& worldName, const string& playerName, Table<PModel>&&, Vec2 basePos, optional<Campaign>);
   void updateSunlightInfo();
   void tick(double time);
   PCreature makeAdventurer(int handicap);
@@ -110,6 +110,8 @@ class Game {
   optional<ExitInfo> updateModel(Model*, double totalTime);
   string getPlayerName() const;
   void uploadEvent(const string& name, const map<string, string>&);
+  optional<Campaign>& getCampaign();
+  const optional<Campaign>& getCampaign() const;
 
   string SERIAL(worldName);
   SunlightInfo sunlightInfo;
@@ -136,7 +138,7 @@ class Game {
   double lastUpdate = -10;
   PlayerControl* SERIAL(playerControl) = nullptr;
   Collective* SERIAL(playerCollective) = nullptr;
-  optional<Campaign> SERIAL(campaign);
+  HeapAllocated<optional<Campaign>> SERIAL(campaign);
   bool wasTransfered = false;
   Creature* SERIAL(player) = nullptr;
   FileSharing* fileSharing;

@@ -13,8 +13,9 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _LOGGING_VIEW
-#define _LOGGING_VIEW
+#pragma once
+
+#include "view_object.h"
 
 enum class LoggingToken {
   GET_TIME,
@@ -203,4 +204,3 @@ class LoggingView : public View {
     View* delegate;
 };
 
-#endif

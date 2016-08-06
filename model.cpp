@@ -45,6 +45,8 @@
 #include "territory.h"
 #include "game.h"
 #include "progress_meter.h"
+#include "view_object.h"
+#include "item.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {

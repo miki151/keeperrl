@@ -32,6 +32,10 @@
 #include "game.h"
 #include "creature_attributes.h"
 #include "creature_factory.h"
+#include "spell_map.h"
+#include "effect_type.h"
+#include "body.h"
+#include "item_class.h"
 
 class Behaviour {
   public:

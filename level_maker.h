@@ -20,6 +20,7 @@
 #include "creature_factory.h"
 #include "item_factory.h"
 #include "square_factory.h"
+#include "item_type.h"
 
 enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON};
 

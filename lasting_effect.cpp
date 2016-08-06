@@ -4,6 +4,7 @@
 #include "view_object.h"
 #include "player_message.h"
 #include "creature_attributes.h"
+#include "body.h"
 
 void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
   switch (effect) {

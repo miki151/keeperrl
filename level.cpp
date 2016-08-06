@@ -35,6 +35,8 @@
 #include "game.h"
 #include "creature_attributes.h"
 #include "square_array.h"
+#include "view_object.h"
+#include "field_of_view.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -65,7 +67,7 @@ Level::Level(SquareArray s, Model* m, vector<Location*> l, const string& n,
   for (Location *l : locations)
     l->setLevel(this);
   for (VisionId vision : ENUM_ALL(VisionId))
-    fieldOfView[vision] = FieldOfView(*squares, vision);
+    (*fieldOfView)[vision] = FieldOfView(*squares, vision);
   for (Vec2 pos : squares->getBounds())
     addLightSource(pos, squares->getReadonly(pos)->getLightEmission(), 1);
 }
@@ -157,7 +159,7 @@ void Level::replaceSquare(Position position, PSquare newSquare, bool storePrevio
   for (PTrigger& t : oldSquare->removeTriggers(position))
     newSquare->addTrigger(position, std::move(t));
   if (auto backgroundObj = oldSquare->extractBackground())
-    background[pos] = backgroundObj;
+    (*background)[pos] = backgroundObj;
   if (auto tribe = oldSquare->getForbiddenTribe())
     newSquare->forbidMovementForTribe(position, *tribe);
   if (storePrevious)
@@ -180,7 +182,7 @@ void Level::updateVisibility(Vec2 changedSquare) {
         addDarknessSource(pos, darknessRadius, -1);
   }
   for (VisionId vision : ENUM_ALL(VisionId))
-    fieldOfView[vision].squareChanged(changedSquare);
+    getFieldOfView(vision).squareChanged(changedSquare);
   for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
     addLightSource(pos, squares->getReadonly(pos)->getLightEmission(), 1);
     if (Creature* c = squares->getReadonly(pos)->getCreature())
@@ -449,7 +451,7 @@ bool Level::isWithinVision(Vec2 from, Vec2 to, VisionId v) const {
 }
 
 FieldOfView& Level::getFieldOfView(VisionId vision) const {
-  return fieldOfView[vision];
+  return (*fieldOfView)[vision];
 }
 
 bool Level::canSee(Vec2 from, Vec2 to, VisionId vision) const {
@@ -618,7 +620,7 @@ void Level::updateSunlightMovement() {
 }
 
 const optional<ViewObject>& Level::getBackgroundObject(Vec2 pos) const {
-  return background[pos];
+  return (*background)[pos];
 }
 
 int Level::getNumModifiedSquares() const {

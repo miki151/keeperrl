@@ -38,6 +38,7 @@
 #include "attack_type.h"
 #include "body.h"
 #include "event_listener.h"
+#include "item_class.h"
 
 vector<int> healingPoints { 5, 15, 40};
 vector<int> sleepTime { 15, 80, 200};

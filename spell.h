@@ -19,33 +19,16 @@
 #include "enums.h"
 #include "util.h"
 #include "singleton.h"
-#include "effect_type.h"
-
-RICH_ENUM(SpellId,
-  HEALING,
-  SUMMON_INSECTS,
-  DECEPTION,
-  SPEED_SELF,
-  STR_BONUS,
-  DEX_BONUS,
-  FIRE_SPHERE_PET,
-  TELEPORT,
-  INVISIBILITY,
-  WORD_OF_POWER,
-  AIR_BLAST,
-  SUMMON_SPIRIT,
-  PORTAL,
-  CURE_POISON,
-  METEOR_SHOWER,
-  MAGIC_SHIELD,
-  BLAST,
-  STUN_RAY
-);
+#include "spell_id.h"
 
 enum class CastMessageType {
   STANDARD,
   AIR_BLAST
 };
+
+class EffectType;
+class DirEffectType;
+class EffectType;
 
 class Spell : public Singleton<Spell, SpellId> {
   public:
@@ -67,7 +50,7 @@ class Spell : public Singleton<Spell, SpellId> {
   Spell(const string&, DirEffectType, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
 
   const string name;
-  const variant<EffectType, DirEffectType> effect;
+  const HeapAllocated<variant<EffectType, DirEffectType>> effect;
   const int difficulty;
   const CastMessageType castMessageType;
   const SoundId sound;

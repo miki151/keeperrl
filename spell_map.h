@@ -16,7 +16,9 @@
 #ifndef _SPELL_MAP_H
 #define _SPELL_MAP_H
 
-#include "spell.h"
+#include "spell_id.h"
+
+class Spell;
 
 class SpellMap {
   public:

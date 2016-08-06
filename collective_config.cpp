@@ -13,6 +13,7 @@
 #include "lasting_effect.h"
 #include "item.h"
 #include "square_type.h"
+#include "view_id.h"
 
 AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
   : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}

@@ -27,6 +27,7 @@
 #include "square_factory.h"
 #include "model.h"
 #include "monster_ai.h"
+#include "item.h"
 
 namespace {
 

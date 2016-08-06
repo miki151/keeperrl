@@ -38,6 +38,9 @@
 #include "sound.h"
 #include "creature_attributes.h"
 #include "event_listener.h"
+#include "item_type.h"
+#include "body.h"
+#include "item.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -51,6 +54,17 @@ void ItemFactory::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(ItemFactory);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ItemFactory);
+
+struct ItemFactory::ItemInfo {
+  ItemInfo(ItemType _id, double _weight) : id(_id), weight(_weight) {}
+  ItemInfo(ItemType _id, double _weight, int minC, int maxC)
+    : id(_id), weight(_weight), minCount(minC), maxCount(maxC) {}
+
+  ItemType id;
+  double weight;
+  int minCount = 1;
+  int maxCount = 2;
+};
 
 class FireScroll : public Item {
   public:
@@ -162,7 +176,7 @@ class ItemOfCreatureVision : public Item {
 class Corpse : public Item {
   public:
   Corpse(const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN, 
-      double rottingT, Item::CorpseInfo info) : 
+      double rottingT, CorpseInfo info) : 
       Item(attr), 
       object2(obj2), 
       rottingTime(rottingT), 
@@ -224,7 +238,7 @@ class Corpse : public Item {
 };
 
 PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemClass itemClass,
-    Item::CorpseInfo corpseInfo) {
+    CorpseInfo corpseInfo) {
   const double rotTime = 300;
   return PItem(new Corpse(
         ViewObject(ViewId::BONE, ViewLayer::ITEM, rottenName),
