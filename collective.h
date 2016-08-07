@@ -338,6 +338,7 @@ class Collective : public TaskCallback {
   ItemPredicate unMarkedItems() const;
   EntitySet<Creature> SERIAL(surrendering);
   void updateConstructions();
+  void scheduleTrapProduction(TrapType, int count);
   void delayDangerousTasks(const vector<Position>& enemyPos, double delayTime);
   bool isDelayed(Position);
   unordered_map<Position, double, CustomHash<Position>> SERIAL(delayedPos);

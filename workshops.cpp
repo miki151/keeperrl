@@ -4,8 +4,8 @@
 #include "item_factory.h"
 #include "item.h"
 
-Workshops::Workshops(const EnumMap<WorkshopType, vector<Item>>& o)
-    : types(o.mapValues<Type>([this] (const vector<Item>& v) { return Type(this, v);})) {
+Workshops::Workshops(const EnumMap<WorkshopType, vector<Item>>& options)
+    : types([&options, this] (WorkshopType t) { return Type(this, options[t]);}) {
 }
 
 Workshops::Type& Workshops::get(WorkshopType type) {
@@ -43,20 +43,25 @@ void Workshops::Type::addDebt(CostInfo cost) {
   workshops->debt[cost.id] += cost.value;
 }
 
-void Workshops::Type::queue(int index) {
+void Workshops::Type::queue(int index, int count) {
+  CHECK(count > 0);
   const Item& newElem = options[index];
-  addDebt(newElem.cost);
+  addDebt(newElem.cost * count);
   if (!queued.empty() && queued.back() == newElem)
-    queued.back().number += newElem.number;
-  else
+    queued.back().number += count;
+  else {
     queued.push_back(newElem);
+    queued.back().number = count;
+  }
   stackQueue();
 }
 
 void Workshops::Type::unqueue(int index) {
   if (index >= 0 && index < queued.size()) {
-    if (!queued[index].state)
-      addDebt(-queued[index].cost);
+    if (queued[index].state.get_value_or(0) == 0)
+      addDebt(-queued[index].cost * queued[index].number);
+    else
+      addDebt(-queued[index].cost * (queued[index].number - 1));
     queued.erase(queued.begin() + index);
   }
   stackQueue();

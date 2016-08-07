@@ -15,8 +15,8 @@ class Workshops {
     const vector<Item>& getOptions() const;
     const vector<Item>& getQueued() const;
     vector<PItem> addWork(double);
-    void queue(int);
-    void unqueue(int);
+    void queue(int index, int count = 1);
+    void unqueue(int index);
     void changeNumber(int index, int number);
     void scheduleItems(Collective*);
     bool isIdle() const;

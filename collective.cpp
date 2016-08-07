@@ -1769,23 +1769,41 @@ bool Collective::tryLockingDoor(Position pos) {
   return false;
 }
 
-void Collective::updateConstructions() {
-  map<TrapType, vector<pair<Item*, Position>>> trapItems;
-  for (TrapType type : ENUM_ALL(TrapType))
-    trapItems[type] = getTrapItems(type, territory->getAll());
-  for (auto elem : constructions->getTraps())
-    if (!isDelayed(elem.first)) {
-      vector<pair<Item*, Position>>& items = trapItems.at(elem.second.getType());
-      if (!items.empty()) {
-        if (!elem.second.isArmed() && !elem.second.isMarked()) {
-          Position pos = items.back().second;
-          taskMap->addTask(Task::applyItem(this, pos, items.back().first, elem.first), pos);
-          markItem(items.back().first);
-          items.pop_back();
-          constructions->getTrap(elem.first).setMarked();
+void Collective::scheduleTrapProduction(TrapType trapType, int count) {
+  if (count > 0)
+    for (auto workshopType : ENUM_ALL(WorkshopType))
+      for (auto& item : workshops->get(workshopType).getQueued())
+        if (ItemFactory::fromId(item.type)->getTrapType() == trapType)
+          count -= item.number;
+  if (count > 0)
+    for (auto workshopType : ENUM_ALL(WorkshopType)) {
+      auto& options = workshops->get(workshopType).getOptions();
+      for (int index : All(options))
+        if (ItemFactory::fromId(options[index].type)->getTrapType() == trapType) {
+          workshops->get(workshopType).queue(index, count);
+          return;
         }
-      }
     }
+}
+
+void Collective::updateConstructions() {
+  EnumMap<TrapType, vector<pair<Item*, Position>>> trapItems(
+      [this] (TrapType type) { return getTrapItems(type, territory->getAll());});
+  EnumMap<TrapType, int> missingTraps;
+  for (auto elem : constructions->getTraps())
+    if (!elem.second.isArmed() && !elem.second.isMarked() && !isDelayed(elem.first)) {
+      vector<pair<Item*, Position>>& items = trapItems[elem.second.getType()];
+      if (!items.empty()) {
+        Position pos = items.back().second;
+        taskMap->addTask(Task::applyItem(this, pos, items.back().first, elem.first), pos);
+        markItem(items.back().first);
+        items.pop_back();
+        constructions->getTrap(elem.first).setMarked();
+      } else
+        ++missingTraps[elem.second.getType()];
+    }
+  for (TrapType type : ENUM_ALL(TrapType))
+    scheduleTrapProduction(type, missingTraps[type]);
   for (Position pos : constructions->getSquares()) {
     auto& construction = constructions->getSquare(pos);
     if (!isDelayed(pos) && !construction.hasTask() && !construction.isBuilt()) {

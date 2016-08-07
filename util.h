@@ -1168,6 +1168,11 @@ class EnumMap {
   EnumMap(const EnumMap& o) : elems(o.elems) {}
   EnumMap(EnumMap&& o) : elems(std::move(o.elems)) {}
 
+  EnumMap(function<U(T)> f) {
+    for (T t : EnumAll<T>())
+      (*this)[t] = f(t);
+  }
+
   bool operator == (const EnumMap<T, U>& other) const {
     return elems == other.elems;
   }
@@ -1209,14 +1214,6 @@ class EnumMap {
   U& operator[](T elem) {
     CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
     return elems[int(elem)];
-  }
-
-  template <typename V, typename Fun>
-  EnumMap<T, V> mapValues(Fun fun) const {
-    EnumMap<T, V> ret;
-    for (T t : EnumAll<T>())
-      ret[t] = fun((*this)[t]);
-    return ret;
   }
 
   template <class Archive> 
