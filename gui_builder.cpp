@@ -198,19 +198,22 @@ PGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
     }
     lines.addSpace(legendLineHeight / 2);
     for (int i : All(info.workshopButtons)) {
+      auto& button = info.workshopButtons[i];
       auto line = gui.getListBuilder();
-      line.addElem(gui.viewObject(info.workshopButtons[i].viewId), 35);
-      line.addElemAuto(gui.label(info.workshopButtons[i].name, colors[ColorId::WHITE]));
+      line.addElem(gui.viewObject(button.viewId), 35);
+      line.addElemAuto(gui.label(button.name, colors[button.unavailable ? ColorId::GRAY : ColorId::WHITE]));
       PGuiElem elem = line.buildHorizontalList();
-      if (info.workshopButtons[i].active)
+      if (button.active)
         elem = gui.stack(
             gui.uiHighlight(colors[ColorId::GREEN]),
             std::move(elem));
-      lines.addElem(gui.stack(
+      if (!button.unavailable)
+        elem = gui.stack(
           gui.button([this, i] {
             workshopsScroll2 = workshopsScroll = 0;
             getButtonCallback(UserInput(UserInputId::WORKSHOP, i))(); }),
-          std::move(elem)));
+          std::move(elem));
+      lines.addElem(std::move(elem));
     }
     technologyCache = lines.buildVerticalList();
   }
@@ -1076,10 +1079,13 @@ void GuiBuilder::drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInf
 }
 
 void GuiBuilder::drawWorkshopsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
-  int margin = 20;
-  int rightElemMargin = 10;
-  Vec2 size(860, 600);
   if (info.chosenWorkshop) {
+    int newHash = info.getHash();
+    if (newHash != workshopsOverlayHash) {
+      workshopsOverlayHash = newHash;
+      int margin = 20;
+      int rightElemMargin = 10;
+      Vec2 size(860, 600);
       auto& options = info.chosenWorkshop->options;
       auto& queued = info.chosenWorkshop->queued;
       auto lines = gui.getListBuilder(legendLineHeight);
@@ -1088,12 +1094,20 @@ void GuiBuilder::drawWorkshopsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
         auto& elem = options[i];
         auto line = gui.getListBuilder();
         line.addElem(gui.viewObject(elem.viewId), 35);
-        line.addElem(gui.label(elem.name), 10);
+        line.addElem(gui.label(elem.name, colors[elem.unavailable ? ColorId::GRAY : ColorId::WHITE]), 10);
         line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
-        lines.addElem(gui.rightMargin(rightElemMargin, gui.stack(
+        PGuiElem guiElem = line.buildHorizontalList();
+        if (elem.unavailable) {
+          CHECK(!elem.unavailableReason.empty());
+          guiElem = gui.stack(getTooltip({elem.unavailableReason}), std::move(guiElem));
+        }
+        else
+          guiElem = gui.stack(
+              getTooltip({elem.description}),
               gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
-              gui.button(getButtonCallback({UserInputId::WORKSHOP_ADD, i})),
-              line.buildHorizontalList())));
+              std::move(guiElem),
+              gui.button(getButtonCallback({UserInputId::WORKSHOP_ADD, i})));
+        lines.addElem(gui.rightMargin(rightElemMargin, std::move(guiElem)));
       }
       auto lines2 = gui.getListBuilder(legendLineHeight);
       lines2.addElem(gui.label("In production:", colors[ColorId::YELLOW]));
@@ -1138,15 +1152,20 @@ void GuiBuilder::drawWorkshopsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
             gui.rightMargin(rightElemMargin, line.buildHorizontalList())));
       }
       size.y = min(600, max(lines.getSize(), lines2.getSize()) + 2 * margin);
-    ret.push_back({gui.miniWindow(gui.stack(
+      workshopsOverlayCache = gui.stack(gui.preferredSize(size.x, size.y),
+        gui.miniWindow(gui.stack(
           gui.keyHandler(getButtonCallback({UserInputId::WORKSHOP, info.chosenWorkshop->index}),
             {gui.getKey(SDL::SDLK_ESCAPE)}, true),
           gui.getListBuilder(430)
-                .addElem(gui.margins(gui.scrollable(lines.buildVerticalList(), &workshopsScroll, &scrollbarsHeld), 
-                    margin))
-                .addElem(gui.margins(gui.scrollable(lines2.buildVerticalList(), &workshopsScroll2, &scrollbarsHeld),
-                    margin)).buildHorizontalList())),
-        size, OverlayInfo::MINIONS});
+                .addElem(gui.margins(gui.scrollable(
+                      lines.buildVerticalList(), &workshopsScroll, &scrollbarsHeld), margin))
+                .addElem(gui.margins(
+                    gui.scrollable(lines2.buildVerticalList(), &workshopsScroll2, &scrollbarsHeld),
+                    margin)).buildHorizontalList())));
+    }
+    ret.push_back({gui.external(workshopsOverlayCache.get()), 
+        Vec2(*workshopsOverlayCache->getPreferredWidth(), *workshopsOverlayCache->getPreferredHeight()),
+        OverlayInfo::MINIONS});
   }
 }
 

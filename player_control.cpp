@@ -1078,12 +1078,15 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
   info.minionLimit = getCollective()->getMaxPopulation();
 }
 
-static ItemInfo getWorkshopItem(const Workshops::Item& option) {
+ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
   return CONSTRUCT(ItemInfo,
       c.name = option.name;
       c.viewId = option.viewId;
       c.price = getCostObj(option.cost);
-      c.unavailable = !option.active;
+      if (option.techId && !getCollective()->hasTech(*option.techId)) {
+        c.unavailable = true;
+        c.unavailableReason = "Requires technology: " + Technology::get(*option.techId)->getName();
+      }
       c.productionState = option.state.get_value_or(0);
       c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
       c.number = option.number;
@@ -1103,21 +1106,25 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     ++i;
   }
   if (chosenWorkshop) {
+    auto transFun = [this](const WorkshopItem& item) { return getWorkshopItem(item); };
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
-        transform2<ItemInfo>(getCollective()->getWorkshops().get(*chosenWorkshop).getOptions(), getWorkshopItem),
-        transform2<ItemInfo>(getCollective()->getWorkshops().get(*chosenWorkshop).getQueued(), getWorkshopItem),
-        index
+        transform2<ItemInfo>(getCollective()->getWorkshops().get(*chosenWorkshop).getOptions(), transFun),
+        transform2<ItemInfo>(getCollective()->getWorkshops().get(*chosenWorkshop).getQueued(), transFun),
     };
   }
 }
 
 vector<PlayerControl::WorkshopInfo> PlayerControl::getWorkshopInfo() const {
-  return {
+  vector<WorkshopInfo> ret {
     {{"Workshop", ViewId::WORKSHOP, false}, WorkshopType::WORKSHOP},
     {{"Forge", ViewId::FORGE, false}, WorkshopType::FORGE},
     {{"Laboratory", ViewId::LABORATORY, false}, WorkshopType::LABORATORY},
     {{"Jeweler", ViewId::JEWELER, false}, WorkshopType::JEWELER},
   };
+  for (auto& elem : ret)
+    elem.button.unavailable = getCollective()->getSquares(
+        CollectiveConfig::getWorkshopInfo(elem.workshopType).squareType).empty();
+  return ret;
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {

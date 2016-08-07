@@ -37,12 +37,13 @@ struct ItemInfo {
   bool HASH(locked);
   bool HASH(pending);
   bool HASH(unavailable);
+  string HASH(unavailableReason);
   optional<EquipmentSlot> HASH(slot);
   optional<CreatureInfo> HASH(owner);
   enum Type {EQUIPMENT, CONSUMABLE, OTHER} HASH(type);
   optional<pair<ViewId, int>> HASH(price);
   double HASH(productionState);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState);
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason);
 };
 
 
@@ -161,7 +162,8 @@ class CollectiveInfo {
     string HASH(name);
     ViewId HASH(viewId);
     bool HASH(active);
-    HASH_ALL(name, viewId, active);
+    bool HASH(unavailable);
+    HASH_ALL(name, viewId, active, unavailable);
   };
   vector<WorkshopButton> HASH(workshopButtons);
   struct ChosenWorkshopInfo {

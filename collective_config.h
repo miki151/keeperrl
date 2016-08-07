@@ -19,6 +19,7 @@
 #include "square_type.h"
 #include "util.h"
 #include "minion_task.h"
+#include "workshop_type.h"
 
 enum class ItemClass;
 
@@ -126,7 +127,6 @@ struct MinionTaskInfo {
 
 struct WorkshopInfo {
   SquareId squareType;
-  WorkshopType workshopType;
   MinionTask minionTask;
   string taskName;
 };
@@ -164,7 +164,7 @@ class CollectiveConfig {
   const optional<GuardianInfo>& getGuardianInfo() const;
   vector<BirthSpawn> getBirthSpawns() const;
   unique_ptr<Workshops> getWorkshops() const;
-  static const vector<WorkshopInfo>& getWorkshopInfo();
+  static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(MinionTask);
 
   bool activeImmigrantion(const Game*) const;

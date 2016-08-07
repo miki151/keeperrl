@@ -42,6 +42,7 @@ template <typename T>
 class EventProxy;
 class SquareType;
 class CostInfo;
+struct WorkshopItem;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
@@ -168,6 +169,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool canBuildDoor(Position) const;
   bool canPlacePost(Position) const;
   void getEquipmentItem(View* view, ItemPredicate predicate);
+  ItemInfo getWorkshopItem(const WorkshopItem&) const;
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
       double* scrollPos = nullptr);
 

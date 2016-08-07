@@ -1973,10 +1973,11 @@ void Collective::onAppliedSquare(Position pos) {
   }
   if (getSquares(SquareId::TRAINING_ROOM).count(pos))
     c->getAttributes().exerciseAttr(Random.choose<AttrType>(), getEfficiency(pos));
-  for (auto& elem : config->getWorkshopInfo())
+  for (auto workshopType : ENUM_ALL(WorkshopType)) {
+    auto& elem = config->getWorkshopInfo(workshopType);
     if (getSquares(elem.squareType).count(pos)) {
       vector<PItem> items =
-          workshops->get(elem.workshopType).addWork(getEfficiency(pos) * (1 + c->getMorale()) / 2);
+          workshops->get(workshopType).addWork(getEfficiency(pos) * (1 + c->getMorale()) / 2);
       if (!items.empty()) {
         if (items[0]->getClass() == ItemClass::WEAPON)
           getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
@@ -1988,6 +1989,7 @@ void Collective::onAppliedSquare(Position pos) {
         pos.dropItems(std::move(items));
       }
     }
+  }
 }
 
 double Collective::getDangerLevel() const {

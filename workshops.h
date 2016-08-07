@@ -1,35 +1,14 @@
 #pragma once
 
-#include "cost_info.h"
-#include "item_type.h"
 #include "resource_id.h"
-
-RICH_ENUM(WorkshopType,
-    WORKSHOP,
-    FORGE,
-    LABORATORY,
-    JEWELER
-);
+#include "workshop_type.h"
+#include "workshop_item.h"
 
 class Collective;
 
 class Workshops {
   public:
-  struct Item {
-    static Item fromType(ItemType, CostInfo, double workNeeded, int batchSize = 1);
-    bool operator == (const Item&) const;
-    ItemType SERIAL(type);
-    string SERIAL(name);
-    ViewId SERIAL(viewId);
-    CostInfo SERIAL(cost);
-    bool SERIAL(active);
-    int SERIAL(number);
-    int SERIAL(batchSize);
-    double SERIAL(workNeeded);
-    optional<double> SERIAL(state);
-    SERIALIZE_ALL(type, name, viewId, cost, active, number, batchSize, workNeeded, state);
-  };
-
+  typedef WorkshopItem Item;
   class Type {
     public:
     Type(Workshops*, const vector<Item>& options);

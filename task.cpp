@@ -497,7 +497,7 @@ class ApplySquare : public Task {
     return "Apply square " + (position ? toString(*position) : "");
   }
 
-  SERIALIZE_ALL2(Task, positions, rejectedPosition, invalidCount, position, callback); 
+  SERIALIZE_ALL2(Task, positions, rejectedPosition, invalidCount, position, callback, searchType); 
   SERIALIZATION_CONSTRUCTOR(ApplySquare);
 
   private:

@@ -1,9 +1,8 @@
 #include "stdafx.h"
 #include "workshops.h"
-#include "item_factory.h"
-#include "view_object.h"
-#include "item.h"
 #include "collective.h"
+#include "item_factory.h"
+#include "item.h"
 
 Workshops::Workshops(const EnumMap<WorkshopType, vector<Item>>& o)
     : types(o.mapValues<Type>([this] (const vector<Item>& v) { return Type(this, v);})) {
@@ -28,10 +27,6 @@ SERIALIZE_DEF(Workshops::Type, options, queued, workshops);
 
 const vector<Workshops::Item>& Workshops::Type::getOptions() const {
   return options;
-}
-
-bool Workshops::Item::operator == (const Item& item) const {
-  return type == item.type;
 }
 
 void Workshops::Type::stackQueue() {
@@ -120,21 +115,6 @@ vector<PItem> Workshops::Type::addWork(double amount) {
 
 const vector<Workshops::Item>& Workshops::Type::getQueued() const {
   return queued;
-}
-
-Workshops::Item Workshops::Item::fromType(ItemType type, CostInfo cost, double workNeeded, int batchSize) {
-  PItem item = ItemFactory::fromId(type);
-  return {
-    type,
-    item->getPluralName(batchSize),
-    item->getViewObject().id(),
-    cost,
-    true,
-    1,
-    batchSize,
-    workNeeded,
-    none
-  };
 }
 
 int Workshops::getDebt(CollectiveResourceId resource) const {
