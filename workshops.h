@@ -25,7 +25,7 @@ class Workshops {
 
     private:
     void stackQueue();
-    void addCost(CostInfo);
+    void addDebt(CostInfo);
     vector<Item> SERIAL(options);
     vector<Item> SERIAL(queued);
     Workshops* SERIAL(workshops) = nullptr;

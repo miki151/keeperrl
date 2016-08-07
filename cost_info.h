@@ -8,7 +8,8 @@ class CostInfo {
   CostInfo(CollectiveResourceId, int amount);
   static CostInfo noCost();
 
-  CostInfo operator-() const;
+  CostInfo operator - () const;
+  CostInfo operator * (int) const;
 
   SERIALIZATION_DECL(CostInfo);
 

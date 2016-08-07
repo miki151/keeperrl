@@ -11,6 +11,10 @@ CostInfo CostInfo::noCost() {
   return CostInfo{CollectiveResourceId(0), 0};
 }
 
-CostInfo CostInfo::operator-() const {
+CostInfo CostInfo::operator - () const {
   return CostInfo(id, -value);
+}
+
+CostInfo CostInfo::operator * (int a) const {
+  return CostInfo(id, a * value);
 }

@@ -39,13 +39,13 @@ void Workshops::Type::stackQueue() {
   queued = tmp;
 }
 
-void Workshops::Type::addCost(CostInfo cost) {
+void Workshops::Type::addDebt(CostInfo cost) {
   workshops->debt[cost.id] += cost.value;
 }
 
 void Workshops::Type::queue(int index) {
   const Item& newElem = options[index];
-  addCost(newElem.cost);
+  addDebt(newElem.cost);
   if (!queued.empty() && queued.back() == newElem)
     queued.back().number += newElem.number;
   else
@@ -55,21 +55,19 @@ void Workshops::Type::queue(int index) {
 
 void Workshops::Type::unqueue(int index) {
   if (index >= 0 && index < queued.size()) {
-    addCost(-queued[index].cost);
+    if (!queued[index].state)
+      addDebt(-queued[index].cost);
     queued.erase(queued.begin() + index);
   }
   stackQueue();
 }
 
 void Workshops::Type::changeNumber(int index, int number) {
-  if (number <= 0)
-    unqueue(index);
-  else {
-    if (index >= 0 && index < queued.size()) {
-      auto& elem = queued[index];
-      addCost(CostInfo(elem.cost.id, number - elem.number));
-      elem.number = number;
-    }
+  CHECK(number > 0);
+  if (index >= 0 && index < queued.size()) {
+    auto& elem = queued[index];
+    addDebt(CostInfo(elem.cost.id, elem.cost.value) * (number - elem.number));
+    elem.number = number;
   }
 }
 
@@ -92,7 +90,7 @@ void Workshops::Type::scheduleItems(Collective* collective) {
       if (i > 0)
         swap(queued[0], queued[i]);
       collective->takeResource(queued[0].cost);
-      addCost(-queued[0].cost);
+      addDebt(-queued[0].cost);
       queued[0].state = 0;
       return;
     }

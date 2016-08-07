@@ -1647,8 +1647,12 @@ void PlayerControl::processInput(View* view, UserInput input) {
               getCollective()->getWorkshops().get(*chosenWorkshop).unqueue(info.itemIndex);
               break;
             case ItemAction::CHANGE_NUMBER:
-              if (auto number = getView()->getNumber("Change the number of items:", 0, 300, 1))
-                getCollective()->getWorkshops().get(*chosenWorkshop).changeNumber(info.itemIndex, *number);
+              if (auto number = getView()->getNumber("Change the number of items:", 0, 300, 1)) {
+                if (*number > 0)
+                  getCollective()->getWorkshops().get(*chosenWorkshop).changeNumber(info.itemIndex, *number);
+                else
+                  getCollective()->getWorkshops().get(*chosenWorkshop).unqueue(info.itemIndex);
+              }
             default:
               break;
           }
