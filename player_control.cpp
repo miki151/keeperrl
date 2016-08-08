@@ -1976,6 +1976,9 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
 void PlayerControl::tryLockingDoor(Position pos) {
   if (getCollective()->tryLockingDoor(pos))
     updateSquareMemory(pos);
+  for (auto workshopType : ENUM_ALL(WorkshopType))
+    if (getCollective()->getSquares(CollectiveConfig::getWorkshopInfo(workshopType).squareType).count(pos))
+      chosenWorkshop = workshopType;
 }
 
 double PlayerControl::getLocalTime() const {
