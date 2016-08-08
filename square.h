@@ -191,6 +191,8 @@ class Square : public Renderable {
   /** Called just before swapping the old square for the new constructed one.*/
   virtual void onConstructNewSquare(Position, Square* newSquare) const {}
   
+  bool isActiveConstruction() const;
+
   /** Triggers all time-dependent processes like burning. Calls tick() for items if present.
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
   void tick(Position);

@@ -731,6 +731,14 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
               c.constructions = ConstructionsId::DUNGEON_ROOMS;
             ));
+    case SquareId::CUSTOM_FLOOR:
+        return new Square(ViewObject(s.get<CustomFloorInfo>().viewId, ViewLayer::FLOOR_BACKGROUND),
+            CONSTRUCT(Square::Params,
+              c.name = s.get<CustomFloorInfo>().name;
+              c.vision = VisionId::NORMAL;
+              c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
+              c.constructions = ConstructionsId::DUNGEON_ROOMS;
+            ));
     case SquareId::BLACK_FLOOR:
         return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND, "Floor"),
             CONSTRUCT(Square::Params,

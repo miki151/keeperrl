@@ -10,6 +10,7 @@
 RICH_ENUM(SquareId,
   FLOOR,
   BLACK_FLOOR,
+  CUSTOM_FLOOR,
   BRIDGE,
   ROAD,
   GRASS,
@@ -107,8 +108,17 @@ struct ChestInfo {
   }
 };
 
+struct CustomFloorInfo {
+  ViewId SERIAL(viewId);
+  string SERIAL(name);
+  SERIALIZE_ALL(viewId, name);
+  bool operator == (const CustomFloorInfo& o) const {
+    return viewId == o.viewId && name == o.name;
+  }
+};
+
 class SquareType : public EnumVariant<SquareId, TYPES(const Creature*, CreatureId,
-      CreatureFactory::SingleCreature, ChestInfo, TribeId, StairInfo, StairKey, string, double),
+      CreatureFactory::SingleCreature, ChestInfo, TribeId, StairInfo, StairKey, string, double, CustomFloorInfo),
     ASSIGN(const Creature*, SquareId::CREATURE_ALTAR),
     ASSIGN(CreatureId,
         SquareId::DECID_TREE,
@@ -128,6 +138,8 @@ class SquareType : public EnumVariant<SquareId, TYPES(const Creature*, CreatureI
         SquareId::BARRICADE),
     ASSIGN(StairKey,
         SquareId::SOKOBAN_HOLE),
+    ASSIGN(CustomFloorInfo,
+        SquareId::CUSTOM_FLOOR),
     ASSIGN(StairInfo,
         SquareId::STAIRS)> {
   using EnumVariant::EnumVariant;

@@ -136,6 +136,7 @@ static optional<short int> getConstructionTime(ConstructionsId id, SquareId squa
       }
     case ConstructionsId::DUNGEON_ROOMS:
       switch (square) {
+        case SquareId::CUSTOM_FLOOR: return 3;
         case SquareId::TREASURE_CHEST: return 10;
         case SquareId::DORM: return 10;
         case SquareId::TRIBE_DOOR: return 10;
@@ -171,6 +172,10 @@ static optional<short int> getConstructionTime(ConstructionsId id, SquareId squa
 
 bool Square::canConstruct(const SquareType& type) const {
   return constructions && getConstructionTime(*constructions, type.getId());
+}
+
+bool Square::isActiveConstruction() const {
+  return !!currentConstruction;
 }
 
 bool Square::construct(Position position, const SquareType& type) {

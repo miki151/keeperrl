@@ -85,6 +85,7 @@ class Position {
   void destroyBy(Creature* c);
   void destroy();
   bool construct(const SquareType&);
+  bool isActiveConstruction() const;
   bool isBurning() const;
   void setOnFire(double amount);
   bool needsRenderUpdate() const;

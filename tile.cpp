@@ -323,6 +323,12 @@ class TileCoordLookup {
     Tile::addTile(ViewId::ROAD, getRoadTile("road"));
     Tile::addTile(ViewId::FLOOR, sprite("floor"));
     Tile::addTile(ViewId::KEEPER_FLOOR, sprite("floor_keeper"));
+    Tile::addTile(ViewId::WOOD_FLOOR1, sprite("floor_wood1"));
+    Tile::addTile(ViewId::WOOD_FLOOR2, sprite("floor_wood2"));
+    Tile::addTile(ViewId::STONE_FLOOR1, sprite("floor_stone1"));
+    Tile::addTile(ViewId::STONE_FLOOR2, sprite("floor_stone2"));
+    Tile::addTile(ViewId::CARPET_FLOOR1, sprite("floor_carpet1"));
+    Tile::addTile(ViewId::CARPET_FLOOR2, sprite("floor_carpet2"));
     Tile::addTile(ViewId::SAND, getExtraBorderTile("sand")
         .addExtraBorderId(ViewId::WATER));
     Tile::addTile(ViewId::MUD, getExtraBorderTile("mud")
@@ -478,7 +484,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::KEY, sprite("key"));
     Tile::addTile(ViewId::FOUNTAIN, sprite("fountain").setNoShadow());
     Tile::addTile(ViewId::GOLD, sprite("gold").setNoShadow());
-    Tile::addTile(ViewId::TREASURE_CHEST, sprite("treasurydeco").setNoShadow().addBackground(byName("treasury")));
+    Tile::addTile(ViewId::TREASURE_CHEST, sprite("treasurydeco").setNoShadow());
     Tile::addTile(ViewId::CHEST, sprite("chest").setNoShadow());
     Tile::addTile(ViewId::OPENED_CHEST, sprite("chest_opened").setNoShadow());
     Tile::addTile(ViewId::COFFIN, sprite("coffin").setNoShadow());
@@ -502,35 +508,21 @@ class TileCoordLookup {
     Tile::addTile(ViewId::TORCH, sprite("torch").setNoShadow().setTranslucent(0.35));
     Tile::addTile(ViewId::ALTAR, sprite("altar").setNoShadow());
     Tile::addTile(ViewId::CREATURE_ALTAR, sprite("altar2").setNoShadow());
-    Tile::addTile(ViewId::TORTURE_TABLE, empty().addConnection(DirSet::fullSet(), byName("torturedeco"))
-        .addBackground(byName("torture"))
-        .setFloorBorders());
+    Tile::addTile(ViewId::TORTURE_TABLE, byName("torturedeco"));
     Tile::addTile(ViewId::IMPALED_HEAD, sprite("impaledhead").setNoShadow());
     Tile::addTile(ViewId::WHIPPING_POST, sprite("whipping_post").setNoShadow());
     Tile::addTile(ViewId::NOTICE_BOARD, sprite("board").setNoShadow());
     Tile::addTile(ViewId::SOKOBAN_HOLE, sprite("hole").setNoShadow());
-    Tile::addTile(ViewId::TRAINING_ROOM, empty().addConnection(DirSet::fullSet(), byName("traindeco"))
-        .addBackground(byName("train")).setFloorBorders());
-    Tile::addTile(ViewId::RITUAL_ROOM, empty().addConnection(DirSet::fullSet(), byName("ritualroomdeco"))
-        .addBackground(byName("ritualroom"))
-        .setFloorBorders());
-    Tile::addTile(ViewId::LIBRARY, empty().addConnection(DirSet::fullSet(), byName("libdeco"))
-        .addBackground(byName("lib")).setFloorBorders());
-    Tile::addTile(ViewId::LABORATORY, empty().addConnection(DirSet::fullSet(), byName("labdeco"))
-        .addBackground(byName("lab")).setFloorBorders());
+    Tile::addTile(ViewId::TRAINING_ROOM, byName("traindeco"));
+    Tile::addTile(ViewId::RITUAL_ROOM, byName("ritualroomdeco"));
+    Tile::addTile(ViewId::LIBRARY, byName("libdeco"));
+    Tile::addTile(ViewId::LABORATORY, byName("labdeco"));
     Tile::addTile(ViewId::CAULDRON, sprite("labdeco").setNoShadow());
     Tile::addTile(ViewId::BEAST_LAIR, sprite("lair").setFloorBorders());
-    Tile::addTile(ViewId::BEAST_CAGE, sprite("lairdeco").setNoShadow()
-        .addBackground(byName("lair")));
-    Tile::addTile(ViewId::FORGE, empty().addConnection(DirSet::fullSet(), byName("forgedeco"))
-        .addBackground(byName("forge"))
-        .setFloorBorders());
-    Tile::addTile(ViewId::WORKSHOP, empty().addConnection(DirSet::fullSet(), byName("workshopdeco"))
-        .addBackground(byName("workshop"))
-        .setFloorBorders());
-    Tile::addTile(ViewId::JEWELER, empty().addConnection(DirSet::fullSet(), byName("jewelerdeco"))
-        .addBackground(byName("jeweler"))
-        .setFloorBorders());
+    Tile::addTile(ViewId::BEAST_CAGE, sprite("lairdeco").setNoShadow());
+    Tile::addTile(ViewId::FORGE, byName("forgedeco"));
+    Tile::addTile(ViewId::WORKSHOP, byName("workshopdeco"));
+    Tile::addTile(ViewId::JEWELER, byName("jewelerdeco"));
     Tile::addTile(ViewId::CEMETERY, sprite("graveyard").setFloorBorders());
     Tile::addTile(ViewId::GRAVE, sprite("RIP").setNoShadow());
     Tile::addTile(ViewId::ROBE, sprite("robe"));
@@ -614,6 +606,12 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::DWARF_FEMALE, symbol(u8"h", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::FLOOR, symbol(u8".", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::KEEPER_FLOOR, symbol(u8".", ColorId::WHITE));
+    Tile::addSymbol(ViewId::WOOD_FLOOR1, symbol(u8".", ColorId::LIGHT_BROWN));
+    Tile::addSymbol(ViewId::WOOD_FLOOR2, symbol(u8".", ColorId::BROWN));
+    Tile::addSymbol(ViewId::STONE_FLOOR1, symbol(u8".", ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::STONE_FLOOR2, symbol(u8".", ColorId::GRAY));
+    Tile::addSymbol(ViewId::CARPET_FLOOR1, symbol(u8".", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::CARPET_FLOOR2, symbol(u8".", ColorId::PINK));
     Tile::addSymbol(ViewId::BRIDGE, symbol(u8"_", ColorId::BROWN));
     Tile::addSymbol(ViewId::ROAD, symbol(u8".", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::SAND, symbol(u8".", ColorId::YELLOW));

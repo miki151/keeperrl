@@ -106,9 +106,9 @@ class Construction : public Task {
     Vec2 dir = c->getPosition().getDir(position);
     if (auto action = c->construct(dir, type))
       return {1.0, action.append([=](Creature* c) {
-          if (!c->construct(dir, type)) {
-          setDone();
-          callback->onConstructed(position, type);
+          if (!position.isActiveConstruction()) {
+            setDone();
+            callback->onConstructed(position, type);
           }
           })};
     else {

@@ -384,6 +384,10 @@ bool Position::construct(const SquareType& type) {
   return !isUnavailable() && modSquare()->construct(*this, type);
 }
 
+bool Position::isActiveConstruction() const {
+  return !isUnavailable() && getSquare()->isActiveConstruction();
+}
+
 bool Position::isBurning() const {
   return isValid() && getSquare()->isBurning();
 }
