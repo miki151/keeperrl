@@ -53,6 +53,7 @@ DEF_UNIQUE_PTR(LevelMaker);
 DEF_UNIQUE_PTR(Item);
 DEF_UNIQUE_PTR(Creature);
 DEF_UNIQUE_PTR(Square);
+DEF_UNIQUE_PTR(Furniture);
 DEF_UNIQUE_PTR(MonsterAI);
 DEF_UNIQUE_PTR(Behaviour);
 DEF_UNIQUE_PTR(Task);

@@ -158,6 +158,8 @@ class Collective : public TaskCallback {
   void removeTrap(Position);
   void addConstruction(Position, SquareType, const CostInfo&, bool immediately, bool noCredit);
   void removeConstruction(Position);
+  void addFurniture(Position, FurnitureType, const CostInfo&, bool immediately, bool noCredit);
+  void removeFurniture(Position);
   void destroySquare(Position);
   bool isPlannedTorch(Position) const;
   bool canPlaceTorch(Position) const;
@@ -229,8 +231,9 @@ class Collective : public TaskCallback {
   virtual void onTaskPickedUp(Position, EntitySet<Item>) override;
   virtual void onCantPickItem(EntitySet<Item> items) override;
   virtual void onConstructed(Position, const SquareType&) override;
+  virtual void onConstructed(Position, FurnitureType) override;
   virtual void onTorchBuilt(Position, Trigger*) override;
-  virtual void onAppliedSquare(Position) override;
+  virtual void onAppliedSquare(Creature*, Position) override;
   virtual void onKillCancelled(Creature*) override;
   virtual void onBedCreated(Position, const SquareType& fromType, const SquareType& toType) override;
   virtual void onCopulated(Creature* who, Creature* with) override;

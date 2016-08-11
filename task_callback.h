@@ -10,10 +10,11 @@ class SquareType;
 class TaskCallback {
   public:
   virtual void onConstructed(Position, const SquareType&) {}
+  virtual void onConstructed(Position, FurnitureType) {}
   virtual bool isConstructionReachable(Position) { return true; }
   virtual void onTorchBuilt(Position, Trigger*) {}
   virtual void onAppliedItem(Position, Item* item) {}
-  virtual void onAppliedSquare(Position) {}
+  virtual void onAppliedSquare(Creature*, Position) {}
   virtual void onAppliedItemCancel(Position) {}
   virtual void onTaskPickedUp(Position, EntitySet<Item>) {}
   virtual void onBrought(Position, EntitySet<Item>) {}

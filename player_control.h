@@ -103,6 +103,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onConstructed(Position, const SquareType&) override;
+  virtual void onConstructed(Position, FurnitureType) override;
   virtual void onNoEnemies() override;
   virtual void tick() override;
   virtual void update(bool currentlyActive) override;
@@ -167,7 +168,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   int getImpCost() const;
   bool canBuildDoor(Position) const;
-  bool canPlacePost(Position) const;
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&) const;
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
@@ -218,10 +218,13 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   int SERIAL(startImpNum) = -1;
   bool SERIAL(payoutWarning) = false;
   optional<UniqueEntity<Creature>::Id> chosenCreature;
+  void setChosenCreature(optional<UniqueEntity<Creature>::Id>);
   optional<WorkshopType> chosenWorkshop;
+  void setChosenWorkshop(optional<WorkshopType>);
   optional<TeamId> getChosenTeam() const;
   void setChosenTeam(optional<TeamId>);
   optional<TeamId> chosenTeam;
+  void clearChosenInfo();
   unordered_set<Position, CustomHash<Position>> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);

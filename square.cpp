@@ -109,19 +109,14 @@ static optional<short int> getConstructionTime(ConstructionsId id, SquareId squa
       return square == SquareId::BRIDGE ? 20 : optional<short int>(none);
     case ConstructionsId::CUT_TREE:
       return square == SquareId::TREE_TRUNK ? 20 : optional<short int>(none);
-    case ConstructionsId::BED:
-      return square == SquareId::BED ? 10 : optional<short int>(none);
-    case ConstructionsId::BEAST_CAGE:
-      return square == SquareId::BEAST_CAGE ? 10 : optional<short int>(none);
-    case ConstructionsId::GRAVE:
-      return square == SquareId::GRAVE ? 10 : optional<short int>(none);
     case ConstructionsId::MINING:
       return square == SquareId::FLOOR ? Random.get(3, 8) : optional<short int>(none);
     case ConstructionsId::MINING_ORE:
       return square == SquareId::FLOOR ? Random.get(25, 50) : optional<short int>(none);
+    case ConstructionsId::GRAVE:
+      return square == SquareId::GRAVE ? 10 : optional<short int>(none);
     case ConstructionsId::OUTDOOR_INSTALLATIONS:
       switch (square) {
-        case SquareId::IMPALED_HEAD:
         case SquareId::EYEBALL: return 5;
         case SquareId::KEEPER_BOARD: return 15;
         default: return none;
@@ -138,32 +133,18 @@ static optional<short int> getConstructionTime(ConstructionsId id, SquareId squa
       switch (square) {
         case SquareId::CUSTOM_FLOOR: return 3;
         case SquareId::TREASURE_CHEST: return 10;
-        case SquareId::DORM: return 10;
         case SquareId::TRIBE_DOOR: return 10;
-        case SquareId::TRAINING_ROOM: return 10;
-        case SquareId::LIBRARY: return 10;
         case SquareId::HATCHERY: return 10;
-        case SquareId::STOCKPILE: return 1;
-        case SquareId::STOCKPILE_EQUIP: return 1;
-        case SquareId::STOCKPILE_RES: return 1;
         case SquareId::CEMETERY: return 10;
-        case SquareId::WORKSHOP: return 10;
-        case SquareId::FORGE: return 10;
-        case SquareId::LABORATORY: return 10;
-        case SquareId::JEWELER: return 10;
         case SquareId::PRISON: return 10;
         case SquareId::TORTURE_TABLE: return 10;
-        case SquareId::BEAST_LAIR: return 10;
-        case SquareId::IMPALED_HEAD: return 5;
         case SquareId::WHIPPING_POST: return 5;
         case SquareId::BARRICADE: return 20;
         case SquareId::TORCH: return 5;
         case SquareId::EYEBALL: return 5;
         case SquareId::CREATURE_ALTAR: return 35;
         case SquareId::MINION_STATUE: return 35;
-        case SquareId::THRONE: return 100;
         case SquareId::MOUNTAIN: return 15;
-        case SquareId::RITUAL_ROOM: return 10;
         case SquareId::KEEPER_BOARD: return 15;
         default: return none;
       }

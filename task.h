@@ -41,8 +41,9 @@ class Task : public UniqueEntity<Task> {
   bool isDone();
 
   static PTask construction(TaskCallback*, Position, const SquareType&);
+  static PTask construction(TaskCallback*, Position, FurnitureType);
   static PTask buildTorch(TaskCallback*, Position, Dir attachmentDir);
-  static PTask bringItem(TaskCallback*, Position position, vector<Item*>, vector<Position> target,
+  static PTask bringItem(TaskCallback*, Position position, vector<Item*>, const set<Position>& target,
       int numRetries = 10);
   static PTask applyItem(TaskCallback*, Position, Item*, Position target);
   enum SearchType { LAZY, RANDOM_CLOSE };

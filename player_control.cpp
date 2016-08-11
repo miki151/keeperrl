@@ -65,6 +65,9 @@
 #include "attack_trigger.h"
 #include "view_object.h"
 #include "body.h"
+#include "furniture.h"
+#include "furniture_type.h"
+#include "furniture_factory.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -92,6 +95,15 @@ struct PlayerControl::BuildInfo {
     optional<int> maxNumber;
   } squareInfo;
 
+  struct FurnitureInfo {
+    FurnitureType type;
+    CostInfo cost;
+    string name;
+    bool buildImmediatly;
+    bool noCredit;
+    optional<int> maxNumber;
+  } furnitureInfo;
+
   struct TrapInfo {
     TrapType type;
     string name;
@@ -101,6 +113,7 @@ struct PlayerControl::BuildInfo {
   enum BuildType {
     DIG,
     SQUARE,
+    FURNITURE,
     IMP,
     TRAP,
     DESTROY,
@@ -119,6 +132,10 @@ struct PlayerControl::BuildInfo {
 
   BuildInfo(SquareInfo info, vector<Requirement> req = {}, const string& h = "", char key = 0, string group = "",
       bool hotkeyOpens = false) : squareInfo(info), buildType(SQUARE), requirements(req), help(h), hotkey(key),
+      groupName(group), hotkeyOpensGroup(hotkeyOpens) {}
+
+  BuildInfo(FurnitureInfo info, vector<Requirement> req = {}, const string& h = "", char key = 0, string group = "",
+      bool hotkeyOpens = false) : furnitureInfo(info), buildType(FURNITURE), requirements(req), help(h), hotkey(key),
       groupName(group), hotkeyOpensGroup(hotkeyOpens) {}
 
   BuildInfo(TrapInfo info, vector<Requirement> = {}, const string& h = "", char hotkey = 0,
@@ -150,11 +167,9 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(TribeId tribe) {
     BuildInfo(BuildInfo::DIG, "", 'd'),
     BuildInfo({SquareId::MOUNTAIN, {ResourceId::STONE, 50}, "Fill up tunnel"}, {},
         "Fill up one tile at a time. Cutting off an area is not allowed."),
-    BuildInfo({SquareId::STOCKPILE, {ResourceId::GOLD, 0}, "Everything", true}, {},
-        "All possible items in your dungeon can be stored here.", 's', "Storage", true),
-    BuildInfo({SquareId::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, {},
+    BuildInfo({FurnitureType::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, {},
         "All equipment for your minions can be stored here.", 0, "Storage"),
-    BuildInfo({SquareId::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, {},
+    BuildInfo({FurnitureType::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, {},
         "Only wood, iron and granite can be stored here.", 0, "Storage"),
     BuildInfo({SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::WOOD_FLOOR1, "wooden floor"}},
         {ResourceId::WOOD, 10}, "Wooden"}, {}, "Wooden floor.", 0, "Floors"),
@@ -168,36 +183,36 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(TribeId tribe) {
         {ResourceId::GOLD, 10}, "Carpet"}, {}, "Carpet.", 0, "Floors"),
     BuildInfo({SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::CARPET_FLOOR2, "carpet floor"}},
         {ResourceId::GOLD, 10}, "Carpet"}, {}, "Carpet.", 0, "Floors"),
-    BuildInfo({SquareId::LIBRARY, {ResourceId::WOOD, 20}, "Library"}, {},
+    BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 20}, "Library"}, {},
         "Mana is regenerated here.", 'y'),
-    BuildInfo({SquareId::THRONE, {ResourceId::GOLD, 800}, "Throne", false, false, 0, 1},
+    BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 800}, "Throne", false, false, 1},
         {{RequirementId::VILLAGE_CONQUERED}},
         "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
-    BuildInfo({SquareId::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, {},
+    BuildInfo({FurnitureType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure room"}, {},
         "Stores gold."),
     BuildInfo({Collective::getHatcheryType(tribe),
         {ResourceId::WOOD, 20}, "Pigsty"}, {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
         "Increases minion population limit by up to " +
             toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 'p'),
-    BuildInfo({SquareId::DORM, {ResourceId::WOOD, 10}, "Dormitory"}, {},
-        "Humanoid minions place their beds here.", 'm'),
-    BuildInfo({SquareId::TRAINING_ROOM, {ResourceId::IRON, 20}, "Training room"}, {},
+    BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 10}, "Bed"}, {},
+        "Humanoid minions sleep here.", 'm'),
+    BuildInfo({FurnitureType::TRAINING_DUMMY, {ResourceId::IRON, 20}, "Training room"}, {},
         "Used to level up your minions.", 't'),
-    BuildInfo({SquareId::WORKSHOP, {ResourceId::WOOD, 20}, "Workshop"},
+    BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 20}, "Workshop"},
         {{RequirementId::TECHNOLOGY, TechId::CRAFTING}},
         "Produces leather equipment, traps, first-aid kits and other.", 'w', workshop),
-    BuildInfo({SquareId::FORGE, {ResourceId::IRON, 15}, "Forge"},
+    BuildInfo({FurnitureType::FORGE, {ResourceId::IRON, 15}, "Forge"},
         {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}}, "Produces iron weapons and armor.", 'f', workshop),
-    BuildInfo({SquareId::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"},
+    BuildInfo({FurnitureType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"},
         {{RequirementId::TECHNOLOGY, TechId::ALCHEMY}}, "Produces magical potions.", 'r', workshop),
-    BuildInfo({SquareId::JEWELER, {ResourceId::WOOD, 20}, "Jeweler"},
+    BuildInfo({FurnitureType::JEWELER, {ResourceId::WOOD, 20}, "Jeweler"},
         {{RequirementId::TECHNOLOGY, TechId::JEWELLERY}}, "Produces magical rings and amulets.", 'j', workshop),
-    BuildInfo({SquareId::RITUAL_ROOM, {ResourceId::MANA, 15}, "Ritual room"}, {},
+    BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::MANA, 15}, "Ritual room"}, {},
         "Summons various demons to your dungeon."),
-    BuildInfo({SquareId::BEAST_LAIR, {ResourceId::WOOD, 12}, "Beast lair"}, {},
-        "Beasts have their cages here."),
-    BuildInfo({SquareId::CEMETERY, {ResourceId::STONE, 20}, "Graveyard"}, {},
-        "Corpses are dragged here. Sometimes an undead creature makes their home here.", 'v'),
+    BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 12}, "Beast lair"}, {},
+        "Beasts sleep here."),
+    BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}, {},
+        "Spot for hauling dead bodies and for undead creatures to sleep in.", 'g'),
     BuildInfo({SquareId::PRISON, {ResourceId::IRON, 20}, "Prison"}, {},
         "Captured enemies are kept here.", 0),
     BuildInfo({SquareId::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, {},
@@ -223,7 +238,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(TribeId tribe) {
             toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
     BuildInfo({SquareId::WHIPPING_POST, {ResourceId::WOOD, 30}, "Whipping post"}, {},
         "A place to whip your minions if they need a morale boost.", 0, "Installations"),
-    BuildInfo({SquareId::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, {},
+    BuildInfo({FurnitureType::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, {},
         "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
     BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
         "Causes the trespasser to panic.", 0, "Traps"),
@@ -700,13 +715,14 @@ int PlayerControl::getMinLibrarySize() const {
 }
 
 void PlayerControl::handleLibrary(View* view) {
-  if (getCollective()->getSquares(SquareId::LIBRARY).empty()) {
+  int libraryCount = getCollective()->getConstructions().getFurnitureCount(FurnitureType::BOOK_SHELF);
+  if (libraryCount == 0) {
     view->presentText("", "You need to build a library to start research.");
     return;
   }
   vector<ListElem> options;
   bool allInactive = false;
-  if (getCollective()->getSquares(SquareId::LIBRARY).size() <= getMinLibrarySize()) {
+  if (libraryCount <= getMinLibrarySize()) {
     allInactive = true;
     options.emplace_back("You need a larger library to continue research.", ListElem::TITLE);
   }
@@ -736,7 +752,7 @@ void PlayerControl::handleLibrary(View* view) {
 typedef CollectiveInfo::Button Button;
 
 static optional<pair<ViewId, int>> getCostObj(CostInfo cost) {
-  auto& resourceInfo = CollectiveConfig::getResourceInfo().at(cost.id);
+  auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.id);
   if (cost.value > 0 && !resourceInfo.dontDisplay)
     return make_pair(resourceInfo.viewId, cost.value);
   else
@@ -778,6 +794,13 @@ static ViewId getSquareViewId(SquareType type) {
   return ids.at(type);
 }
 
+static ViewId getFurnitureViewId(FurnitureType type) {
+  static EnumMap<FurnitureType, optional<ViewId>> ids;
+  if (!ids[type])
+    ids[type] = FurnitureFactory::get(type)->getViewObject().id();
+  return *ids[type];
+}
+
 vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) const {
   vector<Button> buttons;
   for (BuildInfo button : buildInfo) {
@@ -790,12 +813,27 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
              if (int num = getCollective()->getSquares(elem.type).size())
                description = "[" + toString(num) + "]";
            int availableNow = !elem.cost.value ? 1 : getCollective()->numResource(elem.cost.id) / elem.cost.value;
-           if (CollectiveConfig::getResourceInfo().at(elem.cost.id).dontDisplay && availableNow)
+           if (CollectiveConfig::getResourceInfo(elem.cost.id).dontDisplay && availableNow)
              description += " (" + toString(availableNow) + " available)";
-           if (auto square = CollectiveConfig::getSecondarySquare(elem.type))
-             viewId = getSquareViewId(*square);
            buttons.push_back({viewId, elem.name,
                getCostObj(getRoomCost(elem.type, elem.cost, elem.costExponent)),
+               description,
+               (elem.noCredit && !availableNow) ?
+                  CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
+           }
+           break;
+      case BuildInfo::FURNITURE: {
+           auto& elem = button.furnitureInfo;
+           ViewId viewId = getFurnitureViewId(elem.type);
+           string description;
+           if (elem.cost.value > 0)
+             if (int num = getCollective()->getConstructions().getFurniturePositions(elem.type).size())
+               description = "[" + toString(num) + "]";
+           int availableNow = !elem.cost.value ? 1 : getCollective()->numResource(elem.cost.id) / elem.cost.value;
+           if (CollectiveConfig::getResourceInfo(elem.cost.id).dontDisplay && availableNow)
+             description += " (" + toString(availableNow) + " available)";
+           buttons.push_back({viewId, elem.name,
+               getCostObj(elem.cost),
                description,
                (elem.noCredit && !availableNow) ?
                   CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
@@ -815,9 +853,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            break;
       case BuildInfo::TRAP: {
              BuildInfo::TrapInfo& elem = button.trapInfo;
-             int numTraps = getCollective()->getTrapItems(elem.type,
-                 asVector<Position>(getCollective()->getSquares(SquareId::WORKSHOP))).size();
-             buttons.push_back({elem.viewId, elem.name, none, "(" + toString(numTraps) + " ready)" });
+             buttons.push_back({elem.viewId, elem.name, none});
            }
            break;
       case BuildInfo::IMP: {
@@ -868,9 +904,9 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
     case AttackTriggerId::GOLD: return "Gold";
     case AttackTriggerId::STOLEN_ITEMS: return "Item theft";
     case AttackTriggerId::ROOM_BUILT:
-      switch (trigger.get<SquareType>().getId()) {
-        case SquareId::THRONE: return "Throne";
-        case SquareId::IMPALED_HEAD: return "Impaled heads";
+      switch (trigger.get<FurnitureType>()) {
+        case FurnitureType::THRONE: return "Throne";
+        case FurnitureType::IMPALED_HEAD: return "Impaled heads";
         default: FAIL << "Unsupported ROOM_BUILT type"; return "";
       }
     case AttackTriggerId::POWER: return "Keeper's power";
@@ -963,7 +999,8 @@ void PlayerControl::handleRecruiting(Collective* ally) {
 
 void PlayerControl::handleTrading(Collective* ally) {
   double scrollPos = 0;
-  vector<Position> storage = getCollective()->getAllSquares(CollectiveConfig::getEquipmentStorage());
+  const set<Position>& storage = getCollective()->getConstructions().getFurniturePositions(
+      CollectiveConfig::getEquipmentStorage());
   if (storage.empty()) {
     getView()->presentText("Information", "You need a storage room for equipment in order to trade.");
     return;
@@ -1122,6 +1159,7 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
         transform2<ItemInfo>(getCollective()->getWorkshops().get(*chosenWorkshop).getOptions(), transFun),
         transform2<ItemInfo>(getCollective()->getWorkshops().get(*chosenWorkshop).getQueued(), transFun),
+        index
     };
   }
 }
@@ -1134,8 +1172,8 @@ vector<PlayerControl::WorkshopInfo> PlayerControl::getWorkshopInfo() const {
     {{"Jeweler", ViewId::JEWELER, false}, WorkshopType::JEWELER},
   };
   for (auto& elem : ret)
-    elem.button.unavailable = getCollective()->getSquares(
-        CollectiveConfig::getWorkshopInfo(elem.workshopType).squareType).empty();
+    elem.button.unavailable = getCollective()->getConstructions().getFurniturePositions(
+        CollectiveConfig::getWorkshopInfo(elem.workshopType).furniture).empty();
   return ret;
 }
 
@@ -1176,10 +1214,12 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemyGroups = getEnemyGroups();
   info.numResource.clear();
-  for (auto elem : CollectiveConfig::getResourceInfo())
-    if (!elem.second.dontDisplay)
+  for (auto resourceId : ENUM_ALL(CollectiveResourceId)) {
+    auto& elem = CollectiveConfig::getResourceInfo(resourceId);
+    if (!elem.dontDisplay)
       info.numResource.push_back(
-          {elem.second.viewId, getCollective()->numResourcePlusDebt(elem.first), elem.second.name});
+          {elem.viewId, getCollective()->numResourcePlusDebt(resourceId), elem.name});
+  }
   info.warning = "";
   gameInfo.time = getCollective()->getGame()->getGlobalTime();
   gameInfo.modifiedSquares = gameInfo.totalSquares = 0;
@@ -1347,6 +1387,15 @@ static const ViewObject& getConstructionObject(SquareType type) {
   return objects.at(type);
 }
 
+static const ViewObject& getConstructionObject(FurnitureType type) {
+  static EnumMap<FurnitureType, optional<ViewObject>> objects;
+  if (!objects[type]) {
+    objects[type] =  FurnitureFactory::get(type)->getViewObject();
+    objects[type]->setModifier(ViewObject::Modifier::PLANNED);
+  }
+  return *objects[type];
+}
+
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
   if (canSee)
     pos.getViewIndex(index, getCollective()->getLeader()); // use the leader as a generic viewer
@@ -1380,6 +1429,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
             constructions.getTrap(position).isArmed()));
     if (constructions.containsSquare(position) && !constructions.getSquare(position).isBuilt())
       index.insert(getConstructionObject(constructions.getSquare(position).getSquareType()));
+    if (constructions.containsFurniture(position) && !constructions.getFurniture(position).isBuilt())
+      index.insert(getConstructionObject(constructions.getFurniture(position).getFurnitureType()));
   }
   if (constructions.containsTorch(position) && !constructions.getTorch(position).isBuilt())
     index.insert(copyOf(Trigger::getTorchViewObject(constructions.getTorch(position).getAttachmentDir()))
@@ -1474,11 +1525,6 @@ bool PlayerControl::canBuildDoor(Position pos) const {
        (wallFun(pos.minus(Vec2(1, 0))) && wallFun(pos.minus(Vec2(-1, 0)))));
 }
 
-bool PlayerControl::canPlacePost(Position pos) const {
-  return !getCollective()->getConstructions().containsTrap(pos) &&
-      pos.canEnterEmpty({MovementTrait::WALK}) && getCollective()->isKnownSquare(pos);
-}
-  
 Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) const {
   for (Creature* c : getCreatures())
     if (c->getUniqueId() == id)
@@ -1545,9 +1591,27 @@ optional<TeamId> PlayerControl::getChosenTeam() const {
     return none;
 }
 
+void PlayerControl::setChosenCreature(optional<UniqueEntity<Creature>::Id> id) {
+  clearChosenInfo();
+  chosenCreature = id;
+}
+
 void PlayerControl::setChosenTeam(optional<TeamId> team) {
+  clearChosenInfo();
   chosenTeam = team;
 }
+
+void PlayerControl::clearChosenInfo() {
+  chosenWorkshop = none;
+  chosenCreature = none;
+  chosenTeam = none;
+}
+
+void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
+  clearChosenInfo();
+  chosenWorkshop = type;
+}
+
 
 void PlayerControl::processInput(View* view, UserInput input) {
   switch (input.getId()) {
@@ -1605,7 +1669,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           chosenCreature = none;
         } else {
           setChosenTeam(input.get<TeamId>());
-          chosenCreature = getTeams().getLeader(input.get<TeamId>())->getUniqueId();
+          setChosenCreature(getTeams().getLeader(input.get<TeamId>())->getUniqueId());
         }
         break;
     case UserInputId::ACTIVATE_TEAM:
@@ -1643,7 +1707,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
             if (chosenWorkshop == type)
               chosenWorkshop = none;
             else
-              chosenWorkshop = type;
+              setChosenWorkshop(type);
           }
         }
         break;
@@ -1675,7 +1739,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           if (!chosenCreature || getChosenTeam() || !getCreature(*chosenCreature) ||
               getCreature(*chosenCreature)->getName().stack() != c->getName().stack()) {
             setChosenTeam(none);
-            chosenCreature = input.get<Creature::Id>();
+            setChosenCreature(input.get<Creature::Id>());
             break;
           }
         setChosenTeam(none);
@@ -1683,7 +1747,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::CREATURE_BUTTON:
         if (Creature* c = getCreature(input.get<Creature::Id>())) {
-          chosenCreature = input.get<Creature::Id>();
+          setChosenCreature(input.get<Creature::Id>());
           if (getChosenTeam() && !getTeams().contains(*getChosenTeam(), c))
             setChosenTeam(none);
         } else {
@@ -1722,9 +1786,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
               for (int i : All(like))
                 if (like[i] == c) {
                   if (i < like.size() - 1)
-                    chosenCreature = like[i + 1]->getUniqueId();
+                    setChosenCreature(like[i + 1]->getUniqueId());
                   else
-                    chosenCreature = like[like.size() - 2]->getUniqueId();
+                    setChosenCreature(like[like.size() - 2]->getUniqueId());
                   break;
                 }
             getCollective()->banishCreature(c);
@@ -1777,7 +1841,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
             getTeams().remove(info.team, c);
             if (getTeams().exists(info.team)) {
               if (chosenCreature == info.creatureId)
-                chosenCreature = getTeams().getLeader(info.team)->getUniqueId();
+                setChosenCreature(getTeams().getLeader(info.team)->getUniqueId());
             } else
               chosenCreature = none;
           }
@@ -1877,13 +1941,18 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           getView()->addSound(SoundId::DIG_UNMARK);
           // Does this mean I can remove the order if the trap physically exists?
         } else
-        if (canPlacePost(position) && (getCollective()->getSquares(SquareId::FLOOR).count(position) || 
-              getCollective()->getSquares(SquareId::BRIDGE).count(position))) {
+        if (position.canEnterEmpty({MovementTrait::WALK}) && getCollective()->getTerritory().contains(position)) {
           getCollective()->addTrap(position, building.trapInfo.type);
           getView()->addSound(SoundId::ADD_CONSTRUCTION);
         }
       break;
     case BuildInfo::DESTROY:
+        if (getCollective()->getConstructions().containsFurniture(position) &&
+            !getCollective()->getConstructions().getFurniture(position).isBuilt()) {
+          getCollective()->removeFurniture(position);
+          getView()->addSound(SoundId::DIG_UNMARK);
+          selection = SELECT;
+        } else
         if (getCollective()->getConstructions().containsSquare(position) &&
             !getCollective()->getConstructions().getSquare(position).isBuilt()) {
           getCollective()->removeConstruction(position);
@@ -1954,11 +2023,36 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
         break;
     case BuildInfo::CLAIM_TILE:
-        if (getCollective()->isKnownSquare(position) && position.canConstruct(SquareId::STOCKPILE))
+        if (getCollective()->isKnownSquare(position) && position.canConstruct(FurnitureType::STOCKPILE_RES))
           getCollective()->claimSquare(position);
         break;
     case BuildInfo::DISPATCH:
         getCollective()->setPriorityTasks(position);
+        break;
+    case BuildInfo::FURNITURE:
+        if (getCollective()->getConstructions().containsFurniture(position) &&
+            !getCollective()->getConstructions().getFurniture(position).isBuilt()) {
+          if (selection != SELECT) {
+            getCollective()->removeFurniture(position);
+            selection = DESELECT;
+            getView()->addSound(SoundId::DIG_UNMARK);
+          }
+        } else {
+          auto& info = building.furnitureInfo;
+          if (getCollective()->isKnownSquare(position) && getCollective()->getTerritory().contains(position)
+              && !getCollective()->getConstructions().containsTrap(position)
+              && !getCollective()->getConstructions().containsFurniture(position)
+              && position.canConstruct(info.type)
+              && selection != DESELECT
+              && (!info.maxNumber || *info.maxNumber > 
+                  getCollective()->getConstructions().getFurniturePositions(info.type).size()
+                  + getCollective()->getConstructions().getFurnitureCount(info.type))) {
+            CostInfo cost = info.cost;
+            getCollective()->addFurniture(position, info.type, cost, info.buildImmediatly, info.noCredit);
+            selection = SELECT;
+            getView()->addSound(SoundId::ADD_CONSTRUCTION);
+          }
+        }
         break;
     case BuildInfo::SQUARE:
         if (getCollective()->getConstructions().containsSquare(position) &&
@@ -1989,8 +2083,9 @@ void PlayerControl::tryLockingDoor(Position pos) {
   if (getCollective()->tryLockingDoor(pos))
     updateSquareMemory(pos);
   for (auto workshopType : ENUM_ALL(WorkshopType))
-    if (getCollective()->getSquares(CollectiveConfig::getWorkshopInfo(workshopType).squareType).count(pos))
-      chosenWorkshop = workshopType;
+    if (getCollective()->getConstructions()
+        .getFurniturePositions(CollectiveConfig::getWorkshopInfo(workshopType).furniture).count(pos))
+      setChosenWorkshop(workshopType);
 }
 
 double PlayerControl::getLocalTime() const {
@@ -2214,6 +2309,10 @@ void PlayerControl::updateSquareMemory(Position pos) {
   ViewIndex index;
   pos.getViewIndex(index, getCollective()->getLeader()); // use the leader as a generic viewer
   memory->update(pos, index);
+}
+
+void PlayerControl::onConstructed(Position pos, FurnitureType type) {
+  updateSquareMemory(pos);
 }
 
 void PlayerControl::onConstructed(Position pos, const SquareType& type) {

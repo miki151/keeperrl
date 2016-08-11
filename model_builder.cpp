@@ -72,9 +72,9 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
         c.id = CreatureId::GOBLIN;
         c.frequency = 1;
         c.attractions = LIST(
-          {{AttractionId::SQUARE, SquareId::WORKSHOP}, 1.0, 12.0},
-          {{AttractionId::SQUARE, SquareId::JEWELER}, 1.0, 9.0},
-          {{AttractionId::SQUARE, SquareId::FORGE}, 1.0, 9.0},
+          {{AttractionId::FURNITURE, FurnitureType::WORKSHOP}, 0.33, 4.0},
+          {{AttractionId::FURNITURE, FurnitureType::JEWELER}, 0.33, 3.0},
+          {{AttractionId::FURNITURE, FurnitureType::FORGE}, 0.33, 3.0},
           );
         c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
         c.salary = 10;),
@@ -82,7 +82,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::ORC;
           c.frequency = 0.7;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 1.0, 12.0},
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_DUMMY}, 0.33, 4.0},
             );
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 20;),
@@ -90,8 +90,8 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::ORC_SHAMAN;
           c.frequency = 0.10;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::LIBRARY}, 1.0, 16.0},
-            {{AttractionId::SQUARE, SquareId::LABORATORY}, 1.0, 9.0},
+            {{AttractionId::FURNITURE, FurnitureType::BOOK_SHELF}, 0.33, 5.0},
+            {{AttractionId::FURNITURE, FurnitureType::LABORATORY}, 0.33, 3.0},
             );
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 20;),
@@ -99,7 +99,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::OGRE;
           c.frequency = 0.3;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0}
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_DUMMY}, 1.0, 5.0}
             );
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 40;),
@@ -107,7 +107,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::HARPY;
           c.frequency = 0.3;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_DUMMY}, 1.0, 5.0},
             {{AttractionId::ITEM_INDEX, ItemIndex::RANGED_WEAPON}, 1.0, 3.0, true}
             );
           c.traits = {MinionTrait::FIGHTER};
@@ -116,7 +116,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::SPECIAL_HUMANOID;
           c.frequency = 0.1;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_DUMMY}, 3.0, 16.0},
             );
           c.traits = {MinionTrait::FIGHTER};
           c.spawnAtDorm = true;
@@ -135,7 +135,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.salary = 40;
           c.spawnAtDorm = true;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 2.0, 12.0}
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_DUMMY}, 0.66, 4.0}
             );),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::LOST_SOUL;
@@ -143,7 +143,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 0;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 1.0, 9.0}
+            {{AttractionId::FURNITURE, FurnitureType::DEMON_SHRINE}, 0.66, 3.0}
             );
           c.spawnAtDorm = true;),
       CONSTRUCT(ImmigrantInfo,
@@ -152,7 +152,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
           c.salary = 0;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 2.0, 12.0}
+            {{AttractionId::FURNITURE, FurnitureType::DEMON_SHRINE}, 0.66, 3.0}
             );
           c.spawnAtDorm = true;),
       CONSTRUCT(ImmigrantInfo,
@@ -161,7 +161,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 0;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 4.0, 12.0}
+            {{AttractionId::FURNITURE, FurnitureType::DEMON_SHRINE}, 1.33, 3.0}
             );
           c.spawnAtDorm = true;),
       CONSTRUCT(ImmigrantInfo,
@@ -193,7 +193,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.frequency = 0.1;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 4.0, 12.0}
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_DUMMY}, 1.33, 4.0}
             );
           c.salary = 0;),
       /*CONSTRUCT(ImmigrantInfo,

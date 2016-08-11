@@ -38,6 +38,11 @@ Tile Tile::setNoShadow() {
   return *this;
 }
 
+Tile Tile::setRoundShadow() {
+  roundShadow = true;
+  return *this;
+}
+
 Tile Tile::byCoord(TileCoord c) {
   return Tile(c);
 }
@@ -288,10 +293,13 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BORDER_GUARD, empty());
     Tile::addTile(ViewId::VAMPIRE, sprite("vampire"));
     Tile::addTile(ViewId::FALLEN_TREE, sprite("treecut").setNoShadow());
-    Tile::addTile(ViewId::DECID_TREE, sprite("tree2").setNoShadow().addHighlight(byName("tree2_mark")));
-    Tile::addTile(ViewId::CANIF_TREE, sprite("tree1").setNoShadow().addHighlight(byName("tree1_mark")));
+    Tile::addTile(ViewId::DECID_TREE, sprite("tree2").setNoShadow().addHighlight(byName("tree2_mark"))
+        .setRoundShadow());
+    Tile::addTile(ViewId::CANIF_TREE, sprite("tree1").setNoShadow().addHighlight(byName("tree1_mark"))
+        .setRoundShadow());
     Tile::addTile(ViewId::TREE_TRUNK, sprite("treecut").setNoShadow());
-    Tile::addTile(ViewId::BURNT_TREE, sprite("treeburnt").setNoShadow());
+    Tile::addTile(ViewId::BURNT_TREE, sprite("treeburnt").setNoShadow()
+        .setRoundShadow());
     Tile::addTile(ViewId::PLAYER, sprite("adventurer"));
     Tile::addTile(ViewId::KEEPER, sprite("keeper"));
     Tile::addTile(ViewId::RETIRED_KEEPER, sprite("retired_keeper"));
@@ -362,9 +370,11 @@ class TileCoordLookup {
     Tile::addTile(ViewId::MUD_WALL, getWallTile("mud_wall"));
     Tile::addTile(ViewId::DOWN_STAIRCASE, sprite("down_stairs").setNoShadow());
     Tile::addTile(ViewId::UP_STAIRCASE, sprite("up_stairs").setNoShadow());
-    Tile::addTile(ViewId::WELL, sprite("well").setNoShadow());
-    Tile::addTile(ViewId::MINION_STATUE, sprite("statue").setNoShadow());
-    Tile::addTile(ViewId::THRONE, sprite("throne").setNoShadow());
+    Tile::addTile(ViewId::WELL, sprite("well").setNoShadow()
+        .setRoundShadow());
+    Tile::addTile(ViewId::MINION_STATUE, sprite("statue").setNoShadow()
+        .setRoundShadow());
+    Tile::addTile(ViewId::THRONE, sprite("throne").setNoShadow().setRoundShadow());
     Tile::addTile(ViewId::ORC, sprite("orc"));
     Tile::addTile(ViewId::ORC_CAPTAIN, sprite("orc_captain"));
     Tile::addTile(ViewId::ORC_SHAMAN, sprite("orcshaman"));
@@ -443,7 +453,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WATER, getWaterTile("waternesw", "water"));
     Tile::addTile(ViewId::MAGMA, getWaterTile("magmanesw", "magma"));
     Tile::addTile(ViewId::DOOR, sprite("door").setNoShadow());
-    Tile::addTile(ViewId::BARRICADE, sprite("barricade").setNoShadow());
+    Tile::addTile(ViewId::BARRICADE, sprite("barricade").setNoShadow().setRoundShadow());
     Tile::addTile(ViewId::DIG_ICON, sprite("dig_icon"));
     Tile::addTile(ViewId::SWORD, sprite("sword"));
     Tile::addTile(ViewId::SPEAR, sprite("spear"));
@@ -482,13 +492,13 @@ class TileCoordLookup {
     Tile::addTile(ViewId::MUSHROOM5, sprite("mushroom5"));
     Tile::addTile(ViewId::MUSHROOM6, sprite("mushroom6"));
     Tile::addTile(ViewId::KEY, sprite("key"));
-    Tile::addTile(ViewId::FOUNTAIN, sprite("fountain").setNoShadow());
+    Tile::addTile(ViewId::FOUNTAIN, sprite("fountain").setNoShadow().setRoundShadow());
     Tile::addTile(ViewId::GOLD, sprite("gold").setNoShadow());
     Tile::addTile(ViewId::TREASURE_CHEST, sprite("treasurydeco").setNoShadow());
-    Tile::addTile(ViewId::CHEST, sprite("chest").setNoShadow());
-    Tile::addTile(ViewId::OPENED_CHEST, sprite("chest_opened").setNoShadow());
-    Tile::addTile(ViewId::COFFIN, sprite("coffin").setNoShadow());
-    Tile::addTile(ViewId::OPENED_COFFIN, sprite("coffin_opened").setNoShadow());
+    Tile::addTile(ViewId::CHEST, sprite("chest").setNoShadow().setRoundShadow());
+    Tile::addTile(ViewId::OPENED_CHEST, sprite("chest_opened").setNoShadow().setRoundShadow());
+    Tile::addTile(ViewId::COFFIN, sprite("coffin").setNoShadow().setRoundShadow());
+    Tile::addTile(ViewId::OPENED_COFFIN, sprite("coffin_opened").setNoShadow().setRoundShadow());
     Tile::addTile(ViewId::BOULDER, sprite("boulder"));
     Tile::addTile(ViewId::PORTAL, sprite("surprise"));
     Tile::addTile(ViewId::GAS_TRAP, sprite("gas_trap"));
@@ -503,28 +513,28 @@ class TileCoordLookup {
     Tile::addTile(ViewId::STOCKPILE2, sprite("storage2").setFloorBorders());
     Tile::addTile(ViewId::STOCKPILE3, sprite("storage3").setFloorBorders());
     Tile::addTile(ViewId::PRISON, sprite("prison"));
-    Tile::addTile(ViewId::BED, sprite("sleepdeco").setNoShadow());
+    Tile::addTile(ViewId::BED, sprite("sleepdeco").setNoShadow().setRoundShadow());
     Tile::addTile(ViewId::DORM, sprite("sleep").setFloorBorders());
     Tile::addTile(ViewId::TORCH, sprite("torch").setNoShadow().setTranslucent(0.35));
-    Tile::addTile(ViewId::ALTAR, sprite("altar").setNoShadow());
-    Tile::addTile(ViewId::CREATURE_ALTAR, sprite("altar2").setNoShadow());
-    Tile::addTile(ViewId::TORTURE_TABLE, byName("torturedeco"));
-    Tile::addTile(ViewId::IMPALED_HEAD, sprite("impaledhead").setNoShadow());
-    Tile::addTile(ViewId::WHIPPING_POST, sprite("whipping_post").setNoShadow());
-    Tile::addTile(ViewId::NOTICE_BOARD, sprite("board").setNoShadow());
+    Tile::addTile(ViewId::ALTAR, sprite("altar").setNoShadow().setRoundShadow());
+    Tile::addTile(ViewId::CREATURE_ALTAR, sprite("altar2").setNoShadow().setRoundShadow());
+    Tile::addTile(ViewId::TORTURE_TABLE, sprite("torturedeco").setRoundShadow());
+    Tile::addTile(ViewId::IMPALED_HEAD, sprite("impaledhead").setNoShadow().setRoundShadow());
+    Tile::addTile(ViewId::WHIPPING_POST, sprite("whipping_post").setNoShadow().setRoundShadow());
+    Tile::addTile(ViewId::NOTICE_BOARD, sprite("board").setNoShadow().setRoundShadow());
     Tile::addTile(ViewId::SOKOBAN_HOLE, sprite("hole").setNoShadow());
-    Tile::addTile(ViewId::TRAINING_ROOM, byName("traindeco"));
-    Tile::addTile(ViewId::RITUAL_ROOM, byName("ritualroomdeco"));
-    Tile::addTile(ViewId::LIBRARY, byName("libdeco"));
-    Tile::addTile(ViewId::LABORATORY, byName("labdeco"));
+    Tile::addTile(ViewId::TRAINING_ROOM, sprite("traindeco").setRoundShadow());
+    Tile::addTile(ViewId::RITUAL_ROOM, sprite("ritualroomdeco").setRoundShadow());
+    Tile::addTile(ViewId::LIBRARY, sprite("libdeco").setRoundShadow());
+    Tile::addTile(ViewId::LABORATORY, sprite("labdeco").setRoundShadow());
     Tile::addTile(ViewId::CAULDRON, sprite("labdeco").setNoShadow());
     Tile::addTile(ViewId::BEAST_LAIR, sprite("lair").setFloorBorders());
-    Tile::addTile(ViewId::BEAST_CAGE, sprite("lairdeco").setNoShadow());
-    Tile::addTile(ViewId::FORGE, byName("forgedeco"));
-    Tile::addTile(ViewId::WORKSHOP, byName("workshopdeco"));
-    Tile::addTile(ViewId::JEWELER, byName("jewelerdeco"));
+    Tile::addTile(ViewId::BEAST_CAGE, sprite("lairdeco").setNoShadow().setRoundShadow());
+    Tile::addTile(ViewId::FORGE, sprite("forgedeco").setRoundShadow());
+    Tile::addTile(ViewId::WORKSHOP, sprite("workshopdeco").setRoundShadow());
+    Tile::addTile(ViewId::JEWELER, sprite("jewelerdeco").setRoundShadow());
     Tile::addTile(ViewId::CEMETERY, sprite("graveyard").setFloorBorders());
-    Tile::addTile(ViewId::GRAVE, sprite("RIP").setNoShadow());
+    Tile::addTile(ViewId::GRAVE, sprite("RIP").setNoShadow().setRoundShadow());
     Tile::addTile(ViewId::ROBE, sprite("robe"));
     Tile::addTile(ViewId::LEATHER_GLOVES, sprite("leather_gloves"));
     Tile::addTile(ViewId::DEXTERITY_GLOVES, sprite("blue_gloves"));

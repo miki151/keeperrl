@@ -27,6 +27,7 @@
 #include "creature_attributes.h"
 #include "square_type.h"
 #include "spell_map.h"
+#include "construction_map.h"
 
 void Technology::init() {
   Technology::set(TechId::ALCHEMY, new Technology(
@@ -143,7 +144,7 @@ static vector<Vec2> cutShape(Rectangle rect) {
 
 
 static void addResource(Collective* col, SquareId square, int maxDist) {
-  Position init = Random.choose(col->getSquares(SquareId::LIBRARY));
+  Position init = Random.choose(col->getConstructions().getFurniturePositions(FurnitureType::BOOK_SHELF));
   Rectangle resourceArea(Random.get(4, 7), Random.get(4, 7));
   resourceArea.translate(-resourceArea.middle());
   for (int t = 0; t < 200; ++t) {

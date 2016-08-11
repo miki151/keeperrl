@@ -14,6 +14,7 @@
 #include "item.h"
 #include "square_type.h"
 #include "view_id.h"
+#include "furniture_type.h"
 
 AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
   : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}
@@ -218,51 +219,24 @@ vector<BirthSpawn> CollectiveConfig::getBirthSpawns() const {
     return {};
 }
 
-optional<SquareType> CollectiveConfig::getSecondarySquare(SquareType type) {
-  switch (type.getId()) {
-    case SquareId::DORM: return SquareType(SquareId::BED);
-    case SquareId::BEAST_LAIR: return SquareType(SquareId::BEAST_CAGE);
-    case SquareId::CEMETERY: return SquareType(SquareId::GRAVE);
-    default: return none;
-  }
-}
-
-optional<SquareType> DormInfo::getBedType() const {
-  return CollectiveConfig::getSecondarySquare(dormType);
-}
-
 const EnumMap<SpawnType, DormInfo>& CollectiveConfig::getDormInfo() const {
   static EnumMap<SpawnType, DormInfo> dormInfo {
-    {SpawnType::HUMANOID, {SquareId::DORM, CollectiveWarning::BEDS}},
-    {SpawnType::UNDEAD, {SquareId::CEMETERY}},
-    {SpawnType::BEAST, {SquareId::BEAST_LAIR}},
-    {SpawnType::DEMON, {SquareId::RITUAL_ROOM}},
+    {SpawnType::HUMANOID, {FurnitureType::BED, CollectiveWarning::BEDS}},
+    {SpawnType::UNDEAD, {FurnitureType::GRAVE}},
+    {SpawnType::BEAST, {FurnitureType::BEAST_CAGE}},
+    {SpawnType::DEMON, {FurnitureType::DEMON_SHRINE}},
   };
   return dormInfo;
 }
 
-const static unordered_set<SquareType> efficiencySquares {
-  SquareId::TRAINING_ROOM,
-  SquareId::TORTURE_TABLE,
-  SquareId::WORKSHOP,
-  SquareId::FORGE,
-  SquareId::LABORATORY,
-  SquareId::JEWELER,
-  SquareId::LIBRARY,
-};
-
-unordered_set<SquareType> CollectiveConfig::getEfficiencySquares() const {
-  return efficiencySquares;
-}
-
-vector<SquareType> CollectiveConfig::getRoomsNeedingLight() const {
-  static vector<SquareType> ret {
-    SquareId::WORKSHOP,
-      SquareId::FORGE,
-      SquareId::LABORATORY,
-      SquareId::JEWELER,
-      SquareId::TRAINING_ROOM,
-      SquareId::LIBRARY};
+const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
+  static vector<FurnitureType> ret {
+    FurnitureType::WORKSHOP,
+    FurnitureType::FORGE,
+    FurnitureType::LABORATORY,
+    FurnitureType::JEWELER,
+    FurnitureType::TRAINING_DUMMY,
+    FurnitureType::BOOK_SHELF};
   return ret;
 };
 
@@ -278,30 +252,30 @@ int CollectiveConfig::getTaskDuration(const Creature* c, MinionTask task) const 
   }
 }
 
-const static vector<SquareType> resourceStorage {SquareId::STOCKPILE, SquareId::STOCKPILE_RES};
-const static vector<SquareType> equipmentStorage {SquareId::STOCKPILE, SquareId::STOCKPILE_EQUIP};
+const static auto resourceStorage = FurnitureType::STOCKPILE_RES;
+const static auto equipmentStorage = FurnitureType::STOCKPILE_EQUIP;
 
-const vector<SquareType>& CollectiveConfig::getEquipmentStorage() {
+const FurnitureType& CollectiveConfig::getEquipmentStorage() {
   return equipmentStorage;
 }
 
-const vector<SquareType>& CollectiveConfig::getResourceStorage() {
+const FurnitureType& CollectiveConfig::getResourceStorage() {
   return resourceStorage;
 }
 
-const map<CollectiveResourceId, ResourceInfo>& CollectiveConfig::getResourceInfo() {
-  static map<CollectiveResourceId, ResourceInfo> ret = {
-    {CollectiveResourceId::MANA, { {}, none, ItemId::GOLD_PIECE, "mana", ViewId::MANA}},
-    {CollectiveResourceId::PRISONER_HEAD, { {}, none, ItemId::GOLD_PIECE, "", ViewId::IMPALED_HEAD, true}},
+const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
+  static EnumMap<CollectiveResourceId, ResourceInfo> ret = {
+    {CollectiveResourceId::MANA, { none, none, ItemId::GOLD_PIECE, "mana", ViewId::MANA}},
+    {CollectiveResourceId::PRISONER_HEAD, { none, none, ItemId::GOLD_PIECE, "", ViewId::IMPALED_HEAD, true}},
     {CollectiveResourceId::GOLD,
-        {{SquareId::TREASURE_CHEST}, ItemIndex::GOLD, ItemId::GOLD_PIECE, "gold", ViewId::GOLD}},
+        {FurnitureType::TREASURE_CHEST, ItemIndex::GOLD, ItemId::GOLD_PIECE, "gold", ViewId::GOLD}},
     {CollectiveResourceId::WOOD, { resourceStorage, ItemIndex::WOOD, ItemId::WOOD_PLANK, "wood", ViewId::WOOD_PLANK}},
     {CollectiveResourceId::IRON, { resourceStorage, ItemIndex::IRON, ItemId::IRON_ORE, "iron", ViewId::IRON_ROCK}},
     {CollectiveResourceId::STONE, { resourceStorage, ItemIndex::STONE, ItemId::ROCK, "granite", ViewId::ROCK}},
     {CollectiveResourceId::CORPSE,
-      { {SquareId::CEMETERY}, ItemIndex::REVIVABLE_CORPSE, ItemId::GOLD_PIECE, "corpses", ViewId::BODY_PART, true}}
+      { FurnitureType::GRAVE, ItemIndex::REVIVABLE_CORPSE, ItemId::GOLD_PIECE, "corpses", ViewId::BODY_PART, true}}
   };
-  return ret;
+  return ret[id];
 }
 
 MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& desc, optional<CollectiveWarning> w,
@@ -314,11 +288,15 @@ MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWa
   CHECK(type != APPLY_SQUARE);
 }
 
+MinionTaskInfo::MinionTaskInfo(FurnitureType type, const string& desc) : type(FURNITURE), furniture(type),
+    description(desc) {
+}
+
 static EnumMap<WorkshopType, WorkshopInfo> workshops {
-  {WorkshopType::WORKSHOP, {SquareId::WORKSHOP, MinionTask::WORKSHOP, "workshop"}},
-  {WorkshopType::FORGE, {SquareId::FORGE, MinionTask::FORGE, "forge"}},
-  {WorkshopType::LABORATORY, {SquareId::LABORATORY, MinionTask::LABORATORY, "laboratory"}},
-  {WorkshopType::JEWELER, {SquareId::JEWELER, MinionTask::JEWELER, "jeweler"}},
+  {WorkshopType::WORKSHOP, {FurnitureType::WORKSHOP, MinionTask::WORKSHOP, "workshop"}},
+  {WorkshopType::FORGE, {FurnitureType::FORGE, MinionTask::FORGE, "forge"}},
+  {WorkshopType::LABORATORY, {FurnitureType::LABORATORY, MinionTask::LABORATORY, "laboratory"}},
+  {WorkshopType::JEWELER, {FurnitureType::JEWELER, MinionTask::JEWELER, "jeweler"}},
 };
 
 optional<WorkshopType> CollectiveConfig::getWorkshopType(MinionTask task) {
@@ -333,18 +311,18 @@ optional<WorkshopType> CollectiveConfig::getWorkshopType(MinionTask task) {
 
 MinionTaskInfo CollectiveConfig::getTaskInfo(MinionTask task) const {
   switch (task) {
-    case MinionTask::TRAIN: return {{SquareId::TRAINING_ROOM}, "training", CollectiveWarning::TRAINING, 1};
-    case MinionTask::SLEEP: return {{SquareId::BED}, "sleeping", CollectiveWarning::BEDS};
+    case MinionTask::TRAIN: return {FurnitureType::TRAINING_DUMMY, "training"};
+    case MinionTask::SLEEP: return {FurnitureType::BED, "sleeping"};
     case MinionTask::EAT: return {MinionTaskInfo::EAT, "eating"};
-    case MinionTask::GRAVE: return {{SquareId::GRAVE}, "sleeping", CollectiveWarning::GRAVES};
-    case MinionTask::LAIR: return {{SquareId::BEAST_CAGE}, "sleeping"};
-    case MinionTask::THRONE: return {{SquareId::THRONE}, "throne"};
-    case MinionTask::STUDY: return {{SquareId::LIBRARY}, "studying", CollectiveWarning::LIBRARY, 1};
+    case MinionTask::GRAVE: return {FurnitureType::GRAVE, "sleeping"};
+    case MinionTask::LAIR: return {FurnitureType::BEAST_CAGE, "sleeping"};
+    case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
+    case MinionTask::STUDY: return {FurnitureType::BOOK_SHELF, "studying"};
     case MinionTask::PRISON: return {{SquareId::PRISON}, "prison", CollectiveWarning::NO_PRISON};
     case MinionTask::TORTURE: return {{SquareId::TORTURE_TABLE}, "torture ordered",
                                 CollectiveWarning::TORTURE_ROOM, 0, true};
     case MinionTask::CROPS: return {{SquareId::CROPS}, "crops"};
-    case MinionTask::RITUAL: return {{SquareId::RITUAL_ROOM}, "rituals"};
+    case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
     case MinionTask::COPULATE: return {MinionTaskInfo::COPULATE, "copulation"};
     case MinionTask::CONSUME: return {MinionTaskInfo::CONSUME, "consumption"};
     case MinionTask::EXPLORE: return {MinionTaskInfo::EXPLORE, "spying"};
@@ -357,7 +335,7 @@ MinionTaskInfo CollectiveConfig::getTaskInfo(MinionTask task) const {
     case MinionTask::LABORATORY:
     case MinionTask::JEWELER: {
         auto& info = workshops[*getWorkshopType(task)];
-        return MinionTaskInfo({info.squareType}, info.taskName);
+        return MinionTaskInfo(info.furniture, info.taskName);
       }
   }
   return getTaskInfo(task);

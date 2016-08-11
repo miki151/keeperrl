@@ -28,6 +28,7 @@
 #include "model.h"
 #include "monster_ai.h"
 #include "item.h"
+#include "view_id.h"
 
 namespace {
 
@@ -1590,11 +1591,7 @@ class AddMapBorder : public LevelMaker {
 }
 
 static MakerQueue* stockpileMaker(StockpileInfo info) {
-  SquareId square = SquareId(0);
-  switch (info.type) {
-    case StockpileInfo::GOLD: square = SquareId::TREASURE_CHEST; break;
-    case StockpileInfo::MINERALS: square = SquareId::STOCKPILE_RES; break;
-  }
+  SquareType square {SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::STOCKPILE1, "stockpile"}};
   ItemFactory items;
   switch (info.type) {
     case StockpileInfo::GOLD: items = ItemFactory::singleType(ItemId::GOLD_PIECE); break;

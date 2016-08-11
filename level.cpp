@@ -37,12 +37,14 @@
 #include "square_array.h"
 #include "view_object.h"
 #include "field_of_view.h"
+#include "furniture.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, squares, oldSquares, landingSquares, locations, tickingSquares, creatures, model, fieldOfView);
   serializeAll(ar, name, backgroundLevel, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
   serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, memoryUpdates);
+  serializeAll(ar, furnitureInfo);
 }  
 
 SERIALIZABLE(Level);
@@ -53,8 +55,8 @@ Level::~Level() {}
 
 Level::Level(SquareArray s, Model* m, vector<Location*> l, const string& n,
     Table<double> sun, LevelId id) 
-    : squares(std::move(s)), oldSquares(squares->getBounds()), memoryUpdates(squares->getBounds(), true),
-      locations(l), model(m), 
+    : squares(std::move(s)), oldSquares(squares->getBounds()), furnitureInfo(squares->getBounds()),
+      memoryUpdates(squares->getBounds(), true), locations(l), model(m), 
       name(n), sunlight(sun), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id) {
@@ -476,25 +478,8 @@ bool Level::playerCanSee(const Creature* c) const {
     return false;
 }
 
-static bool canPass(const Square* square, const Creature* c) {
-  return square->canEnterEmpty(c) && (!square->getCreature() ||
-      !square->getCreature()->getAttributes().isStationary());
-}
-
-bool Level::canMoveCreature(const Creature* creature, Vec2 direction) const {
-  Vec2 position = creature->getPosition().getCoord();
-  Vec2 destination = position + direction;
-  if (!inBounds(destination) || unavailable[destination])
-    return false;
-  if (noDiagonalPassing && direction.isCardinal8() && !direction.isCardinal4() &&
-      !canPass(getSafeSquare(position + Vec2(direction.x, 0)), creature) &&
-      !canPass(getSafeSquare(position + Vec2(0, direction.y)), creature))
-    return false;
-  return getSafeSquare(destination)->canEnter(creature);
-}
-
 void Level::moveCreature(Creature* creature, Vec2 direction) {
-  CHECK(canMoveCreature(creature, direction));
+//  CHECK(canMoveCreature(creature, direction));
   Vec2 position = creature->getPosition().getCoord();
   unplaceCreature(creature, position);
   placeCreature(creature, position + direction);

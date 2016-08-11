@@ -61,8 +61,8 @@ class Position {
   bool canEnterEmpty(const MovementType&) const;
   optional<SquareApplyType> getApplyType() const;
   optional<SquareApplyType> getApplyType(const Creature*) const;
-  void apply(Creature*);
-  void apply();
+  void apply(Creature*) const;
+  void apply() const;
   double getApplyTime() const;
   void addSound(const Sound&) const;
   bool canHide() const;
@@ -77,6 +77,7 @@ class Position {
   PItem removeItem(Item*);
   vector<PItem> removeItems(vector<Item*>);
   bool canConstruct(const SquareType&) const;
+  bool canConstruct(FurnitureType) const;
   bool canDestroy(const Creature*) const;
   bool isDestroyable() const;
   bool isUnavailable() const;
@@ -85,6 +86,7 @@ class Position {
   void destroyBy(Creature* c);
   void destroy();
   bool construct(const SquareType&);
+  bool construct(FurnitureType, Creature* = nullptr);
   bool isActiveConstruction() const;
   bool isBurning() const;
   void setOnFire(double amount);
@@ -121,6 +123,7 @@ class Position {
   double getLight() const;
   optional<Position> getStairsTo(Position) const;
   void replaceSquare(PSquare, bool storePrevious = true);
+  Furniture* getFurniture() const;
 
   SERIALIZATION_DECL(Position);
   int getHash() const;

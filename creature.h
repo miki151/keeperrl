@@ -172,7 +172,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canEquip(const Item* item) const;
   CreatureAction throwItem(Item*, Vec2 direction) const;
   CreatureAction heal(Vec2 direction) const;
-  CreatureAction applySquare() const;
+  CreatureAction applySquare(Position) const;
   CreatureAction hide() const;
   bool isHidden() const;
   bool knowsHiding(const Creature*) const;
@@ -184,9 +184,11 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction give(Creature* whom, vector<Item*> items);
   CreatureAction fire(Vec2 direction) const;
   CreatureAction construct(Vec2 direction, const SquareType&) const;
+  CreatureAction construct(Vec2 direction, FurnitureType) const;
   CreatureAction placeTorch(Dir attachmentDir, function<void(Trigger*)> builtCallback) const;
   CreatureAction whip(const Position&) const;
   bool canConstruct(const SquareType&) const;
+  bool canConstruct(FurnitureType) const;
   CreatureAction eat(Item*) const;
   enum DestroyAction { BASH, EAT, DESTROY };
   CreatureAction destroy(Vec2 direction, DestroyAction) const;

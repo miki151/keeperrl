@@ -176,7 +176,7 @@ void Player::pickUpItemAction(int numStack, bool multi) {
   if (getUsableSquareApplyType()) {
     --numStack;
     if (numStack == -1) {
-      getCreature()->applySquare().perform(getCreature());
+      getCreature()->applySquare(getCreature()->getPosition()).perform(getCreature());
       return;
     }
   }

@@ -8,6 +8,7 @@
 #include "collective_name.h"
 #include "attack_trigger.h"
 #include "creature_factory.h"
+#include "construction_map.h"
 
 SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom);
 
@@ -93,10 +94,10 @@ static double stolenItemsFun(int numStolen) {
     return 1.0;
 }
 
-static double getRoomProb(SquareId id) {
+static double getRoomProb(FurnitureType id) {
   switch (id) {
-    case SquareId::THRONE: return 0.001;
-    case SquareId::IMPALED_HEAD: return 0.000125;
+    case FurnitureType::THRONE: return 0.001;
+    case FurnitureType::IMPALED_HEAD: return 0.000125;
     default: FAIL << "Unsupported ROOM_BUILT type"; return 0;
   }
 }
@@ -122,8 +123,8 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
       case AttackTriggerId::TIMER: 
         return collective->getGlobalTime() >= trigger.get<int>() ? 0.05 : 0;
       case AttackTriggerId::ROOM_BUILT: 
-        return collective->getSquares(trigger.get<SquareType>()).size() *
-          getRoomProb(trigger.get<SquareType>().getId());
+        return collective->getConstructions().getFurnitureCount(trigger.get<FurnitureType>()) *
+          getRoomProb(trigger.get<FurnitureType>());
       case AttackTriggerId::POWER: 
         return powerMaxProb *
             powerClosenessFun(self->getCollective()->getDangerLevel(), collective->getDangerLevel());

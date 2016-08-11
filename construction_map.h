@@ -6,6 +6,7 @@
 #include "square_type.h"
 #include "unique_entity.h"
 #include "position.h"
+#include "furniture_type.h"
 
 class ConstructionMap {
   public:
@@ -28,6 +29,27 @@ class ConstructionMap {
     CostInfo SERIAL(cost);
     bool SERIAL(built) = false;
     SquareType SERIAL(type);
+    optional<UniqueEntity<Task>::Id> SERIAL(task);
+  };
+
+  class FurnitureInfo {
+    public:
+    FurnitureInfo(FurnitureType, CostInfo);
+    void setBuilt();
+    void reset();
+    void setTask(UniqueEntity<Task>::Id);
+    CostInfo getCost() const;
+    bool isBuilt() const;
+    UniqueEntity<Task>::Id getTask() const;
+    bool hasTask() const;
+    const FurnitureType& getFurnitureType() const;
+
+    SERIALIZATION_DECL(FurnitureInfo);
+
+    private:
+    CostInfo SERIAL(cost);
+    bool SERIAL(built) = false;
+    FurnitureType SERIAL(type);
     optional<UniqueEntity<Task>::Id> SERIAL(task);
   };
 
@@ -77,6 +99,16 @@ class ConstructionMap {
   bool containsSquare(Position) const;
   int getSquareCount(SquareType) const;
 
+  const FurnitureInfo& getFurniture(Position) const;
+  FurnitureInfo& getFurniture(Position);
+  void removeFurniture(Position);
+  void onFurnitureDestroyed(Position);
+  void addFurniture(Position, const FurnitureInfo&);
+  bool containsFurniture(Position) const;
+  int getFurnitureCount(FurnitureType) const;
+  const set<Position>& getFurniturePositions(FurnitureType) const;
+  void onConstructed(Position, FurnitureType);
+
   const TrapInfo& getTrap(Position) const;
   TrapInfo& getTrap(Position);
   void removeTrap(Position);
@@ -89,6 +121,7 @@ class ConstructionMap {
   void addTorch(Position, const TorchInfo&);
   bool containsTorch(Position) const;
   const vector<Position>& getSquares() const;
+  const vector<Position>& getAllFurniture() const;
   const map<Position, TrapInfo>& getTraps() const;
   const map<Position, TorchInfo>& getTorches() const;
 
@@ -97,7 +130,11 @@ class ConstructionMap {
 
   private:
   map<Position, vector<SquareInfo>> SERIAL(squares);
+  map<Position, FurnitureInfo> SERIAL(furniture);
+  EnumMap<FurnitureType, set<Position>> SERIAL(furniturePositions);
+  EnumMap<FurnitureType, int> SERIAL(furnitureCounts);
   vector<Position> squarePos;
+  vector<Position> allFurniture;
   unordered_map<SquareType, int> SERIAL(typeCounts);
   map<Position, TrapInfo> SERIAL(traps);
   map<Position, TorchInfo> SERIAL(torches);

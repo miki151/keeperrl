@@ -14,6 +14,11 @@
 #include "view.h"
 #include "square_interaction.h"
 #include "view_object.h"
+#include "furniture.h"
+#include "furniture_factory.h"
+#include "creature_name.h"
+#include "player_message.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void Position::serialize(Archive& ar, const unsigned int version) {
@@ -96,6 +101,13 @@ Square* Position::modSquare() const {
 const Square* Position::getSquare() const {
   CHECK(isValid());
   return level->getSafeSquare(coord);
+}
+
+Furniture* Position::getFurniture() const {
+  if (isValid())
+    return level->furnitureInfo[coord].furniture.get();
+  else
+    return nullptr;
 }
 
 Creature* Position::getCreature() const {
@@ -224,19 +236,26 @@ optional<SquareApplyType> Position::getApplyType(const Creature* c) const {
   return none;
 }
 
-void Position::apply(Creature* c) {
-  if (isValid())
-    modSquare()->apply(c);
+void Position::apply(Creature* c) const {
+  if (isValid()) {
+    if (auto f = getFurniture())
+      f->apply(*this, c);
+    else
+      modSquare()->apply(c);
+  }
 }
 
-void Position::apply() {
+void Position::apply() const {
   if (isValid())
     modSquare()->apply(*this);
 }
 
 double Position::getApplyTime() const {
   CHECK(isValid());
-  return getSquare()->getApplyTime();
+  if (auto f = getFurniture())
+    return f->getApplyTime();
+  else
+    return getSquare()->getApplyTime();
 }
 
 void Position::addSound(const Sound& sound1) const {
@@ -265,7 +284,8 @@ void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
         index.insert(*obj);
     if (isValid() && isUnavailable())
       index.setHighlight(HighlightType::UNAVAILABLE);
-
+    if (auto furniture = getFurniture())
+      index.insert(furniture->getViewObject());
   }
 }
 
@@ -328,16 +348,12 @@ vector<PItem> Position::removeItems(vector<Item*> it) {
   return modSquare()->removeItems(*this, it);
 }
 
-bool Position::canConstruct(const SquareType& type) const {
-  return !isUnavailable() && getSquare()->canConstruct(type);
-}
-
 bool Position::canDestroy(const Creature* c) const {
   return !isUnavailable() && getSquare()->canDestroy(c);
 }
 
 bool Position::isDestroyable() const {
-  return !isUnavailable() && getSquare()->isDestroyable();
+  return !isUnavailable() && (getSquare()->isDestroyable() || getFurniture());
 }
 
 bool Position::isUnavailable() const {
@@ -345,19 +361,19 @@ bool Position::isUnavailable() const {
 }
 
 bool Position::canEnter(const Creature* c) const {
-  return !isUnavailable() && getSquare()->canEnter(c);
+  return !isUnavailable() && (!getFurniture() || getFurniture()->isWalkable()) && getSquare()->canEnter(c);
 }
 
 bool Position::canEnter(const MovementType& t) const {
-  return !isUnavailable() && getSquare()->canEnter(t);
+  return !isUnavailable() && (!getFurniture() || getFurniture()->isWalkable()) &&getSquare()->canEnter(t);
 }
 
 bool Position::canEnterEmpty(const Creature* c) const {
-  return !isUnavailable() && getSquare()->canEnterEmpty(c);
-}
+  return !isUnavailable() && (!getFurniture() || getFurniture()->isWalkable()) && getSquare()->canEnterEmpty(c);
+} 
 
 bool Position::canEnterEmpty(const MovementType& t) const {
-  return !isUnavailable() && getSquare()->canEnterEmpty(t);
+  return !isUnavailable() && (!getFurniture() || getFurniture()->isWalkable()) && getSquare()->canEnterEmpty(t);
 }
 
 void Position::dropItem(PItem item) {
@@ -376,16 +392,48 @@ void Position::destroyBy(Creature* c) {
 }
 
 void Position::destroy() {
-  if (isValid())
+  if (isValid() && getSquare()->isDestroyable())
     modSquare()->destroy(*this);
+  if (Furniture* f = getFurniture()) {
+    f->onDestroy(*this);
+    level->furnitureInfo[coord].furniture.reset();
+    setNeedsRenderUpdate(true);
+  }
+}
+
+bool Position::canConstruct(const SquareType& type) const {
+  return !isUnavailable() && getSquare()->canConstruct(type);
 }
 
 bool Position::construct(const SquareType& type) {
   return !isUnavailable() && modSquare()->construct(*this, type);
 }
 
+bool Position::canConstruct(FurnitureType type) const {
+  return !isUnavailable() && getSquare()->canEnterEmpty(MovementTrait::WALK);
+}
+
+bool Position::construct(FurnitureType type, Creature* c) {
+  CHECK(!isUnavailable());
+  CHECK(canConstruct(type));
+  auto& furnitureInfo = level->furnitureInfo[coord];
+  if (!furnitureInfo.construction || furnitureInfo.construction->type != type)
+    furnitureInfo.construction = {type, 10};
+  if (--furnitureInfo.construction->time == 0) {
+    setNeedsRenderUpdate(true);
+    furnitureInfo.furniture = FurnitureFactory::get(type);
+    furnitureInfo.construction = none;
+    if (c) {
+      c->monsterMessage(c->getName().the() + " builds " + furnitureInfo.furniture->getName());
+      c->playerMessage("You build " + furnitureInfo.furniture->getName());
+    }
+    return true;
+  } else
+    return false;
+}
+
 bool Position::isActiveConstruction() const {
-  return !isUnavailable() && getSquare()->isActiveConstruction();
+  return !isUnavailable() && (getSquare()->isActiveConstruction() || level->furnitureInfo[coord].construction);
 }
 
 bool Position::isBurning() const {
@@ -549,8 +597,22 @@ void Position::moveCreature(Vec2 direction) {
   level->moveCreature(getCreature(), direction);
 }
 
+static bool canPass(Position position, const Creature* c) {
+  return position.canEnterEmpty(c) && (!position.getCreature() ||
+      !position.getCreature()->getAttributes().isStationary());
+}
+
 bool Position::canMoveCreature(Vec2 direction) const {
-  return !isUnavailable() && level->canMoveCreature(getCreature(), direction);
+  if (!isUnavailable()) {
+    Creature* creature = getCreature();
+    Position destination = plus(direction);
+    if (level->noDiagonalPassing && direction.isCardinal8() && !direction.isCardinal4() &&
+        !canPass(plus(Vec2(direction.x, 0)), creature) &&
+        !canPass(plus(Vec2(0, direction.y)), creature))
+      return false;
+    return destination.canEnter(getCreature());
+  } else
+    return false;
 }
 
 bool Position::canMoveCreature(Position pos) const {

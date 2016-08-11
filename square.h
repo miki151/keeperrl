@@ -46,8 +46,6 @@ enum class ConstructionsId {
   MINING_ORE,
   MINING,
   MOUNTAIN_GEN_ORES,
-  BED,
-  BEAST_CAGE,
   GRAVE,
 };
 

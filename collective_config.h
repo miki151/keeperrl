@@ -27,12 +27,12 @@ class Game;
 class Workshops;
 
 enum class AttractionId {
-  SQUARE,
+  FURNITURE,
   ITEM_INDEX,
 };
 
-class MinionAttraction : public EnumVariant<AttractionId, TYPES(SquareType, ItemIndex),
-    ASSIGN(SquareType, AttractionId::SQUARE),
+class MinionAttraction : public EnumVariant<AttractionId, TYPES(FurnitureType, ItemIndex),
+    ASSIGN(FurnitureType, AttractionId::FURNITURE),
     ASSIGN(ItemIndex, AttractionId::ITEM_INDEX)> {
   using EnumVariant::EnumVariant;
 };
@@ -99,13 +99,12 @@ struct GuardianInfo {
 };
 
 struct DormInfo {
-  SquareType dormType;
-  optional<SquareType> getBedType() const;
+  FurnitureType bedType;
   optional<CollectiveWarning> warning;
 };
 
 struct ResourceInfo {
-  vector<SquareType> storageType;
+  optional<FurnitureType> storageType;
   optional<ItemIndex> itemIndex;
   ItemId itemId;
   string name;
@@ -114,11 +113,13 @@ struct ResourceInfo {
 };
 
 struct MinionTaskInfo {
-  enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME, EAT, SPIDER } type;
+  enum Type { APPLY_SQUARE, FURNITURE, EXPLORE, COPULATE, CONSUME, EAT, SPIDER } type;
   MinionTaskInfo(vector<SquareType>, const string& description, optional<CollectiveWarning> = none, double cost = 0,
       bool centerOnly = false);
+  MinionTaskInfo(FurnitureType, const string& description);
   MinionTaskInfo(Type, const string& description, optional<CollectiveWarning> = none);
   vector<SquareType> squares;
+  FurnitureType furniture;
   string description;
   optional<CollectiveWarning> warning;
   double cost = 0;
@@ -126,7 +127,7 @@ struct MinionTaskInfo {
 };
 
 struct WorkshopInfo {
-  SquareId squareType;
+  FurnitureType furniture;
   MinionTask minionTask;
   string taskName;
 };
@@ -171,12 +172,12 @@ class CollectiveConfig {
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
   static optional<SquareType> getSecondarySquare(SquareType);
   unordered_set<SquareType> getEfficiencySquares() const;
-  vector<SquareType> getRoomsNeedingLight() const;
+  const vector<FurnitureType>& getRoomsNeedingLight() const;
   int getTaskDuration(const Creature*, MinionTask) const;
-  static const map<CollectiveResourceId, ResourceInfo>& getResourceInfo();
+  static const ResourceInfo& getResourceInfo(CollectiveResourceId);
   MinionTaskInfo getTaskInfo(MinionTask) const;
-  static const vector<SquareType>& getEquipmentStorage();
-  static const vector<SquareType>& getResourceStorage();
+  static const FurnitureType& getEquipmentStorage();
+  static const FurnitureType& getResourceStorage();
 
   SERIALIZATION_DECL(CollectiveConfig);
 

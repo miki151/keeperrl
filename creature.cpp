@@ -49,6 +49,7 @@
 #include "spell.h"
 #include "body.h"
 #include "field_of_view.h"
+#include "furniture.h"
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
@@ -620,15 +621,16 @@ CreatureAction Creature::bumpInto(Vec2 direction) const {
     return CreatureAction();
 }
 
-CreatureAction Creature::applySquare() const {
-  if (getPosition().getApplyType(this))
+CreatureAction Creature::applySquare(Position pos) const {
+  CHECK(pos.dist8(getPosition()) <= 1);
+//  if (pos.getApplyType(this))
     return CreatureAction(this, [=](Creature* self) {
       Debug() << getName().the() << " applying " << getPosition().getName();
-      self->getPosition().apply(self);
+      pos.apply(self);
       self->spendTime(self->getPosition().getApplyTime());
     });
-  else
-    return CreatureAction();
+//  else
+//    return CreatureAction();
 }
 
 CreatureAction Creature::hide() const {
@@ -1357,7 +1359,22 @@ CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const
   return CreatureAction();
 }
 
+CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
+  if (getPosition().plus(direction).canConstruct(type) && canConstruct(type))
+    return CreatureAction(this, [=](Creature* self) {
+        addSound(Sound(SoundId::DIGGING).setPitch(0.5));
+        if (getPosition().plus(direction).construct(type, self)) {
+        }
+        self->spendTime(1);
+      });
+  return CreatureAction();
+}
+
 bool Creature::canConstruct(const SquareType& type) const {
+  return attributes->getSkills().hasDiscrete(SkillId::CONSTRUCTION);
+}
+
+bool Creature::canConstruct(FurnitureType type) const {
   return attributes->getSkills().hasDiscrete(SkillId::CONSTRUCTION);
 }
 
@@ -1579,7 +1596,7 @@ CreatureAction Creature::moveTowards(Position pos, bool stepOnTile) {
     return moveTowards(pos, false, stepOnTile);
   else if (auto stairs = position.getStairsTo(pos)) {
     if (stairs == position)
-      return applySquare();
+      return applySquare(position);
     else
       return moveTowards(*stairs, false, true);
   } else

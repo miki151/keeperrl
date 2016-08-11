@@ -29,6 +29,7 @@
 #include "attack_trigger.h"
 #include "view_object.h"
 #include "campaign.h"
+#include "construction_map.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) { 
@@ -161,7 +162,9 @@ void Game::prepareSiteRetirement() {
     }
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->limitKnownTilesToModel();
-  vector<Position> locationPos = playerCollective->getAllSquares({SquareId::LIBRARY});
+  set<Position> locationPosTmp =
+      playerCollective->getConstructions().getFurniturePositions(FurnitureType::BOOK_SHELF);
+  vector<Position> locationPos(locationPosTmp.begin(), locationPosTmp.end());
   if (locationPos.empty())
     locationPos = playerCollective->getTerritory().getAll();
   if (!locationPos.empty())
@@ -173,8 +176,8 @@ void Game::prepareSiteRetirement() {
         new VillageControl(playerCollective, CONSTRUCT(VillageBehaviour,
           c.minPopulation = 6;
           c.minTeamSize = 5;
-          c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
-            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
+          c.triggers = LIST({AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE}, {AttackTriggerId::SELF_VICTIMS},
+            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD});
           c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.8, Random.get(500, 700));))));
   for (Collective* col : models[baseModel]->getCollectives())
@@ -197,7 +200,9 @@ void Game::prepareSiteRetirement() {
 void Game::prepareSingleMapRetirement() {
   CHECK(isSingleModel());
   playerCollective->getLevel()->clearLocations();
-  vector<Position> locationPos = playerCollective->getAllSquares({SquareId::LIBRARY});
+  set<Position> locationPosTmp =
+      playerCollective->getConstructions().getFurniturePositions(FurnitureType::BOOK_SHELF);
+  vector<Position> locationPos(locationPosTmp.begin(), locationPosTmp.end());
   if (locationPos.empty())
     locationPos = playerCollective->getTerritory().getAll();
   if (!locationPos.empty())

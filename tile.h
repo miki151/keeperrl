@@ -40,6 +40,7 @@ class Tile {
   bool symFont = false;
   double translucent = 0;
   bool noShadow = false;
+  bool roundShadow = false;
   bool floorBorders = false;
 
   Tile setNoShadow();
@@ -56,6 +57,7 @@ class Tile {
   Tile setTranslucent(double v);
   Tile addHighlight(TileCoord);
   Tile setColor(Color);
+  Tile setRoundShadow();
   optional<TileCoord> getHighlightCoord() const;
 
   const vector<ViewId>& getExtraBorderIds() const;

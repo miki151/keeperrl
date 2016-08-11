@@ -57,10 +57,6 @@ class Level {
   static Rectangle getSplashBounds();
   static Rectangle getSplashVisibleBounds();
 
-  /** Checks if the creature can move to \paramname{direction}. This ensures 
-    * that a subsequent call to #moveCreature will not fail.*/
-  bool canMoveCreature(const Creature*, Vec2 direction) const;
-
   /** Moves the creature. Updates the creature's position.*/
   void moveCreature(Creature*, Vec2 direction);
 
@@ -231,6 +227,17 @@ class Level {
   Vec2 transform(Vec2);
   HeapAllocated<SquareArray> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
+  struct FurnitureInfo {
+    PFurniture SERIAL(furniture);
+    struct FurnitureConstruction {
+      FurnitureType SERIAL(type);
+      int SERIAL(time);
+      SERIALIZE_ALL(type, time);
+    };
+    optional<FurnitureConstruction> SERIAL(construction);
+    SERIALIZE_ALL(furniture, construction);
+  };
+  Table<FurnitureInfo> SERIAL(furnitureInfo);
   HeapAllocated<Table<optional<ViewObject>>> SERIAL(background);
   Table<bool> SERIAL(memoryUpdates);
   Table<bool> renderUpdates = Table<bool>(getMaxBounds(), true);

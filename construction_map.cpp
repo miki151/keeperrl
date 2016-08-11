@@ -4,6 +4,99 @@
 #include "trigger.h"
 #include "tribe.h"
 
+SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::FurnitureInfo, FurnitureInfo);
+
+SERIALIZE_DEF(ConstructionMap::FurnitureInfo, cost, built, type, task);
+
+ConstructionMap::FurnitureInfo::FurnitureInfo(FurnitureType t, CostInfo c) : cost(c), type(t) {
+}
+
+void ConstructionMap::FurnitureInfo::setBuilt() {
+  built = true;
+  task = none;
+}
+
+void ConstructionMap::FurnitureInfo::reset() {
+  built = false;
+  task = none;
+}
+
+void ConstructionMap::FurnitureInfo::setTask(UniqueEntity<Task>::Id id) {
+  task = id;
+}
+
+CostInfo ConstructionMap::FurnitureInfo::getCost() const {
+  return cost;
+}
+
+bool ConstructionMap::FurnitureInfo::isBuilt() const {
+  return built;
+}
+
+bool ConstructionMap::FurnitureInfo::hasTask() const {
+  return !!task;
+}
+
+UniqueEntity<Task>::Id ConstructionMap::FurnitureInfo::getTask() const {
+  return *task;
+}
+
+const FurnitureType& ConstructionMap::FurnitureInfo::getFurnitureType() const {
+  return type;
+}
+
+const ConstructionMap::FurnitureInfo& ConstructionMap::getFurniture(Position pos) const {
+  return furniture.at(pos); 
+}
+
+ConstructionMap::FurnitureInfo& ConstructionMap::getFurniture(Position pos) {
+  return furniture.at(pos); 
+}
+
+void ConstructionMap::removeFurniture(Position pos) {
+  auto type = furniture.at(pos).getFurnitureType();
+  --furnitureCounts[type];
+  furniturePositions[type].erase(pos);
+  furniture.erase(pos);
+  removeElement(allFurniture, pos);
+  pos.setNeedsRenderUpdate(true);
+}
+
+void ConstructionMap::onFurnitureDestroyed(Position pos) {
+  getFurniture(pos).reset();
+}
+
+void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
+  CHECK(!furniture.count(pos));
+  allFurniture.push_back(pos);
+  furniture.emplace(pos, info);
+  ++furnitureCounts[info.getFurnitureType()];
+  pos.setNeedsRenderUpdate(true);
+}
+
+bool ConstructionMap::containsFurniture(Position pos) const {
+  return furniture.count(pos);
+}
+
+int ConstructionMap::getFurnitureCount(FurnitureType type) const {
+  return furnitureCounts[type];
+}
+
+const set<Position>& ConstructionMap::getFurniturePositions(FurnitureType type) const {
+  return furniturePositions[type];
+}
+
+const vector<Position>& ConstructionMap::getAllFurniture() const {
+  return allFurniture;
+}
+
+void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
+  furniturePositions[type].insert(pos);
+  if (furniture.count(pos))
+    furniture.at(pos).setBuilt();
+}
+
+
 const ConstructionMap::SquareInfo& ConstructionMap::getSquare(Position pos) const {
   for (auto& info : squares.at(pos))
     if (!info.isBuilt())
@@ -235,9 +328,11 @@ SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TorchInfo, TorchInfo);
 
 template <class Archive>
 void ConstructionMap::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, squares, typeCounts, traps, torches);
-  if (Archive::is_loading::value)
+  serializeAll(ar, squares, typeCounts, traps, torches, furniture, furniturePositions, furnitureCounts);
+  if (Archive::is_loading::value) {
     squarePos = getKeys(squares);
+    allFurniture = getKeys(furniture);
+  }
 }
 
 SERIALIZABLE(ConstructionMap);

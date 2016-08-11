@@ -46,6 +46,7 @@ enum class CreatureSize;
 
 enum class SquareApplyType;
 enum class SquareId;
+enum class FurnitureType;
 enum class ItemAction;
 enum class WorshipType;
 enum class SquareInteraction;

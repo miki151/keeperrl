@@ -41,6 +41,7 @@
 #include "square_type.h"
 #include "item_type.h"
 #include "body.h"
+#include "furniture_type.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -79,22 +80,65 @@ void Task::setDone() {
 
 namespace {
 
+class ConstructionHelper {
+  public:
+  ConstructionHelper(SquareType s) : square(s) {}
+  ConstructionHelper(FurnitureType f) : furniture(f) {}
+
+  bool canConstruct(Position pos) {
+    if (square)
+      return pos.canConstruct(*square);
+    else
+      return pos.canConstruct(*furniture);
+  }
+
+  string getDescription(Position position) const {
+    if (square)
+      switch (square->getId()) {
+        case SquareId::FLOOR: return "Dig " + toString(position);
+        case SquareId::TREE_TRUNK: return "Cut tree " + toString(position);
+        default: return "Build " + transform2(EnumInfo<SquareId>::getString(square->getId()),
+                   [] (char c) -> char { if (c == '_') return ' '; else return tolower(c); }) + toString(position);
+      }
+    else
+      return "Build " + transform2(EnumInfo<FurnitureType>::getString(*furniture),
+          [] (char c) -> char { if (c == '_') return ' '; else return tolower(c); }) + toString(position);
+
+  }
+
+  CreatureAction getAction(Creature* c, Vec2 dir) {
+    if (square)
+      return c->construct(dir, *square);
+    else
+      return c->construct(dir, *furniture);
+  }
+
+  void onConstructed(TaskCallback* callback, Position position) {
+    if (square)
+      callback->onConstructed(position, *square);
+    else
+      callback->onConstructed(position, *furniture);
+  }
+
+  SERIALIZE_ALL(square, furniture);
+  SERIALIZATION_CONSTRUCTOR(ConstructionHelper);
+
+  private:
+  optional<SquareType> SERIAL(square);
+  optional<FurnitureType> SERIAL(furniture);
+};
+
 class Construction : public Task {
   public:
-  Construction(TaskCallback* c, Position pos, const SquareType& _type) : Task(true), type(_type), position(pos),
+  Construction(TaskCallback* c, Position pos, const ConstructionHelper& h) : Task(true), helper(h), position(pos),
       callback(c) {}
 
   virtual bool isImpossible(const Level* level) override {
-    return !position.canConstruct(type);
+    return !helper.canConstruct(position);
   }
 
   virtual string getDescription() const override {
-    switch (type.getId()) {
-      case SquareId::FLOOR: return "Dig " + toString(position);
-      case SquareId::TREE_TRUNK: return "Cut tree " + toString(position);
-      default: return "Build " + transform2(EnumInfo<SquareId>::getString(type.getId()),
-                   [] (char c) -> char { if (c == '_') return ' '; else return tolower(c); }) + toString(position);
-    }
+    return helper.getDescription(position);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -104,11 +148,11 @@ class Construction : public Task {
       return c->moveTowards(position);
     CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
     Vec2 dir = c->getPosition().getDir(position);
-    if (auto action = c->construct(dir, type))
+    if (auto action = helper.getAction(c, dir))
       return {1.0, action.append([=](Creature* c) {
           if (!position.isActiveConstruction()) {
             setDone();
-            callback->onConstructed(position, type);
+            helper.onConstructed(callback, position);
           }
           })};
     else {
@@ -117,11 +161,11 @@ class Construction : public Task {
     }
   }
 
-  SERIALIZE_ALL2(Task, position, type, callback);
+  SERIALIZE_ALL2(Task, position, helper, callback);
   SERIALIZATION_CONSTRUCTOR(Construction);
 
   private:
-  SquareType SERIAL(type);
+  ConstructionHelper SERIAL(helper);
   Position SERIAL(position);
   TaskCallback* SERIAL(callback);
 };
@@ -129,6 +173,10 @@ class Construction : public Task {
 }
 
 PTask Task::construction(TaskCallback* c, Position target, const SquareType& type) {
+  return PTask(new Construction(c, target, type));
+}
+
+PTask Task::construction(TaskCallback* c, Position target, FurnitureType type) {
   return PTask(new Construction(c, target, type));
 }
 
@@ -334,15 +382,12 @@ PTask Task::equipItem(Item* item) {
 static Position chooseRandomClose(Position start, const vector<Position>& squares, Task::SearchType type) {
   CHECK(!squares.empty());
   int minD = 10000;
-  int margin = 3;
+  int margin = type == Task::LAZY ? 0 : 3;
   vector<Position> close;
-  for (Position v : squares) {
-    if (type == Task::LAZY && v == start)
-      return v;
-    minD = min(minD, v.dist8(start));
-  }
   for (Position v : squares)
-    if (v.dist8(start) < minD + margin)
+    minD = min(minD, v.dist8(start));
+  for (Position v : squares)
+    if (v.dist8(start) <= minD + margin)
       close.push_back(v);
   if (close.empty())
     return Random.choose(squares);
@@ -402,8 +447,8 @@ class BringItem : public PickItem {
   Position SERIAL(target);
 };
 
-PTask Task::bringItem(TaskCallback* c, Position pos, vector<Item*> items, vector<Position> target, int numRetries) {
-  return PTask(new BringItem(c, pos, items, target, numRetries));
+PTask Task::bringItem(TaskCallback* c, Position pos, vector<Item*> items, const set<Position>& target, int numRetries) {
+  return PTask(new BringItem(c, pos, items, vector<Position>(target.begin(), target.end()), numRetries));
 }
 
 class ApplyItem : public BringItem {
@@ -467,12 +512,12 @@ class ApplySquare : public Task {
         return NoMove;
       }
     }
-    if (position == c->getPosition()) {
-      if (auto action = c->applySquare())
+    if (atTarget(c)) {
+      if (auto action = c->applySquare(*position))
         return {1.0, action.append([=](Creature* c) {
             setDone();
             if (callback)
-              callback->onAppliedSquare(c->getPosition());
+              callback->onAppliedSquare(c, *position);
         })};
       else {
         setDone();
@@ -495,6 +540,13 @@ class ApplySquare : public Task {
 
   virtual string getDescription() const override {
     return "Apply square " + (position ? toString(*position) : "");
+  }
+
+  bool atTarget(Creature* c) {
+    if (position->canEnter(c))
+      return position == c->getPosition();
+    else
+      return position->dist8(c->getPosition()) == 1;
   }
 
   SERIALIZE_ALL2(Task, positions, rejectedPosition, invalidCount, position, callback, searchType); 
@@ -589,7 +641,7 @@ class Sacrifice : public Task {
     if (creature->isDead()) {
       if (sacrificePos) {
         if (sacrificePos == c->getPosition())
-          return c->applySquare().append([=](Creature* c) { setDone(); });
+          return c->applySquare(*sacrificePos).append([=](Creature* c) { setDone(); });
         else
           return c->moveTowards(*sacrificePos);
       } else {
