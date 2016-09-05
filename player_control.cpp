@@ -1668,7 +1668,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::TILE_CLICK: {
         Vec2 pos = input.get<Vec2>();
         if (pos.inRectangle(getLevel()->getBounds()))
-          tryLockingDoor(Position(pos, getLevel()));
+          onSquareClick(Position(pos, getLevel()));
         break;
         }
 
@@ -2072,11 +2072,13 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
   }
 }
 
-void PlayerControl::tryLockingDoor(Position pos) {
+void PlayerControl::onSquareClick(Position pos) {
   if (getCollective()->getTerritory().contains(pos))
     if (auto furniture = pos.getFurniture())
       if (furniture->click(pos))
         updateSquareMemory(pos);
+  if (getCollective()->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF).count(pos))
+    handleLibrary(getView());
   for (auto workshopType : ENUM_ALL(WorkshopType))
     if (getCollective()->getConstructions()
         .getBuiltPositions(CollectiveConfig::getWorkshopInfo(workshopType).furniture).count(pos))

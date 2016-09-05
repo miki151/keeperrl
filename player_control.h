@@ -195,7 +195,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static ViewObject getTrapObject(TrapType, bool built);
   void addToMemory(Position);
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
-  void tryLockingDoor(Position);
+  void onSquareClick(Position);
   Creature* getControlled() const;
   optional<TeamId> getCurrentTeam() const;
   CollectiveTeams& getTeams();
