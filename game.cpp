@@ -163,7 +163,7 @@ void Game::prepareSiteRetirement() {
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->limitKnownTilesToModel();
   set<Position> locationPosTmp =
-      playerCollective->getConstructions().getFurniturePositions(FurnitureType::BOOK_SHELF);
+      playerCollective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF);
   vector<Position> locationPos(locationPosTmp.begin(), locationPosTmp.end());
   if (locationPos.empty())
     locationPos = playerCollective->getTerritory().getAll();
@@ -201,7 +201,7 @@ void Game::prepareSingleMapRetirement() {
   CHECK(isSingleModel());
   playerCollective->getLevel()->clearLocations();
   set<Position> locationPosTmp =
-      playerCollective->getConstructions().getFurniturePositions(FurnitureType::BOOK_SHELF);
+      playerCollective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF);
   vector<Position> locationPos(locationPosTmp.begin(), locationPosTmp.end());
   if (locationPos.empty())
     locationPos = playerCollective->getTerritory().getAll();

@@ -69,7 +69,7 @@ Level::Level(SquareArray s, Model* m, vector<Location*> l, const string& n,
   for (Location *l : locations)
     l->setLevel(this);
   for (VisionId vision : ENUM_ALL(VisionId))
-    (*fieldOfView)[vision] = FieldOfView(*squares, vision);
+    (*fieldOfView)[vision] = FieldOfView(this, vision);
   for (Vec2 pos : squares->getBounds())
     addLightSource(pos, squares->getReadonly(pos)->getLightEmission(), 1);
 }
@@ -135,7 +135,7 @@ void Level::addDarknessSource(Vec2 pos, double radius, int numDarkness) {
         lightCapAmount[v] -= min(1.0, 1 - (dist) / radius) * numDarkness;
         setNeedsRenderUpdate(v, true);
       }
-      updateConnectivity(v);
+//      updateConnectivity(v);
     }
   }
 }
@@ -173,7 +173,7 @@ void Level::replaceSquare(Position position, PSquare newSquare, bool storePrevio
   }
   addLightSource(pos, squares->getSquare(pos)->getLightEmission(), 1);
   updateVisibility(pos);
-  updateConnectivity(pos);
+  position.updateConnectivity();
 }
 
 void Level::updateVisibility(Vec2 changedSquare) {
@@ -549,8 +549,11 @@ void Level::addTickingSquare(Vec2 pos) {
 }
 
 void Level::tick() {
-  for (Vec2 pos : tickingSquares)
+  for (Vec2 pos : tickingSquares) {
     squares->getSquare(pos)->tick(Position(pos, this));
+    if (auto furniture = furnitureInfo[pos].get())
+      furniture->tick(Position(pos, this));
+  }
 }
 
 bool Level::inBounds(Vec2 pos) const {
@@ -573,14 +576,6 @@ const string& Level::getName() const {
   return name;
 }
 
-void Level::updateConnectivity(Vec2 pos) {
-  for (auto& elem : sectors)
-    if (getSafeSquare(pos)->canNavigate(elem.first))
-      elem.second.add(pos);
-    else
-      elem.second.remove(pos);
-}
-
 bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement) const {
   return inBounds(p1) && inBounds(p2) && getSectors(movement).same(p1, p2);
 }
@@ -589,9 +584,9 @@ Sectors& Level::getSectors(const MovementType& movement) const {
   if (!sectors.count(movement)) {
     sectors[movement] = Sectors(getBounds());
     Sectors& newSectors = sectors.at(movement);
-    for (Vec2 v : getBounds())
-      if (getSafeSquare(v)->canNavigate(movement))
-        newSectors.add(v);
+    for (Position pos : getAllPositions())
+      if (pos.canNavigate(movement))
+        newSectors.add(pos.getCoord());
   }
   return sectors.at(movement);
 }
@@ -630,4 +625,22 @@ bool Level::needsMemoryUpdate(Vec2 pos) const {
 
 bool Level::isUnavailable(Vec2 pos) const {
   return unavailable[pos];
+}
+
+void Level::FurnitureInfo::reset() {
+  furniture->reset();
+  construction.reset();
+}
+
+void Level::setFurniture(Vec2 pos, const Furniture& f) {
+  furnitureInfo[pos].furniture->reset(f);
+  if (furnitureInfo[pos].get()->isTicking())
+    addTickingSquare(pos);
+}
+
+Furniture* Level::FurnitureInfo::get() {
+  if (*furniture)
+    return &**furniture;
+  else
+    return nullptr;
 }

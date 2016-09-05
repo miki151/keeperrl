@@ -23,7 +23,7 @@ class SquareArray;
 
 class FieldOfView {
   public:
-  FieldOfView(const SquareArray& squares, VisionId);
+  FieldOfView(Level*, VisionId);
   bool canSee(Vec2 from, Vec2 to);
   const vector<Vec2>& getVisibleTiles(Vec2 from);
   void squareChanged(Vec2 pos);
@@ -41,7 +41,7 @@ class FieldOfView {
     bool checkVisible(int x,int y) const;
     const vector<Vec2>& getVisibleTiles() const;
 
-    Visibility(const SquareArray& squares, VisionId, int x, int y);
+    Visibility(Level*, VisionId, int x, int y);
     Visibility(Visibility&&) = default;
     Visibility& operator = (Visibility&&) = default;
 
@@ -59,7 +59,7 @@ class FieldOfView {
     int SERIAL(py);
   };
   
-  const SquareArray* SERIAL(squares);
+  Level* SERIAL(level);
   Table<unique_ptr<Visibility>> SERIAL(visibility);
   VisionId SERIAL(vision);
 };

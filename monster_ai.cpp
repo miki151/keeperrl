@@ -36,6 +36,7 @@
 #include "effect_type.h"
 #include "body.h"
 #include "item_class.h"
+#include "furniture.h"
 
 class Behaviour {
   public:
@@ -251,28 +252,37 @@ class MoveRandomly : public Behaviour {
   const int memSize = 3;
 };
 
-class StayInPigsty : public Behaviour {
+class StayOnFurniture : public Behaviour {
   public:
-  StayInPigsty(Creature* c, Position orig, SquareApplyType t) : Behaviour(c), origin(orig), type(t) {}
+  StayOnFurniture(Creature* c, FurnitureType t) : Behaviour(c), type(t) {}
 
   MoveInfo getMove() override {
-    if (creature->getPosition().getApplyType(creature) != type)
-      if (auto move = creature->moveTowards(origin, true))
-        return move;
+    auto furniture = creature->getPosition().getFurniture();
+    if (!furniture || furniture->getType() != type) {
+      if (!nextPigsty)
+        for (auto pos : creature->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 20)))
+          if (Furniture* f = pos.getFurniture())
+            if (f->getType() == type) {
+              nextPigsty = pos;
+              break;
+            }
+      if (nextPigsty)
+        if (auto move = creature->moveTowards(*nextPigsty, true))
+          return move;
+    }
     if (Random.roll(10))
       for (Position next: creature->getPosition().neighbors8(Random))
-        if (next.canEnter(creature) && next.getApplyType(creature) == type)
+        if (next.canEnter(creature) && next.getFurniture() && next.getFurniture()->getType() == type)
           return creature->move(next);
     return creature->wait();
   }
 
-  SERIALIZATION_CONSTRUCTOR(StayInPigsty);
-  SERIALIZE_ALL2(Behaviour, origin, type);
+  SERIALIZATION_CONSTRUCTOR(StayOnFurniture)
+  SERIALIZE_ALL2(Behaviour, type)
 
   private:
-  Position SERIAL(origin);
-  SquareApplyType SERIAL(type);
-
+  FurnitureType SERIAL(type);
+  optional<Position> nextPigsty;
 };
 
 class BirdFlyAway : public Behaviour {
@@ -1061,7 +1071,7 @@ void MonsterAI::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, ChooseRandom);
   REGISTER_TYPE(ar, SingleTask);
   REGISTER_TYPE(ar, AvoidFire);
-  REGISTER_TYPE(ar, StayInPigsty);
+  REGISTER_TYPE(ar, StayOnFurniture);
 }
 
 REGISTER_TYPES(MonsterAI::registerTypes);
@@ -1192,12 +1202,12 @@ MonsterAIFactory MonsterAIFactory::moveRandomly() {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::stayInPigsty(Position origin, SquareApplyType type) {
-  return MonsterAIFactory([origin, type](Creature* c) {
+MonsterAIFactory MonsterAIFactory::stayOnFurniture(FurnitureType type) {
+  return MonsterAIFactory([type](Creature* c) {
       return new MonsterAI(c, {
           new AvoidFire(c),
           new Fighter(c, 0.6, true),
-          new StayInPigsty(c, origin, type)},
+          new StayOnFurniture(c, type)},
           {5, 2, 1});
       });
 }

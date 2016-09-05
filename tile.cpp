@@ -453,6 +453,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WATER, getWaterTile("waternesw", "water"));
     Tile::addTile(ViewId::MAGMA, getWaterTile("magmanesw", "magma"));
     Tile::addTile(ViewId::DOOR, sprite("door").setNoShadow());
+    Tile::addTile(ViewId::LOCKED_DOOR, sprite("locked_door").setNoShadow());
     Tile::addTile(ViewId::BARRICADE, sprite("barricade").setNoShadow().setRoundShadow());
     Tile::addTile(ViewId::DIG_ICON, sprite("dig_icon"));
     Tile::addTile(ViewId::SWORD, sprite("sword"));
@@ -730,6 +731,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::WATER, symbol(u8"~", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::MAGMA, symbol(u8"~", ColorId::RED));
     Tile::addSymbol(ViewId::DOOR, symbol(u8"|", ColorId::BROWN));
+    Tile::addSymbol(ViewId::LOCKED_DOOR, symbol(u8"|", ColorId::YELLOW));
     Tile::addSymbol(ViewId::BARRICADE, symbol(u8"X", ColorId::BROWN));
     Tile::addSymbol(ViewId::DIG_ICON, symbol(u8"⛏", ColorId::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::SWORD, symbol(u8")", ColorId::LIGHT_GRAY));
@@ -887,8 +889,6 @@ const Tile& Tile::getTile(ViewId id) {
 }
 
 Color Tile::getColor(const ViewObject& object) {
-  if (object.hasModifier(ViewObject::Modifier::LOCKED))
-    return colors[ColorId::PURPLE];
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE))
     return colors[ColorId::DARK_GRAY];
   if (object.hasModifier(ViewObject::Modifier::HIDDEN))

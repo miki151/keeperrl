@@ -28,7 +28,6 @@
 #include "view_id.h"
 #include "map_memory.h"
 #include "player_message.h"
-#include "square_apply_type.h"
 #include "item_action.h"
 #include "game_info.h"
 #include "equipment.h"
@@ -48,6 +47,7 @@
 #include "collective_name.h"
 #include "view_object.h"
 #include "body.h"
+#include "furniture_usage.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -158,22 +158,9 @@ void Player::getItemNames(vector<Item*> items, vector<ListElem>& names, vector<v
   }
 }
 
-static string getSquareQuestion(SquareApplyType type, string name) {
-  switch (type) {
-    case SquareApplyType::USE_STAIRS: return "use " + name;
-    case SquareApplyType::USE_CHEST: return "open " + name;
-    case SquareApplyType::DRINK: return "drink from " + name;
-    case SquareApplyType::PRAY: return "pray at " + name;
-    case SquareApplyType::SLEEP: return "sleep on " + name;
-    case SquareApplyType::NOTICE_BOARD: return "view " + name;
-    default: break;
-  }
-  return "";
-}
-
 void Player::pickUpItemAction(int numStack, bool multi) {
   auto stacks = getCreature()->stackItems(getCreature()->getPickUpOptions());
-  if (getUsableSquareApplyType()) {
+  if (getUsableUsageType()) {
     --numStack;
     if (numStack == -1) {
       getCreature()->applySquare(getCreature()->getPosition()).perform(getCreature());
@@ -712,7 +699,7 @@ void Player::moveAction(Vec2 dir) {
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());
   else if (!getCreature()->getPosition().plus(dir).canEnterEmpty(getCreature()))
-    tryToPerform(getCreature()->destroy(dir, Creature::BASH));
+    tryToPerform(getCreature()->destroy(dir, DestroyAction::BASH));
 }
 
 bool Player::isPlayer() const {
@@ -895,10 +882,10 @@ vector<Creature*> Player::getTeam() const {
   return {getCreature()};
 }
 
-optional<SquareApplyType> Player::getUsableSquareApplyType() const {
-  if (auto applyType = getCreature()->getPosition().getApplyType(getCreature()))
-    if (!getSquareQuestion(*applyType, getCreature()->getPosition().getName()).empty())
-      return *applyType;
+optional<FurnitureUsageType> Player::getUsableUsageType() const {
+  if (auto usageType = getCreature()->getPosition().getUsageType())
+    if (!FurnitureUsage::getUsageQuestion(*usageType, getCreature()->getPosition().getName()).empty())
+      return *usageType;
   return none;
 }
 
@@ -919,9 +906,9 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.levelName = location && location->getName()
     ? capitalFirst(*location->getName()) : getLevel()->getName();
   info.lyingItems.clear();
-  if (auto applyType = getUsableSquareApplyType()) {
-    string question = getSquareQuestion(*applyType, getCreature()->getPosition().getName());
-    info.lyingItems.push_back(getApplySquareInfo(question, getCreature()->getPosition().getViewObject().id()));
+  if (auto usageType = getUsableUsageType()) {
+    string question = FurnitureUsage::getUsageQuestion(*usageType, getCreature()->getPosition().getName());
+    info.lyingItems.push_back(getFurnitureUsageInfo(question, getCreature()->getPosition().getViewObject().id()));
   }
   for (auto stack : getCreature()->stackItems(getCreature()->getPickUpOptions()))
     info.lyingItems.push_back(getItemInfo(stack));
@@ -933,7 +920,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
       append(info.inventory, getItemInfos(typeGroups[elem]));
 }
 
-ItemInfo Player::getApplySquareInfo(const string& question, ViewId viewId) const {
+ItemInfo Player::getFurnitureUsageInfo(const string& question, ViewId viewId) const {
   return CONSTRUCT(ItemInfo,
     c.name = question;
     c.fullName = c.name;

@@ -123,7 +123,7 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
       case AttackTriggerId::TIMER: 
         return collective->getGlobalTime() >= trigger.get<int>() ? 0.05 : 0;
       case AttackTriggerId::ROOM_BUILT: 
-        return collective->getConstructions().getFurnitureCount(trigger.get<FurnitureType>()) *
+        return collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>()) *
           getRoomProb(trigger.get<FurnitureType>());
       case AttackTriggerId::POWER: 
         return powerMaxProb *

@@ -30,7 +30,6 @@
 #include "attack.h"
 #include "vision.h"
 #include "square_type.h"
-#include "square_apply_type.h"
 #include "equipment.h"
 #include "shortest_path.h"
 #include "spell_map.h"
@@ -1140,9 +1139,9 @@ void Creature::heal(double amount, bool replaceLimbs) {
   updateViewObject();
 }
 
-void Creature::setOnFire(double amount) {
+void Creature::fireDamage(double amount) {
   if (!isAffected(LastingEffect::FIRE_RESISTANT))
-    getBody().setOnFire(this, amount);
+    getBody().fireDamage(this, amount);
 }
 
 void Creature::affectBySilver() {
@@ -1230,7 +1229,7 @@ CreatureAction Creature::disappear() const {
 }
 
 CreatureAction Creature::torture(Creature* other) const {
-  if (other->getPosition().getApplyType(this) != SquareApplyType::TORTURE
+  if (other->getPosition().getUsageType() != FurnitureUsageType::TORTURE
       || other->getPosition().dist8(getPosition()) != 1)
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
@@ -1333,15 +1332,9 @@ CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const
     return CreatureAction(this, [=](Creature* self) {
         if (type.getId() == SquareId::FLOOR)
           addSound(SoundId::DIGGING);
-        else if (type.getId() == SquareId::TREE_TRUNK)
-          addSound(SoundId::TREE_CUTTING);
         else
           addSound(Sound(SoundId::DIGGING).setPitch(0.5));
         if (getPosition().plus(direction).construct(type)) {
-          if (type.getId() == SquareId::TREE_TRUNK) {
-            monsterMessage(getName().the() + " cuts a tree");
-            playerMessage("You cut a tree");
-          } else
           if (type.getId() == SquareId::FLOOR) {
             monsterMessage(getName().the() + " digs a tunnel");
             playerMessage("You dig a tunnel");
@@ -1387,26 +1380,15 @@ CreatureAction Creature::eat(Item* item) const {
   });
 }
 
-CreatureAction Creature::destroy(Vec2 direction, DestroyAction dAction) const {
-  if (direction.length8() == 1 && getPosition().plus(direction).canDestroy(this))
+CreatureAction Creature::destroy(Vec2 direction, DestroyAction::Value action) const {
+  if (direction.length8() <= 1 && getPosition().plus(direction).canDestroy(this))
       return CreatureAction(this, [=](Creature* self) {
         string name = getPosition().plus(direction).getName();
-        switch (dAction) {
-          case BASH: 
-            playerMessage("You bash the " + name);
-            monsterMessage(getName().the() + " bashes the " + name, "BANG!");
-            break;
-          case EAT: 
-            playerMessage("You eat the " + name);
-            monsterMessage(getName().the() + " eats the " + name, "You hear chewing");
-            break;
-          case DESTROY: 
-            playerMessage("You destroy the " + name);
-            monsterMessage(getName().the() + " destroys the " + name, "CRASH!");
-            break;
-      }
-      getPosition().plus(direction).destroyBy(self);
-      self->spendTime(1);
+        playerMessage("You "_s + DestroyAction::getVerbSecondPerson(action) + " the " + name);
+        monsterMessage(getName().the() + " " + DestroyAction::getVerbThirdPerson(action) + " the " + name,
+            DestroyAction::getSoundText(action));
+        getPosition().plus(direction).tryToDestroyBy(self);
+        self->spendTime(1);
     });
   return CreatureAction();
 }
@@ -1646,7 +1628,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
       return action;
     else {
       if (!pos2.canEnterEmpty(this))
-        if (auto action = destroy(getPosition().getDir(pos2), Creature::BASH))
+        if (auto action = destroy(getPosition().getDir(pos2), DestroyAction::BASH))
           return action;
       return CreatureAction();
     }
@@ -1712,7 +1694,7 @@ void Creature::youHit(BodyPart part, AttackType type) const {
           case AttackType::BITE: you(MsgType::YOUR, "internal organs are ripped out!"); break;
           case AttackType::CUT: you(MsgType::ARE, "cut in half!"); break;
           case AttackType::STAB: you(MsgType::ARE, "stabbed in the " +
-                                     Random.choose<string>({"stomach", "heart"}, {1, 1}) + "!"); break;
+                                     Random.choose("stomach"_s, "heart"_s) + "!"); break;
           case AttackType::CRUSH: you(MsgType::YOUR, "ribs and internal organs are crushed!"); break;
           case AttackType::HIT: you(MsgType::ARE, "hit in the chest!"); break;
           case AttackType::PUNCH: you(MsgType::YOUR, "stomach receives a deadly blow!"); break;

@@ -25,7 +25,7 @@ enum class EventId {
   SURRENDERED,
   TRAP_TRIGGERED,
   TRAP_DISARMED,
-  SQUARE_DESTROYED,
+  FURNITURE_DESTROYED,
   EQUIPED
 };
 
@@ -63,7 +63,7 @@ class GameEvent : public EnumVariant<EventId, TYPES(Creature*, Position, Technol
     EventInfo::Attacked, EventInfo::ItemsHandled, EventInfo::ItemsAppeared, EventInfo::ItemsThrown,
     EventInfo::TrapDisarmed),
     ASSIGN(Creature*, EventId::MOVED),
-    ASSIGN(Position, EventId::EXPLOSION, EventId::ALARM, EventId::TRAP_TRIGGERED, EventId::SQUARE_DESTROYED),
+    ASSIGN(Position, EventId::EXPLOSION, EventId::ALARM, EventId::TRAP_TRIGGERED, EventId::FURNITURE_DESTROYED),
     ASSIGN(Technology*, EventId::TECHBOOK_READ),
     ASSIGN(Collective*, EventId::CONQUERED_ENEMY),
     ASSIGN(EventInfo::Attacked, EventId::KILLED, EventId::TORTURED, EventId::SURRENDERED),

@@ -20,6 +20,7 @@
 #include "creature_factory.h"
 #include "item_factory.h"
 #include "square_factory.h"
+#include "furniture_factory.h"
 #include "item_type.h"
 
 enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON};
@@ -81,8 +82,8 @@ struct SettlementInfo {
   optional<ItemType> elderLoot;
   optional<ItemFactory> shopFactory;
   CollectiveBuilder* collective;
-  optional<SquareFactory> furniture;
-  optional<SquareFactory> outsideFeatures;
+  optional<FurnitureFactory> furniture;
+  optional<FurnitureFactory> outsideFeatures;
   bool closeToPlayer;
 };
 
@@ -99,7 +100,7 @@ class LevelMaker {
   static PLevelMaker towerLevel(RandomGen&, SettlementInfo);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
   static PLevelMaker roomLevel(RandomGen&, CreatureFactory roomFactory, CreatureFactory waterFactory,
-    CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down, SquareFactory);
+    CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down, FurnitureFactory furniture);
   static PLevelMaker mazeLevel(RandomGen&, SettlementInfo);
   static PLevelMaker sokobanLevel(RandomGen&, SettlementInfo);
   static PLevelMaker quickLevel(RandomGen&);

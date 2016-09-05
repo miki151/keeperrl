@@ -191,8 +191,9 @@ inline string toString(const Vec2& v) {
 class Range {
   public:
   Range(int start, int end);
-  Range(int end);
+  explicit Range(int end);
 
+  bool isEmpty() const;
   Range reverse();
   Range shorten(int r);
 
@@ -221,8 +222,8 @@ class Range {
   SERIALIZATION_DECL(Range);
   
   private:
-  int SERIAL(start);
-  int SERIAL(finish);
+  int SERIAL(start) = 0;
+  int SERIAL(finish) = 0;
   int SERIAL(increment) = 1;
 };
 
@@ -335,6 +336,115 @@ class EnumInfo<Name> { \
   }\
 }
 
+template <class T>
+class EnumAll {
+  public:
+  class Iter {
+    public:
+    Iter(int num) : ind(num) {
+    }
+
+    T operator* () const {
+      return T(ind);
+    }
+
+    bool operator != (const Iter& other) const {
+      return ind != other.ind;
+    }
+
+    const Iter& operator++ () {
+      ++ind;
+      return *this;
+    }
+
+    private:
+    int ind;
+  };
+
+  Iter begin() {
+    return Iter(0);
+  }
+
+  Iter end() {
+    return Iter(EnumInfo<T>::size);
+  }
+};
+
+#define ENUM_ALL(X) EnumAll<X>()
+
+template<class T, class U>
+class EnumMap {
+  public:
+  EnumMap() {
+    clear();
+  }
+
+  EnumMap(const EnumMap& o) : elems(o.elems) {}
+  EnumMap(EnumMap&& o) : elems(std::move(o.elems)) {}
+
+  EnumMap(function<U(T)> f) {
+    for (T t : EnumAll<T>())
+      (*this)[t] = f(t);
+  }
+
+  bool operator == (const EnumMap<T, U>& other) const {
+    return elems == other.elems;
+  }
+
+  void clear(U value) {
+    for (int i = 0; i < EnumInfo<T>::size; ++i)
+      elems[i] = value;
+  }
+
+  void clear() {
+    for (int i = 0; i < EnumInfo<T>::size; ++i)
+      elems[i] = U();
+  }
+
+  EnumMap(initializer_list<pair<T, U>> il) : EnumMap() {
+    for (auto elem : il)
+      elems[int(elem.first)] = elem.second;
+  }
+
+  EnumMap(const map<T, U> m) : EnumMap() {
+    for (auto elem : m)
+      elems[int(elem.first)] = elem.second;
+  }
+
+  void operator = (initializer_list<pair<T, U>> il) {
+    for (auto elem : il)
+      elems[int(elem.first)] = elem.second;
+  }
+
+  void operator = (const EnumMap& other) {
+    elems = other.elems;
+  }
+
+  const U& operator[](T elem) const {
+    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
+    return elems[int(elem)];
+  }
+
+  U& operator[](T elem) {
+    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
+    return elems[int(elem)];
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    vector<U> SERIAL(tmp);
+    for (int i : All(elems))
+      tmp.push_back(std::move(elems[i]));
+    ar & SVAR(tmp);
+    CHECK(tmp.size() <= elems.size()) << tmp.size() << " " << elems.size();
+    for (int i : All(tmp))
+      elems[i] = std::move(tmp[i]);
+  }
+
+  private:
+  std::array<U, EnumInfo<T>::size> elems;
+};
+
 std::string operator "" _s(const char* str, size_t);
 class RandomGen {
   public:
@@ -372,6 +482,14 @@ class RandomGen {
   template <typename T>
   T choose(initializer_list<T> vi, initializer_list<double> pi) {
     return choose(vector<T>(vi), vector<double>(pi));
+  }
+
+  template <typename T>
+  T choose(const EnumMap<T, double>& map) {
+    vector<double> weights(EnumInfo<T>::size);
+    for (T t : ENUM_ALL(T))
+      weights[(int)t] = map[t];
+    return (T) get(weights);
   }
 
   template <typename T, typename... Args>
@@ -1123,115 +1241,6 @@ class DirSet {
   ContentType content = 0;
 };
 
-template <class T>
-class EnumAll {
-  public:
-  class Iter {
-    public:
-    Iter(int num) : ind(num) {
-    }
-
-    T operator* () const {
-      return T(ind);
-    }
-
-    bool operator != (const Iter& other) const {
-      return ind != other.ind;
-    }
-
-    const Iter& operator++ () {
-      ++ind;
-      return *this;
-    }
-
-    private:
-    int ind;
-  };
-
-  Iter begin() {
-    return Iter(0);
-  }
-
-  Iter end() {
-    return Iter(EnumInfo<T>::size);
-  }
-};
-
-#define ENUM_ALL(X) EnumAll<X>()
-
-template<class T, class U>
-class EnumMap {
-  public:
-  EnumMap() {
-    clear();
-  }
-
-  EnumMap(const EnumMap& o) : elems(o.elems) {}
-  EnumMap(EnumMap&& o) : elems(std::move(o.elems)) {}
-
-  EnumMap(function<U(T)> f) {
-    for (T t : EnumAll<T>())
-      (*this)[t] = f(t);
-  }
-
-  bool operator == (const EnumMap<T, U>& other) const {
-    return elems == other.elems;
-  }
-
-  void clear(U value) {
-    for (int i = 0; i < EnumInfo<T>::size; ++i)
-      elems[i] = value;
-  }
-
-  void clear() {
-    for (int i = 0; i < EnumInfo<T>::size; ++i)
-      elems[i] = U();
-  }
-
-  EnumMap(initializer_list<pair<T, U>> il) : EnumMap() {
-    for (auto elem : il)
-      elems[int(elem.first)] = elem.second;
-  }
-
-  EnumMap(const map<T, U> m) : EnumMap() {
-    for (auto elem : m)
-      elems[int(elem.first)] = elem.second;
-  }
-
-  void operator = (initializer_list<pair<T, U>> il) {
-    for (auto elem : il)
-      elems[int(elem.first)] = elem.second;
-  }
-
-  void operator = (const EnumMap& other) {
-    elems = other.elems;
-  }
-
-  const U& operator[](T elem) const {
-    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
-    return elems[int(elem)];
-  }
-
-  U& operator[](T elem) {
-    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
-    return elems[int(elem)];
-  }
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    vector<U> SERIAL(tmp);
-    for (int i : All(elems))
-      tmp.push_back(std::move(elems[i]));
-    ar & SVAR(tmp);
-    CHECK(tmp.size() <= elems.size()) << tmp.size() << " " << elems.size();
-    for (int i : All(tmp))
-      elems[i] = std::move(tmp[i]);
-  }
-
-  private:
-  std::array<U, EnumInfo<T>::size> elems;
-};
-
 template<class T>
 class EnumSet {
   public:
@@ -1425,7 +1434,6 @@ class BiMap {
 template <class T>
 class HeapAllocated {
   public:
-
   template <typename... Args>
   HeapAllocated(Args... a) : elem(new T(a...)) {}
 
@@ -1467,10 +1475,7 @@ class HeapAllocated {
     return *this;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(elem);
-  }
+  SERIALIZE_ALL(elem);
 
   private:
   unique_ptr<T> SERIAL(elem);

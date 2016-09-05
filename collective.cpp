@@ -42,13 +42,14 @@
 #include "attack_trigger.h"
 #include "spell_map.h"
 #include "body.h"
+#include "furniture.h"
+#include "furniture_factory.h"
 
 struct Collective::ItemFetchInfo {
   ItemIndex index;
   ItemPredicate predicate;
   FurnitureType destination;
   bool oneAtATime;
-  optional<SquareType> additionalPos;
   Warning warning;
 };
 
@@ -56,11 +57,11 @@ template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(TaskCallback);
   serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType, mySquares);
-  serializeAll(ar, mySquares2, territory, squareEfficiency, alarmInfo, markedItems, constructions, minionEquipment);
+  serializeAll(ar, territory, squareEfficiency, alarmInfo, markedItems, constructions, minionEquipment);
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
   serializeAll(ar, credit, level, minionPayment, pregnancies, nextPayoutTime, minionAttraction, teams, name);
   serializeAll(ar, config, warnings, banished, squaresInUse, equipmentUpdates);
-  serializeAll(ar, villainType, eventProxy, workshops);
+  serializeAll(ar, villainType, eventProxy, workshops, fetchPositions);
 }
 
 SERIALIZABLE(Collective);
@@ -82,15 +83,14 @@ ItemPredicate Collective::unMarkedItems() const {
 const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
   if (itemFetchInfo.empty())
     itemFetchInfo = {
-      {ItemIndex::CORPSE, unMarkedItems(), FurnitureType::GRAVE, true, none, Warning::GRAVES},
-      {ItemIndex::GOLD, unMarkedItems(), FurnitureType::TREASURE_CHEST, false, none, Warning::CHESTS},
+      {ItemIndex::CORPSE, unMarkedItems(), FurnitureType::GRAVE, true, Warning::GRAVES},
+      {ItemIndex::GOLD, unMarkedItems(), FurnitureType::TREASURE_CHEST, false, Warning::CHESTS},
       {ItemIndex::MINION_EQUIPMENT, [this](const Item* it)
           { return it->getClass() != ItemClass::GOLD && !isItemMarked(it);},
-          config->getEquipmentStorage(), false, none, Warning::EQUIPMENT_STORAGE},
-      {ItemIndex::WOOD, unMarkedItems(), config->getResourceStorage(), false, SquareType{SquareId::TREE_TRUNK},
-        Warning::RESOURCE_STORAGE},
-      {ItemIndex::IRON, unMarkedItems(), config->getResourceStorage(), false, none, Warning::RESOURCE_STORAGE},
-      {ItemIndex::STONE, unMarkedItems(), config->getResourceStorage(), false, none, Warning::RESOURCE_STORAGE},
+          config->getEquipmentStorage(), false, Warning::EQUIPMENT_STORAGE},
+      {ItemIndex::WOOD, unMarkedItems(), config->getResourceStorage(), false, Warning::RESOURCE_STORAGE},
+      {ItemIndex::IRON, unMarkedItems(), config->getResourceStorage(), false, Warning::RESOURCE_STORAGE},
+      {ItemIndex::STONE, unMarkedItems(), config->getResourceStorage(), false, Warning::RESOURCE_STORAGE},
   };
   return itemFetchInfo;
 }
@@ -128,7 +128,7 @@ double Collective::getAttractionOccupation(const MinionAttraction& attraction) {
 double Collective::getAttractionValue(const MinionAttraction& attraction) {
   switch (attraction.getId()) {
     case AttractionId::FURNITURE: 
-      return constructions->getFurnitureCount(attraction.get<FurnitureType>());
+      return constructions->getBuiltCount(attraction.get<FurnitureType>());
     case AttractionId::ITEM_INDEX: 
       return getAllItems(attraction.get<ItemIndex>(), true).size();
   }
@@ -446,7 +446,7 @@ PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
       break;
       }
     case MinionTaskInfo::FURNITURE: {
-      set<Position> squares = constructions->getFurniturePositions(info.furniture);
+      const set<Position>& squares = constructions->getBuiltPositions(info.furniture);
       if (!squares.empty()) {
         auto searchType = Task::RANDOM_CLOSE;
         if (auto workshopType = config->getWorkshopType(task))
@@ -469,7 +469,7 @@ PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
         return Task::consume(this, target);
       break;
     case MinionTaskInfo::EAT: {
-      const set<Position>& hatchery = getSquares(getHatcheryType(*tribe));
+      const set<Position>& hatchery = constructions->getBuiltPositions(FurnitureType::PIGSTY);
       if (!hatchery.empty())
         return Task::eat(hatchery);
       break;
@@ -499,10 +499,6 @@ PTask Collective::getStandardTask(Creature* c) {
     return ret;
   } else
     return nullptr;
-}
-
-SquareType Collective::getHatcheryType(TribeId tribe) {
-  return {SquareId::HATCHERY, CreatureFactory::SingleCreature(tribe, CreatureId::PIG)};
 }
 
 Creature* Collective::getCopulationTarget(Creature* succubus) {
@@ -554,7 +550,7 @@ PTask Collective::getEquipmentTask(Creature* c) {
     if (!c->getEquipment().isEquipped(it) && c->getEquipment().canEquip(it))
       tasks.push_back(Task::equipItem(it));
   auto storageType = config->getEquipmentStorage();
-  for (Position v : constructions->getFurniturePositions(storageType)) {
+  for (Position v : constructions->getBuiltPositions(storageType)) {
     vector<Item*> it = filter(v.getItems(ItemIndex::MINION_EQUIPMENT), 
         [this, c] (const Item* it) { return minionEquipment->isOwner(it, c) && it->canEquip(); });
     if (!it.empty())
@@ -790,7 +786,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
     return false;
   vector<Position> spawnPos;
   if (info.spawnAtDorm) {
-    for (Position v : Random.permutation(constructions->getFurniturePositions(bedType)))
+    for (Position v : Random.permutation(constructions->getBuiltPositions(bedType)))
       if (v.canEnter(immigrants[spawnPos.size()].get())) {
         spawnPos.push_back(v);
         if (spawnPos.size() >= immigrants.size())
@@ -800,7 +796,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
     spawnPos = getSpawnPos(extractRefs(immigrants));
   groupSize = min<int>(groupSize, spawnPos.size());
   int neededBeds = bySpawnType[spawnType].size() + groupSize
-      - constructions->getFurnitureCount(config->getDormInfo()[spawnType].bedType);
+      - constructions->getBuiltCount(config->getDormInfo()[spawnType].bedType);
   groupSize -= neededBeds;
   if (groupSize < 1)
     return false;
@@ -996,7 +992,7 @@ void Collective::tick() {
     for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
       DormInfo info = config->getDormInfo()[spawnType];
       if (info.warning)
-        setWarning(*info.warning, constructions->getFurnitureCount(info.bedType) < bySpawnType[spawnType].size());
+        setWarning(*info.warning, constructions->getBuiltCount(info.bedType) < bySpawnType[spawnType].size());
     }
     for (auto minionTask : ENUM_ALL(MinionTask)) {
       auto elem = config->getTaskInfo(minionTask);
@@ -1043,9 +1039,8 @@ void Collective::tick() {
     for (const ItemFetchInfo& elem : getFetchInfo()) {
       for (Position pos : territory->getAll())
         fetchItems(pos, elem);
-      if (auto type = elem.additionalPos)
-        for (Position pos : getSquares(*type))
-          fetchItems(pos, elem);
+      for (Position pos : fetchPositions)
+        fetchItems(pos, elem);
     }
   if (config->getManageEquipment() && Random.roll(10))
     minionEquipment->updateOwners(getAllItems(true), getCreatures());
@@ -1193,22 +1188,10 @@ void Collective::onEvent(const GameEvent& event) {
         }
       }
       break;
-    case EventId::SQUARE_DESTROYED: {
+    case EventId::FURNITURE_DESTROYED: {
         Position pos = event.get<Position>();
-        if (territory->contains(pos)) {
-          for (auto& elem : *mySquares)
-            if (elem.second.count(pos)) {
-              elem.second.erase(pos);
-/*              if (config->getEfficiencySquares().count(elem.first))
-                updateEfficiency(pos, elem.first);*/
-            }
-          for (auto& elem : mySquares2)
-            if (elem.second.count(pos))
-              elem.second.erase(pos);
-          (*mySquares)[SquareId::FLOOR].insert(pos);
-          if (constructions->containsSquare(pos))
-            constructions->onSquareDestroyed(pos);
-        }
+        if (constructions->containsFurniture(pos))
+          constructions->onFurnitureDestroyed(pos);
       }
       break;
     case EventId::EQUIPED:
@@ -1283,40 +1266,19 @@ const set<Position>& Collective::getSquares(SquareType type) const {
     return empty;
 }
 
-const set<Position>& Collective::getSquares(SquareApplyType type) const {
-  static set<Position> empty;
-  if (mySquares2.count(type))
-    return mySquares2.at(type);
-  else
-    return empty;
-}
-
-vector<SquareType> Collective::getSquareTypes() const {
-  return getKeys(*mySquares);
-}
-
 const Territory& Collective::getTerritory() const {
   return *territory;
 }
 
 void Collective::claimSquare(Position pos) {
   territory->insert(pos);
-  if (pos.getApplyType() == SquareApplyType::SLEEP)
-    (*mySquares)[SquareId::BED].insert(pos);
-  if (pos.getApplyType() == SquareApplyType::CROPS)
-    (*mySquares)[SquareId::CROPS].insert(pos);
-  if (auto type = pos.getApplyType())
-    mySquares2[*type].insert(pos);
+  if (auto furniture = pos.getFurniture())
+    constructions->addFurniture(pos, ConstructionMap::FurnitureInfo::getBuilt(furniture->getType()));
 }
 
 void Collective::changeSquareType(Position pos, SquareType from, SquareType to) {
   (*mySquares)[from].erase(pos);
   (*mySquares)[to].insert(pos);
-  for (auto& elem : mySquares2)
-    if (elem.second.count(pos))
-      elem.second.erase(pos);
-  if (auto type = pos.getApplyType())
-    mySquares2[*type].insert(pos);
 }
 
 bool Collective::isKnownSquare(Position pos) const {
@@ -1381,7 +1343,7 @@ int Collective::numResource(ResourceId id) const {
   int ret = credit[id];
   if (auto itemIndex = config->getResourceInfo(id).itemIndex)
     if (auto storageType = config->getResourceInfo(id).storageType)
-      for (Position pos : constructions->getFurniturePositions(*storageType))
+      for (Position pos : constructions->getBuiltPositions(*storageType))
         ret += pos.getItems(*itemIndex).size();
   return ret;
 }
@@ -1428,7 +1390,7 @@ void Collective::takeResource(const CostInfo& cost) {
   }
   if (auto itemIndex = config->getResourceInfo(cost.id).itemIndex)
     if (auto storageType = config->getResourceInfo(cost.id).storageType)
-      for (Position pos : Random.permutation(constructions->getFurniturePositions(*storageType))) {
+      for (Position pos : Random.permutation(constructions->getBuiltPositions(*storageType))) {
         vector<Item*> goldHere = pos.getItems(*itemIndex);
         for (Item* it : goldHere) {
           pos.removeItem(it);
@@ -1444,7 +1406,7 @@ void Collective::returnResource(const CostInfo& amount) {
     return;
   CHECK(amount.value > 0);
   if (auto storageType = config->getResourceInfo(amount.id).storageType) {
-    const set<Position>& destination = constructions->getFurniturePositions(*storageType);
+    const set<Position>& destination = constructions->getBuiltPositions(*storageType);
     if (!destination.empty()) {
       Random.choose(destination).dropItems(ItemFactory::fromId(
             config->getResourceInfo(amount.id).itemId, amount.value));
@@ -1566,9 +1528,9 @@ void Collective::orderExecution(Creature* c) {
 }
 
 void Collective::orderTorture(Creature* c) {
-  vector<Position> posts = getAllSquares({SquareId::TORTURE_TABLE}, true);
+  set<Position> posts = getConstructions().getBuiltPositions(FurnitureType::TORTURE_TABLE);
   for (Position p : squaresInUse)
-    removeElementMaybe(posts, p);
+    posts.erase(p);
   if (posts.empty())
     return;
   Position pos = Random.choose(posts);
@@ -1592,7 +1554,7 @@ bool Collective::canWhip(Creature* c) const {
 void Collective::orderWhipping(Creature* whipped) {
   if (!canWhip(whipped))
     return;
-  set<Position> posts = getSquares(SquareId::WHIPPING_POST);
+  set<Position> posts = getConstructions().getBuiltPositions(FurnitureType::WHIPPING_POST);
   for (Position p : squaresInUse)
     posts.erase(p);
   if (posts.empty())
@@ -1625,6 +1587,13 @@ void Collective::removeConstruction(Position pos) {
   constructions->removeSquare(pos);
 }
 
+bool Collective::canAddFurniture(Position position, FurnitureType type) const {
+  return isKnownSquare(position) && FurnitureFactory::canBuild(type, position, this)
+      && !getConstructions().containsTrap(position)
+      && !getConstructions().containsFurniture(position)
+      && position.canConstruct(type);
+}
+
 void Collective::removeFurniture(Position pos) {
   if (constructions->getFurniture(pos).hasTask())
     returnResource(taskMap->removeTask(constructions->getFurniture(pos).getTask()));
@@ -1652,7 +1621,7 @@ void Collective::destroySquare(Position pos) {
 void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& cost, bool immediately,
     bool noCredit) {
   if (immediately && hasResource(cost)) {
-    while (!pos.construct(type)) {}
+    while (!pos.construct(type, getTribeId())) {}
     onConstructed(pos, type);
   } else if (!noCredit || hasResource(cost)) {
     constructions->addFurniture(pos, ConstructionMap::FurnitureInfo(type, cost));
@@ -1703,7 +1672,9 @@ bool Collective::hasPriorityTasks(Position pos) const {
 }
 
 void Collective::cutTree(Position pos) {
-  taskMap->markSquare(pos, HighlightType::CUT_TREE, Task::construction(this, pos, SquareId::TREE_TRUNK));
+  Furniture* f = NOTNULL(pos.getFurniture());
+  CHECK(f->canDestroy(DestroyAction::CUT));
+  taskMap->markSquare(pos, HighlightType::CUT_TREE, Task::destruction(this, pos, f, DestroyAction::CUT));
 }
 
 set<TrapType> Collective::getNeededTraps() const {
@@ -1754,6 +1725,14 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
     taskMap->removeTask(task);
 }
 
+void Collective::onDestructedFurniture(Position pos) {
+  fetchAllItems(pos);
+}
+
+bool Collective::isFetchPosition(Position pos) const {
+  return fetchPositions.count(pos);
+}
+
 void Collective::onConstructed(Position pos, const SquareType& type) {
   CHECK(!getSquares(type).count(pos));
   for (auto& elem : *mySquares)
@@ -1764,9 +1743,8 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
       territory->remove(pos);
     return;
   }
-  if (!contains({SquareId::TREE_TRUNK}, type.getId()))
-    territory->insert(pos);
   (*mySquares)[type].insert(pos);
+  territory->insert(pos);
 /*  if (config->getEfficiencySquares().count(type))
     updateEfficiency(pos, type);*/
   if (constructions->containsSquare(pos) && !constructions->getSquare(pos).isBuilt())
@@ -1777,19 +1755,9 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
           constructions->getTorch(v).getAttachmentDir() == v.getDir(pos).getCardinalDir())
         removeTorch(v);
   }
-  if (auto type = pos.getApplyType())
-    mySquares2[*type].insert(pos);
   control->onConstructed(pos, type);
   if (Task* task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
-}
-
-bool Collective::tryLockingDoor(Position pos) {
-  if (territory->contains(pos) && pos.getApplyType() == SquareApplyType::LOCK) {
-    pos.apply();
-    return true;
-  }
-  return false;
 }
 
 void Collective::scheduleTrapProduction(TrapType trapType, int count) {
@@ -1889,37 +1857,24 @@ bool Collective::isDelayed(Position pos) {
 }
 
 void Collective::fetchAllItems(Position pos) {
-  if (isKnownSquare(pos) && pos.canEnterEmpty(MovementTrait::WALK)) {
-    vector<PTask> tasks;
-    for (const ItemFetchInfo& elem : getFetchInfo()) {
-      vector<Item*> equipment = filter(pos.getItems(elem.index), elem.predicate);
-      if (!equipment.empty()) {
-        const set<Position>& destination = constructions->getFurniturePositions(elem.destination);
-        if (!destination.empty()) {
-          setWarning(elem.warning, false);
-          if (elem.oneAtATime)
-            for (Item* it : equipment)
-              tasks.push_back(Task::bringItem(this, pos, {it}, destination));
-          else
-            tasks.push_back(Task::bringItem(this, pos, equipment, destination));
-          for (Item* it : equipment)
-            markItem(it);
-        } else
-          setWarning(elem.warning, true);
-      }
-    }
-    if (!tasks.empty())
-      taskMap->markSquare(pos, HighlightType::FETCH_ITEMS, Task::chain(std::move(tasks)));
-  }
+  fetchPositions.insert(pos);
+  pos.setNeedsRenderUpdate(true);
+  for (const ItemFetchInfo& elem : getFetchInfo())
+    fetchItems(pos, elem);
+}
+
+void Collective::cancelFetchAllItems(Position pos) {
+  pos.setNeedsRenderUpdate(true);
+  fetchPositions.erase(pos);
 }
 
 void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
   if (isDelayed(pos) || !pos.canEnterEmpty(MovementTrait::WALK)
-      || constructions->getFurniturePositions(elem.destination).count(pos))
+      || constructions->getBuiltPositions(elem.destination).count(pos))
     return;
   vector<Item*> equipment = filter(pos.getItems(elem.index), elem.predicate);
   if (!equipment.empty()) {
-    const set<Position>& destination = constructions->getFurniturePositions(elem.destination);
+    const set<Position>& destination = constructions->getBuiltPositions(elem.destination);
     if (!destination.empty()) {
       setWarning(elem.warning, false);
       if (elem.oneAtATime)
@@ -2001,7 +1956,7 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
       nextPayoutTime = getLocalTime() + config->getPayoutTime();
     minionPayment.getOrInit(c).workAmount += config->getTaskInfo(currentTask).cost;
   }
-  if (constructions->getFurniturePositions(FurnitureType::BOOK_SHELF).count(pos)) {
+  if (constructions->getBuiltPositions(FurnitureType::BOOK_SHELF).count(pos)) {
     addMana(0.2);
     auto availableSpells = Technology::getAvailableSpells(this);
     if (Random.rollD(60.0 / (getEfficiency(pos))) && !availableSpells.empty()) {
@@ -2015,14 +1970,14 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
       }
     }
   }
-  if (constructions->getFurniturePositions(FurnitureType::THRONE).count(pos) && c == getLeader()) {
+  if (constructions->getBuiltPositions(FurnitureType::THRONE).count(pos) && c == getLeader()) {
     addMana(0.2);
   }
-  if (constructions->getFurniturePositions(FurnitureType::TRAINING_DUMMY).count(pos))
+  if (constructions->getBuiltPositions(FurnitureType::TRAINING_DUMMY).count(pos))
     c->getAttributes().exerciseAttr(Random.choose<AttrType>(), getEfficiency(pos));
   for (auto workshopType : ENUM_ALL(WorkshopType)) {
     auto& elem = config->getWorkshopInfo(workshopType);
-    if (constructions->getFurniturePositions(elem.furniture).count(pos)) {
+    if (constructions->getBuiltPositions(elem.furniture).count(pos)) {
       vector<PItem> items =
           workshops->get(workshopType).addWork(getEfficiency(pos) * (1 + c->getMorale()) / 2);
       if (!items.empty()) {
@@ -2043,7 +1998,7 @@ double Collective::getDangerLevel() const {
   double ret = 0;
   for (const Creature* c : getCreatures(MinionTrait::FIGHTER))
     ret += c->getDifficultyPoints();
-  ret += constructions->getFurnitureCount(FurnitureType::IMPALED_HEAD) * 150;
+  ret += constructions->getBuiltCount(FurnitureType::IMPALED_HEAD) * 150;
   return ret;
 }
 
@@ -2190,7 +2145,7 @@ int Collective::getPopulationSize() const {
 int Collective::getMaxPopulation() const {
   int ret = config->getMaxPopulation();
   for (auto& elem : config->getPopulationIncreases()) {
-    int sz = getSquares(elem.type).size();
+    int sz = getConstructions().getBuiltPositions(elem.type).size();
     ret += min<int>(elem.maxIncrease, elem.increasePerSquare * sz);
   }
   return ret;

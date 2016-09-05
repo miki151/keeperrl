@@ -20,6 +20,7 @@
 #include "creature.h"
 #include "task.h"
 #include "player_message.h"
+#include "furniture.h"
 
 template<typename T>
 void UniqueEntity<T>::offsetForSerialization(long long o) {
@@ -90,10 +91,12 @@ SERIALIZABLE_TMPL(UniqueEntity, Item);
 SERIALIZABLE_TMPL(UniqueEntity, Creature);
 SERIALIZABLE_TMPL(UniqueEntity, Task);
 SERIALIZABLE_TMPL(UniqueEntity, PlayerMessage);
+SERIALIZABLE_TMPL(UniqueEntity, Furniture);
 
 SERIALIZABLE(UniqueEntity<Creature>::Id);
 SERIALIZABLE(UniqueEntity<Item>::Id);
 SERIALIZABLE(UniqueEntity<PlayerMessage>::Id);
 SERIALIZABLE(UniqueEntity<Task>::Id);
+SERIALIZABLE(UniqueEntity<Furniture>::Id);
 
 

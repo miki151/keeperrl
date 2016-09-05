@@ -3,7 +3,7 @@
 #include "renderable.h"
 #include "view_object.h"
 
-Renderable::Renderable(const ViewObject& obj) : viewObject(new ViewObject(obj)) {
+Renderable::Renderable(const ViewObject& obj) : viewObject(obj) {
 }
 
 Renderable::~Renderable() {
@@ -27,5 +27,5 @@ void Renderable::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Renderable);
 
 void Renderable::setViewObject(const ViewObject& obj) {
-  viewObject.reset(new ViewObject(obj));
+  viewObject = HeapAllocated<ViewObject>(obj);
 }

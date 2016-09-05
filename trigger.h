@@ -37,7 +37,7 @@ class Trigger {
 
   virtual bool isDangerous(const Creature* c) const;
   virtual void tick();
-  virtual void setOnFire(double size);
+  virtual void fireDamage(double size);
   virtual double getLightEmission() const;
 
   static PTrigger getPortal(const ViewObject&, Position);

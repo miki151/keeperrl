@@ -139,6 +139,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   struct BuildInfo;
   bool meetsRequirement(Requirement) const;
+  bool canSelectRectangle(const BuildInfo&);
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   VillageInfo::Village getVillageInfo(const Collective* enemy) const;
@@ -167,7 +168,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<WorkshopInfo> getWorkshopInfo() const;
 
   int getImpCost() const;
-  bool canBuildDoor(Position) const;
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&) const;
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,

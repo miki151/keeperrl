@@ -103,7 +103,7 @@ void Item::onUnequip(Creature* c) {
     c->removePermanentEffect(*attributes->equipedEffect);
 }
 
-void Item::setOnFire(double amount, Position position) {
+void Item::fireDamage(double amount, Position position) {
   bool burning = fire->isBurning();
   string noBurningName = getTheName();
   fire->set(amount);
@@ -120,7 +120,7 @@ double Item::getFireSize() const {
 void Item::tick(Position position) {
   if (fire->isBurning()) {
     Debug() << getName() << " burning " << fire->getSize();
-    position.setOnFire(fire->getSize());
+    position.fireDamage(fire->getSize());
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
     fire->tick();
     if (!fire->isBurning()) {

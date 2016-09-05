@@ -319,9 +319,8 @@ MinionTaskInfo CollectiveConfig::getTaskInfo(MinionTask task) const {
     case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
     case MinionTask::STUDY: return {FurnitureType::BOOK_SHELF, "studying"};
     case MinionTask::PRISON: return {{SquareId::PRISON}, "prison", CollectiveWarning::NO_PRISON};
-    case MinionTask::TORTURE: return {{SquareId::TORTURE_TABLE}, "torture ordered",
-                                CollectiveWarning::TORTURE_ROOM, 0, true};
-    case MinionTask::CROPS: return {{SquareId::CROPS}, "crops"};
+    case MinionTask::TORTURE: return {FurnitureType::TORTURE_TABLE, "torture ordered"};
+    case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
     case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
     case MinionTask::COPULATE: return {MinionTaskInfo::COPULATE, "copulation"};
     case MinionTask::CONSUME: return {MinionTaskInfo::CONSUME, "consumption"};

@@ -41,12 +41,9 @@ class ViewObject;
 enum class ConstructionsId {
   DUNGEON_ROOMS,
   BRIDGE,
-  OUTDOOR_INSTALLATIONS,
-  CUT_TREE,
   MINING_ORE,
   MINING,
   MOUNTAIN_GEN_ORES,
-  GRAVE,
 };
 
 class Square : public Renderable {
@@ -55,15 +52,11 @@ class Square : public Renderable {
     string name;
     optional<VisionId> vision;
     bool canHide;
-    int strength;
-    double flamability;
     optional<ConstructionsId> constructions;
     bool ticking;
     HeapAllocated<MovementSet> movementSet;
     bool canDestroy;
-    optional<TribeId> owner;
     optional<SoundId> applySound;
-    optional<SquareApplyType> applyType;
     optional<double> applyTime;
     optional<SquareInteraction> interaction;
   };
@@ -95,8 +88,6 @@ class Square : public Renderable {
   bool canEnter(const MovementType&) const;
   //@}
 
-  bool canNavigate(const MovementType&) const;
-
   //@{
   /** Checks if this square is can be entered by the creature. Doesn't take into account other 
     * creatures on the square.*/
@@ -116,25 +107,6 @@ class Square : public Renderable {
 
   /** Returns the strength, i.e. resistance to demolition.*/
   int getStrength() const;
-
-  /** Checks if this square can be destroyed using the 'destroy' order.*/
-  bool isDestroyable() const;
-
-  /** Checks if this square can be destroyed by a creature. Pathfinding will not take into account this result.*/
-  bool canDestroy(const Creature*) const;
-
-  /** Called when something is destroying this square (may take a few turns to destroy).*/
-  virtual void destroyBy(Position, Creature* c);
-  virtual void destroy(Position);
-
-  /** Called when this square is burned completely.*/
-  virtual void burnOut(Position);
-
-  /** Exposes the square and objects on it to fire.*/
-  void setOnFire(Position, double amount);
-
-  /** Returns whether the square is currently on fire.*/
-  bool isBurning() const;
 
   /** Adds some poison gas to the square.*/
   void addPoisonGas(Position, double amount);
@@ -209,13 +181,6 @@ class Square : public Renderable {
   PItem removeItem(Position, Item*);
   vector<PItem> removeItems(Position, vector<Item*>);
 
-  virtual bool canApply(const Creature*) const { return true; }
-  void apply(Creature*);
-  void apply(Position);
-  optional<SquareApplyType> getApplyType() const;
-  double getApplyTime() const;
-  optional<SquareInteraction> getInteraction() const;
-
   void forbidMovementForTribe(Position, TribeId);
   void allowMovementForTribe(Position, TribeId);
   bool isTribeForbidden(TribeId) const;
@@ -228,6 +193,8 @@ class Square : public Renderable {
 
   void clearItemIndex(ItemIndex);
   void setDirty(Position);
+  MovementSet& getMovementSet();
+  const MovementSet& getMovementSet() const;
 
   SERIALIZATION_DECL(Square);
 
@@ -238,8 +205,6 @@ class Square : public Renderable {
   virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
   virtual void onApply(Position) { Debug(FATAL) << "Bad square applied"; }
   string SERIAL(name);
-  void addTraitForTribe(Position, TribeId, MovementTrait);
-  void removeTraitForTribe(Position, TribeId, MovementTrait);
 
   Inventory& getInventory();
   const Inventory& getInventory() const;
@@ -248,17 +213,11 @@ class Square : public Renderable {
   private:
   Item* getTopItem() const;
   mutable unique_ptr<Inventory> SERIAL(inventoryPtr);
-
-  /** Checks if this square can be destroyed by member of the tribe.*/
-  bool canDestroy(const MovementType&) const;
-
   Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);
   optional<VisionId> SERIAL(vision);
   bool SERIAL(hide);
-  int SERIAL(strength);
   optional<StairKey> SERIAL(landingLink);
-  HeapAllocated<Fire> SERIAL(fire);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
   optional<ConstructionsId> SERIAL(constructions);
   struct CurrentConstruction {
@@ -269,16 +228,9 @@ class Square : public Renderable {
   optional<CurrentConstruction> SERIAL(currentConstruction);
   bool SERIAL(ticking);
   HeapAllocated<MovementSet> SERIAL(movementSet);
-  void updateMovement(Position);
   mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);
   unique_ptr<ViewIndex> SERIAL(viewIndex);
-  bool SERIAL(destroyable) = false;
-  optional<TribeId> SERIAL(owner);
   optional<TribeId> SERIAL(forbiddenTribe);
-  optional<SoundId> SERIAL(applySound);
-  optional<SquareApplyType> SERIAL(applyType);
-  double SERIAL(applyTime);
-  optional<SquareInteraction> SERIAL(interaction);
 };
 
 #endif

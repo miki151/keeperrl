@@ -11,6 +11,7 @@ class TaskCallback {
   public:
   virtual void onConstructed(Position, const SquareType&) {}
   virtual void onConstructed(Position, FurnitureType) {}
+  virtual void onDestructedFurniture(Position) {}
   virtual bool isConstructionReachable(Position) { return true; }
   virtual void onTorchBuilt(Position, Trigger*) {}
   virtual void onAppliedItem(Position, Item* item) {}

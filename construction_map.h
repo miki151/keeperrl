@@ -35,6 +35,7 @@ class ConstructionMap {
   class FurnitureInfo {
     public:
     FurnitureInfo(FurnitureType, CostInfo);
+    static FurnitureInfo getBuilt(FurnitureType);
     void setBuilt();
     void reset();
     void setTask(UniqueEntity<Task>::Id);
@@ -105,8 +106,9 @@ class ConstructionMap {
   void onFurnitureDestroyed(Position);
   void addFurniture(Position, const FurnitureInfo&);
   bool containsFurniture(Position) const;
-  int getFurnitureCount(FurnitureType) const;
-  const set<Position>& getFurniturePositions(FurnitureType) const;
+  int getBuiltCount(FurnitureType) const;
+  int getTotalCount(FurnitureType) const;
+  const set<Position>& getBuiltPositions(FurnitureType) const;
   void onConstructed(Position, FurnitureType);
 
   const TrapInfo& getTrap(Position) const;
@@ -132,7 +134,7 @@ class ConstructionMap {
   map<Position, vector<SquareInfo>> SERIAL(squares);
   map<Position, FurnitureInfo> SERIAL(furniture);
   EnumMap<FurnitureType, set<Position>> SERIAL(furniturePositions);
-  EnumMap<FurnitureType, int> SERIAL(furnitureCounts);
+  EnumMap<FurnitureType, int> SERIAL(unbuiltCounts);
   vector<Position> squarePos;
   vector<Position> allFurniture;
   unordered_map<SquareType, int> SERIAL(typeCounts);

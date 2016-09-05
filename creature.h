@@ -24,6 +24,7 @@
 #include "position.h"
 #include "event_generator.h"
 #include "entity_set.h"
+#include "destroy_action.h"
 
 class Skill;
 class Level;
@@ -190,8 +191,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canConstruct(const SquareType&) const;
   bool canConstruct(FurnitureType) const;
   CreatureAction eat(Item*) const;
-  enum DestroyAction { BASH, EAT, DESTROY };
-  CreatureAction destroy(Vec2 direction, DestroyAction) const;
+  CreatureAction destroy(Vec2 direction, DestroyAction::Value) const;
   CreatureAction copulate(Vec2 direction) const;
   bool canCopulateWith(const Creature*) const;
   CreatureAction consume(Creature*) const;
@@ -216,7 +216,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool atTarget() const;
   void die(Creature* attacker = nullptr, bool dropInventory = true, bool dropCorpse = true);
   void die(const string& reason, bool dropInventory = true, bool dropCorpse = true);
-  void setOnFire(double amount);
+  void fireDamage(double amount);
   void poisonWithGas(double amount);
   void affectBySilver();
   void affectByAcid();

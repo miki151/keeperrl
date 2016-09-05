@@ -144,7 +144,7 @@ static vector<Vec2> cutShape(Rectangle rect) {
 
 
 static void addResource(Collective* col, SquareId square, int maxDist) {
-  Position init = Random.choose(col->getConstructions().getFurniturePositions(FurnitureType::BOOK_SHELF));
+  Position init = Random.choose(col->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF));
   Rectangle resourceArea(Random.get(4, 7), Random.get(4, 7));
   resourceArea.translate(-resourceArea.middle());
   for (int t = 0; t < 200; ++t) {

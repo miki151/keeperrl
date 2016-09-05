@@ -12,13 +12,14 @@
 #include "sound.h"
 #include "game.h"
 #include "view.h"
-#include "square_interaction.h"
 #include "view_object.h"
 #include "furniture.h"
 #include "furniture_factory.h"
 #include "creature_name.h"
 #include "player_message.h"
 #include "creature_attributes.h"
+#include "fire.h"
+#include "movement_set.h"
 
 template <class Archive> 
 void Position::serialize(Archive& ar, const unsigned int version) {
@@ -104,8 +105,8 @@ const Square* Position::getSquare() const {
 }
 
 Furniture* Position::getFurniture() const {
-  if (isValid())
-    return level->furnitureInfo[coord].furniture.get();
+  if (isValid() && level->furnitureInfo[coord].get())
+    return level->furnitureInfo[coord].get();
   else
     return nullptr;
 }
@@ -219,43 +220,30 @@ const Location* Position::getLocation() const {
   return nullptr;
 } 
 
-optional<SquareApplyType> Position::getApplyType() const {
-  if (isValid()) {
-    if (auto inter = getSquare()->getInteraction())
-      return SquareInteractions::getApplyType(*inter);
-    else
-      return getSquare()->getApplyType();
-  } else
+optional<FurnitureUsageType> Position::getUsageType() const {
+  if (auto furniture = getFurniture())
+    return furniture->getUsageType();
+  else
     return none;
 }
 
-optional<SquareApplyType> Position::getApplyType(const Creature* c) const {
-  if (auto ret = getApplyType())
-    if (getSquare()->canApply(c))
-      return ret;
-  return none;
+optional<FurnitureClickType> Position::getClickType() const {
+  if (auto furniture = getFurniture())
+    return furniture->getClickType();
+  else
+    return none;
 }
 
 void Position::apply(Creature* c) const {
-  if (isValid()) {
-    if (auto f = getFurniture())
-      f->apply(*this, c);
-    else
-      modSquare()->apply(c);
-  }
-}
-
-void Position::apply() const {
-  if (isValid())
-    modSquare()->apply(*this);
+  if (auto f = getFurniture())
+    f->use(*this, c);
 }
 
 double Position::getApplyTime() const {
-  CHECK(isValid());
   if (auto f = getFurniture())
-    return f->getApplyTime();
+    return f->getUsageTime();
   else
-    return getSquare()->getApplyTime();
+    return 1;
 }
 
 void Position::addSound(const Sound& sound1) const {
@@ -269,8 +257,9 @@ bool Position::canHide() const {
 }
 
 string Position::getName() const {
-  getSquare()->hasItem( nullptr);
-  if (isValid())
+  if (auto furniture = getFurniture())
+    return furniture->getName();
+  else if (isValid())
     return getSquare()->getName();
   else
     return "";
@@ -349,11 +338,21 @@ vector<PItem> Position::removeItems(vector<Item*> it) {
 }
 
 bool Position::canDestroy(const Creature* c) const {
-  return !isUnavailable() && getSquare()->canDestroy(c);
+  if (!isUnavailable())
+    if (Furniture* furniture = getFurniture())
+      return furniture->canDestroy(c);
+  return false;
+}
+
+bool Position::canDestroy(const MovementType& movement) const {
+  if (!isUnavailable())
+    if (Furniture* furniture = getFurniture())
+      return furniture->canDestroy(movement);
+  return false;
 }
 
 bool Position::isDestroyable() const {
-  return !isUnavailable() && (getSquare()->isDestroyable() || getFurniture());
+  return getFurniture();
 }
 
 bool Position::isUnavailable() const {
@@ -361,19 +360,21 @@ bool Position::isUnavailable() const {
 }
 
 bool Position::canEnter(const Creature* c) const {
-  return !isUnavailable() && (!getFurniture() || getFurniture()->isWalkable()) && getSquare()->canEnter(c);
+  return !isUnavailable() && (!getFurniture() || getFurniture()->canEnter(c->getMovementType())) &&
+      getSquare()->canEnter(c);
 }
 
 bool Position::canEnter(const MovementType& t) const {
-  return !isUnavailable() && (!getFurniture() || getFurniture()->isWalkable()) &&getSquare()->canEnter(t);
+  return !isUnavailable() && (!getFurniture() || getFurniture()->canEnter(t)) &&getSquare()->canEnter(t);
 }
 
 bool Position::canEnterEmpty(const Creature* c) const {
-  return !isUnavailable() && (!getFurniture() || getFurniture()->isWalkable()) && getSquare()->canEnterEmpty(c);
+  return !isUnavailable() && (!getFurniture() || getFurniture()->canEnter(c->getMovementType())) &&
+      getSquare()->canEnterEmpty(c);
 } 
 
 bool Position::canEnterEmpty(const MovementType& t) const {
-  return !isUnavailable() && (!getFurniture() || getFurniture()->isWalkable()) && getSquare()->canEnterEmpty(t);
+  return !isUnavailable() && (!getFurniture() || getFurniture()->canEnter(t)) && getSquare()->canEnterEmpty(t);
 }
 
 void Position::dropItem(PItem item) {
@@ -386,19 +387,39 @@ void Position::dropItems(vector<PItem> v) {
     modSquare()->dropItems(*this, std::move(v));
 }
 
-void Position::destroyBy(Creature* c) {
-  if (isValid())
-    modSquare()->destroyBy(*this, c);
+void Position::tryToDestroyBy(Creature* c) {
+  if (Furniture* furniture = getFurniture())
+    furniture->tryToDestroyBy(*this, c);
 }
 
 void Position::destroy() {
-  if (isValid() && getSquare()->isDestroyable())
-    modSquare()->destroy(*this);
-  if (Furniture* f = getFurniture()) {
-    f->onDestroy(*this);
-    level->furnitureInfo[coord].furniture.reset();
-    setNeedsRenderUpdate(true);
-  }
+  if (Furniture* f = getFurniture())
+    f->destroy(*this);
+}
+
+void Position::removeFurniture(const Furniture* f) const {
+  CHECK(level->furnitureInfo[coord].get() == f);
+  level->furnitureInfo[coord].reset();
+  updateConnectivity();
+  updateVisibility();
+  setNeedsRenderUpdate(true);
+}
+
+void Position::addFurniture(const Furniture& f) const {
+  level->furnitureInfo[coord].reset();
+  level->setFurniture(coord, f);
+  updateConnectivity();
+  updateVisibility();
+  setNeedsRenderUpdate(true);
+}
+
+void Position::replaceFurniture(const Furniture* prev, const Furniture& next) const {
+  CHECK(level->furnitureInfo[coord].get() == prev);
+  level->furnitureInfo[coord].reset();
+  level->setFurniture(coord, next);
+  updateConnectivity();
+  updateVisibility();
+  setNeedsRenderUpdate(true);
 }
 
 bool Position::canConstruct(const SquareType& type) const {
@@ -414,6 +435,16 @@ bool Position::canConstruct(FurnitureType type) const {
 }
 
 bool Position::construct(FurnitureType type, Creature* c) {
+  auto& furnitureInfo = level->furnitureInfo[coord];
+  if (construct(type, c->getTribeId())) {
+    c->monsterMessage(c->getName().the() + " builds " + furnitureInfo.get()->getName());
+    c->playerMessage("You build " + furnitureInfo.get()->getName());
+    return true;
+  }
+  return false;
+}
+
+bool Position::construct(FurnitureType type, TribeId tribe) {
   CHECK(!isUnavailable());
   CHECK(canConstruct(type));
   auto& furnitureInfo = level->furnitureInfo[coord];
@@ -421,12 +452,8 @@ bool Position::construct(FurnitureType type, Creature* c) {
     furnitureInfo.construction = {type, 10};
   if (--furnitureInfo.construction->time == 0) {
     setNeedsRenderUpdate(true);
-    furnitureInfo.furniture = FurnitureFactory::get(type);
+    level->setFurniture(coord, FurnitureFactory::get(type, tribe));
     furnitureInfo.construction = none;
-    if (c) {
-      c->monsterMessage(c->getName().the() + " builds " + furnitureInfo.furniture->getName());
-      c->playerMessage("You build " + furnitureInfo.furniture->getName());
-    }
     return true;
   } else
     return false;
@@ -437,19 +464,44 @@ bool Position::isActiveConstruction() const {
 }
 
 bool Position::isBurning() const {
-  return isValid() && getSquare()->isBurning();
+  if (auto furniture = getFurniture())
+    return furniture->getFire() && furniture->getFire()->isBurning();
+  else
+    return false;
 }
 
-void Position::setOnFire(double amount) {
-  if (isValid())
-    modSquare()->setOnFire(*this, amount);
+void Position::updateMovement() {
+  if (isValid()) {
+    auto furniture = getFurniture();
+    if (furniture && isBurning()) {
+      if (!getSquare()->getMovementSet().isOnFire()) {
+        modSquare()->getMovementSet().setOnFire(true);
+        updateConnectivity();
+      }
+    } else
+      if (getSquare()->getMovementSet().isOnFire()) {
+        modSquare()->getMovementSet().setOnFire(false);
+        updateConnectivity();
+      }
+  }
+}
+
+void Position::fireDamage(double amount) {
+  if (auto furniture = getFurniture())
+    furniture->fireDamage(*this, amount);
+  if (Creature* creature = getCreature())
+    creature->fireDamage(amount);
+  for (Item* it : getItems())
+    it->fireDamage(amount, *this);
+  for (Trigger* t : getTriggers())
+    t->fireDamage(amount);
 }
 
 bool Position::needsMemoryUpdate() const {
   return isValid() && level->needsMemoryUpdate(getCoord());
 }
 
-void Position::setNeedsMemoryUpdate(bool s) {
+void Position::setNeedsMemoryUpdate(bool s) const {
   if (isValid())
     level->setNeedsMemoryUpdate(getCoord(), s);
 }
@@ -458,7 +510,7 @@ bool Position::needsRenderUpdate() const {
   return isValid() && level->needsRenderUpdate(getCoord());
 }
 
-void Position::setNeedsRenderUpdate(bool s) {
+void Position::setNeedsRenderUpdate(bool s) const {
   if (isValid())
     level->setNeedsRenderUpdate(getCoord(), s);
 }
@@ -470,6 +522,8 @@ ViewObject& Position::modViewObject() {
 }
 
 const ViewObject& Position::getViewObject() const {
+  if (auto furniture = getFurniture())
+    return furniture->getViewObject();
   if (isValid())
     return getSquare()->getViewObject();
   else {
@@ -540,20 +594,36 @@ void Position::throwItem(vector<PItem> item, const Attack& attack, int maxDist, 
     level->throwItem(std::move(item), attack, maxDist, coord, direction, vision);
 }
 
-bool Position::canNavigate(const MovementType& t) const {
-  return !isUnavailable() && getSquare()->canNavigate(t);
+void Position::updateConnectivity() const {
+  if (isValid()) {
+    for (auto& elem : level->sectors)
+      if (canNavigate(elem.first))
+        elem.second.add(coord);
+      else
+        elem.second.remove(coord);
+  }
 }
 
-int Position::getStrength() const {
+void Position::updateVisibility() const {
   if (isValid())
-    return getSquare()->getStrength();
-  else
-    return 1000000;
+    level->updateVisibility(coord);
+}
+
+bool Position::canNavigate(const MovementType& type) const {
+  MovementType typeForced(type);
+  typeForced.setForced();
+  Creature* creature = getCreature();
+  return canEnterEmpty(type) || 
+    // for destroying doors, etc, but not entering forbidden zone
+    (canDestroy(type) && !canEnterEmpty(typeForced)) ||
+    // for navigating through hostile boulders
+    (creature && creature->getAttributes().isStationary() && !type.isCompatible(creature->getTribeId()));
 }
 
 bool Position::canSeeThru(VisionId id) const {
+  auto furniture = getFurniture();
   if (isValid())
-    return getSquare()->canSeeThru(id);
+    return getSquare()->canSeeThru(id) && (!furniture || furniture->canSeeThru(id));
   else
     return false;
 }

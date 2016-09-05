@@ -420,7 +420,7 @@ vector<PItem> Body::getCorpseItem(const string& name, Creature::Id id) {
 
 void Body::affectPosition(Position position) {
   if (material == Material::FIRE && Random.roll(5))
-    position.setOnFire(1);
+    position.fireDamage(1);
 }
 
 bool Body::takeDamage(const Attack& attack, Creature* creature, double damage) {
@@ -598,7 +598,7 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
   }
 }
 
-void Body::setOnFire(Creature* c, double amount) {
+void Body::fireDamage(Creature* c, double amount) {
   c->you(MsgType::ARE, "burnt by the fire");
   bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::STRENGTH)));
 }

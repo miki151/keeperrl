@@ -1,5 +1,4 @@
-#ifndef _POSITION_H
-#define _POSITION_H
+#pragma once
 
 #include "util.h"
 #include "stair_key.h"
@@ -17,6 +16,7 @@ class Attack;
 class Game;
 class TribeId;
 class Sound;
+class Fire;
 
 class Position {
   public:
@@ -59,10 +59,9 @@ class Position {
   bool canEnter(const MovementType&) const;
   bool canEnterEmpty(const Creature*) const;
   bool canEnterEmpty(const MovementType&) const;
-  optional<SquareApplyType> getApplyType() const;
-  optional<SquareApplyType> getApplyType(const Creature*) const;
+  optional<FurnitureUsageType> getUsageType() const;
+  optional<FurnitureClickType> getClickType() const;
   void apply(Creature*) const;
-  void apply() const;
   double getApplyTime() const;
   void addSound(const Sound&) const;
   bool canHide() const;
@@ -79,21 +78,26 @@ class Position {
   bool canConstruct(const SquareType&) const;
   bool canConstruct(FurnitureType) const;
   bool canDestroy(const Creature*) const;
+  bool canDestroy(const MovementType&) const;
+  void removeFurniture(const Furniture*) const;
+  void addFurniture(const Furniture&) const;
+  void replaceFurniture(const Furniture*, const Furniture&) const;
   bool isDestroyable() const;
   bool isUnavailable() const;
   void dropItem(PItem);
   void dropItems(vector<PItem>);
-  void destroyBy(Creature* c);
+  void tryToDestroyBy(Creature* c);
   void destroy();
   bool construct(const SquareType&);
-  bool construct(FurnitureType, Creature* = nullptr);
+  bool construct(FurnitureType, Creature*);
+  bool construct(FurnitureType, TribeId);
   bool isActiveConstruction() const;
   bool isBurning() const;
-  void setOnFire(double amount);
+  void fireDamage(double amount);
   bool needsRenderUpdate() const;
-  void setNeedsRenderUpdate(bool);
+  void setNeedsRenderUpdate(bool) const;
   bool needsMemoryUpdate() const;
-  void setNeedsMemoryUpdate(bool);
+  void setNeedsMemoryUpdate(bool) const;
   const ViewObject& getViewObject() const;
   ViewObject& modViewObject();
   void forbidMovementForTribe(TribeId);
@@ -108,12 +112,14 @@ class Position {
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   bool canNavigate(const MovementType&) const;
   vector<Position> getVisibleTiles(VisionId);
-  int getStrength() const;
+  void updateConnectivity() const;
+  void updateVisibility() const;
   bool canSeeThru(VisionId) const;
   bool isVisibleBy(const Creature*);
   void clearItemIndex(ItemIndex);
   bool isChokePoint(const MovementType&) const;
   bool isConnectedTo(Position, const MovementType&) const;
+  void updateMovement();
   vector<Creature*> getAllCreatures(int range) const;
   void moveCreature(Vec2 direction);
   void moveCreature(Position);
@@ -142,4 +148,3 @@ inline string toString(const Position& t) {
 	return ss.str();
 }
 
-#endif

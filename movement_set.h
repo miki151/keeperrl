@@ -33,7 +33,6 @@ class MovementSet {
   bool SERIAL(covered) = false;
   EnumSet<MovementTrait> SERIAL(traits);
   EnumSet<MovementTrait> SERIAL(forcibleTraits);
-  optional<pair<TribeId, EnumSet<MovementTrait>>> SERIAL(tribeOverrides);
 };
 
 

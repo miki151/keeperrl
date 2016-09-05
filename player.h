@@ -128,9 +128,8 @@ class Player : public Controller, public CreatureView {
   string getRemainingString(LastingEffect) const;
   vector<ItemInfo> getItemInfos(const vector<Item*>&) const;
   ItemInfo getItemInfo(const vector<Item*>&) const;
-  ItemInfo getApplySquareInfo(const Square*) const;
-  ItemInfo getApplySquareInfo(const string& question, ViewId viewId) const;
-  optional<SquareApplyType> getUsableSquareApplyType() const;
+  ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
+  optional<FurnitureUsageType> getUsableUsageType() const;
   struct TimePosInfo {
     Position pos;
     double time;

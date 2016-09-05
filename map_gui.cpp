@@ -120,7 +120,7 @@ Color getHighlightColor(HighlightType type, double amount) {
     case HighlightType::RECT_DESELECTION: return transparency(colors[ColorId::RED], 90);
     case HighlightType::DIG: return transparency(colors[ColorId::YELLOW], 120);
     case HighlightType::CUT_TREE: return transparency(colors[ColorId::YELLOW], 170);
-    case HighlightType::FETCH_ITEMS: return transparency(colors[ColorId::YELLOW], 170);
+    case HighlightType::FETCH_ITEMS: return transparency(colors[ColorId::YELLOW], 50);
     case HighlightType::RECT_SELECTION: return transparency(colors[ColorId::YELLOW], 90);
     case HighlightType::FOG: return transparency(colors[ColorId::WHITE], 120 * amount);
     case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., amount * 500), 0, (Uint8)(amount * 140));
@@ -132,8 +132,6 @@ Color getHighlightColor(HighlightType type, double amount) {
     case HighlightType::UNAVAILABLE: return Color(0, 0, 0, 120);
   }
 }
-
-set<Vec2> shadowed;
 
 optional<ViewId> getConnectionId(ViewId id) {
   switch (id) {
@@ -513,9 +511,6 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         static auto fire2 = renderer.getTileCoord("fire2");
         renderer.drawTile(pos, Random.choose(fire1, fire2), size);
       }
-    static auto key = renderer.getTileCoord("key");
-    if (object.hasModifier(ViewObject::Modifier::LOCKED))
-      renderer.drawTile(pos, key, size);
   } else {
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal);
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
@@ -648,6 +643,33 @@ Vec2 MapGui::projectOnScreen(Vec2 wpos, int curTime) {
   return layout->projectOnScreen(getBounds(), getScreenPos(), x, y);
 }
 
+void MapGui::renderLowHighlights(Renderer& renderer, Vec2 size, int currentTimeReal) {
+  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
+  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
+  for (Vec2 wpos : allTiles)
+    if (auto& index = objects[wpos])
+      if (index->hasAnyHighlight()) {
+        Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
+        for (HighlightType highlight : ENUM_ALL(HighlightType))
+          if (index->getHighlight(highlight) > 0)
+            switch (highlight) {
+              case HighlightType::FORBIDDEN_ZONE:
+              case HighlightType::FETCH_ITEMS:
+              case HighlightType::PRIORITY_TASK:
+                if (spriteMode)
+                  renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size,
+                      getHighlightColor(highlight, index->getHighlight(highlight)));
+                else
+                  renderer.addQuad(Rectangle(pos, pos + size),
+                      getHighlightColor(highlight, index->getHighlight(highlight)));
+                break;
+              default:
+                break;
+            }
+      }
+  renderer.drawQuads();
+}
+
 void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
@@ -661,21 +683,25 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal
               case HighlightType::CUT_TREE:
                 if (spriteMode && index->hasObject(ViewLayer::FLOOR))
                   break;
-              case HighlightType::FORBIDDEN_ZONE:
-              case HighlightType::FETCH_ITEMS:
               case HighlightType::RECT_SELECTION:
               case HighlightType::RECT_DESELECTION:
-              case HighlightType::PRIORITY_TASK:
               case HighlightType::DIG:
+              case HighlightType::FOG:
               case HighlightType::UNAVAILABLE:
-                if (spriteMode) {
+                if (spriteMode)
                   renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size,
                       getHighlightColor(highlight, index->getHighlight(highlight)));
-                  break;
-                }
+                else
+                  renderer.addQuad(Rectangle(pos, pos + size),
+                      getHighlightColor(highlight, index->getHighlight(highlight)));
+                break;
+              case HighlightType::MEMORY:
+              case HighlightType::POISON_GAS:
+              case HighlightType::NIGHT:
+                  renderer.addQuad(Rectangle(pos, pos + size),
+                      getHighlightColor(highlight, index->getHighlight(highlight)));
+                break;
               default:
-                renderer.addQuad(Rectangle(pos, pos + size),
-                    getHighlightColor(highlight, index->getHighlight(highlight)));
                 break;
             }
       }
@@ -773,8 +799,10 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
     }
     if (!spriteMode)
       break;
-    if (layer == ViewLayer::FLOOR_BACKGROUND)
+    if (layer == ViewLayer::FLOOR_BACKGROUND) {
       renderExtraBorders(renderer, currentTimeReal);
+      renderLowHighlights(renderer, size, currentTimeReal);
+    }
   }
   renderer.drawQuads();
 }

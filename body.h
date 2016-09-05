@@ -68,7 +68,7 @@ class Body {
 
   bool tick(const Creature*);
   bool heal(Creature*, double amount, bool replaceLimbs);
-  void setOnFire(Creature*, double amount);
+  void fireDamage(Creature*, double amount);
   bool isIntrinsicallyAffected(LastingEffect) const;
   void affectByPoison(Creature*);
   void affectByTorture(Creature*);

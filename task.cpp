@@ -42,6 +42,8 @@
 #include "item_type.h"
 #include "body.h"
 #include "furniture_type.h"
+#include "construction_map.h"
+#include "furniture.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -96,7 +98,6 @@ class ConstructionHelper {
     if (square)
       switch (square->getId()) {
         case SquareId::FLOOR: return "Dig " + toString(position);
-        case SquareId::TREE_TRUNK: return "Cut tree " + toString(position);
         default: return "Build " + transform2(EnumInfo<SquareId>::getString(square->getId()),
                    [] (char c) -> char { if (c == '_') return ' '; else return tolower(c); }) + toString(position);
       }
@@ -178,6 +179,58 @@ PTask Task::construction(TaskCallback* c, Position target, const SquareType& typ
 
 PTask Task::construction(TaskCallback* c, Position target, FurnitureType type) {
   return PTask(new Construction(c, target, type));
+}
+
+namespace {
+class Destruction : public Task {
+  public:
+  Destruction(TaskCallback* c, Position pos, Furniture* furniture, DestroyAction::Value action) : Task(true), position(pos),
+      callback(c), destroyAction(action), description(DestroyAction::getVerbSecondPerson(destroyAction) +
+          " "_s + furniture->getName()), furnitureId(furniture->getUniqueId()) {}
+
+  virtual bool isImpossible(const Level* level) override {
+    return !position.isDestroyable();
+  }
+
+  virtual string getDescription() const override {
+    return description;
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (!callback->isConstructionReachable(position))
+      return NoMove;
+    if (c->getPosition().dist8(position) > 1)
+      return c->moveTowards(position);
+    CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
+    Vec2 dir = c->getPosition().getDir(position);
+    if (auto action = c->destroy(dir, destroyAction))
+      return {1.0, action.append([=](Creature* c) {
+          if (!position.getFurniture() || position.getFurniture()->getUniqueId() != furnitureId) {
+            setDone();
+            callback->onDestructedFurniture(position);
+          }
+          })};
+    else {
+      setDone();
+      return NoMove;
+    }
+  }
+
+  SERIALIZE_ALL2(Task, position, callback, destroyAction, description, furnitureId)
+  SERIALIZATION_CONSTRUCTOR(Destruction)
+
+  private:
+  Position SERIAL(position);
+  TaskCallback* SERIAL(callback);
+  DestroyAction::Value SERIAL(destroyAction);
+  string SERIAL(description);
+  Furniture::Id SERIAL(furnitureId);
+};
+
+}
+
+PTask Task::destruction(TaskCallback* c, Position target, Furniture* furniture, DestroyAction::Value destroyAction) {
+  return PTask(new Destruction(c, target, furniture, destroyAction));
 }
 
 namespace {
@@ -543,10 +596,7 @@ class ApplySquare : public Task {
   }
 
   bool atTarget(Creature* c) {
-    if (position->canEnter(c))
-      return position == c->getPosition();
-    else
-      return position->dist8(c->getPosition()) == 1;
+    return position == c->getPosition() || (!position->canEnter(c) && position->dist8(c->getPosition()) == 1);
   }
 
   SERIALIZE_ALL2(Task, positions, rejectedPosition, invalidCount, position, callback, searchType); 
@@ -629,59 +679,6 @@ PTask Task::torture(TaskCallback* callback, Creature* creature) {
 
 namespace {
 
-class Sacrifice : public Task {
-  public:
-  Sacrifice(TaskCallback* call, Creature* c) : creature(c), callback(call) {}
-
-  virtual bool canPerform(const Creature* c) override {
-    return c != creature;
-  }
-
-  virtual MoveInfo getMove(Creature* c) override {
-    if (creature->isDead()) {
-      if (sacrificePos) {
-        if (sacrificePos == c->getPosition())
-          return c->applySquare(*sacrificePos).append([=](Creature* c) { setDone(); });
-        else
-          return c->moveTowards(*sacrificePos);
-      } else {
-        setDone();
-        return NoMove;
-      }
-    }
-    if (creature->getPosition().getApplyType(creature) == SquareApplyType::PRAY)
-      if (auto action = c->attack(creature)) {
-        Position pos = creature->getPosition();
-        return action.append([=](Creature* c) { if (creature->isDead()) sacrificePos = pos; });
-      }
-    return c->moveTowards(creature->getPosition());
-  }
-
-  virtual string getDescription() const override {
-    return "Sacrifice " + creature->getName().bare();
-  }
-
-  virtual void cancel() override {
-    callback->onKillCancelled(creature);
-  }
-
-  SERIALIZE_ALL2(Task, creature, sacrificePos, callback); 
-  SERIALIZATION_CONSTRUCTOR(Sacrifice);
-
-  private:
-  Creature* SERIAL(creature);
-  optional<Position> SERIAL(sacrificePos);
-  TaskCallback* SERIAL(callback);
-};
-
-}
-
-PTask Task::sacrifice(TaskCallback* callback, Creature* creature) {
-  return PTask(new Sacrifice(callback, creature));
-}
-
-namespace {
-
 class DestroySquare : public Task {
   public:
   DestroySquare(Position pos) : position(pos) {
@@ -689,7 +686,7 @@ class DestroySquare : public Task {
 
   virtual MoveInfo getMove(Creature* c) override {
     if (c->getPosition().dist8(position) == 1)
-      if (auto action = c->destroy(position.getDir(c->getPosition()), Creature::DESTROY))
+      if (auto action = c->destroy(position.getDir(c->getPosition()), DestroyAction::DESTROY))
         return action.append([=](Creature* c) { 
           if (!position.canDestroy(c))
             setDone();
@@ -697,7 +694,7 @@ class DestroySquare : public Task {
     if (auto action = c->moveTowards(position))
       return action;
     for (Vec2 v : Vec2::directions8(Random))
-      if (auto action = c->destroy(v, Creature::DESTROY))
+      if (auto action = c->destroy(v, DestroyAction::DESTROY))
         return action;
     return NoMove;
   }
@@ -865,7 +862,7 @@ PTask Task::attackLeader(Collective* col) {
 
 PTask Task::stealFrom(Collective* collective, TaskCallback* callback) {
   vector<PTask> tasks;
-  for (Position pos : collective->getSquares(SquareId::TREASURE_CHEST)) {
+  for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType::TREASURE_CHEST)) {
     vector<Item*> gold = pos.getItems(Item::classPredicate(ItemClass::GOLD));
     if (!gold.empty())
       tasks.push_back(pickItem(callback, pos, gold));
@@ -1410,6 +1407,7 @@ PTask Task::spider(Position origin, const vector<Position>& posClose, const vect
 template <class Archive>
 void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Construction);
+  REGISTER_TYPE(ar, Destruction);
   REGISTER_TYPE(ar, BuildTorch);
   REGISTER_TYPE(ar, PickItem);
   REGISTER_TYPE(ar, PickAndEquipItem);
@@ -1418,7 +1416,6 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, ApplyItem);
   REGISTER_TYPE(ar, ApplySquare);
   REGISTER_TYPE(ar, Kill);
-  REGISTER_TYPE(ar, Sacrifice);
   REGISTER_TYPE(ar, DestroySquare);
   REGISTER_TYPE(ar, Disappear);
   REGISTER_TYPE(ar, Chain);
@@ -1431,7 +1428,6 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Eat);
   REGISTER_TYPE(ar, GoTo);
   REGISTER_TYPE(ar, TransferTo);
-  REGISTER_TYPE(ar, GoToAndWait);
   REGISTER_TYPE(ar, Whipping);
   REGISTER_TYPE(ar, GoToAndWait);
   REGISTER_TYPE(ar, DropItems);

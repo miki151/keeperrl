@@ -31,6 +31,9 @@ class ItemAttributes;
 
 class ItemFactory {
   public:
+  ItemFactory(const ItemFactory&);
+  ItemFactory& operator = (const ItemFactory&);
+  
   vector<PItem> random(optional<int> seed = none);
   vector<PItem> getAll();
 
@@ -47,7 +50,7 @@ class ItemFactory {
   static ItemFactory gnomeShop();
   static ItemFactory dragonCave();
   static ItemFactory minerals();
-  static ItemFactory singleType(ItemType);
+  static ItemFactory singleType(ItemType, Range count = Range(1, 2));
 
   static PItem fromId(ItemType);
   static vector<PItem> fromId(ItemType, int num);
@@ -61,17 +64,18 @@ class ItemFactory {
   static void registerTypes(Archive& ar, int version);
 
   SERIALIZATION_DECL(ItemFactory);
-
+  ~ItemFactory();
+  
   private:
   struct ItemInfo;
-  ItemFactory(const vector<ItemInfo>&, const vector<ItemType>& unique = vector<ItemType>());
+  ItemFactory(const vector<ItemInfo>&, const vector<ItemType>& unique);
+  ItemFactory(const vector<ItemInfo>&);
   static ItemAttributes getAttributes(ItemType);
   ItemFactory& addItem(ItemInfo);
   ItemFactory& addUniqueItem(ItemType);
   vector<ItemType> SERIAL(items);
   vector<double> SERIAL(weights);
-  vector<int> SERIAL(minCount);
-  vector<int> SERIAL(maxCount);
+  vector<Range> SERIAL(count);
   vector<ItemType> SERIAL(unique);
 };
 

@@ -44,11 +44,7 @@
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(items)
-    & SVAR(weights)
-    & SVAR(minCount)
-    & SVAR(maxCount)
-    & SVAR(unique);
+  serializeAll(ar, items, weights, count, unique);
 }
 
 SERIALIZABLE(ItemFactory);
@@ -56,14 +52,13 @@ SERIALIZABLE(ItemFactory);
 SERIALIZATION_CONSTRUCTOR_IMPL(ItemFactory);
 
 struct ItemFactory::ItemInfo {
-  ItemInfo(ItemType _id, double _weight) : id(_id), weight(_weight) {}
-  ItemInfo(ItemType _id, double _weight, int minC, int maxC)
-    : id(_id), weight(_weight), minCount(minC), maxCount(maxC) {}
+  ItemInfo(ItemType _id, double _weight) : id(_id), weight(_weight), count(1, 2) {}
+  ItemInfo(ItemType _id, double _weight, Range c)
+    : id(_id), weight(_weight), count(c) {}
 
   ItemType id;
   double weight;
-  int minCount = 1;
-  int maxCount = 2;
+  Range count;
 };
 
 class FireScroll : public Item {
@@ -76,7 +71,7 @@ class FireScroll : public Item {
 
   virtual void specialTick(Position position) override {
     if (set) {
-      setOnFire(0.03, position);
+      fireDamage(0.03, position);
       set = false;
     }
   }
@@ -257,7 +252,7 @@ class Potion : public Item {
   public:
   Potion(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void setOnFire(double amount, Position position) override {
+  virtual void fireDamage(double amount, Position position) override {
     heat += amount;
     Debug() << getName() << " heat " << heat;
     if (heat > 0.1) {
@@ -350,17 +345,21 @@ void ItemFactory::registerTypes(Archive& ar, int version) {
 
 REGISTER_TYPES(ItemFactory::registerTypes);
 
-ItemFactory::ItemFactory(const vector<ItemInfo>& _items,
-      const vector<ItemType>& _unique) : unique(_unique) {
-  for (auto elem : _items)
+ItemFactory::ItemFactory(const vector<ItemInfo>& items, const vector<ItemType>& u)
+    : ItemFactory(items) {
+  unique = u;
+}
+
+ItemFactory::ItemFactory(const vector<ItemInfo>& items) {
+  for (auto elem : items)
     addItem(elem);
 }
 
 ItemFactory& ItemFactory::addItem(ItemInfo elem) {
   items.push_back(elem.id);
   weights.push_back(elem.weight);
-  minCount.push_back(elem.minCount);
-  maxCount.push_back(elem.maxCount);
+  CHECK(!elem.count.isEmpty());
+  count.push_back(elem.count);
   return *this;
 }
 
@@ -382,7 +381,7 @@ vector<PItem> ItemFactory::random(optional<int> seed) {
     index = gen.get(weights);
   } else
     index = Random.get(weights);
-  return fromId(items[index], Random.get(minCount[index], maxCount[index]));
+  return fromId(items[index], Random.get(count[index]));
 }
 
 vector<PItem> ItemFactory::getAll() {
@@ -433,7 +432,7 @@ ItemFactory ItemFactory::armory() {
       {ItemId::BATTLE_AXE, 2 },
       {ItemId::WAR_HAMMER, 2 },
       {ItemId::BOW, 4 },
-      {ItemId::ARROW, 8, 20, 30 },
+      {ItemId::ARROW, 8, Range(20, 30) },
       {ItemId::LEATHER_ARMOR, 2 },
       {ItemId::CHAIN_ARMOR, 1 },
       {ItemId::LEATHER_HELM, 2 },
@@ -495,7 +494,7 @@ ItemFactory ItemFactory::gnomeShop() {
 
 ItemFactory ItemFactory::dragonCave() {
   return ItemFactory({
-      {ItemId::GOLD_PIECE, 10, 30, 100 },
+      {ItemId::GOLD_PIECE, 10, Range(30, 100) },
       {ItemId::SPECIAL_SWORD, 1 },
       {ItemId::SPECIAL_BATTLE_AXE, 1 },
       {ItemId::SPECIAL_WAR_HAMMER, 1 }});
@@ -611,11 +610,11 @@ ItemFactory ItemFactory::dungeon() {
 }
 
 ItemFactory ItemFactory::chest() {
-  return dungeon().addItem({ItemId::GOLD_PIECE, 300, 20, 41});
+  return dungeon().addItem({ItemId::GOLD_PIECE, 300, Range(20, 41)});
 }
 
-ItemFactory ItemFactory::singleType(ItemType id) {
-  return ItemFactory({{id, 1}});
+ItemFactory ItemFactory::singleType(ItemType id, Range count) {
+  return ItemFactory({ItemInfo{id, 1, count}});
 }
 
 int getEffectPrice(EffectType type) {
@@ -774,6 +773,12 @@ void addPrefix(ItemAttributes& i, WeaponPrefix prefix) {
       break;
   }
 }
+
+ItemFactory& ItemFactory::operator = (const ItemFactory&) = default;
+
+ItemFactory::ItemFactory(const ItemFactory&) = default;
+
+ItemFactory::~ItemFactory() {}
 
 int prefixChance = 30;
 

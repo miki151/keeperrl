@@ -9,6 +9,8 @@
 #include "collective_builder.h"
 #include "view_object.h"
 #include "item.h"
+#include "furniture.h"
+#include "furniture_factory.h"
 
 LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int height, const string& n, bool covered,
     optional<double> defaultLight)
@@ -16,12 +18,17 @@ LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int he
     heightMap(width, height, 0), coverOverride(width, height),
     sunlight(width, height, defaultLight ? *defaultLight : (covered ? 0.0 : 1.0)),
     allCovered(covered), attrib(width, height),
-    type(width, height, SquareType(SquareId(0))), items(width, height), name(n), progressMeter(meter), random(r) {
+    type(width, height, SquareType(SquareId(0))), items(width, height), furniture(width, height),
+    name(n), progressMeter(meter), random(r) {
 }
 
 LevelBuilder::LevelBuilder(RandomGen& r, int width, int height, const string& n, bool covered)
   : LevelBuilder(nullptr, r, width, height, n, covered) {
 }
+
+LevelBuilder::~LevelBuilder() {}
+
+LevelBuilder::LevelBuilder(LevelBuilder&&) = default;
 
 RandomGen& LevelBuilder::getRandom() {
   return random;
@@ -60,7 +67,7 @@ void LevelBuilder::putSquare(Vec2 posT, SquareType t, vector<SquareAttrib> attr)
   if (progressMeter)
     progressMeter->addProgress();
   Vec2 pos = transform(posT);
-  CHECK(type[pos].getId() != SquareId::STAIRS) << "Attempted to overwrite stairs";
+  furniture[pos] = none;
   bool wasCovered = false;
   if (const Square* square = squares.getReadonly(pos)) {
     wasCovered = square->isCovered();
@@ -109,6 +116,28 @@ void LevelBuilder::putItems(Vec2 posT, vector<PItem> it) {
   append(items[pos], std::move(it));
 }
 
+void LevelBuilder::putFurniture(Vec2 posT, FurnitureFactory& f) {
+  putFurniture(posT, f.getRandom(getRandom()));
+}
+
+void LevelBuilder::putFurniture(Vec2 posT, const Furniture& f) {
+  CHECK(canPutFurniture(posT));
+  furniture[transform(posT)] = f;
+}
+
+bool LevelBuilder::canPutFurniture(Vec2 posT) {
+  return !furniture[transform(posT)];
+}
+
+void LevelBuilder::removeFurniture(Vec2 pos) {
+  furniture[transform(pos)].reset();
+}
+
+void LevelBuilder::setLandingLink(Vec2 posT, StairKey key) {
+  Vec2 pos = transform(posT);
+  squares.getSquare(pos)->setLandingLink(key);
+}
+
 bool LevelBuilder::canPutCreature(Vec2 posT, Creature* c) {
   Vec2 pos = transform(posT);
   if (!squares.getReadonly(pos)->canEnter(c))
@@ -139,6 +168,9 @@ PLevel LevelBuilder::build(Model* m, LevelMaker* maker, LevelId levelId) {
   for (CollectiveBuilder* c : collectives)
     c->setLevel(l.get());
   l->noDiagonalPassing = noDiagonalPassing;
+  for (Vec2 v : furniture.getBounds())
+    if (furniture[v])
+      l->setFurniture(v, *furniture[v]);
   return l;
 }
 
@@ -199,4 +231,10 @@ void LevelBuilder::setSunlight(Vec2 pos, double s) {
 
 void LevelBuilder::setUnavailable(Vec2 pos) {
   unavailable[transform(pos)] = true;
+}
+
+bool LevelBuilder::canNavigate(Vec2 posT, const MovementType& movement) {
+  Vec2 pos = transform(posT);
+  return squares.getSquare(pos)->canEnterEmpty(movement) &&
+    (!furniture[pos] || furniture[pos]->canEnter(movement));
 }

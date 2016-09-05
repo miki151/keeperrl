@@ -324,7 +324,7 @@ static Range getSummonNumber(CreatureId id) {
     case CreatureId::FLY: return Range(3, 7);
     case CreatureId::AUTOMATON: return Range(1, 2);
     default: FAIL << "Unsupported summon creature" << int(id);
-             return 0;
+             return Range(0);
   }
 }
 
@@ -367,7 +367,7 @@ void Effect::applyToCreature(Creature* c, const EffectType& type, EffectStrength
     case EffectId::ENHANCE_WEAPON: enhanceWeapon(c); break;
     case EffectId::DESTROY_EQUIPMENT: destroyEquipment(c); break;
     case EffectId::HEAL: heal(c, strength); break;
-    case EffectId::FIRE: c->getPosition().setOnFire(fireAmount[strength]); break;
+    case EffectId::FIRE: c->getPosition().fireDamage(fireAmount[strength]); break;
     case EffectId::PORTAL: portal(c); break;
     case EffectId::TELEPORT: teleport(c); break;
     case EffectId::ROLLING_BOULDER: FAIL << "Not implemented"; break;

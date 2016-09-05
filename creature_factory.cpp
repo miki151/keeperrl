@@ -122,7 +122,7 @@ class BoulderController : public Monster {
       return;
     }
     Position nextPos = getCreature()->getPosition().plus(direction);
-    if (nextPos.getStrength() < 300) {
+    if (nextPos.isDestroyable()) {
       if (Creature* c = nextPos.getCreature()) {
         if (!c->getBody().isKilledByBoulder()) {
           if (auto action = getCreature()->swapPosition(direction, true))
@@ -141,7 +141,7 @@ class BoulderController : public Monster {
           }
         }
       }
-      if (auto action = getCreature()->destroy(direction, Creature::DESTROY))
+      if (auto action = getCreature()->destroy(direction, DestroyAction::DESTROY))
         action.perform(getCreature());
     }
     if (auto action = getCreature()->move(direction))
@@ -444,8 +444,8 @@ class KamikazeController : public Monster {
         if (getCreature()->isEnemy(c) && getCreature()->canSee(c)) {
           getCreature()->monsterMessage(getCreature()->getName().the() + " explodes!");
           for (Position v : c->getPosition().neighbors8())
-            v.setOnFire(1);
-          c->getPosition().setOnFire(1);
+            v.fireDamage(1);
+          c->getPosition().fireDamage(1);
           getCreature()->die(nullptr, false);
           return;
         }

@@ -25,6 +25,7 @@
 #include "event_proxy.h"
 #include "view_object.h"
 #include "item.h"
+#include "furniture.h"
 
 using namespace std::chrono;
 
@@ -55,15 +56,15 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
       10,
       {
       CONSTRUCT(PopulationIncrease,
-        c.type = SquareApplyType::PIGSTY;
+        c.type = FurnitureType::PIGSTY;
         c.increasePerSquare = 0.25;
         c.maxIncrease = ModelBuilder::getPigstyPopulationIncrease();),
       CONSTRUCT(PopulationIncrease,
-        c.type = SquareApplyType::STATUE;
+        c.type = FurnitureType::MINION_STATUE;
         c.increasePerSquare = ModelBuilder::getStatuePopulationIncrease();
         c.maxIncrease = 1000;),
       CONSTRUCT(PopulationIncrease,
-        c.type = SquareApplyType::THRONE;
+        c.type = FurnitureType::THRONE;
         c.increasePerSquare = ModelBuilder::getThronePopulationIncrease();
         c.maxIncrease = c.increasePerSquare;),
       },
@@ -272,7 +273,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(Model* model, EnemyInfo& enemy) {
                   c.location = new Location();
                   c.upStairs = {upLink};
                   c.downStairs = {downLink};
-                  c.furniture = SquareFactory::single(SquareId::TORCH);
+                  c.furniture = FurnitureFactory(TribeId::getHuman(), FurnitureType::TORCH);
                   c.buildingId = BuildingId::BRICK;)));
         downLink = upLink;
       }
@@ -311,7 +312,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(Model* model, EnemyInfo& enemy) {
                 mainSettlement.tribe, TribeId::getMonster(), 0),
                 CreatureFactory::waterCreatures(mainSettlement.tribe),
                 CreatureFactory::lavaCreatures(mainSettlement.tribe), {upLink}, {downLink},
-                SquareFactory::roomFurniture(TribeId::getPest())));
+                FurnitureFactory::roomFurniture(TribeId::getPest())));
         upLink = downLink;
       }
       mainSettlement.upStairs = {upLink};

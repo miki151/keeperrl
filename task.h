@@ -20,6 +20,7 @@
 #include "unique_entity.h"
 #include "entity_set.h"
 #include "position.h"
+#include "destroy_action.h"
 
 class SquareType;
 class Location;
@@ -42,6 +43,7 @@ class Task : public UniqueEntity<Task> {
 
   static PTask construction(TaskCallback*, Position, const SquareType&);
   static PTask construction(TaskCallback*, Position, FurnitureType);
+  static PTask destruction(TaskCallback*, Position, Furniture*, DestroyAction::Value);
   static PTask buildTorch(TaskCallback*, Position, Dir attachmentDir);
   static PTask bringItem(TaskCallback*, Position position, vector<Item*>, const set<Position>& target,
       int numRetries = 10);

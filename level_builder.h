@@ -11,6 +11,7 @@ class ProgressMeter;
 class Model;
 class LevelMaker;
 class Square;
+class FurnitureFactory;
 
 RICH_ENUM(SquareAttrib,
   NO_DIG,
@@ -45,7 +46,8 @@ class LevelBuilder {
       optional<double> defaultLight = none);
   LevelBuilder(RandomGen&, int width, int height, const string& name, bool covered = true);
   
-  LevelBuilder(LevelBuilder&&) = default;
+  LevelBuilder(LevelBuilder&&);
+  ~LevelBuilder();
 
   /** Returns a given square.*/
   const Square* getSquare(Vec2);
@@ -84,8 +86,17 @@ class LevelBuilder {
   /** Adds attribute to given square. The attribute will remain if the square is changed.*/
   void addAttrib(Vec2 pos, SquareAttrib attr);
 
+  void putFurniture(Vec2 pos, FurnitureFactory&);
+  void putFurniture(Vec2 pos, const Furniture&);
+  bool canPutFurniture(Vec2 pos);
+  void removeFurniture(Vec2 pos);
+
+  void setLandingLink(Vec2 pos, StairKey);
+
   /** Removes attribute from given square.*/
   void removeAttrib(Vec2 pos, SquareAttrib attr);
+
+  bool canNavigate(Vec2 pos, const MovementType&);
 
   /** Sets the height of the given square.*/
   void setHeightMap(Vec2 pos, double h);
@@ -132,6 +143,7 @@ class LevelBuilder {
   Table<SquareType> type;
   vector<pair<PCreature, Vec2>> creatures;
   Table<vector<PItem>> items;
+  Table<optional<Furniture>> furniture;
   string name;
   vector<Vec2::LinearMap> mapStack;
   ProgressMeter* progressMeter = nullptr;

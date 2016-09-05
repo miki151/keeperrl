@@ -17,7 +17,7 @@ class Renderable {
   void setViewObject(const ViewObject&);
 
   private:
-  PViewObject SERIAL(viewObject);
+  HeapAllocated<ViewObject> SERIAL(viewObject);
 };
 
 #endif

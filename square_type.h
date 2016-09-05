@@ -14,13 +14,11 @@ RICH_ENUM(SquareId,
   BRIDGE,
   ROAD,
   GRASS,
-  CROPS,
   MUD,
   ROCK_WALL,
   WOOD_WALL,
   BLACK_WALL,
   CASTLE_WALL,
-  WELL,
   MUD_WALL,
   MOUNTAIN,
   HILL,
@@ -32,66 +30,10 @@ RICH_ENUM(SquareId,
   STONE,
   ABYSS,
   SAND,
-  DECID_TREE,
-  CANIF_TREE,
-  TREE_TRUNK,
-  BURNT_TREE,
-  BUSH,
-  TORCH,
-  BED,
-  TORTURE_TABLE,
-  WHIPPING_POST,
-  NOTICE_BOARD,
-  KEEPER_BOARD,
-  CAULDRON,
-  HATCHERY,
   PRISON,
-  CEMETERY,
-  GRAVE,
-  ROLLING_BOULDER,
-  POISON_GAS,
-  FOUNTAIN,
-  CHEST,
-  OPENED_CHEST,
-  TREASURE_CHEST,
-  COFFIN,
-  OPENED_COFFIN,
-  DOOR,
-  TRIBE_DOOR,
-  BARRICADE,
-  STAIRS,
   BORDER_GUARD,
-  CREATURE_ALTAR,
-  EYEBALL,
-  MINION_STATUE,
   SOKOBAN_HOLE
 );
-
-enum class StairLook {
-  NORMAL,
-};
-
-struct StairInfo {
-  StairKey SERIAL(key);
-  StairLook SERIAL(look);
-  enum Direction { UP, DOWN } SERIAL(direction);
-  SERIALIZE_ALL(key, look, direction);
-  bool operator == (const StairInfo& o) const {
-    return key == o.key && look == o.look && direction == o.direction;
-  }
-};
-
-struct ChestInfo {
-  ChestInfo(CreatureFactory::SingleCreature c, double p, int n) : creature(c), creatureChance(p), numCreatures(n) {}
-  ChestInfo() : creatureChance(0), numCreatures(0) {}
-  optional<CreatureFactory::SingleCreature> SERIAL(creature);
-  double SERIAL(creatureChance);
-  int SERIAL(numCreatures);
-  SERIALIZE_ALL(creature, creatureChance, numCreatures);
-  bool operator == (const ChestInfo& o) const {
-    return creature == o.creature && creatureChance == o.creatureChance && numCreatures == o.numCreatures;
-  }
-};
 
 struct CustomFloorInfo {
   ViewId SERIAL(viewId);
@@ -102,31 +44,13 @@ struct CustomFloorInfo {
   }
 };
 
-class SquareType : public EnumVariant<SquareId, TYPES(const Creature*, CreatureId,
-      CreatureFactory::SingleCreature, ChestInfo, TribeId, StairInfo, StairKey, string, double, CustomFloorInfo),
-    ASSIGN(const Creature*, SquareId::CREATURE_ALTAR),
-    ASSIGN(CreatureId,
-        SquareId::DECID_TREE,
-        SquareId::CANIF_TREE,
-        SquareId::BUSH),
-    ASSIGN(CreatureFactory::SingleCreature,
-        SquareId::HATCHERY),
-    ASSIGN(ChestInfo,
-        SquareId::CHEST,
-        SquareId::COFFIN),
-    ASSIGN(string,
-        SquareId::NOTICE_BOARD),
+class SquareType : public EnumVariant<SquareId, TYPES(CreatureId, StairKey, double, CustomFloorInfo),
     ASSIGN(double,
         SquareId::WATER_WITH_DEPTH),
-    ASSIGN(TribeId,
-        SquareId::TRIBE_DOOR,
-        SquareId::BARRICADE),
     ASSIGN(StairKey,
         SquareId::SOKOBAN_HOLE),
     ASSIGN(CustomFloorInfo,
-        SquareId::CUSTOM_FLOOR),
-    ASSIGN(StairInfo,
-        SquareId::STAIRS)> {
+        SquareId::CUSTOM_FLOOR)> {
   using EnumVariant::EnumVariant;
 };
 

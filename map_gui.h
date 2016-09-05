@@ -83,6 +83,7 @@ class MapGui : public GuiElem {
   void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);
   void renderExtraBorders(Renderer&, int currentTimeReal);
   void renderHighlights(Renderer&, Vec2 size, int currentTimeReal);
+  void renderLowHighlights(Renderer&, Vec2 size, int currentTimeReal);
   optional<Vec2> getMousePos();
   void softScroll(double x, double y);
   struct HighlightedInfo {
@@ -169,6 +170,7 @@ class MapGui : public GuiElem {
   bool displayScrollHint = false;
   EntityMap<Creature, int> teamHighlight;
   optional<ViewId> buttonViewId;
+  set<Vec2> shadowed;
 };
 
 #endif

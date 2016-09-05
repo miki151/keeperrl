@@ -23,6 +23,8 @@
 #include "sectors.h"
 #include "stair_key.h"
 #include "entity_set.h"
+#include "vision_id.h"
+
 
 class Model;
 class Square;
@@ -41,12 +43,6 @@ class Position;
 class Game;
 class SquareArray;
 class FieldOfView;
-
-RICH_ENUM(VisionId,
-  ELF,
-  NIGHT,
-  NORMAL
-);
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level {
@@ -202,7 +198,6 @@ class Level {
 
   bool isChokePoint(Vec2, const MovementType&) const;
 
-  void updateConnectivity(Vec2);
   void updateSunlightMovement();
 
   const optional<ViewObject>& getBackgroundObject(Vec2) const;
@@ -215,8 +210,7 @@ class Level {
   void setNeedsRenderUpdate(Vec2, bool);
 
   LevelId getUniqueId() const;
-
-  /** Class used to initialize a level object.*/
+  void setFurniture(Vec2, const Furniture&);
 
   SERIALIZATION_DECL(Level);
 
@@ -227,15 +221,23 @@ class Level {
   Vec2 transform(Vec2);
   HeapAllocated<SquareArray> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
-  struct FurnitureInfo {
-    PFurniture SERIAL(furniture);
+  class FurnitureInfo {
+    friend class Level;
+    public:
+    void reset();
+    Furniture* get();
+    const Furniture* get() const;
     struct FurnitureConstruction {
       FurnitureType SERIAL(type);
       int SERIAL(time);
       SERIALIZE_ALL(type, time);
     };
+
     optional<FurnitureConstruction> SERIAL(construction);
     SERIALIZE_ALL(furniture, construction);
+
+    private:
+    HeapAllocated<optional<Furniture>> SERIAL(furniture);
   };
   Table<FurnitureInfo> SERIAL(furnitureInfo);
   HeapAllocated<Table<optional<ViewObject>>> SERIAL(background);

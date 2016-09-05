@@ -615,6 +615,10 @@ Range Range::reverse() {
   return r;
 }
 
+bool Range::isEmpty() const {
+  return (increment == 1 && start >= finish) || (increment == -1 && start <= finish);
+}
+
 Range Range::shorten(int r) {
   if (start < finish) {
     if (finish - start >= 2 * r)

@@ -80,7 +80,7 @@ struct BirthSpawn {
 };
 
 struct PopulationIncrease {
-  SquareApplyType SERIAL(type);
+  FurnitureType SERIAL(type);
   double SERIAL(increasePerSquare);
   int SERIAL(maxIncrease);
 

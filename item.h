@@ -89,7 +89,7 @@ class Item : public Renderable, public UniqueEntity<Item> {
   void onUnequip(Creature*);
   virtual void onEquipSpecial(Creature*) {}
   virtual void onUnequipSpecial(Creature*) {}
-  virtual void setOnFire(double amount, Position);
+  virtual void fireDamage(double amount, Position);
   double getFireSize() const;
 
   void onHitSquareMessage(Position, int numItems);

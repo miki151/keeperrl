@@ -51,6 +51,9 @@ enum class ItemAction;
 enum class WorshipType;
 enum class SquareInteraction;
 
+enum class FurnitureUsageType;
+enum class FurnitureClickType;
+
 enum class MinionTask;
 enum class MinionTrait;
 enum class TrapType;

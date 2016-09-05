@@ -17,7 +17,6 @@
 #include "move_info.h"
 #include "task_callback.h"
 #include "minion_task.h"
-#include "square_apply_type.h"
 #include "resource_id.h"
 #include "collective_warning.h"
 #include "event_listener.h"
@@ -105,8 +104,6 @@ class Collective : public TaskCallback {
   void clearLeader();
 
   const set<Position>& getSquares(SquareType) const;
-  const set<Position>& getSquares(SquareApplyType) const;
-  vector<SquareType> getSquareTypes() const;
   vector<Position> getAllSquares(const vector<SquareType>&, bool centerOnly = false) const;
   const Territory& getTerritory() const;
   void claimSquare(Position);
@@ -131,6 +128,7 @@ class Collective : public TaskCallback {
   void returnResource(const CostInfo&);
 
   struct ItemFetchInfo;
+  bool isFetchPosition(Position) const;
 
   const ConstructionMap& getConstructions() const;
 
@@ -144,7 +142,6 @@ class Collective : public TaskCallback {
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
   static void sortByEquipmentValue(vector<Item*>&);
-  static SquareType getHatcheryType(TribeId);
 
   vector<pair<Item*, Position>> getTrapItems(TrapType, const vector<Position>&) const;
 
@@ -158,6 +155,7 @@ class Collective : public TaskCallback {
   void removeTrap(Position);
   void addConstruction(Position, SquareType, const CostInfo&, bool immediately, bool noCredit);
   void removeConstruction(Position);
+  bool canAddFurniture(Position, FurnitureType) const;
   void addFurniture(Position, FurnitureType, const CostInfo&, bool immediately, bool noCredit);
   void removeFurniture(Position);
   void destroySquare(Position);
@@ -166,6 +164,7 @@ class Collective : public TaskCallback {
   void removeTorch(Position);
   void addTorch(Position);
   void fetchAllItems(Position);
+  void cancelFetchAllItems(Position);
   void dig(Position);
   void cancelMarkedTask(Position);
   void cutTree(Position);
@@ -206,7 +205,6 @@ class Collective : public TaskCallback {
   int getPopulationSize() const;
   int getMaxPopulation() const;
 
-  bool tryLockingDoor(Position);
   void orderConsumption(Creature* consumer, Creature* who);
   vector<Creature*>getConsumptionTargets(Creature* consumer);
 
@@ -232,6 +230,7 @@ class Collective : public TaskCallback {
   virtual void onCantPickItem(EntitySet<Item> items) override;
   virtual void onConstructed(Position, const SquareType&) override;
   virtual void onConstructed(Position, FurnitureType) override;
+  virtual void onDestructedFurniture(Position) override;
   virtual void onTorchBuilt(Position, Trigger*) override;
   virtual void onAppliedSquare(Creature*, Position) override;
   virtual void onKillCancelled(Creature*) override;
@@ -269,7 +268,7 @@ class Collective : public TaskCallback {
 
   bool isItemNeeded(const Item*) const;
   void addProducesMessage(const Creature*, const vector<PItem>&);
-  
+
   HeapAllocated<MinionEquipment> SERIAL(minionEquipment);
   EnumMap<ResourceId, int> SERIAL(credit);
   HeapAllocated<TaskMap> SERIAL(taskMap);
@@ -322,7 +321,6 @@ class Collective : public TaskCallback {
   HeapAllocated<TribeId> SERIAL(tribe);
   Level* SERIAL(level) = nullptr;
   HeapAllocated<unordered_map<SquareType, set<Position>>> SERIAL(mySquares);
-  unordered_map<SquareApplyType, set<Position>, CustomHash<SquareApplyType>> SERIAL(mySquares2);
   map<Position, int> SERIAL(squareEfficiency);
   HeapAllocated<Territory> SERIAL(territory);
   struct AlarmInfo {
@@ -366,4 +364,5 @@ class Collective : public TaskCallback {
   EntitySet<Creature> SERIAL(equipmentUpdates);
   optional<VillainType> SERIAL(villainType);
   unique_ptr<Workshops> SERIAL(workshops);
+  set<Position> SERIAL(fetchPositions);
 };

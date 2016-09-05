@@ -62,7 +62,7 @@ optional<ViewObject> Trigger::getViewObject(const Creature*) const {
 
 void Trigger::onCreatureEnter(Creature* c) {}
 
-void Trigger::setOnFire(double size) {}
+void Trigger::fireDamage(double size) {}
 
 double Trigger::getLightEmission() const {
   return 0;
