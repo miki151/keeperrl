@@ -1583,9 +1583,10 @@ void PlayerControl::setChosenCreature(optional<UniqueEntity<Creature>::Id> id) {
   chosenCreature = id;
 }
 
-void PlayerControl::setChosenTeam(optional<TeamId> team) {
+void PlayerControl::setChosenTeam(optional<TeamId> team, optional<UniqueEntity<Creature>::Id> creature) {
   clearChosenInfo();
   chosenTeam = team;
+  chosenCreature = creature;
 }
 
 void PlayerControl::clearChosenInfo() {
@@ -1650,15 +1651,15 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
         getTeams().cancel(input.get<TeamId>());
         break;
-    case UserInputId::SELECT_TEAM:
-        if (getChosenTeam() == input.get<TeamId>()) {
+    case UserInputId::SELECT_TEAM: {
+        auto teamId = input.get<TeamId>();
+        if (getChosenTeam() == teamId) {
           setChosenTeam(none);
           chosenCreature = none;
-        } else {
-          setChosenTeam(input.get<TeamId>());
-          setChosenCreature(getTeams().getLeader(input.get<TeamId>())->getUniqueId());
-        }
+        } else
+          setChosenTeam(teamId, getTeams().getLeader(teamId)->getUniqueId());
         break;
+    }
     case UserInputId::ACTIVATE_TEAM:
         if (!getTeams().isActive(input.get<TeamId>()))
           getTeams().activate(input.get<TeamId>());

@@ -222,7 +222,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   optional<WorkshopType> chosenWorkshop;
   void setChosenWorkshop(optional<WorkshopType>);
   optional<TeamId> getChosenTeam() const;
-  void setChosenTeam(optional<TeamId>);
+  void setChosenTeam(optional<TeamId>, optional<UniqueEntity<Creature>::Id> = none);
   optional<TeamId> chosenTeam;
   void clearChosenInfo();
   unordered_set<Position, CustomHash<Position>> SERIAL(surprises);
