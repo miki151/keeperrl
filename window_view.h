@@ -105,7 +105,7 @@ class WindowView: public View {
   void displayMenuSplash2();
   void displayOldSplash();
   void updateMinimap(const CreatureView*);
-  void mapLeftClickFun(Vec2);
+  void mapContinuousLeftClickFun(Vec2);
   void mapCreatureClickFun(UniqueEntity<Creature>::Id);
   void mapCreatureDragFun(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   void mapRightClickFun(Vec2);

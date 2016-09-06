@@ -119,7 +119,8 @@ void WindowView::initialize() {
   else
     currentTileLayout = asciiLayouts;
   mapGui = new MapGui({
-      bindMethod(&WindowView::mapLeftClickFun, this),
+      bindMethod(&WindowView::mapContinuousLeftClickFun, this),
+      [this] (Vec2 pos) { inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));},
       bindMethod(&WindowView::mapRightClickFun, this),
       bindMethod(&WindowView::mapCreatureClickFun, this),
       [this] { refreshInput = true;},
@@ -151,7 +152,7 @@ void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
   }
 }
 
-void WindowView::mapLeftClickFun(Vec2 pos) {
+void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
   guiBuilder.closeOverlayWindows();
   optional<int> activeLibrary = guiBuilder.getActiveButton(CollectiveTab::TECHNOLOGY);
   optional<int> activeBuilding = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS);
@@ -175,10 +176,7 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
           inputQueue.push(UserInput(UserInputId::RECT_DESELECTION, pos));
         else if (activeBuilding)
           inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo{pos, *activeBuilding}));
-        else
-          inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
-      } else
-        inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
+      }
     default:
       break;
   }

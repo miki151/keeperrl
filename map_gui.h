@@ -35,6 +35,7 @@ class Options;
 class MapGui : public GuiElem {
   public:
   struct Callbacks {
+    function<void(Vec2)> continuousLeftClickFun;
     function<void(Vec2)> leftClickFun;
     function<void(Vec2)> rightClickFun;
     function<void(UniqueEntity<Creature>::Id)> creatureClickFun;
@@ -106,7 +107,7 @@ class MapGui : public GuiElem {
     ViewId viewId;
   };
   optional<CreatureInfo&> getCreature(Vec2 mousePos);
-  void considerMapLeftClick(Vec2 mousePos);
+  void considerContinuousLeftClick(Vec2 mousePos);
   MapLayout* layout;
   Table<optional<ViewIndex>> objects;
   bool spriteMode;

@@ -204,7 +204,7 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
     case SDL::SDLK_d:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
-    case SDL::SDLK_RIGHT: 
+    case SDL::SDLK_RIGHT:
     case SDL::SDLK_KP_6:
       softScroll(scrollDist, 0);
       break;
@@ -272,10 +272,10 @@ void MapGui::onMouseGone() {
   lastMouseMove = none;
 }
 
-void MapGui::considerMapLeftClick(Vec2 mousePos) {
+void MapGui::considerContinuousLeftClick(Vec2 mousePos) {
   Vec2 pos = layout->projectOnMap(getBounds(), getScreenPos(), mousePos);
   if (!lastMapLeftClick || lastMapLeftClick != pos) {
-    callbacks.leftClickFun(pos);
+    callbacks.continuousLeftClickFun(pos);
     lastMapLeftClick = pos;
   }
 }
@@ -283,7 +283,7 @@ void MapGui::considerMapLeftClick(Vec2 mousePos) {
 bool MapGui::onMouseMove(Vec2 v) {
   lastMouseMove = v;
   if (v.inRectangle(getBounds()) && mouseHeldPos && !draggedCreature)
-    considerMapLeftClick(v);
+    considerContinuousLeftClick(v);
   if (!draggedCreature && draggedCandidate && mouseHeldPos && mouseHeldPos->distD(v) > 30) {
     callbacks.creatureDragFun(draggedCandidate->id, draggedCandidate->viewId, v);
     draggedCreature = draggedCandidate->id;
@@ -322,15 +322,17 @@ void MapGui::onMouseRelease(Vec2 v) {
   if (mouseHeldPos) {
     if (mouseHeldPos->distD(v) > 10) {
       if (!draggedCreature)
-        considerMapLeftClick(v);
+        considerContinuousLeftClick(v);
       else
         callbacks.creatureDroppedFun(*draggedCreature, layout->projectOnMap(getBounds(), getScreenPos(), v));
     }
     else {
       if (auto c = getCreature(*mouseHeldPos))
         callbacks.creatureClickFun(c->id);
-      else    
-        considerMapLeftClick(v);
+      else {
+        callbacks.leftClickFun(layout->projectOnMap(getBounds(), getScreenPos(), v));
+        considerContinuousLeftClick(v);
+      }
     }
   }
   mouseHeldPos = none;
@@ -386,7 +388,7 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     return Vec2(0, 0);
   double state;
   Vec2 dir;
-  if (screenMovement && 
+  if (screenMovement &&
       curTimeReal >= screenMovement->startTimeReal &&
       curTimeReal <= screenMovement->endTimeReal) {
     state = (double(curTimeReal) - screenMovement->startTimeReal) /
@@ -579,8 +581,8 @@ void MapGui::drawHint(Renderer& renderer, Color color, const vector<string>& tex
 }
 
 void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, Vec2 size, DirSet dirs) {
-  const Tile& tile = Tile::getTile(ViewId::FOG_OF_WAR, true); 
-  const Tile& tile2 = Tile::getTile(ViewId::FOG_OF_WAR_CORNER, true); 
+  const Tile& tile = Tile::getTile(ViewId::FOG_OF_WAR, true);
+  const Tile& tile2 = Tile::getTile(ViewId::FOG_OF_WAR_CORNER, true);
   static DirSet fourDirs = DirSet({Dir::N, Dir::S, Dir::E, Dir::W});
   auto coord = tile.getSpriteCoord(dirs & fourDirs);
   renderer.drawTile(pos, coord, size);
@@ -718,7 +720,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal
 }
 
 void MapGui::renderAnimations(Renderer& renderer, int currentTimeReal) {
-  animations = filter(std::move(animations), [=](const AnimationInfo& elem) 
+  animations = filter(std::move(animations), [=](const AnimationInfo& elem)
       { return !elem.animation->isDone(currentTimeReal);});
   for (auto& elem : animations)
     elem.animation->render(
