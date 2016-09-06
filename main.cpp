@@ -348,13 +348,13 @@ static int keeperMain(const variables_map& vars) {
   Debug::setErrorCallback([&renderer](const string& s) { renderer.showError(s);});
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
-  bool audioOk = audioDevice.initialize();
+  optional<string> audioError = audioDevice.initialize();
   Clock clock;
   GuiFactory guiFactory(renderer, &clock, &options);
   guiFactory.loadFreeImages(freeDataPath + "/images");
   if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
-    if (audioOk)
+    if (!audioError)
       soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath + "/sound");
   }
   if (tilesPresent)
@@ -385,8 +385,10 @@ static int keeperMain(const variables_map& vars) {
     view->initialize();
     viewInitialized = true;
   }
+  if (audioError)
+    view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
   Tile::initialize(renderer, tilesPresent);
-  Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && audioOk), getMaxVolume(), getMaxVolumes());
+  Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && !audioError), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
   optional<GameTypeChoice> forceGame;
