@@ -173,7 +173,7 @@ class CollectiveConfig {
   static optional<SquareType> getSecondarySquare(SquareType);
   unordered_set<SquareType> getEfficiencySquares() const;
   const vector<FurnitureType>& getRoomsNeedingLight() const;
-  int getTaskDuration(const Creature*, MinionTask) const;
+  optional<int> getTaskDuration(const Creature*, MinionTask) const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
   static const MinionTaskInfo& getTaskInfo(MinionTask);
   static const FurnitureType& getEquipmentStorage();

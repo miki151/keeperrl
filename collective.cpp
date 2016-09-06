@@ -353,7 +353,10 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
 }
 
 void Collective::setMinionTask(const Creature* c, MinionTask task) {
-  currentTasks.set(c, {task, c->getLocalTime() + config->getTaskDuration(c, task)});
+  if (auto duration = config->getTaskDuration(c, task))
+    currentTasks.set(c, {task, c->getLocalTime() + *duration});
+  else
+    currentTasks.set(c, {task, none});
 }
 
 optional<MinionTask> Collective::getMinionTask(const Creature* c) const {
@@ -484,7 +487,7 @@ PTask Collective::getStandardTask(Creature* c) {
   if (!c->getAttributes().getMinionTasks().hasAnyTask())
     return nullptr;
   auto current = currentTasks.getMaybe(c);
-  if (!current || current->finishTime < c->getLocalTime() || !isTaskGood(c, current->task)) {
+  if (!current || (current->finishTime && *current->finishTime < c->getLocalTime()) || !isTaskGood(c, current->task)) {
     currentTasks.erase(c);
     setRandomTask(c);
   }
@@ -492,6 +495,8 @@ PTask Collective::getStandardTask(Creature* c) {
     MinionTask task = current->task;
     auto& info = config->getTaskInfo(task);
     PTask ret = generateMinionTask(c, task);
+    if (!current->finishTime) // see comment in header
+      currentTasks.getOrFail(c).finishTime = -1000;
     if (info.warning && !territory->isEmpty())
       setWarning(*info.warning, !ret);
     if (!ret)

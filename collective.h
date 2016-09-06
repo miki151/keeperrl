@@ -282,8 +282,11 @@ class Collective : public TaskCallback {
 
   struct CurrentTaskInfo {
     MinionTask SERIAL(task);
-    double SERIAL(finishTime);
-    SERIALIZE_ALL(task, finishTime);
+    // If none then it's a one-time task. Upon allocating the task, the variable is set to a negative value,
+    // so the job immediately times out after finishing the task.
+    optional<double> SERIAL(finishTime);
+
+    SERIALIZE_ALL(task, finishTime)
   };
 
   EntityMap<Creature, CurrentTaskInfo> SERIAL(currentTasks);

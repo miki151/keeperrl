@@ -240,14 +240,14 @@ const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
   return ret;
 };
 
-int CollectiveConfig::getTaskDuration(const Creature* c, MinionTask task) const {
+optional<int> CollectiveConfig::getTaskDuration(const Creature* c, MinionTask task) const {
   switch (task) {
     case MinionTask::CONSUME:
     case MinionTask::COPULATE:
     case MinionTask::GRAVE:
     case MinionTask::LAIR:
     case MinionTask::EAT:
-    case MinionTask::SLEEP: return 1;
+    case MinionTask::SLEEP: return none;
     default: return 500 + 250 * c->getMorale();
   }
 }
