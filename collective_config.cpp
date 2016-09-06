@@ -309,6 +309,16 @@ optional<WorkshopType> CollectiveConfig::getWorkshopType(MinionTask task) {
   return (*map)[task];
 }
 
+optional<WorkshopType> CollectiveConfig::getWorkshopType(FurnitureType furniture) {
+  static optional<EnumMap<FurnitureType, optional<WorkshopType>>> map;
+  if (!map) {
+    map.emplace();
+    for (auto type : ENUM_ALL(WorkshopType))
+      (*map)[workshops[type].furniture] = type;
+  }
+  return (*map)[furniture];
+}
+
 static MinionTaskInfo createTaskInfo(MinionTask task) {
   switch (task) {
     case MinionTask::TRAIN: return {FurnitureType::TRAINING_DUMMY, "training"};

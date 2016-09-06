@@ -174,6 +174,9 @@ class MapGui : public GuiElem {
   EntityMap<Creature, int> teamHighlight;
   optional<ViewId> buttonViewId;
   set<Vec2> shadowed;
+  bool isRenderedLowHighlight(const ViewIndex&, HighlightType);
+  optional<ViewId> getHighlightedFurniture();
+  Color getHighlightColor(const ViewIndex&, HighlightType);
 };
 
 #endif

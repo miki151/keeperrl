@@ -38,7 +38,8 @@ class Furniture : public Renderable, public UniqueEntity<Furniture> {
   void fireDamage(Position, double amount);
   void tick(Position);
   bool canSeeThru(VisionId) const;
-  bool click(Position);
+  void click(Position);
+  bool isClickable() const;
   void use(Position, Creature*);
   optional<FurnitureUsageType> getUsageType() const;
   int getUsageTime() const;

@@ -167,6 +167,7 @@ class CollectiveConfig {
   unique_ptr<Workshops> getWorkshops() const;
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(MinionTask);
+  static optional<WorkshopType> getWorkshopType(FurnitureType);
 
   bool activeImmigrantion(const Game*) const;
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;

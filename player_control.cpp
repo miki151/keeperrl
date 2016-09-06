@@ -1423,12 +1423,19 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (!canSeePos)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
-  if (auto furniture = position.getFurniture())
+  if (auto furniture = position.getFurniture()) {
+    if (furniture->getType() == FurnitureType::BOOK_SHELF || CollectiveConfig::getWorkshopType(furniture->getType()))
+      index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
+    if (chosenWorkshop && chosenWorkshop == CollectiveConfig::getWorkshopType(furniture->getType()))
+      index.setHighlight(HighlightType::CLICKED_FURNITURE);
     if (draggedCreature)
       if (Creature* c = getCreature(*draggedCreature))
         if (auto task = getTaskFor(furniture->getType()))
-          if (c->getAttributes().getMinionTasks().getValue(*task) > 0)
+          if (c->getAttributes().getMinionTasks().getValue(*task) > 0) {
             index.setHighlight(HighlightType::CREATURE_DROP);
+            index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
+          }
+  }
   if (getCollective()->isMarked(position))
     index.setHighlight(getCollective()->getMarkHighlight(position));
   if (getCollective()->hasPriorityTasks(position))
@@ -1611,14 +1618,23 @@ void PlayerControl::setChosenTeam(optional<TeamId> team, optional<UniqueEntity<C
 }
 
 void PlayerControl::clearChosenInfo() {
-  chosenWorkshop = none;
+  setChosenWorkshop(none);
   chosenCreature = none;
   chosenTeam = none;
 }
 
 void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
-  clearChosenInfo();
+  auto refreshHighlights = [&] {
+    if (chosenWorkshop)
+      for (auto pos : getCollective()->getConstructions().getBuiltPositions(
+             CollectiveConfig::getWorkshopInfo(*chosenWorkshop).furniture))
+        pos.setNeedsRenderUpdate(true);
+  };
+  refreshHighlights();
+  if (type)
+    clearChosenInfo();
   chosenWorkshop = type;
+  refreshHighlights();
 }
 
 void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
@@ -1734,11 +1750,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
           int index = input.get<int>();
           auto info = getWorkshopInfo();
           if (index < 0 || index >= info.size())
-            chosenWorkshop = none;
+            setChosenWorkshop(none);
           else {
             WorkshopType type = info[index].workshopType;
             if (chosenWorkshop == type)
-              chosenWorkshop = none;
+              setChosenWorkshop(none);
             else
               setChosenWorkshop(type);
           }
@@ -2120,15 +2136,16 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
 
 void PlayerControl::onSquareClick(Position pos) {
   if (getCollective()->getTerritory().contains(pos))
-    if (auto furniture = pos.getFurniture())
-      if (furniture->click(pos))
+    if (auto furniture = pos.getFurniture()) {
+      if (furniture->isClickable()) {
+        furniture->click(pos);
         updateSquareMemory(pos);
-  if (getCollective()->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF).count(pos))
-    handleLibrary(getView());
-  for (auto workshopType : ENUM_ALL(WorkshopType))
-    if (getCollective()->getConstructions()
-        .getBuiltPositions(CollectiveConfig::getWorkshopInfo(workshopType).furniture).count(pos))
-      setChosenWorkshop(workshopType);
+      }
+      if (auto workshopType = CollectiveConfig::getWorkshopType(furniture->getType()))
+        setChosenWorkshop(*workshopType);
+      if (furniture->getType() == FurnitureType::BOOK_SHELF)
+        handleLibrary(getView());
+    }
 }
 
 double PlayerControl::getLocalTime() const {

@@ -115,7 +115,8 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer& renderer) {
     return none;
 }
 
-Color getHighlightColor(HighlightType type, double amount) {
+Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
+  double amount = index.getHighlight(type);
   switch (type) {
     case HighlightType::RECT_DESELECTION: return transparency(colors[ColorId::RED], 90);
     case HighlightType::DIG: return transparency(colors[ColorId::YELLOW], 120);
@@ -128,7 +129,13 @@ Color getHighlightColor(HighlightType type, double amount) {
     case HighlightType::NIGHT: return transparency(colors[ColorId::NIGHT_BLUE], amount * 160);
     case HighlightType::EFFICIENCY: return Color(255, 0, 0, 120 * (1 - amount));
     case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 120);
-    case HighlightType::CREATURE_DROP: return Color(0, 255, 0, 120);
+    case HighlightType::CREATURE_DROP:
+      if (index.hasObject(ViewLayer::FLOOR) && getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id())
+        return Color(0, 255, 0);
+      else
+        return Color(0, 255, 0, 120);
+    case HighlightType::CLICKABLE_FURNITURE: return Color(255, 255, 0, 120);
+    case HighlightType::CLICKED_FURNITURE: return Color(255, 255, 0);
     case HighlightType::FORBIDDEN_ZONE: return Color(255, 0, 0, 120);
     case HighlightType::UNAVAILABLE: return Color(0, 0, 0, 120);
   }
@@ -651,6 +658,33 @@ Vec2 MapGui::projectOnScreen(Vec2 wpos, int curTime) {
   return layout->projectOnScreen(getBounds(), getScreenPos(), x, y);
 }
 
+optional<ViewId> MapGui::getHighlightedFurniture() {
+  if (auto mousePos = getMousePos()) {
+    Vec2 curPos = layout->projectOnMap(getBounds(), getScreenPos(), *mousePos);
+    if (curPos.inRectangle(objects.getBounds()) &&
+        objects[curPos] &&
+        objects[curPos]->hasObject(ViewLayer::FLOOR) &&
+        objects[curPos]->getHighlight(HighlightType::CLICKABLE_FURNITURE) > 0)
+      return objects[curPos]->getObject(ViewLayer::FLOOR).id();
+  }
+  return none;
+}
+
+bool MapGui::isRenderedLowHighlight(const ViewIndex& index, HighlightType type) {
+  switch (type) {
+    case HighlightType::CLICKABLE_FURNITURE:
+      return getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id() && !draggedCreature && !buttonViewId;
+    case HighlightType::CREATURE_DROP:
+      return !!draggedCreature;
+    case HighlightType::FORBIDDEN_ZONE:
+    case HighlightType::FETCH_ITEMS:
+    case HighlightType::PRIORITY_TASK:
+    case HighlightType::CLICKED_FURNITURE:
+      return true;
+    default: return false;
+  }
+}
+
 void MapGui::renderLowHighlights(Renderer& renderer, Vec2 size, int currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
@@ -659,24 +693,14 @@ void MapGui::renderLowHighlights(Renderer& renderer, Vec2 size, int currentTimeR
       if (index->hasAnyHighlight()) {
         Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
         for (HighlightType highlight : ENUM_ALL(HighlightType))
-          if (index->getHighlight(highlight) > 0)
-            switch (highlight) {
-              case HighlightType::CREATURE_DROP:
-                if (!draggedCreature)
-                  break;
-              case HighlightType::FORBIDDEN_ZONE:
-              case HighlightType::FETCH_ITEMS:
-              case HighlightType::PRIORITY_TASK:
-                if (spriteMode)
-                  renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size,
-                      getHighlightColor(highlight, index->getHighlight(highlight)));
-                else
-                  renderer.addQuad(Rectangle(pos, pos + size),
-                      getHighlightColor(highlight, index->getHighlight(highlight)));
-                break;
-              default:
-                break;
-            }
+          if (index->getHighlight(highlight) > 0 &&
+              isRenderedLowHighlight(*index, highlight)) {
+            if (spriteMode)
+              renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size,
+                                getHighlightColor(*index, highlight));
+            else
+              renderer.addQuad(Rectangle(pos, pos + size), getHighlightColor(*index, highlight));
+          }
       }
   renderer.drawQuads();
 }
@@ -701,16 +725,14 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal
               case HighlightType::UNAVAILABLE:
                 if (spriteMode)
                   renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size,
-                      getHighlightColor(highlight, index->getHighlight(highlight)));
+                      getHighlightColor(*index, highlight));
                 else
-                  renderer.addQuad(Rectangle(pos, pos + size),
-                      getHighlightColor(highlight, index->getHighlight(highlight)));
+                  renderer.addQuad(Rectangle(pos, pos + size), getHighlightColor(*index, highlight));
                 break;
               case HighlightType::MEMORY:
               case HighlightType::POISON_GAS:
               case HighlightType::NIGHT:
-                  renderer.addQuad(Rectangle(pos, pos + size),
-                      getHighlightColor(highlight, index->getHighlight(highlight)));
+                renderer.addQuad(Rectangle(pos, pos + size), getHighlightColor(*index, highlight));
                 break;
               default:
                 break;
@@ -804,7 +826,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
     if (layer == ViewLayer::FLOOR || !spriteMode) {
       if (!buttonViewId && highlightedInfo.creaturePos)
         drawCreatureHighlight(renderer, *highlightedInfo.creaturePos, size, colors[ColorId::ALMOST_WHITE]);
-      if (highlightedInfo.tilePos)
+      if (highlightedInfo.tilePos && (!getHighlightedFurniture() || !!buttonViewId))
         drawSquareHighlight(renderer, topLeftCorner + (*highlightedInfo.tilePos - allTiles.topLeft()).mult(size),
             size);
     }

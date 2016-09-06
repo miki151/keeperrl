@@ -107,13 +107,15 @@ bool Furniture::canSeeThru(VisionId id) const {
   return !blockVision.contains(id);
 }
 
-bool Furniture::click(Position pos) {
+bool Furniture::isClickable() const {
+  return !!clickType;
+}
+
+void Furniture::click(Position pos) {
   if (clickType) {
     FurnitureClick::handle(*clickType, pos, this);
     pos.setNeedsRenderUpdate(true);
-    return true;
-  } else
-    return false;
+  }
 }
 
 void Furniture::use(Position pos, Creature* c) {
