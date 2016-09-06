@@ -227,7 +227,7 @@ void Collective::banishCreature(Creature* c) {
   if (!items.empty())
     tasks.push_back(Task::dropItems(items));
   if (!exitTiles.empty())
-    tasks.push_back(Task::goTo(Random.choose(exitTiles)));
+    tasks.push_back(Task::goToTryForever(Random.choose(exitTiles)));
   tasks.push_back(Task::disappear());
   c->setController(PController(new Monster(c, MonsterAIFactory::singleTask(Task::chain(std::move(tasks))))));
   banished.insert(c);

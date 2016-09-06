@@ -309,7 +309,7 @@ optional<WorkshopType> CollectiveConfig::getWorkshopType(MinionTask task) {
   return (*map)[task];
 }
 
-MinionTaskInfo CollectiveConfig::getTaskInfo(MinionTask task) const {
+MinionTaskInfo CollectiveConfig::getTaskInfo(MinionTask task) {
   switch (task) {
     case MinionTask::TRAIN: return {FurnitureType::TRAINING_DUMMY, "training"};
     case MinionTask::SLEEP: return {FurnitureType::BED, "sleeping"};

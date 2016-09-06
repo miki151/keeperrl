@@ -43,7 +43,7 @@ class ConstructionMap {
     bool isBuilt() const;
     UniqueEntity<Task>::Id getTask() const;
     bool hasTask() const;
-    const FurnitureType& getFurnitureType() const;
+    FurnitureType getFurnitureType() const;
 
     SERIALIZATION_DECL(FurnitureInfo);
 

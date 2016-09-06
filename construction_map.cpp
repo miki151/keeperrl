@@ -47,7 +47,7 @@ UniqueEntity<Task>::Id ConstructionMap::FurnitureInfo::getTask() const {
   return *task;
 }
 
-const FurnitureType& ConstructionMap::FurnitureInfo::getFurnitureType() const {
+FurnitureType ConstructionMap::FurnitureInfo::getFurnitureType() const {
   return type;
 }
 

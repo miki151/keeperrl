@@ -101,11 +101,11 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, Furniture* fu
                });
       break;
     case FurnitureUsageType::FOUNTAIN: {
-        c->playerMessage("You drink from the fountain.");
-        PItem potion = getOnlyElement(ItemFactory::potions().random());
-        potion->apply(c);
-        break;
-      }
+      c->playerMessage("You drink from the fountain.");
+      PItem potion = getOnlyElement(ItemFactory::potions().random());
+      potion->apply(c);
+      break;
+    }
     case FurnitureUsageType::SLEEP:
       Effect::applyToCreature(c, {EffectId::LASTING, LastingEffect::SLEEP}, EffectStrength::STRONG);
       break;

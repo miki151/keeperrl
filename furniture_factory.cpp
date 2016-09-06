@@ -44,14 +44,16 @@ Furniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
     case FurnitureType::BEAST_CAGE:
       return Furniture("beast cage", ViewObject(ViewId::BEAST_CAGE, ViewLayer::FLOOR), type,
             Furniture::NON_BLOCKING, tribe)
-          .setUsageType(FurnitureUsageType::SLEEP);
+          .setUsageType(FurnitureUsageType::SLEEP)
+          .setTickType(FurnitureTickType::BED);
     case FurnitureType::BED:
       return Furniture("bed", ViewObject(ViewId::BED, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe)
           .setUsageType(FurnitureUsageType::SLEEP)
           .setTickType(FurnitureTickType::BED);
     case FurnitureType::GRAVE:
       return Furniture("grave", ViewObject(ViewId::GRAVE, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe)
-          .setUsageType(FurnitureUsageType::SLEEP);
+          .setUsageType(FurnitureUsageType::SLEEP)
+          .setTickType(FurnitureTickType::BED);
     case FurnitureType::DEMON_SHRINE:
       return Furniture("demon shrine", ViewObject(ViewId::RITUAL_ROOM, ViewLayer::FLOOR), type,
           Furniture::BLOCKING, tribe);

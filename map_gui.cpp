@@ -128,6 +128,7 @@ Color getHighlightColor(HighlightType type, double amount) {
     case HighlightType::NIGHT: return transparency(colors[ColorId::NIGHT_BLUE], amount * 160);
     case HighlightType::EFFICIENCY: return Color(255, 0, 0, 120 * (1 - amount));
     case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 120);
+    case HighlightType::CREATURE_DROP: return Color(0, 255, 0, 120);
     case HighlightType::FORBIDDEN_ZONE: return Color(255, 0, 0, 120);
     case HighlightType::UNAVAILABLE: return Color(0, 0, 0, 120);
   }
@@ -241,13 +242,10 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
 
 bool MapGui::onLeftClick(Vec2 v) {
   if (v.inRectangle(getBounds())) {
-    if (auto c = getCreature(v)) {
-      callbacks.creatureDragFun(c->id, c->viewId, v);
-      creatureClick = true;
-    } else
-      creatureClick = false;
     mouseHeldPos = v;
     mouseOffset.x = mouseOffset.y = 0;
+    if (auto c = getCreature(v))
+      draggedCandidate = c;
     return true;
   }
   return false;
@@ -284,8 +282,12 @@ void MapGui::considerMapLeftClick(Vec2 mousePos) {
 
 bool MapGui::onMouseMove(Vec2 v) {
   lastMouseMove = v;
-  if (v.inRectangle(getBounds()) && mouseHeldPos && !creatureClick)
+  if (v.inRectangle(getBounds()) && mouseHeldPos && !draggedCreature)
     considerMapLeftClick(v);
+  if (!draggedCreature && draggedCandidate && mouseHeldPos && mouseHeldPos->distD(v) > 30) {
+    callbacks.creatureDragFun(draggedCandidate->id, draggedCandidate->viewId, v);
+    draggedCreature = draggedCandidate->id;
+  }
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
     mouseOffset.y = double(v.y - lastMousePos.y) / layout->getSquareSize().y;
@@ -319,8 +321,10 @@ void MapGui::onMouseRelease(Vec2 v) {
   }
   if (mouseHeldPos) {
     if (mouseHeldPos->distD(v) > 10) {
-      if (!creatureClick)
+      if (!draggedCreature)
         considerMapLeftClick(v);
+      else
+        callbacks.creatureDroppedFun(*draggedCreature, layout->projectOnMap(getBounds(), getScreenPos(), v));
     }
     else {
       if (auto c = getCreature(*mouseHeldPos))
@@ -331,6 +335,8 @@ void MapGui::onMouseRelease(Vec2 v) {
   }
   mouseHeldPos = none;
   lastMapLeftClick = none;
+  draggedCreature = none;
+  draggedCandidate = none;
 }
 
 /*void MapGui::drawFloorBorders(Renderer& renderer, DirSet borders, int x, int y) {
@@ -653,6 +659,9 @@ void MapGui::renderLowHighlights(Renderer& renderer, Vec2 size, int currentTimeR
         for (HighlightType highlight : ENUM_ALL(HighlightType))
           if (index->getHighlight(highlight) > 0)
             switch (highlight) {
+              case HighlightType::CREATURE_DROP:
+                if (!draggedCreature)
+                  break;
               case HighlightType::FORBIDDEN_ZONE:
               case HighlightType::FETCH_ITEMS:
               case HighlightType::PRIORITY_TASK:

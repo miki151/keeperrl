@@ -1179,10 +1179,12 @@ PTask Task::eat(set<Position> hatcherySquares) {
 namespace {
 class GoTo : public Task {
   public:
-  GoTo(Position pos) : target(pos) {}
+  GoTo(Position pos, bool forever) : target(pos), tryForever(forever) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (c->getPosition() == target) {
+    if (c->getPosition() == target ||
+        (c->getPosition().dist8(target) == 1 && !target.canEnterEmpty(c)) ||
+        (!tryForever && !c->canNavigateTo(target))) {
       setDone();
       return NoMove;
     } else
@@ -1193,16 +1195,21 @@ class GoTo : public Task {
     return "Go to " + toString(target);
   }
 
-  SERIALIZE_ALL2(Task, target); 
+  SERIALIZE_ALL2(Task, target, tryForever)
   SERIALIZATION_CONSTRUCTOR(GoTo);
 
   protected:
   Position SERIAL(target);
+  bool SERIAL(tryForever);
 };
 }
 
 PTask Task::goTo(Position pos) {
-  return PTask(new GoTo(pos));
+  return PTask(new GoTo(pos, false));
+}
+
+PTask Task::goToTryForever(Position pos) {
+  return PTask(new GoTo(pos, true));
 }
 
 namespace {

@@ -55,6 +55,8 @@ enum class UserInputId {
     CREATURE_WHIP,
     CREATURE_EXECUTE,
     CREATURE_TORTURE,
+    CREATURE_DRAG_DROP,
+    CREATURE_DRAG,
     GO_TO_ENEMY,
     CREATE_TEAM,
     CREATE_TEAM_FROM_GROUP,
@@ -90,16 +92,22 @@ enum class UserInputId {
     CHEAT_ATTRIBUTES
 };
 
+struct CreatureDropInfo {
+  Vec2 SERIAL(pos);
+  UniqueEntity<Creature>::Id SERIAL(creatureId);
+  SERIALIZE_ALL(pos, creatureId)
+};
+
 struct BuildingInfo {
   Vec2 SERIAL(pos);
   int SERIAL(building);
-  SERIALIZE_ALL(pos, building);
+  SERIALIZE_ALL(pos, building)
 };
 
 struct TeamCreatureInfo {
   TeamId SERIAL(team);
   UniqueEntity<Creature>::Id SERIAL(creatureId);
-  SERIALIZE_ALL(team, creatureId);
+  SERIALIZE_ALL(team, creatureId)
 };
 
 struct InventoryItemInfo {
@@ -145,7 +153,7 @@ enum class SpellId;
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
-    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo),
+    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::LIBRARY,
@@ -161,6 +169,7 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_WHIP,
             UserInputId::CREATURE_EXECUTE,
             UserInputId::CREATURE_TORTURE,
+            UserInputId::CREATURE_DRAG,
             UserInputId::GO_TO_ENEMY
             ),
         ASSIGN(UniqueEntity<PlayerMessage>::Id,
@@ -201,7 +210,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
         ASSIGN(WorkshopQueuedActionInfo,
             UserInputId::WORKSHOP_ITEM_ACTION),
         ASSIGN(RenameActionInfo,
-            UserInputId::CREATURE_RENAME)
+            UserInputId::CREATURE_RENAME),
+        ASSIGN(CreatureDropInfo,
+            UserInputId::CREATURE_DRAG_DROP)
         > {
   using EnumVariant::EnumVariant;
 };

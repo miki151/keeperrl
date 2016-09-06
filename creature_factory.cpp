@@ -1097,7 +1097,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.spells->add(SpellId::HEALING);
           c.attributeGain = 1;
           c.minionTasks.setValue(MinionTask::STUDY, 1);
-          c.minionTasks.setValue(MinionTask::LABORATORY, 0.01); 
+          c.minionTasks.setValue(MinionTask::LABORATORY, 0.01);
           c.minionTasks.setValue(MinionTask::TRAIN, 0.0001); 
           c.minionTasks.setValue(MinionTask::THRONE, 0.0001); 
           c.skills.setValue(SkillId::SORCERY, 0.2););

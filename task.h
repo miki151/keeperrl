@@ -73,6 +73,7 @@ class Task : public UniqueEntity<Task> {
   static PTask consume(TaskCallback*, Creature* target);
   static PTask eat(set<Position> hatcherySquares);
   static PTask goTo(Position);
+  static PTask goToTryForever(Position);
   static PTask transferTo(Model*);
   static PTask goToAndWait(Position, double maxTime);
   static PTask whipping(TaskCallback*, Position, Creature* whipped, double interval, double timeout);

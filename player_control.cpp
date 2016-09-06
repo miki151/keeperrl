@@ -1401,13 +1401,34 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
       index.insert(c->getViewObject());
 }
 
+static optional<MinionTask> getTaskFor(FurnitureType type) {
+  static EnumMap<FurnitureType, optional<MinionTask>> cache;
+  static bool initialized = false;
+  if (!initialized) {
+    for (auto furnitureType : ENUM_ALL(FurnitureType))
+      for (auto task : ENUM_ALL(MinionTask)) {
+        auto taskInfo = CollectiveConfig::getTaskInfo(task);
+        if (taskInfo.type == MinionTaskInfo::FURNITURE && taskInfo.furniture == furnitureType)
+          cache[furnitureType] = task;
+      }
+    initialized = true;
+  }
+  return cache[type];
+}
+
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   Position position(pos, getCollective()->getLevel());
   bool canSeePos = canSee(position);
   getSquareViewIndex(position, canSeePos, index);
   if (!canSeePos)
     if (auto memIndex = getMemory().getViewIndex(position))
-    index.mergeFromMemory(*memIndex);
+      index.mergeFromMemory(*memIndex);
+  if (auto furniture = position.getFurniture())
+    if (draggedCreature)
+      if (Creature* c = getCreature(*draggedCreature))
+        if (auto task = getTaskFor(furniture->getType()))
+          if (c->getAttributes().getMinionTasks().getValue(*task) > 0)
+            index.setHighlight(HighlightType::CREATURE_DROP);
   if (getCollective()->isMarked(position))
     index.setHighlight(getCollective()->getMarkHighlight(position));
   if (getCollective()->hasPriorityTasks(position))
@@ -1600,6 +1621,17 @@ void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
   chosenWorkshop = type;
 }
 
+void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
+  Position pos(info.pos, getLevel());
+  if (Creature* c = getCreature(info.creatureId)) {
+    if (getCollective()->getConstructions().containsFurniture(pos)) {
+      auto& furniture = getCollective()->getConstructions().getFurniture(pos);
+      if (auto task  = getTaskFor(furniture.getFurnitureType()))
+        getCollective()->setMinionTask(c, *task);
+    }
+    getCollective()->setTask(c, Task::goTo(pos));
+  }
+}
 
 void PlayerControl::processInput(View* view, UserInput input) {
   switch (input.getId()) {
@@ -1643,6 +1675,19 @@ void PlayerControl::processInput(View* view, UserInput input) {
                 getTeams().add(*team, c);
             }
         }
+        break;   
+    case UserInputId::CREATURE_DRAG:
+        draggedCreature = input.get<Creature::Id>();
+        for (auto task : ENUM_ALL(MinionTask)) {
+          auto info = CollectiveConfig::getTaskInfo(task);
+          if (info.type == MinionTaskInfo::FURNITURE)
+          for (auto pos : getCollective()->getConstructions().getBuiltPositions(info.furniture))
+            pos.setNeedsRenderUpdate(true);
+        }
+        break;
+    case UserInputId::CREATURE_DRAG_DROP:
+        minionDragAndDrop(input.get<CreatureDropInfo>());
+        draggedCreature = none;
         break;
     case UserInputId::CANCEL_TEAM:
         if (getChosenTeam() == input.get<TeamId>()) {

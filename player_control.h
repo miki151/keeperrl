@@ -36,6 +36,7 @@ class ListElem;
 class UserInput;
 class MinionAction;
 struct TaskActionInfo;
+struct CreatureDropInfo;
 struct EquipmentActionInfo;
 struct TeamCreatureInfo;
 template <typename T>
@@ -175,7 +176,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);
-  bool areInSameGroup(Creature*, Creature*) const;
+  void minionDragAndDrop(const CreatureDropInfo&);
   void fillMinions(CollectiveInfo&) const;
   vector<Creature*> getMinionsLike(Creature*) const;
   vector<PlayerInfo> getPlayerInfos(vector<Creature*>) const;
@@ -243,6 +244,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   set<const Collective*> SERIAL(knownVillainLocations);
   bool firstRender = true;
   bool isNight = true;
+  optional<UniqueEntity<Creature>::Id> draggedCreature;
 };
 
 #endif

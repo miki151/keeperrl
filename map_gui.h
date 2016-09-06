@@ -40,6 +40,7 @@ class MapGui : public GuiElem {
     function<void(UniqueEntity<Creature>::Id)> creatureClickFun;
     function<void()> refreshFun;
     function<void(UniqueEntity<Creature>::Id, ViewId, Vec2)> creatureDragFun;
+    function<void(UniqueEntity<Creature>::Id, Vec2)> creatureDroppedFun;
   };
   MapGui(Callbacks, Clock*, Options*);
 
@@ -114,7 +115,8 @@ class MapGui : public GuiElem {
   double lastRenderTime = 0;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
-  bool creatureClick = false;
+  optional<UniqueEntity<Creature>::Id> draggedCreature;
+  optional<CreatureInfo&> draggedCandidate;
   optional<Vec2> lastMapLeftClick;
   vector<string> hint;
   struct AnimationInfo {
