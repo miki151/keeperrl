@@ -331,7 +331,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(Model* model, EnemyInfo& enemy) {
               LevelBuilder(meter, random, 28, 14, "Sokoban"),
               LevelMaker::sokobanLevel(random, mainSettlement));
           return extraSettlement;
-        } catch (LevelGenException ex) {
+        } catch (LevelGenException) {
           Debug() << "Retrying";
         }
       }
@@ -465,7 +465,7 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
       if (meter)
         meter->reset();
       return buildFun();
-    } catch (LevelGenException ex) {
+    } catch (LevelGenException) {
       Debug() << "Retrying level gen";
     }
   }
@@ -507,7 +507,7 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
       ++numSuccess;
       std::cout << ".";
       std::cout.flush();
-    } catch (LevelGenException ex) {
+    } catch (LevelGenException) {
       std::cout << "x";
       std::cout.flush();
     }

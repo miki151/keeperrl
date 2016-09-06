@@ -1407,7 +1407,7 @@ static optional<MinionTask> getTaskFor(FurnitureType type) {
   if (!initialized) {
     for (auto furnitureType : ENUM_ALL(FurnitureType))
       for (auto task : ENUM_ALL(MinionTask)) {
-        auto taskInfo = CollectiveConfig::getTaskInfo(task);
+        auto& taskInfo = CollectiveConfig::getTaskInfo(task);
         if (taskInfo.type == MinionTaskInfo::FURNITURE && taskInfo.furniture == furnitureType)
           cache[furnitureType] = task;
       }
@@ -1679,7 +1679,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CREATURE_DRAG:
         draggedCreature = input.get<Creature::Id>();
         for (auto task : ENUM_ALL(MinionTask)) {
-          auto info = CollectiveConfig::getTaskInfo(task);
+          auto& info = CollectiveConfig::getTaskInfo(task);
           if (info.type == MinionTaskInfo::FURNITURE)
           for (auto pos : getCollective()->getConstructions().getBuiltPositions(info.furniture))
             pos.setNeedsRenderUpdate(true);

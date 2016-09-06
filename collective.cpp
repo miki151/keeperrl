@@ -490,7 +490,7 @@ PTask Collective::getStandardTask(Creature* c) {
   }
   if (auto current = currentTasks.getMaybe(c)) {
     MinionTask task = current->task;
-    MinionTaskInfo info = config->getTaskInfo(task);
+    auto& info = config->getTaskInfo(task);
     PTask ret = generateMinionTask(c, task);
     if (info.warning && !territory->isEmpty())
       setWarning(*info.warning, !ret);
@@ -995,7 +995,7 @@ void Collective::tick() {
         setWarning(*info.warning, constructions->getBuiltCount(info.bedType) < bySpawnType[spawnType].size());
     }
     for (auto minionTask : ENUM_ALL(MinionTask)) {
-      auto elem = config->getTaskInfo(minionTask);
+      auto& elem = config->getTaskInfo(minionTask);
       if (!getAllSquares(elem.squares).empty() && elem.warning)
         setWarning(*elem.warning, false);
     }

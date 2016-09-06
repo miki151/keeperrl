@@ -309,7 +309,7 @@ optional<WorkshopType> CollectiveConfig::getWorkshopType(MinionTask task) {
   return (*map)[task];
 }
 
-MinionTaskInfo CollectiveConfig::getTaskInfo(MinionTask task) {
+static MinionTaskInfo createTaskInfo(MinionTask task) {
   switch (task) {
     case MinionTask::TRAIN: return {FurnitureType::TRAINING_DUMMY, "training"};
     case MinionTask::SLEEP: return {FurnitureType::BED, "sleeping"};
@@ -333,11 +333,18 @@ MinionTaskInfo CollectiveConfig::getTaskInfo(MinionTask task) {
     case MinionTask::FORGE:
     case MinionTask::LABORATORY:
     case MinionTask::JEWELER: {
-        auto& info = workshops[*getWorkshopType(task)];
+        auto& info = workshops[*CollectiveConfig::getWorkshopType(task)];
         return MinionTaskInfo(info.furniture, info.taskName);
       }
   }
-  return getTaskInfo(task);
+  return createTaskInfo(task);
+}
+
+const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
+  static EnumMap<MinionTask, optional<MinionTaskInfo>> cache;
+  if (!cache[task])
+    cache[task] = createTaskInfo(task);
+  return *cache[task];
 }
 
 const WorkshopInfo& CollectiveConfig::getWorkshopInfo(WorkshopType type) {

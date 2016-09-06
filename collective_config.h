@@ -175,7 +175,7 @@ class CollectiveConfig {
   const vector<FurnitureType>& getRoomsNeedingLight() const;
   int getTaskDuration(const Creature*, MinionTask) const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
-  static MinionTaskInfo getTaskInfo(MinionTask);
+  static const MinionTaskInfo& getTaskInfo(MinionTask);
   static const FurnitureType& getEquipmentStorage();
   static const FurnitureType& getResourceStorage();
 
