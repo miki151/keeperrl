@@ -104,6 +104,8 @@ const vector<Position>& ConstructionMap::getAllFurniture() const {
 }
 
 void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
+  if (!containsFurniture(pos))
+    addFurniture(pos, FurnitureInfo::getBuilt(type));
   furniturePositions[type].insert(pos);
   --unbuiltCounts[type];
   if (furniture.count(pos))
