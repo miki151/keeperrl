@@ -151,8 +151,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static vector<BuildInfo> libraryInfo;
   static vector<BuildInfo> minionsInfo;
 
-  CostInfo getRoomCost(SquareType, CostInfo baseCost, double exponent) const;
-
   typedef CollectiveInfo::TechButton TechButton;
 
   int getMinLibrarySize() const;

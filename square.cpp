@@ -119,6 +119,7 @@ static optional<short int> getConstructionTime(ConstructionsId id, SquareId squa
     case ConstructionsId::DUNGEON_ROOMS:
       switch (square) {
         case SquareId::CUSTOM_FLOOR: return 3;
+        case SquareId::FLOOR: return 3;
         case SquareId::PRISON: return 10;
         case SquareId::MOUNTAIN: return 15;
         default: return none;

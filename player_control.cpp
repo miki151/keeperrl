@@ -91,8 +91,8 @@ struct PlayerControl::BuildInfo {
     string name;
     bool buildImmediatly;
     bool noCredit;
-    double costExponent;
     optional<int> maxNumber;
+    optional<ViewId> viewId;
   } squareInfo;
 
   struct FurnitureInfo {
@@ -178,6 +178,8 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(TribeId tribe) {
         {ResourceId::GOLD, 10}, "Carpet"}, {}, "Carpet.", 0, "Floors"),
     BuildInfo({SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::CARPET_FLOOR2, "carpet floor"}},
         {ResourceId::GOLD, 10}, "Carpet"}, {}, "Carpet.", 0, "Floors"),
+    BuildInfo({SquareId::FLOOR, CostInfo::noCost(), "Remove floor", true, false, none, ViewId::DESTROY_BUTTON},
+        {}, "", 0, "Floors"),
     BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 20}, "Library"}, {},
         "Mana is regenerated here.", 'y'),
     BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 800}, "Throne", false, false, 1},
@@ -802,7 +804,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
     switch (button.buildType) {
       case BuildInfo::SQUARE: {
            BuildInfo::SquareInfo& elem = button.squareInfo;
-           ViewId viewId = getSquareViewId(elem.type);
+           ViewId viewId = elem.viewId ? *elem.viewId : getSquareViewId(elem.type);
            string description;
            if (elem.cost.value > 0)
              if (int num = getCollective()->getSquares(elem.type).size())
@@ -811,7 +813,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            if (CollectiveConfig::getResourceInfo(elem.cost.id).dontDisplay && availableNow)
              description += " (" + toString(availableNow) + " available)";
            buttons.push_back({viewId, elem.name,
-               getCostObj(getRoomCost(elem.type, elem.cost, elem.costExponent)),
+               getCostObj(elem.cost),
                description,
                (elem.noCredit && !availableNow) ?
                   CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
@@ -1482,11 +1484,6 @@ optional<CreatureView::MovementInfo> PlayerControl::getMovementInfo() const {
 
 enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
-CostInfo PlayerControl::getRoomCost(SquareType type, CostInfo baseCost, double exponent) const {
-  return {baseCost.id, int(baseCost.value * pow(2, exponent * 
-        getCollective()->getConstructions().getSquareCount(type)))};
-}
-
 int PlayerControl::getImpCost() const {
   int numImps = 0;
   for (Creature* c : getCollective()->getCreatures({MinionTrait::WORKER}, {MinionTrait::PRISONER}))
@@ -2125,7 +2122,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
               && !getCollective()->getConstructions().containsTrap(position)
               && (!info.maxNumber || *info.maxNumber > getCollective()->getSquares(info.type).size()
                   + getCollective()->getConstructions().getSquareCount(info.type))) {
-            CostInfo cost = getRoomCost(info.type, info.cost, info.costExponent);
+            CostInfo cost = info.cost;
             getCollective()->addConstruction(position, info.type, cost, info.buildImmediatly, info.noCredit);
             selection = SELECT;
             getView()->addSound(SoundId::ADD_CONSTRUCTION);
