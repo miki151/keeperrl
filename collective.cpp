@@ -434,17 +434,6 @@ bool Collective::isMinionTaskPossible(Creature* c, MinionTask task) {
 PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
   MinionTaskInfo info = config->getTaskInfo(task);
   switch (info.type) {
-    case MinionTaskInfo::APPLY_SQUARE: {
-      vector<Position> squares = getAllSquares(info.squares);
-      if (!squares.empty()) {
-        auto searchType = Task::RANDOM_CLOSE;
-        if (auto workshopType = config->getWorkshopType(task))
-          if (workshops->get(*workshopType).isIdle())
-            searchType = Task::LAZY;
-        return Task::applySquare(this, squares, searchType);
-      }
-      break;
-      }
     case MinionTaskInfo::FURNITURE: {
       const set<Position>& squares = constructions->getBuiltPositions(info.furniture);
       if (!squares.empty()) {
@@ -452,7 +441,7 @@ PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
         if (auto workshopType = config->getWorkshopType(task))
           if (workshops->get(*workshopType).isIdle())
             searchType = Task::LAZY;
-        return Task::applySquare(this, vector<Position>(squares.begin(), squares.end()), searchType);
+        return Task::applySquare(this, squares, searchType);
       }
       break;
       }
@@ -571,7 +560,7 @@ PTask Collective::getHealingTask(Creature* c) {
   if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
     for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE, MinionTask::LAIR})
       if (c->getAttributes().getMinionTasks().getValue(t) > 0) {
-        vector<Position> positions = getAllSquares(config->getTaskInfo(t).squares);
+        set<Position> positions = getConstructions().getBuiltPositions(config->getTaskInfo(t).furniture);
         if (!positions.empty())
           return Task::applySquare(nullptr, positions, Task::LAZY);
       }
@@ -942,11 +931,11 @@ void Collective::tick() {
       if (info.warning)
         setWarning(*info.warning, constructions->getBuiltCount(info.bedType) < bySpawnType[spawnType].size());
     }
-    for (auto minionTask : ENUM_ALL(MinionTask)) {
+/*    for (auto minionTask : ENUM_ALL(MinionTask)) {
       auto& elem = config->getTaskInfo(minionTask);
       if (!getAllSquares(elem.squares).empty() && elem.warning)
         setWarning(*elem.warning, false);
-    }
+    }*/
   }
   if (config->getEnemyPositions() && Random.roll(5)) {
     vector<Position> enemyPos = getEnemyPositions();
@@ -1194,13 +1183,6 @@ void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
 
 double Collective::getEfficiency(const Creature* c) const {
   return pow(2.0, c->getMorale());
-}
-
-vector<Position> Collective::getAllSquares(const vector<SquareType>& types) const {
-  vector<Position> ret;
-  for (SquareType type : types)
-    append(ret, getSquares(type));
-  return ret;
 }
 
 const set<Position>& Collective::getSquares(SquareType type) const {

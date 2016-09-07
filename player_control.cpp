@@ -210,7 +210,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(TribeId tribe) {
         "Beasts sleep here."),
     BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}, {},
         "Spot for hauling dead bodies and for undead creatures to sleep in.", 'g'),
-    BuildInfo({SquareId::PRISON, {ResourceId::IRON, 20}, "Prison"}, {},
+    BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 20}, "Prison"}, {},
         "Captured enemies are kept here.", 0),
     BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, {},
         "Can be used to torture prisoners.", 'u'),

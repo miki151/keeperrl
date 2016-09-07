@@ -278,13 +278,9 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
   return ret[id];
 }
 
-MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& desc, optional<CollectiveWarning> w)
-    : type(APPLY_SQUARE), squares(s), description(desc), warning(w) {
-}
-
 MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWarning> w)
     : type(t), description(desc), warning(w) {
-  CHECK(type != APPLY_SQUARE);
+  CHECK(type != FURNITURE);
 }
 
 MinionTaskInfo::MinionTaskInfo(FurnitureType type, const string& desc) : type(FURNITURE), furniture(type),
@@ -327,7 +323,7 @@ static MinionTaskInfo createTaskInfo(MinionTask task) {
     case MinionTask::LAIR: return {FurnitureType::BEAST_CAGE, "sleeping"};
     case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
     case MinionTask::STUDY: return {FurnitureType::BOOK_SHELF, "studying"};
-    case MinionTask::PRISON: return {{SquareId::PRISON}, "prison", CollectiveWarning::NO_PRISON};
+    case MinionTask::PRISON: return {FurnitureType::PRISON, "prison"};
     case MinionTask::TORTURE: return {FurnitureType::TORTURE_TABLE, "torture ordered"};
     case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
     case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
@@ -337,7 +333,7 @@ static MinionTaskInfo createTaskInfo(MinionTask task) {
     case MinionTask::SPIDER: return {MinionTaskInfo::SPIDER, "spider"};
     case MinionTask::EXPLORE_NOCTURNAL: return {MinionTaskInfo::EXPLORE, "spying"};
     case MinionTask::EXPLORE_CAVES: return {MinionTaskInfo::EXPLORE, "spying"};
-    case MinionTask::EXECUTE: return {{SquareId::PRISON}, "execution ordered", CollectiveWarning::NO_PRISON};
+    case MinionTask::EXECUTE: return {FurnitureType::PRISON, "execution ordered"};
     case MinionTask::WORKSHOP:
     case MinionTask::FORGE:
     case MinionTask::LABORATORY:

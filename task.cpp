@@ -549,15 +549,18 @@ PTask Task::applyItem(TaskCallback* c, Position position, Item* item, Position t
 
 class ApplySquare : public Task {
   public:
-  ApplySquare(TaskCallback* c, vector<Position> pos, SearchType t) : positions(pos), callback(c), searchType(t) {}
+  ApplySquare(TaskCallback* c, set<Position> pos, SearchType t) : positions(pos), callback(c), searchType(t) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (!position) {
-      vector<Position> candidates = filter(positions, [&](Position pos) {
-          if (Creature* other = pos.getCreature())
-            if (other->isAffected(LastingEffect::SLEEP))
-              return false;
-          return !rejectedPosition.count(pos);});
+      vector<Position> candidates;
+      for (auto& pos : positions) {
+        if (Creature* other = pos.getCreature())
+          if (other->isAffected(LastingEffect::SLEEP))
+            continue;
+        if (!rejectedPosition.count(pos))
+          candidates.push_back(pos);
+      }
       if (!candidates.empty())
         position = chooseRandomClose(c->getPosition(), candidates, searchType);
       else {
@@ -603,7 +606,7 @@ class ApplySquare : public Task {
   SERIALIZATION_CONSTRUCTOR(ApplySquare);
 
   private:
-  vector<Position> SERIAL(positions);
+  set<Position> SERIAL(positions);
   set<Position> SERIAL(rejectedPosition);
   int SERIAL(invalidCount) = 5;
   optional<Position> SERIAL(position);
@@ -611,7 +614,7 @@ class ApplySquare : public Task {
   SearchType SERIAL(searchType);
 };
 
-PTask Task::applySquare(TaskCallback* c, vector<Position> position, SearchType searchType) {
+PTask Task::applySquare(TaskCallback* c, set<Position> position, SearchType searchType) {
   CHECK(position.size() > 0);
   return PTask(new ApplySquare(c, position, searchType));
 }

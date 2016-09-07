@@ -292,13 +292,6 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.name = "sand";
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.vision = VisionId::NORMAL;));
-    case SquareId::PRISON:
-        return new Square(ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND),
-          CONSTRUCT(Square::Params,
-            c.name = "floor";
-            c.canDestroy = true;
-            c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
-            c.vision = VisionId::NORMAL;));
     case SquareId::SOKOBAN_HOLE:
         return new SokobanHole(ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR), "hole",
             s.get<StairKey>());

@@ -40,5 +40,6 @@ RICH_ENUM(FurnitureType,
   CROPS,
   PIGSTY,
   UP_STAIRS,
-  DOWN_STAIRS
+  DOWN_STAIRS,
+  PRISON
 );
