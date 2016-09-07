@@ -120,7 +120,9 @@ void WindowView::initialize() {
     currentTileLayout = asciiLayouts;
   mapGui = new MapGui({
       bindMethod(&WindowView::mapContinuousLeftClickFun, this),
-      [this] (Vec2 pos) { inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));},
+      [this] (Vec2 pos) {
+          if (!guiBuilder.getActiveButton(CollectiveTab::BUILDINGS))
+            inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));},
       bindMethod(&WindowView::mapRightClickFun, this),
       bindMethod(&WindowView::mapCreatureClickFun, this),
       [this] { refreshInput = true;},

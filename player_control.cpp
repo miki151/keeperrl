@@ -2120,6 +2120,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         } else {
           BuildInfo::SquareInfo info = building.squareInfo;
           if (getCollective()->isKnownSquare(position) && position.canConstruct(info.type) 
+              && selection != DESELECT
               && !getCollective()->getSquares(info.type).count(position)
               && !getCollective()->getConstructions().containsTrap(position)
               && (!info.maxNumber || *info.maxNumber > getCollective()->getSquares(info.type).size()
