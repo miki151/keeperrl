@@ -1464,9 +1464,6 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         .setModifier(ViewObject::Modifier::PLANNED));
   if (surprises.count(position) && !getCollective()->isKnownSquare(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
-  if (getCollective()->hasEfficiency(position) && index.hasObject(ViewLayer::FLOOR))
-    index.getObject(ViewLayer::FLOOR).setAttribute(
-        ViewObject::Attribute::EFFICIENCY, getCollective()->getEfficiency(position));
 }
 
 Vec2 PlayerControl::getPosition() const {

@@ -104,15 +104,12 @@ class Collective : public TaskCallback {
   void clearLeader();
 
   const set<Position>& getSquares(SquareType) const;
-  vector<Position> getAllSquares(const vector<SquareType>&, bool centerOnly = false) const;
+  vector<Position> getAllSquares(const vector<SquareType>&) const;
   const Territory& getTerritory() const;
   void claimSquare(Position);
   void changeSquareType(Position pos, SquareType from, SquareType to);
   bool isKnownSquare(Position pos) const;
   void limitKnownTilesToModel();
-
-  double getEfficiency(Position) const;
-  bool hasEfficiency(Position) const;
 
   bool usesEquipment(const Creature*) const;
 
@@ -248,7 +245,6 @@ class Collective : public TaskCallback {
   friend class CollectiveBuilder;
   Collective(Level*, const CollectiveConfig&, TribeId, EnumMap<ResourceId, int> credit, const CollectiveName&);
   void addCreatureInTerritory(PCreature, EnumSet<MinionTrait>);
-  void updateEfficiency(Position, SquareType);
   int getPaymentAmount(const Creature*) const;
   void makePayouts();
   void cashPayouts();
@@ -324,7 +320,6 @@ class Collective : public TaskCallback {
   HeapAllocated<TribeId> SERIAL(tribe);
   Level* SERIAL(level) = nullptr;
   HeapAllocated<unordered_map<SquareType, set<Position>>> SERIAL(mySquares);
-  map<Position, int> SERIAL(squareEfficiency);
   HeapAllocated<Territory> SERIAL(territory);
   struct AlarmInfo {
     double SERIAL(finishTime);

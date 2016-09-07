@@ -57,7 +57,7 @@ template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(TaskCallback);
   serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType, mySquares);
-  serializeAll(ar, territory, squareEfficiency, alarmInfo, markedItems, constructions, minionEquipment);
+  serializeAll(ar, territory, alarmInfo, markedItems, constructions, minionEquipment);
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
   serializeAll(ar, credit, level, minionPayment, pregnancies, nextPayoutTime, minionAttraction, teams, name);
   serializeAll(ar, config, warnings, banished, squaresInUse, equipmentUpdates);
@@ -438,7 +438,7 @@ PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
   MinionTaskInfo info = config->getTaskInfo(task);
   switch (info.type) {
     case MinionTaskInfo::APPLY_SQUARE: {
-      vector<Position> squares = getAllSquares(info.squares, info.centerOnly);
+      vector<Position> squares = getAllSquares(info.squares);
       if (!squares.empty()) {
         auto searchType = Task::RANDOM_CLOSE;
         if (auto workshopType = config->getWorkshopType(task))
@@ -1253,13 +1253,10 @@ double Collective::getEfficiency(const Creature* c) const {
   return pow(2.0, c->getMorale());
 }
 
-vector<Position> Collective::getAllSquares(const vector<SquareType>& types, bool centerOnly) const {
+vector<Position> Collective::getAllSquares(const vector<SquareType>& types) const {
   vector<Position> ret;
   for (SquareType type : types)
     append(ret, getSquares(type));
-  if (centerOnly)
-    ret = filter(ret, [this] (Position pos) {
-        return squareEfficiency.count(pos) && squareEfficiency.at(pos) == 8;});
   return ret;
 }
 
@@ -1288,45 +1285,6 @@ void Collective::changeSquareType(Position pos, SquareType from, SquareType to) 
 
 bool Collective::isKnownSquare(Position pos) const {
   return knownTiles->isKnown(pos);
-}
-
-bool Collective::hasEfficiency(Position pos) const {
-  return squareEfficiency.count(pos);
-}
-
-const double lightBase = 0.5;
-const double flattenVal = 0.9;
-
-double Collective::getEfficiency(Position pos) const {
-  double base;
-  if (squareEfficiency.count(pos))
-    base =squareEfficiency.at(pos) == 8 ? 1 : 0.5;
-  else
-    base = 1;
-  return base * min(1.0, (lightBase + pos.getLight() * (1 - lightBase)) / flattenVal);
-}
-
-const double sizeBase = 0.5;
-
-void Collective::updateEfficiency(Position pos, SquareType type) {
-  pos.setNeedsRenderUpdate(true);
-  if (getSquares(type).count(pos)) {
-    squareEfficiency[pos] = 0;
-    for (Position v : pos.neighbors8())
-      if (getSquares(type).count(v)) {
-        ++squareEfficiency[pos];
-        ++squareEfficiency[v];
-        CHECK(squareEfficiency[v] <= 8);
-        CHECK(squareEfficiency[pos] <= 8);
-      }
-  } else {
-    squareEfficiency.erase(pos);
-    for (Position v : pos.neighbors8())
-      if (getSquares(type).count(v)) {
-        --squareEfficiency[v];
-        CHECK(squareEfficiency[v] >=0) << EnumInfo<SquareId>::getString(type.getId());
-      }
-  }
 }
 
 MoveInfo Collective::getAlarmMove(Creature* c) {
@@ -1750,8 +1708,6 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
   }
   (*mySquares)[type].insert(pos);
   territory->insert(pos);
-/*  if (config->getEfficiencySquares().count(type))
-    updateEfficiency(pos, type);*/
   if (constructions->containsSquare(pos) && !constructions->getSquare(pos).isBuilt())
     constructions->getSquare(pos).setBuilt();
   if (type == SquareId::FLOOR) {
@@ -1964,7 +1920,7 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
   if (constructions->getBuiltPositions(FurnitureType::BOOK_SHELF).count(pos)) {
     addMana(0.2);
     auto availableSpells = Technology::getAvailableSpells(this);
-    if (Random.rollD(60.0 / (getEfficiency(pos))) && !availableSpells.empty()) {
+    if (Random.rollD(60.0) && !availableSpells.empty()) {
       for (int i : Range(30)) {
         Spell* spell = Random.choose(Technology::getAvailableSpells(this));
         if (!c->getAttributes().getSpellMap().contains(spell)) {
@@ -1979,12 +1935,12 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
     addMana(0.2);
   }
   if (constructions->getBuiltPositions(FurnitureType::TRAINING_DUMMY).count(pos))
-    c->getAttributes().exerciseAttr(Random.choose<AttrType>(), getEfficiency(pos));
+    c->getAttributes().exerciseAttr(Random.choose<AttrType>(), 1);
   for (auto workshopType : ENUM_ALL(WorkshopType)) {
     auto& elem = config->getWorkshopInfo(workshopType);
     if (constructions->getBuiltPositions(elem.furniture).count(pos)) {
       vector<PItem> items =
-          workshops->get(workshopType).addWork(getEfficiency(pos) * (1 + c->getMorale()) / 2);
+          workshops->get(workshopType).addWork(getEfficiency(c));
       if (!items.empty()) {
         if (items[0]->getClass() == ItemClass::WEAPON)
           getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);

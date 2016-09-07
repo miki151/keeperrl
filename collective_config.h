@@ -114,8 +114,7 @@ struct ResourceInfo {
 
 struct MinionTaskInfo {
   enum Type { APPLY_SQUARE, FURNITURE, EXPLORE, COPULATE, CONSUME, EAT, SPIDER } type;
-  MinionTaskInfo(vector<SquareType>, const string& description, optional<CollectiveWarning> = none, double cost = 0,
-      bool centerOnly = false);
+  MinionTaskInfo(vector<SquareType>, const string& description, optional<CollectiveWarning> = none, double cost = 0);
   MinionTaskInfo(FurnitureType, const string& description);
   MinionTaskInfo(Type, const string& description, optional<CollectiveWarning> = none);
   vector<SquareType> squares;
@@ -123,7 +122,6 @@ struct MinionTaskInfo {
   string description;
   optional<CollectiveWarning> warning;
   double cost = 0;
-  bool centerOnly = false;
 };
 
 struct WorkshopInfo {

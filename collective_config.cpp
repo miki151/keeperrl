@@ -278,9 +278,8 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
   return ret[id];
 }
 
-MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& desc, optional<CollectiveWarning> w,
-    double _cost, bool center) 
-    : type(APPLY_SQUARE), squares(s), description(desc), warning(w), cost(_cost), centerOnly(center) {
+MinionTaskInfo::MinionTaskInfo(vector<SquareType> s, const string& desc, optional<CollectiveWarning> w, double _cost)
+    : type(APPLY_SQUARE), squares(s), description(desc), warning(w), cost(_cost) {
 }
 
 MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWarning> w)
