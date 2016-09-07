@@ -72,7 +72,7 @@
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl);
-  serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum, payoutWarning);
+  serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
   serializeAll(ar, knownVillains, knownVillainLocations, visibilityMap, warningTimes);
   serializeAll(ar, lastWarningTime, messageHistory, eventProxy);
@@ -2269,12 +2269,6 @@ void PlayerControl::tick() {
   if (startImpNum == -1)
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   checkKeeperDanger();
-  if (getCollective()->hasMinionDebt() && !payoutWarning) {
-    getView()->presentText("Warning", "You don't have enough gold for salaries. "
-        "Your minions will refuse to work if they are not paid.\n \n"
-        "You can get more gold by mining or retrieve it from killed heroes and conquered villages.");
-    payoutWarning = true;
-  }
   for (auto attack : copyOf(ransomAttacks))
     for (const Creature* c : attack.getCreatures())
       if (getCollective()->getTerritory().contains(c->getPosition())) {

@@ -114,14 +114,13 @@ struct ResourceInfo {
 
 struct MinionTaskInfo {
   enum Type { APPLY_SQUARE, FURNITURE, EXPLORE, COPULATE, CONSUME, EAT, SPIDER } type;
-  MinionTaskInfo(vector<SquareType>, const string& description, optional<CollectiveWarning> = none, double cost = 0);
+  MinionTaskInfo(vector<SquareType>, const string& description, optional<CollectiveWarning> = none);
   MinionTaskInfo(FurnitureType, const string& description);
   MinionTaskInfo(Type, const string& description, optional<CollectiveWarning> = none);
   vector<SquareType> squares;
   FurnitureType furniture;
   string description;
   optional<CollectiveWarning> warning;
-  double cost = 0;
 };
 
 struct WorkshopInfo {

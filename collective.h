@@ -186,19 +186,6 @@ class Collective : public TaskCallback {
   Workshops& getWorkshops();
   const Workshops& getWorkshops() const;
 
-  struct MinionPaymentInfo {
-    int SERIAL(salary);
-    double SERIAL(workAmount);
-    int SERIAL(debt);
-    SERIALIZE_ALL(salary, workAmount, debt);
-  };
-
-
-  int getNextPayoutTime() const;
-  int getSalary(const Creature*) const;
-  int getNextSalaries() const;
-  bool hasMinionDebt() const;
-
   int getPopulationSize() const;
   int getMaxPopulation() const;
 
@@ -245,9 +232,6 @@ class Collective : public TaskCallback {
   friend class CollectiveBuilder;
   Collective(Level*, const CollectiveConfig&, TribeId, EnumMap<ResourceId, int> credit, const CollectiveName&);
   void addCreatureInTerritory(PCreature, EnumSet<MinionTrait>);
-  int getPaymentAmount(const Creature*) const;
-  void makePayouts();
-  void cashPayouts();
   void removeCreature(Creature*);
   void onMinionKilled(Creature* victim, Creature* killer);
   void onKilledSomeone(Creature* victim, Creature* killer);
@@ -347,8 +331,6 @@ class Collective : public TaskCallback {
   void addMana(double);
   EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;
-  EntityMap<Creature, MinionPaymentInfo> SERIAL(minionPayment);
-  int SERIAL(nextPayoutTime);
   EntityMap<Creature, vector<AttractionInfo>> SERIAL(minionAttraction);
   double getAttractionOccupation(const MinionAttraction&);
   Creature* getCopulationTarget(Creature* succubus);

@@ -59,7 +59,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType, mySquares);
   serializeAll(ar, territory, alarmInfo, markedItems, constructions, minionEquipment);
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
-  serializeAll(ar, credit, level, minionPayment, pregnancies, nextPayoutTime, minionAttraction, teams, name);
+  serializeAll(ar, credit, level, pregnancies, minionAttraction, teams, name);
   serializeAll(ar, config, warnings, banished, squaresInUse, equipmentUpdates);
   serializeAll(ar, villainType, eventProxy, workshops, fetchPositions);
 }
@@ -98,7 +98,7 @@ const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
 Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
     const CollectiveName& n) 
   : eventProxy(this, l->getModel()), credit(_credit), control(CollectiveControl::idle(this)),
-    tribe(t), level(NOTNULL(l)), nextPayoutTime(-1), name(n), config(cfg), workshops(config->getWorkshops()) {
+    tribe(t), level(NOTNULL(l)), name(n), config(cfg), workshops(config->getWorkshops()) {
 }
 
 const CollectiveName& Collective::getName() const {
@@ -369,9 +369,6 @@ optional<MinionTask> Collective::getMinionTask(const Creature* c) const {
 bool Collective::isTaskGood(const Creature* c, MinionTask task, bool ignoreTaskLock) const {
   if (c->getAttributes().getMinionTasks().getValue(task, ignoreTaskLock) == 0)
     return false;
-  if (auto elem = minionPayment.getMaybe(c))
-    if (elem->debt > 0 && config->getTaskInfo(task).cost > 0)
-      return false;
   switch (task) {
     case MinionTask::CROPS:
     case MinionTask::EXPLORE:
@@ -750,7 +747,6 @@ bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCr
   for (int i : All(immigrants)) {
     Creature* c = immigrants[i].get();
     addCreature(std::move(immigrants[i]), spawnPos[i], info.traits);
-    minionPayment.set(c, {info.salary, 0.0, 0});
     minionAttraction.set(c, info.attractions);
   }
   addNewCreatureMessage(creatureRefs);
@@ -816,7 +812,6 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
     if (i == 0 && groupSize > 1) // group leader
       c->getAttributes().increaseExpLevel(2);
     addCreature(std::move(immigrants[i]), spawnPos[i], info.traits);
-    minionPayment.set(c, {info.salary, 0.0, 0});
     minionAttraction.set(c, info.attractions);
   }
   return true;
@@ -878,53 +873,6 @@ void Collective::considerImmigration() {
       break;
 }
 
-const Collective::ResourceId paymentResource = Collective::ResourceId::GOLD;
-
-int Collective::getPaymentAmount(const Creature* c) const {
-  if (auto payment = minionPayment.getMaybe(c))
-    return config->getPayoutMultiplier() *
-      payment->salary * payment->workAmount / config->getPayoutTime();
-  return 0;
-}
-
-int Collective::getNextSalaries() const {
-  int ret = 0;
-  for (Creature* c : creatures)
-    if (auto payment = minionPayment.getMaybe(c))
-      ret += getPaymentAmount(c) + payment->debt;
-  return ret;
-}
-
-bool Collective::hasMinionDebt() const {
-  for (Creature* c : creatures)
-    if (auto payment = minionPayment.getMaybe(c))
-      if (payment->debt > 0)
-        return true;
-  return false;
-}
-
-void Collective::makePayouts() {
-  if (int numPay = getNextSalaries())
-    control->addMessage(PlayerMessage("Payout time: " + toString(numPay) + " gold",
-          MessagePriority::HIGH));
-  for (Creature* c : creatures)
-    if (minionPayment.getMaybe(c)) {
-      minionPayment.getOrFail(c).debt += getPaymentAmount(c);
-      minionPayment.getOrFail(c).workAmount = 0;
-    }
-}
-
-void Collective::cashPayouts() {
-  int numGold = numResource(paymentResource);
-  for (Creature* c : creatures)
-    if (auto payment = minionPayment.getMaybe(c))
-      if (payment->debt > 0 && payment->debt < numGold) {
-        takeResource({paymentResource, payment->debt});
-        numGold -= payment->debt;
-        minionPayment.getOrFail(c).debt = 0;
-      }
-}
-
 void Collective::considerBirths() {
   for (Creature* c : getCreatures())
     if (pregnancies.contains(c) && !c->isAffected(LastingEffect::PREGNANT)) {
@@ -982,11 +930,6 @@ void Collective::tick() {
   considerBirths();
   decayMorale();
   //considerBuildingBeds();
-/*  if (nextPayoutTime > -1 && time > nextPayoutTime) {
-    nextPayoutTime += config->getPayoutTime();
-    makePayouts();
-  }
-  cashPayouts();*/
   if (config->getWarnings() && Random.roll(5)) {
     considerWeaponWarning();
     considerMoraleWarning();
@@ -1326,9 +1269,6 @@ int Collective::numResourcePlusDebt(ResourceId id) const {
   for (auto& elem : taskMap->getCompletionCosts())
     if (elem.second.id == id && !elem.first->isDone())
       ret += elem.second.value;
-  if (id == ResourceId::GOLD)
-    for (auto& elem : minionPayment)
-      ret -= elem.second.debt;
   ret -= workshops->getDebt(id);
   return ret;
 }
@@ -1912,11 +1852,6 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
 
 void Collective::onAppliedSquare(Creature* c, Position pos) {
   MinionTask currentTask = currentTasks.getOrFail(c).task;
-  if (config->getTaskInfo(currentTask).cost > 0) {
-    if (nextPayoutTime == -1 && minionPayment.getMaybe(c) && minionPayment.getOrFail(c).salary > 0)
-      nextPayoutTime = getLocalTime() + config->getPayoutTime();
-    minionPayment.getOrInit(c).workAmount += config->getTaskInfo(currentTask).cost;
-  }
   if (constructions->getBuiltPositions(FurnitureType::BOOK_SHELF).count(pos)) {
     addMana(0.2);
     auto availableSpells = Technology::getAvailableSpells(this);
@@ -2036,16 +1971,7 @@ const Workshops& Collective::getWorkshops() const {
   return *workshops;
 }
 
-int Collective::getSalary(const Creature* c) const {
-  if (auto payment = minionPayment.getMaybe(c))
-    return payment->salary;
-  else
-    return 0;
-}
 
-int Collective::getNextPayoutTime() const {
-  return nextPayoutTime;
-}
 
 void Collective::addAttack(const CollectiveAttack& attack) {
   control->addAttack(attack);

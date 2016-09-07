@@ -110,7 +110,6 @@ void EntityMap<Key, Value>::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE_TMPL(EntityMap, Creature, double);
 SERIALIZABLE_TMPL(EntityMap, Creature, int);
 SERIALIZABLE_TMPL(EntityMap, Creature, Collective::CurrentTaskInfo);
-SERIALIZABLE_TMPL(EntityMap, Creature, Collective::MinionPaymentInfo);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<AttractionInfo>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<Position>);
 SERIALIZABLE_TMPL(EntityMap, Creature, Creature*);

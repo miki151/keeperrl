@@ -215,7 +215,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void updateSelectionSquares();
   double SERIAL(lastControlKeeperQuestion) = -100;
   int SERIAL(startImpNum) = -1;
-  bool SERIAL(payoutWarning) = false;
   optional<UniqueEntity<Creature>::Id> chosenCreature;
   void setChosenCreature(optional<UniqueEntity<Creature>::Id>);
   optional<WorkshopType> chosenWorkshop;
