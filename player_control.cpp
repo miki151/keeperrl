@@ -68,6 +68,7 @@
 #include "furniture.h"
 #include "furniture_type.h"
 #include "furniture_factory.h"
+#include "known_tiles.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -464,7 +465,7 @@ static vector<ItemType> marketItems {
   {ItemId::RING, LastingEffect::POISON_RESISTANT},
 };
 
-Creature* PlayerControl::getConsumptionTarget(View* view, Creature* consumer) {
+/*Creature* PlayerControl::getConsumptionTarget(View* view, Creature* consumer) {
   vector<Creature*> res;
   vector<ListElem> opt;
   for (Creature* c : getCollective()->getConsumptionTargets(consumer)) {
@@ -474,7 +475,7 @@ Creature* PlayerControl::getConsumptionTarget(View* view, Creature* consumer) {
   if (auto index = view->chooseFromList("Choose minion to absorb:", opt))
     return res[*index];
   return nullptr;
-}
+}*/
 
 void PlayerControl::addConsumableItem(Creature* creature) {
   double scrollPos = 0;
@@ -1462,7 +1463,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (constructions.containsTorch(position) && !constructions.getTorch(position).isBuilt())
     index.insert(copyOf(Trigger::getTorchViewObject(constructions.getTorch(position).getAttachmentDir()))
         .setModifier(ViewObject::Modifier::PLANNED));
-  if (surprises.count(position) && !getCollective()->isKnownSquare(position))
+  if (surprises.count(position) && !getCollective()->getKnownTiles().isKnown(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
 }
 
@@ -1583,7 +1584,7 @@ void PlayerControl::setScrollPos(Position pos) {
 void PlayerControl::scrollToMiddle(const vector<Position>& pos) {
   vector<Vec2> visible;
   for (Position v : pos)
-    if (getCollective()->isKnownSquare(v))
+    if (getCollective()->getKnownTiles().isKnown(v))
       visible.push_back(v.getCoord());
   CHECK(!visible.empty());
   getView()->setScrollPos(Rectangle::boundingBox(visible).middle());
@@ -1636,10 +1637,12 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
   if (Creature* c = getCreature(info.creatureId)) {
     if (getCollective()->getConstructions().containsFurniture(pos)) {
       auto& furniture = getCollective()->getConstructions().getFurniture(pos);
-      if (auto task  = getTaskFor(furniture.getFurnitureType())) {
-        getCollective()->setMinionTask(c, *task);
-        getCollective()->setTask(c, Task::goTo(pos));
-        return;
+      if (auto task = getTaskFor(furniture.getFurnitureType())) {
+        if (getCollective()->isMinionTaskPossible(c, *task)) {
+          getCollective()->setMinionTask(c, *task);
+          getCollective()->setTask(c, Task::goTo(pos));
+          return;
+        }
       }
     }
     getCollective()->setTask(c, Task::goToAndWait(pos, 30));
@@ -1733,7 +1736,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
 
 /*    case UserInputId::MOVE_TO:
         if (getCurrentTeam() && getTeams().isActive(*getCurrentTeam()) &&
-            getCollective()->isKnownSquare(Position(input.get<Vec2>(), getLevel()))) {
+            getCollective()->getKnownTiles().isKnown(Position(input.get<Vec2>(), getLevel()))) {
           getCollective()->freeTeamMembers(*getCurrentTeam());
           getCollective()->setTask(getTeams().getLeader(*getCurrentTeam()),
               Task::goTo(Position(input.get<Vec2>(), getLevel())), true);
@@ -2016,7 +2019,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           getView()->addSound(SoundId::DIG_UNMARK);
           selection = SELECT;
         } else
-        if (getCollective()->isKnownSquare(position) && !position.isBurning()) {
+        if (getCollective()->getKnownTiles().isKnown(position) && !position.isBurning()) {
           selection = SELECT;
           getCollective()->destroySquare(position);
           getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
@@ -2062,7 +2065,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             selection = SELECT;
           } else
             if (position.canConstruct(SquareId::FLOOR) ||
-                (!getCollective()->isKnownSquare(position) && !position.isUnavailable())) {
+                (!getCollective()->getKnownTiles().isKnown(position) && !position.isUnavailable())) {
               getCollective()->dig(position);
               getView()->addSound(SoundId::DIG_MARK);
               selection = SELECT;
@@ -2080,7 +2083,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
         break;
     case BuildInfo::CLAIM_TILE:
-        if (getCollective()->isKnownSquare(position) && position.canConstruct(FurnitureType::STOCKPILE_RES))
+        if (getCollective()->getKnownTiles().isKnown(position) && position.canConstruct(FurnitureType::STOCKPILE_RES))
           getCollective()->claimSquare(position);
         break;
     case BuildInfo::DISPATCH:
@@ -2116,7 +2119,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           }
         } else {
           BuildInfo::SquareInfo info = building.squareInfo;
-          if (getCollective()->isKnownSquare(position) && position.canConstruct(info.type) 
+          if (getCollective()->getKnownTiles().isKnown(position) && position.canConstruct(info.type)
               && selection != DESELECT
               && !getCollective()->getSquares(info.type).count(position)
               && !getCollective()->getConstructions().containsTrap(position)

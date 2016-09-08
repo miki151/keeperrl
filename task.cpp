@@ -1296,8 +1296,8 @@ class GoToAndWait : public Task {
 };
 }
 
-PTask Task::goToAndWait(Position pos, double maxTime) {
-  return PTask(new GoToAndWait(pos, maxTime));
+PTask Task::goToAndWait(Position pos, double waitTime) {
+  return PTask(new GoToAndWait(pos, waitTime));
 }
 
 namespace {

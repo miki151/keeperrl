@@ -109,7 +109,7 @@ class Collective : public TaskCallback {
   const Territory& getTerritory() const;
   void claimSquare(Position);
   void changeSquareType(Position pos, SquareType from, SquareType to);
-  bool isKnownSquare(Position pos) const;
+  const KnownTiles& getKnownTiles() const;
   void limitKnownTilesToModel();
 
   bool usesEquipment(const Creature*) const;
@@ -191,8 +191,6 @@ class Collective : public TaskCallback {
   int getMaxPopulation() const;
 
   void orderConsumption(Creature* consumer, Creature* who);
-  vector<Creature*>getConsumptionTargets(Creature* consumer);
-
   void addAttack(const CollectiveAttack&);
   void onRansomPaid();
 
@@ -276,7 +274,6 @@ class Collective : public TaskCallback {
   PTask getEquipmentTask(Creature* c);
   PTask getHealingTask(Creature* c);
   bool isTaskGood(const Creature*, MinionTask, bool ignoreTaskLock = false) const;
-  PTask generateMinionTask(Creature*, MinionTask);
   void setRandomTask(const Creature*);
 
   void handleSurprise(Position);
@@ -334,8 +331,6 @@ class Collective : public TaskCallback {
   int SERIAL(points) = 0;
   EntityMap<Creature, vector<AttractionInfo>> SERIAL(minionAttraction);
   double getAttractionOccupation(const MinionAttraction&);
-  Creature* getCopulationTarget(Creature* succubus);
-  Creature* getConsumptionTarget(Creature* consumer);
   EntitySet<Creature> SERIAL(pregnancies);
   mutable vector<ItemFetchInfo> itemFetchInfo;
   HeapAllocated<CollectiveTeams> SERIAL(teams);

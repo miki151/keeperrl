@@ -29,4 +29,8 @@ RICH_ENUM(MinionTask,
   THRONE
 );
 
-
+class MinionTasks {
+  public:
+  static PTask generate(Collective*, Creature*, MinionTask);
+  static optional<double> getDuration(MinionTask);
+};

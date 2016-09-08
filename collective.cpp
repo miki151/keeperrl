@@ -392,81 +392,8 @@ void Collective::setRandomTask(const Creature* c) {
     setMinionTask(c, Random.choose(goodTasks));
 }
 
-static bool betterPos(Position from, Position current, Position candidate) {
-  double maxDiff = 0.3;
-  double curDist = from.dist8(current);
-  double newDist = from.dist8(candidate);
-  return Random.getDouble() <= 1.0 - (newDist - curDist) / (curDist * maxDiff);
-}
-
-static optional<Position> getRandomCloseTile(Position from, const vector<Position>& tiles,
-    function<bool(Position)> predicate) {
-  optional<Position> ret;
-  for (Position pos : tiles)
-    if (predicate(pos) && (!ret || betterPos(from, *ret, pos)))
-      ret = pos;
-  return ret;
-}
-
-optional<Position> Collective::getTileToExplore(const Creature* c, MinionTask task) const {
-  vector<Position> border = Random.permutation(knownTiles->getBorderTiles());
-  switch (task) {
-    case MinionTask::EXPLORE_CAVES:
-      if (auto pos = getRandomCloseTile(c->getPosition(), border,
-            [this, c](Position p) {
-                return p.isSameLevel(level) && p.isCovered() &&
-                    (!c->getPosition().isSameLevel(level) || c->isSameSector(p));}))
-        return pos;
-    case MinionTask::EXPLORE:
-    case MinionTask::EXPLORE_NOCTURNAL:
-      return getRandomCloseTile(c->getPosition(), border,
-          [this, c](Position pos) { return pos.isSameLevel(level) && !pos.isCovered()
-              && (!c->getPosition().isSameLevel(level) || c->isSameSector(pos));});
-    default: FAIL << "Unrecognized explore task: " << int(task);
-  }
-  return none;
-}
-
 bool Collective::isMinionTaskPossible(Creature* c, MinionTask task) {
-  return isTaskGood(c, task, true) && generateMinionTask(c, task);
-}
-
-PTask Collective::generateMinionTask(Creature* c, MinionTask task) {
-  MinionTaskInfo info = config->getTaskInfo(task);
-  switch (info.type) {
-    case MinionTaskInfo::FURNITURE: {
-      const set<Position>& squares = constructions->getBuiltPositions(info.furniture);
-      if (!squares.empty()) {
-        auto searchType = Task::RANDOM_CLOSE;
-        if (auto workshopType = config->getWorkshopType(task))
-          if (workshops->get(*workshopType).isIdle())
-            searchType = Task::LAZY;
-        return Task::applySquare(this, squares, searchType);
-      }
-      break;
-      }
-    case MinionTaskInfo::EXPLORE:
-      if (auto pos = getTileToExplore(c, task))
-        return Task::explore(*pos);
-      break;
-    case MinionTaskInfo::COPULATE:
-      if (Creature* target = getCopulationTarget(c))
-        return Task::copulate(this, target, 20);
-      break;
-    case MinionTaskInfo::CONSUME:
-      if (Creature* target = getConsumptionTarget(c))
-        return Task::consume(this, target);
-      break;
-    case MinionTaskInfo::EAT: {
-      const set<Position>& hatchery = constructions->getBuiltPositions(FurnitureType::PIGSTY);
-      if (!hatchery.empty())
-        return Task::eat(hatchery);
-      break;
-      }
-    case MinionTaskInfo::SPIDER:
-      return Task::spider(territory->getAll().front(), territory->getExtended(3), territory->getExtended(6));
-  }
-  return nullptr;
+  return isTaskGood(c, task, true) && MinionTasks::generate(this, c, task);
 }
 
 PTask Collective::getStandardTask(Creature* c) {
@@ -480,7 +407,7 @@ PTask Collective::getStandardTask(Creature* c) {
   if (auto current = currentTasks.getMaybe(c)) {
     MinionTask task = current->task;
     auto& info = config->getTaskInfo(task);
-    PTask ret = generateMinionTask(c, task);
+    PTask ret = MinionTasks::generate(this, c, task);
     if (!current->finishTime) // see comment in header
       currentTasks.getOrFail(c).finishTime = -1000;
     if (info.warning && !territory->isEmpty())
@@ -490,29 +417,6 @@ PTask Collective::getStandardTask(Creature* c) {
     return ret;
   } else
     return nullptr;
-}
-
-Creature* Collective::getCopulationTarget(Creature* succubus) {
-  for (Creature* c : Random.permutation(getCreatures(MinionTrait::FIGHTER)))
-    if (succubus->canCopulateWith(c))
-      return c;
-  return nullptr;
-}
-
-Creature* Collective::getConsumptionTarget(Creature* consumer) {
-  vector<Creature*> v = getConsumptionTargets(consumer);
-  if (!v.empty())
-    return Random.choose(v);
-  else
-    return nullptr;
-}
-
-vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) {
-  vector<Creature*> ret;
-  for (Creature* c : Random.permutation(getCreatures(MinionTrait::FIGHTER)))
-    if (consumer->canConsume(c) && c != getLeader())
-      ret.push_back(c);
-  return ret;
 }
 
 bool Collective::isConquered() const {
@@ -1208,8 +1112,8 @@ void Collective::changeSquareType(Position pos, SquareType from, SquareType to) 
   (*mySquares)[to].insert(pos);
 }
 
-bool Collective::isKnownSquare(Position pos) const {
-  return knownTiles->isKnown(pos);
+const KnownTiles& Collective::getKnownTiles() const {
+  return *knownTiles;
 }
 
 MoveInfo Collective::getAlarmMove(Creature* c) {
@@ -1473,7 +1377,7 @@ void Collective::removeConstruction(Position pos) {
 }
 
 bool Collective::canAddFurniture(Position position, FurnitureType type) const {
-  return isKnownSquare(position) && FurnitureFactory::canBuild(type, position, this)
+  return knownTiles->isKnown(position) && FurnitureFactory::canBuild(type, position, this)
       && !getConstructions().containsTrap(position)
       && !getConstructions().containsFurniture(position)
       && position.canConstruct(type);
@@ -1953,8 +1857,6 @@ const Workshops& Collective::getWorkshops() const {
   return *workshops;
 }
 
-
-
 void Collective::addAttack(const CollectiveAttack& attack) {
   control->addAttack(attack);
 }
@@ -2000,7 +1902,7 @@ void Collective::addTorch(Position pos) {
 
 bool Collective::canPlaceTorch(Position pos) const {
   return getAdjacentWall(pos) && !constructions->containsTorch(pos) &&
-    isKnownSquare(pos) && pos.canEnterEmpty({MovementTrait::WALK});
+    knownTiles->isKnown(pos) && pos.canEnterEmpty({MovementTrait::WALK});
 }
 
 const TaskMap& Collective::getTaskMap() const {
