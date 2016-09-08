@@ -5,6 +5,7 @@
 #include "view_index.h"
 #include "model.h"
 #include "view_object.h"
+#include "square_type.h"
 
 template <class T>
 PositionMap<T>::PositionMap(const T& def) : defaultVal(def) {
@@ -95,6 +96,7 @@ void PositionMap<T>::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE_TMPL(PositionMap, int);
 SERIALIZABLE_TMPL(PositionMap, bool);
+SERIALIZABLE_TMPL(PositionMap, double);
 
 class Task;
 
@@ -102,3 +104,4 @@ SERIALIZABLE_TMPL(PositionMap, Task*);
 SERIALIZABLE_TMPL(PositionMap, HighlightType);
 SERIALIZABLE_TMPL(PositionMap, vector<Task*>);
 SERIALIZABLE_TMPL(PositionMap, optional<ViewIndex>);
+SERIALIZABLE_TMPL(PositionMap, optional<SquareType>);

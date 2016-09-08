@@ -44,6 +44,7 @@
 #include "body.h"
 #include "furniture.h"
 #include "furniture_factory.h"
+#include "tile_efficiency.h"
 
 struct Collective::ItemFetchInfo {
   ItemIndex index;
@@ -61,7 +62,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
   serializeAll(ar, credit, level, pregnancies, minionAttraction, teams, name);
   serializeAll(ar, config, warnings, banished, squaresInUse, equipmentUpdates);
-  serializeAll(ar, villainType, eventProxy, workshops, fetchPositions);
+  serializeAll(ar, villainType, eventProxy, workshops, fetchPositions, tileEfficiency);
 }
 
 SERIALIZABLE(Collective);
@@ -1116,6 +1117,10 @@ const KnownTiles& Collective::getKnownTiles() const {
   return *knownTiles;
 }
 
+const TileEfficiency& Collective::getTileEfficiency() const {
+  return *tileEfficiency;
+}
+
 MoveInfo Collective::getAlarmMove(Creature* c) {
   if (alarmInfo && alarmInfo->finishTime > getGlobalTime())
     if (auto action = c->moveTowards(alarmInfo->position))
@@ -1533,6 +1538,8 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
     return;
   }
   (*mySquares)[type].insert(pos);
+  if (type.getId() == SquareId::CUSTOM_FLOOR)
+    tileEfficiency->setFloor(pos, type);
   territory->insert(pos);
   if (constructions->containsSquare(pos) && !constructions->getSquare(pos).isBuilt())
     constructions->getSquare(pos).setBuilt();
@@ -1738,10 +1745,11 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
 
 void Collective::onAppliedSquare(Creature* c, Position pos) {
   MinionTask currentTask = currentTasks.getOrFail(c).task;
+  double efficiency = tileEfficiency->getEfficiency(pos);
   if (constructions->getBuiltPositions(FurnitureType::BOOK_SHELF).count(pos)) {
-    addMana(0.2);
+    addMana(0.2 * efficiency);
     auto availableSpells = Technology::getAvailableSpells(this);
-    if (Random.rollD(60.0) && !availableSpells.empty()) {
+    if (Random.rollD(60.0 / efficiency) && !availableSpells.empty()) {
       for (int i : Range(30)) {
         Spell* spell = Random.choose(Technology::getAvailableSpells(this));
         if (!c->getAttributes().getSpellMap().contains(spell)) {
@@ -1753,10 +1761,10 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
     }
   }
   if (constructions->getBuiltPositions(FurnitureType::THRONE).count(pos) && c == getLeader()) {
-    addMana(0.2);
+    addMana(0.2 * efficiency);
   }
   if (constructions->getBuiltPositions(FurnitureType::TRAINING_DUMMY).count(pos))
-    c->getAttributes().exerciseAttr(Random.choose<AttrType>(), 1);
+    c->getAttributes().exerciseAttr(Random.choose<AttrType>(), efficiency);
   for (auto workshopType : ENUM_ALL(WorkshopType)) {
     auto& elem = config->getWorkshopInfo(workshopType);
     if (constructions->getBuiltPositions(elem.furniture).count(pos)) {

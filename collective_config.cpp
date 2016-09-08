@@ -265,6 +265,24 @@ const FurnitureType& CollectiveConfig::getResourceStorage() {
   return resourceStorage;
 }
 
+const vector<FloorInfo>& CollectiveConfig::getFloors() {
+  static vector<FloorInfo> ret = {
+    {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::WOOD_FLOOR1, "wooden floor"}},
+        {CollectiveResourceId::WOOD, 10}, "Wooden", 0.02},
+    {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::WOOD_FLOOR2, "wooden floor"}},
+        {CollectiveResourceId::WOOD, 10}, "Wooden", 0.02},
+    {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::STONE_FLOOR1, "stone floor"}},
+        {CollectiveResourceId::STONE, 10}, "Stone", 0.04},
+    {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::STONE_FLOOR2, "stone floor"}},
+        {CollectiveResourceId::STONE, 10}, "Stone", 0.04},
+    {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::CARPET_FLOOR1, "carpet floor"}},
+        {CollectiveResourceId::GOLD, 10}, "Carpet", 0.06},
+    {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::CARPET_FLOOR2, "carpet floor"}},
+        {CollectiveResourceId::GOLD, 10}, "Carpet", 0.06},
+  };
+  return ret;
+}
+
 const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
   static EnumMap<CollectiveResourceId, ResourceInfo> ret = {
     {CollectiveResourceId::MANA, { none, none, ItemId::GOLD_PIECE, "mana", ViewId::MANA}},

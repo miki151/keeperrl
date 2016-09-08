@@ -69,6 +69,7 @@
 #include "furniture_type.h"
 #include "furniture_factory.h"
 #include "known_tiles.h"
+#include "tile_efficiency.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -152,107 +153,102 @@ PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, s
   CHECK(contains({DIG, IMP, DESTROY, FORBID_ZONE, FETCH, DISPATCH, CLAIM_TILE, TORCH}, type));
 }
 
-vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo() const {
-  return getBuildInfo(getTribeId());
-}
-
-vector<PlayerControl::BuildInfo> PlayerControl::getBuildInfo(TribeId tribe) {
-  const CostInfo altarCost {ResourceId::STONE, 30};
+const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
   const string workshop = "Manufactories";
-  vector<BuildInfo> buildInfo {
-    BuildInfo(BuildInfo::DIG, "", 'd'),
-    BuildInfo({SquareId::MOUNTAIN, {ResourceId::STONE, 50}, "Fill up tunnel"}, {},
-        "Fill up one tile at a time. Cutting off an area is not allowed."),
-    BuildInfo({FurnitureType::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, {},
-        "All equipment for your minions can be stored here.", 's', "Storage"),
-    BuildInfo({FurnitureType::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, {},
-        "Only wood, iron and granite can be stored here.", 0, "Storage"),
-    BuildInfo({SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::WOOD_FLOOR1, "wooden floor"}},
-        {ResourceId::WOOD, 10}, "Wooden"}, {}, "Wooden floor.", 0, "Floors"),
-    BuildInfo({SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::WOOD_FLOOR2, "wooden floor"}},
-        {ResourceId::WOOD, 10}, "Wooden"}, {}, "Wooden floor.", 0, "Floors"),
-    BuildInfo({SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::STONE_FLOOR1, "stone floor"}},
-        {ResourceId::STONE, 10}, "Stone"}, {}, "Stone floor.", 0, "Floors"),
-    BuildInfo({SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::STONE_FLOOR2, "stone floor"}},
-        {ResourceId::STONE, 10}, "Stone"}, {}, "Stone floor.", 0, "Floors"),
-    BuildInfo({SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::CARPET_FLOOR1, "carpet floor"}},
-        {ResourceId::GOLD, 10}, "Carpet"}, {}, "Carpet.", 0, "Floors"),
-    BuildInfo({SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::CARPET_FLOOR2, "carpet floor"}},
-        {ResourceId::GOLD, 10}, "Carpet"}, {}, "Carpet.", 0, "Floors"),
-    BuildInfo({SquareId::FLOOR, CostInfo::noCost(), "Remove floor", true, false, none, ViewId::DESTROY_BUTTON},
-        {}, "", 0, "Floors"),
-    BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 20}, "Library"}, {},
-        "Mana is regenerated here.", 'y'),
-    BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 800}, "Throne", false, false, 1},
-        {{RequirementId::VILLAGE_CONQUERED}},
-        "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
-    BuildInfo({FurnitureType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure chest"}, {},
-        "Stores gold."),
-    BuildInfo({FurnitureType::PIGSTY,
-        {ResourceId::WOOD, 20}, "Pigsty"}, {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
-        "Increases minion population limit by up to " +
-            toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 'p'),
-    BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 10}, "Bed"}, {},
-        "Humanoid minions sleep here.", 'm'),
-    BuildInfo({FurnitureType::TRAINING_DUMMY, {ResourceId::IRON, 20}, "Training room"}, {},
-        "Used to level up your minions.", 't'),
-    BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 20}, "Workshop"},
-        {{RequirementId::TECHNOLOGY, TechId::CRAFTING}},
-        "Produces leather equipment, traps, first-aid kits and other.", 'w', workshop),
-    BuildInfo({FurnitureType::FORGE, {ResourceId::IRON, 15}, "Forge"},
-        {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}}, "Produces iron weapons and armor.", 'f', workshop),
-    BuildInfo({FurnitureType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"},
-        {{RequirementId::TECHNOLOGY, TechId::ALCHEMY}}, "Produces magical potions.", 'r', workshop),
-    BuildInfo({FurnitureType::JEWELER, {ResourceId::WOOD, 20}, "Jeweler"},
-        {{RequirementId::TECHNOLOGY, TechId::JEWELLERY}}, "Produces magical rings and amulets.", 'j', workshop),
-    BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::MANA, 15}, "Ritual room"}, {},
-        "Summons various demons to your dungeon."),
-    BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 12}, "Beast lair"}, {},
-        "Beasts sleep here."),
-    BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}, {},
-        "Spot for hauling dead bodies and for undead creatures to sleep in.", 'g'),
-    BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 20}, "Prison"}, {},
-        "Captured enemies are kept here.", 0),
-    BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, {},
-        "Can be used to torture prisoners.", 'u'),
-    BuildInfo(BuildInfo::CLAIM_TILE, "Claim a tile. Building anything has the same effect.", 0, "Orders"),
-    BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
-    BuildInfo(BuildInfo::DISPATCH, "Click on an existing task to give it a high priority.", 'a', "Orders"),
-    BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
-    BuildInfo(BuildInfo::FORBID_ZONE, "Mark tiles to keep minions from entering.", 'b', "Orders"),
-    BuildInfo({FurnitureType::DOOR, {ResourceId::WOOD, 5}, "Door"},
-        {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "Click on a built door to lock it.", 'o', "Installations"),
-    BuildInfo({SquareId::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, {},
-      "Build it to pass over water or lava.", 0, "Installations"),
-    BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"},
-      {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "", 0, "Installations"),
-    BuildInfo(BuildInfo::TORCH, "Place it on tiles next to a wall.", 'c', "Installations"),
-    BuildInfo({FurnitureType::KEEPER_BOARD, {ResourceId::WOOD, 80}, "Message board"}, {},
-        "A board where you can leave a message for other players.", 0, "Installations"),
-    BuildInfo({FurnitureType::EYEBALL, {ResourceId::MANA, 10}, "Eyeball"}, {},
-      "Makes the area around it visible.", 0, "Installations"),
-    BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 300}, "Statue", false, false}, {},
-      "Increases minion population limit by " +
-            toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
-    BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 30}, "Whipping post"}, {},
-        "A place to whip your minions if they need a morale boost.", 0, "Installations"),
-    BuildInfo({FurnitureType::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, {},
-        "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
-    BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
-        "Causes the trespasser to panic.", 0, "Traps"),
-    BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
-        "Releases a cloud of poisonous gas.", 0, "Traps"),
-    BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
-        "Summons all minions", 0, "Traps"),
-    BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
-        "Immobilises the trespasser for some time.", 0, "Traps"),
-    BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
-        "Causes a huge boulder to roll towards the enemy.", 0, "Traps"),
-    BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP},
-        {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
-        "Teleports nearby minions to deal with the trespasser.", 0, "Traps"),
-  };
-  return buildInfo;
+  static optional<vector<BuildInfo>> buildInfo;
+  if (!buildInfo) {
+    buildInfo = {
+      BuildInfo(BuildInfo::DIG, "", 'd'),
+      BuildInfo({SquareId::MOUNTAIN, {ResourceId::STONE, 50}, "Fill up tunnel"}, {},
+          "Fill up one tile at a time. Cutting off an area is not allowed."),
+      BuildInfo({FurnitureType::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, {},
+          "All equipment for your minions can be stored here.", 's', "Storage"),
+      BuildInfo({FurnitureType::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, {},
+          "Only wood, iron and granite can be stored here.", 0, "Storage")
+    };
+    for (auto& floor : CollectiveConfig::getFloors()) {
+      string efficiency = toString<int>(floor.efficiencyBonus * 100);
+      buildInfo->push_back(
+            BuildInfo({floor.type, floor.cost,
+                floor.name + "  (+" + efficiency + ")"},
+            {}, floor.name + " floor. +" + efficiency + " efficiency to surrounding tiles.", 0, "Floors"));
+    };
+    append(*buildInfo, {
+      BuildInfo({SquareId::FLOOR, CostInfo::noCost(), "Remove floor", true, false, none, ViewId::DESTROY_BUTTON},
+          {}, "", 0, "Floors"),
+      BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 20}, "Library"}, {},
+          "Mana is regenerated here.", 'y'),
+      BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 800}, "Throne", false, false, 1},
+          {{RequirementId::VILLAGE_CONQUERED}},
+          "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
+      BuildInfo({FurnitureType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure chest"}, {},
+          "Stores gold."),
+      BuildInfo({FurnitureType::PIGSTY,
+          {ResourceId::WOOD, 20}, "Pigsty"}, {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
+          "Increases minion population limit by up to " +
+              toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 'p'),
+      BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 10}, "Bed"}, {},
+          "Humanoid minions sleep here.", 'm'),
+      BuildInfo({FurnitureType::TRAINING_DUMMY, {ResourceId::IRON, 20}, "Training room"}, {},
+          "Used to level up your minions.", 't'),
+      BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 20}, "Workshop"},
+          {{RequirementId::TECHNOLOGY, TechId::CRAFTING}},
+          "Produces leather equipment, traps, first-aid kits and other.", 'w', workshop),
+      BuildInfo({FurnitureType::FORGE, {ResourceId::IRON, 15}, "Forge"},
+          {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}}, "Produces iron weapons and armor.", 'f', workshop),
+      BuildInfo({FurnitureType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"},
+          {{RequirementId::TECHNOLOGY, TechId::ALCHEMY}}, "Produces magical potions.", 'r', workshop),
+      BuildInfo({FurnitureType::JEWELER, {ResourceId::WOOD, 20}, "Jeweler"},
+          {{RequirementId::TECHNOLOGY, TechId::JEWELLERY}}, "Produces magical rings and amulets.", 'j', workshop),
+      BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::MANA, 15}, "Ritual room"}, {},
+          "Summons various demons to your dungeon."),
+      BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 12}, "Beast lair"}, {},
+          "Beasts sleep here."),
+      BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}, {},
+          "Spot for hauling dead bodies and for undead creatures to sleep in.", 'g'),
+      BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 20}, "Prison"}, {},
+          "Captured enemies are kept here.", 0),
+      BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, {},
+          "Can be used to torture prisoners.", 'u'),
+      BuildInfo(BuildInfo::CLAIM_TILE, "Claim a tile. Building anything has the same effect.", 0, "Orders"),
+      BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
+      BuildInfo(BuildInfo::DISPATCH, "Click on an existing task to give it a high priority.", 'a', "Orders"),
+      BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
+      BuildInfo(BuildInfo::FORBID_ZONE, "Mark tiles to keep minions from entering.", 'b', "Orders"),
+      BuildInfo({FurnitureType::DOOR, {ResourceId::WOOD, 5}, "Door"},
+          {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "Click on a built door to lock it.", 'o', "Installations"),
+      BuildInfo({SquareId::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, {},
+        "Build it to pass over water or lava.", 0, "Installations"),
+      BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"},
+        {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "", 0, "Installations"),
+      BuildInfo(BuildInfo::TORCH, "Place it on tiles next to a wall.", 'c', "Installations"),
+      BuildInfo({FurnitureType::KEEPER_BOARD, {ResourceId::WOOD, 80}, "Message board"}, {},
+          "A board where you can leave a message for other players.", 0, "Installations"),
+      BuildInfo({FurnitureType::EYEBALL, {ResourceId::MANA, 10}, "Eyeball"}, {},
+        "Makes the area around it visible.", 0, "Installations"),
+      BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 300}, "Statue", false, false}, {},
+        "Increases minion population limit by " +
+              toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
+      BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 30}, "Whipping post"}, {},
+          "A place to whip your minions if they need a morale boost.", 0, "Installations"),
+      BuildInfo({FurnitureType::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, {},
+          "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
+      BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+          "Causes the trespasser to panic.", 0, "Traps"),
+      BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+          "Releases a cloud of poisonous gas.", 0, "Traps"),
+      BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+          "Summons all minions", 0, "Traps"),
+      BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+          "Immobilises the trespasser for some time.", 0, "Traps"),
+      BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+          "Causes a huge boulder to roll towards the enemy.", 0, "Traps"),
+      BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP},
+          {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+          "Teleports nearby minions to deal with the trespasser.", 0, "Traps"),
+    });
+  }
+  return *buildInfo;
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::libraryInfo {
@@ -264,7 +260,7 @@ vector<PlayerControl::BuildInfo> PlayerControl::minionsInfo {
 
 vector<PlayerControl::RoomInfo> PlayerControl::getRoomInfo() {
   vector<RoomInfo> ret;
-  for (BuildInfo bInfo : getBuildInfo(TribeId::getKeeper()))
+  for (auto& bInfo : getBuildInfo())
     if (bInfo.buildType == BuildInfo::SQUARE)
       ret.push_back({bInfo.squareInfo.name, bInfo.help, bInfo.requirements});
   return ret;
@@ -313,7 +309,7 @@ static vector<string> getHints() {
 PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(col),
     eventProxy(this, level->getModel()), hints(getHints()) {
   bool hotkeys[128] = {0};
-  for (BuildInfo info : getBuildInfo(TribeId::getKeeper())) {
+  for (auto& info : getBuildInfo()) {
     if (info.hotkey) {
       CHECK(!hotkeys[int(info.hotkey)]);
       hotkeys[int(info.hotkey)] = true;
@@ -1364,7 +1360,7 @@ const MapMemory& PlayerControl::getMemory() const {
 }
 
 ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
-  for (const PlayerControl::BuildInfo& info : getBuildInfo(TribeId::getKeeper()))
+  for (auto& info : getBuildInfo())
     if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type) {
       if (!armed)
         return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed " + Item::getTrapName(type) + " trap")
@@ -1419,6 +1415,20 @@ static optional<MinionTask> getTaskFor(FurnitureType type) {
   return cache[type];
 }
 
+static bool showEfficiency(FurnitureType type) {
+  switch (type) {
+    case FurnitureType::BOOK_SHELF:
+    case FurnitureType::DEMON_SHRINE:
+    case FurnitureType::WORKSHOP:
+    case FurnitureType::TRAINING_DUMMY:
+    case FurnitureType::LABORATORY:
+    case FurnitureType::JEWELER:
+    case FurnitureType::THRONE:
+    case FurnitureType::FORGE: return true;
+    default: return false;
+  }
+}
+
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   Position position(pos, getCollective()->getLevel());
   bool canSeePos = canSee(position);
@@ -1426,19 +1436,23 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (!canSeePos)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
-  if (auto furniture = position.getFurniture()) {
-    if (furniture->getType() == FurnitureType::BOOK_SHELF || CollectiveConfig::getWorkshopType(furniture->getType()))
-      index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
-    if (chosenWorkshop && chosenWorkshop == CollectiveConfig::getWorkshopType(furniture->getType()))
-      index.setHighlight(HighlightType::CLICKED_FURNITURE);
-    if (draggedCreature)
-      if (Creature* c = getCreature(*draggedCreature))
-        if (auto task = getTaskFor(furniture->getType()))
-          if (c->getAttributes().getMinionTasks().getValue(*task) > 0) {
-            index.setHighlight(HighlightType::CREATURE_DROP);
-            index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
-          }
-  }
+  if (getCollective()->getTerritory().contains(position))
+    if (auto furniture = position.getFurniture()) {
+      if (furniture->getType() == FurnitureType::BOOK_SHELF || CollectiveConfig::getWorkshopType(furniture->getType()))
+        index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
+      if (chosenWorkshop && chosenWorkshop == CollectiveConfig::getWorkshopType(furniture->getType()))
+        index.setHighlight(HighlightType::CLICKED_FURNITURE);
+      if (draggedCreature)
+        if (Creature* c = getCreature(*draggedCreature))
+          if (auto task = getTaskFor(furniture->getType()))
+            if (c->getAttributes().getMinionTasks().getValue(*task) > 0) {
+              index.setHighlight(HighlightType::CREATURE_DROP);
+              index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
+            }
+      if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
+        index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY,
+            getCollective()->getTileEfficiency().getEfficiency(position));
+    }
   if (getCollective()->isMarked(position))
     index.setHighlight(getCollective()->getMarkHighlight(position));
   if (getCollective()->hasPriorityTasks(position))
@@ -1645,7 +1659,7 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
         }
       }
     }
-    getCollective()->setTask(c, Task::goToAndWait(pos, 30));
+    getCollective()->setTask(c, Task::goToAndWait(pos, 15));
   }
 }
 

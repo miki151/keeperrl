@@ -37,7 +37,7 @@ RICH_ENUM(SquareId,
 struct CustomFloorInfo {
   ViewId SERIAL(viewId);
   string SERIAL(name);
-  SERIALIZE_ALL(viewId, name);
+  SERIALIZE_ALL(viewId, name)
   bool operator == (const CustomFloorInfo& o) const {
     return viewId == o.viewId && name == o.name;
   }

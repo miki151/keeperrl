@@ -48,6 +48,7 @@ template <typename T>
 class EventProxy;
 class Workshops;
 class SquareType;
+class TileEfficiency;
 
 class Collective : public TaskCallback {
   public:
@@ -110,6 +111,7 @@ class Collective : public TaskCallback {
   void claimSquare(Position);
   void changeSquareType(Position pos, SquareType from, SquareType to);
   const KnownTiles& getKnownTiles() const;
+  const TileEfficiency& getTileEfficiency() const;
   void limitKnownTilesToModel();
 
   bool usesEquipment(const Creature*) const;
@@ -341,4 +343,5 @@ class Collective : public TaskCallback {
   optional<VillainType> SERIAL(villainType);
   unique_ptr<Workshops> SERIAL(workshops);
   set<Position> SERIAL(fetchPositions);
+  HeapAllocated<TileEfficiency> SERIAL(tileEfficiency);
 };

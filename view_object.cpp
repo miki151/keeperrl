@@ -245,7 +245,7 @@ optional<Dir> ViewObject::getAttachmentDir() const {
 
 string ViewObject::getAttributeString(Attribute attr) const {
   if (attr == Attribute::EFFICIENCY)
-    return toString<int>(100 * *getAttribute(attr)) + "%";
+    return toString<int>(*getAttribute(attr) * 100);
   else
     return toString(*getAttribute(attr));
 }

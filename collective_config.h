@@ -19,6 +19,7 @@
 #include "util.h"
 #include "minion_trait.h"
 #include "workshop_type.h"
+#include "cost_info.h"
 
 enum class ItemClass;
 
@@ -126,6 +127,13 @@ struct WorkshopInfo {
   string taskName;
 };
 
+struct FloorInfo {
+  SquareType type;
+  CostInfo cost;
+  string name;
+  double efficiencyBonus;
+};
+
 class CollectiveConfig {
   public:
   static CollectiveConfig keeper(double immigrantFrequency, int payoutTime, double payoutMultiplier,
@@ -165,14 +173,13 @@ class CollectiveConfig {
 
   bool activeImmigrantion(const Game*) const;
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
-  static optional<SquareType> getSecondarySquare(SquareType);
-  unordered_set<SquareType> getEfficiencySquares() const;
   const vector<FurnitureType>& getRoomsNeedingLight() const;
   optional<int> getTaskDuration(const Creature*, MinionTask) const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
   static const MinionTaskInfo& getTaskInfo(MinionTask);
   static const FurnitureType& getEquipmentStorage();
   static const FurnitureType& getResourceStorage();
+  static const vector<FloorInfo>& getFloors();
 
   SERIALIZATION_DECL(CollectiveConfig);
 
