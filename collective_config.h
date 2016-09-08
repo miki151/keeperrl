@@ -12,13 +12,12 @@
 
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
-#ifndef _COLLECTIVE_CONFIG_INFO_H
-#define _COLLECTIVE_CONFIG_INFO_H
+#pragma once
 
 #include "enum_variant.h"
 #include "square_type.h"
 #include "util.h"
-#include "minion_task.h"
+#include "minion_trait.h"
 #include "workshop_type.h"
 
 enum class ItemClass;
@@ -195,7 +194,3 @@ class CollectiveConfig {
   double SERIAL(ghostProb) = 0;
   optional<GuardianInfo> SERIAL(guardianInfo);
 };
-
-
-#endif
-

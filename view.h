@@ -19,7 +19,6 @@
 #include "util.h"
 #include "debug.h"
 #include "user_input.h"
-#include "minion_task.h"
 
 class CreatureView;
 class Level;

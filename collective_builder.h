@@ -1,9 +1,8 @@
-#ifndef _COLLECTIVE_BUILDER_H
-#define _COLLECTIVE_BUILDER_H
+#pragma once
 
 #include "enums.h"
 #include "util.h"
-#include "minion_task.h"
+#include "minion_trait.h"
 
 class Tribe;
 class TribeId;
@@ -40,5 +39,3 @@ class CollectiveBuilder {
   optional<string> locationName;
   optional<string> raceName;
 };
-
-#endif

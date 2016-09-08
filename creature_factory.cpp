@@ -46,6 +46,7 @@
 #include "spell_map.h"
 #include "item_type.h"
 #include "item.h"
+#include "spawn_type.h"
 
 template <class Archive> 
 void CreatureFactory::serialize(Archive& ar, const unsigned int version) {

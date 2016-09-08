@@ -2,7 +2,6 @@
 #define _GAME_INFO_H
 
 #include "unique_entity.h"
-#include "minion_task.h"
 #include "item_action.h"
 #include "village_action.h"
 #include "view_id.h"

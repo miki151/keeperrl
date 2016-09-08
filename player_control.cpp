@@ -1636,10 +1636,13 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
   if (Creature* c = getCreature(info.creatureId)) {
     if (getCollective()->getConstructions().containsFurniture(pos)) {
       auto& furniture = getCollective()->getConstructions().getFurniture(pos);
-      if (auto task  = getTaskFor(furniture.getFurnitureType()))
+      if (auto task  = getTaskFor(furniture.getFurnitureType())) {
         getCollective()->setMinionTask(c, *task);
+        getCollective()->setTask(c, Task::goTo(pos));
+        return;
+      }
     }
-    getCollective()->setTask(c, Task::goTo(pos));
+    getCollective()->setTask(c, Task::goToAndWait(pos, 30));
   }
 }
 

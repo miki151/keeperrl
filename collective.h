@@ -16,11 +16,12 @@
 
 #include "move_info.h"
 #include "task_callback.h"
-#include "minion_task.h"
 #include "resource_id.h"
 #include "collective_warning.h"
 #include "event_listener.h"
 #include "entity_map.h"
+#include "minion_trait.h"
+#include "spawn_type.h"
 
 class CollectiveAttack;
 class Creature;

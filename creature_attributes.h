@@ -22,7 +22,6 @@
 #include "util.h"
 #include "skill.h"
 #include "gender.h"
-#include "minion_task.h"
 #include "creature_name.h"
 #include "minion_task_map.h"
 #include "skill.h"

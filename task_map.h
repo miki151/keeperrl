@@ -6,7 +6,7 @@
 #include "entity_map.h"
 #include "cost_info.h"
 #include "position_map.h"
-#include "minion_task.h"
+#include "minion_trait.h"
 
 class Task;
 class Creature;

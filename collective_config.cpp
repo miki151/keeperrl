@@ -15,6 +15,8 @@
 #include "square_type.h"
 #include "view_id.h"
 #include "furniture_type.h"
+#include "spawn_type.h"
+#include "minion_task.h"
 
 AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
   : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}

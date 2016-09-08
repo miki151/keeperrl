@@ -1409,7 +1409,7 @@ vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) cons
 
 void Collective::orderExecution(Creature* c) {
   taskMap->addTask(Task::kill(this, c), c->getPosition(), MinionTrait::FIGHTER);
-  setTask(c, Task::goToAndWait(c->getPosition(), getLocalTime() + 100));
+  setTask(c, Task::goToAndWait(c->getPosition(), 100));
 }
 
 void Collective::orderTorture(Creature* c) {
@@ -1421,7 +1421,7 @@ void Collective::orderTorture(Creature* c) {
   Position pos = Random.choose(posts);
   squaresInUse.insert(pos);
   taskMap->addTask(Task::torture(this, c), pos, MinionTrait::FIGHTER);
-  setTask(c, Task::goToAndWait(pos, getLocalTime() + 100));
+  setTask(c, Task::goToAndWait(pos, 100));
 }
 
 void Collective::orderSacrifice(Creature* c) {
@@ -1447,7 +1447,7 @@ void Collective::orderWhipping(Creature* whipped) {
   Position pos = Random.choose(posts);
   squaresInUse.insert(pos);
   taskMap->addTask(Task::whipping(this, pos, whipped, 100, getLocalTime() + 100), pos, MinionTrait::FIGHTER);
-  setTask(whipped, Task::goToAndWait(pos, getLocalTime() + 100));
+  setTask(whipped, Task::goToAndWait(pos, 100));
 }
 
 bool Collective::isItemMarked(const Item* it) const {

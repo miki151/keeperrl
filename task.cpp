@@ -1249,27 +1249,50 @@ PTask Task::transferTo(Model *m) {
 namespace {
 class GoToAndWait : public Task {
   public:
-  GoToAndWait(Position pos, double maxT) : position(pos), maxTime(maxT) {}
+  GoToAndWait(Position pos, double waitT) : position(pos), waitTime(waitT) {}
+
+  bool arrived(Creature* c) {
+    return c->getPosition() == position ||
+        (c->getPosition().dist8(position) == 1 && !position.canEnterEmpty(c));
+  }
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (c->getLocalTime() >= maxTime)
+    if (maxTime && c->getLocalTime() >= *maxTime) {
       setDone();
-    if (c->getPosition() != position)
-      return c->moveTowards(position);
-    else
+      return NoMove;
+    }
+    if (!arrived(c)) {
+      auto ret = c->moveTowards(position);
+      if (!ret) {
+        if (!timeout)
+          timeout = c->getLocalTime() + 30;
+        else
+          if (c->getLocalTime() > *timeout) {
+            setDone();
+            return NoMove;
+          }
+      } else
+        timeout = none;
+      return ret;
+    } else {
+      if (!maxTime)
+        maxTime = c->getLocalTime() + waitTime;
       return c->wait();
+    }
   }
 
   virtual string getDescription() const override {
     return "Go to and wait " + toString(position);
   }
 
-  SERIALIZE_ALL2(Task, position, maxTime); 
+  SERIALIZE_ALL2(Task, position, waitTime, maxTime, timeout);
   SERIALIZATION_CONSTRUCTOR(GoToAndWait);
 
   private:
   Position SERIAL(position);
-  double SERIAL(maxTime);
+  double SERIAL(waitTime);
+  optional<double> SERIAL(maxTime);
+  optional<double> SERIAL(timeout);
 };
 }
 

@@ -1,5 +1,4 @@
-#ifndef _MINION_TASK_H
-#define _MINION_TASK_H
+#pragma once
 
 #include "util.h"
 
@@ -30,24 +29,4 @@ RICH_ENUM(MinionTask,
   THRONE
 );
 
-RICH_ENUM(MinionTrait,
-  LEADER,
-  FIGHTER,
-  WORKER,
-  PRISONER,
-  SUMMONED,
-  NO_EQUIPMENT,
-  NO_RETURNING,
-  NO_LIMIT,
-  FARM_ANIMAL
-);
 
-
-RICH_ENUM(SpawnType,
-  HUMANOID,
-  UNDEAD,
-  BEAST,
-  DEMON
-);
-
-#endif
