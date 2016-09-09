@@ -77,6 +77,7 @@ class Position {
   vector<PItem> removeItems(vector<Item*>);
   bool canConstruct(const SquareType&) const;
   bool canConstruct(FurnitureType) const;
+  bool canSupportDoorOrTorch() const;
   bool canDestroy(const Creature*) const;
   bool canDestroy(const MovementType&) const;
   void removeFurniture(const Furniture*) const;

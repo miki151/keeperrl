@@ -175,21 +175,16 @@ Furniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
   }
 }
 
-static bool canBuildDoor(Position pos, const Collective* col) {
+static bool canBuildDoor(Position pos) {
   if (!pos.canConstruct(FurnitureType::DOOR))
     return false;
-  Rectangle innerRect = col->getLevel()->getBounds().minusMargin(1);
-  auto wallFun = [=](Position pos) {
-    return pos.canConstruct(SquareId::FLOOR) ||
-        !pos.getCoord().inRectangle(innerRect); };
-  return !col->getConstructions().containsTrap(pos) && pos.getCoord().inRectangle(innerRect) &&
-      ((wallFun(pos.minus(Vec2(0, 1))) && wallFun(pos.minus(Vec2(0, -1)))) ||
-       (wallFun(pos.minus(Vec2(1, 0))) && wallFun(pos.minus(Vec2(-1, 0)))));
+  return (pos.minus(Vec2(0, 1)).canSupportDoorOrTorch() && pos.minus(Vec2(0, -1)).canSupportDoorOrTorch()) ||
+       (pos.minus(Vec2(1, 0)).canSupportDoorOrTorch() && pos.minus(Vec2(-1, 0)).canSupportDoorOrTorch());
 }
 
 bool FurnitureFactory::canBuild(FurnitureType type, Position pos, const Collective* col) {
   switch (type) {
-    case FurnitureType::DOOR: return canBuildDoor(pos, col);
+    case FurnitureType::DOOR: return canBuildDoor(pos);
     case FurnitureType::KEEPER_BOARD:
     case FurnitureType::EYEBALL: return true;
     default: return col->getTerritory().contains(pos);

@@ -20,6 +20,7 @@
 #include "creature_attributes.h"
 #include "fire.h"
 #include "movement_set.h"
+#include "square_type.h"
 
 template <class Archive> 
 void Position::serialize(Archive& ar, const unsigned int version) {
@@ -432,6 +433,10 @@ bool Position::construct(const SquareType& type) {
 
 bool Position::canConstruct(FurnitureType type) const {
   return !isUnavailable() && getSquare()->canEnterEmpty(MovementTrait::WALK);
+}
+
+bool Position::canSupportDoorOrTorch() const {
+  return canConstruct(SquareId::FLOOR) && !canEnterEmpty({MovementTrait::WALK});
 }
 
 bool Position::construct(FurnitureType type, Creature* c) {

@@ -1333,9 +1333,6 @@ void Collective::orderTorture(Creature* c) {
   setTask(c, Task::goToAndWait(pos, 100));
 }
 
-void Collective::orderSacrifice(Creature* c) {
-}
-
 void Collective::onWhippingDone(Creature* whipped, Position pos) {
   cancelTask(whipped);
   squaresInUse.erase(pos);

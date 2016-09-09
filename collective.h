@@ -146,7 +146,6 @@ class Collective : public TaskCallback {
   vector<pair<Item*, Position>> getTrapItems(TrapType, const vector<Position>&) const;
 
   void orderExecution(Creature*);
-  void orderSacrifice(Creature*);
   void orderTorture(Creature*);
   void orderWhipping(Creature*);
   bool canWhip(Creature*) const;
