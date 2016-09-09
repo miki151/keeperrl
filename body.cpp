@@ -609,6 +609,12 @@ void Body::affectByPoison(Creature* c) {
 
 void Body::affectByTorture(Creature* c) {
   bleed(c, 0.1);
+  if (health < 0.3) {
+    if (!Random.roll(8))
+      c->heal();
+    else
+      c->die();
+  }
 }
 
 bool Body::affectBySilver(Creature* c) {

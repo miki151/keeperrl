@@ -551,18 +551,33 @@ class ApplySquare : public Task {
   public:
   ApplySquare(TaskCallback* c, set<Position> pos, SearchType t) : positions(pos), callback(c), searchType(t) {}
 
+  void changePosIfOccupied() {
+    if (position)
+      if (Creature* c = position->getCreature())
+        if (!c->hasFreeMovement())
+          position = none;
+  }
+
+  optional<Position> choosePosition(Creature* c) {
+    vector<Position> candidates;
+    for (auto& pos : positions) {
+      if (Creature* other = pos.getCreature())
+        if (!other->hasFreeMovement())
+          continue;
+      if (!rejectedPosition.count(pos))
+        candidates.push_back(pos);
+    }
+    if (!candidates.empty())
+      return chooseRandomClose(c->getPosition(), candidates, searchType);
+    else
+      return none;
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
+    changePosIfOccupied();
     if (!position) {
-      vector<Position> candidates;
-      for (auto& pos : positions) {
-        if (Creature* other = pos.getCreature())
-          if (other->isAffected(LastingEffect::SLEEP))
-            continue;
-        if (!rejectedPosition.count(pos))
-          candidates.push_back(pos);
-      }
-      if (!candidates.empty())
-        position = chooseRandomClose(c->getPosition(), candidates, searchType);
+      if (auto pos = choosePosition(c))
+        position = pos;
       else {
         setDone();
         return NoMove;
@@ -599,7 +614,7 @@ class ApplySquare : public Task {
   }
 
   bool atTarget(Creature* c) {
-    return position == c->getPosition() || (!position->canEnter(c) && position->dist8(c->getPosition()) == 1);
+    return position == c->getPosition() || (!position->canEnterEmpty(c) && position->dist8(c->getPosition()) == 1);
   }
 
   SERIALIZE_ALL2(Task, positions, rejectedPosition, invalidCount, position, callback, searchType); 
@@ -1303,60 +1318,38 @@ PTask Task::goToAndWait(Position pos, double waitTime) {
 namespace {
 class Whipping : public Task {
   public:
-  Whipping(TaskCallback* c, Position pos, Creature* w, double i, double t)
-      : callback(c), position(pos), whipped(w), interval(i), timeout(t) {}
-
-  virtual void cancel() override {
-    callback->onWhippingDone(whipped, position);
-  }
+  Whipping(Position pos, Creature* w) : position(pos), whipped(w) {}
 
   virtual bool canPerform(const Creature* c) override {
     return c != whipped;
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (c->getPosition().dist8(position) > 1)
-      return c->moveTowards(position);
-    if (started && (position.getCreature() != whipped || !whipped->isAffected(LastingEffect::TIED_UP))) {
+    if (position.getCreature() != whipped || !whipped->isAffected(LastingEffect::TIED_UP)) {
       setDone();
-      callback->onWhippingDone(whipped, position);
       return NoMove;
     }
-    if (position.getCreature() == whipped) {
-      started = true;
-      if (!whipped->isAffected(LastingEffect::TIED_UP)) {
-        whipped->addEffect(LastingEffect::TIED_UP, interval);
-        return c->wait();
-      }
+    if (c->getPosition().dist8(position) > 1)
+      return c->moveTowards(position);
+    else
       return c->whip(whipped->getPosition());
-    } else {
-      if (c->getLocalTime() > timeout) {
-        setDone();
-        callback->onWhippingDone(whipped, position);
-      }
-      return c->wait();
-    }
   }
 
   virtual string getDescription() const override {
     return "Whipping " + whipped->getName().a();
   }
 
-  SERIALIZE_ALL2(Task, callback, position, whipped, started, interval, timeout); 
+  SERIALIZE_ALL2(Task, position, whipped);
   SERIALIZATION_CONSTRUCTOR(Whipping);
 
   protected:
-  TaskCallback* SERIAL(callback);
   Position SERIAL(position);
   Creature* SERIAL(whipped);
-  bool SERIAL(started) = false;
-  double SERIAL(interval);
-  double SERIAL(timeout);
 };
 }
 
-PTask Task::whipping(TaskCallback* callback, Position pos, Creature* whipped, double interval, double timeout) {
-  return PTask(new Whipping(callback, pos, whipped, interval, timeout));
+PTask Task::whipping(Position pos, Creature* whipped) {
+  return PTask(new Whipping(pos, whipped));
 }
 
 namespace {

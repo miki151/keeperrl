@@ -1577,6 +1577,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::STUDY, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.minionTasks.setValue(MinionTask::BE_TORTURED, 0.0001);
           c.skills.setValue(SkillId::SORCERY, 0.7);
           c.skills.insert(SkillId::HEALING);
           c.chatReactionFriendly = "curses all elves";
@@ -1690,7 +1691,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.skills.insert(SkillId::CONSTRUCTION);
           c.chatReactionFriendly = "talks about escape plans";
           c.minionTasks.setValue(MinionTask::PRISON, 1);
-          c.minionTasks.setValue(MinionTask::TORTURE, 0.0001); 
+          c.minionTasks.setValue(MinionTask::BE_TORTURED, 0.0001);
           c.minionTasks.setValue(MinionTask::EXECUTE, 0.0001);
           c.name = "prisoner";);
     case CreatureId::OGRE: 

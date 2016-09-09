@@ -73,7 +73,8 @@ Furniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
           Furniture::BLOCKING, tribe);
     case FurnitureType::WHIPPING_POST:
       return Furniture("whipping post", ViewObject(ViewId::WHIPPING_POST, ViewLayer::FLOOR), type,
-          Furniture::NON_BLOCKING, tribe);
+          Furniture::NON_BLOCKING, tribe)
+          .setUsageType(FurnitureUsageType::TIE_UP);
     case FurnitureType::MINION_STATUE:
       return Furniture("statue", ViewObject(ViewId::MINION_STATUE, ViewLayer::FLOOR), type,
           Furniture::BLOCKING, tribe);
@@ -127,7 +128,7 @@ Furniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
     case FurnitureType::TORTURE_TABLE:
       return Furniture("torture table", ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR), type,
           Furniture::NON_BLOCKING, tribe)
-          .setUsageType(FurnitureUsageType::TORTURE);
+          .setUsageType(FurnitureUsageType::TIE_UP);
     case FurnitureType::FOUNTAIN:
       return Furniture("fountain", ViewObject(ViewId::FOUNTAIN, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe)
           .setUsageType(FurnitureUsageType::FOUNTAIN);

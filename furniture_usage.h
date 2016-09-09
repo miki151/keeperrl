@@ -6,7 +6,17 @@ class Position;
 class Furniture;
 class Creature;
 
-enum class FurnitureUsageType { CHEST, COFFIN, VAMPIRE_COFFIN, SLEEP, FOUNTAIN, KEEPER_BOARD, CROPS, TORTURE, STAIRS };
+enum class FurnitureUsageType {
+    CHEST,
+    COFFIN,
+    VAMPIRE_COFFIN,
+    SLEEP,
+    FOUNTAIN,
+    KEEPER_BOARD,
+    CROPS,
+    STAIRS,
+    TIE_UP
+};
 class FurnitureUsage {
   public:
   static void handle(FurnitureUsageType, Position, Furniture*, Creature*);

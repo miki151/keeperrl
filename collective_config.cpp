@@ -242,18 +242,6 @@ const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
   return ret;
 };
 
-optional<int> CollectiveConfig::getTaskDuration(const Creature* c, MinionTask task) const {
-  switch (task) {
-    case MinionTask::CONSUME:
-    case MinionTask::COPULATE:
-    case MinionTask::GRAVE:
-    case MinionTask::LAIR:
-    case MinionTask::EAT:
-    case MinionTask::SLEEP: return none;
-    default: return 500 + 250 * c->getMorale();
-  }
-}
-
 const static auto resourceStorage = FurnitureType::STOCKPILE_RES;
 const static auto equipmentStorage = FurnitureType::STOCKPILE_EQUIP;
 
@@ -344,7 +332,6 @@ static MinionTaskInfo createTaskInfo(MinionTask task) {
     case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
     case MinionTask::STUDY: return {FurnitureType::BOOK_SHELF, "studying"};
     case MinionTask::PRISON: return {FurnitureType::PRISON, "prison"};
-    case MinionTask::TORTURE: return {FurnitureType::TORTURE_TABLE, "torture ordered"};
     case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
     case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
     case MinionTask::COPULATE: return {MinionTaskInfo::COPULATE, "copulation"};
@@ -354,6 +341,8 @@ static MinionTaskInfo createTaskInfo(MinionTask task) {
     case MinionTask::EXPLORE_NOCTURNAL: return {MinionTaskInfo::EXPLORE, "spying"};
     case MinionTask::EXPLORE_CAVES: return {MinionTaskInfo::EXPLORE, "spying"};
     case MinionTask::EXECUTE: return {FurnitureType::PRISON, "execution ordered"};
+    case MinionTask::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped"};
+    case MinionTask::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured"};
     case MinionTask::WORKSHOP:
     case MinionTask::FORGE:
     case MinionTask::LABORATORY:

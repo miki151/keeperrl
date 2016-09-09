@@ -174,7 +174,6 @@ class CollectiveConfig {
   bool activeImmigrantion(const Game*) const;
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
   const vector<FurnitureType>& getRoomsNeedingLight() const;
-  optional<int> getTaskDuration(const Creature*, MinionTask) const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
   static const MinionTaskInfo& getTaskInfo(MinionTask);
   static const FurnitureType& getEquipmentStorage();

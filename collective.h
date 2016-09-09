@@ -146,9 +146,6 @@ class Collective : public TaskCallback {
   vector<pair<Item*, Position>> getTrapItems(TrapType, const vector<Position>&) const;
 
   void orderExecution(Creature*);
-  void orderTorture(Creature*);
-  void orderWhipping(Creature*);
-  bool canWhip(Creature*) const;
 
   void addTrap(Position, TrapType);
   void removeTrap(Position);
@@ -222,7 +219,6 @@ class Collective : public TaskCallback {
   virtual void onCopulated(Creature* who, Creature* with) override;
   virtual void onConsumed(Creature* consumer, Creature* who) override;
   virtual bool isConstructionReachable(Position) override;
-  virtual void onWhippingDone(Creature* whipped, Position postPosition) override;
 
   private:
   HeapAllocated<EventProxy<Collective>> SERIAL(eventProxy);

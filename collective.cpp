@@ -354,7 +354,7 @@ MoveInfo Collective::getWorkerMove(Creature* c) {
 }
 
 void Collective::setMinionTask(const Creature* c, MinionTask task) {
-  if (auto duration = config->getTaskDuration(c, task))
+  if (auto duration = MinionTasks::getDuration(c, task))
     currentTasks.set(c, {task, c->getLocalTime() + *duration});
   else
     currentTasks.set(c, {task, none});
@@ -1321,41 +1321,6 @@ void Collective::orderExecution(Creature* c) {
   setTask(c, Task::goToAndWait(c->getPosition(), 100));
 }
 
-void Collective::orderTorture(Creature* c) {
-  set<Position> posts = getConstructions().getBuiltPositions(FurnitureType::TORTURE_TABLE);
-  for (Position p : squaresInUse)
-    posts.erase(p);
-  if (posts.empty())
-    return;
-  Position pos = Random.choose(posts);
-  squaresInUse.insert(pos);
-  taskMap->addTask(Task::torture(this, c), pos, MinionTrait::FIGHTER);
-  setTask(c, Task::goToAndWait(pos, 100));
-}
-
-void Collective::onWhippingDone(Creature* whipped, Position pos) {
-  cancelTask(whipped);
-  squaresInUse.erase(pos);
-}
-
-bool Collective::canWhip(Creature* c) const {
-  return LastingEffects::affects(c, LastingEffect::ENTANGLED) && !hasTrait(c, MinionTrait::FARM_ANIMAL);
-}
-
-void Collective::orderWhipping(Creature* whipped) {
-  if (!canWhip(whipped))
-    return;
-  set<Position> posts = getConstructions().getBuiltPositions(FurnitureType::WHIPPING_POST);
-  for (Position p : squaresInUse)
-    posts.erase(p);
-  if (posts.empty())
-    return;
-  Position pos = Random.choose(posts);
-  squaresInUse.insert(pos);
-  taskMap->addTask(Task::whipping(this, pos, whipped, 100, getLocalTime() + 100), pos, MinionTrait::FIGHTER);
-  setTask(whipped, Task::goToAndWait(pos, 100));
-}
-
 bool Collective::isItemMarked(const Item* it) const {
   return markedItems.contains(it);
 }
@@ -1743,28 +1708,41 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
 void Collective::onAppliedSquare(Creature* c, Position pos) {
   MinionTask currentTask = currentTasks.getOrFail(c).task;
   double efficiency = tileEfficiency->getEfficiency(pos);
-  if (constructions->getBuiltPositions(FurnitureType::BOOK_SHELF).count(pos)) {
-    addMana(0.2 * efficiency);
-    auto availableSpells = Technology::getAvailableSpells(this);
-    if (Random.rollD(60.0 / efficiency) && !availableSpells.empty()) {
-      for (int i : Range(30)) {
-        Spell* spell = Random.choose(Technology::getAvailableSpells(this));
-        if (!c->getAttributes().getSpellMap().contains(spell)) {
-          c->getAttributes().getSpellMap().add(spell);
-          control->addMessage(c->getName().a() + " learns the spell of " + spell->getName());
-          break;
+  switch (NOTNULL(pos.getFurniture())->getType()) {
+    case FurnitureType::BOOK_SHELF: {
+      addMana(0.2 * efficiency);
+      auto availableSpells = Technology::getAvailableSpells(this);
+      if (Random.rollD(60.0 / efficiency) && !availableSpells.empty()) {
+        for (int i : Range(30)) {
+          Spell* spell = Random.choose(Technology::getAvailableSpells(this));
+          if (!c->getAttributes().getSpellMap().contains(spell)) {
+            c->getAttributes().getSpellMap().add(spell);
+            control->addMessage(c->getName().a() + " learns the spell of " + spell->getName());
+            break;
+          }
         }
       }
+      break;
     }
+    case FurnitureType::THRONE:
+      if (c == getLeader())
+        addMana(0.2 * efficiency);
+      break;
+    case FurnitureType::TRAINING_DUMMY:
+      c->getAttributes().exerciseAttr(Random.choose<AttrType>(), efficiency);
+      break;
+    case FurnitureType::WHIPPING_POST:
+      taskMap->addTask(Task::whipping(pos, c), pos, MinionTrait::FIGHTER);
+      break;
+    case FurnitureType::TORTURE_TABLE:
+      taskMap->addTask(Task::torture(this, c), pos, MinionTrait::FIGHTER);
+      break;
+    default:
+      break;
   }
-  if (constructions->getBuiltPositions(FurnitureType::THRONE).count(pos) && c == getLeader()) {
-    addMana(0.2 * efficiency);
-  }
-  if (constructions->getBuiltPositions(FurnitureType::TRAINING_DUMMY).count(pos))
-    c->getAttributes().exerciseAttr(Random.choose<AttrType>(), efficiency);
   for (auto workshopType : ENUM_ALL(WorkshopType)) {
     auto& elem = config->getWorkshopInfo(workshopType);
-    if (constructions->getBuiltPositions(elem.furniture).count(pos)) {
+    if (pos.getFurniture()->getType() == elem.furniture) {
       vector<PItem> items =
           workshops->get(workshopType).addWork(getEfficiency(c));
       if (!items.empty()) {

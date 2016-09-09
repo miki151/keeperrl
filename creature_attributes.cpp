@@ -28,11 +28,14 @@
 #include "spell_map.h"
 #include "effect_type.h"
 #include "effect.h"
+#include "minion_trait.h"
 
 CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
   fun(*this);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     lastingEffects[effect] = -500;
+  if (body->canEntangle())
+    minionTasks.setValue(MinionTask::BE_WHIPPED, 0.01);
 }
 
 CreatureAttributes::~CreatureAttributes() {}

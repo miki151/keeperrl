@@ -107,3 +107,18 @@ PTask MinionTasks::generate(Collective* collective, Creature* c, MinionTask task
   return nullptr;
 }
 
+optional<double> MinionTasks::getDuration(const Creature* c, MinionTask task) {
+  switch (task) {
+    case MinionTask::CONSUME:
+    case MinionTask::COPULATE:
+    case MinionTask::GRAVE:
+    case MinionTask::LAIR:
+    case MinionTask::EAT:
+    case MinionTask::BE_WHIPPED:
+    case MinionTask::BE_TORTURED:
+    case MinionTask::SLEEP: return none;
+    default: return 500 + 250 * c->getMorale();
+  }
+}
+
+

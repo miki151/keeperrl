@@ -119,6 +119,9 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, Furniture* fu
     case FurnitureUsageType::STAIRS:
       c->getLevel()->changeLevel(*pos.getLandingLink(), c);
       break;
+    case FurnitureUsageType::TIE_UP:
+      c->addEffect(LastingEffect::TIED_UP, 100);
+      break;
     default: break;
   }
 

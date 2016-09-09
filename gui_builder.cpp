@@ -1688,7 +1688,6 @@ static string getTaskText(MinionTask option) {
     case MinionTask::RITUAL: return "Rituals";
     case MinionTask::CROPS: return "Crops";
     case MinionTask::PRISON: return "Prison";
-    case MinionTask::TORTURE: return "Torture";
     case MinionTask::EXECUTE: return "Execution";
     case MinionTask::TRAIN: return "Training";
     case MinionTask::WORKSHOP: return "Workshop";
@@ -1700,6 +1699,8 @@ static string getTaskText(MinionTask option) {
     case MinionTask::CONSUME: return "Absorbing";
     case MinionTask::SPIDER: return "Spider";
     case MinionTask::THRONE: return "Throne";
+    case MinionTask::BE_WHIPPED: return "Being whipped";
+    case MinionTask::BE_TORTURED: return "Being tortured";
   }
 }
 
@@ -1829,20 +1830,10 @@ vector<PGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion) {
             gui.labelHighlight("[Banish]", colors[ColorId::LIGHT_BLUE]),
             gui.button(getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId}))));
         break;
-      case PlayerInfo::WHIP:
-        line.push_back(gui.stack(
-            gui.labelHighlight("[Whip]", colors[ColorId::LIGHT_BLUE]),
-            gui.button(getButtonCallback({UserInputId::CREATURE_WHIP, minion.creatureId}))));
-        break;
       case PlayerInfo::EXECUTE:
         line.push_back(gui.stack(
             gui.labelHighlight("[Execute]", colors[ColorId::LIGHT_BLUE]),
             gui.button(getButtonCallback({UserInputId::CREATURE_EXECUTE, minion.creatureId}))));
-        break;
-      case PlayerInfo::TORTURE:
-        line.push_back(gui.stack(
-            gui.labelHighlight("[Torture]", colors[ColorId::LIGHT_BLUE]),
-            gui.button(getButtonCallback({UserInputId::CREATURE_TORTURE, minion.creatureId}))));
         break;
     }
   return line;

@@ -1229,8 +1229,7 @@ CreatureAction Creature::disappear() const {
 }
 
 CreatureAction Creature::torture(Creature* other) const {
-  if (other->getPosition().getUsageType() != FurnitureUsageType::TORTURE
-      || other->getPosition().dist8(getPosition()) != 1)
+  if (other->hasFreeMovement() || other->getPosition().dist8(getPosition()) != 1)
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     monsterMessage(getName().the() + " tortures " + other->getName().the());
@@ -1238,11 +1237,7 @@ CreatureAction Creature::torture(Creature* other) const {
     if (Random.roll(4))
       other->monsterMessage(other->getName().the() + " screams!", "You hear a horrible scream");
     other->addEffect(LastingEffect::STUNNED, 3, false);
-    other->getBody().affectByTorture(self);
-    if (!Random.roll(8))
-      other->heal();
-    else
-      other->die();
+    other->getBody().affectByTorture(other);
     getGame()->addEvent({EventId::TORTURED, EventInfo::Attacked{other, self}});
     self->spendTime(1);
   });

@@ -13,7 +13,6 @@ RICH_ENUM(MinionTask,
   JEWELER,
   STUDY,
   PRISON,
-  TORTURE,
   //SACRIFICE,
   EXECUTE,
   //WORSHIP,
@@ -26,11 +25,13 @@ RICH_ENUM(MinionTask,
   RITUAL,
   CROPS,
   SPIDER,
-  THRONE
+  THRONE,
+  BE_WHIPPED,
+  BE_TORTURED
 );
 
 class MinionTasks {
   public:
   static PTask generate(Collective*, Creature*, MinionTask);
-  static optional<double> getDuration(MinionTask);
+  static optional<double> getDuration(const Creature*, MinionTask);
 };

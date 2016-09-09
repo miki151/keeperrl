@@ -1074,13 +1074,11 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
     if (getCollective()->usesEquipment(c))
       fillEquipment(c, minions.back());
     if (getCollective()->hasTrait(c, MinionTrait::PRISONER))
-      minions.back().actions = { PlayerInfo::EXECUTE, PlayerInfo::TORTURE };
+      minions.back().actions = { PlayerInfo::EXECUTE };
     else {
       minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
       if (c != getCollective()->getLeader()) {
         minions.back().actions.push_back(PlayerInfo::BANISH);
-        if (getCollective()->canWhip(c))
-          minions.back().actions.push_back(PlayerInfo::WHIP);
       }
     }
   }
@@ -1410,6 +1408,8 @@ static optional<MinionTask> getTaskFor(FurnitureType type) {
         if (taskInfo.type == MinionTaskInfo::FURNITURE && taskInfo.furniture == furnitureType)
           cache[furnitureType] = task;
       }
+    cache[FurnitureType::WHIPPING_POST] = MinionTask::BE_WHIPPED;
+    cache[FurnitureType::TORTURE_TABLE] = MinionTask::BE_TORTURED;
     initialized = true;
   }
   return cache[type];
@@ -1857,21 +1857,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
             getCollective()->banishCreature(c);
           }
         break;
-    case UserInputId::CREATURE_WHIP:
-        if (Creature* c = getCreature(input.get<Creature::Id>())) {
-          getCollective()->orderWhipping(c);
-          chosenCreature = none;
-        }
-        break;
     case UserInputId::CREATURE_EXECUTE:
         if (Creature* c = getCreature(input.get<Creature::Id>())) {
           getCollective()->orderExecution(c);
-          chosenCreature = none;
-        }
-        break;
-    case UserInputId::CREATURE_TORTURE:
-        if (Creature* c = getCreature(input.get<Creature::Id>())) {
-          getCollective()->orderTorture(c);
           chosenCreature = none;
         }
         break;
