@@ -134,30 +134,6 @@ static optional<SDL_Keycode> getKey(char c) {
   return none;
 }
 
-class ButtonChar : public Button {
-  public:
-  ButtonChar(function<void(Rectangle)> f, char c, bool cap, Options* o) : Button(f), hotkey(c), capture(cap),
-      options(o) {}
-
-  bool isHotkeyEvent(char c, SDL_Keysym key) {
-    return options->getBoolValue(OptionId::WASD_SCROLLING) == GuiFactory::isAlt(key) &&
-      !GuiFactory::isCtrl(key) && !GuiFactory::isShift(key) && getKey(c) == key.sym;
-  }
-
-  virtual bool onKeyPressed2(SDL_Keysym key) override {
-    if (isHotkeyEvent(hotkey, key)) {
-      fun(getBounds());
-      return capture;
-    }
-    return false;
-  }
-
-  private:
-  char hotkey;
-  bool capture;
-  Options* options;
-};
-
 GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o) : clock(c), renderer(r), options(o) {
 }
 
@@ -167,10 +143,6 @@ DragContainer& GuiFactory::getDragContainer() {
 
 PGuiElem GuiFactory::buttonRect(function<void(Rectangle)> fun, SDL_Keysym hotkey, bool capture) {
   return PGuiElem(new ButtonKey(fun, hotkey, capture));
-}
-
-PGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture) {
-  return PGuiElem(new ButtonChar([=](Rectangle) { fun(); }, hotkey, capture, options));
 }
 
 PGuiElem GuiFactory::button(function<void()> fun, SDL_Keysym hotkey, bool capture) {
@@ -932,6 +904,41 @@ class KeyHandler2 : public GuiElem {
 
 PGuiElem GuiFactory::keyHandler(function<void()> fun, vector<SDL_Keysym> key, bool capture) {
   return PGuiElem(new KeyHandler2(fun, key, capture));
+}
+
+class KeyHandlerChar : public GuiElem {
+  public:
+  KeyHandlerChar(function<void()> f, char c, bool cap, Options* o) : fun(f), hotkey(c), capture(cap),
+      options(o) {}
+
+  bool isHotkeyEvent(char c, SDL_Keysym key) {
+    return options->getBoolValue(OptionId::WASD_SCROLLING) == GuiFactory::isAlt(key) &&
+      !GuiFactory::isCtrl(key) && !GuiFactory::isShift(key) && getKey(c) == key.sym;
+  }
+
+  virtual bool onKeyPressed2(SDL_Keysym key) override {
+    if (isHotkeyEvent(hotkey, key)) {
+      fun();
+      return capture;
+    }
+    return false;
+  }
+
+  private:
+  function<void()> fun;
+  char hotkey;
+  bool capture;
+  Options* options;
+};
+
+PGuiElem GuiFactory::keyHandlerChar(function<void ()> fun, char hotkey, bool capture) {
+  return PGuiElem(new KeyHandlerChar(fun, hotkey, capture, options));
+}
+
+PGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture) {
+  return stack(
+      PGuiElem(new Button([=](Rectangle) { fun(); })),
+      PGuiElem(new KeyHandlerChar(fun, hotkey, capture, options)));
 }
 
 class ElemList : public GuiLayout {

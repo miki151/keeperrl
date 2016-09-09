@@ -78,6 +78,7 @@ class GuiFactory {
   PGuiElem mouseWheel(function<void(bool)>);
   PGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
   PGuiElem keyHandler(function<void()>, vector<SDL::SDL_Keysym>, bool capture = false);
+  PGuiElem keyHandlerChar(function<void()>, char, bool capture = false);
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);

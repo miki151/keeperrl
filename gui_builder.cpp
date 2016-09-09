@@ -143,7 +143,26 @@ GuiFactory::ListBuilder GuiBuilder::drawButtons(vector<CollectiveInfo::Button> b
   for (int i : All(buttons)) {
     if (!buttons[i].groupName.empty() && buttons[i].groupName != lastGroup) {
       lastGroup = buttons[i].groupName;
-      function<void()> buttonFun = [=] {
+      function<void()> buttonFunHotkey = [=] {
+        if (activeGroup != lastGroup) {
+          setActiveButton(tab, i, buttons[i].viewId);
+          setCollectiveTab(tab);
+          activeGroup = lastGroup;
+        } else {
+          if (auto but = getActiveButton(tab)) {
+            int lastButton = 0;
+            for (int j : All(buttons))
+              if (buttons[j].groupName == lastGroup)
+                lastButton = j;
+            int newBut = *but + 1;
+            if (newBut > lastButton)
+              newBut = i;
+            setActiveButton(tab, newBut, buttons[newBut].viewId);
+          } else
+            setActiveButton(tab, i, buttons[i].viewId);
+        }
+      };
+      function<void()> labelFun = [=] {
         if (activeGroup != lastGroup) {
           clearActiveButton();
           setCollectiveTab(tab);
@@ -160,8 +179,9 @@ GuiFactory::ListBuilder GuiBuilder::drawButtons(vector<CollectiveInfo::Button> b
           gui.uiHighlightConditional([=] { return activeGroup == lastGroup;}),
           gui.label(lastGroup, colors[ColorId::WHITE], hotkey)));
       elems.addElem(gui.stack(
-            gui.buttonChar(buttonFun, buttons[i].hotkeyOpensGroup ? buttons[i].hotkey : 0),
-            line.buildHorizontalList()));
+          gui.keyHandlerChar(buttonFunHotkey, hotkey),
+          gui.button(labelFun),
+          line.buildHorizontalList()));
     }
     if (buttons[i].groupName.empty())
       elems.addElem(getButtonLine(buttons[i], i, tab));
@@ -1114,7 +1134,7 @@ void GuiBuilder::drawWorkshopsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
       for (int i : All(queued)) {
         auto& elem = queued[i];
         auto line = gui.getListBuilder();
-        line.addMiddleElem(gui.stack(    
+        line.addMiddleElem(gui.stack(
             gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
             gui.buttonRect([=] (Rectangle bounds) {
                   auto lines = gui.getListBuilder(legendLineHeight);
@@ -1134,7 +1154,7 @@ void GuiBuilder::drawWorkshopsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
                   }
                   drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 200);
                   if (ret)
-                    callbacks.input({UserInputId::WORKSHOP_ITEM_ACTION, 
+                    callbacks.input({UserInputId::WORKSHOP_ITEM_ACTION,
                         WorkshopQueuedActionInfo{i, *ret}});
             }),
             gui.getListBuilder()
@@ -1163,7 +1183,7 @@ void GuiBuilder::drawWorkshopsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
                     gui.scrollable(lines2.buildVerticalList(), &workshopsScroll2, &scrollbarsHeld),
                     margin)).buildHorizontalList())));
     }
-    ret.push_back({gui.external(workshopsOverlayCache.get()), 
+    ret.push_back({gui.external(workshopsOverlayCache.get()),
         Vec2(*workshopsOverlayCache->getPreferredWidth(), *workshopsOverlayCache->getPreferredHeight()),
         OverlayInfo::MINIONS});
   }
@@ -1238,12 +1258,12 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
       auto& lines = elem.second;
       lines.addElem(gui.stack(
             gui.centeredLabel(Renderer::HOR, "[close]", colors[ColorId::LIGHT_BLUE]),
-            gui.button([=] { activeGroup = none;})), legendLineHeight);
+            gui.button([=] { clearActiveButton(); })), legendLineHeight);
       int height = lines.getSize() - 8;
       string groupName = elem.first;
       buildingsOverlayCache.push_back({gui.conditionalStopKeys(
             gui.miniWindow(gui.stack(
-                gui.keyHandler([=] { activeGroup = none; }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+                gui.keyHandler([=] { clearActiveButton(); }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
                 gui.margins(lines.buildVerticalList(), margin))),
             [=] { return !info.ransom && collectiveTab == CollectiveTab::BUILDINGS &&
             activeGroup == groupName;}),

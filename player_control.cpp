@@ -162,16 +162,18 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
       BuildInfo({SquareId::MOUNTAIN, {ResourceId::STONE, 50}, "Fill up tunnel"}, {},
           "Fill up one tile at a time. Cutting off an area is not allowed."),
       BuildInfo({FurnitureType::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, {},
-          "All equipment for your minions can be stored here.", 's', "Storage"),
+          "All equipment for your minions can be stored here.", 's', "Storage", true),
       BuildInfo({FurnitureType::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, {},
           "Only wood, iron and granite can be stored here.", 0, "Storage")
     };
-    for (auto& floor : CollectiveConfig::getFloors()) {
+    for (int i : All(CollectiveConfig::getFloors())) {
+      auto& floor = CollectiveConfig::getFloors()[i];
       string efficiency = toString<int>(floor.efficiencyBonus * 100);
       buildInfo->push_back(
             BuildInfo({floor.type, floor.cost,
                 floor.name + "  (+" + efficiency + ")"},
-            {}, floor.name + " floor. +" + efficiency + " efficiency to surrounding tiles.", 0, "Floors"));
+            {}, floor.name + " floor. +" + efficiency + " efficiency to surrounding tiles.", i == 0 ? 'f' : 0,
+                      "Floors", i == 0));
     };
     append(*buildInfo, {
       BuildInfo({SquareId::FLOOR, CostInfo::noCost(), "Remove floor", true, false, none, ViewId::DESTROY_BUTTON},
@@ -195,7 +197,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           {{RequirementId::TECHNOLOGY, TechId::CRAFTING}},
           "Produces leather equipment, traps, first-aid kits and other.", 'w', workshop),
       BuildInfo({FurnitureType::FORGE, {ResourceId::IRON, 15}, "Forge"},
-          {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}}, "Produces iron weapons and armor.", 'f', workshop),
+          {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}}, "Produces iron weapons and armor.", 0, workshop),
       BuildInfo({FurnitureType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"},
           {{RequirementId::TECHNOLOGY, TechId::ALCHEMY}}, "Produces magical potions.", 'r', workshop),
       BuildInfo({FurnitureType::JEWELER, {ResourceId::WOOD, 20}, "Jeweler"},
