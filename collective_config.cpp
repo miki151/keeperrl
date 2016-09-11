@@ -17,6 +17,8 @@
 #include "furniture_type.h"
 #include "spawn_type.h"
 #include "minion_task.h"
+#include "furniture_usage.h"
+#include "creature_attributes.h"
 
 AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
   : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}
@@ -237,7 +239,9 @@ const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
     FurnitureType::FORGE,
     FurnitureType::LABORATORY,
     FurnitureType::JEWELER,
-    FurnitureType::TRAINING_DUMMY,
+    FurnitureType::TRAINING_WOOD,
+    FurnitureType::TRAINING_IRON,
+    FurnitureType::TRAINING_STEEL,
     FurnitureType::BOOK_SHELF};
   return ret;
 };
@@ -291,8 +295,13 @@ MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWa
   CHECK(type != FURNITURE);
 }
 
-MinionTaskInfo::MinionTaskInfo(FurnitureType type, const string& desc) : type(FURNITURE), furniture(type),
+MinionTaskInfo::MinionTaskInfo(FurnitureType type, const string& desc) : type(FURNITURE),
+  furniturePredicate([type](const Creature*, FurnitureType t) { return t == type;}),
     description(desc) {
+}
+
+MinionTaskInfo::MinionTaskInfo(UsagePredicate pred, const string& desc) : type(FURNITURE),
+  furniturePredicate(pred), description(desc) {
 }
 
 static EnumMap<WorkshopType, WorkshopInfo> workshops {
@@ -322,9 +331,27 @@ optional<WorkshopType> CollectiveConfig::getWorkshopType(FurnitureType furniture
   return (*map)[furniture];
 }
 
+optional<int> CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType type) {
+  switch (type) {
+    case FurnitureType::TRAINING_WOOD:
+      return 3;
+    case FurnitureType::TRAINING_IRON:
+      return 7;
+    case FurnitureType::TRAINING_STEEL:
+      return 12;
+    default:
+      return none;
+  }
+}
+
 static MinionTaskInfo createTaskInfo(MinionTask task) {
   switch (task) {
-    case MinionTask::TRAIN: return {FurnitureType::TRAINING_DUMMY, "training"};
+    case MinionTask::TRAIN: return {[](const Creature* c, FurnitureType t) {
+          if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevelIncrease(t))
+            return !c || c->getAttributes().getExpLevel() < *maxIncrease + c->getAttributes().getBaseExpLevel();
+          else
+            return false;
+        }, "training"};
     case MinionTask::SLEEP: return {FurnitureType::BED, "sleeping"};
     case MinionTask::EAT: return {MinionTaskInfo::EAT, "eating"};
     case MinionTask::GRAVE: return {FurnitureType::GRAVE, "sleeping"};
@@ -404,9 +431,12 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemId::CHAIN_ARMOR, 30, {CollectiveResourceId::IRON, 200}),
           Workshops::Item::fromType(ItemId::IRON_HELM, 8, {CollectiveResourceId::IRON, 80}),
           Workshops::Item::fromType(ItemId::IRON_BOOTS, 12, {CollectiveResourceId::IRON, 120}),
-          Workshops::Item::fromType(ItemId::WAR_HAMMER, 16, {CollectiveResourceId::IRON, 190}), 
-          Workshops::Item::fromType(ItemId::BATTLE_AXE, 22, {CollectiveResourceId::IRON, 250}),
-          Workshops::Item::fromType(ItemId::SPECIAL_WAR_HAMMER, 120, {CollectiveResourceId::IRON, 1900}), 
+          Workshops::Item::fromType(ItemId::WAR_HAMMER, 16, {CollectiveResourceId::IRON, 190})
+                  .setTechId(TechId::TWO_H_WEAP),
+          Workshops::Item::fromType(ItemId::BATTLE_AXE, 22, {CollectiveResourceId::IRON, 250})
+                  .setTechId(TechId::TWO_H_WEAP),
+          Workshops::Item::fromType(ItemId::SPECIAL_WAR_HAMMER, 120, {CollectiveResourceId::IRON, 1900})
+                  .setTechId(TechId::TWO_H_WEAP),
           Workshops::Item::fromType(ItemId::SPECIAL_BATTLE_AXE, 180, {CollectiveResourceId::IRON, 2000}), 
       }},
       {WorkshopType::LABORATORY, {

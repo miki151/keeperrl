@@ -8,6 +8,8 @@
 #include "construction_map.h"
 #include "known_tiles.h"
 #include "territory.h"
+#include "furniture_factory.h"
+#include "furniture.h"
 
 static bool betterPos(Position from, Position current, Position candidate) {
   double maxDiff = 0.3;
@@ -67,11 +69,57 @@ static Creature* getConsumptionTarget(const Collective* collective, Creature* co
     return nullptr;
 }
 
+const vector<FurnitureType>& MinionTasks::getAllFurniture(MinionTask task) {
+  static EnumMap<MinionTask, vector<FurnitureType>> cache;
+  static bool initialized = false;
+  if (!initialized) {
+    for (auto minionTask : ENUM_ALL(MinionTask)) {
+      auto& taskInfo = CollectiveConfig::getTaskInfo(minionTask);
+      switch (taskInfo.type) {
+        case MinionTaskInfo::FURNITURE:
+          for (auto furnitureType : ENUM_ALL(FurnitureType))
+            if (taskInfo.furniturePredicate(nullptr, furnitureType))
+              cache[minionTask].push_back(furnitureType);
+          break;
+        default: break;
+      }
+    }
+    initialized = true;
+  }
+  return cache[task];
+}
+
+optional<MinionTask> MinionTasks::getTaskFor(const Creature* c, FurnitureType type) {
+  static EnumMap<FurnitureType, optional<MinionTask>> cache;
+  static bool initialized = false;
+  if (!initialized) {
+    for (auto task : ENUM_ALL(MinionTask))
+      for (auto furnitureType : getAllFurniture(task))
+        cache[furnitureType] = task;
+    initialized = true;
+  }
+  if (auto task = cache[type]) {
+    auto& info = CollectiveConfig::getTaskInfo(*task);
+    if (info.furniturePredicate(c, type))
+      return *task;
+  }
+  return none;
+}
+
+vector<Position> MinionTasks::getAllPositions(const Collective* collective, const Creature* c, MinionTask task) {
+  vector<Position> ret;
+  auto& info = CollectiveConfig::getTaskInfo(task);
+  for (auto furnitureType : getAllFurniture(task))
+    if (info.furniturePredicate(c, furnitureType))
+      append(ret, collective->getConstructions().getBuiltPositions(furnitureType));
+  return ret;
+}
+
 PTask MinionTasks::generate(Collective* collective, Creature* c, MinionTask task) {
   auto& info = CollectiveConfig::getTaskInfo(task);
   switch (info.type) {
     case MinionTaskInfo::FURNITURE: {
-      const set<Position>& squares = collective->getConstructions().getBuiltPositions(info.furniture);
+      vector<Position> squares = getAllPositions(collective, c, task);
       if (!squares.empty()) {
         auto searchType = Task::RANDOM_CLOSE;
         if (auto workshopType = CollectiveConfig::getWorkshopType(task))
@@ -80,7 +128,7 @@ PTask MinionTasks::generate(Collective* collective, Creature* c, MinionTask task
         return Task::applySquare(collective, squares, searchType);
       }
       break;
-      }
+    }
     case MinionTaskInfo::EXPLORE:
       if (auto pos = getTileToExplore(collective, c, task))
         return Task::explore(*pos);

@@ -170,18 +170,10 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
     case ViewId::STOCKPILE1:
     case ViewId::STOCKPILE2:
     case ViewId::STOCKPILE3:
-    case ViewId::LIBRARY:
-    case ViewId::WORKSHOP:
-    case ViewId::FORGE:
-    case ViewId::LABORATORY:
-    case ViewId::JEWELER:
-    case ViewId::TORTURE_TABLE:
-    case ViewId::RITUAL_ROOM:
     case ViewId::MOUNTAIN:
     case ViewId::GOLD_ORE:
     case ViewId::IRON_ORE:
-    case ViewId::STONE:
-    case ViewId::TRAINING_ROOM: return v8;
+    case ViewId::STONE: return v8;
     default: return v4;
   }
 }

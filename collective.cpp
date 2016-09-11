@@ -128,8 +128,13 @@ double Collective::getAttractionOccupation(const MinionAttraction& attraction) {
 
 double Collective::getAttractionValue(const MinionAttraction& attraction) {
   switch (attraction.getId()) {
-    case AttractionId::FURNITURE: 
-      return constructions->getBuiltCount(attraction.get<FurnitureType>());
+    case AttractionId::FURNITURE: {
+      double ret = constructions->getBuiltCount(attraction.get<FurnitureType>());
+      for (auto type : ENUM_ALL(FurnitureType))
+        if (FurnitureFactory::isUpgrade(attraction.get<FurnitureType>(), type))
+          ret += constructions->getBuiltCount(type);
+      return ret;
+    }
     case AttractionId::ITEM_INDEX: 
       return getAllItems(attraction.get<ItemIndex>(), true).size();
   }
@@ -461,15 +466,14 @@ PTask Collective::getEquipmentTask(Creature* c) {
   return nullptr;
 }
 
-PTask Collective::getHealingTask(Creature* c) {
+void Collective::considerHealingTask(Creature* c) {
   if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
     for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE, MinionTask::LAIR})
       if (c->getAttributes().getMinionTasks().getValue(t) > 0) {
-        set<Position> positions = getConstructions().getBuiltPositions(config->getTaskInfo(t).furniture);
-        if (!positions.empty())
-          return Task::applySquare(nullptr, positions, Task::LAZY);
+        cancelTask(c);
+        setMinionTask(c, t);
+        return;
       }
-  return nullptr;
 }
 
 void Collective::clearLeader() {
@@ -534,11 +538,9 @@ MoveInfo Collective::getMove(Creature* c) {
     if (MoveInfo move = getAlarmMove(c))
       return move;
   }
+  considerHealingTask(c);
   if (Task* task = taskMap->getTask(c))
     return task->getMove(c);
-  if (PTask t = getHealingTask(c))
-    if (t->getMove(c))
-      return taskMap->addTask(std::move(t), c)->getMove(c);
   if (Task* closest = taskMap->getClosestTask(c, MinionTrait::FIGHTER)) {
     taskMap->takeTask(c, closest);
     return closest->getMove(c);
@@ -690,8 +692,8 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   } else
     spawnPos = getSpawnPos(extractRefs(immigrants));
   groupSize = min<int>(groupSize, spawnPos.size());
-  int neededBeds = bySpawnType[spawnType].size() + groupSize
-      - constructions->getBuiltCount(config->getDormInfo()[spawnType].bedType);
+  int neededBeds = max<int>(0, bySpawnType[spawnType].size() + groupSize
+      - constructions->getBuiltCount(config->getDormInfo()[spawnType].bedType));
   groupSize -= neededBeds;
   if (groupSize < 1)
     return false;
@@ -1362,9 +1364,8 @@ void Collective::destroySquare(Position pos) {
   if (Creature* c = pos.getCreature())
     if (c->getAttributes().isStationary())
       c->die(nullptr, false);
-  if (constructions->containsTrap(pos)) {
+  if (constructions->containsTrap(pos))
     removeTrap(pos);
-  }
   if (constructions->containsFurniture(pos))
     removeFurniture(pos);
   if (constructions->containsSquare(pos))
@@ -1706,7 +1707,6 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
 }
 
 void Collective::onAppliedSquare(Creature* c, Position pos) {
-  MinionTask currentTask = currentTasks.getOrFail(c).task;
   double efficiency = tileEfficiency->getEfficiency(pos);
   switch (NOTNULL(pos.getFurniture())->getType()) {
     case FurnitureType::BOOK_SHELF: {
@@ -1728,9 +1728,6 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
       if (c == getLeader())
         addMana(0.2 * efficiency);
       break;
-    case FurnitureType::TRAINING_DUMMY:
-      c->getAttributes().exerciseAttr(Random.choose<AttrType>(), efficiency);
-      break;
     case FurnitureType::WHIPPING_POST:
       taskMap->addTask(Task::whipping(pos, c), pos, MinionTrait::FIGHTER);
       break;
@@ -1740,6 +1737,14 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
     default:
       break;
   }
+  if (auto usage = pos.getFurniture()->getUsageType())
+    switch (*usage) {
+      case FurnitureUsageType::TRAIN:
+        c->getAttributes().increaseExpLevel(0.005 * efficiency);
+        break;
+      default:
+        break;
+    }
   for (auto workshopType : ENUM_ALL(WorkshopType)) {
     auto& elem = config->getWorkshopInfo(workshopType);
     if (pos.getFurniture()->getType() == elem.furniture) {

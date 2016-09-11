@@ -15,7 +15,8 @@ enum class FurnitureUsageType {
     KEEPER_BOARD,
     CROPS,
     STAIRS,
-    TIE_UP
+    TIE_UP,
+    TRAIN
 };
 class FurnitureUsage {
   public:

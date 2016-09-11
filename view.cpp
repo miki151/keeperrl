@@ -94,7 +94,7 @@ CreatureInfo::CreatureInfo(const Creature* c)
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
       stackName(c->getName().stack()),
-      expLevel(c->getAttributes().getExpLevel()),
+      expLevel(c->getAttributes().getVisibleExpLevel()),
       morale(c->getMorale()),
       cost({ViewId::GOLD, c->getAttributes().getRecruitmentCost()}){
 }
@@ -170,7 +170,7 @@ void PlayerInfo::readFrom(const Creature* c) {
       c->getExpLevel(), 0,
       "Describes general combat value of the creature."}*/
   };
-  level = c->getAttributes().getExpLevel();
+  level = c->getAttributes().getVisibleExpLevel();
   skills = getSkillNames(c);
   effects.clear();
   for (auto& adj : c->getBadAdjectives())

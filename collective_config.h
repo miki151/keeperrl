@@ -115,8 +115,10 @@ struct ResourceInfo {
 struct MinionTaskInfo {
   enum Type { FURNITURE, EXPLORE, COPULATE, CONSUME, EAT, SPIDER } type;
   MinionTaskInfo(FurnitureType, const string& description);
+  typedef function<bool(const Creature*, FurnitureType)> UsagePredicate;
+  MinionTaskInfo(UsagePredicate, const string& description);
   MinionTaskInfo(Type, const string& description, optional<CollectiveWarning> = none);
-  FurnitureType furniture;
+  UsagePredicate furniturePredicate;
   string description;
   optional<CollectiveWarning> warning;
 };
@@ -175,6 +177,7 @@ class CollectiveConfig {
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
   const vector<FurnitureType>& getRoomsNeedingLight() const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
+  static optional<int> getTrainingMaxLevelIncrease(FurnitureType);
   static const MinionTaskInfo& getTaskInfo(MinionTask);
   static const FurnitureType& getEquipmentStorage();
   static const FurnitureType& getResourceStorage();

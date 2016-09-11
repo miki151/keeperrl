@@ -269,7 +269,7 @@ class Collective : public TaskCallback {
   optional<Position> getTileToExplore(const Creature*, MinionTask) const;
   PTask getStandardTask(Creature* c);
   PTask getEquipmentTask(Creature* c);
-  PTask getHealingTask(Creature* c);
+  void considerHealingTask(Creature* c);
   bool isTaskGood(const Creature*, MinionTask, bool ignoreTaskLock = false) const;
   void setRandomTask(const Creature*);
 

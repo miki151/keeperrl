@@ -30,8 +30,15 @@ RICH_ENUM(MinionTask,
   BE_TORTURED
 );
 
+class Position;
+
 class MinionTasks {
   public:
   static PTask generate(Collective*, Creature*, MinionTask);
   static optional<double> getDuration(const Creature*, MinionTask);
+  static vector<Position> getAllPositions(const Collective*, const Creature*, MinionTask);
+  static const vector<FurnitureType>& getAllFurniture(MinionTask);
+  static optional<MinionTask> getTaskFor(const Creature*, FurnitureType);
+
+
 };

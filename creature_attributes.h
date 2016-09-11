@@ -60,8 +60,9 @@ class CreatureAttributes {
   void setCourage(double);
   const Gender& getGender() const;
   double getExpLevel() const;
+  double getBaseExpLevel() const;
+  double getVisibleExpLevel() const;
   void increaseExpLevel(double increase);
-  void exerciseAttr(AttrType, double value);
   string bodyDescription() const;
   SpellMap& getSpellMap();
   const SpellMap& getSpellMap() const;
@@ -101,6 +102,7 @@ class CreatureAttributes {
   friend class CreatureFactory;
 
   private:
+  void increaseAttr(AttrType, double value);
   void consumeEffects(const EnumMap<LastingEffect, int>&);
   MustInitialize<ViewId> SERIAL(viewId);
   HeapAllocated<optional<ViewObject>> SERIAL(illusionViewObject);
@@ -124,7 +126,6 @@ class CreatureAttributes {
   bool SERIAL(invincible) = false;
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
-  double SERIAL(attributeGain) = 0.5;
   int SERIAL(recruitmentCost) = 0;
   Skillset SERIAL(skills);
   HeapAllocated<SpellMap> SERIAL(spells);

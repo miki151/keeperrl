@@ -185,14 +185,26 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
       BuildInfo({FurnitureType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure chest"}, {},
           "Stores gold."),
-      BuildInfo({FurnitureType::PIGSTY,
-          {ResourceId::WOOD, 20}, "Pigsty"}, {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
+      BuildInfo({FurnitureType::PIGSTY, {ResourceId::WOOD, 20}, "Pigsty"},
+          {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
           "Increases minion population limit by up to " +
-              toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 'p'),
+          toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 'p'),
       BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 10}, "Bed"}, {},
           "Humanoid minions sleep here.", 'm'),
-      BuildInfo({FurnitureType::TRAINING_DUMMY, {ResourceId::IRON, 20}, "Training room"}, {},
-          "Used to level up your minions.", 't'),
+      BuildInfo({FurnitureType::TRAINING_WOOD, {ResourceId::WOOD, 60}, "Wooden dummy"}, {},
+          "Train your minions here. Adds up to " +
+          toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_WOOD)) + " experience levels.",
+          't', "Training room", true),
+      BuildInfo({FurnitureType::TRAINING_IRON, {ResourceId::IRON, 60}, "Iron dummy"},
+          {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}},
+          "Train your minions here. Adds up to " +
+          toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_IRON)) + " experience levels.",
+          0, "Training room"),
+      BuildInfo({FurnitureType::TRAINING_STEEL, {ResourceId::IRON, 180}, "Steel dummy"},
+          {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}},
+          "Train your minions here. Adds up to " +
+          toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_STEEL)) + " experience levels.",
+          0, "Training room"),
       BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 20}, "Workshop"},
           {{RequirementId::TECHNOLOGY, TechId::CRAFTING}},
           "Produces leather equipment, traps, first-aid kits and other.", 'w', workshop),
@@ -662,7 +674,8 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   vector<pair<string, vector<Item*>>> usedStacks = Item::stackItems(usedItems,
       [&](const Item* it) {
         const Creature* c = getCreature(*getCollective()->getMinionEquipment().getOwner(it));
-        return " owned by " + c->getName().a() + " (level " + toString(c->getAttributes().getExpLevel()) + ")";});
+        return " owned by " + c->getName().a() +
+            " (level " + toString(c->getAttributes().getVisibleExpLevel()) + ")";});
   vector<Item*> allStacked;
   vector<ItemInfo> options;
   for (Item* it : currentItems)
@@ -1400,29 +1413,14 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
       index.insert(c->getViewObject());
 }
 
-static optional<MinionTask> getTaskFor(FurnitureType type) {
-  static EnumMap<FurnitureType, optional<MinionTask>> cache;
-  static bool initialized = false;
-  if (!initialized) {
-    for (auto furnitureType : ENUM_ALL(FurnitureType))
-      for (auto task : ENUM_ALL(MinionTask)) {
-        auto& taskInfo = CollectiveConfig::getTaskInfo(task);
-        if (taskInfo.type == MinionTaskInfo::FURNITURE && taskInfo.furniture == furnitureType)
-          cache[furnitureType] = task;
-      }
-    cache[FurnitureType::WHIPPING_POST] = MinionTask::BE_WHIPPED;
-    cache[FurnitureType::TORTURE_TABLE] = MinionTask::BE_TORTURED;
-    initialized = true;
-  }
-  return cache[type];
-}
-
 static bool showEfficiency(FurnitureType type) {
   switch (type) {
     case FurnitureType::BOOK_SHELF:
     case FurnitureType::DEMON_SHRINE:
     case FurnitureType::WORKSHOP:
-    case FurnitureType::TRAINING_DUMMY:
+    case FurnitureType::TRAINING_WOOD:
+    case FurnitureType::TRAINING_IRON:
+    case FurnitureType::TRAINING_STEEL:
     case FurnitureType::LABORATORY:
     case FurnitureType::JEWELER:
     case FurnitureType::THRONE:
@@ -1446,7 +1444,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (Creature* c = getCreature(*draggedCreature))
-          if (auto task = getTaskFor(furniture->getType()))
+          if (auto task = MinionTasks::getTaskFor(c, furniture->getType()))
             if (c->getAttributes().getMinionTasks().getValue(*task) > 0) {
               index.setHighlight(HighlightType::CREATURE_DROP);
               index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
@@ -1653,7 +1651,7 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
   if (Creature* c = getCreature(info.creatureId)) {
     if (getCollective()->getConstructions().containsFurniture(pos)) {
       auto& furniture = getCollective()->getConstructions().getFurniture(pos);
-      if (auto task = getTaskFor(furniture.getFurnitureType())) {
+      if (auto task = MinionTasks::getTaskFor(c, furniture.getFurnitureType())) {
         if (getCollective()->isMinionTaskPossible(c, *task)) {
           getCollective()->setMinionTask(c, *task);
           getCollective()->setTask(c, Task::goTo(pos));
@@ -1710,12 +1708,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;   
     case UserInputId::CREATURE_DRAG:
         draggedCreature = input.get<Creature::Id>();
-        for (auto task : ENUM_ALL(MinionTask)) {
-          auto& info = CollectiveConfig::getTaskInfo(task);
-          if (info.type == MinionTaskInfo::FURNITURE)
-          for (auto pos : getCollective()->getConstructions().getBuiltPositions(info.furniture))
+        for (auto task : ENUM_ALL(MinionTask))
+          for (auto& pos : MinionTasks::getAllPositions(getCollective(), nullptr, task))
             pos.setNeedsRenderUpdate(true);
-        }
         break;
     case UserInputId::CREATURE_DRAG_DROP:
         minionDragAndDrop(input.get<CreatureDropInfo>());

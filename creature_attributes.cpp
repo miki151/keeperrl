@@ -46,7 +46,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, chatReactionHostile, barehandedDamage, barehandedAttack, attackEffect, passiveAttack, gender);
   serializeAll(ar, body, innocent);
   serializeAll(ar, animal, stationary, cantEquip, courage);
-  serializeAll(ar, carryAnything, invincible, noChase, isSpecial, attributeGain, skills, spells);
+  serializeAll(ar, carryAnything, invincible, noChase, isSpecial, skills, spells);
   serializeAll(ar, permanentEffects, lastingEffects, minionTasks, attrIncrease, recruitmentCost);
   serializeAll(ar, noAttackSound);
 }
@@ -85,31 +85,41 @@ const Gender& CreatureAttributes::getGender() const {
   return gender;
 }
 
-double CreatureAttributes::getExpLevel() const {
-  vector<pair<AttrType, int>> countAttr {
-    {AttrType::STRENGTH, 12},
-    {AttrType::DEXTERITY, 12}};
+struct AttrLevelInfo {
+  AttrType type;
+  double increasePerLevel;
+};
+
+static const vector<AttrLevelInfo> attrLevelInfo {
+  {AttrType::STRENGTH, 1},
+  {AttrType::DEXTERITY, 1}};
+
+static double calculateExpLevel(function<double(AttrType)> attrFun) {
   double sum = 0;
-  for (auto elem : countAttr)
-    sum += 10.0 * (getRawAttr(elem.first) / elem.second - 1);
+  for (auto& elem : attrLevelInfo)
+    sum += attrFun(elem.type) / (elem.increasePerLevel * attrLevelInfo.size());
   return max(1.0, sum);
 }
 
-void CreatureAttributes::increaseExpLevel(double increase) {
-  double l = getExpLevel();
-  for (int i : Range(100000)) {
-    exerciseAttr(Random.choose<AttrType>(), 0.05);
-    if (getExpLevel() >= l + increase)
-      break;
-  }
+double CreatureAttributes::getExpLevel() const {
+  return calculateExpLevel([this] (AttrType t) { return getRawAttr(t);});
 }
 
-double exerciseMax = 2.0;
-double increaseMult = 0.001; // This translates to about 690 stat exercises to reach 50% of the max increase,
-                             // and 2300 to reach 90%
+double CreatureAttributes::getBaseExpLevel() const {
+  return calculateExpLevel([this] (AttrType t) { return attr[t];});
+}
 
-void CreatureAttributes::exerciseAttr(AttrType t, double value) {
-  attrIncrease[t] += ((exerciseMax - 1) * attr[t] - attrIncrease[t]) * increaseMult * value;
+double CreatureAttributes::getVisibleExpLevel() const {
+  return floor(max(1., getExpLevel() - 10));
+}
+
+void CreatureAttributes::increaseExpLevel(double increase) {
+  for (auto& elem : attrLevelInfo)
+    increaseAttr(elem.type, increase * elem.increasePerLevel);
+}
+
+void CreatureAttributes::increaseAttr(AttrType t, double value) {
+  attrIncrease[t] += value;
 }
 
 SpellMap& CreatureAttributes::getSpellMap() {

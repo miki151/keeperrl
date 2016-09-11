@@ -793,10 +793,10 @@ int Creature::getPoints() const {
   return points;
 }
 
-double maxLevelGain = 5.0;
-double minLevelGain = 0.02;
-double equalLevelGain = 0.2;
-double maxLevelDiff = 30;
+static const double maxLevelGain = 5.0;
+static const double minLevelGain = 0.02;
+static const double equalLevelGain = 0.2;
+static const double maxLevelDiff = 30;
 
 void Creature::onKilled(Creature* victim) {
   int difficulty = victim->getDifficultyPoints();
@@ -1081,7 +1081,7 @@ static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
 void Creature::updateViewObject() {
   modViewObject().setAttribute(ViewObject::Attribute::DEFENSE, getModifier(ModifierType::DEFENSE));
   modViewObject().setAttribute(ViewObject::Attribute::ATTACK, getModifier(ModifierType::DAMAGE));
-  modViewObject().setAttribute(ViewObject::Attribute::LEVEL, attributes->getExpLevel());
+  modViewObject().setAttribute(ViewObject::Attribute::LEVEL, attributes->getVisibleExpLevel());
   modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
   modViewObject().setModifier(ViewObject::Modifier::DRAW_MORALE);
   modViewObject().setAdjectives(extractNames(concat(

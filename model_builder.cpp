@@ -83,7 +83,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::ORC;
           c.frequency = 0.7;
           c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::TRAINING_DUMMY}, 0.33, 4.0},
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_WOOD}, 0.33, 4.0},
             );
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 20;),
@@ -100,7 +100,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::OGRE;
           c.frequency = 0.3;
           c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::TRAINING_DUMMY}, 1.0, 5.0}
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_WOOD}, 1.0, 5.0}
             );
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 40;),
@@ -108,7 +108,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::HARPY;
           c.frequency = 0.3;
           c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::TRAINING_DUMMY}, 1.0, 5.0},
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_WOOD}, 1.0, 5.0},
             {{AttractionId::ITEM_INDEX, ItemIndex::RANGED_WEAPON}, 1.0, 3.0, true}
             );
           c.traits = {MinionTrait::FIGHTER};
@@ -136,7 +136,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.salary = 40;
           c.spawnAtDorm = true;
           c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::TRAINING_DUMMY}, 0.66, 4.0}
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_WOOD}, 0.66, 4.0}
             );),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::LOST_SOUL;
@@ -194,7 +194,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.frequency = 0.1;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
           c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::TRAINING_DUMMY}, 1.33, 4.0}
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_WOOD}, 1.33, 4.0}
             );
           c.salary = 0;),
       /*CONSTRUCT(ImmigrantInfo,

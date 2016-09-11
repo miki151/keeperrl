@@ -17,9 +17,18 @@
 
 Furniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
   switch (type) {
-    case FurnitureType::TRAINING_DUMMY:
-      return Furniture("training dummy", ViewObject(ViewId::TRAINING_ROOM, ViewLayer::FLOOR), type,
-          Furniture::BLOCKING, tribe);
+    case FurnitureType::TRAINING_WOOD:
+      return Furniture("wooden training dummy", ViewObject(ViewId::TRAINING_WOOD, ViewLayer::FLOOR), type,
+          Furniture::BLOCKING, tribe)
+          .setUsageType(FurnitureUsageType::TRAIN);
+    case FurnitureType::TRAINING_IRON:
+      return Furniture("iron training dummy", ViewObject(ViewId::TRAINING_IRON, ViewLayer::FLOOR), type,
+          Furniture::BLOCKING, tribe)
+          .setUsageType(FurnitureUsageType::TRAIN);
+    case FurnitureType::TRAINING_STEEL:
+      return Furniture("steel training dummy", ViewObject(ViewId::TRAINING_STEEL, ViewLayer::FLOOR), type,
+          Furniture::BLOCKING, tribe)
+          .setUsageType(FurnitureUsageType::TRAIN);
     case FurnitureType::WORKSHOP:
       return Furniture("workshop", ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR), type,
           Furniture::BLOCKING, tribe);
@@ -189,6 +198,17 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos, const Collecti
     case FurnitureType::KEEPER_BOARD:
     case FurnitureType::EYEBALL: return true;
     default: return col->getTerritory().contains(pos);
+  }
+}
+
+bool FurnitureFactory::isUpgrade(FurnitureType base, FurnitureType upgraded) {
+  switch (base) {
+    case FurnitureType::TRAINING_WOOD:
+      return upgraded == FurnitureType::TRAINING_IRON || upgraded == FurnitureType::TRAINING_STEEL;
+    case FurnitureType::TRAINING_IRON:
+      return upgraded == FurnitureType::TRAINING_STEEL;
+    default:
+      return false;
   }
 }
 

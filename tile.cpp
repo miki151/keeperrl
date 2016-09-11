@@ -524,7 +524,9 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WHIPPING_POST, sprite("whipping_post").setNoShadow().setRoundShadow());
     Tile::addTile(ViewId::NOTICE_BOARD, sprite("board").setNoShadow().setRoundShadow());
     Tile::addTile(ViewId::SOKOBAN_HOLE, sprite("hole").setNoShadow());
-    Tile::addTile(ViewId::TRAINING_ROOM, sprite("traindeco").setRoundShadow());
+    Tile::addTile(ViewId::TRAINING_WOOD, sprite("train_wood").setRoundShadow());
+    Tile::addTile(ViewId::TRAINING_IRON, sprite("train_iron").setRoundShadow());
+    Tile::addTile(ViewId::TRAINING_STEEL, sprite("train_steel").setRoundShadow());
     Tile::addTile(ViewId::RITUAL_ROOM, sprite("ritualroomdeco").setRoundShadow());
     Tile::addTile(ViewId::LIBRARY, sprite("libdeco").setRoundShadow());
     Tile::addTile(ViewId::LABORATORY, sprite("labdeco").setRoundShadow());
@@ -802,7 +804,9 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::WHIPPING_POST, symbol(u8"}", ColorId::BROWN, true));
     Tile::addSymbol(ViewId::NOTICE_BOARD, symbol(u8"|", ColorId::BROWN));
     Tile::addSymbol(ViewId::SOKOBAN_HOLE, symbol(u8"0", ColorId::DARK_BLUE));
-    Tile::addSymbol(ViewId::TRAINING_ROOM, symbol(u8"‡", ColorId::BROWN, true));
+    Tile::addSymbol(ViewId::TRAINING_WOOD, symbol(u8"‡", ColorId::BROWN, true));
+    Tile::addSymbol(ViewId::TRAINING_IRON, symbol(u8"‡", ColorId::LIGHT_GRAY, true));
+    Tile::addSymbol(ViewId::TRAINING_STEEL, symbol(u8"‡", ColorId::LIGHT_BLUE, true));
     Tile::addSymbol(ViewId::RITUAL_ROOM, symbol(u8"Ω", ColorId::PURPLE, true));
     Tile::addSymbol(ViewId::LIBRARY, symbol(u8"▤", ColorId::BROWN, true));
     Tile::addSymbol(ViewId::LABORATORY, symbol(u8"ω", ColorId::PURPLE, true));
