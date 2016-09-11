@@ -137,6 +137,25 @@ PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
       line.buildHorizontalList());
 }
 
+static optional<int> getFirstActive(const vector<CollectiveInfo::Button>& buttons, int begin) {
+  for (int i = begin; i < buttons.size() && buttons[i].groupName == buttons[begin].groupName; ++i)
+    if (buttons[i].state == CollectiveInfo::Button::ACTIVE)
+      return i;
+  return none;
+}
+
+static optional<int> getNextActive(const vector<CollectiveInfo::Button>& buttons, int begin, int current) {
+  int i = current;
+  do {
+    ++i;
+    if (buttons[i].groupName != buttons[begin].groupName)
+      i = begin;
+    if (i == current)
+      return none;
+  } while (buttons[i].state != CollectiveInfo::Button::ACTIVE);
+  return i;
+}
+
 GuiFactory::ListBuilder GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab tab) {
   auto elems = gui.getListBuilder(legendLineHeight);
   string lastGroup;
@@ -145,19 +164,18 @@ GuiFactory::ListBuilder GuiBuilder::drawButtons(vector<CollectiveInfo::Button> b
       lastGroup = buttons[i].groupName;
       function<void()> buttonFunHotkey = [=] {
         if (activeGroup != lastGroup) {
-          setActiveButton(tab, i, buttons[i].viewId);
+          if (auto firstBut = getFirstActive(buttons, i))
+            setActiveButton(tab, *firstBut, buttons[*firstBut].viewId);
           setCollectiveTab(tab);
           activeGroup = lastGroup;
         } else {
           if (auto but = getActiveButton(tab)) {
-            int lastButton = 0;
-            for (int j : All(buttons))
-              if (buttons[j].groupName == lastGroup)
-                lastButton = j;
-            int newBut = *but + 1;
-            if (newBut > lastButton)
-              newBut = i;
-            setActiveButton(tab, newBut, buttons[newBut].viewId);
+            if (auto newBut = getNextActive(buttons, i, *but))
+              setActiveButton(tab, *newBut, buttons[*newBut].viewId);
+            else {
+              clearActiveButton();
+              activeGroup = none;
+            }
           } else
             setActiveButton(tab, i, buttons[i].viewId);
         }
