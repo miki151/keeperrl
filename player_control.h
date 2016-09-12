@@ -176,7 +176,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void minionDragAndDrop(const CreatureDropInfo&);
   void fillMinions(CollectiveInfo&) const;
   vector<Creature*> getMinionsLike(Creature*) const;
-  vector<PlayerInfo> getPlayerInfos(vector<Creature*>) const;
+  vector<PlayerInfo> getPlayerInfos(vector<Creature*>, UniqueEntity<Creature>::Id chosenId) const;
   void sortMinionsForUI(vector<Creature*>&) const;
   vector<CollectiveInfo::CreatureGroup> getCreatureGroups(vector<Creature*>) const;
   vector<CollectiveInfo::CreatureGroup> getEnemyGroups() const;
