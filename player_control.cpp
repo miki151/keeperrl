@@ -1021,30 +1021,33 @@ void PlayerControl::sortMinionsForUI(vector<Creature*>& minions) const {
       });
 }
 
-vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) const {
+vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, UniqueEntity<Creature>::Id chosenId) const {
   sortMinionsForUI(creatures);
   vector<PlayerInfo> minions;
   for (Creature* c : creatures) {
     minions.emplace_back();
     minions.back().readFrom(c);
-    for (MinionTask t : ENUM_ALL(MinionTask))
-      if (c->getAttributes().getMinionTasks().getValue(t, true) > 0) {
-        minions.back().minionTasks.push_back({t,
-            !getCollective()->isMinionTaskPossible(c, t),
-            getCollective()->getMinionTask(c) == t,
-            c->getAttributes().getMinionTasks().isLocked(t)});
-      }
     minions.back().creatureId = c->getUniqueId();
-    if (getCollective()->usesEquipment(c))
-      fillEquipment(c, minions.back());
-    if (getCollective()->hasTrait(c, MinionTrait::PRISONER))
-      minions.back().actions = { PlayerInfo::EXECUTE, PlayerInfo::TORTURE };
-    else {
-      minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
-      if (c != getCollective()->getLeader()) {
-        minions.back().actions.push_back(PlayerInfo::BANISH);
-        if (getCollective()->canWhip(c))
-          minions.back().actions.push_back(PlayerInfo::WHIP);
+    // only fill equipment for the chosen minion to avoid lag
+    if (c->getUniqueId() == chosenId) {
+      for (MinionTask t : ENUM_ALL(MinionTask))
+        if (c->getAttributes().getMinionTasks().getValue(t, true) > 0) {
+          minions.back().minionTasks.push_back({t,
+              !getCollective()->isMinionTaskPossible(c, t),
+              getCollective()->getMinionTask(c) == t,
+              c->getAttributes().getMinionTasks().isLocked(t)});
+        }
+      if (getCollective()->usesEquipment(c))
+        fillEquipment(c, minions.back());
+      if (getCollective()->hasTrait(c, MinionTrait::PRISONER))
+        minions.back().actions = { PlayerInfo::EXECUTE, PlayerInfo::TORTURE };
+      else {
+        minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
+        if (c != getCollective()->getLeader()) {
+          minions.back().actions.push_back(PlayerInfo::BANISH);
+          if (getCollective()->canWhip(c))
+            minions.back().actions.push_back(PlayerInfo::WHIP);
+        }
       }
     }
   }
@@ -1113,9 +1116,10 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   if (chosenCreature)
     if (Creature* c = getCreature(*chosenCreature)) {
       if (!getChosenTeam())
-        info.chosen = {*chosenCreature, getPlayerInfos(getMinionsLike(c))};
+        info.chosen = {*chosenCreature, getPlayerInfos(getMinionsLike(c), *chosenCreature)};
       else
-        info.chosen = {*chosenCreature, getPlayerInfos(getTeams().getMembers(*getChosenTeam())), *getChosenTeam()};
+        info.chosen = {*chosenCreature, getPlayerInfos(getTeams().getMembers(*getChosenTeam()), *chosenCreature),
+                       *getChosenTeam()};
     }
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemyGroups = getEnemyGroups();
