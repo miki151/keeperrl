@@ -856,6 +856,14 @@ vector<T> filter(vector<T>&& v, Predicate predicate) {
   return ret;
 }
 
+template <typename Container, typename Elem>
+vector<Elem> asVector(const Container& c) {
+  vector<Elem> ret;
+  for (const auto& elem : c)
+    ret.push_back(elem);
+  return ret;
+}
+
 template <typename T, typename V>
 bool contains(const T& v, const V& elem) {
   return std::find(v.begin(), v.end(), elem) != v.end();

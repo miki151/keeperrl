@@ -200,7 +200,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void displace(double time, Vec2);
   void surrender(Creature* to);
   
-  virtual void onChat(Creature*);
+  void increaseExpLevel(double increase, bool message = true);
 
   Item* getWeapon() const;
   void dropWeapon();
@@ -305,7 +305,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   vector<Position> visibleCreatures;
   VisionId SERIAL(vision);
   void updateVision();
-  vector<string> SERIAL(personalEvents);
   bool forceMovement = false;
   optional<double> SERIAL(lastCombatTime);
 };

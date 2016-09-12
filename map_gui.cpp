@@ -656,7 +656,8 @@ optional<ViewId> MapGui::getHighlightedFurniture() {
     if (curPos.inRectangle(objects.getBounds()) &&
         objects[curPos] &&
         objects[curPos]->hasObject(ViewLayer::FLOOR) &&
-        objects[curPos]->getHighlight(HighlightType::CLICKABLE_FURNITURE) > 0)
+        (objects[curPos]->getHighlight(HighlightType::CLICKABLE_FURNITURE) > 0 ||
+         (objects[curPos]->getHighlight(HighlightType::CREATURE_DROP) > 0 && !!draggedCreature)))
       return objects[curPos]->getObject(ViewLayer::FLOOR).id();
   }
   return none;

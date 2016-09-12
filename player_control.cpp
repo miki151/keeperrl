@@ -1288,6 +1288,12 @@ void PlayerControl::initialize() {
 
 void PlayerControl::onEvent(const GameEvent& event) {
   switch (event.getId()) {
+    case EventId::CREATURE_EVENT: {
+      auto& info = event.get<EventInfo::CreatureEvent>();
+      if (contains(getCollective()->getCreatures(), info.creature))
+        addMessage(PlayerMessage(info.message).setCreature(info.creature->getUniqueId()));
+      break;
+    }
     case EventId::MOVED: {
         Creature* c = event.get<Creature*>();
         if (contains(getCreatures(), c)) {
@@ -1445,10 +1451,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (draggedCreature)
         if (Creature* c = getCreature(*draggedCreature))
           if (auto task = MinionTasks::getTaskFor(c, furniture->getType()))
-            if (c->getAttributes().getMinionTasks().getValue(*task) > 0) {
+            if (c->getAttributes().getMinionTasks().getValue(*task) > 0)
               index.setHighlight(HighlightType::CREATURE_DROP);
-              index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
-            }
       if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
         index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY,
             getCollective()->getTileEfficiency().getEfficiency(position));

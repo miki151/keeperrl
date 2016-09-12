@@ -603,16 +603,20 @@ static optional<Position> chooseBedPos(const set<Position>& lair, const set<Posi
     return none;
 }
 
-vector<Position> Collective::getSpawnPos(const vector<Creature*>& creatures) {
-  vector<Position> extendedTiles = territory->getExtended(10, 20);
-  if (extendedTiles.empty())
+static vector<Position> getSpawnPos(const vector<Creature*>& creatures, vector<Position> allPositions) {
+  if (allPositions.empty() || creatures.empty())
     return {};
+  for (auto& pos : copyOf(allPositions))
+    if (!pos.canEnterEmpty(creatures[0]))
+      for (auto& neighbor : pos.neighbors8())
+        if (neighbor.canEnterEmpty(creatures[0]))
+          allPositions.push_back(neighbor);
   vector<Position> spawnPos;
   for (auto c : creatures) {
     Position pos;
     int cnt = 100;
     do {
-      pos = Random.choose(extendedTiles);
+      pos = Random.choose(allPositions);
     } while ((!pos.canEnter(c) || contains(spawnPos, pos)) && --cnt > 0);
     if (cnt == 0) {
       Debug() << "Couldn't spawn immigrant " << c->getName().bare();
@@ -635,7 +639,7 @@ bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCr
           break;
       }
   } else 
-    spawnPos = getSpawnPos(creatureRefs);
+    spawnPos = getSpawnPos(creatureRefs, territory->getExtended(10, 20));
   if (spawnPos.size() < immigrants.size())
     return false;
   if (info.autoTeam)
@@ -651,21 +655,12 @@ bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCr
 
 static CostInfo getSpawnCost(SpawnType type, int howMany) {
   switch (type) {
-    case SpawnType::UNDEAD: return {CollectiveResourceId::CORPSE, howMany};
-    default: return {CollectiveResourceId::GOLD, 0};
+    case SpawnType::UNDEAD:
+      return {CollectiveResourceId::CORPSE, howMany};
+    default:
+      return CostInfo::noCost();
   }
 }
-
-/*void Collective::considerBuildingBeds() {
-  bool bedsWarning = false;
-  for (auto spawnType : ENUM_ALL(SpawnType))
-    if (auto bedType = config->getDormInfo()[spawnType].getBedType()) {
-      int neededBeds = bySpawnType[spawnType].size() - constructions->getSquareCount(*bedType);
-      if (neededBeds > 0)
-        bedsWarning |= tryBuildingBeds(spawnType, neededBeds) < neededBeds;
-    }
-  warnings.set(Warning::BEDS, bedsWarning);
-}*/
 
 bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   if (info.techId && !hasTech(*info.techId))
@@ -681,16 +676,8 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   FurnitureType bedType = config->getDormInfo()[spawnType].bedType;
   if (!hasResource(getSpawnCost(spawnType, groupSize)))
     return false;
-  vector<Position> spawnPos;
-  if (info.spawnAtDorm) {
-    for (Position v : Random.permutation(constructions->getBuiltPositions(bedType)))
-      if (v.canEnter(immigrants[spawnPos.size()].get())) {
-        spawnPos.push_back(v);
-        if (spawnPos.size() >= immigrants.size())
-          break;
-      }
-  } else
-    spawnPos = getSpawnPos(extractRefs(immigrants));
+  vector<Position> spawnPos = getSpawnPos(extractRefs(immigrants), info.spawnAtDorm ?
+      asVector<Position>(constructions->getBuiltPositions(bedType)) : territory->getExtended(10, 20));
   groupSize = min<int>(groupSize, spawnPos.size());
   int neededBeds = max<int>(0, bySpawnType[spawnType].size() + groupSize
       - constructions->getBuiltCount(config->getDormInfo()[spawnType].bedType));
@@ -706,7 +693,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   for (int i : All(immigrants)) {
     Creature* c = immigrants[i].get();
     if (i == 0 && groupSize > 1) // group leader
-      c->getAttributes().increaseExpLevel(2);
+      c->increaseExpLevel(2, false);
     addCreature(std::move(immigrants[i]), spawnPos[i], info.traits);
     minionAttraction.set(c, info.attractions);
   }
@@ -1083,9 +1070,9 @@ void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
     int difficulty = victim->getDifficultyPoints();
     CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;
+    control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a())
+        .setPosition(victim->getPosition()));
   }
-  control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a())
-      .setPosition(victim->getPosition()));
 }
 
 double Collective::getEfficiency(const Creature* c) const {
@@ -1708,57 +1695,59 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
 
 void Collective::onAppliedSquare(Creature* c, Position pos) {
   double efficiency = tileEfficiency->getEfficiency(pos);
-  switch (NOTNULL(pos.getFurniture())->getType()) {
-    case FurnitureType::BOOK_SHELF: {
-      addMana(0.2 * efficiency);
-      auto availableSpells = Technology::getAvailableSpells(this);
-      if (Random.rollD(60.0 / efficiency) && !availableSpells.empty()) {
-        for (int i : Range(30)) {
-          Spell* spell = Random.choose(Technology::getAvailableSpells(this));
-          if (!c->getAttributes().getSpellMap().contains(spell)) {
-            c->getAttributes().getSpellMap().add(spell);
-            control->addMessage(c->getName().a() + " learns the spell of " + spell->getName());
-            break;
+  if (auto furniture = pos.getFurniture()) {
+    switch (furniture->getType()) {
+      case FurnitureType::BOOK_SHELF: {
+        addMana(0.2 * efficiency);
+        auto availableSpells = Technology::getAvailableSpells(this);
+        if (Random.rollD(60.0 / efficiency) && !availableSpells.empty()) {
+          for (int i : Range(30)) {
+            Spell* spell = Random.choose(Technology::getAvailableSpells(this));
+            if (!c->getAttributes().getSpellMap().contains(spell)) {
+              c->getAttributes().getSpellMap().add(spell);
+              control->addMessage(c->getName().a() + " learns the spell of " + spell->getName());
+              break;
+            }
           }
         }
+        break;
       }
-      break;
-    }
-    case FurnitureType::THRONE:
-      if (c == getLeader())
-        addMana(0.2 * efficiency);
-      break;
-    case FurnitureType::WHIPPING_POST:
-      taskMap->addTask(Task::whipping(pos, c), pos, MinionTrait::FIGHTER);
-      break;
-    case FurnitureType::TORTURE_TABLE:
-      taskMap->addTask(Task::torture(this, c), pos, MinionTrait::FIGHTER);
-      break;
-    default:
-      break;
-  }
-  if (auto usage = pos.getFurniture()->getUsageType())
-    switch (*usage) {
-      case FurnitureUsageType::TRAIN:
-        c->getAttributes().increaseExpLevel(0.005 * efficiency);
+      case FurnitureType::THRONE:
+        if (c == getLeader())
+          addMana(0.2 * efficiency);
+        break;
+      case FurnitureType::WHIPPING_POST:
+        taskMap->addTask(Task::whipping(pos, c), pos, MinionTrait::FIGHTER);
+        break;
+      case FurnitureType::TORTURE_TABLE:
+        taskMap->addTask(Task::torture(this, c), pos, MinionTrait::FIGHTER);
         break;
       default:
         break;
     }
-  for (auto workshopType : ENUM_ALL(WorkshopType)) {
-    auto& elem = config->getWorkshopInfo(workshopType);
-    if (pos.getFurniture()->getType() == elem.furniture) {
-      vector<PItem> items =
-          workshops->get(workshopType).addWork(getEfficiency(c));
-      if (!items.empty()) {
-        if (items[0]->getClass() == ItemClass::WEAPON)
-          getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
-        if (items[0]->getClass() == ItemClass::ARMOR)
-          getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
-        if (items[0]->getClass() == ItemClass::POTION)
-          getGame()->getStatistics().add(StatId::POTION_PRODUCED);
-        addProducesMessage(c, items);
-        c->getPosition().dropItems(std::move(items));
+    if (auto usage = furniture->getUsageType())
+      switch (*usage) {
+        case FurnitureUsageType::TRAIN:
+          c->increaseExpLevel(0.005 * efficiency);
+          break;
+        default:
+          break;
+      }
+    for (auto workshopType : ENUM_ALL(WorkshopType)) {
+      auto& elem = config->getWorkshopInfo(workshopType);
+      if (furniture->getType() == elem.furniture) {
+        vector<PItem> items =
+            workshops->get(workshopType).addWork(getEfficiency(c));
+        if (!items.empty()) {
+          if (items[0]->getClass() == ItemClass::WEAPON)
+            getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
+          if (items[0]->getClass() == ItemClass::ARMOR)
+            getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
+          if (items[0]->getClass() == ItemClass::POTION)
+            getGame()->getStatistics().add(StatId::POTION_PRODUCED);
+          addProducesMessage(c, items);
+          c->getPosition().dropItems(std::move(items));
+        }
       }
     }
   }
@@ -1821,12 +1810,6 @@ void Collective::onCopulated(Creature* who, Creature* with) {
     pregnancies.insert(who);
     who->addEffect(LastingEffect::PREGNANT, Random.get(200, 300));
   }
-}
-
-void Collective::onConsumed(Creature* consumer, Creature* who) {
-  control->addMessage(consumer->getName().a() + " absorbs " + who->getName().a());
-  for (string s : consumer->popPersonalEvents())
-    control->addMessage(s);
 }
 
 MinionEquipment& Collective::getMinionEquipment() {

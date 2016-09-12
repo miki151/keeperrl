@@ -63,7 +63,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, deathTime, hidden, lastAttacker, deathReason, swapPositionCooldown);
   serializeAll(ar, unknownAttackers, privateEnemies, holding, controller, controllerStack, creatureVisions, kills);
   serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverride);
-  serializeAll(ar, vision, personalEvents, lastCombatTime);
+  serializeAll(ar, vision, lastCombatTime);
 }
 
 SERIALIZABLE(Creature);
@@ -656,14 +656,10 @@ CreatureAction Creature::chatTo(Creature* other) const {
   CHECK(other);
   return CreatureAction(this, [=](Creature* self) {
       playerMessage("You chat with " + other->getName().the());
-      other->onChat(self);
+      other->getAttributes().chatReaction(other, self);
       self->spendTime(1);
   });
   return CreatureAction();
-}
-
-void Creature::onChat(Creature* from) {
-  attributes->chatReaction(this, from);
 }
 
 CreatureAction Creature::stealFrom(Vec2 direction, const vector<Item*>& items) const {
@@ -803,7 +799,7 @@ void Creature::onKilled(Creature* victim) {
   CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
   points += difficulty;
   double levelDiff = victim->attributes->getExpLevel() - attributes->getExpLevel();
-  attributes->increaseExpLevel(max(minLevelGain, min(maxLevelGain, 
+  increaseExpLevel(max(minLevelGain, min(maxLevelGain,
       (maxLevelGain - equalLevelGain) * levelDiff / maxLevelDiff + equalLevelGain)));
   kills.insert(victim);
 }
@@ -1247,6 +1243,16 @@ void Creature::surrender(Creature* to) {
   getGame()->addEvent({EventId::TORTURED, EventInfo::Attacked{this, to}});
 }
 
+void Creature::increaseExpLevel(double increase, bool message) {
+  int curLevel = (int)getAttributes().getVisibleExpLevel();
+  getAttributes().increaseExpLevel(increase);
+  int newLevel = (int)getAttributes().getVisibleExpLevel();
+  if (message && curLevel != newLevel) {
+    you(MsgType::ARE, "more experienced");
+    addPersonalEvent(getName().a() + " reaches experience level " + toString(newLevel));
+  }
+}
+
 CreatureAction Creature::give(Creature* whom, vector<Item*> items) {
   if (!getBody().isHumanoid() || !whom->canTakeItems(items))
     return CreatureAction(whom->getName().the() + (items.size() == 1 ? " can't take this item."
@@ -1408,14 +1414,9 @@ CreatureAction Creature::copulate(Vec2 direction) const {
     });
 }
 
-vector<string> Creature::popPersonalEvents() {
-  vector<string> ret = personalEvents;
-  personalEvents.clear();
-  return ret;
-}
-
 void Creature::addPersonalEvent(const string& s) {
-  personalEvents.push_back(s);
+  if (Model* m = position.getModel())
+    m->addEvent({EventId::CREATURE_EVENT, EventInfo::CreatureEvent{this, s}});
 }
 
 CreatureAction Creature::consume(Creature* other) const {

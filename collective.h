@@ -217,7 +217,6 @@ class Collective : public TaskCallback {
   virtual void onKillCancelled(Creature*) override;
   virtual void onBedCreated(Position, const SquareType& fromType, const SquareType& toType) override;
   virtual void onCopulated(Creature* who, Creature* with) override;
-  virtual void onConsumed(Creature* consumer, Creature* who) override;
   virtual bool isConstructionReachable(Position) override;
 
   private:
@@ -284,7 +283,6 @@ class Collective : public TaskCallback {
   bool considerImmigrant(const ImmigrantInfo&);
   void considerBuildingBeds();
   bool considerNonSpawnImmigrant(const ImmigrantInfo&, vector<PCreature>);
-  vector<Position> getSpawnPos(const vector<Creature*>&);
   void considerImmigration();
   int tryBuildingBeds(SpawnType spawnType, int numBeds);
   void considerBirths();

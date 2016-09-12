@@ -1097,7 +1097,6 @@ class Consume : public Task {
       if (auto action = c->consume(target))
         return action.append([=](Creature* c) {
           setDone();
-          callback->onConsumed(c, target);
         });
       else
         return NoMove;

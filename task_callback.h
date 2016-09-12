@@ -23,7 +23,6 @@ class TaskCallback {
   virtual void onKillCancelled(Creature*) {}
   virtual void onBedCreated(Position, const SquareType& fromType, const SquareType& toType) {}
   virtual void onCopulated(Creature* who, Creature* with) {}
-  virtual void onConsumed(Creature* consumer, Creature* who) {}
 
   template <class Archive> 
   void serialize(Archive&, const unsigned int) {}
