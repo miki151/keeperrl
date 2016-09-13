@@ -48,37 +48,12 @@
 #include "item.h"
 #include "spawn_type.h"
 
-template <class Archive> 
-void CreatureFactory::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(tribe)
-    & SVAR(creatures)
-    & SVAR(weights)
-    & SVAR(unique)
-    & SVAR(tribeOverrides)
-    & SVAR(levelIncrease);
-}
 
-SERIALIZABLE(CreatureFactory);
-
+SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory);
 
-CreatureFactory::SingleCreature::SingleCreature(TribeId t, CreatureId i) : id(i), tribe(t) {}
-
-bool CreatureFactory::SingleCreature::operator == (const SingleCreature& o) const {
-  return tribe == o.tribe && id == o.id;
-}
-
-template <class Archive> 
-void CreatureFactory::SingleCreature::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(tribe)
-    & SVAR(id);
-}
-
-SERIALIZABLE(CreatureFactory::SingleCreature);
-
-SERIALIZATION_CONSTRUCTOR_IMPL2(CreatureFactory::SingleCreature, SingleCreature);
-
-CreatureFactory::CreatureFactory(const SingleCreature& s) : CreatureFactory(s.tribe, {s.id}, {1}, {}) {
+CreatureFactory CreatureFactory::singleCreature(TribeId tribe, CreatureId id) {
+  return CreatureFactory(tribe, {id}, {1}, {});
 }
 
 class BoulderController : public Monster {
@@ -837,10 +812,6 @@ CreatureFactory CreatureFactory::forrest(TribeId tribe) {
 
 CreatureFactory CreatureFactory::crypt(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::ZOMBIE}, { 1}, {});
-}
-
-CreatureFactory::SingleCreature CreatureFactory::coffins(TribeId tribe) {
-  return SingleCreature(tribe, CreatureId::VAMPIRE);
 }
 
 CreatureFactory CreatureFactory::vikingTown(TribeId tribe) {

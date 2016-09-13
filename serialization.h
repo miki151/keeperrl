@@ -67,7 +67,7 @@ typedef text_iarchive InputArchive2;
 
 #define SERIALIZE_DEF(CLASS, ...) \
 template <class Archive> \
-void CLASS::serialize(Archive& ar, const unsigned int version) { \
+void CLASS::serialize(Archive& ar, const unsigned int) { \
   serializeAll(ar, __VA_ARGS__);\
 }\
 SERIALIZABLE(CLASS);

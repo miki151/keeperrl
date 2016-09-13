@@ -148,14 +148,7 @@ RICH_ENUM(CreatureId,
 
 class CreatureFactory {
   public:
-  struct SingleCreature {
-    SingleCreature(TribeId, CreatureId);
-    CreatureId SERIAL(id);
-    TribeId SERIAL(tribe);
-    bool operator == (const SingleCreature&) const;
-    SERIALIZATION_DECL(SingleCreature);
-  };
-  CreatureFactory(const SingleCreature&);
+  static CreatureFactory singleCreature(TribeId, CreatureId);
 
   static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
   static PCreature fromId(CreatureId, TribeId);
@@ -175,7 +168,6 @@ class CreatureFactory {
   static CreatureFactory darkElfEntrance(TribeId);
   static CreatureFactory forrest(TribeId);
   static CreatureFactory crypt(TribeId);
-  static SingleCreature coffins(TribeId);
   static CreatureFactory dwarfTown(TribeId);
   static CreatureFactory dwarfCave(TribeId);
   static CreatureFactory antNest(TribeId);

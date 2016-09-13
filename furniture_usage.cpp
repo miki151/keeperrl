@@ -22,7 +22,7 @@
 struct ChestInfo {
   FurnitureType openedType;
   struct CreatureInfo {
-    optional<CreatureFactory::SingleCreature> creature;
+    optional<CreatureFactory> creature;
     int creatureChance;
     int numCreatures;
     string msgCreature;
@@ -70,7 +70,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, Furniture* fu
       useChest(pos, furniture, c, ChestInfo {
                  FurnitureType::OPENED_CHEST,
                  ChestInfo::CreatureInfo {
-                   CreatureFactory::SingleCreature(TribeId::getPest(), CreatureId::RAT),
+                   CreatureFactory::singleCreature(TribeId::getPest(), CreatureId::RAT),
                    10,
                    Random.get(3, 6),
                    "It's full of rats!",
@@ -95,7 +95,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, Furniture* fu
       useChest(pos, furniture, c, ChestInfo{
                  FurnitureType::OPENED_CHEST,
                  ChestInfo::CreatureInfo {
-                   CreatureFactory::SingleCreature(TribeId::getKeeper(), CreatureId::VAMPIRE_LORD), 1, 1,
+                   CreatureFactory::singleCreature(TribeId::getKeeper(), CreatureId::VAMPIRE_LORD), 1, 1,
                    "There is a rotting corpse inside. The corpse is alive!"
                  },
                  none
