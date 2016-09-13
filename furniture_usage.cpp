@@ -16,6 +16,7 @@
 #include "lasting_effect.h"
 #include "creature_name.h"
 #include "level.h"
+#include "sound.h"
 
 
 struct ChestInfo {
@@ -121,6 +122,9 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, Furniture* fu
       break;
     case FurnitureUsageType::TIE_UP:
       c->addEffect(LastingEffect::TIED_UP, 100);
+      break;
+    case FurnitureUsageType::TRAIN:
+      c->addSound(SoundId::MISSED_ATTACK);
       break;
     default: break;
   }

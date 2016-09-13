@@ -151,8 +151,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction move(Vec2) const;
   CreatureAction forceMove(Position) const;
   CreatureAction forceMove(Vec2) const;
-  CreatureAction swapPosition(Vec2 direction, bool force = false) const;
-  CreatureAction swapPosition(Creature*, bool force = false) const;
   CreatureAction wait() const;
   vector<Item*> getPickUpOptions() const;
   CreatureAction pickUp(const vector<Item*>& item) const;
@@ -266,6 +264,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   void addSound(const Sound&) const;
   void updateViewObject();
+  void swapPosition(Vec2 direction);
 
   private:
 
@@ -276,6 +275,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canCarry(const vector<Item*>&) const;
   TribeSet getFriendlyTribes() const;
   void addMovementInfo(const MovementInfo&);
+  bool canSwapPositionInMovement(Creature* other) const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);

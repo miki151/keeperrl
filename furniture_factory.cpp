@@ -30,23 +30,22 @@ Furniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
           Furniture::BLOCKING, tribe)
           .setUsageType(FurnitureUsageType::TRAIN);
     case FurnitureType::WORKSHOP:
-      return Furniture("workshop", ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR), type,
-          Furniture::BLOCKING, tribe);
+      return Furniture("workshop", ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setUsageTime(5);
     case FurnitureType::FORGE:
-      return Furniture("forge", ViewObject(ViewId::FORGE, ViewLayer::FLOOR), type,
-          Furniture::BLOCKING, tribe);
+      return Furniture("forge", ViewObject(ViewId::FORGE, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setUsageTime(5);
     case FurnitureType::LABORATORY:
-      return Furniture("laboratory", ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR), type,
-          Furniture::BLOCKING, tribe);
+      return Furniture("laboratory", ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setUsageTime(5);
     case FurnitureType::JEWELER:
-      return Furniture("jeweler", ViewObject(ViewId::JEWELER, ViewLayer::FLOOR), type,
-          Furniture::BLOCKING, tribe);
+      return Furniture("jeweler", ViewObject(ViewId::JEWELER, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setUsageTime(5);
     case FurnitureType::BOOK_SHELF:
-      return Furniture("book shelf", ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR), type,
-          Furniture::BLOCKING, tribe);
+      return Furniture("book shelf", ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setUsageTime(5);
     case FurnitureType::THRONE:
-      return Furniture("throne", ViewObject(ViewId::THRONE, ViewLayer::FLOOR), type,
-          Furniture::NON_BLOCKING, tribe);
+      return Furniture("throne", ViewObject(ViewId::THRONE, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe);
     case FurnitureType::IMPALED_HEAD:
       return Furniture("impaled head", ViewObject(ViewId::IMPALED_HEAD, ViewLayer::FLOOR), type,
           Furniture::NON_BLOCKING, tribe);
@@ -65,7 +64,8 @@ Furniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
           .setTickType(FurnitureTickType::BED);
     case FurnitureType::DEMON_SHRINE:
       return Furniture("demon shrine", ViewObject(ViewId::RITUAL_ROOM, ViewLayer::FLOOR), type,
-          Furniture::BLOCKING, tribe);
+          Furniture::BLOCKING, tribe)
+          .setUsageTime(5);
     case FurnitureType::STOCKPILE_RES:
       return Furniture("resource stockpile", ViewObject(ViewId::STOCKPILE1, ViewLayer::FLOOR), type,
           Furniture::NON_BLOCKING, tribe);

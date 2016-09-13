@@ -255,9 +255,11 @@ CreatureAction Creature::move(Position pos) const {
   if (direction.length8() != 1)
     return CreatureAction();
   if (!position.canMoveCreature(direction)) {
-    auto action = swapPosition(direction);
-    if (!action) // this is so the player gets relevant info why the move failed
-      return action;
+    if (pos.getCreature()) {
+      if (!canSwapPositionInMovement(pos.getCreature()))
+        return CreatureAction("You can't swap position with " + pos.getCreature()->getName().the());
+    } else
+      return CreatureAction();
   }
   return CreatureAction(this, [=](Creature* self) {
     Debug() << getName().the() << " moving " << direction;
@@ -266,11 +268,13 @@ CreatureAction Creature::move(Position pos) const {
       self->spendTime(1);
       return;
     }
+    self->attributes->setStationary(false);
     if (position.canMoveCreature(direction))
       self->position.moveCreature(direction);
-    else
-      swapPosition(direction).perform(self);
-    self->attributes->setStationary(false);
+    else {
+      self->swapPosition(direction);
+      return;
+    }
     double oldTime = getLocalTime();
     if (getBody().isCollapsed(this)) {
       you(MsgType::CRAWL, getPosition().getName());
@@ -328,32 +332,27 @@ bool Creature::hasFreeMovement() const {
     !isAffected(LastingEffect::TIED_UP);
 }
 
-CreatureAction Creature::swapPosition(Vec2 direction, bool force) const {
-  if (Creature* other = getPosition().plus(direction).getCreature())
-    return swapPosition(other, force);
-  else
-    return CreatureAction();
+bool Creature::canSwapPositionInMovement(Creature* other) const {
+  return other->hasFreeMovement()
+      && (swapPositionCooldown == 0 || isPlayer())
+      && !other->attributes->isStationary()
+      && !other->getAttributes().isInvincible()
+      && !other->isPlayer()
+      && !other->isEnemy(this)
+      && other->getPosition().canEnterEmpty(this)
+      && getPosition().canEnterEmpty(other);
 }
 
-CreatureAction Creature::swapPosition(Creature* other, bool force) const {
-  Vec2 direction = position.getDir(other->getPosition());
+void Creature::swapPosition(Vec2 direction) {
   CHECK(direction.length8() == 1);
-  if (!other->hasFreeMovement() && !force)
-    return CreatureAction(other->getName().the() + " cannot move.");
-  if ((swapPositionCooldown && !isPlayer()) || other->attributes->isStationary() || 
-      other->getAttributes().isInvincible() ||
-      (other->isPlayer() && !force) || (other->isEnemy(this) && !force) ||
-      !other->getPosition().canEnterEmpty(this) || !getPosition().canEnterEmpty(other))
-    return CreatureAction();
-  return CreatureAction(this, [=](Creature* self) {
-    self->swapPositionCooldown = 4;
-    if (!force)
-      other->playerMessage("Excuse me!");
-    playerMessage("Excuse me!");
-    self->position.swapCreatures(other);
-    other->addMovementInfo({-direction, getLocalTime(), other->getLocalTime(),
-        MovementInfo::MOVE});
-  });
+  Creature* other = NOTNULL(getPosition().plus(direction).getCreature());
+  swapPositionCooldown = 4;
+  playerMessage("Excuse me!");
+  position.swapCreatures(other);
+  double oldTime = getLocalTime();
+  spendTime(1);
+  addMovementInfo({direction, oldTime, getLocalTime(), MovementInfo::MOVE});
+  other->addMovementInfo({-direction, oldTime, getLocalTime(), MovementInfo::MOVE});
 }
 
 void Creature::makeMove() {
@@ -626,7 +625,11 @@ CreatureAction Creature::applySquare(Position pos) const {
     return CreatureAction(this, [=](Creature* self) {
       Debug() << getName().the() << " applying " << getPosition().getName();
       pos.apply(self);
-      self->spendTime(self->getPosition().getApplyTime());
+      double oldTime = getLocalTime();
+      self->spendTime(pos.getApplyTime());
+      if (pos != getPosition())
+        self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime + 1, getLocalTime()),
+            MovementInfo::ATTACK});
     });
 //  else
 //    return CreatureAction();

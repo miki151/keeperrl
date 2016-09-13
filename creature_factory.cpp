@@ -126,8 +126,7 @@ class BoulderController : public Monster {
     if (nextPos.isDestroyable()) {
       if (Creature* c = nextPos.getCreature()) {
         if (!c->getBody().isKilledByBoulder()) {
-          if (auto action = getCreature()->swapPosition(direction, true))
-            action.perform(getCreature());
+          getCreature()->swapPosition(direction);
         } else {
           health -= c->getBody().getBoulderDamage();
           if (health <= 0) {

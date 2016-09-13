@@ -1694,8 +1694,9 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
 }
 
 void Collective::onAppliedSquare(Creature* c, Position pos) {
-  double efficiency = tileEfficiency->getEfficiency(pos);
   if (auto furniture = pos.getFurniture()) {
+    // Furniture have variable apply time, so just multiply by it to be independent of changes.
+    double efficiency = tileEfficiency->getEfficiency(pos) * pos.getApplyTime();
     switch (furniture->getType()) {
       case FurnitureType::BOOK_SHELF: {
         addMana(0.2 * efficiency);
