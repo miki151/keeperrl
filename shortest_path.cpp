@@ -18,17 +18,9 @@
 #include "shortest_path.h"
 #include "level.h"
 #include "creature.h"
+#include "lasting_effect.h"
 
-template <class Archive> 
-void ShortestPath::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(path)
-    & SVAR(target)
-    & SVAR(directions)
-    & SVAR(bounds)
-    & SVAR(reversed);
-}
-
-SERIALIZABLE(ShortestPath);
+SERIALIZE_DEF(ShortestPath, path, target, directions, bounds, reversed)
 SERIALIZATION_CONSTRUCTOR_IMPL(ShortestPath);
 
 const double ShortestPath::infinity = 1000000000;
@@ -218,7 +210,7 @@ ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Posit
         return 1.0;
       if (pos.canNavigate(creature->getMovementType())) {
         if (const Creature* other = pos.getCreature())
-          if (other->isFriend(creature) && other->hasFreeMovement())
+          if (other->isFriend(creature) && !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
             return 2.1;
         return 5.0;
       }

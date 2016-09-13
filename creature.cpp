@@ -325,17 +325,17 @@ Controller* Creature::getController() {
   return controller.get();
 }
 
-bool Creature::hasFreeMovement() const {
-  return !isAffected(LastingEffect::SLEEP) &&
-    !isAffected(LastingEffect::STUNNED) &&
-    !isAffected(LastingEffect::ENTANGLED) &&
-    !isAffected(LastingEffect::TIED_UP);
+bool Creature::hasCondition(CreatureCondition condition) const {
+  for (auto effect : LastingEffects::getCausingCondition(condition))
+    if (isAffected(effect))
+      return true;
+  return false;
 }
 
 bool Creature::canSwapPositionInMovement(Creature* other) const {
-  return other->hasFreeMovement()
+  return !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT)
       && (swapPositionCooldown == 0 || isPlayer())
-      && !other->attributes->isStationary()
+      && !other->getAttributes().isStationary()
       && !other->getAttributes().isInvincible()
       && !other->isPlayer()
       && !other->isEnemy(this)
@@ -360,12 +360,8 @@ void Creature::makeMove() {
   CHECK(!isDead());
   if (holding && holding->isDead())
     holding = nullptr;
-  if (isAffected(LastingEffect::SLEEP)) {
+  if (hasCondition(CreatureCondition::SLEEPING)) {
     controller->sleeping();
-    spendTime(1);
-    return;
-  }
-  if (isAffected(LastingEffect::STUNNED)) {
     spendTime(1);
     return;
   }
@@ -1085,10 +1081,6 @@ void Creature::updateViewObject() {
   modViewObject().setModifier(ViewObject::Modifier::DRAW_MORALE);
   modViewObject().setAdjectives(extractNames(concat(
           getWeaponAdjective(), getBadAdjectives(), getGoodAdjectives())));
-  if (isAffected(LastingEffect::SLEEP))
-    modViewObject().setModifier(ViewObject::Modifier::SLEEPING);
-  else
-    modViewObject().removeModifier(ViewObject::Modifier::SLEEPING);
   getBody().updateViewObject(modViewObject());
   modViewObject().setDescription(getName().bare());
   getPosition().setNeedsRenderUpdate(true);
@@ -1228,7 +1220,7 @@ CreatureAction Creature::disappear() const {
 }
 
 CreatureAction Creature::torture(Creature* other) const {
-  if (other->hasFreeMovement() || other->getPosition().dist8(getPosition()) != 1)
+  if (!other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT) || other->getPosition().dist8(getPosition()) != 1)
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     monsterMessage(getName().the() + " tortures " + other->getName().the());

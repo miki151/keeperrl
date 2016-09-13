@@ -71,7 +71,6 @@ class PlayerInfo {
   string HASH(name);
   string HASH(title);
   int HASH(level);
-  vector<string> HASH(adjectives);
   string description;
   string HASH(levelName);
   int HASH(positionHash);
@@ -112,7 +111,7 @@ class PlayerInfo {
     EXECUTE,
   };
   vector<Action> HASH(actions);
-  HASH_ALL(attributes, skills, firstName, name, title, level, adjectives, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions);
+  HASH_ALL(attributes, skills, firstName, name, title, level, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions);
 };
 
 

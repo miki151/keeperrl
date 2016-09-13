@@ -554,7 +554,7 @@ class ApplySquare : public Task {
   void changePosIfOccupied() {
     if (position)
       if (Creature* c = position->getCreature())
-        if (!c->hasFreeMovement())
+        if (c->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
           position = none;
   }
 
@@ -562,7 +562,7 @@ class ApplySquare : public Task {
     vector<Position> candidates;
     for (auto& pos : positions) {
       if (Creature* other = pos.getCreature())
-        if (!other->hasFreeMovement())
+        if (other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
           continue;
       if (!rejectedPosition.count(pos))
         candidates.push_back(pos);

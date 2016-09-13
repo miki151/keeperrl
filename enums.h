@@ -86,6 +86,7 @@ enum class SkillId;
 enum class VisionId;
 
 enum class LastingEffect;
+enum class CreatureCondition;
 
 enum class NameGeneratorId;
 enum class ItemIndex;

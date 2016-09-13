@@ -267,8 +267,6 @@ vector<string> ViewObject::getLegend() const {
           " defense " + getAttributeString(Attribute::DEFENSE));
   if (hasModifier(Modifier::PLANNED))
     ret.push_back("Planned");
-  if (hasModifier(Modifier::SLEEPING))
-    ret.push_back("Sleeping");
   if (indoors)
     ret.push_back(*indoors ? "Indoors" : "Outdoors");
   if (position.x > -1)

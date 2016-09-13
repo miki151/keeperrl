@@ -246,7 +246,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void addPermanentEffect(LastingEffect, bool msg = true);
   void removePermanentEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
-  bool hasFreeMovement() const;
+  bool hasCondition(CreatureCondition) const;
   bool isDarknessSource() const;
 
   bool isUnknownAttacker(const Creature*) const;

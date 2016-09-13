@@ -124,7 +124,6 @@ void PlayerInfo::readFrom(const Creature* c) {
   firstName = c->getName().first().get_value_or("");
   name = c->getName().bare();
   title = c->getName().title();
-  adjectives = c->getMainAdjectives();
   description = capitalFirst(c->getAttributes().getDescription());
   Item* weapon = c->getWeapon();
   weaponName = weapon ? weapon->getName() : "";
