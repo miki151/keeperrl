@@ -39,26 +39,28 @@
 #include "body.h"
 #include "event_listener.h"
 #include "item_class.h"
+#include "furniture_factory.h"
+#include "furniture.h"
 
-vector<int> healingPoints { 5, 15, 40};
-vector<int> sleepTime { 15, 80, 200};
-vector<int> insanityTime { 5, 20, 50};
-vector<int> panicTime { 5, 15, 40};
-vector<int> halluTime { 30, 100, 250};
-vector<int> blindTime { 5, 15, 45};
-vector<int> invisibleTime { 5, 15, 45};
-vector<double> fireAmount { 0.5, 1, 1};
-vector<int> attrBonusTime { 10, 40, 150};
-vector<int> identifyNum { 1, 1, 400};
-vector<int> poisonTime { 20, 60, 200};
-vector<int> stunTime { 1, 7, 20};
-vector<int> resistantTime { 20, 60, 200};
-vector<int> levitateTime { 20, 60, 200};
-vector<int> magicShieldTime { 5, 20, 60};
-vector<double> gasAmount { 0.3, 0.8, 3};
-vector<double> wordOfPowerDist { 1, 3, 10};
-vector<int> blastRange { 2, 5, 10};
-vector<int> creatureEffectRange { 2, 5, 10};
+static vector<int> healingPoints { 5, 15, 40};
+static vector<int> sleepTime { 15, 80, 200};
+static vector<int> insanityTime { 5, 20, 50};
+static vector<int> panicTime { 5, 15, 40};
+static vector<int> halluTime { 30, 100, 250};
+static vector<int> blindTime { 5, 15, 45};
+static vector<int> invisibleTime { 5, 15, 45};
+static vector<double> fireAmount { 0.5, 1, 1};
+static vector<int> attrBonusTime { 10, 40, 150};
+static vector<int> identifyNum { 1, 1, 400};
+static vector<int> poisonTime { 20, 60, 200};
+static vector<int> stunTime { 1, 7, 20};
+static vector<int> resistantTime { 20, 60, 200};
+static vector<int> levitateTime { 20, 60, 200};
+static vector<int> magicShieldTime { 5, 20, 60};
+static vector<double> gasAmount { 0.3, 0.8, 3};
+static vector<double> wordOfPowerDist { 1, 3, 10};
+static vector<int> blastRange { 2, 5, 10};
+static vector<int> creatureEffectRange { 2, 5, 10};
 
 
 static vector<Creature*> summonCreatures(Position pos, int radius, vector<PCreature> creatures, double delay = 0) {
@@ -92,28 +94,27 @@ static void creatureEffect(Creature* who, EffectType type, EffectStrength str, V
 }
 
 static void blast(Creature* who, Position position, Vec2 direction, int maxDistance, bool damage) {
-  if (Creature* c = position.getCreature())
-    if (!c->getAttributes().isStationary()) {
-      int dist = 0;
-      for (int i : Range(1, maxDistance))
-        if (position.canMoveCreature(direction * i))
-          dist = i;
-        else
-          break;
-      if (dist > 0) {
-        c->displace(who->getLocalTime(), direction * dist);
-        c->you(MsgType::ARE, "thrown back");
-      }
-      if (damage)
-        c->takeDamage(Attack(who, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 32, false));
+  if (Creature* c = position.getCreature()) {
+    int dist = 0;
+    for (int i : Range(1, maxDistance))
+      if (position.canMoveCreature(direction * i))
+        dist = i;
+      else
+        break;
+    if (dist > 0) {
+      c->displace(who->getLocalTime(), direction * dist);
+      c->you(MsgType::ARE, "thrown back");
     }
+    if (damage)
+      c->takeDamage(Attack(who, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 32, false));
+  }
   for (auto elem : Item::stackItems(position.getItems())) {
     position.throwItem(
         position.removeItems(elem.second),
         Attack(who, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
           elem.second[0]->getAttackType(), 15, 15, false), maxDistance, direction, VisionId::NORMAL);
   }
-  if (damage && position.isDestroyable())
+  if (damage)
     position.destroy();
 }
 
@@ -144,7 +145,7 @@ static void emitPoisonGas(Position pos, int strength, bool msg) {
 static void guardingBuilder(Creature* c) {
   optional<Vec2> dest;
   for (Position pos : c->getPosition().neighbors8(Random))
-    if (c->move(pos) && !pos.getCreature()) {
+    if (c->move(pos) && !pos.getCreature() && pos.getDir(c->getPosition()).length4() == 2) {
       dest = c->getPosition().getDir(pos);
       break;
     }
@@ -154,10 +155,8 @@ static void guardingBuilder(Creature* c) {
   else {
     Effect::applyToCreature(c, EffectType(EffectId::TELEPORT), EffectStrength::NORMAL);
   }
-  if (c->getPosition() != pos) {
-    PCreature boulder = CreatureFactory::getGuardingBoulder(c->getTribeId());
-    pos.addCreature(std::move(boulder));
-  }
+  if (c->getPosition() != pos)
+    pos.addFurniture(FurnitureFactory::get(FurnitureType::BOULDER_TRAP, c->getTribeId()));
 }
 
 vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, int ttl, double delay) {
@@ -331,7 +330,7 @@ static Range getSummonNumber(CreatureId id) {
 static double getSummonDelay(CreatureId id) {
   switch (id) {
     case CreatureId::AUTOMATON: return 5;
-    default: return 0;
+    default: return 1;
   }
 }
 

@@ -91,12 +91,6 @@ Rectangle Level::getSplashVisibleBounds() {
   return Rectangle(getSplashBounds().middle() - sz / 2, getSplashBounds().middle() + sz / 2);
 }
 
-void Level::addCreature(Vec2 position, PCreature c, double delay) {
-  Creature* ref = c.get();
-  model->addCreature(std::move(c), delay);
-  putCreature(position, ref);
-}
-
 const static double darknessRadius = 3.5;
 
 void Level::putCreature(Vec2 position, Creature* c) {

@@ -52,8 +52,8 @@ class Model {
 
   optional<Position> getStairs(const Level* from, const Level* to);
 
-  /** Adds new creature to the queue. Assumes this creature has already been added to a level. */
-  void addCreature(PCreature, double delay = 0);
+  void addCreature(PCreature);
+  void addCreature(PCreature, double delay);
   void landHeroPlayer(const string& name, int handicap);
 
   bool isTurnBased();

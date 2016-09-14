@@ -200,9 +200,20 @@ vector<Position> Position::getRectangle(Rectangle rect) const {
   return ret;
 }
 
+void Position::addCreature(PCreature c) {
+  if (isValid()) {
+    Creature* ref = c.get();
+    getModel()->addCreature(std::move(c));
+    level->putCreature(coord, ref);
+  }
+}
+
 void Position::addCreature(PCreature c, double delay) {
-  if (isValid())
-    level->addCreature(coord, std::move(c), delay);
+  if (isValid()) {
+    Creature* ref = c.get();
+    getModel()->addCreature(std::move(c), delay);
+    level->putCreature(coord, ref);
+  }
 }
 
 Position Position::plus(Vec2 v) const {
@@ -352,10 +363,6 @@ bool Position::canDestroy(const MovementType& movement) const {
   return false;
 }
 
-bool Position::isDestroyable() const {
-  return getFurniture();
-}
-
 bool Position::isUnavailable() const {
   return !isValid() || level->isUnavailable(coord);
 }
@@ -366,7 +373,7 @@ bool Position::canEnter(const Creature* c) const {
 }
 
 bool Position::canEnter(const MovementType& t) const {
-  return !isUnavailable() && (!getFurniture() || getFurniture()->canEnter(t)) &&getSquare()->canEnter(t);
+  return !isUnavailable() && (!getFurniture() || getFurniture()->canEnter(t)) && getSquare()->canEnter(t);
 }
 
 bool Position::canEnterEmpty(const Creature* c) const {
@@ -620,9 +627,7 @@ bool Position::canNavigate(const MovementType& type) const {
   Creature* creature = getCreature();
   return canEnterEmpty(type) || 
     // for destroying doors, etc, but not entering forbidden zone
-    (canDestroy(type) && !canEnterEmpty(typeForced)) ||
-    // for navigating through hostile boulders
-    (creature && creature->getAttributes().isStationary() && !type.isCompatible(creature->getTribeId()));
+    (canDestroy(type) && !canEnterEmpty(typeForced));
 }
 
 bool Position::canSeeThru(VisionId id) const {
@@ -674,7 +679,7 @@ void Position::moveCreature(Vec2 direction) {
 
 static bool canPass(Position position, const Creature* c) {
   return position.canEnterEmpty(c) && (!position.getCreature() ||
-      !position.getCreature()->getAttributes().isStationary());
+      !position.getCreature()->getAttributes().isBoulder());
 }
 
 bool Position::canMoveCreature(Vec2 direction) const {

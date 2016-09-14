@@ -53,7 +53,8 @@ class Position {
   vector<Position> neighbors8(RandomGen&) const;
   vector<Position> neighbors4(RandomGen&) const;
   vector<Position> getRectangle(Rectangle) const;
-  void addCreature(PCreature, double delay = 0);
+  void addCreature(PCreature, double delay);
+  void addCreature(PCreature);
   const Location* getLocation() const;
   bool canEnter(const Creature*) const;
   bool canEnter(const MovementType&) const;
@@ -83,7 +84,6 @@ class Position {
   void removeFurniture(const Furniture*) const;
   void addFurniture(const Furniture&) const;
   void replaceFurniture(const Furniture*, const Furniture&) const;
-  bool isDestroyable() const;
   bool isUnavailable() const;
   void dropItem(PItem);
   void dropItems(vector<PItem>);

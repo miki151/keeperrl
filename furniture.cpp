@@ -79,8 +79,6 @@ TribeId Furniture::getTribe() const {
 }
 
 void Furniture::tick(Position pos) {
-  if (tickType)
-    FurnitureTick::handle(*tickType, pos, this);
   if (auto& fire = getFire())
     if (fire->isBurning()) {
       modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
@@ -101,6 +99,8 @@ void Furniture::tick(Position pos) {
       }
       pos.fireDamage(fire->getSize());
     }
+  if (tickType)
+    FurnitureTick::handle(*tickType, pos, this); // this function can delete this
 }
 
 bool Furniture::canSeeThru(VisionId id) const {
@@ -152,7 +152,7 @@ bool Furniture::canDestroy(const MovementType& movement) {
 }
 
 bool Furniture::canDestroy(const Creature* c) {
-  return canDestroy(c->getMovementType()) || (!!strength && c->getAttributes().isInvincible());
+  return canDestroy(c->getMovementType()) || (!!strength && c->getAttributes().isBoulder());
 }
 
 void Furniture::fireDamage(Position pos, double amount) {
@@ -168,7 +168,7 @@ void Furniture::fireDamage(Position pos, double amount) {
   }
 }
 
-Furniture& Furniture::setStrength(double s) {
+Furniture& Furniture::setDestroyable(double s) {
   strength = s;
   return *this;
 }

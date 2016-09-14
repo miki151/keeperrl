@@ -70,8 +70,6 @@ void Square::putCreature(Creature* c) {
   //CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
   setCreature(c);
   onEnter(c);
-  if (c->getAttributes().isStationary())
-    c->getPosition().getLevel()->addTickingSquare(c->getPosition().getCoord());
   if (Game* game = c->getGame())
     game->addEvent({EventId::MOVED, c});
 }
@@ -177,8 +175,6 @@ void Square::tick(Position pos) {
   }
   for (Trigger* t : extractRefs(triggers))
     t->tick();
-  if (creature && creature->getAttributes().isStationary())
-    pos.updateConnectivity();
   tickSpecial(pos);
 }
 
@@ -229,8 +225,6 @@ bool Square::canEnter(const MovementType& movement) const {
 }
 
 bool Square::canEnterEmpty(const MovementType& movement) const {
-  if (creature && creature->getAttributes().isStationary())
-    return false;
   if (!movement.isForced() && forbiddenTribe && movement.isCompatible(*forbiddenTribe))
     return false;
   return movementSet->canEnter(movement);
@@ -353,8 +347,6 @@ void Square::removeCreature(Position pos) {
   CHECK(creature);
   Creature* tmp = creature;
   creature = nullptr;
-  if (tmp->getAttributes().isStationary())
-    pos.updateConnectivity();
 }
 
 bool Square::canSeeThru(VisionId v) const {

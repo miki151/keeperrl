@@ -1346,11 +1346,8 @@ void Collective::removeFurniture(Position pos) {
 }
 
 void Collective::destroySquare(Position pos) {
-  if (pos.isDestroyable() && territory->contains(pos))
+  if (territory->contains(pos))
     pos.destroy();
-  if (Creature* c = pos.getCreature())
-    if (c->getAttributes().isStationary())
-      c->die(nullptr, false);
   if (constructions->containsTrap(pos))
     removeTrap(pos);
   if (constructions->containsFurniture(pos))

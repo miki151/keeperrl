@@ -366,7 +366,7 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
               c.minPopulation = 4;
               c.minTeamSize = 4;
               c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS},
-                AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
+                AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::TIMER, 500},
                 AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
     case EnemyId::DARK_ELVES:

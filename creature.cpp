@@ -268,7 +268,6 @@ CreatureAction Creature::move(Position pos) const {
       self->spendTime(1);
       return;
     }
-    self->attributes->setStationary(false);
     if (position.canMoveCreature(direction))
       self->position.moveCreature(direction);
     else {
@@ -335,8 +334,7 @@ bool Creature::hasCondition(CreatureCondition condition) const {
 bool Creature::canSwapPositionInMovement(Creature* other) const {
   return !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT)
       && (swapPositionCooldown == 0 || isPlayer())
-      && !other->getAttributes().isStationary()
-      && !other->getAttributes().isInvincible()
+      && !other->getAttributes().isBoulder()
       && !other->isPlayer()
       && !other->isEnemy(this)
       && other->getPosition().canEnterEmpty(this)
@@ -1376,14 +1374,18 @@ CreatureAction Creature::eat(Item* item) const {
   });
 }
 
+void Creature::destroyImpl(Vec2 direction, DestroyAction::Value action) {
+  string name = getPosition().plus(direction).getName();
+  playerMessage("You "_s + DestroyAction::getVerbSecondPerson(action) + " the " + name);
+  monsterMessage(getName().the() + " " + DestroyAction::getVerbThirdPerson(action) + " the " + name,
+      DestroyAction::getSoundText(action));
+  getPosition().plus(direction).tryToDestroyBy(this);
+}
+
 CreatureAction Creature::destroy(Vec2 direction, DestroyAction::Value action) const {
   if (direction.length8() <= 1 && getPosition().plus(direction).canDestroy(this))
       return CreatureAction(this, [=](Creature* self) {
-        string name = getPosition().plus(direction).getName();
-        playerMessage("You "_s + DestroyAction::getVerbSecondPerson(action) + " the " + name);
-        monsterMessage(getName().the() + " " + DestroyAction::getVerbThirdPerson(action) + " the " + name,
-            DestroyAction::getSoundText(action));
-        getPosition().plus(direction).tryToDestroyBy(self);
+        self->destroyImpl(direction, action);
         self->spendTime(1);
     });
   return CreatureAction();

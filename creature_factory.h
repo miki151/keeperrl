@@ -189,7 +189,7 @@ class CreatureFactory {
   CreatureFactory& increaseLevel(double);
 
   static PCreature getShopkeeper(Location* shopArea, TribeId);
-  static PCreature getGuardingBoulder(TribeId);
+  static PCreature getRollingBoulder(TribeId, Vec2 direction);
   static PCreature getGhost(Creature*);
   static PCreature getIllusion(Creature*);
   static PCreature getAdventurer(Model*, int handicap);

@@ -3,7 +3,7 @@
 class Position;
 class Furniture;
 
-enum class FurnitureTickType { BED, PIGSTY };
+enum class FurnitureTickType { BED, PIGSTY, BOULDER_TRAP };
 
 class FurnitureTick {
   public:

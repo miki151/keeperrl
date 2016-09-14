@@ -149,7 +149,7 @@ class SokobanHole : public Square {
   }
 
   virtual void onEnterSpecial(Creature* c) override {
-    if (c->getAttributes().isStationary()) {
+    if (c->getAttributes().isBoulder()) {
       Position pos = c->getPosition();
       pos.globalMessage(c->getName().the() + " fills the " + getName());
       pos.replaceSquare(SquareFactory::get(SquareId::FLOOR));

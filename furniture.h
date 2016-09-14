@@ -46,7 +46,7 @@ class Furniture : public Renderable, public UniqueEntity<Furniture> {
   optional<FurnitureClickType> getClickType() const;
   bool isTicking() const;
 
-  Furniture& setStrength(double);
+  Furniture& setDestroyable(double);
   Furniture& setItemDrop(ItemFactory);
   Furniture& setBurntRemains(FurnitureType);
   Furniture& setDestroyedRemains(FurnitureType);

@@ -359,25 +359,25 @@ class Fighter : public Behaviour {
         myDamage += weapon->getModifier(ModifierType::DAMAGE);
       double powerRatio = getMoraleBonus() * myDamage / other->getModifier(ModifierType::DAMAGE);
       bool significantEnemy = myDamage < 5 * other->getModifier(ModifierType::DAMAGE);
-      double weight = 0.1;
+      double panicWeight = 0.1;
       if (creature->getBody().isWounded())
-        weight += 0.4;
+        panicWeight += 0.4;
       if (creature->getBody().isSeriouslyWounded())
-        weight += 0.5;
+        panicWeight += 0.5;
       if (powerRatio < maxPowerRatio)
-        weight += 2 - powerRatio * 2;
-      weight = min(1.0, max(0.0, weight));
+        panicWeight += 2 - powerRatio * 2;
+      panicWeight = min(1.0, max(0.0, panicWeight));
       if (creature->isAffected(LastingEffect::PANIC))
-        weight = 1;
-      if (other->isAffected(LastingEffect::SLEEP) || other->getAttributes().isStationary())
-        weight = 0;
-      Debug() << creature->getName().bare() << " panic weight " << weight;
-      if (weight >= 0.5) {
+        panicWeight = 1;
+      if (other->hasCondition(CreatureCondition::SLEEPING))
+        panicWeight = 0;
+      Debug() << creature->getName().bare() << " panic weight " << panicWeight;
+      if (panicWeight >= 0.5) {
         double dist = creature->getPosition().dist8(other->getPosition());
         if (dist < 7) {
           if (dist == 1 && creature->getBody().isHumanoid())
             creature->surrender(other);
-          if (MoveInfo move = getPanicMove(other, weight))
+          if (MoveInfo move = getPanicMove(other, panicWeight))
             return move;
           else
             return getAttackMove(other, significantEnemy && chase);
@@ -525,7 +525,7 @@ class Fighter : public Behaviour {
   MoveInfo getAttackMove(Creature* other, bool chase) {
     int distance = 10000;
     CHECK(other);
-    if (other->getAttributes().isInvincible())
+    if (other->getAttributes().isBoulder())
       return NoMove;
     Debug() << creature->getName().bare() << " enemy " << other->getName().bare();
     Vec2 enemyDir = creature->getPosition().getDir(other->getPosition());

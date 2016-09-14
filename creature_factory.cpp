@@ -58,67 +58,31 @@ CreatureFactory CreatureFactory::singleCreature(TribeId tribe, CreatureId id) {
 
 class BoulderController : public Monster {
   public:
-  BoulderController(Creature* c) : Monster(c, MonsterAIFactory::idle()), stopped(true) {}
-
-  void considerRolling() {
-    for (Vec2 v : Vec2::directions4(Random)) {
-      int radius = 4;
-      for (int i = 1; i <= radius; ++i) {
-        Position curPos = getCreature()->getPosition().plus(v * i);
-        if (Creature* other = curPos.getCreature()) {
-          if (other->getTribe() != getCreature()->getTribe()) {
-            if (!other->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
-              direction = v;
-              stopped = false;
-              getCreature()->getGame()->addEvent({EventId::TRAP_TRIGGERED, getCreature()->getPosition()});
-              getCreature()->monsterMessage(
-                  PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL),
-                  PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
-              return;
-            } else {
-              other->you(MsgType::DISARM_TRAP, "boulder trap");
-              getCreature()->getGame()->addEvent({EventId::TRAP_DISARMED,
-                  EventInfo::TrapDisarmed{getCreature()->getPosition(), other}});
-              getCreature()->die();
-              return;
-            }
-          }
-        }
-        if (!curPos.canEnterEmpty(getCreature()))
-          break;
-      }
-    }
+  BoulderController(Creature* c, Vec2 dir) : Monster(c, MonsterAIFactory::idle()), direction(dir) {
+    CHECK(direction.length4() == 1);
   }
 
   virtual void makeMove() override {
-    if (stopped)
-      considerRolling();
-    if (stopped) {
-      getCreature()->wait().perform(getCreature());
-      return;
-    }
     Position nextPos = getCreature()->getPosition().plus(direction);
-    if (nextPos.isDestroyable()) {
-      if (Creature* c = nextPos.getCreature()) {
-        if (!c->getBody().isKilledByBoulder()) {
-          getCreature()->swapPosition(direction);
+    if (Creature* c = nextPos.getCreature()) {
+      if (!c->getBody().isKilledByBoulder()) {
+        getCreature()->swapPosition(direction);
+      } else {
+        health -= c->getBody().getBoulderDamage();
+        if (health <= 0) {
+          nextPos.globalMessage(getCreature()->getName().the() + " crashes on the " + c->getName().the(),
+                "You hear a crash");
+          getCreature()->die();
+          c->takeDamage(Attack(getCreature(), AttackLevel::MIDDLE, AttackType::HIT, 1000, 35, false));
+          return;
         } else {
-          health -= c->getBody().getBoulderDamage();
-          if (health <= 0) {
-            nextPos.globalMessage(getCreature()->getName().the() + " crashes on the " + c->getName().the(),
-                  "You hear a crash");
-            getCreature()->die();
-            c->takeDamage(Attack(getCreature(), AttackLevel::MIDDLE, AttackType::HIT, 1000, 35, false));
-            return;
-          } else {
-            c->you(MsgType::KILLED_BY, getCreature()->getName().the());
-            c->die(getCreature());
-          }
+          c->you(MsgType::KILLED_BY, getCreature()->getName().the());
+          c->die(getCreature());
         }
       }
-      if (auto action = getCreature()->destroy(direction, DestroyAction::DESTROY))
-        action.perform(getCreature());
     }
+    if (nextPos.canDestroy(getCreature()))
+      getCreature()->destroyImpl(direction, DestroyAction::DESTROY);
     if (auto action = getCreature()->move(direction))
       action.perform(getCreature());
     else {
@@ -135,7 +99,7 @@ class BoulderController : public Monster {
         return;
       }
     }
-    double speed = getCreature()->getAttr(AttrType::SPEED);
+    int speed = getCreature()->getAttr(AttrType::SPEED);
     double deceleration = 0.1;
     speed -= deceleration * 100 * 100 / speed;
     if (speed < 30 && !getCreature()->isDead()) {
@@ -159,28 +123,28 @@ class BoulderController : public Monster {
       getCreature()->monsterMessage(msg, msgNoSee);
   }
 
-  SERIALIZE_ALL2(Monster, direction, stopped);
-  SERIALIZATION_CONSTRUCTOR(BoulderController);
+  SERIALIZE_ALL2(Monster, direction)
+  SERIALIZATION_CONSTRUCTOR(BoulderController)
 
   private:
   Vec2 SERIAL(direction);
-  bool SERIAL(stopped) = false;
   double health = 1;
 };
 
-PCreature CreatureFactory::getGuardingBoulder(TribeId tribe) {
-  return PCreature(new Creature(tribe, CATTR(
+PCreature CreatureFactory::getRollingBoulder(TribeId tribe, Vec2 direction) {
+  ViewObject viewObject(ViewId::BOULDER, ViewLayer::CREATURE);
+  viewObject.setModifier(ViewObjectModifier::NO_UP_MOVEMENT);
+  return PCreature(new Creature(viewObject, tribe, CATTR(
             c.viewId = ViewId::BOULDER;
             c.attr[AttrType::DEXTERITY] = 1;
             c.attr[AttrType::STRENGTH] = 1000;
             c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE).setDeathSound(none);
             c.attr[AttrType::SPEED] = 140;
             c.permanentEffects[LastingEffect::BLIND] = 1;
-            c.stationary = true;
-            c.invincible = true;
+            c.boulder = true;
             c.name = "boulder";
-            ), ControllerFactory([](Creature* c) { 
-              return new BoulderController(c); })));
+            ), ControllerFactory([direction](Creature* c) {
+              return new BoulderController(c, direction); })));
 }
 
 class SokobanController : public Monster {
@@ -252,8 +216,7 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
             c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE).setDeathSound(none);
             c.attr[AttrType::SPEED] = 140;
             c.permanentEffects[LastingEffect::BLIND] = 1;
-            c.stationary = true;
-            c.invincible = true;
+            c.boulder = true;
             c.name = "boulder";), ControllerFactory([](Creature* c) { 
               return new SokobanController(c); })));
 }
@@ -344,53 +307,52 @@ class KrakenController : public Monster {
     bool isEnemy = false;
     for (Position pos : getCreature()->getPosition().getRectangle(
           Rectangle(Vec2(-radius, -radius), Vec2(radius + 1, radius + 1))))
-        if (Creature * c = pos.getCreature())
-          if (getCreature()->canSee(c) && getCreature()->isEnemy(c) &&
-              !getCreature()->getAttributes().isStationary()) {
-            Vec2 v = getCreature()->getPosition().getDir(pos);
-            isEnemy = true;
-            if (numSpawns > 0) {
-              if (v.length8() == 1) {
-                if (ready) {
-                  c->you(MsgType::HAPPENS_TO, getCreature()->getName().the() + " swings itself around");
-                  c->setHeld(getCreature());
-                  held = c;
-                  unReady();
-                } else
-                  makeReady();
-                break;
-              }
-              pair<Vec2, Vec2> dirs = v.approxL1();
-              vector<Vec2> moves;
-              if (getCreature()->getPosition().plus(dirs.first).canEnter(
-                    {{MovementTrait::WALK, MovementTrait::SWIM}}))
-                moves.push_back(dirs.first);
-              if (getCreature()->getPosition().plus(dirs.second).canEnter(
-                    {{MovementTrait::WALK, MovementTrait::SWIM}}))
-                moves.push_back(dirs.second);
-              if (!moves.empty()) {
-                if (!ready) {
-                  makeReady();
-                } else {
-                  Vec2 move = Random.choose(moves);
-                  ViewId viewId = getCreature()->getPosition().plus(move).canEnter({MovementTrait::SWIM}) 
-                    ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
-                  PCreature spawn(new Creature(getCreature()->getTribeId(),
-                        CreatureFactory::getKrakenAttributes(viewId),
-                        ControllerFactory([=](Creature* c) {
-                          return new KrakenController(c);
-                          })));
-                  spawns.push_back(spawn.get());
-                  dynamic_cast<KrakenController*>(spawn->getController())->father = this;
-                  getCreature()->getPosition().plus(move).addCreature(std::move(spawn));
-                  --numSpawns;
-                  unReady();
-                }
-              } else
+      if (Creature * c = pos.getCreature())
+        if (getCreature()->canSee(c) && getCreature()->isEnemy(c)) {
+          Vec2 v = getCreature()->getPosition().getDir(pos);
+          isEnemy = true;
+          if (numSpawns > 0) {
+            if (v.length8() == 1) {
+              if (ready) {
+                c->you(MsgType::HAPPENS_TO, getCreature()->getName().the() + " swings itself around");
+                c->setHeld(getCreature());
+                held = c;
                 unReady();
+              } else
+                makeReady();
               break;
             }
+            pair<Vec2, Vec2> dirs = v.approxL1();
+            vector<Vec2> moves;
+            if (getCreature()->getPosition().plus(dirs.first).canEnter(
+                  {{MovementTrait::WALK, MovementTrait::SWIM}}))
+              moves.push_back(dirs.first);
+            if (getCreature()->getPosition().plus(dirs.second).canEnter(
+                  {{MovementTrait::WALK, MovementTrait::SWIM}}))
+              moves.push_back(dirs.second);
+            if (!moves.empty()) {
+              if (!ready) {
+                makeReady();
+              } else {
+                Vec2 move = Random.choose(moves);
+                ViewId viewId = getCreature()->getPosition().plus(move).canEnter({MovementTrait::SWIM})
+                  ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
+                PCreature spawn(new Creature(getCreature()->getTribeId(),
+                      CreatureFactory::getKrakenAttributes(viewId),
+                      ControllerFactory([=](Creature* c) {
+                        return new KrakenController(c);
+                        })));
+                spawns.push_back(spawn.get());
+                dynamic_cast<KrakenController*>(spawn->getController())->father = this;
+                getCreature()->getPosition().plus(move).addCreature(std::move(spawn));
+                --numSpawns;
+                unReady();
+              }
+            } else
+              unReady();
+            break;
           }
+        }
     if (!isEnemy && spawns.size() == 0 && father && Random.roll(5)) {
       getCreature()->die(nullptr, false, false);
     }
@@ -638,7 +600,6 @@ PCreature CreatureFactory::getIllusion(Creature* creature) {
           c.attr[AttrType::STRENGTH] = 1;
           c.attr[AttrType::DEXTERITY] = 1;
           c.barehandedDamage = 20; // just so it's not ignored by creatures
-          c.stationary = true;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.noAttackSound = true;
           c.name = "illusion";),
@@ -2459,7 +2420,8 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER: 
       return ItemList()
-        .add(ItemId::ROBE);
+        .add(ItemId::ROBE)
+        .add(ItemId::BOULDER_TRAP_ITEM, 10);
     case CreatureId::DEATH: 
       return ItemList()
         .add(ItemId::SCYTHE);

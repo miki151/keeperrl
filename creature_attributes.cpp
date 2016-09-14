@@ -45,8 +45,8 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, viewId, illusionViewObject, spawnType, name, attr, chatReactionFriendly);
   serializeAll(ar, chatReactionHostile, barehandedDamage, barehandedAttack, attackEffect, passiveAttack, gender);
   serializeAll(ar, body, innocent);
-  serializeAll(ar, animal, stationary, cantEquip, courage);
-  serializeAll(ar, carryAnything, invincible, noChase, isSpecial, skills, spells);
+  serializeAll(ar, animal, cantEquip, courage);
+  serializeAll(ar, carryAnything, boulder, noChase, isSpecial, skills, spells);
   serializeAll(ar, permanentEffects, lastingEffects, minionTasks, attrIncrease, recruitmentCost);
   serializeAll(ar, noAttackSound);
 }
@@ -294,16 +294,8 @@ string CreatureAttributes::getRemainingString(LastingEffect effect, double time)
   return "[" + toString<int>(lastingEffects[effect] - time) + "]";
 }
 
-bool CreatureAttributes::isStationary() const {
-  return stationary;
-}
-
-void CreatureAttributes::setStationary(bool s) {
-  stationary = s;
-}
-
-bool CreatureAttributes::isInvincible() const {
-  return invincible;
+bool CreatureAttributes::isBoulder() const {
+  return boulder;
 }
 
 int CreatureAttributes::getRecruitmentCost() const {

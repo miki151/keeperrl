@@ -477,8 +477,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     Vec2 move;
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal);
     drawCreatureHighlights(renderer, object, pos + movement, size, curTimeReal);
-    if ((object.layer() == ViewLayer::CREATURE && object.id() != ViewId::BOULDER)
-        || tile.roundShadow) {
+    if (object.layer() == ViewLayer::CREATURE || tile.roundShadow) {
       static auto coord = renderer.getTileCoord("round_shadow");
       renderer.drawTile(pos + movement, coord, size, Color(255, 255, 255, 160));
       move.y = -4* size.y / renderer.getNominalSize().y;

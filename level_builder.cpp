@@ -11,6 +11,7 @@
 #include "item.h"
 #include "furniture.h"
 #include "furniture_factory.h"
+#include "position.h"
 
 LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int height, const string& n, bool covered,
     optional<double> defaultLight)
@@ -162,9 +163,8 @@ PLevel LevelBuilder::build(Model* m, LevelMaker* maker, LevelId levelId) {
   PLevel l(new Level(std::move(squares), m, locations, name, sunlight, levelId));
   l->background = background;
   l->unavailable = unavailable;
-  for (pair<PCreature, Vec2>& c : creatures) {
-    l->addCreature(c.second, std::move(c.first));
-  }
+  for (pair<PCreature, Vec2>& c : creatures)
+    Position(c.second, l.get()).addCreature(std::move(c.first));
   for (CollectiveBuilder* c : collectives)
     c->setLevel(l.get());
   l->noDiagonalPassing = noDiagonalPassing;

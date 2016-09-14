@@ -67,9 +67,7 @@ class CreatureAttributes {
   SpellMap& getSpellMap();
   const SpellMap& getSpellMap() const;
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
-  bool isStationary() const;
-  void setStationary(bool);
-  bool isInvincible() const;
+  bool isBoulder() const;
   int getRecruitmentCost() const;
   Skillset& getSkills();
   const Skillset& getSkills() const;
@@ -119,11 +117,10 @@ class CreatureAttributes {
   optional<SpawnType> SERIAL(spawnType);
   bool SERIAL(innocent) = false;
   bool SERIAL(animal) = false;
-  bool SERIAL(stationary) = false;
   bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;
   bool SERIAL(carryAnything) = false;
-  bool SERIAL(invincible) = false;
+  bool SERIAL(boulder) = false;
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
   int SERIAL(recruitmentCost) = 0;

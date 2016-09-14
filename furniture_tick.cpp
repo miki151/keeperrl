@@ -6,6 +6,10 @@
 #include "creature_factory.h"
 #include "body.h"
 #include "furniture.h"
+#include "creature_attributes.h"
+#include "game.h"
+#include "player_message.h"
+#include "movement_type.h"
 
 void FurnitureTick::handle(FurnitureTickType type, Position pos, Furniture* furniture) {
   switch (type) {
@@ -26,5 +30,33 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, Furniture* furn
         if (pos.canEnter(pig.get()))
           pos.addCreature(std::move(pig));
       }
+      break;
+    case FurnitureTickType::BOULDER_TRAP:
+      for (Vec2 direction : Vec2::directions4(Random)) {
+        int radius = 4;
+        for (int i = 1; i <= radius; ++i) {
+          Position curPos = pos.plus(direction * i);
+          if (Creature* other = curPos.getCreature()) {
+            if (other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
+              if (!other->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
+                pos.getGame()->addEvent({EventId::TRAP_TRIGGERED, pos});
+                pos.globalMessage(
+                    PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL),
+                    PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
+                CHECK(!pos.getCreature());
+                pos.addCreature(CreatureFactory::getRollingBoulder(furniture->getTribe(), direction), 0);
+              } else {
+                other->you(MsgType::DISARM_TRAP, "boulder trap");
+                pos.getGame()->addEvent({EventId::TRAP_DISARMED, EventInfo::TrapDisarmed{pos, other}});
+              }
+              pos.removeFurniture(furniture);
+              return;
+            }
+          }
+          if (!curPos.canEnterEmpty({MovementTrait::WALK}))
+            break;
+        }
+      }
+      break;
   }
 }

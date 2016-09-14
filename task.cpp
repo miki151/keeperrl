@@ -189,7 +189,7 @@ class Destruction : public Task {
           " "_s + furniture->getName()), furnitureId(furniture->getUniqueId()) {}
 
   virtual bool isImpossible(const Level* level) override {
-    return !position.isDestroyable();
+    return !position.getFurniture() || !position.getFurniture()->canDestroy(destroyAction);
   }
 
   virtual string getDescription() const override {
