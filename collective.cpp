@@ -1333,7 +1333,9 @@ void Collective::removeConstruction(Position pos) {
 }
 
 bool Collective::canAddFurniture(Position position, FurnitureType type) const {
-  return knownTiles->isKnown(position) && FurnitureFactory::canBuild(type, position, this)
+  return knownTiles->isKnown(position)
+      && FurnitureFactory::canBuild(type, position)
+      && (territory->contains(position) || CollectiveConfig::canBuildOutsideTerritory(type))
       && !getConstructions().containsTrap(position)
       && !getConstructions().containsFurniture(position)
       && position.canConstruct(type);

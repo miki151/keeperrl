@@ -182,6 +182,7 @@ class CollectiveConfig {
   static const FurnitureType& getEquipmentStorage();
   static const FurnitureType& getResourceStorage();
   static const vector<FloorInfo>& getFloors();
+  static bool canBuildOutsideTerritory(FurnitureType);
 
   SERIALIZATION_DECL(CollectiveConfig);
 

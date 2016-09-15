@@ -95,7 +95,7 @@ class Predicate {
   }
 
   static Predicate canEnter(MovementType m) {
-    return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return builder->getSquare(pos)->canEnter(m);});
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return builder->getSquare(pos)->canEnterEmpty(m);});
   }
 
   private:
@@ -217,11 +217,11 @@ class Connector : public LevelMaker {
     if (builder->hasAttrib(pos, SquareAttrib::LAKE))
       return 15;
     if (builder->hasAttrib(pos, SquareAttrib::RIVER))
-      return 5;
+      return 15;
     int numCorners = 0;
     int numTotal = 0;
     for (Vec2 v : Vec2::directions8())
-      if ((pos + v).inRectangle(area) && builder->getSquare(pos + v)->canEnter({MovementTrait::WALK})) {
+      if ((pos + v).inRectangle(area) && builder->getSquare(pos + v)->canEnterEmpty({MovementTrait::WALK})) {
         if (abs(v.x) == abs(v.y))
           ++numCorners;
         ++numTotal;
@@ -241,17 +241,21 @@ class Connector : public LevelMaker {
     Vec2 prev(-100, -100);
     for (Vec2 v = p2; v != p1; v = path.getNextMove(v)) {
       if (!builder->canNavigate(v, {MovementTrait::WALK})) {
-        SquareType newType;
+        optional<SquareType> newType;
+        optional<FurnitureFactory> furniture;
         SquareType oldType = builder->getType(v);
-        if (isWall(oldType))
+        if (isWall(oldType)) {
           newType = SquareId::FLOOR;
-        else
+          if (!!door && oldType != SquareId::BLACK_WALL && builder->getRandom().rollD(doorProb))
+            furniture = *door;
+        } else
           switch (oldType.getId()) {
             case SquareId::ABYSS:
             case SquareId::WATER:
             case SquareId::WATER_WITH_DEPTH:
             case SquareId::MAGMA:
-              newType = SquareId::BRIDGE;
+              if (!builder->getFurnitureType(v))
+                furniture = FurnitureFactory(TribeId::getMonster(), FurnitureType::BRIDGE);
               break;
             case SquareId::MOUNTAIN:
             case SquareId::BLACK_WALL:
@@ -260,9 +264,10 @@ class Connector : public LevelMaker {
             default:
               FAIL << "Unhandled square type " << (int)builder->getType(v).getId();
           }
-        builder->putSquare(v, newType, setAttrib);
-        if (!!door && isWall(oldType) && oldType != SquareId::BLACK_WALL && builder->getRandom().rollD(doorProb))
-          builder->putFurniture(v, *door);
+        if (newType)
+          builder->putSquare(v, *newType, setAttrib);
+        if (furniture)
+          builder->putFurniture(v, *furniture);
       }
       if (!path.isReachable(v))
         failGen();
@@ -813,9 +818,12 @@ class Buildings : public LevelMaker {
       for (Vec2 v : Rectangle(area.left() + area.width() / 3, area.top() + alignHeight,
             area.right() - area.width() / 3, area.top() + alignHeight + 2))
         builder->addAttrib(v, SquareAttrib::BUILDINGS_CENTER);
-    if (roadConnection)
-      builder->putSquare(Vec2((area.left() + area.right()) / 2, area.top() + alignHeight),
-          SquareId::ROAD, SquareAttrib::CONNECT_ROAD);
+    if (roadConnection) {
+      Vec2 pos = Vec2((area.left() + area.right()) / 2, area.top() + alignHeight);
+      builder->removeFurniture(pos);
+      builder->putFurniture(pos, FurnitureFactory::get(FurnitureType::ROAD, TribeId::getMonster()));
+      builder->addAttrib(pos, SquareAttrib::CONNECT_ROAD);
+    }
   }
 
   private:
@@ -1232,24 +1240,28 @@ class Roads : public LevelMaker {
   public:
   Roads(SquareType roadSquare) : square(roadSquare) {}
 
+  bool makeBridge(LevelBuilder* builder, Vec2 pos) {
+    return !builder->canNavigate(pos, {MovementTrait::WALK}) && builder->canNavigate(pos, {MovementTrait::SWIM});
+  }
+
   double getValue(LevelBuilder* builder, Vec2 pos) {
-    if ((!builder->getSquare(pos)->canEnter(MovementType({MovementTrait::WALK, MovementTrait::SWIM})) && 
+    if ((!builder->getSquare(pos)->canEnterEmpty(MovementType({MovementTrait::WALK, MovementTrait::SWIM})) &&
          !builder->hasAttrib(pos, SquareAttrib::ROAD_CUT_THRU)) ||
         builder->hasAttrib(pos, SquareAttrib::NO_ROAD))
       return ShortestPath::infinity;
     SquareType type = builder->getType(pos);
-    if (type == SquareId::WATER)
+    if (makeBridge(builder, pos))
       return 10;
-    if (contains({SquareId::ROAD, SquareId::ROAD}, type.getId()))
+    if (builder->getFurnitureType(pos) == FurnitureType::ROAD || builder->getFurnitureType(pos) == FurnitureType::BRIDGE)
       return 1;
     return 1 + pow(1 + builder->getHeightMap(pos), 2);
   }
 
-  SquareType getRoadType(LevelBuilder* builder, Vec2 pos) {
-    if (builder->getType(pos) == SquareId::WATER)
-      return SquareId::BRIDGE;
+  FurnitureType getRoadType(LevelBuilder* builder, Vec2 pos) {
+    if (makeBridge(builder, pos))
+      return FurnitureType::BRIDGE;
     else
-      return SquareId::ROAD;
+      return FurnitureType::ROAD;
   }
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1270,9 +1282,11 @@ class Roads : public LevelMaker {
       for (Vec2 v = p2; v != p1; v = path.getNextMove(v)) {
         if (!path.isReachable(v))
           failGen();
-        SquareType roadType = getRoadType(builder, v);
-        if (v != p2 && v != p1 && builder->getType(v) != roadType)
-          builder->putSquare(v, roadType);
+        auto roadType = getRoadType(builder, v);
+        if (v != p2 && v != p1 && builder->getFurnitureType(v) != roadType) {
+          builder->removeFurniture(v);
+          builder->putFurniture(v, FurnitureFactory::get(roadType, TribeId::getMonster()));
+        }
         prev = v;
       }
     }
@@ -1438,7 +1452,7 @@ class ShopMaker : public LevelMaker {
     PCreature shopkeeper = CreatureFactory::getShopkeeper(loc, tribe);
     vector<Vec2> pos;
     for (Vec2 v : area)
-      if (builder->getSquare(v)->canEnter(shopkeeper.get()) && builder->getType(v) == building.floorInside)
+      if (builder->getSquare(v)->canEnterEmpty({MovementTrait::WALK}) && builder->getType(v) == building.floorInside)
         pos.push_back(v);
     builder->putCreature(pos[builder->getRandom().get(pos.size())], std::move(shopkeeper));
     builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureFactory::get(FurnitureType::TORCH, tribe));

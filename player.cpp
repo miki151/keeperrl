@@ -551,11 +551,11 @@ void Player::makeMove() {
         "level render time");
   } 
   getView()->refreshView();
-  if (displayTravelInfo && getCreature()->getPosition().getName() == "road" 
+  /*if (displayTravelInfo && getCreature()->getPosition().getName() == "road"
       && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
-  }
+  }*/
   if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     CHECK(getCreature()->getName().first());
     getView()->updateView(this, true);

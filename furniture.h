@@ -40,6 +40,7 @@ class Furniture : public Renderable, public UniqueEntity<Furniture> {
   bool canSeeThru(VisionId) const;
   void click(Position);
   bool isClickable() const;
+  bool overridesMovement() const;
   void use(Position, Creature*);
   optional<FurnitureUsageType> getUsageType() const;
   int getUsageTime() const;
@@ -58,6 +59,7 @@ class Furniture : public Renderable, public UniqueEntity<Furniture> {
   Furniture& setClickType(FurnitureClickType);
   Furniture& setTickType(FurnitureTickType);
   Furniture& setFireInfo(const Fire&);
+  Furniture& setOverrideMovement();
 
   SERIALIZATION_DECL(Furniture)
 
@@ -74,10 +76,11 @@ class Furniture : public Renderable, public UniqueEntity<Furniture> {
   optional<FurnitureType> SERIAL(destroyedRemains);
   optional<double> SERIAL(strength);
   HeapAllocated<optional<ItemFactory>> SERIAL(itemDrop);
-  bool SERIAL(canCut);
+  bool SERIAL(canCut) = false;
   EnumSet<VisionId> SERIAL(blockVision);
   optional<FurnitureUsageType> SERIAL(usageType);
   optional<FurnitureClickType> SERIAL(clickType);
   optional<FurnitureTickType> SERIAL(tickType);
   int SERIAL(usageTime) = 1;
+  bool SERIAL(overrideMovement) = false;
 };

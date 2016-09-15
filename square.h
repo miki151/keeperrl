@@ -40,7 +40,6 @@ class ViewObject;
 
 enum class ConstructionsId {
   DUNGEON_ROOMS,
-  BRIDGE,
   MINING_ORE,
   MINING,
   MOUNTAIN_GEN_ORES,
@@ -82,18 +81,7 @@ class Square : public Renderable {
   /** Returns radius of emitted light (0 if none).*/
   virtual double getLightEmission() const;
 
-  //@{
-  /** Checks if this creature can enter the square at the moment. Takes account other creatures on the square.*/
-  bool canEnter(const Creature*) const;
-  bool canEnter(const MovementType&) const;
-  //@}
-
-  //@{
-  /** Checks if this square is can be entered by the creature. Doesn't take into account other 
-    * creatures on the square.*/
-  bool canEnterEmpty(const Creature*) const;
   bool canEnterEmpty(const MovementType&) const;
-  //@}
 
   /** Checks if this square obstructs view.*/
   bool canSeeThru(VisionId) const;

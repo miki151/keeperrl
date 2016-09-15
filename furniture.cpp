@@ -34,7 +34,7 @@ template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
   ar & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity<Furniture>);
   serializeAll(ar, name, type, blockType, tribe, fire, burntRemains, destroyedRemains, strength, itemDrop, canCut);
-  serializeAll(ar, blockVision, usageType, clickType, tickType, usageTime);
+  serializeAll(ar, blockVision, usageType, clickType, tickType, usageTime, overrideMovement);
 }
 
 SERIALIZABLE(Furniture);
@@ -109,6 +109,10 @@ bool Furniture::canSeeThru(VisionId id) const {
 
 bool Furniture::isClickable() const {
   return !!clickType;
+}
+
+bool Furniture::overridesMovement() const {
+  return overrideMovement;
 }
 
 void Furniture::click(Position pos) {
@@ -226,6 +230,11 @@ Furniture& Furniture::setTickType(FurnitureTickType type) {
 
 Furniture& Furniture::setFireInfo(const Fire& f) {
   *fire = f;
+  return *this;
+}
+
+Furniture& Furniture::setOverrideMovement() {
+  overrideMovement = true;
   return *this;
 }
 

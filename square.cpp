@@ -100,8 +100,6 @@ double Square::getLightEmission() const {
 
 static optional<short int> getConstructionTime(ConstructionsId id, SquareId square) {
   switch (id) {
-    case ConstructionsId::BRIDGE:
-      return square == SquareId::BRIDGE ? 20 : optional<short int>(none);
     case ConstructionsId::MINING:
       return square == SquareId::FLOOR ? Random.get(3, 8) : optional<short int>(none);
     case ConstructionsId::MINING_ORE:
@@ -220,22 +218,10 @@ void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack,
     dropItems(pos, std::move(item));
 }
 
-bool Square::canEnter(const MovementType& movement) const {
-  return creature == nullptr && canEnterEmpty(movement);
-}
-
 bool Square::canEnterEmpty(const MovementType& movement) const {
   if (!movement.isForced() && forbiddenTribe && movement.isCompatible(*forbiddenTribe))
     return false;
   return movementSet->canEnter(movement);
-}
-
-bool Square::canEnter(const Creature* c) const {
-  return creature == nullptr && canEnterEmpty(c);
-}
-
-bool Square::canEnterEmpty(const Creature* c) const {
-  return canEnterEmpty(c->getMovementType());
 }
 
 void Square::addPoisonGas(Position pos, double amount) {

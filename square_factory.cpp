@@ -49,17 +49,18 @@ class Magma : public Square {
       CONSTRUCT(Square::Params,
         c.name = name;
         c.vision = VisionId::NORMAL;
-        c.constructions = ConstructionsId::BRIDGE;
         c.movementSet = MovementSet()
             .addTrait(MovementTrait::FLY)
             .addForcibleTrait(MovementTrait::WALK);)) {}
 
   virtual void onEnterSpecial(Creature* c) override {
-    MovementType realMovement = c->getMovementType();
-    realMovement.setForced(false);
-    if (!canEnterEmpty(realMovement)) {
-      c->you(MsgType::BURN, getName());
-      c->die("burned to death", false);
+    if (!c->getPosition().getFurniture()) { // check if there is a bridge
+      MovementType realMovement = c->getMovementType();
+      realMovement.setForced(false);
+      if (!canEnterEmpty(realMovement)) {
+        c->you(MsgType::BURN, getName());
+        c->die("burned to death", false);
+      }
     }
   }
 
@@ -80,16 +81,17 @@ class Water : public Square {
           CONSTRUCT(Square::Params,
             c.name = name;
             c.vision = VisionId::NORMAL;
-            c.constructions = ConstructionsId::BRIDGE;
             c.movementSet = getMovement(_depth);
           )) {}
 
   virtual void onEnterSpecial(Creature* c) override {
-    MovementType realMovement = c->getMovementType();
-    realMovement.setForced(false);
-    if (!canEnterEmpty(realMovement)) {
-      c->you(MsgType::DROWN, getName());
-      c->die("drowned", false);
+    if (!c->getPosition().getFurniture()) { // check if there is a bridge
+      MovementType realMovement = c->getMovementType();
+      realMovement.setForced(false);
+      if (!canEnterEmpty(realMovement)) {
+        c->you(MsgType::DROWN, getName());
+        c->die("drowned", false);
+      }
     }
   }
 
@@ -208,12 +210,6 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.name = "floor";
               c.vision = VisionId::NORMAL;
               c.movementSet = MovementSet().addTrait(MovementTrait::WALK);));
-    case SquareId::BRIDGE:
-        return new Square(ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR),
-            CONSTRUCT(Square::Params,
-              c.name = "rope bridge";
-              c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
-              c.vision = VisionId::NORMAL;));
     case SquareId::GRASS:
         return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND),
             CONSTRUCT(Square::Params,
@@ -225,13 +221,6 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Square(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND),
             CONSTRUCT(Square::Params,
               c.name = "mud";
-              c.vision = VisionId::NORMAL;
-              c.movementSet = MovementSet().addTrait(MovementTrait::WALK);));
-    case SquareId::ROAD:
-        return new Square(ViewObject(ViewId::ROAD, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::ROAD),
-            CONSTRUCT(Square::Params,
-              c.name = "road";
               c.vision = VisionId::NORMAL;
               c.movementSet = MovementSet().addTrait(MovementTrait::WALK);));
     case SquareId::ROCK_WALL:

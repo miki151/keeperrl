@@ -4,13 +4,12 @@
 
 class TribeId;
 class RandomGen;
-class Collective;
 class Position;
 
 class FurnitureFactory {
   public:
   static Furniture get(FurnitureType, TribeId);
-  static bool canBuild(FurnitureType, Position, const Collective*);
+  static bool canBuild(FurnitureType, Position);
   static bool isUpgrade(FurnitureType base, FurnitureType upgraded);
 
   FurnitureFactory(TribeId, const EnumMap<FurnitureType, double>& distribution,

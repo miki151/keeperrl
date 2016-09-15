@@ -231,7 +231,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
       BuildInfo(BuildInfo::FORBID_ZONE, "Mark tiles to keep minions from entering.", 'b', "Orders"),
       BuildInfo({FurnitureType::DOOR, {ResourceId::WOOD, 5}, "Door"},
           {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "Click on a built door to lock it.", 'o', "Installations"),
-      BuildInfo({SquareId::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, {},
+      BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, {},
         "Build it to pass over water or lava.", 0, "Installations"),
       BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"},
         {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "", 0, "Installations"),

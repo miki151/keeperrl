@@ -368,21 +368,21 @@ bool Position::isUnavailable() const {
 }
 
 bool Position::canEnter(const Creature* c) const {
-  return !isUnavailable() && (!getFurniture() || getFurniture()->canEnter(c->getMovementType())) &&
-      getSquare()->canEnter(c);
+  return !isUnavailable() && !getCreature() && canEnterEmpty(c->getMovementType());
 }
 
 bool Position::canEnter(const MovementType& t) const {
-  return !isUnavailable() && (!getFurniture() || getFurniture()->canEnter(t)) && getSquare()->canEnter(t);
+  return !isUnavailable() && !getCreature() && canEnterEmpty(t);
 }
 
 bool Position::canEnterEmpty(const Creature* c) const {
-  return !isUnavailable() && (!getFurniture() || getFurniture()->canEnter(c->getMovementType())) &&
-      getSquare()->canEnterEmpty(c);
+  return canEnterEmpty(c->getMovementType());
 } 
 
 bool Position::canEnterEmpty(const MovementType& t) const {
-  return !isUnavailable() && (!getFurniture() || getFurniture()->canEnter(t)) && getSquare()->canEnterEmpty(t);
+  auto furniture = getFurniture();
+  return !isUnavailable() && (!furniture || furniture->canEnter(t)) &&
+      (getSquare()->canEnterEmpty(t) || (furniture && furniture->overridesMovement() && furniture->canEnter(t)));
 }
 
 void Position::dropItem(PItem item) {
@@ -439,7 +439,7 @@ bool Position::construct(const SquareType& type) {
 }
 
 bool Position::canConstruct(FurnitureType type) const {
-  return !isUnavailable() && getSquare()->canEnterEmpty(MovementTrait::WALK);
+  return !isUnavailable() && FurnitureFactory::canBuild(type, *this);
 }
 
 bool Position::canSupportDoorOrTorch() const {
@@ -463,9 +463,7 @@ bool Position::construct(FurnitureType type, TribeId tribe) {
   if (!furnitureInfo.construction || furnitureInfo.construction->type != type)
     furnitureInfo.construction = {type, 10};
   if (--furnitureInfo.construction->time == 0) {
-    setNeedsRenderUpdate(true);
-    level->setFurniture(coord, FurnitureFactory::get(type, tribe));
-    furnitureInfo.construction = none;
+    addFurniture(FurnitureFactory::get(type, tribe));
     return true;
   } else
     return false;

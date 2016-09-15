@@ -275,6 +275,15 @@ const vector<FloorInfo>& CollectiveConfig::getFloors() {
   return ret;
 }
 
+bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
+  switch (type) {
+    case FurnitureType::EYEBALL:
+    case FurnitureType::KEEPER_BOARD:
+    case FurnitureType::BRIDGE: return true;
+    default: return false;
+  }
+}
+
 const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
   static EnumMap<CollectiveResourceId, ResourceInfo> ret = {
     {CollectiveResourceId::MANA, { none, none, ItemId::GOLD_PIECE, "mana", ViewId::MANA}},

@@ -9,11 +9,8 @@
 #include "item_type.h"
 #include "furniture_usage.h"
 #include "furniture_click.h"
-#include "collective.h"
-#include "territory.h"
 #include "level.h"
 #include "square_type.h"
-#include "construction_map.h"
 
 Furniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
   switch (type) {
@@ -214,6 +211,11 @@ Furniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
       return Furniture("boulder", ViewObject(ViewId::BOULDER, ViewLayer::CREATURE), type, Furniture::BLOCKING, tribe)
           .setTickType(FurnitureTickType::BOULDER_TRAP)
           .setDestroyable(40);
+    case FurnitureType::BRIDGE:
+      return Furniture("bridge", ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe)
+          .setOverrideMovement();
+    case FurnitureType::ROAD:
+      return Furniture("road", ViewObject(ViewId::ROAD, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe);
   }
 }
 
@@ -224,12 +226,14 @@ static bool canBuildDoor(Position pos) {
        (pos.minus(Vec2(1, 0)).canSupportDoorOrTorch() && pos.minus(Vec2(-1, 0)).canSupportDoorOrTorch());
 }
 
-bool FurnitureFactory::canBuild(FurnitureType type, Position pos, const Collective* col) {
+bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
   switch (type) {
-    case FurnitureType::DOOR: return canBuildDoor(pos);
-    case FurnitureType::KEEPER_BOARD:
-    case FurnitureType::EYEBALL: return true;
-    default: return col->getTerritory().contains(pos);
+    case FurnitureType::BRIDGE:
+      return !pos.canEnterEmpty({MovementTrait::WALK}) && pos.canEnterEmpty({MovementTrait::SWIM});
+    case FurnitureType::DOOR:
+      return canBuildDoor(pos);
+    default:
+      return pos.canEnterEmpty({MovementTrait::WALK});
   }
 }
 
