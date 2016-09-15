@@ -12,7 +12,7 @@
 #include "level.h"
 #include "square_type.h"
 
-Furniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
+static Furniture get(FurnitureType type, TribeId tribe) {
   switch (type) {
     case FurnitureType::TRAINING_WOOD:
       return Furniture("wooden training dummy", ViewObject(ViewId::TRAINING_WOOD, ViewLayer::FLOOR), type,
@@ -219,6 +219,10 @@ Furniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
   }
 }
 
+bool FurnitureParams::operator == (const FurnitureParams& p) const {
+  return type == p.type && tribe == p.tribe;
+}
+
 static bool canBuildDoor(Position pos) {
   if (!pos.canConstruct(FurnitureType::DOOR))
     return false;
@@ -253,6 +257,10 @@ FurnitureFactory::FurnitureFactory(TribeId t, const EnumMap<FurnitureType, doubl
 }
 
 FurnitureFactory::FurnitureFactory(TribeId t, FurnitureType f) : tribe(t), distribution({{f, 1}}) {
+}
+
+PFurniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
+  return PFurniture(new Furniture(::get(type, tribe)));
 }
 
 FurnitureFactory FurnitureFactory::roomFurniture(TribeId tribe) {
@@ -300,12 +308,12 @@ FurnitureFactory FurnitureFactory::cryptCoffins(TribeId tribe) {
   });
 }
 
-Furniture FurnitureFactory::getRandom(RandomGen& random) {
+FurnitureParams FurnitureFactory::getRandom(RandomGen& random) {
   if (!unique.empty()) {
     FurnitureType f = unique.back();
     unique.pop_back();
-    return get(f, *tribe);
+    return {f, *tribe};
   } else
-    return get(random.choose(distribution), *tribe);
+    return {random.choose(distribution), *tribe};
 }
 

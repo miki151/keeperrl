@@ -821,7 +821,7 @@ class Buildings : public LevelMaker {
     if (roadConnection) {
       Vec2 pos = Vec2((area.left() + area.right()) / 2, area.top() + alignHeight);
       builder->removeFurniture(pos);
-      builder->putFurniture(pos, FurnitureFactory::get(FurnitureType::ROAD, TribeId::getMonster()));
+      builder->putFurniture(pos, FurnitureParams{FurnitureType::ROAD, TribeId::getMonster()});
       builder->addAttrib(pos, SquareAttrib::CONNECT_ROAD);
     }
   }
@@ -1285,7 +1285,7 @@ class Roads : public LevelMaker {
         auto roadType = getRoadType(builder, v);
         if (v != p2 && v != p1 && builder->getFurnitureType(v) != roadType) {
           builder->removeFurniture(v);
-          builder->putFurniture(v, FurnitureFactory::get(roadType, TribeId::getMonster()));
+          builder->putFurniture(v, FurnitureParams{roadType, TribeId::getMonster()});
         }
         prev = v;
       }
@@ -1430,7 +1430,7 @@ class Stairs : public LevelMaker {
     checkGen(allPos.size() > 0);
     Vec2 pos = allPos[builder->getRandom().get(allPos.size())];
     auto type = direction == StairDirection::DOWN ? FurnitureType::DOWN_STAIRS : FurnitureType::UP_STAIRS;
-    builder->putFurniture(pos, FurnitureFactory::get(type, TribeId::getHostile()));
+    builder->putFurniture(pos, FurnitureParams{type, TribeId::getHostile()});
     builder->setLandingLink(pos, key);
   }
 
@@ -1455,7 +1455,7 @@ class ShopMaker : public LevelMaker {
       if (builder->getSquare(v)->canEnterEmpty({MovementTrait::WALK}) && builder->getType(v) == building.floorInside)
         pos.push_back(v);
     builder->putCreature(pos[builder->getRandom().get(pos.size())], std::move(shopkeeper));
-    builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureFactory::get(FurnitureType::TORCH, tribe));
+    builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureParams{FurnitureType::TORCH, tribe});
     for (int i : Range(numItems)) {
       Vec2 v = pos[builder->getRandom().get(pos.size())];
       builder->putItems(v, factory.random());
@@ -2471,7 +2471,7 @@ found:
       boulders.push_back(pos);
     }
     builder->putSquare(start + Vec2(length + 1, 0), SquareId::FLOOR);
-    builder->putFurniture(start + Vec2(length + 1, 0), FurnitureFactory::get(FurnitureType::DOOR, TribeId::getHostile()));
+    builder->putFurniture(start + Vec2(length + 1, 0), FurnitureParams{FurnitureType::DOOR, TribeId::getHostile()});
     for (Vec2 v : Rectangle::centered(start + Vec2(length + roomRadius + 2, 0), roomRadius))
       builder->putSquare(v, SquareId::FLOOR, SquareAttrib::SOKOBAN_PRIZE);
     set<int> visited;

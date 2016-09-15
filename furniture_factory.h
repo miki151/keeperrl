@@ -1,22 +1,30 @@
 #pragma once
 
 #include "furniture_type.h"
+#include "tribe.h"
 
-class TribeId;
 class RandomGen;
 class Position;
 
+struct FurnitureParams {
+  FurnitureType SERIAL(type); // HASH(type)
+  TribeId SERIAL(tribe); // HASH(tribe)
+  bool operator == (const FurnitureParams& p) const;
+  SERIALIZE_ALL(type, tribe)
+  HASH_ALL(type, tribe)
+};
+
 class FurnitureFactory {
   public:
-  static Furniture get(FurnitureType, TribeId);
   static bool canBuild(FurnitureType, Position);
   static bool isUpgrade(FurnitureType base, FurnitureType upgraded);
 
   FurnitureFactory(TribeId, const EnumMap<FurnitureType, double>& distribution,
       const vector<FurnitureType>& unique = {});
   FurnitureFactory(TribeId, FurnitureType);
+  static PFurniture get(FurnitureType, TribeId);
 
-  Furniture getRandom(RandomGen&);
+  FurnitureParams getRandom(RandomGen&);
 
   static FurnitureFactory roomFurniture(TribeId);
   static FurnitureFactory castleFurniture(TribeId);

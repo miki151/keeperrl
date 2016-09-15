@@ -1415,7 +1415,7 @@ bool Collective::hasPriorityTasks(Position pos) const {
 }
 
 void Collective::cutTree(Position pos) {
-  Furniture* f = NOTNULL(pos.getFurniture());
+  auto f = NOTNULL(pos.getFurniture());
   CHECK(f->canDestroy(DestroyAction::CUT));
   taskMap->markSquare(pos, HighlightType::CUT_TREE, Task::destruction(this, pos, f, DestroyAction::CUT));
 }

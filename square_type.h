@@ -48,18 +48,14 @@ class SquareType : public EnumVariant<SquareId, TYPES(CreatureId, StairKey, doub
         SquareId::SOKOBAN_HOLE),
     ASSIGN(CustomFloorInfo,
         SquareId::CUSTOM_FLOOR)> {
+  public:
   using EnumVariant::EnumVariant;
+  size_t getHash() const {
+    return (size_t)getId();
+  }
 };
 
 
 bool isWall(SquareType);
-
-namespace std {
-  template <> struct hash<SquareType> {
-    size_t operator()(const SquareType& t) const {
-      return (size_t)t.getId();
-    }
-  };
-}
 
 #endif

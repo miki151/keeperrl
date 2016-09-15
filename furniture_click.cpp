@@ -6,7 +6,7 @@
 #include "position.h"
 #include "tribe.h"
 
-void FurnitureClick::handle(FurnitureClickType type, Position pos, Furniture* furniture) {
+void FurnitureClick::handle(FurnitureClickType type, Position pos, const Furniture* furniture) {
   switch (type) {
     case FurnitureClickType::LOCK:
       pos.replaceFurniture(furniture, FurnitureFactory::get(FurnitureType::LOCKED_DOOR, furniture->getTribe()));

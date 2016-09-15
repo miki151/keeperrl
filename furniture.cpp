@@ -32,7 +32,7 @@ DestroyAction::Value Furniture::getDefaultDestroyAction() const {
 
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
-  ar & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity<Furniture>);
+  ar & SUBCLASS(Renderable);
   serializeAll(ar, name, type, blockType, tribe, fire, burntRemains, destroyedRemains, strength, itemDrop, canCut);
   serializeAll(ar, blockVision, usageType, clickType, tickType, usageTime, overrideMovement);
 }
@@ -51,7 +51,7 @@ FurnitureType Furniture::getType() const {
 bool Furniture::canEnter(const MovementType& movement) const {
   return blockType == NON_BLOCKING || (blockType == BLOCKING_ENEMIES && movement.isCompatible(getTribe()));
 }
-  
+
 void Furniture::destroy(Position pos) {
   pos.globalMessage("The " + name + " " + DestroyAction::getIsDestroyed(getDefaultDestroyAction()));
   pos.getGame()->addEvent({EventId::FURNITURE_DESTROYED, pos});
@@ -115,14 +115,14 @@ bool Furniture::overridesMovement() const {
   return overrideMovement;
 }
 
-void Furniture::click(Position pos) {
+void Furniture::click(Position pos) const {
   if (clickType) {
     FurnitureClick::handle(*clickType, pos, this);
     pos.setNeedsRenderUpdate(true);
   }
 }
 
-void Furniture::use(Position pos, Creature* c) {
+void Furniture::use(Position pos, Creature* c) const {
   if (usageType)
     FurnitureUsage::handle(*usageType, pos, this, c);
 }
@@ -151,11 +151,11 @@ optional<Fire>& Furniture::getFire() {
   return *fire;
 }
 
-bool Furniture::canDestroy(const MovementType& movement) {
+bool Furniture::canDestroy(const MovementType& movement) const {
    return !!strength && (!getFire() || !getFire()->isBurning()) && !movement.isCompatible(getTribe());
 }
 
-bool Furniture::canDestroy(const Creature* c) {
+bool Furniture::canDestroy(const Creature* c) const {
   return canDestroy(c->getMovementType()) || (!!strength && c->getAttributes().isBoulder());
 }
 

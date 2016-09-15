@@ -184,9 +184,10 @@ PTask Task::construction(TaskCallback* c, Position target, FurnitureType type) {
 namespace {
 class Destruction : public Task {
   public:
-  Destruction(TaskCallback* c, Position pos, Furniture* furniture, DestroyAction::Value action) : Task(true), position(pos),
-      callback(c), destroyAction(action), description(DestroyAction::getVerbSecondPerson(destroyAction) +
-          " "_s + furniture->getName()), furnitureId(furniture->getUniqueId()) {}
+  Destruction(TaskCallback* c, Position pos, const Furniture* furniture, DestroyAction::Value action)
+      : Task(true), position(pos), callback(c), destroyAction(action),
+        description(DestroyAction::getVerbSecondPerson(destroyAction) +
+          " "_s + furniture->getName()), furnitureType(furniture->getType()) {}
 
   virtual bool isImpossible(const Level* level) override {
     return !position.getFurniture() || !position.getFurniture()->canDestroy(destroyAction);
@@ -205,7 +206,7 @@ class Destruction : public Task {
     Vec2 dir = c->getPosition().getDir(position);
     if (auto action = c->destroy(dir, destroyAction))
       return {1.0, action.append([=](Creature* c) {
-          if (!position.getFurniture() || position.getFurniture()->getUniqueId() != furnitureId) {
+          if (!position.getFurniture() || position.getFurniture()->getType() != furnitureType) {
             setDone();
             callback->onDestructedFurniture(position);
           }
@@ -216,7 +217,7 @@ class Destruction : public Task {
     }
   }
 
-  SERIALIZE_ALL2(Task, position, callback, destroyAction, description, furnitureId)
+  SERIALIZE_ALL2(Task, position, callback, destroyAction, description, furnitureType)
   SERIALIZATION_CONSTRUCTOR(Destruction)
 
   private:
@@ -224,12 +225,13 @@ class Destruction : public Task {
   TaskCallback* SERIAL(callback);
   DestroyAction::Value SERIAL(destroyAction);
   string SERIAL(description);
-  Furniture::Id SERIAL(furnitureId);
+  FurnitureType SERIAL(furnitureType);
 };
 
 }
 
-PTask Task::destruction(TaskCallback* c, Position target, Furniture* furniture, DestroyAction::Value destroyAction) {
+PTask Task::destruction(TaskCallback* c, Position target, const Furniture* furniture,
+                        DestroyAction::Value destroyAction) {
   return PTask(new Destruction(c, target, furniture, destroyAction));
 }
 

@@ -797,7 +797,7 @@ string PlayerControl::getRequirementText(Requirement req) {
 }
 
 static ViewId getSquareViewId(SquareType type) {
-  static unordered_map<SquareType, ViewId> ids;
+  static unordered_map<SquareType, ViewId, CustomHash<SquareType>> ids;
   if (!ids.count(type))
     ids.insert(make_pair(type, SquareFactory::get(type)->getViewObject().id()));
   return ids.at(type);
@@ -806,7 +806,7 @@ static ViewId getSquareViewId(SquareType type) {
 static ViewId getFurnitureViewId(FurnitureType type) {
   static EnumMap<FurnitureType, optional<ViewId>> ids;
   if (!ids[type])
-    ids[type] = FurnitureFactory::get(type, TribeId::getMonster()).getViewObject().id();
+    ids[type] = FurnitureFactory::get(type, TribeId::getMonster())->getViewObject().id();
   return *ids[type];
 }
 
@@ -1234,7 +1234,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.modifiedSquares = gameInfo.totalSquares = 0;
   for (Collective* col : getCollective()->getGame()->getCollectives()) {
     gameInfo.modifiedSquares += col->getLevel()->getNumModifiedSquares();
-    gameInfo.totalSquares += col->getLevel()->getBounds().area();
+    gameInfo.totalSquares += col->getLevel()->getNumTotalSquares();
   }
   info.teams.clear();
   for (int i : All(getTeams().getAll())) {
@@ -1394,7 +1394,7 @@ ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
 }
 
 static const ViewObject& getConstructionObject(SquareType type) {
-  static unordered_map<SquareType, ViewObject> objects;
+  static unordered_map<SquareType, ViewObject, CustomHash<SquareType>> objects;
   if (!objects.count(type)) {
     objects.insert(make_pair(type, SquareFactory::get(type)->getViewObject()));
     objects.at(type).setModifier(ViewObject::Modifier::PLANNED);
@@ -1405,7 +1405,7 @@ static const ViewObject& getConstructionObject(SquareType type) {
 static const ViewObject& getConstructionObject(FurnitureType type) {
   static EnumMap<FurnitureType, optional<ViewObject>> objects;
   if (!objects[type]) {
-    objects[type] =  FurnitureFactory::get(type, TribeId::getMonster()).getViewObject();
+    objects[type] =  FurnitureFactory::get(type, TribeId::getMonster())->getViewObject();
     objects[type]->setModifier(ViewObject::Modifier::PLANNED);
   }
   return *objects[type];

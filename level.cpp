@@ -38,13 +38,14 @@
 #include "view_object.h"
 #include "field_of_view.h"
 #include "furniture.h"
+#include "furniture_array.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, squares, oldSquares, landingSquares, locations, tickingSquares, creatures, model, fieldOfView);
   serializeAll(ar, name, backgroundLevel, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
   serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, memoryUpdates);
-  serializeAll(ar, furnitureInfo, tickingFurniture);
+  serializeAll(ar, furniture, furnitureConstruction, tickingFurniture);
 }  
 
 SERIALIZABLE(Level);
@@ -53,10 +54,10 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 
 Level::~Level() {}
 
-Level::Level(SquareArray s, Model* m, vector<Location*> l, const string& n,
+Level::Level(SquareArray s, FurnitureArray f, Model* m, vector<Location*> l, const string& n,
     Table<double> sun, LevelId id) 
-    : squares(std::move(s)), oldSquares(squares->getBounds()), furnitureInfo(squares->getBounds()),
-      memoryUpdates(squares->getBounds(), true), locations(l), model(m), 
+    : squares(std::move(s)), oldSquares(squares->getBounds()), furniture(std::move(f)),
+      furnitureConstruction(squares->getBounds()), memoryUpdates(squares->getBounds(), true), locations(l), model(m),
       name(n), sunlight(sun), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id) {
@@ -143,7 +144,7 @@ void Level::removeSquare(Position pos, PSquare defaultSquare) {
 
 void Level::replaceSquare(Position position, PSquare newSquare, bool storePrevious) {
   Vec2 pos = position.getCoord();
-  Square* oldSquare = squares->getSquare(pos);
+  Square* oldSquare = squares->getWritable(pos);
   oldSquare->onConstructNewSquare(position, newSquare.get());
   Creature* c = oldSquare->getCreature();
   if (c)
@@ -159,13 +160,13 @@ void Level::replaceSquare(Position position, PSquare newSquare, bool storePrevio
   if (auto tribe = oldSquare->getForbiddenTribe())
     newSquare->forbidMovementForTribe(position, *tribe);
   if (storePrevious)
-    oldSquares[pos] = squares->extractSquare(pos);
-  squares->putSquare(pos, std::move(newSquare));
-  squares->getSquare(pos)->onAddedToLevel(position);
+    oldSquares[pos] = squares->extractElem(pos);
+  squares->putElem(pos, std::move(newSquare));
+  squares->getWritable(pos)->onAddedToLevel(position);
   if (c) {
-    squares->getSquare(pos)->setCreature(c);
+    squares->getWritable(pos)->setCreature(c);
   }
-  addLightSource(pos, squares->getSquare(pos)->getLightEmission(), 1);
+  addLightSource(pos, squares->getWritable(pos)->getLightEmission(), 1);
   updateVisibility(pos);
   position.updateConnectivity();
 }
@@ -524,7 +525,7 @@ const Square* Level::getSafeSquare(Vec2 pos) const {
 
 Square* Level::modSafeSquare(Vec2 pos) {
   CHECK(inBounds(pos));
-  return squares->getSquare(pos);
+  return squares->getWritable(pos);
 }
 
 Position Level::getPosition(Vec2 pos) const {
@@ -548,10 +549,10 @@ void Level::addTickingFurniture(Vec2 pos) {
 
 void Level::tick() {
   for (Vec2 pos : tickingSquares)
-    squares->getSquare(pos)->tick(Position(pos, this));
+    squares->getWritable(pos)->tick(Position(pos, this));
   for (Vec2 pos : tickingFurniture)
-    if (auto furniture = furnitureInfo[pos].get())
-      furniture->tick(Position(pos, this));
+    if (auto f = furniture->getWritable(pos))
+      f->tick(Position(pos, this));
 }
 
 bool Level::inBounds(Vec2 pos) const {
@@ -602,7 +603,11 @@ const optional<ViewObject>& Level::getBackgroundObject(Vec2 pos) const {
 }
 
 int Level::getNumModifiedSquares() const {
-  return squares->getNumModified();
+  return furniture->getNumModified();
+}
+
+int Level::getNumTotalSquares() const {
+  return furniture->getNumTotal();
 }
 
 void Level::setNeedsMemoryUpdate(Vec2 pos, bool s) {
@@ -625,20 +630,8 @@ bool Level::isUnavailable(Vec2 pos) const {
   return unavailable[pos];
 }
 
-void Level::FurnitureInfo::reset() {
-  furniture->reset();
-  construction.reset();
-}
-
-void Level::setFurniture(Vec2 pos, const Furniture& f) {
-  furnitureInfo[pos].furniture->reset(f);
-  if (furnitureInfo[pos].get()->isTicking())
+void Level::setFurniture(Vec2 pos, PFurniture f) {
+  if (f->isTicking())
     addTickingFurniture(pos);
-}
-
-Furniture* Level::FurnitureInfo::get() {
-  if (*furniture)
-    return &**furniture;
-  else
-    return nullptr;
+  furniture->putElem(pos, std::move(f));
 }

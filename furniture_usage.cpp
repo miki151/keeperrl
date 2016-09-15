@@ -64,7 +64,7 @@ static void useChest(Position pos, const Furniture* furniture, Creature* c, cons
   }
 }
 
-void FurnitureUsage::handle(FurnitureUsageType type, Position pos, Furniture* furniture, Creature* c) {
+void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furniture* furniture, Creature* c) {
   switch (type) {
     case FurnitureUsageType::CHEST:
       useChest(pos, furniture, c, ChestInfo {

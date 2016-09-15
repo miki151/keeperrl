@@ -137,7 +137,7 @@ class ConstructionMap {
   EnumMap<FurnitureType, int> SERIAL(unbuiltCounts);
   vector<Position> squarePos;
   vector<Position> allFurniture;
-  unordered_map<SquareType, int> SERIAL(typeCounts);
+  unordered_map<SquareType, int, CustomHash<SquareType>> SERIAL(typeCounts);
   map<Position, TrapInfo> SERIAL(traps);
   map<Position, TorchInfo> SERIAL(torches);
 };

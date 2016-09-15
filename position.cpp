@@ -21,6 +21,7 @@
 #include "fire.h"
 #include "movement_set.h"
 #include "square_type.h"
+#include "furniture_array.h"
 
 template <class Archive> 
 void Position::serialize(Archive& ar, const unsigned int version) {
@@ -105,9 +106,16 @@ const Square* Position::getSquare() const {
   return level->getSafeSquare(coord);
 }
 
-Furniture* Position::getFurniture() const {
-  if (isValid() && level->furnitureInfo[coord].get())
-    return level->furnitureInfo[coord].get();
+Furniture* Position::modFurniture() const {
+  if (isValid())
+    return level->furniture->getWritable(coord);
+  else
+    return nullptr;
+}
+
+const Furniture* Position::getFurniture() const {
+  if (isValid())
+    return level->furniture->getReadonly(coord);
   else
     return nullptr;
 }
@@ -351,14 +359,14 @@ vector<PItem> Position::removeItems(vector<Item*> it) {
 
 bool Position::canDestroy(const Creature* c) const {
   if (!isUnavailable())
-    if (Furniture* furniture = getFurniture())
+    if (auto furniture = getFurniture())
       return furniture->canDestroy(c);
   return false;
 }
 
 bool Position::canDestroy(const MovementType& movement) const {
   if (!isUnavailable())
-    if (Furniture* furniture = getFurniture())
+    if (auto furniture = getFurniture())
       return furniture->canDestroy(movement);
   return false;
 }
@@ -396,35 +404,36 @@ void Position::dropItems(vector<PItem> v) {
 }
 
 void Position::tryToDestroyBy(Creature* c) {
-  if (Furniture* furniture = getFurniture())
+  if (auto furniture = modFurniture())
     furniture->tryToDestroyBy(*this, c);
 }
 
 void Position::destroy() {
-  if (Furniture* f = getFurniture())
+  if (Furniture* f = modFurniture())
     f->destroy(*this);
 }
 
 void Position::removeFurniture(const Furniture* f) const {
-  CHECK(level->furnitureInfo[coord].get() == f);
-  level->furnitureInfo[coord].reset();
+  CHECK(getFurniture() == f);
+  level->furniture->clearElem(coord);
+  level->furnitureConstruction[coord].reset();
   updateConnectivity();
   updateVisibility();
   setNeedsRenderUpdate(true);
 }
 
-void Position::addFurniture(const Furniture& f) const {
-  level->furnitureInfo[coord].reset();
-  level->setFurniture(coord, f);
+void Position::addFurniture(PFurniture f) const {
+  level->furnitureConstruction[coord].reset();
+  level->setFurniture(coord, std::move(f));
   updateConnectivity();
   updateVisibility();
   setNeedsRenderUpdate(true);
 }
 
-void Position::replaceFurniture(const Furniture* prev, const Furniture& next) const {
-  CHECK(level->furnitureInfo[coord].get() == prev);
-  level->furnitureInfo[coord].reset();
-  level->setFurniture(coord, next);
+void Position::replaceFurniture(const Furniture* prev, PFurniture next) const {
+  CHECK(getFurniture() == prev);
+  level->furnitureConstruction[coord].reset();
+  level->setFurniture(coord, std::move(next));
   updateConnectivity();
   updateVisibility();
   setNeedsRenderUpdate(true);
@@ -447,10 +456,10 @@ bool Position::canSupportDoorOrTorch() const {
 }
 
 bool Position::construct(FurnitureType type, Creature* c) {
-  auto& furnitureInfo = level->furnitureInfo[coord];
   if (construct(type, c->getTribeId())) {
-    c->monsterMessage(c->getName().the() + " builds " + furnitureInfo.get()->getName());
-    c->playerMessage("You build " + furnitureInfo.get()->getName());
+    auto f = getFurniture();
+    c->monsterMessage(c->getName().the() + " builds " + f->getName());
+    c->playerMessage("You build " + f->getName());
     return true;
   }
   return false;
@@ -459,10 +468,10 @@ bool Position::construct(FurnitureType type, Creature* c) {
 bool Position::construct(FurnitureType type, TribeId tribe) {
   CHECK(!isUnavailable());
   CHECK(canConstruct(type));
-  auto& furnitureInfo = level->furnitureInfo[coord];
-  if (!furnitureInfo.construction || furnitureInfo.construction->type != type)
-    furnitureInfo.construction = {type, 10};
-  if (--furnitureInfo.construction->time == 0) {
+  auto& construction = level->furnitureConstruction[coord];
+  if (!construction || construction->type != type)
+    construction = {type, 10};
+  if (--construction->time == 0) {
     addFurniture(FurnitureFactory::get(type, tribe));
     return true;
   } else
@@ -470,7 +479,7 @@ bool Position::construct(FurnitureType type, TribeId tribe) {
 }
 
 bool Position::isActiveConstruction() const {
-  return !isUnavailable() && (getSquare()->isActiveConstruction() || level->furnitureInfo[coord].construction);
+  return !isUnavailable() && (getSquare()->isActiveConstruction() || level->furnitureConstruction[coord]);
 }
 
 bool Position::isBurning() const {
@@ -497,7 +506,7 @@ void Position::updateMovement() {
 }
 
 void Position::fireDamage(double amount) {
-  if (auto furniture = getFurniture())
+  if (auto furniture = modFurniture())
     furniture->fireDamage(*this, amount);
   if (Creature* creature = getCreature())
     creature->fireDamage(amount);

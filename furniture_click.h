@@ -8,5 +8,5 @@ enum class FurnitureClickType { LOCK, UNLOCK };
 
 class FurnitureClick {
   public:
-  static void handle(FurnitureClickType, Position, Furniture*);
+  static void handle(FurnitureClickType, Position, const Furniture*);
 };

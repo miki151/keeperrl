@@ -42,6 +42,7 @@ class CreatureBucketMap;
 class Position;
 class Game;
 class SquareArray;
+class FurnitureArray;
 class FieldOfView;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
@@ -200,6 +201,7 @@ class Level {
 
   const optional<ViewObject>& getBackgroundObject(Vec2) const;
   int getNumModifiedSquares() const;
+  int getNumTotalSquares() const;
   bool isUnavailable(Vec2) const;
 
   void setNeedsMemoryUpdate(Vec2, bool);
@@ -208,7 +210,7 @@ class Level {
   void setNeedsRenderUpdate(Vec2, bool);
 
   LevelId getUniqueId() const;
-  void setFurniture(Vec2, const Furniture&);
+  void setFurniture(Vec2, PFurniture);
 
   SERIALIZATION_DECL(Level);
 
@@ -219,25 +221,13 @@ class Level {
   Vec2 transform(Vec2);
   HeapAllocated<SquareArray> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
-  class FurnitureInfo {
-    friend class Level;
-    public:
-    void reset();
-    Furniture* get();
-    const Furniture* get() const;
-    struct FurnitureConstruction {
-      FurnitureType SERIAL(type);
-      int SERIAL(time);
-      SERIALIZE_ALL(type, time);
-    };
-
-    optional<FurnitureConstruction> SERIAL(construction);
-    SERIALIZE_ALL(furniture, construction);
-
-    private:
-    HeapAllocated<optional<Furniture>> SERIAL(furniture);
+  HeapAllocated<FurnitureArray> SERIAL(furniture);
+  struct FurnitureConstruction {
+    FurnitureType SERIAL(type);
+    int SERIAL(time);
+    SERIALIZE_ALL(type, time);
   };
-  Table<FurnitureInfo> SERIAL(furnitureInfo);
+  Table<optional<FurnitureConstruction>> SERIAL(furnitureConstruction);
   HeapAllocated<Table<optional<ViewObject>>> SERIAL(background);
   Table<bool> SERIAL(memoryUpdates);
   Table<bool> renderUpdates = Table<bool>(getMaxBounds(), true);
@@ -264,7 +254,7 @@ class Level {
   Sectors& getSectors(const MovementType&) const;
   
   friend class LevelBuilder;
-  Level(SquareArray, Model*, vector<Location*>, const string& name, Table<double> sunlight, LevelId);
+  Level(SquareArray, FurnitureArray, Model*, vector<Location*>, const string& name, Table<double> sunlight, LevelId);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);

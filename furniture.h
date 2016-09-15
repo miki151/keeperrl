@@ -9,7 +9,6 @@
 #include "furniture_click.h"
 #include "furniture_usage.h"
 #include "furniture_tick.h"
-#include "unique_entity.h"
 #include "event_listener.h"
 
 class TribeId;
@@ -19,7 +18,7 @@ class Fire;
 class ItemFactory;
 class GameEvent;
 
-class Furniture : public Renderable, public UniqueEntity<Furniture> {
+class Furniture : public Renderable {
   public:
   enum BlockType { BLOCKING, NON_BLOCKING, BLOCKING_ENEMIES };
   Furniture(const string& name, const ViewObject&, FurnitureType, BlockType, TribeId);
@@ -27,8 +26,8 @@ class Furniture : public Renderable, public UniqueEntity<Furniture> {
   const string& getName() const;
   FurnitureType getType() const;
   bool canEnter(const MovementType&) const;
-  bool canDestroy(const Creature*);
-  bool canDestroy(const MovementType&);
+  bool canDestroy(const Creature*) const;
+  bool canDestroy(const MovementType&) const;
   bool canDestroy(DestroyAction::Value) const;
   void destroy(Position);
   void tryToDestroyBy(Position, Creature*);
@@ -38,10 +37,10 @@ class Furniture : public Renderable, public UniqueEntity<Furniture> {
   void fireDamage(Position, double amount);
   void tick(Position);
   bool canSeeThru(VisionId) const;
-  void click(Position);
+  void click(Position) const;
   bool isClickable() const;
   bool overridesMovement() const;
-  void use(Position, Creature*);
+  void use(Position, Creature*) const;
   optional<FurnitureUsageType> getUsageType() const;
   int getUsageTime() const;
   optional<FurnitureClickType> getClickType() const;

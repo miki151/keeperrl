@@ -2421,7 +2421,7 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::KEEPER: 
       return ItemList()
         .add(ItemId::ROBE)
-        .add(ItemId::FIRE_SCROLL, 10);
+        .add(ItemId::BOULDER_TRAP_ITEM, 10);
     case CreatureId::DEATH: 
       return ItemList()
         .add(ItemId::SCYTHE);

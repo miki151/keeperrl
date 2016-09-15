@@ -296,7 +296,7 @@ class Collective : public TaskCallback {
   PCollectiveControl SERIAL(control);
   HeapAllocated<TribeId> SERIAL(tribe);
   Level* SERIAL(level) = nullptr;
-  HeapAllocated<unordered_map<SquareType, set<Position>>> SERIAL(mySquares);
+  HeapAllocated<unordered_map<SquareType, set<Position>, CustomHash<SquareType>>> SERIAL(mySquares);
   HeapAllocated<Territory> SERIAL(territory);
   struct AlarmInfo {
     double SERIAL(finishTime);

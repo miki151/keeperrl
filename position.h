@@ -82,8 +82,8 @@ class Position {
   bool canDestroy(const Creature*) const;
   bool canDestroy(const MovementType&) const;
   void removeFurniture(const Furniture*) const;
-  void addFurniture(const Furniture&) const;
-  void replaceFurniture(const Furniture*, const Furniture&) const;
+  void addFurniture(PFurniture) const;
+  void replaceFurniture(const Furniture*, PFurniture) const;
   bool isUnavailable() const;
   void dropItem(PItem);
   void dropItems(vector<PItem>);
@@ -130,7 +130,8 @@ class Position {
   double getLight() const;
   optional<Position> getStairsTo(Position) const;
   void replaceSquare(PSquare, bool storePrevious = true);
-  Furniture* getFurniture() const;
+  const Furniture* getFurniture() const;
+  Furniture* modFurniture() const;
 
   SERIALIZATION_DECL(Position);
   int getHash() const;

@@ -261,7 +261,7 @@ class StayOnFurniture : public Behaviour {
     if (!furniture || furniture->getType() != type) {
       if (!nextPigsty)
         for (auto pos : creature->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 20)))
-          if (Furniture* f = pos.getFurniture())
+          if (auto f = pos.getFurniture())
             if (f->getType() == type) {
               nextPigsty = pos;
               break;

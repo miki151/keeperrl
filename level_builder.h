@@ -6,6 +6,7 @@
 #include "square_type.h"
 #include "level.h"
 #include "square_array.h"
+#include "furniture_array.h"
 
 class ProgressMeter;
 class Model;
@@ -87,7 +88,7 @@ class LevelBuilder {
   void addAttrib(Vec2 pos, SquareAttrib attr);
 
   void putFurniture(Vec2 pos, FurnitureFactory&);
-  void putFurniture(Vec2 pos, const Furniture&);
+  void putFurniture(Vec2 pos, FurnitureParams);
   bool canPutFurniture(Vec2 pos);
   void removeFurniture(Vec2 pos);
   optional<FurnitureType> getFurnitureType(Vec2 pos);
@@ -144,7 +145,7 @@ class LevelBuilder {
   Table<SquareType> type;
   vector<pair<PCreature, Vec2>> creatures;
   Table<vector<PItem>> items;
-  Table<optional<Furniture>> furniture;
+  FurnitureArray furniture;
   string name;
   vector<Vec2::LinearMap> mapStack;
   ProgressMeter* progressMeter = nullptr;
