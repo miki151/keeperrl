@@ -52,7 +52,6 @@ class Square : public Renderable {
     optional<VisionId> vision;
     bool canHide;
     optional<ConstructionsId> constructions;
-    bool ticking;
     HeapAllocated<MovementSet> movementSet;
     bool canDestroy;
     optional<SoundId> applySound;
@@ -189,7 +188,6 @@ class Square : public Renderable {
   protected:
   void onEnter(Creature*);
   virtual void onEnterSpecial(Creature*) {}
-  virtual void tickSpecial(Position) {}
   virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
   virtual void onApply(Position) { Debug(FATAL) << "Bad square applied"; }
   string SERIAL(name);
@@ -214,7 +212,6 @@ class Square : public Renderable {
     SERIALIZE_ALL(id, turnsRemaining);
   };
   optional<CurrentConstruction> SERIAL(currentConstruction);
-  bool SERIAL(ticking);
   HeapAllocated<MovementSet> SERIAL(movementSet);
   mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);
   unique_ptr<ViewIndex> SERIAL(viewIndex);

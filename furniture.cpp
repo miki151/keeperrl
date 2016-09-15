@@ -167,7 +167,7 @@ void Furniture::fireDamage(Position pos, double amount) {
       pos.globalMessage("The " + getName() + " catches fire");
       modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
       pos.updateMovement();
-      pos.getLevel()->addTickingSquare(pos.getCoord());
+      pos.getLevel()->addTickingFurniture(pos.getCoord());
     }
   }
 }

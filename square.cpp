@@ -44,7 +44,7 @@ template <class Archive>
 void Square::serialize(Archive& ar, const unsigned int version) { 
   ar& SUBCLASS(Renderable);
   serializeAll(ar, inventoryPtr, name, creature, triggers, vision, hide, landingLink, poisonGas);
-  serializeAll(ar, constructions, currentConstruction, ticking, movementSet, lastViewer, viewIndex);
+  serializeAll(ar, constructions, currentConstruction, movementSet, lastViewer, viewIndex);
   serializeAll(ar, forbiddenTribe);
   if (progressMeter)
     progressMeter->addProgress();
@@ -58,8 +58,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 
 Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide),
-    constructions(p.constructions), ticking(p.ticking),
-    movementSet(p.movementSet), viewIndex(new ViewIndex()) {
+    constructions(p.constructions), movementSet(p.movementSet), viewIndex(new ViewIndex()) {
   modViewObject().setIndoors(isCovered());
 }
 
@@ -146,7 +145,7 @@ void Square::setCreature(Creature* c) {
 }
 
 void Square::onAddedToLevel(Position pos) const {
-  if (ticking || !inventoryEmpty())
+  if (!inventoryEmpty())
     pos.getLevel()->addTickingSquare(pos.getCoord());
 }
 
@@ -173,7 +172,6 @@ void Square::tick(Position pos) {
   }
   for (Trigger* t : extractRefs(triggers))
     t->tick();
-  tickSpecial(pos);
 }
 
 bool Square::itemLands(vector<Item*> item, const Attack& attack) const {

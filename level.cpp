@@ -44,7 +44,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, squares, oldSquares, landingSquares, locations, tickingSquares, creatures, model, fieldOfView);
   serializeAll(ar, name, backgroundLevel, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
   serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, memoryUpdates);
-  serializeAll(ar, furnitureInfo);
+  serializeAll(ar, furnitureInfo, tickingFurniture);
 }  
 
 SERIALIZABLE(Level);
@@ -542,12 +542,16 @@ void Level::addTickingSquare(Vec2 pos) {
   tickingSquares.insert(pos);
 }
 
+void Level::addTickingFurniture(Vec2 pos) {
+  tickingFurniture.insert(pos);
+}
+
 void Level::tick() {
-  for (Vec2 pos : tickingSquares) {
+  for (Vec2 pos : tickingSquares)
     squares->getSquare(pos)->tick(Position(pos, this));
+  for (Vec2 pos : tickingFurniture)
     if (auto furniture = furnitureInfo[pos].get())
       furniture->tick(Position(pos, this));
-  }
 }
 
 bool Level::inBounds(Vec2 pos) const {
@@ -629,7 +633,7 @@ void Level::FurnitureInfo::reset() {
 void Level::setFurniture(Vec2 pos, const Furniture& f) {
   furnitureInfo[pos].furniture->reset(f);
   if (furnitureInfo[pos].get()->isTicking())
-    addTickingSquare(pos);
+    addTickingFurniture(pos);
 }
 
 Furniture* Level::FurnitureInfo::get() {

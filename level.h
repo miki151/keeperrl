@@ -120,6 +120,7 @@ class Level {
 
   /** The given square's method Square::tick() will be called every turn. */
   void addTickingSquare(Vec2 pos);
+  void addTickingFurniture(Vec2 pos);
 
   /** Ticks all squares that must be ticked. */
   void tick();
@@ -244,6 +245,7 @@ class Level {
   unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
   vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
+  set<Vec2> SERIAL(tickingFurniture);
   void eraseCreature(Creature*, Vec2 coord);
   void placeCreature(Creature*, Vec2 pos);
   void unplaceCreature(Creature*, Vec2 pos);
