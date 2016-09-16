@@ -241,9 +241,10 @@ class VillageInfo {
   };
   vector<Village> HASH(villages);
   int HASH(numMainVillains);
+  int HASH(numLesserVillains);
   int HASH(totalMain);
   int HASH(numConquered);
-  HASH_ALL(villages, numMainVillains, totalMain, numConquered);
+  HASH_ALL(villages, numMainVillains, numLesserVillains, totalMain, numConquered);
 };
 
 class GameSunlightInfo {

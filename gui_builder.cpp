@@ -1477,9 +1477,13 @@ PGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
     if (info.numMainVillains > 0)
       lines.addElem(gui.leftMargin(titleMargin, gui.label("Main villains:")), titleLineHeight);
     for (int i : All(info.villages)) {
-      if (i == info.numMainVillains) {
+      if (i == info.numMainVillains && info.numLesserVillains > 0) {
         lines.addSpace();
         lines.addElem(gui.leftMargin(titleMargin, gui.label("Lesser villains:")), titleLineHeight);
+      }
+      if (i == info.numMainVillains + info.numLesserVillains) {
+        lines.addSpace();
+        lines.addElem(gui.leftMargin(titleMargin, gui.label("Allies:")), titleLineHeight);
       }
       auto& elem = info.villages[i];
       string title = capitalFirst(elem.name) + (elem.tribeName.empty() ?

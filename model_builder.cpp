@@ -553,31 +553,37 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
     BiomeId biomeId) {
   Model* model = new Model();
   vector<SettlementInfo> topLevelSettlements;
+  vector<EnemyInfo> extraEnemies;
   for (auto& elem : enemyInfo) {
     elem.settlement.collective = new CollectiveBuilder(elem.config, elem.settlement.tribe);
-    if (elem.levelConnection)
+    if (elem.levelConnection) {
+      elem.levelConnection->otherEnemy->settlement.collective =
+          new CollectiveBuilder(elem.levelConnection->otherEnemy->config,
+                                elem.levelConnection->otherEnemy->settlement.tribe);
       topLevelSettlements.push_back(makeExtraLevel(model, elem));
-    else
+      extraEnemies.push_back(*elem.levelConnection->otherEnemy);
+    } else
       topLevelSettlements.push_back(elem.settlement);
   }
+  append(enemyInfo, extraEnemies);
   Level* top = model->buildTopLevel(
       LevelBuilder(meter, random, width, width, levelName, false),
       LevelMaker::topLevel(random, CreatureFactory::forrest(TribeId::getWildlife()), topLevelSettlements, width,
         keeperSpawn, biomeId));
   model->calculateStairNavigation();
-  for (int i : All(enemyInfo)) {
-    if (!enemyInfo[i].settlement.collective->hasCreatures())
+  for (auto& enemy : enemyInfo) {
+    if (!enemy.settlement.collective->hasCreatures())
       continue;
     PVillageControl control;
-    Location* location = enemyInfo[i].settlement.location;
+    Location* location = enemy.settlement.location;
     if (auto name = location->getName())
-      enemyInfo[i].settlement.collective->setLocationName(*name);
-    if (auto race = enemyInfo[i].settlement.race)
-      enemyInfo[i].settlement.collective->setRaceName(*race);
-    PCollective collective = enemyInfo[i].settlement.collective->addSquares(location->getAllSquares()).build();
-    control.reset(new VillageControl(collective.get(), enemyInfo[i].villain));
-    if (enemyInfo[i].villainType)
-      collective->setVillainType(*enemyInfo[i].villainType);
+      enemy.settlement.collective->setLocationName(*name);
+    if (auto race = enemy.settlement.race)
+      enemy.settlement.collective->setRaceName(*race);
+    PCollective collective = enemy.settlement.collective->addSquares(location->getAllSquares()).build();
+    control.reset(new VillageControl(collective.get(), enemy.villain));
+    if (enemy.villainType)
+      collective->setVillainType(*enemy.villainType);
     collective->setControl(std::move(control));
     model->collectives.push_back(std::move(collective));
   }

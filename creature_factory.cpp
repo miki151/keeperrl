@@ -1759,7 +1759,6 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 11;
           c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 3;
-          c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
           c.spells->add(SpellId::HEALING);
@@ -1790,7 +1789,6 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 16;
           c.attr[AttrType::DEXTERITY] = 23;
           c.barehandedDamage = 3;
-          c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
           c.spells->add(SpellId::HEALING);
@@ -1830,7 +1828,6 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 11;
           c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 3;
-          c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
           c.spells->add(SpellId::HEALING);
@@ -1866,7 +1863,6 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 16;
           c.attr[AttrType::DEXTERITY] = 23;
           c.barehandedDamage = 3;
-          c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves";
           c.chatReactionHostile = "\"Die!\"";
           c.spells->add(SpellId::HEALING);

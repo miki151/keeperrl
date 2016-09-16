@@ -1745,6 +1745,10 @@ MakerQueue* village(RandomGen& random, SettlementInfo info) {
     queue->addMaker(new Furnitures(Predicate::andPred(
         Predicate::type(building.floorOutside),
         Predicate::attrib(SquareAttrib::BUILDINGS_CENTER)), 0.2, *info.outsideFeatures, SquareAttrib::NO_ROAD));
+  for (StairKey key : info.downStairs)
+    queue->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::type(SquareId::FLOOR)));
+  for (StairKey key : info.upStairs)
+    queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::type(SquareId::FLOOR)));
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, 
           Predicate::type(building.floorOutside)));

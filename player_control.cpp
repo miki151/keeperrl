@@ -1201,7 +1201,12 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
     ++gameInfo.villageInfo.numMainVillains;
   }
-  for (const Collective* col : getKnownVillains(VillainType::LESSER))
+  gameInfo.villageInfo.numLesserVillains = 0;
+  for (const Collective* col : getKnownVillains(VillainType::LESSER)) {
+    gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
+    ++gameInfo.villageInfo.numLesserVillains;
+  }
+  for (const Collective* col : getKnownVillains(VillainType::ALLY))
     gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.getTimeRemaining() };
@@ -1611,7 +1616,9 @@ void PlayerControl::scrollToMiddle(const vector<Position>& pos) {
 }
 
 Collective* PlayerControl::getVillain(int num) {
-  return concat(getKnownVillains(VillainType::MAIN), getKnownVillains(VillainType::LESSER))[num];
+  return concat(getKnownVillains(VillainType::MAIN),
+                getKnownVillains(VillainType::LESSER),
+                getKnownVillains(VillainType::ALLY))[num];
 }
 
 optional<TeamId> PlayerControl::getChosenTeam() const {
