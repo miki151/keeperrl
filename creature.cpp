@@ -618,10 +618,11 @@ CreatureAction Creature::applySquare(Position pos) const {
 //  if (pos.getApplyType(this))
     return CreatureAction(this, [=](Creature* self) {
       Debug() << getName().the() << " applying " << getPosition().getName();
+      auto originalPos = getPosition();
       pos.apply(self);
       double oldTime = getLocalTime();
       self->spendTime(pos.getApplyTime());
-      if (pos != getPosition())
+      if (pos != getPosition() && getPosition() == originalPos)
         self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime + 1, getLocalTime()),
             MovementInfo::ATTACK});
     });
