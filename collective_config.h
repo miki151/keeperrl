@@ -114,6 +114,7 @@ struct ResourceInfo {
 
 struct MinionTaskInfo {
   enum Type { FURNITURE, EXPLORE, COPULATE, CONSUME, EAT, SPIDER } type;
+  MinionTaskInfo();
   MinionTaskInfo(FurnitureType, const string& description);
   typedef function<bool(const Creature*, FurnitureType)> UsagePredicate;
   MinionTaskInfo(UsagePredicate, const string& description);

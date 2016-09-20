@@ -231,7 +231,7 @@ const EnumMap<SpawnType, DormInfo>& CollectiveConfig::getDormInfo() const {
         case SpawnType::BEAST: return {FurnitureType::BEAST_CAGE};
         case SpawnType::DEMON: return {FurnitureType::DEMON_SHRINE};
       }
-  })
+  });
   return dormInfo;
 }
 
@@ -330,6 +330,8 @@ MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWa
     : type(t), description(desc), warning(w) {
   CHECK(type != FURNITURE);
 }
+
+MinionTaskInfo::MinionTaskInfo() {}
 
 MinionTaskInfo::MinionTaskInfo(FurnitureType type, const string& desc) : type(FURNITURE),
   furniturePredicate([type](const Creature*, FurnitureType t) { return t == type;}),
