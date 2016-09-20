@@ -224,12 +224,14 @@ vector<BirthSpawn> CollectiveConfig::getBirthSpawns() const {
 }
 
 const EnumMap<SpawnType, DormInfo>& CollectiveConfig::getDormInfo() const {
-  static EnumMap<SpawnType, DormInfo> dormInfo {
-    {SpawnType::HUMANOID, {FurnitureType::BED, CollectiveWarning::BEDS}},
-    {SpawnType::UNDEAD, {FurnitureType::GRAVE}},
-    {SpawnType::BEAST, {FurnitureType::BEAST_CAGE}},
-    {SpawnType::DEMON, {FurnitureType::DEMON_SHRINE}},
-  };
+  static EnumMap<SpawnType, DormInfo> dormInfo ([](SpawnType type) -> DormInfo {
+      switch (type) {
+        case SpawnType::HUMANOID: return {FurnitureType::BED, CollectiveWarning::BEDS};
+        case SpawnType::UNDEAD: return {FurnitureType::GRAVE};
+        case SpawnType::BEAST: return {FurnitureType::BEAST_CAGE};
+        case SpawnType::DEMON: return {FurnitureType::DEMON_SHRINE};
+      }
+  })
   return dormInfo;
 }
 
@@ -239,6 +241,7 @@ const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
     FurnitureType::FORGE,
     FurnitureType::LABORATORY,
     FurnitureType::JEWELER,
+    FurnitureType::STEEL_FURNACE,
     FurnitureType::TRAINING_WOOD,
     FurnitureType::TRAINING_IRON,
     FurnitureType::TRAINING_STEEL,
@@ -379,49 +382,44 @@ optional<int> CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType type) 
   }
 }
 
-static MinionTaskInfo createTaskInfo(MinionTask task) {
-  switch (task) {
-    case MinionTask::TRAIN: return {[](const Creature* c, FurnitureType t) {
-          if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevelIncrease(t))
-            return !c || c->getAttributes().getExpLevel() < *maxIncrease + c->getAttributes().getBaseExpLevel();
-          else
-            return false;
-        }, "training"};
-    case MinionTask::SLEEP: return {FurnitureType::BED, "sleeping"};
-    case MinionTask::EAT: return {MinionTaskInfo::EAT, "eating"};
-    case MinionTask::GRAVE: return {FurnitureType::GRAVE, "sleeping"};
-    case MinionTask::LAIR: return {FurnitureType::BEAST_CAGE, "sleeping"};
-    case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
-    case MinionTask::STUDY: return {FurnitureType::BOOK_SHELF, "studying"};
-    case MinionTask::PRISON: return {FurnitureType::PRISON, "prison"};
-    case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
-    case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
-    case MinionTask::COPULATE: return {MinionTaskInfo::COPULATE, "copulation"};
-    case MinionTask::CONSUME: return {MinionTaskInfo::CONSUME, "consumption"};
-    case MinionTask::EXPLORE: return {MinionTaskInfo::EXPLORE, "spying"};
-    case MinionTask::SPIDER: return {MinionTaskInfo::SPIDER, "spider"};
-    case MinionTask::EXPLORE_NOCTURNAL: return {MinionTaskInfo::EXPLORE, "spying"};
-    case MinionTask::EXPLORE_CAVES: return {MinionTaskInfo::EXPLORE, "spying"};
-    case MinionTask::EXECUTE: return {FurnitureType::PRISON, "execution ordered"};
-    case MinionTask::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped"};
-    case MinionTask::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured"};
-    case MinionTask::WORKSHOP:
-    case MinionTask::FORGE:
-    case MinionTask::LABORATORY:
-    case MinionTask::JEWELER:
-    case MinionTask::STEEL_FURNACE: {
-        auto& info = workshops[*CollectiveConfig::getWorkshopType(task)];
-        return MinionTaskInfo(info.furniture, info.taskName);
-      }
-  }
-  return createTaskInfo(task);
-}
-
 const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
-  static EnumMap<MinionTask, optional<MinionTaskInfo>> cache;
-  if (!cache[task])
-    cache[task] = createTaskInfo(task);
-  return *cache[task];
+  static EnumMap<MinionTask, MinionTaskInfo> map([](MinionTask task) -> MinionTaskInfo {
+    switch (task) {
+      case MinionTask::TRAIN: return {[](const Creature* c, FurnitureType t) {
+            if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevelIncrease(t))
+              return !c || c->getAttributes().getExpLevel() < *maxIncrease + c->getAttributes().getBaseExpLevel();
+            else
+              return false;
+          }, "training"};
+      case MinionTask::SLEEP: return {FurnitureType::BED, "sleeping"};
+      case MinionTask::EAT: return {MinionTaskInfo::EAT, "eating"};
+      case MinionTask::GRAVE: return {FurnitureType::GRAVE, "sleeping"};
+      case MinionTask::LAIR: return {FurnitureType::BEAST_CAGE, "sleeping"};
+      case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
+      case MinionTask::STUDY: return {FurnitureType::BOOK_SHELF, "studying"};
+      case MinionTask::PRISON: return {FurnitureType::PRISON, "prison"};
+      case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
+      case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
+      case MinionTask::COPULATE: return {MinionTaskInfo::COPULATE, "copulation"};
+      case MinionTask::CONSUME: return {MinionTaskInfo::CONSUME, "consumption"};
+      case MinionTask::EXPLORE: return {MinionTaskInfo::EXPLORE, "spying"};
+      case MinionTask::SPIDER: return {MinionTaskInfo::SPIDER, "spider"};
+      case MinionTask::EXPLORE_NOCTURNAL: return {MinionTaskInfo::EXPLORE, "spying"};
+      case MinionTask::EXPLORE_CAVES: return {MinionTaskInfo::EXPLORE, "spying"};
+      case MinionTask::EXECUTE: return {FurnitureType::PRISON, "execution ordered"};
+      case MinionTask::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped"};
+      case MinionTask::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured"};
+      case MinionTask::WORKSHOP:
+      case MinionTask::FORGE:
+      case MinionTask::LABORATORY:
+      case MinionTask::JEWELER:
+      case MinionTask::STEEL_FURNACE: {
+          auto& info = workshops[*CollectiveConfig::getWorkshopType(task)];
+          return MinionTaskInfo(info.furniture, info.taskName);
+        }
+    }
+  });
+  return map[task];
 }
 
 const WorkshopInfo& CollectiveConfig::getWorkshopInfo(WorkshopType type) {
