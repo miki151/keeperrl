@@ -148,6 +148,7 @@ optional<ViewId> getConnectionId(ViewId id) {
     case ViewId::CASTLE_WALL:
     case ViewId::MUD_WALL:
     case ViewId::MOUNTAIN:
+    case ViewId::DUNGEON_WALL:
     case ViewId::GOLD_ORE:
     case ViewId::IRON_ORE:
     case ViewId::STONE:
@@ -171,6 +172,7 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
     case ViewId::STOCKPILE2:
     case ViewId::STOCKPILE3:
     case ViewId::MOUNTAIN:
+    case ViewId::DUNGEON_WALL:
     case ViewId::GOLD_ORE:
     case ViewId::IRON_ORE:
     case ViewId::STONE: return v8;

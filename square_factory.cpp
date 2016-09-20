@@ -261,6 +261,14 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.movementSet->setCovered(true);
             c.constructions = ConstructionsId::MOUNTAIN_GEN_ORES;
             ));
+    case SquareId::DUNGEON_WALL:
+        return new Square(ViewObject(ViewId::DUNGEON_WALL, ViewLayer::FLOOR)
+            .setModifier(ViewObject::Modifier::CASTS_SHADOW),
+          CONSTRUCT(Square::Params,
+            c.name = "wall";
+            c.movementSet->setCovered(true);
+            c.constructions = ConstructionsId::MINING;
+            ));
     case SquareId::HILL:
         return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND),
           CONSTRUCT(Square::Params,

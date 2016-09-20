@@ -8,7 +8,7 @@ class SquareType;
 
 class TileEfficiency {
   public:
-  void setFloor(Position, SquareType);
+  void setType(Position, SquareType);
   double getEfficiency(Position) const;
 
   SERIALIZATION_DECL(TileEfficiency)
@@ -16,5 +16,5 @@ class TileEfficiency {
   private:
   void update(Position);
   PositionMap<double> SERIAL(efficiency);
-  PositionMap<optional<SquareType>> SERIAL(floors);
+  PositionMap<optional<SquareType>> SERIAL(types);
 };

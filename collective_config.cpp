@@ -275,6 +275,21 @@ const vector<FloorInfo>& CollectiveConfig::getFloors() {
   return ret;
 }
 
+double CollectiveConfig::getEfficiencyBonus(SquareType type) {
+  switch (type.getId()) {
+    case SquareId::CUSTOM_FLOOR:
+      for (auto& info : getFloors())
+        if (info.type == type)
+          return info.efficiencyBonus;
+      FAIL << "Efficiency data not found for floor " << type.get<CustomFloorInfo>().name;
+      return 0;
+    case SquareId::DUNGEON_WALL:
+      return 0.04;
+    default:
+      return 0;
+  }
+}
+
 bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
   switch (type) {
     case FurnitureType::EYEBALL:

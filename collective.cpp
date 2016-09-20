@@ -1487,8 +1487,7 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
     return;
   }
   (*mySquares)[type].insert(pos);
-  if (type.getId() == SquareId::CUSTOM_FLOOR)
-    tileEfficiency->setFloor(pos, type);
+  tileEfficiency->setType(pos, type);
   territory->insert(pos);
   if (constructions->containsSquare(pos) && !constructions->getSquare(pos).isBuilt())
     constructions->getSquare(pos).setBuilt();

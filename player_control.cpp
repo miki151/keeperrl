@@ -160,11 +160,10 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
     buildInfo = {
       BuildInfo(BuildInfo::DIG, "", 'd'),
       BuildInfo({SquareId::MOUNTAIN, {ResourceId::STONE, 50}, "Fill up tunnel"}, {},
-          "Fill up one tile at a time. Cutting off an area is not allowed."),
-      BuildInfo({FurnitureType::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, {},
-          "All equipment for your minions can be stored here.", 's', "Storage", true),
-      BuildInfo({FurnitureType::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, {},
-          "Only wood, iron and granite can be stored here.", 0, "Storage")
+          "Fill up one tile at a time. Cutting off an area is not allowed.", 0, "Structure"),
+      BuildInfo({SquareId::DUNGEON_WALL, {ResourceId::STONE, 10}, "Reinforce wall"}, {},
+          "Reinforce wall. +" + toString(CollectiveConfig::getEfficiencyBonus(SquareId::DUNGEON_WALL)) +
+          " efficiency to to surrounding tiles.", 0, "Structure"),
     };
     for (int i : All(CollectiveConfig::getFloors())) {
       auto& floor = CollectiveConfig::getFloors()[i];
@@ -178,6 +177,10 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
     append(*buildInfo, {
       BuildInfo({SquareId::FLOOR, CostInfo::noCost(), "Remove floor", true, false, none, ViewId::DESTROY_BUTTON},
           {}, "", 0, "Floors"),
+      BuildInfo({FurnitureType::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, {},
+          "All equipment for your minions can be stored here.", 's', "Storage", true),
+      BuildInfo({FurnitureType::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, {},
+          "Only wood, iron and granite can be stored here.", 0, "Storage"),
       BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 20}, "Library"}, {},
           "Mana is regenerated here.", 'y'),
       BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 800}, "Throne", false, false, 1},

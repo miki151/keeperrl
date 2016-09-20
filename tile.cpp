@@ -351,6 +351,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::CROPS, sprite("wheatfield1"));
     Tile::addTile(ViewId::CROPS2, sprite("wheatfield2"));
     Tile::addTile(ViewId::MOUNTAIN, getMountainTile(sprite("mountain_ted").setNoShadow(), "mountain"));
+    Tile::addTile(ViewId::DUNGEON_WALL, getMountainTile(sprite("mountain_ted").setNoShadow(), "dungeonwall"));
     Tile::addTile(ViewId::WALL, getWallTile("wall"));
     Tile::addTile(ViewId::MAP_MOUNTAIN1, sprite("map_mountain1"));
     Tile::addTile(ViewId::MAP_MOUNTAIN2, sprite("map_mountain2"));
@@ -636,6 +637,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::MUD_WALL, symbol(u8"#", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::WALL, symbol(u8"#", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::MOUNTAIN, symbol(u8"#", ColorId::DARK_GRAY));
+    Tile::addSymbol(ViewId::DUNGEON_WALL, symbol(u8"#", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::MAP_MOUNTAIN1, symbol(u8"^", ColorId::DARK_GRAY));
     Tile::addSymbol(ViewId::MAP_MOUNTAIN2, symbol(u8"^", ColorId::GRAY));
     Tile::addSymbol(ViewId::MAP_MOUNTAIN3, symbol(u8"^", ColorId::LIGHT_GRAY));

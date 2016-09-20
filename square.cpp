@@ -106,6 +106,7 @@ static optional<short int> getConstructionTime(ConstructionsId id, SquareId squa
     case ConstructionsId::MOUNTAIN_GEN_ORES:
       switch (square) {
         case SquareId::FLOOR: return Random.get(3, 8);
+        case SquareId::DUNGEON_WALL: return Random.get(3, 8);
         case SquareId::IRON_ORE:
         case SquareId::STONE:
         case SquareId::GOLD_ORE: return 1;

@@ -224,10 +224,9 @@ bool FurnitureParams::operator == (const FurnitureParams& p) const {
 }
 
 static bool canBuildDoor(Position pos) {
-  if (!pos.canConstruct(FurnitureType::DOOR))
-    return false;
-  return (pos.minus(Vec2(0, 1)).canSupportDoorOrTorch() && pos.minus(Vec2(0, -1)).canSupportDoorOrTorch()) ||
-       (pos.minus(Vec2(1, 0)).canSupportDoorOrTorch() && pos.minus(Vec2(-1, 0)).canSupportDoorOrTorch());
+  return pos.canEnterEmpty({MovementTrait::WALK}) && (
+      (pos.minus(Vec2(0, 1)).canSupportDoorOrTorch() && pos.minus(Vec2(0, -1)).canSupportDoorOrTorch()) ||
+      (pos.minus(Vec2(1, 0)).canSupportDoorOrTorch() && pos.minus(Vec2(-1, 0)).canSupportDoorOrTorch()));
 }
 
 bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
