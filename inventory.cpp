@@ -105,6 +105,8 @@ function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
         return it->getResourceId() == CollectiveResourceId::WOOD; };
     case ItemIndex::IRON: return [](const Item* it) {
         return it->getResourceId() == CollectiveResourceId::IRON; };
+    case ItemIndex::STEEL: return [](const Item* it) {
+        return it->getResourceId() == CollectiveResourceId::STEEL; };
     case ItemIndex::STONE: return [](const Item* it) {
         return it->getResourceId() == CollectiveResourceId::STONE; };
     case ItemIndex::REVIVABLE_CORPSE: return [](const Item* it) {

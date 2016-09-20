@@ -44,6 +44,8 @@ void Technology::init() {
         "pig breeding", "Build a pigsty to feed your minions.", 120, {}));
   Technology::set(TechId::IRON_WORKING, new Technology(
         "iron working", "Build a forge and produce metal weapons and armor.", 60, {TechId::CRAFTING}));
+  Technology::set(TechId::STEEL_MAKING, new Technology(
+        "steelmaking", "Build a steel furnace and produce steel goods.", 400, {TechId::IRON_WORKING}));
   Technology::set(TechId::JEWELLERY, new Technology(
         "jewellery", "Build a jeweler room and produce magical rings and amulets.", 200, {TechId::IRON_WORKING}));
   Technology::set(TechId::TWO_H_WEAP, new Technology(

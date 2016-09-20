@@ -846,6 +846,16 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::ACCURACY] = 3 + maybePlusMinusOne(4);
             i.price = 20;
             i.attackType = AttackType::CUT;);
+    case ItemId::STEEL_SWORD: return ITATTR(
+            i.viewId = ViewId::STEEL_SWORD;
+            i.name = "steel sword";
+            i.itemClass = ItemClass::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
+            i.weight = 1.2;
+            i.modifiers[ModifierType::DAMAGE] = 11 + maybePlusMinusOne(4);
+            i.modifiers[ModifierType::ACCURACY] = 4 + maybePlusMinusOne(4);
+            i.price = 100;
+            i.attackType = AttackType::CUT;);
     case ItemId::SPECIAL_ELVEN_SWORD: return INHERIT(ELVEN_SWORD,
             addPrefix(i, WeaponPrefix::SILVER);
             i.viewId = ViewId::SPECIAL_SWORD;
@@ -877,6 +887,18 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.attackTime = 1.2;
             i.twoHanded = true;
             i.price = 140;
+            i.attackType = AttackType::CUT;);
+    case ItemId::STEEL_BATTLE_AXE: return ITATTR(
+            i.viewId = ViewId::STEEL_BATTLE_AXE;
+            i.name = "steel battle axe";
+            i.itemClass = ItemClass::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
+            i.weight = 7;
+            i.modifiers[ModifierType::DAMAGE] = 18 + maybePlusMinusOne(4);
+            i.modifiers[ModifierType::ACCURACY] = 5 + maybePlusMinusOne(4);
+            i.attackTime = 1.2;
+            i.twoHanded = true;
+            i.price = 500;
             i.attackType = AttackType::CUT;);
     case ItemId::SPECIAL_WAR_HAMMER: return INHERIT(WAR_HAMMER,
             addPrefix(i, WeaponPrefix::LEAD_FILLED);
@@ -1010,6 +1032,15 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.weight = 15;
             i.price = 130;
             i.modifiers[ModifierType::DEFENSE] = 5 + maybePlusMinusOne(4););
+    case ItemId::STEEL_ARMOR: return ITATTR(
+            i.viewId = ViewId::STEEL_ARMOR;
+            i.shortName = "steel";
+            i.name = "steel armor";
+            i.itemClass = ItemClass::ARMOR;
+            i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
+            i.weight = 13;
+            i.price = 800;
+            i.modifiers[ModifierType::DEFENSE] = 8 + maybePlusMinusOne(4););
     case ItemId::IRON_HELM: return ITATTR(
             i.viewId = ViewId::IRON_HELM;
             i.shortName = "iron";
@@ -1249,6 +1280,13 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::OTHER;
             i.price = 0;
             i.resourceId = CollectiveResourceId::IRON;
+            i.weight = 0.5;);
+    case ItemId::STEEL_INGOT: return ITATTR(
+            i.viewId = ViewId::STEEL_INGOT;
+            i.name = "steel ingot";
+            i.itemClass = ItemClass::OTHER;
+            i.price = 0;
+            i.resourceId = CollectiveResourceId::STEEL;
             i.weight = 0.5;);
     case ItemId::WOOD_PLANK: return ITATTR(
             i.viewId = ViewId::WOOD_PLANK;

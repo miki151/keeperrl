@@ -91,6 +91,7 @@ const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
           config->getEquipmentStorage(), false, Warning::EQUIPMENT_STORAGE},
       {ItemIndex::WOOD, unMarkedItems(), config->getResourceStorage(), false, Warning::RESOURCE_STORAGE},
       {ItemIndex::IRON, unMarkedItems(), config->getResourceStorage(), false, Warning::RESOURCE_STORAGE},
+      {ItemIndex::STEEL, unMarkedItems(), config->getResourceStorage(), false, Warning::RESOURCE_STORAGE},
       {ItemIndex::STONE, unMarkedItems(), config->getResourceStorage(), false, Warning::RESOURCE_STORAGE},
   };
   return itemFetchInfo;
@@ -1418,14 +1419,6 @@ void Collective::cutTree(Position pos) {
   auto f = NOTNULL(pos.getFurniture());
   CHECK(f->canDestroy(DestroyAction::CUT));
   taskMap->markSquare(pos, HighlightType::CUT_TREE, Task::destruction(this, pos, f, DestroyAction::CUT));
-}
-
-set<TrapType> Collective::getNeededTraps() const {
-  set<TrapType> ret;
-  for (auto elem : constructions->getTraps())
-    if (!elem.second.isMarked() && !elem.second.isArmed())
-      ret.insert(elem.second.getType());
-  return ret;
 }
 
 void Collective::addTrap(Position pos, TrapType type) {

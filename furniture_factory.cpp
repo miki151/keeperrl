@@ -45,6 +45,10 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("jeweler", ViewObject(ViewId::JEWELER, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setUsageTime(5)
           .setDestroyable(40);
+    case FurnitureType::STEEL_FURNACE:
+      return Furniture("steel furnace", ViewObject(ViewId::STEEL_FURNACE, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setUsageTime(5)
+          .setDestroyable(100);
     case FurnitureType::BOOK_SHELF:
       return Furniture("book shelf", ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setUsageTime(5)

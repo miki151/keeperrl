@@ -458,6 +458,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BARRICADE, sprite("barricade").setNoShadow().setRoundShadow());
     Tile::addTile(ViewId::DIG_ICON, sprite("dig_icon"));
     Tile::addTile(ViewId::SWORD, sprite("sword"));
+    Tile::addTile(ViewId::STEEL_SWORD, sprite("steel_sword"));
     Tile::addTile(ViewId::SPEAR, sprite("spear"));
     Tile::addTile(ViewId::SPECIAL_SWORD, sprite("special_sword"));
     Tile::addTile(ViewId::ELVEN_SWORD, sprite("elven_sword"));
@@ -465,6 +466,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WAR_HAMMER, sprite("warhammer"));
     Tile::addTile(ViewId::SPECIAL_WAR_HAMMER, sprite("special_warhammer"));
     Tile::addTile(ViewId::BATTLE_AXE, sprite("battle_axe"));
+    Tile::addTile(ViewId::STEEL_BATTLE_AXE, sprite("steel_battle_axe"));
     Tile::addTile(ViewId::SPECIAL_BATTLE_AXE, sprite("special_battle_axe"));
     Tile::addTile(ViewId::BOW, sprite("bow"));
     Tile::addTile(ViewId::ARROW, sprite("arrow"));
@@ -510,6 +512,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::TERROR_TRAP, sprite("terror_trap"));
     Tile::addTile(ViewId::ROCK, sprite("stonepile"));
     Tile::addTile(ViewId::IRON_ROCK, sprite("ironpile"));
+    Tile::addTile(ViewId::STEEL_INGOT, sprite("steel_ingot"));
     Tile::addTile(ViewId::WOOD_PLANK, sprite("wood2"));
     Tile::addTile(ViewId::STOCKPILE1, sprite("storage1").setFloorBorders());
     Tile::addTile(ViewId::STOCKPILE2, sprite("storage2").setFloorBorders());
@@ -537,6 +540,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::FORGE, sprite("forgedeco").setRoundShadow());
     Tile::addTile(ViewId::WORKSHOP, sprite("workshopdeco").setRoundShadow());
     Tile::addTile(ViewId::JEWELER, sprite("jewelerdeco").setRoundShadow());
+    Tile::addTile(ViewId::STEEL_FURNACE, sprite("steel_furnace").setRoundShadow());
     Tile::addTile(ViewId::CEMETERY, sprite("graveyard").setFloorBorders());
     Tile::addTile(ViewId::GRAVE, sprite("RIP").setNoShadow().setRoundShadow());
     Tile::addTile(ViewId::ROBE, sprite("robe"));
@@ -547,6 +551,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::LEATHER_HELM, sprite("leather_helm"));
     Tile::addTile(ViewId::TELEPATHY_HELM, sprite("blue_helm"));
     Tile::addTile(ViewId::CHAIN_ARMOR, sprite("chain_armor"));
+    Tile::addTile(ViewId::STEEL_ARMOR, sprite("steel_armor"));
     Tile::addTile(ViewId::IRON_HELM, sprite("iron_helm"));
     Tile::addTile(ViewId::LEATHER_BOOTS, sprite("leather_boots"));
     Tile::addTile(ViewId::IRON_BOOTS, sprite("iron_boots"));
@@ -738,6 +743,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::LOCKED_DOOR, symbol(u8"|", ColorId::YELLOW));
     Tile::addSymbol(ViewId::BARRICADE, symbol(u8"X", ColorId::BROWN));
     Tile::addSymbol(ViewId::DIG_ICON, symbol(u8"⛏", ColorId::LIGHT_GRAY, true));
+    Tile::addSymbol(ViewId::STEEL_SWORD, symbol(u8")", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::SWORD, symbol(u8")", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::SPEAR, symbol(u8"/", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::SPECIAL_SWORD, symbol(u8")", ColorId::YELLOW));
@@ -746,6 +752,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::WAR_HAMMER, symbol(u8")", ColorId::BLUE));
     Tile::addSymbol(ViewId::SPECIAL_WAR_HAMMER, symbol(u8")", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::BATTLE_AXE, symbol(u8")", ColorId::GREEN));
+    Tile::addSymbol(ViewId::STEEL_BATTLE_AXE, symbol(u8")", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::SPECIAL_BATTLE_AXE, symbol(u8")", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::BOW, symbol(u8")", ColorId::BROWN));
     Tile::addSymbol(ViewId::CLUB, symbol(u8")", ColorId::BROWN));
@@ -791,6 +798,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::TERROR_TRAP, symbol(u8"^", ColorId::WHITE, true));
     Tile::addSymbol(ViewId::ROCK, symbol(u8"✱", ColorId::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::IRON_ROCK, symbol(u8"✱", ColorId::ORANGE, true));
+    Tile::addSymbol(ViewId::STEEL_INGOT, symbol(u8"✱", ColorId::LIGHT_BLUE, true));
     Tile::addSymbol(ViewId::WOOD_PLANK, symbol(u8"\\", ColorId::BROWN));
     Tile::addSymbol(ViewId::STOCKPILE1, symbol(u8".", ColorId::YELLOW));
     Tile::addSymbol(ViewId::STOCKPILE2, symbol(u8".", ColorId::LIGHT_GREEN));
@@ -818,6 +826,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::WORKSHOP, symbol(u8"&", ColorId::LIGHT_BROWN));
     Tile::addSymbol(ViewId::FORGE, symbol(u8"&", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::JEWELER, symbol(u8"&", ColorId::YELLOW));
+    Tile::addSymbol(ViewId::STEEL_FURNACE, symbol(u8"&", ColorId::PINK));
     Tile::addSymbol(ViewId::CEMETERY, symbol(u8".", ColorId::DARK_BLUE));
     Tile::addSymbol(ViewId::GRAVE, symbol(u8"☗", ColorId::GRAY, true));
     Tile::addSymbol(ViewId::BORDER_GUARD, symbol(u8" ", ColorId::BLACK));
@@ -829,6 +838,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::LEATHER_HELM, symbol(u8"[", ColorId::BROWN));
     Tile::addSymbol(ViewId::TELEPATHY_HELM, symbol(u8"[", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::CHAIN_ARMOR, symbol(u8"[", ColorId::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::STEEL_ARMOR, symbol(u8"[", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::IRON_HELM, symbol(u8"[", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::LEATHER_BOOTS, symbol(u8"[", ColorId::BROWN));
     Tile::addSymbol(ViewId::IRON_BOOTS, symbol(u8"[", ColorId::LIGHT_GRAY));

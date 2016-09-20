@@ -136,8 +136,6 @@ class Collective : public TaskCallback {
   optional<MinionTask> getMinionTask(const Creature*) const;
   bool isMinionTaskPossible(Creature* c, MinionTask task);
 
-  set<TrapType> getNeededTraps() const;
-
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;

@@ -203,8 +203,8 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_IRON)) + " experience levels.",
           0, "Training room"),
-      BuildInfo({FurnitureType::TRAINING_STEEL, {ResourceId::IRON, 180}, "Steel dummy"},
-          {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}},
+      BuildInfo({FurnitureType::TRAINING_STEEL, {ResourceId::STEEL, 5}, "Steel dummy"},
+          {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}},
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_STEEL)) + " experience levels.",
           0, "Training room"),
@@ -217,6 +217,8 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           {{RequirementId::TECHNOLOGY, TechId::ALCHEMY}}, "Produces magical potions.", 'r', workshop),
       BuildInfo({FurnitureType::JEWELER, {ResourceId::WOOD, 20}, "Jeweler"},
           {{RequirementId::TECHNOLOGY, TechId::JEWELLERY}}, "Produces magical rings and amulets.", 'j', workshop),
+      BuildInfo({FurnitureType::STEEL_FURNACE, {ResourceId::STONE, 300}, "Steel furnace"},
+          {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}}, "Turns iron ore into steel.", 0, workshop),
       BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::MANA, 15}, "Ritual room"}, {},
           "Summons various demons to your dungeon."),
       BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 12}, "Beast lair"}, {},

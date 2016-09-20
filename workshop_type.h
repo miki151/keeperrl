@@ -4,6 +4,7 @@ RICH_ENUM(WorkshopType,
     WORKSHOP,
     FORGE,
     LABORATORY,
-    JEWELER
+    JEWELER,
+    STEEL_FURNACE
 );
 

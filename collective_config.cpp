@@ -300,18 +300,27 @@ bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
 }
 
 const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
-  static EnumMap<CollectiveResourceId, ResourceInfo> ret = {
-    {CollectiveResourceId::MANA, { none, none, ItemId::GOLD_PIECE, "mana", ViewId::MANA}},
-    {CollectiveResourceId::PRISONER_HEAD, { none, none, ItemId::GOLD_PIECE, "", ViewId::IMPALED_HEAD, true}},
-    {CollectiveResourceId::GOLD,
-        {FurnitureType::TREASURE_CHEST, ItemIndex::GOLD, ItemId::GOLD_PIECE, "gold", ViewId::GOLD}},
-    {CollectiveResourceId::WOOD, { resourceStorage, ItemIndex::WOOD, ItemId::WOOD_PLANK, "wood", ViewId::WOOD_PLANK}},
-    {CollectiveResourceId::IRON, { resourceStorage, ItemIndex::IRON, ItemId::IRON_ORE, "iron", ViewId::IRON_ROCK}},
-    {CollectiveResourceId::STONE, { resourceStorage, ItemIndex::STONE, ItemId::ROCK, "granite", ViewId::ROCK}},
-    {CollectiveResourceId::CORPSE,
-      { FurnitureType::GRAVE, ItemIndex::REVIVABLE_CORPSE, ItemId::GOLD_PIECE, "corpses", ViewId::BODY_PART, true}}
-  };
-  return ret[id];
+  static EnumMap<CollectiveResourceId, ResourceInfo> resourceInfo([](CollectiveResourceId id)->ResourceInfo {
+    switch (id) {
+      case CollectiveResourceId::MANA:
+        return { none, none, ItemId::GOLD_PIECE, "mana", ViewId::MANA};
+      case CollectiveResourceId::PRISONER_HEAD:
+        return { none, none, ItemId::GOLD_PIECE, "", ViewId::IMPALED_HEAD, true};
+      case CollectiveResourceId::GOLD:
+        return {FurnitureType::TREASURE_CHEST, ItemIndex::GOLD, ItemId::GOLD_PIECE, "gold", ViewId::GOLD};
+      case CollectiveResourceId::WOOD:
+        return { resourceStorage, ItemIndex::WOOD, ItemId::WOOD_PLANK, "wood", ViewId::WOOD_PLANK};
+      case CollectiveResourceId::IRON:
+        return { resourceStorage, ItemIndex::IRON, ItemId::IRON_ORE, "iron", ViewId::IRON_ROCK};
+      case CollectiveResourceId::STEEL:
+        return { resourceStorage, ItemIndex::STEEL, ItemId::STEEL_INGOT, "steel", ViewId::STEEL_INGOT};
+      case CollectiveResourceId::STONE:
+        return { resourceStorage, ItemIndex::STONE, ItemId::ROCK, "granite", ViewId::ROCK};
+      case CollectiveResourceId::CORPSE:
+        return { FurnitureType::GRAVE, ItemIndex::REVIVABLE_CORPSE, ItemId::GOLD_PIECE, "corpses", ViewId::BODY_PART, true};
+    }
+  });
+  return resourceInfo[id];
 }
 
 MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWarning> w)
@@ -328,12 +337,14 @@ MinionTaskInfo::MinionTaskInfo(UsagePredicate pred, const string& desc) : type(F
   furniturePredicate(pred), description(desc) {
 }
 
-static EnumMap<WorkshopType, WorkshopInfo> workshops {
-  {WorkshopType::WORKSHOP, {FurnitureType::WORKSHOP, MinionTask::WORKSHOP, "workshop"}},
-  {WorkshopType::FORGE, {FurnitureType::FORGE, MinionTask::FORGE, "forge"}},
-  {WorkshopType::LABORATORY, {FurnitureType::LABORATORY, MinionTask::LABORATORY, "laboratory"}},
-  {WorkshopType::JEWELER, {FurnitureType::JEWELER, MinionTask::JEWELER, "jeweler"}},
-};
+static EnumMap<WorkshopType, WorkshopInfo> workshops([](WorkshopType type)->WorkshopInfo {
+  switch (type) {
+    case WorkshopType::WORKSHOP: return {FurnitureType::WORKSHOP, MinionTask::WORKSHOP, "workshop"};
+    case WorkshopType::FORGE: return {FurnitureType::FORGE, MinionTask::FORGE, "forge"};
+    case WorkshopType::LABORATORY: return {FurnitureType::LABORATORY, MinionTask::LABORATORY, "laboratory"};
+    case WorkshopType::JEWELER: return {FurnitureType::JEWELER, MinionTask::JEWELER, "jeweler"};
+    case WorkshopType::STEEL_FURNACE: return {FurnitureType::STEEL_FURNACE, MinionTask::STEEL_FURNACE, "steel furnace"};
+  }});
 
 optional<WorkshopType> CollectiveConfig::getWorkshopType(MinionTask task) {
   static optional<EnumMap<MinionTask, optional<WorkshopType>>> map;
@@ -397,7 +408,8 @@ static MinionTaskInfo createTaskInfo(MinionTask task) {
     case MinionTask::WORKSHOP:
     case MinionTask::FORGE:
     case MinionTask::LABORATORY:
-    case MinionTask::JEWELER: {
+    case MinionTask::JEWELER:
+    case MinionTask::STEEL_FURNACE: {
         auto& info = workshops[*CollectiveConfig::getWorkshopType(task)];
         return MinionTaskInfo(info.furniture, info.taskName);
       }
@@ -451,17 +463,18 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
       }},
       {WorkshopType::FORGE, {
           Workshops::Item::fromType(ItemId::SWORD, 10, {CollectiveResourceId::IRON, 100}),
-          Workshops::Item::fromType(ItemId::SPECIAL_SWORD, 80, {CollectiveResourceId::IRON, 1000}),
+          Workshops::Item::fromType(ItemId::STEEL_SWORD, 20, {CollectiveResourceId::STEEL, 2})
+                  .setTechId(TechId::STEEL_MAKING),
           Workshops::Item::fromType(ItemId::CHAIN_ARMOR, 30, {CollectiveResourceId::IRON, 200}),
+          Workshops::Item::fromType(ItemId::STEEL_ARMOR, 60, {CollectiveResourceId::STEEL, 5}),
           Workshops::Item::fromType(ItemId::IRON_HELM, 8, {CollectiveResourceId::IRON, 80}),
           Workshops::Item::fromType(ItemId::IRON_BOOTS, 12, {CollectiveResourceId::IRON, 120}),
           Workshops::Item::fromType(ItemId::WAR_HAMMER, 16, {CollectiveResourceId::IRON, 190})
                   .setTechId(TechId::TWO_H_WEAP),
           Workshops::Item::fromType(ItemId::BATTLE_AXE, 22, {CollectiveResourceId::IRON, 250})
                   .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemId::SPECIAL_WAR_HAMMER, 120, {CollectiveResourceId::IRON, 1900})
-                  .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemId::SPECIAL_BATTLE_AXE, 180, {CollectiveResourceId::IRON, 2000}), 
+          Workshops::Item::fromType(ItemId::STEEL_BATTLE_AXE, 44, {CollectiveResourceId::STEEL, 6})
+                  .setTechId(TechId::STEEL_MAKING),
       }},
       {WorkshopType::LABORATORY, {
           Workshops::Item::fromType({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SLOWED}}, 2,
@@ -494,6 +507,9 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemId::WARNING_AMULET, 10, {CollectiveResourceId::GOLD, 150}),
           Workshops::Item::fromType(ItemId::DEFENSE_AMULET, 10, {CollectiveResourceId::GOLD, 200}),
           Workshops::Item::fromType(ItemId::HEALING_AMULET, 10, {CollectiveResourceId::GOLD, 300}),
+      }},
+      {WorkshopType::STEEL_FURNACE, {
+          Workshops::Item::fromType(ItemId::STEEL_INGOT, 5, {CollectiveResourceId::IRON, 50}),
       }},
   }));
 }
