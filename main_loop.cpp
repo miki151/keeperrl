@@ -25,10 +25,11 @@
 #include "save_file_info.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
-    const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin, bool singleThread,
+    const string& uPath, Options* o, Jukebox* j, SokobanInput* soko, std::atomic<bool>& fin, bool singleThread,
     optional<GameTypeChoice> force)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
-        highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread), forceGame(force) {
+        highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread), forceGame(force),
+        sokobanInput(soko) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const string& path, const string& suffix) {
@@ -424,7 +425,7 @@ void MainLoop::playGameChoice() {
 void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
-  playGame(Game::splashScreen(ModelBuilder(&meter, Random, options)
+  playGame(Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput)
         .splashModel(dataFreePath + "/splash.txt")), false, true);
 }
 
@@ -547,7 +548,7 @@ PModel MainLoop::quickGame(RandomGen& random) {
   NameGenerator::init(dataFreePath + "/names");
   doWithSplash(SplashType::BIG, "Generating map...", 166000,
       [&] (ProgressMeter& meter) {
-        model = ModelBuilder(&meter, random, options).quickModel();
+        model = ModelBuilder(&meter, random, options, sokobanInput).quickModel();
       });
   return model;
 }
@@ -555,7 +556,7 @@ PModel MainLoop::quickGame(RandomGen& random) {
 void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
   NameGenerator::init(dataFreePath + "/names");
   ProgressMeter meter(1);
-  ModelBuilder(&meter, random, options).measureSiteGen(numTries);
+  ModelBuilder(&meter, random, options, sokobanInput).measureSiteGen(numTries);
 }
 
 Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& random) {
@@ -571,7 +572,7 @@ Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& ran
   int numSites = campaign.getNumNonEmpty();
   doWithSplash(SplashType::BIG, "Generating map...", numSites,
       [&] (ProgressMeter& meter) {
-        ModelBuilder modelBuilder(nullptr, random, options);
+        ModelBuilder modelBuilder(nullptr, random, options, sokobanInput);
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
             meter.addProgress();
@@ -600,7 +601,7 @@ PModel MainLoop::keeperSingleMap(RandomGen& random) {
   NameGenerator::init(dataFreePath + "/names");
   doWithSplash(SplashType::BIG, "Generating map...", 300000,
       [&] (ProgressMeter& meter) {
-        ModelBuilder modelBuilder(&meter, random, options);
+        ModelBuilder modelBuilder(&meter, random, options, sokobanInput);
         model = modelBuilder.singleMapModel(NameGenerator::get(NameGeneratorId::WORLD)->getNext());
         modelBuilder.spawnKeeper(model.get());
       });

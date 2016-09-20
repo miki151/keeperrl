@@ -15,11 +15,13 @@ class Model;
 class RetiredGames;
 struct SaveFileInfo;
 class GameEvents;
+class SokobanInput;
 
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const string& dataFreePath, const string& userPath,
-      Options*, Jukebox*, std::atomic<bool>& finished, bool useSingleThread, optional<GameTypeChoice> forceGame);
+      Options*, Jukebox*, SokobanInput*, std::atomic<bool>& finished, bool useSingleThread,
+      optional<GameTypeChoice> forceGame);
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, RandomGen&, Options*);
@@ -78,6 +80,7 @@ class MainLoop {
   std::atomic<bool>& finished;
   bool useSingleThread;
   optional<GameTypeChoice> forceGame;
+  SokobanInput* sokobanInput;
 };
 
 

@@ -10,10 +10,11 @@ class Options;
 struct SettlementInfo;
 struct EnemyInfo;
 class EnemyFactory;
+class SokobanInput;
 
 class ModelBuilder {
   public:
-  ModelBuilder(ProgressMeter*, RandomGen&, Options*);
+  ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*);
   PModel singleMapModel(const string& worldName);
   PModel campaignBaseModel(const string& siteName);
   PModel campaignSiteModel(const string& siteName, EnemyId, VillainType);
@@ -47,6 +48,7 @@ class ModelBuilder {
   ProgressMeter* meter;
   Options* options;
   HeapAllocated<EnemyFactory> enemyFactory;
+  SokobanInput* sokobanInput;
 };
 
 

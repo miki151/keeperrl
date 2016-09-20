@@ -26,11 +26,12 @@
 #include "view_object.h"
 #include "item.h"
 #include "furniture.h"
+#include "sokoban_input.h"
 
 using namespace std::chrono;
 
-ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o) : random(r), meter(m), options(o),
-  enemyFactory(EnemyFactory(random)) {
+ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o, SokobanInput* sok) : random(r), meter(m), options(o),
+  enemyFactory(EnemyFactory(random)), sokobanInput(sok) {
 }
 
 ModelBuilder::~ModelBuilder() {
@@ -327,9 +328,10 @@ SettlementInfo& ModelBuilder::makeExtraLevel(Model* model, EnemyInfo& enemy) {
       mainSettlement.downStairs = {key};
       for (int i : Range(5000)) {
         try {
+          Table<char> sokoLevel = sokobanInput->getNext();
           model->buildLevel(
-              LevelBuilder(meter, random, 28, 14, "Sokoban"),
-              LevelMaker::sokobanLevel(random, mainSettlement));
+              LevelBuilder(meter, random, sokoLevel.getBounds().width(), sokoLevel.getBounds().height(), "Sokoban"),
+              LevelMaker::sokobanFromFile(random, mainSettlement, sokoLevel));
           return extraSettlement;
         } catch (LevelGenException) {
           Debug() << "Retrying";

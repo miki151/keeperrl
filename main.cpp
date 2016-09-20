@@ -45,6 +45,7 @@
 #include "model_builder.h"
 #include "sound_library.h"
 #include "audio_device.h"
+#include "sokoban_input.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -396,7 +397,8 @@ static int keeperMain(const variables_map& vars) {
     forceGame = GameTypeChoice::KEEPER;
   else if (vars.count("quick_level"))
     forceGame = GameTypeChoice::QUICK_LEVEL;
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox,
+  SokobanInput sokobanInput(freeDataPath + "/sokoban_input.txt");
+  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
       gameFinished, useSingleThread, forceGame);
   if (vars.count("worldgen_test")) {
     loop.modelGenTest(vars["worldgen_test"].as<int>(), Random, &options);

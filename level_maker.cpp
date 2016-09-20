@@ -2450,116 +2450,61 @@ PLevelMaker LevelMaker::roomLevel(RandomGen& random, CreatureFactory roomFactory
   return PLevelMaker(new BorderGuard(queue, SquareId::BLACK_WALL));
 }
 
-class SokobanMaker : public LevelMaker {
+namespace {
+
+class SokobanFromFile : public LevelMaker {
   public:
-  SokobanMaker(CreatureFactory boulders, StairKey hole) : boulderFactory(boulders), holeKey(hole) {}
+  SokobanFromFile(Table<char> f, CreatureFactory boulders, StairKey hole)
+      : file(f), boulderFactory(boulders), holeKey(hole) {}
 
-  virtual void make(LevelBuilder* builder1, Rectangle area) override {
-    builder = builder1;
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
+    CHECK(area == file.getBounds()) << "Bad size of sokoban input.";
     builder->setNoDiagonalPassing();
-    Vec2 start;
-    int roomRadius = 1;
-    for (int x : area.getXRange().shorten(roomRadius).reverse())
-      for (int y : builder->getRandom().permutation(area.getYRange().shorten(roomRadius)))
-        if (builder->getType(Vec2(x, y)) == SquareId::FLOOR) {
-          start = Vec2(x, y);
-          goto found;
-        }
-found:
-    int length = 7;
-    middleLine = start.x;
-    workArea = Rectangle(area.topLeft(), Vec2(start.x + length, area.bottom()));
-    for (int i : Range(1, length + 1)) {
-      Vec2 pos = start + Vec2(i, 0);
-      builder->putSquare(pos, SquareId::FLOOR);
-      boulders.push_back(pos);
-    }
-    builder->putSquare(start + Vec2(length + 1, 0), SquareId::FLOOR);
-    builder->putFurniture(start + Vec2(length + 1, 0), FurnitureParams{FurnitureType::DOOR, TribeId::getHostile()});
-    for (Vec2 v : Rectangle::centered(start + Vec2(length + roomRadius + 2, 0), roomRadius))
-      builder->putSquare(v, SquareId::FLOOR, SquareAttrib::SOKOBAN_PRIZE);
-    set<int> visited;
-    Vec2 curPos = start;
-    if (!moveBoulder(1500, curPos, visited))
-      failGen();
-    for (Vec2 pos : boulders) {
-      if (pos.x > middleLine)
-        failGen();
-      builder->putCreature(pos, boulderFactory.random());
-    }
-    for (int i : Range(1, length + 1))
-      builder->putSquare(start + Vec2(i, 0), {SquareId::SOKOBAN_HOLE, holeKey});
-    builder->addAttrib(curPos, SquareAttrib::SOKOBAN_ENTRY);
+    for (Vec2 v : area)
+      switch (file[v]) {
+        case '#':
+          builder->putSquare(v, SquareId::MOUNTAIN);
+          break;
+        case '.':
+          builder->putSquare(v, SquareId::FLOOR);
+          break;
+        case '^':
+          builder->putSquare(v, {SquareId::SOKOBAN_HOLE, holeKey});
+          break;
+        case '$':
+          builder->putSquare(v, SquareId::FLOOR, SquareAttrib::SOKOBAN_PRIZE);
+          break;
+        case '@':
+          builder->putSquare(v, SquareId::FLOOR, SquareAttrib::SOKOBAN_ENTRY);
+          break;
+        case '+':
+          builder->putSquare(v, SquareId::FLOOR);
+          builder->putFurniture(v, FurnitureParams{FurnitureType::DOOR, TribeId::getHostile()});
+          break;
+        case '0':
+          builder->putSquare(v, SquareId::FLOOR);
+          builder->putCreature(v, boulderFactory.random());
+          break;
+        default: FAIL << "Unknown symbol in sokoban data: " << file[v];
+      }
   }
 
-  private:
-
-  int getHash(const vector<Vec2>& boulders, Vec2 curPos) {
-    return combineHash(boulders);// + std::hash<Vec2>()(curPos);
-  }
-
-  bool isFree(Vec2 pos) {
-    return pos.inRectangle(workArea) && !contains(boulders, pos) && (builder->getType(pos) == SquareId::FLOOR);
-  }
-
-  bool moveBoulder(int minDepth, Vec2& curPos, set<int>& visited) {
-    if (visited.size() > maxVisited)
-      failGen();
-    BfSearch bfSearch(workArea, curPos, [&](Vec2 pos) {
-        return builder->getType(pos) == SquareId::FLOOR && !contains(boulders, pos);}, Vec2::directions4());
-    for (Vec2 pos : builder->getRandom().permutation(bfSearch.getAllReachable())) {
-      for (Vec2 v : Vec2::directions4(builder->getRandom()))
-        if (auto ind = findElement(boulders, pos + v)) {
-          optional<Vec2> dest;
-          for (int i = 1; isFree(pos - v * i) && !builder->getRandom().roll(4); ++i)
-            dest = pos - v * i;
-          if (!dest)
-            continue;
-          CHECK(!contains(boulders, *dest + v));
-          boulders[*ind] = *dest + v;
-          Vec2 prevPos = curPos;
-          curPos = *dest;
-          int hash = getHash(boulders, curPos);
-          if (!visited.count(hash)) {
-            visited.insert(hash);
-            if (moveBoulder(minDepth - 1, curPos, visited))
-              return true;
-          }
-          boulders[*ind] = pos + v;
-          curPos = prevPos;
-        }
-    }
-    return minDepth <= 0;
-  }
-
-  int middleLine;
-  LevelBuilder* builder;
-  Rectangle workArea;
-  const int maxVisited = 15000;
-  vector<Vec2> boulders;
+  Table<char> file;
   CreatureFactory boulderFactory;
   StairKey holeKey;
 };
 
-PLevelMaker LevelMaker::sokobanLevel(RandomGen& random, SettlementInfo info) {
+}
+
+PLevelMaker LevelMaker::sokobanFromFile(RandomGen& random, SettlementInfo info, Table<char> file) {
   MakerQueue* queue = new MakerQueue();
-  queue->addMaker(new Empty(SquareId::MOUNTAIN));
-  RandomLocations* locations = new RandomLocations();
-  for (int i = 0; i < 3; ++i) {
-    locations->add(new Empty(SquareId::FLOOR), Vec2(2, random.get(2, 6)), Predicate::alwaysTrue());
-  }
-  for (int i = 0; i < 1; ++i) {
-    locations->add(new Margin(1, new Empty(SquareId::FLOOR)), Vec2(4, random.get(4, 6)), Predicate::alwaysTrue());
-  }
-  queue->addMaker(new Division(0.5, locations, nullptr));
-  queue->addMaker(new Connector(none, 0, 100));
-  queue->addMaker(new SokobanMaker(info.neutralCreatures->first, getOnlyElement(info.downStairs)));
+  queue->addMaker(new SokobanFromFile(file, info.neutralCreatures->first, getOnlyElement(info.downStairs)));
   queue->addMaker(new Stairs(StairDirection::DOWN, getOnlyElement(info.downStairs),
         Predicate::attrib(SquareAttrib::SOKOBAN_ENTRY)));
   queue->addMaker(new LocationMaker(info.location));
   queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective,
         Predicate::attrib(SquareAttrib::SOKOBAN_PRIZE)));
-  return PLevelMaker(new BorderGuard(queue, SquareId::MOUNTAIN));
+  return PLevelMaker(queue);
 }
 
 PLevelMaker LevelMaker::quickLevel(RandomGen&) {
