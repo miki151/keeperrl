@@ -52,7 +52,7 @@ class ReadWriteArray {
   }
 
   void clearElem(Vec2 pos) {
-    if (auto type = types[pos]) {
+    if (readonly[pos]) {
       --numTotal;
       if (modified[pos])
         --numModified;
