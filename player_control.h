@@ -159,11 +159,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
     function<void(PlayerControl*, View*)> butFun;
   };
   vector<TechInfo> getTechInfo() const;
-  struct WorkshopInfo {
-    CollectiveInfo::WorkshopButton button;
-    WorkshopType workshopType;
-  };
-  vector<WorkshopInfo> getWorkshopInfo() const;
 
   int getImpCost() const;
   void getEquipmentItem(View* view, ItemPredicate predicate);

@@ -181,18 +181,18 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "All equipment for your minions can be stored here.", 's', "Storage", true),
       BuildInfo({FurnitureType::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, {},
           "Only wood, iron and granite can be stored here.", 0, "Storage"),
-      BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 20}, "Library"}, {},
+      BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 80}, "Library"}, {},
           "Mana is regenerated here.", 'y'),
       BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 800}, "Throne", false, false, 1},
           {{RequirementId::VILLAGE_CONQUERED}},
           "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
-      BuildInfo({FurnitureType::TREASURE_CHEST, {ResourceId::WOOD, 5}, "Treasure chest"}, {},
+      BuildInfo({FurnitureType::TREASURE_CHEST, {ResourceId::WOOD, 20}, "Treasure chest"}, {},
           "Stores gold."),
       BuildInfo({FurnitureType::PIGSTY, {ResourceId::WOOD, 20}, "Pigsty"},
           {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
           "Increases minion population limit by up to " +
           toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 'p'),
-      BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 10}, "Bed"}, {},
+      BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 60}, "Bed"}, {},
           "Humanoid minions sleep here.", 'm'),
       BuildInfo({FurnitureType::TRAINING_WOOD, {ResourceId::WOOD, 60}, "Wooden dummy"}, {},
           "Train your minions here. Adds up to " +
@@ -203,38 +203,38 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_IRON)) + " experience levels.",
           0, "Training room"),
-      BuildInfo({FurnitureType::TRAINING_STEEL, {ResourceId::STEEL, 5}, "Steel dummy"},
+      BuildInfo({FurnitureType::TRAINING_STEEL, {ResourceId::STEEL, 60}, "Steel dummy"},
           {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}},
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_STEEL)) + " experience levels.",
           0, "Training room"),
-      BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 20}, "Workshop"},
+      BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 80}, "Workshop"},
           {{RequirementId::TECHNOLOGY, TechId::CRAFTING}},
           "Produces leather equipment, traps, first-aid kits and other.", 'w', workshop),
-      BuildInfo({FurnitureType::FORGE, {ResourceId::IRON, 15}, "Forge"},
+      BuildInfo({FurnitureType::FORGE, {ResourceId::IRON, 100}, "Forge"},
           {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}}, "Produces iron weapons and armor.", 0, workshop),
-      BuildInfo({FurnitureType::LABORATORY, {ResourceId::STONE, 15}, "Laboratory"},
+      BuildInfo({FurnitureType::LABORATORY, {ResourceId::STONE, 50}, "Laboratory"},
           {{RequirementId::TECHNOLOGY, TechId::ALCHEMY}}, "Produces magical potions.", 'r', workshop),
-      BuildInfo({FurnitureType::JEWELER, {ResourceId::WOOD, 20}, "Jeweler"},
+      BuildInfo({FurnitureType::JEWELER, {ResourceId::WOOD, 60}, "Jeweler"},
           {{RequirementId::TECHNOLOGY, TechId::JEWELLERY}}, "Produces magical rings and amulets.", 'j', workshop),
-      BuildInfo({FurnitureType::STEEL_FURNACE, {ResourceId::STONE, 300}, "Steel furnace"},
+      BuildInfo({FurnitureType::STEEL_FURNACE, {ResourceId::STONE, 500}, "Steel furnace"},
           {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}}, "Turns iron ore into steel.", 0, workshop),
-      BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::MANA, 15}, "Ritual room"}, {},
+      BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::MANA, 60}, "Ritual room"}, {},
           "Summons various demons to your dungeon."),
-      BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 12}, "Beast lair"}, {},
+      BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 40}, "Beast lair"}, {},
           "Beasts sleep here."),
-      BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 20}, "Graveyard"}, {},
+      BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 80}, "Graveyard"}, {},
           "Spot for hauling dead bodies and for undead creatures to sleep in.", 'g'),
       BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 20}, "Prison"}, {},
           "Captured enemies are kept here.", 0),
-      BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 20}, "Torture room"}, {},
+      BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 100}, "Torture room"}, {},
           "Can be used to torture prisoners.", 'u'),
       BuildInfo(BuildInfo::CLAIM_TILE, "Claim a tile. Building anything has the same effect.", 0, "Orders"),
       BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
       BuildInfo(BuildInfo::DISPATCH, "Click on an existing task to give it a high priority.", 'a', "Orders"),
       BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
       BuildInfo(BuildInfo::FORBID_ZONE, "Mark tiles to keep minions from entering.", 'b', "Orders"),
-      BuildInfo({FurnitureType::DOOR, {ResourceId::WOOD, 5}, "Door"},
+      BuildInfo({FurnitureType::DOOR, {ResourceId::WOOD, 20}, "Door"},
           {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "Click on a built door to lock it.", 'o', "Installations"),
       BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, {},
         "Build it to pass over water or lava.", 0, "Installations"),
@@ -248,7 +248,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
       BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 300}, "Statue", false, false}, {},
         "Increases minion population limit by " +
               toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
-      BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 30}, "Whipping post"}, {},
+      BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 100}, "Whipping post"}, {},
           "A place to whip your minions if they need a morale boost.", 0, "Installations"),
       BuildInfo({FurnitureType::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, {},
           "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
@@ -1156,13 +1156,34 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
     );
 }
 
+static const ViewObject& getConstructionObject(SquareType type) {
+  static unordered_map<SquareType, ViewObject, CustomHash<SquareType>> objects;
+  if (!objects.count(type)) {
+    objects.insert(make_pair(type, SquareFactory::get(type)->getViewObject()));
+    objects.at(type).setModifier(ViewObject::Modifier::PLANNED);
+  }
+  return objects.at(type);
+}
+
+static const ViewObject& getConstructionObject(FurnitureType type) {
+  static EnumMap<FurnitureType, optional<ViewObject>> objects;
+  if (!objects[type]) {
+    objects[type] =  FurnitureFactory::get(type, TribeId::getMonster())->getViewObject();
+    objects[type]->setModifier(ViewObject::Modifier::PLANNED);
+  }
+  return *objects[type];
+}
+
 void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   info.workshopButtons.clear();
   int index = 0;
   int i = 0;
-  for (auto& elem : getWorkshopInfo()) {
-    info.workshopButtons.push_back(elem.button);
-    if (chosenWorkshop == elem.workshopType) {
+  for (auto workshopType : ENUM_ALL(WorkshopType)) {
+    auto& workshopInfo = CollectiveConfig::getWorkshopInfo(workshopType);
+    bool unavailable = getCollective()->getConstructions().getBuiltPositions(workshopInfo.furniture).empty();
+    info.workshopButtons.push_back({capitalFirst(workshopInfo.taskName),
+        getConstructionObject(workshopInfo.furniture).id(), false, unavailable});
+    if (chosenWorkshop == workshopType) {
       index = i;
       info.workshopButtons.back().active = true;
     }
@@ -1176,19 +1197,6 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
         index
     };
   }
-}
-
-vector<PlayerControl::WorkshopInfo> PlayerControl::getWorkshopInfo() const {
-  vector<WorkshopInfo> ret {
-    {{"Workshop", ViewId::WORKSHOP, false}, WorkshopType::WORKSHOP},
-    {{"Forge", ViewId::FORGE, false}, WorkshopType::FORGE},
-    {{"Laboratory", ViewId::LABORATORY, false}, WorkshopType::LABORATORY},
-    {{"Jeweler", ViewId::JEWELER, false}, WorkshopType::JEWELER},
-  };
-  for (auto& elem : ret)
-    elem.button.unavailable = getCollective()->getConstructions().getBuiltPositions(
-        CollectiveConfig::getWorkshopInfo(elem.workshopType).furniture).empty();
-  return ret;
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
@@ -1401,24 +1409,6 @@ ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
     }
   FAIL << "trap not found" << int(type);
   return ViewObject(ViewId::EMPTY, ViewLayer::LARGE_ITEM);
-}
-
-static const ViewObject& getConstructionObject(SquareType type) {
-  static unordered_map<SquareType, ViewObject, CustomHash<SquareType>> objects;
-  if (!objects.count(type)) {
-    objects.insert(make_pair(type, SquareFactory::get(type)->getViewObject()));
-    objects.at(type).setModifier(ViewObject::Modifier::PLANNED);
-  }
-  return objects.at(type);
-}
-
-static const ViewObject& getConstructionObject(FurnitureType type) {
-  static EnumMap<FurnitureType, optional<ViewObject>> objects;
-  if (!objects[type]) {
-    objects[type] =  FurnitureFactory::get(type, TribeId::getMonster())->getViewObject();
-    objects[type]->setModifier(ViewObject::Modifier::PLANNED);
-  }
-  return *objects[type];
 }
 
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
@@ -1777,11 +1767,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
     case UserInputId::WORKSHOP: {
           int index = input.get<int>();
-          auto info = getWorkshopInfo();
-          if (index < 0 || index >= info.size())
+          if (index < 0 || index >= EnumInfo<WorkshopType>::size)
             setChosenWorkshop(none);
           else {
-            WorkshopType type = info[index].workshopType;
+            WorkshopType type = (WorkshopType) index;
             if (chosenWorkshop == type)
               setChosenWorkshop(none);
             else
@@ -1807,6 +1796,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
                 else
                   getCollective()->getWorkshops().get(*chosenWorkshop).unqueue(info.itemIndex);
               }
+              break;
             default:
               break;
           }

@@ -512,7 +512,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::TERROR_TRAP, sprite("terror_trap"));
     Tile::addTile(ViewId::ROCK, sprite("stonepile"));
     Tile::addTile(ViewId::IRON_ROCK, sprite("ironpile"));
-    Tile::addTile(ViewId::STEEL_INGOT, sprite("steel_ingot"));
+    Tile::addTile(ViewId::STEEL_INGOT, sprite("steelpile"));
     Tile::addTile(ViewId::WOOD_PLANK, sprite("wood2"));
     Tile::addTile(ViewId::STOCKPILE1, sprite("storage1").setFloorBorders());
     Tile::addTile(ViewId::STOCKPILE2, sprite("storage2").setFloorBorders());

@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _TASK_H
-#define _TASK_H
+#pragma once
 
 #include "move_info.h"
 #include "unique_entity.h"
@@ -93,5 +92,3 @@ class Task : public UniqueEntity<Task> {
   bool SERIAL(done) = false;
   bool SERIAL(transfer);
 };
-
-#endif

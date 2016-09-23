@@ -463,17 +463,18 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
       }},
       {WorkshopType::FORGE, {
           Workshops::Item::fromType(ItemId::SWORD, 10, {CollectiveResourceId::IRON, 100}),
-          Workshops::Item::fromType(ItemId::STEEL_SWORD, 20, {CollectiveResourceId::STEEL, 2})
+          Workshops::Item::fromType(ItemId::STEEL_SWORD, 20, {CollectiveResourceId::STEEL, 100})
                   .setTechId(TechId::STEEL_MAKING),
           Workshops::Item::fromType(ItemId::CHAIN_ARMOR, 30, {CollectiveResourceId::IRON, 200}),
-          Workshops::Item::fromType(ItemId::STEEL_ARMOR, 60, {CollectiveResourceId::STEEL, 5}),
+          Workshops::Item::fromType(ItemId::STEEL_ARMOR, 60, {CollectiveResourceId::STEEL, 200})
+                  .setTechId(TechId::STEEL_MAKING),
           Workshops::Item::fromType(ItemId::IRON_HELM, 8, {CollectiveResourceId::IRON, 80}),
           Workshops::Item::fromType(ItemId::IRON_BOOTS, 12, {CollectiveResourceId::IRON, 120}),
           Workshops::Item::fromType(ItemId::WAR_HAMMER, 16, {CollectiveResourceId::IRON, 190})
                   .setTechId(TechId::TWO_H_WEAP),
           Workshops::Item::fromType(ItemId::BATTLE_AXE, 22, {CollectiveResourceId::IRON, 250})
                   .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemId::STEEL_BATTLE_AXE, 44, {CollectiveResourceId::STEEL, 6})
+          Workshops::Item::fromType(ItemId::STEEL_BATTLE_AXE, 44, {CollectiveResourceId::STEEL, 250})
                   .setTechId(TechId::STEEL_MAKING),
       }},
       {WorkshopType::LABORATORY, {
@@ -509,7 +510,7 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemId::HEALING_AMULET, 10, {CollectiveResourceId::GOLD, 300}),
       }},
       {WorkshopType::STEEL_FURNACE, {
-          Workshops::Item::fromType(ItemId::STEEL_INGOT, 5, {CollectiveResourceId::IRON, 50}),
+          Workshops::Item::fromType(ItemId::STEEL_INGOT, 50, {CollectiveResourceId::IRON, 150}).setBatchSize(50),
       }},
   }));
 }
