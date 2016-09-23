@@ -1779,12 +1779,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
         break;
     case UserInputId::WORKSHOP_ADD: 
-        if (chosenWorkshop)
+        if (chosenWorkshop) {
           getCollective()->getWorkshops().get(*chosenWorkshop).queue(input.get<int>());
+          getCollective()->updateResourceProduction();
+        }
         break;
     case UserInputId::WORKSHOP_ITEM_ACTION: {
         auto& info = input.get<WorkshopQueuedActionInfo>();
-        if (chosenWorkshop)
+        if (chosenWorkshop) {
           switch (info.action) {
             case ItemAction::REMOVE:
               getCollective()->getWorkshops().get(*chosenWorkshop).unqueue(info.itemIndex);
@@ -1800,8 +1802,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
             default:
               break;
           }
+          getCollective()->updateResourceProduction();
         }
-        break;
+      }
+      break;
     case UserInputId::CREATURE_GROUP_BUTTON: 
         if (Creature* c = getCreature(input.get<Creature::Id>()))
           if (!chosenCreature || getChosenTeam() || !getCreature(*chosenCreature) ||
@@ -2111,6 +2115,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
                   getCollective()->getConstructions().getTotalCount(info.type))) {
             CostInfo cost = info.cost;
             getCollective()->addFurniture(position, info.type, cost, info.buildImmediatly, info.noCredit);
+            getCollective()->updateResourceProduction();
             selection = SELECT;
             getView()->addSound(SoundId::ADD_CONSTRUCTION);
           }
@@ -2134,6 +2139,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
                   + getCollective()->getConstructions().getSquareCount(info.type))) {
             CostInfo cost = info.cost;
             getCollective()->addConstruction(position, info.type, cost, info.buildImmediatly, info.noCredit);
+            getCollective()->updateResourceProduction();
             selection = SELECT;
             getView()->addSound(SoundId::ADD_CONSTRUCTION);
           }

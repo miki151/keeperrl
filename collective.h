@@ -197,7 +197,7 @@ class Collective : public TaskCallback {
 
   const CollectiveName& getName() const;
   const TaskMap& getTaskMap() const;
-
+  void updateResourceProduction();
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
 
@@ -241,6 +241,8 @@ class Collective : public TaskCallback {
 
   bool isItemNeeded(const Item*) const;
   void addProducesMessage(const Creature*, const vector<PItem>&);
+  int getDebt(ResourceId id) const;
+  int getNumItems(ItemIndex, bool includeMinions = true) const;
 
   HeapAllocated<MinionEquipment> SERIAL(minionEquipment);
   EnumMap<ResourceId, int> SERIAL(credit);
@@ -312,7 +314,8 @@ class Collective : public TaskCallback {
   ItemPredicate unMarkedItems() const;
   EntitySet<Creature> SERIAL(surrendering);
   void updateConstructions();
-  void scheduleTrapProduction(TrapType, int count);
+  void handleTrapPlacementAndProduction();
+  void scheduleAutoProduction(function<bool (const Item*)> itemPredicate, int count);
   void delayDangerousTasks(const vector<Position>& enemyPos, double delayTime);
   bool isDelayed(Position);
   unordered_map<Position, double, CustomHash<Position>> SERIAL(delayedPos);

@@ -137,7 +137,7 @@ double Collective::getAttractionValue(const MinionAttraction& attraction) {
       return ret;
     }
     case AttractionId::ITEM_INDEX: 
-      return getAllItems(attraction.get<ItemIndex>(), true).size();
+      return getNumItems(attraction.get<ItemIndex>(), false);
   }
 }
 
@@ -782,7 +782,7 @@ void Collective::considerBirths() {
 }
 
 void Collective::considerWeaponWarning() {
-  int numWeapons = getAllItems(ItemIndex::WEAPON).size();
+  int numWeapons = getNumItems(ItemIndex::WEAPON);
   PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
   int numNeededWeapons = 0;
   for (Creature* c : getCreatures(MinionTrait::FIGHTER))
@@ -1136,21 +1136,25 @@ int Collective::numResource(ResourceId id) const {
 }
 
 int Collective::numResourcePlusDebt(ResourceId id) const {
-  int ret = numResource(id);
+  return numResource(id) - getDebt(id);
+}
+
+int Collective::getDebt(ResourceId id) const {
+  int ret = 0;
   for (Position pos : constructions->getSquares()) {
     auto& construction = constructions->getSquare(pos);
     if (!construction.isBuilt() && construction.getCost().id == id)
-      ret -= construction.getCost().value;
+      ret += construction.getCost().value;
   }
   for (Position pos : constructions->getAllFurniture()) {
     auto& furniture = constructions->getFurniture(pos);
     if (!furniture.isBuilt() && furniture.getCost().id == id)
-      ret -= furniture.getCost().value;
+      ret += furniture.getCost().value;
   }
   for (auto& elem : taskMap->getCompletionCosts())
     if (elem.second.id == id && !elem.first->isDone())
-      ret += elem.second.value;
-  ret -= workshops->getDebt(id);
+      ret -= elem.second.value;
+  ret += workshops->getDebt(id);
   return ret;
 }
 
@@ -1304,6 +1308,16 @@ vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) cons
     for (Creature* c : getCreatures())
       append(allItems, c->getEquipment().getItems(index));
   return allItems;
+}
+
+int Collective::getNumItems(ItemIndex index, bool includeMinions) const {
+  int ret = 0;
+  for (Position v : territory->getAll())
+    ret += v.getItems(index).size();
+  if (includeMinions)
+    for (Creature* c : getCreatures())
+      ret += c->getEquipment().getItems(index).size();
+  return ret;
 }
 
 void Collective::orderExecution(Creature* c) {
@@ -1495,24 +1509,7 @@ void Collective::onConstructed(Position pos, const SquareType& type) {
     taskMap->removeTask(task);
 }
 
-void Collective::scheduleTrapProduction(TrapType trapType, int count) {
-  if (count > 0)
-    for (auto workshopType : ENUM_ALL(WorkshopType))
-      for (auto& item : workshops->get(workshopType).getQueued())
-        if (ItemFactory::fromId(item.type)->getTrapType() == trapType)
-          count -= item.number;
-  if (count > 0)
-    for (auto workshopType : ENUM_ALL(WorkshopType)) {
-      auto& options = workshops->get(workshopType).getOptions();
-      for (int index : All(options))
-        if (ItemFactory::fromId(options[index].type)->getTrapType() == trapType) {
-          workshops->get(workshopType).queue(index, count);
-          return;
-        }
-    }
-}
-
-void Collective::updateConstructions() {
+void Collective::handleTrapPlacementAndProduction() {
   EnumMap<TrapType, vector<pair<Item*, Position>>> trapItems(
       [this] (TrapType type) { return getTrapItems(type, territory->getAll());});
   EnumMap<TrapType, int> missingTraps;
@@ -1529,7 +1526,37 @@ void Collective::updateConstructions() {
         ++missingTraps[elem.second.getType()];
     }
   for (TrapType type : ENUM_ALL(TrapType))
-    scheduleTrapProduction(type, missingTraps[type]);
+    scheduleAutoProduction([type](const Item* it) { return it->getTrapType() == type;}, missingTraps[type]);
+}
+
+void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicate, int count) {
+  if (count > 0)
+    for (auto workshopType : ENUM_ALL(WorkshopType))
+      for (auto& item : workshops->get(workshopType).getQueued())
+        if (itemPredicate(ItemFactory::fromId(item.type).get()))
+          count -= item.number * item.batchSize;
+  if (count > 0)
+    for (auto workshopType : ENUM_ALL(WorkshopType)) {
+      auto& options = workshops->get(workshopType).getOptions();
+      for (int index : All(options))
+        if (itemPredicate(ItemFactory::fromId(options[index].type).get())) {
+          workshops->get(workshopType).queue(index, (count + options[index].batchSize - 1) / options[index].batchSize);
+          return;
+        }
+    }
+}
+
+void Collective::updateResourceProduction() {
+  for (ResourceId resourceId : ENUM_ALL(ResourceId))
+    if (auto index = config->getResourceInfo(resourceId).itemIndex) {
+      int needed = getDebt(resourceId) - getNumItems(*index);
+      if (needed > 0)
+        scheduleAutoProduction([resourceId] (const Item* it) { return it->getResourceId() == resourceId; }, needed);
+  }
+}
+
+void Collective::updateConstructions() {
+  handleTrapPlacementAndProduction();
   for (Position pos : constructions->getSquares()) {
     auto& construction = constructions->getSquare(pos);
     if (!isDelayed(pos) && !construction.hasTask() && !construction.isBuilt()) {
@@ -1687,10 +1714,10 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
 void Collective::onAppliedSquare(Creature* c, Position pos) {
   if (auto furniture = pos.getFurniture()) {
     // Furniture have variable apply time, so just multiply by it to be independent of changes.
-    double efficiency = tileEfficiency->getEfficiency(pos) * pos.getApplyTime();
+    double efficiency = tileEfficiency->getEfficiency(pos) * pos.getApplyTime() * getEfficiency(c);
     switch (furniture->getType()) {
       case FurnitureType::BOOK_SHELF: {
-        addMana(0.2 * efficiency);
+        addMana(0.1 * efficiency);
         auto availableSpells = Technology::getAvailableSpells(this);
         if (Random.rollD(60.0 / efficiency) && !availableSpells.empty()) {
           for (int i : Range(30)) {
@@ -1729,7 +1756,7 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
       auto& elem = config->getWorkshopInfo(workshopType);
       if (furniture->getType() == elem.furniture) {
         vector<PItem> items =
-            workshops->get(workshopType).addWork(getEfficiency(c));
+            workshops->get(workshopType).addWork(efficiency);
         if (!items.empty()) {
           if (items[0]->getClass() == ItemClass::WEAPON)
             getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
