@@ -976,6 +976,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
           c.skills.setValue(SkillId::UNARMED_MELEE, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::ARCHERY, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::SORCERY, Random.getDouble(0, 1));
+          c.skills.setValue(SkillId::MANA, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::WORKSHOP, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::FORGE, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::LABORATORY, Random.getDouble(0, 1));
@@ -1038,6 +1039,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::THRONE, 0.0001); 
           c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
+          c.skills.setValue(SkillId::MANA, 1);
           );
     case CreatureId::BANDIT: 
       return CATTR(
@@ -1436,6 +1438,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::SORCERY, 0.1);
+          c.skills.setValue(SkillId::MANA, 0.4);
           c.name = "vampire";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::VAMPIRE)->getNext());
           );
@@ -1450,6 +1453,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.spawnType = SpawnType::UNDEAD;
           c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.setValue(SkillId::SORCERY, 0.5);
+          c.skills.setValue(SkillId::MANA, 0.7);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
@@ -1516,6 +1520,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::SORCERY, 0.7);
+          c.skills.setValue(SkillId::MANA, 0.4);
           c.skills.setValue(SkillId::LABORATORY, 0.7);
           c.skills.insert(SkillId::HEALING);
           c.chatReactionFriendly = "curses all elves";
@@ -1850,6 +1855,8 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.skills.setValue(SkillId::ARCHERY, 0.5);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
+          c.skills.setValue(SkillId::MANA, 0.3);
+          c.skills.setValue(SkillId::SORCERY, 0.3);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::STUDY, 1);
@@ -2432,8 +2439,7 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER: 
       return ItemList()
-        .add(ItemId::ROBE)
-        .add(ItemId::BOULDER_TRAP_ITEM, 10);
+        .add(ItemId::ROBE);
     case CreatureId::DEATH:
       return ItemList()
         .add(ItemId::SCYTHE);

@@ -106,7 +106,7 @@ void Skill::init() {
   Skill::set(SkillId::ELF_VISION, new Skill("elf vision", "See and shoot arrows through trees.", true));
   Skill::set(SkillId::NIGHT_VISION, new Skill("night vision", "See in the dark.", true));
   Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them.", true));
-  Skill::set(SkillId::SORCERY, new Skill("sorcery", "Cast spells.", false));
+  Skill::set(SkillId::SORCERY, new Skill("sorcery", "Affects the length of spell cooldowns.", false));
   Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",
         "Absorb other creatures and retain their attributes.", true, false));
   Skill::set(SkillId::HEALING, new Skill("healing", "Heal friendly creatures.", true));
@@ -116,6 +116,7 @@ void Skill::init() {
   Skill::set(SkillId::LABORATORY, new Skill("laboratory", "Craft items in the laboratory.", false));
   Skill::set(SkillId::JEWELER, new Skill("jeweler", "Craft items at the jeweler's shop.", false));
   Skill::set(SkillId::FURNACE, new Skill("furnace", "Craft items at the furnace.", false));
+  Skill::set(SkillId::MANA, new Skill("mana production", "Affects mana production efficiency.", false));
 }
 
 bool Skill::transferOnConsumption() const {

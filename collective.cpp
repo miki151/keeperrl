@@ -1717,7 +1717,7 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
     double efficiency = tileEfficiency->getEfficiency(pos) * pos.getApplyTime() * getEfficiency(c);
     switch (furniture->getType()) {
       case FurnitureType::BOOK_SHELF: {
-        addMana(0.1 * efficiency);
+        addMana(0.1 * efficiency * c->getAttributes().getSkills().getValue(SkillId::MANA));
         auto availableSpells = Technology::getAvailableSpells(this);
         if (Random.rollD(60.0 / efficiency) && !availableSpells.empty()) {
           for (int i : Range(30)) {
@@ -1733,7 +1733,7 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
       }
       case FurnitureType::THRONE:
         if (c == getLeader())
-          addMana(0.2 * efficiency);
+          addMana(0.2 * efficiency * c->getAttributes().getSkills().getValue(SkillId::MANA));
         break;
       case FurnitureType::WHIPPING_POST:
         taskMap->addTask(Task::whipping(pos, c), pos, MinionTrait::FIGHTER);

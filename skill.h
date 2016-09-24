@@ -41,7 +41,8 @@ RICH_ENUM(SkillId,
   FORGE,
   LABORATORY,
   JEWELER,
-  FURNACE
+  FURNACE,
+  MANA
 );
 
 class Creature;
