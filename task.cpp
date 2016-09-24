@@ -121,6 +121,13 @@ class ConstructionHelper {
       callback->onConstructed(position, *furniture);
   }
 
+  bool isActiveConstruction(Position pos) {
+    if (square)
+      return pos.isActiveSquareConstruction();
+    else
+      return pos.isActiveFurnitureConstruction();
+  }
+
   SERIALIZE_ALL(square, furniture);
   SERIALIZATION_CONSTRUCTOR(ConstructionHelper);
 
@@ -151,7 +158,7 @@ class Construction : public Task {
     Vec2 dir = c->getPosition().getDir(position);
     if (auto action = helper.getAction(c, dir))
       return {1.0, action.append([=](Creature* c) {
-          if (!position.isActiveConstruction()) {
+          if (!helper.isActiveConstruction(position)) {
             setDone();
             helper.onConstructed(callback, position);
           }

@@ -92,7 +92,8 @@ class Position {
   bool construct(const SquareType&);
   bool construct(FurnitureType, Creature*);
   bool construct(FurnitureType, TribeId);
-  bool isActiveConstruction() const;
+  bool isActiveFurnitureConstruction() const;
+  bool isActiveSquareConstruction() const;
   bool isBurning() const;
   void fireDamage(double amount);
   bool needsRenderUpdate() const;

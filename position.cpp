@@ -478,8 +478,12 @@ bool Position::construct(FurnitureType type, TribeId tribe) {
     return false;
 }
 
-bool Position::isActiveConstruction() const {
-  return !isUnavailable() && (getSquare()->isActiveConstruction() || level->furnitureConstruction[coord]);
+bool Position::isActiveFurnitureConstruction() const {
+  return !isUnavailable() && level->furnitureConstruction[coord];
+}
+
+bool Position::isActiveSquareConstruction() const {
+  return !isUnavailable() && getSquare()->isActiveConstruction();
 }
 
 bool Position::isBurning() const {
