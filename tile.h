@@ -39,11 +39,8 @@ class Tile {
   string text;
   bool symFont = false;
   double translucent = 0;
-  bool noShadow = false;
   bool roundShadow = false;
   bool floorBorders = false;
-
-  Tile setNoShadow();
 
   Tile addConnection(DirSet, TileCoord);
   Tile addOption(Dir, TileCoord);

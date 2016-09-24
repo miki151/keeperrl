@@ -82,10 +82,10 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setUsageTime(5)
           .setDestroyable(80);
     case FurnitureType::STOCKPILE_RES:
-      return Furniture("resource stockpile", ViewObject(ViewId::STOCKPILE1, ViewLayer::FLOOR), type,
+      return Furniture("resource stockpile", ViewObject(ViewId::STOCKPILE1, ViewLayer::FLOOR_BACKGROUND), type,
           Furniture::NON_BLOCKING, tribe);
     case FurnitureType::STOCKPILE_EQUIP:
-      return Furniture("equipment stockpile", ViewObject(ViewId::STOCKPILE2, ViewLayer::FLOOR), type,
+      return Furniture("equipment stockpile", ViewObject(ViewId::STOCKPILE2, ViewLayer::FLOOR_BACKGROUND), type,
           Furniture::NON_BLOCKING, tribe);
     case FurnitureType::PRISON:
         return Furniture("prison", ViewObject(ViewId::PRISON, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe);
@@ -184,7 +184,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           Furniture::NON_BLOCKING, tribe)
           .setDestroyable(40);
     case FurnitureType::DOOR:
-      return Furniture("door", ViewObject(ViewId::DOOR, ViewLayer::FLOOR), type, Furniture::BLOCKING_ENEMIES, tribe)
+      return Furniture("door", ViewObject(ViewId::DOOR, ViewLayer::FLOOR)
+               .setModifier(ViewObject::Modifier::CASTS_SHADOW), type, Furniture::BLOCKING_ENEMIES, tribe)
           .setBlockVision()
           .setDestroyable(100)
           .setClickType(FurnitureClickType::LOCK);
