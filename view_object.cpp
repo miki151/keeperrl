@@ -212,6 +212,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::FORGE: return "Forge";
     case ViewId::WORKSHOP: return "Workshop";
     case ViewId::JEWELER: return "Jeweler";
+    case ViewId::STEEL_FURNACE: return "Steel furnace";
     case ViewId::MINION_STATUE: return "Statue";
     case ViewId::CREATURE_ALTAR: return "Shrine";
     case ViewId::FOUNTAIN: return "Fountain";

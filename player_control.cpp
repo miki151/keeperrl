@@ -1432,8 +1432,11 @@ static bool showEfficiency(FurnitureType type) {
     case FurnitureType::LABORATORY:
     case FurnitureType::JEWELER:
     case FurnitureType::THRONE:
-    case FurnitureType::FORGE: return true;
-    default: return false;
+    case FurnitureType::FORGE:
+    case FurnitureType::STEEL_FURNACE:
+      return true;
+    default:
+      return false;
   }
 }
 
