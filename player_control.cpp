@@ -1781,6 +1781,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::WORKSHOP_ADD: 
         if (chosenWorkshop) {
           getCollective()->getWorkshops().get(*chosenWorkshop).queue(input.get<int>());
+          getCollective()->getWorkshops().scheduleItems(getCollective());
           getCollective()->updateResourceProduction();
         }
         break;
@@ -1802,6 +1803,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
             default:
               break;
           }
+          getCollective()->getWorkshops().scheduleItems(getCollective());
           getCollective()->updateResourceProduction();
         }
       }

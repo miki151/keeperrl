@@ -7,11 +7,7 @@ RICH_ENUM(MinionTask,
   GRAVE,
   TRAIN,
   EAT,
-  WORKSHOP,
-  FORGE,
-  LABORATORY,
-  JEWELER,
-  STEEL_FURNACE,
+  CRAFT,
   STUDY,
   PRISON,
   //SACRIFICE,
@@ -37,7 +33,7 @@ class MinionTasks {
   public:
   static PTask generate(Collective*, Creature*, MinionTask);
   static optional<double> getDuration(const Creature*, MinionTask);
-  static vector<Position> getAllPositions(const Collective*, const Creature*, MinionTask);
+  static vector<Position> getAllPositions(const Collective*, const Creature*, MinionTask, bool onlyActive = false);
   static const vector<FurnitureType>& getAllFurniture(MinionTask);
   static optional<MinionTask> getTaskFor(const Creature*, FurnitureType);
 

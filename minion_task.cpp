@@ -106,11 +106,12 @@ optional<MinionTask> MinionTasks::getTaskFor(const Creature* c, FurnitureType ty
   return none;
 }
 
-vector<Position> MinionTasks::getAllPositions(const Collective* collective, const Creature* c, MinionTask task) {
+vector<Position> MinionTasks::getAllPositions(const Collective* collective, const Creature* c, MinionTask task,
+    bool onlyActive) {
   vector<Position> ret;
   auto& info = CollectiveConfig::getTaskInfo(task);
   for (auto furnitureType : getAllFurniture(task))
-    if (info.furniturePredicate(c, furnitureType))
+    if (info.furniturePredicate(c, furnitureType) && (!onlyActive || info.activePredicate(collective, furnitureType)))
       append(ret, collective->getConstructions().getBuiltPositions(furnitureType));
   return ret;
 }
@@ -119,13 +120,13 @@ PTask MinionTasks::generate(Collective* collective, Creature* c, MinionTask task
   auto& info = CollectiveConfig::getTaskInfo(task);
   switch (info.type) {
     case MinionTaskInfo::FURNITURE: {
-      vector<Position> squares = getAllPositions(collective, c, task);
-      if (!squares.empty()) {
-        auto searchType = Task::RANDOM_CLOSE;
-        if (auto workshopType = CollectiveConfig::getWorkshopType(task))
-          if (collective->getWorkshops().get(*workshopType).isIdle())
-            searchType = Task::LAZY;
-        return Task::applySquare(collective, squares, searchType);
+      vector<Position> squares = getAllPositions(collective, c, task, true);
+      if (!squares.empty())
+        return Task::applySquare(collective, squares, Task::RANDOM_CLOSE, Task::APPLY);
+      else {
+        vector<Position> squares = getAllPositions(collective, c, task, false);
+        if (!squares.empty())
+          return Task::applySquare(collective, squares, Task::LAZY, Task::NONE);
       }
       break;
     }

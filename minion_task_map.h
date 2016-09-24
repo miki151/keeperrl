@@ -21,7 +21,6 @@
 class MinionTaskMap {
   public:
   void setValue(MinionTask, double);
-  void setWorkshopTasks(double);
   void clear();
 
   void toggleLock(MinionTask);

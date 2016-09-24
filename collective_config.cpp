@@ -19,6 +19,7 @@
 #include "minion_task.h"
 #include "furniture_usage.h"
 #include "creature_attributes.h"
+#include "collective.h"
 
 AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
   : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}
@@ -342,24 +343,18 @@ MinionTaskInfo::MinionTaskInfo(UsagePredicate pred, const string& desc) : type(F
   furniturePredicate(pred), description(desc) {
 }
 
+MinionTaskInfo::MinionTaskInfo(UsagePredicate usagePred, ActivePredicate activePred, const string& desc) :
+    type(FURNITURE), furniturePredicate(usagePred), activePredicate(activePred), description(desc) {
+}
+
 static EnumMap<WorkshopType, WorkshopInfo> workshops([](WorkshopType type)->WorkshopInfo {
   switch (type) {
-    case WorkshopType::WORKSHOP: return {FurnitureType::WORKSHOP, MinionTask::WORKSHOP, "workshop"};
-    case WorkshopType::FORGE: return {FurnitureType::FORGE, MinionTask::FORGE, "forge"};
-    case WorkshopType::LABORATORY: return {FurnitureType::LABORATORY, MinionTask::LABORATORY, "laboratory"};
-    case WorkshopType::JEWELER: return {FurnitureType::JEWELER, MinionTask::JEWELER, "jeweler"};
-    case WorkshopType::STEEL_FURNACE: return {FurnitureType::STEEL_FURNACE, MinionTask::STEEL_FURNACE, "steel furnace"};
+    case WorkshopType::WORKSHOP: return {FurnitureType::WORKSHOP, "workshop", SkillId::WORKSHOP};
+    case WorkshopType::FORGE: return {FurnitureType::FORGE, "forge", SkillId::FORGE};
+    case WorkshopType::LABORATORY: return {FurnitureType::LABORATORY, "laboratory", SkillId::LABORATORY};
+    case WorkshopType::JEWELER: return {FurnitureType::JEWELER, "jeweler", SkillId::JEWELER};
+    case WorkshopType::STEEL_FURNACE: return {FurnitureType::STEEL_FURNACE, "steel furnace", SkillId::FURNACE};
   }});
-
-optional<WorkshopType> CollectiveConfig::getWorkshopType(MinionTask task) {
-  static optional<EnumMap<MinionTask, optional<WorkshopType>>> map;
-  if (!map) {
-    map.emplace();
-    for (auto type : ENUM_ALL(WorkshopType))
-      (*map)[workshops[type].minionTask] = type;
-  }
-  return (*map)[task];
-}
 
 optional<WorkshopType> CollectiveConfig::getWorkshopType(FurnitureType furniture) {
   static optional<EnumMap<FurnitureType, optional<WorkshopType>>> map;
@@ -411,14 +406,19 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
       case MinionTask::EXECUTE: return {FurnitureType::PRISON, "execution ordered"};
       case MinionTask::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped"};
       case MinionTask::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured"};
-      case MinionTask::WORKSHOP:
-      case MinionTask::FORGE:
-      case MinionTask::LABORATORY:
-      case MinionTask::JEWELER:
-      case MinionTask::STEEL_FURNACE: {
-          auto& info = workshops[*CollectiveConfig::getWorkshopType(task)];
-          return MinionTaskInfo(info.furniture, info.taskName);
-        }
+      case MinionTask::CRAFT: return {[](const Creature* c, FurnitureType t) {
+            if (auto type = getWorkshopType(t))
+              return !c || c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0;
+            else
+              return false;
+          },
+          [](const Collective* collective, FurnitureType t) {
+            if (auto type = getWorkshopType(t))
+              return !collective->getWorkshops().get(*type).isIdle();
+            else
+              return false;
+          },
+          "crafting"};
     }
   });
   return map[task];

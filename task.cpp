@@ -551,7 +551,8 @@ PTask Task::applyItem(TaskCallback* c, Position position, Item* item, Position t
 
 class ApplySquare : public Task {
   public:
-  ApplySquare(TaskCallback* c, vector<Position> pos, SearchType t) : positions(pos), callback(c), searchType(t) {}
+  ApplySquare(TaskCallback* c, vector<Position> pos, SearchType t, ActionType a)
+      : positions(pos), callback(c), searchType(t), actionType(a) {}
 
   void changePosIfOccupied() {
     if (position)
@@ -586,7 +587,7 @@ class ApplySquare : public Task {
       }
     }
     if (atTarget(c)) {
-      if (auto action = c->applySquare(*position))
+      if (auto action = getAction(c))
         return {1.0, action.append([=](Creature* c) {
             setDone();
             if (callback)
@@ -611,6 +612,15 @@ class ApplySquare : public Task {
     }
   }
 
+  CreatureAction getAction(Creature* c) {
+    switch (actionType) {
+      case ActionType::APPLY:
+        return c->applySquare(*position);
+      case ActionType::NONE:
+        return c->wait();
+    }
+  }
+
   virtual string getDescription() const override {
     return "Apply square " + (position ? toString(*position) : "");
   }
@@ -619,8 +629,8 @@ class ApplySquare : public Task {
     return position == c->getPosition() || (!position->canEnterEmpty(c) && position->dist8(c->getPosition()) == 1);
   }
 
-  SERIALIZE_ALL2(Task, positions, rejectedPosition, invalidCount, position, callback, searchType); 
-  SERIALIZATION_CONSTRUCTOR(ApplySquare);
+  SERIALIZE_ALL2(Task, positions, rejectedPosition, invalidCount, position, callback, searchType, actionType)
+  SERIALIZATION_CONSTRUCTOR(ApplySquare)
 
   private:
   vector<Position> SERIAL(positions);
@@ -629,11 +639,12 @@ class ApplySquare : public Task {
   optional<Position> SERIAL(position);
   TaskCallback* SERIAL(callback);
   SearchType SERIAL(searchType);
+  ActionType SERIAL(actionType);
 };
 
-PTask Task::applySquare(TaskCallback* c, vector<Position> position, SearchType searchType) {
+PTask Task::applySquare(TaskCallback* c, vector<Position> position, SearchType searchType, ActionType actionType) {
   CHECK(position.size() > 0);
-  return PTask(new ApplySquare(c, position, searchType));
+  return PTask(new ApplySquare(c, position, searchType, actionType));
 }
 
 namespace {

@@ -1732,11 +1732,7 @@ static string getTaskText(MinionTask option) {
     case MinionTask::PRISON: return "Prison";
     case MinionTask::EXECUTE: return "Execution";
     case MinionTask::TRAIN: return "Training";
-    case MinionTask::WORKSHOP: return "Workshop";
-    case MinionTask::FORGE: return "Forge";
-    case MinionTask::LABORATORY: return "Laboratory";
-    case MinionTask::JEWELER: return "Jeweler";
-    case MinionTask::STEEL_FURNACE: return "Steel furnace";
+    case MinionTask::CRAFT: return "Crafting";
     case MinionTask::STUDY: return "Studying";
     case MinionTask::COPULATE: return "Copulating";
     case MinionTask::CONSUME: return "Absorbing";

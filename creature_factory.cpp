@@ -976,11 +976,16 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
           c.skills.setValue(SkillId::UNARMED_MELEE, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::ARCHERY, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::SORCERY, Random.getDouble(0, 1));
+          c.skills.setValue(SkillId::WORKSHOP, Random.getDouble(0, 1));
+          c.skills.setValue(SkillId::FORGE, Random.getDouble(0, 1));
+          c.skills.setValue(SkillId::LABORATORY, Random.getDouble(0, 1));
+          c.skills.setValue(SkillId::JEWELER, Random.getDouble(0, 1));
+          c.skills.setValue(SkillId::FURNACE, Random.getDouble(0, 1));
         }
         if (humanoid) {
           c.chatReactionFriendly = "\"I am the mighty " + name + "\"";
           c.chatReactionHostile = "\"I am the mighty " + name + ". Die!\"";
-          c.minionTasks.setWorkshopTasks(1);
+          c.minionTasks.setValue(MinionTask::CRAFT, 1);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::STUDY, 1);
@@ -1028,10 +1033,12 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.name->useFullTitle();
           c.spells->add(SpellId::HEALING);
           c.minionTasks.setValue(MinionTask::STUDY, 1);
-          c.minionTasks.setValue(MinionTask::LABORATORY, 0.01);
+          c.minionTasks.setValue(MinionTask::CRAFT, 0.0001);
           c.minionTasks.setValue(MinionTask::TRAIN, 0.0001); 
           c.minionTasks.setValue(MinionTask::THRONE, 0.0001); 
-          c.skills.setValue(SkillId::SORCERY, 0.2););
+          c.skills.setValue(SkillId::SORCERY, 0.2);
+          c.skills.setValue(SkillId::LABORATORY, 0.2);
+          );
     case CreatureId::BANDIT: 
       return CATTR(
           c.viewId = ViewId::BANDIT;
@@ -1483,12 +1490,13 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.spawnType = SpawnType::HUMANOID;
           c.chatReactionFriendly = "curses all elves";
           c.chatReactionHostile = "\"Die!\"";
-          c.minionTasks.setWorkshopTasks(1);
           c.minionTasks.setValue(MinionTask::TRAIN, 4);
-          c.minionTasks.setValue(MinionTask::LABORATORY, 0.5); 
+          c.minionTasks.setValue(MinionTask::CRAFT, 1);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
+          c.skills.setValue(SkillId::WORKSHOP, 0.3);
+          c.skills.setValue(SkillId::FORGE, 0.3);
           c.recruitmentCost = 50;
           c.name = "orc";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
@@ -1503,12 +1511,12 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.spawnType = SpawnType::HUMANOID;
           c.recruitmentCost = 50;
-          c.minionTasks.setValue(MinionTask::LABORATORY, 4); 
+          c.minionTasks.setValue(MinionTask::CRAFT, 4);
           c.minionTasks.setValue(MinionTask::STUDY, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
-          c.minionTasks.setValue(MinionTask::BE_TORTURED, 0.0001);
           c.skills.setValue(SkillId::SORCERY, 0.7);
+          c.skills.setValue(SkillId::LABORATORY, 0.7);
           c.skills.insert(SkillId::HEALING);
           c.chatReactionFriendly = "curses all elves";
           c.chatReactionHostile = "\"Die!\"";
@@ -1525,9 +1533,10 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.spawnType = SpawnType::HUMANOID;
           c.minionTasks.setValue(MinionTask::TRAIN, 4);
-          c.minionTasks.setValue(MinionTask::LABORATORY, 0.5); 
+          c.minionTasks.setValue(MinionTask::CRAFT, 0.5);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.skills.setValue(SkillId::LABORATORY, 0.3);
           c.gender = Gender::female;
           c.recruitmentCost = 50;
           c.skills.setValue(SkillId::ARCHERY, 1);
@@ -1581,12 +1590,16 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.spawnType = SpawnType::HUMANOID;
           c.chatReactionFriendly = "talks about crafting";
           c.chatReactionHostile = "\"Die!\"";
-          c.minionTasks.setWorkshopTasks(4);
-          c.minionTasks.setValue(MinionTask::TRAIN, 1); 
-          c.minionTasks.setValue(MinionTask::LABORATORY, 0.5); 
+          c.minionTasks.setValue(MinionTask::TRAIN, 1);
+          c.minionTasks.setValue(MinionTask::CRAFT, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.insert(SkillId::DISARM_TRAPS);
+          c.skills.setValue(SkillId::LABORATORY, 0.3);
+          c.skills.setValue(SkillId::WORKSHOP, 0.9);
+          c.skills.setValue(SkillId::FORGE, 0.9);
+          c.skills.setValue(SkillId::JEWELER, 0.9);
+          c.skills.setValue(SkillId::FURNACE, 0.9);
           c.name = "goblin";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );
@@ -1635,11 +1648,14 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.name = "ogre";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           c.spawnType = SpawnType::HUMANOID;
-          c.minionTasks.setWorkshopTasks(1);
+          c.minionTasks.setValue(MinionTask::CRAFT, 1);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 5);
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
+          c.skills.setValue(SkillId::WORKSHOP, 0.5);
+          c.skills.setValue(SkillId::FORGE, 0.5);
+          c.skills.setValue(SkillId::FURNACE, 0.9);
           c.recruitmentCost = 100;
           );
     case CreatureId::CHICKEN: 

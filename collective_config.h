@@ -117,17 +117,20 @@ struct MinionTaskInfo {
   MinionTaskInfo();
   MinionTaskInfo(FurnitureType, const string& description);
   typedef function<bool(const Creature*, FurnitureType)> UsagePredicate;
+  typedef function<bool(const Collective*, FurnitureType)> ActivePredicate;
   MinionTaskInfo(UsagePredicate, const string& description);
+  MinionTaskInfo(UsagePredicate, ActivePredicate, const string& description);
   MinionTaskInfo(Type, const string& description, optional<CollectiveWarning> = none);
   UsagePredicate furniturePredicate;
+  ActivePredicate activePredicate = [](const Collective*, FurnitureType) { return true; };
   string description;
   optional<CollectiveWarning> warning;
 };
 
 struct WorkshopInfo {
   FurnitureType furniture;
-  MinionTask minionTask;
   string taskName;
+  SkillId skill;
 };
 
 struct FloorInfo {
@@ -171,7 +174,6 @@ class CollectiveConfig {
   vector<BirthSpawn> getBirthSpawns() const;
   unique_ptr<Workshops> getWorkshops() const;
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
-  static optional<WorkshopType> getWorkshopType(MinionTask);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
 
   bool activeImmigrantion(const Game*) const;

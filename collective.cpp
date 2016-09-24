@@ -876,6 +876,7 @@ void Collective::tick() {
     }
   if (config->getManageEquipment() && Random.roll(10))
     minionEquipment->updateOwners(getAllItems(true), getCreatures());
+  workshops->scheduleItems(this);
 }
 
 const vector<Creature*>& Collective::getCreatures(MinionTrait trait) const {
@@ -1583,7 +1584,6 @@ void Collective::updateConstructions() {
     if (!isDelayed(elem.first) && !elem.second.hasTask() && !elem.second.isBuilt())
       constructions->getTorch(elem.first).setTask(taskMap->addTask(
           Task::buildTorch(this, elem.first, elem.second.getAttachmentDir()), elem.first)->getUniqueId());
-  workshops->scheduleItems(this);
 }
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, double delayTime) {
@@ -1752,21 +1752,19 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
         default:
           break;
       }
-    for (auto workshopType : ENUM_ALL(WorkshopType)) {
-      auto& elem = config->getWorkshopInfo(workshopType);
-      if (furniture->getType() == elem.furniture) {
-        vector<PItem> items =
-            workshops->get(workshopType).addWork(efficiency);
-        if (!items.empty()) {
-          if (items[0]->getClass() == ItemClass::WEAPON)
-            getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
-          if (items[0]->getClass() == ItemClass::ARMOR)
-            getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
-          if (items[0]->getClass() == ItemClass::POTION)
-            getGame()->getStatistics().add(StatId::POTION_PRODUCED);
-          addProducesMessage(c, items);
-          c->getPosition().dropItems(std::move(items));
-        }
+    if (auto workshopType = config->getWorkshopType(furniture->getType())) {
+      auto& info = config->getWorkshopInfo(*workshopType);
+      vector<PItem> items =
+          workshops->get(*workshopType).addWork(efficiency * c->getAttributes().getSkills().getValue(info.skill));
+      if (!items.empty()) {
+        if (items[0]->getClass() == ItemClass::WEAPON)
+          getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
+        if (items[0]->getClass() == ItemClass::ARMOR)
+          getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
+        if (items[0]->getClass() == ItemClass::POTION)
+          getGame()->getStatistics().add(StatId::POTION_PRODUCED);
+        addProducesMessage(c, items);
+        c->getPosition().dropItems(std::move(items));
       }
     }
   }

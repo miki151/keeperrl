@@ -21,11 +21,6 @@ void MinionTaskMap::setValue(MinionTask t, double v) {
   tasks[t] = v;
 }
 
-void MinionTaskMap::setWorkshopTasks(double v) {
-  for (auto type : ENUM_ALL(WorkshopType))
-    setValue(CollectiveConfig::getWorkshopInfo(type).minionTask, v);
-}
-
 void MinionTaskMap::clear() {
   tasks.clear();
 }
