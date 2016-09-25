@@ -88,7 +88,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("equipment stockpile", ViewObject(ViewId::STOCKPILE2, ViewLayer::FLOOR_BACKGROUND), type,
           Furniture::NON_BLOCKING, tribe);
     case FurnitureType::PRISON:
-        return Furniture("prison", ViewObject(ViewId::PRISON, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe);
+        return Furniture("prison", ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND), type,
+          Furniture::NON_BLOCKING, tribe);
     case FurnitureType::TREASURE_CHEST:
       return Furniture("treasure chest", ViewObject(ViewId::TREASURE_CHEST, ViewLayer::FLOOR), type,
           Furniture::NON_BLOCKING, tribe)

@@ -162,7 +162,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
       BuildInfo({SquareId::MOUNTAIN, {ResourceId::STONE, 50}, "Fill up tunnel"}, {},
           "Fill up one tile at a time. Cutting off an area is not allowed.", 0, "Structure"),
       BuildInfo({SquareId::DUNGEON_WALL, {ResourceId::STONE, 10}, "Reinforce wall"}, {},
-          "Reinforce wall. +" + toString(CollectiveConfig::getEfficiencyBonus(SquareId::DUNGEON_WALL)) +
+          "Reinforce wall. +" + toString<int>(100 * CollectiveConfig::getEfficiencyBonus(SquareId::DUNGEON_WALL)) +
           " efficiency to to surrounding tiles.", 0, "Structure"),
     };
     for (int i : All(CollectiveConfig::getFloors())) {
@@ -1822,16 +1822,19 @@ void PlayerControl::processInput(View* view, UserInput input) {
         setChosenTeam(none);
         chosenCreature = none;
         break;
-    case UserInputId::CREATURE_BUTTON:
-        if (Creature* c = getCreature(input.get<Creature::Id>())) {
-          setChosenCreature(input.get<Creature::Id>());
-          if (getChosenTeam() && !getTeams().contains(*getChosenTeam(), c))
-            setChosenTeam(none);
+    case UserInputId::CREATURE_BUTTON: {
+        auto chosenId = input.get<Creature::Id>();
+        if (Creature* c = getCreature(chosenId)) {
+          if (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c))
+            setChosenCreature(chosenId);
+          else
+            setChosenTeam(*chosenTeam, chosenId);
         } else {
           chosenCreature = none;
           setChosenTeam(none);
         }
-        break;
+      }
+      break;
     case UserInputId::CREATURE_TASK_ACTION:
         minionTaskAction(input.get<TaskActionInfo>());
         break;

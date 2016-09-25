@@ -257,7 +257,7 @@ CreatureAction Creature::move(Position pos) const {
   if (!position.canMoveCreature(direction)) {
     if (pos.getCreature()) {
       if (!canSwapPositionInMovement(pos.getCreature()))
-        return CreatureAction("You can't swap position with " + pos.getCreature()->getName().the());
+        return CreatureAction(/*"You can't swap position with " + pos.getCreature()->getName().the()*/);
     } else
       return CreatureAction();
   }
@@ -1253,8 +1253,10 @@ CreatureAction Creature::give(Creature* whom, vector<Item*> items) {
         : " can't take these items."));
   return CreatureAction(this, [=](Creature* self) {
     for (auto stack : stackItems(items)) {
-      monsterMessage(getName().the() + " gives " + getPluralAName(stack[0], stack.size()) + " to " +
-          whom->getName().the());
+      if (!whom->isPlayer())
+        monsterMessage(getName().the() + " gives " + getPluralAName(stack[0], stack.size()) + " to " +
+            whom->getName().the());
+      whom->playerMessage(getName().the() + " gives you " + getPluralAName(stack[0], stack.size()));
       playerMessage("You give " + getPluralTheName(stack[0], stack.size()) + " to " +
         whom->getName().the());
     }
