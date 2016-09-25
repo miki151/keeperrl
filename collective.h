@@ -187,6 +187,7 @@ class Collective : public TaskCallback {
   int getMaxPopulation() const;
 
   void orderConsumption(Creature* consumer, Creature* who);
+  vector<Creature*> getConsumptionTargets(Creature* consumer) const;
   void addAttack(const CollectiveAttack&);
   void onRansomPaid();
 

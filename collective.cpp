@@ -430,10 +430,16 @@ bool Collective::isConquered() const {
   return getCreatures(MinionTrait::FIGHTER).empty() && !hasLeader();
 }
 
+vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) const {
+  vector<Creature*> ret;
+  for (Creature* c : Random.permutation(getCreatures(MinionTrait::FIGHTER)))
+    if (consumer->canConsume(c) && c != getLeader())
+      ret.push_back(c);
+  return ret;
+}
+
 void Collective::orderConsumption(Creature* consumer, Creature* who) {
-  CHECK(consumer->getAttributes().getMinionTasks().getValue(MinionTask::CONSUME) > 0);
-  setMinionTask(who, MinionTask::CONSUME);
-  taskMap->freeFromTask(consumer);
+  CHECK(contains(getConsumptionTargets(consumer), who));
   taskMap->addTask(Task::consume(this, who), consumer);
 }
 

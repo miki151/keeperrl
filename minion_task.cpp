@@ -53,16 +53,8 @@ static Creature* getCopulationTarget(const Collective* collective, Creature* suc
   return nullptr;
 }
 
-static vector<Creature*> getConsumptionTargets(const Collective* collective, Creature* consumer) {
-  vector<Creature*> ret;
-  for (Creature* c : Random.permutation(collective->getCreatures(MinionTrait::FIGHTER)))
-    if (consumer->canConsume(c) && c != collective->getLeader())
-      ret.push_back(c);
-  return ret;
-}
-
 static Creature* getConsumptionTarget(const Collective* collective, Creature* consumer) {
-  vector<Creature*> v = getConsumptionTargets(collective, consumer);
+  vector<Creature*> v = collective->getConsumptionTargets(consumer);
   if (!v.empty())
     return Random.choose(v);
   else
@@ -158,7 +150,6 @@ PTask MinionTasks::generate(Collective* collective, Creature* c, MinionTask task
 
 optional<double> MinionTasks::getDuration(const Creature* c, MinionTask task) {
   switch (task) {
-    case MinionTask::CONSUME:
     case MinionTask::COPULATE:
     case MinionTask::GRAVE:
     case MinionTask::LAIR:

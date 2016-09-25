@@ -1120,7 +1120,6 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.barehandedDamage = 3;
           c.barehandedAttack = AttackType::HIT;
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
-          c.minionTasks.setValue(MinionTask::CONSUME, 0.4);
           c.minionTasks.setValue(MinionTask::RITUAL, 1);
           c.spawnType = SpawnType::DEMON;
           c.skills.insert(SkillId::CONSUMPTION);

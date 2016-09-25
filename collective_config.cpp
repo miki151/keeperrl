@@ -398,7 +398,6 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
       case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
       case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
       case MinionTask::COPULATE: return {MinionTaskInfo::COPULATE, "copulation"};
-      case MinionTask::CONSUME: return {MinionTaskInfo::CONSUME, "consumption"};
       case MinionTask::EXPLORE: return {MinionTaskInfo::EXPLORE, "spying"};
       case MinionTask::SPIDER: return {MinionTaskInfo::SPIDER, "spider"};
       case MinionTask::EXPLORE_NOCTURNAL: return {MinionTaskInfo::EXPLORE, "spying"};

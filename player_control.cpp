@@ -1102,6 +1102,8 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
         if (c != getCollective()->getLeader())
           minions.back().actions.push_back(PlayerInfo::BANISH);
       }
+      if (c->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION))
+        minions.back().actions.push_back(PlayerInfo::CONSUME);
     }
   }
   return minions;
@@ -1855,6 +1857,15 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CREATURE_RENAME:
         if (Creature* c = getCreature(input.get<RenameActionInfo>().creature))
           c->getName().setFirst(input.get<RenameActionInfo>().name);
+        break;
+    case UserInputId::CREATURE_CONSUME:
+        if (Creature* c = getCreature(input.get<Creature::Id>())) {
+          if (auto creatureId = getView()->chooseTeamLeader("Choose minion to absorb",
+              transform2<CreatureInfo>(getCollective()->getConsumptionTargets(c),
+                  [] (const Creature* c) { return CreatureInfo(c);}), "cancel"))
+            if (Creature* consumed = getCreature(*creatureId))
+              getCollective()->orderConsumption(c, consumed);
+        }
         break;
     case UserInputId::CREATURE_BANISH:
         if (Creature* c = getCreature(input.get<Creature::Id>()))

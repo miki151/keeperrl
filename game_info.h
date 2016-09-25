@@ -109,6 +109,7 @@ class PlayerInfo {
     RENAME,
     BANISH,
     EXECUTE,
+    CONSUME
   };
   vector<Action> HASH(actions);
   HASH_ALL(attributes, skills, firstName, name, title, level, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions);
