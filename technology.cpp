@@ -43,7 +43,7 @@ void Technology::init() {
   Technology::set(TechId::PIGSTY, new Technology(
         "pig breeding", "Build a pigsty to feed your minions.", 120, {}));
   Technology::set(TechId::IRON_WORKING, new Technology(
-        "iron working", "Build a forge and produce metal weapons and armor.", 60, {TechId::CRAFTING}));
+        "iron working", "Build a forge and produce metal weapons and armor.", 180, {TechId::CRAFTING}));
   Technology::set(TechId::STEEL_MAKING, new Technology(
         "steelmaking", "Build a steel furnace and produce steel goods.", 400, {TechId::IRON_WORKING}));
   Technology::set(TechId::JEWELLERY, new Technology(
@@ -195,9 +195,9 @@ static vector<SpellLearningInfo> spellLearning {
 
 void Technology::onAcquired(TechId id, Collective* col) {
   switch (id) {
-    case TechId::GEOLOGY1: addResources(col, 0, 2, 1, 25); break;
-    case TechId::GEOLOGY2: addResources(col, 1, 3, 1, 45); break;
-    case TechId::GEOLOGY3: addResources(col, 4, 6, 3, 70); break;
+    case TechId::GEOLOGY1: addResources(col, 0, 3, 1, 25); break;
+    case TechId::GEOLOGY2: addResources(col, 1, 4, 2, 45); break;
+    case TechId::GEOLOGY3: addResources(col, 4, 8, 5, 70); break;
     default: break;
   } 
   if (col->hasLeader())
