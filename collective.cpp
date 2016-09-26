@@ -45,14 +45,7 @@
 #include "furniture.h"
 #include "furniture_factory.h"
 #include "tile_efficiency.h"
-
-struct Collective::ItemFetchInfo {
-  ItemIndex index;
-  ItemPredicate predicate;
-  FurnitureType destination;
-  bool oneAtATime;
-  Warning warning;
-};
+#include "zones.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -62,7 +55,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
   serializeAll(ar, credit, level, pregnancies, minionAttraction, teams, name);
   serializeAll(ar, config, warnings, banished, squaresInUse, equipmentUpdates);
-  serializeAll(ar, villainType, eventProxy, workshops, fetchPositions, tileEfficiency);
+  serializeAll(ar, villainType, eventProxy, workshops, zones, tileEfficiency);
 }
 
 SERIALIZABLE(Collective);
@@ -75,26 +68,6 @@ void Collective::setWarning(Warning w, bool state) {
 
 bool Collective::isWarning(Warning w) const {
   return warnings.contains(w);
-}
-
-ItemPredicate Collective::unMarkedItems() const {
-  return [this](const Item* it) { return !isItemMarked(it); };
-}
-
-const vector<Collective::ItemFetchInfo>& Collective::getFetchInfo() const {
-  if (itemFetchInfo.empty())
-    itemFetchInfo = {
-      {ItemIndex::CORPSE, unMarkedItems(), FurnitureType::GRAVE, true, Warning::GRAVES},
-      {ItemIndex::GOLD, unMarkedItems(), FurnitureType::TREASURE_CHEST, false, Warning::CHESTS},
-      {ItemIndex::MINION_EQUIPMENT, [this](const Item* it)
-          { return it->getClass() != ItemClass::GOLD && !isItemMarked(it);},
-          config->getEquipmentStorage(), false, Warning::EQUIPMENT_STORAGE},
-      {ItemIndex::WOOD, unMarkedItems(), config->getResourceStorage(), false, Warning::RESOURCE_STORAGE},
-      {ItemIndex::IRON, unMarkedItems(), config->getResourceStorage(), false, Warning::RESOURCE_STORAGE},
-      {ItemIndex::STEEL, unMarkedItems(), config->getResourceStorage(), false, Warning::RESOURCE_STORAGE},
-      {ItemIndex::STONE, unMarkedItems(), config->getResourceStorage(), false, Warning::RESOURCE_STORAGE},
-  };
-  return itemFetchInfo;
 }
 
 Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
@@ -457,8 +430,7 @@ PTask Collective::getEquipmentTask(Creature* c) {
   for (Item* it : c->getEquipment().getItems())
     if (!c->getEquipment().isEquipped(it) && c->getEquipment().canEquip(it))
       tasks.push_back(Task::equipItem(it));
-  auto storageType = config->getEquipmentStorage();
-  for (Position v : constructions->getBuiltPositions(storageType)) {
+  for (Position v : zones->getPositions(ZoneId::STORAGE_EQUIPMENT)) {
     vector<Item*> it = filter(v.getItems(ItemIndex::MINION_EQUIPMENT), 
         [this, c] (const Item* it) { return minionEquipment->isOwner(it, c) && it->canEquip(); });
     if (!it.empty())
@@ -874,10 +846,10 @@ void Collective::tick() {
   if (config->getConstructions())
     updateConstructions();
   if (config->getFetchItems() && Random.roll(5))
-    for (const ItemFetchInfo& elem : getFetchInfo()) {
+    for (const ItemFetchInfo& elem : CollectiveConfig::getFetchInfo()) {
       for (Position pos : territory->getAll())
         fetchItems(pos, elem);
-      for (Position pos : fetchPositions)
+      for (Position pos : zones->getPositions(ZoneId::FETCH_ITEMS))
         fetchItems(pos, elem);
     }
   if (config->getManageEquipment() && Random.roll(10))
@@ -1136,8 +1108,8 @@ double Collective::getGlobalTime() const {
 int Collective::numResource(ResourceId id) const {
   int ret = credit[id];
   if (auto itemIndex = config->getResourceInfo(id).itemIndex)
-    if (auto storageType = config->getResourceInfo(id).storageType)
-      for (Position pos : constructions->getBuiltPositions(*storageType))
+    if (auto storageType = config->getResourceInfo(id).storageDestination)
+      for (Position pos : storageType(this))
         ret += pos.getItems(*itemIndex).size();
   return ret;
 }
@@ -1184,8 +1156,8 @@ void Collective::takeResource(const CostInfo& cost) {
     }
   }
   if (auto itemIndex = config->getResourceInfo(cost.id).itemIndex)
-    if (auto storageType = config->getResourceInfo(cost.id).storageType)
-      for (Position pos : Random.permutation(constructions->getBuiltPositions(*storageType))) {
+    if (auto storageType = config->getResourceInfo(cost.id).storageDestination)
+      for (Position pos : storageType(this)) {
         vector<Item*> goldHere = pos.getItems(*itemIndex);
         for (Item* it : goldHere) {
           pos.removeItem(it);
@@ -1200,8 +1172,8 @@ void Collective::returnResource(const CostInfo& amount) {
   if (amount.value == 0)
     return;
   CHECK(amount.value > 0);
-  if (auto storageType = config->getResourceInfo(amount.id).storageType) {
-    const set<Position>& destination = constructions->getBuiltPositions(*storageType);
+  if (auto storageType = config->getResourceInfo(amount.id).storageDestination) {
+    const set<Position>& destination = storageType(this);
     if (!destination.empty()) {
       Random.choose(destination).dropItems(ItemFactory::fromId(
             config->getResourceInfo(amount.id).itemId, amount.value));
@@ -1372,6 +1344,7 @@ void Collective::removeFurniture(Position pos) {
 void Collective::destroySquare(Position pos) {
   if (territory->contains(pos))
     pos.destroy();
+  zones->eraseZones(pos);
   if (constructions->containsTrap(pos))
     removeTrap(pos);
   if (constructions->containsFurniture(pos))
@@ -1383,26 +1356,18 @@ void Collective::destroySquare(Position pos) {
   pos.removeTriggers();
 }
 
-void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& cost, bool immediately,
-    bool noCredit) {
-  if (immediately && hasResource(cost)) {
-    while (!pos.construct(type, getTribeId())) {}
-    onConstructed(pos, type);
-  } else if (!noCredit || hasResource(cost)) {
+void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& cost, bool noCredit) {
+  if (!noCredit || hasResource(cost)) {
     constructions->addFurniture(pos, ConstructionMap::FurnitureInfo(type, cost));
     updateConstructions();
   }
 }
 
-void Collective::addConstruction(Position pos, SquareType type, const CostInfo& cost, bool immediately,
-    bool noCredit) {
+void Collective::addConstruction(Position pos, SquareType type, const CostInfo& cost, bool noCredit) {
   if (type.getId() == SquareId::MOUNTAIN && (pos.isChokePoint({MovementTrait::WALK}) ||
         constructions->getSquareCount(type) > 0))
     return;
-  if (immediately && hasResource(cost)) {
-    while (!pos.construct(type)) {}
-    onConstructed(pos, type);
-  } else if (!noCredit || hasResource(cost)) {
+  if (!noCredit || hasResource(cost)) {
     constructions->addSquare(pos, ConstructionMap::SquareInfo(type, cost));
     updateConstructions();
   }
@@ -1483,17 +1448,13 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
 }
 
 void Collective::onDestructedFurniture(Position pos) {
-  fetchAllItems(pos);
-}
-
-bool Collective::isFetchPosition(Position pos) const {
-  return fetchPositions.count(pos);
+  zones->setZone(pos, ZoneId::FETCH_ITEMS);
 }
 
 void Collective::onConstructed(Position pos, const SquareType& type) {
   CHECK(!getSquares(type).count(pos));
   for (auto& elem : *mySquares)
-      elem.second.erase(pos);
+    elem.second.erase(pos);
   if (type.getId() == SquareId::MOUNTAIN) {
     destroySquare(pos);
     if (territory->contains(pos))
@@ -1624,25 +1585,13 @@ bool Collective::isDelayed(Position pos) {
   return delayedPos.count(pos) && delayedPos.at(pos) > getLocalTime();
 }
 
-void Collective::fetchAllItems(Position pos) {
-  fetchPositions.insert(pos);
-  pos.setNeedsRenderUpdate(true);
-  for (const ItemFetchInfo& elem : getFetchInfo())
-    fetchItems(pos, elem);
-}
-
-void Collective::cancelFetchAllItems(Position pos) {
-  pos.setNeedsRenderUpdate(true);
-  fetchPositions.erase(pos);
-}
-
 void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
-  if (isDelayed(pos) || !pos.canEnterEmpty(MovementTrait::WALK)
-      || constructions->getBuiltPositions(elem.destination).count(pos))
+  if (isDelayed(pos) || !pos.canEnterEmpty(MovementTrait::WALK) || elem.destinationFun(this).count(pos))
     return;
-  vector<Item*> equipment = filter(pos.getItems(elem.index), elem.predicate);
+  vector<Item*> equipment = filter(pos.getItems(elem.index),
+      [this, &elem] (const Item* item) { return elem.predicate(this, item); });
   if (!equipment.empty()) {
-    const set<Position>& destination = constructions->getBuiltPositions(elem.destination);
+    const set<Position>& destination = elem.destinationFun(this);
     if (!destination.empty()) {
       setWarning(elem.warning, false);
       if (elem.oneAtATime)
@@ -1892,6 +1841,14 @@ void Collective::removeTorch(Position pos) {
 void Collective::addTorch(Position pos) {
   CHECK(canPlaceTorch(pos));
   constructions->addTorch(pos, ConstructionMap::TorchInfo(getAdjacentWall(pos)->getCardinalDir()));
+}
+
+Zones& Collective::getZones() {
+  return *zones;
+}
+
+const Zones& Collective::getZones() const {
+  return *zones;
 }
 
 bool Collective::canPlaceTorch(Position pos) const {

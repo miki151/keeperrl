@@ -70,6 +70,7 @@
 #include "furniture_factory.h"
 #include "known_tiles.h"
 #include "tile_efficiency.h"
+#include "zones.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -90,8 +91,6 @@ struct PlayerControl::BuildInfo {
   struct SquareInfo {
     SquareType type;
     CostInfo cost;
-    string name;
-    bool buildImmediatly;
     bool noCredit;
     optional<int> maxNumber;
     optional<ViewId> viewId;
@@ -100,15 +99,12 @@ struct PlayerControl::BuildInfo {
   struct FurnitureInfo {
     FurnitureType type;
     CostInfo cost;
-    string name;
-    bool buildImmediatly;
     bool noCredit;
     optional<int> maxNumber;
   } furnitureInfo;
 
   struct TrapInfo {
     TrapType type;
-    string name;
     ViewId viewId;
   } trapInfo;
 
@@ -119,49 +115,53 @@ struct PlayerControl::BuildInfo {
     IMP,
     TRAP,
     DESTROY,
-    FETCH,
+    ZONE,
     DISPATCH,
     CLAIM_TILE,
     FORBID_ZONE,
     TORCH,
   } buildType;
 
+  string name;
   vector<Requirement> requirements;
   string help;
   char hotkey;
   string groupName;
   bool hotkeyOpensGroup = false;
+  ZoneId zone;
+  ViewId viewId;
 
-  BuildInfo(SquareInfo info, vector<Requirement> req = {}, const string& h = "", char key = 0, string group = "",
-      bool hotkeyOpens = false) : squareInfo(info), buildType(SQUARE), requirements(req), help(h), hotkey(key),
-      groupName(group), hotkeyOpensGroup(hotkeyOpens) {}
+  BuildInfo(SquareInfo info, const string& n, vector<Requirement> req = {}, const string& h = "", char key = 0,
+      string group = "", bool hotkeyOpens = false) : squareInfo(info), buildType(SQUARE), name(n), requirements(req),
+      help(h), hotkey(key), groupName(group), hotkeyOpensGroup(hotkeyOpens) {}
 
-  BuildInfo(FurnitureInfo info, vector<Requirement> req = {}, const string& h = "", char key = 0, string group = "",
-      bool hotkeyOpens = false) : furnitureInfo(info), buildType(FURNITURE), requirements(req), help(h),
-      hotkey(key), groupName(group), hotkeyOpensGroup(hotkeyOpens) {}
+  BuildInfo(FurnitureInfo info, const string& n, vector<Requirement> req = {}, const string& h = "", char key = 0,
+      string group = "", bool hotkeyOpens = false) : furnitureInfo(info), buildType(FURNITURE), name(n),
+      requirements(req), help(h), hotkey(key), groupName(group), hotkeyOpensGroup(hotkeyOpens) {}
 
-  BuildInfo(TrapInfo info, vector<Requirement> = {}, const string& h = "", char hotkey = 0,
-      string group = "");
-  BuildInfo(BuildType type, const string& h = "", char hotkey = 0, string group = "");
+  BuildInfo(TrapInfo info, const string& n, vector<Requirement> req = {}, const string& h = "", char key = 0,
+      string group = "") : trapInfo(info), buildType(TRAP), name(n), requirements(req), help(h), hotkey(key), groupName(group) {}
+
+  BuildInfo(BuildType type, const string& n, const string& h = "", char key = 0, string group = "")
+      : buildType(type), name(n), help(h), hotkey(key), groupName(group) {
+    CHECK(contains({DIG, IMP, DESTROY, FORBID_ZONE, DISPATCH, CLAIM_TILE, TORCH}, type));
+  }
+
+  BuildInfo(ZoneId zone, ViewId view, const string& n, const string& h = "", char key = 0, string group = "",
+      bool hotkeyOpens = false)
+      : buildType(ZONE), name(n), hotkey(key), groupName(group), hotkeyOpensGroup(hotkeyOpens) , zone(zone),
+        viewId(view) {}
 };
-
-PlayerControl::BuildInfo::BuildInfo(TrapInfo info, vector<Requirement> req, const string& h, char key, string group)
-    : trapInfo(info), buildType(TRAP), requirements(req), help(h), hotkey(key), groupName(group) {}
-
-PlayerControl::BuildInfo::BuildInfo(BuildType type, const string& h, char key, string group)
-    : buildType(type), help(h), hotkey(key), groupName(group) {
-  CHECK(contains({DIG, IMP, DESTROY, FORBID_ZONE, FETCH, DISPATCH, CLAIM_TILE, TORCH}, type));
-}
 
 const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
   const string workshop = "Manufactories";
   static optional<vector<BuildInfo>> buildInfo;
   if (!buildInfo) {
     buildInfo = {
-      BuildInfo(BuildInfo::DIG, "", 'd'),
-      BuildInfo({SquareId::MOUNTAIN, {ResourceId::STONE, 50}, "Fill up tunnel"}, {},
+      BuildInfo(BuildInfo::DIG, "Dig or cut tree", "", 'd'),
+      BuildInfo({SquareId::MOUNTAIN, {ResourceId::STONE, 50}}, "Fill up tunnel", {},
           "Fill up one tile at a time. Cutting off an area is not allowed.", 0, "Structure"),
-      BuildInfo({SquareId::DUNGEON_WALL, {ResourceId::STONE, 10}, "Reinforce wall"}, {},
+      BuildInfo({SquareId::DUNGEON_WALL, {ResourceId::STONE, 10}}, "Reinforce wall", {},
           "Reinforce wall. +" + toString<int>(100 * CollectiveConfig::getEfficiencyBonus(SquareId::DUNGEON_WALL)) +
           " efficiency to to surrounding tiles.", 0, "Structure"),
     };
@@ -169,100 +169,100 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
       auto& floor = CollectiveConfig::getFloors()[i];
       string efficiency = toString<int>(floor.efficiencyBonus * 100);
       buildInfo->push_back(
-            BuildInfo({floor.type, floor.cost,
-                floor.name + "  (+" + efficiency + ")"},
-            {}, floor.name + " floor. +" + efficiency + " efficiency to surrounding tiles.", i == 0 ? 'f' : 0,
+            BuildInfo({floor.type, floor.cost},
+                floor.name + "  (+" + efficiency + ")",
+                {}, floor.name + " floor. +" + efficiency + " efficiency to surrounding tiles.", i == 0 ? 'f' : 0,
                       "Floors", i == 0));
     };
     append(*buildInfo, {
-      BuildInfo({SquareId::FLOOR, CostInfo::noCost(), "Remove floor", true, false, none, ViewId::DESTROY_BUTTON},
+      BuildInfo({SquareId::FLOOR, CostInfo::noCost(), false, none, ViewId::DESTROY_BUTTON}, "Remove floor",
           {}, "", 0, "Floors"),
-      BuildInfo({FurnitureType::STOCKPILE_EQUIP, {ResourceId::GOLD, 0}, "Equipment", true}, {},
-          "All equipment for your minions can be stored here.", 's', "Storage", true),
-      BuildInfo({FurnitureType::STOCKPILE_RES, {ResourceId::GOLD, 0}, "Resources", true}, {},
-          "Only wood, iron and granite can be stored here.", 0, "Storage"),
-      BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 80}, "Library"}, {},
+      BuildInfo(ZoneId::STORAGE_RESOURCES, ViewId::STORAGE_RESOURCES, "Resources",
+          "Only wood, iron and granite can be stored here.", 's', "Storage", true),
+      BuildInfo(ZoneId::STORAGE_EQUIPMENT, ViewId::STORAGE_EQUIPMENT, "Equipment",
+          "All equipment for your minions can be stored here.", 0, "Storage"),
+      BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 80}}, "Library", {},
           "Mana is regenerated here.", 'y'),
-      BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 800}, "Throne", false, false, 1},
+      BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 800}, false, 1}, "Throne",
           {{RequirementId::VILLAGE_CONQUERED}},
           "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
-      BuildInfo({FurnitureType::TREASURE_CHEST, {ResourceId::WOOD, 20}, "Treasure chest"}, {},
+      BuildInfo({FurnitureType::TREASURE_CHEST, {ResourceId::WOOD, 20}}, "Treasure chest", {},
           "Stores gold."),
-      BuildInfo({FurnitureType::PIGSTY, {ResourceId::WOOD, 20}, "Pigsty"},
+      BuildInfo({FurnitureType::PIGSTY, {ResourceId::WOOD, 20}}, "Pigsty",
           {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
           "Increases minion population limit by up to " +
           toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 'p'),
-      BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 60}, "Bed"}, {},
+      BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 60}}, "Bed", {},
           "Humanoid minions sleep here.", 'm'),
-      BuildInfo({FurnitureType::TRAINING_WOOD, {ResourceId::WOOD, 60}, "Wooden dummy"}, {},
+      BuildInfo({FurnitureType::TRAINING_WOOD, {ResourceId::WOOD, 60}}, "Wooden dummy", {},
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_WOOD)) + " experience levels.",
           't', "Training room", true),
-      BuildInfo({FurnitureType::TRAINING_IRON, {ResourceId::IRON, 60}, "Iron dummy"},
+      BuildInfo({FurnitureType::TRAINING_IRON, {ResourceId::IRON, 60}}, "Iron dummy",
           {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}},
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_IRON)) + " experience levels.",
           0, "Training room"),
-      BuildInfo({FurnitureType::TRAINING_STEEL, {ResourceId::STEEL, 60}, "Steel dummy"},
+      BuildInfo({FurnitureType::TRAINING_STEEL, {ResourceId::STEEL, 60}}, "Steel dummy",
           {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}},
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_STEEL)) + " experience levels.",
           0, "Training room"),
-      BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 80}, "Workshop"},
+      BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 80}}, "Workshop",
           {{RequirementId::TECHNOLOGY, TechId::CRAFTING}},
           "Produces leather equipment, traps, first-aid kits and other.", 'w', workshop),
-      BuildInfo({FurnitureType::FORGE, {ResourceId::IRON, 100}, "Forge"},
+      BuildInfo({FurnitureType::FORGE, {ResourceId::IRON, 100}}, "Forge",
           {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}}, "Produces iron weapons and armor.", 0, workshop),
-      BuildInfo({FurnitureType::LABORATORY, {ResourceId::STONE, 50}, "Laboratory"},
+      BuildInfo({FurnitureType::LABORATORY, {ResourceId::STONE, 50}}, "Laboratory",
           {{RequirementId::TECHNOLOGY, TechId::ALCHEMY}}, "Produces magical potions.", 'r', workshop),
-      BuildInfo({FurnitureType::JEWELER, {ResourceId::WOOD, 60}, "Jeweler"},
+      BuildInfo({FurnitureType::JEWELER, {ResourceId::WOOD, 60}}, "Jeweler",
           {{RequirementId::TECHNOLOGY, TechId::JEWELLERY}}, "Produces magical rings and amulets.", 'j', workshop),
-      BuildInfo({FurnitureType::STEEL_FURNACE, {ResourceId::STONE, 500}, "Steel furnace"},
+      BuildInfo({FurnitureType::STEEL_FURNACE, {ResourceId::STONE, 500}}, "Steel furnace",
           {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}}, "Turns iron ore into steel.", 0, workshop),
-      BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::MANA, 60}, "Ritual room"}, {},
+      BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::MANA, 60}}, "Ritual room", {},
           "Summons various demons to your dungeon."),
-      BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 40}, "Beast lair"}, {},
-          "Beasts sleep here."),
-      BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 80}, "Graveyard"}, {},
+      BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 40}}, "Beast lair", {}, "Beasts sleep here."),
+      BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 80}}, "Graveyard", {},
           "Spot for hauling dead bodies and for undead creatures to sleep in.", 'g'),
-      BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 20}, "Prison"}, {},
-          "Captured enemies are kept here.", 0),
-      BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 100}, "Torture room"}, {},
+      BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 20}}, "Prison", {}, "Captured enemies are kept here.", 0),
+      BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 100}}, "Torture room", {},
           "Can be used to torture prisoners.", 'u'),
-      BuildInfo(BuildInfo::CLAIM_TILE, "Claim a tile. Building anything has the same effect.", 0, "Orders"),
-      BuildInfo(BuildInfo::FETCH, "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
-      BuildInfo(BuildInfo::DISPATCH, "Click on an existing task to give it a high priority.", 'a', "Orders"),
-      BuildInfo(BuildInfo::DESTROY, "", 'e', "Orders"),
-      BuildInfo(BuildInfo::FORBID_ZONE, "Mark tiles to keep minions from entering.", 'b', "Orders"),
-      BuildInfo({FurnitureType::DOOR, {ResourceId::WOOD, 20}, "Door"},
+      BuildInfo(BuildInfo::CLAIM_TILE, "Claim tile", "Claim a tile. Building anything has the same effect.", 0, "Orders"),
+      BuildInfo(ZoneId::FETCH_ITEMS, ViewId::FETCH_ICON, "Fetch items",
+          "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
+      BuildInfo(BuildInfo::DISPATCH, "Prioritize task", "Click on an existing task to give it a high priority.", 'a',
+          "Orders"),
+      BuildInfo(BuildInfo::DESTROY, "Remove construction", "", 'e', "Orders"),
+      BuildInfo(BuildInfo::FORBID_ZONE, "Forbid zone", "Mark tiles to keep minions from entering.", 'b', "Orders"),
+      BuildInfo({FurnitureType::DOOR, {ResourceId::WOOD, 20}}, "Door",
           {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "Click on a built door to lock it.", 'o', "Installations"),
-      BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 20}, "Bridge"}, {},
+      BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 20}}, "Bridge", {},
         "Build it to pass over water or lava.", 0, "Installations"),
-      BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 20}, "Barricade"},
+      BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 20}}, "Barricade",
         {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "", 0, "Installations"),
-      BuildInfo(BuildInfo::TORCH, "Place it on tiles next to a wall.", 'c', "Installations"),
-      BuildInfo({FurnitureType::KEEPER_BOARD, {ResourceId::WOOD, 80}, "Message board"}, {},
+      BuildInfo(BuildInfo::TORCH, "Torch", "Place it on tiles next to a wall.", 'c', "Installations"),
+      BuildInfo({FurnitureType::KEEPER_BOARD, {ResourceId::WOOD, 80}}, "Message board", {},
           "A board where you can leave a message for other players.", 0, "Installations"),
-      BuildInfo({FurnitureType::EYEBALL, {ResourceId::MANA, 10}, "Eyeball"}, {},
+      BuildInfo({FurnitureType::EYEBALL, {ResourceId::MANA, 10}}, "Eyeball", {},
         "Makes the area around it visible.", 0, "Installations"),
-      BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 300}, "Statue", false, false}, {},
+      BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 300}}, "Statue", {},
         "Increases minion population limit by " +
               toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
-      BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 100}, "Whipping post"}, {},
+      BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 100}}, "Whipping post", {},
           "A place to whip your minions if they need a morale boost.", 0, "Installations"),
-      BuildInfo({FurnitureType::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, "Prisoner head", false, true}, {},
+      BuildInfo({FurnitureType::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, true}, "Prisoner head", {},
           "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
-      BuildInfo({TrapType::TERROR, "Terror trap", ViewId::TERROR_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+      BuildInfo({TrapType::TERROR, ViewId::TERROR_TRAP}, "Terror trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
           "Causes the trespasser to panic.", 0, "Traps"),
-      BuildInfo({TrapType::POISON_GAS, "Gas trap", ViewId::GAS_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+      BuildInfo({TrapType::POISON_GAS, ViewId::GAS_TRAP}, "Gas trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
           "Releases a cloud of poisonous gas.", 0, "Traps"),
-      BuildInfo({TrapType::ALARM, "Alarm trap", ViewId::ALARM_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+      BuildInfo({TrapType::ALARM, ViewId::ALARM_TRAP}, "Alarm trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
           "Summons all minions", 0, "Traps"),
-      BuildInfo({TrapType::WEB, "Web trap", ViewId::WEB_TRAP}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+      BuildInfo({TrapType::WEB, ViewId::WEB_TRAP}, "Web trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
           "Immobilises the trespasser for some time.", 0, "Traps"),
-      BuildInfo({TrapType::BOULDER, "Boulder trap", ViewId::BOULDER}, {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+      BuildInfo({TrapType::BOULDER, ViewId::BOULDER}, "Boulder trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
           "Causes a huge boulder to roll towards the enemy.", 0, "Traps"),
-      BuildInfo({TrapType::SURPRISE, "Surprise trap", ViewId::SURPRISE_TRAP},
+      BuildInfo({TrapType::SURPRISE, ViewId::SURPRISE_TRAP}, "Surprise trap",
           {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
           "Teleports nearby minions to deal with the trespasser.", 0, "Traps"),
     });
@@ -271,7 +271,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
 }
 
 vector<PlayerControl::BuildInfo> PlayerControl::libraryInfo {
-  BuildInfo(BuildInfo::IMP, "Click on a visible square on the map to summon an imp.", 'i'),
+  BuildInfo(BuildInfo::IMP, "Summon imp", "Click on a visible square on the map to summon an imp.", 'i'),
 };
 
 vector<PlayerControl::BuildInfo> PlayerControl::minionsInfo {
@@ -281,7 +281,7 @@ vector<PlayerControl::RoomInfo> PlayerControl::getRoomInfo() {
   vector<RoomInfo> ret;
   for (auto& bInfo : getBuildInfo())
     if (bInfo.buildType == BuildInfo::SQUARE)
-      ret.push_back({bInfo.squareInfo.name, bInfo.help, bInfo.requirements});
+      ret.push_back({bInfo.name, bInfo.help, bInfo.requirements});
   return ret;
 }
 
@@ -829,7 +829,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            int availableNow = !elem.cost.value ? 1 : getCollective()->numResource(elem.cost.id) / elem.cost.value;
            if (CollectiveConfig::getResourceInfo(elem.cost.id).dontDisplay && availableNow)
              description += " (" + toString(availableNow) + " available)";
-           buttons.push_back({viewId, elem.name,
+           buttons.push_back({viewId, button.name,
                getCostObj(elem.cost),
                description,
                (elem.noCredit && !availableNow) ?
@@ -846,7 +846,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            int availableNow = !elem.cost.value ? 1 : getCollective()->numResource(elem.cost.id) / elem.cost.value;
            if (CollectiveConfig::getResourceInfo(elem.cost.id).dontDisplay && availableNow)
              description += " (" + toString(availableNow) + " available)";
-           buttons.push_back({viewId, elem.name,
+           buttons.push_back({viewId, button.name,
                getCostObj(elem.cost),
                description,
                (elem.noCredit && !availableNow) ?
@@ -854,38 +854,38 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            }
            break;
       case BuildInfo::DIG:
-           buttons.push_back({ViewId::DIG_ICON, "Dig or cut tree", none, "", CollectiveInfo::Button::ACTIVE});
+           buttons.push_back({ViewId::DIG_ICON, button.name, none, "", CollectiveInfo::Button::ACTIVE});
            break;
-      case BuildInfo::FETCH:
-           buttons.push_back({ViewId::FETCH_ICON, "Fetch items", none, "", CollectiveInfo::Button::ACTIVE});
+      case BuildInfo::ZONE:
+           buttons.push_back({button.viewId, button.name, none, "", CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::CLAIM_TILE:
-           buttons.push_back({ViewId::KEEPER_FLOOR, "Claim tile", none, "", CollectiveInfo::Button::ACTIVE});
+           buttons.push_back({ViewId::KEEPER_FLOOR, button.name, none, "", CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::DISPATCH:
-           buttons.push_back({ViewId::IMP, "Prioritize task", none, "", CollectiveInfo::Button::ACTIVE});
+           buttons.push_back({ViewId::IMP, button.name, none, "", CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::TRAP: {
              BuildInfo::TrapInfo& elem = button.trapInfo;
-             buttons.push_back({elem.viewId, elem.name, none});
+             buttons.push_back({elem.viewId, button.name, none});
            }
            break;
       case BuildInfo::IMP: {
-           buttons.push_back({ViewId::IMP, "Summon imp", make_pair(ViewId::MANA, getImpCost()),
+           buttons.push_back({ViewId::IMP, button.name, make_pair(ViewId::MANA, getImpCost()),
                "[" + toString(
                    getCollective()->getCreatures({MinionTrait::WORKER}, {MinionTrait::PRISONER}).size()) + "]",
                getImpCost() <= getCollective()->numResource(ResourceId::MANA) ?
                   CollectiveInfo::Button::ACTIVE : CollectiveInfo::Button::GRAY_CLICKABLE});
            break; }
       case BuildInfo::DESTROY:
-           buttons.push_back({ViewId::DESTROY_BUTTON, "Remove construction", none, "",
+           buttons.push_back({ViewId::DESTROY_BUTTON, button.name, none, "",
                    CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::FORBID_ZONE:
-           buttons.push_back({ViewId::FORBID_ZONE, "Forbid zone", none, "", CollectiveInfo::Button::ACTIVE});
+           buttons.push_back({ViewId::FORBID_ZONE, button.name, none, "", CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::TORCH:
-           buttons.push_back({ViewId::TORCH, "Torch", none, "", CollectiveInfo::Button::ACTIVE});
+           buttons.push_back({ViewId::TORCH, button.name, none, "", CollectiveInfo::Button::ACTIVE});
            break;
     }
     vector<string> unmetReqText;
@@ -1013,8 +1013,7 @@ void PlayerControl::handleRecruiting(Collective* ally) {
 
 void PlayerControl::handleTrading(Collective* ally) {
   double scrollPos = 0;
-  const set<Position>& storage = getCollective()->getConstructions().getBuiltPositions(
-      CollectiveConfig::getEquipmentStorage());
+  const set<Position>& storage = getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT);
   if (storage.empty()) {
     getView()->presentText("Information", "You need a storage room for equipment in order to trade.");
     return;
@@ -1310,6 +1309,13 @@ void PlayerControl::initialize() {
 
 void PlayerControl::onEvent(const GameEvent& event) {
   switch (event.getId()) {
+    case EventId::POSITION_DISCOVERED: {
+      Position pos = event.get<Position>();
+      if (getCollective()->addKnownTile(pos))
+        updateKnownLocations(pos);
+      addToMemory(pos);
+      break;
+    }
     case EventId::CREATURE_EVENT: {
       auto& info = event.get<EventInfo::CreatureEvent>();
       if (contains(getCollective()->getCreatures(), info.creature))
@@ -1470,8 +1476,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHighlight(HighlightType::PRIORITY_TASK);
   if (position.isTribeForbidden(getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
-  if (getCollective()->isFetchPosition(position))
-    index.setHighlight(HighlightType::FETCH_ITEMS);
+  getCollective()->getZones().setHighlights(position, index);
   if (rectSelection
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
@@ -1999,7 +2004,7 @@ void PlayerControl::updateSelectionSquares() {
 
 bool PlayerControl::canSelectRectangle(const BuildInfo& info) {
   switch (info.buildType) {
-    case BuildInfo::FETCH:
+    case BuildInfo::ZONE:
     case BuildInfo::FORBID_ZONE:
     case BuildInfo::FURNITURE:
     case BuildInfo::DIG:
@@ -2111,17 +2116,18 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
         break;
         }
-    case BuildInfo::FETCH:
-        if (getCollective()->isFetchPosition(position) && selection != SELECT) {
-          getCollective()->cancelFetchAllItems(position);
+    case BuildInfo::ZONE:
+        if (getCollective()->getZones().isZone(position, building.zone) && selection != SELECT) {
+          getCollective()->getZones().eraseZone(position, building.zone);
           selection = DESELECT;
-        } else if (selection != DESELECT && !getCollective()->isFetchPosition(position)) {
-          getCollective()->fetchAllItems(position);
+        } else if (selection != DESELECT && !getCollective()->getZones().isZone(position, building.zone) &&
+            getCollective()->getKnownTiles().isKnown(position)) {
+          getCollective()->getZones().setZone(position, building.zone);
           selection = SELECT;
         }
         break;
     case BuildInfo::CLAIM_TILE:
-        if (getCollective()->getKnownTiles().isKnown(position) && position.canConstruct(FurnitureType::STOCKPILE_RES))
+        if (getCollective()->getKnownTiles().isKnown(position) && position.canConstruct(FurnitureType::BED))
           getCollective()->claimSquare(position);
         break;
     case BuildInfo::DISPATCH:
@@ -2141,7 +2147,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
               && (!info.maxNumber || *info.maxNumber >
                   getCollective()->getConstructions().getTotalCount(info.type))) {
             CostInfo cost = info.cost;
-            getCollective()->addFurniture(position, info.type, cost, info.buildImmediatly, info.noCredit);
+            getCollective()->addFurniture(position, info.type, cost, info.noCredit);
             getCollective()->updateResourceProduction();
             selection = SELECT;
             getView()->addSound(SoundId::ADD_CONSTRUCTION);
@@ -2165,7 +2171,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
               && (!info.maxNumber || *info.maxNumber > getCollective()->getSquares(info.type).size()
                   + getCollective()->getConstructions().getSquareCount(info.type))) {
             CostInfo cost = info.cost;
-            getCollective()->addConstruction(position, info.type, cost, info.buildImmediatly, info.noCredit);
+            getCollective()->addConstruction(position, info.type, cost, info.noCredit);
             getCollective()->updateResourceProduction();
             selection = SELECT;
             getView()->addSound(SoundId::ADD_CONSTRUCTION);

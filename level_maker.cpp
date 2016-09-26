@@ -1637,7 +1637,7 @@ class AddMapBorder : public LevelMaker {
 }
 
 static MakerQueue* stockpileMaker(StockpileInfo info) {
-  SquareType square {SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::STOCKPILE1, "stockpile"}};
+  SquareType square {SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::STONE_FLOOR1, "stockpile"}};
   ItemFactory items;
   switch (info.type) {
     case StockpileInfo::GOLD: items = ItemFactory::singleType(ItemId::GOLD_PIECE); break;

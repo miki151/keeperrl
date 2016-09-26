@@ -103,13 +103,25 @@ struct DormInfo {
   optional<CollectiveWarning> warning;
 };
 
+typedef function<const set<Position>&(const Collective*)> StorageDestinationFun;
+
 struct ResourceInfo {
-  optional<FurnitureType> storageType;
+  StorageDestinationFun storageDestination;
   optional<ItemIndex> itemIndex;
   ItemId itemId;
   string name;
   ViewId viewId;
   bool dontDisplay;
+};
+
+typedef function<bool(const Collective*, const Item*)> CollectiveItemPredicate;
+
+struct ItemFetchInfo {
+  ItemIndex index;
+  CollectiveItemPredicate predicate;
+  StorageDestinationFun destinationFun;
+  bool oneAtATime;
+  CollectiveWarning warning;
 };
 
 struct MinionTaskInfo {
@@ -180,10 +192,9 @@ class CollectiveConfig {
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
   const vector<FurnitureType>& getRoomsNeedingLight() const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
+  static const vector<ItemFetchInfo>& getFetchInfo();
   static optional<int> getTrainingMaxLevelIncrease(FurnitureType);
   static const MinionTaskInfo& getTaskInfo(MinionTask);
-  static const FurnitureType& getEquipmentStorage();
-  static const FurnitureType& getResourceStorage();
   static const vector<FloorInfo>& getFloors();
   static double getEfficiencyBonus(SquareType);
   static bool canBuildOutsideTerritory(FurnitureType);

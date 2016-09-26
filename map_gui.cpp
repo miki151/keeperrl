@@ -122,6 +122,8 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::DIG: return transparency(colors[ColorId::YELLOW], 120);
     case HighlightType::CUT_TREE: return transparency(colors[ColorId::YELLOW], 170);
     case HighlightType::FETCH_ITEMS: return transparency(colors[ColorId::YELLOW], 50);
+    case HighlightType::STORAGE_EQUIPMENT: return transparency(colors[ColorId::GREEN], buttonViewId ? 120 : 50);
+    case HighlightType::STORAGE_RESOURCES: return transparency(colors[ColorId::BLUE], buttonViewId ? 120 : 50);
     case HighlightType::RECT_SELECTION: return transparency(colors[ColorId::YELLOW], 90);
     case HighlightType::FOG: return transparency(colors[ColorId::WHITE], 120 * amount);
     case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., amount * 500), 0, (Uint8)(amount * 140));
@@ -168,9 +170,6 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
     case ViewId::DORM:
     case ViewId::CEMETERY:
     case ViewId::BEAST_LAIR:
-    case ViewId::STOCKPILE1:
-    case ViewId::STOCKPILE2:
-    case ViewId::STOCKPILE3:
     case ViewId::MOUNTAIN:
     case ViewId::DUNGEON_WALL:
     case ViewId::GOLD_ORE:
@@ -672,6 +671,8 @@ bool MapGui::isRenderedLowHighlight(const ViewIndex& index, HighlightType type) 
       return !!draggedCreature;
     case HighlightType::FORBIDDEN_ZONE:
     case HighlightType::FETCH_ITEMS:
+    case HighlightType::STORAGE_EQUIPMENT:
+    case HighlightType::STORAGE_RESOURCES:
     case HighlightType::PRIORITY_TASK:
     case HighlightType::CLICKED_FURNITURE:
       return true;

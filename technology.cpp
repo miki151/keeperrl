@@ -28,6 +28,8 @@
 #include "square_type.h"
 #include "spell_map.h"
 #include "construction_map.h"
+#include "square_factory.h"
+#include "game.h"
 
 void Technology::init() {
   Technology::set(TechId::ALCHEMY, new Technology(
@@ -153,8 +155,10 @@ static void addResource(Collective* col, SquareId square, int maxDist) {
     Position center = init.plus(Vec2(Random.get(-maxDist, maxDist + 1), Random.get(-maxDist, maxDist + 1)));
     vector<Position> all = center.getRectangle(resourceArea);
     if (areaOk(all, square)) {
-      for (Vec2 pos : cutShape(resourceArea))
-        col->addConstruction(center.plus(pos), square, CostInfo::noCost(), true, true);
+      for (Vec2 pos : cutShape(resourceArea)) {
+        center.plus(pos).replaceSquare(SquareFactory::get(square));
+        center.getGame()->addEvent({EventId::POSITION_DISCOVERED, center.plus(pos)});
+      }
       return;
     }
   }

@@ -27,7 +27,8 @@ enum class EventId {
   TRAP_DISARMED,
   FURNITURE_DESTROYED,
   EQUIPED,
-  CREATURE_EVENT
+  CREATURE_EVENT,
+  POSITION_DISCOVERED
 };
 
 namespace EventInfo {
@@ -69,7 +70,8 @@ class GameEvent : public EnumVariant<EventId, TYPES(Creature*, Position, Technol
     EventInfo::CreatureEvent, EventInfo::Attacked, EventInfo::ItemsHandled, EventInfo::ItemsAppeared,
     EventInfo::ItemsThrown, EventInfo::TrapDisarmed),
     ASSIGN(Creature*, EventId::MOVED),
-    ASSIGN(Position, EventId::EXPLOSION, EventId::ALARM, EventId::TRAP_TRIGGERED, EventId::FURNITURE_DESTROYED),
+    ASSIGN(Position, EventId::EXPLOSION, EventId::ALARM, EventId::TRAP_TRIGGERED, EventId::FURNITURE_DESTROYED,
+        EventId::POSITION_DISCOVERED),
     ASSIGN(Technology*, EventId::TECHBOOK_READ),
     ASSIGN(Collective*, EventId::CONQUERED_ENEMY),
     ASSIGN(EventInfo::CreatureEvent, EventId::CREATURE_EVENT),

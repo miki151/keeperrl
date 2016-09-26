@@ -49,6 +49,8 @@ class EventProxy;
 class Workshops;
 class SquareType;
 class TileEfficiency;
+class Zones;
+struct ItemFetchInfo;
 
 class Collective : public TaskCallback {
   public:
@@ -127,9 +129,6 @@ class Collective : public TaskCallback {
   void takeResource(const CostInfo&);
   void returnResource(const CostInfo&);
 
-  struct ItemFetchInfo;
-  bool isFetchPosition(Position) const;
-
   const ConstructionMap& getConstructions() const;
 
   void setMinionTask(const Creature* c, MinionTask task);
@@ -147,18 +146,18 @@ class Collective : public TaskCallback {
 
   void addTrap(Position, TrapType);
   void removeTrap(Position);
-  void addConstruction(Position, SquareType, const CostInfo&, bool immediately, bool noCredit);
+  void addConstruction(Position, SquareType, const CostInfo&, bool noCredit);
   void removeConstruction(Position);
   bool canAddFurniture(Position, FurnitureType) const;
-  void addFurniture(Position, FurnitureType, const CostInfo&, bool immediately, bool noCredit);
+  void addFurniture(Position, FurnitureType, const CostInfo&, bool noCredit);
   void removeFurniture(Position);
   void destroySquare(Position);
   bool isPlannedTorch(Position) const;
   bool canPlaceTorch(Position) const;
   void removeTorch(Position);
   void addTorch(Position);
-  void fetchAllItems(Position);
-  void cancelFetchAllItems(Position);
+  Zones& getZones();
+  const Zones& getZones() const;
   void dig(Position);
   void cancelMarkedTask(Position);
   void cutTree(Position);
@@ -199,6 +198,8 @@ class Collective : public TaskCallback {
   const CollectiveName& getName() const;
   const TaskMap& getTaskMap() const;
   void updateResourceProduction();
+  bool isItemMarked(const Item*) const;
+
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
 
@@ -230,7 +231,6 @@ class Collective : public TaskCallback {
   void onMinionKilled(Creature* victim, Creature* killer);
   void onKilledSomeone(Creature* victim, Creature* killer);
 
-  const vector<ItemFetchInfo>& getFetchInfo() const;
   void fetchItems(Position, const ItemFetchInfo&);
 
   void addMoraleForKill(const Creature* killer, const Creature* victim);
@@ -250,7 +250,6 @@ class Collective : public TaskCallback {
   HeapAllocated<TaskMap> SERIAL(taskMap);
   vector<TechId> SERIAL(technologies);
   int SERIAL(numFreeTech) = 0;
-  bool isItemMarked(const Item*) const;
   void markItem(const Item*);
   void unmarkItem(UniqueEntity<Item>::Id);
 
@@ -312,7 +311,6 @@ class Collective : public TaskCallback {
   HeapAllocated<ConstructionMap> SERIAL(constructions);
   EntitySet<Item> SERIAL(markedItems);
   set<Position> SERIAL(squaresInUse);
-  ItemPredicate unMarkedItems() const;
   EntitySet<Creature> SERIAL(surrendering);
   void updateConstructions();
   void handleTrapPlacementAndProduction();
@@ -329,7 +327,6 @@ class Collective : public TaskCallback {
   EntityMap<Creature, vector<AttractionInfo>> SERIAL(minionAttraction);
   double getAttractionOccupation(const MinionAttraction&);
   EntitySet<Creature> SERIAL(pregnancies);
-  mutable vector<ItemFetchInfo> itemFetchInfo;
   HeapAllocated<CollectiveTeams> SERIAL(teams);
   HeapAllocated<CollectiveName> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
@@ -337,6 +334,6 @@ class Collective : public TaskCallback {
   EntitySet<Creature> SERIAL(equipmentUpdates);
   optional<VillainType> SERIAL(villainType);
   unique_ptr<Workshops> SERIAL(workshops);
-  set<Position> SERIAL(fetchPositions);
+  HeapAllocated<Zones> SERIAL(zones);
   HeapAllocated<TileEfficiency> SERIAL(tileEfficiency);
 };

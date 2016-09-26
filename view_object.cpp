@@ -189,9 +189,6 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::BED: return "Bed";
     case ViewId::DORM: return "Dormitory";
     case ViewId::TORCH: return "Torch";
-    case ViewId::STOCKPILE1: return "Storage (all)";
-    case ViewId::STOCKPILE2: return "Storage (equipment)";
-    case ViewId::STOCKPILE3: return "Storage (resources)";
     case ViewId::PRISON: return "Prison";
     case ViewId::WELL: return "Well";
     case ViewId::TORTURE_TABLE: return "Torture room";

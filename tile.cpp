@@ -521,9 +521,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::IRON_ROCK, sprite("ironpile"));
     Tile::addTile(ViewId::STEEL_INGOT, sprite("steelpile"));
     Tile::addTile(ViewId::WOOD_PLANK, sprite("wood2"));
-    Tile::addTile(ViewId::STOCKPILE1, sprite("storage1").setFloorBorders());
-    Tile::addTile(ViewId::STOCKPILE2, sprite("storage2").setFloorBorders());
-    Tile::addTile(ViewId::STOCKPILE3, sprite("storage3").setFloorBorders());
+    Tile::addTile(ViewId::STORAGE_EQUIPMENT, sprite("dig_mark").setColor(transparency(colors[ColorId::GREEN], 120)));
+    Tile::addTile(ViewId::STORAGE_RESOURCES, sprite("dig_mark").setColor(transparency(colors[ColorId::BLUE], 120)));
     Tile::addTile(ViewId::PRISON, sprite("prison"));
     Tile::addTile(ViewId::BED, sprite("sleepdeco").setRoundShadow());
     Tile::addTile(ViewId::DORM, sprite("sleep").setFloorBorders());
@@ -819,9 +818,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::IRON_ROCK, symbol(u8"✱", ColorId::ORANGE, true));
     Tile::addSymbol(ViewId::STEEL_INGOT, symbol(u8"✱", ColorId::LIGHT_BLUE, true));
     Tile::addSymbol(ViewId::WOOD_PLANK, symbol(u8"\\", ColorId::BROWN));
-    Tile::addSymbol(ViewId::STOCKPILE1, symbol(u8".", ColorId::YELLOW));
-    Tile::addSymbol(ViewId::STOCKPILE2, symbol(u8".", ColorId::LIGHT_GREEN));
-    Tile::addSymbol(ViewId::STOCKPILE3, symbol(u8".", ColorId::LIGHT_BLUE));
+    Tile::addSymbol(ViewId::STORAGE_EQUIPMENT, symbol(u8".", ColorId::GREEN));
+    Tile::addSymbol(ViewId::STORAGE_RESOURCES, symbol(u8".", ColorId::BLUE));
     Tile::addSymbol(ViewId::PRISON, symbol(u8".", ColorId::BLUE));
     Tile::addSymbol(ViewId::DORM, symbol(u8".", ColorId::BROWN));
     Tile::addSymbol(ViewId::BED, symbol(u8"=", ColorId::WHITE));

@@ -20,6 +20,9 @@
 #include "furniture_usage.h"
 #include "creature_attributes.h"
 #include "collective.h"
+#include "zones.h"
+#include "construction_map.h"
+#include "item_class.h"
 
 AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
   : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}
@@ -250,17 +253,6 @@ const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
   return ret;
 };
 
-const static auto resourceStorage = FurnitureType::STOCKPILE_RES;
-const static auto equipmentStorage = FurnitureType::STOCKPILE_EQUIP;
-
-const FurnitureType& CollectiveConfig::getEquipmentStorage() {
-  return equipmentStorage;
-}
-
-const FurnitureType& CollectiveConfig::getResourceStorage() {
-  return resourceStorage;
-}
-
 const vector<FloorInfo>& CollectiveConfig::getFloors() {
   static vector<FloorInfo> ret = {
     {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::WOOD_FLOOR2, "wooden floor"}},
@@ -303,28 +295,61 @@ bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
   }
 }
 
+static StorageDestinationFun getFurnitureStorage(FurnitureType t) {
+  return [t](const Collective* col)->const set<Position>& { return col->getConstructions().getBuiltPositions(t); };
+}
+
+static StorageDestinationFun getZoneStorage(ZoneId zone) {
+  return [zone](const Collective* col)->const set<Position>& { return col->getZones().getPositions(zone); };
+}
+
 const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
   static EnumMap<CollectiveResourceId, ResourceInfo> resourceInfo([](CollectiveResourceId id)->ResourceInfo {
     switch (id) {
       case CollectiveResourceId::MANA:
-        return { none, none, ItemId::GOLD_PIECE, "mana", ViewId::MANA};
+        return { nullptr, none, ItemId::GOLD_PIECE, "mana", ViewId::MANA};
       case CollectiveResourceId::PRISONER_HEAD:
-        return { none, none, ItemId::GOLD_PIECE, "", ViewId::IMPALED_HEAD, true};
+        return { nullptr, none, ItemId::GOLD_PIECE, "", ViewId::IMPALED_HEAD, true};
       case CollectiveResourceId::GOLD:
-        return {FurnitureType::TREASURE_CHEST, ItemIndex::GOLD, ItemId::GOLD_PIECE, "gold", ViewId::GOLD};
+        return {getFurnitureStorage(FurnitureType::TREASURE_CHEST), ItemIndex::GOLD, ItemId::GOLD_PIECE, "gold", ViewId::GOLD};
       case CollectiveResourceId::WOOD:
-        return { resourceStorage, ItemIndex::WOOD, ItemId::WOOD_PLANK, "wood", ViewId::WOOD_PLANK};
+        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::WOOD, ItemId::WOOD_PLANK, "wood", ViewId::WOOD_PLANK};
       case CollectiveResourceId::IRON:
-        return { resourceStorage, ItemIndex::IRON, ItemId::IRON_ORE, "iron", ViewId::IRON_ROCK};
+        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::IRON, ItemId::IRON_ORE, "iron", ViewId::IRON_ROCK};
       case CollectiveResourceId::STEEL:
-        return { resourceStorage, ItemIndex::STEEL, ItemId::STEEL_INGOT, "steel", ViewId::STEEL_INGOT};
+        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::STEEL, ItemId::STEEL_INGOT, "steel", ViewId::STEEL_INGOT};
       case CollectiveResourceId::STONE:
-        return { resourceStorage, ItemIndex::STONE, ItemId::ROCK, "granite", ViewId::ROCK};
+        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::STONE, ItemId::ROCK, "granite", ViewId::ROCK};
       case CollectiveResourceId::CORPSE:
-        return { FurnitureType::GRAVE, ItemIndex::REVIVABLE_CORPSE, ItemId::GOLD_PIECE, "corpses", ViewId::BODY_PART, true};
+        return { getFurnitureStorage(FurnitureType::GRAVE), ItemIndex::REVIVABLE_CORPSE, ItemId::GOLD_PIECE, "corpses", ViewId::BODY_PART, true};
     }
   });
   return resourceInfo[id];
+}
+
+static CollectiveItemPredicate unMarkedItems() {
+  return [](const Collective* col, const Item* it) { return !col->isItemMarked(it); };
+}
+
+
+const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() {
+  static vector<ItemFetchInfo> ret {
+      {ItemIndex::CORPSE, unMarkedItems(), getFurnitureStorage(FurnitureType::GRAVE), true, CollectiveWarning::GRAVES},
+      {ItemIndex::GOLD, unMarkedItems(), getFurnitureStorage(FurnitureType::TREASURE_CHEST), false,
+          CollectiveWarning::CHESTS},
+      {ItemIndex::MINION_EQUIPMENT, [](const Collective* col, const Item* it)
+          { return it->getClass() != ItemClass::GOLD && !col->isItemMarked(it);},
+          getZoneStorage(ZoneId::STORAGE_EQUIPMENT), false, CollectiveWarning::EQUIPMENT_STORAGE},
+      {ItemIndex::WOOD, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
+          CollectiveWarning::RESOURCE_STORAGE},
+      {ItemIndex::IRON, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
+          CollectiveWarning::RESOURCE_STORAGE},
+      {ItemIndex::STEEL, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
+          CollectiveWarning::RESOURCE_STORAGE},
+      {ItemIndex::STONE, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
+          CollectiveWarning::RESOURCE_STORAGE},
+  };
+  return ret;
 }
 
 MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWarning> w)

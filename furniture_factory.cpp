@@ -81,12 +81,6 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           Furniture::BLOCKING, tribe)
           .setUsageTime(5)
           .setDestroyable(80);
-    case FurnitureType::STOCKPILE_RES:
-      return Furniture("resource stockpile", ViewObject(ViewId::STOCKPILE1, ViewLayer::FLOOR_BACKGROUND), type,
-          Furniture::NON_BLOCKING, tribe);
-    case FurnitureType::STOCKPILE_EQUIP:
-      return Furniture("equipment stockpile", ViewObject(ViewId::STOCKPILE2, ViewLayer::FLOOR_BACKGROUND), type,
-          Furniture::NON_BLOCKING, tribe);
     case FurnitureType::PRISON:
         return Furniture("prison", ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND), type,
           Furniture::NON_BLOCKING, tribe);
