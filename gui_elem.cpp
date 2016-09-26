@@ -128,9 +128,8 @@ static optional<SDL_Keycode> getKey(char c) {
     case 'x': return SDL::SDLK_x;
     case 'y': return SDL::SDLK_y;
     case 'z': return SDL::SDLK_z;
-    case 0: return none;
+    default: return none;
   }
-  FAIL << "Unrecognized key " << c;
   return none;
 }
 
@@ -913,7 +912,9 @@ class KeyHandlerChar : public GuiElem {
 
   bool isHotkeyEvent(char c, SDL_Keysym key) {
     return options->getBoolValue(OptionId::WASD_SCROLLING) == GuiFactory::isAlt(key) &&
-      !GuiFactory::isCtrl(key) && !GuiFactory::isShift(key) && getKey(c) == key.sym;
+      !GuiFactory::isCtrl(key) &&
+      ((!GuiFactory::isShift(key) && getKey(c) == key.sym) ||
+          (GuiFactory::isShift(key) && getKey(tolower(c)) == key.sym));
   }
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
@@ -2283,13 +2284,14 @@ PGuiElem GuiFactory::window(PGuiElem content, function<void()> onExitButton) {
         ));
 }
 
-PGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight) {
+PGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight, optional<int> topBarHeight) {
   return margin(
       stack(makeVec<PGuiElem>(
           background(background1),
           sprite(get(TexId::HORI_BAR), Alignment::TOP),
           sprite(get(TexId::HORI_BAR), Alignment::BOTTOM, true),
-          margin(sprite(get(TexId::HORI_BAR_MINI), Alignment::BOTTOM), empty(), 85, TOP),
+          topBarHeight ? margin(sprite(get(TexId::HORI_BAR_MINI), Alignment::BOTTOM), empty(), *topBarHeight, TOP)
+                       : empty(),
           sprite(get(TexId::VERT_BAR), Alignment::RIGHT, false, true),
           sprite(get(TexId::VERT_BAR), Alignment::LEFT),
           sprite(get(TexId::CORNER_TOP_LEFT), Alignment::TOP_RIGHT, false, true, Vec2(8, 0)),

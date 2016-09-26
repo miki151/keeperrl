@@ -659,42 +659,6 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, PlayerInfo& info) {
   ret.push_back({std::move(content), size + Vec2(margin, margin) * 2, OverlayInfo::TOP_RIGHT});
 }
 
-struct KeyInfo {
-  string keyDesc;
-  string action;
-  SDL_Keysym event;
-};
-
-PGuiElem GuiBuilder::drawPlayerHelp(PlayerInfo& info) {
-  vector<PGuiElem> lines;
-  vector<KeyInfo> bottomKeys {
-      { "Enter", "Interact or pick up", gui.getKey(SDL::SDLK_RETURN)},
-      { "U", "Leave minion", gui.getKey(SDL::SDLK_u)},
-      { "C", "Chat with someone", gui.getKey(SDL::SDLK_c)},
-      { "H", "Hide", gui.getKey(SDL::SDLK_h)},
-      { "P", "Pay debt", gui.getKey(SDL::SDLK_p)},
-      { "M", "Message history", gui.getKey(SDL::SDLK_m)},
-      { "Space", "Wait", gui.getKey(SDL::SDLK_SPACE)},
-  };
-  vector<string> help = {
-      "Move around with number pad.",
-      "Extended attack: ctrl + arrow.",
-      "Fast travel: ctrl + arrow.",
-      "Fire arrows: alt + arrow.",
-      "",
-  };
-  for (auto& elem : help)
-    lines.push_back(gui.label(elem, colors[ColorId::LIGHT_BLUE]));
-  for (int i : All(bottomKeys)) {
-    string text = "[" + bottomKeys[i].keyDesc + "] " + bottomKeys[i].action;
-    SDL_Keysym key = bottomKeys[i].event;
-    lines.push_back(gui.stack(
-          gui.label(text, colors[ColorId::LIGHT_BLUE]),
-          gui.button([this, key]() { callbacks.keyboard(key);})));
-  }
-  return gui.verticalList(std::move(lines), legendLineHeight);
-}
-
 static string getActionText(ItemAction a) {
   switch (a) {
     case ItemAction::DROP: return "drop";
@@ -847,24 +811,56 @@ vector<PGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info) {
   return lines;
 }
 
+static string getKeybindingDesc(char c) {
+  if (c == ' ')
+    return "[Space]";
+  else
+    return "["_s + (char)toupper(c) + "]";
+}
+
+static vector<string> help = {
+    "Move around with number pad.",
+    "Extended attack: ctrl + arrow.",
+    "Fast travel: ctrl + arrow.",
+    "Fire arrows: alt + arrow.",
+};
+
 PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(info.getTitle(), colors[ColorId::WHITE]));
   list.addElem(gui.label("Level " + toString(info.level), colors[ColorId::WHITE]));
   auto line = gui.getListBuilder();
-  line.addElemAuto(gui.label("Commands: "));
+  vector<PGuiElem> keyElems;
+  for (int i : All(info.commands)) {
+    keyElems.push_back(gui.keyHandlerChar(getButtonCallback({UserInputId::PLAYER_COMMAND, i}),
+        info.commands[i].keybinding));
+  }
   line.addElemAuto(gui.stack(
-        gui.button(getButtonCallback(UserInputId::UNPOSSESS), gui.getKey(SDL::SDLK_u), true),
-        gui.labelHighlight("[U] ", colors[ColorId::LIGHT_BLUE]),
-        getTooltip({"Leave minion and order team back to base."})));
-  line.addElemAuto(gui.stack(
-        gui.button(getButtonCallback(UserInputId::TRANSFER), gui.getKey(SDL::SDLK_t), true),
-        gui.labelHighlight("[T] ", colors[ColorId::LIGHT_BLUE]),
-        getTooltip({"Travel to another site."})));
-  line.addElemAuto(gui.stack(
-        gui.button(getButtonCallback(UserInputId::SWAP_TEAM), gui.getKey(SDL::SDLK_s), true),
-        gui.labelHighlight("[S] ", colors[ColorId::LIGHT_BLUE]),
-        getTooltip({"Switch control to a different team member."})));
+      gui.stack(std::move(keyElems)),
+      gui.labelHighlight("[Commands]", colors[ColorId::LIGHT_BLUE]),
+      gui.buttonRect([=] (Rectangle bounds) {
+          auto lines = gui.getListBuilder(legendLineHeight);
+          bool exit = false;
+          optional<ItemAction> ret;
+          for (auto& elem : help)
+            lines.addElem(gui.label(elem, colors[ColorId::LIGHT_BLUE]));
+          for (int i : All(info.commands)) {
+            auto& command = info.commands[i];
+            function<void()> buttonFun = [] {};
+            if (command.active)
+              buttonFun = [&exit, &ret, i, this] {
+                  callbacks.input({UserInputId::PLAYER_COMMAND, i});
+                  exit = true;
+              };
+            auto labelColor = colors[command.active ? ColorId::WHITE : ColorId::GRAY];
+            lines.addElem(gui.stack(
+                gui.buttonChar(buttonFun, command.keybinding),
+                command.active ? gui.uiHighlightMouseOver(colors[ColorId::GREEN]) : gui.empty(),
+                gui.tooltip({command.description}),
+                gui.label(getKeybindingDesc(command.keybinding) + " " + command.name, labelColor)));
+           }
+           drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260);
+     })));
   line.addElem(gui.button(getButtonCallback(UserInputId::CHEAT_ATTRIBUTES), gui.getKey(SDL::SDLK_y)), 1);
   list.addElem(line.buildHorizontalList());
   for (auto& elem : drawEffectsList(info))
@@ -908,25 +904,8 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
 }
 
 PGuiElem GuiBuilder::drawRightPlayerInfo(PlayerInfo& info) {
-  vector<PGuiElem> buttons = makeVec<PGuiElem>(
-    gui.icon(gui.DIPLOMACY),
-    gui.icon(gui.HELP));
-  for (int i : All(buttons)) {
-    buttons[i] = gui.stack(
-        gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
-          [this, i] { return int(minionTab) == i;}),
-        std::move(buttons[i]),
-        gui.button([this, i]() { minionTab = MinionTab(i); }));
-  }
-  PGuiElem main;
-  main = gui.stack(
-      gui.conditional(drawPlayerInventory(info), [this] { return minionTab == MinionTab::INVENTORY;}),
-      gui.conditional(drawPlayerHelp(info), [this] { return minionTab == MinionTab::HELP;}));
-  main = gui.margins(std::move(main), 15, 24, 15, 5);
-  int numButtons = buttons.size();
-  PGuiElem butGui = gui.margins(
-      gui.centerHoriz(gui.horizontalList(std::move(buttons), 50), numButtons * 50), 0, 5, 0, 5);
-  return gui.margin(std::move(butGui), std::move(main), 55, gui.TOP);
+  PGuiElem main = drawPlayerInventory(info);
+  return gui.margins(std::move(main), 15, 24, 15, 5);
 }
 
 typedef CreatureInfo CreatureInfo;

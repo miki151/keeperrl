@@ -1521,13 +1521,21 @@ class MinionController : public Player {
   MinionController(Creature* c, Model* m, MapMemory* memory, PlayerControl* ctrl)
       : Player(c, m, false, memory), control(ctrl) {}
 
-  virtual bool swapTeam() override {
-    return control->swapTeam();
+  virtual vector<CommandInfo> getCommands() const override {
+    return concat(Player::getCommands(), {
+      {PlayerInfo::CommandInfo{"Leave minion", 'u', "Leave minion and order team back to base.", true},
+       [] (Player* player) { dynamic_cast<MinionController*>(player)->unpossess(); }, true},
+      {PlayerInfo::CommandInfo{"Switch control", 's', "Switch control to a different team member.", true},
+       [] (Player* player) { dynamic_cast<MinionController*>(player)->swapTeam(); }, getTeam().size() > 1},
+    });
   }
 
-  virtual bool unpossess() override {
+  void unpossess() {
     control->leaveControl();
-    return true;
+  }
+
+  bool swapTeam() {
+    return control->swapTeam();
   }
 
   virtual void onFellAsleep() override {

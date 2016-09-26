@@ -367,6 +367,7 @@ void WindowView::rebuildGui() {
   vector<GuiBuilder::OverlayInfo> overlays;
   int rightBarWidth = 0;
   int bottomBarHeight = 0;
+  optional<int> topBarHeight;
   int rightBottomMargin = 30;
   tempGuiElems.clear();
   if (!options->getIntValue(OptionId::DISABLE_MOUSE_WHEEL)) {
@@ -407,6 +408,7 @@ void WindowView::rebuildGui() {
         bottom = guiBuilder.drawBottomBandInfo(gameInfo);
         rightBarWidth = rightBarWidthCollective;
         bottomBarHeight = bottomBarHeightCollective;
+        topBarHeight = 85;
         break;
   }
   resetMapBounds();
@@ -414,7 +416,7 @@ void WindowView::rebuildGui() {
   int sideOffset = 10;
   int rightWindowHeight = 80;
   if (rightBarWidth > 0) {
-    tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight));
+    tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight, topBarHeight));
     tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
     tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
     tempGuiElems.back()->setBounds(Rectangle(Vec2(0, 0),
@@ -1243,9 +1245,6 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
   switch (key.sym) {
     case SDL::SDLK_z: zoom(0); break;
     case SDL::SDLK_F2: options->handle(this, OptionSet::GENERAL); refreshScreen(); break;
-    case SDL::SDLK_SPACE:
-      inputQueue.push(UserInput(UserInputId::WAIT));
-      break;
     case SDL::SDLK_ESCAPE:
       if (!guiBuilder.clearActiveButton() && !renderer.isMonkey())
         inputQueue.push(UserInput(UserInputId::EXIT));
@@ -1285,12 +1284,6 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     case SDL::SDLK_KP_7:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1)));
       mapGui->onMouseGone();
-      break;
-    case SDL::SDLK_m: inputQueue.push(UserInput(UserInputId::SHOW_HISTORY)); break;
-    case SDL::SDLK_h: inputQueue.push(UserInput(UserInputId::HIDE)); break;
-    case SDL::SDLK_p: inputQueue.push(UserInput(UserInputId::PAY_DEBT)); break;
-    case SDL::SDLK_c:
-      inputQueue.push(UserInput(GuiFactory::isShift(key) ? UserInputId::CONSUME : UserInputId::CHAT));
       break;
     default: break;
   }

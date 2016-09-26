@@ -59,7 +59,6 @@ class GuiBuilder {
   PGuiElem getTurnInfoGui(int& turn);
   PGuiElem drawBottomPlayerInfo(GameInfo&);
   PGuiElem drawRightPlayerInfo(PlayerInfo&);
-  PGuiElem drawPlayerHelp(PlayerInfo&);
   PGuiElem drawPlayerInventory(PlayerInfo&);
   PGuiElem drawRightBandInfo(GameInfo&);
   PGuiElem drawTechnology(CollectiveInfo&);

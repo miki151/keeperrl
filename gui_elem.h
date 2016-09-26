@@ -239,7 +239,7 @@ class GuiFactory {
   PGuiElem miniWindow2(PGuiElem content, function<void()> onExitButton = nullptr);
   PGuiElem miniBorder();
   PGuiElem miniBorder2();
-  PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight);
+  PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight, optional<int> topBarHeight);
   PGuiElem invisible(PGuiElem content);
   PGuiElem background(PGuiElem content, Color);
   PGuiElem translucentBackground(PGuiElem content);

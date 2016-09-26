@@ -529,6 +529,35 @@ void Player::retireMessages() {
   }
 }
 
+vector<Player::CommandInfo> Player::getCommands() const {
+  bool canChat = false;
+  bool canPay = false;
+  for (Position pos : getCreature()->getPosition().neighbors8())
+    if (Creature* c = pos.getCreature()) {
+      canChat = true;
+      if (c->getDebt(getCreature()))
+        canPay = true;
+    }
+  return {
+    {PlayerInfo::CommandInfo{"Wait", ' ', "Skip this turn.", true},
+     [] (Player* player) { player->getCreature()->wait().perform(player->getCreature()); }, false},
+    {PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
+     [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},
+    {PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
+     [] (Player* player) { player->chatAction(); }, false},
+    {PlayerInfo::CommandInfo{"Hide", 'h', "Hide behind or under a terrain feature or piece of furniture.", !!getCreature()->hide()},
+     [] (Player* player) { player->hideAction(); }, false},
+    {PlayerInfo::CommandInfo{"Pay debt", 'p', "Pay debt to a shopkeeper.", canPay},
+     [] (Player* player) { player->payDebtAction();}, false},
+    {PlayerInfo::CommandInfo{"Absorb", 'a',
+        "Absorb a friendly creature and inherit its attributes. Requires the absorbtion skill.",
+        getCreature()->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION)},
+     [] (Player* player) { player->consumeAction();}, false},
+    {PlayerInfo::CommandInfo{"Message history", 'm', "Show message history.", true},
+     [] (Player* player) { player->showHistory(); }, false},
+  };
+}
+
 void Player::makeMove() {
   if (adventurer)
     considerAdventurerMusic();
@@ -610,26 +639,21 @@ void Player::makeMove() {
       handleItems(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action); break;
     case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
     case UserInputId::PICK_UP_ITEM_MULTI: pickUpItemAction(action.get<int>(), true); break;
-    case UserInputId::WAIT: getCreature()->wait().perform(getCreature()); break;
-    case UserInputId::HIDE: hideAction(); break;
-    case UserInputId::PAY_DEBT: payDebtAction(); break;
-    case UserInputId::CHAT: chatAction(); break;
-    case UserInputId::CONSUME: consumeAction(); break;
-    case UserInputId::SHOW_HISTORY: showHistory(); break;
-    case UserInputId::UNPOSSESS:
-      if (unpossess())
-        return;
-      break;
-    case UserInputId::SWAP_TEAM:
-      if (swapTeam())
-        return;
-      break;
     case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
     case UserInputId::DRAW_LEVEL_MAP: getView()->drawLevelMap(this); break;
     case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
     case UserInputId::CREATURE_BUTTON2: extendedAttackAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
-    case UserInputId::TRANSFER: getGame()->transferAction(getTeam()); return;
+    case UserInputId::PLAYER_COMMAND: {
+        int index = action.get<int>();
+        auto commands = getCommands();
+        if (index >= 0 && index < commands.size()) {
+          commands[index].perform(this);
+          if (commands[index].actionKillsController)
+            return;
+        }
+      }
+      break;
 #ifndef RELEASE
     case UserInputId::CHEAT_ATTRIBUTES:
       getCreature()->getAttributes().setBaseAttr(AttrType::STRENGTH, 80);
@@ -867,14 +891,6 @@ void Player::onKilled(const Creature* attacker) {
     getGame()->gameOver(getCreature(), getCreature()->getKills().getSize(), "monsters", getCreature()->getPoints());
 }
 
-bool Player::unpossess() {
-  return false;
-}
-
-bool Player::swapTeam() {
-  return false;
-}
-
 void Player::onFellAsleep() {
 }
 
@@ -918,6 +934,9 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto elem : typeDisplayOrder)
     if (typeGroups[elem].size() > 0)
       append(info.inventory, getItemInfos(typeGroups[elem]));
+  info.commands = transform2<PlayerInfo::CommandInfo>(getCommands(),
+      [](const CommandInfo& info) { return info.commandInfo;});
+
 }
 
 ItemInfo Player::getFurnitureUsageInfo(const string& question, ViewId viewId) const {

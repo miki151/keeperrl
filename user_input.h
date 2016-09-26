@@ -70,6 +70,7 @@ enum class UserInputId {
     GO_TO_VILLAGE,
     PAY_RANSOM,
     IGNORE_RANSOM,
+    SHOW_HISTORY,
 // turn-based actions
     MOVE,
     MOVE_TO,
@@ -77,16 +78,8 @@ enum class UserInputId {
     FIRE,
     PICK_UP_ITEM,
     PICK_UP_ITEM_MULTI,
-    SHOW_HISTORY,
-    HIDE,
-    PAY_DEBT,
-    CHAT,
-    WAIT,
-    UNPOSSESS,
-    TRANSFER,
-    SWAP_TEAM,
+    PLAYER_COMMAND,
     CAST_SPELL,
-    CONSUME,
     INVENTORY_ITEM,
     CHEAT_ATTRIBUTES
 };
@@ -182,7 +175,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::SELECT_TEAM,
             UserInputId::PICK_UP_ITEM,
             UserInputId::PICK_UP_ITEM_MULTI,
-            UserInputId::GO_TO_VILLAGE),
+            UserInputId::GO_TO_VILLAGE,
+            UserInputId::PLAYER_COMMAND
+        ),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM),
         ASSIGN(Vec2,

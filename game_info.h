@@ -93,6 +93,14 @@ class PlayerInfo {
   vector<ItemInfo> HASH(lyingItems);
   vector<ItemInfo> HASH(inventory);
   vector<CreatureInfo> HASH(team);
+  struct CommandInfo {
+    string HASH(name);
+    char HASH(keybinding);
+    string HASH(description);
+    bool HASH(active);
+    HASH_ALL(name, keybinding, description, active);
+  };
+  vector<CommandInfo> HASH(commands);
   struct MinionTaskInfo {
     MinionTask HASH(task);
     bool HASH(inactive);
@@ -112,7 +120,7 @@ class PlayerInfo {
     CONSUME
   };
   vector<Action> HASH(actions);
-  HASH_ALL(attributes, skills, firstName, name, title, level, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions);
+  HASH_ALL(attributes, skills, firstName, name, title, level, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands);
 };
 
 

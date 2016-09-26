@@ -23,6 +23,7 @@
 #include "map_memory.h"
 #include "position.h"
 #include "event_listener.h"
+#include "game_info.h"
 
 class View;
 class Model;
@@ -72,8 +73,12 @@ class Player : public Controller, public CreatureView {
   virtual void onDisplaced() override;
 
   // overridden by subclasses
-  virtual bool unpossess();
-  virtual bool swapTeam();
+  struct CommandInfo {
+    PlayerInfo::CommandInfo commandInfo;
+    function<void(Player*)> perform;
+    bool actionKillsController;
+  };
+  virtual vector<CommandInfo> getCommands() const;
   virtual void onFellAsleep();
   virtual vector<Creature*> getTeam() const;
 
