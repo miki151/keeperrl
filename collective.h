@@ -215,7 +215,6 @@ class Collective : public TaskCallback {
   virtual void onTorchBuilt(Position, Trigger*) override;
   virtual void onAppliedSquare(Creature*, Position) override;
   virtual void onKillCancelled(Creature*) override;
-  virtual void onBedCreated(Position, const SquareType& fromType, const SquareType& toType) override;
   virtual void onCopulated(Creature* who, Creature* with) override;
   virtual bool isConstructionReachable(Position) override;
 

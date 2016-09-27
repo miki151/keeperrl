@@ -21,7 +21,6 @@ class TaskCallback {
   virtual void onBrought(Position, EntitySet<Item>) {}
   virtual void onCantPickItem(EntitySet<Item> items) {}
   virtual void onKillCancelled(Creature*) {}
-  virtual void onBedCreated(Position, const SquareType& fromType, const SquareType& toType) {}
   virtual void onCopulated(Creature* who, Creature* with) {}
 
   template <class Archive> 

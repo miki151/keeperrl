@@ -306,10 +306,6 @@ MoveInfo Collective::getDropItems(Creature *c) {
   return NoMove;
 }
 
-void Collective::onBedCreated(Position pos, const SquareType& fromType, const SquareType& toType) {
-  changeSquareType(pos, fromType, toType);
-}
-
 MoveInfo Collective::getWorkerMove(Creature* c) {
   if (Task* task = taskMap->getTask(c))
     return task->getMove(c);
