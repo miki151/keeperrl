@@ -33,7 +33,8 @@ class Task : public UniqueEntity<Task> {
   virtual ~Task();
 
   virtual MoveInfo getMove(Creature*) = 0;
-  virtual bool isImpossible(const Level*);
+  virtual bool isBogus() const;
+  virtual bool isBlocked(Creature*) const;
   virtual bool canTransfer();
   virtual void cancel() {}
   virtual string getDescription() const = 0;

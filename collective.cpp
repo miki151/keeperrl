@@ -1644,7 +1644,7 @@ bool Collective::addKnownTile(Position pos) {
     knownTiles->addTile(pos);
     if (pos.getLevel() == level)
       if (Task* task = taskMap->getMarked(pos))
-        if (task->isImpossible(getLevel()))
+        if (task->isBogus())
           taskMap->removeTask(task);
     return true;
   } else

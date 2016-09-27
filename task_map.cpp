@@ -22,7 +22,7 @@ Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
         if (!task->isDone() &&
             (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
             (!closest || dist < getPosition(closest)->dist8(c->getPosition()) || isPriorityTask(task.get())) &&
-            c->canNavigateTo(*pos) &&
+            c->canNavigateTo(*pos) && !task->isBlocked(c) &&
             (!delayed || *delayed < c->getLocalTime())) {
           closest = task.get();
           if (isPriorityTask(task.get()))

@@ -60,7 +60,11 @@ Task::Task(bool t) : transfer(t) {
 Task::~Task() {
 }
 
-bool Task::isImpossible(const Level*) {
+bool Task::isBogus() const {
+  return false;
+}
+
+bool Task::isBlocked(Creature*) const {
   return false;
 }
 
@@ -87,7 +91,7 @@ class ConstructionHelper {
   ConstructionHelper(SquareType s) : square(s) {}
   ConstructionHelper(FurnitureType f) : furniture(f) {}
 
-  bool canConstruct(Position pos) {
+  bool canConstruct(Position pos) const {
     if (square)
       return pos.canConstruct(*square);
     else
@@ -141,7 +145,7 @@ class Construction : public Task {
   Construction(TaskCallback* c, Position pos, const ConstructionHelper& h) : Task(true), helper(h), position(pos),
       callback(c) {}
 
-  virtual bool isImpossible(const Level* level) override {
+  virtual bool isBogus() const override {
     return !helper.canConstruct(position);
   }
 
@@ -196,7 +200,7 @@ class Destruction : public Task {
         description(DestroyAction::getVerbSecondPerson(destroyAction) +
           " "_s + furniture->getName()), furnitureType(furniture->getType()) {}
 
-  virtual bool isImpossible(const Level* level) override {
+  virtual bool isBogus() const override {
     return !position.getFurniture() || !position.getFurniture()->canDestroy(destroyAction);
   }
 
@@ -291,8 +295,8 @@ class PickItem : public Task {
     setDone();
   }
 
-  Position getPosition() {
-    return position;
+  virtual bool isBlocked(Creature* c) const override {
+    return !c->isSameSector(position);
   }
 
   bool itemsExist(Position target) {
@@ -351,8 +355,8 @@ class PickItem : public Task {
     return NoMove;
   }
 
-  SERIALIZE_ALL2(Task, items, pickedUp, position, tries, callback); 
-  SERIALIZATION_CONSTRUCTOR(PickItem);
+  SERIALIZE_ALL2(Task, items, pickedUp, position, tries, callback)
+  SERIALIZATION_CONSTRUCTOR(PickItem)
 
   protected:
   EntitySet<Item> SERIAL(items);
@@ -459,11 +463,12 @@ static Position chooseRandomClose(Position start, const vector<Position>& square
 
 class BringItem : public PickItem {
   public:
-  BringItem(TaskCallback* c, Position position, vector<Item*> items, vector<Position> _target, int retries)
-      : PickItem(c, position, items, retries), target(chooseRandomClose(position, _target, LAZY)) {}
 
-  BringItem(TaskCallback* c, Position position, vector<Item*> items, vector<Position> _target)
-      : PickItem(c, position, items), target(chooseRandomClose(position, _target, LAZY)) {}
+  BringItem(TaskCallback* c, Position position, vector<Item*> items, vector<Position> target, int retries)
+      : PickItem(c, position, items, retries), allTargets(target) {}
+
+  BringItem(TaskCallback* c, Position position, vector<Item*> items, Position t)
+      : PickItem(c, position, items), target(t), allTargets({t}) {}
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) {
     return c->drop(it).append([=](Creature* c) {
@@ -472,29 +477,54 @@ class BringItem : public PickItem {
   }
 
   virtual string getDescription() const override {
-    return "Bring item from " + toString(position) + " to " + toString(target);
+    return "Bring item from " + toString(position) + " to " + (target ? toString(*target) : "???"_s);
   }
 
   virtual void onPickedUp() override {
   }
-  
+
+  virtual bool isBlocked(Creature* c) const override {
+    if (!c->isSameSector(position))
+      return true;
+    for (auto& pos : allTargets)
+      if (c->isSameSector(pos))
+        return false;
+    return true;
+  }
+
+  optional<Position> getBestTarget(Creature* c, const vector<Position>& pos) const {
+    vector<Position> available = filter(pos, [c](const Position& pos) { return c->isSameSector(pos); });
+    if (!available.empty())
+      return chooseRandomClose(c->getPosition(), available, LAZY);
+    else
+      return none;
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     if (!pickedUp)
       return PickItem::getMove(c);
+    if (!target || !c->isSameSector(*target))
+      target = getBestTarget(c, allTargets);
+    if (!target)
+      return c->drop(c->getEquipment().getItems(items.containsPredicate())).append(
+          [this] (Creature*) {
+            callback->onCantPickItem(items);
+            setDone();
+          });
     if (c->getPosition() == target) {
       vector<Item*> myItems = c->getEquipment().getItems(items.containsPredicate());
       if (auto action = getBroughtAction(c, myItems))
-        return {1.0, action.append([=](Creature* c) {setDone();})};
+        return {1.0, action.append([=](Creature*) {setDone();})};
       else {
         setDone();
         return NoMove;
       }
     } else {
-      if (c->getPosition().dist8(target) == 1)
-        if (Creature* other = target.getCreature())
+      if (c->getPosition().dist8(*target) == 1)
+        if (Creature* other = target->getCreature())
           if (other->isAffected(LastingEffect::SLEEP))
             other->removeEffect(LastingEffect::SLEEP);
-      return c->moveTowards(target);
+      return c->moveTowards(*target);
     }
   }
 
@@ -502,11 +532,12 @@ class BringItem : public PickItem {
     return !pickedUp;
   }
 
-  SERIALIZE_ALL2(PickItem, target); 
-  SERIALIZATION_CONSTRUCTOR(BringItem);
+  SERIALIZE_ALL2(PickItem, target, allTargets)
+  SERIALIZATION_CONSTRUCTOR(BringItem)
 
   protected:
-  Position SERIAL(target);
+  optional<Position> SERIAL(target);
+  vector<Position> SERIAL(allTargets);
 };
 
 PTask Task::bringItem(TaskCallback* c, Position pos, vector<Item*> items, const set<Position>& target, int numRetries) {
@@ -515,15 +546,15 @@ PTask Task::bringItem(TaskCallback* c, Position pos, vector<Item*> items, const 
 
 class ApplyItem : public BringItem {
   public:
-  ApplyItem(TaskCallback* c, Position position, vector<Item*> items, Position _target) 
-      : BringItem(c, position, items, {_target}), callback(c) {}
+  ApplyItem(TaskCallback* c, Position position, vector<Item*> items, Position target)
+      : BringItem(c, position, items, target), callback(c) {}
 
   virtual void cancel() override {
-    callback->onAppliedItemCancel(target);
+    callback->onAppliedItemCancel(*target);
   }
 
   virtual string getDescription() const override {
-    return "Bring and apply item " + toString(position) + " to " + toString(target);
+    return "Bring and apply item " + toString(position) + " to " + toString(*target);
   }
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) override {

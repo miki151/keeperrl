@@ -54,7 +54,7 @@ typedef text_iarchive InputArchive2;
   friend boost::serialization::access; \
   A(); \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version);
+  void serialize(Archive& ar, const unsigned int);
 
 #define SERIALIZATION_CONSTRUCTOR_IMPL(A) \
   A::A() {}
@@ -85,20 +85,20 @@ void serializeAll(Archive& ar, Arg1& arg1, Args&... args) {
 
 #define SERIALIZE_SUBCLASS(SUB) \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version) { \
+  void serialize(Archive& ar, const unsigned int) { \
     ar & SUBCLASS(SUB);\
   }
 
 #define SERIALIZE_ALL2(SUB, ...) \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version) { \
+  void serialize(Archive& ar, const unsigned int) { \
     ar & SUBCLASS(SUB);\
     serializeAll(ar, __VA_ARGS__); \
   }
 
 #define SERIALIZE_ALL(...) \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version) { \
+  void serialize(Archive& ar, const unsigned int) { \
     serializeAll(ar, __VA_ARGS__); \
   }
 
