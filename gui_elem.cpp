@@ -128,6 +128,7 @@ static optional<SDL_Keycode> getKey(char c) {
     case 'x': return SDL::SDLK_x;
     case 'y': return SDL::SDLK_y;
     case 'z': return SDL::SDLK_z;
+    case ' ': return SDL::SDLK_SPACE;
     default: return none;
   }
   return none;
