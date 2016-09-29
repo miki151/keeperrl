@@ -611,7 +611,8 @@ int Level::getNumTotalSquares() const {
 }
 
 void Level::setNeedsMemoryUpdate(Vec2 pos, bool s) {
-  memoryUpdates[pos] = s;
+  if (pos.inRectangle(getBounds()))
+    memoryUpdates[pos] = s;
 }
 
 bool Level::needsRenderUpdate(Vec2 pos) const {
@@ -620,6 +621,7 @@ bool Level::needsRenderUpdate(Vec2 pos) const {
 
 void Level::setNeedsRenderUpdate(Vec2 pos, bool s) {
   renderUpdates[pos] = s;
+  setNeedsMemoryUpdate(pos, s);
 }
 
 bool Level::needsMemoryUpdate(Vec2 pos) const {

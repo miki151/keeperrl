@@ -306,7 +306,7 @@ string PlayerControl::getWarningText(Collective::Warning w) {
     case Warning::TORTURE_ROOM: return "You need to build a torture room.";
 //    case Warning::ALTAR: return "You need to build a shrine to sacrifice.";
     case Warning::MORE_CHESTS: return "You need a larger treasure room.";
-    case Warning::MANA: return "Kill or torture some innocent beings for more mana.";
+    case Warning::MANA: return "Conquer an enemy tribe or torture some innocent beings for more mana.";
     case Warning::MORE_LIGHTS: return "Place some torches to light up your dungeon.";
   }
   return "";
