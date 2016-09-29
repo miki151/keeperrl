@@ -111,9 +111,9 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyedRemains(FurnitureType::TREE_TRUNK)
           .setBurntRemains(FurnitureType::BURNT_TREE)
           .setDestroyable(100, DestroyAction::Type::BOULDER)
-          .setDestroyable(50, DestroyAction::Type::CUT)
+          .setDestroyable(70, DestroyAction::Type::CUT)
           .setFireInfo(Fire(1000, 0.7))
-          .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(25, 40)));
+          .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(40, 70)));
     case FurnitureType::DECID_TREE:
       return Furniture("tree", ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe)
           .setBlockVision()
@@ -122,8 +122,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBurntRemains(FurnitureType::BURNT_TREE)
           .setFireInfo(Fire(1000, 0.7))
           .setDestroyable(100, DestroyAction::Type::BOULDER)
-          .setDestroyable(50, DestroyAction::Type::CUT)
-          .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(25, 40)));
+          .setDestroyable(70, DestroyAction::Type::CUT)
+          .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(40, 70)));
     case FurnitureType::TREE_TRUNK:
       return Furniture("tree trunk", ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR), type,
                        Furniture::NON_BLOCKING, tribe);
@@ -136,7 +136,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(20, DestroyAction::Type::BOULDER)
           .setDestroyable(10, DestroyAction::Type::CUT)
           .setFireInfo(Fire(100, 0.8))
-          .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(5, 10)));
+          .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(10, 20)));
     case FurnitureType::CROPS:
       return Furniture("wheat", ViewObject(Random.choose(ViewId::CROPS, ViewId::CROPS2), ViewLayer::FLOOR),
                        type, Furniture::NON_BLOCKING, tribe)
