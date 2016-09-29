@@ -115,7 +115,7 @@ static void blast(Creature* who, Position position, Vec2 direction, int maxDista
           elem.second[0]->getAttackType(), 15, 15, false), maxDistance, direction, VisionId::NORMAL);
   }
   if (damage)
-    position.destroy();
+    position.destroy(DestroyAction::Type::BASH);
 }
 
 static void blast(Creature* c, Vec2 direction, int range) {

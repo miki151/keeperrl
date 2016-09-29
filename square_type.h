@@ -1,5 +1,4 @@
-#ifndef _SQUARE_TYPE_H
-#define _SQUARE_TYPE_H
+#pragma once
 
 #include "enums.h"
 #include "creature_factory.h"
@@ -13,20 +12,11 @@ RICH_ENUM(SquareId,
   CUSTOM_FLOOR,
   GRASS,
   MUD,
-  ROCK_WALL,
-  WOOD_WALL,
   BLACK_WALL,
-  CASTLE_WALL,
-  MUD_WALL,
-  MOUNTAIN,
-  DUNGEON_WALL,
   HILL,
   WATER,
   WATER_WITH_DEPTH,
   MAGMA,
-  GOLD_ORE,
-  IRON_ORE,
-  STONE,
   ABYSS,
   SAND,
   BORDER_GUARD,
@@ -55,8 +45,3 @@ class SquareType : public EnumVariant<SquareId, TYPES(CreatureId, StairKey, doub
     return (size_t)getId();
   }
 };
-
-
-bool isWall(SquareType);
-
-#endif

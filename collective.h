@@ -158,9 +158,8 @@ class Collective : public TaskCallback {
   void addTorch(Position);
   Zones& getZones();
   const Zones& getZones() const;
-  void dig(Position);
   void cancelMarkedTask(Position);
-  void cutTree(Position);
+  void orderDestruction(Position pos, const DestroyAction&);
   double getDangerLevel() const;
   bool isMarked(Position) const;
   HighlightType getMarkHighlight(Position) const;
@@ -211,7 +210,7 @@ class Collective : public TaskCallback {
   virtual void onCantPickItem(EntitySet<Item> items) override;
   virtual void onConstructed(Position, const SquareType&) override;
   virtual void onConstructed(Position, FurnitureType) override;
-  virtual void onDestructedFurniture(Position) override;
+  virtual void onDestructedFurniture(Position, const DestroyAction&) override;
   virtual void onTorchBuilt(Position, Trigger*) override;
   virtual void onAppliedSquare(Creature*, Position) override;
   virtual void onKillCancelled(Creature*) override;

@@ -1339,7 +1339,7 @@ void Collective::removeFurniture(Position pos) {
 
 void Collective::destroySquare(Position pos) {
   if (territory->contains(pos))
-    pos.destroy();
+    pos.destroy(DestroyAction::Type::BASH);
   zones->eraseZones(pos);
   if (constructions->containsTrap(pos))
     removeTrap(pos);
@@ -1353,6 +1353,9 @@ void Collective::destroySquare(Position pos) {
 }
 
 void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& cost, bool noCredit) {
+  if (type == FurnitureType::MOUNTAIN && (pos.isChokePoint({MovementTrait::WALK}) ||
+        constructions->getTotalCount(type) - constructions->getBuiltCount(type) > 0))
+    return;
   if (!noCredit || hasResource(cost)) {
     constructions->addFurniture(pos, ConstructionMap::FurnitureInfo(type, cost));
     updateConstructions();
@@ -1360,9 +1363,6 @@ void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& 
 }
 
 void Collective::addConstruction(Position pos, SquareType type, const CostInfo& cost, bool noCredit) {
-  if (type.getId() == SquareId::MOUNTAIN && (pos.isChokePoint({MovementTrait::WALK}) ||
-        constructions->getSquareCount(type) > 0))
-    return;
   if (!noCredit || hasResource(cost)) {
     constructions->addSquare(pos, ConstructionMap::SquareInfo(type, cost));
     updateConstructions();
@@ -1371,10 +1371,6 @@ void Collective::addConstruction(Position pos, SquareType type, const CostInfo& 
 
 const ConstructionMap& Collective::getConstructions() const {
   return *constructions;
-}
-
-void Collective::dig(Position pos) {
-  taskMap->markSquare(pos, HighlightType::DIG, Task::construction(this, pos, SquareId::FLOOR));
 }
 
 void Collective::cancelMarkedTask(Position pos) {
@@ -1397,10 +1393,19 @@ bool Collective::hasPriorityTasks(Position pos) const {
   return taskMap->hasPriorityTasks(pos);
 }
 
-void Collective::cutTree(Position pos) {
+static HighlightType getHighlight(const DestroyAction& action) {
+  switch (action.getType()) {
+    case DestroyAction::Type::CUT:
+      return HighlightType::CUT_TREE;
+    default:
+      return HighlightType::DIG;
+  }
+}
+
+void Collective::orderDestruction(Position pos, const DestroyAction& action) {
   auto f = NOTNULL(pos.getFurniture());
-  CHECK(f->canDestroy(DestroyAction::CUT));
-  taskMap->markSquare(pos, HighlightType::CUT_TREE, Task::destruction(this, pos, f, DestroyAction::CUT));
+  CHECK(f->canDestroy(action));
+  taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action));
 }
 
 void Collective::addTrap(Position pos, TrapType type) {
@@ -1437,37 +1442,45 @@ bool Collective::isConstructionReachable(Position pos) {
 }
 
 void Collective::onConstructed(Position pos, FurnitureType type) {
+  if (type == FurnitureType::MOUNTAIN || type == FurnitureType::DUNGEON_WALL) {
+    constructions->removeFurniture(pos);
+    if (territory->contains(pos))
+      territory->remove(pos);
+    return;
+  }
   constructions->onConstructed(pos, type);
   control->onConstructed(pos, type);
   if (Task* task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
 }
 
-void Collective::onDestructedFurniture(Position pos) {
-  zones->setZone(pos, ZoneId::FETCH_ITEMS);
+void Collective::onDestructedFurniture(Position pos, const DestroyAction& action) {
+  switch (action.getType()) {
+    case DestroyAction::Type::CUT:
+      zones->setZone(pos, ZoneId::FETCH_ITEMS);
+      break;
+    case DestroyAction::Type::DIG:
+      territory->insert(pos);
+      for (Position v : pos.neighbors4())
+        if (constructions->containsTorch(v) &&
+            constructions->getTorch(v).getAttachmentDir() == v.getDir(pos).getCardinalDir())
+          removeTorch(v);
+      break;
+    default:
+      break;
+  }
+  control->onDestructed(pos, action);
 }
 
 void Collective::onConstructed(Position pos, const SquareType& type) {
   CHECK(!getSquares(type).count(pos));
   for (auto& elem : *mySquares)
     elem.second.erase(pos);
-  if (type.getId() == SquareId::MOUNTAIN) {
-    destroySquare(pos);
-    if (territory->contains(pos))
-      territory->remove(pos);
-    return;
-  }
   (*mySquares)[type].insert(pos);
   tileEfficiency->setType(pos, type);
   territory->insert(pos);
   if (constructions->containsSquare(pos) && !constructions->getSquare(pos).isBuilt())
     constructions->getSquare(pos).setBuilt();
-  if (type == SquareId::FLOOR) {
-    for (Position v : pos.neighbors4())
-      if (constructions->containsTorch(v) &&
-          constructions->getTorch(v).getAttachmentDir() == v.getDir(pos).getCardinalDir())
-        removeTorch(v);
-  }
   control->onConstructed(pos, type);
   if (Task* task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
@@ -1534,9 +1547,7 @@ void Collective::updateConstructions() {
   }
   for (Position pos : constructions->getAllFurniture()) {
     auto& construction = constructions->getFurniture(pos);
-    if (!isDelayed(pos) && !construction.hasTask() && !construction.isBuilt()) {
-      if (!hasResource(construction.getCost()))
-        continue;
+    if (!isDelayed(pos) && !construction.hasTask() && !construction.isBuilt() && hasResource(construction.getCost())) {
       construction.setTask(
           taskMap->addTaskCost(Task::construction(this, pos, construction.getFurnitureType()), pos,
           construction.getCost())->getUniqueId());
@@ -1817,7 +1828,7 @@ void Collective::freeTeamMembers(TeamId id) {
 
 static optional<Vec2> getAdjacentWall(Position pos) {
   for (Position p : pos.neighbors4(Random))
-    if (p.canConstruct(SquareId::FLOOR))
+    if (p.canSupportDoorOrTorch())
       return pos.getDir(p);
   return none;
 }

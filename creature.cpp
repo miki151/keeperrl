@@ -1335,10 +1335,6 @@ CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const
           if (type.getId() == SquareId::FLOOR) {
             monsterMessage(getName().the() + " digs a tunnel");
             playerMessage("You dig a tunnel");
-          } else
-          if (type.getId() == SquareId::MOUNTAIN) {
-            monsterMessage(getName().the() + " fills up a tunnel");
-            playerMessage("You fill up a tunnel");
           } else {
             monsterMessage(getName().the() + " builds " + getPosition().plus(direction).getName());
             playerMessage("You build " + getPosition().plus(direction).getName());
@@ -1353,8 +1349,7 @@ CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
   if (getPosition().plus(direction).canConstruct(type) && canConstruct(type))
     return CreatureAction(this, [=](Creature* self) {
         addSound(Sound(SoundId::DIGGING).setPitch(0.5));
-        if (getPosition().plus(direction).construct(type, self)) {
-        }
+        getPosition().plus(direction).construct(type, self);
         self->spendTime(1);
       });
   return CreatureAction();
@@ -1377,16 +1372,15 @@ CreatureAction Creature::eat(Item* item) const {
   });
 }
 
-void Creature::destroyImpl(Vec2 direction, DestroyAction::Value action) {
+void Creature::destroyImpl(Vec2 direction, const DestroyAction& action) {
   string name = getPosition().plus(direction).getName();
-  playerMessage("You "_s + DestroyAction::getVerbSecondPerson(action) + " the " + name);
-  monsterMessage(getName().the() + " " + DestroyAction::getVerbThirdPerson(action) + " the " + name,
-      DestroyAction::getSoundText(action));
-  getPosition().plus(direction).tryToDestroyBy(this);
+  playerMessage("You "_s + action.getVerbSecondPerson() + " the " + name);
+  monsterMessage(getName().the() + " " + action.getVerbThirdPerson() + " the " + name, action.getSoundText());
+  getPosition().plus(direction).tryToDestroyBy(this, action);
 }
 
-CreatureAction Creature::destroy(Vec2 direction, DestroyAction::Value action) const {
-  if (direction.length8() <= 1 && getPosition().plus(direction).canDestroy(this))
+CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) const {
+  if (direction.length8() <= 1 && getPosition().plus(direction).canDestroy(this, action))
       return CreatureAction(this, [=](Creature* self) {
         self->destroyImpl(direction, action);
         self->spendTime(1);
@@ -1624,7 +1618,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
       return action;
     else {
       if (!pos2.canEnterEmpty(this))
-        if (auto action = destroy(getPosition().getDir(pos2), DestroyAction::BASH))
+        if (auto action = destroy(getPosition().getDir(pos2), DestroyAction::Type::BASH))
           return action;
       return CreatureAction();
     }

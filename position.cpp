@@ -357,17 +357,14 @@ vector<PItem> Position::removeItems(vector<Item*> it) {
   return modSquare()->removeItems(*this, it);
 }
 
-bool Position::canDestroy(const Creature* c) const {
-  if (!isUnavailable())
-    if (auto furniture = getFurniture())
-      return furniture->canDestroy(c);
-  return false;
+bool Position::canDestroy(const Creature* c, const DestroyAction& action) const {
+  return canDestroy(c->getMovementType(), action);
 }
 
-bool Position::canDestroy(const MovementType& movement) const {
+bool Position::canDestroy(const MovementType& movement, const DestroyAction& action) const {
   if (!isUnavailable())
     if (auto furniture = getFurniture())
-      return furniture->canDestroy(movement);
+      return furniture->canDestroy(movement, action);
   return false;
 }
 
@@ -403,14 +400,14 @@ void Position::dropItems(vector<PItem> v) {
     modSquare()->dropItems(*this, std::move(v));
 }
 
-void Position::tryToDestroyBy(Creature* c) {
+void Position::tryToDestroyBy(Creature* c, const DestroyAction& action) {
   if (auto furniture = modFurniture())
-    furniture->tryToDestroyBy(*this, c);
+    furniture->tryToDestroyBy(*this, c, action);
 }
 
-void Position::destroy() {
+void Position::destroy(const DestroyAction& action) {
   if (Furniture* f = modFurniture())
-    f->destroy(*this);
+    f->destroy(*this, action);
 }
 
 void Position::removeFurniture(const Furniture* f) const {
@@ -452,17 +449,15 @@ bool Position::canConstruct(FurnitureType type) const {
 }
 
 bool Position::canSupportDoorOrTorch() const {
-  return canConstruct(SquareId::FLOOR) && !canEnterEmpty({MovementTrait::WALK});
+  if (auto furniture = getFurniture())
+    return furniture->canSupportDoor();
+  else
+    return false;
 }
 
-bool Position::construct(FurnitureType type, Creature* c) {
-  if (construct(type, c->getTribeId())) {
-    auto f = getFurniture();
-    c->monsterMessage(c->getName().the() + " builds " + f->getName());
-    c->playerMessage("You build " + f->getName());
-    return true;
-  }
-  return false;
+void Position::construct(FurnitureType type, Creature* c) {
+  if (construct(type, c->getTribeId()))
+    getFurniture()->onConstructedBy(c);
 }
 
 bool Position::construct(FurnitureType type, TribeId tribe) {
@@ -638,7 +633,7 @@ bool Position::canNavigate(const MovementType& type) const {
   Creature* creature = getCreature();
   return canEnterEmpty(type) || 
     // for destroying doors, etc, but not entering forbidden zone
-    (canDestroy(type) && !canEnterEmpty(typeForced));
+    (canDestroy(type, DestroyAction::Type::BASH) && !canEnterEmpty(typeForced));
 }
 
 bool Position::canSeeThru(VisionId id) const {

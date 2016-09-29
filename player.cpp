@@ -723,7 +723,7 @@ void Player::moveAction(Vec2 dir) {
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());
   else if (!getCreature()->getPosition().plus(dir).canEnterEmpty(getCreature()))
-    tryToPerform(getCreature()->destroy(dir, DestroyAction::BASH));
+    tryToPerform(getCreature()->destroy(dir, DestroyAction::Type::BASH));
 }
 
 bool Player::isPlayer() const {

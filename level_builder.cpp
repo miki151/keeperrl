@@ -48,10 +48,6 @@ void LevelBuilder::removeAttrib(Vec2 pos, SquareAttrib attr) {
   attrib[transform(pos)].erase(attr);
 }
 
-const Square* LevelBuilder::getSquare(Vec2 pos) {
-  return squares.getReadonly(transform(pos));
-}
-
 Square* LevelBuilder::modSquare(Vec2 pos) {
   return squares.getWritable(transform(pos));
 }
@@ -122,8 +118,13 @@ void LevelBuilder::putFurniture(Vec2 posT, FurnitureFactory& f) {
 }
 
 void LevelBuilder::putFurniture(Vec2 posT, FurnitureParams f) {
-  CHECK(canPutFurniture(posT));
+  if (getFurniture(posT))
+    removeFurniture(posT);
   furniture.putElem(transform(posT), f);
+}
+
+void LevelBuilder::putFurniture(Vec2 pos, FurnitureType type) {
+  putFurniture(pos, {type, TribeId::getHostile()});
 }
 
 bool LevelBuilder::canPutFurniture(Vec2 posT) {
@@ -135,10 +136,14 @@ void LevelBuilder::removeFurniture(Vec2 pos) {
 }
 
 optional<FurnitureType> LevelBuilder::getFurnitureType(Vec2 posT) {
-  if (auto f = furniture.getReadonly(transform(posT)))
+  if (auto f = getFurniture(posT))
     return f->getType();
   else
     return none;
+}
+
+const Furniture* LevelBuilder::getFurniture(Vec2 posT) {
+  return furniture.getReadonly(transform(posT));
 }
 
 void LevelBuilder::setLandingLink(Vec2 posT, StairKey key) {
@@ -148,7 +153,7 @@ void LevelBuilder::setLandingLink(Vec2 posT, StairKey key) {
 
 bool LevelBuilder::canPutCreature(Vec2 posT, Creature* c) {
   Vec2 pos = transform(posT);
-  if (!squares.getReadonly(pos)->canEnterEmpty(c->getMovementType()))
+  if (!canNavigate(posT, c->getMovementType()))
     return false;
   for (pair<PCreature, Vec2>& c : creatures) {
     if (c.second == pos)

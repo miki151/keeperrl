@@ -40,9 +40,6 @@ class ViewObject;
 
 enum class ConstructionsId {
   DUNGEON_ROOMS,
-  MINING_ORE,
-  MINING,
-  MOUNTAIN_GEN_ORES,
 };
 
 class Square : public Renderable {

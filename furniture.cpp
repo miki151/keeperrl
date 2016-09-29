@@ -23,18 +23,12 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Furniture);
 
 Furniture::~Furniture() {}
 
-DestroyAction::Value Furniture::getDefaultDestroyAction() const {
-  if (canCut)
-    return DestroyAction::CUT;
-  else
-    return DestroyAction::BASH;
-}
-
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
   ar & SUBCLASS(Renderable);
-  serializeAll(ar, name, type, blockType, tribe, fire, burntRemains, destroyedRemains, strength, itemDrop, canCut);
-  serializeAll(ar, blockVision, usageType, clickType, tickType, usageTime, overrideMovement);
+  serializeAll(ar, name, type, blockType, tribe, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
+  serializeAll(ar, blockVision, usageType, clickType, tickType, usageTime, overrideMovement, canSupport);
+  serializeAll(ar, constructMessage);
 }
 
 SERIALIZABLE(Furniture);
@@ -52,8 +46,8 @@ bool Furniture::canEnter(const MovementType& movement) const {
   return blockType == NON_BLOCKING || (blockType == BLOCKING_ENEMIES && movement.isCompatible(getTribe()));
 }
 
-void Furniture::destroy(Position pos) {
-  pos.globalMessage("The " + name + " " + DestroyAction::getIsDestroyed(getDefaultDestroyAction()));
+void Furniture::destroy(Position pos, const DestroyAction& action) {
+  pos.globalMessage("The " + name + " " + action.getIsDestroyed());
   pos.getGame()->addEvent({EventId::FURNITURE_DESTROYED, pos});
   if (*itemDrop)
     pos.dropItems((*itemDrop)->random());
@@ -63,14 +57,12 @@ void Furniture::destroy(Position pos) {
     pos.removeFurniture(this);
 }
 
-void Furniture::tryToDestroyBy(Position pos, Creature* c) {
-  c->addSound(DestroyAction::getSound(getDefaultDestroyAction()));
-  if (!strength)
-    destroy(pos);
-  else {
+void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {
+  if (auto& strength = destroyActions[action.getType()]) {
+    c->addSound(action.getSound());
     *strength -= c->getAttr(AttrType::STRENGTH);
     if (*strength <= 0)
-      destroy(pos);
+      destroy(pos, action);
   }
 }
 
@@ -143,6 +135,32 @@ bool Furniture::isTicking() const {
   return !!tickType;
 }
 
+bool Furniture::canSupportDoor() const {
+  return canSupport;
+}
+
+void Furniture::onConstructedBy(Creature* c) const {
+  switch (constructMessage) {
+    case BUILD:
+      c->monsterMessage(c->getName().the() + " builds a " + getName());
+      c->playerMessage("You build a " + getName());
+      break;
+    case FILL_UP:
+      c->monsterMessage(c->getName().the() + " fills up the tunnel");
+      c->playerMessage("You fill up the tunnel");
+      break;
+    case REINFORCE:
+      c->monsterMessage(c->getName().the() + " reinforces the wall");
+      c->playerMessage("You reinforce the wall");
+      break;
+  }
+}
+
+Furniture& Furniture::setConstructMessage(Furniture::ConstructMessage msg) {
+  constructMessage = msg;
+  return *this;
+}
+
 const optional<Fire>& Furniture::getFire() const {
   return *fire;
 }
@@ -151,12 +169,10 @@ optional<Fire>& Furniture::getFire() {
   return *fire;
 }
 
-bool Furniture::canDestroy(const MovementType& movement) const {
-   return !!strength && (!getFire() || !getFire()->isBurning()) && !movement.isCompatible(getTribe());
-}
-
-bool Furniture::canDestroy(const Creature* c) const {
-  return canDestroy(c->getMovementType()) || (!!strength && c->getAttributes().isBoulder());
+bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& action) const {
+   return canDestroy(action) &&
+       (!getFire() || !getFire()->isBurning()) &&
+       (!movement.isCompatible(getTribe()) || action.canDestroyFriendly());
 }
 
 void Furniture::fireDamage(Position pos, double amount) {
@@ -173,7 +189,13 @@ void Furniture::fireDamage(Position pos, double amount) {
 }
 
 Furniture& Furniture::setDestroyable(double s) {
-  strength = s;
+  setDestroyable(s, DestroyAction::Type::BOULDER);
+  setDestroyable(s, DestroyAction::Type::BASH);
+  return *this;
+}
+
+Furniture& Furniture::setDestroyable(double s, DestroyAction::Type type) {
+  destroyActions[type] = s;
   return *this;
 }
 
@@ -189,11 +211,6 @@ Furniture& Furniture::setBurntRemains(FurnitureType t) {
 
 Furniture& Furniture::setDestroyedRemains(FurnitureType t) {
   destroyedRemains = t;
-  return *this;
-}
-
-Furniture& Furniture::setCanCut() {
-  canCut = true;
   return *this;
 }
 
@@ -233,14 +250,20 @@ Furniture& Furniture::setFireInfo(const Fire& f) {
   return *this;
 }
 
+Furniture& Furniture::setCanSupportDoor() {
+  canSupport = true;
+  return *this;
+}
+
 Furniture& Furniture::setOverrideMovement() {
   overrideMovement = true;
   return *this;
 }
 
-bool Furniture::canDestroy(DestroyAction::Value value) const {
-  if (value == DestroyAction::CUT)
-    return canCut;
-  else
-    return true;
+bool Furniture::canDestroy(const DestroyAction& action) const {
+  return !!destroyActions[action.getType()];
+}
+
+optional<double> Furniture::getStrength(const DestroyAction& action) const {
+  return destroyActions[action.getType()];
 }

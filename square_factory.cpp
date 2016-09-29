@@ -116,27 +116,6 @@ class Water : public Square {
   }
 };
 
-class MountainOre : public Square {
-  public:
-  MountainOre(const ViewObject& object, const string& name, ItemId ore, int dropped) : Square(object,
-        CONSTRUCT(Square::Params,
-          c.name = name;
-          c.movementSet->setCovered(true);
-          c.constructions = ConstructionsId::MINING_ORE;)),
-      oreId(ore), numDropped(dropped) {}
-
-  virtual void onConstructNewSquare(Position pos, Square* s) const override {
-    pos.dropItems(ItemFactory::fromId(oreId, numDropped));
-  }
-
-  SERIALIZE_ALL2(Square, oreId, numDropped);
-  SERIALIZATION_CONSTRUCTOR(MountainOre);
-
-  private:
-  ItemId SERIAL(oreId);
-  int SERIAL(numDropped);
-};
-
 class SokobanHole : public Square {
   public:
   SokobanHole(const ViewObject& obj, const string& name, StairKey key) : Square(obj,
@@ -176,7 +155,6 @@ template <class Archive>
 void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Magma);
   REGISTER_TYPE(ar, Water);
-  REGISTER_TYPE(ar, MountainOre);
   REGISTER_TYPE(ar, SokobanHole);
 }
 
@@ -223,52 +201,9 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.name = "mud";
               c.vision = VisionId::NORMAL;
               c.movementSet = MovementSet().addTrait(MovementTrait::WALK);));
-    case SquareId::ROCK_WALL:
-        return new Square(ViewObject(ViewId::WALL, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW),
-            CONSTRUCT(Square::Params,
-              c.name = "wall";
-              c.constructions = ConstructionsId::MINING;
-            ));
-    case SquareId::GOLD_ORE:
-        return new MountainOre(ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), "gold ore", ItemId::GOLD_PIECE, Random.get(18, 40));
-    case SquareId::IRON_ORE:
-        return new MountainOre(ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), "iron ore", ItemId::IRON_ORE, Random.get(18, 40));
-    case SquareId::STONE:
-        return new MountainOre(ViewObject(ViewId::STONE, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), "granite", ItemId::ROCK, Random.get(18, 40));
-    case SquareId::WOOD_WALL:
-        return new Square(ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params,
-              c.name = "wall";
-              /*c.flamability = 0.4;*/));
     case SquareId::BLACK_WALL:
         return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR, "Wall")
             .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));
-    case SquareId::CASTLE_WALL:
-        return new Square(ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));
-    case SquareId::MUD_WALL:
-        return new Square(ViewObject(ViewId::MUD_WALL, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));
-    case SquareId::MOUNTAIN:
-        return new Square(ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW),
-          CONSTRUCT(Square::Params,
-            c.name = "mountain";
-            c.movementSet->setCovered(true);
-            c.constructions = ConstructionsId::MOUNTAIN_GEN_ORES;
-            ));
-    case SquareId::DUNGEON_WALL:
-        return new Square(ViewObject(ViewId::DUNGEON_WALL, ViewLayer::FLOOR)
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW),
-          CONSTRUCT(Square::Params,
-            c.name = "wall";
-            c.movementSet->setCovered(true);
-            c.constructions = ConstructionsId::MINING;
-            ));
     case SquareId::HILL:
         return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND),
           CONSTRUCT(Square::Params,

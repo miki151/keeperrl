@@ -407,20 +407,6 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
   addMapVillains(enemyInfo, biome);
- // append(enemyInfo, getBanditCave(random));
-  /*      append(enemyInfo, getSokobanEntry(random));
-        append(enemyInfo, random.choose({
-          getFriendlyCave(random, CreatureId::ORC),
-          getFriendlyCave(random, CreatureId::OGRE),
-          getFriendlyCave(random, CreatureId::HARPY)}));*/
-  /*      append(enemyInfo, random.choose({
-          getGreenDragon(random),
-          getShelob(random),
-          getHydra(random),
-          getRedDragon(random),
-          getCyclops(random),
-          getDriadTown(random),
-          getEntTown(random)}));*/
   PModel ret = tryModel(210, siteName, enemyInfo, true, biome);
   return ret;
 }

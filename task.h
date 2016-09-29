@@ -43,7 +43,7 @@ class Task : public UniqueEntity<Task> {
 
   static PTask construction(TaskCallback*, Position, const SquareType&);
   static PTask construction(TaskCallback*, Position, FurnitureType);
-  static PTask destruction(TaskCallback*, Position, const Furniture*, DestroyAction::Value);
+  static PTask destruction(TaskCallback*, Position, const Furniture*, DestroyAction);
   static PTask buildTorch(TaskCallback*, Position, Dir attachmentDir);
   static PTask bringItem(TaskCallback*, Position position, vector<Item*>, const set<Position>& target,
       int numRetries = 10);
@@ -57,7 +57,6 @@ class Task : public UniqueEntity<Task> {
   static PTask kill(TaskCallback*, Creature*);
   static PTask torture(TaskCallback*, Creature*);
   static PTask sacrifice(TaskCallback*, Creature*);
-  static PTask destroySquare(Position);
   static PTask disappear();
   static PTask chain(PTask, PTask);
   static PTask chain(PTask, PTask, PTask);

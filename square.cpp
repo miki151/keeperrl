@@ -99,23 +99,10 @@ double Square::getLightEmission() const {
 
 static optional<short int> getConstructionTime(ConstructionsId id, SquareId square) {
   switch (id) {
-    case ConstructionsId::MINING:
-      return square == SquareId::FLOOR ? Random.get(3, 8) : optional<short int>(none);
-    case ConstructionsId::MINING_ORE:
-      return square == SquareId::FLOOR ? Random.get(25, 50) : optional<short int>(none);
-    case ConstructionsId::MOUNTAIN_GEN_ORES:
-      switch (square) {
-        case SquareId::FLOOR: return Random.get(3, 8);
-        case SquareId::DUNGEON_WALL: return Random.get(3, 8);
-        case SquareId::IRON_ORE:
-        case SquareId::STONE:
-        case SquareId::GOLD_ORE: return 1;
-        default: return none;
-      }
     case ConstructionsId::DUNGEON_ROOMS:
       switch (square) {
         case SquareId::CUSTOM_FLOOR: return 3;
-        case SquareId::MOUNTAIN: return 15;
+        case SquareId::FLOOR: return 1;
         default: return none;
       }
   }

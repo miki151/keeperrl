@@ -26,11 +26,11 @@ class Furniture : public Renderable {
   const string& getName() const;
   FurnitureType getType() const;
   bool canEnter(const MovementType&) const;
-  bool canDestroy(const Creature*) const;
-  bool canDestroy(const MovementType&) const;
-  bool canDestroy(DestroyAction::Value) const;
-  void destroy(Position);
-  void tryToDestroyBy(Position, Creature*);
+  bool canDestroy(const MovementType&, const DestroyAction&) const;
+  bool canDestroy(const DestroyAction&) const;
+  optional<double> getStrength(const DestroyAction&) const;
+  void destroy(Position, const DestroyAction&);
+  void tryToDestroyBy(Position, Creature*, const DestroyAction&);
   TribeId getTribe() const;
   const optional<Fire>& getFire() const;
   optional<Fire>& getFire();
@@ -45,12 +45,17 @@ class Furniture : public Renderable {
   int getUsageTime() const;
   optional<FurnitureClickType> getClickType() const;
   bool isTicking() const;
+  bool canSupportDoor() const;
+  void onConstructedBy(Creature*) const;
 
+  enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE };
+
+  Furniture& setConstructMessage(ConstructMessage);
   Furniture& setDestroyable(double);
+  Furniture& setDestroyable(double, DestroyAction::Type);
   Furniture& setItemDrop(ItemFactory);
   Furniture& setBurntRemains(FurnitureType);
   Furniture& setDestroyedRemains(FurnitureType);
-  Furniture& setCanCut();
   Furniture& setBlockVision();
   Furniture& setBlockVision(VisionId, bool);
   Furniture& setUsageType(FurnitureUsageType);
@@ -58,6 +63,7 @@ class Furniture : public Renderable {
   Furniture& setClickType(FurnitureClickType);
   Furniture& setTickType(FurnitureTickType);
   Furniture& setFireInfo(const Fire&);
+  Furniture& setCanSupportDoor();
   Furniture& setOverrideMovement();
 
   SERIALIZATION_DECL(Furniture)
@@ -65,7 +71,6 @@ class Furniture : public Renderable {
   ~Furniture();
 
   private:
-  DestroyAction::Value getDefaultDestroyAction() const;
   string SERIAL(name);
   FurnitureType SERIAL(type);
   BlockType SERIAL(blockType);
@@ -73,13 +78,14 @@ class Furniture : public Renderable {
   HeapAllocated<optional<Fire>> SERIAL(fire);
   optional<FurnitureType> SERIAL(burntRemains);
   optional<FurnitureType> SERIAL(destroyedRemains);
-  optional<double> SERIAL(strength);
+  EnumMap<DestroyAction::Type, optional<double>> SERIAL(destroyActions);
   HeapAllocated<optional<ItemFactory>> SERIAL(itemDrop);
-  bool SERIAL(canCut) = false;
   EnumSet<VisionId> SERIAL(blockVision);
   optional<FurnitureUsageType> SERIAL(usageType);
   optional<FurnitureClickType> SERIAL(clickType);
   optional<FurnitureTickType> SERIAL(tickType);
   int SERIAL(usageTime) = 1;
   bool SERIAL(overrideMovement) = false;
+  bool SERIAL(canSupport) = false;
+  ConstructMessage SERIAL(constructMessage) = BUILD;
 };

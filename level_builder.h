@@ -1,6 +1,4 @@
-#ifndef _LEVEL_BUILDER_H
-#define _LEVEL_BUILDER_H
-
+#pragma once
 
 #include "util.h"
 #include "square_type.h"
@@ -51,7 +49,6 @@ class LevelBuilder {
   ~LevelBuilder();
 
   /** Returns a given square.*/
-  const Square* getSquare(Vec2);
   Square* modSquare(Vec2);
 
   /** Checks if it's possible to put a creature on given square.*/
@@ -89,9 +86,11 @@ class LevelBuilder {
 
   void putFurniture(Vec2 pos, FurnitureFactory&);
   void putFurniture(Vec2 pos, FurnitureParams);
+  void putFurniture(Vec2 pos, FurnitureType);
   bool canPutFurniture(Vec2 pos);
   void removeFurniture(Vec2 pos);
   optional<FurnitureType> getFurnitureType(Vec2 pos);
+  const Furniture* getFurniture(Vec2 pos);
 
   void setLandingLink(Vec2 pos, StairKey);
 
@@ -152,5 +151,3 @@ class LevelBuilder {
   RandomGen& random;
   bool noDiagonalPassing = false;
 };
-
-#endif

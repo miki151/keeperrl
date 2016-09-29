@@ -159,10 +159,10 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
   if (!buildInfo) {
     buildInfo = {
       BuildInfo(BuildInfo::DIG, "Dig or cut tree", "", 'd'),
-      BuildInfo({SquareId::MOUNTAIN, {ResourceId::STONE, 50}}, "Fill up tunnel", {},
+      BuildInfo({FurnitureType::MOUNTAIN, {ResourceId::STONE, 50}}, "Fill up tunnel", {},
           "Fill up one tile at a time. Cutting off an area is not allowed.", 0, "Structure"),
-      BuildInfo({SquareId::DUNGEON_WALL, {ResourceId::STONE, 10}}, "Reinforce wall", {},
-          "Reinforce wall. +" + toString<int>(100 * CollectiveConfig::getEfficiencyBonus(SquareId::DUNGEON_WALL)) +
+      BuildInfo({FurnitureType::DUNGEON_WALL, {ResourceId::STONE, 10}}, "Reinforce wall", {},
+          "Reinforce wall. +"/* + toString<int>(100 * CollectiveConfig::getEfficiencyBonus(SquareId::DUNGEON_WALL)) +*/
           " efficiency to to surrounding tiles.", 0, "Structure"),
     };
     for (int i : All(CollectiveConfig::getFloors())) {
@@ -2101,18 +2101,14 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           selection = DESELECT;
         } else
         if (!markedToDig && selection != DESELECT) {
-          auto furniture = position.getFurniture();
-          if (furniture && furniture->canDestroy(DestroyAction::CUT)) {
-            getCollective()->cutTree(position);
-            getView()->addSound(SoundId::DIG_MARK);
-            selection = SELECT;
-          } else
-            if (position.canConstruct(SquareId::FLOOR) ||
-                (!getCollective()->getKnownTiles().isKnown(position) && !position.isUnavailable())) {
-              getCollective()->dig(position);
-              getView()->addSound(SoundId::DIG_MARK);
-              selection = SELECT;
-            }
+          if (auto furniture = position.getFurniture())
+            for (auto type : {DestroyAction::Type::CUT, DestroyAction::Type::DIG})
+              if (furniture->canDestroy(type)) {
+                getCollective()->orderDestruction(position, type);
+                getView()->addSound(SoundId::DIG_MARK);
+                selection = SELECT;
+                break;
+              }
         }
         break;
         }
@@ -2164,7 +2160,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           }
         } else {
           BuildInfo::SquareInfo info = building.squareInfo;
-          if (getCollective()->getKnownTiles().isKnown(position) && position.canConstruct(info.type)
+          if (getCollective()->getTerritory().contains(position) && position.canConstruct(info.type)
               && selection != DESELECT
               && !getCollective()->getSquares(info.type).count(position)
               && !getCollective()->getConstructions().containsTrap(position)
@@ -2413,12 +2409,15 @@ void PlayerControl::updateSquareMemory(Position pos) {
 }
 
 void PlayerControl::onConstructed(Position pos, FurnitureType type) {
-  updateSquareMemory(pos);
+  //updateSquareMemory(pos);
 }
 
 void PlayerControl::onConstructed(Position pos, const SquareType& type) {
-  updateSquareMemory(pos);
-  if (type == SquareId::FLOOR) {
+  //updateSquareMemory(pos);
+}
+
+void PlayerControl::onDestructed(Position pos, const DestroyAction& action) {
+  if (action.getType() == DestroyAction::Type::DIG) {
     Vec2 visRadius(3, 3);
     for (Position v : pos.getRectangle(Rectangle(-visRadius, visRadius + Vec2(1, 1)))) {
       getCollective()->addKnownTile(v);

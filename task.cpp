@@ -195,10 +195,10 @@ PTask Task::construction(TaskCallback* c, Position target, FurnitureType type) {
 namespace {
 class Destruction : public Task {
   public:
-  Destruction(TaskCallback* c, Position pos, const Furniture* furniture, DestroyAction::Value action)
+  Destruction(TaskCallback* c, Position pos, const Furniture* furniture, DestroyAction action)
       : Task(true), position(pos), callback(c), destroyAction(action),
-        description(DestroyAction::getVerbSecondPerson(destroyAction) +
-          " "_s + furniture->getName()), furnitureType(furniture->getType()) {}
+        description(action.getVerbSecondPerson() + " "_s + furniture->getName()),
+        furnitureType(furniture->getType()) {}
 
   virtual bool isBogus() const override {
     return !position.getFurniture() || !position.getFurniture()->canDestroy(destroyAction);
@@ -219,7 +219,7 @@ class Destruction : public Task {
       return {1.0, action.append([=](Creature* c) {
           if (!position.getFurniture() || position.getFurniture()->getType() != furnitureType) {
             setDone();
-            callback->onDestructedFurniture(position);
+            callback->onDestructedFurniture(position, destroyAction);
           }
           })};
     else {
@@ -234,15 +234,14 @@ class Destruction : public Task {
   private:
   Position SERIAL(position);
   TaskCallback* SERIAL(callback);
-  DestroyAction::Value SERIAL(destroyAction);
+  DestroyAction SERIAL(destroyAction);
   string SERIAL(description);
   FurnitureType SERIAL(furnitureType);
 };
 
 }
 
-PTask Task::destruction(TaskCallback* c, Position target, const Furniture* furniture,
-                        DestroyAction::Value destroyAction) {
+PTask Task::destruction(TaskCallback* c, Position target, const Furniture* furniture, DestroyAction destroyAction) {
   return PTask(new Destruction(c, target, furniture, destroyAction));
 }
 
@@ -744,45 +743,6 @@ PTask Task::kill(TaskCallback* callback, Creature* creature) {
 
 PTask Task::torture(TaskCallback* callback, Creature* creature) {
   return PTask(new Kill(callback, creature, Kill::TORTURE));
-}
-
-namespace {
-
-class DestroySquare : public Task {
-  public:
-  DestroySquare(Position pos) : position(pos) {
-  }
-
-  virtual MoveInfo getMove(Creature* c) override {
-    if (c->getPosition().dist8(position) == 1)
-      if (auto action = c->destroy(position.getDir(c->getPosition()), DestroyAction::DESTROY))
-        return action.append([=](Creature* c) { 
-          if (!position.canDestroy(c))
-            setDone();
-          });
-    if (auto action = c->moveTowards(position))
-      return action;
-    for (Vec2 v : Vec2::directions8(Random))
-      if (auto action = c->destroy(v, DestroyAction::DESTROY))
-        return action;
-    return NoMove;
-  }
-
-  virtual string getDescription() const override {
-    return "Destroy " + toString(position);
-  }
-
-  SERIALIZE_ALL2(Task, position); 
-  SERIALIZATION_CONSTRUCTOR(DestroySquare);
-
-  private:
-  Position SERIAL(position);
-};
-
-}
-
-PTask Task::destroySquare(Position position) {
-  return PTask(new DestroySquare(position));
 }
 
 namespace {
@@ -1492,7 +1452,6 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, ApplyItem);
   REGISTER_TYPE(ar, ApplySquare);
   REGISTER_TYPE(ar, Kill);
-  REGISTER_TYPE(ar, DestroySquare);
   REGISTER_TYPE(ar, Disappear);
   REGISTER_TYPE(ar, Chain);
   REGISTER_TYPE(ar, Explore);

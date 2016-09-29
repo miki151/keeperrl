@@ -106,23 +106,23 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(80);
     case FurnitureType::CANIF_TREE:
       return Furniture("tree", ViewObject(ViewId::CANIF_TREE, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe)
-          .setCanCut()
           .setBlockVision()
           .setBlockVision(VisionId::ELF, false)
           .setDestroyedRemains(FurnitureType::TREE_TRUNK)
           .setBurntRemains(FurnitureType::BURNT_TREE)
-          .setDestroyable(100)
+          .setDestroyable(100, DestroyAction::Type::BOULDER)
+          .setDestroyable(50, DestroyAction::Type::CUT)
           .setFireInfo(Fire(1000, 0.7))
           .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(25, 40)));
     case FurnitureType::DECID_TREE:
       return Furniture("tree", ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe)
-          .setCanCut()
           .setBlockVision()
           .setBlockVision(VisionId::ELF, false)
           .setDestroyedRemains(FurnitureType::TREE_TRUNK)
           .setBurntRemains(FurnitureType::BURNT_TREE)
           .setFireInfo(Fire(1000, 0.7))
-          .setDestroyable(100)
+          .setDestroyable(100, DestroyAction::Type::BOULDER)
+          .setDestroyable(50, DestroyAction::Type::CUT)
           .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(25, 40)));
     case FurnitureType::TREE_TRUNK:
       return Furniture("tree trunk", ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR), type,
@@ -133,8 +133,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(30);
     case FurnitureType::BUSH:
       return Furniture("bush", ViewObject(ViewId::BUSH, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe)
-          .setCanCut()
-          .setDestroyable(20)
+          .setDestroyable(20, DestroyAction::Type::BOULDER)
+          .setDestroyable(10, DestroyAction::Type::CUT)
           .setFireInfo(Fire(100, 0.8))
           .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(5, 10)));
     case FurnitureType::CROPS:
@@ -216,6 +216,57 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setOverrideMovement();
     case FurnitureType::ROAD:
       return Furniture("road", ViewObject(ViewId::ROAD, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe);
+    case FurnitureType::MOUNTAIN:
+      return Furniture("mountain", ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setBlockVision()
+          .setConstructMessage(Furniture::FILL_UP)
+          .setCanSupportDoor()
+          .setDestroyable(200, DestroyAction::Type::BOULDER)
+          .setDestroyable(50, DestroyAction::Type::DIG);
+    case FurnitureType::IRON_ORE:
+      return Furniture("iron ore", ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setBlockVision()
+          .setCanSupportDoor()
+          .setDestroyable(200, DestroyAction::Type::BOULDER)
+          .setItemDrop(ItemFactory::singleType(ItemId::IRON_ORE, Range(18, 40)))
+          .setDestroyable(100, DestroyAction::Type::DIG);
+    case FurnitureType::STONE:
+      return Furniture("granite", ViewObject(ViewId::STONE, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setBlockVision()
+          .setCanSupportDoor()
+          .setDestroyable(200, DestroyAction::Type::BOULDER)
+          .setItemDrop(ItemFactory::singleType(ItemId::ROCK, Range(18, 40)))
+          .setDestroyable(180, DestroyAction::Type::DIG);
+    case FurnitureType::GOLD_ORE:
+      return Furniture("gold ore", ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setBlockVision()
+          .setCanSupportDoor()
+          .setDestroyable(200, DestroyAction::Type::BOULDER)
+          .setItemDrop(ItemFactory::singleType(ItemId::GOLD_PIECE, Range(18, 40)))
+          .setDestroyable(100, DestroyAction::Type::DIG);
+    case FurnitureType::DUNGEON_WALL:
+      return Furniture("wall", ViewObject(ViewId::DUNGEON_WALL, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setBlockVision()
+          .setCanSupportDoor()
+          .setConstructMessage(Furniture::REINFORCE)
+          .setDestroyable(300, DestroyAction::Type::BOULDER)
+          .setDestroyable(100, DestroyAction::Type::DIG);
+    case FurnitureType::CASTLE_WALL:
+      return Furniture("wall", ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setBlockVision()
+          .setCanSupportDoor()
+          .setDestroyable(300, DestroyAction::Type::BOULDER);
+    case FurnitureType::WOOD_WALL:
+      return Furniture("wall", ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setBlockVision()
+          .setCanSupportDoor()
+          .setDestroyable(100, DestroyAction::Type::BOULDER)
+          .setFireInfo(Fire(1000, 0.7));
+    case FurnitureType::MUD_WALL:
+      return Furniture("wall", ViewObject(ViewId::MUD_WALL, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+          .setBlockVision()
+          .setCanSupportDoor()
+          .setDestroyable(100, DestroyAction::Type::BOULDER);
   }
 }
 
@@ -235,6 +286,11 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
       return !pos.canEnterEmpty({MovementTrait::WALK}) && pos.canEnterEmpty({MovementTrait::SWIM});
     case FurnitureType::DOOR:
       return canBuildDoor(pos);
+    case FurnitureType::DUNGEON_WALL:
+      if (auto furniture = pos.getFurniture())
+        return furniture->getType() == FurnitureType::MOUNTAIN;
+      else
+        return false;
     default:
       return pos.canEnterEmpty({MovementTrait::WALK});
   }

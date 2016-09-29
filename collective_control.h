@@ -21,7 +21,8 @@ class CollectiveControl {
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAttack(const CollectiveAttack&) {}
   virtual void onConstructed(Position, const SquareType&) {}
-  virtual void onConstructed(Position, FurnitureType) {};
+  virtual void onConstructed(Position, FurnitureType) {}
+  virtual void onDestructed(Position, const DestroyAction&) {}
   virtual void onNoEnemies() {}
   virtual void onRansomPaid() {}
   virtual vector<TriggerInfo> getTriggers(const Collective* against) const;

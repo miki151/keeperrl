@@ -1,14 +1,30 @@
 #pragma once
 
+#include "util.h"
+
 class Sound;
 
 class DestroyAction {
   public:
-  enum Value { BASH, EAT, DESTROY, CUT };
+  enum class Type;
+  DestroyAction(Type);
+  const char* getVerbSecondPerson() const;
+  const char* getVerbThirdPerson() const;
+  const char* getIsDestroyed() const;
+  const char* getSoundText() const;
+  Sound getSound() const;
+  Type getType() const;
+  bool canDestroyFriendly() const;
 
-  static const char* getVerbSecondPerson(Value);
-  static const char* getVerbThirdPerson(Value);
-  static const char* getIsDestroyed(Value);
-  static const char* getSoundText(Value);
-  static Sound getSound(Value);
+  SERIALIZATION_DECL(DestroyAction)
+
+  private:
+  Type SERIAL(type);
 };
+
+RICH_ENUM(DestroyAction::Type,
+  BOULDER,
+  BASH,
+  CUT,
+  DIG
+);

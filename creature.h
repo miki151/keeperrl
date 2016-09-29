@@ -189,8 +189,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canConstruct(const SquareType&) const;
   bool canConstruct(FurnitureType) const;
   CreatureAction eat(Item*) const;
-  CreatureAction destroy(Vec2 direction, DestroyAction::Value) const;
-  void destroyImpl(Vec2 direction, DestroyAction::Value action);
+  CreatureAction destroy(Vec2 direction, const DestroyAction&) const;
+  void destroyImpl(Vec2 direction, const DestroyAction& action);
   CreatureAction copulate(Vec2 direction) const;
   bool canCopulateWith(const Creature*) const;
   CreatureAction consume(Creature*) const;

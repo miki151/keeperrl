@@ -17,6 +17,7 @@ class Game;
 class TribeId;
 class Sound;
 class Fire;
+class DestroyAction;
 
 class Position {
   public:
@@ -79,18 +80,18 @@ class Position {
   bool canConstruct(const SquareType&) const;
   bool canConstruct(FurnitureType) const;
   bool canSupportDoorOrTorch() const;
-  bool canDestroy(const Creature*) const;
-  bool canDestroy(const MovementType&) const;
+  bool canDestroy(const Creature*, const DestroyAction&) const;
+  bool canDestroy(const MovementType&, const DestroyAction&) const;
   void removeFurniture(const Furniture*) const;
   void addFurniture(PFurniture) const;
   void replaceFurniture(const Furniture*, PFurniture) const;
   bool isUnavailable() const;
   void dropItem(PItem);
   void dropItems(vector<PItem>);
-  void tryToDestroyBy(Creature* c);
-  void destroy();
+  void tryToDestroyBy(Creature* c, const DestroyAction&);
+  void destroy(const DestroyAction&);
   bool construct(const SquareType&);
-  bool construct(FurnitureType, Creature*);
+  void construct(FurnitureType, Creature*);
   bool construct(FurnitureType, TribeId);
   bool isActiveFurnitureConstruction() const;
   bool isActiveSquareConstruction() const;

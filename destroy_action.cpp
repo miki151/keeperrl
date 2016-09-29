@@ -2,48 +2,67 @@
 #include "destroy_action.h"
 #include "sound.h"
 
-const char* DestroyAction::getVerbSecondPerson(Value value) {
-  switch (value) {
-    case BASH: return "bash";
-    case EAT: return "eat";
-    case DESTROY: return "destroy";
-    case CUT: return "cut";
+SERIALIZE_DEF(DestroyAction, type)
+SERIALIZATION_CONSTRUCTOR_IMPL(DestroyAction)
+
+DestroyAction::DestroyAction(Type t) : type(t) {
+}
+
+const char* DestroyAction::getVerbSecondPerson() const {
+  switch (type) {
+    case Type::BOULDER: return "destroy";
+    case Type::BASH: return "bash";
+    case Type::CUT: return "cut";
+    case Type::DIG: return "dig into";
   }
 }
 
-const char* DestroyAction::getVerbThirdPerson(Value value) {
-  switch (value) {
-    case BASH: return "bashes";
-    case EAT: return "eats";
-    case DESTROY: return "destroys";
-    case CUT: return "cut";
+const char* DestroyAction::getVerbThirdPerson() const {
+  switch (type) {
+    case Type::BASH: return "bashes";
+    case Type::BOULDER: return "destroys";
+    case Type::CUT: return "cuts";
+    case Type::DIG: return "digs into";
   }
 }
 
-const char*DestroyAction::getIsDestroyed(DestroyAction::Value value) {
-   switch (value) {
-    case BASH: return "is destroyed";
-    case EAT: return "is completely devoured";
-    case DESTROY: return "is destroyed";
-    case CUT: return "falls";
+const char*DestroyAction::getIsDestroyed() const {
+  switch (type) {
+    case Type::BASH:
+    case Type::BOULDER: return "is destroyed";
+    case Type::CUT: return "falls";
+    case Type::DIG: return "is dug out";
   }
 }
 
-const char* DestroyAction::getSoundText(Value value) {
-  switch (value) {
-    case BASH: return "BANG!";
-    case EAT: return "You hear chewing.";
-    case DESTROY:
-    case CUT:  return "CRASH";
+const char* DestroyAction::getSoundText() const {
+  switch (type) {
+    case Type::BASH: return "BANG!";
+    case Type::BOULDER:
+    case Type::CUT: return "CRASH!";
+    case Type::DIG: return "";
   }
 }
 
-Sound DestroyAction::getSound(DestroyAction::Value value) {
-   switch (value) {
-    case BASH:
-    case EAT:
-    case DESTROY: return SoundId::BANG_DOOR;
-    case CUT: return SoundId::TREE_CUTTING;
+Sound DestroyAction::getSound() const {
+  switch (type) {
+    case Type::BASH:
+    case Type::BOULDER: return SoundId::BANG_DOOR;
+    case Type::CUT: return SoundId::TREE_CUTTING;
+    case Type::DIG: return SoundId::DIGGING;
+   }
+}
+
+DestroyAction::Type DestroyAction::getType() const {
+  return type;
+}
+
+bool DestroyAction::canDestroyFriendly() const {
+  switch (type) {
+    case Type::BASH:
+      return false;
+    default:
+      return true;
   }
 }
 

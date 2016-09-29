@@ -47,7 +47,7 @@
 #include "item_type.h"
 #include "item.h"
 #include "spawn_type.h"
-
+#include "furniture.h"
 
 SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory);
@@ -66,11 +66,14 @@ class BoulderController : public Monster {
     Position nextPos = getCreature()->getPosition().plus(direction);
     if (Creature* c = nextPos.getCreature()) {
       if (!c->getBody().isKilledByBoulder()) {
-        getCreature()->swapPosition(direction);
+        if (nextPos.canEnterEmpty(getCreature())) {
+          getCreature()->swapPosition(direction);
+          return;
+        }
       } else {
         health -= c->getBody().getBoulderDamage();
         if (health <= 0) {
-          nextPos.globalMessage(getCreature()->getName().the() + " crashes on the " + c->getName().the(),
+          nextPos.globalMessage(getCreature()->getName().the() + " crashes on " + c->getName().the(),
                 "You hear a crash");
           getCreature()->die();
           c->takeDamage(Attack(getCreature(), AttackLevel::MIDDLE, AttackType::HIT, 1000, 35, false));
@@ -81,23 +84,21 @@ class BoulderController : public Monster {
         }
       }
     }
-    if (nextPos.canDestroy(getCreature()))
-      getCreature()->destroyImpl(direction, DestroyAction::DESTROY);
+    if (auto furniture = nextPos.getFurniture())
+      if (furniture->canDestroy(getCreature()->getMovementType(), DestroyAction::Type::BOULDER) &&
+          *furniture->getStrength(DestroyAction::Type::BOULDER) <
+          health * getCreature()->getAttr(AttrType::STRENGTH)) {
+        getCreature()->destroyImpl(direction, DestroyAction::Type::BOULDER);
+        health -= *furniture->getStrength(DestroyAction::Type::BOULDER) /
+            (double) getCreature()->getAttr(AttrType::STRENGTH);
+      }
     if (auto action = getCreature()->move(direction))
       action.perform(getCreature());
     else {
-      if (health >= 0.9 && nextPos.canConstruct(SquareId::FLOOR)) {
-        getCreature()->globalMessage("The " + nextPos.getName() + " is destroyed!");
-        while (!nextPos.construct(SquareId::FLOOR)) {} // This should use destroy() probably
-        if (auto action = getCreature()->move(direction))
-          action.perform(getCreature());
-        health = 0.1;
-      } else {
-        nextPos.globalMessage(getCreature()->getName().the() + " crashes on the " + nextPos.getName(),
-            "You hear a crash");
-        getCreature()->die();
-        return;
-      }
+      nextPos.globalMessage(getCreature()->getName().the() + " crashes on the " + nextPos.getName(),
+          "You hear a crash");
+      getCreature()->die();
+      return;
     }
     int speed = getCreature()->getAttr(AttrType::SPEED);
     double deceleration = 0.1;
@@ -137,7 +138,7 @@ PCreature CreatureFactory::getRollingBoulder(TribeId tribe, Vec2 direction) {
   return PCreature(new Creature(viewObject, tribe, CATTR(
             c.viewId = ViewId::BOULDER;
             c.attr[AttrType::DEXTERITY] = 1;
-            c.attr[AttrType::STRENGTH] = 1000;
+            c.attr[AttrType::STRENGTH] = 250;
             c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE).setDeathSound(none);
             c.attr[AttrType::SPEED] = 140;
             c.permanentEffects[LastingEffect::BLIND] = 1;

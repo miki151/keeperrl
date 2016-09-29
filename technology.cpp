@@ -25,10 +25,10 @@
 #include "spell.h"
 #include "creature.h"
 #include "creature_attributes.h"
-#include "square_type.h"
 #include "spell_map.h"
 #include "construction_map.h"
-#include "square_factory.h"
+#include "furniture.h"
+#include "furniture_factory.h"
 #include "game.h"
 
 void Technology::init() {
@@ -127,9 +127,9 @@ const vector<Technology*> Technology::getAllowed() const {
   return ret;
 }
 
-static bool areaOk(const vector<Position>& v, SquareId id) {
+static bool areaOk(const vector<Position>& v) {
   for (Position pos : v)
-    if (!pos.canConstruct(id))
+    if (!pos.getFurniture() || pos.getFurniture()->getType() != FurnitureType::MOUNTAIN)
       return false;
   return true;
 }
@@ -147,16 +147,16 @@ static vector<Vec2> cutShape(Rectangle rect) {
 }
 
 
-static void addResource(Collective* col, SquareId square, int maxDist) {
+static void addResource(Collective* col, FurnitureType type, int maxDist) {
   Position init = Random.choose(col->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF));
   Rectangle resourceArea(Random.get(4, 7), Random.get(4, 7));
   resourceArea.translate(-resourceArea.middle());
   for (int t = 0; t < 200; ++t) {
     Position center = init.plus(Vec2(Random.get(-maxDist, maxDist + 1), Random.get(-maxDist, maxDist + 1)));
     vector<Position> all = center.getRectangle(resourceArea);
-    if (areaOk(all, square)) {
+    if (areaOk(all)) {
       for (Vec2 pos : cutShape(resourceArea)) {
-        center.plus(pos).replaceSquare(SquareFactory::get(square));
+        center.plus(pos).addFurniture(FurnitureFactory::get(type, TribeId::getHostile()));
         center.getGame()->addEvent({EventId::POSITION_DISCOVERED, center.plus(pos)});
       }
       return;
@@ -166,11 +166,11 @@ static void addResource(Collective* col, SquareId square, int maxDist) {
 
 static void addResources(Collective* col, int numGold, int numIron, int numStone, int maxDist) {
   for (int i : Range(numGold))
-    addResource(col, SquareId::GOLD_ORE, maxDist);
+    addResource(col, FurnitureType::GOLD_ORE, maxDist);
   for (int i : Range(numIron))
-    addResource(col, SquareId::IRON_ORE, maxDist);
+    addResource(col, FurnitureType::IRON_ORE, maxDist);
   for (int i : Range(numStone))
-    addResource(col, SquareId::STONE, maxDist);
+    addResource(col, FurnitureType::STONE, maxDist);
 }
 
 struct SpellLearningInfo {
