@@ -202,8 +202,8 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.vision = VisionId::NORMAL;
               c.movementSet = MovementSet().addTrait(MovementTrait::WALK);));
     case SquareId::BLACK_WALL:
-        return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR, "Wall")
-            .setModifier(ViewObject::Modifier::CASTS_SHADOW), CONSTRUCT(Square::Params, c.name = "wall";));
+        return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR, "Wall"),
+            CONSTRUCT(Square::Params, c.name = "wall";));
     case SquareId::HILL:
         return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND),
           CONSTRUCT(Square::Params,

@@ -1327,18 +1327,10 @@ void Creature::addSound(const Sound& sound1) const {
 CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const {
   if (getPosition().plus(direction).canConstruct(type) && canConstruct(type))
     return CreatureAction(this, [=](Creature* self) {
-        if (type.getId() == SquareId::FLOOR)
-          addSound(SoundId::DIGGING);
-        else
-          addSound(Sound(SoundId::DIGGING).setPitch(0.5));
+        addSound(Sound(SoundId::DIGGING).setPitch(0.5));
         if (getPosition().plus(direction).construct(type)) {
-          if (type.getId() == SquareId::FLOOR) {
-            monsterMessage(getName().the() + " digs a tunnel");
-            playerMessage("You dig a tunnel");
-          } else {
-            monsterMessage(getName().the() + " builds " + getPosition().plus(direction).getName());
-            playerMessage("You build " + getPosition().plus(direction).getName());
-          }
+          monsterMessage(getName().the() + " builds " + getPosition().plus(direction).getName());
+          playerMessage("You build " + getPosition().plus(direction).getName());
         }
         self->spendTime(1);
       });

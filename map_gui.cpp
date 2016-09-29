@@ -159,10 +159,6 @@ optional<ViewId> getConnectionId(ViewId id) {
   }
 }
 
-optional<ViewId> getConnectionId(const ViewObject& object) {
-  return getConnectionId(object.id());
-}
-
 vector<Vec2>& getConnectionDirs(ViewId id) {
   static vector<Vec2> v4 = Vec2::directions4();
   static vector<Vec2> v8 = Vec2::directions8();
@@ -468,7 +464,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   if (spriteMode && tile.hasSpriteCoord()) {
     DirSet dirs;
     DirSet borderDirs;
-    if (auto connectionId = getConnectionId(object))
+    if (auto connectionId = getConnectionId(object.id()))
       for (Vec2 dir : getConnectionDirs(object.id())) {
         if ((tilePos + dir).inRectangle(levelBounds) && connectionMap.has(tilePos + dir, *connectionId))
           dirs.insert(dir.getCardinalDir());
@@ -970,16 +966,17 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds(), getScreenPos()))
     if (auto& index = objects[wpos]) {
       if (index->hasObject(ViewLayer::FLOOR)) {
-        const ViewObject& object = index->getObject(ViewLayer::FLOOR);
-        if (object.hasModifier(ViewObject::Modifier::CASTS_SHADOW)) {
+        auto& object = index->getObject(ViewLayer::FLOOR);
+        auto& tile = Tile::getTile(object.id());
+        if (tile.wallShadow) {
           shadowed.erase(wpos);
           shadowed.insert(wpos + Vec2(0, 1));
         }
-        if (auto id = getConnectionId(object))
+        if (auto id = getConnectionId(object.id()))
           connectionMap.add(wpos, *id);
       }
       if (index->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
-        if (auto id = getConnectionId(index->getObject(ViewLayer::FLOOR_BACKGROUND)))
+        if (auto id = getConnectionId(index->getObject(ViewLayer::FLOOR_BACKGROUND).id()))
           connectionMap.add(wpos, *id);
       }
       if (auto viewId = index->getHiddenId())

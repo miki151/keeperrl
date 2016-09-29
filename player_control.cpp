@@ -1675,6 +1675,8 @@ void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
 void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
   Position pos(info.pos, getLevel());
   if (Creature* c = getCreature(info.creatureId)) {
+    c->removeEffect(LastingEffect::TIED_UP);
+    c->removeEffect(LastingEffect::SLEEP);
     if (getCollective()->getConstructions().containsFurniture(pos)) {
       auto& furniture = getCollective()->getConstructions().getFurniture(pos);
       if (auto task = MinionTasks::getTaskFor(c, furniture.getFurnitureType())) {

@@ -38,6 +38,11 @@ Tile Tile::setRoundShadow() {
   return *this;
 }
 
+Tile Tile::setWallShadow() {
+  wallShadow = true;
+  return *this;
+}
+
 Tile Tile::byCoord(TileCoord c) {
   return Tile(c);
 }
@@ -357,25 +362,25 @@ class TileCoordLookup {
         .addExtraBorderId(ViewId::WATER));
     Tile::addTile(ViewId::CROPS, sprite("wheatfield1"));
     Tile::addTile(ViewId::CROPS2, sprite("wheatfield2"));
-    Tile::addTile(ViewId::MOUNTAIN, getMountainTile(sprite("mountain_ted"), "mountain"));
-    Tile::addTile(ViewId::DUNGEON_WALL, getMountainTile(sprite("mountain_ted"), "dungeonwall"));
+    Tile::addTile(ViewId::MOUNTAIN, getMountainTile(sprite("mountain_ted"), "mountain").setWallShadow());
+    Tile::addTile(ViewId::DUNGEON_WALL, getMountainTile(sprite("mountain_ted"), "dungeonwall").setWallShadow());
     Tile::addTile(ViewId::WALL, getWallTile("wall"));
     Tile::addTile(ViewId::MAP_MOUNTAIN1, sprite("map_mountain1"));
     Tile::addTile(ViewId::MAP_MOUNTAIN2, sprite("map_mountain2"));
     Tile::addTile(ViewId::MAP_MOUNTAIN3, sprite("map_mountain3"));
-    Tile::addTile(ViewId::GOLD_ORE, getMountainTile(sprite("gold_ore").addBackground(byName("mountain_ted"))
-          , "mountain"));
-    Tile::addTile(ViewId::IRON_ORE, getMountainTile(sprite("iron_ore").addBackground(byName("mountain_ted"))
-          , "mountain"));
-    Tile::addTile(ViewId::STONE, getMountainTile(sprite("stone_ore").addBackground(byName("mountain_ted"))
-          , "mountain"));
+    Tile::addTile(ViewId::GOLD_ORE, getMountainTile(sprite("gold_ore")
+          .addBackground(byName("mountain_ted")).setWallShadow(), "mountain"));
+    Tile::addTile(ViewId::IRON_ORE, getMountainTile(sprite("iron_ore")
+          .addBackground(byName("mountain_ted")).setWallShadow(), "mountain"));
+    Tile::addTile(ViewId::STONE, getMountainTile(sprite("stone_ore")
+          .addBackground(byName("mountain_ted")).setWallShadow(), "mountain"));
     Tile::addTile(ViewId::HILL, getExtraBorderTile("hill")
         .addExtraBorderId(ViewId::SAND)
         .addExtraBorderId(ViewId::WATER));
-    Tile::addTile(ViewId::WOOD_WALL, getWallTile("wood_wall"));
-    Tile::addTile(ViewId::BLACK_WALL, getWallTile("wall"));
-    Tile::addTile(ViewId::CASTLE_WALL, getWallTile("castle_wall"));
-    Tile::addTile(ViewId::MUD_WALL, getWallTile("mud_wall"));
+    Tile::addTile(ViewId::WOOD_WALL, getWallTile("wood_wall").setWallShadow());
+    Tile::addTile(ViewId::BLACK_WALL, getWallTile("wall").setWallShadow());
+    Tile::addTile(ViewId::CASTLE_WALL, getWallTile("castle_wall").setWallShadow());
+    Tile::addTile(ViewId::MUD_WALL, getWallTile("mud_wall").setWallShadow());
     Tile::addTile(ViewId::DOWN_STAIRCASE, sprite("down_stairs"));
     Tile::addTile(ViewId::UP_STAIRCASE, sprite("up_stairs"));
     Tile::addTile(ViewId::WELL, sprite("well")
@@ -460,8 +465,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BUSH, sprite("bush").addHighlight(byName("bush_mark")));
     Tile::addTile(ViewId::WATER, getWaterTile("waternesw", "water"));
     Tile::addTile(ViewId::MAGMA, getWaterTile("magmanesw", "magma"));
-    Tile::addTile(ViewId::DOOR, sprite("door"));
-    Tile::addTile(ViewId::LOCKED_DOOR, sprite("locked_door"));
+    Tile::addTile(ViewId::DOOR, sprite("door").setWallShadow());
+    Tile::addTile(ViewId::LOCKED_DOOR, sprite("locked_door").setWallShadow());
     Tile::addTile(ViewId::BARRICADE, sprite("barricade").setRoundShadow());
     Tile::addTile(ViewId::DIG_ICON, sprite("dig_icon"));
     Tile::addTile(ViewId::SWORD, sprite("sword"));

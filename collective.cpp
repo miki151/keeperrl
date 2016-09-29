@@ -792,7 +792,7 @@ void Collective::tick() {
     considerWeaponWarning();
     considerMoraleWarning();
     setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
-    setWarning(Warning::DIGGING, getSquares(SquareId::FLOOR).empty());
+    setWarning(Warning::DIGGING, getTerritory().isEmpty());
 /*    setWarning(Warning::MORE_LIGHTS,
         constructions->getTorches().size() * 25 < getAllSquares(config->getRoomsNeedingLight()).size());*/
     for (SpawnType spawnType : ENUM_ALL(SpawnType)) {

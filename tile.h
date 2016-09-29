@@ -41,6 +41,7 @@ class Tile {
   double translucent = 0;
   bool roundShadow = false;
   bool floorBorders = false;
+  bool wallShadow = false;
 
   Tile addConnection(DirSet, TileCoord);
   Tile addOption(Dir, TileCoord);
@@ -55,6 +56,7 @@ class Tile {
   Tile addHighlight(TileCoord);
   Tile setColor(Color);
   Tile setRoundShadow();
+  Tile setWallShadow();
   optional<TileCoord> getHighlightCoord() const;
 
   const vector<ViewId>& getExtraBorderIds() const;

@@ -179,8 +179,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           Furniture::NON_BLOCKING, tribe)
           .setDestroyable(40);
     case FurnitureType::DOOR:
-      return Furniture("door", ViewObject(ViewId::DOOR, ViewLayer::FLOOR)
-               .setModifier(ViewObject::Modifier::CASTS_SHADOW), type, Furniture::BLOCKING_ENEMIES, tribe)
+      return Furniture("door", ViewObject(ViewId::DOOR, ViewLayer::FLOOR), type, Furniture::BLOCKING_ENEMIES, tribe)
           .setBlockVision()
           .setDestroyable(100)
           .setClickType(FurnitureClickType::LOCK);
