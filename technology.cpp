@@ -129,7 +129,7 @@ const vector<Technology*> Technology::getAllowed() const {
 
 static bool areaOk(const vector<Position>& v) {
   for (Position pos : v)
-    if (!pos.getFurniture() || pos.getFurniture()->getType() != FurnitureType::MOUNTAIN)
+    if (pos.isUnavailable() || !pos.getFurniture() || pos.getFurniture()->getType() != FurnitureType::MOUNTAIN)
       return false;
   return true;
 }
