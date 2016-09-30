@@ -408,7 +408,7 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
     switch (task) {
       case MinionTask::TRAIN: return {[](const Creature* c, FurnitureType t) {
             if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevelIncrease(t))
-              return !c || c->getAttributes().getExpLevel() < *maxIncrease + c->getAttributes().getBaseExpLevel();
+              return !c || c->getAttributes().getExpIncrease(ExperienceType::TRAINING) < *maxIncrease;
             else
               return false;
           }, "training"};

@@ -582,7 +582,7 @@ void Game::cancelPlayer(Creature* c) {
 
 static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
   SavedGameInfo::MinionInfo ret;
-  ret.level = c->getAttributes().getVisibleExpLevel();
+  ret.level = (int)c->getAttributes().getVisibleExpLevel();
   ret.viewId = c->getViewObject().id();
   return ret;
 }

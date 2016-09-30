@@ -206,10 +206,9 @@ class CreatureFactory {
 
   private:
   CreatureFactory(TribeId tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
-      const vector<CreatureId>& unique = {}, EnumMap<CreatureId, optional<TribeId>> overrides = {},
-      double levelIncrease = 0);
+      const vector<CreatureId>& unique = {}, EnumMap<CreatureId, optional<TribeId>> overrides = {});
   CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& creatures,
-      const vector<CreatureId>& unique = {}, double levelIncrease = 0);
+      const vector<CreatureId>& unique = {});
   static void initSplash(TribeId);
   static PCreature getSokobanBoulder(TribeId);
   static PCreature getSpecial(TribeId, bool humanoid, bool large, const ControllerFactory&);

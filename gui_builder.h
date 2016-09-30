@@ -132,6 +132,8 @@ class GuiBuilder {
   PGuiElem getHintCallback(const vector<string>&);
   PGuiElem getTooltip(const vector<string>&);
   vector<PGuiElem> drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>&);
+  PGuiElem drawPlayerLevelButton(const PlayerInfo&);
+  PGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
   PGuiElem drawBuildings(CollectiveInfo&);
   PGuiElem buildingsCache;
   int buildingsHash = 0;

@@ -48,6 +48,7 @@
 #include "item.h"
 #include "spawn_type.h"
 #include "furniture.h"
+#include "experience_type.h"
 
 SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory);
@@ -192,6 +193,7 @@ PCreature CreatureFactory::getAdventurer(Model* m, int handicap) {
           c.attr[AttrType::STRENGTH] = 13 + handicap;
           c.attr[AttrType::DEXTERITY] = 15 + handicap;
           c.barehandedDamage = 5;
+          c.maxExpFromCombat = 15;
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
           c.name->useFullTitle();
@@ -640,7 +642,7 @@ PCreature CreatureFactory::random(const MonsterAIFactory& actorFactory) {
   } else
     id = Random.choose(creatures, weights);
   PCreature ret = fromId(id, getTribeFor(id), actorFactory);
-  ret->getAttributes().increaseExpLevel(levelIncrease);
+  ret->getAttributes().increaseBaseExpLevel(levelIncrease);
   return ret;
 }
 
@@ -654,12 +656,12 @@ CreatureFactory& CreatureFactory::increaseLevel(double l) {
 }
 
 CreatureFactory::CreatureFactory(TribeId t, const vector<CreatureId>& c, const vector<double>& w,
-    const vector<CreatureId>& u, EnumMap<CreatureId, optional<TribeId>> overrides, double lIncrease)
-    : tribe(t), creatures(c), weights(w), unique(u), tribeOverrides(overrides), levelIncrease(lIncrease) {
+    const vector<CreatureId>& u, EnumMap<CreatureId, optional<TribeId>> overrides)
+    : tribe(t), creatures(c), weights(w), unique(u), tribeOverrides(overrides) {
 }
 
-CreatureFactory::CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& c, const vector<CreatureId>& u,
-      double lIncrease) : unique(u),levelIncrease(lIncrease) {
+CreatureFactory::CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& c, const vector<CreatureId>& u)
+    : unique(u) {
   for (auto& elem : c) {
     creatures.push_back(::get<0>(elem));
     weights.push_back(::get<1>(elem));
@@ -743,7 +745,7 @@ CreatureFactory CreatureFactory::splashMonsters(TribeId tribe) {
       CreatureId::SPECIAL_HL, CreatureId::SPECIAL_BL, CreatureId::WOLF, CreatureId::CAVE_BEAR,
       CreatureId::BAT, CreatureId::WEREWOLF, CreatureId::ZOMBIE, CreatureId::VAMPIRE, CreatureId::DOPPLEGANGER,
       CreatureId::SUCCUBUS},
-      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}, 25);
+      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseLevel(25);
 }
 
 CreatureFactory CreatureFactory::elvenVillage(TribeId tribe) {

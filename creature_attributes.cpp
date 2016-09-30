@@ -48,7 +48,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, animal, cantEquip, courage);
   serializeAll(ar, carryAnything, boulder, noChase, isSpecial, skills, spells);
   serializeAll(ar, permanentEffects, lastingEffects, minionTasks, attrIncrease, recruitmentCost);
-  serializeAll(ar, noAttackSound);
+  serializeAll(ar, noAttackSound, maxExpFromCombat);
 }
 
 SERIALIZABLE(CreatureAttributes);
@@ -64,7 +64,10 @@ const CreatureName& CreatureAttributes::getName() const {
 }
 
 double CreatureAttributes::getRawAttr(AttrType type) const {
-  return attr[type] + attrIncrease[type];
+  double ret = attr[type];
+  for (auto expType : ENUM_ALL(ExperienceType))
+    ret += attrIncrease[expType][type];
+  return ret;
 }
 
 void CreatureAttributes::setBaseAttr(AttrType type, int v) {
@@ -98,28 +101,50 @@ static double calculateExpLevel(function<double(AttrType)> attrFun) {
   double sum = 0;
   for (auto& elem : attrLevelInfo)
     sum += attrFun(elem.type) / (elem.increasePerLevel * attrLevelInfo.size());
-  return max(1.0, sum);
+  return sum;
 }
 
 double CreatureAttributes::getExpLevel() const {
   return calculateExpLevel([this] (AttrType t) { return getRawAttr(t);});
 }
 
-double CreatureAttributes::getBaseExpLevel() const {
-  return calculateExpLevel([this] (AttrType t) { return attr[t];});
+double CreatureAttributes::getExpIncrease(ExperienceType type) const {
+  return calculateExpLevel([=] (AttrType t) { return attrIncrease[type][t];});
 }
 
 double CreatureAttributes::getVisibleExpLevel() const {
-  return floor(max(1., getExpLevel() - 10));
+  return max(1., getExpLevel() - 10);
 }
 
-void CreatureAttributes::increaseExpLevel(double increase) {
+void CreatureAttributes::increaseExpLevel(ExperienceType type, double increase) {
   for (auto& elem : attrLevelInfo)
-    increaseAttr(elem.type, increase * elem.increasePerLevel);
+    attrIncrease[type][elem.type] += increase * elem.increasePerLevel;
 }
 
-void CreatureAttributes::increaseAttr(AttrType t, double value) {
-  attrIncrease[t] += value;
+void CreatureAttributes::increaseBaseExpLevel(double increase) {
+  for (auto& elem : attrLevelInfo)
+    attr[elem.type] += increase * elem.increasePerLevel;
+}
+
+static const double maxLevelGain = 1.0;
+static const double minLevelGain = 0.02;
+static const double equalLevelGain = 0.2;
+static const double maxLevelDiff = 10;
+
+double CreatureAttributes::getExpFromKill(const Creature* victim) const {
+  double levelDiff = victim->getAttributes().getExpLevel() - getExpLevel();
+  double maxIncrease = max(0.0, maxExpFromCombat - getExpIncrease(ExperienceType::COMBAT));
+  return min(maxIncrease, max(minLevelGain, min(maxLevelGain,
+                                                (maxLevelGain - equalLevelGain) * levelDiff / maxLevelDiff + equalLevelGain)));
+}
+
+optional<double> CreatureAttributes::getMaxExpIncrease(ExperienceType type) const {
+  switch (type) {
+    case ExperienceType::COMBAT:
+      return maxExpFromCombat;
+    default:
+      return none;
+  }
 }
 
 SpellMap& CreatureAttributes::getSpellMap() {

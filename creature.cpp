@@ -787,18 +787,11 @@ int Creature::getPoints() const {
   return points;
 }
 
-static const double maxLevelGain = 5.0;
-static const double minLevelGain = 0.02;
-static const double equalLevelGain = 0.2;
-static const double maxLevelDiff = 30;
-
 void Creature::onKilled(Creature* victim) {
   int difficulty = victim->getDifficultyPoints();
   CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
   points += difficulty;
-  double levelDiff = victim->attributes->getExpLevel() - attributes->getExpLevel();
-  increaseExpLevel(max(minLevelGain, min(maxLevelGain,
-      (maxLevelGain - equalLevelGain) * levelDiff / maxLevelDiff + equalLevelGain)));
+  increaseExpLevel(ExperienceType::COMBAT, getAttributes().getExpFromKill(victim));
   kills.insert(victim);
 }
 
@@ -1237,11 +1230,11 @@ void Creature::surrender(Creature* to) {
   getGame()->addEvent({EventId::TORTURED, EventInfo::Attacked{this, to}});
 }
 
-void Creature::increaseExpLevel(double increase, bool message) {
+void Creature::increaseExpLevel(ExperienceType type, double increase) {
   int curLevel = (int)getAttributes().getVisibleExpLevel();
-  getAttributes().increaseExpLevel(increase);
+  getAttributes().increaseExpLevel(type, increase);
   int newLevel = (int)getAttributes().getVisibleExpLevel();
-  if (message && curLevel != newLevel) {
+  if (curLevel != newLevel) {
     you(MsgType::ARE, "more experienced");
     addPersonalEvent(getName().a() + " reaches experience level " + toString(newLevel));
   }

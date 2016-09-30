@@ -1,7 +1,4 @@
-#ifndef _HASHING_H
-#define _HASHING_H
-
-#include <boost/functional/hash.hpp>
+#pragma once
 
 struct general_ {};
 struct special_ : general_ {};
@@ -40,13 +37,18 @@ size_t combineHash(const pair<T, U>& arg) {
   return combineHash(arg.first, arg.second);
 }
 
-template <typename T>
-size_t combineHash(const vector<T>& v) {
+template <typename Iter>
+size_t combineHashIter(Iter begin, Iter end) {
   size_t seed = 0;
-  for(auto& i : v) {
-    seed ^= combineHash(i) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+  for (; begin != end; ++begin) {
+    seed ^= combineHash(*begin) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
   }
   return seed;
+}
+
+template <typename T>
+size_t combineHash(const vector<T>& v) {
+  return combineHashIter(v.begin(), v.end());
 }
 
 template <typename Arg1, typename... Args>
@@ -68,5 +70,3 @@ struct CustomHash {
     return combineHash(t);
   }
 };
-
-#endif

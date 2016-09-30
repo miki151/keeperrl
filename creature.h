@@ -199,7 +199,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void displace(double time, Vec2);
   void surrender(Creature* to);
   
-  void increaseExpLevel(double increase, bool message = true);
+  void increaseExpLevel(ExperienceType, double increase);
 
   Item* getWeapon() const;
   void dropWeapon();

@@ -680,7 +680,7 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
       [&](const Item* it) {
         const Creature* c = getCreature(*getCollective()->getMinionEquipment().getOwner(it));
         return " owned by " + c->getName().a() +
-            " (level " + toString(c->getAttributes().getVisibleExpLevel()) + ")";});
+            " (level " + toString<int>(c->getAttributes().getVisibleExpLevel()) + ")";});
   vector<Item*> allStacked;
   vector<ItemInfo> options;
   for (Item* it : currentItems)
@@ -1082,9 +1082,22 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
   for (Creature* c : creatures) {
     minions.emplace_back();
     minions.back().readFrom(c);
-    minions.back().creatureId = c->getUniqueId();
     // only fill equipment for the chosen minion to avoid lag
     if (c->getUniqueId() == chosenId) {
+      optional<FurnitureType> requiredDummy;
+      for (auto dummyType : MinionTasks::getAllFurniture(MinionTask::TRAIN)) {
+        bool canTrain = *CollectiveConfig::getTrainingMaxLevelIncrease(dummyType) >
+            minions.back().levelInfo.increases[ExperienceType::TRAINING];
+        bool hasDummy = getCollective()->getConstructions().getBuiltCount(dummyType) > 0;
+        if (canTrain && hasDummy) {
+          requiredDummy = none;
+          break;
+        }
+        if (!requiredDummy && canTrain && !hasDummy)
+          requiredDummy = dummyType;
+      }
+      if (requiredDummy)
+        minions.back().levelInfo.warning = "Requires " + FurnitureFactory::getName(*requiredDummy) + ".";
       for (MinionTask t : ENUM_ALL(MinionTask))
         if (c->getAttributes().getMinionTasks().getValue(t, true) > 0) {
           minions.back().minionTasks.push_back({t,

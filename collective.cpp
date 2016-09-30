@@ -46,6 +46,7 @@
 #include "furniture_factory.h"
 #include "tile_efficiency.h"
 #include "zones.h"
+#include "experience_type.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -668,7 +669,7 @@ bool Collective::considerImmigrant(const ImmigrantInfo& info) {
   for (int i : All(immigrants)) {
     Creature* c = immigrants[i].get();
     if (i == 0 && groupSize > 1) // group leader
-      c->increaseExpLevel(2, false);
+      c->getAttributes().increaseBaseExpLevel(2);
     addCreature(std::move(immigrants[i]), spawnPos[i], info.traits);
     minionAttraction.set(c, info.attractions);
   }
@@ -1709,7 +1710,7 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
     if (auto usage = furniture->getUsageType())
       switch (*usage) {
         case FurnitureUsageType::TRAIN:
-          c->increaseExpLevel(0.005 * efficiency);
+          c->increaseExpLevel(ExperienceType::TRAINING, 0.005 * efficiency);
           break;
         default:
           break;

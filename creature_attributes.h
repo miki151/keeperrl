@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _CREATURE_ATTRIBUTES_H
-#define _CREATURE_ATTRIBUTES_H
+#pragma once
 
 #include <string>
 #include <functional>
@@ -27,6 +26,7 @@
 #include "skill.h"
 #include "modifier_type.h"
 #include "lasting_effect.h"
+#include "experience_type.h"
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);
@@ -60,9 +60,12 @@ class CreatureAttributes {
   void setCourage(double);
   const Gender& getGender() const;
   double getExpLevel() const;
-  double getBaseExpLevel() const;
+  double getExpIncrease(ExperienceType) const;
   double getVisibleExpLevel() const;
-  void increaseExpLevel(double increase);
+  void increaseExpLevel(ExperienceType, double increase);
+  void increaseBaseExpLevel(double increase);
+  double getExpFromKill(const Creature* victim) const;
+  optional<double> getMaxExpIncrease(ExperienceType) const;
   string bodyDescription() const;
   SpellMap& getSpellMap();
   const SpellMap& getSpellMap() const;
@@ -100,7 +103,6 @@ class CreatureAttributes {
   friend class CreatureFactory;
 
   private:
-  void increaseAttr(AttrType, double value);
   void consumeEffects(const EnumMap<LastingEffect, int>&);
   MustInitialize<ViewId> SERIAL(viewId);
   HeapAllocated<optional<ViewObject>> SERIAL(illusionViewObject);
@@ -129,8 +131,7 @@ class CreatureAttributes {
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
   MinionTaskMap SERIAL(minionTasks);
-  EnumMap<AttrType, double> SERIAL(attrIncrease);
+  EnumMap<ExperienceType, EnumMap<AttrType, double>> SERIAL(attrIncrease);
   bool SERIAL(noAttackSound) = false;
+  double SERIAL(maxExpFromCombat) = 4;
 };
-
-#endif

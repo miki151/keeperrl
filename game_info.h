@@ -6,6 +6,7 @@
 #include "village_action.h"
 #include "view_id.h"
 #include "player_message.h"
+#include "experience_type.h"
 
 enum class SpellId;
 
@@ -70,7 +71,14 @@ class PlayerInfo {
   string HASH(firstName);
   string HASH(name);
   string HASH(title);
-  int HASH(level);
+  struct LevelInfo {
+    double HASH(level);
+    EnumMap<ExperienceType, double> HASH(increases);
+    EnumMap<ExperienceType, optional<double>> HASH(limits);
+    optional<string> HASH(warning);
+    HASH_ALL(level, increases, limits, warning);
+  };
+  LevelInfo HASH(levelInfo);
   string description;
   string HASH(levelName);
   int HASH(positionHash);
@@ -120,7 +128,7 @@ class PlayerInfo {
     CONSUME
   };
   vector<Action> HASH(actions);
-  HASH_ALL(attributes, skills, firstName, name, title, level, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands);
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands);
 };
 
 

@@ -23,6 +23,7 @@ class FurnitureFactory {
       const vector<FurnitureType>& unique = {});
   FurnitureFactory(TribeId, FurnitureType);
   static PFurniture get(FurnitureType, TribeId);
+  static const string& getName(FurnitureType);
 
   FurnitureParams getRandom(RandomGen&);
 

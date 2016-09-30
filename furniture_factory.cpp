@@ -269,6 +269,12 @@ static Furniture get(FurnitureType type, TribeId tribe) {
   }
 }
 
+const string& FurnitureFactory::getName(FurnitureType type) {
+  static EnumMap<FurnitureType, string> names(
+      [] (FurnitureType type) { return get(type, TribeId::getHostile())->getName(); });
+  return names[type];
+}
+
 bool FurnitureParams::operator == (const FurnitureParams& p) const {
   return type == p.type && tribe == p.tribe;
 }

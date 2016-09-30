@@ -825,10 +825,35 @@ static vector<string> help = {
     "Fire arrows: alt + arrow.",
 };
 
+PGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, ExperienceType type) {
+  auto line = gui.getListBuilder();
+  line.addElemAuto(gui.label(capitalFirst(toLower(EnumInfo<ExperienceType>::getString(type))) + ": "));
+  line.addElemAuto(gui.label(toString(info.increases[type])));
+  if (auto limit = info.limits[type])
+    line.addElemAuto(gui.label("  (limit " + toString(*limit) + ")"));
+  return line.buildHorizontalList();
+}
+
+PGuiElem GuiBuilder::drawPlayerLevelButton(const PlayerInfo& info) {
+  return gui.stack(
+      gui.labelHighlight("[Level " + toString(info.levelInfo.level) + "]", colors[ColorId::LIGHT_BLUE]),
+      gui.buttonRect([=] (Rectangle bounds) {
+          auto lines = gui.getListBuilder(legendLineHeight);
+          bool exit = false;
+          lines.addElem(gui.label("Level " + toString(info.levelInfo.level)));
+          lines.addElem(gui.label("Increases:", colors[ColorId::YELLOW]));
+          for (auto expType : ENUM_ALL(ExperienceType))
+            lines.addElem(gui.leftMargin(30, getExpIncreaseLine(info.levelInfo, expType)));
+          if (auto& warning = info.levelInfo.warning)
+            lines.addElem(gui.label(*warning, colors[ColorId::RED]));
+          drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260);
+      }));
+}
+
 PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(info.getTitle(), colors[ColorId::WHITE]));
-  list.addElem(gui.label("Level " + toString(info.level), colors[ColorId::WHITE]));
+  list.addElem(drawPlayerLevelButton(info));
   auto line = gui.getListBuilder();
   vector<PGuiElem> keyElems;
   for (int i : All(info.commands)) {
@@ -1681,7 +1706,7 @@ PGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
         line.addElemAuto(gui.rightMargin(5, gui.label(minion.getFirstName())));
         if (auto icon = getMoraleIcon(minion.morale))
           line.addElem(gui.topMargin(-2, gui.icon(*icon)), 20);
-        line.addBackElem(gui.label("L:" + toString(minion.level)), 42);
+        line.addBackElem(gui.label("L:" + toString<int>(minion.levelInfo.level)), 42);
         list.addElem(gui.stack(makeVec<PGuiElem>(
               gui.button(getButtonCallback({UserInputId::CREATURE_BUTTON, minionId})),
               gui.uiHighlight([=] { return mapGui->getCreatureHighlight(minionId, clock->getRealMillis());}),
@@ -1878,6 +1903,7 @@ PGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion) {
   list.addElem(gui.horizontalList(drawMinionActions(minion), 140));
   vector<PGuiElem> leftLines;
   leftLines.push_back(gui.label("Attributes", colors[ColorId::YELLOW]));
+  leftLines.push_back(drawPlayerLevelButton(minion));
   for (auto& elem : drawAttributesOnPage(drawPlayerAttributes(minion.attributes)))
     leftLines.push_back(std::move(elem));
   for (auto& elem : drawEffectsList(minion))

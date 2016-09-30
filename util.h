@@ -430,6 +430,10 @@ class EnumMap {
     return elems[int(elem)];
   }
 
+  size_t getHash() const {
+    return combineHashIter(elems.begin(), elems.end());
+  }
+
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version) {
     vector<U> SERIAL(tmp);
