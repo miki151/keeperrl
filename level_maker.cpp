@@ -820,7 +820,7 @@ class Buildings : public LevelMaker {
       for (Vec2 v : Rectangle(w + 1, h + 1)) {
         filled[Vec2(px, py) + v] = true;
         builder->putFurniture(Vec2(px, py) + v, building.wall);
-        builder->setCoverOverride(Vec2(px, py) + v, true);
+        builder->setCovered(Vec2(px, py) + v, true);
       }
       for (Vec2 v : Rectangle(w - 1, h - 1)) {
         builder->putSquare(Vec2(px + 1, py + 1) + v, building.floorInside, SquareAttrib::ROOM);
@@ -1225,12 +1225,14 @@ class Mountains : public LevelMaker {
         builder->putSquare(v, SquareId::FLOOR, SquareAttrib::GLACIER);
         builder->putFurniture(v, {FurnitureType::MOUNTAIN, TribeId::getHostile()});
         builder->setSunlight(v, 0.0);
+        builder->setCovered(v, true);
         ++gCnt;
       }
       else if (wys[v] >= cutOffVal) {
         builder->putSquare(v, SquareId::FLOOR, SquareAttrib::MOUNTAIN);
         builder->putFurniture(v, {FurnitureType::MOUNTAIN, TribeId::getHostile()});
         builder->setSunlight(v, 1. - (wys[v] - cutOffVal) / (cutOffValSnow - cutOffVal));
+        builder->setCovered(v, true);
         ++mCnt;
       }
       else if (wys[v] >= cutOffValHill) {

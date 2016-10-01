@@ -45,7 +45,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, squares, oldSquares, landingSquares, locations, tickingSquares, creatures, model, fieldOfView);
   serializeAll(ar, name, backgroundLevel, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
   serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, memoryUpdates);
-  serializeAll(ar, furniture, furnitureConstruction, tickingFurniture);
+  serializeAll(ar, furniture, furnitureConstruction, tickingFurniture, covered);
 }  
 
 SERIALIZABLE(Level);
@@ -55,10 +55,10 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 Level::~Level() {}
 
 Level::Level(SquareArray s, FurnitureArray f, Model* m, vector<Location*> l, const string& n,
-    Table<double> sun, LevelId id) 
+    Table<double> sun, LevelId id, Table<bool> cover)
     : squares(std::move(s)), oldSquares(squares->getBounds()), furniture(std::move(f)),
       furnitureConstruction(squares->getBounds()), memoryUpdates(squares->getBounds(), true), locations(l), model(m),
-      name(n), sunlight(sun), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
+      name(n), sunlight(sun), covered(cover), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id) {
   for (Vec2 pos : squares->getBounds()) {
@@ -151,7 +151,6 @@ void Level::replaceSquare(Position position, PSquare newSquare, bool storePrevio
     oldSquare->removeCreature(position);
   for (Item* it : copyOf(oldSquare->getItems()))
     newSquare->dropItem(position, oldSquare->removeItem(position, it));
-  newSquare->setCovered(oldSquare->isCovered());
   addLightSource(pos, oldSquare->getLightEmission(), -1);
   for (PTrigger& t : oldSquare->removeTriggers(position))
     newSquare->addTrigger(position, std::move(t));
@@ -223,12 +222,12 @@ Game* Level::getGame() const {
 }
 
 bool Level::isInSunlight(Vec2 pos) const {
-  return !getSafeSquare(pos)->isCovered() && lightCapAmount[pos] == 1 &&
+  return !covered[pos] && lightCapAmount[pos] == 1 &&
       getGame()->getSunlightInfo().getState() == SunlightState::DAY;
 }
 
 double Level::getLight(Vec2 pos) const {
-  return max(0.0, min(getSafeSquare(pos)->isCovered() ? 1 : lightCapAmount[pos], lightAmount[pos] +
+  return max(0.0, min(covered[pos] ? 1 : lightCapAmount[pos], lightAmount[pos] +
       sunlight[pos] * getGame()->getSunlightInfo().getLightAmount()));
 }
 
@@ -603,11 +602,11 @@ const optional<ViewObject>& Level::getBackgroundObject(Vec2 pos) const {
 }
 
 int Level::getNumModifiedSquares() const {
-  return furniture->getNumModified();
+  return squares->getNumModified();
 }
 
 int Level::getNumTotalSquares() const {
-  return furniture->getNumTotal();
+  return squares->getNumTotal();
 }
 
 void Level::setNeedsMemoryUpdate(Vec2 pos, bool s) {

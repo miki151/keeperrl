@@ -57,7 +57,7 @@ class Magma : public Square {
     if (!c->getPosition().getFurniture()) { // check if there is a bridge
       MovementType realMovement = c->getMovementType();
       realMovement.setForced(false);
-      if (!canEnterEmpty(realMovement)) {
+      if (!c->getPosition().canEnterEmpty(realMovement)) {
         c->you(MsgType::BURN, getName());
         c->die("burned to death", false);
       }
@@ -88,7 +88,7 @@ class Water : public Square {
     if (!c->getPosition().getFurniture()) { // check if there is a bridge
       MovementType realMovement = c->getMovementType();
       realMovement.setForced(false);
-      if (!canEnterEmpty(realMovement)) {
+      if (!c->getPosition().canEnterEmpty(realMovement)) {
         c->you(MsgType::DROWN, getName());
         c->die("drowned", false);
       }

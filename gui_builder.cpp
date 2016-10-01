@@ -412,7 +412,9 @@ PGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
     int modifiedSquares = info.modifiedSquares;
     int totalSquares = info.totalSquares;
     bottomLine.addElemAuto(
-        gui.labelFun([=]()->string { return "FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()) + " SMOD " + toString(modifiedSquares) + "/" + toString(totalSquares); },
+        gui.labelFun([=]()->string {
+            return "FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps()) +
+                " SMOD " + toString(modifiedSquares) + "/" + toString(totalSquares); },
         colors[ColorId::WHITE]));
     main = gui.margin(gui.leftMargin(25, bottomLine.buildHorizontalList()),
         std::move(main), 18, gui.BOTTOM);

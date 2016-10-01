@@ -387,7 +387,8 @@ bool Position::canEnterEmpty(const Creature* c) const {
 bool Position::canEnterEmpty(const MovementType& t) const {
   auto furniture = getFurniture();
   return !isUnavailable() && (!furniture || furniture->canEnter(t)) &&
-      (getSquare()->canEnterEmpty(t) || (furniture && furniture->overridesMovement() && furniture->canEnter(t)));
+      (getSquare()->getMovementSet().canEnter(t, level->covered[coord], getSquare()->getForbiddenTribe()) ||
+       (furniture && furniture->overridesMovement() && furniture->canEnter(t)));
 }
 
 void Position::dropItem(PItem item) {
@@ -593,7 +594,7 @@ double Position::getPoisonGasAmount() const {
 
 bool Position::isCovered() const {
   if (isValid())
-    return getSquare()->isCovered();
+    return level->covered[coord];
   else
     return false;
 }

@@ -77,8 +77,6 @@ class Square : public Renderable {
   /** Returns radius of emitted light (0 if none).*/
   virtual double getLightEmission() const;
 
-  bool canEnterEmpty(const MovementType&) const;
-
   /** Checks if this square obstructs view.*/
   bool canSeeThru(VisionId) const;
   bool canSeeThru() const;
@@ -150,8 +148,6 @@ class Square : public Renderable {
   /** Triggers all time-dependent processes like burning. Calls tick() for items if present.
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
   void tick(Position);
-  void setCovered(bool);
-  bool isCovered() const;
 
   optional<ViewObject> extractBackground() const;
   void getViewIndex(ViewIndex&, const Creature* viewer) const;

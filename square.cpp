@@ -59,7 +59,6 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 Square::Square(const ViewObject& obj, Params p)
   : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide),
     constructions(p.constructions), movementSet(p.movementSet), viewIndex(new ViewIndex()) {
-  modViewObject().setIndoors(isCovered());
 }
 
 Square::~Square() {
@@ -137,15 +136,6 @@ void Square::onAddedToLevel(Position pos) const {
     pos.getLevel()->addTickingSquare(pos.getCoord());
 }
 
-void Square::setCovered(bool covered) {
-  movementSet->setCovered(covered);
-  modViewObject().setIndoors(covered);
-}
-
-bool Square::isCovered() const {
-  return movementSet->isCovered();
-}
-
 void Square::tick(Position pos) {
   setDirty(pos);
   if (!inventoryEmpty())
@@ -202,12 +192,6 @@ void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack,
   item[0]->onHitSquareMessage(pos, item.size());
   if (!item[0]->isDiscarded())
     dropItems(pos, std::move(item));
-}
-
-bool Square::canEnterEmpty(const MovementType& movement) const {
-  if (!movement.isForced() && forbiddenTribe && movement.isCompatible(*forbiddenTribe))
-    return false;
-  return movementSet->canEnter(movement);
 }
 
 void Square::addPoisonGas(Position pos, double amount) {

@@ -114,7 +114,7 @@ class LevelBuilder {
   void addCollective(CollectiveBuilder*);
 
   /** Sets the cover of the square. The value will remain if square is changed.*/
-  void setCoverOverride(Vec2, bool covered);
+  void setCovered(Vec2, bool covered);
   void setSunlight(Vec2, double);
 
   void setNoDiagonalPassing();
@@ -137,9 +137,8 @@ class LevelBuilder {
   Table<double> dark;
   vector<Location*> locations;
   vector<CollectiveBuilder*> collectives;
-  Table<optional<bool>> coverOverride;
+  Table<bool> covered;
   Table<double> sunlight;
-  bool allCovered;
   Table<EnumSet<SquareAttrib>> attrib;
   Table<SquareType> type;
   vector<pair<PCreature, Vec2>> creatures;

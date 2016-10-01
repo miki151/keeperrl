@@ -5,14 +5,16 @@
 
 template <class Archive> 
 void MovementSet::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, onFire, covered, traits, forcibleTraits);
+  serializeAll(ar, onFire, traits, forcibleTraits);
 }
 
 SERIALIZABLE(MovementSet);
 
-bool MovementSet::canEnter(const MovementType& movementType) const {
+bool MovementSet::canEnter(const MovementType& movementType, bool covered, const optional<TribeId>& forbidden) const {
   if (!movementType.isForced()) {
-    if ((!covered && movementType.isSunlightVulnerable()) || (onFire && !movementType.isFireResistant()))
+    if ((!covered && movementType.isSunlightVulnerable()) ||
+        (onFire && !movementType.isFireResistant()) ||
+        (forbidden && movementType.isCompatible(*forbidden)))
       return false;
   }
   EnumSet<MovementTrait> rightTraits(traits);
@@ -31,15 +33,6 @@ MovementSet& MovementSet::setOnFire(bool state) {
 
 bool MovementSet::isOnFire() const {
   return onFire;
-}
-
-MovementSet& MovementSet::setCovered(bool state) {
-  covered = state;
-  return *this;
-}
-
-bool MovementSet::isCovered() const {
-  return covered;
 }
 
 MovementSet& MovementSet::addTrait(MovementTrait trait) {

@@ -247,6 +247,7 @@ class Level {
   const Level* SERIAL(backgroundLevel) = nullptr;
   Vec2 SERIAL(backgroundOffset);
   Table<double> SERIAL(sunlight);
+  Table<bool> SERIAL(covered);
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
@@ -254,7 +255,8 @@ class Level {
   Sectors& getSectors(const MovementType&) const;
   
   friend class LevelBuilder;
-  Level(SquareArray, FurnitureArray, Model*, vector<Location*>, const string& name, Table<double> sunlight, LevelId);
+  Level(SquareArray, FurnitureArray, Model*, vector<Location*>, const string& name, Table<double> sunlight, LevelId,
+        Table<bool> cover);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
