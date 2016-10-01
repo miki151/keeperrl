@@ -29,13 +29,15 @@ SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBo
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Body);
 
-Body::Body(bool humanoid, Material m, Size s) : xhumanoid(humanoid), size(s), 
+Body::Body(bool humanoid, Material m, Size s) : xhumanoid(humanoid), size(s),
     weight(getDefaultWeight(size)), material(m),
     deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH) {
+  if (humanoid)
+    setHumanoidBodyParts();
 }
 
 Body Body::humanoid(Material m, Size s) {
-  return Body(true, m, s).setHumanoidBodyParts();
+  return Body(true, m, s);
 }
 
 Body Body::humanoid(Size s) {
