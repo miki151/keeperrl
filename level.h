@@ -222,12 +222,6 @@ class Level {
   HeapAllocated<SquareArray> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
   HeapAllocated<FurnitureArray> SERIAL(furniture);
-  struct FurnitureConstruction {
-    FurnitureType SERIAL(type);
-    int SERIAL(time);
-    SERIALIZE_ALL(type, time);
-  };
-  Table<optional<FurnitureConstruction>> SERIAL(furnitureConstruction);
   HeapAllocated<Table<optional<ViewObject>>> SERIAL(background);
   Table<bool> SERIAL(memoryUpdates);
   Table<bool> renderUpdates = Table<bool>(getMaxBounds(), true);

@@ -12,5 +12,15 @@ struct GenerateFurniture {
 
 class FurnitureArray: public ReadWriteArray<Furniture, FurnitureParams, GenerateFurniture> {
   public:
-  using ReadWriteArray::ReadWriteArray;
+  FurnitureArray(Rectangle bounds);
+
+  struct Construction {
+    FurnitureType SERIAL(type);
+    int SERIAL(time);
+    SERIALIZE_ALL(type, time)
+  };
+  Table<optional<Construction>> SERIAL(construction);
+
+  SERIALIZATION_DECL(FurnitureArray)
+
 };

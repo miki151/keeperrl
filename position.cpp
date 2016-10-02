@@ -414,14 +414,14 @@ void Position::destroy(const DestroyAction& action) {
 void Position::removeFurniture(const Furniture* f) const {
   CHECK(getFurniture() == f);
   level->furniture->clearElem(coord);
-  level->furnitureConstruction[coord].reset();
+  level->furniture->construction[coord].reset();
   updateConnectivity();
   updateVisibility();
   setNeedsRenderUpdate(true);
 }
 
 void Position::addFurniture(PFurniture f) const {
-  level->furnitureConstruction[coord].reset();
+  level->furniture->construction[coord].reset();
   level->setFurniture(coord, std::move(f));
   updateConnectivity();
   updateVisibility();
@@ -430,7 +430,7 @@ void Position::addFurniture(PFurniture f) const {
 
 void Position::replaceFurniture(const Furniture* prev, PFurniture next) const {
   CHECK(getFurniture() == prev);
-  level->furnitureConstruction[coord].reset();
+  level->furniture->construction[coord].reset();
   level->setFurniture(coord, std::move(next));
   updateConnectivity();
   updateVisibility();
@@ -464,7 +464,7 @@ void Position::construct(FurnitureType type, Creature* c) {
 bool Position::construct(FurnitureType type, TribeId tribe) {
   CHECK(!isUnavailable());
   CHECK(canConstruct(type));
-  auto& construction = level->furnitureConstruction[coord];
+  auto& construction = level->furniture->construction[coord];
   if (!construction || construction->type != type)
     construction = {type, 10};
   if (--construction->time == 0) {
@@ -475,7 +475,7 @@ bool Position::construct(FurnitureType type, TribeId tribe) {
 }
 
 bool Position::isActiveFurnitureConstruction() const {
-  return !isUnavailable() && level->furnitureConstruction[coord];
+  return !isUnavailable() && level->furniture->construction[coord];
 }
 
 bool Position::isActiveSquareConstruction() const {

@@ -45,7 +45,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, squares, oldSquares, landingSquares, locations, tickingSquares, creatures, model, fieldOfView);
   serializeAll(ar, name, backgroundLevel, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
   serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, memoryUpdates);
-  serializeAll(ar, furniture, furnitureConstruction, tickingFurniture, covered);
+  serializeAll(ar, furniture, tickingFurniture, covered);
 }  
 
 SERIALIZABLE(Level);
@@ -57,7 +57,7 @@ Level::~Level() {}
 Level::Level(SquareArray s, FurnitureArray f, Model* m, vector<Location*> l, const string& n,
     Table<double> sun, LevelId id, Table<bool> cover)
     : squares(std::move(s)), oldSquares(squares->getBounds()), furniture(std::move(f)),
-      furnitureConstruction(squares->getBounds()), memoryUpdates(squares->getBounds(), true), locations(l), model(m),
+      memoryUpdates(squares->getBounds(), true), locations(l), model(m),
       name(n), sunlight(sun), covered(cover), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id) {
