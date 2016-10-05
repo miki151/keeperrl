@@ -1001,7 +1001,7 @@ void Collective::onEvent(const GameEvent& event) {
         auto info = event.get<EventInfo::FurnitureEvent>();
         if (constructions->containsFurniture(info.position, info.layer))
           constructions->onFurnitureDestroyed(info.position, info.layer);
-        tileEfficiency->removeType(info.position, info.layer);
+        tileEfficiency->update(info.position);
       }
       break;
     case EventId::EQUIPED:
@@ -1318,7 +1318,7 @@ void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
 void Collective::destroySquare(Position pos, FurnitureLayer layer) {
   if (territory->contains(pos))
     if (auto furniture = pos.modFurniture(layer)) {
-      tileEfficiency->removeType(pos, furniture->getType());
+      tileEfficiency->update(pos);
       furniture->destroy(pos, DestroyAction::Type::BASH);
     }
   zones->eraseZones(pos);
@@ -1414,7 +1414,7 @@ bool Collective::isConstructionReachable(Position pos) {
 }
 
 void Collective::onConstructed(Position pos, FurnitureType type) {
-  tileEfficiency->setType(pos, type);
+  tileEfficiency->update(pos);
   if (type == FurnitureType::MOUNTAIN || type == FurnitureType::DUNGEON_WALL) {
     constructions->removeFurniture(pos, Furniture::getLayer(type));
     if (territory->contains(pos))
@@ -1428,7 +1428,7 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
 }
 
 void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAction& action) {
-  tileEfficiency->removeType(pos, type);
+  tileEfficiency->update(pos);
   switch (action.getType()) {
     case DestroyAction::Type::CUT:
       zones->setZone(pos, ZoneId::FETCH_ITEMS);

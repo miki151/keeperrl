@@ -9,15 +9,11 @@ class SquareType;
 
 class TileEfficiency {
   public:
-  void setType(Position, FurnitureType);
-  void removeType(Position, FurnitureType);
-  void removeType(Position, FurnitureLayer);
+  void update(Position);
   double getEfficiency(Position) const;
 
   SERIALIZATION_DECL(TileEfficiency)
 
   private:
-  void update(Position);
   PositionMap<double> SERIAL(efficiency);
-  PositionMap<EnumMap<FurnitureLayer, optional<FurnitureType>>> SERIAL(types);
 };
