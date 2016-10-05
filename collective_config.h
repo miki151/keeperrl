@@ -146,7 +146,7 @@ struct WorkshopInfo {
 };
 
 struct FloorInfo {
-  SquareType type;
+  FurnitureType type;
   CostInfo cost;
   string name;
   double efficiencyBonus;
@@ -196,7 +196,7 @@ class CollectiveConfig {
   static optional<int> getTrainingMaxLevelIncrease(FurnitureType);
   static const MinionTaskInfo& getTaskInfo(MinionTask);
   static const vector<FloorInfo>& getFloors();
-  static double getEfficiencyBonus(SquareType);
+  static double getEfficiencyBonus(FurnitureType);
   static bool canBuildOutsideTerritory(FurnitureType);
 
   SERIALIZATION_DECL(CollectiveConfig);

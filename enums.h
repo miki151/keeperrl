@@ -48,12 +48,15 @@ enum class CreatureSize;
 enum class SquareApplyType;
 enum class SquareId;
 enum class FurnitureType;
+enum class FurnitureLayer;
 enum class ItemAction;
 enum class WorshipType;
 enum class SquareInteraction;
 
 enum class FurnitureUsageType;
 enum class FurnitureClickType;
+enum class FurnitureTickType;
+enum class FurnitureEntryType;
 
 enum class MinionTask;
 enum class MinionTrait;

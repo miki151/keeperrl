@@ -1,6 +1,4 @@
-#ifndef _STAIR_KEY_H
-#define _STAIR_KEY_H
-
+#pragma once
 
 class StairKey {
   public:
@@ -8,6 +6,7 @@ class StairKey {
   static StairKey heroSpawn();
   static StairKey keeperSpawn();
   static StairKey transferLanding();
+  static StairKey sokoban();
 
   bool operator == (const StairKey&) const;
 
@@ -29,6 +28,3 @@ template <> struct hash<StairKey> {
   }
 };
 }
-
-
-#endif

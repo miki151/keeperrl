@@ -24,7 +24,7 @@
 #include "stair_key.h"
 #include "entity_set.h"
 #include "vision_id.h"
-
+#include "furniture_layer.h"
 
 class Model;
 class Square;
@@ -115,9 +115,6 @@ class Level {
   Position getPosition(Vec2) const;
   vector<Position> getAllPositions() const;
   //@}
-
-  void replaceSquare(Position, PSquare square, bool storePrevious = true);
-  void removeSquare(Position, PSquare defaultSquare);
 
   /** The given square's method Square::tick() will be called every turn. */
   void addTickingSquare(Vec2 pos);
@@ -249,8 +246,8 @@ class Level {
   Sectors& getSectors(const MovementType&) const;
   
   friend class LevelBuilder;
-  Level(SquareArray, FurnitureArray, Model*, vector<Location*>, const string& name, Table<double> sunlight, LevelId,
-        Table<bool> cover);
+  Level(SquareArray, FurnitureArray, Model*, vector<Location*>, const string& name,
+        Table<double> sunlight, LevelId, Table<bool> cover);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);

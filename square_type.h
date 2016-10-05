@@ -9,7 +9,6 @@
 RICH_ENUM(SquareId,
   FLOOR,
   BLACK_FLOOR,
-  CUSTOM_FLOOR,
   GRASS,
   MUD,
   BLACK_WALL,
@@ -19,26 +18,12 @@ RICH_ENUM(SquareId,
   MAGMA,
   ABYSS,
   SAND,
-  BORDER_GUARD,
-  SOKOBAN_HOLE
+  BORDER_GUARD
 );
 
-struct CustomFloorInfo {
-  ViewId SERIAL(viewId);
-  string SERIAL(name);
-  SERIALIZE_ALL(viewId, name)
-  bool operator == (const CustomFloorInfo& o) const {
-    return viewId == o.viewId && name == o.name;
-  }
-};
-
-class SquareType : public EnumVariant<SquareId, TYPES(CreatureId, StairKey, double, CustomFloorInfo),
+class SquareType : public EnumVariant<SquareId, TYPES(double),
     ASSIGN(double,
-        SquareId::WATER_WITH_DEPTH),
-    ASSIGN(StairKey,
-        SquareId::SOKOBAN_HOLE),
-    ASSIGN(CustomFloorInfo,
-        SquareId::CUSTOM_FLOOR)> {
+        SquareId::WATER_WITH_DEPTH)> {
   public:
   using EnumVariant::EnumVariant;
   size_t getHash() const {

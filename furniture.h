@@ -6,10 +6,8 @@
 #include "fire.h"
 #include "item_factory.h"
 #include "vision_id.h"
-#include "furniture_click.h"
-#include "furniture_usage.h"
-#include "furniture_tick.h"
 #include "event_listener.h"
+#include "furniture_layer.h"
 
 class TribeId;
 class Creature;
@@ -21,11 +19,16 @@ class GameEvent;
 class Furniture : public Renderable {
   public:
   enum BlockType { BLOCKING, NON_BLOCKING, BLOCKING_ENEMIES };
+
+  static const string& getName(FurnitureType);
+  static FurnitureLayer getLayer(FurnitureType);
+
   Furniture(const string& name, const ViewObject&, FurnitureType, BlockType, TribeId);
   Furniture(const Furniture&);
   const string& getName() const;
   FurnitureType getType() const;
   bool canEnter(const MovementType&) const;
+  void onEnter(Creature*) const;
   bool canDestroy(const MovementType&, const DestroyAction&) const;
   bool canDestroy(const DestroyAction&) const;
   optional<double> getStrength(const DestroyAction&) const;
@@ -47,6 +50,7 @@ class Furniture : public Renderable {
   bool isTicking() const;
   bool canSupportDoor() const;
   void onConstructedBy(Creature*) const;
+  FurnitureLayer getLayer() const;
 
   enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE };
 
@@ -62,9 +66,11 @@ class Furniture : public Renderable {
   Furniture& setUsageTime(int);
   Furniture& setClickType(FurnitureClickType);
   Furniture& setTickType(FurnitureTickType);
+  Furniture& setEntryType(FurnitureEntryType);
   Furniture& setFireInfo(const Fire&);
   Furniture& setCanSupportDoor();
   Furniture& setOverrideMovement();
+  Furniture& setLayer(FurnitureLayer);
 
   SERIALIZATION_DECL(Furniture)
 
@@ -73,6 +79,7 @@ class Furniture : public Renderable {
   private:
   string SERIAL(name);
   FurnitureType SERIAL(type);
+  FurnitureLayer SERIAL(layer) = FurnitureLayer::MIDDLE;
   BlockType SERIAL(blockType);
   HeapAllocated<TribeId> SERIAL(tribe);
   HeapAllocated<optional<Fire>> SERIAL(fire);
@@ -84,6 +91,7 @@ class Furniture : public Renderable {
   optional<FurnitureUsageType> SERIAL(usageType);
   optional<FurnitureClickType> SERIAL(clickType);
   optional<FurnitureTickType> SERIAL(tickType);
+  optional<FurnitureEntryType> SERIAL(entryType);
   int SERIAL(usageTime) = 1;
   bool SERIAL(overrideMovement) = false;
   bool SERIAL(canSupport) = false;

@@ -64,13 +64,18 @@ struct CreatureEvent {
   string message;
 };
 
+struct FurnitureEvent {
+  Position position;
+  FurnitureLayer layer;
+};
+
 }
 
 class GameEvent : public EnumVariant<EventId, TYPES(Creature*, Position, Technology*, Collective*,
     EventInfo::CreatureEvent, EventInfo::Attacked, EventInfo::ItemsHandled, EventInfo::ItemsAppeared,
-    EventInfo::ItemsThrown, EventInfo::TrapDisarmed),
+    EventInfo::ItemsThrown, EventInfo::TrapDisarmed, EventInfo::FurnitureEvent),
     ASSIGN(Creature*, EventId::MOVED),
-    ASSIGN(Position, EventId::EXPLOSION, EventId::ALARM, EventId::TRAP_TRIGGERED, EventId::FURNITURE_DESTROYED,
+    ASSIGN(Position, EventId::EXPLOSION, EventId::ALARM, EventId::TRAP_TRIGGERED,
         EventId::POSITION_DISCOVERED),
     ASSIGN(Technology*, EventId::TECHBOOK_READ),
     ASSIGN(Collective*, EventId::CONQUERED_ENEMY),
@@ -79,7 +84,8 @@ class GameEvent : public EnumVariant<EventId, TYPES(Creature*, Position, Technol
     ASSIGN(EventInfo::ItemsHandled, EventId::PICKED_UP, EventId::DROPPED, EventId::EQUIPED),
     ASSIGN(EventInfo::ItemsAppeared, EventId::ITEMS_APPEARED),
     ASSIGN(EventInfo::ItemsThrown, EventId::ITEMS_THROWN),
-    ASSIGN(EventInfo::TrapDisarmed, EventId::TRAP_DISARMED)> {
+    ASSIGN(EventInfo::TrapDisarmed, EventId::TRAP_DISARMED),
+    ASSIGN(EventInfo::FurnitureEvent, EventId::FURNITURE_DESTROYED) > {
   using EnumVariant::EnumVariant;
 };
 

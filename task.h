@@ -41,7 +41,6 @@ class Task : public UniqueEntity<Task> {
   virtual bool canPerform(const Creature* c);
   bool isDone();
 
-  static PTask construction(TaskCallback*, Position, const SquareType&);
   static PTask construction(TaskCallback*, Position, FurnitureType);
   static PTask destruction(TaskCallback*, Position, const Furniture*, DestroyAction);
   static PTask buildTorch(TaskCallback*, Position, Dir attachmentDir);

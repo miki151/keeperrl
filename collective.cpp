@@ -47,15 +47,16 @@
 #include "tile_efficiency.h"
 #include "zones.h"
 #include "experience_type.h"
+#include "furniture_usage.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(TaskCallback);
-  serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType, mySquares);
+  serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType);
   serializeAll(ar, territory, alarmInfo, markedItems, constructions, minionEquipment);
-  serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, numFreeTech, kills, points, currentTasks);
+  serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
   serializeAll(ar, credit, level, pregnancies, minionAttraction, teams, name);
-  serializeAll(ar, config, warnings, banished, squaresInUse, equipmentUpdates);
+  serializeAll(ar, config, warnings, banished, equipmentUpdates);
   serializeAll(ar, villainType, eventProxy, workshops, zones, tileEfficiency);
 }
 
@@ -997,9 +998,10 @@ void Collective::onEvent(const GameEvent& event) {
       }
       break;
     case EventId::FURNITURE_DESTROYED: {
-        Position pos = event.get<Position>();
-        if (constructions->containsFurniture(pos))
-          constructions->onFurnitureDestroyed(pos);
+        auto info = event.get<EventInfo::FurnitureEvent>();
+        if (constructions->containsFurniture(info.position, info.layer))
+          constructions->onFurnitureDestroyed(info.position, info.layer);
+        tileEfficiency->removeType(info.position, info.layer);
       }
       break;
     case EventId::EQUIPED:
@@ -1056,27 +1058,14 @@ double Collective::getEfficiency(const Creature* c) const {
   return pow(2.0, c->getMorale());
 }
 
-const set<Position>& Collective::getSquares(SquareType type) const {
-  static set<Position> empty;
-  if (mySquares->count(type))
-    return mySquares->at(type);
-  else
-    return empty;
-}
-
 const Territory& Collective::getTerritory() const {
   return *territory;
 }
 
 void Collective::claimSquare(Position pos) {
   territory->insert(pos);
-  if (auto furniture = pos.getFurniture())
+  for (auto furniture : pos.getFurniture())
     constructions->addFurniture(pos, ConstructionMap::FurnitureInfo::getBuilt(furniture->getType()));
-}
-
-void Collective::changeSquareType(Position pos, SquareType from, SquareType to) {
-  (*mySquares)[from].erase(pos);
-  (*mySquares)[to].insert(pos);
 }
 
 const KnownTiles& Collective::getKnownTiles() const {
@@ -1117,13 +1106,8 @@ int Collective::numResourcePlusDebt(ResourceId id) const {
 
 int Collective::getDebt(ResourceId id) const {
   int ret = 0;
-  for (Position pos : constructions->getSquares()) {
-    auto& construction = constructions->getSquare(pos);
-    if (!construction.isBuilt() && construction.getCost().id == id)
-      ret += construction.getCost().value;
-  }
-  for (Position pos : constructions->getAllFurniture()) {
-    auto& furniture = constructions->getFurniture(pos);
+  for (auto& pos : constructions->getAllFurniture()) {
+    auto& furniture = constructions->getFurniture(pos.first, pos.second);
     if (!furniture.isBuilt() && furniture.getCost().id == id)
       ret += furniture.getCost().value;
   }
@@ -1317,37 +1301,31 @@ void Collective::removeTrap(Position pos) {
   constructions->removeTrap(pos);
 }
 
-void Collective::removeConstruction(Position pos) {
-  if (constructions->getSquare(pos).hasTask())
-    returnResource(taskMap->removeTask(constructions->getSquare(pos).getTask()));
-  constructions->removeSquare(pos);
-}
-
 bool Collective::canAddFurniture(Position position, FurnitureType type) const {
   return knownTiles->isKnown(position)
-      && FurnitureFactory::canBuild(type, position)
       && (territory->contains(position) || CollectiveConfig::canBuildOutsideTerritory(type))
       && !getConstructions().containsTrap(position)
-      && !getConstructions().containsFurniture(position)
+      && !getConstructions().containsFurniture(position, Furniture::getLayer(type))
       && position.canConstruct(type);
 }
 
-void Collective::removeFurniture(Position pos) {
-  if (constructions->getFurniture(pos).hasTask())
-    returnResource(taskMap->removeTask(constructions->getFurniture(pos).getTask()));
-  constructions->removeFurniture(pos);
+void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
+  if (constructions->getFurniture(pos, layer).hasTask())
+    returnResource(taskMap->removeTask(constructions->getFurniture(pos, layer).getTask()));
+  constructions->removeFurniture(pos, layer);
 }
 
-void Collective::destroySquare(Position pos) {
+void Collective::destroySquare(Position pos, FurnitureLayer layer) {
   if (territory->contains(pos))
-    pos.destroy(DestroyAction::Type::BASH);
+    if (auto furniture = pos.modFurniture(layer)) {
+      tileEfficiency->removeType(pos, furniture->getType());
+      furniture->destroy(pos, DestroyAction::Type::BASH);
+    }
   zones->eraseZones(pos);
   if (constructions->containsTrap(pos))
     removeTrap(pos);
-  if (constructions->containsFurniture(pos))
-    removeFurniture(pos);
-  if (constructions->containsSquare(pos))
-    removeConstruction(pos);
+  if (constructions->containsFurniture(pos, layer))
+    removeFurniture(pos, layer);
   if (constructions->containsTorch(pos))
     removeTorch(pos);
   pos.removeTriggers();
@@ -1359,13 +1337,6 @@ void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& 
     return;
   if (!noCredit || hasResource(cost)) {
     constructions->addFurniture(pos, ConstructionMap::FurnitureInfo(type, cost));
-    updateConstructions();
-  }
-}
-
-void Collective::addConstruction(Position pos, SquareType type, const CostInfo& cost, bool noCredit) {
-  if (!noCredit || hasResource(cost)) {
-    constructions->addSquare(pos, ConstructionMap::SquareInfo(type, cost));
     updateConstructions();
   }
 }
@@ -1404,7 +1375,7 @@ static HighlightType getHighlight(const DestroyAction& action) {
 }
 
 void Collective::orderDestruction(Position pos, const DestroyAction& action) {
-  auto f = NOTNULL(pos.getFurniture());
+  auto f = NOTNULL(pos.getFurniture(FurnitureLayer::MIDDLE));
   CHECK(f->canDestroy(action));
   taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action));
 }
@@ -1443,8 +1414,9 @@ bool Collective::isConstructionReachable(Position pos) {
 }
 
 void Collective::onConstructed(Position pos, FurnitureType type) {
+  tileEfficiency->setType(pos, type);
   if (type == FurnitureType::MOUNTAIN || type == FurnitureType::DUNGEON_WALL) {
-    constructions->removeFurniture(pos);
+    constructions->removeFurniture(pos, Furniture::getLayer(type));
     if (territory->contains(pos))
       territory->remove(pos);
     return;
@@ -1455,7 +1427,8 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
     taskMap->removeTask(task);
 }
 
-void Collective::onDestructedFurniture(Position pos, const DestroyAction& action) {
+void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAction& action) {
+  tileEfficiency->removeType(pos, type);
   switch (action.getType()) {
     case DestroyAction::Type::CUT:
       zones->setZone(pos, ZoneId::FETCH_ITEMS);
@@ -1471,20 +1444,6 @@ void Collective::onDestructedFurniture(Position pos, const DestroyAction& action
       break;
   }
   control->onDestructed(pos, action);
-}
-
-void Collective::onConstructed(Position pos, const SquareType& type) {
-  CHECK(!getSquares(type).count(pos));
-  for (auto& elem : *mySquares)
-    elem.second.erase(pos);
-  (*mySquares)[type].insert(pos);
-  tileEfficiency->setType(pos, type);
-  territory->insert(pos);
-  if (constructions->containsSquare(pos) && !constructions->getSquare(pos).isBuilt())
-    constructions->getSquare(pos).setBuilt();
-  control->onConstructed(pos, type);
-  if (Task* task = taskMap->getMarked(pos))
-    taskMap->removeTask(task);
 }
 
 void Collective::handleTrapPlacementAndProduction() {
@@ -1535,22 +1494,14 @@ void Collective::updateResourceProduction() {
 
 void Collective::updateConstructions() {
   handleTrapPlacementAndProduction();
-  for (Position pos : constructions->getSquares()) {
-    auto& construction = constructions->getSquare(pos);
-    if (!isDelayed(pos) && !construction.hasTask() && !construction.isBuilt()) {
-      if (!hasResource(construction.getCost()))
-        continue;
+  for (auto& pos : constructions->getAllFurniture()) {
+    auto& construction = constructions->getFurniture(pos.first, pos.second);
+    if (!isDelayed(pos.first) &&
+        !construction.hasTask() &&
+        !construction.isBuilt() &&
+        hasResource(construction.getCost())) {
       construction.setTask(
-          taskMap->addTaskCost(Task::construction(this, pos, construction.getSquareType()), pos,
-          construction.getCost())->getUniqueId());
-      takeResource(construction.getCost());
-    }
-  }
-  for (Position pos : constructions->getAllFurniture()) {
-    auto& construction = constructions->getFurniture(pos);
-    if (!isDelayed(pos) && !construction.hasTask() && !construction.isBuilt() && hasResource(construction.getCost())) {
-      construction.setTask(
-          taskMap->addTaskCost(Task::construction(this, pos, construction.getFurnitureType()), pos,
+          taskMap->addTaskCost(Task::construction(this, pos.first, construction.getFurnitureType()), pos.first,
           construction.getCost())->getUniqueId());
       takeResource(construction.getCost());
     }
@@ -1675,7 +1626,7 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
 }
 
 void Collective::onAppliedSquare(Creature* c, Position pos) {
-  if (auto furniture = pos.getFurniture()) {
+  if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
     // Furniture have variable apply time, so just multiply by it to be independent of changes.
     double efficiency = tileEfficiency->getEfficiency(pos) * pos.getApplyTime() * getEfficiency(c);
     switch (furniture->getType()) {
@@ -1749,11 +1700,9 @@ double Collective::getTechCost(Technology* t) {
   return t->getCost();
 }
 
-void Collective::acquireTech(Technology* tech, bool free) {
+void Collective::acquireTech(Technology* tech) {
   technologies.push_back(tech->getId());
   Technology::onAcquired(tech->getId(), this);
-  if (free)
-    ++numFreeTech;
 }
 
 vector<Technology*> Collective::getTechnologies() const {

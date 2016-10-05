@@ -135,41 +135,6 @@ void Level::addDarknessSource(Vec2 pos, double radius, int numDarkness) {
   }
 }
 
-void Level::removeSquare(Position pos, PSquare defaultSquare) {
-  if (!oldSquares[pos.getCoord()])
-    replaceSquare(pos, std::move(defaultSquare), false);
-  else
-    replaceSquare(pos, std::move(oldSquares[pos.getCoord()]), false);
-}
-
-void Level::replaceSquare(Position position, PSquare newSquare, bool storePrevious) {
-  Vec2 pos = position.getCoord();
-  Square* oldSquare = squares->getWritable(pos);
-  oldSquare->onConstructNewSquare(position, newSquare.get());
-  Creature* c = oldSquare->getCreature();
-  if (c)
-    oldSquare->removeCreature(position);
-  for (Item* it : copyOf(oldSquare->getItems()))
-    newSquare->dropItem(position, oldSquare->removeItem(position, it));
-  addLightSource(pos, oldSquare->getLightEmission(), -1);
-  for (PTrigger& t : oldSquare->removeTriggers(position))
-    newSquare->addTrigger(position, std::move(t));
-  if (auto backgroundObj = oldSquare->extractBackground())
-    (*background)[pos] = backgroundObj;
-  if (auto tribe = oldSquare->getForbiddenTribe())
-    newSquare->forbidMovementForTribe(position, *tribe);
-  if (storePrevious)
-    oldSquares[pos] = squares->extractElem(pos);
-  squares->putElem(pos, std::move(newSquare));
-  squares->getWritable(pos)->onAddedToLevel(position);
-  if (c) {
-    squares->getWritable(pos)->setCreature(c);
-  }
-  addLightSource(pos, squares->getWritable(pos)->getLightEmission(), 1);
-  updateVisibility(pos);
-  position.updateConnectivity();
-}
-
 void Level::updateVisibility(Vec2 changedSquare) {
   for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
     addLightSource(pos, squares->getReadonly(pos)->getLightEmission(), -1);
@@ -487,11 +452,13 @@ void Level::unplaceCreature(Creature* creature, Vec2 pos) {
 }
 
 void Level::placeCreature(Creature* creature, Vec2 pos) {
-  creature->setPosition(Position(pos, this));
+  Position position(pos, this);
+  creature->setPosition(position);
   bucketMap->addElement(pos, creature);
   modSafeSquare(pos)->putCreature(creature);
   if (creature->isDarknessSource())
     addDarknessSource(pos, darknessRadius, 1);
+  position.onEnter(creature);
 }
 
 void Level::swapCreatures(Creature* c1, Creature* c2) {
@@ -550,8 +517,9 @@ void Level::tick() {
   for (Vec2 pos : tickingSquares)
     squares->getWritable(pos)->tick(Position(pos, this));
   for (Vec2 pos : tickingFurniture)
-    if (auto f = furniture->getWritable(pos))
-      f->tick(Position(pos, this));
+    for (auto layer : ENUM_ALL(FurnitureLayer))
+      if (auto f = furniture->getBuilt(layer).getWritable(pos))
+        f->tick(Position(pos, this));
 }
 
 bool Level::inBounds(Vec2 pos) const {
@@ -632,7 +600,9 @@ bool Level::isUnavailable(Vec2 pos) const {
 }
 
 void Level::setFurniture(Vec2 pos, PFurniture f) {
+  auto layer = f->getLayer();
+  furniture->getConstruction(pos, layer).reset();
   if (f->isTicking())
     addTickingFurniture(pos);
-  furniture->putElem(pos, std::move(f));
+  furniture->getBuilt(layer).putElem(pos, std::move(f));
 }

@@ -44,7 +44,7 @@ template <class Archive>
 void Square::serialize(Archive& ar, const unsigned int version) { 
   ar& SUBCLASS(Renderable);
   serializeAll(ar, inventoryPtr, name, creature, triggers, vision, hide, landingLink, poisonGas);
-  serializeAll(ar, constructions, currentConstruction, movementSet, lastViewer, viewIndex);
+  serializeAll(ar, movementSet, lastViewer, viewIndex);
   serializeAll(ar, forbiddenTribe);
   if (progressMeter)
     progressMeter->addProgress();
@@ -57,8 +57,8 @@ SERIALIZABLE(Square);
 SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 
 Square::Square(const ViewObject& obj, Params p)
-  : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide),
-    constructions(p.constructions), movementSet(p.movementSet), viewIndex(new ViewIndex()) {
+  : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), movementSet(p.movementSet),
+    viewIndex(new ViewIndex()) {
 }
 
 Square::~Square() {
@@ -94,37 +94,6 @@ double Square::getLightEmission() const {
   for (auto& elem : triggers)
     sum += elem->getLightEmission();
   return sum;
-}
-
-static optional<short int> getConstructionTime(ConstructionsId id, SquareId square) {
-  switch (id) {
-    case ConstructionsId::DUNGEON_ROOMS:
-      switch (square) {
-        case SquareId::CUSTOM_FLOOR: return 3;
-        case SquareId::FLOOR: return 1;
-        default: return none;
-      }
-  }
-}
-
-bool Square::canConstruct(const SquareType& type) const {
-  return constructions && getConstructionTime(*constructions, type.getId());
-}
-
-bool Square::isActiveConstruction() const {
-  return !!currentConstruction;
-}
-
-bool Square::construct(Position position, const SquareType& type) {
-  setDirty(position);
-  CHECK(canConstruct(type));
-  if (!currentConstruction || currentConstruction->id != type.getId())
-    currentConstruction = CurrentConstruction{type.getId(), *getConstructionTime(*constructions, type.getId())};
-  if (--currentConstruction->turnsRemaining <= 0) {
-    position.getLevel()->replaceSquare(position, SquareFactory::get(type));
-    return true;
-  } else
-    return false;
 }
 
 void Square::setCreature(Creature* c) {

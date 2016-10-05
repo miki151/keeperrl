@@ -255,30 +255,23 @@ const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
 
 const vector<FloorInfo>& CollectiveConfig::getFloors() {
   static vector<FloorInfo> ret = {
-    {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::WOOD_FLOOR2, "wooden floor"}},
-        {CollectiveResourceId::WOOD, 10}, "Wooden", 0.02},
-    {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::WOOD_FLOOR4, "wooden floor"}},
-        {CollectiveResourceId::WOOD, 10}, "Wooden", 0.02},
-    {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::STONE_FLOOR1, "stone floor"}},
-        {CollectiveResourceId::STONE, 10}, "Stone", 0.04},
-    {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::STONE_FLOOR5, "stone floor"}},
-        {CollectiveResourceId::STONE, 10}, "Stone", 0.04},
-    {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::CARPET_FLOOR1, "carpet floor"}},
-        {CollectiveResourceId::GOLD, 10}, "Carpet", 0.06},
-    {SquareType{SquareId::CUSTOM_FLOOR, CustomFloorInfo{ViewId::CARPET_FLOOR4, "carpet floor"}},
-        {CollectiveResourceId::GOLD, 10}, "Carpet", 0.06},
+    {FurnitureType::FLOOR_WOOD1, {CollectiveResourceId::WOOD, 10}, "Wooden", 0.02},
+    {FurnitureType::FLOOR_WOOD2, {CollectiveResourceId::WOOD, 10}, "Wooden", 0.02},
+    {FurnitureType::FLOOR_STONE1, {CollectiveResourceId::STONE, 10}, "Stone", 0.04},
+    {FurnitureType::FLOOR_STONE2, {CollectiveResourceId::STONE, 10}, "Stone", 0.04},
+    {FurnitureType::FLOOR_CARPET1, {CollectiveResourceId::GOLD, 10}, "Carpet", 0.06},
+    {FurnitureType::FLOOR_CARPET2, {CollectiveResourceId::GOLD, 10}, "Carpet", 0.06},
   };
   return ret;
 }
 
-double CollectiveConfig::getEfficiencyBonus(SquareType type) {
-  switch (type.getId()) {
-    case SquareId::CUSTOM_FLOOR:
-      for (auto& info : getFloors())
-        if (info.type == type)
-          return info.efficiencyBonus;
-      FAIL << "Efficiency data not found for floor " << type.get<CustomFloorInfo>().name;
-      return 0;
+double CollectiveConfig::getEfficiencyBonus(FurnitureType type) {
+  for (auto& info : getFloors())
+    if (info.type == type)
+      return info.efficiencyBonus;
+  switch (type) {
+    case FurnitureType::DUNGEON_WALL:
+      return 0.04;
     default:
       return 0;
   }

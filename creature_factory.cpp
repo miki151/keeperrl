@@ -85,7 +85,7 @@ class BoulderController : public Monster {
         }
       }
     }
-    if (auto furniture = nextPos.getFurniture())
+    if (auto furniture = nextPos.getFurniture(FurnitureLayer::MIDDLE))
       if (furniture->canDestroy(getCreature()->getMovementType(), DestroyAction::Type::BOULDER) &&
           *furniture->getStrength(DestroyAction::Type::BOULDER) <
           health * getCreature()->getAttr(AttrType::STRENGTH)) {

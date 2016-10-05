@@ -9,6 +9,8 @@
 #include "item_type.h"
 #include "furniture_usage.h"
 #include "furniture_click.h"
+#include "furniture_tick.h"
+#include "furniture_entry.h"
 #include "level.h"
 #include "square_type.h"
 
@@ -206,6 +208,10 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("stairs", ViewObject(ViewId::DOWN_STAIRCASE, ViewLayer::FLOOR), type,
             Furniture::NON_BLOCKING, tribe)
           .setUsageType(FurnitureUsageType::STAIRS);
+    case FurnitureType::SOKOBAN_HOLE:
+      return Furniture("hole", ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR), type,
+            Furniture::NON_BLOCKING, tribe)
+          .setEntryType(FurnitureEntryType::SOKOBAN);
     case FurnitureType::BOULDER_TRAP:
       return Furniture("boulder", ViewObject(ViewId::BOULDER, ViewLayer::CREATURE), type, Furniture::BLOCKING, tribe)
           .setTickType(FurnitureTickType::BOULDER_TRAP)
@@ -266,13 +272,31 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlockVision()
           .setCanSupportDoor()
           .setDestroyable(100, DestroyAction::Type::BOULDER);
+    case FurnitureType::FLOOR_WOOD1:
+      return Furniture("floor", ViewObject(ViewId::WOOD_FLOOR2, ViewLayer::FLOOR_BACKGROUND), type,
+          Furniture::NON_BLOCKING, tribe)
+          .setLayer(FurnitureLayer::FLOOR);
+    case FurnitureType::FLOOR_WOOD2:
+      return Furniture("floor", ViewObject(ViewId::WOOD_FLOOR4, ViewLayer::FLOOR_BACKGROUND), type,
+          Furniture::NON_BLOCKING, tribe)
+          .setLayer(FurnitureLayer::FLOOR);
+    case FurnitureType::FLOOR_STONE1:
+      return Furniture("floor", ViewObject(ViewId::STONE_FLOOR1, ViewLayer::FLOOR_BACKGROUND), type,
+          Furniture::NON_BLOCKING, tribe)
+          .setLayer(FurnitureLayer::FLOOR);
+    case FurnitureType::FLOOR_STONE2:
+      return Furniture("floor", ViewObject(ViewId::STONE_FLOOR5, ViewLayer::FLOOR_BACKGROUND), type,
+          Furniture::NON_BLOCKING, tribe)
+          .setLayer(FurnitureLayer::FLOOR);
+    case FurnitureType::FLOOR_CARPET1:
+      return Furniture("floor", ViewObject(ViewId::CARPET_FLOOR1, ViewLayer::FLOOR_BACKGROUND), type,
+          Furniture::NON_BLOCKING, tribe)
+          .setLayer(FurnitureLayer::FLOOR);
+    case FurnitureType::FLOOR_CARPET2:
+      return Furniture("floor", ViewObject(ViewId::CARPET_FLOOR4, ViewLayer::FLOOR_BACKGROUND), type,
+          Furniture::NON_BLOCKING, tribe)
+          .setLayer(FurnitureLayer::FLOOR);
   }
-}
-
-const string& FurnitureFactory::getName(FurnitureType type) {
-  static EnumMap<FurnitureType, string> names(
-      [] (FurnitureType type) { return get(type, TribeId::getHostile())->getName(); });
-  return names[type];
 }
 
 bool FurnitureParams::operator == (const FurnitureParams& p) const {
@@ -292,12 +316,12 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
     case FurnitureType::DOOR:
       return canBuildDoor(pos);
     case FurnitureType::DUNGEON_WALL:
-      if (auto furniture = pos.getFurniture())
+      if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
         return furniture->getType() == FurnitureType::MOUNTAIN;
       else
         return false;
     default:
-      return pos.canEnterEmpty({MovementTrait::WALK});
+      return pos.canEnterSquare({MovementTrait::WALK});
   }
 }
 

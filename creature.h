@@ -182,7 +182,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction stealFrom(Vec2 direction, const vector<Item*>&) const;
   CreatureAction give(Creature* whom, vector<Item*> items);
   CreatureAction fire(Vec2 direction) const;
-  CreatureAction construct(Vec2 direction, const SquareType&) const;
   CreatureAction construct(Vec2 direction, FurnitureType) const;
   CreatureAction placeTorch(Dir attachmentDir, function<void(Trigger*)> builtCallback) const;
   CreatureAction whip(const Position&) const;

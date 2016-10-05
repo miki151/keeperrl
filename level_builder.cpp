@@ -65,7 +65,8 @@ void LevelBuilder::putSquare(Vec2 posT, SquareType t, vector<SquareAttrib> attr)
   if (progressMeter)
     progressMeter->addProgress();
   Vec2 pos = transform(posT);
-  furniture.clearElem(pos);
+  for (auto layer : ENUM_ALL(FurnitureLayer))
+    furniture.getBuilt(layer).clearElem(pos);
   if (const Square* square = squares.getReadonly(pos)) {
     if (auto backgroundObj = square->extractBackground())
       background[pos] = backgroundObj;
@@ -113,32 +114,37 @@ void LevelBuilder::putFurniture(Vec2 posT, FurnitureFactory& f) {
 }
 
 void LevelBuilder::putFurniture(Vec2 posT, FurnitureParams f) {
-  if (getFurniture(posT))
-    removeFurniture(posT);
-  furniture.putElem(transform(posT), f);
+  auto layer = Furniture::getLayer(f.type);
+  if (getFurniture(posT, layer))
+    removeFurniture(posT, layer);
+  furniture.getBuilt(layer).putElem(transform(posT), f);
 }
 
 void LevelBuilder::putFurniture(Vec2 pos, FurnitureType type) {
   putFurniture(pos, {type, TribeId::getHostile()});
 }
 
-bool LevelBuilder::canPutFurniture(Vec2 posT) {
-  return !furniture.getReadonly(transform(posT));
+bool LevelBuilder::canPutFurniture(Vec2 posT, FurnitureLayer layer) {
+  return !getFurniture(posT, layer);
 }
 
-void LevelBuilder::removeFurniture(Vec2 pos) {
-  furniture.clearElem(transform(pos));
+void LevelBuilder::removeFurniture(Vec2 pos, FurnitureLayer layer) {
+  furniture.getBuilt(layer).clearElem(transform(pos));
 }
 
-optional<FurnitureType> LevelBuilder::getFurnitureType(Vec2 posT) {
-  if (auto f = getFurniture(posT))
+optional<FurnitureType> LevelBuilder::getFurnitureType(Vec2 posT, FurnitureLayer layer) {
+  if (auto f = getFurniture(posT, layer))
     return f->getType();
   else
     return none;
 }
 
-const Furniture* LevelBuilder::getFurniture(Vec2 posT) {
-  return furniture.getReadonly(transform(posT));
+bool LevelBuilder::isFurnitureType(Vec2 pos, FurnitureType type) {
+  return getFurnitureType(pos, Furniture::getLayer(type)) == type;
+}
+
+const Furniture* LevelBuilder::getFurniture(Vec2 posT, FurnitureLayer layer) {
+  return furniture.getBuilt(layer).getReadonly(transform(posT));
 }
 
 void LevelBuilder::setLandingLink(Vec2 posT, StairKey key) {
@@ -236,7 +242,7 @@ void LevelBuilder::setUnavailable(Vec2 pos) {
 
 bool LevelBuilder::canNavigate(Vec2 posT, const MovementType& movement) {
   Vec2 pos = transform(posT);
-  const Furniture* f = furniture.getReadonly(pos);
+  const Furniture* f = furniture.getBuilt(FurnitureLayer::MIDDLE).getReadonly(pos);
   return (squares.getReadonly(pos)->getMovementSet().canEnter(movement, covered[pos], none) ||
           (f && f->overridesMovement() && f->canEnter(movement))) &&
       (!f || f->canEnter(movement));

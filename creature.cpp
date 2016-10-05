@@ -1317,19 +1317,6 @@ void Creature::addSound(const Sound& sound1) const {
   getGame()->getView()->addSound(sound);
 }
 
-CreatureAction Creature::construct(Vec2 direction, const SquareType& type) const {
-  if (getPosition().plus(direction).canConstruct(type) && canConstruct(type))
-    return CreatureAction(this, [=](Creature* self) {
-        addSound(Sound(SoundId::DIGGING).setPitch(0.5));
-        if (getPosition().plus(direction).construct(type)) {
-          monsterMessage(getName().the() + " builds " + getPosition().plus(direction).getName());
-          playerMessage("You build " + getPosition().plus(direction).getName());
-        }
-        self->spendTime(1);
-      });
-  return CreatureAction();
-}
-
 CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
   if (getPosition().plus(direction).canConstruct(type) && canConstruct(type))
     return CreatureAction(this, [=](Creature* self) {
@@ -1358,18 +1345,23 @@ CreatureAction Creature::eat(Item* item) const {
 }
 
 void Creature::destroyImpl(Vec2 direction, const DestroyAction& action) {
-  string name = getPosition().plus(direction).getName();
-  playerMessage("You "_s + action.getVerbSecondPerson() + " the " + name);
-  monsterMessage(getName().the() + " " + action.getVerbThirdPerson() + " the " + name, action.getSoundText());
-  getPosition().plus(direction).tryToDestroyBy(this, action);
+  auto pos = getPosition().plus(direction);
+  if (auto furniture = pos.modFurniture(FurnitureLayer::MIDDLE)) {
+    string name = furniture->getName();
+    playerMessage("You "_s + action.getVerbSecondPerson() + " the " + name);
+    monsterMessage(getName().the() + " " + action.getVerbThirdPerson() + " the " + name, action.getSoundText());
+    furniture->tryToDestroyBy(pos, this, action);
+  }
 }
 
 CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) const {
-  if (direction.length8() <= 1 && getPosition().plus(direction).canDestroy(this, action))
+  auto pos = getPosition().plus(direction);
+  if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
+    if (direction.length8() <= 1 && furniture->canDestroy(getMovementType(), action))
       return CreatureAction(this, [=](Creature* self) {
         self->destroyImpl(direction, action);
         self->spendTime(1);
-    });
+      });
   return CreatureAction();
 }
 

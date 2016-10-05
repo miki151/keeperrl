@@ -128,9 +128,11 @@ const vector<Technology*> Technology::getAllowed() const {
 }
 
 static bool areaOk(const vector<Position>& v) {
-  for (Position pos : v)
-    if (pos.isUnavailable() || !pos.getFurniture() || pos.getFurniture()->getType() != FurnitureType::MOUNTAIN)
+  for (Position pos : v) {
+    auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE);
+    if (pos.isUnavailable() || !furniture || furniture->getType() != FurnitureType::MOUNTAIN)
       return false;
+  }
   return true;
 }
 

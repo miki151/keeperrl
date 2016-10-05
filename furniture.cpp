@@ -13,6 +13,10 @@
 #include "game.h"
 #include "event_listener.h"
 #include "level.h"
+#include "furniture_usage.h"
+#include "furniture_entry.h"
+#include "furniture_click.h"
+#include "furniture_tick.h"
 
 Furniture::Furniture(const string& n, const ViewObject& o, FurnitureType t, BlockType b, TribeId id)
     : Renderable(o), name(n), type(t), blockType(b), tribe(id) {}
@@ -28,11 +32,22 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar & SUBCLASS(Renderable);
   serializeAll(ar, name, type, blockType, tribe, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   serializeAll(ar, blockVision, usageType, clickType, tickType, usageTime, overrideMovement, canSupport);
-  serializeAll(ar, constructMessage);
+  serializeAll(ar, constructMessage, layer, entryType);
 }
 
 SERIALIZABLE(Furniture);
 
+const string& Furniture::getName(FurnitureType type) {
+  static EnumMap<FurnitureType, string> names(
+      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getName(); });
+  return names[type];
+}
+
+FurnitureLayer Furniture::getLayer(FurnitureType type) {
+  static EnumMap<FurnitureType, FurnitureLayer> layers(
+      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getLayer(); });
+  return layers[type];
+}
 
 const string& Furniture::getName() const {
   return name;
@@ -46,9 +61,14 @@ bool Furniture::canEnter(const MovementType& movement) const {
   return blockType == NON_BLOCKING || (blockType == BLOCKING_ENEMIES && movement.isCompatible(getTribe()));
 }
 
+void Furniture::onEnter(Creature* c) const {
+  if (entryType)
+    FurnitureEntry::handle(*entryType, this, c);
+}
+
 void Furniture::destroy(Position pos, const DestroyAction& action) {
   pos.globalMessage("The " + name + " " + action.getIsDestroyed());
-  pos.getGame()->addEvent({EventId::FURNITURE_DESTROYED, pos});
+  pos.getGame()->addEvent({EventId::FURNITURE_DESTROYED, EventInfo::FurnitureEvent{pos, getLayer()}});
   if (*itemDrop)
     pos.dropItems((*itemDrop)->random());
   if (destroyedRemains)
@@ -81,7 +101,7 @@ void Furniture::tick(Position pos) {
       fire->tick();
       if (fire->isBurntOut()) {
         pos.globalMessage("The " + getName() + " burns down");
-        pos.getGame()->addEvent({EventId::FURNITURE_DESTROYED, pos});
+        pos.getGame()->addEvent({EventId::FURNITURE_DESTROYED, EventInfo::FurnitureEvent{pos, getLayer()}});
         pos.updateMovement();
         if (burntRemains)
           pos.replaceFurniture(this, FurnitureFactory::get(*burntRemains, *tribe));
@@ -154,6 +174,10 @@ void Furniture::onConstructedBy(Creature* c) const {
       c->playerMessage("You reinforce the wall");
       break;
   }
+}
+
+FurnitureLayer Furniture::getLayer() const {
+  return layer;
 }
 
 Furniture& Furniture::setConstructMessage(Furniture::ConstructMessage msg) {
@@ -245,6 +269,11 @@ Furniture& Furniture::setTickType(FurnitureTickType type) {
   return *this;
 }
 
+Furniture& Furniture::setEntryType(FurnitureEntryType type) {
+  entryType = type;
+  return *this;
+}
+
 Furniture& Furniture::setFireInfo(const Fire& f) {
   *fire = f;
   return *this;
@@ -257,6 +286,11 @@ Furniture& Furniture::setCanSupportDoor() {
 
 Furniture& Furniture::setOverrideMovement() {
   overrideMovement = true;
+  return *this;
+}
+
+Furniture& Furniture::setLayer(FurnitureLayer l) {
+  layer = l;
   return *this;
 }
 

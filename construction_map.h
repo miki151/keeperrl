@@ -1,5 +1,4 @@
-#ifndef _CONSTRUCTION_MAP_H
-#define _CONSTRUCTION_MAP_H
+#pragma once
 
 #include "cost_info.h"
 #include "util.h"
@@ -7,30 +6,10 @@
 #include "unique_entity.h"
 #include "position.h"
 #include "furniture_type.h"
+#include "furniture_layer.h"
 
 class ConstructionMap {
   public:
-
-  class SquareInfo {
-    public:
-    SquareInfo(SquareType, CostInfo);
-    void setBuilt();
-    void reset();
-    void setTask(UniqueEntity<Task>::Id);
-    CostInfo getCost() const;
-    bool isBuilt() const;
-    UniqueEntity<Task>::Id getTask() const;
-    bool hasTask() const;
-    const SquareType& getSquareType() const;
-
-    SERIALIZATION_DECL(SquareInfo);
-
-    private:
-    CostInfo SERIAL(cost);
-    bool SERIAL(built) = false;
-    SquareType SERIAL(type);
-    optional<UniqueEntity<Task>::Id> SERIAL(task);
-  };
 
   class FurnitureInfo {
     public:
@@ -44,6 +23,7 @@ class ConstructionMap {
     UniqueEntity<Task>::Id getTask() const;
     bool hasTask() const;
     FurnitureType getFurnitureType() const;
+    FurnitureLayer getLayer() const;
 
     SERIALIZATION_DECL(FurnitureInfo);
 
@@ -92,20 +72,12 @@ class ConstructionMap {
     Trigger* SERIAL(trigger) = nullptr;
   };
 
-  const SquareInfo& getSquare(Position) const;
-  SquareInfo& getSquare(Position);
-  void removeSquare(Position);
-  void onSquareDestroyed(Position);
-  void addSquare(Position, const SquareInfo&);
-  bool containsSquare(Position) const;
-  int getSquareCount(SquareType) const;
-
-  const FurnitureInfo& getFurniture(Position) const;
-  FurnitureInfo& getFurniture(Position);
-  void removeFurniture(Position);
-  void onFurnitureDestroyed(Position);
+  const FurnitureInfo& getFurniture(Position, FurnitureLayer) const;
+  FurnitureInfo& getFurniture(Position, FurnitureLayer);
+  void removeFurniture(Position, FurnitureLayer);
+  void onFurnitureDestroyed(Position, FurnitureLayer);
   void addFurniture(Position, const FurnitureInfo&);
-  bool containsFurniture(Position) const;
+  bool containsFurniture(Position, FurnitureLayer) const;
   int getBuiltCount(FurnitureType) const;
   int getTotalCount(FurnitureType) const;
   const set<Position>& getBuiltPositions(FurnitureType) const;
@@ -123,7 +95,7 @@ class ConstructionMap {
   void addTorch(Position, const TorchInfo&);
   bool containsTorch(Position) const;
   const vector<Position>& getSquares() const;
-  const vector<Position>& getAllFurniture() const;
+  const vector<pair<Position, FurnitureLayer>>& getAllFurniture() const;
   const map<Position, TrapInfo>& getTraps() const;
   const map<Position, TorchInfo>& getTorches() const;
 
@@ -131,15 +103,10 @@ class ConstructionMap {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  map<Position, vector<SquareInfo>> SERIAL(squares);
-  map<Position, FurnitureInfo> SERIAL(furniture);
+  EnumMap<FurnitureLayer, map<Position, FurnitureInfo>> SERIAL(furniture);
   EnumMap<FurnitureType, set<Position>> SERIAL(furniturePositions);
   EnumMap<FurnitureType, int> SERIAL(unbuiltCounts);
-  vector<Position> squarePos;
-  vector<Position> allFurniture;
-  unordered_map<SquareType, int, CustomHash<SquareType>> SERIAL(typeCounts);
+  vector<pair<Position, FurnitureLayer>> SERIAL(allFurniture);
   map<Position, TrapInfo> SERIAL(traps);
   map<Position, TorchInfo> SERIAL(torches);
 };
-
-#endif

@@ -54,7 +54,7 @@ class Magma : public Square {
             .addForcibleTrait(MovementTrait::WALK);)) {}
 
   virtual void onEnterSpecial(Creature* c) override {
-    if (!c->getPosition().getFurniture()) { // check if there is a bridge
+    if (c->getPosition().getFurniture().empty()) { // check if there is a bridge
       MovementType realMovement = c->getMovementType();
       realMovement.setForced(false);
       if (!c->getPosition().canEnterEmpty(realMovement)) {
@@ -85,7 +85,7 @@ class Water : public Square {
           )) {}
 
   virtual void onEnterSpecial(Creature* c) override {
-    if (!c->getPosition().getFurniture()) { // check if there is a bridge
+    if (c->getPosition().getFurniture().empty()) { // check if there is a bridge
       MovementType realMovement = c->getMovementType();
       realMovement.setForced(false);
       if (!c->getPosition().canEnterEmpty(realMovement)) {
@@ -116,46 +116,10 @@ class Water : public Square {
   }
 };
 
-class SokobanHole : public Square {
-  public:
-  SokobanHole(const ViewObject& obj, const string& name, StairKey key) : Square(obj,
-      CONSTRUCT(Square::Params,
-        c.name = name;
-        c.vision = VisionId::NORMAL;
-        c.canHide = false;
-        c.movementSet = MovementSet()
-            .addForcibleTrait(MovementTrait::WALK)
-            .addTrait(MovementTrait::FLY);)),
-    stairKey(key) {
-  }
-
-  virtual void onEnterSpecial(Creature* c) override {
-    if (c->getAttributes().isBoulder()) {
-      Position pos = c->getPosition();
-      pos.globalMessage(c->getName().the() + " fills the " + getName());
-      pos.replaceSquare(SquareFactory::get(SquareId::FLOOR));
-      c->die(nullptr, false, false);
-    } else {
-      if (!c->isAffected(LastingEffect::FLYING))
-        c->you(MsgType::FALL, "into the " + getName() + "!");
-      else
-        c->you(MsgType::ARE, "sucked into the " + getName() + "!");
-      c->getPosition().getLevel()->changeLevel(stairKey, c);
-    }
-  }
-
-  SERIALIZE_ALL2(Square, stairKey);
-  SERIALIZATION_CONSTRUCTOR(SokobanHole);
-
-  private:
-  StairKey SERIAL(stairKey);
-};
-
 template <class Archive>
 void SquareFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Magma);
   REGISTER_TYPE(ar, Water);
-  REGISTER_TYPE(ar, SokobanHole);
 }
 
 REGISTER_TYPES(SquareFactory::registerTypes);
@@ -172,15 +136,6 @@ Square* SquareFactory::getPtr(SquareType s) {
               c.name = "floor";
               c.vision = VisionId::NORMAL;
               c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
-              c.constructions = ConstructionsId::DUNGEON_ROOMS;
-            ));
-    case SquareId::CUSTOM_FLOOR:
-        return new Square(ViewObject(s.get<CustomFloorInfo>().viewId, ViewLayer::FLOOR_BACKGROUND),
-            CONSTRUCT(Square::Params,
-              c.name = s.get<CustomFloorInfo>().name;
-              c.vision = VisionId::NORMAL;
-              c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
-              c.constructions = ConstructionsId::DUNGEON_ROOMS;
             ));
     case SquareId::BLACK_FLOOR:
         return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND, "Floor"),
@@ -224,9 +179,6 @@ Square* SquareFactory::getPtr(SquareType s) {
             c.name = "sand";
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.vision = VisionId::NORMAL;));
-    case SquareId::SOKOBAN_HOLE:
-        return new SokobanHole(ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR), "hole",
-            s.get<StairKey>());
     case SquareId::BORDER_GUARD:
         return new Square(ViewObject(ViewId::BORDER_GUARD, ViewLayer::FLOOR),
           CONSTRUCT(Square::Params, c.name = "wall";));

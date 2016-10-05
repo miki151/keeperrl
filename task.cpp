@@ -86,71 +86,17 @@ void Task::setDone() {
 
 namespace {
 
-class ConstructionHelper {
-  public:
-  ConstructionHelper(SquareType s) : square(s) {}
-  ConstructionHelper(FurnitureType f) : furniture(f) {}
-
-  bool canConstruct(Position pos) const {
-    if (square)
-      return pos.canConstruct(*square);
-    else
-      return pos.canConstruct(*furniture);
-  }
-
-  string getDescription(Position position) const {
-    if (square)
-      switch (square->getId()) {
-        case SquareId::FLOOR: return "Dig " + toString(position);
-        default: return "Build " + transform2(EnumInfo<SquareId>::getString(square->getId()),
-                   [] (char c) -> char { if (c == '_') return ' '; else return tolower(c); }) + toString(position);
-      }
-    else
-      return "Build " + transform2(EnumInfo<FurnitureType>::getString(*furniture),
-          [] (char c) -> char { if (c == '_') return ' '; else return tolower(c); }) + toString(position);
-
-  }
-
-  CreatureAction getAction(Creature* c, Vec2 dir) {
-    if (square)
-      return c->construct(dir, *square);
-    else
-      return c->construct(dir, *furniture);
-  }
-
-  void onConstructed(TaskCallback* callback, Position position) {
-    if (square)
-      callback->onConstructed(position, *square);
-    else
-      callback->onConstructed(position, *furniture);
-  }
-
-  bool isActiveConstruction(Position pos) {
-    if (square)
-      return pos.isActiveSquareConstruction();
-    else
-      return pos.isActiveFurnitureConstruction();
-  }
-
-  SERIALIZE_ALL(square, furniture);
-  SERIALIZATION_CONSTRUCTOR(ConstructionHelper);
-
-  private:
-  optional<SquareType> SERIAL(square);
-  optional<FurnitureType> SERIAL(furniture);
-};
-
 class Construction : public Task {
   public:
-  Construction(TaskCallback* c, Position pos, const ConstructionHelper& h) : Task(true), helper(h), position(pos),
+  Construction(TaskCallback* c, Position pos, FurnitureType type) : Task(true), furnitureType(type), position(pos),
       callback(c) {}
 
   virtual bool isBogus() const override {
-    return !helper.canConstruct(position);
+    return position.canConstruct(furnitureType);
   }
 
   virtual string getDescription() const override {
-    return helper.getDescription(position);
+    return "Build " + Furniture::getName(furnitureType) + " at " + toString(position);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -160,11 +106,11 @@ class Construction : public Task {
       return c->moveTowards(position);
     CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
     Vec2 dir = c->getPosition().getDir(position);
-    if (auto action = helper.getAction(c, dir))
+    if (auto action = c->construct(dir, furnitureType))
       return {1.0, action.append([=](Creature* c) {
-          if (!helper.isActiveConstruction(position)) {
+          if (!position.isActiveConstruction(Furniture::getLayer(furnitureType))) {
             setDone();
-            helper.onConstructed(callback, position);
+            callback->onConstructed(position, furnitureType);
           }
           })};
     else {
@@ -173,19 +119,15 @@ class Construction : public Task {
     }
   }
 
-  SERIALIZE_ALL2(Task, position, helper, callback);
-  SERIALIZATION_CONSTRUCTOR(Construction);
+  SERIALIZE_ALL2(Task, position, furnitureType, callback)
+  SERIALIZATION_CONSTRUCTOR(Construction)
 
   private:
-  ConstructionHelper SERIAL(helper);
+  FurnitureType SERIAL(furnitureType);
   Position SERIAL(position);
   TaskCallback* SERIAL(callback);
 };
 
-}
-
-PTask Task::construction(TaskCallback* c, Position target, const SquareType& type) {
-  return PTask(new Construction(c, target, type));
 }
 
 PTask Task::construction(TaskCallback* c, Position target, FurnitureType type) {
@@ -200,8 +142,15 @@ class Destruction : public Task {
         description(action.getVerbSecondPerson() + " "_s + furniture->getName()),
         furnitureType(furniture->getType()) {}
 
+  const Furniture* getFurniture() const {
+    return position.getFurniture(Furniture::getLayer(furnitureType));
+  }
+
   virtual bool isBogus() const override {
-    return !position.getFurniture() || !position.getFurniture()->canDestroy(destroyAction);
+    if (auto furniture = getFurniture())
+      if (furniture->canDestroy(destroyAction))
+        return false;
+    return true;
   }
 
   virtual string getDescription() const override {
@@ -217,9 +166,9 @@ class Destruction : public Task {
     Vec2 dir = c->getPosition().getDir(position);
     if (auto action = c->destroy(dir, destroyAction))
       return {1.0, action.append([=](Creature* c) {
-          if (!position.getFurniture() || position.getFurniture()->getType() != furnitureType) {
+          if (!getFurniture() || getFurniture()->getType() != furnitureType) {
             setDone();
-            callback->onDestructedFurniture(position, destroyAction);
+            callback->onDestructed(position, furnitureType, destroyAction);
           }
           })};
     else {

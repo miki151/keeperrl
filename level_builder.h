@@ -87,10 +87,11 @@ class LevelBuilder {
   void putFurniture(Vec2 pos, FurnitureFactory&);
   void putFurniture(Vec2 pos, FurnitureParams);
   void putFurniture(Vec2 pos, FurnitureType);
-  bool canPutFurniture(Vec2 pos);
-  void removeFurniture(Vec2 pos);
-  optional<FurnitureType> getFurnitureType(Vec2 pos);
-  const Furniture* getFurniture(Vec2 pos);
+  bool canPutFurniture(Vec2 pos, FurnitureLayer);
+  void removeFurniture(Vec2 pos, FurnitureLayer);
+  optional<FurnitureType> getFurnitureType(Vec2 pos, FurnitureLayer);
+  bool isFurnitureType(Vec2 pos, FurnitureType);
+  const Furniture* getFurniture(Vec2 pos, FurnitureLayer);
 
   void setLandingLink(Vec2 pos, StairKey);
 

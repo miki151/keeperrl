@@ -37,6 +37,7 @@
 #include "body.h"
 #include "item_class.h"
 #include "furniture.h"
+#include "furniture_factory.h"
 
 class Behaviour {
   public:
@@ -257,11 +258,10 @@ class StayOnFurniture : public Behaviour {
   StayOnFurniture(Creature* c, FurnitureType t) : Behaviour(c), type(t) {}
 
   MoveInfo getMove() override {
-    auto furniture = creature->getPosition().getFurniture();
-    if (!furniture || furniture->getType() != type) {
+    if (auto furniture = creature->getPosition().getFurniture(type)) {
       if (!nextPigsty)
         for (auto pos : creature->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 20)))
-          if (auto f = pos.getFurniture())
+          if (auto f = pos.getFurniture(type))
             if (f->getType() == type) {
               nextPigsty = pos;
               break;
@@ -272,7 +272,7 @@ class StayOnFurniture : public Behaviour {
     }
     if (Random.roll(10))
       for (Position next: creature->getPosition().neighbors8(Random))
-        if (next.canEnter(creature) && next.getFurniture() && next.getFurniture()->getType() == type)
+        if (next.canEnter(creature) && next.getFurniture(type))
           return creature->move(next);
     return creature->wait();
   }

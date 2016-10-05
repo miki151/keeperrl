@@ -3,6 +3,7 @@
 #include "creature.h"
 #include "trigger.h"
 #include "tribe.h"
+#include "furniture.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::FurnitureInfo, FurnitureInfo);
 
@@ -51,31 +52,36 @@ FurnitureType ConstructionMap::FurnitureInfo::getFurnitureType() const {
   return type;
 }
 
-const ConstructionMap::FurnitureInfo& ConstructionMap::getFurniture(Position pos) const {
-  return furniture.at(pos); 
+FurnitureLayer ConstructionMap::FurnitureInfo::getLayer() const {
+  return Furniture::getLayer(type);
 }
 
-ConstructionMap::FurnitureInfo& ConstructionMap::getFurniture(Position pos) {
-  return furniture.at(pos); 
+const ConstructionMap::FurnitureInfo& ConstructionMap::getFurniture(Position pos, FurnitureLayer layer) const {
+  return furniture[layer].at(pos);
 }
 
-void ConstructionMap::removeFurniture(Position pos) {
-  auto type = furniture.at(pos).getFurnitureType();
+ConstructionMap::FurnitureInfo& ConstructionMap::getFurniture(Position pos, FurnitureLayer layer) {
+  return furniture[layer].at(pos);
+}
+
+void ConstructionMap::removeFurniture(Position pos, FurnitureLayer layer) {
+  auto type = furniture[layer].at(pos).getFurnitureType();
   --unbuiltCounts[type];
   furniturePositions[type].erase(pos);
-  furniture.erase(pos);
-  removeElement(allFurniture, pos);
+  furniture[layer].erase(pos);
+  removeElement(allFurniture, {pos, layer});
   pos.setNeedsRenderUpdate(true);
 }
 
-void ConstructionMap::onFurnitureDestroyed(Position pos) {
-  getFurniture(pos).reset();
+void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
+  getFurniture(pos, layer).reset();
 }
 
 void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
-  CHECK(!furniture.count(pos));
-  allFurniture.push_back(pos);
-  furniture.emplace(pos, info);
+  auto layer = info.getLayer();
+  CHECK(!furniture[layer].count(pos));
+  allFurniture.push_back({pos, layer});
+  furniture[layer].emplace(pos, info);
   pos.setNeedsRenderUpdate(true);
   if (info.isBuilt())
     furniturePositions[info.getFurnitureType()].insert(pos);
@@ -83,8 +89,8 @@ void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
     ++unbuiltCounts[info.getFurnitureType()];
 }
 
-bool ConstructionMap::containsFurniture(Position pos) const {
-  return furniture.count(pos);
+bool ConstructionMap::containsFurniture(Position pos, FurnitureLayer layer) const {
+  return furniture[layer].count(pos);
 }
 
 int ConstructionMap::getBuiltCount(FurnitureType type) const {
@@ -99,68 +105,18 @@ const set<Position>& ConstructionMap::getBuiltPositions(FurnitureType type) cons
   return furniturePositions[type];
 }
 
-const vector<Position>& ConstructionMap::getAllFurniture() const {
+const vector<pair<Position, FurnitureLayer>>& ConstructionMap::getAllFurniture() const {
   return allFurniture;
 }
 
 void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
-  if (!containsFurniture(pos))
+  auto layer = Furniture::getLayer(type);
+  if (!containsFurniture(pos, layer))
     addFurniture(pos, FurnitureInfo::getBuilt(type));
   furniturePositions[type].insert(pos);
   --unbuiltCounts[type];
-  if (furniture.count(pos))
-    furniture.at(pos).setBuilt();
-}
-
-const ConstructionMap::SquareInfo& ConstructionMap::getSquare(Position pos) const {
-  for (auto& info : squares.at(pos))
-    if (!info.isBuilt())
-      return info;
-  CHECK(!squares.at(pos).empty());
-  return squares.at(pos).back();
-}
-
-ConstructionMap::SquareInfo& ConstructionMap::getSquare(Position pos) {
-  for (auto& info : squares.at(pos))
-    if (!info.isBuilt())
-      return info;
-  CHECK(!squares.at(pos).empty());
-  return squares.at(pos).back();
-}
-
-void ConstructionMap::removeSquare(Position pos) {
-  for (auto& info : squares.at(pos))
-    --typeCounts[info.getSquareType()];
-  squares.erase(pos);
-  removeElement(squarePos, pos);
-  pos.setNeedsRenderUpdate(true);
-}
-
-void ConstructionMap::addSquare(Position pos, const ConstructionMap::SquareInfo& info) {
-  if (!squares.count(pos))
-    squarePos.push_back(pos);
-  squares[pos].push_back(info);
-  ++typeCounts[info.getSquareType()];
-  pos.setNeedsRenderUpdate(true);
-}
-
-bool ConstructionMap::containsSquare(Position pos) const {
-  return squares.count(pos);
-}
-
-int ConstructionMap::getSquareCount(SquareType type) const {
-  if (typeCounts.count(type))
-    return typeCounts.at(type);
-  else
-    return 0;
-}
-
-void ConstructionMap::onSquareDestroyed(Position pos) {
-  getSquare(pos).reset();
-}
-
-const vector<Position>& ConstructionMap::getSquares() const {
-  return squarePos;
+  if (furniture[layer].count(pos))
+    furniture[layer].at(pos).setBuilt();
 }
 
 const ConstructionMap::TrapInfo& ConstructionMap::getTrap(Position pos) const {
@@ -188,43 +144,6 @@ bool ConstructionMap::containsTrap(Position pos) const {
 
 const map<Position, ConstructionMap::TrapInfo>& ConstructionMap::getTraps() const {
   return traps;
-}
-
-ConstructionMap::SquareInfo::SquareInfo(SquareType t, CostInfo c) : cost(c), type(t) {
-}
-
-void ConstructionMap::SquareInfo::setBuilt() {
-  built = true;
-  task = none;
-}
-
-void ConstructionMap::SquareInfo::reset() {
-  built = false;
-  task = none;
-}
-
-void ConstructionMap::SquareInfo::setTask(UniqueEntity<Task>::Id id) {
-  task = id;
-}
-
-CostInfo ConstructionMap::SquareInfo::getCost() const {
-  return cost;
-}
-
-bool ConstructionMap::SquareInfo::isBuilt() const {
-  return built;
-}
-
-bool ConstructionMap::SquareInfo::hasTask() const {
-  return !!task;
-}
-
-UniqueEntity<Task>::Id ConstructionMap::SquareInfo::getTask() const {
-  return *task;
-}
-
-const SquareType& ConstructionMap::SquareInfo::getSquareType() const {
-  return type;
 }
 
 void ConstructionMap::TrapInfo::setArmed() {
@@ -318,14 +237,6 @@ const map<Position, ConstructionMap::TorchInfo>& ConstructionMap::getTorches() c
 }
 
 template <class Archive>
-void ConstructionMap::SquareInfo::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, cost, built, type, task);
-}
-
-SERIALIZABLE(ConstructionMap::SquareInfo);
-SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::SquareInfo, SquareInfo);
-
-template <class Archive>
 void ConstructionMap::TrapInfo::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, type, armed, marked);
 }
@@ -343,11 +254,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TorchInfo, TorchInfo);
 
 template <class Archive>
 void ConstructionMap::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, squares, typeCounts, traps, torches, furniture, furniturePositions, unbuiltCounts);
-  if (Archive::is_loading::value) {
-    squarePos = getKeys(squares);
-    allFurniture = getKeys(furniture);
-  }
+  serializeAll(ar, traps, torches, furniture, furniturePositions, unbuiltCounts, allFurniture);
 }
 
 SERIALIZABLE(ConstructionMap);

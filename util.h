@@ -411,13 +411,15 @@ class EnumMap {
       elems[int(elem.first)] = elem.second;
   }
 
-  void operator = (initializer_list<pair<T, U>> il) {
+  EnumMap& operator = (initializer_list<pair<T, U>> il) {
     for (auto elem : il)
       elems[int(elem.first)] = elem.second;
+    return *this;
   }
 
-  void operator = (const EnumMap& other) {
+  EnumMap& operator = (const EnumMap& other) {
     elems = other.elems;
+    return *this;
   }
 
   const U& operator[](T elem) const {

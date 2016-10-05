@@ -47,7 +47,6 @@ class CollectiveName;
 template <typename T>
 class EventProxy;
 class Workshops;
-class SquareType;
 class TileEfficiency;
 class Zones;
 struct ItemFetchInfo;
@@ -107,11 +106,8 @@ class Collective : public TaskCallback {
   bool hasLeader() const;
   void clearLeader();
 
-  const set<Position>& getSquares(SquareType) const;
-  vector<Position> getAllSquares(const vector<SquareType>&) const;
   const Territory& getTerritory() const;
   void claimSquare(Position);
-  void changeSquareType(Position pos, SquareType from, SquareType to);
   const KnownTiles& getKnownTiles() const;
   const TileEfficiency& getTileEfficiency() const;
   void limitKnownTilesToModel();
@@ -146,12 +142,10 @@ class Collective : public TaskCallback {
 
   void addTrap(Position, TrapType);
   void removeTrap(Position);
-  void addConstruction(Position, SquareType, const CostInfo&, bool noCredit);
-  void removeConstruction(Position);
   bool canAddFurniture(Position, FurnitureType) const;
   void addFurniture(Position, FurnitureType, const CostInfo&, bool noCredit);
-  void removeFurniture(Position);
-  void destroySquare(Position);
+  void removeFurniture(Position, FurnitureLayer);
+  void destroySquare(Position, FurnitureLayer);
   bool isPlannedTorch(Position) const;
   bool canPlaceTorch(Position) const;
   void removeTorch(Position);
@@ -167,7 +161,7 @@ class Collective : public TaskCallback {
   bool hasPriorityTasks(Position) const;
 
   bool hasTech(TechId id) const;
-  void acquireTech(Technology*, bool free = false);
+  void acquireTech(Technology*);
   vector<Technology*> getTechnologies() const;
   double getTechCost(Technology*);
   bool addKnownTile(Position);
@@ -208,9 +202,8 @@ class Collective : public TaskCallback {
   virtual void onAppliedItemCancel(Position) override;
   virtual void onTaskPickedUp(Position, EntitySet<Item>) override;
   virtual void onCantPickItem(EntitySet<Item> items) override;
-  virtual void onConstructed(Position, const SquareType&) override;
   virtual void onConstructed(Position, FurnitureType) override;
-  virtual void onDestructedFurniture(Position, const DestroyAction&) override;
+  virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
   virtual void onTorchBuilt(Position, Trigger*) override;
   virtual void onAppliedSquare(Creature*, Position) override;
   virtual void onKillCancelled(Creature*) override;
@@ -247,7 +240,6 @@ class Collective : public TaskCallback {
   EnumMap<ResourceId, int> SERIAL(credit);
   HeapAllocated<TaskMap> SERIAL(taskMap);
   vector<TechId> SERIAL(technologies);
-  int SERIAL(numFreeTech) = 0;
   void markItem(const Item*);
   void unmarkItem(UniqueEntity<Item>::Id);
 
@@ -294,7 +286,6 @@ class Collective : public TaskCallback {
   PCollectiveControl SERIAL(control);
   HeapAllocated<TribeId> SERIAL(tribe);
   Level* SERIAL(level) = nullptr;
-  HeapAllocated<unordered_map<SquareType, set<Position>, CustomHash<SquareType>>> SERIAL(mySquares);
   HeapAllocated<Territory> SERIAL(territory);
   struct AlarmInfo {
     double SERIAL(finishTime);
@@ -308,7 +299,6 @@ class Collective : public TaskCallback {
   MoveInfo getAlarmMove(Creature* c);
   HeapAllocated<ConstructionMap> SERIAL(constructions);
   EntitySet<Item> SERIAL(markedItems);
-  set<Position> SERIAL(squaresInUse);
   EntitySet<Creature> SERIAL(surrendering);
   void updateConstructions();
   void handleTrapPlacementAndProduction();

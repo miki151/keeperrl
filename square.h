@@ -38,17 +38,12 @@ class MovementType;
 class MovementSet;
 class ViewObject;
 
-enum class ConstructionsId {
-  DUNGEON_ROOMS,
-};
-
 class Square : public Renderable {
   public:
   struct Params {
     string name;
     optional<VisionId> vision;
     bool canHide;
-    optional<ConstructionsId> constructions;
     HeapAllocated<MovementSet> movementSet;
     bool canDestroy;
     optional<SoundId> applySound;
@@ -133,18 +128,6 @@ class Square : public Renderable {
   /** Checks if a given item is present on the square.*/
   bool hasItem(Item*) const;
 
-  /** Checks if another square can be constructed from this one.*/
-  bool canConstruct(const SquareType&) const;
-
-  /** Constructs another square. The construction might finish after several attempts.
-    Returns true if construction was finishd.*/
-  bool construct(Position, const SquareType&);
-
-  /** Called just before swapping the old square for the new constructed one.*/
-  virtual void onConstructNewSquare(Position, Square* newSquare) const {}
-  
-  bool isActiveConstruction() const;
-
   /** Triggers all time-dependent processes like burning. Calls tick() for items if present.
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
   void tick(Position);
@@ -198,13 +181,6 @@ class Square : public Renderable {
   bool SERIAL(hide);
   optional<StairKey> SERIAL(landingLink);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
-  optional<ConstructionsId> SERIAL(constructions);
-  struct CurrentConstruction {
-    SquareId SERIAL(id);
-    short int SERIAL(turnsRemaining);
-    SERIALIZE_ALL(id, turnsRemaining);
-  };
-  optional<CurrentConstruction> SERIAL(currentConstruction);
   HeapAllocated<MovementSet> SERIAL(movementSet);
   mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);
   unique_ptr<ViewIndex> SERIAL(viewIndex);

@@ -1,14 +1,17 @@
 #pragma once
 
 #include "position_map.h"
-#include "square_type.h"
+#include "furniture_type.h"
+#include "furniture_layer.h"
 
 class Position;
 class SquareType;
 
 class TileEfficiency {
   public:
-  void setType(Position, SquareType);
+  void setType(Position, FurnitureType);
+  void removeType(Position, FurnitureType);
+  void removeType(Position, FurnitureLayer);
   double getEfficiency(Position) const;
 
   SERIALIZATION_DECL(TileEfficiency)
@@ -16,5 +19,5 @@ class TileEfficiency {
   private:
   void update(Position);
   PositionMap<double> SERIAL(efficiency);
-  PositionMap<optional<SquareType>> SERIAL(types);
+  PositionMap<EnumMap<FurnitureLayer, optional<FurnitureType>>> SERIAL(types);
 };
