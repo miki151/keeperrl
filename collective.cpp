@@ -1318,8 +1318,8 @@ void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
 void Collective::destroySquare(Position pos, FurnitureLayer layer) {
   if (territory->contains(pos))
     if (auto furniture = pos.modFurniture(layer)) {
-      tileEfficiency->update(pos);
       furniture->destroy(pos, DestroyAction::Type::BASH);
+      tileEfficiency->update(pos);
     }
   zones->eraseZones(pos);
   if (constructions->containsTrap(pos))

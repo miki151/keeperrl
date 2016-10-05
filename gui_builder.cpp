@@ -848,7 +848,7 @@ PGuiElem GuiBuilder::drawPlayerLevelButton(const PlayerInfo& info) {
             lines.addElem(gui.leftMargin(30, getExpIncreaseLine(info.levelInfo, expType)));
           if (auto& warning = info.levelInfo.warning)
             lines.addElem(gui.label(*warning, colors[ColorId::RED]));
-          drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260);
+          drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 300);
       }));
 }
 
