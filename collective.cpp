@@ -781,7 +781,7 @@ void Collective::decayMorale() {
 void Collective::update(bool currentlyActive) {
   control->update(currentlyActive);
   if (currentlyActive == config->activeImmigrantion(getGame()) &&
-      Random.rollD(1.0 / config->getImmigrantFrequency()))
+      Random.chance(config->getImmigrantFrequency()))
     considerImmigration();
 }
 
@@ -1633,7 +1633,7 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
       case FurnitureType::BOOK_SHELF: {
         addMana(0.1 * efficiency * c->getAttributes().getSkills().getValue(SkillId::MANA));
         auto availableSpells = Technology::getAvailableSpells(this);
-        if (Random.rollD(60.0 / efficiency) && !availableSpells.empty()) {
+        if (Random.chance(efficiency / 60) && !availableSpells.empty()) {
           for (int i : Range(30)) {
             Spell* spell = Random.choose(Technology::getAvailableSpells(this));
             if (!c->getAttributes().getSpellMap().contains(spell)) {

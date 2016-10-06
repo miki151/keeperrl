@@ -465,7 +465,7 @@ class RandomGen {
   double getDouble();
   double getDouble(double a, double b);
   bool roll(int chance);
-  bool rollD(double chance);
+  bool chance(double chance);
   template <typename T>
   T choose(const vector<T>& v, const vector<double>& p) {
     CHECK(v.size() == p.size());

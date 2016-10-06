@@ -111,14 +111,32 @@ class Predicate {
 
 class SquareChange {
   public:
-  SquareChange(FurnitureType type)
+  static SquareChange none() {
+    return SquareChange([](LevelBuilder*, Vec2) {});
+  }
+
+  SquareChange& add(SquareChange added) {
+    auto funCopy = changeFun; // copy just the function because storing this leads to a crash
+    changeFun = [added, funCopy] (LevelBuilder* builder, Vec2 pos) {
+        funCopy(builder, pos); added.changeFun(builder, pos); };
+    return *this;
+  }
+
+  SquareChange(FurnitureType type, optional<SquareAttrib> attrib = ::none)
       : changeFun([=](LevelBuilder* builder, Vec2 pos) {
     builder->putFurniture(pos, type);
+    if (attrib)
+      builder->addAttrib(pos, *attrib);
   }) {}
 
   SquareChange(SquareId id) : SquareChange(SquareType(id)) {}
 
-  SquareChange(SquareType type, optional<SquareAttrib> attrib = none)
+  SquareChange(SquareAttrib attrib)
+      : changeFun([=](LevelBuilder* builder, Vec2 pos) {
+    builder->addAttrib(pos, attrib);
+  }) {}
+
+  SquareChange(SquareType type, optional<SquareAttrib> attrib = ::none)
       : changeFun([=](LevelBuilder* builder, Vec2 pos) {
     builder->putSquare(pos, type, attrib);
   }) {}
@@ -156,7 +174,7 @@ class RoomMaker : public LevelMaker {
   public:
   RoomMaker(int _numRooms,
             int _minSize, int _maxSize, 
-            FurnitureType _wallType,
+            SquareChange wall = SquareChange::none(),
             optional<FurnitureType> _onType = none,
             LevelMaker* _roomContents = new Empty(SquareId::FLOOR),
             vector<LevelMaker*> _insideMakers = {},
@@ -164,7 +182,7 @@ class RoomMaker : public LevelMaker {
       numRooms(_numRooms),
       minSize(_minSize),
       maxSize(_maxSize),
-      wallType(_wallType),
+      wallChange(wall.add(SquareChange(SquareAttrib::ROOM_WALL))),
       onType(_onType),
       roomContents(_roomContents),
       insideMakers(toUniquePtr(_insideMakers)),
@@ -199,23 +217,16 @@ class RoomMaker : public LevelMaker {
       for (Vec2 v : Rectangle(k - Vec2(2, 2)))
         builder->putSquare(p + v + Vec2(1, 1), SquareId::FLOOR, SquareAttrib::ROOM);
       for (int i : Range(p.x, p.x + k.x)) {
-        if (i == p.x || i == p.x + k.x - 1) {
-          builder->putFurniture(Vec2(i, p.y), wallType);
-          builder->putFurniture(Vec2(i, p.y + k.y - 1), wallType);
-          if (!diggableCorners) {
-            builder->addAttrib(Vec2(i, p.y), SquareAttrib::NO_DIG);
-            builder->addAttrib(Vec2(i, p.y + k.y - 1), SquareAttrib::NO_DIG);
-          }
-        } else {
-          builder->putFurniture(Vec2(i, p.y), wallType);
-          builder->putFurniture(Vec2(i, p.y + k.y - 1), wallType);
+        wallChange.apply(builder, Vec2(i, p.y));
+        wallChange.apply(builder, Vec2(i, p.y + k.y - 1));
+        if ((i == p.x || i == p.x + k.x - 1) && !diggableCorners) {
+          builder->addAttrib(Vec2(i, p.y), SquareAttrib::NO_DIG);
+          builder->addAttrib(Vec2(i, p.y + k.y - 1), SquareAttrib::NO_DIG);
         }
       }
-      for (int i : Range(p.y, p.y + k.y)) {
-        if (i > p.y && i < p.y + k.y - 1) {
-          builder->putFurniture(Vec2(p.x, i), wallType);
-          builder->putFurniture(Vec2(p.x + k.x - 1, i), wallType);
-        }
+      for (int i : Range(p.y + 1, p.y + k.y - 1)) {
+        wallChange.apply(builder, Vec2(p.x, i));
+        wallChange.apply(builder, Vec2(p.x + k.x - 1, i));
       }
       Rectangle inside(p.x + 1, p.y + 1, p.x + k.x - 1, p.y + k.y - 1);
       roomContents->make(builder, inside);
@@ -231,7 +242,7 @@ class RoomMaker : public LevelMaker {
   int numRooms;
   int minSize;
   int maxSize;
-  FurnitureType wallType;
+  SquareChange wallChange;
   optional<FurnitureType> onType;
   PLevelMaker roomContents;
   vector<PLevelMaker> insideMakers;
@@ -276,10 +287,10 @@ class Connector : public LevelMaker {
     for (Vec2 v = p2; v != p1; v = path.getNextMove(v)) {
       if (!builder->canNavigate(v, {MovementTrait::WALK})) {
         if (auto furniture = builder->getFurniture(v, FurnitureLayer::MIDDLE)) {
-          bool placeDoor = furniture->canSupportDoor();
+          bool placeDoor = furniture->canSupportDoor() && builder->hasAttrib(v, SquareAttrib::ROOM_WALL);
           if (!furniture->canEnter({MovementTrait::WALK}))
             builder->removeFurniture(v, FurnitureLayer::MIDDLE);
-          if (placeDoor && door && builder->getRandom().rollD(doorProb))
+          if (placeDoor && door && builder->getRandom().chance(doorProb))
             builder->putFurniture(v, *door);
         }
         if (builder->canNavigate(v, {MovementTrait::WALK}))
@@ -1676,8 +1687,8 @@ PLevelMaker LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
   BuildingInfo building = getBuildingInfo(info);
   queue->addMaker(new Empty(SquareChange(SquareId::FLOOR, FurnitureType::MOUNTAIN)));
   queue->addMaker(new LocationMaker(info.location));
-  queue->addMaker(new RoomMaker(random.get(8, 15), 3, 5, FurnitureType::MOUNTAIN));
-  queue->addMaker(new Connector(building.door, 0.75));
+  queue->addMaker(new RoomMaker(random.get(8, 15), 3, 5));
+  queue->addMaker(new Connector(building.door, 0));
   if (info.furniture)
     queue->addMaker(new Furnitures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture));
   for (StairKey key : info.downStairs)
@@ -1694,7 +1705,7 @@ PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
   BuildingInfo building = getBuildingInfo(info);
   queue->addMaker(new Empty(SquareChange(SquareId::FLOOR, FurnitureType::MOUNTAIN)));
-  queue->addMaker(new RoomMaker(random.get(8, 15), 3, 5, FurnitureType::MOUNTAIN));
+  queue->addMaker(new RoomMaker(random.get(8, 15), 3, 5));
   queue->addMaker(new Connector(building.door, 0.75));
   if (info.furniture)
     queue->addMaker(new Furnitures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture));
@@ -1832,7 +1843,7 @@ MakerQueue* forrestCottage(SettlementInfo info) {
 MakerQueue* castle(RandomGen& random, SettlementInfo info) {
   BuildingInfo building = getBuildingInfo(info);
   LevelMaker* castleRoom = new BorderGuard(new Empty(SquareChange(building.floorInside, SquareAttrib::EMPTY_ROOM)),
-      building.wall);
+      SquareChange(building.wall, SquareAttrib::ROOM_WALL));
   MakerQueue* leftSide = new MakerQueue();
   leftSide->addMaker(new Division(true, random.getDouble(0.5, 0.5),
       new Margin(1, -1, -1, 1, castleRoom), new Margin(1, 1, -1, -1, castleRoom)));
@@ -1842,7 +1853,8 @@ MakerQueue* castle(RandomGen& random, SettlementInfo info) {
   if (info.shopFactory)
     insideMakers.push_back(new ShopMaker(*info.shopFactory, info.tribe, random.get(8, 16), building));
   inside->addMaker(new Division(random.getDouble(0.25, 0.4), leftSide,
-        new Buildings(1, 3, 3, 6, building, false, insideMakers, false), SquareChange(building.wall)));
+        new Buildings(1, 3, 3, 6, building, false, insideMakers, false),
+            SquareChange(building.wall, SquareAttrib::ROOM_WALL)));
   MakerQueue* insidePlusWall = new MakerQueue();
   insidePlusWall->addMaker(new Empty(building.floorOutside));
   insidePlusWall->addMaker(new BorderGuard(inside, building.wall));
@@ -1853,8 +1865,11 @@ MakerQueue* castle(RandomGen& random, SettlementInfo info) {
   vector<LevelMaker*> cornerMakers;
   for (auto& elem : info.stockpiles)
     cornerMakers.push_back(new Margin(1, stockpileMaker(elem)));
-  queue->addMaker(new AreaCorners(new BorderGuard(new Empty(
-      SquareChange(building.floorInside, SquareAttrib::CASTLE_CORNER)), building.wall), Vec2(5, 5), cornerMakers));
+  queue->addMaker(new AreaCorners(
+      new BorderGuard(new Empty(SquareChange(building.floorInside, SquareAttrib::CASTLE_CORNER)),
+          SquareChange(building.wall, SquareAttrib::ROOM_WALL)),
+      Vec2(5, 5),
+      cornerMakers));
   queue->addMaker(new Margin(insideMargin, new Connector(building.door, 1, 18)));
   queue->addMaker(new Margin(insideMargin, new CastleExit(info.tribe, building, *info.guardId)));
   if (info.creatures)
@@ -1901,6 +1916,7 @@ MakerQueue* castle2(RandomGen& random, SettlementInfo info) {
     queue->addMaker(
         new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
           Predicate::type(building.floorOutside)));
+   queue->addMaker(new AddAttrib(SquareAttrib::NO_DIG, Predicate::type(building.wall)));
    return queue;
 }
 
@@ -2455,7 +2471,7 @@ PLevelMaker LevelMaker::roomLevel(RandomGen& random, CreatureFactory roomFactory
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareChange(SquareId::FLOOR, FurnitureType::MOUNTAIN)));
   queue->addMaker(underground(random, waterFactory, lavaFactory));
-  queue->addMaker(new RoomMaker(random.get(8, 15), 4, 7, FurnitureType::MOUNTAIN,
+  queue->addMaker(new RoomMaker(random.get(8, 15), 4, 7, SquareChange::none(),
         FurnitureType::MOUNTAIN, new Empty(SquareId::FLOOR)));
   queue->addMaker(new Connector(FurnitureFactory(TribeId::getHostile(), FurnitureType::DOOR), 0.5));
   queue->addMaker(new Furnitures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.05, furniture));

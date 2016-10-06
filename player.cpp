@@ -658,6 +658,7 @@ void Player::makeMove() {
     case UserInputId::CHEAT_ATTRIBUTES:
       getCreature()->getAttributes().setBaseAttr(AttrType::STRENGTH, 80);
       getCreature()->getAttributes().setBaseAttr(AttrType::DEXTERITY, 80);
+      getCreature()->addPermanentEffect(LastingEffect::FLYING, true);
       break;
 #endif
     default: break;

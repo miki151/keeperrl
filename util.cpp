@@ -75,8 +75,8 @@ bool RandomGen::roll(int chance) {
   return get(chance) == 0;
 }
 
-bool RandomGen::rollD(double chance) {
-  return getDouble(0, chance) <= 1;
+bool RandomGen::chance(double v) {
+  return getDouble(0, 1) <= v;
 }
 
 double RandomGen::getDouble() {
