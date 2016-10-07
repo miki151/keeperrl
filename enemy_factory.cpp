@@ -160,10 +160,14 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 6;
               c.minTeamSize = 5;
-              c.triggers = LIST({AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
-                {AttackTriggerId::SELF_VICTIMS},
-                AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
-                AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
+              c.triggers = LIST(
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+                  AttackTriggerId::SELF_VICTIMS,
+                  {AttackTriggerId::TIMER, 7000},
+                  AttackTriggerId::STOLEN_ITEMS,
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
+                  AttackTriggerId::FINISH_OFF,
+                  AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
               c.ransom = make_pair(0.8, random.get(500, 700));));
     case EnemyId::KNIGHTS:
@@ -193,10 +197,14 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 12;
               c.minTeamSize = 10;
-              c.triggers = LIST({AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
-                {AttackTriggerId::SELF_VICTIMS},
-                AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
-                AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
+              c.triggers = LIST(
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+                  AttackTriggerId::SELF_VICTIMS,
+                  {AttackTriggerId::TIMER, 7000},
+                  AttackTriggerId::STOLEN_ITEMS,
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
+                  AttackTriggerId::FINISH_OFF,
+                  AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
               c.ransom = make_pair(0.9, random.get(1400, 2000));),
           random.roll(4) ? LevelConnection{LevelConnection::MAZE, get(EnemyId::MINOTAUR)}
@@ -224,8 +232,11 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 0;
               c.minTeamSize = 1;
-              c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 25}, AttackTriggerId::STOLEN_ITEMS,
-                AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
+              c.triggers = LIST(
+                  {AttackTriggerId::ENEMY_POPULATION, 22},
+                  AttackTriggerId::STOLEN_ITEMS,
+                  AttackTriggerId::FINISH_OFF,
+                  AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 12);
               c.welcomeMessage = VillageBehaviour::DRAGON_WELCOME;));
     case EnemyId::GREEN_DRAGON:
@@ -242,8 +253,11 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 0;
               c.minTeamSize = 1;
-              c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 20}, AttackTriggerId::STOLEN_ITEMS,
-                AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
+              c.triggers = LIST(
+                  {AttackTriggerId::ENEMY_POPULATION, 18},
+                  AttackTriggerId::STOLEN_ITEMS,
+                  AttackTriggerId::FINISH_OFF,
+                  AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 7);
               c.welcomeMessage = VillageBehaviour::DRAGON_WELCOME;));
     case EnemyId::DWARVES:
@@ -268,9 +282,14 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 3;
             c.minTeamSize = 4;
-            c.triggers = LIST({AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE}, {AttackTriggerId::SELF_VICTIMS},
-              AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
-              AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
+            c.triggers = LIST(
+                {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+                AttackTriggerId::SELF_VICTIMS,
+                AttackTriggerId::STOLEN_ITEMS,
+                {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
+                {AttackTriggerId::TIMER, 7000},
+                AttackTriggerId::FINISH_OFF,
+                AttackTriggerId::PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 3);
             c.ransom = make_pair(0.8, random.get(1200, 1600));));
     case EnemyId::ELVES:
@@ -316,8 +335,12 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 0;
               c.minTeamSize = 1;
-              c.triggers = LIST({AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE}, AttackTriggerId::PROXIMITY,
-                {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD}, AttackTriggerId::FINISH_OFF);
+              c.triggers = LIST(
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+                  AttackTriggerId::PROXIMITY,
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
+                  AttackTriggerId::FINISH_OFF,
+                  {AttackTriggerId::TIMER, 7000});
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::CAMP_AND_SPAWN,
                 CreatureFactory::elementals(TribeId::getHuman()));
               c.ransom = make_pair(0.5, random.get(200, 400));),
@@ -365,9 +388,14 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 4;
               c.minTeamSize = 4;
-              c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS},
-                AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::TIMER, 500},
-                AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
+              c.triggers = LIST(
+                  AttackTriggerId::POWER,
+                  AttackTriggerId::SELF_VICTIMS,
+                  AttackTriggerId::STOLEN_ITEMS,
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
+                  {AttackTriggerId::TIMER, 7000},
+                  AttackTriggerId::FINISH_OFF,
+                  AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
     case EnemyId::DARK_ELVES:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -476,7 +504,9 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 13}, AttackTriggerId::PROXIMITY);
+            c.triggers = LIST(
+                {AttackTriggerId::ENEMY_POPULATION, 13},
+                AttackTriggerId::PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 4);));
     case EnemyId::HYDRA:
       return EnemyInfo(CONSTRUCT(SettlementInfo,

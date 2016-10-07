@@ -118,10 +118,11 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
   double entryMaxProb = 1.0 / 20.0;
   double finishOffMaxProb = 1.0 / 1000;
   double proximityMaxProb = 1.0 / 5000;
+  double timerProb = 1.0 / 3000;
   if (Collective* collective = self->getEnemyCollective())
     switch (trigger.getId()) {
       case AttackTriggerId::TIMER: 
-        return collective->getGlobalTime() >= trigger.get<int>() ? 0.05 : 0;
+        return collective->getGlobalTime() >= trigger.get<int>() ? timerProb : 0;
       case AttackTriggerId::ROOM_BUILT: 
         return collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>()) *
           getRoomProb(trigger.get<FurnitureType>());
