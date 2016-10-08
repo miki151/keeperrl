@@ -32,7 +32,7 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar & SUBCLASS(Renderable);
   serializeAll(ar, name, type, blockType, tribe, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   serializeAll(ar, blockVision, usageType, clickType, tickType, usageTime, overrideMovement, canSupport);
-  serializeAll(ar, constructMessage, layer, entryType);
+  serializeAll(ar, constructMessage, layer, entryType, lightEmission);
 }
 
 SERIALIZABLE(Furniture);
@@ -180,6 +180,10 @@ FurnitureLayer Furniture::getLayer() const {
   return layer;
 }
 
+double Furniture::getLightEmission() const {
+  return lightEmission;
+}
+
 Furniture& Furniture::setConstructMessage(Furniture::ConstructMessage msg) {
   constructMessage = msg;
   return *this;
@@ -291,6 +295,11 @@ Furniture& Furniture::setOverrideMovement() {
 
 Furniture& Furniture::setLayer(FurnitureLayer l) {
   layer = l;
+  return *this;
+}
+
+Furniture& Furniture::setLightEmission(double v) {
+  lightEmission = v;
   return *this;
 }
 

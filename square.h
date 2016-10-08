@@ -69,9 +69,6 @@ class Square : public Renderable {
   /** Returns the entry point details. Returns none if square is not entry point. See setLandingLink().*/
   optional<StairKey> getLandingLink() const;
 
-  /** Returns radius of emitted light (0 if none).*/
-  virtual double getLightEmission() const;
-
   /** Checks if this square obstructs view.*/
   bool canSeeThru(VisionId) const;
   bool canSeeThru() const;

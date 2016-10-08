@@ -51,6 +51,7 @@ class Furniture : public Renderable {
   bool canSupportDoor() const;
   void onConstructedBy(Creature*) const;
   FurnitureLayer getLayer() const;
+  double getLightEmission() const;
 
   enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE };
 
@@ -71,6 +72,7 @@ class Furniture : public Renderable {
   Furniture& setCanSupportDoor();
   Furniture& setOverrideMovement();
   Furniture& setLayer(FurnitureLayer);
+  Furniture& setLightEmission(double);
 
   SERIALIZATION_DECL(Furniture)
 
@@ -96,4 +98,5 @@ class Furniture : public Renderable {
   bool SERIAL(overrideMovement) = false;
   bool SERIAL(canSupport) = false;
   ConstructMessage SERIAL(constructMessage) = BUILD;
+  double SERIAL(lightEmission) = 0;
 };

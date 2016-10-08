@@ -149,8 +149,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
                        type, Furniture::NON_BLOCKING, tribe)
           .setTickType(FurnitureTickType::PIGSTY);
     case FurnitureType::TORCH:
-      return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::FLOOR), type,
-          Furniture::NON_BLOCKING, tribe);
+      return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe)
+          .setLightEmission(8.2);
     case FurnitureType::TORTURE_TABLE:
       return Furniture("torture table", ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR), type,
           Furniture::NON_BLOCKING, tribe)
@@ -300,6 +300,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
 }
 
 bool FurnitureParams::operator == (const FurnitureParams& p) const {
+
   return type == p.type && tribe == p.tribe;
 }
 

@@ -609,6 +609,17 @@ bool Position::sunlightBurns() const {
   return isValid() && level->isInSunlight(coord);
 }
 
+double Position::getLightEmission() const {
+  if (!isValid())
+    return 0;
+  double ret = 0;
+  for (auto t : getSquare()->getTriggers())
+    ret += t->getLightEmission();
+  for (auto f : getFurniture())
+    ret += f->getLightEmission();
+  return ret;
+}
+
 void Position::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId vision) {
   if (isValid())
     level->throwItem(std::move(item), attack, maxDist, coord, direction, vision);

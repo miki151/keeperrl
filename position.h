@@ -106,6 +106,7 @@ class Position {
   double getPoisonGasAmount() const;
   bool isCovered() const;
   bool sunlightBurns() const;
+  double getLightEmission() const;
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   bool canNavigate(const MovementType&) const;

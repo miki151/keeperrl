@@ -71,8 +71,8 @@ Level::Level(SquareArray s, FurnitureArray f, Model* m, vector<Location*> l, con
     l->setLevel(this);
   for (VisionId vision : ENUM_ALL(VisionId))
     (*fieldOfView)[vision] = FieldOfView(this, vision);
-  for (Vec2 pos : squares->getBounds())
-    addLightSource(pos, squares->getReadonly(pos)->getLightEmission(), 1);
+  for (auto pos : getAllPositions())
+    addLightSource(pos.getCoord(), pos.getLightEmission(), 1);
 }
 
 LevelId Level::getUniqueId() const {
@@ -137,7 +137,7 @@ void Level::addDarknessSource(Vec2 pos, double radius, int numDarkness) {
 
 void Level::updateVisibility(Vec2 changedSquare) {
   for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
-    addLightSource(pos, squares->getReadonly(pos)->getLightEmission(), -1);
+    addLightSource(pos, Position(pos, this).getLightEmission(), -1);
     if (Creature* c = squares->getReadonly(pos)->getCreature())
       if (c->isDarknessSource())
         addDarknessSource(pos, darknessRadius, -1);
@@ -145,7 +145,7 @@ void Level::updateVisibility(Vec2 changedSquare) {
   for (VisionId vision : ENUM_ALL(VisionId))
     getFieldOfView(vision).squareChanged(changedSquare);
   for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
-    addLightSource(pos, squares->getReadonly(pos)->getLightEmission(), 1);
+    addLightSource(pos, Position(pos, this).getLightEmission(), 1);
     if (Creature* c = squares->getReadonly(pos)->getCreature())
       if (c->isDarknessSource())
         addDarknessSource(pos, darknessRadius, 1);

@@ -89,13 +89,6 @@ optional<StairKey> Square::getLandingLink() const {
   return landingLink;
 }
 
-double Square::getLightEmission() const {
-  double sum = 0;
-  for (auto& elem : triggers)
-    sum += elem->getLightEmission();
-  return sum;
-}
-
 void Square::setCreature(Creature* c) {
   creature = c;
 }
