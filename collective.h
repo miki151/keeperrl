@@ -107,6 +107,7 @@ class Collective : public TaskCallback {
   void clearLeader();
 
   const Territory& getTerritory() const;
+  bool canClaimSquare(Position pos) const;
   void claimSquare(Position);
   const KnownTiles& getKnownTiles() const;
   const TileEfficiency& getTileEfficiency() const;

@@ -287,7 +287,7 @@ class Connector : public LevelMaker {
     for (Vec2 v = p2; v != p1; v = path.getNextMove(v)) {
       if (!builder->canNavigate(v, {MovementTrait::WALK})) {
         if (auto furniture = builder->getFurniture(v, FurnitureLayer::MIDDLE)) {
-          bool placeDoor = furniture->canSupportDoor() && builder->hasAttrib(v, SquareAttrib::ROOM_WALL);
+          bool placeDoor = furniture->isWall() && builder->hasAttrib(v, SquareAttrib::ROOM_WALL);
           if (!furniture->canEnter({MovementTrait::WALK}))
             builder->removeFurniture(v, FurnitureLayer::MIDDLE);
           if (placeDoor && door && builder->getRandom().chance(doorProb))

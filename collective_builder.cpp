@@ -58,8 +58,12 @@ PCollective CollectiveBuilder::build() {
       CollectiveName(raceName, locationName, creatures[0].creature));
   for (auto& elem : creatures)
     c->addCreature(elem.creature, elem.traits);
-  for (Vec2 v : squares)
-    c->claimSquare(Position(v, level));
+  for (Vec2 v : squares) {
+    Position pos(v, level);
+    c->addKnownTile(pos);
+    if (c->canClaimSquare(pos))
+      c->claimSquare(pos);
+  }
   return PCollective(c);
 }
 

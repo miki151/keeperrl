@@ -31,7 +31,7 @@ template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
   ar & SUBCLASS(Renderable);
   serializeAll(ar, name, type, blockType, tribe, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
-  serializeAll(ar, blockVision, usageType, clickType, tickType, usageTime, overrideMovement, canSupport);
+  serializeAll(ar, blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall);
   serializeAll(ar, constructMessage, layer, entryType, lightEmission);
 }
 
@@ -155,8 +155,8 @@ bool Furniture::isTicking() const {
   return !!tickType;
 }
 
-bool Furniture::canSupportDoor() const {
-  return canSupport;
+bool Furniture::isWall() const {
+  return wall;
 }
 
 void Furniture::onConstructedBy(Creature* c) const {
@@ -283,8 +283,8 @@ Furniture& Furniture::setFireInfo(const Fire& f) {
   return *this;
 }
 
-Furniture& Furniture::setCanSupportDoor() {
-  canSupport = true;
+Furniture& Furniture::setIsWall() {
+  wall = true;
   return *this;
 }
 

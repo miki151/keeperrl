@@ -80,7 +80,7 @@ class Position {
   PItem removeItem(Item*);
   vector<PItem> removeItems(vector<Item*>);
   bool canConstruct(FurnitureType) const;
-  bool canSupportDoorOrTorch() const;
+  bool isWall() const;
   void removeFurniture(const Furniture*) const;
   void addFurniture(PFurniture) const;
   void replaceFurniture(const Furniture*, PFurniture) const;

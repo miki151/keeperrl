@@ -1062,10 +1062,19 @@ const Territory& Collective::getTerritory() const {
   return *territory;
 }
 
+bool Collective::canClaimSquare(Position pos) const {
+  return getKnownTiles().isKnown(pos) &&
+      pos.isCovered() &&
+      pos.canConstruct(FurnitureType::BED);
+}
+
 void Collective::claimSquare(Position pos) {
+  CHECK(canClaimSquare(pos));
   territory->insert(pos);
   for (auto furniture : pos.getFurniture())
-    constructions->addFurniture(pos, ConstructionMap::FurnitureInfo::getBuilt(furniture->getType()));
+    if (!constructions->containsFurniture(pos, furniture->getLayer()))
+      constructions->addFurniture(pos, ConstructionMap::FurnitureInfo::getBuilt(furniture->getType()));
+  control->onClaimedSquare(pos);
 }
 
 const KnownTiles& Collective::getKnownTiles() const {
@@ -1303,7 +1312,9 @@ void Collective::removeTrap(Position pos) {
 
 bool Collective::canAddFurniture(Position position, FurnitureType type) const {
   return knownTiles->isKnown(position)
-      && (territory->contains(position) || CollectiveConfig::canBuildOutsideTerritory(type))
+      && (territory->contains(position) ||
+          canClaimSquare(position) ||
+          CollectiveConfig::canBuildOutsideTerritory(type))
       && !getConstructions().containsTrap(position)
       && !getConstructions().containsFurniture(position, Furniture::getLayer(type))
       && position.canConstruct(type);
@@ -1338,6 +1349,8 @@ void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& 
   if (!noCredit || hasResource(cost)) {
     constructions->addFurniture(pos, ConstructionMap::FurnitureInfo(type, cost));
     updateConstructions();
+    if (canClaimSquare(pos))
+      claimSquare(pos);
   }
 }
 
@@ -1415,7 +1428,7 @@ bool Collective::isConstructionReachable(Position pos) {
 
 void Collective::onConstructed(Position pos, FurnitureType type) {
   tileEfficiency->update(pos);
-  if (type == FurnitureType::MOUNTAIN || type == FurnitureType::DUNGEON_WALL) {
+  if (pos.getFurniture(type)->isWall()) {
     constructions->removeFurniture(pos, Furniture::getLayer(type));
     if (territory->contains(pos))
       territory->remove(pos);
@@ -1778,7 +1791,7 @@ void Collective::freeTeamMembers(TeamId id) {
 
 static optional<Vec2> getAdjacentWall(Position pos) {
   for (Position p : pos.neighbors4(Random))
-    if (p.canSupportDoorOrTorch())
+    if (p.isWall())
       return pos.getDir(p);
   return none;
 }

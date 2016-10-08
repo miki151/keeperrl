@@ -225,52 +225,52 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("mountain", ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setBlockVision()
           .setConstructMessage(Furniture::FILL_UP)
-          .setCanSupportDoor()
+          .setIsWall()
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(50, DestroyAction::Type::DIG);
     case FurnitureType::IRON_ORE:
       return Furniture("iron ore", ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setBlockVision()
-          .setCanSupportDoor()
+          .setIsWall()
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setItemDrop(ItemFactory::singleType(ItemId::IRON_ORE, Range(18, 40)))
           .setDestroyable(100, DestroyAction::Type::DIG);
     case FurnitureType::STONE:
       return Furniture("granite", ViewObject(ViewId::STONE, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setBlockVision()
-          .setCanSupportDoor()
+          .setIsWall()
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setItemDrop(ItemFactory::singleType(ItemId::ROCK, Range(18, 40)))
           .setDestroyable(180, DestroyAction::Type::DIG);
     case FurnitureType::GOLD_ORE:
       return Furniture("gold ore", ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setBlockVision()
-          .setCanSupportDoor()
+          .setIsWall()
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setItemDrop(ItemFactory::singleType(ItemId::GOLD_PIECE, Range(18, 40)))
           .setDestroyable(100, DestroyAction::Type::DIG);
     case FurnitureType::DUNGEON_WALL:
       return Furniture("wall", ViewObject(ViewId::DUNGEON_WALL, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setBlockVision()
-          .setCanSupportDoor()
+          .setIsWall()
           .setConstructMessage(Furniture::REINFORCE)
           .setDestroyable(300, DestroyAction::Type::BOULDER)
           .setDestroyable(100, DestroyAction::Type::DIG);
     case FurnitureType::CASTLE_WALL:
       return Furniture("wall", ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setBlockVision()
-          .setCanSupportDoor()
+          .setIsWall()
           .setDestroyable(300, DestroyAction::Type::BOULDER);
     case FurnitureType::WOOD_WALL:
       return Furniture("wall", ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setBlockVision()
-          .setCanSupportDoor()
+          .setIsWall()
           .setDestroyable(100, DestroyAction::Type::BOULDER)
           .setFireInfo(Fire(1000, 0.7));
     case FurnitureType::MUD_WALL:
       return Furniture("wall", ViewObject(ViewId::MUD_WALL, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setBlockVision()
-          .setCanSupportDoor()
+          .setIsWall()
           .setDestroyable(100, DestroyAction::Type::BOULDER);
     case FurnitureType::FLOOR_WOOD1:
       return Furniture("floor", ViewObject(ViewId::WOOD_FLOOR2, ViewLayer::FLOOR_BACKGROUND), type,
@@ -306,8 +306,8 @@ bool FurnitureParams::operator == (const FurnitureParams& p) const {
 
 static bool canBuildDoor(Position pos) {
   return pos.canEnterEmpty({MovementTrait::WALK}) && (
-      (pos.minus(Vec2(0, 1)).canSupportDoorOrTorch() && pos.minus(Vec2(0, -1)).canSupportDoorOrTorch()) ||
-      (pos.minus(Vec2(1, 0)).canSupportDoorOrTorch() && pos.minus(Vec2(-1, 0)).canSupportDoorOrTorch()));
+      (pos.minus(Vec2(0, 1)).isWall() && pos.minus(Vec2(0, -1)).isWall()) ||
+      (pos.minus(Vec2(1, 0)).isWall() && pos.minus(Vec2(-1, 0)).isWall()));
 }
 
 bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
@@ -322,7 +322,7 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
       else
         return false;
     default:
-      return pos.canEnterSquare({MovementTrait::WALK});
+      return pos.canEnterSquare({MovementTrait::WALK}) && !pos.isWall();
   }
 }
 

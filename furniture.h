@@ -48,7 +48,7 @@ class Furniture : public Renderable {
   int getUsageTime() const;
   optional<FurnitureClickType> getClickType() const;
   bool isTicking() const;
-  bool canSupportDoor() const;
+  bool isWall() const;
   void onConstructedBy(Creature*) const;
   FurnitureLayer getLayer() const;
   double getLightEmission() const;
@@ -69,7 +69,7 @@ class Furniture : public Renderable {
   Furniture& setTickType(FurnitureTickType);
   Furniture& setEntryType(FurnitureEntryType);
   Furniture& setFireInfo(const Fire&);
-  Furniture& setCanSupportDoor();
+  Furniture& setIsWall();
   Furniture& setOverrideMovement();
   Furniture& setLayer(FurnitureLayer);
   Furniture& setLightEmission(double);
@@ -96,7 +96,7 @@ class Furniture : public Renderable {
   optional<FurnitureEntryType> SERIAL(entryType);
   int SERIAL(usageTime) = 1;
   bool SERIAL(overrideMovement) = false;
-  bool SERIAL(canSupport) = false;
+  bool SERIAL(wall) = false;
   ConstructMessage SERIAL(constructMessage) = BUILD;
   double SERIAL(lightEmission) = 0;
 };

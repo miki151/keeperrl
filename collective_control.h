@@ -20,8 +20,8 @@ class CollectiveControl {
   virtual void onOtherKilled(const Creature* victim, const Creature* killer);
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAttack(const CollectiveAttack&) {}
-  virtual void onConstructed(Position, const SquareType&) {}
   virtual void onConstructed(Position, FurnitureType) {}
+  virtual void onClaimedSquare(Position) {}
   virtual void onDestructed(Position, const DestroyAction&) {}
   virtual void onNoEnemies() {}
   virtual void onRansomPaid() {}

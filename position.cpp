@@ -459,9 +459,9 @@ bool Position::canConstruct(FurnitureType type) const {
   return !isUnavailable() && FurnitureFactory::canBuild(type, *this);
 }
 
-bool Position::canSupportDoorOrTorch() const {
+bool Position::isWall() const {
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    return furniture->canSupportDoor();
+    return furniture->isWall();
   else
     return false;
 }

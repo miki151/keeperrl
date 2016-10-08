@@ -2102,7 +2102,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
         break;
     case BuildInfo::CLAIM_TILE:
-        if (getCollective()->getKnownTiles().isKnown(position) && position.canConstruct(FurnitureType::BED))
+        if (getCollective()->canClaimSquare(position))
           getCollective()->claimSquare(position);
         break;
     case BuildInfo::DISPATCH:
@@ -2118,16 +2118,15 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             selection = DESELECT;
             getView()->addSound(SoundId::DIG_UNMARK);
           }
-        } else {
-          if (getCollective()->canAddFurniture(position, info.type) && selection != DESELECT
-              && (!info.maxNumber || *info.maxNumber >
-                  getCollective()->getConstructions().getTotalCount(info.type))) {
-            CostInfo cost = info.cost;
-            getCollective()->addFurniture(position, info.type, cost, info.noCredit);
-            getCollective()->updateResourceProduction();
-            selection = SELECT;
-            getView()->addSound(SoundId::ADD_CONSTRUCTION);
-          }
+        } else
+        if (getCollective()->canAddFurniture(position, info.type) && selection != DESELECT
+            && (!info.maxNumber || *info.maxNumber >
+                getCollective()->getConstructions().getTotalCount(info.type))) {
+          CostInfo cost = info.cost;
+          getCollective()->addFurniture(position, info.type, cost, info.noCredit);
+          getCollective()->updateResourceProduction();
+          selection = SELECT;
+          getView()->addSound(SoundId::ADD_CONSTRUCTION);
         }
       }
       break;
@@ -2369,8 +2368,10 @@ void PlayerControl::onConstructed(Position pos, FurnitureType type) {
   //updateSquareMemory(pos);
 }
 
-void PlayerControl::onConstructed(Position pos, const SquareType& type) {
-  //updateSquareMemory(pos);
+void PlayerControl::onClaimedSquare(Position position) {
+  position.modViewObject().setId(ViewId::KEEPER_FLOOR);
+  position.setNeedsRenderUpdate(true);
+  updateSquareMemory(position);
 }
 
 void PlayerControl::onDestructed(Position pos, const DestroyAction& action) {
