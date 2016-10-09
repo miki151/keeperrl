@@ -1993,7 +1993,10 @@ bool PlayerControl::canSelectRectangle(const BuildInfo& info) {
     case BuildInfo::FORBID_ZONE:
     case BuildInfo::FURNITURE:
     case BuildInfo::DIG:
-    default: return false;
+    case BuildInfo::DESTROY:
+      return true;
+    default:
+      return false;
   }
 }
 
@@ -2004,11 +2007,11 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       return;
   if (!getLevel()->inBounds(pos))
     return;
-  if (deselectOnly && !canSelectRectangle(building))
+  if (!deselectOnly && rectangle && !canSelectRectangle(building))
     return;
   switch (building.buildType) {
     case BuildInfo::IMP:
-        if (getCollective()->numResource(ResourceId::MANA) >= getImpCost() && selection == NONE && !rectangle) {
+        if (getCollective()->numResource(ResourceId::MANA) >= getImpCost() && selection == NONE) {
           selection = SELECT;
           PCreature imp = CreatureFactory::fromId(CreatureId::IMP, getTribeId(),
               MonsterAIFactory::collective(getCollective()));
@@ -2023,14 +2026,18 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
         break;
     case BuildInfo::TRAP:
-        if (getCollective()->getConstructions().containsTrap(position)) {
+        if (getCollective()->getConstructions().containsTrap(position) && selection != SELECT) {
           getCollective()->removeTrap(position);
           getView()->addSound(SoundId::DIG_UNMARK);
+          selection = DESELECT;
           // Does this mean I can remove the order if the trap physically exists?
         } else
-        if (position.canEnterEmpty({MovementTrait::WALK}) && getCollective()->getTerritory().contains(position)) {
+        if (position.canEnterEmpty({MovementTrait::WALK}) &&
+            getCollective()->getTerritory().contains(position) &&
+            selection != DESELECT) {
           getCollective()->addTrap(position, building.trapInfo.type);
           getView()->addSound(SoundId::ADD_CONSTRUCTION);
+          selection = SELECT;
         }
       break;
     case BuildInfo::DESTROY:
