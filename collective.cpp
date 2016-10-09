@@ -1337,8 +1337,9 @@ void Collective::destroySquare(Position pos, FurnitureLayer layer) {
     removeTrap(pos);
   if (constructions->containsFurniture(pos, layer))
     removeFurniture(pos, layer);
-  if (constructions->containsTorch(pos))
-    removeTorch(pos);
+  if (layer == FurnitureLayer::CEILING)
+    if (constructions->containsTorch(pos))
+      removeTorch(pos);
   pos.removeTriggers();
 }
 
