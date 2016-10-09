@@ -248,9 +248,9 @@ bool MapGui::onLeftClick(Vec2 v) {
 }
 
 bool MapGui::onRightClick(Vec2 pos) {
-  if (clock->getRealMillis() - lastRightClick < 200) {
+  if (lastRightClick && clock->getRealMillis() - *lastRightClick < milliseconds{200}) {
     lockedView = true;
-    lastRightClick = -100000;
+    lastRightClick = none;
     return true;
   }
   lastRightClick = clock->getRealMillis();
@@ -379,7 +379,7 @@ static double getJumpOffset(const ViewObject& object, double state) {
   return maxH * (1.0 - (2.0 * state - 1) * (2.0 * state - 1));
 }
 
-Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time, int curTimeReal) {
+Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time, milliseconds curTimeReal) {
   if (!object.hasAnyMovementInfo())
     return Vec2(0, 0);
   double state;
@@ -387,8 +387,8 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   if (screenMovement &&
       curTimeReal >= screenMovement->startTimeReal &&
       curTimeReal <= screenMovement->endTimeReal) {
-    state = (double(curTimeReal) - screenMovement->startTimeReal) /
-          (screenMovement->endTimeReal - screenMovement->startTimeReal);
+    state = (double) (curTimeReal - screenMovement->startTimeReal).count() /
+          (double) (screenMovement->endTimeReal - screenMovement->startTimeReal).count();
     dir = object.getMovementInfo(screenMovement->startTimeGame, screenMovement->endTimeGame,
         screenMovement->creatureId);
   } else if (object.hasAnyMovementInfo() && !screenMovement) {
@@ -408,25 +408,26 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - getJumpOffset(object, state)) * size.y);
 }
 
-void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Vec2 pos, Vec2 sz, int curTime) {
+void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Vec2 pos, Vec2 sz,
+    milliseconds curTime) {
   if (object.hasModifier(ViewObject::Modifier::PLAYER))
     drawCreatureHighlight(renderer, pos, sz, colors[ColorId::ALMOST_WHITE]);
   if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && showMorale)
     if (auto morale = object.getAttribute(ViewObject::Attribute::MORALE))
       drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));
-  if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT) && (curTime / 1000) % 2) {
+  if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT) && (curTime.count() / 1000) % 2) {
     drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
   } else
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
     drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
   if (object.getCreatureId()) {
-    Color c = getCreatureHighlight(*object.getCreatureId(), curTime);
+    Color c = getCreatureHighlight(*object.getCreatureId());
     if (c.a > 0)
       drawCreatureHighlight(renderer, pos, sz, c);
   }
 }
 
-Color MapGui::getCreatureHighlight(UniqueEntity<Creature>::Id creature, int curTime) {
+Color MapGui::getCreatureHighlight(UniqueEntity<Creature>::Id creature) {
   if (teamHighlight.getMaybe(creature).get_value_or(0) > 0)
     return colors[ColorId::YELLOW];
   else
@@ -444,7 +445,7 @@ static bool mirrorSprite(ViewId id) {
 }
 
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size,
-    Vec2 tilePos, int curTimeReal, const EnumMap<HighlightType, double>& highlightMap) {
+    Vec2 tilePos, milliseconds curTimeReal, const EnumMap<HighlightType, double>& highlightMap) {
   const Tile& tile = Tile::getTile(object.id(), spriteMode);
   Color color = Renderer::getBleedingColor(object);
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
@@ -601,7 +602,7 @@ bool MapGui::isFoW(Vec2 pos) const {
   return !pos.inRectangle(Level::getMaxBounds()) || fogOfWar.getValue(pos);
 }
 
-void MapGui::renderExtraBorders(Renderer& renderer, int currentTimeReal) {
+void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal) {
   extraBorderPos.clear();
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
@@ -632,13 +633,13 @@ void MapGui::renderExtraBorders(Renderer& renderer, int currentTimeReal) {
     }
 }
 
-Vec2 MapGui::projectOnScreen(Vec2 wpos, int curTime) {
+Vec2 MapGui::projectOnScreen(Vec2 wpos, milliseconds curTime) {
   double x = wpos.x;
   double y = wpos.y;
   if (screenMovement) {
     if (curTime >= screenMovement->startTimeReal && curTime <= screenMovement->endTimeReal) {
-      double state = (double(curTime) - screenMovement->startTimeReal) /
-          (screenMovement->endTimeReal - screenMovement->startTimeReal);
+      double state = (double)(curTime - screenMovement->startTimeReal).count() /
+          (double) (screenMovement->endTimeReal - screenMovement->startTimeReal).count();
       x += (1 - state) * (screenMovement->to.x - screenMovement->from.x);
       y += (1 - state) * (screenMovement->to.y - screenMovement->from.y);
     }
@@ -676,7 +677,7 @@ bool MapGui::isRenderedLowHighlight(const ViewIndex& index, HighlightType type) 
   }
 }
 
-void MapGui::renderLowHighlights(Renderer& renderer, Vec2 size, int currentTimeReal) {
+void MapGui::renderLowHighlights(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   for (Vec2 wpos : allTiles)
@@ -696,7 +697,7 @@ void MapGui::renderLowHighlights(Renderer& renderer, Vec2 size, int currentTimeR
   renderer.drawQuads();
 }
 
-void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal) {
+void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   for (Vec2 wpos : allTiles)
@@ -732,7 +733,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, int currentTimeReal
   renderer.drawQuads();
 }
 
-void MapGui::renderAnimations(Renderer& renderer, int currentTimeReal) {
+void MapGui::renderAnimations(Renderer& renderer, milliseconds currentTimeReal) {
   animations = filter(std::move(animations), [=](const AnimationInfo& elem)
       { return !elem.animation->isDone(currentTimeReal);});
   for (auto& elem : animations)
@@ -743,7 +744,7 @@ void MapGui::renderAnimations(Renderer& renderer, int currentTimeReal) {
         currentTimeReal);
 }
 
-MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size, int currentTimeReal) {
+MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
   HighlightedInfo ret {};
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
@@ -770,7 +771,8 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size
   return ret;
 }
 
-void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& highlightedInfo,int currentTimeReal) {
+void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& highlightedInfo,
+    milliseconds currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   renderer.drawFilledRectangle(getBounds(), colors[ColorId::BLACK]);
@@ -846,7 +848,7 @@ void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
         colors[ColorId::LIGHT_GRAY]);
 }
 
-void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, int currentTimeReal, Vec2 pos, Vec2 size) {
+void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds currentTimeReal, Vec2 pos, Vec2 size) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   for (Vec2 v : concat({pos}, pos.neighbors8()))
@@ -858,9 +860,9 @@ void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, int currentTim
 
 void MapGui::render(Renderer& renderer) {
   Vec2 size = layout->getSquareSize();
-  int currentTimeReal = clock->getRealMillis();
-  if (softCenter) {
-    double moveDist = (currentTimeReal - lastRenderTime) / 20;
+  auto currentTimeReal = clock->getRealMillis();
+  if (!!softCenter && !!lastRenderTime) {
+    double moveDist = (currentTimeReal - *lastRenderTime).count() / 20;
     double offsetx = softCenter->x - center.x;
     double offsety = softCenter->y - center.y;
     double offset = sqrt(offsetx * offsetx + offsety * offsety);
@@ -872,8 +874,8 @@ void MapGui::render(Renderer& renderer) {
       center.x += offsetx * moveDist;
       center.y += offsety * moveDist;
     }
-    lastRenderTime = currentTimeReal;
   }
+  lastRenderTime = currentTimeReal;
   HighlightedInfo highlightedInfo = getHighlightedInfo(renderer, size, currentTimeReal);
   renderMapObjects(renderer, size, highlightedInfo, currentTimeReal);
   renderHighlights(renderer, size, currentTimeReal);
@@ -906,7 +908,7 @@ void MapGui::updateEnemyPositions(const vector<Vec2>& positions) {
     enemyPositions.setValue(v, true);
 }
 
-void MapGui::updateObject(Vec2 pos, CreatureView* view, int currentTime) {
+void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime) {
   Level* level = view->getLevel();
   objects[pos].emplace();
   view->getViewIndex(pos, *objects[pos]);
@@ -924,13 +926,13 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   showMorale = moral;
   layout = mapLayout;
   displayScrollHint = view->isPlayerView() && !lockedView;
-  int currentTimeReal = clock->getRealMillis();
+  auto currentTimeReal = clock->getRealMillis();
   if (view != previousView || level != previousLevel)
     for (Vec2 pos : level->getBounds())
       updateObject(pos, view, currentTimeReal);
   else
     for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
-      if (level->needsRenderUpdate(pos) || lastSquareUpdate[pos] < currentTimeReal - 1000)
+      if (level->needsRenderUpdate(pos) || lastSquareUpdate[pos] < currentTimeReal - milliseconds{1000})
         updateObject(pos, view, currentTimeReal);
   previousView = view;
   if (previousLevel != level) {
@@ -952,7 +954,7 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
           movement->from,
           movement->to,
           clock->getRealMillis(),
-          clock->getRealMillis() + 100,
+          clock->getRealMillis() + milliseconds{100},
           movement->prevTime,
           currentTimeGame,
           movement->creatureId

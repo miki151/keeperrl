@@ -84,8 +84,8 @@ class WindowView: public View {
   virtual void presentHighscores(const vector<HighscoreList>&) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
-  virtual int getTimeMilli() override;
-  virtual int getTimeMilliAbsolute() override;
+  virtual milliseconds getTimeMilli() override;
+  virtual milliseconds getTimeMilliAbsolute() override;
   virtual void stopClock() override;
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
@@ -244,7 +244,7 @@ class WindowView: public View {
   atomic<int> zoomUI;
   void playSounds(const CreatureView*);
   vector<Sound> soundQueue;
-  EnumMap<SoundId, int> lastPlayed;
+  EnumMap<SoundId, optional<milliseconds>> lastPlayed;
   SoundLibrary* soundLibrary;
 };
 

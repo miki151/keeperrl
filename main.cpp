@@ -76,7 +76,7 @@ void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<boo
   view->initialize();
   options->setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
   initialized = true;
-  Intervalometer meter(1000 / 60);
+  Intervalometer meter(milliseconds{1000 / 60});
   while (!finished) {    
     while (!meter.getCount(view->getTimeMilliAbsolute())) {
     }

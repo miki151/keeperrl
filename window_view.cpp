@@ -291,7 +291,7 @@ void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) 
 }
 
 void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, function<void()> cancelFun) {
-  int t0 = clock->getRealMillis();
+  auto t0 = clock->getRealMillis();
   int mouthMillis = 400;
   Texture& loadingSplash = gui.get(GuiFactory::TexId::LOADING_SPLASH);
   string cancelText = "[cancel]";
@@ -301,7 +301,7 @@ void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, fu
     Rectangle cancelBut(textPos.x - renderer.getTextLength(cancelText) / 2, textPos.y + 30,
         textPos.x + renderer.getTextLength(cancelText) / 2, textPos.y + 60);
     if (useTiles)
-      drawMenuBackground(meter.getProgress(), min(1.0, double(clock->getRealMillis() - t0) / mouthMillis));
+      drawMenuBackground(meter.getProgress(), min(1.0, (double)(clock->getRealMillis() - t0).count() / mouthMillis));
     else
       renderer.drawImage((renderer.getSize().x - loadingSplash.getSize().x) / 2,
           (renderer.getSize().y - loadingSplash.getSize().y) / 2, loadingSplash);
@@ -558,10 +558,11 @@ void WindowView::updateView(CreatureView* view, bool noRefresh) {
 
 void WindowView::playSounds(const CreatureView* view) {
   Rectangle area = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds(), mapGui->getScreenPos());
-  int curTime = clock->getRealMillis();
-  const int soundCooldown = 70;
+  auto curTime = clock->getRealMillis();
+  const milliseconds soundCooldown {70};
   for (auto& sound : soundQueue) {
-    if (curTime > lastPlayed[sound.getId()] + soundCooldown && (!sound.getPosition() || 
+    auto lastTime = lastPlayed[sound.getId()];
+    if ((!lastTime || curTime > *lastTime + soundCooldown) && (!sound.getPosition() ||
         (sound.getPosition()->isSameLevel(view->getLevel()) && sound.getPosition()->getCoord().inRectangle(area)))) {
       soundLibrary->playSound(sound);
       lastPlayed[sound.getId()] = curTime;
@@ -1141,11 +1142,11 @@ bool WindowView::travelInterrupt() {
   return lockKeyboard;
 }
 
-int WindowView::getTimeMilli() {
+milliseconds WindowView::getTimeMilli() {
   return clock->getMillis();
 }
 
-int WindowView::getTimeMilliAbsolute() {
+milliseconds WindowView::getTimeMilliAbsolute() {
   return clock->getRealMillis();
 }
 

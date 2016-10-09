@@ -8,19 +8,19 @@ class ViewObject;
 
 class Animation {
   public:
-  void render(Renderer&, Rectangle bounds, Vec2 origin, double time);
-  bool isDone(double time) const;
-  void setBegin(double time);
+  void render(Renderer&, Rectangle bounds, Vec2 origin, milliseconds time);
+  bool isDone(milliseconds time) const;
+  void setBegin(milliseconds time);
   static PAnimation thrownObject(Vec2 direction, ViewObject, bool useSprite, Vec2 squareSize);
   static PAnimation fromId(AnimationId);
 
   protected:
-  Animation(double duration);
+  Animation(milliseconds duration);
   virtual void renderSpec(Renderer&, Rectangle bounds, Vec2 origin, double state) = 0;
 
   private:
-  double begin = -1;
-  double duration;
+  optional<milliseconds> begin;
+  milliseconds duration;
 };
 
 #endif

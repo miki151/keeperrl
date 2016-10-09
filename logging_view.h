@@ -49,12 +49,12 @@ class LoggingView : public View {
       return val;
     }
 
-    virtual int getTimeMilli() override {
-      return logAndGet(delegate->getTimeMilli(), LoggingToken::GET_TIME);
+    virtual milliseconds getTimeMilli() override {
+      return milliseconds{logAndGet(delegate->getTimeMilli().count(), LoggingToken::GET_TIME)};
     }
 
-    virtual int getTimeMilliAbsolute() override {
-      return logAndGet(delegate->getTimeMilliAbsolute(), LoggingToken::GET_TIME_ABSOLUTE);
+    virtual milliseconds getTimeMilliAbsolute() override {
+      return milliseconds{logAndGet(delegate->getTimeMilliAbsolute().count(), LoggingToken::GET_TIME_ABSOLUTE)};
     }
 
     virtual void addSound(const Sound& s) override {

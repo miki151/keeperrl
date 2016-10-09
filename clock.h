@@ -1,13 +1,12 @@
-#ifndef _CLOCK_H
-#define _CLOCK_H
+#pragma once
 
 class Clock {
   public:
-  int getMillis();
+  milliseconds getMillis();
   void pause();
   void cont();
   bool isPaused();
-  int getRealMillis();
+  milliseconds getRealMillis();
 
   private:
   steady_clock::time_point pausedTime;
@@ -16,12 +15,11 @@ class Clock {
 
 class Intervalometer {
   public:
-  Intervalometer(int frequencyMillis);
-  int getCount(int currentTimeMillis);
+  Intervalometer(milliseconds frequency);
+  int getCount(milliseconds currentTime);
 
   private:
-  int frequency;
-  int lastUpdate = 0;
+  milliseconds frequency;
+  optional<milliseconds> lastUpdate;
 };
 
-#endif

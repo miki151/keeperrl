@@ -286,7 +286,7 @@ PGuiElem GuiBuilder::drawKeeperHelp() {
 }
 
 int GuiBuilder::FpsCounter::getSec() {
-  return clock.getMillis() / 1000;
+  return clock.getMillis().count() / 1000;
 }
 
 void GuiBuilder::FpsCounter::addTick() {
@@ -1711,7 +1711,7 @@ PGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
         line.addBackElem(gui.label("L:" + toString<int>(minion.levelInfo.level)), 42);
         list.addElem(gui.stack(makeVec<PGuiElem>(
               gui.button(getButtonCallback({UserInputId::CREATURE_BUTTON, minionId})),
-              gui.uiHighlight([=] { return mapGui->getCreatureHighlight(minionId, clock->getRealMillis());}),
+              gui.uiHighlight([=] { return mapGui->getCreatureHighlight(minionId);}),
               gui.uiHighlightConditional([=] { return current == minionId;}),
               gui.dragSource({DragContentId::CREATURE, minionId},
                 [=]{ return gui.viewObject(minion.viewId);}),
@@ -2019,7 +2019,7 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
                 [marked, pos] { return *marked == pos;}));
       }
       if (auto desc = sites[x][y].getDwellerDescription())
-        elem.push_back(gui.tooltip({*desc}, 0));
+        elem.push_back(gui.tooltip({*desc}, milliseconds{0}));
       columns2.addElem(gui.stack(std::move(elem)));
     }
     rows.addElem(gui.stack(columns.buildHorizontalList(), columns2.buildHorizontalList()));

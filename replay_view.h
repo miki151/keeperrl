@@ -33,12 +33,12 @@ class ReplayView : public View {
       return ret;
     }
 
-    virtual int getTimeMilli() override {
-      return readValue<int>(LoggingToken::GET_TIME);
+    virtual milliseconds getTimeMilli() override {
+      return milliseconds{readValue<int>(LoggingToken::GET_TIME)};
     }
 
-    virtual int getTimeMilliAbsolute() override {
-      return readValue<int>(LoggingToken::GET_TIME_ABSOLUTE);
+    virtual milliseconds getTimeMilliAbsolute() override {
+      return milliseconds{readValue<int>(LoggingToken::GET_TIME_ABSOLUTE)};
     }
 
     virtual double getGameSpeed() override {

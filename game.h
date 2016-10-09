@@ -135,7 +135,7 @@ class Game {
   HeapAllocated<Statistics> SERIAL(statistics);
   Options* options;
   Highscores* highscores;
-  double lastUpdate = -10;
+  optional<milliseconds> lastUpdate;
   PlayerControl* SERIAL(playerControl) = nullptr;
   Collective* SERIAL(playerCollective) = nullptr;
   HeapAllocated<optional<Campaign>> SERIAL(campaign);

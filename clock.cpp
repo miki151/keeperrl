@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "clock.h"
 
-int Clock::getMillis() {
+milliseconds Clock::getMillis() {
   if (lastPause)
-    return duration_cast<milliseconds>(*lastPause - pausedTime).count();
+    return duration_cast<milliseconds>(*lastPause - pausedTime);
   else
-    return duration_cast<milliseconds>(steady_clock::now() - pausedTime).count();
+    return duration_cast<milliseconds>(steady_clock::now() - pausedTime);
 }
 
 void Clock::pause() {
@@ -24,17 +24,19 @@ bool Clock::isPaused() {
   return !!lastPause;
 }
 
-int Clock::getRealMillis() {
-  return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
+milliseconds Clock::getRealMillis() {
+  return duration_cast<milliseconds>(steady_clock::now().time_since_epoch());
 }
 
-Intervalometer::Intervalometer(int f) : frequency(f) {
+Intervalometer::Intervalometer(milliseconds f) : frequency(f) {
 }
 
-int Intervalometer::getCount(int mill) {
-  if (mill >= lastUpdate + frequency) {
-    int diff = (mill - lastUpdate) / frequency;
-    lastUpdate += diff * frequency;
+int Intervalometer::getCount(milliseconds mill) {
+  if (!lastUpdate)
+    lastUpdate = mill - frequency;
+  if (mill >= *lastUpdate + frequency) {
+    int diff = (mill - *lastUpdate) / frequency;
+    *lastUpdate += diff * frequency;
     return diff;
   }
   return 0;

@@ -1812,8 +1812,8 @@ const static Vec2 tooltipOffset = Vec2(10, 10);
 
 class Tooltip : public GuiElem {
   public:
-  Tooltip(const vector<string>& t, PGuiElem bg, Clock* c, int delayM) : text(t), background(std::move(bg)),
-      lastTimeOut(c->getRealMillis()), clock(c), delayMilli(delayM) {
+  Tooltip(const vector<string>& t, PGuiElem bg, Clock* c, milliseconds d) : text(t), background(std::move(bg)),
+      lastTimeOut(c->getRealMillis()), clock(c), delay(d) {
   }
 
   virtual bool onMouseMove(Vec2 pos) override {
@@ -1827,7 +1827,7 @@ class Tooltip : public GuiElem {
 
   virtual void render(Renderer& r) override {
     if (canRender) {
-      if (clock->getRealMillis() > lastTimeOut + delayMilli) {
+      if (clock->getRealMillis() > lastTimeOut + delay) {
         Vec2 size(0, text.size() * tooltipLineHeight + 2 * tooltipVMargin);
         for (const string& t : text)
           size.x = max(size.x, r.getTextLength(t) + 2 * tooltipHMargin);
@@ -1850,12 +1850,12 @@ class Tooltip : public GuiElem {
   bool canRender = false;
   vector<string> text;
   PGuiElem background;
-  int lastTimeOut;
+  milliseconds lastTimeOut;
   Clock* clock;
-  int delayMilli;
+  milliseconds delay;
 };
 
-PGuiElem GuiFactory::tooltip(const vector<string>& v, int delayMilli) {
+PGuiElem GuiFactory::tooltip(const vector<string>& v, milliseconds delayMilli) {
   if (v.empty() || (v.size() == 1 && v[0].empty()))
     return empty();
   return PGuiElem(new Tooltip(v, stack(background(background1), miniBorder()), clock, delayMilli));

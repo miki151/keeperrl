@@ -245,8 +245,8 @@ optional<Game::ExitInfo> Game::update(double timeDiff) {
 }
 
 optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
-  int absoluteTime = view->getTimeMilliAbsolute();
-  if (absoluteTime - lastUpdate > 20) {
+  auto absoluteTime = view->getTimeMilliAbsolute();
+  if (!lastUpdate || absoluteTime - *lastUpdate > milliseconds{20}) {
     if (playerControl)
       playerControl->render(view);
     if (spectator)
@@ -268,7 +268,7 @@ optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
         if (input.getId() == UserInputId::IDLE)
           break;
         else
-          lastUpdate = -10;
+          lastUpdate = none;
         playerControl->processInput(view, input);
         if (exitInfo)
           return exitInfo;

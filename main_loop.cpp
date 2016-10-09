@@ -271,15 +271,15 @@ int MainLoop::getAutosaveFreq() {
 void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
   view->reset();
   game->initialize(options, highscores, view, fileSharing);
-  const double stepTimeMilli = 3;
+  const milliseconds stepTimeMilli {3};
   Intervalometer meter(stepTimeMilli);
   double lastMusicUpdate = -1000;
   double lastAutoSave = game->getGlobalTime();
   while (1) {
     double step = 1;
     if (!game->isTurnBased()) {
-      double gameTimeStep = view->getGameSpeed() / stepTimeMilli;
-      long long timeMilli = view->getTimeMilli();
+      double gameTimeStep = view->getGameSpeed() / stepTimeMilli.count();
+      auto timeMilli = view->getTimeMilli();
       double count = meter.getCount(timeMilli);
       //Debug() << "Intervalometer " << timeMilli << " " << count;
       step = min(1.0, double(count) * gameTimeStep);

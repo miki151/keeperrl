@@ -3,27 +3,27 @@
 #include "animation.h"
 #include "view_object.h"
 
-Animation::Animation(double d) : duration(d) {}
+Animation::Animation(milliseconds d) : duration(d) {}
 
-bool Animation::isDone(double time) const {
-  return time > begin + duration;
+bool Animation::isDone(milliseconds time) const {
+  return begin && time > *begin + duration;
 }
 
-void Animation::setBegin(double time) {
-  CHECK(begin == -1);
+void Animation::setBegin(milliseconds time) {
+  CHECK(!begin);
   begin = time;
 }
 
-void Animation::render(Renderer& r, Rectangle bounds, Vec2 origin, double time) {
-  CHECK(begin >= 0) << begin;
-  CHECK(time - begin <= duration) << time << " " << begin << " " << duration;
-  renderSpec(r, bounds, origin, (time - begin) / duration);
+void Animation::render(Renderer& r, Rectangle bounds, Vec2 origin, milliseconds time) {
+  CHECK(begin);
+  CHECK(time - *begin <= duration) << time << " " << *begin << " " << duration;
+  renderSpec(r, bounds, origin, (time - *begin) / duration);
 }
 
 class ThrownObject : public Animation {
   public:
   ThrownObject(Vec2 dir, ViewObject obj, bool sprite, Vec2 sz)
-    : Animation(200), direction(dir), viewObject(obj), useSprite(sprite), squareSize(sz) {}
+    : Animation(milliseconds{200}), direction(dir), viewObject(obj), useSprite(sprite), squareSize(sz) {}
 
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
     int x = origin.x + state * direction.x;
@@ -49,8 +49,8 @@ class SpriteAnim : public Animation {
     Vec2 size;
     Vec2 offset;
   };
-  SpriteAnim(double frame, int tile, vector<FrameInfo> f)
-      : Animation(frame * f.size()), frames(f), tileNum(tile) {}
+  SpriteAnim(int frame, int tile, vector<FrameInfo> f)
+      : Animation(milliseconds{frame * f.size()}), frames(f), tileNum(tile) {}
 
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
     return;

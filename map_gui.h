@@ -67,25 +67,25 @@ class MapGui : public GuiElem {
   optional<Vec2> projectOnMap(Vec2 screenCoord);
   void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
-  Color getCreatureHighlight(UniqueEntity<Creature>::Id, int curTime);
+  Color getCreatureHighlight(UniqueEntity<Creature>::Id);
   void setButtonViewId(ViewId);
   void clearButtonViewId();
 
   private:
-  void updateObject(Vec2, CreatureView*, int currentTime);
-  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, int currentTimeReal,
+  void updateObject(Vec2, CreatureView*, milliseconds currentTime);
+  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, milliseconds currentTimeReal,
       const EnumMap<HighlightType, double>&);
-  void drawCreatureHighlights(Renderer&, const ViewObject&, Vec2 pos, Vec2 sz, int currentTimeReal);
+  void drawCreatureHighlights(Renderer&, const ViewObject&, Vec2 pos, Vec2 sz, milliseconds currentTimeReal);
   void drawCreatureHighlight(Renderer&, Vec2 pos, Vec2 size, Color);
   void drawSquareHighlight(Renderer&, Vec2 pos, Vec2 size);
-  void considerRedrawingSquareHighlight(Renderer&, int currentTimeReal, Vec2 pos, Vec2 size);
+  void considerRedrawingSquareHighlight(Renderer&, milliseconds currentTimeReal, Vec2 pos, Vec2 size);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
   enum class HintPosition;
   void drawHint(Renderer& renderer, Color color, const vector<string>& text);
   void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);
-  void renderExtraBorders(Renderer&, int currentTimeReal);
-  void renderHighlights(Renderer&, Vec2 size, int currentTimeReal);
-  void renderLowHighlights(Renderer&, Vec2 size, int currentTimeReal);
+  void renderExtraBorders(Renderer&, milliseconds currentTimeReal);
+  void renderHighlights(Renderer&, Vec2 size, milliseconds currentTimeReal);
+  void renderLowHighlights(Renderer&, Vec2 size, milliseconds currentTimeReal);
   optional<Vec2> getMousePos();
   void softScroll(double x, double y);
   struct HighlightedInfo {
@@ -94,12 +94,12 @@ class MapGui : public GuiElem {
     optional<ViewObject> object;
     bool isEnemy;
   };
-  void renderMapObjects(Renderer&, Vec2 size, HighlightedInfo&, int currentTimeReal);
-  HighlightedInfo getHighlightedInfo(Renderer&, Vec2 size, int currentTimeReal);
-  void renderAnimations(Renderer&, int currentTimeReal);
+  void renderMapObjects(Renderer&, Vec2 size, HighlightedInfo&, milliseconds currentTimeReal);
+  HighlightedInfo getHighlightedInfo(Renderer&, Vec2 size, milliseconds currentTimeReal);
+  void renderAnimations(Renderer&, milliseconds currentTimeReal);
 
-  Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, int curTimeReal);
-  Vec2 projectOnScreen(Vec2 wpos, int currentTimeReal);
+  Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal);
+  Vec2 projectOnScreen(Vec2 wpos, milliseconds currentTimeReal);
   bool considerCreatureClick(Vec2 mousePos);
   struct CreatureInfo {
     Rectangle bounds;
@@ -113,7 +113,7 @@ class MapGui : public GuiElem {
   bool spriteMode;
   Rectangle levelBounds = Rectangle(1, 1);
   Callbacks callbacks;
-  double lastRenderTime = 0;
+  optional<milliseconds> lastRenderTime;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
   optional<UniqueEntity<Creature>::Id> draggedCreature;
@@ -135,7 +135,7 @@ class MapGui : public GuiElem {
   } mouseOffset, center;
   const Level* previousLevel = nullptr;
   const CreatureView* previousView = nullptr;
-  Table<optional<int>> lastSquareUpdate;
+  Table<optional<milliseconds>> lastSquareUpdate;
   optional<Coords> softCenter;
   Vec2 lastMousePos;
   optional<Vec2> lastMouseMove;
@@ -144,8 +144,8 @@ class MapGui : public GuiElem {
   struct ScreenMovement {
     Vec2 from;
     Vec2 to;
-    int startTimeReal;
-    int endTimeReal;
+    milliseconds startTimeReal;
+    milliseconds endTimeReal;
     double startTimeGame;
     double endTimeGame;
     UniqueEntity<Creature>::Id creatureId;
@@ -169,7 +169,7 @@ class MapGui : public GuiElem {
   DirtyTable<bool> enemyPositions;
   void updateEnemyPositions(const vector<Vec2>&);
   bool lockedView = true;
-  int lastRightClick = -10000;
+  optional<milliseconds> lastRightClick;
   bool displayScrollHint = false;
   EntityMap<Creature, int> teamHighlight;
   optional<ViewId> buttonViewId;

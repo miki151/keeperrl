@@ -214,10 +214,10 @@ class View {
 
   /** Returns the current real time in milliseconds. The clock is stopped on blocking keyboard input,
       so it can be used to sync game time in real-time mode.*/
-  virtual int getTimeMilli() = 0;
+  virtual milliseconds getTimeMilli() = 0;
 
   /** Returns the absolute time, doesn't take pausing into account.*/
-  virtual int getTimeMilliAbsolute() = 0;
+  virtual milliseconds getTimeMilliAbsolute() = 0;
 
   /** Stops the real time clock.*/
   virtual void stopClock() = 0;
