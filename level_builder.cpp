@@ -243,7 +243,8 @@ void LevelBuilder::setUnavailable(Vec2 pos) {
 bool LevelBuilder::canNavigate(Vec2 posT, const MovementType& movement) {
   Vec2 pos = transform(posT);
   const Furniture* f = furniture.getBuilt(FurnitureLayer::MIDDLE).getReadonly(pos);
-  return (squares.getReadonly(pos)->getMovementSet().canEnter(movement, covered[pos], none) ||
+  return !unavailable[pos] &&
+      (squares.getReadonly(pos)->getMovementSet().canEnter(movement, covered[pos], none) ||
           (f && f->overridesMovement() && f->canEnter(movement))) &&
       (!f || f->canEnter(movement));
 }

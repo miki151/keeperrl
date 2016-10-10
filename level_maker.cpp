@@ -2365,7 +2365,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   queue->addMaker(new Margin(mapBorder + locationMargin, locations2));
   queue->addMaker(new Items(ItemFactory::mushrooms(), width / 10, width / 5));
   queue->addMaker(new AddMapBorder(mapBorder));
-  queue->addMaker(getForrestCreatures(forrestCreatures, width - 2 * mapBorder, biomeId));
+  queue->addMaker(new Margin(mapBorder, getForrestCreatures(forrestCreatures, width - 2 * mapBorder, biomeId)));
   return PLevelMaker(new BorderGuard(queue));
 }
 

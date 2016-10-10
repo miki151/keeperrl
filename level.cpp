@@ -153,9 +153,10 @@ void Level::updateVisibility(Vec2 changedSquare) {
 }
 
 Creature* Level::getPlayer() const {
-  if (Creature* player = model->getGame()->getPlayer())
-    if (player->getLevel() == this)
-      return player;
+  if (auto game = model->getGame())
+    if (auto player = game->getPlayer())
+      if (player->getLevel() == this)
+        return player;
   return nullptr;
 }
 
