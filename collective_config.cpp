@@ -23,6 +23,7 @@
 #include "zones.h"
 #include "construction_map.h"
 #include "item_class.h"
+#include "villain_type.h"
 
 AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
   : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}
@@ -393,6 +394,14 @@ optional<int> CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType type) 
       return 12;
     default:
       return none;
+  }
+}
+
+int CollectiveConfig::getManaForConquering(VillainType type) {
+  switch (type) {
+    case VillainType::MAIN: return 400;
+    case VillainType::LESSER: return 200;
+    default: return 0;
   }
 }
 

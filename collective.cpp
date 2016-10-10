@@ -933,15 +933,6 @@ void Collective::decreaseMoraleForBanishing(const Creature*) {
 void Collective::onKillCancelled(Creature* c) {
 }
 
-static int getManaForConquering(VillainType type) {
-  switch (type) {
-    case VillainType::MAIN: return 400;
-    case VillainType::LESSER: return 200;
-    default: return 0;
-  }
-}
-
-
 void Collective::onEvent(const GameEvent& event) {
   switch (event.getId()) {
     case EventId::ALARM: {
@@ -1009,11 +1000,17 @@ void Collective::onEvent(const GameEvent& event) {
           getOnlyElement(event.get<EventInfo::ItemsHandled>().items));
       break;
     case EventId::CONQUERED_ENEMY: {
-        Collective* col = event.get<Collective*>();
-        if (col->getVillainType())
-          addMana(getManaForConquering(*col->getVillainType()));
+      Collective* col = event.get<Collective*>();
+      if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER) {
+        control->addMessage(PlayerMessage("The tribe of " + col->getName().getFull() + " is destroyed.",
+            MessagePriority::CRITICAL));
+        auto mana = config->getManaForConquering(*col->getVillainType());
+        addMana(mana);
+        control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
+            MessagePriority::HIGH));
       }
-      break;
+    }
+    break;
     default:
       break;
   }

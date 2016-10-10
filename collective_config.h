@@ -198,6 +198,7 @@ class CollectiveConfig {
   static const vector<FloorInfo>& getFloors();
   static double getEfficiencyBonus(FurnitureType);
   static bool canBuildOutsideTerritory(FurnitureType);
+  static int getManaForConquering(VillainType);
 
   SERIALIZATION_DECL(CollectiveConfig);
 

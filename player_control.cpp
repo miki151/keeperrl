@@ -1270,19 +1270,9 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
 void PlayerControl::addMessage(const PlayerMessage& msg) {
   messages.push_back(msg);
   messageHistory.push_back(msg);
-}
-
-void PlayerControl::addImportantLongMessage(const string& msg, optional<Position> pos) {
-  if (Creature* c = getControlled())
-    c->playerMessage(PlayerMessage(msg, MessagePriority::CRITICAL));
-  for (string s : removeEmpty(split(msg, {'.'}))) {
-    trim(s);
-    auto msg = PlayerMessage(s, MessagePriority::CRITICAL);
-    if (pos)
-      msg.setPosition(*pos);
-    addMessage(msg);
-    getView()->stopClock();
-  }
+  if (msg.getPriority() == MessagePriority::CRITICAL)
+    if (Creature* c = getControlled())
+      c->playerMessage(msg);
 }
 
 void PlayerControl::initialize() {
@@ -1322,12 +1312,6 @@ void PlayerControl::onEvent(const GameEvent& event) {
         auto info = event.get<EventInfo::ItemsHandled>();
         if (info.creature == getControlled() && !getCollective()->hasTrait(info.creature, MinionTrait::WORKER))
           getCollective()->ownItems(info.creature, info.items);
-      }
-      break;
-    case EventId::CONQUERED_ENEMY: {
-        Collective* col = event.get<Collective*>();
-        if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER)
-          addImportantLongMessage("The tribe of " + col->getName().getFull() + " is destroyed.");
       }
       break;
     case EventId::WON_GAME:
@@ -2209,14 +2193,14 @@ void PlayerControl::onNoEnemies() {
 }
 
 void PlayerControl::considerNightfallMessage() {
-  if (getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
+  /*if (getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
     if (!isNight) {
       addMessage(PlayerMessage("Night is falling. Killing enemies in their sleep yields double mana.",
             MessagePriority::HIGH));
       isNight = true;
     }
   } else
-    isNight = false;
+    isNight = false;*/
 }
 
 void PlayerControl::considerWarning() {
@@ -2288,8 +2272,8 @@ void PlayerControl::tick() {
   for (auto attack : copyOf(newAttacks))
     for (const Creature* c : attack.getCreatures())
       if (isConsideredAttacking(c)) {
-        addImportantLongMessage("You are under attack by " + attack.getAttacker()->getName().getFull() + "!",
-            c->getPosition());
+        addMessage(PlayerMessage("You are under attack by " + attack.getAttacker()->getName().getFull() + "!",
+            MessagePriority::CRITICAL).setPosition(c->getPosition()));
         getGame()->setCurrentMusic(MusicType::BATTLE, true);
         removeElement(newAttacks, attack);
         knownVillains.insert(attack.getAttacker());

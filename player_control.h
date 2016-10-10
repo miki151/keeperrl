@@ -49,7 +49,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   public:
   PlayerControl(Collective*, Level*);
   ~PlayerControl();
-  void addImportantLongMessage(const string&, optional<Position> = none);
 
   void processInput(View* view, UserInput);
   MoveInfo getMove(Creature* c);
