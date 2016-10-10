@@ -1324,20 +1324,21 @@ void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
 }
 
 void Collective::destroySquare(Position pos, FurnitureLayer layer) {
-  if (territory->contains(pos))
-    if (auto furniture = pos.modFurniture(layer)) {
+  if (auto furniture = pos.modFurniture(layer))
+    if (furniture->getTribe() == getTribeId()) {
       furniture->destroy(pos, DestroyAction::Type::BASH);
       tileEfficiency->update(pos);
     }
-  zones->eraseZones(pos);
-  if (constructions->containsTrap(pos))
-    removeTrap(pos);
   if (constructions->containsFurniture(pos, layer))
     removeFurniture(pos, layer);
-  if (layer == FurnitureLayer::CEILING)
+  if (layer != FurnitureLayer::FLOOR) {
+    zones->eraseZones(pos);
     if (constructions->containsTorch(pos))
       removeTorch(pos);
-  pos.removeTriggers();
+    if (constructions->containsTrap(pos))
+      removeTrap(pos);
+    pos.removeTriggers();
+  }
 }
 
 void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& cost, bool noCredit) {

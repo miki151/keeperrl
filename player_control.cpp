@@ -1977,6 +1977,7 @@ bool PlayerControl::canSelectRectangle(const BuildInfo& info) {
     case BuildInfo::FURNITURE:
     case BuildInfo::DIG:
     case BuildInfo::DESTROY:
+    case BuildInfo::DISPATCH:
       return true;
     default:
       return false;

@@ -57,7 +57,7 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static const int saveVersion = 1100;
+static const int saveVersion = 1200;
 
 static bool isCompatible(int loadedVersion) {
   return loadedVersion > 2 && loadedVersion <= saveVersion && loadedVersion / 100 == saveVersion / 100;
