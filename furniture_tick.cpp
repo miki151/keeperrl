@@ -37,7 +37,7 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, Furniture* furn
         for (int i = 1; i <= radius; ++i) {
           Position curPos = pos.plus(direction * i);
           if (Creature* other = curPos.getCreature()) {
-            if (other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
+            if (!other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
               if (!other->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
                 pos.getGame()->addEvent({EventId::TRAP_TRIGGERED, pos});
                 pos.globalMessage(

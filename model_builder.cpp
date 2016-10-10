@@ -471,14 +471,14 @@ PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, 
 }
 
 void ModelBuilder::measureSiteGen(int numTries) {
-  measureModelGen(numTries, [this] { trySingleMapModel("pok"); });
+//  measureModelGen(numTries, [this] { trySingleMapModel("pok"); });
   //measureModelGen(numTries, [this] { tryCampaignBaseModel("pok"); });
-/*  for (EnemyId id : {EnemyId::SOKOBAN})
-//  for (EnemyId id : ENUM_ALL(EnemyId))
+//  for (EnemyId id : {EnemyId::SOKOBAN})
+  for (EnemyId id : ENUM_ALL(EnemyId))
     if (!!getBiome(id, random)) {
       std::cout << "Measuring " << EnumInfo<EnemyId>::getString(id) << std::endl;
       measureModelGen(numTries, [&] { tryCampaignSiteModel("", id, VillainType::LESSER); });
-    }*/
+    }
 }
 
 void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
