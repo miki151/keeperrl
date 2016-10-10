@@ -66,7 +66,7 @@ class GuiFactory {
 
   SDL::SDL_Keysym getKey(SDL::SDL_Keycode);
   PGuiElem button(function<void()> fun, SDL::SDL_Keysym, bool capture = false);
-  PGuiElem buttonChar(function<void()> fun, char, bool capture = false);
+  PGuiElem buttonChar(function<void()> fun, char, bool capture = false, bool useAltIfWasdScrolling = false);
   PGuiElem button(function<void()> fun);
   PGuiElem reverseButton(function<void()> fun, vector<SDL::SDL_Keysym> = {}, bool capture = false);
   PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun, SDL::SDL_Keysym, bool capture = false);
@@ -78,7 +78,7 @@ class GuiFactory {
   PGuiElem mouseWheel(function<void(bool)>);
   PGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
   PGuiElem keyHandler(function<void()>, vector<SDL::SDL_Keysym>, bool capture = false);
-  PGuiElem keyHandlerChar(function<void()>, char, bool capture = false);
+  PGuiElem keyHandlerChar(function<void()>, char, bool capture = false, bool useAltIfWasdScrolling = false);
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);

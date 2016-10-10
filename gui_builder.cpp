@@ -133,7 +133,7 @@ PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
   }
   return gui.stack(
       getHintCallback({capitalFirst(button.help)}),
-      gui.buttonChar(buttonFun, !button.hotkeyOpensGroup ? button.hotkey : 0, true),
+      gui.buttonChar(buttonFun, !button.hotkeyOpensGroup ? button.hotkey : 0, true, true),
       line.buildHorizontalList());
 }
 
@@ -197,7 +197,7 @@ GuiFactory::ListBuilder GuiBuilder::drawButtons(vector<CollectiveInfo::Button> b
           gui.uiHighlightConditional([=] { return activeGroup == lastGroup;}),
           gui.label(lastGroup, colors[ColorId::WHITE], hotkey)));
       elems.addElem(gui.stack(
-          gui.keyHandlerChar(buttonFunHotkey, hotkey),
+          gui.keyHandlerChar(buttonFunHotkey, hotkey, true, true),
           gui.button(labelFun),
           line.buildHorizontalList()));
     }
@@ -231,7 +231,7 @@ PGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
             gui.buttonChar([this, i] {
               closeOverlayWindows();
               getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i))();
-            }, info.techButtons[i].hotkey),
+            }, info.techButtons[i].hotkey, true, true),
             line.buildHorizontalList()));
     }
     lines.addSpace(legendLineHeight / 2);
@@ -858,10 +858,11 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   list.addElem(drawPlayerLevelButton(info));
   auto line = gui.getListBuilder();
   vector<PGuiElem> keyElems;
-  for (int i : All(info.commands)) {
-    keyElems.push_back(gui.keyHandlerChar(getButtonCallback({UserInputId::PLAYER_COMMAND, i}),
-        info.commands[i].keybinding));
-  }
+  for (int i : All(info.commands))
+    if (info.commands[i].active) {
+      keyElems.push_back(gui.keyHandlerChar(getButtonCallback({UserInputId::PLAYER_COMMAND, i}),
+          info.commands[i].keybinding));
+    }
   line.addElemAuto(gui.stack(
       gui.stack(std::move(keyElems)),
       gui.labelHighlight("[Commands]", colors[ColorId::LIGHT_BLUE]),

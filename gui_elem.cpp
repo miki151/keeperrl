@@ -908,11 +908,11 @@ PGuiElem GuiFactory::keyHandler(function<void()> fun, vector<SDL_Keysym> key, bo
 
 class KeyHandlerChar : public GuiElem {
   public:
-  KeyHandlerChar(function<void()> f, char c, bool cap, Options* o) : fun(f), hotkey(c), capture(cap),
-      options(o) {}
+  KeyHandlerChar(function<void()> f, char c, bool cap, function<bool()> rAlt) : fun(f), hotkey(c), requireAlt(rAlt),
+      capture(cap) {}
 
   bool isHotkeyEvent(char c, SDL_Keysym key) {
-    return options->getBoolValue(OptionId::WASD_SCROLLING) == GuiFactory::isAlt(key) &&
+    return requireAlt() == GuiFactory::isAlt(key) &&
       !GuiFactory::isCtrl(key) &&
       ((!GuiFactory::isShift(key) && getKey(c) == key.sym) ||
           (GuiFactory::isShift(key) && getKey(tolower(c)) == key.sym));
@@ -929,18 +929,19 @@ class KeyHandlerChar : public GuiElem {
   private:
   function<void()> fun;
   char hotkey;
+  function<bool()> requireAlt;
   bool capture;
-  Options* options;
 };
 
-PGuiElem GuiFactory::keyHandlerChar(function<void ()> fun, char hotkey, bool capture) {
-  return PGuiElem(new KeyHandlerChar(fun, hotkey, capture, options));
+PGuiElem GuiFactory::keyHandlerChar(function<void ()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
+  return PGuiElem(new KeyHandlerChar(fun, hotkey, capture,
+       [=] { return useAltIfWasdOn && options->getBoolValue(OptionId::WASD_SCROLLING); }));
 }
 
-PGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture) {
+PGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
   return stack(
       PGuiElem(new Button([=](Rectangle) { fun(); })),
-      PGuiElem(new KeyHandlerChar(fun, hotkey, capture, options)));
+      PGuiElem(keyHandlerChar(fun, hotkey, capture, useAltIfWasdOn)));
 }
 
 class ElemList : public GuiLayout {
