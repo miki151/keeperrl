@@ -787,6 +787,7 @@ void Collective::update(bool currentlyActive) {
 
 void Collective::tick() {
   control->tick();
+  zones->tick();
   considerBirths();
   decayMorale();
   //considerBuildingBeds();
@@ -848,6 +849,8 @@ void Collective::tick() {
       for (Position pos : territory->getAll())
         fetchItems(pos, elem);
       for (Position pos : zones->getPositions(ZoneId::FETCH_ITEMS))
+        fetchItems(pos, elem);
+      for (Position pos : zones->getPositions(ZoneId::PERMANENT_FETCH_ITEMS))
         fetchItems(pos, elem);
     }
   if (config->getManageEquipment() && Random.roll(10))

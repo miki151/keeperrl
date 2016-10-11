@@ -122,6 +122,7 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::DIG: return transparency(colors[ColorId::YELLOW], 120);
     case HighlightType::CUT_TREE: return transparency(colors[ColorId::YELLOW], 170);
     case HighlightType::FETCH_ITEMS: return transparency(colors[ColorId::YELLOW], 50);
+    case HighlightType::PERMANENT_FETCH_ITEMS: return transparency(colors[ColorId::ORANGE], 50);
     case HighlightType::STORAGE_EQUIPMENT: return transparency(colors[ColorId::GREEN], buttonViewId ? 120 : 50);
     case HighlightType::STORAGE_RESOURCES: return transparency(colors[ColorId::BLUE], buttonViewId ? 120 : 50);
     case HighlightType::RECT_SELECTION: return transparency(colors[ColorId::YELLOW], 90);
@@ -672,6 +673,7 @@ bool MapGui::isRenderedLowHighlight(const ViewIndex& index, HighlightType type) 
       return !!draggedCreature;
     case HighlightType::FORBIDDEN_ZONE:
     case HighlightType::FETCH_ITEMS:
+    case HighlightType::PERMANENT_FETCH_ITEMS:
     case HighlightType::STORAGE_EQUIPMENT:
     case HighlightType::STORAGE_RESOURCES:
     case HighlightType::PRIORITY_TASK:

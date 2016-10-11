@@ -140,7 +140,7 @@ struct PlayerControl::BuildInfo {
 
   BuildInfo(ZoneId zone, ViewId view, const string& n, const string& h = "", char key = 0, string group = "",
       bool hotkeyOpens = false)
-      : buildType(ZONE), name(n), hotkey(key), groupName(group), hotkeyOpensGroup(hotkeyOpens) , zone(zone),
+      : buildType(ZONE), name(n), help(h), hotkey(key), groupName(group), hotkeyOpensGroup(hotkeyOpens) , zone(zone),
         viewId(view) {}
 };
 
@@ -219,7 +219,10 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "Can be used to torture prisoners.", 'u'),
       BuildInfo(BuildInfo::CLAIM_TILE, "Claim tile", "Claim a tile. Building anything has the same effect.", 0, "Orders"),
       BuildInfo(ZoneId::FETCH_ITEMS, ViewId::FETCH_ICON, "Fetch items",
-          "Order imps to fetch items from outside the dungeon.", 0, "Orders"),
+          "Order imps to fetch items from locations outside the dungeon. This is a one-time order.", 0, "Orders"),
+      BuildInfo(ZoneId::PERMANENT_FETCH_ITEMS, ViewId::FETCH_ICON, "Fetch items persistently",
+          "Order imps to fetch items from locations outside the dungeon. This is a persistent order.", 0,
+          "Orders"),
       BuildInfo(BuildInfo::DISPATCH, "Prioritize task", "Click on an existing task to give it a high priority.", 'a',
           "Orders"),
       BuildInfo({FurnitureLayer::CEILING, FurnitureLayer::MIDDLE}, "Remove construction", "", 'e', "Orders"),

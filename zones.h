@@ -4,6 +4,7 @@
 
 RICH_ENUM(ZoneId,
   FETCH_ITEMS,
+  PERMANENT_FETCH_ITEMS,
   STORAGE_EQUIPMENT,
   STORAGE_RESOURCES
 );
@@ -20,6 +21,7 @@ class Zones {
   void eraseZones(Position);
   const set<Position>& getPositions(ZoneId) const;
   void setHighlights(Position, ViewIndex&) const;
+  void tick();
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

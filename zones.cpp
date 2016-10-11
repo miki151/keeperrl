@@ -35,6 +35,8 @@ static HighlightType getHighlight(ZoneId id) {
   switch (id) {
     case ZoneId::FETCH_ITEMS:
       return HighlightType::FETCH_ITEMS;
+    case ZoneId::PERMANENT_FETCH_ITEMS:
+      return HighlightType::PERMANENT_FETCH_ITEMS;
     case ZoneId::STORAGE_EQUIPMENT:
       return HighlightType::STORAGE_EQUIPMENT;
     case ZoneId::STORAGE_RESOURCES:
@@ -46,4 +48,10 @@ void Zones::setHighlights(Position pos, ViewIndex& index) const {
   for (auto id : ENUM_ALL(ZoneId))
     if (isZone(pos, id))
       index.setHighlight(getHighlight(id));
+}
+
+void Zones::tick() {
+  for (auto pos : copyOf(zones[ZoneId::FETCH_ITEMS]))
+    if (pos.getItems().empty())
+      eraseZone(pos, ZoneId::FETCH_ITEMS);
 }
