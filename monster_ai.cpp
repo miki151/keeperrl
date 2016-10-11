@@ -258,14 +258,13 @@ class StayOnFurniture : public Behaviour {
   StayOnFurniture(Creature* c, FurnitureType t) : Behaviour(c), type(t) {}
 
   MoveInfo getMove() override {
-    if (auto furniture = creature->getPosition().getFurniture(type)) {
+    if (!creature->getPosition().getFurniture(type)) {
       if (!nextPigsty)
         for (auto pos : creature->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 20)))
-          if (auto f = pos.getFurniture(type))
-            if (f->getType() == type) {
-              nextPigsty = pos;
-              break;
-            }
+          if (pos.getFurniture(type)) {
+            nextPigsty = pos;
+            break;
+          }
       if (nextPigsty)
         if (auto move = creature->moveTowards(*nextPigsty, true))
           return move;
