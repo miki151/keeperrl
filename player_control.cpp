@@ -1264,9 +1264,11 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
 void PlayerControl::addMessage(const PlayerMessage& msg) {
   messages.push_back(msg);
   messageHistory.push_back(msg);
-  if (msg.getPriority() == MessagePriority::CRITICAL)
+  if (msg.getPriority() == MessagePriority::CRITICAL) {
+    getView()->stopClock();
     if (Creature* c = getControlled())
       c->playerMessage(msg);
+  }
 }
 
 void PlayerControl::initialize() {
