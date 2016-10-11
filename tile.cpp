@@ -515,7 +515,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::OPENED_CHEST, sprite("chest_opened").setRoundShadow());
     Tile::addTile(ViewId::COFFIN, sprite("coffin").setRoundShadow());
     Tile::addTile(ViewId::OPENED_COFFIN, sprite("coffin_opened").setRoundShadow());
-    Tile::addTile(ViewId::BOULDER, sprite("boulder"));
+    Tile::addTile(ViewId::BOULDER, sprite("boulder").setRoundShadow());
     Tile::addTile(ViewId::PORTAL, sprite("surprise"));
     Tile::addTile(ViewId::GAS_TRAP, sprite("gas_trap"));
     Tile::addTile(ViewId::ALARM_TRAP, sprite("alarm_trap"));

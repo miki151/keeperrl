@@ -1143,15 +1143,6 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
     );
 }
 
-static const ViewObject& getConstructionObject(SquareType type) {
-  static unordered_map<SquareType, ViewObject, CustomHash<SquareType>> objects;
-  if (!objects.count(type)) {
-    objects.insert(make_pair(type, SquareFactory::get(type)->getViewObject()));
-    objects.at(type).setModifier(ViewObject::Modifier::PLANNED);
-  }
-  return objects.at(type);
-}
-
 static const ViewObject& getConstructionObject(FurnitureType type) {
   static EnumMap<FurnitureType, optional<ViewObject>> objects;
   if (!objects[type]) {
