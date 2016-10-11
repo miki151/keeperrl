@@ -605,8 +605,28 @@ void Body::fireDamage(Creature* c, double amount) {
   bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::STRENGTH)));
 }
 
-void Body::affectByPoison(Creature* c) {
-  bleed(c, 1.0 / 60);
+bool Body::affectByPoison(Creature* c, double amount) {
+  if (material == Material::FLESH) {
+    bleed(c, amount);
+    c->playerMessage("You feel poison flowing in your veins.");
+    if (health <= 0) {
+      c->you(MsgType::DIE_OF, "poisoning");
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Body::affectByPoisonGas(Creature* c, double amount) {
+  if (!c->isAffected(LastingEffect::POISON_RESISTANT) && material == Material::FLESH) {
+    bleed(c, amount / 20);
+    c->you(MsgType::ARE, "poisoned by the gas");
+    if (health <= 0) {
+      c->you(MsgType::DIE_OF, "poisoning");
+      return true;
+    }
+  }
+  return false;
 }
 
 void Body::affectByTorture(Creature* c) {
@@ -615,7 +635,7 @@ void Body::affectByTorture(Creature* c) {
     if (!Random.roll(8))
       c->heal();
     else
-      c->die();
+      c->die("killed by torture");
   }
 }
 

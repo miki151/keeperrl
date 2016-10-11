@@ -57,7 +57,7 @@ static vector<int> stunTime { 1, 7, 20};
 static vector<int> resistantTime { 20, 60, 200};
 static vector<int> levitateTime { 20, 60, 200};
 static vector<int> magicShieldTime { 5, 20, 60};
-static vector<double> gasAmount { 0.3, 0.8, 3};
+static vector<double> gasAmount { 1.5, 4.0, 15.0};
 static vector<double> wordOfPowerDist { 1, 3, 10};
 static vector<int> blastRange { 2, 5, 10};
 static vector<int> creatureEffectRange { 2, 5, 10};
@@ -136,8 +136,6 @@ static void airBlast(Creature* c, int strength) {
 }
 
 static void emitPoisonGas(Position pos, int strength, bool msg) {
-  for (Position v : pos.neighbors8())
-    v.addPoisonGas(gasAmount[strength] / 2);
   pos.addPoisonGas(gasAmount[strength]);
   if (msg)
     pos.globalMessage("A cloud of gas is released", "You hear a hissing sound");

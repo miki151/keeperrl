@@ -877,10 +877,11 @@ void Creature::tick() {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (attributes->considerTimeout(effect, globalTime))
       LastingEffects::onTimedOut(this, effect, true);
-  if (isAffected(LastingEffect::POISON)) {
-    getBody().affectByPoison(this);
-    playerMessage("You feel poison flowing in your veins.");
-  }
+  if (isAffected(LastingEffect::POISON))
+    if (getBody().affectByPoison(this, 0.015)) {
+      die(lastAttacker);
+      return;
+    }
   updateViewObject();
   if (getBody().tick(this)) {
     die(lastAttacker);
@@ -1129,19 +1130,17 @@ void Creature::fireDamage(double amount) {
 
 void Creature::affectBySilver() {
   if (getBody().affectBySilver(this))
-    die();
+    die(lastAttacker);
 }
 
 void Creature::affectByAcid() {
   if (getBody().affectByAcid(this))
-    die();
+    die("dissolved by acid");
 }
 
 void Creature::poisonWithGas(double amount) {
-  if (isAffected(LastingEffect::POISON)) {
-    getBody().affectByPoison(this);
-    you(MsgType::ARE, "poisoned by the gas");
-  }
+  if (getBody().affectByPoisonGas(this, amount))
+    die("poisoned with gas");
 }
 
 void Creature::setHeld(const Creature* c) {

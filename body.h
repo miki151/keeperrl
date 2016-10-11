@@ -70,7 +70,8 @@ class Body {
   bool heal(Creature*, double amount, bool replaceLimbs);
   void fireDamage(Creature*, double amount);
   bool isIntrinsicallyAffected(LastingEffect) const;
-  void affectByPoison(Creature*);
+  bool affectByPoison(Creature*, double amount);
+  bool affectByPoisonGas(Creature*, double amount);
   void affectByTorture(Creature*);
   bool affectBySilver(Creature*);
   bool affectByAcid(Creature*);
