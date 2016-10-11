@@ -1021,6 +1021,10 @@ class RandomLocations : public LevelMaker {
     maxDistance[{m2, m1}] = dist;
   }
 
+  void setMinMargin(LevelMaker *m1, int margin) {
+    minMargin[m1] = margin;
+  }
+
   void setMinDistanceLast(LevelMaker* m, double dist) {
     minDistance[{m, insideMakers.back().get()}]  = dist;
     minDistance[{insideMakers.back().get(), m}]  = dist;
@@ -1041,7 +1045,7 @@ class RandomLocations : public LevelMaker {
     failGen(); // "Failed to find free space for " << (int)sizes.size() << " areas";
   }
 
-  bool tryMake(LevelBuilder* builder, vector<LocationPredicate::Precomputed>& precomputed, Rectangle area) {
+  bool tryMake(LevelBuilder* builder, const vector<LocationPredicate::Precomputed>& precomputed, Rectangle area) {
     vector<Rectangle> occupied;
     vector<Rectangle> makerBounds;
     vector<LevelBuilder::Rot> maps;
@@ -1049,6 +1053,7 @@ class RandomLocations : public LevelMaker {
       maps.push_back(builder->getRandom().choose(
             LevelBuilder::CW0, LevelBuilder::CW1, LevelBuilder::CW2, LevelBuilder::CW3));
     for (int i : All(insideMakers)) {
+      auto maker = insideMakers[i].get();
       int width = sizes[i].first;
       int height = sizes[i].second;
       if (contains({LevelBuilder::CW1, LevelBuilder::CW3}, maps[i]))
@@ -1060,23 +1065,25 @@ class RandomLocations : public LevelMaker {
       bool ok;
       do {
         ok = true;
-        px = area.left() + builder->getRandom().get(area.width() - width);
-        py = area.top() + builder->getRandom().get(area.height() - height);
+        int margin = minMargin.count(maker) ? minMargin.at(maker) : 0;
+        CHECK(width + 2 * margin < area.width()) << "Couldn't fit maker width inside area.";
+        CHECK(height + 2 * margin < area.height())  << "Couldn't fit maker height inside area.";
+        px = area.left() + margin + builder->getRandom().get(area.width() - width - 2 * margin);
+        py = area.top() + margin + builder->getRandom().get(area.height() - height - 2 * margin);
+        Rectangle area(px, py, px + width, py + height);
         for (int j : Range(i))
-          if ((maxDistance.count({insideMakers[j].get(), insideMakers[i].get()}) && 
-                maxDistance[{insideMakers[j].get(), insideMakers[i].get()}] <
-                  Vec2(px + width / 2, py + height / 2).dist8(occupied[j].middle())) ||
-              minDistance[{insideMakers[j].get(), insideMakers[i].get()}] >
-                  Vec2(px + width / 2, py + height / 2).dist8(occupied[j].middle())) {
+          if ((maxDistance.count({insideMakers[j].get(), maker}) &&
+                maxDistance[{insideMakers[j].get(), maker}] < area.middle().dist8(occupied[j].middle())) ||
+              minDistance[{insideMakers[j].get(), maker}] > area.middle().dist8(occupied[j].middle())) {
             ok = false;
             break;
           }
-        if (!precomputed[i].apply(Rectangle(px, py, px + width, py + height)))
+        if (!precomputed[i].apply(area))
           ok = false;
         else
           if (separate)
             for (Rectangle r : occupied)
-              if (r.intersects(Rectangle(px, py, px + width, py + height))) {
+              if (r.intersects(area)) {
                 ok = false;
                 break;
               }
@@ -1102,6 +1109,7 @@ class RandomLocations : public LevelMaker {
   bool separate;
   map<pair<LevelMaker*, LevelMaker*>, double> minDistance;
   map<pair<LevelMaker*, LevelMaker*>, double> maxDistance;
+  map<LevelMaker*, int> minMargin;
 };
 
 class Margin : public LevelMaker {
@@ -2235,10 +2243,13 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   RandomLocations* locations = new RandomLocations();
   RandomLocations* locations2 = new RandomLocations();
   LevelMaker* startingPos = nullptr;
+  int locationMargin = 10;
   if (keeperSpawn) {
     startingPos = new StartingPos(Predicate::alwaysTrue(), StairKey::keeperSpawn());
     locations->add(startingPos, Vec2(4, 4), RandomLocations::LocationPredicate(
           Predicate::attrib(SquareAttrib::HILL), Predicate::attrib(SquareAttrib::MOUNTAIN), 1, 8));
+    int minMargin = 50;
+    locations->setMinMargin(startingPos, minMargin - locationMargin);
   }
   struct CottageInfo {
     LevelMaker* maker;
@@ -2344,10 +2355,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
         {random.get(5, 12), random.get(5, 12)}, Predicate::type(SquareId::MOUNTAIN));
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
   }*/
-  int maxDist = 1000;
-  int maxDist2 = 1000;
   int mapBorder = 30;
-  int locationMargin = 10;
   queue->addMaker(new Empty(SquareId::WATER));
   queue->addMaker(getMountains(biomeId));
   queue->addMaker(new MountainRiver(1, SquareId::WATER, SquareId::SAND, Predicate::type(FurnitureType::MOUNTAIN)));
