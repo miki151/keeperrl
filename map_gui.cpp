@@ -663,7 +663,11 @@ optional<ViewId> MapGui::getHighlightedFurniture() {
 bool MapGui::isRenderedLowHighlight(const ViewIndex& index, HighlightType type) {
   switch (type) {
     case HighlightType::CLICKABLE_FURNITURE:
-      return getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id() && !draggedCreature && !buttonViewId;
+      return
+          index.hasObject(ViewLayer::FLOOR) &&
+          getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id() &&
+          !draggedCreature &&
+          !buttonViewId;
     case HighlightType::CREATURE_DROP:
       return !!draggedCreature;
     case HighlightType::FORBIDDEN_ZONE:

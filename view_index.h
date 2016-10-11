@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _VIEW_INDEX
-#define _VIEW_INDEX
+#pragma once
 
 #include "enums.h"
 #include "util.h"
@@ -76,5 +75,3 @@ class ViewIndex {
   bool SERIAL(anyHighlight) = false;
   optional<ViewId> hiddenId;
 };
-
-#endif

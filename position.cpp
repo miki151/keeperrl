@@ -489,16 +489,15 @@ bool Position::isActiveConstruction(FurnitureLayer layer) const {
 }
 
 bool Position::isBurning() const {
-  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    return furniture->getFire() && furniture->getFire()->isBurning();
-  else
-    return false;
+  for (auto furniture : getFurniture())
+    if (furniture->getFire() && furniture->getFire()->isBurning())
+      return true;
+  return false;
 }
 
 void Position::updateMovement() {
   if (isValid()) {
-    auto furniture = getFurniture(FurnitureLayer::MIDDLE);
-    if (furniture && isBurning()) {
+    if (isBurning()) {
       if (!getSquare()->getMovementSet().isOnFire()) {
         modSquare()->getMovementSet().setOnFire(true);
         updateConnectivity();
@@ -512,7 +511,7 @@ void Position::updateMovement() {
 }
 
 void Position::fireDamage(double amount) {
-  if (auto furniture = modFurniture(FurnitureLayer::MIDDLE))
+  for (auto furniture : modFurniture())
     furniture->fireDamage(*this, amount);
   if (Creature* creature = getCreature())
     creature->fireDamage(amount);
