@@ -77,8 +77,8 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl);
   serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
-  serializeAll(ar, knownVillains, knownVillainLocations, visibilityMap, warningTimes);
-  serializeAll(ar, lastWarningTime, messageHistory, eventProxy);
+  serializeAll(ar, knownVillains, knownVillainLocations, visibilityMap);
+  serializeAll(ar, messageHistory, eventProxy);
 }
 
 SERIALIZABLE(PlayerControl);
@@ -276,33 +276,6 @@ vector<PlayerControl::RoomInfo> PlayerControl::getRoomInfo() {
     if (bInfo.buildType == BuildInfo::FURNITURE)
       ret.push_back({bInfo.name, bInfo.help, bInfo.requirements});
   return ret;
-}
-
-typedef Collective::Warning Warning;
-
-string PlayerControl::getWarningText(Collective::Warning w) {
-  switch (w) {
-    case Warning::DIGGING: return "Dig into the mountain and start building a dungeon.";
-    case Warning::RESOURCE_STORAGE: return "Storage room for resources is needed.";
-    case Warning::EQUIPMENT_STORAGE: return "Storage room for equipment is needed.";
-    case Warning::LIBRARY: return "Build a library to start research.";
-    case Warning::BEDS: return "You need to build a dormitory for your minions.";
-    case Warning::TRAINING: return "Build a training room for your minions.";
-    case Warning::NO_HATCHERY: return "You need to build a pigsty.";
-    case Warning::WORKSHOP: return "Build a workshop to produce equipment and traps.";
-    case Warning::NO_WEAPONS: return "You need weapons for your minions.";
-    case Warning::LOW_MORALE: return "Kill some enemies or summon a succubus to increase morale of your minions.";
-    case Warning::GRAVES: return "You need a graveyard to collect corpses";
-    case Warning::CHESTS: return "You need to build a treasure room.";
-    case Warning::NO_PRISON: return "You need to build a prison.";
-    case Warning::LARGER_PRISON: return "You need a larger prison.";
-    case Warning::TORTURE_ROOM: return "You need to build a torture room.";
-//    case Warning::ALTAR: return "You need to build a shrine to sacrifice.";
-    case Warning::MORE_CHESTS: return "You need a larger treasure room.";
-    case Warning::MANA: return "Conquer an enemy tribe or torture some innocent beings for more mana.";
-    case Warning::MORE_LIGHTS: return "Place some torches to light up your dungeon.";
-  }
-  return "";
 }
 
 static bool seeEverything = false;
@@ -2181,10 +2154,6 @@ void PlayerControl::checkKeeperDanger() {
   }
 }
 
-const double messageTimeout = 80;
-const double anyWarningFrequency = 100;
-const double warningFrequency = 500;
-
 void PlayerControl::onNoEnemies() {
   getGame()->setCurrentMusic(MusicType::PEACEFUL, false);
 }
@@ -2198,17 +2167,6 @@ void PlayerControl::considerNightfallMessage() {
     }
   } else
     isNight = false;*/
-}
-
-void PlayerControl::considerWarning() {
-  double time = getLocalTime();
-  if (time > lastWarningTime + anyWarningFrequency)
-    for (Warning w : ENUM_ALL(Warning))
-      if (getCollective()->isWarning(w) && (warningTimes[w] == 0 || time > warningTimes[w] + warningFrequency)) {
-        addMessage(PlayerMessage(getWarningText(w), MessagePriority::HIGH));
-        lastWarningTime = warningTimes[w] = time;
-        break;
-      }
 }
 
 void PlayerControl::update(bool currentlyActive) {
@@ -2250,13 +2208,16 @@ bool PlayerControl::isConsideredAttacking(const Creature* c) {
     return canSee(c) && c->getLevel() == getLevel();
 }
 
+const double messageTimeout = 80;
+
 void PlayerControl::tick() {
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
   messages = filter(messages, [&] (const PlayerMessage& msg) {
       return msg.getFreshness() > 0; });
   considerNightfallMessage();
-  considerWarning();
+  if (auto msg = getCollective()->getWarnings().getNextWarning(getLocalTime()))
+    addMessage(PlayerMessage(*msg, MessagePriority::HIGH));
   if (startImpNum == -1)
     startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   checkKeeperDanger();

@@ -17,7 +17,6 @@
 #include "move_info.h"
 #include "task_callback.h"
 #include "resource_id.h"
-#include "collective_warning.h"
 #include "event_listener.h"
 #include "entity_map.h"
 #include "minion_trait.h"
@@ -50,6 +49,7 @@ class Workshops;
 class TileEfficiency;
 class Zones;
 struct ItemFetchInfo;
+class CollectiveWarnings;
 
 class Collective : public TaskCallback {
   public:
@@ -77,7 +77,6 @@ class Collective : public TaskCallback {
   double getLocalTime() const;
   double getGlobalTime() const;
 
-  typedef CollectiveWarning Warning;
   typedef CollectiveResourceId ResourceId;
 
   SERIALIZATION_DECL(Collective);
@@ -112,13 +111,12 @@ class Collective : public TaskCallback {
   const KnownTiles& getKnownTiles() const;
   const TileEfficiency& getTileEfficiency() const;
   void limitKnownTilesToModel();
+  CollectiveWarnings& getWarnings();
+  const CollectiveConfig& getConfig() const;
 
   bool usesEquipment(const Creature*) const;
 
   virtual ~Collective();
-
-  void setWarning(Warning, bool state = true);
-  bool isWarning(Warning) const;
 
   int numResource(ResourceId) const;
   int numResourcePlusDebt(ResourceId) const;
@@ -193,6 +191,7 @@ class Collective : public TaskCallback {
   const TaskMap& getTaskMap() const;
   void updateResourceProduction();
   bool isItemMarked(const Item*) const;
+  int getNumItems(ItemIndex, bool includeMinions = true) const;
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
@@ -235,7 +234,6 @@ class Collective : public TaskCallback {
   bool isItemNeeded(const Item*) const;
   void addProducesMessage(const Creature*, const vector<PItem>&);
   int getDebt(ResourceId id) const;
-  int getNumItems(ItemIndex, bool includeMinions = true) const;
 
   HeapAllocated<MinionEquipment> SERIAL(minionEquipment);
   EnumMap<ResourceId, int> SERIAL(credit);
@@ -264,7 +262,6 @@ class Collective : public TaskCallback {
   void setRandomTask(const Creature*);
 
   void handleSurprise(Position);
-  EnumSet<Warning> SERIAL(warnings);
   MoveInfo getDropItems(Creature*);
   MoveInfo getWorkerMove(Creature*);
   MoveInfo getTeamMemberMove(Creature*);
@@ -275,10 +272,7 @@ class Collective : public TaskCallback {
   void considerBuildingBeds();
   bool considerNonSpawnImmigrant(const ImmigrantInfo&, vector<PCreature>);
   void considerImmigration();
-  int tryBuildingBeds(SpawnType spawnType, int numBeds);
   void considerBirths();
-  void considerWeaponWarning();
-  void considerMoraleWarning();
   void decayMorale();
   vector<Creature*> SERIAL(creatures);
   Creature* SERIAL(leader) = nullptr;
@@ -325,4 +319,5 @@ class Collective : public TaskCallback {
   unique_ptr<Workshops> SERIAL(workshops);
   HeapAllocated<Zones> SERIAL(zones);
   HeapAllocated<TileEfficiency> SERIAL(tileEfficiency);
+  HeapAllocated<CollectiveWarnings> SERIAL(warnings);
 };

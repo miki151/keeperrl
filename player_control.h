@@ -223,8 +223,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<PlayerMessage> SERIAL(messageHistory);
   vector<CollectiveAttack> SERIAL(newAttacks);
   vector<CollectiveAttack> SERIAL(ransomAttacks);
-  EnumMap<CollectiveWarning, double> SERIAL(warningTimes);
-  double SERIAL(lastWarningTime) = -10000;
   vector<string> SERIAL(hints);
   optional<PlayerMessage> findMessage(PlayerMessage::Id);
   void updateVisibleCreatures();

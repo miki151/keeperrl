@@ -48,6 +48,7 @@
 #include "zones.h"
 #include "experience_type.h"
 #include "furniture_usage.h"
+#include "collective_warning.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -63,14 +64,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Collective);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective);
-
-void Collective::setWarning(Warning w, bool state) {
-  warnings.set(w, state);
-}
-
-bool Collective::isWarning(Warning w) const {
-  return warnings.contains(w);
-}
 
 Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
     const CollectiveName& n) 
@@ -389,7 +382,7 @@ PTask Collective::getStandardTask(Creature* c) {
     if (!current->finishTime) // see comment in header
       currentTasks.getOrFail(c).finishTime = -1000;
     if (info.warning && !territory->isEmpty())
-      setWarning(*info.warning, !ret);
+      warnings->setWarning(*info.warning, !ret);
     if (!ret)
       currentTasks.erase(c);
     return ret;
@@ -757,22 +750,6 @@ void Collective::considerBirths() {
     }
 }
 
-void Collective::considerWeaponWarning() {
-  int numWeapons = getNumItems(ItemIndex::WEAPON);
-  PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
-  int numNeededWeapons = 0;
-  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
-    if (usesEquipment(c) && minionEquipment->needs(c, genWeapon.get(), true, true))
-      ++numNeededWeapons;
-  setWarning(Warning::NO_WEAPONS, numNeededWeapons > numWeapons);
-}
-
-void Collective::considerMoraleWarning() {
-  vector<Creature*> minions = getCreatures(MinionTrait::FIGHTER);
-  setWarning(Warning::LOW_MORALE,
-      filter(minions, [] (const Creature* c) { return c->getMorale() < -0.2; }).size() > minions.size() / 2);
-}
-
 void Collective::decayMorale() {
   for (Creature* c : getCreatures(MinionTrait::FIGHTER))
     c->addMorale(-c->getMorale() * 0.0008);
@@ -790,25 +767,8 @@ void Collective::tick() {
   zones->tick();
   considerBirths();
   decayMorale();
-  //considerBuildingBeds();
-  if (config->getWarnings() && Random.roll(5)) {
-    considerWeaponWarning();
-    considerMoraleWarning();
-    setWarning(Warning::MANA, numResource(ResourceId::MANA) < 100);
-    setWarning(Warning::DIGGING, getTerritory().isEmpty());
-/*    setWarning(Warning::MORE_LIGHTS,
-        constructions->getTorches().size() * 25 < getAllSquares(config->getRoomsNeedingLight()).size());*/
-    for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
-      DormInfo info = config->getDormInfo()[spawnType];
-      if (info.warning)
-        setWarning(*info.warning, constructions->getBuiltCount(info.bedType) < bySpawnType[spawnType].size());
-    }
-/*    for (auto minionTask : ENUM_ALL(MinionTask)) {
-      auto& elem = config->getTaskInfo(minionTask);
-      if (!getAllSquares(elem.squares).empty() && elem.warning)
-        setWarning(*elem.warning, false);
-    }*/
-  }
+  if (config->getWarnings() && Random.roll(5))
+    warnings->considerWarnings(this);
   if (config->getEnemyPositions() && Random.roll(5)) {
     vector<Position> enemyPos = getEnemyPositions();
     if (!enemyPos.empty())
@@ -1567,14 +1527,14 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
   if (!equipment.empty()) {
     const set<Position>& destination = elem.destinationFun(this);
     if (!destination.empty()) {
-      setWarning(elem.warning, false);
+      warnings->setWarning(elem.warning, false);
       if (elem.oneAtATime)
         equipment = {equipment[0]};
       taskMap->addTask(Task::bringItem(this, pos, equipment, destination), pos);
       for (Item* it : equipment)
         markItem(it);
     } else
-      setWarning(elem.warning, true);
+      warnings->setWarning(elem.warning, true);
   }
 }
 
@@ -1610,6 +1570,14 @@ void Collective::onCantPickItem(EntitySet<Item> items) {
 
 void Collective::limitKnownTilesToModel() {
   knownTiles->limitToModel(getLevel()->getModel());
+}
+
+CollectiveWarnings& Collective::getWarnings() {
+  return *warnings;
+}
+
+const CollectiveConfig& Collective::getConfig() const {
+  return *config;
 }
 
 bool Collective::addKnownTile(Position pos) {

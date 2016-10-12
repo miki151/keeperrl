@@ -30,18 +30,8 @@ AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool m
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(immigrantFrequency)
-    & SVAR(payoutTime)
-    & SVAR(payoutMultiplier)
-    & SVAR(maxPopulation)
-    & SVAR(populationIncreases)
-    & SVAR(immigrantInfo)
-    & SVAR(type)
-    & SVAR(recruitingMinPopulation)
-    & SVAR(leaderAsFighter)
-    & SVAR(spawnGhosts)
-    & SVAR(ghostProb)
-    & SVAR(guardianInfo);
+  serializeAll(ar, immigrantFrequency, payoutTime, payoutMultiplier, maxPopulation, populationIncreases, immigrantInfo);
+  serializeAll(ar, type, recruitingMinPopulation, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo);
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -49,27 +39,15 @@ SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveConfig);
 
 template <class Archive>
 void ImmigrantInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(id)
-    & SVAR(frequency)
-    & SVAR(attractions)
-    & SVAR(traits)
-    & SVAR(spawnAtDorm)
-    & SVAR(salary)
-    & SVAR(techId)
-    & SVAR(limit)
-    & SVAR(groupSize)
-    & SVAR(autoTeam)
-    & SVAR(ignoreSpawnType);
+  serializeAll(ar, id, frequency, attractions, traits, spawnAtDorm, salary, techId, limit, groupSize, autoTeam);
+  serializeAll(ar, ignoreSpawnType);
 }
 
 SERIALIZABLE(ImmigrantInfo);
 
 template <class Archive>
 void AttractionInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(attraction)
-    & SVAR(amountClaimed)
-    & SVAR(minAmount)
-    & SVAR(mandatory);
+  serializeAll(ar, attraction, amountClaimed, minAmount, mandatory);
 }
 
 SERIALIZABLE(AttractionInfo);
@@ -77,19 +55,14 @@ SERIALIZATION_CONSTRUCTOR_IMPL(AttractionInfo);
 
 template <class Archive>
 void PopulationIncrease::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(type)
-    & SVAR(increasePerSquare)
-    & SVAR(maxIncrease);
+  serializeAll(ar, type, increasePerSquare, maxIncrease);
 }
 
 SERIALIZABLE(PopulationIncrease);
 
 template <class Archive>
 void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(creature)
-    & SVAR(probability)
-    & SVAR(minEnemies)
-    & SVAR(minVictims);
+  serializeAll(ar, creature, probability, minEnemies, minVictims);
 }
 
 SERIALIZABLE(GuardianInfo);
