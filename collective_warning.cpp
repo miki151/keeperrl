@@ -22,6 +22,8 @@ void CollectiveWarnings::setWarning(Warning w, bool state) {
 void CollectiveWarnings::considerWarnings(Collective* col) {
   setWarning(Warning::MANA, col->numResource(CollectiveResourceId::MANA) < 100);
   setWarning(Warning::DIGGING, col->getTerritory().isEmpty());
+  setWarning(Warning::LIBRARY, !col->getTerritory().isEmpty() &&
+      col->getConstructions().getTotalCount(FurnitureType::BOOK_SHELF) == 0);
   for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
     DormInfo info = col->getConfig().getDormInfo()[spawnType];
     if (info.warning)
