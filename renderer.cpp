@@ -101,7 +101,7 @@ static void checkOpenglError() {
 Texture::Texture(const string& fileName){
   SDL::SDL_Surface* image= SDL::IMG_Load(fileName.c_str());
   CHECK(image) << SDL::IMG_GetError();
-  CHECK(loadFrom(image));
+  CHECK(loadFrom(image)) << "Couldn't load image: " << fileName;
   SDL::SDL_FreeSurface(image);
   path = fileName;
 }
