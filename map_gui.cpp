@@ -661,49 +661,61 @@ optional<ViewId> MapGui::getHighlightedFurniture() {
   return none;
 }
 
-bool MapGui::isRenderedLowHighlight(const ViewIndex& index, HighlightType type) {
+bool MapGui::isRenderedHighlight(const ViewIndex& index, HighlightType type) {
+  if (index.getHighlight(type) > 0)
+    switch (type) {
+      case HighlightType::CLICKABLE_FURNITURE:
+        return
+            index.hasObject(ViewLayer::FLOOR) &&
+            getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id() &&
+            !draggedCreature &&
+            !buttonViewId;
+      case HighlightType::CREATURE_DROP:
+        return !!draggedCreature;
+      default: return true;
+    }
+  else
+    return false;
+}
+
+bool MapGui::isRenderedHighlightLow(const ViewIndex& index, HighlightType type) {
   switch (type) {
+    case HighlightType::PRIORITY_TASK:
+      return index.getHighlight(HighlightType::DIG) == 0;
     case HighlightType::CLICKABLE_FURNITURE:
-      return
-          index.hasObject(ViewLayer::FLOOR) &&
-          getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id() &&
-          !draggedCreature &&
-          !buttonViewId;
     case HighlightType::CREATURE_DROP:
-      return !!draggedCreature;
     case HighlightType::FORBIDDEN_ZONE:
     case HighlightType::FETCH_ITEMS:
     case HighlightType::PERMANENT_FETCH_ITEMS:
     case HighlightType::STORAGE_EQUIPMENT:
     case HighlightType::STORAGE_RESOURCES:
-    case HighlightType::PRIORITY_TASK:
     case HighlightType::CLICKED_FURNITURE:
       return true;
     default: return false;
   }
 }
 
-void MapGui::renderLowHighlights(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
-  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
-  for (Vec2 wpos : allTiles)
-    if (auto& index = objects[wpos])
-      if (index->hasAnyHighlight()) {
-        Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
-        for (HighlightType highlight : ENUM_ALL(HighlightType))
-          if (index->getHighlight(highlight) > 0 &&
-              isRenderedLowHighlight(*index, highlight)) {
-            if (spriteMode)
-              renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size,
-                                getHighlightColor(*index, highlight));
-            else
-              renderer.addQuad(Rectangle(pos, pos + size), getHighlightColor(*index, highlight));
-          }
-      }
-  renderer.drawQuads();
+void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight) {
+  auto color = getHighlightColor(index, highlight);
+  switch (highlight) {
+    case HighlightType::MEMORY:
+    case HighlightType::POISON_GAS:
+    case HighlightType::NIGHT:
+      renderer.addQuad(Rectangle(pos, pos + size), color);
+      break;
+    case HighlightType::CUT_TREE:
+      if (spriteMode && index.hasObject(ViewLayer::FLOOR))
+        break;
+    default:
+      if (spriteMode)
+        renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size, color);
+      else
+        renderer.addQuad(Rectangle(pos, pos + size), color);
+      break;
+  }
 }
 
-void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
+void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds currentTimeReal, bool lowHighlights) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   for (Vec2 wpos : allTiles)
@@ -711,30 +723,8 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
       if (index->hasAnyHighlight()) {
         Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
         for (HighlightType highlight : ENUM_ALL(HighlightType))
-          if (index->getHighlight(highlight) > 0)
-            switch (highlight) {
-              case HighlightType::CUT_TREE:
-                if (spriteMode && index->hasObject(ViewLayer::FLOOR))
-                  break;
-              case HighlightType::RECT_SELECTION:
-              case HighlightType::RECT_DESELECTION:
-              case HighlightType::DIG:
-              case HighlightType::FOG:
-              case HighlightType::UNAVAILABLE:
-                if (spriteMode)
-                  renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size,
-                      getHighlightColor(*index, highlight));
-                else
-                  renderer.addQuad(Rectangle(pos, pos + size), getHighlightColor(*index, highlight));
-                break;
-              case HighlightType::MEMORY:
-              case HighlightType::POISON_GAS:
-              case HighlightType::NIGHT:
-                renderer.addQuad(Rectangle(pos, pos + size), getHighlightColor(*index, highlight));
-                break;
-              default:
-                break;
-            }
+          if (isRenderedHighlight(*index, highlight)  && isRenderedHighlightLow(*index, highlight) == lowHighlights)
+            renderHighlight(renderer, pos, size, *index, highlight);
       }
   renderer.drawQuads();
 }
@@ -833,7 +823,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
       break;
     if (layer == ViewLayer::FLOOR_BACKGROUND) {
       renderExtraBorders(renderer, currentTimeReal);
-      renderLowHighlights(renderer, size, currentTimeReal);
+      renderHighlights(renderer, size, currentTimeReal, true);
     }
   }
   renderer.drawQuads();
@@ -884,7 +874,7 @@ void MapGui::render(Renderer& renderer) {
   lastRenderTime = currentTimeReal;
   HighlightedInfo highlightedInfo = getHighlightedInfo(renderer, size, currentTimeReal);
   renderMapObjects(renderer, size, highlightedInfo, currentTimeReal);
-  renderHighlights(renderer, size, currentTimeReal);
+  renderHighlights(renderer, size, currentTimeReal, false);
   renderAnimations(renderer, currentTimeReal);
   if (highlightedInfo.tilePos)
     considerRedrawingSquareHighlight(renderer, currentTimeReal, *highlightedInfo.tilePos, size);
