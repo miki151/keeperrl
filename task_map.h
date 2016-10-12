@@ -13,8 +13,7 @@ class Creature;
 
 class TaskMap {
   public:
-  Task* addTask(PTask, const Creature*);
-  Task* addPriorityTask(PTask, const Creature*);
+  Task* addTaskFor(PTask, const Creature*);
   Task* addTask(PTask, Position, MinionTrait required = MinionTrait::WORKER);
   Task* getTask(const Creature*);
   bool hasTask(const Creature*) const;
@@ -24,7 +23,6 @@ class TaskMap {
   optional<Position> getPosition(Task*) const;
   void takeTask(const Creature*, Task*);
   void freeTask(Task*);
-  void freeFromTask(Creature*);
 
   Task* addTaskCost(PTask, Position, CostInfo);
   void markSquare(Position, HighlightType, PTask);
@@ -32,9 +30,9 @@ class TaskMap {
   HighlightType getHighlightType(Position) const;
   CostInfo removeTask(Task*);
   CostInfo removeTask(UniqueEntity<Task>::Id);
+  CostInfo freeFromTask(const Creature*);
   bool isPriorityTask(const Task*) const;
   bool hasPriorityTasks(Position) const;
-  void freeTaskDelay(Task*, double delayTime);
   void setPriorityTasks(Position);
   Task* getClosestTask(Creature* c, MinionTrait);
   const map<Task*, CostInfo>& getCompletionCosts() const;

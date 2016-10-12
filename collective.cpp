@@ -177,12 +177,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 void Collective::removeCreature(Creature* c) {
   removeElement(creatures, c);
   minionAttraction.erase(c);
-  if (Task* task = taskMap->getTask(c)) {
-    if (!task->canTransfer())
-      returnResource(taskMap->removeTask(task));
-    else
-      taskMap->freeTaskDelay(task, getLocalTime() + 50);
-  }
+  returnResource(taskMap->freeFromTask(c));
   if (auto spawnType = c->getAttributes().getSpawnType())
     removeElement(bySpawnType[*spawnType], c);
   for (auto team : teams->getContaining(c))
@@ -404,7 +399,7 @@ vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) const {
 
 void Collective::orderConsumption(Creature* consumer, Creature* who) {
   CHECK(contains(getConsumptionTargets(consumer), who));
-  taskMap->addTask(Task::consume(this, who), consumer);
+  setTask(consumer, Task::consume(this, who));
 }
 
 void Collective::ownItem(const Creature* c, const Item* it) {
@@ -466,17 +461,9 @@ MoveInfo Collective::getTeamMemberMove(Creature* c) {
   return NoMove;
 }
 
-void Collective::setTask(const Creature *c, PTask task, bool priority) {
-  if (Task* task = taskMap->getTask(c)) {
-    if (!task->canTransfer())
-      returnResource(taskMap->removeTask(task));
-    else
-      taskMap->freeTaskDelay(task, getLocalTime() + 50);
-  }
-  if (priority)
-    taskMap->addPriorityTask(std::move(task), c);
-  else
-    taskMap->addTask(std::move(task), c);
+void Collective::setTask(const Creature *c, PTask task) {
+  returnResource(taskMap->freeFromTask(c));
+  taskMap->addTaskFor(std::move(task), c);
 }
 
 bool Collective::hasTask(const Creature* c) const {
@@ -518,17 +505,17 @@ MoveInfo Collective::getMove(Creature* c) {
   if (usesEquipment(c))
     if (PTask t = getEquipmentTask(c))
       if (t->getMove(c))
-        return taskMap->addTask(std::move(t), c)->getMove(c);
+        return taskMap->addTaskFor(std::move(t), c)->getMove(c);
   if (PTask t = getStandardTask(c))
     if (t->getMove(c))
-      return taskMap->addTask(std::move(t), c)->getMove(c);
+      return taskMap->addTaskFor(std::move(t), c)->getMove(c);
   if (!hasTrait(c, MinionTrait::NO_RETURNING) && !territory->isEmpty() &&
       !territory->contains(c->getPosition()) && teams->getActive(c).empty()) {
     if (c->getPosition().getModel() == getLevel()->getModel())
       return c->moveTowards(Random.choose(territory->getAll()));
     else
       if (PTask t = Task::transferTo(getLevel()->getModel()))
-        return taskMap->addTask(std::move(t), c)->getMove(c);
+        return taskMap->addTaskFor(std::move(t), c)->getMove(c);
   }
   return NoMove;
 }

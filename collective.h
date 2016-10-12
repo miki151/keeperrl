@@ -65,7 +65,7 @@ class Collective : public TaskCallback {
   Game* getGame() const;
   const Level* getLevel() const;
   void addNewCreatureMessage(const vector<Creature*>&);
-  void setTask(const Creature*, PTask, bool priority = false);
+  void setTask(const Creature*, PTask);
   bool hasTask(const Creature*) const;
   void cancelTask(const Creature*);
   void banishCreature(Creature*);

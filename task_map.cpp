@@ -2,6 +2,7 @@
 #include "task_map.h"
 #include "creature.h"
 #include "task.h"
+#include "creature_name.h"
 
 SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, creatureMap, marked, completionCost, priorityTasks, delayedTasks, highlight, requiredTraits);
 
@@ -34,11 +35,6 @@ Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
 
 vector<const Task*> TaskMap::getAllTasks() const {
   return transform2<const Task*>(tasks, [] (const PTask& t) { return t.get(); });
-}
-
-void TaskMap::freeTaskDelay(Task* t, double d) {
-  freeTask(t);
-  delayedTasks.set(t, d);
 }
 
 void TaskMap::setPriorityTasks(Position pos) {
@@ -136,16 +132,11 @@ const vector<Task*>& TaskMap::getTasks(Position pos) const {
   return reversePositions.get(pos);
 }
 
-Task* TaskMap::addTask(PTask task, const Creature* c) {
+Task* TaskMap::addTaskFor(PTask task, const Creature* c) {
+  CHECK(!hasTask(c)) << c->getName().bare() << " already has a task";
   creatureMap.insert(c, task.get());
   tasks.push_back(std::move(task));
   return tasks.back().get();
-}
-
-Task* TaskMap::addPriorityTask(PTask task, const Creature* c) {
-  Task* t = addTask(std::move(task), c);
-  priorityTasks.insert(t);
-  return t;
 }
 
 Task* TaskMap::addTask(PTask task, Position position, MinionTrait required) {
@@ -180,9 +171,16 @@ void TaskMap::freeTask(Task* task) {
     creatureMap.erase(task);
 }
 
-void TaskMap::freeFromTask(Creature* c) {
-  if (Task* t = getTask(c))
-    freeTask(t);
+CostInfo TaskMap::freeFromTask(const Creature* c) {
+  if (Task* task = getTask(c)) {
+    if (!task->canTransfer())
+      return removeTask(task);
+    else {
+      freeTask(task);
+      delayedTasks.set(task, c->getLocalTime() + 50);
+    }
+  }
+  return CostInfo::noCost();
 }
 
 const map<Task*, CostInfo>& TaskMap::getCompletionCosts() const {
