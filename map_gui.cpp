@@ -177,9 +177,10 @@ vector<Vec2>& getConnectionDirs(ViewId id) {
 }
 
 void MapGui::softScroll(double x, double y) {
-  if (softCenter)
-    center = *softCenter;
-  softCenter = {center.x + x, center.y + y};
+  if (!softCenter)
+    softCenter = center;
+  softCenter->x = max(0.0, min<double>(softCenter->x + x, levelBounds.right()));
+  softCenter->y = max(0.0, min<double>(softCenter->y + y, levelBounds.bottom()));
   lastRenderTime = clock->getRealMillis();
 }
 
@@ -229,10 +230,6 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
       softScroll(-scrollDist, -scrollDist);
       break;
     default: break;
-  }
-  if (softCenter) {
-    softCenter->x = max(0.0, min<double>(softCenter->x, levelBounds.right()));
-    softCenter->y = max(0.0, min<double>(softCenter->y, levelBounds.bottom()));
   }
   return false;
 }
@@ -858,7 +855,7 @@ void MapGui::render(Renderer& renderer) {
   Vec2 size = layout->getSquareSize();
   auto currentTimeReal = clock->getRealMillis();
   if (!!softCenter && !!lastRenderTime) {
-    double moveDist = (currentTimeReal - *lastRenderTime).count() / 20;
+    double moveDist = (double)(currentTimeReal - *lastRenderTime).count() / 20;
     double offsetx = softCenter->x - center.x;
     double offsety = softCenter->y - center.y;
     double offset = sqrt(offsetx * offsetx + offsety * offsety);
@@ -870,8 +867,8 @@ void MapGui::render(Renderer& renderer) {
       center.x += offsetx * moveDist;
       center.y += offsety * moveDist;
     }
+    lastRenderTime = currentTimeReal;
   }
-  lastRenderTime = currentTimeReal;
   HighlightedInfo highlightedInfo = getHighlightedInfo(renderer, size, currentTimeReal);
   renderMapObjects(renderer, size, highlightedInfo, currentTimeReal);
   renderHighlights(renderer, size, currentTimeReal, false);

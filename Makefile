@@ -81,10 +81,10 @@ IPATH = -I. -I./extern
 CFLAGS += $(IPATH)
 
 ifdef OSX
-BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system -lboost_thread -lboost_chrono
+BOOST_LIBS = -lboost_serialization -lboost_filesystem -lboost_system -lboost_thread -lboost_chrono
 OPENGL_LIBS = -framework OpenGL
 else
-BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system
+BOOST_LIBS = -lboost_serialization -lboost_filesystem -lboost_system
 OPENGL_LIBS = -lGL
 endif
 

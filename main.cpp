@@ -20,7 +20,6 @@
 
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
-#include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
 #include <exception>
@@ -46,6 +45,7 @@
 #include "sound_library.h"
 #include "audio_device.h"
 #include "sokoban_input.h"
+#include "extern/cxxopts.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -167,8 +167,8 @@ static void fail() {
   *((int*) 0x1234) = 0; // best way to fail
 }
 
-static int keeperMain(const variables_map&);
-static options_description getOptions();
+static int keeperMain(const cxxopts::Options&);
+static cxxopts::Options getOptions();
 
 #ifdef VSTUDIO
 
@@ -239,29 +239,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 }
 #endif
 
-static options_description getOptions() {
-  options_description flags("Flags");
-  flags.add_options()
+
+static cxxopts::Options getOptions() {
+  cxxopts::Options options("KeeperRL", "KeeperRL command line");
+  options.add_options()
     ("help", "Print help")
     ("steam", "Run with Steam")
     ("no_minidump", "Don't write minidumps when crashed.")
     ("single_thread", "Use a single thread for rendering and game logic")
-    ("user_dir", value<string>(), "Directory for options and save files")
-    ("data_dir", value<string>(), "Directory containing the game data")
-    ("upload_url", value<string>(), "URL for uploading maps")
-    ("override_settings", value<string>(), "Override settings")
+    ("user_dir", "Directory for options and save files", cxxopts::value<string>())
+    ("data_dir", "Directory containing the game data", cxxopts::value<string>())
+    ("upload_url", "URL for uploading maps", cxxopts::value<string>())
+    ("override_settings", "Override settings", cxxopts::value<string>())
     ("run_tests", "Run all unit tests and exit")
-    ("worldgen_test", value<int>(), "Test how often world generation fails")
+    ("worldgen_test", "Test how often world generation fails", cxxopts::value<int>())
     ("force_keeper", "Skip main menu and force keeper mode")
     ("logging", "Log to log.out")
     ("free_mode", "Run in free ascii mode")
 #ifndef RELEASE
     ("quick_level", "")
 #endif
-    ("seed", value<int>(), "Use given seed")
-    ("record", value<string>(), "Record game to file")
-    ("replay", value<string>(), "Replay game from file");
-  return flags;
+    ("seed", "Use given seed", cxxopts::value<int>())
+    ("record", "Record game to file", cxxopts::value<string>())
+    ("replay", "Replay game from file", cxxopts::value<string>());
+  return options;
 }
 
 #undef main
@@ -272,9 +273,9 @@ static options_description getOptions() {
 int main(int argc, char* argv[]) {
   StackPrinter::initialize(argv[0], time(0));
   std::set_terminate(fail);
-  variables_map vars;
-  store(parse_command_line(argc, argv, getOptions()), vars);
-  keeperMain(vars);
+  auto options = getOptions();
+  options.parse(argc, argv);
+  keeperMain(options);
 }
 #endif
 
@@ -292,9 +293,9 @@ static long long getInstallId(const string& path, RandomGen& random) {
 
 const static string serverVersion = "19";
 
-static int keeperMain(const variables_map& vars) {
+static int keeperMain(const cxxopts::Options& vars) {
   if (vars.count("help")) {
-    std::cout << getOptions() << endl;
+    std::cout << vars.help() << endl;
     return 0;
   }
   if (vars.count("run_tests")) {
