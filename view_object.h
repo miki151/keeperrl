@@ -64,9 +64,6 @@ class ViewObject {
   ViewId id() const;
   void setId(ViewId);
 
-  void setPosition(Vec2);
-  int getPositionHash() const;
-
   void setAdjectives(const vector<string>&);
   void setDescription(const string&);
 
@@ -95,7 +92,6 @@ class ViewObject {
   ViewLayer SERIAL(viewLayer);
   optional<string> SERIAL(description);
   optional<Dir> SERIAL(attachmentDir);
-  Vec2 SERIAL(position) = Vec2(-1, -1);
   optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
   vector<string> SERIAL(adjectives);
   optional<bool> indoors;

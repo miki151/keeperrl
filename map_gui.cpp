@@ -492,7 +492,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     move += movement;
     if (mirrorSprite(object.id()))
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
-          object.getPositionHash() % 2, object.getPositionHash() % 4 > 1);
+          tilePos.getHash() % 2, tilePos.getHash() % 4 > 1);
     else
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
     if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
@@ -883,12 +883,18 @@ void MapGui::render(Renderer& renderer) {
   } else
   if (!hint.empty())
     drawHint(renderer, colors[ColorId::WHITE], hint);
-  else
-  if (highlightedInfo.object) {
+  else {
+    vector<string> legend;
     Color col = colors[ColorId::WHITE];
-    if (highlightedInfo.isEnemy)
-      col = colors[ColorId::RED];
-    drawHint(renderer, col, highlightedInfo.object->getLegend());
+    if (highlightedInfo.object) {
+      if (highlightedInfo.isEnemy)
+        col = colors[ColorId::RED];
+      legend = highlightedInfo.object->getLegend();
+    }
+    if (auto pos = highlightedInfo.tilePos)
+      legend.push_back(toString(*pos));
+    if (!legend.empty())
+      drawHint(renderer, col, legend);
   }
   if (spriteMode && buttonViewId && renderer.getMousePos().inRectangle(getBounds()))
     renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), *buttonViewId, spriteMode, size);

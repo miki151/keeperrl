@@ -18,20 +18,7 @@
 #include "view_object.h"
 #include "view_id.h"
 
-template <class Archive> 
-void ViewObject::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(resource_id)
-    & SVAR(viewLayer)
-    & SVAR(description)
-    & SVAR(modifiers)
-    & SVAR(attributes)
-    & SVAR(attachmentDir)
-    & SVAR(position)
-    & SVAR(creatureId)
-    & SVAR(adjectives);
-}
-
-SERIALIZABLE(ViewObject);
+SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, adjectives)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
@@ -163,7 +150,6 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::ALTAR: return "Shrine";
     case ViewId::UP_STAIRCASE:
     case ViewId::DOWN_STAIRCASE: return "Stairs";
-    case ViewId::FLOOR: return "Floor";
     case ViewId::BRIDGE: return "Bridge";
     case ViewId::GRASS: return "Grass";
     case ViewId::CROPS: return "Wheat";
@@ -222,6 +208,14 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::DOOR: return "Door (click to lock)";
     case ViewId::LOCKED_DOOR: return "Door (click to unlock)";
     case ViewId::BARRICADE: return "Barricade";
+    case ViewId::WOOD_FLOOR1:
+    case ViewId::WOOD_FLOOR2:
+    case ViewId::STONE_FLOOR1:
+    case ViewId::STONE_FLOOR2:
+    case ViewId::CARPET_FLOOR1:
+    case ViewId::CARPET_FLOOR2:
+    case ViewId::KEEPER_FLOOR:
+    case ViewId::FLOOR: return "Floor";
     case ViewId::BORDER_GUARD: return "Wall";
     default: return "";
   }
@@ -267,8 +261,6 @@ vector<string> ViewObject::getLegend() const {
     ret.push_back("Planned");
   if (indoors)
     ret.push_back(*indoors ? "Indoors" : "Outdoors");
-  if (position.x > -1)
-    ret.push_back(toString(position.x) + ", " + toString(position.y));
   if (!!attributes[Attribute::MORALE])
     ret.push_back("Morale " + getAttributeString(Attribute::MORALE));
   append(ret, adjectives);
@@ -455,13 +447,4 @@ const ViewObject& ViewObject::unknownMonster() {
 const ViewObject& ViewObject::empty() {
   static ViewObject ret(ViewId::BORDER_GUARD, ViewLayer::FLOOR);
   return ret;
-}
-
-void ViewObject::setPosition(Vec2 pos) {
-  position = pos;
-}
-
-int ViewObject::getPositionHash() const {
-  int a = position.x * position.y;
-  return (a * (a + 3)) % 1487;
 }

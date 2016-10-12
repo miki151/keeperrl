@@ -181,12 +181,7 @@ class Vec2 {
   HASH_ALL(x, y);
 };
 
-template <>
-inline string toString(const Vec2& v) {
-  stringstream ss;
-  ss << "(" << v.x << ", " << v.y << ")";
-  return ss.str();
-}
+extern string toString(const Vec2& v);
 
 class Range {
   public:
@@ -904,6 +899,12 @@ void append(vector<T>& v, const U& u) {
 template <typename T>
 vector<T> concat(vector<T> v, const vector<T>& w) {
   append(v, w);
+  return v;
+}
+
+template <typename T>
+vector<T> concat(vector<T> v, const T& w) {
+  v.push_back(w);
   return v;
 }
 

@@ -160,6 +160,12 @@ bool contains(const string& s, const string& p) {
   return s.find(p) != string::npos;
 }
 
+string toString(const Vec2& v) {
+  stringstream ss;
+  ss << "(" << v.x << ", " << v.y << ")";
+  return ss.str();
+}
+
 Vec2::Vec2(int _x, int _y) : x(_x), y(_y) {
 }
 

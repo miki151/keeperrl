@@ -517,17 +517,7 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool 
     tex = &altTiles[coord.texNum];
   }
   Vec2 coordPos = coord.pos.mult(sz);
-  if (vFlip) {
-    sz.y *= -1;
-    tileSize.y *= -1;
-    coordPos.y -= sz.y;
-  }
-  if (vFlip) {
-    sz.x *= -1;
-    tileSize.x *= -1;
-    coordPos.x -= sz.x;
-  }
-  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color);
+  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, vFlip, hFlip);
 }
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
