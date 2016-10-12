@@ -1030,19 +1030,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
     minions.back().readFrom(c);
     // only fill equipment for the chosen minion to avoid lag
     if (c->getUniqueId() == chosenId) {
-      optional<FurnitureType> requiredDummy;
-      for (auto dummyType : MinionTasks::getAllFurniture(MinionTask::TRAIN)) {
-        bool canTrain = *CollectiveConfig::getTrainingMaxLevelIncrease(dummyType) >
-            minions.back().levelInfo.increases[ExperienceType::TRAINING];
-        bool hasDummy = getCollective()->getConstructions().getBuiltCount(dummyType) > 0;
-        if (canTrain && hasDummy) {
-          requiredDummy = none;
-          break;
-        }
-        if (!requiredDummy && canTrain && !hasDummy)
-          requiredDummy = dummyType;
-      }
-      if (requiredDummy)
+      if (auto requiredDummy = getCollective()->getMissingTrainingDummy(c))
         minions.back().levelInfo.warning = "Requires " + Furniture::getName(*requiredDummy) + ".";
       for (MinionTask t : ENUM_ALL(MinionTask))
         if (c->getAttributes().getMinionTasks().getValue(t, true) > 0) {

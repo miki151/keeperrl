@@ -85,6 +85,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static void registerTypes(Archive& ar, int version);
 
   vector<Creature*> getTeam(const Creature*);
+  optional<FurnitureType> getMissingTrainingDummy(const Creature*);
 
   protected:
   // from CreatureView

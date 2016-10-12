@@ -11,6 +11,7 @@
 #include "collective_config.h"
 #include "territory.h"
 #include "item.h"
+#include "minion_task.h"
 
 SERIALIZE_DEF(CollectiveWarnings, warnings, warningTimes, lastWarningTime)
 
@@ -30,6 +31,7 @@ void CollectiveWarnings::considerWarnings(Collective* col) {
   considerMoraleWarning(col);
   considerWeaponWarning(col);
   considerTorchesWarning(col);
+  considerTrainingRoomWarning(col);
   /*    for (auto minionTask : ENUM_ALL(MinionTask)) {
         auto& elem = config->getTaskInfo(minionTask);
         if (!getAllSquares(elem.squares).empty() && elem.warning)
@@ -66,7 +68,25 @@ void CollectiveWarnings::considerTorchesWarning(Collective* col) {
         numLit -= unlitPen;
       else
         numLit += 1;
-   setWarning(Warning::MORE_LIGHTS, numLit < 0);
+  setWarning(Warning::MORE_LIGHTS, numLit < 0);
+}
+
+void CollectiveWarnings::considerTrainingRoomWarning(Collective* col) {
+  optional<FurnitureType> firstDummy;
+  for (auto dummyType : MinionTasks::getAllFurniture(MinionTask::TRAIN))
+    if (!firstDummy ||
+        *col->getConfig().getTrainingMaxLevelIncrease(dummyType) <
+            *col->getConfig().getTrainingMaxLevelIncrease(*firstDummy))
+      firstDummy = dummyType;
+  setWarning(Warning::TRAINING, false);
+  setWarning(Warning::TRAINING_UPGRADE, false);
+  for (auto creature : col->getCreatures())
+    if (auto type = col->getMissingTrainingDummy(creature)) {
+      if (type == firstDummy)
+        setWarning(Warning::TRAINING, true);
+      else
+        setWarning(Warning::TRAINING_UPGRADE, true);
+    }
 }
 
 const char* CollectiveWarnings::getText(Warning w) {
@@ -77,6 +97,7 @@ const char* CollectiveWarnings::getText(Warning w) {
     case Warning::LIBRARY: return "Build a library to start research.";
     case Warning::BEDS: return "You need to build beds for your minions.";
     case Warning::TRAINING: return "Build a training room for your minions.";
+    case Warning::TRAINING_UPGRADE: return "Training room upgrade needed.";
     case Warning::NO_HATCHERY: return "You need to build a pigsty.";
     case Warning::WORKSHOP: return "Build a workshop to produce equipment and traps.";
     case Warning::NO_WEAPONS: return "You need weapons for your minions.";

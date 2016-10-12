@@ -9,6 +9,7 @@ RICH_ENUM(CollectiveWarning,
     LIBRARY,
     BEDS,
     TRAINING,
+    TRAINING_UPGRADE,
     NO_HATCHERY,
     WORKSHOP,
     NO_WEAPONS,
@@ -42,6 +43,7 @@ class CollectiveWarnings {
   void considerWeaponWarning(Collective*);
   void considerMoraleWarning(Collective*);
   void considerTorchesWarning(Collective*);
+  void considerTrainingRoomWarning(Collective*);
   const char*getText(Warning w);
   EnumSet<Warning> SERIAL(warnings);
   EnumMap<CollectiveWarning, optional<double>> SERIAL(warningTimes);

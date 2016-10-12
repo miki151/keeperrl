@@ -1667,6 +1667,22 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
   }
 }
 
+optional<FurnitureType> Collective::getMissingTrainingDummy(const Creature* c) const {
+  if (c->getAttributes().getMinionTasks().getValue(MinionTask::TRAIN) == 0)
+    return none;
+  optional<FurnitureType> requiredDummy;
+  for (auto dummyType : MinionTasks::getAllFurniture(MinionTask::TRAIN)) {
+    bool canTrain = *config->getTrainingMaxLevelIncrease(dummyType) >
+        c->getAttributes().getExpIncrease(ExperienceType::TRAINING);
+    bool hasDummy = getConstructions().getBuiltCount(dummyType) > 0;
+    if (canTrain && hasDummy)
+      return none;
+    if (!requiredDummy && canTrain && !hasDummy)
+      requiredDummy = dummyType;
+  }
+  return requiredDummy;
+}
+
 double Collective::getDangerLevel() const {
   double ret = 0;
   for (const Creature* c : getCreatures(MinionTrait::FIGHTER))

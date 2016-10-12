@@ -170,6 +170,7 @@ class Collective : public TaskCallback {
 
   MinionEquipment& getMinionEquipment();
   const MinionEquipment& getMinionEquipment() const;
+  optional<FurnitureType> getMissingTrainingDummy(const Creature*) const;
 
   Workshops& getWorkshops();
   const Workshops& getWorkshops() const;
