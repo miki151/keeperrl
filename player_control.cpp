@@ -1858,7 +1858,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
             getTeams().remove(info.team, c);
             if (getTeams().exists(info.team)) {
               if (chosenCreature == info.creatureId)
-                setChosenCreature(getTeams().getLeader(info.team)->getUniqueId());
+                setChosenTeam(info.team, getTeams().getLeader(info.team)->getUniqueId());
             } else
               chosenCreature = none;
           }
