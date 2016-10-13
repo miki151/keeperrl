@@ -731,6 +731,10 @@ class DirtyTable {
     ++counter;
   }
 
+  void clear(Vec2 v) {
+    dirty[v] = counter - 1;
+  }
+
   private:
   Table<T> val;
   Table<int> dirty;

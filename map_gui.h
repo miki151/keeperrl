@@ -153,8 +153,9 @@ class MapGui : public GuiElem {
   class ViewIdMap {
     public:
     ViewIdMap(Rectangle bounds);
-    void add(Vec2 pos, ViewId id);
-    bool has(Vec2 pos, ViewId id);
+    void add(Vec2 pos, ViewId);
+    void remove(Vec2 pos);
+    bool has(Vec2 pos, ViewId);
     void clear();
 
     private:
@@ -178,6 +179,7 @@ class MapGui : public GuiElem {
   optional<ViewId> getHighlightedFurniture();
   Color getHighlightColor(const ViewIndex&, HighlightType);
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight);
+  void processScrolling(milliseconds);
 };
 
 #endif

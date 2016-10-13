@@ -54,6 +54,10 @@ void MapGui::ViewIdMap::add(Vec2 pos, ViewId id) {
     ids.setValue(pos, {id});
 }
 
+void MapGui::ViewIdMap::remove(Vec2 pos) {
+  ids.clear(pos);
+}
+
 bool MapGui::ViewIdMap::has(Vec2 pos, ViewId id) {
   return ids.getValue(pos).contains(id);
 }
@@ -185,7 +189,7 @@ void MapGui::softScroll(double x, double y) {
 }
 
 bool MapGui::onKeyPressed2(SDL_Keysym key) {
-  const double scrollDist = GuiFactory::isShift(key) ? 20 : 5;
+  const double scrollDist = 9 * 32 / layout->getSquareSize().x;
   if (!keyScrolling)
     return false;
   switch (key.sym) {
@@ -851,24 +855,28 @@ void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds c
     }
 }
 
-void MapGui::render(Renderer& renderer) {
-  Vec2 size = layout->getSquareSize();
-  auto currentTimeReal = clock->getRealMillis();
+void MapGui::processScrolling(milliseconds time) {
   if (!!softCenter && !!lastRenderTime) {
-    double moveDist = (double)(currentTimeReal - *lastRenderTime).count() / 20;
     double offsetx = softCenter->x - center.x;
     double offsety = softCenter->y - center.y;
     double offset = sqrt(offsetx * offsetx + offsety * offsety);
-    if (offset <= moveDist)
+    if (offset < 0.1)
       softCenter = none;
     else {
+      double timeDiff = (time - *lastRenderTime).count();
+      double moveDist = min(offset, max(offset, 4.0) * 10 * timeDiff / 1000);
       offsetx /= offset;
       offsety /= offset;
       center.x += offsetx * moveDist;
       center.y += offsety * moveDist;
     }
-    lastRenderTime = currentTimeReal;
+    lastRenderTime = time;
   }
+}
+
+void MapGui::render(Renderer& renderer) {
+  Vec2 size = layout->getSquareSize();
+  auto currentTimeReal = clock->getRealMillis();
   HighlightedInfo highlightedInfo = getHighlightedInfo(renderer, size, currentTimeReal);
   renderMapObjects(renderer, size, highlightedInfo, currentTimeReal);
   renderHighlights(renderer, size, currentTimeReal, false);
@@ -895,6 +903,7 @@ void MapGui::render(Renderer& renderer) {
   }
   if (spriteMode && buttonViewId && renderer.getMousePos().inRectangle(getBounds()))
     renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), *buttonViewId, spriteMode, size);
+  processScrolling(currentTimeReal);
 }
 
 void MapGui::setHint(const vector<string>& h) {
@@ -910,11 +919,31 @@ void MapGui::updateEnemyPositions(const vector<Vec2>& positions) {
 void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime) {
   Level* level = view->getLevel();
   objects[pos].emplace();
-  view->getViewIndex(pos, *objects[pos]);
+  auto& index = *objects[pos];
+  view->getViewIndex(pos, index);
   level->setNeedsRenderUpdate(pos, false);
-  if (objects[pos]->hasObject(ViewLayer::FLOOR) || objects[pos]->hasObject(ViewLayer::FLOOR_BACKGROUND))
-    objects[pos]->setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
+  if (index.hasObject(ViewLayer::FLOOR) || index.hasObject(ViewLayer::FLOOR_BACKGROUND))
+    index.setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
   lastSquareUpdate[pos] = currentTime;
+  connectionMap.remove(pos);
+  shadowed.erase(pos + Vec2(0, 1));
+  if (index.hasObject(ViewLayer::FLOOR)) {
+    auto& object = index.getObject(ViewLayer::FLOOR);
+    auto& tile = Tile::getTile(object.id());
+    if (tile.wallShadow) {
+      shadowed.erase(pos);
+      shadowed.insert(pos + Vec2(0, 1));
+    }
+    if (auto id = getConnectionId(object.id()))
+      connectionMap.add(pos, *id);
+  }
+  if (index.hasObject(ViewLayer::FLOOR_BACKGROUND)) {
+    if (auto id = getConnectionId(index.getObject(ViewLayer::FLOOR_BACKGROUND).id()))
+      connectionMap.add(pos, *id);
+  }
+  if (auto viewId = index.getHiddenId())
+    if (auto id = getConnectionId(*viewId))
+      connectionMap.add(pos, *id);
 }
 
 void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui, bool moral) {
@@ -962,27 +991,5 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
     } else
       screenMovement = none;
   }
-  connectionMap.clear();
-  shadowed.clear();
-  for (Vec2 wpos : layout->getAllTiles(getBounds(), objects.getBounds(), getScreenPos()))
-    if (auto& index = objects[wpos]) {
-      if (index->hasObject(ViewLayer::FLOOR)) {
-        auto& object = index->getObject(ViewLayer::FLOOR);
-        auto& tile = Tile::getTile(object.id());
-        if (tile.wallShadow) {
-          shadowed.erase(wpos);
-          shadowed.insert(wpos + Vec2(0, 1));
-        }
-        if (auto id = getConnectionId(object.id()))
-          connectionMap.add(wpos, *id);
-      }
-      if (index->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
-        if (auto id = getConnectionId(index->getObject(ViewLayer::FLOOR_BACKGROUND).id()))
-          connectionMap.add(wpos, *id);
-      }
-      if (auto viewId = index->getHiddenId())
-        if (auto id = getConnectionId(*viewId))
-          connectionMap.add(wpos, *id);
-    }
 }
 
