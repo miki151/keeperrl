@@ -482,12 +482,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawTile(pos + movement, coord, size, Color(255, 255, 255, 160));
       move.y = -4* size.y / renderer.getNominalSize().y;
     }
-    static auto shortShadow = renderer.getTileCoord("short_shadow");
-    if (auto background = tile.getBackgroundCoord()) {
+    if (auto background = tile.getBackgroundCoord())
       renderer.drawTile(pos, *background, size, color);
-      if (shadowed.count(tilePos))
-        renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
-    }
     if (auto dir = object.getAttachmentDir())
       move = getAttachmentOffset(*dir, size);
     move += movement;
@@ -509,6 +505,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
 /*    if (tile.floorBorders) {
       drawFloorBorders(renderer, borderDirs, x, y);
     }*/
+    static auto shortShadow = renderer.getTileCoord("short_shadow");
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
     if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
@@ -931,7 +928,6 @@ void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime
     auto& object = index.getObject(ViewLayer::FLOOR);
     auto& tile = Tile::getTile(object.id());
     if (tile.wallShadow) {
-      shadowed.erase(pos);
       shadowed.insert(pos + Vec2(0, 1));
     }
     if (auto id = getConnectionId(object.id()))
