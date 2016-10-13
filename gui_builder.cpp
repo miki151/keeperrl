@@ -1140,6 +1140,8 @@ void GuiBuilder::drawWorkshopsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
         auto line = gui.getListBuilder();
         line.addElem(gui.viewObject(elem.viewId), 35);
         line.addElem(gui.label(elem.name, colors[elem.unavailable ? ColorId::GRAY : ColorId::WHITE]), 10);
+        if (elem.number > 1)
+          line.addBackElem(gui.label(toString(elem.number) + "x"), 35);
         line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
         PGuiElem guiElem = line.buildHorizontalList();
         if (elem.unavailable) {

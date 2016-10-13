@@ -20,7 +20,6 @@ WorkshopItem WorkshopItem::fromType(ItemType type, double workNeeded, CostInfo c
 
 WorkshopItem& WorkshopItem::setBatchSize(int size) {
   batchSize = size;
-  name = ItemFactory::fromId(type)->getPluralName(size);
   return *this;
 }
 

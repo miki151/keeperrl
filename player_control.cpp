@@ -1093,14 +1093,14 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
   return CONSTRUCT(ItemInfo,
       c.name = option.name;
       c.viewId = option.viewId;
-      c.price = getCostObj(option.cost);
+      c.price = getCostObj(option.cost * option.number);
       if (option.techId && !getCollective()->hasTech(*option.techId)) {
         c.unavailable = true;
         c.unavailableReason = "Requires technology: " + Technology::get(*option.techId)->getName();
       }
       c.productionState = option.state.get_value_or(0);
       c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
-      c.number = option.number;
+      c.number = option.number * option.batchSize;
     );
 }
 
@@ -1731,18 +1731,21 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::WORKSHOP_ITEM_ACTION: {
         auto& info = input.get<WorkshopQueuedActionInfo>();
         if (chosenWorkshop) {
+          auto& workshop = getCollective()->getWorkshops().get(*chosenWorkshop);
           switch (info.action) {
             case ItemAction::REMOVE:
-              getCollective()->getWorkshops().get(*chosenWorkshop).unqueue(info.itemIndex);
+              workshop.unqueue(info.itemIndex);
               break;
-            case ItemAction::CHANGE_NUMBER:
-              if (auto number = getView()->getNumber("Change the number of items:", 0, 300, 1)) {
+            case ItemAction::CHANGE_NUMBER: {
+              int batchSize = workshop.getQueued().at(info.itemIndex).batchSize;
+              if (auto number = getView()->getNumber("Change the number of items:", 0, 50 * batchSize, batchSize)) {
                 if (*number > 0)
-                  getCollective()->getWorkshops().get(*chosenWorkshop).changeNumber(info.itemIndex, *number);
+                  workshop.changeNumber(info.itemIndex, *number / batchSize);
                 else
-                  getCollective()->getWorkshops().get(*chosenWorkshop).unqueue(info.itemIndex);
+                  workshop.unqueue(info.itemIndex);
               }
               break;
+            }
             default:
               break;
           }
