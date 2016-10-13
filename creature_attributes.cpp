@@ -135,7 +135,7 @@ double CreatureAttributes::getExpFromKill(const Creature* victim) const {
   double levelDiff = victim->getAttributes().getExpLevel() - getExpLevel();
   double maxIncrease = max(0.0, maxExpFromCombat - getExpIncrease(ExperienceType::COMBAT));
   return min(maxIncrease, max(minLevelGain, min(maxLevelGain,
-                                                (maxLevelGain - equalLevelGain) * levelDiff / maxLevelDiff + equalLevelGain)));
+      (maxLevelGain - equalLevelGain) * levelDiff / maxLevelDiff + equalLevelGain)));
 }
 
 optional<double> CreatureAttributes::getMaxExpIncrease(ExperienceType type) const {

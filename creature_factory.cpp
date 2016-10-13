@@ -89,9 +89,9 @@ class BoulderController : public Monster {
       if (furniture->canDestroy(getCreature()->getMovementType(), DestroyAction::Type::BOULDER) &&
           *furniture->getStrength(DestroyAction::Type::BOULDER) <
           health * getCreature()->getAttr(AttrType::STRENGTH)) {
-        getCreature()->destroyImpl(direction, DestroyAction::Type::BOULDER);
         health -= *furniture->getStrength(DestroyAction::Type::BOULDER) /
             (double) getCreature()->getAttr(AttrType::STRENGTH);
+        getCreature()->destroyImpl(direction, DestroyAction::Type::BOULDER);
       }
     if (auto action = getCreature()->move(direction))
       action.perform(getCreature());
