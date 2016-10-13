@@ -129,7 +129,7 @@ void CreatureAttributes::increaseBaseExpLevel(double increase) {
 static const double maxLevelGain = 1.0;
 static const double minLevelGain = 0.02;
 static const double equalLevelGain = 0.2;
-static const double maxLevelDiff = 10;
+static const double maxLevelDiff = 5;
 
 double CreatureAttributes::getExpFromKill(const Creature* victim) const {
   double levelDiff = victim->getAttributes().getExpLevel() - getExpLevel();
