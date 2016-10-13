@@ -17,13 +17,14 @@ void Animation::setBegin(milliseconds time) {
 void Animation::render(Renderer& r, Rectangle bounds, Vec2 origin, milliseconds time) {
   CHECK(begin);
   CHECK(time - *begin <= duration) << time << " " << *begin << " " << duration;
-  renderSpec(r, bounds, origin, (time - *begin) / duration);
+  renderSpec(r, bounds, origin, (double)(time - *begin).count() / duration.count());
 }
 
 class ThrownObject : public Animation {
   public:
   ThrownObject(Vec2 dir, ViewObject obj, bool sprite, Vec2 sz)
-    : Animation(milliseconds{200}), direction(dir), viewObject(obj), useSprite(sprite), squareSize(sz) {}
+    : Animation(milliseconds{dir.length8()}), direction(dir), viewObject(obj), useSprite(sprite),
+      squareSize(sz) {}
 
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
     int x = origin.x + state * direction.x;
