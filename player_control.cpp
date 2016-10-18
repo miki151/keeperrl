@@ -1959,7 +1959,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           selection = SELECT;
           PCreature imp = CreatureFactory::fromId(CreatureId::IMP, getTribeId(),
               MonsterAIFactory::collective(getCollective()));
-          for (Position v : concat(position.neighbors8(Random), {position}))
+          for (Position v : concat(position.neighbors8(Random), position))
             if (v.canEnter(imp.get()) && (canSee(v) || getCollective()->getTerritory().contains(v))) {
               getCollective()->takeResource({ResourceId::MANA, getImpCost()});
               getCollective()->addCreature(std::move(imp), v,

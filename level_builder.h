@@ -5,6 +5,7 @@
 #include "level.h"
 #include "square_array.h"
 #include "furniture_array.h"
+#include "view_object.h"
 
 class ProgressMeter;
 class Model;
