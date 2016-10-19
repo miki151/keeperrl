@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _DEBUG_H
-#define _DEBUG_H
+#pragma once
 
 #include <string>
 
@@ -126,4 +125,3 @@ const T& rangeCheck(const T& e, const V& lower, const V& upper, const string& ms
 #define CHECKEQ2(e, v, msg) valueCheck(e, v, string(__FILE__) + ":" + toString(__LINE__) + ": " + #e + " != " + #v + " " + msg)
 #define CHECK_RANGE(e, lower, upper, msg) rangeCheck(e, lower, upper, string(__FILE__) + ":" + toString(__LINE__) + ": " + msg)
 
-#endif

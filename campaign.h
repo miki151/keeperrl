@@ -1,5 +1,4 @@
-#ifndef _CAMPAIGN_H
-#define _CAMPAIGN_H
+#pragma once
 
 #include "util.h"
 #include "saved_game_info.h"
@@ -83,4 +82,3 @@ class Campaign {
 };
 
 
-#endif

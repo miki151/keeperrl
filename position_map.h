@@ -1,5 +1,4 @@
-#ifndef _POSITION_MAP_H
-#define _POSITION_MAP_H
+#pragma once
 
 #include "util.h"
 #include "position.h"
@@ -27,4 +26,3 @@ class PositionMap {
   T SERIAL(defaultVal);
 };
 
-#endif

@@ -65,9 +65,12 @@ class Magma : public Square {
   }
 
   virtual void dropItems(Position position, vector<PItem> items) override {
-    for (auto elem : Item::stackItems(extractRefs(items)))
-      position.globalMessage(elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
-            "burns", "burn") + " in the magma.");
+    if (position.getFurniture().empty()) { // check if there is a bridge
+      for (auto elem : Item::stackItems(extractRefs(items)))
+        position.globalMessage(elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
+              "burns", "burn") + " in the magma.");
+    } else
+      Square::dropItems(position, std::move(items));
   }
 
   SERIALIZE_SUBCLASS(Square);
@@ -96,9 +99,12 @@ class Water : public Square {
   }
 
   virtual void dropItems(Position position, vector<PItem> items) override {
-    for (auto elem : Item::stackItems(extractRefs(items)))
-      position.globalMessage(elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
-            "sinks", "sink") + " in the water.", "You hear a splash.");
+    if (position.getFurniture().empty()) { // check if there is a bridge
+      for (auto elem : Item::stackItems(extractRefs(items)))
+        position.globalMessage(elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
+              "sinks", "sink") + " in the water.", "You hear a splash.");
+    } else
+      Square::dropItems(position, std::move(items));
   }
 
   SERIALIZE_SUBCLASS(Square);

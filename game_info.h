@@ -1,5 +1,4 @@
-#ifndef _GAME_INFO_H
-#define _GAME_INFO_H
+#pragma once
 
 #include "unique_entity.h"
 #include "item_action.h"
@@ -290,4 +289,3 @@ class GameInfo {
   HASH_ALL(infoType, time, collectiveInfo, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel, modifiedSquares, totalSquares);
 };
 
-#endif

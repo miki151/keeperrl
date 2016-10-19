@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _CREATURE_FACTORY
-#define _CREATURE_FACTORY
+#pragma once
 
 #include "util.h"
 #include "tribe.h"
@@ -223,6 +222,3 @@ class CreatureFactory {
   EnumMap<CreatureId, optional<TribeId>> SERIAL(tribeOverrides);
   double SERIAL(levelIncrease) = 0;
 };
-
-
-#endif

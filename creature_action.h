@@ -1,5 +1,4 @@
-#ifndef _CREATURE_ACTION_H
-#define _CREATURE_ACTION_H
+#pragma once
 
 #include "util.h"
 
@@ -33,4 +32,3 @@ class CreatureAction {
 };
 
 
-#endif

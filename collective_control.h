@@ -1,5 +1,4 @@
-#ifndef _COLLECTIVE_CONTROL_H
-#define _COLLECTIVE_CONTROL_H
+#pragma once
 
 #include "move_info.h"
 #include "player_message.h"
@@ -27,6 +26,8 @@ class CollectiveControl {
   virtual void onRansomPaid() {}
   virtual vector<TriggerInfo> getTriggers(const Collective* against) const;
 
+  Collective* getCollective() const;
+
   SERIALIZATION_DECL(CollectiveControl);
 
   virtual ~CollectiveControl();
@@ -38,12 +39,8 @@ class CollectiveControl {
 
   const vector<Creature*>& getCreatures() const;
 
-  protected:
-  Collective* getCollective() const;
-
   private:
   Collective* SERIAL(collective) = nullptr;
 };
 
 
-#endif

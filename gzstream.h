@@ -26,8 +26,7 @@
 // Standard C++ Library".
 // ============================================================================
 
-#ifndef GZSTREAM_H
-#define GZSTREAM_H 1
+#pragma once
 
 // standard C++ with new header file names and std:: namespace
 #include <iostream>
@@ -115,7 +114,6 @@ public:
 } // namespace GZSTREAM_NAMESPACE
 #endif
 
-#endif // GZSTREAM_H
 // ============================================================================
 // EOF //
 

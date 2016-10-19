@@ -1,5 +1,4 @@
-#ifndef _SPECTATOR_H
-#define _SPECTATOR_H
+#pragma once
 
 #include "creature_view.h"
 
@@ -20,4 +19,3 @@ class Spectator : public CreatureView {
   Level* level;
 };
 
-#endif

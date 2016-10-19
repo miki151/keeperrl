@@ -155,6 +155,8 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!traits.contains(MinionTrait::FARM_ANIMAL))
     c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
+  if (traits.contains(MinionTrait::WORKER))
+    c->getAttributes().getMinionTasks().clear();
   if (!leader)
     leader = c;
   CHECK(c->getTribeId() == *tribe);
@@ -391,7 +393,7 @@ bool Collective::isConquered() const {
 
 vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) const {
   vector<Creature*> ret;
-  for (Creature* c : Random.permutation(getCreatures(MinionTrait::FIGHTER)))
+  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
     if (consumer->canConsume(c) && c != getLeader())
       ret.push_back(c);
   return ret;

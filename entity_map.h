@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ENTITY_MAP_H
-#define _ENTITY_MAP_H
+#pragma once
 
 #include "unique_entity.h"
 #include "util.h"
@@ -53,4 +52,3 @@ class EntityMap {
   map<typename UniqueEntity<Key>::Id, Value> SERIAL(elems);
 };
 
-#endif

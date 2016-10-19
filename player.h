@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _PLAYER_H
-#define _PLAYER_H
+#pragma once
 
 #include "creature_action.h"
 #include "controller.h"
@@ -87,13 +86,14 @@ class Player : public Controller, public CreatureView {
   Game* getGame() const;
   View* getView() const;
 
+  bool tryToPerform(CreatureAction);
+
   private:
   HeapAllocated<EventProxy<Player>> SERIAL(eventProxy);
   friend EventProxy<Player>;
   void onEvent(const GameEvent&);
 
   void considerAdventurerMusic();
-  bool tryToPerform(CreatureAction);
   void extendedAttackAction(UniqueEntity<Creature>::Id);
   void extendedAttackAction(Creature* other);
   void creatureAction(UniqueEntity<Creature>::Id);
@@ -113,7 +113,6 @@ class Player : public Controller, public CreatureView {
   void chatAction(optional<Vec2> dir = none);
   void giveAction(vector<Item*>);
   void spellAction(SpellId);
-  void consumeAction();
   void fireAction(Vec2 dir);
   vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
   void getItemNames(vector<Item*> it, vector<ListElem>& names, vector<vector<Item*> >& groups,
@@ -144,4 +143,3 @@ class Player : public Controller, public CreatureView {
   HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
 };
 
-#endif

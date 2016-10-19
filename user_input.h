@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _USER_INPUT_H
-#define _USER_INPUT_H
+#pragma once
 
 #include "util.h"
 #include "enum_variant.h"
@@ -210,4 +209,3 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
   using EnumVariant::EnumVariant;
 };
 
-#endif

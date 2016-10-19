@@ -1,5 +1,4 @@
-#ifndef _LASTING_EFFECT_H
-#define _LASTING_EFFECT_H
+#pragma once
 
 #include "util.h"
 
@@ -47,4 +46,3 @@ class LastingEffects {
 };
 
 
-#endif

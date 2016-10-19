@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _INVENTORY_H
-#define _INVENTORY_H
+#pragma once
 
 #include <functional>
 
@@ -69,4 +68,3 @@ class Inventory {
   mutable EnumMap<ItemIndex, optional<vector<Item*>>> indexes;
 };
 
-#endif

@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _UTIL_H
-#define _UTIL_H
+#pragma once
 
 #include <iostream>
 
@@ -1607,4 +1606,3 @@ class DisjointSets {
   vector<int> size;
 };
 
-#endif

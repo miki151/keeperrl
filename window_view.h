@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _WINDOW_VIEW
-#define _WINDOW_VIEW
+#pragma once
 
 #include "util.h"
 #include "view.h"
@@ -247,6 +246,3 @@ class WindowView: public View {
   EnumMap<SoundId, optional<milliseconds>> lastPlayed;
   SoundLibrary* soundLibrary;
 };
-
-
-#endif

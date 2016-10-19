@@ -116,6 +116,7 @@ void Model::update(double totalTime) {
       CreatureAction::checkUsage(false);
 #endif
     }
+    CHECK(creature->getLevel() != nullptr) << creature->getName().bare();
     if (!creature->isDead() && creature->getLevel()->getModel() == this)
       CHECK(creature->getPosition().getCreature() == creature);
   } else

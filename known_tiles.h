@@ -12,8 +12,7 @@
 
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
-#ifndef _KNOWN_TILES_H
-#define _KNOWN_TILES_H
+#pragma once
 
 #include "util.h"
 #include "position_map.h"
@@ -33,4 +32,3 @@ class KnownTiles {
   set<Position> SERIAL(border);
 };
 
-#endif

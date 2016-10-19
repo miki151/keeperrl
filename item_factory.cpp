@@ -1172,6 +1172,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::BOULDER_TRAP_ITEM: return ITATTR(
             i.viewId = ViewId::TRAP_ITEM;
             i.name = "boulder trap";
+            i.shortName = "boulder";
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
@@ -1184,6 +1185,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::TRAP_ITEM: return ITATTR(
             i.viewId = ViewId::TRAP_ITEM;
             i.name = "unarmed " + Effect::getName(item.get<TrapInfo>().effectType) + " trap";
+            i.shortName = Effect::getName(item.get<TrapInfo>().effectType);
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;

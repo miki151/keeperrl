@@ -1,5 +1,4 @@
-#ifndef _MOVEMENT_SET
-#define _MOVEMENT_SET
+#pragma once
 
 class MovementType;
 class Tribe;
@@ -33,6 +32,3 @@ class MovementSet {
   EnumSet<MovementTrait> SERIAL(traits);
   EnumSet<MovementTrait> SERIAL(forcibleTraits);
 };
-
-
-#endif

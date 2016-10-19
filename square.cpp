@@ -132,10 +132,6 @@ bool Square::itemLands(vector<Item*> item, const Attack& attack) const {
   return false;
 }
 
-bool Square::itemBounces(Item* item, VisionId v) const {
-  return !canSeeThru(v);
-}
-
 void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir,
     VisionId vision) {
   setDirty(pos);

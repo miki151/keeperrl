@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _UNIQUE_ENTITY_H
-#define _UNIQUE_ENTITY_H
+#pragma once
 
 #include "enums.h"
 
@@ -49,4 +48,3 @@ class UniqueEntity {
   static long long offset;
 };
 
-#endif

@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _EQUIPMENT_H
-#define _EQUIPMENT_H
+#pragma once
 
 #include "inventory.h"
 #include "enums.h"
@@ -52,4 +51,3 @@ class Equipment : public Inventory {
   vector<Item*> SERIAL(equipped);
 };
 
-#endif

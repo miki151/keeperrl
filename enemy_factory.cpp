@@ -235,6 +235,7 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
               c.triggers = LIST(
                   {AttackTriggerId::ENEMY_POPULATION, 22},
                   AttackTriggerId::STOLEN_ITEMS,
+                  {AttackTriggerId::TIMER, 7000},
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 12);
@@ -256,6 +257,7 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
               c.triggers = LIST(
                   {AttackTriggerId::ENEMY_POPULATION, 18},
                   AttackTriggerId::STOLEN_ITEMS,
+                  {AttackTriggerId::TIMER, 7000},
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 7);
@@ -460,7 +462,7 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
             c.numCreatures = random.get(7, 13);
             c.location = new Location();
             c.tribe = TribeId::getMonster();
-            c.race = "ents";
+            c.race = "tree spirits";
             c.buildingId = BuildingId::WOOD;),
           CollectiveConfig::withImmigrants(0.003, 15, {
           CONSTRUCT(ImmigrantInfo,

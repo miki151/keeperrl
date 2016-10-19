@@ -1,5 +1,4 @@
-#ifndef _ITEM_TYPE_H
-#define _ITEM_TYPE_H
+#pragma once
 
 #include "enum_variant.h"
 #include "effect_type.h"
@@ -83,4 +82,3 @@ class ItemType : public EnumVariant<ItemId, TYPES(EffectType, TrapInfo, LastingE
   using EnumVariant::EnumVariant;
 };
 
-#endif

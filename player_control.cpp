@@ -443,18 +443,6 @@ static vector<ItemType> marketItems {
   {ItemId::RING, LastingEffect::POISON_RESISTANT},
 };
 
-/*Creature* PlayerControl::getConsumptionTarget(View* view, Creature* consumer) {
-  vector<Creature*> res;
-  vector<ListElem> opt;
-  for (Creature* c : getCollective()->getConsumptionTargets(consumer)) {
-    res.push_back(c);
-    opt.emplace_back(c->getName().bare() + ", level " + toString(c->getAttributes().getExpLevel()));
-  }
-  if (auto index = view->chooseFromList("Choose minion to absorb:", opt))
-    return res[*index];
-  return nullptr;
-}*/
-
 void PlayerControl::addConsumableItem(Creature* creature) {
   double scrollPos = 0;
   while (1) {
@@ -688,7 +676,7 @@ int PlayerControl::getNumMinions() const {
 }
 
 int PlayerControl::getMinLibrarySize() const {
-  return 2 * getCollective()->getTechnologies().size();
+  return getCollective()->getTechnologies().size();
 }
 
 void PlayerControl::handleLibrary(View* view) {
@@ -869,8 +857,8 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
         case FurnitureType::IMPALED_HEAD: return "Impaled heads";
         default: FAIL << "Unsupported ROOM_BUILT type"; return "";
       }
-    case AttackTriggerId::POWER: return "Keeper's power";
-    case AttackTriggerId::FINISH_OFF: return "Finishing off";
+    case AttackTriggerId::POWER: return "Your power";
+    case AttackTriggerId::FINISH_OFF: return "Finishing you off";
     case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
     case AttackTriggerId::TIMER: return "Your evilness";
     case AttackTriggerId::ENTRY: return "Entry";
@@ -1455,7 +1443,30 @@ class MinionController : public Player {
        [] (Player* player) { dynamic_cast<MinionController*>(player)->unpossess(); }, true},
       {PlayerInfo::CommandInfo{"Switch control", 's', "Switch control to a different team member.", true},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->swapTeam(); }, getTeam().size() > 1},
+      {PlayerInfo::CommandInfo{"Absorb", 'a',
+          "Absorb a friendly creature and inherit its attributes. Requires the absorbtion skill.",
+          getCreature()->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION)},
+       [] (Player* player) { dynamic_cast<MinionController*>(player)->consumeAction();}, false},
     });
+  }
+
+  void consumeAction() {
+    vector<Creature*> targets = control->getCollective()->getConsumptionTargets(getCreature());
+    vector<Creature*> actions;
+    for (auto target : targets)
+      if (auto action = getCreature()->consume(target))
+        actions.push_back(target);
+    if (actions.size() == 1 && getView()->yesOrNoPrompt("Really absorb " + actions[0]->getName().the() + "?")) {
+      tryToPerform(getCreature()->consume(actions[0]));
+    } else
+    if (actions.size() > 1) {
+      auto dir = getView()->chooseDirection("Which direction?");
+      if (!dir)
+        return;
+      if (Creature* c = getCreature()->getPosition().plus(*dir).getCreature())
+        if (contains(targets, c) && getView()->yesOrNoPrompt("Really absorb " + c->getName().the() + "?"))
+          tryToPerform(getCreature()->consume(c));
+    }
   }
 
   void unpossess() {
@@ -1949,7 +1960,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
   for (auto& req : building.requirements)
     if (!meetsRequirement(req))
       return;
-  if (!getLevel()->inBounds(pos))
+  if (position.isUnavailable())
     return;
   if (!deselectOnly && rectangle && !canSelectRectangle(building))
     return;
@@ -1959,7 +1970,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           selection = SELECT;
           PCreature imp = CreatureFactory::fromId(CreatureId::IMP, getTribeId(),
               MonsterAIFactory::collective(getCollective()));
-          for (Position v : concat(position.neighbors8(Random), {position}))
+          for (Position v : concat(position.neighbors8(Random), position))
             if (v.canEnter(imp.get()) && (canSee(v) || getCollective()->getTerritory().contains(v))) {
               getCollective()->takeResource({ResourceId::MANA, getImpCost()});
               getCollective()->addCreature(std::move(imp), v,
@@ -1978,6 +1989,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         } else
         if (position.canEnterEmpty({MovementTrait::WALK}) &&
             getCollective()->getTerritory().contains(position) &&
+            !getCollective()->getConstructions().containsTrap(position) &&
             selection != DESELECT) {
           getCollective()->addTrap(position, building.trapInfo.type);
           getView()->addSound(SoundId::ADD_CONSTRUCTION);

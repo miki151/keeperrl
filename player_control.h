@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _PLAYER_CONTROL_H
-#define _PLAYER_CONTROL_H
+#pragma once
 
 #include "creature_view.h"
 #include "entity_set.h"
@@ -237,4 +236,3 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   optional<UniqueEntity<Creature>::Id> draggedCreature;
 };
 
-#endif

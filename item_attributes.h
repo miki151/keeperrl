@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ITEM_ATTRIBUTES_H
-#define _ITEM_ATTRIBUTES_H
+#pragma once
 
 #include <string>
 #include <functional>
@@ -71,4 +70,3 @@ class ItemAttributes {
   optional<SoundId> SERIAL(applySound);
 };
 
-#endif

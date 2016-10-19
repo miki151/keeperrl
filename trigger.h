@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _TRIGGER_H
-#define _TRIGGER_H
+#pragma once
 
 #include "util.h"
 #include "position.h"
@@ -60,4 +59,3 @@ class Trigger {
   Position SERIAL(position);
 };
 
-#endif

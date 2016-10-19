@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _GUI_ELEM
-#define _GUI_ELEM
+#pragma once
 
 #include "renderer.h"
 #include "drag_and_drop.h"
@@ -298,6 +297,3 @@ class GuiFactory {
   Options* options;
   DragContainer dragContainer;
 };
-
-
-#endif

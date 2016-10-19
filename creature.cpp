@@ -1390,7 +1390,7 @@ void Creature::addPersonalEvent(const string& s) {
 }
 
 CreatureAction Creature::consume(Creature* other) const {
-  if (!other || !canConsume(other))
+  if (!other || !canConsume(other) || other->getPosition().dist8(getPosition()) > 1)
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* self) {
     self->attributes->consume(self, *other->attributes);

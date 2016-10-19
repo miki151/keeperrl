@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _TIME_QUEUE_H
-#define _TIME_QUEUE_H
+#pragma once
 
 #include "util.h"
 #include "entity_set.h"
@@ -42,4 +41,3 @@ class TimeQueue {
   EntityMap<Creature, double> SERIAL(timeMap);
 };
 
-#endif

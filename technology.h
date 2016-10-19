@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _TECHNOLOGY_H
-#define _TECHNOLOGY_H
+#pragma once
 
 #include "singleton.h"
 #include "enums.h"
@@ -73,4 +72,3 @@ class Technology : public Singleton<Technology, TechId> {
   bool research;
 };
 
-#endif

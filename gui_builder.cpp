@@ -1884,7 +1884,7 @@ vector<PGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion) {
         break;
       case PlayerInfo::CONSUME:
         line.push_back(gui.stack(
-            gui.labelHighlight("[Consume]", colors[ColorId::LIGHT_BLUE]),
+            gui.labelHighlight("[Absorb]", colors[ColorId::LIGHT_BLUE]),
             gui.button(getButtonCallback({UserInputId::CREATURE_CONSUME, minion.creatureId}))));
         break;
     }

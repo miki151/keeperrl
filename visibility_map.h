@@ -1,5 +1,4 @@
-#ifndef _VISIBILITY_MAP_H
-#define _VISIBILITY_MAP_H
+#pragma once
 
 #include "util.h"
 #include "position_map.h"
@@ -23,5 +22,4 @@ class VisibilityMap {
   PositionMap<int> SERIAL(visibilityCount);
 };
 
-#endif
 

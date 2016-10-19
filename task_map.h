@@ -1,5 +1,4 @@
-#ifndef _TASK_MAP_H
-#define _TASK_MAP_H
+#pragma once
 
 #include "util.h"
 #include "entity_set.h"
@@ -52,4 +51,3 @@ class TaskMap {
   unordered_map<Task*, MinionTrait> SERIAL(requiredTraits);
 };
 
-#endif

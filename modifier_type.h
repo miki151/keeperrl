@@ -1,5 +1,6 @@
-#ifndef _MODIFIER_H
-#define _MODIFIER_H
+#pragma once
+
+#include "util.h"
 
 RICH_ENUM(ModifierType,
   DAMAGE,
@@ -17,5 +18,3 @@ RICH_ENUM(AttrType,
   DEXTERITY,
   SPEED
 );
-
-#endif

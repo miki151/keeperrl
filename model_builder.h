@@ -1,4 +1,4 @@
-#ifndef _MODEL_BUILDER_H
+#pragma once
 
 #include "village_control.h"
 #include "stair_key.h"
@@ -50,6 +50,3 @@ class ModelBuilder {
   HeapAllocated<EnemyFactory> enemyFactory;
   SokobanInput* sokobanInput;
 };
-
-
-#endif

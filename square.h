@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _SQUARE_H
-#define _SQUARE_H
+#pragma once
 
 #include "util.h"
 #include "debug.h"
@@ -133,7 +132,6 @@ class Square : public Renderable {
   void getViewIndex(ViewIndex&, const Creature* viewer) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
-  bool itemBounces(Item* item, VisionId) const;
   void onItemLands(Position, vector<PItem>, const Attack&, int remainingDist, Vec2 dir, VisionId);
   const vector<Item*>& getItems() const;
   vector<Item*> getItems(function<bool (Item*)> predicate) const;
@@ -184,4 +182,3 @@ class Square : public Renderable {
   optional<TribeId> SERIAL(forbiddenTribe);
 };
 
-#endif

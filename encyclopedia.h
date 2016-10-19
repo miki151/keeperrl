@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ENCYCLOPEDIA_H
-#define _ENCYCLOPEDIA_H
+#pragma once
 
 class View;
 class Technology;
@@ -24,4 +23,3 @@ class Encyclopedia {
   void present(View*, int lastInd = 0);
 };
 
-#endif

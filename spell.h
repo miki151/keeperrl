@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _SPELL_H
-#define _SPELL_H
+#pragma once
 
 #include "enums.h"
 #include "util.h"
@@ -56,4 +55,3 @@ class Spell : public Singleton<Spell, SpellId> {
   const SoundId sound;
 };
 
-#endif
