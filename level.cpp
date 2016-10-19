@@ -146,7 +146,9 @@ void Level::updateVisibility(Vec2 changedSquare) {
     getFieldOfView(vision).squareChanged(changedSquare);
   for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
     addLightSource(pos, Position(pos, this).getLightEmission(), 1);
-    if (Creature* c = squares->getReadonly(pos)->getCreature())
+    auto square = squares->getReadonly(pos);
+    CHECK(square) << pos << " " << getBounds();
+    if (Creature* c = square->getCreature())
       if (c->isDarknessSource())
         addDarknessSource(pos, darknessRadius, 1);
   }
