@@ -13,9 +13,9 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _REPLAY_VIEW
-#define _REPLAY_VIEW
+#pragma once
 
+#include "util.h"
 #include "logging_view.h"
 
 class ReplayView : public View {
@@ -203,5 +203,3 @@ class ReplayView : public View {
     InputArchive& input;
     View* delegate;
 };
-
-#endif

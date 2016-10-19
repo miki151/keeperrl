@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _SQUARE_H
-#define _SQUARE_H
+#pragma once
 
 #include "util.h"
 #include "debug.h"
@@ -184,4 +183,3 @@ class Square : public Renderable {
   optional<TribeId> SERIAL(forbiddenTribe);
 };
 
-#endif

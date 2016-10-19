@@ -1,5 +1,4 @@
-#ifndef _MAIN_LOOP_H
-#define _MAIN_LOOP_H
+#pragma once
 
 #include "util.h"
 #include "file_sharing.h"
@@ -85,5 +84,4 @@ class MainLoop {
 
 
 
-#endif
 

@@ -1,5 +1,4 @@
-#ifndef _SOUND_H
-#define _SOUND_H
+#pragma once
 
 #include "util.h"
 #include "position.h"
@@ -61,4 +60,3 @@ class Sound {
   double pitch = 1;
 };
 
-#endif

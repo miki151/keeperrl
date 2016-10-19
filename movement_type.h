@@ -1,5 +1,4 @@
-#ifndef _MOVEMENT_TYPE
-#define _MOVEMENT_TYPE
+#pragma once
 
 #include "util.h"
 #include "tribe.h"
@@ -47,5 +46,3 @@ namespace std {
     size_t operator()(const MovementType& t) const;
   };
 }
-
-#endif

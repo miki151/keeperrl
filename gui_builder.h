@@ -14,8 +14,7 @@
  If not, see http://www.gnu.org/licenses/ . */
 
 
-#ifndef _GUI_BUILDER_H
-#define _GUI_BUILDER_H
+#pragma once
 
 #include "util.h"
 #include "gui_elem.h"
@@ -256,4 +255,3 @@ RICH_ENUM(GuiBuilder::GameSpeed,
   VERY_FAST
 );
 
-#endif

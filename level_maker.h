@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _LEVEL_MAKER_H
-#define _LEVEL_MAKER_H
+#pragma once
 
 #include "util.h"
 #include "creature_factory.h"
@@ -107,4 +106,3 @@ class LevelMaker {
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
 };
 
-#endif

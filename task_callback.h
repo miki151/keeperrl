@@ -1,5 +1,4 @@
-#ifndef _TASK_CALLBACK_H
-#define _TASK_CALLBACK_H
+#pragma once
 
 #include "util.h"
 #include "entity_set.h"
@@ -28,4 +27,3 @@ class TaskCallback {
   virtual ~TaskCallback() {}
 };
 
-#endif

@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ACTOR_H
-#define _ACTOR_H
+#pragma once
 
 #include "creature_action.h"
 #include "position.h"
@@ -78,5 +77,3 @@ class MonsterAIFactory {
   MonsterAIFactory(MakerFun);
   MakerFun maker;
 };
-
-#endif

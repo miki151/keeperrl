@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _INPUT_QUEUE
-#define _INPUT_QUEUE
+#pragma once
 
 #include "user_input.h"
 
@@ -26,6 +25,3 @@ class InputQueue {
   private:
   queue<UserInput> q;
 };
-
-
-#endif

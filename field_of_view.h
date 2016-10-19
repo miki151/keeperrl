@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _FIELD_OF_VIEW_H
-#define _FIELD_OF_VIEW_H
+#pragma once
 
 #include "util.h"
 
@@ -64,4 +63,3 @@ class FieldOfView {
   VisionId SERIAL(vision);
 };
 
-#endif

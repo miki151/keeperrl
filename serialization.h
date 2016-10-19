@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _SERIALIZATION
-#define _SERIALIZATION
+#pragma once
 
 #ifdef TEXT_SERIALIZATION
 typedef text_iarchive InputArchive;
@@ -367,5 +366,3 @@ void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version
 }
 
 }} // namespace boost::serialization
-
-#endif

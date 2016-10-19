@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ENTITY_SET_H
-#define _ENTITY_SET_H
+#pragma once
 
 #include "unique_entity.h"
 #include "util.h"
@@ -51,4 +50,3 @@ class EntitySet {
   set<typename UniqueEntity<T>::Id> SERIAL(elems);
 };
 
-#endif

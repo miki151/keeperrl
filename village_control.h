@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _VILLAGE_CONTROL_H
-#define _VILLAGE_CONTROL_H
+#pragma once
 
 #include "collective_control.h"
 #include "enum_variant.h"
@@ -66,4 +65,3 @@ class VillageControl : public CollectiveControl {
   double SERIAL(maxEnemyPower) = 0;
 };
 
-#endif

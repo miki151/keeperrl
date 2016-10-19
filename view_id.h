@@ -1,5 +1,4 @@
-#ifndef _VIEW_ID_H
-#define _VIEW_ID_H
+#pragma once
 
 
 RICH_ENUM(ViewId,
@@ -301,4 +300,3 @@ RICH_ENUM(ViewId,
   ROUND_SHADOW
 );
 
-#endif

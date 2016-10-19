@@ -1,5 +1,4 @@
-#ifndef _ITEM_ACTION_H
-#define _ITEM_ACTION_H
+#pragma once
 
 
 enum class ItemAction {
@@ -17,4 +16,3 @@ enum class ItemAction {
   CHANGE_NUMBER
 };
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef _BODY_H
-#define _BODY_H
+#pragma once
 
 #include "util.h"
 #include "unique_entity.h"
@@ -147,4 +146,3 @@ class Body {
   optional<SoundId> SERIAL(deathSound);
 };
 
-#endif

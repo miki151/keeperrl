@@ -1,5 +1,4 @@
-#ifndef _MOVE_INFO_H
-#define _MOVE_INFO_H
+#pragma once
 
 #include "creature_action.h"
 
@@ -23,4 +22,3 @@ struct MoveInfo {
 
 const MoveInfo NoMove = {0.0, CreatureAction()};
 
-#endif

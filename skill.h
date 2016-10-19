@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _SKILL_H
-#define _SKILL_H
+#pragma once
 
 #include <string>
 
@@ -83,4 +82,3 @@ class Skillset {
   EnumSet<SkillId> SERIAL(discrete);
 };
 
-#endif

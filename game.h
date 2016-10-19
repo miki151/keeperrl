@@ -1,5 +1,4 @@
-#ifndef _GAME_H
-#define _GAME_H
+#pragma once
 
 #include "util.h"
 #include "sunlight_info.h"
@@ -147,4 +146,3 @@ class Game {
 };
 
 
-#endif

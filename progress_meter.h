@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _PROGRESS_METER_H
-#define _PROGRESS_METER_H
+#pragma once
 
 class ProgressMeter {
   public:
@@ -29,5 +28,4 @@ class ProgressMeter {
   atomic<float> increase;
 };
 
-#endif
 

@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _TILE_H
-#define _TILE_H
+#pragma once
 
 #include "renderer.h"
 #include "util.h"
@@ -93,4 +92,3 @@ class Tile {
 };
 
 
-#endif

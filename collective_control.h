@@ -1,5 +1,4 @@
-#ifndef _COLLECTIVE_CONTROL_H
-#define _COLLECTIVE_CONTROL_H
+#pragma once
 
 #include "move_info.h"
 #include "player_message.h"
@@ -46,4 +45,3 @@ class CollectiveControl {
 };
 
 
-#endif

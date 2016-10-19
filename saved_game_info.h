@@ -1,5 +1,4 @@
-#ifndef _SAVED_GAME_INFO_H
-#define _SAVED_GAME_INFO_H
+#pragma once
 
 #include "util.h"
 #include "view_id.h"
@@ -30,4 +29,3 @@ class SavedGameInfo {
 };
 
 
-#endif

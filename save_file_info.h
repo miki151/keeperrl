@@ -1,5 +1,4 @@
-#ifndef _SAVE_FILE_INFO_H
-#define _SAVE_FILE_INFO_H
+#pragma once
 
 #include "util.h"
 
@@ -9,5 +8,4 @@ struct SaveFileInfo {
   bool SERIAL(download);
   SERIALIZE_ALL(filename, date, download);
 };
-#endif
 

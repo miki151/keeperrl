@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ENUMS_H
-#define _ENUMS_H
+#pragma once
 
 #include "serialization.h"
 
@@ -100,4 +99,3 @@ enum class SoundId;
 
 enum class MessagePriority;
 enum class WorkshopType;
-#endif

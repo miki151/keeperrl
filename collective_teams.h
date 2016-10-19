@@ -12,8 +12,7 @@
 
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
-#ifndef _COLLECTIVE_TEAMS_H
-#define _COLLECTIVE_TEAMS_H
+#pragma once
 
 #include "util.h"
 #include "enums.h"
@@ -58,4 +57,3 @@ class CollectiveTeams {
   TeamId SERIAL(nextId) = 1;
 };
 
-#endif

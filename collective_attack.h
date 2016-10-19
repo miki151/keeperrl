@@ -1,5 +1,4 @@
-#ifndef _COLLECTIVE_ATTACK_H
-#define _COLLECTIVE_ATTACK_H
+#pragma once
 
 #include "util.h"
 
@@ -21,4 +20,3 @@ class CollectiveAttack {
   Collective* SERIAL(attacker);
 };
 
-#endif

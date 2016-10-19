@@ -1,5 +1,4 @@
-#ifndef _FILE_SHARING_H
-#define _FILE_SHARING_H
+#pragma once
 
 #include "util.h"
 #include "highscores.h"
@@ -59,4 +58,3 @@ class FileSharing {
   long long installId;
 };
 
-#endif

@@ -1,6 +1,3 @@
-#ifndef _VILLAIN_TYPE
-#define _VILLAIN_TYPE
+#pragma once
 
 enum class VillainType { MAIN, LESSER, ALLY, PLAYER };
-
-#endif

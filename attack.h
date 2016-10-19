@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ATTACK_H
-#define _ATTACK_H
+#pragma once
 
 #include "enums.h"
 #include "util.h"
@@ -45,4 +44,3 @@ class Attack {
   optional<EffectType> effect;
 };
 
-#endif

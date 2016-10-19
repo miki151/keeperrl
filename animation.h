@@ -1,5 +1,4 @@
-#ifndef _ANIMATION_H
-#define _ANIMATION_H
+#pragma once
 
 #include "util.h"
 #include "renderer.h"
@@ -23,4 +22,3 @@ class Animation {
   milliseconds duration;
 };
 
-#endif

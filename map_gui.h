@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _MAP_GUI
-#define _MAP_GUI
+#pragma once
 
 #include "util.h"
 #include "gui_elem.h"
@@ -181,5 +180,3 @@ class MapGui : public GuiElem {
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight);
   void processScrolling(milliseconds);
 };
-
-#endif

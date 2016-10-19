@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _VIEW_OBJECT_H
-#define _VIEW_OBJECT_H
+#pragma once
 
 #include "debug.h"
 #include "enums.h"
@@ -112,4 +111,3 @@ class ViewObject {
   } movementQueue;
 };
 
-#endif

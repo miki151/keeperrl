@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _PLAYER_H
-#define _PLAYER_H
+#pragma once
 
 #include "creature_action.h"
 #include "controller.h"
@@ -144,4 +143,3 @@ class Player : public Controller, public CreatureView {
   HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
 };
 
-#endif

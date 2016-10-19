@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _LEVEL_H
-#define _LEVEL_H
+#pragma once
 
 #include "util.h"
 #include "debug.h"
@@ -258,4 +257,3 @@ class Level {
   bool SERIAL(noDiagonalPassing) = false;
 };
 
-#endif

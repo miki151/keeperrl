@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ITEM_FACTORY
-#define _ITEM_FACTORY
+#pragma once
 
 #include <map>
 #include <string>
@@ -78,5 +77,3 @@ class ItemFactory {
   vector<Range> SERIAL(count);
   vector<ItemType> SERIAL(unique);
 };
-
-#endif

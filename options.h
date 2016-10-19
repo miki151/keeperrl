@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _OPTIONS_H
-#define _OPTIONS_H
+#pragma once
 
 #include "util.h"
 
@@ -97,4 +96,3 @@ class Options {
 };
 
 
-#endif

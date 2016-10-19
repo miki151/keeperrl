@@ -1,5 +1,4 @@
-#ifndef _ATTACK_TRIGGER_H
-#define _ATTACK_TRIGGER_H
+#pragma once
 
 #include "util.h"
 #include "furniture_type.h"
@@ -28,4 +27,3 @@ struct TriggerInfo {
   double value;
 };
 
-#endif
