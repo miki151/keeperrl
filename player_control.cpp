@@ -857,8 +857,8 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
         case FurnitureType::IMPALED_HEAD: return "Impaled heads";
         default: FAIL << "Unsupported ROOM_BUILT type"; return "";
       }
-    case AttackTriggerId::POWER: return "Keeper's power";
-    case AttackTriggerId::FINISH_OFF: return "Finishing off";
+    case AttackTriggerId::POWER: return "Your power";
+    case AttackTriggerId::FINISH_OFF: return "Finishing you off";
     case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
     case AttackTriggerId::TIMER: return "Your evilness";
     case AttackTriggerId::ENTRY: return "Entry";
