@@ -30,8 +30,8 @@ struct MovementInfo {
   MovementInfo(Vec2, double, double, Type);
   MovementInfo();
   Vec2 direction;
-  float tBegin;
-  float tEnd;
+  double tBegin;
+  double tEnd;
   Type type;
 };
 
