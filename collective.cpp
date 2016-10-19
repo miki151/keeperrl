@@ -155,6 +155,8 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!traits.contains(MinionTrait::FARM_ANIMAL))
     c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
+  if (traits.contains(MinionTrait::WORKER))
+    c->getAttributes().getMinionTasks().clear();
   if (!leader)
     leader = c;
   CHECK(c->getTribeId() == *tribe);
