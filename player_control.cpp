@@ -676,7 +676,7 @@ int PlayerControl::getNumMinions() const {
 }
 
 int PlayerControl::getMinLibrarySize() const {
-  return 2 * getCollective()->getTechnologies().size();
+  return getCollective()->getTechnologies().size();
 }
 
 void PlayerControl::handleLibrary(View* view) {

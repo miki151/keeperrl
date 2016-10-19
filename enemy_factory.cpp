@@ -460,7 +460,7 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
             c.numCreatures = random.get(7, 13);
             c.location = new Location();
             c.tribe = TribeId::getMonster();
-            c.race = "ents";
+            c.race = "tree spirits";
             c.buildingId = BuildingId::WOOD;),
           CollectiveConfig::withImmigrants(0.003, 15, {
           CONSTRUCT(ImmigrantInfo,
