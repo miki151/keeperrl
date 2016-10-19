@@ -1960,7 +1960,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
   for (auto& req : building.requirements)
     if (!meetsRequirement(req))
       return;
-  if (!getLevel()->inBounds(pos))
+  if (position.isUnavailable())
     return;
   if (!deselectOnly && rectangle && !canSelectRectangle(building))
     return;

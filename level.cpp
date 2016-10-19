@@ -307,7 +307,7 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
   CHECK(direction.length8() == 1);
   int cnt = 1;
   vector<Vec2> trajectory;
-  for (Vec2 v = position + direction;; v += direction) {
+  for (Vec2 v = position + direction; inBounds(v); v += direction) {
     trajectory.push_back(v);
     Position pos(v, this);
     if (!pos.canSeeThru(vision)) {
