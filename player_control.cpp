@@ -1989,6 +1989,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         } else
         if (position.canEnterEmpty({MovementTrait::WALK}) &&
             getCollective()->getTerritory().contains(position) &&
+            !getCollective()->getConstructions().containsTrap(position) &&
             selection != DESELECT) {
           getCollective()->addTrap(position, building.trapInfo.type);
           getView()->addSound(SoundId::ADD_CONSTRUCTION);
