@@ -18,15 +18,15 @@
 
 class ProgressMeter {
   public:
-  ProgressMeter(double increase);
+  ProgressMeter(float increase);
   double getProgress() const;
-  void setProgress(double);
+  void setProgress(float);
   void addProgress(int = 1);
   void reset();
 
   private:
   atomic<int> progress;
-  atomic<double> increase;
+  atomic<float> increase;
 };
 
 #endif
