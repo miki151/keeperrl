@@ -443,18 +443,6 @@ static vector<ItemType> marketItems {
   {ItemId::RING, LastingEffect::POISON_RESISTANT},
 };
 
-/*Creature* PlayerControl::getConsumptionTarget(View* view, Creature* consumer) {
-  vector<Creature*> res;
-  vector<ListElem> opt;
-  for (Creature* c : getCollective()->getConsumptionTargets(consumer)) {
-    res.push_back(c);
-    opt.emplace_back(c->getName().bare() + ", level " + toString(c->getAttributes().getExpLevel()));
-  }
-  if (auto index = view->chooseFromList("Choose minion to absorb:", opt))
-    return res[*index];
-  return nullptr;
-}*/
-
 void PlayerControl::addConsumableItem(Creature* creature) {
   double scrollPos = 0;
   while (1) {
@@ -1455,7 +1443,30 @@ class MinionController : public Player {
        [] (Player* player) { dynamic_cast<MinionController*>(player)->unpossess(); }, true},
       {PlayerInfo::CommandInfo{"Switch control", 's', "Switch control to a different team member.", true},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->swapTeam(); }, getTeam().size() > 1},
+      {PlayerInfo::CommandInfo{"Absorb", 'a',
+          "Absorb a friendly creature and inherit its attributes. Requires the absorbtion skill.",
+          getCreature()->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION)},
+       [] (Player* player) { dynamic_cast<MinionController*>(player)->consumeAction();}, false},
     });
+  }
+
+  void consumeAction() {
+    vector<Creature*> targets = control->getCollective()->getConsumptionTargets(getCreature());
+    vector<Creature*> actions;
+    for (auto target : targets)
+      if (auto action = getCreature()->consume(target))
+        actions.push_back(target);
+    if (actions.size() == 1 && getView()->yesOrNoPrompt("Really absorb " + actions[0]->getName().the() + "?")) {
+      tryToPerform(getCreature()->consume(actions[0]));
+    } else
+    if (actions.size() > 1) {
+      auto dir = getView()->chooseDirection("Which direction?");
+      if (!dir)
+        return;
+      if (Creature* c = getCreature()->getPosition().plus(*dir).getCreature())
+        if (contains(targets, c) && getView()->yesOrNoPrompt("Really absorb " + c->getName().the() + "?"))
+          tryToPerform(getCreature()->consume(c));
+    }
   }
 
   void unpossess() {

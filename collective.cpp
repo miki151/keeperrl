@@ -393,7 +393,7 @@ bool Collective::isConquered() const {
 
 vector<Creature*> Collective::getConsumptionTargets(Creature* consumer) const {
   vector<Creature*> ret;
-  for (Creature* c : Random.permutation(getCreatures(MinionTrait::FIGHTER)))
+  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
     if (consumer->canConsume(c) && c != getLeader())
       ret.push_back(c);
   return ret;

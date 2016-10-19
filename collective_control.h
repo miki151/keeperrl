@@ -26,6 +26,8 @@ class CollectiveControl {
   virtual void onRansomPaid() {}
   virtual vector<TriggerInfo> getTriggers(const Collective* against) const;
 
+  Collective* getCollective() const;
+
   SERIALIZATION_DECL(CollectiveControl);
 
   virtual ~CollectiveControl();
@@ -36,9 +38,6 @@ class CollectiveControl {
   static void registerTypes(Archive& ar, int version);
 
   const vector<Creature*>& getCreatures() const;
-
-  protected:
-  Collective* getCollective() const;
 
   private:
   Collective* SERIAL(collective) = nullptr;

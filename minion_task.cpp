@@ -53,14 +53,6 @@ static Creature* getCopulationTarget(const Collective* collective, Creature* suc
   return nullptr;
 }
 
-static Creature* getConsumptionTarget(const Collective* collective, Creature* consumer) {
-  vector<Creature*> v = collective->getConsumptionTargets(consumer);
-  if (!v.empty())
-    return Random.choose(v);
-  else
-    return nullptr;
-}
-
 const vector<FurnitureType>& MinionTasks::getAllFurniture(MinionTask task) {
   static EnumMap<MinionTask, vector<FurnitureType>> cache;
   static bool initialized = false;
@@ -129,10 +121,6 @@ PTask MinionTasks::generate(Collective* collective, Creature* c, MinionTask task
     case MinionTaskInfo::COPULATE:
       if (Creature* target = getCopulationTarget(collective, c))
         return Task::copulate(collective, target, 20);
-      break;
-    case MinionTaskInfo::CONSUME:
-      if (Creature* target = getConsumptionTarget(collective, c))
-        return Task::consume(collective, target);
       break;
     case MinionTaskInfo::EAT: {
       const set<Position>& hatchery = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);

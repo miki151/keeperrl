@@ -272,24 +272,6 @@ void Player::throwItem(vector<Item*> items, optional<Vec2> dir) {
   tryToPerform(getCreature()->throwItem(items[0], *dir));
 }
 
-void Player::consumeAction() {
-  vector<CreatureAction> actions;
-  for (Vec2 v : Vec2::directions8())
-    if (Creature* c = getCreature()->getPosition().plus(v).getCreature())
-      if (auto action = getCreature()->consume(c))
-      actions.push_back(action);
-  if (actions.size() == 1) {
-    tryToPerform(actions[0]);
-  } else
-  if (actions.size() > 1) {
-    auto dir = getView()->chooseDirection("Which direction?");
-    if (!dir)
-      return;
-    if (Creature* c = getCreature()->getPosition().plus(*dir).getCreature())
-      tryToPerform(getCreature()->consume(c));
-  }
-}
-
 vector<ItemAction> Player::getItemActions(const vector<Item*>& item) const {
   vector<ItemAction> actions;
   if (getCreature()->equip(item[0]))
@@ -549,10 +531,6 @@ vector<Player::CommandInfo> Player::getCommands() const {
      [] (Player* player) { player->hideAction(); }, false},
     {PlayerInfo::CommandInfo{"Pay debt", 'p', "Pay debt to a shopkeeper.", canPay},
      [] (Player* player) { player->payDebtAction();}, false},
-    {PlayerInfo::CommandInfo{"Absorb", 'a',
-        "Absorb a friendly creature and inherit its attributes. Requires the absorbtion skill.",
-        getCreature()->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION)},
-     [] (Player* player) { player->consumeAction();}, false},
     {PlayerInfo::CommandInfo{"Message history", 'm', "Show message history.", true},
      [] (Player* player) { player->showHistory(); }, false},
   };
