@@ -235,12 +235,12 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setTickType(FurnitureTickType::BOULDER_TRAP)
           .setDestroyable(40);
     case FurnitureType::BRIDGE:
-      return Furniture("bridge", ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe)
+      return Furniture("bridge", ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, TribeId::getHostile())
           .setOverrideMovement();
     case FurnitureType::ROAD:
       return Furniture("road", ViewObject(ViewId::ROAD, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe);
     case FurnitureType::MOUNTAIN:
-      return Furniture("mountain", ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+      return Furniture("mountain", ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR), type, Furniture::BLOCKING, TribeId::getHostile())
           .setBlockVision()
           .setConstructMessage(Furniture::FILL_UP)
           .setIsWall()
@@ -268,7 +268,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setItemDrop(ItemFactory::singleType(ItemId::GOLD_PIECE, Range(18, 40)))
           .setDestroyable(100, DestroyAction::Type::DIG);
     case FurnitureType::DUNGEON_WALL:
-      return Furniture("wall", ViewObject(ViewId::DUNGEON_WALL, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
+      return Furniture("wall", ViewObject(ViewId::DUNGEON_WALL, ViewLayer::FLOOR), type, Furniture::BLOCKING, TribeId::getHostile())
           .setBlockVision()
           .setIsWall()
           .setConstructMessage(Furniture::REINFORCE)
