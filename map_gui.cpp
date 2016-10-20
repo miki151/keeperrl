@@ -817,12 +817,12 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
         drawSquareHighlight(renderer, topLeftCorner + (*highlightedInfo.tilePos - allTiles.topLeft()).mult(size),
             size);
     }
+    if (layer == ViewLayer::FLOOR_BACKGROUND)
+      renderHighlights(renderer, size, currentTimeReal, true);
     if (!spriteMode)
       break;
-    if (layer == ViewLayer::FLOOR_BACKGROUND) {
+    if (layer == ViewLayer::FLOOR_BACKGROUND)
       renderExtraBorders(renderer, currentTimeReal);
-      renderHighlights(renderer, size, currentTimeReal, true);
-    }
   }
   renderer.drawQuads();
 }
