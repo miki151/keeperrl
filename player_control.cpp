@@ -2100,13 +2100,14 @@ void PlayerControl::onSquareClick(Position pos) {
   if (getCollective()->getTerritory().contains(pos))
     if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
       if (furniture->isClickable()) {
-        furniture->click(pos);
+        furniture->click(pos); // this can remove the furniture
         updateSquareMemory(pos);
+      } else {
+        if (auto workshopType = CollectiveConfig::getWorkshopType(furniture->getType()))
+          setChosenWorkshop(*workshopType);
+        if (furniture->getType() == FurnitureType::BOOK_SHELF)
+          handleLibrary(getView());
       }
-      if (auto workshopType = CollectiveConfig::getWorkshopType(furniture->getType()))
-        setChosenWorkshop(*workshopType);
-      if (furniture->getType() == FurnitureType::BOOK_SHELF)
-        handleLibrary(getView());
     }
 }
 
