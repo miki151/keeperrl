@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _CREATURE_ATTRIBUTES_H
-#define _CREATURE_ATTRIBUTES_H
+#pragma once
 
 #include <string>
 #include <functional>
@@ -22,17 +21,12 @@
 #include "util.h"
 #include "skill.h"
 #include "gender.h"
-#include "effect.h"
-#include "minion_task.h"
 #include "creature_name.h"
-#include "view_object.h"
-#include "spell_map.h"
 #include "minion_task_map.h"
 #include "skill.h"
 #include "modifier_type.h"
 #include "lasting_effect.h"
-#include "body.h"
-
+#include "experience_type.h"
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);
@@ -46,6 +40,8 @@ struct SpellInfo;
 class MinionTaskMap;
 class SpellMap;
 class Body;
+class SpellMap;
+class EffectType;
 
 class CreatureAttributes {
   public:
@@ -64,15 +60,17 @@ class CreatureAttributes {
   void setCourage(double);
   const Gender& getGender() const;
   double getExpLevel() const;
-  void increaseExpLevel(double increase);
-  void exerciseAttr(AttrType, double value);
+  double getExpIncrease(ExperienceType) const;
+  double getVisibleExpLevel() const;
+  void increaseExpLevel(ExperienceType, double increase);
+  void increaseBaseExpLevel(double increase);
+  double getExpFromKill(const Creature* victim) const;
+  optional<double> getMaxExpIncrease(ExperienceType) const;
   string bodyDescription() const;
   SpellMap& getSpellMap();
   const SpellMap& getSpellMap() const;
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
-  bool isStationary() const;
-  void setStationary(bool);
-  bool isInvincible() const;
+  bool isBoulder() const;
   int getRecruitmentCost() const;
   Skillset& getSkills();
   const Skillset& getSkills() const;
@@ -107,7 +105,7 @@ class CreatureAttributes {
   private:
   void consumeEffects(const EnumMap<LastingEffect, int>&);
   MustInitialize<ViewId> SERIAL(viewId);
-  optional<ViewObject> SERIAL(illusionViewObject);
+  HeapAllocated<optional<ViewObject>> SERIAL(illusionViewObject);
   MustInitialize<CreatureName> SERIAL(name);
   EnumMap<AttrType, int> SERIAL(attr);
   HeapAllocated<Body> SERIAL(body);
@@ -115,28 +113,25 @@ class CreatureAttributes {
   optional<string> SERIAL(chatReactionHostile);
   int SERIAL(barehandedDamage) = 0;
   optional<AttackType> SERIAL(barehandedAttack);
-  optional<EffectType> SERIAL(attackEffect);
-  optional<EffectType> SERIAL(passiveAttack);
+  HeapAllocated<optional<EffectType>> SERIAL(attackEffect);
+  HeapAllocated<optional<EffectType>> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::male;
   optional<SpawnType> SERIAL(spawnType);
   bool SERIAL(innocent) = false;
   bool SERIAL(animal) = false;
-  bool SERIAL(stationary) = false;
   bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;
   bool SERIAL(carryAnything) = false;
-  bool SERIAL(invincible) = false;
+  bool SERIAL(boulder) = false;
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
-  double SERIAL(attributeGain) = 0.5;
   int SERIAL(recruitmentCost) = 0;
   Skillset SERIAL(skills);
-  SpellMap SERIAL(spells);
+  HeapAllocated<SpellMap> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
   MinionTaskMap SERIAL(minionTasks);
-  EnumMap<AttrType, double> SERIAL(attrIncrease);
+  EnumMap<ExperienceType, EnumMap<AttrType, double>> SERIAL(attrIncrease);
   bool SERIAL(noAttackSound) = false;
+  double SERIAL(maxExpFromCombat) = 4;
 };
-
-#endif

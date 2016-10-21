@@ -4,17 +4,14 @@ ifndef RPATH
 RPATH = .
 endif
 
-CFLAGS = -Wall -std=c++11 -Wno-sign-compare -Wno-unused-variable -Wno-unused-function -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare
+CFLAGS = -Wall -std=c++11 -Wno-sign-compare -Wno-unused-variable -Wno-unused-function -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512
 
-CLANG = true
-
-ifdef CLANG
-CC = clang++
-LD = clang++
-CFLAGS += -Werror -DCLANG -ftemplate-depth=512
-else
 CC = g++
 LD = g++
+
+ifndef RELEASE
+CFLAGS += -Werror 
+LDFLAGS += -fuse-ld=gold
 endif
 
 
@@ -23,10 +20,8 @@ LDFLAGS += -Wl -L/usr/local/opt/openal-soft/lib
 CFLAGS += -stdlib=libc++ -DOSX -mmacosx-version-min=10.7
 CFLAGS += -DTEXT_SERIALIZATION -I/usr/local/opt/openal-soft/include
 else
-LDFLAGS = -Wl,-rpath=$(RPATH) -static-libstdc++
+LDFLAGS += -Wl,-rpath=$(RPATH) -static-libstdc++
 endif
-
-LDFLAGS += -fuse-ld=gold
 
 ifdef DATA_DIR
 CFLAGS += -DDATA_DIR=\"$(DATA_DIR)\"
@@ -81,12 +76,14 @@ IPATH = -I. -I./extern
 CFLAGS += $(IPATH)
 
 ifdef OSX
-BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system -lboost_thread -lboost_chrono
+BOOST_LIBS = -lboost_serialization -lboost_filesystem -lboost_system -lboost_thread -lboost_chrono -lboost_program_options
 OPENGL_LIBS = -framework OpenGL
 else
-BOOST_LIBS = -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_system
+BOOST_LIBS = -lboost_serialization -lboost_filesystem -lboost_system -lboost_program_options
 OPENGL_LIBS = -lGL
 endif
+
+LDFLAGS += -L/usr/local/lib
 
 SRCS = $(shell ls -t *.cpp)
 

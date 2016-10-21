@@ -119,11 +119,16 @@ void WindowView::initialize() {
   else
     currentTileLayout = asciiLayouts;
   mapGui = new MapGui({
-      bindMethod(&WindowView::mapLeftClickFun, this),
+      bindMethod(&WindowView::mapContinuousLeftClickFun, this),
+      [this] (Vec2 pos) {
+          if (!guiBuilder.getActiveButton(CollectiveTab::BUILDINGS))
+            inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));},
       bindMethod(&WindowView::mapRightClickFun, this),
       bindMethod(&WindowView::mapCreatureClickFun, this),
       [this] { refreshInput = true;},
-      bindMethod(&WindowView::mapCreatureDragFun, this)}, clock, options );
+      bindMethod(&WindowView::mapCreatureDragFun, this),
+      [this] (UniqueEntity<Creature>::Id id, Vec2 pos) {
+          inputQueue.push(UserInput(UserInputId::CREATURE_DRAG_DROP, CreatureDropInfo{pos, id})); }}, clock, options );
   minimapGui = new MinimapGui(renderer, [this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = gui.stack(gui.rectangle(colors[ColorId::BLACK]), gui.miniWindow(),
       gui.margins(gui.renderInBounds(PGuiElem(minimapGui)), 6));
@@ -133,6 +138,7 @@ void WindowView::initialize() {
 
 void WindowView::mapCreatureDragFun(UniqueEntity<Creature>::Id id, ViewId viewId, Vec2 origin) {
   gui.getDragContainer().put({DragContentId::CREATURE, id}, gui.viewObject(viewId), origin);
+  inputQueue.push(UserInput(UserInputId::CREATURE_DRAG, id));
 }
 
 bool WindowView::isKeyPressed(SDL::SDL_Scancode code) {
@@ -143,12 +149,12 @@ void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
   if (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL)) {
     inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON2, id));
   } else {
-    inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
     guiBuilder.setCollectiveTab(CollectiveTab::MINIONS);
+    inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
   }
 }
 
-void WindowView::mapLeftClickFun(Vec2 pos) {
+void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
   guiBuilder.closeOverlayWindows();
   optional<int> activeLibrary = guiBuilder.getActiveButton(CollectiveTab::TECHNOLOGY);
   optional<int> activeBuilding = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS);
@@ -168,14 +174,11 @@ void WindowView::mapLeftClickFun(Vec2 pos) {
       if (collectiveTab == CollectiveTab::BUILDINGS) {
         if (activeBuilding && (isKeyPressed(SDL::SDL_SCANCODE_LSHIFT) || isKeyPressed(SDL::SDL_SCANCODE_RSHIFT)))
           inputQueue.push(UserInput(UserInputId::RECT_SELECTION, pos));
-        else if (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL))
+        else if (activeBuilding && (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL)))
           inputQueue.push(UserInput(UserInputId::RECT_DESELECTION, pos));
         else if (activeBuilding)
           inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo{pos, *activeBuilding}));
-        else
-          inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
-      } else
-        inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
+      }
     default:
       break;
   }
@@ -288,7 +291,7 @@ void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) 
 }
 
 void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, function<void()> cancelFun) {
-  int t0 = clock->getRealMillis();
+  auto t0 = clock->getRealMillis();
   int mouthMillis = 400;
   Texture& loadingSplash = gui.get(GuiFactory::TexId::LOADING_SPLASH);
   string cancelText = "[cancel]";
@@ -298,7 +301,7 @@ void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, fu
     Rectangle cancelBut(textPos.x - renderer.getTextLength(cancelText) / 2, textPos.y + 30,
         textPos.x + renderer.getTextLength(cancelText) / 2, textPos.y + 60);
     if (useTiles)
-      drawMenuBackground(meter.getProgress(), min(1.0, double(clock->getRealMillis() - t0) / mouthMillis));
+      drawMenuBackground(meter.getProgress(), min(1.0, (double)(clock->getRealMillis() - t0).count() / mouthMillis));
     else
       renderer.drawImage((renderer.getSize().x - loadingSplash.getSize().x) / 2,
           (renderer.getSize().y - loadingSplash.getSize().y) / 2, loadingSplash);
@@ -364,6 +367,7 @@ void WindowView::rebuildGui() {
   vector<GuiBuilder::OverlayInfo> overlays;
   int rightBarWidth = 0;
   int bottomBarHeight = 0;
+  optional<int> topBarHeight;
   int rightBottomMargin = 30;
   tempGuiElems.clear();
   if (!options->getIntValue(OptionId::DISABLE_MOUSE_WHEEL)) {
@@ -404,6 +408,7 @@ void WindowView::rebuildGui() {
         bottom = guiBuilder.drawBottomBandInfo(gameInfo);
         rightBarWidth = rightBarWidthCollective;
         bottomBarHeight = bottomBarHeightCollective;
+        topBarHeight = 85;
         break;
   }
   resetMapBounds();
@@ -411,7 +416,7 @@ void WindowView::rebuildGui() {
   int sideOffset = 10;
   int rightWindowHeight = 80;
   if (rightBarWidth > 0) {
-    tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight));
+    tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight, topBarHeight));
     tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
     tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
     tempGuiElems.back()->setBounds(Rectangle(Vec2(0, 0),
@@ -472,7 +477,7 @@ vector<GuiElem*> WindowView::getAllGuiElems() {
     return concat({mapGui}, extractRefs(tempGuiElems));
   vector<GuiElem*> ret = concat(extractRefs(tempGuiElems), extractRefs(blockingElems));
   if (gameReady)
-    ret = concat(concat({mapGui}, ret), {minimapDecoration.get()});
+    ret = concat({mapGui, minimapDecoration.get()}, ret);
   return ret;
 }
 
@@ -553,10 +558,11 @@ void WindowView::updateView(CreatureView* view, bool noRefresh) {
 
 void WindowView::playSounds(const CreatureView* view) {
   Rectangle area = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds(), mapGui->getScreenPos());
-  int curTime = clock->getRealMillis();
-  const int soundCooldown = 70;
+  auto curTime = clock->getRealMillis();
+  const milliseconds soundCooldown {70};
   for (auto& sound : soundQueue) {
-    if (curTime > lastPlayed[sound.getId()] + soundCooldown && (!sound.getPosition() || 
+    auto lastTime = lastPlayed[sound.getId()];
+    if ((!lastTime || curTime > *lastTime + soundCooldown) && (!sound.getPosition() ||
         (sound.getPosition()->isSameLevel(view->getLevel()) && sound.getPosition()->getCoord().inRectangle(area)))) {
       soundLibrary->playSound(sound);
       lastPlayed[sound.getId()] = curTime;
@@ -783,7 +789,7 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, double* scro
     int menuHeight = lines.size() * guiBuilder.getStandardLineHeight() + 30;
     PGuiElem menu = gui.miniWindow(gui.margins(
             gui.scrollable(gui.verticalList(std::move(lines), guiBuilder.getStandardLineHeight()), scrollPos),
-        15, 15, 15, 15), [&retVal] { retVal = optional<int>(none); });
+        15), [&retVal] { retVal = optional<int>(none); });
     PGuiElem bg2 = gui.darken();
     bg2->setBounds(renderer.getSize());
     while (1) {
@@ -1136,11 +1142,11 @@ bool WindowView::travelInterrupt() {
   return lockKeyboard;
 }
 
-int WindowView::getTimeMilli() {
+milliseconds WindowView::getTimeMilli() {
   return clock->getMillis();
 }
 
-int WindowView::getTimeMilliAbsolute() {
+milliseconds WindowView::getTimeMilliAbsolute() {
   return clock->getRealMillis();
 }
 
@@ -1240,9 +1246,6 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
   switch (key.sym) {
     case SDL::SDLK_z: zoom(0); break;
     case SDL::SDLK_F2: options->handle(this, OptionSet::GENERAL); refreshScreen(); break;
-    case SDL::SDLK_SPACE:
-      inputQueue.push(UserInput(UserInputId::WAIT));
-      break;
     case SDL::SDLK_ESCAPE:
       if (!guiBuilder.clearActiveButton() && !renderer.isMonkey())
         inputQueue.push(UserInput(UserInputId::EXIT));
@@ -1282,12 +1285,6 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     case SDL::SDLK_KP_7:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1)));
       mapGui->onMouseGone();
-      break;
-    case SDL::SDLK_m: inputQueue.push(UserInput(UserInputId::SHOW_HISTORY)); break;
-    case SDL::SDLK_h: inputQueue.push(UserInput(UserInputId::HIDE)); break;
-    case SDL::SDLK_p: inputQueue.push(UserInput(UserInputId::PAY_DEBT)); break;
-    case SDL::SDLK_c:
-      inputQueue.push(UserInput(GuiFactory::isShift(key) ? UserInputId::CONSUME : UserInputId::CHAT));
       break;
     default: break;
   }

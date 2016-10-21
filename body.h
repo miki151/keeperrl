@@ -1,5 +1,4 @@
-#ifndef _BODY_H
-#define _BODY_H
+#pragma once
 
 #include "util.h"
 #include "unique_entity.h"
@@ -68,9 +67,10 @@ class Body {
 
   bool tick(const Creature*);
   bool heal(Creature*, double amount, bool replaceLimbs);
-  void setOnFire(Creature*, double amount);
+  void fireDamage(Creature*, double amount);
   bool isIntrinsicallyAffected(LastingEffect) const;
-  void affectByPoison(Creature*);
+  bool affectByPoison(Creature*, double amount);
+  bool affectByPoisonGas(Creature*, double amount);
   void affectByTorture(Creature*);
   bool affectBySilver(Creature*);
   bool affectByAcid(Creature*);
@@ -146,4 +146,3 @@ class Body {
   optional<SoundId> SERIAL(deathSound);
 };
 
-#endif

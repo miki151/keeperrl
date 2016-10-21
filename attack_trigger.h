@@ -1,8 +1,7 @@
-#ifndef _ATTACK_TRIGGER_H
-#define _ATTACK_TRIGGER_H
+#pragma once
 
 #include "util.h"
-#include "square_type.h"
+#include "furniture_type.h"
 
 RICH_ENUM(AttackTriggerId,
   POWER,
@@ -17,13 +16,14 @@ RICH_ENUM(AttackTriggerId,
   PROXIMITY
 );
 
-typedef EnumVariant<AttackTriggerId, TYPES(int, SquareType),
+class AttackTrigger : public EnumVariant<AttackTriggerId, TYPES(int, FurnitureType),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD, AttackTriggerId::TIMER),
-        ASSIGN(SquareType, AttackTriggerId::ROOM_BUILT)> AttackTrigger;
+        ASSIGN(FurnitureType, AttackTriggerId::ROOM_BUILT)> {
+  using EnumVariant::EnumVariant;
+};
 
 struct TriggerInfo {
   AttackTrigger trigger;
   double value;
 };
 
-#endif

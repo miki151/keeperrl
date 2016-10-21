@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _USER_INPUT_H
-#define _USER_INPUT_H
+#pragma once
 
 #include "util.h"
 #include "enum_variant.h"
@@ -52,9 +51,10 @@ enum class UserInputId {
     CREATURE_CONTROL,
     CREATURE_RENAME,
     CREATURE_BANISH,
-    CREATURE_WHIP,
     CREATURE_EXECUTE,
-    CREATURE_TORTURE,
+    CREATURE_CONSUME,
+    CREATURE_DRAG_DROP,
+    CREATURE_DRAG,
     GO_TO_ENEMY,
     CREATE_TEAM,
     CREATE_TEAM_FROM_GROUP,
@@ -62,10 +62,14 @@ enum class UserInputId {
     SELECT_TEAM,
     ACTIVATE_TEAM,
     TECHNOLOGY,
+    WORKSHOP,
+    WORKSHOP_ADD,
+    WORKSHOP_ITEM_ACTION,
     VILLAGE_ACTION,
     GO_TO_VILLAGE,
     PAY_RANSOM,
     IGNORE_RANSOM,
+    SHOW_HISTORY,
 // turn-based actions
     MOVE,
     MOVE_TO,
@@ -73,30 +77,28 @@ enum class UserInputId {
     FIRE,
     PICK_UP_ITEM,
     PICK_UP_ITEM_MULTI,
-    SHOW_HISTORY,
-    HIDE,
-    PAY_DEBT,
-    CHAT,
-    WAIT,
-    UNPOSSESS,
-    TRANSFER,
-    SWAP_TEAM,
+    PLAYER_COMMAND,
     CAST_SPELL,
-    CONSUME,
     INVENTORY_ITEM,
     CHEAT_ATTRIBUTES
+};
+
+struct CreatureDropInfo {
+  Vec2 SERIAL(pos);
+  UniqueEntity<Creature>::Id SERIAL(creatureId);
+  SERIALIZE_ALL(pos, creatureId)
 };
 
 struct BuildingInfo {
   Vec2 SERIAL(pos);
   int SERIAL(building);
-  SERIALIZE_ALL(pos, building);
+  SERIALIZE_ALL(pos, building)
 };
 
 struct TeamCreatureInfo {
   TeamId SERIAL(team);
   UniqueEntity<Creature>::Id SERIAL(creatureId);
-  SERIALIZE_ALL(team, creatureId);
+  SERIALIZE_ALL(team, creatureId)
 };
 
 struct InventoryItemInfo {
@@ -126,6 +128,12 @@ struct EquipmentActionInfo {
   SERIALIZE_ALL(creature, ids, slot, action);
 };
 
+struct WorkshopQueuedActionInfo {
+  int SERIAL(itemIndex);
+  ItemAction SERIAL(action);
+  SERIALIZE_ALL(itemIndex, action);
+};
+
 struct RenameActionInfo {
   UniqueEntity<Creature>::Id SERIAL(creature);
   string SERIAL(name);
@@ -136,7 +144,7 @@ enum class SpellId;
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
-    TaskActionInfo, EquipmentActionInfo, RenameActionInfo),
+    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::LIBRARY,
@@ -149,9 +157,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_GROUP_BUTTON,
             UserInputId::CREATURE_CONTROL,
             UserInputId::CREATURE_BANISH,
-            UserInputId::CREATURE_WHIP,
             UserInputId::CREATURE_EXECUTE,
-            UserInputId::CREATURE_TORTURE,
+            UserInputId::CREATURE_CONSUME,
+            UserInputId::CREATURE_DRAG,
             UserInputId::GO_TO_ENEMY
             ),
         ASSIGN(UniqueEntity<PlayerMessage>::Id,
@@ -159,12 +167,16 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             ),
         ASSIGN(int,
             UserInputId::TECHNOLOGY,
+            UserInputId::WORKSHOP,
+            UserInputId::WORKSHOP_ADD,
             UserInputId::CANCEL_TEAM,
             UserInputId::ACTIVATE_TEAM,
             UserInputId::SELECT_TEAM,
             UserInputId::PICK_UP_ITEM,
             UserInputId::PICK_UP_ITEM_MULTI,
-            UserInputId::GO_TO_VILLAGE),
+            UserInputId::GO_TO_VILLAGE,
+            UserInputId::PLAYER_COMMAND
+        ),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM),
         ASSIGN(Vec2,
@@ -187,10 +199,13 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_TASK_ACTION),
         ASSIGN(EquipmentActionInfo,
             UserInputId::CREATURE_EQUIPMENT_ACTION),
+        ASSIGN(WorkshopQueuedActionInfo,
+            UserInputId::WORKSHOP_ITEM_ACTION),
         ASSIGN(RenameActionInfo,
-            UserInputId::CREATURE_RENAME)
+            UserInputId::CREATURE_RENAME),
+        ASSIGN(CreatureDropInfo,
+            UserInputId::CREATURE_DRAG_DROP)
         > {
   using EnumVariant::EnumVariant;
 };
 
-#endif

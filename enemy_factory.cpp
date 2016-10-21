@@ -3,6 +3,7 @@
 #include "location.h"
 #include "name_generator.h"
 #include "technology.h"
+#include "attack_trigger.h"
 
 EnemyFactory::EnemyFactory(RandomGen& r) : random(r) {
 }
@@ -106,14 +107,14 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
     case EnemyId::ORC_VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
-            c.creatures = CreatureFactory::orcTown(TribeId::getGreenskin());
+            c.tribe = TribeId::getGreenskin();
+            c.creatures = CreatureFactory::orcTown(c.tribe);
             c.numCreatures = random.get(12, 16);
             c.location = getVillageLocation();
-            c.tribe = TribeId::getGreenskin();
             c.race = "greenskins";
             c.buildingId = BuildingId::BRICK;
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());
-            c.outsideFeatures = SquareFactory::villageOutside();),
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
+            c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
           CollectiveConfig::withImmigrants(0.003, 16, {
             CONSTRUCT(ImmigrantInfo,
                 c.id = CreatureId::ORC;
@@ -127,29 +128,29 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
     case EnemyId::VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
-            c.creatures = CreatureFactory::humanVillage(TribeId::getHuman());
+            c.tribe = TribeId::getHuman();
+            c.creatures = CreatureFactory::humanVillage(c.tribe);
             c.numCreatures = random.get(12, 20);
             c.location = getVillageLocation();
-            c.tribe = TribeId::getHuman();
             c.race = "humans";
             c.buildingId = BuildingId::WOOD;
             c.shopFactory = ItemFactory::armory();
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             ), CollectiveConfig::noImmigrants().setGhostSpawns(0.1, 4));
     case EnemyId::WARRIORS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CASTLE2;
-            c.creatures = CreatureFactory::vikingTown(TribeId::getHuman());
+            c.tribe = TribeId::getHuman();
+            c.creatures = CreatureFactory::vikingTown(c.tribe);
             c.numCreatures = random.get(12, 16);
             c.location = getVillageLocation();
-            c.tribe = TribeId::getHuman();
             c.race = "humans";
             c.buildingId = BuildingId::WOOD_CASTLE;
             c.stockpiles = LIST({StockpileInfo::GOLD, 800});
             c.guardId = CreatureId::WARRIOR;
             c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::BEAST_MUT);
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());
-            c.outsideFeatures = SquareFactory::castleOutside();),
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
+            c.outsideFeatures = FurnitureFactory::castleOutside(c.tribe);),
           CollectiveConfig::withImmigrants(0.003, 16, {
             CONSTRUCT(ImmigrantInfo,
                 c.id = CreatureId::WARRIOR;
@@ -159,25 +160,30 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 6;
               c.minTeamSize = 5;
-              c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
-                AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
-                AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
+              c.triggers = LIST(
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+                  AttackTriggerId::SELF_VICTIMS,
+                  {AttackTriggerId::TIMER, 7000},
+                  AttackTriggerId::STOLEN_ITEMS,
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
+                  AttackTriggerId::FINISH_OFF,
+                  AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
               c.ransom = make_pair(0.8, random.get(500, 700));));
     case EnemyId::KNIGHTS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CASTLE;
-            c.creatures = CreatureFactory::humanCastle(TribeId::getHuman());
+            c.tribe = TribeId::getHuman();
+            c.creatures = CreatureFactory::humanCastle(c.tribe);
             c.numCreatures = random.get(20, 26);
             c.location = getVillageLocation();
-            c.tribe = TribeId::getHuman();
             c.race = "humans";
             c.stockpiles = LIST({StockpileInfo::GOLD, 700});
             c.buildingId = BuildingId::BRICK;
             c.guardId = CreatureId::CASTLE_GUARD;
             c.shopFactory = ItemFactory::villageShop();
-            c.furniture = SquareFactory::castleFurniture(TribeId::getPest());
-            c.outsideFeatures = SquareFactory::castleOutside();),
+            c.furniture = FurnitureFactory::castleFurniture(c.tribe);
+            c.outsideFeatures = FurnitureFactory::castleOutside(c.tribe);),
           CollectiveConfig::withImmigrants(0.003, 26, {
             CONSTRUCT(ImmigrantInfo,
                 c.id = CreatureId::KNIGHT;
@@ -191,21 +197,26 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 12;
               c.minTeamSize = 10;
-              c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
-                AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
-                AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
+              c.triggers = LIST(
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+                  AttackTriggerId::SELF_VICTIMS,
+                  {AttackTriggerId::TIMER, 7000},
+                  AttackTriggerId::STOLEN_ITEMS,
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
+                  AttackTriggerId::FINISH_OFF,
+                  AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
               c.ransom = make_pair(0.9, random.get(1400, 2000));),
           random.roll(4) ? LevelConnection{LevelConnection::MAZE, get(EnemyId::MINOTAUR)}
               : optional<LevelConnection>(none));
     case EnemyId::MINOTAUR:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
-            c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::MINOTAUR);
+            c.tribe = TribeId::getMonster();
+            c.creatures = CreatureFactory::singleType(c.tribe, CreatureId::MINOTAUR);
             c.numCreatures = 1;
             c.location = new Location("maze");
-            c.tribe = TribeId::getMonster();
             c.race = "monsters";
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants());
     case EnemyId::RED_DRAGON:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -221,8 +232,12 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 0;
               c.minTeamSize = 1;
-              c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 25}, AttackTriggerId::STOLEN_ITEMS,
-                AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
+              c.triggers = LIST(
+                  {AttackTriggerId::ENEMY_POPULATION, 22},
+                  AttackTriggerId::STOLEN_ITEMS,
+                  {AttackTriggerId::TIMER, 7000},
+                  AttackTriggerId::FINISH_OFF,
+                  AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 12);
               c.welcomeMessage = VillageBehaviour::DRAGON_WELCOME;));
     case EnemyId::GREEN_DRAGON:
@@ -239,23 +254,27 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 0;
               c.minTeamSize = 1;
-              c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 20}, AttackTriggerId::STOLEN_ITEMS,
-                AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
+              c.triggers = LIST(
+                  {AttackTriggerId::ENEMY_POPULATION, 18},
+                  AttackTriggerId::STOLEN_ITEMS,
+                  {AttackTriggerId::TIMER, 7000},
+                  AttackTriggerId::FINISH_OFF,
+                  AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 7);
               c.welcomeMessage = VillageBehaviour::DRAGON_WELCOME;));
     case EnemyId::DWARVES:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::MINETOWN;
-            c.creatures = CreatureFactory::dwarfTown(TribeId::getDwarf());
+            c.tribe = TribeId::getDwarf();
+            c.creatures = CreatureFactory::dwarfTown(c.tribe);
             c.numCreatures = random.get(9, 14);
             c.location = getVillageLocation();
-            c.tribe = TribeId::getDwarf();
             c.race = "dwarves";
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST({StockpileInfo::GOLD, 1000}, {StockpileInfo::MINERALS, 600});
             c.shopFactory = ItemFactory::dwarfShop();
-            c.outsideFeatures = SquareFactory::dungeonOutside();
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
+            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::withImmigrants(0.002, 15, {
             CONSTRUCT(ImmigrantInfo,
                 c.id = CreatureId::DWARF;
@@ -265,9 +284,14 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 3;
             c.minTeamSize = 4;
-            c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
-              AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
-              AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
+            c.triggers = LIST(
+                {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+                AttackTriggerId::SELF_VICTIMS,
+                AttackTriggerId::STOLEN_ITEMS,
+                {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
+                {AttackTriggerId::TIMER, 7000},
+                AttackTriggerId::FINISH_OFF,
+                AttackTriggerId::PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 3);
             c.ransom = make_pair(0.8, random.get(1200, 1600));));
     case EnemyId::ELVES:
@@ -281,7 +305,7 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
             c.stockpiles = LIST({StockpileInfo::GOLD, 800});
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
+            c.furniture = FurnitureFactory::roomFurniture(TribeId::getPest());),
           CollectiveConfig::withImmigrants(0.002, 18, {
             CONSTRUCT(ImmigrantInfo,
                 c.id = CreatureId::ELF_ARCHER;
@@ -308,13 +332,17 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
             c.location = new Location();
             c.tribe = TribeId::getHuman();
             c.buildingId = BuildingId::BRICK;
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
+            c.furniture = FurnitureFactory::roomFurniture(TribeId::getPest());),
           CollectiveConfig::noImmigrants().setLeaderAsFighter(),
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 0;
               c.minTeamSize = 1;
-              c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, AttackTriggerId::PROXIMITY,
-                {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD}, AttackTriggerId::FINISH_OFF);
+              c.triggers = LIST(
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+                  AttackTriggerId::PROXIMITY,
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
+                  AttackTriggerId::FINISH_OFF,
+                  {AttackTriggerId::TIMER, 7000});
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::CAMP_AND_SPAWN,
                 CreatureFactory::elementals(TribeId::getHuman()));
               c.ransom = make_pair(0.5, random.get(200, 400));),
@@ -343,16 +371,16 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
     case EnemyId::LIZARDMEN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
-            c.creatures = CreatureFactory::lizardTown(TribeId::getLizard());
+            c.tribe = TribeId::getLizard();
+            c.creatures = CreatureFactory::lizardTown(c.tribe);
             c.numCreatures = random.get(8, 14);
             c.location = getVillageLocation();
-            c.tribe = TribeId::getLizard();
             c.race = "lizardmen";
             c.buildingId = BuildingId::MUD;
             c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::HUMANOID_MUT);
             c.shopFactory = ItemFactory::mushrooms();
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());
-            c.outsideFeatures = SquareFactory::villageOutside();),
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
+            c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
           CollectiveConfig::withImmigrants(0.007, 15, {
             CONSTRUCT(ImmigrantInfo,
                 c.id = CreatureId::LIZARDMAN;
@@ -362,21 +390,26 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 4;
               c.minTeamSize = 4;
-              c.triggers = LIST({AttackTriggerId::POWER}, {AttackTriggerId::SELF_VICTIMS},
-                AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD},
-                AttackTriggerId::FINISH_OFF, AttackTriggerId::PROXIMITY);
+              c.triggers = LIST(
+                  AttackTriggerId::POWER,
+                  AttackTriggerId::SELF_VICTIMS,
+                  AttackTriggerId::STOLEN_ITEMS,
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
+                  {AttackTriggerId::TIMER, 7000},
+                  AttackTriggerId::FINISH_OFF,
+                  AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
     case EnemyId::DARK_ELVES:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::MINETOWN;
-            c.creatures = CreatureFactory::darkElfVillage(TribeId::getDarkElf());
+            c.tribe = TribeId::getDarkElf();
+            c.creatures = CreatureFactory::darkElfVillage(c.tribe);
             c.numCreatures = random.get(14, 16);
             c.location = getVillageLocation();
-            c.tribe = TribeId::getDarkElf();
             c.race = "dark elves";
             c.buildingId = BuildingId::DUNGEON;
-            c.outsideFeatures = SquareFactory::dungeonOutside();
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
+            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::withImmigrants(0.002, 15, {
             CONSTRUCT(ImmigrantInfo,
                 c.id = CreatureId::DARK_ELF_WARRIOR;
@@ -387,40 +420,40 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
     case EnemyId::DARK_ELVES_ENTRY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;
-            c.creatures = CreatureFactory::darkElfEntrance(TribeId::getDarkElf());
+            c.tribe = TribeId::getDarkElf();
+            c.creatures = CreatureFactory::darkElfEntrance(c.tribe);
             c.numCreatures = random.get(3, 7);
             c.location = new Location();
-            c.tribe = TribeId::getDarkElf();
             c.race = "dark elves";
             c.buildingId = BuildingId::DUNGEON;
-            c.outsideFeatures = SquareFactory::dungeonOutside();
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
+            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants(), {});
     case EnemyId::GNOMES:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::MINETOWN;
-            c.creatures = CreatureFactory::gnomeVillage(TribeId::getGnome());
+            c.tribe = TribeId::getGnome();
+            c.creatures = CreatureFactory::gnomeVillage(c.tribe);
             c.numCreatures = random.get(12, 24);
             c.location = getVillageLocation();
-            c.tribe = TribeId::getGnome();
             c.race = "gnomes";
             c.buildingId = BuildingId::DUNGEON;
             c.shopFactory = ItemFactory::gnomeShop();
-            c.outsideFeatures = SquareFactory::dungeonOutside();
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
+            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants(), none,
           LevelConnection{LevelConnection::GNOMISH_MINES, get(EnemyId::GNOMES_ENTRY)});
     case EnemyId::GNOMES_ENTRY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;
-            c.creatures = CreatureFactory::gnomeEntrance(TribeId::getGnome());
+            c.tribe = TribeId::getGnome();
+            c.creatures = CreatureFactory::gnomeEntrance(c.tribe);
             c.numCreatures = random.get(3, 7);
             c.location = new Location();
-            c.tribe = TribeId::getGnome();
             c.race = "gnomes";
             c.buildingId = BuildingId::DUNGEON;
-            c.outsideFeatures = SquareFactory::dungeonOutside();
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
+            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants());
     case EnemyId::ENTS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -429,7 +462,7 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
             c.numCreatures = random.get(7, 13);
             c.location = new Location();
             c.tribe = TribeId::getMonster();
-            c.race = "ents";
+            c.race = "tree spirits";
             c.buildingId = BuildingId::WOOD;),
           CollectiveConfig::withImmigrants(0.003, 15, {
           CONSTRUCT(ImmigrantInfo,
@@ -473,7 +506,9 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 13}, AttackTriggerId::PROXIMITY);
+            c.triggers = LIST(
+                {AttackTriggerId::ENEMY_POPULATION, 13},
+                AttackTriggerId::PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 4);));
     case EnemyId::HYDRA:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -492,7 +527,7 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
             c.location = new Location("cemetery");
             c.tribe = TribeId::getMonster();
             c.race = "undead";
-            c.furniture = SquareFactory::cryptCoffins(TribeId::getKeeper());
+            c.furniture = FurnitureFactory::cryptCoffins(TribeId::getKeeper());
             c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {},
           LevelConnection{LevelConnection::CRYPT, get(EnemyId::CEMETERY_ENTRY)});
     case EnemyId::CEMETERY_ENTRY:
@@ -508,14 +543,14 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
       CreatureId creature = random.choose(CreatureId::OGRE, CreatureId::HARPY, CreatureId::ORC);
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
-            c.creatures = CreatureFactory::singleType(TribeId::getGreenskin(), creature);
+            c.tribe = TribeId::getGreenskin();
+            c.creatures = CreatureFactory::singleType(c.tribe, creature);
             c.numCreatures = random.get(4, 8);
             c.location = new Location();
-            c.tribe = TribeId::getGreenskin();
             c.buildingId = BuildingId::DUNGEON;
             c.closeToPlayer = true;
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());
-            c.outsideFeatures = SquareFactory::villageOutside();),
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
+            c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
           CollectiveConfig::withImmigrants(0.003, 10, {
             CONSTRUCT(ImmigrantInfo,
                 c.id = creature;
@@ -545,66 +580,66 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
     case EnemyId::WITCH:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::WITCH_HOUSE;
-            c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::WITCH);
+            c.tribe = TribeId::getMonster();
+            c.creatures = CreatureFactory::singleType(c.tribe, CreatureId::WITCH);
             c.numCreatures = 1;
             c.location = new Location();
-            c.tribe = TribeId::getMonster();
             c.race = "witch";
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);
-            c.furniture = SquareFactory::single(SquareId::CAULDRON);), CollectiveConfig::noImmigrants());
+            c.furniture = FurnitureFactory(c.tribe, FurnitureType::LABORATORY);), CollectiveConfig::noImmigrants());
     case EnemyId::HUMAN_COTTAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::COTTAGE;
-            c.creatures = CreatureFactory::humanPeaceful(TribeId::getHuman());
+            c.tribe = TribeId::getHuman();
+            c.creatures = CreatureFactory::humanPeaceful(c.tribe);
             c.numCreatures = random.get(3, 7);
             c.location = new Location();
-            c.tribe = TribeId::getHuman();
             c.race = "humans";
             c.buildingId = BuildingId::WOOD;
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants().setGuardian({CreatureId::WITCHMAN, 0.001, 1, 2}));
     case EnemyId::ELVEN_COTTAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::FORREST_COTTAGE;
-            c.creatures = CreatureFactory::elvenCottage(TribeId::getElf());
+            c.tribe = TribeId::getElf();
+            c.creatures = CreatureFactory::elvenCottage(c.tribe);
             c.numCreatures = random.get(3, 7);
             c.location = new Location();
-            c.tribe = TribeId::getElf();
             c.race = "elves";
             c.buildingId = BuildingId::WOOD;
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants());
     case EnemyId::KOBOLD_CAVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;
-            c.creatures = CreatureFactory::koboldVillage(TribeId::getDwarf());
+            c.tribe = TribeId::getDwarf();
+            c.creatures = CreatureFactory::koboldVillage(c.tribe);
             c.numCreatures = random.get(3, 7);
             c.location = new Location();
             c.race = "kobolds";
-            c.tribe = TribeId::getDwarf();
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST({StockpileInfo::MINERALS, 300});),
           CollectiveConfig::noImmigrants());
     case EnemyId::DWARF_CAVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;
-            c.creatures = CreatureFactory::dwarfCave(TribeId::getDwarf());
+            c.tribe = TribeId::getDwarf();
+            c.creatures = CreatureFactory::dwarfCave(c.tribe);
             c.numCreatures = random.get(2, 5);
             c.location = new Location();
             c.race = "dwarves";
-            c.tribe = TribeId::getDwarf();
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 300},
                 StockpileInfo{StockpileInfo::GOLD, 300}));
-            c.outsideFeatures = SquareFactory::dungeonOutside();
-            c.furniture = SquareFactory::roomFurniture(TribeId::getPest());),
+            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants(),
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 0;
             c.minTeamSize = 1;
             c.triggers = LIST(AttackTriggerId::SELF_VICTIMS, AttackTriggerId::STOLEN_ITEMS);
-            c.attackBehaviour = AttackBehaviourId::KILL_LEADER;
+            c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
             c.ransom = make_pair(0.5, random.get(200, 400));));
   }
 }

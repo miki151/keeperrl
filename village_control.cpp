@@ -30,6 +30,7 @@
 #include "lasting_effect.h"
 #include "body.h"
 #include "event_proxy.h"
+#include "attack_trigger.h"
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;

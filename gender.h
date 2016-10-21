@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _GENDER_H
-#define _GENDER_H
+#pragma once
 
 class Gender {
   public:
@@ -36,4 +35,3 @@ class Gender {
   bool SERIAL(fem);
 };
 
-#endif

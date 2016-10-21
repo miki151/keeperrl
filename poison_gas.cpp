@@ -35,7 +35,7 @@ const double decrease = 0.98;
 const double spread = 0.10;
 
 void PoisonGas::tick(Position pos) {
-  if (amount < 0.1) {
+  if (amount < 0.01) {
     amount = 0;
     return;
   }

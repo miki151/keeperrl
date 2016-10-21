@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _MODEL_H
-#define _MODEL_H
+#pragma once
 
 #include "util.h"
 #include "map_memory.h"
@@ -52,8 +51,8 @@ class Model {
 
   optional<Position> getStairs(const Level* from, const Level* to);
 
-  /** Adds new creature to the queue. Assumes this creature has already been added to a level. */
-  void addCreature(PCreature, double delay = 0);
+  void addCreature(PCreature);
+  void addCreature(PCreature, double delay);
   void landHeroPlayer(const string& name, int handicap);
 
   bool isTurnBased();
@@ -118,4 +117,3 @@ class Model {
   void checkCreatureConsistency();
 };
 
-#endif

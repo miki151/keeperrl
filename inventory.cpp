@@ -19,6 +19,8 @@
 #include "item.h"
 #include "minion_equipment.h"
 #include "resource_id.h"
+#include "item_class.h"
+#include "corpse_info.h"
 
 template <class Archive> 
 void Inventory::serialize(Archive& ar, const unsigned int version) {
@@ -103,6 +105,8 @@ function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
         return it->getResourceId() == CollectiveResourceId::WOOD; };
     case ItemIndex::IRON: return [](const Item* it) {
         return it->getResourceId() == CollectiveResourceId::IRON; };
+    case ItemIndex::STEEL: return [](const Item* it) {
+        return it->getResourceId() == CollectiveResourceId::STEEL; };
     case ItemIndex::STONE: return [](const Item* it) {
         return it->getResourceId() == CollectiveResourceId::STONE; };
     case ItemIndex::REVIVABLE_CORPSE: return [](const Item* it) {

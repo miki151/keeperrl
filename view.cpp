@@ -27,6 +27,8 @@
 #include "level.h"
 #include "position.h"
 #include "creature_attributes.h"
+#include "view_object.h"
+#include "spell_map.h"
 
 ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
@@ -92,7 +94,7 @@ CreatureInfo::CreatureInfo(const Creature* c)
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
       stackName(c->getName().stack()),
-      expLevel(c->getAttributes().getExpLevel()),
+      expLevel((int)c->getAttributes().getVisibleExpLevel()),
       morale(c->getMorale()),
       cost({ViewId::GOLD, c->getAttributes().getRecruitmentCost()}){
 }
@@ -122,7 +124,6 @@ void PlayerInfo::readFrom(const Creature* c) {
   firstName = c->getName().first().get_value_or("");
   name = c->getName().bare();
   title = c->getName().title();
-  adjectives = c->getMainAdjectives();
   description = capitalFirst(c->getAttributes().getDescription());
   Item* weapon = c->getWeapon();
   weaponName = weapon ? weapon->getName() : "";
@@ -130,6 +131,7 @@ void PlayerInfo::readFrom(const Creature* c) {
   morale = c->getMorale();
   levelName = c->getLevel()->getName();
   positionHash = c->getPosition().getHash();
+  creatureId = c->getUniqueId();
   typedef PlayerInfo::AttributeInfo::Id AttrId;
   attributes = {
     { "Attack",
@@ -168,7 +170,11 @@ void PlayerInfo::readFrom(const Creature* c) {
       c->getExpLevel(), 0,
       "Describes general combat value of the creature."}*/
   };
-  level = c->getAttributes().getExpLevel();
+  levelInfo.level = c->getAttributes().getVisibleExpLevel();
+  for (auto expType : ENUM_ALL(ExperienceType)) {
+    levelInfo.increases[expType] = c->getAttributes().getExpIncrease(expType);
+    levelInfo.limits[expType] = c->getAttributes().getMaxExpIncrease(expType);
+  }
   skills = getSkillNames(c);
   effects.clear();
   for (auto& adj : c->getBadAdjectives())

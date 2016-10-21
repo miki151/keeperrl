@@ -38,19 +38,28 @@
 #include "sound.h"
 #include "creature_attributes.h"
 #include "event_listener.h"
+#include "item_type.h"
+#include "body.h"
+#include "item.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(items)
-    & SVAR(weights)
-    & SVAR(minCount)
-    & SVAR(maxCount)
-    & SVAR(unique);
+  serializeAll(ar, items, weights, count, unique);
 }
 
 SERIALIZABLE(ItemFactory);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ItemFactory);
+
+struct ItemFactory::ItemInfo {
+  ItemInfo(ItemType _id, double _weight) : id(_id), weight(_weight), count(1, 2) {}
+  ItemInfo(ItemType _id, double _weight, Range c)
+    : id(_id), weight(_weight), count(c) {}
+
+  ItemType id;
+  double weight;
+  Range count;
+};
 
 class FireScroll : public Item {
   public:
@@ -62,7 +71,7 @@ class FireScroll : public Item {
 
   virtual void specialTick(Position position) override {
     if (set) {
-      setOnFire(0.03, position);
+      fireDamage(0.03, position);
       set = false;
     }
   }
@@ -80,7 +89,7 @@ class AmuletOfWarning : public Item {
 
   virtual void specialTick(Position position) override {
     Creature* owner = position.getCreature();
-    if (owner && owner->getEquipment().isEquiped(this)) {
+    if (owner && owner->getEquipment().isEquipped(this)) {
       bool isDanger = false;
       bool isBigDanger = false;
       for (Position v : position.getRectangle(Rectangle(-radius, -radius, radius + 1, radius + 1))) {
@@ -123,7 +132,7 @@ class AmuletOfHealing : public Item {
 
   virtual void specialTick(Position position) override {
     Creature* owner = position.getCreature();
-    if (owner && owner->getEquipment().isEquiped(this))
+    if (owner && owner->getEquipment().isEquipped(this))
         owner->heal(1.0 / 20);
   }
 
@@ -162,7 +171,7 @@ class ItemOfCreatureVision : public Item {
 class Corpse : public Item {
   public:
   Corpse(const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN, 
-      double rottingT, Item::CorpseInfo info) : 
+      double rottingT, CorpseInfo info) : 
       Item(attr), 
       object2(obj2), 
       rottingTime(rottingT), 
@@ -224,7 +233,7 @@ class Corpse : public Item {
 };
 
 PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemClass itemClass,
-    Item::CorpseInfo corpseInfo) {
+    CorpseInfo corpseInfo) {
   const double rotTime = 300;
   return PItem(new Corpse(
         ViewObject(ViewId::BONE, ViewLayer::ITEM, rottenName),
@@ -243,7 +252,7 @@ class Potion : public Item {
   public:
   Potion(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void setOnFire(double amount, Position position) override {
+  virtual void fireDamage(double amount, Position position) override {
     heat += amount;
     Debug() << getName() << " heat " << heat;
     if (heat > 0.1) {
@@ -336,17 +345,21 @@ void ItemFactory::registerTypes(Archive& ar, int version) {
 
 REGISTER_TYPES(ItemFactory::registerTypes);
 
-ItemFactory::ItemFactory(const vector<ItemInfo>& _items,
-      const vector<ItemType>& _unique) : unique(_unique) {
-  for (auto elem : _items)
+ItemFactory::ItemFactory(const vector<ItemInfo>& items, const vector<ItemType>& u)
+    : ItemFactory(items) {
+  unique = u;
+}
+
+ItemFactory::ItemFactory(const vector<ItemInfo>& items) {
+  for (auto elem : items)
     addItem(elem);
 }
 
 ItemFactory& ItemFactory::addItem(ItemInfo elem) {
   items.push_back(elem.id);
   weights.push_back(elem.weight);
-  minCount.push_back(elem.minCount);
-  maxCount.push_back(elem.maxCount);
+  CHECK(!elem.count.isEmpty());
+  count.push_back(elem.count);
   return *this;
 }
 
@@ -368,7 +381,7 @@ vector<PItem> ItemFactory::random(optional<int> seed) {
     index = gen.get(weights);
   } else
     index = Random.get(weights);
-  return fromId(items[index], Random.get(minCount[index], maxCount[index]));
+  return fromId(items[index], Random.get(count[index]));
 }
 
 vector<PItem> ItemFactory::getAll() {
@@ -419,7 +432,7 @@ ItemFactory ItemFactory::armory() {
       {ItemId::BATTLE_AXE, 2 },
       {ItemId::WAR_HAMMER, 2 },
       {ItemId::BOW, 4 },
-      {ItemId::ARROW, 8, 20, 30 },
+      {ItemId::ARROW, 8, Range(20, 30) },
       {ItemId::LEATHER_ARMOR, 2 },
       {ItemId::CHAIN_ARMOR, 1 },
       {ItemId::LEATHER_HELM, 2 },
@@ -481,7 +494,7 @@ ItemFactory ItemFactory::gnomeShop() {
 
 ItemFactory ItemFactory::dragonCave() {
   return ItemFactory({
-      {ItemId::GOLD_PIECE, 10, 30, 100 },
+      {ItemId::GOLD_PIECE, 10, Range(30, 100) },
       {ItemId::SPECIAL_SWORD, 1 },
       {ItemId::SPECIAL_BATTLE_AXE, 1 },
       {ItemId::SPECIAL_WAR_HAMMER, 1 }});
@@ -491,77 +504,6 @@ ItemFactory ItemFactory::minerals() {
   return ItemFactory({
       {ItemId::IRON_ORE, 1 },
       {ItemId::ROCK, 1 }});
-}
-
-ItemFactory ItemFactory::workshop(const vector<Technology*>& techs) {
-  ItemFactory factory({
-    {ItemId::FIRST_AID_KIT, 4},
-    {ItemId::LEATHER_ARMOR, 4 },
-    {ItemId::LEATHER_HELM, 2 },
-    {ItemId::LEATHER_BOOTS, 2 },
-    {ItemId::LEATHER_GLOVES, 2 },
-    {ItemId::CLUB, 3 },
-    {ItemId::HEAVY_CLUB, 1 },
-  });
-  if (contains(techs, Technology::get(TechId::TRAPS))) {
-    factory.addItem({ItemId::BOULDER_TRAP_ITEM, 0.5 });
-    factory.addItem({{ItemId::TRAP_ITEM, TrapInfo({TrapType::POISON_GAS, EffectId::EMIT_POISON_GAS})}, 0.5 });
-    factory.addItem({{ItemId::TRAP_ITEM, TrapInfo({TrapType::ALARM, EffectId::ALARM})}, 1 });
-    factory.addItem({{ItemId::TRAP_ITEM, TrapInfo({TrapType::WEB,
-          EffectType(EffectId::LASTING, LastingEffect::ENTANGLED)})}, 1 });
-    factory.addItem({{ItemId::TRAP_ITEM, TrapInfo({TrapType::SURPRISE, EffectId::TELE_ENEMIES})}, 1 });
-    factory.addItem({{ItemId::TRAP_ITEM, TrapInfo({TrapType::TERROR,
-          EffectType(EffectId::LASTING, LastingEffect::PANIC)})}, 1 });
-  }
-  if (contains(techs, Technology::get(TechId::ARCHERY))) {
-    factory.addItem({ItemId::BOW, 2 });
-    factory.addItem({ItemId::ARROW, 2, 10, 30 });
-  }
-  return factory;
-}
-
-ItemFactory ItemFactory::forge(const vector<Technology*>& techs) {
-//  CHECK(contains(techs, Technology::get(TechId::IRON_WORKING)));
-  ItemFactory factory({
-    {ItemId::SWORD, 6 },
-    {ItemId::SPECIAL_SWORD, 0.05 },
-    {ItemId::CHAIN_ARMOR, 4 },
-    {ItemId::IRON_HELM, 2 },
-    {ItemId::IRON_BOOTS, 2 },
-  });
-  if (contains(techs, Technology::get(TechId::TWO_H_WEAP))) {
-    factory.addItem({ItemId::BATTLE_AXE, 5 });
-    factory.addItem({ItemId::WAR_HAMMER, 5 });
-    factory.addItem({ItemId::SPECIAL_BATTLE_AXE, 0.05 });
-    factory.addItem({ItemId::SPECIAL_WAR_HAMMER, 0.05 });
-  }
-  return factory;
-}
-
-ItemFactory ItemFactory::jeweler(const vector<Technology*>& techs) {
-  return ItemFactory({
-    {ItemId::WARNING_AMULET, 3 },
-    {ItemId::HEALING_AMULET, 3 },
-    {ItemId::DEFENSE_AMULET, 3 },
-    {{ItemId::RING, LastingEffect::POISON_RESISTANT}, 3},
-    {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 3},
-  });
-}
-
-ItemFactory ItemFactory::laboratory(const vector<Technology*>& techs) {
-  ItemFactory factory({
-      {{ItemId::POTION, EffectId::HEAL}, 1 },
-      {{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)}, 1 },
-      {{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)}, 1 },
-      {{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT)}, 1 }});
-  if (contains(techs, Technology::get(TechId::ALCHEMY_ADV))) {
-    factory.addItem({{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::BLIND)}, 1 });
-    factory.addItem({{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::INVISIBLE)}, 1 });
-    factory.addItem({{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::FLYING)}, 1 });
-    factory.addItem({{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::POISON)}, 1 });
-    factory.addItem({{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SPEED)}, 1 });
-  }
-  return factory;
 }
 
 ItemFactory ItemFactory::potions() {
@@ -668,11 +610,11 @@ ItemFactory ItemFactory::dungeon() {
 }
 
 ItemFactory ItemFactory::chest() {
-  return dungeon().addItem({ItemId::GOLD_PIECE, 300, 20, 41});
+  return dungeon().addItem({ItemId::GOLD_PIECE, 300, Range(20, 41)});
 }
 
-ItemFactory ItemFactory::singleType(ItemType id) {
-  return ItemFactory({{id, 1}});
+ItemFactory ItemFactory::singleType(ItemType id, Range count) {
+  return ItemFactory({ItemInfo{id, 1, count}});
 }
 
 int getEffectPrice(EffectType type) {
@@ -832,6 +774,12 @@ void addPrefix(ItemAttributes& i, WeaponPrefix prefix) {
   }
 }
 
+ItemFactory& ItemFactory::operator = (const ItemFactory&) = default;
+
+ItemFactory::ItemFactory(const ItemFactory&) = default;
+
+ItemFactory::~ItemFactory() {}
+
 int prefixChance = 30;
 
 #define INHERIT(ID, X) ItemAttributes([&](ItemAttributes& i) { i = getAttributes(ItemId::ID); X })
@@ -898,6 +846,16 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[ModifierType::ACCURACY] = 3 + maybePlusMinusOne(4);
             i.price = 20;
             i.attackType = AttackType::CUT;);
+    case ItemId::STEEL_SWORD: return ITATTR(
+            i.viewId = ViewId::STEEL_SWORD;
+            i.name = "steel sword";
+            i.itemClass = ItemClass::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
+            i.weight = 1.2;
+            i.modifiers[ModifierType::DAMAGE] = 11 + maybePlusMinusOne(4);
+            i.modifiers[ModifierType::ACCURACY] = 4 + maybePlusMinusOne(4);
+            i.price = 100;
+            i.attackType = AttackType::CUT;);
     case ItemId::SPECIAL_ELVEN_SWORD: return INHERIT(ELVEN_SWORD,
             addPrefix(i, WeaponPrefix::SILVER);
             i.viewId = ViewId::SPECIAL_SWORD;
@@ -929,6 +887,18 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.attackTime = 1.2;
             i.twoHanded = true;
             i.price = 140;
+            i.attackType = AttackType::CUT;);
+    case ItemId::STEEL_BATTLE_AXE: return ITATTR(
+            i.viewId = ViewId::STEEL_BATTLE_AXE;
+            i.name = "steel battle axe";
+            i.itemClass = ItemClass::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
+            i.weight = 7;
+            i.modifiers[ModifierType::DAMAGE] = 18 + maybePlusMinusOne(4);
+            i.modifiers[ModifierType::ACCURACY] = 5 + maybePlusMinusOne(4);
+            i.attackTime = 1.2;
+            i.twoHanded = true;
+            i.price = 500;
             i.attackType = AttackType::CUT;);
     case ItemId::SPECIAL_WAR_HAMMER: return INHERIT(WAR_HAMMER,
             addPrefix(i, WeaponPrefix::LEAD_FILLED);
@@ -1062,6 +1032,15 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.weight = 15;
             i.price = 130;
             i.modifiers[ModifierType::DEFENSE] = 5 + maybePlusMinusOne(4););
+    case ItemId::STEEL_ARMOR: return ITATTR(
+            i.viewId = ViewId::STEEL_ARMOR;
+            i.shortName = "steel";
+            i.name = "steel armor";
+            i.itemClass = ItemClass::ARMOR;
+            i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
+            i.weight = 13;
+            i.price = 800;
+            i.modifiers[ModifierType::DEFENSE] = 8 + maybePlusMinusOne(4););
     case ItemId::IRON_HELM: return ITATTR(
             i.viewId = ViewId::IRON_HELM;
             i.shortName = "iron";
@@ -1193,6 +1172,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::BOULDER_TRAP_ITEM: return ITATTR(
             i.viewId = ViewId::TRAP_ITEM;
             i.name = "boulder trap";
+            i.shortName = "boulder";
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
@@ -1205,6 +1185,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
     case ItemId::TRAP_ITEM: return ITATTR(
             i.viewId = ViewId::TRAP_ITEM;
             i.name = "unarmed " + Effect::getName(item.get<TrapInfo>().effectType) + " trap";
+            i.shortName = Effect::getName(item.get<TrapInfo>().effectType);
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
@@ -1301,6 +1282,13 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::OTHER;
             i.price = 0;
             i.resourceId = CollectiveResourceId::IRON;
+            i.weight = 0.5;);
+    case ItemId::STEEL_INGOT: return ITATTR(
+            i.viewId = ViewId::STEEL_INGOT;
+            i.name = "steel ingot";
+            i.itemClass = ItemClass::OTHER;
+            i.price = 0;
+            i.resourceId = CollectiveResourceId::STEEL;
             i.weight = 0.5;);
     case ItemId::WOOD_PLANK: return ITATTR(
             i.viewId = ViewId::WOOD_PLANK;

@@ -13,18 +13,19 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _VIEW_INDEX
-#define _VIEW_INDEX
+#pragma once
 
 #include "enums.h"
 #include "util.h"
-#include "view_object.h"
+#include "view_layer.h"
 
+class ViewObject;
 
 RICH_ENUM(HighlightType,
   DIG,
   CUT_TREE,
   FETCH_ITEMS,
+  PERMANENT_FETCH_ITEMS,
   RECT_SELECTION,
   RECT_DESELECTION,
   POISON_GAS,
@@ -34,7 +35,12 @@ RICH_ENUM(HighlightType,
   EFFICIENCY,
   PRIORITY_TASK,
   FORBIDDEN_ZONE,
-  UNAVAILABLE
+  UNAVAILABLE,
+  CREATURE_DROP,
+  CLICKABLE_FURNITURE,
+  CLICKED_FURNITURE,
+  STORAGE_EQUIPMENT,
+  STORAGE_RESOURCES
 );
 
 class ViewIndex {
@@ -70,5 +76,3 @@ class ViewIndex {
   bool SERIAL(anyHighlight) = false;
   optional<ViewId> hiddenId;
 };
-
-#endif

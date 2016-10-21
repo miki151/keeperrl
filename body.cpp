@@ -11,6 +11,10 @@
 #include "item_factory.h"
 #include "position.h"
 #include "player_message.h"
+#include "view_object.h"
+#include "item_type.h"
+#include "effect.h"
+#include "item.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {
@@ -25,13 +29,15 @@ SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBo
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Body);
 
-Body::Body(bool humanoid, Material m, Size s) : xhumanoid(humanoid), size(s), 
+Body::Body(bool humanoid, Material m, Size s) : xhumanoid(humanoid), size(s),
     weight(getDefaultWeight(size)), material(m),
     deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH) {
+  if (humanoid)
+    setHumanoidBodyParts();
 }
 
 Body Body::humanoid(Material m, Size s) {
-  return Body(true, m, s).setHumanoidBodyParts();
+  return Body(true, m, s);
 }
 
 Body Body::humanoid(Size s) {
@@ -416,7 +422,7 @@ vector<PItem> Body::getCorpseItem(const string& name, Creature::Id id) {
 
 void Body::affectPosition(Position position) {
   if (material == Material::FIRE && Random.roll(5))
-    position.setOnFire(1);
+    position.fireDamage(1);
 }
 
 bool Body::takeDamage(const Attack& attack, Creature* creature, double damage) {
@@ -594,17 +600,43 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
   }
 }
 
-void Body::setOnFire(Creature* c, double amount) {
+void Body::fireDamage(Creature* c, double amount) {
   c->you(MsgType::ARE, "burnt by the fire");
   bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::STRENGTH)));
 }
 
-void Body::affectByPoison(Creature* c) {
-  bleed(c, 1.0 / 60);
+bool Body::affectByPoison(Creature* c, double amount) {
+  if (material == Material::FLESH) {
+    bleed(c, amount);
+    c->playerMessage("You feel poison flowing in your veins.");
+    if (health <= 0) {
+      c->you(MsgType::DIE_OF, "poisoning");
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Body::affectByPoisonGas(Creature* c, double amount) {
+  if (!c->isAffected(LastingEffect::POISON_RESISTANT) && material == Material::FLESH) {
+    bleed(c, amount / 20);
+    c->you(MsgType::ARE, "poisoned by the gas");
+    if (health <= 0) {
+      c->you(MsgType::DIE_OF, "poisoning");
+      return true;
+    }
+  }
+  return false;
 }
 
 void Body::affectByTorture(Creature* c) {
   bleed(c, 0.1);
+  if (health < 0.3) {
+    if (!Random.roll(8))
+      c->heal();
+    else
+      c->die("killed by torture");
+  }
 }
 
 bool Body::affectBySilver(Creature* c) {

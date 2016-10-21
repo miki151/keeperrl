@@ -28,18 +28,7 @@ string Skill::getName() const {
 string Skill::getNameForCreature(const Creature* c) const {
   double val = c->getAttributes().getSkills().getValue(getId());
   CHECK(val >= 0 && val <= 1) << "Skill value " << val;
-  string grade;
-  if (val == 0)
-    grade = "unskilled";
-  else if (val < 0.3)
-    grade = "basic";
-  else if (val < 0.6)
-    grade = "skilled";
-  else if (val < 1)
-    grade = "expert";
-  else
-    grade = "master";
-  return getName() + " (" + grade + ")";
+  return getName() + " (" + toString<int>(val * 100) + "%)";
 }
 
 string Skill::getHelpText() const {
@@ -117,11 +106,17 @@ void Skill::init() {
   Skill::set(SkillId::ELF_VISION, new Skill("elf vision", "See and shoot arrows through trees.", true));
   Skill::set(SkillId::NIGHT_VISION, new Skill("night vision", "See in the dark.", true));
   Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them.", true));
-  Skill::set(SkillId::SORCERY, new Skill("sorcery", "Cast spells.", false));
+  Skill::set(SkillId::SORCERY, new Skill("sorcery", "Affects the length of spell cooldowns.", false));
   Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",
         "Absorb other creatures and retain their attributes.", true, false));
   Skill::set(SkillId::HEALING, new Skill("healing", "Heal friendly creatures.", true));
   Skill::set(SkillId::STEALTH, new Skill("stealth", "Fight without waking up creatures sleeping nearby.", true));
+  Skill::set(SkillId::WORKSHOP, new Skill("workshop", "Craft items in the workshop.", false));
+  Skill::set(SkillId::FORGE, new Skill("forge", "Craft items in the forge.", false));
+  Skill::set(SkillId::LABORATORY, new Skill("laboratory", "Craft items in the laboratory.", false));
+  Skill::set(SkillId::JEWELER, new Skill("jeweler", "Craft items at the jeweler's shop.", false));
+  Skill::set(SkillId::FURNACE, new Skill("furnace", "Craft items at the furnace.", false));
+  Skill::set(SkillId::MANA, new Skill("mana production", "Affects mana production efficiency.", false));
 }
 
 bool Skill::transferOnConsumption() const {

@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _PLAYER_H
-#define _PLAYER_H
+#pragma once
 
 #include "creature_action.h"
 #include "controller.h"
@@ -23,6 +22,7 @@
 #include "map_memory.h"
 #include "position.h"
 #include "event_listener.h"
+#include "game_info.h"
 
 class View;
 class Model;
@@ -72,8 +72,12 @@ class Player : public Controller, public CreatureView {
   virtual void onDisplaced() override;
 
   // overridden by subclasses
-  virtual bool unpossess();
-  virtual bool swapTeam();
+  struct CommandInfo {
+    PlayerInfo::CommandInfo commandInfo;
+    function<void(Player*)> perform;
+    bool actionKillsController;
+  };
+  virtual vector<CommandInfo> getCommands() const;
   virtual void onFellAsleep();
   virtual vector<Creature*> getTeam() const;
 
@@ -82,13 +86,14 @@ class Player : public Controller, public CreatureView {
   Game* getGame() const;
   View* getView() const;
 
+  bool tryToPerform(CreatureAction);
+
   private:
   HeapAllocated<EventProxy<Player>> SERIAL(eventProxy);
   friend EventProxy<Player>;
   void onEvent(const GameEvent&);
 
   void considerAdventurerMusic();
-  bool tryToPerform(CreatureAction);
   void extendedAttackAction(UniqueEntity<Creature>::Id);
   void extendedAttackAction(Creature* other);
   void creatureAction(UniqueEntity<Creature>::Id);
@@ -108,7 +113,6 @@ class Player : public Controller, public CreatureView {
   void chatAction(optional<Vec2> dir = none);
   void giveAction(vector<Item*>);
   void spellAction(SpellId);
-  void consumeAction();
   void fireAction(Vec2 dir);
   vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
   void getItemNames(vector<Item*> it, vector<ListElem>& names, vector<vector<Item*> >& groups,
@@ -128,9 +132,8 @@ class Player : public Controller, public CreatureView {
   string getRemainingString(LastingEffect) const;
   vector<ItemInfo> getItemInfos(const vector<Item*>&) const;
   ItemInfo getItemInfo(const vector<Item*>&) const;
-  ItemInfo getApplySquareInfo(const Square*) const;
-  ItemInfo getApplySquareInfo(const string& question, ViewId viewId) const;
-  optional<SquareApplyType> getUsableSquareApplyType() const;
+  ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
+  optional<FurnitureUsageType> getUsableUsageType() const;
   struct TimePosInfo {
     Position pos;
     double time;
@@ -140,4 +143,3 @@ class Player : public Controller, public CreatureView {
   HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
 };
 
-#endif

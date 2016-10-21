@@ -109,6 +109,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
+      OptionId::FAST_IMMIGRATION,
 #endif
   }},
   {OptionSet::KEEPER, {

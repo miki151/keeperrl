@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _SERIALIZATION
-#define _SERIALIZATION
+#pragma once
 
 #ifdef TEXT_SERIALIZATION
 typedef text_iarchive InputArchive;
@@ -54,7 +53,7 @@ typedef text_iarchive InputArchive2;
   friend boost::serialization::access; \
   A(); \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version);
+  void serialize(Archive& ar, const unsigned int);
 
 #define SERIALIZATION_CONSTRUCTOR_IMPL(A) \
   A::A() {}
@@ -67,7 +66,7 @@ typedef text_iarchive InputArchive2;
 
 #define SERIALIZE_DEF(CLASS, ...) \
 template <class Archive> \
-void CLASS::serialize(Archive& ar, const unsigned int version) { \
+void CLASS::serialize(Archive& ar, const unsigned int) { \
   serializeAll(ar, __VA_ARGS__);\
 }\
 SERIALIZABLE(CLASS);
@@ -85,20 +84,20 @@ void serializeAll(Archive& ar, Arg1& arg1, Args&... args) {
 
 #define SERIALIZE_SUBCLASS(SUB) \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version) { \
+  void serialize(Archive& ar, const unsigned int) { \
     ar & SUBCLASS(SUB);\
   }
 
 #define SERIALIZE_ALL2(SUB, ...) \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version) { \
+  void serialize(Archive& ar, const unsigned int) { \
     ar & SUBCLASS(SUB);\
     serializeAll(ar, __VA_ARGS__); \
   }
 
 #define SERIALIZE_ALL(...) \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version) { \
+  void serialize(Archive& ar, const unsigned int) { \
     serializeAll(ar, __VA_ARGS__); \
   }
 
@@ -319,21 +318,6 @@ inline void serialize(Archive & ar, std::vector<T, Allocator> & t, unsigned int 
   boost::serialization::split_free(ar, t, file_version);
 }
 
-#ifdef CLANG // clang doesn't see the serialization of std::array in boost, for some reason
-#ifndef OSX
-template <class Archive, class T, std::size_t N>
-void serialize(Archive& ar, std::array<T,N>& a, const unsigned int)
-{
-    ar & boost::serialization::make_nvp(
-        "elems",
-        *static_cast<T (*)[N]>(static_cast<void *>(a.data()))
-    );
-
-}
-
-#endif
-#endif
-
 #ifdef DEBUG_STL
 // stl debug dummies
 
@@ -382,5 +366,3 @@ void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version
 }
 
 }} // namespace boost::serialization
-
-#endif

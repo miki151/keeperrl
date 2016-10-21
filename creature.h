@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _CREATURE_H
-#define _CREATURE_H
+#pragma once
 
 #include "enums.h"
 #include "unique_entity.h"
@@ -24,6 +23,7 @@
 #include "position.h"
 #include "event_generator.h"
 #include "entity_set.h"
+#include "destroy_action.h"
 
 class Skill;
 class Level;
@@ -74,6 +74,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&);
   void heal(double amount = 1, bool replaceLimbs = false);
+  /** Morale is in the range [-1:1] **/
   double getMorale() const;
   void addMorale(double);
   DEF_UNIQUE_PTR(MoraleOverride);
@@ -149,8 +150,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction move(Vec2) const;
   CreatureAction forceMove(Position) const;
   CreatureAction forceMove(Vec2) const;
-  CreatureAction swapPosition(Vec2 direction, bool force = false) const;
-  CreatureAction swapPosition(Creature*, bool force = false) const;
   CreatureAction wait() const;
   vector<Item*> getPickUpOptions() const;
   CreatureAction pickUp(const vector<Item*>& item) const;
@@ -171,7 +170,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canEquip(const Item* item) const;
   CreatureAction throwItem(Item*, Vec2 direction) const;
   CreatureAction heal(Vec2 direction) const;
-  CreatureAction applySquare() const;
+  CreatureAction applySquare(Position) const;
   CreatureAction hide() const;
   bool isHidden() const;
   bool knowsHiding(const Creature*) const;
@@ -182,13 +181,14 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction stealFrom(Vec2 direction, const vector<Item*>&) const;
   CreatureAction give(Creature* whom, vector<Item*> items);
   CreatureAction fire(Vec2 direction) const;
-  CreatureAction construct(Vec2 direction, const SquareType&) const;
+  CreatureAction construct(Vec2 direction, FurnitureType) const;
   CreatureAction placeTorch(Dir attachmentDir, function<void(Trigger*)> builtCallback) const;
   CreatureAction whip(const Position&) const;
   bool canConstruct(const SquareType&) const;
+  bool canConstruct(FurnitureType) const;
   CreatureAction eat(Item*) const;
-  enum DestroyAction { BASH, EAT, DESTROY };
-  CreatureAction destroy(Vec2 direction, DestroyAction) const;
+  CreatureAction destroy(Vec2 direction, const DestroyAction&) const;
+  void destroyImpl(Vec2 direction, const DestroyAction& action);
   CreatureAction copulate(Vec2 direction) const;
   bool canCopulateWith(const Creature*) const;
   CreatureAction consume(Creature*) const;
@@ -197,7 +197,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void displace(double time, Vec2);
   void surrender(Creature* to);
   
-  virtual void onChat(Creature*);
+  void increaseExpLevel(ExperienceType, double increase);
 
   Item* getWeapon() const;
   void dropWeapon();
@@ -213,7 +213,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool atTarget() const;
   void die(Creature* attacker = nullptr, bool dropInventory = true, bool dropCorpse = true);
   void die(const string& reason, bool dropInventory = true, bool dropCorpse = true);
-  void setOnFire(double amount);
+  void fireDamage(double amount);
   void poisonWithGas(double amount);
   void affectBySilver();
   void affectByAcid();
@@ -245,7 +245,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void addPermanentEffect(LastingEffect, bool msg = true);
   void removePermanentEffect(LastingEffect, bool msg = true);
   bool isAffected(LastingEffect) const;
-  bool hasFreeMovement() const;
+  bool hasCondition(CreatureCondition) const;
   bool isDarknessSource() const;
 
   bool isUnknownAttacker(const Creature*) const;
@@ -263,6 +263,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   void addSound(const Sound&) const;
   void updateViewObject();
+  void swapPosition(Vec2 direction);
 
   private:
 
@@ -273,6 +274,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canCarry(const vector<Item*>&) const;
   TribeSet getFriendlyTribes() const;
   void addMovementInfo(const MovementInfo&);
+  bool canSwapPositionInMovement(Creature* other) const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
@@ -302,7 +304,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   vector<Position> visibleCreatures;
   VisionId SERIAL(vision);
   void updateVision();
-  vector<string> SERIAL(personalEvents);
   bool forceMovement = false;
   optional<double> SERIAL(lastCombatTime);
 };
@@ -368,4 +369,3 @@ enum class MsgType {
     GROW,
 };
 
-#endif

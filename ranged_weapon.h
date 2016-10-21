@@ -13,9 +13,9 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _RANGED_WEAPON
-#define _RANGED_WEAPON
+#pragma once
 
+#include "util.h"
 #include "item.h"
 
 class RangedWeapon : public Item {
@@ -26,5 +26,3 @@ class RangedWeapon : public Item {
 
   SERIALIZATION_DECL(RangedWeapon);
 };
-
-#endif

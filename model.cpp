@@ -45,6 +45,8 @@
 #include "territory.h"
 #include "game.h"
 #include "progress_meter.h"
+#include "view_object.h"
+#include "item.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
@@ -114,6 +116,7 @@ void Model::update(double totalTime) {
       CreatureAction::checkUsage(false);
 #endif
     }
+    CHECK(creature->getLevel() != nullptr) << creature->getName().bare();
     if (!creature->isDead() && creature->getLevel()->getModel() == this)
       CHECK(creature->getPosition().getCreature() == creature);
   } else
@@ -130,10 +133,14 @@ void Model::tick(double time) {
     col->tick();
 }
 
+void Model::addCreature(PCreature c) {
+  addCreature(std::move(c), 1 + Random.getDouble());
+}
+
 void Model::addCreature(PCreature c, double delay) {
   if (c->isPlayer())
     game->setPlayer(c.get());
-  timeQueue->addCreature(std::move(c), getLocalTime() + 1 + delay + Random.getDouble());
+  timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 
 Level* Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {

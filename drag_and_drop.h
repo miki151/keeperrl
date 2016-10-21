@@ -1,5 +1,4 @@
-#ifndef _DRAG_AND_DROP_H
-#define _DRAG_AND_DROP_H
+#pragma once
 
 #include "util.h"
 #include "enum_variant.h"
@@ -29,4 +28,3 @@ class DragContainer {
   Vec2 origin;
 };
 
-#endif

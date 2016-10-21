@@ -5,22 +5,19 @@
 
 template <class Archive> 
 void MovementSet::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(onFire)
-    & SVAR(covered)
-    & SVAR(traits)
-    & SVAR(forcibleTraits)
-    & SVAR(tribeOverrides);
+  serializeAll(ar, onFire, traits, forcibleTraits);
 }
 
 SERIALIZABLE(MovementSet);
 
-bool MovementSet::canEnter(const MovementType& movementType) const {
+bool MovementSet::canEnter(const MovementType& movementType, bool covered, const optional<TribeId>& forbidden) const {
   if (!movementType.isForced()) {
-    if ((!covered && movementType.isSunlightVulnerable()) || (onFire && !movementType.isFireResistant()))
+    if ((!covered && movementType.isSunlightVulnerable()) ||
+        (onFire && !movementType.isFireResistant()) ||
+        (forbidden && movementType.isCompatible(*forbidden)))
       return false;
   }
-  EnumSet<MovementTrait> rightTraits = (tribeOverrides && movementType.isCompatible(tribeOverrides->first)) ?
-      tribeOverrides->second : traits;
+  EnumSet<MovementTrait> rightTraits(traits);
   if (movementType.isForced())
     rightTraits = rightTraits.sum(forcibleTraits);
   for (auto trait : rightTraits)
@@ -38,15 +35,6 @@ bool MovementSet::isOnFire() const {
   return onFire;
 }
 
-MovementSet& MovementSet::setCovered(bool state) {
-  covered = state;
-  return *this;
-}
-
-bool MovementSet::isCovered() const {
-  return covered;
-}
-
 MovementSet& MovementSet::addTrait(MovementTrait trait) {
   traits.insert(trait);
   return *this;
@@ -54,24 +42,6 @@ MovementSet& MovementSet::addTrait(MovementTrait trait) {
 
 MovementSet& MovementSet::removeTrait(MovementTrait trait) {
   traits.erase(trait);
-  return *this;
-}
-
-MovementSet& MovementSet::addTraitForTribe(TribeId tribe, MovementTrait trait) {
-  if (!tribeOverrides)
-    tribeOverrides = {tribe, {trait}};
-  else {
-    CHECK(tribeOverrides->first == tribe);
-    tribeOverrides->second.insert(trait);
-  }
-  return *this;
-}
-
-MovementSet& MovementSet::removeTraitForTribe(TribeId tribe, MovementTrait trait) {
-  if (tribeOverrides) {
-    CHECK(tribeOverrides->first == tribe);
-    tribeOverrides->second.erase(trait);
-  }
   return *this;
 }
 
@@ -83,5 +53,4 @@ MovementSet& MovementSet::addForcibleTrait(MovementTrait trait) {
 void MovementSet::clear() {
   traits.clear();
   forcibleTraits.clear();
-  tribeOverrides = none;
 }

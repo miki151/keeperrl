@@ -15,14 +15,10 @@
 
 #include "stdafx.h"
 #include "minion_task_map.h"
+#include "collective_config.h"
 
 void MinionTaskMap::setValue(MinionTask t, double v) {
   tasks[t] = v;
-}
-
-void MinionTaskMap::setWorkshopTasks(double v) {
-  for (auto task : getWorkshopTasks())
-    setValue(task, v);
 }
 
 void MinionTaskMap::clear() {

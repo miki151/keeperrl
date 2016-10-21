@@ -93,6 +93,11 @@ Debug& Debug::operator <<(const double msg) {
   return *this;
 }
 
+Debug& Debug::operator <<(const milliseconds msg) {
+  add(toString(msg.count()));
+  return *this;
+}
+
 template<class T>
 Debug& Debug::operator<<(const vector<T>& container){
   (*this) << "{";

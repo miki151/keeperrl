@@ -13,15 +13,11 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _VIEW_H
-#define _VIEW_H
+#pragma once
 
 #include "util.h"
 #include "debug.h"
-#include "view_object.h"
 #include "user_input.h"
-#include "minion_task.h"
-#include "cost_info.h"
 
 class CreatureView;
 class Level;
@@ -217,10 +213,10 @@ class View {
 
   /** Returns the current real time in milliseconds. The clock is stopped on blocking keyboard input,
       so it can be used to sync game time in real-time mode.*/
-  virtual int getTimeMilli() = 0;
+  virtual milliseconds getTimeMilli() = 0;
 
   /** Returns the absolute time, doesn't take pausing into account.*/
-  virtual int getTimeMilliAbsolute() = 0;
+  virtual milliseconds getTimeMilliAbsolute() = 0;
 
   /** Stops the real time clock.*/
   virtual void stopClock() = 0;
@@ -238,4 +234,3 @@ enum class AnimationId {
   EXPLOSION,
 };
 
-#endif

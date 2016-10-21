@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _CREATURE_FACTORY
-#define _CREATURE_FACTORY
+#pragma once
 
 #include "util.h"
 #include "tribe.h"
@@ -148,14 +147,7 @@ RICH_ENUM(CreatureId,
 
 class CreatureFactory {
   public:
-  struct SingleCreature {
-    SingleCreature(TribeId, CreatureId);
-    CreatureId SERIAL(id);
-    TribeId SERIAL(tribe);
-    bool operator == (const SingleCreature&) const;
-    SERIALIZATION_DECL(SingleCreature);
-  };
-  CreatureFactory(const SingleCreature&);
+  static CreatureFactory singleCreature(TribeId, CreatureId);
 
   static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
   static PCreature fromId(CreatureId, TribeId);
@@ -175,7 +167,6 @@ class CreatureFactory {
   static CreatureFactory darkElfEntrance(TribeId);
   static CreatureFactory forrest(TribeId);
   static CreatureFactory crypt(TribeId);
-  static SingleCreature coffins(TribeId);
   static CreatureFactory dwarfTown(TribeId);
   static CreatureFactory dwarfCave(TribeId);
   static CreatureFactory antNest(TribeId);
@@ -197,7 +188,7 @@ class CreatureFactory {
   CreatureFactory& increaseLevel(double);
 
   static PCreature getShopkeeper(Location* shopArea, TribeId);
-  static PCreature getGuardingBoulder(TribeId);
+  static PCreature getRollingBoulder(TribeId, Vec2 direction);
   static PCreature getGhost(Creature*);
   static PCreature getIllusion(Creature*);
   static PCreature getAdventurer(Model*, int handicap);
@@ -214,10 +205,9 @@ class CreatureFactory {
 
   private:
   CreatureFactory(TribeId tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
-      const vector<CreatureId>& unique = {}, EnumMap<CreatureId, optional<TribeId>> overrides = {},
-      double levelIncrease = 0);
+      const vector<CreatureId>& unique = {}, EnumMap<CreatureId, optional<TribeId>> overrides = {});
   CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& creatures,
-      const vector<CreatureId>& unique = {}, double levelIncrease = 0);
+      const vector<CreatureId>& unique = {});
   static void initSplash(TribeId);
   static PCreature getSokobanBoulder(TribeId);
   static PCreature getSpecial(TribeId, bool humanoid, bool large, const ControllerFactory&);
@@ -232,6 +222,3 @@ class CreatureFactory {
   EnumMap<CreatureId, optional<TribeId>> SERIAL(tribeOverrides);
   double SERIAL(levelIncrease) = 0;
 };
-
-
-#endif

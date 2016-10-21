@@ -13,13 +13,12 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _EQUIPMENT_H
-#define _EQUIPMENT_H
+#pragma once
 
 #include "inventory.h"
 #include "enums.h"
 
-enum class EquipmentSlot {
+RICH_ENUM(EquipmentSlot,
   WEAPON,
   RANGED_WEAPON,
   HELMET,
@@ -27,18 +26,19 @@ enum class EquipmentSlot {
   BODY_ARMOR,
   BOOTS,
   AMULET,
-  RINGS,
-};
+  RINGS
+);
 
 class Equipment : public Inventory {
   public:
   vector<Item*> getItem(EquipmentSlot slot) const;
-  bool isEquiped(const Item*) const;
+  bool isEquipped(const Item*) const;
   bool canEquip(const Item*) const;
   void equip(Item*, EquipmentSlot);
   void unequip(const Item*);
   PItem removeItem(Item*);
   int getMaxItems(EquipmentSlot) const;
+  const vector<Item*>& getAllEquipped() const;
   vector<PItem> removeItems(const vector<Item*>&);
   vector<PItem> removeAllItems();
 
@@ -47,7 +47,7 @@ class Equipment : public Inventory {
   static map<EquipmentSlot, string> slotTitles;
 
   private:
-  map<EquipmentSlot, vector<Item*>> SERIAL(items);
+  EnumMap<EquipmentSlot, vector<Item*>> SERIAL(items);
+  vector<Item*> SERIAL(equipped);
 };
 
-#endif

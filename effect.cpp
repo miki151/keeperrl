@@ -38,26 +38,29 @@
 #include "attack_type.h"
 #include "body.h"
 #include "event_listener.h"
+#include "item_class.h"
+#include "furniture_factory.h"
+#include "furniture.h"
 
-vector<int> healingPoints { 5, 15, 40};
-vector<int> sleepTime { 15, 80, 200};
-vector<int> insanityTime { 5, 20, 50};
-vector<int> panicTime { 5, 15, 40};
-vector<int> halluTime { 30, 100, 250};
-vector<int> blindTime { 5, 15, 45};
-vector<int> invisibleTime { 5, 15, 45};
-vector<double> fireAmount { 0.5, 1, 1};
-vector<int> attrBonusTime { 10, 40, 150};
-vector<int> identifyNum { 1, 1, 400};
-vector<int> poisonTime { 20, 60, 200};
-vector<int> stunTime { 1, 7, 20};
-vector<int> resistantTime { 20, 60, 200};
-vector<int> levitateTime { 20, 60, 200};
-vector<int> magicShieldTime { 5, 20, 60};
-vector<double> gasAmount { 0.3, 0.8, 3};
-vector<double> wordOfPowerDist { 1, 3, 10};
-vector<int> blastRange { 2, 5, 10};
-vector<int> creatureEffectRange { 2, 5, 10};
+static vector<int> healingPoints { 5, 15, 40};
+static vector<int> sleepTime { 15, 80, 200};
+static vector<int> insanityTime { 5, 20, 50};
+static vector<int> panicTime { 5, 15, 40};
+static vector<int> halluTime { 30, 100, 250};
+static vector<int> blindTime { 5, 15, 45};
+static vector<int> invisibleTime { 5, 15, 45};
+static vector<double> fireAmount { 0.5, 1, 1};
+static vector<int> attrBonusTime { 10, 40, 150};
+static vector<int> identifyNum { 1, 1, 400};
+static vector<int> poisonTime { 20, 60, 200};
+static vector<int> stunTime { 1, 7, 20};
+static vector<int> resistantTime { 20, 60, 200};
+static vector<int> levitateTime { 20, 60, 200};
+static vector<int> magicShieldTime { 5, 20, 60};
+static vector<double> gasAmount { 0.3, 0.8, 3};
+static vector<double> wordOfPowerDist { 1, 3, 10};
+static vector<int> blastRange { 2, 5, 10};
+static vector<int> creatureEffectRange { 2, 5, 10};
 
 
 static vector<Creature*> summonCreatures(Position pos, int radius, vector<PCreature> creatures, double delay = 0) {
@@ -91,29 +94,29 @@ static void creatureEffect(Creature* who, EffectType type, EffectStrength str, V
 }
 
 static void blast(Creature* who, Position position, Vec2 direction, int maxDistance, bool damage) {
-  if (Creature* c = position.getCreature())
-    if (!c->getAttributes().isStationary()) {
-      int dist = 0;
-      for (int i : Range(1, maxDistance))
-        if (position.canMoveCreature(direction * i))
-          dist = i;
-        else
-          break;
-      if (dist > 0) {
-        c->displace(who->getLocalTime(), direction * dist);
-        c->you(MsgType::ARE, "thrown back");
-      }
-      if (damage)
-        c->takeDamage(Attack(who, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 32, false));
+  if (Creature* c = position.getCreature()) {
+    int dist = 0;
+    for (int i : Range(1, maxDistance))
+      if (position.canMoveCreature(direction * i))
+        dist = i;
+      else
+        break;
+    if (dist > 0) {
+      c->displace(who->getLocalTime(), direction * dist);
+      c->you(MsgType::ARE, "thrown back");
     }
+    if (damage)
+      c->takeDamage(Attack(who, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 32, false));
+  }
   for (auto elem : Item::stackItems(position.getItems())) {
     position.throwItem(
         position.removeItems(elem.second),
         Attack(who, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
           elem.second[0]->getAttackType(), 15, 15, false), maxDistance, direction, VisionId::NORMAL);
   }
-  if (damage && position.isDestroyable())
-    position.destroy();
+  if (damage)
+    for (auto furniture : position.modFurniture())
+      furniture->destroy(position, DestroyAction::Type::BASH);
 }
 
 static void blast(Creature* c, Vec2 direction, int range) {
@@ -134,7 +137,7 @@ static void airBlast(Creature* c, int strength) {
 
 static void emitPoisonGas(Position pos, int strength, bool msg) {
   for (Position v : pos.neighbors8())
-    v.addPoisonGas(gasAmount[strength] / 2);
+    pos.addPoisonGas(gasAmount[strength] / 2);
   pos.addPoisonGas(gasAmount[strength]);
   if (msg)
     pos.globalMessage("A cloud of gas is released", "You hear a hissing sound");
@@ -143,7 +146,7 @@ static void emitPoisonGas(Position pos, int strength, bool msg) {
 static void guardingBuilder(Creature* c) {
   optional<Vec2> dest;
   for (Position pos : c->getPosition().neighbors8(Random))
-    if (c->move(pos) && !pos.getCreature()) {
+    if (c->move(pos) && !pos.getCreature() && pos.getDir(c->getPosition()).length4() == 2) {
       dest = c->getPosition().getDir(pos);
       break;
     }
@@ -153,10 +156,8 @@ static void guardingBuilder(Creature* c) {
   else {
     Effect::applyToCreature(c, EffectType(EffectId::TELEPORT), EffectStrength::NORMAL);
   }
-  if (c->getPosition() != pos) {
-    PCreature boulder = CreatureFactory::getGuardingBoulder(c->getTribeId());
-    pos.addCreature(std::move(boulder));
-  }
+  if (c->getPosition() != pos)
+    pos.addFurniture(FurnitureFactory::get(FurnitureType::BOULDER_TRAP, c->getTribeId()));
 }
 
 vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, int ttl, double delay) {
@@ -192,11 +193,7 @@ static void enhanceWeapon(Creature* c, int mod = 1, const string msg = "is impro
 }
 
 static void destroyEquipment(Creature* c) {
-  vector<Item*> equiped;
-  for (Item* item : c->getEquipment().getItems())
-    if (c->getEquipment().isEquiped(item))
-      equiped.push_back(item);
-  Item* dest = Random.choose(equiped);
+  Item* dest = Random.choose(c->getEquipment().getAllEquipped());
   c->you(MsgType::YOUR, dest->getName() + " crumbles to dust.");
   c->steal({dest});
   return;
@@ -327,14 +324,14 @@ static Range getSummonNumber(CreatureId id) {
     case CreatureId::FLY: return Range(3, 7);
     case CreatureId::AUTOMATON: return Range(1, 2);
     default: FAIL << "Unsupported summon creature" << int(id);
-             return 0;
+             return Range(0);
   }
 }
 
 static double getSummonDelay(CreatureId id) {
   switch (id) {
     case CreatureId::AUTOMATON: return 5;
-    default: return 0;
+    default: return 1;
   }
 }
 
@@ -370,7 +367,7 @@ void Effect::applyToCreature(Creature* c, const EffectType& type, EffectStrength
     case EffectId::ENHANCE_WEAPON: enhanceWeapon(c); break;
     case EffectId::DESTROY_EQUIPMENT: destroyEquipment(c); break;
     case EffectId::HEAL: heal(c, strength); break;
-    case EffectId::FIRE: c->getPosition().setOnFire(fireAmount[strength]); break;
+    case EffectId::FIRE: c->getPosition().fireDamage(fireAmount[strength]); break;
     case EffectId::PORTAL: portal(c); break;
     case EffectId::TELEPORT: teleport(c); break;
     case EffectId::ROLLING_BOULDER: FAIL << "Not implemented"; break;

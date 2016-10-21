@@ -13,8 +13,9 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _LOGGING_VIEW
-#define _LOGGING_VIEW
+#pragma once
+
+#include "view_object.h"
 
 enum class LoggingToken {
   GET_TIME,
@@ -48,12 +49,12 @@ class LoggingView : public View {
       return val;
     }
 
-    virtual int getTimeMilli() override {
-      return logAndGet(delegate->getTimeMilli(), LoggingToken::GET_TIME);
+    virtual milliseconds getTimeMilli() override {
+      return milliseconds{logAndGet(delegate->getTimeMilli().count(), LoggingToken::GET_TIME)};
     }
 
-    virtual int getTimeMilliAbsolute() override {
-      return logAndGet(delegate->getTimeMilliAbsolute(), LoggingToken::GET_TIME_ABSOLUTE);
+    virtual milliseconds getTimeMilliAbsolute() override {
+      return milliseconds{logAndGet(delegate->getTimeMilliAbsolute().count(), LoggingToken::GET_TIME_ABSOLUTE)};
     }
 
     virtual void addSound(const Sound& s) override {
@@ -203,4 +204,3 @@ class LoggingView : public View {
     View* delegate;
 };
 
-#endif

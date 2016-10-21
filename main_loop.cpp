@@ -25,10 +25,11 @@
 #include "save_file_info.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
-    const string& uPath, Options* o, Jukebox* j, std::atomic<bool>& fin, bool singleThread,
+    const string& uPath, Options* o, Jukebox* j, SokobanInput* soko, std::atomic<bool>& fin, bool singleThread,
     optional<GameTypeChoice> force)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
-        highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread), forceGame(force) {
+        highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread), forceGame(force),
+        sokobanInput(soko) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const string& path, const string& suffix) {
@@ -56,7 +57,7 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static const int saveVersion = 1100;
+static const int saveVersion = 1200;
 
 static bool isCompatible(int loadedVersion) {
   return loadedVersion > 2 && loadedVersion <= saveVersion && loadedVersion / 100 == saveVersion / 100;
@@ -169,8 +170,10 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
   int saveTime = 0;
   if (game->isSingleModel() || type == GameSaveType::RETIRED_SITE)
     saveTime = singleModelGameSaveTime;
-  else
-    saveTime = game->getCampaign().getNumNonEmpty();
+  else {
+    auto savedGameInfo = game->getSavedGameInfo();
+    saveTime = savedGameInfo.getNumSites();
+  }
   if (type == GameSaveType::RETIRED_SITE)
     doWithSplash(splashType, "Retiring site...", saveTime,
         [&] (ProgressMeter& meter) {
@@ -268,15 +271,15 @@ int MainLoop::getAutosaveFreq() {
 void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
   view->reset();
   game->initialize(options, highscores, view, fileSharing);
-  const double stepTimeMilli = 3;
+  const milliseconds stepTimeMilli {3};
   Intervalometer meter(stepTimeMilli);
   double lastMusicUpdate = -1000;
   double lastAutoSave = game->getGlobalTime();
   while (1) {
     double step = 1;
     if (!game->isTurnBased()) {
-      double gameTimeStep = view->getGameSpeed() / stepTimeMilli;
-      long long timeMilli = view->getTimeMilli();
+      double gameTimeStep = view->getGameSpeed() / stepTimeMilli.count();
+      auto timeMilli = view->getTimeMilli();
       double count = meter.getCount(timeMilli);
       //Debug() << "Intervalometer " << timeMilli << " " << count;
       step = min(1.0, double(count) * gameTimeStep);
@@ -422,7 +425,7 @@ void MainLoop::playGameChoice() {
 void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
-  playGame(Game::splashScreen(ModelBuilder(&meter, Random, options)
+  playGame(Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput)
         .splashModel(dataFreePath + "/splash.txt")), false, true);
 }
 
@@ -545,7 +548,7 @@ PModel MainLoop::quickGame(RandomGen& random) {
   NameGenerator::init(dataFreePath + "/names");
   doWithSplash(SplashType::BIG, "Generating map...", 166000,
       [&] (ProgressMeter& meter) {
-        model = ModelBuilder(&meter, random, options).quickModel();
+        model = ModelBuilder(&meter, random, options, sokobanInput).quickModel();
       });
   return model;
 }
@@ -553,7 +556,7 @@ PModel MainLoop::quickGame(RandomGen& random) {
 void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
   NameGenerator::init(dataFreePath + "/names");
   ProgressMeter meter(1);
-  ModelBuilder(&meter, random, options).measureSiteGen(numTries);
+  ModelBuilder(&meter, random, options, sokobanInput).measureSiteGen(numTries);
 }
 
 Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& random) {
@@ -569,7 +572,7 @@ Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& ran
   int numSites = campaign.getNumNonEmpty();
   doWithSplash(SplashType::BIG, "Generating map...", numSites,
       [&] (ProgressMeter& meter) {
-        ModelBuilder modelBuilder(nullptr, random, options);
+        ModelBuilder modelBuilder(nullptr, random, options, sokobanInput);
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
             meter.addProgress();
@@ -598,7 +601,7 @@ PModel MainLoop::keeperSingleMap(RandomGen& random) {
   NameGenerator::init(dataFreePath + "/names");
   doWithSplash(SplashType::BIG, "Generating map...", 300000,
       [&] (ProgressMeter& meter) {
-        ModelBuilder modelBuilder(&meter, random, options);
+        ModelBuilder modelBuilder(&meter, random, options, sokobanInput);
         model = modelBuilder.singleMapModel(NameGenerator::get(NameGeneratorId::WORLD)->getNext());
         modelBuilder.spawnKeeper(model.get());
       });

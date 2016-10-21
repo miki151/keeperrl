@@ -13,27 +13,16 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _VIEW_OBJECT_H
-#define _VIEW_OBJECT_H
+#pragma once
 
 #include "debug.h"
 #include "enums.h"
 #include "util.h"
 #include "unique_entity.h"
+#include "view_layer.h"
 
-RICH_ENUM(ViewLayer,
-  FLOOR_BACKGROUND,
-  FLOOR,
-  ITEM,
-  LARGE_ITEM,
-  TORCH1,
-  CREATURE,
-  TORCH2
-);
-
-RICH_ENUM(ViewObjectModifier, BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, CASTS_SHADOW, PLANNED, LOCKED,
-    ROUND_SHADOW, TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, SLEEPING, ROAD, NO_UP_MOVEMENT, REMEMBER,
-    SPIRIT_DAMAGE);
+RICH_ENUM(ViewObjectModifier, BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, PLANNED,
+    TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, ROAD, NO_UP_MOVEMENT, REMEMBER, SPIRIT_DAMAGE);
 RICH_ENUM(ViewObjectAttribute, WOUNDED, BURNING, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY, MORALE);
 
 struct MovementInfo {
@@ -41,8 +30,8 @@ struct MovementInfo {
   MovementInfo(Vec2, double, double, Type);
   MovementInfo();
   Vec2 direction;
-  float tBegin;
-  float tEnd;
+  double tBegin;
+  double tEnd;
   Type type;
 };
 
@@ -74,9 +63,6 @@ class ViewObject {
   ViewId id() const;
   void setId(ViewId);
 
-  void setPosition(Vec2);
-  int getPositionHash() const;
-
   void setAdjectives(const vector<string>&);
   void setDescription(const string&);
 
@@ -105,7 +91,6 @@ class ViewObject {
   ViewLayer SERIAL(viewLayer);
   optional<string> SERIAL(description);
   optional<Dir> SERIAL(attachmentDir);
-  Vec2 SERIAL(position) = Vec2(-1, -1);
   optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
   vector<string> SERIAL(adjectives);
   optional<bool> indoors;
@@ -126,4 +111,3 @@ class ViewObject {
   } movementQueue;
 };
 
-#endif

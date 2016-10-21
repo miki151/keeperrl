@@ -23,11 +23,15 @@
 #include "enemy_factory.h"
 #include "location.h"
 #include "event_proxy.h"
+#include "view_object.h"
+#include "item.h"
+#include "furniture.h"
+#include "sokoban_input.h"
 
 using namespace std::chrono;
 
-ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o) : random(r), meter(m), options(o),
-  enemyFactory(EnemyFactory(random)) {
+ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o, SokobanInput* sok) : random(r), meter(m), options(o),
+  enemyFactory(EnemyFactory(random)), sokobanInput(sok) {
 }
 
 ModelBuilder::~ModelBuilder() {
@@ -53,15 +57,15 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
       10,
       {
       CONSTRUCT(PopulationIncrease,
-        c.type = SquareApplyType::PIGSTY;
+        c.type = FurnitureType::PIGSTY;
         c.increasePerSquare = 0.25;
         c.maxIncrease = ModelBuilder::getPigstyPopulationIncrease();),
       CONSTRUCT(PopulationIncrease,
-        c.type = SquareApplyType::STATUE;
+        c.type = FurnitureType::MINION_STATUE;
         c.increasePerSquare = ModelBuilder::getStatuePopulationIncrease();
         c.maxIncrease = 1000;),
       CONSTRUCT(PopulationIncrease,
-        c.type = SquareApplyType::THRONE;
+        c.type = FurnitureType::THRONE;
         c.increasePerSquare = ModelBuilder::getThronePopulationIncrease();
         c.maxIncrease = c.increasePerSquare;),
       },
@@ -70,9 +74,9 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
         c.id = CreatureId::GOBLIN;
         c.frequency = 1;
         c.attractions = LIST(
-          {{AttractionId::SQUARE, SquareId::WORKSHOP}, 1.0, 12.0},
-          {{AttractionId::SQUARE, SquareId::JEWELER}, 1.0, 9.0},
-          {{AttractionId::SQUARE, SquareId::FORGE}, 1.0, 9.0},
+          {{AttractionId::FURNITURE, FurnitureType::WORKSHOP}, 1, 2.0},
+          {{AttractionId::FURNITURE, FurnitureType::JEWELER}, 1, 2.0},
+          {{AttractionId::FURNITURE, FurnitureType::FORGE}, 1, 2.0},
           );
         c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
         c.salary = 10;),
@@ -80,7 +84,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::ORC;
           c.frequency = 0.7;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 1.0, 12.0},
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_WOOD}, 1, 2.0},
             );
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 20;),
@@ -88,8 +92,8 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::ORC_SHAMAN;
           c.frequency = 0.10;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::LIBRARY}, 1.0, 16.0},
-            {{AttractionId::SQUARE, SquareId::LABORATORY}, 1.0, 9.0},
+            {{AttractionId::FURNITURE, FurnitureType::BOOK_SHELF}, 1, 4.0},
+            {{AttractionId::FURNITURE, FurnitureType::LABORATORY}, 1, 2.0},
             );
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 20;),
@@ -97,7 +101,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::OGRE;
           c.frequency = 0.3;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0}
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_IRON}, 1.0, 2.0}
             );
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 40;),
@@ -105,7 +109,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::HARPY;
           c.frequency = 0.3;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_WOOD}, 1.0, 5.0},
             {{AttractionId::ITEM_INDEX, ItemIndex::RANGED_WEAPON}, 1.0, 3.0, true}
             );
           c.traits = {MinionTrait::FIGHTER};
@@ -114,7 +118,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::SPECIAL_HUMANOID;
           c.frequency = 0.1;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 3.0, 16.0},
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_DUMMY}, 3.0, 16.0},
             );
           c.traits = {MinionTrait::FIGHTER};
           c.spawnAtDorm = true;
@@ -133,7 +137,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.salary = 40;
           c.spawnAtDorm = true;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 2.0, 12.0}
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_IRON}, 1, 3.0}
             );),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::LOST_SOUL;
@@ -141,7 +145,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 0;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 1.0, 9.0}
+            {{AttractionId::FURNITURE, FurnitureType::DEMON_SHRINE}, 1, 2.0}
             );
           c.spawnAtDorm = true;),
       CONSTRUCT(ImmigrantInfo,
@@ -150,7 +154,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
           c.salary = 0;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 2.0, 12.0}
+            {{AttractionId::FURNITURE, FurnitureType::DEMON_SHRINE}, 1, 3.0}
             );
           c.spawnAtDorm = true;),
       CONSTRUCT(ImmigrantInfo,
@@ -159,7 +163,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.traits = {MinionTrait::FIGHTER};
           c.salary = 0;
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::RITUAL_ROOM}, 4.0, 12.0}
+            {{AttractionId::FURNITURE, FurnitureType::DEMON_SHRINE}, 2, 4.0}
             );
           c.spawnAtDorm = true;),
       CONSTRUCT(ImmigrantInfo,
@@ -191,7 +195,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.frequency = 0.1;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
           c.attractions = LIST(
-            {{AttractionId::SQUARE, SquareId::TRAINING_ROOM}, 4.0, 12.0}
+            {{AttractionId::FURNITURE, FurnitureType::TRAINING_IRON}, 1.33, 4.0}
             );
           c.salary = 0;),
       /*CONSTRUCT(ImmigrantInfo,
@@ -270,7 +274,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(Model* model, EnemyInfo& enemy) {
                   c.location = new Location();
                   c.upStairs = {upLink};
                   c.downStairs = {downLink};
-                  c.furniture = SquareFactory::single(SquareId::TORCH);
+                  c.furniture = FurnitureFactory(TribeId::getHuman(), FurnitureType::TORCH);
                   c.buildingId = BuildingId::BRICK;)));
         downLink = upLink;
       }
@@ -309,7 +313,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(Model* model, EnemyInfo& enemy) {
                 mainSettlement.tribe, TribeId::getMonster(), 0),
                 CreatureFactory::waterCreatures(mainSettlement.tribe),
                 CreatureFactory::lavaCreatures(mainSettlement.tribe), {upLink}, {downLink},
-                SquareFactory::roomFurniture(TribeId::getPest())));
+                FurnitureFactory::roomFurniture(TribeId::getPest())));
         upLink = downLink;
       }
       mainSettlement.upStairs = {upLink};
@@ -324,11 +328,12 @@ SettlementInfo& ModelBuilder::makeExtraLevel(Model* model, EnemyInfo& enemy) {
       mainSettlement.downStairs = {key};
       for (int i : Range(5000)) {
         try {
+          Table<char> sokoLevel = sokobanInput->getNext();
           model->buildLevel(
-              LevelBuilder(meter, random, 28, 14, "Sokoban"),
-              LevelMaker::sokobanLevel(random, mainSettlement));
+              LevelBuilder(meter, random, sokoLevel.getBounds().width(), sokoLevel.getBounds().height(), "Sokoban"),
+              LevelMaker::sokobanFromFile(random, mainSettlement, sokoLevel));
           return extraSettlement;
-        } catch (LevelGenException ex) {
+        } catch (LevelGenException) {
           Debug() << "Retrying";
         }
       }
@@ -402,20 +407,6 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
   addMapVillains(enemyInfo, biome);
- // append(enemyInfo, getBanditCave(random));
-  /*      append(enemyInfo, getSokobanEntry(random));
-        append(enemyInfo, random.choose({
-          getFriendlyCave(random, CreatureId::ORC),
-          getFriendlyCave(random, CreatureId::OGRE),
-          getFriendlyCave(random, CreatureId::HARPY)}));*/
-  /*      append(enemyInfo, random.choose({
-          getGreenDragon(random),
-          getShelob(random),
-          getHydra(random),
-          getRedDragon(random),
-          getCyclops(random),
-          getDriadTown(random),
-          getEntTown(random)}));*/
   PModel ret = tryModel(210, siteName, enemyInfo, true, biome);
   return ret;
 }
@@ -462,7 +453,7 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
       if (meter)
         meter->reset();
       return buildFun();
-    } catch (LevelGenException ex) {
+    } catch (LevelGenException) {
       Debug() << "Retrying level gen";
     }
   }
@@ -480,14 +471,15 @@ PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, 
 }
 
 void ModelBuilder::measureSiteGen(int numTries) {
+  std::cout << "Measuring single map" << std::endl;
   measureModelGen(numTries, [this] { trySingleMapModel("pok"); });
   //measureModelGen(numTries, [this] { tryCampaignBaseModel("pok"); });
-/*  for (EnemyId id : {EnemyId::SOKOBAN})
-//  for (EnemyId id : ENUM_ALL(EnemyId))
+//  for (EnemyId id : {EnemyId::SOKOBAN})
+  for (EnemyId id : ENUM_ALL(EnemyId))
     if (!!getBiome(id, random)) {
       std::cout << "Measuring " << EnumInfo<EnemyId>::getString(id) << std::endl;
       measureModelGen(numTries, [&] { tryCampaignSiteModel("", id, VillainType::LESSER); });
-    }*/
+    }
 }
 
 void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
@@ -504,7 +496,7 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
       ++numSuccess;
       std::cout << ".";
       std::cout.flush();
-    } catch (LevelGenException ex) {
+    } catch (LevelGenException) {
       std::cout << "x";
       std::cout.flush();
     }
@@ -550,31 +542,37 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
     BiomeId biomeId) {
   Model* model = new Model();
   vector<SettlementInfo> topLevelSettlements;
+  vector<EnemyInfo> extraEnemies;
   for (auto& elem : enemyInfo) {
     elem.settlement.collective = new CollectiveBuilder(elem.config, elem.settlement.tribe);
-    if (elem.levelConnection)
+    if (elem.levelConnection) {
+      elem.levelConnection->otherEnemy->settlement.collective =
+          new CollectiveBuilder(elem.levelConnection->otherEnemy->config,
+                                elem.levelConnection->otherEnemy->settlement.tribe);
       topLevelSettlements.push_back(makeExtraLevel(model, elem));
-    else
+      extraEnemies.push_back(*elem.levelConnection->otherEnemy);
+    } else
       topLevelSettlements.push_back(elem.settlement);
   }
+  append(enemyInfo, extraEnemies);
   Level* top = model->buildTopLevel(
       LevelBuilder(meter, random, width, width, levelName, false),
       LevelMaker::topLevel(random, CreatureFactory::forrest(TribeId::getWildlife()), topLevelSettlements, width,
         keeperSpawn, biomeId));
   model->calculateStairNavigation();
-  for (int i : All(enemyInfo)) {
-    if (!enemyInfo[i].settlement.collective->hasCreatures())
+  for (auto& enemy : enemyInfo) {
+    if (!enemy.settlement.collective->hasCreatures())
       continue;
     PVillageControl control;
-    Location* location = enemyInfo[i].settlement.location;
+    Location* location = enemy.settlement.location;
     if (auto name = location->getName())
-      enemyInfo[i].settlement.collective->setLocationName(*name);
-    if (auto race = enemyInfo[i].settlement.race)
-      enemyInfo[i].settlement.collective->setRaceName(*race);
-    PCollective collective = enemyInfo[i].settlement.collective->addSquares(location->getAllSquares()).build();
-    control.reset(new VillageControl(collective.get(), enemyInfo[i].villain));
-    if (enemyInfo[i].villainType)
-      collective->setVillainType(*enemyInfo[i].villainType);
+      enemy.settlement.collective->setLocationName(*name);
+    if (auto race = enemy.settlement.race)
+      enemy.settlement.collective->setRaceName(*race);
+    PCollective collective = enemy.settlement.collective->addSquares(location->getAllSquares()).build();
+    control.reset(new VillageControl(collective.get(), enemy.villain));
+    if (enemy.villainType)
+      collective->setVillainType(*enemy.villainType);
     collective->setControl(std::move(control));
     model->collectives.push_back(std::move(collective));
   }

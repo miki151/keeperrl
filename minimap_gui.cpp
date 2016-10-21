@@ -23,6 +23,7 @@
 #include "map_memory.h"
 #include "view_index.h"
 #include "sdl.h"
+#include "view_object.h"
 
 void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
   if (!mapBufferTex)

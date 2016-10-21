@@ -13,39 +13,21 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _SPELL_H
-#define _SPELL_H
+#pragma once
 
 #include "enums.h"
 #include "util.h"
 #include "singleton.h"
-#include "effect_type.h"
-
-RICH_ENUM(SpellId,
-  HEALING,
-  SUMMON_INSECTS,
-  DECEPTION,
-  SPEED_SELF,
-  STR_BONUS,
-  DEX_BONUS,
-  FIRE_SPHERE_PET,
-  TELEPORT,
-  INVISIBILITY,
-  WORD_OF_POWER,
-  AIR_BLAST,
-  SUMMON_SPIRIT,
-  PORTAL,
-  CURE_POISON,
-  METEOR_SHOWER,
-  MAGIC_SHIELD,
-  BLAST,
-  STUN_RAY
-);
+#include "spell_id.h"
 
 enum class CastMessageType {
   STANDARD,
   AIR_BLAST
 };
+
+class EffectType;
+class DirEffectType;
+class EffectType;
 
 class Spell : public Singleton<Spell, SpellId> {
   public:
@@ -67,10 +49,9 @@ class Spell : public Singleton<Spell, SpellId> {
   Spell(const string&, DirEffectType, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
 
   const string name;
-  const variant<EffectType, DirEffectType> effect;
+  const HeapAllocated<variant<EffectType, DirEffectType>> effect;
   const int difficulty;
   const CastMessageType castMessageType;
   const SoundId sound;
 };
 
-#endif

@@ -6,22 +6,28 @@
 #include "collective.h"
 #include "game.h"
 #include "collective_name.h"
+#include "attack_trigger.h"
+#include "creature_factory.h"
+#include "construction_map.h"
 
 SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom);
 
+VillageBehaviour::VillageBehaviour() {}
+
+VillageBehaviour::~VillageBehaviour() {}
 
 PTask VillageBehaviour::getAttackTask(VillageControl* self) {
   Collective* enemy = self->getEnemyCollective();
-  switch (attackBehaviour.getId()) {
+  switch (attackBehaviour->getId()) {
     case AttackBehaviourId::KILL_LEADER:
       return Task::attackLeader(enemy);
     case AttackBehaviourId::KILL_MEMBERS:
-      return Task::killFighters(enemy, attackBehaviour.get<int>());
+      return Task::killFighters(enemy, attackBehaviour->get<int>());
     case AttackBehaviourId::STEAL_GOLD:
       return Task::stealFrom(enemy, self->getCollective());
     case AttackBehaviourId::CAMP_AND_SPAWN:
       return Task::campAndSpawn(enemy, self->getCollective(),
-            attackBehaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
+            attackBehaviour->get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
   }
 }
 
@@ -88,10 +94,10 @@ static double stolenItemsFun(int numStolen) {
     return 1.0;
 }
 
-static double getRoomProb(SquareId id) {
+static double getRoomProb(FurnitureType id) {
   switch (id) {
-    case SquareId::THRONE: return 0.001;
-    case SquareId::IMPALED_HEAD: return 0.000125;
+    case FurnitureType::THRONE: return 0.001;
+    case FurnitureType::IMPALED_HEAD: return 0.000125;
     default: FAIL << "Unsupported ROOM_BUILT type"; return 0;
   }
 }
@@ -112,13 +118,14 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
   double entryMaxProb = 1.0 / 20.0;
   double finishOffMaxProb = 1.0 / 1000;
   double proximityMaxProb = 1.0 / 5000;
+  double timerProb = 1.0 / 3000;
   if (Collective* collective = self->getEnemyCollective())
     switch (trigger.getId()) {
       case AttackTriggerId::TIMER: 
-        return collective->getGlobalTime() >= trigger.get<int>() ? 0.05 : 0;
+        return collective->getGlobalTime() >= trigger.get<int>() ? timerProb : 0;
       case AttackTriggerId::ROOM_BUILT: 
-        return collective->getSquares(trigger.get<SquareType>()).size() *
-          getRoomProb(trigger.get<SquareType>().getId());
+        return collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>()) *
+          getRoomProb(trigger.get<FurnitureType>());
       case AttackTriggerId::POWER: 
         return powerMaxProb *
             powerClosenessFun(self->getCollective()->getDangerLevel(), collective->getDangerLevel());

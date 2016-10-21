@@ -1,9 +1,7 @@
-#ifndef _STACK_PRINTER_H
-#define _STACK_PRINTER_H
+#pragma once
 
 class StackPrinter {
   public:
   static void initialize(const char* programPath, time_t startTime);
 };
 
-#endif

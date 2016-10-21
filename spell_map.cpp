@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "spell_map.h"
+#include "spell.h"
 
 void SpellMap::add(Spell* spell) {
   add(spell->getId());

@@ -28,7 +28,6 @@
 #include "view_id.h"
 #include "map_memory.h"
 #include "player_message.h"
-#include "square_apply_type.h"
 #include "item_action.h"
 #include "game_info.h"
 #include "equipment.h"
@@ -46,6 +45,9 @@
 #include "event_proxy.h"
 #include "visibility_map.h"
 #include "collective_name.h"
+#include "view_object.h"
+#include "body.h"
+#include "furniture_usage.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -133,7 +135,7 @@ void Player::onBump(Creature*) {
 }
 
 string Player::getInventoryItemName(const Item* item, bool plural) const {
-  if (getCreature()->getEquipment().isEquiped(item))
+  if (getCreature()->getEquipment().isEquipped(item))
     return item->getNameAndModifiers(plural, getCreature()) + " "
       + getSlotSuffix(item->getEquipmentSlot());
   else
@@ -156,25 +158,12 @@ void Player::getItemNames(vector<Item*> items, vector<ListElem>& names, vector<v
   }
 }
 
-static string getSquareQuestion(SquareApplyType type, string name) {
-  switch (type) {
-    case SquareApplyType::USE_STAIRS: return "use " + name;
-    case SquareApplyType::USE_CHEST: return "open " + name;
-    case SquareApplyType::DRINK: return "drink from " + name;
-    case SquareApplyType::PRAY: return "pray at " + name;
-    case SquareApplyType::SLEEP: return "sleep on " + name;
-    case SquareApplyType::NOTICE_BOARD: return "view " + name;
-    default: break;
-  }
-  return "";
-}
-
 void Player::pickUpItemAction(int numStack, bool multi) {
   auto stacks = getCreature()->stackItems(getCreature()->getPickUpOptions());
-  if (getUsableSquareApplyType()) {
+  if (getUsableUsageType()) {
     --numStack;
     if (numStack == -1) {
-      getCreature()->applySquare().perform(getCreature());
+      getCreature()->applySquare(getCreature()->getPosition()).perform(getCreature());
       return;
     }
   }
@@ -281,24 +270,6 @@ void Player::throwItem(vector<Item*> items, optional<Vec2> dir) {
     dir = *cDir;
   }
   tryToPerform(getCreature()->throwItem(items[0], *dir));
-}
-
-void Player::consumeAction() {
-  vector<CreatureAction> actions;
-  for (Vec2 v : Vec2::directions8())
-    if (Creature* c = getCreature()->getPosition().plus(v).getCreature())
-      if (auto action = getCreature()->consume(c))
-      actions.push_back(action);
-  if (actions.size() == 1) {
-    tryToPerform(actions[0]);
-  } else
-  if (actions.size() > 1) {
-    auto dir = getView()->chooseDirection("Which direction?");
-    if (!dir)
-      return;
-    if (Creature* c = getCreature()->getPosition().plus(*dir).getCreature())
-      tryToPerform(getCreature()->consume(c));
-  }
 }
 
 vector<ItemAction> Player::getItemActions(const vector<Item*>& item) const {
@@ -540,6 +511,31 @@ void Player::retireMessages() {
   }
 }
 
+vector<Player::CommandInfo> Player::getCommands() const {
+  bool canChat = false;
+  bool canPay = false;
+  for (Position pos : getCreature()->getPosition().neighbors8())
+    if (Creature* c = pos.getCreature()) {
+      canChat = true;
+      if (c->getDebt(getCreature()))
+        canPay = true;
+    }
+  return {
+    {PlayerInfo::CommandInfo{"Wait", ' ', "Skip this turn.", true},
+     [] (Player* player) { player->getCreature()->wait().perform(player->getCreature()); }, false},
+    {PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
+     [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},
+    {PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
+     [] (Player* player) { player->chatAction(); }, false},
+    {PlayerInfo::CommandInfo{"Hide", 'h', "Hide behind or under a terrain feature or piece of furniture.", !!getCreature()->hide()},
+     [] (Player* player) { player->hideAction(); }, false},
+    {PlayerInfo::CommandInfo{"Pay debt", 'p', "Pay debt to a shopkeeper.", canPay},
+     [] (Player* player) { player->payDebtAction();}, false},
+    {PlayerInfo::CommandInfo{"Message history", 'm', "Show message history.", true},
+     [] (Player* player) { player->showHistory(); }, false},
+  };
+}
+
 void Player::makeMove() {
   if (adventurer)
     considerAdventurerMusic();
@@ -562,11 +558,11 @@ void Player::makeMove() {
         "level render time");
   } 
   getView()->refreshView();
-  if (displayTravelInfo && getCreature()->getPosition().getName() == "road" 
+  /*if (displayTravelInfo && getCreature()->getPosition().getName() == "road"
       && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     getView()->presentText("", "Use ctrl + arrows to travel quickly on roads and corridors.");
     displayTravelInfo = false;
-  }
+  }*/
   if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     CHECK(getCreature()->getName().first());
     getView()->updateView(this, true);
@@ -621,30 +617,26 @@ void Player::makeMove() {
       handleItems(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action); break;
     case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
     case UserInputId::PICK_UP_ITEM_MULTI: pickUpItemAction(action.get<int>(), true); break;
-    case UserInputId::WAIT: getCreature()->wait().perform(getCreature()); break;
-    case UserInputId::HIDE: hideAction(); break;
-    case UserInputId::PAY_DEBT: payDebtAction(); break;
-    case UserInputId::CHAT: chatAction(); break;
-    case UserInputId::CONSUME: consumeAction(); break;
-    case UserInputId::SHOW_HISTORY: showHistory(); break;
-    case UserInputId::UNPOSSESS:
-      if (unpossess())
-        return;
-      break;
-    case UserInputId::SWAP_TEAM:
-      if (swapTeam())
-        return;
-      break;
     case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
     case UserInputId::DRAW_LEVEL_MAP: getView()->drawLevelMap(this); break;
     case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
     case UserInputId::CREATURE_BUTTON2: extendedAttackAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
-    case UserInputId::TRANSFER: getGame()->transferAction(getTeam()); return;
+    case UserInputId::PLAYER_COMMAND: {
+        int index = action.get<int>();
+        auto commands = getCommands();
+        if (index >= 0 && index < commands.size()) {
+          commands[index].perform(this);
+          if (commands[index].actionKillsController)
+            return;
+        }
+      }
+      break;
 #ifndef RELEASE
     case UserInputId::CHEAT_ATTRIBUTES:
       getCreature()->getAttributes().setBaseAttr(AttrType::STRENGTH, 80);
       getCreature()->getAttributes().setBaseAttr(AttrType::DEXTERITY, 80);
+      getCreature()->addPermanentEffect(LastingEffect::FLYING, true);
       break;
 #endif
     default: break;
@@ -710,7 +702,7 @@ void Player::moveAction(Vec2 dir) {
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());
   else if (!getCreature()->getPosition().plus(dir).canEnterEmpty(getCreature()))
-    tryToPerform(getCreature()->destroy(dir, Creature::BASH));
+    tryToPerform(getCreature()->destroy(dir, DestroyAction::Type::BASH));
 }
 
 bool Player::isPlayer() const {
@@ -878,14 +870,6 @@ void Player::onKilled(const Creature* attacker) {
     getGame()->gameOver(getCreature(), getCreature()->getKills().getSize(), "monsters", getCreature()->getPoints());
 }
 
-bool Player::unpossess() {
-  return false;
-}
-
-bool Player::swapTeam() {
-  return false;
-}
-
 void Player::onFellAsleep() {
 }
 
@@ -893,10 +877,10 @@ vector<Creature*> Player::getTeam() const {
   return {getCreature()};
 }
 
-optional<SquareApplyType> Player::getUsableSquareApplyType() const {
-  if (auto applyType = getCreature()->getPosition().getApplyType(getCreature()))
-    if (!getSquareQuestion(*applyType, getCreature()->getPosition().getName()).empty())
-      return *applyType;
+optional<FurnitureUsageType> Player::getUsableUsageType() const {
+  if (auto usageType = getCreature()->getPosition().getUsageType())
+    if (!FurnitureUsage::getUsageQuestion(*usageType, getCreature()->getPosition().getName()).empty())
+      return *usageType;
   return none;
 }
 
@@ -917,9 +901,9 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.levelName = location && location->getName()
     ? capitalFirst(*location->getName()) : getLevel()->getName();
   info.lyingItems.clear();
-  if (auto applyType = getUsableSquareApplyType()) {
-    string question = getSquareQuestion(*applyType, getCreature()->getPosition().getName());
-    info.lyingItems.push_back(getApplySquareInfo(question, getCreature()->getPosition().getViewObject().id()));
+  if (auto usageType = getUsableUsageType()) {
+    string question = FurnitureUsage::getUsageQuestion(*usageType, getCreature()->getPosition().getName());
+    info.lyingItems.push_back(getFurnitureUsageInfo(question, getCreature()->getPosition().getViewObject().id()));
   }
   for (auto stack : getCreature()->stackItems(getCreature()->getPickUpOptions()))
     info.lyingItems.push_back(getItemInfo(stack));
@@ -929,9 +913,12 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto elem : typeDisplayOrder)
     if (typeGroups[elem].size() > 0)
       append(info.inventory, getItemInfos(typeGroups[elem]));
+  info.commands = transform2<PlayerInfo::CommandInfo>(getCommands(),
+      [](const CommandInfo& info) { return info.commandInfo;});
+
 }
 
-ItemInfo Player::getApplySquareInfo(const string& question, ViewId viewId) const {
+ItemInfo Player::getFurnitureUsageInfo(const string& question, ViewId viewId) const {
   return CONSTRUCT(ItemInfo,
     c.name = question;
     c.fullName = c.name;
@@ -949,7 +936,7 @@ ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
     c.viewId = stack[0]->getViewObject().id();
     c.ids = transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();});
     c.actions = getItemActions(stack);
-    c.equiped = getCreature()->getEquipment().isEquiped(stack[0]); );
+    c.equiped = getCreature()->getEquipment().isEquipped(stack[0]); );
 }
 
 vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {

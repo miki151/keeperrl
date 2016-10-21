@@ -27,6 +27,8 @@
 #include "item_attributes.h"
 #include "view.h"
 #include "sound.h"
+#include "item_class.h"
+#include "corpse_info.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -39,16 +41,6 @@ void Item::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(Item);
 SERIALIZATION_CONSTRUCTOR_IMPL(Item);
-
-template <class Archive> 
-void Item::CorpseInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(canBeRevived)
-    & BOOST_SERIALIZATION_NVP(hasHead)
-    & BOOST_SERIALIZATION_NVP(isSkeleton);
-}
-
-SERIALIZABLE(Item::CorpseInfo);
-
 
 Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, *attr.name)),
     attributes(attr), fire(*attr.weight, attr.flamability) {
@@ -111,7 +103,7 @@ void Item::onUnequip(Creature* c) {
     c->removePermanentEffect(*attributes->equipedEffect);
 }
 
-void Item::setOnFire(double amount, Position position) {
+void Item::fireDamage(double amount, Position position) {
   bool burning = fire->isBurning();
   string noBurningName = getTheName();
   fire->set(amount);
@@ -128,7 +120,7 @@ double Item::getFireSize() const {
 void Item::tick(Position position) {
   if (fire->isBurning()) {
     Debug() << getName() << " burning " << fire->getSize();
-    position.setOnFire(fire->getSize());
+    position.fireDamage(fire->getSize());
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
     fire->tick();
     if (!fire->isBurning()) {
@@ -297,6 +289,13 @@ string Item::getTheName(bool getPlural, const Creature* owner) const {
   return the + getName(getPlural, owner);
 }
 
+string Item::getPluralName(int count) const {
+  if (count > 1)
+    return toString(count) + " " + getName(true);
+  else
+    return getName(false);
+}
+
 string Item::getPluralTheName(int count) const {
   if (count > 1)
     return toString(count) + " " + getTheName(true);
@@ -442,5 +441,9 @@ bool Item::isWieldedTwoHanded() const {
 
 int Item::getMinStrength() const {
   return 10 + getWeight();
+}
+
+optional<CorpseInfo> Item::getCorpseInfo() const {
+  return none;
 }
 

@@ -12,25 +12,27 @@
 
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
-#ifndef _COLLECTIVE_CONFIG_INFO_H
-#define _COLLECTIVE_CONFIG_INFO_H
+#pragma once
 
 #include "enum_variant.h"
 #include "square_type.h"
 #include "util.h"
-#include "minion_task.h"
+#include "minion_trait.h"
+#include "workshop_type.h"
+#include "cost_info.h"
 
 enum class ItemClass;
 
 class Game;
+class Workshops;
 
 enum class AttractionId {
-  SQUARE,
+  FURNITURE,
   ITEM_INDEX,
 };
 
-class MinionAttraction : public EnumVariant<AttractionId, TYPES(SquareType, ItemIndex),
-    ASSIGN(SquareType, AttractionId::SQUARE),
+class MinionAttraction : public EnumVariant<AttractionId, TYPES(FurnitureType, ItemIndex),
+    ASSIGN(FurnitureType, AttractionId::FURNITURE),
     ASSIGN(ItemIndex, AttractionId::ITEM_INDEX)> {
   using EnumVariant::EnumVariant;
 };
@@ -78,7 +80,7 @@ struct BirthSpawn {
 };
 
 struct PopulationIncrease {
-  SquareApplyType SERIAL(type);
+  FurnitureType SERIAL(type);
   double SERIAL(increasePerSquare);
   int SERIAL(maxIncrease);
 
@@ -97,29 +99,57 @@ struct GuardianInfo {
 };
 
 struct DormInfo {
-  SquareType dormType;
-  optional<SquareType> getBedType() const;
+  FurnitureType bedType;
   optional<CollectiveWarning> warning;
 };
 
+typedef function<const set<Position>&(const Collective*)> StorageDestinationFun;
+
 struct ResourceInfo {
-  vector<SquareType> storageType;
+  StorageDestinationFun storageDestination;
   optional<ItemIndex> itemIndex;
   ItemId itemId;
   string name;
+  ViewId viewId;
   bool dontDisplay;
 };
 
+typedef function<bool(const Collective*, const Item*)> CollectiveItemPredicate;
+
+struct ItemFetchInfo {
+  ItemIndex index;
+  CollectiveItemPredicate predicate;
+  StorageDestinationFun destinationFun;
+  bool oneAtATime;
+  CollectiveWarning warning;
+};
+
 struct MinionTaskInfo {
-  enum Type { APPLY_SQUARE, EXPLORE, COPULATE, CONSUME, EAT, SPIDER } type;
-  MinionTaskInfo(vector<SquareType>, const string& description, optional<CollectiveWarning> = none, double cost = 0,
-      bool centerOnly = false);
+  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER } type;
+  MinionTaskInfo();
+  MinionTaskInfo(FurnitureType, const string& description);
+  typedef function<bool(const Creature*, FurnitureType)> UsagePredicate;
+  typedef function<bool(const Collective*, FurnitureType)> ActivePredicate;
+  MinionTaskInfo(UsagePredicate, const string& description);
+  MinionTaskInfo(UsagePredicate, ActivePredicate, const string& description);
   MinionTaskInfo(Type, const string& description, optional<CollectiveWarning> = none);
-  vector<SquareType> squares;
+  UsagePredicate furniturePredicate;
+  ActivePredicate activePredicate = [](const Collective*, FurnitureType) { return true; };
   string description;
   optional<CollectiveWarning> warning;
-  double cost = 0;
-  bool centerOnly = false;
+};
+
+struct WorkshopInfo {
+  FurnitureType furniture;
+  string taskName;
+  SkillId skill;
+};
+
+struct FloorInfo {
+  FurnitureType type;
+  CostInfo cost;
+  string name;
+  double efficiencyBonus;
 };
 
 class CollectiveConfig {
@@ -154,17 +184,21 @@ class CollectiveConfig {
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
   vector<BirthSpawn> getBirthSpawns() const;
+  unique_ptr<Workshops> getWorkshops() const;
+  static const WorkshopInfo& getWorkshopInfo(WorkshopType);
+  static optional<WorkshopType> getWorkshopType(FurnitureType);
 
   bool activeImmigrantion(const Game*) const;
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
-  static optional<SquareType> getSecondarySquare(SquareType);
-  unordered_set<SquareType> getEfficiencySquares() const;
-  vector<SquareType> getRoomsNeedingLight() const;
-  int getTaskDuration(const Creature*, MinionTask) const;
-  static const map<CollectiveResourceId, ResourceInfo>& getResourceInfo();
-  map<MinionTask, MinionTaskInfo> getTaskInfo() const;
-  static const vector<SquareType>& getEquipmentStorage();
-  static const vector<SquareType>& getResourceStorage();
+  const vector<FurnitureType>& getRoomsNeedingLight() const;
+  static const ResourceInfo& getResourceInfo(CollectiveResourceId);
+  static const vector<ItemFetchInfo>& getFetchInfo();
+  static optional<int> getTrainingMaxLevelIncrease(FurnitureType);
+  static const MinionTaskInfo& getTaskInfo(MinionTask);
+  static const vector<FloorInfo>& getFloors();
+  static double getEfficiencyBonus(FurnitureType);
+  static bool canBuildOutsideTerritory(FurnitureType);
+  static int getManaForConquering(VillainType);
 
   SERIALIZATION_DECL(CollectiveConfig);
 
@@ -186,7 +220,3 @@ class CollectiveConfig {
   double SERIAL(ghostProb) = 0;
   optional<GuardianInfo> SERIAL(guardianInfo);
 };
-
-
-#endif
-

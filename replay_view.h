@@ -13,9 +13,9 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _REPLAY_VIEW
-#define _REPLAY_VIEW
+#pragma once
 
+#include "util.h"
 #include "logging_view.h"
 
 class ReplayView : public View {
@@ -33,12 +33,12 @@ class ReplayView : public View {
       return ret;
     }
 
-    virtual int getTimeMilli() override {
-      return readValue<int>(LoggingToken::GET_TIME);
+    virtual milliseconds getTimeMilli() override {
+      return milliseconds{readValue<int>(LoggingToken::GET_TIME)};
     }
 
-    virtual int getTimeMilliAbsolute() override {
-      return readValue<int>(LoggingToken::GET_TIME_ABSOLUTE);
+    virtual milliseconds getTimeMilliAbsolute() override {
+      return milliseconds{readValue<int>(LoggingToken::GET_TIME_ABSOLUTE)};
     }
 
     virtual double getGameSpeed() override {
@@ -203,5 +203,3 @@ class ReplayView : public View {
     InputArchive& input;
     View* delegate;
 };
-
-#endif

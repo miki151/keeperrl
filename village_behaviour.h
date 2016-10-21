@@ -3,7 +3,8 @@
 #include "util.h"
 #include "enum_variant.h"
 #include "creature_factory.h"
-#include "attack_trigger.h"
+
+class AttackTrigger;
 
 enum class AttackBehaviourId {
   KILL_LEADER,
@@ -16,7 +17,10 @@ typedef EnumVariant<AttackBehaviourId, TYPES(int, CreatureFactory),
         ASSIGN(int, AttackBehaviourId::KILL_MEMBERS),
         ASSIGN(CreatureFactory, AttackBehaviourId::CAMP_AND_SPAWN)> AttackBehaviour;
 
-struct VillageBehaviour {
+class VillageBehaviour {
+  public:
+  VillageBehaviour();
+
   typedef AttackTrigger Trigger;
   enum WelcomeMessage {
     DRAGON_WELCOME,
@@ -29,7 +33,7 @@ struct VillageBehaviour {
   int SERIAL(minPopulation);
   int SERIAL(minTeamSize);
   vector<Trigger> SERIAL(triggers);
-  AttackBehaviour SERIAL(attackBehaviour);
+  HeapAllocated<AttackBehaviour> SERIAL(attackBehaviour);
   optional<WelcomeMessage> SERIAL(welcomeMessage);
   optional<pair<double, int>> SERIAL(ransom);
 
@@ -37,6 +41,8 @@ struct VillageBehaviour {
   double getAttackProbability(const VillageControl* self) const;
   double getTriggerValue(const Trigger&, const VillageControl* self) const;
   bool contains(const Creature*);
+
+  ~VillageBehaviour();
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

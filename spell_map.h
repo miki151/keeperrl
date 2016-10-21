@@ -13,10 +13,11 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _SPELL_MAP_H
-#define _SPELL_MAP_H
+#pragma once
 
-#include "spell.h"
+#include "spell_id.h"
+
+class Spell;
 
 class SpellMap {
   public:
@@ -35,4 +36,3 @@ class SpellMap {
   EnumMap<SpellId, optional<double>> SERIAL(elems);
 };
 
-#endif

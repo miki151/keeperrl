@@ -1,6 +1,6 @@
-#ifndef _SOUND_LIBRARY
-#define _SOUND_LIBRARY
+#pragma once
 
+#include "util.h"
 #include "sound.h"
 
 class Options;
@@ -18,6 +18,3 @@ class SoundLibrary {
   bool on;
   AudioDevice& audioDevice;
 };
-
-
-#endif

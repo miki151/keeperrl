@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _MINION_EQUIPMENT_H
-#define _MINION_EQUIPMENT_H
+#pragma once
 
 #include "util.h"
 #include "unique_entity.h"
@@ -54,4 +53,3 @@ class MinionEquipment {
   set<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>> SERIAL(locked);
 };
 
-#endif

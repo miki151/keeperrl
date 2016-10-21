@@ -45,6 +45,7 @@
 #include "model_builder.h"
 #include "sound_library.h"
 #include "audio_device.h"
+#include "sokoban_input.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -75,7 +76,7 @@ void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<boo
   view->initialize();
   options->setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
   initialized = true;
-  Intervalometer meter(1000 / 60);
+  Intervalometer meter(milliseconds{1000 / 60});
   while (!finished) {    
     while (!meter.getCount(view->getTimeMilliAbsolute())) {
     }
@@ -238,8 +239,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 }
 #endif
 
+
 static options_description getOptions() {
-  options_description flags("Flags");
+  options_description flags("KeeperRL");
   flags.add_options()
     ("help", "Print help")
     ("steam", "Run with Steam")
@@ -348,13 +350,13 @@ static int keeperMain(const variables_map& vars) {
   Debug::setErrorCallback([&renderer](const string& s) { renderer.showError(s);});
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
-  bool audioOk = audioDevice.initialize();
+  optional<string> audioError = audioDevice.initialize();
   Clock clock;
   GuiFactory guiFactory(renderer, &clock, &options);
   guiFactory.loadFreeImages(freeDataPath + "/images");
   if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
-    if (audioOk)
+    if (!audioError)
       soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath + "/sound");
   }
   if (tilesPresent)
@@ -385,8 +387,10 @@ static int keeperMain(const variables_map& vars) {
     view->initialize();
     viewInitialized = true;
   }
+  if (audioError)
+    view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
   Tile::initialize(renderer, tilesPresent);
-  Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && audioOk), getMaxVolume(), getMaxVolumes());
+  Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && !audioError), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
   optional<GameTypeChoice> forceGame;
@@ -394,7 +398,8 @@ static int keeperMain(const variables_map& vars) {
     forceGame = GameTypeChoice::KEEPER;
   else if (vars.count("quick_level"))
     forceGame = GameTypeChoice::QUICK_LEVEL;
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox,
+  SokobanInput sokobanInput(freeDataPath + "/sokoban_input.txt");
+  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
       gameFinished, useSingleThread, forceGame);
   if (vars.count("worldgen_test")) {
     loop.modelGenTest(vars["worldgen_test"].as<int>(), Random, &options);

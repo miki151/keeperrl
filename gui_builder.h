@@ -14,8 +14,7 @@
  If not, see http://www.gnu.org/licenses/ . */
 
 
-#ifndef _GUI_BUILDER_H
-#define _GUI_BUILDER_H
+#pragma once
 
 #include "util.h"
 #include "gui_elem.h"
@@ -59,7 +58,6 @@ class GuiBuilder {
   PGuiElem getTurnInfoGui(int& turn);
   PGuiElem drawBottomPlayerInfo(GameInfo&);
   PGuiElem drawRightPlayerInfo(PlayerInfo&);
-  PGuiElem drawPlayerHelp(PlayerInfo&);
   PGuiElem drawPlayerInventory(PlayerInfo&);
   PGuiElem drawRightBandInfo(GameInfo&);
   PGuiElem drawTechnology(CollectiveInfo&);
@@ -133,6 +131,8 @@ class GuiBuilder {
   PGuiElem getHintCallback(const vector<string>&);
   PGuiElem getTooltip(const vector<string>&);
   vector<PGuiElem> drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>&);
+  PGuiElem drawPlayerLevelButton(const PlayerInfo&);
+  PGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
   PGuiElem drawBuildings(CollectiveInfo&);
   PGuiElem buildingsCache;
   int buildingsHash = 0;
@@ -190,6 +190,8 @@ class GuiBuilder {
   double lyingItemsScroll = 0;
   double villagesScroll = 0;
   double tasksScroll = 0;
+  double workshopsScroll = 0;
+  double workshopsScroll2 = 0;
   double minionPageScroll = 0;
   int itemIndex = -1;
   int numSeenVillains = -1;
@@ -218,11 +220,14 @@ class GuiBuilder {
     Clock clock;
   } fpsCounter, upsCounter;
 
-  vector<PGuiElem> drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab);
+  GuiFactory::ListBuilder drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab);
   PGuiElem getButtonLine(CollectiveInfo::Button, int num, CollectiveTab);
   void drawMinionsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   PGuiElem minionsOverlayCache;
   int minionsOverlayHash = 0;
+  void drawWorkshopsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
+  PGuiElem workshopsOverlayCache;
+  int workshopsOverlayHash = 0;
   void drawTasksOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   void drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInfo::Ransom&);
   void drawBuildingsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
@@ -250,4 +255,3 @@ RICH_ENUM(GuiBuilder::GameSpeed,
   VERY_FAST
 );
 
-#endif

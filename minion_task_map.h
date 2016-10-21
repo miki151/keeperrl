@@ -13,15 +13,13 @@
  You should have received a copy of the GNU General Public License along with this program.
  If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _MINION_TASK_MAP_H
-#define _MINION_TASK_MAP_H
+#pragma once
 
 #include "minion_task.h"
 
 class MinionTaskMap {
   public:
   void setValue(MinionTask, double);
-  void setWorkshopTasks(double);
   void clear();
 
   void toggleLock(MinionTask);
@@ -40,4 +38,3 @@ class MinionTaskMap {
 
 BOOST_CLASS_VERSION(MinionTaskMap, 1);
 
-#endif

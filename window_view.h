@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _WINDOW_VIEW
-#define _WINDOW_VIEW
+#pragma once
 
 #include "util.h"
 #include "view.h"
@@ -84,8 +83,8 @@ class WindowView: public View {
   virtual void presentHighscores(const vector<HighscoreList>&) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
-  virtual int getTimeMilli() override;
-  virtual int getTimeMilliAbsolute() override;
+  virtual milliseconds getTimeMilli() override;
+  virtual milliseconds getTimeMilliAbsolute() override;
   virtual void stopClock() override;
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
@@ -105,7 +104,7 @@ class WindowView: public View {
   void displayMenuSplash2();
   void displayOldSplash();
   void updateMinimap(const CreatureView*);
-  void mapLeftClickFun(Vec2);
+  void mapContinuousLeftClickFun(Vec2);
   void mapCreatureClickFun(UniqueEntity<Creature>::Id);
   void mapCreatureDragFun(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   void mapRightClickFun(Vec2);
@@ -244,9 +243,6 @@ class WindowView: public View {
   atomic<int> zoomUI;
   void playSounds(const CreatureView*);
   vector<Sound> soundQueue;
-  EnumMap<SoundId, int> lastPlayed;
+  EnumMap<SoundId, optional<milliseconds>> lastPlayed;
   SoundLibrary* soundLibrary;
 };
-
-
-#endif

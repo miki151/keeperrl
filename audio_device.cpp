@@ -10,17 +10,18 @@
 AudioDevice::AudioDevice() {
 }
 
-bool AudioDevice::initialize() {
+static bool initialized = false;
+
+optional<string> AudioDevice::initialize() {
   if ((device = alcOpenDevice(nullptr))) {
     if ((context = alcCreateContext((ALCdevice*)device, nullptr))) {
       alcMakeContextCurrent((ALCcontext*)context);
       alDistanceModel(AL_NONE);
-      return true;
+      initialized = true;
+      return none;
     }
   }
-  ALenum error = alGetError();
-  CHECK(!error) << "Failed to initialize audio " << alGetString(error);
-  return false;
+  return "Error code: " + toString(alGetError());
 }
 
 AudioDevice::~AudioDevice() {
@@ -35,7 +36,7 @@ AudioDevice::~AudioDevice() {
 
 const int maxSources = 12;
 
-#define AL(X) {X; checkError(__FILE__, __LINE__, #X); }
+#define AL(X) { if (initialized) {X; checkError(__FILE__, __LINE__, #X); }}
 
 static void checkError(const char* file, int line, const char* functionName) {
   ALenum error = alGetError();
@@ -46,7 +47,7 @@ optional<OpenalId> AudioDevice::getFreeSource() {
   RecursiveLock lock(mutex);
   for (int i : All(sources)) {
     auto& source = sources[i];
-    ALint state;
+    ALint state = 0;
     AL(alGetSourcei(source.getId(), AL_SOURCE_STATE, &state));
     if (state == AL_STOPPED) {
       // recreating the source does a better job at cleaning up after streaming
@@ -65,7 +66,7 @@ optional<OpenalId> AudioDevice::getFreeSource() {
 void AudioDevice::play(const SoundBuffer& sound, double volume, double pitch) {
   RecursiveLock lock(mutex);
   if (auto source = getFreeSource()) {
-    ALint state;
+    ALint state = 0;
     AL(alGetSourcei(*source, AL_SOURCE_STATE, &state));
     CHECK(state == AL_INITIAL) << state;
     AL(alSourcei(*source, AL_BUFFER, sound.getBufferId()));
@@ -160,7 +161,7 @@ SoundStream::SoundStream(const char* path, double volume) : startedPlaying(false
 bool SoundStream::isPlaying() const {
   if (!startedPlaying)
     return true;
-  ALint state;
+  ALint state = 0;
   AL(alGetSourcei(source.getId(), AL_SOURCE_STATE, &state));
   return state == AL_PLAYING;
 }
@@ -170,7 +171,7 @@ void SoundStream::setVolume(double v) {
 }
 
 double SoundStream::getVolume() const {
-  float ret;
+  float ret = 0;
   AL(alGetSourcef(source.getId(), AL_GAIN, &ret));
   return ret;
 }
@@ -182,7 +183,7 @@ void SoundStream::init(const char* path) {
 }
 
 void SoundStream::loop(double volume) {
-  int numQueued;
+  int numQueued = 0;
   AL(alGetSourcei(source.getId(), AL_BUFFERS_QUEUED, &numQueued));
   if (numQueued == 0) { /*fill and queue initial buffers*/
     vector<char> data = readSoundData(*file, streamingBufferSize);
@@ -197,14 +198,14 @@ void SoundStream::loop(double volume) {
     startedPlaying = true;
     //CHECK(isPlaying()); fails if I unplug/plug the speaker cable...?
   } else { /*refill processed buffers*/
-    int numProcessed;
+    int numProcessed = 0;
     AL(alGetSourcei(source.getId(), AL_BUFFERS_PROCESSED, &numProcessed));
     while (numProcessed--) {
       vector<char> data = readSoundData(*file, streamingBufferSize);
       if (data.size() == 0)
         break;
       else {
-        ALuint buffer;
+        ALuint buffer = 0;
         AL(alSourceUnqueueBuffers(source.getId(), 1, &buffer));
         AL(alBufferData(buffer, (info->channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data.data(),
             data.size(), info->rate));

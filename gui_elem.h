@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _GUI_ELEM
-#define _GUI_ELEM
+#pragma once
 
 #include "renderer.h"
 #include "drag_and_drop.h"
@@ -66,7 +65,7 @@ class GuiFactory {
 
   SDL::SDL_Keysym getKey(SDL::SDL_Keycode);
   PGuiElem button(function<void()> fun, SDL::SDL_Keysym, bool capture = false);
-  PGuiElem buttonChar(function<void()> fun, char, bool capture = false);
+  PGuiElem buttonChar(function<void()> fun, char, bool capture = false, bool useAltIfWasdScrolling = false);
   PGuiElem button(function<void()> fun);
   PGuiElem reverseButton(function<void()> fun, vector<SDL::SDL_Keysym> = {}, bool capture = false);
   PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun, SDL::SDL_Keysym, bool capture = false);
@@ -78,6 +77,7 @@ class GuiFactory {
   PGuiElem mouseWheel(function<void(bool)>);
   PGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
   PGuiElem keyHandler(function<void()>, vector<SDL::SDL_Keysym>, bool capture = false);
+  PGuiElem keyHandlerChar(function<void()>, char, bool capture = false, bool useAltIfWasdScrolling = false);
   PGuiElem stack(vector<PGuiElem>);
   PGuiElem stack(PGuiElem, PGuiElem);
   PGuiElem stack(PGuiElem, PGuiElem, PGuiElem);
@@ -92,10 +92,13 @@ class GuiFactory {
     ListBuilder& addElemAuto(PGuiElem);
     ListBuilder& addBackElemAuto(PGuiElem);
     ListBuilder& addBackElem(PGuiElem, int size = 0);
+    ListBuilder& addMiddleElem(PGuiElem);
     PGuiElem buildVerticalList();
+    PGuiElem buildVerticalListFit();
     PGuiElem buildHorizontalList();
     PGuiElem buildHorizontalListFit();
     int getSize() const;
+    int getLength() const;
     bool isEmpty() const;
     vector<PGuiElem>& getAllElems();
     void clear();
@@ -106,13 +109,12 @@ class GuiFactory {
     vector<int> sizes;
     int defaultSize = 0;
     int backElems = 0;
+    bool middleElem = false;
   };
   ListBuilder getListBuilder(int defaultSize = 0);
-  PGuiElem verticalList(vector<PGuiElem>, int elemHeight, int numAlignBottom = 0);
-  PGuiElem verticalList(vector<PGuiElem>, vector<int> elemHeight, int numAlignBottom = 0);
+  PGuiElem verticalList(vector<PGuiElem>, int elemHeight);
   PGuiElem verticalListFit(vector<PGuiElem>, double spacing);
-  PGuiElem horizontalList(vector<PGuiElem>, int elemWidth, int numAlignRight = 0);
-  PGuiElem horizontalList(vector<PGuiElem>, vector<int> elemWidth, int numAlignRight = 0);
+  PGuiElem horizontalList(vector<PGuiElem>, int elemHeight);
   PGuiElem horizontalListFit(vector<PGuiElem>, double spacing = 0);
   PGuiElem verticalAspect(PGuiElem, double ratio);
   PGuiElem empty();
@@ -131,6 +133,7 @@ class GuiFactory {
   PGuiElem rightMargin(int size, PGuiElem content);
   PGuiElem topMargin(int size, PGuiElem content);
   PGuiElem bottomMargin(int size, PGuiElem content);
+  PGuiElem progressBar(Color, double state);
   PGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem labelHighlight(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   PGuiElem labelHighlightBlink(const string& s, Color, Color);
@@ -176,7 +179,7 @@ class GuiFactory {
       Vec2 offset = Vec2(0, 0), function<Color()> = nullptr);
   PGuiElem sprite(Texture&, Alignment, Color);
   PGuiElem sprite(Texture&, double scale);
-  PGuiElem tooltip(const vector<string>&, int delayMilli = 700);
+  PGuiElem tooltip(const vector<string>&, milliseconds delay = milliseconds{700});
   PGuiElem darken();
   PGuiElem stopMouseMovement();
   PGuiElem fullScreen(PGuiElem);
@@ -235,7 +238,7 @@ class GuiFactory {
   PGuiElem miniWindow2(PGuiElem content, function<void()> onExitButton = nullptr);
   PGuiElem miniBorder();
   PGuiElem miniBorder2();
-  PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight);
+  PGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight, optional<int> topBarHeight);
   PGuiElem invisible(PGuiElem content);
   PGuiElem background(PGuiElem content, Color);
   PGuiElem translucentBackground(PGuiElem content);
@@ -294,6 +297,3 @@ class GuiFactory {
   Options* options;
   DragContainer dragContainer;
 };
-
-
-#endif

@@ -13,12 +13,9 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _TRIGGER_H
-#define _TRIGGER_H
+#pragma once
 
 #include "util.h"
-#include "effect_type.h"
-#include "view_object.h"
 #include "position.h"
 
 class Creature;
@@ -26,6 +23,7 @@ class CreatureView;
 class Attack;
 class Tribe;
 class ViewObject;
+class EffectType;
 
 class Trigger {
   public:
@@ -38,7 +36,7 @@ class Trigger {
 
   virtual bool isDangerous(const Creature* c) const;
   virtual void tick();
-  virtual void setOnFire(double size);
+  virtual void fireDamage(double size);
   virtual double getLightEmission() const;
 
   static PTrigger getPortal(const ViewObject&, Position);
@@ -57,8 +55,7 @@ class Trigger {
   Trigger(Position);
   Trigger(const ViewObject& obj, Position);
 
-  optional<ViewObject> SERIAL(viewObject);
+  unique_ptr<ViewObject> SERIAL(viewObject);
   Position SERIAL(position);
 };
 
-#endif

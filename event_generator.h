@@ -1,5 +1,4 @@
-#ifndef _EVENT_GENERATOR_H
-#define _EVENT_GENERATOR_H
+#pragma once
 
 #include "util.h"
 
@@ -21,4 +20,3 @@ class EventGenerator {
 
 
 
-#endif

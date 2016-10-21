@@ -25,6 +25,11 @@
 #include "save_file_info.h"
 #include "file_sharing.h"
 #include "villain_type.h"
+#include "square_type.h"
+#include "attack_trigger.h"
+#include "view_object.h"
+#include "campaign.h"
+#include "construction_map.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) { 
@@ -89,13 +94,13 @@ PGame Game::campaignGame(Table<PModel>&& models, Vec2 basePos, const string& pla
 PGame Game::singleMapGame(const string& worldName, const string& playerName, PModel&& model) {
   Table<PModel> t(1, 1);
   t[0][0] = std::move(model);
-  return PGame(new Game(worldName, playerName, std::move(t), Vec2(0, 0)));
+  return PGame(new Game(worldName, playerName, std::move(t), Vec2(0, 0), none));
 }
 
 PGame Game::splashScreen(PModel&& model) {
   Table<PModel> t(1, 1);
   t[0][0] = std::move(model);
-  PGame game(new Game("", "", std::move(t), Vec2(0, 0)));
+  PGame game(new Game("", "", std::move(t), Vec2(0, 0), none));
   game->spectator.reset(new Spectator(game->models[0][0]->getTopLevel()));
   game->turnEvents.clear();
   return game;
@@ -105,7 +110,11 @@ bool Game::isTurnBased() {
   return !spectator && (!playerControl || playerControl->isTurnBased());
 }
 
-const Campaign& Game::getCampaign() const {
+const optional<Campaign>& Game::getCampaign() const {
+  return *campaign;
+}
+
+optional<Campaign>& Game::getCampaign() {
   return *campaign;
 }
 
@@ -153,7 +162,9 @@ void Game::prepareSiteRetirement() {
     }
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->limitKnownTilesToModel();
-  vector<Position> locationPos = playerCollective->getAllSquares({SquareId::LIBRARY});
+  set<Position> locationPosTmp =
+      playerCollective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF);
+  vector<Position> locationPos(locationPosTmp.begin(), locationPosTmp.end());
   if (locationPos.empty())
     locationPos = playerCollective->getTerritory().getAll();
   if (!locationPos.empty())
@@ -165,9 +176,14 @@ void Game::prepareSiteRetirement() {
         new VillageControl(playerCollective, CONSTRUCT(VillageBehaviour,
           c.minPopulation = 6;
           c.minTeamSize = 5;
-          c.triggers = LIST({AttackTriggerId::ROOM_BUILT, SquareId::THRONE}, {AttackTriggerId::SELF_VICTIMS},
-            AttackTriggerId::STOLEN_ITEMS, {AttackTriggerId::ROOM_BUILT, SquareId::IMPALED_HEAD});
-          c.attackBehaviour = AttackBehaviourId::KILL_LEADER;
+          c.triggers = LIST(
+              {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+              {AttackTriggerId::SELF_VICTIMS},
+              AttackTriggerId::STOLEN_ITEMS,
+              {AttackTriggerId::TIMER, 7000},
+              {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD}
+          );
+          c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.8, Random.get(500, 700));))));
   for (Collective* col : models[baseModel]->getCollectives())
     for (Creature* c : col->getCreatures())
@@ -189,7 +205,9 @@ void Game::prepareSiteRetirement() {
 void Game::prepareSingleMapRetirement() {
   CHECK(isSingleModel());
   playerCollective->getLevel()->clearLocations();
-  vector<Position> locationPos = playerCollective->getAllSquares({SquareId::LIBRARY});
+  set<Position> locationPosTmp =
+      playerCollective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF);
+  vector<Position> locationPos(locationPosTmp.begin(), locationPosTmp.end());
   if (locationPos.empty())
     locationPos = playerCollective->getTerritory().getAll();
   if (!locationPos.empty())
@@ -232,8 +250,8 @@ optional<Game::ExitInfo> Game::update(double timeDiff) {
 }
 
 optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
-  int absoluteTime = view->getTimeMilliAbsolute();
-  if (absoluteTime - lastUpdate > 20) {
+  auto absoluteTime = view->getTimeMilliAbsolute();
+  if (!lastUpdate || absoluteTime - *lastUpdate > milliseconds{20}) {
     if (playerControl)
       playerControl->render(view);
     if (spectator)
@@ -255,7 +273,7 @@ optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
         if (input.getId() == UserInputId::IDLE)
           break;
         else
-          lastUpdate = -10;
+          lastUpdate = none;
         playerControl->processInput(view, input);
         if (exitInfo)
           return exitInfo;
@@ -275,15 +293,15 @@ optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
 
 bool Game::isVillainActive(const Collective* col) {
   const Model* m = col->getLevel()->getModel();
-  return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
+  return m == getMainModel().get() || getCampaign()->isInInfluence(getModelCoords(m));
 }
 
 void Game::tick(double time) {
   if (!turnEvents.empty() && time > *turnEvents.begin()) {
     int turn = *turnEvents.begin();
     if (turn == 0) {
-      if (campaign)
-        uploadEvent("campaignStarted", campaign->getParameters());
+      if (getCampaign())
+        uploadEvent("campaignStarted", getCampaign()->getParameters());
       else
         uploadEvent("singleStarted", map<string, string>());
     } else
@@ -372,13 +390,13 @@ Vec2 Game::getModelCoords(const Model* m) const {
 }
 
 void Game::presentWorldmap() {
-  view->presentWorldmap(*campaign);
+  view->presentWorldmap(*getCampaign());
 }
 
 void Game::transferAction(vector<Creature*> creatures) {
-  if (!campaign)
+  if (!getCampaign())
     return;
-  if (auto dest = view->chooseSite("Choose destination site:", *campaign,
+  if (auto dest = view->chooseSite("Choose destination site:", *getCampaign(),
         getModelCoords(creatures[0]->getLevel()->getModel()))) {
     Model* to = NOTNULL(models[*dest].get());
     vector<CreatureInfo> cant;
@@ -394,7 +412,7 @@ void Game::transferAction(vector<Creature*> creatures) {
         transferCreature(c, models[*dest].get());
       if (!visited[*dest]) {
         visited[*dest] = true;
-        if (auto retired = campaign->getSites()[*dest].getRetired())
+        if (auto retired = getCampaign()->getSites()[*dest].getRetired())
             uploadEvent("retiredLoaded", {
                 {"retiredId", getGameId(retired->fileInfo)},
                 {"playerName", getPlayerName()}});
@@ -569,7 +587,7 @@ void Game::cancelPlayer(Creature* c) {
 
 static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
   SavedGameInfo::MinionInfo ret;
-  ret.level = c->getAttributes().getExpLevel();
+  ret.level = (int)c->getAttributes().getVisibleExpLevel();
   ret.viewId = c->getViewObject().id();
   return ret;
 }
@@ -583,8 +601,8 @@ string Game::getPlayerName() const {
 
 SavedGameInfo Game::getSavedGameInfo() const {
   int numSites = 1;
-  if (campaign)
-    numSites = campaign->getNumNonEmpty();
+  if (getCampaign())
+    numSites = getCampaign()->getNumNonEmpty();
   if (Collective* col = getPlayerCollective()) {
     vector<Creature*> creatures = col->getCreatures();
     CHECK(!creatures.empty());
@@ -660,14 +678,14 @@ void Game::addEvent(const GameEvent& event) {
   switch (event.getId()) {
     case EventId::CONQUERED_ENEMY: {
         Collective* col = event.get<Collective*>();
-        if (campaign && col->getVillainType()) {
+        if (getCampaign() && col->getVillainType()) {
           Vec2 coords = getModelCoords(col->getLevel()->getModel());
-          if (!campaign->isDefeated(coords)) {
-            if (auto retired = campaign->getSites()[coords].getRetired())
+          if (!getCampaign()->isDefeated(coords)) {
+            if (auto retired = getCampaign()->getSites()[coords].getRetired())
               uploadEvent("retiredConquered", {
                   {"retiredId", getGameId(retired->fileInfo)},
                   {"playerName", getPlayerName()}});
-            campaign->setDefeated(coords);
+            getCampaign()->setDefeated(coords);
           }
         }
         if (col->getVillainType() == VillainType::MAIN && gameWon()) {

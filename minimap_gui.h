@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _MINIMAP_GUI_H
-#define _MINIMAP_GUI_H
+#pragma once
 
 #include "util.h"
 #include "gui_elem.h"
@@ -60,4 +59,3 @@ class MinimapGui : public GuiElem {
   Renderer& renderer;
 };
 
-#endif

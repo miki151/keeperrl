@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _CONTROLLER_H
-#define _CONTROLLER_H
+#pragma once
 
 #include "enums.h"
 #include "util.h"
@@ -85,4 +84,3 @@ class ControllerFactory {
   function<Controller* (Creature*)> fun;
 };
 
-#endif

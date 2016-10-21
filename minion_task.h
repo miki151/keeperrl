@@ -1,5 +1,4 @@
-#ifndef _MINION_TASK_H
-#define _MINION_TASK_H
+#pragma once
 
 #include "util.h"
 
@@ -8,13 +7,9 @@ RICH_ENUM(MinionTask,
   GRAVE,
   TRAIN,
   EAT,
-  WORKSHOP,
-  FORGE,
-  LABORATORY,
-  JEWELER,
+  CRAFT,
   STUDY,
   PRISON,
-  TORTURE,
   //SACRIFICE,
   EXECUTE,
   //WORSHIP,
@@ -23,35 +18,23 @@ RICH_ENUM(MinionTask,
   EXPLORE_NOCTURNAL,
   EXPLORE_CAVES,
   COPULATE,
-  CONSUME,
   RITUAL,
   CROPS,
   SPIDER,
-  THRONE
+  THRONE,
+  BE_WHIPPED,
+  BE_TORTURED
 );
 
-inline vector<MinionTask> getWorkshopTasks() {
-  return {MinionTask::WORKSHOP, MinionTask::FORGE, MinionTask::LABORATORY, MinionTask::JEWELER};
-}
+class Position;
 
-RICH_ENUM(MinionTrait,
-  LEADER,
-  FIGHTER,
-  WORKER,
-  PRISONER,
-  SUMMONED,
-  NO_EQUIPMENT,
-  NO_RETURNING,
-  NO_LIMIT,
-  FARM_ANIMAL
-);
+class MinionTasks {
+  public:
+  static PTask generate(Collective*, Creature*, MinionTask);
+  static optional<double> getDuration(const Creature*, MinionTask);
+  static vector<Position> getAllPositions(const Collective*, const Creature*, MinionTask, bool onlyActive = false);
+  static const vector<FurnitureType>& getAllFurniture(MinionTask);
+  static optional<MinionTask> getTaskFor(const Creature*, FurnitureType);
 
 
-RICH_ENUM(SpawnType,
-  HUMANOID,
-  UNDEAD,
-  BEAST,
-  DEMON
-);
-
-#endif
+};

@@ -1,5 +1,4 @@
-#ifndef _SUNLIGHT_INFO_H
-#define _SUNLIGHT_INFO_H
+#pragma once
 
 enum class SunlightState { DAY, NIGHT};
 
@@ -17,4 +16,3 @@ class SunlightInfo {
   SunlightState state;
 };
 
-#endif

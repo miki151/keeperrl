@@ -1,5 +1,4 @@
-#ifndef _EFFECT_TYPE_H
-#define _EFFECT_TYPE_H
+#pragma once
 
 #include "enum_variant.h"
 
@@ -44,4 +43,3 @@ class DirEffectType : public EnumVariant<DirEffectId, TYPES(EffectType),
   using EnumVariant::EnumVariant;
 };
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef _LASTING_EFFECT_H
-#define _LASTING_EFFECT_H
+#pragma once
 
 #include "util.h"
 
@@ -27,6 +26,10 @@ RICH_ENUM(LastingEffect,
     PREGNANT
 );
 
+RICH_ENUM(CreatureCondition,
+    SLEEPING,
+    RESTRICTED_MOVEMENT
+);
 
 class LastingEffects {
   public:
@@ -39,7 +42,7 @@ class LastingEffects {
   static void onCreatureDamage(Creature*, LastingEffect);
   static const char* getGoodAdjective(LastingEffect);
   static const char* getBadAdjective(LastingEffect);
+  static const vector<LastingEffect>& getCausingCondition(CreatureCondition);
 };
 
 
-#endif

@@ -30,24 +30,23 @@ map<EquipmentSlot, string> Equipment::slotTitles = {
 
 template <class Archive> 
 void Equipment::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(Inventory) & SVAR(items);
+  ar & SUBCLASS(Inventory);
+  serializeAll(ar, items, equipped);
 }
 
 SERIALIZABLE(Equipment);
 SERIALIZATION_CONSTRUCTOR_IMPL(Equipment);
 
 vector<Item*> Equipment::getItem(EquipmentSlot slot) const {
-  if (items.count(slot) > 0)
-    return items.at(slot);
-  else
-    return {};
+  return items[slot];
 }
 
-bool Equipment::isEquiped(const Item* item) const {
-  if (!item->canEquip())
-    return false;
-  EquipmentSlot slot = item->getEquipmentSlot();
-  return items.count(slot) && contains(items.at(slot), item);
+const vector<Item*>& Equipment::getAllEquipped() const {
+  return equipped;
+}
+
+bool Equipment::isEquipped(const Item* item) const {
+  return item->canEquip() && contains(items[item->getEquipmentSlot()], item);
 }
 
 int Equipment::getMaxItems(EquipmentSlot slot) const {
@@ -58,25 +57,25 @@ int Equipment::getMaxItems(EquipmentSlot slot) const {
 }
 
 bool Equipment::canEquip(const Item* item) const {
-  if (!item->canEquip() || isEquiped(item))
+  if (!item->canEquip() || isEquipped(item))
     return false;
   EquipmentSlot slot = item->getEquipmentSlot();
-  return !items.count(slot) || items.at(slot).size() < getMaxItems(slot);
+  return items[slot].size() < getMaxItems(slot);
 }
 
 void Equipment::equip(Item* item, EquipmentSlot slot) {
   items[slot].push_back(item);
+  equipped.push_back(item);
   CHECK(hasItem(item));
 }
 
 void Equipment::unequip(const Item* item) {
-  EquipmentSlot slot = item->getEquipmentSlot();
-  CHECK(items.count(slot));
-  removeElement(items.at(slot), item);
+  removeElement(items[item->getEquipmentSlot()], item);
+  removeElement(equipped, item);
 }
 
 PItem Equipment::removeItem(Item* item) {
-  if (isEquiped(item))
+  if (isEquipped(item))
     unequip(item);
   return Inventory::removeItem(item);
 }
@@ -90,6 +89,7 @@ vector<PItem> Equipment::removeItems(const vector<Item*>& items) {
 
 vector<PItem> Equipment::removeAllItems() {
   items.clear();
+  equipped.clear();
   return Inventory::removeAllItems();
 }
 

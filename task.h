@@ -13,13 +13,13 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _TASK_H
-#define _TASK_H
+#pragma once
 
 #include "move_info.h"
 #include "unique_entity.h"
 #include "entity_set.h"
 #include "position.h"
+#include "destroy_action.h"
 
 class SquareType;
 class Location;
@@ -33,26 +33,29 @@ class Task : public UniqueEntity<Task> {
   virtual ~Task();
 
   virtual MoveInfo getMove(Creature*) = 0;
-  virtual bool isImpossible(const Level*);
+  virtual bool isBogus() const;
+  virtual bool isBlocked(Creature*) const;
   virtual bool canTransfer();
   virtual void cancel() {}
   virtual string getDescription() const = 0;
   virtual bool canPerform(const Creature* c);
   bool isDone();
 
-  static PTask construction(TaskCallback*, Position, const SquareType&);
+  static PTask construction(TaskCallback*, Position, FurnitureType);
+  static PTask destruction(TaskCallback*, Position, const Furniture*, DestroyAction);
   static PTask buildTorch(TaskCallback*, Position, Dir attachmentDir);
-  static PTask bringItem(TaskCallback*, Position position, vector<Item*>, vector<Position> target,
+  static PTask bringItem(TaskCallback*, Position position, vector<Item*>, const set<Position>& target,
       int numRetries = 10);
   static PTask applyItem(TaskCallback*, Position, Item*, Position target);
-  static PTask applySquare(TaskCallback*, vector<Position>);
+  enum SearchType { LAZY, RANDOM_CLOSE };
+  enum ActionType { APPLY, NONE };
+  static PTask applySquare(TaskCallback*, vector<Position>, SearchType, ActionType);
   static PTask pickAndEquipItem(TaskCallback*, Position, Item*);
   static PTask equipItem(Item*);
   static PTask pickItem(TaskCallback*, Position, vector<Item*>);
   static PTask kill(TaskCallback*, Creature*);
   static PTask torture(TaskCallback*, Creature*);
   static PTask sacrifice(TaskCallback*, Creature*);
-  static PTask destroySquare(Position);
   static PTask disappear();
   static PTask chain(PTask, PTask);
   static PTask chain(PTask, PTask, PTask);
@@ -69,9 +72,10 @@ class Task : public UniqueEntity<Task> {
   static PTask consume(TaskCallback*, Creature* target);
   static PTask eat(set<Position> hatcherySquares);
   static PTask goTo(Position);
+  static PTask goToTryForever(Position);
   static PTask transferTo(Model*);
-  static PTask goToAndWait(Position, double maxTime);
-  static PTask whipping(TaskCallback*, Position, Creature* whipped, double interval, double timeout);
+  static PTask goToAndWait(Position, double waitTime);
+  static PTask whipping(Position, Creature* whipped);
   static PTask dropItems(vector<Item*>);
   static PTask spider(Position origin, const vector<Position>& posClose, const vector<Position>& posFurther);
 
@@ -88,5 +92,3 @@ class Task : public UniqueEntity<Task> {
   bool SERIAL(done) = false;
   bool SERIAL(transfer);
 };
-
-#endif

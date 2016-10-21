@@ -13,15 +13,12 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _PLAYER_CONTROL_H
-#define _PLAYER_CONTROL_H
+#pragma once
 
 #include "creature_view.h"
 #include "entity_set.h"
 #include "collective_control.h"
-#include "cost_info.h"
 #include "game_info.h"
-#include "square_type.h"
 #include "map_memory.h"
 #include "position.h"
 #include "collective_warning.h"
@@ -38,16 +35,19 @@ class ListElem;
 class UserInput;
 class MinionAction;
 struct TaskActionInfo;
+struct CreatureDropInfo;
 struct EquipmentActionInfo;
 struct TeamCreatureInfo;
 template <typename T>
 class EventProxy;
+class SquareType;
+class CostInfo;
+struct WorkshopItem;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
   PlayerControl(Collective*, Level*);
   ~PlayerControl();
-  void addImportantLongMessage(const string&, optional<Position> = none);
 
   void processInput(View* view, UserInput);
   MoveInfo getMove(Creature* c);
@@ -77,7 +77,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
     vector<Requirement> requirements;
   };
   static vector<RoomInfo> getRoomInfo();
-  static vector<RoomInfo> getWorkshopInfo();
 
   SERIALIZATION_DECL(PlayerControl);
 
@@ -85,6 +84,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static void registerTypes(Archive& ar, int version);
 
   vector<Creature*> getTeam(const Creature*);
+  optional<FurnitureType> getMissingTrainingDummy(const Creature*);
 
   protected:
   // from CreatureView
@@ -102,7 +102,9 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
-  virtual void onConstructed(Position, const SquareType&) override;
+  virtual void onConstructed(Position, FurnitureType) override;
+  virtual void onClaimedSquare(Position) override;
+  virtual void onDestructed(Position, const DestroyAction&) override;
   virtual void onNoEnemies() override;
   virtual void tick() override;
   virtual void update(bool currentlyActive) override;
@@ -138,18 +140,15 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   struct BuildInfo;
   bool meetsRequirement(Requirement) const;
+  bool canSelectRectangle(const BuildInfo&);
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   VillageInfo::Village getVillageInfo(const Collective* enemy) const;
-  vector<BuildInfo> getBuildInfo() const;
-  static vector<BuildInfo> getBuildInfo(TribeId);
+  void fillWorkshopInfo(CollectiveInfo&) const;
+  static const vector<BuildInfo>& getBuildInfo();
   static vector<BuildInfo> workshopInfo;
   static vector<BuildInfo> libraryInfo;
   static vector<BuildInfo> minionsInfo;
-
-  ViewId getResourceViewId(CollectiveResourceId id) const;
-  optional<pair<ViewId, int>> getCostObj(CostInfo) const;
-  CostInfo getRoomCost(SquareType, CostInfo baseCost, double exponent) const;
 
   typedef CollectiveInfo::TechButton TechButton;
 
@@ -162,15 +161,14 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<TechInfo> getTechInfo() const;
 
   int getImpCost() const;
-  bool canBuildDoor(Position) const;
-  bool canPlacePost(Position) const;
   void getEquipmentItem(View* view, ItemPredicate predicate);
+  ItemInfo getWorkshopItem(const WorkshopItem&) const;
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
       double* scrollPos = nullptr);
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);
-  bool areInSameGroup(Creature*, Creature*) const;
+  void minionDragAndDrop(const CreatureDropInfo&);
   void fillMinions(CollectiveInfo&) const;
   vector<Creature*> getMinionsLike(Creature*) const;
   vector<PlayerInfo> getPlayerInfos(vector<Creature*>, UniqueEntity<Creature>::Id chosenId) const;
@@ -190,7 +188,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   static ViewObject getTrapObject(TrapType, bool built);
   void addToMemory(Position);
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
-  void tryLockingDoor(Position);
+  void onSquareClick(Position);
   Creature* getControlled() const;
   optional<TeamId> getCurrentTeam() const;
   CollectiveTeams& getTeams();
@@ -211,19 +209,20 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void updateSelectionSquares();
   double SERIAL(lastControlKeeperQuestion) = -100;
   int SERIAL(startImpNum) = -1;
-  bool SERIAL(payoutWarning) = false;
   optional<UniqueEntity<Creature>::Id> chosenCreature;
+  void setChosenCreature(optional<UniqueEntity<Creature>::Id>);
+  optional<WorkshopType> chosenWorkshop;
+  void setChosenWorkshop(optional<WorkshopType>);
   optional<TeamId> getChosenTeam() const;
-  void setChosenTeam(optional<TeamId>);
+  void setChosenTeam(optional<TeamId>, optional<UniqueEntity<Creature>::Id> = none);
   optional<TeamId> chosenTeam;
+  void clearChosenInfo();
   unordered_set<Position, CustomHash<Position>> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
   vector<PlayerMessage> SERIAL(messageHistory);
   vector<CollectiveAttack> SERIAL(newAttacks);
   vector<CollectiveAttack> SERIAL(ransomAttacks);
-  EnumMap<CollectiveWarning, double> SERIAL(warningTimes);
-  double SERIAL(lastWarningTime) = -10000;
   vector<string> SERIAL(hints);
   optional<PlayerMessage> findMessage(PlayerMessage::Id);
   void updateVisibleCreatures();
@@ -234,6 +233,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   set<const Collective*> SERIAL(knownVillainLocations);
   bool firstRender = true;
   bool isNight = true;
+  optional<UniqueEntity<Creature>::Id> draggedCreature;
 };
 
-#endif

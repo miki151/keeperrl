@@ -5,6 +5,7 @@
 #include "collective_config.h"
 #include "villain_type.h"
 #include "village_behaviour.h"
+#include "attack_trigger.h"
 
 struct EnemyInfo;
 

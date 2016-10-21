@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _SHORTEST_PATH_H
-#define _SHORTEST_PATH_H
+#pragma once
 
 #include <functional>
 
@@ -96,4 +95,3 @@ class BfSearch {
   set<Vec2> reachable;
 };
 
-#endif

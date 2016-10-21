@@ -4,6 +4,9 @@
 #include "task.h"
 #include "view_index.h"
 #include "model.h"
+#include "view_object.h"
+#include "furniture_type.h"
+#include "furniture_layer.h"
 
 template <class T>
 PositionMap<T>::PositionMap(const T& def) : defaultVal(def) {
@@ -44,7 +47,7 @@ T& PositionMap<T>::getOrInit(Position pos) {
   else try {
     return outliers.at(levelId).at(pos.getCoord());
   } catch (std::out_of_range) {
-    return outliers[levelId][pos.getCoord()] = defaultVal;
+    return outliers[levelId][pos.getCoord()]  = defaultVal;
   }
 }
 
@@ -94,6 +97,7 @@ void PositionMap<T>::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE_TMPL(PositionMap, int);
 SERIALIZABLE_TMPL(PositionMap, bool);
+SERIALIZABLE_TMPL(PositionMap, double);
 
 class Task;
 
@@ -101,3 +105,4 @@ SERIALIZABLE_TMPL(PositionMap, Task*);
 SERIALIZABLE_TMPL(PositionMap, HighlightType);
 SERIALIZABLE_TMPL(PositionMap, vector<Task*>);
 SERIALIZABLE_TMPL(PositionMap, optional<ViewIndex>);
+SERIALIZABLE_TMPL(PositionMap, EnumMap<FurnitureLayer, optional<FurnitureType>>);

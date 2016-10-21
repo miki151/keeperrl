@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _RENDERER_H
-#define _RENDERER_H
+#pragma once
 
 #include "sdl.h"
 #include "util.h"
@@ -231,4 +230,3 @@ class Renderer {
   void setGlScissor(optional<Rectangle>);
 };
 
-#endif

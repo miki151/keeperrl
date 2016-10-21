@@ -1,5 +1,4 @@
-#ifndef _HIGHSCORES_H
-#define _HIGHSCORES_H
+#pragma once
 
 #include "util.h"
 
@@ -43,4 +42,3 @@ class Highscores {
   Options* options;
 };
 
-#endif

@@ -101,7 +101,7 @@ static void checkOpenglError() {
 Texture::Texture(const string& fileName){
   SDL::SDL_Surface* image= SDL::IMG_Load(fileName.c_str());
   CHECK(image) << SDL::IMG_GetError();
-  CHECK(loadFrom(image));
+  CHECK(loadFrom(image)) << "Couldn't load image: " << fileName;
   SDL::SDL_FreeSurface(image);
   path = fileName;
 }
@@ -479,12 +479,14 @@ void Renderer::showError(const string& s) {
 }
 
 Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : nominalSize(nominal) {
+
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MINOR_VERSION, 1 );
   CHECK(window = SDL::SDL_CreateWindow("KeeperRL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1200, 720,
     SDL::SDL_WINDOW_RESIZABLE | SDL::SDL_WINDOW_SHOWN | SDL::SDL_WINDOW_MAXIMIZED | SDL::SDL_WINDOW_OPENGL)) << SDL::SDL_GetError();
   CHECK(SDL::SDL_GL_CreateContext(window)) << SDL::SDL_GetError();
+  SDL_SetWindowMinimumSize(window, 800, 600);
   SDL_GetWindowSize(window, &width, &height);
   initOpenGL();
   loadFonts(fontPath, fonts);
@@ -517,17 +519,7 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool 
     tex = &altTiles[coord.texNum];
   }
   Vec2 coordPos = coord.pos.mult(sz);
-  if (vFlip) {
-    sz.y *= -1;
-    tileSize.y *= -1;
-    coordPos.y -= sz.y;
-  }
-  if (vFlip) {
-    sz.x *= -1;
-    tileSize.x *= -1;
-    coordPos.x -= sz.x;
-  }
-  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color);
+  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, vFlip, hFlip);
 }
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {

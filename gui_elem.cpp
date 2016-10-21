@@ -128,35 +128,11 @@ static optional<SDL_Keycode> getKey(char c) {
     case 'x': return SDL::SDLK_x;
     case 'y': return SDL::SDLK_y;
     case 'z': return SDL::SDLK_z;
-    case 0: return none;
+    case ' ': return SDL::SDLK_SPACE;
+    default: return none;
   }
-  FAIL << "Unrecognized key " << c;
   return none;
 }
-
-class ButtonChar : public Button {
-  public:
-  ButtonChar(function<void(Rectangle)> f, char c, bool cap, Options* o) : Button(f), hotkey(c), capture(cap),
-      options(o) {}
-
-  bool isHotkeyEvent(char c, SDL_Keysym key) {
-    return options->getBoolValue(OptionId::WASD_SCROLLING) == GuiFactory::isAlt(key) &&
-      !GuiFactory::isCtrl(key) && !GuiFactory::isShift(key) && getKey(c) == key.sym;
-  }
-
-  virtual bool onKeyPressed2(SDL_Keysym key) override {
-    if (isHotkeyEvent(hotkey, key)) {
-      fun(getBounds());
-      return capture;
-    }
-    return false;
-  }
-
-  private:
-  char hotkey;
-  bool capture;
-  Options* options;
-};
 
 GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o) : clock(c), renderer(r), options(o) {
 }
@@ -167,10 +143,6 @@ DragContainer& GuiFactory::getDragContainer() {
 
 PGuiElem GuiFactory::buttonRect(function<void(Rectangle)> fun, SDL_Keysym hotkey, bool capture) {
   return PGuiElem(new ButtonKey(fun, hotkey, capture));
-}
-
-PGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture) {
-  return PGuiElem(new ButtonChar([=](Rectangle) { fun(); }, hotkey, capture, options));
 }
 
 PGuiElem GuiFactory::button(function<void()> fun, SDL_Keysym hotkey, bool capture) {
@@ -890,7 +862,10 @@ class AlignmentGui : public GuiLayout {
       case GuiFactory::Alignment::TOP_RIGHT:
         return Rectangle(getBounds().right() - getWidth(), getBounds().top(), getBounds().right(),
             getBounds().top() + getHeight());
-      default: FAIL << "Unhandled";
+      case GuiFactory::Alignment::RIGHT:
+        return Rectangle(getBounds().right() - getWidth(), getBounds().top(), getBounds().right(),
+            getBounds().bottom());
+      default: FAIL << "Unhandled alignment: " << (int)alignment;
     }
     return Rectangle();
   }
@@ -931,36 +906,77 @@ PGuiElem GuiFactory::keyHandler(function<void()> fun, vector<SDL_Keysym> key, bo
   return PGuiElem(new KeyHandler2(fun, key, capture));
 }
 
-class VerticalList : public GuiLayout {
+class KeyHandlerChar : public GuiElem {
   public:
-  VerticalList(vector<PGuiElem> e, vector<int> h, int alignBack = 0)
-    : GuiLayout(std::move(e)), heights(h), numAlignBack(alignBack) {
+  KeyHandlerChar(function<void()> f, char c, bool cap, function<bool()> rAlt) : fun(f), hotkey(c), requireAlt(rAlt),
+      capture(cap) {}
+
+  bool isHotkeyEvent(char c, SDL_Keysym key) {
+    return requireAlt() == GuiFactory::isAlt(key) &&
+      !GuiFactory::isCtrl(key) &&
+      ((!GuiFactory::isShift(key) && getKey(c) == key.sym) ||
+          (GuiFactory::isShift(key) && getKey(tolower(c)) == key.sym));
+  }
+
+  virtual bool onKeyPressed2(SDL_Keysym key) override {
+    if (isHotkeyEvent(hotkey, key)) {
+      fun();
+      return capture;
+    }
+    return false;
+  }
+
+  private:
+  function<void()> fun;
+  char hotkey;
+  function<bool()> requireAlt;
+  bool capture;
+};
+
+PGuiElem GuiFactory::keyHandlerChar(function<void ()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
+  return PGuiElem(new KeyHandlerChar(fun, hotkey, capture,
+       [=] { return useAltIfWasdOn && options->getBoolValue(OptionId::WASD_SCROLLING); }));
+}
+
+PGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
+  return stack(
+      PGuiElem(new Button([=](Rectangle) { fun(); })),
+      PGuiElem(keyHandlerChar(fun, hotkey, capture, useAltIfWasdOn)));
+}
+
+class ElemList : public GuiLayout {
+  public:
+  ElemList(vector<PGuiElem> e, vector<int> h, int alignBack, bool middleEl)
+    : GuiLayout(std::move(e)), heights(h), numAlignBack(alignBack), middleElem(middleEl) {
     //CHECK(heights.size() > 0);
     CHECK(heights.size() == elems.size());
-  }
-
-  Rectangle getBackPosition(int num) {
-    int height = std::accumulate(heights.begin() + num + 1, heights.end(), 0);
-    return Rectangle(getBounds().bottomLeft() - Vec2(0, height + heights[num]), getBounds().bottomRight() 
-        - Vec2(0, height));
-  }
-
-  virtual Rectangle getElemBounds(int num) override {
-    if (num >= heights.size() - numAlignBack)
-      return getBackPosition(num);
-    int height = std::accumulate(heights.begin(), heights.begin() + num, 0);
-    return Rectangle(getBounds().topLeft() + Vec2(0, height), getBounds().topRight() 
-        + Vec2(0, height + heights[num]));
-  }
-
-  void renderPart(Renderer& r, int scrollPos) {
-    int totHeight = 0;
-    for (int i : Range(scrollPos, heights.size())) {
-      if (totHeight + elems[i]->getBounds().height() > getBounds().height())
-        break;
-      elems[i]->render(r);
-      totHeight += elems[i]->getBounds().height();
+    int sum = 0;
+    for (int h : heights) {
+      accuHeights.push_back(sum);
+      sum += h;
     }
+    accuHeights.push_back(sum);
+  }
+
+  Range getBackPosition(int num, Range bounds) {
+    int height = accuHeights[heights.size()] - accuHeights[num + 1];
+    return Range(bounds.getEnd() - height - heights[num], bounds.getEnd() - height);
+  }
+
+  Range getMiddlePosition(Range bounds) {
+    CHECK(heights.size() > numAlignBack);
+    int height1 = accuHeights[heights.size() - numAlignBack - 1];
+    int height2 = accuHeights[heights.size()] - accuHeights[heights.size() - numAlignBack];
+    return Range(bounds.getStart() + height1, bounds.getEnd() - height2);
+  }
+
+  Range getElemPosition(int num, Range bounds) {
+    if (middleElem && num == heights.size() - numAlignBack - 1)
+      return getMiddlePosition(bounds);
+    if (num >= heights.size() - numAlignBack)
+      return getBackPosition(num, bounds);
+    int height = accuHeights[num];
+    return Range(bounds.getStart() + height, bounds.getStart() + height + heights[num]);
   }
 
   int getLastTopElem(int myHeight) {
@@ -983,6 +999,40 @@ class VerticalList : public GuiLayout {
     return ret;
   }
 
+  int getSize() {
+    return heights.size();
+  }
+
+  int getTotalHeight() {
+    return getElemsHeight(getSize());
+  }
+
+
+  protected:
+  vector<int> heights;
+  vector<int> accuHeights;
+  int numAlignBack;
+  bool middleElem;
+};
+
+class VerticalList : public ElemList {
+  public:
+  using ElemList::ElemList;
+
+  void renderPart(Renderer& r, int scrollPos) {
+    int totHeight = 0;
+    for (int i : Range(scrollPos, heights.size())) {
+      if (totHeight + elems[i]->getBounds().height() > getBounds().height())
+        break;
+      elems[i]->render(r);
+      totHeight += elems[i]->getBounds().height();
+    }
+  }
+
+  virtual Rectangle getElemBounds(int num) override {
+    return Rectangle(getBounds().getXRange(), getElemPosition(num, getBounds().getYRange()));
+  }
+
   optional<int> getPreferredWidth() override {
     for (auto& elem : elems)
       if (auto width = elem->getPreferredWidth())
@@ -993,19 +1043,37 @@ class VerticalList : public GuiLayout {
   optional<int> getPreferredHeight() override {
     return getTotalHeight();
   }
-
-  int getSize() {
-    return heights.size();
-  }
-
-  int getTotalHeight() {
-    return getElemsHeight(getSize());
-  }
-
-  protected:
-  vector<int> heights;
-  int numAlignBack;
 };
+
+PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, int height) {
+  vector<int> heights(e.size(), height);
+  return PGuiElem(new VerticalList(std::move(e), heights, 0, false));
+}
+
+class HorizontalList : public ElemList {
+  public:
+  using ElemList::ElemList;
+
+  virtual Rectangle getElemBounds(int num) override {
+    return Rectangle(getElemPosition(num, getBounds().getXRange()), getBounds().getYRange());
+  }
+
+  optional<int> getPreferredHeight() override {
+    for (auto& elem : elems)
+      if (auto height = elem->getPreferredHeight())
+        return height;
+    return none;
+  }
+
+  optional<int> getPreferredWidth() override {
+    return getTotalHeight();
+  }
+};
+
+PGuiElem GuiFactory::horizontalList(vector<PGuiElem> e, int height) {
+  vector<int> heights(e.size(), height);
+  return PGuiElem(new HorizontalList(std::move(e), heights, 0, false));
+}
 
 GuiFactory::ListBuilder GuiFactory::getListBuilder(int defaultSize) {
   return ListBuilder(*this, defaultSize);
@@ -1015,6 +1083,7 @@ GuiFactory::ListBuilder::ListBuilder(GuiFactory& g, int defSz) : gui(g), default
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElem(PGuiElem elem, int size) {
   CHECK(!backElems);
+  CHECK(!middleElem);
   if (size == 0) {
     CHECK(defaultSize > 0);
     size = defaultSize;
@@ -1025,6 +1094,8 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElem(PGuiElem elem, int siz
 }
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addSpace(int size) {
+  CHECK(!backElems);
+  CHECK(!middleElem);
   if (size == 0) {
     CHECK(defaultSize > 0);
     size = defaultSize;
@@ -1036,9 +1107,16 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addSpace(int size) {
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElemAuto(PGuiElem elem) {
   CHECK(!backElems);
+  CHECK(!middleElem);
   int size = -1;
   elems.push_back(std::move(elem));
   sizes.push_back(size);
+  return *this;
+}
+
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addMiddleElem(PGuiElem elem) {
+  addElem(std::move(elem), 1234);
+  middleElem = true;
   return *this;
 }
 
@@ -1065,6 +1143,10 @@ int GuiFactory::ListBuilder::getSize() const {
   return std::accumulate(sizes.begin(), sizes.end(), 0);
 }
 
+int GuiFactory::ListBuilder::getLength() const {
+  return sizes.size();
+}
+
 bool GuiFactory::ListBuilder::isEmpty() const {
   return sizes.empty();
 }
@@ -1083,16 +1165,14 @@ PGuiElem GuiFactory::ListBuilder::buildVerticalList() {
   for (int i : All(sizes))
     if (sizes[i] == -1)
       sizes[i] = *elems[i]->getPreferredHeight();
-  PGuiElem ret = gui.verticalList(std::move(elems), sizes, backElems);
-  return ret;
+  return PGuiElem(new VerticalList(std::move(elems), sizes, backElems, middleElem));
 }
 
 PGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
   for (int i : All(sizes))
     if (sizes[i] == -1)
       sizes[i] = *elems[i]->getPreferredWidth();
-  PGuiElem ret = gui.horizontalList(std::move(elems), sizes, backElems);
-  return ret;
+  return PGuiElem(new HorizontalList(std::move(elems), sizes, backElems, middleElem));
 }
 
 PGuiElem GuiFactory::ListBuilder::buildHorizontalListFit() {
@@ -1100,13 +1180,9 @@ PGuiElem GuiFactory::ListBuilder::buildHorizontalListFit() {
   return ret;
 }
 
-PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, vector<int> heights, int numAlignBottom) {
-  return PGuiElem(new VerticalList(std::move(e), heights, numAlignBottom));
-}
-
-PGuiElem GuiFactory::verticalList(vector<PGuiElem> e, int height, int numAlignBottom) {
-  vector<int> heights(e.size(), height);
-  return PGuiElem(new VerticalList(std::move(e), heights, numAlignBottom));
+PGuiElem GuiFactory::ListBuilder::buildVerticalListFit() {
+  PGuiElem ret = gui.verticalListFit(std::move(elems), 0);
+  return ret;
 }
 
 class VerticalListFit : public GuiLayout {
@@ -1149,45 +1225,6 @@ class HorizontalListFit : public GuiLayout {
 
 PGuiElem GuiFactory::horizontalListFit(vector<PGuiElem> e, double spacing) {
   return PGuiElem(new HorizontalListFit(std::move(e), spacing));
-}
-
-class HorizontalList : public VerticalList {
-  public:
-  using VerticalList::VerticalList;
-
-  Rectangle getBackPosition(int num) {
-    int height = std::accumulate(heights.begin() + num + 1, heights.end(), 0);
-    return Rectangle(getBounds().topRight() - Vec2(height + heights[num], 0), getBounds().bottomRight() 
-        - Vec2(height, 0));
-  }
-
-  virtual Rectangle getElemBounds(int num) override {
-    if (num >= heights.size() - numAlignBack)
-      return getBackPosition(num);
-    int height = std::accumulate(heights.begin(), heights.begin() + num, 0);
-    return Rectangle(getBounds().topLeft() + Vec2(height, 0), getBounds().bottomLeft() 
-        + Vec2(height + heights[num], 0));
-  }
-
-  optional<int> getPreferredHeight() override {
-    for (auto& elem : elems)
-      if (auto height = elem->getPreferredHeight())
-        return height;
-    return none;
-  }
-
-  optional<int> getPreferredWidth() override {
-    return getTotalHeight();
-  }
-};
-
-PGuiElem GuiFactory::horizontalList(vector<PGuiElem> e, vector<int> widths, int numAlignRight) {
-  return PGuiElem(new HorizontalList(std::move(e), widths, numAlignRight));
-}
-
-PGuiElem GuiFactory::horizontalList(vector<PGuiElem> e, int width, int numAlignRight) {
-  vector<int> widths(e.size(), width);
-  return horizontalList(std::move(e), widths, numAlignRight);
 }
 
 class VerticalAspect : public GuiLayout {
@@ -1373,6 +1410,15 @@ class MarginFit : public GuiLayout {
 
 PGuiElem GuiFactory::marginFit(PGuiElem top, PGuiElem rest, double width, MarginType type) {
   return PGuiElem(new MarginFit(std::move(top), std::move(rest), width, type));
+}
+
+PGuiElem GuiFactory::progressBar(Color c, double state) {
+  return PGuiElem(new DrawCustom([=] (Renderer& r, Rectangle bounds) {
+          int width = bounds.width() * state;
+          if (width > 0)
+            r.drawFilledRectangle(Rectangle(bounds.topLeft(),
+                  Vec2(bounds.left() + width, bounds.bottom())), c);
+        }));
 }
 
 class Margins : public GuiLayout {
@@ -1767,8 +1813,8 @@ const static Vec2 tooltipOffset = Vec2(10, 10);
 
 class Tooltip : public GuiElem {
   public:
-  Tooltip(const vector<string>& t, PGuiElem bg, Clock* c, int delayM) : text(t), background(std::move(bg)),
-      lastTimeOut(c->getRealMillis()), clock(c), delayMilli(delayM) {
+  Tooltip(const vector<string>& t, PGuiElem bg, Clock* c, milliseconds d) : text(t), background(std::move(bg)),
+      lastTimeOut(c->getRealMillis()), clock(c), delay(d) {
   }
 
   virtual bool onMouseMove(Vec2 pos) override {
@@ -1782,7 +1828,7 @@ class Tooltip : public GuiElem {
 
   virtual void render(Renderer& r) override {
     if (canRender) {
-      if (clock->getRealMillis() > lastTimeOut + delayMilli) {
+      if (clock->getRealMillis() > lastTimeOut + delay) {
         Vec2 size(0, text.size() * tooltipLineHeight + 2 * tooltipVMargin);
         for (const string& t : text)
           size.x = max(size.x, r.getTextLength(t) + 2 * tooltipHMargin);
@@ -1805,12 +1851,12 @@ class Tooltip : public GuiElem {
   bool canRender = false;
   vector<string> text;
   PGuiElem background;
-  int lastTimeOut;
+  milliseconds lastTimeOut;
   Clock* clock;
-  int delayMilli;
+  milliseconds delay;
 };
 
-PGuiElem GuiFactory::tooltip(const vector<string>& v, int delayMilli) {
+PGuiElem GuiFactory::tooltip(const vector<string>& v, milliseconds delayMilli) {
   if (v.empty() || (v.size() == 1 && v[0].empty()))
     return empty();
   return PGuiElem(new Tooltip(v, stack(background(background1), miniBorder()), clock, delayMilli));
@@ -2240,13 +2286,14 @@ PGuiElem GuiFactory::window(PGuiElem content, function<void()> onExitButton) {
         ));
 }
 
-PGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight) {
+PGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight, optional<int> topBarHeight) {
   return margin(
       stack(makeVec<PGuiElem>(
           background(background1),
           sprite(get(TexId::HORI_BAR), Alignment::TOP),
           sprite(get(TexId::HORI_BAR), Alignment::BOTTOM, true),
-          margin(sprite(get(TexId::HORI_BAR_MINI), Alignment::BOTTOM), empty(), 85, TOP),
+          topBarHeight ? margin(sprite(get(TexId::HORI_BAR_MINI), Alignment::BOTTOM), empty(), *topBarHeight, TOP)
+                       : empty(),
           sprite(get(TexId::VERT_BAR), Alignment::RIGHT, false, true),
           sprite(get(TexId::VERT_BAR), Alignment::LEFT),
           sprite(get(TexId::CORNER_TOP_LEFT), Alignment::TOP_RIGHT, false, true, Vec2(8, 0)),
