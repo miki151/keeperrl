@@ -61,7 +61,7 @@ PCollective CollectiveBuilder::build() {
   for (Vec2 v : squares) {
     Position pos(v, level);
     c->addKnownTile(pos);
-    if (c->canClaimSquare(pos))
+    //if (c->canClaimSquare(pos))
       c->claimSquare(pos);
   }
   return PCollective(c);
