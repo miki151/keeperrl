@@ -471,7 +471,8 @@ PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, 
 }
 
 void ModelBuilder::measureSiteGen(int numTries) {
-//  measureModelGen(numTries, [this] { trySingleMapModel("pok"); });
+  std::cout << "Measuring single map" << std::endl;
+  measureModelGen(numTries, [this] { trySingleMapModel("pok"); });
   //measureModelGen(numTries, [this] { tryCampaignBaseModel("pok"); });
 //  for (EnemyId id : {EnemyId::SOKOBAN})
   for (EnemyId id : ENUM_ALL(EnemyId))

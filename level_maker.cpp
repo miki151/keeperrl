@@ -2017,7 +2017,9 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
       return Predicate::attrib(SquareAttrib::MOUNTAIN);
     case SettlementType::ISLAND_VAULT_DOOR:
       return RandomLocations::LocationPredicate(
-          Predicate::attrib(SquareAttrib::MOUNTAIN), Predicate::attrib(SquareAttrib::RIVER), 10, 30);
+          Predicate::andPred(
+            Predicate::attrib(SquareAttrib::MOUNTAIN),
+            Predicate::negate(Predicate::attrib(SquareAttrib::RIVER))), Predicate::attrib(SquareAttrib::RIVER), 10, 30);
     default:
       return Predicate::andPred(Predicate::attrib(SquareAttrib::LOWLAND),
           Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
@@ -2200,7 +2202,7 @@ static LevelMaker* getMountains(BiomeId id) {
   switch (id) {
     case BiomeId::GRASSLAND:
     case BiomeId::FORREST:
-      return new Mountains({0.0, 0.0, 0.78, 0.83, 0.95}, 0.45, {0, 1, 0, 0, 0});
+      return new Mountains({0.0, 0.0, 0.68, 0.73, 0.90}, 0.45, {0, 1, 0, 0, 0});
     case BiomeId::MOUNTAIN:
       return new Mountains({0.0, 0.0, 0.15, 0.25, 0.75}, 0.45, {0, 1, 0, 0, 0});
   }
