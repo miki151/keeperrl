@@ -36,7 +36,8 @@ RICH_ENUM(TechId,
   SPELLS_MAS,
   GEOLOGY1,
   GEOLOGY2,
-  GEOLOGY3
+  GEOLOGY3,
+  GEOLOGY4
 );
 
 class Spell;

@@ -251,22 +251,22 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlockVision()
           .setIsWall()
           .setDestroyable(200, DestroyAction::Type::BOULDER)
-          .setItemDrop(ItemFactory::singleType(ItemId::IRON_ORE, Range(18, 40)))
-          .setDestroyable(100, DestroyAction::Type::DIG);
+          .setItemDrop(ItemFactory::singleType(ItemId::IRON_ORE, Range(40, 70)))
+          .setDestroyable(220, DestroyAction::Type::DIG);
     case FurnitureType::STONE:
       return Furniture("granite", ViewObject(ViewId::STONE, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setBlockVision()
           .setIsWall()
           .setDestroyable(200, DestroyAction::Type::BOULDER)
-          .setItemDrop(ItemFactory::singleType(ItemId::ROCK, Range(18, 40)))
-          .setDestroyable(180, DestroyAction::Type::DIG);
+          .setItemDrop(ItemFactory::singleType(ItemId::ROCK, Range(40, 70)))
+          .setDestroyable(250, DestroyAction::Type::DIG);
     case FurnitureType::GOLD_ORE:
       return Furniture("gold ore", ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setBlockVision()
           .setIsWall()
           .setDestroyable(200, DestroyAction::Type::BOULDER)
-          .setItemDrop(ItemFactory::singleType(ItemId::GOLD_PIECE, Range(18, 40)))
-          .setDestroyable(100, DestroyAction::Type::DIG);
+          .setItemDrop(ItemFactory::singleType(ItemId::GOLD_PIECE, Range(40, 70)))
+          .setDestroyable(220, DestroyAction::Type::DIG);
     case FurnitureType::DUNGEON_WALL:
       return Furniture("wall", ViewObject(ViewId::DUNGEON_WALL, ViewLayer::FLOOR), type, Furniture::BLOCKING, TribeId::getHostile())
           .setBlockVision()

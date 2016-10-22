@@ -68,6 +68,8 @@ void Technology::init() {
         "advanced geology", "Discover more precious ores in the earth.", 180, {TechId::GEOLOGY1}));
   Technology::set(TechId::GEOLOGY3, new Technology(
         "expert geology", "Discover even more precious ores in the earth.", 400, {TechId::GEOLOGY2}));
+  Technology::set(TechId::GEOLOGY4, new Technology(
+        "master geology", "Discover ALL precious ores in the earth!", 1200, {TechId::GEOLOGY3}));
 }
 
 bool Technology::canResearch() const {
@@ -201,9 +203,10 @@ static vector<SpellLearningInfo> spellLearning {
 
 void Technology::onAcquired(TechId id, Collective* col) {
   switch (id) {
-    case TechId::GEOLOGY1: addResources(col, 0, 3, 1, 25); break;
-    case TechId::GEOLOGY2: addResources(col, 1, 4, 2, 45); break;
-    case TechId::GEOLOGY3: addResources(col, 4, 8, 5, 70); break;
+    case TechId::GEOLOGY1: addResources(col, 0, 2, 1, 25); break;
+    case TechId::GEOLOGY2: addResources(col, 1, 3, 2, 35); break;
+    case TechId::GEOLOGY3: addResources(col, 2, 4, 3, 50); break;
+    case TechId::GEOLOGY4: addResources(col, 3, 8, 4, 70); break;
     default: break;
   } 
   if (col->hasLeader())
