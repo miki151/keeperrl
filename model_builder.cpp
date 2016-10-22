@@ -92,7 +92,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::ORC_SHAMAN;
           c.frequency = 0.10;
           c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::BOOK_SHELF}, 1, 4.0},
+            {{AttractionId::FURNITURE, FurnitureType::BOOK_SHELF}, 2, 4.0},
             {{AttractionId::FURNITURE, FurnitureType::LABORATORY}, 1, 2.0},
             );
           c.traits = {MinionTrait::FIGHTER};
