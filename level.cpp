@@ -98,7 +98,8 @@ void Level::putCreature(Vec2 position, Creature* c) {
   CHECK(inBounds(position));
   creatures.push_back(c);
   creatureIds.insert(c);
-  CHECK(getSafeSquare(position)->getCreature() == nullptr);
+  CHECK(getSafeSquare(position)->getCreature() == nullptr)
+      << "Square occupied by " << getSafeSquare(position)->getCreature()->getName().bare();
   placeCreature(c, position);
 }
 
