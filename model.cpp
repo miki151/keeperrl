@@ -96,6 +96,8 @@ void Model::checkCreatureConsistency() {
 
 void Model::update(double totalTime) {
   if (Creature* creature = timeQueue->getNextCreature()) {
+    CHECK(creature->getLevel() != nullptr) << "Creature misplaced before processing: " << creature->getName().bare() <<
+        ". Any idea why this happened?";
     if (creature->isDead()) {
       checkCreatureConsistency();
       FAIL << "Dead: " << creature->getName().bare();
@@ -107,6 +109,8 @@ void Model::update(double totalTime) {
       lastTick += 1;
       tick(lastTick);
     }
+    CHECK(creature->getLevel() != nullptr) << "Creature misplaced before moving: " << creature->getName().bare() <<
+        ". Any idea why this happened?";
     if (!creature->isDead()) {
 #ifndef RELEASE
       CreatureAction::checkUsage(true);
@@ -116,7 +120,8 @@ void Model::update(double totalTime) {
       CreatureAction::checkUsage(false);
 #endif
     }
-    CHECK(creature->getLevel() != nullptr) << creature->getName().bare();
+    CHECK(creature->getLevel() != nullptr) << "Creature misplaced after moving: " << creature->getName().bare() <<
+        ". Any idea why this happened?";
     if (!creature->isDead() && creature->getLevel()->getModel() == this)
       CHECK(creature->getPosition().getCreature() == creature);
   } else
@@ -157,6 +162,13 @@ Level* Model::buildTopLevel(LevelBuilder&& b, PLevelMaker maker) {
 
 Model::Model() {
   clearDeadCreatures();
+}
+
+// TODO: clean up dead creature controllers and remove this!
+void Model::clearDeadPlayers() {
+  for (auto& c : deadCreatures)
+    if (c->isPlayer())
+      c->popController();
 }
 
 void Model::clearDeadCreatures() {

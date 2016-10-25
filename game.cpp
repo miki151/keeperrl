@@ -223,7 +223,7 @@ void Game::prepareSingleMapRetirement() {
       col->clearLeader();
   for (Creature* c : getMainModel()->getAllCreatures())
     c->clearLastAttacker();
-  getMainModel()->clearDeadCreatures();
+  getMainModel()->clearDeadPlayers();
   player = nullptr;
 }
 
@@ -580,8 +580,7 @@ Creature* Game::getPlayer() const {
     return nullptr;
 }
 
-void Game::cancelPlayer(Creature* c) {
-  CHECK(c == player);
+void Game::clearPlayer() {
   player = nullptr;
 }
 

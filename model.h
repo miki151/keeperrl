@@ -87,6 +87,7 @@ class Model {
 
   void lockSerialization();
   void clearDeadCreatures();
+  void clearDeadPlayers();
 
   void addEvent(const GameEvent&);
 

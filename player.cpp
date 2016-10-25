@@ -833,6 +833,8 @@ optional<CreatureView::MovementInfo> Player::getMovementInfo() const {
 }
 
 void Player::onDisplaced() {
+  if (!currentTimePos)
+    currentTimePos = { getCreature()->getPosition(), getCreature()->getLocalTime()};
   currentTimePos->pos = getCreature()->getPosition();
 }
 

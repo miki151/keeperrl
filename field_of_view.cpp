@@ -40,7 +40,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(FieldOfView);
 SERIALIZATION_CONSTRUCTOR_IMPL2(FieldOfView::Visibility, Visibility);
 
 FieldOfView::FieldOfView(Level* l, VisionId v)
-  : level(l), visibility(l->getBounds().width(), l->getBounds().height()), vision(v) {
+  : level(l), visibility(l->getBounds()), vision(v) {
 }
 
 bool FieldOfView::canSee(Vec2 from, Vec2 to) {
@@ -62,8 +62,9 @@ void FieldOfView::squareChanged(Vec2 pos) {
     }
 }
 
-void FieldOfView::Visibility::setVisible(int x, int y) {
-  if (!visible[x + sightRange][y + sightRange] && x * x + y * y <= sightRange * sightRange) {
+void FieldOfView::Visibility::setVisible(const Level* level, int x, int y) {
+  if (level->inBounds(Vec2(px + x, py + y)) &&
+      !visible[x + sightRange][y + sightRange] && x * x + y * y <= sightRange * sightRange) {
     visible[x + sightRange][y + sightRange] = 1;
     visibleTiles.push_back(Vec2(px + x, py + y));
   }
@@ -76,17 +77,17 @@ FieldOfView::Visibility::Visibility(Level* level, VisionId vision, int x, int y)
   memset(visible, 0, (2 * sightRange + 1) * (2 * sightRange + 1));
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
       [&](int px, int py) { return !Position(Vec2(x + px, y + py), level).canSeeThru(vision); },
-      [&](int px, int py) { setVisible(px ,py); });
+      [&](int px, int py) { setVisible(level, px, py); });
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
       [&](int px, int py) { return !Position(Vec2(x + py, y - px), level).canSeeThru(vision); },
-      [&](int px, int py) { setVisible(py, -px); });
+      [&](int px, int py) { setVisible(level, py, -px); });
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange,2,-1,1,1,1,
       [&](int px, int py) { return !Position(Vec2(x - px, y - py), level).canSeeThru(vision); },
-      [&](int px, int py) { setVisible(-px, -py); });
+      [&](int px, int py) { setVisible(level, -px, -py); });
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange,2,-1,1,1,1,
       [&](int px, int py) { return !Position(Vec2(x - py, y + px), level).canSeeThru(vision); },
-      [&](int px, int py) { setVisible(-py, px); });
-  setVisible(0, 0);
+      [&](int px, int py) { setVisible(level, -py, px); });
+  setVisible(level, 0, 0);
 /*  ++numSamples;
   totalIter += visibleTiles.size();
   if (numSamples%100 == 0)

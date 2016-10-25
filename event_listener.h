@@ -95,6 +95,8 @@ class EventListener {
 
   EventListener();
   EventListener(Model*);
+  EventListener(const EventListener&) = delete;
+  EventListener(EventListener&&) = delete;
   virtual ~EventListener();
 
   void subscribeTo(Model*);

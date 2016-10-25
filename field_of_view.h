@@ -52,7 +52,7 @@ class FieldOfView {
     void calculate(int,int,int,int, int, int, int, int,
         function<bool (int, int)> isBlocking,
         function<void (int, int)> setVisible);
-    void setVisible(int, int);
+    void setVisible(const Level*, int, int);
 
     int SERIAL(px);
     int SERIAL(py);
