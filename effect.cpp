@@ -116,7 +116,8 @@ static void blast(Creature* who, Position position, Vec2 direction, int maxDista
   }
   if (damage)
     for (auto furniture : position.modFurniture())
-      furniture->destroy(position, DestroyAction::Type::BASH);
+      if (furniture->canDestroy(DestroyAction::Type::BASH))
+        furniture->destroy(position, DestroyAction::Type::BASH);
 }
 
 static void blast(Creature* c, Vec2 direction, int range) {

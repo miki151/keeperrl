@@ -28,6 +28,8 @@ class PlayerMessage;
 class Controller {
   public:
   Controller(Creature*);
+  Controller(const Controller&) = delete;
+  Controller(Controller&&) = delete;
 
   virtual bool isPlayer() const = 0;
 
