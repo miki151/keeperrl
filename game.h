@@ -60,7 +60,7 @@ class Game {
   Collective* getPlayerCollective() const;
   void setPlayer(Creature*);
   Creature* getPlayer() const;
-  void cancelPlayer(Creature*);
+  void clearPlayer();
 
   int getModelDistance(const Collective* c1, const Collective* c2) const;
 

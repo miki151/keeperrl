@@ -187,11 +187,13 @@ void Creature::setController(PController ctrl) {
 void Creature::popController() {
   if (controller->isPlayer()) {
     modViewObject().removeModifier(ViewObject::Modifier::PLAYER);
-    getGame()->cancelPlayer(this);
+    getGame()->clearPlayer();
   }
-  CHECK(!controllerStack.empty());
-  controller = std::move(controllerStack.back());
-  controllerStack.pop_back();
+  if (!controllerStack.empty()) {
+    controller = std::move(controllerStack.back());
+    controllerStack.pop_back();
+  } else
+    controller.release();
 }
 
 bool Creature::isDead() const {
