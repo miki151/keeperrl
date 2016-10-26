@@ -361,6 +361,7 @@ static int keeperMain(const variables_map& vars) {
   }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
+  renderer.setCursorPath(freeDataPath + "/images/mouse_cursor.png", freeDataPath + "/images/mouse_cursor2.png");
   if (vars.count("replay")) {
     string fname = vars["replay"].as<string>();
     Debug() << "Reading from " << fname;

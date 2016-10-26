@@ -121,6 +121,7 @@ class Renderer {
   void setFullscreen(bool);
   void setFullscreenMode(int);
   void setZoom(int);
+  void enableCustomCursor(bool);
   void initialize();
   bool isFullscreen();
   void showError(const string&);
@@ -177,6 +178,7 @@ class Renderer {
 
   void startMonkey();
   bool isMonkey();
+  void setCursorPath(const string& path, const string& pathClicked);
 
   void printSystemInfo(ostream&);
 
@@ -195,9 +197,9 @@ class Renderer {
   vector<Vec2> tileSize;
   Vec2 nominalSize;
   map<string, TileCoord> tileCoords;
-  bool pollEventWorkaroundMouseReleaseBug(Event&);
   bool pollEventOrFromQueue(Event&);
   void considerMouseMoveEvent(Event&);
+  void considerMouseCursorAnim(Event&);
   void zoomMousePos(Event&);
   void updateResolution();
   Event getRandomEvent();
@@ -228,5 +230,13 @@ class Renderer {
   int zoom = 1;
   optional<Rectangle> scissor;
   void setGlScissor(optional<Rectangle>);
+  bool cursorEnabled = true;
+  void reloadCursors();
+  string cursorPath;
+  string clickedCursorPath;
+  SDL::SDL_Cursor* originalCursor;
+  SDL::SDL_Cursor* cursor;
+  SDL::SDL_Cursor* cursorClicked;
+  SDL::SDL_Surface* loadScaledSurface(const string& path, double scale);
 };
 

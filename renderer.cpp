@@ -432,6 +432,11 @@ void Renderer::setZoom(int v) {
   initOpenGL();
 }
 
+void Renderer::enableCustomCursor(bool state) {
+  cursorEnabled = state;
+  reloadCursors();
+}
+
 void Renderer::initOpenGL() {
     bool success = true;
     SDL::GLenum error = GL_NO_ERROR;
@@ -448,6 +453,41 @@ void Renderer::initOpenGL() {
     SDL::glEnable(GL_TEXTURE_2D);
     SDL::glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
     CHECK(SDL::glGetError() == GL_NO_ERROR);
+    reloadCursors();
+}
+
+SDL::SDL_Surface* Renderer::loadScaledSurface(const string& path, double scale) {
+  if (auto surface = SDL::IMG_Load(path.c_str())) {
+    if (scale == 1)
+      return surface;
+    if (auto scaled = createSurface(surface->w * scale, surface->h * scale)) {
+      SDL::SDL_SetSurfaceBlendMode(surface, SDL::SDL_BLENDMODE_NONE);
+      CHECK(!SDL_BlitScaled(surface, nullptr, scaled, nullptr)) << SDL::IMG_GetError();
+      SDL_FreeSurface(surface);
+      return scaled;
+    }
+    SDL_FreeSurface(surface);
+  }
+  return nullptr;
+}
+
+void Renderer::reloadCursors() {
+  if (!cursorEnabled) {
+    SDL_SetCursor(originalCursor);
+    cursor = cursorClicked = nullptr;
+  } else {
+    if (auto surface = loadScaledSurface(cursorPath, zoom))
+      cursor = SDL_CreateColorCursor(surface, 0, 0);
+    if (auto surface = loadScaledSurface(clickedCursorPath, zoom))
+      cursorClicked = SDL_CreateColorCursor(surface, 0, 0);
+    if (cursor)
+      SDL_SetCursor(cursor);
+  }
+}
+
+void Renderer::setCursorPath(const string& path, const string& pathClicked) {
+  cursorPath = path;
+  clickedCursorPath = pathClicked;
 }
 
 void Renderer::initialize() {
@@ -488,6 +528,7 @@ Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : 
   CHECK(SDL::SDL_GL_CreateContext(window)) << SDL::SDL_GetError();
   SDL_SetWindowMinimumSize(window, 800, 600);
   SDL_GetWindowSize(window, &width, &height);
+  originalCursor = SDL::SDL_GetCursor();
   initOpenGL();
   loadFonts(fontPath, fonts);
 }
@@ -686,9 +727,21 @@ bool Renderer::pollEventOrFromQueue(Event& ev) {
   } else if (SDL_PollEvent(&ev)) {
     zoomMousePos(ev);
     considerMouseMoveEvent(ev);
+    considerMouseCursorAnim(ev);
     return true;
   } else
     return false;
+}
+
+void Renderer::considerMouseCursorAnim(Event& ev) {
+  if (ev.type == SDL::SDL_MOUSEBUTTONDOWN) {
+    if (cursorClicked)
+      SDL_SetCursor(cursorClicked);
+  } else
+  if (ev.type == SDL::SDL_MOUSEBUTTONUP) {
+    if (cursor)
+      SDL_SetCursor(cursor);
+  }
 }
 
 void Renderer::considerMouseMoveEvent(Event& ev) {

@@ -29,6 +29,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::FULLSCREEN_RESOLUTION, 0},
   {OptionId::ZOOM_UI, 0},
   {OptionId::DISABLE_MOUSE_WHEEL, 0},
+  {OptionId::DISABLE_CURSOR, 0},
   {OptionId::ONLINE, 1},
   {OptionId::GAME_EVENTS, 1},
   {OptionId::AUTOSAVE, 1},
@@ -57,6 +58,7 @@ const map<OptionId, string> names {
   {OptionId::FULLSCREEN_RESOLUTION, "Fullscreen resolution"},
   {OptionId::ZOOM_UI, "Zoom in UI"},
   {OptionId::DISABLE_MOUSE_WHEEL, "Disable mouse wheel scrolling"},
+  {OptionId::DISABLE_CURSOR, "Disable pretty mouse cursor"},
   {OptionId::ONLINE, "Online features"},
   {OptionId::GAME_EVENTS, "Anonymous statistics"},
   {OptionId::AUTOSAVE, "Autosave"},
@@ -102,6 +104,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
   //    OptionId::FULLSCREEN_RESOLUTION,
       OptionId::ZOOM_UI,
       OptionId::DISABLE_MOUSE_WHEEL,
+      OptionId::DISABLE_CURSOR,
       OptionId::ONLINE,
       OptionId::GAME_EVENTS,
       OptionId::AUTOSAVE,
@@ -263,6 +266,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::GAME_EVENTS:
     case OptionId::ZOOM_UI:
     case OptionId::DISABLE_MOUSE_WHEEL:
+    case OptionId::DISABLE_CURSOR:
     case OptionId::START_WITH_NIGHT: return getYesNo(value);
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_SEED:
