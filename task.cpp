@@ -338,6 +338,7 @@ class PickAndEquipItem : public PickItem {
       return PickItem::getMove(c);
     vector<Item*> it = c->getEquipment().getItems(items.containsPredicate());
     if (!it.empty()) {
+      CHECK(it.size() == 1) << "Duplicate items: " << it[0]->getName() << " " << it[1]->getName();
       if (auto action = c->equip(getOnlyElement(it)))
         return {1.0, action.append([=](Creature* c) {
           setDone();
