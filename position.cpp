@@ -391,6 +391,14 @@ Inventory& Position::modInventory() const {
     return modSquare()->getInventory();
 }
 
+const Inventory& Position::getInventory() const {
+  if (!isValid()) {
+    static Inventory empty;
+    return empty;
+  } else
+    return getSquare()->getInventory();
+}
+
 vector<PItem> Position::removeItems(vector<Item*> it) {
   CHECK(isValid());
   return modSquare()->removeItems(*this, it);

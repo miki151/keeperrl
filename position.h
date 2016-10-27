@@ -80,6 +80,7 @@ class Position {
   const vector<Item*>& getItems(ItemIndex) const;
   PItem removeItem(Item*);
   Inventory& modInventory() const;
+  const Inventory& getInventory() const;
   vector<PItem> removeItems(vector<Item*>);
   bool canConstruct(FurnitureType) const;
   bool isWall() const;

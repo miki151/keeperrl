@@ -994,11 +994,11 @@ static ItemInfo getPillageItemInfo(const vector<Item*>& stack, bool noStorage) {
 
 static vector<PItem> retrieveItems(Collective* col, vector<Item*> items) {
   vector<PItem> ret;
+  EntitySet<Item> index(items);
   for (auto pos : col->getTerritory().getAll()) {
-    auto& inventory = pos.modInventory();
-    for (auto item : items)
-      if (inventory.hasItem(item))
-        ret.push_back(inventory.removeItem(item));
+    for (auto item : copyOf(pos.getInventory().getItems()))
+      if (index.contains(item))
+        ret.push_back(pos.modInventory().removeItem(item));
   }
   return ret;
 }
