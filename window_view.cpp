@@ -828,6 +828,12 @@ optional<UniqueEntity<Item>::Id> WindowView::chooseTradeItem(const string& title
       Vec2(rightBarWidthCollective + 30, 80));
 }
 
+optional<int> WindowView::choosePillageItem(const string& title, const vector<ItemInfo>& items, double* scrollPos) {
+  SyncQueue<optional<int>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawPillageItemMenu(returnQueue, title, items, scrollPos),
+      Vec2(rightBarWidthCollective + 30, 80));
+}
+
 optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, optional<Vec2> current) {
   SyncQueue<optional<Vec2>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, current));
@@ -867,8 +873,9 @@ void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, optional<Vec2> or
     blockingElems.push_back(gui.darken());
     blockingElems.back()->setBounds(renderer.getSize());
   }
+  Vec2 size(*elem->getPreferredWidth(), min(renderer.getSize().y - origin->y, *elem->getPreferredHeight()));
+  elem->setBounds(Rectangle(*origin, *origin + size));
   blockingElems.push_back(std::move(elem));
-  blockingElems.back()->setPreferredBounds(*origin);
   lock.unlock();
   if (currentThreadId() == renderThreadId)
     while (!sem.get())

@@ -1228,6 +1228,13 @@ vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) cons
   return allItems;
 }
 
+bool Collective::canPillage() const {
+  for (auto pos : territory->getAll())
+    if (!pos.getItems().empty())
+      return true;
+  return false;
+}
+
 int Collective::getNumItems(ItemIndex index, bool includeMinions) const {
   int ret = 0;
   for (Position v : territory->getAll())
@@ -1236,6 +1243,13 @@ int Collective::getNumItems(ItemIndex index, bool includeMinions) const {
     for (Creature* c : getCreatures())
       ret += c->getEquipment().getItems(index).size();
   return ret;
+}
+
+optional<set<Position>> Collective::getStorageFor(const Item* item) const {
+  for (auto& info : config->getFetchInfo())
+    if (Inventory::getIndexPredicate(info.index)(item))
+      return info.destinationFun(this);
+  return none;
 }
 
 void Collective::orderExecution(Creature* c) {

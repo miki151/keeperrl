@@ -71,6 +71,7 @@
 #include "known_tiles.h"
 #include "tile_efficiency.h"
 #include "zones.h"
+#include "inventory.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -563,7 +564,6 @@ static ItemInfo getTradeItemInfo(const vector<Item*>& stack, int budget) {
     c.unavailable = c.price->second > budget;);
 }
 
-
 void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   if (!creature->getBody().isHumanoid())
     return;
@@ -890,6 +890,8 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   if (col->isConquered()) {
     info.state = info.CONQUERED;
     info.triggers.clear();
+    if (col->canPillage())
+      info.actions.push_back({VillageAction::PILLAGE});
   } else if (hostile)
     info.state = info.HOSTILE;
   else {
@@ -970,6 +972,57 @@ void PlayerControl::handleTrading(Collective* ally) {
         getCollective()->takeResource({ResourceId::GOLD, it->getPrice()});
         Random.choose(storage).dropItem(ally->buyItem(it));
       }
+    getView()->updateView(this, true);
+  }
+}
+
+static ItemInfo getPillageItemInfo(const vector<Item*>& stack, bool noStorage) {
+  return CONSTRUCT(ItemInfo,
+    c.name = stack[0]->getShortName(nullptr, true);
+    c.fullName = stack[0]->getNameAndModifiers(false);
+    c.description = stack[0]->getDescription();
+    c.number = stack.size();
+    c.viewId = stack[0]->getViewObject().id();
+    c.ids = transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();});
+    c.unavailable = noStorage;
+    c.unavailableReason = noStorage ? "No storage is available for this item." : "";
+  );
+}
+
+static vector<PItem> retrieveItems(Collective* col, vector<Item*> items) {
+  vector<PItem> ret;
+  for (auto pos : col->getTerritory().getAll()) {
+    auto& inventory = pos.modInventory();
+    for (auto item : items)
+      if (inventory.hasItem(item))
+        ret.push_back(inventory.removeItem(item));
+  }
+  return ret;
+}
+
+void PlayerControl::handlePillage(Collective* col) {
+  double scrollPos = 0;
+  while (1) {
+    struct PillageOption {
+      vector<Item*> items;
+      set<Position> storage;
+    };
+    vector<PillageOption> options;
+    for (auto& elem : Item::stackItems(col->getAllItems(false)))
+      if (auto storage = getCollective()->getStorageFor(elem.second.front()))
+        options.push_back({elem.second, *storage});
+      else
+        options.push_back({elem.second, getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)});
+    if (options.empty())
+      return;
+    vector<ItemInfo> itemInfo = transform2<ItemInfo>(options,
+        [this] (const PillageOption& it) {
+            return getPillageItemInfo(it.items, it.storage.empty());});
+    auto index = getView()->choosePillageItem("Pillage " + col->getName().getShort(), itemInfo, &scrollPos);
+    if (!index)
+      break;
+    CHECK(!options[*index].storage.empty());
+    Random.choose(options[*index].storage).dropItems(retrieveItems(col, options[*index].items));
     getView()->updateView(this, true);
   }
 }
@@ -1908,6 +1961,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
               break;
             case VillageAction::TRADE: 
               handleTrading(village);
+              break;
+            case VillageAction::PILLAGE:
+              handlePillage(village);
               break;
           }
     case UserInputId::PAY_RANSOM:

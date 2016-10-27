@@ -22,6 +22,7 @@
 #include "movement_set.h"
 #include "square_type.h"
 #include "furniture_array.h"
+#include "inventory.h"
 
 template <class Archive> 
 void Position::serialize(Archive& ar, const unsigned int version) {
@@ -380,6 +381,14 @@ const vector<Item*>& Position::getItems(ItemIndex index) const {
 PItem Position::removeItem(Item* it) {
   CHECK(isValid());
   return modSquare()->removeItem(*this, it);
+}
+
+Inventory& Position::modInventory() const {
+  if (!isValid()) {
+    static Inventory empty;
+    return empty;
+  } else
+    return modSquare()->getInventory();
 }
 
 vector<PItem> Position::removeItems(vector<Item*> it) {

@@ -216,10 +216,6 @@ void Square::dropItems(Position pos, vector<PItem> items) {
   dropItemsLevelGen(std::move(items));
 }
 
-bool Square::hasItem(Item* it) const {
-  return !inventoryEmpty() && getInventory().hasItem(it);
-}
-
 void Square::addTrigger(Position pos, PTrigger t) {
   setDirty(pos);
   pos.getLevel()->addTickingSquare(pos.getCoord());

@@ -133,6 +133,7 @@ class Collective : public TaskCallback {
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
+  bool canPillage() const;
   static void sortByEquipmentValue(vector<Item*>&);
 
   vector<pair<Item*, Position>> getTrapItems(TrapType, const vector<Position>&) const;
@@ -193,6 +194,7 @@ class Collective : public TaskCallback {
   void updateResourceProduction();
   bool isItemMarked(const Item*) const;
   int getNumItems(ItemIndex, bool includeMinions = true) const;
+  optional<set<Position>> getStorageFor(const Item*) const;
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);

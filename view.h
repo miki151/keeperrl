@@ -190,6 +190,8 @@ class View {
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
       const vector<ItemInfo>&, double* scrollPos) = 0;
 
+  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, double* scrollPos) = 0;
+
   virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) = 0;
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;

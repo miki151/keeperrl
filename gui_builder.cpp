@@ -547,6 +547,8 @@ vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
     out.push_back("Not equipped yet.");
   if (item.locked)
     out.push_back("Locked: minion won't change to another item.");
+  if (!item.unavailableReason.empty())
+    out.push_back(item.unavailableReason);
   return out;
 }
 
@@ -614,7 +616,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, PlayerInfo& info) {
   const int maxElems = 6;
   const string title = "Click or press [Enter]:";
   int numElems = min<int>(maxElems, info.lyingItems.size());
-  Vec2 size = Vec2(60 + renderer.getTextLength(title), (1 + numElems) * legendLineHeight);
+  Vec2 size = Vec2(380, (1 + numElems) * legendLineHeight);
   if (!info.lyingItems.empty()) {
     for (int i : All(info.lyingItems)) {
       size.x = max(size.x, 40 + viewObjectWidth + renderer.getTextLength(info.lyingItems[i].name));
@@ -1425,30 +1427,27 @@ PGuiElem GuiBuilder::getVillageStateLabel(VillageInfo::Village::State state) {
   }
 }
 
+static const char* getVillageActionText(VillageAction action) {
+  switch (action) {
+    case VillageAction::RECRUIT:
+      return "Recruit";
+    case VillageAction::TRADE:
+      return "Trade";
+    case VillageAction::PILLAGE:
+      return "Pillage";
+  }
+}
+
 PGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageInfo::Village::ActionInfo action) {
   if (action.disabledReason)
-    switch (action.action) {
-      case VillageAction::RECRUIT:
-        return gui.stack(
-            gui.label("Recruit", colors[ColorId::GRAY]),
-            getTooltip({*action.disabledReason}));
-      case VillageAction::TRADE:
-        return gui.stack(
-            gui.label("Trade", colors[ColorId::GRAY]),
-            getTooltip({*action.disabledReason}));
-    } else
-      switch (action.action) {
-        case VillageAction::RECRUIT:
-          return gui.stack(
-              gui.labelHighlight("Recruit", colors[ColorId::GREEN]),
-              gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION,
-                  VillageActionInfo{villageIndex, action.action}})));
-        case VillageAction::TRADE:
-          return gui.stack(
-              gui.labelHighlight("Trade", colors[ColorId::GREEN]),
-              gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION, VillageActionInfo{villageIndex,
-                  action.action}})));
-      }
+    return gui.stack(
+        gui.label(getVillageActionText(action.action), colors[ColorId::GRAY]),
+        getTooltip({*action.disabledReason}));
+  else
+    return gui.stack(
+        gui.labelHighlight(getVillageActionText(action.action), colors[ColorId::GREEN]),
+        gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION,
+            VillageActionInfo{villageIndex, action.action}})));
 }
 
 static Color getTriggerColor(double value) {
@@ -1962,9 +1961,25 @@ PGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id
     lines.addElem(std::move(elem));
   int menuHeight = lines.getSize() + 30;
   return gui.stack(
-      gui.preferredSize(330, menuHeight),
+      gui.preferredSize(380, menuHeight),
       gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos), 15),
           [&queue] { queue.push(none); }));
+}
+
+PGuiElem GuiBuilder::drawPillageItemMenu(SyncQueue<optional<int>>& queue, const string& title,
+    const vector<ItemInfo>& items, double* scrollPos) {
+  int titleExtraSpace = 10;
+  GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
+  lines.addElem(gui.label(title), getStandardLineHeight() + titleExtraSpace);
+  for (PGuiElem& elem : drawItemMenu(items,
+        [&queue, &items] (Rectangle, optional<int> index) {
+            if (index && !items[*index].unavailable) queue.push(*index);}))
+    lines.addElem(std::move(elem));
+  int menuHeight = lines.getSize() + 30;
+  return gui.stack(
+      gui.preferredSize(380, menuHeight),
+      gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos), 15),
+                     [&queue] { queue.push(none); }));
 }
 
 PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked, function<bool(Vec2)> activeFun,

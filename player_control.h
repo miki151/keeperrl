@@ -184,6 +184,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void handleLibrary(View*);
   void handleRecruiting(Collective* ally);
   void handleTrading(Collective* ally);
+  void handlePillage(Collective* enemy);
   void handleRansom(bool pay);
   static ViewObject getTrapObject(TrapType, bool built);
   void addToMemory(Position);

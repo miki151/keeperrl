@@ -1,5 +1,5 @@
 #pragma once
 
 
-enum class VillageAction { RECRUIT, TRADE };
+enum class VillageAction { RECRUIT, TRADE, PILLAGE };
 

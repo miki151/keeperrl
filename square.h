@@ -121,9 +121,6 @@ class Square : public Renderable {
   void dropItemsLevelGen(vector<PItem>);
   //@}
 
-  /** Checks if a given item is present on the square.*/
-  bool hasItem(Item*) const;
-
   /** Triggers all time-dependent processes like burning. Calls tick() for items if present.
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
   void tick(Position);
@@ -154,6 +151,9 @@ class Square : public Renderable {
   MovementSet& getMovementSet();
   const MovementSet& getMovementSet() const;
 
+  Inventory& getInventory();
+  const Inventory& getInventory() const;
+
   SERIALIZATION_DECL(Square);
 
   protected:
@@ -163,8 +163,6 @@ class Square : public Renderable {
   virtual void onApply(Position) { Debug(FATAL) << "Bad square applied"; }
   string SERIAL(name);
 
-  Inventory& getInventory();
-  const Inventory& getInventory() const;
   bool inventoryEmpty() const;
 
   private:

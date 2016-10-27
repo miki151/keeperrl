@@ -80,6 +80,7 @@ class WindowView: public View {
       pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos) override;
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
       const vector<ItemInfo>&, double* scrollPos) override;
+  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, double* scrollPos) override;
   virtual void presentHighscores(const vector<HighscoreList>&) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
@@ -218,8 +219,9 @@ class WindowView: public View {
     }
     if (!origin)
       origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
+    Vec2 size(*elem->getPreferredWidth(), min(renderer.getSize().y - origin->y, *elem->getPreferredHeight()));
+    elem->setBounds(Rectangle(*origin, *origin + size));
     blockingElems.push_back(std::move(elem));
-    blockingElems.back()->setPreferredBounds(*origin);
     if (currentThreadId() == renderThreadId) {
       while (queue.isEmpty())
         refreshView();
