@@ -503,9 +503,8 @@ CreatureAction Creature::drop(const vector<Item*>& items) const {
       monsterMessage(getName().the() + " drops " + getPluralAName(stack[0], stack.size()));
       playerMessage("You drop " + getPluralTheName(stack[0], stack.size()));
     }
-    for (auto item : items)
-      self->getPosition().dropItem(self->equipment->removeItem(item));
     getGame()->addEvent({EventId::DROPPED, EventInfo::ItemsHandled{self, items}});
+    self->getPosition().dropItems(self->equipment->removeItems(items));
     self->spendTime(1);
   });
 }

@@ -206,8 +206,7 @@ void Square::dropItem(Position pos, PItem item) {
 }
 
 void Square::dropItemsLevelGen(vector<PItem> items) {
-  for (PItem& it : items)
-    getInventory().addItem(std::move(it));
+  getInventory().addItems(std::move(items));
 }
 
 void Square::dropItems(Position pos, vector<PItem> items) {
