@@ -20,6 +20,7 @@
 #include "unique_entity.h"
 #include "village_action.h"
 #include "minion_task.h"
+#include "entity_set.h"
 
 class PlayerMessage;
 
@@ -102,7 +103,7 @@ struct TeamCreatureInfo {
 };
 
 struct InventoryItemInfo {
-  vector<UniqueEntity<Item>::Id> SERIAL(items);
+  EntitySet<Item> SERIAL(items);
   ItemAction SERIAL(action);
   SERIALIZE_ALL(items, action);
 };
@@ -122,7 +123,7 @@ struct TaskActionInfo {
 
 struct EquipmentActionInfo {
   UniqueEntity<Creature>::Id SERIAL(creature);
-  vector<UniqueEntity<Item>::Id> SERIAL(ids);
+  EntitySet<Item> SERIAL(ids);
   optional<EquipmentSlot> SERIAL(slot);
   ItemAction SERIAL(action);
   SERIALIZE_ALL(creature, ids, slot, action);

@@ -295,9 +295,9 @@ vector<ItemAction> Player::getItemActions(const vector<Item*>& item) const {
   return actions;
 }
 
-void Player::handleItems(const vector<UniqueEntity<Item>::Id>& itemIds, ItemAction action) {
+void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
   vector<Item*> items = getCreature()->getEquipment().getItems(
-      [&](const Item* it) { return contains(itemIds, it->getUniqueId());});
+      [&](const Item* it) { return itemIds.contains(it);});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
   // the above assertion fails for unknown reason, so just fail this softly.
   if (items.empty() || (items.size() == 1 && action == ItemAction::DROP_MULTI)) 
@@ -936,7 +936,8 @@ ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
     c.description = getCreature()->isBlind() ? "" : stack[0]->getDescription();
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
-    c.ids = transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();});
+    for (auto it : stack)
+      c.ids.insert(it->getUniqueId());
     c.actions = getItemActions(stack);
     c.equiped = getCreature()->getEquipment().isEquipped(stack[0]); );
 }

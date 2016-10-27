@@ -517,7 +517,8 @@ static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pendi
     if (stack[0]->canEquip())
       c.slot = stack[0]->getEquipmentSlot();
     c.viewId = stack[0]->getViewObject().id();
-    c.ids = transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();});
+    for (auto it : stack)
+      c.ids.insert(it->getUniqueId());
     c.actions = {ItemAction::DROP};
     c.equiped = equiped;
     c.locked = locked;
@@ -560,7 +561,8 @@ static ItemInfo getTradeItemInfo(const vector<Item*>& stack, int budget) {
     c.description = stack[0]->getDescription();
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
-    c.ids = transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();});
+    for (auto it : stack)
+      c.ids.insert(it->getUniqueId());
     c.unavailable = c.price->second > budget;);
 }
 
@@ -983,7 +985,8 @@ static ItemInfo getPillageItemInfo(const vector<Item*>& stack, bool noStorage) {
     c.description = stack[0]->getDescription();
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
-    c.ids = transform2<UniqueEntity<Item>::Id>(stack, [](const Item* it) { return it->getUniqueId();});
+    for (auto it : stack)
+      c.ids.insert(it->getUniqueId());
     c.unavailable = noStorage;
     c.unavailableReason = noStorage ? "No storage is available for this item." : "";
   );

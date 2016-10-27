@@ -6,6 +6,7 @@
 #include "view_id.h"
 #include "player_message.h"
 #include "experience_type.h"
+#include "entity_set.h"
 
 enum class SpellId;
 
@@ -30,7 +31,7 @@ struct ItemInfo {
   string HASH(description);
   int HASH(number);
   ViewId HASH(viewId);
-  vector<UniqueEntity<Item>::Id> HASH(ids);
+  EntitySet<Item> HASH(ids);
   vector<ItemAction> HASH(actions);
   bool HASH(equiped);
   bool HASH(locked);
@@ -288,4 +289,3 @@ class GameInfo {
   vector<PlayerMessage> HASH(messageBuffer);
   HASH_ALL(infoType, time, collectiveInfo, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel, modifiedSquares, totalSquares);
 };
-

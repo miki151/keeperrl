@@ -46,6 +46,10 @@ class EntitySet {
   Iter begin() const;
   Iter end() const;
 
+  size_t getHash() const {
+    return combineHashIter(elems.begin(), elems.end());
+  }
+
   private:
   set<typename UniqueEntity<T>::Id> SERIAL(elems);
 };

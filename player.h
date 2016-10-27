@@ -104,7 +104,7 @@ class Player : public Controller, public CreatureView {
   void takeOffAction();
   void hideAction();
   void displayInventory();
-  void handleItems(const vector<UniqueEntity<Item>::Id>&, ItemAction);
+  void handleItems(const EntitySet<Item>&, ItemAction);
   vector<ItemAction> getItemActions(const vector<Item*>&) const;
   bool interruptedByEnemy();
   void travelAction();

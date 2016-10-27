@@ -1957,7 +1957,7 @@ PGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id
       .addBackElemAuto(drawCost(budget)).buildHorizontalList(),
      getStandardLineHeight() + titleExtraSpace);
   for (PGuiElem& elem : drawItemMenu(items,
-        [&queue, items] (Rectangle, optional<int> index) { if (index) queue.push(items[*index].ids.front());}))
+        [&queue, items] (Rectangle, optional<int> index) { if (index) queue.push(*items[*index].ids.begin());}))
     lines.addElem(std::move(elem));
   int menuHeight = lines.getSize() + 30;
   return gui.stack(
