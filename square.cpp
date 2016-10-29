@@ -43,7 +43,14 @@
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
   ar& SUBCLASS(Renderable);
-  serializeAll(ar, inventoryPtr, name, creature, triggers, vision, hide, landingLink, poisonGas);
+  if (version == 0) {
+    unique_ptr<Inventory> SERIAL(tmp);
+    serializeAll(ar, tmp);
+    if (tmp)
+      inventory.reset(std::move(*tmp));
+  } else
+    serializeAll(ar, inventory);
+  serializeAll(ar, name, creature, triggers, vision, hide, landingLink, poisonGas);
   serializeAll(ar, movementSet, lastViewer, viewIndex);
   serializeAll(ar, forbiddenTribe);
   if (progressMeter)
@@ -94,13 +101,13 @@ void Square::setCreature(Creature* c) {
 }
 
 void Square::onAddedToLevel(Position pos) const {
-  if (!inventoryEmpty())
+  if (!inventory->isEmpty())
     pos.getLevel()->addTickingSquare(pos.getCoord());
 }
 
 void Square::tick(Position pos) {
   setDirty(pos);
-  if (!inventoryEmpty())
+  if (!inventory->isEmpty())
     for (Item* item : getInventory().getItems()) {
       item->tick(pos);
       if (item->isDiscarded())
@@ -180,7 +187,7 @@ void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
   // viewer is null only in Spectator mode, so setting a random id to lastViewer is ok
   lastViewer = viewer ? viewer->getUniqueId() : Creature::Id();
   double fireSize = 0;
-  if (!inventoryEmpty())
+  if (!inventory->isEmpty())
     for (Item* it : getInventory().getItems())
       fireSize = max(fireSize, it->getFireSize());
   ret.insert(getViewObject());
@@ -276,33 +283,22 @@ bool Square::canHide() const {
 }
 
 Item* Square::getTopItem() const {
-  if (!inventoryEmpty())
-    return getInventory().getItems().back();
-  else
+  if (inventory->isEmpty())
     return nullptr;
+  else
+    return inventory->getItems().back();
 }
 
 vector<Item*> Square::getItems(function<bool (Item*)> predicate) const {
-  if (!inventoryEmpty())
-    return getInventory().getItems(predicate);
-  else
-    return {};
+ return inventory->getItems(predicate);
 }
 
-static vector<Item*> empty;
-
 const vector<Item*>& Square::getItems() const {
-  if (!inventoryEmpty())
-    return getInventory().getItems();
-  else
-    return empty;
+  return inventory->getItems();
 }
 
 const vector<Item*>& Square::getItems(ItemIndex index) const {
-  if (!inventoryEmpty())
-    return getInventory().getItems(index);
-  else
-    return empty;
+  return inventory->getItems(index);
 }
 
 PItem Square::removeItem(Position pos, Item* it) {
@@ -351,24 +347,14 @@ optional<TribeId> Square::getForbiddenTribe() const {
   return forbiddenTribe;
 }
 
-
 Inventory& Square::getInventory() {
-  if (!inventoryPtr)
-    inventoryPtr.reset(new Inventory());
-  return *inventoryPtr;
+  return *inventory;
 }
 
 const Inventory& Square::getInventory() const {
-  if (!inventoryPtr)
-    inventoryPtr.reset(new Inventory());
-  return *inventoryPtr;
-}
-
-bool Square::inventoryEmpty() const {
-  return !inventoryPtr || inventoryPtr->isEmpty();
+  return *inventory;
 }
 
 void Square::clearItemIndex(ItemIndex index) {
-  if (!inventoryEmpty())
-    getInventory().clearIndex(index);
+  inventory->clearIndex(index);
 }

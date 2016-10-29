@@ -58,7 +58,7 @@ class Item : public Renderable, public UniqueEntity<Item> {
   string getPluralTheName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
-  virtual optional<EffectType> getEffectType() const;
+  const optional<EffectType>& getEffectType() const;
   optional<EffectType> getAttackEffect() const;
   ItemClass getClass() const;
   
@@ -127,6 +127,8 @@ class Item : public Renderable, public UniqueEntity<Item> {
   HeapAllocated<ItemAttributes> SERIAL(attributes);
   optional<UniqueEntity<Creature>::Id> SERIAL(shopkeeper);
   HeapAllocated<Fire> SERIAL(fire);
+  bool SERIAL(canEquipCache);
+  ItemClass SERIAL(classCache);
 };
 
-
+BOOST_CLASS_VERSION(Item, 1)

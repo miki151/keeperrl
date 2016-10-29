@@ -463,7 +463,7 @@ string Creature::getPluralAName(Item* item, int num) const {
 }
 
 bool Creature::canCarry(const vector<Item*>& items) const {
-  double weight = getInventoryWeight();
+  double weight = equipment->getTotalWeight();
   for (Item* it : items)
     weight += it->getWeight();
   return weight <= 2 * getModifier(ModifierType::INV_LIMIT);
@@ -481,7 +481,7 @@ CreatureAction Creature::pickUp(const vector<Item*>& items) const {
       playerMessage("You pick up " + getPluralTheName(stack[0], stack.size()));
     }
     self->equipment->addItems(self->getPosition().removeItems(items));
-    if (getInventoryWeight() > getModifier(ModifierType::INV_LIMIT))
+    if (equipment->getTotalWeight() > getModifier(ModifierType::INV_LIMIT))
       playerMessage("You are overloaded.");
     getGame()->addEvent({EventId::PICKED_UP, EventInfo::ItemsHandled{self, items}});
     self->spendTime(1);
@@ -731,7 +731,7 @@ int Creature::getAttr(AttrType type) const {
         def -= simulAttackPen(numAttacksThisTurn);
         break;
     case AttrType::SPEED: {
-        double totWeight = getInventoryWeight();
+        double totWeight = equipment->getTotalWeight();
         if (!attributes->canCarryAnything() && totWeight > getAttr(AttrType::STRENGTH))
           def -= 20.0 * totWeight / def;
         CHECK(def > 0);
@@ -751,9 +751,9 @@ int Creature::accuracyBonus() const {
 int Creature::getModifier(ModifierType type) const {
   int def = 0;
   for (Item* item : equipment->getAllEquipped())
-      def += CHECK_RANGE(item->getModifier(type), -10000000, 10000000, getName().bare());
+      def += item->getModifier(type);
   for (SkillId skill : ENUM_ALL(SkillId))
-    def += CHECK_RANGE(Skill::get(skill)->getModifier(this, type), -10000000, 10000000, getName().bare());
+    def += Skill::get(skill)->getModifier(this, type);
   switch (type) {
     case ModifierType::FIRED_DAMAGE: 
     case ModifierType::THROWN_DAMAGE: 
@@ -794,13 +794,6 @@ void Creature::onKilled(Creature* victim) {
   points += difficulty;
   increaseExpLevel(ExperienceType::COMBAT, getAttributes().getExpFromKill(victim));
   kills.insert(victim);
-}
-
-double Creature::getInventoryWeight() const {
-  double ret = 0;
-  for (Item* item : getEquipment().getItems())
-    ret += item->getWeight();
-  return ret;
 }
 
 Tribe* Creature::getTribe() {

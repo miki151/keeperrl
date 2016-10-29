@@ -95,6 +95,8 @@ class Collective : public TaskCallback {
 
   vector<Creature*> getRecruits() const;
   void recruit(Creature*, Collective* to);
+  bool canPillage() const;
+  bool hasTradeItems() const;
   vector<Item*> getTradeItems() const;
   PItem buyItem(Item*);
   vector<TriggerInfo> getTriggers(const Collective* against) const;
@@ -133,7 +135,6 @@ class Collective : public TaskCallback {
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
-  bool canPillage() const;
   static void sortByEquipmentValue(vector<Item*>&);
 
   vector<pair<Item*, Position>> getTrapItems(TrapType, const vector<Position>&) const;
@@ -317,10 +318,12 @@ class Collective : public TaskCallback {
   HeapAllocated<CollectiveName> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
   EntitySet<Creature> SERIAL(banished);
-  EntitySet<Creature> SERIAL(equipmentUpdates);
   optional<VillainType> SERIAL(villainType);
   unique_ptr<Workshops> SERIAL(workshops);
   HeapAllocated<Zones> SERIAL(zones);
   HeapAllocated<TileEfficiency> SERIAL(tileEfficiency);
   HeapAllocated<CollectiveWarnings> SERIAL(warnings);
+  mutable optional<double> dangerLevelCache;
 };
+
+BOOST_CLASS_VERSION(Collective, 1)

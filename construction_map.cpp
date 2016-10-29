@@ -60,21 +60,36 @@ const ConstructionMap::FurnitureInfo& ConstructionMap::getFurniture(Position pos
   return furniture[layer].at(pos);
 }
 
-ConstructionMap::FurnitureInfo& ConstructionMap::getFurniture(Position pos, FurnitureLayer layer) {
+void ConstructionMap::setTask(Position pos, FurnitureLayer layer, UniqueEntity<Task>::Id id) {
+  modFurniture(pos, layer).setTask(id);
+}
+
+ConstructionMap::FurnitureInfo& ConstructionMap::modFurniture(Position pos, FurnitureLayer layer) {
   return furniture[layer].at(pos);
 }
 
 void ConstructionMap::removeFurniture(Position pos, FurnitureLayer layer) {
-  auto type = furniture[layer].at(pos).getFurnitureType();
-  --unbuiltCounts[type];
+  auto& info = furniture[layer].at(pos);
+  auto type = info.getFurnitureType();
+  if (!info.isBuilt()) {
+    --unbuiltCounts[type];
+    addDebt(-info.getCost());
+  }
   furniturePositions[type].erase(pos);
   furniture[layer].erase(pos);
   removeElement(allFurniture, {pos, layer});
   pos.setNeedsRenderUpdate(true);
 }
 
+void ConstructionMap::addDebt(const CostInfo& cost) {
+  debt[cost.id] += cost.value;
+}
+
 void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
-  getFurniture(pos, layer).reset();
+  auto& info = modFurniture(pos, layer);
+  if (info.isBuilt())
+    addDebt(info.getCost());
+  info.reset();
 }
 
 void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
@@ -85,8 +100,10 @@ void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
   pos.setNeedsRenderUpdate(true);
   if (info.isBuilt())
     furniturePositions[info.getFurnitureType()].insert(pos);
-  else
+  else {
     ++unbuiltCounts[info.getFurnitureType()];
+    addDebt(info.getCost());
+  }
 }
 
 bool ConstructionMap::containsFurniture(Position pos, FurnitureLayer layer) const {
@@ -115,8 +132,11 @@ void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
     addFurniture(pos, FurnitureInfo::getBuilt(type));
   furniturePositions[type].insert(pos);
   --unbuiltCounts[type];
-  if (furniture[layer].count(pos))
-    furniture[layer].at(pos).setBuilt();
+  if (furniture[layer].count(pos)) {
+    auto& info = furniture[layer].at(pos);
+    info.setBuilt();
+    addDebt(-info.getCost());
+  }
 }
 
 const ConstructionMap::TrapInfo& ConstructionMap::getTrap(Position pos) const {
@@ -236,6 +256,10 @@ const map<Position, ConstructionMap::TorchInfo>& ConstructionMap::getTorches() c
   return torches;
 }
 
+int ConstructionMap::getDebt(CollectiveResourceId id) const {
+  return debt[id];
+}
+
 template <class Archive>
 void ConstructionMap::TrapInfo::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, type, armed, marked);
@@ -254,6 +278,14 @@ SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TorchInfo, TorchInfo);
 
 template <class Archive>
 void ConstructionMap::serialize(Archive& ar, const unsigned int version) {
+  if (version == 0) {
+    for (auto& elem : getAllFurniture()) {
+      auto& info = getFurniture(elem.first, elem.second);
+      if (!info.isBuilt())
+        addDebt(info.getCost());
+    }
+  } else
+    serializeAll(ar, debt);
   serializeAll(ar, traps, torches, furniture, furniturePositions, unbuiltCounts, allFurniture);
 }
 

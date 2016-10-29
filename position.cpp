@@ -52,7 +52,7 @@ Model* Position::getModel() const {
 }
 
 Game* Position::getGame() const {
-  if (isValid())
+  if (level)
     return level->getModel()->getGame();
   else
     return nullptr;

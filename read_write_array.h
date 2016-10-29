@@ -12,7 +12,7 @@ class ReadWriteArray {
   SERIALIZE_ALL(modified, readonly, types, readonlyMap, numModified, numTotal)
   SERIALIZATION_CONSTRUCTOR(ReadWriteArray)
 
-  Rectangle getBounds() const {
+  const Rectangle& getBounds() const {
     return modified.getBounds();
   }
 

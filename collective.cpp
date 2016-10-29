@@ -57,7 +57,11 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, territory, alarmInfo, markedItems, constructions, minionEquipment);
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
   serializeAll(ar, credit, level, pregnancies, minionAttraction, teams, name);
-  serializeAll(ar, config, warnings, banished, equipmentUpdates);
+  serializeAll(ar, config, warnings, banished);
+  if (version == 0) {
+    EntitySet<Creature> SERIAL(tmp);
+    serializeAll(ar, tmp);
+  }
   serializeAll(ar, villainType, eventProxy, workshops, zones, tileEfficiency);
 }
 
@@ -223,6 +227,13 @@ void Collective::recruit(Creature* c, Collective* to) {
   removeCreature(c);
   c->setTribe(to->getTribeId());
   to->addCreature(c, {MinionTrait::FIGHTER});
+}
+
+bool Collective::hasTradeItems() const {
+  for (Position pos : territory->getAll())
+    if (!pos.getItems(ItemIndex::FOR_SALE).empty())
+      return true;
+  return false;
 }
 
 vector<Item*> Collective::getTradeItems() const {
@@ -406,27 +417,26 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
 
 void Collective::ownItem(const Creature* c, const Item* it) {
   minionEquipment->own(c, it);
-  equipmentUpdates.insert(c);
 }
 
 PTask Collective::getEquipmentTask(Creature* c) {
-  if (!Random.roll(20) && !equipmentUpdates.contains(c))
-    return nullptr;
-  equipmentUpdates.erase(c);
-  autoEquipment(c, Random.roll(10));
+  if (Random.roll(40))
+    autoEquipment(c, true);
   vector<PTask> tasks;
   for (Item* it : c->getEquipment().getItems())
     if (!c->getEquipment().isEquipped(it) && c->getEquipment().canEquip(it))
       tasks.push_back(Task::equipItem(it));
   for (Position v : zones->getPositions(ZoneId::STORAGE_EQUIPMENT)) {
-    vector<Item*> it = filter(v.getItems(ItemIndex::MINION_EQUIPMENT), 
-        [this, c] (const Item* it) { return minionEquipment->isOwner(it, c) && it->canEquip(); });
-    if (!it.empty())
-      tasks.push_back(Task::pickAndEquipItem(this, v, it[0]));
-    it = filter(v.getItems(ItemIndex::MINION_EQUIPMENT), 
-        [this, c] (const Item* it) { return minionEquipment->isOwner(it, c); });
-    if (!it.empty())
-      tasks.push_back(Task::pickItem(this, v, it));
+    vector<Item*> allItems = filter(v.getItems(ItemIndex::MINION_EQUIPMENT),
+        [this, c] (const Item* it) { return minionEquipment->isOwner(it, c);});
+    vector<Item*> consumables;
+    for (auto item : allItems)
+      if (item->canEquip())
+        tasks.push_back(Task::pickAndEquipItem(this, v, item));
+      else
+        consumables.push_back(item);
+    if (!consumables.empty())
+      tasks.push_back(Task::pickItem(this, v, consumables));
   }
   if (!tasks.empty())
     return Task::chain(std::move(tasks));
@@ -752,6 +762,7 @@ void Collective::update(bool currentlyActive) {
 }
 
 void Collective::tick() {
+  dangerLevelCache = none;
   control->tick();
   zones->tick();
   considerBirths();
@@ -803,7 +814,7 @@ void Collective::tick() {
         fetchItems(pos, elem);
     }
   if (config->getManageEquipment() && Random.roll(10))
-    minionEquipment->updateOwners(getAllItems(true), getCreatures());
+    minionEquipment->updateOwners(getAllItems(ItemIndex::MINION_EQUIPMENT, true), getCreatures());
   workshops->scheduleItems(this);
 }
 
@@ -1063,12 +1074,7 @@ int Collective::numResourcePlusDebt(ResourceId id) const {
 }
 
 int Collective::getDebt(ResourceId id) const {
-  int ret = 0;
-  for (auto& pos : constructions->getAllFurniture()) {
-    auto& furniture = constructions->getFurniture(pos.first, pos.second);
-    if (!furniture.isBuilt() && furniture.getCost().id == id)
-      ret += furniture.getCost().value;
-  }
+  int ret = constructions->getDebt(id);
   for (auto& elem : taskMap->getCompletionCosts())
     if (elem.second.id == id && !elem.first->isDone())
       ret -= elem.second.value;
@@ -1162,7 +1168,7 @@ void Collective::autoEquipment(Creature* creature, bool replace) {
         minionEquipment->discard(it);
   }
   vector<Item*> possibleItems = filter(getAllItems(ItemIndex::MINION_EQUIPMENT, false), [&](const Item* it) {
-      return minionEquipment->needs(creature, it, false, replace) && !minionEquipment->getOwner(it); });
+      return !minionEquipment->getOwner(it) && minionEquipment->needs(creature, it, false, replace); });
   sortByEquipmentValue(possibleItems);
   for (Item* it : possibleItems) {
     if (!it->canEquip()) {
@@ -1478,7 +1484,7 @@ void Collective::updateConstructions() {
         !construction.hasTask() &&
         !construction.isBuilt() &&
         hasResource(construction.getCost())) {
-      construction.setTask(
+      constructions->setTask(pos.first, pos.second,
           taskMap->addTaskCost(Task::construction(this, pos.first, construction.getFurnitureType()), pos.first,
           construction.getCost())->getUniqueId());
       takeResource(construction.getCost());
@@ -1687,11 +1693,14 @@ optional<FurnitureType> Collective::getMissingTrainingDummy(const Creature* c) c
 }
 
 double Collective::getDangerLevel() const {
-  double ret = 0;
-  for (const Creature* c : getCreatures(MinionTrait::FIGHTER))
-    ret += c->getDifficultyPoints();
-  ret += constructions->getBuiltCount(FurnitureType::IMPALED_HEAD) * 150;
-  return ret;
+  if (!dangerLevelCache) {
+    double ret = 0;
+    for (const Creature* c : getCreatures(MinionTrait::FIGHTER))
+      ret += c->getDifficultyPoints();
+    ret += constructions->getBuiltCount(FurnitureType::IMPALED_HEAD) * 150;
+    dangerLevelCache = ret;
+  }
+  return *dangerLevelCache;
 }
 
 bool Collective::hasTech(TechId id) const {

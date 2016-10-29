@@ -32,18 +32,21 @@
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(UniqueEntity) & SUBCLASS(Renderable)
-    & SVAR(attributes)
-    & SVAR(discarded)
-    & SVAR(shopkeeper)
-    & SVAR(fire);
+  ar& SUBCLASS(UniqueEntity) & SUBCLASS(Renderable);
+  serializeAll(ar, attributes, discarded, shopkeeper, fire);
+  if (version == 0) {
+    classCache = *attributes->itemClass;
+    canEquipCache = !!attributes->equipmentSlot;
+  } else
+    serializeAll(ar, classCache, canEquipCache);
 }
 
 SERIALIZABLE(Item);
 SERIALIZATION_CONSTRUCTOR_IMPL(Item);
 
 Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, *attr.name)),
-    attributes(attr), fire(*attr.weight, attr.flamability) {
+    attributes(attr), fire(*attr.weight, attr.flamability), canEquipCache(!!attributes->equipmentSlot),
+    classCache(*attributes->itemClass) {
 }
 
 Item::~Item() {
@@ -166,7 +169,7 @@ string Item::getDescription() const {
 }
 
 ItemClass Item::getClass() const {
-  return *attributes->itemClass;
+  return classCache;
 }
 
 int Item::getPrice() const {
@@ -400,7 +403,7 @@ bool Item::isDiscarded() {
   return discarded;
 }
 
-optional<EffectType> Item::getEffectType() const {
+const optional<EffectType>& Item::getEffectType() const {
   return attributes->effect;
 }
 
@@ -409,7 +412,7 @@ optional<EffectType> Item::getAttackEffect() const {
 }
 
 bool Item::canEquip() const {
-  return !!attributes->equipmentSlot;
+  return canEquipCache;
 }
 
 EquipmentSlot Item::getEquipmentSlot() const {

@@ -197,6 +197,7 @@ class Corpse : public Item {
       setName(rottenName);
       setViewObject(object2);
       corpseInfo.isSkeleton = true;
+      rotten = true;
     } else {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))
         Effect::applyToPosition(position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);

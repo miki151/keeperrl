@@ -27,17 +27,24 @@
 #include "item_class.h"
 #include "corpse_info.h"
 
-static vector<EffectType> combatConsumables {
-    EffectType(EffectId::LASTING, LastingEffect::SPEED),
-    EffectType(EffectId::LASTING, LastingEffect::SLOWED),
-    EffectType(EffectId::LASTING, LastingEffect::SLEEP),
-    EffectType(EffectId::LASTING, LastingEffect::POISON),
-    EffectType(EffectId::LASTING, LastingEffect::BLIND),
-    EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
-    EffectType(EffectId::LASTING, LastingEffect::STR_BONUS),
-    EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS),
-    EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT),
-};
+static bool isCombatConsumable(EffectType type) {
+  if (type.getId() != EffectId::LASTING)
+    return false;
+  switch (type.get<LastingEffect>()) {
+    case LastingEffect::SPEED:
+    case LastingEffect::SLOWED:
+    case LastingEffect::SLEEP:
+    case LastingEffect::POISON:
+    case LastingEffect::BLIND:
+    case LastingEffect::INVISIBLE:
+    case LastingEffect::STR_BONUS:
+    case LastingEffect::DEX_BONUS:
+    case LastingEffect::POISON_RESISTANT:
+      return true;
+    default:
+      return false;
+  }
+}
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
@@ -46,24 +53,39 @@ void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(MinionEquipment);
 
-int MinionEquipment::getEquipmentLimit(EquipmentType type) const {
+optional<int> MinionEquipment::getEquipmentLimit(EquipmentType type) const {
   switch (type) {
-    case MinionEquipment::ARMOR: return 1000;
     case MinionEquipment::COMBAT_ITEM:
-    case MinionEquipment::HEALING: return 6;
-    case MinionEquipment::ARCHERY: return 40;
+    case MinionEquipment::HEALING:
+      return 6;
+    case MinionEquipment::ARCHERY:
+      return 40;
+    default:
+      return none;
+  }
+}
+
+static bool isArcheryItem(const Item* it) {
+  switch (it->getClass()) {
+    case ItemClass::RANGED_WEAPON:
+    case ItemClass::AMMO:
+      return true;
+    default:
+      return false;
   }
 }
 
 optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const Item* it) {
   if (it->canEquip())
     return MinionEquipment::ARMOR;
-  if (contains({ItemClass::RANGED_WEAPON, ItemClass::AMMO}, it->getClass()))
+  if (isArcheryItem(it))
     return MinionEquipment::ARCHERY;
-  if (it->getEffectType() == EffectType(EffectId::HEAL))
-    return MinionEquipment::HEALING;
-  if (contains(combatConsumables, it->getEffectType()))
-    return MinionEquipment::COMBAT_ITEM;
+  if (auto& effect = it->getEffectType()) {
+    if (effect->getId() == EffectId::HEAL)
+      return MinionEquipment::HEALING;
+    if (isCombatConsumable(*effect))
+      return MinionEquipment::COMBAT_ITEM;
+  }
   return none;
 }
 
@@ -75,9 +97,10 @@ bool MinionEquipment::isItemUseful(const Item* it) {
 
 bool MinionEquipment::needs(const Creature* c, const Item* it, bool noLimit, bool replacement) const {
   if (optional<EquipmentType> type = getEquipmentType(it)) {
-    int limit = noLimit ? 10000 : getEquipmentLimit(*type);
-    if (c->getEquipment().getItems([&](const Item* it) { return getEquipmentType(it) == *type;}).size() >= limit)
-      return false;
+    if (!noLimit)
+      if (auto limit = getEquipmentLimit(*type))
+        if (c->getEquipment().getItems([&](const Item* it) { return getEquipmentType(it) == *type;}).size() >= *limit)
+          return false;
     return ((c->canEquip(it) || (replacement && c->canEquipIfEmptySlot(it))) && (isItemAppropriate(c, it) || noLimit))
       || (type == ARCHERY && (c->canEquip(it) ||
         (it->getClass() == ItemClass::AMMO && !c->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON).empty())))

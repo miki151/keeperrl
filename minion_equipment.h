@@ -46,7 +46,7 @@ class MinionEquipment {
   enum EquipmentType { ARMOR, HEALING, ARCHERY, COMBAT_ITEM };
 
   static optional<EquipmentType> getEquipmentType(const Item* it);
-  int getEquipmentLimit(EquipmentType type) const;
+  optional<int> getEquipmentLimit(EquipmentType type) const;
   bool isItemAppropriate(const Creature*, const Item*) const;
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);

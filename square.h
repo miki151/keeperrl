@@ -163,11 +163,9 @@ class Square : public Renderable {
   virtual void onApply(Position) { Debug(FATAL) << "Bad square applied"; }
   string SERIAL(name);
 
-  bool inventoryEmpty() const;
-
   private:
   Item* getTopItem() const;
-  mutable unique_ptr<Inventory> SERIAL(inventoryPtr);
+  HeapAllocated<Inventory> SERIAL(inventory);
   Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);
   optional<VisionId> SERIAL(vision);
@@ -180,3 +178,4 @@ class Square : public Renderable {
   optional<TribeId> SERIAL(forbiddenTribe);
 };
 
+BOOST_CLASS_VERSION(Square, 1)

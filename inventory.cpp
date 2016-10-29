@@ -30,8 +30,11 @@ void Inventory::serialize(Archive& ar, const unsigned int version) {
     serializeAll(ar, oldItems, oldItemsCache);
     items = PItemVector(std::move(oldItems));
     itemsCache = ItemVector(oldItemsCache);
+    weight = 0;
+    for (auto item : itemsCache.getElems())
+      weight += item->getWeight();
   } else
-    serializeAll(ar, items, itemsCache);
+    serializeAll(ar, items, itemsCache, weight);
 }
 
 Inventory::~Inventory() {}
@@ -46,6 +49,7 @@ void Inventory::addItem(PItem item) {
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     if (indexes[ind] && getIndexPredicate(ind)(item.get()))
       indexes[ind]->insert(item.get());
+  weight += item->getWeight();
   items.insert(std::move(item));
 }
 
@@ -56,6 +60,7 @@ void Inventory::addItems(vector<PItem> v) {
 
 PItem Inventory::removeItem(Item* itemRef) {
   PItem item = items.remove(itemRef->getUniqueId());
+  weight -= item->getWeight();
   itemsCache.remove(itemRef->getUniqueId());
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     if (indexes[ind] && getIndexPredicate(ind)(item.get()))
@@ -78,6 +83,7 @@ vector<PItem> Inventory::removeAllItems() {
   itemsCache.removeAll();
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     indexes[ind] = none;
+  weight = 0;
   return items.removeAll();
 }
 
@@ -89,7 +95,7 @@ vector<Item*> Inventory::getItems(function<bool (Item*)> predicate) const {
   return ret;
 }
 
-Item* Inventory::getItemById(UniqueEntity<Item>::Id id) {
+Item* Inventory::getItemById(UniqueEntity<Item>::Id id) const {
   if (auto item = itemsCache.fetch(id))
     return *item;
   else
@@ -124,9 +130,14 @@ function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
 }
 
 const vector<Item*>& Inventory::getItems(ItemIndex index) const {
-  if (!indexes[index])
-    indexes[index] = ItemVector(getItems(getIndexPredicate(index)));
-  return indexes[index]->getElems();
+  if (isEmpty()) {
+    static vector<Item*> empty;
+    return empty;
+  }
+  auto& elems = indexes[index];
+  if (!elems)
+    elems = ItemVector(getItems(getIndexPredicate(index)));
+  return elems->getElems();
 }
 
 const vector<Item*>& Inventory::getItems() const {
@@ -139,6 +150,10 @@ bool Inventory::hasItem(const Item* itemRef) const {
 
 int Inventory::size() const {
   return items.getElems().size();
+}
+
+double Inventory::getTotalWeight() const {
+  return weight;
 }
 
 bool Inventory::isEmpty() const {

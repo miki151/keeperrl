@@ -1483,6 +1483,10 @@ class HeapAllocated {
     return elem.get();
   }
 
+  void reset(T&& t) {
+    elem.reset(new T(std::move(t)));
+  }
+
   /*HeapAllocated& operator = (const T& t) {
     *elem.get() = t;
     return *this;

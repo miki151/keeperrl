@@ -94,17 +94,11 @@ class Level {
       its obstructing/non-obstructing attribute. */
   void updateVisibility(Vec2 changedSquare);
 
-  /** Returns width of the level.*/
-  int getWidth() const;
-
-  /** Returns height of the level.*/
-  int getHeight() const;
-
   /** Checks \paramname{pos} lies within the level's boundaries.*/
   bool inBounds(Vec2 pos) const;
 
   /** Returns the level's boundaries.*/
-  Rectangle getBounds() const;
+  const Rectangle& getBounds() const;
 
   /** Returns the name of the level. */
   const string& getName() const;

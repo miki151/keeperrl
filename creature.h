@@ -268,7 +268,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   private:
 
   CreatureAction moveTowards(Position, bool away, bool stepOnTile);
-  double getInventoryWeight() const;
   Item* getAmmo() const;
   void spendTime(double time);
   bool canCarry(const vector<Item*>&) const;

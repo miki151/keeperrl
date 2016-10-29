@@ -770,6 +770,7 @@ static ViewId getFurnitureViewId(FurnitureType type) {
 
 vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) const {
   vector<Button> buttons;
+  EnumMap<ResourceId, int> numResource([this](ResourceId id) { return getCollective()->numResource(id);});
   for (BuildInfo button : buildInfo) {
     switch (button.buildType) {
       case BuildInfo::FURNITURE: {
@@ -779,7 +780,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            if (elem.cost.value > 0)
              if (int num = getCollective()->getConstructions().getBuiltPositions(elem.type).size())
                description = "[" + toString(num) + "]";
-           int availableNow = !elem.cost.value ? 1 : getCollective()->numResource(elem.cost.id) / elem.cost.value;
+           int availableNow = !elem.cost.value ? 1 : numResource[elem.cost.id] / elem.cost.value;
            if (CollectiveConfig::getResourceInfo(elem.cost.id).dontDisplay && availableNow)
              description += " (" + toString(availableNow) + " available)";
            buttons.push_back({viewId, button.name,
@@ -810,7 +811,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            buttons.push_back({ViewId::IMP, button.name, make_pair(ViewId::MANA, getImpCost()),
                "[" + toString(
                    getCollective()->getCreatures({MinionTrait::WORKER}, {MinionTrait::PRISONER}).size()) + "]",
-               getImpCost() <= getCollective()->numResource(ResourceId::MANA) ?
+               getImpCost() <= numResource[ResourceId::MANA] ?
                   CollectiveInfo::Button::ACTIVE : CollectiveInfo::Button::GRAY_CLICKABLE});
            break; }
       case BuildInfo::DESTROY:
@@ -901,13 +902,13 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
     if (knownVillains.count(col)) {
       if (!col->getRecruits().empty())
         info.actions.push_back({VillageAction::RECRUIT});
-      if (!col->getTradeItems().empty())
+      if (col->hasTradeItems())
         info.actions.push_back({VillageAction::TRADE});
     } else if (getGame()->isVillainActive(col)){
       if (!col->getRecruits().empty())
         info.actions.push_back({VillageAction::RECRUIT,
             string("You must discover the location of the ally first.")});
-      if (!col->getTradeItems().empty())
+      if (col->hasTradeItems())
         info.actions.push_back({VillageAction::TRADE, string("You must discover the location of the ally first.")});
     }
   }

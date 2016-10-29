@@ -533,16 +533,8 @@ bool Level::inBounds(Vec2 pos) const {
   return pos.inRectangle(getBounds());
 }
 
-Rectangle Level::getBounds() const {
-  return Rectangle(0, 0, getWidth(), getHeight());
-}
-
-int Level::getWidth() const {
-  return squares->getBounds().width();
-}
-
-int Level::getHeight() const {
-  return squares->getBounds().height();
+const Rectangle& Level::getBounds() const {
+  return squares->getBounds();
 }
 
 const string& Level::getName() const {

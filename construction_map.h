@@ -7,6 +7,7 @@
 #include "position.h"
 #include "furniture_type.h"
 #include "furniture_layer.h"
+#include "resource_id.h"
 
 class ConstructionMap {
   public:
@@ -73,7 +74,7 @@ class ConstructionMap {
   };
 
   const FurnitureInfo& getFurniture(Position, FurnitureLayer) const;
-  FurnitureInfo& getFurniture(Position, FurnitureLayer);
+  void setTask(Position, FurnitureLayer, UniqueEntity<Task>::Id);
   void removeFurniture(Position, FurnitureLayer);
   void onFurnitureDestroyed(Position, FurnitureLayer);
   void addFurniture(Position, const FurnitureInfo&);
@@ -98,15 +99,21 @@ class ConstructionMap {
   const vector<pair<Position, FurnitureLayer>>& getAllFurniture() const;
   const map<Position, TrapInfo>& getTraps() const;
   const map<Position, TorchInfo>& getTorches() const;
+  int getDebt(CollectiveResourceId) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
+  FurnitureInfo& modFurniture(Position, FurnitureLayer);
   EnumMap<FurnitureLayer, map<Position, FurnitureInfo>> SERIAL(furniture);
   EnumMap<FurnitureType, set<Position>> SERIAL(furniturePositions);
   EnumMap<FurnitureType, int> SERIAL(unbuiltCounts);
   vector<pair<Position, FurnitureLayer>> SERIAL(allFurniture);
   map<Position, TrapInfo> SERIAL(traps);
   map<Position, TorchInfo> SERIAL(torches);
+  EnumMap<CollectiveResourceId, int> SERIAL(debt);
+  void addDebt(const CostInfo&);
 };
+
+BOOST_CLASS_VERSION(ConstructionMap, 1)
