@@ -132,7 +132,7 @@ void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
     addFurniture(pos, FurnitureInfo::getBuilt(type));
   furniturePositions[type].insert(pos);
   --unbuiltCounts[type];
-  if (furniture[layer].count(pos)) {
+  if (furniture[layer].count(pos)) { // why this if?
     auto& info = furniture[layer].at(pos);
     info.setBuilt();
     addDebt(-info.getCost());

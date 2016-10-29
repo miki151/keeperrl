@@ -408,6 +408,7 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName) {
   BiomeId biome = BiomeId::MOUNTAIN;
   addMapVillains(enemyInfo, biome);
   PModel ret = tryModel(210, siteName, enemyInfo, true, biome);
+  spawnKeeper(ret.get());
   return ret;
 }
 
@@ -518,7 +519,7 @@ void ModelBuilder::spawnKeeper(Model* m) {
   if (!keeperName.empty())
     keeper->getName().setFirst(keeperName);
   Creature* keeperRef = keeper.get();
-  level->landCreature(StairKey::keeperSpawn(), keeperRef);
+  CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   m->addCreature(std::move(keeper));
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::getKeeper())
@@ -532,7 +533,7 @@ void ModelBuilder::spawnKeeper(Model* m) {
   for (int i : Range(4)) {
     PCreature c = CreatureFactory::fromId(CreatureId::IMP, TribeId::getKeeper(),
         MonsterAIFactory::collective(playerCollective));
-    level->landCreature(StairKey::keeperSpawn(), c.get());
+    CHECK(level->landCreature(StairKey::keeperSpawn(), c.get())) << "Couldn't place imp on level.";
     playerCollective->addCreature(c.get(), getImpTraits());
     m->addCreature(std::move(c));
   }

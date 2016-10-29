@@ -2249,7 +2249,10 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   if (keeperSpawn) {
     startingPos = new StartingPos(Predicate::alwaysTrue(), StairKey::keeperSpawn());
     locations->add(startingPos, Vec2(4, 4), RandomLocations::LocationPredicate(
-          Predicate::attrib(SquareAttrib::HILL), Predicate::attrib(SquareAttrib::MOUNTAIN), 1, 8));
+        Predicate::andPred(
+                       Predicate::attrib(SquareAttrib::HILL),
+                       Predicate::canEnter({MovementTrait::WALK})),
+        Predicate::attrib(SquareAttrib::MOUNTAIN), 1, 8));
     int minMargin = 50;
     locations->setMinMargin(startingPos, minMargin - locationMargin);
   }

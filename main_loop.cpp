@@ -578,7 +578,6 @@ Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& ran
             meter.addProgress();
           if (sites[v].getKeeper()) {
             models[v] = modelBuilder.campaignBaseModel("Campaign base site");
-            modelBuilder.spawnKeeper(models[v].get());
           } else if (auto villain = sites[v].getVillain())
             models[v] = modelBuilder.campaignSiteModel("Campaign enemy site", villain->enemyId, villain->type);
           else if (auto retired = sites[v].getRetired()) {
