@@ -880,9 +880,6 @@ void MapGui::render(Renderer& renderer) {
   renderAnimations(renderer, currentTimeReal);
   if (highlightedInfo.tilePos)
     considerRedrawingSquareHighlight(renderer, currentTimeReal, *highlightedInfo.tilePos, size);
-  if (displayScrollHint && isScrollingNow) {
-    drawHint(renderer, colors[ColorId::LIGHT_BLUE], {"Double right-click to scroll back to creature."});
-  } else
   if (!hint.empty())
     drawHint(renderer, colors[ColorId::WHITE], hint);
   else {

@@ -251,7 +251,7 @@ optional<Game::ExitInfo> Game::update(double timeDiff) {
 
 optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
   auto absoluteTime = view->getTimeMilliAbsolute();
-  if (!lastUpdate || absoluteTime - *lastUpdate > milliseconds{20}) {
+  if (!lastUpdate || absoluteTime - *lastUpdate > milliseconds{10}) {
     if (playerControl)
       playerControl->render(view);
     if (spectator)
