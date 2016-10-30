@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifdef WINDOWS
   #include <windows.h>
@@ -43,9 +45,19 @@ int addr2line(char const * const program_name, void const * const addr)
 }
 
 
+int printStacktraceWithGdb(const char* gdb) {
+  char gdbcmd[512] = {0};
+  sprintf(gdbcmd, "%s %s -batch -q -p %d -ex bt -ex quit >> stacktrace.out", gdb, icky_global_program_name, getpid());
+  return system(gdbcmd);
+}
+
 #ifdef WINDOWS
   void windows_print_stacktrace(CONTEXT* context)
   {
+    if (!printStacktraceWithGdb("gdb.exe")) {
+      fputs("Successfully printed stacktrace using GDB.\n", stderr);
+      return EXCEPTION_EXECUTE_HANDLER;
+    }
     SymInitialize(GetCurrentProcess(), 0, true);
 
     STACKFRAME frame = { 0 };
@@ -203,6 +215,10 @@ int addr2line(char const * const program_name, void const * const addr)
 
   void posix_signal_handler(int sig, siginfo_t *siginfo, void *context)
   {
+    if (!printStacktraceWithGdb("gdb")) {
+      fputs("Successfully printed stacktrace using GDB.\n", stderr);
+      _Exit(1);
+    }
     FILE* errorOut = fopen("stacktrace.out", "a");
     (void)context;
     switch(sig)
