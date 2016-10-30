@@ -47,7 +47,7 @@ int addr2line(char const * const program_name, void const * const addr)
 
 int printStacktraceWithGdb(const char* gdb) {
   char gdbcmd[512] = {0};
-  sprintf(gdbcmd, "%s %s -batch -q -p %d -ex bt -ex quit >> stacktrace.out", gdb, icky_global_program_name, getpid());
+  sprintf(gdbcmd, "%s %s -batch -q -p %d -x gdb_input.txt >> stacktrace.out", gdb, icky_global_program_name, getpid());
   return system(gdbcmd);
 }
 
