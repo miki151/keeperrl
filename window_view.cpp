@@ -1253,8 +1253,18 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     return;
   lockKeyboard = true;
   switch (key.sym) {
+#ifndef RELEASE
+    case SDL::SDLK_F8:
+      renderer.startMonkey();
+      break;
+#endif
     case SDL::SDLK_z: zoom(0); break;
-    case SDL::SDLK_F2: options->handle(this, OptionSet::GENERAL); refreshScreen(); break;
+    case SDL::SDLK_F2:
+      if (!renderer.isMonkey()) {
+        options->handle(this, OptionSet::GENERAL);
+        refreshScreen();
+      }
+      break;
     case SDL::SDLK_ESCAPE:
       if (!guiBuilder.clearActiveButton() && !renderer.isMonkey())
         inputQueue.push(UserInput(UserInputId::EXIT));

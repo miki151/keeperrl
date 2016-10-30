@@ -202,7 +202,6 @@ class Renderer {
   void considerMouseCursorAnim(Event&);
   void zoomMousePos(Event&);
   void updateResolution();
-  Event getRandomEvent();
   void initOpenGL();
   SDL::SDL_Window* window;
   int width, height;

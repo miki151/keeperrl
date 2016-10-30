@@ -21,6 +21,7 @@
 #include "tile.h"
 
 #include "fontstash.h"
+#include "sdl_event_generator.h"
 
 EnumMap<ColorId, Color> colors({
   {ColorId::WHITE, Color(255, 255, 255)},
@@ -694,31 +695,6 @@ void Renderer::resize(int w, int h) {
   initOpenGL();
 }
 
-Event Renderer::getRandomEvent() {
-  FAIL << "Unimpl";
-  return SDL::SDL_Event();
-/*  Uint8 ty
-  Event ret;
-  ret.type = type;
-  int modProb = 5;
-  switch (type) {
-    case Event::KeyPressed:
-      ret.key = {Keyboard::Key(Random.get(int(Keyboard::Key::KeyCount))), Random.roll(modProb),
-          Random.roll(modProb), Random.roll(modProb), Random.roll(modProb) };
-      break;
-    case Event::MouseButtonReleased:
-    case Event::MouseButtonPressed:
-      ret.mouseButton = { Random.choose({Mouse::Left, Mouse::Right}), Random.get(getSize().x),
-        Random.get(getSize().y) };
-      break;
-    case Event::MouseMoved:
-      ret.mouseMove = { Random.get(getSize().x), Random.get(getSize().y) };
-      break;
-    default: return getRandomEvent();
-  }
-  return ret;*/
-}
-
 bool Renderer::pollEventOrFromQueue(Event& ev) {
   if (!eventQueue.empty()) {
     ev = eventQueue.front();
@@ -753,8 +729,8 @@ bool Renderer::pollEvent(Event& ev) {
   CHECK(currentThreadId() == *renderThreadId);
   if (monkey) {
     if (Random.roll(2))
-      return false;
-    ev = getRandomEvent();
+      return pollEventOrFromQueue(ev);
+    ev = SdlEventGenerator::getRandom(Random, getSize());
     return true;
   } else 
     return pollEventOrFromQueue(ev);
@@ -792,7 +768,7 @@ void Renderer::zoomMousePos(Event& ev) {
 
 void Renderer::waitEvent(Event& ev) {
   if (monkey) {
-    ev = getRandomEvent();
+    ev = SdlEventGenerator::getRandom(Random, getSize());
     return;
   } else {
     if (!eventQueue.empty()) {
