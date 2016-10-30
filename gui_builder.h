@@ -108,7 +108,8 @@ class GuiBuilder {
   void addUpsCounterTick();
   void closeOverlayWindows();
   bool clearActiveButton();
-  void setActiveButton(CollectiveTab, int num, ViewId);
+  void setActiveButton(CollectiveTab, int num, ViewId, optional<string> activeGroup);
+  void setActiveGroup(const string&);
   optional<int> getActiveButton(CollectiveTab) const;
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);

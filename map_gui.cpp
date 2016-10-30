@@ -85,8 +85,9 @@ void MapGui::unhighlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
 }
 
 Vec2 MapGui::getScreenPos() const {
-  return Vec2((center.x - mouseOffset.x) * layout->getSquareSize().x,
-      (center.y - mouseOffset.y) * layout->getSquareSize().y);
+  return Vec2(
+      (int) (min<double>(levelBounds.right(), max(0.0, center.x - mouseOffset.x)) * layout->getSquareSize().x),
+      (int) (min<double>(levelBounds.bottom(), max(0.0, center.y - mouseOffset.y)) * layout->getSquareSize().y));
 }
 
 void MapGui::setSpriteMode(bool s) {
@@ -289,10 +290,6 @@ bool MapGui::onMouseMove(Vec2 v) {
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
     mouseOffset.y = double(v.y - lastMousePos.y) / layout->getSquareSize().y;
-    mouseOffset.x = min(mouseOffset.x, center.x);
-    mouseOffset.y = min(mouseOffset.y, center.y);
-    mouseOffset.x = max(mouseOffset.x, center.x - levelBounds.right());
-    mouseOffset.y = max(mouseOffset.y, center.y - levelBounds.bottom());
     callbacks.refreshFun();
   }
   return false;
@@ -310,8 +307,8 @@ void MapGui::onMouseRelease(Vec2 v) {
     if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1)
       callbacks.rightClickFun(layout->projectOnMap(getBounds(), getScreenPos(), lastMousePos));
     else {
-      center.x -= mouseOffset.x;
-      center.y -= mouseOffset.y;
+      center.x = min<double>(levelBounds.right(), max(0.0, center.x - mouseOffset.x));
+      center.y = min<double>(levelBounds.bottom(), max(0.0, center.y - mouseOffset.y));
     }
     isScrollingNow = false;
     callbacks.refreshFun();

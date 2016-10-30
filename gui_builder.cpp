@@ -81,9 +81,15 @@ optional<int> GuiBuilder::getActiveButton(CollectiveTab tab) const {
     return none;
 }
 
-void GuiBuilder::setActiveButton(CollectiveTab tab, int num, ViewId viewId) {
+void GuiBuilder::setActiveGroup(const string& group) {
+  clearActiveButton();
+  activeGroup = group;
+}
+
+void GuiBuilder::setActiveButton(CollectiveTab tab, int num, ViewId viewId, optional<string> group) {
   activeButton = {tab, num};
   mapGui->setButtonViewId(viewId);
+  activeGroup = group;
 }
 
 bool GuiBuilder::clearActiveButton() {
@@ -124,9 +130,8 @@ PGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
         clearActiveButton();
       else {
         setCollectiveTab(tab);
-        setActiveButton(tab, num, viewId);
+        setActiveButton(tab, num, viewId, none);
       }
-      activeGroup = none;
     };
   else {
     buttonFun = [] {};
@@ -144,13 +149,17 @@ static optional<int> getFirstActive(const vector<CollectiveInfo::Button>& button
   return none;
 }
 
-static optional<int> getNextActive(const vector<CollectiveInfo::Button>& buttons, int begin, int current) {
-  int i = current;
+static optional<int> getNextActive(const vector<CollectiveInfo::Button>& buttons, int begin,
+    optional<int> current) {
+  if (!current)
+    return getFirstActive(buttons, begin);
+  CHECK(current >= begin);
+  int i = *current;
   do {
     ++i;
     if (buttons[i].groupName != buttons[begin].groupName)
       i = begin;
-    if (i == current)
+    if (current == i)
       return none;
   } while (buttons[i].state != CollectiveInfo::Button::ACTIVE);
   return i;
@@ -164,21 +173,16 @@ GuiFactory::ListBuilder GuiBuilder::drawButtons(vector<CollectiveInfo::Button> b
       lastGroup = buttons[i].groupName;
       function<void()> buttonFunHotkey = [=] {
         if (activeGroup != lastGroup) {
-          if (auto firstBut = getFirstActive(buttons, i))
-            setActiveButton(tab, *firstBut, buttons[*firstBut].viewId);
           setCollectiveTab(tab);
-          activeGroup = lastGroup;
-        } else {
-          if (auto but = getActiveButton(tab)) {
-            if (auto newBut = getNextActive(buttons, i, *but))
-              setActiveButton(tab, *newBut, buttons[*newBut].viewId);
-            else {
-              clearActiveButton();
-              activeGroup = none;
-            }
-          } else
-            setActiveButton(tab, i, buttons[i].viewId);
-        }
+          if (auto firstBut = getNextActive(buttons, i, none))
+            setActiveButton(tab, *firstBut, buttons[*firstBut].viewId, lastGroup);
+          else
+            setActiveGroup(lastGroup);
+        } else
+        if (auto newBut = getNextActive(buttons, i, getActiveButton(tab)))
+          setActiveButton(tab, *newBut, buttons[*newBut].viewId, lastGroup);
+        else
+          clearActiveButton();
       };
       function<void()> labelFun = [=] {
         if (activeGroup != lastGroup) {
@@ -187,7 +191,6 @@ GuiFactory::ListBuilder GuiBuilder::drawButtons(vector<CollectiveInfo::Button> b
           activeGroup = lastGroup;
         } else {
           clearActiveButton();
-          activeGroup = none;
         }
       };
       auto line = gui.getListBuilder();
