@@ -48,7 +48,7 @@ class IndexedVector {
     return elems[index];
   }
 
-  T& operator[] (int) {
+  T& operator[] (int index) {
     return elems[index];
   }
 
