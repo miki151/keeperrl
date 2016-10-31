@@ -45,19 +45,19 @@ int addr2line(char const * const program_name, void const * const addr)
 }
 
 
-int printStacktraceWithGdb(const char* gdb) {
+
+#ifdef WINDOWS
+
+int printStacktraceWithGdb() {
   char gdbcmd[512] = {0};
-  sprintf(gdbcmd, "%s %s -batch -q -p %d -x gdb_input.txt >> stacktrace.out", gdb, icky_global_program_name, getpid());
+  sprintf(gdbcmd, "rungdb.bat %d", GetCurrentProcessId());
+  fputs(gdbcmd, stderr);
+  fflush(stderr);
   return system(gdbcmd);
 }
 
-#ifdef WINDOWS
   void windows_print_stacktrace(CONTEXT* context)
   {
-    if (!printStacktraceWithGdb("gdb.exe")) {
-      fputs("Successfully printed stacktrace using GDB.\n", stderr);
-      return;
-    }
     SymInitialize(GetCurrentProcess(), 0, true);
 
     STACKFRAME frame = { 0 };
@@ -98,6 +98,15 @@ int printStacktraceWithGdb(const char* gdb) {
 
   LONG WINAPI windows_exception_handler(EXCEPTION_POINTERS * ExceptionInfo)
   {
+	  fputs("Printing windows stack.\n", stderr);
+    if (!printStacktraceWithGdb("gdb.exe")) {
+      fputs("Successfully printed stacktrace using GDB.\n", stderr);
+      fflush(stderr);
+      return EXCEPTION_EXECUTE_HANDLER;
+    }
+    fputs("Failed to print stacktrace using GDB. Using built-in stack printer.\n", stderr);
+    fflush(stderr);
+
     switch(ExceptionInfo->ExceptionRecord->ExceptionCode)
     {
       case EXCEPTION_ACCESS_VIOLATION:

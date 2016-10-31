@@ -26,7 +26,8 @@ static optional<Table<char>> readTable(ifstream& input) {
 
 static int getTableNum(const string& path) {
   int ret = 0;
-  if (auto in = ifstream(path.c_str()))
+  ifstream in(path.c_str());
+  if (in)
     in >> ret;
   return ret;
 }
