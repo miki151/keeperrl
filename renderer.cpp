@@ -477,9 +477,9 @@ void Renderer::reloadCursors() {
     SDL_SetCursor(originalCursor);
     cursor = cursorClicked = nullptr;
   } else {
-    if (auto surface = loadScaledSurface(cursorPath, zoom))
+    if (auto surface = loadScaledSurface(cursorPath, 2 * zoom))
       cursor = SDL_CreateColorCursor(surface, 0, 0);
-    if (auto surface = loadScaledSurface(clickedCursorPath, zoom))
+    if (auto surface = loadScaledSurface(clickedCursorPath, 2 * zoom))
       cursorClicked = SDL_CreateColorCursor(surface, 0, 0);
     if (cursor)
       SDL_SetCursor(cursor);
