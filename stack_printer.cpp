@@ -45,15 +45,17 @@ int addr2line(char const * const program_name, void const * const addr)
 }
 
 
-int printStacktraceWithGdb(const char* gdb) {
+
+#ifdef WINDOWS
+
+int printStacktraceWithGdb() {
   char gdbcmd[512] = {0};
-  sprintf(gdbcmd, "%s keeper.exe -batch -q -p %d -x gdb_input.txt >> stacktrace.out", gdb, GetCurrentProcessId());
+  sprintf(gdbcmd, "rungdb.bat %d", GetCurrentProcessId());
   fputs(gdbcmd, stderr);
   fflush(stderr);
   return system(gdbcmd);
 }
 
-#ifdef WINDOWS
   void windows_print_stacktrace(CONTEXT* context)
   {
     SymInitialize(GetCurrentProcess(), 0, true);
