@@ -399,7 +399,7 @@ static int keeperMain(const variables_map& vars) {
     forceGame = GameTypeChoice::KEEPER;
   else if (vars.count("quick_level"))
     forceGame = GameTypeChoice::QUICK_LEVEL;
-  SokobanInput sokobanInput(freeDataPath + "/sokoban_input.txt");
+  SokobanInput sokobanInput(freeDataPath + "/sokoban_input.txt", userPath + "/sokoban_state.txt");
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
       gameFinished, useSingleThread, forceGame);
   if (vars.count("worldgen_test")) {
