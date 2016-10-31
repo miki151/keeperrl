@@ -56,7 +56,7 @@ int printStacktraceWithGdb(const char* gdb) {
   {
     if (!printStacktraceWithGdb("gdb.exe")) {
       fputs("Successfully printed stacktrace using GDB.\n", stderr);
-      return EXCEPTION_EXECUTE_HANDLER;
+      return;
     }
     SymInitialize(GetCurrentProcess(), 0, true);
 
