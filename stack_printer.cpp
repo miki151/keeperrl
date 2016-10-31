@@ -224,10 +224,10 @@ int printStacktraceWithGdb() {
 
   void posix_signal_handler(int sig, siginfo_t *siginfo, void *context)
   {
-    if (!printStacktraceWithGdb("gdb")) {
+/*    if (!printStacktraceWithGdb("gdb")) {
       fputs("Successfully printed stacktrace using GDB.\n", stderr);
       _Exit(1);
-    }
+    }*/
     FILE* errorOut = fopen("stacktrace.out", "a");
     (void)context;
     switch(sig)
