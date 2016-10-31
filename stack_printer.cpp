@@ -99,7 +99,7 @@ int printStacktraceWithGdb() {
   LONG WINAPI windows_exception_handler(EXCEPTION_POINTERS * ExceptionInfo)
   {
 	  fputs("Printing windows stack.\n", stderr);
-    if (!printStacktraceWithGdb("gdb.exe")) {
+    if (!printStacktraceWithGdb()) {
       fputs("Successfully printed stacktrace using GDB.\n", stderr);
       fflush(stderr);
       return EXCEPTION_EXECUTE_HANDLER;
