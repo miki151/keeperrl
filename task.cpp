@@ -426,7 +426,7 @@ class BringItem : public PickItem {
   }
 
   virtual string getDescription() const override {
-    return "Bring item from " + toString(position) + " to " + (target ? toString(*target) : "???"_s);
+    return "Bring item from " + toString(position) + " to " + toString(target);
   }
 
   virtual void onPickedUp() override {
@@ -458,6 +458,7 @@ class BringItem : public PickItem {
       return c->drop(c->getEquipment().getItems(items.containsPredicate())).append(
           [this] (Creature*) {
             callback->onCantPickItem(items);
+            cancel();
             setDone();
           });
     if (c->getPosition() == target) {
@@ -499,11 +500,11 @@ class ApplyItem : public BringItem {
       : BringItem(c, position, items, target), callback(c) {}
 
   virtual void cancel() override {
-    callback->onAppliedItemCancel(*target);
+    callback->onAppliedItemCancel(getOnlyElement(allTargets));
   }
 
   virtual string getDescription() const override {
-    return "Bring and apply item " + toString(position) + " to " + (target ? toString(*target) : "???"_s);
+    return "Bring and apply item " + toString(position) + " to " + toString(target);
   }
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) override {

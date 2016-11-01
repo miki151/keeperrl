@@ -29,6 +29,14 @@ string toString(const T& t) {
   return ss.str();
 }
 
+template <class T>
+string toString(const optional<T>& t) {
+  if (t)
+    return toString(*t);
+  else
+    return "(unknown)";
+}
+
 class ParsingException {
 };
 
