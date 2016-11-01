@@ -1394,8 +1394,11 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
   else
     index.setHiddenId(pos.getViewObject().id());
   if (const Creature* c = pos.getCreature())
-    if (canSee)
+    if (canSee) {
       index.insert(c->getViewObject());
+      if (isEnemy(c))
+        index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::HOSTILE);
+    }
 }
 
 static bool showEfficiency(FurnitureType type) {

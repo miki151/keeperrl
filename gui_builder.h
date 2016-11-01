@@ -241,7 +241,6 @@ class GuiBuilder {
   vector<string> getItemHint(const ItemInfo&);
   PGuiElem drawMinionAndLevel(ViewId viewId, int level, int iconMult);
   vector<SDL::SDL_Keysym> getConfirmationKeys();
-  bool morale = true;
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
   vector<PGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);
   PGuiElem menuElemMargins(PGuiElem);
@@ -249,6 +248,7 @@ class GuiBuilder {
   string getPlayerTitle(PlayerInfo&);
   SDL::SDL_KeyboardEvent getHotkeyEvent(char);
   MapGui* mapGui = nullptr;
+  vector<PGuiElem> getSettingsButtons();
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

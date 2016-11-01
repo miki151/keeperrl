@@ -855,6 +855,8 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));
       if (contains(getTeam(), c))
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
+      if (getCreature()->isEnemy(c))
+        index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::HOSTILE);
     } else if (getCreature()->isUnknownAttacker(c))
       index.insert(copyOf(ViewObject::unknownMonster()));
   }

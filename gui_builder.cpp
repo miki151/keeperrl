@@ -892,8 +892,10 @@ PGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
                 command.active ? gui.uiHighlightMouseOver(colors[ColorId::GREEN]) : gui.empty(),
                 gui.tooltip({command.description}),
                 gui.label(getKeybindingDesc(command.keybinding) + " " + command.name, labelColor)));
-           }
-           drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260);
+          }
+          for (auto& button : getSettingsButtons())
+            lines.addElem(std::move(button));
+          drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260);
      })));
   line.addElem(gui.button(getButtonCallback(UserInputId::CHEAT_ATTRIBUTES), gui.getKey(SDL::SDLK_y)), 1);
   list.addElem(line.buildHorizontalList());
@@ -1018,6 +1020,19 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
   return lines.buildVerticalList();
 }
 
+vector<PGuiElem> GuiBuilder::getSettingsButtons() {
+  return makeVec<PGuiElem>(
+      gui.stack(makeVec<PGuiElem>(
+            getHintCallback({"Morale affects minion's productivity and chances of fleeing from battle."}),
+            gui.uiHighlightConditional([=] { return mapGui->highlightMorale();}),
+            gui.label("Highlight morale"),
+            gui.button([this] { mapGui->setHighlightMorale(!mapGui->highlightMorale()); }))),
+      gui.stack(makeVec<PGuiElem>(
+            gui.uiHighlightConditional([=] { return mapGui->highlightEnemies();}),
+            gui.label("Highlight enemies"),
+            gui.button([this] { mapGui->setHighlightEnemies(!mapGui->highlightEnemies()); }))));
+}
+
 PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
   int newHash = info.getHash();
   if (newHash != minionsHash) {
@@ -1048,11 +1063,8 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
               gui.uiHighlightConditional([=] { return showTasks;}),
               gui.label("Show tasks"),
               gui.button([this] { closeOverlayWindows(); showTasks = !showTasks; })));
-    list.addElem(gui.stack(makeVec<PGuiElem>(
-              getHintCallback({"Morale affects minion's productivity and chances of fleeing from battle."}),
-              gui.uiHighlightConditional([=] { return morale;}),
-              gui.label("Show morale"),
-              gui.button([this] { morale = !morale; }))));
+    for (auto& button : getSettingsButtons())
+      list.addElem(std::move(button));
     list.addElem(gui.stack(
               gui.label("Show message history"),
               gui.button(getButtonCallback(UserInputId::SHOW_HISTORY))));
@@ -1072,10 +1084,6 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
     minionsCache = gui.scrollable(list.buildVerticalList(), &minionsScroll, &scrollbarsHeld);
   }
   return gui.external(minionsCache.get());
-}
-
-bool GuiBuilder::showMorale() const {
-  return morale;
 }
 
 const int taskMapWindowWidth = 400;

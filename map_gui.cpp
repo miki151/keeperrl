@@ -74,6 +74,22 @@ void MapGui::clearButtonViewId() {
   buttonViewId = none;
 }
 
+bool MapGui::highlightMorale() {
+  return morale;
+}
+
+bool MapGui::highlightEnemies() {
+  return enemies;
+}
+
+void MapGui::setHighlightMorale(bool s) {
+  morale = s;
+}
+
+void MapGui::setHighlightEnemies(bool s) {
+  enemies = s;
+}
+
 void MapGui::highlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
   for (auto& id : ids)
     ++teamHighlight.getOrInit(id);
@@ -411,7 +427,9 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
     milliseconds curTime) {
   if (object.hasModifier(ViewObject::Modifier::PLAYER))
     drawCreatureHighlight(renderer, pos, sz, colors[ColorId::ALMOST_WHITE]);
-  if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && showMorale)
+  if (object.hasModifier(ViewObject::Modifier::HOSTILE) && enemies)
+    drawCreatureHighlight(renderer, pos, sz, colors[ColorId::PURPLE]);
+  if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && morale)
     if (auto morale = object.getAttribute(ViewObject::Attribute::MORALE))
       drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));
   if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT) && (curTime.count() / 1000) % 2) {
@@ -936,12 +954,11 @@ void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime
       connectionMap.add(pos, *id);
 }
 
-void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui, bool moral) {
+void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui) {
   Level* level = view->getLevel();
   levelBounds = view->getLevel()->getBounds();
   updateEnemyPositions(view->getVisibleEnemies());
   mouseUI = ui;
-  showMorale = moral;
   layout = mapLayout;
   displayScrollHint = view->isPlayerView() && !lockedView;
   auto currentTimeReal = clock->getRealMillis();

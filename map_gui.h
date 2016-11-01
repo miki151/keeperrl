@@ -52,7 +52,7 @@ class MapGui : public GuiElem {
   virtual void onMouseRelease(Vec2) override;
   virtual bool onKeyPressed2(SDL::SDL_Keysym) override;
 
-  void updateObjects(CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, bool showMorale);
+  void updateObjects(CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI);
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void setHint(const vector<string>&);
@@ -69,6 +69,10 @@ class MapGui : public GuiElem {
   Color getCreatureHighlight(UniqueEntity<Creature>::Id);
   void setButtonViewId(ViewId);
   void clearButtonViewId();
+  bool highlightMorale();
+  bool highlightEnemies();
+  void setHighlightMorale(bool);
+  void setHighlightEnemies(bool);
 
   private:
   void updateObject(Vec2, CreatureView*, milliseconds currentTime);
@@ -164,7 +168,8 @@ class MapGui : public GuiElem {
   ViewIdMap connectionMap;
   bool mouseUI = false;
   vector<CreatureInfo> creatureMap;
-  bool showMorale;
+  bool morale = true;
+  bool enemies = true;
   DirtyTable<bool> enemyPositions;
   void updateEnemyPositions(const vector<Vec2>&);
   bool lockedView = true;
