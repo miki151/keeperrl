@@ -503,7 +503,7 @@ class ApplyItem : public BringItem {
   }
 
   virtual string getDescription() const override {
-    return "Bring and apply item " + toString(position) + " to " + toString(*target);
+    return "Bring and apply item " + toString(position) + " to " + (target ? toString(*target) : "???"_s);
   }
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) override {
