@@ -87,7 +87,7 @@ class Texture {
   explicit Texture(SDL::SDL_Surface*);
   static optional<Texture> loadMaybe(const string& path);
 
-  optional<SDL::GLenum> loadFrom(SDL::SDL_Surface*);
+  optional<SDL::GLenum> loadFromMaybe(SDL::SDL_Surface*);
   const Vec2& getSize() const;
 
   ~Texture();

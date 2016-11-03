@@ -29,7 +29,7 @@ void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
   if (!mapBufferTex)
     mapBufferTex.emplace(mapBuffer);
   else
-    mapBufferTex->loadFrom(mapBuffer);
+    CHECK(!mapBufferTex->loadFromMaybe(mapBuffer));
   renderer.drawImage(target, info.bounds, *mapBufferTex);
   Vec2 topLeft = target.topLeft();
   double scale = min(double(target.width()) / info.bounds.width(),
