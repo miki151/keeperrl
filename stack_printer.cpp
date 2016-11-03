@@ -188,7 +188,7 @@ int printStacktraceWithGdb() {
         addr2line(icky_global_program_name, (void*)ExceptionInfo->ContextRecord->Eip);
 #endif
     }
-
+    system("sendreport.bat");
     return EXCEPTION_EXECUTE_HANDLER;
   }
 
