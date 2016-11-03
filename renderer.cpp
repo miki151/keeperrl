@@ -102,7 +102,8 @@ static void checkOpenglError() {
 Texture::Texture(const string& fileName){
   SDL::SDL_Surface* image= SDL::IMG_Load(fileName.c_str());
   CHECK(image) << SDL::IMG_GetError();
-  CHECK(loadFrom(image)) << "Couldn't load image: " << fileName;
+  if (auto error = loadFromMaybe(image))
+    FAIL << "Couldn't load image: " << fileName << ". Error code " << toString(*error);
   SDL::SDL_FreeSurface(image);
   path = fileName;
 }
@@ -114,7 +115,7 @@ Texture::~Texture() {
 
 static int totalTex = 0;
 
-bool Texture::loadFrom(SDL::SDL_Surface* image) {
+optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* image) {
   if (!texId) {
     texId = 0;
     SDL::glGenTextures(1, &(*texId));
@@ -145,10 +146,11 @@ bool Texture::loadFrom(SDL::SDL_Surface* image) {
   SDL::glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
   checkOpenglError();
   SDL::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->w, image ->h, 0, mode, GL_UNSIGNED_BYTE, image->pixels);
-  if (SDL::glGetError() != GL_NO_ERROR)
-    return false;
+  auto error = SDL::glGetError();
+  if (error != GL_NO_ERROR)
+    return error;
   size = Vec2(image->w, image->h);
-  return true;
+  return none;
 }
 
 Texture::Texture(const string& path, int px, int py, int w, int h) {
@@ -162,13 +164,14 @@ Texture::Texture(const string& path, int px, int py, int w, int h) {
   CHECK(sub) << SDL::SDL_GetError();
   CHECK(!SDL_BlitSurface(image, &src, sub, &offset)) << SDL::SDL_GetError();
   SDL::SDL_FreeSurface(image);
-  CHECK(loadFrom(sub));
+  if (auto error = loadFromMaybe(sub))
+    FAIL << "Couldn't load image: " << path << ". Error code " << toString(*error);
   SDL::SDL_FreeSurface(sub);
   this->path = path;
 }
 
 Texture::Texture(SDL::SDL_Surface* surface) {
-  CHECK(loadFrom(surface));
+  CHECK(!loadFromMaybe(surface));
 }
 
 Texture::Texture(Texture&& tex) {
@@ -186,7 +189,7 @@ Texture& Texture::operator = (Texture&& tex) {
 optional<Texture> Texture::loadMaybe(const string& path) {
   if (SDL::SDL_Surface* image = SDL::IMG_Load(path.c_str())) {
     Texture ret;
-    bool ok = ret.loadFrom(image);
+    bool ok = !ret.loadFromMaybe(image);
     SDL::SDL_FreeSurface(image);
     if (ok)
       return std::move(ret);
