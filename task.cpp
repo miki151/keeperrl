@@ -47,9 +47,8 @@
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(UniqueEntity)
-    & SVAR(done)
-    & SVAR(transfer);
+  ar& SUBCLASS(UniqueEntity);
+  serializeAll(ar, done, transfer, viewId);
 }
 
 SERIALIZABLE(Task);
@@ -76,8 +75,20 @@ bool Task::canPerform(const Creature* c) {
   return true;
 }
 
+optional<Position> Task::getPosition() const {
+  return none;
+}
+
+optional<ViewId> Task::getViewId() const {
+  return viewId;
+}
+
 bool Task::isDone() {
   return done;
+}
+
+void Task::setViewId(ViewId id) {
+  viewId = id;
 }
 
 void Task::setDone() {
@@ -1230,6 +1241,10 @@ class GoToAndWait : public Task {
   bool arrived(Creature* c) {
     return c->getPosition() == position ||
         (c->getPosition().dist8(position) == 1 && !position.canEnterEmpty(c));
+  }
+
+  virtual optional<Position> getPosition() const override {
+    return position;
   }
 
   virtual MoveInfo getMove(Creature* c) override {

@@ -1446,6 +1446,9 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHighlight(getCollective()->getMarkHighlight(position));
   if (getCollective()->hasPriorityTasks(position))
     index.setHighlight(HighlightType::PRIORITY_TASK);
+  for (auto task : getCollective()->getTaskMap().getTasks(position))
+    if (auto viewId = task->getViewId())
+        index.insert(ViewObject(*viewId, ViewLayer::LARGE_ITEM));
   if (position.isTribeForbidden(getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   getCollective()->getZones().setHighlights(position, index);
@@ -1681,7 +1684,10 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
         }
       }
     }
-    getCollective()->setTask(c, Task::goToAndWait(pos, 15));
+    PTask task = Task::goToAndWait(pos, 15);
+    task->setViewId(ViewId::GUARD_POST);
+    getCollective()->setTask(c, std::move(task));
+    pos.setNeedsRenderUpdate(true);
   }
 }
 

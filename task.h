@@ -39,7 +39,10 @@ class Task : public UniqueEntity<Task> {
   virtual void cancel() {}
   virtual string getDescription() const = 0;
   virtual bool canPerform(const Creature* c);
+  virtual optional<Position> getPosition() const;
+  optional<ViewId> getViewId() const;
   bool isDone();
+  void setViewId(ViewId);
 
   static PTask construction(TaskCallback*, Position, FurnitureType);
   static PTask destruction(TaskCallback*, Position, const Furniture*, DestroyAction);
@@ -91,4 +94,5 @@ class Task : public UniqueEntity<Task> {
   private:
   bool SERIAL(done) = false;
   bool SERIAL(transfer);
+  optional<ViewId> SERIAL(viewId);
 };

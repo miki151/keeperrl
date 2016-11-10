@@ -23,6 +23,7 @@ class TaskMap {
   void takeTask(const Creature*, Task*);
   void freeTask(Task*);
 
+  void setPosition(Task*, Position);
   Task* addTaskCost(PTask, Position, CostInfo);
   void markSquare(Position, HighlightType, PTask);
   Task* getMarked(Position) const;

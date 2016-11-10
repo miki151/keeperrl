@@ -135,14 +135,15 @@ const vector<Task*>& TaskMap::getTasks(Position pos) const {
 Task* TaskMap::addTaskFor(PTask task, const Creature* c) {
   CHECK(!hasTask(c)) << c->getName().bare() << " already has a task";
   creatureMap.insert(c, task.get());
+  if (auto pos = task->getPosition())
+    setPosition(task.get(), *pos);
   tasks.push_back(std::move(task));
   return tasks.back().get();
 }
 
 Task* TaskMap::addTask(PTask task, Position position, MinionTrait required) {
-  positionMap[task.get()] = position;
+  setPosition(task.get(), position);
   requiredTraits[task.get()] = required;
-  reversePositions.getOrInit(position).push_back(task.get());
   tasks.push_back(std::move(task));
   return tasks.back().get();
 }
@@ -169,6 +170,11 @@ const Creature* TaskMap::getOwner(const Task* task) const {
 void TaskMap::freeTask(Task* task) {
   if (creatureMap.contains(task))
     creatureMap.erase(task);
+}
+
+void TaskMap::setPosition(Task* task, Position position) {
+  positionMap[task] = position;
+  reversePositions.getOrInit(position).push_back(task);
 }
 
 CostInfo TaskMap::freeFromTask(const Creature* c) {

@@ -568,7 +568,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::IRON_BOOTS, sprite("iron_boots"));
     Tile::addTile(ViewId::SPEED_BOOTS, sprite("blue_boots"));
     Tile::addTile(ViewId::LEVITATION_BOOTS, sprite("green_boots"));
-    Tile::addTile(ViewId::GUARD_POST, sprite("guardroom"));
+    Tile::addTile(ViewId::GUARD_POST, sprite("guardroom").setRoundShadow());
     Tile::addTile(ViewId::MANA, sprite("mana"));
     Tile::addTile(ViewId::FETCH_ICON, sprite("leather_gloves"));
     Tile::addTile(ViewId::EYEBALL, sprite("eyeball2").setRoundShadow());
