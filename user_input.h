@@ -56,6 +56,7 @@ enum class UserInputId {
     CREATURE_CONSUME,
     CREATURE_DRAG_DROP,
     CREATURE_DRAG,
+    TEAM_DRAG_DROP,
     GO_TO_ENEMY,
     CREATE_TEAM,
     CREATE_TEAM_FROM_GROUP,
@@ -88,6 +89,12 @@ struct CreatureDropInfo {
   Vec2 SERIAL(pos);
   UniqueEntity<Creature>::Id SERIAL(creatureId);
   SERIALIZE_ALL(pos, creatureId)
+};
+
+struct TeamDropInfo {
+  Vec2 SERIAL(pos);
+  TeamId SERIAL(teamId);
+  SERIALIZE_ALL(pos, teamId)
 };
 
 struct BuildingInfo {
@@ -145,7 +152,7 @@ enum class SpellId;
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
-    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo),
+    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::LIBRARY,
@@ -205,7 +212,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
         ASSIGN(RenameActionInfo,
             UserInputId::CREATURE_RENAME),
         ASSIGN(CreatureDropInfo,
-            UserInputId::CREATURE_DRAG_DROP)
+            UserInputId::CREATURE_DRAG_DROP),
+        ASSIGN(TeamDropInfo,
+            UserInputId::TEAM_DRAG_DROP)
         > {
   using EnumVariant::EnumVariant;
 };

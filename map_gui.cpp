@@ -27,14 +27,15 @@
 #include "level.h"
 #include "creature_view.h"
 #include "options.h"
+#include "drag_and_drop.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
 
-MapGui::MapGui(Callbacks call, Clock* c, Options* o) : objects(Level::getMaxBounds()), callbacks(call),
+MapGui::MapGui(Callbacks call, Clock* c, Options* o, GuiFactory* f) : objects(Level::getMaxBounds()), callbacks(call),
     clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
     lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()),
-    enemyPositions(Level::getMaxBounds(), false) {
+    enemyPositions(Level::getMaxBounds(), false), guiFactory(f) {
   clearCenter();
 }
 
@@ -297,11 +298,12 @@ void MapGui::considerContinuousLeftClick(Vec2 mousePos) {
 
 bool MapGui::onMouseMove(Vec2 v) {
   lastMouseMove = v;
+  auto draggedCreature = getDraggedCreature();
   if (v.inRectangle(getBounds()) && mouseHeldPos && !draggedCreature)
     considerContinuousLeftClick(v);
   if (!draggedCreature && draggedCandidate && mouseHeldPos && mouseHeldPos->distD(v) > 30) {
     callbacks.creatureDragFun(draggedCandidate->id, draggedCandidate->viewId, v);
-    draggedCreature = draggedCandidate->id;
+    setDraggedCreature(draggedCandidate->id, draggedCandidate->viewId, v);
   }
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
@@ -330,14 +332,27 @@ void MapGui::onMouseRelease(Vec2 v) {
     callbacks.refreshFun();
     mouseOffset.x = mouseOffset.y = 0;
   }
+  auto draggedCreature = getDraggedCreature();
+  if (auto& draggedElem = guiFactory->getDragContainer().getElement())
+    if (guiFactory->getDragContainer().getOrigin().distD(v) > 10) {
+      switch (draggedElem->getId()) {
+        case DragContentId::CREATURE:
+          callbacks.creatureDroppedFun(draggedElem->get<UniqueEntity<Creature>::Id>(),
+              layout->projectOnMap(getBounds(), getScreenPos(), v));
+          break;
+        case DragContentId::TEAM:
+          callbacks.teamDroppedFun(draggedElem->get<TeamId>(),
+              layout->projectOnMap(getBounds(), getScreenPos(), v));
+          break;
+        default:
+          break;
+      }
+    }
   if (mouseHeldPos) {
     if (mouseHeldPos->distD(v) > 10) {
       if (!draggedCreature)
         considerContinuousLeftClick(v);
-      else
-        callbacks.creatureDroppedFun(*draggedCreature, layout->projectOnMap(getBounds(), getScreenPos(), v));
-    }
-    else {
+    } else {
       if (auto c = getCreature(*mouseHeldPos))
         callbacks.creatureClickFun(c->id);
       else {
@@ -348,7 +363,6 @@ void MapGui::onMouseRelease(Vec2 v) {
   }
   mouseHeldPos = none;
   lastMapLeftClick = none;
-  draggedCreature = none;
   draggedCandidate = none;
 }
 
@@ -668,7 +682,7 @@ optional<ViewId> MapGui::getHighlightedFurniture() {
         objects[curPos] &&
         objects[curPos]->hasObject(ViewLayer::FLOOR) &&
         (objects[curPos]->getHighlight(HighlightType::CLICKABLE_FURNITURE) > 0 ||
-         (objects[curPos]->getHighlight(HighlightType::CREATURE_DROP) > 0 && !!draggedCreature)))
+         (objects[curPos]->getHighlight(HighlightType::CREATURE_DROP) > 0 && !!getDraggedCreature())))
       return objects[curPos]->getObject(ViewLayer::FLOOR).id();
   }
   return none;
@@ -681,10 +695,10 @@ bool MapGui::isRenderedHighlight(const ViewIndex& index, HighlightType type) {
         return
             index.hasObject(ViewLayer::FLOOR) &&
             getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id() &&
-            !draggedCreature &&
+            !getDraggedCreature() &&
             !buttonViewId;
       case HighlightType::CREATURE_DROP:
-        return !!draggedCreature;
+        return !!getDraggedCreature();
       default: return true;
     }
   else
@@ -884,6 +898,21 @@ void MapGui::processScrolling(milliseconds time) {
     }
     lastRenderTime = time;
   }
+}
+
+optional<UniqueEntity<Creature>::Id> MapGui::getDraggedCreature() const {
+  if (auto draggedContent = guiFactory->getDragContainer().getElement())
+    switch (draggedContent->getId()) {
+      case DragContentId::CREATURE:
+        return draggedContent->get<UniqueEntity<Creature>::Id>();
+      default:
+        break;
+    }
+  return none;
+}
+
+void MapGui::setDraggedCreature(UniqueEntity<Creature>::Id id, ViewId viewId, Vec2 origin) {
+  guiFactory->getDragContainer().put({DragContentId::CREATURE, id}, guiFactory->viewObject(viewId), origin);
 }
 
 void MapGui::render(Renderer& renderer) {

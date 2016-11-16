@@ -986,22 +986,29 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
     }
     if (!currentLine.empty())
       teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
+    ViewId leaderViewId = info.getMinion(team.members[0])->viewId;
     lines.addElemAuto(gui.stack(makeVec<PGuiElem>(
             gui.mouseOverAction([team, this] { mapGui->highlightTeam(team.members); },
               [team, this] { mapGui->unhighlightTeam(team.members); }),
-            gui.button(getButtonCallback({UserInputId::SELECT_TEAM, team.id})),
+            gui.releaseButton(getButtonCallback({UserInputId::SELECT_TEAM, team.id})),
             gui.uiHighlightConditional([team] () { return team.highlight; }),
             gui.uiHighlightMouseOver(),
             gui.dragListener([this, team](DragContent content) {
                 UserInputId id;
                 switch (content.getId()) {
-                  case DragContentId::CREATURE: id = UserInputId::ADD_TO_TEAM; break;
-                  case DragContentId::CREATURE_GROUP: id = UserInputId::ADD_GROUP_TO_TEAM; break;
+                  case DragContentId::CREATURE:
+                    id = UserInputId::ADD_TO_TEAM; break;
+                  case DragContentId::CREATURE_GROUP:
+                    id = UserInputId::ADD_GROUP_TO_TEAM; break;
+                  default:
+                    return;
                 }
                 callbacks.input({id, TeamCreatureInfo{team.id, content.get<UniqueEntity<Creature>::Id>()}});}),
+            gui.dragSource({DragContentId::TEAM, team.id},
+                           [=] { return gui.viewObject(leaderViewId);}),
             gui.getListBuilder(22)
-            .addElem(gui.topMargin(8, gui.icon(GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
-            .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
+              .addElem(gui.topMargin(8, gui.icon(GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
+              .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
   }
   string hint = "Drag and drop minions onto the [new team] button to create a new team. "
     "You can drag them both from the map and the menus.";
@@ -1009,8 +1016,12 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
         gui.dragListener([this](DragContent content) {
             UserInputId id;
             switch (content.getId()) {
-              case DragContentId::CREATURE: id = UserInputId::CREATE_TEAM; break;
-              case DragContentId::CREATURE_GROUP: id = UserInputId::CREATE_TEAM_FROM_GROUP; break;
+              case DragContentId::CREATURE:
+                id = UserInputId::CREATE_TEAM; break;
+              case DragContentId::CREATURE_GROUP:
+                id = UserInputId::CREATE_TEAM_FROM_GROUP; break;
+              default:
+                return;
             }
             callbacks.input({id, content.get<UniqueEntity<Creature>::Id>() });}),
         gui.uiHighlightMouseOver(),
@@ -1049,7 +1060,7 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
         tmp = gui.stack(gui.uiHighlight(), std::move(tmp));
       line.addElem(std::move(tmp), 200);
       list.addElem(gui.leftMargin(20, gui.stack(
-          gui.button(getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, elem.creatureId})),
+          gui.releaseButton(getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, elem.creatureId})),
           gui.dragSource({DragContentId::CREATURE_GROUP, elem.creatureId},
               [=]{ return gui.getListBuilder(10)
                   .addElemAuto(gui.label(toString(elem.count) + " "))
@@ -1724,7 +1735,7 @@ PGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
           line.addElem(gui.topMargin(-2, gui.icon(*icon)), 20);
         line.addBackElem(gui.label("L:" + toString<int>(minion.levelInfo.level)), 42);
         list.addElem(gui.stack(makeVec<PGuiElem>(
-              gui.button(getButtonCallback({UserInputId::CREATURE_BUTTON, minionId})),
+              gui.releaseButton(getButtonCallback({UserInputId::CREATURE_BUTTON, minionId})),
               gui.uiHighlight([=] { return mapGui->getCreatureHighlight(minionId);}),
               gui.uiHighlightConditional([=] { return current == minionId;}),
               gui.dragSource({DragContentId::CREATURE, minionId},

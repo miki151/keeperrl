@@ -24,6 +24,10 @@ GuiElem* DragContainer::getGui() {
   return gui.get();
 }
 
+const optional<DragContent>& DragContainer::getElement() const {
+  return content;
+}
+
 bool DragContainer::hasElement() {
   return !!content;
 }

@@ -1744,6 +1744,18 @@ void PlayerControl::processInput(View* view, UserInput input) {
         minionDragAndDrop(input.get<CreatureDropInfo>());
         draggedCreature = none;
         break;
+    case UserInputId::TEAM_DRAG_DROP: {
+        auto& info = input.get<TeamDropInfo>();
+        Position pos = Position(info.pos, getLevel());
+        if (getTeams().exists(info.teamId))
+          for (Creature* c : getTeams().getMembers(info.teamId)) {
+            PTask task = Task::goToAndWait(pos, 15);
+            task->setViewId(ViewId::GUARD_POST);
+            getCollective()->setTask(c, std::move(task));
+            pos.setNeedsRenderUpdate(true);
+          }
+        break;
+    }
     case UserInputId::CANCEL_TEAM:
         if (getChosenTeam() == input.get<TeamId>()) {
           setChosenTeam(none);
@@ -1849,10 +1861,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
             setChosenCreature(chosenId);
           else
             setChosenTeam(*chosenTeam, chosenId);
-        } else {
-          chosenCreature = none;
-          setChosenTeam(none);
         }
+        else
+          setChosenTeam(none);
       }
       break;
     case UserInputId::CREATURE_TASK_ACTION:

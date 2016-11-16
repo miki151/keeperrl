@@ -7,10 +7,12 @@
 enum class DragContentId {
   CREATURE,
   CREATURE_GROUP,
+  TEAM
 };
 
 class DragContent : public EnumVariant<DragContentId, TYPES(UniqueEntity<Creature>::Id, TeamId),
-    ASSIGN(UniqueEntity<Creature>::Id, DragContentId::CREATURE, DragContentId::CREATURE_GROUP)> {
+    ASSIGN(UniqueEntity<Creature>::Id, DragContentId::CREATURE, DragContentId::CREATURE_GROUP),
+    ASSIGN(TeamId, DragContentId::TEAM)> {
   using EnumVariant::EnumVariant;
 };
 
@@ -19,6 +21,7 @@ class DragContainer {
   void put(DragContent content, PGuiElem, Vec2 origin);
   optional<DragContent> pop();
   GuiElem* getGui();
+  const optional<DragContent>& getElement() const;
   bool hasElement();
   Vec2 getOrigin();
 

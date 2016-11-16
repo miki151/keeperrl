@@ -61,6 +61,19 @@ class Button : public GuiElem {
   function<void(Rectangle)> fun;
 };
 
+class ReleaseButton : public GuiElem {
+  public:
+  ReleaseButton(function<void(Rectangle)> f) : fun(f) {}
+
+  virtual void onMouseRelease(Vec2 pos) override {
+    if (pos.inRectangle(getBounds()))
+      fun(getBounds());
+  }
+
+  protected:
+  function<void(Rectangle)> fun;
+};
+
 bool GuiFactory::isShift(const SDL_Keysym& key) {
   return key.mod & (SDL::KMOD_LSHIFT | SDL::KMOD_RSHIFT);
 }
@@ -156,26 +169,6 @@ PGuiElem GuiFactory::buttonRect(function<void(Rectangle)> fun) {
 PGuiElem GuiFactory::button(function<void()> fun) {
   return PGuiElem(new Button([=](Rectangle) { fun(); }));
 }
-
-class ReleaseButton : public GuiElem {
-  public:
-  ReleaseButton(function<void(Rectangle)> f) : fun(f) {}
-
-  virtual bool onLeftClick(Vec2 pos) override {
-    if (pos.inRectangle(getBounds()))
-      pressed = true;
-    return false;
-  }
-
-  virtual void onMouseRelease(Vec2 pos) override {
-    if (pos.inRectangle(getBounds()))
-      fun(getBounds());
-  }
-
-  protected:
-  function<void(Rectangle)> fun;
-  bool pressed = false;
-};
 
 PGuiElem GuiFactory::releaseButton(function<void(Rectangle)> fun) {
   return PGuiElem(new ReleaseButton(fun));

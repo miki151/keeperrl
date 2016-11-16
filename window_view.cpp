@@ -130,7 +130,13 @@ void WindowView::initialize() {
       [this] { refreshInput = true;},
       bindMethod(&WindowView::mapCreatureDragFun, this),
       [this] (UniqueEntity<Creature>::Id id, Vec2 pos) {
-          inputQueue.push(UserInput(UserInputId::CREATURE_DRAG_DROP, CreatureDropInfo{pos, id})); }}, clock, options );
+          inputQueue.push(UserInput(UserInputId::CREATURE_DRAG_DROP, CreatureDropInfo{pos, id})); },
+      [this] (TeamId id, Vec2 pos) {
+          inputQueue.push(UserInput(UserInputId::TEAM_DRAG_DROP, TeamDropInfo{pos, id})); },
+      },
+      clock,
+      options,
+      &gui);
   minimapGui = new MinimapGui(renderer, [this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); });
   minimapDecoration = gui.stack(gui.rectangle(colors[ColorId::BLACK]), gui.miniWindow(),
       gui.margins(gui.renderInBounds(PGuiElem(minimapGui)), 6));
@@ -139,7 +145,6 @@ void WindowView::initialize() {
 }
 
 void WindowView::mapCreatureDragFun(UniqueEntity<Creature>::Id id, ViewId viewId, Vec2 origin) {
-  gui.getDragContainer().put({DragContentId::CREATURE, id}, gui.viewObject(viewId), origin);
   inputQueue.push(UserInput(UserInputId::CREATURE_DRAG, id));
 }
 

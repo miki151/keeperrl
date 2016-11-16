@@ -41,8 +41,9 @@ class MapGui : public GuiElem {
     function<void()> refreshFun;
     function<void(UniqueEntity<Creature>::Id, ViewId, Vec2)> creatureDragFun;
     function<void(UniqueEntity<Creature>::Id, Vec2)> creatureDroppedFun;
+    function<void(TeamId, Vec2)> teamDroppedFun;
   };
-  MapGui(Callbacks, Clock*, Options*);
+  MapGui(Callbacks, Clock*, Options*, GuiFactory*);
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
@@ -118,7 +119,6 @@ class MapGui : public GuiElem {
   optional<milliseconds> lastRenderTime;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
-  optional<UniqueEntity<Creature>::Id> draggedCreature;
   optional<CreatureInfo&> draggedCandidate;
   optional<Vec2> lastMapLeftClick;
   vector<string> hint;
@@ -184,4 +184,7 @@ class MapGui : public GuiElem {
   Color getHighlightColor(const ViewIndex&, HighlightType);
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight);
   void processScrolling(milliseconds);
+  GuiFactory* guiFactory;
+  optional<UniqueEntity<Creature>::Id> getDraggedCreature() const;
+  void setDraggedCreature(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
 };
