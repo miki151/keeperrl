@@ -899,40 +899,45 @@ void WindowView::presentHighscores(const vector<HighscoreList>& list) {
       guiBuilder.getMenuPosition(MenuType::NORMAL, 0).topLeft());
 }
 
+struct GameChoice {
+  GameTypeChoice type;
+  GuiFactory::TexId texId;
+  GuiFactory::TexId highlightId;
+  string name;
+};
+
+const static vector<GameChoice> gameChoices {
+  {GameTypeChoice::KEEPER, GuiFactory::TexId::KEEPER_CHOICE, GuiFactory::TexId::KEEPER_HIGHLIGHT, "keeper"},
+  {GameTypeChoice::ADVENTURER, GuiFactory::TexId::ADVENTURER_CHOICE, GuiFactory::TexId::ADVENTURER_HIGHLIGHT,
+      "adventurer"},
+};
+
 PGuiElem WindowView::drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index) {
+  vector<PGuiElem> choiceElems;
+  for (auto& elem : gameChoices)
+    choiceElems.push_back(
+        gui.stack(makeVec<PGuiElem>(
+          gui.button([&] { choice = elem.type;}),
+          gui.mouseOverAction([&] { index = elem.type;}),
+          gui.sprite(elem.texId, GuiFactory::Alignment::CENTER_STRETCHED),
+          gui.marginFit(gui.empty(), gui.centerHoriz(gui.mainMenuLabel(elem.name, -0.08,
+              colors[ColorId::MAIN_MENU_OFF])), 0.94, gui.TOP),
+          gui.mouseHighlightGameChoice(gui.stack(
+            gui.sprite(elem.highlightId, GuiFactory::Alignment::CENTER_STRETCHED),
+          gui.marginFit(gui.empty(), gui.centerHoriz(gui.mainMenuLabel(elem.name, -0.08)),
+              0.94, gui.TOP)),
+            elem.type, index)
+          )));
   return gui.verticalAspect(
       gui.marginFit(
-      gui.horizontalListFit(makeVec<PGuiElem>(
-            gui.stack(makeVec<PGuiElem>(
-              gui.button([&] { choice = GameTypeChoice::KEEPER;}),
-              gui.mouseOverAction([&] { index = GameTypeChoice::KEEPER;}),             
-              gui.sprite(GuiFactory::TexId::KEEPER_CHOICE, GuiFactory::Alignment::LEFT_STRETCHED),
-              gui.marginFit(gui.empty(), gui.mainMenuLabel("keeper          ", -0.08,
-                  colors[ColorId::MAIN_MENU_OFF]), 0.94, gui.TOP),
-              gui.mouseHighlightGameChoice(gui.stack(
-                gui.sprite(GuiFactory::TexId::KEEPER_HIGHLIGHT, GuiFactory::Alignment::LEFT_STRETCHED),
-              gui.marginFit(gui.empty(), gui.mainMenuLabel("keeper          ", -0.08),
-                  0.94, gui.TOP)),
-                GameTypeChoice::KEEPER, index)
-              )),
-            gui.stack(makeVec<PGuiElem>(
-              gui.button([&] { choice = GameTypeChoice::ADVENTURER;}),
-              gui.sprite(GuiFactory::TexId::ADVENTURER_CHOICE, GuiFactory::Alignment::RIGHT_STRETCHED),
-              gui.marginFit(gui.empty(), gui.mainMenuLabel("          adventurer", -0.08,
-                  colors[ColorId::MAIN_MENU_OFF]), 0.94, gui.TOP),
-              gui.mouseHighlightGameChoice(gui.stack(
-                gui.sprite(GuiFactory::TexId::ADVENTURER_HIGHLIGHT, GuiFactory::Alignment::RIGHT_STRETCHED),
-                gui.marginFit(gui.empty(), gui.mainMenuLabel("          adventurer", -0.08),
-                  0.94, gui.TOP)),
-                GameTypeChoice::ADVENTURER, index)
-              ))), 0),
+      gui.horizontalListFit(std::move(choiceElems), 0),
       gui.margins(gui.verticalListFit(makeVec<PGuiElem>(
           gui.stack(
             gui.button([&] { choice = optional<GameTypeChoice>(none);}),
             gui.mainMenuLabelBg("Go back", 0.2),
             gui.mouseHighlightGameChoice(gui.mainMenuLabel("Go back", 0.2), none, index)),
           gui.empty()), 0), 0, 30, 0, 0),
-      0.7, gui.TOP), 1);
+      0.7, gui.TOP), 0.6 * gameChoices.size());
 }
 
 optional<GameTypeChoice> WindowView::chooseGameType() {

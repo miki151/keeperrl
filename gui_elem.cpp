@@ -567,22 +567,31 @@ PGuiElem GuiFactory::labelUnicode(const string& s, function<Color()> color, int 
 
 class MainMenuLabel : public GuiElem {
   public:
-  MainMenuLabel(const string& s, Color c, double vPad) : text(s), color(c), vPadding(vPad) {}
+  MainMenuLabel(Renderer& r, const string& s, Color c, double vPad) : text(s), color(c), vPadding(vPad), renderer(r) {}
+
+  int getSize() {
+    return (0.9 - 2 * vPadding) * getBounds().height();
+  }
 
   virtual void render(Renderer& renderer) override {
-    int size = (0.9 - 2 * vPadding) * getBounds().height();
     double height = getBounds().top() + vPadding * getBounds().height();
+    int size = getSize();
     renderer.drawText(color, getBounds().middle().x, height - size / 11, text, Renderer::HOR, size);
+  }
+
+  virtual optional<int> getPreferredWidth() override {
+    return renderer.getTextLength(text, getSize());
   }
 
   private:
   string text;
   Color color;
   double vPadding;
+  Renderer& renderer;
 };
 
 PGuiElem GuiFactory::mainMenuLabel(const string& s, double vPadding, Color c) {
-  return PGuiElem(new MainMenuLabel(s, c, vPadding));
+  return PGuiElem(new MainMenuLabel(renderer, s, c, vPadding));
 }
 
 class GuiLayout : public GuiElem {
@@ -1242,7 +1251,7 @@ PGuiElem GuiFactory::verticalAspect(PGuiElem elem, double ratio) {
 class CenterHoriz : public GuiLayout {
   public:
   CenterHoriz(PGuiElem elem, int w = -1) : GuiLayout(makeVec<PGuiElem>(std::move(elem))),
-      width(w > -1 ? w : *elems[0]->getPreferredWidth()) {}
+      width(w) {}
 
   optional<int> getPreferredHeight() override {
     if (auto height = elems[0]->getPreferredHeight())
@@ -1253,7 +1262,8 @@ class CenterHoriz : public GuiLayout {
 
   virtual Rectangle getElemBounds(int num) override {
     int center = (getBounds().left() + getBounds().right()) / 2;
-    return Rectangle(center - width / 2, getBounds().top(), center + width / 2, getBounds().bottom());
+    int myWidth = width > -1 ? width : max(2, *elems[0]->getPreferredWidth());
+    return Rectangle(center - myWidth / 2, getBounds().top(), center + myWidth / 2, getBounds().bottom());
   }
 
   private:
