@@ -39,6 +39,7 @@ enum class SplashType;
 enum class GameTypeChoice;
 enum class MenuType;
 enum class OptionId;
+enum class CampaignType;
 
 enum class MovementTrait;
 enum class SpawnType;

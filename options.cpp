@@ -125,25 +125,6 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::KEEPER_NAME,
       OptionId::KEEPER_SEED,
   }},
-  {OptionSet::ADVENTURER, {
-      OptionId::ADVENTURER_NAME,
-  }},
-  {OptionSet::CAMPAIGN, {
-      OptionId::KEEPER_NAME,
-      OptionId::MAIN_VILLAINS,
-      //OptionId::RETIRED_VILLAINS,
-      OptionId::LESSER_VILLAINS,
-      OptionId::ALLIES,
-      //OptionId::INFLUENCE_SIZE
-  }},
-  {OptionSet::ADVENTURER_CAMPAIGN, {
-      OptionId::ADVENTURER_NAME,
-      OptionId::MAIN_VILLAINS,
-      //OptionId::RETIRED_VILLAINS,
-      OptionId::LESSER_VILLAINS,
-      OptionId::ALLIES,
-      //OptionId::INFLUENCE_SIZE
-  }},
 };
 
 map<OptionId, Options::Trigger> triggers;

@@ -53,8 +53,6 @@ enum class OptionSet {
   GENERAL,
   KEEPER,
   ADVENTURER,
-  CAMPAIGN,
-  ADVENTURER_CAMPAIGN
 };
 
 class View;

@@ -9,6 +9,8 @@ class ProgressMeter;
 class Options;
 class RetiredGames;
 
+enum class CampaignType { CAMPAIGN, FREE_PLAY, ENDLESS};
+
 class Campaign {
   public:
   struct VillainInfo {
@@ -44,11 +46,11 @@ class Campaign {
     SERIALIZE_ALL(viewId, dweller, blocked);
   };
 
-  enum Type { ADVENTURER, KEEPER};
+  enum PlayerType { ADVENTURER, KEEPER};
 
   const Table<SiteInfo>& getSites() const;
   void clearSite(Vec2);
-  static optional<Campaign> prepareCampaign(View*, Options*, RetiredGames&&, RandomGen&, Type);
+  static optional<Campaign> prepareCampaign(View*, Options*, RetiredGames&&, RandomGen&, PlayerType);
   optional<Vec2> getPlayerPos() const;
   const string& getWorldName() const;
   bool isDefeated(Vec2) const;
@@ -57,7 +59,8 @@ class Campaign {
   bool isInInfluence(Vec2) const;
   int getNumNonEmpty() const;
   bool canEmbark(Vec2) const;
-  Type getType() const;
+  CampaignType getType() const;
+  PlayerType getPlayerType() const;
 
   map<string, string> getParameters() const;
   vector<OptionId> getOptions(Options*) const;
@@ -68,7 +71,7 @@ class Campaign {
 
   private:
   void refreshInfluencePos();
-  Campaign(Table<SiteInfo>);
+  Campaign(Table<SiteInfo>, CampaignType);
   vector<VillainInfo> getMainVillains();
   vector<VillainInfo> getLesserVillains();
   vector<VillainInfo> getAllies();
@@ -78,7 +81,9 @@ class Campaign {
   Table<bool> SERIAL(defeated);
   set<Vec2> SERIAL(influencePos);
   int SERIAL(influenceSize);
-  Type SERIAL(type);
+  PlayerType SERIAL(playerType);
+  void setPlayerPos(Vec2 pos);
+  CampaignType SERIAL(type);
 };
 
 

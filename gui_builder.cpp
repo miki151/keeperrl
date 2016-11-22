@@ -2201,13 +2201,14 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
       gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())),
       gui.centerHoriz(gui.stack(
             gui.labelHighlight("[Help]", colors[ColorId::LIGHT_BLUE]),
-            gui.button([&] { helpText = true; })))));
+                gui.button([&] { queue.push({CampaignActionId::CHANGE_TYPE,
+                                             (CampaignType)((((int)campaign.getType()) + 1) % 3)}); })))));
   for (OptionId id : campaign.getOptions(options))
     lines.addElem(gui.leftMargin(optionMargin, drawOptionElem(options, id,
             [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});})));
   lines.addSpace(10);
-  lines.addElem(gui.centerHoriz(gui.label(campaign.getSiteChoiceTitle())));
-  lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, &embarkPos,
+  lines.addBackElem(gui.centerHoriz(gui.label(campaign.getSiteChoiceTitle())));
+  lines.addBackElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, &embarkPos,
         [&campaign](Vec2 pos) { return campaign.canEmbark(pos); },
         [&campaign, &queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
   lines.addBackElem(gui.topMargin(10, gui.centerHoriz(gui.getListBuilder()

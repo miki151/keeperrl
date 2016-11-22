@@ -18,10 +18,16 @@ const Table<Campaign::SiteInfo>& Campaign::getSites() const {
 }
 
 bool Campaign::canEmbark(Vec2 pos) const {
-  switch (type) {
+  if (type == CampaignType::CAMPAIGN)
+    return false;
+  switch (playerType) {
     case ADVENTURER: return !!sites[pos].dweller;
     case KEEPER: return !sites[pos].dweller && !sites[pos].blocked;
   }
+}
+
+CampaignType Campaign::getType() const {
+  return type;
 }
 
 bool Campaign::canTravelTo(Vec2 pos) const {
@@ -32,7 +38,7 @@ optional<Vec2> Campaign::getPlayerPos() const {
   return playerPos;
 }
 
-Campaign::Campaign(Table<SiteInfo> s) : sites(s), defeated(sites.getBounds(), false) {
+Campaign::Campaign(Table<SiteInfo> s, CampaignType t) : sites(s), defeated(sites.getBounds(), false), type(t) {
 }
 
 const string& Campaign::getWorldName() const {
@@ -45,7 +51,7 @@ void Campaign::clearSite(Vec2 v) {
 }
 
 vector<Campaign::VillainInfo> Campaign::getMainVillains() {
-  switch (type) {
+  switch (playerType) {
     case KEEPER:
       return {
         {ViewId::AVATAR, EnemyId::KNIGHTS, "Knights", VillainType::MAIN},
@@ -71,7 +77,7 @@ vector<Campaign::VillainInfo> Campaign::getMainVillains() {
 }
 
 vector<Campaign::VillainInfo> Campaign::getLesserVillains() {
-  switch (type) {
+  switch (playerType) {
     case KEEPER:
       return {
         {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", VillainType::LESSER},
@@ -96,7 +102,7 @@ vector<Campaign::VillainInfo> Campaign::getLesserVillains() {
 }
 
 vector<Campaign::VillainInfo> Campaign::getAllies() {
-  switch (type) {
+  switch (playerType) {
     case KEEPER:
       return {
         {ViewId::UNKNOWN_MONSTER, EnemyId::FRIENDLY_CAVE, "Unknown", VillainType::ALLY},
@@ -238,14 +244,45 @@ static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, Vec2 size, int nu
   return ret;
 }
 
+struct VillainLimits {
+  int numRetired;
+  int numMain;
+  int numLesser;
+  int numAllies;
+};
+
+static VillainLimits getLimits(CampaignType type, Options* options, const RetiredGames& retired) {
+  switch (type) {
+    case CampaignType::FREE_PLAY: {
+      int numRetired = min(retired.getNumActive(), options->getIntValue(OptionId::MAIN_VILLAINS));
+      return {
+        numRetired,
+        options->getIntValue(OptionId::MAIN_VILLAINS) - numRetired,
+        options->getIntValue(OptionId::LESSER_VILLAINS),
+        options->getIntValue(OptionId::ALLIES)
+      };
+    }
+    case CampaignType::CAMPAIGN:
+      return {min(retired.getNumActive(), 1), 3, 3, 2};
+    case CampaignType::ENDLESS:
+      return {
+        0,
+        0,
+        options->getIntValue(OptionId::LESSER_VILLAINS),
+        options->getIntValue(OptionId::ALLIES)
+      };
+  }
+}
+
 optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, RetiredGames&& retired,
-    RandomGen& random, Type type) {
+    RandomGen& random, PlayerType playerType) {
   Vec2 size(16, 9);
   int numBlocked = 0.6 * size.x * size.y;
   Table<SiteInfo> terrain = getTerrain(random, size, numBlocked);
   string worldName = NameGenerator::get(NameGeneratorId::WORLD)->getNext();
   options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
   options->setDefaultString(OptionId::ADVENTURER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+  CampaignType type = CampaignType::FREE_PLAY;
   while (1) {
     //options->setLimits(OptionId::RETIRED_VILLAINS, 0, min<int>(retired.size(), 4)); 
 #ifdef RELEASE
@@ -256,36 +293,41 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
     options->setLimits(OptionId::LESSER_VILLAINS, 0, 6); 
     options->setLimits(OptionId::ALLIES, 0, 4); 
     options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6); 
-    int numRetired = min(retired.getNumActive(), options->getIntValue(OptionId::MAIN_VILLAINS));
-    int numMain = options->getIntValue(OptionId::MAIN_VILLAINS) - numRetired;
-    int numLesser = options->getIntValue(OptionId::LESSER_VILLAINS);
-    int numAllies = options->getIntValue(OptionId::ALLIES);
+    auto limits = getLimits(type, options, retired);
     vector<VillainInfo> mainVillains;
-    Campaign campaign(terrain);
-    campaign.type = type;
+    Campaign campaign(terrain, type);
+    campaign.playerType = playerType;
     campaign.worldName = worldName;
-    while (mainVillains.size() < numMain)
+    while (mainVillains.size() < limits.numMain)
       append(mainVillains, random.permutation(campaign.getMainVillains()));
-    mainVillains.resize(numMain);
+    mainVillains.resize(limits.numMain);
     vector<VillainInfo> lesserVillains;
-    while (lesserVillains.size() < numLesser)
+    while (lesserVillains.size() < limits.numLesser)
       append(lesserVillains, random.permutation(campaign.getLesserVillains()));
-    lesserVillains.resize(numLesser);
+    lesserVillains.resize(limits.numLesser);
     vector<VillainInfo> allies;
-    while (allies.size() < numAllies)
+    while (allies.size() < limits.numAllies)
       append(allies, random.permutation(campaign.getAllies()));
-    allies.resize(numAllies);
+    allies.resize(limits.numAllies);
     vector<Vec2> freePos;
     for (Vec2 v : Rectangle(size))
       if (!campaign.sites[v].blocked)
         freePos.push_back(v);
+    if (type == CampaignType::CAMPAIGN) {
+      Rectangle playerSpawn(campaign.sites.getBounds().topLeft(), campaign.sites.getBounds().bottomLeft() + Vec2(2, 0));
+      for (Vec2 pos : playerSpawn)
+        if (!campaign.sites[pos].blocked) {
+          campaign.setPlayerPos(pos);
+          removeElementMaybe(freePos, *campaign.getPlayerPos());
+        }
+    }
     for (int i : All(mainVillains)) {
       Vec2 pos = random.choose(freePos);
       removeElement(freePos, pos);
       campaign.sites[pos].dweller = mainVillains[i];
     }
     vector<RetiredGames::RetiredGame> activeGames = retired.getActiveGames();
-    for (int i : Range(numRetired)) {
+    for (int i : Range(limits.numRetired)) {
       Vec2 pos = random.choose(freePos);
       removeElement(freePos, pos);
       campaign.sites[pos].dweller = RetiredInfo{activeGames[i].gameInfo, activeGames[i].fileInfo};
@@ -311,7 +353,12 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
             worldName = NameGenerator::get(NameGeneratorId::WORLD)->getNext();
             options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
         case CampaignActionId::UPDATE_MAP:
-            updateMap = true; break;
+            updateMap = true;
+            break;
+        case CampaignActionId::CHANGE_TYPE:
+            type = action.get<CampaignType>();
+            updateMap = true;
+            break;
         case CampaignActionId::UPDATE_OPTION:
             switch (action.get<OptionId>()) {
               case OptionId::KEEPER_NAME:
@@ -322,20 +369,11 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
         case CampaignActionId::CANCEL:
             return none;
         case CampaignActionId::CHOOSE_SITE:
-            switch (type) {
-              case KEEPER:
-                if (campaign.playerPos)
-                  campaign.clearSite(*campaign.playerPos);
-                campaign.playerPos = action.get<Vec2>();
-                campaign.sites[*campaign.playerPos].dweller = KeeperInfo{ViewId::KEEPER};
-                break;
-              case ADVENTURER:
-                campaign.playerPos = action.get<Vec2>();
-                break;
-            }
+            if (type != CampaignType::CAMPAIGN)
+              campaign.setPlayerPos(action.get<Vec2>());
             break;
         case CampaignActionId::CONFIRM:
-            if (numRetired > 0 || type != KEEPER ||
+            if (limits.numRetired > 0 || playerType != KEEPER ||
                 retired.getAllGames().empty() ||
                 view->yesOrNoPrompt("The imps are going to be sad if you don't add any retired dungeons. Continue?"))
               return campaign;
@@ -344,6 +382,21 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
         break;
     }
   }
+}
+
+void Campaign::setPlayerPos(Vec2 pos) {
+  switch (playerType) {
+    case KEEPER:
+      if (playerPos)
+        clearSite(*playerPos);
+      playerPos = pos;
+      sites[*playerPos].dweller = KeeperInfo{ViewId::KEEPER};
+      break;
+    case ADVENTURER:
+      playerPos = pos;
+      break;
+  }
+
 }
 
 map<string, string> Campaign::getParameters() const {
@@ -366,30 +419,49 @@ map<string, string> Campaign::getParameters() const {
     {"lesser", toString(numLesser)},
     {"allies", toString(numAlly)},
     {"retired", toString(numRetired)},
-    {"type", type == KEEPER ? "keeper" : "adventurer"}
+    {"type", playerType == KEEPER ? "keeper" : "adventurer"}
   };
 }
 
-Campaign::Type Campaign::getType() const {
-  return type;
+Campaign::PlayerType Campaign::getPlayerType() const {
+  return playerType;
+}
+
+static vector<OptionId> getOptions(CampaignType type) {
+  switch (type) {
+    case CampaignType::CAMPAIGN:
+      return {};
+    case CampaignType::ENDLESS:
+      return {OptionId::LESSER_VILLAINS, OptionId::ALLIES};
+    case CampaignType::FREE_PLAY:
+      return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
+  }
+
 }
 
 vector<OptionId> Campaign::getOptions(Options* options) const {
-  switch (type) {
-    case KEEPER: return options->getOptions(OptionSet::CAMPAIGN);
-    case ADVENTURER: return options->getOptions(OptionSet::ADVENTURER_CAMPAIGN);
+  vector<OptionId> ret;
+  switch (playerType) {
+    case KEEPER:
+      ret.push_back(OptionId::KEEPER_NAME);
+      break;
+    case ADVENTURER:
+      ret.push_back(OptionId::ADVENTURER_NAME);
+      break;
   }
+  append(ret, ::getOptions(type));
+  return ret;
 }
 
 const char* Campaign::getSiteChoiceTitle() const {
-   switch (type) {
+   switch (playerType) {
     case KEEPER: return "Choose the location of your base:";
     case ADVENTURER: return "Choose a location to start your adventure:";
   }
 }
 
 const char* Campaign::getIntroText() const {
-   switch (type) {
+   switch (playerType) {
     case KEEPER:
       return
         "Welcome to the campaign mode! "

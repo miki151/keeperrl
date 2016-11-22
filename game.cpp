@@ -34,7 +34,7 @@
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) { 
   serializeAll(ar, villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
-  serializeAll(ar, worldName, musicType, portals, statistics, spectator, tribes, gameIdentifier, player);
+  serializeAll(ar, worldName, musicType, portals, statistics, spectator, tribes, gameIdentifier, player, noHighscores);
   serializeAll(ar, gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
     sunlightInfo.update(currentTime);
@@ -88,6 +88,8 @@ Game::~Game() {}
 
 PGame Game::campaignGame(Table<PModel>&& models, Vec2 basePos, const string& playerName, const Campaign& campaign) {
   PGame game(new Game(campaign.getWorldName(), playerName, std::move(models), basePos, campaign));
+  if (campaign.getType() == CampaignType::FREE_PLAY)
+    game->setNoHighScores();
   return game;
 }
 
@@ -492,18 +494,20 @@ void Game::conquered(const string& title, int numKills, int points) {
   for (string stat : statistics->getText())
     text += stat + "\n";
   view->presentText("Victory", text);
-  Highscores::Score score = CONSTRUCT(Highscores::Score,
-        c.worldName = getWorldName();
-        c.points = points;
-        c.gameId = getGameIdentifier();
-        c.playerName = title;
-        c.gameResult = "achieved world domination";
-        c.gameWon = true;
-        c.turns = getGlobalTime();
-        c.gameType = getGameType(isSingleModel(), !!playerControl);
-  );
-  highscores->add(score);
-  highscores->present(view, score);
+  if (!noHighscores) {
+    Highscores::Score score = CONSTRUCT(Highscores::Score,
+          c.worldName = getWorldName();
+          c.points = points;
+          c.gameId = getGameIdentifier();
+          c.playerName = title;
+          c.gameResult = "achieved world domination";
+          c.gameWon = true;
+          c.turns = getGlobalTime();
+          c.gameType = getGameType(isSingleModel(), !!playerControl);
+    );
+    highscores->add(score);
+    highscores->present(view, score);
+  }
 }
 
 bool Game::isGameOver() const {
@@ -520,18 +524,20 @@ void Game::gameOver(const Creature* creature, int numKills, const string& enemie
   for (string stat : statistics->getText())
     text += stat + "\n";
   view->presentText("Game over", text);
-  Highscores::Score score = CONSTRUCT(Highscores::Score,
-        c.worldName = getWorldName();
-        c.points = points;
-        c.gameId = getGameIdentifier();
-        c.playerName = *creature->getName().first();
-        c.gameResult = creature->getDeathReason().get_value_or("");
-        c.gameWon = false;
-        c.turns = getGlobalTime();
-        c.gameType = getGameType(isSingleModel(), !!playerControl);
-  );
-  highscores->add(score);
-  highscores->present(view, score);
+  if (!noHighscores) {
+    Highscores::Score score = CONSTRUCT(Highscores::Score,
+          c.worldName = getWorldName();
+          c.points = points;
+          c.gameId = getGameIdentifier();
+          c.playerName = *creature->getName().first();
+          c.gameResult = creature->getDeathReason().get_value_or("");
+          c.gameWon = false;
+          c.turns = getGlobalTime();
+          c.gameType = getGameType(isSingleModel(), !!playerControl);
+    );
+    highscores->add(score);
+    highscores->present(view, score);
+  }
   exitInfo = ExitInfo(ExitId::QUIT);
 }
 
@@ -582,6 +588,10 @@ Creature* Game::getPlayer() const {
 
 void Game::clearPlayer() {
   player = nullptr;
+}
+
+void Game::setNoHighScores() {
+  noHighscores = true;
 }
 
 static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {

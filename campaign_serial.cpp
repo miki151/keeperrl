@@ -11,7 +11,7 @@ template <class Archive>
 void Campaign::serialize(Archive& ar, const unsigned int version) {
   serialize2(ar, sites);
   //serializeAll(ar, sites);
-  serializeAll(ar, playerPos, worldName, defeated, influencePos, influenceSize, type);
+  serializeAll(ar, playerPos, worldName, defeated, influencePos, influenceSize, playerType, type);
 }
 
 SERIALIZABLE(Campaign);

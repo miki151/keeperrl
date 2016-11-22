@@ -102,10 +102,12 @@ enum class CampaignActionId {
   REROLL_MAP,
   UPDATE_MAP,
   CONFIRM,
-  UPDATE_OPTION
+  UPDATE_OPTION,
+  CHANGE_TYPE,
 };
 
-class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2, OptionId),
+class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2, OptionId, CampaignType),
+  ASSIGN(CampaignType, CampaignActionId::CHANGE_TYPE),
   ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE),
   ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION)> {
     using EnumVariant::EnumVariant;

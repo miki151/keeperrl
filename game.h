@@ -61,6 +61,7 @@ class Game {
   void setPlayer(Creature*);
   Creature* getPlayer() const;
   void clearPlayer();
+  void setNoHighScores();
 
   int getModelDistance(const Collective* c1, const Collective* c2) const;
 
@@ -142,6 +143,7 @@ class Game {
   Creature* SERIAL(player) = nullptr;
   FileSharing* fileSharing;
   set<int> SERIAL(turnEvents);
+  bool SERIAL(noHighscores) = false;
   friend class GameListener;
 };
 
