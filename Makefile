@@ -20,7 +20,7 @@ LDFLAGS += -Wl -L/usr/local/opt/openal-soft/lib
 CFLAGS += -stdlib=libc++ -DOSX -mmacosx-version-min=10.7
 CFLAGS += -DTEXT_SERIALIZATION -I/usr/local/opt/openal-soft/include
 else
-LDFLAGS += -Wl,-rpath=$(RPATH) -static-libstdc++
+LDFLAGS += -Wl,-rpath=$(RPATH)
 endif
 
 ifdef DATA_DIR
