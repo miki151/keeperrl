@@ -103,9 +103,7 @@ stdafx.h.gch: stdafx.h
 
 ifndef OPT
 PCH = stdafx.h.gch
-ifdef CLANG
 PCHINC = -include-pch stdafx.h.gch
-endif
 endif
 
 $(OBJDIR)/%.o: %.cpp ${PCH}
