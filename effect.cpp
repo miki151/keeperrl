@@ -63,7 +63,7 @@ static vector<int> blastRange { 2, 5, 10};
 static vector<int> creatureEffectRange { 2, 5, 10};
 
 
-static vector<Creature*> summonCreatures(Position pos, int radius, vector<PCreature> creatures, double delay = 0) {
+vector<Creature*> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, double delay) {
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
   vector<Creature*> ret;
   for (int i : All(creatures))
@@ -76,7 +76,7 @@ static vector<Creature*> summonCreatures(Position pos, int radius, vector<PCreat
   return ret;
 }
 
-static vector<Creature*> summonCreatures(Creature* c, int radius, vector<PCreature> creatures, double delay = 0) {
+vector<Creature*> Effect::summonCreatures(Creature* c, int radius, vector<PCreature> creatures, double delay) {
   return summonCreatures(c->getPosition(), radius, std::move(creatures), delay);
 }
 
@@ -84,7 +84,7 @@ static void deception(Creature* creature) {
   vector<PCreature> creatures;
   for (int i : Range(Random.get(3, 7)))
     creatures.push_back(CreatureFactory::getIllusion(creature));
-  summonCreatures(creature, 2, std::move(creatures));
+  Effect::summonCreatures(creature, 2, std::move(creatures));
 }
 
 static void creatureEffect(Creature* who, EffectType type, EffectStrength str, Vec2 direction, int range) {

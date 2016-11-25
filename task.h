@@ -65,7 +65,7 @@ class Task : public UniqueEntity<Task> {
   static PTask chain(vector<PTask>);
   static PTask explore(Position);
   static PTask attackLeader(Collective*);
-  static PTask campAndSpawn(Collective* target, Collective* self, const CreatureFactory&, int defenseSize,
+  static PTask campAndSpawn(Collective* target, const CreatureFactory&, int defenseSize,
       Range attackSize, int numAttacks);
   static PTask killFighters(Collective*, int numFighters);
   static PTask stealFrom(Collective*, TaskCallback*);

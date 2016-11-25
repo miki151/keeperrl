@@ -35,6 +35,8 @@ class Effect {
 
   static vector<Creature*> summon(Creature*, CreatureId, int num, int ttl, double delay = 0);
   static vector<Creature*> summon(Position, CreatureFactory&, int num, int ttl, double delay = 0);
+  static vector<Creature*> summonCreatures(Position, int radius, vector<PCreature>, double delay = 0);
+  static vector<Creature*> summonCreatures(Creature*, int radius, vector<PCreature>, double delay = 0);
   static string getName(const EffectType&);
   static string getName(LastingEffect);
   static string getDescription(const EffectType&);

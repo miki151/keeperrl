@@ -44,6 +44,7 @@
 #include "furniture_type.h"
 #include "construction_map.h"
 #include "furniture.h"
+#include "monster_ai.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -865,27 +866,25 @@ namespace {
 
 class CampAndSpawn : public Task {
   public:
-  CampAndSpawn(Collective* _target, Collective* _self, CreatureFactory s, int defense, Range attack, int numAtt)
-    : target(_target), self(_self), spawns(s),
+  CampAndSpawn(Collective* _target, CreatureFactory s, int defense, Range attack, int numAtt)
+    : target(_target), spawns(s),
       campPos(Random.permutation(target->getTerritory().getStandardExtended())), defenseSize(defense),
       attackSize(attack), numAttacks(numAtt) {}
 
-  MoveInfo makeTeam(Creature* c, optional<TeamId>& team, int minMembers, vector<Creature*> initial, int delay) {
-    if (!team || !self->getTeams().exists(*team) || self->getTeams().getMembers(*team).size() < minMembers) {
-      if (!Random.roll(delay))
-        return c->wait();
-      return c->wait().append([this, &team, initial] (Creature* c) {
-          for (Creature* spawn : Effect::summon(c->getPosition(), spawns, 1, 1000)) {
-            self->addCreature(spawn, {MinionTrait::FIGHTER, MinionTrait::SUMMONED});
-            if (!team || !self->getTeams().exists(*team)) {
-              team = self->getTeams().createPersistent(concat(initial, {spawn}));
-              self->getTeams().activate(*team);
-            } else
-              self->getTeams().add(*team, spawn);
-          }
-        });
-    } else
-      return NoMove;
+  void updateTeams() {
+    for (auto member : copyOf(defenseTeam))
+      if (member->isDead())
+        removeElement(defenseTeam, member);
+    for (auto member : copyOf(attackTeam))
+      if (member->isDead())
+        removeElement(attackTeam, member);
+  }
+
+  virtual void cancel() override {
+    // Cancel only the attack team, as the defense will disappear when the summoner dies
+    for (Creature* c : attackTeam)
+      if (!c->isDead())
+        c->die(nullptr, false, false);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -893,25 +892,32 @@ class CampAndSpawn : public Task {
       setDone();
       return NoMove;
     }
-    if (auto move = makeTeam(c, defenseTeam, defenseSize + 1, {c}, 1))
-      return move;
+    updateTeams();
+    if (defenseTeam.size() < defenseSize && Random.roll(5)) {
+      for (Creature* c : Effect::summonCreatures(c, 4,
+          makeVec<PCreature>(spawns.random(MonsterAIFactory::summoned(c, 100000)))))
+        defenseTeam.push_back(c);
+    }
     if (!contains(campPos, c->getPosition()))
       return c->moveTowards(campPos[0]);
-    if (attackTeam && !self->getTeams().exists(*attackTeam))
-      attackTeam.reset();
-    if (!attackTeam) {
-      if (numAttacks-- <= 0) {
-        setDone();
-        return c->wait();
+    if (attackTeam.empty()) {
+      if (!attackCountdown) {
+        if (numAttacks-- <= 0) {
+          setDone();
+          return c->wait();
+        }
+        attackCountdown = Random.get(30, 60);
       }
-      currentAttack = Random.get(attackSize);
-    }
-    if (currentAttack) {
-      if (auto move = makeTeam(c, attackTeam, *currentAttack, {}, attackTeam ? 15 : 1))
-        return move;
-      for (Creature* c : self->getTeams().getMembers(*attackTeam))
-        self->setTask(c, Task::attackLeader(target));
-      currentAttack.reset();
+      if (*attackCountdown > 0)
+        --*attackCountdown;
+      else {
+        vector<PCreature> team;
+        for (int i : Range(Random.get(attackSize)))
+          team.push_back(spawns.random(MonsterAIFactory::singleTask(Task::attackLeader(target))));
+        for (Creature* c : Effect::summonCreatures(c, 4, std::move(team)))
+          attackTeam.push_back(c);
+        attackCountdown = none;
+      }
     }
     return c->wait();
   }
@@ -920,28 +926,27 @@ class CampAndSpawn : public Task {
     return "Camp and spawn " + target->getLeader()->getName().bare();
   }
  
-  SERIALIZE_ALL2(Task, target, self, spawns, campPos, defenseSize, attackSize, currentAttack, defenseTeam, attackTeam, numAttacks); 
+  SERIALIZE_ALL2(Task, target, spawns, campPos, defenseSize, attackSize, attackCountdown, defenseTeam, attackTeam, numAttacks);
   SERIALIZATION_CONSTRUCTOR(CampAndSpawn);
 
   private:
   Collective* SERIAL(target);
-  Collective* SERIAL(self);
   CreatureFactory SERIAL(spawns);
   vector<Position> SERIAL(campPos);
   int SERIAL(defenseSize);
   Range SERIAL(attackSize);
-  optional<int> SERIAL(currentAttack);
-  optional<TeamId> SERIAL(defenseTeam);
-  optional<TeamId> SERIAL(attackTeam);
+  optional<int> SERIAL(attackCountdown);
+  vector<Creature*> SERIAL(defenseTeam);
+  vector<Creature*> SERIAL(attackTeam);
   int SERIAL(numAttacks);
 };
 
 
 }
 
-PTask Task::campAndSpawn(Collective* target, Collective* self, const CreatureFactory& spawns, int defenseSize,
+PTask Task::campAndSpawn(Collective* target, const CreatureFactory& spawns, int defenseSize,
     Range attackSize, int numAttacks) {
-  return PTask(new CampAndSpawn(target, self, spawns, defenseSize, attackSize, numAttacks));
+  return PTask(new CampAndSpawn(target, spawns, defenseSize, attackSize, numAttacks));
 }
 
 namespace {
