@@ -577,7 +577,8 @@ Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& ran
           if (!sites[v].isEmpty())
             meter.addProgress();
           if (sites[v].getKeeper()) {
-            models[v] = modelBuilder.campaignBaseModel("Campaign base site");
+            models[v] = modelBuilder.campaignBaseModel("Campaign base site",
+                campaign.getType() == CampaignType::ENDLESS);
           } else if (auto villain = sites[v].getVillain())
             models[v] = modelBuilder.campaignSiteModel("Campaign enemy site", villain->enemyId, villain->type);
           else if (auto retired = sites[v].getRetired()) {
@@ -602,7 +603,6 @@ PModel MainLoop::keeperSingleMap(RandomGen& random) {
       [&] (ProgressMeter& meter) {
         ModelBuilder modelBuilder(&meter, random, options, sokobanInput);
         model = modelBuilder.singleMapModel(NameGenerator::get(NameGeneratorId::WORLD)->getNext());
-        modelBuilder.spawnKeeper(model.get());
       });
   return model;
 }

@@ -27,6 +27,7 @@
 #include "item.h"
 #include "furniture.h"
 #include "sokoban_input.h"
+#include "external_enemies.h"
 
 using namespace std::chrono;
 
@@ -383,7 +384,7 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
         EnemyId::WITCH,
         EnemyId::CEMETERY}))
     enemies.push_back(enemyFactory->get(enemy));
-  return tryModel(360, worldName, enemies, true, BiomeId::GRASSLAND);
+  return tryModel(360, worldName, enemies, true, BiomeId::GRASSLAND, {});
 }
 
 void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId) {
@@ -403,13 +404,14 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId)
   }
 }
 
-PModel ModelBuilder::tryCampaignBaseModel(const string& siteName) {
+PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExternalEnemies) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
   addMapVillains(enemyInfo, biome);
-  PModel ret = tryModel(210, siteName, enemyInfo, true, biome);
-  spawnKeeper(ret.get());
-  return ret;
+  vector<ExternalEnemy> externalEnemies;
+  if (addExternalEnemies)
+    externalEnemies = enemyFactory->getExternalEnemies();
+  return tryModel(210, siteName, enemyInfo, true, biome, externalEnemies);
 }
 
 static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
@@ -445,7 +447,7 @@ PModel ModelBuilder::tryCampaignSiteModel(const string& siteName, EnemyId enemyI
   auto biomeId = getBiome(enemyId, random);
   CHECK(biomeId) << "Unimplemented enemy in campaign " << EnumInfo<EnemyId>::getString(enemyId);
   addMapVillains(enemyInfo, *biomeId);
-  return tryModel(170, siteName, enemyInfo, false, *biomeId);
+  return tryModel(170, siteName, enemyInfo, false, *biomeId, {});
 }
 
 PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
@@ -463,8 +465,8 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
 
 }
 
-PModel ModelBuilder::campaignBaseModel(const string& siteName) {
-  return tryBuilding(20, [&] { return tryCampaignBaseModel(siteName); });
+PModel ModelBuilder::campaignBaseModel(const string& siteName, bool externalEnemies) {
+  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); });
 }
 
 PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type) {
@@ -512,7 +514,7 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
     minT << "\nMaxT: " << maxT << "\nAvgT: " << sumT / numSuccess << std::endl;
 }
 
-void ModelBuilder::spawnKeeper(Model* m) {
+Collective* ModelBuilder::spawnKeeper(Model* m) {
   Level* level = m->getTopLevel();
   PCreature keeper = CreatureFactory::fromId(CreatureId::KEEPER, TribeId::getKeeper());
   string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
@@ -537,10 +539,11 @@ void ModelBuilder::spawnKeeper(Model* m) {
     playerCollective->addCreature(c.get(), getImpTraits());
     m->addCreature(std::move(c));
   }
+  return playerCollective;
 }
 
 PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo, bool keeperSpawn,
-    BiomeId biomeId) {
+    BiomeId biomeId, vector<ExternalEnemy> externalEnemies) {
   Model* model = new Model();
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
@@ -576,6 +579,11 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
       collective->setVillainType(*enemy.villainType);
     collective->setControl(std::move(control));
     model->collectives.push_back(std::move(collective));
+  }
+  if (keeperSpawn) {
+    auto collective = spawnKeeper(model);
+    if (!externalEnemies.empty())
+      model->addExternalEnemies(ExternalEnemies(random, externalEnemies, collective));
   }
   return PModel(model);
 }

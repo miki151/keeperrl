@@ -47,12 +47,13 @@
 #include "progress_meter.h"
 #include "view_object.h"
 #include "item.h"
+#include "external_enemies.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   serializeAll(ar, levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
-  serializeAll(ar, stairNavigation, cemetery, topLevel, eventGenerator);
+  serializeAll(ar, stairNavigation, cemetery, topLevel, eventGenerator, externalEnemies);
   if (progressMeter)
     progressMeter->addProgress();
 }
@@ -136,6 +137,8 @@ void Model::tick(double time) {
     l->tick();
   for (PCollective& col : collectives)
     col->tick();
+  if (*externalEnemies)
+    (*externalEnemies)->update(getTopLevel(), time);
 }
 
 void Model::addCreature(PCreature c) {
@@ -289,6 +292,10 @@ void Model::landHeroPlayer(const string& advName, int handicap) {
       return;
     }
   CHECK(target->landCreature(target->getAllPositions(), std::move(player))) << "No place to spawn player";
+}
+
+void Model::addExternalEnemies(const ExternalEnemies& e) {
+  externalEnemies = e;
 }
 
 void Model::addEvent(const GameEvent& e) {

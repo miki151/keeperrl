@@ -73,10 +73,13 @@ struct EnemyInfo {
   optional<LevelConnection> levelConnection;
 };
 
+struct ExternalEnemy;
+
 class EnemyFactory {
   public:
   EnemyFactory(RandomGen&);
   EnemyInfo get(EnemyId);
+  vector<ExternalEnemy> getExternalEnemies();
   vector<EnemyInfo> getVaults();
 
   private:

@@ -1261,7 +1261,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
   }
   for (auto& elem : ransomAttacks) {
-    info.ransom = {make_pair(ViewId::GOLD, *elem.getRansom()), elem.getAttacker()->getName().getFull(),
+    info.ransom = {make_pair(ViewId::GOLD, *elem.getRansom()), elem.getAttackerName(),
         getCollective()->hasResource({ResourceId::GOLD, *elem.getRansom()})};
     break;
   }
@@ -2314,11 +2314,12 @@ void PlayerControl::tick() {
   for (auto attack : copyOf(newAttacks))
     for (const Creature* c : attack.getCreatures())
       if (isConsideredAttacking(c)) {
-        addMessage(PlayerMessage("You are under attack by " + attack.getAttacker()->getName().getFull() + "!",
+        addMessage(PlayerMessage("You are under attack by " + attack.getAttackerName() + "!",
             MessagePriority::CRITICAL).setPosition(c->getPosition()));
         getGame()->setCurrentMusic(MusicType::BATTLE, true);
         removeElement(newAttacks, attack);
-        knownVillains.insert(attack.getAttacker());
+        if (auto attacker = attack.getAttacker())
+          knownVillains.insert(attacker);
         if (attack.getRansom())
           ransomAttacks.push_back(attack);
         break;

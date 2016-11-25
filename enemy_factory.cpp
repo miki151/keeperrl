@@ -4,6 +4,7 @@
 #include "name_generator.h"
 #include "technology.h"
 #include "attack_trigger.h"
+#include "external_enemies.h"
 
 EnemyFactory::EnemyFactory(RandomGen& r) : random(r) {
 }
@@ -642,4 +643,30 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
             c.ransom = make_pair(0.5, random.get(200, 400));));
   }
+}
+
+vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
+  return {
+    ExternalEnemy{
+        CreatureFactory::singleCreature(TribeId::getBandit(), CreatureId::BANDIT),
+        Range(3, 7),
+        Range(200, 201),
+        AttackBehaviourId::KILL_LEADER,
+        "bandits"
+    },
+    ExternalEnemy{
+        CreatureFactory::singleCreature(TribeId::getBandit(), CreatureId::ZOMBIE),
+        Range(3, 7),
+        Range(400, 401),
+        AttackBehaviourId::KILL_LEADER,
+        "zombies"
+    },
+    ExternalEnemy{
+        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::ELEMENTALIST),
+        Range(1, 2),
+        Range(600, 601),
+        {AttackBehaviourId::CAMP_AND_SPAWN, CreatureFactory::elementals(TribeId::getHuman())},
+        "an elementalist"
+    }
+  };
 }

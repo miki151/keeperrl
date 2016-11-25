@@ -31,6 +31,7 @@ class LevelBuilder;
 class TimeQueue;
 class StairKey;
 class Game;
+class ExternalEnemies;
 
 /**
   * Main class that holds all game logic.
@@ -54,6 +55,7 @@ class Model {
   void addCreature(PCreature);
   void addCreature(PCreature, double delay);
   void landHeroPlayer(const string& name, int handicap);
+  void addExternalEnemies(const ExternalEnemies&);
 
   bool isTurnBased();
 
@@ -116,5 +118,6 @@ class Model {
   friend class EventListener;
   HeapAllocated<EventGenerator<EventListener>> SERIAL(eventGenerator);
   void checkCreatureConsistency();
+  HeapAllocated<optional<ExternalEnemies>> SERIAL(externalEnemies);
 };
 
