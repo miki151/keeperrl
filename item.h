@@ -130,5 +130,3 @@ class Item : public Renderable, public UniqueEntity<Item> {
   bool SERIAL(canEquipCache);
   ItemClass SERIAL(classCache);
 };
-
-BOOST_CLASS_VERSION(Item, 1)

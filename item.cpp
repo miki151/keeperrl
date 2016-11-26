@@ -33,12 +33,7 @@
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(UniqueEntity) & SUBCLASS(Renderable);
-  serializeAll(ar, attributes, discarded, shopkeeper, fire);
-  if (version == 0) {
-    classCache = *attributes->itemClass;
-    canEquipCache = !!attributes->equipmentSlot;
-  } else
-    serializeAll(ar, classCache, canEquipCache);
+  serializeAll(ar, attributes, discarded, shopkeeper, fire, classCache, canEquipCache);
 }
 
 SERIALIZABLE(Item);

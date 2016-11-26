@@ -132,8 +132,8 @@ class StreamCombiner {
 namespace boost { 
 namespace serialization {
 
+// We can't default boost functions for these structures as they don't support unique_ptr elements.
 
-// why the f** are these things not implemented by default in boost?
 //unordered_map
 template<class Archive, class T, class U, class H>
 inline void save(Archive& ar, const unordered_map<T, U, H>& t, unsigned int file_version){
@@ -269,44 +269,6 @@ inline void load(Archive& ar, unordered_set<T, H>& t, unsigned int){
 
 template<class Archive, class T, class H>
 inline void serialize(Archive& ar, unordered_set<T, H>& t, unsigned int file_version){
-  boost::serialization::split_free(ar, t, file_version);
-}
-
-// unique_ptr
-template<class Archive, class T>
-inline void save(Archive & ar, const std::unique_ptr< T > &t, unsigned int file_version){
-  const T * const ptr = t.get();
-  ar << BOOST_SERIALIZATION_NVP(ptr);
-}
-
-template<class Archive, class T>
-inline void load(Archive & ar, std::unique_ptr< T > &t, unsigned int file_version){
-  T *ptr;
-  ar >> BOOST_SERIALIZATION_NVP(ptr);
-  t.reset(ptr);
-}
-
-template<class Archive, class T>
-inline void serialize(Archive & ar, std::unique_ptr< T > &t, unsigned int file_version){
-  boost::serialization::split_free(ar, t, file_version);
-}
-
-// shared_ptr
-template<class Archive, class T>
-inline void save(Archive & ar, const std::shared_ptr< T > &t, unsigned int file_version){
-  const T * const ptr = t.get();
-  ar << BOOST_SERIALIZATION_NVP(ptr);
-}
-
-template<class Archive, class T>
-inline void load(Archive & ar, std::shared_ptr< T > &t, unsigned int file_version){
-  T *ptr;
-  ar >> BOOST_SERIALIZATION_NVP(ptr);
-  t.reset(ptr);
-}
-
-template<class Archive, class T>
-inline void serialize(Archive & ar, std::shared_ptr< T > &t, unsigned int file_version){
   boost::serialization::split_free(ar, t, file_version);
 }
 
