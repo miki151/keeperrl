@@ -123,7 +123,7 @@ void Player::onEvent(const GameEvent& event) {
 }
 
 ControllerFactory Player::getFactory(Model* m, MapMemory* levelMemory) {
-  return ControllerFactory([=](Creature* c) { return new Player(c, m, true, levelMemory);});
+  return ControllerFactory([=](Creature* c) { return SController(new Player(c, m, true, levelMemory));});
 }
 
 static string getSlotSuffix(EquipmentSlot slot) {

@@ -88,8 +88,6 @@ class Model {
   void serialize(Archive& ar, const unsigned int version);
 
   void lockSerialization();
-  void clearDeadCreatures();
-  void clearDeadPlayers();
 
   void addEvent(const GameEvent&);
 

@@ -159,7 +159,6 @@ void Game::prepareSiteRetirement() {
           if (col->getLeader()->isDead())
             col->clearLeader();
         models[v]->setGame(nullptr);
-        models[v]->clearDeadCreatures();
       }
     }
   playerCollective->setVillainType(VillainType::MAIN);
@@ -225,7 +224,6 @@ void Game::prepareSingleMapRetirement() {
       col->clearLeader();
   for (Creature* c : getMainModel()->getAllCreatures())
     c->clearLastAttacker();
-  getMainModel()->clearDeadPlayers();
   player = nullptr;
 }
 

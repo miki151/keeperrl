@@ -1588,7 +1588,7 @@ void PlayerControl::commandTeam(TeamId team) {
   if (getControlled())
     leaveControl();
   Creature* c = getTeams().getLeader(team);
-  c->pushController(PController(new MinionController(c, getModel(), memory.get(), this)));
+  c->pushController(SController(new MinionController(c, getModel(), memory.get(), this)));
   getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
   getView()->resetCenter();

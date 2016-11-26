@@ -49,8 +49,6 @@ class Controller {
 
   virtual void onBump(Creature*) = 0;
 
-  virtual Controller* getPossessedController(Creature*);
-
   virtual ~Controller() {}
 
   SERIALIZATION_DECL(Controller);
@@ -79,10 +77,10 @@ class DoNothingController : public Controller {
 
 class ControllerFactory {
   public:
-  ControllerFactory(function<Controller* (Creature*)>);
-  PController get(Creature*) const;
+  ControllerFactory(function<SController(Creature*)>);
+  SController get(Creature*) const;
 
   private:
-  function<Controller* (Creature*)> fun;
+  function<SController(Creature*)> fun;
 };
 

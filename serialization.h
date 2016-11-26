@@ -291,6 +291,25 @@ inline void serialize(Archive & ar, std::unique_ptr< T > &t, unsigned int file_v
   boost::serialization::split_free(ar, t, file_version);
 }
 
+// shared_ptr
+template<class Archive, class T>
+inline void save(Archive & ar, const std::shared_ptr< T > &t, unsigned int file_version){
+  const T * const ptr = t.get();
+  ar << BOOST_SERIALIZATION_NVP(ptr);
+}
+
+template<class Archive, class T>
+inline void load(Archive & ar, std::shared_ptr< T > &t, unsigned int file_version){
+  T *ptr;
+  ar >> BOOST_SERIALIZATION_NVP(ptr);
+  t.reset(ptr);
+}
+
+template<class Archive, class T>
+inline void serialize(Archive & ar, std::shared_ptr< T > &t, unsigned int file_version){
+  boost::serialization::split_free(ar, t, file_version);
+}
+
 // vector
 template<class Archive, class T, class Allocator>
 inline void save(Archive & ar, const std::vector<T, Allocator> &t, unsigned int){

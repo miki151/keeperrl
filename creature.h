@@ -226,9 +226,9 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void playerMessage(const PlayerMessage&) const;
   bool isPlayer() const;
 
-  Controller* getController();
-  void pushController(PController);
-  void setController(PController);
+  SController getController() const;
+  void pushController(SController);
+  void setController(SController);
   void popController();
 
   void addCreatureVision(CreatureVision*);
@@ -290,8 +290,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   EntitySet<Creature> SERIAL(unknownAttackers);
   EntitySet<Creature> SERIAL(privateEnemies);
   const Creature* SERIAL(holding) = nullptr;
-  PController SERIAL(controller);
-  vector<PController> SERIAL(controllerStack);
+  vector<SController> SERIAL(controllerStack);
   vector<CreatureVision*> SERIAL(creatureVisions);
   EntitySet<Creature> SERIAL(kills);
   mutable double SERIAL(difficultyPoints) = 0;

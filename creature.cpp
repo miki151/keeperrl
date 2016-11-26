@@ -61,7 +61,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
   serializeAll(ar, attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
   serializeAll(ar, deathTime, hidden, lastAttacker, deathReason, swapPositionCooldown);
-  serializeAll(ar, unknownAttackers, privateEnemies, holding, controller, controllerStack, creatureVisions, kills);
+  serializeAll(ar, unknownAttackers, privateEnemies, holding, controllerStack, creatureVisions, kills);
   serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverride);
   serializeAll(ar, vision, lastCombatTime);
 }
@@ -72,7 +72,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Creature);
 
 Creature::Creature(const ViewObject& object, TribeId t, const CreatureAttributes& attr,
     const ControllerFactory& f)
-    : Renderable(object), attributes(attr), tribe(t), controller(f.get(this)) {
+    : Renderable(object), attributes(attr), tribe(t), controllerStack({f.get(this)}) {
   modViewObject().setCreatureId(getUniqueId());
   updateVision();    
 }
@@ -170,30 +170,29 @@ void Creature::removeCreatureVision(CreatureVision* vision) {
   removeElement(creatureVisions, vision);
 }
 
-void Creature::pushController(PController ctrl) {
-  controllerStack.push_back(std::move(controller));
-  setController(std::move(ctrl));
-}
-
-void Creature::setController(PController ctrl) {
+void Creature::pushController(SController ctrl) {
   if (ctrl->isPlayer()) {
     modViewObject().setModifier(ViewObject::Modifier::PLAYER);
     if (Game* g = getGame())
       g->setPlayer(this);
   }
-  controller = std::move(ctrl);
+  controllerStack.push_back(std::move(ctrl));
+}
+
+void Creature::setController(SController ctrl) {
+  controllerStack.clear();
+  pushController(std::move(ctrl));
 }
 
 void Creature::popController() {
-  if (controller->isPlayer()) {
-    modViewObject().removeModifier(ViewObject::Modifier::PLAYER);
-    getGame()->clearPlayer();
-  }
+  if (auto controller = getController())
+    if (controller->isPlayer()) {
+      modViewObject().removeModifier(ViewObject::Modifier::PLAYER);
+      getGame()->clearPlayer();
+    }
   if (!controllerStack.empty()) {
-    controller = std::move(controllerStack.back());
     controllerStack.pop_back();
-  } else
-    controller.release();
+  }
 }
 
 bool Creature::isDead() const {
@@ -288,12 +287,12 @@ CreatureAction Creature::move(Position pos) const {
 
 void Creature::displace(double time, Vec2 dir) {
   position.moveCreature(dir);
-  controller->onDisplaced();
+  getController()->onDisplaced();
   addMovementInfo({dir, time, time + 1, MovementInfo::MOVE});
 }
 
 int Creature::getDebt(const Creature* debtor) const {
-  return controller->getDebt(debtor);
+  return getController()->getDebt(debtor);
 }
 
 bool Creature::canTakeItems(const vector<Item*>& items) const {
@@ -303,27 +302,28 @@ bool Creature::canTakeItems(const vector<Item*>& items) const {
 void Creature::takeItems(vector<PItem> items, const Creature* from) {
   vector<Item*> ref = extractRefs(items);
   equipment->addItems(std::move(items));
-  controller->onItemsGiven(ref, from);
+  getController()->onItemsGiven(ref, from);
 }
 
 void Creature::you(MsgType type, const vector<string>& param) const {
-  controller->you(type, param);
+  getController()->you(type, param);
 }
 
 void Creature::you(MsgType type, const string& param) const {
-  controller->you(type, param);
+  getController()->you(type, param);
 }
 
 void Creature::you(const string& param) const {
-  controller->you(param);
+  getController()->you(param);
 }
 
 void Creature::playerMessage(const PlayerMessage& message) const {
-  controller->privateMessage(message);
+  getController()->privateMessage(message);
 }
 
-Controller* Creature::getController() {
-  return controller.get();
+SController Creature::getController() const {
+  CHECK(!controllerStack.empty());
+  return controllerStack.back();
 }
 
 bool Creature::hasCondition(CreatureCondition condition) const {
@@ -361,7 +361,7 @@ void Creature::makeMove() {
   if (holding && holding->isDead())
     holding = nullptr;
   if (hasCondition(CreatureCondition::SLEEPING)) {
-    controller->sleeping();
+    getController()->sleeping();
     spendTime(1);
     return;
   }
@@ -369,7 +369,13 @@ void Creature::makeMove() {
   updateViewObject();
   if (swapPositionCooldown)
     --swapPositionCooldown;
-  MEASURE(controller->makeMove(), "creature move time");
+  {
+    // Calls makeMove() while preventing Controller destruction by holding a shared_ptr on stack.
+    // This is needed, otherwise Controller could be destroyed during makeMove() if creature committed suicide.
+    SController controllerTmp = controllerStack.back();
+    MEASURE(controllerTmp->makeMove(), "creature move time");
+  }
+
   Debug() << getName().bare() << " morale " << getMorale();
   if (!hidden)
     modViewObject().removeModifier(ViewObject::Modifier::HIDDEN);
@@ -607,7 +613,7 @@ CreatureAction Creature::heal(Vec2 direction) const {
 CreatureAction Creature::bumpInto(Vec2 direction) const {
   if (const Creature* other = getPosition().plus(direction).getCreature())
     return CreatureAction(this, [=](Creature* self) {
-      other->controller->onBump(self);
+      other->getController()->onBump(self);
       self->spendTime(1);
     });
   else
@@ -1170,7 +1176,7 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
       addSound(*sound);
   lastAttacker = attacker;
   Debug() << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
-  controller->onKilled(attacker);
+  getController()->onKilled(attacker);
   if (dropInventory)
     for (PItem& item : equipment->removeAllItems())
       getPosition().dropItem(std::move(item));
@@ -1184,6 +1190,7 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   if (attributes->isInnocent())
     getGame()->getStatistics().add(StatId::INNOCENT_KILLED);
   getGame()->getStatistics().add(StatId::DEATH);
+  controllerStack.clear();
 }
 
 CreatureAction Creature::flyAway() const {
@@ -1473,7 +1480,7 @@ bool Creature::canSee(Vec2 pos) const {
 }
   
 bool Creature::isPlayer() const {
-  return controller->isPlayer();
+  return getController()->isPlayer();
 }
 
 const CreatureName& Creature::getName() const {

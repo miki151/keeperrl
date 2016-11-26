@@ -164,18 +164,6 @@ Level* Model::buildTopLevel(LevelBuilder&& b, PLevelMaker maker) {
 }
 
 Model::Model() {
-  clearDeadCreatures();
-}
-
-// TODO: clean up dead creature controllers and remove this!
-void Model::clearDeadPlayers() {
-  for (auto& c : deadCreatures)
-    if (c->isPlayer())
-      c->popController();
-}
-
-void Model::clearDeadCreatures() {
-  deadCreatures.clear();
   cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
       .build(this, LevelMaker::emptyLevel(Random).get(), Random.getLL());
 }

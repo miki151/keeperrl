@@ -146,7 +146,7 @@ PCreature CreatureFactory::getRollingBoulder(TribeId tribe, Vec2 direction) {
             c.boulder = true;
             c.name = "boulder";
             ), ControllerFactory([direction](Creature* c) {
-              return new BoulderController(c, direction); })));
+              return SController(new BoulderController(c, direction)); })));
 }
 
 class SokobanController : public Monster {
@@ -221,7 +221,7 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
             c.name = "boulder";), ControllerFactory([](Creature* c) { 
-              return new SokobanController(c); })));
+              return SController(new SokobanController(c)); })));
 }
 
 CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id) {
@@ -343,10 +343,10 @@ class KrakenController : public Monster {
                 PCreature spawn(new Creature(getCreature()->getTribeId(),
                       CreatureFactory::getKrakenAttributes(viewId),
                       ControllerFactory([=](Creature* c) {
-                        return new KrakenController(c);
+                        return SController(new KrakenController(c));
                         })));
                 spawns.push_back(spawn.get());
-                dynamic_cast<KrakenController*>(spawn->getController())->father = this;
+                dynamic_cast<KrakenController*>(spawn->getController().get())->father = this;
                 getCreature()->getPosition().plus(move).addCreature(std::move(spawn));
                 --numSpawns;
                 unReady();
@@ -412,7 +412,7 @@ class ShopkeeperController : public Monster {
       return;
     }
     if (firstMove) {
-      eventProxy.subscribeTo(getCreature()->getPosition().getModel());
+      eventProxy->subscribeTo(getCreature()->getPosition().getModel());
       for (Position v : shopArea->getAllSquares()) {
         for (Item* item : v.getItems())
           item->setShopkeeper(getCreature());
@@ -502,7 +502,7 @@ class ShopkeeperController : public Monster {
     }
   }
 
-  EventProxy<ShopkeeperController> SERIAL(eventProxy);
+  HeapAllocated<EventProxy<ShopkeeperController>> SERIAL(eventProxy);
 
   virtual int getDebt(const Creature* debtor) const override {
     if (debt.count(debtor)) {
@@ -547,7 +547,7 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, TribeId tribe) {
         c.name = "shopkeeper";
         c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());),
       ControllerFactory([shopArea](Creature* c) { 
-          return new ShopkeeperController(c, shopArea); })));
+          return SController(new ShopkeeperController(c, shopArea)); })));
   vector<ItemType> inventory(Random.get(100, 300), ItemId::GOLD_PIECE);
   inventory.push_back(ItemId::SWORD);
   inventory.push_back(ItemId::LEATHER_ARMOR);
@@ -606,8 +606,8 @@ PCreature CreatureFactory::getIllusion(Creature* creature) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.noAttackSound = true;
           c.name = "illusion";),
-        ControllerFactory([creature] (Creature* o) { return new IllusionController(o,
-            creature->getGlobalTime() + Random.get(5, 10));})));
+        ControllerFactory([creature] (Creature* o) { return SController(new IllusionController(o,
+            creature->getGlobalTime() + Random.get(5, 10)));})));
 }
 
 template <class Archive>
@@ -2347,11 +2347,11 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
   switch (id) {
     case CreatureId::KRAKEN:
       return ControllerFactory([=](Creature* c) {
-          return new KrakenController(c);
+          return SController(new KrakenController(c));
           });
     case CreatureId::FIRE_SPHERE:
       return ControllerFactory([=](Creature* c) {
-          return new KamikazeController(c, normalFactory);
+          return SController(new KamikazeController(c, normalFactory));
           });
     default: return Monster::getFactory(normalFactory);
   }

@@ -158,7 +158,7 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (!traits.contains(MinionTrait::FARM_ANIMAL))
-    c->setController(PController(new Monster(c, MonsterAIFactory::collective(this))));
+    c->setController(SController(new Monster(c, MonsterAIFactory::collective(this))));
   if (traits.contains(MinionTrait::WORKER))
     c->getAttributes().getMinionTasks().clear();
   if (!leader)
@@ -205,7 +205,7 @@ void Collective::banishCreature(Creature* c) {
   if (!exitTiles.empty())
     tasks.push_back(Task::goToTryForever(Random.choose(exitTiles)));
   tasks.push_back(Task::disappear());
-  c->setController(PController(new Monster(c, MonsterAIFactory::singleTask(Task::chain(std::move(tasks))))));
+  c->setController(SController(new Monster(c, MonsterAIFactory::singleTask(Task::chain(std::move(tasks))))));
   banished.insert(c);
 }
 

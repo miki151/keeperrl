@@ -111,6 +111,8 @@ using std::string;
 
 using std::queue;
 using std::unique_ptr;
+using std::shared_ptr;
+using std::make_shared;
 using std::default_random_engine;
 using std::function;
 using std::initializer_list;
