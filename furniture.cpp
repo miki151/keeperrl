@@ -90,6 +90,10 @@ TribeId Furniture::getTribe() const {
   return *tribe;
 }
 
+void Furniture::setTribe(TribeId id) {
+  tribe = id;
+}
+
 void Furniture::tick(Position pos) {
   if (auto& fire = getFire())
     if (fire->isBurning()) {

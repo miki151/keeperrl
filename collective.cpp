@@ -1031,9 +1031,12 @@ bool Collective::canClaimSquare(Position pos) const {
 void Collective::claimSquare(Position pos) {
   //CHECK(canClaimSquare(pos));
   territory->insert(pos);
-  for (auto furniture : pos.getFurniture())
-    if (!constructions->containsFurniture(pos, furniture->getLayer()))
-      constructions->addFurniture(pos, ConstructionMap::FurnitureInfo::getBuilt(furniture->getType()));
+  for (auto furniture : pos.modFurniture())
+    if (!furniture->isWall()) {
+      if (!constructions->containsFurniture(pos, furniture->getLayer()))
+        constructions->addFurniture(pos, ConstructionMap::FurnitureInfo::getBuilt(furniture->getType()));
+      furniture->setTribe(getTribeId());
+    }
   control->onClaimedSquare(pos);
 }
 

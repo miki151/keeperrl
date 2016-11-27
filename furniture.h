@@ -35,6 +35,7 @@ class Furniture : public Renderable {
   void destroy(Position, const DestroyAction&);
   void tryToDestroyBy(Position, Creature*, const DestroyAction&);
   TribeId getTribe() const;
+  void setTribe(TribeId);
   const optional<Fire>& getFire() const;
   optional<Fire>& getFire();
   void fireDamage(Position, double amount);
