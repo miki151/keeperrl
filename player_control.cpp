@@ -1691,6 +1691,21 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
   }
 }
 
+bool PlayerControl::canSelectRectangle(const BuildInfo& info) {
+  switch (info.buildType) {
+    case BuildInfo::ZONE:
+    case BuildInfo::FORBID_ZONE:
+    case BuildInfo::FURNITURE:
+    case BuildInfo::DIG:
+    case BuildInfo::DESTROY:
+    case BuildInfo::DISPATCH:
+    case BuildInfo::CLAIM_TILE:
+      return true;
+    default:
+      return false;
+  }
+}
+
 void PlayerControl::processInput(View* view, UserInput input) {
   switch (input.getId()) {
     case UserInputId::MESSAGE_INFO:
@@ -1954,14 +1969,18 @@ void PlayerControl::processInput(View* view, UserInput input) {
               chosenCreature = none;
           }
         break; }
-    case UserInputId::RECT_SELECTION:
-        updateSelectionSquares();
-        if (rectSelection) {
-          rectSelection->corner2 = input.get<Vec2>();
+    case UserInputId::RECT_SELECTION: {
+        auto& info = input.get<BuildingInfo>();
+        if (canSelectRectangle(getBuildInfo()[info.building])) {
+          updateSelectionSquares();
+          if (rectSelection) {
+            rectSelection->corner2 = info.pos;
+          } else
+            rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = info.pos;);
+          updateSelectionSquares();
         } else
-          rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = input.get<Vec2>(););
-        updateSelectionSquares();
-        break;
+          handleSelection(info.pos, getBuildInfo()[info.building], false);
+        break; }
     case UserInputId::RECT_DESELECTION:
         updateSelectionSquares();
         if (rectSelection) {
@@ -1970,10 +1989,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
           rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = input.get<Vec2>(); c.deselect = true;);
         updateSelectionSquares();
         break;
-    case UserInputId::BUILD:
-        handleSelection(input.get<BuildingInfo>().pos,
-            getBuildInfo()[input.get<BuildingInfo>().building], false);
-        break;
+    case UserInputId::BUILD: {
+        auto& info = input.get<BuildingInfo>();
+        handleSelection(info.pos, getBuildInfo()[info.building], false);
+        break; }
     case UserInputId::LIBRARY:
         handleSelection(input.get<BuildingInfo>().pos, libraryInfo[input.get<BuildingInfo>().building], false);
         break;
@@ -2019,20 +2038,6 @@ void PlayerControl::updateSelectionSquares() {
   if (rectSelection)
     for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
       Position(v, getLevel()).setNeedsRenderUpdate(true);
-}
-
-bool PlayerControl::canSelectRectangle(const BuildInfo& info) {
-  switch (info.buildType) {
-    case BuildInfo::ZONE:
-    case BuildInfo::FORBID_ZONE:
-    case BuildInfo::FURNITURE:
-    case BuildInfo::DIG:
-    case BuildInfo::DESTROY:
-    case BuildInfo::DISPATCH:
-      return true;
-    default:
-      return false;
-  }
 }
 
 void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle, bool deselectOnly) {
