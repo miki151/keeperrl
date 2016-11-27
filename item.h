@@ -20,6 +20,7 @@
 #include "unique_entity.h"
 #include "renderable.h"
 #include "position.h"
+#include "owner_pointer.h"
 
 class Level;
 class Attack;

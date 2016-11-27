@@ -21,6 +21,7 @@
 #include "enums.h"
 #include "serialization.h"
 #include "hashing.h"
+#include "owner_pointer.h"
 
 template <class T>
 string toString(const T& t) {
@@ -59,8 +60,21 @@ optional<T> fromStringSafe(const string& s);
 #define DEF_SHARED_PTR(T) class T;\
   typedef shared_ptr<T> S##T;
 
+#define DEF_OWNER_PTR(T) class T;\
+  typedef OwnerPointer<T> P##T; \
+  typedef WeakPointer<T> W##T; \
+  typedef WeakPointer<const T> WConst##T; \
+  template <typename... Args> \
+  OwnerPointer<T> make##T(Args... a) { \
+    return makeOwner<T>(a...); \
+  } \
+  template <typename Subclass, typename... Args> \
+  OwnerPointer<T> make##T(Args... a) { \
+    return makeOwner<T, Subclass>(a...); \
+  }
+
+DEF_OWNER_PTR(Item);
 DEF_UNIQUE_PTR(LevelMaker);
-DEF_UNIQUE_PTR(Item);
 DEF_UNIQUE_PTR(Creature);
 DEF_UNIQUE_PTR(Square);
 DEF_UNIQUE_PTR(Furniture);
@@ -98,6 +112,7 @@ typedef function<bool(const Item*)> ItemPredicate;
 template<class T>
 vector<T*> extractRefs(vector<unique_ptr<T>>& v) {
   vector<T*> ret;
+  ret.reserve(v.size());
   for (auto& el : v)
     ret.push_back(el.get());
   return ret;
@@ -106,6 +121,7 @@ vector<T*> extractRefs(vector<unique_ptr<T>>& v) {
 template<class T>
 vector<unique_ptr<T>> toUniquePtr(const vector<T*>& v) {
   vector<unique_ptr<T>> ret;
+  ret.reserve(v.size());
   for (T* el : v)
     ret.push_back(unique_ptr<T>(el));
   return ret;
@@ -114,6 +130,16 @@ vector<unique_ptr<T>> toUniquePtr(const vector<T*>& v) {
 template<class T>
 const vector<T*> extractRefs(const vector<unique_ptr<T>>& v) {
   vector<T*> ret;
+  ret.reserve(v.size());
+  for (auto& el : v)
+    ret.push_back(el.get());
+  return ret;
+}
+
+template<class T>
+const vector<T*> extractRefs(const vector<OwnerPointer<T>>& v) {
+  vector<T*> ret;
+  ret.reserve(v.size());
   for (auto& el : v)
     ret.push_back(el.get());
   return ret;
@@ -818,6 +844,7 @@ string transform2(const string& u, Fun fun) {
 template <typename T, typename U, typename Fun>
 vector<T> transform2(const vector<U>& u, Fun fun) {
   vector<T> ret;
+  ret.reserve(u.size());
   for (const U& elem : u)
     ret.push_back(fun(elem));
   return ret;
@@ -826,6 +853,7 @@ vector<T> transform2(const vector<U>& u, Fun fun) {
 template <typename T, typename U, typename Fun>
 vector<T> transform2(vector<U>& u, Fun fun) {
   vector<T> ret;
+  ret.reserve(u.size());
   for (U& elem : u)
     ret.push_back(fun(elem));
   return ret;
@@ -894,12 +922,14 @@ bool contains(const initializer_list<T>& v, const V& elem) {
 
 template <typename T>
 void append(vector<T>& v, const vector<T>& w) {
+  v.reserve(v.size() + w.size());
   for (T elem : w)
     v.push_back(elem);
 }
 
 template <typename T>
 void append(vector<T>& v, vector<T>&& w) {
+  v.reserve(v.size() + w.size());
   for (T& elem : w)
     v.push_back(std::move(elem));
 }
@@ -1033,7 +1063,11 @@ class MustInitialize {
 template<class T>
 vector<T> concat(const vector<vector<T>>& vectors) {
   vector<T> ret;
-  for (const vector<T>& v : vectors)
+  int sz = 0;
+  for (const auto& v : vectors)
+    sz += v.size();
+  ret.reserve(sz);
+  for (const auto& v : vectors)
     for (const T& t : v)
       ret.push_back(t);
   return ret;

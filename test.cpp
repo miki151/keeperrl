@@ -433,6 +433,36 @@ void testReverse3() {
   CHECKEQ(reverse2(v1), v2);
 }
 
+static int numRef = 0;
+
+void testOwnerPointer() {
+  numRef = 0;
+  struct tmp {
+    tmp(int a) : x(a) { ++numRef;}
+    ~tmp() { --numRef; }
+    int x;
+  };
+  WeakPointer<tmp> w1;
+  WeakPointer<tmp> w2;
+  {
+    OwnerPointer<tmp> t1 = makeOwner<tmp>(1);
+    OwnerPointer<tmp> t2 = std::move(t1);
+    OwnerPointer<tmp> t3 = makeOwner<tmp>(2);
+    w1 = t3;
+    w2 = t2;
+    CHECK(w1);
+    CHECKEQ(w1->x, 2);
+    CHECK(w2);
+    CHECKEQ(w2->x, 1);
+    t3 = std::move(t2);
+    CHECK(!w1);
+    CHECK(w2);
+  }
+  CHECK(!w1);
+  CHECK(!w2);
+  CHECKEQ(numRef, 0);
+}
+
 int testAll() {
   testStringConvertion();
   testTimeQueue();
@@ -463,6 +493,7 @@ int testAll() {
   testReverse();
   testReverse2();
   testReverse3();
+  testOwnerPointer();
   Debug() << "-----===== OK =====-----";
   return 0;
 }

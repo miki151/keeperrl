@@ -236,7 +236,7 @@ class Corpse : public Item {
 PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemClass itemClass,
     CorpseInfo corpseInfo) {
   const double rotTime = 300;
-  return PItem(new Corpse(
+  return makeItem<Corpse>(
         ViewObject(ViewId::BONE, ViewLayer::ITEM, rottenName),
         ITATTR(
           i.viewId = ViewId::BODY_PART;
@@ -246,7 +246,7 @@ PItem ItemFactory::corpse(const string& name, const string& rottenName, double w
           i.weight = weight;),
         rottenName,
         rotTime,
-        corpseInfo));
+        corpseInfo);
 }
 
 class Potion : public Item {
@@ -694,9 +694,9 @@ ViewId getTrapViewId(TrapType t) {
 }
 
 PItem getTrap(const ItemAttributes& attr, TrapInfo info) {
-  return PItem(new TrapItem(ViewObject(getTrapViewId(info.trapType), ViewLayer::LARGE_ITEM,
+  return makeItem<TrapItem>(ViewObject(getTrapViewId(info.trapType), ViewLayer::LARGE_ITEM,
           Effect::getName(info.effectType) + " trap"),
-        attr, info.effectType, info.alwaysVisible));
+        attr, info.effectType, info.alwaysVisible);
 }
 
 ViewId getRingViewId(LastingEffect e) {
@@ -781,25 +781,22 @@ ItemFactory::ItemFactory(const ItemFactory&) = default;
 
 ItemFactory::~ItemFactory() {}
 
-int prefixChance = 30;
-
 #define INHERIT(ID, X) ItemAttributes([&](ItemAttributes& i) { i = getAttributes(ItemId::ID); X })
 
 PItem ItemFactory::fromId(ItemType item) {
   switch (item.getId()) {
-    case ItemId::WARNING_AMULET: return PItem(new AmuletOfWarning(getAttributes(item), 5));
-    case ItemId::BOW: return PItem(new RangedWeapon(getAttributes(item)));
-    case ItemId::TELEPATHY_HELM: return PItem(new ItemOfCreatureVision(getAttributes(item), new Telepathy()));
-    case ItemId::HEALING_AMULET: return PItem(new AmuletOfHealing(getAttributes(item)));
-    case ItemId::FIRE_SCROLL: return PItem(new FireScroll(getAttributes(item)));
-    case ItemId::RANDOM_TECH_BOOK: return PItem(new TechBook(getAttributes(item), none));
-    case ItemId::TECH_BOOK: return PItem(new TechBook(getAttributes(item), item.get<TechId>()));
-    case ItemId::POTION: return PItem(new Potion(getAttributes(item)));
+    case ItemId::WARNING_AMULET: return makeItem<AmuletOfWarning>(getAttributes(item), 5);
+    case ItemId::BOW: return makeItem<RangedWeapon>(getAttributes(item));
+    case ItemId::TELEPATHY_HELM: return makeItem<ItemOfCreatureVision>(getAttributes(item), new Telepathy());
+    case ItemId::HEALING_AMULET: return makeItem<AmuletOfHealing>(getAttributes(item));
+    case ItemId::FIRE_SCROLL: return makeItem<FireScroll>(getAttributes(item));
+    case ItemId::RANDOM_TECH_BOOK: return makeItem<TechBook>(getAttributes(item), none);
+    case ItemId::TECH_BOOK: return makeItem<TechBook>(getAttributes(item), item.get<TechId>());
+    case ItemId::POTION: return makeItem<Potion>(getAttributes(item));
     case ItemId::TRAP_ITEM:
         return getTrap(getAttributes(item), item.get<TrapInfo>());
-    default: return PItem(new Item(getAttributes(item)));
+    default: return makeItem(getAttributes(item));
   }
-  return PItem();
 }
 
 ItemAttributes ItemFactory::getAttributes(ItemType item) {
