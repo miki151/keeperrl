@@ -370,7 +370,7 @@ static int keeperMain(const variables_map& vars) {
   unique_ptr<View> view;
   view.reset(WindowView::createDefaultView(
       {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
-#ifdef RELEASE
+#ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
   std::atomic<bool> gameFinished(false);
