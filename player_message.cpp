@@ -15,7 +15,7 @@ PlayerMessage PlayerMessage::announcement(const string& title, const string& tex
 
 void PlayerMessage::presentMessages(View* view, const vector<PlayerMessage>& messages) {
   view->presentList("Message history", transform2<ListElem>(messages,
-        [](const PlayerMessage& msg) { return ListElem(msg.text).setMessagePriority(msg.priority);}));
+        [](const PlayerMessage& msg) { return ListElem(msg.text).setMessagePriority(msg.priority);}), true);
 }
 
 optional<string> PlayerMessage::getAnnouncementTitle() const {

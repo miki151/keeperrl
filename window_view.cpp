@@ -1274,7 +1274,7 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       break;
 #endif
     case SDL::SDLK_F7:
-      presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())));
+      presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())), true);
       break;
     case SDL::SDLK_z: zoom(0); break;
     case SDL::SDLK_F2:
