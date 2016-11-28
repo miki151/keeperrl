@@ -160,7 +160,7 @@ class TileCoordLookup {
     bool bad = false;
     for (ViewId id : ENUM_ALL(ViewId))
       if (!tiles[id]) {
-        Debug() << "ViewId not found: " << EnumInfo<ViewId>::getString(id);
+        INFO << "ViewId not found: " << EnumInfo<ViewId>::getString(id);
         bad = true;
       }
     CHECK(!bad);
@@ -171,7 +171,7 @@ class TileCoordLookup {
     bool bad = false;
     for (ViewId id : ENUM_ALL(ViewId))
       if (!symbols[id]) {
-        Debug() << "ViewId not found: " << EnumInfo<ViewId>::getString(id);
+        INFO << "ViewId not found: " << EnumInfo<ViewId>::getString(id);
         bad = true;
       }
     CHECK(!bad);

@@ -65,9 +65,9 @@ public:
     gzstreambuf* close();
     ~gzstreambuf() { close(); }
     
-    virtual int     overflow( int c = EOF);
-    virtual int     underflow();
-    virtual int     sync();
+    virtual int     overflow( int c = EOF) override;
+    virtual int     underflow() override;
+    virtual int     sync() override;
 };
 
 class gzstreambase : virtual public std::ios {

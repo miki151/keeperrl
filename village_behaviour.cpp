@@ -98,7 +98,7 @@ static double getRoomProb(FurnitureType id) {
   switch (id) {
     case FurnitureType::THRONE: return 0.001;
     case FurnitureType::IMPALED_HEAD: return 0.000125;
-    default: FAIL << "Unsupported ROOM_BUILT type"; return 0;
+    default: FATAL << "Unsupported ROOM_BUILT type"; return 0;
   }
 }
 
@@ -160,7 +160,7 @@ double VillageBehaviour::getAttackProbability(const VillageControl* self) const 
     double val = getTriggerValue(elem, self);
     CHECK(val >= 0 && val <= 1);
     ret = max(ret, val);
-    Debug() << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village "
+    INFO << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village "
         << self->getCollective()->getName().getFull() << " under attack probability " << val;
   }
   return ret;

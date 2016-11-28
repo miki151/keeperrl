@@ -106,6 +106,8 @@ int gzstreambuf::flush_buffer() {
     int w = pptr() - pbase();
     if ( gzwrite( file, pbase(), w) != w)
         return EOF;
+    else
+      gzflush(file, Z_SYNC_FLUSH);
     pbump( -w);
     return w;
 }

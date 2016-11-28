@@ -368,7 +368,7 @@ void WindowView::rebuildGui() {
   int newHash = gameInfo.getHash();
   if (newHash == lastGuiHash)
     return;
-  Debug() << "Rebuilding UI";
+  INFO << "Rebuilding UI";
   lastGuiHash = newHash;
   PGuiElem bottom, right;
   vector<GuiBuilder::OverlayInfo> overlays;
@@ -466,7 +466,6 @@ void WindowView::rebuildGui() {
       tempGuiElems.push_back(std::move(overlay.elem));
       height = min(height, renderer.getSize().y - pos.y);
       tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(width, height)));
-      Debug() << "Overlay " << overlay.alignment << " bounds " << tempGuiElems.back()->getBounds();
     }
   }
   Event ev;
@@ -664,7 +663,7 @@ int indexHeight(const vector<ListElem>& options, int index) {
   for (int i : All(options))
     if (options[i].getMod() == ListElem::NORMAL && tmp++ == index)
       return i;
-  FAIL << "Bad index " << int(options.size()) << " " << index;
+  FATAL << "Bad index " << int(options.size()) << " " << index;
   return -1;
 }
 
@@ -866,6 +865,13 @@ optional<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& 
 bool WindowView::creaturePrompt(const string& title, const vector<CreatureInfo>& creatures) {
   SyncQueue<bool> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawCreaturePrompt(returnQueue, title, creatures));
+}
+
+void WindowView::logMessage(const std::string& message) {
+  RecursiveLock lock(logMutex);
+  messageLog.push_back(message);
+  if (messageLog.size() > 10000)
+    messageLog.pop_front();
 }
 
 void WindowView::getBlockingGui(Semaphore& sem, PGuiElem elem, optional<Vec2> origin) {
@@ -1267,6 +1273,9 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       renderer.startMonkey();
       break;
 #endif
+    case SDL::SDLK_F7:
+      presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())));
+      break;
     case SDL::SDLK_z: zoom(0); break;
     case SDL::SDLK_F2:
       if (!renderer.isMonkey()) {

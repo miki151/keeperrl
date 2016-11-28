@@ -69,7 +69,7 @@ MusicType Jukebox::getCurrentType() {
   for (auto& elem : byType)
     if (contains(elem.second, current))
       return elem.first;
-  FAIL << "Track type not found " << current;
+  FATAL << "Track type not found " << current;
   return MusicType::PEACEFUL;
 }
 

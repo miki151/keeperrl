@@ -209,7 +209,7 @@ class RoomMaker : public LevelMaker {
           }
       } while (!good && --cnt > 0);
       if (cnt == 0) {
-        Debug() << "Placed only " << i << " rooms out of " << numRooms;
+        INFO << "Placed only " << i << " rooms out of " << numRooms;
         break;
       }
       for (Vec2 v : Rectangle(k))
@@ -305,7 +305,7 @@ class Connector : public LevelMaker {
               builder->putFurniture(v, {FurnitureType::BRIDGE, TribeId::getMonster()});
             break;
           default:
-            FAIL << "Unhandled square type " << (int)builder->getType(v).getId();
+            FATAL << "Unhandled square type " << (int)builder->getType(v).getId();
         }
       }
       if (!path.isReachable(v))
@@ -486,7 +486,7 @@ class River : public LevelMaker {
   private:
 
   vector<Vec2> straightLine(int x0, int y0, int x1, int y1){
-    Debug() << "Line " << x1 << " " << y0 << " " << x1 << " " << y1;
+    INFO << "Line " << x1 << " " << y0 << " " << x1 << " " << y1;
     int dx = x1 - x0;
     int dy = y1 - y0;
     vector<Vec2> ret{ Vec2(x0, y0)};
@@ -1270,7 +1270,7 @@ class Mountains : public LevelMaker {
         ++lCnt;
       }
     }
-    Debug() << "Terrain distribution " << gCnt << " glacier, " << mCnt << " mountain, " << hCnt << " hill, " << lCnt << " lowland, " << wCnt << " water, " << sCnt << " sand";
+    INFO << "Terrain distribution " << gCnt << " glacier, " << mCnt << " mountain, " << hCnt << " hill, " << lCnt << " lowland, " << wCnt << " water, " << sCnt << " sand";
   }
 
   private:
@@ -1312,7 +1312,7 @@ class Roads : public LevelMaker {
     for (Vec2 v : area)
       if (builder->hasAttrib(v, SquareAttrib::CONNECT_ROAD)) {
         points.push_back(v);
-        Debug() << "Connecting point " << v;
+        INFO << "Connecting point " << v;
       }
     for (int ind : Range(1, points.size())) {
       Vec2 p1 = points[ind];
@@ -2534,7 +2534,7 @@ class SokobanFromFile : public LevelMaker {
           builder->putSquare(v, SquareId::FLOOR);
           builder->putCreature(v, boulderFactory.random());
           break;
-        default: FAIL << "Unknown symbol in sokoban data: " << file[v];
+        default: FATAL << "Unknown symbol in sokoban data: " << file[v];
       }
   }
 

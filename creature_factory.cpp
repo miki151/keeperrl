@@ -2337,9 +2337,9 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.barehandedDamage = 10;
           c.chatReactionFriendly = c.chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\"";
           c.name = "Death";);
-    default: FAIL << "This is not handled here " << int(id);
+    default: FATAL << "This is not handled here " << int(id);
   }
-  FAIL << "unhandled case";
+  FATAL << "unhandled case";
   return CreatureAttributes([](CreatureAttributes&) {});
 }
 

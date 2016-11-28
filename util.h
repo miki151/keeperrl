@@ -356,7 +356,7 @@ class EnumInfo<Name> { \
     for (int i : Range(size)) \
       if (getString(Name(i)) == s) \
         return Name(i); \
-    FAIL << #Name << " value not found " << s;\
+    FATAL << #Name << " value not found " << s;\
     return Name(0);\
   }\
   static optional<Name> fromStringSafe(const string& s) {\
@@ -608,7 +608,7 @@ class RandomGen {
 
 extern RandomGen Random;
 
-inline Debug& operator <<(Debug& d, Rectangle rect) {
+inline std::ostream& operator <<(std::ostream& d, Rectangle rect) {
   return d << "(" << rect.left() << "," << rect.top() << ") (" << rect.right() << "," << rect.bottom() << ")";
 }
 
@@ -1073,41 +1073,18 @@ vector<T> concat(const vector<vector<T>>& vectors) {
   return ret;
 }
 
-template<class T>
-inline T& operator <<(T& d, Vec2 msg) {
+inline std::ostream& operator <<(std::ostream& d, Vec2 msg) {
   return d << "(" << msg.x << "," << msg.y << ")";
 }
 
-inline std::istream& operator >>(std::istream& d, Vec2& msg) {
-  string in;
-  d >> in;
-  vector<string> s = split(in.substr(1, in.size() - 2), {','});
-  CHECKEQ((int)s.size(), 2);
-  msg = Vec2(fromString<int>(s[0]), fromString<int>(s[1]));
-  return d;
-}
-
 template<class T>
-Debug& operator<<(Debug& d, const Table<T>& container){
+std::ostream& operator<<(std::ostream& d, const Table<T>& container){
   for (int i : Range(container.height())) {
     d << i << ":";
     for (int j : Range(container.width()))
       d << container[j][i] << ",";
     d << '\n';
   }
-  return d;
-}
-
-inline NoDebug& operator <<(NoDebug& d, Vec2 msg) {
-  return d;
-}
-
-inline NoDebug& operator <<(NoDebug& d, Rectangle msg) {
-  return d;
-}
-
-template<class T>
-NoDebug& operator<<(NoDebug& d, const Table<T>& container){
   return d;
 }
 
@@ -1655,3 +1632,5 @@ class DisjointSets {
   vector<int> size;
 };
 
+extern int getSize(const string&);
+extern const char* getString(const string&);

@@ -335,7 +335,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(Model* model, EnemyInfo& enemy) {
               LevelMaker::sokobanFromFile(random, mainSettlement, sokoLevel));
           return extraSettlement;
         } catch (LevelGenException) {
-          Debug() << "Retrying";
+          INFO << "Retrying";
         }
       }
       throw LevelGenException();
@@ -457,10 +457,10 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
         meter->reset();
       return buildFun();
     } catch (LevelGenException) {
-      Debug() << "Retrying level gen";
+      INFO << "Retrying level gen";
     }
   }
-  FAIL << "Couldn't generate a level";
+  FATAL << "Couldn't generate a level";
   return nullptr;
 
 }

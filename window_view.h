@@ -96,7 +96,8 @@ class WindowView: public View {
   virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) override;
   virtual bool creaturePrompt(const string& title, const vector<CreatureInfo>&) override;
- 
+  virtual void logMessage(const string&) override;
+
   private:
 
   Renderer& renderer;
@@ -170,6 +171,7 @@ class WindowView: public View {
   function<void()> getButtonCallback(UserInput);
 
   recursive_mutex renderMutex;
+  recursive_mutex logMutex;
 
   bool lockKeyboard = false;
 
@@ -247,4 +249,5 @@ class WindowView: public View {
   vector<Sound> soundQueue;
   EnumMap<SoundId, optional<milliseconds>> lastPlayed;
   SoundLibrary* soundLibrary;
+  deque<string> messageLog;
 };

@@ -261,7 +261,7 @@ Dir Vec2::getCardinalDir() const {
     return Dir::W;
   if (x == -1 && y == -1)
     return Dir::NW;
-  FAIL << "Not cardinal dir " << *this;
+  FATAL << "Not cardinal dir " << *this;
   return Dir::N;
 }
 
@@ -467,7 +467,7 @@ Vec2 Vec2::getBearing() const {
     return Vec2(0, -1);
   if (ang >= 6.5 && ang < 7.5)
     return Vec2(1, -1);
-  FAIL << ang;
+  FATAL << ang;
   return Vec2(0, 0);
 }
 
@@ -791,7 +791,7 @@ static string toText(int num) {
     case 7: return "seven";
     case 8: return "eight";
     case 9: return "nine";
-    default: FAIL << "Unsupported number " << num;
+    default: FATAL << "Unsupported number " << num;
              return "";
   }
 }
@@ -964,4 +964,12 @@ int DisjointSets::getSet(int i) {
     i = j;
   }
   return ret;
+}
+
+int getSize(const std::string& s) {
+  return s.size();
+}
+
+const char* getString(const std::string& s) {
+  return s.c_str();
 }

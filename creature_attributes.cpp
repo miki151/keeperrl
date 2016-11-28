@@ -286,7 +286,7 @@ void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& effec
 }
 
 void CreatureAttributes::consume(Creature* self, const CreatureAttributes& other) {
-  Debug() << name->bare() << " consume " << other.name->bare();
+  INFO << name->bare() << " consume " << other.name->bare();
   self->you(MsgType::CONSUME, other.name->the());
   self->addPersonalEvent(self->getName().a() + " absorbs " + other.name->a());
   vector<string> adjectives;

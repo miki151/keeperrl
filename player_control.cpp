@@ -858,7 +858,7 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
       switch (trigger.get<FurnitureType>()) {
         case FurnitureType::THRONE: return "Throne";
         case FurnitureType::IMPALED_HEAD: return "Impaled heads";
-        default: FAIL << "Unsupported ROOM_BUILT type"; return "";
+        default: FATAL << "Unsupported ROOM_BUILT type"; return "";
       }
     case AttackTriggerId::POWER: return "Your power";
     case AttackTriggerId::FINISH_OFF: return "Finishing you off";
@@ -1384,7 +1384,7 @@ ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
       else
         return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, Item::getTrapName(type) + " trap");
     }
-  FAIL << "trap not found" << int(type);
+  FATAL << "trap not found" << int(type);
   return ViewObject(ViewId::EMPTY, ViewLayer::LARGE_ITEM);
 }
 

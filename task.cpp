@@ -525,7 +525,7 @@ class ApplyItem : public BringItem {
       return c->wait();
     } else {
       if (it.size() > 1)
-        FAIL << it[0]->getName() << " " << it[0]->getUniqueId().getHash() << " "  << it[1]->getName() << " " <<
+        FATAL << it[0]->getName() << " " << it[0]->getUniqueId().getHash() << " "  << it[1]->getName() << " " <<
             it[1]->getUniqueId().getHash();
       Item* item = getOnlyElement(it);
       if (auto action = c->applyItem(item))

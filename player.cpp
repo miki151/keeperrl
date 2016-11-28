@@ -131,7 +131,7 @@ static string getSlotSuffix(EquipmentSlot slot) {
 }
 
 void Player::onBump(Creature*) {
-  FAIL << "Shouldn't call onBump on a player";
+  FATAL << "Shouldn't call onBump on a player";
 }
 
 string Player::getInventoryItemName(const Item* item, bool plural) const {
@@ -221,7 +221,7 @@ static string getText(ItemClass type) {
     case ItemClass::OTHER: return "Other";
     case ItemClass::GOLD: return "Gold";
   }
-  FAIL << int(type);
+  FATAL << int(type);
   return "";
 }
 
@@ -315,7 +315,7 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
       if (getCreature()->isEquipmentAppropriate(items[0]) || getView()->yesOrNoPrompt(
           items[0]->getTheName() + " is too heavy and will incur an accuracy penalty. Do you want to continue?"))
         tryToPerform(getCreature()->equip(items[0])); break;
-    default: FAIL << "Unhandled item action " << int(action);
+    default: FATAL << "Unhandled item action " << int(action);
   }
 }
 
@@ -353,13 +353,13 @@ void Player::travelAction() {
   vector<Vec2> squareDirs = getCreature()->getPosition().getTravelDir();
   if (squareDirs.size() != 2) {
     travelling = false;
-    Debug() << "Stopped by multiple routes";
+    INFO << "Stopped by multiple routes";
     return;
   }
   optional<int> myIndex = findElement(squareDirs, -travelDir);
   if (!myIndex) { // This was an assertion but was failing
     travelling = false;
-    Debug() << "Stopped by bad travel data";
+    INFO << "Stopped by bad travel data";
     return;
   }
   travelDir = squareDirs[(*myIndex + 1) % 2];*/
@@ -392,7 +392,7 @@ void Player::payDebtAction() {
             privateMessage("You pay " + c->getName().the() + " " + toString(debt) + " gold.");
         }
       } else {
-        Debug() << "No debt " << c->getName().bare();
+        INFO << "No debt " << c->getName().bare();
       }
     }
 }
@@ -576,7 +576,7 @@ void Player::makeMove() {
   else if (target && action.getId() == UserInputId::IDLE)
     targetAction();
   else {
-    Debug() << "Action " << int(action.getId());
+    INFO << "Action " << int(action.getId());
   vector<Vec2> direction;
   bool travel = false;
   bool wasJustTravelling = travelling || !!target;

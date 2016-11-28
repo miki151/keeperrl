@@ -16,21 +16,14 @@
 #pragma once
 
 #include <string>
+#include <ostream>
+#include <functional>
 
-#define DEBUG
-
-#ifdef DEBUG
-
-#define FAIL Debug(FATAL, __FILE__, __LINE__)
-#define CHECK(exp) if (!(exp)) Debug(FATAL, __FILE__, __LINE__) << ": " << #exp << " is false. "
-//#define CHECKEQ(exp, exp2) if ((exp) != (exp2)) Debug(FATAL) << __FILE__ << ":" << __LINE__ << ": " << #exp << " = " << #exp2 << " is false. " << exp << " " << exp2
-#define TRY(exp, msg) do { try { exp; } catch (...) { Debug(FATAL) << __FILE__ << ":" << __LINE__ << ": " << #exp << " failed. " << msg; exp; } } while(0)
-
-#else
-
-#define CHECK(exp) exp
-#define TRY(exp, msg) exp
-#endif
+#define FATAL FatalLog.get() << "FATAL " << __FILE__ << ":" << __LINE__ << " "
+#define INFO InfoLog.get() << __FILE__ << ":" <<  __LINE__ << " "
+#define CHECK(exp) if (!(exp)) FATAL << ": " << #exp << " is false. "
+//#define CHECKEQ(exp, exp2) if ((exp) != (exp2)) FATAL << __FILE__ << ":" << __LINE__ << ": " << #exp << " = " << #exp2 << " is false. " << exp << " " << exp2
+//#define TRY(exp, msg) do { try { exp; } catch (...) { FATAL << __FILE__ << ":" << __LINE__ << ": " << #exp << " failed. " << msg; exp; } } while(0)
 
 #ifndef WINDOWS
 
@@ -41,7 +34,7 @@
   exp; \
   gettimeofday(&time1, nullptr); \
   suseconds_t m2 = time1.tv_usec + time1.tv_sec * 1000000; \
-  Debug() << text << " " << int(m2 - m1);} while(0);
+  INFO << text << " " << int(m2 - m1);} while(0);
 
 #else
 
@@ -55,73 +48,99 @@
 #define NO_RELEASE(exp) exp
 #endif
 
-enum DebugType { INFO, FATAL };
 
-class NoDebug {
-  public:
-  NoDebug& operator <<(const string& msg) { return *this;}
-  NoDebug& operator <<(const int msg) {return *this;}
-  NoDebug& operator <<(const long long msg) {return *this;}
-  NoDebug& operator <<(const size_t msg) {return *this;}
-  NoDebug& operator <<(const char msg) {return *this;}
-  NoDebug& operator <<(const double msg) {return *this;}
-  NoDebug& operator <<(const milliseconds msg) {return *this;}
-  template<class T>
-  NoDebug& operator<<(const vector<T>& container) {return *this;}
-  template<class T>
-  NoDebug& operator<<(const vector<vector<T> >& container) {return *this;}
-};
+template<class T>
+std::ostream& operator<<(std::ostream& d, const vector<T>& container){
+  d << "{";
+  for (const T& elem : container) {
+    d << elem << ",";
+  }
+  d << "}";
+  return d;
+}
 
-class Debug {
+inline std::ostream& operator<<(std::ostream& d, const milliseconds& millis) {
+  return d << millis.count() << "ms";
+}
+
+template<class T>
+std::ostream& operator<<(std::ostream& d, const vector<vector<T> >& container){
+  d << "{";
+  for (int i = 0; i < container[0].size(); ++i) {
+    for (int j = 0; j < container[0].size(); ++i) {
+      d << container[j][i] << ",";
+    }
+    d << '\n';
+  }
+  d << "}";
+  return d;
+}
+
+class DebugOutput {
   public:
-  Debug(DebugType t = INFO, const string& msg = "", int line = 0);
-  static void init(bool log);
-  static void setErrorCallback(function<void(const string&)>);
-  Debug& operator <<(const string& msg);
-  Debug& operator <<(const int msg);
-  Debug& operator <<(const long long msg);
-  Debug& operator <<(const size_t msg);
-  Debug& operator <<(const char msg);
-  Debug& operator <<(const double msg);
-  Debug& operator <<(const milliseconds msg);
-  template<class T>
-  Debug& operator<<(const vector<T>& container);
-  template<class T>
-  Debug& operator<<(const vector<vector<T> >& container);
-  ~Debug();
+  static DebugOutput toStream(std::ostream&);
+  static DebugOutput toString(function<void(const string&)> callback);
+  static DebugOutput crash();
+
+  typedef function<void()> LineEndFun;
+  std::ostream& out;
+  LineEndFun onLineEnd;
 
   private:
-  string out;
-  DebugType type;
-  void add(const string& a);
+  DebugOutput(std::ostream& o, LineEndFun end) : out(o), onLineEnd(end) {}
 };
+
+class DebugLog {
+  public:
+  void addOutput(DebugOutput);
+
+  class Logger {
+    public:
+    Logger(vector<DebugOutput>& s) : outputs(s) {}
+
+    template <typename T>
+    Logger& operator << (const T& t) {
+      for (int i = outputs.size() - 1; i >= 0; --i)
+        outputs[i].out << t;
+      return *this;
+    }
+    ~Logger() {
+      for (int i = outputs.size() - 1; i >= 0; --i)
+        outputs[i].onLineEnd();
+    }
+
+    private:
+    vector<DebugOutput>& outputs;
+  };
+
+  Logger get();
+
+  private:
+  vector<DebugOutput> outputs;
+};
+
+extern DebugLog InfoLog;
+extern DebugLog FatalLog;
 
 template <class T, class V>
 const T& valueCheck(const T& e, const V& v, const string& msg) {
-  if (e != v) Debug(FATAL) << msg << " (" << e << " != " << v << ")";
+  if (e != v) FATAL << msg << " (" << e << " != " << v << ")";
   return e;
 }
 
 template <class T>
 T* notNullCheck(T* e, const char* file, int line, const char* exp) {
-  if (e == nullptr) Debug(FATAL) << file << ": " << line << ": " << exp << " is null";
+  if (e == nullptr) FATAL << file << ": " << line << ": " << exp << " is null";
   return e;
 }
 
 template <class T>
 unique_ptr<T> notNullCheck(unique_ptr<T> e, const char* file, int line, const char* exp) {
-  if (e.get() == nullptr) Debug(FATAL) << file << ": " << line << ": " << exp << " is null";
-  return e;
-}
-
-template <class T, class V>
-const T& rangeCheck(const T& e, const V& lower, const V& upper, const string& msg) {
-  if (e < lower || e > upper) Debug(FATAL) << msg << " (" << e << " not in range " << lower << "," << upper << ")";
+  if (e.get() == nullptr) FATAL << file << ": " << line << ": " << exp << " is null";
   return e;
 }
 
 #define NOTNULL(e) notNullCheck(e, __FILE__, __LINE__, #e)
 #define CHECKEQ(e, v) valueCheck(e, v, string(__FILE__) + ":" + toString(__LINE__) + ": " + #e + " != " + #v + " ")
 #define CHECKEQ2(e, v, msg) valueCheck(e, v, string(__FILE__) + ":" + toString(__LINE__) + ": " + #e + " != " + #v + " " + msg)
-#define CHECK_RANGE(e, lower, upper, msg) rangeCheck(e, lower, upper, string(__FILE__) + ":" + toString(__LINE__) + ": " + msg)
 

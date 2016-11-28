@@ -313,7 +313,7 @@ static int getSummonTtl(CreatureId id) {
     case CreatureId::SPIRIT: return 100;
     case CreatureId::FLY: return 100;
     case CreatureId::AUTOMATON: return 100;
-    default: FAIL << "Unsupported summon creature" << int(id);
+    default: FATAL << "Unsupported summon creature" << int(id);
              return 0;
   }
 }
@@ -324,7 +324,7 @@ static Range getSummonNumber(CreatureId id) {
     case CreatureId::SPIRIT: return Range(2, 5);
     case CreatureId::FLY: return Range(3, 7);
     case CreatureId::AUTOMATON: return Range(1, 2);
-    default: FAIL << "Unsupported summon creature" << int(id);
+    default: FATAL << "Unsupported summon creature" << int(id);
              return Range(0);
   }
 }
@@ -353,7 +353,7 @@ static void summon(Creature* summoner, CreatureId id) {
 void Effect::applyToCreature(Creature* c, const EffectType& type, EffectStrength strengthEnum) {
   int strength = int(strengthEnum);
   switch (type.getId()) {
-    case EffectId::LEAVE_BODY: FAIL << "Implement"; break;
+    case EffectId::LEAVE_BODY: FATAL << "Implement"; break;
     case EffectId::LASTING:
         c->addEffect(type.get<LastingEffect>(), getDuration(c, type.get<LastingEffect>(), strength)); break;
     case EffectId::TELE_ENEMIES: teleEnemies(c); break;
@@ -371,7 +371,7 @@ void Effect::applyToCreature(Creature* c, const EffectType& type, EffectStrength
     case EffectId::FIRE: c->getPosition().fireDamage(fireAmount[strength]); break;
     case EffectId::PORTAL: portal(c); break;
     case EffectId::TELEPORT: teleport(c); break;
-    case EffectId::ROLLING_BOULDER: FAIL << "Not implemented"; break;
+    case EffectId::ROLLING_BOULDER: FATAL << "Not implemented"; break;
     case EffectId::EMIT_POISON_GAS: emitPoisonGas(c->getPosition(), strength, true); break;
     case EffectId::SILVER_DAMAGE: c->affectBySilver(); break;
     case EffectId::CURE_POISON: c->removeEffect(LastingEffect::POISON); break;
@@ -382,7 +382,7 @@ void Effect::applyToCreature(Creature* c, const EffectType& type, EffectStrength
 void Effect::applyToPosition(Position pos, const EffectType& type, EffectStrength strength) {
   switch (type.getId()) {
     case EffectId::EMIT_POISON_GAS: emitPoisonGas(pos, int(strength), false); break;
-    default: FAIL << "Can't apply to position " << int(type.getId());
+    default: FATAL << "Can't apply to position " << int(type.getId());
   }
 }
 

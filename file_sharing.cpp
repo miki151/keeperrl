@@ -172,7 +172,7 @@ static vector<Elem> parseLines(const string& s, function<optional<Elem>(const ve
     iss.getline(buf, 10000);
     if (!iss)
       break;
-    Debug() << "Parsing " << string(buf);
+    INFO << "Parsing " << string(buf);
     if (auto elem = parseLine(split(buf, {','})))
       ret.push_back(*elem);
   }
@@ -182,7 +182,7 @@ static vector<Elem> parseLines(const string& s, function<optional<Elem>(const ve
 
 static optional<FileSharing::GameInfo> parseGame(const vector<string>& fields) {
   if (fields.size() >= 6) {
-    Debug() << "Parsed " << fields;
+    INFO << "Parsed " << fields;
     try {
       return FileSharing::GameInfo{fields[0], fields[1], fromString<int>(fields[2]), fromString<int>(fields[3]),
         fromString<int>(fields[4]), fromString<int>(fields[5])};
@@ -223,7 +223,7 @@ optional<vector<FileSharing::GameInfo>> FileSharing::listGames() {
 static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
   if (fields.size() < 6)
     return none;
-  Debug() << "Parsed " << fields;
+  INFO << "Parsed " << fields;
   FileSharing::SiteInfo elem;
   elem.fileInfo.filename = fields[0];
   try {
@@ -279,7 +279,7 @@ optional<string> FileSharing::download(const string& filename, const string& dir
   //progressFun = [&] (double p) { meter.setProgress(p);};
   if (CURL *curl = curl_easy_init()) {
     string path = dir + "/" + filename;
-    Debug() << "Downloading to " << path;
+    INFO << "Downloading to " << path;
     if (FILE* fp = fopen(path.c_str(), "wb")) {
       curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/uploads/" + filename).c_str());
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToFile);

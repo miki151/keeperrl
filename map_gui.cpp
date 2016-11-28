@@ -393,7 +393,7 @@ static Vec2 getAttachmentOffset(Dir dir, Vec2 size) {
     case Dir::S: return Vec2(0, size.y / 4);
     case Dir::E:
     case Dir::W: return Vec2(dir) * size.x / 2;
-    default: FAIL << "Bad attachment dir " << int(dir);
+    default: FATAL << "Bad attachment dir " << int(dir);
   }
   return Vec2();
 }

@@ -314,7 +314,7 @@ void Game::tick(double time) {
     for (Vec2 v : models.getBounds())
       if (Model* m = models[v].get())
         m->updateSunlightMovement();
-  Debug() << "Global time " << time;
+  INFO << "Global time " << time;
   for (Collective* col : collectives) {
     if (isVillainActive(col))
       col->update(col->getLevel()->getModel() == getCurrentModel());
@@ -385,7 +385,7 @@ Vec2 Game::getModelCoords(const Model* m) const {
   for (Vec2 v : models.getBounds())
     if (models[v].get() == m)
       return v;
-  FAIL << "Model not found";
+  FATAL << "Model not found";
   return Vec2();
 }
 

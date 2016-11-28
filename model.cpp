@@ -101,7 +101,7 @@ void Model::update(double totalTime) {
         ". Any idea why this happened?";
     if (creature->isDead()) {
       checkCreatureConsistency();
-      FAIL << "Dead: " << creature->getName().bare();
+      FATAL << "Dead: " << creature->getName().bare();
     }
     currentTime = creature->getLocalTime();
     if (currentTime > totalTime)
@@ -195,7 +195,7 @@ Level* Model::getLinkedLevel(Level* from, StairKey key) const {
   for (Level* target : getLevels())
     if (target != from && target->hasStairKey(key))
       return target;
-  FAIL << "Failed to find next level for " << key.getInternalKey() << " " << from->getName();
+  FATAL << "Failed to find next level for " << key.getInternalKey() << " " << from->getName();
   return nullptr;
 }
 

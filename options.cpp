@@ -161,7 +161,7 @@ static EnumMap<OptionId, optional<Options::Value>> parseOverrides(const string& 
     else if (parts[1] == "y")
       ret[id] = true;
     else
-      FAIL << "Bad override " << parts;
+      FATAL << "Bad override " << parts;
   }
   return ret;
 }

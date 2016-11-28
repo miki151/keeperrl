@@ -61,7 +61,7 @@ T& PositionMap<T>::getOrFail(Position pos) {
     else
       return outliers.at(levelId).at(pos.getCoord());
   } catch (std::out_of_range) {
-    FAIL << "getOrFail failed " << pos.getCoord();
+    FATAL << "getOrFail failed " << pos.getCoord();
     return defaultVal;
   }
 }

@@ -159,8 +159,8 @@ class Square : public Renderable {
   protected:
   void onEnter(Creature*);
   virtual void onEnterSpecial(Creature*) {}
-  virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
-  virtual void onApply(Position) { Debug(FATAL) << "Bad square applied"; }
+  virtual void onApply(Creature*) { FATAL << "Bad square applied"; }
+  virtual void onApply(Position) { FATAL << "Bad square applied"; }
   string SERIAL(name);
 
   private:

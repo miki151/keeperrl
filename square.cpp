@@ -243,7 +243,7 @@ PTrigger Square::removeTrigger(Position pos, Trigger* trigger) {
       pos.getLevel()->removeLightSource(pos.getCoord(), ret->getLightEmission());
       return ret;
     }
-  FAIL << "Trigger not found";
+  FATAL << "Trigger not found";
   return nullptr;
 }
 

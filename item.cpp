@@ -117,7 +117,7 @@ double Item::getFireSize() const {
 
 void Item::tick(Position position) {
   if (fire->isBurning()) {
-    Debug() << getName() << " burning " << fire->getSize();
+    INFO << getName() << " burning " << fire->getSize();
     position.fireDamage(fire->getSize());
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
     fire->tick();
@@ -221,7 +221,7 @@ string Item::getApplyMsgThirdPerson(const Creature* owner) const {
     case ItemClass::BOOK: return "reads " + getAName(false, owner);
     case ItemClass::TOOL: return "applies " + getAName(false, owner);
     case ItemClass::FOOD: return "eats " + getAName(false, owner);
-    default: FAIL << "Bad type for applying " << (int)getClass();
+    default: FATAL << "Bad type for applying " << (int)getClass();
   }
   return "";
 }
@@ -235,7 +235,7 @@ string Item::getApplyMsgFirstPerson(const Creature* owner) const {
     case ItemClass::BOOK: return "read " + getAName(false, owner);
     case ItemClass::TOOL: return "apply " + getAName(false, owner);
     case ItemClass::FOOD: return "eat " + getAName(false, owner);
-    default: FAIL << "Bad type for applying " << (int)getClass();
+    default: FATAL << "Bad type for applying " << (int)getClass();
   }
   return "";
 }
@@ -247,7 +247,7 @@ string Item::getNoSeeApplyMsg() const {
     case ItemClass::BOOK: return "You hear someone reading ";
     case ItemClass::TOOL: return "";
     case ItemClass::FOOD: return "";
-    default: FAIL << "Bad type for applying " << (int)getClass();
+    default: FATAL << "Bad type for applying " << (int)getClass();
   }
   return "";
 }

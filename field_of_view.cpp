@@ -91,7 +91,7 @@ FieldOfView::Visibility::Visibility(Level* level, VisionId vision, int x, int y)
 /*  ++numSamples;
   totalIter += visibleTiles.size();
   if (numSamples%100 == 0)
-    Debug() << numSamples << " iterations " << totalIter / numSamples << " avg";*/
+    INFO << numSamples << " iterations " << totalIter / numSamples << " avg";*/
 }
 
 const vector<Vec2>& FieldOfView::Visibility::getVisibleTiles() const {

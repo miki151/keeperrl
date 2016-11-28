@@ -92,9 +92,9 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> 
   while (!q.empty()) {
     ++numPopped;
     Vec2 pos = q.top().pos;
-   // Debug() << "Popping " << pos << " " << distance[pos]  << " " << (from ? (*from - pos).length4() : 0);
+   // INFO << "Popping " << pos << " " << distance[pos]  << " " << (from ? (*from - pos).length4() : 0);
     if (from == pos || (limit && distanceTable.getDistance(pos) >= *limit)) {
-      Debug() << "Shortest path from " << (from ? *from : Vec2(-1, -1)) << " to " << target << " " << numPopped
+      INFO << "Shortest path from " << (from ? *from : Vec2(-1, -1)) << " to " << target << " " << numPopped
         << " visited distance " << distanceTable.getDistance(pos);
       constructPath(pos);
       return;
@@ -116,7 +116,7 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> 
       }
     }
   }
-  Debug() << "Shortest path exhausted, " << numPopped << " visited";
+  INFO << "Shortest path exhausted, " << numPopped << " visited";
 }
 
 void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, double mult, Vec2 from,
@@ -137,7 +137,7 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2
     ++numPopped;
     Vec2 pos = q.top().pos;
     if (from == pos) {
-      Debug() << "Rev shortest path from " << " from " << target << " " << numPopped << " visited";
+      INFO << "Rev shortest path from " << " from " << target << " " << numPopped << " visited";
       constructPath(pos, true);
       return;
     }
@@ -151,7 +151,7 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2
         }
       }
   }
-  Debug() << "Rev shortest path from " << " from " << target << " " << numPopped << " visited";
+  INFO << "Rev shortest path from " << " from " << target << " " << numPopped << " visited";
 }
 
 void ShortestPath::constructPath(Vec2 pos, bool reversed) {
@@ -171,7 +171,7 @@ void ShortestPath::constructPath(Vec2 pos, bool reversed) {
       if (reversed)
         break;
       else
-        FAIL << "can't track path";
+        FATAL << "can't track path";
     }
     ret.push_back(pos);
     pos = next;

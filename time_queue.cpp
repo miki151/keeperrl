@@ -57,7 +57,7 @@ PCreature TimeQueue::removeCreature(Creature* cRef) {
       creatures.erase(creatures.begin() + i);
       return ret;
     }
-  FAIL << "Creature not found";
+  FATAL << "Creature not found";
   return nullptr;
 }
 

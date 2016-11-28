@@ -281,10 +281,10 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
       double gameTimeStep = view->getGameSpeed() / stepTimeMilli.count();
       auto timeMilli = view->getTimeMilli();
       double count = meter.getCount(timeMilli);
-      //Debug() << "Intervalometer " << timeMilli << " " << count;
+      //INFO << "Intervalometer " << timeMilli << " " << count;
       step = min(1.0, double(count) * gameTimeStep);
     }
-    Debug() << "Time step " << step;
+    INFO << "Time step " << step;
     if (auto exitInfo = game->update(step)) {
       if (exitInfo->getId() == Game::ExitId::QUIT && eraseSave()) {
         eraseSaveFile(game, GameSaveType::KEEPER);
@@ -359,7 +359,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
           return ret;
         }
         break;
-      default: FAIL << "Bad campaign mode";
+      default: FATAL << "Bad campaign mode";
     }
   }
   return nullptr;
@@ -621,7 +621,7 @@ PGame MainLoop::loadGame(string file) {
           Square::progressMeter = &meter;
         else
           Model::progressMeter = &meter;
-        Debug() << "Loading from " << file;
+        INFO << "Loading from " << file;
         game = loadGameFromFile(userPath + "/" + file);});
   if (!game)
     view->presentText("Sorry", "This save file is corrupted :(");

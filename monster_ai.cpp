@@ -370,7 +370,7 @@ class Fighter : public Behaviour {
         panicWeight = 1;
       if (other->hasCondition(CreatureCondition::SLEEPING))
         panicWeight = 0;
-      Debug() << creature->getName().bare() << " panic weight " << panicWeight;
+      INFO << creature->getName().bare() << " panic weight " << panicWeight;
       if (panicWeight >= 0.5) {
         double dist = creature->getPosition().dist8(other->getPosition());
         if (dist < 7) {
@@ -526,7 +526,7 @@ class Fighter : public Behaviour {
     CHECK(other);
     if (other->getAttributes().isBoulder())
       return NoMove;
-    Debug() << creature->getName().bare() << " enemy " << other->getName().bare();
+    INFO << creature->getName().bare() << " enemy " << other->getName().bare();
     Vec2 enemyDir = creature->getPosition().getDir(other->getPosition());
     distance = enemyDir.length8();
     if (creature->getBody().isHumanoid() && !creature->getWeapon()) {

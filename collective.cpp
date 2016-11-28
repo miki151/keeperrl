@@ -251,7 +251,7 @@ PItem Collective::buyItem(Item* item) {
         ret->setShopkeeper(nullptr);
         return ret;
       }
-  FAIL << "Couldn't find item";
+  FATAL << "Couldn't find item";
   return nullptr;
 }
 
@@ -588,7 +588,7 @@ static vector<Position> getSpawnPos(const vector<Creature*>& creatures, vector<P
       pos = Random.choose(allPositions);
     } while ((!pos.canEnter(c) || contains(spawnPos, pos)) && --cnt > 0);
     if (cnt == 0) {
-      Debug() << "Couldn't spawn immigrant " << c->getName().bare();
+      INFO << "Couldn't spawn immigrant " << c->getName().bare();
       return {};
     } else
       spawnPos.push_back(pos);
@@ -1113,7 +1113,7 @@ void Collective::takeResource(const CostInfo& cost) {
             return;
         }
       }
-  FAIL << "Not enough " << config->getResourceInfo(cost.id).name << " missing " << num << " of " << cost.value;
+  FATAL << "Not enough " << config->getResourceInfo(cost.id).name << " missing " << num << " of " << cost.value;
 }
 
 void Collective::returnResource(const CostInfo& amount) {

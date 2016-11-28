@@ -98,7 +98,7 @@ void Furniture::tick(Position pos) {
   if (auto& fire = getFire())
     if (fire->isBurning()) {
       modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
-      Debug() << getName() << " burning " << fire->getSize();
+      INFO << getName() << " burning " << fire->getSize();
       for (Position v : pos.neighbors8(Random))
         if (fire->getSize() > Random.getDouble() * 40)
           v.fireDamage(fire->getSize() / 20);

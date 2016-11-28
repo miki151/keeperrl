@@ -232,6 +232,8 @@ class View {
   virtual bool isClockStopped() = 0;
 
   virtual void addSound(const Sound&) = 0;
+
+  virtual void logMessage(const string&) = 0;
 };
 
 enum class AnimationId {

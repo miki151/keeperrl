@@ -242,7 +242,7 @@ TechId Technology::getNeededTech(Spell* spell) {
   for (auto elem : spellLearning)
     if (elem.id == spell->getId())
       return elem.techId;
-  FAIL << "Spell not found";
+  FATAL << "Spell not found";
   return TechId(0);
 }
 

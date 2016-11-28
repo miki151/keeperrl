@@ -564,7 +564,7 @@ void Body::updateViewObject(ViewObject& obj) const {
 }
 
 bool Body::heal(Creature* c, double amount, bool replaceLimbs) {
-  Debug() << c->getName().the() << " heal";
+  INFO << c->getName().the() << " heal";
   if (replaceLimbs)
     healLimbs(c, true);
   if (health < 1) {
@@ -661,7 +661,6 @@ bool Body::affectByAcid(Creature* c) {
 
 void Body::bleed(Creature* c, double amount) {
   if (hasHealth()) {
-    CHECK_RANGE(amount, 0, 1000000, c->getName().bare());
     health -= amount;
     c->updateViewObject();
   }

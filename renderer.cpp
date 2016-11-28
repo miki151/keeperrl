@@ -103,7 +103,7 @@ Texture::Texture(const string& fileName){
   SDL::SDL_Surface* image= SDL::IMG_Load(fileName.c_str());
   CHECK(image) << SDL::IMG_GetError();
   if (auto error = loadFromMaybe(image))
-    FAIL << "Couldn't load image: " << fileName << ". Error code " << toString(*error);
+    FATAL << "Couldn't load image: " << fileName << ". Error code " << toString(*error);
   SDL::SDL_FreeSurface(image);
   path = fileName;
 }
@@ -165,7 +165,7 @@ Texture::Texture(const string& path, int px, int py, int w, int h) {
   CHECK(!SDL_BlitSurface(image, &src, sub, &offset)) << SDL::SDL_GetError();
   SDL::SDL_FreeSurface(image);
   if (auto error = loadFromMaybe(sub))
-    FAIL << "Couldn't load image: " << path << ". Error code " << toString(*error);
+    FATAL << "Couldn't load image: " << path << ". Error code " << toString(*error);
   SDL::SDL_FreeSurface(sub);
   this->path = path;
 }
@@ -645,7 +645,7 @@ bool Renderer::loadTilesFromDir(const string& path, vector<Texture>& tiles, Vec2
   vector<string> files;
   while (dirent* ent = readdir(dir)) {
     string name(ent->d_name);
-    Debug() << "Found " << name;
+    INFO << "Found " << name;
     if (endsWith(name, imageSuf))
       files.push_back(name);
   }

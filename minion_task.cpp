@@ -41,7 +41,7 @@ static optional<Position> getTileToExplore(const Collective* collective, const C
       return getRandomCloseTile(c->getPosition(), border,
           [&](Position pos) { return pos.isSameLevel(collective->getLevel()) && !pos.isCovered()
               && (!c->getPosition().isSameLevel(collective->getLevel()) || c->isSameSector(pos));});
-    default: FAIL << "Unrecognized explore task: " << int(task);
+    default: FATAL << "Unrecognized explore task: " << int(task);
   }
   return none;
 }

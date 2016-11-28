@@ -199,7 +199,7 @@ void VillageControl::update(bool currentlyActive) {
         if (getCollective()->getGame()->isSingleModel())
           fighters = filter(fighters, [this] (const Creature* c) {
               return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });
-        Debug() << getCollective()->getName().getShort() << " fighters: " << int(fighters.size())
+        INFO << getCollective()->getName().getShort() << " fighters: " << int(fighters.size())
           << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
         if (fighters.size() >= villain->minTeamSize && 
             allMembers.size() >= villain->minPopulation + villain->minTeamSize)

@@ -867,7 +867,7 @@ class AlignmentGui : public GuiLayout {
       case GuiFactory::Alignment::RIGHT:
         return Rectangle(getBounds().right() - getWidth(), getBounds().top(), getBounds().right(),
             getBounds().bottom());
-      default: FAIL << "Unhandled alignment: " << (int)alignment;
+      default: FATAL << "Unhandled alignment: " << (int)alignment;
     }
     return Rectangle();
   }

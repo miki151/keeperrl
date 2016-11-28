@@ -255,7 +255,7 @@ class Potion : public Item {
 
   virtual void fireDamage(double amount, Position position) override {
     heat += amount;
-    Debug() << getName() << " heat " << heat;
+    INFO << getName() << " heat " << heat;
     if (heat > 0.1) {
       position.globalMessage(getAName() + " boils and explodes!");
       discarded = true;
@@ -683,7 +683,7 @@ const static vector<EffectType> potionEffects {
 
 ViewId getTrapViewId(TrapType t) {
   switch (t) {
-    case TrapType::BOULDER: FAIL << "Not handled trap type " << int(t);
+    case TrapType::BOULDER: FATAL << "Not handled trap type " << int(t);
     case TrapType::POISON_GAS: return ViewId::GAS_TRAP;
     case TrapType::ALARM: return ViewId::ALARM_TRAP;
     case TrapType::WEB: return ViewId::WEB_TRAP;
@@ -703,7 +703,7 @@ ViewId getRingViewId(LastingEffect e) {
   switch (e) {
     case LastingEffect::FIRE_RESISTANT: return ViewId::FIRE_RESIST_RING;
     case LastingEffect::POISON_RESISTANT: return ViewId::POISON_RESIST_RING;
-    default: FAIL << "Unhandled lasting effect " << int(e);
+    default: FATAL << "Unhandled lasting effect " << int(e);
   }
   return ViewId(0);
 }
@@ -727,11 +727,11 @@ void makeArtifact(ItemAttributes& i) {
     for (auto elem : badArtifactNames)
       for (auto pattern : elem.second)
         if (contains(toLower(*i.artifactName), pattern) && contains(*i.name, elem.first)) {
-          Debug() << "Rejected artifact " << *i.name << " " << *i.artifactName;
+          INFO << "Rejected artifact " << *i.name << " " << *i.artifactName;
           good = false;
         }
   } while (!good);
-  Debug() << "Making artifact " << *i.name << " " << *i.artifactName;
+  INFO << "Making artifact " << *i.name << " " << *i.artifactName;
   i.modifiers[ModifierType::DAMAGE] += Random.get(1, 4);
   i.modifiers[ModifierType::ACCURACY] += Random.get(1, 4);
   i.price *= 15;

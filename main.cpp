@@ -95,7 +95,7 @@ static void runGame(function<void()> game, function<void()> render, bool singleT
   if (singleThread)
     game();
   else {
-    FAIL << "Unimplemented";
+    FATAL << "Unimplemented";
   }
 }
 
@@ -218,10 +218,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     SetUnhandledExceptionFilter(miniDumpFunction2);
   if (vars.count("steam")) {
     if (SteamAPI_RestartAppIfNecessary(329970))
-      FAIL << "Init failure";
+      FATAL << "Init failure";
     if (!SteamAPI_Init()) {
       MessageBox(NULL, TEXT("Steam is not running. If you'd like to run the game without Steam, run the standalone exe binary."), TEXT("Failure"), MB_OK);
-      FAIL << "Steam is not running";
+      FATAL << "Steam is not running";
     }
     std::ofstream("steam_id") << SteamUser()->GetSteamID().ConvertToUint64() << std::endl;
   }
@@ -254,7 +254,7 @@ static options_description getOptions() {
     ("run_tests", "Run all unit tests and exit")
     ("worldgen_test", value<int>(), "Test how often world generation fails")
     ("force_keeper", "Skip main menu and force keeper mode")
-    ("logging", "Log to log.out")
+    ("stderr", "Log to stderr")
     ("free_mode", "Run in free ascii mode")
 #ifndef RELEASE
     ("quick_level", "")
@@ -298,16 +298,21 @@ static int keeperMain(const variables_map& vars) {
     std::cout << getOptions() << endl;
     return 0;
   }
+  bool useSingleThread = true;//vars.count("single_thread");
+  FatalLog.addOutput(DebugOutput::crash());
+  FatalLog.addOutput(DebugOutput::toStream(std::cerr));
+#ifndef RELEASE
+  ogzstream compressedLog("log.gz");
+  InfoLog.addOutput(DebugOutput::toStream(compressedLog));
+#endif
+  FatalLog.addOutput(DebugOutput::toString(
+      [](const string& s) { ofstream("stacktrace.out") << s << "\n" << std::flush; } ));
+  if (vars.count("stderr") || vars.count("run_tests"))
+    InfoLog.addOutput(DebugOutput::toStream(std::cerr));
   if (vars.count("run_tests")) {
     testAll();
     return 0;
   }
-  bool useSingleThread = true;//vars.count("single_thread");
-  unique_ptr<View> view;
-  unique_ptr<CompressedInput> input;
-  unique_ptr<CompressedOutput> output;
-  string lognamePref = "log";
-  Debug::init(vars.count("logging"));
   Skill::init();
   Technology::init();
   Spell::init();
@@ -331,8 +336,8 @@ static int keeperMain(const variables_map& vars) {
 #endif
   else
     userPath = USER_DIR;
-  Debug() << "Data path: " << dataPath;
-  Debug() << "User path: " << userPath;
+  INFO << "Data path: " << dataPath;
+  INFO << "User path: " << userPath;
   string uploadUrl;
   if (vars.count("upload_url"))
     uploadUrl = vars["upload_url"].as<string>();
@@ -347,7 +352,7 @@ static int keeperMain(const variables_map& vars) {
   Random.init(seed);
   long long installId = getInstallId(userPath + "/installId.txt", Random);
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
-  Debug::setErrorCallback([&renderer](const string& s) { renderer.showError(s);});
+  FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
@@ -362,26 +367,12 @@ static int keeperMain(const variables_map& vars) {
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
   renderer.setCursorPath(freeDataPath + "/images/mouse_cursor.png", freeDataPath + "/images/mouse_cursor2.png");
-  if (vars.count("replay")) {
-    string fname = vars["replay"].as<string>();
-    Debug() << "Reading from " << fname;
-    input.reset(new CompressedInput(fname.c_str()));
-    input->getArchive() >> seed;
-    Random.init(seed);
-    view.reset(WindowView::createReplayView(input->getArchive(),
-          {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
-  } else {
-    if (vars.count("record")) {
-      string fname = vars["record"].as<string>();
-      output.reset(new CompressedOutput(fname.c_str()));
-      output->getArchive() << seed;
-      Debug() << "Writing to " << fname;
-      view.reset(WindowView::createLoggingView(output->getArchive(),
-            {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
-    } else 
-      view.reset(WindowView::createDefaultView(
-            {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
-  } 
+  unique_ptr<View> view;
+  view.reset(WindowView::createDefaultView(
+      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
+#ifdef RELEASE
+  InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
+#endif
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);
   if (useSingleThread) {

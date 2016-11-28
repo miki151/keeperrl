@@ -412,7 +412,7 @@ void testSectors3() {
         if (v.inRectangle(bounds))
           CHECK(t[v] == s.same(pos, v));
   }
-  std::cout << s.getNumSectors() << " sectors" << endl;
+  INFO << s.getNumSectors() << " sectors";
 }
 
 void testReverse() {
@@ -460,7 +460,7 @@ void testOwnerPointer() {
   }
   CHECK(!w1);
   CHECK(!w2);
-  CHECKEQ(numRef, 0);
+  CHECKEQ(numRef, 1);
 }
 
 int testAll() {
@@ -494,6 +494,6 @@ int testAll() {
   testReverse2();
   testReverse3();
   testOwnerPointer();
-  Debug() << "-----===== OK =====-----";
+  INFO << "-----===== OK =====-----";
   return 0;
 }
