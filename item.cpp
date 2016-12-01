@@ -29,6 +29,7 @@
 #include "sound.h"
 #include "item_class.h"
 #include "corpse_info.h"
+#include "equipment.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -66,12 +67,20 @@ ItemPredicate Item::classPredicate(ItemClass cl) {
   return [cl](const Item* item) { return item->getClass() == cl; };
 }
 
+ItemPredicate Item::equipmentSlotPredicate(EquipmentSlot slot) {
+  return [slot](const Item* item) { return item->canEquip() && item->getEquipmentSlot() == slot; };
+}
+
 ItemPredicate Item::classPredicate(vector<ItemClass> cl) {
   return [cl](const Item* item) { return contains(cl, item->getClass()); };
 }
 
 ItemPredicate Item::namePredicate(const string& name) {
   return [name](const Item* item) { return item->getName() == name; };
+}
+
+ItemPredicate Item::isRangedWeaponPredicate() {
+ return [](const Item* it) { return it->canEquip() && it->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON;};
 }
 
 vector<pair<string, vector<Item*>>> Item::stackItems(vector<Item*> items, function<string(const Item*)> suffix) {

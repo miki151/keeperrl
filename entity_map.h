@@ -29,6 +29,7 @@ class EntityMap {
   Value& getOrFail(const Key*);
   Value& getOrInit(const Key*);
   optional<Value> getMaybe(const Key*) const;
+  const Value& getOrElse(const Key*, const Value&) const;
   bool empty() const;
   void clear();
   int getSize() const;
@@ -39,6 +40,7 @@ class EntityMap {
   Value& getOrFail(typename UniqueEntity<Key>::Id);
   Value& getOrInit(typename UniqueEntity<Key>::Id);
   optional<Value> getMaybe(typename UniqueEntity<Key>::Id) const;
+  const Value& getOrElse(typename UniqueEntity<Key>::Id, const Value&) const;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);

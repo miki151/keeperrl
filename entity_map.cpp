@@ -41,6 +41,11 @@ optional<Value> EntityMap<Key, Value>::getMaybe(const Key* key) const {
 }
 
 template <typename Key, typename Value>
+const Value& EntityMap<Key, Value>::getOrElse(const Key* key, const Value& value) const {
+  return getOrElse(key->getUniqueId(), value);
+}
+
+template <typename Key, typename Value>
 bool EntityMap<Key, Value>::empty() const {
   return elems.empty();
 }
@@ -90,6 +95,15 @@ optional<Value> EntityMap<Key, Value>::getMaybe(typename UniqueEntity<Key>::Id i
 }
 
 template <typename Key, typename Value>
+const Value& EntityMap<Key, Value>::getOrElse(typename UniqueEntity<Key>::Id id, const Value& value) const {
+  auto iter = elems.find(id);
+  if (iter != elems.end())
+    return iter->second;
+  else
+    return value;
+}
+
+template <typename Key, typename Value>
 typename EntityMap<Key, Value>::Iter EntityMap<Key, Value>::begin() const {
   return elems.begin();
 }
@@ -112,6 +126,7 @@ SERIALIZABLE_TMPL(EntityMap, Creature, int);
 SERIALIZABLE_TMPL(EntityMap, Creature, Collective::CurrentTaskInfo);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<AttractionInfo>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<Position>);
+SERIALIZABLE_TMPL(EntityMap, Creature, vector<WItem>);
 SERIALIZABLE_TMPL(EntityMap, Creature, Creature*);
 SERIALIZABLE_TMPL(EntityMap, Task, double);
 SERIALIZABLE_TMPL(EntityMap, Item, Creature::Id);

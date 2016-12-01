@@ -50,7 +50,7 @@ void CollectiveWarnings::considerWeaponWarning(Collective* col) {
   PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
   int numNeededWeapons = 0;
   for (Creature* c : col->getCreatures(MinionTrait::FIGHTER))
-    if (col->usesEquipment(c) && col->getMinionEquipment().needs(c, genWeapon.get(), true, true))
+    if (col->usesEquipment(c) && col->getMinionEquipment().needsItem(c, genWeapon.get(), true))
       ++numNeededWeapons;
   setWarning(Warning::NO_WEAPONS, numNeededWeapons > numWeapons);
 }

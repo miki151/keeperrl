@@ -309,14 +309,14 @@ static int keeperMain(const variables_map& vars) {
       [](const string& s) { ofstream("stacktrace.out") << s << "\n" << std::flush; } ));
   if (vars.count("stderr") || vars.count("run_tests"))
     InfoLog.addOutput(DebugOutput::toStream(std::cerr));
-  if (vars.count("run_tests")) {
-    testAll();
-    return 0;
-  }
   Skill::init();
   Technology::init();
   Spell::init();
   Vision::init();
+  if (vars.count("run_tests")) {
+    testAll();
+    return 0;
+  }
   string dataPath;
   if (vars.count("data_dir"))
     dataPath = vars["data_dir"].as<string>();

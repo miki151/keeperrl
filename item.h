@@ -38,7 +38,7 @@ RICH_ENUM(TrapType,
   TERROR
 );
 
-class Item : public Renderable, public UniqueEntity<Item> {
+class Item : public Renderable, public UniqueEntity<Item>, public std::enable_shared_from_this<Item> {
   public:
   Item(const ItemAttributes&);
   virtual ~Item();
@@ -105,8 +105,10 @@ class Item : public Renderable, public UniqueEntity<Item> {
 
   static ItemPredicate effectPredicate(EffectType);
   static ItemPredicate classPredicate(ItemClass);
+  static ItemPredicate equipmentSlotPredicate(EquipmentSlot);
   static ItemPredicate classPredicate(vector<ItemClass>);
   static ItemPredicate namePredicate(const string& name);
+  static ItemPredicate isRangedWeaponPredicate();
 
   static vector<pair<string, vector<Item*>>> stackItems(vector<Item*>,
       function<string(const Item*)> addSuffix = [](const Item*) { return ""; });

@@ -62,8 +62,7 @@ optional<T> fromStringSafe(const string& s);
 
 #define DEF_OWNER_PTR(T) class T;\
   typedef OwnerPointer<T> P##T; \
-  typedef WeakPointer<T> W##T; \
-  typedef WeakPointer<const T> WConst##T; \
+  typedef weak_ptr<T> W##T; \
   template <typename... Args> \
   OwnerPointer<T> make##T(Args... a) { \
     return makeOwner<T>(a...); \

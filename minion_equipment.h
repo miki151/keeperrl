@@ -26,21 +26,23 @@ class MinionEquipment {
   public:
 
   static bool isItemUseful(const Item*);
-  bool needs(const Creature* c, const Item* it, bool noLimit = false, bool replacement = false) const;
+  bool needsItem(const Creature* c, const Item* it, bool noLimit = false) const;
   optional<UniqueEntity<Creature>::Id> getOwner(const Item*) const;
   bool isOwner(const Item*, const Creature*) const;
-  void own(const Creature*, const Item*);
+  void own(const Creature*, Item*);
   void discard(const Item*);
   void discard(UniqueEntity<Item>::Id);
-  void updateOwners(const vector<Item*>, const vector<Creature*>&);
+  void updateOwners(const vector<Creature*>&);
+  vector<Item*> getItemsOwnedBy(const Creature*, ItemPredicate = nullptr) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
-  static int getItemValue(const Item*);
-
   void setLocked(const Creature*, UniqueEntity<Item>::Id, bool locked);
   bool isLocked(const Creature*, UniqueEntity<Item>::Id) const;
+  void sortByEquipmentValue(vector<Item*>& items) const;
+  void autoAssign(const Creature*, vector<Item*> possibleItems);
+  void updateItems(const vector<Item*>& items);
 
   private:
   enum EquipmentType { ARMOR, HEALING, ARCHERY, COMBAT_ITEM };
@@ -48,8 +50,11 @@ class MinionEquipment {
   static optional<EquipmentType> getEquipmentType(const Item* it);
   optional<int> getEquipmentLimit(EquipmentType type) const;
   bool isItemAppropriate(const Creature*, const Item*) const;
+  Item* getWorstItem(const Creature*, vector<Item*>) const;
+  int getItemValue(const Item*) const;
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
+  EntityMap<Creature, vector<WItem>> SERIAL(myItems);
   set<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>> SERIAL(locked);
 };
 

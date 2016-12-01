@@ -952,6 +952,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.name = "short bow";
             i.itemClass = ItemClass::RANGED_WEAPON;
             i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
+            i.twoHanded = true;
             i.weight = 1;
             i.modifiers[ModifierType::FIRED_ACCURACY] = 10 + maybePlusMinusOne(4);
             i.price = 60;);

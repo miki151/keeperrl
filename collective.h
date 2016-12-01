@@ -70,7 +70,6 @@ class Collective : public TaskCallback {
   void cancelTask(const Creature*);
   void banishCreature(Creature*);
   bool wasBanished(const Creature*) const;
-  void ownItem(const Creature*, const Item*);
   void setVillainType(VillainType);
   optional<VillainType> getVillainType() const;
   CollectiveControl* getControl() const;
@@ -135,7 +134,6 @@ class Collective : public TaskCallback {
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
-  static void sortByEquipmentValue(vector<Item*>&);
 
   vector<pair<Item*, Position>> getTrapItems(TrapType, const vector<Position>&) const;
 
@@ -188,7 +186,6 @@ class Collective : public TaskCallback {
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
   void freeTeamMembers(TeamId);
-  void ownItems(const Creature* who, const vector<Item*>);
 
   const CollectiveName& getName() const;
   const TaskMap& getTaskMap() const;
@@ -269,8 +266,6 @@ class Collective : public TaskCallback {
   MoveInfo getDropItems(Creature*);
   MoveInfo getWorkerMove(Creature*);
   MoveInfo getTeamMemberMove(Creature*);
-  void autoEquipment(Creature* creature, bool replace);
-  Item* getWorstItem(const Creature*, vector<Item*> items) const;
   int getTaskDuration(const Creature*, MinionTask) const;
   bool considerImmigrant(const ImmigrantInfo&);
   void considerBuildingBeds();

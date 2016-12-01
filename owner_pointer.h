@@ -4,48 +4,6 @@
 #include "util.h"
 
 template <typename T>
-class OwnerPointer;
-
-template <typename T>
-class WeakPointer {
-  public:
-
-  WeakPointer() {}
-
-  WeakPointer(const OwnerPointer<T>& p) : elem(p.elem) {}
-  WeakPointer(std::nullptr_t) {}
-  WeakPointer(const WeakPointer<T>& o) : elem(o.elem) {}
-
-  WeakPointer<T>& operator = (const WeakPointer<T>& o) {
-    elem = o.elem;
-    return *this;
-  }
-
-  T* operator -> () const {
-    return elem.lock().get();
-  }
-
-  T& operator * () const {
-    return *elem.lock();
-  }
-
-  T* get() const {
-    return elem.lock().get();
-  }
-
-  operator bool() const {
-    return !elem.expired();
-  }
-
-  bool operator !() const {
-    return elem.expired();
-  }
-
-  private:
-  weak_ptr<T> elem;
-};
-
-template <typename T>
 class OwnerPointer {
   public:
 
@@ -59,6 +17,10 @@ class OwnerPointer {
   OwnerPointer<T>& operator = (OwnerPointer<T>&& o) {
     elem = std::move(o.elem);
     return *this;
+  }
+
+  void clear() {
+    elem.reset();
   }
 
   T* operator -> () const {
@@ -81,10 +43,13 @@ class OwnerPointer {
     return !elem;
   }
 
+  weak_ptr<T> getWeakPointer() const {
+    return weak_ptr<T>(elem);
+  }
+
   SERIALIZE_ALL(elem)
 
   private:
-  friend class WeakPointer<T>;
 
   template <typename U, typename... Args>
   friend OwnerPointer<U> makeOwner(Args... a);
@@ -108,8 +73,8 @@ OwnerPointer<T> makeOwner(Args... a) {
 }
 
 template<class T>
-vector<WeakPointer<T>> getWeakPointers(vector<OwnerPointer<T>>& v) {
-  vector<WeakPointer<T>> ret;
+vector<weak_ptr<T>> getWeakPointers(vector<OwnerPointer<T>>& v) {
+  vector<weak_ptr<T>> ret;
   ret.resize(v.size());
   for (auto& el : v)
     ret.push_back(el.get());

@@ -447,11 +447,12 @@ static vector<ItemType> marketItems {
 void PlayerControl::addConsumableItem(Creature* creature) {
   double scrollPos = 0;
   while (1) {
-    const Item* chosenItem = chooseEquipmentItem(creature, {}, [&](const Item* it) {
-        return !getCollective()->getMinionEquipment().isOwner(it, creature) && !it->canEquip()
-        && getCollective()->getMinionEquipment().needs(creature, it, true); }, &scrollPos);
+    Item* chosenItem = chooseEquipmentItem(creature, {}, [&](const Item* it) {
+        return !getCollective()->getMinionEquipment().isOwner(it, creature)
+            && !it->canEquip()
+            && getCollective()->getMinionEquipment().needsItem(creature, it, true); }, &scrollPos);
     if (chosenItem)
-      getCollective()->ownItem(creature, chosenItem);
+      getCollective()->getMinionEquipment().own(creature, chosenItem);
     else
       break;
   }
@@ -459,7 +460,7 @@ void PlayerControl::addConsumableItem(Creature* creature) {
 
 void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
   vector<Item*> currentItems = creature->getEquipment().getItem(slot);
-  const Item* chosenItem = chooseEquipmentItem(creature, currentItems, [&](const Item* it) {
+  Item* chosenItem = chooseEquipmentItem(creature, currentItems, [&](const Item* it) {
       return !getCollective()->getMinionEquipment().isOwner(it, creature)
       && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slot; });
   if (chosenItem) {
@@ -470,7 +471,7 @@ void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
         || creature->isEquipmentAppropriate(chosenItem)
         || getView()->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " +
           creature->getName().the() + ", and will incur an accuracy penalty.\n Do you want to continue?"))
-      getCollective()->ownItem(creature, chosenItem);
+      getCollective()->getMinionEquipment().own(creature, chosenItem);
   }
 }
 
@@ -486,6 +487,7 @@ void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
         addEquipment(creature, *action.slot);
       else
         addConsumableItem(creature);
+      break;
     case ItemAction::LOCK:
       for (auto id : action.ids)
         getCollective()->getMinionEquipment().setLocked(creature, id, true);
@@ -618,7 +620,7 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   vector<Item*> availableItems;
   vector<Item*> usedItems;
   vector<Item*> allItems = getCollective()->getAllItems(predicate);
-  getCollective()->sortByEquipmentValue(allItems);
+  getCollective()->getMinionEquipment().sortByEquipmentValue(allItems);
   for (Item* item : allItems)
     if (!contains(currentItems, item)) {
       auto owner = getCollective()->getMinionEquipment().getOwner(item);
@@ -1308,12 +1310,6 @@ void PlayerControl::onEvent(const GameEvent& event) {
             addToMemory(pos);
           }
         }
-      }
-      break;
-    case EventId::PICKED_UP: {
-        auto info = event.get<EventInfo::ItemsHandled>();
-        if (info.creature == getControlled() && !getCollective()->hasTrait(info.creature, MinionTrait::WORKER))
-          getCollective()->ownItems(info.creature, info.items);
       }
       break;
     case EventId::WON_GAME:

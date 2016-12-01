@@ -15,5 +15,5 @@
 
 #pragma once
 
-int testAll();
+void testAll();
 

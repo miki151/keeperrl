@@ -173,7 +173,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     byTrait[t].push_back(c);
   if (auto spawnType = c->getAttributes().getSpawnType())
     bySpawnType[*spawnType].push_back(c);
-  for (const Item* item : c->getEquipment().getItems())
+  for (Item* item : c->getEquipment().getItems())
     minionEquipment->own(c, item);
   if (traits.contains(MinionTrait::FIGHTER)) {
     c->setMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this)));
@@ -415,13 +415,9 @@ void Collective::orderConsumption(Creature* consumer, Creature* who) {
   setTask(consumer, Task::consume(this, who));
 }
 
-void Collective::ownItem(const Creature* c, const Item* it) {
-  minionEquipment->own(c, it);
-}
-
 PTask Collective::getEquipmentTask(Creature* c) {
   if (Random.roll(40))
-    autoEquipment(c, true);
+    minionEquipment->autoAssign(c, getAllItems(ItemIndex::MINION_EQUIPMENT, false));
   vector<PTask> tasks;
   for (Item* it : c->getEquipment().getItems())
     if (!c->getEquipment().isEquipped(it) && c->getEquipment().canEquip(it))
@@ -813,8 +809,10 @@ void Collective::tick() {
       for (Position pos : zones->getPositions(ZoneId::PERMANENT_FETCH_ITEMS))
         fetchItems(pos, elem);
     }
-  if (config->getManageEquipment() && Random.roll(10))
-    minionEquipment->updateOwners(getAllItems(ItemIndex::MINION_EQUIPMENT, true), getCreatures());
+  if (config->getManageEquipment() && Random.roll(40)) {
+    minionEquipment->updateOwners(getCreatures());
+    minionEquipment->updateItems(getAllItems(ItemIndex::MINION_EQUIPMENT, true));
+  }
   workshops->scheduleItems(this);
 }
 
@@ -958,10 +956,10 @@ void Collective::onEvent(const GameEvent& event) {
         tileEfficiency->update(info.position);
       }
       break;
-    case EventId::EQUIPED:
+    /*case EventId::EQUIPED:
       minionEquipment->own(event.get<EventInfo::ItemsHandled>().creature,
           getOnlyElement(event.get<EventInfo::ItemsHandled>().items));
-      break;
+      break;*/
     case EventId::CONQUERED_ENEMY: {
       Collective* col = event.get<Collective*>();
       if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER) {
@@ -1148,55 +1146,6 @@ bool Collective::usesEquipment(const Creature* c) const {
     && !hasTrait(c, MinionTrait::PRISONER);
 }
 
-Item* Collective::getWorstItem(const Creature* c, vector<Item*> items) const {
-  Item* ret = nullptr;
-  for (Item* it : items)
-    if (!minionEquipment->isLocked(c, it->getUniqueId()) &&
-        (ret == nullptr || minionEquipment->getItemValue(it) < minionEquipment->getItemValue(ret)))
-      ret = it;
-  return ret;
-}
-
-void Collective::autoEquipment(Creature* creature, bool replace) {
-  map<EquipmentSlot, vector<Item*>> slots;
-  vector<Item*> myItems = filter(getAllItems(ItemIndex::CAN_EQUIP), [&](const Item* it) {
-      return minionEquipment->isOwner(it, creature);});
-  for (Item* it : myItems) {
-    EquipmentSlot slot = it->getEquipmentSlot();
-    if (slots[slot].size() < creature->getEquipment().getMaxItems(slot)) {
-      slots[slot].push_back(it);
-    } else  // a rare occurence that minion owns too many items of the same slot,
-          //should happen only when an item leaves the fortress and then is braught back
-      if (!minionEquipment->isLocked(creature, it->getUniqueId()))
-        minionEquipment->discard(it);
-  }
-  vector<Item*> possibleItems = filter(getAllItems(ItemIndex::MINION_EQUIPMENT, false), [&](const Item* it) {
-      return !minionEquipment->getOwner(it) && minionEquipment->needs(creature, it, false, replace); });
-  sortByEquipmentValue(possibleItems);
-  for (Item* it : possibleItems) {
-    if (!it->canEquip()) {
-      minionEquipment->own(creature, it);
-      if (it->getClass() != ItemClass::AMMO)
-        break;
-      else
-        continue;  
-    }
-    Item* replacedItem = getWorstItem(creature, slots[it->getEquipmentSlot()]);
-    int slotSize = creature->getEquipment().getMaxItems(it->getEquipmentSlot());
-    int numInSlot = slots[it->getEquipmentSlot()].size();
-    if (numInSlot < slotSize ||
-        (replacedItem && minionEquipment->getItemValue(replacedItem) < minionEquipment->getItemValue(it))) {
-      if (numInSlot == slotSize) {
-        minionEquipment->discard(replacedItem);
-        removeElement(slots[it->getEquipmentSlot()], replacedItem); 
-      }
-      minionEquipment->own(creature, it);
-      slots[it->getEquipmentSlot()].push_back(it);
-      break;
-    }
-  }
-}
-
 vector<Item*> Collective::getAllItems(bool includeMinions) const {
   vector<Item*> allItems;
   for (Position v : territory->getAll())
@@ -1205,16 +1154,6 @@ vector<Item*> Collective::getAllItems(bool includeMinions) const {
     for (Creature* c : getCreatures())
       append(allItems, c->getEquipment().getItems());
   return allItems;
-}
-
-void Collective::sortByEquipmentValue(vector<Item*>& items) {
-  sort(items.begin(), items.end(), [](const Item* it1, const Item* it2) {
-      int diff = MinionEquipment::getItemValue(it1) - MinionEquipment::getItemValue(it2);
-      if (diff == 0)
-        return it1->getUniqueId() < it2->getUniqueId();
-      else
-        return diff > 0;
-    });
 }
 
 vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinions) const {
@@ -1733,12 +1672,6 @@ int Collective::getPoints() const {
 
 void Collective::onRansomPaid() {
   control->onRansomPaid();
-}
-
-void Collective::ownItems(const Creature* who, const vector<Item*> items) {
-  for (const Item* it : items)
-    if (minionEquipment->isItemUseful(it))
-      minionEquipment->own(who, it);
 }
 
 void Collective::onCopulated(Creature* who, Creature* with) {

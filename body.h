@@ -113,10 +113,10 @@ class Body {
   bool isUndead() const;
   double getBoulderDamage() const;
 
-
   SERIALIZATION_DECL(Body);
 
   private:
+  friend class Test;
   Size getSize() const;
   void injureBodyPart(Creature*, BodyPart, bool drop);
   BodyPart getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;

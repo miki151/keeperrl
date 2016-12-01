@@ -74,6 +74,7 @@
 #include <boost/serialization/optional.hpp>
 #include <boost/serialization/bitset.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/weak_ptr.hpp>
 #include <boost/serialization/unique_ptr.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/variant.hpp>
