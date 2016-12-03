@@ -802,7 +802,7 @@ void Player::you(MsgType type, const string& param) {
     case MsgType::HIT: msg = "You hit " + param; break;
     default: break;
   }
-  privateMessage(msg);
+  privateMessage(PlayerMessage(msg, MessagePriority::HIGH));
 }
 
 Level* Player::getLevel() const {

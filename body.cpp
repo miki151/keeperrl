@@ -467,7 +467,7 @@ bool Body::isBleeding() const {
 
 void Body::getBadAdjectives(vector<AdjectiveInfo>& ret) const {
   if (health < 1)
-    ret.push_back({isBleeding() ? "Critically wounded" : "Wounded", ""});
+    ret.push_back({isBleeding() ? "Bleeding" : "Wounded", ""});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = numInjured(part))
       ret.push_back({getPlural(string("Injured ") + getBodyPartName(part), num), ""});
@@ -536,7 +536,7 @@ bool Body::tick(const Creature* c) {
   }
   if (isBleeding()) {
     health -= 1.0 / 40;
-    c->playerMessage("You are bleeding.");
+    c->playerMessage(PlayerMessage("You are bleeding.", MessagePriority::HIGH));
   }
   if (health <= 0) {
     c->you(MsgType::DIE_OF, c->isAffected(LastingEffect::POISON) ? "poisoning" : "bleeding");
