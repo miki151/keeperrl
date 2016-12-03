@@ -9,7 +9,9 @@ class ProgressMeter;
 class Options;
 class RetiredGames;
 
-enum class CampaignType { CAMPAIGN, FREE_PLAY, ENDLESS};
+RICH_ENUM(CampaignType,
+  CAMPAIGN, FREE_PLAY, ENDLESS
+);
 
 class Campaign {
   public:
@@ -50,7 +52,7 @@ class Campaign {
 
   const Table<SiteInfo>& getSites() const;
   void clearSite(Vec2);
-  static optional<Campaign> prepareCampaign(View*, Options*, RetiredGames&&, RandomGen&, PlayerType);
+  static optional<Campaign> prepareCampaign(View*, Options*, function<RetiredGames()>, RandomGen&, PlayerType);
   optional<Vec2> getPlayerPos() const;
   const string& getWorldName() const;
   bool isDefeated(Vec2) const;
@@ -63,7 +65,9 @@ class Campaign {
   PlayerType getPlayerType() const;
 
   map<string, string> getParameters() const;
-  vector<OptionId> getOptions(Options*) const;
+  vector<OptionId> getPrimaryOptions() const;
+  vector<OptionId> getSecondaryOptions() const;
+
   const char* getSiteChoiceTitle() const;
   const char* getIntroText() const;
 
@@ -82,7 +86,7 @@ class Campaign {
   set<Vec2> SERIAL(influencePos);
   int SERIAL(influenceSize);
   PlayerType SERIAL(playerType);
-  void setPlayerPos(Vec2 pos);
+  void setPlayerPos(Vec2, Options* options);
   CampaignType SERIAL(type);
 };
 

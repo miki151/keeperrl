@@ -119,9 +119,9 @@ class ReplayView : public View {
       return delegate->chooseSite(message, c, cur);
     }
 
-    virtual CampaignAction prepareCampaign(const Campaign& c, Options* options, RetiredGames& retired) override {
+    /*virtual CampaignAction prepareCampaign(const Campaign& c, Options* options, RetiredGames& retired) override {
       return delegate->prepareCampaign(c, options, retired);
-    }
+    }*/
 
     virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>& c,
         const string& cancelText) override {

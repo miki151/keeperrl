@@ -38,8 +38,10 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
   {OptionId::KEEPER_NAME, string("")},
+  {OptionId::KEEPER_GENDER, 0},
   {OptionId::KEEPER_SEED, string("")},
   {OptionId::ADVENTURER_NAME, string("")},
+  {OptionId::ADVENTURER_GENDER, 0},
   {OptionId::MAIN_VILLAINS, 4},
   {OptionId::RETIRED_VILLAINS, 1},
   {OptionId::LESSER_VILLAINS, 3},
@@ -67,8 +69,10 @@ const map<OptionId, string> names {
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::KEEPER_NAME, "Keeper's name"},
+  {OptionId::KEEPER_GENDER, "Keeper's avatar"},
   {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::ADVENTURER_NAME, "Adventurer's name"},
+  {OptionId::ADVENTURER_GENDER, "Adventurer's avatar"},
   {OptionId::MAIN_VILLAINS, "Main villains"},
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
@@ -127,7 +131,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
   }},
 };
 
-map<OptionId, Options::Trigger> triggers;
+static map<OptionId, Options::Trigger> triggers;
 
 void Options::addTrigger(OptionId id, Trigger trigger) {
   triggers[id] = trigger;
@@ -141,8 +145,13 @@ Options::Type Options::getType(OptionId id) {
   switch (id) {
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_SEED:
-    case OptionId::KEEPER_NAME: return Options::STRING;
-    default: return Options::INT;
+    case OptionId::KEEPER_NAME:
+      return Options::STRING;
+    case OptionId::ADVENTURER_GENDER:
+    case OptionId::KEEPER_GENDER:
+      return Options::VIEW_ID;
+    default:
+      return Options::INT;
   }
 }
 
@@ -201,6 +210,14 @@ int Options::getIntValue(OptionId id) {
   return v;
 }
 
+ViewId Options::getViewIdValue(OptionId id) {
+  return choicesViewId[id].at(boost::get<int>(getValue(id)) % choicesViewId[id].size());
+}
+
+void Options::setNextViewId(OptionId id) {
+  setValue(id, boost::get<int>(getValue(id)) + 1);
+}
+
 void Options::setLimits(OptionId id, int minV, int maxV) {
   limits[id] = make_pair(minV, maxV);
 }
@@ -238,7 +255,8 @@ string Options::getValueString(OptionId id) {
     case OptionId::AUTOSAVE:
     case OptionId::WASD_SCROLLING:
     case OptionId::SOUND:
-    case OptionId::MUSIC: return getOnOff(value);
+    case OptionId::MUSIC:
+      return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
     case OptionId::FAST_IMMIGRATION:
@@ -248,7 +266,8 @@ string Options::getValueString(OptionId id) {
     case OptionId::ZOOM_UI:
     case OptionId::DISABLE_MOUSE_WHEEL:
     case OptionId::DISABLE_CURSOR:
-    case OptionId::START_WITH_NIGHT: return getYesNo(value);
+    case OptionId::START_WITH_NIGHT:
+      return getYesNo(value);
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_SEED:
     case OptionId::KEEPER_NAME: {
@@ -269,7 +288,11 @@ string Options::getValueString(OptionId id) {
     case OptionId::LESSER_VILLAINS:
     case OptionId::RETIRED_VILLAINS:
     case OptionId::INFLUENCE_SIZE:
-    case OptionId::ALLIES: return toString(getIntValue(id));
+    case OptionId::ALLIES:
+      return toString(getIntValue(id));
+    case OptionId::KEEPER_GENDER:
+    case OptionId::ADVENTURER_GENDER:
+      return EnumInfo<ViewId>::getString((ViewId) getViewIdValue(id));
   }
 }
 
@@ -316,6 +339,10 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
 
 void Options::setChoices(OptionId id, const vector<string>& v) {
   choices[id] = v;
+}
+
+void Options::setChoices(OptionId id, const vector<ViewId>& v) {
+  choicesViewId[id] = v;
 }
 
 bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {

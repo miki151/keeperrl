@@ -156,7 +156,7 @@ class GuiFactory {
   PGuiElem viewObject(const ViewObject&, double scale = 1, Color = colors[ColorId::WHITE]);
   PGuiElem viewObject(ViewId, double scale = 1, Color = colors[ColorId::WHITE]);
   PGuiElem asciiBackground(ViewId);
-  PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
+  PGuiElem translate(PGuiElem, Vec2 pos, Vec2 size);
   PGuiElem centerHoriz(PGuiElem, int width = -1);
   PGuiElem onRenderedAction(function<void()>);
   PGuiElem mouseOverAction(function<void()> callback, function<void()> onLeaveCallback = nullptr);

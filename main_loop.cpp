@@ -346,12 +346,12 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     random.init(Random.get(1234567));
     switch (*choice) {
       case GameTypeChoice::KEEPER:
-        if (auto campaign = Campaign::prepareCampaign(view, options, getRetiredGames(), random, Campaign::KEEPER))
+        if (auto campaign = Campaign::prepareCampaign(view, options, [this] { return getRetiredGames(); }, random, Campaign::KEEPER))
           return Game::campaignGame(prepareCampaignModels(*campaign, random), *campaign->getPlayerPos(),
             options->getStringValue(OptionId::KEEPER_NAME), *campaign);
         break;
       case GameTypeChoice::ADVENTURER:
-        if (auto campaign = Campaign::prepareCampaign(view, options, getRetiredGames(), random,
+        if (auto campaign = Campaign::prepareCampaign(view, options, [this] { return getRetiredGames(); }, random,
               Campaign::ADVENTURER)) {
           PGame ret = Game::campaignGame(prepareCampaignModels(*campaign, random), *campaign->getPlayerPos(),
               options->getStringValue(OptionId::ADVENTURER_NAME), *campaign);
@@ -403,7 +403,7 @@ void MainLoop::playGameChoice() {
     PGame game;
     RandomGen random;
     optional<int> choice = view->chooseFromList("", {
-        "Campaign", "Single map", "Load game", "Go back"}, 0, MenuType::MAIN);
+        "World", "Single map", "Load game", "Go back"}, 0, MenuType::MAIN);
     if (!choice)
       return;
     switch (*choice) {

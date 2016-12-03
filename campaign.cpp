@@ -245,28 +245,24 @@ static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, Vec2 size, int nu
 }
 
 struct VillainLimits {
-  int numRetired;
   int numMain;
   int numLesser;
   int numAllies;
 };
 
-static VillainLimits getLimits(CampaignType type, Options* options, const RetiredGames& retired) {
+static VillainLimits getLimits(CampaignType type, Options* options) {
   switch (type) {
     case CampaignType::FREE_PLAY: {
-      int numRetired = min(retired.getNumActive(), options->getIntValue(OptionId::MAIN_VILLAINS));
       return {
-        numRetired,
-        options->getIntValue(OptionId::MAIN_VILLAINS) - numRetired,
+        options->getIntValue(OptionId::MAIN_VILLAINS),
         options->getIntValue(OptionId::LESSER_VILLAINS),
         options->getIntValue(OptionId::ALLIES)
       };
     }
     case CampaignType::CAMPAIGN:
-      return {min(retired.getNumActive(), 1), 3, 3, 2};
+      return {4, 3, 2};
     case CampaignType::ENDLESS:
       return {
-        0,
         0,
         options->getIntValue(OptionId::LESSER_VILLAINS),
         options->getIntValue(OptionId::ALLIES)
@@ -274,7 +270,7 @@ static VillainLimits getLimits(CampaignType type, Options* options, const Retire
   }
 }
 
-optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, RetiredGames&& retired,
+optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, function<RetiredGames()> genRetired,
     RandomGen& random, PlayerType playerType) {
   Vec2 size(16, 9);
   int numBlocked = 0.6 * size.x * size.y;
@@ -282,9 +278,14 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
   string worldName = NameGenerator::get(NameGeneratorId::WORLD)->getNext();
   options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
   options->setDefaultString(OptionId::ADVENTURER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
-  CampaignType type = CampaignType::FREE_PLAY;
+  optional<RetiredGames> retiredCache;
+  static optional<RetiredGames> noRetired;
+  CampaignType type = CampaignType::CAMPAIGN;
+  View::CampaignMenuState menuState {};
   while (1) {
-    //options->setLimits(OptionId::RETIRED_VILLAINS, 0, min<int>(retired.size(), 4)); 
+    if (type == CampaignType::FREE_PLAY && !retiredCache)
+      retiredCache = genRetired();
+    auto& retired = type == CampaignType::FREE_PLAY ? retiredCache : noRetired;
 #ifdef RELEASE
     options->setLimits(OptionId::MAIN_VILLAINS, 1, 4); 
 #else
@@ -292,15 +293,18 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
 #endif
     options->setLimits(OptionId::LESSER_VILLAINS, 0, 6); 
     options->setLimits(OptionId::ALLIES, 0, 4); 
-    options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6); 
-    auto limits = getLimits(type, options, retired);
+    options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6);
+    options->setChoices(OptionId::KEEPER_GENDER, {ViewId::KEEPER, ViewId::WITCH});
+    options->setChoices(OptionId::ADVENTURER_GENDER, {ViewId::PLAYER});
+    auto limits = getLimits(type, options);
     vector<VillainInfo> mainVillains;
     Campaign campaign(terrain, type);
     campaign.playerType = playerType;
     campaign.worldName = worldName;
-    while (mainVillains.size() < limits.numMain)
+    int numRetired = retired ? min(limits.numMain, retired->getNumActive()) : 0;
+    while (mainVillains.size() < limits.numMain - numRetired)
       append(mainVillains, random.permutation(campaign.getMainVillains()));
-    mainVillains.resize(limits.numMain);
+    mainVillains.resize(limits.numMain - numRetired);
     vector<VillainInfo> lesserVillains;
     while (lesserVillains.size() < limits.numLesser)
       append(lesserVillains, random.permutation(campaign.getLesserVillains()));
@@ -315,10 +319,11 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
         freePos.push_back(v);
     if (type == CampaignType::CAMPAIGN) {
       Rectangle playerSpawn(campaign.sites.getBounds().topLeft(), campaign.sites.getBounds().bottomLeft() + Vec2(2, 0));
-      for (Vec2 pos : playerSpawn)
+      for (Vec2 pos : random.permutation(playerSpawn.getAllSquares()))
         if (!campaign.sites[pos].blocked) {
-          campaign.setPlayerPos(pos);
+          campaign.setPlayerPos(pos, options);
           removeElementMaybe(freePos, *campaign.getPlayerPos());
+          break;
         }
     }
     for (int i : All(mainVillains)) {
@@ -326,11 +331,13 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
       removeElement(freePos, pos);
       campaign.sites[pos].dweller = mainVillains[i];
     }
-    vector<RetiredGames::RetiredGame> activeGames = retired.getActiveGames();
-    for (int i : Range(limits.numRetired)) {
-      Vec2 pos = random.choose(freePos);
-      removeElement(freePos, pos);
-      campaign.sites[pos].dweller = RetiredInfo{activeGames[i].gameInfo, activeGames[i].fileInfo};
+    if (retired) {
+      vector<RetiredGames::RetiredGame> activeGames = retired->getActiveGames();
+      for (int i : Range(numRetired)) {
+        Vec2 pos = random.choose(freePos);
+        removeElement(freePos, pos);
+        campaign.sites[pos].dweller = RetiredInfo{activeGames[i].gameInfo, activeGames[i].fileInfo};
+      }
     }
     for (int i : All(lesserVillains)) {
       Vec2 pos = random.choose(freePos);
@@ -346,7 +353,8 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
       bool updateMap = false;
       campaign.influenceSize = options->getIntValue(OptionId::INFLUENCE_SIZE);
       campaign.refreshInfluencePos();
-      CampaignAction action = view->prepareCampaign(campaign, options, retired);
+      bool hasRetired = type == CampaignType::FREE_PLAY;
+      CampaignAction action = view->prepareCampaign(campaign, options, retired, menuState);
       switch (action.getId()) {
         case CampaignActionId::REROLL_MAP:
             terrain = getTerrain(random, size, numBlocked);
@@ -361,7 +369,13 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
             break;
         case CampaignActionId::UPDATE_OPTION:
             switch (action.get<OptionId>()) {
+              case OptionId::KEEPER_GENDER:
+              case OptionId::ADVENTURER_GENDER:
+                if (campaign.playerPos) {
+                  campaign.setPlayerPos(*campaign.playerPos, options);
+                }
               case OptionId::KEEPER_NAME:
+              case OptionId::ADVENTURER_NAME:
               case OptionId::INFLUENCE_SIZE: break;
               default: updateMap = true; break;
             }
@@ -370,11 +384,11 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
             return none;
         case CampaignActionId::CHOOSE_SITE:
             if (type != CampaignType::CAMPAIGN)
-              campaign.setPlayerPos(action.get<Vec2>());
+              campaign.setPlayerPos(action.get<Vec2>(), options);
             break;
         case CampaignActionId::CONFIRM:
-            if (limits.numRetired > 0 || playerType != KEEPER ||
-                retired.getAllGames().empty() ||
+            if (!retired || numRetired > 0 || playerType != KEEPER ||
+                retired->getAllGames().empty() ||
                 view->yesOrNoPrompt("The imps are going to be sad if you don't add any retired dungeons. Continue?"))
               return campaign;
       }
@@ -384,13 +398,13 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, Retir
   }
 }
 
-void Campaign::setPlayerPos(Vec2 pos) {
+void Campaign::setPlayerPos(Vec2 pos, Options* options) {
   switch (playerType) {
     case KEEPER:
       if (playerPos)
         clearSite(*playerPos);
       playerPos = pos;
-      sites[*playerPos].dweller = KeeperInfo{ViewId::KEEPER};
+      sites[*playerPos].dweller = KeeperInfo{options->getViewIdValue(OptionId::KEEPER_GENDER)};
       break;
     case ADVENTURER:
       playerPos = pos;
@@ -427,7 +441,7 @@ Campaign::PlayerType Campaign::getPlayerType() const {
   return playerType;
 }
 
-static vector<OptionId> getOptions(CampaignType type) {
+vector<OptionId> Campaign::getSecondaryOptions() const {
   switch (type) {
     case CampaignType::CAMPAIGN:
       return {};
@@ -436,21 +450,15 @@ static vector<OptionId> getOptions(CampaignType type) {
     case CampaignType::FREE_PLAY:
       return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
   }
-
 }
 
-vector<OptionId> Campaign::getOptions(Options* options) const {
-  vector<OptionId> ret;
+vector<OptionId> Campaign::getPrimaryOptions() const {
   switch (playerType) {
     case KEEPER:
-      ret.push_back(OptionId::KEEPER_NAME);
-      break;
+      return {OptionId::KEEPER_NAME, OptionId::KEEPER_GENDER};
     case ADVENTURER:
-      ret.push_back(OptionId::ADVENTURER_NAME);
-      break;
+      return {OptionId::ADVENTURER_NAME, OptionId::ADVENTURER_GENDER};
   }
-  append(ret, ::getOptions(type));
-  return ret;
 }
 
 const char* Campaign::getSiteChoiceTitle() const {

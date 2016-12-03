@@ -2130,23 +2130,29 @@ PGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncreas
 
 PGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void()> onChanged) {
   auto line = gui.getListBuilder();
-  string value = options->getValueString(id);
+  string valueString = options->getValueString(id);
   string name = options->getName(id);
-  line.addElem(gui.label(name + ": " + value), 280);
-  line.addSpace(30);
   switch (options->getType(id)) {
+    case Options::VIEW_ID:
+      line.addElemAuto(gui.label(name + ": "));
+      line.addElem(gui.stack(
+            gui.viewObject(options->getViewIdValue(id), 1),
+            gui.button([=] { options->setNextViewId(id); onChanged(); })), 30);
+      break;
     case Options::STRING:
+      line.addElemAuto(gui.label(name + ": "));
       line.addElemAuto(gui.stack(
           gui.button([=] {
-              if (auto val = getTextInput("Enter " + name, value, 10, "Leave blank to use a random name.")) {
+              if (auto val = getTextInput("Enter " + name, valueString, 10, "Leave blank to use a random name.")) {
                 options->setValue(id, *val);
                 onChanged();
               }}),
-          gui.labelHighlight("[Change]", colors[ColorId::LIGHT_BLUE])));
+          gui.labelHighlight(valueString, colors[ColorId::LIGHT_BLUE])));
       break;
     case Options::INT: {
       auto limits = options->getLimits(id);
       int value = options->getIntValue(id);
+      line.addElem(gui.label(name + ": " + valueString), 280);
       line.addElemAuto(drawPlusMinus([=] (int v) {
             options->setValue(id, value + v); onChanged();}, value < limits->second, value > limits->first));
       }
@@ -2158,57 +2164,84 @@ PGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
 }
 
 GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, function<void()> reloadCampaign,
-    bool active) {
+    optional<int> maxActive) {
   auto lines = gui.getListBuilder(legendLineHeight);
-  vector<RetiredGames::RetiredGame> allGames = retired.getAllGames();
+  const vector<RetiredGames::RetiredGame>& allGames = retired.getAllGames();
+  bool displayActive = !maxActive;
   for (int i : All(allGames)) {
-    if (i == retired.getNumLocal() && !active)
+    if (i == retired.getNumLocal() && !displayActive)
       lines.addElem(gui.label("Online dungeons:", colors[ColorId::YELLOW]));
-    if (retired.isActive(i) == active) {
+    if (retired.isActive(i) == displayActive) {
       auto header = gui.getListBuilder();
+      bool maxedOut = !displayActive && retired.getNumActive() >= *maxActive;
       if (retired.isActive(i))
         header.addElem(gui.stack(
               gui.labelUnicode(u8"✘", colors[ColorId::RED]),
               gui.button([i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();})), 15);
-      header.addElem(gui.label(allGames[i].gameInfo.getName()), 170);
+      header.addElem(gui.label(allGames[i].gameInfo.getName(),
+          colors[maxedOut ? ColorId::LIGHT_GRAY : ColorId::WHITE]), 170);
       for (auto& minion : allGames[i].gameInfo.getMinions())
         header.addElem(drawMinionAndLevel(minion.viewId, minion.level, 1), 25);
       header.addSpace(20);
-      if (allGames[i].numTotal > 0 && !active)
+      if (allGames[i].numTotal > 0)
         header.addElemAuto(gui.stack(
           gui.tooltip({"Number of times this dungeon has been conquered over how many times it has been loaded."}),
           gui.label("Conquer rate: " + toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal))));
       PGuiElem line = header.buildHorizontalList();
-      if (allGames[i].numTotal > 0 && active)
+      if (allGames[i].numTotal > 0 && displayActive)
         line = gui.stack(std::move(line), gui.tooltip({
               "Conquer rate: " + toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal)}));
-      if (!retired.isActive(i))
+      if (!retired.isActive(i) && !maxedOut) {
         line = gui.stack(
             gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
             std::move(line),
             gui.button([i, reloadCampaign, &retired] { retired.setActive(i, true); reloadCampaign();}));
+      }
       lines.addElem(std::move(line));
     }
   }
   return lines;
 }
 
+static const char* getGameTypeName(CampaignType type) {
+  switch (type) {
+    case CampaignType::CAMPAIGN: return "Campaign";
+    case CampaignType::ENDLESS: return "Endless";
+    case CampaignType::FREE_PLAY: return "Free play";
+  }
+}
+
 PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign, Options* options,
-    RetiredGames& retiredGames, optional<Vec2>& embarkPos, bool& retiredMenu, bool& helpText) {
+    optional<RetiredGames>& retiredGames, View::CampaignMenuState& menuState) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
+  GuiFactory::ListBuilder centerLines(gui, getStandardLineHeight());
   int optionMargin = 50;
-  lines.addElem(gui.stack(
-      gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())),
-      gui.centerHoriz(gui.stack(
+  centerLines.addElem(gui.centerHoriz(gui.stack(
+       gui.labelHighlight("Game mode: "_s + getGameTypeName(campaign.getType())),
+       gui.buttonRect([&queue, this] (Rectangle bounds) {
+           auto lines = gui.getListBuilder(legendLineHeight);
+           bool exit = false;
+           for (auto type : ENUM_ALL(CampaignType))
+             lines.addElem(gui.stack(
+                 gui.label(getGameTypeName(type)),
+                 gui.button([&, type] { queue.push({CampaignActionId::CHANGE_TYPE, type}); exit = true; })));
+           drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 300);
+       }))));
+  centerLines.addElem(gui.centerHoriz(gui.stack(
             gui.labelHighlight("[Help]", colors[ColorId::LIGHT_BLUE]),
-                gui.button([&] { queue.push({CampaignActionId::CHANGE_TYPE,
-                                             (CampaignType)((((int)campaign.getType()) + 1) % 3)}); })))));
-  for (OptionId id : campaign.getOptions(options))
+                gui.button([&] { menuState.helpText = !menuState.helpText; }))));
+  lines.addElem(gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())));
+  for (OptionId id : campaign.getPrimaryOptions())
     lines.addElem(gui.leftMargin(optionMargin, drawOptionElem(options, id,
             [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});})));
+  if (!campaign.getSecondaryOptions().empty()) {
+    lines.addElem(gui.leftMargin(optionMargin, gui.stack(
+        gui.labelHighlight("[Settings]", colors[ColorId::LIGHT_BLUE]),
+        gui.button([&menuState] { menuState.settings = !menuState.settings;}))));
+  }
   lines.addSpace(10);
   lines.addBackElem(gui.centerHoriz(gui.label(campaign.getSiteChoiceTitle())));
-  lines.addBackElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, &embarkPos,
+  lines.addBackElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, nullptr,
         [&campaign](Vec2 pos) { return campaign.canEmbark(pos); },
         [&campaign, &queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
   lines.addBackElem(gui.topMargin(10, gui.centerHoriz(gui.getListBuilder()
@@ -2232,35 +2265,60 @@ PGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
   int retiredMenuX = 380;
   int helpPosX = 300;
   int menuPosY = 5 * legendLineHeight;
-  GuiFactory::ListBuilder retiredList = drawRetiredGames(retiredGames,
-      [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, false);
-  if (retiredList.isEmpty())
-    retiredList.addElem(gui.label("No retired dungeons found :("));
-  PGuiElem interior = gui.stack(makeVec<PGuiElem>(
-      lines.buildVerticalList(),
-      gui.setHeight(5 * legendLineHeight, gui.alignment(GuiFactory::Alignment::BOTTOM, gui.leftMargin(retiredPosX,
-          drawRetiredGames(retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, true)
-              .addElem(gui.conditional(
-                  gui.stack(
-                      gui.button([&retiredMenu] { retiredMenu = !retiredMenu;}),
-                      gui.labelHighlight("[Add retired dungeon]", colors[ColorId::LIGHT_BLUE])),
-                  gui.label("[Add retired dungeon]", colors[ColorId::GRAY]),
-                  [&retiredGames] { return retiredGames.getNumActive() < 4;}))
-              .buildVerticalList()))),
-      gui.conditional(gui.topMargin(menuPosY, gui.leftMargin(retiredMenuX,
-            gui.setWidth(550, gui.setHeight(min(500, retiredList.getSize() + 30),
-              gui.miniWindow2(gui.scrollable(retiredList.buildVerticalList()),
-          [&retiredMenu] { retiredMenu = false;}))))),
-          [&retiredMenu] { return retiredMenu;}),
-      gui.conditional(gui.margins(gui.miniWindow2(gui.margins(
-              gui.labelMultiLine(campaign.getIntroText(), legendLineHeight), 10),
-          [&helpText] { helpText = false;}), 100, 50, 100, 280),
-          [&helpText] { return helpText;})
-      ));
+  vector<PGuiElem> interior;
+  interior.push_back(lines.buildVerticalList());
+  interior.push_back(centerLines.buildVerticalList());
+  interior.push_back(
+        gui.conditional(gui.margins(gui.miniWindow2(gui.margins(
+                gui.labelMultiLine(campaign.getIntroText(), legendLineHeight), 10),
+            [&menuState] { menuState.helpText = false;}), 100, 50, 100, 280),
+            [&menuState] { return menuState.helpText;}));
+
+  GuiFactory::ListBuilder secondaryOptionLines(gui, getStandardLineHeight());
+  if (!campaign.getSecondaryOptions().empty()) {
+    for (OptionId id : campaign.getSecondaryOptions())
+      secondaryOptionLines.addElem(
+          drawOptionElem(options, id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});}));
+  }
+  if (retiredGames) {
+    auto addedDungeons = drawRetiredGames(
+        *retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, none);
+    int addedHeight = addedDungeons.getSize();
+    if (!addedDungeons.isEmpty()) {
+      addedHeight += legendLineHeight;
+      secondaryOptionLines.addElem(gui.label("Retired villains added:", colors[ColorId::YELLOW]));
+      secondaryOptionLines.addElem(addedDungeons.buildVerticalList(), addedHeight);
+    }
+    GuiFactory::ListBuilder retiredList = drawRetiredGames(*retiredGames,
+        [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, options->getIntValue(OptionId::MAIN_VILLAINS));
+    if (retiredList.isEmpty())
+      retiredList.addElem(gui.label("No retired dungeons found :("));
+    else
+      secondaryOptionLines.addElem(gui.label("Available villains:", colors[ColorId::YELLOW]));
+    int listHeight = min(360 - addedHeight, retiredList.getSize() + 30);
+    secondaryOptionLines.addElem(gui.scrollable(retiredList.buildVerticalList()), listHeight);
+  }
+  int optionsSize = secondaryOptionLines.getSize();
+  if (!secondaryOptionLines.isEmpty())
+    interior.push_back(
+          gui.conditional(gui.translate(gui.miniWindow2(gui.margins(secondaryOptionLines.buildVerticalList(), 10),
+              [&] { menuState.settings = false;}), Vec2(30, 70),
+                  Vec2(650, 50 + optionsSize)),
+          [&menuState] { return menuState.settings;}));
   return gui.stack(
-      gui.preferredSize(1000, 735),
-      gui.window(gui.margins(std::move(interior), 5), [&queue] { queue.push(CampaignActionId::CANCEL); }));
+      gui.preferredSize(1000, 705),
+      gui.window(gui.margins(gui.stack(std::move(interior)), 5), [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
+
+/*interior.push_back(gui.setHeight(5 * legendLineHeight, gui.alignment(GuiFactory::Alignment::BOTTOM,
+    gui.leftMargin(retiredPosX,
+            .addElem(gui.conditional(
+                gui.stack(
+                    gui.button([&menuState] { menuState.retiredMenu = !menuState.retiredMenu;}),
+                    gui.labelHighlight("[Add retired dungeon]", colors[ColorId::LIGHT_BLUE])),
+                gui.label("[Add retired dungeon]", colors[ColorId::GRAY]),
+                [&retiredGames] { return retiredGames->getNumActive() < 4;}))
+            .buildVerticalList()))));*/
 
 PGuiElem GuiBuilder::drawCreaturePrompt(SyncQueue<bool>& queue, const string& title,
     const vector<CreatureInfo>& creatures) {

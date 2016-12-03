@@ -847,13 +847,11 @@ void WindowView::presentWorldmap(const Campaign& campaign) {
   return getBlockingGui(sem, guiBuilder.drawWorldmap(sem, campaign));
 }
 
-CampaignAction WindowView::prepareCampaign(const Campaign& campaign, Options* options, RetiredGames& retired) {
+CampaignAction WindowView::prepareCampaign(const Campaign& campaign, Options* options, optional<RetiredGames>& retired,
+    CampaignMenuState& state) {
   SyncQueue<CampaignAction> returnQueue;
-  optional<Vec2> embarkPos;
-  bool retiredMenu = false;
-  bool helpText = false;
-  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, retired,
-        embarkPos, retiredMenu, helpText));
+  state.helpText = false;
+  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, retired, state));
 }
 
 optional<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,

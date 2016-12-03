@@ -1485,6 +1485,10 @@ class SetHeight : public GuiLayout {
         getBounds().right(), getBounds().top() + height);
   }
 
+  virtual optional<int> getPreferredHeight() override {
+    return height;
+  }
+
   private:
   int height;
 };
@@ -1641,22 +1645,21 @@ PGuiElem GuiFactory::dragListener(function<void(DragContent)> fun) {
 
 class TranslateGui : public GuiLayout {
   public:
-  TranslateGui(PGuiElem e, Vec2 v, Rectangle nSize)
-      : GuiLayout(makeVec<PGuiElem>(std::move(e))), vec(v), newSize(nSize) {
-    CHECK(newSize.topLeft() == Vec2(0, 0));
+  TranslateGui(PGuiElem e, Vec2 p, Vec2 s)
+      : GuiLayout(makeVec<PGuiElem>(std::move(e))), pos(p), size(s) {
   }
 
   virtual Rectangle getElemBounds(int num) override {
-    return Rectangle(getBounds().topLeft(), newSize.bottomRight()).translate(vec);
+    return Rectangle(getBounds().topLeft() + pos, getBounds().topLeft() + pos + size);
   }
 
   private:
-  Vec2 vec;
-  Rectangle newSize;
+  Vec2 pos;
+  Vec2 size;
 };
 
-PGuiElem GuiFactory::translate(PGuiElem e, Vec2 v, Rectangle newSize) {
-  return PGuiElem(new TranslateGui(std::move(e), v, newSize));
+PGuiElem GuiFactory::translate(PGuiElem e, Vec2 pos, Vec2 size) {
+  return PGuiElem(new TranslateGui(std::move(e), pos, size));
 }
 
 PGuiElem GuiFactory::onRenderedAction(function<void()> fun) {
@@ -2146,6 +2149,13 @@ class Conditional : public GuiLayout {
 
   virtual bool isVisible(int num) override {
     return cond(this);
+  }
+
+  virtual bool onKeyPressed2(SDL_Keysym key) override {
+    if (cond(this))
+      return elems[0]->onKeyPressed2(key);
+    else
+      return false;
   }
 
   protected:

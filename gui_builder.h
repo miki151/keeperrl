@@ -21,6 +21,7 @@
 #include "game_info.h"
 #include "user_input.h"
 #include "clock.h"
+#include "view.h"
 
 class Clock;
 class MinionAction;
@@ -84,8 +85,8 @@ class GuiBuilder {
       pair<ViewId, int> budget, const vector<ItemInfo>&, double* scrollPos);
   PGuiElem drawPillageItemMenu(SyncQueue<optional<int>>&, const string& title, const vector<ItemInfo>&,
       double* scrollPos);
-  PGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, Options*, RetiredGames&,
-      optional<Vec2>& embark, bool& retiredMenu, bool& helpText);
+  PGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, Options*, optional<RetiredGames>&,
+      View::CampaignMenuState&);
   PGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
   PGuiElem drawWorldmap(Semaphore& sem, const Campaign&);
@@ -169,7 +170,7 @@ class GuiBuilder {
   PGuiElem drawTeams(CollectiveInfo&);
   PGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
   PGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged);
-  GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, bool active);
+  GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, optional<int> maxActive);
   PGuiElem minionsCache;
   int minionsHash = 0;
   PGuiElem technologyCache;
