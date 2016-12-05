@@ -668,6 +668,36 @@ class Test {
     CHECK(equipment.getItemsOwnedBy(human.get()).size() == items.size());
   }
 
+  void testContainerRange() {
+    vector<string> v { "abc", "def", "ghi" };
+    int i = 0;
+    for (auto elem : Iter(v)) {
+      CHECK(elem.index() == i);
+      CHECK(*elem == v[i]);
+      CHECK(elem->size() == v[i].size());
+      ++i;
+    }
+  }
+
+  void testContainerRangeErase() {
+    vector<int> v {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    for (auto elem : Iter(v))
+      if (*elem % 3 == 1)
+        elem.markToErase();
+    sort(v.begin(), v.end());
+    CHECKEQ(v, makeVec<int>(2, 3, 5, 6, 8, 9, 11, 12));
+  }
+
+  void testContainerRangeConst() {
+    const vector<int> v {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    vector<int> o;
+    int cnt = 0;
+    for (auto elem : Iter(v))
+      if (*elem % 3 == 1)
+        o.push_back(*elem);
+    CHECKEQ(o, makeVec<int>(1, 4, 7, 10));
+  }
+
   int testAll() {
     testStringConvertion();
     testTimeQueue();
