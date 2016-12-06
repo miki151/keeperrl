@@ -4,6 +4,24 @@
 
 #include "container_helpers.h"
 
+template <typename T>
+void eraseIterators(vector<T>& container, vector<typename vector<T>::iterator> iterators) {
+  sort(iterators.begin(), iterators.end(),
+       [&](const typename vector<T>::iterator& t1, const typename vector<T>::iterator& t2) {
+    return t1 - container.begin() > t2 - container.begin();
+  });
+  for (auto& iterator : iterators) {
+    *iterator = std::move(container.back());
+    container.pop_back();
+  }
+}
+
+template <typename T, typename U>
+void eraseIterators(map<T, U>& container, vector<typename map<T, U>::iterator> iterators) {
+  for (auto& iterator : iterators)
+    container.erase(iterator);
+}
+
 template <typename Container>
 class ContainerRange {
   public:
@@ -14,14 +32,14 @@ class ContainerRange {
   class Accessor {
     public:
 
-    Accessor(ContainerRange& r, int i) : range(r), ind(i) {}
+    Accessor(ContainerRange& r, int i, typename Container::iterator it) : range(r), ind(i), iterator(it) {}
 
     Value& operator * () const {
-      return range.container[ind];
+      return *iterator;
     }
 
     Value* operator -> () const {
-      return &range.container[ind];
+      return &(*iterator);
     }
 
     int index() const {
@@ -29,54 +47,55 @@ class ContainerRange {
     }
 
     void markToErase() const {
-      range.toErase.push_back(ind);
+      range.toErase.push_back(iterator);
     }
 
     private:
     ContainerRange& range;
     int ind;
+    typename Container::iterator iterator;
   };
 
   class Iter {
     public:
-    Iter(ContainerRange& r, int i) : range(r), ind(i) {}
+    Iter(ContainerRange& r, int i, typename Container::iterator iter) : range(r), index(i), iterator(iter) {}
 
     Accessor operator* () const {
-      return Accessor(range, ind);
+      return Accessor(range, index, iterator);
     }
 
     bool operator != (const Iter& other) const {
-      return ind != other.ind;
+      return iterator != other.iterator;
     }
 
     const Iter& operator++ () {
-      ++ind;
+      ++iterator;
+      ++index;
       return *this;
     }
 
     private:
     ContainerRange& range;
-    int ind;
+    int index;
+    typename Container::iterator iterator;
   };
 
   Iter begin() {
-    return Iter(*this, 0);
+    return Iter(*this, 0, container.begin());
   }
 
   Iter end() {
-    return Iter(*this, container.size());
+    return Iter(*this, container.size(), container.end());
   }
 
   ~ContainerRange() {
-    sort(toErase.begin(), toErase.end());
-    for (int i = toErase.size() - 1; i >= 0; --i)
-      removeIndex(container, toErase[i]);
+    eraseIterators(container, toErase);
   }
 
   private:
   friend Accessor;
   Container& container;
-  vector<int> toErase;
+  vector<typename Container::iterator> toErase;
 };
 
 template <typename Container>
@@ -89,14 +108,14 @@ class ConstContainerRange {
   class Accessor {
     public:
 
-    Accessor(ConstContainerRange& r, int i) : range(r), ind(i) {}
+    Accessor(ConstContainerRange& r, int i, typename Container::const_iterator it) : range(r), ind(i), iterator(it) {}
 
     const Value& operator * () const {
-      return range.container[ind];
+      return *iterator;
     }
 
     const Value* operator -> () const {
-      return &range.container[ind];
+      return &(*iterator);
     }
 
     int index() const {
@@ -106,36 +125,39 @@ class ConstContainerRange {
     private:
     ConstContainerRange& range;
     int ind;
+    typename Container::const_iterator iterator;
   };
 
   class Iter {
     public:
-    Iter(ConstContainerRange& r, int i) : range(r), ind(i) {}
+    Iter(ConstContainerRange& r, int i, typename Container::const_iterator iter) : range(r), index(i), iterator(iter) {}
 
     Accessor operator* () const {
-      return Accessor(range, ind);
+      return Accessor(range, index, iterator);
     }
 
     bool operator != (const Iter& other) const {
-      return ind != other.ind;
+      return iterator != other.iterator;
     }
 
     const Iter& operator++ () {
-      ++ind;
+      ++iterator;
+      ++index;
       return *this;
     }
 
     private:
     ConstContainerRange& range;
-    int ind;
+    int index;
+    typename Container::const_iterator iterator;
   };
 
   Iter begin() {
-    return Iter(*this, 0);
+    return Iter(*this, 0, container.begin());
   }
 
   Iter end() {
-    return Iter(*this, container.size());
+    return Iter(*this, container.size(), container.end());
   }
 
   private:

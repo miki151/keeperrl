@@ -679,6 +679,17 @@ class Test {
     }
   }
 
+  void testContainerRangeMap() {
+    map<int, string> v { {0, "abc"}, {1, "def"}, {2, "ghi"} };
+    int i = 0;
+    for (auto elem : Iter(v)) {
+      CHECK(elem.index() == i);
+      CHECK(elem->second == v[i]);
+      CHECK(elem->second.size() == v[i].size());
+      ++i;
+    }
+  }
+
   void testContainerRangeErase() {
     vector<int> v {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     for (auto elem : Iter(v))
@@ -696,6 +707,27 @@ class Test {
       if (*elem % 3 == 1)
         o.push_back(*elem);
     CHECKEQ(o, makeVec<int>(1, 4, 7, 10));
+  }
+
+  void testContainerRangeMapConst() {
+    const map<int, string> v { {0, "abc"}, {1, "def"}, {2, "ghi"} };
+    int i = 0;
+    for (auto elem : Iter(v)) {
+      CHECK(elem.index() == i);
+      CHECK(elem->second == v.at(i));
+      CHECK(elem->second.size() == v.at(i).size());
+      ++i;
+    }
+  }
+
+  void testContainerRangeMapErase() {
+    map<int, int> v {{1, -1}, {2, -2}, {3, -3}, {4, -4}, {5, -5}, {6, -6}, {7, -7}, {8, -8}, {9, -9}, {10, -10},
+        {11, -11}, {12, -12}};
+    for (auto elem : Iter(v))
+      if (elem->first % 3 == 1)
+        elem.markToErase();
+    map<int, int> result {{2, -2}, {3, -3}, {5, -5}, {6, -6}, {8, -8}, {9, -9}, {11, -11}, {12, -12}};
+    CHECK(v == result);
   }
 
   int testAll() {
@@ -737,6 +769,12 @@ class Test {
     testMinionEquipmentAutoAssign();
     testMinionEquipmentLocking();
     testMinionEquipment123();
+    testContainerRange();
+    testContainerRangeMap();
+    testContainerRangeErase();
+    testContainerRangeMapErase();
+    testContainerRangeConst();
+    testContainerRangeMapConst();
     INFO << "-----===== OK =====-----";
     return 0;
   }
