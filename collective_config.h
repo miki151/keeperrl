@@ -20,6 +20,7 @@
 #include "minion_trait.h"
 #include "workshop_type.h"
 #include "cost_info.h"
+#include "position.h"
 
 enum class ItemClass;
 
@@ -64,10 +65,9 @@ struct ImmigrantInfo {
   bool SERIAL(spawnAtDorm);
   int SERIAL(salary);
   optional<TechId> SERIAL(techId);
-  optional<SunlightState> SERIAL(limit);
+  optional<SunlightState> SERIAL(sunlightState);
   optional<Range> SERIAL(groupSize);
   bool SERIAL(autoTeam);
-  bool SERIAL(ignoreSpawnType);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -175,6 +175,7 @@ class CollectiveConfig {
   bool getEnemyPositions() const;
   bool getWarnings() const;
   bool getConstructions() const;
+  bool bedsLimitImmigration() const;
   int getMaxPopulation() const;
   int getNumGhostSpawns() const;
   double getGhostProb() const;
@@ -188,7 +189,7 @@ class CollectiveConfig {
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
 
-  bool activeImmigrantion(const Game*) const;
+  bool hasImmigrantion(bool currentlyActiveModel) const;
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
   const vector<FurnitureType>& getRoomsNeedingLight() const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);

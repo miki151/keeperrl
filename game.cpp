@@ -358,7 +358,6 @@ void Game::exitAction() {
       }
       break;
     case OPTIONS: options->handle(view, OptionSet::GENERAL); break;
-    default: break;
   }
 }
 

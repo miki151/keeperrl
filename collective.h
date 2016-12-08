@@ -50,6 +50,7 @@ class TileEfficiency;
 class Zones;
 struct ItemFetchInfo;
 class CollectiveWarnings;
+class Immigration;
 
 class Collective : public TaskCallback {
   public:
@@ -175,6 +176,9 @@ class Collective : public TaskCallback {
   Workshops& getWorkshops();
   const Workshops& getWorkshops() const;
 
+  Immigration& getImmigration();
+  const Immigration& getImmigration() const;
+
   int getPopulationSize() const;
   int getMaxPopulation() const;
 
@@ -267,10 +271,6 @@ class Collective : public TaskCallback {
   MoveInfo getWorkerMove(Creature*);
   MoveInfo getTeamMemberMove(Creature*);
   int getTaskDuration(const Creature*, MinionTask) const;
-  bool considerImmigrant(const ImmigrantInfo&);
-  void considerBuildingBeds();
-  bool considerNonSpawnImmigrant(const ImmigrantInfo&, vector<PCreature>);
-  void considerImmigration();
   void considerBirths();
   void decayMorale();
   vector<Creature*> SERIAL(creatures);
@@ -306,8 +306,6 @@ class Collective : public TaskCallback {
   void addMana(double);
   EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;
-  EntityMap<Creature, vector<AttractionInfo>> SERIAL(minionAttraction);
-  double getAttractionOccupation(const MinionAttraction&);
   EntitySet<Creature> SERIAL(pregnancies);
   HeapAllocated<CollectiveTeams> SERIAL(teams);
   HeapAllocated<CollectiveName> SERIAL(name);
@@ -318,7 +316,6 @@ class Collective : public TaskCallback {
   HeapAllocated<Zones> SERIAL(zones);
   HeapAllocated<TileEfficiency> SERIAL(tileEfficiency);
   HeapAllocated<CollectiveWarnings> SERIAL(warnings);
+  HeapAllocated<Immigration> SERIAL(immigration);
   mutable optional<double> dangerLevelCache;
 };
-
-BOOST_CLASS_VERSION(Collective, 1)

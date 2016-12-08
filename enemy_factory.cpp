@@ -556,7 +556,6 @@ EnemyInfo EnemyFactory::get(EnemyId enemyId) {
             CONSTRUCT(ImmigrantInfo,
                 c.id = creature;
                 c.frequency = 3;
-                c.ignoreSpawnType = true;
                 c.traits = LIST(MinionTrait::FIGHTER);), 
             }).allowRecruiting(4));
       }

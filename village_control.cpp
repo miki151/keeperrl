@@ -31,6 +31,7 @@
 #include "body.h"
 #include "event_proxy.h"
 #include "attack_trigger.h"
+#include "immigration.h"
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
@@ -174,10 +175,16 @@ bool VillageControl::canPerformAttack(bool currentlyActive) {
     getCollective()->getLevel()->getModel() == getCollective()->getGame()->getMainModel().get();
 }
 
+void VillageControl::acceptImmigration() {
+  for (auto& elem : getCollective()->getImmigration().getAvailable(getCollective()))
+    getCollective()->getImmigration().accept(getCollective(), elem.first);
+}
+
 void VillageControl::update(bool currentlyActive) {
   considerWelcomeMessage();
   considerCancellingAttack();
   checkEntries();
+  acceptImmigration();
   vector<Creature*> allMembers = getCollective()->getCreatures();
   for (auto team : getCollective()->getTeams().getAll()) {
     for (const Creature* c : getCollective()->getTeams().getMembers(team))

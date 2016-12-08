@@ -39,8 +39,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveConfig);
 
 template <class Archive>
 void ImmigrantInfo::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, id, frequency, attractions, traits, spawnAtDorm, salary, techId, limit, groupSize, autoTeam);
-  serializeAll(ar, ignoreSpawnType);
+  serializeAll(ar, id, frequency, attractions, traits, spawnAtDorm, salary, techId, sunlightState, groupSize, autoTeam);
 }
 
 SERIALIZABLE(ImmigrantInfo);
@@ -120,12 +119,12 @@ bool CollectiveConfig::sleepOnlyAtNight() const {
   return type != KEEPER;
 }
 
-bool CollectiveConfig::activeImmigrantion(const Game* game) const {
-  return type == KEEPER || game->isSingleModel();
+bool CollectiveConfig::hasImmigrantion(bool currentlyActiveModel) const {
+  return type != KEEPER || currentlyActiveModel;
 }
 
 double CollectiveConfig::getImmigrantFrequency() const {
-  return immigrantFrequency;
+  return 0.1;
 }
 
 int CollectiveConfig::getPayoutTime() const {
@@ -153,6 +152,10 @@ bool CollectiveConfig::getWarnings() const {
 }
 
 bool CollectiveConfig::getConstructions() const {
+  return type == KEEPER;
+}
+
+bool CollectiveConfig::bedsLimitImmigration() const {
   return type == KEEPER;
 }
 

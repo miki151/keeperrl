@@ -132,7 +132,33 @@ class StreamCombiner {
 namespace boost { 
 namespace serialization {
 
-// We can't default boost functions for these structures as they don't support unique_ptr elements.
+// We can't use default boost functions for these structures as they don't support unique_ptr elements.
+
+//map
+template<class Archive, class T, class U, class H>
+inline void save(Archive& ar, const map<T, U, H>& t, unsigned int file_version){
+  int count = t.size();
+  ar << BOOST_SERIALIZATION_NVP(count);
+  for (auto& elem : t)
+    ar << boost::serialization::make_nvp("key", elem.first) << boost::serialization::make_nvp("value", elem.second);
+}
+
+template<class Archive, class T, class U, class H>
+inline void load(Archive& ar, map<T, U, H>& t, unsigned int){
+  int count;
+  ar >> BOOST_SERIALIZATION_NVP(count);
+  t.clear();
+  while (count-- > 0) {
+    pair<T, U> p;
+    ar >> boost::serialization::make_nvp("key", p.first) >> boost::serialization::make_nvp("value", p.second);
+    t.insert(std::move(p));
+  }
+}
+
+template<class Archive, class T, class U, class H>
+inline void serialize(Archive& ar, map<T, U, H>& t, unsigned int file_version){
+  boost::serialization::split_free(ar, t, file_version);
+}
 
 //unordered_map
 template<class Archive, class T, class U, class H>

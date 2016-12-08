@@ -171,13 +171,13 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::RAVEN;
           c.frequency = 1.0;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-          c.limit = SunlightState::DAY;
+          c.sunlightState = SunlightState::DAY;
           c.salary = 0;),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::BAT;
           c.frequency = 1.0;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-          c.limit = SunlightState::NIGHT;
+          c.sunlightState = SunlightState::NIGHT;
           c.salary = 0;),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::WOLF;

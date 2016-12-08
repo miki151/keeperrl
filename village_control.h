@@ -53,7 +53,7 @@ class VillageControl : public CollectiveControl {
   bool isEnemy(const Creature*);
   Collective* getEnemyCollective() const;
   bool canPerformAttack(bool currentlyActive);
-
+  void acceptImmigration();
 
   optional<VillageBehaviour> SERIAL(villain);
 
