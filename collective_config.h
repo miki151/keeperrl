@@ -27,45 +27,33 @@ enum class ItemClass;
 class Game;
 class Workshops;
 
-enum class AttractionId {
-  FURNITURE,
-  ITEM_INDEX,
-};
-
-class MinionAttraction : public EnumVariant<AttractionId, TYPES(FurnitureType, ItemIndex),
-    ASSIGN(FurnitureType, AttractionId::FURNITURE),
-    ASSIGN(ItemIndex, AttractionId::ITEM_INDEX)> {
-  using EnumVariant::EnumVariant;
-};
-
-namespace std {
-  template <> struct hash<MinionAttraction> {
-    size_t operator()(const MinionAttraction& t) const {
-      return (size_t)t.getId();
-    }
-  };
-}
+using AttractionType = variant<FurnitureType, ItemIndex>;
 
 struct AttractionInfo {
-  AttractionInfo(MinionAttraction, double amountClaimed, double minAmount, bool mandatory = false);
+  AttractionInfo(int amountClaimed, vector<AttractionType>);
+  AttractionInfo(int amountClaimed, AttractionType);
 
-  SERIALIZATION_DECL(AttractionInfo);
+  SERIALIZATION_DECL(AttractionInfo)
 
-  MinionAttraction SERIAL(attraction);
-  double SERIAL(amountClaimed);
-  double SERIAL(minAmount);
-  bool SERIAL(mandatory);
+  vector<AttractionType> SERIAL(types);
+  int SERIAL(amountClaimed);
 };
+
+using ImmigrantRequirement = variant<AttractionInfo, TechId, SunlightState, CostInfo, FurnitureType>;
 
 struct ImmigrantInfo {
   CreatureId SERIAL(id);
   double SERIAL(frequency);
-  vector<AttractionInfo> SERIAL(attractions);
+  struct RequirementInfo {
+    ImmigrantRequirement SERIAL(type);
+    bool SERIAL(preliminary); // if true, candidate immigrant won't be generated if this requirement is not met.
+    SERIALIZE_ALL(type, preliminary)
+  };
+  vector<RequirementInfo> SERIAL(requirements);
+  void addRequirement(ImmigrantRequirement);
+  void addPreliminaryRequirement(ImmigrantRequirement);
   EnumSet<MinionTrait> SERIAL(traits);
   bool SERIAL(spawnAtDorm);
-  int SERIAL(salary);
-  optional<TechId> SERIAL(techId);
-  optional<SunlightState> SERIAL(sunlightState);
   optional<Range> SERIAL(groupSize);
   bool SERIAL(autoTeam);
 
@@ -220,4 +208,5 @@ class CollectiveConfig {
   int SERIAL(spawnGhosts) = 0;
   double SERIAL(ghostProb) = 0;
   optional<GuardianInfo> SERIAL(guardianInfo);
+  void addBedRequirementToImmigrants();
 };

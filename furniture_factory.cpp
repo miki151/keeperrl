@@ -357,6 +357,18 @@ bool FurnitureFactory::isUpgrade(FurnitureType base, FurnitureType upgraded) {
   }
 }
 
+const vector<FurnitureType>& FurnitureFactory::getUpgrades(FurnitureType base) {
+  static EnumMap<FurnitureType, vector<FurnitureType>> upgradeMap(
+      [](const FurnitureType& base) {
+    vector<FurnitureType> ret;
+    for (auto type2 : ENUM_ALL(FurnitureType))
+      if (FurnitureFactory::isUpgrade(base, type2))
+        ret.push_back(type2);
+    return ret;
+  });
+  return upgradeMap[base];
+}
+
 FurnitureFactory::FurnitureFactory(TribeId t, const EnumMap<FurnitureType, double>& d,
     const vector<FurnitureType>& u) : tribe(t), distribution(d), unique(u) {
 }

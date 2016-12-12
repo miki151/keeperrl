@@ -27,7 +27,7 @@ size_t combineHash(const T& arg) {
 template <typename T>
 size_t combineHash(const optional<T>& arg) {
   if (!arg)
-    return 0;
+    return 1236543;
   else
     return combineHash(*arg);
 }
@@ -39,7 +39,7 @@ size_t combineHash(const pair<T, U>& arg) {
 
 template <typename Iter>
 size_t combineHashIter(Iter begin, Iter end) {
-  size_t seed = 0;
+  size_t seed = 43216789;
   for (; begin != end; ++begin) {
     seed ^= combineHash(*begin) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
   }

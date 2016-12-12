@@ -441,12 +441,11 @@ void WindowView::rebuildGui() {
         case GuiBuilder::OverlayInfo::MINIONS:
           pos = Vec2(rightBarWidth - 20, rightWindowHeight - 6);
           break;
-        case GuiBuilder::OverlayInfo::TOP_RIGHT:
+        case GuiBuilder::OverlayInfo::TOP_LEFT:
           pos = Vec2(rightBarWidth + sideOffset, rightWindowHeight);
           break;
-        case GuiBuilder::OverlayInfo::BOTTOM_RIGHT:
-          pos = Vec2(rightBarWidth + sideOffset,
-              renderer.getSize().y - bottomBarHeight - bottomOffset - height);
+        case GuiBuilder::OverlayInfo::BOTTOM_LEFT:
+          pos = Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - 21 - height);
           break;
         case GuiBuilder::OverlayInfo::LEFT:
           pos = Vec2(sideOffset,

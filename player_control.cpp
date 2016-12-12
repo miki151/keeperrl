@@ -72,6 +72,7 @@
 #include "tile_efficiency.h"
 #include "zones.h"
 #include "inventory.h"
+#include "immigration.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -1185,6 +1186,18 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   }
 }
 
+void PlayerControl::fillImmigration(CollectiveInfo& info) const {
+  info.immigration.clear();
+  auto& immigration = getCollective()->getImmigration();
+  for (auto& elem : immigration.getAvailable(getCollective()))
+    info.immigration.push_back(ImmigrantDataInfo {
+        transform2<CreatureInfo>(elem.second.get().getCreatures(), [](const Creature *c) { return CreatureInfo(c); }),
+        immigration.getMissingRequirements(getCollective(), elem.second.get()),
+        (int)(elem.second.get().getEndTime() - getGame()->getGlobalTime()),
+        elem.first
+    });
+}
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.villageInfo.villages.clear();
@@ -1214,6 +1227,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.buildings = fillButtons(getBuildInfo());
   info.libraryButtons = fillButtons(libraryInfo);
   fillMinions(info);
+  fillImmigration(info);
   info.chosenCreature.reset();
   if (chosenCreature)
     if (Creature* c = getCreature(*chosenCreature)) {
@@ -1965,6 +1979,12 @@ void PlayerControl::processInput(View* view, UserInput input) {
               chosenCreature = none;
           }
         break; }
+    case UserInputId::IMMIGRANT_ACCEPT:
+        getCollective()->getImmigration().accept(getCollective(), input.get<int>());
+        break;
+    case UserInputId::IMMIGRANT_REJECT:
+        getCollective()->getImmigration().reject(input.get<int>());
+        break;
     case UserInputId::RECT_SELECTION: {
         auto& info = input.get<BuildingInfo>();
         if (canSelectRectangle(getBuildInfo()[info.building])) {

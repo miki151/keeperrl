@@ -584,7 +584,6 @@ void Collective::update(bool currentlyActive) {
   control->update(currentlyActive);
   if (config->hasImmigrantion(currentlyActive) &&
       Random.chance(config->getImmigrantFrequency()) &&
-      getPopulationSize() < getMaxPopulation() &&
       hasLeader())
     immigration->update(this);
 }

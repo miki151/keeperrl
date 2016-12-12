@@ -1523,5 +1523,31 @@ class DisjointSets {
   vector<int> size;
 };
 
+template <typename ReturnType, typename... Lambdas>
+struct lambda_visitor : public boost::static_visitor<ReturnType>, public Lambdas... {
+    lambda_visitor(Lambdas... lambdas) : Lambdas(lambdas)... {}
+};
+
+template <typename ReturnType, typename... Lambdas>
+lambda_visitor<ReturnType, Lambdas...> make_lambda_visitor(Lambdas... lambdas) {
+    return { lambdas... };
+    // you can use the following instead if your compiler doesn't
+    // support list-initialization yet
+    // return lambda_visitor<ReturnType, Lambdas...>(lambdas...);
+}
+
+template <typename Visitor, typename Visitable>
+typename Visitor::result_type apply_visitor(Visitable& visitable, const Visitor& visitor) {
+  return visitable.apply_visitor(visitor);
+}
+
+template <typename T, typename ...Args>
+optional<T&> getType(variant<Args...>& v) {
+  if (auto ptr = boost::get<T>(&v))
+    return *ptr;
+  else
+    return none;
+}
+
 extern int getSize(const string&);
 extern const char* getString(const string&);

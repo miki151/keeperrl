@@ -38,7 +38,6 @@ class CollectiveTeams;
 class ConstructionMap;
 class Technology;
 class CollectiveConfig;
-class MinionAttraction;
 class CostInfo;
 struct TriggerInfo;
 class Territory;
@@ -232,9 +231,6 @@ class Collective : public TaskCallback {
   void addMoraleForKill(const Creature* killer, const Creature* victim);
   void decreaseMoraleForKill(const Creature* killer, const Creature* victim);
   void decreaseMoraleForBanishing(const Creature*);
-
-  double getAttractionValue(const MinionAttraction&);
-  double getImmigrantChance(const ImmigrantInfo&);
 
   bool isItemNeeded(const Item*) const;
   void addProducesMessage(const Creature*, const vector<PItem>&);

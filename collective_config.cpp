@@ -25,8 +25,11 @@
 #include "item_class.h"
 #include "villain_type.h"
 
-AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
-  : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}
+AttractionInfo::AttractionInfo(int cl,  AttractionType a)
+  : types({a}), amountClaimed(cl) {}
+
+AttractionInfo::AttractionInfo(int cl, vector<AttractionType> a)
+  : types(a), amountClaimed(cl) {}
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
@@ -39,14 +42,14 @@ SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveConfig);
 
 template <class Archive>
 void ImmigrantInfo::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, id, frequency, attractions, traits, spawnAtDorm, salary, techId, sunlightState, groupSize, autoTeam);
+  serializeAll(ar, id, frequency, requirements, traits, spawnAtDorm, groupSize, autoTeam);
 }
 
 SERIALIZABLE(ImmigrantInfo);
 
 template <class Archive>
 void AttractionInfo::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, attraction, amountClaimed, minAmount, mandatory);
+  serializeAll(ar, types, amountClaimed);
 }
 
 SERIALIZABLE(AttractionInfo);
@@ -66,10 +69,37 @@ void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(GuardianInfo);
 
+void ImmigrantInfo::addRequirement(ImmigrantRequirement t) {
+  requirements.push_back({t, false});
+}
+
+void ImmigrantInfo::addPreliminaryRequirement(ImmigrantRequirement t) {
+  requirements.push_back({t, true});
+}
+
+void CollectiveConfig::addBedRequirementToImmigrants() {
+  for (auto& info : immigrantInfo) {
+    PCreature c = CreatureFactory::fromId(info.id, TribeId::getKeeper());
+    if (auto spawnType = c->getAttributes().getSpawnType()) {
+      AttractionType bedType = getDormInfo()[*spawnType].bedType;
+      for (auto& requirement : info.requirements)
+        if (auto attraction = getType<AttractionInfo>(requirement.type))
+          for (auto& type : attraction->types)
+            if (type == bedType)
+              goto finish; // if the bed attraction is already defined, don't add it again.
+      info.requirements.push_back({ImmigrantRequirement(AttractionInfo(1, bedType)), false});
+    }
+    finish:;
+  }
+}
+
 CollectiveConfig::CollectiveConfig(double freq, int payoutT, double payoutM, vector<ImmigrantInfo> im,
     CollectiveType t, int maxPop, vector<PopulationIncrease> popInc)
     : immigrantFrequency(freq), payoutTime(payoutT), payoutMultiplier(payoutM),
-    maxPopulation(maxPop), populationIncreases(popInc), immigrantInfo(im), type(t) {}
+    maxPopulation(maxPop), populationIncreases(popInc), immigrantInfo(im), type(t) {
+  if (type == KEEPER)
+    addBedRequirementToImmigrants();
+}
 
 CollectiveConfig CollectiveConfig::keeper(double freq, int payout, double payoutMult, int maxPopulation,
     vector<PopulationIncrease> increases, vector<ImmigrantInfo> im) {
@@ -124,7 +154,7 @@ bool CollectiveConfig::hasImmigrantion(bool currentlyActiveModel) const {
 }
 
 double CollectiveConfig::getImmigrantFrequency() const {
-  return 0.1;
+  return immigrantFrequency;
 }
 
 int CollectiveConfig::getPayoutTime() const {
@@ -515,4 +545,3 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
       }},
   }));
 }
-

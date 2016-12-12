@@ -67,6 +67,7 @@ class GuiFactory {
   PGuiElem button(function<void()> fun, SDL::SDL_Keysym, bool capture = false);
   PGuiElem buttonChar(function<void()> fun, char, bool capture = false, bool useAltIfWasdScrolling = false);
   PGuiElem button(function<void()> fun);
+  PGuiElem buttonRightClick(function<void()> fun);
   PGuiElem reverseButton(function<void()> fun, vector<SDL::SDL_Keysym> = {}, bool capture = false);
   PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun, SDL::SDL_Keysym, bool capture = false);
   PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun);
@@ -157,7 +158,8 @@ class GuiFactory {
   PGuiElem viewObject(ViewId, double scale = 1, Color = colors[ColorId::WHITE]);
   PGuiElem asciiBackground(ViewId);
   PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
-  PGuiElem centerHoriz(PGuiElem, int width = -1);
+  PGuiElem centerHoriz(PGuiElem, optional<int> width = none);
+  PGuiElem centerVert(PGuiElem, optional<int> height = none);
   PGuiElem onRenderedAction(function<void()>);
   PGuiElem mouseOverAction(function<void()> callback, function<void()> onLeaveCallback = nullptr);
   PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
@@ -180,6 +182,7 @@ class GuiFactory {
   PGuiElem sprite(Texture&, Alignment, Color);
   PGuiElem sprite(Texture&, double scale);
   PGuiElem tooltip(const vector<string>&, milliseconds delay = milliseconds{700});
+  PGuiElem tooltip2(PGuiElem);
   PGuiElem darken();
   PGuiElem stopMouseMovement();
   PGuiElem fullScreen(PGuiElem);

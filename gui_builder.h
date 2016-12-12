@@ -69,12 +69,13 @@ class GuiBuilder {
   struct OverlayInfo {
     PGuiElem elem;
     Vec2 size;
-    enum { LEFT, TOP_RIGHT, BOTTOM_RIGHT, MESSAGES, GAME_SPEED, INVISIBLE, MINIONS } alignment;
+    enum { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, INVISIBLE, MINIONS } alignment;
   };
   void drawPlayerOverlay(vector<OverlayInfo>&, PlayerInfo&);
   void drawBandOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   void drawMessages(vector<OverlayInfo>&, const vector<PlayerMessage>&, int guiLength);
   void drawGameSpeedDialog(vector<OverlayInfo>&);
+  void drawImmigrationOverlay(vector<OverlayInfo>&, CollectiveInfo&);
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
   vector<PGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);
   typedef function<void(optional<UniqueEntity<Creature>::Id>)> CreatureMenuCallback;
@@ -170,6 +171,7 @@ class GuiBuilder {
   PGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
   PGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged);
   GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, bool active);
+  PGuiElem drawImmigrantInfo(const ImmigrantDataInfo&);
   PGuiElem minionsCache;
   int minionsHash = 0;
   PGuiElem technologyCache;
@@ -178,6 +180,8 @@ class GuiBuilder {
   optional<OverlayInfo> speedDialog;
   int rightBandInfoHash = 0;
   PGuiElem rightBandInfoCache;
+  PGuiElem immigrationCache;
+  int immigrationHash = 0;
   optional<string> activeGroup;
   struct ActiveButton {
     CollectiveTab tab;

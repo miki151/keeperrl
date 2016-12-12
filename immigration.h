@@ -14,12 +14,17 @@ class Immigration {
 
   void update(Collective*);
 
+  struct Group {
+    ImmigrantInfo info;
+    int count;
+  };
+
   class Available {
     public:
-    static Available generate(Collective*, const ImmigrantInfo&);
-    bool isUnavailable(const Collective*) const;
+    static Available generate(Collective*, const Group& group);
     vector<Position> getSpawnPositions(const Collective*) const;
-    CostInfo getCost() const;
+    vector<Creature*> getCreatures() const;
+    double getEndTime() const;
 
     SERIALIZATION_DECL(Available)
 
@@ -33,18 +38,25 @@ class Immigration {
 
   map<int, std::reference_wrapper<const Available>> getAvailable(const Collective*) const;
 
+  bool isUnavailable(const Available&, const Collective*) const;
   void accept(Collective*, int id);
   void reject(int id);
-  bool canAccept(const Collective* collective, Available&) const;
+  vector<string> getMissingRequirements(const Collective* collective, const Available&) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
+  int getAttractionOccupation(const Collective* collective, const AttractionType& attraction) const;
+  int getAttractionValue(const Collective* collective, const AttractionType& attraction) const;
+
   private:
-  EntityMap<Creature, vector<AttractionInfo>> SERIAL(minionAttraction);
+  EntityMap<Creature, map<AttractionType, int>> SERIAL(minionAttraction);
   map<int, Available> SERIAL(available);
-  double getAttractionOccupation(const Collective* collective, const MinionAttraction& attraction) const;
-  double getAttractionValue(const Collective* collective, const MinionAttraction& attraction) const;
-  optional<double> getImmigrantChance(const Collective* collective, const ImmigrantInfo& info) const;
+  double getImmigrantChance(const Collective* collective, const Group& info) const;
+  vector<string> getMissingAttractions(const Collective*, const ImmigrantInfo&) const;
   int SERIAL(idCnt) = 0;
+  void occupyAttraction(const Collective*, const Creature*, const AttractionInfo&);
+  void occupyRequirements(Collective*, const Creature*, const ImmigrantInfo&);
+  bool preliminaryRequirementsMet(const Collective*, const Group&) const;
+  vector<string> getMissingRequirements(const Collective*, const Group&) const;
 };

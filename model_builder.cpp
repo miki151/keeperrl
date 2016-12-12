@@ -72,49 +72,38 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
       },
       {
       CONSTRUCT(ImmigrantInfo,
-        c.id = CreatureId::GOBLIN;
-        c.frequency = 1;
-        c.attractions = LIST(
-          {{AttractionId::FURNITURE, FurnitureType::WORKSHOP}, 1, 2.0},
-          {{AttractionId::FURNITURE, FurnitureType::JEWELER}, 1, 2.0},
-          {{AttractionId::FURNITURE, FurnitureType::FORGE}, 1, 2.0},
-          );
-        c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
-        c.salary = 10;),
+          c.id = CreatureId::GOBLIN;
+          c.frequency = 1;
+          c.addRequirement(AttractionInfo{1, vector<AttractionType>(
+               {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})});
+          c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::ORC;
           c.frequency = 0.7;
-          c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::TRAINING_WOOD}, 1, 2.0},
-            );
+          c.addRequirement(AttractionInfo{1, FurnitureType::TRAINING_WOOD});
           c.traits = {MinionTrait::FIGHTER};
-          c.salary = 20;),
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::ORC_SHAMAN;
           c.frequency = 0.10;
-          c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::BOOK_SHELF}, 2, 4.0},
-            {{AttractionId::FURNITURE, FurnitureType::LABORATORY}, 1, 2.0},
-            );
+          c.addRequirement(AttractionInfo{1, vector<AttractionType>(
+               {FurnitureType::BOOK_SHELF, FurnitureType::LABORATORY})});
           c.traits = {MinionTrait::FIGHTER};
-          c.salary = 20;),
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::OGRE;
           c.frequency = 0.3;
-          c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::TRAINING_IRON}, 1.0, 2.0}
-            );
+          c.addRequirement(AttractionInfo{1, FurnitureType::TRAINING_IRON});
           c.traits = {MinionTrait::FIGHTER};
-          c.salary = 40;),
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::HARPY;
           c.frequency = 0.3;
-          c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::TRAINING_WOOD}, 1.0, 5.0},
-            {{AttractionId::ITEM_INDEX, ItemIndex::RANGED_WEAPON}, 1.0, 3.0, true}
-            );
+          c.addRequirement(AttractionInfo{1, FurnitureType::TRAINING_WOOD});
+          c.addRequirement(AttractionInfo{1, ItemIndex::RANGED_WEAPON});
           c.traits = {MinionTrait::FIGHTER};
-          c.salary = 40;),
+      ),
 /*      CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::SPECIAL_HUMANOID;
           c.frequency = 0.1;
@@ -129,76 +118,71 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::ZOMBIE;
           c.frequency = 0.5;
           c.traits = {MinionTrait::FIGHTER};
-          c.salary = 10;
-          c.spawnAtDorm = true;),
+          c.spawnAtDorm = true;
+          c.addPreliminaryRequirement(CostInfo(CollectiveResourceId::CORPSE, 1));
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::VAMPIRE;
           c.frequency = 0.2;
           c.traits = {MinionTrait::FIGHTER};
-          c.salary = 40;
           c.spawnAtDorm = true;
-          c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::TRAINING_IRON}, 1, 3.0}
-            );),
+          c.addRequirement(AttractionInfo{1, FurnitureType::TRAINING_IRON});
+          c.addPreliminaryRequirement(CostInfo(CollectiveResourceId::CORPSE, 1));
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::LOST_SOUL;
           c.frequency = 0.3;
           c.traits = {MinionTrait::FIGHTER};
-          c.salary = 0;
-          c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::DEMON_SHRINE}, 1, 2.0}
-            );
-          c.spawnAtDorm = true;),
+          c.addRequirement(AttractionInfo{1, FurnitureType::DEMON_SHRINE});
+          c.addPreliminaryRequirement(FurnitureType::DEMON_SHRINE);
+          c.spawnAtDorm = true;
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::SUCCUBUS;
           c.frequency = 0.3;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
-          c.salary = 0;
-          c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::DEMON_SHRINE}, 1, 3.0}
-            );
-          c.spawnAtDorm = true;),
+          c.addRequirement(AttractionInfo{2, FurnitureType::DEMON_SHRINE});
+          c.addPreliminaryRequirement(FurnitureType::DEMON_SHRINE);
+          c.spawnAtDorm = true;
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::DOPPLEGANGER;
           c.frequency = 0.2;
           c.traits = {MinionTrait::FIGHTER};
-          c.salary = 0;
-          c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::DEMON_SHRINE}, 2, 4.0}
-            );
-          c.spawnAtDorm = true;),
+          c.addRequirement(AttractionInfo{3, FurnitureType::DEMON_SHRINE});
+          c.addPreliminaryRequirement(FurnitureType::DEMON_SHRINE);
+          c.spawnAtDorm = true;
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::RAVEN;
           c.frequency = 1.0;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-          c.sunlightState = SunlightState::DAY;
-          c.salary = 0;),
+          c.addPreliminaryRequirement(SunlightState::DAY);
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::BAT;
           c.frequency = 1.0;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-          c.sunlightState = SunlightState::NIGHT;
-          c.salary = 0;),
+          c.addPreliminaryRequirement(SunlightState::NIGHT);
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::WOLF;
           c.frequency = 0.15;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
           c.groupSize = Range(3, 9);
           c.autoTeam = true;
-          c.salary = 0;),
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::CAVE_BEAR;
           c.frequency = 0.1;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-          c.salary = 0;),
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::WEREWOLF;
           c.frequency = 0.1;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
-          c.attractions = LIST(
-            {{AttractionId::FURNITURE, FurnitureType::TRAINING_IRON}, 1.33, 4.0}
-            );
-          c.salary = 0;),
+          c.addRequirement(AttractionInfo{2, FurnitureType::TRAINING_IRON});
+      ),
       /*CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::SPECIAL_MONSTER_KEEPER;
           c.frequency = 0.1;
@@ -216,7 +200,7 @@ static map<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
     return credit;
   } else
     return {{CollectiveResourceId::MANA, 200}};
- 
+
 }
 
 static EnumSet<MinionTrait> getImpTraits() {

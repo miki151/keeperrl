@@ -131,6 +131,13 @@ class PlayerInfo {
   HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands);
 };
 
+struct ImmigrantDataInfo {
+  vector<CreatureInfo> HASH(creatures);
+  vector<string> HASH(requirements);
+  int HASH(timeLeft);
+  int HASH(id);
+  HASH_ALL(creatures, requirements, timeLeft, id)
+};
 
 class CollectiveInfo {
   public:
@@ -171,6 +178,7 @@ class CollectiveInfo {
     HASH_ALL(chosenId, creatures, teamId);
   };
   optional<ChosenCreatureInfo> HASH(chosenCreature);
+  vector<ImmigrantDataInfo> HASH(immigration);
   struct WorkshopButton {
     string HASH(name);
     ViewId HASH(viewId);
@@ -231,7 +239,7 @@ class CollectiveInfo {
   };
   optional<Ransom> HASH(ransom);
 
-  HASH_ALL(warning, buildings, minionButtons, libraryButtons, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, chosenWorkshop, workshopButtons);
+  HASH_ALL(warning, buildings, minionButtons, libraryButtons, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, chosenWorkshop, workshopButtons, immigration);
 };
 
 class VillageInfo {

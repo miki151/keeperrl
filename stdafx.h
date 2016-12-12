@@ -81,6 +81,7 @@
 #include <boost/any.hpp>
 #include <boost/optional.hpp>
 #include <boost/version.hpp>
+#include <boost/operators.hpp>
 
 #ifdef DEBUG_STL
 

@@ -18,6 +18,7 @@ class FurnitureFactory {
   public:
   static bool canBuild(FurnitureType, Position);
   static bool isUpgrade(FurnitureType base, FurnitureType upgraded);
+  static const vector<FurnitureType>& getUpgrades(FurnitureType base);
 
   FurnitureFactory(TribeId, const EnumMap<FurnitureType, double>& distribution,
       const vector<FurnitureType>& unique = {});

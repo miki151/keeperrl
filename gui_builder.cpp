@@ -482,6 +482,42 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
   overlays.push_back({gui.external(speedDialog->elem.get()), speedDialog->size, speedDialog->alignment});
 }
 
+PGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  auto& creature = info.creatures[0];
+  lines.addElem(gui.label(creature.name));
+  lines.addElem(gui.label("Level: " + toString(creature.expLevel)));
+  lines.addElem(gui.label("Turns left: " + toString(info.timeLeft)));
+  for (auto& req : info.requirements)
+    lines.addElem(gui.label(req, colors[ColorId::ORANGE]));
+  return gui.translucentBackground(gui.margins(lines.buildVerticalList(), 15));
+}
+
+void GuiBuilder::drawImmigrationOverlay(vector<OverlayInfo>& overlays, CollectiveInfo& info) {
+  int hash = combineHash(info.immigration);
+  int elemWidth = 40;
+  if (hash != immigrationHash) {
+    auto lines = gui.getListBuilder(elemWidth);
+    for (int i : All(info.immigration).reverse()) {
+      auto& elem = info.immigration[i];
+      lines.addElem(gui.translucentBackground(gui.stack(
+          gui.tooltip2(drawImmigrantInfo(elem)),
+          gui.button(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, elem.id})),
+          gui.buttonRightClick(getButtonCallback({UserInputId::IMMIGRANT_REJECT, elem.id})),
+          gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.viewObject(elem.creatures[0].viewId)))))));
+    }
+    if (!lines.isEmpty())
+      immigrationCache = lines.buildVerticalList();
+    else
+      immigrationCache.reset();
+  }
+  if (immigrationCache)
+    overlays.push_back(OverlayInfo{
+        gui.external(immigrationCache.get()),
+        Vec2(elemWidth, *immigrationCache->getPreferredHeight()),
+        OverlayInfo::BOTTOM_LEFT});
+}
+
 PGuiElem GuiBuilder::getSunlightInfoGui(GameSunlightInfo& sunlightInfo) {
   return gui.stack(
       gui.conditional(
@@ -664,7 +700,7 @@ void GuiBuilder::drawPlayerOverlay(vector<OverlayInfo>& ret, PlayerInfo& info) {
       gui.conditional(gui.stack(gui.fullScreen(gui.darken()), gui.miniWindow()), gui.translucentBackground(),
         [=] { return playerOverlayFocused;}),
       gui.margins(std::move(content), margin, margin, margin, margin));
-  ret.push_back({std::move(content), size + Vec2(margin, margin) * 2, OverlayInfo::TOP_RIGHT});
+  ret.push_back({std::move(content), size + Vec2(margin, margin) * 2, OverlayInfo::TOP_LEFT});
 }
 
 static string getActionText(ItemAction a) {
@@ -1123,7 +1159,7 @@ void GuiBuilder::drawTasksOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info
         gui.margins(gui.scrollable(gui.verticalList(std::move(lines), lineHeight), &tasksScroll, &scrollbarsHeld),
           margin)), [this] { return showTasks; }),
       Vec2(taskMapWindowWidth, info.taskMap.size() * lineHeight + 2 * margin),
-      OverlayInfo::TOP_RIGHT});
+      OverlayInfo::TOP_LEFT});
 }
 
 void GuiBuilder::drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInfo::Ransom& ransom) {
@@ -1145,7 +1181,7 @@ void GuiBuilder::drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInf
   ret.push_back({gui.miniWindow(
         gui.margins(lines.buildVerticalList(), margin)),
       Vec2(600 + 2 * margin, lines.getSize() + 2 * margin),
-      OverlayInfo::TOP_RIGHT});
+      OverlayInfo::TOP_LEFT});
 }
 
 void GuiBuilder::drawWorkshopsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info) {
@@ -1303,7 +1339,7 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
         buildingsOverlayCache.push_back({gui.conditional(
               gui.miniWindow(gui.margins(getButtonLine(elem, i, CollectiveTab::BUILDINGS), margin)),
               [i, this] { return getActiveButton(CollectiveTab::BUILDINGS) == i;}),
-            Vec2(300, legendLineHeight + 2 * margin), OverlayInfo::TOP_RIGHT});
+            Vec2(300, legendLineHeight + 2 * margin), OverlayInfo::TOP_LEFT});
       }
     }
     for (auto& elem : overlaysMap) {
@@ -1320,7 +1356,7 @@ void GuiBuilder::drawBuildingsOverlay(vector<OverlayInfo>& ret, CollectiveInfo& 
             [=] { return !info.ransom && collectiveTab == CollectiveTab::BUILDINGS &&
             activeGroup == groupName;}),
           Vec2(300 + 2 * margin, height + 2 * margin),
-          OverlayInfo::TOP_RIGHT});
+          OverlayInfo::TOP_LEFT});
     }
   }
   for (auto& elem : buildingsOverlayCache)
@@ -1334,6 +1370,7 @@ void GuiBuilder::drawBandOverlay(vector<OverlayInfo>& ret, CollectiveInfo& info)
   drawWorkshopsOverlay(ret, info);
   drawTasksOverlay(ret, info);
   drawBuildingsOverlay(ret, info);
+  drawImmigrationOverlay(ret, info);
 }
 
 int GuiBuilder::getNumMessageLines() const {

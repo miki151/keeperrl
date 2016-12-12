@@ -170,6 +170,28 @@ PGuiElem GuiFactory::button(function<void()> fun) {
   return PGuiElem(new Button([=](Rectangle) { fun(); }));
 }
 
+namespace {
+class ButtonRightClick : public GuiElem {
+  public:
+  ButtonRightClick(function<void(Rectangle)> f) : fun(f) {}
+
+  virtual bool onRightClick(Vec2 pos) override {
+    if (pos.inRectangle(getBounds())) {
+      fun(getBounds());
+      return true;
+    }
+    return false;
+  }
+
+  protected:
+  function<void(Rectangle)> fun;
+};
+}
+
+PGuiElem GuiFactory::buttonRightClick(function<void ()> fun) {
+  return PGuiElem(new ButtonRightClick([fun](Rectangle) { fun(); }));
+}
+
 PGuiElem GuiFactory::releaseButton(function<void(Rectangle)> fun) {
   return PGuiElem(new ReleaseButton(fun));
 }
@@ -1036,10 +1058,12 @@ class VerticalList : public ElemList {
   }
 
   optional<int> getPreferredWidth() override {
+    optional<int> ret;
     for (auto& elem : elems)
       if (auto width = elem->getPreferredWidth())
-        return width;
-    return none;
+        if (ret.get_value_or(-1) < *width)
+          ret = width;
+    return ret;
   }
 
   optional<int> getPreferredHeight() override {
@@ -1061,10 +1085,12 @@ class HorizontalList : public ElemList {
   }
 
   optional<int> getPreferredHeight() override {
+    optional<int> ret;
     for (auto& elem : elems)
       if (auto height = elem->getPreferredHeight())
-        return height;
-    return none;
+        if (ret.get_value_or(-1) < *height)
+          ret = height;
+    return ret;
   }
 
   optional<int> getPreferredWidth() override {
@@ -1250,7 +1276,7 @@ PGuiElem GuiFactory::verticalAspect(PGuiElem elem, double ratio) {
 
 class CenterHoriz : public GuiLayout {
   public:
-  CenterHoriz(PGuiElem elem, int w = -1) : GuiLayout(makeVec<PGuiElem>(std::move(elem))),
+  CenterHoriz(PGuiElem elem, optional<int> w) : GuiLayout(makeVec<PGuiElem>(std::move(elem))),
       width(w) {}
 
   optional<int> getPreferredHeight() override {
@@ -1262,18 +1288,46 @@ class CenterHoriz : public GuiLayout {
 
   virtual Rectangle getElemBounds(int num) override {
     int center = (getBounds().left() + getBounds().right()) / 2;
-    int myWidth = width > -1 ? width : max(2, *elems[0]->getPreferredWidth());
+    int myWidth = width ? *width : max(2, *elems[0]->getPreferredWidth());
     return Rectangle(center - myWidth / 2, getBounds().top(), center + myWidth / 2, getBounds().bottom());
   }
 
   private:
-  int width;
+  optional<int> width;
 };
 
-PGuiElem GuiFactory::centerHoriz(PGuiElem e, int width) {
-  if (width == 0)
+PGuiElem GuiFactory::centerHoriz(PGuiElem e, optional<int> width) {
+  if (width && *width == 0)
     return empty();
   return PGuiElem(new CenterHoriz(std::move(e), width));
+}
+
+class CenterVert : public GuiLayout {
+  public:
+  CenterVert(PGuiElem elem, optional<int> h) : GuiLayout(makeVec<PGuiElem>(std::move(elem))),
+      height(h) {}
+
+  optional<int> getPreferredWidth() override {
+    if (auto width = elems[0]->getPreferredWidth())
+      return *width;
+    else
+      return none;
+  }
+
+  virtual Rectangle getElemBounds(int num) override {
+    int center = (getBounds().top() + getBounds().bottom()) / 2;
+    int myHeight = height ? *height : max(2, *elems[0]->getPreferredHeight());
+    return Rectangle(getBounds().left(), center - myHeight / 2, getBounds().right(), center + myHeight / 2);
+  }
+
+  private:
+  optional<int> height;
+};
+
+PGuiElem GuiFactory::centerVert(PGuiElem e, optional<int> height) {
+  if (height && *height == 0)
+    return empty();
+  return PGuiElem(new CenterVert(std::move(e), height));
 }
 
 class MarginGui : public GuiLayout {
@@ -1570,8 +1624,8 @@ PGuiElem GuiFactory::empty() {
 
 class ViewObjectGui : public GuiElem {
   public:
-  ViewObjectGui(const ViewObject& obj, double sc, Color c) : object(obj), scale(sc), color(c) {}
-  ViewObjectGui(ViewId id, double sc, Color c) : object(id), scale(sc), color(c) {}
+  ViewObjectGui(const ViewObject& obj, Vec2 sz, double sc, Color c) : object(obj), size(sz), scale(sc), color(c) {}
+  ViewObjectGui(ViewId id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {}
   
   virtual void render(Renderer& renderer) override {
     if (ViewObject* obj = boost::get<ViewObject>(&object))
@@ -1580,18 +1634,27 @@ class ViewObjectGui : public GuiElem {
       renderer.drawViewObject(getBounds().topLeft(), boost::get<ViewId>(object), true, scale, color);
   }
 
+  virtual optional<int> getPreferredWidth() override {
+    return size.x;
+  }
+
+  virtual optional<int> getPreferredHeight() override {
+    return size.y;
+  }
+
   private:
   variant<ViewObject, ViewId> object;
+  Vec2 size;
   double scale;
   Color color;
 };
 
 PGuiElem GuiFactory::viewObject(const ViewObject& object, double scale, Color color) {
-  return PGuiElem(new ViewObjectGui(object, scale, color));
+  return PGuiElem(new ViewObjectGui(object, renderer.getNominalSize() * scale, scale, color));
 }
 
 PGuiElem GuiFactory::viewObject(ViewId id, double scale, Color color) {
-  return PGuiElem(new ViewObjectGui(id, scale, color));
+  return PGuiElem(new ViewObjectGui(id, renderer.getNominalSize() * scale, scale, color));
 }
 
 PGuiElem GuiFactory::asciiBackground(ViewId id) {
@@ -1807,6 +1870,42 @@ PGuiElem GuiFactory::mouseHighlightGameChoice(PGuiElem elem,
 
 PGuiElem GuiFactory::mouseHighlight2(PGuiElem elem) {
   return PGuiElem(new MouseHighlight2(std::move(elem)));
+}
+
+class Tooltip2 : public GuiElem {
+  public:
+  Tooltip2(PGuiElem e) : elem(std::move(e)), size(*elem->getPreferredWidth(), *elem->getPreferredHeight()) {
+  }
+
+  virtual bool onMouseMove(Vec2 pos) override {
+    canRender = pos.inRectangle(getBounds());
+    return false;
+  }
+
+  virtual void onMouseGone() override {
+    canRender = false;
+  }
+
+  virtual void render(Renderer& r) override {
+    if (canRender) {
+      Vec2 pos = getBounds().topRight();
+      pos.x = min(pos.x, r.getSize().x - size.x);
+      pos.y = min(pos.y, r.getSize().y - size.y);
+      r.setTopLayer();
+      elem->setBounds(Rectangle(pos, pos + size));
+      elem->render(r);
+      r.popLayer();
+    }
+  }
+
+  private:
+  bool canRender = false;
+  PGuiElem elem;
+  Vec2 size;
+};
+
+PGuiElem GuiFactory::tooltip2(PGuiElem elem) {
+  return PGuiElem(new Tooltip2(std::move(elem)));
 }
 
 const static int tooltipLineHeight = 28;

@@ -145,6 +145,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   VillageInfo::Village getVillageInfo(const Collective* enemy) const;
   void fillWorkshopInfo(CollectiveInfo&) const;
+  void fillImmigration(CollectiveInfo&) const;
   static const vector<BuildInfo>& getBuildInfo();
   static vector<BuildInfo> workshopInfo;
   static vector<BuildInfo> libraryInfo;

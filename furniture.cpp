@@ -18,8 +18,22 @@
 #include "furniture_click.h"
 #include "furniture_tick.h"
 
+static string makePlural(const string& s) {
+  if (s.empty())
+    return "";
+  if (s.back() == 'y')
+    return s.substr(0, s.size() - 1) + "ies";
+  if (s.back() == 'h')
+    return s + "es";
+  if (s.back() == 's')
+    return s;
+  if (endsWith(s, "shelf"))
+    return s.substr(0, s.size() - 5) + "shelves";
+  return s + "s";
+}
+
 Furniture::Furniture(const string& n, const ViewObject& o, FurnitureType t, BlockType b, TribeId id)
-    : Renderable(o), name(n), type(t), blockType(b), tribe(id) {}
+    : Renderable(o), name(n), pluralName(makePlural(name)), type(t), blockType(b), tribe(id) {}
 
 Furniture::Furniture(const Furniture&) = default;
 
@@ -30,17 +44,22 @@ Furniture::~Furniture() {}
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
   ar & SUBCLASS(Renderable);
-  serializeAll(ar, name, type, blockType, tribe, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
+  serializeAll(ar, name, pluralName, type, blockType, tribe, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   serializeAll(ar, blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall);
   serializeAll(ar, constructMessage, layer, entryType, lightEmission);
 }
 
 SERIALIZABLE(Furniture);
 
-const string& Furniture::getName(FurnitureType type) {
+const string& Furniture::getName(FurnitureType type, int count) {
   static EnumMap<FurnitureType, string> names(
-      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getName(); });
-  return names[type];
+      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getName(1); });
+  static EnumMap<FurnitureType, string> pluralNames(
+      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getName(2); });
+  if (count == 1)
+    return names[type];
+  else
+    return pluralNames[type];
 }
 
 FurnitureLayer Furniture::getLayer(FurnitureType type) {
@@ -49,8 +68,11 @@ FurnitureLayer Furniture::getLayer(FurnitureType type) {
   return layers[type];
 }
 
-const string& Furniture::getName() const {
-  return name;
+const string& Furniture::getName(int count) const {
+  if (count > 1)
+    return pluralName;
+  else
+    return name;
 }
 
 FurnitureType Furniture::getType() const {
