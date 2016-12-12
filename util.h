@@ -1549,5 +1549,14 @@ optional<T&> getType(variant<Args...>& v) {
     return none;
 }
 
+template <typename Key, typename Value>
+optional<const Value&> getMaybe(const map<Key, Value>& m, const Key& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
+
 extern int getSize(const string&);
 extern const char* getString(const string&);

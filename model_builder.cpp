@@ -73,7 +73,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
       {
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::GOBLIN;
-          c.frequency = 1;
+          c.frequency = 0.7;
           c.addRequirement(AttractionInfo{1, vector<AttractionType>(
                {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})});
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
@@ -86,7 +86,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
       ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::ORC_SHAMAN;
-          c.frequency = 0.10;
+          c.frequency = 0.6;
           c.addRequirement(AttractionInfo{1, vector<AttractionType>(
                {FurnitureType::BOOK_SHELF, FurnitureType::LABORATORY})});
           c.traits = {MinionTrait::FIGHTER};
@@ -155,13 +155,13 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
       ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::RAVEN;
-          c.frequency = 1.0;
+          c.frequency = 0.5;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
           c.addPreliminaryRequirement(SunlightState::DAY);
       ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::BAT;
-          c.frequency = 1.0;
+          c.frequency = 0.5;
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_RETURNING);
           c.addPreliminaryRequirement(SunlightState::NIGHT);
       ),

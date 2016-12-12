@@ -132,11 +132,14 @@ class PlayerInfo {
 };
 
 struct ImmigrantDataInfo {
-  vector<CreatureInfo> HASH(creatures);
   vector<string> HASH(requirements);
+  string HASH(name);
+  ViewId HASH(viewId);
+  int HASH(expLevel);
+  int HASH(count);
   int HASH(timeLeft);
   int HASH(id);
-  HASH_ALL(creatures, requirements, timeLeft, id)
+  HASH_ALL(requirements, name, viewId, expLevel, count, timeLeft, id)
 };
 
 class CollectiveInfo {

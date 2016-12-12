@@ -484,32 +484,72 @@ void GuiBuilder::drawGameSpeedDialog(vector<OverlayInfo>& overlays) {
 
 PGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
   auto lines = gui.getListBuilder(legendLineHeight);
-  auto& creature = info.creatures[0];
-  lines.addElem(gui.label(creature.name));
-  lines.addElem(gui.label("Level: " + toString(creature.expLevel)));
+  lines.addElem(gui.label(capitalFirst(info.name)));
+  lines.addElem(gui.label("Level: " + toString(info.expLevel)));
   lines.addElem(gui.label("Turns left: " + toString(info.timeLeft)));
   for (auto& req : info.requirements)
     lines.addElem(gui.label(req, colors[ColorId::ORANGE]));
-  return gui.translucentBackground(gui.margins(lines.buildVerticalList(), 15));
+  return gui.miniWindow(gui.margins(lines.buildVerticalList(), 15));
+}
+
+int GuiBuilder::getImmigrantAnimationOffset(int id) {
+  const milliseconds delay = clock->getRealMillis() - getMaybe(*firstImmigrantAppearance, id).get_value_or(milliseconds{0});
+  const milliseconds fallingTime {1000};
+  const int fallHeight = 2000;
+  if (delay < fallingTime)
+    return fallHeight - fallHeight * delay.count() / fallingTime.count();
+  else
+    return 0;
 }
 
 void GuiBuilder::drawImmigrationOverlay(vector<OverlayInfo>& overlays, CollectiveInfo& info) {
   int hash = combineHash(info.immigration);
   int elemWidth = 40;
+  if (!firstImmigrantAppearance) {
+    // If the map is not present, initialize and fill it with current immigrant data
+    // so that they won't get animated.
+    firstImmigrantAppearance.emplace();
+    for (auto& elem : info.immigration)
+      firstImmigrantAppearance->insert({elem.id, milliseconds{0}});
+  }
+  auto makeHighlight = [=] (Color c) { return gui.margins(gui.rectangle(c), 4); };
   if (hash != immigrationHash) {
     auto lines = gui.getListBuilder(elemWidth);
     for (int i : All(info.immigration).reverse()) {
       auto& elem = info.immigration[i];
-      lines.addElem(gui.translucentBackground(gui.stack(
+      int id = elem.id;
+      firstImmigrantAppearance->insert({elem.id, clock->getRealMillis()});
+      PGuiElem button;
+      if (elem.requirements.empty())
+        button = gui.stack(makeVec<PGuiElem>(
+            gui.sprite(GuiFactory::TexId::IMMIGRANT_BG, GuiFactory::Alignment::CENTER),
+            gui.releaseLeftButton(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, elem.id})),
+            gui.releaseRightButton(getButtonCallback({UserInputId::IMMIGRANT_REJECT, elem.id})),
+            gui.onMouseLeftButtonHeld(makeHighlight(Color(0, 255, 0, 100))),
+            gui.onMouseRightButtonHeld(makeHighlight(Color(255, 0, 0, 100)))
+        ));
+      else
+        button = gui.stack(makeVec<PGuiElem>(
+            gui.sprite(GuiFactory::TexId::IMMIGRANT2_BG, GuiFactory::Alignment::CENTER),
+            gui.releaseRightButton(getButtonCallback({UserInputId::IMMIGRANT_REJECT, elem.id})),
+            gui.onMouseRightButtonHeld(makeHighlight(Color(255, 0, 0, 100)))
+        ));
+      lines.addElem(gui.translate([=]() { return Vec2(0, -getImmigrantAnimationOffset(id));}, gui.stack(
+          std::move(button),
           gui.tooltip2(drawImmigrantInfo(elem)),
-          gui.button(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, elem.id})),
-          gui.buttonRightClick(getButtonCallback({UserInputId::IMMIGRANT_REJECT, elem.id})),
-          gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.viewObject(elem.creatures[0].viewId)))))));
+          gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
+              gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
+          gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
+              elem.count == 1 ? gui.viewObject(elem.viewId) : drawMinionAndLevel(elem.viewId, elem.count, 1)))))
+      )));
     }
-    if (!lines.isEmpty())
-      immigrationCache = lines.buildVerticalList();
-    else
-      immigrationCache.reset();
+    lines.addElem(gui.stack(makeVec<PGuiElem>(
+        gui.sprite(GuiFactory::TexId::IMMIGRANT_BG, GuiFactory::Alignment::CENTER),
+        //gui.button(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, elem.id})),
+        gui.setWidth(elemWidth, gui.topMargin(-2, gui.centerHoriz(gui.label("?", 32, colors[ColorId::GREEN]))))
+    )));
+    immigrationCache = gui.stack(gui.stopMouseMovement(), lines.buildVerticalList());
+    immigrationHash = hash;
   }
   if (immigrationCache)
     overlays.push_back(OverlayInfo{
@@ -1026,7 +1066,7 @@ PGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
     lines.addElemAuto(gui.stack(makeVec<PGuiElem>(
             gui.mouseOverAction([team, this] { mapGui->highlightTeam(team.members); },
               [team, this] { mapGui->unhighlightTeam(team.members); }),
-            gui.releaseButton(getButtonCallback({UserInputId::SELECT_TEAM, team.id})),
+            gui.releaseLeftButton(getButtonCallback({UserInputId::SELECT_TEAM, team.id})),
             gui.uiHighlightConditional([team] () { return team.highlight; }),
             gui.uiHighlightMouseOver(),
             gui.dragListener([this, team](DragContent content) {
@@ -1096,7 +1136,7 @@ PGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
         tmp = gui.stack(gui.uiHighlight(), std::move(tmp));
       line.addElem(std::move(tmp), 200);
       list.addElem(gui.leftMargin(20, gui.stack(
-          gui.releaseButton(getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, elem.creatureId})),
+          gui.releaseLeftButton(getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, elem.creatureId})),
           gui.dragSource({DragContentId::CREATURE_GROUP, elem.creatureId},
               [=]{ return gui.getListBuilder(10)
                   .addElemAuto(gui.label(toString(elem.count) + " "))
@@ -1772,7 +1812,7 @@ PGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
           line.addElem(gui.topMargin(-2, gui.icon(*icon)), 20);
         line.addBackElem(gui.label("L:" + toString<int>(minion.levelInfo.level)), 42);
         list.addElem(gui.stack(makeVec<PGuiElem>(
-              gui.releaseButton(getButtonCallback({UserInputId::CREATURE_BUTTON, minionId})),
+              gui.releaseLeftButton(getButtonCallback({UserInputId::CREATURE_BUTTON, minionId})),
               gui.uiHighlight([=] { return mapGui->getCreatureHighlight(minionId);}),
               gui.uiHighlightConditional([=] { return current == minionId;}),
               gui.dragSource({DragContentId::CREATURE, minionId},

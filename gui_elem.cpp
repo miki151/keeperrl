@@ -63,15 +63,44 @@ class Button : public GuiElem {
 
 class ReleaseButton : public GuiElem {
   public:
-  ReleaseButton(function<void(Rectangle)> f) : fun(f) {}
+  ReleaseButton(function<void()> f, int but) : fun(f), button(but) {}
 
   virtual void onMouseRelease(Vec2 pos) override {
-    if (pos.inRectangle(getBounds()))
-      fun(getBounds());
+    if (clicked && pos.inRectangle(getBounds()))
+      fun();
+    else
+      clicked = false;
+  }
+
+  virtual bool onLeftClick(Vec2 pos) override {
+    if (button == 0 && pos.inRectangle(getBounds())) {
+      clicked = true;
+      return true;
+    } else
+      return false;
+  }
+
+  virtual bool onRightClick(Vec2 pos) override {
+    if (button == 1 && pos.inRectangle(getBounds())) {
+      clicked = true;
+      return true;
+    } else
+      return false;
+  }
+
+  virtual bool onMouseMove(Vec2 pos) override {
+    if (!pos.inRectangle(getBounds()))
+      clicked = false;
+    return false;
+  }
+  virtual void onMouseGone() override {
+    clicked = false;
   }
 
   protected:
-  function<void(Rectangle)> fun;
+  function<void()> fun;
+  const int button;
+  bool clicked = false;
 };
 
 bool GuiFactory::isShift(const SDL_Keysym& key) {
@@ -192,12 +221,12 @@ PGuiElem GuiFactory::buttonRightClick(function<void ()> fun) {
   return PGuiElem(new ButtonRightClick([fun](Rectangle) { fun(); }));
 }
 
-PGuiElem GuiFactory::releaseButton(function<void(Rectangle)> fun) {
-  return PGuiElem(new ReleaseButton(fun));
+PGuiElem GuiFactory::releaseLeftButton(function<void()> fun) {
+  return PGuiElem(new ReleaseButton(fun, 0));
 }
 
-PGuiElem GuiFactory::releaseButton(function<void()> fun) {
-  return PGuiElem(new ReleaseButton([=](Rectangle) { fun(); }));
+PGuiElem GuiFactory::releaseRightButton(function<void()> fun) {
+  return PGuiElem(new ReleaseButton(fun, 1));
 }
 
 class ReverseButton : public GuiElem {
@@ -1722,6 +1751,23 @@ PGuiElem GuiFactory::translate(PGuiElem e, Vec2 v, Rectangle newSize) {
   return PGuiElem(new TranslateGui(std::move(e), v, newSize));
 }
 
+class TranslateGui2 : public GuiLayout {
+  public:
+  TranslateGui2(PGuiElem e, function<Vec2()> v) : GuiLayout(makeVec<PGuiElem>(std::move(e))), vec(v) {
+  }
+
+  virtual Rectangle getElemBounds(int num) override {
+    return getBounds().translate(vec());
+  }
+
+  private:
+  function<Vec2()> vec;
+};
+
+PGuiElem GuiFactory::translate(function<Vec2()> f, PGuiElem e) {
+  return PGuiElem(new TranslateGui2(std::move(e), f));
+}
+
 PGuiElem GuiFactory::onRenderedAction(function<void()> fun) {
   return PGuiElem(new DrawCustom([=] (Renderer& r, Rectangle bounds) { fun(); }));
 }
@@ -1759,6 +1805,49 @@ class MouseOverAction : public GuiElem {
 
 PGuiElem GuiFactory::mouseOverAction(function<void()> callback, function<void()> outCallback) {
   return PGuiElem(new MouseOverAction(callback, outCallback));
+}
+
+class MouseButtonHeld : public GuiLayout {
+  public:
+  MouseButtonHeld(PGuiElem elem, int but) : GuiLayout(std::move(elem)), button(but) {}
+
+  virtual bool onLeftClick(Vec2 v) override {
+    if (button == 0 && v.inRectangle(getBounds()))
+      on = true;
+    return false;
+  }
+
+  virtual bool onRightClick(Vec2 v) override {
+    if (button == 1 && v.inRectangle(getBounds()))
+      on = true;
+    return false;
+  }
+
+  virtual void onMouseGone() override {
+    on = false;
+  }
+
+  virtual bool onMouseMove(Vec2 pos) override {
+    if (!pos.inRectangle(getBounds()))
+      on = false;
+    return false;
+  }
+
+  virtual bool isVisible(int num) override {
+    return on;
+  }
+
+  private:
+  const int button;
+  bool on = false;
+};
+
+PGuiElem GuiFactory::onMouseLeftButtonHeld(PGuiElem elem) {
+  return PGuiElem(new MouseButtonHeld(std::move(elem), 0));
+}
+
+PGuiElem GuiFactory::onMouseRightButtonHeld(PGuiElem elem) {
+  return PGuiElem(new MouseButtonHeld(std::move(elem), 1));
 }
 
 class MouseHighlightBase : public GuiLayout {
@@ -2169,6 +2258,8 @@ void GuiFactory::loadFreeImages(const string& path) {
   textures.emplace(TexId::HORI_BAR_MINI2, path + "/ui/horibarmini2.png");
   textures.emplace(TexId::VERT_BAR_MINI2, path + "/ui/vertbarmini2.png");
   textures.emplace(TexId::CORNER_MINI2, path + "/ui/cornermini2.png");
+  textures.emplace(TexId::IMMIGRANT_BG, path + "/ui/immigrantbg.png");
+  textures.emplace(TexId::IMMIGRANT2_BG, path + "/ui/immigrant2bg.png");
   textures.emplace(TexId::SCROLL_UP, path + "/ui/up.png");
   textures.emplace(TexId::SCROLL_DOWN, path + "/ui/down.png");
   textures.emplace(TexId::WINDOW_CORNER, path + "/ui/corner1.png");

@@ -71,8 +71,8 @@ class GuiFactory {
   PGuiElem reverseButton(function<void()> fun, vector<SDL::SDL_Keysym> = {}, bool capture = false);
   PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun, SDL::SDL_Keysym, bool capture = false);
   PGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun);
-  PGuiElem releaseButton(function<void()> fun);
-  PGuiElem releaseButton(function<void(Rectangle buttonBounds)> fun);
+  PGuiElem releaseLeftButton(function<void()> fun);
+  PGuiElem releaseRightButton(function<void()> fun);
   PGuiElem focusable(PGuiElem content, vector<SDL::SDL_Keysym> focusEvent,
       vector<SDL::SDL_Keysym> defocusEvent, bool& focused);
   PGuiElem mouseWheel(function<void(bool)>);
@@ -158,10 +158,13 @@ class GuiFactory {
   PGuiElem viewObject(ViewId, double scale = 1, Color = colors[ColorId::WHITE]);
   PGuiElem asciiBackground(ViewId);
   PGuiElem translate(PGuiElem, Vec2, Rectangle newSize);
+  PGuiElem translate(function<Vec2()>, PGuiElem);
   PGuiElem centerHoriz(PGuiElem, optional<int> width = none);
   PGuiElem centerVert(PGuiElem, optional<int> height = none);
   PGuiElem onRenderedAction(function<void()>);
   PGuiElem mouseOverAction(function<void()> callback, function<void()> onLeaveCallback = nullptr);
+  PGuiElem onMouseLeftButtonHeld(PGuiElem);
+  PGuiElem onMouseRightButtonHeld(PGuiElem);
   PGuiElem mouseHighlight(PGuiElem highlight, int myIndex, int* highlighted);
   PGuiElem mouseHighlightClick(PGuiElem highlight, int myIndex, int* highlighted);
   PGuiElem mouseHighlight2(PGuiElem highlight);
@@ -210,6 +213,8 @@ class GuiFactory {
     CORNER_TOP_LEFT,
     CORNER_TOP_RIGHT,
     CORNER_BOTTOM_RIGHT,
+    IMMIGRANT_BG,
+    IMMIGRANT2_BG,
     SCROLL_UP,
     SCROLL_DOWN,
     WINDOW_CORNER,

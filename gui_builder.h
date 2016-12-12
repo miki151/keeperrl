@@ -253,6 +253,8 @@ class GuiBuilder {
   SDL::SDL_KeyboardEvent getHotkeyEvent(char);
   MapGui* mapGui = nullptr;
   vector<PGuiElem> getSettingsButtons();
+  optional<map<int, milliseconds>> firstImmigrantAppearance;
+  int getImmigrantAnimationOffset(int id);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

@@ -203,7 +203,7 @@ void Immigration::update(Collective* collective) {
       [](const ImmigrantInfo& info) { return Group {info, info.groupSize ? Random.get(*info.groupSize) : 1};});
   vector<double> weights = transform2<double>(immigrantInfo,
       [&](const Group& group) { return getImmigrantChance(collective, group);});
-  if (accumulate(weights.begin(), weights.end(), 0) > 0)
+  if (std::accumulate(weights.begin(), weights.end(), 0.0) > 0)
     available.emplace(++idCnt, Available::generate(collective, Random.choose(immigrantInfo, weights)));
 }
 

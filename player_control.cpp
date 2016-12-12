@@ -1189,13 +1189,19 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
 void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   info.immigration.clear();
   auto& immigration = getCollective()->getImmigration();
-  for (auto& elem : immigration.getAvailable(getCollective()))
+  for (auto& elem : immigration.getAvailable(getCollective())) {
+    int count = elem.second.get().getCreatures().size();
+    Creature* c = elem.second.get().getCreatures()[0];
     info.immigration.push_back(ImmigrantDataInfo {
-        transform2<CreatureInfo>(elem.second.get().getCreatures(), [](const Creature *c) { return CreatureInfo(c); }),
         immigration.getMissingRequirements(getCollective(), elem.second.get()),
+        c->getName().multiple(count),
+        c->getViewObject().id(),
+        (int) c->getAttributes().getExpVisibleLevel(),
+        count,
         (int)(elem.second.get().getEndTime() - getGame()->getGlobalTime()),
         elem.first
     });
+  }
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
