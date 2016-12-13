@@ -1196,7 +1196,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         immigration.getMissingRequirements(getCollective(), elem.second.get()),
         c->getName().multiple(count),
         c->getViewObject().id(),
-        (int) c->getAttributes().getExpVisibleLevel(),
+        (int) c->getAttributes().getVisibleExpLevel(),
         count,
         (int)(elem.second.get().getEndTime() - getGame()->getGlobalTime()),
         elem.first

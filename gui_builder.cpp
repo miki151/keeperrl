@@ -2126,7 +2126,7 @@ PGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
                 [marked, pos] { return *marked == pos;}));
         elem.push_back(gui.topMargin(-2 * iconScale, gui.viewObject(*id, iconScale)));
         if (c.isDefeated(pos))
-          elem.push_back(gui.viewObject(ViewId::TERROR_TRAP, iconScale));
+          elem.push_back(gui.viewObject(ViewId::CAMPAIGN_DEFEATED, iconScale));
       } else {
         if (activeFun(pos))
           elem.push_back(gui.stack(
