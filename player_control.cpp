@@ -312,7 +312,6 @@ PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(
   for(const Location* loc : level->getAllLocations())
     if (loc->isMarkedAsSurprise())
       surprises.insert(loc->getMiddle());
-  //col->getGame()->getOptions()->addTrigger(OptionId::SHOW_MAP, [&] (bool val) { seeEverything = val; });
 }
 
 PlayerControl::~PlayerControl() {
@@ -902,7 +901,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
     info.state = info.HOSTILE;
   else {
     info.state = info.FRIENDLY;
-    if (knownVillains.count(col)) {
+    if (knownVillains.count(col) || true) {
       if (!col->getRecruits().empty())
         info.actions.push_back({VillageAction::RECRUIT});
       if (col->hasTradeItems())

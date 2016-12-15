@@ -192,7 +192,7 @@ void PlayerInfo::readFrom(const Creature* c) {
   }
 }
 
-CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) {
+const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) const {
   for (auto& elem : minions)
     if (elem.uniqueId == id)
       return &elem;

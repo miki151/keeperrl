@@ -31,6 +31,8 @@ class MapGui;
 class CampaignAction;
 class Campaign;
 class RetiredGames;
+template<typename Value>
+class CallCache;
 
 RICH_ENUM(CollectiveTab,
   BUILDINGS,
@@ -54,47 +56,46 @@ class GuiBuilder {
   void reset();
   int getStandardLineHeight() const;
 
-  PGuiElem getSunlightInfoGui(GameSunlightInfo& sunlightInfo);
-  PGuiElem getTurnInfoGui(int& turn);
-  PGuiElem drawBottomPlayerInfo(GameInfo&);
-  PGuiElem drawRightPlayerInfo(PlayerInfo&);
-  PGuiElem drawPlayerInventory(PlayerInfo&);
-  PGuiElem drawRightBandInfo(GameInfo&);
-  PGuiElem drawTechnology(CollectiveInfo&);
-  PGuiElem drawMinions(CollectiveInfo&);
-  PGuiElem drawBottomBandInfo(GameInfo&);
-  PGuiElem drawKeeperHelp();
+  SGuiElem getSunlightInfoGui(GameSunlightInfo& sunlightInfo);
+  SGuiElem getTurnInfoGui(int& turn);
+  SGuiElem drawBottomPlayerInfo(GameInfo&);
+  SGuiElem drawRightPlayerInfo(PlayerInfo&);
+  SGuiElem drawPlayerInventory(PlayerInfo&);
+  SGuiElem drawRightBandInfo(GameInfo&);
+  SGuiElem drawTechnology(CollectiveInfo&);
+  SGuiElem drawMinions(CollectiveInfo&);
+  SGuiElem drawBottomBandInfo(GameInfo&);
+  SGuiElem drawKeeperHelp();
   optional<string> getTextInput(const string& title, const string& value, int maxLength, const string& hint);
 
   struct OverlayInfo {
-    PGuiElem elem;
-    Vec2 size;
+    SGuiElem elem;
     enum { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, INVISIBLE, MINIONS } alignment;
   };
-  void drawPlayerOverlay(vector<OverlayInfo>&, PlayerInfo&);
-  void drawBandOverlay(vector<OverlayInfo>&, CollectiveInfo&);
-  void drawMessages(vector<OverlayInfo>&, const vector<PlayerMessage>&, int guiLength);
-  void drawGameSpeedDialog(vector<OverlayInfo>&);
-  void drawImmigrationOverlay(vector<OverlayInfo>&, CollectiveInfo&);
+  SGuiElem drawPlayerOverlay(const PlayerInfo&);
+  void drawOverlays(vector<OverlayInfo>&, GameInfo&);
+  SGuiElem drawMessages(const vector<PlayerMessage>&, int guiLength);
+  SGuiElem drawGameSpeedDialog();
+  SGuiElem drawImmigrationOverlay(const CollectiveInfo&);
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
-  vector<PGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);
+  vector<SGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);
   typedef function<void(optional<UniqueEntity<Creature>::Id>)> CreatureMenuCallback;
-  PGuiElem drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
+  SGuiElem drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos);
-  PGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
+  SGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
       pair<ViewId, int> budget, const vector<ItemInfo>&, double* scrollPos);
-  PGuiElem drawPillageItemMenu(SyncQueue<optional<int>>&, const string& title, const vector<ItemInfo>&,
+  SGuiElem drawPillageItemMenu(SyncQueue<optional<int>>&, const string& title, const vector<ItemInfo>&,
       double* scrollPos);
-  PGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, Options*, RetiredGames&,
+  SGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, Options*, RetiredGames&,
       optional<Vec2>& embark, bool& retiredMenu, bool& helpText);
-  PGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
+  SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
-  PGuiElem drawWorldmap(Semaphore& sem, const Campaign&);
-  PGuiElem drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
+  SGuiElem drawWorldmap(Semaphore& sem, const Campaign&);
+  SGuiElem drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       const vector<CreatureInfo>&, const string& cancelText);
-  PGuiElem drawCreaturePrompt(SyncQueue<bool>&, const string& title, const vector<CreatureInfo>& creatures);
-  PGuiElem drawCost(pair<ViewId, int>, ColorId = ColorId::WHITE);
-  PGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<double>& scrollPos,
+  SGuiElem drawCreaturePrompt(SyncQueue<bool>&, const string& title, const vector<CreatureInfo>& creatures);
+  SGuiElem drawCost(pair<ViewId, int>, ColorId = ColorId::WHITE);
+  SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<double>& scrollPos,
       bool& online);
 
   void setCollectiveTab(CollectiveTab t);
@@ -119,68 +120,69 @@ class GuiBuilder {
   Rectangle getMinionMenuPosition();
   Rectangle getEquipmentMenuPosition(int height);
   Rectangle getTextInputPosition();
-  PGuiElem drawListGui(const string& title, const vector<ListElem>& options,
-      MenuType, int* height, int* highlight, int* choice);
+  SGuiElem drawListGui(const string& title, const vector<ListElem>& options,
+      MenuType, int* highlight, int* choice, vector<int>* positions);
   int getScrollPos(int index, int count);
-  void setMapGui(MapGui*);
+  void setMapGui(shared_ptr<MapGui>);
+  ~GuiBuilder();
 
   private:
-  PGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>* markedPos, function<bool(Vec2)> activeFun,
+  SGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>* markedPos, function<bool(Vec2)> activeFun,
       function<void(Vec2)> clickFun);
   Renderer& renderer;
   GuiFactory& gui;
   Clock* clock;
   Options* options;
   Callbacks callbacks;
-  PGuiElem getHintCallback(const vector<string>&);
-  PGuiElem getTooltip(const vector<string>&);
-  vector<PGuiElem> drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>&);
-  PGuiElem drawPlayerLevelButton(const PlayerInfo&);
-  PGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
-  PGuiElem drawBuildings(CollectiveInfo&);
-  PGuiElem buildingsCache;
+  SGuiElem getHintCallback(const vector<string>&);
+  SGuiElem getTooltip(const vector<string>&);
+  vector<SGuiElem> drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>&);
+  SGuiElem drawPlayerLevelButton(const PlayerInfo&);
+  SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
+  SGuiElem drawBuildings(const CollectiveInfo&);
+  SGuiElem buildingsCache;
   int buildingsHash = 0;
   vector<OverlayInfo> buildingsOverlayCache;
   int buildingsOverlayHash = 0;
-  PGuiElem bottomBandCache;
-  PGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
-  PGuiElem minionButtonsCache;
+  SGuiElem bottomBandCache;
+  SGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
+  SGuiElem minionButtonsCache;
   int minionButtonsHash = 0;
-  PGuiElem drawMinionPage(const PlayerInfo&);
-  PGuiElem drawActivityButton(const PlayerInfo&);
-  PGuiElem drawVillages(VillageInfo&);
-  PGuiElem villagesCache;
+  SGuiElem drawMinionPage(const PlayerInfo&);
+  SGuiElem drawActivityButton(const PlayerInfo&);
+  SGuiElem drawVillages(VillageInfo&);
+  SGuiElem villagesCache;
   int villagesHash = 0;
-  vector<PGuiElem> drawAttributesOnPage(vector<PGuiElem>&&);
-  vector<PGuiElem> drawEquipmentAndConsumables(const PlayerInfo&);
-  vector<PGuiElem> drawSkillsList(const PlayerInfo&);
-  vector<PGuiElem> drawSpellsList(const PlayerInfo&, bool active);
-  PGuiElem getSpellIcon(const PlayerInfo::Spell&, bool active);
-  vector<PGuiElem> drawEffectsList(const PlayerInfo&);
-  vector<PGuiElem> drawMinionActions(const PlayerInfo&);
-  vector<PGuiElem> joinLists(vector<PGuiElem>&&, vector<PGuiElem>&&);
+  vector<SGuiElem> drawAttributesOnPage(vector<SGuiElem>&&);
+  vector<SGuiElem> drawEquipmentAndConsumables(const PlayerInfo&);
+  vector<SGuiElem> drawSkillsList(const PlayerInfo&);
+  vector<SGuiElem> drawSpellsList(const PlayerInfo&, bool active);
+  SGuiElem getSpellIcon(const PlayerInfo::Spell&, bool active);
+  vector<SGuiElem> drawEffectsList(const PlayerInfo&);
+  vector<SGuiElem> drawMinionActions(const PlayerInfo&);
+  vector<SGuiElem> joinLists(vector<SGuiElem>&&, vector<SGuiElem>&&);
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width);
   void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);
-  PGuiElem getTextContent(const string& title, const string& value, const string& hint);
-  PGuiElem getVillageActionButton(int villageIndex, VillageInfo::Village::ActionInfo);
-  PGuiElem getVillageStateLabel(VillageInfo::Village::State);
-  vector<PGuiElem> drawRecruitList(const vector<CreatureInfo>&, CreatureMenuCallback, int budget);
-  PGuiElem drawHighscorePage(const HighscoreList&, double *scrollPos);
-  PGuiElem drawTeams(CollectiveInfo&);
-  PGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
-  PGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged);
+  SGuiElem getTextContent(const string& title, const string& value, const string& hint);
+  SGuiElem getVillageActionButton(int villageIndex, VillageInfo::Village::ActionInfo);
+  SGuiElem getVillageStateLabel(VillageInfo::Village::State);
+  vector<SGuiElem> drawRecruitList(const vector<CreatureInfo>&, CreatureMenuCallback, int budget);
+  SGuiElem drawHighscorePage(const HighscoreList&, double *scrollPos);
+  SGuiElem drawTeams(CollectiveInfo&);
+  SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
+  SGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged);
   GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, bool active);
-  PGuiElem drawImmigrantInfo(const ImmigrantDataInfo&);
-  PGuiElem minionsCache;
+  SGuiElem drawImmigrantInfo(const ImmigrantDataInfo&);
+  SGuiElem minionsCache;
   int minionsHash = 0;
-  PGuiElem technologyCache;
+  SGuiElem technologyCache;
   int technologyHash = 0;
-  PGuiElem keeperHelp;
+  SGuiElem keeperHelp;
   optional<OverlayInfo> speedDialog;
   int rightBandInfoHash = 0;
-  PGuiElem rightBandInfoCache;
-  PGuiElem immigrationCache;
+  SGuiElem rightBandInfoCache;
+  SGuiElem immigrationCache;
   int immigrationHash = 0;
   optional<string> activeGroup;
   struct ActiveButton {
@@ -227,34 +229,35 @@ class GuiBuilder {
     Clock clock;
   } fpsCounter, upsCounter;
 
-  GuiFactory::ListBuilder drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab);
-  PGuiElem getButtonLine(CollectiveInfo::Button, int num, CollectiveTab);
-  void drawMinionsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
-  PGuiElem minionsOverlayCache;
+  SGuiElem drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab);
+  SGuiElem getButtonLine(CollectiveInfo::Button, int num, CollectiveTab);
+  SGuiElem drawMinionsOverlay(const CollectiveInfo&);
+  SGuiElem minionsOverlayCache;
   int minionsOverlayHash = 0;
-  void drawWorkshopsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
-  PGuiElem workshopsOverlayCache;
+  SGuiElem drawWorkshopsOverlay(const CollectiveInfo&);
+  SGuiElem workshopsOverlayCache;
   int workshopsOverlayHash = 0;
-  void drawTasksOverlay(vector<OverlayInfo>&, CollectiveInfo&);
-  void drawRansomOverlay(vector<OverlayInfo>& ret, const CollectiveInfo::Ransom&);
-  void drawBuildingsOverlay(vector<OverlayInfo>&, CollectiveInfo&);
+  SGuiElem drawTasksOverlay(const CollectiveInfo&);
+  SGuiElem drawRansomOverlay(const optional<CollectiveInfo::Ransom>&);
+  SGuiElem drawBuildingsOverlay(const CollectiveInfo&);
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
-  PGuiElem getItemLine(const ItemInfo&, function<void(Rectangle)> onClick,
+  SGuiElem getItemLine(const ItemInfo&, function<void(Rectangle)> onClick,
       function<void()> onMultiClick = nullptr);
   vector<string> getItemHint(const ItemInfo&);
-  PGuiElem drawMinionAndLevel(ViewId viewId, int level, int iconMult);
+  SGuiElem drawMinionAndLevel(ViewId viewId, int level, int iconMult);
   vector<SDL::SDL_Keysym> getConfirmationKeys();
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
-  vector<PGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);
-  PGuiElem menuElemMargins(PGuiElem);
-  PGuiElem getHighlight(MenuType, const string& label, int height);
+  vector<SGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);
+  SGuiElem menuElemMargins(SGuiElem);
+  SGuiElem getHighlight(MenuType, const string& label, int height);
   string getPlayerTitle(PlayerInfo&);
   SDL::SDL_KeyboardEvent getHotkeyEvent(char);
-  MapGui* mapGui = nullptr;
-  vector<PGuiElem> getSettingsButtons();
+  shared_ptr<MapGui> mapGui = nullptr;
+  vector<SGuiElem> getSettingsButtons();
   optional<map<int, milliseconds>> firstImmigrantAppearance;
   int getImmigrantAnimationOffset(int id);
+  HeapAllocated<CallCache<SGuiElem>> cache;
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

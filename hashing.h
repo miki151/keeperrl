@@ -32,11 +32,6 @@ size_t combineHash(const optional<T>& arg) {
     return combineHash(*arg);
 }
 
-template <typename T, typename U>
-size_t combineHash(const pair<T, U>& arg) {
-  return combineHash(arg.first, arg.second);
-}
-
 template <typename Iter>
 size_t combineHashIter(Iter begin, Iter end) {
   size_t seed = 43216789;
@@ -55,6 +50,15 @@ template <typename Arg1, typename... Args>
 size_t combineHash(const Arg1& arg1, const Args&... args) {
   size_t hash = combineHash(args...);
   return hash ^ (combineHash(arg1) + 0x9e3779b9 + (hash << 6) + (hash >> 2));
+}
+
+inline size_t combineHash() {
+  return 0x9e3779b9;
+}
+
+template <typename T, typename U>
+size_t combineHash(const pair<T, U>& arg) {
+  return combineHash(arg.first, arg.second);
 }
 
 #define HASH_ALL(...)\

@@ -28,6 +28,8 @@
 #include "item.h"
 #include "modifier_type.h"
 #include "body.h"
+#include "call_cache.h"
+
 
 class Test {
   public:
@@ -730,58 +732,97 @@ class Test {
     CHECK(v == result);
   }
 
-  int testAll() {
-    testStringConvertion();
-    testTimeQueue();
-    testRectangleIterator();
-    testValueCheck();
-    testSplit();
-    testShortestPath();
-    testAStar();
-    testShortestPath2();
-    testShortestPathReverse();
-    testRange();
-    testRange2();
-    testContains();
-    testPredicates();
-    testOptional();
-    testMustInitialize();
-    testVec2();
-    testConcat();
-    testTable();
-    testVec2();
-    testRectangle();
-    testProjection();
-    testRandomExit();
-    testCombine();
-    testSectors1();
-    testSectors2();
-    testSectors3();
-    testReverse();
-    testReverse2();
-    testReverse3();
-    testOwnerPointer();
-    testMinionEquipment1();
-    testMinionEquipmentAmmo();
-    testMinionEquipmentItemDestroyed();
-    testMinionEquipmentUpdateItems();
-    testMinionEquipmentUpdateOwners();
-    testMinionEquipmentAutoAssign();
-    testMinionEquipmentLocking();
-    testMinionEquipment123();
-    testContainerRange();
-    testContainerRangeMap();
-    testContainerRangeErase();
-    testContainerRangeMapErase();
-    testContainerRangeConst();
-    testContainerRangeMapConst();
-    INFO << "-----===== OK =====-----";
-    return 0;
+  using TestCache = CallCache<string>;
+
+  int cnt1 = 0;
+
+  string genString1(int a) {
+    ++cnt1;
+    return toString(a);
+  }
+
+  void testCacheTemplate() {
+    TestCache cache(10);
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 15), "15");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 15), "15");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 15), "15");
+    CHECKEQ(cnt1, 1);
+  }
+
+  void testCacheTemplate2() {
+    TestCache cache(3);
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 1), "1");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 1), "1");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 2), "2");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 2), "2");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 3), "3");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 3), "3");
+    CHECKEQ(cnt1, 3);
+    CHECKEQ(cache.getSize(), 3);
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 4), "4");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 4), "4");
+    CHECKEQ(cnt1, 4);
+    CHECKEQ(cache.getSize(), 3);
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 2), "2");
+    CHECKEQ(cnt1, 4);
+    CHECKEQ(cache.getSize(), 3);
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 1), "1");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 1), "1");
+    CHECKEQ(cnt1, 5);
+    CHECKEQ(cache.getSize(), 3);
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 3), "3");
+    CHECKEQ(cnt1, 6);
+    CHECKEQ(cache.getSize(), 3);
   }
 
 };
 
 void testAll() {
-  Test test;
-  test.testAll();
+  Test().testStringConvertion();
+  Test().testTimeQueue();
+  Test().testRectangleIterator();
+  Test().testValueCheck();
+  Test().testSplit();
+  Test().testShortestPath();
+  Test().testAStar();
+  Test().testShortestPath2();
+  Test().testShortestPathReverse();
+  Test().testRange();
+  Test().testRange2();
+  Test().testContains();
+  Test().testPredicates();
+  Test().testOptional();
+  Test().testMustInitialize();
+  Test().testVec2();
+  Test().testConcat();
+  Test().testTable();
+  Test().testVec2();
+  Test().testRectangle();
+  Test().testProjection();
+  Test().testRandomExit();
+  Test().testCombine();
+  Test().testSectors1();
+  Test().testSectors2();
+  Test().testSectors3();
+  Test().testReverse();
+  Test().testReverse2();
+  Test().testReverse3();
+  Test().testOwnerPointer();
+  Test().testMinionEquipment1();
+  Test().testMinionEquipmentAmmo();
+  Test().testMinionEquipmentItemDestroyed();
+  Test().testMinionEquipmentUpdateItems();
+  Test().testMinionEquipmentUpdateOwners();
+  Test().testMinionEquipmentAutoAssign();
+  Test().testMinionEquipmentLocking();
+  Test().testMinionEquipment123();
+  Test().testContainerRange();
+  Test().testContainerRangeMap();
+  Test().testContainerRangeErase();
+  Test().testContainerRangeMapErase();
+  Test().testContainerRangeConst();
+  Test().testContainerRangeMapConst();
+  Test().testCacheTemplate();
+  Test().testCacheTemplate2();
+  INFO << "-----===== OK =====-----";
 }

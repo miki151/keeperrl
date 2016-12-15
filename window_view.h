@@ -114,12 +114,12 @@ class WindowView: public View {
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
       double* scrollPos);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
-  PGuiElem drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index);
-  PGuiElem getTextContent(const string& title, const string& value, const string& hint);
+  SGuiElem drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index);
+  SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
   int lastGuiHash = 0;
   void drawMap();
-  void propagateEvent(const Event& event, vector<GuiElem*>);
+  void propagateEvent(const Event& event, vector<SGuiElem>);
   void keyboardAction(const SDL::SDL_Keysym&);
 
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
@@ -145,14 +145,14 @@ class WindowView: public View {
   GameInfo gameInfo;
 
   MapLayout* mapLayout;
-  MapGui* mapGui;
-  MinimapGui* minimapGui;
-  PGuiElem mapDecoration;
-  PGuiElem minimapDecoration;
-  vector<PGuiElem> tempGuiElems;
-  vector<PGuiElem> blockingElems;
-  vector<GuiElem*> getAllGuiElems();
-  vector<GuiElem*> getClickableGuiElems();
+  shared_ptr<MapGui> mapGui;
+  shared_ptr<MinimapGui> minimapGui;
+  SGuiElem mapDecoration;
+  SGuiElem minimapDecoration;
+  vector<SGuiElem> tempGuiElems;
+  vector<SGuiElem> blockingElems;
+  vector<SGuiElem> getAllGuiElems();
+  vector<SGuiElem> getClickableGuiElems();
   SyncQueue<UserInput> inputQueue;
 
   bool gameReady = false;
@@ -208,11 +208,11 @@ class WindowView: public View {
     bool cont = false;
   };
 
-  void getBlockingGui(Semaphore&, PGuiElem, optional<Vec2> origin = none);
+  void getBlockingGui(Semaphore&, SGuiElem, optional<Vec2> origin = none);
   bool isKeyPressed(SDL::SDL_Scancode);
 
   template<typename T>
-  T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, optional<Vec2> origin = none) {
+  T getBlockingGui(SyncQueue<T>& queue, SGuiElem elem, optional<Vec2> origin = none) {
     RecursiveLock lock(renderMutex);
     TempClockPause pause(clock);
     if (blockingElems.empty()) {

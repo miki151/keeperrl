@@ -18,7 +18,7 @@ class DragContent : public EnumVariant<DragContentId, TYPES(UniqueEntity<Creatur
 
 class DragContainer {
   public:
-  void put(DragContent content, PGuiElem, Vec2 origin);
+  void put(DragContent content, SGuiElem, Vec2 origin);
   optional<DragContent> pop();
   GuiElem* getGui();
   const optional<DragContent>& getElement() const;
@@ -27,7 +27,7 @@ class DragContainer {
 
   private:
   optional<DragContent> content;
-  PGuiElem gui;
+  SGuiElem gui;
   Vec2 origin;
 };
 

@@ -1,0 +1,56 @@
+#pragma once
+
+#include "stdafx.h"
+
+template <typename Value>
+class CallCache {
+  public:
+  CallCache(int size) : maxSize(size) {}
+
+  typedef pair<int, int> Key;
+
+  template <typename... Args, typename...Args2>
+  Value get(function<Value(Args2...)> fun, int id, Args&&...args) {
+    Key key = {id, combineHash(args...)};
+    if (auto elem = getValue(key))
+      return *elem;
+    else
+      return insertValue(key, fun(std::forward<Args>(args)...));
+  }
+
+  int getSize() const {
+    return cache.size();
+  }
+
+  template <typename... Args>
+  bool contains(int id, Args...args) {
+    return cache.count({id, combineHash(args...)});
+  }
+
+  private:
+  Value& insertValue(Key key, Value value) {
+    if (cache.size() >= maxSize) {
+      CHECK(!lastUsed.isEmpty());
+      pair<const int, Key> lru = lastUsed.getFront2();
+      lastUsed.erase(lru.first);
+      cache.erase(lru.second);
+    }
+    if (lastUsed.contains(key))
+      lastUsed.erase(key);
+    lastUsed.insert(key, ++cnt);
+    return cache[key] = value;
+  }
+
+  optional<Value&> getValue(Key key) {
+    if (auto elem = getMaybe(cache, key)) {
+      lastUsed.erase(key);
+      lastUsed.insert(key, ++cnt);
+      return *elem;
+    } else
+      return none;
+  }
+  const int maxSize;
+  unordered_map<Key, Value, CustomHash<Key>> cache;
+  BiMap<Key, int> lastUsed;
+  int cnt = 0;
+};

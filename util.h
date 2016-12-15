@@ -86,7 +86,7 @@ DEF_SHARED_PTR(Controller);
 DEF_UNIQUE_PTR(Trigger);
 DEF_UNIQUE_PTR(Level);
 DEF_UNIQUE_PTR(VillageControl);
-DEF_UNIQUE_PTR(GuiElem);
+DEF_SHARED_PTR(GuiElem);
 DEF_UNIQUE_PTR(Animation);
 DEF_UNIQUE_PTR(ViewObject);
 DEF_UNIQUE_PTR(Collective);
@@ -1332,16 +1332,6 @@ class BiMap {
     m2.erase(v);
   }
 
-  V& get(const U& u) {
-    CHECK(m1.count(u));
-    return m1.at(u);
-  }
-
-  U& get(const V& v) {
-    CHECK(m2.count(v));
-    return m2.at(v);
-  }
-
   const V& get(const U& u) const {
     CHECK(m1.count(u));
     return m1.at(u);
@@ -1350,6 +1340,22 @@ class BiMap {
   const U& get(const V& v) const {
     CHECK(m2.count(v));
     return m2.at(v);
+  }
+
+  const pair<U, V> getFront1() {
+    return *m1.begin();
+  }
+
+  const pair<V, U> getFront2() {
+    return *m2.begin();
+  }
+
+  int getSize() const {
+    return m1.size();
+  }
+
+  bool isEmpty() const {
+    return m1.empty();
   }
 
   template <class Archive> 
@@ -1488,6 +1494,11 @@ function<void(Args...)> bindMethod(void (T::*ptr) (Args...), T* t) {
   return [=](Args... a) { (t->*ptr)(a...);};
 }
 
+template <typename Ret, typename T, typename... Args>
+function<Ret(Args...)> bindMethod(Ret (T::*ptr) (Args...), T* t) {
+  return [=](Args... a) { return (t->*ptr)(a...);};
+}
+
 template <typename... Args>
 function<void(Args...)> bindFunction(void (*ptr) (Args...)) {
   return [=](Args... a) { (*ptr)(a...);};
@@ -1549,8 +1560,17 @@ optional<T&> getType(variant<Args...>& v) {
     return none;
 }
 
-template <typename Key, typename Value>
-optional<const Value&> getMaybe(const map<Key, Value>& m, const Key& key) {
+template <typename Key, typename Map>
+optional<const typename Map::mapped_type&> getMaybe(const Map& m, const Key& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
+
+template <typename Key, typename Map>
+optional<typename Map::mapped_type&> getMaybe(Map& m, const Key& key) {
   auto it = m.find(key);
   if (it != m.end())
     return it->second;
