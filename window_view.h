@@ -60,7 +60,7 @@ class WindowView: public View {
   virtual void setScrollPos(Vec2 pos) override;
   virtual void resetCenter() override;
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = MenuType::NORMAL, double* scrollPos = nullptr,
+      MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
   virtual optional<GameTypeChoice> chooseGameType() override;
   virtual optional<Vec2> chooseDirection(const string& message) override;
@@ -75,12 +75,12 @@ class WindowView: public View {
   virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint) override;
-  virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) override;
+  virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
-      pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos) override;
+      pair<ViewId, int> budget, const vector<CreatureInfo>&, ScrollPosition* scrollPos) override;
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
-      const vector<ItemInfo>&, double* scrollPos) override;
-  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, double* scrollPos) override;
+      const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
+  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
   virtual void presentHighscores(const vector<HighscoreList>&) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
@@ -112,7 +112,7 @@ class WindowView: public View {
   void mapRightClickFun(Vec2);
   Rectangle getTextInputPosition();
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
-      double* scrollPos);
+      ScrollPosition* scrollPos);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   SGuiElem drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);

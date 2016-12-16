@@ -21,6 +21,7 @@
 #include "game_info.h"
 #include "user_input.h"
 #include "clock.h"
+#include "scroll_position.h"
 
 class Clock;
 class MinionAction;
@@ -81,11 +82,11 @@ class GuiBuilder {
   vector<SGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);
   typedef function<void(optional<UniqueEntity<Creature>::Id>)> CreatureMenuCallback;
   SGuiElem drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
-      const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos);
+      const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>&, ScrollPosition* scrollPos);
   SGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
-      pair<ViewId, int> budget, const vector<ItemInfo>&, double* scrollPos);
+      pair<ViewId, int> budget, const vector<ItemInfo>&, ScrollPosition* scrollPos);
   SGuiElem drawPillageItemMenu(SyncQueue<optional<int>>&, const string& title, const vector<ItemInfo>&,
-      double* scrollPos);
+      ScrollPosition* scrollPos);
   SGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, Options*, RetiredGames&,
       optional<Vec2>& embark, bool& retiredMenu, bool& helpText);
   SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
@@ -95,7 +96,7 @@ class GuiBuilder {
       const vector<CreatureInfo>&, const string& cancelText);
   SGuiElem drawCreaturePrompt(SyncQueue<bool>&, const string& title, const vector<CreatureInfo>& creatures);
   SGuiElem drawCost(pair<ViewId, int>, ColorId = ColorId::WHITE);
-  SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<double>& scrollPos,
+  SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<ScrollPosition>& scrollPos,
       bool& online);
 
   void setCollectiveTab(CollectiveTab t);
@@ -168,7 +169,7 @@ class GuiBuilder {
   SGuiElem getVillageActionButton(int villageIndex, VillageInfo::Village::ActionInfo);
   SGuiElem getVillageStateLabel(VillageInfo::Village::State);
   vector<SGuiElem> drawRecruitList(const vector<CreatureInfo>&, CreatureMenuCallback, int budget);
-  SGuiElem drawHighscorePage(const HighscoreList&, double *scrollPos);
+  SGuiElem drawHighscorePage(const HighscoreList&, ScrollPosition* scrollPos);
   SGuiElem drawTeams(CollectiveInfo&);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
   SGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged);
@@ -191,17 +192,17 @@ class GuiBuilder {
   };
   optional<ActiveButton> activeButton;
   bool showTasks = false;
-  double inventoryScroll = 0;
-  double playerStatsScroll = 0;
-  double buildingsScroll = 0;
-  double minionButtonsScroll = 0;
-  double minionsScroll = 0;
-  double lyingItemsScroll = 0;
-  double villagesScroll = 0;
-  double tasksScroll = 0;
-  double workshopsScroll = 0;
-  double workshopsScroll2 = 0;
-  double minionPageScroll = 0;
+  ScrollPosition inventoryScroll;
+  ScrollPosition playerStatsScroll;
+  ScrollPosition buildingsScroll;
+  ScrollPosition minionButtonsScroll;
+  ScrollPosition minionsScroll;
+  ScrollPosition lyingItemsScroll;
+  ScrollPosition villagesScroll;
+  ScrollPosition tasksScroll;
+  ScrollPosition workshopsScroll;
+  ScrollPosition workshopsScroll2;
+  ScrollPosition minionPageScroll;
   int itemIndex = -1;
   int numSeenVillains = -1;
   bool playerOverlayFocused = false;

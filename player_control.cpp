@@ -73,6 +73,7 @@
 #include "zones.h"
 #include "inventory.h"
 #include "immigration.h"
+#include "scroll_position.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -445,7 +446,7 @@ static vector<ItemType> marketItems {
 };
 
 void PlayerControl::addConsumableItem(Creature* creature) {
-  double scrollPos = 0;
+  ScrollPosition scrollPos;
   while (1) {
     Item* chosenItem = chooseEquipmentItem(creature, {}, [&](const Item* it) {
         return !getCollective()->getMinionEquipment().isOwner(it, creature)
@@ -616,7 +617,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
 }
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
-    double* scrollPos) {
+    ScrollPosition* scrollPos) {
   vector<Item*> availableItems;
   vector<Item*> usedItems;
   vector<Item*> allItems = getCollective()->getAllItems(predicate);
@@ -918,7 +919,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
 }
 
 void PlayerControl::handleRecruiting(Collective* ally) {
-  double scrollPos = 0;
+  ScrollPosition scrollPos;
   vector<Creature*> recruited;
   vector<Creature*> transfers;
   while (1) {
@@ -953,7 +954,7 @@ void PlayerControl::handleRecruiting(Collective* ally) {
 }
 
 void PlayerControl::handleTrading(Collective* ally) {
-  double scrollPos = 0;
+  ScrollPosition scrollPos;
   const set<Position>& storage = getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT);
   if (storage.empty()) {
     getView()->presentText("Information", "You need a storage room for equipment in order to trade.");
@@ -1007,7 +1008,7 @@ static vector<PItem> retrieveItems(Collective* col, vector<Item*> items) {
 }
 
 void PlayerControl::handlePillage(Collective* col) {
-  double scrollPos = 0;
+  ScrollPosition scrollPos;
   while (1) {
     struct PillageOption {
       vector<Item*> items;

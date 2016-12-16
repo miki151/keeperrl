@@ -259,7 +259,8 @@ SGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
       if (!button.unavailable)
         elem = gui.stack(
           gui.button([this, i] {
-            workshopsScroll2 = workshopsScroll = 0;
+            workshopsScroll2.reset();
+            workshopsScroll.reset();
             getButtonCallback(UserInput(UserInputId::WORKSHOP, i))(); }),
           std::move(elem));
       lines.addElem(std::move(elem));
@@ -717,7 +718,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
           legendLineHeight, GuiFactory::TOP),
         gui.keyHandler([=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, getConfirmationKeys(), true));
   else {
-    auto updateScrolling = [=] { lyingItemsScroll = itemIndex * legendLineHeight + legendLineHeight / 2; };
+    auto updateScrolling = [=] { lyingItemsScroll.set(itemIndex * legendLineHeight + legendLineHeight / 2, clock->getRealMillis()); };
     content = gui.stack(makeVec<SGuiElem>(
           gui.focusable(gui.stack(
               gui.keyHandler([=] { callbacks.input({UserInputId::PICK_UP_ITEM, itemIndex});},
@@ -727,7 +728,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
               gui.keyHandler([=] { itemIndex = (itemIndex + totalElems - 1) % totalElems; updateScrolling(); },
                 {gui.getKey(SDL::SDLK_UP), gui.getKey(SDL::SDLK_KP_8)}, true)),
             getConfirmationKeys(), {gui.getKey(SDL::SDLK_ESCAPE)}, playerOverlayFocused),
-          gui.keyHandler([=] { if (!playerOverlayFocused) { itemIndex = 0; lyingItemsScroll = 0;} }, getConfirmationKeys()),
+          gui.keyHandler([=] { if (!playerOverlayFocused) { itemIndex = 0; lyingItemsScroll.reset();} }, getConfirmationKeys()),
           gui.keyHandler([=] { itemIndex = -1; }, {gui.getKey(SDL::SDLK_ESCAPE)}),
           gui.margin(
             gui.leftMargin(3, gui.label(title, colors[ColorId::YELLOW])),
@@ -2031,7 +2032,7 @@ static vector<CreatureMapElem> getRecruitStacks(const vector<CreatureInfo>& crea
 }
 
 SGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>& queue, const string& title,
-    pair<ViewId, int> budget, const vector<ItemInfo>& items, double* scrollPos) {
+    pair<ViewId, int> budget, const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
   int titleExtraSpace = 10;
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(GuiFactory::ListBuilder(gui)
@@ -2047,7 +2048,7 @@ SGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id
 }
 
 SGuiElem GuiBuilder::drawPillageItemMenu(SyncQueue<optional<int>>& queue, const string& title,
-    const vector<ItemInfo>& items, double* scrollPos) {
+    const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
   int titleExtraSpace = 10;
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(gui.label(title), getStandardLineHeight() + titleExtraSpace);
@@ -2375,7 +2376,7 @@ SGuiElem GuiBuilder::drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature
 }
 
 SGuiElem GuiBuilder::drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
-    const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>& creatures, double* scrollPos) {
+    const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>& creatures, ScrollPosition* scrollPos) {
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   lines.addElem(GuiFactory::ListBuilder(gui)
       .addElemAuto(gui.label(title))
@@ -2414,7 +2415,7 @@ vector<SGuiElem> GuiBuilder::drawRecruitList(const vector<CreatureInfo>& creatur
   return lines;
 }
 
-SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, double *scrollPos) {
+SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, ScrollPosition *scrollPos) {
   GuiFactory::ListBuilder lines(gui, legendLineHeight);
   for (auto& elem : page.scores) {
     GuiFactory::ListBuilder line(gui);
@@ -2430,7 +2431,7 @@ SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, double *scroll
 }
 
 SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore& sem, int& tabNum,
-    vector<double>& scrollPos, bool& online) {
+    vector<ScrollPosition>& scrollPos, bool& online) {
   vector<SGuiElem> pages;
   int numTabs = list.size() / 2;
   GuiFactory::ListBuilder topLine(gui, 200);

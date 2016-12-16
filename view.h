@@ -30,6 +30,7 @@ class Sound;
 class Campaign;
 class Options;
 class RetiredGames;
+class ScrollPosition;
 
 enum class SplashType { BIG, AUTOSAVING, SMALL };
 
@@ -162,7 +163,7 @@ class View {
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
       Returns none if the player cancelled the choice.*/
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = MenuType::NORMAL, double* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
+      MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
   virtual optional<GameTypeChoice> chooseGameType() = 0;
 
@@ -187,14 +188,14 @@ class View {
       const string& hint = "") = 0;
 
   virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
-      pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos) = 0;
+      pair<ViewId, int> budget, const vector<CreatureInfo>&, ScrollPosition* scrollPos) = 0;
 
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
-      const vector<ItemInfo>&, double* scrollPos) = 0;
+      const vector<ItemInfo>&, ScrollPosition* scrollPos) = 0;
 
-  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, double* scrollPos) = 0;
+  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) = 0;
 
-  virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) = 0;
+  virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) = 0;
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
 

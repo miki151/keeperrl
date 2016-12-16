@@ -43,6 +43,7 @@ class EventProxy;
 class SquareType;
 class CostInfo;
 struct WorkshopItem;
+class ScrollPosition;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
@@ -165,7 +166,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&) const;
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
-      double* scrollPos = nullptr);
+      ScrollPosition* scrollPos = nullptr);
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);

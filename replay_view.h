@@ -54,7 +54,7 @@ class ReplayView : public View {
     }
 
     virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index,
-        MenuType, double* scrollPos, optional<UserInputId> a) override {
+        MenuType, ScrollPosition* scrollPos, optional<UserInputId> a) override {
       return readValue<optional<int>>(LoggingToken::CHOOSE_FROM_LIST);
     }
 
@@ -74,17 +74,17 @@ class ReplayView : public View {
       return readValue<optional<int>>(LoggingToken::GET_NUMBER);
     }
 
-    virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) override {
+    virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) override {
       return readValue<optional<int>>(LoggingToken::CHOOSE_ITEM);
     }
 
     virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
-        pair<ViewId, int> budget, const vector<CreatureInfo>& c, double* scrollPos) override {
+        pair<ViewId, int> budget, const vector<CreatureInfo>& c, ScrollPosition* scrollPos) override {
       return readValue<optional<UniqueEntity<Creature>::Id>>(LoggingToken::CHOOSE_RECRUIT);
     }
 
     virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
-        const vector<ItemInfo>& c, double* scrollPos) override {
+        const vector<ItemInfo>& c, ScrollPosition* scrollPos) override {
       return readValue<optional<UniqueEntity<Item>::Id>>(LoggingToken::CHOOSE_TRADE_ITEM);
     }
 

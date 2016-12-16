@@ -762,7 +762,7 @@ optional<int> WindowView::getNumber(const string& title, int min, int max, int i
 }
 
 optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
-    MenuType type, double* scrollPos, optional<UserInputId> exitAction) {
+    MenuType type, ScrollPosition* scrollPos, optional<UserInputId> exitAction) {
   return chooseFromListInternal(title, options, index, type, scrollPos);
 }
 
@@ -777,14 +777,14 @@ optional<string> WindowView::getText(const string& title, const string& value, i
   return returnQueue.pop();
 }
 
-optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, double* scrollPos1) {
+optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollPos1) {
   RecursiveLock lock(renderMutex);
   uiLock = true;
   TempClockPause pause(clock);
   SyncQueue<optional<int>> returnQueue;
   addReturnDialog<optional<int>>(returnQueue, [=] ()-> optional<int> {
-    double* scrollPos = scrollPos1;
-    double localScrollPos = 0;
+    ScrollPosition* scrollPos = scrollPos1;
+    ScrollPosition localScrollPos;
     if (!scrollPos)
       scrollPos = &localScrollPos;
     optional<optional<int>> retVal;
@@ -817,20 +817,20 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, double* scro
 }
 
 optional<UniqueEntity<Creature>::Id> WindowView::chooseRecruit(const string& title, const string& warning,
-    pair<ViewId, int> budget, const vector<CreatureInfo>& creatures, double* scrollPos) {
+    pair<ViewId, int> budget, const vector<CreatureInfo>& creatures, ScrollPosition* scrollPos) {
   SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawRecruitMenu(returnQueue, title, warning, budget, creatures,
         scrollPos), Vec2(rightBarWidthCollective + 30, 80));
 }
 
 optional<UniqueEntity<Item>::Id> WindowView::chooseTradeItem(const string& title, pair<ViewId, int> budget,
-    const vector<ItemInfo>& items, double* scrollPos) {
+    const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
   SyncQueue<optional<UniqueEntity<Item>::Id>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawTradeItemMenu(returnQueue, title, budget, items, scrollPos),
       Vec2(rightBarWidthCollective + 30, 80));
 }
 
-optional<int> WindowView::choosePillageItem(const string& title, const vector<ItemInfo>& items, double* scrollPos) {
+optional<int> WindowView::choosePillageItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
   SyncQueue<optional<int>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawPillageItemMenu(returnQueue, title, items, scrollPos),
       Vec2(rightBarWidthCollective + 30, 80));
@@ -899,7 +899,7 @@ void WindowView::presentHighscores(const vector<HighscoreList>& list) {
   Semaphore sem;
   int tabNum = 0;
   bool online = false;
-  vector<double> scrollPos(list.size(), 0);
+  vector<ScrollPosition> scrollPos(list.size());
   getBlockingGui(sem, guiBuilder.drawHighscores(list, sem, tabNum, scrollPos, online),
       guiBuilder.getMenuPosition(MenuType::NORMAL, 0).topLeft());
 }
@@ -1007,7 +1007,7 @@ optional<GameTypeChoice> WindowView::chooseGameType() {
 }
 
 optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
-    MenuType menuType, double* scrollPos1) {
+    MenuType menuType, ScrollPosition* scrollPos1) {
   if (!useTiles && menuType == MenuType::MAIN)
     menuType = MenuType::MAIN_NO_TILES;
   if (options.size() == 0)
@@ -1021,7 +1021,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   renderer.flushEvents(SDL::SDL_KEYDOWN);
   int choice = -1;
   int count = 0;
-  double* scrollPos = scrollPos1;
+  ScrollPosition* scrollPos = scrollPos1;
   int index = index1;
   vector<int> indexes(options.size());
   vector<int> optionIndexes;
@@ -1051,7 +1051,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     else
       return 0;
   };
-  double localScrollPos = index >= 0 ? getScrollPos(optionIndexes[index]) : 0;
+  ScrollPosition localScrollPos(index >= 0 ? getScrollPos(optionIndexes[index]) : 0);
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
   SGuiElem dismissBut = gui.margins(gui.stack(makeVec<SGuiElem>(
@@ -1079,17 +1079,17 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
           case SDL::SDLK_UP:
             if (count > 0) {
               index = (index - 1 + count) % count;
-              *scrollPos = getScrollPos(optionIndexes[index]);
+              scrollPos->set(getScrollPos(optionIndexes[index]), clock->getRealMillis());
             } else
-              *scrollPos -= 100;
+              scrollPos->add(-100, clock->getRealMillis());
             break;
           case SDL::SDLK_KP_2:
           case SDL::SDLK_DOWN:
             if (count > 0) {
               index = (index + 1 + count) % count;
-              *scrollPos = getScrollPos(optionIndexes[index]);
+              scrollPos->set(getScrollPos(optionIndexes[index]), clock->getRealMillis());
             } else
-              *scrollPos += 100;
+              scrollPos->add(100, clock->getRealMillis());
             break;
           case SDL::SDLK_KP_5:
           case SDL::SDLK_KP_ENTER:
@@ -1140,7 +1140,7 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
   for (ListElem& e : conv)
     if (e.getMod() == ListElem::NORMAL)
       e.setMod(ListElem::TEXT);
-  double scrollPos = scrollDown ? options.size() - 1 : 0;
+  ScrollPosition scrollPos(scrollDown ? options.size() - 1 : 0);
   chooseFromListInternal(title, conv, -1, menu, &scrollPos);
 }
 

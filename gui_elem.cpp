@@ -21,6 +21,7 @@
 #include "clock.h"
 #include "spell.h"
 #include "options.h"
+#include "scroll_position.h"
 
 #include "sdl.h"
 
@@ -2060,8 +2061,9 @@ int GuiFactory::getHeldInitValue() {
 class ScrollBar : public GuiLayout {
   public:
 
-  ScrollBar(SGuiElem b, SGuiElem _content, Vec2 butSize, int vMarg, double* scrollP, int* h)
-      : GuiLayout(std::move(b)), buttonSize(butSize), vMargin(vMarg), scrollPos(scrollP), content(_content) {
+  ScrollBar(SGuiElem b, SGuiElem _content, Vec2 butSize, int vMarg, ScrollPosition* scrollP, int* h,
+      Clock* c)
+      : GuiLayout(std::move(b)), buttonSize(butSize), vMargin(vMarg), scrollPos(scrollP), content(_content), clock(c) {
     if (h)
       held = h;
     else
@@ -2094,21 +2096,22 @@ class ScrollBar : public GuiLayout {
   const int wheelScrollUnit = 100;
 
   double getScrollPos() {
-    *scrollPos = max<double>(getBounds().height() / 2, min<double>(*scrollPos, scrollLength() + getBounds().height() / 2));
-    return *scrollPos - getBounds().height() / 2;
+    scrollPos->setBounds(getBounds().height() / 2, scrollLength() + getBounds().height() / 2);
+    return scrollPos->get(clock->getRealMillis()) - getBounds().height() / 2;
   }
 
-  void setScrollPos(double v) {
-    *scrollPos = getBounds().height() / 2 + max<double>(0, min<double>(v, scrollLength()));
+  void addScrollPos(double v) {
+    scrollPos->add(v, clock->getRealMillis());
+    scrollPos->setBounds(getBounds().height() / 2, scrollLength() + getBounds().height() / 2);
   }
 
   virtual bool onMouseWheel(Vec2 v, bool up) override {
     if (v.inRectangle(Rectangle(Vec2(content->getBounds().left(), getBounds().top()),
         getBounds().bottomRight()))) {
       if (up)
-        setScrollPos(getScrollPos() - wheelScrollUnit);
+        addScrollPos(- wheelScrollUnit);
       else
-        setScrollPos(getScrollPos() + wheelScrollUnit);
+        addScrollPos(wheelScrollUnit);
       return true;
     }
     return false;
@@ -2121,11 +2124,11 @@ class ScrollBar : public GuiLayout {
     } else
     if (v.inRectangle(getBounds())) {
       if (v.y <= getBounds().top() + vMargin)
-        setScrollPos(getScrollPos() - wheelScrollUnit);
+        addScrollPos(- wheelScrollUnit);
       else if (v.y >= getBounds().bottom() - vMargin)
-        setScrollPos(getScrollPos() + wheelScrollUnit);
+        addScrollPos(wheelScrollUnit);
       else
-        setScrollPos(scrollLength() * calcPos(v.y));
+        scrollPos->set(getBounds().height() / 2 + scrollLength() * calcPos(v.y), clock->getRealMillis());
       return true;
     }
     return false;
@@ -2133,7 +2136,7 @@ class ScrollBar : public GuiLayout {
 
   virtual bool onMouseMove(Vec2 v) override {
     if (*held != notHeld)
-      setScrollPos(scrollLength() * calcPos(v.y - *held));
+      scrollPos->reset(getBounds().height() / 2 + scrollLength() * calcPos(v.y - *held));
     return false;
   }
 
@@ -2150,29 +2153,19 @@ class ScrollBar : public GuiLayout {
   int localHeld = notHeld;
   Vec2 buttonSize;
   int vMargin;
-  double* scrollPos;
+  ScrollPosition* scrollPos;
   SGuiElem content;
+  Clock* clock;
 };
 
 class Scrollable : public GuiElem {
   public:
-  Scrollable(SGuiElem c, double* scrollP) : content(c) {
-    if (scrollP)
-      scrollPos = scrollP;
-    else {
-      defaultPos.reset(new double);
-      scrollPos = defaultPos.get();
-      *scrollPos = 0;
-    }
-  }
-
-  double* getScrollPosPtr() {
-    return scrollPos;
+  Scrollable(SGuiElem c, ScrollPosition* scrollP, Clock* cl) : content(c), scrollPos(scrollP), clock(cl) {
   }
 
   double getScrollPos() {
     return max<double>(getBounds().height() / 2,
-        min<double>(*scrollPos, *content->getPreferredHeight() - getBounds().height() / 2));
+        min<double>(scrollPos->get(clock->getRealMillis()), *content->getPreferredHeight() - getBounds().height() / 2));
   }
 
   void onRefreshBounds() override {
@@ -2180,7 +2173,6 @@ class Scrollable : public GuiElem {
   }
 
   virtual void render(Renderer& r) override {
-
     r.setScissor(Rectangle(0, getBounds().top(), r.getSize().x, getBounds().bottom()));
     content->render(r);
     r.setScissor(none);
@@ -2217,8 +2209,8 @@ class Scrollable : public GuiElem {
 
   private:
   SGuiElem content;
-  double* scrollPos;
-  unique_ptr<double> defaultPos;
+  ScrollPosition* scrollPos;
+  Clock* clock;
 };
 
 const int border2Width = 6;
@@ -2373,12 +2365,21 @@ SGuiElem GuiFactory::conditional(SGuiElem elem, SGuiElem alter, function<bool()>
   return conditional2(std::move(elem), std::move(alter), [=] (GuiElem*) { return f(); });
 }
 
-SGuiElem GuiFactory::scrollable(SGuiElem content, double* scrollPos, int* held) {
-  SGuiElem scrollable(new Scrollable(content, scrollPos));
-  scrollPos = ((Scrollable*)(scrollable.get()))->getScrollPosPtr();
+class GuiContainScrollPos : public GuiElem {
+  public:
+  ScrollPosition pos;
+};
+
+SGuiElem GuiFactory::scrollable(SGuiElem content, ScrollPosition* scrollPos, int* held) {
+  if (!scrollPos) {
+    auto cont = new GuiContainScrollPos();
+    scrollPos = &cont->pos;
+    content = stack(SGuiElem(cont), std::move(content));
+  }
+  SGuiElem scrollable(new Scrollable(content, scrollPos, clock));
   int scrollBarMargin = get(TexId::SCROLL_UP).getSize().y;
   SGuiElem bar(new ScrollBar(
-        getScrollButton(), content, getScrollButtonSize(), scrollBarMargin, scrollPos, held));
+        getScrollButton(), content, getScrollButtonSize(), scrollBarMargin, scrollPos, held, clock));
   SGuiElem barButtons = getScrollbar();
   barButtons = conditional2(std::move(barButtons), [=] (GuiElem* e) {
       return e->getBounds().height() < *content->getPreferredHeight();});

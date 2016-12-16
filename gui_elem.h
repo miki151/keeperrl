@@ -22,6 +22,7 @@ class ViewObject;
 class Clock;
 class Options;
 enum class SpellId;
+class ScrollPosition;
 
 class GuiElem {
   public:
@@ -171,7 +172,7 @@ class GuiFactory {
   SGuiElem mouseHighlight2(SGuiElem highlight);
   SGuiElem mouseHighlightGameChoice(SGuiElem, optional<GameTypeChoice> my, optional<GameTypeChoice>& highlight);
   static int getHeldInitValue();
-  SGuiElem scrollable(SGuiElem content, double* scrollPos = nullptr, int* held = nullptr);
+  SGuiElem scrollable(SGuiElem content, ScrollPosition* scrollPos = nullptr, int* held = nullptr);
   SGuiElem getScrollButton();
   SGuiElem conditional2(SGuiElem elem, function<bool(GuiElem*)> cond);
   SGuiElem conditional(SGuiElem elem, function<bool()> cond);
