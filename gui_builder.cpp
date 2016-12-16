@@ -29,6 +29,8 @@
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
 
+#define THIS_LINE __LINE__
+
 GuiBuilder::GuiBuilder(Renderer& r, GuiFactory& g, Clock* c, Options* o, Callbacks call)
     : renderer(r), gui(g), clock(c), options(o), callbacks(call), gameSpeed(GameSpeed::NORMAL), cache(1000) {
 }
@@ -520,6 +522,16 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
   const int elemWidth = 40;
   auto makeHighlight = [=] (Color c) { return gui.margins(gui.rectangle(c), 4); };
   auto lines = gui.getListBuilder(elemWidth);
+  function<SGuiElem(int)> getAcceptButton = [=] (int immigrantId) {
+    return gui.stack(
+        gui.releaseLeftButton(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, immigrantId})),
+        gui.onMouseLeftButtonHeld(makeHighlight(Color(0, 255, 0, 100))));
+  };
+  function<SGuiElem(int)> getRejectButton = [=] (int immigrantId) {
+    return gui.stack(
+        gui.releaseRightButton(getButtonCallback({UserInputId::IMMIGRANT_REJECT, immigrantId})),
+        gui.onMouseRightButtonHeld(makeHighlight(Color(255, 0, 0, 100))));
+  };
   for (int i : All(info.immigration).reverse()) {
     auto& elem = info.immigration[i];
     int id = elem.id;
@@ -528,16 +540,13 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
     if (elem.requirements.empty())
       button = gui.stack(makeVec<SGuiElem>(
           gui.sprite(GuiFactory::TexId::IMMIGRANT_BG, GuiFactory::Alignment::CENTER),
-          gui.releaseLeftButton(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, elem.id})),
-          gui.releaseRightButton(getButtonCallback({UserInputId::IMMIGRANT_REJECT, elem.id})),
-          gui.onMouseLeftButtonHeld(makeHighlight(Color(0, 255, 0, 100))),
-          gui.onMouseRightButtonHeld(makeHighlight(Color(255, 0, 0, 100)))
+          cache->get(getAcceptButton, THIS_LINE, elem.id),
+          cache->get(getRejectButton, THIS_LINE, elem.id)
       ));
     else
       button = gui.stack(makeVec<SGuiElem>(
           gui.sprite(GuiFactory::TexId::IMMIGRANT2_BG, GuiFactory::Alignment::CENTER),
-          gui.releaseRightButton(getButtonCallback({UserInputId::IMMIGRANT_REJECT, elem.id})),
-          gui.onMouseRightButtonHeld(makeHighlight(Color(255, 0, 0, 100)))
+          cache->get(getRejectButton, THIS_LINE, elem.id)
       ));
     lines.addElem(gui.translate([=]() { return Vec2(0, -getImmigrantAnimationOffset(id));}, gui.stack(
         std::move(button),
@@ -597,7 +606,7 @@ static GuiFactory::IconId getAttrIcon(AttrId id) {
 vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>& attr) {
   vector<SGuiElem> ret;
   for (auto& elem : attr)
-    ret.push_back(gui.stack(getTooltip({elem.name, elem.help}),
+    ret.push_back(gui.stack(getTooltip({elem.name, elem.help}, THIS_LINE),
         gui.horizontalList(makeVec<SGuiElem>(
           gui.icon(getAttrIcon(elem.id)),
           gui.margins(gui.label(toString(elem.value), getBonusColor(elem.bonus)), 0, 2, 0, 0)), 30)));
@@ -649,7 +658,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   else
     line.addSpace(130);
   for (auto& elem : line.getAllElems())
-    elem = gui.stack(gui.buttonRect(onClick), std::move(elem), getTooltip(getItemHint(item)));
+    elem = gui.stack(gui.buttonRect(onClick), std::move(elem), getTooltip(getItemHint(item), THIS_LINE));
   if (item.owner) {
     line.addBackElem(gui.viewObject(item.owner->viewId), viewObjectWidth);
     line.addBackElem(gui.label("L:" + toString(item.owner->expLevel)), 60);
@@ -660,13 +669,16 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
     line.addBackElem(gui.stack(
         gui.label("[#]"),
         gui.button(onMultiClick),
-        getTooltip({"Click to choose how many to pick up."})), 25);
+        getTooltip({"Click to choose how many to pick up."}, THIS_LINE)), 25);
   }
   return gui.margins(line.buildHorizontalList(), leftMargin, 0, 0, 0);
 }
 
-SGuiElem GuiBuilder::getTooltip(const vector<string>& text) {
-  return gui.conditional(gui.tooltip(text), [this] { return !disableTooltip;});
+SGuiElem GuiBuilder::getTooltip(const vector<string>& text, int id) {
+  return cache->get(
+      [this](const vector<string>& text) {
+        return gui.conditional(gui.tooltip(text), [this] { return !disableTooltip;}); },
+      id, text);
 }
 
 const int listLineHeight = 30;
@@ -846,7 +858,7 @@ vector<SGuiElem> GuiBuilder::drawSkillsList(const PlayerInfo& info) {
   if (!info.skills.empty()) {
     lines.push_back(gui.label("Skills", colors[ColorId::YELLOW]));
     for (auto& elem : info.skills)
-      lines.push_back(gui.stack(getTooltip({elem.help}),
+      lines.push_back(gui.stack(getTooltip({elem.help}, THIS_LINE),
             gui.label(capitalFirst(elem.name), colors[ColorId::WHITE])));
     lines.push_back(gui.empty());
   }
@@ -865,7 +877,7 @@ SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, bool active) {
   } else
   if (active)
     ret.push_back(gui.button(getButtonCallback({UserInputId::CAST_SPELL, spell.id})));
-  ret.push_back(getTooltip({spell.name, spell.help}));
+  ret.push_back(getTooltip({spell.name, spell.help}, THIS_LINE));
   return gui.stack(std::move(ret));
 }
 
@@ -888,7 +900,7 @@ vector<SGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info) {
   vector<SGuiElem> lines;
   for (auto effect : info.effects)
     lines.push_back(gui.stack(
-          getTooltip({effect.help}),
+          getTooltip({effect.help}, THIS_LINE),
           gui.label(effect.name, effect.bad ? colors[ColorId::RED] : colors[ColorId::WHITE])));
   return lines;
 }
@@ -1061,10 +1073,13 @@ SGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
     if (!currentLine.empty())
       teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
     ViewId leaderViewId = info.getMinion(team.members[0])->viewId;
+    auto selectButton = [this](int teamId) {
+      return gui.releaseLeftButton(getButtonCallback({UserInputId::SELECT_TEAM, teamId}));
+    };
     lines.addElemAuto(gui.stack(makeVec<SGuiElem>(
             gui.mouseOverAction([team, this] { mapGui->highlightTeam(team.members); },
               [team, this] { mapGui->unhighlightTeam(team.members); }),
-            gui.releaseLeftButton(getButtonCallback({UserInputId::SELECT_TEAM, team.id})),
+            cache->get(selectButton, THIS_LINE, team.id),
             gui.uiHighlightConditional([team] () { return team.highlight; }),
             gui.uiHighlightMouseOver(),
             gui.dragListener([this, team](DragContent content) {
@@ -1124,6 +1139,9 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
     minionsHash = newHash;
     auto list = gui.getListBuilder(legendLineHeight);
     list.addElem(gui.label(info.monsterHeader, colors[ColorId::WHITE]));
+    auto selectButton = [this](UniqueEntity<Creature>::Id creatureId) {
+      return gui.releaseLeftButton(getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, creatureId}));
+    };
     for (int i : All(info.minionGroups)) {
       auto& elem = info.minionGroups[i];
       auto line = gui.getListBuilder();
@@ -1134,7 +1152,7 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
         tmp = gui.stack(gui.uiHighlight(), std::move(tmp));
       line.addElem(std::move(tmp), 200);
       list.addElem(gui.leftMargin(20, gui.stack(
-          gui.releaseLeftButton(getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, elem.creatureId})),
+          cache->get(selectButton, THIS_LINE, elem.creatureId),
           gui.dragSource({DragContentId::CREATURE_GROUP, elem.creatureId},
               [=]{ return gui.getListBuilder(10)
                   .addElemAuto(gui.label(toString(elem.count) + " "))
@@ -1239,11 +1257,11 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info) {
     SGuiElem guiElem = line.buildHorizontalList();
     if (elem.unavailable) {
       CHECK(!elem.unavailableReason.empty());
-      guiElem = gui.stack(getTooltip({elem.unavailableReason}), std::move(guiElem));
+      guiElem = gui.stack(getTooltip({elem.unavailableReason}, THIS_LINE), std::move(guiElem));
     }
     else
       guiElem = gui.stack(
-          getTooltip({elem.description}),
+          getTooltip({elem.description}, THIS_LINE),
           gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
           std::move(guiElem),
           gui.button(getButtonCallback({UserInputId::WORKSHOP_ADD, i})));
@@ -1374,22 +1392,23 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info) {
 void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
   switch (info.infoType) {
     case GameInfo::InfoType::BAND:
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), 6,
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::BOTTOM_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), 1,
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
            info.collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), 2,
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::MINIONS});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), 3,
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::MINIONS});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), 4,
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), 5,
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawGameSpeedDialog, this), 7), OverlayInfo::GAME_SPEED});
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawGameSpeedDialog, this), THIS_LINE),
+           OverlayInfo::GAME_SPEED});
       break;
     case GameInfo::InfoType::PLAYER:
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawPlayerOverlay, this), 8,
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawPlayerOverlay, this), THIS_LINE,
            info.playerInfo), OverlayInfo::TOP_LEFT});
       break;
     default:
@@ -1525,7 +1544,7 @@ SGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageInfo::Villa
   if (action.disabledReason)
     return gui.stack(
         gui.label(getVillageActionText(action.action), colors[ColorId::GRAY]),
-        getTooltip({*action.disabledReason}));
+        getTooltip({*action.disabledReason}, THIS_LINE));
   else
     return gui.stack(
         gui.labelHighlight(getVillageActionText(action.action), colors[ColorId::GREEN]),
@@ -1784,6 +1803,9 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
     optional<TeamId> teamId) {
   CHECK(!minions.empty());
   map<ViewId, vector<PlayerInfo>> minionMap = groupByViewId(minions);
+  auto selectButton = [this](UniqueEntity<Creature>::Id creatureId) {
+    return gui.releaseLeftButton(getButtonCallback({UserInputId::CREATURE_BUTTON, creatureId}));
+  };
   auto list = gui.getListBuilder(legendLineHeight);
   for (auto& elem : minionMap) {
     list.addElem(gui.topMargin(5, gui.viewObject(elem.first)), legendLineHeight + 5);
@@ -1799,7 +1821,7 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
         line.addElem(gui.topMargin(-2, gui.icon(*icon)), 20);
       line.addBackElem(gui.label("L:" + toString<int>(minion.levelInfo.level)), 42);
       list.addElem(gui.stack(makeVec<SGuiElem>(
-            gui.releaseLeftButton(getButtonCallback({UserInputId::CREATURE_BUTTON, minionId})),
+            cache->get(selectButton, THIS_LINE, minionId),
             gui.uiHighlight([=] { return mapGui->getCreatureHighlight(minionId);}),
             gui.uiHighlightConditional([=] { return current == minionId;}),
             gui.dragSource({DragContentId::CREATURE, minionId},
@@ -1880,7 +1902,7 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                     gui.uiHighlightConditional([=]{ return task.current; }),
                     gui.label(getTaskText(task.task), colors[getTaskColor(task)])))
                 .addBackElemAuto(gui.stack(
-                    getTooltip({"Click to turn this task on/off."}),
+                    getTooltip({"Click to turn this task on/off."}, THIS_LINE),
                     gui.button([&exit, &retAction, task] {
                       retAction.lock.toggle(task.task);
                     }),

@@ -136,7 +136,7 @@ class GuiBuilder {
   Options* options;
   Callbacks callbacks;
   SGuiElem getHintCallback(const vector<string>&);
-  SGuiElem getTooltip(const vector<string>&);
+  SGuiElem getTooltip(const vector<string>&, int id);
   vector<SGuiElem> drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>&);
   SGuiElem drawPlayerLevelButton(const PlayerInfo&);
   SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);

@@ -9,13 +9,13 @@ class CallCache {
 
   typedef pair<int, int> Key;
 
-  template <typename... Args, typename...Args2>
-  Value get(function<Value(Args2...)> fun, int id, Args&&...args) {
+  template <typename... Args, typename Generator>
+  Value get(Generator gen, int id, Args&&...args) {
     Key key = {id, combineHash(args...)};
     if (auto elem = getValue(key))
       return *elem;
     else
-      return insertValue(key, fun(std::forward<Args>(args)...));
+      return insertValue(key, gen(std::forward<Args>(args)...));
   }
 
   int getSize() const {
