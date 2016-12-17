@@ -492,9 +492,19 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
 
 SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
   auto lines = gui.getListBuilder(legendLineHeight);
+  if (info.autoState)
+    switch (*info.autoState) {
+      case ImmigrantDataInfo::AUTO_ACCEPT:
+        lines.addElem(gui.label("(Immigrant will be accepted automatically)", colors[ColorId::GREEN]));
+        break;
+      case ImmigrantDataInfo::AUTO_REJECT:
+        lines.addElem(gui.label("(Immigrant will be rejected automatically)", colors[ColorId::RED]));
+        break;
+    }
   lines.addElem(gui.label(capitalFirst(info.name)));
   lines.addElem(gui.label("Level: " + toString(info.expLevel)));
-  lines.addElem(gui.label("Turns left: " + toString(info.timeLeft)));
+  if (info.timeLeft)
+    lines.addElem(gui.label("Turns left: " + toString(*info.timeLeft)));
   for (auto& req : info.requirements)
     lines.addElem(gui.label(req, colors[ColorId::ORANGE]));
   return gui.miniWindow(gui.margins(lines.buildVerticalList(), 15));
@@ -511,6 +521,10 @@ int GuiBuilder::getImmigrantAnimationOffset(int id) {
     return 0;
 }
 
+int GuiBuilder::getImmigrationBarWidth() const {
+  return 40;
+}
+
 SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
   if (!firstImmigrantAppearance) {
     // If the map is not present, initialize and fill it with current immigrant data
@@ -519,7 +533,7 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
     for (auto& elem : info.immigration)
       firstImmigrantAppearance->insert({elem.id, milliseconds{0}});
   }
-  const int elemWidth = 40;
+  const int elemWidth = getImmigrationBarWidth();
   auto makeHighlight = [=] (Color c) { return gui.margins(gui.rectangle(c), 4); };
   auto lines = gui.getListBuilder(elemWidth);
   function<SGuiElem(int)> getAcceptButton = [=] (int immigrantId) {
@@ -534,7 +548,6 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
   };
   for (int i : All(info.immigration).reverse()) {
     auto& elem = info.immigration[i];
-    int id = elem.id;
     firstImmigrantAppearance->insert({elem.id, clock->getRealMillis()});
     SGuiElem button;
     if (elem.requirements.empty())
@@ -548,9 +561,9 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
           gui.sprite(GuiFactory::TexId::IMMIGRANT2_BG, GuiFactory::Alignment::CENTER),
           cache->get(getRejectButton, THIS_LINE, elem.id)
       ));
-    lines.addElem(gui.translate([=]() { return Vec2(0, -getImmigrantAnimationOffset(id));}, gui.stack(
+    lines.addElem(gui.translate([=]() { return Vec2(0, -getImmigrantAnimationOffset(elem.id));}, gui.stack(
         std::move(button),
-        gui.tooltip2(drawImmigrantInfo(elem)),
+        gui.tooltip2(drawImmigrantInfo(elem), [](const Rectangle& r) { return r.topRight();}),
         gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
             gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
         gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
@@ -559,12 +572,58 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
   }
   lines.addElem(gui.stack(makeVec<SGuiElem>(
       gui.sprite(GuiFactory::TexId::IMMIGRANT_BG, GuiFactory::Alignment::CENTER),
-      //gui.button(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, elem.id})),
+      gui.conditional(makeHighlight(Color(0, 255, 0, 100)), [this] { return immigrantHelpOpen; }),
+      gui.button([this] { immigrantHelpOpen = !immigrantHelpOpen; }),
       gui.setWidth(elemWidth, gui.topMargin(-2, gui.centerHoriz(gui.label("?", 32, colors[ColorId::GREEN]))))
   )));
   return gui.setWidth(elemWidth, gui.stack(
         gui.stopMouseMovement(),
         lines.buildVerticalList()));
+}
+
+SGuiElem GuiBuilder::getImmigrationHelpText() {
+  return gui.labelMultiLine("Welcome to the new immigration system! On the left you see creatures that would "
+                            "like to join your dungeon. Left-click on a candidate to accept him or her, right-click "
+                            "to reject. Some candidates have some requirements that you need to fulfill before "
+                            "they can join.\\n\\nBelow are all possible immigrants, along with their full "
+                            "requirements. You can also click on them to set automatic acception or rejection.",
+                            legendLineHeight);
+}
+
+SGuiElem GuiBuilder::drawImmigrationHelp(const CollectiveInfo& info) {
+  const int elemWidth = 80;
+  const int numPerLine = 8;
+  const int iconScale = 2;
+  auto lines = gui.getListBuilder(elemWidth);
+  lines.addElem(getImmigrationHelpText(), legendLineHeight * 6);
+  auto line = gui.getListBuilder(elemWidth);
+  for (auto& elem : info.allImmigration) {
+    auto icon = gui.viewObject(elem.viewId, iconScale);
+    if (elem.autoState)
+      switch (*elem.autoState) {
+        case ImmigrantDataInfo::AUTO_ACCEPT:
+          icon = gui.stack(std::move(icon), gui.viewObject(ViewId::ACCEPT_IMMIGRANT, iconScale));
+          break;
+        case ImmigrantDataInfo::AUTO_REJECT:
+          icon = gui.stack(std::move(icon), gui.viewObject(ViewId::REJECT_IMMIGRANT, iconScale));
+          break;
+      }
+    line.addElem(gui.stack(makeVec<SGuiElem>(
+        gui.button(getButtonCallback({UserInputId::IMMIGRANT_AUTO_ACCEPT, elem.id})),
+        gui.tooltip2(drawImmigrantInfo(elem), [](const Rectangle& r) { return r.bottomLeft();}),
+        gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
+            gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
+        gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5, std::move(icon))))))));
+    if (line.getLength() >= numPerLine) {
+      lines.addElem(line.buildHorizontalList());
+      line.clear();
+    }
+  }
+  if (!line.isEmpty())
+    lines.addElem(line.buildHorizontalList());
+  return gui.setHeight(400, gui.miniWindow(gui.margins(gui.stack(
+        gui.stopMouseMovement(),
+        lines.buildVerticalList()), 15), [this] { immigrantHelpOpen = false; }, true));
 }
 
 SGuiElem GuiBuilder::getSunlightInfoGui(GameSunlightInfo& sunlightInfo) {
@@ -1393,7 +1452,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
   switch (info.infoType) {
     case GameInfo::InfoType::BAND:
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
-           info.collectiveInfo), OverlayInfo::BOTTOM_LEFT});
+           info.collectiveInfo), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
            info.collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
@@ -1404,6 +1463,9 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
            info.collectiveInfo), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::TOP_LEFT});
+      if (immigrantHelpOpen)
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationHelp, this), THIS_LINE,
+            info.collectiveInfo), OverlayInfo::BOTTOM_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawGameSpeedDialog, this), THIS_LINE),
            OverlayInfo::GAME_SPEED});
       break;

@@ -56,6 +56,7 @@ class GuiBuilder {
   GuiBuilder(Renderer&, GuiFactory&, Clock*, Options*, Callbacks);
   void reset();
   int getStandardLineHeight() const;
+  int getImmigrationBarWidth() const;
 
   SGuiElem getSunlightInfoGui(GameSunlightInfo& sunlightInfo);
   SGuiElem getTurnInfoGui(int& turn);
@@ -71,13 +72,14 @@ class GuiBuilder {
 
   struct OverlayInfo {
     SGuiElem elem;
-    enum { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, INVISIBLE, MINIONS } alignment;
+    enum { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, INVISIBLE, MINIONS, IMMIGRATION } alignment;
   };
   SGuiElem drawPlayerOverlay(const PlayerInfo&);
   void drawOverlays(vector<OverlayInfo>&, GameInfo&);
   SGuiElem drawMessages(const vector<PlayerMessage>&, int guiLength);
   SGuiElem drawGameSpeedDialog();
   SGuiElem drawImmigrationOverlay(const CollectiveInfo&);
+  SGuiElem drawImmigrationHelp(const CollectiveInfo&);
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
   vector<SGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);
   typedef function<void(optional<UniqueEntity<Creature>::Id>)> CreatureMenuCallback;
@@ -128,6 +130,7 @@ class GuiBuilder {
   ~GuiBuilder();
 
   private:
+  SGuiElem getImmigrationHelpText();
   SGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>* markedPos, function<bool(Vec2)> activeFun,
       function<void(Vec2)> clickFun);
   Renderer& renderer;
@@ -212,6 +215,7 @@ class GuiBuilder {
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
   MinionTab minionTab = MinionTab::INVENTORY;
   bool gameSpeedDialogOpen = false;
+  bool immigrantHelpOpen = false;
   atomic<GameSpeed> gameSpeed;
   const char* getGameSpeedName(GameSpeed) const;
   const char* getCurrentGameSpeedName() const;

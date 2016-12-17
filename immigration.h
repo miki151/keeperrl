@@ -48,6 +48,7 @@ class Immigration {
 
   int getAttractionOccupation(const Collective* collective, const AttractionType& attraction) const;
   int getAttractionValue(const Collective* collective, const AttractionType& attraction) const;
+  static vector<string> getAllRequirements(const ImmigrantInfo&);
 
   private:
   EntityMap<Creature, map<AttractionType, int>> SERIAL(minionAttraction);

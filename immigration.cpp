@@ -146,6 +146,31 @@ vector<string> Immigration::getMissingRequirements(const Collective* collective,
       [](vector<string>& all, const optional<string>& value) { if (value) all.push_back(*value);}, {}, false);
 }
 
+vector<string> Immigration::getAllRequirements(const ImmigrantInfo& info) {
+  auto visitor = make_lambda_visitor<optional<string>>(
+      [&](const AttractionInfo& attraction) {
+          int required = attraction.amountClaimed;
+          return "Requires " + toString(required) + " " +
+              combineWithOr(transform2<string>(attraction.types,
+                  [&](const AttractionType& type) { return getAttractionName(type, required); }));
+      },
+      [&](const TechId& techId) -> optional<string> {
+          return "Requires technology: " + Technology::get(techId)->getName();
+      },
+      [&](const SunlightState& state) -> optional<string> {
+          return "Will only join during the "_s + SunlightInfo::getText(state);
+      },
+      [&](const CostInfo& cost) -> optional<string> {
+          return "Costs " + toString(cost.value) + " " + CollectiveConfig::getResourceInfo(cost.id).name;
+      },
+      [&](const FurnitureType& type) -> optional<string> {
+          return "Requires at least one " + Furniture::getName(type);
+      }
+  );
+  return visitRequirements<optional<string>, vector<string>>(info, visitor,
+      [](vector<string>& all, const optional<string>& value) { if (value) all.push_back(*value);}, {}, false);
+}
+
 bool Immigration::preliminaryRequirementsMet(const Collective* collective, const Group& group) const {
   auto visitor = make_lambda_visitor<bool>(
       [&](const AttractionInfo& attraction) {

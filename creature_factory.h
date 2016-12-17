@@ -71,7 +71,6 @@ RICH_ENUM(CreatureId,
     VAMPIRE,
     VAMPIRE_LORD,
     MUMMY,
-    MUMMY_LORD,
     SKELETON,
     
     GNOME,
@@ -175,7 +174,6 @@ class CreatureFactory {
   static CreatureFactory orcTown(TribeId);
   static CreatureFactory splash(TribeId);
   static CreatureFactory singleType(TribeId, CreatureId);
-  static CreatureFactory pyramid(TribeId, int level);
   static CreatureFactory insects(TribeId tribe);
   static CreatureFactory lavaCreatures(TribeId tribe);
   static CreatureFactory waterCreatures(TribeId tribe);

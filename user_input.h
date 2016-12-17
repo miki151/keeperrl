@@ -58,6 +58,7 @@ enum class UserInputId {
     CREATURE_DRAG,
     IMMIGRANT_ACCEPT,
     IMMIGRANT_REJECT,
+    IMMIGRANT_AUTO_ACCEPT,
     TEAM_DRAG_DROP,
     GO_TO_ENEMY,
     CREATE_TEAM,
@@ -188,7 +189,8 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::GO_TO_VILLAGE,
             UserInputId::PLAYER_COMMAND,
             UserInputId::IMMIGRANT_ACCEPT,
-            UserInputId::IMMIGRANT_REJECT
+            UserInputId::IMMIGRANT_REJECT,
+            UserInputId::IMMIGRANT_AUTO_ACCEPT
         ),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM),

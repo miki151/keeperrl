@@ -1823,6 +1823,10 @@ class MouseButtonHeld : public GuiStack {
     return false;
   }
 
+  virtual void onMouseRelease(Vec2) override {
+    on = false;
+  }
+
   virtual void onMouseGone() override {
     on = false;
   }
@@ -1962,7 +1966,8 @@ SGuiElem GuiFactory::mouseHighlight2(SGuiElem elem) {
 
 class Tooltip2 : public GuiElem {
   public:
-  Tooltip2(SGuiElem e) : elem(std::move(e)), size(*elem->getPreferredWidth(), *elem->getPreferredHeight()) {
+  Tooltip2(SGuiElem e, GuiFactory::PositionFun pos)
+      : elem(std::move(e)), size(*elem->getPreferredWidth(), *elem->getPreferredHeight()), positionFun(pos) {
   }
 
   virtual bool onMouseMove(Vec2 pos) override {
@@ -1976,7 +1981,7 @@ class Tooltip2 : public GuiElem {
 
   virtual void render(Renderer& r) override {
     if (canRender) {
-      Vec2 pos = getBounds().topRight();
+      Vec2 pos = positionFun(getBounds());
       pos.x = min(pos.x, r.getSize().x - size.x);
       pos.y = min(pos.y, r.getSize().y - size.y);
       r.setTopLayer();
@@ -1990,10 +1995,11 @@ class Tooltip2 : public GuiElem {
   bool canRender = false;
   SGuiElem elem;
   Vec2 size;
+  GuiFactory::PositionFun positionFun;
 };
 
-SGuiElem GuiFactory::tooltip2(SGuiElem elem) {
-  return SGuiElem(new Tooltip2(std::move(elem)));
+SGuiElem GuiFactory::tooltip2(SGuiElem elem, PositionFun positionFun) {
+  return SGuiElem(new Tooltip2(std::move(elem), positionFun));
 }
 
 const static int tooltipLineHeight = 28;
@@ -2432,12 +2438,12 @@ SGuiElem GuiFactory::miniBorder2() {
         sprite(get(TexId::CORNER_MINI2), Alignment::TOP_LEFT, false, false)));
 }
 
-SGuiElem GuiFactory::miniWindow2(SGuiElem content, function<void()> onExitButton) {
+SGuiElem GuiFactory::miniWindow2(SGuiElem content, function<void()> onExitButton, bool captureExitClick) {
   return stack(fullScreen(darken()),
-      miniWindow(margins(std::move(content), 15), onExitButton));
+      miniWindow(margins(std::move(content), 15), onExitButton, captureExitClick));
 }
 
-SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton) {
+SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton, bool captureExitClick) {
   auto ret = makeVec<SGuiElem>(
         stopMouseMovement(),
         rectangle(colors[ColorId::BLACK]),
@@ -2445,7 +2451,7 @@ SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton)
         miniBorder(),
         std::move(content));
   if (onExitButton)
-    ret.push_back(reverseButton(onExitButton, {getKey(SDL::SDLK_ESCAPE)}));
+    ret.push_back(reverseButton(onExitButton, {getKey(SDL::SDLK_ESCAPE)}, captureExitClick));
   return stack(std::move(ret));
 }
 

@@ -187,7 +187,8 @@ class GuiFactory {
   SGuiElem sprite(Texture&, Alignment, Color);
   SGuiElem sprite(Texture&, double scale);
   SGuiElem tooltip(const vector<string>&, milliseconds delay = milliseconds{700});
-  SGuiElem tooltip2(SGuiElem);
+  typedef function<Vec2(const Rectangle&)> PositionFun;
+  SGuiElem tooltip2(SGuiElem, PositionFun);
   SGuiElem darken();
   SGuiElem stopMouseMovement();
   SGuiElem fullScreen(SGuiElem);
@@ -244,8 +245,8 @@ class GuiFactory {
   SGuiElem mainMenuHighlight();
   SGuiElem window(SGuiElem content, function<void()> onExitButton);
   SGuiElem miniWindow();
-  SGuiElem miniWindow(SGuiElem content, function<void()> onExitButton = nullptr);
-  SGuiElem miniWindow2(SGuiElem content, function<void()> onExitButton = nullptr);
+  SGuiElem miniWindow(SGuiElem content, function<void()> onExitButton = nullptr, bool captureExitClick = false);
+  SGuiElem miniWindow2(SGuiElem content, function<void()> onExitButton = nullptr, bool captureExitClick = false);
   SGuiElem miniBorder();
   SGuiElem miniBorder2();
   SGuiElem mainDecoration(int rightBarWidth, int bottomBarHeight, optional<int> topBarHeight);

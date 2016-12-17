@@ -81,7 +81,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
   serializeAll(ar, knownVillains, knownVillainLocations, visibilityMap);
-  serializeAll(ar, messageHistory, eventProxy);
+  serializeAll(ar, messageHistory, eventProxy, immigrantAutoState);
 }
 
 SERIALIZABLE(PlayerControl);
@@ -1202,6 +1202,28 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         elem.first
     });
   }
+  info.allImmigration.clear();
+  static EnumMap<CreatureId, PCreature> creatureCache(
+      [](const CreatureId id) {
+        return CreatureFactory::fromId(id, TribeId::getKeeper());
+      }
+  );
+  for (auto elem : Iter(getCollective()->getConfig().getImmigrantInfo())) {
+    Creature* c = creatureCache[elem->id].get();
+    optional<ImmigrantDataInfo::AutoState> autoState;
+    if (auto state = getMaybe(immigrantAutoState, elem.index()))
+      autoState = *state;
+    info.allImmigration.push_back(ImmigrantDataInfo {
+        immigration.getAllRequirements(*elem),
+        c->getName().bare(),
+        c->getViewObject().id(),
+        (int) c->getAttributes().getVisibleExpLevel(),
+        0,
+        none,
+        elem.index(),
+        autoState
+    });
+  }
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
@@ -1991,6 +2013,21 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::IMMIGRANT_REJECT:
         getCollective()->getImmigration().reject(input.get<int>());
         break;
+    case UserInputId::IMMIGRANT_AUTO_ACCEPT: {
+        int id = input.get<int>();
+        if (auto state = getMaybe(immigrantAutoState, id))
+          switch (*state) {
+            case ImmigrantDataInfo::AUTO_ACCEPT:
+              immigrantAutoState[id] = ImmigrantDataInfo::AUTO_REJECT;
+              break;
+            case ImmigrantDataInfo::AUTO_REJECT:
+              immigrantAutoState.erase(id);
+              break;
+          }
+        else
+          immigrantAutoState[id] = ImmigrantDataInfo::AUTO_ACCEPT;
+        break;
+      }
     case UserInputId::RECT_SELECTION: {
         auto& info = input.get<BuildingInfo>();
         if (canSelectRectangle(getBuildInfo()[info.building])) {

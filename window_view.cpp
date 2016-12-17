@@ -443,8 +443,12 @@ void WindowView::rebuildGui() {
             case GuiBuilder::OverlayInfo::TOP_LEFT:
               pos = Vec2(rightBarWidth + sideOffset, rightWindowHeight);
               break;
-            case GuiBuilder::OverlayInfo::BOTTOM_LEFT:
+            case GuiBuilder::OverlayInfo::IMMIGRATION:
               pos = Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - 21 - *height);
+              break;
+            case GuiBuilder::OverlayInfo::BOTTOM_LEFT:
+              pos = Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
+                         renderer.getSize().y - bottomBarHeight - 21 - *height);
               break;
             case GuiBuilder::OverlayInfo::LEFT:
               pos = Vec2(sideOffset,

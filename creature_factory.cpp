@@ -807,13 +807,6 @@ CreatureFactory CreatureFactory::orcTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1});
 }
 
-CreatureFactory CreatureFactory::pyramid(TribeId tribe, int level) {
-  if (level == 2)
-    return CreatureFactory(tribe, { CreatureId::MUMMY }, {1}, { CreatureId::MUMMY_LORD });
-  else
-    return CreatureFactory(tribe, { CreatureId::MUMMY }, {1}, { });
-}
-
 CreatureFactory CreatureFactory::insects(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::SPIDER}, {1});
 }
@@ -1485,7 +1478,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.name = CreatureName("mummy", "mummies"););
-    case CreatureId::ORC: 
+    case CreatureId::ORC:
       return CATTR(
           c.viewId = ViewId::ORC;
           c.attr[AttrType::SPEED] = 100;
@@ -2558,10 +2551,6 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::ARROW, Random.get(20, 36))
         .add(ItemId::GOLD_PIECE, Random.get(10, 30))
         .add(randomBackup());
-    case CreatureId::MUMMY_LORD: 
-      return ItemList()
-        .add(ItemId::GOLD_PIECE, Random.get(100, 200)).add(
-            Random.choose(ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER, ItemId::SPECIAL_SWORD));
     case CreatureId::WITCH: 
       return ItemList()
         .add(ItemId::KNIFE)
