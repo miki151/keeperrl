@@ -14,11 +14,13 @@
 #include "item_index.h"
 #include "technology.h"
 
-SERIALIZE_DEF(Immigration, available, minionAttraction, idCnt)
+SERIALIZE_DEF(Immigration, available, minionAttraction, idCnt, collective, generated)
+
+SERIALIZATION_CONSTRUCTOR_IMPL(Immigration)
 
 static map<AttractionType, int> empty;
 
-int Immigration::getAttractionOccupation(const Collective* collective, const AttractionType& type) const {
+int Immigration::getAttractionOccupation(const AttractionType& type) const {
   int res = 0;
   for (auto creature : collective->getCreatures()) {
     auto& elems = minionAttraction.getOrElse(creature, empty);
@@ -29,7 +31,7 @@ int Immigration::getAttractionOccupation(const Collective* collective, const Att
   return res;
 }
 
-int Immigration::getAttractionValue(const Collective* collective, const AttractionType& attraction) const {
+int Immigration::getAttractionValue(const AttractionType& attraction) const {
   return apply_visitor(attraction, make_lambda_visitor<int>(
         [&](FurnitureType type) {
           auto& constructions = collective->getConstructions();
@@ -43,165 +45,118 @@ int Immigration::getAttractionValue(const Collective* collective, const Attracti
         }));
 }
 
-static string getAttractionName(const AttractionType& attraction, int count) {
-  return apply_visitor(attraction, make_lambda_visitor<string>(
-        [&](FurnitureType type) {
-          return Furniture::getName(type, count);
-        },
-        [&](ItemIndex index) {
-          return getName(index, count);
-        }));
-}
-
-static string combineWithOr(const vector<string>& elems) {
-  string ret;
-  for (auto& elem : elems) {
-    if (!ret.empty())
-      ret += " or ";
-    ret += elem;
-  }
-  return ret;
-}
-
-template <typename Value, typename Aggregate, typename Visitor>
-Aggregate visitRequirements(
-    const ImmigrantInfo& info,
-    const Visitor& visitor,
-    function<void(Aggregate&, const Value&)> aggregator,
-    Aggregate result,
-    bool onlyPreliminary) {
-  for (auto& requirement : info.requirements)
-    if (requirement.preliminary || !onlyPreliminary) {
-      Value value = apply_visitor(requirement.type, visitor);
-      aggregator(result, value);
-    }
-  return result;
-}
-
-template <typename Value>
-Value visitAttraction(const Immigration& immigration, const Collective* collective, const AttractionInfo& attraction,
-    function<Value(int total, int available)> visit) {
+static void visitAttraction(const Immigration& immigration, const AttractionInfo& attraction,
+    function<void(int total, int available)> visit) {
   int value = 0;
   int occupation = 0;
   for (auto& type : attraction.types) {
-    int thisValue = immigration.getAttractionValue(collective, type);
+    int thisValue = immigration.getAttractionValue(type);
     value += thisValue;
-    occupation += min(thisValue, immigration.getAttractionOccupation(collective, type));
+    occupation += min(thisValue, immigration.getAttractionOccupation(type));
   }
-  return visit(value, max(0, value - occupation));
+  visit(value, max(0, value - occupation));
 }
 
-vector<string> Immigration::getMissingRequirements(const Collective* collective, const Available& available) const {
-  vector<string> ret = getMissingRequirements(collective, Group {available.info, (int)available.creatures.size()});
+vector<string> Immigration::getMissingRequirements(const Available& available) const {
+  vector<string> ret = getMissingRequirements(Group {available.info, (int)available.creatures.size()});
   int groupSize = available.creatures.size();
   if (groupSize > collective->getMaxPopulation() - collective->getPopulationSize())
     ret.push_back("Exceeds population limit");
   auto spawnType = available.creatures[0]->getAttributes().getSpawnType();
-  if (ret.empty() && available.getSpawnPositions(collective).size() < groupSize)
+  if (ret.empty() && available.getSpawnPositions().size() < groupSize)
     ret.push_back("Not enough room to spawn.");
   return ret;
 }
 
-vector<string> Immigration::getMissingRequirements(const Collective* collective, const Group& group) const {
-  auto visitor = make_lambda_visitor<optional<string>>(
+vector<string> Immigration::getMissingRequirements(const Group& group) const {
+  vector<string> ret;
+  auto visitor = make_lambda_visitor<void>(
       [&](const AttractionInfo& attraction) {
-        return visitAttraction<optional<string>>(*this, collective, attraction,
-            [&](int total, int available) -> optional<string> {
+        return visitAttraction(*this, attraction,
+            [&](int total, int available) {
               int required = attraction.amountClaimed * group.count - available;
               if (required > 0) {
                 const char* extra = total > 0 ? "more " : "";
-                return "Requires " + toString(required) + " " + extra +
+                ret.push_back("Requires " + toString(required) + " " + extra +
                     combineWithOr(transform2<string>(attraction.types,
-                        [&](const AttractionType& type) { return getAttractionName(type, required); }));
-              } else
-                return none;
+                        [&](const AttractionType& type) { return AttractionInfo::getAttractionName(type, required); })));
+              }
             });
       },
-      [&](const TechId& techId) -> optional<string> {
+      [&](const TechId& techId) {
         if (!collective->hasTech(techId))
-          return "Missing technology: " + Technology::get(techId)->getName();
-        else
-          return none;
+          ret.push_back("Missing technology: " + Technology::get(techId)->getName());
       },
-      [&](const SunlightState& state) -> optional<string> {
+      [&](const SunlightState& state) {
         if (state != collective->getGame()->getSunlightInfo().getState())
-          return "Immigrant won't join during the "_s + collective->getGame()->getSunlightInfo().getText();
-        else
-          return none;
+          ret.push_back("Immigrant won't join during the "_s + collective->getGame()->getSunlightInfo().getText());
       },
-      [&](const CostInfo& cost) -> optional<string> {
+      [&](const CostInfo& cost) {
         if (!collective->hasResource(cost * group.count))
-          return "Not enough " + CollectiveConfig::getResourceInfo(cost.id).name;
-        else
-          return none;
+          ret.push_back("Not enough " + CollectiveConfig::getResourceInfo(cost.id).name);
       },
-      [&](const FurnitureType& type) -> optional<string> {
+      [&](const ExponentialCost& cost) {
+        if (!collective->hasResource(calculateCost(group.info, cost) * group.count))
+          ret.push_back("Not enough " + CollectiveConfig::getResourceInfo(cost.base.id).name);
+      },
+      [&](const FurnitureType& type) {
         if (collective->getConstructions().getBuiltCount(type) == 0)
-          return "Requires " + Furniture::getName(type);
-        else
-          return none;
+          ret.push_back("Requires " + Furniture::getName(type));
       }
   );
-  return visitRequirements<optional<string>, vector<string>>(group.info, visitor,
-      [](vector<string>& all, const optional<string>& value) { if (value) all.push_back(*value);}, {}, false);
+  group.info.visitRequirements(visitor);
+  return ret;
 }
 
 vector<string> Immigration::getAllRequirements(const ImmigrantInfo& info) {
-  auto visitor = make_lambda_visitor<optional<string>>(
+  vector<string> ret;
+
+  return ret;
+}
+
+bool Immigration::preliminaryRequirementsMet(const Group& group) const {
+  bool ret = true;
+  auto visitor = make_lambda_visitor<void>(
       [&](const AttractionInfo& attraction) {
-          int required = attraction.amountClaimed;
-          return "Requires " + toString(required) + " " +
-              combineWithOr(transform2<string>(attraction.types,
-                  [&](const AttractionType& type) { return getAttractionName(type, required); }));
+        visitAttraction(*this, attraction,
+            [&](int, int available) { return ret &= (available > 0); });
       },
-      [&](const TechId& techId) -> optional<string> {
-          return "Requires technology: " + Technology::get(techId)->getName();
+      [&](const TechId& techId) { ret &= collective->hasTech(techId); },
+      [&](const SunlightState& state) { ret &= (state == collective->getGame()->getSunlightInfo().getState()); },
+      [&](const FurnitureType& type) { ret &= (collective->getConstructions().getBuiltCount(type) > 0); },
+      [&](const CostInfo& cost) {
+        ret &= collective->hasResource(cost * group.count);
       },
-      [&](const SunlightState& state) -> optional<string> {
-          return "Will only join during the "_s + SunlightInfo::getText(state);
-      },
-      [&](const CostInfo& cost) -> optional<string> {
-          return "Costs " + toString(cost.value) + " " + CollectiveConfig::getResourceInfo(cost.id).name;
-      },
-      [&](const FurnitureType& type) -> optional<string> {
-          return "Requires at least one " + Furniture::getName(type);
+      [&](const ExponentialCost& cost) {
+        ret &= collective->hasResource(calculateCost(group.info, cost) * group.count);
       }
   );
-  return visitRequirements<optional<string>, vector<string>>(info, visitor,
-      [](vector<string>& all, const optional<string>& value) { if (value) all.push_back(*value);}, {}, false);
+  group.info.visitPreliminaryRequirements(visitor);
+  return ret;
 }
 
-bool Immigration::preliminaryRequirementsMet(const Collective* collective, const Group& group) const {
-  auto visitor = make_lambda_visitor<bool>(
-      [&](const AttractionInfo& attraction) {
-        return visitAttraction<bool>(*this, collective, attraction,
-            [&](int, int available) { return available > 0; });
+void Immigration::occupyRequirements(const Creature* c, const ImmigrantInfo& info) {
+  auto visitor = make_lambda_visitor<void>(
+      [&](const AttractionInfo& attraction) { occupyAttraction(c, attraction); },
+      [&](const TechId&) {},
+      [&](const SunlightState&) {},
+      [&](const FurnitureType&) {},
+      [&](const CostInfo& cost) {
+        collective->takeResource(cost);
       },
-      [&](const TechId& techId) { return collective->hasTech(techId); },
-      [&](const SunlightState& state) { return state == collective->getGame()->getSunlightInfo().getState(); },
-      [&](const CostInfo& cost) { return collective->hasResource(cost * group.count); },
-      [&](const FurnitureType& type) { return collective->getConstructions().getBuiltCount(type) > 0; }
+      [&](const ExponentialCost& cost) {
+        collective->takeResource(calculateCost(info, cost));
+      }
   );
-  return visitRequirements<bool, bool>(group.info, visitor, [](bool& all, const bool& value) { all &= value;}, true, true);
+  info.visitRequirements(visitor);
 }
 
-void Immigration::occupyRequirements(Collective* collective, const Creature* c, const ImmigrantInfo& info) {
-  auto visitor = make_lambda_visitor<int>(
-      [&](const AttractionInfo& attraction) { occupyAttraction(collective, c, attraction); return 0;},
-      [&](const TechId&) { return 0;},
-      [&](const SunlightState&) { return 0;},
-      [&](const FurnitureType&) { return 0;},
-      [&](const CostInfo& cost) { collective->takeResource(cost); return 0; }
-  );
-  visitRequirements<int, int>(info, visitor, [](int&, const int&) { return 0;}, 0, false);
-}
-
-void Immigration::occupyAttraction(const Collective* collective, const Creature* c, const AttractionInfo& attraction) {
+void Immigration::occupyAttraction(const Creature* c, const AttractionInfo& attraction) {
   int toOccupy = attraction.amountClaimed;
   vector<AttractionType> occupied;
   for (auto& type : attraction.types) {
     int nowOccupy = min(toOccupy, max(0,
-        getAttractionValue(collective, type) - getAttractionOccupation(collective, type)));
+        getAttractionValue(type) - getAttractionOccupation(type)));
     if (nowOccupy > 0) {
       CHECK(nowOccupy <= toOccupy) << nowOccupy << " " << toOccupy;
       toOccupy -= nowOccupy;
@@ -213,29 +168,24 @@ void Immigration::occupyAttraction(const Collective* collective, const Creature*
   CHECK(toOccupy == 0) << toOccupy;
 }
 
-double Immigration::getImmigrantChance(const Collective* collective, const Group& group) const {
-  if (!preliminaryRequirementsMet(collective, group))
+double Immigration::getImmigrantChance(const Group& group) const {
+  if (!preliminaryRequirementsMet(group))
     return 0.0;
   else
-    return group.info.frequency;
+    return group.info.frequency.get_value_or(0);
 }
 
-void Immigration::update(Collective* collective) {
-  for (auto elem : Iter(available))
-    if (isUnavailable(elem->second, collective))
-      elem.markToErase();
-  auto immigrantInfo = transform2<Group>(collective->getConfig().getImmigrantInfo(),
-      [](const ImmigrantInfo& info) { return Group {info, info.groupSize ? Random.get(*info.groupSize) : 1};});
-  vector<double> weights = transform2<double>(immigrantInfo,
-      [&](const Group& group) { return getImmigrantChance(collective, group);});
-  if (std::accumulate(weights.begin(), weights.end(), 0.0) > 0)
-    available.emplace(++idCnt, Available::generate(collective, Random.choose(immigrantInfo, weights)));
+Immigration::Immigration(Collective* c) : collective(c) {
+  for (auto& elem : collective->getConfig().getImmigrantInfo())
+    if (!elem.frequency) {
+      available.emplace(++idCnt, Available::generate(this, Group{elem, 1}));
+    }
 }
 
-map<int, std::reference_wrapper<const Immigration::Available>> Immigration::getAvailable(const Collective* col) const {
+map<int, std::reference_wrapper<const Immigration::Available>> Immigration::getAvailable() const {
   map<int, std::reference_wrapper<const Immigration::Available>> ret;
   for (auto& elem : available)
-    if (!isUnavailable(elem.second, col))
+    if (!isUnavailable(elem.second))
       ret.emplace(elem.first, std::cref(elem.second));
   return ret;
 }
@@ -264,36 +214,79 @@ static vector<Position> getSpawnPos(const vector<Creature*>& creatures, vector<P
   return spawnPos;
 }
 
-vector<Position> Immigration::Available::getSpawnPositions(const Collective* collective) const {
-  if (auto spawnType = creatures[0]->getAttributes().getSpawnType()) {
-    FurnitureType bedType = collective->getConfig().getDormInfo()[*spawnType].bedType;
-    if (info.spawnAtDorm)
-      return asVector<Position>(collective->getConstructions().getBuiltPositions(bedType));
-  }
-  return collective->getTerritory().getExtended(10, 20);
+vector<Position> Immigration::Available::getSpawnPositions() const {
+  return apply_visitor(info.spawnLocation, make_lambda_visitor<vector<Position>>(
+    [&] (FurnitureType type) {
+      return asVector<Position>(immigration->collective->getConstructions().getBuiltPositions(type));
+    },
+    [&] (OutsideTerritory) {
+      return immigration->collective->getTerritory().getExtended(10, 20);
+    },
+    [&] (NearLeader) {
+      return filter(immigration->collective->getLeader()->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 2)),
+        [&](const Position& pos) { return pos.canEnter(creatures[0].get());});
+    }
+  ));
 }
 
 vector<Creature*> Immigration::Available::getCreatures() const {
   return extractRefs(creatures);
 }
 
-double Immigration::Available::getEndTime() const {
+optional<double> Immigration::Available::getEndTime() const {
   return endTime;
 }
 
-Immigration::Available::Available(vector<PCreature> c, ImmigrantInfo i, double t)
-    : creatures(std::move(c)), info(i), endTime(t) {
+optional<CostInfo> Immigration::Available::getCost() const {
+  optional<CostInfo> ret;
+  auto visitor = make_lambda_visitor<void>(
+      [&](const AttractionInfo&) {},
+      [&](const TechId&) {},
+      [&](const SunlightState&) {},
+      [&](const FurnitureType&) {},
+      [&](const CostInfo& cost) {
+        ret = cost;
+      },
+      [&](const ExponentialCost& cost) {
+        ret = immigration->calculateCost(info, cost);
+      }
+  );
+  info.visitRequirements(visitor);
+  return ret;
 }
 
-void Immigration::accept(Collective* collective, int id) {
+CostInfo Immigration::calculateCost(const ImmigrantInfo& info, const ExponentialCost& cost) const {
+  EntitySet<Creature> existing;
+  for (Creature* c : collective->getCreatures())
+    existing.insert(c);
+  int numType = 0;
+  if (auto gen = getMaybe(generated, info.id))
+    for (Creature* c : *gen)
+      if (existing.contains(c))
+        ++numType;
+  if (numType < cost.numFree)
+    return CostInfo::noCost();
+  else
+    return CostInfo(cost.base.id, cost.base.value * pow(2, double(numType - cost.numFree) / cost.numToDoubleCost));
+}
+
+const ImmigrantInfo& Immigration::Available::getImmigrantInfo() const {
+  return info;
+}
+
+Immigration::Available::Available(Immigration* im, vector<PCreature> c, ImmigrantInfo i, optional<double> t)
+  : creatures(std::move(c)), info(i), endTime(t), immigration(im) {
+}
+
+void Immigration::accept(int id) {
   if (!available.count(id))
     return;
   auto& immigrants = available.at(id);
-  if (!getMissingRequirements(collective, immigrants).empty())
+  if (!getMissingRequirements(immigrants).empty())
     return;
   const int groupSize = immigrants.creatures.size();
   auto& creatures = immigrants.creatures;
-  vector<Position> spawnPos = getSpawnPos(extractRefs(creatures), immigrants.getSpawnPositions(collective));
+  vector<Position> spawnPos = getSpawnPos(extractRefs(creatures), immigrants.getSpawnPositions());
   if (spawnPos.size() < immigrants.creatures.size())
     return;
   if (immigrants.info.autoTeam && groupSize > 1)
@@ -304,9 +297,13 @@ void Immigration::accept(Collective* collective, int id) {
     if (i == 0 && groupSize > 1) // group leader
       c->getAttributes().increaseBaseExpLevel(2);
     collective->addCreature(std::move(immigrants.creatures[i]), spawnPos[i], immigrants.info.traits);
-    occupyRequirements(collective, c, immigrants.info);
+    occupyRequirements(c, immigrants.info);
+    generated[immigrants.info.id].push_back(c);
   }
-  reject(id);
+  if (immigrants.info.frequency) // this means it's not a persistent candidate
+    reject(id);
+  else
+    immigrants.regenerate();
 }
 
 void Immigration::reject(int id) {
@@ -314,22 +311,43 @@ void Immigration::reject(int id) {
     available.at(id).endTime = -1;
 }
 
-SERIALIZE_DEF(Immigration::Available, creatures, info, endTime)
+SERIALIZE_DEF(Immigration::Available, creatures, info, endTime, immigration)
 SERIALIZATION_CONSTRUCTOR_IMPL2(Immigration::Available, Available)
 
-Immigration::Available Immigration::Available::generate(Collective* collective, const Group& group) {
+Immigration::Available Immigration::Available::generate(Immigration* immigration, const Group& group) {
   vector<PCreature> immigrants;
   for (int i : Range(group.count))
-    immigrants.push_back(CreatureFactory::fromId(group.info.id, collective->getTribeId(),
-        MonsterAIFactory::collective(collective)));
-  return Available (
+    immigrants.push_back(CreatureFactory::fromId(group.info.id, immigration->collective->getTribeId(),
+        MonsterAIFactory::collective(immigration->collective)));
+  return Available(
+    immigration,
     std::move(immigrants),
     group.info,
-    collective->getGame()->getGlobalTime() + 500
+    group.info.frequency ? immigration->collective->getGame()->getGlobalTime() + 500 : optional<double>(none)
   );
 }
 
-bool Immigration::isUnavailable(const Available& available, const Collective* col) const {
-  return available.endTime < col->getGame()->getGlobalTime() ||
-      !preliminaryRequirementsMet(col, {available.info, (int)available.creatures.size()});
+void Immigration::Available::regenerate() {
+  creatures.clear();
+  for (int i : Range(info.groupSize ? Random.get(*info.groupSize) : 1))
+    creatures.push_back(CreatureFactory::fromId(info.id, immigration->collective->getTribeId(),
+        MonsterAIFactory::collective(immigration->collective)));
+}
+
+
+bool Immigration::isUnavailable(const Available& available) const {
+  return (available.endTime && available.endTime < collective->getGame()->getGlobalTime()) ||
+      !preliminaryRequirementsMet({available.info, (int)available.creatures.size()});
+}
+
+void Immigration::update() {
+  for (auto elem : Iter(available))
+    if (isUnavailable(elem->second))
+      elem.markToErase();
+  auto immigrantInfo = transform2<Group>(collective->getConfig().getImmigrantInfo(),
+      [](const ImmigrantInfo& info) { return Group {info, info.groupSize ? Random.get(*info.groupSize) : 1};});
+  vector<double> weights = transform2<double>(immigrantInfo,
+      [&](const Group& group) { return getImmigrantChance(group);});
+  if (std::accumulate(weights.begin(), weights.end(), 0.0) > 0)
+    available.emplace(++idCnt, Available::generate(this, Random.choose(immigrantInfo, weights)));
 }

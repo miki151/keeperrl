@@ -69,7 +69,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Collective);
 Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
     const CollectiveName& n) 
   : eventProxy(this, l->getModel()), credit(_credit), control(CollectiveControl::idle(this)),
-    tribe(t), level(NOTNULL(l)), name(n), config(cfg), workshops(config->getWorkshops()) {
+    tribe(t), level(NOTNULL(l)), name(n), config(cfg), workshops(config->getWorkshops()), immigration(this) {
 }
 
 const CollectiveName& Collective::getName() const {
@@ -585,7 +585,7 @@ void Collective::update(bool currentlyActive) {
   if (config->hasImmigrantion(currentlyActive) &&
       Random.chance(config->getImmigrantFrequency()) &&
       hasLeader())
-    immigration->update(this);
+    immigration->update();
 }
 
 void Collective::tick() {

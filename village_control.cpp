@@ -176,8 +176,8 @@ bool VillageControl::canPerformAttack(bool currentlyActive) {
 }
 
 void VillageControl::acceptImmigration() {
-  for (auto& elem : getCollective()->getImmigration().getAvailable(getCollective()))
-    getCollective()->getImmigration().accept(getCollective(), elem.first);
+  for (auto& elem : getCollective()->getImmigration().getAvailable())
+    getCollective()->getImmigration().accept(elem.first);
 }
 
 void VillageControl::update(bool currentlyActive) {

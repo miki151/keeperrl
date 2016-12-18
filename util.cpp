@@ -973,3 +973,13 @@ int getSize(const std::string& s) {
 const char* getString(const std::string& s) {
   return s.c_str();
 }
+
+string combineWithOr(const vector<string>& elems) {
+  string ret;
+  for (auto& elem : elems) {
+    if (!ret.empty())
+      ret += " or ";
+    ret += elem;
+  }
+  return ret;
+}

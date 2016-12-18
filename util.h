@@ -154,6 +154,9 @@ bool endsWith(const string&, const string& suffix);
 
 vector<string> split(const string& s, const set<char>& delim);
 vector<string> removeEmpty(const vector<string>&);
+string combineWithOr(const vector<string>&);
+
+
 
 class Rectangle;
 class RandomGen;

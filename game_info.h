@@ -133,6 +133,7 @@ class PlayerInfo {
 
 struct ImmigrantDataInfo {
   vector<string> HASH(requirements);
+  optional<pair<ViewId, int>> HASH(cost);
   string HASH(name);
   ViewId HASH(viewId);
   int HASH(expLevel);
@@ -141,7 +142,7 @@ struct ImmigrantDataInfo {
   int HASH(id);
   enum AutoState { AUTO_REJECT, AUTO_ACCEPT};
   optional<AutoState> HASH(autoState);
-  HASH_ALL(requirements, name, viewId, expLevel, count, timeLeft, id, autoState)
+  HASH_ALL(requirements, name, viewId, expLevel, count, timeLeft, id, autoState, cost)
 };
 
 class CollectiveInfo {

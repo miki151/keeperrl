@@ -35,15 +35,29 @@ struct AttractionInfo {
 
   SERIALIZATION_DECL(AttractionInfo)
 
+  static string getAttractionName(const AttractionType&, int count);
+
   vector<AttractionType> SERIAL(types);
   int SERIAL(amountClaimed);
 };
 
-using ImmigrantRequirement = variant<AttractionInfo, TechId, SunlightState, CostInfo, FurnitureType>;
+struct ExponentialCost {
+  CostInfo SERIAL(base);
+  int SERIAL(numToDoubleCost);
+  int SERIAL(numFree);
+  SERIALIZE_ALL(base, numToDoubleCost, numFree)
+};
+
+using ImmigrantRequirement = variant<AttractionInfo, TechId, SunlightState, FurnitureType, CostInfo, ExponentialCost>;
+
+struct OutsideTerritory { SERIALIZE_EMPTY() };
+struct NearLeader { SERIALIZE_EMPTY() };
+
+using SpawnLocation = variant<FurnitureType, OutsideTerritory, NearLeader>;
 
 struct ImmigrantInfo {
   CreatureId SERIAL(id);
-  double SERIAL(frequency);
+  optional<double> SERIAL(frequency);
   struct RequirementInfo {
     ImmigrantRequirement SERIAL(type);
     bool SERIAL(preliminary); // if true, candidate immigrant won't be generated if this requirement is not met.
@@ -52,9 +66,21 @@ struct ImmigrantInfo {
   vector<RequirementInfo> SERIAL(requirements);
   void addRequirement(ImmigrantRequirement);
   void addPreliminaryRequirement(ImmigrantRequirement);
+  template <typename Visitor>
+  void visitRequirements(const Visitor& visitor) const {
+    for (auto& requirement : requirements)
+      apply_visitor(requirement.type, visitor);
+  }
+  template <typename Visitor>
+  void visitPreliminaryRequirements(const Visitor& visitor) const {
+    for (auto& requirement : requirements)
+      if (requirement.preliminary)
+        apply_visitor(requirement.type, visitor);
+  }
   EnumSet<MinionTrait> SERIAL(traits);
-  bool SERIAL(spawnAtDorm);
+  SpawnLocation SERIAL(spawnLocation) = OutsideTerritory{};
   optional<Range> SERIAL(groupSize);
+  int initialRecruitment;
   bool SERIAL(autoTeam);
 
   template <class Archive>

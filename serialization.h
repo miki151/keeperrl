@@ -101,6 +101,11 @@ void serializeAll(Archive& ar, Arg1& arg1, Args&... args) {
     serializeAll(ar, __VA_ARGS__); \
   }
 
+#define SERIALIZE_EMPTY() \
+  template <class Archive> \
+  void serialize(Archive& ar, const unsigned int) { \
+  }
+
 class Serialization {
   public:
   template <class Archive>

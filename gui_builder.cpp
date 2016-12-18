@@ -501,7 +501,12 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
         lines.addElem(gui.label("(Immigrant will be rejected automatically)", colors[ColorId::RED]));
         break;
     }
-  lines.addElem(gui.label(capitalFirst(info.name)));
+  lines.addElem(
+      gui.getListBuilder()
+          .addElemAuto(gui.label(capitalFirst(info.name)))
+          .addSpace(100)
+          .addBackElemAuto(info.cost ? drawCost(*info.cost) : gui.empty())
+          .buildHorizontalList());
   lines.addElem(gui.label("Level: " + toString(info.expLevel)));
   if (info.timeLeft)
     lines.addElem(gui.label("Turns left: " + toString(*info.timeLeft)));

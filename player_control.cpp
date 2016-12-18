@@ -729,6 +729,13 @@ static optional<pair<ViewId, int>> getCostObj(CostInfo cost) {
     return none;
 }
 
+static optional<pair<ViewId, int>> getCostObj(const optional<CostInfo>& cost) {
+  if (cost)
+    return getCostObj(*cost);
+  else
+    return none;
+}
+
 string PlayerControl::getMinionName(CreatureId id) const {
   static map<CreatureId, string> names;
   if (!names.count(id))
@@ -1189,16 +1196,20 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
 void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   info.immigration.clear();
   auto& immigration = getCollective()->getImmigration();
-  for (auto& elem : immigration.getAvailable(getCollective())) {
+  for (auto& elem : immigration.getAvailable()) {
     int count = elem.second.get().getCreatures().size();
+    optional<int> timeRemaining;
+    if (auto time = elem.second.get().getEndTime())
+      timeRemaining = (int)(*time - getGame()->getGlobalTime());
     Creature* c = elem.second.get().getCreatures()[0];
     info.immigration.push_back(ImmigrantDataInfo {
-        immigration.getMissingRequirements(getCollective(), elem.second.get()),
+        immigration.getMissingRequirements(elem.second.get()),
+        getCostObj(elem.second.get().getCost()),
         c->getName().multiple(count),
         c->getViewObject().id(),
         (int) c->getAttributes().getVisibleExpLevel(),
         count,
-        (int)(elem.second.get().getEndTime() - getGame()->getGlobalTime()),
+        timeRemaining,
         elem.first
     });
   }
@@ -1213,8 +1224,40 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     optional<ImmigrantDataInfo::AutoState> autoState;
     if (auto state = getMaybe(immigrantAutoState, elem.index()))
       autoState = *state;
+    optional<pair<ViewId, int>> costObj;
+    vector<string> requirements;
+    auto visitor = make_lambda_visitor<void>(
+        [&](const AttractionInfo& attraction) {
+          int required = attraction.amountClaimed;
+          requirements.push_back("Requires " + toString(required) + " " +
+              combineWithOr(transform2<string>(attraction.types,
+                  [&](const AttractionType& type) { return AttractionInfo::getAttractionName(type, required); })));
+        },
+        [&](const TechId& techId) {
+          requirements.push_back("Requires technology: " + Technology::get(techId)->getName());
+        },
+        [&](const SunlightState& state) {
+          requirements.push_back("Will only join during the "_s + SunlightInfo::getText(state));
+        },
+        [&](const FurnitureType& type) {
+          requirements.push_back("Requires at least one " + Furniture::getName(type));
+        },
+        [&](const CostInfo& cost) {
+          costObj = getCostObj(cost);
+        },
+        [&](const ExponentialCost& cost) {
+          auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.base.id);
+          costObj = make_pair(resourceInfo.viewId, cost.base.value);
+          requirements.push_back("Cost doubles for every " + toString(cost.numToDoubleCost) + " "
+              + c->getName().plural());
+          if (cost.numFree > 0)
+            requirements.push_back("First " + toString(cost.numFree) + " " + c->getName().plural() + " are free.");
+        }
+    );
+    elem->visitRequirements(visitor);
     info.allImmigration.push_back(ImmigrantDataInfo {
-        immigration.getAllRequirements(*elem),
+        requirements,
+        costObj,
         c->getName().bare(),
         c->getViewObject().id(),
         (int) c->getAttributes().getVisibleExpLevel(),
@@ -2008,24 +2051,26 @@ void PlayerControl::processInput(View* view, UserInput input) {
           }
         break; }
     case UserInputId::IMMIGRANT_ACCEPT:
-        getCollective()->getImmigration().accept(getCollective(), input.get<int>());
+        getCollective()->getImmigration().accept(input.get<int>());
         break;
     case UserInputId::IMMIGRANT_REJECT:
         getCollective()->getImmigration().reject(input.get<int>());
         break;
     case UserInputId::IMMIGRANT_AUTO_ACCEPT: {
         int id = input.get<int>();
-        if (auto state = getMaybe(immigrantAutoState, id))
-          switch (*state) {
-            case ImmigrantDataInfo::AUTO_ACCEPT:
-              immigrantAutoState[id] = ImmigrantDataInfo::AUTO_REJECT;
-              break;
-            case ImmigrantDataInfo::AUTO_REJECT:
-              immigrantAutoState.erase(id);
-              break;
-          }
-        else
-          immigrantAutoState[id] = ImmigrantDataInfo::AUTO_ACCEPT;
+        if (getCollective()->getConfig().getImmigrantInfo()[id].frequency) {
+          if (auto state = getMaybe(immigrantAutoState, id))
+            switch (*state) {
+              case ImmigrantDataInfo::AUTO_ACCEPT:
+                immigrantAutoState[id] = ImmigrantDataInfo::AUTO_REJECT;
+                break;
+              case ImmigrantDataInfo::AUTO_REJECT:
+                immigrantAutoState.erase(id);
+                break;
+            }
+          else
+            immigrantAutoState[id] = ImmigrantDataInfo::AUTO_ACCEPT;
+        }
         break;
       }
     case UserInputId::RECT_SELECTION: {

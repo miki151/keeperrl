@@ -28,6 +28,7 @@
 #include "furniture.h"
 #include "sokoban_input.h"
 #include "external_enemies.h"
+#include "immigration.h"
 
 using namespace std::chrono;
 
@@ -71,6 +72,14 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
         c.maxIncrease = c.increasePerSquare;),
       },
       {
+      CONSTRUCT(ImmigrantInfo,
+          c.id = CreatureId::IMP;
+          c.frequency = none;
+          c.spawnLocation = NearLeader {};
+          c.initialRecruitment = 4;
+          c.addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::MANA, 20), 5, 4 });
+          c.traits = LIST(MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT);
+      ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::GOBLIN;
           c.frequency = 0.7;
@@ -118,14 +127,14 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.id = CreatureId::ZOMBIE;
           c.frequency = 0.5;
           c.traits = {MinionTrait::FIGHTER};
-          c.spawnAtDorm = true;
+          c.spawnLocation = FurnitureType::GRAVE;
           c.addPreliminaryRequirement(CostInfo(CollectiveResourceId::CORPSE, 1));
       ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::VAMPIRE;
           c.frequency = 0.2;
           c.traits = {MinionTrait::FIGHTER};
-          c.spawnAtDorm = true;
+          c.spawnLocation = FurnitureType::GRAVE;
           c.addRequirement(AttractionInfo{1, FurnitureType::TRAINING_IRON});
           c.addPreliminaryRequirement(CostInfo(CollectiveResourceId::CORPSE, 1));
       ),
@@ -135,7 +144,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.traits = {MinionTrait::FIGHTER};
           c.addRequirement(AttractionInfo{1, FurnitureType::DEMON_SHRINE});
           c.addPreliminaryRequirement(FurnitureType::DEMON_SHRINE);
-          c.spawnAtDorm = true;
+          c.spawnLocation = FurnitureType::DEMON_SHRINE;
       ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::SUCCUBUS;
@@ -143,7 +152,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.traits = LIST(MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT);
           c.addRequirement(AttractionInfo{2, FurnitureType::DEMON_SHRINE});
           c.addPreliminaryRequirement(FurnitureType::DEMON_SHRINE);
-          c.spawnAtDorm = true;
+          c.spawnLocation = FurnitureType::DEMON_SHRINE;
       ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::DOPPLEGANGER;
@@ -151,7 +160,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           c.traits = {MinionTrait::FIGHTER};
           c.addRequirement(AttractionInfo{3, FurnitureType::DEMON_SHRINE});
           c.addPreliminaryRequirement(FurnitureType::DEMON_SHRINE);
-          c.spawnAtDorm = true;
+          c.spawnLocation = FurnitureType::DEMON_SHRINE;
       ),
       CONSTRUCT(ImmigrantInfo,
           c.id = CreatureId::RAVEN;
@@ -516,13 +525,9 @@ Collective* ModelBuilder::spawnKeeper(Model* m) {
   Collective* playerCollective = m->collectives.back().get();
   playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, level)));
   playerCollective->setVillainType(VillainType::PLAYER);
-  for (int i : Range(4)) {
-    PCreature c = CreatureFactory::fromId(CreatureId::IMP, TribeId::getKeeper(),
-        MonsterAIFactory::collective(playerCollective));
-    CHECK(level->landCreature(StairKey::keeperSpawn(), c.get())) << "Couldn't place imp on level.";
-    playerCollective->addCreature(c.get(), getImpTraits());
-    m->addCreature(std::move(c));
-  }
+  for (auto& elem : playerCollective->getImmigration().getAvailable())
+    for (int i : Range(elem.second.get().getImmigrantInfo().initialRecruitment))
+      playerCollective->getImmigration().accept(elem.first);
   return playerCollective;
 }
 

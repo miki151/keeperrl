@@ -24,9 +24,21 @@
 #include "construction_map.h"
 #include "item_class.h"
 #include "villain_type.h"
+#include "furniture.h"
 
 AttractionInfo::AttractionInfo(int cl,  AttractionType a)
   : types({a}), amountClaimed(cl) {}
+
+string AttractionInfo::getAttractionName(const AttractionType& attraction, int count) {
+  return apply_visitor(attraction, make_lambda_visitor<string>(
+      [&](FurnitureType type) {
+        return Furniture::getName(type, count);
+      },
+      [&](ItemIndex index) {
+        return getName(index, count);
+      }
+  ));
+}
 
 AttractionInfo::AttractionInfo(int cl, vector<AttractionType> a)
   : types(a), amountClaimed(cl) {}
@@ -42,7 +54,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveConfig);
 
 template <class Archive>
 void ImmigrantInfo::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, id, frequency, requirements, traits, spawnAtDorm, groupSize, autoTeam);
+  serializeAll(ar, id, frequency, requirements, traits, spawnLocation, groupSize, autoTeam);
 }
 
 SERIALIZABLE(ImmigrantInfo);
