@@ -57,7 +57,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType);
   serializeAll(ar, territory, alarmInfo, markedItems, constructions, minionEquipment);
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
-  serializeAll(ar, credit, level, pregnancies, immigration, teams, name);
+  serializeAll(ar, credit, level, immigration, teams, name);
   serializeAll(ar, config, warnings, banished);
   serializeAll(ar, villainType, eventProxy, workshops, zones, tileEfficiency);
 }
@@ -551,30 +551,6 @@ void Collective::addNewCreatureMessage(const vector<Creature*>& immigrants) {
   }
 }
 
-void Collective::considerBirths() {
-  for (Creature* c : getCreatures())
-    if (pregnancies.contains(c) && !c->isAffected(LastingEffect::PREGNANT)) {
-      pregnancies.erase(c);
-      if (getPopulationSize() < getMaxPopulation()) {
-        vector<pair<CreatureId, double>> candidates;
-        for (auto& elem : config->getBirthSpawns())
-          if (!elem.tech || hasTech(*elem.tech)) 
-            candidates.emplace_back(elem.id, elem.frequency);
-        if (candidates.empty())
-          return;
-        PCreature spawn = CreatureFactory::fromId(Random.choose(candidates), getTribeId());
-        for (Position pos : c->getPosition().neighbors8(Random))
-          if (pos.canEnter(spawn.get())) {
-            control->addMessage(c->getName().a() + " gives birth to " + spawn->getName().a());
-            c->playerMessage("You give birth to " + spawn->getName().a() + "!");
-            c->monsterMessage(c->getName().the() + " gives birth to "  + spawn->getName().a());
-            addCreature(std::move(spawn), pos, {MinionTrait::FIGHTER});
-            return;
-          }
-      }
-    }
-}
-
 void Collective::decayMorale() {
   for (Creature* c : getCreatures(MinionTrait::FIGHTER))
     c->addMorale(-c->getMorale() * 0.0008);
@@ -592,7 +568,6 @@ void Collective::tick() {
   dangerLevelCache = none;
   control->tick();
   zones->tick();
-  considerBirths();
   decayMorale();
   if (config->getWarnings() && Random.roll(5))
     warnings->considerWarnings(this);
@@ -1513,9 +1488,9 @@ void Collective::onCopulated(Creature* who, Creature* with) {
     control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
   if (contains(getCreatures(), with))
     with->addMorale(1);
-  if (!pregnancies.contains(who)) {
-    pregnancies.insert(who);
-    who->addEffect(LastingEffect::PREGNANT, Random.get(200, 300));
+  if (!who->isAffected(LastingEffect::PREGNANT) && Random.roll(2)) {
+    who->addEffect(LastingEffect::PREGNANT, getConfig().getImmigrantTimeout());
+    control->addMessage(who->getName().a() + " becomes pregnant.");
   }
 }
 

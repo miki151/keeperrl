@@ -1201,32 +1201,69 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     optional<int> timeRemaining;
     if (auto time = elem.second.get().getEndTime())
       timeRemaining = (int)(*time - getGame()->getGlobalTime());
+    elem.second.get().getInfo().visitRequirements(makeDefaultVisitor(
+        [&](const Pregnancy&) {
+          optional<int> maxT;
+          for (Creature* c : getCollective()->getCreatures())
+            if (c->isAffected(LastingEffect::PREGNANT))
+              if (auto remaining = c->getTimeRemaining(LastingEffect::PREGNANT))
+                if (!maxT || *remaining > *maxT)
+                  maxT = *remaining;
+          if (maxT && (!timeRemaining || *maxT > *timeRemaining))
+            timeRemaining = maxT;
+        }
+    ));
     Creature* c = elem.second.get().getCreatures()[0];
+    string name = c->getName().multiple(count);
+    if (auto& s = c->getName().stackOnly())
+      name += " (" + *s + ")";
     info.immigration.push_back(ImmigrantDataInfo {
         immigration.getMissingRequirements(elem.second.get()),
         getCostObj(elem.second.get().getCost()),
-        c->getName().multiple(count),
+        name,
         c->getViewObject().id(),
-        (int) c->getAttributes().getVisibleExpLevel(),
+        Range::singleElem((int) c->getAttributes().getVisibleExpLevel()),
         count,
         timeRemaining,
         elem.first
     });
   }
+  sort(info.immigration.begin(), info.immigration.end(),
+      [](const ImmigrantDataInfo& i1, const ImmigrantDataInfo& i2) {
+        return (i1.timeLeft && (!i2.timeLeft || *i1.timeLeft > *i2.timeLeft)) ||
+            (!i1.timeLeft && !i2.timeLeft && i1.id < i2.id);
+      });
   info.allImmigration.clear();
-  static EnumMap<CreatureId, PCreature> creatureCache(
-      [](const CreatureId id) {
-        return CreatureFactory::fromId(id, TribeId::getKeeper());
+  struct CreatureStats {
+    Range level;
+    PCreature creature;
+  };
+  static EnumMap<CreatureId, optional<CreatureStats>> creatureStats;
+  auto getStats = [&](CreatureId id) -> CreatureStats& {
+    if (!creatureStats[id]) {
+      int minL = 10000;
+      int maxL = -10000;
+      PCreature c;
+      for (int i : Range(100)) {
+        auto creature = CreatureFactory::fromId(id, TribeId::getKeeper());
+        minL = min(minL, (int)creature->getAttributes().getVisibleExpLevel());
+        maxL = max(maxL, (int)creature->getAttributes().getVisibleExpLevel());
+        if (!c)
+          c = std::move(creature);
       }
-  );
+      creatureStats[id] = CreatureStats{Range(minL, maxL + 1), std::move(c)};
+    }
+    return *creatureStats[id];
+  };
   for (auto elem : Iter(getCollective()->getConfig().getImmigrantInfo())) {
-    Creature* c = creatureCache[elem->id].get();
+    auto creatureId = elem->getId(0);
+    Creature* c = getStats(creatureId).creature.get();
     optional<ImmigrantDataInfo::AutoState> autoState;
     if (auto state = getMaybe(immigrantAutoState, elem.index()))
       autoState = *state;
     optional<pair<ViewId, int>> costObj;
     vector<string> requirements;
-    auto visitor = make_lambda_visitor<void>(
+    elem->visitRequirements(makeVisitor<void>(
         [&](const AttractionInfo& attraction) {
           int required = attraction.amountClaimed;
           requirements.push_back("Requires " + toString(required) + " " +
@@ -1252,15 +1289,19 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
               + c->getName().plural());
           if (cost.numFree > 0)
             requirements.push_back("First " + toString(cost.numFree) + " " + c->getName().plural() + " are free.");
+        },
+        [&](const Pregnancy&) {
+          requirements.push_back("Requires a pregnant succubus");
         }
-    );
-    elem->visitRequirements(visitor);
+    ));
+    if (auto limit = elem->getLimit())
+      requirements.push_back("Limited to " + toString(*limit) + " creatures.");
     info.allImmigration.push_back(ImmigrantDataInfo {
         requirements,
         costObj,
-        c->getName().bare(),
+        c->getName().stack(),
         c->getViewObject().id(),
-        (int) c->getAttributes().getVisibleExpLevel(),
+        getStats(creatureId).level,
         0,
         none,
         elem.index(),
@@ -2058,7 +2099,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::IMMIGRANT_AUTO_ACCEPT: {
         int id = input.get<int>();
-        if (getCollective()->getConfig().getImmigrantInfo()[id].frequency) {
+        if (!getCollective()->getConfig().getImmigrantInfo()[id].isPersistent()) {
           if (auto state = getMaybe(immigrantAutoState, id))
             switch (*state) {
               case ImmigrantDataInfo::AUTO_ACCEPT:

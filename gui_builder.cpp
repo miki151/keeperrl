@@ -507,7 +507,10 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
           .addSpace(100)
           .addBackElemAuto(info.cost ? drawCost(*info.cost) : gui.empty())
           .buildHorizontalList());
-  lines.addElem(gui.label("Level: " + toString(info.expLevel)));
+  if (info.expLevel.getLength() == 1)
+    lines.addElem(gui.label("Level: " + toString(info.expLevel.getStart())));
+  else
+    lines.addElem(gui.label("Level: " + toString(info.expLevel.getStart()) + "-" + toString(info.expLevel.getEnd())));
   if (info.timeLeft)
     lines.addElem(gui.label("Turns left: " + toString(*info.timeLeft)));
   for (auto& req : info.requirements)
@@ -537,6 +540,14 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
     firstImmigrantAppearance.emplace();
     for (auto& elem : info.immigration)
       firstImmigrantAppearance->insert({elem.id, milliseconds{0}});
+  } else {
+    // Otherwise remove keys from the map that aren't present anymore.
+    unordered_set<int> exist;
+    for (auto& elem : info.immigration)
+      exist.insert(elem.id);
+    for (auto elem : Iter(*firstImmigrantAppearance))
+      if (!exist.count(elem->first))
+        elem.markToErase();
   }
   const int elemWidth = getImmigrationBarWidth();
   auto makeHighlight = [=] (Color c) { return gui.margins(gui.rectangle(c), 4); };
@@ -551,7 +562,7 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
         gui.releaseRightButton(getButtonCallback({UserInputId::IMMIGRANT_REJECT, immigrantId})),
         gui.onMouseRightButtonHeld(makeHighlight(Color(255, 0, 0, 100))));
   };
-  for (int i : All(info.immigration).reverse()) {
+  for (int i : All(info.immigration)) {
     auto& elem = info.immigration[i];
     firstImmigrantAppearance->insert({elem.id, clock->getRealMillis()});
     SGuiElem button;
@@ -590,7 +601,7 @@ SGuiElem GuiBuilder::getImmigrationHelpText() {
   return gui.labelMultiLine("Welcome to the new immigration system! On the left you see creatures that would "
                             "like to join your dungeon. Left-click on a candidate to accept him or her, right-click "
                             "to reject. Some candidates have some requirements that you need to fulfill before "
-                            "they can join.\\n\\nBelow are all possible immigrants, along with their full "
+                            "they can join. Above are all possible immigrants, along with their full "
                             "requirements. You can also click on them to set automatic acception or rejection.",
                             legendLineHeight);
 }
@@ -600,7 +611,6 @@ SGuiElem GuiBuilder::drawImmigrationHelp(const CollectiveInfo& info) {
   const int numPerLine = 8;
   const int iconScale = 2;
   auto lines = gui.getListBuilder(elemWidth);
-  lines.addElem(getImmigrationHelpText(), legendLineHeight * 6);
   auto line = gui.getListBuilder(elemWidth);
   for (auto& elem : info.allImmigration) {
     auto icon = gui.viewObject(elem.viewId, iconScale);
@@ -626,7 +636,8 @@ SGuiElem GuiBuilder::drawImmigrationHelp(const CollectiveInfo& info) {
   }
   if (!line.isEmpty())
     lines.addElem(line.buildHorizontalList());
-  return gui.setHeight(400, gui.miniWindow(gui.margins(gui.stack(
+  lines.addElem(getImmigrationHelpText(), legendLineHeight * 6);
+  return gui.setHeight(450, gui.miniWindow(gui.margins(gui.stack(
         gui.stopMouseMovement(),
         lines.buildVerticalList()), 15), [this] { immigrantHelpOpen = false; }, true));
 }

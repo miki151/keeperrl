@@ -742,7 +742,7 @@ CreatureFactory CreatureFactory::splashLeader(TribeId tribe) {
 
 CreatureFactory CreatureFactory::splashMonsters(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::GNOME, CreatureId::GOBLIN, CreatureId::OGRE,
-      CreatureId::SPECIAL_HL, CreatureId::SPECIAL_BL, CreatureId::WOLF, CreatureId::CAVE_BEAR,
+      CreatureId::SPECIAL_HLBN, CreatureId::SPECIAL_BLBW, CreatureId::WOLF, CreatureId::CAVE_BEAR,
       CreatureId::BAT, CreatureId::WEREWOLF, CreatureId::ZOMBIE, CreatureId::VAMPIRE, CreatureId::DOPPLEGANGER,
       CreatureId::SUCCUBUS},
       { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseLevel(25);
@@ -944,9 +944,8 @@ static EnumMap<BodyPart, int> getSpecialBeastBody(bool large, bool living, bool 
   return parts[(!large) * 4 + (!living) * 2 + wings];
 }
 
-PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, const ControllerFactory& factory) {
-  bool wings = Random.roll(2);
-  bool living = Random.roll(2);
+PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, bool living, bool wings,
+    const ControllerFactory& factory) {
   Body body = Body(humanoid, living ? Body::Material::FLESH : Body::Material::SPIRIT,
       large ? Body::Size::LARGE : Body::Size::MEDIUM);
   if (wings)
@@ -2353,14 +2352,38 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
 PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) {
   ControllerFactory factory = Monster::getFactory(aiFactory);
   switch (id) {
-    case CreatureId::SPECIAL_BL:
-      return getSpecial(tribe, false, true, factory);
-    case CreatureId::SPECIAL_BM:
-      return getSpecial(tribe, false, false, factory);
-    case CreatureId::SPECIAL_HL:
-      return getSpecial(tribe, true, true, factory);
-    case CreatureId::SPECIAL_HM:
-      return getSpecial(tribe, true, false, factory);
+    case CreatureId::SPECIAL_BLBN:
+      return getSpecial(tribe, false, true, true, false, factory);
+    case CreatureId::SPECIAL_BLBW:
+      return getSpecial(tribe, false, true, true, true, factory);
+    case CreatureId::SPECIAL_BLGN:
+      return getSpecial(tribe, false, true, false, false, factory);
+    case CreatureId::SPECIAL_BLGW:
+      return getSpecial(tribe, false, true, false, true, factory);
+    case CreatureId::SPECIAL_BMBN:
+      return getSpecial(tribe, false, false, true, false, factory);
+    case CreatureId::SPECIAL_BMBW:
+      return getSpecial(tribe, false, false, true, true, factory);
+    case CreatureId::SPECIAL_BMGN:
+      return getSpecial(tribe, false, false, false, false, factory);
+    case CreatureId::SPECIAL_BMGW:
+      return getSpecial(tribe, false, false, false, true, factory);
+    case CreatureId::SPECIAL_HLBN:
+      return getSpecial(tribe, true, true, true, false, factory);
+    case CreatureId::SPECIAL_HLBW:
+      return getSpecial(tribe, true, true, true, true, factory);
+    case CreatureId::SPECIAL_HLGN:
+      return getSpecial(tribe, true, true, false, false, factory);
+    case CreatureId::SPECIAL_HLGW:
+      return getSpecial(tribe, true, true, false, true, factory);
+    case CreatureId::SPECIAL_HMBN:
+      return getSpecial(tribe, true, false, true, false, factory);
+    case CreatureId::SPECIAL_HMBW:
+      return getSpecial(tribe, true, false, true, true, factory);
+    case CreatureId::SPECIAL_HMGN:
+      return getSpecial(tribe, true, false, false, false, factory);
+    case CreatureId::SPECIAL_HMGW:
+      return getSpecial(tribe, true, false, false, true, factory);
     case CreatureId::SOKOBAN_BOULDER:
       return getSokobanBoulder(tribe);
     default: return get(getAttributes(id), tribe, getController(id, aiFactory));

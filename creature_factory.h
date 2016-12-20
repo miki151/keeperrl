@@ -37,10 +37,22 @@ RICH_ENUM(CreatureId,
     DOPPLEGANGER,
     BANDIT,
 
-    SPECIAL_BL,
-    SPECIAL_BM,
-    SPECIAL_HL,
-    SPECIAL_HM,
+    SPECIAL_BLBN,
+    SPECIAL_BLBW,
+    SPECIAL_BLGN,
+    SPECIAL_BLGW,
+    SPECIAL_BMBN,
+    SPECIAL_BMBW,
+    SPECIAL_BMGN,
+    SPECIAL_BMGW,
+    SPECIAL_HLBN,
+    SPECIAL_HLBW,
+    SPECIAL_HLGN,
+    SPECIAL_HLGW,
+    SPECIAL_HMBN,
+    SPECIAL_HMBW,
+    SPECIAL_HMGN,
+    SPECIAL_HMGW,
 
     GHOST,
     SPIRIT,
@@ -208,7 +220,7 @@ class CreatureFactory {
       const vector<CreatureId>& unique = {});
   static void initSplash(TribeId);
   static PCreature getSokobanBoulder(TribeId);
-  static PCreature getSpecial(TribeId, bool humanoid, bool large, const ControllerFactory&);
+  static PCreature getSpecial(TribeId, bool humanoid, bool large, bool living, bool wings, const ControllerFactory&);
   static PCreature get(CreatureId, TribeId, MonsterAIFactory);
   static PCreature get(const CreatureAttributes&, TribeId, const ControllerFactory&);
   static CreatureAttributes getAttributes(CreatureId id);

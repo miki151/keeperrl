@@ -37,9 +37,9 @@ void Technology::init() {
   Technology::set(TechId::ALCHEMY_ADV, new Technology(
         "advanced alchemy", "Produce more powerful potions.", 200, {TechId::ALCHEMY}));
   Technology::set(TechId::HUMANOID_MUT, new Technology(
-        "humanoid mutation", "Breed new, very powerful humanoid species.", 400,{}));
+        "humanoid mutation", "Breed new, very powerful humanoid species.", 400, {TechId::ALCHEMY}));
   Technology::set(TechId::BEAST_MUT, new Technology(
-        "beast mutation", "Breed new, very powerful beast species.", 400, {}));
+        "beast mutation", "Breed new, very powerful beast species.", 400, {TechId::ALCHEMY}));
   Technology::set(TechId::CRAFTING, new Technology(
         "crafting", "Build a workshop and produce basic equipment.", 40, {}));
   Technology::set(TechId::PIGSTY, new Technology(

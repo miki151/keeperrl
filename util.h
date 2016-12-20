@@ -227,6 +227,7 @@ class Range {
   public:
   Range(int start, int end);
   explicit Range(int end);
+  static Range singleElem(int);
 
   bool isEmpty() const;
   Range reverse();
@@ -234,6 +235,7 @@ class Range {
 
   int getStart() const;
   int getEnd() const;
+  int getLength() const;
 
   class Iter {
     public:
@@ -254,12 +256,13 @@ class Range {
   Iter begin();
   Iter end();
 
-  SERIALIZATION_DECL(Range);
+  SERIALIZATION_DECL(Range)
+  HASH_ALL(start, finish, increment)
   
   private:
-  int SERIAL(start) = 0;
-  int SERIAL(finish) = 0;
-  int SERIAL(increment) = 1;
+  int SERIAL(start) = 0; // HASH(start)
+  int SERIAL(finish) = 0; // HASH(finish)
+  int SERIAL(increment) = 1; // HASH(increment)
 };
 
 class Rectangle {
@@ -1538,16 +1541,23 @@ class DisjointSets {
 };
 
 template <typename ReturnType, typename... Lambdas>
-struct lambda_visitor : public boost::static_visitor<ReturnType>, public Lambdas... {
-    lambda_visitor(Lambdas... lambdas) : Lambdas(lambdas)... {}
+struct LambdaVisitor : public boost::static_visitor<ReturnType>, public Lambdas... {
+  LambdaVisitor(Lambdas... lambdas) : Lambdas(lambdas)... {}
 };
 
 template <typename ReturnType, typename... Lambdas>
-lambda_visitor<ReturnType, Lambdas...> make_lambda_visitor(Lambdas... lambdas) {
-    return { lambdas... };
-    // you can use the following instead if your compiler doesn't
-    // support list-initialization yet
-    // return lambda_visitor<ReturnType, Lambdas...>(lambdas...);
+LambdaVisitor<ReturnType, Lambdas...> makeVisitor(Lambdas... lambdas) {
+  return LambdaVisitor<ReturnType, Lambdas...>(lambdas...);
+}
+
+struct DefaultOperator {
+  template <typename T>
+  void operator() (const T&) const {}
+};
+
+template <typename... Lambdas>
+LambdaVisitor<void, DefaultOperator, Lambdas...> makeDefaultVisitor(Lambdas... lambdas) {
+  return LambdaVisitor<void, DefaultOperator, Lambdas...>(DefaultOperator {}, lambdas...);
 }
 
 template <typename Visitor, typename Visitable>

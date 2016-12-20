@@ -615,6 +615,10 @@ Range::Range(int a, int b) : start(a), finish(b) {
 }
 Range::Range(int a) : Range(0, a) {}
 
+Range Range::singleElem(int a) {
+  return Range(a, a + 1);
+}
+
 Range Range::reverse() {
   Range r(finish - 1, start - 1);
   r.increment = -1;
@@ -645,6 +649,10 @@ int Range::getStart() const {
 
 int Range::getEnd() const {
   return finish;
+}
+
+int Range::getLength() const {
+  return finish - start;
 }
 
 Range::Iter Range::begin() {

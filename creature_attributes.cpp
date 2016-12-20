@@ -205,6 +205,10 @@ bool CreatureAttributes::isAffected(LastingEffect effect, double time) const {
   return lastingEffects[effect] >= time || isAffectedPermanently(effect);
 }
 
+double CreatureAttributes::getTimeOut(LastingEffect effect) const {
+  return lastingEffects[effect];
+}
+
 bool CreatureAttributes::considerTimeout(LastingEffect effect, double globalTime) {
   if (lastingEffects[effect] > 0 && lastingEffects[effect] < globalTime) {
     clearLastingEffect(effect);

@@ -267,7 +267,6 @@ class Collective : public TaskCallback {
   MoveInfo getWorkerMove(Creature*);
   MoveInfo getTeamMemberMove(Creature*);
   int getTaskDuration(const Creature*, MinionTask) const;
-  void considerBirths();
   void decayMorale();
   vector<Creature*> SERIAL(creatures);
   Creature* SERIAL(leader) = nullptr;
@@ -302,7 +301,6 @@ class Collective : public TaskCallback {
   void addMana(double);
   EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;
-  EntitySet<Creature> SERIAL(pregnancies);
   HeapAllocated<CollectiveTeams> SERIAL(teams);
   HeapAllocated<CollectiveName> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);

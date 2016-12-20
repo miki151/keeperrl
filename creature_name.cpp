@@ -65,7 +65,11 @@ void CreatureName::setGroup(const string& s) {
   groupName = s;
 }
 
-string CreatureName::stack() const {
+const optional<string>& CreatureName::stackOnly() const {
+  return stackName;
+}
+
+const string& CreatureName::stack() const {
   if (stackName)
     return *stackName;
   else

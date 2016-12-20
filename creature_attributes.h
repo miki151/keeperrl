@@ -81,6 +81,7 @@ class CreatureAttributes {
   string getDescription() const;
   bool isAffected(LastingEffect, double globalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
+  double getTimeOut(LastingEffect) const;
   string getRemainingString(LastingEffect, double time) const;
   void shortenEffect(LastingEffect, double time);
   void clearLastingEffect(LastingEffect);

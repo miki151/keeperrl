@@ -136,7 +136,7 @@ struct ImmigrantDataInfo {
   optional<pair<ViewId, int>> HASH(cost);
   string HASH(name);
   ViewId HASH(viewId);
-  int HASH(expLevel);
+  Range HASH(expLevel);
   int HASH(count);
   optional<int> HASH(timeLeft);
   int HASH(id);

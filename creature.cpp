@@ -713,6 +713,15 @@ bool Creature::isAffected(LastingEffect effect) const {
   return attributes->isAffected(effect, getGlobalTime());
 }
 
+optional<double> Creature::getTimeRemaining(LastingEffect effect) const {
+  double t = attributes->getTimeOut(effect);
+  double global = getGlobalTime();
+  if (t >= global)
+    return t - global;
+  else
+    return none;
+}
+
 bool Creature::isBlind() const {
   return isAffected(LastingEffect::BLIND) ||
     (getBody().numLost(BodyPart::HEAD) > 0 && getBody().numBodyParts(BodyPart::HEAD) == 0);

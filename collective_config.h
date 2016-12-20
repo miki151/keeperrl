@@ -21,77 +21,13 @@
 #include "workshop_type.h"
 #include "cost_info.h"
 #include "position.h"
+#include "immigrant_info.h"
 
 enum class ItemClass;
 
 class Game;
 class Workshops;
-
-using AttractionType = variant<FurnitureType, ItemIndex>;
-
-struct AttractionInfo {
-  AttractionInfo(int amountClaimed, vector<AttractionType>);
-  AttractionInfo(int amountClaimed, AttractionType);
-
-  SERIALIZATION_DECL(AttractionInfo)
-
-  static string getAttractionName(const AttractionType&, int count);
-
-  vector<AttractionType> SERIAL(types);
-  int SERIAL(amountClaimed);
-};
-
-struct ExponentialCost {
-  CostInfo SERIAL(base);
-  int SERIAL(numToDoubleCost);
-  int SERIAL(numFree);
-  SERIALIZE_ALL(base, numToDoubleCost, numFree)
-};
-
-using ImmigrantRequirement = variant<AttractionInfo, TechId, SunlightState, FurnitureType, CostInfo, ExponentialCost>;
-
-struct OutsideTerritory { SERIALIZE_EMPTY() };
-struct NearLeader { SERIALIZE_EMPTY() };
-
-using SpawnLocation = variant<FurnitureType, OutsideTerritory, NearLeader>;
-
-struct ImmigrantInfo {
-  CreatureId SERIAL(id);
-  optional<double> SERIAL(frequency);
-  struct RequirementInfo {
-    ImmigrantRequirement SERIAL(type);
-    bool SERIAL(preliminary); // if true, candidate immigrant won't be generated if this requirement is not met.
-    SERIALIZE_ALL(type, preliminary)
-  };
-  vector<RequirementInfo> SERIAL(requirements);
-  void addRequirement(ImmigrantRequirement);
-  void addPreliminaryRequirement(ImmigrantRequirement);
-  template <typename Visitor>
-  void visitRequirements(const Visitor& visitor) const {
-    for (auto& requirement : requirements)
-      apply_visitor(requirement.type, visitor);
-  }
-  template <typename Visitor>
-  void visitPreliminaryRequirements(const Visitor& visitor) const {
-    for (auto& requirement : requirements)
-      if (requirement.preliminary)
-        apply_visitor(requirement.type, visitor);
-  }
-  EnumSet<MinionTrait> SERIAL(traits);
-  SpawnLocation SERIAL(spawnLocation) = OutsideTerritory{};
-  optional<Range> SERIAL(groupSize);
-  int initialRecruitment;
-  bool SERIAL(autoTeam);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);
-};
-
-struct BirthSpawn {
-  CreatureId id;
-  double frequency;
-  optional<TechId> tech;
-};
+class ImmigrantInfo;
 
 struct PopulationIncrease {
   FurnitureType SERIAL(type);
@@ -169,8 +105,8 @@ struct FloorInfo {
 class CollectiveConfig {
   public:
   static CollectiveConfig keeper(double immigrantFrequency, int payoutTime, double payoutMultiplier,
-      int maxPopulation, vector<PopulationIncrease>, vector<ImmigrantInfo>);
-  static CollectiveConfig withImmigrants(double immigrantFrequency, int maxPopulation, vector<ImmigrantInfo>);
+      int maxPopulation, vector<PopulationIncrease>, const vector<ImmigrantInfo>&);
+  static CollectiveConfig withImmigrants(double immigrantFrequency, int maxPopulation, const vector<ImmigrantInfo>&);
   static CollectiveConfig noImmigrants();
 
   CollectiveConfig& allowRecruiting(int minPopulation);
@@ -192,13 +128,13 @@ class CollectiveConfig {
   bool bedsLimitImmigration() const;
   int getMaxPopulation() const;
   int getNumGhostSpawns() const;
+  int getImmigrantTimeout() const;
   double getGhostProb() const;
   optional<int> getRecruitingMinPopulation() const;
   bool sleepOnlyAtNight() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
-  vector<BirthSpawn> getBirthSpawns() const;
   unique_ptr<Workshops> getWorkshops() const;
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
@@ -215,12 +151,12 @@ class CollectiveConfig {
   static bool canBuildOutsideTerritory(FurnitureType);
   static int getManaForConquering(VillainType);
 
-  SERIALIZATION_DECL(CollectiveConfig);
+  SERIALIZATION_DECL(CollectiveConfig)
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };
   CollectiveConfig(double immigrantFrequency, int payoutTime, double payoutMultiplier,
-      vector<ImmigrantInfo>, CollectiveType, int maxPopulation, vector<PopulationIncrease>);
+      const vector<ImmigrantInfo>&, CollectiveType, int maxPopulation, vector<PopulationIncrease>);
 
   double SERIAL(immigrantFrequency);
   int SERIAL(payoutTime);

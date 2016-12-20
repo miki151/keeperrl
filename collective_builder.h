@@ -8,7 +8,7 @@ class Tribe;
 class TribeId;
 class Level;
 class Creature;
-struct ImmigrantInfo;
+class ImmigrantInfo;
 class Position;
 class CollectiveConfig;
 

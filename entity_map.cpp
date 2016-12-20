@@ -5,6 +5,7 @@
 #include "collective.h"
 #include "collective_config.h"
 #include "item.h"
+#include "immigrant_info.h"
 
 template <typename Key, typename Value>
 EntityMap<Key, Value>::EntityMap() {
