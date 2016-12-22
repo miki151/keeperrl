@@ -27,6 +27,11 @@ EnemyInfo& EnemyInfo::setSurprise() {
   return *this;
 }
 
+EnemyInfo&EnemyInfo::setId(EnemyId i) {
+  id = i;
+  return *this;
+}
+
 static EnemyInfo getVault(SettlementType type, CreatureFactory factory, TribeId tribe, int num,
     optional<ItemFactory> itemFactory = none, optional<VillageBehaviour> villain = none) {
   return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -76,7 +81,11 @@ static Location* getVillageLocation() {
   return new Location(NameGenerator::get(NameGeneratorId::TOWN)->getNext());
 }
 
-EnemyInfo EnemyFactory::get(EnemyId enemyId) {
+EnemyInfo EnemyFactory::get(EnemyId id){
+  return getById(id).setId(id);
+}
+
+EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
   switch (enemyId) {
     case EnemyId::ANTS_CLOSED:
       return EnemyInfo(CONSTRUCT(SettlementInfo,

@@ -1609,8 +1609,6 @@ SGuiElem GuiBuilder::getVillageStateLabel(VillageInfo::Village::State state) {
 
 static const char* getVillageActionText(VillageAction action) {
   switch (action) {
-    case VillageAction::RECRUIT:
-      return "Recruit";
     case VillageAction::TRADE:
       return "Trade";
     case VillageAction::PILLAGE:

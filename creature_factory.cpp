@@ -1013,8 +1013,11 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
   return c;
 }
 
-
 CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
+  return getAttributesFromId(id).setCreatureId(id);
+}
+
+CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
   switch (id) {
     case CreatureId::KEEPER: 
       return CATTR(

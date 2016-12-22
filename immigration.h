@@ -31,11 +31,13 @@ class Immigration {
 
     private:
     static Available generate(Immigration*, const Group& group);
+    static Available generate(Immigration*, int index);
     vector<Position> getSpawnPositions() const;
-    Available(Immigration*, vector<PCreature>, int immigrantIndex, optional<double> endTime);
-    void regenerate();
+    using Creatures = variant<vector<Creature*>, vector<PCreature>>;
+    Available(Immigration*, Creatures, int immigrantIndex, optional<double> endTime);
+    void addAllCreatures(const vector<Position>& spawnPositions);
     friend class Immigration;
-    vector<PCreature> SERIAL(creatures);
+    Creatures SERIAL(creatures);
     int SERIAL(immigrantIndex);
     optional<double> SERIAL(endTime);
     Immigration* SERIAL(immigration);
@@ -51,7 +53,6 @@ class Immigration {
 
   int getAttractionOccupation(const AttractionType& attraction) const;
   int getAttractionValue(const AttractionType& attraction) const;
-  static vector<string> getAllRequirements(const ImmigrantInfo&);
 
   private:
   vector<ImmigrantInfo> SERIAL(immigrants);
@@ -69,4 +70,6 @@ class Immigration {
   vector<string> getMissingRequirements(const Group&) const;
   void considerPersistentImmigrants(const vector<ImmigrantInfo>&);
   CostInfo calculateCost(int index, const ExponentialCost&) const;
+  bool SERIAL(initialized) = false;
+  void initializePersistent();
 };

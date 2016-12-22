@@ -71,7 +71,9 @@ class Collective : public TaskCallback {
   void banishCreature(Creature*);
   bool wasBanished(const Creature*) const;
   void setVillainType(VillainType);
+  void setEnemyId(EnemyId);
   optional<VillainType> getVillainType() const;
+  optional<EnemyId> getEnemyId() const;
   CollectiveControl* getControl() const;
   double getLocalTime() const;
   double getGlobalTime() const;
@@ -92,8 +94,6 @@ class Collective : public TaskCallback {
   void setTrait(Creature* c, MinionTrait);
   void removeTrait(Creature* c, MinionTrait);
 
-  vector<Creature*> getRecruits() const;
-  void recruit(Creature*, Collective* to);
   bool canPillage() const;
   bool hasTradeItems() const;
   vector<Item*> getTradeItems() const;
@@ -196,6 +196,11 @@ class Collective : public TaskCallback {
   bool isItemMarked(const Item*) const;
   int getNumItems(ItemIndex, bool includeMinions = true) const;
   optional<set<Position>> getStorageFor(const Item*) const;
+
+  void addKnownVillain(const Collective*);
+  bool isKnownVillain(const Collective*) const;
+  void addKnownVillainLocation(const Collective*);
+  bool isKnownVillainLocation(const Collective*) const;
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
@@ -306,10 +311,13 @@ class Collective : public TaskCallback {
   HeapAllocated<CollectiveConfig> SERIAL(config);
   EntitySet<Creature> SERIAL(banished);
   optional<VillainType> SERIAL(villainType);
+  optional<EnemyId> SERIAL(enemyId);
   unique_ptr<Workshops> SERIAL(workshops);
   HeapAllocated<Zones> SERIAL(zones);
   HeapAllocated<TileEfficiency> SERIAL(tileEfficiency);
   HeapAllocated<CollectiveWarnings> SERIAL(warnings);
   HeapAllocated<Immigration> SERIAL(immigration);
   mutable optional<double> dangerLevelCache;
+  unordered_set<const Collective*> SERIAL(knownVillains);
+  unordered_set<const Collective*> SERIAL(knownVillainLocations);
 };

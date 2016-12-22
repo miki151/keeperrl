@@ -58,8 +58,8 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, territory, alarmInfo, markedItems, constructions, minionEquipment);
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
   serializeAll(ar, credit, level, immigration, teams, name);
-  serializeAll(ar, config, warnings, banished);
-  serializeAll(ar, villainType, eventProxy, workshops, zones, tileEfficiency);
+  serializeAll(ar, config, warnings, knownVillains, knownVillainLocations, banished);
+  serializeAll(ar, villainType, enemyId, eventProxy, workshops, zones, tileEfficiency);
 }
 
 SERIALIZABLE(Collective);
@@ -80,8 +80,16 @@ void Collective::setVillainType(VillainType t) {
   villainType = t;
 }
 
+void Collective::setEnemyId(EnemyId id) {
+  enemyId = id;
+}
+
 optional<VillainType> Collective::getVillainType() const {
   return villainType;
+}
+
+optional<EnemyId> Collective::getEnemyId() const {
+  return enemyId;
 }
 
 Collective::~Collective() {
@@ -137,7 +145,8 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     c->getAttributes().getMinionTasks().clear();
   if (!leader)
     leader = c;
-  CHECK(c->getTribeId() == *tribe);
+  if (c->getTribeId() != *tribe)
+    c->setTribe(*tribe);
   if (Game* game = getGame())
     for (Collective* col : getGame()->getCollectives())
       if (contains(col->getCreatures(), c))
@@ -186,7 +195,7 @@ bool Collective::wasBanished(const Creature* c) const {
   return banished.contains(c);
 }
 
-vector<Creature*> Collective::getRecruits() const {
+/*vector<Creature*> Collective::getRecruits() const {
   vector<Creature*> ret;
   vector<Creature*> possibleRecruits = filter(getCreatures(MinionTrait::FIGHTER),
       [] (const Creature* c) { return c->getAttributes().getRecruitmentCost() > 0; });
@@ -194,13 +203,7 @@ vector<Creature*> Collective::getRecruits() const {
     for (int i = *minPop; i < possibleRecruits.size(); ++i)
       ret.push_back(possibleRecruits[i]);
   return ret;
-}
-
-void Collective::recruit(Creature* c, Collective* to) {
-  removeCreature(c);
-  c->setTribe(to->getTribeId());
-  to->addCreature(c, {MinionTrait::FIGHTER});
-}
+}*/
 
 bool Collective::hasTradeItems() const {
   for (Position pos : territory->getAll())
@@ -208,6 +211,8 @@ bool Collective::hasTradeItems() const {
       return true;
   return false;
 }
+
+//kocham Cię
 
 vector<Item*> Collective::getTradeItems() const {
   vector<Item*> ret;
@@ -558,9 +563,7 @@ void Collective::decayMorale() {
 
 void Collective::update(bool currentlyActive) {
   control->update(currentlyActive);
-  if (config->hasImmigrantion(currentlyActive) &&
-      Random.chance(config->getImmigrantFrequency()) &&
-      hasLeader())
+  if (config->hasImmigrantion(currentlyActive) && hasLeader())
     immigration->update();
 }
 
@@ -1004,6 +1007,22 @@ optional<set<Position>> Collective::getStorageFor(const Item* item) const {
     if (Inventory::getIndexPredicate(info.index)(item))
       return info.destinationFun(this);
   return none;
+}
+
+void Collective::addKnownVillain(const Collective* col) {
+  knownVillains.insert(col);
+}
+
+bool Collective::isKnownVillain(const Collective* col) const {
+  return knownVillains.count(col);
+}
+
+void Collective::addKnownVillainLocation(const Collective* col) {
+  knownVillainLocations.insert(col);
+}
+
+bool Collective::isKnownVillainLocation(const Collective* col) const {
+  return knownVillainLocations.count(col);
 }
 
 void Collective::orderExecution(Creature* c) {

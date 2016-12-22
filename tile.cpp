@@ -577,8 +577,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::SQUARE_HIGHLIGHT, sprite("square_highlight"));
     Tile::addTile(ViewId::ROUND_SHADOW, sprite("round_shadow"));
     Tile::addTile(ViewId::CAMPAIGN_DEFEATED, sprite("campaign_defeated"));
-    Tile::addTile(ViewId::ACCEPT_IMMIGRANT, sprite("accept_immigrant"));
-    Tile::addTile(ViewId::REJECT_IMMIGRANT, sprite("reject_immigrant"));
+    Tile::addTile(ViewId::ACCEPT_IMMIGRANT, symbol(u8"✓", ColorId::GREEN));
+    Tile::addTile(ViewId::REJECT_IMMIGRANT, symbol(u8"X", ColorId::RED));
     Tile::addTile(ViewId::FOG_OF_WAR_CORNER, sprite("fogofwar")
         .addConnection({Dir::NE}, byName("fogofwarcornne"))
         .addConnection({Dir::NW}, byName("fogofwarcornnw"))

@@ -50,6 +50,8 @@ class CreatureAttributes {
   ~CreatureAttributes();
   SERIALIZATION_DECL(CreatureAttributes);
 
+  CreatureAttributes& setCreatureId(CreatureId);
+  const optional<CreatureId>& getCreatureId() const;
   Body& getBody();
   const Body& getBody() const;
   const CreatureName& getName() const;
@@ -135,4 +137,5 @@ class CreatureAttributes {
   EnumMap<ExperienceType, EnumMap<AttrType, double>> SERIAL(attrIncrease);
   bool SERIAL(noAttackSound) = false;
   double SERIAL(maxExpFromCombat) = 4;
+  optional<CreatureId> SERIAL(creatureId);
 };

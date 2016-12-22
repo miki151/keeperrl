@@ -48,12 +48,21 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, animal, cantEquip, courage);
   serializeAll(ar, carryAnything, boulder, noChase, isSpecial, skills, spells);
   serializeAll(ar, permanentEffects, lastingEffects, minionTasks, attrIncrease, recruitmentCost);
-  serializeAll(ar, noAttackSound, maxExpFromCombat);
+  serializeAll(ar, noAttackSound, maxExpFromCombat, creatureId);
 }
 
 SERIALIZABLE(CreatureAttributes);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureAttributes);
+
+CreatureAttributes& CreatureAttributes::setCreatureId(CreatureId id) {
+  creatureId = id;
+  return *this;
+}
+
+const optional<CreatureId>& CreatureAttributes::getCreatureId() const {
+  return creatureId;
+}
 
 CreatureName& CreatureAttributes::getName() {
   return *name;

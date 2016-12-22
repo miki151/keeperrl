@@ -184,7 +184,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void fillEquipment(Creature*, PlayerInfo&) const;
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
-  void handleRecruiting(Collective* ally);
   void handleTrading(Collective* ally);
   void handlePillage(Collective* enemy);
   void handleRansom(bool pay);
@@ -232,8 +231,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<Vec2> SERIAL(visibleEnemies);
   HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
   set<const Location*> SERIAL(knownLocations);
-  set<const Collective*> SERIAL(knownVillains);
-  set<const Collective*> SERIAL(knownVillainLocations);
   bool firstRender = true;
   bool isNight = true;
   optional<UniqueEntity<Creature>::Id> draggedCreature;

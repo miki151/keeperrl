@@ -80,7 +80,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl);
   serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
-  serializeAll(ar, knownVillains, knownVillainLocations, visibilityMap);
+  serializeAll(ar, visibilityMap);
   serializeAll(ar, messageHistory, eventProxy, immigrantAutoState);
 }
 
@@ -885,7 +885,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   info.tribeName = col->getName().getRace();
   info.triggers.clear();
   if (getGame()->isSingleModel()) {
-    if (!knownVillainLocations.count(col))
+    if (!getCollective()->isKnownVillainLocation(col))
       info.access = VillageInfo::Village::NO_LOCATION;
     else {
       info.access = VillageInfo::Village::LOCATION;
@@ -909,15 +909,10 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
     info.state = info.HOSTILE;
   else {
     info.state = info.FRIENDLY;
-    if (knownVillains.count(col) || true) {
-      if (!col->getRecruits().empty())
-        info.actions.push_back({VillageAction::RECRUIT});
+    if (getCollective()->isKnownVillain(col) || true) {
       if (col->hasTradeItems())
         info.actions.push_back({VillageAction::TRADE});
     } else if (getGame()->isVillainActive(col)){
-      if (!col->getRecruits().empty())
-        info.actions.push_back({VillageAction::RECRUIT,
-            string("You must discover the location of the ally first.")});
       if (col->hasTradeItems())
         info.actions.push_back({VillageAction::TRADE, string("You must discover the location of the ally first.")});
     }
@@ -925,7 +920,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   return info;
 }
 
-void PlayerControl::handleRecruiting(Collective* ally) {
+/*void PlayerControl::handleRecruiting(Collective* ally) {
   ScrollPosition scrollPos;
   vector<Creature*> recruited;
   vector<Creature*> transfers;
@@ -958,7 +953,7 @@ void PlayerControl::handleRecruiting(Collective* ally) {
     for (Creature* c : transfers)
 //      if (getGame()->canTransferCreature(c, getCollective()->getLevel()->getModel()))
         getGame()->transferCreature(c, getModel());
-}
+}*/
 
 void PlayerControl::handleTrading(Collective* ally) {
   ScrollPosition scrollPos;
@@ -1058,7 +1053,7 @@ vector<Collective*> PlayerControl::getKnownVillains(VillainType type) const {
     return getGame()->getVillains(type);
   else
     return filter(getGame()->getVillains(type), [this](Collective* c) {
-        return seeEverything || knownVillains.count(c);});
+        return seeEverything || getCollective()->isKnownVillain(c);});
 }
 
 vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
@@ -1292,6 +1287,12 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         },
         [&](const Pregnancy&) {
           requirements.push_back("Requires a pregnant succubus");
+        },
+        [&](const RecruitmentInfo& info) {
+          if (auto col = info.findEnemy(getGame()))
+            requirements.push_back(col->getName().getFull() + " must be discovered and have recruits available.");
+          else
+            requirements.push_back("Can't recruit creature in this game.");
         }
     ));
     if (auto limit = elem->getLimit())
@@ -1487,8 +1488,8 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
       }
   for (const Collective* col : getGame()->getCollectives())
     if (col != getCollective() && col->getTerritory().contains(pos)) {
-      knownVillains.insert(col);
-      knownVillainLocations.insert(col);
+      getCollective()->addKnownVillain(col);
+      getCollective()->addKnownVillainLocation(col);
     }
 }
 
@@ -2144,9 +2145,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::VILLAGE_ACTION: 
         if (Collective* village = getVillain(input.get<VillageActionInfo>().villageIndex))
           switch (input.get<VillageActionInfo>().action) {
-            case VillageAction::RECRUIT: 
-              handleRecruiting(village);
-              break;
             case VillageAction::TRADE: 
               handleTrading(village);
               break;
@@ -2469,7 +2467,7 @@ void PlayerControl::tick() {
         getGame()->setCurrentMusic(MusicType::BATTLE, true);
         removeElement(newAttacks, attack);
         if (auto attacker = attack.getAttacker())
-          knownVillains.insert(attacker);
+          getCollective()->addKnownVillain(attacker);
         if (attack.getRansom())
           ransomAttacks.push_back(attack);
         break;

@@ -28,6 +28,18 @@ struct ExponentialCost {
 
 struct Pregnancy { SERIALIZE_EMPTY() };
 
+class Collective;
+class Game;
+
+struct RecruitmentInfo {
+  EnemyId SERIAL(enemyId);
+  int SERIAL(minPopulation);
+  MinionTrait SERIAL(trait);
+  Collective* findEnemy(Game*) const;
+  vector<Creature*> getRecruits(Game*, CreatureId) const;
+  SERIALIZE_ALL(enemyId, minPopulation, trait)
+};
+
 using ImmigrantRequirement = variant<
     AttractionInfo,
     TechId,
@@ -35,7 +47,8 @@ using ImmigrantRequirement = variant<
     FurnitureType,
     CostInfo,
     ExponentialCost,
-    Pregnancy
+    Pregnancy,
+    RecruitmentInfo
 >;
 
 struct OutsideTerritory { SERIALIZE_EMPTY() };

@@ -70,7 +70,7 @@
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/array.hpp>
-#include <boost/serialization/variant.hpp>
+#include "variant_serialization.h"
 #include <boost/serialization/optional.hpp>
 #include <boost/serialization/bitset.hpp>
 #include <boost/serialization/shared_ptr.hpp>

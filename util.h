@@ -824,8 +824,9 @@ map<V, vector<T> > groupBy(const vector<T>& values, function<V (const T&)> getKe
 
 template <typename T>
 vector<T> getSubsequence(const vector<T>& v, int start, int length) {
-  CHECK(start >= 0 && length > 0 && start + length <= v.size());
+  CHECK(start >= 0 && length >= 0 && start + length <= v.size());
   vector<T> ret;
+  ret.reserve(length);
   for (int i : Range(start, start + length))
     ret.push_back(v[i]);
   return ret;

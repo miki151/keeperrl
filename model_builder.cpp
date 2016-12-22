@@ -134,6 +134,9 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
       ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
           .setFrequency(0.1)
           .addRequirement(AttractionInfo{2, FurnitureType::TRAINING_IRON}),
+      ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
+          .addPreliminaryRequirement(RecruitmentInfo{EnemyId::DARK_ELVES, 3, MinionTrait::FIGHTER})
+          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 150)),
       ImmigrantInfo({CreatureId::SPECIAL_HMBN, CreatureId::SPECIAL_HMBW,
               CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}, {MinionTrait::FIGHTER})
           .addPreliminaryRequirement(TechId::HUMANOID_MUT)
@@ -145,7 +148,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           .addPreliminaryRequirement(TechId::BEAST_MUT)
           .addPreliminaryRequirement(Pregnancy {})
           .addRequirement(CostInfo(CollectiveResourceId::MANA, 250))
-          .setSpawnLocation(Pregnancy {}),
+          .setSpawnLocation(Pregnancy {})
   });
 }
 
@@ -473,9 +476,9 @@ Collective* ModelBuilder::spawnKeeper(Model* m) {
   Collective* playerCollective = m->collectives.back().get();
   playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, level)));
   playerCollective->setVillainType(VillainType::PLAYER);
-  for (auto& elem : playerCollective->getImmigration().getAvailable())
+  /*for (auto& elem : playerCollective->getImmigration().getAvailable())
     for (int i : Range(elem.second.get().getInfo().getInitialRecruitment()))
-      playerCollective->getImmigration().accept(elem.first);
+      playerCollective->getImmigration().accept(elem.first);*/
   return playerCollective;
 }
 
@@ -514,6 +517,8 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
     control.reset(new VillageControl(collective.get(), enemy.villain));
     if (enemy.villainType)
       collective->setVillainType(*enemy.villainType);
+    if (enemy.id)
+      collective->setEnemyId(*enemy.id);
     collective->setControl(std::move(control));
     model->collectives.push_back(std::move(collective));
   }

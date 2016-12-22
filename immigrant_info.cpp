@@ -2,7 +2,10 @@
 #include "immigrant_info.h"
 #include "furniture.h"
 #include "item_index.h"
-
+#include "game.h"
+#include "collective.h"
+#include "creature.h"
+#include "creature_attributes.h"
 
 SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds)
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
@@ -113,3 +116,18 @@ ImmigrantInfo& ImmigrantInfo::setAutoTeam() {
   return *this;
 }
 
+vector<Creature*> RecruitmentInfo::getRecruits(Game* game, CreatureId id) const {
+  vector<Creature*> ret;
+  if (Collective* col = findEnemy(game)) {
+    ret = filter(col->getCreatures(), [&](const Creature* c) { return c->getAttributes().getCreatureId() == id; });
+    ret = getPrefix(ret, max(0, (int)ret.size() - minPopulation));
+  }
+  return ret;
+}
+
+Collective* RecruitmentInfo::findEnemy(Game* game) const {
+  for (Collective* col : game->getCollectives())
+    if (col->getEnemyId() == enemyId)
+      return col;
+  return nullptr;
+}
