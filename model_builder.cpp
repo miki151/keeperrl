@@ -79,74 +79,78 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::MANA, 20), 5, 4 }),
       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
           .setFrequency(0.7)
-          .addRequirement(AttractionInfo{1, vector<AttractionType>(
+          .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
                {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})}),
       ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
           .setFrequency(0.7)
-          .addRequirement(AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
+          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
       ImmigrantInfo(CreatureId::ORC_SHAMAN, {MinionTrait::FIGHTER})
           .setFrequency(0.6)
-          .addRequirement(AttractionInfo{1, {FurnitureType::BOOK_SHELF, FurnitureType::LABORATORY}}),
+          .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOK_SHELF, FurnitureType::LABORATORY}}),
       ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
           .setFrequency(0.3)
-          .addRequirement(AttractionInfo{1, FurnitureType::TRAINING_IRON}),
+          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON}),
       ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
           .setFrequency(0.3)
-          .addRequirement(AttractionInfo{1, FurnitureType::TRAINING_WOOD})
-          .addRequirement(AttractionInfo{1, ItemIndex::RANGED_WEAPON}),
+          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
+          .addRequirement(0.3, AttractionInfo{1, ItemIndex::RANGED_WEAPON}),
       ImmigrantInfo(CreatureId::ZOMBIE, {MinionTrait::FIGHTER})
           .setFrequency(0.5)
           .setSpawnLocation(FurnitureType::GRAVE)
-          .addPreliminaryRequirement(CostInfo(CollectiveResourceId::CORPSE, 1)),
+          .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
       ImmigrantInfo(CreatureId::VAMPIRE, {MinionTrait::FIGHTER})
           .setFrequency(0.2)
           .setSpawnLocation(FurnitureType::GRAVE)
-          .addRequirement(AttractionInfo{1, FurnitureType::TRAINING_IRON})
-          .addPreliminaryRequirement(CostInfo(CollectiveResourceId::CORPSE, 1)),
+          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
+          .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
       ImmigrantInfo(CreatureId::LOST_SOUL, {MinionTrait::FIGHTER})
           .setFrequency(0.3)
           .setSpawnLocation(FurnitureType::DEMON_SHRINE)
-          .addRequirement(AttractionInfo{1, FurnitureType::DEMON_SHRINE})
-          .addPreliminaryRequirement(FurnitureType::DEMON_SHRINE),
+          .addRequirement(0.3, AttractionInfo{1, FurnitureType::DEMON_SHRINE})
+          .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
       ImmigrantInfo(CreatureId::SUCCUBUS, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
           .setFrequency(0.3)
           .setSpawnLocation(FurnitureType::DEMON_SHRINE)
-          .addRequirement(AttractionInfo{2, FurnitureType::DEMON_SHRINE})
-          .addPreliminaryRequirement(FurnitureType::DEMON_SHRINE),
+          .addRequirement(0.3, AttractionInfo{2, FurnitureType::DEMON_SHRINE})
+          .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
       ImmigrantInfo(CreatureId::DOPPLEGANGER, {MinionTrait::FIGHTER})
           .setFrequency(0.3)
           .setSpawnLocation(FurnitureType::DEMON_SHRINE)
-          .addRequirement(AttractionInfo{3, FurnitureType::DEMON_SHRINE})
-          .addPreliminaryRequirement(FurnitureType::DEMON_SHRINE),
+          .addRequirement(0.3, AttractionInfo{3, FurnitureType::DEMON_SHRINE})
+          .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
       ImmigrantInfo(CreatureId::RAVEN, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
           .setFrequency(0.5)
-          .addPreliminaryRequirement(SunlightState::DAY),
+          .addRequirement(0.0, FurnitureType::BEAST_CAGE)
+          .addRequirement(0.0, SunlightState::DAY),
       ImmigrantInfo(CreatureId::BAT, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
           .setFrequency(0.5)
-          .addPreliminaryRequirement(SunlightState::NIGHT),
+          .addRequirement(0.0, FurnitureType::BEAST_CAGE)
+          .addRequirement(0.0, SunlightState::NIGHT),
       ImmigrantInfo(CreatureId::WOLF, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
           .setFrequency(0.15)
+          .addRequirement(0.0, FurnitureType::BEAST_CAGE)
           .setGroupSize(Range(3, 9))
           .setAutoTeam()
-          .addPreliminaryRequirement(SunlightState::NIGHT),
+          .addRequirement(0.0, SunlightState::NIGHT),
       ImmigrantInfo(CreatureId::CAVE_BEAR, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
+          .addRequirement(0.0, FurnitureType::BEAST_CAGE)
           .setFrequency(0.1),
       ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
           .setFrequency(0.1)
           .addRequirement(AttractionInfo{2, FurnitureType::TRAINING_IRON}),
       ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
-          .addPreliminaryRequirement(RecruitmentInfo{EnemyId::DARK_ELVES, 3, MinionTrait::FIGHTER})
+          .addRequirement(0.0, RecruitmentInfo{EnemyId::DARK_ELVES, 3, MinionTrait::FIGHTER})
           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 150)),
       ImmigrantInfo({CreatureId::SPECIAL_HMBN, CreatureId::SPECIAL_HMBW,
               CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}, {MinionTrait::FIGHTER})
-          .addPreliminaryRequirement(TechId::HUMANOID_MUT)
-          .addPreliminaryRequirement(Pregnancy {})
+          .addRequirement(0.0, TechId::HUMANOID_MUT)
+          .addRequirement(0.0, Pregnancy {})
           .addRequirement(CostInfo(CollectiveResourceId::MANA, 250))
           .setSpawnLocation(Pregnancy {}),
       ImmigrantInfo({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW,
               CreatureId::SPECIAL_BMGN, CreatureId::SPECIAL_BMGW}, {MinionTrait::FIGHTER})
-          .addPreliminaryRequirement(TechId::BEAST_MUT)
-          .addPreliminaryRequirement(Pregnancy {})
+          .addRequirement(0.0, TechId::BEAST_MUT)
+          .addRequirement(0.0, Pregnancy {})
           .addRequirement(CostInfo(CollectiveResourceId::MANA, 250))
           .setSpawnLocation(Pregnancy {})
   });

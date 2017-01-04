@@ -128,42 +128,47 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
   return ret;
 }
 
-bool Immigration::preliminaryRequirementsMet(const Group& group) const {
-  bool ret = true;
+double Immigration::getRequirementMultiplier(const Group& group) const {
+  double ret = 1;
   auto visitor = makeVisitor<void>(
-      [&](const AttractionInfo& attraction) {
+      [&](const AttractionInfo& attraction, double prob) {
         visitAttraction(*this, attraction,
-            [&](int, int available) { return ret &= (available > 0); });
+            [&](int, int available) { if (!available) ret *= prob; });
       },
-      [&](const TechId& techId) {
-        ret &= collective->hasTech(techId);
+      [&](const TechId& techId, double prob) {
+        if (!collective->hasTech(techId))
+          ret *= prob;
       },
-      [&](const SunlightState& state) {
-        ret &= (state == collective->getGame()->getSunlightInfo().getState());
+      [&](const SunlightState& state, double prob) {
+        if (state != collective->getGame()->getSunlightInfo().getState())
+          ret *= prob;
       },
-      [&](const FurnitureType& type) {
-        ret &= (collective->getConstructions().getBuiltCount(type) > 0);
+      [&](const FurnitureType& type, double prob) {
+        if (collective->getConstructions().getBuiltCount(type) == 0)
+          ret *= prob;
       },
-      [&](const CostInfo& cost) {
-        ret &= collective->hasResource(cost * group.count);
+      [&](const CostInfo& cost, double prob) {
+        if (!collective->hasResource(cost * group.count))
+          ret *= prob;
       },
-      [&](const ExponentialCost& cost) {
-        ret &= collective->hasResource(calculateCost(group.immigrantIndex, cost) * group.count);
+      [&](const ExponentialCost& cost, double prob) {
+        if (!collective->hasResource(calculateCost(group.immigrantIndex, cost) * group.count))
+          ret *= prob;
       },
-      [&](const Pregnancy&) {
+      [&](const Pregnancy&, double prob) {
         for (Creature* c : collective->getCreatures())
           if (c->isAffected(LastingEffect::PREGNANT))
             return;
-        ret = false;
+        ret *= prob;
       },
-      [&](const RecruitmentInfo& info) {
+      [&](const RecruitmentInfo& info, double prob) {
         Collective* col = info.findEnemy(collective->getGame());
         if (!col || !collective->isKnownVillainLocation(col) ||
             info.getRecruits(collective->getGame(), immigrants[group.immigrantIndex].getId(0)).empty())
-          ret = false;
+          ret *= prob;
       }
   );
-  immigrants[group.immigrantIndex].visitPreliminaryRequirements(visitor);
+  immigrants[group.immigrantIndex].visitRequirementsAndProb(visitor);
   return ret;
 }
 
@@ -210,10 +215,10 @@ void Immigration::occupyAttraction(const Creature* c, const AttractionInfo& attr
 
 double Immigration::getImmigrantChance(const Group& group) const {
   auto& info = immigrants[group.immigrantIndex];
-  if (info.isPersistent() || !preliminaryRequirementsMet(group))
+  if (info.isPersistent())
     return 0.0;
   else
-    return info.getFrequency();
+    return info.getFrequency() * getRequirementMultiplier(group);
 }
 
 Immigration::Immigration(Collective* c)
@@ -225,7 +230,7 @@ map<int, std::reference_wrapper<const Immigration::Available>> Immigration::getA
   map<int, std::reference_wrapper<const Immigration::Available>> ret;
   for (auto& elem : available)
     if (!elem.second.isUnavailable() &&
-        preliminaryRequirementsMet({elem.second.immigrantIndex, (int)elem.second.getCreatures().size()}))
+        getRequirementMultiplier({elem.second.immigrantIndex, (int)elem.second.getCreatures().size()}) > 0)
       ret.emplace(elem.first, std::cref(elem.second));
   return ret;
 }

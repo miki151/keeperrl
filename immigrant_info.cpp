@@ -82,12 +82,12 @@ optional<int> ImmigrantInfo::getLimit() const {
 }
 
 ImmigrantInfo& ImmigrantInfo::addRequirement(ImmigrantRequirement t) {
-  requirements.push_back({t, false});
+  requirements.push_back({t, 1});
   return *this;
 }
 
-ImmigrantInfo& ImmigrantInfo::addPreliminaryRequirement(ImmigrantRequirement t) {
-  requirements.push_back({t, true});
+ImmigrantInfo& ImmigrantInfo::addRequirement(double prob, ImmigrantRequirement t) {
+  requirements.push_back({t, prob});
   return *this;
 }
 

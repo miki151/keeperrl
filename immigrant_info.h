@@ -71,8 +71,8 @@ class ImmigrantInfo {
   const EnumSet<MinionTrait>& getTraits() const;
   optional<int> getLimit() const;
 
+  ImmigrantInfo& addRequirement(double candidateProb, ImmigrantRequirement);
   ImmigrantInfo& addRequirement(ImmigrantRequirement);
-  ImmigrantInfo& addPreliminaryRequirement(ImmigrantRequirement);
   ImmigrantInfo& setFrequency(double);
   ImmigrantInfo& setSpawnLocation(SpawnLocation);
   ImmigrantInfo& setInitialRecruitment(int);
@@ -80,15 +80,29 @@ class ImmigrantInfo {
   ImmigrantInfo& setAutoTeam();
 
   template <typename Visitor>
-  void visitRequirements(const Visitor& visitor) const {
-    for (auto& requirement : requirements)
-      apply_visitor(requirement.type, visitor);
-  }
+  struct RequirementVisitor : public boost::static_visitor<void> {
+    RequirementVisitor(const Visitor& v, double p) : visitor(v), prob(p) {}
+    const Visitor& visitor;
+    double prob;
+    template <typename Req>
+    void operator()(const Req& r) const {
+      visitor(r, prob);
+    }
+  };
+
   template <typename Visitor>
-  void visitPreliminaryRequirements(const Visitor& visitor) const {
-    for (auto& requirement : requirements)
-      if (requirement.preliminary)
-        apply_visitor(requirement.type, visitor);
+  void visitRequirementsAndProb(const Visitor& visitor) const {
+    for (auto& requirement : requirements) {
+      RequirementVisitor<Visitor> v {visitor, requirement.candidateProb};
+      apply_visitor(requirement.type, v);
+    }
+  }
+
+  template <typename Visitor>
+  void visitRequirements(const Visitor& visitor) const {
+    for (auto& requirement : requirements) {
+      apply_visitor(requirement.type, visitor);
+    }
   }
 
   SERIALIZATION_DECL(ImmigrantInfo)
@@ -99,8 +113,8 @@ class ImmigrantInfo {
   optional<double> SERIAL(frequency);
   struct RequirementInfo {
     ImmigrantRequirement SERIAL(type);
-    bool SERIAL(preliminary); // if true, candidate immigrant won't be generated if this requirement is not met.
-    SERIALIZE_ALL(type, preliminary)
+    double SERIAL(candidateProb); // chance of candidate immigrant still generated if this requirement is not met.
+    SERIALIZE_ALL(type, candidateProb)
   };
   vector<RequirementInfo> SERIAL(requirements);
   EnumSet<MinionTrait> SERIAL(traits);

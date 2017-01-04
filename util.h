@@ -1552,8 +1552,8 @@ LambdaVisitor<ReturnType, Lambdas...> makeVisitor(Lambdas... lambdas) {
 }
 
 struct DefaultOperator {
-  template <typename T>
-  void operator() (const T&) const {}
+  template <typename... T>
+  void operator() (const T&...) const {}
 };
 
 template <typename... Lambdas>
