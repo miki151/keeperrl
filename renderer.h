@@ -100,6 +100,7 @@ class Texture {
   void addTexCoord(int x, int y) const;
   optional<SDL::GLuint> texId;
   Vec2 size;
+  Vec2 realSize;
   string path;
 };
 
@@ -129,6 +130,7 @@ class Renderer {
   const static int textSize = 19;
   const static int smallTextSize = 14;
   static SDL::SDL_Surface* createSurface(int w, int h);
+  static SDL::SDL_Surface* createPowerOfTwoSurface(SDL::SDL_Surface*);
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(const string& s, int size = textSize, FontId = TEXT_FONT);
   Vec2 getTextSize(const string& s, int size = textSize, FontId = TEXT_FONT);
