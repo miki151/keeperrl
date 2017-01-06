@@ -66,7 +66,7 @@ class Immigration {
   int SERIAL(candidateTimeout);
   void occupyAttraction(const Creature*, const AttractionInfo&);
   void occupyRequirements(const Creature*, int immigrantIndex);
-  double preliminaryRequirementsMet(const Group&) const;
+  double getRequirementMultiplier(const Group&) const;
   vector<string> getMissingRequirements(const Group&) const;
   void considerPersistentImmigrants(const vector<ImmigrantInfo>&);
   CostInfo calculateCost(int index, const ExponentialCost&) const;

@@ -513,6 +513,8 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
     lines.addElem(gui.label("Level: " + toString(info.expLevel.getStart()) + "-" + toString(info.expLevel.getEnd())));
   if (info.timeLeft)
     lines.addElem(gui.label("Turns left: " + toString(*info.timeLeft)));
+  for (auto& req : info.info)
+    lines.addElem(gui.label(req, colors[ColorId::WHITE]));
   for (auto& req : info.requirements)
     lines.addElem(gui.label(req, colors[ColorId::ORANGE]));
   return gui.miniWindow(gui.margins(lines.buildVerticalList(), 15));
@@ -2116,19 +2118,6 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion) {
       topMargin, GuiFactory::TOP);
 }
 
-static vector<CreatureMapElem> getRecruitStacks(const vector<CreatureInfo>& creatures) {
-  map<string, CreatureMapElem> creatureMap;
-  for (int i : All(creatures)) {
-    auto elem = creatures[i];
-    string key = elem.stackName + " " + toString(elem.cost->second) + " " + toString(elem.expLevel);
-    if (!creatureMap.count(key)) {
-      creatureMap.insert(make_pair(key, CreatureMapElem({elem.viewId, 1, elem})));
-    } else
-      ++creatureMap.at(key).count;
-  }
-  return getValues(creatureMap);
-}
-
 SGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>& queue, const string& title,
     pair<ViewId, int> budget, const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
   int titleExtraSpace = 10;
@@ -2471,46 +2460,6 @@ SGuiElem GuiBuilder::drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature
   int margin = 25;
   return gui.setWidth(2 * margin + windowWidth,
       gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
-}
-
-SGuiElem GuiBuilder::drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
-    const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>& creatures, ScrollPosition* scrollPos) {
-  GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
-  lines.addElem(GuiFactory::ListBuilder(gui)
-      .addElemAuto(gui.label(title))
-      .addBackElemAuto(drawCost(budget)).buildHorizontalList());
-  if (!warning.empty()) {
-    lines.addElem(gui.label(warning, colors[ColorId::RED]));
-    budget.second = -1;
-  }
-  lines.addSpace(10);
-  for (SGuiElem& elem : drawRecruitList(creatures,
-        [&queue] (optional<UniqueEntity<Creature>::Id> a) { queue.push(a);}, budget.second))
-    lines.addElem(std::move(elem));
-  return gui.setWidth(330,
-      gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos), 15),
-          [&queue] { queue.push(none); }));
-}
-
-vector<SGuiElem> GuiBuilder::drawRecruitList(const vector<CreatureInfo>& creatures,
-    CreatureMenuCallback callback, int budget) {
-  vector<CreatureMapElem> stacks = getRecruitStacks(creatures);
-  vector<SGuiElem> lines;
-  for (auto& elem : stacks) {
-    bool canAfford = elem.any.cost->second <= budget;
-    ColorId color = canAfford ? ColorId::WHITE : ColorId::GRAY;
-    lines.push_back(gui.stack(
-        gui.keyHandler([callback] { callback(none); }, {gui.getKey(SDL::SDLK_ESCAPE), gui.getKey(SDL::SDLK_RETURN)}),
-        canAfford ? gui.button([callback, elem] { callback(elem.any.uniqueId); }) : gui.empty(),
-        gui.leftMargin(25, gui.stack(
-            canAfford ? gui.mouseHighlight2(gui.highlight(listLineHeight)) : gui.empty(),
-            GuiFactory::ListBuilder(gui)
-                  .addElemAuto(gui.rightMargin(10, gui.label(toString(elem.count), colors[color])))
-                  .addElem(gui.viewObject(elem.viewId), 50)
-                  .addElem(gui.label("level " + toString(elem.any.expLevel), colors[color]), 50)
-                  .addBackElemAuto(drawCost(*elem.any.cost, color)).buildHorizontalList()))));
-  }
-  return lines;
 }
 
 SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, ScrollPosition *scrollPos) {

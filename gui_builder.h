@@ -83,8 +83,6 @@ class GuiBuilder {
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
   vector<SGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);
   typedef function<void(optional<UniqueEntity<Creature>::Id>)> CreatureMenuCallback;
-  SGuiElem drawRecruitMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
-      const string& warning, pair<ViewId, int> budget, const vector<CreatureInfo>&, ScrollPosition* scrollPos);
   SGuiElem drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>&, const string& title,
       pair<ViewId, int> budget, const vector<ItemInfo>&, ScrollPosition* scrollPos);
   SGuiElem drawPillageItemMenu(SyncQueue<optional<int>>&, const string& title, const vector<ItemInfo>&,
@@ -171,7 +169,6 @@ class GuiBuilder {
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   SGuiElem getVillageActionButton(int villageIndex, VillageInfo::Village::ActionInfo);
   SGuiElem getVillageStateLabel(VillageInfo::Village::State);
-  vector<SGuiElem> drawRecruitList(const vector<CreatureInfo>&, CreatureMenuCallback, int budget);
   SGuiElem drawHighscorePage(const HighscoreList&, ScrollPosition* scrollPos);
   SGuiElem drawTeams(CollectiveInfo&);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);

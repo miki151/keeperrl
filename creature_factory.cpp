@@ -1498,7 +1498,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.skills.setValue(SkillId::WORKSHOP, 0.3);
           c.skills.setValue(SkillId::FORGE, 0.3);
-          c.recruitmentCost = 50;
           c.name = "orc";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );
@@ -1511,7 +1510,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::DEXTERITY] = 11;
           c.barehandedDamage = 3;
           c.spawnType = SpawnType::HUMANOID;
-          c.recruitmentCost = 50;
           c.minionTasks.setValue(MinionTask::CRAFT, 4);
           c.minionTasks.setValue(MinionTask::STUDY, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
@@ -1540,7 +1538,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::LABORATORY, 0.3);
           c.gender = Gender::female;
-          c.recruitmentCost = 50;
           c.skills.setValue(SkillId::ARCHERY, 1);
           c.name = CreatureName("harpy", "harpies");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
@@ -1658,7 +1655,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::WORKSHOP, 0.5);
           c.skills.setValue(SkillId::FORGE, 0.5);
           c.skills.setValue(SkillId::FURNACE, 0.9);
-          c.recruitmentCost = 100;
           );
     case CreatureId::CHICKEN: 
       return CATTR(
@@ -1858,7 +1854,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
-          c.recruitmentCost = 140;
           c.name = CreatureName("dark elf", "dark elves"););
     case CreatureId::DARK_ELF_CHILD:
       return CATTR(

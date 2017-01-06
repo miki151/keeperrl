@@ -139,8 +139,17 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           .setFrequency(0.1)
           .addRequirement(AttractionInfo{2, FurnitureType::TRAINING_IRON}),
       ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
-          .addRequirement(0.0, RecruitmentInfo{EnemyId::DARK_ELVES, 3, MinionTrait::FIGHTER})
-          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 150)),
+          .addRequirement(0.0, RecruitmentInfo{{EnemyId::DARK_ELVES}, 3, MinionTrait::FIGHTER})
+          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100)),
+      ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
+          .addRequirement(0.0, RecruitmentInfo{{EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
+          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 15)),
+      ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
+          .addRequirement(0.0, RecruitmentInfo{{EnemyId::HARPY_CAVE}, 3, MinionTrait::FIGHTER})
+          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 60)),
+      ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
+          .addRequirement(0.0, RecruitmentInfo{{EnemyId::OGRE_CAVE, EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
+          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 60)),
       ImmigrantInfo({CreatureId::SPECIAL_HMBN, CreatureId::SPECIAL_HMBW,
               CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}, {MinionTrait::FIGHTER})
           .addRequirement(0.0, TechId::HUMANOID_MUT)
@@ -311,7 +320,8 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
   if (random.roll(4))
     enemies.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED).setSurprise().setVillainType(VillainType::LESSER));
   enemies.push_back(enemyFactory->get(EnemyId::KNIGHTS).setSurprise().setVillainType(VillainType::MAIN));
-  enemies.push_back(enemyFactory->get(EnemyId::FRIENDLY_CAVE).setSurprise().setVillainType(VillainType::ALLY));
+  enemies.push_back(enemyFactory->get(random.choose(EnemyId::OGRE_CAVE, EnemyId::HARPY_CAVE))
+      .setSurprise().setVillainType(VillainType::ALLY));
   for (auto& enemy : random.chooseN(3, {
         EnemyId::ELEMENTALIST,
         EnemyId::WARRIORS,
@@ -375,7 +385,8 @@ static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
     case EnemyId::GREEN_DRAGON:
     case EnemyId::DWARVES:
     case EnemyId::DARK_ELVES:
-    case EnemyId::FRIENDLY_CAVE:
+    case EnemyId::OGRE_CAVE:
+    case EnemyId::HARPY_CAVE:
     case EnemyId::SOKOBAN:
     case EnemyId::GNOMES:
     case EnemyId::CYCLOPS:

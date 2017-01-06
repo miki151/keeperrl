@@ -1196,6 +1196,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     optional<int> timeRemaining;
     if (auto time = elem.second.get().getEndTime())
       timeRemaining = (int)(*time - getGame()->getGlobalTime());
+    vector<string> infoLines;
     elem.second.get().getInfo().visitRequirements(makeDefaultVisitor(
         [&](const Pregnancy&) {
           optional<int> maxT;
@@ -1206,6 +1207,11 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
                   maxT = *remaining;
           if (maxT && (!timeRemaining || *maxT > *timeRemaining))
             timeRemaining = maxT;
+        },
+        [&](const RecruitmentInfo& info) {
+          infoLines.push_back(
+              toString(info.getAvailableRecruits(getGame(), elem.second.get().getInfo().getId(0)).size()) +
+              " recruits available.");
         }
     ));
     Creature* c = elem.second.get().getCreatures()[0];
@@ -1214,6 +1220,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
       name += " (" + *s + ")";
     info.immigration.push_back(ImmigrantDataInfo {
         immigration.getMissingRequirements(elem.second.get()),
+        infoLines,
         getCostObj(elem.second.get().getCost()),
         name,
         c->getViewObject().id(),
@@ -1228,6 +1235,9 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         return (i1.timeLeft && (!i2.timeLeft || *i1.timeLeft > *i2.timeLeft)) ||
             (!i1.timeLeft && !i2.timeLeft && i1.id < i2.id);
       });
+}
+
+void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   info.allImmigration.clear();
   struct CreatureStats {
     Range level;
@@ -1258,6 +1268,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
       autoState = *state;
     optional<pair<ViewId, int>> costObj;
     vector<string> requirements;
+    vector<string> infoLines;
     elem->visitRequirements(makeVisitor<void>(
         [&](const AttractionInfo& attraction) {
           int required = attraction.amountClaimed;
@@ -1280,25 +1291,26 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         [&](const ExponentialCost& cost) {
           auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.base.id);
           costObj = make_pair(resourceInfo.viewId, cost.base.value);
-          requirements.push_back("Cost doubles for every " + toString(cost.numToDoubleCost) + " "
+          infoLines.push_back("Cost doubles for every " + toString(cost.numToDoubleCost) + " "
               + c->getName().plural());
           if (cost.numFree > 0)
-            requirements.push_back("First " + toString(cost.numFree) + " " + c->getName().plural() + " are free.");
+            infoLines.push_back("First " + toString(cost.numFree) + " " + c->getName().plural() + " are free.");
         },
         [&](const Pregnancy&) {
           requirements.push_back("Requires a pregnant succubus");
         },
         [&](const RecruitmentInfo& info) {
-          if (auto col = info.findEnemy(getGame()))
-            requirements.push_back(col->getName().getFull() + " must be discovered and have recruits available.");
+          if (info.findEnemy(getGame()))
+            requirements.push_back("Ally must be discovered and have recruits available.");
           else
-            requirements.push_back("Can't recruit creature in this game.");
+            requirements.push_back("Recruit is not available in this game.");
         }
     ));
     if (auto limit = elem->getLimit())
-      requirements.push_back("Limited to " + toString(*limit) + " creatures.");
+      infoLines.push_back("Limited to " + toString(*limit) + " creatures.");
     info.allImmigration.push_back(ImmigrantDataInfo {
         requirements,
+        infoLines,
         costObj,
         c->getName().stack(),
         c->getViewObject().id(),
@@ -1341,6 +1353,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.libraryButtons = fillButtons(libraryInfo);
   fillMinions(info);
   fillImmigration(info);
+  fillImmigrationHelp(info);
   info.chosenCreature.reset();
   if (chosenCreature)
     if (Creature* c = getCreature(*chosenCreature)) {

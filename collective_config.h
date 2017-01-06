@@ -21,7 +21,6 @@
 #include "workshop_type.h"
 #include "cost_info.h"
 #include "position.h"
-#include "immigrant_info.h"
 
 enum class ItemClass;
 
@@ -109,7 +108,6 @@ class CollectiveConfig {
   static CollectiveConfig withImmigrants(double immigrantFrequency, int maxPopulation, const vector<ImmigrantInfo>&);
   static CollectiveConfig noImmigrants();
 
-  CollectiveConfig& allowRecruiting(int minPopulation);
   CollectiveConfig& setLeaderAsFighter();
   CollectiveConfig& setGhostSpawns(double prob, int number);
   CollectiveConfig& setGuardian(GuardianInfo);
@@ -130,7 +128,6 @@ class CollectiveConfig {
   int getNumGhostSpawns() const;
   int getImmigrantTimeout() const;
   double getGhostProb() const;
-  optional<int> getRecruitingMinPopulation() const;
   bool sleepOnlyAtNight() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
@@ -152,6 +149,8 @@ class CollectiveConfig {
   static int getManaForConquering(VillainType);
 
   SERIALIZATION_DECL(CollectiveConfig)
+  CollectiveConfig(const CollectiveConfig&);
+  ~CollectiveConfig();
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };
@@ -165,7 +164,6 @@ class CollectiveConfig {
   vector<PopulationIncrease> SERIAL(populationIncreases);
   vector<ImmigrantInfo> SERIAL(immigrantInfo);
   CollectiveType SERIAL(type);
-  optional<int> SERIAL(recruitingMinPopulation);
   bool SERIAL(leaderAsFighter) = false;
   int SERIAL(spawnGhosts) = 0;
   double SERIAL(ghostProb) = 0;

@@ -73,7 +73,6 @@ class CreatureAttributes {
   const SpellMap& getSpellMap() const;
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
   bool isBoulder() const;
-  int getRecruitmentCost() const;
   Skillset& getSkills();
   const Skillset& getSkills() const;
   ViewObject createViewObject() const;
@@ -128,7 +127,6 @@ class CreatureAttributes {
   bool SERIAL(boulder) = false;
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
-  int SERIAL(recruitmentCost) = 0;
   Skillset SERIAL(skills);
   HeapAllocated<SpellMap> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);

@@ -47,7 +47,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, body, innocent);
   serializeAll(ar, animal, cantEquip, courage);
   serializeAll(ar, carryAnything, boulder, noChase, isSpecial, skills, spells);
-  serializeAll(ar, permanentEffects, lastingEffects, minionTasks, attrIncrease, recruitmentCost);
+  serializeAll(ar, permanentEffects, lastingEffects, minionTasks, attrIncrease);
   serializeAll(ar, noAttackSound, maxExpFromCombat, creatureId);
 }
 
@@ -334,10 +334,6 @@ string CreatureAttributes::getRemainingString(LastingEffect effect, double time)
 
 bool CreatureAttributes::isBoulder() const {
   return boulder;
-}
-
-int CreatureAttributes::getRecruitmentCost() const {
-  return recruitmentCost;
 }
 
 Skillset& CreatureAttributes::getSkills() {

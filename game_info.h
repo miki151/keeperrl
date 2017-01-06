@@ -20,8 +20,7 @@ struct CreatureInfo {
   string HASH(stackName);
   int HASH(expLevel);
   double HASH(morale); 
-  optional<pair<ViewId, int>> HASH(cost);
-  HASH_ALL(viewId, uniqueId, name, stackName, expLevel, morale, cost);
+  HASH_ALL(viewId, uniqueId, name, stackName, expLevel, morale);
 };
 
 
@@ -133,6 +132,7 @@ class PlayerInfo {
 
 struct ImmigrantDataInfo {
   vector<string> HASH(requirements);
+  vector<string> HASH(info);
   optional<pair<ViewId, int>> HASH(cost);
   string HASH(name);
   ViewId HASH(viewId);
@@ -142,7 +142,7 @@ struct ImmigrantDataInfo {
   int HASH(id);
   enum AutoState { AUTO_REJECT, AUTO_ACCEPT};
   optional<AutoState> HASH(autoState);
-  HASH_ALL(requirements, name, viewId, expLevel, count, timeLeft, id, autoState, cost)
+  HASH_ALL(requirements, info, name, viewId, expLevel, count, timeLeft, id, autoState, cost)
 };
 
 class CollectiveInfo {

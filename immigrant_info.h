@@ -4,6 +4,7 @@
 #include "util.h"
 #include "cost_info.h"
 #include "minion_trait.h"
+#include "enemy_factory.h"
 
 using AttractionType = variant<FurnitureType, ItemIndex>;
 
@@ -32,11 +33,12 @@ class Collective;
 class Game;
 
 struct RecruitmentInfo {
-  EnemyId SERIAL(enemyId);
+  EnumSet<EnemyId> SERIAL(enemyId);
   int SERIAL(minPopulation);
   MinionTrait SERIAL(trait);
   Collective* findEnemy(Game*) const;
-  vector<Creature*> getRecruits(Game*, CreatureId) const;
+  vector<Creature*> getAvailableRecruits(Game*, CreatureId) const;
+  vector<Creature*> getAllRecruits(Game*, CreatureId) const;
   SERIALIZE_ALL(enemyId, minPopulation, trait)
 };
 

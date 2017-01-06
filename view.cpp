@@ -95,9 +95,7 @@ CreatureInfo::CreatureInfo(const Creature* c)
       name(c->getName().bare()),
       stackName(c->getName().stack()),
       expLevel((int)c->getAttributes().getVisibleExpLevel()),
-      morale(c->getMorale()),
-      cost({ViewId::GOLD, c->getAttributes().getRecruitmentCost()}){
-}
+      morale(c->getMorale()) {}
 
 string PlayerInfo::getFirstName() const {
   if (!firstName.empty())

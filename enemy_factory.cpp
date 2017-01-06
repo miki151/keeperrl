@@ -123,7 +123,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           CollectiveConfig::withImmigrants(0.003, 16, {
               ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER}).setFrequency(3),
               ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER}).setFrequency(1)
-            }).allowRecruiting(9));
+            }));
     case EnemyId::VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
@@ -390,7 +390,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::withImmigrants(0.002, 15, {
               ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER}).setFrequency(1),
-          }).allowRecruiting(2), none,
+          }), none,
           LevelConnection{LevelConnection::GNOMISH_MINES, get(EnemyId::DARK_ELVES_ENTRY)});
     case EnemyId::DARK_ELVES_ENTRY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -510,12 +510,11 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           c.race = "undead";
           c.tribe = TribeId::getMonster();
           c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants());
-    case EnemyId::FRIENDLY_CAVE: {
-      CreatureId creature = random.choose(CreatureId::OGRE, CreatureId::HARPY, CreatureId::ORC);
+    case EnemyId::OGRE_CAVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
             c.tribe = TribeId::getGreenskin();
-            c.creatures = CreatureFactory::singleType(c.tribe, creature);
+            c.creatures = CreatureFactory::singleType(c.tribe, CreatureId::OGRE);
             c.numCreatures = random.get(4, 8);
             c.location = new Location();
             c.buildingId = BuildingId::DUNGEON;
@@ -523,8 +522,22 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
           CollectiveConfig::withImmigrants(0.003, 10, {
-              ImmigrantInfo(creature, {MinionTrait::FIGHTER}).setFrequency(1),
-          }).allowRecruiting(4));
+              ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER}).setFrequency(1),
+          }));
+    case EnemyId::HARPY_CAVE: {
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::CAVE;
+            c.tribe = TribeId::getGreenskin();
+            c.creatures = CreatureFactory::singleType(c.tribe, CreatureId::HARPY);
+            c.numCreatures = random.get(4, 8);
+            c.location = new Location();
+            c.buildingId = BuildingId::DUNGEON;
+            c.closeToPlayer = true;
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
+            c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
+          CollectiveConfig::withImmigrants(0.003, 10, {
+              ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER}).setFrequency(1),
+          }));
       }
     case EnemyId::SOKOBAN_ENTRY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,

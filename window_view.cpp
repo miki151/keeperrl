@@ -820,13 +820,6 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPositi
   return returnQueue.pop();
 }
 
-optional<UniqueEntity<Creature>::Id> WindowView::chooseRecruit(const string& title, const string& warning,
-    pair<ViewId, int> budget, const vector<CreatureInfo>& creatures, ScrollPosition* scrollPos) {
-  SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawRecruitMenu(returnQueue, title, warning, budget, creatures,
-        scrollPos), Vec2(rightBarWidthCollective + 30, 80));
-}
-
 optional<UniqueEntity<Item>::Id> WindowView::chooseTradeItem(const string& title, pair<ViewId, int> budget,
     const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
   SyncQueue<optional<UniqueEntity<Item>::Id>> returnQueue;

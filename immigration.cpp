@@ -120,7 +120,7 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
           ret.push_back("Ally doesn't exist.");
         if (!collective->isKnownVillainLocation(col))
           ret.push_back("Ally hasn't been discovered.");
-        else if (info.getRecruits(collective->getGame(), immigrantInfo.getId(0)).empty())
+        else if (info.getAvailableRecruits(collective->getGame(), immigrantInfo.getId(0)).empty())
           ret.push_back(col->getName().getFull() + " don't have recruits available at this moment.");
       }
   );
@@ -164,7 +164,7 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
       [&](const RecruitmentInfo& info, double prob) {
         Collective* col = info.findEnemy(collective->getGame());
         if (!col || !collective->isKnownVillainLocation(col) ||
-            info.getRecruits(collective->getGame(), immigrants[group.immigrantIndex].getId(0)).empty())
+            info.getAvailableRecruits(collective->getGame(), immigrants[group.immigrantIndex].getId(0)).empty())
           ret *= prob;
       }
   );
@@ -395,9 +395,10 @@ Immigration::Available Immigration::Available::generate(Immigration* immigration
   ImmigrantInfo& info = immigration->immigrants[group.immigrantIndex];
   optional<Creatures> creatures;
   info.visitRequirements(makeDefaultVisitor(
-      [&](const RecruitmentInfo& info) {
-        if (Collective* col = info.findEnemy(immigration->collective->getGame()))
-          creatures = Creatures(makeVec<Creature*>(col->getCreatures(info.trait).at(0) ));
+      [&](const RecruitmentInfo& recruitmentInfo) {
+        auto recruits = recruitmentInfo.getAllRecruits(immigration->collective->getGame(), info.getId(0));
+        if (!recruits.empty())
+          creatures = getPrefix(recruits, 1);
       }));
   if (!creatures) {
     vector<PCreature> immigrants;

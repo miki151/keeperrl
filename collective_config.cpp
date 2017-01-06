@@ -30,7 +30,7 @@
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, immigrantFrequency, payoutTime, payoutMultiplier, maxPopulation, populationIncreases, immigrantInfo);
-  serializeAll(ar, type, recruitingMinPopulation, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo);
+  serializeAll(ar, type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo);
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -179,15 +179,6 @@ bool CollectiveConfig::bedsLimitImmigration() const {
 
 int CollectiveConfig::getMaxPopulation() const {
   return maxPopulation;
-}
-
-optional<int> CollectiveConfig::getRecruitingMinPopulation() const {
-  return recruitingMinPopulation;
-}
-
-CollectiveConfig& CollectiveConfig::allowRecruiting(int minPop) {
-  recruitingMinPopulation = minPop;
-  return *this;
 }
 
 const vector<ImmigrantInfo>& CollectiveConfig::getImmigrantInfo() const {
@@ -382,6 +373,11 @@ int CollectiveConfig::getManaForConquering(VillainType type) {
     case VillainType::LESSER: return 200;
     default: return 0;
   }
+}
+
+CollectiveConfig::CollectiveConfig(const CollectiveConfig&) = default;
+
+CollectiveConfig::~CollectiveConfig() {
 }
 
 const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {

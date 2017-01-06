@@ -116,18 +116,22 @@ ImmigrantInfo& ImmigrantInfo::setAutoTeam() {
   return *this;
 }
 
-vector<Creature*> RecruitmentInfo::getRecruits(Game* game, CreatureId id) const {
+vector<Creature*> RecruitmentInfo::getAllRecruits(Game* game, CreatureId id) const {
   vector<Creature*> ret;
-  if (Collective* col = findEnemy(game)) {
+  if (Collective* col = findEnemy(game))
     ret = filter(col->getCreatures(), [&](const Creature* c) { return c->getAttributes().getCreatureId() == id; });
-    ret = getPrefix(ret, max(0, (int)ret.size() - minPopulation));
-  }
   return ret;
+}
+
+vector<Creature*> RecruitmentInfo::getAvailableRecruits(Game* game, CreatureId id) const {
+  auto ret = getAllRecruits(game, id);
+  return getPrefix(ret, max(0, (int)ret.size() - minPopulation));
 }
 
 Collective* RecruitmentInfo::findEnemy(Game* game) const {
   for (Collective* col : game->getCollectives())
-    if (col->getEnemyId() == enemyId)
-      return col;
+    if (auto id = col->getEnemyId())
+      if (enemyId.contains(*id))
+        return col;
   return nullptr;
 }

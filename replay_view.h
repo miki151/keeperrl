@@ -78,11 +78,6 @@ class ReplayView : public View {
       return readValue<optional<int>>(LoggingToken::CHOOSE_ITEM);
     }
 
-    virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
-        pair<ViewId, int> budget, const vector<CreatureInfo>& c, ScrollPosition* scrollPos) override {
-      return readValue<optional<UniqueEntity<Creature>::Id>>(LoggingToken::CHOOSE_RECRUIT);
-    }
-
     virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
         const vector<ItemInfo>& c, ScrollPosition* scrollPos) override {
       return readValue<optional<UniqueEntity<Item>::Id>>(LoggingToken::CHOOSE_TRADE_ITEM);

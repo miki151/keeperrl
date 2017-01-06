@@ -76,8 +76,6 @@ class WindowView: public View {
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint) override;
   virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) override;
-  virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
-      pair<ViewId, int> budget, const vector<CreatureInfo>&, ScrollPosition* scrollPos) override;
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
       const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
   virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
