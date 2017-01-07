@@ -72,4 +72,6 @@ class Immigration {
   CostInfo calculateCost(int index, const ExponentialCost&) const;
   bool SERIAL(initialized) = false;
   void initializePersistent();
+  double SERIAL(nextImmigrantTime) = -1;
+  void resetImmigrantTime();
 };

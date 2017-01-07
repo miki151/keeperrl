@@ -54,7 +54,7 @@ int ModelBuilder::getThronePopulationIncrease() {
 
 static CollectiveConfig getKeeperConfig(bool fastImmigration) {
   return CollectiveConfig::keeper(
-      fastImmigration ? 0.1 : 0.007,
+      fastImmigration ? 10 : 140,
       500,
       2,
       10,

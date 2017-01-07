@@ -29,7 +29,7 @@
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, immigrantFrequency, payoutTime, payoutMultiplier, maxPopulation, populationIncreases, immigrantInfo);
+  serializeAll(ar, immigrantInterval, payoutTime, payoutMultiplier, maxPopulation, populationIncreases, immigrantInfo);
   serializeAll(ar, type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo);
 }
 
@@ -77,21 +77,21 @@ void CollectiveConfig::addBedRequirementToImmigrants() {
   }
 }
 
-CollectiveConfig::CollectiveConfig(double freq, int payoutT, double payoutM, const vector<ImmigrantInfo>& im,
+CollectiveConfig::CollectiveConfig(int interval, int payoutT, double payoutM, const vector<ImmigrantInfo>& im,
     CollectiveType t, int maxPop, vector<PopulationIncrease> popInc)
-    : immigrantFrequency(freq), payoutTime(payoutT), payoutMultiplier(payoutM),
+    : immigrantInterval(interval), payoutTime(payoutT), payoutMultiplier(payoutM),
     maxPopulation(maxPop), populationIncreases(popInc), immigrantInfo(im), type(t) {
   if (type == KEEPER)
     addBedRequirementToImmigrants();
 }
 
-CollectiveConfig CollectiveConfig::keeper(double freq, int payout, double payoutMult, int maxPopulation,
+CollectiveConfig CollectiveConfig::keeper(int immigrantInterval, int payout, double payoutMult, int maxPopulation,
     vector<PopulationIncrease> increases, const vector<ImmigrantInfo>& im) {
-  return CollectiveConfig(freq, payout, payoutMult, im, KEEPER, maxPopulation, increases);
+  return CollectiveConfig(immigrantInterval, payout, payoutMult, im, KEEPER, maxPopulation, increases);
 }
 
-CollectiveConfig CollectiveConfig::withImmigrants(double frequency, int maxPopulation, const vector<ImmigrantInfo>& im) {
-  return CollectiveConfig(frequency, 0, 0, im, VILLAGE, maxPopulation, {});
+CollectiveConfig CollectiveConfig::withImmigrants(int interval, int maxPopulation, const vector<ImmigrantInfo>& im) {
+  return CollectiveConfig(interval, 0, 0, im, VILLAGE, maxPopulation, {});
 }
 
 CollectiveConfig CollectiveConfig::noImmigrants() {
@@ -141,8 +141,8 @@ bool CollectiveConfig::hasImmigrantion(bool currentlyActiveModel) const {
   return type != KEEPER || currentlyActiveModel;
 }
 
-double CollectiveConfig::getImmigrantFrequency() const {
-  return immigrantFrequency;
+int CollectiveConfig::getImmigrantInterval() const {
+  return immigrantInterval;
 }
 
 int CollectiveConfig::getPayoutTime() const {

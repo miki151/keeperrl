@@ -17,7 +17,7 @@
 #include "game.h"
 #include "collective_name.h"
 
-SERIALIZE_DEF(Immigration, immigrants, available, minionAttraction, idCnt, collective, generated, candidateTimeout, initialized)
+SERIALIZE_DEF(Immigration, immigrants, available, minionAttraction, idCnt, collective, generated, candidateTimeout, initialized, nextImmigrantTime)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Immigration)
 
@@ -439,21 +439,29 @@ void Immigration::initializePersistent() {
     }
 }
 
+void Immigration::resetImmigrantTime() {
+  double interval = collective->getConfig().getImmigrantInterval();
+  nextImmigrantTime = interval * (Random.getDouble() + 1 + floor(nextImmigrantTime / interval));
+}
+
 void Immigration::update() {
   if (!initialized) {
     initialized = true;
     initializePersistent();
+    resetImmigrantTime();
   }
   for (auto elem : Iter(available))
     if (elem->second.isUnavailable())
       elem.markToErase();
-  if (Random.chance(collective->getConfig().getImmigrantFrequency())) {
+  if (nextImmigrantTime < collective->getGlobalTime()) {
     vector<Group> immigrantInfo;
     for (auto elem : Iter(immigrants))
       immigrantInfo.push_back(Group {elem.index(), Random.get(elem->getGroupSize())});
     vector<double> weights = transform2<double>(immigrantInfo,
         [&](const Group& group) { return getImmigrantChance(group);});
-    if (std::accumulate(weights.begin(), weights.end(), 0.0) > 0)
+    if (std::accumulate(weights.begin(), weights.end(), 0.0) > 0) {
       available.emplace(++idCnt, Available::generate(this, Random.choose(immigrantInfo, weights)));
+      resetImmigrantTime();
+    }
   }
 }

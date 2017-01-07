@@ -96,7 +96,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getAnt();
             c.race = "ants";
             c.buildingId = BuildingId::DUNGEON;),
-          CollectiveConfig::withImmigrants(0.002, 15, {
+          CollectiveConfig::withImmigrants(500, 15, {
             ImmigrantInfo(CreatureId::ANT_WORKER, {MinionTrait::FIGHTER}).setFrequency(1),
             ImmigrantInfo(CreatureId::ANT_SOLDIER, {MinionTrait::FIGHTER}).setFrequency(1)}),
           CONSTRUCT(VillageBehaviour,
@@ -120,7 +120,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.buildingId = BuildingId::BRICK;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
-          CollectiveConfig::withImmigrants(0.003, 16, {
+          CollectiveConfig::withImmigrants(300, 16, {
               ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER}).setFrequency(3),
               ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER}).setFrequency(1)
             }));
@@ -150,7 +150,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::BEAST_MUT);
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::castleOutside(c.tribe);),
-          CollectiveConfig::withImmigrants(0.003, 16, {
+          CollectiveConfig::withImmigrants(300, 16, {
               ImmigrantInfo(CreatureId::WARRIOR, {MinionTrait::FIGHTER}).setFrequency(1),
             }).setGhostSpawns(0.1, 6),
           CONSTRUCT(VillageBehaviour,
@@ -180,7 +180,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.shopFactory = ItemFactory::villageShop();
             c.furniture = FurnitureFactory::castleFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::castleOutside(c.tribe);),
-          CollectiveConfig::withImmigrants(0.003, 26, {
+          CollectiveConfig::withImmigrants(300, 26, {
               ImmigrantInfo(CreatureId::ARCHER, {MinionTrait::FIGHTER}).setFrequency(1),
               ImmigrantInfo(CreatureId::KNIGHT, {MinionTrait::FIGHTER}).setFrequency(1)
             }).setGhostSpawns(0.1, 6),
@@ -265,7 +265,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.shopFactory = ItemFactory::dwarfShop();
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
-          CollectiveConfig::withImmigrants(0.002, 15, {
+          CollectiveConfig::withImmigrants(500, 15, {
               ImmigrantInfo(CreatureId::DWARF, {MinionTrait::FIGHTER}).setFrequency(1),
             }).setGhostSpawns(0.1, 4),
           CONSTRUCT(VillageBehaviour,
@@ -293,7 +293,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);
             c.furniture = FurnitureFactory::roomFurniture(TribeId::getPest());),
-          CollectiveConfig::withImmigrants(0.002, 18, {
+          CollectiveConfig::withImmigrants(500, 18, {
               ImmigrantInfo(CreatureId::ELF_ARCHER, {MinionTrait::FIGHTER}).setFrequency(1),
             }).setGhostSpawns(0.1, 4),
           CONSTRUCT(VillageBehaviour,
@@ -340,7 +340,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getBandit();
             c.race = "bandits";
             c.buildingId = BuildingId::DUNGEON;),
-          CollectiveConfig::withImmigrants(0.001, 10, {
+          CollectiveConfig::withImmigrants(1000, 10, {
               ImmigrantInfo(CreatureId::BANDIT, {MinionTrait::FIGHTER}).setFrequency(1),
             }),
           CONSTRUCT(VillageBehaviour,
@@ -362,7 +362,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.shopFactory = ItemFactory::mushrooms();
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
-          CollectiveConfig::withImmigrants(0.007, 15, {
+          CollectiveConfig::withImmigrants(140, 15, {
               ImmigrantInfo(CreatureId::LIZARDMAN, {MinionTrait::FIGHTER}).setFrequency(1),
             }).setGhostSpawns(0.1, 4),
           CONSTRUCT(VillageBehaviour,
@@ -388,7 +388,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.buildingId = BuildingId::DUNGEON;
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
-          CollectiveConfig::withImmigrants(0.002, 15, {
+          CollectiveConfig::withImmigrants(500, 15, {
               ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER}).setFrequency(1),
           }), none,
           LevelConnection{LevelConnection::GNOMISH_MINES, get(EnemyId::DARK_ELVES_ENTRY)});
@@ -439,7 +439,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getMonster();
             c.race = "tree spirits";
             c.buildingId = BuildingId::WOOD;),
-          CollectiveConfig::withImmigrants(0.003, 15, {
+          CollectiveConfig::withImmigrants(300, 15, {
               ImmigrantInfo(CreatureId::ENT, {MinionTrait::FIGHTER}).setFrequency(1),
           }));
     case EnemyId::DRIADS:
@@ -451,7 +451,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getMonster();
             c.race = "driads";
             c.buildingId = BuildingId::WOOD;),
-          CollectiveConfig::withImmigrants(0.003, 15, {
+          CollectiveConfig::withImmigrants(300, 15, {
               ImmigrantInfo(CreatureId::DRIAD, {MinionTrait::FIGHTER}).setFrequency(1),
           }));
     case EnemyId::SHELOB:
@@ -521,7 +521,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.closeToPlayer = true;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
-          CollectiveConfig::withImmigrants(0.003, 10, {
+          CollectiveConfig::withImmigrants(300, 10, {
               ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER}).setFrequency(1),
           }));
     case EnemyId::HARPY_CAVE: {
@@ -535,7 +535,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.closeToPlayer = true;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
-          CollectiveConfig::withImmigrants(0.003, 10, {
+          CollectiveConfig::withImmigrants(300, 10, {
               ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER}).setFrequency(1),
           }));
       }
