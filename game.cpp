@@ -242,14 +242,18 @@ optional<Game::ExitInfo> Game::update(double timeDiff) {
       updateModel(models[v].get(), localTime[models[v].get()]);
     }
   localTime[currentModel] += timeDiff;
-  while (currentTime > lastTick + 1) {
-    lastTick += 1;
-    tick(lastTick);
+  while (!lastTick || currentTime > *lastTick + 1) {
+    if (!lastTick)
+      lastTick = currentTime;
+    else
+      *lastTick += 1;
+    tick(*lastTick);
   }
+  considerRealTimeRender();
   return updateModel(currentModel, localTime[currentModel]);
 }
 
-optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
+void Game::considerRealTimeRender() {
   auto absoluteTime = view->getTimeMilliAbsolute();
   if (!lastUpdate || absoluteTime - *lastUpdate > milliseconds{10}) {
     if (playerControl)
@@ -257,7 +261,10 @@ optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
     if (spectator)
       view->updateView(spectator.get(), false);
     lastUpdate = absoluteTime;
-  } 
+  }
+}
+
+optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
   do {
     if (spectator)
       while (1) {

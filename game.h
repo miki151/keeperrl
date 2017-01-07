@@ -123,7 +123,7 @@ class Game {
   double SERIAL(currentTime) = 0;
   optional<ExitInfo> exitInfo;
   Tribe::Map SERIAL(tribes);
-  double SERIAL(lastTick) = 0;
+  optional<double> SERIAL(lastTick);
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
   map<VillainType, vector<Collective*>> SERIAL(villainsByType);
@@ -145,6 +145,7 @@ class Game {
   set<int> SERIAL(turnEvents);
   bool SERIAL(noHighscores) = false;
   friend class GameListener;
+  void considerRealTimeRender();
 };
 
 

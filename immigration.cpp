@@ -349,7 +349,7 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
   ));
 }
 
-void Immigration::accept(int id) {
+void Immigration::accept(int id, bool withMessage) {
   if (!available.count(id))
     return;
   auto& candidate = available.at(id);
@@ -363,7 +363,8 @@ void Immigration::accept(int id) {
     return;
   if (immigrantInfo.isAutoTeam() && groupSize > 1)
     collective->getTeams().activate(collective->getTeams().createPersistent(creatures));
-  collective->addNewCreatureMessage(creatures);
+  if (withMessage)
+    collective->addNewCreatureMessage(creatures);
   for (int i : All(creatures)) {
     Creature* c = creatures[i];
     if (i == 0 && groupSize > 1) // group leader
@@ -435,7 +436,7 @@ void Immigration::initializePersistent() {
       available.emplace(++idCnt, Available::generate(this, Group{elem.index(), 1}));
       auto& elem = available.at(idCnt);
       for (int i : Range(elem.getInfo().getInitialRecruitment()))
-        accept(idCnt);
+        accept(idCnt, false);
     }
 }
 

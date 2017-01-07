@@ -1233,7 +1233,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   sort(info.immigration.begin(), info.immigration.end(),
       [](const ImmigrantDataInfo& i1, const ImmigrantDataInfo& i2) {
         return (i1.timeLeft && (!i2.timeLeft || *i1.timeLeft > *i2.timeLeft)) ||
-            (!i1.timeLeft && !i2.timeLeft && i1.id < i2.id);
+            (!i1.timeLeft && !i2.timeLeft && i1.id > i2.id);
       });
 }
 
