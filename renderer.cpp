@@ -115,7 +115,28 @@ Texture::~Texture() {
 
 static int totalTex = 0;
 
-optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* image) {
+// Some graphic cards need power of two sized textures, so we create a larger texture to contain the original one.
+SDL::SDL_Surface* Renderer::createPowerOfTwoSurface(SDL::SDL_Surface* image) {
+  int w = 1;
+  int h = 1;
+  while (w < image->w)
+    w *= 2;
+  while (h < image->h)
+    h *= 2;
+  auto ret = createSurface(w, h);
+  SDL::SDL_Rect dst {0, 0, image->w, image->h };
+  SDL_BlitSurface(image, nullptr, ret, &dst);
+  // fill the rest of the texture as well, which 'kind-of' solves the problem with repeating textures.
+  dst = {image->w, 0, 0, 0};
+  SDL_BlitSurface(image, nullptr, ret, &dst);
+  dst = {image->w, image->h, 0, 0};
+  SDL_BlitSurface(image, nullptr, ret, &dst);
+  dst = {0, image->h, 0, 0};
+  SDL_BlitSurface(image, nullptr, ret, &dst);
+  return ret;
+}
+
+optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* imageOrig) {
   if (!texId) {
     texId = 0;
     SDL::glGenTextures(1, &(*texId));
@@ -129,6 +150,7 @@ optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* image) {
   SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   checkOpenglError();
   int mode = GL_RGB;
+  auto image = Renderer::createPowerOfTwoSurface(imageOrig);
   if (image->format->BytesPerPixel == 4) {
     if (image->format->Rmask == 0x000000ff)
       mode = GL_RGBA;
@@ -146,10 +168,12 @@ optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* image) {
   SDL::glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
   checkOpenglError();
   SDL::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->w, image ->h, 0, mode, GL_UNSIGNED_BYTE, image->pixels);
+  size = Vec2(imageOrig->w, imageOrig->h);
+  realSize = Vec2(image->w, image->h);
+  SDL::SDL_FreeSurface(image);
   auto error = SDL::glGetError();
   if (error != GL_NO_ERROR)
     return error;
-  size = Vec2(image->w, image->h);
   return none;
 }
 
@@ -180,6 +204,7 @@ Texture::Texture(Texture&& tex) {
 
 Texture& Texture::operator = (Texture&& tex) {
   size = tex.size;
+  realSize = tex.realSize;
   texId = tex.texId;
   path = tex.path;
   tex.texId = none;
@@ -202,7 +227,7 @@ const Vec2& Texture::getSize() const {
 }
 
 void Texture::addTexCoord(int x, int y) const {
-  SDL::glTexCoord2f((float)x / size.x, (float)y / size.y);
+  SDL::glTexCoord2f((float)x / realSize.x, (float)y / realSize.y);
 }
 
 Texture::Texture() {
