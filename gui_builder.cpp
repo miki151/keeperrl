@@ -494,10 +494,10 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
   auto lines = gui.getListBuilder(legendLineHeight);
   if (info.autoState)
     switch (*info.autoState) {
-      case ImmigrantDataInfo::AUTO_ACCEPT:
+      case ImmigrantAutoState::AUTO_ACCEPT:
         lines.addElem(gui.label("(Immigrant will be accepted automatically)", colors[ColorId::GREEN]));
         break;
-      case ImmigrantDataInfo::AUTO_REJECT:
+      case ImmigrantAutoState::AUTO_REJECT:
         lines.addElem(gui.label("(Immigrant will be rejected automatically)", colors[ColorId::RED]));
         break;
     }
@@ -520,9 +520,8 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
   return gui.miniWindow(gui.margins(lines.buildVerticalList(), 15));
 }
 
-int GuiBuilder::getImmigrantAnimationOffset(int id) {
-  const auto firstTime = getMaybe(*firstImmigrantAppearance, id);
-  const milliseconds delay = clock->getRealMillis() - (firstTime ? *firstTime : milliseconds{0});
+int GuiBuilder::getImmigrantAnimationOffset(milliseconds initTime) {
+  const milliseconds delay = clock->getRealMillis() - initTime;
   const milliseconds fallingTime {1000};
   const int fallHeight = 2000;
   if (delay < fallingTime)
@@ -536,21 +535,6 @@ int GuiBuilder::getImmigrationBarWidth() const {
 }
 
 SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
-  if (!firstImmigrantAppearance) {
-    // If the map is not present, initialize and fill it with current immigrant data
-    // so that they won't get animated.
-    firstImmigrantAppearance.emplace();
-    for (auto& elem : info.immigration)
-      firstImmigrantAppearance->insert({elem.id, milliseconds{0}});
-  } else {
-    // Otherwise remove keys from the map that aren't present anymore.
-    unordered_set<int> exist;
-    for (auto& elem : info.immigration)
-      exist.insert(elem.id);
-    for (auto elem : Iter(*firstImmigrantAppearance))
-      if (!exist.count(elem->first))
-        elem.markToErase();
-  }
   const int elemWidth = getImmigrationBarWidth();
   auto makeHighlight = [=] (Color c) { return gui.margins(gui.rectangle(c), 4); };
   auto lines = gui.getListBuilder(elemWidth);
@@ -566,7 +550,6 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
   };
   for (int i : All(info.immigration)) {
     auto& elem = info.immigration[i];
-    firstImmigrantAppearance->insert({elem.id, clock->getRealMillis()});
     SGuiElem button;
     if (elem.requirements.empty())
       button = gui.stack(makeVec<SGuiElem>(
@@ -579,7 +562,8 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
           gui.sprite(GuiFactory::TexId::IMMIGRANT2_BG, GuiFactory::Alignment::CENTER),
           cache->get(getRejectButton, THIS_LINE, elem.id)
       ));
-    lines.addElem(gui.translate([=]() { return Vec2(0, -getImmigrantAnimationOffset(elem.id));}, gui.stack(
+    auto initTime = elem.generatedTime;
+    lines.addElem(gui.translate([=]() { return initTime ? Vec2(0, -getImmigrantAnimationOffset(*initTime)) : Vec2(0, 0);}, gui.stack(
         std::move(button),
         gui.tooltip2(drawImmigrantInfo(elem), [](const Rectangle& r) { return r.topRight();}),
         gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
@@ -618,15 +602,16 @@ SGuiElem GuiBuilder::drawImmigrationHelp(const CollectiveInfo& info) {
     auto icon = gui.viewObject(elem.viewId, iconScale);
     if (elem.autoState)
       switch (*elem.autoState) {
-        case ImmigrantDataInfo::AUTO_ACCEPT:
+        case ImmigrantAutoState::AUTO_ACCEPT:
           icon = gui.stack(std::move(icon), gui.viewObject(ViewId::ACCEPT_IMMIGRANT, iconScale));
           break;
-        case ImmigrantDataInfo::AUTO_REJECT:
+        case ImmigrantAutoState::AUTO_REJECT:
           icon = gui.stack(std::move(icon), gui.viewObject(ViewId::REJECT_IMMIGRANT, iconScale));
           break;
       }
     line.addElem(gui.stack(makeVec<SGuiElem>(
         gui.button(getButtonCallback({UserInputId::IMMIGRANT_AUTO_ACCEPT, elem.id})),
+        gui.buttonRightClick(getButtonCallback({UserInputId::IMMIGRANT_AUTO_REJECT, elem.id})),
         gui.tooltip2(drawImmigrantInfo(elem), [](const Rectangle& r) { return r.bottomLeft();}),
         gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
             gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
@@ -1469,6 +1454,7 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info) {
 void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
   switch (info.infoType) {
     case GameInfo::InfoType::BAND:
+      //ret.push_back({drawImmigrationOverlay(info.collectiveInfo), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,

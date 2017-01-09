@@ -81,7 +81,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
   serializeAll(ar, visibilityMap);
-  serializeAll(ar, messageHistory, eventProxy, immigrantAutoState);
+  serializeAll(ar, messageHistory, eventProxy);
 }
 
 SERIALIZABLE(PlayerControl);
@@ -1192,12 +1192,13 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   info.immigration.clear();
   auto& immigration = getCollective()->getImmigration();
   for (auto& elem : immigration.getAvailable()) {
-    int count = elem.second.get().getCreatures().size();
+    const auto& candidate = elem.second.get();
+    const int count = candidate.getCreatures().size();
     optional<int> timeRemaining;
-    if (auto time = elem.second.get().getEndTime())
+    if (auto time = candidate.getEndTime())
       timeRemaining = (int)(*time - getGame()->getGlobalTime());
     vector<string> infoLines;
-    elem.second.get().getInfo().visitRequirements(makeDefaultVisitor(
+    candidate.getInfo().visitRequirements(makeDefaultVisitor(
         [&](const Pregnancy&) {
           optional<int> maxT;
           for (Creature* c : getCollective()->getCreatures())
@@ -1210,24 +1211,26 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         },
         [&](const RecruitmentInfo& info) {
           infoLines.push_back(
-              toString(info.getAvailableRecruits(getGame(), elem.second.get().getInfo().getId(0)).size()) +
+              toString(info.getAvailableRecruits(getGame(), candidate.getInfo().getId(0)).size()) +
               " recruits available.");
         }
     ));
-    Creature* c = elem.second.get().getCreatures()[0];
+    Creature* c = candidate.getCreatures()[0];
     string name = c->getName().multiple(count);
     if (auto& s = c->getName().stackOnly())
       name += " (" + *s + ")";
     info.immigration.push_back(ImmigrantDataInfo {
-        immigration.getMissingRequirements(elem.second.get()),
+        immigration.getMissingRequirements(candidate),
         infoLines,
-        getCostObj(elem.second.get().getCost()),
+        getCostObj(candidate.getCost()),
         name,
         c->getViewObject().id(),
         Range::singleElem((int) c->getAttributes().getVisibleExpLevel()),
         count,
         timeRemaining,
-        elem.first
+        elem.first,
+        none,
+        candidate.getCreatedTime()
     });
   }
   sort(info.immigration.begin(), info.immigration.end(),
@@ -1263,9 +1266,6 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   for (auto elem : Iter(getCollective()->getConfig().getImmigrantInfo())) {
     auto creatureId = elem->getId(0);
     Creature* c = getStats(creatureId).creature.get();
-    optional<ImmigrantDataInfo::AutoState> autoState;
-    if (auto state = getMaybe(immigrantAutoState, elem.index()))
-      autoState = *state;
     optional<pair<ViewId, int>> costObj;
     vector<string> requirements;
     vector<string> infoLines;
@@ -1318,7 +1318,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         0,
         none,
         elem.index(),
-        autoState
+        getCollective()->getImmigration().getAutoState(elem.index())
     });
   }
 }
@@ -2113,21 +2113,20 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::IMMIGRANT_AUTO_ACCEPT: {
         int id = input.get<int>();
-        if (!getCollective()->getConfig().getImmigrantInfo()[id].isPersistent()) {
-          if (auto state = getMaybe(immigrantAutoState, id))
-            switch (*state) {
-              case ImmigrantDataInfo::AUTO_ACCEPT:
-                immigrantAutoState[id] = ImmigrantDataInfo::AUTO_REJECT;
-                break;
-              case ImmigrantDataInfo::AUTO_REJECT:
-                immigrantAutoState.erase(id);
-                break;
-            }
-          else
-            immigrantAutoState[id] = ImmigrantDataInfo::AUTO_ACCEPT;
+        if (getCollective()->getImmigration().getAutoState(id) == ImmigrantAutoState::AUTO_ACCEPT)
+          getCollective()->getImmigration().setAutoState(id, none);
+        else
+          getCollective()->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_ACCEPT);
         }
         break;
-      }
+    case UserInputId::IMMIGRANT_AUTO_REJECT: {
+        int id = input.get<int>();
+        if (getCollective()->getImmigration().getAutoState(id) == ImmigrantAutoState::AUTO_REJECT)
+          getCollective()->getImmigration().setAutoState(id, none);
+        else
+          getCollective()->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_REJECT);
+        }
+        break;
     case UserInputId::RECT_SELECTION: {
         auto& info = input.get<BuildingInfo>();
         if (canSelectRectangle(getBuildInfo()[info.building])) {
@@ -2165,6 +2164,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
               handlePillage(village);
               break;
           }
+        break;
     case UserInputId::PAY_RANSOM:
         handleRansom(true);
         break;

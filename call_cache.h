@@ -42,7 +42,7 @@ class CallCache {
   }
 
   optional<Value&> getValue(Key key) {
-    if (auto elem = getMaybe(cache, key)) {
+    if (auto elem = getReferenceMaybe(cache, key)) {
       lastUsed.erase(key);
       lastUsed.insert(key, ++cnt);
       return *elem;

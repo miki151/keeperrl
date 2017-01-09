@@ -257,8 +257,7 @@ class GuiBuilder {
   SDL::SDL_KeyboardEvent getHotkeyEvent(char);
   shared_ptr<MapGui> mapGui = nullptr;
   vector<SGuiElem> getSettingsButtons();
-  optional<map<int, milliseconds>> firstImmigrantAppearance;
-  int getImmigrantAnimationOffset(int id);
+  int getImmigrantAnimationOffset(std::chrono::milliseconds initTime);
   HeapAllocated<CallCache<SGuiElem>> cache;
 };
 

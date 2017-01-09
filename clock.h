@@ -6,7 +6,7 @@ class Clock {
   void pause();
   void cont();
   bool isPaused();
-  milliseconds getRealMillis();
+  static milliseconds getRealMillis();
 
   private:
   steady_clock::time_point pausedTime;

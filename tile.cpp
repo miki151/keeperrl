@@ -577,8 +577,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::SQUARE_HIGHLIGHT, sprite("square_highlight"));
     Tile::addTile(ViewId::ROUND_SHADOW, sprite("round_shadow"));
     Tile::addTile(ViewId::CAMPAIGN_DEFEATED, sprite("campaign_defeated"));
-    Tile::addTile(ViewId::ACCEPT_IMMIGRANT, symbol(u8"✓", ColorId::GREEN));
-    Tile::addTile(ViewId::REJECT_IMMIGRANT, symbol(u8"X", ColorId::RED));
+    Tile::addTile(ViewId::ACCEPT_IMMIGRANT, symbol(u8"✓", ColorId::GREEN, true));
+    Tile::addTile(ViewId::REJECT_IMMIGRANT, symbol(u8"✘", ColorId::RED, true));
     Tile::addTile(ViewId::FOG_OF_WAR_CORNER, sprite("fogofwar")
         .addConnection({Dir::NE}, byName("fogofwarcornne"))
         .addConnection({Dir::NW}, byName("fogofwarcornnw"))
@@ -882,8 +882,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::ROUND_SHADOW, symbol(u8" ", ColorId::WHITE));
     Tile::addSymbol(ViewId::CAMPAIGN_DEFEATED, symbol(u8"X", ColorId::RED));
     Tile::addSymbol(ViewId::FOG_OF_WAR_CORNER, symbol(u8" ", ColorId::WHITE));
-    Tile::addSymbol(ViewId::ACCEPT_IMMIGRANT, symbol(u8"✓", ColorId::GREEN));
-    Tile::addSymbol(ViewId::REJECT_IMMIGRANT, symbol(u8"X", ColorId::RED));
+    Tile::addSymbol(ViewId::ACCEPT_IMMIGRANT, symbol(u8"✓", ColorId::GREEN, true));
+    Tile::addSymbol(ViewId::REJECT_IMMIGRANT, symbol(u8"✘", ColorId::RED, true));
     Tile::addSymbol(ViewId::SPECIAL_BLBN, symbol(u8"B", ColorId::PURPLE));
     Tile::addSymbol(ViewId::SPECIAL_BLBW, symbol(u8"B", ColorId::LIGHT_RED));
     Tile::addSymbol(ViewId::SPECIAL_BLGN, symbol(u8"B", ColorId::LIGHT_GRAY));

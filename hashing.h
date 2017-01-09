@@ -56,6 +56,11 @@ inline size_t combineHash() {
   return 0x9e3779b9;
 }
 
+template<>
+inline size_t combineHash(const milliseconds& m) {
+  return m.count();
+}
+
 template <typename T, typename U>
 size_t combineHash(const pair<T, U>& arg) {
   return combineHash(arg.first, arg.second);

@@ -16,8 +16,9 @@
 #include "level.h"
 #include "game.h"
 #include "collective_name.h"
+#include "clock.h"
 
-SERIALIZE_DEF(Immigration, immigrants, available, minionAttraction, idCnt, collective, generated, candidateTimeout, initialized, nextImmigrantTime)
+SERIALIZE_DEF(Immigration, available, minionAttraction, idCnt, collective, generated, candidateTimeout, initialized, nextImmigrantTime, autoState)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Immigration)
 
@@ -45,7 +46,11 @@ int Immigration::getAttractionValue(const AttractionType& attraction) const {
         },
         [&](ItemIndex index) {
           return collective->getNumItems(index, false);
-        }));
+  }));
+}
+
+const vector<ImmigrantInfo>& Immigration::getImmigrants() const {
+  return collective->getConfig().getImmigrantInfo();
 }
 
 static void visitAttraction(const Immigration& immigration, const AttractionInfo& attraction,
@@ -72,9 +77,20 @@ vector<string> Immigration::getMissingRequirements(const Available& available) c
   return ret;
 }
 
+void Immigration::setAutoState(int index, optional<ImmigrantAutoState> s) {
+  if (!s)
+    autoState.erase(index);
+  else
+    autoState[index] = *s;
+}
+
+optional<ImmigrantAutoState> Immigration::getAutoState(int index) const {
+  return getValueMaybe(autoState, index);
+}
+
 vector<string> Immigration::getMissingRequirements(const Group& group) const {
   vector<string> ret;
-  auto& immigrantInfo = immigrants[group.immigrantIndex];
+  auto& immigrantInfo = getImmigrants()[group.immigrantIndex];
   auto visitor = makeVisitor<void>(
       [&](const AttractionInfo& attraction) {
         return visitAttraction(*this, attraction,
@@ -164,11 +180,11 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
       [&](const RecruitmentInfo& info, double prob) {
         Collective* col = info.findEnemy(collective->getGame());
         if (!col || !collective->isKnownVillainLocation(col) ||
-            info.getAvailableRecruits(collective->getGame(), immigrants[group.immigrantIndex].getId(0)).empty())
+            info.getAvailableRecruits(collective->getGame(), getImmigrants()[group.immigrantIndex].getId(0)).empty())
           ret *= prob;
       }
   );
-  immigrants[group.immigrantIndex].visitRequirementsAndProb(visitor);
+  getImmigrants()[group.immigrantIndex].visitRequirementsAndProb(visitor);
   return ret;
 }
 
@@ -193,7 +209,7 @@ void Immigration::occupyRequirements(const Creature* c, int index) {
       },
       [&](const RecruitmentInfo&) {}
   );
-  immigrants[index].visitRequirements(visitor);
+  getImmigrants()[index].visitRequirements(visitor);
 }
 
 void Immigration::occupyAttraction(const Creature* c, const AttractionInfo& attraction) {
@@ -214,7 +230,7 @@ void Immigration::occupyAttraction(const Creature* c, const AttractionInfo& attr
 }
 
 double Immigration::getImmigrantChance(const Group& group) const {
-  auto& info = immigrants[group.immigrantIndex];
+  auto& info = getImmigrants()[group.immigrantIndex];
   if (info.isPersistent())
     return 0.0;
   else
@@ -222,14 +238,14 @@ double Immigration::getImmigrantChance(const Group& group) const {
 }
 
 Immigration::Immigration(Collective* c)
-    : immigrants(c->getConfig().getImmigrantInfo()), collective(c),
-      candidateTimeout(c->getConfig().getImmigrantTimeout()) {
+    : collective(c), candidateTimeout(c->getConfig().getImmigrantTimeout()) {
 }
 
 map<int, std::reference_wrapper<const Immigration::Available>> Immigration::getAvailable() const {
   map<int, std::reference_wrapper<const Immigration::Available>> ret;
   for (auto& elem : available)
     if (!elem.second.isUnavailable() &&
+        getValueMaybe(autoState, elem.second.immigrantIndex) != ImmigrantAutoState::AUTO_REJECT &&
         getRequirementMultiplier({elem.second.immigrantIndex, (int)elem.second.getCreatures().size()}) > 0)
       ret.emplace(elem.first, std::cref(elem.second));
   return ret;
@@ -287,7 +303,7 @@ vector<Position> Immigration::Available::getSpawnPositions() const {
 }
 
 const ImmigrantInfo& Immigration::Available::getInfo() const {
-  return immigration->immigrants[immigrantIndex];
+  return immigration->getImmigrants()[immigrantIndex];
 }
 
 optional<double> Immigration::Available::getEndTime() const {
@@ -313,7 +329,7 @@ CostInfo Immigration::calculateCost(int index, const ExponentialCost& cost) cons
   for (Creature* c : collective->getCreatures())
     existing.insert(c);
   int numType = 0;
-  if (auto gen = getMaybe(generated, index))
+  if (auto gen = getReferenceMaybe(generated, index))
     for (Creature* c : *gen)
       if (existing.contains(c))
         ++numType;
@@ -353,7 +369,7 @@ void Immigration::accept(int id, bool withMessage) {
   if (!available.count(id))
     return;
   auto& candidate = available.at(id);
-  auto& immigrantInfo = immigrants[candidate.immigrantIndex];
+  auto& immigrantInfo = getImmigrants()[candidate.immigrantIndex];
   if (!getMissingRequirements(candidate).empty())
     return;
   vector<Creature*> creatures = candidate.getCreatures();
@@ -380,7 +396,7 @@ void Immigration::accept(int id, bool withMessage) {
 }
 
 void Immigration::reject(int id) {
-  if (auto immigrant = getMaybe(available, id))
+  if (auto immigrant = getReferenceMaybe(available, id))
     if (!immigrant->getInfo().isPersistent())
       immigrant->endTime = -1;
 }
@@ -389,11 +405,11 @@ SERIALIZE_DEF(Immigration::Available, creatures, immigrantIndex, endTime, immigr
 SERIALIZATION_CONSTRUCTOR_IMPL2(Immigration::Available, Available)
 
 Immigration::Available Immigration::Available::generate(Immigration* immigration, int index) {
-  return generate(immigration, Group {index, Random.get(immigration->immigrants[index].getGroupSize()) });
+  return generate(immigration, Group {index, Random.get(immigration->getImmigrants()[index].getGroupSize()) });
 }
 
 Immigration::Available Immigration::Available::generate(Immigration* immigration, const Group& group) {
-  ImmigrantInfo& info = immigration->immigrants[group.immigrantIndex];
+  const ImmigrantInfo& info = immigration->getImmigrants()[group.immigrantIndex];
   optional<Creatures> creatures;
   info.visitRequirements(makeDefaultVisitor(
       [&](const RecruitmentInfo& recruitmentInfo) {
@@ -430,8 +446,12 @@ bool Immigration::Available::isUnavailable() const {
   return creatures.empty() || (endTime && endTime < immigration->collective->getGame()->getGlobalTime());
 }
 
+optional<std::chrono::milliseconds> Immigration::Available::getCreatedTime() const {
+  return createdTime;
+}
+
 void Immigration::initializePersistent() {
-  for (auto elem : Iter(immigrants))
+  for (auto elem : Iter(getImmigrants()))
     if (elem->isPersistent()) {
       available.emplace(++idCnt, Available::generate(this, Group{elem.index(), 1}));
       auto& elem = available.at(idCnt);
@@ -451,17 +471,22 @@ void Immigration::update() {
     initializePersistent();
     resetImmigrantTime();
   }
-  for (auto elem : Iter(available))
-    if (elem->second.isUnavailable())
+  for (auto elem : Iter(available)) {
+    if (getValueMaybe(autoState, elem->second.immigrantIndex) == ImmigrantAutoState::AUTO_ACCEPT)
+      accept(elem->first);
+    if (elem->second.isUnavailable() && !elem->second.getInfo().isPersistent())
       elem.markToErase();
+  }
   if (nextImmigrantTime < collective->getGlobalTime()) {
     vector<Group> immigrantInfo;
-    for (auto elem : Iter(immigrants))
+    for (auto elem : Iter(getImmigrants()))
       immigrantInfo.push_back(Group {elem.index(), Random.get(elem->getGroupSize())});
     vector<double> weights = transform2<double>(immigrantInfo,
         [&](const Group& group) { return getImmigrantChance(group);});
     if (std::accumulate(weights.begin(), weights.end(), 0.0) > 0) {
-      available.emplace(++idCnt, Available::generate(this, Random.choose(immigrantInfo, weights)));
+      ++idCnt;
+      available.emplace(idCnt, Available::generate(this, Random.choose(immigrantInfo, weights)));
+      available[idCnt].createdTime = Clock::getRealMillis();
       resetImmigrantTime();
     }
   }

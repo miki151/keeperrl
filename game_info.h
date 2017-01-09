@@ -7,6 +7,7 @@
 #include "player_message.h"
 #include "experience_type.h"
 #include "entity_set.h"
+#include "immigrant_auto_state.h"
 
 enum class SpellId;
 
@@ -141,8 +142,9 @@ struct ImmigrantDataInfo {
   optional<int> HASH(timeLeft);
   int HASH(id);
   enum AutoState { AUTO_REJECT, AUTO_ACCEPT};
-  optional<AutoState> HASH(autoState);
-  HASH_ALL(requirements, info, name, viewId, expLevel, count, timeLeft, id, autoState, cost)
+  optional<ImmigrantAutoState> HASH(autoState);
+  optional<milliseconds> HASH(generatedTime);
+  HASH_ALL(requirements, info, name, viewId, expLevel, count, timeLeft, id, autoState, cost, generatedTime)
 };
 
 class CollectiveInfo {

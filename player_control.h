@@ -235,6 +235,5 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool firstRender = true;
   bool isNight = true;
   optional<UniqueEntity<Creature>::Id> draggedCreature;
-  map<int, ImmigrantDataInfo::AutoState> SERIAL(immigrantAutoState);
 };
 

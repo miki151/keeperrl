@@ -5,6 +5,7 @@
 #include "entity_map.h"
 #include "collective_config.h"
 #include "immigrant_info.h"
+#include "immigrant_auto_state.h"
 
 class Collective;
 struct AttractionInfo;
@@ -26,6 +27,7 @@ class Immigration {
     optional<CostInfo> getCost() const;
     const ImmigrantInfo& getInfo() const;
     bool isUnavailable() const;
+    optional<milliseconds> getCreatedTime() const;
 
     SERIALIZATION_DECL(Available)
 
@@ -41,6 +43,7 @@ class Immigration {
     int SERIAL(immigrantIndex);
     optional<double> SERIAL(endTime);
     Immigration* SERIAL(immigration);
+    optional<milliseconds> createdTime;
   };
 
   map<int, std::reference_wrapper<const Available>> getAvailable() const;
@@ -49,13 +52,16 @@ class Immigration {
   void reject(int id);
   vector<string> getMissingRequirements(const Available&) const;
 
+  void setAutoState(int index, optional<ImmigrantAutoState>);
+  optional<ImmigrantAutoState> getAutoState(int index) const;
+
   SERIALIZATION_DECL(Immigration)
 
   int getAttractionOccupation(const AttractionType& attraction) const;
   int getAttractionValue(const AttractionType& attraction) const;
 
   private:
-  vector<ImmigrantInfo> SERIAL(immigrants);
+  const vector<ImmigrantInfo>& getImmigrants() const;
   EntityMap<Creature, map<AttractionType, int>> SERIAL(minionAttraction);
   map<int, Available> SERIAL(available);
   Collective* SERIAL(collective);
@@ -74,4 +80,5 @@ class Immigration {
   void initializePersistent();
   double SERIAL(nextImmigrantTime) = -1;
   void resetImmigrantTime();
+  map<int, ImmigrantAutoState> SERIAL(autoState);
 };
