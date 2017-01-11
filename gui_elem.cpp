@@ -35,8 +35,10 @@ Rectangle GuiElem::getBounds() {
 }
 
 void GuiElem::setBounds(Rectangle b) {
-  bounds = b;
-  onRefreshBounds();
+  if (bounds != b) {
+    bounds = b;
+    onRefreshBounds();
+  }
 }
 
 void GuiElem::setPreferredBounds(Vec2 origin) {
@@ -1085,14 +1087,10 @@ class VerticalList : public ElemList {
   public:
   using ElemList::ElemList;
 
-  void renderPart(Renderer& r, int scrollPos) {
-    int totHeight = 0;
-    for (int i : Range(scrollPos, heights.size())) {
-      if (totHeight + elems[i]->getBounds().height() > getBounds().height())
-        break;
-      elems[i]->render(r);
-      totHeight += elems[i]->getBounds().height();
-    }
+  virtual void renderPart(Renderer& r, Rectangle rect) override {
+    for (int i : All(elems))
+      if (elems[i]->getBounds().intersects(rect))
+        elems[i]->render(r);
   }
 
   virtual Rectangle getElemBounds(int num) override {
@@ -2081,6 +2079,11 @@ class ScrollBar : public GuiLayout {
     return Rectangle(center - buttonSize / 2, center + buttonSize / 2);
   }
 
+  virtual void render(Renderer& r) override {
+    onRefreshBounds();
+    GuiLayout::render(r);
+  }
+
   double calcPos(int mouseHeight) {
     return max(0.0, min(1.0, 
           double(mouseHeight - getBounds().top() - vMargin - buttonSize.y / 2)
@@ -2174,13 +2177,11 @@ class Scrollable : public GuiElem {
         min<double>(scrollPos->get(clock->getRealMillis()), *content->getPreferredHeight() - getBounds().height() / 2));
   }
 
-  void onRefreshBounds() override {
-    content->setBounds(getBounds().translate(Vec2(0, -getScrollPos() + getBounds().height() / 2)));
-  }
-
   virtual void render(Renderer& r) override {
-    r.setScissor(Rectangle(0, getBounds().top(), r.getSize().x, getBounds().bottom()));
-    content->render(r);
+    Rectangle visible(0, getBounds().top(), r.getSize().x, getBounds().bottom());
+    r.setScissor(visible);
+    content->setBounds(getBounds().translate(Vec2(0, -getScrollPos() + getBounds().height() / 2)));
+    content->renderPart(r, visible);
     r.setScissor(none);
   }
 
