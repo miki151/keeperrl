@@ -1542,8 +1542,23 @@ class DisjointSets {
 };
 
 template <typename ReturnType, typename... Lambdas>
-struct LambdaVisitor : public boost::static_visitor<ReturnType>, public Lambdas... {
-  LambdaVisitor(Lambdas... lambdas) : Lambdas(lambdas)... {}
+struct LambdaVisitor;
+
+template <typename ReturnType, typename Lambda1, typename... Lambdas>
+struct LambdaVisitor< ReturnType, Lambda1 , Lambdas...> : public Lambda1, public LambdaVisitor<ReturnType, Lambdas...> {
+    using Lambda1::operator();
+    using LambdaVisitor<ReturnType, Lambdas...>::operator();
+    LambdaVisitor(Lambda1 l1, Lambdas... lambdas)
+      : Lambda1(l1), LambdaVisitor<ReturnType, Lambdas...> (lambdas...)
+    {}
+};
+
+template <typename ReturnType, typename Lambda1>
+struct LambdaVisitor<ReturnType, Lambda1> : public boost::static_visitor<ReturnType>, public Lambda1 {
+    using Lambda1::operator();
+    LambdaVisitor(Lambda1 l1)
+      : boost::static_visitor<ReturnType>(), Lambda1(l1)
+    {}
 };
 
 template <typename ReturnType, typename... Lambdas>
