@@ -137,7 +137,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           .setFrequency(0.1),
       ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
           .setFrequency(0.1)
-          .addRequirement(AttractionInfo{2, FurnitureType::TRAINING_IRON}),
+          .addRequirement(0.1, AttractionInfo{2, FurnitureType::TRAINING_IRON}),
       ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
           .addRequirement(0.0, RecruitmentInfo{{EnemyId::DARK_ELVES}, 3, MinionTrait::FIGHTER})
           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100)),
