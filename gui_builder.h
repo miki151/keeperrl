@@ -22,6 +22,7 @@
 #include "user_input.h"
 #include "clock.h"
 #include "scroll_position.h"
+#include "fps_counter.h"
 
 class Clock;
 class MinionAction;
@@ -217,19 +218,9 @@ class GuiBuilder {
   const char* getGameSpeedName(GameSpeed) const;
   const char* getCurrentGameSpeedName() const;
 
-  class FpsCounter {
-    public:
-    int getSec();
-
-    void addTick();
-
-    int getFps();
-
-    int lastFps = 0;
-    int curSec = -1;
-    int curFps = 0;
-    Clock clock;
-  } fpsCounter, upsCounter;
+  FpsCounter fpsCounter, upsCounter;
+  enum class CounterMode { FPS, LAT, SMOD };
+  CounterMode counterMode = CounterMode::FPS;
 
   SGuiElem drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab);
   SGuiElem getButtonLine(CollectiveInfo::Button, int num, CollectiveTab);

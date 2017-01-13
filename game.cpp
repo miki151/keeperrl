@@ -233,6 +233,7 @@ void Game::doneRetirement() {
 }
 
 optional<Game::ExitInfo> Game::update(double timeDiff) {
+  ScopeTimer timer("Game::update timer");
   currentTime += timeDiff;
   Model* currentModel = getCurrentModel();
   // Give every model a couple of turns so that things like shopkeepers can initialize.

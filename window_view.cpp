@@ -541,6 +541,7 @@ void WindowView::updateMinimap(const CreatureView* creature) {
 }
 
 void WindowView::updateView(CreatureView* view, bool noRefresh) {
+  ScopeTimer timer("UpdateView timer");
   if (!wasRendered && currentThreadId() != renderThreadId)
     return;
   GameInfo newInfo;
@@ -598,6 +599,7 @@ void WindowView::animation(Vec2 pos, AnimationId id) {
 }
 
 void WindowView::refreshView() {
+
   if (currentThreadId() != renderThreadId)
     return;
   {

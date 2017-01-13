@@ -32,7 +32,8 @@ using SDL::SDL_Keycode;
 #define THIS_LINE __LINE__
 
 GuiBuilder::GuiBuilder(Renderer& r, GuiFactory& g, Clock* c, Options* o, Callbacks call)
-    : renderer(r), gui(g), clock(c), options(o), callbacks(call), gameSpeed(GameSpeed::NORMAL), cache(1000) {
+    : renderer(r), gui(g), clock(c), options(o), callbacks(call), gameSpeed(GameSpeed::NORMAL),
+      fpsCounter(60), upsCounter(60), cache(1000) {
 }
 
 void GuiBuilder::reset() {
@@ -299,24 +300,6 @@ SGuiElem GuiBuilder::drawKeeperHelp() {
   return gui.external(keeperHelp.get());
 }
 
-int GuiBuilder::FpsCounter::getSec() {
-  return clock.getMillis().count() / 1000;
-}
-
-void GuiBuilder::FpsCounter::addTick() {
-  if (getSec() == curSec)
-    ++curFps;
-  else {
-    lastFps = curFps;
-    curSec = getSec();
-    curFps = 0;
-  }
-}
-
-int GuiBuilder::FpsCounter::getFps() {
-  return lastFps;
-}
-
 void GuiBuilder::addFpsCounterTick() {
   fpsCounter.addTick();
 }
@@ -425,12 +408,18 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
         gui.button([&] { gameSpeedDialogOpen = !gameSpeedDialogOpen; })), 160);
     int modifiedSquares = info.modifiedSquares;
     int totalSquares = info.totalSquares;
-    bottomLine.addElemAuto(
+    bottomLine.addElemAuto(gui.stack(
         gui.labelFun([=]()->string {
-            return "FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps());
-                //+ " SMOD " + toString(modifiedSquares) + "/" + toString(totalSquares);
-        },
-        colors[ColorId::WHITE]));
+          switch (counterMode) {
+            case CounterMode::FPS:
+              return "FPS " + toString(fpsCounter.getFps()) + " / " + toString(upsCounter.getFps());
+            case CounterMode::LAT:
+              return "LAT " + toString(fpsCounter.getMaxLatency()) + "ms / " + toString(upsCounter.getMaxLatency()) + "ms";
+            case CounterMode::SMOD:
+              return "SMOD " + toString(modifiedSquares) + "/" + toString(totalSquares);
+          }
+        }, colors[ColorId::WHITE]),
+        gui.button([=]() { counterMode = (CounterMode) ( ((int) counterMode + 1) % 3); })));
     main = gui.margin(gui.leftMargin(25, bottomLine.buildHorizontalList()),
         std::move(main), 18, gui.BOTTOM);
     rightBandInfoCache = gui.margin(std::move(butGui), std::move(main), 55, gui.TOP);
