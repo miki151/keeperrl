@@ -5,6 +5,7 @@
 #include "cost_info.h"
 #include "minion_trait.h"
 #include "enemy_factory.h"
+#include "sound.h"
 
 using AttractionType = variant<FurnitureType, ItemIndex>;
 
@@ -72,6 +73,8 @@ class ImmigrantInfo {
   bool isPersistent() const;
   const EnumSet<MinionTrait>& getTraits() const;
   optional<int> getLimit() const;
+  optional<Keybinding> getKeybinding() const;
+  optional<Sound> getSound() const;
 
   ImmigrantInfo& addRequirement(double candidateProb, ImmigrantRequirement);
   ImmigrantInfo& addRequirement(ImmigrantRequirement);
@@ -80,6 +83,8 @@ class ImmigrantInfo {
   ImmigrantInfo& setInitialRecruitment(int);
   ImmigrantInfo& setGroupSize(Range);
   ImmigrantInfo& setAutoTeam();
+  ImmigrantInfo& setKeybinding(Keybinding);
+  ImmigrantInfo& setSound(Sound);
 
   template <typename Visitor>
   struct RequirementVisitor : public boost::static_visitor<void> {
@@ -125,4 +130,6 @@ class ImmigrantInfo {
   int SERIAL(initialRecruitment) = 0;
   bool SERIAL(autoTeam) = false;
   bool SERIAL(consumeIds) = false;
+  optional<Keybinding> SERIAL(keybinding);
+  optional<Sound> SERIAL(sound);
 };

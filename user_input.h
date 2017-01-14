@@ -37,7 +37,6 @@ enum class UserInputId {
 // real-time actions
     BUILD,
     TILE_CLICK,
-    LIBRARY,
     RECT_SELECTION,
     RECT_DESELECTION,
     BUTTON_RELEASE,
@@ -160,7 +159,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
-            UserInputId::LIBRARY,
             UserInputId::BUTTON_RELEASE),
         ASSIGN(UniqueEntity<Creature>::Id,
             UserInputId::CREATURE_BUTTON,

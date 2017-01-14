@@ -175,9 +175,6 @@ void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
 /*      if (collectiveTab == CollectiveTab::MINIONS)
         inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
       else*/
-      if (collectiveTab == CollectiveTab::TECHNOLOGY && activeLibrary)
-        inputQueue.push(UserInput(UserInputId::LIBRARY, BuildingInfo{pos, *activeLibrary}));
-      else
       if (collectiveTab == CollectiveTab::BUILDINGS) {
         if (activeBuilding && (isKeyPressed(SDL::SDL_SCANCODE_LSHIFT) || isKeyPressed(SDL::SDL_SCANCODE_RSHIFT)))
           inputQueue.push(UserInput(UserInputId::RECT_SELECTION, BuildingInfo{pos, *activeBuilding}));

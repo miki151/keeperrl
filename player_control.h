@@ -149,9 +149,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void fillImmigration(CollectiveInfo&) const;
   void fillImmigrationHelp(CollectiveInfo&) const;
   static const vector<BuildInfo>& getBuildInfo();
-  static vector<BuildInfo> workshopInfo;
-  static vector<BuildInfo> libraryInfo;
-  static vector<BuildInfo> minionsInfo;
 
   typedef CollectiveInfo::TechButton TechButton;
 
@@ -163,7 +160,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   };
   vector<TechInfo> getTechInfo() const;
 
-  int getImpCost() const;
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&) const;
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
@@ -211,7 +207,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   optional<SelectionInfo> rectSelection;
   void updateSelectionSquares();
   double SERIAL(lastControlKeeperQuestion) = -100;
-  int SERIAL(startImpNum) = -1;
   optional<UniqueEntity<Creature>::Id> chosenCreature;
   void setChosenCreature(optional<UniqueEntity<Creature>::Id>);
   optional<WorkshopType> chosenWorkshop;

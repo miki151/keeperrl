@@ -30,6 +30,7 @@
 #include "external_enemies.h"
 #include "immigration.h"
 #include "technology.h"
+#include "keybinding.h"
 
 using namespace std::chrono;
 
@@ -75,6 +76,8 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
       {
       ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
           .setSpawnLocation(NearLeader{})
+          .setKeybinding(Keybinding::CREATE_IMP)
+          .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
           .setInitialRecruitment(4)
           .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::MANA, 20), 5, 4 }),
       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})

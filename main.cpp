@@ -46,6 +46,7 @@
 #include "sound_library.h"
 #include "audio_device.h"
 #include "sokoban_input.h"
+#include "keybinding_map.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -359,7 +360,8 @@ static int keeperMain(const variables_map& vars) {
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
   Clock clock;
-  GuiFactory guiFactory(renderer, &clock, &options);
+  KeybindingMap keybindingMap(userPath + "/keybindings.txt");
+  GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap);
   guiFactory.loadFreeImages(freeDataPath + "/images");
   if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");

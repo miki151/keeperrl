@@ -23,6 +23,7 @@ class Clock;
 class Options;
 enum class SpellId;
 class ScrollPosition;
+class KeybindingMap;
 
 class GuiElem {
   public:
@@ -51,7 +52,7 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*);
+  GuiFactory(Renderer&, Clock*, Options*, KeybindingMap*);
   void loadFreeImages(const string& path);
   void loadNonFreeImages(const string& path);
 
@@ -66,19 +67,20 @@ class GuiFactory {
   static bool keyEventEqual(const SDL::SDL_Keysym&, const SDL::SDL_Keysym&);
 
   SDL::SDL_Keysym getKey(SDL::SDL_Keycode);
-  SGuiElem button(function<void()> fun, SDL::SDL_Keysym, bool capture = false);
-  SGuiElem buttonChar(function<void()> fun, char, bool capture = false, bool useAltIfWasdScrolling = false);
-  SGuiElem button(function<void()> fun);
-  SGuiElem buttonRightClick(function<void()> fun);
-  SGuiElem reverseButton(function<void()> fun, vector<SDL::SDL_Keysym> = {}, bool capture = false);
-  SGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun, SDL::SDL_Keysym, bool capture = false);
-  SGuiElem buttonRect(function<void(Rectangle buttonBounds)> fun);
-  SGuiElem releaseLeftButton(function<void()> fun);
-  SGuiElem releaseRightButton(function<void()> fun);
+  SGuiElem button(function<void()>, SDL::SDL_Keysym, bool capture = false);
+  SGuiElem buttonChar(function<void()>, char, bool capture = false, bool useAltIfWasdScrolling = false);
+  SGuiElem button(function<void()>);
+  SGuiElem buttonRightClick(function<void()>);
+  SGuiElem reverseButton(function<void()>, vector<SDL::SDL_Keysym> = {}, bool capture = false);
+  SGuiElem buttonRect(function<void(Rectangle buttonBounds)>, SDL::SDL_Keysym, bool capture = false);
+  SGuiElem buttonRect(function<void(Rectangle buttonBounds)>);
+  SGuiElem releaseLeftButton(function<void()>, optional<Keybinding> = none);
+  SGuiElem releaseRightButton(function<void()>);
   SGuiElem focusable(SGuiElem content, vector<SDL::SDL_Keysym> focusEvent,
       vector<SDL::SDL_Keysym> defocusEvent, bool& focused);
   SGuiElem mouseWheel(function<void(bool)>);
   SGuiElem keyHandler(function<void(SDL::SDL_Keysym)>, bool capture = false);
+  SGuiElem keyHandler(function<void()>, Keybinding, bool capture = false);
   SGuiElem keyHandler(function<void()>, vector<SDL::SDL_Keysym>, bool capture = false);
   SGuiElem keyHandlerChar(function<void()>, char, bool capture = false, bool useAltIfWasdScrolling = false);
   SGuiElem stack(vector<SGuiElem>);
@@ -308,4 +310,5 @@ class GuiFactory {
   Renderer& renderer;
   Options* options;
   DragContainer dragContainer;
+  KeybindingMap* keybindingMap;
 };

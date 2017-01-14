@@ -231,11 +231,10 @@ SGuiElem GuiBuilder::drawBuildings(const CollectiveInfo& info) {
 }
 
 SGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
-  int hash = combineHash(info.techButtons, info.workshopButtons, info.libraryButtons);
+  int hash = combineHash(info.techButtons, info.workshopButtons);
   if (hash != technologyHash) {
     technologyHash = hash;
     auto lines = gui.getListBuilder(legendLineHeight);
-    lines.addElemAuto(drawButtons(info.libraryButtons, CollectiveTab::TECHNOLOGY));
     lines.addSpace(legendLineHeight / 2);
     for (int i : All(info.techButtons)) {
       auto line = gui.getListBuilder();
@@ -527,14 +526,14 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
   const int elemWidth = getImmigrationBarWidth();
   auto makeHighlight = [=] (Color c) { return gui.margins(gui.rectangle(c), 4); };
   auto lines = gui.getListBuilder(elemWidth);
-  function<SGuiElem(int)> getAcceptButton = [=] (int immigrantId) {
+  auto getAcceptButton = [=] (const ImmigrantDataInfo& info) {
     return gui.stack(
-        gui.releaseLeftButton(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, immigrantId})),
+        gui.releaseLeftButton(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, info.id}), info.keybinding),
         gui.onMouseLeftButtonHeld(makeHighlight(Color(0, 255, 0, 100))));
   };
-  function<SGuiElem(int)> getRejectButton = [=] (int immigrantId) {
+  auto getRejectButton = [=] (const ImmigrantDataInfo& info) {
     return gui.stack(
-        gui.releaseRightButton(getButtonCallback({UserInputId::IMMIGRANT_REJECT, immigrantId})),
+        gui.releaseRightButton(getButtonCallback({UserInputId::IMMIGRANT_REJECT, info.id})),
         gui.onMouseRightButtonHeld(makeHighlight(Color(255, 0, 0, 100))));
   };
   for (int i : All(info.immigration)) {
@@ -543,13 +542,13 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
     if (elem.requirements.empty())
       button = gui.stack(makeVec<SGuiElem>(
           gui.sprite(GuiFactory::TexId::IMMIGRANT_BG, GuiFactory::Alignment::CENTER),
-          cache->get(getAcceptButton, THIS_LINE, elem.id),
-          cache->get(getRejectButton, THIS_LINE, elem.id)
+          cache->get(getAcceptButton, THIS_LINE, elem),
+          cache->get(getRejectButton, THIS_LINE, elem)
       ));
     else
       button = gui.stack(makeVec<SGuiElem>(
           gui.sprite(GuiFactory::TexId::IMMIGRANT2_BG, GuiFactory::Alignment::CENTER),
-          cache->get(getRejectButton, THIS_LINE, elem.id)
+          cache->get(getRejectButton, THIS_LINE, elem)
       ));
     auto initTime = elem.generatedTime;
     lines.addElem(gui.translate([=]() { return initTime ? Vec2(0, -getImmigrantAnimationOffset(*initTime)) : Vec2(0, 0);}, gui.stack(

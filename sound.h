@@ -54,9 +54,11 @@ class Sound {
   SoundId getId() const;
   double getPitch() const;
 
+  SERIALIZATION_DECL(Sound)
+
   private:
-  SoundId id;
-  optional<Position> position;
-  double pitch = 1;
+  SoundId SERIAL(id);
+  optional<Position> SERIAL(position);
+  double SERIAL(pitch) = 1;
 };
 

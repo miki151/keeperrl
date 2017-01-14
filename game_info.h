@@ -144,7 +144,8 @@ struct ImmigrantDataInfo {
   enum AutoState { AUTO_REJECT, AUTO_ACCEPT};
   optional<ImmigrantAutoState> HASH(autoState);
   optional<milliseconds> HASH(generatedTime);
-  HASH_ALL(requirements, info, name, viewId, expLevel, count, timeLeft, id, autoState, cost, generatedTime)
+  optional<Keybinding> HASH(keybinding);
+  HASH_ALL(requirements, info, name, viewId, expLevel, count, timeLeft, id, autoState, cost, generatedTime, keybinding)
 };
 
 class CollectiveInfo {
@@ -163,8 +164,6 @@ class CollectiveInfo {
     HASH_ALL(viewId, name, cost, count, state, help, hotkey, groupName, hotkeyOpensGroup);
   };
   vector<Button> HASH(buildings);
-  vector<Button> HASH(minionButtons);
-  vector<Button> HASH(libraryButtons);
   int HASH(minionCount);
   int HASH(minionLimit);
   string HASH(monsterHeader);
@@ -248,7 +247,7 @@ class CollectiveInfo {
   };
   optional<Ransom> HASH(ransom);
 
-  HASH_ALL(warning, buildings, minionButtons, libraryButtons, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, chosenWorkshop, workshopButtons, immigration, allImmigration);
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, chosenWorkshop, workshopButtons, immigration, allImmigration);
 };
 
 class VillageInfo {

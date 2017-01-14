@@ -22,6 +22,7 @@
 #include "spell.h"
 #include "options.h"
 #include "scroll_position.h"
+#include "keybinding_map.h"
 
 #include "sdl.h"
 
@@ -179,7 +180,8 @@ static optional<SDL_Keycode> getKey(char c) {
   return none;
 }
 
-GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o) : clock(c), renderer(r), options(o) {
+GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, KeybindingMap* k)
+    : clock(c), renderer(r), options(o), keybindingMap(k) {
 }
 
 DragContainer& GuiFactory::getDragContainer() {
@@ -224,8 +226,11 @@ SGuiElem GuiFactory::buttonRightClick(function<void ()> fun) {
   return SGuiElem(new ButtonRightClick([fun](Rectangle) { fun(); }));
 }
 
-SGuiElem GuiFactory::releaseLeftButton(function<void()> fun) {
-  return SGuiElem(new ReleaseButton(fun, 0));
+SGuiElem GuiFactory::releaseLeftButton(function<void()> fun, optional<Keybinding> key) {
+  auto ret = SGuiElem(new ReleaseButton(fun, 0));
+  if (key)
+    ret = stack(std::move(ret), keyHandler(fun, *key, false));
+  return ret;
 }
 
 SGuiElem GuiFactory::releaseRightButton(function<void()> fun) {
@@ -949,6 +954,10 @@ SGuiElem GuiFactory::alignment(GuiFactory::Alignment alignment, SGuiElem content
  
 SGuiElem GuiFactory::keyHandler(function<void(SDL_Keysym)> fun, bool capture) {
   return SGuiElem(new KeyHandler(fun, capture));
+}
+
+SGuiElem GuiFactory::keyHandler(function<void()> fun, Keybinding keybinding, bool capture) {
+  return keyHandler([=] (SDL_Keysym key) { if (keybindingMap->matches(keybinding, key)) fun(); }, capture);
 }
 
 class KeyHandler2 : public GuiElem {
