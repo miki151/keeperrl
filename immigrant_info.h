@@ -75,6 +75,7 @@ class ImmigrantInfo {
   optional<int> getLimit() const;
   optional<Keybinding> getKeybinding() const;
   optional<Sound> getSound() const;
+  bool isNoAuto() const;
 
   ImmigrantInfo& addRequirement(double candidateProb, ImmigrantRequirement);
   ImmigrantInfo& addRequirement(ImmigrantRequirement);
@@ -85,6 +86,7 @@ class ImmigrantInfo {
   ImmigrantInfo& setAutoTeam();
   ImmigrantInfo& setKeybinding(Keybinding);
   ImmigrantInfo& setSound(Sound);
+  ImmigrantInfo& setNoAuto();
 
   template <typename Visitor>
   struct RequirementVisitor : public boost::static_visitor<void> {
@@ -132,4 +134,5 @@ class ImmigrantInfo {
   bool SERIAL(consumeIds) = false;
   optional<Keybinding> SERIAL(keybinding);
   optional<Sound> SERIAL(sound);
+  bool SERIAL(noAuto) = false;
 };

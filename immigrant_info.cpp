@@ -7,7 +7,7 @@
 #include "creature.h"
 #include "creature_attributes.h"
 
-SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound)
+SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto)
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
 
 AttractionInfo::AttractionInfo(int cl,  AttractionType a)
@@ -89,6 +89,10 @@ optional<Sound> ImmigrantInfo::getSound() const {
   return sound;
 }
 
+bool ImmigrantInfo::isNoAuto() const {
+  return noAuto;
+}
+
 ImmigrantInfo& ImmigrantInfo::addRequirement(ImmigrantRequirement t) {
   requirements.push_back({t, 1});
   return *this;
@@ -131,6 +135,11 @@ ImmigrantInfo& ImmigrantInfo::setKeybinding(Keybinding key) {
 
 ImmigrantInfo& ImmigrantInfo::setSound(Sound s) {
   sound = s;
+  return *this;
+}
+
+ImmigrantInfo& ImmigrantInfo::setNoAuto() {
+  noAuto = true;
   return *this;
 }
 

@@ -78,10 +78,12 @@ vector<string> Immigration::getMissingRequirements(const Available& available) c
 }
 
 void Immigration::setAutoState(int index, optional<ImmigrantAutoState> s) {
-  if (!s)
-    autoState.erase(index);
-  else
-    autoState[index] = *s;
+  if (!getImmigrants().at(index).isNoAuto()) {
+    if (!s)
+      autoState.erase(index);
+    else
+      autoState[index] = *s;
+  }
 }
 
 optional<ImmigrantAutoState> Immigration::getAutoState(int index) const {

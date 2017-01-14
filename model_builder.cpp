@@ -78,6 +78,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
           .setSpawnLocation(NearLeader{})
           .setKeybinding(Keybinding::CREATE_IMP)
           .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
+          .setNoAuto()
           .setInitialRecruitment(4)
           .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::MANA, 20), 5, 4 }),
       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
