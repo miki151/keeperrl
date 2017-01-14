@@ -699,6 +699,7 @@ class GuiLayout : public GuiElem {
   }
 
   virtual void render(Renderer& r) override {
+    onRefreshBounds();
     for (int i : All(elems))
       if (isVisible(i))
         elems[i]->render(r);

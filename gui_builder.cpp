@@ -551,13 +551,14 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
           cache->get(getRejectButton, THIS_LINE, elem)
       ));
     auto initTime = elem.generatedTime;
-    lines.addElem(gui.translate([=]() { return initTime ? Vec2(0, -getImmigrantAnimationOffset(*initTime)) : Vec2(0, 0);}, gui.stack(
-        std::move(button),
-        gui.tooltip2(drawImmigrantInfo(elem), [](const Rectangle& r) { return r.topRight();}),
-        gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
-            gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
-        gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
-            elem.count == 1 ? gui.viewObject(elem.viewId) : drawMinionAndLevel(elem.viewId, elem.count, 1)))))
+    lines.addElem(gui.translate([=]() { return Vec2(0, initTime ? -getImmigrantAnimationOffset(*initTime) : 0);},
+        gui.stack(
+            std::move(button),
+            gui.tooltip2(drawImmigrantInfo(elem), [](const Rectangle& r) { return r.topRight();}),
+            gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
+                gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
+            gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
+                elem.count == 1 ? gui.viewObject(elem.viewId) : drawMinionAndLevel(elem.viewId, elem.count, 1)))))
     )));
   }
   lines.addElem(gui.stack(makeVec<SGuiElem>(
