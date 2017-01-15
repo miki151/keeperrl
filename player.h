@@ -40,11 +40,11 @@ class Player : public Controller, public CreatureView {
   virtual ~Player();
 
   static ControllerFactory getFactory(MapMemory* levelMemory);
+  Player(Creature*, bool adventurer, MapMemory*);
 
   SERIALIZATION_DECL(Player)
 
   protected:
-  Player(Creature*, bool adventurer, MapMemory*);
 
   virtual void moveAction(Vec2 direction);
 

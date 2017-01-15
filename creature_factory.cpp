@@ -2364,9 +2364,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
 
 ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
   switch (id) {
-    case CreatureId::ADVENTURER:
-    case CreatureId::ADVENTURER_F:
-      return Player::getFactory(new MapMemory());
     case CreatureId::KRAKEN:
       return ControllerFactory([=](Creature* c) {
           return SController(new KrakenController(c));

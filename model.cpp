@@ -271,6 +271,7 @@ vector<Creature*> Model::getAllCreatures() const {
 void Model::landHeroPlayer(Options* options, int handicap) {
   PCreature player = CreatureFactory::fromId(
       options->getCreatureId(OptionId::ADVENTURER_TYPE), TribeId::getAdventurer());
+  player->setController(make_shared<Player>(player.get(), true, new MapMemory()));
   string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
   if (!advName.empty())
     player->getName().setFirst(advName);
