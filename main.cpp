@@ -46,6 +46,7 @@
 #include "sound_library.h"
 #include "audio_device.h"
 #include "sokoban_input.h"
+#include "keybinding_map.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -255,6 +256,7 @@ static options_description getOptions() {
     ("worldgen_test", value<int>(), "Test how often world generation fails")
     ("force_keeper", "Skip main menu and force keeper mode")
     ("stderr", "Log to stderr")
+    ("nolog", "No logging")
     ("free_mode", "Run in free ascii mode")
 #ifndef RELEASE
     ("quick_level", "")
@@ -303,7 +305,8 @@ static int keeperMain(const variables_map& vars) {
   FatalLog.addOutput(DebugOutput::toStream(std::cerr));
 #ifndef RELEASE
   ogzstream compressedLog("log.gz");
-  InfoLog.addOutput(DebugOutput::toStream(compressedLog));
+  if (!vars.count("nolog"))
+    InfoLog.addOutput(DebugOutput::toStream(compressedLog));
 #endif
   FatalLog.addOutput(DebugOutput::toString(
       [](const string& s) { ofstream("stacktrace.out") << s << "\n" << std::flush; } ));
@@ -357,7 +360,8 @@ static int keeperMain(const variables_map& vars) {
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
   Clock clock;
-  GuiFactory guiFactory(renderer, &clock, &options);
+  KeybindingMap keybindingMap(userPath + "/keybindings.txt");
+  GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap);
   guiFactory.loadFreeImages(freeDataPath + "/images");
   if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");

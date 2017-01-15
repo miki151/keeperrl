@@ -28,6 +28,8 @@
 #include "item.h"
 #include "modifier_type.h"
 #include "body.h"
+#include "call_cache.h"
+
 
 class Test {
   public:
@@ -668,52 +670,159 @@ class Test {
     CHECK(equipment.getItemsOwnedBy(human.get()).size() == items.size());
   }
 
-  int testAll() {
-    testStringConvertion();
-    testTimeQueue();
-    testRectangleIterator();
-    testValueCheck();
-    testSplit();
-    testShortestPath();
-    testAStar();
-    testShortestPath2();
-    testShortestPathReverse();
-    testRange();
-    testRange2();
-    testContains();
-    testPredicates();
-    testOptional();
-    testMustInitialize();
-    testVec2();
-    testConcat();
-    testTable();
-    testVec2();
-    testRectangle();
-    testProjection();
-    testRandomExit();
-    testCombine();
-    testSectors1();
-    testSectors2();
-    testSectors3();
-    testReverse();
-    testReverse2();
-    testReverse3();
-    testOwnerPointer();
-    testMinionEquipment1();
-    testMinionEquipmentAmmo();
-    testMinionEquipmentItemDestroyed();
-    testMinionEquipmentUpdateItems();
-    testMinionEquipmentUpdateOwners();
-    testMinionEquipmentAutoAssign();
-    testMinionEquipmentLocking();
-    testMinionEquipment123();
-    INFO << "-----===== OK =====-----";
-    return 0;
+  void testContainerRange() {
+    vector<string> v { "abc", "def", "ghi" };
+    int i = 0;
+    for (auto elem : Iter(v)) {
+      CHECK(elem.index() == i);
+      CHECK(*elem == v[i]);
+      CHECK(elem->size() == v[i].size());
+      ++i;
+    }
+  }
+
+  void testContainerRangeMap() {
+    map<int, string> v { {0, "abc"}, {1, "def"}, {2, "ghi"} };
+    int i = 0;
+    for (auto elem : Iter(v)) {
+      CHECK(elem.index() == i);
+      CHECK(elem->second == v[i]);
+      CHECK(elem->second.size() == v[i].size());
+      ++i;
+    }
+  }
+
+  void testContainerRangeErase() {
+    vector<int> v {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    for (auto elem : Iter(v))
+      if (*elem % 3 == 1)
+        elem.markToErase();
+    sort(v.begin(), v.end());
+    CHECKEQ(v, makeVec<int>(2, 3, 5, 6, 8, 9, 11, 12));
+  }
+
+  void testContainerRangeConst() {
+    const vector<int> v {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    vector<int> o;
+    int cnt = 0;
+    for (auto elem : Iter(v))
+      if (*elem % 3 == 1)
+        o.push_back(*elem);
+    CHECKEQ(o, makeVec<int>(1, 4, 7, 10));
+  }
+
+  void testContainerRangeMapConst() {
+    const map<int, string> v { {0, "abc"}, {1, "def"}, {2, "ghi"} };
+    int i = 0;
+    for (auto elem : Iter(v)) {
+      CHECK(elem.index() == i);
+      CHECK(elem->second == v.at(i));
+      CHECK(elem->second.size() == v.at(i).size());
+      ++i;
+    }
+  }
+
+  void testContainerRangeMapErase() {
+    map<int, int> v {{1, -1}, {2, -2}, {3, -3}, {4, -4}, {5, -5}, {6, -6}, {7, -7}, {8, -8}, {9, -9}, {10, -10},
+        {11, -11}, {12, -12}};
+    for (auto elem : Iter(v))
+      if (elem->first % 3 == 1)
+        elem.markToErase();
+    map<int, int> result {{2, -2}, {3, -3}, {5, -5}, {6, -6}, {8, -8}, {9, -9}, {11, -11}, {12, -12}};
+    CHECK(v == result);
+  }
+
+  using TestCache = CallCache<string>;
+
+  int cnt1 = 0;
+
+  string genString1(int a) {
+    ++cnt1;
+    return toString(a);
+  }
+
+  void testCacheTemplate() {
+    TestCache cache(10);
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 15), "15");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 15), "15");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 15), "15");
+    CHECKEQ(cnt1, 1);
+  }
+
+  void testCacheTemplate2() {
+    TestCache cache(3);
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 1), "1");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 1), "1");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 2), "2");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 2), "2");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 3), "3");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 3), "3");
+    CHECKEQ(cnt1, 3);
+    CHECKEQ(cache.getSize(), 3);
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 4), "4");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 4), "4");
+    CHECKEQ(cnt1, 4);
+    CHECKEQ(cache.getSize(), 3);
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 2), "2");
+    CHECKEQ(cnt1, 4);
+    CHECKEQ(cache.getSize(), 3);
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 1), "1");
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 1), "1");
+    CHECKEQ(cnt1, 5);
+    CHECKEQ(cache.getSize(), 3);
+    CHECKEQ(cache.get(bindMethod<string>(&Test::genString1, this), 123, 3), "3");
+    CHECKEQ(cnt1, 6);
+    CHECKEQ(cache.getSize(), 3);
   }
 
 };
 
 void testAll() {
-  Test test;
-  test.testAll();
+  Test().testStringConvertion();
+  Test().testTimeQueue();
+  Test().testRectangleIterator();
+  Test().testValueCheck();
+  Test().testSplit();
+  Test().testShortestPath();
+  Test().testAStar();
+  Test().testShortestPath2();
+  Test().testShortestPathReverse();
+  Test().testRange();
+  Test().testRange2();
+  Test().testContains();
+  Test().testPredicates();
+  Test().testOptional();
+  Test().testMustInitialize();
+  Test().testVec2();
+  Test().testConcat();
+  Test().testTable();
+  Test().testVec2();
+  Test().testRectangle();
+  Test().testProjection();
+  Test().testRandomExit();
+  Test().testCombine();
+  Test().testSectors1();
+  Test().testSectors2();
+  Test().testSectors3();
+  Test().testReverse();
+  Test().testReverse2();
+  Test().testReverse3();
+  Test().testOwnerPointer();
+  Test().testMinionEquipment1();
+  Test().testMinionEquipmentAmmo();
+  Test().testMinionEquipmentItemDestroyed();
+  Test().testMinionEquipmentUpdateItems();
+  Test().testMinionEquipmentUpdateOwners();
+  Test().testMinionEquipmentAutoAssign();
+  Test().testMinionEquipmentLocking();
+  Test().testMinionEquipment123();
+  Test().testContainerRange();
+  Test().testContainerRangeMap();
+  Test().testContainerRangeErase();
+  Test().testContainerRangeMapErase();
+  Test().testContainerRangeConst();
+  Test().testContainerRangeMapConst();
+  Test().testCacheTemplate();
+  Test().testCacheTemplate2();
+  INFO << "-----===== OK =====-----";
 }

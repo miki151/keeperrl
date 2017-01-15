@@ -3,6 +3,10 @@
 
 
 const char* SunlightInfo::getText() const {
+  return getText(state);
+}
+
+const char* SunlightInfo::getText(SunlightState state) {
   switch (state) {
     case SunlightState::NIGHT: return "night";
     case SunlightState::DAY: return "day";

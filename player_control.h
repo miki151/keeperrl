@@ -43,6 +43,7 @@ class EventProxy;
 class SquareType;
 class CostInfo;
 struct WorkshopItem;
+class ScrollPosition;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
@@ -145,10 +146,9 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   VillageInfo::Village getVillageInfo(const Collective* enemy) const;
   void fillWorkshopInfo(CollectiveInfo&) const;
+  void fillImmigration(CollectiveInfo&) const;
+  void fillImmigrationHelp(CollectiveInfo&) const;
   static const vector<BuildInfo>& getBuildInfo();
-  static vector<BuildInfo> workshopInfo;
-  static vector<BuildInfo> libraryInfo;
-  static vector<BuildInfo> minionsInfo;
 
   typedef CollectiveInfo::TechButton TechButton;
 
@@ -160,11 +160,10 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   };
   vector<TechInfo> getTechInfo() const;
 
-  int getImpCost() const;
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&) const;
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
-      double* scrollPos = nullptr);
+      ScrollPosition* scrollPos = nullptr);
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);
@@ -182,7 +181,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void fillEquipment(Creature*, PlayerInfo&) const;
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
-  void handleRecruiting(Collective* ally);
   void handleTrading(Collective* ally);
   void handlePillage(Collective* enemy);
   void handleRansom(bool pay);
@@ -209,7 +207,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   optional<SelectionInfo> rectSelection;
   void updateSelectionSquares();
   double SERIAL(lastControlKeeperQuestion) = -100;
-  int SERIAL(startImpNum) = -1;
   optional<UniqueEntity<Creature>::Id> chosenCreature;
   void setChosenCreature(optional<UniqueEntity<Creature>::Id>);
   optional<WorkshopType> chosenWorkshop;
@@ -230,8 +227,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   vector<Vec2> SERIAL(visibleEnemies);
   HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
   set<const Location*> SERIAL(knownLocations);
-  set<const Collective*> SERIAL(knownVillains);
-  set<const Collective*> SERIAL(knownVillainLocations);
   bool firstRender = true;
   bool isNight = true;
   optional<UniqueEntity<Creature>::Id> draggedCreature;

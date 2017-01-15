@@ -5,6 +5,7 @@
 #include "collective.h"
 #include "collective_config.h"
 #include "item.h"
+#include "immigrant_info.h"
 
 template <typename Key, typename Value>
 EntityMap<Key, Value>::EntityMap() {
@@ -124,7 +125,7 @@ void EntityMap<Key, Value>::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE_TMPL(EntityMap, Creature, double);
 SERIALIZABLE_TMPL(EntityMap, Creature, int);
 SERIALIZABLE_TMPL(EntityMap, Creature, Collective::CurrentTaskInfo);
-SERIALIZABLE_TMPL(EntityMap, Creature, vector<AttractionInfo>);
+SERIALIZABLE_TMPL(EntityMap, Creature, map<AttractionType, int>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<Position>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<WItem>);
 SERIALIZABLE_TMPL(EntityMap, Creature, Creature*);

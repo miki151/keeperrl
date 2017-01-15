@@ -35,10 +35,10 @@ RICH_ENUM(OptionId,
 
   FAST_IMMIGRATION,
   ADVENTURER_NAME,
-  ADVENTURER_GENDER,
+  ADVENTURER_TYPE,
 
   KEEPER_NAME,
-  KEEPER_GENDER,
+  KEEPER_TYPE,
   KEEPER_SEED,
   SHOW_MAP,
   START_WITH_NIGHT,
@@ -65,10 +65,10 @@ class Options {
   Options(const string& path, const string& overrides);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
-  ViewId getViewIdValue(OptionId);
-  void setNextViewId(OptionId);
+  CreatureId getCreatureId(OptionId);
+  void setNextCreatureId(OptionId);
   const string& getName(OptionId);
-  enum Type { INT, BOOL, STRING, VIEW_ID };
+  enum Type { INT, BOOL, STRING, PLAYER_TYPE };
   Type getType(OptionId);
   string getValueString(OptionId);
   void setValue(OptionId, Value);
@@ -83,7 +83,7 @@ class Options {
   void addTrigger(OptionId, Trigger trigger);
   void setDefaultString(OptionId, const string&);
   void setChoices(OptionId, const vector<string>&);
-  void setChoices(OptionId, const vector<ViewId>&);
+  void setChoices(OptionId, const vector<CreatureId>&);
 
   private:
   optional<Value> readValue(OptionId, const string&);
@@ -96,7 +96,7 @@ class Options {
   EnumMap<OptionId, string> defaultStrings;
   EnumMap<OptionId, optional<Value>> overrides;
   EnumMap<OptionId, vector<string>> choices;
-  EnumMap<OptionId, vector<ViewId>> choicesViewId;
+  EnumMap<OptionId, vector<CreatureId>> choicesCreatureId;
   EnumMap<OptionId, optional<pair<int, int>>> limits;
 };
 

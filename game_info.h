@@ -7,6 +7,7 @@
 #include "player_message.h"
 #include "experience_type.h"
 #include "entity_set.h"
+#include "immigrant_auto_state.h"
 
 enum class SpellId;
 
@@ -20,8 +21,7 @@ struct CreatureInfo {
   string HASH(stackName);
   int HASH(expLevel);
   double HASH(morale); 
-  optional<pair<ViewId, int>> HASH(cost);
-  HASH_ALL(viewId, uniqueId, name, stackName, expLevel, morale, cost);
+  HASH_ALL(viewId, uniqueId, name, stackName, expLevel, morale);
 };
 
 
@@ -131,6 +131,22 @@ class PlayerInfo {
   HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands);
 };
 
+struct ImmigrantDataInfo {
+  vector<string> HASH(requirements);
+  vector<string> HASH(info);
+  optional<pair<ViewId, int>> HASH(cost);
+  string HASH(name);
+  ViewId HASH(viewId);
+  Range HASH(expLevel);
+  int HASH(count);
+  optional<int> HASH(timeLeft);
+  int HASH(id);
+  enum AutoState { AUTO_REJECT, AUTO_ACCEPT};
+  optional<ImmigrantAutoState> HASH(autoState);
+  optional<milliseconds> HASH(generatedTime);
+  optional<Keybinding> HASH(keybinding);
+  HASH_ALL(requirements, info, name, viewId, expLevel, count, timeLeft, id, autoState, cost, generatedTime, keybinding)
+};
 
 class CollectiveInfo {
   public:
@@ -148,8 +164,6 @@ class CollectiveInfo {
     HASH_ALL(viewId, name, cost, count, state, help, hotkey, groupName, hotkeyOpensGroup);
   };
   vector<Button> HASH(buildings);
-  vector<Button> HASH(minionButtons);
-  vector<Button> HASH(libraryButtons);
   int HASH(minionCount);
   int HASH(minionLimit);
   string HASH(monsterHeader);
@@ -171,6 +185,8 @@ class CollectiveInfo {
     HASH_ALL(chosenId, creatures, teamId);
   };
   optional<ChosenCreatureInfo> HASH(chosenCreature);
+  vector<ImmigrantDataInfo> HASH(immigration);
+  vector<ImmigrantDataInfo> HASH(allImmigration);
   struct WorkshopButton {
     string HASH(name);
     ViewId HASH(viewId);
@@ -201,7 +217,7 @@ class CollectiveInfo {
     HASH_ALL(id, members, active, highlight);
   };
   vector<Team> HASH(teams);
-  CreatureInfo* getMinion(UniqueEntity<Creature>::Id);
+  const CreatureInfo* getMinion(UniqueEntity<Creature>::Id) const;
   bool hasMinion(UniqueEntity<Creature>::Id);
   int HASH(nextPayout);
   int HASH(payoutTimeRemaining);
@@ -231,7 +247,7 @@ class CollectiveInfo {
   };
   optional<Ransom> HASH(ransom);
 
-  HASH_ALL(warning, buildings, minionButtons, libraryButtons, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, chosenWorkshop, workshopButtons);
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, chosenWorkshop, workshopButtons, immigration, allImmigration);
 };
 
 class VillageInfo {

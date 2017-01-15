@@ -39,12 +39,12 @@ class Player : public Controller, public CreatureView {
   public:
   virtual ~Player();
 
-  static ControllerFactory getFactory(Model*, MapMemory* levelMemory);
+  static ControllerFactory getFactory(MapMemory* levelMemory);
 
-  SERIALIZATION_DECL(Player);
+  SERIALIZATION_DECL(Player)
 
   protected:
-  Player(Creature*, Model*, bool adventurer, MapMemory*);
+  Player(Creature*, bool adventurer, MapMemory*);
 
   virtual void moveAction(Vec2 direction);
 

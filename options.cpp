@@ -38,10 +38,10 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
   {OptionId::KEEPER_NAME, string("")},
-  {OptionId::KEEPER_GENDER, 0},
+  {OptionId::KEEPER_TYPE, 0},
   {OptionId::KEEPER_SEED, string("")},
   {OptionId::ADVENTURER_NAME, string("")},
-  {OptionId::ADVENTURER_GENDER, 0},
+  {OptionId::ADVENTURER_TYPE, 0},
   {OptionId::MAIN_VILLAINS, 4},
   {OptionId::RETIRED_VILLAINS, 1},
   {OptionId::LESSER_VILLAINS, 3},
@@ -69,10 +69,10 @@ const map<OptionId, string> names {
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::KEEPER_NAME, "Keeper's name"},
-  {OptionId::KEEPER_GENDER, "Keeper's avatar"},
+  {OptionId::KEEPER_TYPE, "Keeper's avatar"},
   {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::ADVENTURER_NAME, "Adventurer's name"},
-  {OptionId::ADVENTURER_GENDER, "Adventurer's avatar"},
+  {OptionId::ADVENTURER_TYPE, "Adventurer's avatar"},
   {OptionId::MAIN_VILLAINS, "Main villains"},
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
@@ -147,9 +147,9 @@ Options::Type Options::getType(OptionId id) {
     case OptionId::KEEPER_SEED:
     case OptionId::KEEPER_NAME:
       return Options::STRING;
-    case OptionId::ADVENTURER_GENDER:
-    case OptionId::KEEPER_GENDER:
-      return Options::VIEW_ID;
+    case OptionId::ADVENTURER_TYPE:
+    case OptionId::KEEPER_TYPE:
+      return Options::PLAYER_TYPE;
     default:
       return Options::INT;
   }
@@ -210,11 +210,11 @@ int Options::getIntValue(OptionId id) {
   return v;
 }
 
-ViewId Options::getViewIdValue(OptionId id) {
-  return choicesViewId[id].at(boost::get<int>(getValue(id)) % choicesViewId[id].size());
+CreatureId Options::getCreatureId(OptionId id) {
+  return choicesCreatureId[id].at(boost::get<int>(getValue(id)) % choicesCreatureId[id].size());
 }
 
-void Options::setNextViewId(OptionId id) {
+void Options::setNextCreatureId(OptionId id) {
   setValue(id, boost::get<int>(getValue(id)) + 1);
 }
 
@@ -290,9 +290,9 @@ string Options::getValueString(OptionId id) {
     case OptionId::INFLUENCE_SIZE:
     case OptionId::ALLIES:
       return toString(getIntValue(id));
-    case OptionId::KEEPER_GENDER:
-    case OptionId::ADVENTURER_GENDER:
-      return EnumInfo<ViewId>::getString((ViewId) getViewIdValue(id));
+    case OptionId::KEEPER_TYPE:
+    case OptionId::ADVENTURER_TYPE:
+      return toString((int)getCreatureId(id));
   }
 }
 
@@ -341,8 +341,8 @@ void Options::setChoices(OptionId id, const vector<string>& v) {
   choices[id] = v;
 }
 
-void Options::setChoices(OptionId id, const vector<ViewId>& v) {
-  choicesViewId[id] = v;
+void Options::setChoices(OptionId id, const vector<CreatureId>& v) {
+  choicesCreatureId[id] = v;
 }
 
 bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {

@@ -355,7 +355,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
               Campaign::ADVENTURER)) {
           PGame ret = Game::campaignGame(prepareCampaignModels(*campaign, random), *campaign->getPlayerPos(),
               options->getStringValue(OptionId::ADVENTURER_NAME), *campaign);
-          ret->getMainModel()->landHeroPlayer(options->getStringValue(OptionId::ADVENTURER_NAME), 0);
+          ret->getMainModel()->landHeroPlayer(options, 0);
           return ret;
         }
         break;
@@ -671,8 +671,7 @@ PGame MainLoop::adventurerGame() {
       CHECK(game->isSingleModel());
       auto handicap = view->getNumber("Choose handicap (your adventurer's strength and dexterity increase)",
           0, 20, 5);
-      game->getMainModel()->landHeroPlayer(options->getStringValue(OptionId::ADVENTURER_NAME),
-          handicap.get_value_or(0));
+      game->getMainModel()->landHeroPlayer(options, handicap.get_value_or(0));
       return game;
     }
   }

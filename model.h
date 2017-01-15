@@ -32,6 +32,7 @@ class TimeQueue;
 class StairKey;
 class Game;
 class ExternalEnemies;
+class Options;
 
 /**
   * Main class that holds all game logic.
@@ -54,7 +55,7 @@ class Model {
 
   void addCreature(PCreature);
   void addCreature(PCreature, double delay);
-  void landHeroPlayer(const string& name, int handicap);
+  void landHeroPlayer(Options*, int handicap);
   void addExternalEnemies(const ExternalEnemies&);
 
   bool isTurnBased();

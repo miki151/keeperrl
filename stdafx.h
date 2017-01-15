@@ -65,12 +65,12 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/map.hpp>
 #include <boost/serialization/deque.hpp>
 #include <boost/serialization/set.hpp>
+#include <boost/serialization/utility.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/array.hpp>
-#include <boost/serialization/variant.hpp>
+#include "variant_serialization.h"
 #include <boost/serialization/optional.hpp>
 #include <boost/serialization/bitset.hpp>
 #include <boost/serialization/shared_ptr.hpp>
@@ -81,6 +81,7 @@
 #include <boost/any.hpp>
 #include <boost/optional.hpp>
 #include <boost/version.hpp>
+#include <boost/operators.hpp>
 
 #ifdef DEBUG_STL
 
@@ -107,6 +108,7 @@ using std::string;
 using std::vector;
 using std::map;
 using std::set;
+using std::multiset;
 using std::deque;
 using std::string;
 

@@ -20,12 +20,12 @@ class Furniture : public Renderable {
   public:
   enum BlockType { BLOCKING, NON_BLOCKING, BLOCKING_ENEMIES };
 
-  static const string& getName(FurnitureType);
+  static const string& getName(FurnitureType, int count = 1);
   static FurnitureLayer getLayer(FurnitureType);
 
   Furniture(const string& name, const ViewObject&, FurnitureType, BlockType, TribeId);
   Furniture(const Furniture&);
-  const string& getName() const;
+  const string& getName(int count = 1) const;
   FurnitureType getType() const;
   bool canEnter(const MovementType&) const;
   void onEnter(Creature*) const;
@@ -81,6 +81,7 @@ class Furniture : public Renderable {
 
   private:
   string SERIAL(name);
+  string SERIAL(pluralName);
   FurnitureType SERIAL(type);
   FurnitureLayer SERIAL(layer) = FurnitureLayer::MIDDLE;
   BlockType SERIAL(blockType);

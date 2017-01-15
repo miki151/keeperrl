@@ -301,8 +301,11 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BURNT_TREE, sprite("treeburnt")
         .setRoundShadow());
     Tile::addTile(ViewId::PLAYER, sprite("adventurer"));
+    Tile::addTile(ViewId::PLAYER_F, sprite("adventurer_female"));
     Tile::addTile(ViewId::KEEPER, sprite("keeper"));
+    Tile::addTile(ViewId::KEEPER_F, sprite("keeper_female"));
     Tile::addTile(ViewId::RETIRED_KEEPER, sprite("retired_keeper"));
+    Tile::addTile(ViewId::RETIRED_KEEPER_F, sprite("retired_keeper_female"));
     Tile::addTile(ViewId::ELF, sprite("elf male"));
     Tile::addTile(ViewId::ELF_WOMAN, sprite("elf female"));
     Tile::addTile(ViewId::ELF_ARCHER, sprite("elf archer"));
@@ -576,6 +579,9 @@ class TileCoordLookup {
     Tile::addTile(ViewId::CREATURE_HIGHLIGHT, sprite("creature_highlight"));
     Tile::addTile(ViewId::SQUARE_HIGHLIGHT, sprite("square_highlight"));
     Tile::addTile(ViewId::ROUND_SHADOW, sprite("round_shadow"));
+    Tile::addTile(ViewId::CAMPAIGN_DEFEATED, sprite("campaign_defeated"));
+    Tile::addTile(ViewId::ACCEPT_IMMIGRANT, symbol(u8"✓", ColorId::GREEN, true));
+    Tile::addTile(ViewId::REJECT_IMMIGRANT, symbol(u8"✘", ColorId::RED, true));
     Tile::addTile(ViewId::FOG_OF_WAR_CORNER, sprite("fogofwar")
         .addConnection({Dir::NE}, byName("fogofwarcornne"))
         .addConnection({Dir::NW}, byName("fogofwarcornnw"))
@@ -607,8 +613,11 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::EMPTY, symbol(u8" ", ColorId::BLACK));
     Tile::addSymbol(ViewId::DIG_MARK, symbol(u8" ", ColorId::BLACK));
     Tile::addSymbol(ViewId::PLAYER, symbol(u8"@", ColorId::WHITE));
+    Tile::addSymbol(ViewId::PLAYER_F, symbol(u8"@", ColorId::WHITE));
     Tile::addSymbol(ViewId::KEEPER, symbol(u8"@", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::KEEPER_F, symbol(u8"@", ColorId::PURPLE));
     Tile::addSymbol(ViewId::RETIRED_KEEPER, symbol(u8"@", ColorId::BLUE));
+    Tile::addSymbol(ViewId::RETIRED_KEEPER_F, symbol(u8"@", ColorId::BLUE));
     Tile::addSymbol(ViewId::UNKNOWN_MONSTER, symbol(u8"?", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF, symbol(u8"@", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF_WOMAN, symbol(u8"@", ColorId::LIGHT_GREEN));
@@ -877,7 +886,10 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::CREATURE_HIGHLIGHT, symbol(u8" ", ColorId::WHITE));
     Tile::addSymbol(ViewId::SQUARE_HIGHLIGHT, symbol(u8"⛶", ColorId::WHITE, true));
     Tile::addSymbol(ViewId::ROUND_SHADOW, symbol(u8" ", ColorId::WHITE));
+    Tile::addSymbol(ViewId::CAMPAIGN_DEFEATED, symbol(u8"X", ColorId::RED));
     Tile::addSymbol(ViewId::FOG_OF_WAR_CORNER, symbol(u8" ", ColorId::WHITE));
+    Tile::addSymbol(ViewId::ACCEPT_IMMIGRANT, symbol(u8"✓", ColorId::GREEN, true));
+    Tile::addSymbol(ViewId::REJECT_IMMIGRANT, symbol(u8"✘", ColorId::RED, true));
     Tile::addSymbol(ViewId::SPECIAL_BLBN, symbol(u8"B", ColorId::PURPLE));
     Tile::addSymbol(ViewId::SPECIAL_BLBW, symbol(u8"B", ColorId::LIGHT_RED));
     Tile::addSymbol(ViewId::SPECIAL_BLGN, symbol(u8"B", ColorId::LIGHT_GRAY));

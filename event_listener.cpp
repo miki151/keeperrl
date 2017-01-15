@@ -25,6 +25,10 @@ void EventListener::unsubscribe() {
   }
 }
 
+bool EventListener::isSubscribed() const {
+  return !generator;
+}
+
 EventListener::~EventListener() {
   unsubscribe();
 }

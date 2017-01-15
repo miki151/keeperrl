@@ -182,33 +182,6 @@ class SokobanController : public Monster {
   private:
 };
 
-PCreature CreatureFactory::getAdventurer(Model* m, int handicap) {
-  MapMemory* levelMemory = new MapMemory();
-  PCreature player = CreatureFactory::addInventory(
-      PCreature(new Creature(TribeId::getAdventurer(),
-      CATTR(
-          c.viewId = ViewId::PLAYER;
-          c.attr[AttrType::SPEED] = 100;
-          c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 13 + handicap;
-          c.attr[AttrType::DEXTERITY] = 15 + handicap;
-          c.barehandedDamage = 5;
-          c.maxExpFromCombat = 15;
-          c.name = "Adventurer";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
-          c.name->useFullTitle();
-          c.skills.insert(SkillId::AMBUSH);), Player::getFactory(m, levelMemory))), {
-      ItemId::FIRST_AID_KIT,
-      ItemId::SWORD,
-      ItemId::KNIFE,
-      ItemId::LEATHER_GLOVES,
-      ItemId::LEATHER_ARMOR,
-      ItemId::LEATHER_HELM});
-  for (int i : Range(Random.get(70, 131)))
-    player->take(ItemFactory::fromId(ItemId::GOLD_PIECE));
-  return player;
-}
-
 PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
   ViewObject viewObject(ViewId::BOULDER, ViewLayer::CREATURE);
   viewObject.setModifier(ViewObjectModifier::NO_UP_MOVEMENT).setModifier(ViewObjectModifier::REMEMBER);
@@ -234,6 +207,14 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id) {
       c.barehandedDamage = 10;
       c.skills.insert(SkillId::SWIMMING);
       c.name = "kraken";);
+}
+
+ViewId CreatureFactory::getViewId(CreatureId id) {
+  static EnumMap<CreatureId, ViewId> idMap([](CreatureId id) {
+    auto c = fromId(id, TribeId::getMonster());
+    return c->getViewObject().id();
+  });
+  return idMap[id];
 }
 
 class KrakenController : public Monster {
@@ -742,7 +723,7 @@ CreatureFactory CreatureFactory::splashLeader(TribeId tribe) {
 
 CreatureFactory CreatureFactory::splashMonsters(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::GNOME, CreatureId::GOBLIN, CreatureId::OGRE,
-      CreatureId::SPECIAL_HL, CreatureId::SPECIAL_BL, CreatureId::WOLF, CreatureId::CAVE_BEAR,
+      CreatureId::SPECIAL_HLBN, CreatureId::SPECIAL_BLBW, CreatureId::WOLF, CreatureId::CAVE_BEAR,
       CreatureId::BAT, CreatureId::WEREWOLF, CreatureId::ZOMBIE, CreatureId::VAMPIRE, CreatureId::DOPPLEGANGER,
       CreatureId::SUCCUBUS},
       { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseLevel(25);
@@ -807,13 +788,6 @@ CreatureFactory CreatureFactory::orcTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1});
 }
 
-CreatureFactory CreatureFactory::pyramid(TribeId tribe, int level) {
-  if (level == 2)
-    return CreatureFactory(tribe, { CreatureId::MUMMY }, {1}, { CreatureId::MUMMY_LORD });
-  else
-    return CreatureFactory(tribe, { CreatureId::MUMMY }, {1}, { });
-}
-
 CreatureFactory CreatureFactory::insects(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::SPIDER}, {1});
 }
@@ -862,7 +836,7 @@ CreatureFactory CreatureFactory::gnomishMines(TribeId peaceful, TribeId enemy, i
       make_tuple(CreatureId::RAT, 100., enemy)});
 }
 
-static ViewId getViewId(bool humanoid, bool large, bool body, bool wings) {
+static ViewId getSpecialViewId(bool humanoid, bool large, bool body, bool wings) {
   static vector<ViewId> specialViewIds {
     ViewId::SPECIAL_BLBN,
     ViewId::SPECIAL_BLBW,
@@ -951,16 +925,15 @@ static EnumMap<BodyPart, int> getSpecialBeastBody(bool large, bool living, bool 
   return parts[(!large) * 4 + (!living) * 2 + wings];
 }
 
-PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, const ControllerFactory& factory) {
-  bool wings = Random.roll(2);
-  bool living = Random.roll(2);
+PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, bool living, bool wings,
+    const ControllerFactory& factory) {
   Body body = Body(humanoid, living ? Body::Material::FLESH : Body::Material::SPIRIT,
       large ? Body::Size::LARGE : Body::Size::MEDIUM);
   if (wings)
     body.addWings();
   string name = getSpeciesName(humanoid, large, living, wings);
   PCreature c = get(CATTR(
-        c.viewId = getViewId(humanoid, large, living, wings);
+        c.viewId = getSpecialViewId(humanoid, large, living, wings);
         c.isSpecial = true;
         c.body = body;
         c.attr[AttrType::SPEED] = Random.get(80, 120);
@@ -1021,8 +994,11 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
   return c;
 }
 
-
 CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
+  return getAttributesFromId(id).setCreatureId(id);
+}
+
+CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
   switch (id) {
     case CreatureId::KEEPER: 
       return CATTR(
@@ -1035,7 +1011,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
           c.name->useFullTitle();
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::STR_BONUS);
           c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.minionTasks.setValue(MinionTask::CRAFT, 0.0001);
           c.minionTasks.setValue(MinionTask::TRAIN, 0.0001); 
@@ -1044,7 +1020,55 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.skills.setValue(SkillId::MANA, 1);
           );
-    case CreatureId::BANDIT: 
+    case CreatureId::KEEPER_F:
+      return CATTR(
+          c.viewId = ViewId::KEEPER_F;
+          c.attr[AttrType::SPEED] = 100;
+          c.gender = Gender::female;
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.attr[AttrType::STRENGTH] = 13;
+          c.attr[AttrType::DEXTERITY] = 17;
+          c.barehandedDamage = 5;
+          c.name = "Keeper";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+          c.name->useFullTitle();
+          c.spells->add(SpellId::HEALING);
+          c.minionTasks.setValue(MinionTask::STUDY, 1);
+          c.minionTasks.setValue(MinionTask::CRAFT, 0.0001);
+          c.minionTasks.setValue(MinionTask::TRAIN, 0.0001);
+          c.minionTasks.setValue(MinionTask::THRONE, 0.0001);
+          c.skills.setValue(SkillId::SORCERY, 0.2);
+          c.skills.setValue(SkillId::LABORATORY, 0.2);
+          c.skills.setValue(SkillId::MANA, 1);
+          );
+    case CreatureId::ADVENTURER:
+      return CATTR(
+          c.viewId = ViewId::PLAYER;
+          c.attr[AttrType::SPEED] = 100;
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.attr[AttrType::STRENGTH] = 15;
+          c.attr[AttrType::DEXTERITY] = 15;
+          c.barehandedDamage = 5;
+          c.maxExpFromCombat = 15;
+          c.name = "Adventurer";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+          c.name->useFullTitle();
+          c.skills.insert(SkillId::AMBUSH););
+    case CreatureId::ADVENTURER_F:
+      return CATTR(
+          c.viewId = ViewId::PLAYER_F;
+          c.gender = Gender::female;
+          c.attr[AttrType::SPEED] = 100;
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.attr[AttrType::STRENGTH] = 13;
+          c.attr[AttrType::DEXTERITY] = 17;
+          c.barehandedDamage = 5;
+          c.maxExpFromCombat = 15;
+          c.name = "Adventurer";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+          c.name->useFullTitle();
+          c.skills.setValue(SkillId::ARCHERY, 0.6););
+    case CreatureId::BANDIT:
       return CATTR(
           c.viewId = ViewId::BANDIT;
           c.attr[AttrType::SPEED] = 100;
@@ -1485,7 +1509,7 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.name = CreatureName("mummy", "mummies"););
-    case CreatureId::ORC: 
+    case CreatureId::ORC:
       return CATTR(
           c.viewId = ViewId::ORC;
           c.attr[AttrType::SPEED] = 100;
@@ -1503,7 +1527,6 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.skills.setValue(SkillId::WORKSHOP, 0.3);
           c.skills.setValue(SkillId::FORGE, 0.3);
-          c.recruitmentCost = 50;
           c.name = "orc";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );
@@ -1516,7 +1539,6 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.attr[AttrType::DEXTERITY] = 11;
           c.barehandedDamage = 3;
           c.spawnType = SpawnType::HUMANOID;
-          c.recruitmentCost = 50;
           c.minionTasks.setValue(MinionTask::CRAFT, 4);
           c.minionTasks.setValue(MinionTask::STUDY, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
@@ -1545,7 +1567,6 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::LABORATORY, 0.3);
           c.gender = Gender::female;
-          c.recruitmentCost = 50;
           c.skills.setValue(SkillId::ARCHERY, 1);
           c.name = CreatureName("harpy", "harpies");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
@@ -1663,7 +1684,6 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.skills.setValue(SkillId::WORKSHOP, 0.5);
           c.skills.setValue(SkillId::FORGE, 0.5);
           c.skills.setValue(SkillId::FURNACE, 0.9);
-          c.recruitmentCost = 100;
           );
     case CreatureId::CHICKEN: 
       return CATTR(
@@ -1863,7 +1883,6 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
-          c.recruitmentCost = 140;
           c.name = CreatureName("dark elf", "dark elves"););
     case CreatureId::DARK_ELF_CHILD:
       return CATTR(
@@ -2345,6 +2364,9 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
 
 ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
   switch (id) {
+    case CreatureId::ADVENTURER:
+    case CreatureId::ADVENTURER_F:
+      return Player::getFactory(new MapMemory());
     case CreatureId::KRAKEN:
       return ControllerFactory([=](Creature* c) {
           return SController(new KrakenController(c));
@@ -2360,14 +2382,38 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
 PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) {
   ControllerFactory factory = Monster::getFactory(aiFactory);
   switch (id) {
-    case CreatureId::SPECIAL_BL:
-      return getSpecial(tribe, false, true, factory);
-    case CreatureId::SPECIAL_BM:
-      return getSpecial(tribe, false, false, factory);
-    case CreatureId::SPECIAL_HL:
-      return getSpecial(tribe, true, true, factory);
-    case CreatureId::SPECIAL_HM:
-      return getSpecial(tribe, true, false, factory);
+    case CreatureId::SPECIAL_BLBN:
+      return getSpecial(tribe, false, true, true, false, factory);
+    case CreatureId::SPECIAL_BLBW:
+      return getSpecial(tribe, false, true, true, true, factory);
+    case CreatureId::SPECIAL_BLGN:
+      return getSpecial(tribe, false, true, false, false, factory);
+    case CreatureId::SPECIAL_BLGW:
+      return getSpecial(tribe, false, true, false, true, factory);
+    case CreatureId::SPECIAL_BMBN:
+      return getSpecial(tribe, false, false, true, false, factory);
+    case CreatureId::SPECIAL_BMBW:
+      return getSpecial(tribe, false, false, true, true, factory);
+    case CreatureId::SPECIAL_BMGN:
+      return getSpecial(tribe, false, false, false, false, factory);
+    case CreatureId::SPECIAL_BMGW:
+      return getSpecial(tribe, false, false, false, true, factory);
+    case CreatureId::SPECIAL_HLBN:
+      return getSpecial(tribe, true, true, true, false, factory);
+    case CreatureId::SPECIAL_HLBW:
+      return getSpecial(tribe, true, true, true, true, factory);
+    case CreatureId::SPECIAL_HLGN:
+      return getSpecial(tribe, true, true, false, false, factory);
+    case CreatureId::SPECIAL_HLGW:
+      return getSpecial(tribe, true, true, false, true, factory);
+    case CreatureId::SPECIAL_HMBN:
+      return getSpecial(tribe, true, false, true, false, factory);
+    case CreatureId::SPECIAL_HMBW:
+      return getSpecial(tribe, true, false, true, true, factory);
+    case CreatureId::SPECIAL_HMGN:
+      return getSpecial(tribe, true, false, false, false, factory);
+    case CreatureId::SPECIAL_HMGW:
+      return getSpecial(tribe, true, false, false, true, factory);
     case CreatureId::SOKOBAN_BOULDER:
       return getSokobanBoulder(tribe);
     default: return get(getAttributes(id), tribe, getController(id, aiFactory));
@@ -2439,9 +2485,20 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList().add(ItemId::GOLD_PIECE, Random.get(600, 1000));
     case CreatureId::ANGEL:
       return ItemList().add(ItemId::SPECIAL_SWORD);
-    case CreatureId::KEEPER: 
+    case CreatureId::KEEPER_F:
+    case CreatureId::KEEPER:
       return ItemList()
         .add(ItemId::ROBE);
+    case CreatureId::ADVENTURER_F:
+    case CreatureId::ADVENTURER:
+      return ItemList()
+        .add(ItemId::FIRST_AID_KIT)
+        .add(ItemId::KNIFE)
+        .add(ItemId::SWORD)
+        .add(ItemId::LEATHER_GLOVES)
+        .add(ItemId::LEATHER_ARMOR)
+        .add(ItemId::LEATHER_HELM)
+        .add(ItemId::GOLD_PIECE, Random.get(80, 130));
     case CreatureId::DEATH:
       return ItemList()
         .add(ItemId::SCYTHE);
@@ -2558,10 +2615,6 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::ARROW, Random.get(20, 36))
         .add(ItemId::GOLD_PIECE, Random.get(10, 30))
         .add(randomBackup());
-    case CreatureId::MUMMY_LORD: 
-      return ItemList()
-        .add(ItemId::GOLD_PIECE, Random.get(100, 200)).add(
-            Random.choose(ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER, ItemId::SPECIAL_SWORD));
     case CreatureId::WITCH: 
       return ItemList()
         .add(ItemId::KNIFE)

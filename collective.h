@@ -38,7 +38,6 @@ class CollectiveTeams;
 class ConstructionMap;
 class Technology;
 class CollectiveConfig;
-class MinionAttraction;
 class CostInfo;
 struct TriggerInfo;
 class Territory;
@@ -50,6 +49,7 @@ class TileEfficiency;
 class Zones;
 struct ItemFetchInfo;
 class CollectiveWarnings;
+class Immigration;
 
 class Collective : public TaskCallback {
   public:
@@ -71,7 +71,9 @@ class Collective : public TaskCallback {
   void banishCreature(Creature*);
   bool wasBanished(const Creature*) const;
   void setVillainType(VillainType);
+  void setEnemyId(EnemyId);
   optional<VillainType> getVillainType() const;
+  optional<EnemyId> getEnemyId() const;
   CollectiveControl* getControl() const;
   double getLocalTime() const;
   double getGlobalTime() const;
@@ -92,8 +94,6 @@ class Collective : public TaskCallback {
   void setTrait(Creature* c, MinionTrait);
   void removeTrait(Creature* c, MinionTrait);
 
-  vector<Creature*> getRecruits() const;
-  void recruit(Creature*, Collective* to);
   bool canPillage() const;
   bool hasTradeItems() const;
   vector<Item*> getTradeItems() const;
@@ -175,6 +175,9 @@ class Collective : public TaskCallback {
   Workshops& getWorkshops();
   const Workshops& getWorkshops() const;
 
+  Immigration& getImmigration();
+  const Immigration& getImmigration() const;
+
   int getPopulationSize() const;
   int getMaxPopulation() const;
 
@@ -193,6 +196,11 @@ class Collective : public TaskCallback {
   bool isItemMarked(const Item*) const;
   int getNumItems(ItemIndex, bool includeMinions = true) const;
   optional<set<Position>> getStorageFor(const Item*) const;
+
+  void addKnownVillain(const Collective*);
+  bool isKnownVillain(const Collective*) const;
+  void addKnownVillainLocation(const Collective*);
+  bool isKnownVillainLocation(const Collective*) const;
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
@@ -229,9 +237,6 @@ class Collective : public TaskCallback {
   void decreaseMoraleForKill(const Creature* killer, const Creature* victim);
   void decreaseMoraleForBanishing(const Creature*);
 
-  double getAttractionValue(const MinionAttraction&);
-  double getImmigrantChance(const ImmigrantInfo&);
-
   bool isItemNeeded(const Item*) const;
   void addProducesMessage(const Creature*, const vector<PItem>&);
   int getDebt(ResourceId id) const;
@@ -267,11 +272,6 @@ class Collective : public TaskCallback {
   MoveInfo getWorkerMove(Creature*);
   MoveInfo getTeamMemberMove(Creature*);
   int getTaskDuration(const Creature*, MinionTask) const;
-  bool considerImmigrant(const ImmigrantInfo&);
-  void considerBuildingBeds();
-  bool considerNonSpawnImmigrant(const ImmigrantInfo&, vector<PCreature>);
-  void considerImmigration();
-  void considerBirths();
   void decayMorale();
   vector<Creature*> SERIAL(creatures);
   Creature* SERIAL(leader) = nullptr;
@@ -306,19 +306,18 @@ class Collective : public TaskCallback {
   void addMana(double);
   EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;
-  EntityMap<Creature, vector<AttractionInfo>> SERIAL(minionAttraction);
-  double getAttractionOccupation(const MinionAttraction&);
-  EntitySet<Creature> SERIAL(pregnancies);
   HeapAllocated<CollectiveTeams> SERIAL(teams);
   HeapAllocated<CollectiveName> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
   EntitySet<Creature> SERIAL(banished);
   optional<VillainType> SERIAL(villainType);
+  optional<EnemyId> SERIAL(enemyId);
   unique_ptr<Workshops> SERIAL(workshops);
   HeapAllocated<Zones> SERIAL(zones);
   HeapAllocated<TileEfficiency> SERIAL(tileEfficiency);
   HeapAllocated<CollectiveWarnings> SERIAL(warnings);
+  HeapAllocated<Immigration> SERIAL(immigration);
   mutable optional<double> dangerLevelCache;
+  unordered_set<const Collective*> SERIAL(knownVillains);
+  unordered_set<const Collective*> SERIAL(knownVillainLocations);
 };
-
-BOOST_CLASS_VERSION(Collective, 1)

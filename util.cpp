@@ -615,6 +615,10 @@ Range::Range(int a, int b) : start(a), finish(b) {
 }
 Range::Range(int a) : Range(0, a) {}
 
+Range Range::singleElem(int a) {
+  return Range(a, a + 1);
+}
+
 Range Range::reverse() {
   Range r(finish - 1, start - 1);
   r.increment = -1;
@@ -645,6 +649,10 @@ int Range::getStart() const {
 
 int Range::getEnd() const {
   return finish;
+}
+
+int Range::getLength() const {
+  return finish - start;
 }
 
 Range::Iter Range::begin() {
@@ -972,4 +980,14 @@ int getSize(const std::string& s) {
 
 const char* getString(const std::string& s) {
   return s.c_str();
+}
+
+string combineWithOr(const vector<string>& elems) {
+  string ret;
+  for (auto& elem : elems) {
+    if (!ret.empty())
+      ret += " or ";
+    ret += elem;
+  }
+  return ret;
 }

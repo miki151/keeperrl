@@ -20,7 +20,7 @@ const Table<Campaign::SiteInfo>& Campaign::getSites() const {
 bool Campaign::canEmbark(Vec2 pos) const {
   if (type == CampaignType::CAMPAIGN)
     return false;
-  switch (playerType) {
+  switch (playerRole) {
     case ADVENTURER: return !!sites[pos].dweller;
     case KEEPER: return !sites[pos].dweller && !sites[pos].blocked;
   }
@@ -51,7 +51,7 @@ void Campaign::clearSite(Vec2 v) {
 }
 
 vector<Campaign::VillainInfo> Campaign::getMainVillains() {
-  switch (playerType) {
+  switch (playerRole) {
     case KEEPER:
       return {
         {ViewId::AVATAR, EnemyId::KNIGHTS, "Knights", VillainType::MAIN},
@@ -77,7 +77,7 @@ vector<Campaign::VillainInfo> Campaign::getMainVillains() {
 }
 
 vector<Campaign::VillainInfo> Campaign::getLesserVillains() {
-  switch (playerType) {
+  switch (playerRole) {
     case KEEPER:
       return {
         {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", VillainType::LESSER},
@@ -102,10 +102,11 @@ vector<Campaign::VillainInfo> Campaign::getLesserVillains() {
 }
 
 vector<Campaign::VillainInfo> Campaign::getAllies() {
-  switch (playerType) {
+  switch (playerRole) {
     case KEEPER:
       return {
-        {ViewId::UNKNOWN_MONSTER, EnemyId::FRIENDLY_CAVE, "Unknown", VillainType::ALLY},
+        {ViewId::UNKNOWN_MONSTER, EnemyId::OGRE_CAVE, "Unknown", VillainType::ALLY},
+        {ViewId::UNKNOWN_MONSTER, EnemyId::HARPY_CAVE, "Unknown", VillainType::ALLY},
         {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "Unknown", VillainType::ALLY},
         {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::ALLY},
         {ViewId::GNOME_BOSS, EnemyId::GNOMES, "Gnomes", VillainType::ALLY},
@@ -271,7 +272,7 @@ static VillainLimits getLimits(CampaignType type, Options* options) {
 }
 
 optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, function<RetiredGames()> genRetired,
-    RandomGen& random, PlayerType playerType) {
+    RandomGen& random, PlayerRole playerRole) {
   Vec2 size(16, 9);
   int numBlocked = 0.6 * size.x * size.y;
   Table<SiteInfo> terrain = getTerrain(random, size, numBlocked);
@@ -294,12 +295,12 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, funct
     options->setLimits(OptionId::LESSER_VILLAINS, 0, 6); 
     options->setLimits(OptionId::ALLIES, 0, 4); 
     options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6);
-    options->setChoices(OptionId::KEEPER_GENDER, {ViewId::KEEPER, ViewId::WITCH});
-    options->setChoices(OptionId::ADVENTURER_GENDER, {ViewId::PLAYER});
+    options->setChoices(OptionId::KEEPER_TYPE, {CreatureId::KEEPER, CreatureId::KEEPER_F});
+    options->setChoices(OptionId::ADVENTURER_TYPE, {CreatureId::ADVENTURER, CreatureId::ADVENTURER_F});
     auto limits = getLimits(type, options);
     vector<VillainInfo> mainVillains;
     Campaign campaign(terrain, type);
-    campaign.playerType = playerType;
+    campaign.playerRole = playerRole;
     campaign.worldName = worldName;
     int numRetired = retired ? min(limits.numMain, retired->getNumActive()) : 0;
     while (mainVillains.size() < limits.numMain - numRetired)
@@ -369,8 +370,8 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, funct
             break;
         case CampaignActionId::UPDATE_OPTION:
             switch (action.get<OptionId>()) {
-              case OptionId::KEEPER_GENDER:
-              case OptionId::ADVENTURER_GENDER:
+              case OptionId::KEEPER_TYPE:
+              case OptionId::ADVENTURER_TYPE:
                 if (campaign.playerPos) {
                   campaign.setPlayerPos(*campaign.playerPos, options);
                 }
@@ -387,7 +388,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, funct
               campaign.setPlayerPos(action.get<Vec2>(), options);
             break;
         case CampaignActionId::CONFIRM:
-            if (!retired || numRetired > 0 || playerType != KEEPER ||
+            if (!retired || numRetired > 0 || playerRole != KEEPER ||
                 retired->getAllGames().empty() ||
                 view->yesOrNoPrompt("The imps are going to be sad if you don't add any retired dungeons. Continue?"))
               return campaign;
@@ -399,12 +400,12 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, funct
 }
 
 void Campaign::setPlayerPos(Vec2 pos, Options* options) {
-  switch (playerType) {
+  switch (playerRole) {
     case KEEPER:
       if (playerPos)
         clearSite(*playerPos);
       playerPos = pos;
-      sites[*playerPos].dweller = KeeperInfo{options->getViewIdValue(OptionId::KEEPER_GENDER)};
+      sites[*playerPos].dweller = KeeperInfo{CreatureFactory::getViewId(options->getCreatureId(OptionId::KEEPER_TYPE))};
       break;
     case ADVENTURER:
       playerPos = pos;
@@ -433,12 +434,12 @@ map<string, string> Campaign::getParameters() const {
     {"lesser", toString(numLesser)},
     {"allies", toString(numAlly)},
     {"retired", toString(numRetired)},
-    {"type", playerType == KEEPER ? "keeper" : "adventurer"}
+    {"type", playerRole == KEEPER ? "keeper" : "adventurer"}
   };
 }
 
-Campaign::PlayerType Campaign::getPlayerType() const {
-  return playerType;
+Campaign::PlayerRole Campaign::getPlayerRole() const {
+  return playerRole;
 }
 
 vector<OptionId> Campaign::getSecondaryOptions() const {
@@ -453,23 +454,23 @@ vector<OptionId> Campaign::getSecondaryOptions() const {
 }
 
 vector<OptionId> Campaign::getPrimaryOptions() const {
-  switch (playerType) {
+  switch (playerRole) {
     case KEEPER:
-      return {OptionId::KEEPER_NAME, OptionId::KEEPER_GENDER};
+      return {OptionId::KEEPER_NAME, OptionId::KEEPER_TYPE};
     case ADVENTURER:
-      return {OptionId::ADVENTURER_NAME, OptionId::ADVENTURER_GENDER};
+      return {OptionId::ADVENTURER_NAME, OptionId::ADVENTURER_TYPE};
   }
 }
 
 const char* Campaign::getSiteChoiceTitle() const {
-   switch (playerType) {
+   switch (playerRole) {
     case KEEPER: return "Choose the location of your base:";
     case ADVENTURER: return "Choose a location to start your adventure:";
   }
 }
 
 const char* Campaign::getIntroText() const {
-   switch (playerType) {
+   switch (playerRole) {
     case KEEPER:
       return
         "Welcome to the campaign mode! "

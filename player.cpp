@@ -60,8 +60,8 @@ SERIALIZABLE(Player);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
-Player::Player(Creature* c, Model* m, bool adv, MapMemory* memory) :
-    Controller(c), levelMemory(memory), eventProxy(this, m), adventurer(adv), displayGreeting(adventurer) {
+Player::Player(Creature* c, bool adv, MapMemory* memory) :
+    Controller(c), levelMemory(memory), eventProxy(this), adventurer(adv), displayGreeting(adventurer) {
   visibilityMap->update(c, c->getVisibleTiles());
 }
 
@@ -122,8 +122,8 @@ void Player::onEvent(const GameEvent& event) {
   }
 }
 
-ControllerFactory Player::getFactory(Model* m, MapMemory* levelMemory) {
-  return ControllerFactory([=](Creature* c) { return SController(new Player(c, m, true, levelMemory));});
+ControllerFactory Player::getFactory(MapMemory* levelMemory) {
+  return ControllerFactory([=](Creature* c) { return SController(new Player(c, true, levelMemory));});
 }
 
 static string getSlotSuffix(EquipmentSlot slot) {
@@ -537,6 +537,8 @@ vector<Player::CommandInfo> Player::getCommands() const {
 }
 
 void Player::makeMove() {
+  if (!eventProxy->isSubscribed())
+    eventProxy->subscribeTo(getCreature()->getPosition().getModel());
   if (adventurer)
     considerAdventurerMusic();
   if (currentTimePos && currentTimePos->pos.getLevel() != getCreature()->getLevel()) {
@@ -802,7 +804,7 @@ void Player::you(MsgType type, const string& param) {
     case MsgType::HIT: msg = "You hit " + param; break;
     default: break;
   }
-  privateMessage(msg);
+  privateMessage(PlayerMessage(msg, MessagePriority::HIGH));
 }
 
 Level* Player::getLevel() const {

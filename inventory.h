@@ -20,24 +20,10 @@
 #include "util.h"
 #include "unique_entity.h"
 #include "indexed_vector.h"
+#include "item_index.h"
 
 class Item;
 
-RICH_ENUM(ItemIndex,
-  GOLD,
-  WOOD,
-  IRON,
-  STEEL,
-  STONE,
-  REVIVABLE_CORPSE,
-  CORPSE,
-  WEAPON,
-  TRAP,
-  MINION_EQUIPMENT,
-  RANGED_WEAPON,
-  CAN_EQUIP,
-  FOR_SALE
-);
 
 class Inventory {
   public:

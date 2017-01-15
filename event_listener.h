@@ -101,6 +101,7 @@ class EventListener {
 
   void subscribeTo(Model*);
   void unsubscribe();
+  bool isSubscribed() const;
 
   virtual void onEvent(const GameEvent&) = 0;
 

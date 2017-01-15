@@ -25,9 +25,13 @@ class Tribe;
 class ItemType;
 class CreatureAttributes;
 class ControllerFactory;
+class Gender;
 
 RICH_ENUM(CreatureId,
     KEEPER,
+    KEEPER_F,
+    ADVENTURER,
+    ADVENTURER_F,
 
     GOBLIN, 
     ORC,
@@ -37,10 +41,22 @@ RICH_ENUM(CreatureId,
     DOPPLEGANGER,
     BANDIT,
 
-    SPECIAL_BL,
-    SPECIAL_BM,
-    SPECIAL_HL,
-    SPECIAL_HM,
+    SPECIAL_BLBN,
+    SPECIAL_BLBW,
+    SPECIAL_BLGN,
+    SPECIAL_BLGW,
+    SPECIAL_BMBN,
+    SPECIAL_BMBW,
+    SPECIAL_BMGN,
+    SPECIAL_BMGW,
+    SPECIAL_HLBN,
+    SPECIAL_HLBW,
+    SPECIAL_HLGN,
+    SPECIAL_HLGW,
+    SPECIAL_HMBN,
+    SPECIAL_HMBW,
+    SPECIAL_HMGN,
+    SPECIAL_HMGW,
 
     GHOST,
     SPIRIT,
@@ -71,7 +87,6 @@ RICH_ENUM(CreatureId,
     VAMPIRE,
     VAMPIRE_LORD,
     MUMMY,
-    MUMMY_LORD,
     SKELETON,
     
     GNOME,
@@ -175,7 +190,6 @@ class CreatureFactory {
   static CreatureFactory orcTown(TribeId);
   static CreatureFactory splash(TribeId);
   static CreatureFactory singleType(TribeId, CreatureId);
-  static CreatureFactory pyramid(TribeId, int level);
   static CreatureFactory insects(TribeId tribe);
   static CreatureFactory lavaCreatures(TribeId tribe);
   static CreatureFactory waterCreatures(TribeId tribe);
@@ -191,17 +205,18 @@ class CreatureFactory {
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
   static PCreature getGhost(Creature*);
   static PCreature getIllusion(Creature*);
-  static PCreature getAdventurer(Model*, int handicap);
 
   static PCreature addInventory(PCreature c, const vector<ItemType>& items);
   static CreatureAttributes getKrakenAttributes(ViewId);
+  static ViewId getViewId(CreatureId);
+  static const Gender& getGender(CreatureId);
 
   static void init();
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
 
-  SERIALIZATION_DECL(CreatureFactory);
+  SERIALIZATION_DECL(CreatureFactory)
 
   private:
   CreatureFactory(TribeId tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
@@ -210,9 +225,10 @@ class CreatureFactory {
       const vector<CreatureId>& unique = {});
   static void initSplash(TribeId);
   static PCreature getSokobanBoulder(TribeId);
-  static PCreature getSpecial(TribeId, bool humanoid, bool large, const ControllerFactory&);
+  static PCreature getSpecial(TribeId, bool humanoid, bool large, bool living, bool wings, const ControllerFactory&);
   static PCreature get(CreatureId, TribeId, MonsterAIFactory);
   static PCreature get(const CreatureAttributes&, TribeId, const ControllerFactory&);
+  static CreatureAttributes getAttributesFromId(CreatureId);
   static CreatureAttributes getAttributes(CreatureId id);
   TribeId getTribeFor(CreatureId);
   optional<TribeId> SERIAL(tribe);

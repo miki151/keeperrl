@@ -22,6 +22,8 @@
 #include "serialization.h"
 #include "hashing.h"
 #include "owner_pointer.h"
+#include "container_helpers.h"
+#include "container_range.h"
 
 template <class T>
 string toString(const T& t) {
@@ -84,7 +86,7 @@ DEF_SHARED_PTR(Controller);
 DEF_UNIQUE_PTR(Trigger);
 DEF_UNIQUE_PTR(Level);
 DEF_UNIQUE_PTR(VillageControl);
-DEF_UNIQUE_PTR(GuiElem);
+DEF_SHARED_PTR(GuiElem);
 DEF_UNIQUE_PTR(Animation);
 DEF_UNIQUE_PTR(ViewObject);
 DEF_UNIQUE_PTR(Collective);
@@ -152,6 +154,9 @@ bool endsWith(const string&, const string& suffix);
 
 vector<string> split(const string& s, const set<char>& delim);
 vector<string> removeEmpty(const vector<string>&);
+string combineWithOr(const vector<string>&);
+
+
 
 class Rectangle;
 class RandomGen;
@@ -222,6 +227,7 @@ class Range {
   public:
   Range(int start, int end);
   explicit Range(int end);
+  static Range singleElem(int);
 
   bool isEmpty() const;
   Range reverse();
@@ -229,6 +235,7 @@ class Range {
 
   int getStart() const;
   int getEnd() const;
+  int getLength() const;
 
   class Iter {
     public:
@@ -249,12 +256,13 @@ class Range {
   Iter begin();
   Iter end();
 
-  SERIALIZATION_DECL(Range);
+  SERIALIZATION_DECL(Range)
+  HASH_ALL(start, finish, increment)
   
   private:
-  int SERIAL(start) = 0;
-  int SERIAL(finish) = 0;
-  int SERIAL(increment) = 1;
+  int SERIAL(start) = 0; // HASH(start)
+  int SERIAL(finish) = 0; // HASH(finish)
+  int SERIAL(increment) = 1; // HASH(increment)
 };
 
 class Rectangle {
@@ -816,8 +824,9 @@ map<V, vector<T> > groupBy(const vector<T>& values, function<V (const T&)> getKe
 
 template <typename T>
 vector<T> getSubsequence(const vector<T>& v, int start, int length) {
-  CHECK(start >= 0 && length > 0 && start + length <= v.size());
+  CHECK(start >= 0 && length >= 0 && start + length <= v.size());
   vector<T> ret;
+  ret.reserve(length);
   for (int i : Range(start, start + length))
     ret.push_back(v[i]);
   return ret;
@@ -1087,116 +1096,6 @@ std::ostream& operator<<(std::ostream& d, const Table<T>& container){
   return d;
 }
 
-template<class T>
-void removeIndex(vector<T>& v, int index) {
-  v[index] = std::move(v.back());
-  v.pop_back();
-}
-
-template<class T>
-optional<int> findAddress(const vector<T>& v, const T* ptr) {
-  for (int i : All(v))
-    if (&v[i] == ptr)
-      return i;
-  return none;
-}
-
-template<class T>
-optional<int> findElement(const vector<T>& v, const T& element) {
-  for (int i : All(v))
-    if (v[i] == element)
-      return i;
-  return none;
-}
-
-template<class T>
-optional<int> findElement(const vector<T*>& v, const T* element) {
-  for (int i : All(v))
-    if (v[i] == element)
-      return i;
-  return none;
-}
-
-template<class T>
-optional<int> findElement(const vector<unique_ptr<T>>& v, const T* element) {
-  for (int i : All(v))
-    if (v[i].get() == element)
-      return i;
-  return none;
-}
-
-template<class T>
-bool removeElementMaybe(vector<T>& v, const T& element) {
-  if (auto ind = findElement(v, element)) {
-    removeIndex(v, *ind);
-    return true;
-  }
-  return false;
-}
-
-template<class T>
-void removeElement(vector<T>& v, const T& element) {
-  auto ind = findElement(v, element);
-  CHECK(ind) << "Element not found";
-  removeIndex(v, *ind);
-}
-
-template<class T>
-unique_ptr<T> removeElement(vector<unique_ptr<T>>& v, const T* element) {
-  auto ind = findElement(v, element);
-  CHECK(ind) << "Element not found";
-  unique_ptr<T> ret = std::move(v[*ind]);
-  removeIndex(v, *ind);
-  return ret;
-}
-template<class T>
-void removeElement(vector<T*>& v, const T* element) {
-  auto ind = findElement(v, element);
-  CHECK(ind) << "Element not found";
-  removeIndex(v, *ind);
-}
-
-template<class T>
-T getOnlyElement(const vector<T>& v) {
-  CHECK(v.size() == 1) << v.size();
-  return v[0];
-}
-
-template<class T>
-T& getOnlyElement(vector<T>& v) {
-  CHECK(v.size() == 1) << v.size();
-  return v[0];
-}
-
-// TODO: write a template that works with all containers
-template<class T>
-T getOnlyElement(const set<T>& v) {
-  CHECK(v.size() == 1) << v.size();
-  return *v.begin();
-}
-
-template<class T>
-T getOnlyElement(vector<T>&& v) {
-  CHECK(v.size() == 1) << v.size();
-  return std::move(v[0]);
-}
-
-template <typename T>
-void emplaceBack(vector<T>&) {}
-
-template <typename T, typename First, typename... Args>
-void emplaceBack(vector<T>& v, First&& first, Args&&... args) {
-  v.emplace_back(std::move(std::forward<First>(first)));
-  emplaceBack(v, std::forward<Args>(args)...);
-}
-
-template <typename T, typename... Args>
-vector<T> makeVec(Args&&... args) {
-  vector<T> ret;
-  emplaceBack(ret, args...);
-  return ret;
-}
-
 string addAParticle(const string& s);
 
 string capitalFirst(string s);
@@ -1440,16 +1339,6 @@ class BiMap {
     m2.erase(v);
   }
 
-  V& get(const U& u) {
-    CHECK(m1.count(u));
-    return m1.at(u);
-  }
-
-  U& get(const V& v) {
-    CHECK(m2.count(v));
-    return m2.at(v);
-  }
-
   const V& get(const U& u) const {
     CHECK(m1.count(u));
     return m1.at(u);
@@ -1458,6 +1347,22 @@ class BiMap {
   const U& get(const V& v) const {
     CHECK(m2.count(v));
     return m2.at(v);
+  }
+
+  const pair<U, V> getFront1() {
+    return *m1.begin();
+  }
+
+  const pair<V, U> getFront2() {
+    return *m2.begin();
+  }
+
+  int getSize() const {
+    return m1.size();
+  }
+
+  bool isEmpty() const {
+    return m1.empty();
   }
 
   template <class Archive> 
@@ -1596,6 +1501,11 @@ function<void(Args...)> bindMethod(void (T::*ptr) (Args...), T* t) {
   return [=](Args... a) { (t->*ptr)(a...);};
 }
 
+template <typename Ret, typename T, typename... Args>
+function<Ret(Args...)> bindMethod(Ret (T::*ptr) (Args...), T* t) {
+  return [=](Args... a) { return (t->*ptr)(a...);};
+}
+
 template <typename... Args>
 function<void(Args...)> bindFunction(void (*ptr) (Args...)) {
   return [=](Args... a) { (*ptr)(a...);};
@@ -1630,6 +1540,81 @@ class DisjointSets {
   vector<int> father;
   vector<int> size;
 };
+
+template <typename ReturnType, typename... Lambdas>
+struct LambdaVisitor;
+
+template <typename ReturnType, typename Lambda1, typename... Lambdas>
+struct LambdaVisitor< ReturnType, Lambda1 , Lambdas...> : public Lambda1, public LambdaVisitor<ReturnType, Lambdas...> {
+    using Lambda1::operator();
+    using LambdaVisitor<ReturnType, Lambdas...>::operator();
+    LambdaVisitor(Lambda1 l1, Lambdas... lambdas)
+      : Lambda1(l1), LambdaVisitor<ReturnType, Lambdas...> (lambdas...)
+    {}
+};
+
+template <typename ReturnType, typename Lambda1>
+struct LambdaVisitor<ReturnType, Lambda1> : public boost::static_visitor<ReturnType>, public Lambda1 {
+    using Lambda1::operator();
+    LambdaVisitor(Lambda1 l1)
+      : boost::static_visitor<ReturnType>(), Lambda1(l1)
+    {}
+};
+
+template <typename ReturnType, typename... Lambdas>
+LambdaVisitor<ReturnType, Lambdas...> makeVisitor(Lambdas... lambdas) {
+  return LambdaVisitor<ReturnType, Lambdas...>(lambdas...);
+}
+
+struct DefaultOperator {
+  template <typename... T>
+  void operator() (const T&...) const {}
+};
+
+template <typename... Lambdas>
+LambdaVisitor<void, DefaultOperator, Lambdas...> makeDefaultVisitor(Lambdas... lambdas) {
+  return LambdaVisitor<void, DefaultOperator, Lambdas...>(DefaultOperator {}, lambdas...);
+}
+
+template <typename Visitor, typename Visitable>
+typename Visitor::result_type apply_visitor(Visitable& visitable, const Visitor& visitor) {
+  return visitable.apply_visitor(visitor);
+}
+
+template <typename T, typename ...Args>
+optional<T&> getType(variant<Args...>& v) {
+  if (auto ptr = boost::get<T>(&v))
+    return *ptr;
+  else
+    return none;
+}
+
+template <typename Key, typename Map>
+optional<const typename Map::mapped_type&> getReferenceMaybe(const Map& m, const Key& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
+
+template <typename Key, typename Map>
+optional<typename Map::mapped_type&> getReferenceMaybe(Map& m, const Key& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
+
+template <typename Key, typename Map>
+optional<typename Map::mapped_type> getValueMaybe(const Map& m, const Key& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
 
 extern int getSize(const string&);
 extern const char* getString(const string&);

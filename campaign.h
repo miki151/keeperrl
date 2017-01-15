@@ -48,11 +48,11 @@ class Campaign {
     SERIALIZE_ALL(viewId, dweller, blocked);
   };
 
-  enum PlayerType { ADVENTURER, KEEPER};
+  enum PlayerRole { ADVENTURER, KEEPER};
 
   const Table<SiteInfo>& getSites() const;
   void clearSite(Vec2);
-  static optional<Campaign> prepareCampaign(View*, Options*, function<RetiredGames()>, RandomGen&, PlayerType);
+  static optional<Campaign> prepareCampaign(View*, Options*, function<RetiredGames()>, RandomGen&, PlayerRole);
   optional<Vec2> getPlayerPos() const;
   const string& getWorldName() const;
   bool isDefeated(Vec2) const;
@@ -62,7 +62,7 @@ class Campaign {
   int getNumNonEmpty() const;
   bool canEmbark(Vec2) const;
   CampaignType getType() const;
-  PlayerType getPlayerType() const;
+  PlayerRole getPlayerRole() const;
 
   map<string, string> getParameters() const;
   vector<OptionId> getPrimaryOptions() const;
@@ -85,7 +85,7 @@ class Campaign {
   Table<bool> SERIAL(defeated);
   set<Vec2> SERIAL(influencePos);
   int SERIAL(influenceSize);
-  PlayerType SERIAL(playerType);
+  PlayerRole SERIAL(playerRole);
   void setPlayerPos(Vec2, Options* options);
   CampaignType SERIAL(type);
 };

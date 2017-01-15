@@ -20,64 +20,13 @@
 #include "minion_trait.h"
 #include "workshop_type.h"
 #include "cost_info.h"
+#include "position.h"
 
 enum class ItemClass;
 
 class Game;
 class Workshops;
-
-enum class AttractionId {
-  FURNITURE,
-  ITEM_INDEX,
-};
-
-class MinionAttraction : public EnumVariant<AttractionId, TYPES(FurnitureType, ItemIndex),
-    ASSIGN(FurnitureType, AttractionId::FURNITURE),
-    ASSIGN(ItemIndex, AttractionId::ITEM_INDEX)> {
-  using EnumVariant::EnumVariant;
-};
-
-namespace std {
-  template <> struct hash<MinionAttraction> {
-    size_t operator()(const MinionAttraction& t) const {
-      return (size_t)t.getId();
-    }
-  };
-}
-
-struct AttractionInfo {
-  AttractionInfo(MinionAttraction, double amountClaimed, double minAmount, bool mandatory = false);
-
-  SERIALIZATION_DECL(AttractionInfo);
-
-  MinionAttraction SERIAL(attraction);
-  double SERIAL(amountClaimed);
-  double SERIAL(minAmount);
-  bool SERIAL(mandatory);
-};
-
-struct ImmigrantInfo {
-  CreatureId SERIAL(id);
-  double SERIAL(frequency);
-  vector<AttractionInfo> SERIAL(attractions);
-  EnumSet<MinionTrait> SERIAL(traits);
-  bool SERIAL(spawnAtDorm);
-  int SERIAL(salary);
-  optional<TechId> SERIAL(techId);
-  optional<SunlightState> SERIAL(limit);
-  optional<Range> SERIAL(groupSize);
-  bool SERIAL(autoTeam);
-  bool SERIAL(ignoreSpawnType);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);
-};
-
-struct BirthSpawn {
-  CreatureId id;
-  double frequency;
-  optional<TechId> tech;
-};
+class ImmigrantInfo;
 
 struct PopulationIncrease {
   FurnitureType SERIAL(type);
@@ -154,12 +103,11 @@ struct FloorInfo {
 
 class CollectiveConfig {
   public:
-  static CollectiveConfig keeper(double immigrantFrequency, int payoutTime, double payoutMultiplier,
-      int maxPopulation, vector<PopulationIncrease>, vector<ImmigrantInfo>);
-  static CollectiveConfig withImmigrants(double immigrantFrequency, int maxPopulation, vector<ImmigrantInfo>);
+  static CollectiveConfig keeper(int immigrantInterval, int payoutTime, double payoutMultiplier,
+      int maxPopulation, vector<PopulationIncrease>, const vector<ImmigrantInfo>&);
+  static CollectiveConfig withImmigrants(int immigrantInterval, int maxPopulation, const vector<ImmigrantInfo>&);
   static CollectiveConfig noImmigrants();
 
-  CollectiveConfig& allowRecruiting(int minPopulation);
   CollectiveConfig& setLeaderAsFighter();
   CollectiveConfig& setGhostSpawns(double prob, int number);
   CollectiveConfig& setGuardian(GuardianInfo);
@@ -167,7 +115,7 @@ class CollectiveConfig {
   bool isLeaderFighter() const;
   bool getManageEquipment() const;
   bool getWorkerFollowLeader() const;
-  double getImmigrantFrequency() const;
+  int getImmigrantInterval() const;
   int getPayoutTime() const;
   double getPayoutMultiplier() const;
   bool getStripSpawns() const;
@@ -175,20 +123,20 @@ class CollectiveConfig {
   bool getEnemyPositions() const;
   bool getWarnings() const;
   bool getConstructions() const;
+  bool bedsLimitImmigration() const;
   int getMaxPopulation() const;
   int getNumGhostSpawns() const;
+  int getImmigrantTimeout() const;
   double getGhostProb() const;
-  optional<int> getRecruitingMinPopulation() const;
   bool sleepOnlyAtNight() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
-  vector<BirthSpawn> getBirthSpawns() const;
   unique_ptr<Workshops> getWorkshops() const;
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
 
-  bool activeImmigrantion(const Game*) const;
+  bool hasImmigrantion(bool currentlyActiveModel) const;
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
   const vector<FurnitureType>& getRoomsNeedingLight() const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
@@ -200,23 +148,25 @@ class CollectiveConfig {
   static bool canBuildOutsideTerritory(FurnitureType);
   static int getManaForConquering(VillainType);
 
-  SERIALIZATION_DECL(CollectiveConfig);
+  SERIALIZATION_DECL(CollectiveConfig)
+  CollectiveConfig(const CollectiveConfig&);
+  ~CollectiveConfig();
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };
-  CollectiveConfig(double immigrantFrequency, int payoutTime, double payoutMultiplier,
-      vector<ImmigrantInfo>, CollectiveType, int maxPopulation, vector<PopulationIncrease>);
+  CollectiveConfig(int immigrantInterval, int payoutTime, double payoutMultiplier,
+      const vector<ImmigrantInfo>&, CollectiveType, int maxPopulation, vector<PopulationIncrease>);
 
-  double SERIAL(immigrantFrequency);
+  int SERIAL(immigrantInterval);
   int SERIAL(payoutTime);
   double SERIAL(payoutMultiplier);
   int SERIAL(maxPopulation);
   vector<PopulationIncrease> SERIAL(populationIncreases);
   vector<ImmigrantInfo> SERIAL(immigrantInfo);
   CollectiveType SERIAL(type);
-  optional<int> SERIAL(recruitingMinPopulation);
   bool SERIAL(leaderAsFighter) = false;
   int SERIAL(spawnGhosts) = 0;
   double SERIAL(ghostProb) = 0;
   optional<GuardianInfo> SERIAL(guardianInfo);
+  void addBedRequirementToImmigrants();
 };

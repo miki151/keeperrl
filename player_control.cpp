@@ -72,13 +72,15 @@
 #include "tile_efficiency.h"
 #include "zones.h"
 #include "inventory.h"
+#include "immigration.h"
+#include "scroll_position.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl);
-  serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion, startImpNum);
+  serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
-  serializeAll(ar, knownVillains, knownVillainLocations, visibilityMap);
+  serializeAll(ar, visibilityMap);
   serializeAll(ar, messageHistory, eventProxy);
 }
 
@@ -104,7 +106,6 @@ struct PlayerControl::BuildInfo {
   enum BuildType {
     DIG,
     FURNITURE,
-    IMP,
     TRAP,
     DESTROY,
     ZONE,
@@ -133,7 +134,7 @@ struct PlayerControl::BuildInfo {
 
   BuildInfo(BuildType type, const string& n, const string& h = "", char key = 0, string group = "")
       : buildType(type), name(n), help(h), hotkey(key), groupName(group) {
-    CHECK(contains({DIG, IMP, FORBID_ZONE, DISPATCH, CLAIM_TILE, TORCH}, type));
+    CHECK(contains({DIG, FORBID_ZONE, DISPATCH, CLAIM_TILE, TORCH}, type));
   }
   BuildInfo(const vector<FurnitureLayer>& layers, const string& n, const string& h = "", char key = 0, string group = "")
       : buildType(DESTROY), name(n), help(h), hotkey(key), groupName(group), destroyLayers(layers) {
@@ -210,13 +211,13 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           {{RequirementId::TECHNOLOGY, TechId::JEWELLERY}}, "Produces magical rings and amulets.", 0, workshop),
       BuildInfo({FurnitureType::STEEL_FURNACE, {ResourceId::STONE, 500}}, "Steel furnace",
           {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}}, "Turns iron ore into steel.", 0, workshop),
-      BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::MANA, 60}}, "Ritual room", {},
+      BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::MANA, 60}}, "Demon shrine", {},
           "Summons various demons to your dungeon."),
-      BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 40}}, "Beast lair", {}, "Beasts sleep here."),
+      BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 40}}, "Beast cage", {}, "Beasts sleep here."),
       BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 80}}, "Graveyard", {},
           "Spot for hauling dead bodies and for undead creatures to sleep in.", 'g'),
       BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 20}}, "Prison", {}, "Captured enemies are kept here.", 0),
-      BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 100}}, "Torture room", {},
+      BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 100}}, "Torture table", {},
           "Can be used to torture prisoners.", 'u'),
       BuildInfo(BuildInfo::CLAIM_TILE, "Claim tile", "Claim a tile. Building anything has the same effect.", 0, "Orders"),
       BuildInfo(ZoneId::FETCH_ITEMS, ViewId::FETCH_ICON, "Fetch items",
@@ -264,13 +265,6 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
   return *buildInfo;
 }
 
-vector<PlayerControl::BuildInfo> PlayerControl::libraryInfo {
-  BuildInfo(BuildInfo::IMP, "Summon imp", "Click on a visible square on the map to summon an imp.", 'i'),
-};
-
-vector<PlayerControl::BuildInfo> PlayerControl::minionsInfo {
-};
-
 vector<PlayerControl::RoomInfo> PlayerControl::getRoomInfo() {
   vector<RoomInfo> ret;
   for (auto& bInfo : getBuildInfo())
@@ -311,13 +305,10 @@ PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(
   for(const Location* loc : level->getAllLocations())
     if (loc->isMarkedAsSurprise())
       surprises.insert(loc->getMiddle());
-  //col->getGame()->getOptions()->addTrigger(OptionId::SHOW_MAP, [&] (bool val) { seeEverything = val; });
 }
 
 PlayerControl::~PlayerControl() {
 }
-
-const int basicImpCost = 20;
 
 Creature* PlayerControl::getControlled() const {
   if (auto team = getCurrentTeam())
@@ -445,7 +436,7 @@ static vector<ItemType> marketItems {
 };
 
 void PlayerControl::addConsumableItem(Creature* creature) {
-  double scrollPos = 0;
+  ScrollPosition scrollPos;
   while (1) {
     Item* chosenItem = chooseEquipmentItem(creature, {}, [&](const Item* it) {
         return !getCollective()->getMinionEquipment().isOwner(it, creature)
@@ -616,7 +607,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
 }
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
-    double* scrollPos) {
+    ScrollPosition* scrollPos) {
   vector<Item*> availableItems;
   vector<Item*> usedItems;
   vector<Item*> allItems = getCollective()->getAllItems(predicate);
@@ -728,6 +719,13 @@ static optional<pair<ViewId, int>> getCostObj(CostInfo cost) {
     return none;
 }
 
+static optional<pair<ViewId, int>> getCostObj(const optional<CostInfo>& cost) {
+  if (cost)
+    return getCostObj(*cost);
+  else
+    return none;
+}
+
 string PlayerControl::getMinionName(CreatureId id) const {
   static map<CreatureId, string> names;
   if (!names.count(id))
@@ -809,13 +807,6 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
              buttons.push_back({elem.viewId, button.name, none});
            }
            break;
-      case BuildInfo::IMP: {
-           buttons.push_back({ViewId::IMP, button.name, make_pair(ViewId::MANA, getImpCost()),
-               "[" + toString(
-                   getCollective()->getCreatures({MinionTrait::WORKER}, {MinionTrait::PRISONER}).size()) + "]",
-               getImpCost() <= numResource[ResourceId::MANA] ?
-                  CollectiveInfo::Button::ACTIVE : CollectiveInfo::Button::GRAY_CLICKABLE});
-           break; }
       case BuildInfo::DESTROY:
            buttons.push_back({ViewId::DESTROY_BUTTON, button.name, none, "",
                    CollectiveInfo::Button::ACTIVE});
@@ -877,7 +868,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   info.tribeName = col->getName().getRace();
   info.triggers.clear();
   if (getGame()->isSingleModel()) {
-    if (!knownVillainLocations.count(col))
+    if (!getCollective()->isKnownVillainLocation(col))
       info.access = VillageInfo::Village::NO_LOCATION;
     else {
       info.access = VillageInfo::Village::LOCATION;
@@ -901,15 +892,10 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
     info.state = info.HOSTILE;
   else {
     info.state = info.FRIENDLY;
-    if (knownVillains.count(col)) {
-      if (!col->getRecruits().empty())
-        info.actions.push_back({VillageAction::RECRUIT});
+    if (getCollective()->isKnownVillain(col) || true) {
       if (col->hasTradeItems())
         info.actions.push_back({VillageAction::TRADE});
     } else if (getGame()->isVillainActive(col)){
-      if (!col->getRecruits().empty())
-        info.actions.push_back({VillageAction::RECRUIT,
-            string("You must discover the location of the ally first.")});
       if (col->hasTradeItems())
         info.actions.push_back({VillageAction::TRADE, string("You must discover the location of the ally first.")});
     }
@@ -917,8 +903,8 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   return info;
 }
 
-void PlayerControl::handleRecruiting(Collective* ally) {
-  double scrollPos = 0;
+/*void PlayerControl::handleRecruiting(Collective* ally) {
+  ScrollPosition scrollPos;
   vector<Creature*> recruited;
   vector<Creature*> transfers;
   while (1) {
@@ -950,10 +936,10 @@ void PlayerControl::handleRecruiting(Collective* ally) {
     for (Creature* c : transfers)
 //      if (getGame()->canTransferCreature(c, getCollective()->getLevel()->getModel()))
         getGame()->transferCreature(c, getModel());
-}
+}*/
 
 void PlayerControl::handleTrading(Collective* ally) {
-  double scrollPos = 0;
+  ScrollPosition scrollPos;
   const set<Position>& storage = getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT);
   if (storage.empty()) {
     getView()->presentText("Information", "You need a storage room for equipment in order to trade.");
@@ -1007,7 +993,7 @@ static vector<PItem> retrieveItems(Collective* col, vector<Item*> items) {
 }
 
 void PlayerControl::handlePillage(Collective* col) {
-  double scrollPos = 0;
+  ScrollPosition scrollPos;
   while (1) {
     struct PillageOption {
       vector<Item*> items;
@@ -1050,7 +1036,7 @@ vector<Collective*> PlayerControl::getKnownVillains(VillainType type) const {
     return getGame()->getVillains(type);
   else
     return filter(getGame()->getVillains(type), [this](Collective* c) {
-        return seeEverything || knownVillains.count(c);});
+        return seeEverything || getCollective()->isKnownVillain(c);});
 }
 
 vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
@@ -1185,6 +1171,142 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   }
 }
 
+void PlayerControl::fillImmigration(CollectiveInfo& info) const {
+  info.immigration.clear();
+  auto& immigration = getCollective()->getImmigration();
+  for (auto& elem : immigration.getAvailable()) {
+    const auto& candidate = elem.second.get();
+    const int count = candidate.getCreatures().size();
+    optional<int> timeRemaining;
+    if (auto time = candidate.getEndTime())
+      timeRemaining = (int)(*time - getGame()->getGlobalTime());
+    vector<string> infoLines;
+    candidate.getInfo().visitRequirements(makeDefaultVisitor(
+        [&](const Pregnancy&) {
+          optional<int> maxT;
+          for (Creature* c : getCollective()->getCreatures())
+            if (c->isAffected(LastingEffect::PREGNANT))
+              if (auto remaining = c->getTimeRemaining(LastingEffect::PREGNANT))
+                if (!maxT || *remaining > *maxT)
+                  maxT = *remaining;
+          if (maxT && (!timeRemaining || *maxT > *timeRemaining))
+            timeRemaining = maxT;
+        },
+        [&](const RecruitmentInfo& info) {
+          infoLines.push_back(
+              toString(info.getAvailableRecruits(getGame(), candidate.getInfo().getId(0)).size()) +
+              " recruits available.");
+        }
+    ));
+    Creature* c = candidate.getCreatures()[0];
+    string name = c->getName().multiple(count);
+    if (auto& s = c->getName().stackOnly())
+      name += " (" + *s + ")";
+    info.immigration.push_back(ImmigrantDataInfo {
+        immigration.getMissingRequirements(candidate),
+        infoLines,
+        getCostObj(candidate.getCost()),
+        name,
+        c->getViewObject().id(),
+        Range::singleElem((int) c->getAttributes().getVisibleExpLevel()),
+        count,
+        timeRemaining,
+        elem.first,
+        none,
+        candidate.getCreatedTime(),
+        candidate.getInfo().getKeybinding()
+    });
+  }
+  sort(info.immigration.begin(), info.immigration.end(),
+      [](const ImmigrantDataInfo& i1, const ImmigrantDataInfo& i2) {
+        return (i1.timeLeft && (!i2.timeLeft || *i1.timeLeft > *i2.timeLeft)) ||
+            (!i1.timeLeft && !i2.timeLeft && i1.id > i2.id);
+      });
+}
+
+void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
+  info.allImmigration.clear();
+  struct CreatureStats {
+    Range level;
+    PCreature creature;
+  };
+  static EnumMap<CreatureId, optional<CreatureStats>> creatureStats;
+  auto getStats = [&](CreatureId id) -> CreatureStats& {
+    if (!creatureStats[id]) {
+      int minL = 10000;
+      int maxL = -10000;
+      PCreature c;
+      for (int i : Range(100)) {
+        auto creature = CreatureFactory::fromId(id, TribeId::getKeeper());
+        minL = min(minL, (int)creature->getAttributes().getVisibleExpLevel());
+        maxL = max(maxL, (int)creature->getAttributes().getVisibleExpLevel());
+        if (!c)
+          c = std::move(creature);
+      }
+      creatureStats[id] = CreatureStats{Range(minL, maxL + 1), std::move(c)};
+    }
+    return *creatureStats[id];
+  };
+  for (auto elem : Iter(getCollective()->getConfig().getImmigrantInfo())) {
+    auto creatureId = elem->getId(0);
+    Creature* c = getStats(creatureId).creature.get();
+    optional<pair<ViewId, int>> costObj;
+    vector<string> requirements;
+    vector<string> infoLines;
+    elem->visitRequirements(makeVisitor<void>(
+        [&](const AttractionInfo& attraction) {
+          int required = attraction.amountClaimed;
+          requirements.push_back("Requires " + toString(required) + " " +
+              combineWithOr(transform2<string>(attraction.types,
+                  [&](const AttractionType& type) { return AttractionInfo::getAttractionName(type, required); })));
+        },
+        [&](const TechId& techId) {
+          requirements.push_back("Requires technology: " + Technology::get(techId)->getName());
+        },
+        [&](const SunlightState& state) {
+          requirements.push_back("Will only join during the "_s + SunlightInfo::getText(state));
+        },
+        [&](const FurnitureType& type) {
+          requirements.push_back("Requires at least one " + Furniture::getName(type));
+        },
+        [&](const CostInfo& cost) {
+          costObj = getCostObj(cost);
+        },
+        [&](const ExponentialCost& cost) {
+          auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.base.id);
+          costObj = make_pair(resourceInfo.viewId, cost.base.value);
+          infoLines.push_back("Cost doubles for every " + toString(cost.numToDoubleCost) + " "
+              + c->getName().plural());
+          if (cost.numFree > 0)
+            infoLines.push_back("First " + toString(cost.numFree) + " " + c->getName().plural() + " are free.");
+        },
+        [&](const Pregnancy&) {
+          requirements.push_back("Requires a pregnant succubus");
+        },
+        [&](const RecruitmentInfo& info) {
+          if (info.findEnemy(getGame()))
+            requirements.push_back("Ally must be discovered and have recruits available.");
+          else
+            requirements.push_back("Recruit is not available in this game.");
+        }
+    ));
+    if (auto limit = elem->getLimit())
+      infoLines.push_back("Limited to " + toString(*limit) + " creatures.");
+    info.allImmigration.push_back(ImmigrantDataInfo {
+        requirements,
+        infoLines,
+        costObj,
+        c->getName().stack(),
+        c->getViewObject().id(),
+        getStats(creatureId).level,
+        0,
+        none,
+        elem.index(),
+        getCollective()->getImmigration().getAutoState(elem.index())
+    });
+  }
+}
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.villageInfo.villages.clear();
@@ -1212,8 +1334,9 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.infoType = GameInfo::InfoType::BAND;
   CollectiveInfo& info = gameInfo.collectiveInfo;
   info.buildings = fillButtons(getBuildInfo());
-  info.libraryButtons = fillButtons(libraryInfo);
   fillMinions(info);
+  fillImmigration(info);
+  fillImmigrationHelp(info);
   info.chosenCreature.reset();
   if (chosenCreature)
     if (Creature* c = getCreature(*chosenCreature)) {
@@ -1361,8 +1484,8 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
       }
   for (const Collective* col : getGame()->getCollectives())
     if (col != getCollective() && col->getTerritory().contains(pos)) {
-      knownVillains.insert(col);
-      knownVillainLocations.insert(col);
+      getCollective()->addKnownVillain(col);
+      getCollective()->addKnownVillainLocation(col);
     }
 }
 
@@ -1480,21 +1603,12 @@ optional<CreatureView::MovementInfo> PlayerControl::getMovementInfo() const {
   return none;
 }
 
-enum Selection { SELECT, DESELECT, NONE } selection = NONE;
-
-int PlayerControl::getImpCost() const {
-  int numImps = 0;
-  for (Creature* c : getCollective()->getCreatures({MinionTrait::WORKER}, {MinionTrait::PRISONER}))
-    ++numImps;
-  if (numImps < startImpNum)
-    return 0;
-  return basicImpCost * pow(2, double(numImps - startImpNum) / 5);
-}
+static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
 class MinionController : public Player {
   public:
   MinionController(Creature* c, Model* m, MapMemory* memory, PlayerControl* ctrl)
-      : Player(c, m, false, memory), control(ctrl) {}
+      : Player(c, false, memory), control(ctrl) {}
 
   virtual vector<CommandInfo> getCommands() const override {
     return concat(Player::getCommands(), {
@@ -1965,6 +2079,31 @@ void PlayerControl::processInput(View* view, UserInput input) {
               chosenCreature = none;
           }
         break; }
+    case UserInputId::IMMIGRANT_ACCEPT:
+        if (auto info = getReferenceMaybe(getCollective()->getImmigration().getAvailable(), input.get<int>()))
+          if (auto sound = info->get().getInfo().getSound())
+            getView()->addSound(*sound);
+        getCollective()->getImmigration().accept(input.get<int>());
+        break;
+    case UserInputId::IMMIGRANT_REJECT:
+        getCollective()->getImmigration().reject(input.get<int>());
+        break;
+    case UserInputId::IMMIGRANT_AUTO_ACCEPT: {
+        int id = input.get<int>();
+        if (getCollective()->getImmigration().getAutoState(id) == ImmigrantAutoState::AUTO_ACCEPT)
+          getCollective()->getImmigration().setAutoState(id, none);
+        else
+          getCollective()->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_ACCEPT);
+        }
+        break;
+    case UserInputId::IMMIGRANT_AUTO_REJECT: {
+        int id = input.get<int>();
+        if (getCollective()->getImmigration().getAutoState(id) == ImmigrantAutoState::AUTO_REJECT)
+          getCollective()->getImmigration().setAutoState(id, none);
+        else
+          getCollective()->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_REJECT);
+        }
+        break;
     case UserInputId::RECT_SELECTION: {
         auto& info = input.get<BuildingInfo>();
         if (canSelectRectangle(getBuildInfo()[info.building])) {
@@ -1989,15 +2128,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
         auto& info = input.get<BuildingInfo>();
         handleSelection(info.pos, getBuildInfo()[info.building], false);
         break; }
-    case UserInputId::LIBRARY:
-        handleSelection(input.get<BuildingInfo>().pos, libraryInfo[input.get<BuildingInfo>().building], false);
-        break;
     case UserInputId::VILLAGE_ACTION: 
         if (Collective* village = getVillain(input.get<VillageActionInfo>().villageIndex))
           switch (input.get<VillageActionInfo>().action) {
-            case VillageAction::RECRUIT: 
-              handleRecruiting(village);
-              break;
             case VillageAction::TRADE: 
               handleTrading(village);
               break;
@@ -2005,6 +2138,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
               handlePillage(village);
               break;
           }
+        break;
     case UserInputId::PAY_RANSOM:
         handleRansom(true);
         break;
@@ -2046,21 +2180,6 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
   if (!deselectOnly && rectangle && !canSelectRectangle(building))
     return;
   switch (building.buildType) {
-    case BuildInfo::IMP:
-        if (getCollective()->numResource(ResourceId::MANA) >= getImpCost() && selection == NONE) {
-          selection = SELECT;
-          PCreature imp = CreatureFactory::fromId(CreatureId::IMP, getTribeId(),
-              MonsterAIFactory::collective(getCollective()));
-          for (Position v : concat(position.neighbors8(Random), position))
-            if (v.canEnter(imp.get()) && (canSee(v) || getCollective()->getTerritory().contains(v))) {
-              getCollective()->takeResource({ResourceId::MANA, getImpCost()});
-              getCollective()->addCreature(std::move(imp), v,
-                  {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT});
-              getView()->addSound(Sound(SoundId::CREATE_IMP).setPitch(2));
-              break;
-            }
-        }
-        break;
     case BuildInfo::TRAP:
         if (getCollective()->getConstructions().containsTrap(position) && selection != SELECT) {
           getCollective()->removeTrap(position);
@@ -2096,7 +2215,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         if (position.isTribeForbidden(getTribeId()) && selection != SELECT) {
           position.allowMovementForTribe(getTribeId());
           selection = DESELECT;
-        } 
+        }
         else if (!position.isTribeForbidden(getTribeId()) && selection != DESELECT) {
           position.forbidMovementForTribe(getTribeId());
           selection = SELECT;
@@ -2303,8 +2422,6 @@ void PlayerControl::tick() {
   considerNightfallMessage();
   if (auto msg = getCollective()->getWarnings().getNextWarning(getLocalTime()))
     addMessage(PlayerMessage(*msg, MessagePriority::HIGH));
-  if (startImpNum == -1)
-    startImpNum = getCollective()->getCreatures(MinionTrait::WORKER).size();
   checkKeeperDanger();
   for (auto attack : copyOf(ransomAttacks))
     for (const Creature* c : attack.getCreatures())
@@ -2320,7 +2437,7 @@ void PlayerControl::tick() {
         getGame()->setCurrentMusic(MusicType::BATTLE, true);
         removeElement(newAttacks, attack);
         if (auto attacker = attack.getAttacker())
-          knownVillains.insert(attacker);
+          getCollective()->addKnownVillain(attacker);
         if (attack.getRansom())
           ransomAttacks.push_back(attack);
         break;

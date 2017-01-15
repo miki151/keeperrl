@@ -268,8 +268,10 @@ vector<Creature*> Model::getAllCreatures() const {
   return timeQueue->getAllCreatures();
 }
 
-void Model::landHeroPlayer(const string& advName, int handicap) {
-  PCreature player = CreatureFactory::getAdventurer(this, handicap);
+void Model::landHeroPlayer(Options* options, int handicap) {
+  PCreature player = CreatureFactory::fromId(
+      options->getCreatureId(OptionId::ADVENTURER_TYPE), TribeId::getAdventurer());
+  string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
   if (!advName.empty())
     player->getName().setFirst(advName);
   Level* target = getTopLevel();

@@ -37,7 +37,8 @@ RICH_ENUM(EnemyId,
   DARK_ELVES_ENTRY,
   GNOMES,
   GNOMES_ENTRY,
-  FRIENDLY_CAVE,
+  OGRE_CAVE,
+  HARPY_CAVE,
   ORC_VILLAGE,
   SOKOBAN,
   SOKOBAN_ENTRY,
@@ -63,14 +64,16 @@ struct LevelConnection {
 
 struct EnemyInfo {
   EnemyInfo(SettlementInfo s, CollectiveConfig c, optional<VillageBehaviour> v = none,
-      optional<LevelConnection> l = none);
+      optional<LevelConnection> = none);
   EnemyInfo& setVillainType(VillainType type);
   EnemyInfo& setSurprise();
+  EnemyInfo& setId(EnemyId);
   SettlementInfo settlement;
   CollectiveConfig config;
   optional<VillageBehaviour> villain;
   optional<VillainType> villainType;
   optional<LevelConnection> levelConnection;
+  optional<EnemyId> id;
 };
 
 struct ExternalEnemy;
@@ -83,5 +86,6 @@ class EnemyFactory {
   vector<EnemyInfo> getVaults();
 
   private:
+  EnemyInfo getById(EnemyId);
   RandomGen& random;
 };

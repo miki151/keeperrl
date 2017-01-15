@@ -50,6 +50,8 @@ class CreatureAttributes {
   ~CreatureAttributes();
   SERIALIZATION_DECL(CreatureAttributes);
 
+  CreatureAttributes& setCreatureId(CreatureId);
+  const optional<CreatureId>& getCreatureId() const;
   Body& getBody();
   const Body& getBody() const;
   const CreatureName& getName() const;
@@ -71,7 +73,6 @@ class CreatureAttributes {
   const SpellMap& getSpellMap() const;
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
   bool isBoulder() const;
-  int getRecruitmentCost() const;
   Skillset& getSkills();
   const Skillset& getSkills() const;
   ViewObject createViewObject() const;
@@ -81,6 +82,7 @@ class CreatureAttributes {
   string getDescription() const;
   bool isAffected(LastingEffect, double globalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
+  double getTimeOut(LastingEffect) const;
   string getRemainingString(LastingEffect, double time) const;
   void shortenEffect(LastingEffect, double time);
   void clearLastingEffect(LastingEffect);
@@ -125,7 +127,6 @@ class CreatureAttributes {
   bool SERIAL(boulder) = false;
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
-  int SERIAL(recruitmentCost) = 0;
   Skillset SERIAL(skills);
   HeapAllocated<SpellMap> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
@@ -134,4 +135,5 @@ class CreatureAttributes {
   EnumMap<ExperienceType, EnumMap<AttrType, double>> SERIAL(attrIncrease);
   bool SERIAL(noAttackSound) = false;
   double SERIAL(maxExpFromCombat) = 4;
+  optional<CreatureId> SERIAL(creatureId);
 };

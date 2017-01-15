@@ -24,30 +24,21 @@
 #include "construction_map.h"
 #include "item_class.h"
 #include "villain_type.h"
-
-AttractionInfo::AttractionInfo(MinionAttraction a, double cl, double min, bool mand)
-  : attraction(a), amountClaimed(cl), minAmount(min), mandatory(mand) {}
+#include "furniture.h"
+#include "immigrant_info.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, immigrantFrequency, payoutTime, payoutMultiplier, maxPopulation, populationIncreases, immigrantInfo);
-  serializeAll(ar, type, recruitingMinPopulation, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo);
+  serializeAll(ar, immigrantInterval, payoutTime, payoutMultiplier, maxPopulation, populationIncreases, immigrantInfo);
+  serializeAll(ar, type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo);
 }
 
 SERIALIZABLE(CollectiveConfig);
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveConfig);
 
 template <class Archive>
-void ImmigrantInfo::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, id, frequency, attractions, traits, spawnAtDorm, salary, techId, limit, groupSize, autoTeam);
-  serializeAll(ar, ignoreSpawnType);
-}
-
-SERIALIZABLE(ImmigrantInfo);
-
-template <class Archive>
 void AttractionInfo::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, attraction, amountClaimed, minAmount, mandatory);
+  serializeAll(ar, types, amountClaimed);
 }
 
 SERIALIZABLE(AttractionInfo);
@@ -67,18 +58,40 @@ void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(GuardianInfo);
 
-CollectiveConfig::CollectiveConfig(double freq, int payoutT, double payoutM, vector<ImmigrantInfo> im,
-    CollectiveType t, int maxPop, vector<PopulationIncrease> popInc)
-    : immigrantFrequency(freq), payoutTime(payoutT), payoutMultiplier(payoutM),
-    maxPopulation(maxPop), populationIncreases(popInc), immigrantInfo(im), type(t) {}
-
-CollectiveConfig CollectiveConfig::keeper(double freq, int payout, double payoutMult, int maxPopulation,
-    vector<PopulationIncrease> increases, vector<ImmigrantInfo> im) {
-  return CollectiveConfig(freq, payout, payoutMult, im, KEEPER, maxPopulation, increases);
+void CollectiveConfig::addBedRequirementToImmigrants() {
+  for (auto& info : immigrantInfo) {
+    PCreature c = CreatureFactory::fromId(info.getId(0), TribeId::getKeeper());
+    if (auto spawnType = c->getAttributes().getSpawnType()) {
+      AttractionType bedType = getDormInfo()[*spawnType].bedType;
+      bool hasBed = false;
+      info.visitRequirements(makeDefaultVisitor(
+          [&](const AttractionInfo& attraction) -> void {
+            for (auto& type : attraction.types)
+              if (type == bedType)
+                hasBed = true;
+          }
+      ));
+      if (!hasBed)
+        info.addRequirement(AttractionInfo(1, bedType));
+    }
+  }
 }
 
-CollectiveConfig CollectiveConfig::withImmigrants(double frequency, int maxPopulation, vector<ImmigrantInfo> im) {
-  return CollectiveConfig(frequency, 0, 0, im, VILLAGE, maxPopulation, {});
+CollectiveConfig::CollectiveConfig(int interval, int payoutT, double payoutM, const vector<ImmigrantInfo>& im,
+    CollectiveType t, int maxPop, vector<PopulationIncrease> popInc)
+    : immigrantInterval(interval), payoutTime(payoutT), payoutMultiplier(payoutM),
+    maxPopulation(maxPop), populationIncreases(popInc), immigrantInfo(im), type(t) {
+  if (type == KEEPER)
+    addBedRequirementToImmigrants();
+}
+
+CollectiveConfig CollectiveConfig::keeper(int immigrantInterval, int payout, double payoutMult, int maxPopulation,
+    vector<PopulationIncrease> increases, const vector<ImmigrantInfo>& im) {
+  return CollectiveConfig(immigrantInterval, payout, payoutMult, im, KEEPER, maxPopulation, increases);
+}
+
+CollectiveConfig CollectiveConfig::withImmigrants(int interval, int maxPopulation, const vector<ImmigrantInfo>& im) {
+  return CollectiveConfig(interval, 0, 0, im, VILLAGE, maxPopulation, {});
 }
 
 CollectiveConfig CollectiveConfig::noImmigrants() {
@@ -98,6 +111,10 @@ CollectiveConfig& CollectiveConfig::setGhostSpawns(double prob, int num) {
 
 int CollectiveConfig::getNumGhostSpawns() const {
   return spawnGhosts;
+}
+
+int CollectiveConfig::getImmigrantTimeout() const {
+  return 500;
 }
 
 double CollectiveConfig::getGhostProb() const {
@@ -120,12 +137,12 @@ bool CollectiveConfig::sleepOnlyAtNight() const {
   return type != KEEPER;
 }
 
-bool CollectiveConfig::activeImmigrantion(const Game* game) const {
-  return type == KEEPER || game->isSingleModel();
+bool CollectiveConfig::hasImmigrantion(bool currentlyActiveModel) const {
+  return type != KEEPER || currentlyActiveModel;
 }
 
-double CollectiveConfig::getImmigrantFrequency() const {
-  return immigrantFrequency;
+int CollectiveConfig::getImmigrantInterval() const {
+  return immigrantInterval;
 }
 
 int CollectiveConfig::getPayoutTime() const {
@@ -156,17 +173,12 @@ bool CollectiveConfig::getConstructions() const {
   return type == KEEPER;
 }
 
+bool CollectiveConfig::bedsLimitImmigration() const {
+  return type == KEEPER;
+}
+
 int CollectiveConfig::getMaxPopulation() const {
   return maxPopulation;
-}
-
-optional<int> CollectiveConfig::getRecruitingMinPopulation() const {
-  return recruitingMinPopulation;
-}
-
-CollectiveConfig& CollectiveConfig::allowRecruiting(int minPop) {
-  recruitingMinPopulation = minPop;
-  return *this;
 }
 
 const vector<ImmigrantInfo>& CollectiveConfig::getImmigrantInfo() const {
@@ -184,21 +196,6 @@ CollectiveConfig& CollectiveConfig::setGuardian(GuardianInfo info) {
 
 const optional<GuardianInfo>& CollectiveConfig::getGuardianInfo() const {
   return guardianInfo;
-}
-
-vector<BirthSpawn> CollectiveConfig::getBirthSpawns() const {
-  if (type == KEEPER)
-    return {{ CreatureId::GOBLIN, 1 },
-      { CreatureId::ORC, 1 },
-      { CreatureId::ORC_SHAMAN, 0.5 },
-      { CreatureId::HARPY, 0.5 },
-      { CreatureId::OGRE, 0.5 },
-      { CreatureId::WEREWOLF, 0.5 },
-      { CreatureId::SPECIAL_HM, 1.0, TechId::HUMANOID_MUT},
-      { CreatureId::SPECIAL_BM, 1.0, TechId::BEAST_MUT },
-    };
-  else 
-    return {};
 }
 
 const EnumMap<SpawnType, DormInfo>& CollectiveConfig::getDormInfo() const {
@@ -378,6 +375,11 @@ int CollectiveConfig::getManaForConquering(VillainType type) {
   }
 }
 
+CollectiveConfig::CollectiveConfig(const CollectiveConfig&) = default;
+
+CollectiveConfig::~CollectiveConfig() {
+}
+
 const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
   static EnumMap<MinionTask, MinionTaskInfo> map([](MinionTask task) -> MinionTaskInfo {
     switch (task) {
@@ -512,4 +514,3 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
       }},
   }));
 }
-

@@ -49,6 +49,7 @@
 #include "experience_type.h"
 #include "furniture_usage.h"
 #include "collective_warning.h"
+#include "immigration.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -56,13 +57,9 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType);
   serializeAll(ar, territory, alarmInfo, markedItems, constructions, minionEquipment);
   serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
-  serializeAll(ar, credit, level, pregnancies, minionAttraction, teams, name);
-  serializeAll(ar, config, warnings, banished);
-  if (version == 0) {
-    EntitySet<Creature> SERIAL(tmp);
-    serializeAll(ar, tmp);
-  }
-  serializeAll(ar, villainType, eventProxy, workshops, zones, tileEfficiency);
+  serializeAll(ar, credit, level, immigration, teams, name);
+  serializeAll(ar, config, warnings, knownVillains, knownVillainLocations, banished);
+  serializeAll(ar, villainType, enemyId, eventProxy, workshops, zones, tileEfficiency);
 }
 
 SERIALIZABLE(Collective);
@@ -72,7 +69,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Collective);
 Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
     const CollectiveName& n) 
   : eventProxy(this, l->getModel()), credit(_credit), control(CollectiveControl::idle(this)),
-    tribe(t), level(NOTNULL(l)), name(n), config(cfg), workshops(config->getWorkshops()) {
+    tribe(t), level(NOTNULL(l)), name(n), config(cfg), workshops(config->getWorkshops()), immigration(this) {
 }
 
 const CollectiveName& Collective::getName() const {
@@ -83,34 +80,19 @@ void Collective::setVillainType(VillainType t) {
   villainType = t;
 }
 
+void Collective::setEnemyId(EnemyId id) {
+  enemyId = id;
+}
+
 optional<VillainType> Collective::getVillainType() const {
   return villainType;
 }
 
+optional<EnemyId> Collective::getEnemyId() const {
+  return enemyId;
+}
+
 Collective::~Collective() {
-}
-
-double Collective::getAttractionOccupation(const MinionAttraction& attraction) {
-  double res = 0;
-  for (auto& elem : minionAttraction)
-    for (auto& info : elem.second)
-      if (info.attraction == attraction)
-        res += info.amountClaimed;
-  return res;
-}
-
-double Collective::getAttractionValue(const MinionAttraction& attraction) {
-  switch (attraction.getId()) {
-    case AttractionId::FURNITURE: {
-      double ret = constructions->getBuiltCount(attraction.get<FurnitureType>());
-      for (auto type : ENUM_ALL(FurnitureType))
-        if (FurnitureFactory::isUpgrade(attraction.get<FurnitureType>(), type))
-          ret += constructions->getBuiltCount(type);
-      return ret;
-    }
-    case AttractionId::ITEM_INDEX: 
-      return getNumItems(attraction.get<ItemIndex>(), false);
-  }
 }
 
 namespace {
@@ -163,7 +145,8 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     c->getAttributes().getMinionTasks().clear();
   if (!leader)
     leader = c;
-  CHECK(c->getTribeId() == *tribe);
+  if (c->getTribeId() != *tribe)
+    c->setTribe(*tribe);
   if (Game* game = getGame())
     for (Collective* col : getGame()->getCollectives())
       if (contains(col->getCreatures(), c))
@@ -182,7 +165,6 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 
 void Collective::removeCreature(Creature* c) {
   removeElement(creatures, c);
-  minionAttraction.erase(c);
   returnResource(taskMap->freeFromTask(c));
   if (auto spawnType = c->getAttributes().getSpawnType())
     removeElement(bySpawnType[*spawnType], c);
@@ -213,7 +195,7 @@ bool Collective::wasBanished(const Creature* c) const {
   return banished.contains(c);
 }
 
-vector<Creature*> Collective::getRecruits() const {
+/*vector<Creature*> Collective::getRecruits() const {
   vector<Creature*> ret;
   vector<Creature*> possibleRecruits = filter(getCreatures(MinionTrait::FIGHTER),
       [] (const Creature* c) { return c->getAttributes().getRecruitmentCost() > 0; });
@@ -221,13 +203,7 @@ vector<Creature*> Collective::getRecruits() const {
     for (int i = *minPop; i < possibleRecruits.size(); ++i)
       ret.push_back(possibleRecruits[i]);
   return ret;
-}
-
-void Collective::recruit(Creature* c, Collective* to) {
-  removeCreature(c);
-  c->setTribe(to->getTribeId());
-  to->addCreature(c, {MinionTrait::FIGHTER});
-}
+}*/
 
 bool Collective::hasTradeItems() const {
   for (Position pos : territory->getAll())
@@ -235,6 +211,8 @@ bool Collective::hasTradeItems() const {
       return true;
   return false;
 }
+
+//kocham Cię
 
 vector<Item*> Collective::getTradeItems() const {
   vector<Item*> ret;
@@ -568,103 +546,6 @@ static optional<Position> chooseBedPos(const set<Position>& lair, const set<Posi
     return none;
 }
 
-static vector<Position> getSpawnPos(const vector<Creature*>& creatures, vector<Position> allPositions) {
-  if (allPositions.empty() || creatures.empty())
-    return {};
-  for (auto& pos : copyOf(allPositions))
-    if (!pos.canEnterEmpty(creatures[0]))
-      for (auto& neighbor : pos.neighbors8())
-        if (neighbor.canEnterEmpty(creatures[0]))
-          allPositions.push_back(neighbor);
-  vector<Position> spawnPos;
-  for (auto c : creatures) {
-    Position pos;
-    int cnt = 100;
-    do {
-      pos = Random.choose(allPositions);
-    } while ((!pos.canEnter(c) || contains(spawnPos, pos)) && --cnt > 0);
-    if (cnt == 0) {
-      INFO << "Couldn't spawn immigrant " << c->getName().bare();
-      return {};
-    } else
-      spawnPos.push_back(pos);
-  }
-  return spawnPos;
-}
-
-bool Collective::considerNonSpawnImmigrant(const ImmigrantInfo& info, vector<PCreature> immigrants) {
-  CHECK(!info.spawnAtDorm);
-  auto creatureRefs = extractRefs(immigrants);
-  vector<Position> spawnPos;
-  if (!config->activeImmigrantion(getGame())) {
-    for (Position v : Random.permutation(territory->getAll()))
-      if (v.canEnter(immigrants[spawnPos.size()].get())) {
-        spawnPos.push_back(v);
-        if (spawnPos.size() >= immigrants.size())
-          break;
-      }
-  } else 
-    spawnPos = getSpawnPos(creatureRefs, territory->getExtended(10, 20));
-  if (spawnPos.size() < immigrants.size())
-    return false;
-  if (info.autoTeam)
-    teams->activate(teams->createPersistent(extractRefs(immigrants)));
-  for (int i : All(immigrants)) {
-    Creature* c = immigrants[i].get();
-    addCreature(std::move(immigrants[i]), spawnPos[i], info.traits);
-    minionAttraction.set(c, info.attractions);
-  }
-  addNewCreatureMessage(creatureRefs);
-  return true;
-}
-
-static CostInfo getSpawnCost(SpawnType type, int howMany) {
-  switch (type) {
-    case SpawnType::UNDEAD:
-      return {CollectiveResourceId::CORPSE, howMany};
-    default:
-      return CostInfo::noCost();
-  }
-}
-
-bool Collective::considerImmigrant(const ImmigrantInfo& info) {
-  if (info.techId && !hasTech(*info.techId))
-    return false;
-  vector<PCreature> immigrants;
-  int groupSize = info.groupSize ? Random.get(*info.groupSize) : 1;
-  groupSize = min(groupSize, getMaxPopulation() - getPopulationSize());
-  for (int i : Range(groupSize))
-    immigrants.push_back(CreatureFactory::fromId(info.id, getTribeId(), MonsterAIFactory::collective(this)));
-  if (!immigrants[0]->getAttributes().getSpawnType() || info.ignoreSpawnType)
-    return considerNonSpawnImmigrant(info, std::move(immigrants));
-  SpawnType spawnType = *immigrants[0]->getAttributes().getSpawnType();
-  FurnitureType bedType = config->getDormInfo()[spawnType].bedType;
-  if (!hasResource(getSpawnCost(spawnType, groupSize)))
-    return false;
-  vector<Position> spawnPos = getSpawnPos(extractRefs(immigrants), info.spawnAtDorm ?
-      asVector<Position>(constructions->getBuiltPositions(bedType)) : territory->getExtended(10, 20));
-  groupSize = min<int>(groupSize, spawnPos.size());
-  int neededBeds = max<int>(0, bySpawnType[spawnType].size() + groupSize
-      - constructions->getBuiltCount(config->getDormInfo()[spawnType].bedType));
-  groupSize -= neededBeds;
-  if (groupSize < 1)
-    return false;
-  if (immigrants.size() > groupSize)
-    immigrants.resize(groupSize);
-  takeResource(getSpawnCost(spawnType, immigrants.size()));
-  if (info.autoTeam && groupSize > 1)
-    teams->activate(teams->createPersistent(extractRefs(immigrants)));
-  addNewCreatureMessage(extractRefs(immigrants));
-  for (int i : All(immigrants)) {
-    Creature* c = immigrants[i].get();
-    if (i == 0 && groupSize > 1) // group leader
-      c->getAttributes().increaseBaseExpLevel(2);
-    addCreature(std::move(immigrants[i]), spawnPos[i], info.traits);
-    minionAttraction.set(c, info.attractions);
-  }
-  return true;
-}
-
 void Collective::addNewCreatureMessage(const vector<Creature*>& immigrants) {
   if (immigrants.size() == 1)
     control->addMessage(PlayerMessage(immigrants[0]->getName().a() + " joins your forces.")
@@ -675,76 +556,6 @@ void Collective::addNewCreatureMessage(const vector<Creature*>& immigrants) {
   }
 }
 
-double Collective::getImmigrantChance(const ImmigrantInfo& info) {
-  if (info.limit && info.limit != getGame()->getSunlightInfo().getState())
-    return 0;
-  double result = 0;
-  if (info.attractions.empty())
-    return -1;
-  for (auto& attraction : info.attractions) {
-    double value = getAttractionValue(attraction.attraction);
-    if (value < 0.001 && attraction.mandatory)
-      return 0;
-    result += max(0.0, value - getAttractionOccupation(attraction.attraction) - attraction.minAmount);
-  }
-  return result * info.frequency;
-}
-
-void Collective::considerImmigration() {
-  if (getPopulationSize() >= getMaxPopulation() || !hasLeader())
-    return;
-  vector<double> weights;
-  bool ok = false;
-  for (auto& elem : config->getImmigrantInfo()) {
-    weights.push_back(getImmigrantChance(elem));
-    if (weights.back() > 0 || weights.back() < -0.9)
-      ok = true;
-  }
-  double avgWeight = 0; 
-  int numPositive = 0;
-  for (double elem : weights)
-    if (elem > 0) {
-      ++numPositive;
-      avgWeight += elem;
-    }
-  for (double& elem : weights)
-    if (elem < -0.9) {
-      if (numPositive == 0)
-        elem = 1;
-      else
-        elem = avgWeight / numPositive;
-    }
-  if (!ok)
-    return;
-  for (int i : Range(10))
-    if (considerImmigrant(Random.choose(config->getImmigrantInfo(), weights)))
-      break;
-}
-
-void Collective::considerBirths() {
-  for (Creature* c : getCreatures())
-    if (pregnancies.contains(c) && !c->isAffected(LastingEffect::PREGNANT)) {
-      pregnancies.erase(c);
-      if (getPopulationSize() < getMaxPopulation()) {
-        vector<pair<CreatureId, double>> candidates;
-        for (auto& elem : config->getBirthSpawns())
-          if (!elem.tech || hasTech(*elem.tech)) 
-            candidates.emplace_back(elem.id, elem.frequency);
-        if (candidates.empty())
-          return;
-        PCreature spawn = CreatureFactory::fromId(Random.choose(candidates), getTribeId());
-        for (Position pos : c->getPosition().neighbors8(Random))
-          if (pos.canEnter(spawn.get())) {
-            control->addMessage(c->getName().a() + " gives birth to " + spawn->getName().a());
-            c->playerMessage("You give birth to " + spawn->getName().a() + "!");
-            c->monsterMessage(c->getName().the() + " gives birth to "  + spawn->getName().a());
-            addCreature(std::move(spawn), pos, {MinionTrait::FIGHTER});
-            return;
-          }
-      }
-    }
-}
-
 void Collective::decayMorale() {
   for (Creature* c : getCreatures(MinionTrait::FIGHTER))
     c->addMorale(-c->getMorale() * 0.0008);
@@ -752,16 +563,14 @@ void Collective::decayMorale() {
 
 void Collective::update(bool currentlyActive) {
   control->update(currentlyActive);
-  if (currentlyActive == config->activeImmigrantion(getGame()) &&
-      Random.chance(config->getImmigrantFrequency()))
-    considerImmigration();
+  if (config->hasImmigrantion(currentlyActive) && hasLeader())
+    immigration->update();
 }
 
 void Collective::tick() {
   dangerLevelCache = none;
   control->tick();
   zones->tick();
-  considerBirths();
   decayMorale();
   if (config->getWarnings() && Random.roll(5))
     warnings->considerWarnings(this);
@@ -1198,6 +1007,22 @@ optional<set<Position>> Collective::getStorageFor(const Item* item) const {
     if (Inventory::getIndexPredicate(info.index)(item))
       return info.destinationFun(this);
   return none;
+}
+
+void Collective::addKnownVillain(const Collective* col) {
+  knownVillains.insert(col);
+}
+
+bool Collective::isKnownVillain(const Collective* col) const {
+  return knownVillains.count(col);
+}
+
+void Collective::addKnownVillainLocation(const Collective* col) {
+  knownVillainLocations.insert(col);
+}
+
+bool Collective::isKnownVillainLocation(const Collective* col) const {
+  return knownVillainLocations.count(col);
 }
 
 void Collective::orderExecution(Creature* c) {
@@ -1682,9 +1507,9 @@ void Collective::onCopulated(Creature* who, Creature* with) {
     control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
   if (contains(getCreatures(), with))
     with->addMorale(1);
-  if (!pregnancies.contains(who)) {
-    pregnancies.insert(who);
-    who->addEffect(LastingEffect::PREGNANT, Random.get(200, 300));
+  if (!who->isAffected(LastingEffect::PREGNANT) && Random.roll(2)) {
+    who->addEffect(LastingEffect::PREGNANT, getConfig().getImmigrantTimeout());
+    control->addMessage(who->getName().a() + " becomes pregnant.");
   }
 }
 
@@ -1702,6 +1527,14 @@ Workshops& Collective::getWorkshops() {
 
 const Workshops& Collective::getWorkshops() const {
   return *workshops;
+}
+
+Immigration& Collective::getImmigration() {
+  return *immigration;
+}
+
+const Immigration& Collective::getImmigration() const {
+  return *immigration;
 }
 
 void Collective::addAttack(const CollectiveAttack& attack) {
