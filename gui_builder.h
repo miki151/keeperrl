@@ -89,7 +89,7 @@ class GuiBuilder {
       pair<ViewId, int> budget, const vector<ItemInfo>&, ScrollPosition* scrollPos);
   SGuiElem drawPillageItemMenu(SyncQueue<optional<int>>&, const string& title, const vector<ItemInfo>&,
       ScrollPosition* scrollPos);
-  SGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, const Campaign&, Options*, optional<RetiredGames>&,
+  SGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, View::CampaignOptions, Options*,
       View::CampaignMenuState&);
   SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
@@ -174,7 +174,7 @@ class GuiBuilder {
   SGuiElem drawHighscorePage(const HighscoreList&, ScrollPosition* scrollPos);
   SGuiElem drawTeams(CollectiveInfo&);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
-  SGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged);
+  SGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged, optional<string> defaultString);
   GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, optional<int> maxActive);
   SGuiElem drawImmigrantInfo(const ImmigrantDataInfo&);
   SGuiElem minionsCache;

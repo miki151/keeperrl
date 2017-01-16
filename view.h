@@ -201,7 +201,13 @@ class View {
     bool helpText;
     bool settings;
   };
-  virtual CampaignAction prepareCampaign(const Campaign&, Options*, optional<RetiredGames>&, CampaignMenuState&) = 0;
+  struct CampaignOptions {
+    const Campaign& campaign;
+    optional<RetiredGames>& retired;
+    const Creature* player;
+  };
+
+  virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) = 0;
 
   virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) = 0;

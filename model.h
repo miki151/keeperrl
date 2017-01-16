@@ -55,7 +55,7 @@ class Model {
 
   void addCreature(PCreature);
   void addCreature(PCreature, double delay);
-  void landHeroPlayer(Options*, int handicap);
+  void landHeroPlayer(PCreature);
   void addExternalEnemies(const ExternalEnemies&);
 
   bool isTurnBased();

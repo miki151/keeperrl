@@ -15,6 +15,7 @@ class RetiredGames;
 struct SaveFileInfo;
 class GameEvents;
 class SokobanInput;
+struct CampaignSetup;
 
 class MainLoop {
   public:
@@ -56,7 +57,7 @@ class MainLoop {
 
   void playMenuMusic();
 
-  Table<PModel> prepareCampaignModels(Campaign& campaign, RandomGen& random);
+  Table<PModel> prepareCampaignModels(CampaignSetup& campaign, RandomGen& random);
   PModel keeperSingleMap(RandomGen& random);
   PModel quickGame(RandomGen& random);
   PGame adventurerGame();

@@ -268,13 +268,8 @@ vector<Creature*> Model::getAllCreatures() const {
   return timeQueue->getAllCreatures();
 }
 
-void Model::landHeroPlayer(Options* options, int handicap) {
-  PCreature player = CreatureFactory::fromId(
-      options->getCreatureId(OptionId::ADVENTURER_TYPE), TribeId::getAdventurer());
+void Model::landHeroPlayer(PCreature player) {
   player->setController(make_shared<Player>(player.get(), true, new MapMemory()));
-  string advName = options->getStringValue(OptionId::ADVENTURER_NAME);
-  if (!advName.empty())
-    player->getName().setFirst(advName);
   Level* target = getTopLevel();
   vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
   for (Position pos : landing)

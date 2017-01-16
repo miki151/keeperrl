@@ -13,6 +13,8 @@ RICH_ENUM(CampaignType,
   CAMPAIGN, FREE_PLAY, ENDLESS
 );
 
+struct CampaignSetup;
+
 class Campaign {
   public:
   struct VillainInfo {
@@ -52,7 +54,7 @@ class Campaign {
 
   const Table<SiteInfo>& getSites() const;
   void clearSite(Vec2);
-  static optional<Campaign> prepareCampaign(View*, Options*, function<RetiredGames()>, RandomGen&, PlayerRole);
+  static optional<CampaignSetup> prepareCampaign(View*, Options*, function<RetiredGames()>, RandomGen&, PlayerRole);
   optional<Vec2> getPlayerPos() const;
   const string& getWorldName() const;
   bool isDefeated(Vec2) const;
@@ -90,4 +92,7 @@ class Campaign {
   CampaignType SERIAL(type);
 };
 
-
+struct CampaignSetup {
+  Campaign campaign;
+  PCreature player;
+};

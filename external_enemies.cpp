@@ -7,11 +7,13 @@
 #include "creature.h"
 #include "collective_attack.h"
 #include "attack_behaviour.h"
+#include "model.h"
+#include "game.h"
 
-SERIALIZE_DEF(ExternalEnemies, enemies, attackTime, target)
+SERIALIZE_DEF(ExternalEnemies, enemies, attackTime)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
-ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> e, Collective* t) : enemies(e), target(t) {
+ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> e) : enemies(e) {
   for (int i : All(enemies))
     attackTime.push_back(random.get(enemies[i].attackTime));
 }
@@ -31,6 +33,8 @@ PTask ExternalEnemies::getAttackTask(Collective* enemy, AttackBehaviour behaviou
 }
 
 void ExternalEnemies::update(Level* level, double localTime) {
+  Collective* target = level->getModel()->getGame()->getPlayerCollective();
+  CHECK(!!target);
   for (int i : All(enemies))
     if (attackTime[i] && *attackTime[i] <= localTime) {
       vector<Creature*> attackers;
@@ -45,3 +49,4 @@ void ExternalEnemies::update(Level* level, double localTime) {
       attackTime[i] = none;
     }
 }
+

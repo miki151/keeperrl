@@ -846,11 +846,11 @@ void WindowView::presentWorldmap(const Campaign& campaign) {
   return getBlockingGui(sem, guiBuilder.drawWorldmap(sem, campaign));
 }
 
-CampaignAction WindowView::prepareCampaign(const Campaign& campaign, Options* options, optional<RetiredGames>& retired,
+CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, Options* options,
     CampaignMenuState& state) {
   SyncQueue<CampaignAction> returnQueue;
   state.helpText = false;
-  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, retired, state));
+  return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, state));
 }
 
 optional<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,

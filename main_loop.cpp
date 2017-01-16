@@ -23,6 +23,7 @@
 #include "saved_game_info.h"
 #include "retired_games.h"
 #include "save_file_info.h"
+#include "creature.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
     const string& uPath, Options* o, Jukebox* j, SokobanInput* soko, std::atomic<bool>& fin, bool singleThread,
@@ -346,16 +347,16 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     random.init(Random.get(1234567));
     switch (*choice) {
       case GameTypeChoice::KEEPER:
-        if (auto campaign = Campaign::prepareCampaign(view, options, [this] { return getRetiredGames(); }, random, Campaign::KEEPER))
-          return Game::campaignGame(prepareCampaignModels(*campaign, random), *campaign->getPlayerPos(),
-            options->getStringValue(OptionId::KEEPER_NAME), *campaign);
+        if (auto result = Campaign::prepareCampaign(view, options, [this] { return getRetiredGames(); }, random, Campaign::KEEPER))
+          return Game::campaignGame(prepareCampaignModels(*result, random), *result->campaign.getPlayerPos(),
+            options->getStringValue(OptionId::KEEPER_NAME), result->campaign);
         break;
       case GameTypeChoice::ADVENTURER:
-        if (auto campaign = Campaign::prepareCampaign(view, options, [this] { return getRetiredGames(); }, random,
+        if (auto result = Campaign::prepareCampaign(view, options, [this] { return getRetiredGames(); }, random,
               Campaign::ADVENTURER)) {
-          PGame ret = Game::campaignGame(prepareCampaignModels(*campaign, random), *campaign->getPlayerPos(),
-              options->getStringValue(OptionId::ADVENTURER_NAME), *campaign);
-          ret->getMainModel()->landHeroPlayer(options, 0);
+          PGame ret = Game::campaignGame(prepareCampaignModels(*result, random), *result->campaign.getPlayerPos(),
+              options->getStringValue(OptionId::ADVENTURER_NAME), result->campaign);
+          ret->getMainModel()->landHeroPlayer(std::move(result->player));
           return ret;
         }
         break;
@@ -559,9 +560,9 @@ void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
   ModelBuilder(&meter, random, options, sokobanInput).measureSiteGen(numTries);
 }
 
-Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& random) {
-  Table<PModel> models(campaign.getSites().getBounds());
-  auto& sites = campaign.getSites();
+Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& result, RandomGen& random) {
+  Table<PModel> models(result.campaign.getSites().getBounds());
+  auto& sites = result.campaign.getSites();
   for (Vec2 v : sites.getBounds())
     if (auto retired = sites[v].getRetired()) {
       if (retired->fileInfo.download)
@@ -569,7 +570,7 @@ Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& ran
     }
   optional<string> failedToLoad;
   NameGenerator::init(dataFreePath + "/names");
-  int numSites = campaign.getNumNonEmpty();
+  int numSites = result.campaign.getNumNonEmpty();
   doWithSplash(SplashType::BIG, "Generating map...", numSites,
       [&] (ProgressMeter& meter) {
         ModelBuilder modelBuilder(nullptr, random, options, sokobanInput);
@@ -577,8 +578,8 @@ Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& ran
           if (!sites[v].isEmpty())
             meter.addProgress();
           if (sites[v].getKeeper()) {
-            models[v] = modelBuilder.campaignBaseModel("Campaign base site",
-                campaign.getType() == CampaignType::ENDLESS);
+            models[v] = modelBuilder.campaignBaseModel("Campaign base site", std::move(result.player),
+                result.campaign.getType() == CampaignType::ENDLESS);
           } else if (auto villain = sites[v].getVillain())
             models[v] = modelBuilder.campaignSiteModel("Campaign enemy site", villain->enemyId, villain->type);
           else if (auto retired = sites[v].getRetired()) {
@@ -586,7 +587,7 @@ Table<PModel> MainLoop::prepareCampaignModels(Campaign& campaign, RandomGen& ran
               models[v] = std::move(m);
             else {
               failedToLoad = retired->fileInfo.filename;
-              campaign.clearSite(v);
+              result.campaign.clearSite(v);
             }
           }
         }
@@ -602,7 +603,8 @@ PModel MainLoop::keeperSingleMap(RandomGen& random) {
   doWithSplash(SplashType::BIG, "Generating map...", 300000,
       [&] (ProgressMeter& meter) {
         ModelBuilder modelBuilder(&meter, random, options, sokobanInput);
-        model = modelBuilder.singleMapModel(NameGenerator::get(NameGeneratorId::WORLD)->getNext());
+        PCreature player = CreatureFactory::fromId(CreatureId::KEEPER, TribeId::getKeeper());
+        model = modelBuilder.singleMapModel(NameGenerator::get(NameGeneratorId::WORLD)->getNext(), std::move(player));
       });
   return model;
 }
@@ -669,9 +671,9 @@ PGame MainLoop::adventurerGame() {
     if (PGame game = loadGame(savedGame->filename)) {
       game->initialize(options, highscores, view, fileSharing);
       CHECK(game->isSingleModel());
-      auto handicap = view->getNumber("Choose handicap (your adventurer's strength and dexterity increase)",
-          0, 20, 5);
-      game->getMainModel()->landHeroPlayer(options, handicap.get_value_or(0));
+      auto handicap = view->getNumber("Choose handicap (your adventurer's strength and dexterity increase)", 0, 20, 5);
+      PCreature player = CreatureFactory::fromId(CreatureId::ADVENTURER, TribeId::getAdventurer());
+      game->getMainModel()->landHeroPlayer(std::move(player));
       return game;
     }
   }

@@ -26,6 +26,8 @@
 #include "retired_games.h"
 #include "call_cache.h"
 #include "creature_factory.h"
+#include "creature.h"
+#include "creature_name.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -2246,9 +2248,11 @@ SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncreas
       .buildHorizontalList();
 }
 
-SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void()> onChanged) {
+SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void()> onChanged, optional<string> defaultString) {
   auto line = gui.getListBuilder();
   string valueString = options->getValueString(id);
+  if (defaultString && valueString.empty())
+    valueString = *defaultString;
   string name = options->getName(id);
   switch (options->getType(id)) {
     case Options::PLAYER_TYPE: {
@@ -2332,8 +2336,10 @@ static const char* getGameTypeName(CampaignType type) {
   }
 }
 
-SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Campaign& campaign, Options* options,
-    optional<RetiredGames>& retiredGames, View::CampaignMenuState& menuState) {
+SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
+    Options* options, View::CampaignMenuState& menuState) {
+  const auto& campaign = campaignOptions.campaign;
+  auto& retiredGames = campaignOptions.retired;
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
   GuiFactory::ListBuilder centerLines(gui, getStandardLineHeight());
   GuiFactory::ListBuilder rightLines(gui, getStandardLineHeight());
@@ -2353,9 +2359,18 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
             gui.labelHighlight("[Help]", colors[ColorId::LIGHT_BLUE]),
                 gui.button([&] { menuState.helpText = !menuState.helpText; }))));
   lines.addElem(gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())));
+  auto getDefaultString = [&](OptionId id) -> optional<string> {
+    switch(id) {
+      case OptionId::ADVENTURER_NAME:
+      case OptionId::KEEPER_NAME:
+        return campaignOptions.player->getName().first();
+      default:
+        return none;
+    }
+  };
   for (OptionId id : campaign.getPrimaryOptions())
     lines.addElem(gui.leftMargin(optionMargin, drawOptionElem(options, id,
-            [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});})));
+            [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});}, getDefaultString(id))));
   lines.addSpace(10);
   lines.addBackElem(gui.centerHoriz(gui.label(campaign.getSiteChoiceTitle())));
   lines.addBackElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, nullptr,
@@ -2382,7 +2397,8 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, const Ca
   if (!campaign.getSecondaryOptions().empty()) {
     for (OptionId id : campaign.getSecondaryOptions())
       rightLines.addElem(
-          drawOptionElem(options, id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});}));
+          drawOptionElem(options, id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});},
+              getDefaultString(id)));
   }
   if (retiredGames) {
     auto addedDungeons = drawRetiredGames(

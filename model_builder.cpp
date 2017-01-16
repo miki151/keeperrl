@@ -307,8 +307,10 @@ static string getBoardText(const string& keeperName, const string& dukeName) {
   return dukeName + " will reward a daring hero 150 florens for slaying " + keeperName + " the Keeper.";
 }
 
-PModel ModelBuilder::singleMapModel(const string& worldName) {
-  return tryBuilding(10, [&] { return trySingleMapModel(worldName);});
+PModel ModelBuilder::singleMapModel(const string& worldName, PCreature keeper) {
+  auto ret = tryBuilding(10, [&] { return trySingleMapModel(worldName);});
+  spawnKeeper(ret.get(), std::move(keeper));
+  return ret;
 }
 
 PModel ModelBuilder::trySingleMapModel(const string& worldName) {
@@ -428,8 +430,10 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
 
 }
 
-PModel ModelBuilder::campaignBaseModel(const string& siteName, bool externalEnemies) {
-  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); });
+PModel ModelBuilder::campaignBaseModel(const string& siteName, PCreature keeper, bool externalEnemies) {
+  auto ret = tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); });
+  spawnKeeper(ret.get(), std::move(keeper));
+  return ret;
 }
 
 PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type) {
@@ -477,12 +481,8 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
     minT << "\nMaxT: " << maxT << "\nAvgT: " << sumT / numSuccess << std::endl;
 }
 
-Collective* ModelBuilder::spawnKeeper(Model* m) {
+Collective* ModelBuilder::spawnKeeper(Model* m, PCreature keeper) {
   Level* level = m->getTopLevel();
-  PCreature keeper = CreatureFactory::fromId(options->getCreatureId(OptionId::KEEPER_TYPE), TribeId::getKeeper());
-  string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
-  if (!keeperName.empty())
-    keeper->getName().setFirst(keeperName);
   Creature* keeperRef = keeper.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   m->addCreature(std::move(keeper));
@@ -495,9 +495,6 @@ Collective* ModelBuilder::spawnKeeper(Model* m) {
   Collective* playerCollective = m->collectives.back().get();
   playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, level)));
   playerCollective->setVillainType(VillainType::PLAYER);
-  /*for (auto& elem : playerCollective->getImmigration().getAvailable())
-    for (int i : Range(elem.second.get().getInfo().getInitialRecruitment()))
-      playerCollective->getImmigration().accept(elem.first);*/
   return playerCollective;
 }
 
@@ -541,11 +538,8 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
     collective->setControl(std::move(control));
     model->collectives.push_back(std::move(collective));
   }
-  if (keeperSpawn) {
-    auto collective = spawnKeeper(model);
-    if (!externalEnemies.empty())
-      model->addExternalEnemies(ExternalEnemies(random, externalEnemies, collective));
-  }
+  if (!externalEnemies.empty())
+    model->addExternalEnemies(ExternalEnemies(random, externalEnemies));
   return PModel(model);
 }
 

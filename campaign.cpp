@@ -9,7 +9,8 @@
 #include "retired_games.h"
 #include "villain_type.h"
 #include "enemy_factory.h"
-
+#include "creature.h"
+#include "creature_name.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
@@ -271,32 +272,43 @@ static VillainLimits getLimits(CampaignType type, Options* options) {
   }
 }
 
-optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, function<RetiredGames()> genRetired,
+static PCreature getPlayerCreature(Options* options, Campaign::PlayerRole role) {
+  PCreature ret;
+  switch (role) {
+    case Campaign::PlayerRole::KEEPER:
+      ret = CreatureFactory::fromId(options->getCreatureId(OptionId::KEEPER_TYPE), TribeId::getKeeper());
+    case Campaign::PlayerRole::ADVENTURER:
+      ret = CreatureFactory::fromId(options->getCreatureId(OptionId::ADVENTURER_TYPE), TribeId::getAdventurer());
+  }
+  ret->getName().useFullTitle();
+  return ret;
+}
+
+optional<CampaignSetup> Campaign::prepareCampaign(View* view, Options* options, function<RetiredGames()> genRetired,
     RandomGen& random, PlayerRole playerRole) {
   Vec2 size(16, 9);
   int numBlocked = 0.6 * size.x * size.y;
   Table<SiteInfo> terrain = getTerrain(random, size, numBlocked);
-  string worldName = NameGenerator::get(NameGeneratorId::WORLD)->getNext();
-  options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
-  options->setDefaultString(OptionId::ADVENTURER_NAME, NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
   optional<RetiredGames> retiredCache;
   static optional<RetiredGames> noRetired;
   CampaignType type = CampaignType::CAMPAIGN;
   View::CampaignMenuState menuState {};
+#ifdef RELEASE
+  options->setLimits(OptionId::MAIN_VILLAINS, 1, 4);
+#else
+  options->setLimits(OptionId::MAIN_VILLAINS, 0, 4);
+#endif
+  options->setLimits(OptionId::LESSER_VILLAINS, 0, 6);
+  options->setLimits(OptionId::ALLIES, 0, 4);
+  options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6);
+  options->setChoices(OptionId::KEEPER_TYPE, {CreatureId::KEEPER, CreatureId::KEEPER_F});
+  options->setChoices(OptionId::ADVENTURER_TYPE, {CreatureId::ADVENTURER, CreatureId::ADVENTURER_F});
   while (1) {
     if (type == CampaignType::FREE_PLAY && !retiredCache)
       retiredCache = genRetired();
     auto& retired = type == CampaignType::FREE_PLAY ? retiredCache : noRetired;
-#ifdef RELEASE
-    options->setLimits(OptionId::MAIN_VILLAINS, 1, 4); 
-#else
-    options->setLimits(OptionId::MAIN_VILLAINS, 0, 4); 
-#endif
-    options->setLimits(OptionId::LESSER_VILLAINS, 0, 6); 
-    options->setLimits(OptionId::ALLIES, 0, 4); 
-    options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6);
-    options->setChoices(OptionId::KEEPER_TYPE, {CreatureId::KEEPER, CreatureId::KEEPER_F});
-    options->setChoices(OptionId::ADVENTURER_TYPE, {CreatureId::ADVENTURER, CreatureId::ADVENTURER_F});
+    string worldName = NameGenerator::get(NameGeneratorId::WORLD)->getNext();
+    PCreature player = getPlayerCreature(options, playerRole);
     auto limits = getLimits(type, options);
     vector<VillainInfo> mainVillains;
     Campaign campaign(terrain, type);
@@ -355,12 +367,10 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, funct
       campaign.influenceSize = options->getIntValue(OptionId::INFLUENCE_SIZE);
       campaign.refreshInfluencePos();
       bool hasRetired = type == CampaignType::FREE_PLAY;
-      CampaignAction action = view->prepareCampaign(campaign, options, retired, menuState);
+      CampaignAction action = view->prepareCampaign({campaign, retired, player.get()}, options, menuState);
       switch (action.getId()) {
         case CampaignActionId::REROLL_MAP:
             terrain = getTerrain(random, size, numBlocked);
-            worldName = NameGenerator::get(NameGeneratorId::WORLD)->getNext();
-            options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
         case CampaignActionId::UPDATE_MAP:
             updateMap = true;
             break;
@@ -372,9 +382,11 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, funct
             switch (action.get<OptionId>()) {
               case OptionId::KEEPER_TYPE:
               case OptionId::ADVENTURER_TYPE:
+                player = getPlayerCreature(options, playerRole);
                 if (campaign.playerPos) {
                   campaign.setPlayerPos(*campaign.playerPos, options);
                 }
+                break;
               case OptionId::KEEPER_NAME:
               case OptionId::ADVENTURER_NAME:
               case OptionId::INFLUENCE_SIZE: break;
@@ -391,7 +403,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, funct
             if (!retired || numRetired > 0 || playerRole != KEEPER ||
                 retired->getAllGames().empty() ||
                 view->yesOrNoPrompt("The imps are going to be sad if you don't add any retired dungeons. Continue?"))
-              return campaign;
+              return CampaignSetup{campaign, std::move(player)};
       }
       if (updateMap)
         break;

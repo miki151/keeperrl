@@ -15,7 +15,7 @@ struct ExternalEnemy {
 
 class ExternalEnemies : public TaskCallback {
   public:
-  ExternalEnemies(RandomGen&, vector<ExternalEnemy>, Collective* target);
+  ExternalEnemies(RandomGen&, vector<ExternalEnemy>);
   void update(Level*, double localTime);
 
   SERIALIZATION_DECL(ExternalEnemies)
@@ -23,6 +23,5 @@ class ExternalEnemies : public TaskCallback {
   private:
   vector<ExternalEnemy> SERIAL(enemies);
   vector<optional<int>> SERIAL(attackTime);
-  Collective* SERIAL(target);
   PTask getAttackTask(Collective* target, AttackBehaviour);
 };
