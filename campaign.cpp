@@ -277,8 +277,8 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, funct
   int numBlocked = 0.6 * size.x * size.y;
   Table<SiteInfo> terrain = getTerrain(random, size, numBlocked);
   string worldName = NameGenerator::get(NameGeneratorId::WORLD)->getNext();
-  options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
-  options->setDefaultString(OptionId::ADVENTURER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+  options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+  options->setDefaultString(OptionId::ADVENTURER_NAME, NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
   optional<RetiredGames> retiredCache;
   static optional<RetiredGames> noRetired;
   CampaignType type = CampaignType::CAMPAIGN;
@@ -360,7 +360,7 @@ optional<Campaign> Campaign::prepareCampaign(View* view, Options* options, funct
         case CampaignActionId::REROLL_MAP:
             terrain = getTerrain(random, size, numBlocked);
             worldName = NameGenerator::get(NameGeneratorId::WORLD)->getNext();
-            options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+            options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
         case CampaignActionId::UPDATE_MAP:
             updateMap = true;
             break;

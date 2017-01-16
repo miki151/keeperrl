@@ -60,7 +60,8 @@ void NameGenerator::init(const string& namesPath) {
     input.push_back(ret);
   }
   set(NameGeneratorId::SCROLL, new NameGenerator(input));
-  set(NameGeneratorId::FIRST, new NameGenerator(readLines(namesPath + "/first_names.txt")));
+  set(NameGeneratorId::FIRST_MALE, new NameGenerator(readLines(namesPath + "/first_male.txt")));
+  set(NameGeneratorId::FIRST_FEMALE, new NameGenerator(readLines(namesPath + "/first_female.txt")));
   set(NameGeneratorId::AZTEC, new NameGenerator(readLines(namesPath + "/aztec_names.txt")));
   set(NameGeneratorId::CREATURE, new NameGenerator(readLines(namesPath + "/creatures.txt")));
   set(NameGeneratorId::WEAPON, new NameGenerator(readLines(namesPath + "/artifacts.txt")));

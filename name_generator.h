@@ -19,7 +19,8 @@
 #include "singleton.h"
 
 RICH_ENUM(NameGeneratorId,
-  FIRST,
+  FIRST_MALE,
+  FIRST_FEMALE,
   SCROLL,
   AZTEC,
   CREATURE,

@@ -568,7 +568,13 @@ void Player::makeMove() {
   if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     CHECK(getCreature()->getName().first());
     getView()->updateView(this, true);
-    getView()->presentText("", "Dear " + *getCreature()->getName().first() + ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " + getGame()->getWorldName() + ". This land is swarming with evil, and you need to destroy all of it, like in a bad RPG game. Humans, dwarves and elves are your allies. Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " + NameGenerator::get(NameGeneratorId::FIRST)->getNext() + "\n \nPS.: Beware the orcs!");
+    getView()->presentText("", "Dear " + *getCreature()->getName().first() +
+        ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " +
+        getGame()->getWorldName() + ". This land is swarming with evil, and you need to destroy all of it, "
+        "like in a bad RPG game. Humans, dwarves and elves are your allies. "
+        "Find them, talk to them, they will help you. Let your sword guide you.\n \n \nYours, " +
+        NameGenerator::get(Random.choose(NameGeneratorId::FIRST_MALE, NameGeneratorId::FIRST_FEMALE))->getNext() +
+        "\n \nPS.: Beware the orcs!");
     displayGreeting = false;
     getView()->updateView(this, false);
   }

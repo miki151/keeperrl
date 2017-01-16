@@ -526,7 +526,7 @@ PCreature CreatureFactory::getShopkeeper(Location* shopArea, TribeId tribe) {
         c.chatReactionFriendly = "complains about high import tax";
         c.chatReactionHostile = "\"Die!\"";
         c.name = "shopkeeper";
-        c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());),
+        c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());),
       ControllerFactory([shopArea](Creature* c) { 
           return SController(new ShopkeeperController(c, shopArea)); })));
   vector<ItemType> inventory(Random.get(100, 300), ItemId::GOLD_PIECE);
@@ -1009,7 +1009,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 5;
           c.name = "Keeper";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
           c.spells->add(SpellId::STR_BONUS);
           c.minionTasks.setValue(MinionTask::STUDY, 1);
@@ -1030,7 +1030,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 5;
           c.name = "Keeper";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
           c.spells->add(SpellId::HEALING);
           c.minionTasks.setValue(MinionTask::STUDY, 1);
@@ -1051,7 +1051,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.barehandedDamage = 5;
           c.maxExpFromCombat = 15;
           c.name = "Adventurer";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
           c.skills.insert(SkillId::AMBUSH););
     case CreatureId::ADVENTURER_F:
@@ -1065,7 +1065,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.barehandedDamage = 5;
           c.maxExpFromCombat = 15;
           c.name = "Adventurer";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
           c.skills.setValue(SkillId::ARCHERY, 0.6););
     case CreatureId::BANDIT:
@@ -1174,7 +1174,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 20;
           c.attr[AttrType::DEXTERITY] = 20;
           c.name = CreatureName("witchman", "witchmen");
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.barehandedDamage = 6;
           c.gender = Gender::male;
           c.chatReactionFriendly = "curses all monsters";
@@ -2254,7 +2254,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons";
           c.chatReactionHostile = "\"Die!\"";
           c.name = "elementalist";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           );
     case CreatureId::FIRE_ELEMENTAL:
       return CATTR(

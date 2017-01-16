@@ -375,7 +375,7 @@ PGame MainLoop::prepareSingleMap(RandomGen& random) {
     return nullptr;
   switch (*choice) {
     case GameTypeChoice::KEEPER:
-      options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+      options->setDefaultString(OptionId::KEEPER_NAME, NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
       options->setDefaultString(OptionId::KEEPER_SEED, NameGenerator::get(NameGeneratorId::SCROLL)->getNext());
       if (forceGame || options->handleOrExit(view, OptionSet::KEEPER, -1)) {
         string seed = options->getStringValue(OptionId::KEEPER_SEED);
@@ -390,7 +390,7 @@ PGame MainLoop::prepareSingleMap(RandomGen& random) {
       return Game::singleMapGame("", "", quickGame(random));
     case GameTypeChoice::ADVENTURER:
       options->setDefaultString(OptionId::ADVENTURER_NAME,
-          NameGenerator::get(NameGeneratorId::FIRST)->getNext());
+          NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
       if (options->handleOrExit(view, OptionSet::ADVENTURER, -1))
         return adventurerGame();
   }
