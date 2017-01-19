@@ -497,10 +497,10 @@ MoveInfo Collective::getMove(Creature* c) {
       return taskMap->addTaskFor(std::move(t), c)->getMove(c);
   if (!hasTrait(c, MinionTrait::NO_RETURNING) && !territory->isEmpty() &&
       !territory->contains(c->getPosition()) && teams->getActive(c).empty()) {
-    if (c->getPosition().getModel() == getLevel()->getModel())
+    if (c->getPosition().getModel() == getModel())
       return c->moveTowards(Random.choose(territory->getAll()));
     else
-      if (PTask t = Task::transferTo(getLevel()->getModel()))
+      if (PTask t = Task::transferTo(getModel()))
         return taskMap->addTaskFor(std::move(t), c)->getMove(c);
   }
   return NoMove;
@@ -863,7 +863,7 @@ MoveInfo Collective::getAlarmMove(Creature* c) {
 }
 
 double Collective::getLocalTime() const {
-  return getLevel()->getModel()->getLocalTime();
+  return getModel()->getLocalTime();
 }
 
 double Collective::getGlobalTime() const {
@@ -1014,7 +1014,7 @@ void Collective::addKnownVillain(const Collective* col) {
 }
 
 bool Collective::isKnownVillain(const Collective* col) const {
-  return getLevel()->getModel() != col->getLevel()->getModel() || knownVillains.count(col);
+  return getModel() != col->getModel() || knownVillains.count(col);
 }
 
 void Collective::addKnownVillainLocation(const Collective* col) {
@@ -1345,7 +1345,7 @@ void Collective::onCantPickItem(EntitySet<Item> items) {
 }
 
 void Collective::limitKnownTilesToModel() {
-  knownTiles->limitToModel(getLevel()->getModel());
+  knownTiles->limitToModel(getModel());
 }
 
 CollectiveWarnings& Collective::getWarnings() {

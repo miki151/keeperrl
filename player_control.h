@@ -192,8 +192,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   optional<TeamId> getCurrentTeam() const;
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
-  Model* getModel();
-  const Model* getModel() const;
+  Model* getModel() const;
   Game* getGame() const;
   View* getView() const;
 

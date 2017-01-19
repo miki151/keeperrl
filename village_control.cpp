@@ -39,7 +39,7 @@ typedef EnumVariant<AttackTriggerId, TYPES(int),
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
 
 VillageControl::VillageControl(Collective* col, optional<VillageBehaviour> v) : CollectiveControl(col),
-    eventProxy(this, col->getLevel()->getModel()), villain(v) {
+    eventProxy(this, col->getModel()), villain(v) {
   for (Position v : col->getTerritory().getAll())
     for (Item* it : v.getItems())
       myItems.insert(it);
@@ -96,7 +96,7 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
   if (Collective* enemy = getEnemyCollective()) {
     for (Creature* c : attackers)
 //      if (getCollective()->getGame()->canTransferCreature(c, enemy->getLevel()->getModel()))
-        getCollective()->getGame()->transferCreature(c, enemy->getLevel()->getModel());
+        getCollective()->getGame()->transferCreature(c, enemy->getModel());
     optional<int> ransom;
     int hisGold = enemy->numResource(CollectiveResourceId::GOLD);
     if (villain->ransom && hisGold >= villain->ransom->second)
@@ -172,7 +172,7 @@ void VillageControl::checkEntries() {
 
 bool VillageControl::canPerformAttack(bool currentlyActive) {
   return !currentlyActive ||
-      getCollective()->getLevel()->getModel() == getCollective()->getGame()->getMainModel().get();
+      getCollective()->getModel() == getCollective()->getGame()->getMainModel().get();
 }
 
 void VillageControl::acceptImmigration() {

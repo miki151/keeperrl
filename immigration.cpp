@@ -359,7 +359,7 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
       [&](vector<Creature*>& creatures) {
         for (Creature* c : creatures) {
           immigration->collective->addCreature(c, {MinionTrait::FIGHTER});
-          Model* target = immigration->collective->getLevel()->getModel();
+          Model* target = immigration->collective->getModel();
           if (c->getPosition().getModel() != target)
             c->getGame()->transferCreature(c, target);
         }

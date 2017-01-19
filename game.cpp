@@ -264,7 +264,7 @@ optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
 }
 
 bool Game::isVillainActive(const Collective* col) {
-  const Model* m = col->getLevel()->getModel();
+  const Model* m = col->getModel();
   return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
 }
 
@@ -286,7 +286,7 @@ void Game::tick(double time) {
   INFO << "Global time " << time;
   for (Collective* col : collectives) {
     if (isVillainActive(col))
-      col->update(col->getLevel()->getModel() == getCurrentModel());
+      col->update(col->getModel() == getCurrentModel());
   }
 }
 
@@ -343,7 +343,7 @@ bool Game::canTransferCreature(Creature* c, Model* to) {
 }
 
 int Game::getModelDistance(const Collective* c1, const Collective* c2) const {
-  return getModelCoords(c1->getLevel()->getModel()).dist8(getModelCoords(c2->getLevel()->getModel()));
+  return getModelCoords(c1->getModel()).dist8(getModelCoords(c2->getModel()));
 }
  
 Vec2 Game::getModelCoords(const Model* m) const {
@@ -626,7 +626,7 @@ void Game::addEvent(const GameEvent& event) {
     case EventId::CONQUERED_ENEMY: {
         Collective* col = event.get<Collective*>();
         if (col->getVillainType()) {
-          Vec2 coords = getModelCoords(col->getLevel()->getModel());
+          Vec2 coords = getModelCoords(col->getModel());
           if (!campaign->isDefeated(coords)) {
             if (auto retired = campaign->getSites()[coords].getRetired())
               uploadEvent("retiredConquered", {

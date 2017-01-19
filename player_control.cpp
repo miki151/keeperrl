@@ -382,7 +382,7 @@ void PlayerControl::leaveControl() {
   for (TeamId team : getTeams().getActive(controlled)) {
     for (Creature* c : getTeams().getMembers(team))
 //      if (getGame()->canTransferCreature(c, getCollective()->getLevel()->getModel()))
-        getGame()->transferCreature(c, getCollective()->getLevel()->getModel());
+        getGame()->transferCreature(c, getModel());
     if (!getTeams().isPersistent(team)) {
       if (getTeams().getMembers(team).size() == 1)
         getTeams().cancel(team);
@@ -867,7 +867,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   info.name = col->getName().getShort();
   info.tribeName = col->getName().getRace();
   info.triggers.clear();
-  if (col->getLevel()->getModel() == getModel()) {
+  if (col->getModel() == getModel()) {
     if (!getCollective()->isKnownVillainLocation(col))
       info.access = VillageInfo::Village::NO_LOCATION;
     else {
@@ -2403,7 +2403,7 @@ void PlayerControl::update(bool currentlyActive) {
 }
 
 bool PlayerControl::isConsideredAttacking(const Creature* c, const Collective* enemy) {
-  if (enemy && enemy->getLevel()->getModel() == getModel())
+  if (enemy && enemy->getModel() == getModel())
     return canSee(c) && contains(getCollective()->getTerritory().getStandardExtended(), c->getPosition());
   else
     return canSee(c) && c->getLevel() == getLevel();
@@ -2486,11 +2486,7 @@ Level* PlayerControl::getLevel() const {
   return getCollective()->getLevel();
 }
 
-const Model* PlayerControl::getModel() const {
-  return getLevel()->getModel();
-}
-
-Model* PlayerControl::getModel() {
+Model* PlayerControl::getModel() const {
   return getLevel()->getModel();
 }
 
