@@ -28,6 +28,7 @@
 #include "creature_factory.h"
 #include "creature.h"
 #include "creature_name.h"
+#include "campaign_type.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -2333,6 +2334,7 @@ static const char* getGameTypeName(CampaignType type) {
     case CampaignType::CAMPAIGN: return "Campaign";
     case CampaignType::ENDLESS: return "Endless";
     case CampaignType::FREE_PLAY: return "Free play";
+    case CampaignType::SINGLE_KEEPER: return "Single map";
   }
 }
 
@@ -2368,11 +2370,12 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
         return none;
     }
   };
-  for (OptionId id : campaign.getPrimaryOptions())
+  for (OptionId id : campaignOptions.primaryOptions)
     lines.addElem(gui.leftMargin(optionMargin, drawOptionElem(options, id,
             [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});}, getDefaultString(id))));
   lines.addSpace(10);
-  lines.addBackElem(gui.centerHoriz(gui.label(campaign.getSiteChoiceTitle())));
+  if (auto& title = campaignOptions.mapTitle)
+    lines.addBackElem(gui.centerHoriz(gui.label(*title)));
   lines.addBackElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, nullptr,
         [&campaign](Vec2 pos) { return campaign.canEmbark(pos); },
         [&campaign, &queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
@@ -2394,8 +2397,8 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, gui.getKey(SDL::SDLK_ESCAPE)),
                 gui.labelHighlight("[Cancel]", colors[ColorId::LIGHT_BLUE]))).buildHorizontalList())));
   GuiFactory::ListBuilder secondaryOptionLines(gui, getStandardLineHeight());
-  if (!campaign.getSecondaryOptions().empty()) {
-    for (OptionId id : campaign.getSecondaryOptions())
+  if (!campaignOptions.secondaryOptions.empty()) {
+    for (OptionId id : campaignOptions.secondaryOptions)
       rightLines.addElem(
           drawOptionElem(options, id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});},
               getDefaultString(id)));
@@ -2431,7 +2434,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   interior.push_back(gui.margins(rightLines.buildVerticalList(), retiredPosX, 0, 50, 0));
   interior.push_back(
         gui.conditional(gui.margins(gui.miniWindow2(gui.margins(
-                gui.labelMultiLine(campaign.getIntroText(), legendLineHeight), 10),
+                gui.labelMultiLine(campaignOptions.introText, legendLineHeight), 10),
             [&menuState] { menuState.helpText = false;}), 100, 50, 100, 280),
             [&menuState] { return menuState.helpText;}));
 
@@ -2512,10 +2515,7 @@ SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, ScrollPosition
     GuiFactory::ListBuilder line(gui);
     ColorId color = elem.highlight ? ColorId::GREEN : ColorId::WHITE;
     line.addElemAuto(gui.label(elem.text, colors[color]));
-    if (page.sortBy == page.SCORE)
-      line.addBackElem(gui.label(toString(elem.score) + " points", colors[color]), 130);
-    else
-      line.addBackElem(gui.label(toString(elem.turns) + " turns", colors[color]), 130);
+    line.addBackElem(gui.label(elem.score, colors[color]), 130);
     lines.addElem(gui.leftMargin(30, line.buildHorizontalList()));
   }
   return gui.scrollable(lines.buildVerticalList(), scrollPos);

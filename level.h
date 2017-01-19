@@ -190,7 +190,7 @@ class Level {
   void updateSunlightMovement();
 
   const optional<ViewObject>& getBackgroundObject(Vec2) const;
-  int getNumModifiedSquares() const;
+  int getNumGeneratedSquares() const;
   int getNumTotalSquares() const;
   bool isUnavailable(Vec2) const;
 

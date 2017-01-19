@@ -249,11 +249,7 @@ bool Collective::hasLeader() const {
   return leader && !leader->isDead();
 }
 
-Level* Collective::getLevel() {
-  return level;
-}
-
-const Level* Collective::getLevel() const {
+Level* Collective::getLevel() const {
   return level;
 }
 
@@ -271,6 +267,10 @@ TribeId Collective::getTribeId() const {
 
 Tribe* Collective::getTribe() const {
   return getGame()->getTribe(*tribe);
+}
+
+Model* Collective::getModel() const {
+  return getLevel()->getModel();
 }
 
 const vector<Creature*>& Collective::getCreatures() const {
@@ -1014,7 +1014,7 @@ void Collective::addKnownVillain(const Collective* col) {
 }
 
 bool Collective::isKnownVillain(const Collective* col) const {
-  return knownVillains.count(col);
+  return getLevel()->getModel() != col->getLevel()->getModel() || knownVillains.count(col);
 }
 
 void Collective::addKnownVillainLocation(const Collective* col) {

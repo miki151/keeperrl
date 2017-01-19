@@ -16,6 +16,7 @@ struct SaveFileInfo;
 class GameEvents;
 class SokobanInput;
 struct CampaignSetup;
+class ModelBuilder;
 
 class MainLoop {
   public:
@@ -34,11 +35,8 @@ class MainLoop {
   int getSaveVersion(const SaveFileInfo& save);
   void uploadFile(const string& path, GameSaveType);
   void saveUI(PGame&, GameSaveType type, SplashType splashType);
-  void getSaveOptions(const vector<FileSharing::GameInfo>&, const vector<pair<GameSaveType, string>>&,
+  void getSaveOptions(const vector<pair<GameSaveType, string>>&,
       vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
-
-  void getDownloadOptions(const vector<FileSharing::GameInfo>&, vector<ListElem>& options,
-      vector<SaveFileInfo>& allFiles, const string& title);
 
   optional<SaveFileInfo> chooseSaveFile(const vector<ListElem>& options, const vector<SaveFileInfo>& allFiles,
       string noSaveMsg, View*);
@@ -49,9 +47,8 @@ class MainLoop {
   void doWithSplash(SplashType, const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
 
   PGame prepareCampaign(RandomGen&);
-  PGame prepareSingleMap(RandomGen&);
   void playGame(PGame&&, bool withMusic, bool noAutoSave);
-  void playGameChoice();
+  void playGameChoice(int);
   void splashScreen();
   void showCredits(const string& path, View*);
 
@@ -60,7 +57,6 @@ class MainLoop {
   Table<PModel> prepareCampaignModels(CampaignSetup& campaign, RandomGen& random);
   PModel keeperSingleMap(RandomGen& random);
   PModel quickGame(RandomGen& random);
-  PGame adventurerGame();
   PGame loadGame(string file);
   PGame loadPrevious();
   string getSavePath(PGame&, GameSaveType);
@@ -81,6 +77,9 @@ class MainLoop {
   bool useSingleThread;
   optional<GameTypeChoice> forceGame;
   SokobanInput* sokobanInput;
+  PModel getBaseModel(ModelBuilder&, CampaignSetup&);
+  void considerGameEventsPrompt();
+  void considerFreeVersionText(bool tilesPresent);
 };
 
 

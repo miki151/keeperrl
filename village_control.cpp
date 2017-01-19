@@ -171,8 +171,8 @@ void VillageControl::checkEntries() {
 }
 
 bool VillageControl::canPerformAttack(bool currentlyActive) {
-  return !currentlyActive || getCollective()->getGame()->isSingleModel() ||
-    getCollective()->getLevel()->getModel() == getCollective()->getGame()->getMainModel().get();
+  return !currentlyActive ||
+      getCollective()->getLevel()->getModel() == getCollective()->getGame()->getMainModel().get();
 }
 
 void VillageControl::acceptImmigration() {
@@ -200,12 +200,12 @@ void VillageControl::update(bool currentlyActive) {
       if (Collective* enemy = getEnemyCollective())
         maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
       double prob = villain->getAttackProbability(this) / updateFreq;
-      if (prob > 0 && Random.roll(1 / prob)) {
+      if (Random.chance(prob)) {
         vector<Creature*> fighters;
         fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::SUMMONED});
-        if (getCollective()->getGame()->isSingleModel())
+        /*if (getCollective()->getGame()->isSingleModel())
           fighters = filter(fighters, [this] (const Creature* c) {
-              return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });
+              return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });*/
         INFO << getCollective()->getName().getShort() << " fighters: " << int(fighters.size())
           << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");
         if (fighters.size() >= villain->minTeamSize && 

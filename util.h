@@ -363,8 +363,7 @@ class EnumInfo<Name> { \
     for (int i : Range(size)) \
       if (getString(Name(i)) == s) \
         return Name(i); \
-    FATAL << #Name << " value not found " << s;\
-    return Name(0);\
+    throw ParsingException();\
   }\
   static optional<Name> fromStringSafe(const string& s) {\
     for (int i : Range(size)) \

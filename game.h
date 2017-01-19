@@ -18,19 +18,18 @@ class EventListener;
 class GameEvent;
 class Campaign;
 class SavedGameInfo;
+struct CampaignSetup;
 
 RICH_ENUM(GameSaveType,
     ADVENTURER,
     KEEPER,
-    RETIRED_SINGLE,
     RETIRED_SITE,
     AUTOSAVE);
 
 class Game {
   public:
-  static PGame singleMapGame(const string& worldName, const string& playerName, PModel&&);
-  static PGame campaignGame(Table<PModel>&&, Vec2 basePos, const string& playerName, const Campaign&);
-  static PGame splashScreen(PModel&&);
+  static PGame campaignGame(Table<PModel>&&, Vec2 basePos, const CampaignSetup&);
+  static PGame splashScreen(PModel&&, const CampaignSetup&);
 
   enum class ExitId { SAVE, QUIT };
 
@@ -61,7 +60,6 @@ class Game {
   void setPlayer(Creature*);
   Creature* getPlayer() const;
   void clearPlayer();
-  void setNoHighScores();
 
   int getModelDistance(const Collective* c1, const Collective* c2) const;
 
@@ -77,7 +75,6 @@ class Game {
   void killedKeeper(const string& title, const string& keeper, const string& land, int numKills, int points);
   bool isGameOver() const;
   bool isTurnBased();
-  bool isSingleModel() const;
   bool isVillainActive(const Collective*);
   SavedGameInfo getSavedGameInfo() const;
 
@@ -89,8 +86,11 @@ class Game {
   void handleMessageBoard(Position, Creature*);
 
   PModel& getMainModel();
+  vector<Model*> getAllModels() const;
+  bool isSingleModel() const;
+  int getSaveProgressCount() const;
+
   void prepareSiteRetirement();
-  void prepareSingleMapRetirement();
   void doneRetirement();
 
   typedef function<void(EventListener*)> EventFun;
@@ -98,10 +98,10 @@ class Game {
 
   ~Game();
 
-  SERIALIZATION_DECL(Game);
+  SERIALIZATION_DECL(Game)
 
   private:
-  Game(const string& worldName, const string& playerName, Table<PModel>&&, Vec2 basePos, optional<Campaign>);
+  Game(Table<PModel>&&, Vec2 basePos, const CampaignSetup&);
   void updateSunlightInfo();
   void tick(double time);
   PCreature makeAdventurer(int handicap);
@@ -110,10 +110,7 @@ class Game {
   optional<ExitInfo> updateModel(Model*, double totalTime);
   string getPlayerName() const;
   void uploadEvent(const string& name, const map<string, string>&);
-  optional<Campaign>& getCampaign();
-  const optional<Campaign>& getCampaign() const;
 
-  string SERIAL(worldName);
   SunlightInfo sunlightInfo;
   Table<PModel> SERIAL(models);
   Table<bool> SERIAL(visited);
@@ -138,12 +135,11 @@ class Game {
   optional<milliseconds> lastUpdate;
   PlayerControl* SERIAL(playerControl) = nullptr;
   Collective* SERIAL(playerCollective) = nullptr;
-  HeapAllocated<optional<Campaign>> SERIAL(campaign);
+  HeapAllocated<Campaign> SERIAL(campaign);
   bool wasTransfered = false;
   Creature* SERIAL(player) = nullptr;
   FileSharing* fileSharing;
   set<int> SERIAL(turnEvents);
-  bool SERIAL(noHighscores) = false;
   friend class GameListener;
   void considerRealTimeRender();
 };

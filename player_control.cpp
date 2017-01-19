@@ -867,7 +867,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   info.name = col->getName().getShort();
   info.tribeName = col->getName().getRace();
   info.triggers.clear();
-  if (getGame()->isSingleModel()) {
+  if (col->getLevel()->getModel() == getModel()) {
     if (!getCollective()->isKnownVillainLocation(col))
       info.access = VillageInfo::Village::NO_LOCATION;
     else {
@@ -1032,11 +1032,8 @@ void PlayerControl::handleRansom(bool pay) {
 }
 
 vector<Collective*> PlayerControl::getKnownVillains(VillainType type) const {
-  if (!getGame()->isSingleModel())
-    return getGame()->getVillains(type);
-  else
-    return filter(getGame()->getVillains(type), [this](Collective* c) {
-        return seeEverything || getCollective()->isKnownVillain(c);});
+  return filter(getGame()->getVillains(type), [this](Collective* c) {
+      return seeEverything || getCollective()->isKnownVillain(c);});
 }
 
 vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
@@ -1049,8 +1046,8 @@ vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
 
 void PlayerControl::sortMinionsForUI(vector<Creature*>& minions) const {
   sort(minions.begin(), minions.end(), [] (const Creature* c1, const Creature* c2) {
-      int l1 = c1->getAttributes().getExpLevel();
-      int l2 = c2->getAttributes().getExpLevel();
+      int l1 = (int) c1->getAttributes().getExpLevel();
+      int l2 = (int) c2->getAttributes().getExpLevel();
       return l1 > l2 || (l1 == l2 && c1->getUniqueId() > c2->getUniqueId());
       });
 }
@@ -1360,7 +1357,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.time = getCollective()->getGame()->getGlobalTime();
   gameInfo.modifiedSquares = gameInfo.totalSquares = 0;
   for (Collective* col : getCollective()->getGame()->getCollectives()) {
-    gameInfo.modifiedSquares += col->getLevel()->getNumModifiedSquares();
+    gameInfo.modifiedSquares += col->getLevel()->getNumGeneratedSquares();
     gameInfo.totalSquares += col->getLevel()->getNumTotalSquares();
   }
   info.teams.clear();
@@ -2405,8 +2402,8 @@ void PlayerControl::update(bool currentlyActive) {
   }
 }
 
-bool PlayerControl::isConsideredAttacking(const Creature* c) {
-  if (getGame()->isSingleModel())
+bool PlayerControl::isConsideredAttacking(const Creature* c, const Collective* enemy) {
+  if (enemy && enemy->getLevel()->getModel() == getModel())
     return canSee(c) && contains(getCollective()->getTerritory().getStandardExtended(), c->getPosition());
   else
     return canSee(c) && c->getLevel() == getLevel();
@@ -2431,7 +2428,7 @@ void PlayerControl::tick() {
       }
   for (auto attack : copyOf(newAttacks))
     for (const Creature* c : attack.getCreatures())
-      if (isConsideredAttacking(c)) {
+      if (isConsideredAttacking(c, attack.getAttacker())) {
         addMessage(PlayerMessage("You are under attack by " + attack.getAttackerName() + "!",
             MessagePriority::CRITICAL).setPosition(c->getPosition()));
         getGame()->setCurrentMusic(MusicType::BATTLE, true);

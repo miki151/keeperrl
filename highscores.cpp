@@ -3,6 +3,8 @@
 #include "view.h"
 #include "file_sharing.h"
 #include "options.h"
+#include "campaign_type.h"
+#include "player_role.h"
 
 Highscores::Highscores(const string& local, FileSharing& sharing, Options* o)
     : localPath(local), fileSharing(sharing), options(o) {
@@ -47,7 +49,8 @@ string Highscores::Score::toString() const {
     ::toString<int>(gameWon) + delim +
     ::toString(points) + delim +
     ::toString(turns) + delim +
-    ::toString<int>(gameType);
+    EnumInfo<CampaignType>::getString(campaignType) + delim +
+    EnumInfo<PlayerRole>::getString(playerRole);
 }
 
 void Highscores::saveToFile(const vector<Score>& scores, const string& path) {
@@ -74,75 +77,68 @@ vector<Highscores::Score> Highscores::fromString(const string& s) {
 
 optional<Highscores::Score> Highscores::Score::parse(const string& buf) {
   vector<string> p = split(buf, {','});
-  if (p.size() != 8 || !fromStringSafe<int>(p[4]) || !fromStringSafe<int>(p[5]) || !fromStringSafe<int>(p[6])
-      || !fromStringSafe<int>(p[7]))
+  if (p.size() == 9)
+    try {
+      return CONSTRUCT(Score,
+          c.gameId = p[0];
+          c.playerName = p[1];
+          c.worldName = p[2];
+          c.gameResult = p[3];
+          c.gameWon = ::fromString<int>(p[4]);
+          c.points = ::fromString<int>(p[5]);
+          c.turns = ::fromString<int>(p[6]);
+          c.campaignType = EnumInfo<CampaignType>::fromString(p[7]);
+          c.playerRole = EnumInfo<PlayerRole>::fromString(p[8]);
+      );
+    } catch (ParsingException&) {}
 #ifndef RELEASE
     return CONSTRUCT(Score, c.playerName = "ERROR: " + buf;);
 #else
     return none;
 #endif
-  else {
-    return CONSTRUCT(Score,
-        c.gameId = p[0];
-        c.playerName = p[1];
-        c.worldName = p[2];
-        c.gameResult = p[3];
-        c.gameWon = ::fromString<int>(p[4]);
-        c.points = ::fromString<int>(p[5]);
-        c.turns = ::fromString<int>(p[6]);
-        c.gameType = Score::GameType(::fromString<int>(p[7]));
-    );
-  }
 }
 
 typedef Highscores::Score Score;
-static HighscoreList fillScores(const string& name, vector<Score> scores, optional<Score> lastElem,
-    HighscoreList::SortBy sortBy) {
-  HighscoreList list { name, sortBy };
-  switch (sortBy) {
-    case HighscoreList::SCORE: 
-      sort(scores.begin(), scores.end(), [] (const Score& a, const Score& b) -> bool {
-          return a.points > b.points;
-      });
-      break;
-    case HighscoreList::TURNS: 
-      sort(scores.begin(), scores.end(), [] (const Score& a, const Score& b) -> bool {
+static HighscoreList fillScores(const string& name, optional<Score> lastElem, vector<Score> scores) {
+  HighscoreList list { name, {} };
+  sort(scores.begin(), scores.end(), [] (const Score& a, const Score& b) -> bool {
+      if (a.gameWon) {
+        if (!b.gameWon)
+          return true;
+        else
           return a.turns < b.turns;
-      });
-      break;
-  }
+      } else
+      if (b.gameWon)
+        return false;
+      else
+        return a.points > b.points || (a.points == b.points && a.gameId < b.gameId);
+  });
   for (auto& score : scores) {
     bool highlight = lastElem == score;
+    string points = score.gameWon ? toString(score.turns) + " turns" : toString(score.points) + " points";
     if (score.gameResult.empty())
-      list.scores.push_back({score.playerName + " of " + score.worldName, score.points, score.turns, highlight});
+      list.scores.push_back({score.playerName + " of " + score.worldName, points, highlight});
     else
       list.scores.push_back({score.playerName + " of " + score.worldName +
-          ", " + score.gameResult, score.points, score.turns, highlight});
+          ", " + score.gameResult, points, highlight});
   }
   return list;
 }
 
 void Highscores::present(View* view, optional<Score> lastAdded) const {
   vector<HighscoreList> lists;
-  lists.push_back(fillScores("Keepers", filter(localScores, [] (const Score& s) { return s.gameType == s.KEEPER;}),
-      lastAdded, lists.back().SCORE)); 
-  lists.push_back(fillScores("Adventurers", filter(localScores,
-      [] (const Score& s) { return s.gameType == s.ADVENTURER;}), lastAdded, lists.back().SCORE)); 
-  lists.push_back(fillScores("Campaign", filter(localScores,
-          [] (const Score& s) { return s.gameType == s.KEEPER_CAMPAIGN || s.gameType == s.ADVENTURER_CAMPAIGN;}),
-        lastAdded, lists.back().SCORE)); 
-  lists.push_back(fillScores("Fastest wins", filter(localScores,
-      [] (const Score& s) { return s.gameType == s.KEEPER && s.gameWon == true;}), lastAdded, lists.back().TURNS)); 
-  lists.push_back(fillScores("Keepers", filter(remoteScores,
-      [] (const Score& s) { return s.gameType == s.KEEPER;}), lastAdded, lists.back().SCORE)); 
-  lists.push_back(fillScores("Adventurers", filter(remoteScores,
-      [] (const Score& s) { return s.gameType == s.ADVENTURER;}), lastAdded, lists.back().SCORE)); 
-  lists.push_back(fillScores("Campaign", filter(remoteScores,
-      [] (const Score& s) { return s.gameType == s.KEEPER_CAMPAIGN || s.gameType == s.ADVENTURER_CAMPAIGN;}),
-        lastAdded, lists.back().SCORE)); 
-  lists.push_back(fillScores("Fastest wins", filter(remoteScores,
-      [] (const Score& s) { return s.gameType == s.KEEPER && s.gameWon == true;}),
-          lastAdded, lists.back().TURNS)); 
+  lists.push_back(fillScores("Keepers", lastAdded, filter(localScores,
+      [] (const Score& s) { return s.campaignType == CampaignType::CAMPAIGN && s.playerRole == PlayerRole::KEEPER;})));
+  lists.push_back(fillScores("Adventurers", lastAdded, filter(localScores,
+      [] (const Score& s) { return s.campaignType == CampaignType::CAMPAIGN && s.playerRole == PlayerRole::ADVENTURER;})));
+  lists.push_back(fillScores("Single map", lastAdded, filter(localScores,
+      [] (const Score& s) { return s.campaignType == CampaignType::SINGLE_KEEPER && s.playerRole == PlayerRole::KEEPER;})));
+  lists.push_back(fillScores("Keepers", lastAdded, filter(remoteScores,
+      [] (const Score& s) { return s.campaignType == CampaignType::CAMPAIGN && s.playerRole == PlayerRole::KEEPER;})));
+  lists.push_back(fillScores("Adventurers", lastAdded, filter(remoteScores,
+      [] (const Score& s) { return s.campaignType == CampaignType::CAMPAIGN && s.playerRole == PlayerRole::ADVENTURER;})));
+  lists.push_back(fillScores("Single map", lastAdded, filter(remoteScores,
+      [] (const Score& s) { return s.campaignType == CampaignType::SINGLE_KEEPER && s.playerRole == PlayerRole::KEEPER;})));
   view->presentHighscores(lists);
 }
 

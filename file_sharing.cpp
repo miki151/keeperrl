@@ -90,14 +90,6 @@ static optional<string> curlUpload(const char* path, const char* url, void* prog
     return string("Failed to initialize libcurl");
 }
 
-
-optional<string> FileSharing::uploadRetired(const string& path, ProgressMeter& meter) {
-  if (!options.getBoolValue(OptionId::ONLINE))
-    return none;
-  static ProgressCallback callback = [&] (double p) { meter.setProgress(p);};
-  return curlUpload(path.c_str(), (uploadUrl + "/upload.php").c_str(), &callback, 0);
-}
-
 optional<string> FileSharing::uploadSite(const string& path, ProgressMeter& meter) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return none;
@@ -180,18 +172,6 @@ static vector<Elem> parseLines(const string& s, function<optional<Elem>(const ve
 
 }
 
-static optional<FileSharing::GameInfo> parseGame(const vector<string>& fields) {
-  if (fields.size() >= 6) {
-    INFO << "Parsed " << fields;
-    try {
-      return FileSharing::GameInfo{fields[0], fields[1], fromString<int>(fields[2]), fromString<int>(fields[3]),
-        fromString<int>(fields[4]), fromString<int>(fields[5])};
-    } catch (ParsingException e) {
-    }
-  }
-  return none;
-}
-
 static optional<string> downloadContent(const string& url) {
   if (CURL* curl = curl_easy_init()) {
     curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(url).c_str());
@@ -209,15 +189,6 @@ static optional<string> downloadContent(const string& url) {
       return ret;
   }
   return none;
-}
-
-optional<vector<FileSharing::GameInfo>> FileSharing::listGames() {
-  if (!options.getBoolValue(OptionId::ONLINE))
-    return {};
-  if (auto content = downloadContent(uploadUrl + "/get_games.php"))
-    return parseLines<FileSharing::GameInfo>(*content, parseGame);
-  else
-    return none;
 }
 
 static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {

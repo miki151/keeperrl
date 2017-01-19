@@ -11,18 +11,7 @@ class FileSharing {
   public:
   FileSharing(const string& uploadUrl, Options&, long long installId);
 
-  optional<string> uploadRetired(const string& path, ProgressMeter&);
   optional<string> uploadSite(const string& path, ProgressMeter&);
-
-  struct GameInfo {
-    string displayName;
-    string filename;
-    time_t time;
-    int totalGames;
-    int wonGames;
-    int version;
-  };
-  optional<vector<GameInfo>> listGames();
   struct SiteInfo {
     SavedGameInfo gameInfo;
     SaveFileInfo fileInfo;

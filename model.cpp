@@ -54,11 +54,7 @@ void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   serializeAll(ar, levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
   serializeAll(ar, stairNavigation, cemetery, topLevel, eventGenerator, externalEnemies);
-  if (progressMeter)
-    progressMeter->addProgress();
 }
-
-ProgressMeter* Model::progressMeter = nullptr;
 
 void Model::lockSerialization() {
   serializationLocked = true;
@@ -72,6 +68,13 @@ void Model::addWoodCount(int cnt) {
 
 int Model::getWoodCount() const {
   return woodCount;
+}
+
+int Model::getSaveProgressCount() const {
+  int ret = 0;
+  for (const PLevel& l : levels)
+    ret += l->getNumGeneratedSquares();
+  return ret;
 }
 
 vector<Collective*> Model::getCollectives() const {

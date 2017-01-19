@@ -61,9 +61,9 @@ class Collective : public TaskCallback {
   void update(bool currentlyActive);
   TribeId getTribeId() const;
   Tribe* getTribe() const;
-  Level* getLevel();
+  Level* getLevel() const;
+  Model* getModel() const;
   Game* getGame() const;
-  const Level* getLevel() const;
   void addNewCreatureMessage(const vector<Creature*>&);
   void setTask(const Creature*, PTask);
   bool hasTask(const Creature*) const;

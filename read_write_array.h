@@ -45,10 +45,11 @@ class ReadWriteArray {
   }
 
   void putElem(Vec2 pos, PType s) {
+    if (!readonly[pos])
+      ++numTotal;
+    ++numModified;
     modified[pos] = std::move(s);
     readonly[pos] = modified[pos].get();
-    ++numModified;
-    ++numTotal;
   }
 
   void clearElem(Vec2 pos) {
@@ -62,8 +63,8 @@ class ReadWriteArray {
     }
   }
 
-  int getNumModified() const {
-    return numModified;
+  int getNumGenerated() const {
+    return numModified + readonlyMap.size();
   }
 
   int getNumTotal() const {

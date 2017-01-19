@@ -145,8 +145,7 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
       case AttackTriggerId::ENTRY:
         return entryMaxProb * self->entries;
       case AttackTriggerId::PROXIMITY:
-        if (!collective->getGame()->isSingleModel() &&
-            collective->getGame()->getModelDistance(collective, self->getCollective()) <= 1)
+        if (collective->getGame()->getModelDistance(collective, self->getCollective()) == 1)
           return proximityMaxProb;
         else
           return 0;

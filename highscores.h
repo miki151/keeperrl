@@ -21,7 +21,8 @@ class Highscores {
     bool gameWon;
     int points;
     int turns;
-    enum GameType { KEEPER, ADVENTURER, KEEPER_CAMPAIGN, ADVENTURER_CAMPAIGN } gameType;
+    CampaignType campaignType;
+    PlayerRole playerRole;
   };
 
   void present(View*, optional<Score> lastAdded = none) const;

@@ -87,11 +87,9 @@ enum class MenuType {
 
 struct HighscoreList {
   string name;
-  enum SortBy { SCORE, TURNS } sortBy;
   struct Elem {
     string text;
-    int score;
-    int turns;
+    string score;
     bool highlight;
   };
   vector<Elem> scores;
@@ -205,6 +203,10 @@ class View {
     const Campaign& campaign;
     optional<RetiredGames>& retired;
     const Creature* player;
+    vector<OptionId> primaryOptions;
+    vector<OptionId> secondaryOptions;
+    optional<string> mapTitle;
+    string introText;
   };
 
   virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) = 0;

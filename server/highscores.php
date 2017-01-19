@@ -4,7 +4,7 @@ include 'db.php';
 
 $dbConn = getDBConn();
 
-  $sql = "select * from highscores2";
+  $sql = "select * from highscores";
 
   header("Content-Type:text/plain");
 
@@ -18,7 +18,8 @@ $dbConn = getDBConn();
       echo $row["game_won"] . ",";
       echo $row["points"] . ",";
       echo $row["turns"] . ",";
-      echo $row["game_type"] . "\n";
+      echo $row["game_type"] . ",";
+      echo $row["player_role"] . "\n";
     }
   }
 $dbConn->close();

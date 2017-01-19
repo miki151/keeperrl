@@ -568,8 +568,8 @@ const optional<ViewObject>& Level::getBackgroundObject(Vec2 pos) const {
   return (*background)[pos];
 }
 
-int Level::getNumModifiedSquares() const {
-  return squares->getNumModified();
+int Level::getNumGeneratedSquares() const {
+  return squares->getNumGenerated();
 }
 
 int Level::getNumTotalSquares() const {

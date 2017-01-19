@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "saved_game_info.h"
 
-SERIALIZE_DEF(SavedGameInfo, minions, dangerLevel, name, numSites);
+SERIALIZE_DEF(SavedGameInfo, minions, dangerLevel, name, progressCount);
 
 #ifdef PARSE_GAME
 template void SavedGameInfo::serialize(text_oarchive&, unsigned);
@@ -10,7 +10,7 @@ template void SavedGameInfo::serialize(text_oarchive&, unsigned);
 SERIALIZATION_CONSTRUCTOR_IMPL(SavedGameInfo);
 
 SavedGameInfo::SavedGameInfo(const vector<MinionInfo>& m, double d, const string& n, int s) 
-    : minions(m), dangerLevel(d), name(n), numSites(s) {
+    : minions(m), dangerLevel(d), name(n), progressCount(s) {
 }
 
 const vector<SavedGameInfo::MinionInfo>& SavedGameInfo::getMinions() const {
@@ -29,6 +29,6 @@ ViewId SavedGameInfo::getViewId() const {
   return minions.at(0).viewId;
 }
 
-int SavedGameInfo::getNumSites() const {
-  return numSites;
+int SavedGameInfo::getProgressCount() const {
+  return progressCount;
 }

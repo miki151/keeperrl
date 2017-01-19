@@ -293,7 +293,7 @@ static long long getInstallId(const string& path, RandomGen& random) {
   return ret;
 }
 
-const static string serverVersion = "19";
+const static string serverVersion = "21";
 
 static int keeperMain(const variables_map& vars) {
   if (vars.count("help")) {
@@ -345,7 +345,11 @@ static int keeperMain(const variables_map& vars) {
   if (vars.count("upload_url"))
     uploadUrl = vars["upload_url"].as<string>();
   else
+#ifdef RELEASE
     uploadUrl = "http://keeperrl.com/~retired/" + serverVersion;
+#else
+    uploadUrl = "http://localhost/~michal/" + serverVersion;
+#endif
   makeDir(userPath);
   string overrideSettings;
   if (vars.count("override_settings"))
@@ -388,7 +392,7 @@ static int keeperMain(const variables_map& vars) {
   Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && !audioError), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options, installId);
-  Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
+  Highscores highscores(userPath + "/" + "highscores3.txt", fileSharing, &options);
   optional<GameTypeChoice> forceGame;
   if (vars.count("force_keeper"))
     forceGame = GameTypeChoice::KEEPER;

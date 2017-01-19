@@ -1651,8 +1651,8 @@ class PreferredSize : public GuiLayout {
   virtual Rectangle getElemBounds(int num) override {
     auto bounds = getBounds();
     return Rectangle(bounds.left(), bounds.top(),
-        bounds.left() + min(bounds.width(), width.get_value_or(bounds.width())),
-        bounds.top() + min(bounds.height(), height.get_value_or(bounds.height())));
+        bounds.left() + max(1, min(bounds.width(), width.get_value_or(bounds.width()))),
+        bounds.top() + max(1, min(bounds.height(), height.get_value_or(bounds.height()))));
   }
 
   private:

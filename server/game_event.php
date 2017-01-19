@@ -27,15 +27,9 @@ function addTurn($params) {
 
 function addCampaignStarted($params) {
   global $conn;
-  $sql = $conn->prepare("INSERT INTO event_campaign_started (game_id, main, lesser, allies, retired, install_id, type) VALUES (?, ?, ?, ?, ?, ?, ?)");
-  $sql->bind_param("siiiiss", $params["gameId"], $params["main"], $params["lesser"], $params["allies"], $params["retired"], $params["installId"], $params["type"]);
-  executeSql($sql, $conn);
-}
-
-function addSingleStarted($params) {
-  global $conn;
-  $sql = $conn->prepare("INSERT INTO event_single_started (game_id, install_id) VALUES (?, ?)");
-  $sql->bind_param("ss", $params["gameId"], $params["installId"]);
+  $sql = $conn->prepare("INSERT INTO event_campaign_started (game_id, main, lesser, allies, retired, install_id, game_type, player_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+  $sql->bind_param("siiiisss", $params["gameId"], $params["main"], $params["lesser"], $params["allies"],
+      $params["retired"], $params["installId"], $params["game_type"], $params["player_role"]);
   executeSql($sql, $conn);
 }
 
@@ -59,8 +53,6 @@ if ($eventType == "boardMessage")
   addMessage($_POST);
 if ($eventType == "campaignStarted")
   addCampaignStarted($_POST);
-if ($eventType == "singleStarted")
-  addSingleStarted($_POST);
 
 $conn->close();
 ?>

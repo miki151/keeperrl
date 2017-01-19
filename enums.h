@@ -40,6 +40,7 @@ enum class GameTypeChoice;
 enum class MenuType;
 enum class OptionId;
 enum class CampaignType;
+enum class PlayerRole;
 
 enum class MovementTrait;
 enum class SpawnType;
