@@ -530,14 +530,14 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
   const int elemWidth = getImmigrationBarWidth();
   auto makeHighlight = [=] (Color c) { return gui.margins(gui.rectangle(c), 4); };
   auto lines = gui.getListBuilder(elemWidth);
-  auto getAcceptButton = [=] (const ImmigrantDataInfo& info) {
+  auto getAcceptButton = [=] (int immigrantId, optional<Keybinding> keybinding) {
     return gui.stack(
-        gui.releaseLeftButton(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, info.id}), info.keybinding),
+        gui.releaseLeftButton(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, immigrantId}), keybinding),
         gui.onMouseLeftButtonHeld(makeHighlight(Color(0, 255, 0, 100))));
   };
-  auto getRejectButton = [=] (const ImmigrantDataInfo& info) {
+  auto getRejectButton = [=] (int immigrantId) {
     return gui.stack(
-        gui.releaseRightButton(getButtonCallback({UserInputId::IMMIGRANT_REJECT, info.id})),
+        gui.releaseRightButton(getButtonCallback({UserInputId::IMMIGRANT_REJECT, immigrantId})),
         gui.onMouseRightButtonHeld(makeHighlight(Color(255, 0, 0, 100))));
   };
   for (int i : All(info.immigration)) {
@@ -546,13 +546,13 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
     if (elem.requirements.empty())
       button = gui.stack(makeVec<SGuiElem>(
           gui.sprite(GuiFactory::TexId::IMMIGRANT_BG, GuiFactory::Alignment::CENTER),
-          cache->get(getAcceptButton, THIS_LINE, elem),
-          cache->get(getRejectButton, THIS_LINE, elem)
+          cache->get(getAcceptButton, THIS_LINE, elem.id, elem.keybinding),
+          cache->get(getRejectButton, THIS_LINE, elem.id)
       ));
     else
       button = gui.stack(makeVec<SGuiElem>(
           gui.sprite(GuiFactory::TexId::IMMIGRANT2_BG, GuiFactory::Alignment::CENTER),
-          cache->get(getRejectButton, THIS_LINE, elem)
+          cache->get(getRejectButton, THIS_LINE, elem.id)
       ));
     auto initTime = elem.generatedTime;
     lines.addElem(gui.translate([=]() { return Vec2(0, initTime ? -getImmigrantAnimationOffset(*initTime) : 0);},
