@@ -165,6 +165,13 @@ void Furniture::use(Position pos, Creature* c) const {
     FurnitureUsage::handle(*usageType, pos, this, c);
 }
 
+bool Furniture::canUse(const Creature* c) const {
+  if (usageType)
+    return FurnitureUsage::canHandle(*usageType, c);
+  else
+    return false;
+}
+
 optional<FurnitureUsageType> Furniture::getUsageType() const {
   return usageType;
 }

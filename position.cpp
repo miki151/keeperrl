@@ -271,30 +271,11 @@ const Location* Position::getLocation() const {
   return nullptr;
 } 
 
-optional<FurnitureUsageType> Position::getUsageType() const {
-  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    return furniture->getUsageType();
-  else
-    return none;
-}
-
 optional<FurnitureClickType> Position::getClickType() const {
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
     return furniture->getClickType();
   else
     return none;
-}
-
-void Position::apply(Creature* c) const {
-  if (auto f = getFurniture(FurnitureLayer::MIDDLE))
-    f->use(*this, c);
-}
-
-double Position::getApplyTime() const {
-  if (auto f = getFurniture(FurnitureLayer::MIDDLE))
-    return f->getUsageTime();
-  else
-    return 1;
 }
 
 void Position::addSound(const Sound& sound1) const {

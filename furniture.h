@@ -45,6 +45,7 @@ class Furniture : public Renderable {
   bool isClickable() const;
   bool overridesMovement() const;
   void use(Position, Creature*) const;
+  bool canUse(const Creature*) const;
   optional<FurnitureUsageType> getUsageType() const;
   int getUsageTime() const;
   optional<FurnitureClickType> getClickType() const;

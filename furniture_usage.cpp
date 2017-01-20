@@ -17,7 +17,7 @@
 #include "creature_name.h"
 #include "level.h"
 #include "sound.h"
-
+#include "body.h"
 
 struct ChestInfo {
   FurnitureType openedType;
@@ -129,7 +129,18 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furnitu
       break;
     default: break;
   }
+}
 
+bool FurnitureUsage::canHandle(FurnitureUsageType type, const Creature* c) {
+  switch (type) {
+    case FurnitureUsageType::KEEPER_BOARD:
+    case FurnitureUsageType::FOUNTAIN:
+    case FurnitureUsageType::COFFIN:
+    case FurnitureUsageType::CHEST:
+      return c->getBody().isHumanoid();
+    default:
+      return true;
+  }
 }
 
 string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitureName) {

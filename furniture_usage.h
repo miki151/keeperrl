@@ -21,5 +21,6 @@ enum class FurnitureUsageType {
 class FurnitureUsage {
   public:
   static void handle(FurnitureUsageType, Position, const Furniture*, Creature*);
+  static bool canHandle(FurnitureUsageType, const Creature*);
   static string getUsageQuestion(FurnitureUsageType, string furnitureName);
 };

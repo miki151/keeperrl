@@ -622,19 +622,19 @@ CreatureAction Creature::bumpInto(Vec2 direction) const {
 
 CreatureAction Creature::applySquare(Position pos) const {
   CHECK(pos.dist8(getPosition()) <= 1);
-//  if (pos.getApplyType(this))
-    return CreatureAction(this, [=](Creature* self) {
-      INFO << getName().the() << " applying " << getPosition().getName();
-      auto originalPos = getPosition();
-      pos.apply(self);
-      double oldTime = getLocalTime();
-      self->spendTime(pos.getApplyTime());
-      if (pos != getPosition() && getPosition() == originalPos)
-        self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime + 1, getLocalTime()),
-            MovementInfo::ATTACK});
-    });
-//  else
-//    return CreatureAction();
+  if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
+    if (furniture->canUse(this))
+      return CreatureAction(this, [=](Creature* self) {
+        INFO << getName().the() << " applying " << getPosition().getName();
+        auto originalPos = getPosition();
+        furniture->use(pos, self);
+        double oldTime = getLocalTime();
+        self->spendTime(furniture->getUsageTime());
+        if (pos != getPosition() && getPosition() == originalPos)
+          self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime + 1, getLocalTime()),
+              MovementInfo::ATTACK});
+      });
+  return CreatureAction();
 }
 
 CreatureAction Creature::hide() const {
@@ -664,7 +664,6 @@ CreatureAction Creature::chatTo(Creature* other) const {
       other->getAttributes().chatReaction(other, self);
       self->spendTime(1);
   });
-  return CreatureAction();
 }
 
 CreatureAction Creature::stealFrom(Vec2 direction, const vector<Item*>& items) const {

@@ -48,6 +48,7 @@
 #include "view_object.h"
 #include "body.h"
 #include "furniture_usage.h"
+#include "furniture.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
@@ -891,9 +892,12 @@ vector<Creature*> Player::getTeam() const {
 }
 
 optional<FurnitureUsageType> Player::getUsableUsageType() const {
-  if (auto usageType = getCreature()->getPosition().getUsageType())
-    if (!FurnitureUsage::getUsageQuestion(*usageType, getCreature()->getPosition().getName()).empty())
-      return *usageType;
+  if (auto furniture = getCreature()->getPosition().getFurniture(FurnitureLayer::MIDDLE))
+    if (furniture->canUse(getCreature())) {
+      auto usageType = *furniture->getUsageType();
+      if (!FurnitureUsage::getUsageQuestion(usageType, getCreature()->getPosition().getName()).empty())
+        return usageType;
+    }
   return none;
 }
 
