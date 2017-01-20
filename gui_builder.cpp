@@ -452,34 +452,38 @@ static SDL_Keycode getHotkey(GuiBuilder::GameSpeed speed) {
 }
 
 SGuiElem GuiBuilder::drawGameSpeedDialog() {
-  vector<SGuiElem> lines;
   int keyMargin = 95;
+  auto pauseFun = [=] {
+    if (clock->isPaused())
+      clock->cont();
+    else
+      clock->pause();
+      gameSpeedDialogOpen = false;
+  };
+  vector<SGuiElem> lines;
+  vector<SGuiElem> hotkeys;
   lines.push_back(gui.stack(
         gui.getListBuilder(keyMargin)
             .addElem(gui.label("pause"))
             .addElem(gui.label("[space]")).buildHorizontalList(),
-        gui.button([=] {
-          if (clock->isPaused())
-          clock->cont();
-          else
-          clock->pause();
-          gameSpeedDialogOpen = false;
-          }, gui.getKey(SDL::SDLK_SPACE))));
+        gui.button(pauseFun)));
+  hotkeys.push_back(gui.keyHandler(pauseFun, {gui.getKey(SDL::SDLK_SPACE)}));
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
+    auto speedFun = [=] { gameSpeed = speed; gameSpeedDialogOpen = false; clock->cont();};
     Color color = colors[speed == gameSpeed ? ColorId::GREEN : ColorId::WHITE];
     lines.push_back(gui.stack(gui.getListBuilder(keyMargin)
               .addElem(gui.label(getGameSpeedName(speed), color))
               .addElem(gui.label("'" + string(1, getHotkeyChar(speed)) + "' ", color)).buildHorizontalList(),
-          gui.button([=] { gameSpeed = speed; gameSpeedDialogOpen = false; clock->cont();},
-            gui.getKey(getHotkey(speed)))));
+          gui.button(speedFun)));
+    hotkeys.push_back(gui.keyHandler(speedFun, {gui.getKey(getHotkey(speed))}));
   }
   reverse(lines.begin(), lines.end());
   int margin = 20;
   Vec2 size(150 + 2 * margin, legendLineHeight * lines.size() - 10 + 2 * margin);
   SGuiElem dialog = gui.miniWindow(
       gui.margins(gui.verticalList(std::move(lines), legendLineHeight), margin));
-  return gui.preferredSize(size,
-      gui.conditional(std::move(dialog), [this] { return gameSpeedDialogOpen; }));
+  return gui.stack(gui.stack(std::move(hotkeys)),
+      gui.preferredSize(size, gui.conditional(std::move(dialog), [this] { return gameSpeedDialogOpen; })));
 }
 
 SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
