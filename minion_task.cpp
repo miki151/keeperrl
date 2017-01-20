@@ -36,7 +36,9 @@ static optional<Position> getTileToExplore(const Collective* collective, const C
                 return p.isSameLevel(collective->getLevel()) && p.isCovered() &&
                     (!c->getPosition().isSameLevel(collective->getLevel()) || c->isSameSector(p));}))
         return pos;
+      FALLTHROUGH;
     case MinionTask::EXPLORE:
+      FALLTHROUGH;
     case MinionTask::EXPLORE_NOCTURNAL:
       return getRandomCloseTile(c->getPosition(), border,
           [&](Position pos) { return pos.isSameLevel(collective->getLevel()) && !pos.isCovered()

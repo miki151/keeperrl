@@ -115,15 +115,8 @@ void Model::update(double totalTime) {
     }
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced before moving: " << creature->getName().bare() <<
         ". Any idea why this happened?";
-    if (!creature->isDead()) {
-#ifndef RELEASE
-      CreatureAction::checkUsage(true);
-#endif
+    if (!creature->isDead())
       creature->makeMove();
-#ifndef RELEASE
-      CreatureAction::checkUsage(false);
-#endif
-    }
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced after moving: " << creature->getName().bare() <<
         ". Any idea why this happened?";
     if (!creature->isDead() && creature->getLevel()->getModel() == this)

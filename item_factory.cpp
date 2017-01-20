@@ -683,7 +683,7 @@ const static vector<EffectType> potionEffects {
 
 ViewId getTrapViewId(TrapType t) {
   switch (t) {
-    case TrapType::BOULDER: FATAL << "Not handled trap type " << int(t);
+    case TrapType::BOULDER: FATAL << "Not handled trap type " << int(t); break;
     case TrapType::POISON_GAS: return ViewId::GAS_TRAP;
     case TrapType::ALARM: return ViewId::ALARM_TRAP;
     case TrapType::WEB: return ViewId::WEB_TRAP;

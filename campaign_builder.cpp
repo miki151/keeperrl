@@ -351,6 +351,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(View* view, function<Re
       switch (action.getId()) {
         case CampaignActionId::REROLL_MAP:
             terrain = getTerrain(random, size, numBlocked);
+          FALLTHROUGH;
         case CampaignActionId::UPDATE_MAP:
             updateMap = true;
             break;

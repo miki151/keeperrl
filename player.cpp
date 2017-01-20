@@ -600,6 +600,7 @@ void Player::makeMove() {
   switch (action.getId()) {
     case UserInputId::FIRE: fireAction(action.get<Vec2>()); break;
     case UserInputId::TRAVEL: travel = true;
+      FALLTHROUGH;
     case UserInputId::MOVE: direction.push_back(action.get<Vec2>()); break;
     case UserInputId::MOVE_TO: {
       Position newPos = getCreature()->getPosition().withCoord(action.get<Vec2>());

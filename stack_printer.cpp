@@ -269,6 +269,7 @@ int printStacktraceWithGdb() {
             fputs("Caught SIGFPE: Arithmetic Exception\n", errorOut);
             break;
         }
+        break;
       case SIGILL:
         switch(siginfo->si_code)
         {

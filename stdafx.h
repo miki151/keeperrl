@@ -16,6 +16,22 @@
 #ifndef _STDAFX_H
 #define _STDAFX_H
 
+#if __has_cpp_attribute(nodiscard)
+#define NODISCARD [[nodiscard]]
+#elif __has_cpp_attribute(gnu::warn_unused_result)
+#define NODISCARD [[gnu::warn_unused_result]]
+#else
+#define NODISCARD
+#endif
+
+#if __has_cpp_attribute(fallthrough)
+#define FALLTHROUGH [[fallthrough]]
+#elif __has_cpp_attribute(clang::fallthrough)
+#define FALLTHROUGH [[clang::fallthrough]]
+#else
+#define FALLTHROUGH
+#endif
+
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -184,4 +200,5 @@ using boost::archive::text_oarchive;
 #include "util.h"
 #include "debug.h"
 #include "enums.h"
+
 #endif

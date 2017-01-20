@@ -214,6 +214,7 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
     case SDL::SDLK_w:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
+      FALLTHROUGH;
     case SDL::SDLK_UP:
     case SDL::SDLK_KP_8:
       softScroll(0, -scrollDist);
@@ -224,6 +225,7 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
     case SDL::SDLK_d:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
+      FALLTHROUGH;
     case SDL::SDLK_RIGHT:
     case SDL::SDLK_KP_6:
       softScroll(scrollDist, 0);
@@ -234,6 +236,7 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
     case SDL::SDLK_s:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
+      FALLTHROUGH;
     case SDL::SDLK_DOWN:
     case SDL::SDLK_KP_2:
       softScroll(0, scrollDist);
@@ -244,6 +247,7 @@ bool MapGui::onKeyPressed2(SDL_Keysym key) {
     case SDL::SDLK_a:
       if (!options->getBoolValue(OptionId::WASD_SCROLLING) || GuiFactory::isAlt(key))
         break;
+      FALLTHROUGH;
     case SDL::SDLK_LEFT:
     case SDL::SDLK_KP_4:
       softScroll(-scrollDist, 0);
@@ -617,9 +621,13 @@ void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, Vec2 size, DirSet dirs)
     static DirSet sw({Dir::S, Dir::W});
     switch (dir) {
       case Dir::NE: if (!dirs.contains(ne)) continue;
+        FALLTHROUGH;
       case Dir::SE: if (!dirs.contains(se)) continue;
+        FALLTHROUGH;
       case Dir::NW: if (!dirs.contains(nw)) continue;
+        FALLTHROUGH;
       case Dir::SW: if (!dirs.contains(sw)) continue;
+        FALLTHROUGH;
       default: break;
     }
     renderer.drawTile(pos, tile2.getSpriteCoord(DirSet::oneElement(dir)), size);
@@ -733,6 +741,7 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
     case HighlightType::CUT_TREE:
       if (spriteMode && index.hasObject(ViewLayer::FLOOR))
         break;
+      FALLTHROUGH;
     default:
       if (spriteMode)
         renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size, color);

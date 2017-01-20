@@ -177,8 +177,6 @@ Square* SquareFactory::getPtr(SquareType s) {
         return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND), "water", s.get<double>());
     case SquareId::MAGMA: 
         return new Magma(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR), "magma");
-    case SquareId::ABYSS: 
-        FATAL << "Unimplemented";
     case SquareId::SAND:
         return new Square(ViewObject(ViewId::SAND, ViewLayer::FLOOR_BACKGROUND),
           CONSTRUCT(Square::Params,

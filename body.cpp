@@ -558,6 +558,7 @@ void Body::updateViewObject(ViewObject& obj) const {
     case Material::SPIRIT:
     case Material::FIRE:
       obj.setModifier(ViewObject::Modifier::SPIRIT_DAMAGE);
+      break;
     default:
       break;
   }

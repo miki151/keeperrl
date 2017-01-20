@@ -526,7 +526,8 @@ string Effect::getDescription(LastingEffect type) {
     case LastingEffect::STR_BONUS: return "Gives a strength bonus.";
     case LastingEffect::DEX_BONUS: return "Gives a dexterity bonus.";
     case LastingEffect::SLEEP: return "Puts to sleep.";
-    case LastingEffect::TIED_UP:;
+    case LastingEffect::TIED_UP:
+      FALLTHROUGH;
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "Causes stunning.";
     case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";

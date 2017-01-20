@@ -333,7 +333,7 @@ bool Collective::isTaskGood(const Creature* c, MinionTask task, bool ignoreTaskL
     case MinionTask::SLEEP:
         if (!config->sleepOnlyAtNight())
           return true;
-        // break skipped on purpose
+      FALLTHROUGH;
     case MinionTask::EXPLORE_NOCTURNAL:
         return getGame()->getSunlightInfo().getState() == SunlightState::NIGHT;
     default: return true;

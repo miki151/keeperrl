@@ -897,10 +897,11 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
           case SDL::SDLK_KP_5:
           case SDL::SDLK_KP_ENTER:
           case SDL::SDLK_RETURN:
-              if (index > -1) {
-                if (index < itemInfo.actions.size())
-                  return itemInfo.actions[index];
-              }
+            if (index > -1) {
+              if (index < itemInfo.actions.size())
+                return itemInfo.actions[index];
+            }
+            break;
           case SDL::SDLK_ESCAPE: return none;
           default: break;
         }

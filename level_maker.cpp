@@ -297,9 +297,10 @@ class Connector : public LevelMaker {
           continue;
         SquareType oldType = builder->getType(v);
         switch (oldType.getId()) {
-          case SquareId::ABYSS:
           case SquareId::WATER:
+            FALLTHROUGH;
           case SquareId::WATER_WITH_DEPTH:
+            FALLTHROUGH;
           case SquareId::MAGMA:
             if (!builder->getFurnitureType(v, FurnitureLayer::MIDDLE))
               builder->putFurniture(v, {FurnitureType::BRIDGE, TribeId::getMonster()});

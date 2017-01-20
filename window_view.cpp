@@ -183,6 +183,7 @@ void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
         else if (activeBuilding)
           inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo{pos, *activeBuilding}));
       }
+      break;
     default:
       break;
   }
@@ -994,8 +995,12 @@ optional<GameTypeChoice> WindowView::chooseGameType() {
             break;
           case SDL::SDLK_KP_5:
           case SDL::SDLK_KP_ENTER:
-          case SDL::SDLK_RETURN: if (index) return *index;
-          case SDL::SDLK_ESCAPE: return none;
+          case SDL::SDLK_RETURN:
+            if (index)
+              return *index;
+            break;
+          case SDL::SDLK_ESCAPE:
+            return none;
           default: break;
         }
     }
@@ -1099,8 +1104,12 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
               callbackRet = indexes[index];
               break;
             }
-          case SDL::SDLK_ESCAPE: callbackRet = optional<int>(none);
-          default: break;
+            break;
+          case SDL::SDLK_ESCAPE:
+            callbackRet = optional<int>(none);
+            break;
+          default:
+            break;
         }        
       }, true));
   while (1) {
