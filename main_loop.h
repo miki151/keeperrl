@@ -22,7 +22,7 @@ class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const string& dataFreePath, const string& userPath,
       Options*, Jukebox*, SokobanInput*, std::atomic<bool>& finished, bool useSingleThread,
-      optional<GameTypeChoice> forceGame);
+      optional<PlayerRole> forceGame);
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, RandomGen&, Options*);
@@ -75,7 +75,7 @@ class MainLoop {
   FileSharing* fileSharing;
   std::atomic<bool>& finished;
   bool useSingleThread;
-  optional<GameTypeChoice> forceGame;
+  optional<PlayerRole> forceGame;
   SokobanInput* sokobanInput;
   PModel getBaseModel(ModelBuilder&, CampaignSetup&);
   void considerGameEventsPrompt();

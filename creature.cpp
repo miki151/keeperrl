@@ -1190,14 +1190,14 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
       getPosition().dropItem(std::move(item));
   if (dropInventory && dCorpse)
     getPosition().dropItems(getBody().getCorpseItem(getName().bare(), getUniqueId()));
-  getGame()->addEvent({EventId::KILLED, EventInfo::Attacked{this, attacker}});
-  if (attacker)
-    attacker->onKilled(this);
-  getTribe()->onMemberKilled(this, attacker);
-  getLevel()->killCreature(this);
   if (attributes->isInnocent())
     getGame()->getStatistics().add(StatId::INNOCENT_KILLED);
   getGame()->getStatistics().add(StatId::DEATH);
+  if (attacker)
+    attacker->onKilled(this);
+  getGame()->addEvent({EventId::KILLED, EventInfo::Attacked{this, attacker}});
+  getTribe()->onMemberKilled(this, attacker);
+  getLevel()->killCreature(this);
   controllerStack.clear();
 }
 

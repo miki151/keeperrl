@@ -62,7 +62,7 @@ class WindowView: public View {
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
-  virtual optional<GameTypeChoice> chooseGameType() override;
+  virtual optional<PlayerRole> choosePlayerRole() override;
   virtual optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
@@ -112,7 +112,7 @@ class WindowView: public View {
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
       ScrollPosition* scrollPos);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
-  SGuiElem drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index);
+  SGuiElem drawGameChoices(optional<optional<PlayerRole>>& choice, optional<PlayerRole>& index);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
   int lastGuiHash = 0;

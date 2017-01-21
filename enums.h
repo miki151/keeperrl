@@ -36,7 +36,6 @@ enum class ExperienceType;
 enum class ItemClass;
 enum class EquipmentSlot;
 enum class SplashType;
-enum class GameTypeChoice;
 enum class MenuType;
 enum class OptionId;
 enum class CampaignType;

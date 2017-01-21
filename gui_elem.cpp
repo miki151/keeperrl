@@ -1959,7 +1959,7 @@ SGuiElem GuiFactory::mouseHighlightClick(SGuiElem elem, int myIndex, int* highli
 
 class MouseHighlightGameChoice : public GuiStack {
   public:
-  MouseHighlightGameChoice(SGuiElem h, optional<GameTypeChoice> my, optional<GameTypeChoice>& highlight)
+  MouseHighlightGameChoice(SGuiElem h, optional<PlayerRole> my, optional<PlayerRole>& highlight)
     : GuiStack(std::move(h)), myChoice(my), highlighted(highlight) {}
 
   virtual void onMouseGone() override {
@@ -1981,12 +1981,12 @@ class MouseHighlightGameChoice : public GuiStack {
   }
 
   private:
-  optional<GameTypeChoice> myChoice;
-  optional<GameTypeChoice>& highlighted;
+  optional<PlayerRole> myChoice;
+  optional<PlayerRole>& highlighted;
 };
 
 SGuiElem GuiFactory::mouseHighlightGameChoice(SGuiElem elem,
-    optional<GameTypeChoice> my, optional<GameTypeChoice>& highlight) {
+    optional<PlayerRole> my, optional<PlayerRole>& highlight) {
   return SGuiElem(new MouseHighlightGameChoice(std::move(elem), my, highlight));
 }
 

@@ -47,6 +47,7 @@
 #include "audio_device.h"
 #include "sokoban_input.h"
 #include "keybinding_map.h"
+#include "player_role.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -254,12 +255,11 @@ static options_description getOptions() {
     ("override_settings", value<string>(), "Override settings")
     ("run_tests", "Run all unit tests and exit")
     ("worldgen_test", value<int>(), "Test how often world generation fails")
-    ("force_keeper", "Skip main menu and force keeper mode")
     ("stderr", "Log to stderr")
     ("nolog", "No logging")
     ("free_mode", "Run in free ascii mode")
 #ifndef RELEASE
-    ("quick_level", "")
+    ("force_keeper", "Skip main menu and force keeper mode")
 #endif
     ("seed", value<int>(), "Use given seed")
     ("record", value<string>(), "Record game to file")
@@ -393,11 +393,9 @@ static int keeperMain(const variables_map& vars) {
   Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && !audioError), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath + "/" + "highscores3.txt", fileSharing, &options);
-  optional<GameTypeChoice> forceGame;
+  optional<PlayerRole> forceGame;
   if (vars.count("force_keeper"))
-    forceGame = GameTypeChoice::KEEPER;
-  else if (vars.count("quick_level"))
-    forceGame = GameTypeChoice::QUICK_LEVEL;
+    forceGame = PlayerRole::KEEPER;
   SokobanInput sokobanInput(freeDataPath + "/sokoban_input.txt", userPath + "/sokoban_state.txt");
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
       gameFinished, useSingleThread, forceGame);

@@ -6,13 +6,15 @@ struct CampaignSetup;
 
 class CampaignBuilder {
   public:
-  CampaignBuilder(Options*, PlayerRole);
-  optional<CampaignSetup> prepareCampaign(View*, function<RetiredGames()>, RandomGen&);
+  CampaignBuilder(View*, RandomGen&, Options*, PlayerRole);
+  optional<CampaignSetup> prepareCampaign(function<RetiredGames()>, CampaignType defaultType, bool noPrompt = false);
   static CampaignSetup getEmptyCampaign();
 
   private:
   optional<Vec2> considerStaticPlayerPos(Campaign&, RandomGen&);
   bool isStaticPlayerPos(const Campaign&);
+  View* view;
+  RandomGen& random;
   PlayerRole playerRole;
   Options* options;
   vector<OptionId> getSecondaryOptions(CampaignType) const;
@@ -24,6 +26,7 @@ class CampaignBuilder {
   const char* getIntroText() const;
   void setPlayerPos(Campaign&, Vec2, const Creature* player);
   PCreature getPlayerCreature();
+  vector<CampaignType> getAvailableTypes() const;
 };
 
 struct CampaignSetup {

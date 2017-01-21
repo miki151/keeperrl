@@ -35,6 +35,7 @@
 #include "player_message.h"
 #include "position.h"
 #include "sound_library.h"
+#include "player_role.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -905,19 +906,19 @@ void WindowView::presentHighscores(const vector<HighscoreList>& list) {
 }
 
 struct GameChoice {
-  GameTypeChoice type;
+  PlayerRole type;
   GuiFactory::TexId texId;
   GuiFactory::TexId highlightId;
   string name;
 };
 
 const static vector<GameChoice> gameChoices {
-  {GameTypeChoice::KEEPER, GuiFactory::TexId::KEEPER_CHOICE, GuiFactory::TexId::KEEPER_HIGHLIGHT, "keeper"},
-  {GameTypeChoice::ADVENTURER, GuiFactory::TexId::ADVENTURER_CHOICE, GuiFactory::TexId::ADVENTURER_HIGHLIGHT,
+  {PlayerRole::KEEPER, GuiFactory::TexId::KEEPER_CHOICE, GuiFactory::TexId::KEEPER_HIGHLIGHT, "keeper"},
+  {PlayerRole::ADVENTURER, GuiFactory::TexId::ADVENTURER_CHOICE, GuiFactory::TexId::ADVENTURER_HIGHLIGHT,
       "adventurer"},
 };
 
-SGuiElem WindowView::drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index) {
+SGuiElem WindowView::drawGameChoices(optional<optional<PlayerRole>>& choice, optional<PlayerRole>& index) {
   vector<SGuiElem> choiceElems;
   for (auto& elem : gameChoices)
     choiceElems.push_back(
@@ -938,14 +939,14 @@ SGuiElem WindowView::drawGameChoices(optional<optional<GameTypeChoice>>& choice,
       gui.horizontalListFit(std::move(choiceElems), 0),
       gui.margins(gui.verticalListFit(makeVec<SGuiElem>(
           gui.stack(
-            gui.button([&] { choice = optional<GameTypeChoice>(none);}),
+            gui.button([&] { choice = optional<PlayerRole>(none);}),
             gui.mainMenuLabelBg("Go back", 0.2),
             gui.mouseHighlightGameChoice(gui.mainMenuLabel("Go back", 0.2), none, index)),
           gui.empty()), 0), 0, 30, 0, 0),
       0.7, gui.TOP), 0.6 * gameChoices.size());
 }
 
-optional<GameTypeChoice> WindowView::chooseGameType() {
+optional<PlayerRole> WindowView::choosePlayerRole() {
   if (!useTiles) {
     if (auto ind = chooseFromListInternal("", {
           ListElem("Choose your role:", ListElem::TITLE),
@@ -953,17 +954,17 @@ optional<GameTypeChoice> WindowView::chooseGameType() {
           "Adventurer"
           },
         0, MenuType::MAIN, nullptr))
-      return (GameTypeChoice)(*ind);
+      return (PlayerRole)(*ind);
     else
       return none;
   }
   RecursiveLock lock(renderMutex);
   uiLock = true;
   TempClockPause pause(clock);
-  SyncQueue<optional<GameTypeChoice>> returnQueue;
-  addReturnDialog<optional<GameTypeChoice>>(returnQueue, [=] ()-> optional<GameTypeChoice> {
-  optional<optional<GameTypeChoice>> choice;
-  optional<GameTypeChoice> index = GameTypeChoice::KEEPER;
+  SyncQueue<optional<PlayerRole>> returnQueue;
+  addReturnDialog<optional<PlayerRole>>(returnQueue, [=] ()-> optional<PlayerRole> {
+  optional<optional<PlayerRole>> choice;
+  optional<PlayerRole> index = PlayerRole::KEEPER;
   SGuiElem stuff = drawGameChoices(choice, index);
   while (1) {
     refreshScreen(false);
@@ -981,17 +982,17 @@ optional<GameTypeChoice> WindowView::chooseGameType() {
         switch (event.key.keysym.sym) {
           case SDL::SDLK_KP_4:
           case SDL::SDLK_LEFT:
-            if (index != GameTypeChoice::KEEPER)
-              index = GameTypeChoice::KEEPER;
+            if (index != PlayerRole::KEEPER)
+              index = PlayerRole::KEEPER;
             else
-              index = GameTypeChoice::ADVENTURER;
+              index = PlayerRole::ADVENTURER;
             break;
           case SDL::SDLK_KP_6:
           case SDL::SDLK_RIGHT:
-            if (index != GameTypeChoice::ADVENTURER)
-              index = GameTypeChoice::ADVENTURER;
+            if (index != PlayerRole::ADVENTURER)
+              index = PlayerRole::ADVENTURER;
             else
-              index = GameTypeChoice::KEEPER;
+              index = PlayerRole::KEEPER;
             break;
           case SDL::SDLK_KP_5:
           case SDL::SDLK_KP_ENTER:

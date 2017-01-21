@@ -30,7 +30,7 @@
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
     const string& uPath, Options* o, Jukebox* j, SokobanInput* soko, std::atomic<bool>& fin, bool singleThread,
-    optional<GameTypeChoice> force)
+    optional<PlayerRole> force)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
         highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread), forceGame(force),
         sokobanInput(soko) {
@@ -292,26 +292,20 @@ RetiredGames MainLoop::getRetiredGames() {
 }
 
 PGame MainLoop::prepareCampaign(RandomGen& random) {
-  if (auto choice = view->chooseGameType()) {
+  if (forceGame) {
+    CampaignBuilder builder(view, random, options, PlayerRole::KEEPER);
+    auto result = builder.prepareCampaign([this] { return getRetiredGames(); }, CampaignType::QUICK_MAP, true);
+    forceGame = none;
+    return Game::campaignGame(prepareCampaignModels(*result, random), *result->campaign.getPlayerPos(), *result);
+  }
+  if (auto choice = view->choosePlayerRole()) {
     random.init(Random.get(1234567));
-    switch (*choice) {
-      case GameTypeChoice::KEEPER: {
-        CampaignBuilder builder(options, PlayerRole::KEEPER);
-        if (auto result = builder.prepareCampaign(view, [this] { return getRetiredGames(); }, random))
-          return Game::campaignGame(prepareCampaignModels(*result, random), *result->campaign.getPlayerPos(), *result);
-        break;
-      }
-      case GameTypeChoice::ADVENTURER: {
-        CampaignBuilder builder(options, PlayerRole::ADVENTURER);
-        if (auto result = builder.prepareCampaign(view, [this] { return getRetiredGames(); }, random)) {
-          PGame ret = Game::campaignGame(prepareCampaignModels(*result, random), *result->campaign.getPlayerPos(),
-              *result);
-          ret->getMainModel()->landHeroPlayer(std::move(result->player));
-          return ret;
-        }
-        break;
-      }
-      default: FATAL << "Bad campaign mode";
+    CampaignBuilder builder(view, random, options, *choice);
+    if (auto result = builder.prepareCampaign([this] { return getRetiredGames(); }, CampaignType::CAMPAIGN)) {
+      auto ret = Game::campaignGame(prepareCampaignModels(*result, random), *result->campaign.getPlayerPos(), *result);
+      if (*choice == PlayerRole::ADVENTURER)
+        ret->getMainModel()->landHeroPlayer(std::move(result->player));
+      return ret;
     }
   }
   return nullptr;

@@ -15,13 +15,9 @@
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(Campaign& campaign, RandomGen& random) {
   switch (campaign.type) {
-    case CampaignType::CAMPAIGN: {
-      Rectangle playerSpawn(campaign.sites.getBounds().topLeft(), campaign.sites.getBounds().bottomLeft() + Vec2(2, 0));
-      for (Vec2 pos : random.permutation(playerSpawn.getAllSquares()))
-        if (!campaign.sites[pos].blocked)
-          return pos;
-      return none;
-    }
+    case CampaignType::CAMPAIGN:
+      return Vec2(1, campaign.sites.getBounds().middle().y);
+    case CampaignType::QUICK_MAP:
     case CampaignType::SINGLE_KEEPER:
       return campaign.sites.getBounds().middle();
     default:
@@ -42,6 +38,7 @@ static void setCountLimits(Options* options) {
 
 vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
   switch (type) {
+    case CampaignType::QUICK_MAP:
     case CampaignType::CAMPAIGN:
       return {};
     case CampaignType::ENDLESS:
@@ -59,6 +56,26 @@ vector<OptionId> CampaignBuilder::getPrimaryOptions() const {
       return {OptionId::KEEPER_NAME, OptionId::KEEPER_TYPE};
     case PlayerRole::ADVENTURER:
       return {OptionId::ADVENTURER_NAME, OptionId::ADVENTURER_TYPE};
+  }
+}
+
+vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
+  switch (playerRole) {
+    case PlayerRole::KEEPER:
+      return {
+        CampaignType::CAMPAIGN,
+        CampaignType::ENDLESS,
+        CampaignType::FREE_PLAY,
+        CampaignType::SINGLE_KEEPER,
+#ifndef RELEASE
+        CampaignType::QUICK_MAP,
+#endif
+      };
+    case PlayerRole::ADVENTURER:
+      return {
+        CampaignType::CAMPAIGN,
+        CampaignType::FREE_PLAY,
+      };
   }
 }
 
@@ -121,7 +138,6 @@ vector<Campaign::VillainInfo> CampaignBuilder::getLesserVillains() {
         {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
         {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::LESSER},
         {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::LESSER},
-        {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::LESSER},
         {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", VillainType::LESSER},
       };
   }
@@ -175,6 +191,7 @@ const char* CampaignBuilder::getIntroText() const {
 
 bool CampaignBuilder::isStaticPlayerPos(const Campaign& campaign) {
   switch (campaign.type) {
+    case CampaignType::QUICK_MAP:
     case CampaignType::CAMPAIGN:
     case CampaignType::SINGLE_KEEPER:
       return true;
@@ -249,12 +266,14 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
         options->getIntValue(OptionId::LESSER_VILLAINS),
         options->getIntValue(OptionId::ALLIES)
       };
+    case CampaignType::QUICK_MAP:
     case CampaignType::SINGLE_KEEPER:
       return {0, 0, 0};
   }
 }
 
-CampaignBuilder::CampaignBuilder(Options* o, PlayerRole r) : playerRole(r), options(o) {
+CampaignBuilder::CampaignBuilder(View* v, RandomGen& rand, Options* o, PlayerRole r)
+    : view(v), random(rand), playerRole(r), options(o) {
 }
 
 static string getNewIdSuffix() {
@@ -268,14 +287,12 @@ static string getNewIdSuffix() {
   return ret;
 }
 
-optional<CampaignSetup> CampaignBuilder::prepareCampaign(View* view, function<RetiredGames()> genRetired,
-    RandomGen& random) {
+optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()> genRetired, CampaignType type, bool noPrompt) {
   Vec2 size(16, 9);
   int numBlocked = 0.6 * size.x * size.y;
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
   optional<RetiredGames> retiredCache;
   static optional<RetiredGames> noRetired;
-  CampaignType type = CampaignType::CAMPAIGN;
   View::CampaignMenuState menuState {};
   setCountLimits(options);
   options->setChoices(OptionId::KEEPER_TYPE, {CreatureId::KEEPER, CreatureId::KEEPER_F});
@@ -308,6 +325,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(View* view, function<Re
       if (!campaign.sites[v].blocked)
         freePos.push_back(v);
     if (auto pos = considerStaticPlayerPos(campaign, random)) {
+      campaign.clearSite(*pos);
       setPlayerPos(campaign, *pos, player.get());
       removeElementMaybe(freePos, *pos);
     }
@@ -339,15 +357,17 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(View* view, function<Re
       campaign.influenceSize = options->getIntValue(OptionId::INFLUENCE_SIZE);
       campaign.refreshInfluencePos();
       bool hasRetired = type == CampaignType::FREE_PLAY;
-      CampaignAction action = view->prepareCampaign({
-          campaign,
-          retired,
-          player.get(),
-          getPrimaryOptions(),
-          getSecondaryOptions(type),
-          getSiteChoiceTitle(type),
-          getIntroText()
-          }, options, menuState);
+      CampaignAction action = noPrompt ? CampaignActionId::CONFIRM
+          : view->prepareCampaign({
+              campaign,
+              retired,
+              player.get(),
+              getPrimaryOptions(),
+              getSecondaryOptions(type),
+              getSiteChoiceTitle(type),
+              getIntroText(),
+              getAvailableTypes()
+              }, options, menuState);
       switch (action.getId()) {
         case CampaignActionId::REROLL_MAP:
             terrain = getTerrain(random, size, numBlocked);

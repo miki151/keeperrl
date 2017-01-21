@@ -71,12 +71,6 @@ class ListElem {
   optional<MessagePriority> messagePriority;
 };
 
-enum class GameTypeChoice {
-  KEEPER,
-  ADVENTURER,
-  QUICK_LEVEL,
-};
-
 enum class MenuType {
   NORMAL,
   MAIN,
@@ -163,7 +157,7 @@ class View {
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
-  virtual optional<GameTypeChoice> chooseGameType() = 0;
+  virtual optional<PlayerRole> choosePlayerRole() = 0;
 
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(const string& message) = 0;
@@ -207,6 +201,7 @@ class View {
     vector<OptionId> secondaryOptions;
     optional<string> mapTitle;
     string introText;
+    vector<CampaignType> availableTypes;
   };
 
   virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) = 0;

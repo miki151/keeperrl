@@ -2340,6 +2340,7 @@ static const char* getGameTypeName(CampaignType type) {
     case CampaignType::ENDLESS: return "Endless";
     case CampaignType::FREE_PLAY: return "Free play";
     case CampaignType::SINGLE_KEEPER: return "Single map";
+    case CampaignType::QUICK_MAP: return "Quick map";
   }
 }
 
@@ -2353,10 +2354,10 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   int optionMargin = 50;
   centerLines.addElem(gui.centerHoriz(gui.stack(
        gui.labelHighlight("Game mode: "_s + getGameTypeName(campaign.getType())),
-       gui.buttonRect([&queue, this] (Rectangle bounds) {
+       gui.buttonRect([&queue, this, campaignOptions] (Rectangle bounds) {
            auto lines = gui.getListBuilder(legendLineHeight);
            bool exit = false;
-           for (auto type : ENUM_ALL(CampaignType))
+           for (auto type : campaignOptions.availableTypes)
              lines.addElem(gui.stack(
                  gui.label(getGameTypeName(type)),
                  gui.button([&, type] { queue.push({CampaignActionId::CHANGE_TYPE, type}); exit = true; })));
