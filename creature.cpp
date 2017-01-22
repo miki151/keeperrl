@@ -1198,7 +1198,7 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   getGame()->addEvent({EventId::KILLED, EventInfo::Attacked{this, attacker}});
   getTribe()->onMemberKilled(this, attacker);
   getLevel()->killCreature(this);
-  controllerStack.clear();
+  setController(make_shared<DoNothingController>(this));
 }
 
 CreatureAction Creature::flyAway() const {
