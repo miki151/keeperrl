@@ -103,7 +103,7 @@ class PlayerInfo {
   vector<CreatureInfo> HASH(team);
   struct CommandInfo {
     string HASH(name);
-    char HASH(keybinding);
+    optional<char> HASH(keybinding);
     string HASH(description);
     bool HASH(active);
     HASH_ALL(name, keybinding, description, active);

@@ -1012,10 +1012,9 @@ SGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
   auto line = gui.getListBuilder();
   vector<SGuiElem> keyElems;
   for (int i : All(info.commands))
-    if (info.commands[i].active) {
-      keyElems.push_back(gui.keyHandlerChar(getButtonCallback({UserInputId::PLAYER_COMMAND, i}),
-          info.commands[i].keybinding));
-    }
+    if (info.commands[i].active)
+      if (auto key = info.commands[i].keybinding)
+        keyElems.push_back(gui.keyHandlerChar(getButtonCallback({UserInputId::PLAYER_COMMAND, i}), *key));
   line.addElemAuto(gui.stack(
       gui.stack(std::move(keyElems)),
       gui.labelHighlight("[Commands]", colors[ColorId::LIGHT_BLUE]),
@@ -1034,11 +1033,13 @@ SGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
                   exit = true;
               };
             auto labelColor = colors[command.active ? ColorId::WHITE : ColorId::GRAY];
+            auto button = command.keybinding ? gui.buttonChar(buttonFun, *command.keybinding) : gui.button(buttonFun);
             lines.addElem(gui.stack(
-                gui.buttonChar(buttonFun, command.keybinding),
+                button,
                 command.active ? gui.uiHighlightMouseOver(colors[ColorId::GREEN]) : gui.empty(),
                 gui.tooltip({command.description}),
-                gui.label(getKeybindingDesc(command.keybinding) + " " + command.name, labelColor)));
+                gui.label((command.keybinding ? getKeybindingDesc(*command.keybinding) + " " : ""_s) +
+                    command.name, labelColor)));
           }
           for (auto& button : getSettingsButtons())
             lines.addElem(std::move(button));

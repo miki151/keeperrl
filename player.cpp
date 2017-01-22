@@ -523,17 +523,20 @@ vector<Player::CommandInfo> Player::getCommands() const {
     }
   return {
     {PlayerInfo::CommandInfo{"Wait", ' ', "Skip this turn.", true},
-     [] (Player* player) { player->getCreature()->wait().perform(player->getCreature()); }, false},
+      [] (Player* player) { player->getCreature()->wait().perform(player->getCreature()); }, false},
     {PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
-     [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},
+      [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},
     {PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
-     [] (Player* player) { player->chatAction(); }, false},
-    {PlayerInfo::CommandInfo{"Hide", 'h', "Hide behind or under a terrain feature or piece of furniture.", !!getCreature()->hide()},
-     [] (Player* player) { player->hideAction(); }, false},
+      [] (Player* player) { player->chatAction(); }, false},
+    {PlayerInfo::CommandInfo{"Hide", 'h', "Hide behind or under a terrain feature or piece of furniture.",
+        !!getCreature()->hide()},
+      [] (Player* player) { player->hideAction(); }, false},
     {PlayerInfo::CommandInfo{"Pay debt", 'p', "Pay debt to a shopkeeper.", canPay},
-     [] (Player* player) { player->payDebtAction();}, false},
+      [] (Player* player) { player->payDebtAction();}, false},
+    {PlayerInfo::CommandInfo{"Drop everything", none, "Drop all items in possession.", !getCreature()->getEquipment().isEmpty()},
+      [] (Player* player) { auto c = player->getCreature(); player->tryToPerform(c->drop(c->getEquipment().getItems())); }, false},
     {PlayerInfo::CommandInfo{"Message history", 'm', "Show message history.", true},
-     [] (Player* player) { player->showHistory(); }, false},
+      [] (Player* player) { player->showHistory(); }, false},
   };
 }
 
