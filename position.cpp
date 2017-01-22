@@ -284,10 +284,6 @@ void Position::addSound(const Sound& sound1) const {
   getGame()->getView()->addSound(sound);
 }
 
-bool Position::canHide() const {
-  return isValid() && getSquare()->canHide();
-}
-
 string Position::getName() const {
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
     return furniture->getName();

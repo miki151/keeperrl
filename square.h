@@ -42,7 +42,6 @@ class Square : public Renderable {
   struct Params {
     string name;
     optional<VisionId> vision;
-    bool canHide;
     HeapAllocated<MovementSet> movementSet;
     bool canDestroy;
     optional<SoundId> applySound;
@@ -74,9 +73,6 @@ class Square : public Renderable {
 
   /** Sets if this square obstructs view.*/
   void setVision(Position, VisionId);
-
-  /** Checks if the player can hide behind this square.*/
-  bool canHide() const;
 
   /** Returns the strength, i.e. resistance to demolition.*/
   int getStrength() const;
@@ -169,7 +165,6 @@ class Square : public Renderable {
   Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);
   optional<VisionId> SERIAL(vision);
-  bool SERIAL(hide);
   optional<StairKey> SERIAL(landingLink);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
   HeapAllocated<MovementSet> SERIAL(movementSet);
@@ -177,5 +172,3 @@ class Square : public Renderable {
   unique_ptr<ViewIndex> SERIAL(viewIndex);
   optional<TribeId> SERIAL(forbiddenTribe);
 };
-
-BOOST_CLASS_VERSION(Square, 1)

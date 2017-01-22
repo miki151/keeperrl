@@ -43,14 +43,8 @@
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
   ar& SUBCLASS(Renderable);
-  if (version == 0) {
-    unique_ptr<Inventory> SERIAL(tmp);
-    serializeAll(ar, tmp);
-    if (tmp)
-      inventory.reset(std::move(*tmp));
-  } else
-    serializeAll(ar, inventory);
-  serializeAll(ar, name, creature, triggers, vision, hide, landingLink, poisonGas);
+  serializeAll(ar, inventory);
+  serializeAll(ar, name, creature, triggers, vision, landingLink, poisonGas);
   serializeAll(ar, movementSet, lastViewer, viewIndex);
   serializeAll(ar, forbiddenTribe);
   if (progressMeter)
@@ -64,7 +58,7 @@ SERIALIZABLE(Square);
 SERIALIZATION_CONSTRUCTOR_IMPL(Square);
 
 Square::Square(const ViewObject& obj, Params p)
-  : Renderable(obj), name(p.name), vision(p.vision), hide(p.canHide), movementSet(p.movementSet),
+  : Renderable(obj), name(p.name), vision(p.vision), movementSet(p.movementSet),
     viewIndex(new ViewIndex()) {
 }
 
@@ -276,10 +270,6 @@ bool Square::canSeeThru() const {
 void Square::setVision(Position pos, VisionId v) {
   vision = v;
   pos.getLevel()->updateVisibility(pos.getCoord());
-}
-
-bool Square::canHide() const {
-  return hide;
 }
 
 Item* Square::getTopItem() const {

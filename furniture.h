@@ -54,6 +54,7 @@ class Furniture : public Renderable {
   void onConstructedBy(Creature*) const;
   FurnitureLayer getLayer() const;
   double getLightEmission() const;
+  bool canHide() const;
 
   enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE };
 
@@ -75,6 +76,7 @@ class Furniture : public Renderable {
   Furniture& setOverrideMovement();
   Furniture& setLayer(FurnitureLayer);
   Furniture& setLightEmission(double);
+  Furniture& setCanHide();
 
   SERIALIZATION_DECL(Furniture)
 
@@ -102,4 +104,5 @@ class Furniture : public Renderable {
   bool SERIAL(wall) = false;
   ConstructMessage SERIAL(constructMessage) = BUILD;
   double SERIAL(lightEmission) = 0;
+  bool SERIAL(canHideHere) = false;
 };

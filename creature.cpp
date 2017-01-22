@@ -640,21 +640,22 @@ CreatureAction Creature::applySquare(Position pos) const {
 CreatureAction Creature::hide() const {
   if (!attributes->getSkills().hasDiscrete(SkillId::AMBUSH))
     return CreatureAction("You don't have this skill.");
-  if (!getPosition().canHide())
-    return CreatureAction("You can't hide here.");
-  return CreatureAction(this, [=](Creature* self) {
-    playerMessage("You hide behind the " + getPosition().getName());
-    self->knownHiding.clear();
-    self->modViewObject().setModifier(ViewObject::Modifier::HIDDEN);
-    for (Creature* other : getLevel()->getAllCreatures())
-      if (other->canSee(this) && other->isEnemy(this)) {
-        self->knownHiding.insert(other);
-        if (!isBlind())
-          you(MsgType::CAN_SEE_HIDING, other->getName().the());
-      }
-    self->spendTime(1);
-    self->hidden = true;
-  });
+  if (auto furniture = getPosition().getFurniture(FurnitureLayer::MIDDLE))
+    if (furniture->canHide())
+      return CreatureAction(this, [=](Creature* self) {
+        playerMessage("You hide behind the " + furniture->getName());
+        self->knownHiding.clear();
+        self->modViewObject().setModifier(ViewObject::Modifier::HIDDEN);
+        for (Creature* other : getLevel()->getAllCreatures())
+          if (other->canSee(this) && other->isEnemy(this)) {
+            self->knownHiding.insert(other);
+            if (!isBlind())
+              you(MsgType::CAN_SEE_HIDING, other->getName().the());
+          }
+        self->spendTime(1);
+        self->hidden = true;
+      });
+  return CreatureAction("You can't hide here.");
 }
 
 CreatureAction Creature::chatTo(Creature* other) const {

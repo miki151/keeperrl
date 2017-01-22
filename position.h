@@ -66,7 +66,6 @@ class Position {
   void onEnter(Creature*);
   optional<FurnitureClickType> getClickType() const;
   void addSound(const Sound&) const;
-  bool canHide() const;
   void getViewIndex(ViewIndex&, const Creature* viewer) const;
   vector<Trigger*> getTriggers() const;
   PTrigger removeTrigger(Trigger*);
