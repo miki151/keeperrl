@@ -17,6 +17,7 @@ class CollectiveControl {
   virtual void tick();
   virtual void onMemberKilled(const Creature* victim, const Creature* killer);
   virtual void onOtherKilled(const Creature* victim, const Creature* killer);
+  virtual void onMemberAdded(const Creature*) {}
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAttack(const CollectiveAttack&) {}
   virtual void onConstructed(Position, FurnitureType) {}
@@ -28,7 +29,7 @@ class CollectiveControl {
 
   Collective* getCollective() const;
 
-  SERIALIZATION_DECL(CollectiveControl);
+  SERIALIZATION_DECL(CollectiveControl)
 
   virtual ~CollectiveControl();
 

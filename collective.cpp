@@ -161,6 +161,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (traits.contains(MinionTrait::FIGHTER)) {
     c->setMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this)));
   }
+  control->onMemberAdded(c);
 }
 
 void Collective::removeCreature(Creature* c) {

@@ -1401,7 +1401,17 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
 
 void PlayerControl::initialize() {
   for (Creature* c : getCreatures())
-    onEvent({EventId::MOVED, c});
+    updateMinionVisibility(c);
+}
+
+void PlayerControl::updateMinionVisibility(const Creature* c) {
+  vector<Position> visibleTiles = c->getVisibleTiles();
+  visibilityMap->update(c, visibleTiles);
+  for (Position pos : visibleTiles) {
+    if (getCollective()->addKnownTile(pos))
+      updateKnownLocations(pos);
+    addToMemory(pos);
+  }
 }
 
 void PlayerControl::onEvent(const GameEvent& event) {
@@ -1420,18 +1430,11 @@ void PlayerControl::onEvent(const GameEvent& event) {
       break;
     }
     case EventId::MOVED: {
-        Creature* c = event.get<Creature*>();
-        if (contains(getCreatures(), c)) {
-          vector<Position> visibleTiles = c->getVisibleTiles();
-          visibilityMap->update(c, visibleTiles);
-          for (Position pos : visibleTiles) {
-            if (getCollective()->addKnownTile(pos))
-              updateKnownLocations(pos);
-            addToMemory(pos);
-          }
-        }
-      }
+      Creature* c = event.get<Creature*>();
+      if (contains(getCreatures(), c))
+        updateMinionVisibility(c);
       break;
+    }
     case EventId::WON_GAME:
       CHECK(!getKeeper()->isDead());
       getGame()->conquered(*getKeeper()->getName().first(), getCollective()->getKills().getSize(),
@@ -2480,6 +2483,10 @@ void PlayerControl::onMemberKilled(const Creature* victim, const Creature* kille
     getGame()->gameOver(victim, getCollective()->getKills().getSize(), "enemies",
         getCollective()->getDangerLevel() + getCollective()->getPoints());
   }
+}
+
+void PlayerControl::onMemberAdded(const Creature* c) {
+  updateMinionVisibility(c);
 }
 
 Level* PlayerControl::getLevel() const {

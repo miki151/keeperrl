@@ -318,7 +318,7 @@ void Game::exitAction() {
         return;
       }
     case ABANDON:
-      if (view->yesOrNoPrompt("Are you sure you want to abandon your game?")) {
+      if (view->yesOrNoPrompt("Do you want to abandon your game? This will remove the save file.")) {
         exitInfo = ExitInfo(ExitId::QUIT);
         return;
       }

@@ -549,7 +549,7 @@ void Player::makeMove() {
     ViewObject::setHallu(true);
   else
     ViewObject::setHallu(false);
-  if (updateView) {
+  //if (updateView) { Check disabled so that we update in every frame to avoid some square refreshing issues.
     updateView = false;
     for (Position pos : getCreature()->getVisibleTiles()) {
       ViewIndex index;
@@ -559,7 +559,7 @@ void Player::makeMove() {
     MEASURE(
         getView()->updateView(this, false),
         "level render time");
-  } 
+  //}
   getView()->refreshView();
   /*if (displayTravelInfo && getCreature()->getPosition().getName() == "road"
       && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
