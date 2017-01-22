@@ -29,6 +29,7 @@
 #include "creature.h"
 #include "creature_name.h"
 #include "campaign_type.h"
+#include "villain_type.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -2132,6 +2133,19 @@ SGuiElem GuiBuilder::drawPillageItemMenu(SyncQueue<optional<int>>& queue, const 
                      [&queue] { queue.push(none); }));
 }
 
+static Color getHighlightColor(VillainType type) {
+  switch (type) {
+    case VillainType::MAIN:
+      return colors[ColorId::RED];
+    case VillainType::LESSER:
+      return colors[ColorId::YELLOW];
+    case VillainType::ALLY:
+      return colors[ColorId::GREEN];
+    case VillainType::PLAYER:
+      return colors[ColorId::WHITE];
+  }
+}
+
 SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked, function<bool(Vec2)> activeFun,
     function<void(Vec2)> clickFun){
   int iconScale = 2;
@@ -2163,7 +2177,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
         elem.push_back(gui.asciiBackground(*id));
         if (c.getPlayerPos() && c.isInInfluence(pos))
           elem.push_back(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale,
-                sites[pos].isEnemy() ? colors[ColorId::RED] : colors[ColorId::GREEN]));
+              getHighlightColor(*sites[pos].getVillainType())));
         if (c.getPlayerPos() == pos && (!marked || !*marked)) // hacky way of checking this is adventurer embark position
           elem.push_back(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale));
         if (activeFun(pos))

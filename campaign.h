@@ -20,16 +20,16 @@ class Campaign {
     string getDescription() const;
     bool isEnemy() const;
     VillainType SERIAL(type);
-    SERIALIZE_ALL(viewId, name, enemyId, type);
+    SERIALIZE_ALL(viewId, name, enemyId, type)
   };
   struct KeeperInfo {
     ViewId SERIAL(viewId);
-    SERIALIZE_ALL(viewId);
+    SERIALIZE_ALL(viewId)
   };
   struct RetiredInfo {
     SavedGameInfo SERIAL(gameInfo);
     SaveFileInfo SERIAL(fileInfo);
-    SERIALIZE_ALL(gameInfo, fileInfo);
+    SERIALIZE_ALL(gameInfo, fileInfo)
   };
   struct SiteInfo {
     vector<ViewId> SERIAL(viewId);
@@ -43,6 +43,7 @@ class Campaign {
     void setBlocked();
     optional<ViewId> getDwellerViewId() const;
     optional<string> getDwellerDescription() const;
+    optional<VillainType> getVillainType() const;
     SERIALIZE_ALL(viewId, dweller, blocked)
   };
 

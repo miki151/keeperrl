@@ -94,27 +94,33 @@ bool Campaign::SiteInfo::isEmpty() const {
 }
 
 optional<string> Campaign::SiteInfo::getDwellerDescription() const {
-  if (!dweller)
+  if (dweller)
+    return apply_visitor(*dweller, makeVisitor<string>(
+        [](const VillainInfo& info) { return info.name + " (" + info.getDescription() + ")"; },
+        [](const RetiredInfo& info) { return info.gameInfo.getName() + " (hostile)" ;},
+        [](const KeeperInfo&) { return "This is your home site"; }));
+  else
     return none;
-  if (const KeeperInfo* info = boost::get<KeeperInfo>(&(*dweller)))
-    return string("This is your home site");
-  if (const VillainInfo* info = boost::get<VillainInfo>(&(*dweller)))
-    return info->name + " (" + info->getDescription() + ")";
-  if (const RetiredInfo* info = boost::get<RetiredInfo>(&(*dweller)))
-    return info->gameInfo.getName() + " (hostile)";
-  return none;
+}
+
+optional<VillainType> Campaign::SiteInfo::getVillainType() const {
+  if (dweller)
+    return apply_visitor(*dweller, makeVisitor<VillainType>(
+        [](const VillainInfo& info) { return info.type; },
+        [](const RetiredInfo&) { return VillainType::MAIN; },
+        [](const KeeperInfo&) { return VillainType::PLAYER; }));
+  else
+    return none;
 }
 
 optional<ViewId> Campaign::SiteInfo::getDwellerViewId() const {
-  if (!dweller)
+  if (dweller)
+    return apply_visitor(*dweller, makeVisitor<ViewId>(
+        [](const VillainInfo& info) { return info.viewId; },
+        [](const RetiredInfo& info) { return info.gameInfo.getViewId(); },
+        [](const KeeperInfo& info) { return info.viewId; }));
+  else
     return none;
-  if (const KeeperInfo* info = boost::get<KeeperInfo>(&(*dweller)))
-    return info->viewId;
-  if (const VillainInfo* info = boost::get<VillainInfo>(&(*dweller)))
-    return info->viewId;
-  if (const RetiredInfo* info = boost::get<RetiredInfo>(&(*dweller)))
-    return info->gameInfo.getViewId();
-  return none;
 }
 
 bool Campaign::SiteInfo::isEnemy() const {
