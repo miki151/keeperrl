@@ -32,6 +32,7 @@
 #include "construction_map.h"
 #include "campaign_builder.h"
 #include "campaign_type.h"
+#include "game_save_type.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) { 
@@ -196,7 +197,7 @@ void Game::doneRetirement() {
   UniqueEntity<Item>::clearOffset();
 }
 
-optional<Game::ExitInfo> Game::update(double timeDiff) {
+optional<ExitInfo> Game::update(double timeDiff) {
   ScopeTimer timer("Game::update timer");
   currentTime += timeDiff;
   Model* currentModel = getCurrentModel();
@@ -229,13 +230,13 @@ void Game::considerRealTimeRender() {
   }
 }
 
-optional<Game::ExitInfo> Game::updateModel(Model* model, double totalTime) {
+optional<ExitInfo> Game::updateModel(Model* model, double totalTime) {
   do {
     if (spectator)
       while (1) {
         UserInput input = view->getAction();
         if (input.getId() == UserInputId::EXIT)
-          return ExitInfo{ExitId::QUIT};
+          return ExitInfo(ExitAndQuit());
         if (input.getId() == UserInputId::IDLE)
           break;
       }
@@ -305,21 +306,21 @@ void Game::exitAction() {
   switch (Action(*ind)) {
     case RETIRE:
       if (view->yesOrNoPrompt("Retire your dungeon and share it online?")) {
-        exitInfo = ExitInfo(ExitId::SAVE, GameSaveType::RETIRED_SITE);
+        exitInfo = ExitInfo(GameSaveType::RETIRED_SITE);
         return;
       }
       break;
     case SAVE:
       if (!playerControl) {
-        exitInfo = ExitInfo(ExitId::SAVE, GameSaveType::ADVENTURER);
+        exitInfo = ExitInfo(GameSaveType::ADVENTURER);
         return;
       } else {
-        exitInfo = ExitInfo(ExitId::SAVE, GameSaveType::KEEPER);
+        exitInfo = ExitInfo(GameSaveType::KEEPER);
         return;
       }
     case ABANDON:
-      if (view->yesOrNoPrompt("Do you want to abandon your game? This will remove the save file.")) {
-        exitInfo = ExitInfo(ExitId::QUIT);
+      if (view->yesOrNoPrompt("Do you want to abandon your game? This is permanent and the save file will be removed!")) {
+        exitInfo = ExitInfo(ExitAndQuit());
         return;
       }
       break;
@@ -483,7 +484,7 @@ void Game::gameOver(const Creature* creature, int numKills, const string& enemie
   );
   highscores->add(score);
   highscores->present(view, score);
-  exitInfo = ExitInfo(ExitId::QUIT);
+  exitInfo = ExitInfo(ExitAndQuit());
 }
 
 Options* Game::getOptions() {

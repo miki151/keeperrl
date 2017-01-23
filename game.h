@@ -5,6 +5,7 @@
 #include "tribe.h"
 #include "enum_variant.h"
 #include "position.h"
+#include "exit_info.h"
 
 class Options;
 class Highscores;
@@ -20,22 +21,10 @@ class Campaign;
 class SavedGameInfo;
 struct CampaignSetup;
 
-RICH_ENUM(GameSaveType,
-    ADVENTURER,
-    KEEPER,
-    RETIRED_SITE,
-    AUTOSAVE);
-
 class Game {
   public:
   static PGame campaignGame(Table<PModel>&&, Vec2 basePos, const CampaignSetup&);
   static PGame splashScreen(PModel&&, const CampaignSetup&);
-
-  enum class ExitId { SAVE, QUIT };
-
-  class ExitInfo : public EnumVariant<ExitId, TYPES(GameSaveType), ASSIGN(GameSaveType, ExitId::SAVE)> {
-    using EnumVariant::EnumVariant;
-  };
 
   optional<ExitInfo> update(double timeDiff);
   Options* getOptions();

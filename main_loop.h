@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "file_sharing.h"
+#include "exit_info.h"
 
 class View;
 class Highscores;
@@ -59,8 +60,8 @@ class MainLoop {
   PModel quickGame(RandomGen& random);
   PGame loadGame(string file);
   PGame loadPrevious();
-  string getSavePath(PGame&, GameSaveType);
-  void eraseSaveFile(PGame&, GameSaveType);
+  string getSavePath(const PGame&, GameSaveType);
+  void eraseSaveFile(const PGame&, GameSaveType);
 
   bool downloadGame(const string& filename);
   bool eraseSave();
@@ -80,6 +81,7 @@ class MainLoop {
   PModel getBaseModel(ModelBuilder&, CampaignSetup&);
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);
+  void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
 };
 
 

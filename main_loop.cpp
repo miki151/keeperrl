@@ -27,6 +27,8 @@
 #include "campaign_builder.h"
 #include "player_role.h"
 #include "campaign_type.h"
+#include "game_save_type.h"
+#include "exit_info.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
     const string& uPath, Options* o, Jukebox* j, SokobanInput* soko, std::atomic<bool>& fin, bool singleThread,
@@ -159,7 +161,7 @@ void MainLoop::uploadFile(const string& path, GameSaveType type) {
     view->presentText("Error uploading file", *error);
 }
 
-string MainLoop::getSavePath(PGame& game, GameSaveType gameType) {
+string MainLoop::getSavePath(const PGame& game, GameSaveType gameType) {
   return userPath + "/" + stripFilename(game->getGameIdentifier()) + getSaveSuffix(gameType);
 }
 
@@ -185,7 +187,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
     uploadFile(path, type);
 }
 
-void MainLoop::eraseSaveFile(PGame& game, GameSaveType type) {
+void MainLoop::eraseSaveFile(const PGame& game, GameSaveType type) {
   remove(getSavePath(game, type).c_str());
 }
 
@@ -240,21 +242,20 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
     }
     INFO << "Time step " << step;
     if (auto exitInfo = game->update(step)) {
-      if (exitInfo->getId() == Game::ExitId::QUIT && eraseSave()) {
-        eraseSaveFile(game, GameSaveType::KEEPER);
-        eraseSaveFile(game, GameSaveType::ADVENTURER);
-        eraseSaveFile(game, GameSaveType::AUTOSAVE);
-      }
-      if (exitInfo->getId() == Game::ExitId::SAVE) {
-        bool retired = false;
-        if (exitInfo->get<GameSaveType>() == GameSaveType::RETIRED_SITE) {
-          game->prepareSiteRetirement();
-          retired = true;
-        }
-        saveUI(game, exitInfo->get<GameSaveType>(), SplashType::BIG);
-        if (retired)
-          game->doneRetirement();
-      }
+      apply_visitor(*exitInfo, makeVisitor<void>(
+          [&](GameSaveType type) {
+            if (type == GameSaveType::RETIRED_SITE) {
+              game->prepareSiteRetirement();
+              saveUI(game, type, SplashType::BIG);
+              game->doneRetirement();
+            } else
+              saveUI(game, type, SplashType::BIG);
+            eraseAllSavesExcept(game, type);
+          },
+          [&](ExitAndQuit) {
+            eraseAllSavesExcept(game, none);
+          }
+      ));
       return;
     }
     double gameTime = game->getGlobalTime();
@@ -263,13 +264,21 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
       lastMusicUpdate = gameTime;
     }
     if (lastAutoSave < gameTime - getAutosaveFreq() && !noAutoSave) {
-      if (options->getBoolValue(OptionId::AUTOSAVE))
+      if (options->getBoolValue(OptionId::AUTOSAVE)) {
         saveUI(game, GameSaveType::AUTOSAVE, SplashType::AUTOSAVING);
+        eraseAllSavesExcept(game, GameSaveType::AUTOSAVE);
+      }
       lastAutoSave = gameTime;
     }
     if (useSingleThread)
       view->refreshView();
   }
+}
+
+void MainLoop::eraseAllSavesExcept(const PGame& game, optional<GameSaveType> except) {
+  for (auto erasedType : ENUM_ALL(GameSaveType))
+    if (erasedType != except)
+      eraseSaveFile(game, erasedType);
 }
 
 RetiredGames MainLoop::getRetiredGames() {
