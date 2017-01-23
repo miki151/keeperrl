@@ -819,6 +819,7 @@ static string getActionText(ItemAction a) {
     case ItemAction::DROP: return "drop";
     case ItemAction::DROP_MULTI: return "drop some";
     case ItemAction::GIVE: return "give";
+    case ItemAction::PAY: return "pay for";
     case ItemAction::EQUIP: return "equip";
     case ItemAction::THROW: return "throw";
     case ItemAction::UNEQUIP: return "remove";

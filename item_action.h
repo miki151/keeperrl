@@ -13,6 +13,7 @@ enum class ItemAction {
   REPLACE,
   GIVE,
   REMOVE,
-  CHANGE_NUMBER
+  CHANGE_NUMBER,
+  PAY
 };
 

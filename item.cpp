@@ -265,7 +265,7 @@ void Item::setName(const string& n) {
   attributes->name = n;
 }
 
-const Creature* Item::getShopkeeper(const Creature* owner) const {
+Creature* Item::getShopkeeper(const Creature* owner) const {
   if (shopkeeper)
     for (Creature* c : owner->getVisibleCreatures())
       if (c->getUniqueId() == *shopkeeper)

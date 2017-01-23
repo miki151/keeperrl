@@ -485,15 +485,6 @@ class ShopkeeperController : public Monster {
 
   HeapAllocated<EventProxy<ShopkeeperController>> SERIAL(eventProxy);
 
-  virtual int getDebt(const Creature* debtor) const override {
-    if (debt.count(debtor)) {
-      return debt.at(debtor);
-    }
-    else {
-      return 0;
-    }
-  }
-
   SERIALIZE_ALL2(Monster, prevCreatures, debt, thiefCount, thieves, shopArea, firstMove, eventProxy);
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
 

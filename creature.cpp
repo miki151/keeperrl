@@ -291,10 +291,6 @@ void Creature::displace(double time, Vec2 dir) {
   addMovementInfo({dir, time, time + 1, MovementInfo::MOVE});
 }
 
-int Creature::getDebt(const Creature* debtor) const {
-  return getController()->getDebt(debtor);
-}
-
 bool Creature::canTakeItems(const vector<Item*>& items) const {
   return getBody().isHumanoid() && canCarry(items);
 }

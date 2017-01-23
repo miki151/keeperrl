@@ -113,7 +113,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   TribeId getTribeId() const;
   void setTribe(TribeId);
   bool isFriend(const Creature*) const;
-  int getDebt(const Creature* debtor) const;
   vector<Item*> getGold(int num) const;
 
   void takeItems(vector<PItem> items, const Creature* from);

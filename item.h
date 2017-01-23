@@ -65,7 +65,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public std::enable_sh
   
   int getPrice() const;
   void setShopkeeper(const Creature* shopkeeper);
-  const Creature* getShopkeeper(const Creature* owner) const;
+  Creature* getShopkeeper(const Creature* owner) const;
   bool isShopkeeper(const Creature*) const;
   // This function returns true after shopkeeper was killed. TODO: refactor shops.
   bool isOrWasForSale() const;

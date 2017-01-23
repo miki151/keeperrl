@@ -282,16 +282,18 @@ vector<ItemAction> Player::getItemActions(const vector<Item*>& item) const {
   if (getCreature()->unequip(item[0]))
     actions.push_back(ItemAction::UNEQUIP);
   else {
+    actions.push_back(ItemAction::THROW);
+    actions.push_back(ItemAction::DROP);
+    if (item.size() > 1)
+      actions.push_back(ItemAction::DROP_MULTI);
+    if (item[0]->getShopkeeper(getCreature()))
+      actions.push_back(ItemAction::PAY);
     for (Position v : getCreature()->getPosition().neighbors8())
       if (Creature* c = v.getCreature())
         if (getCreature()->isFriend(c)/* && c->canTakeItems(item)*/) {
           actions.push_back(ItemAction::GIVE);
           break;
         }
-    actions.push_back(ItemAction::THROW);
-    actions.push_back(ItemAction::DROP);
-    if (item.size() > 1)
-      actions.push_back(ItemAction::DROP_MULTI);
   }
   return actions;
 }
@@ -312,6 +314,7 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
     case ItemAction::APPLY: applyItem(items); break;
     case ItemAction::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
     case ItemAction::GIVE: giveAction(items); break;
+    case ItemAction::PAY: payForItemAction(items); break;
     case ItemAction::EQUIP: 
       if (getCreature()->isEquipmentAppropriate(items[0]) || getView()->yesOrNoPrompt(
           items[0]->getTheName() + " is too heavy and will incur an accuracy penalty. Do you want to continue?"))
@@ -381,21 +384,39 @@ void Player::targetAction() {
     target = none;
 }
 
-void Player::payDebtAction() {
-  for (Position pos : getCreature()->getPosition().neighbors8())
-    if (Creature* c = pos.getCreature()) {
-      if (int debt = c->getDebt(getCreature())) {
-        vector<Item*> gold = getCreature()->getGold(debt);
-        if (gold.size() < debt) {
-          privateMessage("You don't have enough gold to pay.");
-        } else if (getView()->yesOrNoPrompt("Buy items for " + toString(debt) + " gold?")) {
-          if (tryToPerform(getCreature()->give(c, gold)))
-            privateMessage("You pay " + c->getName().the() + " " + toString(debt) + " gold.");
-        }
-      } else {
-        INFO << "No debt " << c->getName().bare();
-      }
+void Player::payForItemAction(const vector<Item*>& items) {
+  int totalPrice = items.size() * items[0]->getPrice();
+  for (auto item : items) {
+    CHECK(item->getShopkeeper(getCreature()));
+    CHECK(item->getPrice() == items[0]->getPrice());
+  }
+  vector<Item*> gold = getCreature()->getGold(totalPrice);
+  int canPayFor = gold.size() / items[0]->getPrice();
+  if (canPayFor == 0)
+    privateMessage("You don't have enough gold to pay.");
+  else if (canPayFor == items.size() || getView()->yesOrNoPrompt("You only have enough gold for " +
+      toString(canPayFor) + " " + items[0]->getName(canPayFor > 1, getCreature()) + ". Still pay?"))
+    tryToPerform(getCreature()->give(items[0]->getShopkeeper(getCreature()),
+        getPrefix(gold, canPayFor * items[0]->getPrice())));
+}
+
+void Player::payForAllItemsAction() {
+  int totalPrice = 0;
+  Creature* shopkeeper = nullptr;
+  for (auto item : getCreature()->getEquipment().getItems())
+    if (auto c = item->getShopkeeper(getCreature())) {
+      totalPrice += item->getPrice();
+      shopkeeper = c;
     }
+  if (totalPrice > 0) {
+    vector<Item*> gold = getCreature()->getGold(totalPrice);
+    if (gold.size() < totalPrice) {
+      privateMessage("You don't have enough gold to pay for everything.");
+    } else if (getView()->yesOrNoPrompt("Buy items for " + toString(totalPrice) + " gold?")) {
+      if (tryToPerform(getCreature()->give(shopkeeper, gold)))
+        privateMessage("You pay " + shopkeeper->getName().the() + " " + toString(totalPrice) + " gold.");
+    }
+  }
 }
 
 void Player::giveAction(vector<Item*> items) {
@@ -514,13 +535,9 @@ void Player::retireMessages() {
 
 vector<Player::CommandInfo> Player::getCommands() const {
   bool canChat = false;
-  bool canPay = false;
   for (Position pos : getCreature()->getPosition().neighbors8())
-    if (Creature* c = pos.getCreature()) {
+    if (Creature* c = pos.getCreature())
       canChat = true;
-      if (c->getDebt(getCreature()))
-        canPay = true;
-    }
   return {
     {PlayerInfo::CommandInfo{"Wait", ' ', "Skip this turn.", true},
       [] (Player* player) { player->getCreature()->wait().perform(player->getCreature()); }, false},
@@ -531,8 +548,8 @@ vector<Player::CommandInfo> Player::getCommands() const {
     {PlayerInfo::CommandInfo{"Hide", 'h', "Hide behind or under a terrain feature or piece of furniture.",
         !!getCreature()->hide()},
       [] (Player* player) { player->hideAction(); }, false},
-    {PlayerInfo::CommandInfo{"Pay debt", 'p', "Pay debt to a shopkeeper.", canPay},
-      [] (Player* player) { player->payDebtAction();}, false},
+    {PlayerInfo::CommandInfo{"Pay for all items", 'p', "Pay debt to a shopkeeper.", true},
+      [] (Player* player) { player->payForAllItemsAction();}, false},
     {PlayerInfo::CommandInfo{"Drop everything", none, "Drop all items in possession.", !getCreature()->getEquipment().isEmpty()},
       [] (Player* player) { auto c = player->getCreature(); player->tryToPerform(c->drop(c->getEquipment().getItems())); }, false},
     {PlayerInfo::CommandInfo{"Message history", 'm', "Show message history.", true},

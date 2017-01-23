@@ -45,8 +45,6 @@ class Controller {
   virtual void makeMove() = 0;
   virtual void sleeping() {}
 
-  virtual int getDebt(const Creature* debtor) const { return 0; }
-
   virtual void onBump(Creature*) = 0;
 
   virtual ~Controller() {}

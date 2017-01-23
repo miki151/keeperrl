@@ -109,7 +109,8 @@ class Player : public Controller, public CreatureView {
   bool interruptedByEnemy();
   void travelAction();
   void targetAction();
-  void payDebtAction();
+  void payForAllItemsAction();
+  void payForItemAction(const vector<Item*>&);
   void chatAction(optional<Vec2> dir = none);
   void giveAction(vector<Item*>);
   void spellAction(SpellId);
