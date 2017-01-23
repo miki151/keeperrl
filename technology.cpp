@@ -157,7 +157,7 @@ static void addResource(Collective* col, FurnitureType type, int maxDist) {
   resourceArea.translate(-resourceArea.middle());
   for (int t = 0; t < 200; ++t) {
     Position center = init.plus(Vec2(Random.get(-maxDist, maxDist + 1), Random.get(-maxDist, maxDist + 1)));
-    vector<Position> all = center.getRectangle(resourceArea);
+    vector<Position> all = center.getRectangle(resourceArea.minusMargin(-1));
     if (areaOk(all)) {
       for (Vec2 pos : cutShape(resourceArea)) {
         center.plus(pos).addFurniture(FurnitureFactory::get(type, TribeId::getHostile()));
