@@ -217,9 +217,7 @@ static void portal(Creature* c) {
 }
 
 static void teleport(Creature* c) {
-  Vec2 enemyRadius(12, 12);
-  Vec2 teleRadius(6, 6);
-  Rectangle area(-enemyRadius, enemyRadius + Vec2(1, 1));
+  Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
   int infinity = 10000;
   PositionMap<int> weight(infinity);
   queue<Position> q;
@@ -241,7 +239,7 @@ static void teleport(Creature* c) {
   vector<Position> good;
   int maxW = 0;
   for (Position v : c->getPosition().getRectangle(area)) {
-    if (!v.canEnter(c) || v.isBurning() || v.getPoisonGasAmount() > 0)
+    if (!v.canEnter(c) || v.isBurning() || v.getPoisonGasAmount() > 0 || !c->isSameSector(v))
       continue;
     int weightV = weight.get(v);
     if (weightV == maxW)
