@@ -186,7 +186,7 @@ class GuiFactory {
       TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER, LEFT_STRETCHED, RIGHT_STRETCHED,
       CENTER_STRETCHED};
   SGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
-      Vec2 offset = Vec2(0, 0), function<Color()> = nullptr);
+      Vec2 offset = Vec2(0, 0), optional<Color> = none);
   SGuiElem sprite(Texture&, Alignment, Color);
   SGuiElem sprite(Texture&, double scale);
   SGuiElem tooltip(const vector<string>&, milliseconds delay = milliseconds{700});
@@ -240,7 +240,7 @@ class GuiFactory {
     LOADING_SPLASH,
   };
 
-  SGuiElem sprite(TexId, Alignment, function<Color()> = nullptr);
+  SGuiElem sprite(TexId, Alignment, optional<Color> = none);
   SGuiElem repeatedPattern(Texture& tex);
   SGuiElem background(Color);
   SGuiElem highlight(double height);
@@ -293,7 +293,6 @@ class GuiFactory {
   SGuiElem uiHighlightMouseOver(Color = colors[ColorId::GREEN]);
   SGuiElem uiHighlightConditional(function<bool()>, Color = colors[ColorId::GREEN]);
   SGuiElem uiHighlight(Color = colors[ColorId::GREEN]);
-  SGuiElem uiHighlight(function<Color()>);
   SGuiElem rectangleBorder(Color);
 
   private:

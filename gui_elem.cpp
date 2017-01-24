@@ -349,7 +349,7 @@ SGuiElem GuiFactory::sprite(Texture& tex, double height) {
 }
 
 SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset,
-    function<Color()> col) {
+    optional<Color> col) {
   return SGuiElem(new DrawCustom(
         [&tex, align, offset, col, vFlip, hFlip] (Renderer& r, Rectangle bounds) {
           Vec2 size = tex.getSize();
@@ -417,7 +417,7 @@ SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFli
               stretchSize = size * (double(bounds.height()) / size.y);
               pos = (bounds.topRight() + bounds.topLeft()) / 2 - Vec2(stretchSize->x / 2, 0) + offset;
           }
-          r.drawSprite(pos, origin, size, tex, stretchSize, !!col ? col() : colors[ColorId::WHITE], vFlip, hFlip);
+          r.drawSprite(pos, origin, size, tex, stretchSize, !!col ? *col : colors[ColorId::WHITE], vFlip, hFlip);
         }));
 }
 
@@ -2574,10 +2574,6 @@ SGuiElem GuiFactory::uiHighlightMouseOver(Color c) {
 }
 
 SGuiElem GuiFactory::uiHighlight(Color c) {
-  return uiHighlight([=] { return c; });
-}
-
-SGuiElem GuiFactory::uiHighlight(function<Color()> c) {
   return leftMargin(-8, topMargin(-4, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_STRETCHED, c)));
 }
 
@@ -2589,12 +2585,12 @@ SGuiElem GuiFactory::rectangleBorder(Color col) {
   return rectangle(colors[ColorId::TRANSPARENT], col);
 }
 
-SGuiElem GuiFactory::sprite(TexId id, Alignment a, function<Color()> c) {
+SGuiElem GuiFactory::sprite(TexId id, Alignment a, optional<Color> c) {
   return sprite(get(id), a, false, false, Vec2(0, 0), c);
 }
 
 SGuiElem GuiFactory::sprite(Texture& t, Alignment a, Color c) {
-  return sprite(t, a, false, false, Vec2(0, 0), [=]{ return c; });
+  return sprite(t, a, false, false, Vec2(0, 0), c);
 }
 
 SGuiElem GuiFactory::mainMenuLabelBg(const string& s, double vPadding, Color color) {

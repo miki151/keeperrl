@@ -67,7 +67,7 @@ class MapGui : public GuiElem {
   optional<Vec2> projectOnMap(Vec2 screenCoord);
   void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
-  Color getCreatureHighlight(UniqueEntity<Creature>::Id);
+  bool isCreatureHighlighted(UniqueEntity<Creature>::Id);
   void setButtonViewId(ViewId);
   void clearButtonViewId();
   bool highlightMorale();

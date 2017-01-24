@@ -367,10 +367,10 @@ void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Col
       SDL::glLineWidth(2);
       SDL::glBegin(GL_LINE_LOOP);
       outline->applyGl();
-      SDL::glVertex2f(a.x, a.y);
-      SDL::glVertex2f(b.x, a.y);
-      SDL::glVertex2f(b.x, b.y);
-      SDL::glVertex2f(a.x, b.y);
+      SDL::glVertex2f(a.x + 1.5f, a.y + 1.5f);
+      SDL::glVertex2f(b.x - 0.5f, a.y + 1.5f);
+      SDL::glVertex2f(b.x - 0.5f, b.y - 0.5f);
+      SDL::glVertex2f(a.x + 1.5f, b.y - 0.5f);
       SDL::glEnd();
       a += Vec2(2, 2);
       b -= Vec2(2, 2);

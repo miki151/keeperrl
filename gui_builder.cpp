@@ -1887,7 +1887,7 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
       line.addBackElem(gui.label("L:" + toString<int>(minion.levelInfo.level)), 42);
       list.addElem(gui.stack(makeVec<SGuiElem>(
             cache->get(selectButton, THIS_LINE, minionId),
-            gui.uiHighlight([=] { return mapGui->getCreatureHighlight(minionId);}),
+            gui.uiHighlightConditional([=] { return mapGui->isCreatureHighlighted(minionId);}, colors[ColorId::YELLOW]),
             gui.uiHighlightConditional([=] { return current == minionId;}),
             gui.dragSource({DragContentId::CREATURE, minionId},
               [=]{ return gui.viewObject(minion.viewId);}),
