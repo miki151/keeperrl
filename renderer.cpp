@@ -418,8 +418,11 @@ void Renderer::setGlScissor(optional<Rectangle> s) {
 }
 
 void Renderer::addRenderElem(function<void()> f) {
-  optional<Rectangle> thisScissor = scissor;
-  f = [f, thisScissor, this] { setGlScissor(thisScissor); f(); };
+  if (currentLayer == 0) {
+    auto thisScissor = scissor;
+    f = [f, thisScissor, this] { setGlScissor(thisScissor); f(); };
+  } else
+    f = [f, this] { setGlScissor(none); f(); };
   renderList[currentLayer].push_back(f);
 }
 
