@@ -717,8 +717,13 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
     line.addElemAuto(gui.label(item.name, color));
   else
     line.addSpace(130);
-  for (auto& elem : line.getAllElems())
-    elem = gui.stack(gui.buttonRect(onClick), std::move(elem), getTooltip(getItemHint(item), THIS_LINE));
+
+  auto mainLine = gui.stack(
+      gui.buttonRect(onClick),
+      line.buildHorizontalList(),
+      getTooltip(getItemHint(item), (int) item.ids.getHash()));
+  line.clear();
+  line.addElemAuto(std::move(mainLine));
   if (item.owner) {
     line.addBackElem(gui.viewObject(item.owner->viewId), viewObjectWidth);
     line.addBackElem(gui.label("L:" + toString(item.owner->expLevel)), 60);

@@ -105,7 +105,6 @@ class GuiFactory {
     int getSize() const;
     int getLength() const;
     bool isEmpty() const;
-    vector<SGuiElem>& getAllElems();
     void clear();
 
     private:

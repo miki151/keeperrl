@@ -1229,10 +1229,6 @@ bool GuiFactory::ListBuilder::isEmpty() const {
   return sizes.empty();
 }
 
-vector<SGuiElem>& GuiFactory::ListBuilder::getAllElems() {
-  return elems;
-}
-
 void GuiFactory::ListBuilder::clear() {
   elems.clear();
   sizes.clear();
