@@ -870,9 +870,10 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
   vector<string> options = transform2<string>(itemInfo.actions, bindFunction(getActionText));
   options.push_back("cancel");
   int count = options.size();
-  SGuiElem stuff = drawListGui("", ListElem::convert(options), MenuType::NORMAL, &index, &choice, nullptr);
+  SGuiElem stuff = gui.margins(
+      drawListGui("", ListElem::convert(options), MenuType::NORMAL, &index, &choice, nullptr), 15);
   stuff = gui.miniWindow(gui.margins(std::move(stuff), 0));
-  Vec2 size(150, options.size() * listLineHeight + 35);
+  Vec2 size(*stuff->getPreferredWidth() + 15, *stuff->getPreferredHeight());
   menuPos.x = min(menuPos.x, renderer.getSize().x - size.x);
   menuPos.y = min(menuPos.y, renderer.getSize().y - size.y);
   while (1) {
@@ -1782,8 +1783,7 @@ SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
   if (!title.empty()) {
     lines.addElem(gui.leftMargin(leftMargin, gui.label(capitalFirst(title), colors[ColorId::WHITE])));
     lines.addSpace();
-  } else
-    lines.addSpace(listLineHeight / 2);
+  }
   int numActive = 0;
   int secColumnWidth = 0;
   int columnWidth = 300;
