@@ -33,8 +33,7 @@ class ItemFactory {
   ItemFactory(const ItemFactory&);
   ItemFactory& operator = (const ItemFactory&);
   
-  vector<PItem> random(optional<int> seed = none);
-  vector<PItem> getAll();
+  vector<PItem> random();
 
   static ItemFactory dungeon();
   static ItemFactory chest();
@@ -67,13 +66,12 @@ class ItemFactory {
   
   private:
   struct ItemInfo;
-  ItemFactory(const vector<ItemInfo>&, const vector<ItemType>& unique);
   ItemFactory(const vector<ItemInfo>&);
   static ItemAttributes getAttributes(ItemType);
   ItemFactory& addItem(ItemInfo);
-  ItemFactory& addUniqueItem(ItemType);
+  ItemFactory& addUniqueItem(ItemType, Range count = Range::singleElem(1));
   vector<ItemType> SERIAL(items);
   vector<double> SERIAL(weights);
   vector<Range> SERIAL(count);
-  vector<ItemType> SERIAL(unique);
+  vector<pair<ItemType, Range>> SERIAL(uniqueCounts);
 };

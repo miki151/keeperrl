@@ -456,6 +456,14 @@ void Player::chatAction(optional<Vec2> dir) {
   }
 }
 
+void Player::fireAction() {
+  if (auto testAction = getCreature()->fire(Vec2(1, 0))) {
+    if (auto dir = getView()->chooseDirection("Fire which direction?"))
+      fireAction(*dir);
+  } else
+    privateMessage(testAction.getFailedReason());
+}
+
 void Player::fireAction(Vec2 dir) {
   tryToPerform(getCreature()->fire(dir));
 }
@@ -539,8 +547,10 @@ vector<Player::CommandInfo> Player::getCommands() const {
     if (Creature* c = pos.getCreature())
       canChat = true;
   return {
+    {PlayerInfo::CommandInfo{"Fire ranged weapon", 'f', "", true},
+      [] (Player* player) { player->fireAction(); }, false},
     {PlayerInfo::CommandInfo{"Wait", ' ', "Skip this turn.", true},
-      [] (Player* player) { player->getCreature()->wait().perform(player->getCreature()); }, false},
+      [] (Player* player) { player->tryToPerform(player->getCreature()->wait()); }, false},
     {PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
       [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},
     {PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},

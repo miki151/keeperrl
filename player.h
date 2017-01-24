@@ -114,6 +114,7 @@ class Player : public Controller, public CreatureView {
   void chatAction(optional<Vec2> dir = none);
   void giveAction(vector<Item*>);
   void spellAction(SpellId);
+  void fireAction();
   void fireAction(Vec2 dir);
   vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
   void getItemNames(vector<Item*> it, vector<ListElem>& names, vector<vector<Item*> >& groups,

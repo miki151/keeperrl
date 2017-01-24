@@ -1264,8 +1264,10 @@ CreatureAction Creature::give(Creature* whom, vector<Item*> items) {
 
 CreatureAction Creature::fire(Vec2 direction) const {
   CHECK(direction.length8() == 1);
-  if (getEquipment().getItem(EquipmentSlot::RANGED_WEAPON).empty())
+  if (getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty())
     return CreatureAction("You need a ranged weapon.");
+  if (getEquipment().getItem(EquipmentSlot::RANGED_WEAPON).empty())
+    return CreatureAction("You need to equip your ranged weapon.");
   if (getBody().numGood(BodyPart::ARM) < 2)
     return CreatureAction("You need two hands to shoot a bow.");
   if (!getAmmo())

@@ -44,7 +44,7 @@
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, items, weights, count, unique);
+  serializeAll(ar, items, weights, count, uniqueCounts);
 }
 
 SERIALIZABLE(ItemFactory);
@@ -346,11 +346,6 @@ void ItemFactory::registerTypes(Archive& ar, int version) {
 
 REGISTER_TYPES(ItemFactory::registerTypes);
 
-ItemFactory::ItemFactory(const vector<ItemInfo>& items, const vector<ItemType>& u)
-    : ItemFactory(items) {
-  unique = u;
-}
-
 ItemFactory::ItemFactory(const vector<ItemInfo>& items) {
   for (auto elem : items)
     addItem(elem);
@@ -364,34 +359,20 @@ ItemFactory& ItemFactory::addItem(ItemInfo elem) {
   return *this;
 }
 
-ItemFactory& ItemFactory::addUniqueItem(ItemType id) {
-  unique.push_back(id);
+ItemFactory& ItemFactory::addUniqueItem(ItemType id, Range count) {
+  uniqueCounts.push_back({id, count});
   return *this;
 }
 
-vector<PItem> ItemFactory::random(optional<int> seed) {
-  if (unique.size() > 0) {
-    ItemType id = unique.back();
-    unique.pop_back();
-    return fromId(id, 1);
+vector<PItem> ItemFactory::random() {
+  if (uniqueCounts.size() > 0) {
+    ItemType id = uniqueCounts.back().first;
+    int cnt = Random.get(uniqueCounts.back().second);
+    uniqueCounts.pop_back();
+    return fromId(id, cnt);
   }
-  int index;
-  if (seed) {
-    RandomGen gen;
-    gen.init(*seed);
-    index = gen.get(weights);
-  } else
-    index = Random.get(weights);
+  int index = Random.get(weights);
   return fromId(items[index], Random.get(count[index]));
-}
-
-vector<PItem> ItemFactory::getAll() {
-  vector<PItem> ret;
-  for (ItemType id : unique)
-    ret.push_back(fromId(id));
-  for (ItemType id : items)
-    ret.push_back(fromId(id));
-  return ret;
 }
 
 ItemFactory ItemFactory::villageShop() {
@@ -445,7 +426,9 @@ ItemFactory ItemFactory::armory() {
       {ItemId::LEATHER_GLOVES, 2 },
       {ItemId::STRENGTH_GLOVES, 0.5 },
       {ItemId::DEXTERITY_GLOVES, 0.5 },
-      {ItemId::IRON_BOOTS, 1} });
+      {ItemId::IRON_BOOTS, 1} })
+      .addUniqueItem(ItemId::BOW)
+      .addUniqueItem(ItemId::ARROW, Range(20, 30));
 }
 
 ItemFactory ItemFactory::orcShop() {
@@ -489,8 +472,8 @@ ItemFactory ItemFactory::gnomeShop() {
       {ItemId::LEVITATION_BOOTS, 0.3 },
       {ItemId::LEATHER_GLOVES, 2 },
       {ItemId::STRENGTH_GLOVES, 0.5 },
-      {ItemId::DEXTERITY_GLOVES, 0.5 } },
-      {ItemId::AUTOMATON_ITEM});
+      {ItemId::DEXTERITY_GLOVES, 0.5 } })
+      .addUniqueItem({ItemId::AUTOMATON_ITEM});
 }
 
 ItemFactory ItemFactory::dragonCave() {
