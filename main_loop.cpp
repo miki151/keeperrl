@@ -307,28 +307,38 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     forceGame = none;
     return Game::campaignGame(prepareCampaignModels(*result, random), *result->campaign.getPlayerPos(), *result);
   }
-  if (auto choice = view->choosePlayerRole()) {
-    random.init(Random.get(1234567));
-    CampaignBuilder builder(view, random, options, *choice);
-    if (auto result = builder.prepareCampaign([this] { return getRetiredGames(); }, CampaignType::CAMPAIGN)) {
-      auto ret = Game::campaignGame(prepareCampaignModels(*result, random), *result->campaign.getPlayerPos(), *result);
-      if (*choice == PlayerRole::ADVENTURER)
-        ret->getMainModel()->landHeroPlayer(std::move(result->player));
-      return ret;
-    }
+  auto choice = PlayerRoleChoice(PlayerRole::KEEPER);
+  while (1) {
+    choice = view->getPlayerRoleChoice(choice);
+    if (auto ret = apply_visitor(choice, makeVisitor<optional<PGame>>(
+        [&](PlayerRole role) -> optional<PGame> {
+          random.init(Random.get(1234567));
+          CampaignBuilder builder(view, random, options, role);
+          if (auto result = builder.prepareCampaign([this] { return getRetiredGames(); }, CampaignType::CAMPAIGN)) {
+            auto ret = Game::campaignGame(prepareCampaignModels(*result, random), *result->campaign.getPlayerPos(), *result);
+            if (role == PlayerRole::ADVENTURER)
+              ret->getMainModel()->landHeroPlayer(std::move(result->player));
+            return std::move(ret);
+          } else
+            return none;
+        },
+        [&](LoadGameChoice&) -> optional<PGame> {
+          if (auto game = loadPrevious())
+            return std::move(game);
+          else
+            return none;
+        },
+        [&](GoBackChoice&) -> optional<PGame> {
+          return PGame(nullptr);
+        }
+      )))
+      return std::move(*ret);
   }
-  return nullptr;
 }
 
-void MainLoop::playGameChoice(int choice) {
-  PGame game;
+void MainLoop::playGameChoice() {
   RandomGen random;
-  switch (choice) {
-    case 0: game = prepareCampaign(random); break;
-    case 1: game = loadPrevious(); break;
-    default: return;
-  }
-  if (game) {
+  if (PGame game = prepareCampaign(random)) {
     Random = std::move(random);
     playGame(std::move(game), true, false);
   }
@@ -399,17 +409,16 @@ void MainLoop::start(bool tilesPresent) {
       choice = 0;
     else
       choice = view->chooseFromList("", {
-        "Play", "Load game", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);
+        "Play", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);
     if (!choice)
       continue;
     lastIndex = *choice;
     switch (*choice) {
-      case 0: playGameChoice(0); break;
-      case 1: playGameChoice(1); break;
-      case 2: options->handle(view, OptionSet::GENERAL); break;
-      case 3: highscores->present(view); break;
-      case 4: showCredits(dataFreePath + "/credits.txt", view); break;
-      case 5: finished = true; break;
+      case 0: playGameChoice(); break;
+      case 1: options->handle(view, OptionSet::GENERAL); break;
+      case 2: highscores->present(view); break;
+      case 3: showCredits(dataFreePath + "/credits.txt", view); break;
+      case 4: finished = true; break;
     }
     if (finished)
       break;

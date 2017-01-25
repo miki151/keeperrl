@@ -58,10 +58,6 @@ class ReplayView : public View {
       return readValue<optional<int>>(LoggingToken::CHOOSE_FROM_LIST);
     }
 
-    virtual optional<PlayerRole> choosePlayerRole() override {
-      return readValue<PlayerRole>(LoggingToken::CHOOSE_GAME_TYPE);
-    }
-
     virtual optional<Vec2> chooseDirection(const string& message) override {
       return readValue<optional<Vec2>>(LoggingToken::CHOOSE_DIRECTION);
     }

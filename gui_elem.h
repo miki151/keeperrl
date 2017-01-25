@@ -17,6 +17,7 @@
 
 #include "renderer.h"
 #include "drag_and_drop.h"
+#include "player_role_choice.h"
 
 class ViewObject;
 class Clock;
@@ -172,7 +173,7 @@ class GuiFactory {
   SGuiElem mouseHighlight(SGuiElem highlight, int myIndex, int* highlighted);
   SGuiElem mouseHighlightClick(SGuiElem highlight, int myIndex, int* highlighted);
   SGuiElem mouseHighlight2(SGuiElem highlight);
-  SGuiElem mouseHighlightGameChoice(SGuiElem, optional<PlayerRole> my, optional<PlayerRole>& highlight);
+  SGuiElem mouseHighlightGameChoice(SGuiElem, optional<PlayerRoleChoice> my, optional<PlayerRoleChoice>& highlight);
   static int getHeldInitValue();
   SGuiElem scrollable(SGuiElem content, ScrollPosition* scrollPos = nullptr, int* held = nullptr);
   SGuiElem getScrollButton();

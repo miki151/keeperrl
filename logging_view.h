@@ -92,10 +92,6 @@ class LoggingView : public View {
           LoggingToken::CHOOSE_FROM_LIST);
     }
 
-    virtual optional<PlayerRole> choosePlayerRole() override {
-      return logAndGet(delegate->choosePlayerRole(), LoggingToken::CHOOSE_GAME_TYPE);
-    }
-
     virtual optional<Vec2> chooseDirection(const string& message) override {
       return logAndGet(delegate->chooseDirection(message), LoggingToken::CHOOSE_DIRECTION);
     }

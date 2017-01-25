@@ -49,7 +49,7 @@ class MainLoop {
 
   PGame prepareCampaign(RandomGen&);
   void playGame(PGame&&, bool withMusic, bool noAutoSave);
-  void playGameChoice(int);
+  void playGameChoice();
   void splashScreen();
   void showCredits(const string& path, View*);
 

@@ -918,12 +918,12 @@ const static vector<GameChoice> gameChoices {
       "adventurer"},
 };
 
-SGuiElem WindowView::drawGameChoices(optional<optional<PlayerRole>>& choice, optional<PlayerRole>& index) {
+SGuiElem WindowView::drawGameChoices(optional<PlayerRoleChoice>& choice, optional<PlayerRoleChoice>& index) {
   vector<SGuiElem> choiceElems;
   for (auto& elem : gameChoices)
     choiceElems.push_back(
         gui.stack(makeVec<SGuiElem>(
-          gui.button([&] { choice = elem.type;}),
+          gui.button([&] { choice = PlayerRoleChoice(elem.type);}),
           gui.mouseOverAction([&] { index = elem.type;}),
           gui.sprite(elem.texId, GuiFactory::Alignment::CENTER_STRETCHED),
           gui.marginFit(gui.empty(), gui.centerHoriz(gui.mainMenuLabel(elem.name, -0.08,
@@ -932,39 +932,42 @@ SGuiElem WindowView::drawGameChoices(optional<optional<PlayerRole>>& choice, opt
             gui.sprite(elem.highlightId, GuiFactory::Alignment::CENTER_STRETCHED),
           gui.marginFit(gui.empty(), gui.centerHoriz(gui.mainMenuLabel(elem.name, -0.08)),
               0.94, gui.TOP)),
-            elem.type, index)
+            PlayerRoleChoice(elem.type), index)
           )));
   return gui.verticalAspect(
       gui.marginFit(
       gui.horizontalListFit(std::move(choiceElems), 0),
-      gui.margins(gui.verticalListFit(makeVec<SGuiElem>(
+      gui.topMargin(30, gui.verticalListFit(makeVec<SGuiElem>(
           gui.stack(
-            gui.button([&] { choice = optional<PlayerRole>(none);}),
-            gui.mainMenuLabelBg("Go back", 0.2),
-            gui.mouseHighlightGameChoice(gui.mainMenuLabel("Go back", 0.2), none, index)),
-          gui.empty()), 0), 0, 30, 0, 0),
+            gui.button([&] { choice = PlayerRoleChoice(LoadGameChoice());}),
+            gui.mainMenuLabelBg("Load game", 0.15),
+            gui.mouseHighlightGameChoice(gui.mainMenuLabel("Load game", 0.15), PlayerRoleChoice(LoadGameChoice()), index)),
+          gui.stack(
+            gui.button([&] { choice = PlayerRoleChoice(GoBackChoice());}),
+            gui.mainMenuLabelBg("Go back", 0.15),
+            gui.mouseHighlightGameChoice(gui.mainMenuLabel("Go back", 0.15), PlayerRoleChoice(GoBackChoice()), index))), 0)),
       0.7, gui.TOP), 0.6 * gameChoices.size());
 }
 
-optional<PlayerRole> WindowView::choosePlayerRole() {
+PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> index) {
   if (!useTiles) {
     if (auto ind = chooseFromListInternal("", {
           ListElem("Choose your role:", ListElem::TITLE),
           "Keeper",
-          "Adventurer"
+          "Adventurer",
+          "Load game",
           },
         0, MenuType::MAIN, nullptr))
-      return (PlayerRole)(*ind);
+      return *ind == 2 ? LoadGameChoice() : PlayerRoleChoice((PlayerRole)(*ind));
     else
-      return none;
+      return GoBackChoice();
   }
   RecursiveLock lock(renderMutex);
   uiLock = true;
   TempClockPause pause(clock);
-  SyncQueue<optional<PlayerRole>> returnQueue;
-  addReturnDialog<optional<PlayerRole>>(returnQueue, [=] ()-> optional<PlayerRole> {
-  optional<optional<PlayerRole>> choice;
-  optional<PlayerRole> index = PlayerRole::KEEPER;
+  SyncQueue<PlayerRoleChoice> returnQueue;
+  addReturnDialog<PlayerRoleChoice>(returnQueue, [&] ()-> PlayerRoleChoice {
+  optional<PlayerRoleChoice> choice;
   SGuiElem stuff = drawGameChoices(choice, index);
   while (1) {
     refreshScreen(false);
@@ -978,21 +981,53 @@ optional<PlayerRole> WindowView::choosePlayerRole() {
         return *choice;
       if (considerResizeEvent(event))
         continue;
+      int numRoles = EnumInfo<PlayerRole>::size;
       if (event.type == SDL::SDL_KEYDOWN)
         switch (event.key.keysym.sym) {
           case SDL::SDLK_KP_4:
           case SDL::SDLK_LEFT:
-            if (index != PlayerRole::KEEPER)
-              index = PlayerRole::KEEPER;
+            if (!index)
+              index = (PlayerRole) 0;
             else
-              index = PlayerRole::ADVENTURER;
+              apply_visitor(*index, makeDefaultVisitor(
+                  [&](PlayerRole& role) { role = PlayerRole(((int) role - 1 + numRoles) % numRoles); },
+                  [&](LoadGameChoice) { index = (PlayerRole) 0; },
+                  [&](GoBackChoice) { index = (PlayerRole) 0; }
+              ));
             break;
           case SDL::SDLK_KP_6:
-          case SDL::SDLK_RIGHT:
-            if (index != PlayerRole::ADVENTURER)
-              index = PlayerRole::ADVENTURER;
+          case SDL::SDLK_RIGHT: {
+            if (!index)
+              index = (PlayerRole) (numRoles - 1);
             else
-              index = PlayerRole::KEEPER;
+              apply_visitor(*index, makeDefaultVisitor(
+                  [&](PlayerRole& role) { role = PlayerRole(((int) role - 1 + numRoles) % numRoles); },
+                  [&](LoadGameChoice) { index = (PlayerRole) (numRoles - 1); },
+                  [&](GoBackChoice) { index = (PlayerRole) (numRoles - 1); }
+            ));
+            break;
+          }
+          case SDL::SDLK_KP_8:
+          case SDL::SDLK_UP:
+            if (!index)
+              index = (PlayerRole) 0;
+            else
+              apply_visitor(*index, makeDefaultVisitor(
+                  [&](PlayerRole&) { index = GoBackChoice(); },
+                  [&](LoadGameChoice) { index = (PlayerRole) 0; },
+                  [&](GoBackChoice) { index = LoadGameChoice(); }
+              ));
+            break;
+          case SDL::SDLK_KP_2:
+          case SDL::SDLK_DOWN:
+            if (!index)
+              index = (PlayerRole) 0;
+            else
+              apply_visitor(*index, makeDefaultVisitor(
+                  [&](PlayerRole& role) { index = LoadGameChoice(); },
+                  [&](LoadGameChoice) { index = GoBackChoice(); },
+                  [&](GoBackChoice) { index = (PlayerRole) 0; }
+              ));
             break;
           case SDL::SDLK_KP_5:
           case SDL::SDLK_KP_ENTER:
@@ -1001,7 +1036,7 @@ optional<PlayerRole> WindowView::choosePlayerRole() {
               return *index;
             break;
           case SDL::SDLK_ESCAPE:
-            return none;
+            return GoBackChoice();
           default: break;
         }
     }

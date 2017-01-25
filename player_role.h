@@ -2,4 +2,4 @@
 
 #include "util.h"
 
-RICH_ENUM(PlayerRole, ADVENTURER, KEEPER);
+RICH_ENUM(PlayerRole, KEEPER, ADVENTURER);

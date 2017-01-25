@@ -23,6 +23,7 @@
 #include "options.h"
 #include "scroll_position.h"
 #include "keybinding_map.h"
+#include "player_role_choice.h"
 
 #include "sdl.h"
 
@@ -1955,11 +1956,11 @@ SGuiElem GuiFactory::mouseHighlightClick(SGuiElem elem, int myIndex, int* highli
 
 class MouseHighlightGameChoice : public GuiStack {
   public:
-  MouseHighlightGameChoice(SGuiElem h, optional<PlayerRole> my, optional<PlayerRole>& highlight)
+  MouseHighlightGameChoice(SGuiElem h, optional<PlayerRoleChoice> my, optional<PlayerRoleChoice>& highlight)
     : GuiStack(std::move(h)), myChoice(my), highlighted(highlight) {}
 
   virtual void onMouseGone() override {
-    if (*highlighted == myChoice)
+    if (highlighted == myChoice)
       highlighted = none;
   }
 
@@ -1977,12 +1978,12 @@ class MouseHighlightGameChoice : public GuiStack {
   }
 
   private:
-  optional<PlayerRole> myChoice;
-  optional<PlayerRole>& highlighted;
+  optional<PlayerRoleChoice> myChoice;
+  optional<PlayerRoleChoice>& highlighted;
 };
 
 SGuiElem GuiFactory::mouseHighlightGameChoice(SGuiElem elem,
-    optional<PlayerRole> my, optional<PlayerRole>& highlight) {
+    optional<PlayerRoleChoice> my, optional<PlayerRoleChoice>& highlight) {
   return SGuiElem(new MouseHighlightGameChoice(std::move(elem), my, highlight));
 }
 
