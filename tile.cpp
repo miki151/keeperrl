@@ -404,6 +404,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::RED_DRAGON, sprite("reddragon"));
     Tile::addTile(ViewId::CYCLOPS, sprite("cyclops"));
     Tile::addTile(ViewId::MINOTAUR, sprite("mino"));
+    Tile::addTile(ViewId::SOFT_MONSTER, sprite("softmonster"));
     Tile::addTile(ViewId::HYDRA, sprite("hydra"));
     Tile::addTile(ViewId::SHELOB, sprite("szelob"));
     Tile::addTile(ViewId::WITCH, sprite("witch"));
@@ -699,7 +700,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::GREEN_DRAGON, symbol(u8"D", ColorId::GREEN));
     Tile::addSymbol(ViewId::RED_DRAGON, symbol(u8"D", ColorId::RED));
     Tile::addSymbol(ViewId::CYCLOPS, symbol(u8"C", ColorId::GREEN));
-    Tile::addSymbol(ViewId::MINOTAUR, symbol(u8"C", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::MINOTAUR, symbol(u8"M", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::SOFT_MONSTER, symbol(u8"M", ColorId::PINK));
     Tile::addSymbol(ViewId::HYDRA, symbol(u8"H", ColorId::PURPLE));
     Tile::addSymbol(ViewId::SHELOB, symbol(u8"S", ColorId::PURPLE));
     Tile::addSymbol(ViewId::WITCH, symbol(u8"@", ColorId::BROWN));

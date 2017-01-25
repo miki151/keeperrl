@@ -771,10 +771,6 @@ CreatureFactory CreatureFactory::antNest(TribeId tribe) {
       { CreatureId::ANT_QUEEN});
 }
 
-CreatureFactory CreatureFactory::splash(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::IMP}, { 1}, { CreatureId::KEEPER });
-}
-
 CreatureFactory CreatureFactory::orcTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1});
 }
@@ -805,6 +801,7 @@ CreatureFactory CreatureFactory::gnomishMines(TribeId peaceful, TribeId enemy, i
       make_tuple(CreatureId::BANDIT, 100., enemy),
       make_tuple(CreatureId::GREEN_DRAGON, 5., enemy),
       make_tuple(CreatureId::RED_DRAGON, 5., enemy),
+      make_tuple(CreatureId::SOFT_MONSTER, 5., enemy),
       make_tuple(CreatureId::CYCLOPS, 15., enemy),
       make_tuple(CreatureId::WITCH, 15., enemy),
       make_tuple(CreatureId::CLAY_GOLEM, 20., enemy),
@@ -1193,7 +1190,17 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.barehandedDamage = 20;
           c.barehandedAttack = AttackType::BITE;
           c.name = "minotaur";);
-    case CreatureId::HYDRA: 
+    case CreatureId::SOFT_MONSTER:
+      return CATTR(
+          c.viewId = ViewId::SOFT_MONSTER;
+          c.attr[AttrType::SPEED] = 100;
+          c.body = Body::humanoid(Body::Size::LARGE).setWeight(400);
+          c.attr[AttrType::STRENGTH] = 45;
+          c.attr[AttrType::DEXTERITY] = 35;
+          c.barehandedDamage = 1;
+          c.courage = 0.1;
+          c.name = "soft monster";);
+    case CreatureId::HYDRA:
       return CATTR(
           c.viewId = ViewId::HYDRA;
           c.attr[AttrType::SPEED] = 110;

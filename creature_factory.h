@@ -152,6 +152,7 @@ RICH_ENUM(CreatureId,
     SPIDER,
     FLY,
     RAT,
+    SOFT_MONSTER,
 
     ANT_WORKER,
     ANT_SOLDIER,
@@ -188,7 +189,6 @@ class CreatureFactory {
   static CreatureFactory vikingTown(TribeId);
   static CreatureFactory lizardTown(TribeId);
   static CreatureFactory orcTown(TribeId);
-  static CreatureFactory splash(TribeId);
   static CreatureFactory singleType(TribeId, CreatureId);
   static CreatureFactory insects(TribeId tribe);
   static CreatureFactory lavaCreatures(TribeId tribe);
