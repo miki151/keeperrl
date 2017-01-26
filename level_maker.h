@@ -52,6 +52,7 @@ enum class SettlementType {
   ISLAND_VAULT_DOOR,
   CEMETERY,
   SWAMP,
+  MOUNTAIN_LAKE,
 };
 
 RICH_ENUM(BiomeId,

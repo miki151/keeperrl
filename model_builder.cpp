@@ -273,8 +273,8 @@ SettlementInfo& ModelBuilder::makeExtraLevel(Model* model, EnemyInfo& enemy) {
             LevelBuilder(meter, random, 60, 40, "Mines lvl " + toString(i + 1)),
             LevelMaker::roomLevel(random, CreatureFactory::gnomishMines(
                 mainSettlement.tribe, TribeId::getMonster(), 0),
-                CreatureFactory::waterCreatures(mainSettlement.tribe),
-                CreatureFactory::lavaCreatures(mainSettlement.tribe), {upLink}, {downLink},
+                CreatureFactory::waterCreatures(TribeId::getMonster()),
+                CreatureFactory::lavaCreatures(TribeId::getMonster()), {upLink}, {downLink},
                 FurnitureFactory::roomFurniture(TribeId::getPest())));
         upLink = downLink;
       }
@@ -345,6 +345,7 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
         EnemyId::ENTS}))
     enemies.push_back(enemyFactory->get(enemy).setSurprise().setVillainType(VillainType::LESSER));
   for (auto& enemy : random.chooseN(1, {
+        EnemyId::KRAKEN,
         EnemyId::WITCH,
         EnemyId::CEMETERY}))
     enemies.push_back(enemyFactory->get(enemy));
@@ -372,6 +373,8 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
   addMapVillains(enemyInfo, biome);
+  if (random.chance(0.3))
+    enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
   vector<ExternalEnemy> externalEnemies;
   if (addExternalEnemies)
     externalEnemies = enemyFactory->getExternalEnemies();

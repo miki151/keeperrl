@@ -490,6 +490,14 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.location = new Location();
             c.tribe = TribeId::getHostile();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
           .setGhostSpawns(0.03, 1));
+    case EnemyId::KRAKEN:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::MOUNTAIN_LAKE;
+            c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::KRAKEN);
+            c.numCreatures = 1;
+            c.race = "kraken";
+            c.location = new Location();
+            c.tribe = TribeId::getMonster();), CollectiveConfig::noImmigrants().setLeaderAsFighter());
     case EnemyId::CEMETERY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CEMETERY;

@@ -92,8 +92,13 @@ class Water : public Square {
       MovementType realMovement = c->getMovementType();
       realMovement.setForced(false);
       if (!c->getPosition().canEnterEmpty(realMovement)) {
-        c->you(MsgType::DROWN, getName());
-        c->die("drowned", false);
+        if (auto holding = c->getHoldingCreature()) {
+          c->you(MsgType::ARE, "drowned by " + holding->getName().the());
+          c->die(holding, false);
+        } else {
+          c->you(MsgType::DROWN, getName());
+          c->die("drowned", false);
+        }
       }
     }
   }

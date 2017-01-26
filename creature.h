@@ -216,8 +216,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void poisonWithGas(double amount);
   void affectBySilver();
   void affectByAcid();
-  void setHeld(const Creature* holding);
-  bool isHeld() const;
+  void setHeld(Creature* holding);
+  Creature* getHoldingCreature() const;
 
   void you(MsgType type, const vector<string>& param) const;
   void you(MsgType type, const string& param) const;
@@ -289,7 +289,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   int SERIAL(swapPositionCooldown) = 0;
   EntitySet<Creature> SERIAL(unknownAttackers);
   EntitySet<Creature> SERIAL(privateEnemies);
-  const Creature* SERIAL(holding) = nullptr;
+  Creature* SERIAL(holding) = nullptr;
   vector<SController> SERIAL(controllerStack);
   vector<CreatureVision*> SERIAL(creatureVisions);
   EntitySet<Creature> SERIAL(kills);

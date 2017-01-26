@@ -251,7 +251,7 @@ CreatureAction Creature::move(Vec2 dir) const {
 
 CreatureAction Creature::move(Position pos) const {
   Vec2 direction = getPosition().getDir(pos);
-  if (holding)
+  if (getHoldingCreature())
     return CreatureAction("You can't break free!");
   if (direction.length8() != 1)
     return CreatureAction();
@@ -354,8 +354,6 @@ void Creature::swapPosition(Vec2 direction) {
 void Creature::makeMove() {
   numAttacksThisTurn = 0;
   CHECK(!isDead());
-  if (holding && holding->isDead())
-    holding = nullptr;
   if (hasCondition(CreatureCondition::SLEEPING)) {
     getController()->sleeping();
     spendTime(1);
@@ -1148,12 +1146,12 @@ void Creature::poisonWithGas(double amount) {
     die("poisoned with gas");
 }
 
-void Creature::setHeld(const Creature* c) {
+void Creature::setHeld(Creature* c) {
   holding = c;
 }
 
-bool Creature::isHeld() const {
-  return holding != nullptr;
+Creature* Creature::getHoldingCreature() const {
+  return (!holding || holding->isDead()) ? nullptr : holding;
 }
 
 void Creature::take(vector<PItem> items) {
@@ -1511,7 +1509,7 @@ MovementType Creature::getMovementType() const {
       isAffected(LastingEffect::FLYING),
       attributes->getSkills().hasDiscrete(SkillId::SWIMMING),
       getBody().canWade()})
-    .setForced(isBlind() || isHeld() || forceMovement)
+    .setForced(isBlind() || getHoldingCreature() || forceMovement)
     .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT))
     .setSunlightVulnerable(getBody().isSunlightVulnerable() && !isAffected(LastingEffect::DARKNESS_SOURCE)
         && (!getGame() || getGame()->getSunlightInfo().getState() == SunlightState::DAY));

@@ -207,7 +207,7 @@ class CreatureFactory {
   static PCreature getIllusion(Creature*);
 
   static PCreature addInventory(PCreature c, const vector<ItemType>& items);
-  static CreatureAttributes getKrakenAttributes(ViewId);
+  static CreatureAttributes getKrakenAttributes(ViewId, const char* name);
   static ViewId getViewId(CreatureId);
   static const Gender& getGender(CreatureId);
 

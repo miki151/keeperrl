@@ -139,7 +139,7 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 }
 
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
-  if (!traits.contains(MinionTrait::FARM_ANIMAL))
+  if (!traits.contains(MinionTrait::FARM_ANIMAL) && !c->getController()->isCustomController())
     c->setController(SController(new Monster(c, MonsterAIFactory::collective(this))));
   if (traits.contains(MinionTrait::WORKER))
     c->getAttributes().getMinionTasks().clear();

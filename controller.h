@@ -44,6 +44,7 @@ class Controller {
 
   virtual void makeMove() = 0;
   virtual void sleeping() {}
+  virtual bool isCustomController() { return false; }
 
   virtual void onBump(Creature*) = 0;
 

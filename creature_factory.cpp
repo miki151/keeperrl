@@ -197,16 +197,17 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
               return SController(new SokobanController(c)); })));
 }
 
-CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id) {
+CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* name) {
   return CATTR(
       c.viewId = id;
       c.attr[AttrType::SPEED] = 40;
-      c.body = Body::nonHumanoid(Body::Size::LARGE);
+      c.body = Body::nonHumanoid(Body::Size::LARGE).setDeathSound(none);
       c.attr[AttrType::STRENGTH] = 15;
       c.attr[AttrType::DEXTERITY] = 15;
       c.barehandedDamage = 10;
+      c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
       c.skills.insert(SkillId::SWIMMING);
-      c.name = "kraken";);
+      c.name = name;);
 }
 
 ViewId CreatureFactory::getViewId(CreatureId id) {
@@ -220,17 +221,23 @@ ViewId CreatureFactory::getViewId(CreatureId id) {
 class KrakenController : public Monster {
   public:
   KrakenController(Creature* c) : Monster(c, MonsterAIFactory::monster()) {
-    numSpawns = Random.choose({1, 2}, {4, 1});
   }
 
-  void makeReady() {
-    ready = true;
+  KrakenController(Creature* c, KrakenController* f) : KrakenController(c) {
+    father = f;
   }
-  
-  void unReady() {
-    ready = false;
+
+  virtual bool isCustomController() override {
+    return true;
   }
-  
+
+  int getMaxSpawns() {
+    if (father)
+      return 1;
+    else
+      return 7;
+  }
+
   virtual void onKilled(const Creature* attacker) override {
     if (attacker) {
       if (father)
@@ -260,97 +267,96 @@ class KrakenController : public Monster {
       getCreature()->monsterMessage(msg, msgNoSee);
   }
 
-  virtual void makeMove() override {
-    int radius = 10;
-    if (waitNow) {
-      getCreature()->wait().perform(getCreature());
-      waitNow = false;
-      return;
+  void pullEnemy(Creature* held) {
+    held->you(MsgType::HAPPENS_TO, getCreature()->getName().the() + " pulls");
+    if (father) {
+      held->setHeld(father->getCreature());
+      Vec2 pullDir = held->getPosition().getDir(getCreature()->getPosition());
+      double localTime = getCreature()->getLocalTime();
+      getCreature()->die(nullptr, false, false);
+      held->displace(localTime, pullDir);
+    } else {
+      held->you(MsgType::ARE, "eaten by " + getCreature()->getName().the());
+      held->die();
     }
+  }
+
+  Creature* getHeld() {
+    for (auto pos : getCreature()->getPosition().neighbors8())
+      if (auto creature = pos.getCreature())
+        if (creature->getHoldingCreature() == getCreature())
+          return creature;
+    return nullptr;
+  }
+
+  Creature* getVisibleEnemy() {
+    const int radius = 10;
+    Creature* ret = nullptr;
+    auto myPos = getCreature()->getPosition();
+    for (Position pos : getCreature()->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), radius)))
+      if (Creature* c = pos.getCreature())
+        if (c->getAttributes().getCreatureId() != getCreature()->getAttributes().getCreatureId() &&
+            (!ret || ret->getPosition().dist8(myPos) > c->getPosition().dist8(myPos)) &&
+            getCreature()->canSee(c) && getCreature()->isEnemy(c) && !c->getHoldingCreature())
+          ret = c;
+    return ret;
+  }
+
+  void considerAttacking(Creature* c) {
+    auto pos = c->getPosition();
+    Vec2 v = getCreature()->getPosition().getDir(pos);
+    if (v.length8() == 1) {
+      c->you(MsgType::HAPPENS_TO, getCreature()->getName().the() + " swings itself around");
+      c->setHeld(getCreature());
+    } else {
+      pair<Vec2, Vec2> dirs = v.approxL1();
+      vector<Vec2> moves;
+      if (getCreature()->getPosition().plus(dirs.first).canEnter(
+            {{MovementTrait::WALK, MovementTrait::SWIM}}))
+        moves.push_back(dirs.first);
+      if (getCreature()->getPosition().plus(dirs.second).canEnter(
+            {{MovementTrait::WALK, MovementTrait::SWIM}}))
+        moves.push_back(dirs.second);
+      if (!moves.empty()) {
+        Vec2 move = Random.choose(moves);
+        ViewId viewId = getCreature()->getPosition().plus(move).canEnter({MovementTrait::SWIM})
+          ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
+        PCreature spawn(new Creature(getCreature()->getTribeId(),
+              CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"),
+              ControllerFactory([=](Creature* c) {
+                return SController(new KrakenController(c, this));
+                })));
+        spawns.push_back(spawn.get());
+        getCreature()->getPosition().plus(move).addCreature(std::move(spawn));
+      }
+    }
+  }
+
+  virtual void makeMove() override {
     for (Creature* c : spawns)
       if (c->isDead()) {
-        ++numSpawns;
         removeElement(spawns, c);
         break;
       }
-    if (held && (held->getPosition().dist8(getCreature()->getPosition()) != 1 || held->isDead()))
-      held = nullptr;
-    if (held) {
-      held->you(MsgType::HAPPENS_TO, getCreature()->getName().the() + " pulls");
-      if (father) {
-        held->setHeld(father->getCreature());
-        father->held = held;
-        Position newPos = getCreature()->getPosition();
-        getCreature()->die(nullptr, false);
-        held->getPosition().moveCreature(newPos);
-      } else {
-        held->you(MsgType::ARE, "eaten by " + getCreature()->getName().the());
-        held->die();
+    if (spawns.empty()) {
+      if (auto held = getHeld()) {
+        pullEnemy(held);
+        return;
+      } else if (auto c = getVisibleEnemy()) {
+        considerAttacking(c);
+      } else if (father && Random.roll(5)) {
+        getCreature()->die(nullptr, false, false);
+        return;
       }
-    }
-    bool isEnemy = false;
-    for (Position pos : getCreature()->getPosition().getRectangle(
-          Rectangle(Vec2(-radius, -radius), Vec2(radius + 1, radius + 1))))
-      if (Creature * c = pos.getCreature())
-        if (getCreature()->canSee(c) && getCreature()->isEnemy(c)) {
-          Vec2 v = getCreature()->getPosition().getDir(pos);
-          isEnemy = true;
-          if (numSpawns > 0) {
-            if (v.length8() == 1) {
-              if (ready) {
-                c->you(MsgType::HAPPENS_TO, getCreature()->getName().the() + " swings itself around");
-                c->setHeld(getCreature());
-                held = c;
-                unReady();
-              } else
-                makeReady();
-              break;
-            }
-            pair<Vec2, Vec2> dirs = v.approxL1();
-            vector<Vec2> moves;
-            if (getCreature()->getPosition().plus(dirs.first).canEnter(
-                  {{MovementTrait::WALK, MovementTrait::SWIM}}))
-              moves.push_back(dirs.first);
-            if (getCreature()->getPosition().plus(dirs.second).canEnter(
-                  {{MovementTrait::WALK, MovementTrait::SWIM}}))
-              moves.push_back(dirs.second);
-            if (!moves.empty()) {
-              if (!ready) {
-                makeReady();
-              } else {
-                Vec2 move = Random.choose(moves);
-                ViewId viewId = getCreature()->getPosition().plus(move).canEnter({MovementTrait::SWIM})
-                  ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
-                PCreature spawn(new Creature(getCreature()->getTribeId(),
-                      CreatureFactory::getKrakenAttributes(viewId),
-                      ControllerFactory([=](Creature* c) {
-                        return SController(new KrakenController(c));
-                        })));
-                spawns.push_back(spawn.get());
-                dynamic_cast<KrakenController*>(spawn->getController().get())->father = this;
-                getCreature()->getPosition().plus(move).addCreature(std::move(spawn));
-                --numSpawns;
-                unReady();
-              }
-            } else
-              unReady();
-            break;
-          }
-        }
-    if (!isEnemy && spawns.size() == 0 && father && Random.roll(5)) {
-      getCreature()->die(nullptr, false, false);
     }
     getCreature()->wait().perform(getCreature());
   }
 
-  SERIALIZE_ALL2(Monster, numSpawns, waitNow, ready, held, spawns, father);
+  SERIALIZE_ALL2(Monster, ready, spawns, father);
   SERIALIZATION_CONSTRUCTOR(KrakenController);
 
   private:
-  int SERIAL(numSpawns) = 0;
-  bool SERIAL(waitNow) = true;
   bool SERIAL(ready) = false;
-  Creature* SERIAL(held) = nullptr;
   vector<Creature*> SERIAL(spawns);
   KrakenController* SERIAL(father) = nullptr;
 };
@@ -2326,7 +2332,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\"";
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.name = "angel";);
-    case CreatureId::KRAKEN: return getKrakenAttributes(ViewId::KRAKEN_HEAD);
+    case CreatureId::KRAKEN:
+      return getKrakenAttributes(ViewId::KRAKEN_HEAD, "kraken");
     case CreatureId::BAT: 
       return CATTR(
           c.viewId = ViewId::BAT;

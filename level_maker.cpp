@@ -1973,6 +1973,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
   switch (type) {
     case SettlementType::WITCH_HOUSE:
     case SettlementType::CEMETERY:
+    case SettlementType::MOUNTAIN_LAKE:
     case SettlementType::SWAMP: return {random.get(12, 16), random.get(12, 16)};
     case SettlementType::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
     case SettlementType::FORREST_COTTAGE: return {15, 15};
@@ -2014,6 +2015,7 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
           Predicate::type(FurnitureType::MOUNTAIN), Predicate::andPred(
             Predicate::negate(Predicate::attrib(SquareAttrib::LOCATION)),
             Predicate::attrib(SquareAttrib::CONNECTOR)), 1, 2);
+    case SettlementType::MOUNTAIN_LAKE:
     case SettlementType::ISLAND_VAULT:
       return Predicate::attrib(SquareAttrib::MOUNTAIN);
     case SettlementType::ISLAND_VAULT_DOOR:
@@ -2190,9 +2192,18 @@ static LevelMaker* emptyCollective(SettlementInfo info) {
       new Creatures(*info.creatures, info.numCreatures, info.collective)});
 }
 
-LevelMaker* swamp(SettlementInfo info) {
+static LevelMaker* swamp(SettlementInfo info) {
   MakerQueue* queue = new MakerQueue({
       new Lake(false),
+      new LocationMaker(info.location)});
+  if (info.creatures)
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective));
+  return queue;
+}
+
+static LevelMaker* mountainLake(SettlementInfo info) {
+  MakerQueue* queue = new MakerQueue({
+      new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE),
       new LocationMaker(info.location)});
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective));
@@ -2266,60 +2277,69 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
   for (SettlementInfo settlement : settlements) {
     LevelMaker* queue = nullptr;
     switch (settlement.type) {
-      case SettlementType::VILLAGE: queue = village(random, settlement); break;
-      case SettlementType::VILLAGE2: queue = village2(random, settlement); break;
+      case SettlementType::VILLAGE:
+        queue = village(random, settlement);
+        break;
+      case SettlementType::VILLAGE2:
+        queue = village2(random, settlement);
+        break;
       case SettlementType::CASTLE:
-          queue = castle(random, settlement);
-          break;
-      case SettlementType::CASTLE2: queue = castle2(random, settlement); break;
+        queue = castle(random, settlement);
+        break;
+      case SettlementType::CASTLE2:
+        queue = castle2(random, settlement);
+        break;
       case SettlementType::COTTAGE:
-          queue = cottage(settlement);
-          cottages.push_back({queue, settlement.collective, settlement.tribe});
-          break;
+        queue = cottage(settlement);
+        cottages.push_back({queue, settlement.collective, settlement.tribe});
+        break;
       case SettlementType::FORREST_COTTAGE:
-          queue = forrestCottage(settlement);
-          break;
+        queue = forrestCottage(settlement);
+        break;
       case SettlementType::TOWER:
-          queue = tower(random, settlement, true);
-          break;
+        queue = tower(random, settlement, true);
+        break;
       case SettlementType::WITCH_HOUSE:
-          queue = cottage(settlement);
-          break;
+        queue = cottage(settlement);
+        break;
       case SettlementType::FOREST:
-          queue = emptyCollective(settlement);
-          break;
+        queue = emptyCollective(settlement);
+        break;
       case SettlementType::MINETOWN:
-          queue = mineTownMaker(random, settlement);
-          break;
+        queue = mineTownMaker(random, settlement);
+        break;
       case SettlementType::ANT_NEST:
-          queue = antNestMaker(random, settlement);
-          break;
+        queue = antNestMaker(random, settlement);
+        break;
       case SettlementType::SMALL_MINETOWN:
-          queue = smallMineTownMaker(random, settlement); break;
-          break;
+        queue = smallMineTownMaker(random, settlement);
+        break;
       case SettlementType::VAULT:
-          queue = vaultMaker(settlement, false);
-          if (keeperSpawn)
-            locations->setMaxDistance(startingPos, queue, width / 3);
-          break;
+        queue = vaultMaker(settlement, false);
+        if (keeperSpawn)
+          locations->setMaxDistance(startingPos, queue, width / 3);
+        break;
       case SettlementType::ISLAND_VAULT:
-          queue = islandVaultMaker(random, settlement, false);
-          break;
+        queue = islandVaultMaker(random, settlement, false);
+        break;
       case SettlementType::ISLAND_VAULT_DOOR:
-          queue = islandVaultMaker(random, settlement, true);
-          break;
+        queue = islandVaultMaker(random, settlement, true);
+        break;
       case SettlementType::CAVE:
-          queue = dragonCaveMaker(settlement); break;
-          break;
+        queue = dragonCaveMaker(settlement);
+        break;
       case SettlementType::SPIDER_CAVE:
-          queue = spiderCaveMaker(settlement); break;
-          break;
+        queue = spiderCaveMaker(settlement);
+        break;
       case SettlementType::CEMETERY:
-          queue = cemetery(settlement); break;
-          break;
+        queue = cemetery(settlement);
+        break;
+      case SettlementType::MOUNTAIN_LAKE:
+        queue = mountainLake(settlement);
+        break;
       case SettlementType::SWAMP:
-          queue = swamp(settlement); break;
-          break;
+        queue = swamp(settlement);
+        break;
     }
     if (settlement.type == SettlementType::SPIDER_CAVE)
       locations2->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
