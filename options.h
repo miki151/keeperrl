@@ -62,7 +62,7 @@ class View;
 class Options {
   public:
   typedef variant<int, string> Value;
-  Options(const string& path, const string& overrides);
+  Options(const string& path);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
   CreatureId getCreatureId(OptionId);

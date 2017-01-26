@@ -252,7 +252,7 @@ static options_description getOptions() {
     ("user_dir", value<string>(), "Directory for options and save files")
     ("data_dir", value<string>(), "Directory containing the game data")
     ("upload_url", value<string>(), "URL for uploading maps")
-    ("override_settings", value<string>(), "Override settings")
+    ("restore_settings", "Restore settings to default values.")
     ("run_tests", "Run all unit tests and exit")
     ("worldgen_test", value<int>(), "Test how often world generation fails")
     ("stderr", "Log to stderr")
@@ -351,10 +351,10 @@ static int keeperMain(const variables_map& vars) {
     uploadUrl = "http://localhost/~michal/" + serverVersion;
 #endif
   makeDir(userPath);
-  string overrideSettings;
-  if (vars.count("override_settings"))
-    overrideSettings = vars["override_settings"].as<string>();
-  Options options(userPath + "/options.txt", overrideSettings);
+  string settingsPath = userPath + "/options.txt";
+  if (vars.count("restore_settings"))
+    remove(settingsPath.c_str());
+  Options options(settingsPath);
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   Random.init(seed);
   long long installId = getInstallId(userPath + "/installId.txt", Random);
