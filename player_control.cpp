@@ -892,7 +892,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
     info.state = info.HOSTILE;
   else {
     info.state = info.FRIENDLY;
-    if (getCollective()->isKnownVillain(col) || true) {
+    if (getCollective()->isKnownVillain(col)) {
       if (col->hasTradeItems())
         info.actions.push_back({VillageAction::TRADE});
     } else if (getGame()->isVillainActive(col)){

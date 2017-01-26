@@ -361,6 +361,8 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId)
     case BiomeId::MOUNTAIN:
       for (int i : Range(random.get(1, 4)))
         enemyInfo.push_back(enemyFactory->get(random.choose(EnemyId::DWARF_CAVE, EnemyId::KOBOLD_CAVE)));
+      for (int i : Range(random.get(0, 3)))
+        enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
       break;
     case BiomeId::FORREST:
       for (int i : Range(random.get(3, 5)))
@@ -375,6 +377,8 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   addMapVillains(enemyInfo, biome);
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
+  for (int i : Range(random.get(1, 3)))
+    enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
   vector<ExternalEnemy> externalEnemies;
   if (addExternalEnemies)
     externalEnemies = enemyFactory->getExternalEnemies();

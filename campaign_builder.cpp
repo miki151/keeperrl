@@ -123,7 +123,6 @@ vector<Campaign::VillainInfo> CampaignBuilder::getLesserVillains() {
   switch (playerRole) {
     case PlayerRole::KEEPER:
       return {
-        {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", VillainType::LESSER},
         {ViewId::ENT, EnemyId::ENTS, "Tree spirits", VillainType::LESSER},
         {ViewId::DRIAD, EnemyId::DRIADS, "Driads", VillainType::LESSER},
         {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
