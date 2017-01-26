@@ -408,7 +408,8 @@ void Renderer::setScissor(optional<Rectangle> s) {
 void Renderer::setGlScissor(optional<Rectangle> s) {
   if (s != scissor) {
     if (s) {
-      SDL::glScissor(s->left(), getSize().y - s->bottom(), s->width(), s->height());
+      int zoom = getZoom();
+      SDL::glScissor(s->left() * zoom, (getSize().y - s->bottom()) * zoom, s->width() * zoom, s->height() * zoom);
       SDL::glEnable(GL_SCISSOR_TEST);
     }
     else
@@ -437,7 +438,7 @@ void Renderer::popLayer() {
 }
 
 Vec2 Renderer::getSize() {
-  return Vec2(width / zoom, height / zoom);
+  return Vec2(width / getZoom(), height / getZoom());
 }
 
 bool Renderer::isFullscreen() {
@@ -459,6 +460,15 @@ void Renderer::setFullscreenMode(int v) {
   fullscreenMode = v;
 }
 
+const Vec2 minResolution = Vec2(800, 600);
+
+int Renderer::getZoom() {
+  if (zoom == 1 || (width / zoom >= minResolution.x && height / zoom >= minResolution.y))
+    return zoom;
+  else
+    return 1;
+}
+
 void Renderer::setZoom(int v) {
   zoom = v;
   initOpenGL();
@@ -476,7 +486,7 @@ void Renderer::initOpenGL() {
     SDL::glMatrixMode( GL_PROJECTION );
     SDL::glLoadIdentity();
     SDL::glViewport(0, 0, width, height);
-    SDL::glOrtho(0.0, width / zoom, height / zoom, 0.0, -1.0, 1.0);
+    SDL::glOrtho(0.0, width / getZoom(), height / getZoom(), 0.0, -1.0, 1.0);
     CHECK(SDL::glGetError() == GL_NO_ERROR);
     //Initialize Modelview Matrix
     SDL::glMatrixMode( GL_MODELVIEW );
@@ -508,9 +518,9 @@ void Renderer::reloadCursors() {
     SDL_SetCursor(originalCursor);
     cursor = cursorClicked = nullptr;
   } else {
-    if (auto surface = loadScaledSurface(cursorPath, zoom))
+    if (auto surface = loadScaledSurface(cursorPath, getZoom()))
       cursor = SDL_CreateColorCursor(surface, 0, 0);
-    if (auto surface = loadScaledSurface(clickedCursorPath, zoom))
+    if (auto surface = loadScaledSurface(clickedCursorPath, getZoom()))
       cursorClicked = SDL_CreateColorCursor(surface, 0, 0);
     if (cursor)
       SDL_SetCursor(cursor);
@@ -551,14 +561,13 @@ void Renderer::showError(const string& s) {
 }
 
 Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : nominalSize(nominal) {
-
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MINOR_VERSION, 1 );
   CHECK(window = SDL::SDL_CreateWindow("KeeperRL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1200, 720,
     SDL::SDL_WINDOW_RESIZABLE | SDL::SDL_WINDOW_SHOWN | SDL::SDL_WINDOW_MAXIMIZED | SDL::SDL_WINDOW_OPENGL)) << SDL::SDL_GetError();
   CHECK(SDL::SDL_GL_CreateContext(window)) << SDL::SDL_GetError();
-  SDL_SetWindowMinimumSize(window, 800, 600);
+  SDL_SetWindowMinimumSize(window, minResolution.x, minResolution.y);
   SDL_GetWindowSize(window, &width, &height);
   originalCursor = SDL::SDL_GetCursor();
   initOpenGL();
@@ -778,6 +787,7 @@ void Renderer::flushEvents(EventType type) {
 }
 
 void Renderer::zoomMousePos(Event& ev) {
+  auto zoom = getZoom();
   switch (ev.type) {
     case SDL::SDL_MOUSEBUTTONUP:
     case SDL::SDL_MOUSEBUTTONDOWN:

@@ -122,6 +122,7 @@ class Renderer {
   void setFullscreen(bool);
   void setFullscreenMode(int);
   void setZoom(int);
+  int getZoom();
   void enableCustomCursor(bool);
   void initialize();
   bool isFullscreen();
