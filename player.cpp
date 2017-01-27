@@ -923,11 +923,10 @@ vector<Creature*> Player::getTeam() const {
 
 optional<FurnitureUsageType> Player::getUsableUsageType() const {
   if (auto furniture = getCreature()->getPosition().getFurniture(FurnitureLayer::MIDDLE))
-    if (furniture->canUse(getCreature())) {
-      auto usageType = *furniture->getUsageType();
-      if (!FurnitureUsage::getUsageQuestion(usageType, getCreature()->getPosition().getName()).empty())
-        return usageType;
-    }
+    if (furniture->canUse(getCreature()))
+      if (auto usageType = furniture->getUsageType())
+        if (!FurnitureUsage::getUsageQuestion(*usageType, getCreature()->getPosition().getName()).empty())
+          return usageType;
   return none;
 }
 
