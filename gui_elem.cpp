@@ -59,7 +59,7 @@ class Button : public GuiElem {
       fun(getBounds());
       return true;
     }
-    return false;
+     return false;
   }
 
   protected:
@@ -2206,10 +2206,14 @@ class Scrollable : public GuiElem {
         min<double>(scrollPos->get(clock->getRealMillis()), *content->getPreferredHeight() - getBounds().height() / 2));
   }
 
+  virtual void onRefreshBounds() override {
+    content->setBounds(getBounds().translate(Vec2(0, -getScrollPos() + getBounds().height() / 2)));
+  }
+
   virtual void render(Renderer& r) override {
     Rectangle visible(0, getBounds().top(), r.getSize().x, getBounds().bottom());
     r.setScissor(visible);
-    content->setBounds(getBounds().translate(Vec2(0, -getScrollPos() + getBounds().height() / 2)));
+    onRefreshBounds();
     content->renderPart(r, visible);
     r.setScissor(none);
   }
@@ -2362,13 +2366,6 @@ class Conditional : public GuiStack {
 
   virtual bool isVisible(int num) override {
     return cond(this);
-  }
-
-  virtual bool onKeyPressed2(SDL_Keysym key) override {
-    if (cond(this))
-      return elems[0]->onKeyPressed2(key);
-    else
-      return false;
   }
 
   protected:
