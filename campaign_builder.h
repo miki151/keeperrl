@@ -27,6 +27,8 @@ class CampaignBuilder {
   void setPlayerPos(Campaign&, Vec2, const Creature* player);
   PCreature getPlayerCreature();
   vector<CampaignType> getAvailableTypes() const;
+  void placeVillains(Campaign&, const vector<Campaign::SiteInfo::Dweller>&);
+  vector<Campaign::SiteInfo::Dweller> getRandomVillains(const vector<Campaign::VillainInfo>& source, int count);
 };
 
 struct CampaignSetup {

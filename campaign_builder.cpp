@@ -286,6 +286,26 @@ static string getNewIdSuffix() {
   return ret;
 }
 
+void CampaignBuilder::placeVillains(Campaign& campaign, const vector<Campaign::SiteInfo::Dweller>& villains) {
+  vector<Vec2> freePos;
+  for (Vec2 v : campaign.sites.getBounds())
+    if (!campaign.sites[v].blocked && campaign.sites[v].isEmpty())
+      freePos.push_back(v);
+  for (int i : All(villains)) {
+    Vec2 pos = random.choose(freePos);
+    removeElement(freePos, pos);
+    campaign.sites[pos].dweller = villains[i];
+  }
+}
+
+vector<Campaign::SiteInfo::Dweller> CampaignBuilder::getRandomVillains(const vector<Campaign::VillainInfo>& source, int count) {
+  vector<Campaign::SiteInfo::Dweller> villains;
+  while (villains.size() < count)
+    append(villains, random.permutation(source));
+  villains.resize(count);
+  return villains;
+}
+
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()> genRetired, CampaignType type) {
   Vec2 size(16, 9);
   int numBlocked = 0.6 * size.x * size.y;
@@ -303,53 +323,20 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()
     string worldName = NameGenerator::get(NameGeneratorId::WORLD)->getNext();
     PCreature player = getPlayerCreature();
     auto limits = getVillainCounts(type, options);
-    vector<Campaign::VillainInfo> mainVillains;
-    Campaign campaign(terrain, type);
-    campaign.playerRole = playerRole;
-    campaign.worldName = worldName;
+    Campaign campaign(terrain, type, playerRole, worldName);
     int numRetired = retired ? min(limits.numMain, retired->getNumActive()) : 0;
-    while (mainVillains.size() < limits.numMain - numRetired)
-      append(mainVillains, random.permutation(getMainVillains()));
-    mainVillains.resize(limits.numMain - numRetired);
-    vector<Campaign::VillainInfo> lesserVillains;
-    while (lesserVillains.size() < limits.numLesser)
-      append(lesserVillains, random.permutation(getLesserVillains()));
-    lesserVillains.resize(limits.numLesser);
-    vector<Campaign::VillainInfo> allies;
-    while (allies.size() < limits.numAllies)
-      append(allies, random.permutation(getAllies()));
-    allies.resize(limits.numAllies);
-    vector<Vec2> freePos;
-    for (Vec2 v : Rectangle(size))
-      if (!campaign.sites[v].blocked)
-        freePos.push_back(v);
     if (auto pos = considerStaticPlayerPos(campaign, random)) {
       campaign.clearSite(*pos);
       setPlayerPos(campaign, *pos, player.get());
-      removeElementMaybe(freePos, *pos);
     }
-    for (int i : All(mainVillains)) {
-      Vec2 pos = random.choose(freePos);
-      removeElement(freePos, pos);
-      campaign.sites[pos].dweller = mainVillains[i];
-    }
+    placeVillains(campaign, getRandomVillains(getMainVillains(), limits.numMain - numRetired));
+    placeVillains(campaign, getRandomVillains(getLesserVillains(), limits.numLesser));
+    placeVillains(campaign, getRandomVillains(getAllies(), limits.numAllies));
     if (retired) {
-      vector<RetiredGames::RetiredGame> activeGames = retired->getActiveGames();
-      for (int i : Range(numRetired)) {
-        Vec2 pos = random.choose(freePos);
-        removeElement(freePos, pos);
-        campaign.sites[pos].dweller = Campaign::RetiredInfo{activeGames[i].gameInfo, activeGames[i].fileInfo};
-      }
-    }
-    for (int i : All(lesserVillains)) {
-      Vec2 pos = random.choose(freePos);
-      removeElement(freePos, pos);
-      campaign.sites[pos].dweller = lesserVillains[i];
-    }
-    for (int i : All(allies)) {
-      Vec2 pos = random.choose(freePos);
-      removeElement(freePos, pos);
-      campaign.sites[pos].dweller = allies[i];
+      placeVillains(campaign, getPrefixOrAll(transform2<Campaign::SiteInfo::Dweller>(retired->getActiveGames(),
+          [](const RetiredGames::RetiredGame& game) -> Campaign::SiteInfo::Dweller {
+            return Campaign::RetiredInfo{game.gameInfo, game.fileInfo};
+          }), numRetired));
     }
     while (1) {
       bool updateMap = false;
@@ -415,6 +402,6 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()
 }
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
-  Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER);
+  Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "");
   return CampaignSetup{ret, PCreature(nullptr), "", ""};
 }

@@ -34,7 +34,8 @@ optional<Vec2> Campaign::getPlayerPos() const {
   return playerPos;
 }
 
-Campaign::Campaign(Table<SiteInfo> s, CampaignType t) : sites(s), defeated(sites.getBounds(), false), type(t) {
+Campaign::Campaign(Table<SiteInfo> s, CampaignType t, PlayerRole r, const string& w)
+    : sites(s), worldName(w), defeated(sites.getBounds(), false), playerRole(r), type(t) {
 }
 
 const string& Campaign::getWorldName() const {

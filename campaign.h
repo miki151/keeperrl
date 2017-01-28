@@ -33,7 +33,8 @@ class Campaign {
   };
   struct SiteInfo {
     vector<ViewId> SERIAL(viewId);
-    optional<variant<VillainInfo, RetiredInfo, KeeperInfo>> SERIAL(dweller);
+    typedef variant<VillainInfo, RetiredInfo, KeeperInfo> Dweller;
+    optional<Dweller> SERIAL(dweller);
     optional<VillainInfo> getVillain() const;
     optional<RetiredInfo> getRetired() const;
     optional<KeeperInfo> getKeeper() const;
@@ -67,7 +68,7 @@ class Campaign {
   private:
   friend class CampaignBuilder;
   void refreshInfluencePos();
-  Campaign(Table<SiteInfo>, CampaignType);
+  Campaign(Table<SiteInfo>, CampaignType, PlayerRole, const string& worldName);
   Table<SiteInfo> SERIAL(sites);
   optional<Vec2> SERIAL(playerPos);
   string SERIAL(worldName);

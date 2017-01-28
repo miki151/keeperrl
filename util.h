@@ -837,6 +837,11 @@ vector<T> getPrefix(const vector<T>& v, int num) {
 }
 
 template <typename T>
+vector<T> getPrefixOrAll(const vector<T>& v, int num) {
+  return getSubsequence(v, 0, min((int)v.size(), num));
+}
+
+template <typename T>
 vector<T> getSuffix(const vector<T>& v, int num) {
   return getSubsequence(v, v.size() - num, num);
 }
