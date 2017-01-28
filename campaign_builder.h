@@ -7,7 +7,7 @@ struct CampaignSetup;
 class CampaignBuilder {
   public:
   CampaignBuilder(View*, RandomGen&, Options*, PlayerRole);
-  optional<CampaignSetup> prepareCampaign(function<RetiredGames()>, CampaignType defaultType, bool noPrompt = false);
+  optional<CampaignSetup> prepareCampaign(function<RetiredGames()>, CampaignType defaultType);
   static CampaignSetup getEmptyCampaign();
 
   private:

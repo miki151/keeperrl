@@ -303,7 +303,7 @@ RetiredGames MainLoop::getRetiredGames() {
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   if (forceGame) {
     CampaignBuilder builder(view, random, options, PlayerRole::KEEPER);
-    auto result = builder.prepareCampaign([this] { return getRetiredGames(); }, CampaignType::QUICK_MAP, true);
+    auto result = builder.prepareCampaign([this] { return getRetiredGames(); }, CampaignType::QUICK_MAP);
     forceGame = none;
     return Game::campaignGame(prepareCampaignModels(*result, random), *result->campaign.getPlayerPos(), *result);
   }

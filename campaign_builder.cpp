@@ -286,7 +286,7 @@ static string getNewIdSuffix() {
   return ret;
 }
 
-optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()> genRetired, CampaignType type, bool noPrompt) {
+optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()> genRetired, CampaignType type) {
   Vec2 size(16, 9);
   int numBlocked = 0.6 * size.x * size.y;
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
@@ -355,8 +355,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()
       bool updateMap = false;
       campaign.influenceSize = options->getIntValue(OptionId::INFLUENCE_SIZE);
       campaign.refreshInfluencePos();
-      bool hasRetired = type == CampaignType::FREE_PLAY;
-      CampaignAction action = noPrompt ? CampaignActionId::CONFIRM
+      CampaignAction action = type == CampaignType::QUICK_MAP ? CampaignActionId::CONFIRM
           : view->prepareCampaign({
               campaign,
               retired,
