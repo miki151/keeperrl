@@ -111,7 +111,7 @@ class Collective : public TaskCallback {
   void claimSquare(Position);
   const KnownTiles& getKnownTiles() const;
   const TileEfficiency& getTileEfficiency() const;
-  void limitKnownTilesToModel();
+  void retire();
   CollectiveWarnings& getWarnings();
   const CollectiveConfig& getConfig() const;
 

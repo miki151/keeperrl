@@ -195,6 +195,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   
   void displace(double time, Vec2);
   void surrender(Creature* to);
+  void retire();
   
   void increaseExpLevel(ExperienceType, double increase);
 

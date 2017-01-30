@@ -1345,8 +1345,10 @@ void Collective::onCantPickItem(EntitySet<Item> items) {
     unmarkItem(id);
 }
 
-void Collective::limitKnownTilesToModel() {
+void Collective::retire() {
   knownTiles->limitToModel(getModel());
+  knownVillainLocations.clear();
+  knownVillains.clear();
 }
 
 CollectiveWarnings& Collective::getWarnings() {

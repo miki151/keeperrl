@@ -997,6 +997,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::KEEPER: 
       return CATTR(
           c.viewId = ViewId::KEEPER;
+          c.retiredViewId = ViewId::RETIRED_KEEPER;
           c.attr[AttrType::SPEED] = 100;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.attr[AttrType::STRENGTH] = 15;
@@ -1017,6 +1018,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::KEEPER_F:
       return CATTR(
           c.viewId = ViewId::KEEPER_F;
+          c.retiredViewId = ViewId::RETIRED_KEEPER_F;
           c.attr[AttrType::SPEED] = 100;
           c.gender = Gender::female;
           c.body = Body::humanoid(Body::Size::LARGE);

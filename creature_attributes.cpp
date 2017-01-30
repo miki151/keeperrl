@@ -42,7 +42,7 @@ CreatureAttributes::~CreatureAttributes() {}
 
 template <class Archive> 
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, viewId, illusionViewObject, spawnType, name, attr, chatReactionFriendly);
+  serializeAll(ar, viewId, retiredViewId, illusionViewObject, spawnType, name, attr, chatReactionFriendly);
   serializeAll(ar, chatReactionHostile, barehandedDamage, barehandedAttack, attackEffect, passiveAttack, gender);
   serializeAll(ar, body, innocent);
   serializeAll(ar, animal, cantEquip, courage);
@@ -407,5 +407,9 @@ MinionTaskMap& CreatureAttributes::getMinionTasks() {
 
 bool CreatureAttributes::dontChase() const {
   return noChase;
+}
+
+optional<ViewId> CreatureAttributes::getRetiredViewId() {
+  return retiredViewId;
 }
 

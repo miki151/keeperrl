@@ -1233,6 +1233,11 @@ void Creature::surrender(Creature* to) {
   getGame()->addEvent({EventId::TORTURED, EventInfo::Attacked{this, to}});
 }
 
+void Creature::retire() {
+  if (auto id = attributes->getRetiredViewId())
+    modViewObject().setId(*id);
+}
+
 void Creature::increaseExpLevel(ExperienceType type, double increase) {
   int curLevel = (int)getAttributes().getVisibleExpLevel();
   getAttributes().increaseExpLevel(type, increase);

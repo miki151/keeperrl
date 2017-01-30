@@ -101,12 +101,14 @@ class CreatureAttributes {
   const MinionTaskMap& getMinionTasks() const;
   MinionTaskMap& getMinionTasks();
   bool dontChase() const;
+  optional<ViewId> getRetiredViewId();
 
   friend class CreatureFactory;
 
   private:
   void consumeEffects(const EnumMap<LastingEffect, int>&);
   MustInitialize<ViewId> SERIAL(viewId);
+  optional<ViewId> SERIAL(retiredViewId);
   HeapAllocated<optional<ViewObject>> SERIAL(illusionViewObject);
   MustInitialize<CreatureName> SERIAL(name);
   EnumMap<AttrType, int> SERIAL(attr);

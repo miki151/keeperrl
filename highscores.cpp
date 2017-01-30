@@ -50,7 +50,7 @@ string Highscores::Score::toString() const {
     ::toString(points) + delim +
     ::toString(turns) + delim +
     EnumInfo<CampaignType>::getString(campaignType) + delim +
-    EnumInfo<PlayerRole>::getString(playerRole);
+      EnumInfo<PlayerRole>::getString(playerRole);
 }
 
 void Highscores::saveToFile(const vector<Score>& scores, const string& path) {
@@ -125,20 +125,37 @@ static HighscoreList fillScores(const string& name, optional<Score> lastElem, ve
   return list;
 }
 
+struct PublicScorePage {
+  CampaignType type;
+  PlayerRole role;
+  const char* name;
+};
+
+static vector<PublicScorePage> getPublicScores() {
+  return {
+    {CampaignType::CAMPAIGN, PlayerRole::KEEPER, "Keepers"},
+    {CampaignType::CAMPAIGN, PlayerRole::ADVENTURER, "Adventurers"},
+    {CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "Single map"},
+  };
+}
+
+bool Score::isPublic() const {
+  for (auto& elem : getPublicScores())
+    if (elem.type == campaignType && elem.role == playerRole)
+      return true;
+  return false;
+}
+
 void Highscores::present(View* view, optional<Score> lastAdded) const {
+  if (lastAdded && !lastAdded->isPublic())
+    return;
   vector<HighscoreList> lists;
-  lists.push_back(fillScores("Keepers", lastAdded, filter(localScores,
-      [] (const Score& s) { return s.campaignType == CampaignType::CAMPAIGN && s.playerRole == PlayerRole::KEEPER;})));
-  lists.push_back(fillScores("Adventurers", lastAdded, filter(localScores,
-      [] (const Score& s) { return s.campaignType == CampaignType::CAMPAIGN && s.playerRole == PlayerRole::ADVENTURER;})));
-  lists.push_back(fillScores("Single map", lastAdded, filter(localScores,
-      [] (const Score& s) { return s.campaignType == CampaignType::SINGLE_KEEPER && s.playerRole == PlayerRole::KEEPER;})));
-  lists.push_back(fillScores("Keepers", lastAdded, filter(remoteScores,
-      [] (const Score& s) { return s.campaignType == CampaignType::CAMPAIGN && s.playerRole == PlayerRole::KEEPER;})));
-  lists.push_back(fillScores("Adventurers", lastAdded, filter(remoteScores,
-      [] (const Score& s) { return s.campaignType == CampaignType::CAMPAIGN && s.playerRole == PlayerRole::ADVENTURER;})));
-  lists.push_back(fillScores("Single map", lastAdded, filter(remoteScores,
-      [] (const Score& s) { return s.campaignType == CampaignType::SINGLE_KEEPER && s.playerRole == PlayerRole::KEEPER;})));
+  for (auto& elem : getPublicScores())
+    lists.push_back(fillScores(elem.name, lastAdded, filter(localScores,
+        [&] (const Score& s) { return s.campaignType == elem.type && s.playerRole == elem.role;})));
+  for (auto& elem : getPublicScores())
+    lists.push_back(fillScores(elem.name, lastAdded, filter(remoteScores,
+        [&] (const Score& s) { return s.campaignType == elem.type && s.playerRole == elem.role;})));
   view->presentHighscores(lists);
 }
 

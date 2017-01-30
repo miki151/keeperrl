@@ -151,7 +151,7 @@ void Game::prepareSiteRetirement() {
       }
     }
   playerCollective->setVillainType(VillainType::MAIN);
-  playerCollective->limitKnownTilesToModel();
+  playerCollective->retire();
   set<Position> locationPosTmp =
       playerCollective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF);
   vector<Position> locationPos(locationPosTmp.begin(), locationPosTmp.end());
@@ -160,7 +160,8 @@ void Game::prepareSiteRetirement() {
   if (!locationPos.empty())
     playerCollective->getLevel()->addMarkedLocation(Rectangle::boundingBox(transform2<Vec2>(locationPos, 
       [](const Position& p) { return p.getCoord();})));
-  playerControl->getKeeper()->modViewObject().setId(ViewId::RETIRED_KEEPER);
+  for (auto c : playerCollective->getCreatures())
+    c->retire();
   playerControl = nullptr;
   playerCollective->setControl(PCollectiveControl(
         new VillageControl(playerCollective, CONSTRUCT(VillageBehaviour,

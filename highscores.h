@@ -23,6 +23,7 @@ class Highscores {
     int turns;
     CampaignType campaignType;
     PlayerRole playerRole;
+    bool isPublic() const;
   };
 
   void present(View*, optional<Score> lastAdded = none) const;
