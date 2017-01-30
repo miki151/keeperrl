@@ -3,6 +3,8 @@
 #include "campaign.h"
 
 struct CampaignSetup;
+struct VillainPlacement;
+struct VillainCounts;
 
 class CampaignBuilder {
   public:
@@ -11,7 +13,7 @@ class CampaignBuilder {
   static CampaignSetup getEmptyCampaign();
 
   private:
-  optional<Vec2> considerStaticPlayerPos(Campaign&, RandomGen&);
+  optional<Vec2> considerStaticPlayerPos(const Campaign&);
   bool isStaticPlayerPos(const Campaign&);
   View* view;
   RandomGen& random;
@@ -27,8 +29,9 @@ class CampaignBuilder {
   void setPlayerPos(Campaign&, Vec2, const Creature* player);
   PCreature getPlayerCreature();
   vector<CampaignType> getAvailableTypes() const;
-  void placeVillains(Campaign&, const vector<Campaign::SiteInfo::Dweller>&);
-  vector<Campaign::SiteInfo::Dweller> getRandomVillains(const vector<Campaign::VillainInfo>& source, int count);
+  VillainPlacement getVillainPlacement(const Campaign&, VillainType);
+  void placeVillains(Campaign&, vector<Campaign::SiteInfo::Dweller>, const VillainPlacement&, int count);
+  void placeVillains(Campaign&, const VillainCounts&, const optional<RetiredGames>&);
 };
 
 struct CampaignSetup {

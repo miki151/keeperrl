@@ -236,6 +236,7 @@ class Range {
   int getStart() const;
   int getEnd() const;
   int getLength() const;
+  bool contains(int) const;
 
   class Iter {
     public:
@@ -558,8 +559,13 @@ class RandomGen {
 
   template <typename T>
   vector<T> permutation(vector<T> v) {
-    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    std::shuffle(v.begin(), v.end(), generator);
     return v;
+  }
+
+  template <typename Iterator>
+  void shuffle(Iterator begin, Iterator end) {
+    std::shuffle(begin, end, generator);
   }
 
   template <typename T>

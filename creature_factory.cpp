@@ -1290,7 +1290,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "guard";);
     case CreatureId::AVATAR: 
       return CATTR(
-          c.viewId = ViewId::AVATAR;
+          c.viewId = ViewId::DUKE;
           c.attr[AttrType::SPEED] = 100;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.attr[AttrType::STRENGTH] = 40;

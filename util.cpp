@@ -655,6 +655,10 @@ int Range::getLength() const {
   return finish - start;
 }
 
+bool Range::contains(int p) const {
+  return (increment > 0 && p >= start && p < finish) || (increment < 0 && p <= start && p > finish);
+}
+
 Range::Iter Range::begin() {
   if ((increment > 0 && start < finish) || (increment < 0 && start > finish))
     return Iter(start, start, finish, increment);

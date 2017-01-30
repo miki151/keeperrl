@@ -413,7 +413,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WARRIOR, sprite("warrior"));
     Tile::addTile(ViewId::SHAMAN, sprite("shaman"));
     Tile::addTile(ViewId::CASTLE_GUARD, sprite("knight"));
-    Tile::addTile(ViewId::AVATAR, sprite("knightboss"));
+    Tile::addTile(ViewId::DUKE, sprite("knightboss"));
     Tile::addTile(ViewId::ARCHER, sprite("archer"));
     Tile::addTile(ViewId::PESEANT, sprite("peasant"));
     Tile::addTile(ViewId::PESEANT_WOMAN, sprite("peasantgirl"));
@@ -712,7 +712,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::KNIGHT, symbol(u8"@", ColorId::LIGHT_GRAY));
     Tile::addSymbol(ViewId::WARRIOR, symbol(u8"@", ColorId::DARK_GRAY));
     Tile::addSymbol(ViewId::SHAMAN, symbol(u8"@", ColorId::YELLOW));
-    Tile::addSymbol(ViewId::AVATAR, symbol(u8"@", ColorId::BLUE));
+    Tile::addSymbol(ViewId::DUKE, symbol(u8"@", ColorId::BLUE));
     Tile::addSymbol(ViewId::ARCHER, symbol(u8"@", ColorId::BROWN));
     Tile::addSymbol(ViewId::PESEANT, symbol(u8"@", ColorId::GREEN));
     Tile::addSymbol(ViewId::PESEANT_WOMAN, symbol(u8"@", ColorId::GREEN));
