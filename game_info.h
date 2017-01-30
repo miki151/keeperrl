@@ -43,7 +43,8 @@ struct ItemInfo {
   enum Type {EQUIPMENT, CONSUMABLE, OTHER} HASH(type);
   optional<pair<ViewId, int>> HASH(price);
   double HASH(productionState);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason);
+  optional<double> HASH(weight);
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason, weight)
 };
 
 

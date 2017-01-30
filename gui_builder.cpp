@@ -730,6 +730,8 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   }
   if (item.price)
     line.addBackElemAuto(drawCost(*item.price));
+  if (item.weight)
+    line.addBackElemAuto(gui.label("[" + toString((int)(*item.weight * item.number * 10)) + "s]"));
   if (onMultiClick && item.number > 1) {
     line.addBackElem(gui.stack(
         gui.label("[#]"),

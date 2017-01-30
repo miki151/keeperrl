@@ -385,8 +385,6 @@ string Item::getShortName(const Creature* owner, bool noSuffix) const {
   string name = getModifiers(true);
   if (attributes->shortName)
     name = *attributes->shortName + " " + name;
-  if (owner && getShopkeeper(owner) && !noSuffix)
-    name = name + " (" + toString(getPrice()) + " gold)";
   if (fire->isBurning() && !noSuffix)
     name.append(" (burning)");
   return name;

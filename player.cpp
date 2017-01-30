@@ -983,7 +983,11 @@ ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
     for (auto it : stack)
       c.ids.insert(it->getUniqueId());
     c.actions = getItemActions(stack);
-    c.equiped = getCreature()->getEquipment().isEquipped(stack[0]); );
+    c.equiped = getCreature()->getEquipment().isEquipped(stack[0]);
+    c.weight = stack[0]->getWeight();
+    if (stack[0]->getShopkeeper(getCreature()))
+      c.price = make_pair(ViewId::GOLD, stack[0]->getPrice());
+  );
 }
 
 vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
