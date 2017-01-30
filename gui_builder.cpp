@@ -1328,7 +1328,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info) {
     SGuiElem guiElem = line.buildHorizontalList();
     if (elem.unavailable) {
       CHECK(!elem.unavailableReason.empty());
-      guiElem = gui.stack(getTooltip({elem.unavailableReason}, THIS_LINE), std::move(guiElem));
+      guiElem = gui.stack(getTooltip({elem.unavailableReason, elem.description}, THIS_LINE), std::move(guiElem));
     }
     else
       guiElem = gui.stack(
@@ -1378,7 +1378,9 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info) {
     lines2.addElem(gui.stack(
         gui.bottomMargin(5,
             gui.progressBar(transparency(colors[ColorId::DARK_GREEN], 128), elem.productionState)),
-        gui.rightMargin(rightElemMargin, line.buildHorizontalList())));
+        gui.rightMargin(rightElemMargin, gui.stack(
+            getTooltip({elem.description}, THIS_LINE),
+            line.buildHorizontalList()))));
   }
   return gui.preferredSize(860, 600,
     gui.miniWindow(gui.stack(

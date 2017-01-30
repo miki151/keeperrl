@@ -1128,6 +1128,7 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
         c.unavailable = true;
         c.unavailableReason = "Requires technology: " + Technology::get(*option.techId)->getName();
       }
+      c.description = option.description;
       c.productionState = option.state.get_value_or(0);
       c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
       c.number = option.number * option.batchSize;

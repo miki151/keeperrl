@@ -12,12 +12,13 @@ struct WorkshopItem {
   string SERIAL(name);
   ViewId SERIAL(viewId);
   CostInfo SERIAL(cost);
+  string SERIAL(description);
   int SERIAL(number);
   int SERIAL(batchSize);
   double SERIAL(workNeeded);
   optional<double> SERIAL(state);
   optional<TechId> SERIAL(techId);
-  SERIALIZE_ALL(type, name, viewId, cost, number, batchSize, workNeeded, state, techId);
+  SERIALIZE_ALL(type, name, viewId, cost, number, batchSize, workNeeded, state, techId, description);
 };
 
 
