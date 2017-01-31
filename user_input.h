@@ -34,6 +34,7 @@ enum class UserInputId {
     DRAW_WORLD_MAP,
     EXIT,
     MESSAGE_INFO,
+    CHEAT_ATTRIBUTES,
 // real-time actions
     BUILD,
     TILE_CLICK,
@@ -85,7 +86,6 @@ enum class UserInputId {
     PLAYER_COMMAND,
     CAST_SPELL,
     INVENTORY_ITEM,
-    CHEAT_ATTRIBUTES
 };
 
 struct CreatureDropInfo {

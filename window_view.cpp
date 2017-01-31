@@ -1320,6 +1320,9 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
   lockKeyboard = true;
   switch (key.sym) {
 #ifndef RELEASE
+    case SDL::SDLK_F9:
+      inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
+      break;
     case SDL::SDLK_F8:
       renderer.startMonkey();
       break;

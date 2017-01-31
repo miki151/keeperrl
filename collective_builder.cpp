@@ -36,11 +36,6 @@ CollectiveBuilder& CollectiveBuilder::addCreature(Creature* c) {
   return *this;
 }
 
-CollectiveBuilder& CollectiveBuilder::setCredit(map<CollectiveResourceId, int> c) {
-  credit = c;
-  return *this;
-}
-
 CollectiveBuilder& CollectiveBuilder::addSquares(const vector<Vec2>& v) {
   append(squares, v);
   return *this;
@@ -54,7 +49,7 @@ CollectiveBuilder& CollectiveBuilder::addSquares(const vector<Position>& v) {
 
 PCollective CollectiveBuilder::build() {
   CHECK(!creatures.empty());
-  Collective* c = new Collective(NOTNULL(level), *config, *tribe, credit,
+  Collective* c = new Collective(NOTNULL(level), *config, *tribe,
       CollectiveName(raceName, locationName, creatures[0].creature));
   for (auto& elem : creatures)
     c->addCreature(elem.creature, elem.traits);

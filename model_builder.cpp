@@ -169,24 +169,12 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
   });
 }
 
-static map<CollectiveResourceId, int> getKeeperCredit(bool resourceBonus) {
-  if (resourceBonus) {
-    map<CollectiveResourceId, int> credit;
-    for (auto elem : ENUM_ALL(CollectiveResourceId))
-      credit[elem] = 10000;
-    return credit;
-  } else
-    return {{CollectiveResourceId::MANA, 200}};
-
-}
-
 static EnumSet<MinionTrait> getImpTraits() {
   return {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT};
 }
 
 PModel ModelBuilder::tryQuickModel(int width) {
   Model* m = new Model();
-  string keeperName = options->getStringValue(OptionId::KEEPER_NAME);
   Level* top = m->buildTopLevel(
       LevelBuilder(meter, random, width, width, "Quick", false),
       LevelMaker::quickLevel(random));
@@ -194,7 +182,6 @@ PModel ModelBuilder::tryQuickModel(int width) {
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::getKeeper())
       .setLevel(top)
-      .setCredit(getKeeperCredit(true))
       .build());
   vector<CreatureId> ids {
     CreatureId::DONKEY,
@@ -497,7 +484,6 @@ Collective* ModelBuilder::spawnKeeper(Model* m, PCreature keeper) {
         getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::getKeeper())
       .setLevel(level)
       .addCreature(keeperRef)
-      .setCredit(getKeeperCredit(options->getBoolValue(OptionId::STARTING_RESOURCE)))
       .build());
   Collective* playerCollective = m->collectives.back().get();
   playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, level)));

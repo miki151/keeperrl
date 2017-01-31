@@ -66,9 +66,8 @@ SERIALIZABLE(Collective);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective);
 
-Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, EnumMap<ResourceId, int> _credit,
-    const CollectiveName& n) 
-  : eventProxy(this, l->getModel()), credit(_credit), control(CollectiveControl::idle(this)),
+Collective::Collective(Level* l, const CollectiveConfig& cfg, TribeId t, const CollectiveName& n)
+  : eventProxy(this, l->getModel()), credit(cfg.getStartingResource()), control(CollectiveControl::idle(this)),
     tribe(t), level(NOTNULL(l)), name(n), config(cfg), workshops(config->getWorkshops()), immigration(this) {
 }
 

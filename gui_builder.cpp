@@ -1054,7 +1054,6 @@ SGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
             lines.addElem(std::move(button));
           drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260);
      })));
-  line.addElem(gui.button(getButtonCallback(UserInputId::CHEAT_ATTRIBUTES), gui.getKey(SDL::SDLK_y)), 1);
   list.addElem(line.buildHorizontalList());
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));

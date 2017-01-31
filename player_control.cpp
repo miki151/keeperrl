@@ -2149,6 +2149,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::SHOW_HISTORY:
         PlayerMessage::presentMessages(getView(), messageHistory);
         break;
+    case UserInputId::CHEAT_ATTRIBUTES:
+        for (auto resource : ENUM_ALL(CollectiveResourceId))
+          getCollective()->returnResource(CostInfo(resource, 1000));
+        break;
     case UserInputId::BUTTON_RELEASE:
         if (rectSelection) {
           selection = rectSelection->deselect ? DESELECT : SELECT;

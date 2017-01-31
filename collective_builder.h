@@ -16,7 +16,6 @@ class CollectiveBuilder {
   public:
   CollectiveBuilder(const CollectiveConfig&, TribeId);
   CollectiveBuilder& setLevel(Level*);
-  CollectiveBuilder& setCredit(map<CollectiveResourceId, int>);
   CollectiveBuilder& addCreature(Creature*);
   CollectiveBuilder& addSquares(const vector<Vec2>&);
   CollectiveBuilder& addSquares(const vector<Position>&);
@@ -34,7 +33,6 @@ class CollectiveBuilder {
   vector<CreatureInfo> creatures;
   HeapAllocated<CollectiveConfig> config;
   HeapAllocated<TribeId> tribe;
-  map<CollectiveResourceId, int> credit;
   vector<Vec2> squares;
   optional<string> locationName;
   optional<string> raceName;

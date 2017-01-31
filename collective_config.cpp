@@ -354,6 +354,13 @@ optional<WorkshopType> CollectiveConfig::getWorkshopType(FurnitureType furniture
   return (*map)[furniture];
 }
 
+map<CollectiveResourceId, int> CollectiveConfig::getStartingResource() const {
+  if (type == KEEPER)
+    return {{CollectiveResourceId::MANA, 200}};
+  else
+    return {};
+}
+
 optional<int> CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType type) {
   switch (type) {
     case FurnitureType::TRAINING_WOOD:

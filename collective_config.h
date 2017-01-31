@@ -136,6 +136,8 @@ class CollectiveConfig {
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
 
+  map<CollectiveResourceId, int> getStartingResource() const;
+
   bool hasImmigrantion(bool currentlyActiveModel) const;
   const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
   const vector<FurnitureType>& getRoomsNeedingLight() const;

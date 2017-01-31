@@ -225,7 +225,7 @@ class Collective : public TaskCallback {
   void onEvent(const GameEvent&);
 
   friend class CollectiveBuilder;
-  Collective(Level*, const CollectiveConfig&, TribeId, EnumMap<ResourceId, int> credit, const CollectiveName&);
+  Collective(Level*, const CollectiveConfig&, TribeId, const CollectiveName&);
   void addCreatureInTerritory(PCreature, EnumSet<MinionTrait>);
   void removeCreature(Creature*);
   void onMinionKilled(Creature* victim, Creature* killer);
