@@ -700,8 +700,7 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
     if (event.type == SDL::SDL_MOUSEMOTION || event.type == SDL::SDL_MOUSEBUTTONDOWN) {
       if (auto pos = mapGui->projectOnMap(renderer.getMousePos())) {
         refreshScreen(false);
-        Vec2 middle = mapLayout->getAllTiles(getMapGuiBounds(), Level::getMaxBounds(), mapGui->getScreenPos())
-            .middle();
+        Vec2 middle = mapGui->getScreenPos().div(mapLayout->getSquareSize());
         if (pos == middle)
           continue;
         Vec2 dir = (*pos - middle).getBearing();
@@ -720,8 +719,12 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
               wpos.x + mapLayout->getSquareSize().x / 2, wpos.y, arrows[numArrow], Renderer::HOR);
         }
         renderer.drawAndClearBuffer();
-        if (event.type == SDL::SDL_MOUSEBUTTONDOWN)
-          return dir;
+        if (event.type == SDL::SDL_MOUSEBUTTONDOWN) {
+          if (event.button.button == SDL_BUTTON_LEFT)
+            return dir;
+          else
+            return none;
+        }
       }
       renderer.flushEvents(SDL::SDL_MOUSEMOTION);
     } else
