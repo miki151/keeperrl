@@ -250,7 +250,9 @@ PCreature Model::extractCreature(Creature* c) {
 }
 
 void Model::transferCreature(PCreature c, Vec2 travelDir) {
-  CHECK(getTopLevel()->landCreature(StairKey::transferLanding(), std::move(c), travelDir));
+  Creature* ref = c.get();
+  addCreature(std::move(c));
+  CHECK(getTopLevel()->landCreature(StairKey::transferLanding(), ref, travelDir));
 }
 
 bool Model::canTransferCreature(Creature* c, Vec2 travelDir) {
