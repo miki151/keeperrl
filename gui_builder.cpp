@@ -1084,6 +1084,15 @@ SGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
       list.addElem(std::move(elem), spellIconSize.y);
     list.addSpace();
   }
+  if (info.debt > 0) {
+    list.addElem(gui.label("Debt", colors[ColorId::YELLOW]));
+    list.addElem(gui.label("Click on debt or on individual items to pay.", Renderer::smallTextSize,
+        colors[ColorId::LIGHT_GRAY]), legendLineHeight * 2 / 3);
+    list.addElem(gui.stack(
+        drawCost({ViewId::GOLD, info.debt}),
+        gui.button(getButtonCallback(UserInputId::PAY_DEBT))));
+    list.addSpace();
+  }
   if (!info.inventory.empty()) {
     list.addElem(gui.label("Inventory", colors[ColorId::YELLOW]));
     for (auto& item : info.inventory)

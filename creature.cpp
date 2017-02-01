@@ -49,6 +49,7 @@
 #include "body.h"
 #include "field_of_view.h"
 #include "furniture.h"
+#include "creature_debt.h"
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
@@ -63,7 +64,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, deathTime, hidden, lastAttacker, deathReason, swapPositionCooldown);
   serializeAll(ar, unknownAttackers, privateEnemies, holding, controllerStack, creatureVisions, kills);
   serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverride);
-  serializeAll(ar, vision, lastCombatTime);
+  serializeAll(ar, vision, lastCombatTime, debt);
 }
 
 SERIALIZABLE(Creature);
@@ -295,7 +296,7 @@ bool Creature::canTakeItems(const vector<Item*>& items) const {
   return getBody().isHumanoid() && canCarry(items);
 }
 
-void Creature::takeItems(vector<PItem> items, const Creature* from) {
+void Creature::takeItems(vector<PItem> items, Creature* from) {
   vector<Item*> ref = extractRefs(items);
   equipment->addItems(std::move(items));
   getController()->onItemsGiven(ref, from);
@@ -1248,21 +1249,28 @@ void Creature::increaseExpLevel(ExperienceType type, double increase) {
   }
 }
 
-CreatureAction Creature::give(Creature* whom, vector<Item*> items) {
+CreatureAction Creature::give(Creature* whom, vector<Item*> items) const {
   if (!getBody().isHumanoid() || !whom->canTakeItems(items))
     return CreatureAction(whom->getName().the() + (items.size() == 1 ? " can't take this item."
         : " can't take these items."));
   return CreatureAction(this, [=](Creature* self) {
     for (auto stack : stackItems(items)) {
       if (!whom->isPlayer())
-        monsterMessage(getName().the() + " gives " + getPluralAName(stack[0], stack.size()) + " to " +
+        monsterMessage(getName().the() + " gives " + getPluralAName(stack[0], (int) stack.size()) + " to " +
             whom->getName().the());
-      whom->playerMessage(getName().the() + " gives you " + getPluralAName(stack[0], stack.size()));
-      playerMessage("You give " + getPluralTheName(stack[0], stack.size()) + " to " +
+      whom->playerMessage(getName().the() + " gives you " + getPluralAName(stack[0], (int) stack.size()));
+      playerMessage("You give " + getPluralTheName(stack[0], (int) stack.size()) + " to " +
         whom->getName().the());
     }
-    whom->takeItems(equipment->removeItems(items), this);
+    whom->takeItems(self->equipment->removeItems(items), self);
   });
+}
+
+CreatureAction Creature::payFor(const vector<Item*>& items) const {
+  int totalPrice = std::accumulate(items.begin(), items.end(), 0,
+      [](int sum, const Item* it) { return sum + it->getPrice(); });
+  return give(items[0]->getShopkeeper(this), getGold(totalPrice))
+      .append([=](Creature*) { for (auto it : items) it->setShopkeeper(nullptr); });
 }
 
 CreatureAction Creature::fire(Vec2 direction) const {
@@ -1736,6 +1744,14 @@ void Creature::updateVision() {
 
 VisionId Creature::getVision() const {
   return vision;
+}
+
+const CreatureDebt& Creature::getDebt() const {
+  return *debt;
+}
+
+CreatureDebt& Creature::getDebt() {
+  return *debt;
 }
 
 void Creature::updateVisibleCreatures() {

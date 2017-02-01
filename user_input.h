@@ -86,6 +86,7 @@ enum class UserInputId {
     PLAYER_COMMAND,
     CAST_SPELL,
     INVENTORY_ITEM,
+    PAY_DEBT,
 };
 
 struct CreatureDropInfo {

@@ -49,6 +49,7 @@
 #include "spawn_type.h"
 #include "furniture.h"
 #include "experience_type.h"
+#include "creature_debt.h"
 
 SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory);
@@ -393,6 +394,8 @@ class ShopkeeperController : public Monster {
       : Monster(c, MonsterAIFactory::stayInLocation(area)), eventProxy(this), shopArea(area) {
   }
 
+
+
   virtual void makeMove() override {
     if (!getCreature()->getPosition().isSameLevel(shopArea->getLevel())) {
       Monster::makeMove();
@@ -412,7 +415,7 @@ class ShopkeeperController : public Monster {
       if (const Creature* c = v.getCreature()) {
         creatures.push_back(c);
         if (!prevCreatures.count(c) && !thieves.count(c) && !getCreature()->isEnemy(c)) {
-          if (!debt.count(c))
+          if (!debtors.count(c))
             c->playerMessage("\"Welcome to " + *getCreature()->getName().first() + "'s shop!\"");
           else {
             c->playerMessage("\"Pay your debt or... !\"");
@@ -420,17 +423,17 @@ class ShopkeeperController : public Monster {
           }
         }
       }
-    for (auto elem : debt) {
-      const Creature* c = elem.first;
-      if (!contains(creatures, c)) {
-        c->playerMessage("\"Come back, you owe me " + toString(elem.second) + " gold!\"");
-        if (++thiefCount[c] == 4) {
-          c->playerMessage("\"Thief! Thief!\"");
-          getCreature()->getTribe()->onItemsStolen(c);
-          thiefCount.erase(c);
-          debt.erase(c);
-          thieves.insert(c);
-          for (Item* item : c->getEquipment().getItems())
+    for (auto debtor : copyOf(debtors)) {
+      if (!contains(creatures, debtor)) {
+        debtor->playerMessage("\"Come back, you owe me " + toString(debtor->getDebt().getAmountOwed(getCreature())) +
+            " gold!\"");
+        if (++thiefCount[debtor] == 4) {
+          debtor->playerMessage("\"Thief! Thief!\"");
+          getCreature()->getTribe()->onItemsStolen(debtor);
+          thiefCount.erase(debtor);
+          debtors.erase(debtor);
+          thieves.insert(debtor);
+          for (Item* item : debtor->getEquipment().getItems())
             item->setShopkeeper(nullptr);
           break;
         }
@@ -441,15 +444,11 @@ class ShopkeeperController : public Monster {
     Monster::makeMove();
   }
 
-  virtual void onItemsGiven(vector<Item*> items, const Creature* from) override {
-    int paid = filter(items, Item::classPredicate(ItemClass::GOLD)).size();
-    if ((debt[from] -= paid) <= 0)
-      debt.erase(from);
-    for (Item* it : from->getEquipment().getItems())
-      if (it->getShopkeeper(from) && it->getPrice() <= paid) {
-        it->setShopkeeper(nullptr);
-        paid -= it->getPrice();
-      }
+  virtual void onItemsGiven(vector<Item*> items, Creature* from) override {
+    int paid = (int) filter(items, Item::classPredicate(ItemClass::GOLD)).size();
+    from->getDebt().add(getCreature(), -paid);
+    if (from->getDebt().getAmountOwed(getCreature()) <= 0)
+      debtors.erase(from);
   }
   
   void onEvent(const GameEvent& event) {
@@ -468,8 +467,10 @@ class ShopkeeperController : public Monster {
           auto info = event.get<EventInfo::ItemsHandled>();
           if (shopArea->contains(info.creature->getPosition())) {
             for (const Item* item : info.items)
-              if (item->isShopkeeper(getCreature()))
-                debt[info.creature] += item->getPrice();
+              if (item->isShopkeeper(getCreature())) {
+                info.creature->getDebt().add(getCreature(), item->getPrice());
+                debtors.insert(info.creature);
+              }
           }
         }
         break;
@@ -478,8 +479,9 @@ class ShopkeeperController : public Monster {
           if (shopArea->contains(info.creature->getPosition())) {
             for (const Item* item : info.items)
               if (item->isShopkeeper(getCreature())) {
-                if ((debt[info.creature] -= item->getPrice()) <= 0)
-                  debt.erase(info.creature);
+                info.creature->getDebt().add(getCreature(), -item->getPrice());
+                if (info.creature->getDebt().getAmountOwed(getCreature()) == 0)
+                  debtors.erase(info.creature);
               }
           }
         }
@@ -491,12 +493,12 @@ class ShopkeeperController : public Monster {
 
   HeapAllocated<EventProxy<ShopkeeperController>> SERIAL(eventProxy);
 
-  SERIALIZE_ALL2(Monster, prevCreatures, debt, thiefCount, thieves, shopArea, firstMove, eventProxy);
+  SERIALIZE_ALL2(Monster, prevCreatures, debtors, thiefCount, thieves, shopArea, firstMove, eventProxy);
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
 
   private:
   unordered_set<const Creature*> SERIAL(prevCreatures);
-  unordered_map<const Creature*, int> SERIAL(debt);
+  unordered_set<const Creature*> SERIAL(debtors);
   unordered_map<const Creature*, int> SERIAL(thiefCount);
   unordered_set<const Creature*> SERIAL(thieves);
   Location* SERIAL(shopArea);

@@ -49,6 +49,7 @@ class SpellMap;
 class Sound;
 class Game;
 class CreatureListener;
+class CreatureDebt;
 struct AdjectiveInfo;
 struct MovementInfo;
 
@@ -107,6 +108,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   int getPoints() const;
   VisionId getVision() const;
+  const CreatureDebt& getDebt() const;
+  CreatureDebt& getDebt();
 
   const Tribe* getTribe() const;
   Tribe* getTribe();
@@ -115,7 +118,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool isFriend(const Creature*) const;
   vector<Item*> getGold(int num) const;
 
-  void takeItems(vector<PItem> items, const Creature* from);
+  void takeItems(vector<PItem> items, Creature* from);
   bool canTakeItems(const vector<Item*>& items) const;
 
   void youHit(BodyPart part, AttackType type) const;
@@ -178,7 +181,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction torture(Creature*) const;
   CreatureAction chatTo(Creature*) const;
   CreatureAction stealFrom(Vec2 direction, const vector<Item*>&) const;
-  CreatureAction give(Creature* whom, vector<Item*> items);
+  CreatureAction give(Creature* whom, vector<Item*> items) const;
+  CreatureAction payFor(const vector<Item*>&) const;
   CreatureAction fire(Vec2 direction) const;
   CreatureAction construct(Vec2 direction, FurnitureType) const;
   CreatureAction placeTorch(Dir attachmentDir, function<void(Trigger*)> builtCallback) const;
@@ -305,6 +309,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void updateVision();
   bool forceMovement = false;
   optional<double> SERIAL(lastCombatTime);
+  HeapAllocated<CreatureDebt> SERIAL(debt);
 };
 
 struct AdjectiveInfo {

@@ -39,7 +39,7 @@ class Controller {
   virtual void privateMessage(const PlayerMessage& message) {}
 
   virtual void onKilled(const Creature* attacker) {}
-  virtual void onItemsGiven(vector<Item*> items, const Creature* from) { }
+  virtual void onItemsGiven(vector<Item*> items, Creature* from) { }
   virtual void onDisplaced() {}
 
   virtual void makeMove() = 0;

@@ -101,6 +101,7 @@ class PlayerInfo {
   vector<Spell> HASH(spells);
   vector<ItemInfo> HASH(lyingItems);
   vector<ItemInfo> HASH(inventory);
+  int HASH(debt);
   vector<CreatureInfo> HASH(team);
   struct CommandInfo {
     string HASH(name);
@@ -129,7 +130,7 @@ class PlayerInfo {
     CONSUME
   };
   vector<Action> HASH(actions);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands);
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt);
 };
 
 struct ImmigrantDataInfo {
