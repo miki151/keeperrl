@@ -108,6 +108,7 @@ bool GuiBuilder::clearActiveButton() {
     activeButton = none;
     activeGroup = none;
     mapGui->clearButtonViewId();
+    callbacks.input(UserInputId::RECT_CANCEL);
     return true;
   }
   return false;

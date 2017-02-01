@@ -2153,12 +2153,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
         for (auto resource : ENUM_ALL(CollectiveResourceId))
           getCollective()->returnResource(CostInfo(resource, 1000));
         break;
-    case UserInputId::BUTTON_RELEASE:
+    case UserInputId::RECT_CONFIRM:
         if (rectSelection) {
           selection = rectSelection->deselect ? DESELECT : SELECT;
           for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
             handleSelection(v, getBuildInfo()[input.get<BuildingInfo>().building], true, rectSelection->deselect);
         }
+        FALLTHROUGH;
+    case UserInputId::RECT_CANCEL:
         updateSelectionSquares();
         rectSelection = none;
         selection = NONE;

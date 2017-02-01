@@ -617,7 +617,7 @@ void Player::makeMove() {
   bool travel = false;
   bool wasJustTravelling = travelling || !!target;
   if (action.getId() != UserInputId::IDLE) {
-    if (action.getId() != UserInputId::REFRESH && action.getId() != UserInputId::BUTTON_RELEASE) {
+    if (action.getId() != UserInputId::REFRESH && action.getId() != UserInputId::RECT_CONFIRM) {
       retireMessages();
       travelling = false;
       target = none;

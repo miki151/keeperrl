@@ -1287,9 +1287,11 @@ void WindowView::processEvents() {
       case SDL::SDL_MOUSEBUTTONUP:
         if (event.button.button == SDL_BUTTON_LEFT) {
           if (auto building = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS))
-            inputQueue.push(UserInput(UserInputId::BUTTON_RELEASE, BuildingInfo{Vec2(0, 0), *building}));
-          if (auto building = guiBuilder.getActiveButton(CollectiveTab::TECHNOLOGY))
-            inputQueue.push(UserInput(UserInputId::BUTTON_RELEASE, BuildingInfo{Vec2(0, 0), *building}));
+            inputQueue.push(UserInput(UserInputId::RECT_CONFIRM, BuildingInfo{Vec2(0, 0), *building}));
+          else if (auto building = guiBuilder.getActiveButton(CollectiveTab::TECHNOLOGY))
+            inputQueue.push(UserInput(UserInputId::RECT_CONFIRM, BuildingInfo{Vec2(0, 0), *building}));
+          else
+            inputQueue.push(UserInputId::RECT_CANCEL);
         }
         break;
       default: break;
