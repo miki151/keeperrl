@@ -1231,7 +1231,7 @@ CreatureAction Creature::torture(Creature* other) const {
 }
 
 void Creature::surrender(Creature* to) {
-  getGame()->addEvent({EventId::TORTURED, EventInfo::Attacked{this, to}});
+  getGame()->addEvent({EventId::SURRENDERED, EventInfo::Attacked{this, to}});
 }
 
 void Creature::retire() {
