@@ -24,7 +24,10 @@ PTask VillageBehaviour::getAttackTask(VillageControl* self) {
     case AttackBehaviourId::KILL_MEMBERS:
       return Task::killFighters(enemy, attackBehaviour->get<int>());
     case AttackBehaviourId::STEAL_GOLD:
-      return Task::stealFrom(enemy, self->getCollective());
+      if (auto ret = Task::stealFrom(enemy, self->getCollective()))
+        return ret;
+      else
+        return Task::attackLeader(enemy);
     case AttackBehaviourId::CAMP_AND_SPAWN:
       return Task::campAndSpawn(enemy,
             attackBehaviour->get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));

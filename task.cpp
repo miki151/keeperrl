@@ -859,7 +859,10 @@ PTask Task::stealFrom(Collective* collective, TaskCallback* callback) {
     if (!gold.empty())
       tasks.push_back(pickItem(callback, pos, gold));
   }
-  return chain(std::move(tasks));
+  if (!tasks.empty())
+    return chain(std::move(tasks));
+  else
+    return PTask(nullptr);
 }
 
 namespace {
