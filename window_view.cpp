@@ -1265,8 +1265,14 @@ void WindowView::processEvents() {
           return;
         default:break;
       }
-    else
+    else {
+      if (event.type == SDL::SDL_KEYDOWN) {
+        if (lockKeyboard)
+          return;
+        lockKeyboard = true;
+      }
       propagateEvent(event, getClickableGuiElems());
+    }
     switch (event.type) {
       case SDL::SDL_KEYDOWN:
         if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
@@ -1318,9 +1324,6 @@ UserInputId getDirActionId(const SDL_Keysym& key) {
 }
 
 void WindowView::keyboardAction(const SDL_Keysym& key) {
-  if (lockKeyboard)
-    return;
-  lockKeyboard = true;
   switch (key.sym) {
 #ifndef RELEASE
     case SDL::SDLK_F9:
