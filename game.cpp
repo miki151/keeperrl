@@ -33,6 +33,7 @@
 #include "campaign_builder.h"
 #include "campaign_type.h"
 #include "game_save_type.h"
+#include "player_role.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) { 
@@ -78,8 +79,11 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
 
 Game::~Game() {}
 
-PGame Game::campaignGame(Table<PModel>&& models, Vec2 basePos, const CampaignSetup& setup) {
-  return PGame(new Game(std::move(models), basePos, setup));
+PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup) {
+  PGame ret(new Game(std::move(models), *setup.campaign.getPlayerPos(), setup));
+  if (setup.campaign.getPlayerRole() == PlayerRole::ADVENTURER)
+    ret->getMainModel()->landHeroPlayer(std::move(setup.player));
+  return ret;
 }
 
 PGame Game::splashScreen(PModel&& model, const CampaignSetup& s) {
@@ -217,6 +221,7 @@ optional<ExitInfo> Game::update(double timeDiff) {
     tick(*lastTick);
   }
   considerRealTimeRender();
+  considerRetiredLoadedEvent(getModelCoords(currentModel));
   return updateModel(currentModel, localTime[currentModel]);
 }
 
@@ -375,16 +380,18 @@ void Game::transferAction(vector<Creature*> creatures) {
     if (!creatures.empty()) {
       for (Creature* c : creatures)
         transferCreature(c, models[*dest].get());
-      if (!visited[*dest]) {
-        visited[*dest] = true;
-        if (auto retired = campaign->getSites()[*dest].getRetired())
-            uploadEvent("retiredLoaded", {
-                {"retiredId", getGameId(retired->fileInfo)},
-                {"playerName", getPlayerName()}});
-
-      }
       wasTransfered = true;
     }
+  }
+}
+
+void Game::considerRetiredLoadedEvent(Vec2 coord) {
+  if (!visited[coord]) {
+    visited[coord] = true;
+    if (auto retired = campaign->getSites()[coord].getRetired())
+        uploadEvent("retiredLoaded", {
+            {"retiredId", getGameId(retired->fileInfo)},
+            {"playerName", getPlayerName()}});
   }
 }
 

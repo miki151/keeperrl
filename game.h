@@ -23,7 +23,7 @@ struct CampaignSetup;
 
 class Game {
   public:
-  static PGame campaignGame(Table<PModel>&&, Vec2 basePos, const CampaignSetup&);
+  static PGame campaignGame(Table<PModel>&&, CampaignSetup&);
   static PGame splashScreen(PModel&&, const CampaignSetup&);
 
   optional<ExitInfo> update(double timeDiff);
@@ -131,6 +131,7 @@ class Game {
   set<int> SERIAL(turnEvents);
   friend class GameListener;
   void considerRealTimeRender();
+  void considerRetiredLoadedEvent(Vec2 coord);
 };
 
 

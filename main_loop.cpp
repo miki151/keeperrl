@@ -305,7 +305,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     CampaignBuilder builder(view, random, options, PlayerRole::KEEPER);
     auto result = builder.prepareCampaign([this] { return getRetiredGames(); }, CampaignType::QUICK_MAP);
     forceGame = none;
-    return Game::campaignGame(prepareCampaignModels(*result, random), *result->campaign.getPlayerPos(), *result);
+    return Game::campaignGame(prepareCampaignModels(*result, random), *result);
   }
   auto choice = PlayerRoleChoice(PlayerRole::KEEPER);
   while (1) {
@@ -315,10 +315,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
           random.init(Random.get(1234567));
           CampaignBuilder builder(view, random, options, role);
           if (auto result = builder.prepareCampaign([this] { return getRetiredGames(); }, CampaignType::CAMPAIGN)) {
-            auto ret = Game::campaignGame(prepareCampaignModels(*result, random), *result->campaign.getPlayerPos(), *result);
-            if (role == PlayerRole::ADVENTURER)
-              ret->getMainModel()->landHeroPlayer(std::move(result->player));
-            return std::move(ret);
+            return Game::campaignGame(prepareCampaignModels(*result, random), *result);
           } else
             return none;
         },

@@ -37,7 +37,8 @@ if($fileType != "sit") {
     echo "Sorry, only KeeperRL retired site files are allowed.";
 } else
 if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-  exec(escapeshellcmd("./parse_game --input \"$target_file\" --serial_info --display_name --version", $values, $parse_error));
+  exec(escapeshellcmd("./parse_game --input \"$target_file\" --serial_info --display_name --version"),
+      $values, $parse_error);
   if ($parse_error != 0) {
     echo "Error parsing save file";
     exec(escapeshellcmd("rm \"$target_file\""));
