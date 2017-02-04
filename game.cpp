@@ -611,10 +611,7 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
   if (auto index = view->chooseFromList("", options))
     if (auto text = view->getText("Enter message", "", 80)) {
       if (text->size() >= 2)
-        uploadEvent("boardMessage", {
-            {"boardId", toString(pos.getHash())},
-            {"author", c->getName().title()},
-            {"text", *text}});
+        fileSharing->uploadBoardMessage(getGameIdentifier(), pos.getHash(), c->getName().title(), *text);
       else
         view->presentText("", "The message was too short.");
     }

@@ -41,9 +41,23 @@ size_t dataFun(void *buffer, size_t size, size_t nmemb, void *userp) {
   return size * nmemb;
 }
 
-static string escapeUrl(string s) {
+static string escapeSpaces(string s) {
   replace_all(s, " ", "%20");
   return s;
+}
+
+static string escapeEverything(const string& s) {
+  char* tmp = curl_easy_escape(curl_easy_init(), s.c_str(), (int) s.size());
+  string ret(tmp);
+  curl_free(tmp);
+  return ret;
+}
+
+static string unescapeEverything(const string& s) {
+  char* tmp = curl_easy_unescape(curl_easy_init(), s.c_str(), (int) s.size(), nullptr);
+  string ret(tmp);
+  curl_free(tmp);
+  return ret;
 }
 
 static optional<string> curlUpload(const char* path, const char* url, void* progressCallback, int timeout) {
@@ -67,7 +81,7 @@ static optional<string> curlUpload(const char* path, const char* url, void* prog
     string ret;
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
     /* what URL that receives this POST */ 
-    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(url).c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(url).c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
     if (timeout > 0)
       curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
@@ -126,11 +140,11 @@ void FileSharing::uploadGameEventImpl(const GameEvent& data, int tries) {
       for (auto& elem : data) {
         if (!params.empty())
           params += "&";
-        params += elem.first + "=" + elem.second;
+        params += elem.first + "=" + escapeEverything(elem.second);
       }
       if (CURL* curl = curl_easy_init()) {
         string ret;
-        curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/game_event.php").c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(uploadUrl + "/game_event.php").c_str());
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, params.c_str());
         CURLcode res = curl_easy_perform(curl);
@@ -145,7 +159,7 @@ string FileSharing::downloadHighscores() {
   string ret;
   if (options.getBoolValue(OptionId::ONLINE))
     if(CURL* curl = curl_easy_init()) {
-      curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/highscores.php").c_str());
+      curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(uploadUrl + "/highscores.php").c_str());
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
       curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
@@ -174,7 +188,7 @@ static vector<Elem> parseLines(const string& s, function<optional<Elem>(const ve
 
 static optional<string> downloadContent(const string& url) {
   if (CURL* curl = curl_easy_init()) {
-    curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(url).c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(url).c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
     // Internal CURL progressmeter must be disabled if we provide our own callback
@@ -224,7 +238,7 @@ optional<vector<FileSharing::SiteInfo>> FileSharing::listSites() {
 
 static optional<FileSharing::BoardMessage> parseBoardMessage(const vector<string>& fields) {
   if (fields.size() >= 2)
-    return FileSharing::BoardMessage{fields[0], fields[1]};
+    return FileSharing::BoardMessage{unescapeEverything(fields[0]), unescapeEverything(fields[1])};
   else
     return none;
 }
@@ -234,6 +248,16 @@ optional<vector<FileSharing::BoardMessage>> FileSharing::getBoardMessages(int bo
     if (auto content = downloadContent(uploadUrl + "/get_messages.php?boardId=" + toString(boardId)))
       return parseLines<FileSharing::BoardMessage>(*content, parseBoardMessage);
   return none;
+}
+
+void FileSharing::uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text) {
+  uploadGameEvent({
+      { "gameId", gameId },
+      { "eventType", "boardMessage"},
+      { "boardId", toString(hash) },
+      { "author", author },
+      { "text", text }
+  });
 }
 
 void FileSharing::cancel() {
@@ -252,7 +276,7 @@ optional<string> FileSharing::download(const string& filename, const string& dir
     string path = dir + "/" + filename;
     INFO << "Downloading to " << path;
     if (FILE* fp = fopen(path.c_str(), "wb")) {
-      curl_easy_setopt(curl, CURLOPT_URL, escapeUrl(uploadUrl + "/uploads/" + filename).c_str());
+      curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(uploadUrl + "/uploads/" + filename).c_str());
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToFile);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
       // Internal CURL progressmeter must be disabled if we provide our own callback
