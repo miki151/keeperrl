@@ -345,26 +345,30 @@ CostInfo Immigration::calculateCost(int index, const ExponentialCost& cost) cons
   return info;
 }*/
 
-Immigration::Available::Available(Immigration* im, Creatures c, int ind, optional<double> t)
+Immigration::Available::Available(Immigration* im, vector<PCreature> c, int ind, optional<double> t)
   : creatures(std::move(c)), immigrantIndex(ind), endTime(t), immigration(im) {
 }
 
 void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositions) {
-  apply_visitor(creatures, makeVisitor<void>(
-      [&](vector<PCreature>& creatures) {
-        for (auto creature : Iter(creatures))
-          immigration->collective->addCreature(std::move(*creature), spawnPositions[creature.index()],
-              getInfo().getTraits());
-      },
-      [&](vector<Creature*>& creatures) {
-        for (Creature* c : creatures) {
+  const ImmigrantInfo& info = immigration->getImmigrants()[immigrantIndex];
+  bool addedRecruits = false;
+  info.visitRequirements(makeDefaultVisitor(
+      [&](const RecruitmentInfo& recruitmentInfo) {
+        auto recruits = recruitmentInfo.getAllRecruits(immigration->collective->getGame(), info.getId(0));
+        if (!recruits.empty()) {
+          Creature* c = recruits[0];
           immigration->collective->addCreature(c, {MinionTrait::FIGHTER});
           Model* target = immigration->collective->getModel();
           if (c->getPosition().getModel() != target)
             c->getGame()->transferCreature(c, target);
+          addedRecruits = true;
         }
       }
   ));
+  if (!addedRecruits)
+    for (auto creature : Iter(creatures))
+      immigration->collective->addCreature(std::move(*creature), spawnPositions[creature.index()],
+          getInfo().getTraits());
 }
 
 void Immigration::accept(int id, bool withMessage) {
@@ -412,24 +416,14 @@ Immigration::Available Immigration::Available::generate(Immigration* immigration
 
 Immigration::Available Immigration::Available::generate(Immigration* immigration, const Group& group) {
   const ImmigrantInfo& info = immigration->getImmigrants()[group.immigrantIndex];
-  optional<Creatures> creatures;
-  info.visitRequirements(makeDefaultVisitor(
-      [&](const RecruitmentInfo& recruitmentInfo) {
-        auto recruits = recruitmentInfo.getAllRecruits(immigration->collective->getGame(), info.getId(0));
-        if (!recruits.empty())
-          creatures = getPrefix(recruits, 1);
-      }));
-  if (!creatures) {
-    vector<PCreature> immigrants;
-    int numGenerated = immigration->generated[group.immigrantIndex].size();
-    for (int i : Range(group.count))
-      immigrants.push_back(CreatureFactory::fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
-          MonsterAIFactory::collective(immigration->collective)));
-    creatures = std::move(immigrants);
-  }
+  vector<PCreature> immigrants;
+  int numGenerated = immigration->generated[group.immigrantIndex].size();
+  for (int i : Range(group.count))
+    immigrants.push_back(CreatureFactory::fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
+        MonsterAIFactory::collective(immigration->collective)));
   return Available(
     immigration,
-    std::move(*creatures),
+    std::move(immigrants),
     group.immigrantIndex,
     !info.isPersistent()
         ? immigration->collective->getGame()->getGlobalTime() + immigration->candidateTimeout
@@ -438,10 +432,7 @@ Immigration::Available Immigration::Available::generate(Immigration* immigration
 }
 
 vector<Creature*> Immigration::Available::getCreatures() const {
-  return apply_visitor(creatures, makeVisitor<vector<Creature*>>(
-          [](const vector<Creature*>& v) { return v;},
-          [](const vector<PCreature>& v) { return extractRefs(v);}
-      ));
+  return extractRefs(creatures);
 }
 
 bool Immigration::Available::isUnavailable() const {

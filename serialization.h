@@ -103,7 +103,7 @@ void serializeAll(Archive& ar, Arg1& arg1, Args&... args) {
 
 #define SERIALIZE_EMPTY() \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int) { \
+  void serialize(Archive&, const unsigned int) { \
   }
 
 class Serialization {

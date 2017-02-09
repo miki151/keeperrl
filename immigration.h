@@ -35,11 +35,10 @@ class Immigration {
     static Available generate(Immigration*, const Group& group);
     static Available generate(Immigration*, int index);
     vector<Position> getSpawnPositions() const;
-    using Creatures = variant<vector<Creature*>, vector<PCreature>>;
-    Available(Immigration*, Creatures, int immigrantIndex, optional<double> endTime);
+    Available(Immigration*, vector<PCreature>, int immigrantIndex, optional<double> endTime);
     void addAllCreatures(const vector<Position>& spawnPositions);
     friend class Immigration;
-    Creatures SERIAL(creatures);
+    vector<PCreature> SERIAL(creatures);
     int SERIAL(immigrantIndex);
     optional<double> SERIAL(endTime);
     Immigration* SERIAL(immigration);
