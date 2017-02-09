@@ -887,15 +887,15 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
     info.state = info.CONQUERED;
     info.triggers.clear();
     if (col->canPillage())
-      info.actions.push_back({VillageAction::PILLAGE});
+      info.actions.push_back({VillageAction::PILLAGE, none});
   } else if (hostile)
     info.state = info.HOSTILE;
   else {
     info.state = info.FRIENDLY;
-    if (getCollective()->isKnownVillain(col)) {
+    if (getCollective()->isKnownVillainLocation(col)) {
       if (col->hasTradeItems())
-        info.actions.push_back({VillageAction::TRADE});
-    } else if (getGame()->isVillainActive(col)){
+        info.actions.push_back({VillageAction::TRADE, none});
+    } else if (getGame()->isVillainActive(col)) {
       if (col->hasTradeItems())
         info.actions.push_back({VillageAction::TRADE, string("You must discover the location of the ally first.")});
     }
