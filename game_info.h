@@ -141,7 +141,7 @@ struct ImmigrantDataInfo {
   ViewId HASH(viewId);
   Range HASH(expLevel);
   int HASH(count);
-  optional<int> HASH(timeLeft);
+  optional<double> HASH(timeLeft);
   int HASH(id);
   enum AutoState { AUTO_REJECT, AUTO_ACCEPT};
   optional<ImmigrantAutoState> HASH(autoState);

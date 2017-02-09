@@ -1175,9 +1175,9 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   for (auto& elem : immigration.getAvailable()) {
     const auto& candidate = elem.second.get();
     const int count = candidate.getCreatures().size();
-    optional<int> timeRemaining;
+    optional<double> timeRemaining;
     if (auto time = candidate.getEndTime())
-      timeRemaining = (int)(*time - getGame()->getGlobalTime());
+      timeRemaining = *time - getGame()->getGlobalTime();
     vector<string> infoLines;
     candidate.getInfo().visitRequirements(makeDefaultVisitor(
         [&](const Pregnancy&) {

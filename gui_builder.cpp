@@ -510,7 +510,7 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
   else
     lines.addElem(gui.label("Level: " + toString(info.expLevel.getStart()) + "-" + toString(info.expLevel.getEnd())));
   if (info.timeLeft)
-    lines.addElem(gui.label("Turns left: " + toString(*info.timeLeft)));
+    lines.addElem(gui.label("Turns left: " + toString((int)*info.timeLeft)));
   for (auto& req : info.info)
     lines.addElem(gui.label(req, colors[ColorId::WHITE]));
   for (auto& req : info.requirements)
