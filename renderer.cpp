@@ -671,7 +671,7 @@ bool Renderer::loadTilesFromDir(const string& path, Vec2 size) {
 
 SDL::SDL_Surface* Renderer::createSurface(int w, int h) {
   SDL::SDL_Surface* ret = SDL::SDL_CreateRGBSurface(0, w, h, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-  CHECK(ret) << SDL::SDL_GetError();
+  CHECK(ret) << "Failed to creature surface " << w << ":" << h << ": " << SDL::SDL_GetError();
   return ret;
 }
 
