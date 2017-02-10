@@ -455,7 +455,9 @@ void Immigration::initializePersistent() {
 
 void Immigration::resetImmigrantTime() {
   double interval = collective->getConfig().getImmigrantInterval();
-  nextImmigrantTime = interval * (Random.getDouble() + 1 + floor(nextImmigrantTime / interval));
+  nextImmigrantTime = max(
+      collective->getGlobalTime(),
+      interval * (Random.getDouble() + 1 + floor(nextImmigrantTime / interval)));
 }
 
 void Immigration::update() {
