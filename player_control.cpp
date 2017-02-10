@@ -2345,11 +2345,16 @@ void PlayerControl::addToMemory(Position pos) {
 
 void PlayerControl::checkKeeperDanger() {
   Creature* controlled = getControlled();
+  Creature* keeper = getKeeper();
+  auto prompt = [&] {
+      return getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control " +
+          keeper->getAttributes().getGender().him() + "?");
+  };
   if (!getKeeper()->isDead() && controlled != getKeeper()) { 
     if ((getKeeper()->wasInCombat(5) || getKeeper()->getBody().isWounded())
         && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 50) {
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
-      if (getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {
+      if (prompt()) {
         controlSingle(getKeeper());
         return;
       }
@@ -2357,7 +2362,7 @@ void PlayerControl::checkKeeperDanger() {
     if (getKeeper()->isAffected(LastingEffect::POISON)
         && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 5) {
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
-      if (getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control him?")) {
+      if (prompt()) {
         controlSingle(getKeeper());
         return;
       }

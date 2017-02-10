@@ -21,8 +21,9 @@ class Gender {
   const static Gender female;
   static void initialize();
 
-  string his() const;
   string he() const;
+  string his() const;
+  string him() const;
   string god() const;
 
   SERIALIZATION_DECL(Gender);
