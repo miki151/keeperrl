@@ -135,6 +135,7 @@ bool FurnitureUsage::canHandle(FurnitureUsageType type, const Creature* c) {
   switch (type) {
     case FurnitureUsageType::KEEPER_BOARD:
     case FurnitureUsageType::FOUNTAIN:
+    case FurnitureUsageType::VAMPIRE_COFFIN:
     case FurnitureUsageType::COFFIN:
     case FurnitureUsageType::CHEST:
       return c->getBody().isHumanoid();
