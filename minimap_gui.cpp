@@ -65,8 +65,19 @@ void MinimapGui::render(Renderer& r) {
   renderMap(r, getBounds());
 }
 
+static Vec2 getMapBufferSize() {
+  int w = 1;
+  int h = 1;
+  while (w < Level::getMaxBounds().width())
+    w *= 2;
+  while (h < Level::getMaxBounds().height())
+    h *= 2;
+  return Vec2(w, h);
+}
+
 MinimapGui::MinimapGui(Renderer& r, function<void()> f) : clickFun(f), renderer(r) {
-  mapBuffer = Renderer::createSurface(Level::getMaxBounds().width(), Level::getMaxBounds().height());
+  auto size = getMapBufferSize();
+  mapBuffer = Renderer::createSurface(size.x, size.y);
 }
 
 void MinimapGui::clear() {
