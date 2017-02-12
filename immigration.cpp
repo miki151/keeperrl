@@ -397,8 +397,9 @@ void Immigration::accept(int id, bool withMessage) {
     generated[candidate.immigrantIndex].push_back(c);
   }
   candidate.addAllCreatures(spawnPos);
-  rejectIfNonPersistent(id);
-  if (immigrantInfo.isAvailable(generated[candidate.immigrantIndex].size()))
+  if (!immigrantInfo.isPersistent())
+    rejectIfNonPersistent(id);
+  else if (immigrantInfo.isAvailable(generated[candidate.immigrantIndex].size()))
     available[id] = Available::generate(this, candidate.immigrantIndex);
 }
 
