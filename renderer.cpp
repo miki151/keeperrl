@@ -123,6 +123,8 @@ SDL::SDL_Surface* Renderer::createPowerOfTwoSurface(SDL::SDL_Surface* image) {
     w *= 2;
   while (h < image->h)
     h *= 2;
+  if (w == image->w && h == image->h)
+    return image;
   auto ret = createSurface(w, h);
   SDL::SDL_Rect dst {0, 0, image->w, image->h };
   SDL_BlitSurface(image, nullptr, ret, &dst);
@@ -170,7 +172,8 @@ optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* imageOrig) {
   SDL::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->w, image ->h, 0, mode, GL_UNSIGNED_BYTE, image->pixels);
   size = Vec2(imageOrig->w, imageOrig->h);
   realSize = Vec2(image->w, image->h);
-  SDL::SDL_FreeSurface(image);
+  if (image != imageOrig)
+    SDL::SDL_FreeSurface(image);
   auto error = SDL::glGetError();
   if (error != GL_NO_ERROR)
     return error;

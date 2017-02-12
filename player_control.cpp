@@ -2087,7 +2087,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         getCollective()->getImmigration().accept(input.get<int>());
         break;
     case UserInputId::IMMIGRANT_REJECT:
-        getCollective()->getImmigration().reject(input.get<int>());
+        getCollective()->getImmigration().rejectIfNonPersistent(input.get<int>());
         break;
     case UserInputId::IMMIGRANT_AUTO_ACCEPT: {
         int id = input.get<int>();

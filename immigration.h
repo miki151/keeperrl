@@ -48,7 +48,7 @@ class Immigration {
   map<int, std::reference_wrapper<const Available>> getAvailable() const;
 
   void accept(int id, bool withMessage = true);
-  void reject(int id);
+  void rejectIfNonPersistent(int id);
   vector<string> getMissingRequirements(const Available&) const;
 
   void setAutoState(int index, optional<ImmigrantAutoState>);
