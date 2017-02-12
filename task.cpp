@@ -666,7 +666,6 @@ class Kill : public Task {
       case ATTACK: return "Kill " + creature->getName().bare();
       case TORTURE: return "Torture " + creature->getName().bare();
     }
-    
   }
 
   virtual bool canPerform(const Creature* c) override {
@@ -675,7 +674,7 @@ class Kill : public Task {
 
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(c != creature);
-    if (creature->isDead()) {
+    if (creature->isDead() || (type == TORTURE && !creature->isAffected(LastingEffect::TIED_UP))) {
       setDone();
       return NoMove;
     }
