@@ -366,9 +366,11 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
       }
   ));
   if (!addedRecruits)
-    for (auto creature : Iter(creatures))
+    for (auto creature : Iter(creatures)) {
       immigration->collective->addCreature(std::move(*creature), spawnPositions[creature.index()],
           getInfo().getTraits());
+      creature.markToErase();
+    }
 }
 
 void Immigration::accept(int id, bool withMessage) {
@@ -395,13 +397,12 @@ void Immigration::accept(int id, bool withMessage) {
     generated[candidate.immigrantIndex].push_back(c);
   }
   candidate.addAllCreatures(spawnPos);
-  if (!immigrantInfo.isPersistent())
-    reject(id);
-  else if (immigrantInfo.isAvailable(generated[candidate.immigrantIndex].size()))
+  rejectIfNonPersistent(id);
+  if (immigrantInfo.isAvailable(generated[candidate.immigrantIndex].size()))
     available[id] = Available::generate(this, candidate.immigrantIndex);
 }
 
-void Immigration::reject(int id) {
+void Immigration::rejectIfNonPersistent(int id) {
   if (auto immigrant = getReferenceMaybe(available, id))
     if (!immigrant->getInfo().isPersistent())
       immigrant->endTime = -1;
@@ -466,12 +467,12 @@ void Immigration::update() {
     initializePersistent();
     resetImmigrantTime();
   }
-  for (auto elem : Iter(available)) {
+  for (auto elem : Iter(available))
+    if (elem->second.isUnavailable())
+      elem.markToErase();
+  for (auto elem : Iter(available))
     if (getValueMaybe(autoState, elem->second.immigrantIndex) == ImmigrantAutoState::AUTO_ACCEPT)
       accept(elem->first);
-    if (elem->second.isUnavailable() && !elem->second.getInfo().isPersistent())
-      elem.markToErase();
-  }
   if (nextImmigrantTime < collective->getGlobalTime()) {
     vector<Group> immigrantInfo;
     for (auto elem : Iter(getImmigrants()))
