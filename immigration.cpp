@@ -374,6 +374,7 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
 }
 
 void Immigration::accept(int id, bool withMessage) {
+  CHECK(!collective->isConquered());
   if (!available.count(id))
     return;
   auto& candidate = available.at(id);
