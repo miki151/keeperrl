@@ -5,6 +5,7 @@
 struct CampaignSetup;
 struct VillainPlacement;
 struct VillainCounts;
+class TribeId;
 
 class CampaignBuilder {
   public:
@@ -32,6 +33,9 @@ class CampaignBuilder {
   VillainPlacement getVillainPlacement(const Campaign&, VillainType);
   void placeVillains(Campaign&, vector<Campaign::SiteInfo::Dweller>, const VillainPlacement&, int count);
   void placeVillains(Campaign&, const VillainCounts&, const optional<RetiredGames>&);
+  OptionId getPlayerNameOptionId() const;
+  OptionId getPlayerTypeOptionId() const;
+  TribeId getPlayerTribeId() const;
 };
 
 struct CampaignSetup {

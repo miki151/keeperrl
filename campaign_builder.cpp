@@ -50,13 +50,35 @@ vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
   }
 }
 
-vector<OptionId> CampaignBuilder::getPrimaryOptions() const {
+OptionId CampaignBuilder::getPlayerNameOptionId() const {
   switch (playerRole) {
     case PlayerRole::KEEPER:
-      return {OptionId::KEEPER_NAME, OptionId::KEEPER_TYPE};
+      return OptionId::KEEPER_NAME;
     case PlayerRole::ADVENTURER:
-      return {OptionId::ADVENTURER_NAME, OptionId::ADVENTURER_TYPE};
+      return OptionId::ADVENTURER_NAME;
   }
+}
+
+OptionId CampaignBuilder::getPlayerTypeOptionId() const {
+  switch (playerRole) {
+    case PlayerRole::KEEPER:
+      return OptionId::KEEPER_TYPE;
+    case PlayerRole::ADVENTURER:
+      return OptionId::ADVENTURER_TYPE;
+  }
+}
+
+TribeId CampaignBuilder::getPlayerTribeId() const {
+  switch (playerRole) {
+    case PlayerRole::KEEPER:
+      return TribeId::getKeeper();
+    case PlayerRole::ADVENTURER:
+      return TribeId::getAdventurer();
+  }
+}
+
+vector<OptionId> CampaignBuilder::getPrimaryOptions() const {
+  return {getPlayerTypeOptionId(), getPlayerNameOptionId()};
 }
 
 vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
@@ -215,15 +237,10 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, const Creature*
 }
 
 PCreature CampaignBuilder::getPlayerCreature() {
-  PCreature ret;
-  switch (playerRole) {
-    case PlayerRole::KEEPER:
-      ret = CreatureFactory::fromId(options->getCreatureId(OptionId::KEEPER_TYPE), TribeId::getKeeper());
-      break;
-    case PlayerRole::ADVENTURER:
-      ret = CreatureFactory::fromId(options->getCreatureId(OptionId::ADVENTURER_TYPE), TribeId::getAdventurer());
-      break;
-  }
+  PCreature ret = CreatureFactory::fromId(options->getCreatureId(getPlayerTypeOptionId()), getPlayerTribeId());
+  auto name = options->getStringValue(getPlayerNameOptionId());
+  if (!name.empty())
+    ret->getName().setFirst(name);
   ret->getName().useFullTitle();
   return ret;
 }
@@ -407,6 +424,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()
             break;
         case CampaignActionId::UPDATE_OPTION:
             switch (action.get<OptionId>()) {
+              case OptionId::KEEPER_NAME:
+              case OptionId::ADVENTURER_NAME:
               case OptionId::KEEPER_TYPE:
               case OptionId::ADVENTURER_TYPE:
                 player = getPlayerCreature();
@@ -414,8 +433,6 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()
                   setPlayerPos(campaign, *campaign.playerPos, player.get());
                 }
                 break;
-              case OptionId::KEEPER_NAME:
-              case OptionId::ADVENTURER_NAME:
               case OptionId::INFLUENCE_SIZE: break;
               default: updateMap = true; break;
             }
