@@ -583,11 +583,12 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
 }
 
 SGuiElem GuiBuilder::getImmigrationHelpText() {
-  return gui.labelMultiLine("Welcome to the new immigration system! On the left you see creatures that would "
-                            "like to join your dungeon. Left-click on a candidate to accept him or her, right-click "
-                            "to reject. Some candidates have some requirements that you need to fulfill before "
-                            "they can join. Above are all possible immigrants, along with their full "
-                            "requirements. You can also click on them to set automatic acception or rejection.",
+  return gui.labelMultiLine("Welcome to the new immigration system! The icons immediately to the left represent "
+                            "creatures that would "
+                            "like to join your dungeon. Left-click accepts, right-click rejects a candidate. "
+                            "Some creatures have requirements that you need to fulfill before "
+                            "they can join. Above this text you can examine all possible immigrants, along with their full "
+                            "requirements. You can also click on the icons to set automatic acception or rejection.",
                             legendLineHeight);
 }
 

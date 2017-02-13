@@ -2090,7 +2090,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::IMMIGRANT_AUTO_ACCEPT: {
         int id = input.get<int>();
-        if (getCollective()->getImmigration().getAutoState(id) == ImmigrantAutoState::AUTO_ACCEPT)
+        if (!!getCollective()->getImmigration().getAutoState(id))
           getCollective()->getImmigration().setAutoState(id, none);
         else
           getCollective()->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_ACCEPT);
@@ -2098,7 +2098,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::IMMIGRANT_AUTO_REJECT: {
         int id = input.get<int>();
-        if (getCollective()->getImmigration().getAutoState(id) == ImmigrantAutoState::AUTO_REJECT)
+        if (!!getCollective()->getImmigration().getAutoState(id))
           getCollective()->getImmigration().setAutoState(id, none);
         else
           getCollective()->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_REJECT);
