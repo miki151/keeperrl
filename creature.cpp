@@ -1485,7 +1485,7 @@ bool Creature::canSee(const Creature* c) const {
   for (CreatureVision* v : creatureVisions)
     if (v->canSee(this, c))
       return true;
-  return !isBlind() && !c->isAffected(LastingEffect::INVISIBLE) &&
+  return !isBlind() && (!c->isAffected(LastingEffect::INVISIBLE) || isFriend(c)) &&
          (!c->isHidden() || c->knowsHiding(this)) && c->getPosition().isVisibleBy(this);
 }
 
