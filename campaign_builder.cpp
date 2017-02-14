@@ -16,7 +16,6 @@
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
   switch (campaign.type) {
     case CampaignType::CAMPAIGN:
-      return Vec2(1, campaign.sites.getBounds().middle().y);
     case CampaignType::QUICK_MAP:
     case CampaignType::SINGLE_KEEPER:
       return campaign.sites.getBounds().middle();
@@ -209,18 +208,6 @@ const char* CampaignBuilder::getIntroText() const {
    }
 }
 
-
-bool CampaignBuilder::isStaticPlayerPos(const Campaign& campaign) {
-  switch (campaign.type) {
-    case CampaignType::QUICK_MAP:
-    case CampaignType::CAMPAIGN:
-    case CampaignType::SINGLE_KEEPER:
-      return true;
-    default:
-      return false;
-  }
-}
-
 void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, const Creature* player) {
   switch (playerRole) {
     case PlayerRole::KEEPER:
@@ -304,7 +291,7 @@ static string getNewIdSuffix() {
 }
 
 struct VillainPlacement {
-  Range xRange;
+  function<bool(int)> xPredicate;
   optional<Vec2> firstLocation;
 };
 
@@ -315,7 +302,7 @@ void CampaignBuilder::placeVillains(Campaign& campaign, vector<Campaign::SiteInf
     villains.resize(count);
   vector<Vec2> freePos;
   for (Vec2 v : campaign.sites.getBounds())
-    if (!campaign.sites[v].blocked && campaign.sites[v].isEmpty() && placement.xRange.contains(v.x))
+    if (!campaign.sites[v].blocked && campaign.sites[v].isEmpty() && placement.xPredicate(v.x))
       freePos.push_back(v);
   freePos = random.permutation(freePos);
   if (auto& pos = placement.firstLocation)
@@ -325,16 +312,16 @@ void CampaignBuilder::placeVillains(Campaign& campaign, vector<Campaign::SiteInf
 }
 
 VillainPlacement CampaignBuilder::getVillainPlacement(const Campaign& campaign, VillainType type) {
-  VillainPlacement ret { campaign.sites.getBounds().getXRange(), none };
+  VillainPlacement ret { [&campaign](int x) { return campaign.sites.getBounds().getXRange().contains(x);}, none };
   int width = campaign.sites.getBounds().right();
   switch (campaign.getType()) {
     case CampaignType::CAMPAIGN:
       switch (type) {
         case VillainType::LESSER:
-          ret.xRange = Range(2, 2 * width / 3);
+          ret.xPredicate = [](int x) { return x >= 5 && x < 12; };
           break;
         case VillainType::MAIN:
-          ret.xRange = Range(width / 2, width);
+          ret.xPredicate = [](int x) { return (x >= 1 && x < 5) || (x >= 12 && x < 16) ; };
           break;
         case VillainType::ALLY:
           if (campaign.getPlayerRole() == PlayerRole::ADVENTURER)
@@ -358,7 +345,8 @@ vector<Dweller> shuffle(RandomGen& random, vector<T> v) {
   return transform2<Dweller>(v, [](const T& t) { return Dweller(t); });
 }
 
-void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& counts, const optional<RetiredGames>& retired) {
+void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& counts,
+    const optional<RetiredGames>& retired) {
   int numRetired = retired ? min(counts.numMain, retired->getNumActive()) : 0;
   placeVillains(campaign, shuffle(random, getMainVillains()), getVillainPlacement(campaign, VillainType::MAIN),
       counts.numMain - numRetired);
@@ -375,7 +363,7 @@ void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& cou
 }
 
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()> genRetired, CampaignType type) {
-  Vec2 size(16, 9);
+  Vec2 size(17, 9);
   int numBlocked = 0.6 * size.x * size.y;
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
   optional<RetiredGames> retiredCache;
@@ -440,7 +428,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()
         case CampaignActionId::CANCEL:
             return none;
         case CampaignActionId::CHOOSE_SITE:
-            if (!isStaticPlayerPos(campaign))
+            if (!considerStaticPlayerPos(campaign))
               setPlayerPos(campaign, action.get<Vec2>(), player.get());
             break;
         case CampaignActionId::CONFIRM:

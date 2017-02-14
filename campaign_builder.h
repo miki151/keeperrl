@@ -15,7 +15,6 @@ class CampaignBuilder {
 
   private:
   optional<Vec2> considerStaticPlayerPos(const Campaign&);
-  bool isStaticPlayerPos(const Campaign&);
   View* view;
   RandomGen& random;
   PlayerRole playerRole;
