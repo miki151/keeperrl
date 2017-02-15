@@ -85,10 +85,10 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
     case PlayerRole::KEEPER:
       return {
         CampaignType::CAMPAIGN,
-        CampaignType::ENDLESS,
         CampaignType::FREE_PLAY,
         CampaignType::SINGLE_KEEPER,
 #ifndef RELEASE
+        CampaignType::ENDLESS,
         CampaignType::QUICK_MAP,
 #endif
       };
