@@ -34,7 +34,7 @@ Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
 }
 
 vector<const Task*> TaskMap::getAllTasks() const {
-  return transform2<const Task*>(tasks, [] (const PTask& t) { return t.get(); });
+  return transform2(tasks, [] (const PTask& t) -> const Task* { return t.get(); });
 }
 
 void TaskMap::setPriorityTasks(Position pos) {

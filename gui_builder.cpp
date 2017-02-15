@@ -876,7 +876,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
   int index = 0;
   disableTooltip = true;
   DestructorFunction dFun([this] { disableTooltip = false; });
-  vector<string> options = transform2<string>(itemInfo.actions, bindFunction(getActionText));
+  vector<string> options = transform2(itemInfo.actions, bindFunction(getActionText));
   options.push_back("cancel");
   int count = options.size();
   SGuiElem stuff = gui.margins(

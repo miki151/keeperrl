@@ -1264,7 +1264,7 @@ void Collective::updateConstructions() {
 }
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, double delayTime) {
-  vector<Vec2> enemyPos = transform2<Vec2>(filter(enemyPos1,
+  vector<Vec2> enemyPos = transform2(filter(enemyPos1,
         [=] (const Position& p) { return p.isSameLevel(level); }),
       [] (const Position& p) { return p.getCoord();});
   int infinity = 1000000;
@@ -1486,7 +1486,7 @@ void Collective::acquireTech(Technology* tech) {
 }
 
 vector<Technology*> Collective::getTechnologies() const {
-  return transform2<Technology*>(technologies, [] (const TechId t) { return Technology::get(t); });
+  return transform2(technologies, [] (const TechId t) { return Technology::get(t); });
 }
 
 const EntitySet<Creature>& Collective::getKills() const {

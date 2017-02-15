@@ -961,8 +961,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto elem : typeDisplayOrder)
     if (typeGroups[elem].size() > 0)
       append(info.inventory, getItemInfos(typeGroups[elem]));
-  info.commands = transform2<PlayerInfo::CommandInfo>(getCommands(),
-      [](const CommandInfo& info) { return info.commandInfo;});
+  info.commands = transform2(getCommands(), [](const CommandInfo& info) { return info.commandInfo;});
 
 }
 
@@ -1002,7 +1001,7 @@ vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
 }
 
 vector<Vec2> Player::getVisibleEnemies() const {
-  return transform2<Vec2>(getCreature()->getVisibleEnemies(),
+  return transform2(getCreature()->getVisibleEnemies(),
       [](const Creature* c) { return c->getPosition().getCoord(); });
 }
 

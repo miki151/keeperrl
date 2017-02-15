@@ -859,18 +859,18 @@ string transform2(const string& u, Fun fun) {
   return ret;
 }
 
-template <typename T, typename U, typename Fun>
-vector<T> transform2(const vector<U>& u, Fun fun) {
-  vector<T> ret;
+template <typename U, typename Fun>
+auto transform2(const vector<U>& u, Fun fun) -> vector<decltype(fun(u[0]))> {
+  vector<decltype(fun(u[0]))> ret;
   ret.reserve(u.size());
   for (const U& elem : u)
     ret.push_back(fun(elem));
   return ret;
 }
 
-template <typename T, typename U, typename Fun>
-vector<T> transform2(vector<U>& u, Fun fun) {
-  vector<T> ret;
+template <typename U, typename Fun>
+auto transform2(vector<U>& u, Fun fun) -> vector<decltype(fun(u[0]))> {
+  vector<decltype(fun(u[0]))> ret;
   ret.reserve(u.size());
   for (U& elem : u)
     ret.push_back(fun(elem));
@@ -878,7 +878,7 @@ vector<T> transform2(vector<U>& u, Fun fun) {
 }
 
 template <typename T, typename U, typename Fun>
-optional<T> transform2(const optional<U>& u, Fun fun) {
+auto transform2(const optional<U>& u, Fun fun) -> optional<decltype(fun(*u))> {
   if (u)
     return fun(*u);
   else
@@ -1125,13 +1125,13 @@ string getPluralText(const string&, int num);
 template<class T>
 string combine(const vector<T*>& v) {
   return combine(
-      transform2<string>(v, [](const T* e) { return e->getName(); }));
+      transform2(v, [](const T* e) { return e->getName(); }));
 }
 
 template<class T>
 string combine(const vector<T>& v) {
   return combine(
-      transform2<string>(v, [](const T& e) { return e.name; }));
+      transform2(v, [](const T& e) { return e.name; }));
 }
 
 template<class T, class U>

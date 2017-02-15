@@ -199,7 +199,7 @@ void MainLoop::getSaveOptions(const vector<pair<GameSaveType, string>>& games, v
     append(allFiles, files);
     if (!files.empty()) {
       options.emplace_back(elem.second, ListElem::TITLE);
-      append(options, transform2<ListElem>(files,
+      append(options, transform2(files,
           [this] (const SaveFileInfo& info) {
               auto nameAndVersion = getNameAndVersion(userPath + "/" + info.filename);
               return ListElem(nameAndVersion->first, getDateString(info.date));}));

@@ -1067,7 +1067,7 @@ bool Creature::takeDamage(const Attack& attack) {
 }
 
 static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
-  return transform2<string>(adjectives, [] (const AdjectiveInfo& e) { return e.name; });
+  return transform2(adjectives, [] (const AdjectiveInfo& e) { return e.name; });
 }
 
 void Creature::updateViewObject() {

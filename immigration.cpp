@@ -101,7 +101,7 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
               if (required > 0) {
                 const char* extra = total > 0 ? "more " : "";
                 ret.push_back("Requires " + toString(required) + " " + extra +
-                    combineWithOr(transform2<string>(attraction.types,
+                    combineWithOr(transform2(attraction.types,
                         [&](const AttractionType& type) { return AttractionInfo::getAttractionName(type, required); })));
               }
             });
@@ -479,7 +479,7 @@ void Immigration::update() {
     vector<Group> immigrantInfo;
     for (auto elem : Iter(getImmigrants()))
       immigrantInfo.push_back(Group {elem.index(), Random.get(elem->getGroupSize())});
-    vector<double> weights = transform2<double>(immigrantInfo,
+    vector<double> weights = transform2(immigrantInfo,
         [&](const Group& group) { return getImmigrantChance(group);});
     if (std::accumulate(weights.begin(), weights.end(), 0.0) > 0) {
       ++idCnt;

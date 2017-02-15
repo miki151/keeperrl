@@ -342,7 +342,7 @@ using Dweller = Campaign::SiteInfo::Dweller;
 template <typename T>
 vector<Dweller> shuffle(RandomGen& random, vector<T> v) {
   random.shuffle(v.begin(), v.end());
-  return transform2<Dweller>(v, [](const T& t) { return Dweller(t); });
+  return transform2(v, [](const T& t) { return Dweller(t); });
 }
 
 void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& counts,
@@ -355,7 +355,7 @@ void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& cou
   placeVillains(campaign, shuffle(random, getAllies()), getVillainPlacement(campaign, VillainType::ALLY),
       counts.numAllies);
   if (retired) {
-    placeVillains(campaign, transform2<Dweller>(retired->getActiveGames(),
+    placeVillains(campaign, transform2(retired->getActiveGames(),
         [](const RetiredGames::RetiredGame& game) -> Dweller {
           return Campaign::RetiredInfo{game.gameInfo, game.fileInfo};
         }), getVillainPlacement(campaign, VillainType::MAIN), numRetired);
