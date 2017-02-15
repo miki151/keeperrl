@@ -1067,7 +1067,7 @@ bool Creature::takeDamage(const Attack& attack) {
 }
 
 static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
-  return transform2<string>(adjectives, [] (const AdjectiveInfo& e) { return e.name; });
+  return transform2(adjectives, [] (const AdjectiveInfo& e) { return e.name; });
 }
 
 void Creature::updateViewObject() {
@@ -1485,7 +1485,7 @@ bool Creature::canSee(const Creature* c) const {
   for (CreatureVision* v : creatureVisions)
     if (v->canSee(this, c))
       return true;
-  return !isBlind() && !c->isAffected(LastingEffect::INVISIBLE) &&
+  return !isBlind() && (!c->isAffected(LastingEffect::INVISIBLE) || isFriend(c)) &&
          (!c->isHidden() || c->knowsHiding(this)) && c->getPosition().isVisibleBy(this);
 }
 

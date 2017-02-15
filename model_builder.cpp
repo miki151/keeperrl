@@ -349,7 +349,7 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId)
       for (int i : Range(random.get(1, 4)))
         enemyInfo.push_back(enemyFactory->get(random.choose(EnemyId::DWARF_CAVE, EnemyId::KOBOLD_CAVE)));
       for (int i : Range(random.get(0, 3)))
-        enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
+        enemyInfo.push_back(enemyFactory->get(random.choose({EnemyId::BANDITS, EnemyId::NO_AGGRO_BANDITS}, {1, 4})));
       break;
     case BiomeId::FORREST:
       for (int i : Range(random.get(3, 5)))
@@ -361,11 +361,11 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId)
 PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExternalEnemies) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
-  addMapVillains(enemyInfo, biome);
+  enemyInfo.push_back(enemyFactory->get(EnemyId::DWARF_CAVE));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::KOBOLD_CAVE));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
-  for (int i : Range(random.get(1, 3)))
-    enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
   vector<ExternalEnemy> externalEnemies;
   if (addExternalEnemies)
     externalEnemies = enemyFactory->getExternalEnemies();
@@ -436,7 +436,8 @@ PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, 
 
 void ModelBuilder::measureSiteGen(int numTries) {
   std::cout << "Measuring single map" << std::endl;
-  measureModelGen(numTries, [this] { trySingleMapModel("pok"); });
+//  measureModelGen(numTries, [this] { trySingleMapModel("pok"); });
+  //measureModelGen(numTries, [this] { tryCampaignBaseModel("pok", false); });
   //measureModelGen(numTries, [this] { tryCampaignBaseModel("pok"); });
 //  for (EnemyId id : {EnemyId::SOKOBAN})
   for (EnemyId id : ENUM_ALL(EnemyId))

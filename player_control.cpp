@@ -950,7 +950,7 @@ void PlayerControl::handleTrading(Collective* ally) {
     if (items.empty())
       break;
     int budget = getCollective()->numResource(ResourceId::GOLD);
-    vector<ItemInfo> itemInfo = transform2<ItemInfo>(items,
+    vector<ItemInfo> itemInfo = transform2(items,
         [this, budget] (const pair<string, vector<Item*>> it) {
             return getTradeItemInfo(it.second, budget);});
     auto index = getView()->chooseTradeItem("Trade with " + ally->getName().getShort(),
@@ -1006,8 +1006,7 @@ void PlayerControl::handlePillage(Collective* col) {
         options.push_back({elem.second, getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)});
     if (options.empty())
       return;
-    vector<ItemInfo> itemInfo = transform2<ItemInfo>(options,
-        [this] (const PillageOption& it) {
+    vector<ItemInfo> itemInfo = transform2(options, [this] (const PillageOption& it) {
             return getPillageItemInfo(it.items, it.storage.empty());});
     auto index = getView()->choosePillageItem("Pillage " + col->getName().getShort(), itemInfo, &scrollPos);
     if (!index)
@@ -1113,7 +1112,7 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
     minions.push_back(c);
   minions.push_back(getCollective()->getLeader());
   info.minionGroups = getCreatureGroups(minions);
-  info.minions = transform2<CreatureInfo>(minions, [](const Creature* c) { return CreatureInfo(c) ;});
+  info.minions = transform2(minions, [](const Creature* c) { return CreatureInfo(c) ;});
   info.minionCount = getCollective()->getPopulationSize();
   info.minionLimit = getCollective()->getMaxPopulation();
 }
@@ -1161,8 +1160,8 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   if (chosenWorkshop) {
     auto transFun = [this](const WorkshopItem& item) { return getWorkshopItem(item); };
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
-        transform2<ItemInfo>(getCollective()->getWorkshops().get(*chosenWorkshop).getOptions(), transFun),
-        transform2<ItemInfo>(getCollective()->getWorkshops().get(*chosenWorkshop).getQueued(), transFun),
+        transform2(getCollective()->getWorkshops().get(*chosenWorkshop).getOptions(), transFun),
+        transform2(getCollective()->getWorkshops().get(*chosenWorkshop).getQueued(), transFun),
         index
     };
   }
@@ -1254,7 +1253,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         [&](const AttractionInfo& attraction) {
           int required = attraction.amountClaimed;
           requirements.push_back("Requires " + toString(required) + " " +
-              combineWithOr(transform2<string>(attraction.types,
+              combineWithOr(transform2(attraction.types,
                   [&](const AttractionType& type) { return AttractionInfo::getAttractionName(type, required); })));
         },
         [&](const TechId& techId) {
@@ -2015,7 +2014,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CREATURE_CONSUME:
         if (Creature* c = getCreature(input.get<Creature::Id>())) {
           if (auto creatureId = getView()->chooseTeamLeader("Choose minion to absorb",
-              transform2<CreatureInfo>(getCollective()->getConsumptionTargets(c),
+              transform2(getCollective()->getConsumptionTargets(c),
                   [] (const Creature* c) { return CreatureInfo(c);}), "cancel"))
             if (Creature* consumed = getCreature(*creatureId))
               getCollective()->orderConsumption(c, consumed);
@@ -2090,7 +2089,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::IMMIGRANT_AUTO_ACCEPT: {
         int id = input.get<int>();
-        if (getCollective()->getImmigration().getAutoState(id) == ImmigrantAutoState::AUTO_ACCEPT)
+        if (!!getCollective()->getImmigration().getAutoState(id))
           getCollective()->getImmigration().setAutoState(id, none);
         else
           getCollective()->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_ACCEPT);
@@ -2098,7 +2097,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::IMMIGRANT_AUTO_REJECT: {
         int id = input.get<int>();
-        if (getCollective()->getImmigration().getAutoState(id) == ImmigrantAutoState::AUTO_REJECT)
+        if (!!getCollective()->getImmigration().getAutoState(id))
           getCollective()->getImmigration().setAutoState(id, none);
         else
           getCollective()->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_REJECT);

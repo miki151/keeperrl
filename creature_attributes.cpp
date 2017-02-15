@@ -34,7 +34,7 @@ CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) 
   fun(*this);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     lastingEffects[effect] = -500;
-  if (body->canEntangle() && !body->isMinionFood())
+  if (body->canEntangle() && !body->isMinionFood() && body->isHumanoid())
     minionTasks.setValue(MinionTask::BE_WHIPPED, 0.01);
 }
 

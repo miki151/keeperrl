@@ -617,10 +617,11 @@ void Player::makeMove() {
   bool travel = false;
   bool wasJustTravelling = travelling || !!target;
   if (action.getId() != UserInputId::IDLE) {
-    if (action.getId() != UserInputId::REFRESH && action.getId() != UserInputId::RECT_CONFIRM) {
+    if (action.getId() == UserInputId::TILE_CLICK) {
       retireMessages();
       travelling = false;
-      target = none;
+      if (target)
+        target = none;
       getView()->resetCenter();
     }
     updateView = true;
@@ -630,7 +631,7 @@ void Player::makeMove() {
     case UserInputId::TRAVEL: travel = true;
       FALLTHROUGH;
     case UserInputId::MOVE: direction.push_back(action.get<Vec2>()); break;
-    case UserInputId::MOVE_TO: {
+    case UserInputId::TILE_CLICK: {
       Position newPos = getCreature()->getPosition().withCoord(action.get<Vec2>());
       if (newPos.dist8(getCreature()->getPosition()) == 1) {
         Vec2 dir = getCreature()->getPosition().getDir(newPos);
@@ -960,8 +961,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto elem : typeDisplayOrder)
     if (typeGroups[elem].size() > 0)
       append(info.inventory, getItemInfos(typeGroups[elem]));
-  info.commands = transform2<PlayerInfo::CommandInfo>(getCommands(),
-      [](const CommandInfo& info) { return info.commandInfo;});
+  info.commands = transform2(getCommands(), [](const CommandInfo& info) { return info.commandInfo;});
 
 }
 
@@ -1001,7 +1001,7 @@ vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
 }
 
 vector<Vec2> Player::getVisibleEnemies() const {
-  return transform2<Vec2>(getCreature()->getVisibleEnemies(),
+  return transform2(getCreature()->getVisibleEnemies(),
       [](const Creature* c) { return c->getPosition().getCoord(); });
 }
 

@@ -168,10 +168,6 @@ void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
   optional<int> activeBuilding = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS);
   auto collectiveTab = guiBuilder.getCollectiveTab();
   switch (gameInfo.infoType) {
-    case GameInfo::InfoType::SPECTATOR:
-    case GameInfo::InfoType::PLAYER:
-      inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));
-      break;
     case GameInfo::InfoType::BAND:
 /*      if (collectiveTab == CollectiveTab::MINIONS)
         inputQueue.push(UserInput(UserInputId::MOVE_TO, pos));

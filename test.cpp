@@ -344,7 +344,7 @@ class Test {
     vector<int> v { 5, 4, 3, 2, 1};
     vector<string> s { "s5", "s4", "s3", "s2", "s1" };
     function<string(const int&)> func = [](const int& a) { return "s" + toString(a); };
-    vector<string> res = transform2<string>(v, func);
+    vector<string> res = transform2(v, func);
     CHECKEQ(res, s);
   }
 

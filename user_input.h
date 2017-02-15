@@ -79,7 +79,6 @@ enum class UserInputId {
     SHOW_HISTORY,
 // turn-based actions
     MOVE,
-    MOVE_TO,
     TRAVEL,
     FIRE,
     PICK_UP_ITEM,
@@ -199,7 +198,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
         ASSIGN(Vec2,
             UserInputId::TILE_CLICK,
             UserInputId::MOVE, 
-            UserInputId::MOVE_TO, 
             UserInputId::TRAVEL, 
             UserInputId::FIRE,
             UserInputId::RECT_DESELECTION),
