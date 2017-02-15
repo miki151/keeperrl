@@ -74,6 +74,7 @@ static string getSaveSuffix(GameSaveType t) {
     case GameSaveType::KEEPER: return ".kep";
     case GameSaveType::ADVENTURER: return ".adv";
     case GameSaveType::RETIRED_SITE: return ".sit";
+    case GameSaveType::RETIRED_CAMPAIGN: return ".cam";
     case GameSaveType::AUTOSAVE: return ".aut";
   }
 }
@@ -281,29 +282,45 @@ void MainLoop::eraseAllSavesExcept(const PGame& game, optional<GameSaveType> exc
       eraseSaveFile(game, erasedType);
 }
 
-RetiredGames MainLoop::getRetiredGames() {
-  RetiredGames ret;
-  for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
-    if (isCompatible(getSaveVersion(info)))
-      if (auto saved = getSavedGameInfo(userPath + "/" + info.filename))
-        ret.addLocal(*saved, info);
-  optional<vector<FileSharing::SiteInfo>> onlineSites;
-  doWithSplash(SplashType::SMALL, "Fetching list of retired dungeons from the server...",
-      [&] { onlineSites = fileSharing->listSites(); }, [&] { fileSharing->cancel(); });
-  if (onlineSites) {
-    for (auto& elem : *onlineSites)
-      if (isCompatible(elem.version))
-        ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames);
-  } else
-    view->presentText("", "Failed to fetch list of retired dungeons from the server.");
-  ret.sort();
-  return ret;
+optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
+  switch (type) {
+    case CampaignType::FREE_PLAY: {
+      RetiredGames ret;
+      for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
+        if (isCompatible(getSaveVersion(info)))
+          if (auto saved = getSavedGameInfo(userPath + "/" + info.filename))
+            ret.addLocal(*saved, info);
+      optional<vector<FileSharing::SiteInfo>> onlineSites;
+      doWithSplash(SplashType::SMALL, "Fetching list of retired dungeons from the server...",
+          [&] { onlineSites = fileSharing->listSites(); }, [&] { fileSharing->cancel(); });
+      if (onlineSites) {
+        for (auto& elem : *onlineSites)
+          if (isCompatible(elem.version))
+            ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames);
+      } else
+        view->presentText("", "Failed to fetch list of retired dungeons from the server.");
+      ret.sort();
+      return ret;
+    }
+    case CampaignType::CAMPAIGN: {
+      RetiredGames ret;
+      for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_CAMPAIGN)))
+        if (isCompatible(getSaveVersion(info)))
+          if (auto saved = getSavedGameInfo(userPath + "/" + info.filename))
+            ret.addLocal(*saved, info);
+      for (int i : All(ret.getAllGames()))
+        ret.setActive(i, true);
+      return ret;
+    }
+    default:
+      return none;
+  }
 }
 
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   if (forceGame) {
     CampaignBuilder builder(view, random, options, PlayerRole::KEEPER);
-    auto result = builder.prepareCampaign([this] { return getRetiredGames(); }, CampaignType::QUICK_MAP);
+    auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP);
     forceGame = none;
     return Game::campaignGame(prepareCampaignModels(*result, random), *result);
   }
@@ -314,7 +331,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
         [&](PlayerRole role) -> optional<PGame> {
           random.init(Random.get(1234567));
           CampaignBuilder builder(view, random, options, role);
-          if (auto result = builder.prepareCampaign([this] { return getRetiredGames(); }, CampaignType::CAMPAIGN)) {
+          if (auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {
             return Game::campaignGame(prepareCampaignModels(*result, random), *result);
           } else
             return none;

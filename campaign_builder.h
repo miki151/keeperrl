@@ -10,7 +10,7 @@ class TribeId;
 class CampaignBuilder {
   public:
   CampaignBuilder(View*, RandomGen&, Options*, PlayerRole);
-  optional<CampaignSetup> prepareCampaign(function<RetiredGames()>, CampaignType defaultType);
+  optional<CampaignSetup> prepareCampaign(function<optional<RetiredGames>(CampaignType)>, CampaignType defaultType);
   static CampaignSetup getEmptyCampaign();
 
   private:

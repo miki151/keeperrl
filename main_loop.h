@@ -32,7 +32,7 @@ class MainLoop {
 
   private:
 
-  RetiredGames getRetiredGames();
+  optional<RetiredGames> getRetiredGames(CampaignType);
   int getSaveVersion(const SaveFileInfo& save);
   void uploadFile(const string& path, GameSaveType);
   void saveUI(PGame&, GameSaveType type, SplashType splashType);

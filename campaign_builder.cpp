@@ -250,6 +250,7 @@ struct VillainCounts {
   int numMain;
   int numLesser;
   int numAllies;
+  int maxRetired;
 };
 
 static VillainCounts getVillainCounts(CampaignType type, Options* options) {
@@ -258,20 +259,22 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
       return {
         options->getIntValue(OptionId::MAIN_VILLAINS),
         options->getIntValue(OptionId::LESSER_VILLAINS),
-        options->getIntValue(OptionId::ALLIES)
+        options->getIntValue(OptionId::ALLIES),
+        10000
       };
     }
     case CampaignType::CAMPAIGN:
-      return {4, 6, 2};
+      return {4, 6, 2, 1};
     case CampaignType::ENDLESS:
       return {
         0,
         options->getIntValue(OptionId::LESSER_VILLAINS),
-        options->getIntValue(OptionId::ALLIES)
+        options->getIntValue(OptionId::ALLIES),
+        0
       };
     case CampaignType::QUICK_MAP:
     case CampaignType::SINGLE_KEEPER:
-      return {0, 0, 0};
+      return {0, 0, 0, 0};
   }
 }
 
@@ -347,7 +350,7 @@ vector<Dweller> shuffle(RandomGen& random, vector<T> v) {
 
 void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& counts,
     const optional<RetiredGames>& retired) {
-  int numRetired = retired ? min(counts.numMain, retired->getNumActive()) : 0;
+  int numRetired = retired ? min(counts.numMain, counts.maxRetired) : 0;
   placeVillains(campaign, shuffle(random, getMainVillains()), getVillainPlacement(campaign, VillainType::MAIN),
       counts.numMain - numRetired);
   placeVillains(campaign, shuffle(random, getLesserVillains()), getVillainPlacement(campaign, VillainType::LESSER),
@@ -362,12 +365,12 @@ void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& cou
   }
 }
 
-optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()> genRetired, CampaignType type) {
+optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<RetiredGames>(CampaignType)> genRetired,
+    CampaignType type) {
   Vec2 size(17, 9);
   int numBlocked = 0.6 * size.x * size.y;
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
-  optional<RetiredGames> retiredCache;
-  static optional<RetiredGames> noRetired;
+  auto retired = genRetired(type);
   View::CampaignMenuState menuState {};
   setCountLimits(options);
   options->setChoices(OptionId::KEEPER_TYPE, {CreatureId::KEEPER, CreatureId::KEEPER_F});
@@ -379,9 +382,6 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()
       campaign.clearSite(*pos);
       setPlayerPos(campaign, *pos, player.get());
     }
-    if (type == CampaignType::FREE_PLAY && !retiredCache)
-      retiredCache = genRetired();
-    auto& retired = type == CampaignType::FREE_PLAY ? retiredCache : noRetired;
     placeVillains(campaign, getVillainCounts(type, options), retired);
     while (1) {
       bool updateMap = false;
@@ -408,6 +408,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<RetiredGames()
             break;
         case CampaignActionId::CHANGE_TYPE:
             type = action.get<CampaignType>();
+            retired = genRetired(type);
             updateMap = true;
             break;
         case CampaignActionId::UPDATE_OPTION:
