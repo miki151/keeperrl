@@ -16,6 +16,7 @@
 #ifndef _STDAFX_H
 #define _STDAFX_H
 
+#ifndef WINDOWS
 #if __has_cpp_attribute(nodiscard)
 #define NODISCARD [[nodiscard]]
 #elif __has_cpp_attribute(gnu::warn_unused_result)
@@ -29,6 +30,11 @@
 #elif __has_cpp_attribute(clang::fallthrough)
 #define FALLTHROUGH [[clang::fallthrough]]
 #else
+#define FALLTHROUGH
+#endif
+
+#else
+#define NODISCARD
 #define FALLTHROUGH
 #endif
 
