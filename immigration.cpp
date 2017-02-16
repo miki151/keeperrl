@@ -332,8 +332,8 @@ CostInfo Immigration::calculateCost(int index, const ExponentialCost& cost) cons
     existing.insert(c);
   int numType = 0;
   if (auto gen = getReferenceMaybe(generated, index))
-    for (Creature* c : *gen)
-      if (existing.contains(c))
+    for (auto id : *gen)
+      if (existing.contains(id))
         ++numType;
   if (numType < cost.numFree)
     return CostInfo::noCost();
@@ -395,12 +395,12 @@ void Immigration::accept(int id, bool withMessage) {
     if (i == 0 && groupSize > 1) // group leader
       c->getAttributes().increaseBaseExpLevel(2);
     occupyRequirements(c, candidate.immigrantIndex);
-    generated[candidate.immigrantIndex].push_back(c);
+    generated[candidate.immigrantIndex].insert(c);
   }
   candidate.addAllCreatures(spawnPos);
   if (!immigrantInfo.isPersistent())
     rejectIfNonPersistent(id);
-  else if (immigrantInfo.isAvailable(generated[candidate.immigrantIndex].size()))
+  else if (immigrantInfo.isAvailable(generated[candidate.immigrantIndex].getSize()))
     available[id] = Available::generate(this, candidate.immigrantIndex);
 }
 
@@ -420,7 +420,7 @@ Immigration::Available Immigration::Available::generate(Immigration* immigration
 Immigration::Available Immigration::Available::generate(Immigration* immigration, const Group& group) {
   const ImmigrantInfo& info = immigration->getImmigrants()[group.immigrantIndex];
   vector<PCreature> immigrants;
-  int numGenerated = immigration->generated[group.immigrantIndex].size();
+  int numGenerated = immigration->generated[group.immigrantIndex].getSize();
   for (int i : Range(group.count))
     immigrants.push_back(CreatureFactory::fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
         MonsterAIFactory::collective(immigration->collective)));

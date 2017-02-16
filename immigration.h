@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "util.h"
 #include "entity_map.h"
+#include "entity_set.h"
 #include "collective_config.h"
 #include "immigrant_info.h"
 #include "immigrant_auto_state.h"
@@ -64,7 +65,7 @@ class Immigration {
   EntityMap<Creature, map<AttractionType, int>> SERIAL(minionAttraction);
   map<int, Available> SERIAL(available);
   Collective* SERIAL(collective);
-  map<int, vector<Creature*>> SERIAL(generated);
+  map<int, EntitySet<Creature>> SERIAL(generated);
   double getImmigrantChance(const Group& info) const;
   vector<string> getMissingAttractions(const ImmigrantInfo&) const;
   int SERIAL(idCnt) = 0;
