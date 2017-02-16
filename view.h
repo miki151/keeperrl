@@ -203,6 +203,8 @@ class View {
     optional<string> mapTitle;
     string introText;
     vector<CampaignType> availableTypes;
+    enum WarningType { NO_RETIRE, OTHER_MODES };
+    optional<WarningType> warning;
   };
 
   virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) = 0;

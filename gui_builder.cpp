@@ -2379,6 +2379,19 @@ static const char* getGameTypeName(CampaignType type) {
   }
 }
 
+SGuiElem GuiBuilder::drawMenuWarning(View::CampaignOptions::WarningType type) {
+  switch (type) {
+    case View::CampaignOptions::NO_RETIRE:
+      return gui.labelMultiLine("Warning: you won't be able to retire your dungeon in this mode.",
+              legendLineHeight, Renderer::textSize, colors[ColorId::RED]);
+    case View::CampaignOptions::OTHER_MODES:
+      return gui.getListBuilder()
+          .addElemAuto(gui.labelUnicode(u8"⬅", colors[ColorId::WHITE]))
+          .addElemAuto(gui.label(" Other game modes are here.", colors[ColorId::WHITE]))
+          .buildHorizontalList();
+  }
+}
+
 SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
     Options* options, View::CampaignMenuState& menuState) {
   const auto& campaign = campaignOptions.campaign;
@@ -2464,7 +2477,8 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
     rightLines.addElem(gui.stack(
         gui.labelHighlight("[Add retired dungeons]", colors[ColorId::LIGHT_BLUE]),
         gui.button([&menuState] { menuState.settings = !menuState.settings;})));
-  }
+  } else if (campaignOptions.warning)
+    rightLines.addElem(gui.leftMargin(-20, drawMenuWarning(*campaignOptions.warning)));
   int retiredPosX = 640;
   int retiredMenuX = 380;
   int helpPosX = 300;

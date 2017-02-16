@@ -850,7 +850,6 @@ void WindowView::presentWorldmap(const Campaign& campaign) {
 CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, Options* options,
     CampaignMenuState& state) {
   SyncQueue<CampaignAction> returnQueue;
-  state.helpText = false;
   return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, state));
 }
 

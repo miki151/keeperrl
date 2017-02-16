@@ -365,13 +365,24 @@ void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& cou
   }
 }
 
+static optional<View::CampaignOptions::WarningType> getMenuWarning(CampaignType type) {
+  switch (type) {
+    case CampaignType::CAMPAIGN:
+      return View::CampaignOptions::OTHER_MODES;
+    case CampaignType::SINGLE_KEEPER:
+      return View::CampaignOptions::NO_RETIRE;
+    default:
+      return none;
+  }
+}
+
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<RetiredGames>(CampaignType)> genRetired,
     CampaignType type) {
   Vec2 size(17, 9);
   int numBlocked = 0.6 * size.x * size.y;
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
   auto retired = genRetired(type);
-  View::CampaignMenuState menuState {};
+  View::CampaignMenuState menuState { false, true, false};
   setCountLimits(options);
   options->setChoices(OptionId::KEEPER_TYPE, {CreatureId::KEEPER, CreatureId::KEEPER_F});
   options->setChoices(OptionId::ADVENTURER_TYPE, {CreatureId::ADVENTURER, CreatureId::ADVENTURER_F});
@@ -396,7 +407,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               getSecondaryOptions(type),
               getSiteChoiceTitle(type),
               getIntroText(),
-              getAvailableTypes()
+              getAvailableTypes(),
+              getMenuWarning(type)
               }, options, menuState);
       switch (action.getId()) {
         case CampaignActionId::REROLL_MAP:

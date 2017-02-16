@@ -251,6 +251,7 @@ class GuiBuilder {
   vector<SGuiElem> getSettingsButtons();
   int getImmigrantAnimationOffset(std::chrono::milliseconds initTime);
   HeapAllocated<CallCache<SGuiElem>> cache;
+  SGuiElem drawMenuWarning(View::CampaignOptions::WarningType);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,
