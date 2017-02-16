@@ -390,7 +390,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
       CampaignAction action = type == CampaignType::QUICK_MAP ? CampaignActionId::CONFIRM
           : view->prepareCampaign({
               campaign,
-              retired,
+              (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,
               player.get(),
               getPrimaryOptions(),
               getSecondaryOptions(type),

@@ -98,7 +98,7 @@ optional<string> Campaign::SiteInfo::getDwellerDescription() const {
   if (dweller)
     return apply_visitor(*dweller, makeVisitor<string>(
         [](const VillainInfo& info) { return info.name + " (" + info.getDescription() + ")"; },
-        [](const RetiredInfo& info) { return info.gameInfo.getName() + " (hostile)" ;},
+        [](const RetiredInfo& info) { return info.gameInfo.getName() + " (main villain)" ;},
         [](const KeeperInfo&) { return "This is your home site"; }));
   else
     return none;
