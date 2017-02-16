@@ -2405,11 +2405,16 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
        gui.buttonRect([&queue, this, campaignOptions] (Rectangle bounds) {
            auto lines = gui.getListBuilder(legendLineHeight);
            bool exit = false;
-           for (auto type : campaignOptions.availableTypes)
+           for (auto& info : campaignOptions.availableTypes) {
              lines.addElem(gui.stack(
-                 gui.label(getGameTypeName(type)),
-                 gui.button([&, type] { queue.push({CampaignActionId::CHANGE_TYPE, type}); exit = true; })));
-           drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 300);
+                 gui.labelHighlight(getGameTypeName(info.type)),
+                 gui.button([&, info] { queue.push({CampaignActionId::CHANGE_TYPE, info.type}); exit = true; })));
+             for (auto& desc : info.description)
+               lines.addElem(gui.leftMargin(0, gui.label("- " + desc, colors[ColorId::LIGHT_GRAY], Renderer::smallTextSize)),
+                   legendLineHeight * 2 / 3);
+             lines.addSpace(legendLineHeight / 3);
+           }
+           drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 350);
        }))));
   centerLines.addElem(gui.centerHoriz(gui.stack(
             gui.labelHighlight("[Help]", colors[ColorId::LIGHT_BLUE]),

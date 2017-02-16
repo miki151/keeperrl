@@ -80,6 +80,28 @@ vector<OptionId> CampaignBuilder::getPrimaryOptions() const {
   return {getPlayerTypeOptionId(), getPlayerNameOptionId()};
 }
 
+static vector<string> getCampaignTypeDescription(CampaignType type) {
+  switch (type) {
+    case CampaignType::CAMPAIGN:
+      return {
+        "The main competitive mode."
+      };
+    case CampaignType::FREE_PLAY:
+      return {
+        "Add retired dungeons of other players.",
+        "Customize starting point and villains.",
+        "Highscores not recorded.",
+      };
+    case CampaignType::SINGLE_KEEPER:
+      return {
+        "Everyone is on one big map.",
+        "Separate highscore table."
+      };
+    default:
+      return {};
+  }
+}
+
 vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
   switch (playerRole) {
     case PlayerRole::KEEPER:
@@ -407,7 +429,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               getSecondaryOptions(type),
               getSiteChoiceTitle(type),
               getIntroText(),
-              getAvailableTypes(),
+              transform2(getAvailableTypes(), [](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
+                  return {t, getCampaignTypeDescription(t)};}),
               getMenuWarning(type)
               }, options, menuState);
       switch (action.getId()) {

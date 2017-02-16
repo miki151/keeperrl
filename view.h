@@ -201,7 +201,11 @@ class View {
     vector<OptionId> secondaryOptions;
     optional<string> mapTitle;
     string introText;
-    vector<CampaignType> availableTypes;
+    struct CampaignTypeInfo {
+      CampaignType type;
+      vector<string> description;
+    };
+    vector<CampaignTypeInfo> availableTypes;
     enum WarningType { NO_RETIRE, OTHER_MODES };
     optional<WarningType> warning;
   };
