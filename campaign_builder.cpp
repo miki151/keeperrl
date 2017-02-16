@@ -382,7 +382,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
   int numBlocked = 0.6 * size.x * size.y;
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
   auto retired = genRetired(type);
-  View::CampaignMenuState menuState { false, true, false};
+  View::CampaignMenuState menuState { true, false};
   setCountLimits(options);
   options->setChoices(OptionId::KEEPER_TYPE, {CreatureId::KEEPER, CreatureId::KEEPER_F});
   options->setChoices(OptionId::ADVENTURER_TYPE, {CreatureId::ADVENTURER, CreatureId::ADVENTURER_F});

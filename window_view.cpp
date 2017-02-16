@@ -1261,7 +1261,7 @@ void WindowView::processEvents() {
         default:break;
       }
     else {
-      if (event.type == SDL::SDL_KEYDOWN) {
+      if (event.type == SDL::SDL_KEYDOWN && renderDialog.empty() && blockingElems.empty()) {
         if (lockKeyboard)
           return;
         lockKeyboard = true;

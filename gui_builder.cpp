@@ -2488,7 +2488,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   interior.push_back(centerLines.buildVerticalList());
   interior.push_back(gui.margins(rightLines.buildVerticalList(), retiredPosX, 0, 50, 0));
   interior.push_back(
-        gui.conditional(gui.margins(gui.miniWindow2(gui.margins(
+        gui.conditionalStopKeys(gui.margins(gui.miniWindow2(gui.margins(
                 gui.labelMultiLine(campaignOptions.introText, legendLineHeight), 10),
             [&menuState] { menuState.helpText = false;}), 100, 50, 100, 280),
             [&menuState] { return menuState.helpText;}));
@@ -2496,7 +2496,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   int optionsSize = secondaryOptionLines.getSize();
   if (!secondaryOptionLines.isEmpty())
     interior.push_back(
-          gui.conditional(gui.translate(gui.miniWindow2(gui.margins(secondaryOptionLines.buildVerticalList(), 10),
+          gui.conditionalStopKeys(gui.translate(gui.miniWindow2(gui.margins(secondaryOptionLines.buildVerticalList(), 10),
               [&] { menuState.settings = false;}), Vec2(30, 70),
                   Vec2(650, 50 + optionsSize)),
           [&menuState] { return menuState.settings;}));

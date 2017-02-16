@@ -190,7 +190,6 @@ class View {
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
 
   struct CampaignMenuState {
-    bool retiredMenu;
     bool helpText;
     bool settings;
   };
