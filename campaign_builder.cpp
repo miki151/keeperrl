@@ -350,7 +350,7 @@ vector<Dweller> shuffle(RandomGen& random, vector<T> v) {
 
 void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& counts,
     const optional<RetiredGames>& retired) {
-  int numRetired = retired ? min(counts.numMain, counts.maxRetired) : 0;
+  int numRetired = retired ? min(retired->getNumActive(), min(counts.numMain, counts.maxRetired)) : 0;
   placeVillains(campaign, shuffle(random, getMainVillains()), getVillainPlacement(campaign, VillainType::MAIN),
       counts.numMain - numRetired);
   placeVillains(campaign, shuffle(random, getLesserVillains()), getVillainPlacement(campaign, VillainType::LESSER),
