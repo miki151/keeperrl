@@ -299,11 +299,11 @@ void Game::tick(double time) {
 
 void Game::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
-//#ifdef RELEASE
+#ifdef RELEASE
   bool canRetire = playerControl && gameWon() && !getPlayer() && campaign->getType() != CampaignType::SINGLE_KEEPER;
-/*#else
+#else
   bool canRetire = playerControl && !getPlayer();
-#endif*/
+#endif
   vector<ListElem> elems { "Save the game",
     {"Retire", canRetire ? ListElem::NORMAL : ListElem::INACTIVE} , "Change options", "Abandon the game" };
   auto ind = view->chooseFromList("Would you like to:", elems);

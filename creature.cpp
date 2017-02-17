@@ -204,10 +204,6 @@ double Creature::getDeathTime() const {
   return *deathTime;
 }
 
-const Creature* Creature::getLastAttacker() const {
-  return lastAttacker;
-}
-
 void Creature::clearLastAttacker() {
   lastAttacker = nullptr;
 }

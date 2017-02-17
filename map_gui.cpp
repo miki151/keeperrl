@@ -1010,7 +1010,7 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
     previousLevel = level;
     mouseOffset = {0, 0};
   }
-  if (!isCentered() || (view->isPlayerView() && lockedView)) {
+  if (!isCentered() || view->isPlayerView()) {
     setCenter(view->getPosition());
   }
   keyScrolling = !view->isPlayerView();

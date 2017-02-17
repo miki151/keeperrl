@@ -134,7 +134,6 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Body& getBody();
   bool isDead() const;
   bool isBlind() const;
-  const Creature* getLastAttacker() const;
   void clearLastAttacker();
   optional<string> getDeathReason() const;
   double getDeathTime() const;
