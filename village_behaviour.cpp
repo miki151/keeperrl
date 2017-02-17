@@ -9,6 +9,7 @@
 #include "attack_trigger.h"
 #include "creature_factory.h"
 #include "construction_map.h"
+#include "villain_type.h"
 
 SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom);
 
@@ -112,6 +113,18 @@ static double getFinishOffProb(double maxPower, double currentPower, double self
   return 1 - 2 * (currentPower / maxPower) * (1 - minProb);
 }
 
+static double getNumConqueredProb(const Game* game, int minCount) {
+  int numConquered = 0;
+  for (auto col : game->getCollectives())
+    if ((col->getVillainType() == VillainType::LESSER || col->getVillainType() == VillainType::MAIN) &&
+        col->isConquered())
+      ++numConquered;
+  if (numConquered >= minCount)
+    return 0.5 * (1 + min(1.0, (double)(numConquered - minCount) / minCount));
+  else
+    return 0;
+}
+
 double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageControl* self) const {
   double powerMaxProb = 1.0 / 10000; // rather small chance that they attack just because you are strong
   double victimsMaxProb = 1.0 / 500;
@@ -122,6 +135,7 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
   double finishOffMaxProb = 1.0 / 1000;
   double proximityMaxProb = 1.0 / 5000;
   double timerProb = 1.0 / 3000;
+  double numConqueredMaxProb = 1.0 / 3000;
   if (Collective* collective = self->getEnemyCollective())
     switch (trigger.getId()) {
       case AttackTriggerId::TIMER: 
@@ -143,8 +157,7 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
       case AttackTriggerId::GOLD:
         return goldMaxProb * goldFun(collective->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
       case AttackTriggerId::STOLEN_ITEMS:
-        return stolenMaxProb 
-          * stolenItemsFun(self->stolenItemCount);
+        return stolenMaxProb * stolenItemsFun(self->stolenItemCount);
       case AttackTriggerId::ENTRY:
         return entryMaxProb * self->entries;
       case AttackTriggerId::PROXIMITY:
@@ -152,6 +165,8 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
           return proximityMaxProb;
         else
           return 0;
+      case AttackTriggerId::NUM_CONQUERED:
+        return numConqueredMaxProb * getNumConqueredProb(self->getCollective()->getGame(), trigger.get<int>());
     }
   return 0;
 }

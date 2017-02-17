@@ -159,7 +159,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               c.triggers = LIST(
                   {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
                   AttackTriggerId::SELF_VICTIMS,
-                  {AttackTriggerId::TIMER, 7000},
+                  {AttackTriggerId::NUM_CONQUERED, 2},
                   AttackTriggerId::STOLEN_ITEMS,
                   {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
                   AttackTriggerId::FINISH_OFF,
@@ -190,7 +190,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               c.triggers = LIST(
                   {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
                   AttackTriggerId::SELF_VICTIMS,
-                  {AttackTriggerId::TIMER, 7000},
+                  {AttackTriggerId::NUM_CONQUERED, 3},
                   AttackTriggerId::STOLEN_ITEMS,
                   {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
                   AttackTriggerId::FINISH_OFF,
@@ -225,7 +225,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               c.triggers = LIST(
                   {AttackTriggerId::ENEMY_POPULATION, 22},
                   AttackTriggerId::STOLEN_ITEMS,
-                  {AttackTriggerId::TIMER, 7000},
+                  {AttackTriggerId::NUM_CONQUERED, 3},
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 12);
@@ -247,7 +247,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               c.triggers = LIST(
                   {AttackTriggerId::ENEMY_POPULATION, 18},
                   AttackTriggerId::STOLEN_ITEMS,
-                  {AttackTriggerId::TIMER, 7000},
+                  {AttackTriggerId::NUM_CONQUERED, 2},
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 7);
@@ -276,7 +276,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                 AttackTriggerId::SELF_VICTIMS,
                 AttackTriggerId::STOLEN_ITEMS,
                 {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
-                {AttackTriggerId::TIMER, 7000},
+                {AttackTriggerId::NUM_CONQUERED, 3},
                 AttackTriggerId::FINISH_OFF,
                 AttackTriggerId::PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 3);
@@ -326,7 +326,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                   AttackTriggerId::PROXIMITY,
                   {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
                   AttackTriggerId::FINISH_OFF,
-                  {AttackTriggerId::TIMER, 7000});
+                  {AttackTriggerId::NUM_CONQUERED, 3});
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::CAMP_AND_SPAWN,
                 CreatureFactory::elementals(TribeId::getHuman()));
               c.ransom = make_pair(0.5, random.get(200, 400));),
@@ -377,7 +377,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                   AttackTriggerId::SELF_VICTIMS,
                   AttackTriggerId::STOLEN_ITEMS,
                   {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
-                  {AttackTriggerId::TIMER, 7000},
+                  {AttackTriggerId::NUM_CONQUERED, 2},
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));

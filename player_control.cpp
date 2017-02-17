@@ -844,11 +844,11 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
 static string getTriggerLabel(const AttackTrigger& trigger) {
   switch (trigger.getId()) {
     case AttackTriggerId::SELF_VICTIMS: return "Killed tribe members";
-    case AttackTriggerId::GOLD: return "Gold";
+    case AttackTriggerId::GOLD: return "Your gold";
     case AttackTriggerId::STOLEN_ITEMS: return "Item theft";
     case AttackTriggerId::ROOM_BUILT:
       switch (trigger.get<FurnitureType>()) {
-        case FurnitureType::THRONE: return "Throne";
+        case FurnitureType::THRONE: return "Your throne";
         case FurnitureType::IMPALED_HEAD: return "Impaled heads";
         default: FATAL << "Unsupported ROOM_BUILT type"; return "";
       }
@@ -856,6 +856,7 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
     case AttackTriggerId::FINISH_OFF: return "Finishing you off";
     case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
     case AttackTriggerId::TIMER: return "Your evilness";
+    case AttackTriggerId::NUM_CONQUERED: return "Your aggression";
     case AttackTriggerId::ENTRY: return "Entry";
     case AttackTriggerId::PROXIMITY: return "Proximity";
   }
