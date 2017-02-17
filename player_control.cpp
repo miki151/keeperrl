@@ -1191,7 +1191,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         [&](const RecruitmentInfo& info) {
           infoLines.push_back(
               toString(info.getAvailableRecruits(getGame(), candidate.getInfo().getId(0)).size()) +
-              " recruits available.");
+              " recruits available");
         }
     ));
     Creature* c = candidate.getCreatures()[0];
@@ -1274,20 +1274,20 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
           infoLines.push_back("Cost doubles for every " + toString(cost.numToDoubleCost) + " "
               + c->getName().plural());
           if (cost.numFree > 0)
-            infoLines.push_back("First " + toString(cost.numFree) + " " + c->getName().plural() + " are free.");
+            infoLines.push_back("First " + toString(cost.numFree) + " " + c->getName().plural() + " are free");
         },
         [&](const Pregnancy&) {
           requirements.push_back("Requires a pregnant succubus");
         },
         [&](const RecruitmentInfo& info) {
           if (info.findEnemy(getGame()))
-            requirements.push_back("Ally must be discovered and have recruits available.");
+            requirements.push_back("Ally must be discovered and have recruits available");
           else
-            requirements.push_back("Recruit is not available in this game.");
+            requirements.push_back("Recruit is not available in this game");
         }
     ));
     if (auto limit = elem->getLimit())
-      infoLines.push_back("Limited to " + toString(*limit) + " creatures.");
+      infoLines.push_back("Limited to " + toString(*limit) + " creatures");
     info.allImmigration.push_back(ImmigrantDataInfo {
         requirements,
         infoLines,
