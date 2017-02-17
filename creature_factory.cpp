@@ -1008,7 +1008,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
-          c.spells->add(SpellId::STR_BONUS);
+          c.spells->add(SpellId::HEALING);
           c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.minionTasks.setValue(MinionTask::CRAFT, 0.0001);
           c.minionTasks.setValue(MinionTask::TRAIN, 0.0001); 
@@ -1016,7 +1016,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.skills.setValue(SkillId::MANA, 1);
-          );
+      );
     case CreatureId::KEEPER_F:
       return CATTR(
           c.viewId = ViewId::KEEPER_F;
@@ -1024,8 +1024,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::SPEED] = 100;
           c.gender = Gender::female;
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 13;
-          c.attr[AttrType::DEXTERITY] = 17;
+          c.attr[AttrType::STRENGTH] = 15;
+          c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 5;
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
@@ -1038,7 +1038,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.skills.setValue(SkillId::MANA, 1);
-          );
+      );
     case CreatureId::ADVENTURER:
       return CATTR(
           c.viewId = ViewId::PLAYER;
@@ -1051,21 +1051,22 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
-          c.skills.insert(SkillId::AMBUSH););
+          c.skills.insert(SkillId::AMBUSH);
+      );
     case CreatureId::ADVENTURER_F:
       return CATTR(
           c.viewId = ViewId::PLAYER_F;
           c.gender = Gender::female;
           c.attr[AttrType::SPEED] = 100;
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 13;
-          c.attr[AttrType::DEXTERITY] = 17;
+          c.attr[AttrType::STRENGTH] = 15;
+          c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 5;
           c.maxExpFromCombat = 15;
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
-          c.skills.setValue(SkillId::ARCHERY, 0.6););
+      );
     case CreatureId::BANDIT:
       return CATTR(
           c.viewId = ViewId::BANDIT;
