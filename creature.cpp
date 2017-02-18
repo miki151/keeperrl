@@ -61,7 +61,12 @@ template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) { 
   ar & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
   serializeAll(ar, attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
-  serializeAll(ar, deathTime, hidden, lastAttacker, deathReason, swapPositionCooldown);
+  serializeAll(ar, deathTime, hidden);
+  if (version == 0) {
+    Creature* SERIAL(tmp);
+    serializeAll(ar, tmp);
+  }
+  serializeAll(ar, deathReason, swapPositionCooldown);
   serializeAll(ar, unknownAttackers, privateEnemies, holding, controllerStack, creatureVisions, kills);
   serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverride);
   serializeAll(ar, vision, lastCombatTime, debt);

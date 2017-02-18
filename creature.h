@@ -288,7 +288,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   double SERIAL(morale) = 0;
   optional<double> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
-  Creature* SERIAL(lastAttacker) = nullptr;
+  Creature* lastAttacker = nullptr;
   optional<string> SERIAL(deathReason);
   int SERIAL(swapPositionCooldown) = 0;
   EntitySet<Creature> SERIAL(unknownAttackers);
@@ -310,6 +310,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   optional<double> SERIAL(lastCombatTime);
   HeapAllocated<CreatureDebt> SERIAL(debt);
 };
+
+BOOST_CLASS_VERSION(Creature, 1);
 
 struct AdjectiveInfo {
   string name;
