@@ -33,7 +33,7 @@ class FileSharing {
   optional<vector<BoardMessage>> getBoardMessages(int boardId);
   void uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text);
 
-  string downloadHighscores();
+  string downloadHighscores(int version);
 
   void cancel();
   ~FileSharing();

@@ -80,7 +80,7 @@ static optional<string> curlUpload(const char* path, const char* url, void* prog
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     string ret;
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
-    /* what URL that receives this POST */ 
+    /* what URL that receives this POST */
     curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(url).c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
     if (timeout > 0)
@@ -155,11 +155,12 @@ void FileSharing::uploadGameEventImpl(const GameEvent& data, int tries) {
     });
 }
 
-string FileSharing::downloadHighscores() {
+string FileSharing::downloadHighscores(int version) {
   string ret;
   if (options.getBoolValue(OptionId::ONLINE))
     if(CURL* curl = curl_easy_init()) {
-      curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(uploadUrl + "/highscores.php").c_str());
+      curl_easy_setopt(curl, CURLOPT_URL,
+          escapeSpaces(uploadUrl + "/highscores.php?version=" + toString(version)).c_str());
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
       curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);

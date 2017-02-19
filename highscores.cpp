@@ -5,24 +5,23 @@
 #include "options.h"
 #include "campaign_type.h"
 #include "player_role.h"
+#include "parse_game.h"
+
+const static int highscoreVersion = 1;
 
 Highscores::Highscores(const string& local, FileSharing& sharing, Options* o)
     : localPath(local), fileSharing(sharing), options(o) {
   localScores = fromFile(localPath);
-  remoteScores = fromString(fileSharing.downloadHighscores());
+  remoteScores = fromString(fileSharing.downloadHighscores(highscoreVersion));
   fileSharing.uploadHighscores(localPath);
 }
 
 void Highscores::add(Score s) {
+  s.version = highscoreVersion;
   localScores.push_back(s);
-  sortScores(localScores);
   saveToFile(localScores, localPath);
   remoteScores.push_back(s);
-  sortScores(remoteScores);
   fileSharing.uploadHighscores(localPath);
-}
-
-void Highscores::sortScores(vector<Score>& scores) {
 }
 
 vector<Highscores::Score> Highscores::fromStream(istream& in) {
@@ -33,31 +32,15 @@ vector<Highscores::Score> Highscores::fromStream(istream& in) {
     if (!in)
       break;
     if (auto score = Score::parse(buf))
-      ret.push_back(*score);
+      if (score->version == highscoreVersion)
+        ret.push_back(*score);
   }
-  sortScores(ret);
   return ret;
 }
 
-const char delim = ',';
-
-string Highscores::Score::toString() const {
-  return gameId + delim +
-    playerName + delim +
-    worldName + delim +
-    gameResult + delim +
-    ::toString<int>(gameWon) + delim +
-    ::toString(points) + delim +
-    ::toString(turns) + delim +
-    EnumInfo<CampaignType>::getString(campaignType) + delim +
-      EnumInfo<PlayerRole>::getString(playerRole);
-}
-
 void Highscores::saveToFile(const vector<Score>& scores, const string& path) {
-  ofstream of(path);
-  for (const Score& score : scores) {
-    of << score.toString() << std::endl;
-  }
+  CompressedOutput out(path.c_str());
+  out.getArchive() << BOOST_SERIALIZATION_NVP(scores);
 }
 
 bool Highscores::Score::operator == (const Score& s) const {
@@ -66,8 +49,12 @@ bool Highscores::Score::operator == (const Score& s) const {
 }
 
 vector<Highscores::Score> Highscores::fromFile(const string& path) {
-  ifstream in(path);
-  return fromStream(in);
+  vector<Highscores::Score> scores;
+  try {
+    CompressedInput in(path.c_str());
+    in.getArchive() >> BOOST_SERIALIZATION_NVP(scores);
+  } catch (...) {}
+  return filter(scores, [](const Score& s) { return s.version == highscoreVersion;});
 }
 
 vector<Highscores::Score> Highscores::fromString(const string& s) {
@@ -77,7 +64,7 @@ vector<Highscores::Score> Highscores::fromString(const string& s) {
 
 optional<Highscores::Score> Highscores::Score::parse(const string& buf) {
   vector<string> p = split(buf, {','});
-  if (p.size() == 9)
+  if (p.size() == 10)
     try {
       return CONSTRUCT(Score,
           c.gameId = p[0];
@@ -89,6 +76,7 @@ optional<Highscores::Score> Highscores::Score::parse(const string& buf) {
           c.turns = ::fromString<int>(p[6]);
           c.campaignType = EnumInfo<CampaignType>::fromString(p[7]);
           c.playerRole = EnumInfo<PlayerRole>::fromString(p[8]);
+          c.version = ::fromString<int>(p[9]);
       );
     } catch (ParsingException&) {}
 #ifndef RELEASE

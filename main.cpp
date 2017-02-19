@@ -392,7 +392,7 @@ static int keeperMain(const variables_map& vars) {
   Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && !audioError), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options, installId);
-  Highscores highscores(userPath + "/" + "highscores3.txt", fileSharing, &options);
+  Highscores highscores(userPath + "/" + "highscores.dat", fileSharing, &options);
   optional<PlayerRole> forceGame;
   if (vars.count("force_keeper"))
     forceGame = PlayerRole::KEEPER;

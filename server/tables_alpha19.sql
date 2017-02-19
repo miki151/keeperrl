@@ -117,6 +117,7 @@ CREATE TABLE `highscores` (
   `turns` int(9) DEFAULT NULL,
   `game_type` varchar(20) DEFAULT NULL,
   `player_role` varchar(20) DEFAULT NULL,
+  `version` int(3) NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `no_dupes` (`game_id`,`player_name`,`world_name`,`game_result`,`points`,`turns`)
