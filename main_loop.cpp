@@ -329,7 +329,6 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     choice = view->getPlayerRoleChoice(choice);
     if (auto ret = apply_visitor(choice, makeVisitor<optional<PGame>>(
         [&](PlayerRole role) -> optional<PGame> {
-          random.init(Random.get(1234567));
           CampaignBuilder builder(view, random, options, role);
           if (auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {
             return Game::campaignGame(prepareCampaignModels(*result, random), *result);
@@ -351,9 +350,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
 }
 
 void MainLoop::playGameChoice() {
-  RandomGen random;
-  if (PGame game = prepareCampaign(random)) {
-    Random = std::move(random);
+  if (PGame game = prepareCampaign(Random)) {
     playGame(std::move(game), true, false);
   }
   view->reset();
