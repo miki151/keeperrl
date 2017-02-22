@@ -53,7 +53,7 @@ int ModelBuilder::getThronePopulationIncrease() {
   return 10;
 }
 
-static CollectiveConfig getKeeperConfig(bool fastImmigration) {
+static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration) {
   return CollectiveConfig::keeper(
       fastImmigration ? 10 : 140,
       500,
@@ -154,14 +154,14 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
       ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
           .addRequirement(0.0, RecruitmentInfo{{EnemyId::OGRE_CAVE, EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 60)),
-      ImmigrantInfo({CreatureId::SPECIAL_HMBN, CreatureId::SPECIAL_HMBW,
-              CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}, {MinionTrait::FIGHTER})
+      ImmigrantInfo(random.permutation({CreatureId::SPECIAL_HMBN, CreatureId::SPECIAL_HMBW,
+              CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}), {MinionTrait::FIGHTER})
           .addRequirement(0.0, TechId::HUMANOID_MUT)
           .addRequirement(0.0, Pregnancy {})
           .addRequirement(CostInfo(CollectiveResourceId::MANA, 250))
           .setSpawnLocation(Pregnancy {}),
-      ImmigrantInfo({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW,
-              CreatureId::SPECIAL_BMGN, CreatureId::SPECIAL_BMGW}, {MinionTrait::FIGHTER})
+      ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW,
+              CreatureId::SPECIAL_BMGN, CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER})
           .addRequirement(0.0, TechId::BEAST_MUT)
           .addRequirement(0.0, Pregnancy {})
           .addRequirement(CostInfo(CollectiveResourceId::MANA, 250))
@@ -180,7 +180,7 @@ PModel ModelBuilder::tryQuickModel(int width) {
       LevelMaker::quickLevel(random));
   m->calculateStairNavigation();
   m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::getKeeper())
+        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::getKeeper())
       .setLevel(top)
       .build());
   vector<CreatureId> ids {
@@ -482,7 +482,7 @@ Collective* ModelBuilder::spawnKeeper(Model* m, PCreature keeper) {
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   m->addCreature(std::move(keeper));
   m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::getKeeper())
+        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::getKeeper())
       .setLevel(level)
       .addCreature(keeperRef)
       .build());
