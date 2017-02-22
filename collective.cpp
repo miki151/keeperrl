@@ -131,7 +131,7 @@ void Collective::addCreatureInTerritory(PCreature creature, EnumSet<MinionTrait>
 
 void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTrait> traits) {
   if (config->getStripSpawns())
-    creature->getEquipment().removeAllItems();
+    creature->getEquipment().removeAllItems(creature.get());
   Creature* c = creature.get();
   pos.addCreature(std::move(creature));
   addCreature(c, traits);

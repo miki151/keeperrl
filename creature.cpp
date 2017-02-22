@@ -397,7 +397,7 @@ Equipment& Creature::getEquipment() {
 }
 
 vector<PItem> Creature::steal(const vector<Item*> items) {
-  return equipment->removeItems(items);
+  return equipment->removeItems(items, this);
 }
 
 Item* Creature::getAmmo() const {
@@ -506,7 +506,7 @@ CreatureAction Creature::drop(const vector<Item*>& items) const {
       playerMessage("You drop " + getPluralTheName(stack[0], stack.size()));
     }
     getGame()->addEvent({EventId::DROPPED, EventInfo::ItemsHandled{self, items}});
-    self->getPosition().dropItems(self->equipment->removeItems(items));
+    self->getPosition().dropItems(self->equipment->removeItems(items, self));
     self->spendTime(1);
   });
 }
@@ -558,13 +558,11 @@ CreatureAction Creature::equip(Item* item) const {
     EquipmentSlot slot = item->getEquipmentSlot();
     if (self->equipment->getItem(slot).size() >= self->equipment->getMaxItems(slot)) {
       Item* previousItem = self->equipment->getItem(slot)[0];
-      self->equipment->unequip(previousItem);
-      previousItem->onUnequip(self);
+      self->equipment->unequip(previousItem, self);
     }
-    self->equipment->equip(item, slot);
+    self->equipment->equip(item, slot, self);
     playerMessage("You equip " + item->getTheName(false, this));
     monsterMessage(getName().the() + " equips " + item->getAName());
-    item->onEquip(self);
 /*    if (Game* game = getGame())
       game->addEvent({EventId::EQUIPED, EventInfo::ItemsHandled{self, {item}}});*/
     self->spendTime(1);
@@ -582,12 +580,11 @@ CreatureAction Creature::unequip(Item* item) const {
     INFO << getName().the() << " unequip";
     CHECK(equipment->isEquipped(item)) << "Item not equipped.";
     EquipmentSlot slot = item->getEquipmentSlot();
-    self->equipment->unequip(item);
+    self->equipment->unequip(item, self);
     playerMessage("You " + string(slot == EquipmentSlot::WEAPON ? " sheathe " : " remove ") +
         item->getTheName(false, this));
     monsterMessage(getName().the() + (slot == EquipmentSlot::WEAPON ? " sheathes " : " removes ") +
         item->getAName());
-    item->onUnequip(self);
     self->spendTime(1);
   });
 }
@@ -876,7 +873,7 @@ void Creature::tick() {
   for (Item* item : equipment->getItems()) {
     item->tick(position);
     if (item->isDiscarded())
-      equipment->removeItem(item);
+      equipment->removeItem(item, this);
   }
   double globalTime = getGlobalTime();
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
@@ -947,7 +944,7 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
 void Creature::dropWeapon() {
   Item* weapon = NOTNULL(getWeapon());
   you(MsgType::DROP_WEAPON, weapon->getName());
-  getPosition().dropItem(equipment->removeItem(weapon));
+  getPosition().dropItem(equipment->removeItem(weapon, this));
 }
 
 CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackParams, bool spend) const {
@@ -1183,7 +1180,7 @@ void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
   INFO << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   getController()->onKilled(attacker);
   if (dropInventory)
-    for (PItem& item : equipment->removeAllItems())
+    for (PItem& item : equipment->removeAllItems(this))
       getPosition().dropItem(std::move(item));
   if (dropInventory && dCorpse)
     getPosition().dropItems(getBody().getCorpseItem(getName().bare(), getUniqueId()));
@@ -1263,7 +1260,7 @@ CreatureAction Creature::give(Creature* whom, vector<Item*> items) const {
       playerMessage("You give " + getPluralTheName(stack[0], (int) stack.size()) + " to " +
         whom->getName().the());
     }
-    whom->takeItems(self->equipment->removeItems(items), self);
+    whom->takeItems(self->equipment->removeItems(items, self), self);
   });
 }
 
@@ -1285,7 +1282,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
   if (!getAmmo())
     return CreatureAction("Out of ammunition");
   return CreatureAction(this, [=](Creature* self) {
-    PItem ammo = self->equipment->removeItem(NOTNULL(getAmmo()));
+    PItem ammo = self->equipment->removeItem(NOTNULL(getAmmo()), self);
     RangedWeapon* weapon = NOTNULL(dynamic_cast<RangedWeapon*>(
         getOnlyElement(self->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))));
     weapon->fire(self, std::move(ammo), direction);
@@ -1439,7 +1436,7 @@ CreatureAction Creature::applyItem(Item* item) const {
       monsterMessage(getName().the() + " " + item->getApplyMsgThirdPerson(self), item->getNoSeeApplyMsg());
       item->apply(self);
       if (item->isDiscarded()) {
-        self->equipment->removeItem(item);
+        self->equipment->removeItem(item, self);
       }
       self->spendTime(time);
   });
@@ -1475,7 +1472,7 @@ CreatureAction Creature::throwItem(Item* item, Vec2 direction) const {
         none);
     playerMessage("You throw " + item->getAName(false, this));
     monsterMessage(getName().the() + " throws " + item->getAName());
-    self->getPosition().throwItem(self->equipment->removeItem(item), attack, dist, direction, getVision());
+    self->getPosition().throwItem(self->equipment->removeItem(item, self), attack, dist, direction, getVision());
     self->spendTime(1);
   });
 }

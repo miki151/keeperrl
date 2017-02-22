@@ -997,7 +997,7 @@ class ConsumeItem : public Task {
 
   virtual MoveInfo getMove(Creature* c) override {
     return c->wait().append([=](Creature* c) {
-        c->getEquipment().removeItems(c->getEquipment().getItems(items.containsPredicate())); });
+        c->getEquipment().removeItems(c->getEquipment().getItems(items.containsPredicate()), c); });
   }
 
   virtual string getDescription() const override {

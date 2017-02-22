@@ -34,13 +34,13 @@ class Equipment : public Inventory {
   vector<Item*> getItem(EquipmentSlot slot) const;
   bool isEquipped(const Item*) const;
   bool canEquip(const Item*) const;
-  void equip(Item*, EquipmentSlot);
-  void unequip(const Item*);
-  PItem removeItem(Item*);
+  void equip(Item*, EquipmentSlot, Creature*);
+  void unequip(Item*, Creature*);
+  PItem removeItem(Item*, Creature*);
   int getMaxItems(EquipmentSlot) const;
   const vector<Item*>& getAllEquipped() const;
-  vector<PItem> removeItems(const vector<Item*>&);
-  vector<PItem> removeAllItems();
+  vector<PItem> removeItems(const vector<Item*>&, Creature*);
+  vector<PItem> removeAllItems(Creature*);
 
   SERIALIZATION_DECL(Equipment);
 
