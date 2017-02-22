@@ -2474,7 +2474,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
     GuiFactory::ListBuilder retiredList = drawRetiredGames(*retiredGames,
         [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, options->getIntValue(OptionId::MAIN_VILLAINS));
     if (retiredList.isEmpty())
-      retiredList.addElem(gui.label("No retired dungeons found :("));
+      retiredList.addElem(gui.label("No more retired dungeons found :("));
     else
       secondaryOptionLines.addElem(gui.label("Available villains:", colors[ColorId::YELLOW]));
     int listHeight = min(360 - addedHeight, retiredList.getSize() + 30);
@@ -2485,17 +2485,16 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   } else if (campaignOptions.warning)
     rightLines.addElem(gui.leftMargin(-20, drawMenuWarning(*campaignOptions.warning)));
   int retiredPosX = 640;
-  int retiredMenuX = 380;
-  int helpPosX = 300;
-  int menuPosY = 5 * legendLineHeight;
   vector<SGuiElem> interior;
   interior.push_back(lines.buildVerticalList());
   interior.push_back(centerLines.buildVerticalList());
   interior.push_back(gui.margins(rightLines.buildVerticalList(), retiredPosX, 0, 50, 0));
+  auto closeHelp = [&menuState] { menuState.helpText = false;};
   interior.push_back(
-        gui.conditionalStopKeys(gui.margins(gui.miniWindow2(gui.margins(
-                gui.labelMultiLine(campaignOptions.introText, legendLineHeight), 10),
-            [&menuState] { menuState.helpText = false;}), 100, 50, 100, 280),
+        gui.conditionalStopKeys(gui.margins(gui.miniWindow2(gui.stack(
+                gui.button(closeHelp),  // to make the window closable on a click anywhere
+                gui.margins(gui.labelMultiLine(campaignOptions.introText, legendLineHeight), 10)),
+            closeHelp), 100, 50, 100, 280),
             [&menuState] { return menuState.helpText;}));
 
   int optionsSize = secondaryOptionLines.getSize();

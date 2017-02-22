@@ -84,18 +84,19 @@ static vector<string> getCampaignTypeDescription(CampaignType type) {
   switch (type) {
     case CampaignType::CAMPAIGN:
       return {
-        "The main competitive mode"
+        "the main competitive mode"
       };
     case CampaignType::FREE_PLAY:
       return {
-        "Add retired dungeons of other players",
-        "Customize starting point and villains",
-        "Highscores not recorded",
+        "retired dungeons of other players",
+        "custom starting point and villains",
+        "highscores not recorded",
       };
     case CampaignType::SINGLE_KEEPER:
       return {
-        "Everyone is on one big map",
-        "Separate highscore table"
+        "everyone on one big map",
+        "separate highscore table",
+        "retiring not possible"
       };
     default:
       return {};
