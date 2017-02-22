@@ -1285,7 +1285,7 @@ void WindowView::processEvents() {
             inputQueue.push(UserInput(UserInputId::RECT_CONFIRM, BuildingInfo{Vec2(0, 0), *building}));
           else if (auto building = guiBuilder.getActiveButton(CollectiveTab::TECHNOLOGY))
             inputQueue.push(UserInput(UserInputId::RECT_CONFIRM, BuildingInfo{Vec2(0, 0), *building}));
-          else
+          else if (gameInfo.infoType == GameInfo::InfoType::BAND)
             inputQueue.push(UserInputId::RECT_CANCEL);
         }
         break;

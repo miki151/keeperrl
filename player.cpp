@@ -617,8 +617,8 @@ void Player::makeMove() {
   bool travel = false;
   bool wasJustTravelling = travelling || !!target;
   if (action.getId() != UserInputId::IDLE) {
+    retireMessages();
     if (action.getId() == UserInputId::TILE_CLICK) {
-      retireMessages();
       travelling = false;
       if (target)
         target = none;
