@@ -1125,13 +1125,13 @@ string getPluralText(const string&, int num);
 template<class T>
 string combine(const vector<T*>& v) {
   return combine(
-      transform2(v, [](const T* e) { return e->getName(); }));
+      transform2(v, [](const T* e) -> string { return e->getName(); }));
 }
 
 template<class T>
 string combine(const vector<T>& v) {
   return combine(
-      transform2(v, [](const T& e) { return e.name; }));
+      transform2(v, [](const T& e) -> string { return e.name; }));
 }
 
 template<class T, class U>

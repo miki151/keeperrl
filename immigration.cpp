@@ -442,7 +442,7 @@ bool Immigration::Available::isUnavailable() const {
   return creatures.empty() || (endTime && endTime < immigration->collective->getGame()->getGlobalTime());
 }
 
-optional<std::chrono::milliseconds> Immigration::Available::getCreatedTime() const {
+optional<milliseconds> Immigration::Available::getCreatedTime() const {
   return createdTime;
 }
 

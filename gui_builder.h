@@ -249,7 +249,7 @@ class GuiBuilder {
   SDL::SDL_KeyboardEvent getHotkeyEvent(char);
   shared_ptr<MapGui> mapGui = nullptr;
   vector<SGuiElem> getSettingsButtons();
-  int getImmigrantAnimationOffset(std::chrono::milliseconds initTime);
+  int getImmigrantAnimationOffset(milliseconds initTime);
   HeapAllocated<CallCache<SGuiElem>> cache;
   SGuiElem drawMenuWarning(View::CampaignOptions::WarningType);
 };

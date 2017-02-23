@@ -961,7 +961,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto elem : typeDisplayOrder)
     if (typeGroups[elem].size() > 0)
       append(info.inventory, getItemInfos(typeGroups[elem]));
-  info.commands = transform2(getCommands(), [](const CommandInfo& info) { return info.commandInfo;});
+  info.commands = transform2(getCommands(), [](const CommandInfo& info) -> PlayerInfo::CommandInfo { return info.commandInfo;});
 
 }
 

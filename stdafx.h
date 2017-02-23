@@ -16,7 +16,7 @@
 #ifndef _STDAFX_H
 #define _STDAFX_H
 
-#ifndef WINDOWS
+#if !defined(WINDOWS) && !defined(OSX)
 #if __has_cpp_attribute(nodiscard)
 #define NODISCARD [[nodiscard]]
 #elif __has_cpp_attribute(gnu::warn_unused_result)

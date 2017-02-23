@@ -64,12 +64,12 @@ class OwnerPointer {
 
 template <typename T, typename... Args>
 OwnerPointer<T> makeOwner(Args... a) {
-  return OwnerPointer<T>(make_shared<T>(a...));
+  return OwnerPointer<T>(std::make_shared<T>(a...));
 }
 
 template <typename T, typename Subclass, typename... Args>
 OwnerPointer<T> makeOwner(Args... a) {
-  return OwnerPointer<T>(make_shared<Subclass>(a...));
+  return OwnerPointer<T>(std::make_shared<Subclass>(a...));
 }
 
 template<class T>

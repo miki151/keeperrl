@@ -358,7 +358,7 @@ map<CollectiveResourceId, int> CollectiveConfig::getStartingResource() const {
   if (type == KEEPER)
     return {{CollectiveResourceId::MANA, 200}};
   else
-    return {};
+    return map<CollectiveResourceId, int>{};
 }
 
 optional<int> CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType type) {
