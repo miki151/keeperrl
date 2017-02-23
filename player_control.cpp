@@ -749,7 +749,7 @@ string PlayerControl::getRequirementText(Requirement req) {
     case RequirementId::TECHNOLOGY:
       return Technology::get(req.get<TechId>())->getName();
     case PlayerControl::RequirementId::VILLAGE_CONQUERED:
-      return "that at least one enemy village is conquered";
+      return "that at least one main villain is conquered";
   }
 }
 

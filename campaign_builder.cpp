@@ -212,9 +212,9 @@ const char* CampaignBuilder::getIntroText() const {
     case PlayerRole::KEEPER:
       return
         "Welcome to the campaign mode! "
-        "The world, which you see below, is made up of smaller maps. Pick one, and build your base there. "
+        "The world, which you see below, is made up of smaller maps. You will build your base on one of them. "
         "There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" "
-        "to win the game. Make sure you add a few retired dungeons created by other players."
+        "to win the game."
         "You can travel to other sites by creating a team and using the travel command.\n\n"
         "The highlighted tribes are in your influence zone, which means that you can currently interact with them "
         "(trade, recruit, attack or be attacked). "
@@ -222,9 +222,9 @@ const char* CampaignBuilder::getIntroText() const {
     case PlayerRole::ADVENTURER:
       return
         "Welcome to the campaign mode! "
-        "The world, which you see below, is made up of smaller maps. Pick one to start your adventure there. "
+        "The world, which you see below, is made up of smaller maps. Your adventure will start on of them. "
         "There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" "
-        "to win the game. Make sure you add a few retired dungeons created by other players."
+        "to win the game."
         "You can travel to other sites by using the travel command.\n\n"
         "The highlighted tribes are in your influence zone, which means that you can currently travel there. "
         "As you conquer more enemies, your influence zone grows.\n\n";
