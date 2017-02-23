@@ -317,11 +317,12 @@ bool MapGui::onMouseMove(Vec2 v) {
   return false;
 }
 
-optional<MapGui::CreatureInfo&> MapGui::getCreature(Vec2 mousePos) {
-  for (auto& elem : creatureMap)
-    if (mousePos.inRectangle(elem.bounds))
-      return elem;
-  return none;
+optional<MapGui::CreatureInfo> MapGui::getCreature(Vec2 mousePos) {
+  auto info = getHighlightedInfo(layout->getSquareSize(), clock->getRealMillis());
+  if (info.creaturePos && info.object && info.object->getCreatureId())
+    return CreatureInfo {*info.object->getCreatureId(), info.object->id()};
+  else
+    return none;
 }
 
 void MapGui::onMouseRelease(Vec2 v) {
@@ -523,9 +524,6 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
       if (auto coord = tile.getHighlightCoord())
         renderer.drawTile(pos + move, *coord, size, color);
-    if (!buttonViewId)
-      if (auto id = object.getCreatureId())
-        creatureMap.push_back(CreatureInfo{Rectangle(pos + move, pos + move + size), *id, object.id()});
     if (tile.hasCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, coord, size, color);
@@ -548,9 +546,6 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     drawCreatureHighlights(renderer, object, pos, size, curTimeReal);
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y, Tile::getColor(object),
         tilePos.x, tilePos.y, tile.text, Renderer::HOR);
-    if (!buttonViewId)
-      if (auto id = object.getCreatureId())
-        creatureMap.push_back(CreatureInfo{Rectangle(tilePos, tilePos + size), *id, object.id()});
     if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
       if (*burningVal > 0) {
         renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, u8"ѡ",
@@ -771,7 +766,7 @@ void MapGui::renderAnimations(Renderer& renderer, milliseconds currentTimeReal) 
         currentTimeReal);
 }
 
-MapGui::HighlightedInfo MapGui::getHighlightedInfo(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
+MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds currentTimeReal) {
   HighlightedInfo ret {};
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
@@ -807,7 +802,6 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
         projectOnScreen(levelBounds.topLeft(), currentTimeReal),
         projectOnScreen(levelBounds.bottomRight(), currentTimeReal)), colors[ColorId::BLACK]);
   fogOfWar.clear();
-  creatureMap.clear();
   for (ViewLayer layer : layout->getLayers()) {
     for (Vec2 wpos : allTiles) {
       Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
@@ -922,7 +916,7 @@ void MapGui::setDraggedCreature(UniqueEntity<Creature>::Id id, ViewId viewId, Ve
 void MapGui::render(Renderer& renderer) {
   Vec2 size = layout->getSquareSize();
   auto currentTimeReal = clock->getRealMillis();
-  HighlightedInfo highlightedInfo = getHighlightedInfo(renderer, size, currentTimeReal);
+  HighlightedInfo highlightedInfo = getHighlightedInfo(size, currentTimeReal);
   renderMapObjects(renderer, size, highlightedInfo, currentTimeReal);
   renderHighlights(renderer, size, currentTimeReal, false);
   renderAnimations(renderer, currentTimeReal);

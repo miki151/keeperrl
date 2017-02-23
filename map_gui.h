@@ -98,18 +98,17 @@ class MapGui : public GuiElem {
     bool isEnemy;
   };
   void renderMapObjects(Renderer&, Vec2 size, HighlightedInfo&, milliseconds currentTimeReal);
-  HighlightedInfo getHighlightedInfo(Renderer&, Vec2 size, milliseconds currentTimeReal);
+  HighlightedInfo getHighlightedInfo(Vec2 size, milliseconds currentTimeReal);
   void renderAnimations(Renderer&, milliseconds currentTimeReal);
 
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal);
   Vec2 projectOnScreen(Vec2 wpos, milliseconds currentTimeReal);
   bool considerCreatureClick(Vec2 mousePos);
   struct CreatureInfo {
-    Rectangle bounds;
     UniqueEntity<Creature>::Id id;
     ViewId viewId;
   };
-  optional<CreatureInfo&> getCreature(Vec2 mousePos);
+  optional<CreatureInfo> getCreature(Vec2 mousePos);
   void considerContinuousLeftClick(Vec2 mousePos);
   MapLayout* layout;
   Table<optional<ViewIndex>> objects;
@@ -119,7 +118,7 @@ class MapGui : public GuiElem {
   optional<milliseconds> lastRenderTime;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
-  optional<CreatureInfo&> draggedCandidate;
+  optional<CreatureInfo> draggedCandidate;
   optional<Vec2> lastMapLeftClick;
   vector<string> hint;
   struct AnimationInfo {
@@ -167,7 +166,6 @@ class MapGui : public GuiElem {
   bool keyScrolling = false;
   ViewIdMap connectionMap;
   bool mouseUI = false;
-  vector<CreatureInfo> creatureMap;
   bool morale = true;
   bool enemies = true;
   DirtyTable<bool> enemyPositions;
