@@ -2079,12 +2079,13 @@ void PlayerControl::processInput(View* view, UserInput input) {
               chosenCreature = none;
           }
         break; }
-    case UserInputId::IMMIGRANT_ACCEPT:
-        if (auto info = getReferenceMaybe(getCollective()->getImmigration().getAvailable(), input.get<int>()))
+    case UserInputId::IMMIGRANT_ACCEPT: {
+        auto available = getCollective()->getImmigration().getAvailable();
+        if (auto info = getReferenceMaybe(available, input.get<int>()))
           if (auto sound = info->get().getInfo().getSound())
             getView()->addSound(*sound);
         getCollective()->getImmigration().accept(input.get<int>());
-        break;
+        break; }
     case UserInputId::IMMIGRANT_REJECT:
         getCollective()->getImmigration().rejectIfNonPersistent(input.get<int>());
         break;
