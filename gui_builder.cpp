@@ -2313,7 +2313,7 @@ SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
                 options->setValue(id, *val);
                 onChanged();
               }}),
-          gui.labelHighlight(valueString, colors[ColorId::LIGHT_BLUE])));
+          gui.labelHighlight(valueString, colors[ColorId::WHITE])));
       break;
     case Options::INT: {
       auto limits = options->getLimits(id);

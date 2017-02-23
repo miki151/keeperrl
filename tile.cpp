@@ -614,11 +614,11 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::EMPTY, symbol(u8" ", ColorId::BLACK));
     Tile::addSymbol(ViewId::DIG_MARK, symbol(u8" ", ColorId::BLACK));
     Tile::addSymbol(ViewId::PLAYER, symbol(u8"@", ColorId::WHITE));
-    Tile::addSymbol(ViewId::PLAYER_F, symbol(u8"@", ColorId::WHITE));
+    Tile::addSymbol(ViewId::PLAYER_F, symbol(u8"@", ColorId::YELLOW));
     Tile::addSymbol(ViewId::KEEPER, symbol(u8"@", ColorId::PURPLE));
-    Tile::addSymbol(ViewId::KEEPER_F, symbol(u8"@", ColorId::PURPLE));
+    Tile::addSymbol(ViewId::KEEPER_F, symbol(u8"@", ColorId::PINK));
     Tile::addSymbol(ViewId::RETIRED_KEEPER, symbol(u8"@", ColorId::BLUE));
-    Tile::addSymbol(ViewId::RETIRED_KEEPER_F, symbol(u8"@", ColorId::BLUE));
+    Tile::addSymbol(ViewId::RETIRED_KEEPER_F, symbol(u8"@", ColorId::LIGHT_BLUE));
     Tile::addSymbol(ViewId::UNKNOWN_MONSTER, symbol(u8"?", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF, symbol(u8"@", ColorId::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF_WOMAN, symbol(u8"@", ColorId::LIGHT_GREEN));
