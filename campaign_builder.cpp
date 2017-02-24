@@ -222,7 +222,7 @@ const char* CampaignBuilder::getIntroText() const {
     case PlayerRole::ADVENTURER:
       return
         "Welcome to the campaign mode! "
-        "The world, which you see below, is made up of smaller maps. Your adventure will start on of them. "
+        "The world, which you see below, is made up of smaller maps. Your adventure will start on one of them. "
         "There are hostile and friendly tribes around you. You have to conquer all villains marked as \"main\" "
         "to win the game."
         "You can travel to other sites by using the travel command.\n\n"
