@@ -62,32 +62,37 @@ int EntityMap<Key, Value>::getSize() const {
 }
 
 template <typename Key, typename Value>
-void EntityMap<Key, Value>::set(typename UniqueEntity<Key>::Id id, const Value& value) {
+vector<typename UniqueEntity<Key>::Id> EntityMap<Key, Value>::getKeys() const {
+  return ::getKeys(elems);
+}
+
+template <typename Key, typename Value>
+void EntityMap<Key, Value>::set(EntityId id, const Value& value) {
   elems[id] = value;
 }
 
 template <typename Key, typename Value>
-void EntityMap<Key, Value>::erase(typename UniqueEntity<Key>::Id id) {
+void EntityMap<Key, Value>::erase(EntityId id) {
   elems.erase(id);
 }
 
 template <typename Key, typename Value>
-const Value& EntityMap<Key, Value>::getOrFail(typename UniqueEntity<Key>::Id id) const {
+const Value& EntityMap<Key, Value>::getOrFail(EntityId id) const {
   return elems.at(id);
 }
 
 template <typename Key, typename Value>
-Value& EntityMap<Key, Value>::getOrFail(typename UniqueEntity<Key>::Id id) {
+Value& EntityMap<Key, Value>::getOrFail(EntityId id) {
   return elems.at(id);
 }
 
 template <typename Key, typename Value>
-Value& EntityMap<Key, Value>::getOrInit(typename UniqueEntity<Key>::Id id) {
+Value& EntityMap<Key, Value>::getOrInit(EntityId id) {
   return elems[id];
 }
 
 template <typename Key, typename Value>
-optional<Value> EntityMap<Key, Value>::getMaybe(typename UniqueEntity<Key>::Id id) const {
+optional<Value> EntityMap<Key, Value>::getMaybe(EntityId id) const {
   try {
     return getOrFail(id);
   } catch (std::out_of_range) {
@@ -96,7 +101,7 @@ optional<Value> EntityMap<Key, Value>::getMaybe(typename UniqueEntity<Key>::Id i
 }
 
 template <typename Key, typename Value>
-const Value& EntityMap<Key, Value>::getOrElse(typename UniqueEntity<Key>::Id id, const Value& value) const {
+const Value& EntityMap<Key, Value>::getOrElse(EntityId id, const Value& value) const {
   auto iter = elems.find(id);
   if (iter != elems.end())
     return iter->second;

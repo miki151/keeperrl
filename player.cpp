@@ -406,11 +406,13 @@ void Player::payForAllItemsAction() {
     if (gold.size() < totalDebt)
       privateMessage("You don't have enough gold to pay for everything.");
     else {
-      auto creditor = getOnlyElement(getCreature()->getDebt().getCreditors());
-      if (getView()->yesOrNoPrompt("Give " + creditor->getName().the() + " " + toString(gold.size()) + " gold?")) {
-        if (tryToPerform(getCreature()->give(creditor, gold)))
-          for (auto item : getCreature()->getEquipment().getItems())
-            item->setShopkeeper(nullptr);
+      for (auto creatureId : getCreature()->getDebt().getCreditors())
+        for (Creature* c : getCreature()->getVisibleCreatures())
+          if (c->getUniqueId() == creatureId &&
+              getView()->yesOrNoPrompt("Give " + c->getName().the() + " " + toString(gold.size()) + " gold?")) {
+              if (tryToPerform(getCreature()->give(c, gold)))
+                for (auto item : getCreature()->getEquipment().getItems())
+                  item->setShopkeeper(nullptr);
       }
     }
   }

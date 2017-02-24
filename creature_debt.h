@@ -1,13 +1,15 @@
 #pragma once
 
 #include "util.h"
+#include "unique_entity.h"
+#include "entity_map.h"
 
 class Creature;
 
 class CreatureDebt {
   public:
   int getTotal() const;
-  vector<Creature*> getCreditors() const;
+  vector<UniqueEntity<Creature>::Id> getCreditors() const;
   int getAmountOwed(Creature* creditor) const;
   void add(Creature*, int);
 
@@ -15,6 +17,8 @@ class CreatureDebt {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  map<Creature*, int> SERIAL(debt);
+  EntityMap<Creature, int> SERIAL(debt);
   int SERIAL(total);
 };
+
+BOOST_CLASS_VERSION(CreatureDebt, 1)

@@ -2,22 +2,35 @@
 #include "creature_debt.h"
 #include "creature.h"
 
-SERIALIZE_DEF(CreatureDebt, debt, total)
+
+template <class Archive>
+void CreatureDebt::serialize(Archive& ar, const unsigned int version) {
+  if (version == 0) {
+    map<Creature*, int> SERIAL(tmp);
+    serializeAll(ar, tmp);
+    for (auto& elem : tmp)
+      debt.set(elem.first, elem.second);
+  } else
+    serializeAll(ar, debt);
+  serializeAll(ar, total);
+}
+
+SERIALIZABLE(CreatureDebt);
 
 int CreatureDebt::getTotal() const {
   return total;
 }
 
-vector<Creature*> CreatureDebt::getCreditors() const {
-  return getKeys(debt);
+vector<Creature::Id> CreatureDebt::getCreditors() const {
+  return debt.getKeys();
 }
 
 int CreatureDebt::getAmountOwed(Creature* creditor) const {
-  return getValueMaybe(debt, creditor).get_value_or(0);
+  return debt.getMaybe(creditor).get_value_or(0);
 }
 
 void CreatureDebt::add(Creature* c, int amount) {
-  auto& current = debt[c];
+  auto& current = debt.getOrInit(c);
   amount = max(-current, amount);
   total += amount;
   if ((current += amount) <= 0)
