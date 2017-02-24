@@ -12,7 +12,7 @@ ifdef DEBUG
 GFLAG += -g
 endif
 
-define NO_OMIT_FP
+NO_OMIT_FP = true
 
 ifdef NO_OMIT_FP
 GFLAG += -fno-omit-frame-pointer
