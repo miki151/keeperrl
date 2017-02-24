@@ -4,13 +4,13 @@ ifndef RPATH
 RPATH = .
 endif
 
-CFLAGS = -Wall -std=c++11 -Wno-sign-compare -Wno-unused-variable -Wno-unused-function -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512 -Wimplicit-fallthrough
+CFLAGS = -Wall -std=c++11 -Wno-sign-compare -Wno-unused-variable -Wno-unused-function -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512
 
 CC = g++
 LD = g++
 
 ifndef RELEASE
-CFLAGS += -Werror 
+CFLAGS += -Werror -Wimplicit-fallthrough
 LDFLAGS += -fuse-ld=gold
 endif
 
