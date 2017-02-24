@@ -12,8 +12,10 @@ ifdef DEBUG
 GFLAG += -g
 endif
 
+define NO_OMIT_FP
+
 ifdef NO_OMIT_FP
-GFLAG += -fno-inline -fno-omit-frame-pointer
+GFLAG += -fno-omit-frame-pointer
 endif
 
 ifdef PROF
