@@ -67,7 +67,15 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
     serializeAll(ar, tmp);
   }
   serializeAll(ar, deathReason, swapPositionCooldown);
-  serializeAll(ar, unknownAttackers, privateEnemies, holding, controllerStack, creatureVisions, kills);
+  serializeAll(ar, unknownAttackers, privateEnemies);
+  if (version < 2) {
+    Creature* SERIAL(tmp);
+    serializeAll(ar, tmp);
+    if (tmp)
+      holding = tmp->getUniqueId();
+  } else
+    serializeAll(ar, holding);
+  serializeAll(ar, controllerStack, creatureVisions, kills);
   serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverride);
   serializeAll(ar, vision, lastCombatTime, debt);
 }
@@ -1146,11 +1154,16 @@ void Creature::poisonWithGas(double amount) {
 }
 
 void Creature::setHeld(Creature* c) {
-  holding = c;
+  holding = c->getUniqueId();
 }
 
 Creature* Creature::getHoldingCreature() const {
-  return (!holding || holding->isDead()) ? nullptr : holding;
+  if (holding)
+    for (auto pos : getPosition().neighbors8())
+      if (auto c = pos.getCreature())
+        if (c->getUniqueId() == *holding)
+          return c;
+  return nullptr;
 }
 
 void Creature::take(vector<PItem> items) {

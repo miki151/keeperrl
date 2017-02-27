@@ -293,7 +293,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   int SERIAL(swapPositionCooldown) = 0;
   EntitySet<Creature> SERIAL(unknownAttackers);
   EntitySet<Creature> SERIAL(privateEnemies);
-  Creature* SERIAL(holding) = nullptr;
+  optional<Creature::Id> SERIAL(holding);
   vector<SController> SERIAL(controllerStack);
   vector<CreatureVision*> SERIAL(creatureVisions);
   EntitySet<Creature> SERIAL(kills);
@@ -311,7 +311,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   HeapAllocated<CreatureDebt> SERIAL(debt);
 };
 
-BOOST_CLASS_VERSION(Creature, 1);
+BOOST_CLASS_VERSION(Creature, 2);
 
 struct AdjectiveInfo {
   string name;
