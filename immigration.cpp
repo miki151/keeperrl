@@ -71,7 +71,6 @@ vector<string> Immigration::getMissingRequirements(const Available& available) c
   if (!available.getInfo().getTraits().contains(MinionTrait::NO_LIMIT) &&
       groupSize > collective->getMaxPopulation() - collective->getPopulationSize())
     ret.push_back("Exceeds population limit");
-  auto spawnType = available.getCreatures()[0]->getAttributes().getSpawnType();
   if (ret.empty() && available.getSpawnPositions().size() < groupSize)
     ret.push_back("Not enough room to spawn.");
   return ret;
@@ -375,7 +374,7 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
 
 void Immigration::accept(int id, bool withMessage) {
   CHECK(!collective->isConquered());
-  if (!available.count(id))
+  if (!getAvailable().count(id))
     return;
   auto& candidate = available.at(id);
   auto& immigrantInfo = getImmigrants()[candidate.immigrantIndex];
@@ -383,6 +382,7 @@ void Immigration::accept(int id, bool withMessage) {
     return;
   vector<Creature*> creatures = candidate.getCreatures();
   const int groupSize = creatures.size();
+  CHECK(groupSize >= 1);
   vector<Position> spawnPos = candidate.getSpawnPositions();
   if (spawnPos.size() < groupSize)
     return;
