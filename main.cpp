@@ -387,8 +387,6 @@ static int keeperMain(const variables_map& vars) {
     view->initialize();
     viewInitialized = true;
   }
-  if (audioError)
-    view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
   Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && !audioError), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options, installId);
@@ -411,6 +409,8 @@ static int keeperMain(const variables_map& vars) {
     loop.start(tilesPresent); };
   auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };
   try {
+    if (audioError)
+      view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
     runGame(game, render, useSingleThread);
   } catch (GameExitException ex) {
   }
