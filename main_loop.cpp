@@ -560,7 +560,7 @@ PModel MainLoop::keeperSingleMap(RandomGen& random) {
 }
 
 PGame MainLoop::loadGame(string file) {
-  SavedGameInfo info = *getSavedGameInfo(file);
+  SavedGameInfo info = *getSavedGameInfo(userPath + "/" + file);
   PGame game;
   doWithSplash(SplashType::BIG, "Loading " + file + "...", info.getProgressCount(),
       [&] (ProgressMeter& meter) {
