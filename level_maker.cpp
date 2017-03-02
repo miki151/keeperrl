@@ -32,6 +32,7 @@
 #include "furniture_type.h"
 #include "furniture_factory.h"
 #include "furniture.h"
+#include "progress.h"
 
 namespace {
 
@@ -1065,6 +1066,7 @@ class RandomLocations : public LevelMaker {
       int cnt = 1000;
       bool ok;
       do {
+        Progress::checkIfInterrupted();
         ok = true;
         int margin = minMargin.count(maker) ? minMargin.at(maker) : 0;
         CHECK(width + 2 * margin < area.width()) << "Couldn't fit maker width inside area.";

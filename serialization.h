@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "progress.h"
+
 #ifdef TEXT_SERIALIZATION
 typedef text_iarchive InputArchive;
 typedef text_oarchive OutputArchive;
@@ -78,6 +80,7 @@ void serializeAll(Archive& ar) {
 
 template <typename Archive, typename Arg1, typename... Args>
 void serializeAll(Archive& ar, Arg1& arg1, Args&... args) {
+  Progress::checkIfInterrupted();
   ar & boost::serialization::make_nvp("arg1", arg1);
   serializeAll(ar, args...);
 }

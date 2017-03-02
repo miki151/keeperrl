@@ -462,9 +462,20 @@ void MainLoop::doWithSplash(SplashType type, const string& text, int totalProgre
   if (useSingleThread) {
     // A bit confusing, but the flag refers to using a single thread for rendering and gameplay.
     // This forces us to build the world on an extra thread to be able to display a progress bar.
-    thread t = makeThread([fun, &meter, this] { fun(meter); view->clearSplash(); });
-    view->refreshView();
-    t.join();
+    thread t = makeThread([fun, &meter, this] {
+      try {
+        fun(meter);
+        view->clearSplash();
+      } catch (Progress::InterruptedException) {}
+    });
+    try {
+      view->refreshView();
+      t.join();
+    } catch (GameExitException e) {
+      Progress::interrupt();
+      t.join();
+      throw e;
+    }
   } else {
     fun(meter);
     view->clearSplash();

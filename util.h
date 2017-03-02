@@ -40,8 +40,9 @@ string toString(const optional<T>& t) {
     return "(unknown)";
 }
 
-class ParsingException {
-};
+class ParsingException {};
+
+class GameExitException {};
 
 template <class T>
 T fromString(const string& s) {
