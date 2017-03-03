@@ -1,16 +1,17 @@
-#ifndef _LEVEL_BUILDER_H
-#define _LEVEL_BUILDER_H
-
+#pragma once
 
 #include "util.h"
 #include "square_type.h"
 #include "level.h"
 #include "square_array.h"
+#include "furniture_array.h"
+#include "view_object.h"
 
 class ProgressMeter;
 class Model;
 class LevelMaker;
 class Square;
+class FurnitureFactory;
 
 RICH_ENUM(SquareAttrib,
   NO_DIG,
@@ -26,6 +27,7 @@ RICH_ENUM(SquareAttrib,
   ROAD_CUT_THRU,
   NO_ROAD,
   ROOM,
+  ROOM_WALL,
   COLLECTIVE_START,
   COLLECTIVE_STAIRS,
   EMPTY_ROOM,
@@ -45,10 +47,10 @@ class LevelBuilder {
       optional<double> defaultLight = none);
   LevelBuilder(RandomGen&, int width, int height, const string& name, bool covered = true);
   
-  LevelBuilder(LevelBuilder&&) = default;
+  LevelBuilder(LevelBuilder&&);
+  ~LevelBuilder();
 
   /** Returns a given square.*/
-  const Square* getSquare(Vec2);
   Square* modSquare(Vec2);
 
   /** Checks if it's possible to put a creature on given square.*/
@@ -84,8 +86,21 @@ class LevelBuilder {
   /** Adds attribute to given square. The attribute will remain if the square is changed.*/
   void addAttrib(Vec2 pos, SquareAttrib attr);
 
+  void putFurniture(Vec2 pos, FurnitureFactory&);
+  void putFurniture(Vec2 pos, FurnitureParams);
+  void putFurniture(Vec2 pos, FurnitureType);
+  bool canPutFurniture(Vec2 pos, FurnitureLayer);
+  void removeFurniture(Vec2 pos, FurnitureLayer);
+  optional<FurnitureType> getFurnitureType(Vec2 pos, FurnitureLayer);
+  bool isFurnitureType(Vec2 pos, FurnitureType);
+  const Furniture* getFurniture(Vec2 pos, FurnitureLayer);
+
+  void setLandingLink(Vec2 pos, StairKey);
+
   /** Removes attribute from given square.*/
   void removeAttrib(Vec2 pos, SquareAttrib attr);
+
+  bool canNavigate(Vec2 pos, const MovementType&);
 
   /** Sets the height of the given square.*/
   void setHeightMap(Vec2 pos, double h);
@@ -102,7 +117,7 @@ class LevelBuilder {
   void addCollective(CollectiveBuilder*);
 
   /** Sets the cover of the square. The value will remain if square is changed.*/
-  void setCoverOverride(Vec2, bool covered);
+  void setCovered(Vec2, bool covered);
   void setSunlight(Vec2, double);
 
   void setNoDiagonalPassing();
@@ -125,18 +140,16 @@ class LevelBuilder {
   Table<double> dark;
   vector<Location*> locations;
   vector<CollectiveBuilder*> collectives;
-  Table<optional<bool>> coverOverride;
+  Table<bool> covered;
   Table<double> sunlight;
-  bool allCovered;
   Table<EnumSet<SquareAttrib>> attrib;
   Table<SquareType> type;
   vector<pair<PCreature, Vec2>> creatures;
   Table<vector<PItem>> items;
+  FurnitureArray furniture;
   string name;
   vector<Vec2::LinearMap> mapStack;
   ProgressMeter* progressMeter = nullptr;
   RandomGen& random;
   bool noDiagonalPassing = false;
 };
-
-#endif

@@ -7,7 +7,8 @@ $conn = getDBConn();
 $sql = "select filename, UNIX_TIMESTAMP(a.timestamp) as time, display_name, version," .
 "count(distinct b.id) as won_games, count(distinct c.id) as total_games, save_info from retired_sites a " .
 "left join event_retired_conquered b on TRIM(TRAILING '.sit' FROM a.filename) = b.retired_id " .
-"left join event_retired_loaded c on TRIM(TRAILING '.sit' FROM a.filename) = c.retired_id group by filename;";
+"left join event_retired_loaded c on TRIM(TRAILING '.sit' FROM a.filename) = c.retired_id " .
+"group by filename, time, display_name, version, save_info;";
 
 header("Content-Type:text/plain");
 

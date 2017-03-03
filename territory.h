@@ -1,5 +1,4 @@
-#ifndef _TERRITORY_H
-#define _TERRITORY_H
+#pragma once
 
 #include "util.h"
 #include "position.h"
@@ -27,5 +26,4 @@ class Territory {
   mutable map<int, vector<Position>> extendedCache2;
 };
 
-#endif
 

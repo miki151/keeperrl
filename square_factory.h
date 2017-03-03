@@ -13,14 +13,14 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _SQUARE_FACTORY
-#define _SQUARE_FACTORY
+#pragma once
 
 #include "util.h"
-#include "square_type.h"
 
 class Square;
+class SquareType;
 class StairKey;
+class TribeId;
 
 class SquareFactory {
   public:
@@ -49,5 +49,3 @@ class SquareFactory {
   vector<SquareType> squares;
   vector<double> weights;
 };
-
-#endif

@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ACTOR_H
-#define _ACTOR_H
+#pragma once
 
 #include "creature_action.h"
 #include "position.h"
@@ -67,7 +66,7 @@ class MonsterAIFactory {
   static MonsterAIFactory summoned(Creature*, int ttl);
   static MonsterAIFactory dieTime(double time);
   static MonsterAIFactory moveRandomly();
-  static MonsterAIFactory stayInPigsty(Position origin, SquareApplyType);
+  static MonsterAIFactory stayOnFurniture(FurnitureType);
   static MonsterAIFactory idle();
   static MonsterAIFactory splashHeroes(bool leader);
   static MonsterAIFactory splashMonsters();
@@ -78,5 +77,3 @@ class MonsterAIFactory {
   MonsterAIFactory(MakerFun);
   MakerFun maker;
 };
-
-#endif

@@ -1,27 +1,38 @@
-#ifndef _CLOCK_H
-#define _CLOCK_H
+#pragma once
 
 class Clock {
   public:
-  int getMillis();
+  Clock();
+  milliseconds getMillis();
   void pause();
   void cont();
   bool isPaused();
-  int getRealMillis();
+  static milliseconds getRealMillis();
 
   private:
+  steady_clock::time_point getCurrent();
   steady_clock::time_point pausedTime;
   optional<steady_clock::time_point> lastPause;
+  steady_clock::time_point initTime;
+};
+
+class ScopeTimer {
+  public:
+  ScopeTimer(const char* msg);
+  ~ScopeTimer();
+
+  private:
+  const char* message;
+  Clock clock;
 };
 
 class Intervalometer {
   public:
-  Intervalometer(int frequencyMillis);
-  int getCount(int currentTimeMillis);
+  Intervalometer(milliseconds frequency);
+  int getCount(milliseconds currentTime);
 
   private:
-  int frequency;
-  int lastUpdate = 0;
+  milliseconds frequency;
+  optional<milliseconds> lastUpdate;
 };
 
-#endif

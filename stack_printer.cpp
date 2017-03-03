@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifdef WINDOWS
   #include <windows.h>
@@ -36,14 +38,24 @@ int addr2line(char const * const program_name, void const * const addr)
     /* apple does things differently... */
     sprintf(addr2line_cmd,"atos -o %.256s %p >> stacktrace.out 2>&1", program_name, addr); 
   #else
-    sprintf(addr2line_cmd,"addr2line -f -p -e \"%.256s\" %p >> stacktrace.out 2>&1", program_name, addr); 
+    sprintf(addr2line_cmd,"addr2line -C -f -p -e \"%.256s\" %p >> stacktrace.out 2>&1", program_name, addr); 
   #endif
 
   return system(addr2line_cmd);
 }
 
 
+
 #ifdef WINDOWS
+
+int printStacktraceWithGdb() {
+  char gdbcmd[512] = {0};
+  sprintf(gdbcmd, "rungdb.bat %d", GetCurrentProcessId());
+  fputs(gdbcmd, stderr);
+  fflush(stderr);
+  return system(gdbcmd);
+}
+
   void windows_print_stacktrace(CONTEXT* context)
   {
     SymInitialize(GetCurrentProcess(), 0, true);
@@ -86,6 +98,15 @@ int addr2line(char const * const program_name, void const * const addr)
 
   LONG WINAPI windows_exception_handler(EXCEPTION_POINTERS * ExceptionInfo)
   {
+	  fputs("Printing windows stack.\n", stderr);
+    if (!printStacktraceWithGdb()) {
+      fputs("Successfully printed stacktrace using GDB.\n", stderr);
+      fflush(stderr);
+      return EXCEPTION_EXECUTE_HANDLER;
+    }
+    fputs("Failed to print stacktrace using GDB. Using built-in stack printer.\n", stderr);
+    fflush(stderr);
+
     switch(ExceptionInfo->ExceptionRecord->ExceptionCode)
     {
       case EXCEPTION_ACCESS_VIOLATION:
@@ -167,7 +188,7 @@ int addr2line(char const * const program_name, void const * const addr)
         addr2line(icky_global_program_name, (void*)ExceptionInfo->ContextRecord->Eip);
 #endif
     }
-
+    system("sendreport.bat");
     return EXCEPTION_EXECUTE_HANDLER;
   }
 
@@ -203,6 +224,10 @@ int addr2line(char const * const program_name, void const * const addr)
 
   void posix_signal_handler(int sig, siginfo_t *siginfo, void *context)
   {
+/*    if (!printStacktraceWithGdb("gdb")) {
+      fputs("Successfully printed stacktrace using GDB.\n", stderr);
+      _Exit(1);
+    }*/
     FILE* errorOut = fopen("stacktrace.out", "a");
     (void)context;
     switch(sig)
@@ -244,6 +269,7 @@ int addr2line(char const * const program_name, void const * const addr)
             fputs("Caught SIGFPE: Arithmetic Exception\n", errorOut);
             break;
         }
+        break;
       case SIGILL:
         switch(siginfo->si_code)
         {

@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _MODEL_H
-#define _MODEL_H
+#pragma once
 
 #include "util.h"
 #include "map_memory.h"
@@ -32,6 +31,8 @@ class LevelBuilder;
 class TimeQueue;
 class StairKey;
 class Game;
+class ExternalEnemies;
+class Options;
 
 /**
   * Main class that holds all game logic.
@@ -44,17 +45,15 @@ class Model {
     Returns the total logical time elapsed.*/
   void update(double totalTime);
 
-  /** For displaying progress while loading/saving the game.*/
-  static ProgressMeter* progressMeter;
-
   /** Returns the level that the stairs lead to. */
   Level* getLinkedLevel(Level* from, StairKey) const;
 
   optional<Position> getStairs(const Level* from, const Level* to);
 
-  /** Adds new creature to the queue. Assumes this creature has already been added to a level. */
-  void addCreature(PCreature, double delay = 0);
-  void landHeroPlayer(const string& name, int handicap);
+  void addCreature(PCreature);
+  void addCreature(PCreature, double delay);
+  void landHeroPlayer(PCreature);
+  void addExternalEnemies(const ExternalEnemies&);
 
   bool isTurnBased();
 
@@ -74,6 +73,8 @@ class Model {
   void addWoodCount(int);
   int getWoodCount() const;
 
+  int getSaveProgressCount() const;
+
   void killCreature(Creature* victim);
   void updateSunlightMovement();
 
@@ -87,7 +88,6 @@ class Model {
   void serialize(Archive& ar, const unsigned int version);
 
   void lockSerialization();
-  void clearDeadCreatures();
 
   void addEvent(const GameEvent&);
 
@@ -116,6 +116,6 @@ class Model {
   friend class EventListener;
   HeapAllocated<EventGenerator<EventListener>> SERIAL(eventGenerator);
   void checkCreatureConsistency();
+  HeapAllocated<optional<ExternalEnemies>> SERIAL(externalEnemies);
 };
 
-#endif

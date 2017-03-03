@@ -1,5 +1,4 @@
-#ifndef _COLLECTIVE_CONTROL_H
-#define _COLLECTIVE_CONTROL_H
+#pragma once
 
 #include "move_info.h"
 #include "player_message.h"
@@ -18,14 +17,19 @@ class CollectiveControl {
   virtual void tick();
   virtual void onMemberKilled(const Creature* victim, const Creature* killer);
   virtual void onOtherKilled(const Creature* victim, const Creature* killer);
+  virtual void onMemberAdded(const Creature*) {}
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAttack(const CollectiveAttack&) {}
-  virtual void onConstructed(Position, const SquareType&) {}
+  virtual void onConstructed(Position, FurnitureType) {}
+  virtual void onClaimedSquare(Position) {}
+  virtual void onDestructed(Position, const DestroyAction&) {}
   virtual void onNoEnemies() {}
   virtual void onRansomPaid() {}
-  virtual vector<TriggerInfo> getTriggers(const Collective* against) const { return {}; }
+  virtual vector<TriggerInfo> getTriggers(const Collective* against) const;
 
-  SERIALIZATION_DECL(CollectiveControl);
+  Collective* getCollective() const;
+
+  SERIALIZATION_DECL(CollectiveControl)
 
   virtual ~CollectiveControl();
 
@@ -36,12 +40,8 @@ class CollectiveControl {
 
   const vector<Creature*>& getCreatures() const;
 
-  protected:
-  Collective* getCollective() const;
-
   private:
   Collective* SERIAL(collective) = nullptr;
 };
 
 
-#endif

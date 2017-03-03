@@ -1,5 +1,4 @@
-#ifndef _ENUM_VARIANT_H
-#define _ENUM_VARIANT_H
+#pragma once
 
 #include "serialization.h"
 #include "debug.h"
@@ -97,4 +96,3 @@ TypeAssign<T, decltype(FIRST(__VA_ARGS__)), __VA_ARGS__>
 
 
 
-#endif

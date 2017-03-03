@@ -4,6 +4,7 @@
 #include "view_object.h"
 #include "player_message.h"
 #include "creature_attributes.h"
+#include "body.h"
 
 void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
   switch (effect) {
@@ -214,6 +215,20 @@ const char* LastingEffects::getBadAdjective(LastingEffect effect) {
     case LastingEffect::SLOWED: return "Slowed";
     case LastingEffect::INSANITY: return "Insane";
     default: return nullptr;
+  }
+}
+
+const vector<LastingEffect>& LastingEffects::getCausingCondition(CreatureCondition condition) {
+  switch (condition) {
+    case CreatureCondition::RESTRICTED_MOVEMENT: {
+      static vector<LastingEffect> ret {LastingEffect::ENTANGLED, LastingEffect::TIED_UP,
+                                          LastingEffect::SLEEP, LastingEffect::STUNNED};
+      return ret;
+    }
+    case CreatureCondition::SLEEPING: {
+      static vector<LastingEffect> ret { LastingEffect::SLEEP, LastingEffect::STUNNED};
+      return ret;
+    }
   }
 }
 

@@ -13,30 +13,17 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _INVENTORY_H
-#define _INVENTORY_H
+#pragma once
 
 #include <functional>
 
 #include "util.h"
 #include "unique_entity.h"
+#include "indexed_vector.h"
+#include "item_index.h"
 
 class Item;
 
-RICH_ENUM(ItemIndex,
-  GOLD,
-  WOOD,
-  IRON,
-  STONE,
-  REVIVABLE_CORPSE,
-  CORPSE,
-  WEAPON,
-  TRAP,
-  MINION_EQUIPMENT,
-  RANGED_WEAPON,
-  CAN_EQUIP,
-  FOR_SALE
-);
 
 class Inventory {
   public:
@@ -53,19 +40,26 @@ class Inventory {
   const vector<Item*>& getItems(ItemIndex) const;
 
   bool hasItem(const Item*) const;
-  Item* getItemById(UniqueEntity<Item>::Id);
+  Item* getItemById(UniqueEntity<Item>::Id) const;
   int size() const;
+  double getTotalWeight() const;
 
   bool isEmpty() const;
 
+  Inventory(Inventory&&) = default;
   ~Inventory();
 
   SERIALIZATION_DECL(Inventory);
 
   private:
-  vector<PItem> SERIAL(items);
-  vector<Item*> SERIAL(itemsCache);
-  mutable EnumMap<ItemIndex, optional<vector<Item*>>> indexes;
+
+  typedef IndexedVector<Item*, UniqueEntity<Item>::Id> ItemVector;
+  typedef IndexedVector<PItem, UniqueEntity<Item>::Id> PItemVector;
+
+  PItemVector SERIAL(items);
+  ItemVector SERIAL(itemsCache);
+  double SERIAL(weight) = 0;
+  mutable EnumMap<ItemIndex, optional<ItemVector>> indexes;
 };
 
-#endif
+BOOST_CLASS_VERSION(Inventory, 1)

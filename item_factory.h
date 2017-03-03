@@ -13,24 +13,27 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ITEM_FACTORY
-#define _ITEM_FACTORY
+#pragma once
 
 #include <map>
 #include <string>
 #include <functional>
 
 #include "util.h"
-#include "item.h"
-#include "item_type.h"
+#include "corpse_info.h"
+#include "item_class.h"
 
 class Item;
 class Technology;
+class ItemType;
+class ItemAttributes;
 
 class ItemFactory {
   public:
-  vector<PItem> random(optional<int> seed = none);
-  vector<PItem> getAll();
+  ItemFactory(const ItemFactory&);
+  ItemFactory& operator = (const ItemFactory&);
+  
+  vector<PItem> random();
 
   static ItemFactory dungeon();
   static ItemFactory chest();
@@ -44,17 +47,13 @@ class ItemFactory {
   static ItemFactory orcShop();
   static ItemFactory gnomeShop();
   static ItemFactory dragonCave();
-  static ItemFactory workshop(const vector<Technology*>& techs);
-  static ItemFactory forge(const vector<Technology*>& techs);
-  static ItemFactory jeweler(const vector<Technology*>& techs);
-  static ItemFactory laboratory(const vector<Technology*>& techs);
   static ItemFactory minerals();
-  static ItemFactory singleType(ItemType);
+  static ItemFactory singleType(ItemType, Range count = Range(1, 2));
 
   static PItem fromId(ItemType);
   static vector<PItem> fromId(ItemType, int num);
   static PItem corpse(const string& name, const string& rottenName, double weight, ItemClass = ItemClass::CORPSE,
-      Item::CorpseInfo corpseInfo = {UniqueEntity<Creature>::Id(), false, false, false});
+      CorpseInfo corpseInfo = {UniqueEntity<Creature>::Id(), false, false, false});
   static PItem trapItem(PTrigger trigger, string trapName);
 
   static void init();
@@ -63,27 +62,16 @@ class ItemFactory {
   static void registerTypes(Archive& ar, int version);
 
   SERIALIZATION_DECL(ItemFactory);
-
+  ~ItemFactory();
+  
   private:
-  struct ItemInfo {
-    ItemInfo(ItemType _id, double _weight) : id(_id), weight(_weight) {}
-    ItemInfo(ItemType _id, double _weight, int minC, int maxC)
-        : id(_id), weight(_weight), minCount(minC), maxCount(maxC) {}
-
-    ItemType id;
-    double weight;
-    int minCount = 1;
-    int maxCount = 2;
-  };
-  ItemFactory(const vector<ItemInfo>&, const vector<ItemType>& unique = vector<ItemType>());
+  struct ItemInfo;
+  ItemFactory(const vector<ItemInfo>&);
   static ItemAttributes getAttributes(ItemType);
   ItemFactory& addItem(ItemInfo);
-  ItemFactory& addUniqueItem(ItemType);
+  ItemFactory& addUniqueItem(ItemType, Range count = Range::singleElem(1));
   vector<ItemType> SERIAL(items);
   vector<double> SERIAL(weights);
-  vector<int> SERIAL(minCount);
-  vector<int> SERIAL(maxCount);
-  vector<ItemType> SERIAL(unique);
+  vector<Range> SERIAL(count);
+  vector<pair<ItemType, Range>> SERIAL(uniqueCounts);
 };
-
-#endif

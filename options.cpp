@@ -29,6 +29,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::FULLSCREEN_RESOLUTION, 0},
   {OptionId::ZOOM_UI, 0},
   {OptionId::DISABLE_MOUSE_WHEEL, 0},
+  {OptionId::DISABLE_CURSOR, 0},
   {OptionId::ONLINE, 1},
   {OptionId::GAME_EVENTS, 1},
   {OptionId::AUTOSAVE, 1},
@@ -37,8 +38,10 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
   {OptionId::KEEPER_NAME, string("")},
+  {OptionId::KEEPER_TYPE, 0},
   {OptionId::KEEPER_SEED, string("")},
   {OptionId::ADVENTURER_NAME, string("")},
+  {OptionId::ADVENTURER_TYPE, 0},
   {OptionId::MAIN_VILLAINS, 4},
   {OptionId::RETIRED_VILLAINS, 1},
   {OptionId::LESSER_VILLAINS, 3},
@@ -57,6 +60,7 @@ const map<OptionId, string> names {
   {OptionId::FULLSCREEN_RESOLUTION, "Fullscreen resolution"},
   {OptionId::ZOOM_UI, "Zoom in UI"},
   {OptionId::DISABLE_MOUSE_WHEEL, "Disable mouse wheel scrolling"},
+  {OptionId::DISABLE_CURSOR, "Disable pretty mouse cursor"},
   {OptionId::ONLINE, "Online features"},
   {OptionId::GAME_EVENTS, "Anonymous statistics"},
   {OptionId::AUTOSAVE, "Autosave"},
@@ -65,8 +69,10 @@ const map<OptionId, string> names {
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::KEEPER_NAME, "Keeper's name"},
+  {OptionId::KEEPER_TYPE, "Keeper's gender"},
   {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::ADVENTURER_NAME, "Adventurer's name"},
+  {OptionId::ADVENTURER_TYPE, "Adventurer's gender"},
   {OptionId::MAIN_VILLAINS, "Main villains"},
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
@@ -102,6 +108,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
   //    OptionId::FULLSCREEN_RESOLUTION,
       OptionId::ZOOM_UI,
       OptionId::DISABLE_MOUSE_WHEEL,
+      OptionId::DISABLE_CURSOR,
       OptionId::ONLINE,
       OptionId::GAME_EVENTS,
       OptionId::AUTOSAVE,
@@ -109,6 +116,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
+      OptionId::FAST_IMMIGRATION,
 #endif
   }},
   {OptionSet::KEEPER, {
@@ -121,28 +129,9 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::KEEPER_NAME,
       OptionId::KEEPER_SEED,
   }},
-  {OptionSet::ADVENTURER, {
-      OptionId::ADVENTURER_NAME,
-  }},
-  {OptionSet::CAMPAIGN, {
-      OptionId::KEEPER_NAME,
-      OptionId::MAIN_VILLAINS,
-      //OptionId::RETIRED_VILLAINS,
-      OptionId::LESSER_VILLAINS,
-      OptionId::ALLIES,
-      //OptionId::INFLUENCE_SIZE
-  }},
-  {OptionSet::ADVENTURER_CAMPAIGN, {
-      OptionId::ADVENTURER_NAME,
-      OptionId::MAIN_VILLAINS,
-      //OptionId::RETIRED_VILLAINS,
-      OptionId::LESSER_VILLAINS,
-      OptionId::ALLIES,
-      //OptionId::INFLUENCE_SIZE
-  }},
 };
 
-map<OptionId, Options::Trigger> triggers;
+static map<OptionId, Options::Trigger> triggers;
 
 void Options::addTrigger(OptionId id, Trigger trigger) {
   triggers[id] = trigger;
@@ -156,8 +145,13 @@ Options::Type Options::getType(OptionId id) {
   switch (id) {
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_SEED:
-    case OptionId::KEEPER_NAME: return Options::STRING;
-    default: return Options::INT;
+    case OptionId::KEEPER_NAME:
+      return Options::STRING;
+    case OptionId::ADVENTURER_TYPE:
+    case OptionId::KEEPER_TYPE:
+      return Options::PLAYER_TYPE;
+    default:
+      return Options::INT;
   }
 }
 
@@ -165,24 +159,7 @@ vector<OptionId> Options::getOptions(OptionSet set) {
   return optionSets.at(set);
 }
 
-static EnumMap<OptionId, optional<Options::Value>> parseOverrides(const string& s) {
-  EnumMap<OptionId, optional<Options::Value>> ret;
-  for (string op : split(s, {','})) {
-    auto parts = split(op, {'='});
-    CHECK(parts.size() == 2);
-    OptionId id = EnumInfo<OptionId>::fromString(parts[0]);
-    if (parts[1] == "n")
-      ret[id] = false;
-    else if (parts[1] == "y")
-      ret[id] = true;
-    else
-      FAIL << "Bad override " << parts;
-  }
-  return ret;
-}
-
-Options::Options(const string& path, const string& _overrides)
-    : filename(path), overrides(parseOverrides(_overrides)) {
+Options::Options(const string& path) : filename(path) {
   readValues();
 }
 
@@ -214,6 +191,14 @@ int Options::getIntValue(OptionId id) {
       return limits[id]->first;
   }
   return v;
+}
+
+CreatureId Options::getCreatureId(OptionId id) {
+  return choicesCreatureId[id].at(boost::get<int>(getValue(id)) % choicesCreatureId[id].size());
+}
+
+void Options::setNextCreatureId(OptionId id) {
+  setValue(id, boost::get<int>(getValue(id)) + 1);
 }
 
 void Options::setLimits(OptionId id, int minV, int maxV) {
@@ -253,7 +238,8 @@ string Options::getValueString(OptionId id) {
     case OptionId::AUTOSAVE:
     case OptionId::WASD_SCROLLING:
     case OptionId::SOUND:
-    case OptionId::MUSIC: return getOnOff(value);
+    case OptionId::MUSIC:
+      return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
     case OptionId::FAST_IMMIGRATION:
@@ -262,7 +248,9 @@ string Options::getValueString(OptionId id) {
     case OptionId::GAME_EVENTS:
     case OptionId::ZOOM_UI:
     case OptionId::DISABLE_MOUSE_WHEEL:
-    case OptionId::START_WITH_NIGHT: return getYesNo(value);
+    case OptionId::DISABLE_CURSOR:
+    case OptionId::START_WITH_NIGHT:
+      return getYesNo(value);
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_SEED:
     case OptionId::KEEPER_NAME: {
@@ -283,7 +271,11 @@ string Options::getValueString(OptionId id) {
     case OptionId::LESSER_VILLAINS:
     case OptionId::RETIRED_VILLAINS:
     case OptionId::INFLUENCE_SIZE:
-    case OptionId::ALLIES: return toString(getIntValue(id));
+    case OptionId::ALLIES:
+      return toString(getIntValue(id));
+    case OptionId::KEEPER_TYPE:
+    case OptionId::ADVENTURER_TYPE:
+      return toString((int)getCreatureId(id));
   }
 }
 
@@ -330,6 +322,10 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
 
 void Options::setChoices(OptionId id, const vector<string>& v) {
   choices[id] = v;
+}
+
+void Options::setChoices(OptionId id, const vector<CreatureId>& v) {
+  choicesCreatureId[id] = v;
 }
 
 bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {

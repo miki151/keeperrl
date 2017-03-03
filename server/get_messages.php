@@ -15,8 +15,8 @@ $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
   while($row = $result->fetch_assoc()) {
-    echo $row["text"] . ",";
-    echo $row["author"] . "\n";
+    echo rawurlencode($row["text"]) . ",";
+    echo rawurlencode($row["author"]) . "\n";
   }
 }
 

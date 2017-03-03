@@ -13,9 +13,9 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _REPLAY_VIEW
-#define _REPLAY_VIEW
+#pragma once
 
+#include "util.h"
 #include "logging_view.h"
 
 class ReplayView : public View {
@@ -33,12 +33,12 @@ class ReplayView : public View {
       return ret;
     }
 
-    virtual int getTimeMilli() override {
-      return readValue<int>(LoggingToken::GET_TIME);
+    virtual milliseconds getTimeMilli() override {
+      return milliseconds{readValue<int>(LoggingToken::GET_TIME)};
     }
 
-    virtual int getTimeMilliAbsolute() override {
-      return readValue<int>(LoggingToken::GET_TIME_ABSOLUTE);
+    virtual milliseconds getTimeMilliAbsolute() override {
+      return milliseconds{readValue<int>(LoggingToken::GET_TIME_ABSOLUTE)};
     }
 
     virtual double getGameSpeed() override {
@@ -54,12 +54,8 @@ class ReplayView : public View {
     }
 
     virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index,
-        MenuType, double* scrollPos, optional<UserInputId> a) override {
+        MenuType, ScrollPosition* scrollPos, optional<UserInputId> a) override {
       return readValue<optional<int>>(LoggingToken::CHOOSE_FROM_LIST);
-    }
-
-    virtual optional<GameTypeChoice> chooseGameType() override {
-      return readValue<GameTypeChoice>(LoggingToken::CHOOSE_GAME_TYPE);
     }
 
     virtual optional<Vec2> chooseDirection(const string& message) override {
@@ -74,17 +70,12 @@ class ReplayView : public View {
       return readValue<optional<int>>(LoggingToken::GET_NUMBER);
     }
 
-    virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) override {
+    virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) override {
       return readValue<optional<int>>(LoggingToken::CHOOSE_ITEM);
     }
 
-    virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
-        pair<ViewId, int> budget, const vector<CreatureInfo>& c, double* scrollPos) override {
-      return readValue<optional<UniqueEntity<Creature>::Id>>(LoggingToken::CHOOSE_RECRUIT);
-    }
-
     virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
-        const vector<ItemInfo>& c, double* scrollPos) override {
+        const vector<ItemInfo>& c, ScrollPosition* scrollPos) override {
       return readValue<optional<UniqueEntity<Item>::Id>>(LoggingToken::CHOOSE_TRADE_ITEM);
     }
 
@@ -119,9 +110,9 @@ class ReplayView : public View {
       return delegate->chooseSite(message, c, cur);
     }
 
-    virtual CampaignAction prepareCampaign(const Campaign& c, Options* options, RetiredGames& retired) override {
+    /*virtual CampaignAction prepareCampaign(const Campaign& c, Options* options, RetiredGames& retired) override {
       return delegate->prepareCampaign(c, options, retired);
-    }
+    }*/
 
     virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>& c,
         const string& cancelText) override {
@@ -203,5 +194,3 @@ class ReplayView : public View {
     InputArchive& input;
     View* delegate;
 };
-
-#endif

@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _CONTROLLER_H
-#define _CONTROLLER_H
+#pragma once
 
 #include "enums.h"
 #include "util.h"
@@ -29,6 +28,8 @@ class PlayerMessage;
 class Controller {
   public:
   Controller(Creature*);
+  Controller(const Controller&) = delete;
+  Controller(Controller&&) = delete;
 
   virtual bool isPlayer() const = 0;
 
@@ -38,17 +39,14 @@ class Controller {
   virtual void privateMessage(const PlayerMessage& message) {}
 
   virtual void onKilled(const Creature* attacker) {}
-  virtual void onItemsGiven(vector<Item*> items, const Creature* from) { }
+  virtual void onItemsGiven(vector<Item*> items, Creature* from) { }
   virtual void onDisplaced() {}
 
   virtual void makeMove() = 0;
   virtual void sleeping() {}
-
-  virtual int getDebt(const Creature* debtor) const { return 0; }
+  virtual bool isCustomController() { return false; }
 
   virtual void onBump(Creature*) = 0;
-
-  virtual Controller* getPossessedController(Creature*);
 
   virtual ~Controller() {}
 
@@ -78,11 +76,10 @@ class DoNothingController : public Controller {
 
 class ControllerFactory {
   public:
-  ControllerFactory(function<Controller* (Creature*)>);
-  PController get(Creature*) const;
+  ControllerFactory(function<SController(Creature*)>);
+  SController get(Creature*) const;
 
   private:
-  function<Controller* (Creature*)> fun;
+  function<SController(Creature*)> fun;
 };
 
-#endif

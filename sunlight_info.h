@@ -1,11 +1,11 @@
-#ifndef _SUNLIGHT_INFO_H
-#define _SUNLIGHT_INFO_H
+#pragma once
 
 enum class SunlightState { DAY, NIGHT};
 
 class SunlightInfo {
   public:
   const char* getText() const;
+  static const char* getText(SunlightState);
   void update(double currentTime);
   SunlightState getState() const;
   double getLightAmount() const;
@@ -17,4 +17,3 @@ class SunlightInfo {
   SunlightState state;
 };
 
-#endif

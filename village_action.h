@@ -1,7 +1,5 @@
-#ifndef _VILLAGE_ACTION_H
-#define _VILLAGE_ACTION_H
+#pragma once
 
 
-enum class VillageAction { RECRUIT, TRADE };
+enum class VillageAction { TRADE, PILLAGE };
 
-#endif

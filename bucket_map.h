@@ -1,4 +1,4 @@
-#ifndef _BUCKET_MAP_H
+#pragma once
 
 #include "util.h"
 
@@ -25,5 +25,3 @@ class CreatureBucketMap : public BucketMap<Creature*> {
   public:
   using BucketMap::BucketMap;
 };
-
-#endif

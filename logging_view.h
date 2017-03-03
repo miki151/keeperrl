@@ -13,8 +13,9 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _LOGGING_VIEW
-#define _LOGGING_VIEW
+#pragma once
+
+#include "view_object.h"
 
 enum class LoggingToken {
   GET_TIME,
@@ -48,12 +49,12 @@ class LoggingView : public View {
       return val;
     }
 
-    virtual int getTimeMilli() override {
-      return logAndGet(delegate->getTimeMilli(), LoggingToken::GET_TIME);
+    virtual milliseconds getTimeMilli() override {
+      return milliseconds{logAndGet(delegate->getTimeMilli().count(), LoggingToken::GET_TIME)};
     }
 
-    virtual int getTimeMilliAbsolute() override {
-      return logAndGet(delegate->getTimeMilliAbsolute(), LoggingToken::GET_TIME_ABSOLUTE);
+    virtual milliseconds getTimeMilliAbsolute() override {
+      return milliseconds{logAndGet(delegate->getTimeMilliAbsolute().count(), LoggingToken::GET_TIME_ABSOLUTE)};
     }
 
     virtual void addSound(const Sound& s) override {
@@ -64,9 +65,9 @@ class LoggingView : public View {
       return delegate->chooseSite(message, c, cur);
     }
 
-    virtual CampaignAction prepareCampaign(const Campaign& c, Options* options, RetiredGames& retired) override {
+    /*virtual CampaignAction prepareCampaign(const Campaign& c, Options* options, RetiredGames& retired) override {
       return delegate->prepareCampaign(c, options, retired);
-    }
+    }*/
 
     virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>& c,
         const string& cancelText) override {
@@ -86,13 +87,9 @@ class LoggingView : public View {
     }
 
     virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index,
-        MenuType type, double* scrollPos, optional<UserInputId> action) override {
+        MenuType type, ScrollPosition* scrollPos, optional<UserInputId> action) override {
       return logAndGet(delegate->chooseFromList(title, options, index, type, scrollPos, action),
           LoggingToken::CHOOSE_FROM_LIST);
-    }
-
-    virtual optional<GameTypeChoice> chooseGameType() override {
-      return logAndGet(delegate->chooseGameType(), LoggingToken::CHOOSE_GAME_TYPE);
     }
 
     virtual optional<Vec2> chooseDirection(const string& message) override {
@@ -107,17 +104,12 @@ class LoggingView : public View {
       return logAndGet(delegate->getNumber(title, min, max, increments), LoggingToken::GET_NUMBER);
     }
 
-    virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) override {
+    virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) override {
       return logAndGet(delegate->chooseItem(items, scrollpos), LoggingToken::CHOOSE_ITEM);
     }
 
-    virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
-        pair<ViewId, int> budget, const vector<CreatureInfo>& c, double* scrollPos) override {
-      return logAndGet(delegate->chooseRecruit(title, warning, budget, c, scrollPos), LoggingToken::CHOOSE_RECRUIT);
-    }
-
     virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
-        const vector<ItemInfo>& c, double* scrollPos) override {
+        const vector<ItemInfo>& c, ScrollPosition* scrollPos) override {
       return logAndGet(delegate->chooseTradeItem(title, budget, c, scrollPos), LoggingToken::CHOOSE_TRADE_ITEM);
     }
 
@@ -203,4 +195,3 @@ class LoggingView : public View {
     View* delegate;
 };
 
-#endif

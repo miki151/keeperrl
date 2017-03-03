@@ -2,6 +2,7 @@
 #include "task_map.h"
 #include "creature.h"
 #include "task.h"
+#include "creature_name.h"
 
 SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, creatureMap, marked, completionCost, priorityTasks, delayedTasks, highlight, requiredTraits);
 
@@ -18,11 +19,11 @@ Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
       if (auto pos = getPosition(task.get())) {
         double dist = pos->dist8(c->getPosition());
         const Creature* owner = getOwner(task.get());
-        optional<double> delayed = delayedTasks.getMaybe(task.get());
+        auto delayed = delayedTasks.getMaybe(task.get());
         if (!task->isDone() &&
             (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
             (!closest || dist < getPosition(closest)->dist8(c->getPosition()) || isPriorityTask(task.get())) &&
-            c->canNavigateTo(*pos) &&
+            c->canNavigateTo(*pos) && !task->isBlocked(c) &&
             (!delayed || *delayed < c->getLocalTime())) {
           closest = task.get();
           if (isPriorityTask(task.get()))
@@ -33,12 +34,7 @@ Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
 }
 
 vector<const Task*> TaskMap::getAllTasks() const {
-  return transform2<const Task*>(tasks, [] (const PTask& t) { return t.get(); });
-}
-
-void TaskMap::freeTaskDelay(Task* t, double d) {
-  freeTask(t);
-  delayedTasks.set(t, d);
+  return transform2(tasks, [] (const PTask& t) -> const Task* { return t.get(); });
 }
 
 void TaskMap::setPriorityTasks(Position pos) {
@@ -136,22 +132,18 @@ const vector<Task*>& TaskMap::getTasks(Position pos) const {
   return reversePositions.get(pos);
 }
 
-Task* TaskMap::addTask(PTask task, const Creature* c) {
+Task* TaskMap::addTaskFor(PTask task, const Creature* c) {
+  CHECK(!hasTask(c)) << c->getName().bare() << " already has a task";
   creatureMap.insert(c, task.get());
+  if (auto pos = task->getPosition())
+    setPosition(task.get(), *pos);
   tasks.push_back(std::move(task));
   return tasks.back().get();
 }
 
-Task* TaskMap::addPriorityTask(PTask task, const Creature* c) {
-  Task* t = addTask(std::move(task), c);
-  priorityTasks.insert(t);
-  return t;
-}
-
 Task* TaskMap::addTask(PTask task, Position position, MinionTrait required) {
-  positionMap[task.get()] = position;
+  setPosition(task.get(), position);
   requiredTraits[task.get()] = required;
-  reversePositions.getOrInit(position).push_back(task.get());
   tasks.push_back(std::move(task));
   return tasks.back().get();
 }
@@ -180,9 +172,21 @@ void TaskMap::freeTask(Task* task) {
     creatureMap.erase(task);
 }
 
-void TaskMap::freeFromTask(Creature* c) {
-  if (Task* t = getTask(c))
-    freeTask(t);
+void TaskMap::setPosition(Task* task, Position position) {
+  positionMap[task] = position;
+  reversePositions.getOrInit(position).push_back(task);
+}
+
+CostInfo TaskMap::freeFromTask(const Creature* c) {
+  if (Task* task = getTask(c)) {
+    if (!task->canTransfer())
+      return removeTask(task);
+    else {
+      freeTask(task);
+      delayedTasks.set(task, c->getLocalTime() + 50);
+    }
+  }
+  return CostInfo::noCost();
 }
 
 const map<Task*, CostInfo>& TaskMap::getCompletionCosts() const {

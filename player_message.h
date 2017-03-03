@@ -1,5 +1,4 @@
-#ifndef _PLAYER_MESSAGE_H
-#define _PLAYER_MESSAGE_H
+#pragma once
 
 #include "util.h"
 #include "unique_entity.h"
@@ -51,4 +50,3 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
   const Location* SERIAL(location) = nullptr;
 };
 
-#endif

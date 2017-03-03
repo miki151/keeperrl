@@ -13,13 +13,14 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _NAME_GENERATOR
-#define _NAME_GENERATOR
+#pragma once
 
+#include "util.h"
 #include "singleton.h"
 
 RICH_ENUM(NameGeneratorId,
-  FIRST,
+  FIRST_MALE,
+  FIRST_FEMALE,
   SCROLL,
   AZTEC,
   CREATURE,
@@ -48,5 +49,3 @@ class NameGenerator : public Singleton<NameGenerator, NameGeneratorId> {
   queue<string> names;
   bool oneName;
 };
-
-#endif

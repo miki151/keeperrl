@@ -1,5 +1,4 @@
-#ifndef _CAMPAIGN_H
-#define _CAMPAIGN_H
+#pragma once
 
 #include "util.h"
 #include "saved_game_info.h"
@@ -10,6 +9,8 @@ class ProgressMeter;
 class Options;
 class RetiredGames;
 
+struct CampaignSetup;
+
 class Campaign {
   public:
   struct VillainInfo {
@@ -19,20 +20,21 @@ class Campaign {
     string getDescription() const;
     bool isEnemy() const;
     VillainType SERIAL(type);
-    SERIALIZE_ALL(viewId, name, enemyId, type);
+    SERIALIZE_ALL(viewId, name, enemyId, type)
   };
   struct KeeperInfo {
     ViewId SERIAL(viewId);
-    SERIALIZE_ALL(viewId);
+    SERIALIZE_ALL(viewId)
   };
   struct RetiredInfo {
     SavedGameInfo SERIAL(gameInfo);
     SaveFileInfo SERIAL(fileInfo);
-    SERIALIZE_ALL(gameInfo, fileInfo);
+    SERIALIZE_ALL(gameInfo, fileInfo)
   };
   struct SiteInfo {
     vector<ViewId> SERIAL(viewId);
-    optional<variant<VillainInfo, RetiredInfo, KeeperInfo>> SERIAL(dweller);
+    typedef variant<VillainInfo, RetiredInfo, KeeperInfo> Dweller;
+    optional<Dweller> SERIAL(dweller);
     optional<VillainInfo> getVillain() const;
     optional<RetiredInfo> getRetired() const;
     optional<KeeperInfo> getKeeper() const;
@@ -42,14 +44,12 @@ class Campaign {
     void setBlocked();
     optional<ViewId> getDwellerViewId() const;
     optional<string> getDwellerDescription() const;
-    SERIALIZE_ALL(viewId, dweller, blocked);
+    optional<VillainType> getVillainType() const;
+    SERIALIZE_ALL(viewId, dweller, blocked)
   };
-
-  enum Type { ADVENTURER, KEEPER};
 
   const Table<SiteInfo>& getSites() const;
   void clearSite(Vec2);
-  static optional<Campaign> prepareCampaign(View*, Options*, RetiredGames&&, RandomGen&, Type);
   optional<Vec2> getPlayerPos() const;
   const string& getWorldName() const;
   bool isDefeated(Vec2) const;
@@ -58,29 +58,23 @@ class Campaign {
   bool isInInfluence(Vec2) const;
   int getNumNonEmpty() const;
   bool canEmbark(Vec2) const;
-  Type getType() const;
+  CampaignType getType() const;
+  PlayerRole getPlayerRole() const;
 
   map<string, string> getParameters() const;
-  vector<OptionId> getOptions(Options*) const;
-  const char* getSiteChoiceTitle() const;
-  const char* getIntroText() const;
 
-  SERIALIZATION_DECL(Campaign);
+  SERIALIZATION_DECL(Campaign)
 
   private:
+  friend class CampaignBuilder;
   void refreshInfluencePos();
-  Campaign(Table<SiteInfo>);
-  vector<VillainInfo> getMainVillains();
-  vector<VillainInfo> getLesserVillains();
-  vector<VillainInfo> getAllies();
+  Campaign(Table<SiteInfo>, CampaignType, PlayerRole, const string& worldName);
   Table<SiteInfo> SERIAL(sites);
   optional<Vec2> SERIAL(playerPos);
   string SERIAL(worldName);
   Table<bool> SERIAL(defeated);
   set<Vec2> SERIAL(influencePos);
   int SERIAL(influenceSize);
-  Type SERIAL(type);
+  PlayerRole SERIAL(playerRole);
+  CampaignType SERIAL(type);
 };
-
-
-#endif

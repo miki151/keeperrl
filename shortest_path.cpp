@@ -18,17 +18,9 @@
 #include "shortest_path.h"
 #include "level.h"
 #include "creature.h"
+#include "lasting_effect.h"
 
-template <class Archive> 
-void ShortestPath::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(path)
-    & SVAR(target)
-    & SVAR(directions)
-    & SVAR(bounds)
-    & SVAR(reversed);
-}
-
-SERIALIZABLE(ShortestPath);
+SERIALIZE_DEF(ShortestPath, path, target, directions, bounds, reversed)
 SERIALIZATION_CONSTRUCTOR_IMPL(ShortestPath);
 
 const double ShortestPath::infinity = 1000000000;
@@ -100,9 +92,9 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> 
   while (!q.empty()) {
     ++numPopped;
     Vec2 pos = q.top().pos;
-   // Debug() << "Popping " << pos << " " << distance[pos]  << " " << (from ? (*from - pos).length4() : 0);
+   // INFO << "Popping " << pos << " " << distance[pos]  << " " << (from ? (*from - pos).length4() : 0);
     if (from == pos || (limit && distanceTable.getDistance(pos) >= *limit)) {
-      Debug() << "Shortest path from " << (from ? *from : Vec2(-1, -1)) << " to " << target << " " << numPopped
+      INFO << "Shortest path from " << (from ? *from : Vec2(-1, -1)) << " to " << target << " " << numPopped
         << " visited distance " << distanceTable.getDistance(pos);
       constructPath(pos);
       return;
@@ -124,7 +116,7 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> 
       }
     }
   }
-  Debug() << "Shortest path exhausted, " << numPopped << " visited";
+  INFO << "Shortest path exhausted, " << numPopped << " visited";
 }
 
 void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, double mult, Vec2 from,
@@ -145,7 +137,7 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2
     ++numPopped;
     Vec2 pos = q.top().pos;
     if (from == pos) {
-      Debug() << "Rev shortest path from " << " from " << target << " " << numPopped << " visited";
+      INFO << "Rev shortest path from " << " from " << target << " " << numPopped << " visited";
       constructPath(pos, true);
       return;
     }
@@ -159,7 +151,7 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2
         }
       }
   }
-  Debug() << "Rev shortest path from " << " from " << target << " " << numPopped << " visited";
+  INFO << "Rev shortest path from " << " from " << target << " " << numPopped << " visited";
 }
 
 void ShortestPath::constructPath(Vec2 pos, bool reversed) {
@@ -179,7 +171,7 @@ void ShortestPath::constructPath(Vec2 pos, bool reversed) {
       if (reversed)
         break;
       else
-        FAIL << "can't track path";
+        FATAL << "can't track path";
     }
     ret.push_back(pos);
     pos = next;
@@ -218,7 +210,7 @@ ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Posit
         return 1.0;
       if (pos.canNavigate(creature->getMovementType())) {
         if (const Creature* other = pos.getCreature())
-          if (other->isFriend(creature) && other->hasFreeMovement())
+          if (other->isFriend(creature) && !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
             return 2.1;
         return 5.0;
       }

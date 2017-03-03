@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _EFFECT_H
-#define _EFFECT_H
+#pragma once
 
 #include "util.h"
 #include "enums.h"
@@ -36,6 +35,8 @@ class Effect {
 
   static vector<Creature*> summon(Creature*, CreatureId, int num, int ttl, double delay = 0);
   static vector<Creature*> summon(Position, CreatureFactory&, int num, int ttl, double delay = 0);
+  static vector<Creature*> summonCreatures(Position, int radius, vector<PCreature>, double delay = 0);
+  static vector<Creature*> summonCreatures(Creature*, int radius, vector<PCreature>, double delay = 0);
   static string getName(const EffectType&);
   static string getName(LastingEffect);
   static string getDescription(const EffectType&);
@@ -49,4 +50,3 @@ class Effect {
 enum class EffectStrength { WEAK, NORMAL, STRONG };
 
 
-#endif

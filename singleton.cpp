@@ -23,6 +23,7 @@
 #include "skill.h"
 #include "name_generator.h"
 #include "spell.h"
+#include "effect_type.h"
 
 template<class T, class E>
 EnumMap<E, unique_ptr<T>> Singleton<T, E>::elems;

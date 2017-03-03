@@ -1,6 +1,4 @@
-#ifndef _ATTACK_LEVEL_H
-#define _ATTACK_LEVEL_H
+#pragma once
 
 enum class AttackLevel { LOW, MIDDLE, HIGH };
 
-#endif

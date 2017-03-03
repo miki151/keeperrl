@@ -27,31 +27,22 @@
 #include "item_attributes.h"
 #include "view.h"
 #include "sound.h"
+#include "item_class.h"
+#include "corpse_info.h"
+#include "equipment.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(UniqueEntity) & SUBCLASS(Renderable)
-    & SVAR(attributes)
-    & SVAR(discarded)
-    & SVAR(shopkeeper)
-    & SVAR(fire);
+  ar& SUBCLASS(UniqueEntity) & SUBCLASS(Renderable);
+  serializeAll(ar, attributes, discarded, shopkeeper, fire, classCache, canEquipCache);
 }
 
 SERIALIZABLE(Item);
 SERIALIZATION_CONSTRUCTOR_IMPL(Item);
 
-template <class Archive> 
-void Item::CorpseInfo::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(canBeRevived)
-    & BOOST_SERIALIZATION_NVP(hasHead)
-    & BOOST_SERIALIZATION_NVP(isSkeleton);
-}
-
-SERIALIZABLE(Item::CorpseInfo);
-
-
 Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, *attr.name)),
-    attributes(attr), fire(*attr.weight, attr.flamability) {
+    attributes(attr), fire(*attr.weight, attr.flamability), canEquipCache(!!attributes->equipmentSlot),
+    classCache(*attributes->itemClass) {
 }
 
 Item::~Item() {
@@ -76,12 +67,20 @@ ItemPredicate Item::classPredicate(ItemClass cl) {
   return [cl](const Item* item) { return item->getClass() == cl; };
 }
 
+ItemPredicate Item::equipmentSlotPredicate(EquipmentSlot slot) {
+  return [slot](const Item* item) { return item->canEquip() && item->getEquipmentSlot() == slot; };
+}
+
 ItemPredicate Item::classPredicate(vector<ItemClass> cl) {
   return [cl](const Item* item) { return contains(cl, item->getClass()); };
 }
 
 ItemPredicate Item::namePredicate(const string& name) {
   return [name](const Item* item) { return item->getName() == name; };
+}
+
+ItemPredicate Item::isRangedWeaponPredicate() {
+ return [](const Item* it) { return it->canEquip() && it->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON;};
 }
 
 vector<pair<string, vector<Item*>>> Item::stackItems(vector<Item*> items, function<string(const Item*)> suffix) {
@@ -111,7 +110,7 @@ void Item::onUnequip(Creature* c) {
     c->removePermanentEffect(*attributes->equipedEffect);
 }
 
-void Item::setOnFire(double amount, Position position) {
+void Item::fireDamage(double amount, Position position) {
   bool burning = fire->isBurning();
   string noBurningName = getTheName();
   fire->set(amount);
@@ -127,8 +126,8 @@ double Item::getFireSize() const {
 
 void Item::tick(Position position) {
   if (fire->isBurning()) {
-    Debug() << getName() << " burning " << fire->getSize();
-    position.setOnFire(fire->getSize());
+    INFO << getName() << " burning " << fire->getSize();
+    position.fireDamage(fire->getSize());
     modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
     fire->tick();
     if (!fire->isBurning()) {
@@ -174,7 +173,7 @@ string Item::getDescription() const {
 }
 
 ItemClass Item::getClass() const {
-  return *attributes->itemClass;
+  return classCache;
 }
 
 int Item::getPrice() const {
@@ -231,7 +230,7 @@ string Item::getApplyMsgThirdPerson(const Creature* owner) const {
     case ItemClass::BOOK: return "reads " + getAName(false, owner);
     case ItemClass::TOOL: return "applies " + getAName(false, owner);
     case ItemClass::FOOD: return "eats " + getAName(false, owner);
-    default: FAIL << "Bad type for applying " << (int)getClass();
+    default: FATAL << "Bad type for applying " << (int)getClass();
   }
   return "";
 }
@@ -245,7 +244,7 @@ string Item::getApplyMsgFirstPerson(const Creature* owner) const {
     case ItemClass::BOOK: return "read " + getAName(false, owner);
     case ItemClass::TOOL: return "apply " + getAName(false, owner);
     case ItemClass::FOOD: return "eat " + getAName(false, owner);
-    default: FAIL << "Bad type for applying " << (int)getClass();
+    default: FATAL << "Bad type for applying " << (int)getClass();
   }
   return "";
 }
@@ -257,7 +256,7 @@ string Item::getNoSeeApplyMsg() const {
     case ItemClass::BOOK: return "You hear someone reading ";
     case ItemClass::TOOL: return "";
     case ItemClass::FOOD: return "";
-    default: FAIL << "Bad type for applying " << (int)getClass();
+    default: FATAL << "Bad type for applying " << (int)getClass();
   }
   return "";
 }
@@ -266,7 +265,7 @@ void Item::setName(const string& n) {
   attributes->name = n;
 }
 
-const Creature* Item::getShopkeeper(const Creature* owner) const {
+Creature* Item::getShopkeeper(const Creature* owner) const {
   if (shopkeeper)
     for (Creature* c : owner->getVisibleCreatures())
       if (c->getUniqueId() == *shopkeeper)
@@ -295,6 +294,13 @@ string Item::getAName(bool getPlural, const Creature* owner) const {
 string Item::getTheName(bool getPlural, const Creature* owner) const {
   string the = (attributes->noArticle || getPlural) ? "" : "the ";
   return the + getName(getPlural, owner);
+}
+
+string Item::getPluralName(int count) const {
+  if (count > 1)
+    return toString(count) + " " + getName(true);
+  else
+    return getName(false);
 }
 
 string Item::getPluralTheName(int count) const {
@@ -379,8 +385,6 @@ string Item::getShortName(const Creature* owner, bool noSuffix) const {
   string name = getModifiers(true);
   if (attributes->shortName)
     name = *attributes->shortName + " " + name;
-  if (owner && getShopkeeper(owner) && !noSuffix)
-    name = name + " (" + toString(getPrice()) + " gold)";
   if (fire->isBurning() && !noSuffix)
     name.append(" (burning)");
   return name;
@@ -401,7 +405,7 @@ bool Item::isDiscarded() {
   return discarded;
 }
 
-optional<EffectType> Item::getEffectType() const {
+const optional<EffectType>& Item::getEffectType() const {
   return attributes->effect;
 }
 
@@ -410,7 +414,7 @@ optional<EffectType> Item::getAttackEffect() const {
 }
 
 bool Item::canEquip() const {
-  return !!attributes->equipmentSlot;
+  return canEquipCache;
 }
 
 EquipmentSlot Item::getEquipmentSlot() const {
@@ -442,5 +446,9 @@ bool Item::isWieldedTwoHanded() const {
 
 int Item::getMinStrength() const {
   return 10 + getWeight();
+}
+
+optional<CorpseInfo> Item::getCorpseInfo() const {
+  return none;
 }
 

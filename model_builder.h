@@ -1,4 +1,4 @@
-#ifndef _MODEL_BUILDER_H
+#pragma once
 
 #include "village_control.h"
 #include "stair_key.h"
@@ -10,12 +10,15 @@ class Options;
 struct SettlementInfo;
 struct EnemyInfo;
 class EnemyFactory;
+class SokobanInput;
+class ExternalEnemies;
+struct ExternalEnemy;
 
 class ModelBuilder {
   public:
-  ModelBuilder(ProgressMeter*, RandomGen&, Options*);
-  PModel singleMapModel(const string& worldName);
-  PModel campaignBaseModel(const string& siteName);
+  ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*);
+  PModel singleMapModel(const string& worldName, PCreature keeper);
+  PModel campaignBaseModel(const string& siteName, PCreature keeper, bool externalEnemies);
   PModel campaignSiteModel(const string& siteName, EnemyId, VillainType);
 
   void measureModelGen(int numTries, function<void()> genFun);
@@ -25,7 +28,7 @@ class ModelBuilder {
 
   PModel splashModel(const string& splashPath);
 
-  void spawnKeeper(Model*);
+  Collective* spawnKeeper(Model*, PCreature);
 
   static int getPigstyPopulationIncrease();
   static int getStatuePopulationIncrease();
@@ -35,10 +38,10 @@ class ModelBuilder {
 
   private:
   PModel trySingleMapModel(const string& worldName);
-  PModel tryCampaignBaseModel(const string& siteName);
+  PModel tryCampaignBaseModel(const string& siteName, bool externalEnemies);
   PModel tryCampaignSiteModel(const string& siteName, EnemyId, VillainType);
   PModel tryModel(int width, const string& levelName, vector<EnemyInfo>,
-      bool keeperSpawn, BiomeId);
+      bool keeperSpawn, BiomeId, vector<ExternalEnemy>);
   PModel tryQuickModel(int width);
   SettlementInfo& makeExtraLevel(Model*, EnemyInfo&);
   PModel tryBuilding(int numTries, function<PModel()> buildFun);
@@ -47,7 +50,5 @@ class ModelBuilder {
   ProgressMeter* meter;
   Options* options;
   HeapAllocated<EnemyFactory> enemyFactory;
+  SokobanInput* sokobanInput;
 };
-
-
-#endif

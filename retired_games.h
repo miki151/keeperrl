@@ -1,5 +1,4 @@
-#ifndef _RETIRED_GAMES_H
-#define _RETIRED_GAMES_H
+#pragma once
 
 #include "util.h"
 #include "saved_game_info.h"
@@ -34,4 +33,3 @@ class RetiredGames {
   int numLocal = 0;
 };
 
-#endif

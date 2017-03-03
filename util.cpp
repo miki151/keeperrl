@@ -75,8 +75,8 @@ bool RandomGen::roll(int chance) {
   return get(chance) == 0;
 }
 
-bool RandomGen::rollD(double chance) {
-  return getDouble(0, chance) <= 1;
+bool RandomGen::chance(double v) {
+  return getDouble(0, 1) <= v;
 }
 
 double RandomGen::getDouble() {
@@ -158,6 +158,12 @@ vector<string> removeEmpty(const vector<string>& v) {
 template<>
 bool contains(const string& s, const string& p) {
   return s.find(p) != string::npos;
+}
+
+string toString(const Vec2& v) {
+  stringstream ss;
+  ss << "(" << v.x << ", " << v.y << ")";
+  return ss.str();
 }
 
 Vec2::Vec2(int _x, int _y) : x(_x), y(_y) {
@@ -255,7 +261,7 @@ Dir Vec2::getCardinalDir() const {
     return Dir::W;
   if (x == -1 && y == -1)
     return Dir::NW;
-  FAIL << "Not cardinal dir " << *this;
+  FATAL << "Not cardinal dir " << *this;
   return Dir::N;
 }
 
@@ -461,7 +467,7 @@ Vec2 Vec2::getBearing() const {
     return Vec2(0, -1);
   if (ang >= 6.5 && ang < 7.5)
     return Vec2(1, -1);
-  FAIL << ang;
+  FATAL << ang;
   return Vec2(0, 0);
 }
 
@@ -488,6 +494,10 @@ Rectangle::Rectangle(int px1, int py1, int kx1, int ky1) : px(px1), py(py1), kx(
 Rectangle::Rectangle(Vec2 p, Vec2 k) : px(p.x), py(p.y), kx(k.x), ky(k.y), w(k.x - p.x), h(k.y - p.y) {
   CHECK(k.x > p.x) << p << " " << k;
   CHECK(k.y > p.y) << p << " " << k;
+}
+
+Rectangle::Rectangle(Range xRange, Range yRange)
+    : Rectangle(xRange.getStart(), yRange.getStart(), xRange.getEnd(), yRange.getEnd()) {
 }
 
 Rectangle::Iter::Iter(int x1, int y1, int px1, int py1, int kx1, int ky1) : pos(x1, y1), px(px1), py(py1), kx(kx1), ky(ky1) {}
@@ -605,10 +615,18 @@ Range::Range(int a, int b) : start(a), finish(b) {
 }
 Range::Range(int a) : Range(0, a) {}
 
+Range Range::singleElem(int a) {
+  return Range(a, a + 1);
+}
+
 Range Range::reverse() {
   Range r(finish - 1, start - 1);
   r.increment = -1;
   return r;
+}
+
+bool Range::isEmpty() const {
+  return (increment == 1 && start >= finish) || (increment == -1 && start <= finish);
 }
 
 Range Range::shorten(int r) {
@@ -631,6 +649,14 @@ int Range::getStart() const {
 
 int Range::getEnd() const {
   return finish;
+}
+
+int Range::getLength() const {
+  return finish - start;
+}
+
+bool Range::contains(int p) const {
+  return (increment > 0 && p >= start && p < finish) || (increment < 0 && p <= start && p > finish);
 }
 
 Range::Iter Range::begin() {
@@ -777,7 +803,7 @@ static string toText(int num) {
     case 7: return "seven";
     case 8: return "eight";
     case 9: return "nine";
-    default: FAIL << "Unsupported number " << num;
+    default: FATAL << "Unsupported number " << num;
              return "";
   }
 }
@@ -948,6 +974,24 @@ int DisjointSets::getSet(int i) {
     int j = father[i];
     father[i] = ret;
     i = j;
+  }
+  return ret;
+}
+
+int getSize(const std::string& s) {
+  return s.size();
+}
+
+const char* getString(const std::string& s) {
+  return s.c_str();
+}
+
+string combineWithOr(const vector<string>& elems) {
+  string ret;
+  for (auto& elem : elems) {
+    if (!ret.empty())
+      ret += " or ";
+    ret += elem;
   }
   return ret;
 }

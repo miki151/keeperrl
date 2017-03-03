@@ -5,6 +5,9 @@
 Sound::Sound(SoundId i) : id(i) {
 }
 
+SERIALIZE_DEF(Sound, id, position, pitch)
+SERIALIZATION_CONSTRUCTOR_IMPL(Sound)
+
 Sound& Sound::setPosition(const Position& p) {
   position = p;
   return *this;

@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _MEMORY_H
-#define _MEMORY_H
+#pragma once
 
 #include "util.h"
 #include "position.h"
@@ -43,5 +42,3 @@ class MapMemory {
   HeapAllocated<PositionMap<optional<ViewIndex>>> SERIAL(table);
   mutable map<int, unordered_set<Position, CustomHash<Position>>> updated;
 };
-
-#endif

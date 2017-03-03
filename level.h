@@ -13,19 +13,17 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _LEVEL_H
-#define _LEVEL_H
+#pragma once
 
 #include "util.h"
 #include "debug.h"
-#include "field_of_view.h"
 #include "unique_entity.h"
 #include "movement_type.h"
 #include "sectors.h"
 #include "stair_key.h"
 #include "entity_set.h"
-#include "square_array.h"
-#include "view_object.h"
+#include "vision_id.h"
+#include "furniture_layer.h"
 
 class Model;
 class Square;
@@ -42,12 +40,9 @@ class PlayerMessage;
 class CreatureBucketMap;
 class Position;
 class Game;
-
-RICH_ENUM(VisionId,
-  ELF,
-  NIGHT,
-  NORMAL
-);
+class SquareArray;
+class FurnitureArray;
+class FieldOfView;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level {
@@ -58,18 +53,11 @@ class Level {
   static Rectangle getSplashBounds();
   static Rectangle getSplashVisibleBounds();
 
-  /** Checks if the creature can move to \paramname{direction}. This ensures 
-    * that a subsequent call to #moveCreature will not fail.*/
-  bool canMoveCreature(const Creature*, Vec2 direction) const;
-
   /** Moves the creature. Updates the creature's position.*/
   void moveCreature(Creature*, Vec2 direction);
 
   /** Swaps positions of two creatures. */
   void swapCreatures(Creature*, Creature*);
-
-  /** Puts \paramname{creature} on \paramname{position}. \paramname{creature} ownership is assumed by the model.*/
-  void addCreature(Vec2 position, PCreature, double delay = 0);
 
   /** Puts the \paramname{creature} on \paramname{position}. */
   void putCreature(Vec2 position, Creature*);
@@ -80,7 +68,7 @@ class Level {
     Returns the position of the stairs that were used. */
   bool landCreature(StairKey key, Creature*);
   bool landCreature(StairKey key, PCreature);
-  bool landCreature(StairKey key, PCreature, Vec2 travelDir);
+  bool landCreature(StairKey key, Creature*, Vec2 travelDir);
   //@}
 
   /** Lands the creature on the level randomly choosing one of the given squares.
@@ -106,17 +94,11 @@ class Level {
       its obstructing/non-obstructing attribute. */
   void updateVisibility(Vec2 changedSquare);
 
-  /** Returns width of the level.*/
-  int getWidth() const;
-
-  /** Returns height of the level.*/
-  int getHeight() const;
-
   /** Checks \paramname{pos} lies within the level's boundaries.*/
   bool inBounds(Vec2 pos) const;
 
   /** Returns the level's boundaries.*/
-  Rectangle getBounds() const;
+  const Rectangle& getBounds() const;
 
   /** Returns the name of the level. */
   const string& getName() const;
@@ -127,11 +109,9 @@ class Level {
   vector<Position> getAllPositions() const;
   //@}
 
-  void replaceSquare(Position, PSquare square, bool storePrevious = true);
-  void removeSquare(Position, PSquare defaultSquare);
-
   /** The given square's method Square::tick() will be called every turn. */
   void addTickingSquare(Vec2 pos);
+  void addTickingFurniture(Vec2 pos);
 
   /** Ticks all squares that must be ticked. */
   void tick();
@@ -207,11 +187,11 @@ class Level {
 
   bool isChokePoint(Vec2, const MovementType&) const;
 
-  void updateConnectivity(Vec2);
   void updateSunlightMovement();
 
   const optional<ViewObject>& getBackgroundObject(Vec2) const;
-  int getNumModifiedSquares() const;
+  int getNumGeneratedSquares() const;
+  int getNumTotalSquares() const;
   bool isUnavailable(Vec2) const;
 
   void setNeedsMemoryUpdate(Vec2, bool);
@@ -220,8 +200,7 @@ class Level {
   void setNeedsRenderUpdate(Vec2, bool);
 
   LevelId getUniqueId() const;
-
-  /** Class used to initialize a level object.*/
+  void setFurniture(Vec2, PFurniture);
 
   SERIALIZATION_DECL(Level);
 
@@ -230,26 +209,29 @@ class Level {
   const Square* getSafeSquare(Vec2) const;
   Square* modSafeSquare(Vec2);
   Vec2 transform(Vec2);
-  SquareArray SERIAL(squares);
+  HeapAllocated<SquareArray> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
-  Table<optional<ViewObject>> SERIAL(background);
+  HeapAllocated<FurnitureArray> SERIAL(furniture);
+  HeapAllocated<Table<optional<ViewObject>>> SERIAL(background);
   Table<bool> SERIAL(memoryUpdates);
   Table<bool> renderUpdates = Table<bool>(getMaxBounds(), true);
   Table<bool> SERIAL(unavailable);
   unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
   vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
+  set<Vec2> SERIAL(tickingFurniture);
   void eraseCreature(Creature*, Vec2 coord);
   void placeCreature(Creature*, Vec2 pos);
   void unplaceCreature(Creature*, Vec2 pos);
   vector<Creature*> SERIAL(creatures);
   EntitySet<Creature> SERIAL(creatureIds);
   Model* SERIAL(model) = nullptr;
-  mutable EnumMap<VisionId, FieldOfView> SERIAL(fieldOfView);
+  mutable HeapAllocated<EnumMap<VisionId, FieldOfView>> SERIAL(fieldOfView);
   string SERIAL(name);
   const Level* SERIAL(backgroundLevel) = nullptr;
   Vec2 SERIAL(backgroundOffset);
   Table<double> SERIAL(sunlight);
+  Table<bool> SERIAL(covered);
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
@@ -257,7 +239,8 @@ class Level {
   Sectors& getSectors(const MovementType&) const;
   
   friend class LevelBuilder;
-  Level(SquareArray, Model*, vector<Location*>, const string& name, Table<double> sunlight, LevelId);
+  Level(SquareArray, FurnitureArray, Model*, vector<Location*>, const string& name,
+        Table<double> sunlight, LevelId, Table<bool> cover);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
@@ -268,4 +251,3 @@ class Level {
   bool SERIAL(noDiagonalPassing) = false;
 };
 
-#endif

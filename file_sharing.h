@@ -1,5 +1,4 @@
-#ifndef _FILE_SHARING_H
-#define _FILE_SHARING_H
+#pragma once
 
 #include "util.h"
 #include "highscores.h"
@@ -12,18 +11,7 @@ class FileSharing {
   public:
   FileSharing(const string& uploadUrl, Options&, long long installId);
 
-  optional<string> uploadRetired(const string& path, ProgressMeter&);
   optional<string> uploadSite(const string& path, ProgressMeter&);
-
-  struct GameInfo {
-    string displayName;
-    string filename;
-    time_t time;
-    int totalGames;
-    int wonGames;
-    int version;
-  };
-  optional<vector<GameInfo>> listGames();
   struct SiteInfo {
     SavedGameInfo gameInfo;
     SaveFileInfo fileInfo;
@@ -43,8 +31,9 @@ class FileSharing {
     string author;
   };
   optional<vector<BoardMessage>> getBoardMessages(int boardId);
+  void uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text);
 
-  string downloadHighscores();
+  string downloadHighscores(int version);
 
   void cancel();
   ~FileSharing();
@@ -59,4 +48,3 @@ class FileSharing {
   long long installId;
 };
 
-#endif

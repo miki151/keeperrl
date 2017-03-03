@@ -12,8 +12,10 @@ ifdef DEBUG
 GFLAG += -g
 endif
 
+NO_OMIT_FP = true
+
 ifdef NO_OMIT_FP
-GFLAG += -fno-inline -fno-omit-frame-pointer
+GFLAG += -fno-omit-frame-pointer
 endif
 
 ifdef PROF
@@ -48,10 +50,12 @@ CFLAGS += $(IPATH)
 
 SRCS = $(shell ls -t *.cpp)
 
+LIBS = -mwindows keeper.res -lvorbisfile -lvorbis -logg -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -lfreetype
+
 ifdef AMD64
-LIBS = -lmingw32 -lSDL2main -lSDL2 -mwindows -lvorbisfile -lvorbis -logg -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -lfreetype -lfreeglut -lglu32 -lz -lboost_serialization-mgw49-mt-1_57 -lboost_program_options-mgw49-mt-1_57 -lboost_system-mgw49-mt-1_57 -lboost_filesystem-mgw49-mt-1_57 -lglew32 -ljpeg -lOpenAL32.dll -lsndfile -lopengl32 -lcurldll -limagehlp
+LIBS += -lmingw32 -lSDL2main -lSDL2 -lfreeglut -lglu32 -lz -lboost_serialization-mgw49-mt-1_57 -lboost_program_options-mgw49-mt-1_57 -lboost_system-mgw49-mt-1_57 -lboost_filesystem-mgw49-mt-1_57 -lglew32 -ljpeg -lOpenAL32.dll -lsndfile -lopengl32 -lcurldll -limagehlp
 else
-LIBS = -lSDL2.dll -lSDL2main -lvorbisfile -lvorbis -logg -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -lfreetype -lglut -lglu32 -lz -lboost_serialization-mgw49-mt-1_56 -lboost_program_options-mgw49-mt-1_56 -lboost_system-mgw49-mt-1_56 -lboost_filesystem-mgw49-mt-1_56 -lglew -ljpeg -lOpenAL32.dll -lsndfile -lopengl32 -lcurldll -limagehlp
+LIBS += -lSDL2.dll -lSDL2main  -lglut -lglu32 -lz -lboost_serialization-mgw49-mt-1_56 -lboost_program_options-mgw49-mt-1_56 -lboost_system-mgw49-mt-1_56 -lboost_filesystem-mgw49-mt-1_56 -lglew -ljpeg -lOpenAL32.dll -lsndfile -lopengl32 -lcurldll -limagehlp
 endif
 
 ifdef debug

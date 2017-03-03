@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _CREATURE_NAME_H
-#define _CREATURE_NAME_H
+#pragma once
 
 #include "util.h"
 
@@ -27,7 +26,8 @@ class CreatureName {
   void setStack(const string&);
   void setGroup(const string&);
   void useFullTitle();
-  string stack() const;
+  const string& stack() const;
+  const optional<string>& stackOnly() const;
   optional<string> first() const;
   string bare() const;
   string the() const;
@@ -47,5 +47,4 @@ class CreatureName {
   bool SERIAL(fullTitle) = false;
 };
 
-#endif
 

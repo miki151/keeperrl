@@ -40,14 +40,10 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Controller);
 Controller::Controller(Creature* c) : creature(c) {
 }
 
-Controller* Controller::getPossessedController(Creature* c) {
-  return new DoNothingController(c);
-}
+ControllerFactory::ControllerFactory(function<SController(Creature*)> f) : fun(f) {}
 
-ControllerFactory::ControllerFactory(function<Controller* (Creature*)> f) : fun(f) {}
-
-PController ControllerFactory::get(Creature* c) const {
-  return PController(fun(c));
+SController ControllerFactory::get(Creature* c) const {
+  return SController(fun(c));
 }
 
 DoNothingController::DoNothingController(Creature* c) : Controller(c) {}

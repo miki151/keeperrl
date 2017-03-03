@@ -1,5 +1,4 @@
-#ifndef _ITEM_TYPE_H
-#define _ITEM_TYPE_H
+#pragma once
 
 #include "enum_variant.h"
 #include "effect_type.h"
@@ -9,10 +8,12 @@ enum class ItemId {
   KNIFE,
   SPEAR,
   SWORD,
+  STEEL_SWORD,
   SPECIAL_SWORD,
   ELVEN_SWORD,
   SPECIAL_ELVEN_SWORD,
   BATTLE_AXE,
+  STEEL_BATTLE_AXE,
   SPECIAL_BATTLE_AXE,
   WAR_HAMMER,
   SPECIAL_WAR_HAMMER,
@@ -26,6 +27,7 @@ enum class ItemId {
   LEATHER_HELM,
   TELEPATHY_HELM,
   CHAIN_ARMOR,
+  STEEL_ARMOR,
   IRON_HELM,
   LEATHER_BOOTS,
   IRON_BOOTS,
@@ -50,6 +52,7 @@ enum class ItemId {
   FIRST_AID_KIT,
   ROCK,
   IRON_ORE,
+  STEEL_INGOT,
   GOLD_PIECE,
   WOOD_PLANK,
   BONE,
@@ -66,10 +69,9 @@ struct TrapInfo {
   TrapType SERIAL(trapType);
   EffectType SERIAL(effectType);
   bool SERIAL(alwaysVisible);
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(trapType) & SVAR(effectType) & SVAR(alwaysVisible);
-  }
+  SERIALIZE_ALL(trapType, effectType, alwaysVisible);
+  bool operator == (const TrapInfo& o) const { return trapType == o.trapType && effectType == o.effectType &&
+      alwaysVisible == o.alwaysVisible; }
 };
 
 class ItemType : public EnumVariant<ItemId, TYPES(EffectType, TrapInfo, LastingEffect, TechId),
@@ -80,4 +82,3 @@ class ItemType : public EnumVariant<ItemId, TYPES(EffectType, TrapInfo, LastingE
   using EnumVariant::EnumVariant;
 };
 
-#endif

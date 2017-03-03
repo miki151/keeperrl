@@ -1,5 +1,4 @@
-#ifndef _PARSE_GAME_H
-#define _PARSE_GAME_H
+#pragma once
 
 #include "util.h"
 #include "saved_game_info.h"
@@ -51,4 +50,3 @@ inline optional<SavedGameInfo> getSavedGameInfo(const string& filename) {
 }
 
 
-#endif

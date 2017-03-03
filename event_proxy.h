@@ -11,6 +11,9 @@ class EventProxy : public EventListener {
       subscribeTo(m);
   }
 
+  EventProxy(const EventProxy&) = delete;
+  EventProxy(EventProxy&&) = delete;
+
   SERIALIZATION_CONSTRUCTOR(EventProxy);
   SERIALIZE_ALL2(EventListener, owner);
 

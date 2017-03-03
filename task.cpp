@@ -38,12 +38,18 @@
 #include "model.h"
 #include "collective_name.h"
 #include "creature_attributes.h"
+#include "square_type.h"
+#include "item_type.h"
+#include "body.h"
+#include "furniture_type.h"
+#include "construction_map.h"
+#include "furniture.h"
+#include "monster_ai.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(UniqueEntity)
-    & SVAR(done)
-    & SVAR(transfer);
+  ar& SUBCLASS(UniqueEntity);
+  serializeAll(ar, done, transfer, viewId);
 }
 
 SERIALIZABLE(Task);
@@ -54,7 +60,11 @@ Task::Task(bool t) : transfer(t) {
 Task::~Task() {
 }
 
-bool Task::isImpossible(const Level*) {
+bool Task::isBogus() const {
+  return false;
+}
+
+bool Task::isBlocked(Creature*) const {
   return false;
 }
 
@@ -66,8 +76,20 @@ bool Task::canPerform(const Creature* c) {
   return true;
 }
 
+optional<Position> Task::getPosition() const {
+  return none;
+}
+
+optional<ViewId> Task::getViewId() const {
+  return viewId;
+}
+
 bool Task::isDone() {
   return done;
+}
+
+void Task::setViewId(ViewId id) {
+  viewId = id;
 }
 
 void Task::setDone() {
@@ -78,20 +100,15 @@ namespace {
 
 class Construction : public Task {
   public:
-  Construction(TaskCallback* c, Position pos, const SquareType& _type) : Task(true), type(_type), position(pos),
+  Construction(TaskCallback* c, Position pos, FurnitureType type) : Task(true), furnitureType(type), position(pos),
       callback(c) {}
 
-  virtual bool isImpossible(const Level* level) override {
-    return !position.canConstruct(type);
+  virtual bool isBogus() const override {
+    return position.canConstruct(furnitureType);
   }
 
   virtual string getDescription() const override {
-    switch (type.getId()) {
-      case SquareId::FLOOR: return "Dig " + toString(position);
-      case SquareId::TREE_TRUNK: return "Cut tree " + toString(position);
-      default: return "Build " + transform2(EnumInfo<SquareId>::getString(type.getId()),
-                   [] (char c) -> char { if (c == '_') return ' '; else return tolower(c); }) + toString(position);
-    }
+    return "Build " + Furniture::getName(furnitureType) + " at " + toString(position);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -101,11 +118,11 @@ class Construction : public Task {
       return c->moveTowards(position);
     CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
     Vec2 dir = c->getPosition().getDir(position);
-    if (auto action = c->construct(dir, type))
+    if (auto action = c->construct(dir, furnitureType))
       return {1.0, action.append([=](Creature* c) {
-          if (!c->construct(dir, type)) {
-          setDone();
-          callback->onConstructed(position, type);
+          if (!position.isActiveConstruction(Furniture::getLayer(furnitureType))) {
+            setDone();
+            callback->onConstructed(position, furnitureType);
           }
           })};
     else {
@@ -114,19 +131,79 @@ class Construction : public Task {
     }
   }
 
-  SERIALIZE_ALL2(Task, position, type, callback);
-  SERIALIZATION_CONSTRUCTOR(Construction);
+  SERIALIZE_ALL2(Task, position, furnitureType, callback)
+  SERIALIZATION_CONSTRUCTOR(Construction)
 
   private:
-  SquareType SERIAL(type);
+  FurnitureType SERIAL(furnitureType);
   Position SERIAL(position);
   TaskCallback* SERIAL(callback);
 };
 
 }
 
-PTask Task::construction(TaskCallback* c, Position target, const SquareType& type) {
+PTask Task::construction(TaskCallback* c, Position target, FurnitureType type) {
   return PTask(new Construction(c, target, type));
+}
+
+namespace {
+class Destruction : public Task {
+  public:
+  Destruction(TaskCallback* c, Position pos, const Furniture* furniture, DestroyAction action)
+      : Task(true), position(pos), callback(c), destroyAction(action),
+        description(action.getVerbSecondPerson() + " "_s + furniture->getName()),
+        furnitureType(furniture->getType()) {}
+
+  const Furniture* getFurniture() const {
+    return position.getFurniture(Furniture::getLayer(furnitureType));
+  }
+
+  virtual bool isBogus() const override {
+    if (auto furniture = getFurniture())
+      if (furniture->canDestroy(destroyAction))
+        return false;
+    return true;
+  }
+
+  virtual string getDescription() const override {
+    return description;
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (!callback->isConstructionReachable(position))
+      return NoMove;
+    if (c->getPosition().dist8(position) > 1)
+      return c->moveTowards(position);
+    CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
+    Vec2 dir = c->getPosition().getDir(position);
+    if (auto action = c->destroy(dir, destroyAction))
+      return {1.0, action.append([=](Creature* c) {
+          if (!getFurniture() || getFurniture()->getType() != furnitureType) {
+            setDone();
+            callback->onDestructed(position, furnitureType, destroyAction);
+          }
+          })};
+    else {
+      setDone();
+      return NoMove;
+    }
+  }
+
+  SERIALIZE_ALL2(Task, position, callback, destroyAction, description, furnitureType)
+  SERIALIZATION_CONSTRUCTOR(Destruction)
+
+  private:
+  Position SERIAL(position);
+  TaskCallback* SERIAL(callback);
+  DestroyAction SERIAL(destroyAction);
+  string SERIAL(description);
+  FurnitureType SERIAL(furnitureType);
+};
+
+}
+
+PTask Task::destruction(TaskCallback* c, Position target, const Furniture* furniture, DestroyAction destroyAction) {
+  return PTask(new Destruction(c, target, furniture, destroyAction));
 }
 
 namespace {
@@ -178,8 +255,8 @@ class PickItem : public Task {
     setDone();
   }
 
-  Position getPosition() {
-    return position;
+  virtual bool isBlocked(Creature* c) const override {
+    return !c->isSameSector(position);
   }
 
   bool itemsExist(Position target) {
@@ -238,8 +315,8 @@ class PickItem : public Task {
     return NoMove;
   }
 
-  SERIALIZE_ALL2(Task, items, pickedUp, position, tries, callback); 
-  SERIALIZATION_CONSTRUCTOR(PickItem);
+  SERIALIZE_ALL2(Task, items, pickedUp, position, tries, callback)
+  SERIALIZATION_CONSTRUCTOR(PickItem)
 
   protected:
   EntitySet<Item> SERIAL(items);
@@ -273,6 +350,7 @@ class PickAndEquipItem : public PickItem {
       return PickItem::getMove(c);
     vector<Item*> it = c->getEquipment().getItems(items.containsPredicate());
     if (!it.empty()) {
+      CHECK(it.size() == 1) << "Duplicate items: " << it[0]->getName() << " " << it[1]->getName();
       if (auto action = c->equip(getOnlyElement(it)))
         return {1.0, action.append([=](Creature* c) {
           setDone();
@@ -328,15 +406,15 @@ PTask Task::equipItem(Item* item) {
   return PTask(new EquipItem(item));
 }
 
-static Position chooseRandomClose(Position start, const vector<Position>& squares) {
+static Position chooseRandomClose(Position start, const vector<Position>& squares, Task::SearchType type) {
   CHECK(!squares.empty());
   int minD = 10000;
-  int margin = 3;
+  int margin = type == Task::LAZY ? 0 : 3;
   vector<Position> close;
   for (Position v : squares)
     minD = min(minD, v.dist8(start));
   for (Position v : squares)
-    if (v.dist8(start) < minD + margin)
+    if (v.dist8(start) <= minD + margin)
       close.push_back(v);
   if (close.empty())
     return Random.choose(squares);
@@ -346,11 +424,12 @@ static Position chooseRandomClose(Position start, const vector<Position>& square
 
 class BringItem : public PickItem {
   public:
-  BringItem(TaskCallback* c, Position position, vector<Item*> items, vector<Position> _target, int retries)
-      : PickItem(c, position, items, retries), target(chooseRandomClose(position, _target)) {}
 
-  BringItem(TaskCallback* c, Position position, vector<Item*> items, vector<Position> _target)
-      : PickItem(c, position, items), target(chooseRandomClose(position, _target)) {}
+  BringItem(TaskCallback* c, Position position, vector<Item*> items, vector<Position> target, int retries)
+      : PickItem(c, position, items, retries), allTargets(target) {}
+
+  BringItem(TaskCallback* c, Position position, vector<Item*> items, Position t)
+      : PickItem(c, position, items), target(t), allTargets({t}) {}
 
   virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) {
     return c->drop(it).append([=](Creature* c) {
@@ -364,24 +443,50 @@ class BringItem : public PickItem {
 
   virtual void onPickedUp() override {
   }
-  
+
+  virtual bool isBlocked(Creature* c) const override {
+    if (!c->isSameSector(position))
+      return true;
+    for (auto& pos : allTargets)
+      if (c->isSameSector(pos))
+        return false;
+    return true;
+  }
+
+  optional<Position> getBestTarget(Creature* c, const vector<Position>& pos) const {
+    vector<Position> available = filter(pos, [c](const Position& pos) { return c->isSameSector(pos); });
+    if (!available.empty())
+      return chooseRandomClose(c->getPosition(), available, LAZY);
+    else
+      return none;
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     if (!pickedUp)
       return PickItem::getMove(c);
+    if (!target || !c->isSameSector(*target))
+      target = getBestTarget(c, allTargets);
+    if (!target)
+      return c->drop(c->getEquipment().getItems(items.containsPredicate())).append(
+          [this] (Creature*) {
+            callback->onCantPickItem(items);
+            cancel();
+            setDone();
+          });
     if (c->getPosition() == target) {
       vector<Item*> myItems = c->getEquipment().getItems(items.containsPredicate());
       if (auto action = getBroughtAction(c, myItems))
-        return {1.0, action.append([=](Creature* c) {setDone();})};
+        return {1.0, action.append([=](Creature*) {setDone();})};
       else {
         setDone();
         return NoMove;
       }
     } else {
-      if (c->getPosition().dist8(target) == 1)
-        if (Creature* other = target.getCreature())
+      if (c->getPosition().dist8(*target) == 1)
+        if (Creature* other = target->getCreature())
           if (other->isAffected(LastingEffect::SLEEP))
             other->removeEffect(LastingEffect::SLEEP);
-      return c->moveTowards(target);
+      return c->moveTowards(*target);
     }
   }
 
@@ -389,24 +494,25 @@ class BringItem : public PickItem {
     return !pickedUp;
   }
 
-  SERIALIZE_ALL2(PickItem, target); 
-  SERIALIZATION_CONSTRUCTOR(BringItem);
+  SERIALIZE_ALL2(PickItem, target, allTargets)
+  SERIALIZATION_CONSTRUCTOR(BringItem)
 
   protected:
-  Position SERIAL(target);
+  optional<Position> SERIAL(target);
+  vector<Position> SERIAL(allTargets);
 };
 
-PTask Task::bringItem(TaskCallback* c, Position pos, vector<Item*> items, vector<Position> target, int numRetries) {
-  return PTask(new BringItem(c, pos, items, target, numRetries));
+PTask Task::bringItem(TaskCallback* c, Position pos, vector<Item*> items, const set<Position>& target, int numRetries) {
+  return PTask(new BringItem(c, pos, items, vector<Position>(target.begin(), target.end()), numRetries));
 }
 
 class ApplyItem : public BringItem {
   public:
-  ApplyItem(TaskCallback* c, Position position, vector<Item*> items, Position _target) 
-      : BringItem(c, position, items, {_target}), callback(c) {}
+  ApplyItem(TaskCallback* c, Position position, vector<Item*> items, Position target)
+      : BringItem(c, position, items, target), callback(c) {}
 
   virtual void cancel() override {
-    callback->onAppliedItemCancel(target);
+    callback->onAppliedItemCancel(getOnlyElement(allTargets));
   }
 
   virtual string getDescription() const override {
@@ -419,7 +525,7 @@ class ApplyItem : public BringItem {
       return c->wait();
     } else {
       if (it.size() > 1)
-        FAIL << it[0]->getName() << " " << it[0]->getUniqueId().getHash() << " "  << it[1]->getName() << " " <<
+        FATAL << it[0]->getName() << " " << it[0]->getUniqueId().getHash() << " "  << it[1]->getName() << " " <<
             it[1]->getUniqueId().getHash();
       Item* item = getOnlyElement(it);
       if (auto action = c->applyItem(item))
@@ -445,28 +551,47 @@ PTask Task::applyItem(TaskCallback* c, Position position, Item* item, Position t
 
 class ApplySquare : public Task {
   public:
-  ApplySquare(TaskCallback* c, vector<Position> pos) : positions(pos), callback(c) {}
+  ApplySquare(TaskCallback* c, vector<Position> pos, SearchType t, ActionType a)
+      : positions(pos), callback(c), searchType(t), actionType(a) {}
+
+  void changePosIfOccupied() {
+    if (position)
+      if (Creature* c = position->getCreature())
+        if (c->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
+          position = none;
+  }
+
+  optional<Position> choosePosition(Creature* c) {
+    vector<Position> candidates;
+    for (auto& pos : positions) {
+      if (Creature* other = pos.getCreature())
+        if (other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
+          continue;
+      if (!rejectedPosition.count(pos))
+        candidates.push_back(pos);
+    }
+    if (!candidates.empty())
+      return chooseRandomClose(c->getPosition(), candidates, searchType);
+    else
+      return none;
+  }
 
   virtual MoveInfo getMove(Creature* c) override {
+    changePosIfOccupied();
     if (!position) {
-      vector<Position> candidates = filter(positions, [&](Position pos) {
-          if (Creature* other = pos.getCreature())
-            if (other->isAffected(LastingEffect::SLEEP))
-              return false;
-          return !rejectedPosition.count(pos);});
-      if (!candidates.empty())
-        position = chooseRandomClose(c->getPosition(), candidates);
+      if (auto pos = choosePosition(c))
+        position = pos;
       else {
         setDone();
         return NoMove;
       }
     }
-    if (position == c->getPosition()) {
-      if (auto action = c->applySquare())
+    if (atTarget(c)) {
+      if (auto action = getAction(c))
         return {1.0, action.append([=](Creature* c) {
             setDone();
             if (callback)
-              callback->onAppliedSquare(c->getPosition());
+              callback->onAppliedSquare(c, *position);
         })};
       else {
         setDone();
@@ -487,12 +612,25 @@ class ApplySquare : public Task {
     }
   }
 
+  CreatureAction getAction(Creature* c) {
+    switch (actionType) {
+      case ActionType::APPLY:
+        return c->applySquare(*position);
+      case ActionType::NONE:
+        return c->wait();
+    }
+  }
+
   virtual string getDescription() const override {
     return "Apply square " + (position ? toString(*position) : "");
   }
 
-  SERIALIZE_ALL2(Task, positions, rejectedPosition, invalidCount, position, callback); 
-  SERIALIZATION_CONSTRUCTOR(ApplySquare);
+  bool atTarget(Creature* c) {
+    return position == c->getPosition() || (!position->canEnterEmpty(c) && position->dist8(c->getPosition()) == 1);
+  }
+
+  SERIALIZE_ALL2(Task, positions, rejectedPosition, invalidCount, position, callback, searchType, actionType)
+  SERIALIZATION_CONSTRUCTOR(ApplySquare)
 
   private:
   vector<Position> SERIAL(positions);
@@ -500,11 +638,13 @@ class ApplySquare : public Task {
   int SERIAL(invalidCount) = 5;
   optional<Position> SERIAL(position);
   TaskCallback* SERIAL(callback);
+  SearchType SERIAL(searchType);
+  ActionType SERIAL(actionType);
 };
 
-PTask Task::applySquare(TaskCallback* c, vector<Position> position) {
+PTask Task::applySquare(TaskCallback* c, vector<Position> position, SearchType searchType, ActionType actionType) {
   CHECK(position.size() > 0);
-  return PTask(new ApplySquare(c, position));
+  return PTask(new ApplySquare(c, position, searchType, actionType));
 }
 
 namespace {
@@ -526,7 +666,6 @@ class Kill : public Task {
       case ATTACK: return "Kill " + creature->getName().bare();
       case TORTURE: return "Torture " + creature->getName().bare();
     }
-    
   }
 
   virtual bool canPerform(const Creature* c) override {
@@ -535,7 +674,7 @@ class Kill : public Task {
 
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(c != creature);
-    if (creature->isDead()) {
+    if (creature->isDead() || (type == TORTURE && !creature->isAffected(LastingEffect::TIED_UP))) {
       setDone();
       return NoMove;
     }
@@ -566,98 +705,6 @@ PTask Task::kill(TaskCallback* callback, Creature* creature) {
 
 PTask Task::torture(TaskCallback* callback, Creature* creature) {
   return PTask(new Kill(callback, creature, Kill::TORTURE));
-}
-
-namespace {
-
-class Sacrifice : public Task {
-  public:
-  Sacrifice(TaskCallback* call, Creature* c) : creature(c), callback(call) {}
-
-  virtual bool canPerform(const Creature* c) override {
-    return c != creature;
-  }
-
-  virtual MoveInfo getMove(Creature* c) override {
-    if (creature->isDead()) {
-      if (sacrificePos) {
-        if (sacrificePos == c->getPosition())
-          return c->applySquare().append([=](Creature* c) { setDone(); });
-        else
-          return c->moveTowards(*sacrificePos);
-      } else {
-        setDone();
-        return NoMove;
-      }
-    }
-    if (creature->getPosition().getApplyType(creature) == SquareApplyType::PRAY)
-      if (auto action = c->attack(creature)) {
-        Position pos = creature->getPosition();
-        return action.append([=](Creature* c) { if (creature->isDead()) sacrificePos = pos; });
-      }
-    return c->moveTowards(creature->getPosition());
-  }
-
-  virtual string getDescription() const override {
-    return "Sacrifice " + creature->getName().bare();
-  }
-
-  virtual void cancel() override {
-    callback->onKillCancelled(creature);
-  }
-
-  SERIALIZE_ALL2(Task, creature, sacrificePos, callback); 
-  SERIALIZATION_CONSTRUCTOR(Sacrifice);
-
-  private:
-  Creature* SERIAL(creature);
-  optional<Position> SERIAL(sacrificePos);
-  TaskCallback* SERIAL(callback);
-};
-
-}
-
-PTask Task::sacrifice(TaskCallback* callback, Creature* creature) {
-  return PTask(new Sacrifice(callback, creature));
-}
-
-namespace {
-
-class DestroySquare : public Task {
-  public:
-  DestroySquare(Position pos) : position(pos) {
-  }
-
-  virtual MoveInfo getMove(Creature* c) override {
-    if (c->getPosition().dist8(position) == 1)
-      if (auto action = c->destroy(position.getDir(c->getPosition()), Creature::DESTROY))
-        return action.append([=](Creature* c) { 
-          if (!position.canDestroy(c))
-            setDone();
-          });
-    if (auto action = c->moveTowards(position))
-      return action;
-    for (Vec2 v : Vec2::directions8(Random))
-      if (auto action = c->destroy(v, Creature::DESTROY))
-        return action;
-    return NoMove;
-  }
-
-  virtual string getDescription() const override {
-    return "Destroy " + toString(position);
-  }
-
-  SERIALIZE_ALL2(Task, position); 
-  SERIALIZATION_CONSTRUCTOR(DestroySquare);
-
-  private:
-  Position SERIAL(position);
-};
-
-}
-
-PTask Task::destroySquare(Position position) {
-  return PTask(new DestroySquare(position));
 }
 
 namespace {
@@ -806,39 +853,40 @@ PTask Task::attackLeader(Collective* col) {
 
 PTask Task::stealFrom(Collective* collective, TaskCallback* callback) {
   vector<PTask> tasks;
-  for (Position pos : collective->getSquares(SquareId::TREASURE_CHEST)) {
+  for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType::TREASURE_CHEST)) {
     vector<Item*> gold = pos.getItems(Item::classPredicate(ItemClass::GOLD));
     if (!gold.empty())
       tasks.push_back(pickItem(callback, pos, gold));
   }
-  return chain(std::move(tasks));
+  if (!tasks.empty())
+    return chain(std::move(tasks));
+  else
+    return PTask(nullptr);
 }
 
 namespace {
 
 class CampAndSpawn : public Task {
   public:
-  CampAndSpawn(Collective* _target, Collective* _self, CreatureFactory s, int defense, Range attack, int numAtt)
-    : target(_target), self(_self), spawns(s),
+  CampAndSpawn(Collective* _target, CreatureFactory s, int defense, Range attack, int numAtt)
+    : target(_target), spawns(s),
       campPos(Random.permutation(target->getTerritory().getStandardExtended())), defenseSize(defense),
       attackSize(attack), numAttacks(numAtt) {}
 
-  MoveInfo makeTeam(Creature* c, optional<TeamId>& team, int minMembers, vector<Creature*> initial, int delay) {
-    if (!team || !self->getTeams().exists(*team) || self->getTeams().getMembers(*team).size() < minMembers) {
-      if (!Random.roll(delay))
-        return c->wait();
-      return c->wait().append([this, &team, initial] (Creature* c) {
-          for (Creature* spawn : Effect::summon(c->getPosition(), spawns, 1, 1000)) {
-            self->addCreature(spawn, {MinionTrait::FIGHTER, MinionTrait::SUMMONED});
-            if (!team || !self->getTeams().exists(*team)) {
-              team = self->getTeams().createPersistent(concat(initial, {spawn}));
-              self->getTeams().activate(*team);
-            } else
-              self->getTeams().add(*team, spawn);
-          }
-        });
-    } else
-      return NoMove;
+  void updateTeams() {
+    for (auto member : copyOf(defenseTeam))
+      if (member->isDead())
+        removeElement(defenseTeam, member);
+    for (auto member : copyOf(attackTeam))
+      if (member->isDead())
+        removeElement(attackTeam, member);
+  }
+
+  virtual void cancel() override {
+    // Cancel only the attack team, as the defense will disappear when the summoner dies
+    for (Creature* c : attackTeam)
+      if (!c->isDead())
+        c->die(nullptr, false, false);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -846,25 +894,32 @@ class CampAndSpawn : public Task {
       setDone();
       return NoMove;
     }
-    if (auto move = makeTeam(c, defenseTeam, defenseSize + 1, {c}, 1))
-      return move;
+    updateTeams();
+    if (defenseTeam.size() < defenseSize && Random.roll(5)) {
+      for (Creature* summon : Effect::summonCreatures(c, 4,
+          makeVec<PCreature>(spawns.random(MonsterAIFactory::summoned(c, 100000)))))
+        defenseTeam.push_back(summon);
+    }
     if (!contains(campPos, c->getPosition()))
       return c->moveTowards(campPos[0]);
-    if (attackTeam && !self->getTeams().exists(*attackTeam))
-      attackTeam.reset();
-    if (!attackTeam) {
-      if (numAttacks-- <= 0) {
-        setDone();
-        return c->wait();
+    if (attackTeam.empty()) {
+      if (!attackCountdown) {
+        if (numAttacks-- <= 0) {
+          setDone();
+          return c->wait();
+        }
+        attackCountdown = Random.get(30, 60);
       }
-      currentAttack = Random.get(attackSize);
-    }
-    if (currentAttack) {
-      if (auto move = makeTeam(c, attackTeam, *currentAttack, {}, attackTeam ? 15 : 1))
-        return move;
-      for (Creature* c : self->getTeams().getMembers(*attackTeam))
-        self->setTask(c, Task::attackLeader(target));
-      currentAttack.reset();
+      if (*attackCountdown > 0)
+        --*attackCountdown;
+      else {
+        vector<PCreature> team;
+        for (int i : Range(Random.get(attackSize)))
+          team.push_back(spawns.random(MonsterAIFactory::singleTask(Task::attackLeader(target))));
+        for (Creature* summon : Effect::summonCreatures(c, 4, std::move(team)))
+          attackTeam.push_back(summon);
+        attackCountdown = none;
+      }
     }
     return c->wait();
   }
@@ -873,28 +928,27 @@ class CampAndSpawn : public Task {
     return "Camp and spawn " + target->getLeader()->getName().bare();
   }
  
-  SERIALIZE_ALL2(Task, target, self, spawns, campPos, defenseSize, attackSize, currentAttack, defenseTeam, attackTeam, numAttacks); 
+  SERIALIZE_ALL2(Task, target, spawns, campPos, defenseSize, attackSize, attackCountdown, defenseTeam, attackTeam, numAttacks);
   SERIALIZATION_CONSTRUCTOR(CampAndSpawn);
 
   private:
   Collective* SERIAL(target);
-  Collective* SERIAL(self);
   CreatureFactory SERIAL(spawns);
   vector<Position> SERIAL(campPos);
   int SERIAL(defenseSize);
   Range SERIAL(attackSize);
-  optional<int> SERIAL(currentAttack);
-  optional<TeamId> SERIAL(defenseTeam);
-  optional<TeamId> SERIAL(attackTeam);
+  optional<int> SERIAL(attackCountdown);
+  vector<Creature*> SERIAL(defenseTeam);
+  vector<Creature*> SERIAL(attackTeam);
   int SERIAL(numAttacks);
 };
 
 
 }
 
-PTask Task::campAndSpawn(Collective* target, Collective* self, const CreatureFactory& spawns, int defenseSize,
+PTask Task::campAndSpawn(Collective* target, const CreatureFactory& spawns, int defenseSize,
     Range attackSize, int numAttacks) {
-  return PTask(new CampAndSpawn(target, self, spawns, defenseSize, attackSize, numAttacks));
+  return PTask(new CampAndSpawn(target, spawns, defenseSize, attackSize, numAttacks));
 }
 
 namespace {
@@ -943,7 +997,7 @@ class ConsumeItem : public Task {
 
   virtual MoveInfo getMove(Creature* c) override {
     return c->wait().append([=](Creature* c) {
-        c->getEquipment().removeItems(c->getEquipment().getItems(items.containsPredicate())); });
+        c->getEquipment().removeItems(c->getEquipment().getItems(items.containsPredicate()), c); });
   }
 
   virtual string getDescription() const override {
@@ -1023,7 +1077,6 @@ class Consume : public Task {
       if (auto action = c->consume(target))
         return action.append([=](Creature* c) {
           setDone();
-          callback->onConsumed(c, target);
         });
       else
         return NoMove;
@@ -1123,10 +1176,12 @@ PTask Task::eat(set<Position> hatcherySquares) {
 namespace {
 class GoTo : public Task {
   public:
-  GoTo(Position pos) : target(pos) {}
+  GoTo(Position pos, bool forever) : target(pos), tryForever(forever) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (c->getPosition() == target) {
+    if (c->getPosition() == target ||
+        (c->getPosition().dist8(target) == 1 && !target.canEnter(c)) ||
+        (!tryForever && !c->canNavigateTo(target))) {
       setDone();
       return NoMove;
     } else
@@ -1137,16 +1192,21 @@ class GoTo : public Task {
     return "Go to " + toString(target);
   }
 
-  SERIALIZE_ALL2(Task, target); 
+  SERIALIZE_ALL2(Task, target, tryForever)
   SERIALIZATION_CONSTRUCTOR(GoTo);
 
   protected:
   Position SERIAL(target);
+  bool SERIAL(tryForever);
 };
 }
 
 PTask Task::goTo(Position pos) {
-  return PTask(new GoTo(pos));
+  return PTask(new GoTo(pos, false));
+}
+
+PTask Task::goToTryForever(Position pos) {
+  return PTask(new GoTo(pos, true));
 }
 
 namespace {
@@ -1183,91 +1243,96 @@ PTask Task::transferTo(Model *m) {
 namespace {
 class GoToAndWait : public Task {
   public:
-  GoToAndWait(Position pos, double maxT) : position(pos), maxTime(maxT) {}
+  GoToAndWait(Position pos, double waitT) : position(pos), waitTime(waitT) {}
+
+  bool arrived(Creature* c) {
+    return c->getPosition() == position ||
+        (c->getPosition().dist8(position) == 1 && !position.canEnterEmpty(c));
+  }
+
+  virtual optional<Position> getPosition() const override {
+    return position;
+  }
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (c->getLocalTime() >= maxTime)
+    if (maxTime && c->getLocalTime() >= *maxTime) {
       setDone();
-    if (c->getPosition() != position)
-      return c->moveTowards(position);
-    else
+      return NoMove;
+    }
+    if (!arrived(c)) {
+      auto ret = c->moveTowards(position);
+      if (!ret) {
+        if (!timeout)
+          timeout = c->getLocalTime() + 30;
+        else
+          if (c->getLocalTime() > *timeout) {
+            setDone();
+            return NoMove;
+          }
+      } else
+        timeout = none;
+      return ret;
+    } else {
+      if (!maxTime)
+        maxTime = c->getLocalTime() + waitTime;
       return c->wait();
+    }
   }
 
   virtual string getDescription() const override {
     return "Go to and wait " + toString(position);
   }
 
-  SERIALIZE_ALL2(Task, position, maxTime); 
+  SERIALIZE_ALL2(Task, position, waitTime, maxTime, timeout);
   SERIALIZATION_CONSTRUCTOR(GoToAndWait);
 
   private:
   Position SERIAL(position);
-  double SERIAL(maxTime);
+  double SERIAL(waitTime);
+  optional<double> SERIAL(maxTime);
+  optional<double> SERIAL(timeout);
 };
 }
 
-PTask Task::goToAndWait(Position pos, double maxTime) {
-  return PTask(new GoToAndWait(pos, maxTime));
+PTask Task::goToAndWait(Position pos, double waitTime) {
+  return PTask(new GoToAndWait(pos, waitTime));
 }
 
 namespace {
 class Whipping : public Task {
   public:
-  Whipping(TaskCallback* c, Position pos, Creature* w, double i, double t)
-      : callback(c), position(pos), whipped(w), interval(i), timeout(t) {}
-
-  virtual void cancel() override {
-    callback->onWhippingDone(whipped, position);
-  }
+  Whipping(Position pos, Creature* w) : position(pos), whipped(w) {}
 
   virtual bool canPerform(const Creature* c) override {
     return c != whipped;
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (c->getPosition().dist8(position) > 1)
-      return c->moveTowards(position);
-    if (started && (position.getCreature() != whipped || !whipped->isAffected(LastingEffect::TIED_UP))) {
+    if (position.getCreature() != whipped || !whipped->isAffected(LastingEffect::TIED_UP)) {
       setDone();
-      callback->onWhippingDone(whipped, position);
       return NoMove;
     }
-    if (position.getCreature() == whipped) {
-      started = true;
-      if (!whipped->isAffected(LastingEffect::TIED_UP)) {
-        whipped->addEffect(LastingEffect::TIED_UP, interval);
-        return c->wait();
-      }
+    if (c->getPosition().dist8(position) > 1)
+      return c->moveTowards(position);
+    else
       return c->whip(whipped->getPosition());
-    } else {
-      if (c->getLocalTime() > timeout) {
-        setDone();
-        callback->onWhippingDone(whipped, position);
-      }
-      return c->wait();
-    }
   }
 
   virtual string getDescription() const override {
     return "Whipping " + whipped->getName().a();
   }
 
-  SERIALIZE_ALL2(Task, callback, position, whipped, started, interval, timeout); 
+  SERIALIZE_ALL2(Task, position, whipped);
   SERIALIZATION_CONSTRUCTOR(Whipping);
 
   protected:
-  TaskCallback* SERIAL(callback);
   Position SERIAL(position);
   Creature* SERIAL(whipped);
-  bool SERIAL(started) = false;
-  double SERIAL(interval);
-  double SERIAL(timeout);
 };
 }
 
-PTask Task::whipping(TaskCallback* callback, Position pos, Creature* whipped, double interval, double timeout) {
-  return PTask(new Whipping(callback, pos, whipped, interval, timeout));
+PTask Task::whipping(Position pos, Creature* whipped) {
+  return PTask(new Whipping(pos, whipped));
 }
 
 namespace {
@@ -1351,6 +1416,7 @@ PTask Task::spider(Position origin, const vector<Position>& posClose, const vect
 template <class Archive>
 void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Construction);
+  REGISTER_TYPE(ar, Destruction);
   REGISTER_TYPE(ar, BuildTorch);
   REGISTER_TYPE(ar, PickItem);
   REGISTER_TYPE(ar, PickAndEquipItem);
@@ -1359,8 +1425,6 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, ApplyItem);
   REGISTER_TYPE(ar, ApplySquare);
   REGISTER_TYPE(ar, Kill);
-  REGISTER_TYPE(ar, Sacrifice);
-  REGISTER_TYPE(ar, DestroySquare);
   REGISTER_TYPE(ar, Disappear);
   REGISTER_TYPE(ar, Chain);
   REGISTER_TYPE(ar, Explore);
@@ -1372,7 +1436,6 @@ void Task::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, Eat);
   REGISTER_TYPE(ar, GoTo);
   REGISTER_TYPE(ar, TransferTo);
-  REGISTER_TYPE(ar, GoToAndWait);
   REGISTER_TYPE(ar, Whipping);
   REGISTER_TYPE(ar, GoToAndWait);
   REGISTER_TYPE(ar, DropItems);

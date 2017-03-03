@@ -59,7 +59,7 @@ const optional<string>& Location::getName() const {
 
 vector<Position> Location::getAllSquares() const {
   CHECK(level) << "Location bounds not initialized";
-  return transform2<Position>(squares, [this] (Vec2 v) { return Position(v, level); });
+  return transform2(squares, [this] (Vec2 v) { return Position(v, level); });
 }
 
 bool Location::contains(Position pos) const {

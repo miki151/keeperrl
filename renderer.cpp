@@ -21,6 +21,7 @@
 #include "tile.h"
 
 #include "fontstash.h"
+#include "sdl_event_generator.h"
 
 EnumMap<ColorId, Color> colors({
   {ColorId::WHITE, Color(255, 255, 255)},
@@ -101,7 +102,8 @@ static void checkOpenglError() {
 Texture::Texture(const string& fileName){
   SDL::SDL_Surface* image= SDL::IMG_Load(fileName.c_str());
   CHECK(image) << SDL::IMG_GetError();
-  CHECK(loadFrom(image));
+  if (auto error = loadFromMaybe(image))
+    FATAL << "Couldn't load image: " << fileName << ". Error code " << toString(*error);
   SDL::SDL_FreeSurface(image);
   path = fileName;
 }
@@ -113,7 +115,30 @@ Texture::~Texture() {
 
 static int totalTex = 0;
 
-bool Texture::loadFrom(SDL::SDL_Surface* image) {
+// Some graphic cards need power of two sized textures, so we create a larger texture to contain the original one.
+SDL::SDL_Surface* Renderer::createPowerOfTwoSurface(SDL::SDL_Surface* image) {
+  int w = 1;
+  int h = 1;
+  while (w < image->w)
+    w *= 2;
+  while (h < image->h)
+    h *= 2;
+  if (w == image->w && h == image->h)
+    return image;
+  auto ret = createSurface(w, h);
+  SDL::SDL_Rect dst {0, 0, image->w, image->h };
+  SDL_BlitSurface(image, nullptr, ret, &dst);
+  // fill the rest of the texture as well, which 'kind-of' solves the problem with repeating textures.
+  dst = {image->w, 0, 0, 0};
+  SDL_BlitSurface(image, nullptr, ret, &dst);
+  dst = {image->w, image->h, 0, 0};
+  SDL_BlitSurface(image, nullptr, ret, &dst);
+  dst = {0, image->h, 0, 0};
+  SDL_BlitSurface(image, nullptr, ret, &dst);
+  return ret;
+}
+
+optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* imageOrig) {
   if (!texId) {
     texId = 0;
     SDL::glGenTextures(1, &(*texId));
@@ -127,6 +152,7 @@ bool Texture::loadFrom(SDL::SDL_Surface* image) {
   SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   checkOpenglError();
   int mode = GL_RGB;
+  auto image = Renderer::createPowerOfTwoSurface(imageOrig);
   if (image->format->BytesPerPixel == 4) {
     if (image->format->Rmask == 0x000000ff)
       mode = GL_RGBA;
@@ -144,10 +170,14 @@ bool Texture::loadFrom(SDL::SDL_Surface* image) {
   SDL::glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
   checkOpenglError();
   SDL::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->w, image ->h, 0, mode, GL_UNSIGNED_BYTE, image->pixels);
-  if (SDL::glGetError() != GL_NO_ERROR)
-    return false;
-  size = Vec2(image->w, image->h);
-  return true;
+  size = Vec2(imageOrig->w, imageOrig->h);
+  realSize = Vec2(image->w, image->h);
+  if (image != imageOrig)
+    SDL::SDL_FreeSurface(image);
+  auto error = SDL::glGetError();
+  if (error != GL_NO_ERROR)
+    return error;
+  return none;
 }
 
 Texture::Texture(const string& path, int px, int py, int w, int h) {
@@ -161,13 +191,14 @@ Texture::Texture(const string& path, int px, int py, int w, int h) {
   CHECK(sub) << SDL::SDL_GetError();
   CHECK(!SDL_BlitSurface(image, &src, sub, &offset)) << SDL::SDL_GetError();
   SDL::SDL_FreeSurface(image);
-  CHECK(loadFrom(sub));
+  if (auto error = loadFromMaybe(sub))
+    FATAL << "Couldn't load image: " << path << ". Error code " << toString(*error);
   SDL::SDL_FreeSurface(sub);
   this->path = path;
 }
 
 Texture::Texture(SDL::SDL_Surface* surface) {
-  CHECK(loadFrom(surface));
+  CHECK(!loadFromMaybe(surface));
 }
 
 Texture::Texture(Texture&& tex) {
@@ -176,6 +207,7 @@ Texture::Texture(Texture&& tex) {
 
 Texture& Texture::operator = (Texture&& tex) {
   size = tex.size;
+  realSize = tex.realSize;
   texId = tex.texId;
   path = tex.path;
   tex.texId = none;
@@ -185,7 +217,7 @@ Texture& Texture::operator = (Texture&& tex) {
 optional<Texture> Texture::loadMaybe(const string& path) {
   if (SDL::SDL_Surface* image = SDL::IMG_Load(path.c_str())) {
     Texture ret;
-    bool ok = ret.loadFrom(image);
+    bool ok = !ret.loadFromMaybe(image);
     SDL::SDL_FreeSurface(image);
     if (ok)
       return std::move(ret);
@@ -198,7 +230,7 @@ const Vec2& Texture::getSize() const {
 }
 
 void Texture::addTexCoord(int x, int y) const {
-  SDL::glTexCoord2f((float)x / size.x, (float)y / size.y);
+  SDL::glTexCoord2f((float)x / realSize.x, (float)y / realSize.y);
 }
 
 Texture::Texture() {
@@ -338,10 +370,10 @@ void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Col
       SDL::glLineWidth(2);
       SDL::glBegin(GL_LINE_LOOP);
       outline->applyGl();
-      SDL::glVertex2f(a.x, a.y);
-      SDL::glVertex2f(b.x, a.y);
-      SDL::glVertex2f(b.x, b.y);
-      SDL::glVertex2f(a.x, b.y);
+      SDL::glVertex2f(a.x + 1.5f, a.y + 1.5f);
+      SDL::glVertex2f(b.x - 0.5f, a.y + 1.5f);
+      SDL::glVertex2f(b.x - 0.5f, b.y - 0.5f);
+      SDL::glVertex2f(a.x + 1.5f, b.y - 0.5f);
       SDL::glEnd();
       a += Vec2(2, 2);
       b -= Vec2(2, 2);
@@ -379,7 +411,8 @@ void Renderer::setScissor(optional<Rectangle> s) {
 void Renderer::setGlScissor(optional<Rectangle> s) {
   if (s != scissor) {
     if (s) {
-      SDL::glScissor(s->left(), getSize().y - s->bottom(), s->width(), s->height());
+      int zoom = getZoom();
+      SDL::glScissor(s->left() * zoom, (getSize().y - s->bottom()) * zoom, s->width() * zoom, s->height() * zoom);
       SDL::glEnable(GL_SCISSOR_TEST);
     }
     else
@@ -389,8 +422,11 @@ void Renderer::setGlScissor(optional<Rectangle> s) {
 }
 
 void Renderer::addRenderElem(function<void()> f) {
-  optional<Rectangle> thisScissor = scissor;
-  f = [f, thisScissor, this] { setGlScissor(thisScissor); f(); };
+  if (currentLayer == 0) {
+    auto thisScissor = scissor;
+    f = [f, thisScissor, this] { setGlScissor(thisScissor); f(); };
+  } else
+    f = [f, this] { setGlScissor(none); f(); };
   renderList[currentLayer].push_back(f);
 }
 
@@ -405,7 +441,7 @@ void Renderer::popLayer() {
 }
 
 Vec2 Renderer::getSize() {
-  return Vec2(width / zoom, height / zoom);
+  return Vec2(width / getZoom(), height / getZoom());
 }
 
 bool Renderer::isFullscreen() {
@@ -427,9 +463,23 @@ void Renderer::setFullscreenMode(int v) {
   fullscreenMode = v;
 }
 
+const Vec2 minResolution = Vec2(800, 600);
+
+int Renderer::getZoom() {
+  if (zoom == 1 || (width / zoom >= minResolution.x && height / zoom >= minResolution.y))
+    return zoom;
+  else
+    return 1;
+}
+
 void Renderer::setZoom(int v) {
   zoom = v;
   initOpenGL();
+}
+
+void Renderer::enableCustomCursor(bool state) {
+  cursorEnabled = state;
+  reloadCursors();
 }
 
 void Renderer::initOpenGL() {
@@ -439,7 +489,7 @@ void Renderer::initOpenGL() {
     SDL::glMatrixMode( GL_PROJECTION );
     SDL::glLoadIdentity();
     SDL::glViewport(0, 0, width, height);
-    SDL::glOrtho(0.0, width / zoom, height / zoom, 0.0, -1.0, 1.0);
+    SDL::glOrtho(0.0, width / getZoom(), height / getZoom(), 0.0, -1.0, 1.0);
     CHECK(SDL::glGetError() == GL_NO_ERROR);
     //Initialize Modelview Matrix
     SDL::glMatrixMode( GL_MODELVIEW );
@@ -448,6 +498,41 @@ void Renderer::initOpenGL() {
     SDL::glEnable(GL_TEXTURE_2D);
     SDL::glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
     CHECK(SDL::glGetError() == GL_NO_ERROR);
+    reloadCursors();
+}
+
+SDL::SDL_Surface* Renderer::loadScaledSurface(const string& path, double scale) {
+  if (auto surface = SDL::IMG_Load(path.c_str())) {
+    if (scale == 1)
+      return surface;
+    if (auto scaled = createSurface(surface->w * scale, surface->h * scale)) {
+      SDL::SDL_SetSurfaceBlendMode(surface, SDL::SDL_BLENDMODE_NONE);
+      CHECK(!SDL_BlitScaled(surface, nullptr, scaled, nullptr)) << SDL::IMG_GetError();
+      SDL_FreeSurface(surface);
+      return scaled;
+    }
+    SDL_FreeSurface(surface);
+  }
+  return nullptr;
+}
+
+void Renderer::reloadCursors() {
+  if (!cursorEnabled) {
+    SDL_SetCursor(originalCursor);
+    cursor = cursorClicked = nullptr;
+  } else {
+    if (auto surface = loadScaledSurface(cursorPath, getZoom()))
+      cursor = SDL_CreateColorCursor(surface, 0, 0);
+    if (auto surface = loadScaledSurface(clickedCursorPath, getZoom()))
+      cursorClicked = SDL_CreateColorCursor(surface, 0, 0);
+    if (cursor)
+      SDL_SetCursor(cursor);
+  }
+}
+
+void Renderer::setCursorPath(const string& path, const string& pathClicked) {
+  cursorPath = path;
+  clickedCursorPath = pathClicked;
 }
 
 void Renderer::initialize() {
@@ -485,7 +570,9 @@ Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : 
   CHECK(window = SDL::SDL_CreateWindow("KeeperRL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1200, 720,
     SDL::SDL_WINDOW_RESIZABLE | SDL::SDL_WINDOW_SHOWN | SDL::SDL_WINDOW_MAXIMIZED | SDL::SDL_WINDOW_OPENGL)) << SDL::SDL_GetError();
   CHECK(SDL::SDL_GL_CreateContext(window)) << SDL::SDL_GetError();
+  SDL_SetWindowMinimumSize(window, minResolution.x, minResolution.y);
   SDL_GetWindowSize(window, &width, &height);
+  originalCursor = SDL::SDL_GetCursor();
   initOpenGL();
   loadFonts(fontPath, fonts);
 }
@@ -517,17 +604,7 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool 
     tex = &altTiles[coord.texNum];
   }
   Vec2 coordPos = coord.pos.mult(sz);
-  if (vFlip) {
-    sz.y *= -1;
-    tileSize.y *= -1;
-    coordPos.y -= sz.y;
-  }
-  if (vFlip) {
-    sz.x *= -1;
-    tileSize.x *= -1;
-    coordPos.x -= sz.x;
-  }
-  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color);
+  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, vFlip, hFlip);
 }
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
@@ -597,7 +674,7 @@ bool Renderer::loadTilesFromDir(const string& path, Vec2 size) {
 
 SDL::SDL_Surface* Renderer::createSurface(int w, int h) {
   SDL::SDL_Surface* ret = SDL::SDL_CreateRGBSurface(0, w, h, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-  CHECK(ret) << SDL::SDL_GetError();
+  CHECK(ret) << "Failed to creature surface " << w << ":" << h << ": " << SDL::SDL_GetError();
   return ret;
 }
 
@@ -608,7 +685,7 @@ bool Renderer::loadTilesFromDir(const string& path, vector<Texture>& tiles, Vec2
   vector<string> files;
   while (dirent* ent = readdir(dir)) {
     string name(ent->d_name);
-    Debug() << "Found " << name;
+    INFO << "Found " << name;
     if (endsWith(name, imageSuf))
       files.push_back(name);
   }
@@ -661,31 +738,6 @@ void Renderer::resize(int w, int h) {
   initOpenGL();
 }
 
-Event Renderer::getRandomEvent() {
-  FAIL << "Unimpl";
-  return SDL::SDL_Event();
-/*  Uint8 ty
-  Event ret;
-  ret.type = type;
-  int modProb = 5;
-  switch (type) {
-    case Event::KeyPressed:
-      ret.key = {Keyboard::Key(Random.get(int(Keyboard::Key::KeyCount))), Random.roll(modProb),
-          Random.roll(modProb), Random.roll(modProb), Random.roll(modProb) };
-      break;
-    case Event::MouseButtonReleased:
-    case Event::MouseButtonPressed:
-      ret.mouseButton = { Random.choose({Mouse::Left, Mouse::Right}), Random.get(getSize().x),
-        Random.get(getSize().y) };
-      break;
-    case Event::MouseMoved:
-      ret.mouseMove = { Random.get(getSize().x), Random.get(getSize().y) };
-      break;
-    default: return getRandomEvent();
-  }
-  return ret;*/
-}
-
 bool Renderer::pollEventOrFromQueue(Event& ev) {
   if (!eventQueue.empty()) {
     ev = eventQueue.front();
@@ -694,9 +746,21 @@ bool Renderer::pollEventOrFromQueue(Event& ev) {
   } else if (SDL_PollEvent(&ev)) {
     zoomMousePos(ev);
     considerMouseMoveEvent(ev);
+    considerMouseCursorAnim(ev);
     return true;
   } else
     return false;
+}
+
+void Renderer::considerMouseCursorAnim(Event& ev) {
+  if (ev.type == SDL::SDL_MOUSEBUTTONDOWN) {
+    if (cursorClicked)
+      SDL_SetCursor(cursorClicked);
+  } else
+  if (ev.type == SDL::SDL_MOUSEBUTTONUP) {
+    if (cursor)
+      SDL_SetCursor(cursor);
+  }
 }
 
 void Renderer::considerMouseMoveEvent(Event& ev) {
@@ -708,8 +772,8 @@ bool Renderer::pollEvent(Event& ev) {
   CHECK(currentThreadId() == *renderThreadId);
   if (monkey) {
     if (Random.roll(2))
-      return false;
-    ev = getRandomEvent();
+      return pollEventOrFromQueue(ev);
+    ev = SdlEventGenerator::getRandom(Random, getSize());
     return true;
   } else 
     return pollEventOrFromQueue(ev);
@@ -726,6 +790,7 @@ void Renderer::flushEvents(EventType type) {
 }
 
 void Renderer::zoomMousePos(Event& ev) {
+  auto zoom = getZoom();
   switch (ev.type) {
     case SDL::SDL_MOUSEBUTTONUP:
     case SDL::SDL_MOUSEBUTTONDOWN:
@@ -747,7 +812,7 @@ void Renderer::zoomMousePos(Event& ev) {
 
 void Renderer::waitEvent(Event& ev) {
   if (monkey) {
-    ev = getRandomEvent();
+    ev = SdlEventGenerator::getRandom(Random, getSize());
     return;
   } else {
     if (!eventQueue.empty()) {

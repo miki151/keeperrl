@@ -1,22 +1,21 @@
-#ifndef _COLLECTIVE_BUILDER_H
-#define _COLLECTIVE_BUILDER_H
+#pragma once
 
 #include "enums.h"
 #include "util.h"
-#include "minion_task.h"
-#include "collective_config.h"
+#include "minion_trait.h"
 
 class Tribe;
+class TribeId;
 class Level;
 class Creature;
-struct ImmigrantInfo;
+class ImmigrantInfo;
 class Position;
+class CollectiveConfig;
 
 class CollectiveBuilder {
   public:
-  CollectiveBuilder(CollectiveConfig, TribeId);
+  CollectiveBuilder(const CollectiveConfig&, TribeId);
   CollectiveBuilder& setLevel(Level*);
-  CollectiveBuilder& setCredit(map<CollectiveResourceId, int>);
   CollectiveBuilder& addCreature(Creature*);
   CollectiveBuilder& addSquares(const vector<Vec2>&);
   CollectiveBuilder& addSquares(const vector<Position>&);
@@ -32,12 +31,9 @@ class CollectiveBuilder {
     EnumSet<MinionTrait> traits;
   };
   vector<CreatureInfo> creatures;
-  CollectiveConfig config;
-  TribeId tribe;
-  map<CollectiveResourceId, int> credit;
+  HeapAllocated<CollectiveConfig> config;
+  HeapAllocated<TribeId> tribe;
   vector<Vec2> squares;
   optional<string> locationName;
   optional<string> raceName;
 };
-
-#endif

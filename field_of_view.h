@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _FIELD_OF_VIEW_H
-#define _FIELD_OF_VIEW_H
+#pragma once
 
 #include "util.h"
 
@@ -23,7 +22,7 @@ class SquareArray;
 
 class FieldOfView {
   public:
-  FieldOfView(const SquareArray& squares, VisionId);
+  FieldOfView(Level*, VisionId);
   bool canSee(Vec2 from, Vec2 to);
   const vector<Vec2>& getVisibleTiles(Vec2 from);
   void squareChanged(Vec2 pos);
@@ -41,7 +40,7 @@ class FieldOfView {
     bool checkVisible(int x,int y) const;
     const vector<Vec2>& getVisibleTiles() const;
 
-    Visibility(const SquareArray& squares, VisionId, int x, int y);
+    Visibility(Level*, VisionId, int x, int y);
     Visibility(Visibility&&) = default;
     Visibility& operator = (Visibility&&) = default;
 
@@ -53,15 +52,14 @@ class FieldOfView {
     void calculate(int,int,int,int, int, int, int, int,
         function<bool (int, int)> isBlocking,
         function<void (int, int)> setVisible);
-    void setVisible(int, int);
+    void setVisible(const Level*, int, int);
 
     int SERIAL(px);
     int SERIAL(py);
   };
   
-  const SquareArray* SERIAL(squares);
+  Level* SERIAL(level);
   Table<unique_ptr<Visibility>> SERIAL(visibility);
   VisionId SERIAL(vision);
 };
 
-#endif

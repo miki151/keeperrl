@@ -19,6 +19,10 @@ StairKey StairKey::transferLanding() {
   return StairKey(2);
 }
 
+StairKey StairKey::sokoban() {
+  return StairKey(3);
+}
+
 bool StairKey::operator == (const StairKey& o) const {
   return key == o.key;
 }
@@ -30,11 +34,5 @@ int StairKey::getInternalKey() const {
 StairKey::StairKey(int k) : key(k) {
 }
 
-template <class Archive>
-void StairKey::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(key);
-}
-
-SERIALIZABLE(StairKey);
-
+SERIALIZE_DEF(StairKey, key)
 SERIALIZATION_CONSTRUCTOR_IMPL(StairKey);

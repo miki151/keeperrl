@@ -1,5 +1,4 @@
-#ifndef _COLLECTIVE_NAME_H
-#define _COLLECTIVE_NAME_H
+#pragma once
 
 #include "util.h"
 
@@ -18,4 +17,3 @@ class CollectiveName {
   string SERIAL(raceName);
 };
 
-#endif

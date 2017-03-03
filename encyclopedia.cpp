@@ -109,7 +109,7 @@ void Encyclopedia::present(View* view, int lastInd) {
     case 0: advances(view); break;
 //    case 1: workshop(view); break;
     case 1: skills(view); break;
-    default: FAIL << "wfepok";
+    default: FATAL << "wfepok";
   }
   present(view, *index);
 }

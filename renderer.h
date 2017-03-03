@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _RENDERER_H
-#define _RENDERER_H
+#pragma once
 
 #include "sdl.h"
 #include "util.h"
@@ -88,7 +87,7 @@ class Texture {
   explicit Texture(SDL::SDL_Surface*);
   static optional<Texture> loadMaybe(const string& path);
 
-  bool loadFrom(SDL::SDL_Surface*);
+  optional<SDL::GLenum> loadFromMaybe(SDL::SDL_Surface*);
   const Vec2& getSize() const;
 
   ~Texture();
@@ -101,6 +100,7 @@ class Texture {
   void addTexCoord(int x, int y) const;
   optional<SDL::GLuint> texId;
   Vec2 size;
+  Vec2 realSize;
   string path;
 };
 
@@ -122,6 +122,8 @@ class Renderer {
   void setFullscreen(bool);
   void setFullscreenMode(int);
   void setZoom(int);
+  int getZoom();
+  void enableCustomCursor(bool);
   void initialize();
   bool isFullscreen();
   void showError(const string&);
@@ -129,6 +131,7 @@ class Renderer {
   const static int textSize = 19;
   const static int smallTextSize = 14;
   static SDL::SDL_Surface* createSurface(int w, int h);
+  static SDL::SDL_Surface* createPowerOfTwoSurface(SDL::SDL_Surface*);
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(const string& s, int size = textSize, FontId = TEXT_FONT);
   Vec2 getTextSize(const string& s, int size = textSize, FontId = TEXT_FONT);
@@ -178,6 +181,7 @@ class Renderer {
 
   void startMonkey();
   bool isMonkey();
+  void setCursorPath(const string& path, const string& pathClicked);
 
   void printSystemInfo(ostream&);
 
@@ -196,12 +200,11 @@ class Renderer {
   vector<Vec2> tileSize;
   Vec2 nominalSize;
   map<string, TileCoord> tileCoords;
-  bool pollEventWorkaroundMouseReleaseBug(Event&);
   bool pollEventOrFromQueue(Event&);
   void considerMouseMoveEvent(Event&);
+  void considerMouseCursorAnim(Event&);
   void zoomMousePos(Event&);
   void updateResolution();
-  Event getRandomEvent();
   void initOpenGL();
   SDL::SDL_Window* window;
   int width, height;
@@ -229,6 +232,13 @@ class Renderer {
   int zoom = 1;
   optional<Rectangle> scissor;
   void setGlScissor(optional<Rectangle>);
+  bool cursorEnabled = true;
+  void reloadCursors();
+  string cursorPath;
+  string clickedCursorPath;
+  SDL::SDL_Cursor* originalCursor;
+  SDL::SDL_Cursor* cursor;
+  SDL::SDL_Cursor* cursorClicked;
+  SDL::SDL_Surface* loadScaledSurface(const string& path, double scale);
 };
 
-#endif

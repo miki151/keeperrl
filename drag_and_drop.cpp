@@ -2,7 +2,7 @@
 #include "drag_and_drop.h"
 #include "gui_elem.h"
 
-void DragContainer::put(DragContent c, PGuiElem g, Vec2 o) {
+void DragContainer::put(DragContent c, SGuiElem g, Vec2 o) {
   content = c;
   gui = std::move(g);
   origin = o;
@@ -22,6 +22,10 @@ optional<DragContent> DragContainer::pop() {
 
 GuiElem* DragContainer::getGui() {
   return gui.get();
+}
+
+const optional<DragContent>& DragContainer::getElement() const {
+  return content;
 }
 
 bool DragContainer::hasElement() {

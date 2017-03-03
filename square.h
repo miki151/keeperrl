@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _SQUARE_H
-#define _SQUARE_H
+#pragma once
 
 #include "util.h"
 #include "debug.h"
@@ -38,34 +37,14 @@ class MovementType;
 class MovementSet;
 class ViewObject;
 
-enum class ConstructionsId {
-  DUNGEON_ROOMS,
-  BRIDGE,
-  OUTDOOR_INSTALLATIONS,
-  CUT_TREE,
-  MINING_ORE,
-  MINING,
-  MOUNTAIN_GEN_ORES,
-  BED,
-  BEAST_CAGE,
-  GRAVE,
-};
-
 class Square : public Renderable {
   public:
   struct Params {
     string name;
     optional<VisionId> vision;
-    bool canHide;
-    int strength;
-    double flamability;
-    optional<ConstructionsId> constructions;
-    bool ticking;
     HeapAllocated<MovementSet> movementSet;
     bool canDestroy;
-    optional<TribeId> owner;
     optional<SoundId> applySound;
-    optional<SquareApplyType> applyType;
     optional<double> applyTime;
     optional<SquareInteraction> interaction;
   };
@@ -88,24 +67,6 @@ class Square : public Renderable {
   /** Returns the entry point details. Returns none if square is not entry point. See setLandingLink().*/
   optional<StairKey> getLandingLink() const;
 
-  /** Returns radius of emitted light (0 if none).*/
-  virtual double getLightEmission() const;
-
-  //@{
-  /** Checks if this creature can enter the square at the moment. Takes account other creatures on the square.*/
-  bool canEnter(const Creature*) const;
-  bool canEnter(const MovementType&) const;
-  //@}
-
-  bool canNavigate(const MovementType&) const;
-
-  //@{
-  /** Checks if this square is can be entered by the creature. Doesn't take into account other 
-    * creatures on the square.*/
-  bool canEnterEmpty(const Creature*) const;
-  bool canEnterEmpty(const MovementType&) const;
-  //@}
-
   /** Checks if this square obstructs view.*/
   bool canSeeThru(VisionId) const;
   bool canSeeThru() const;
@@ -113,30 +74,8 @@ class Square : public Renderable {
   /** Sets if this square obstructs view.*/
   void setVision(Position, VisionId);
 
-  /** Checks if the player can hide behind this square.*/
-  bool canHide() const;
-
   /** Returns the strength, i.e. resistance to demolition.*/
   int getStrength() const;
-
-  /** Checks if this square can be destroyed using the 'destroy' order.*/
-  bool isDestroyable() const;
-
-  /** Checks if this square can be destroyed by a creature. Pathfinding will not take into account this result.*/
-  bool canDestroy(const Creature*) const;
-
-  /** Called when something is destroying this square (may take a few turns to destroy).*/
-  virtual void destroyBy(Position, Creature* c);
-  virtual void destroy(Position);
-
-  /** Called when this square is burned completely.*/
-  virtual void burnOut(Position);
-
-  /** Exposes the square and objects on it to fire.*/
-  void setOnFire(Position, double amount);
-
-  /** Returns whether the square is currently on fire.*/
-  bool isBurning() const;
 
   /** Adds some poison gas to the square.*/
   void addPoisonGas(Position, double amount);
@@ -178,43 +117,20 @@ class Square : public Renderable {
   void dropItemsLevelGen(vector<PItem>);
   //@}
 
-  /** Checks if a given item is present on the square.*/
-  bool hasItem(Item*) const;
-
-  /** Checks if another square can be constructed from this one.*/
-  bool canConstruct(const SquareType&) const;
-
-  /** Constructs another square. The construction might finish after several attempts.
-    Returns true if construction was finishd.*/
-  bool construct(Position, const SquareType&);
-
-  /** Called just before swapping the old square for the new constructed one.*/
-  virtual void onConstructNewSquare(Position, Square* newSquare) const {}
-  
   /** Triggers all time-dependent processes like burning. Calls tick() for items if present.
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
   void tick(Position);
-  void setCovered(bool);
-  bool isCovered() const;
 
   optional<ViewObject> extractBackground() const;
   void getViewIndex(ViewIndex&, const Creature* viewer) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
-  bool itemBounces(Item* item, VisionId) const;
   void onItemLands(Position, vector<PItem>, const Attack&, int remainingDist, Vec2 dir, VisionId);
   const vector<Item*>& getItems() const;
   vector<Item*> getItems(function<bool (Item*)> predicate) const;
   const vector<Item*>& getItems(ItemIndex) const;
   PItem removeItem(Position, Item*);
   vector<PItem> removeItems(Position, vector<Item*>);
-
-  virtual bool canApply(const Creature*) const { return true; }
-  void apply(Creature*);
-  void apply(Position);
-  optional<SquareApplyType> getApplyType() const;
-  double getApplyTime() const;
-  optional<SquareInteraction> getInteraction() const;
 
   void forbidMovementForTribe(Position, TribeId);
   void allowMovementForTribe(Position, TribeId);
@@ -228,57 +144,31 @@ class Square : public Renderable {
 
   void clearItemIndex(ItemIndex);
   void setDirty(Position);
+  MovementSet& getMovementSet();
+  const MovementSet& getMovementSet() const;
+
+  Inventory& getInventory();
+  const Inventory& getInventory() const;
 
   SERIALIZATION_DECL(Square);
 
   protected:
   void onEnter(Creature*);
   virtual void onEnterSpecial(Creature*) {}
-  virtual void tickSpecial(Position) {}
-  virtual void onApply(Creature*) { Debug(FATAL) << "Bad square applied"; }
-  virtual void onApply(Position) { Debug(FATAL) << "Bad square applied"; }
+  virtual void onApply(Creature*) { FATAL << "Bad square applied"; }
+  virtual void onApply(Position) { FATAL << "Bad square applied"; }
   string SERIAL(name);
-  void addTraitForTribe(Position, TribeId, MovementTrait);
-  void removeTraitForTribe(Position, TribeId, MovementTrait);
-
-  Inventory& getInventory();
-  const Inventory& getInventory() const;
-  bool inventoryEmpty() const;
 
   private:
   Item* getTopItem() const;
-  mutable unique_ptr<Inventory> SERIAL(inventoryPtr);
-
-  /** Checks if this square can be destroyed by member of the tribe.*/
-  bool canDestroy(const MovementType&) const;
-
+  HeapAllocated<Inventory> SERIAL(inventory);
   Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);
   optional<VisionId> SERIAL(vision);
-  bool SERIAL(hide);
-  int SERIAL(strength);
   optional<StairKey> SERIAL(landingLink);
-  HeapAllocated<Fire> SERIAL(fire);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
-  optional<ConstructionsId> SERIAL(constructions);
-  struct CurrentConstruction {
-    SquareId SERIAL(id);
-    short int SERIAL(turnsRemaining);
-    SERIALIZE_ALL(id, turnsRemaining);
-  };
-  optional<CurrentConstruction> SERIAL(currentConstruction);
-  bool SERIAL(ticking);
   HeapAllocated<MovementSet> SERIAL(movementSet);
-  void updateMovement(Position);
   mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);
   unique_ptr<ViewIndex> SERIAL(viewIndex);
-  bool SERIAL(destroyable) = false;
-  optional<TribeId> SERIAL(owner);
   optional<TribeId> SERIAL(forbiddenTribe);
-  optional<SoundId> SERIAL(applySound);
-  optional<SquareApplyType> SERIAL(applyType);
-  double SERIAL(applyTime);
-  optional<SquareInteraction> SERIAL(interaction);
 };
-
-#endif

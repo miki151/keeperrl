@@ -27,6 +27,10 @@ string Gender::his() const {
   return fem ? "her" : "his";
 }
 
+string Gender::him() const {
+  return fem ? "her" : "him";
+}
+
 string Gender::he() const {
   return fem ? "she" : "he";
 }

@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _TECHNOLOGY_H
-#define _TECHNOLOGY_H
+#pragma once
 
 #include "singleton.h"
 #include "enums.h"
@@ -27,6 +26,7 @@ RICH_ENUM(TechId,
   CRAFTING,
   PIGSTY,
   IRON_WORKING,
+  STEEL_MAKING,
   TWO_H_WEAP,
   JEWELLERY,
   TRAPS,
@@ -36,7 +36,8 @@ RICH_ENUM(TechId,
   SPELLS_MAS,
   GEOLOGY1,
   GEOLOGY2,
-  GEOLOGY3
+  GEOLOGY3,
+  GEOLOGY4
 );
 
 class Spell;
@@ -72,4 +73,3 @@ class Technology : public Singleton<Technology, TechId> {
   bool research;
 };
 
-#endif

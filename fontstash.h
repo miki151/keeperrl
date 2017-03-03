@@ -17,8 +17,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#ifndef FONTSTASH_H
-#define FONTSTASH_H
+#pragma once
 
 #define STH_ESUCCESS 0
 // error opening file
@@ -61,4 +60,3 @@ void sth_vmetrics(struct sth_stash* stash,
 
 void sth_delete(struct sth_stash* stash);
 
-#endif // FONTSTASH_H

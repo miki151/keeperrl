@@ -13,14 +13,13 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _TILE_H
-#define _TILE_H
+#pragma once
 
-#include "view_object.h"
 #include "renderer.h"
 #include "util.h"
 
 enum class ViewId;
+class ViewObject;
 
 class Tile {
   public:
@@ -39,10 +38,9 @@ class Tile {
   string text;
   bool symFont = false;
   double translucent = 0;
-  bool noShadow = false;
+  bool roundShadow = false;
   bool floorBorders = false;
-
-  Tile setNoShadow();
+  bool wallShadow = false;
 
   Tile addConnection(DirSet, TileCoord);
   Tile addOption(Dir, TileCoord);
@@ -56,6 +54,8 @@ class Tile {
   Tile setTranslucent(double v);
   Tile addHighlight(TileCoord);
   Tile setColor(Color);
+  Tile setRoundShadow();
+  Tile setWallShadow();
   optional<TileCoord> getHighlightCoord() const;
 
   const vector<ViewId>& getExtraBorderIds() const;
@@ -92,4 +92,3 @@ class Tile {
 };
 
 
-#endif

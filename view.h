@@ -13,15 +13,12 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _VIEW_H
-#define _VIEW_H
+#pragma once
 
 #include "util.h"
 #include "debug.h"
-#include "view_object.h"
 #include "user_input.h"
-#include "minion_task.h"
-#include "cost_info.h"
+#include "player_role_choice.h"
 
 class CreatureView;
 class Level;
@@ -34,6 +31,7 @@ class Sound;
 class Campaign;
 class Options;
 class RetiredGames;
+class ScrollPosition;
 
 enum class SplashType { BIG, AUTOSAVING, SMALL };
 
@@ -74,12 +72,6 @@ class ListElem {
   optional<MessagePriority> messagePriority;
 };
 
-enum class GameTypeChoice {
-  KEEPER,
-  ADVENTURER,
-  QUICK_LEVEL,
-};
-
 enum class MenuType {
   NORMAL,
   MAIN,
@@ -90,11 +82,9 @@ enum class MenuType {
 
 struct HighscoreList {
   string name;
-  enum SortBy { SCORE, TURNS } sortBy;
   struct Elem {
     string text;
-    int score;
-    int turns;
+    string score;
     bool highlight;
   };
   vector<Elem> scores;
@@ -106,16 +96,16 @@ enum class CampaignActionId {
   REROLL_MAP,
   UPDATE_MAP,
   CONFIRM,
-  UPDATE_OPTION
+  UPDATE_OPTION,
+  CHANGE_TYPE,
 };
 
-class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2, OptionId),
+class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2, OptionId, CampaignType),
+  ASSIGN(CampaignType, CampaignActionId::CHANGE_TYPE),
   ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE),
   ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION)> {
     using EnumVariant::EnumVariant;
 };
-
-class GameExitException {};
 
 class View {
   public:
@@ -164,9 +154,9 @@ class View {
   /** Draws a window with some options for the player to choose. \paramname{index} indicates the highlighted item. 
       Returns none if the player cancelled the choice.*/
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = MenuType::NORMAL, double* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
+      MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
-  virtual optional<GameTypeChoice> chooseGameType() = 0;
+  virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) = 0;
 
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(const string& message) = 0;
@@ -188,17 +178,37 @@ class View {
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint = "") = 0;
 
-  virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
-      pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos) = 0;
-
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
-      const vector<ItemInfo>&, double* scrollPos) = 0;
+      const vector<ItemInfo>&, ScrollPosition* scrollPos) = 0;
 
-  virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) = 0;
+  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) = 0;
+
+  virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) = 0;
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
 
-  virtual CampaignAction prepareCampaign(const Campaign&, Options*, RetiredGames&) = 0;
+  struct CampaignMenuState {
+    bool helpText;
+    bool settings;
+  };
+  struct CampaignOptions {
+    const Campaign& campaign;
+    optional<RetiredGames&> retired;
+    const Creature* player;
+    vector<OptionId> primaryOptions;
+    vector<OptionId> secondaryOptions;
+    optional<string> mapTitle;
+    string introText;
+    struct CampaignTypeInfo {
+      CampaignType type;
+      vector<string> description;
+    };
+    vector<CampaignTypeInfo> availableTypes;
+    enum WarningType { NO_RETIRE, OTHER_MODES };
+    optional<WarningType> warning;
+  };
+
+  virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) = 0;
 
   virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) = 0;
@@ -217,10 +227,10 @@ class View {
 
   /** Returns the current real time in milliseconds. The clock is stopped on blocking keyboard input,
       so it can be used to sync game time in real-time mode.*/
-  virtual int getTimeMilli() = 0;
+  virtual milliseconds getTimeMilli() = 0;
 
   /** Returns the absolute time, doesn't take pausing into account.*/
-  virtual int getTimeMilliAbsolute() = 0;
+  virtual milliseconds getTimeMilliAbsolute() = 0;
 
   /** Stops the real time clock.*/
   virtual void stopClock() = 0;
@@ -232,10 +242,11 @@ class View {
   virtual bool isClockStopped() = 0;
 
   virtual void addSound(const Sound&) = 0;
+
+  virtual void logMessage(const string&) = 0;
 };
 
 enum class AnimationId {
   EXPLOSION,
 };
 
-#endif

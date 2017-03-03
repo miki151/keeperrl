@@ -13,9 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _TEST_H
-#define _TEST_H
+#pragma once
 
-int testAll();
+void testAll();
 
-#endif

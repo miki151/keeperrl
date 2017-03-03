@@ -25,6 +25,11 @@
 #include "spell.h"
 #include "creature.h"
 #include "creature_attributes.h"
+#include "spell_map.h"
+#include "construction_map.h"
+#include "furniture.h"
+#include "furniture_factory.h"
+#include "game.h"
 
 void Technology::init() {
   Technology::set(TechId::ALCHEMY, new Technology(
@@ -32,15 +37,17 @@ void Technology::init() {
   Technology::set(TechId::ALCHEMY_ADV, new Technology(
         "advanced alchemy", "Produce more powerful potions.", 200, {TechId::ALCHEMY}));
   Technology::set(TechId::HUMANOID_MUT, new Technology(
-        "humanoid mutation", "Breed new, very powerful humanoid species.", 400,{}));
+        "humanoid mutation", "Breed new, very powerful humanoid species.", 400, {TechId::ALCHEMY}));
   Technology::set(TechId::BEAST_MUT, new Technology(
-        "beast mutation", "Breed new, very powerful beast species.", 400, {}));
+        "beast mutation", "Breed new, very powerful beast species.", 400, {TechId::ALCHEMY}));
   Technology::set(TechId::CRAFTING, new Technology(
         "crafting", "Build a workshop and produce basic equipment.", 40, {}));
   Technology::set(TechId::PIGSTY, new Technology(
         "pig breeding", "Build a pigsty to feed your minions.", 120, {}));
   Technology::set(TechId::IRON_WORKING, new Technology(
-        "iron working", "Build a forge and produce metal weapons and armor.", 60, {TechId::CRAFTING}));
+        "iron working", "Build a forge and produce metal weapons and armor.", 180, {TechId::CRAFTING}));
+  Technology::set(TechId::STEEL_MAKING, new Technology(
+        "steelmaking", "Build a steel furnace and produce steel goods.", 400, {TechId::IRON_WORKING}));
   Technology::set(TechId::JEWELLERY, new Technology(
         "jewellery", "Build a jeweler room and produce magical rings and amulets.", 200, {TechId::IRON_WORKING}));
   Technology::set(TechId::TWO_H_WEAP, new Technology(
@@ -61,6 +68,8 @@ void Technology::init() {
         "advanced geology", "Discover more precious ores in the earth.", 180, {TechId::GEOLOGY1}));
   Technology::set(TechId::GEOLOGY3, new Technology(
         "expert geology", "Discover even more precious ores in the earth.", 400, {TechId::GEOLOGY2}));
+  Technology::set(TechId::GEOLOGY4, new Technology(
+        "master geology", "Discover ALL precious ores in the earth!", 1200, {TechId::GEOLOGY3}));
 }
 
 bool Technology::canResearch() const {
@@ -120,10 +129,12 @@ const vector<Technology*> Technology::getAllowed() const {
   return ret;
 }
 
-static bool areaOk(const vector<Position>& v, SquareId id) {
-  for (Position pos : v)
-    if (!pos.canConstruct(id))
+static bool areaOk(const vector<Position>& v) {
+  for (Position pos : v) {
+    auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE);
+    if (pos.isUnavailable() || !furniture || furniture->getType() != FurnitureType::MOUNTAIN)
       return false;
+  }
   return true;
 }
 
@@ -140,16 +151,18 @@ static vector<Vec2> cutShape(Rectangle rect) {
 }
 
 
-static void addResource(Collective* col, SquareId square, int maxDist) {
-  Position init = Random.choose(col->getSquares(SquareId::LIBRARY));
+static void addResource(Collective* col, FurnitureType type, int maxDist) {
+  Position init = Random.choose(col->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF));
   Rectangle resourceArea(Random.get(4, 7), Random.get(4, 7));
   resourceArea.translate(-resourceArea.middle());
   for (int t = 0; t < 200; ++t) {
     Position center = init.plus(Vec2(Random.get(-maxDist, maxDist + 1), Random.get(-maxDist, maxDist + 1)));
-    vector<Position> all = center.getRectangle(resourceArea);
-    if (areaOk(all, square)) {
-      for (Vec2 pos : cutShape(resourceArea))
-        col->addConstruction(center.plus(pos), square, CostInfo::noCost(), true, true);
+    vector<Position> all = center.getRectangle(resourceArea.minusMargin(-1));
+    if (areaOk(all)) {
+      for (Vec2 pos : cutShape(resourceArea)) {
+        center.plus(pos).addFurniture(FurnitureFactory::get(type, TribeId::getHostile()));
+        center.getGame()->addEvent({EventId::POSITION_DISCOVERED, center.plus(pos)});
+      }
       return;
     }
   }
@@ -157,11 +170,11 @@ static void addResource(Collective* col, SquareId square, int maxDist) {
 
 static void addResources(Collective* col, int numGold, int numIron, int numStone, int maxDist) {
   for (int i : Range(numGold))
-    addResource(col, SquareId::GOLD_ORE, maxDist);
+    addResource(col, FurnitureType::GOLD_ORE, maxDist);
   for (int i : Range(numIron))
-    addResource(col, SquareId::IRON_ORE, maxDist);
+    addResource(col, FurnitureType::IRON_ORE, maxDist);
   for (int i : Range(numStone))
-    addResource(col, SquareId::STONE, maxDist);
+    addResource(col, FurnitureType::STONE, maxDist);
 }
 
 struct SpellLearningInfo {
@@ -191,8 +204,9 @@ static vector<SpellLearningInfo> spellLearning {
 void Technology::onAcquired(TechId id, Collective* col) {
   switch (id) {
     case TechId::GEOLOGY1: addResources(col, 0, 2, 1, 25); break;
-    case TechId::GEOLOGY2: addResources(col, 1, 3, 1, 45); break;
-    case TechId::GEOLOGY3: addResources(col, 4, 6, 3, 70); break;
+    case TechId::GEOLOGY2: addResources(col, 1, 3, 2, 35); break;
+    case TechId::GEOLOGY3: addResources(col, 2, 4, 3, 50); break;
+    case TechId::GEOLOGY4: addResources(col, 3, 8, 4, 70); break;
     default: break;
   } 
   if (col->hasLeader())
@@ -228,7 +242,7 @@ TechId Technology::getNeededTech(Spell* spell) {
   for (auto elem : spellLearning)
     if (elem.id == spell->getId())
       return elem.techId;
-  FAIL << "Spell not found";
+  FATAL << "Spell not found";
   return TechId(0);
 }
 

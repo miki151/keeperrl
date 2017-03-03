@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ENUMS_H
-#define _ENUMS_H
+#pragma once
 
 #include "serialization.h"
 
@@ -33,12 +32,14 @@ enum class AttackType;
 enum class AttackLevel;
 enum class ModifierType;
 enum class AttrType;
+enum class ExperienceType;
 enum class ItemClass;
 enum class EquipmentSlot;
 enum class SplashType;
-enum class GameTypeChoice;
 enum class MenuType;
 enum class OptionId;
+enum class CampaignType;
+enum class PlayerRole;
 
 enum class MovementTrait;
 enum class SpawnType;
@@ -46,9 +47,16 @@ enum class CreatureSize;
 
 enum class SquareApplyType;
 enum class SquareId;
+enum class FurnitureType;
+enum class FurnitureLayer;
 enum class ItemAction;
 enum class WorshipType;
 enum class SquareInteraction;
+
+enum class FurnitureUsageType;
+enum class FurnitureClickType;
+enum class FurnitureTickType;
+enum class FurnitureEntryType;
 
 enum class MinionTask;
 enum class MinionTrait;
@@ -82,12 +90,15 @@ enum class SkillId;
 enum class VisionId;
 
 enum class LastingEffect;
+enum class CreatureCondition;
 
 enum class NameGeneratorId;
 enum class ItemIndex;
 
 enum class CollectiveWarning;
 enum class SoundId;
+enum class Keybinding;
 
 enum class MessagePriority;
-#endif
+enum class WorkshopType;
+enum class PlayerType;

@@ -1,5 +1,4 @@
-#ifndef _RENDERABLE_H
-#define _RENDERABLE_H
+#pragma once
 
 class ViewObject;
 
@@ -17,7 +16,6 @@ class Renderable {
   void setViewObject(const ViewObject&);
 
   private:
-  PViewObject SERIAL(viewObject);
+  HeapAllocated<ViewObject> SERIAL(viewObject);
 };
 
-#endif

@@ -13,20 +13,21 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ITEM_H
-#define _ITEM_H
+#pragma once
 
 #include "util.h"
 #include "enums.h"
 #include "unique_entity.h"
 #include "renderable.h"
-#include "effect_type.h"
 #include "position.h"
+#include "owner_pointer.h"
 
 class Level;
 class Attack;
 class Fire;
 class ItemAttributes;
+class EffectType;
+struct CorpseInfo;
 
 RICH_ENUM(TrapType,
   BOULDER,
@@ -37,24 +38,7 @@ RICH_ENUM(TrapType,
   TERROR
 );
 
-RICH_ENUM(ItemClass,
-  WEAPON,
-  RANGED_WEAPON,
-  AMMO,
-  ARMOR,
-  SCROLL,
-  POTION,
-  BOOK,
-  AMULET,
-  RING,
-  TOOL,
-  OTHER,
-  GOLD,
-  FOOD,
-  CORPSE
-);
-
-class Item : public Renderable, public UniqueEntity<Item> {
+class Item : public Renderable, public UniqueEntity<Item>, public std::enable_shared_from_this<Item> {
   public:
   Item(const ItemAttributes&);
   virtual ~Item();
@@ -71,16 +55,17 @@ class Item : public Renderable, public UniqueEntity<Item> {
   string getNameAndModifiers(bool plural = false, const Creature* owner = nullptr) const;
   string getArtifactName() const;
   string getShortName(const Creature* owner = nullptr, bool noSuffix = false) const;
+  string getPluralName(int count) const;
   string getPluralTheName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
-  virtual optional<EffectType> getEffectType() const;
+  const optional<EffectType>& getEffectType() const;
   optional<EffectType> getAttackEffect() const;
   ItemClass getClass() const;
   
   int getPrice() const;
   void setShopkeeper(const Creature* shopkeeper);
-  const Creature* getShopkeeper(const Creature* owner) const;
+  Creature* getShopkeeper(const Creature* owner) const;
   bool isShopkeeper(const Creature*) const;
   // This function returns true after shopkeeper was killed. TODO: refactor shops.
   bool isOrWasForSale() const;
@@ -104,7 +89,7 @@ class Item : public Renderable, public UniqueEntity<Item> {
   void onUnequip(Creature*);
   virtual void onEquipSpecial(Creature*) {}
   virtual void onUnequipSpecial(Creature*) {}
-  virtual void setOnFire(double amount, Position);
+  virtual void fireDamage(double amount, Position);
   double getFireSize() const;
 
   void onHitSquareMessage(Position, int numItems);
@@ -120,23 +105,15 @@ class Item : public Renderable, public UniqueEntity<Item> {
 
   static ItemPredicate effectPredicate(EffectType);
   static ItemPredicate classPredicate(ItemClass);
+  static ItemPredicate equipmentSlotPredicate(EquipmentSlot);
   static ItemPredicate classPredicate(vector<ItemClass>);
   static ItemPredicate namePredicate(const string& name);
+  static ItemPredicate isRangedWeaponPredicate();
 
   static vector<pair<string, vector<Item*>>> stackItems(vector<Item*>,
       function<string(const Item*)> addSuffix = [](const Item*) { return ""; });
 
-  struct CorpseInfo {
-    UniqueEntity<Creature>::Id victim;
-    bool canBeRevived;
-    bool hasHead;
-    bool isSkeleton;
-
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version);
-  };
-
-  virtual optional<CorpseInfo> getCorpseInfo() const { return none; }
+  virtual optional<CorpseInfo> getCorpseInfo() const;
 
   SERIALIZATION_DECL(Item);
 
@@ -153,7 +130,6 @@ class Item : public Renderable, public UniqueEntity<Item> {
   HeapAllocated<ItemAttributes> SERIAL(attributes);
   optional<UniqueEntity<Creature>::Id> SERIAL(shopkeeper);
   HeapAllocated<Fire> SERIAL(fire);
+  bool SERIAL(canEquipCache);
+  ItemClass SERIAL(classCache);
 };
-
-
-#endif

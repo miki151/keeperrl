@@ -5,6 +5,7 @@
 #include "collective_config.h"
 #include "villain_type.h"
 #include "village_behaviour.h"
+#include "attack_trigger.h"
 
 struct EnemyInfo;
 
@@ -22,11 +23,13 @@ RICH_ENUM(EnemyId,
 
   VILLAGE,
   BANDITS,
+  NO_AGGRO_BANDITS,
   ENTS,
   DRIADS,
   CYCLOPS,
   SHELOB,
   HYDRA,
+  KRAKEN,
   ANTS_OPEN,
   ANTS_CLOSED,
   CEMETERY,
@@ -36,7 +39,8 @@ RICH_ENUM(EnemyId,
   DARK_ELVES_ENTRY,
   GNOMES,
   GNOMES_ENTRY,
-  FRIENDLY_CAVE,
+  OGRE_CAVE,
+  HARPY_CAVE,
   ORC_VILLAGE,
   SOKOBAN,
   SOKOBAN_ENTRY,
@@ -62,22 +66,28 @@ struct LevelConnection {
 
 struct EnemyInfo {
   EnemyInfo(SettlementInfo s, CollectiveConfig c, optional<VillageBehaviour> v = none,
-      optional<LevelConnection> l = none);
+      optional<LevelConnection> = none);
   EnemyInfo& setVillainType(VillainType type);
   EnemyInfo& setSurprise();
+  EnemyInfo& setId(EnemyId);
   SettlementInfo settlement;
   CollectiveConfig config;
   optional<VillageBehaviour> villain;
   optional<VillainType> villainType;
   optional<LevelConnection> levelConnection;
+  optional<EnemyId> id;
 };
+
+struct ExternalEnemy;
 
 class EnemyFactory {
   public:
   EnemyFactory(RandomGen&);
   EnemyInfo get(EnemyId);
+  vector<ExternalEnemy> getExternalEnemies();
   vector<EnemyInfo> getVaults();
 
   private:
+  EnemyInfo getById(EnemyId);
   RandomGen& random;
 };

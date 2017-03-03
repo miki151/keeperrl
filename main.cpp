@@ -45,6 +45,9 @@
 #include "model_builder.h"
 #include "sound_library.h"
 #include "audio_device.h"
+#include "sokoban_input.h"
+#include "keybinding_map.h"
+#include "player_role.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -75,7 +78,7 @@ void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<boo
   view->initialize();
   options->setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
   initialized = true;
-  Intervalometer meter(1000 / 60);
+  Intervalometer meter(milliseconds{1000 / 60});
   while (!finished) {    
     while (!meter.getCount(view->getTimeMilliAbsolute())) {
     }
@@ -94,7 +97,7 @@ static void runGame(function<void()> game, function<void()> render, bool singleT
   if (singleThread)
     game();
   else {
-    FAIL << "Unimplemented";
+    FATAL << "Unimplemented";
   }
 }
 
@@ -217,10 +220,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     SetUnhandledExceptionFilter(miniDumpFunction2);
   if (vars.count("steam")) {
     if (SteamAPI_RestartAppIfNecessary(329970))
-      FAIL << "Init failure";
+      FATAL << "Init failure";
     if (!SteamAPI_Init()) {
       MessageBox(NULL, TEXT("Steam is not running. If you'd like to run the game without Steam, run the standalone exe binary."), TEXT("Failure"), MB_OK);
-      FAIL << "Steam is not running";
+      FATAL << "Steam is not running";
     }
     std::ofstream("steam_id") << SteamUser()->GetSteamID().ConvertToUint64() << std::endl;
   }
@@ -238,8 +241,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 }
 #endif
 
+
 static options_description getOptions() {
-  options_description flags("Flags");
+  options_description flags("KeeperRL");
   flags.add_options()
     ("help", "Print help")
     ("steam", "Run with Steam")
@@ -248,14 +252,14 @@ static options_description getOptions() {
     ("user_dir", value<string>(), "Directory for options and save files")
     ("data_dir", value<string>(), "Directory containing the game data")
     ("upload_url", value<string>(), "URL for uploading maps")
-    ("override_settings", value<string>(), "Override settings")
+    ("restore_settings", "Restore settings to default values.")
     ("run_tests", "Run all unit tests and exit")
     ("worldgen_test", value<int>(), "Test how often world generation fails")
-    ("force_keeper", "Skip main menu and force keeper mode")
-    ("logging", "Log to log.out")
+    ("stderr", "Log to stderr")
+    ("nolog", "No logging")
     ("free_mode", "Run in free ascii mode")
 #ifndef RELEASE
-    ("quick_level", "")
+    ("force_keeper", "Skip main menu and force keeper mode")
 #endif
     ("seed", value<int>(), "Use given seed")
     ("record", value<string>(), "Record game to file")
@@ -289,27 +293,33 @@ static long long getInstallId(const string& path, RandomGen& random) {
   return ret;
 }
 
-const static string serverVersion = "19";
+const static string serverVersion = "21";
 
 static int keeperMain(const variables_map& vars) {
   if (vars.count("help")) {
     std::cout << getOptions() << endl;
     return 0;
   }
-  if (vars.count("run_tests")) {
-    testAll();
-    return 0;
-  }
   bool useSingleThread = true;//vars.count("single_thread");
-  unique_ptr<View> view;
-  unique_ptr<CompressedInput> input;
-  unique_ptr<CompressedOutput> output;
-  string lognamePref = "log";
-  Debug::init(vars.count("logging"));
+  FatalLog.addOutput(DebugOutput::crash());
+  FatalLog.addOutput(DebugOutput::toStream(std::cerr));
+#ifndef RELEASE
+  ogzstream compressedLog("log.gz");
+  if (!vars.count("nolog"))
+    InfoLog.addOutput(DebugOutput::toStream(compressedLog));
+#endif
+  FatalLog.addOutput(DebugOutput::toString(
+      [](const string& s) { ofstream("stacktrace.out") << s << "\n" << std::flush; } ));
+  if (vars.count("stderr") || vars.count("run_tests"))
+    InfoLog.addOutput(DebugOutput::toStream(std::cerr));
   Skill::init();
   Technology::init();
   Spell::init();
   Vision::init();
+  if (vars.count("run_tests")) {
+    testAll();
+    return 0;
+  }
   string dataPath;
   if (vars.count("data_dir"))
     dataPath = vars["data_dir"].as<string>();
@@ -329,56 +339,48 @@ static int keeperMain(const variables_map& vars) {
 #endif
   else
     userPath = USER_DIR;
-  Debug() << "Data path: " << dataPath;
-  Debug() << "User path: " << userPath;
+  INFO << "Data path: " << dataPath;
+  INFO << "User path: " << userPath;
   string uploadUrl;
   if (vars.count("upload_url"))
     uploadUrl = vars["upload_url"].as<string>();
   else
+#ifdef RELEASE
     uploadUrl = "http://keeperrl.com/~retired/" + serverVersion;
+#else
+    uploadUrl = "http://localhost/~michal/" + serverVersion;
+#endif
   makeDir(userPath);
-  string overrideSettings;
-  if (vars.count("override_settings"))
-    overrideSettings = vars["override_settings"].as<string>();
-  Options options(userPath + "/options.txt", overrideSettings);
+  string settingsPath = userPath + "/options.txt";
+  if (vars.count("restore_settings"))
+    remove(settingsPath.c_str());
+  Options options(settingsPath);
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   Random.init(seed);
   long long installId = getInstallId(userPath + "/installId.txt", Random);
   Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
-  Debug::setErrorCallback([&renderer](const string& s) { renderer.showError(s);});
+  FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
-  bool audioOk = audioDevice.initialize();
+  optional<string> audioError = audioDevice.initialize();
   Clock clock;
-  GuiFactory guiFactory(renderer, &clock, &options);
+  KeybindingMap keybindingMap(userPath + "/keybindings.txt");
+  GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap);
   guiFactory.loadFreeImages(freeDataPath + "/images");
   if (tilesPresent) {
     guiFactory.loadNonFreeImages(paidDataPath + "/images");
-    if (audioOk)
+    if (!audioError)
       soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath + "/sound");
   }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath + "/images");
-  if (vars.count("replay")) {
-    string fname = vars["replay"].as<string>();
-    Debug() << "Reading from " << fname;
-    input.reset(new CompressedInput(fname.c_str()));
-    input->getArchive() >> seed;
-    Random.init(seed);
-    view.reset(WindowView::createReplayView(input->getArchive(),
-          {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
-  } else {
-    if (vars.count("record")) {
-      string fname = vars["record"].as<string>();
-      output.reset(new CompressedOutput(fname.c_str()));
-      output->getArchive() << seed;
-      Debug() << "Writing to " << fname;
-      view.reset(WindowView::createLoggingView(output->getArchive(),
-            {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
-    } else 
-      view.reset(WindowView::createDefaultView(
-            {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
-  } 
+  renderer.setCursorPath(freeDataPath + "/images/mouse_cursor.png", freeDataPath + "/images/mouse_cursor2.png");
+  unique_ptr<View> view;
+  view.reset(WindowView::createDefaultView(
+      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
+#ifndef RELEASE
+  InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
+#endif
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);
   if (useSingleThread) {
@@ -386,15 +388,14 @@ static int keeperMain(const variables_map& vars) {
     viewInitialized = true;
   }
   Tile::initialize(renderer, tilesPresent);
-  Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && audioOk), getMaxVolume(), getMaxVolumes());
+  Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && !audioError), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options, installId);
-  Highscores highscores(userPath + "/" + "highscores2.txt", fileSharing, &options);
-  optional<GameTypeChoice> forceGame;
+  Highscores highscores(userPath + "/" + "highscores.dat", fileSharing, &options);
+  optional<PlayerRole> forceGame;
   if (vars.count("force_keeper"))
-    forceGame = GameTypeChoice::KEEPER;
-  else if (vars.count("quick_level"))
-    forceGame = GameTypeChoice::QUICK_LEVEL;
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox,
+    forceGame = PlayerRole::KEEPER;
+  SokobanInput sokobanInput(freeDataPath + "/sokoban_input.txt", userPath + "/sokoban_state.txt");
+  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
       gameFinished, useSingleThread, forceGame);
   if (vars.count("worldgen_test")) {
     loop.modelGenTest(vars["worldgen_test"].as<int>(), Random, &options);
@@ -408,6 +409,8 @@ static int keeperMain(const variables_map& vars) {
     loop.start(tilesPresent); };
   auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };
   try {
+    if (audioError)
+      view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
     runGame(game, render, useSingleThread);
   } catch (GameExitException ex) {
   }

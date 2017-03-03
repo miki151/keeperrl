@@ -19,46 +19,42 @@
 #include "square.h"
 #include "square_array.h"
 #include "square_type.h"
+#include "level.h"
 
 template <class Archive> 
-void FieldOfView::serialize(Archive& ar, const unsigned int version) {
+void FieldOfView::serialize(Archive& ar, const unsigned int) {
   if (Archive::is_saving::value) // don't save the visibility values, as they can be easily recomputed
     visibility = Table<unique_ptr<Visibility>>(visibility.getBounds());
-  ar & SVAR(squares)
-     & SVAR(visibility)
-     & SVAR(vision);
+  serializeAll(ar, level, visibility, vision);
 }
 
 SERIALIZABLE(FieldOfView);
 
 template <class Archive> 
-void FieldOfView::Visibility::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(visible)
-    & SVAR(visibleTiles)
-    & SVAR(px)
-    & SVAR(py);
+void FieldOfView::Visibility::serialize(Archive& ar, const unsigned int) {
+  serializeAll(ar, visible, visibleTiles, px, py);
 }
 
 SERIALIZABLE(FieldOfView::Visibility);
 SERIALIZATION_CONSTRUCTOR_IMPL(FieldOfView);
 SERIALIZATION_CONSTRUCTOR_IMPL2(FieldOfView::Visibility, Visibility);
 
-FieldOfView::FieldOfView(const SquareArray& s, VisionId v) 
-  : squares(&s), visibility(s.getBounds().width(), s.getBounds().height()), vision(v) {
+FieldOfView::FieldOfView(Level* l, VisionId v)
+  : level(l), visibility(l->getBounds()), vision(v) {
 }
 
 bool FieldOfView::canSee(Vec2 from, Vec2 to) {
   if ((from - to).lengthD() > sightRange)
     return false;
   if (!visibility[from])
-    visibility[from].reset(new Visibility(*squares, vision, from.x, from.y));
+    visibility[from].reset(new Visibility(level, vision, from.x, from.y));
   return visibility[from]->checkVisible(to.x - from.x, to.y - from.y);
 }
   
 void FieldOfView::squareChanged(Vec2 pos) {
   vector<Vec2> updateList;
   if (!visibility[pos])
-    visibility[pos].reset(new Visibility(*squares, vision, pos.x, pos.y));
+    visibility[pos].reset(new Visibility(level, vision, pos.x, pos.y));
   vector<Vec2> visible = visibility[pos]->getVisibleTiles();
   for (Vec2 v : visible)
     if (visibility[v] && visibility[v]->checkVisible(pos.x - v.x, pos.y - v.y)) {
@@ -66,8 +62,9 @@ void FieldOfView::squareChanged(Vec2 pos) {
     }
 }
 
-void FieldOfView::Visibility::setVisible(int x, int y) {
-  if (!visible[x + sightRange][y + sightRange] && x * x + y * y <= sightRange * sightRange) {
+void FieldOfView::Visibility::setVisible(const Level* level, int x, int y) {
+  if (level->inBounds(Vec2(px + x, py + y)) &&
+      !visible[x + sightRange][y + sightRange] && x * x + y * y <= sightRange * sightRange) {
     visible[x + sightRange][y + sightRange] = 1;
     visibleTiles.push_back(Vec2(px + x, py + y));
   }
@@ -76,25 +73,25 @@ void FieldOfView::Visibility::setVisible(int x, int y) {
 static int totalIter = 0;
 static int numSamples = 0;
 
-FieldOfView::Visibility::Visibility(const SquareArray& squares, VisionId vision, int x, int y) : px(x), py(y) {
+FieldOfView::Visibility::Visibility(Level* level, VisionId vision, int x, int y) : px(x), py(y) {
   memset(visible, 0, (2 * sightRange + 1) * (2 * sightRange + 1));
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
-      [&](int px, int py) { return !squares.getReadonly(Vec2(x + px, y + py))->canSeeThru(vision); },
-      [&](int px, int py) { setVisible(px ,py); });
+      [&](int px, int py) { return !Position(Vec2(x + px, y + py), level).canSeeThru(vision); },
+      [&](int px, int py) { setVisible(level, px, py); });
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
-      [&](int px, int py) { return !squares.getReadonly(Vec2(x + py, y - px))->canSeeThru(vision); },
-      [&](int px, int py) { setVisible(py, -px); });
+      [&](int px, int py) { return !Position(Vec2(x + py, y - px), level).canSeeThru(vision); },
+      [&](int px, int py) { setVisible(level, py, -px); });
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange,2,-1,1,1,1,
-      [&](int px, int py) { return !squares.getReadonly(Vec2(x - px, y - py))->canSeeThru(vision); },
-      [&](int px, int py) { setVisible(-px, -py); });
+      [&](int px, int py) { return !Position(Vec2(x - px, y - py), level).canSeeThru(vision); },
+      [&](int px, int py) { setVisible(level, -px, -py); });
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange,2,-1,1,1,1,
-      [&](int px, int py) { return !squares.getReadonly(Vec2(x - py, y + px))->canSeeThru(vision); },
-      [&](int px, int py) { setVisible(-py, px); });
-  setVisible(0, 0);
+      [&](int px, int py) { return !Position(Vec2(x - py, y + px), level).canSeeThru(vision); },
+      [&](int px, int py) { setVisible(level, -py, px); });
+  setVisible(level, 0, 0);
 /*  ++numSamples;
   totalIter += visibleTiles.size();
   if (numSamples%100 == 0)
-    Debug() << numSamples << " iterations " << totalIter / numSamples << " avg";*/
+    INFO << numSamples << " iterations " << totalIter / numSamples << " avg";*/
 }
 
 const vector<Vec2>& FieldOfView::Visibility::getVisibleTiles() const {
@@ -103,7 +100,7 @@ const vector<Vec2>& FieldOfView::Visibility::getVisibleTiles() const {
 
 const vector<Vec2>& FieldOfView::getVisibleTiles(Vec2 from) {
   if (!visibility[from]) {
-    visibility[from].reset(new Visibility(*squares, vision, from.x, from.y));
+    visibility[from].reset(new Visibility(level, vision, from.x, from.y));
   }
   return visibility[from]->getVisibleTiles();
 }

@@ -19,10 +19,22 @@
 #include "item.h"
 #include "minion_equipment.h"
 #include "resource_id.h"
+#include "item_class.h"
+#include "corpse_info.h"
 
 template <class Archive> 
 void Inventory::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, items, itemsCache);
+  if (version == 0) {
+    vector<PItem> SERIAL(oldItems);
+    vector<Item*> SERIAL(oldItemsCache);
+    serializeAll(ar, oldItems, oldItemsCache);
+    items = PItemVector(std::move(oldItems));
+    itemsCache = ItemVector(oldItemsCache);
+    weight = 0;
+    for (auto item : itemsCache.getElems())
+      weight += item->getWeight();
+  } else
+    serializeAll(ar, items, itemsCache, weight);
 }
 
 Inventory::~Inventory() {}
@@ -33,11 +45,12 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Inventory);
 
 void Inventory::addItem(PItem item) {
   CHECK(!!item) << "Null item dropped";
-  itemsCache.push_back(item.get());
+  itemsCache.insert(item.get());
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     if (indexes[ind] && getIndexPredicate(ind)(item.get()))
-      indexes[ind]->push_back(item.get()); 
-  items.push_back(std::move(item));
+      indexes[ind]->insert(item.get());
+  weight += item->getWeight();
+  items.insert(std::move(item));
 }
 
 void Inventory::addItems(vector<PItem> v) {
@@ -46,19 +59,12 @@ void Inventory::addItems(vector<PItem> v) {
 }
 
 PItem Inventory::removeItem(Item* itemRef) {
-  int ind = -1;
-  for (int i : All(items))
-    if (items[i].get() == itemRef) {
-      ind = i;
-      break;
-    }
-  CHECK(ind > -1) << "Tried to remove unknown item.";
-  PItem item = std::move(items[ind]);
-  items.erase(items.begin() + ind);
-  removeElement(itemsCache, itemRef);
+  PItem item = items.remove(itemRef->getUniqueId());
+  weight -= item->getWeight();
+  itemsCache.remove(itemRef->getUniqueId());
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     if (indexes[ind] && getIndexPredicate(ind)(item.get()))
-      removeElement(*indexes[ind], itemRef);
+      indexes[ind]->remove(itemRef->getUniqueId());
   return item;
 }
 
@@ -74,26 +80,26 @@ void Inventory::clearIndex(ItemIndex ind) {
 }
 
 vector<PItem> Inventory::removeAllItems() {
-  itemsCache.clear();
+  itemsCache.removeAll();
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     indexes[ind] = none;
-  return std::move(items);
+  weight = 0;
+  return items.removeAll();
 }
 
 vector<Item*> Inventory::getItems(function<bool (Item*)> predicate) const {
   vector<Item*> ret;
-  for (const PItem& item : items)
+  for (const PItem& item : items.getElems())
     if (predicate(item.get()))
       ret.push_back(item.get());
   return ret;
 }
 
-Item* Inventory::getItemById(UniqueEntity<Item>::Id id) {
-  Item* ret = nullptr;
-  for (PItem& item : items)
-    if (item->getUniqueId() == id)
-      ret = item.get();
-  return ret;
+Item* Inventory::getItemById(UniqueEntity<Item>::Id id) const {
+  if (auto item = itemsCache.fetch(id))
+    return *item;
+  else
+    return nullptr;
 }
 
 function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
@@ -103,6 +109,8 @@ function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
         return it->getResourceId() == CollectiveResourceId::WOOD; };
     case ItemIndex::IRON: return [](const Item* it) {
         return it->getResourceId() == CollectiveResourceId::IRON; };
+    case ItemIndex::STEEL: return [](const Item* it) {
+        return it->getResourceId() == CollectiveResourceId::STEEL; };
     case ItemIndex::STONE: return [](const Item* it) {
         return it->getResourceId() == CollectiveResourceId::STONE; };
     case ItemIndex::REVIVABLE_CORPSE: return [](const Item* it) {
@@ -122,27 +130,33 @@ function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
 }
 
 const vector<Item*>& Inventory::getItems(ItemIndex index) const {
-  if (!indexes[index])
-    indexes[index] = getItems(getIndexPredicate(index));
-  return *indexes[index];
+  if (isEmpty()) {
+    static vector<Item*> empty;
+    return empty;
+  }
+  auto& elems = indexes[index];
+  if (!elems)
+    elems = ItemVector(getItems(getIndexPredicate(index)));
+  return elems->getElems();
 }
 
 const vector<Item*>& Inventory::getItems() const {
-  return itemsCache;
+  return itemsCache.getElems();
 }
 
 bool Inventory::hasItem(const Item* itemRef) const {
-  for (const PItem& item : items) 
-    if (item.get() == itemRef)
-      return true;
-  return false;
+  return !!itemsCache.fetch(itemRef->getUniqueId());
 }
 
 int Inventory::size() const {
-  return items.size();
+  return items.getElems().size();
+}
+
+double Inventory::getTotalWeight() const {
+  return weight;
 }
 
 bool Inventory::isEmpty() const {
-  return items.empty();
+  return items.getElems().empty();
 }
 

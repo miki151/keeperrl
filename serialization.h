@@ -13,8 +13,9 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _SERIALIZATION
-#define _SERIALIZATION
+#pragma once
+
+#include "progress.h"
 
 #ifdef TEXT_SERIALIZATION
 typedef text_iarchive InputArchive;
@@ -54,7 +55,7 @@ typedef text_iarchive InputArchive2;
   friend boost::serialization::access; \
   A(); \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version);
+  void serialize(Archive& ar, const unsigned int);
 
 #define SERIALIZATION_CONSTRUCTOR_IMPL(A) \
   A::A() {}
@@ -67,7 +68,7 @@ typedef text_iarchive InputArchive2;
 
 #define SERIALIZE_DEF(CLASS, ...) \
 template <class Archive> \
-void CLASS::serialize(Archive& ar, const unsigned int version) { \
+void CLASS::serialize(Archive& ar, const unsigned int) { \
   serializeAll(ar, __VA_ARGS__);\
 }\
 SERIALIZABLE(CLASS);
@@ -79,27 +80,33 @@ void serializeAll(Archive& ar) {
 
 template <typename Archive, typename Arg1, typename... Args>
 void serializeAll(Archive& ar, Arg1& arg1, Args&... args) {
+  Progress::checkIfInterrupted();
   ar & boost::serialization::make_nvp("arg1", arg1);
   serializeAll(ar, args...);
 }
 
 #define SERIALIZE_SUBCLASS(SUB) \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version) { \
+  void serialize(Archive& ar, const unsigned int) { \
     ar & SUBCLASS(SUB);\
   }
 
 #define SERIALIZE_ALL2(SUB, ...) \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version) { \
+  void serialize(Archive& ar, const unsigned int) { \
     ar & SUBCLASS(SUB);\
     serializeAll(ar, __VA_ARGS__); \
   }
 
 #define SERIALIZE_ALL(...) \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int version) { \
+  void serialize(Archive& ar, const unsigned int) { \
     serializeAll(ar, __VA_ARGS__); \
+  }
+
+#define SERIALIZE_EMPTY() \
+  template <class Archive> \
+  void serialize(Archive&, const unsigned int) { \
   }
 
 class Serialization {
@@ -133,8 +140,34 @@ class StreamCombiner {
 namespace boost { 
 namespace serialization {
 
+// We can't use default boost functions for these structures as they don't support unique_ptr elements.
 
-// why the f** are these things not implemented by default in boost?
+//map
+template<class Archive, class T, class U, class H>
+inline void save(Archive& ar, const map<T, U, H>& t, unsigned int file_version){
+  int count = t.size();
+  ar << BOOST_SERIALIZATION_NVP(count);
+  for (auto& elem : t)
+    ar << boost::serialization::make_nvp("key", elem.first) << boost::serialization::make_nvp("value", elem.second);
+}
+
+template<class Archive, class T, class U, class H>
+inline void load(Archive& ar, map<T, U, H>& t, unsigned int){
+  int count;
+  ar >> BOOST_SERIALIZATION_NVP(count);
+  t.clear();
+  while (count-- > 0) {
+    pair<T, U> p;
+    ar >> boost::serialization::make_nvp("key", p.first) >> boost::serialization::make_nvp("value", p.second);
+    t.insert(std::move(p));
+  }
+}
+
+template<class Archive, class T, class U, class H>
+inline void serialize(Archive& ar, map<T, U, H>& t, unsigned int file_version){
+  boost::serialization::split_free(ar, t, file_version);
+}
+
 //unordered_map
 template<class Archive, class T, class U, class H>
 inline void save(Archive& ar, const unordered_map<T, U, H>& t, unsigned int file_version){
@@ -273,25 +306,6 @@ inline void serialize(Archive& ar, unordered_set<T, H>& t, unsigned int file_ver
   boost::serialization::split_free(ar, t, file_version);
 }
 
-// unique_ptr
-template<class Archive, class T>
-inline void save(Archive & ar, const std::unique_ptr< T > &t, unsigned int file_version){
-  const T * const ptr = t.get();
-  ar << BOOST_SERIALIZATION_NVP(ptr);
-}
-
-template<class Archive, class T>
-inline void load(Archive & ar, std::unique_ptr< T > &t, unsigned int file_version){
-  T *ptr;
-  ar >> BOOST_SERIALIZATION_NVP(ptr);
-  t.reset(ptr);
-}
-
-template<class Archive, class T>
-inline void serialize(Archive & ar, std::unique_ptr< T > &t, unsigned int file_version){
-  boost::serialization::split_free(ar, t, file_version);
-}
-
 // vector
 template<class Archive, class T, class Allocator>
 inline void save(Archive & ar, const std::vector<T, Allocator> &t, unsigned int){
@@ -318,21 +332,6 @@ template<class Archive, class T, class Allocator>
 inline void serialize(Archive & ar, std::vector<T, Allocator> & t, unsigned int file_version){
   boost::serialization::split_free(ar, t, file_version);
 }
-
-#ifdef CLANG // clang doesn't see the serialization of std::array in boost, for some reason
-#ifndef OSX
-template <class Archive, class T, std::size_t N>
-void serialize(Archive& ar, std::array<T,N>& a, const unsigned int)
-{
-    ar & boost::serialization::make_nvp(
-        "elems",
-        *static_cast<T (*)[N]>(static_cast<void *>(a.data()))
-    );
-
-}
-
-#endif
-#endif
 
 #ifdef DEBUG_STL
 // stl debug dummies
@@ -382,5 +381,3 @@ void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version
 }
 
 }} // namespace boost::serialization
-
-#endif

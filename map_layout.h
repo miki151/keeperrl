@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _MAP_LAYOUT
-#define _MAP_LAYOUT
+#pragma once
 
 #include "util.h"
 #include "enums.h"
@@ -35,6 +34,3 @@ class MapLayout {
   vector<ViewLayer> layers;
   Vec2 squareSize;
 };
-
-
-#endif

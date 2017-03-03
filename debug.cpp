@@ -24,106 +24,31 @@ static void fail() {
 
 namespace boost {
   void assertion_failed(char const * expr, char const * function, char const * file, long line) {
-    FAIL << "Assertion at " << file << ":" << (int)line;
+    FATAL << "Assertion at " << file << ":" << (int)line;
     fail();
   }
 }
 
-
-Debug::Debug(DebugType t, const string& msg, int line) : type(t) {
-  if (t == DebugType::FATAL)
-    out = "FATAL";
-  else
-    out = "INFO";
-  out += msg + ":" + toString(line) + " ";
+DebugOutput DebugOutput::toStream(std::ostream& o) {
+  return DebugOutput(o, [&] { o << "\n" << std::flush;});
 }
 
-static ofstream output;
-
-void Debug::init(bool log) {
-  if (log)
-    output.open("log.out");
+DebugOutput DebugOutput::toString(function<void (const string&)> callback) {
+  stringstream* os = new stringstream(); // we are going to leak this object, sorry
+  return DebugOutput(*os, [=] { callback(os->str()); os->str(""); });
 }
 
-static function<void(const string&)> errorCallback;
-
-void Debug::setErrorCallback(function<void(const string&)> error) {
-  errorCallback = error;
+DebugOutput DebugOutput::crash() {
+  return DebugOutput(*(new stringstream()), [] { fail(); });
 }
 
-void Debug::add(const string& a) {
-  out += a;
+void DebugLog::addOutput(DebugOutput o) {
+  outputs.push_back(o);
 }
 
-Debug::~Debug() {
-  if (type == DebugType::FATAL) {
-    (ofstream("stacktrace.out") << out << endl).flush();
-    if (errorCallback)
-      errorCallback(out);
-    fail();
-  } else {
-    if (output) {
-      output << out << endl;
-      output.flush();
-    }
-  }
-}
-Debug& Debug::operator <<(const string& msg) {
-  add(msg);
-  return *this;
-}
-Debug& Debug::operator <<(const int msg) {
-  add(toString(msg));
-  return *this;
-}
-Debug& Debug::operator <<(const long long msg) {
-  add(toString(msg));
-  return *this;
-}
-Debug& Debug::operator <<(const size_t msg) {
-  add(toString(msg));
-  return *this;
-}
-Debug& Debug::operator <<(const char msg) {
-  add(toString(msg));
-  return *this;
-}
-Debug& Debug::operator <<(const double msg) {
-  add(toString(msg));
-  return *this;
+DebugLog::Logger DebugLog::get() {
+  return Logger(outputs);
 }
 
-template<class T>
-Debug& Debug::operator<<(const vector<T>& container){
-  (*this) << "{";
-  for (const T& elem : container) {
-    (*this) << elem << ",";
-  }
-  (*this) << "}";
-  return *this;
-}
-
-template<class T>
-Debug& Debug::operator<<(const vector<vector<T> >& container){
-  (*this) << "{";
-  for (int i = 0; i < container[0].size(); ++i) {
-    for (int j = 0; j < container[0].size(); ++i) {
-      (*this) << container[j][i] << ",";
-    }
-    (*this) << '\n';
-  }
-  (*this) << "}";
-  return *this;
-}
-
-template Debug& Debug::operator <<(const vector<string>&);
-template Debug& Debug::operator <<(const vector<int>&);
-template Debug& Debug::operator <<(const vector<Vec2>&);
-template Debug& Debug::operator <<(const vector<double>&);
-template Debug& Debug::operator <<(const vector<vector<double> >&);
-
-template NoDebug& NoDebug::operator <<(const vector<string>&);
-template NoDebug& NoDebug::operator <<(const vector<int>&);
-template NoDebug& NoDebug::operator <<(const vector<Vec2>&);
-template NoDebug& NoDebug::operator <<(const vector<double>&);
-template NoDebug& NoDebug::operator <<(const vector<vector<double> >&);
+DebugLog InfoLog;
+DebugLog FatalLog;

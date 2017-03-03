@@ -6,22 +6,32 @@
 #include "collective.h"
 #include "game.h"
 #include "collective_name.h"
+#include "attack_trigger.h"
+#include "creature_factory.h"
+#include "construction_map.h"
+#include "villain_type.h"
 
 SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom);
 
+VillageBehaviour::VillageBehaviour() {}
+
+VillageBehaviour::~VillageBehaviour() {}
 
 PTask VillageBehaviour::getAttackTask(VillageControl* self) {
   Collective* enemy = self->getEnemyCollective();
-  switch (attackBehaviour.getId()) {
+  switch (attackBehaviour->getId()) {
     case AttackBehaviourId::KILL_LEADER:
       return Task::attackLeader(enemy);
     case AttackBehaviourId::KILL_MEMBERS:
-      return Task::killFighters(enemy, attackBehaviour.get<int>());
+      return Task::killFighters(enemy, attackBehaviour->get<int>());
     case AttackBehaviourId::STEAL_GOLD:
-      return Task::stealFrom(enemy, self->getCollective());
+      if (auto ret = Task::stealFrom(enemy, self->getCollective()))
+        return ret;
+      else
+        return Task::attackLeader(enemy);
     case AttackBehaviourId::CAMP_AND_SPAWN:
-      return Task::campAndSpawn(enemy, self->getCollective(),
-            attackBehaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
+      return Task::campAndSpawn(enemy,
+            attackBehaviour->get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
   }
 }
 
@@ -88,11 +98,11 @@ static double stolenItemsFun(int numStolen) {
     return 1.0;
 }
 
-static double getRoomProb(SquareId id) {
+static double getRoomProb(FurnitureType id) {
   switch (id) {
-    case SquareId::THRONE: return 0.001;
-    case SquareId::IMPALED_HEAD: return 0.000125;
-    default: FAIL << "Unsupported ROOM_BUILT type"; return 0;
+    case FurnitureType::THRONE: return 0.001;
+    case FurnitureType::IMPALED_HEAD: return 0.000125;
+    default: FATAL << "Unsupported ROOM_BUILT type"; return 0;
   }
 }
 
@@ -101,6 +111,18 @@ static double getFinishOffProb(double maxPower, double currentPower, double self
     return 0;
   double minProb = 0.25;
   return 1 - 2 * (currentPower / maxPower) * (1 - minProb);
+}
+
+static double getNumConqueredProb(const Game* game, int minCount) {
+  int numConquered = 0;
+  for (auto col : game->getCollectives())
+    if ((col->getVillainType() == VillainType::LESSER || col->getVillainType() == VillainType::MAIN) &&
+        col->isConquered())
+      ++numConquered;
+  if (numConquered >= minCount)
+    return 0.5 * (1 + min(1.0, (double)(numConquered - minCount) / minCount));
+  else
+    return 0;
 }
 
 double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageControl* self) const {
@@ -112,13 +134,15 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
   double entryMaxProb = 1.0 / 20.0;
   double finishOffMaxProb = 1.0 / 1000;
   double proximityMaxProb = 1.0 / 5000;
+  double timerProb = 1.0 / 3000;
+  double numConqueredMaxProb = 1.0 / 3000;
   if (Collective* collective = self->getEnemyCollective())
     switch (trigger.getId()) {
       case AttackTriggerId::TIMER: 
-        return collective->getGlobalTime() >= trigger.get<int>() ? 0.05 : 0;
+        return collective->getGlobalTime() >= trigger.get<int>() ? timerProb : 0;
       case AttackTriggerId::ROOM_BUILT: 
-        return collective->getSquares(trigger.get<SquareType>()).size() *
-          getRoomProb(trigger.get<SquareType>().getId());
+        return collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>()) *
+          getRoomProb(trigger.get<FurnitureType>());
       case AttackTriggerId::POWER: 
         return powerMaxProb *
             powerClosenessFun(self->getCollective()->getDangerLevel(), collective->getDangerLevel());
@@ -133,16 +157,16 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
       case AttackTriggerId::GOLD:
         return goldMaxProb * goldFun(collective->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
       case AttackTriggerId::STOLEN_ITEMS:
-        return stolenMaxProb 
-          * stolenItemsFun(self->stolenItemCount);
+        return stolenMaxProb * stolenItemsFun(self->stolenItemCount);
       case AttackTriggerId::ENTRY:
         return entryMaxProb * self->entries;
       case AttackTriggerId::PROXIMITY:
-        if (!collective->getGame()->isSingleModel() &&
-            collective->getGame()->getModelDistance(collective, self->getCollective()) <= 1)
+        if (collective->getGame()->getModelDistance(collective, self->getCollective()) == 1)
           return proximityMaxProb;
         else
           return 0;
+      case AttackTriggerId::NUM_CONQUERED:
+        return numConqueredMaxProb * getNumConqueredProb(self->getCollective()->getGame(), trigger.get<int>());
     }
   return 0;
 }
@@ -153,7 +177,7 @@ double VillageBehaviour::getAttackProbability(const VillageControl* self) const 
     double val = getTriggerValue(elem, self);
     CHECK(val >= 0 && val <= 1);
     ret = max(ret, val);
-    Debug() << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village "
+    INFO << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village "
         << self->getCollective()->getName().getFull() << " under attack probability " << val;
   }
   return ret;

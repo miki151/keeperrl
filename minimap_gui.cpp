@@ -23,12 +23,13 @@
 #include "map_memory.h"
 #include "view_index.h"
 #include "sdl.h"
+#include "view_object.h"
 
 void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
   if (!mapBufferTex)
     mapBufferTex.emplace(mapBuffer);
-  else
-    mapBufferTex->loadFrom(mapBuffer);
+  else if (auto error = mapBufferTex->loadFromMaybe(mapBuffer))
+    FATAL << "Failed to render minimap, error: " << toString(*error);
   renderer.drawImage(target, info.bounds, *mapBufferTex);
   Vec2 topLeft = target.topLeft();
   double scale = min(double(target.width()) / info.bounds.width(),
@@ -64,8 +65,19 @@ void MinimapGui::render(Renderer& r) {
   renderMap(r, getBounds());
 }
 
+static Vec2 getMapBufferSize() {
+  int w = 1;
+  int h = 1;
+  while (w < Level::getMaxBounds().width())
+    w *= 2;
+  while (h < Level::getMaxBounds().height())
+    h *= 2;
+  return Vec2(w, h);
+}
+
 MinimapGui::MinimapGui(Renderer& r, function<void()> f) : clickFun(f), renderer(r) {
-  mapBuffer = Renderer::createSurface(Level::getMaxBounds().width(), Level::getMaxBounds().height());
+  auto size = getMapBufferSize();
+  mapBuffer = Renderer::createSurface(size.x, size.y);
 }
 
 void MinimapGui::clear() {

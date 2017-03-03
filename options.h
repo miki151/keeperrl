@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _OPTIONS_H
-#define _OPTIONS_H
+#pragma once
 
 #include "util.h"
 
@@ -32,11 +31,14 @@ RICH_ENUM(OptionId,
   WASD_SCROLLING,
   ZOOM_UI,
   DISABLE_MOUSE_WHEEL,
+  DISABLE_CURSOR,
 
   FAST_IMMIGRATION,
   ADVENTURER_NAME,
+  ADVENTURER_TYPE,
 
   KEEPER_NAME,
+  KEEPER_TYPE,
   KEEPER_SEED,
   SHOW_MAP,
   START_WITH_NIGHT,
@@ -53,8 +55,6 @@ enum class OptionSet {
   GENERAL,
   KEEPER,
   ADVENTURER,
-  CAMPAIGN,
-  ADVENTURER_CAMPAIGN
 };
 
 class View;
@@ -62,11 +62,13 @@ class View;
 class Options {
   public:
   typedef variant<int, string> Value;
-  Options(const string& path, const string& overrides);
+  Options(const string& path);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
+  CreatureId getCreatureId(OptionId);
+  void setNextCreatureId(OptionId);
   const string& getName(OptionId);
-  enum Type { INT, BOOL, STRING };
+  enum Type { INT, BOOL, STRING, PLAYER_TYPE };
   Type getType(OptionId);
   string getValueString(OptionId);
   void setValue(OptionId, Value);
@@ -81,6 +83,7 @@ class Options {
   void addTrigger(OptionId, Trigger trigger);
   void setDefaultString(OptionId, const string&);
   void setChoices(OptionId, const vector<string>&);
+  void setChoices(OptionId, const vector<CreatureId>&);
 
   private:
   optional<Value> readValue(OptionId, const string&);
@@ -93,8 +96,8 @@ class Options {
   EnumMap<OptionId, string> defaultStrings;
   EnumMap<OptionId, optional<Value>> overrides;
   EnumMap<OptionId, vector<string>> choices;
+  EnumMap<OptionId, vector<CreatureId>> choicesCreatureId;
   EnumMap<OptionId, optional<pair<int, int>>> limits;
 };
 
 
-#endif

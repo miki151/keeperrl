@@ -1,8 +1,8 @@
-#ifndef _MAIN_LOOP_H
-#define _MAIN_LOOP_H
+#pragma once
 
 #include "util.h"
 #include "file_sharing.h"
+#include "exit_info.h"
 
 class View;
 class Highscores;
@@ -15,11 +15,15 @@ class Model;
 class RetiredGames;
 struct SaveFileInfo;
 class GameEvents;
+class SokobanInput;
+struct CampaignSetup;
+class ModelBuilder;
 
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const string& dataFreePath, const string& userPath,
-      Options*, Jukebox*, std::atomic<bool>& finished, bool useSingleThread, optional<GameTypeChoice> forceGame);
+      Options*, Jukebox*, SokobanInput*, std::atomic<bool>& finished, bool useSingleThread,
+      optional<PlayerRole> forceGame);
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, RandomGen&, Options*);
@@ -28,15 +32,12 @@ class MainLoop {
 
   private:
 
-  RetiredGames getRetiredGames();
+  optional<RetiredGames> getRetiredGames(CampaignType);
   int getSaveVersion(const SaveFileInfo& save);
   void uploadFile(const string& path, GameSaveType);
   void saveUI(PGame&, GameSaveType type, SplashType splashType);
-  void getSaveOptions(const vector<FileSharing::GameInfo>&, const vector<pair<GameSaveType, string>>&,
+  void getSaveOptions(const vector<pair<GameSaveType, string>>&,
       vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
-
-  void getDownloadOptions(const vector<FileSharing::GameInfo>&, vector<ListElem>& options,
-      vector<SaveFileInfo>& allFiles, const string& title);
 
   optional<SaveFileInfo> chooseSaveFile(const vector<ListElem>& options, const vector<SaveFileInfo>& allFiles,
       string noSaveMsg, View*);
@@ -47,7 +48,6 @@ class MainLoop {
   void doWithSplash(SplashType, const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
 
   PGame prepareCampaign(RandomGen&);
-  PGame prepareSingleMap(RandomGen&);
   void playGame(PGame&&, bool withMusic, bool noAutoSave);
   void playGameChoice();
   void splashScreen();
@@ -55,14 +55,13 @@ class MainLoop {
 
   void playMenuMusic();
 
-  Table<PModel> prepareCampaignModels(Campaign& campaign, RandomGen& random);
+  Table<PModel> prepareCampaignModels(CampaignSetup& campaign, RandomGen& random);
   PModel keeperSingleMap(RandomGen& random);
   PModel quickGame(RandomGen& random);
-  PGame adventurerGame();
   PGame loadGame(string file);
   PGame loadPrevious();
-  string getSavePath(PGame&, GameSaveType);
-  void eraseSaveFile(PGame&, GameSaveType);
+  string getSavePath(const PGame&, GameSaveType);
+  void eraseSaveFile(const PGame&, GameSaveType);
 
   bool downloadGame(const string& filename);
   bool eraseSave();
@@ -77,10 +76,14 @@ class MainLoop {
   FileSharing* fileSharing;
   std::atomic<bool>& finished;
   bool useSingleThread;
-  optional<GameTypeChoice> forceGame;
+  optional<PlayerRole> forceGame;
+  SokobanInput* sokobanInput;
+  PModel getBaseModel(ModelBuilder&, CampaignSetup&);
+  void considerGameEventsPrompt();
+  void considerFreeVersionText(bool tilesPresent);
+  void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
 };
 
 
 
-#endif
 

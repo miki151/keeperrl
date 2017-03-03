@@ -1,21 +1,25 @@
 #include "stdafx.h"
 #include "clock.h"
 
-int Clock::getMillis() {
+Clock::Clock() {
+  initTime = steady_clock::now();
+}
+
+milliseconds Clock::getMillis() {
   if (lastPause)
-    return duration_cast<milliseconds>(*lastPause - pausedTime).count();
+    return duration_cast<milliseconds>(*lastPause - pausedTime);
   else
-    return duration_cast<milliseconds>(steady_clock::now() - pausedTime).count();
+    return duration_cast<milliseconds>(getCurrent() - pausedTime);
 }
 
 void Clock::pause() {
   if (!lastPause)
-    lastPause = steady_clock::now();
+    lastPause = getCurrent();
 }
 
 void Clock::cont() {
   if (lastPause) {
-    pausedTime += steady_clock::now() - *lastPause;
+    pausedTime += getCurrent() - *lastPause;
     lastPause = none;
   }
 }
@@ -24,19 +28,32 @@ bool Clock::isPaused() {
   return !!lastPause;
 }
 
-int Clock::getRealMillis() {
-  return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
+milliseconds Clock::getRealMillis() {
+  return duration_cast<milliseconds>(steady_clock::now().time_since_epoch());
 }
 
-Intervalometer::Intervalometer(int f) : frequency(f) {
+steady_clock::time_point Clock::getCurrent() {
+  return steady_clock::time_point(steady_clock::now() - initTime);
 }
 
-int Intervalometer::getCount(int mill) {
-  if (mill >= lastUpdate + frequency) {
-    int diff = (mill - lastUpdate) / frequency;
-    lastUpdate += diff * frequency;
+Intervalometer::Intervalometer(milliseconds f) : frequency(f) {
+}
+
+int Intervalometer::getCount(milliseconds mill) {
+  if (!lastUpdate)
+    lastUpdate = mill - frequency;
+  if (mill >= *lastUpdate + frequency) {
+    int diff = (mill - *lastUpdate) / frequency;
+    *lastUpdate += diff * frequency;
     return diff;
   }
   return 0;
 }
 
+
+ScopeTimer::ScopeTimer(const char* msg) : message(msg) {
+}
+
+ScopeTimer::~ScopeTimer() {
+  INFO << " " << clock.getMillis() << message;
+}

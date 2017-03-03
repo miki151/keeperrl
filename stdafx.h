@@ -16,6 +16,28 @@
 #ifndef _STDAFX_H
 #define _STDAFX_H
 
+#ifndef RELEASE
+#if __has_cpp_attribute(nodiscard)
+#define NODISCARD [[nodiscard]]
+#elif __has_cpp_attribute(gnu::warn_unused_result)
+#define NODISCARD [[gnu::warn_unused_result]]
+#else
+#define NODISCARD
+#endif
+
+#if __has_cpp_attribute(fallthrough)
+#define FALLTHROUGH [[fallthrough]]
+#elif __has_cpp_attribute(clang::fallthrough)
+#define FALLTHROUGH [[clang::fallthrough]]
+#else
+#define FALLTHROUGH
+#endif
+
+#else
+#define NODISCARD
+#define FALLTHROUGH
+#endif
+
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -65,19 +87,23 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/map.hpp>
 #include <boost/serialization/deque.hpp>
 #include <boost/serialization/set.hpp>
+#include <boost/serialization/utility.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/array.hpp>
-#include <boost/serialization/variant.hpp>
+#include "variant_serialization.h"
 #include <boost/serialization/optional.hpp>
 #include <boost/serialization/bitset.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/weak_ptr.hpp>
+#include <boost/serialization/unique_ptr.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/variant.hpp>
 #include <boost/any.hpp>
 #include <boost/optional.hpp>
 #include <boost/version.hpp>
+#include <boost/operators.hpp>
 
 #ifdef DEBUG_STL
 
@@ -104,6 +130,7 @@ using std::string;
 using std::vector;
 using std::map;
 using std::set;
+using std::multiset;
 using std::deque;
 using std::string;
 
@@ -111,6 +138,9 @@ using std::string;
 
 using std::queue;
 using std::unique_ptr;
+using std::shared_ptr;
+using std::weak_ptr;
+using std::make_shared;
 using std::default_random_engine;
 using std::function;
 using std::initializer_list;
@@ -176,4 +206,5 @@ using boost::archive::text_oarchive;
 #include "util.h"
 #include "debug.h"
 #include "enums.h"
+
 #endif

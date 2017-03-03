@@ -27,6 +27,8 @@
 #include "level.h"
 #include "position.h"
 #include "creature_attributes.h"
+#include "view_object.h"
+#include "spell_map.h"
 
 ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
@@ -76,8 +78,7 @@ optional<UserInputId> ListElem::getAction() const {
 }
 
 vector<ListElem> ListElem::convert(const vector<string>& v) {
-  function<ListElem(const string&)> fun = [](const string& s) -> ListElem { return ListElem(s); };
-  return transform2<ListElem>(v, fun);
+  return transform2(v, [](const string& s) { return ListElem(s); });
 }
 
 View::View() {
@@ -92,10 +93,8 @@ CreatureInfo::CreatureInfo(const Creature* c)
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
       stackName(c->getName().stack()),
-      expLevel(c->getAttributes().getExpLevel()),
-      morale(c->getMorale()),
-      cost({ViewId::GOLD, c->getAttributes().getRecruitmentCost()}){
-}
+      expLevel((int)c->getAttributes().getVisibleExpLevel()),
+      morale(c->getMorale()) {}
 
 string PlayerInfo::getFirstName() const {
   if (!firstName.empty())
@@ -122,7 +121,6 @@ void PlayerInfo::readFrom(const Creature* c) {
   firstName = c->getName().first().get_value_or("");
   name = c->getName().bare();
   title = c->getName().title();
-  adjectives = c->getMainAdjectives();
   description = capitalFirst(c->getAttributes().getDescription());
   Item* weapon = c->getWeapon();
   weaponName = weapon ? weapon->getName() : "";
@@ -130,6 +128,7 @@ void PlayerInfo::readFrom(const Creature* c) {
   morale = c->getMorale();
   levelName = c->getLevel()->getName();
   positionHash = c->getPosition().getHash();
+  creatureId = c->getUniqueId();
   typedef PlayerInfo::AttributeInfo::Id AttrId;
   attributes = {
     { "Attack",
@@ -168,7 +167,11 @@ void PlayerInfo::readFrom(const Creature* c) {
       c->getExpLevel(), 0,
       "Describes general combat value of the creature."}*/
   };
-  level = c->getAttributes().getExpLevel();
+  levelInfo.level = c->getAttributes().getVisibleExpLevel();
+  for (auto expType : ENUM_ALL(ExperienceType)) {
+    levelInfo.increases[expType] = c->getAttributes().getExpIncrease(expType);
+    levelInfo.limits[expType] = c->getAttributes().getMaxExpIncrease(expType);
+  }
   skills = getSkillNames(c);
   effects.clear();
   for (auto& adj : c->getBadAdjectives())
@@ -186,7 +189,7 @@ void PlayerInfo::readFrom(const Creature* c) {
   }
 }
 
-CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) {
+const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) const {
   for (auto& elem : minions)
     if (elem.uniqueId == id)
       return &elem;

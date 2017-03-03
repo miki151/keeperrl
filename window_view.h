@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _WINDOW_VIEW
-#define _WINDOW_VIEW
+#pragma once
 
 #include "util.h"
 #include "view.h"
@@ -61,9 +60,9 @@ class WindowView: public View {
   virtual void setScrollPos(Vec2 pos) override;
   virtual void resetCenter() override;
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
-      MenuType = MenuType::NORMAL, double* scrollPos = nullptr,
+      MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
-  virtual optional<GameTypeChoice> chooseGameType() override;
+  virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) override;
   virtual optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
   virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
@@ -76,27 +75,27 @@ class WindowView: public View {
   virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint) override;
-  virtual optional<int> chooseItem(const vector<ItemInfo>& items, double* scrollpos) override;
-  virtual optional<UniqueEntity<Creature>::Id> chooseRecruit(const string& title, const string& warning,
-      pair<ViewId, int> budget, const vector<CreatureInfo>&, double* scrollPos) override;
+  virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) override;
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
-      const vector<ItemInfo>&, double* scrollPos) override;
+      const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
+  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
   virtual void presentHighscores(const vector<HighscoreList>&) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;
-  virtual int getTimeMilli() override;
-  virtual int getTimeMilliAbsolute() override;
+  virtual milliseconds getTimeMilli() override;
+  virtual milliseconds getTimeMilliAbsolute() override;
   virtual void stopClock() override;
   virtual bool isClockStopped() override;
   virtual void continueClock() override;
   virtual void addSound(const Sound&) override;
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current) override;
   virtual void presentWorldmap(const Campaign&) override;
-  virtual CampaignAction prepareCampaign(const Campaign&, Options*, RetiredGames&) override;
+  virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) override;
   virtual bool creaturePrompt(const string& title, const vector<CreatureInfo>&) override;
- 
+  virtual void logMessage(const string&) override;
+
   private:
 
   Renderer& renderer;
@@ -105,20 +104,20 @@ class WindowView: public View {
   void displayMenuSplash2();
   void displayOldSplash();
   void updateMinimap(const CreatureView*);
-  void mapLeftClickFun(Vec2);
+  void mapContinuousLeftClickFun(Vec2);
   void mapCreatureClickFun(UniqueEntity<Creature>::Id);
   void mapCreatureDragFun(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   void mapRightClickFun(Vec2);
   Rectangle getTextInputPosition();
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
-      double* scrollPos);
+      ScrollPosition* scrollPos);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
-  PGuiElem drawGameChoices(optional<optional<GameTypeChoice>>& choice, optional<GameTypeChoice>& index);
-  PGuiElem getTextContent(const string& title, const string& value, const string& hint);
+  SGuiElem drawGameChoices(optional<PlayerRoleChoice>& choice, optional<PlayerRoleChoice>& index);
+  SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
   int lastGuiHash = 0;
   void drawMap();
-  void propagateEvent(const Event& event, vector<GuiElem*>);
+  void propagateEvent(const Event& event, vector<SGuiElem>);
   void keyboardAction(const SDL::SDL_Keysym&);
 
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
@@ -144,14 +143,14 @@ class WindowView: public View {
   GameInfo gameInfo;
 
   MapLayout* mapLayout;
-  MapGui* mapGui;
-  MinimapGui* minimapGui;
-  PGuiElem mapDecoration;
-  PGuiElem minimapDecoration;
-  vector<PGuiElem> tempGuiElems;
-  vector<PGuiElem> blockingElems;
-  vector<GuiElem*> getAllGuiElems();
-  vector<GuiElem*> getClickableGuiElems();
+  shared_ptr<MapGui> mapGui;
+  shared_ptr<MinimapGui> minimapGui;
+  SGuiElem mapDecoration;
+  SGuiElem minimapDecoration;
+  vector<SGuiElem> tempGuiElems;
+  vector<SGuiElem> blockingElems;
+  vector<SGuiElem> getAllGuiElems();
+  vector<SGuiElem> getClickableGuiElems();
   SyncQueue<UserInput> inputQueue;
 
   bool gameReady = false;
@@ -170,6 +169,7 @@ class WindowView: public View {
   function<void()> getButtonCallback(UserInput);
 
   recursive_mutex renderMutex;
+  recursive_mutex logMutex;
 
   bool lockKeyboard = false;
 
@@ -206,11 +206,11 @@ class WindowView: public View {
     bool cont = false;
   };
 
-  void getBlockingGui(Semaphore&, PGuiElem, optional<Vec2> origin = none);
+  void getBlockingGui(Semaphore&, SGuiElem, optional<Vec2> origin = none);
   bool isKeyPressed(SDL::SDL_Scancode);
 
   template<typename T>
-  T getBlockingGui(SyncQueue<T>& queue, PGuiElem elem, optional<Vec2> origin = none) {
+  T getBlockingGui(SyncQueue<T>& queue, SGuiElem elem, optional<Vec2> origin = none) {
     RecursiveLock lock(renderMutex);
     TempClockPause pause(clock);
     if (blockingElems.empty()) {
@@ -219,8 +219,10 @@ class WindowView: public View {
     }
     if (!origin)
       origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
+    Vec2 size(*elem->getPreferredWidth(), min(renderer.getSize().y - origin->y, *elem->getPreferredHeight()));
+    elem->setBounds(Rectangle(*origin, *origin + size));
+    propagateMousePosition({elem});
     blockingElems.push_back(std::move(elem));
-    blockingElems.back()->setPreferredBounds(*origin);
     if (currentThreadId() == renderThreadId) {
       while (queue.isEmpty())
         refreshView();
@@ -244,9 +246,8 @@ class WindowView: public View {
   atomic<int> zoomUI;
   void playSounds(const CreatureView*);
   vector<Sound> soundQueue;
-  EnumMap<SoundId, int> lastPlayed;
+  EnumMap<SoundId, optional<milliseconds>> lastPlayed;
   SoundLibrary* soundLibrary;
+  deque<string> messageLog;
+  void propagateMousePosition(const vector<SGuiElem>&);
 };
-
-
-#endif

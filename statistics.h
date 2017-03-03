@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _STATISTICS_H
-#define _STATISTICS_H
+#pragma once
 
 #include "util.h"
 #include "enums.h"
@@ -44,4 +43,3 @@ class Statistics {
   EnumMap<StatId, int> SERIAL(count);
 };
 
-#endif

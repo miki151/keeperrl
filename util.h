@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _UTIL_H
-#define _UTIL_H
+#pragma once
 
 #include <iostream>
 
@@ -22,6 +21,9 @@
 #include "enums.h"
 #include "serialization.h"
 #include "hashing.h"
+#include "owner_pointer.h"
+#include "container_helpers.h"
+#include "container_range.h"
 
 template <class T>
 string toString(const T& t) {
@@ -30,8 +32,17 @@ string toString(const T& t) {
   return ss.str();
 }
 
-class ParsingException {
-};
+template <class T>
+string toString(const optional<T>& t) {
+  if (t)
+    return toString(*t);
+  else
+    return "(unknown)";
+}
+
+class ParsingException {};
+
+class GameExitException {};
 
 template <class T>
 T fromString(const string& s) {
@@ -49,18 +60,34 @@ optional<T> fromStringSafe(const string& s);
 #define DEF_UNIQUE_PTR(T) class T;\
   typedef unique_ptr<T> P##T;
 
+#define DEF_SHARED_PTR(T) class T;\
+  typedef shared_ptr<T> S##T;
+
+#define DEF_OWNER_PTR(T) class T;\
+  typedef OwnerPointer<T> P##T; \
+  typedef weak_ptr<T> W##T; \
+  template <typename... Args> \
+  OwnerPointer<T> make##T(Args... a) { \
+    return makeOwner<T>(a...); \
+  } \
+  template <typename Subclass, typename... Args> \
+  OwnerPointer<T> make##T(Args... a) { \
+    return makeOwner<T, Subclass>(a...); \
+  }
+
+DEF_OWNER_PTR(Item);
 DEF_UNIQUE_PTR(LevelMaker);
-DEF_UNIQUE_PTR(Item);
 DEF_UNIQUE_PTR(Creature);
 DEF_UNIQUE_PTR(Square);
+DEF_UNIQUE_PTR(Furniture);
 DEF_UNIQUE_PTR(MonsterAI);
 DEF_UNIQUE_PTR(Behaviour);
 DEF_UNIQUE_PTR(Task);
-DEF_UNIQUE_PTR(Controller);
+DEF_SHARED_PTR(Controller);
 DEF_UNIQUE_PTR(Trigger);
 DEF_UNIQUE_PTR(Level);
 DEF_UNIQUE_PTR(VillageControl);
-DEF_UNIQUE_PTR(GuiElem);
+DEF_SHARED_PTR(GuiElem);
 DEF_UNIQUE_PTR(Animation);
 DEF_UNIQUE_PTR(ViewObject);
 DEF_UNIQUE_PTR(Collective);
@@ -87,6 +114,7 @@ typedef function<bool(const Item*)> ItemPredicate;
 template<class T>
 vector<T*> extractRefs(vector<unique_ptr<T>>& v) {
   vector<T*> ret;
+  ret.reserve(v.size());
   for (auto& el : v)
     ret.push_back(el.get());
   return ret;
@@ -95,6 +123,7 @@ vector<T*> extractRefs(vector<unique_ptr<T>>& v) {
 template<class T>
 vector<unique_ptr<T>> toUniquePtr(const vector<T*>& v) {
   vector<unique_ptr<T>> ret;
+  ret.reserve(v.size());
   for (T* el : v)
     ret.push_back(unique_ptr<T>(el));
   return ret;
@@ -103,6 +132,16 @@ vector<unique_ptr<T>> toUniquePtr(const vector<T*>& v) {
 template<class T>
 const vector<T*> extractRefs(const vector<unique_ptr<T>>& v) {
   vector<T*> ret;
+  ret.reserve(v.size());
+  for (auto& el : v)
+    ret.push_back(el.get());
+  return ret;
+}
+
+template<class T>
+const vector<T*> extractRefs(const vector<OwnerPointer<T>>& v) {
+  vector<T*> ret;
+  ret.reserve(v.size());
   for (auto& el : v)
     ret.push_back(el.get());
   return ret;
@@ -116,6 +155,9 @@ bool endsWith(const string&, const string& suffix);
 
 vector<string> split(const string& s, const set<char>& delim);
 vector<string> removeEmpty(const vector<string>&);
+string combineWithOr(const vector<string>&);
+
+
 
 class Rectangle;
 class RandomGen;
@@ -180,23 +222,22 @@ class Vec2 {
   HASH_ALL(x, y);
 };
 
-template <>
-inline string toString(const Vec2& v) {
-  stringstream ss;
-  ss << "(" << v.x << ", " << v.y << ")";
-  return ss.str();
-}
+extern string toString(const Vec2& v);
 
 class Range {
   public:
   Range(int start, int end);
-  Range(int end);
+  explicit Range(int end);
+  static Range singleElem(int);
 
+  bool isEmpty() const;
   Range reverse();
   Range shorten(int r);
 
   int getStart() const;
   int getEnd() const;
+  int getLength() const;
+  bool contains(int) const;
 
   class Iter {
     public:
@@ -217,12 +258,13 @@ class Range {
   Iter begin();
   Iter end();
 
-  SERIALIZATION_DECL(Range);
+  SERIALIZATION_DECL(Range)
+  HASH_ALL(start, finish, increment)
   
   private:
-  int SERIAL(start);
-  int SERIAL(finish);
-  int SERIAL(increment) = 1;
+  int SERIAL(start) = 0; // HASH(start)
+  int SERIAL(finish) = 0; // HASH(finish)
+  int SERIAL(increment) = 1; // HASH(increment)
 };
 
 class Rectangle {
@@ -234,6 +276,7 @@ class Rectangle {
   Rectangle(Vec2 dim);
   Rectangle(int px, int py, int kx, int ky);
   Rectangle(Vec2 p, Vec2 k);
+  Rectangle(Range xRange, Range yRange);
   static Rectangle boundingBox(const vector<Vec2>& v);
   static Rectangle centered(Vec2 center, int radius);
 
@@ -322,8 +365,7 @@ class EnumInfo<Name> { \
     for (int i : Range(size)) \
       if (getString(Name(i)) == s) \
         return Name(i); \
-    FAIL << #Name << " value not found " << s;\
-    return Name(0);\
+    throw ParsingException();\
   }\
   static optional<Name> fromStringSafe(const string& s) {\
     for (int i : Range(size)) \
@@ -332,6 +374,121 @@ class EnumInfo<Name> { \
     return none;\
   }\
 }
+
+template <class T>
+class EnumAll {
+  public:
+  class Iter {
+    public:
+    Iter(int num) : ind(num) {
+    }
+
+    T operator* () const {
+      return T(ind);
+    }
+
+    bool operator != (const Iter& other) const {
+      return ind != other.ind;
+    }
+
+    const Iter& operator++ () {
+      ++ind;
+      return *this;
+    }
+
+    private:
+    int ind;
+  };
+
+  Iter begin() {
+    return Iter(0);
+  }
+
+  Iter end() {
+    return Iter(EnumInfo<T>::size);
+  }
+};
+
+#define ENUM_ALL(X) EnumAll<X>()
+
+template<class T, class U>
+class EnumMap {
+  public:
+  EnumMap() {
+    clear();
+  }
+
+  EnumMap(const EnumMap& o) : elems(o.elems) {}
+  EnumMap(EnumMap&& o) : elems(std::move(o.elems)) {}
+
+  EnumMap(function<U(T)> f) {
+    for (T t : EnumAll<T>())
+      (*this)[t] = f(t);
+  }
+
+  bool operator == (const EnumMap<T, U>& other) const {
+    return elems == other.elems;
+  }
+
+  void clear(U value) {
+    for (int i = 0; i < EnumInfo<T>::size; ++i)
+      elems[i] = value;
+  }
+
+  void clear() {
+    for (int i = 0; i < EnumInfo<T>::size; ++i)
+      elems[i] = U();
+  }
+
+  EnumMap(initializer_list<pair<T, U>> il) : EnumMap() {
+    for (auto elem : il)
+      elems[int(elem.first)] = elem.second;
+  }
+
+  EnumMap(const map<T, U> m) : EnumMap() {
+    for (auto elem : m)
+      elems[int(elem.first)] = elem.second;
+  }
+
+  EnumMap& operator = (initializer_list<pair<T, U>> il) {
+    for (auto elem : il)
+      elems[int(elem.first)] = elem.second;
+    return *this;
+  }
+
+  EnumMap& operator = (const EnumMap& other) {
+    elems = other.elems;
+    return *this;
+  }
+
+  const U& operator[](T elem) const {
+    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
+    return elems[int(elem)];
+  }
+
+  U& operator[](T elem) {
+    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
+    return elems[int(elem)];
+  }
+
+  size_t getHash() const {
+    return combineHashIter(elems.begin(), elems.end());
+  }
+
+  template <class Archive> 
+  void serialize(Archive& ar, const unsigned int version) {
+    vector<U> SERIAL(tmp);
+    for (int i : All(elems))
+      tmp.push_back(std::move(elems[i]));
+    ar & SVAR(tmp);
+    CHECK(tmp.size() <= elems.size()) << tmp.size() << " " << elems.size();
+    for (int i : All(tmp))
+      elems[i] = std::move(tmp[i]);
+  }
+
+  private:
+  std::array<U, EnumInfo<T>::size> elems;
+};
 
 std::string operator "" _s(const char* str, size_t);
 class RandomGen {
@@ -347,7 +504,7 @@ class RandomGen {
   double getDouble();
   double getDouble(double a, double b);
   bool roll(int chance);
-  bool rollD(double chance);
+  bool chance(double chance);
   template <typename T>
   T choose(const vector<T>& v, const vector<double>& p) {
     CHECK(v.size() == p.size());
@@ -370,6 +527,14 @@ class RandomGen {
   template <typename T>
   T choose(initializer_list<T> vi, initializer_list<double> pi) {
     return choose(vector<T>(vi), vector<double>(pi));
+  }
+
+  template <typename T>
+  T choose(const EnumMap<T, double>& map) {
+    vector<double> weights(EnumInfo<T>::size);
+    for (T t : ENUM_ALL(T))
+      weights[(int)t] = map[t];
+    return (T) get(weights);
   }
 
   template <typename T, typename... Args>
@@ -395,8 +560,13 @@ class RandomGen {
 
   template <typename T>
   vector<T> permutation(vector<T> v) {
-    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    std::shuffle(v.begin(), v.end(), generator);
     return v;
+  }
+
+  template <typename Iterator>
+  void shuffle(Iterator begin, Iterator end) {
+    std::shuffle(begin, end, generator);
   }
 
   template <typename T>
@@ -451,7 +621,7 @@ class RandomGen {
 
 extern RandomGen Random;
 
-inline Debug& operator <<(Debug& d, Rectangle rect) {
+inline std::ostream& operator <<(std::ostream& d, Rectangle rect) {
   return d << "(" << rect.left() << "," << rect.top() << ") (" << rect.right() << "," << rect.bottom() << ")";
 }
 
@@ -610,6 +780,10 @@ class DirtyTable {
     ++counter;
   }
 
+  void clear(Vec2 v) {
+    dirty[v] = counter - 1;
+  }
+
   private:
   Table<T> val;
   Table<int> dirty;
@@ -656,8 +830,9 @@ map<V, vector<T> > groupBy(const vector<T>& values, function<V (const T&)> getKe
 
 template <typename T>
 vector<T> getSubsequence(const vector<T>& v, int start, int length) {
-  CHECK(start >= 0 && length > 0 && start + length <= v.size());
+  CHECK(start >= 0 && length >= 0 && start + length <= v.size());
   vector<T> ret;
+  ret.reserve(length);
   for (int i : Range(start, start + length))
     ret.push_back(v[i]);
   return ret;
@@ -666,6 +841,11 @@ vector<T> getSubsequence(const vector<T>& v, int start, int length) {
 template <typename T>
 vector<T> getPrefix(const vector<T>& v, int num) {
   return getSubsequence(v, 0, num);
+}
+
+template <typename T>
+vector<T> getPrefixOrAll(const vector<T>& v, int num) {
+  return getSubsequence(v, 0, min((int)v.size(), num));
 }
 
 template <typename T>
@@ -680,24 +860,26 @@ string transform2(const string& u, Fun fun) {
   return ret;
 }
 
-template <typename T, typename U, typename Fun>
-vector<T> transform2(const vector<U>& u, Fun fun) {
-  vector<T> ret;
+template <typename U, typename Fun>
+auto transform2(const vector<U>& u, Fun fun) -> vector<decltype(fun(u[0]))> {
+  vector<decltype(fun(u[0]))> ret;
+  ret.reserve(u.size());
   for (const U& elem : u)
     ret.push_back(fun(elem));
   return ret;
 }
 
-template <typename T, typename U, typename Fun>
-vector<T> transform2(vector<U>& u, Fun fun) {
-  vector<T> ret;
+template <typename U, typename Fun>
+auto transform2(vector<U>& u, Fun fun) -> vector<decltype(fun(u[0]))> {
+  vector<decltype(fun(u[0]))> ret;
+  ret.reserve(u.size());
   for (U& elem : u)
     ret.push_back(fun(elem));
   return ret;
 }
 
 template <typename T, typename U, typename Fun>
-optional<T> transform2(const optional<U>& u, Fun fun) {
+auto transform2(const optional<U>& u, Fun fun) -> optional<decltype(fun(*u))> {
   if (u)
     return fun(*u);
   else
@@ -736,6 +918,14 @@ vector<T> filter(vector<T>&& v, Predicate predicate) {
   return ret;
 }
 
+template <typename Container, typename Elem>
+vector<Elem> asVector(const Container& c) {
+  vector<Elem> ret;
+  for (const auto& elem : c)
+    ret.push_back(elem);
+  return ret;
+}
+
 template <typename T, typename V>
 bool contains(const T& v, const V& elem) {
   return std::find(v.begin(), v.end(), elem) != v.end();
@@ -751,12 +941,14 @@ bool contains(const initializer_list<T>& v, const V& elem) {
 
 template <typename T>
 void append(vector<T>& v, const vector<T>& w) {
+  v.reserve(v.size() + w.size());
   for (T elem : w)
     v.push_back(elem);
 }
 
 template <typename T>
 void append(vector<T>& v, vector<T>&& w) {
+  v.reserve(v.size() + w.size());
   for (T& elem : w)
     v.push_back(std::move(elem));
 }
@@ -770,6 +962,12 @@ void append(vector<T>& v, const U& u) {
 template <typename T>
 vector<T> concat(vector<T> v, const vector<T>& w) {
   append(v, w);
+  return v;
+}
+
+template <typename T>
+vector<T> concat(vector<T> v, const T& w) {
+  v.push_back(w);
   return v;
 }
 
@@ -884,28 +1082,22 @@ class MustInitialize {
 template<class T>
 vector<T> concat(const vector<vector<T>>& vectors) {
   vector<T> ret;
-  for (const vector<T>& v : vectors)
+  int sz = 0;
+  for (const auto& v : vectors)
+    sz += v.size();
+  ret.reserve(sz);
+  for (const auto& v : vectors)
     for (const T& t : v)
       ret.push_back(t);
   return ret;
 }
 
-template<class T>
-inline T& operator <<(T& d, Vec2 msg) {
+inline std::ostream& operator <<(std::ostream& d, Vec2 msg) {
   return d << "(" << msg.x << "," << msg.y << ")";
 }
 
-inline std::istream& operator >>(std::istream& d, Vec2& msg) {
-  string in;
-  d >> in;
-  vector<string> s = split(in.substr(1, in.size() - 2), {','});
-  CHECKEQ((int)s.size(), 2);
-  msg = Vec2(fromString<int>(s[0]), fromString<int>(s[1]));
-  return d;
-}
-
 template<class T>
-Debug& operator<<(Debug& d, const Table<T>& container){
+std::ostream& operator<<(std::ostream& d, const Table<T>& container){
   for (int i : Range(container.height())) {
     d << i << ":";
     for (int j : Range(container.width()))
@@ -913,129 +1105,6 @@ Debug& operator<<(Debug& d, const Table<T>& container){
     d << '\n';
   }
   return d;
-}
-
-inline NoDebug& operator <<(NoDebug& d, Vec2 msg) {
-  return d;
-}
-
-inline NoDebug& operator <<(NoDebug& d, Rectangle msg) {
-  return d;
-}
-
-template<class T>
-NoDebug& operator<<(NoDebug& d, const Table<T>& container){
-  return d;
-}
-
-template<class T>
-void removeIndex(vector<T>& v, int index) {
-  v[index] = std::move(v.back());
-  v.pop_back();
-}
-
-template<class T>
-optional<int> findAddress(const vector<T>& v, const T* ptr) {
-  for (int i : All(v))
-    if (&v[i] == ptr)
-      return i;
-  return none;
-}
-
-template<class T>
-optional<int> findElement(const vector<T>& v, const T& element) {
-  for (int i : All(v))
-    if (v[i] == element)
-      return i;
-  return none;
-}
-
-template<class T>
-optional<int> findElement(const vector<T*>& v, const T* element) {
-  for (int i : All(v))
-    if (v[i] == element)
-      return i;
-  return none;
-}
-
-template<class T>
-optional<int> findElement(const vector<unique_ptr<T>>& v, const T* element) {
-  for (int i : All(v))
-    if (v[i].get() == element)
-      return i;
-  return none;
-}
-
-template<class T>
-bool removeElementMaybe(vector<T>& v, const T& element) {
-  if (auto ind = findElement(v, element)) {
-    removeIndex(v, *ind);
-    return true;
-  }
-  return false;
-}
-
-template<class T>
-void removeElement(vector<T>& v, const T& element) {
-  auto ind = findElement(v, element);
-  CHECK(ind) << "Element not found";
-  removeIndex(v, *ind);
-}
-
-template<class T>
-unique_ptr<T> removeElement(vector<unique_ptr<T>>& v, const T* element) {
-  auto ind = findElement(v, element);
-  CHECK(ind) << "Element not found";
-  unique_ptr<T> ret = std::move(v[*ind]);
-  removeIndex(v, *ind);
-  return ret;
-}
-template<class T>
-void removeElement(vector<T*>& v, const T* element) {
-  auto ind = findElement(v, element);
-  CHECK(ind) << "Element not found";
-  removeIndex(v, *ind);
-}
-
-template<class T>
-T getOnlyElement(const vector<T>& v) {
-  CHECK(v.size() == 1) << v.size();
-  return v[0];
-}
-
-template<class T>
-T& getOnlyElement(vector<T>& v) {
-  CHECK(v.size() == 1) << v.size();
-  return v[0];
-}
-
-// TODO: write a template that works with all containers
-template<class T>
-T getOnlyElement(const set<T>& v) {
-  CHECK(v.size() == 1) << v.size();
-  return *v.begin();
-}
-
-template<class T>
-T getOnlyElement(vector<T>&& v) {
-  CHECK(v.size() == 1) << v.size();
-  return std::move(v[0]);
-}
-
-template <typename T>
-void emplaceBack(vector<T>&) {}
-
-template <typename T, typename First, typename... Args>
-void emplaceBack(vector<T>& v, First&& first, Args&&... args) {
-  v.emplace_back(std::move(std::forward<First>(first)));
-  emplaceBack(v, std::forward<Args>(args)...);
-}
-
-template <typename T, typename... Args>
-vector<T> makeVec(Args&&... args) {
-  vector<T> ret;
-  emplaceBack(ret, args...);
-  return ret;
 }
 
 string addAParticle(const string& s);
@@ -1057,13 +1126,13 @@ string getPluralText(const string&, int num);
 template<class T>
 string combine(const vector<T*>& v) {
   return combine(
-      transform2<string>(v, [](const T* e) { return e->getName(); }));
+      transform2(v, [](const T* e) -> string { return e->getName(); }));
 }
 
 template<class T>
 string combine(const vector<T>& v) {
   return combine(
-      transform2<string>(v, [](const T& e) { return e.name; }));
+      transform2(v, [](const T& e) -> string { return e.name; }));
 }
 
 template<class T, class U>
@@ -1119,74 +1188,6 @@ class DirSet {
 
   private:
   ContentType content = 0;
-};
-
-template<class T, class U>
-class EnumMap {
-  public:
-  EnumMap() {
-    clear();
-  }
-
-  EnumMap(const EnumMap& o) : elems(o.elems) {}
-  EnumMap(EnumMap&& o) : elems(std::move(o.elems)) {}
-
-  bool operator == (const EnumMap<T, U>& other) const {
-    return elems == other.elems;
-  }
-
-  void clear(U value) {
-    for (int i = 0; i < EnumInfo<T>::size; ++i)
-      elems[i] = value;
-  }
-
-  void clear() {
-    for (int i = 0; i < EnumInfo<T>::size; ++i)
-      elems[i] = U();
-  }
-
-  EnumMap(initializer_list<pair<T, U>> il) : EnumMap() {
-    for (auto elem : il)
-      elems[int(elem.first)] = elem.second;
-  }
-
-  EnumMap(const map<T, U> m) : EnumMap() {
-    for (auto elem : m)
-      elems[int(elem.first)] = elem.second;
-  }
-
-  void operator = (initializer_list<pair<T, U>> il) {
-    for (auto elem : il)
-      elems[int(elem.first)] = elem.second;
-  }
-
-  void operator = (const EnumMap& other) {
-    elems = other.elems;
-  }
-
-  const U& operator[](T elem) const {
-    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
-    return elems[int(elem)];
-  }
-
-  U& operator[](T elem) {
-    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
-    return elems[int(elem)];
-  }
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    vector<U> SERIAL(tmp);
-    for (int i : All(elems))
-      tmp.push_back(std::move(elems[i]));
-    ar & SVAR(tmp);
-    CHECK(tmp.size() <= elems.size()) << tmp.size() << " " << elems.size();
-    for (int i : All(tmp))
-      elems[i] = std::move(tmp[i]);
-  }
-
-  private:
-  std::array<U, EnumInfo<T>::size> elems;
 };
 
 template<class T>
@@ -1319,42 +1320,6 @@ class EnumSet {
   Bitset elems;
 };
 
-template <class T>
-class EnumAll {
-  public:
-  class Iter {
-    public:
-    Iter(int num) : ind(num) {
-    }
-
-    T operator* () const {
-      return T(ind);
-    }
-
-    bool operator != (const Iter& other) const {
-      return ind != other.ind;
-    }
-
-    const Iter& operator++ () {
-      ++ind;
-      return *this;
-    }
-
-    private:
-    int ind;
-  };
-
-  Iter begin() {
-    return Iter(0);
-  }
-
-  Iter end() {
-    return Iter(EnumInfo<T>::size);
-  }
-};
-
-#define ENUM_ALL(X) EnumAll<X>()
-
 template <typename U, typename V>
 class BiMap {
   public:
@@ -1385,16 +1350,6 @@ class BiMap {
     m2.erase(v);
   }
 
-  V& get(const U& u) {
-    CHECK(m1.count(u));
-    return m1.at(u);
-  }
-
-  U& get(const V& v) {
-    CHECK(m2.count(v));
-    return m2.at(v);
-  }
-
   const V& get(const U& u) const {
     CHECK(m1.count(u));
     return m1.at(u);
@@ -1403,6 +1358,22 @@ class BiMap {
   const U& get(const V& v) const {
     CHECK(m2.count(v));
     return m2.at(v);
+  }
+
+  const pair<U, V> getFront1() {
+    return *m1.begin();
+  }
+
+  const pair<V, U> getFront2() {
+    return *m2.begin();
+  }
+
+  int getSize() const {
+    return m1.size();
+  }
+
+  bool isEmpty() const {
+    return m1.empty();
   }
 
   template <class Archive> 
@@ -1418,7 +1389,6 @@ class BiMap {
 template <class T>
 class HeapAllocated {
   public:
-
   template <typename... Args>
   HeapAllocated(Args... a) : elem(new T(a...)) {}
 
@@ -1450,20 +1420,21 @@ class HeapAllocated {
     return elem.get();
   }
 
-  HeapAllocated& operator = (const T& t) {
+  void reset(T&& t) {
+    elem.reset(new T(std::move(t)));
+  }
+
+  /*HeapAllocated& operator = (const T& t) {
     *elem.get() = t;
     return *this;
-  }
+  }*/
 
   HeapAllocated& operator = (const HeapAllocated& t) {
     *elem.get() = *t;
     return *this;
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(elem);
-  }
+  SERIALIZE_ALL(elem);
 
   private:
   unique_ptr<T> SERIAL(elem);
@@ -1541,6 +1512,11 @@ function<void(Args...)> bindMethod(void (T::*ptr) (Args...), T* t) {
   return [=](Args... a) { (t->*ptr)(a...);};
 }
 
+template <typename Ret, typename T, typename... Args>
+function<Ret(Args...)> bindMethod(Ret (T::*ptr) (Args...), T* t) {
+  return [=](Args... a) { return (t->*ptr)(a...);};
+}
+
 template <typename... Args>
 function<void(Args...)> bindFunction(void (*ptr) (Args...)) {
   return [=](Args... a) { (*ptr)(a...);};
@@ -1576,4 +1552,80 @@ class DisjointSets {
   vector<int> size;
 };
 
-#endif
+template <typename ReturnType, typename... Lambdas>
+struct LambdaVisitor;
+
+template <typename ReturnType, typename Lambda1, typename... Lambdas>
+struct LambdaVisitor< ReturnType, Lambda1 , Lambdas...> : public Lambda1, public LambdaVisitor<ReturnType, Lambdas...> {
+    using Lambda1::operator();
+    using LambdaVisitor<ReturnType, Lambdas...>::operator();
+    LambdaVisitor(Lambda1 l1, Lambdas... lambdas)
+      : Lambda1(l1), LambdaVisitor<ReturnType, Lambdas...> (lambdas...)
+    {}
+};
+
+template <typename ReturnType, typename Lambda1>
+struct LambdaVisitor<ReturnType, Lambda1> : public boost::static_visitor<ReturnType>, public Lambda1 {
+    using Lambda1::operator();
+    LambdaVisitor(Lambda1 l1)
+      : boost::static_visitor<ReturnType>(), Lambda1(l1)
+    {}
+};
+
+template <typename ReturnType, typename... Lambdas>
+LambdaVisitor<ReturnType, Lambdas...> makeVisitor(Lambdas... lambdas) {
+  return LambdaVisitor<ReturnType, Lambdas...>(lambdas...);
+}
+
+struct DefaultOperator {
+  template <typename... T>
+  void operator() (const T&...) const {}
+};
+
+template <typename... Lambdas>
+LambdaVisitor<void, DefaultOperator, Lambdas...> makeDefaultVisitor(Lambdas... lambdas) {
+  return LambdaVisitor<void, DefaultOperator, Lambdas...>(DefaultOperator {}, lambdas...);
+}
+
+template <typename Visitor, typename Visitable>
+typename Visitor::result_type apply_visitor(Visitable& visitable, const Visitor& visitor) {
+  return visitable.apply_visitor(visitor);
+}
+
+template <typename T, typename ...Args>
+optional<T&> getType(variant<Args...>& v) {
+  if (auto ptr = boost::get<T>(&v))
+    return *ptr;
+  else
+    return none;
+}
+
+template <typename Key, typename Map>
+optional<const typename Map::mapped_type&> getReferenceMaybe(const Map& m, const Key& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
+
+template <typename Key, typename Map>
+optional<typename Map::mapped_type&> getReferenceMaybe(Map& m, const Key& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
+
+template <typename Key, typename Map>
+optional<typename Map::mapped_type> getValueMaybe(const Map& m, const Key& key) {
+  auto it = m.find(key);
+  if (it != m.end())
+    return it->second;
+  else
+    return none;
+}
+
+extern int getSize(const string&);
+extern const char* getString(const string&);

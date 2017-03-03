@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _ENTITY_MAP_H
-#define _ENTITY_MAP_H
+#pragma once
 
 #include "unique_entity.h"
 #include "util.h"
@@ -22,6 +21,7 @@
 template <typename Key, typename Value>
 class EntityMap {
   public:
+  using EntityId = typename UniqueEntity<Key>::Id;
   EntityMap();
   EntityMap& operator = (const EntityMap&) = default;
   void set(const Key*, const Value&);
@@ -30,27 +30,29 @@ class EntityMap {
   Value& getOrFail(const Key*);
   Value& getOrInit(const Key*);
   optional<Value> getMaybe(const Key*) const;
+  const Value& getOrElse(const Key*, const Value&) const;
   bool empty() const;
   void clear();
   int getSize() const;
+  vector<EntityId> getKeys() const;
 
-  void set(typename UniqueEntity<Key>::Id, const Value&);
-  void erase(typename UniqueEntity<Key>::Id);
-  const Value& getOrFail(typename UniqueEntity<Key>::Id) const;
-  Value& getOrFail(typename UniqueEntity<Key>::Id);
-  Value& getOrInit(typename UniqueEntity<Key>::Id);
-  optional<Value> getMaybe(typename UniqueEntity<Key>::Id) const;
+  void set(EntityId, const Value&);
+  void erase(EntityId);
+  const Value& getOrFail(EntityId) const;
+  Value& getOrFail(EntityId);
+  Value& getOrInit(EntityId);
+  optional<Value> getMaybe(EntityId) const;
+  const Value& getOrElse(EntityId, const Value&) const;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
-  typedef typename map<typename UniqueEntity<Key>::Id, Value>::const_iterator Iter;
+  typedef typename map<EntityId, Value>::const_iterator Iter;
 
   Iter begin() const;
   Iter end() const;
 
   private:
-  map<typename UniqueEntity<Key>::Id, Value> SERIAL(elems);
+  map<EntityId, Value> SERIAL(elems);
 };
 
-#endif
