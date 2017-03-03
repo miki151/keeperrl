@@ -93,11 +93,7 @@ Value& EntityMap<Key, Value>::getOrInit(EntityId id) {
 
 template <typename Key, typename Value>
 optional<Value> EntityMap<Key, Value>::getMaybe(EntityId id) const {
-  try {
-    return getOrFail(id);
-  } catch (std::out_of_range) {
-    return none;
-  }
+  return getValueMaybe(elems, id);
 }
 
 template <typename Key, typename Value>
