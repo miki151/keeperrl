@@ -770,7 +770,7 @@ static ViewId getFurnitureViewId(FurnitureType type) {
 vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) const {
   vector<Button> buttons;
   EnumMap<ResourceId, int> numResource([this](ResourceId id) { return getCollective()->numResource(id);});
-  for (BuildInfo button : buildInfo) {
+  for (auto& button : buildInfo) {
     switch (button.buildType) {
       case BuildInfo::FURNITURE: {
            auto& elem = button.furnitureInfo;
@@ -802,7 +802,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            buttons.push_back({ViewId::IMP, button.name, none, "", CollectiveInfo::Button::ACTIVE});
            break;
       case BuildInfo::TRAP: {
-             BuildInfo::TrapInfo& elem = button.trapInfo;
+             auto& elem = button.trapInfo;
              buttons.push_back({elem.viewId, button.name, none});
            }
            break;
@@ -823,7 +823,10 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
         unmetReqText.push_back("Requires " + getRequirementText(req) + ".");
         buttons.back().state = CollectiveInfo::Button::INACTIVE;
       }
-    buttons.back().help = combineSentences(concat({button.help}, unmetReqText));
+    if (unmetReqText.empty())
+      buttons.back().help = button.help;
+    else
+      buttons.back().help = combineSentences(concat({button.help}, unmetReqText));
     buttons.back().hotkey = button.hotkey;
     buttons.back().groupName = button.groupName;
     buttons.back().hotkeyOpensGroup = button.hotkeyOpensGroup;

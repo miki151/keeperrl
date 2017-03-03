@@ -108,6 +108,7 @@ void emplaceBack(vector<T>& v, First&& first, Args&&... args) {
 template <typename T, typename... Args>
 vector<T> makeVec(Args&&... args) {
   vector<T> ret;
+  ret.reserve(sizeof...(Args));
   emplaceBack(ret, args...);
   return ret;
 }
