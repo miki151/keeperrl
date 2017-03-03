@@ -1184,7 +1184,7 @@ void Creature::die(const string& reason, bool dropInventory, bool dCorpse) {
 }
 
 void Creature::die(Creature* attacker, bool dropInventory, bool dCorpse) {
-  CHECK(!isDead());
+  CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().get_value_or("");
   deathTime = getGlobalTime();
   if (dCorpse)
     if (auto sound = getBody().getDeathSound())
