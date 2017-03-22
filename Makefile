@@ -11,7 +11,7 @@ LD = g++
 
 ifndef RELEASE
 CFLAGS += -Werror -Wimplicit-fallthrough
-LDFLAGS += -fuse-ld=gold
+LDFLAGS += -fuse-ld=lld
 endif
 
 
