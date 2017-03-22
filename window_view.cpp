@@ -908,20 +908,32 @@ struct GameChoice {
   GuiFactory::TexId texId;
   GuiFactory::TexId highlightId;
   string name;
+  string description;
 };
 
 const static vector<GameChoice> gameChoices {
-  {PlayerRole::KEEPER, GuiFactory::TexId::KEEPER_CHOICE, GuiFactory::TexId::KEEPER_HIGHLIGHT, "keeper"},
-  {PlayerRole::ADVENTURER, GuiFactory::TexId::ADVENTURER_CHOICE, GuiFactory::TexId::ADVENTURER_HIGHLIGHT,
-      "adventurer"},
+  {PlayerRole::KEEPER,
+   GuiFactory::TexId::KEEPER_CHOICE,
+   GuiFactory::TexId::KEEPER_HIGHLIGHT,
+   "keeper",
+   "Play as a keeper. Build and manage your dream dungeon, defend against raids, and attack you enemies!"},
+  {PlayerRole::ADVENTURER,
+   GuiFactory::TexId::ADVENTURER_CHOICE,
+   GuiFactory::TexId::ADVENTURER_HIGHLIGHT,
+   "adventurer",
+   "Play as an adventurer. Roam the land in search of adventures and loot!"},
 };
 
 SGuiElem WindowView::drawGameChoices(optional<PlayerRoleChoice>& choice, optional<PlayerRoleChoice>& index) {
   vector<SGuiElem> choiceElems;
+  const Vec2 hintSize(500, 100);
   for (auto& elem : gameChoices)
     choiceElems.push_back(
         gui.stack(makeVec<SGuiElem>(
           gui.button([&] { choice = PlayerRoleChoice(elem.type);}),
+          gui.tooltip2(gui.preferredSize(hintSize, gui.miniWindow(gui.margins(
+              gui.labelMultiLine(elem.description, guiBuilder.getStandardLineHeight()), 20))),
+              [=](const Rectangle&) { return Vec2((renderer.getSize().x - hintSize.x) / 2, renderer.getSize().y * 4 / 5); }),
           gui.mouseOverAction([&] { index = elem.type;}),
           gui.sprite(elem.texId, GuiFactory::Alignment::CENTER_STRETCHED),
           gui.marginFit(gui.empty(), gui.centerHoriz(gui.mainMenuLabel(elem.name, -0.08,
