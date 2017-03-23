@@ -17,6 +17,7 @@ optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign
   switch (campaign.type) {
     case CampaignType::CAMPAIGN:
     case CampaignType::QUICK_MAP:
+    case CampaignType::KEEPER_TUTORIAL:
     case CampaignType::SINGLE_KEEPER:
       return campaign.sites.getBounds().middle();
     default:
@@ -37,6 +38,7 @@ static void setCountLimits(Options* options) {
 
 vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
   switch (type) {
+    case CampaignType::KEEPER_TUTORIAL:
     case CampaignType::QUICK_MAP:
     case CampaignType::CAMPAIGN:
       return {};
@@ -113,6 +115,7 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
 #ifndef RELEASE
         CampaignType::ENDLESS,
         CampaignType::QUICK_MAP,
+        CampaignType::KEEPER_TUTORIAL,
 #endif
       };
     case PlayerRole::ADVENTURER:
@@ -295,6 +298,7 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
         options->getIntValue(OptionId::ALLIES),
         0
       };
+    case CampaignType::KEEPER_TUTORIAL:
     case CampaignType::QUICK_MAP:
     case CampaignType::SINGLE_KEEPER:
       return {0, 0, 0, 0};
@@ -399,6 +403,16 @@ static optional<View::CampaignOptions::WarningType> getMenuWarning(CampaignType 
   }
 }
 
+static bool autoConfirm(CampaignType type) {
+  switch (type) {
+    case CampaignType::QUICK_MAP:
+    case CampaignType::KEEPER_TUTORIAL:
+      return true;
+    default:
+      return false;
+  }
+}
+
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<RetiredGames>(CampaignType)> genRetired,
     CampaignType type) {
   Vec2 size(17, 9);
@@ -421,7 +435,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
       bool updateMap = false;
       campaign.influenceSize = options->getIntValue(OptionId::INFLUENCE_SIZE);
       campaign.refreshInfluencePos();
-      CampaignAction action = type == CampaignType::QUICK_MAP ? CampaignActionId::CONFIRM
+      CampaignAction action = autoConfirm(type) ? CampaignActionId::CONFIRM
           : view->prepareCampaign({
               campaign,
               (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,

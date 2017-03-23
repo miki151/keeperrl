@@ -48,6 +48,7 @@
 #include "sokoban_input.h"
 #include "keybinding_map.h"
 #include "player_role.h"
+#include "campaign_type.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -391,9 +392,9 @@ static int keeperMain(const variables_map& vars) {
   Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && !audioError), getMaxVolume(), getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath + "/" + "highscores.dat", fileSharing, &options);
-  optional<PlayerRole> forceGame;
+  optional<MainLoop::ForceGameInfo> forceGame;
   if (vars.count("force_keeper"))
-    forceGame = PlayerRole::KEEPER;
+    forceGame = {PlayerRole::KEEPER, CampaignType::KEEPER_TUTORIAL};
   SokobanInput sokobanInput(freeDataPath + "/sokoban_input.txt", userPath + "/sokoban_state.txt");
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
       gameFinished, useSingleThread, forceGame);

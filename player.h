@@ -34,13 +34,14 @@ class Game;
 template <typename T>
 class EventProxy;
 class VisibilityMap;
+class Tutorial;
 
 class Player : public Controller, public CreatureView {
   public:
   virtual ~Player();
 
   static ControllerFactory getFactory(MapMemory* levelMemory);
-  Player(Creature*, bool adventurer, MapMemory*);
+  Player(Creature*, bool adventurer, MapMemory*, STutorial = nullptr);
 
   SERIALIZATION_DECL(Player)
 
@@ -143,5 +144,6 @@ class Player : public Controller, public CreatureView {
   optional<TimePosInfo> currentTimePos;
   optional<TimePosInfo> previousTimePos;
   HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
+  STutorial SERIAL(tutorial);
 };
 

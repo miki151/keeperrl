@@ -29,10 +29,11 @@
 #include "campaign_type.h"
 #include "game_save_type.h"
 #include "exit_info.h"
+#include "tutorial.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const string& freePath,
     const string& uPath, Options* o, Jukebox* j, SokobanInput* soko, std::atomic<bool>& fin, bool singleThread,
-    optional<PlayerRole> force)
+    optional<ForceGameInfo> force)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
         highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread), forceGame(force),
         sokobanInput(soko) {
@@ -317,11 +318,10 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
   }
 }
 
-PGame MainLoop::prepareCampaign(RandomGen& random) {
-  if (forceGame) {
-    CampaignBuilder builder(view, random, options, PlayerRole::KEEPER);
-    auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP);
-    forceGame = none;
+PGame MainLoop::prepareCampaign(RandomGen& random, const optional<ForceGameInfo>& forceGameInfo) {
+  if (forceGameInfo) {
+    CampaignBuilder builder(view, random, options, forceGameInfo->role);
+    auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), forceGameInfo->type);
     return Game::campaignGame(prepareCampaignModels(*result, random), *result);
   }
   auto choice = PlayerRoleChoice(PlayerRole::KEEPER);
@@ -347,13 +347,6 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
       )))
       return std::move(*ret);
   }
-}
-
-void MainLoop::playGameChoice() {
-  if (PGame game = prepareCampaign(Random)) {
-    playGame(std::move(game), true, false);
-  }
-  view->reset();
 }
 
 void MainLoop::splashScreen() {
@@ -417,19 +410,29 @@ void MainLoop::start(bool tilesPresent) {
     playMenuMusic();
     optional<int> choice;
     if (forceGame)
-      choice = 0;
+      choice = 1;
     else
       choice = view->chooseFromList("", {
-        "Play", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);
+        "Tutorial", "Play", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);
     if (!choice)
       continue;
     lastIndex = *choice;
     switch (*choice) {
-      case 0: playGameChoice(); break;
-      case 1: options->handle(view, OptionSet::GENERAL); break;
-      case 2: highscores->present(view); break;
-      case 3: showCredits(dataFreePath + "/credits.txt", view); break;
-      case 4: finished = true; break;
+      case 0:
+        if (PGame game = prepareCampaign(Random, ForceGameInfo { PlayerRole::KEEPER, CampaignType::KEEPER_TUTORIAL }))
+          playGame(std::move(game), true, false);
+        view->reset();
+        break;
+      case 1:
+        if (PGame game = prepareCampaign(Random, forceGame))
+          playGame(std::move(game), true, false);
+        view->reset();
+        forceGame = none;
+        break;
+      case 2: options->handle(view, OptionSet::GENERAL); break;
+      case 3: highscores->present(view); break;
+      case 4: showCredits(dataFreePath + "/credits.txt", view); break;
+      case 5: finished = true; break;
     }
     if (finished)
       break;
@@ -516,9 +519,15 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) 
   switch (setup.campaign.getType()) {
     case CampaignType::SINGLE_KEEPER:
       return modelBuilder.singleMapModel(setup.campaign.getWorldName(), std::move(setup.player));
-    default:
-      return modelBuilder.campaignBaseModel("Campaign base site", std::move(setup.player),
+    default: {
+      auto ret = modelBuilder.campaignBaseModel("Campaign base site",
           setup.campaign.getType() == CampaignType::ENDLESS);
+      STutorial tutorial;
+      if (setup.campaign.getType() == CampaignType::KEEPER_TUTORIAL)
+        tutorial = make_shared<Tutorial>();
+      modelBuilder.spawnKeeper(ret.get(), std::move(setup.player), tutorial);
+      return ret;
+    }
   }
 }
 

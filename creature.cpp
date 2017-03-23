@@ -88,7 +88,7 @@ Creature::Creature(const ViewObject& object, TribeId t, const CreatureAttributes
     const ControllerFactory& f)
     : Renderable(object), attributes(attr), tribe(t), controllerStack({f.get(this)}) {
   modViewObject().setCreatureId(getUniqueId());
-  updateVision();    
+  updateVision();
 }
 
 Creature::Creature(TribeId t, const CreatureAttributes& attr, const ControllerFactory& f)

@@ -50,20 +50,21 @@
 #include "furniture_usage.h"
 #include "furniture.h"
 #include "creature_debt.h"
+#include "tutorial.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(Controller);
   serializeAll(ar, travelling, travelDir, target, lastLocation, displayGreeting, levelMemory, messages);
-  serializeAll(ar, messageHistory, adventurer, eventProxy, visibilityMap);
+  serializeAll(ar, messageHistory, adventurer, eventProxy, visibilityMap, tutorial);
 }
 
 SERIALIZABLE(Player);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
-Player::Player(Creature* c, bool adv, MapMemory* memory) :
-    Controller(c), levelMemory(memory), eventProxy(this), adventurer(adv), displayGreeting(adventurer) {
+Player::Player(Creature* c, bool adv, MapMemory* memory, STutorial t) :
+    Controller(c), levelMemory(memory), eventProxy(this), adventurer(adv), displayGreeting(adventurer), tutorial(t) {
   visibilityMap->update(c, c->getVisibleTiles());
 }
 
@@ -964,7 +965,8 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
     if (typeGroups[elem].size() > 0)
       append(info.inventory, getItemInfos(typeGroups[elem]));
   info.commands = transform2(getCommands(), [](const CommandInfo& info) -> PlayerInfo::CommandInfo { return info.commandInfo;});
-
+  if (tutorial)
+    tutorial->refreshInfo(getGame(), gameInfo.tutorial);
 }
 
 ItemInfo Player::getFurnitureUsageInfo(const string& question, ViewId viewId) const {

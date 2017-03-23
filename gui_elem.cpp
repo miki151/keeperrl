@@ -519,18 +519,22 @@ SGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
         }, width));
 }
 
-/*static Color blinking(Color c1, Color c2, int period, int state) {
-  double s = (state % period) / (double) period;
+static Color blinking(Color c1, Color c2, milliseconds period, milliseconds state, int numBlinks, int numCycle) {
+  if ((state.count() / period.count()) % numCycle >= numBlinks)
+    return c1;
+  double s = (state.count() % period.count()) / (double) period.count();
   double c = (cos(s * 2 * 3.14159) + 1) / 2;
   return Color(c1.r * c + c2.r * (1 - c), c1.g * c + c2.g * (1 - c), c1.b * c + c2.b * (1 - c));
 }
 
-PGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2) {
-  int period = 700;
+SGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2) {
+  milliseconds period {250};
+  int numBlinks = 2;
+  int numCycle = 10;
   auto width = [=] { return renderer.getTextLength(s); };
-  return PGuiElem(new DrawCustom(
+  return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          Color c = blinking(c1, c2, period, clock->getRealMillis());
+          Color c = blinking(c1, c2, period, clock->getRealMillis(), numBlinks, numCycle);
           r.drawText(transparency(colors[ColorId::BLACK], 100),
             bounds.topLeft().x + 1, bounds.topLeft().y + 2, s);
           Color c1(c);
@@ -538,7 +542,7 @@ PGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2) {
             lighten(c1);
           r.drawText(c1, bounds.topLeft().x, bounds.topLeft().y, s);
         }, width));
-}*/
+}
 
 SGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hotkey) {
   auto width = [=] { return renderer.getTextLength(s); };
@@ -940,7 +944,13 @@ class AlignmentGui : public GuiLayout {
       case GuiFactory::Alignment::RIGHT:
         return Rectangle(getBounds().right() - getWidth(), getBounds().top(), getBounds().right(),
             getBounds().bottom());
-      default: FATAL << "Unhandled alignment: " << (int)alignment;
+      case GuiFactory::Alignment::BOTTOM_RIGHT:
+        return Rectangle(getBounds().right() - getWidth(), getBounds().bottom() - getHeight(), getBounds().right(),
+            getBounds().bottom());
+      case GuiFactory::Alignment::BOTTOM_LEFT:
+        return Rectangle(getBounds().left(), getBounds().bottom() - getHeight(), getBounds().left() + getWidth(),
+            getBounds().bottom());
+      default: FATAL << "Unhandled alignment, please implement me :) " << (int)alignment;
     }
     return Rectangle();
   }

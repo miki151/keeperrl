@@ -13,12 +13,13 @@ class EnemyFactory;
 class SokobanInput;
 class ExternalEnemies;
 struct ExternalEnemy;
+class Tutorial;
 
 class ModelBuilder {
   public:
   ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*);
   PModel singleMapModel(const string& worldName, PCreature keeper);
-  PModel campaignBaseModel(const string& siteName, PCreature keeper, bool externalEnemies);
+  PModel campaignBaseModel(const string& siteName, bool externalEnemies);
   PModel campaignSiteModel(const string& siteName, EnemyId, VillainType);
 
   void measureModelGen(int numTries, function<void()> genFun);
@@ -28,7 +29,7 @@ class ModelBuilder {
 
   PModel splashModel(const string& splashPath);
 
-  Collective* spawnKeeper(Model*, PCreature);
+  Collective* spawnKeeper(Model*, PCreature, STutorial);
 
   static int getPigstyPopulationIncrease();
   static int getStatuePopulationIncrease();

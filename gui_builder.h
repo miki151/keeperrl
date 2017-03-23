@@ -74,7 +74,7 @@ class GuiBuilder {
 
   struct OverlayInfo {
     SGuiElem elem;
-    enum { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, INVISIBLE, MINIONS, IMMIGRATION } alignment;
+    enum { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, INVISIBLE, MINIONS, IMMIGRATION, TUTORIAL } alignment;
   };
   SGuiElem drawPlayerOverlay(const PlayerInfo&);
   void drawOverlays(vector<OverlayInfo>&, GameInfo&);
@@ -252,6 +252,7 @@ class GuiBuilder {
   int getImmigrantAnimationOffset(milliseconds initTime);
   HeapAllocated<CallCache<SGuiElem>> cache;
   SGuiElem drawMenuWarning(View::CampaignOptions::WarningType);
+  SGuiElem drawTutorialOverlay(const TutorialInfo&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

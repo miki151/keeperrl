@@ -74,6 +74,7 @@
 #include "inventory.h"
 #include "immigration.h"
 #include "scroll_position.h"
+#include "tutorial.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -81,7 +82,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
   serializeAll(ar, visibilityMap);
-  serializeAll(ar, messageHistory, eventProxy);
+  serializeAll(ar, messageHistory, eventProxy, tutorial);
 }
 
 SERIALIZABLE(PlayerControl);
@@ -286,8 +287,8 @@ static vector<string> getHints() {
   };
 }
 
-PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(col),
-    eventProxy(this, level->getModel()), hints(getHints()) {
+PlayerControl::PlayerControl(Collective* col, Level* level, STutorial t) : CollectiveControl(col),
+    eventProxy(this, level->getModel()), hints(getHints()), tutorial(t) {
   bool hotkeys[128] = {0};
   for (auto& info : getBuildInfo()) {
     if (info.hotkey) {
@@ -1308,6 +1309,8 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
+  if (tutorial)
+    tutorial->refreshInfo(getGame(), gameInfo.tutorial);
   gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.villageInfo.villages.clear();
   gameInfo.villageInfo.totalMain = 0;
@@ -1610,8 +1613,8 @@ static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
 class MinionController : public Player {
   public:
-  MinionController(Creature* c, Model* m, MapMemory* memory, PlayerControl* ctrl)
-      : Player(c, false, memory), control(ctrl) {}
+  MinionController(Creature* c, Model* m, MapMemory* memory, PlayerControl* ctrl, STutorial tutorial)
+      : Player(c, false, memory, tutorial), control(ctrl) {}
 
   virtual vector<CommandInfo> getCommands() const override {
     return concat(Player::getCommands(), {
@@ -1701,7 +1704,7 @@ void PlayerControl::commandTeam(TeamId team) {
   if (getControlled())
     leaveControl();
   Creature* c = getTeams().getLeader(team);
-  c->pushController(SController(new MinionController(c, getModel(), memory.get(), this)));
+  c->pushController(SController(new MinionController(c, getModel(), memory.get(), this, tutorial)));
   getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
   getView()->resetCenter();
@@ -2155,6 +2158,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CHEAT_ATTRIBUTES:
         for (auto resource : ENUM_ALL(CollectiveResourceId))
           getCollective()->returnResource(CostInfo(resource, 1000));
+        break;
+    case UserInputId::TUTORIAL_CONTINUE:
+        if (tutorial)
+          tutorial->continueTutorial(getGame());
+        break;
+    case UserInputId::TUTORIAL_GO_BACK:
+        if (tutorial)
+          tutorial->goBack();
         break;
     case UserInputId::RECT_CONFIRM:
         if (rectSelection) {

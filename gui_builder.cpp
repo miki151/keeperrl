@@ -532,6 +532,21 @@ int GuiBuilder::getImmigrationBarWidth() const {
   return 40;
 }
 
+SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
+  auto continueButton = gui.stack(
+      gui.button(getButtonCallback(UserInputId::TUTORIAL_CONTINUE)),
+      gui.setHeight(20, gui.labelHighlightBlink("[Continue]", colors[ColorId::LIGHT_BLUE], colors[ColorId::WHITE])));
+  auto backButton = gui.stack(
+      gui.button(getButtonCallback(UserInputId::TUTORIAL_GO_BACK)),
+      gui.setHeight(20, gui.labelHighlight("[Go back]", colors[ColorId::LIGHT_BLUE])));
+  return gui.preferredSize(460, 150, gui.stack(gui.darken(), gui.rectangleBorder(colors[ColorId::GRAY]),
+      gui.margins(gui.stack(
+        gui.labelMultiLine(info.message, legendLineHeight),
+        gui.alignment(GuiFactory::Alignment::BOTTOM_RIGHT, info.canContinue ? continueButton : gui.empty()),
+        gui.alignment(GuiFactory::Alignment::BOTTOM_LEFT, info.canGoBack ? backButton : gui.empty())
+      ), 20)));
+}
+
 SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
   const int elemWidth = getImmigrationBarWidth();
   auto makeHighlight = [=] (Color c) { return gui.margins(gui.rectangle(c), 4); };
@@ -1473,9 +1488,11 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info) {
 }
 
 void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
+  if (info.tutorial)
+    ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTutorialOverlay, this), THIS_LINE,
+         *info.tutorial), OverlayInfo::TUTORIAL});
   switch (info.infoType) {
     case GameInfo::InfoType::BAND:
-      //ret.push_back({drawImmigrationOverlay(info.collectiveInfo), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
@@ -2376,6 +2393,7 @@ static const char* getGameTypeName(CampaignType type) {
     case CampaignType::FREE_PLAY: return "Free play";
     case CampaignType::SINGLE_KEEPER: return "Single map";
     case CampaignType::QUICK_MAP: return "Quick map";
+    case CampaignType::KEEPER_TUTORIAL: return "Tutorial";
   }
 }
 

@@ -21,9 +21,13 @@ class ModelBuilder;
 
 class MainLoop {
   public:
+  struct ForceGameInfo {
+    PlayerRole role;
+    CampaignType type;
+  };
   MainLoop(View*, Highscores*, FileSharing*, const string& dataFreePath, const string& userPath,
       Options*, Jukebox*, SokobanInput*, std::atomic<bool>& finished, bool useSingleThread,
-      optional<PlayerRole> forceGame);
+      optional<ForceGameInfo>);
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, RandomGen&, Options*);
@@ -47,9 +51,8 @@ class MainLoop {
 
   void doWithSplash(SplashType, const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
 
-  PGame prepareCampaign(RandomGen&);
+  PGame prepareCampaign(RandomGen&, const optional<ForceGameInfo>&);
   void playGame(PGame&&, bool withMusic, bool noAutoSave);
-  void playGameChoice();
   void splashScreen();
   void showCredits(const string& path, View*);
 
@@ -76,7 +79,7 @@ class MainLoop {
   FileSharing* fileSharing;
   std::atomic<bool>& finished;
   bool useSingleThread;
-  optional<PlayerRole> forceGame;
+  optional<ForceGameInfo> forceGame;
   SokobanInput* sokobanInput;
   PModel getBaseModel(ModelBuilder&, CampaignSetup&);
   void considerGameEventsPrompt();

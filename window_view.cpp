@@ -459,6 +459,10 @@ void WindowView::rebuildGui() {
               pos = Vec2(renderer.getSize().x, 0);
               overlay.elem = gui.invisible(std::move(overlay.elem));
               break;
+            case GuiBuilder::OverlayInfo::TUTORIAL:
+              pos = Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
+                  renderer.getSize().y - bottomBarHeight - *height);
+              break;
           }
           tempGuiElems.push_back(std::move(overlay.elem));
           *height = min(*height, renderer.getSize().y - pos.y);

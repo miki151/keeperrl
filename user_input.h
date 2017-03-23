@@ -35,6 +35,8 @@ enum class UserInputId {
     EXIT,
     MESSAGE_INFO,
     CHEAT_ATTRIBUTES,
+    TUTORIAL_CONTINUE,
+    TUTORIAL_GO_BACK,
 // real-time actions
     BUILD,
     TILE_CLICK,

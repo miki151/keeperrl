@@ -289,6 +289,14 @@ class GameSunlightInfo {
   HASH_ALL(description, timeRemaining);
 };
 
+class TutorialInfo {
+  public:
+  string HASH(message);
+  bool HASH(canContinue);
+  bool HASH(canGoBack);
+  HASH_ALL(message, canContinue, canGoBack)
+};
+
 /** Represents all the game information displayed around the map window.*/
 class GameInfo {
   public:
@@ -303,7 +311,8 @@ class GameInfo {
   PlayerInfo HASH(playerInfo);
   VillageInfo HASH(villageInfo);
   GameSunlightInfo HASH(sunlightInfo);
+  optional<TutorialInfo> HASH(tutorial);
 
   vector<PlayerMessage> HASH(messageBuffer);
-  HASH_ALL(infoType, time, collectiveInfo, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel, modifiedSquares, totalSquares);
+  HASH_ALL(infoType, time, collectiveInfo, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel, modifiedSquares, totalSquares, tutorial);
 };

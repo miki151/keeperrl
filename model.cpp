@@ -48,6 +48,7 @@
 #include "view_object.h"
 #include "item.h"
 #include "external_enemies.h"
+#include "tutorial.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {

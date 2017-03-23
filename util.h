@@ -95,6 +95,7 @@ DEF_UNIQUE_PTR(CollectiveControl);
 DEF_UNIQUE_PTR(Model);
 DEF_UNIQUE_PTR(Tribe);
 DEF_UNIQUE_PTR(Game);
+DEF_SHARED_PTR(Tutorial);
 
 template <typename T>
 T lambdaConstruct(function<void(T&)> fun) {

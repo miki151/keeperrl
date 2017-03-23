@@ -44,10 +44,11 @@ class SquareType;
 class CostInfo;
 struct WorkshopItem;
 class ScrollPosition;
+class Tutorial;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
-  PlayerControl(Collective*, Level*);
+  PlayerControl(Collective*, Level*, STutorial tutorial);
   ~PlayerControl();
 
   void processInput(View* view, UserInput);
@@ -231,5 +232,6 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool isNight = true;
   optional<UniqueEntity<Creature>::Id> draggedCreature;
   void updateMinionVisibility(const Creature*);
+  STutorial SERIAL(tutorial);
 };
 
