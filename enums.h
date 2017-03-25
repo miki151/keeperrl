@@ -98,6 +98,7 @@ enum class ItemIndex;
 enum class CollectiveWarning;
 enum class SoundId;
 enum class Keybinding;
+enum class TutorialHighlight;
 
 enum class MessagePriority;
 enum class WorkshopType;

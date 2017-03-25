@@ -20,4 +20,5 @@ class Tutorial {
 
   enum class State;
   State SERIAL(state);
+  EnumSet<TutorialHighlight> getHighlights(const Game*) const;
 };

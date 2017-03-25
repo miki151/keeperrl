@@ -75,6 +75,7 @@
 #include "immigration.h"
 #include "scroll_position.h"
 #include "tutorial.h"
+#include "tutorial_highlight.h"
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -124,7 +125,13 @@ struct PlayerControl::BuildInfo {
   bool hotkeyOpensGroup = false;
   ZoneId zone;
   ViewId viewId;
+  optional<TutorialHighlight> tutorialHighlight;
   vector<FurnitureLayer> destroyLayers;
+
+  BuildInfo& setTutorialHighlight(TutorialHighlight t) {
+    tutorialHighlight = t;
+    return *this;
+  }
 
   BuildInfo(FurnitureInfo info, const string& n, vector<Requirement> req = {}, const string& h = "", char key = 0,
       string group = "", bool hotkeyOpens = false) : furnitureInfo(info), buildType(FURNITURE), name(n),
@@ -152,7 +159,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
   static optional<vector<BuildInfo>> buildInfo;
   if (!buildInfo) {
     buildInfo = {
-      BuildInfo(BuildInfo::DIG, "Dig or cut tree", "", 'd'),
+      BuildInfo(BuildInfo::DIG, "Dig or cut tree", "", 'd').setTutorialHighlight(TutorialHighlight::DIG_OR_CUT_TREES),
       BuildInfo({FurnitureType::MOUNTAIN, {ResourceId::STONE, 50}}, "Fill up tunnel", {},
           "Fill up one tile at a time. Cutting off an area is not allowed.", 0, "Structure"),
       BuildInfo({FurnitureType::DUNGEON_WALL, {ResourceId::STONE, 10}}, "Reinforce wall", {},
@@ -171,7 +178,8 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
     append(*buildInfo, {
              BuildInfo({FurnitureLayer::FLOOR}, "Remove floor", "", 0, "Floors"),
       BuildInfo(ZoneId::STORAGE_RESOURCES, ViewId::STORAGE_RESOURCES, "Resources",
-          "Only wood, iron and granite can be stored here.", 's', "Storage", true),
+          "Only wood, iron and granite can be stored here.", 's', "Storage", true)
+             .setTutorialHighlight(TutorialHighlight::RESOURCE_STORAGE),
       BuildInfo(ZoneId::STORAGE_EQUIPMENT, ViewId::STORAGE_EQUIPMENT, "Equipment",
           "All equipment for your minions can be stored here.", 0, "Storage"),
       BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 80}}, "Library", {},
@@ -831,6 +839,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
     buttons.back().hotkey = button.hotkey;
     buttons.back().groupName = button.groupName;
     buttons.back().hotkeyOpensGroup = button.hotkeyOpensGroup;
+    buttons.back().tutorialHighlight = button.tutorialHighlight;
   }
   return buttons;
 }
@@ -1357,7 +1366,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     auto& elem = CollectiveConfig::getResourceInfo(resourceId);
     if (!elem.dontDisplay)
       info.numResource.push_back(
-          {elem.viewId, getCollective()->numResourcePlusDebt(resourceId), elem.name});
+          {elem.viewId, getCollective()->numResourcePlusDebt(resourceId), elem.name, elem.tutorialHighlight});
   }
   info.warning = "";
   gameInfo.time = getCollective()->getGame()->getGlobalTime();

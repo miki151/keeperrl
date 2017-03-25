@@ -61,6 +61,7 @@ struct ResourceInfo {
   string name;
   ViewId viewId;
   bool dontDisplay;
+  optional<TutorialHighlight> tutorialHighlight;
 };
 
 typedef function<bool(const Collective*, const Item*)> CollectiveItemPredicate;

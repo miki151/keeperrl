@@ -8,6 +8,7 @@
 #include "experience_type.h"
 #include "entity_set.h"
 #include "immigrant_auto_state.h"
+#include "tutorial_highlight.h"
 
 enum class SpellId;
 
@@ -163,7 +164,8 @@ class CollectiveInfo {
     char HASH(hotkey);
     string HASH(groupName);
     bool HASH(hotkeyOpensGroup);
-    HASH_ALL(viewId, name, cost, count, state, help, hotkey, groupName, hotkeyOpensGroup);
+    optional<TutorialHighlight> HASH(tutorialHighlight);
+    HASH_ALL(viewId, name, cost, count, state, help, hotkey, groupName, hotkeyOpensGroup, tutorialHighlight);
   };
   vector<Button> HASH(buildings);
   int HASH(minionCount);
@@ -208,7 +210,8 @@ class CollectiveInfo {
     ViewId HASH(viewId);
     int HASH(count);
     string HASH(name);
-    HASH_ALL(viewId, count, name);
+    optional<TutorialHighlight> HASH(tutorialHighlight);
+    HASH_ALL(viewId, count, name, tutorialHighlight);
   };
   vector<Resource> HASH(numResource);
   struct Team {
@@ -294,7 +297,8 @@ class TutorialInfo {
   string HASH(message);
   bool HASH(canContinue);
   bool HASH(canGoBack);
-  HASH_ALL(message, canContinue, canGoBack)
+  EnumSet<TutorialHighlight> HASH(highlights);
+  HASH_ALL(message, canContinue, canGoBack, highlights)
 };
 
 /** Represents all the game information displayed around the map window.*/

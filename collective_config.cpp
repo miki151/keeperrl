@@ -26,6 +26,7 @@
 #include "villain_type.h"
 #include "furniture.h"
 #include "immigrant_info.h"
+#include "tutorial_highlight.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
@@ -276,7 +277,8 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
       case CollectiveResourceId::GOLD:
         return {getFurnitureStorage(FurnitureType::TREASURE_CHEST), ItemIndex::GOLD, ItemId::GOLD_PIECE, "gold", ViewId::GOLD};
       case CollectiveResourceId::WOOD:
-        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::WOOD, ItemId::WOOD_PLANK, "wood", ViewId::WOOD_PLANK};
+        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::WOOD, ItemId::WOOD_PLANK, "wood", ViewId::WOOD_PLANK,
+            false, TutorialHighlight::WOOD_RESOURCE};
       case CollectiveResourceId::IRON:
         return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::IRON, ItemId::IRON_ORE, "iron", ViewId::IRON_ROCK};
       case CollectiveResourceId::STEEL:

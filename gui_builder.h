@@ -113,8 +113,8 @@ class GuiBuilder {
   void addUpsCounterTick();
   void closeOverlayWindows();
   bool clearActiveButton();
-  void setActiveButton(CollectiveTab, int num, ViewId, optional<string> activeGroup);
-  void setActiveGroup(const string&);
+  void setActiveButton(CollectiveTab, int num, ViewId, optional<string> activeGroup, optional<TutorialHighlight>);
+  void setActiveGroup(const string&, optional<TutorialHighlight>);
   optional<int> getActiveButton(CollectiveTab) const;
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
@@ -143,11 +143,7 @@ class GuiBuilder {
   vector<SGuiElem> drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>&);
   SGuiElem drawPlayerLevelButton(const PlayerInfo&);
   SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
-  SGuiElem drawBuildings(const CollectiveInfo&);
-  SGuiElem buildingsCache;
-  int buildingsHash = 0;
-  vector<OverlayInfo> buildingsOverlayCache;
-  int buildingsOverlayHash = 0;
+  SGuiElem drawBuildings(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem bottomBandCache;
   SGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
   SGuiElem minionButtonsCache;
@@ -223,8 +219,7 @@ class GuiBuilder {
   enum class CounterMode { FPS, LAT, SMOD };
   CounterMode counterMode = CounterMode::FPS;
 
-  SGuiElem drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab);
-  SGuiElem getButtonLine(CollectiveInfo::Button, int num, CollectiveTab);
+  SGuiElem getButtonLine(CollectiveInfo::Button, int num, CollectiveTab, const optional<TutorialInfo>&);
   SGuiElem drawMinionsOverlay(const CollectiveInfo&);
   SGuiElem minionsOverlayCache;
   int minionsOverlayHash = 0;
@@ -233,7 +228,7 @@ class GuiBuilder {
   int workshopsOverlayHash = 0;
   SGuiElem drawTasksOverlay(const CollectiveInfo&);
   SGuiElem drawRansomOverlay(const optional<CollectiveInfo::Ransom>&);
-  SGuiElem drawBuildingsOverlay(const CollectiveInfo&);
+  SGuiElem drawBuildingsOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
   SGuiElem getItemLine(const ItemInfo&, function<void(Rectangle)> onClick,
@@ -253,6 +248,9 @@ class GuiBuilder {
   HeapAllocated<CallCache<SGuiElem>> cache;
   SGuiElem drawMenuWarning(View::CampaignOptions::WarningType);
   SGuiElem drawTutorialOverlay(const TutorialInfo&);
+  unordered_set<pair<int, TutorialHighlight>, CustomHash<pair<int, TutorialHighlight>>> tutorialClicks;
+  bool wasTutorialClicked(size_t hash, TutorialHighlight);
+  void onTutorialClicked(size_t hash, TutorialHighlight);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

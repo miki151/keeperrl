@@ -519,28 +519,30 @@ SGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
         }, width));
 }
 
-static Color blinking(Color c1, Color c2, milliseconds period, milliseconds state, int numBlinks, int numCycle) {
-  if ((state.count() / period.count()) % numCycle >= numBlinks)
-    return c1;
-  double s = (state.count() % period.count()) / (double) period.count();
-  double c = (cos(s * 2 * 3.14159) + 1) / 2;
+static double blinkingState(milliseconds time, int numBlinks, int numCycle) {
+  const milliseconds period {250};
+  if ((time.count() / period.count()) % numCycle >= numBlinks)
+    return 1.0;
+  double s = (time.count() % period.count()) / (double) period.count();
+  return (cos(s * 2 * 3.14159) + 1) / 2;
+}
+
+static Color blinkingColor(Color c1, Color c2, milliseconds time) {
+  double c = blinkingState(time, 2, 10);
   return Color(c1.r * c + c2.r * (1 - c), c1.g * c + c2.g * (1 - c), c1.b * c + c2.b * (1 - c));
 }
 
-SGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2) {
-  milliseconds period {250};
-  int numBlinks = 2;
-  int numCycle = 10;
+SGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2, char hotkey) {
   auto width = [=] { return renderer.getTextLength(s); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          Color c = blinking(c1, c2, period, clock->getRealMillis(), numBlinks, numCycle);
-          r.drawText(transparency(colors[ColorId::BLACK], 100),
-            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s);
+          Color c = blinkingColor(c1, c2, clock->getRealMillis());
+          r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
+            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, hotkey);
           Color c1(c);
           if (r.getMousePos().inRectangle(bounds))
             lighten(c1);
-          r.drawText(c1, bounds.topLeft().x, bounds.topLeft().y, s);
+          r.drawTextWithHotkey(c1, bounds.topLeft().x, bounds.topLeft().y, s, hotkey);
         }, width));
 }
 
@@ -2579,6 +2581,14 @@ SGuiElem GuiFactory::uiHighlightMouseOver(Color c) {
 
 SGuiElem GuiFactory::uiHighlight(Color c) {
   return leftMargin(-8, topMargin(-4, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_STRETCHED, c)));
+}
+
+SGuiElem GuiFactory::blink(SGuiElem elem) {
+  return conditional(elem, [this]() { return blinkingState(clock->getRealMillis(), 2, 4) < 0.5; });
+}
+
+SGuiElem GuiFactory::tutorialHighlight() {
+  return blink(uiHighlight(colors[ColorId::YELLOW]));
 }
 
 SGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {

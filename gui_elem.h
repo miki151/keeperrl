@@ -142,7 +142,7 @@ class GuiFactory {
   SGuiElem progressBar(Color, double state);
   SGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
   SGuiElem labelHighlight(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
-  SGuiElem labelHighlightBlink(const string& s, Color, Color);
+  SGuiElem labelHighlightBlink(const string& s, Color, Color, char hotkey = 0);
   SGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
   SGuiElem label(const string&, function<Color()>, char hotkey = 0);
   SGuiElem labelFun(function<string()>, function<Color()>);
@@ -293,6 +293,8 @@ class GuiFactory {
   SGuiElem uiHighlightMouseOver(Color = colors[ColorId::GREEN]);
   SGuiElem uiHighlightConditional(function<bool()>, Color = colors[ColorId::GREEN]);
   SGuiElem uiHighlight(Color = colors[ColorId::GREEN]);
+  SGuiElem blink(SGuiElem);
+  SGuiElem tutorialHighlight();
   SGuiElem rectangleBorder(Color);
 
   private:

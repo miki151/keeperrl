@@ -920,7 +920,7 @@ const static vector<GameChoice> gameChoices {
    GuiFactory::TexId::KEEPER_CHOICE,
    GuiFactory::TexId::KEEPER_HIGHLIGHT,
    "keeper",
-   "Play as a keeper. Build and manage your dream dungeon, defend against raids, and attack you enemies!"},
+   "Play as a keeper. Build and manage your dream dungeon, defend against raids, and attack your enemies!"},
   {PlayerRole::ADVENTURER,
    GuiFactory::TexId::ADVENTURER_CHOICE,
    GuiFactory::TexId::ADVENTURER_HIGHLIGHT,

@@ -44,6 +44,7 @@ GuiBuilder::GuiBuilder(Renderer& r, GuiFactory& g, Clock* c, Options* o, Callbac
 void GuiBuilder::reset() {
   gameSpeed = GameSpeed::NORMAL;
   numSeenVillains = -1;
+  tutorialClicks.clear();
 }
 
 void GuiBuilder::setMapGui(shared_ptr<MapGui> g) {
@@ -92,15 +93,23 @@ optional<int> GuiBuilder::getActiveButton(CollectiveTab tab) const {
     return none;
 }
 
-void GuiBuilder::setActiveGroup(const string& group) {
+void GuiBuilder::setActiveGroup(const string& group, optional<TutorialHighlight> tutorial) {
   clearActiveButton();
   activeGroup = group;
+  if (tutorial)
+    onTutorialClicked(combineHash(group), *tutorial);
 }
 
-void GuiBuilder::setActiveButton(CollectiveTab tab, int num, ViewId viewId, optional<string> group) {
+void GuiBuilder::setActiveButton(CollectiveTab tab, int num, ViewId viewId, optional<string> group,
+    optional<TutorialHighlight> tutorial) {
   activeButton = {tab, num};
   mapGui->setButtonViewId(viewId);
   activeGroup = group;
+  if (tutorial) {
+    onTutorialClicked(num, *tutorial);
+    if (group)
+      onTutorialClicked(combineHash(*group), *tutorial);
+  }
 }
 
 bool GuiBuilder::clearActiveButton() {
@@ -122,27 +131,43 @@ SGuiElem GuiBuilder::drawCost(pair<ViewId, int> cost, ColorId color) {
       .buildHorizontalList();
 }
 
-SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, CollectiveTab tab) {
+bool GuiBuilder::wasTutorialClicked(size_t hash, TutorialHighlight state) {
+  return tutorialClicks.count({hash, state});
+}
+
+void GuiBuilder::onTutorialClicked(size_t hash, TutorialHighlight state) {
+  tutorialClicks.insert({hash, state});
+}
+
+SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, CollectiveTab tab,
+    const optional<TutorialInfo>& tutorial) {
   GuiFactory::ListBuilder line(gui);
   line.addElem(gui.viewObject(button.viewId), 35);
+  auto tutorialHighlight = button.tutorialHighlight;
   if (button.state != CollectiveInfo::Button::ACTIVE)
     line.addElem(gui.label(button.name + " " + button.count, colors[ColorId::GRAY], button.hotkey), 100);
-  else
+  else {
+    auto tutorialElem = gui.empty();
+    if (tutorial && tutorialHighlight && tutorial->highlights.contains(*tutorialHighlight))
+      tutorialElem = gui.conditional(gui.tutorialHighlight(),
+          [=]{ return !wasTutorialClicked(num, *tutorialHighlight); });
     line.addElem(gui.stack(
-          gui.uiHighlightConditional([=] () { return getActiveButton(tab) == num; }),
-          gui.label(button.name + " " + button.count, colors[ColorId::WHITE], button.hotkey)
-          ), 100);
+        gui.uiHighlightConditional([=] () { return getActiveButton(tab) == num; }),
+        tutorialElem,
+        gui.label(button.name + " " + button.count, colors[ColorId::WHITE], button.hotkey)
+        ), 100);
+  }
   if (button.cost)
     line.addBackElemAuto(drawCost(*button.cost));
   function<void()> buttonFun;
   ViewId viewId = button.viewId;
   if (button.state != CollectiveInfo::Button::INACTIVE)
-    buttonFun = [this, num, viewId, tab] {
+    buttonFun = [=] {
       if (getActiveButton(tab) == num)
         clearActiveButton();
       else {
         setCollectiveTab(tab);
-        setActiveButton(tab, num, viewId, none);
+        setActiveButton(tab, num, viewId, none, tutorialHighlight);
       }
     };
   else {
@@ -177,31 +202,38 @@ static optional<int> getNextActive(const vector<CollectiveInfo::Button>& buttons
   return i;
 }
 
-SGuiElem GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons, CollectiveTab tab) {
+SGuiElem GuiBuilder::drawBuildings(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   vector<SGuiElem> keypressOnly;
+  auto& buttons = info.buildings;
+  auto tab = CollectiveTab::BUILDINGS;
   auto elems = gui.getListBuilder(legendLineHeight);
   string lastGroup;
   for (int i : All(buttons)) {
     if (!buttons[i].groupName.empty() && buttons[i].groupName != lastGroup) {
       lastGroup = buttons[i].groupName;
+      optional<TutorialHighlight> tutorialHighlight;
+      if (tutorial)
+        for (int j = i; j < buttons.size() && buttons[i].groupName == buttons[j].groupName; ++j)
+          if (auto highlight = buttons[j].tutorialHighlight)
+            if (tutorial->highlights.contains(*highlight))
+              tutorialHighlight = *highlight;
       function<void()> buttonFunHotkey = [=] {
         if (activeGroup != lastGroup) {
           setCollectiveTab(tab);
           if (auto firstBut = getNextActive(buttons, i, none))
-            setActiveButton(tab, *firstBut, buttons[*firstBut].viewId, lastGroup);
+            setActiveButton(tab, *firstBut, buttons[*firstBut].viewId, lastGroup, tutorialHighlight);
           else
-            setActiveGroup(lastGroup);
+            setActiveGroup(lastGroup, tutorialHighlight);
         } else
         if (auto newBut = getNextActive(buttons, i, getActiveButton(tab)))
-          setActiveButton(tab, *newBut, buttons[*newBut].viewId, lastGroup);
+          setActiveButton(tab, *newBut, buttons[*newBut].viewId, lastGroup, tutorialHighlight);
         else
           clearActiveButton();
       };
       function<void()> labelFun = [=] {
         if (activeGroup != lastGroup) {
-          clearActiveButton();
           setCollectiveTab(tab);
-          activeGroup = lastGroup;
+          setActiveGroup(lastGroup, tutorialHighlight);
         } else {
           clearActiveButton();
         }
@@ -209,8 +241,13 @@ SGuiElem GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons, Collect
       auto line = gui.getListBuilder();
       line.addElem(gui.viewObject(buttons[i].viewId), 35);
       char hotkey = buttons[i].hotkeyOpensGroup ? buttons[i].hotkey : 0;
+      SGuiElem tutorialElem = gui.empty();
+      if (tutorial)
+        tutorialElem = gui.conditional(gui.tutorialHighlight(),
+             [=]{ return !wasTutorialClicked(combineHash(lastGroup), *tutorialHighlight); });
       line.addElemAuto(gui.stack(
           gui.uiHighlightConditional([=] { return activeGroup == lastGroup;}),
+          tutorialElem,
           gui.label(lastGroup, colors[ColorId::WHITE], hotkey)));
       elems.addElem(gui.stack(
           gui.keyHandlerChar(buttonFunHotkey, hotkey, true, true),
@@ -218,22 +255,12 @@ SGuiElem GuiBuilder::drawButtons(vector<CollectiveInfo::Button> buttons, Collect
           line.buildHorizontalList()));
     }
     if (buttons[i].groupName.empty())
-      elems.addElem(getButtonLine(buttons[i], i, tab));
+      elems.addElem(getButtonLine(buttons[i], i, tab, tutorial));
     else
-      keypressOnly.push_back(gui.invisible(getButtonLine(buttons[i], i, tab)));
+      keypressOnly.push_back(gui.invisible(getButtonLine(buttons[i], i, tab, tutorial)));
   }
   keypressOnly.push_back(elems.buildVerticalList());
-  return gui.stack(std::move(keypressOnly));
-}
-
-SGuiElem GuiBuilder::drawBuildings(const CollectiveInfo& info) {
-  int newHash = combineHash(info.buildings);
-  if (newHash != buildingsHash) {
-    buildingsCache =  gui.scrollable(drawButtons(info.buildings, CollectiveTab::BUILDINGS),
-        &buildingsScroll, &scrollbarsHeld);
-    buildingsHash = newHash;
-  }
-  return gui.external(buildingsCache.get());
+  return gui.scrollable(gui.stack(std::move(keypressOnly)));
 }
 
 SGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
@@ -325,7 +352,14 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
       res.addElem(gui.viewObject(info.numResource[i].viewId), 30);
       res.addElemAuto(gui.labelFun([&info, i] { return toString<int>(info.numResource[i].count); },
             [&info, i] { return info.numResource[i].count >= 0 ? colors[ColorId::WHITE] : colors[ColorId::RED]; }));
-      topLine.addElem(gui.stack(getHintCallback({info.numResource[i].name}), res.buildHorizontalList()));
+      auto tutorialHighlight = info.numResource[i].tutorialHighlight;
+      auto tutorialElem = gui.conditional(gui.tutorialHighlight(), [tutorialHighlight, &gameInfo] {
+          return gameInfo.tutorial && tutorialHighlight && gameInfo.tutorial->highlights.contains(*tutorialHighlight);
+      });
+      topLine.addElem(gui.stack(
+          tutorialElem,
+          getHintCallback({info.numResource[i].name}),
+          res.buildHorizontalList()));
     }
     auto bottomLine = gui.getListBuilder(140);
     bottomLine.addElem(getTurnInfoGui(gameInfo.time));
@@ -387,7 +421,8 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
             gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP))));
     vector<pair<CollectiveTab, SGuiElem>> elems = makeVec<pair<CollectiveTab, SGuiElem>>(
         make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo)),
-        make_pair(CollectiveTab::BUILDINGS, drawBuildings(collectiveInfo)),
+        make_pair(CollectiveTab::BUILDINGS, cache->get(bindMethod(
+            &GuiBuilder::drawBuildings, this), THIS_LINE, info.collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp()),
         make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(collectiveInfo)),
         make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
@@ -1459,7 +1494,7 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo& info) {
       gui.margins(std::move(menu), margin))));
 }
 
-SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info) {
+SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   vector<SGuiElem> elems;
   map<string, GuiFactory::ListBuilder> overlaysMap;
   int margin = 20;
@@ -1468,9 +1503,9 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info) {
     if (!elem.groupName.empty()) {
       if (!overlaysMap.count(elem.groupName))
         overlaysMap.emplace(make_pair(elem.groupName, gui.getListBuilder(legendLineHeight)));
-      overlaysMap.at(elem.groupName).addElem(getButtonLine(elem, i, CollectiveTab::BUILDINGS));
+      overlaysMap.at(elem.groupName).addElem(getButtonLine(elem, i, CollectiveTab::BUILDINGS, tutorial));
       elems.push_back(gui.setWidth(300, gui.conditional(
-            gui.miniWindow(gui.margins(getButtonLine(elem, i, CollectiveTab::BUILDINGS), margin)),
+            gui.miniWindow(gui.margins(getButtonLine(elem, i, CollectiveTab::BUILDINGS, tutorial), margin)),
             [i, this] { return getActiveButton(CollectiveTab::BUILDINGS) == i;})));
     }
   }
@@ -1504,7 +1539,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
-           info.collectiveInfo), OverlayInfo::TOP_LEFT});
+           info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       if (immigrantHelpOpen)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationHelp, this), THIS_LINE,
             info.collectiveInfo), OverlayInfo::BOTTOM_LEFT});

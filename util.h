@@ -879,7 +879,7 @@ auto transform2(vector<U>& u, Fun fun) -> vector<decltype(fun(u[0]))> {
   return ret;
 }
 
-template <typename T, typename U, typename Fun>
+template <typename U, typename Fun>
 auto transform2(const optional<U>& u, Fun fun) -> optional<decltype(fun(*u))> {
   if (u)
     return fun(*u);
