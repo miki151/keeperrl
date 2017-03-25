@@ -242,7 +242,7 @@ SGuiElem GuiBuilder::drawBuildings(const CollectiveInfo& info, const optional<Tu
       line.addElem(gui.viewObject(buttons[i].viewId), 35);
       char hotkey = buttons[i].hotkeyOpensGroup ? buttons[i].hotkey : 0;
       SGuiElem tutorialElem = gui.empty();
-      if (tutorial)
+      if (tutorialHighlight)
         tutorialElem = gui.conditional(gui.tutorialHighlight(),
              [=]{ return !wasTutorialClicked(combineHash(lastGroup), *tutorialHighlight); });
       line.addElemAuto(gui.stack(
@@ -392,7 +392,7 @@ const char* GuiBuilder::getCurrentGameSpeedName() const {
 }
 
 SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
-  int hash = combineHash(info.collectiveInfo, info.villageInfo, info.modifiedSquares, info.totalSquares);
+  int hash = combineHash(info.collectiveInfo, info.villageInfo, info.modifiedSquares, info.totalSquares, info.tutorial);
   if (hash != rightBandInfoHash) {
     rightBandInfoHash = hash;
     CollectiveInfo& collectiveInfo = info.collectiveInfo;
@@ -574,7 +574,7 @@ SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
   auto backButton = gui.stack(
       gui.button(getButtonCallback(UserInputId::TUTORIAL_GO_BACK)),
       gui.setHeight(20, gui.labelHighlight("[Go back]", colors[ColorId::LIGHT_BLUE])));
-  return gui.preferredSize(460, 150, gui.stack(gui.darken(), gui.rectangleBorder(colors[ColorId::GRAY]),
+  return gui.preferredSize(520, 250, gui.stack(gui.darken(), gui.rectangleBorder(colors[ColorId::GRAY]),
       gui.margins(gui.stack(
         gui.labelMultiLine(info.message, legendLineHeight),
         gui.alignment(GuiFactory::Alignment::BOTTOM_RIGHT, info.canContinue ? continueButton : gui.empty()),
