@@ -49,6 +49,7 @@ class Game {
   void setPlayer(Creature*);
   Creature* getPlayer() const;
   void clearPlayer();
+  void addTutorial(STutorial);
 
   int getModelDistance(const Collective* c1, const Collective* c2) const;
 

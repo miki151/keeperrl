@@ -318,6 +318,15 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
   }
 }
 
+PGame MainLoop::prepareTutorial() {
+  PGame game = loadGame(dataFreePath + "/tutorial.kep");
+  if (game)
+    game->addTutorial(make_shared<Tutorial>());
+  else
+    view->presentText("Sorry", "Failed to load the tutorial :(");
+  return game;
+}
+
 PGame MainLoop::prepareCampaign(RandomGen& random, const optional<ForceGameInfo>& forceGameInfo) {
   if (forceGameInfo) {
     CampaignBuilder builder(view, random, options, forceGameInfo->role);
@@ -338,8 +347,10 @@ PGame MainLoop::prepareCampaign(RandomGen& random, const optional<ForceGameInfo>
         [&](LoadGameChoice&) -> optional<PGame> {
           if (auto game = loadPrevious())
             return std::move(game);
-          else
+          else {
+            view->presentText("Sorry", "Failed to load the save file :(");
             return none;
+          }
         },
         [&](GoBackChoice&) -> optional<PGame> {
           return PGame(nullptr);
@@ -419,7 +430,7 @@ void MainLoop::start(bool tilesPresent) {
     lastIndex = *choice;
     switch (*choice) {
       case 0:
-        if (PGame game = prepareCampaign(Random, ForceGameInfo { PlayerRole::KEEPER, CampaignType::KEEPER_TUTORIAL }))
+        if (PGame game = prepareTutorial())
           playGame(std::move(game), true, false);
         view->reset();
         break;
@@ -522,10 +533,7 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) 
     default: {
       auto ret = modelBuilder.campaignBaseModel("Campaign base site",
           setup.campaign.getType() == CampaignType::ENDLESS);
-      STutorial tutorial;
-      if (setup.campaign.getType() == CampaignType::KEEPER_TUTORIAL)
-        tutorial = make_shared<Tutorial>();
-      modelBuilder.spawnKeeper(ret.get(), std::move(setup.player), tutorial);
+      modelBuilder.spawnKeeper(ret.get(), std::move(setup.player));
       return ret;
     }
   }
@@ -580,15 +588,14 @@ PModel MainLoop::keeperSingleMap(RandomGen& random) {
 }
 
 PGame MainLoop::loadGame(string file) {
-  SavedGameInfo info = *getSavedGameInfo(userPath + "/" + file);
   PGame game;
-  doWithSplash(SplashType::BIG, "Loading " + file + "...", info.getProgressCount(),
-      [&] (ProgressMeter& meter) {
-        Square::progressMeter = &meter;
-        INFO << "Loading from " << file;
-        game = loadGameFromFile(userPath + "/" + file);});
-  if (!game)
-    view->presentText("Sorry", "This save file is corrupted :(");
+  if (auto info = getSavedGameInfo(file))
+    doWithSplash(SplashType::BIG, "Loading " + file + "...", info->getProgressCount(),
+        [&] (ProgressMeter& meter) {
+          Square::progressMeter = &meter;
+          INFO << "Loading from " << file;
+          game = loadGameFromFile(file);
+    });
   Square::progressMeter = nullptr;
   return game;
 }
@@ -634,9 +641,9 @@ PGame MainLoop::loadPrevious() {
       {GameSaveType::ADVENTURER, "Adventurer games:"}}, options, files);
   optional<SaveFileInfo> savedGame = chooseSaveFile(options, files, "No saved games found.", view);
   if (savedGame) {
-    PGame ret = loadGame(savedGame->filename);
+    PGame ret = loadGame(userPath + "/" + savedGame->filename);
     if (eraseSave())
-      changeSaveType(savedGame->filename, GameSaveType::AUTOSAVE);
+      changeSaveType(userPath + "/" + savedGame->filename, GameSaveType::AUTOSAVE);
     return ret;
   } else
     return nullptr;

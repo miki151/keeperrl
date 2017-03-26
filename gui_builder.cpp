@@ -2432,7 +2432,6 @@ static const char* getGameTypeName(CampaignType type) {
     case CampaignType::FREE_PLAY: return "Free play";
     case CampaignType::SINGLE_KEEPER: return "Single map";
     case CampaignType::QUICK_MAP: return "Quick map";
-    case CampaignType::KEEPER_TUTORIAL: return "Tutorial";
   }
 }
 

@@ -21,4 +21,5 @@ class Tutorial {
   enum class State;
   State SERIAL(state);
   EnumSet<TutorialHighlight> getHighlights(const Game*) const;
+  vector<Vec2> getHighlightedSquares(const Game*) const;
 };

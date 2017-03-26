@@ -17,7 +17,6 @@ optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign
   switch (campaign.type) {
     case CampaignType::CAMPAIGN:
     case CampaignType::QUICK_MAP:
-    case CampaignType::KEEPER_TUTORIAL:
     case CampaignType::SINGLE_KEEPER:
       return campaign.sites.getBounds().middle();
     default:
@@ -38,7 +37,6 @@ static void setCountLimits(Options* options) {
 
 vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
   switch (type) {
-    case CampaignType::KEEPER_TUTORIAL:
     case CampaignType::QUICK_MAP:
     case CampaignType::CAMPAIGN:
       return {};
@@ -115,7 +113,6 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
 #ifndef RELEASE
         CampaignType::ENDLESS,
         CampaignType::QUICK_MAP,
-        CampaignType::KEEPER_TUTORIAL,
 #endif
       };
     case PlayerRole::ADVENTURER:
@@ -298,7 +295,6 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
         options->getIntValue(OptionId::ALLIES),
         0
       };
-    case CampaignType::KEEPER_TUTORIAL:
     case CampaignType::QUICK_MAP:
     case CampaignType::SINGLE_KEEPER:
       return {0, 0, 0, 0};
@@ -406,7 +402,6 @@ static optional<View::CampaignOptions::WarningType> getMenuWarning(CampaignType 
 static bool autoConfirm(CampaignType type) {
   switch (type) {
     case CampaignType::QUICK_MAP:
-    case CampaignType::KEEPER_TUTORIAL:
       return true;
     default:
       return false;

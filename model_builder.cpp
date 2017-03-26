@@ -297,7 +297,7 @@ static string getBoardText(const string& keeperName, const string& dukeName) {
 
 PModel ModelBuilder::singleMapModel(const string& worldName, PCreature keeper) {
   auto ret = tryBuilding(10, [&] { return trySingleMapModel(worldName);});
-  spawnKeeper(ret.get(), std::move(keeper), nullptr);
+  spawnKeeper(ret.get(), std::move(keeper));
   return ret;
 }
 
@@ -476,7 +476,7 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
     minT << "\nMaxT: " << maxT << "\nAvgT: " << sumT / numSuccess << std::endl;
 }
 
-Collective* ModelBuilder::spawnKeeper(Model* m, PCreature keeper, STutorial tutorial) {
+Collective* ModelBuilder::spawnKeeper(Model* m, PCreature keeper) {
   Level* level = m->getTopLevel();
   Creature* keeperRef = keeper.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
@@ -487,7 +487,7 @@ Collective* ModelBuilder::spawnKeeper(Model* m, PCreature keeper, STutorial tuto
       .addCreature(keeperRef)
       .build());
   Collective* playerCollective = m->collectives.back().get();
-  playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, level, tutorial)));
+  playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, level)));
   playerCollective->setVillainType(VillainType::PLAYER);
   return playerCollective;
 }

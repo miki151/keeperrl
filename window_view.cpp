@@ -360,11 +360,7 @@ Color getSpeedColor(int value) {
 }
 
 void WindowView::rebuildGui() {
-  int newHash = gameInfo.getHash();
-  if (newHash == lastGuiHash)
-    return;
   INFO << "Rebuilding UI";
-  lastGuiHash = newHash;
   SGuiElem bottom, right;
   vector<GuiBuilder::OverlayInfo> overlays;
   int rightBarWidth = 0;
@@ -547,20 +543,19 @@ void WindowView::updateView(CreatureView* view, bool noRefresh) {
   ScopeTimer timer("UpdateView timer");
   if (!wasRendered && currentThreadId() != renderThreadId)
     return;
-  GameInfo newInfo;
-  view->refreshGameInfo(newInfo);
   RecursiveLock lock(renderMutex);
+  view->refreshGameInfo(gameInfo);
   wasRendered = false;
   guiBuilder.addUpsCounterTick();
   gameReady = true;
   if (!noRefresh)
     uiLock = false;
   switchTiles();
-  gameInfo = newInfo;
   rebuildGui();
   mapGui->setSpriteMode(currentTileLayout.sprites);
   bool spectator = gameInfo.infoType == GameInfo::InfoType::SPECTATOR;
-  mapGui->updateObjects(view, mapLayout, currentTileLayout.sprites || spectator, !spectator);
+  mapGui->updateObjects(view, mapLayout, currentTileLayout.sprites || spectator, !spectator,
+      gameInfo.tutorial ? gameInfo.tutorial->highlightedSquares : vector<Vec2>());
   updateMinimap(view);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     guiBuilder.setGameSpeed(GuiBuilder::GameSpeed::NORMAL);
@@ -1156,7 +1151,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
             break;
           default:
             break;
-        }        
+        }
       }, true));
   while (1) {
     refreshScreen(false);
@@ -1369,7 +1364,7 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, -1)));
       mapGui->onMouseGone();
       break;
-    case SDL::SDLK_RIGHT: 
+    case SDL::SDLK_RIGHT:
     case SDL::SDLK_KP_6:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 0)));
       mapGui->onMouseGone();

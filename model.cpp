@@ -49,6 +49,9 @@
 #include "item.h"
 #include "external_enemies.h"
 #include "tutorial.h"
+#include "villain_type.h"
+#include "player_control.h"
+#include "tutorial.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {

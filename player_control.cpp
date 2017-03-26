@@ -295,8 +295,8 @@ static vector<string> getHints() {
   };
 }
 
-PlayerControl::PlayerControl(Collective* col, Level* level, STutorial t) : CollectiveControl(col),
-    eventProxy(this, level->getModel()), hints(getHints()), tutorial(t) {
+PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(col),
+    eventProxy(this, level->getModel()), hints(getHints()) {
   bool hotkeys[128] = {0};
   for (auto& info : getBuildInfo()) {
     if (info.hotkey) {
@@ -356,6 +356,10 @@ void PlayerControl::onControlledKilled() {
     }
   }
   leaveControl();
+}
+
+void PlayerControl::setTutorial(STutorial t) {
+  tutorial = t;
 }
 
 bool PlayerControl::swapTeam() {

@@ -85,6 +85,7 @@ class MainLoop {
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
+  PGame prepareTutorial();
 };
 
 

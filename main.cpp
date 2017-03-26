@@ -394,7 +394,7 @@ static int keeperMain(const variables_map& vars) {
   Highscores highscores(userPath + "/" + "highscores.dat", fileSharing, &options);
   optional<MainLoop::ForceGameInfo> forceGame;
   if (vars.count("force_keeper"))
-    forceGame = {PlayerRole::KEEPER, CampaignType::KEEPER_TUTORIAL};
+    forceGame = {PlayerRole::KEEPER, CampaignType::QUICK_MAP};
   SokobanInput sokobanInput(freeDataPath + "/sokoban_input.txt", userPath + "/sokoban_state.txt");
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
       gameFinished, useSingleThread, forceGame);

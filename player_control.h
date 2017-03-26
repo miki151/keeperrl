@@ -48,7 +48,7 @@ class Tutorial;
 
 class PlayerControl : public CreatureView, public CollectiveControl {
   public:
-  PlayerControl(Collective*, Level*, STutorial tutorial);
+  PlayerControl(Collective*, Level*);
   ~PlayerControl();
 
   void processInput(View* view, UserInput);
@@ -63,6 +63,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void leaveControl();
   bool swapTeam();
   void onControlledKilled();
+  void setTutorial(STutorial);
 
   enum class RequirementId {
     TECHNOLOGY,

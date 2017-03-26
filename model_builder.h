@@ -29,7 +29,7 @@ class ModelBuilder {
 
   PModel splashModel(const string& splashPath);
 
-  Collective* spawnKeeper(Model*, PCreature, STutorial);
+  Collective* spawnKeeper(Model*, PCreature);
 
   static int getPigstyPopulationIncrease();
   static int getStatuePopulationIncrease();

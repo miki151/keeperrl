@@ -95,6 +95,10 @@ PGame Game::splashScreen(PModel&& model, const CampaignSetup& s) {
   return game;
 }
 
+void Game::addTutorial(STutorial tut) {
+  playerControl->setTutorial(tut);
+}
+
 bool Game::isTurnBased() {
   return !spectator && (!playerControl || playerControl->isTurnBased());
 }
