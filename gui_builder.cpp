@@ -569,14 +569,18 @@ int GuiBuilder::getImmigrationBarWidth() const {
 
 SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
   auto continueButton = gui.stack(
-      gui.button(getButtonCallback(UserInputId::TUTORIAL_CONTINUE)),
+      gui.button([this]() { callbacks.input(UserInputId::TUTORIAL_CONTINUE); tutorialClicks.clear(); }),
       gui.setHeight(20, gui.labelHighlightBlink("[Continue]", colors[ColorId::LIGHT_BLUE], colors[ColorId::WHITE])));
   auto backButton = gui.stack(
       gui.button(getButtonCallback(UserInputId::TUTORIAL_GO_BACK)),
       gui.setHeight(20, gui.labelHighlight("[Go back]", colors[ColorId::LIGHT_BLUE])));
+  auto pauseWarning = gui.setHeight(20,
+        gui.label("Press [Space] to unpause the game.", colors[ColorId::RED]));
   return gui.preferredSize(520, 250, gui.stack(gui.darken(), gui.rectangleBorder(colors[ColorId::GRAY]),
       gui.margins(gui.stack(
         gui.labelMultiLine(info.message, legendLineHeight),
+        gui.conditional(gui.alignment(GuiFactory::Alignment::BOTTOM_CENTER, pauseWarning),
+            [this]{return clock->isPaused();}),
         gui.alignment(GuiFactory::Alignment::BOTTOM_RIGHT, info.canContinue ? continueButton : gui.empty()),
         gui.alignment(GuiFactory::Alignment::BOTTOM_LEFT, info.canGoBack ? backButton : gui.empty())
       ), 20)));

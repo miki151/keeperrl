@@ -952,6 +952,9 @@ class AlignmentGui : public GuiLayout {
       case GuiFactory::Alignment::BOTTOM_LEFT:
         return Rectangle(getBounds().left(), getBounds().bottom() - getHeight(), getBounds().left() + getWidth(),
             getBounds().bottom());
+      case GuiFactory::Alignment::BOTTOM_CENTER:
+        return Rectangle(getBounds().middle().x - getWidth() / 2, getBounds().bottom() - getHeight(),
+            getBounds().middle().x + getWidth() / 2, getBounds().bottom());
       default: FATAL << "Unhandled alignment, please implement me :) " << (int)alignment;
     }
     return Rectangle();
