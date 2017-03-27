@@ -4,11 +4,11 @@
 
 class SokobanInput {
   public:
-  SokobanInput(const string& levelsPath, const string& statePath);
+  SokobanInput(const FilePath& levels, const FilePath& state);
 
   Table<char> getNext();
 
   private:
-  string levelsPath;
-  string statePath;
+  FilePath levelsPath;
+  FilePath statePath;
 };

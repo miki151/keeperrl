@@ -22,6 +22,7 @@
 
 #include "fontstash.h"
 #include "sdl_event_generator.h"
+#include "clock.h"
 
 EnumMap<ColorId, Color> colors({
   {ColorId::WHITE, Color(255, 255, 255)},
@@ -99,13 +100,12 @@ static void checkOpenglError() {
   CHECK(error == GL_NO_ERROR) << (int)error;
 }
 
-Texture::Texture(const string& fileName){
-  SDL::SDL_Surface* image= SDL::IMG_Load(fileName.c_str());
+Texture::Texture(const FilePath& fileName) : path(fileName) {
+  SDL::SDL_Surface* image= SDL::IMG_Load(fileName.getPath());
   CHECK(image) << SDL::IMG_GetError();
   if (auto error = loadFromMaybe(image))
     FATAL << "Couldn't load image: " << fileName << ". Error code " << toString(*error);
   SDL::SDL_FreeSurface(image);
-  path = fileName;
 }
 
 Texture::~Texture() {
@@ -180,8 +180,8 @@ optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* imageOrig) {
   return none;
 }
 
-Texture::Texture(const string& path, int px, int py, int w, int h) {
-  SDL::SDL_Surface* image = SDL::IMG_Load(path.c_str());
+Texture::Texture(const FilePath& filename, int px, int py, int w, int h) : path(filename) {
+  SDL::SDL_Surface* image = SDL::IMG_Load(path->getPath());
   CHECK(image) << SDL::IMG_GetError();
   SDL::SDL_Rect offset;
   offset.x = 0;
@@ -194,7 +194,6 @@ Texture::Texture(const string& path, int px, int py, int w, int h) {
   if (auto error = loadFromMaybe(sub))
     FATAL << "Couldn't load image: " << path << ". Error code " << toString(*error);
   SDL::SDL_FreeSurface(sub);
-  this->path = path;
 }
 
 Texture::Texture(SDL::SDL_Surface* surface) {
@@ -214,13 +213,15 @@ Texture& Texture::operator = (Texture&& tex) {
   return *this;
 }
 
-optional<Texture> Texture::loadMaybe(const string& path) {
-  if (SDL::SDL_Surface* image = SDL::IMG_Load(path.c_str())) {
+optional<Texture> Texture::loadMaybe(const FilePath& path) {
+  if (SDL::SDL_Surface* image = SDL::IMG_Load(path.getPath())) {
     Texture ret;
     bool ok = !ret.loadFromMaybe(image);
     SDL::SDL_FreeSurface(image);
-    if (ok)
+    if (ok) {
+      ret.path = path;
       return std::move(ret);
+    }
   }
   return none;
 }
@@ -501,8 +502,8 @@ void Renderer::initOpenGL() {
     reloadCursors();
 }
 
-SDL::SDL_Surface* Renderer::loadScaledSurface(const string& path, double scale) {
-  if (auto surface = SDL::IMG_Load(path.c_str())) {
+SDL::SDL_Surface* Renderer::loadScaledSurface(const FilePath& path, double scale) {
+  if (auto surface = SDL::IMG_Load(path.getPath())) {
     if (scale == 1)
       return surface;
     if (auto scaled = createSurface(surface->w * scale, surface->h * scale)) {
@@ -530,11 +531,6 @@ void Renderer::reloadCursors() {
   }
 }
 
-void Renderer::setCursorPath(const string& path, const string& pathClicked) {
-  cursorPath = path;
-  clickedCursorPath = pathClicked;
-}
-
 void Renderer::initialize() {
   if (!renderThreadId)
     renderThreadId = currentThreadId();
@@ -551,19 +547,22 @@ vector<string> Renderer::getFullscreenResolutions() {
 void Renderer::printSystemInfo(ostream& out) {
 }
 
-void Renderer::loadFonts(const string& fontPath, FontSet& fonts) {
+void Renderer::loadFonts(const DirectoryPath& fontPath, FontSet& fonts) {
   CHECK(fontStash = sth_create(512, 512)) << "Error initializing fonts";
-  fonts.textFont = sth_add_font(fontStash, (fontPath + "/Lato-Bol.ttf").c_str());
-  fonts.symbolFont = sth_add_font(fontStash, (fontPath + "/Symbola.ttf").c_str());
-  CHECK(fonts.textFont >= 0) << "Error loading " << fontPath + "/Lato-Bol.ttf";
-  CHECK(fonts.symbolFont >= 0) << "Error loading " << fontPath + "/Symbola.ttf";
+  auto textFont = fontPath.file("Lato-Bol.ttf");
+  auto symbolFont = fontPath.file("Symbola.ttf");
+  fonts.textFont = sth_add_font(fontStash, textFont.getPath());
+  fonts.symbolFont = sth_add_font(fontStash, symbolFont.getPath());
+  CHECK(fonts.textFont >= 0) << "Error loading " << textFont;
+  CHECK(fonts.symbolFont >= 0) << "Error loading " << symbolFont;
 }
 
 void Renderer::showError(const string& s) {
   SDL_ShowSimpleMessageBox(SDL::SDL_MESSAGEBOX_ERROR, "Error", s.c_str(), window);
 }
 
-Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : nominalSize(nominal) {
+Renderer::Renderer(const string& title, Vec2 nominal, const DirectoryPath& fontPath, const FilePath& cursorP,
+    const FilePath& clickedCursorP) : nominalSize(nominal), cursorPath(cursorP), clickedCursorPath(clickedCursorP) {
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MINOR_VERSION, 1 );
@@ -660,14 +659,12 @@ void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {
     drawFilledRectangle(bounds, colors[ColorId::BLACK]);
 }
 
-const static string imageSuf = ".png";
-
-bool Renderer::loadAltTilesFromDir(const string& path, Vec2 altSize) {
+bool Renderer::loadAltTilesFromDir(const DirectoryPath& path, Vec2 altSize) {
   altTileSize.push_back(altSize);
   return loadTilesFromDir(path, altTiles, altSize, 720 * altSize.x / tileSize.back().x);
 }
 
-bool Renderer::loadTilesFromDir(const string& path, Vec2 size) {
+bool Renderer::loadTilesFromDir(const DirectoryPath& path, Vec2 size) {
   tileSize.push_back(size);
   return loadTilesFromDir(path, tiles, size, 720);
 }
@@ -678,31 +675,24 @@ SDL::SDL_Surface* Renderer::createSurface(int w, int h) {
   return ret;
 }
 
-bool Renderer::loadTilesFromDir(const string& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
-  DIR* dir = opendir(path.c_str());
-  if (!dir)
-    return false;
-  vector<string> files;
-  while (dirent* ent = readdir(dir)) {
-    string name(ent->d_name);
-    INFO << "Found " << name;
-    if (endsWith(name, imageSuf))
-      files.push_back(name);
-  }
+bool Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
+  const static string imageSuf = ".png";
+  auto files = filter(path.getFiles(), [](const FilePath& f) { return f.hasSuffix(imageSuf);});
   int rowLength = setWidth / size.x;
   SDL::SDL_Surface* image = createSurface(setWidth, ((files.size() + rowLength - 1) / rowLength) * size.y);
   CHECK(image) << SDL::SDL_GetError();
   for (int i : All(files)) {
-    SDL::SDL_Surface* im = SDL::IMG_Load((path + "/" + files[i]).c_str());
+    SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
     CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
     CHECK(im->w == size.x && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
     SDL::SDL_Rect offset;
     offset.x = size.x * (i % rowLength);
     offset.y = size.y * (i / rowLength);
     SDL_BlitSurface(im, nullptr, image, &offset);
-    CHECK(!tileCoords.count(files[i])) << "Duplicate name " << files[i];
-    tileCoords[files[i].substr(0, files[i].size() - imageSuf.size())] =
-        {{i % rowLength, i / rowLength}, int(tiles.size())};
+    string fileName = files[i].getFileName();
+    string spriteName = fileName.substr(0, fileName.size() - imageSuf.size());
+    CHECK(!tileCoords.count(spriteName)) << "Duplicate name " << spriteName;
+    tileCoords[spriteName] = {{i % rowLength, i / rowLength}, int(tiles.size())};
     SDL::SDL_FreeSurface(im);
   }
   tiles.push_back(Texture(image));
@@ -720,6 +710,10 @@ Vec2 Renderer::getNominalSize() const {
 }
 
 void Renderer::drawAndClearBuffer() {
+/*  static milliseconds last {0};
+  auto curTime = Clock::getRealMillis();
+  std::cout << "Draw buffer " << (curTime - last).count() << std::endl;
+  last = curTime;*/
   for (int i : All(renderList)) {
     for (auto& elem : renderList[i])
       elem();

@@ -2,8 +2,7 @@
 #include "keybinding_map.h"
 #include "gui_elem.h"
 
-KeybindingMap::KeybindingMap(const string& fromPath) {
-
+KeybindingMap::KeybindingMap(const FilePath&) {
 }
 
 bool KeybindingMap::matches(Keybinding key, SDL::SDL_Keysym sym) {

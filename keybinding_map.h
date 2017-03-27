@@ -5,7 +5,7 @@
 
 class KeybindingMap {
   public:
-  KeybindingMap(const string& fromPath);
+  KeybindingMap(const FilePath&);
   bool matches(Keybinding, SDL::SDL_Keysym);
 
   private:

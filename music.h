@@ -25,7 +25,7 @@ enum class MusicType { INTRO, MAIN, PEACEFUL, BATTLE, NIGHT, ADV_PEACEFUL, ADV_B
 
 class Jukebox {
   public:
-  Jukebox(Options*, AudioDevice&, vector<pair<MusicType, string>> tracks, float maxVolume,
+  Jukebox(Options*, AudioDevice&, vector<pair<MusicType, FilePath>> tracks, float maxVolume,
       map<MusicType, float> maxVolumes);
 
   void setType(MusicType, bool now);
@@ -42,7 +42,7 @@ class Jukebox {
   typedef std::unique_lock<std::recursive_mutex> MusicLock;
   std::recursive_mutex musicMutex;
 
-  vector<string> music;
+  vector<FilePath> music;
   unique_ptr<SoundStream> stream;
   map<MusicType, vector<int>> byType;
   int current = 0;

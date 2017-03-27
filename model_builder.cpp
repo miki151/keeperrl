@@ -537,7 +537,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
   return PModel(model);
 }
 
-PModel ModelBuilder::splashModel(const string& splashPath) {
+PModel ModelBuilder::splashModel(const FilePath& splashPath) {
   Model* m = new Model();
   Level* l = m->buildTopLevel(
       LevelBuilder(meter, Random, Level::getSplashBounds().width(), Level::getSplashBounds().height(), "Splash",

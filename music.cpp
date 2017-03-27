@@ -18,11 +18,11 @@
 #include "options.h"
 #include "audio_device.h"
 
-Jukebox::Jukebox(Options* options, AudioDevice& audio, vector<pair<MusicType, string>> tracks,
+Jukebox::Jukebox(Options* options, AudioDevice& audio, vector<pair<MusicType, FilePath> > tracks,
     float maxVol, map<MusicType, float> maxV)
     : numTracks(tracks.size()), maxVolume(maxVol), maxVolumes(maxV), audioDevice(audio) {
   for (int i : All(tracks)) {
-    music.emplace_back(tracks[i].second.c_str());
+    music.emplace_back(tracks[i].second);
     byType[tracks[i].first].push_back(i);
   }
   options->addTrigger(OptionId::MUSIC, [this](bool turnOn) { toggle(turnOn); });
@@ -90,7 +90,7 @@ void Jukebox::setType(MusicType c, bool now) {
 
 void Jukebox::play(int index) {
   stream.reset();
-  stream.reset(new SoundStream(music[current].c_str(), getMaxVolume(current)));
+  stream.reset(new SoundStream(music[current], getMaxVolume(current)));
 }
 
 void Jukebox::refresh() {

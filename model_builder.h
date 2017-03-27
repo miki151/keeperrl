@@ -27,7 +27,7 @@ class ModelBuilder {
 
   PModel quickModel();
 
-  PModel splashModel(const string& splashPath);
+  PModel splashModel(const FilePath& splashPath);
 
   Collective* spawnKeeper(Model*, PCreature);
 

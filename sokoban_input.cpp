@@ -2,10 +2,9 @@
 #include "sokoban_input.h"
 
 
-SokobanInput::SokobanInput(const string& l, const string& s) : levelsPath(l), statePath(s) {
-  ifstream input(levelsPath.c_str());
+SokobanInput::SokobanInput(const FilePath& l, const FilePath& s) : levelsPath(l), statePath(s) {
+  ifstream input(levelsPath.getPath());
   CHECK(input) << "Failed to load sokoban data from " << levelsPath;
-  CHECK(!levelsPath.empty());
 }
 
 static optional<Table<char>> readTable(ifstream& input) {
@@ -24,16 +23,16 @@ static optional<Table<char>> readTable(ifstream& input) {
   return ret;
 }
 
-static int getTableNum(const string& path) {
+static int getTableNum(const FilePath& path) {
   int ret = 0;
-  ifstream in(path.c_str());
+  ifstream in(path.getPath());
   if (in)
     in >> ret;
   return ret;
 }
 
 Table<char> SokobanInput::getNext() {
-  ifstream input(levelsPath.c_str());
+  ifstream input(levelsPath.getPath());
   CHECK(input) << "Failed to load sokoban data from " << levelsPath;
   vector<Table<char>> rest;
   while(1) {
@@ -45,6 +44,6 @@ Table<char> SokobanInput::getNext() {
   CHECK(!rest.empty()) << "Failed to load sokoban data from " << levelsPath;
   input.close();
   int curLevel = getTableNum(statePath);
-  ofstream(statePath) << (curLevel + 1);
+  ofstream(statePath.getPath()) << (curLevel + 1);
   return rest[curLevel % rest.size()];
 }

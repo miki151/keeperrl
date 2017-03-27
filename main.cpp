@@ -21,10 +21,8 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
 
 #include <exception>
-#include "dirent.h"
 
 #include "view.h"
 #include "options.h"
@@ -114,12 +112,12 @@ static void runGame(function<void()> game, function<void()> render, bool singleT
 }
 
 #endif
-void initializeRendererTiles(Renderer& r, const string& path) {
-  r.loadTilesFromDir(path + "/orig16", Vec2(16, 16));
+static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
+  r.loadTilesFromDir(path.subdirectory("orig16"), Vec2(16, 16));
 //  r.loadAltTilesFromDir(path + "/orig16_scaled", Vec2(24, 24));
-  r.loadTilesFromDir(path + "/orig24", Vec2(24, 24));
+  r.loadTilesFromDir(path.subdirectory("orig24"), Vec2(24, 24));
 //  r.loadAltTilesFromDir(path + "/orig24_scaled", Vec2(36, 36));
-  r.loadTilesFromDir(path + "/orig30", Vec2(30, 30));
+  r.loadTilesFromDir(path.subdirectory("orig30"), Vec2(30, 30));
 //  r.loadAltTilesFromDir(path + "/orig30_scaled", Vec2(45, 45));
 }
 
@@ -131,39 +129,36 @@ static map<MusicType, float> getMaxVolumes() {
   return {{MusicType::ADV_BATTLE, 0.4}, {MusicType::ADV_PEACEFUL, 0.4}};
 }
 
-vector<pair<MusicType, string>> getMusicTracks(const string& path, bool present) {
+vector<pair<MusicType, FilePath>> getMusicTracks(const DirectoryPath& path, bool present) {
   if (!present)
     return {};
   else
     return {
-    {MusicType::INTRO, path + "/intro.ogg"},
-      {MusicType::MAIN, path + "/main.ogg"},
-      {MusicType::PEACEFUL, path + "/peaceful1.ogg"},
-      {MusicType::PEACEFUL, path + "/peaceful2.ogg"},
-      {MusicType::PEACEFUL, path + "/peaceful3.ogg"},
-      {MusicType::PEACEFUL, path + "/peaceful4.ogg"},
-      {MusicType::PEACEFUL, path + "/peaceful5.ogg"},
-      {MusicType::BATTLE, path + "/battle1.ogg"},
-      {MusicType::BATTLE, path + "/battle2.ogg"},
-      {MusicType::BATTLE, path + "/battle3.ogg"},
-      {MusicType::BATTLE, path + "/battle4.ogg"},
-      {MusicType::BATTLE, path + "/battle5.ogg"},
-      {MusicType::NIGHT, path + "/night1.ogg"},
-      {MusicType::NIGHT, path + "/night2.ogg"},
-      {MusicType::NIGHT, path + "/night3.ogg"},
-      {MusicType::ADV_BATTLE, path + "/adv_battle1.ogg"},
-      {MusicType::ADV_BATTLE, path + "/adv_battle2.ogg"},
-      {MusicType::ADV_BATTLE, path + "/adv_battle3.ogg"},
-      {MusicType::ADV_BATTLE, path + "/adv_battle4.ogg"},
-      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful1.ogg"},
-      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful2.ogg"},
-      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful3.ogg"},
-      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful4.ogg"},
-      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful5.ogg"},
+      {MusicType::INTRO, path.file("intro.ogg")},
+      {MusicType::MAIN, path.file("main.ogg")},
+      {MusicType::PEACEFUL, path.file("peaceful1.ogg")},
+      {MusicType::PEACEFUL, path.file("peaceful2.ogg")},
+      {MusicType::PEACEFUL, path.file("peaceful3.ogg")},
+      {MusicType::PEACEFUL, path.file("peaceful4.ogg")},
+      {MusicType::PEACEFUL, path.file("peaceful5.ogg")},
+      {MusicType::BATTLE, path.file("battle1.ogg")},
+      {MusicType::BATTLE, path.file("battle2.ogg")},
+      {MusicType::BATTLE, path.file("battle3.ogg")},
+      {MusicType::BATTLE, path.file("battle4.ogg")},
+      {MusicType::BATTLE, path.file("battle5.ogg")},
+      {MusicType::NIGHT, path.file("night1.ogg")},
+      {MusicType::NIGHT, path.file("night2.ogg")},
+      {MusicType::NIGHT, path.file("night3.ogg")},
+      {MusicType::ADV_BATTLE, path.file("adv_battle1.ogg")},
+      {MusicType::ADV_BATTLE, path.file("adv_battle2.ogg")},
+      {MusicType::ADV_BATTLE, path.file("adv_battle3.ogg")},
+      {MusicType::ADV_BATTLE, path.file("adv_battle4.ogg")},
+      {MusicType::ADV_PEACEFUL, path.file("adv_peaceful1.ogg")},
+      {MusicType::ADV_PEACEFUL, path.file("adv_peaceful2.ogg")},
+      {MusicType::ADV_PEACEFUL, path.file("adv_peaceful3.ogg")},
+      {MusicType::ADV_PEACEFUL, path.file("adv_peaceful4.ogg")},
+      {MusicType::ADV_PEACEFUL, path.file("adv_peaceful5.ogg")},
   };
-}
-void makeDir(const string& path) {
-  boost::filesystem::create_directories(path.c_str());
 }
 
 static void fail() {
@@ -282,14 +277,14 @@ int main(int argc, char* argv[]) {
 }
 #endif
 
-static long long getInstallId(const string& path, RandomGen& random) {
+static long long getInstallId(const FilePath& path, RandomGen& random) {
   long long ret;
-  ifstream in(path);
+  ifstream in(path.getPath());
   if (in)
     in >> ret;
   else {
     ret = random.getLL();
-    ofstream(path) << ret;
+    ofstream(path.getPath()) << ret;
   }
   return ret;
 }
@@ -321,25 +316,26 @@ static int keeperMain(const variables_map& vars) {
     testAll();
     return 0;
   }
-  string dataPath;
-  if (vars.count("data_dir"))
-    dataPath = vars["data_dir"].as<string>();
-  else
-    dataPath = DATA_DIR;
-  string freeDataPath = dataPath + "/data_free";
-  string paidDataPath = dataPath + "/data";
-  string contribDataPath = dataPath + "/data_contrib";
-  bool tilesPresent = !vars.count("free_mode") && !!opendir(paidDataPath.c_str());
-  string userPath;
-  if (vars.count("user_dir"))
-    userPath = vars["user_dir"].as<string>();
+  DirectoryPath dataPath([&]() -> string {
+    if (vars.count("data_dir"))
+      return vars["data_dir"].as<string>();
+    else
+      return DATA_DIR;
+  }());
+  auto freeDataPath = dataPath.subdirectory("data_free");
+  auto paidDataPath = dataPath.subdirectory("data");
+  auto contribDataPath = dataPath.subdirectory("data_contrib");
+  bool tilesPresent = !vars.count("free_mode") && paidDataPath.exists();
+  DirectoryPath userPath([&] () -> string {
+    if (vars.count("user_dir"))
+      return vars["user_dir"].as<string>();
 #ifndef WINDOWS
-  else
-  if (const char* localPath = std::getenv("XDG_DATA_HOME"))
-    userPath = localPath + string("/KeeperRL");
+    else if (const char* localPath = std::getenv("XDG_DATA_HOME"))
+      return localPath + string("/KeeperRL");
 #endif
-  else
-    userPath = USER_DIR;
+    else
+      return USER_DIR;
+  }());
   INFO << "Data path: " << dataPath;
   INFO << "User path: " << userPath;
   string uploadUrl;
@@ -351,31 +347,35 @@ static int keeperMain(const variables_map& vars) {
 #else
     uploadUrl = "http://localhost/~michal/" + serverVersion;
 #endif
-  makeDir(userPath);
-  string settingsPath = userPath + "/options.txt";
+  userPath.createIfDoesntExist();
+  auto settingsPath = userPath.file("options.txt");
   if (vars.count("restore_settings"))
-    remove(settingsPath.c_str());
+    remove(settingsPath.getPath());
   Options options(settingsPath);
   int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
   Random.init(seed);
-  long long installId = getInstallId(userPath + "/installId.txt", Random);
-  Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
+  long long installId = getInstallId(userPath.file("installId.txt"), Random);
+  Renderer renderer(
+      "KeeperRL",
+      Vec2(24, 24),
+      contribDataPath,
+      freeDataPath.file("images/mouse_cursor.png"),
+      freeDataPath.file("images/mouse_cursor2.png"));
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
   Clock clock;
-  KeybindingMap keybindingMap(userPath + "/keybindings.txt");
+  KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap);
-  guiFactory.loadFreeImages(freeDataPath + "/images");
+  guiFactory.loadFreeImages(freeDataPath.subdirectory("images"));
   if (tilesPresent) {
-    guiFactory.loadNonFreeImages(paidDataPath + "/images");
+    guiFactory.loadNonFreeImages(paidDataPath.subdirectory("images"));
     if (!audioError)
-      soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath + "/sound");
+      soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath.subdirectory("sound"));
   }
   if (tilesPresent)
-    initializeRendererTiles(renderer, paidDataPath + "/images");
-  renderer.setCursorPath(freeDataPath + "/images/mouse_cursor.png", freeDataPath + "/images/mouse_cursor2.png");
+    initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
   unique_ptr<View> view;
   view.reset(WindowView::createDefaultView(
       {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
@@ -389,13 +389,18 @@ static int keeperMain(const variables_map& vars) {
     viewInitialized = true;
   }
   Tile::initialize(renderer, tilesPresent);
-  Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && !audioError), getMaxVolume(), getMaxVolumes());
+  Jukebox jukebox(
+      &options,
+      audioDevice,
+      getMusicTracks(paidDataPath.subdirectory("music"), tilesPresent && !audioError),
+      getMaxVolume(),
+      getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options, installId);
-  Highscores highscores(userPath + "/" + "highscores.dat", fileSharing, &options);
+  Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   optional<MainLoop::ForceGameInfo> forceGame;
   if (vars.count("force_keeper"))
     forceGame = {PlayerRole::KEEPER, CampaignType::QUICK_MAP};
-  SokobanInput sokobanInput(freeDataPath + "/sokoban_input.txt", userPath + "/sokoban_state.txt");
+  SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
       gameFinished, useSingleThread, forceGame);
   if (vars.count("worldgen_test")) {
@@ -404,7 +409,7 @@ static int keeperMain(const variables_map& vars) {
   }
   auto game = [&] {
     while (!viewInitialized) {}
-    ofstream systemInfo(userPath + "/system_info.txt");
+    ofstream systemInfo(userPath.file("system_info.txt").getPath());
     systemInfo << "KeeperRL version " << BUILD_VERSION << " " << BUILD_DATE << std::endl;
     renderer.printSystemInfo(systemInfo);
     loop.start(tilesPresent); };

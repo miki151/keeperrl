@@ -24,6 +24,8 @@
 #include "owner_pointer.h"
 #include "container_helpers.h"
 #include "container_range.h"
+#include "directory_path.h"
+#include "file_path.h"
 
 template <class T>
 string toString(const T& t) {

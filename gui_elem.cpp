@@ -2279,80 +2279,80 @@ Texture& GuiFactory::get(TexId id) {
   return textures.at(id);
 }
 
-void GuiFactory::loadFreeImages(const string& path) {
-  textures.emplace(TexId::SCROLLBAR, path + "/ui/scrollbar.png");
-  textures.emplace(TexId::SCROLL_BUTTON, path + "/ui/scrollmark.png");
-  textures.emplace(TexId::BACKGROUND_PATTERN, path + "/window_bg.png");
+void GuiFactory::loadFreeImages(const DirectoryPath& path) {
+  textures.emplace(TexId::SCROLLBAR, path.file("ui/scrollbar.png"));
+  textures.emplace(TexId::SCROLL_BUTTON, path.file("ui/scrollmark.png"));
+  textures.emplace(TexId::BACKGROUND_PATTERN, path.file("window_bg.png"));
   text = colors[ColorId::WHITE];
   titleText = colors[ColorId::YELLOW];
   inactiveText = colors[ColorId::LIGHT_GRAY];
-  textures.emplace(TexId::HORI_CORNER1, path + "/ui/horicorner1.png");
-  textures.emplace(TexId::HORI_CORNER2, path + "/ui/horicorner2.png");
-  textures.emplace(TexId::HORI_LINE, path + "/ui/horiline.png");
-  textures.emplace(TexId::HORI_MIDDLE, path + "/ui/horimiddle.png");
-  textures.emplace(TexId::VERT_BAR, path + "/ui/vertbar.png");
-  textures.emplace(TexId::HORI_BAR, path + "/ui/horibar.png");
-  textures.emplace(TexId::CORNER_TOP_LEFT, path + "/ui/cornerTOPL.png");
-  textures.emplace(TexId::CORNER_TOP_RIGHT, path + "/ui/cornerTOPR.png");
-  textures.emplace(TexId::CORNER_BOTTOM_RIGHT, path + "/ui/cornerBOTTOMR.png");
+  textures.emplace(TexId::HORI_CORNER1, path.file("ui/horicorner1.png"));
+  textures.emplace(TexId::HORI_CORNER2, path.file("ui/horicorner2.png"));
+  textures.emplace(TexId::HORI_LINE, path.file("ui/horiline.png"));
+  textures.emplace(TexId::HORI_MIDDLE, path.file("ui/horimiddle.png"));
+  textures.emplace(TexId::VERT_BAR, path.file("ui/vertbar.png"));
+  textures.emplace(TexId::HORI_BAR, path.file("ui/horibar.png"));
+  textures.emplace(TexId::CORNER_TOP_LEFT, path.file("ui/cornerTOPL.png"));
+  textures.emplace(TexId::CORNER_TOP_RIGHT, path.file("ui/cornerTOPR.png"));
+  textures.emplace(TexId::CORNER_BOTTOM_RIGHT, path.file("ui/cornerBOTTOMR.png"));
 
-  textures.emplace(TexId::HORI_BAR_MINI, path + "/ui/horibarmini.png");
-  textures.emplace(TexId::VERT_BAR_MINI, path + "/ui/vertbarmini.png");
-  textures.emplace(TexId::CORNER_MINI, path + "/ui/cornermini.png");
+  textures.emplace(TexId::HORI_BAR_MINI, path.file("ui/horibarmini.png"));
+  textures.emplace(TexId::VERT_BAR_MINI, path.file("ui/vertbarmini.png"));
+  textures.emplace(TexId::CORNER_MINI, path.file("ui/cornermini.png"));
 
-  textures.emplace(TexId::HORI_BAR_MINI2, path + "/ui/horibarmini2.png");
-  textures.emplace(TexId::VERT_BAR_MINI2, path + "/ui/vertbarmini2.png");
-  textures.emplace(TexId::CORNER_MINI2, path + "/ui/cornermini2.png");
-  textures.emplace(TexId::IMMIGRANT_BG, path + "/ui/immigrantbg.png");
-  textures.emplace(TexId::IMMIGRANT2_BG, path + "/ui/immigrant2bg.png");
-  textures.emplace(TexId::SCROLL_UP, path + "/ui/up.png");
-  textures.emplace(TexId::SCROLL_DOWN, path + "/ui/down.png");
-  textures.emplace(TexId::WINDOW_CORNER, path + "/ui/corner1.png");
-  textures.emplace(TexId::WINDOW_CORNER_EXIT, path + "/ui/corner2X.png");
-  textures.emplace(TexId::WINDOW_VERT_BAR, path + "/ui/vertibarmsg1.png");
-  textures.emplace(TexId::MAIN_MENU_HIGHLIGHT, path + "/ui/menu_highlight.png");
-  textures.emplace(TexId::SPLASH1, path + "/splash2f.png");
-  textures.emplace(TexId::SPLASH2, path + "/splash2e.png");
-  textures.emplace(TexId::LOADING_SPLASH, path + "/" + Random.choose(
+  textures.emplace(TexId::HORI_BAR_MINI2, path.file("ui/horibarmini2.png"));
+  textures.emplace(TexId::VERT_BAR_MINI2, path.file("ui/vertbarmini2.png"));
+  textures.emplace(TexId::CORNER_MINI2, path.file("ui/cornermini2.png"));
+  textures.emplace(TexId::IMMIGRANT_BG, path.file("ui/immigrantbg.png"));
+  textures.emplace(TexId::IMMIGRANT2_BG, path.file("ui/immigrant2bg.png"));
+  textures.emplace(TexId::SCROLL_UP, path.file("ui/up.png"));
+  textures.emplace(TexId::SCROLL_DOWN, path.file("ui/down.png"));
+  textures.emplace(TexId::WINDOW_CORNER, path.file("ui/corner1.png"));
+  textures.emplace(TexId::WINDOW_CORNER_EXIT, path.file("ui/corner2X.png"));
+  textures.emplace(TexId::WINDOW_VERT_BAR, path.file("ui/vertibarmsg1.png"));
+  textures.emplace(TexId::MAIN_MENU_HIGHLIGHT, path.file("ui/menu_highlight.png"));
+  textures.emplace(TexId::SPLASH1, path.file("splash2f.png"));
+  textures.emplace(TexId::SPLASH2, path.file("splash2e.png"));
+  textures.emplace(TexId::LOADING_SPLASH, path.file(Random.choose(
             "splash2a.png"_s,
             "splash2b.png"_s,
             "splash2c.png"_s,
-            "splash2d.png"_s));
-  textures.emplace(TexId::UI_HIGHLIGHT, path + "/ui/ui_highlight.png");
+            "splash2d.png"_s)));
+  textures.emplace(TexId::UI_HIGHLIGHT, path.file("ui/ui_highlight.png"));
   const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i)
-    iconTextures.push_back(Texture(path + "/icons.png", 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
+    iconTextures.push_back(Texture(path.file("icons.png"), 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
   const int statIconWidth = 18;
   for (int i = 0; i < 6; ++i)
-    iconTextures.push_back(Texture(path + "/stat_icons.png",
+    iconTextures.push_back(Texture(path.file("stat_icons.png"),
           i * statIconWidth, 0, statIconWidth, statIconWidth));
   const int moraleIconWidth = 16;
   for (int i = 0; i < 4; ++i)
-    iconTextures.push_back(Texture(path + "/morale_icons.png",
+    iconTextures.push_back(Texture(path.file("morale_icons.png"),
           0, i * moraleIconWidth, moraleIconWidth, moraleIconWidth));
   const int teamIconWidth = 16;
   for (int i = 0; i < 2; ++i)
-    iconTextures.push_back(Texture(path + "/team_icons.png",
+    iconTextures.push_back(Texture(path.file("team_icons.png"),
           0, i * teamIconWidth, teamIconWidth, teamIconWidth));
   const int spellIconWidth = 40;
   for (SpellId id : ENUM_ALL(SpellId))
-    spellTextures.push_back(Texture(path + "/spells.png",
+    spellTextures.push_back(Texture(path.file("spells.png"),
           0, int(id) * spellIconWidth, spellIconWidth, spellIconWidth));
 }
 
-void GuiFactory::loadNonFreeImages(const string& path) {
-  textures.emplace(TexId::KEEPER_CHOICE, path + "/keeper_choice.png");
-  textures.emplace(TexId::ADVENTURER_CHOICE, path + "/adventurer_choice.png");
-  textures.emplace(TexId::KEEPER_HIGHLIGHT, path + "/keeper_highlight.png");
-  textures.emplace(TexId::ADVENTURER_HIGHLIGHT, path + "/adventurer_highlight.png");
-  textures.emplace(TexId::MENU_ITEM, path + "/barmid.png");
+void GuiFactory::loadNonFreeImages(const DirectoryPath& path) {
+  textures.emplace(TexId::KEEPER_CHOICE, path.file("keeper_choice.png"));
+  textures.emplace(TexId::ADVENTURER_CHOICE, path.file("adventurer_choice.png"));
+  textures.emplace(TexId::KEEPER_HIGHLIGHT, path.file("keeper_highlight.png"));
+  textures.emplace(TexId::ADVENTURER_HIGHLIGHT, path.file("adventurer_highlight.png"));
+  textures.emplace(TexId::MENU_ITEM, path.file("barmid.png"));
   // If menu_core fails to load, try the lower resolution versions
-  if (auto tex = Texture::loadMaybe(path + "/menu_core.png")) {
+  if (auto tex = Texture::loadMaybe(path.file("menu_core.png"))) {
     textures.emplace(TexId::MENU_CORE, std::move(*tex));
-    textures.emplace(TexId::MENU_MOUTH, path + "/menu_mouth.png");
+    textures.emplace(TexId::MENU_MOUTH, path.file("menu_mouth.png"));
   } else {
-    textures.emplace(TexId::MENU_CORE, path + "/menu_core_sm.png");
-    textures.emplace(TexId::MENU_MOUTH, path + "/menu_mouth_sm.png");
+    textures.emplace(TexId::MENU_CORE, path.file("menu_core_sm.png"));
+    textures.emplace(TexId::MENU_MOUTH, path.file("menu_mouth_sm.png"));
   }
 }
 

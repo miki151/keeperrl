@@ -2430,7 +2430,7 @@ class SpecificArea : public LevelMaker {
 };
 
 PLevelMaker LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory heroes, CreatureFactory monsters,
-    CreatureFactory imps, const string& splashPath) {
+    CreatureFactory imps, const FilePath& splashPath) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareId::BLACK_FLOOR));
   Rectangle leaderSpawn(

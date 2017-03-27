@@ -9,7 +9,7 @@ typedef unsigned int OpenalId;
 
 class SoundBuffer {
   public:
-  SoundBuffer(const char* path);
+  SoundBuffer(const FilePath&);
   ~SoundBuffer();
   SoundBuffer(SoundBuffer&&);
 
@@ -36,7 +36,7 @@ class AudioDevice;
 
 class SoundStream {
   public:
-  SoundStream(const char* path, double volume);
+  SoundStream(const FilePath&, double volume);
   bool isPlaying() const;
   ~SoundStream();
   void setVolume(double);
@@ -44,7 +44,7 @@ class SoundStream {
 
   private:
   void loop(double volume);
-  void init(const char* path);
+  void init(const FilePath&);
   SoundSource source;
   OpenalId buffers[2];
   HeapAllocated<OggVorbis_File> file;

@@ -9,11 +9,11 @@ class SoundBuffer;
 
 class SoundLibrary {
   public:
-  SoundLibrary(Options*, AudioDevice&, const string& path);
+  SoundLibrary(Options*, AudioDevice&, const DirectoryPath&);
   void playSound(const Sound&);
 
   private:
-  void addSounds(SoundId, const string& path);
+  void addSounds(SoundId, const DirectoryPath&);
   EnumMap<SoundId, vector<SoundBuffer>> sounds;
   bool on;
   AudioDevice& audioDevice;

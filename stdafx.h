@@ -102,8 +102,11 @@
 #include <boost/variant.hpp>
 #include <boost/any.hpp>
 #include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 #include <boost/version.hpp>
 #include <boost/operators.hpp>
+#include <boost/filesystem.hpp>
+#include "dirent.h"
 
 #ifdef DEBUG_STL
 

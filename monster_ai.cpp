@@ -950,9 +950,9 @@ class SplashItems : public TaskCallback {
     return Task::bringItem(this, Position(pos, level), it, {Position(target, level)}, 100);
   }
 
-  void setInitialized(const string& splashPath) {
+  void setInitialized(const FilePath& splashPath) {
     initialized = true;
-    ifstream iff(splashPath.c_str());
+    ifstream iff(splashPath.getPath());
     CHECK(!!iff);
     Vec2 sz;
     iff >> sz.x >> sz.y;
@@ -977,11 +977,13 @@ class SplashItems : public TaskCallback {
   bool initialized = false;
   vector<Vec2> targetsGold;
   vector<Vec2> targetsCorpse;
-} splashItems;
+};
+
+static SplashItems splashItems;
 
 class SplashImps : public Behaviour {
   public:
-  SplashImps(Creature* c, const string& splash) : Behaviour(c), splashPath(splash) {}
+  SplashImps(Creature* c, const FilePath& splash) : Behaviour(c), splashPath(splash) {}
 
   void initializeSplashItems() {
     for (Vec2 v : Level::getSplashVisibleBounds()) {
@@ -990,7 +992,7 @@ class SplashImps : public Behaviour {
       if (!inv.empty())
         splashItems.addItems(v, inv);
     }
-    splashItems.setInitialized(splashPath);
+    splashItems.setInitialized(*splashPath);
   }
 
   virtual MoveInfo getMove() override {
@@ -1026,7 +1028,7 @@ class SplashImps : public Behaviour {
   private:
   optional<Vec2> initialPos;
   PTask task;
-  string splashPath;
+  optional<FilePath> splashPath;
 };
 
 class AvoidFire : public Behaviour {
@@ -1286,7 +1288,7 @@ MonsterAIFactory MonsterAIFactory::splashMonsters() {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::splashImps(const string& splashPath) {
+MonsterAIFactory MonsterAIFactory::splashImps(const FilePath& splashPath) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         new SplashImps(c, splashPath),

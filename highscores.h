@@ -8,7 +8,7 @@ class Options;
 
 class Highscores {
   public:
-  Highscores(const string& localPath, FileSharing&, Options*);
+  Highscores(const FilePath& localPath, FileSharing&, Options*);
 
   struct Score {
     static optional<Score> parse(const string& buf);
@@ -32,15 +32,15 @@ class Highscores {
   void present(View*, optional<Score> lastAdded = none) const;
   void add(Score);
 
-  static vector<Score> fromFile(const string& path);
+  static vector<Score> fromFile(const FilePath&);
 
   private:
   static vector<Score> fromStream(istream&);
   static vector<Score> fromSync(FileSharing&);
   static vector<Score> fromString(const string&);
-  static void saveToFile(const vector<Score>&, const string& path);
+  static void saveToFile(const vector<Score>&, const FilePath&);
 
-  string localPath;
+  FilePath localPath;
   FileSharing& fileSharing;
   vector<Score> localScores;
   vector<Score> remoteScores;

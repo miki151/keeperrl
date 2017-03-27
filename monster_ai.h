@@ -70,7 +70,7 @@ class MonsterAIFactory {
   static MonsterAIFactory idle();
   static MonsterAIFactory splashHeroes(bool leader);
   static MonsterAIFactory splashMonsters();
-  static MonsterAIFactory splashImps(const string& splashPath);
+  static MonsterAIFactory splashImps(const FilePath& splashPath);
 
   private:
   typedef function<MonsterAI*(Creature*)> MakerFun;

@@ -82,10 +82,10 @@ class Texture {
   Texture(const Texture&) = delete;
   Texture(Texture&&);
   Texture& operator = (Texture&&);
-  Texture(const string& path);
-  Texture(const string& path, int px, int py, int kx, int ky);
+  Texture(const FilePath& path);
+  Texture(const FilePath& path, int px, int py, int kx, int ky);
   explicit Texture(SDL::SDL_Surface*);
-  static optional<Texture> loadMaybe(const string& path);
+  static optional<Texture> loadMaybe(const FilePath&);
 
   optional<SDL::GLenum> loadFromMaybe(SDL::SDL_Surface*);
   const Vec2& getSize() const;
@@ -101,7 +101,7 @@ class Texture {
   optional<SDL::GLuint> texId;
   Vec2 size;
   Vec2 realSize;
-  string path;
+  optional<FilePath> path;
 };
 
 class Renderer {
@@ -118,7 +118,8 @@ class Renderer {
     int texNum;
   };
 
-  Renderer(const string& windowTile, Vec2 nominalTileSize, const string& fontPath);
+  Renderer(const string& windowTile, Vec2 nominalTileSize, const DirectoryPath& fontPath, const FilePath& cursorPath,
+      const FilePath& clickedCursorPath);
   void setFullscreen(bool);
   void setFullscreenMode(int);
   void setZoom(int);
@@ -164,9 +165,9 @@ class Renderer {
   void drawQuads();
   static Color getBleedingColor(const ViewObject&);
   Vec2 getSize();
-  bool loadTilesFromDir(const string& path, Vec2 size);
-  bool loadTilesFromDir(const string& path, vector<Texture>&, Vec2 size, int setWidth);
-  bool loadAltTilesFromDir(const string& path, Vec2 altSize);
+  bool loadTilesFromDir(const DirectoryPath& path, Vec2 size);
+  bool loadTilesFromDir(const DirectoryPath&, vector<Texture>&, Vec2 size, int setWidth);
+  bool loadAltTilesFromDir(const DirectoryPath&, Vec2 altSize);
 
   void drawAndClearBuffer();
   void resize(int width, int height);
@@ -181,7 +182,6 @@ class Renderer {
 
   void startMonkey();
   bool isMonkey();
-  void setCursorPath(const string& path, const string& pathClicked);
 
   void printSystemInfo(ostream&);
 
@@ -224,7 +224,7 @@ class Renderer {
   };
   FontSet fonts;
   sth_stash* fontStash;
-  void loadFonts(const string& fontPath, FontSet&);
+  void loadFonts(const DirectoryPath& fontPath, FontSet&);
   int getFont(Renderer::FontId);
   optional<thread::id> renderThreadId;
   bool fullscreen;
@@ -234,11 +234,11 @@ class Renderer {
   void setGlScissor(optional<Rectangle>);
   bool cursorEnabled = true;
   void reloadCursors();
-  string cursorPath;
-  string clickedCursorPath;
+  FilePath cursorPath;
+  FilePath clickedCursorPath;
   SDL::SDL_Cursor* originalCursor;
   SDL::SDL_Cursor* cursor;
   SDL::SDL_Cursor* cursorClicked;
-  SDL::SDL_Surface* loadScaledSurface(const string& path, double scale);
+  SDL::SDL_Surface* loadScaledSurface(const FilePath& path, double scale);
 };
 

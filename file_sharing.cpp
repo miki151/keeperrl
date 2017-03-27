@@ -104,17 +104,17 @@ static optional<string> curlUpload(const char* path, const char* url, void* prog
     return string("Failed to initialize libcurl");
 }
 
-optional<string> FileSharing::uploadSite(const string& path, ProgressMeter& meter) {
+optional<string> FileSharing::uploadSite(const FilePath& path, ProgressMeter& meter) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return none;
   static ProgressCallback callback = [&] (double p) { meter.setProgress(p);};
-  return curlUpload(path.c_str(), (uploadUrl + "/upload_site.php").c_str(), &callback, 0);
+  return curlUpload(path.getPath(), (uploadUrl + "/upload_site.php").c_str(), &callback, 0);
 }
 
-void FileSharing::uploadHighscores(const string& path) {
+void FileSharing::uploadHighscores(const FilePath& path) {
   if (options.getBoolValue(OptionId::ONLINE))
     uploadQueue.push([this, path] {
-      curlUpload(path.c_str(), (uploadUrl + "/upload_scores.php").c_str(), nullptr, 5);
+      curlUpload(path.getPath(), (uploadUrl + "/upload_scores.php").c_str(), nullptr, 5);
     });
 }
 
@@ -269,14 +269,14 @@ static size_t writeToFile(void *ptr, size_t size, size_t nmemb, FILE *stream) {
   return fwrite(ptr, size, nmemb, stream);
 }
 
-optional<string> FileSharing::download(const string& filename, const string& dir, ProgressMeter& meter) {
+optional<string> FileSharing::download(const string& filename, const DirectoryPath& dir, ProgressMeter& meter) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return string("Downloading not enabled!");
   //progressFun = [&] (double p) { meter.setProgress(p);};
   if (CURL *curl = curl_easy_init()) {
-    string path = dir + "/" + filename;
+    auto path = dir.file(filename);
     INFO << "Downloading to " << path;
-    if (FILE* fp = fopen(path.c_str(), "wb")) {
+    if (FILE* fp = fopen(path.getPath(), "wb")) {
       curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(uploadUrl + "/uploads/" + filename).c_str());
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToFile);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
@@ -288,16 +288,16 @@ optional<string> FileSharing::download(const string& filename, const string& dir
       CURLcode res = curl_easy_perform(curl);
       string ret;
       if(res != CURLE_OK)
-        ret = string("Upload failed: ") + curl_easy_strerror(res);
+        ret = string("Download failed: ") + curl_easy_strerror(res);
       curl_easy_cleanup(curl);
       fclose(fp);
       if (!ret.empty()) {
-        remove(path.c_str());
+        remove(path.getPath());
         return ret;
       } else
         return none;
     } else
-      return string("Failed to open file: " + path);
+      return string("Failed to open file: "_s + path.getPath());
   } else
     return string("Failed to initialize libcurl");
 }

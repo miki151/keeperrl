@@ -11,7 +11,7 @@ class FileSharing {
   public:
   FileSharing(const string& uploadUrl, Options&, long long installId);
 
-  optional<string> uploadSite(const string& path, ProgressMeter&);
+  optional<string> uploadSite(const FilePath& path, ProgressMeter&);
   struct SiteInfo {
     SavedGameInfo gameInfo;
     SaveFileInfo fileInfo;
@@ -20,11 +20,11 @@ class FileSharing {
     int version;
   };
   optional<vector<SiteInfo>> listSites();
-  optional<string> download(const string& filename, const string& dir, ProgressMeter&);
+  optional<string> download(const string& filename, const DirectoryPath& dir, ProgressMeter&);
 
   typedef map<string, string> GameEvent;
   void uploadGameEvent(const GameEvent&);
-  void uploadHighscores(const string& path);
+  void uploadHighscores(const FilePath&);
 
   struct BoardMessage {
     string text;

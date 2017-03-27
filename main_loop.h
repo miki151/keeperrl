@@ -25,7 +25,7 @@ class MainLoop {
     PlayerRole role;
     CampaignType type;
   };
-  MainLoop(View*, Highscores*, FileSharing*, const string& dataFreePath, const string& userPath,
+  MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
       Options*, Jukebox*, SokobanInput*, std::atomic<bool>& finished, bool useSingleThread,
       optional<ForceGameInfo>);
 
@@ -38,7 +38,7 @@ class MainLoop {
 
   optional<RetiredGames> getRetiredGames(CampaignType);
   int getSaveVersion(const SaveFileInfo& save);
-  void uploadFile(const string& path, GameSaveType);
+  void uploadFile(const FilePath& path, GameSaveType);
   void saveUI(PGame&, GameSaveType type, SplashType splashType);
   void getSaveOptions(const vector<pair<GameSaveType, string>>&,
       vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
@@ -54,25 +54,25 @@ class MainLoop {
   PGame prepareCampaign(RandomGen&, const optional<ForceGameInfo>&);
   void playGame(PGame&&, bool withMusic, bool noAutoSave);
   void splashScreen();
-  void showCredits(const string& path, View*);
+  void showCredits(const FilePath& path, View*);
 
   void playMenuMusic();
 
   Table<PModel> prepareCampaignModels(CampaignSetup& campaign, RandomGen& random);
   PModel keeperSingleMap(RandomGen& random);
   PModel quickGame(RandomGen& random);
-  PGame loadGame(string file);
+  PGame loadGame(const FilePath&);
   PGame loadPrevious();
-  string getSavePath(const PGame&, GameSaveType);
+  FilePath getSavePath(const PGame&, GameSaveType);
   void eraseSaveFile(const PGame&, GameSaveType);
 
   bool downloadGame(const string& filename);
   bool eraseSave();
-  static vector<SaveFileInfo> getSaveFiles(const string& path, const string& suffix);
+  static vector<SaveFileInfo> getSaveFiles(const DirectoryPath& path, const string& suffix);
 
   View* view;
-  string dataFreePath;
-  string userPath;
+  DirectoryPath dataFreePath;
+  DirectoryPath userPath;
   Options* options;
   Jukebox* jukebox;
   Highscores* highscores;

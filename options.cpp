@@ -159,7 +159,7 @@ vector<OptionId> Options::getOptions(OptionSet set) {
   return optionSets.at(set);
 }
 
-Options::Options(const string& path) : filename(path) {
+Options::Options(const FilePath& path) : filename(path) {
   readValues();
 }
 
@@ -373,7 +373,7 @@ void Options::handle(View* view, OptionSet set, int lastIndex) {
 void Options::readValues() {
   if (!values) {
     values = defaults;
-    ifstream in(filename);
+    ifstream in(filename.getPath());
     while (1) {
       char buf[100];
       in.getline(buf, 100);
@@ -396,7 +396,7 @@ void Options::readValues() {
 }
 
 void Options::writeValues() {
-  ofstream out(filename);
+  ofstream out(filename.getPath());
   for (OptionId id : ENUM_ALL(OptionId))
     out << EnumInfo<OptionId>::getString(id) << "," << (*values)[id] << std::endl;
 }

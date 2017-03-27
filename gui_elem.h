@@ -54,8 +54,8 @@ class GuiElem {
 class GuiFactory {
   public:
   GuiFactory(Renderer&, Clock*, Options*, KeybindingMap*);
-  void loadFreeImages(const string& path);
-  void loadNonFreeImages(const string& path);
+  void loadFreeImages(const DirectoryPath&);
+  void loadNonFreeImages(const DirectoryPath&);
 
   vector<string> breakText(const string& text, int maxWidth);
 

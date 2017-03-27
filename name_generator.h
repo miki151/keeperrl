@@ -42,7 +42,7 @@ class NameGenerator : public Singleton<NameGenerator, NameGeneratorId> {
   NameGenerator() = default;
   string getNext();
 
-  static void init(const string&);
+  static void init(const DirectoryPath&);
 
   private:
   NameGenerator(vector<string> names, bool oneName = false);

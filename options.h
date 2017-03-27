@@ -62,7 +62,7 @@ class View;
 class Options {
   public:
   typedef variant<int, string> Value;
-  Options(const string& path);
+  Options(const FilePath& path);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
   CreatureId getCreatureId(OptionId);
@@ -92,7 +92,7 @@ class Options {
   void readValues();
   optional<EnumMap<OptionId, Value>> values;
   void writeValues();
-  string filename;
+  FilePath filename;
   EnumMap<OptionId, string> defaultStrings;
   EnumMap<OptionId, optional<Value>> overrides;
   EnumMap<OptionId, vector<string>> choices;

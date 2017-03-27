@@ -9,7 +9,7 @@
 
 const static int highscoreVersion = 1;
 
-Highscores::Highscores(const string& local, FileSharing& sharing, Options* o)
+Highscores::Highscores(const FilePath& local, FileSharing& sharing, Options* o)
     : localPath(local), fileSharing(sharing), options(o) {
   localScores = fromFile(localPath);
   remoteScores = fromString(fileSharing.downloadHighscores(highscoreVersion));
@@ -38,8 +38,8 @@ vector<Highscores::Score> Highscores::fromStream(istream& in) {
   return ret;
 }
 
-void Highscores::saveToFile(const vector<Score>& scores, const string& path) {
-  CompressedOutput out(path.c_str());
+void Highscores::saveToFile(const vector<Score>& scores, const FilePath& path) {
+  CompressedOutput out(path.getPath());
   out.getArchive() << BOOST_SERIALIZATION_NVP(scores);
 }
 
@@ -48,10 +48,10 @@ bool Highscores::Score::operator == (const Score& s) const {
     && points == s.points && turns == s.turns;
 }
 
-vector<Highscores::Score> Highscores::fromFile(const string& path) {
+vector<Highscores::Score> Highscores::fromFile(const FilePath& path) {
   vector<Highscores::Score> scores;
   try {
-    CompressedInput in(path.c_str());
+    CompressedInput in(path.getPath());
     in.getArchive() >> BOOST_SERIALIZATION_NVP(scores);
   } catch (...) {}
   return filter(scores, [](const Score& s) { return s.version == highscoreVersion;});
