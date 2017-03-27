@@ -1819,7 +1819,7 @@ Rectangle GuiBuilder::getMenuPosition(MenuType type, int numElems) {
       break;
     case MenuType::GAME_CHOICE:
       windowWidth = 0.41 * renderer.getSize().y;
-      ySpacing = renderer.getSize().y * 0.28;
+      ySpacing = renderer.getSize().y * 0.25;
       yOffset = renderer.getSize().y * 0.05;
       break;
     default: ySpacing = 100; break;

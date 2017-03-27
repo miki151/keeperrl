@@ -923,6 +923,14 @@ const static vector<GameChoice> gameChoices {
    "Play as an adventurer. Roam the land in search of adventures and loot!"},
 };
 
+static const char* getRoleText(NonRoleChoice c) {
+  switch (c) {
+    case NonRoleChoice::GO_BACK: return "Go back";
+    case NonRoleChoice::LOAD_GAME: return "Load game";
+    case NonRoleChoice::TUTORIAL: return "Tutorial";
+  }
+}
+
 SGuiElem WindowView::drawGameChoices(optional<PlayerRoleChoice>& choice, optional<PlayerRoleChoice>& index) {
   vector<SGuiElem> choiceElems;
   const Vec2 hintSize(500, 100);
@@ -943,33 +951,38 @@ SGuiElem WindowView::drawGameChoices(optional<PlayerRoleChoice>& choice, optiona
               0.94, gui.TOP)),
             PlayerRoleChoice(elem.type), index)
           )));
+  vector<SGuiElem> nonRoleChoices;
+  for (auto nonRoleChoice : ENUM_ALL(NonRoleChoice))
+    nonRoleChoices.push_back(
+        gui.stack(
+            gui.button([&choice, nonRoleChoice] { choice = nonRoleChoice;}),
+            gui.mainMenuLabelBg(getRoleText(nonRoleChoice), 0.15),
+            gui.mouseHighlightGameChoice(gui.mainMenuLabel(getRoleText(nonRoleChoice), 0.15),
+                PlayerRoleChoice(nonRoleChoice), index))
+        );
   return gui.verticalAspect(
       gui.marginFit(
       gui.horizontalListFit(std::move(choiceElems), 0),
-      gui.topMargin(30, gui.verticalListFit(makeVec<SGuiElem>(
-          gui.stack(
-            gui.button([&] { choice = PlayerRoleChoice(LoadGameChoice());}),
-            gui.mainMenuLabelBg("Load game", 0.15),
-            gui.mouseHighlightGameChoice(gui.mainMenuLabel("Load game", 0.15), PlayerRoleChoice(LoadGameChoice()), index)),
-          gui.stack(
-            gui.button([&] { choice = PlayerRoleChoice(GoBackChoice());}),
-            gui.mainMenuLabelBg("Go back", 0.15),
-            gui.mouseHighlightGameChoice(gui.mainMenuLabel("Go back", 0.15), PlayerRoleChoice(GoBackChoice()), index))), 0)),
-      0.7, gui.TOP), 0.6 * gameChoices.size());
+      gui.topMargin(30, gui.verticalListFit(nonRoleChoices, 0)),
+      0.65, gui.TOP), 0.6 * gameChoices.size());
 }
 
 PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> index) {
+  int numRoles = EnumInfo<PlayerRole>::size;
+  int numNonRoles = EnumInfo<NonRoleChoice>::size;
   if (!useTiles) {
-    if (auto ind = chooseFromListInternal("", {
-          ListElem("Choose your role:", ListElem::TITLE),
-          "Keeper",
-          "Adventurer",
-          "Load game",
-          },
-        0, MenuType::MAIN, nullptr))
-      return *ind == 2 ? LoadGameChoice() : PlayerRoleChoice((PlayerRole)(*ind));
-    else
-      return GoBackChoice();
+    vector<ListElem> choices {ListElem("Choose your role:", ListElem::TITLE)};
+    for (auto role : ENUM_ALL(PlayerRole))
+      choices.emplace_back("Play as " + EnumInfo<PlayerRole>::getString(role));
+    for (auto nonRole : ENUM_ALL(NonRoleChoice))
+      choices.emplace_back(getRoleText(nonRole));
+    if (auto ind = chooseFromListInternal("", choices, 0, MenuType::MAIN, nullptr)) {
+      if (*ind < numRoles)
+        return PlayerRole(*ind);
+      else
+        return NonRoleChoice(*ind - numRoles);
+    } else
+      return NonRoleChoice::GO_BACK;
   }
   RecursiveLock lock(renderMutex);
   uiLock = true;
@@ -990,7 +1003,6 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
         return *choice;
       if (considerResizeEvent(event))
         continue;
-      int numRoles = EnumInfo<PlayerRole>::size;
       if (event.type == SDL::SDL_KEYDOWN)
         switch (event.key.keysym.sym) {
           case SDL::SDLK_KP_4:
@@ -998,10 +1010,13 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
             if (!index)
               index = (PlayerRole) 0;
             else
-              apply_visitor(*index, makeDefaultVisitor(
-                  [&](PlayerRole& role) { role = PlayerRole(((int) role - 1 + numRoles) % numRoles); },
-                  [&](LoadGameChoice) { index = (PlayerRole) 0; },
-                  [&](GoBackChoice) { index = (PlayerRole) 0; }
+              apply_visitor(*index, makeVisitor<void>(
+                  [&] (PlayerRole role) {
+                    index = PlayerRoleChoice(PlayerRole(((int) role - 1 + numRoles) % numRoles));
+                  },
+                  [&] (NonRoleChoice) {
+                    index = PlayerRoleChoice(PlayerRole(0));
+                  }
               ));
             break;
           case SDL::SDLK_KP_6:
@@ -1009,11 +1024,14 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
             if (!index)
               index = (PlayerRole) (numRoles - 1);
             else
-              apply_visitor(*index, makeDefaultVisitor(
-                  [&](PlayerRole& role) { role = PlayerRole(((int) role - 1 + numRoles) % numRoles); },
-                  [&](LoadGameChoice) { index = (PlayerRole) (numRoles - 1); },
-                  [&](GoBackChoice) { index = (PlayerRole) (numRoles - 1); }
-            ));
+              apply_visitor(*index, makeVisitor<void>(
+                  [&] (PlayerRole role) {
+                    index = PlayerRoleChoice(PlayerRole(((int) role + 1) % numRoles));
+                  },
+                  [&] (NonRoleChoice) {
+                    index = PlayerRoleChoice(PlayerRole(numRoles - 1));
+                  }
+              ));
             break;
           }
           case SDL::SDLK_KP_8:
@@ -1021,10 +1039,16 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
             if (!index)
               index = (PlayerRole) 0;
             else
-              apply_visitor(*index, makeDefaultVisitor(
-                  [&](PlayerRole&) { index = GoBackChoice(); },
-                  [&](LoadGameChoice) { index = (PlayerRole) 0; },
-                  [&](GoBackChoice) { index = LoadGameChoice(); }
+              apply_visitor(*index, makeVisitor<void>(
+                  [&] (PlayerRole) {
+                    index = PlayerRoleChoice(NonRoleChoice(numNonRoles - 1));
+                  },
+                  [&] (NonRoleChoice choice) {
+                    if ((int) choice == 0)
+                      index = PlayerRoleChoice(PlayerRole(0));
+                    else
+                      index = PlayerRoleChoice(NonRoleChoice((int) choice - 1));
+                  }
               ));
             break;
           case SDL::SDLK_KP_2:
@@ -1032,10 +1056,16 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
             if (!index)
               index = (PlayerRole) 0;
             else
-              apply_visitor(*index, makeDefaultVisitor(
-                  [&](PlayerRole& role) { index = LoadGameChoice(); },
-                  [&](LoadGameChoice) { index = GoBackChoice(); },
-                  [&](GoBackChoice) { index = (PlayerRole) 0; }
+              apply_visitor(*index, makeVisitor<void>(
+                  [&] (PlayerRole role) {
+                    index = PlayerRoleChoice(NonRoleChoice(0));
+                  },
+                  [&] (NonRoleChoice choice) {
+                    if ((int) choice >= numNonRoles - 1)
+                      index = PlayerRoleChoice(PlayerRole(0));
+                    else
+                      index = PlayerRoleChoice(NonRoleChoice((int) choice + 1));
+                  }
               ));
             break;
           case SDL::SDLK_KP_5:
@@ -1045,7 +1075,7 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
               return *index;
             break;
           case SDL::SDLK_ESCAPE:
-            return GoBackChoice();
+            return PlayerRoleChoice(NonRoleChoice::GO_BACK);
           default: break;
         }
     }

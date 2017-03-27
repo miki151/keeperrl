@@ -1,6 +1,11 @@
 #pragma once
 
-struct LoadGameChoice { bool operator == (LoadGameChoice) const { return true; } };
-struct GoBackChoice { bool operator == (GoBackChoice) const { return true; } };
-using PlayerRoleChoice = variant<PlayerRole, LoadGameChoice, GoBackChoice>;
+#include "util.h"
 
+RICH_ENUM(NonRoleChoice,
+  TUTORIAL,
+  LOAD_GAME,
+  GO_BACK
+);
+
+using PlayerRoleChoice = variant<PlayerRole, NonRoleChoice>;

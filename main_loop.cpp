@@ -333,23 +333,27 @@ PGame MainLoop::prepareCampaign(RandomGen& random, const optional<ForceGameInfo>
   while (1) {
     choice = view->getPlayerRoleChoice(choice);
     if (auto ret = apply_visitor(choice, makeVisitor<optional<PGame>>(
-        [&](PlayerRole role) -> optional<PGame> {
+        [&] (PlayerRole role) -> optional<PGame> {
           CampaignBuilder builder(view, random, options, role);
           if (auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {
             return Game::campaignGame(prepareCampaignModels(*result, random), *result);
           } else
             return none;
         },
-        [&](LoadGameChoice&) -> optional<PGame> {
-          if (auto game = loadPrevious())
-            return std::move(game);
-          else
-            return none;
-        },
-        [&](GoBackChoice&) -> optional<PGame> {
-          return PGame(nullptr);
+        [&] (NonRoleChoice choice) -> optional<PGame> {
+          switch (choice) {
+            case NonRoleChoice::LOAD_GAME:
+              if (auto game = loadPrevious())
+                return std::move(game);
+              else
+                return none;
+            case NonRoleChoice::TUTORIAL:
+              return prepareTutorial();
+            case NonRoleChoice::GO_BACK:
+              return PGame(nullptr);
+          }
         }
-      )))
+        )))
       return std::move(*ret);
   }
 }
@@ -418,26 +422,21 @@ void MainLoop::start(bool tilesPresent) {
       choice = 1;
     else
       choice = view->chooseFromList("", {
-        "Tutorial", "Play", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);
+        "Play", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);
     if (!choice)
       continue;
     lastIndex = *choice;
     switch (*choice) {
       case 0:
-        if (PGame game = prepareTutorial())
-          playGame(std::move(game), true, false);
-        view->reset();
-        break;
-      case 1:
         if (PGame game = prepareCampaign(Random, forceGame))
           playGame(std::move(game), true, false);
         view->reset();
         forceGame = none;
         break;
-      case 2: options->handle(view, OptionSet::GENERAL); break;
-      case 3: highscores->present(view); break;
-      case 4: showCredits(dataFreePath.file("credits.txt"), view); break;
-      case 5: finished = true; break;
+      case 1: options->handle(view, OptionSet::GENERAL); break;
+      case 2: highscores->present(view); break;
+      case 3: showCredits(dataFreePath.file("credits.txt"), view); break;
+      case 4: finished = true; break;
     }
     if (finished)
       break;
