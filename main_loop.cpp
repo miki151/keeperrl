@@ -419,7 +419,7 @@ void MainLoop::start(bool tilesPresent) {
     playMenuMusic();
     optional<int> choice;
     if (forceGame)
-      choice = 1;
+      choice = 0;
     else
       choice = view->chooseFromList("", {
         "Play", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);

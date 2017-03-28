@@ -20,7 +20,7 @@
 
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
-#include <boost/program_options.hpp>
+#include "extern/ProgramOptions.h"
 
 #include <exception>
 
@@ -69,7 +69,6 @@
 #endif
 
 using namespace boost::iostreams;
-using namespace boost::program_options;
 using namespace boost::archive;
 
 
@@ -165,8 +164,8 @@ static void fail() {
   *((int*) 0x1234) = 0; // best way to fail
 }
 
-static int keeperMain(const variables_map&);
-static options_description getOptions();
+static int keeperMain(po::parser&);
+static po::parser getCommandLineFlags();
 
 #ifdef VSTUDIO
 
@@ -238,28 +237,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #endif
 
 
-static options_description getOptions() {
-  options_description flags("KeeperRL");
-  flags.add_options()
-    ("help", "Print help")
-    ("steam", "Run with Steam")
-    ("no_minidump", "Don't write minidumps when crashed.")
-    ("single_thread", "Use a single thread for rendering and game logic")
-    ("user_dir", value<string>(), "Directory for options and save files")
-    ("data_dir", value<string>(), "Directory containing the game data")
-    ("upload_url", value<string>(), "URL for uploading maps")
-    ("restore_settings", "Restore settings to default values.")
-    ("run_tests", "Run all unit tests and exit")
-    ("worldgen_test", value<int>(), "Test how often world generation fails")
-    ("stderr", "Log to stderr")
-    ("nolog", "No logging")
-    ("free_mode", "Run in free ascii mode")
+static po::parser getCommandLineFlags() {
+  po::parser flags;
+  flags["help"].description("Print help");
+  flags["steam"].description("Run with Steam");
+  flags["no_minidump"].description("Don't write minidumps when crashed.");
+  flags["single_thread"].description("Use a single thread for rendering and game logic");
+  flags["user_dir"].type(po::string).description("Directory for options and save files");
+  flags["data_dir"].type(po::string).description("Directory containing the game data");
+  flags["upload_url"].type(po::string).description("URL for uploading maps");
+  flags["restore_settings"].description("Restore settings to default values.");
+  flags["run_tests"].description("Run all unit tests and exit");
+  flags["worldgen_test"].type(po::i32).description("Test how often world generation fails");
+  flags["stderr"].description("Log to stderr");
+  flags["nolog"].description("No logging");
+  flags["free_mode"].description("Run in free ascii mode");
 #ifndef RELEASE
-    ("force_keeper", "Skip main menu and force keeper mode")
+  flags["force_keeper"].description("Skip main menu and force keeper mode");
 #endif
-    ("seed", value<int>(), "Use given seed")
-    ("record", value<string>(), "Record game to file")
-    ("replay", value<string>(), "Replay game from file");
+  flags["seed"].type(po::i32).description("Use given seed");
+  flags["record"].type(po::string).description("Record game to file");
+  flags["replay"].type(po::string).description("Replay game from file");
   return flags;
 }
 
@@ -271,9 +269,10 @@ static options_description getOptions() {
 int main(int argc, char* argv[]) {
   StackPrinter::initialize(argv[0], time(0));
   std::set_terminate(fail);
-  variables_map vars;
-  store(parse_command_line(argc, argv, getOptions()), vars);
-  keeperMain(vars);
+  po::parser flags = getCommandLineFlags();
+  if (!flags.parseArgs(argc, argv))
+    return -1;
+  keeperMain(flags);
 }
 #endif
 
@@ -291,9 +290,9 @@ static long long getInstallId(const FilePath& path, RandomGen& random) {
 
 const static string serverVersion = "21";
 
-static int keeperMain(const variables_map& vars) {
-  if (vars.count("help")) {
-    std::cout << getOptions() << endl;
+static int keeperMain(po::parser& commandLineFlags) {
+  if (commandLineFlags["help"].was_set()) {
+    std::cout << commandLineFlags << endl;
     return 0;
   }
   bool useSingleThread = true;//vars.count("single_thread");
@@ -301,34 +300,34 @@ static int keeperMain(const variables_map& vars) {
   FatalLog.addOutput(DebugOutput::toStream(std::cerr));
 #ifndef RELEASE
   ogzstream compressedLog("log.gz");
-  if (!vars.count("nolog"))
+  if (!commandLineFlags["nolog"].was_set())
     InfoLog.addOutput(DebugOutput::toStream(compressedLog));
 #endif
   FatalLog.addOutput(DebugOutput::toString(
       [](const string& s) { ofstream("stacktrace.out") << s << "\n" << std::flush; } ));
-  if (vars.count("stderr") || vars.count("run_tests"))
+  if (commandLineFlags["stderr"].was_set() || commandLineFlags["run_tests"].was_set())
     InfoLog.addOutput(DebugOutput::toStream(std::cerr));
   Skill::init();
   Technology::init();
   Spell::init();
   Vision::init();
-  if (vars.count("run_tests")) {
+  if (commandLineFlags["run_tests"].was_set()) {
     testAll();
     return 0;
   }
   DirectoryPath dataPath([&]() -> string {
-    if (vars.count("data_dir"))
-      return vars["data_dir"].as<string>();
+    if (commandLineFlags["data_dir"].was_set())
+      return commandLineFlags["data_dir"].get().string;
     else
       return DATA_DIR;
   }());
   auto freeDataPath = dataPath.subdirectory("data_free");
   auto paidDataPath = dataPath.subdirectory("data");
   auto contribDataPath = dataPath.subdirectory("data_contrib");
-  bool tilesPresent = !vars.count("free_mode") && paidDataPath.exists();
+  bool tilesPresent = !commandLineFlags["free_mode"].was_set() && paidDataPath.exists();
   DirectoryPath userPath([&] () -> string {
-    if (vars.count("user_dir"))
-      return vars["user_dir"].as<string>();
+    if (commandLineFlags["user_dir"].was_set())
+      return commandLineFlags["user_dir"].get().string;
 #ifndef WINDOWS
     else if (const char* localPath = std::getenv("XDG_DATA_HOME"))
       return localPath + string("/KeeperRL");
@@ -339,8 +338,8 @@ static int keeperMain(const variables_map& vars) {
   INFO << "Data path: " << dataPath;
   INFO << "User path: " << userPath;
   string uploadUrl;
-  if (vars.count("upload_url"))
-    uploadUrl = vars["upload_url"].as<string>();
+  if (commandLineFlags["upload_url"].was_set())
+    uploadUrl = commandLineFlags["upload_url"].get().string;
   else
 #ifdef RELEASE
     uploadUrl = "http://keeperrl.com/~retired/" + serverVersion;
@@ -349,10 +348,10 @@ static int keeperMain(const variables_map& vars) {
 #endif
   userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
-  if (vars.count("restore_settings"))
+  if (commandLineFlags["restore_settings"].was_set())
     remove(settingsPath.getPath());
   Options options(settingsPath);
-  int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
+  int seed = commandLineFlags["seed"].was_set() ? commandLineFlags["seed"].get().i32 : int(time(0));
   Random.init(seed);
   long long installId = getInstallId(userPath.file("installId.txt"), Random);
   Renderer renderer(
@@ -398,13 +397,13 @@ static int keeperMain(const variables_map& vars) {
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   optional<MainLoop::ForceGameInfo> forceGame;
-  if (vars.count("force_keeper"))
+  if (commandLineFlags["force_keeper"].was_set())
     forceGame = {PlayerRole::KEEPER, CampaignType::QUICK_MAP};
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
       gameFinished, useSingleThread, forceGame);
-  if (vars.count("worldgen_test")) {
-    loop.modelGenTest(vars["worldgen_test"].as<int>(), Random, &options);
+  if (commandLineFlags["worldgen_test"].was_set()) {
+    loop.modelGenTest(commandLineFlags["worldgen_test"].get().i32, Random, &options);
     return 0;
   }
   auto game = [&] {
