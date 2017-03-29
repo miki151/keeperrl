@@ -129,14 +129,8 @@ const T& valueCheck(const T& e, const V& v, const string& msg) {
 }
 
 template <class T>
-T* notNullCheck(T* e, const char* file, int line, const char* exp) {
-  if (e == nullptr) FATAL << file << ": " << line << ": " << exp << " is null";
-  return e;
-}
-
-template <class T>
-unique_ptr<T> notNullCheck(unique_ptr<T> e, const char* file, int line, const char* exp) {
-  if (e.get() == nullptr) FATAL << file << ": " << line << ": " << exp << " is null";
+T notNullCheck(T&& e, const char* file, int line, const char* exp) {
+  if (!e) FATAL << file << ": " << line << ": " << exp << " is null";
   return e;
 }
 

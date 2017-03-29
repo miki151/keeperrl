@@ -40,17 +40,17 @@ struct Attacked {
 
 struct ItemsHandled {
   Creature* creature;
-  vector<Item*> items;
+  vector<WItem> items;
 };
 
 struct ItemsAppeared {
   Position position;
-  vector<Item*> items;
+  vector<WItem> items;
 };
 
 struct ItemsThrown {
   Level* level;
-  vector<Item*> items;
+  vector<WItem> items;
   vector<Vec2> trajectory;
 };
 

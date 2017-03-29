@@ -26,7 +26,7 @@ template <class Archive>
 void Inventory::serialize(Archive& ar, const unsigned int version) {
   if (version == 0) {
     vector<PItem> SERIAL(oldItems);
-    vector<Item*> SERIAL(oldItemsCache);
+    vector<WItem> SERIAL(oldItemsCache);
     serializeAll(ar, oldItems, oldItemsCache);
     items = PItemVector(std::move(oldItems));
     itemsCache = ItemVector(oldItemsCache);
@@ -58,7 +58,7 @@ void Inventory::addItems(vector<PItem> v) {
     addItem(std::move(it));
 }
 
-PItem Inventory::removeItem(Item* itemRef) {
+PItem Inventory::removeItem(WItem itemRef) {
   PItem item = items.remove(itemRef->getUniqueId());
   weight -= item->getWeight();
   itemsCache.remove(itemRef->getUniqueId());
@@ -68,9 +68,9 @@ PItem Inventory::removeItem(Item* itemRef) {
   return item;
 }
 
-vector<PItem> Inventory::removeItems(vector<Item*> items) {
+vector<PItem> Inventory::removeItems(vector<WItem> items) {
   vector<PItem> ret;
-  for (Item* item : items)
+  for (WItem item : items)
     ret.push_back(removeItem(item));
   return ret;
 }
@@ -87,51 +87,51 @@ vector<PItem> Inventory::removeAllItems() {
   return items.removeAll();
 }
 
-vector<Item*> Inventory::getItems(function<bool (Item*)> predicate) const {
-  vector<Item*> ret;
+vector<WItem> Inventory::getItems(function<bool (WItem)> predicate) const {
+  vector<WItem> ret;
   for (const PItem& item : items.getElems())
     if (predicate(item.get()))
       ret.push_back(item.get());
   return ret;
 }
 
-Item* Inventory::getItemById(UniqueEntity<Item>::Id id) const {
+WItem Inventory::getItemById(UniqueEntity<Item>::Id id) const {
   if (auto item = itemsCache.fetch(id))
     return *item;
   else
     return nullptr;
 }
 
-function<bool(const Item*)> Inventory::getIndexPredicate(ItemIndex index) {
+function<bool(const WItem)> Inventory::getIndexPredicate(ItemIndex index) {
   switch (index) {
     case ItemIndex::GOLD: return Item::classPredicate(ItemClass::GOLD);
-    case ItemIndex::WOOD: return [](const Item* it) {
+    case ItemIndex::WOOD: return [](const WItem it) {
         return it->getResourceId() == CollectiveResourceId::WOOD; };
-    case ItemIndex::IRON: return [](const Item* it) {
+    case ItemIndex::IRON: return [](const WItem it) {
         return it->getResourceId() == CollectiveResourceId::IRON; };
-    case ItemIndex::STEEL: return [](const Item* it) {
+    case ItemIndex::STEEL: return [](const WItem it) {
         return it->getResourceId() == CollectiveResourceId::STEEL; };
-    case ItemIndex::STONE: return [](const Item* it) {
+    case ItemIndex::STONE: return [](const WItem it) {
         return it->getResourceId() == CollectiveResourceId::STONE; };
-    case ItemIndex::REVIVABLE_CORPSE: return [](const Item* it) {
+    case ItemIndex::REVIVABLE_CORPSE: return [](const WItem it) {
         return it->getClass() == ItemClass::CORPSE && it->getCorpseInfo()->canBeRevived; };
-    case ItemIndex::WEAPON: return [](const Item* it) {
+    case ItemIndex::WEAPON: return [](const WItem it) {
         return it->getClass() == ItemClass::WEAPON; };
-    case ItemIndex::TRAP: return [](const Item* it) { return !!it->getTrapType(); };
-    case ItemIndex::CORPSE: return [](const Item* it) {
+    case ItemIndex::TRAP: return [](const WItem it) { return !!it->getTrapType(); };
+    case ItemIndex::CORPSE: return [](const WItem it) {
         return it->getClass() == ItemClass::CORPSE; };
-    case ItemIndex::MINION_EQUIPMENT: return [](const Item* it) {
+    case ItemIndex::MINION_EQUIPMENT: return [](const WItem it) {
         return MinionEquipment::isItemUseful(it);};
-    case ItemIndex::RANGED_WEAPON: return [](const Item* it) {
+    case ItemIndex::RANGED_WEAPON: return [](const WItem it) {
         return it->getClass() == ItemClass::RANGED_WEAPON;};
-    case ItemIndex::CAN_EQUIP: return [](const Item* it) {return it->canEquip();};
-    case ItemIndex::FOR_SALE: return [](const Item* it) {return it->isOrWasForSale();};
+    case ItemIndex::CAN_EQUIP: return [](const WItem it) {return it->canEquip();};
+    case ItemIndex::FOR_SALE: return [](const WItem it) {return it->isOrWasForSale();};
   }
 }
 
-const vector<Item*>& Inventory::getItems(ItemIndex index) const {
+const vector<WItem>& Inventory::getItems(ItemIndex index) const {
   if (isEmpty()) {
-    static vector<Item*> empty;
+    static vector<WItem> empty;
     return empty;
   }
   auto& elems = indexes[index];
@@ -140,11 +140,11 @@ const vector<Item*>& Inventory::getItems(ItemIndex index) const {
   return elems->getElems();
 }
 
-const vector<Item*>& Inventory::getItems() const {
+const vector<WItem>& Inventory::getItems() const {
   return itemsCache.getElems();
 }
 
-bool Inventory::hasItem(const Item* itemRef) const {
+bool Inventory::hasItem(const WItem itemRef) const {
   return !!itemsCache.fetch(itemRef->getUniqueId());
 }
 

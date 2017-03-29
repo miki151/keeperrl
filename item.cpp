@@ -60,34 +60,34 @@ string Item::getTrapName(TrapType type) {
 }
 
 ItemPredicate Item::effectPredicate(EffectType type) {
-  return [type](const Item* item) { return item->getEffectType() == type; };
+  return [type](const WItem item) { return item->getEffectType() == type; };
 }
 
 ItemPredicate Item::classPredicate(ItemClass cl) {
-  return [cl](const Item* item) { return item->getClass() == cl; };
+  return [cl](const WItem item) { return item->getClass() == cl; };
 }
 
 ItemPredicate Item::equipmentSlotPredicate(EquipmentSlot slot) {
-  return [slot](const Item* item) { return item->canEquip() && item->getEquipmentSlot() == slot; };
+  return [slot](const WItem item) { return item->canEquip() && item->getEquipmentSlot() == slot; };
 }
 
 ItemPredicate Item::classPredicate(vector<ItemClass> cl) {
-  return [cl](const Item* item) { return contains(cl, item->getClass()); };
+  return [cl](const WItem item) { return contains(cl, item->getClass()); };
 }
 
 ItemPredicate Item::namePredicate(const string& name) {
-  return [name](const Item* item) { return item->getName() == name; };
+  return [name](const WItem item) { return item->getName() == name; };
 }
 
 ItemPredicate Item::isRangedWeaponPredicate() {
- return [](const Item* it) { return it->canEquip() && it->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON;};
+ return [](const WItem it) { return it->canEquip() && it->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON;};
 }
 
-vector<pair<string, vector<Item*>>> Item::stackItems(vector<Item*> items, function<string(const Item*)> suffix) {
-  map<string, vector<Item*>> stacks = groupBy<Item*, string>(items, [suffix](const Item* item) {
+vector<pair<string, vector<WItem>>> Item::stackItems(vector<WItem> items, function<string(const WItem)> suffix) {
+  map<string, vector<WItem>> stacks = groupBy<WItem, string>(items, [suffix](const WItem item) {
         return item->getNameAndModifiers() + suffix(item);
       });
-  vector<pair<string, vector<Item*>>> ret;
+  vector<pair<string, vector<WItem>>> ret;
   for (auto elem : stacks)
     if (elem.second.size() > 1)
       ret.emplace_back(

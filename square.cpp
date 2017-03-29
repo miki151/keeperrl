@@ -102,7 +102,7 @@ void Square::onAddedToLevel(Position pos) const {
 void Square::tick(Position pos) {
   setDirty(pos);
   if (!inventory->isEmpty())
-    for (Item* item : getInventory().getItems()) {
+    for (WItem item : getInventory().getItems()) {
       item->tick(pos);
       if (item->isDiscarded())
         getInventory().removeItem(item);
@@ -115,7 +115,7 @@ void Square::tick(Position pos) {
     t->tick();
 }
 
-bool Square::itemLands(vector<Item*> item, const Attack& attack) const {
+bool Square::itemLands(vector<WItem> item, const Attack& attack) const {
   if (creature) {
     if (!creature->dodgeAttack(attack))
       return true;
@@ -182,13 +182,13 @@ void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
   lastViewer = viewer ? viewer->getUniqueId() : Creature::Id();
   double fireSize = 0;
   if (!inventory->isEmpty())
-    for (Item* it : getInventory().getItems())
+    for (WItem it : getInventory().getItems())
       fireSize = max(fireSize, it->getFireSize());
   ret.insert(getViewObject());
   for (const PTrigger& t : triggers)
     if (auto obj = t->getViewObject(viewer))
       ret.insert(copyOf(*obj).setAttribute(ViewObject::Attribute::BURNING, fireSize));
-  if (Item* it = getTopItem())
+  if (WItem it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (poisonGas->getAmount() > 0)
     ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas->getAmount()));
@@ -272,31 +272,31 @@ void Square::setVision(Position pos, VisionId v) {
   pos.getLevel()->updateVisibility(pos.getCoord());
 }
 
-Item* Square::getTopItem() const {
+WItem Square::getTopItem() const {
   if (inventory->isEmpty())
     return nullptr;
   else
     return inventory->getItems().back();
 }
 
-vector<Item*> Square::getItems(function<bool (Item*)> predicate) const {
+vector<WItem> Square::getItems(function<bool (WItem)> predicate) const {
  return inventory->getItems(predicate);
 }
 
-const vector<Item*>& Square::getItems() const {
+const vector<WItem>& Square::getItems() const {
   return inventory->getItems();
 }
 
-const vector<Item*>& Square::getItems(ItemIndex index) const {
+const vector<WItem>& Square::getItems(ItemIndex index) const {
   return inventory->getItems(index);
 }
 
-PItem Square::removeItem(Position pos, Item* it) {
+PItem Square::removeItem(Position pos, WItem it) {
   setDirty(pos);
   return getInventory().removeItem(it);
 }
 
-vector<PItem> Square::removeItems(Position pos, vector<Item*> it) {
+vector<PItem> Square::removeItems(Position pos, vector<WItem> it) {
   setDirty(pos);
   return getInventory().removeItems(it);
 }

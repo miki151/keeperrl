@@ -41,7 +41,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
 VillageControl::VillageControl(Collective* col, optional<VillageBehaviour> v) : CollectiveControl(col),
     eventProxy(this, col->getModel()), villain(v) {
   for (Position v : col->getTerritory().getAll())
-    for (Item* it : v.getItems())
+    for (WItem it : v.getItems())
       myItems.insert(it);
 }
 
@@ -75,7 +75,7 @@ void VillageControl::onEvent(const GameEvent& event) {
         if (isEnemy(info.creature) && villain)
           if (contains(villain->triggers, AttackTriggerId::STOLEN_ITEMS)) {
             bool wasTheft = false;
-            for (const Item* it : info.items)
+            for (const WItem it : info.items)
               if (myItems.contains(it)) {
                 wasTheft = true;
                 ++stolenItemCount;

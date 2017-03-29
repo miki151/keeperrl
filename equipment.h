@@ -31,15 +31,15 @@ RICH_ENUM(EquipmentSlot,
 
 class Equipment : public Inventory {
   public:
-  vector<Item*> getItem(EquipmentSlot slot) const;
-  bool isEquipped(const Item*) const;
-  bool canEquip(const Item*) const;
-  void equip(Item*, EquipmentSlot, Creature*);
-  void unequip(Item*, Creature*);
-  PItem removeItem(Item*, Creature*);
+  vector<WItem> getItem(EquipmentSlot slot) const;
+  bool isEquipped(const WItem) const;
+  bool canEquip(const WItem) const;
+  void equip(WItem, EquipmentSlot, Creature*);
+  void unequip(WItem, Creature*);
+  PItem removeItem(WItem, Creature*);
   int getMaxItems(EquipmentSlot) const;
-  const vector<Item*>& getAllEquipped() const;
-  vector<PItem> removeItems(const vector<Item*>&, Creature*);
+  const vector<WItem>& getAllEquipped() const;
+  vector<PItem> removeItems(const vector<WItem>&, Creature*);
   vector<PItem> removeAllItems(Creature*);
 
   SERIALIZATION_DECL(Equipment);
@@ -47,7 +47,7 @@ class Equipment : public Inventory {
   static map<EquipmentSlot, string> slotTitles;
 
   private:
-  EnumMap<EquipmentSlot, vector<Item*>> SERIAL(items);
-  vector<Item*> SERIAL(equipped);
+  EnumMap<EquipmentSlot, vector<WItem>> SERIAL(items);
+  vector<WItem> SERIAL(equipped);
 };
 

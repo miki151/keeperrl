@@ -71,13 +71,13 @@ class Position {
   PTrigger removeTrigger(Trigger*);
   vector<PTrigger> removeTriggers();
   void addTrigger(PTrigger);
-  const vector<Item*>& getItems() const;
-  vector<Item*> getItems(function<bool (Item*)> predicate) const;
-  const vector<Item*>& getItems(ItemIndex) const;
-  PItem removeItem(Item*);
+  const vector<WItem>& getItems() const;
+  vector<WItem> getItems(function<bool (WItem)> predicate) const;
+  const vector<WItem>& getItems(ItemIndex) const;
+  PItem removeItem(WItem);
   Inventory& modInventory() const;
   const Inventory& getInventory() const;
-  vector<PItem> removeItems(vector<Item*>);
+  vector<PItem> removeItems(vector<WItem>);
   bool canConstruct(FurnitureType) const;
   bool isWall() const;
   void removeFurniture(const Furniture*) const;

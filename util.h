@@ -67,7 +67,7 @@ optional<T> fromStringSafe(const string& s);
 
 #define DEF_OWNER_PTR(T) class T;\
   typedef OwnerPointer<T> P##T; \
-  typedef weak_ptr<T> W##T; \
+  typedef WeakPointer<T> W##T; \
   template <typename... Args> \
   OwnerPointer<T> make##T(Args... a) { \
     return makeOwner<T>(a...); \
@@ -112,7 +112,7 @@ T lambdaConstruct(function<void(T&)> fun) {
 #define LIST(...) {__VA_ARGS__}
 
 class Item;
-typedef function<bool(const Item*)> ItemPredicate;
+typedef function<bool(const WItem)> ItemPredicate;
 
 template<class T>
 vector<T*> extractRefs(vector<unique_ptr<T>>& v) {
@@ -221,7 +221,7 @@ class Vec2 {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
-   
+
   HASH_ALL(x, y);
 };
 
@@ -263,7 +263,7 @@ class Range {
 
   SERIALIZATION_DECL(Range)
   HASH_ALL(start, finish, increment)
-  
+
   private:
   int SERIAL(start) = 0; // HASH(start)
   int SERIAL(finish) = 0; // HASH(finish)
@@ -478,7 +478,7 @@ class EnumMap {
     return combineHashIter(elems.begin(), elems.end());
   }
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     vector<U> SERIAL(tmp);
     for (int i : All(elems))
@@ -701,11 +701,11 @@ class Table {
   RowAccess operator[](int ind) {
     return RowAccess(mem.get() + (ind - bounds.px) * bounds.h, bounds.py, bounds.h);
   }
- 
+
   RowAccess operator[](int ind) const {
     return RowAccess(mem.get() + (ind - bounds.px) * bounds.h, bounds.py, bounds.h);
   }
- 
+
   T& operator[](const Vec2& vAbs) {
 #ifdef RELEASE
     return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
@@ -728,14 +728,14 @@ class Table {
 #endif
   }
 
-  template <class Archive> 
+  template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
     ar << BOOST_SERIALIZATION_NVP(bounds);
     for (Vec2 v : bounds)
       ar << boost::serialization::make_nvp("Elem", (*this)[v]);
   }
 
-  template <class Archive> 
+  template <class Archive>
   void load(Archive& ar, const unsigned int version) {
     ar >> BOOST_SERIALIZATION_NVP(bounds);
     mem.reset(new T[bounds.width() * bounds.height()]);
@@ -755,7 +755,7 @@ class Table {
 template<typename T>
 class DirtyTable {
   public:
-  DirtyTable(Rectangle bounds, T dirty) : val(bounds), dirty(bounds, 0), dirtyVal(dirty) {} 
+  DirtyTable(Rectangle bounds, T dirty) : val(bounds), dirty(bounds, 0), dirtyVal(dirty) {}
 
   const T& getValue(Vec2 v) const {
     return dirty[v] < counter ? dirtyVal : val[v];
@@ -1073,7 +1073,7 @@ class MustInitialize {
     return elem.front();
   }
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & BOOST_SERIALIZATION_NVP(elem);
   }
@@ -1307,7 +1307,7 @@ class EnumSet {
     return hash<Bitset>()(elems);
   }
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     vector<T> SERIAL(tmp);
     for (T elem : *this)
@@ -1379,7 +1379,7 @@ class BiMap {
     return m1.empty();
   }
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SVAR(m1) & SVAR(m2);
   }
@@ -1537,7 +1537,7 @@ struct ConstructorFunction {
 struct DestructorFunction {
   DestructorFunction(function<void()> inDestructor);
   ~DestructorFunction();
-    
+
   private:
   function<void()> destFun;
 };

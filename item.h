@@ -110,8 +110,8 @@ class Item : public Renderable, public UniqueEntity<Item>, public std::enable_sh
   static ItemPredicate namePredicate(const string& name);
   static ItemPredicate isRangedWeaponPredicate();
 
-  static vector<pair<string, vector<Item*>>> stackItems(vector<Item*>,
-      function<string(const Item*)> addSuffix = [](const Item*) { return ""; });
+  static vector<pair<string, vector<WItem>>> stackItems(vector<WItem>,
+      function<string(const WItem)> addSuffix = [](const WItem) { return ""; });
 
   virtual optional<CorpseInfo> getCorpseInfo() const;
 

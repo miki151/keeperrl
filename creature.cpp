@@ -62,19 +62,8 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
   serializeAll(ar, attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
   serializeAll(ar, deathTime, hidden);
-  if (version == 0) {
-    Creature* SERIAL(tmp);
-    serializeAll(ar, tmp);
-  }
   serializeAll(ar, deathReason, swapPositionCooldown);
-  serializeAll(ar, unknownAttackers, privateEnemies);
-  if (version < 2) {
-    Creature* SERIAL(tmp);
-    serializeAll(ar, tmp);
-    if (tmp)
-      holding = tmp->getUniqueId();
-  } else
-    serializeAll(ar, holding);
+  serializeAll(ar, unknownAttackers, privateEnemies, holding);
   serializeAll(ar, controllerStack, creatureVisions, kills);
   serializeAll(ar, difficultyPoints, points, numAttacksThisTurn, moraleOverride);
   serializeAll(ar, vision, lastCombatTime, debt);
@@ -301,12 +290,12 @@ void Creature::displace(double time, Vec2 dir) {
   addMovementInfo({dir, time, time + 1, MovementInfo::MOVE});
 }
 
-bool Creature::canTakeItems(const vector<Item*>& items) const {
+bool Creature::canTakeItems(const vector<WItem>& items) const {
   return getBody().isHumanoid() && canCarry(items);
 }
 
 void Creature::takeItems(vector<PItem> items, Creature* from) {
-  vector<Item*> ref = extractRefs(items);
+  vector<WItem> ref = getWeakPointers(items);
   equipment->addItems(std::move(items));
   getController()->onItemsGiven(ref, from);
 }
@@ -404,12 +393,12 @@ Equipment& Creature::getEquipment() {
   return *equipment;
 }
 
-vector<PItem> Creature::steal(const vector<Item*> items) {
+vector<PItem> Creature::steal(const vector<WItem> items) {
   return equipment->removeItems(items, this);
 }
 
-Item* Creature::getAmmo() const {
-  for (Item* item : equipment->getItems())
+WItem Creature::getAmmo() const {
+  for (WItem item : equipment->getItems())
     if (item->getClass() == ItemClass::AMMO)
       return item;
   return nullptr;
@@ -451,35 +440,35 @@ void Creature::addSkill(Skill* skill) {
   }
 }
 
-vector<Item*> Creature::getPickUpOptions() const {
+vector<WItem> Creature::getPickUpOptions() const {
   if (!getBody().isHumanoid())
-    return vector<Item*>();
+    return vector<WItem>();
   else
     return getPosition().getItems();
 }
 
-string Creature::getPluralTheName(Item* item, int num) const {
+string Creature::getPluralTheName(WItem item, int num) const {
   if (num == 1)
     return item->getTheName(false, this);
   else
     return toString(num) + " " + item->getTheName(true, this);
 }
 
-string Creature::getPluralAName(Item* item, int num) const {
+string Creature::getPluralAName(WItem item, int num) const {
   if (num == 1)
     return item->getAName(false, this);
   else
     return toString(num) + " " + item->getAName(true, this);
 }
 
-bool Creature::canCarry(const vector<Item*>& items) const {
+bool Creature::canCarry(const vector<WItem>& items) const {
   double weight = equipment->getTotalWeight();
-  for (Item* it : items)
+  for (WItem it : items)
     weight += it->getWeight();
   return weight <= 2 * getModifier(ModifierType::INV_LIMIT);
 }
 
-CreatureAction Creature::pickUp(const vector<Item*>& items) const {
+CreatureAction Creature::pickUp(const vector<WItem>& items) const {
   if (!getBody().isHumanoid())
     return CreatureAction("You can't pick up anything!");
   if (!canCarry(items))
@@ -498,13 +487,13 @@ CreatureAction Creature::pickUp(const vector<Item*>& items) const {
   });
 }
 
-vector<vector<Item*>> Creature::stackItems(vector<Item*> items) const {
-  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items, 
-      [this] (Item* const& item) { return item->getNameAndModifiers(false, this); });
+vector<vector<WItem>> Creature::stackItems(vector<WItem> items) const {
+  map<string, vector<WItem> > stacks = groupBy<WItem, string>(items, 
+      [this] (WItem const& item) { return item->getNameAndModifiers(false, this); });
   return getValues(stacks);
 }
 
-CreatureAction Creature::drop(const vector<Item*>& items) const {
+CreatureAction Creature::drop(const vector<WItem>& items) const {
   if (!getBody().isHumanoid())
     return CreatureAction("You can't drop this item!");
   return CreatureAction(this, [=](Creature* self) {
@@ -523,7 +512,7 @@ void Creature::drop(vector<PItem> items) {
   getPosition().dropItems(std::move(items));
 }
 
-bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
+bool Creature::canEquipIfEmptySlot(const WItem item, string* reason) const {
   if (!getBody().isHumanoid()) {
     if (reason)
       *reason = "Only humanoids can equip items!";
@@ -547,15 +536,15 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
   return item->canEquip();
 }
 
-bool Creature::canEquip(const Item* item) const {
+bool Creature::canEquip(const WItem item) const {
   return canEquipIfEmptySlot(item, nullptr) && equipment->canEquip(item);
 }
 
-bool Creature::isEquipmentAppropriate(const Item* item) const {
+bool Creature::isEquipmentAppropriate(const WItem item) const {
   return item->getClass() != ItemClass::WEAPON || item->getMinStrength() <= getAttr(AttrType::STRENGTH);
 }
 
-CreatureAction Creature::equip(Item* item) const {
+CreatureAction Creature::equip(WItem item) const {
   string reason;
   if (!canEquipIfEmptySlot(item, &reason))
     return CreatureAction(reason);
@@ -565,7 +554,7 @@ CreatureAction Creature::equip(Item* item) const {
     INFO << getName().the() << " equip " << item->getName();
     EquipmentSlot slot = item->getEquipmentSlot();
     if (self->equipment->getItem(slot).size() >= self->equipment->getMaxItems(slot)) {
-      Item* previousItem = self->equipment->getItem(slot)[0];
+      WItem previousItem = self->equipment->getItem(slot)[0];
       self->equipment->unequip(previousItem, self);
     }
     self->equipment->equip(item, slot, self);
@@ -577,7 +566,7 @@ CreatureAction Creature::equip(Item* item) const {
   });
 }
 
-CreatureAction Creature::unequip(Item* item) const {
+CreatureAction Creature::unequip(WItem item) const {
   if (!equipment->isEquipped(item))
     return CreatureAction("This item is not equipped.");
   if (!getBody().isHumanoid())
@@ -669,7 +658,7 @@ CreatureAction Creature::chatTo(Creature* other) const {
   });
 }
 
-CreatureAction Creature::stealFrom(Vec2 direction, const vector<Item*>& items) const {
+CreatureAction Creature::stealFrom(Vec2 direction, const vector<WItem>& items) const {
   if (getPosition().plus(direction).getCreature())
     return CreatureAction(this, [=](Creature *self) {
         Creature* other = NOTNULL(getPosition().plus(direction).getCreature());
@@ -740,7 +729,7 @@ int simulAttackPen(int attackers) {
 
 int Creature::getAttr(AttrType type) const {
   int def = getBody().modifyAttr(type, attributes->getRawAttr(type));
-  for (Item* item : equipment->getAllEquipped())
+  for (WItem item : equipment->getAllEquipped())
     def += item->getAttr(type);
   switch (type) {
     case AttrType::DEXTERITY:
@@ -759,7 +748,7 @@ int Creature::getAttr(AttrType type) const {
 }
 
 int Creature::accuracyBonus() const {
-  if (Item* weapon = getWeapon())
+  if (WItem weapon = getWeapon())
     return -max(0, weapon->getMinStrength() - getAttr(AttrType::STRENGTH));
   else
     return 0;
@@ -767,7 +756,7 @@ int Creature::accuracyBonus() const {
 
 int Creature::getModifier(ModifierType type) const {
   int def = 0;
-  for (Item* item : equipment->getAllEquipped())
+  for (WItem item : equipment->getAllEquipped())
       def += item->getModifier(type);
   for (SkillId skill : ENUM_ALL(SkillId))
     def += Skill::get(skill)->getModifier(this, type);
@@ -842,9 +831,9 @@ bool Creature::isEnemy(const Creature* c) const {
     privateEnemies.contains(c) || c->privateEnemies.contains(this);
 }
 
-vector<Item*> Creature::getGold(int num) const {
-  vector<Item*> ret;
-  for (Item* item : equipment->getItems([](Item* it) { return it->getClass() == ItemClass::GOLD; })) {
+vector<WItem> Creature::getGold(int num) const {
+  vector<WItem> ret;
+  for (WItem item : equipment->getItems([](WItem it) { return it->getClass() == ItemClass::GOLD; })) {
     ret.push_back(item);
     if (ret.size() == num)
       return ret;
@@ -879,7 +868,7 @@ void Creature::tick() {
   updateVision();
   if (Random.roll(5))
     getDifficultyPoints();
-  for (Item* item : equipment->getItems()) {
+  for (WItem item : equipment->getItems()) {
     item->tick(position);
     if (item->isDiscarded())
       equipment->removeItem(item, this);
@@ -951,9 +940,10 @@ static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
 }
 
 void Creature::dropWeapon() {
-  Item* weapon = NOTNULL(getWeapon());
-  you(MsgType::DROP_WEAPON, weapon->getName());
-  getPosition().dropItem(equipment->removeItem(weapon, this));
+  if (auto weapon = getWeapon()) {
+    you(MsgType::DROP_WEAPON, weapon->getName());
+    getPosition().dropItem(equipment->removeItem(weapon, this));
+  }
 }
 
 CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackParams, bool spend) const {
@@ -1173,7 +1163,7 @@ void Creature::take(vector<PItem> items) {
 }
 
 void Creature::take(PItem item) {
-  Item* ref = item.get();
+  WItem ref = item.get();
   equipment->addItem(std::move(item));
   if (auto action = equip(ref))
     action.perform(this);
@@ -1261,7 +1251,7 @@ void Creature::increaseExpLevel(ExperienceType type, double increase) {
   }
 }
 
-CreatureAction Creature::give(Creature* whom, vector<Item*> items) const {
+CreatureAction Creature::give(Creature* whom, vector<WItem> items) const {
   if (!getBody().isHumanoid() || !whom->canTakeItems(items))
     return CreatureAction(whom->getName().the() + (items.size() == 1 ? " can't take this item."
         : " can't take these items."));
@@ -1278,9 +1268,9 @@ CreatureAction Creature::give(Creature* whom, vector<Item*> items) const {
   });
 }
 
-CreatureAction Creature::payFor(const vector<Item*>& items) const {
+CreatureAction Creature::payFor(const vector<WItem>& items) const {
   int totalPrice = std::accumulate(items.begin(), items.end(), 0,
-      [](int sum, const Item* it) { return sum + it->getPrice(); });
+      [](int sum, const WItem it) { return sum + it->getPrice(); });
   return give(items[0]->getShopkeeper(this), getGold(totalPrice))
       .append([=](Creature*) { for (auto it : items) it->setShopkeeper(nullptr); });
 }
@@ -1298,7 +1288,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
   return CreatureAction(this, [=](Creature* self) {
     PItem ammo = self->equipment->removeItem(NOTNULL(getAmmo()), self);
     RangedWeapon* weapon = NOTNULL(dynamic_cast<RangedWeapon*>(
-        getOnlyElement(self->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))));
+        getOnlyElement(self->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON)).get()));
     weapon->fire(self, std::move(ammo), direction);
     self->spendTime(1);
   });
@@ -1365,7 +1355,7 @@ bool Creature::canConstruct(FurnitureType type) const {
   return attributes->getSkills().hasDiscrete(SkillId::CONSTRUCTION);
 }
 
-CreatureAction Creature::eat(Item* item) const {
+CreatureAction Creature::eat(WItem item) const {
   return CreatureAction(this, [=](Creature* self) {
     monsterMessage(getName().the() + " eats " + item->getAName());
     playerMessage("You eat " + item->getAName());
@@ -1430,15 +1420,15 @@ CreatureAction Creature::consume(Creature* other) const {
   });
 }
 
-Item* Creature::getWeapon() const {
-  vector<Item*> it = equipment->getItem(EquipmentSlot::WEAPON);
+WItem Creature::getWeapon() const {
+  vector<WItem> it = equipment->getItem(EquipmentSlot::WEAPON);
   if (it.empty())
     return nullptr;
   else
     return getOnlyElement(it);
 }
 
-CreatureAction Creature::applyItem(Item* item) const {
+CreatureAction Creature::applyItem(WItem item) const {
   if (!contains({ItemClass::TOOL, ItemClass::POTION, ItemClass::FOOD, ItemClass::BOOK, ItemClass::SCROLL},
       item->getClass()) || !getBody().isHumanoid())
     return CreatureAction("You can't apply this item");
@@ -1456,7 +1446,7 @@ CreatureAction Creature::applyItem(Item* item) const {
   });
 }
 
-CreatureAction Creature::throwItem(Item* item, Vec2 direction) const {
+CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
   if (!getBody().numGood(BodyPart::ARM) || !getBody().isHumanoid())
     return CreatureAction("You can't throw anything!");
   else if (item->getWeight() > 20)
@@ -1837,7 +1827,7 @@ vector<string> Creature::getMainAdjectives() const {
 }
 
 vector<AdjectiveInfo> Creature::getWeaponAdjective() const {
-  if (const Item* weapon = getWeapon())
+  if (const WItem weapon = getWeapon())
     return {{"Wielding " + weapon->getAName(), ""}};
   else
     return {};

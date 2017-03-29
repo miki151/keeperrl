@@ -37,15 +37,15 @@ void Equipment::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Equipment);
 SERIALIZATION_CONSTRUCTOR_IMPL(Equipment);
 
-vector<Item*> Equipment::getItem(EquipmentSlot slot) const {
+vector<WItem> Equipment::getItem(EquipmentSlot slot) const {
   return items[slot];
 }
 
-const vector<Item*>& Equipment::getAllEquipped() const {
+const vector<WItem>& Equipment::getAllEquipped() const {
   return equipped;
 }
 
-bool Equipment::isEquipped(const Item* item) const {
+bool Equipment::isEquipped(const WItem item) const {
   return item->canEquip() && contains(items[item->getEquipmentSlot()], item);
 }
 
@@ -56,35 +56,35 @@ int Equipment::getMaxItems(EquipmentSlot slot) const {
   }
 }
 
-bool Equipment::canEquip(const Item* item) const {
+bool Equipment::canEquip(const WItem item) const {
   if (!item->canEquip() || isEquipped(item))
     return false;
   EquipmentSlot slot = item->getEquipmentSlot();
   return items[slot].size() < getMaxItems(slot);
 }
 
-void Equipment::equip(Item* item, EquipmentSlot slot, Creature* c) {
+void Equipment::equip(WItem item, EquipmentSlot slot, Creature* c) {
   items[slot].push_back(item);
   equipped.push_back(item);
   item->onEquip(c);
   CHECK(hasItem(item));
 }
 
-void Equipment::unequip(Item* item, Creature* c) {
+void Equipment::unequip(WItem item, Creature* c) {
   removeElement(items[item->getEquipmentSlot()], item);
   removeElement(equipped, item);
   item->onUnequip(c);
 }
 
-PItem Equipment::removeItem(Item* item, Creature* c) {
+PItem Equipment::removeItem(WItem item, Creature* c) {
   if (isEquipped(item))
     unequip(item, c);
   return Inventory::removeItem(item);
 }
   
-vector<PItem> Equipment::removeItems(const vector<Item*>& items, Creature* c) {
+vector<PItem> Equipment::removeItems(const vector<WItem>& items, Creature* c) {
   vector<PItem> ret;
-  for (Item* it : items)
+  for (WItem it : items)
     ret.push_back(removeItem(it, c));
   return ret;
 }

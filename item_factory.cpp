@@ -180,7 +180,7 @@ class Corpse : public Item {
   }
 
   virtual void applySpecial(Creature* c) override {
-    Item* it = c->getWeapon();
+    WItem it = c->getWeapon();
     if (it && it->getAttackType() == AttackType::CUT) {
       c->you(MsgType::DECAPITATE, getTheName());
       setName("decapitated " + getName());

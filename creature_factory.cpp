@@ -404,7 +404,7 @@ class ShopkeeperController : public Monster {
     if (firstMove) {
       eventProxy->subscribeTo(getCreature()->getPosition().getModel());
       for (Position v : shopArea->getAllSquares()) {
-        for (Item* item : v.getItems())
+        for (WItem item : v.getItems())
           item->setShopkeeper(getCreature());
         v.clearItemIndex(ItemIndex::FOR_SALE);
       }
@@ -433,7 +433,7 @@ class ShopkeeperController : public Monster {
           thiefCount.erase(debtor);
           debtors.erase(debtor);
           thieves.insert(debtor);
-          for (Item* item : debtor->getEquipment().getItems())
+          for (WItem item : debtor->getEquipment().getItems())
             item->setShopkeeper(nullptr);
           break;
         }
@@ -444,7 +444,7 @@ class ShopkeeperController : public Monster {
     Monster::makeMove();
   }
 
-  virtual void onItemsGiven(vector<Item*> items, Creature* from) override {
+  virtual void onItemsGiven(vector<WItem> items, Creature* from) override {
     int paid = (int) filter(items, Item::classPredicate(ItemClass::GOLD)).size();
     from->getDebt().add(getCreature(), -paid);
     if (from->getDebt().getAmountOwed(getCreature()) <= 0)
@@ -456,7 +456,7 @@ class ShopkeeperController : public Monster {
       case EventId::ITEMS_APPEARED: {
           auto info = event.get<EventInfo::ItemsAppeared>();
           if (shopArea->contains(info.position)) {
-           for (Item* it : info.items) {
+           for (WItem it : info.items) {
              it->setShopkeeper(getCreature());
              info.position.clearItemIndex(ItemIndex::FOR_SALE);
            }
@@ -466,7 +466,7 @@ class ShopkeeperController : public Monster {
       case EventId::PICKED_UP: {
           auto info = event.get<EventInfo::ItemsHandled>();
           if (shopArea->contains(info.creature->getPosition())) {
-            for (const Item* item : info.items)
+            for (const WItem item : info.items)
               if (item->isShopkeeper(getCreature())) {
                 info.creature->getDebt().add(getCreature(), item->getPrice());
                 debtors.insert(info.creature);
@@ -477,7 +477,7 @@ class ShopkeeperController : public Monster {
       case EventId::DROPPED: {
           auto info = event.get<EventInfo::ItemsHandled>();
           if (shopArea->contains(info.creature->getPosition())) {
-            for (const Item* item : info.items)
+            for (const WItem item : info.items)
               if (item->isShopkeeper(getCreature())) {
                 info.creature->getDebt().add(getCreature(), -item->getPrice());
                 if (info.creature->getDebt().getAmountOwed(getCreature()) == 0)

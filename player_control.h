@@ -165,7 +165,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&) const;
-  Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
+  WItem chooseEquipmentItem(Creature* creature, vector<WItem> currentItems, ItemPredicate predicate,
       ScrollPosition* scrollPos = nullptr);
 
   int getNumMinions() const;

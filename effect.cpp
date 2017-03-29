@@ -177,7 +177,7 @@ vector<Creature*> Effect::summon(Position pos, CreatureFactory& factory, int num
 
 static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improved") {
   for (EquipmentSlot slot : Random.permutation(getKeys(Equipment::slotTitles)))
-    for (Item* item : c->getEquipment().getItem(slot))
+    for (WItem item : c->getEquipment().getItem(slot))
       if (item->getClass() == ItemClass::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
         if (item->getModifier(ModifierType::DEFENSE) > 0 || mod > 0)
@@ -187,14 +187,14 @@ static void enhanceArmor(Creature* c, int mod = 1, const string msg = "is improv
 }
 
 static void enhanceWeapon(Creature* c, int mod = 1, const string msg = "is improved") {
-  if (Item* item = c->getWeapon()) {
+  if (WItem item = c->getWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
     item->addModifier(Random.choose(ModifierType::ACCURACY, ModifierType::DAMAGE), mod);
   }
 }
 
 static void destroyEquipment(Creature* c) {
-  Item* dest = Random.choose(c->getEquipment().getAllEquipped());
+  WItem dest = Random.choose(c->getEquipment().getAllEquipped());
   c->you(MsgType::YOUR, dest->getName() + " crumbles to dust.");
   c->steal({dest});
   return;

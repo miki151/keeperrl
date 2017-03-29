@@ -64,7 +64,7 @@ struct ResourceInfo {
   optional<TutorialHighlight> tutorialHighlight;
 };
 
-typedef function<bool(const Collective*, const Item*)> CollectiveItemPredicate;
+typedef function<bool(const Collective*, const WItem)> CollectiveItemPredicate;
 
 struct ItemFetchInfo {
   ItemIndex index;

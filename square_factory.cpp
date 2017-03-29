@@ -66,7 +66,7 @@ class Magma : public Square {
 
   virtual void dropItems(Position position, vector<PItem> items) override {
     if (position.getFurniture().empty()) { // check if there is a bridge
-      for (auto elem : Item::stackItems(extractRefs(items)))
+      for (auto elem : Item::stackItems(getWeakPointers(items)))
         position.globalMessage(elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
               "burns", "burn") + " in the magma.");
     } else
@@ -105,7 +105,7 @@ class Water : public Square {
 
   virtual void dropItems(Position position, vector<PItem> items) override {
     if (position.getFurniture().empty()) { // check if there is a bridge
-      for (auto elem : Item::stackItems(extractRefs(items)))
+      for (auto elem : Item::stackItems(getWeakPointers(items)))
         position.globalMessage(elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
               "sinks", "sink") + " in the water.", "You hear a splash.");
     } else

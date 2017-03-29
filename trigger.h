@@ -31,7 +31,7 @@ class Trigger {
   virtual ~Trigger();
 
   virtual void onCreatureEnter(Creature* c);
-  virtual bool interceptsFlyingItem(Item* it) const;
+  virtual bool interceptsFlyingItem(WItem it) const;
   virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, VisionId);
 
   virtual bool isDangerous(const Creature* c) const;

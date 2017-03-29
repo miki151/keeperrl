@@ -319,7 +319,7 @@ void CreatureAttributes::consume(Creature* self, const CreatureAttributes& other
   consumeEffects(other.permanentEffects);
 }
 
-AttackType CreatureAttributes::getAttackType(const Item* weapon) const {
+AttackType CreatureAttributes::getAttackType(const WItem weapon) const {
   if (weapon)
     return weapon->getAttackType();
   else if (barehandedAttack)

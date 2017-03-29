@@ -314,13 +314,13 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
     if (!pos.canSeeThru(vision)) {
       item[0]->onHitSquareMessage(Position(v, this), item.size());
       trajectory.pop_back();
-      getGame()->addEvent({EventId::ITEMS_THROWN, EventInfo::ItemsThrown{this, extractRefs(item), trajectory}});
+      getGame()->addEvent({EventId::ITEMS_THROWN, EventInfo::ItemsThrown{this, getWeakPointers(item), trajectory}});
       if (!item[0]->isDiscarded())
         modSafeSquare(v - direction)->dropItems(Position(v - direction, this), std::move(item));
       return;
     }
-    if (++cnt > maxDist || getSafeSquare(v)->itemLands(extractRefs(item), attack)) {
-      getGame()->addEvent({EventId::ITEMS_THROWN, EventInfo::ItemsThrown{this, extractRefs(item), trajectory}});
+    if (++cnt > maxDist || getSafeSquare(v)->itemLands(getWeakPointers(item), attack)) {
+      getGame()->addEvent({EventId::ITEMS_THROWN, EventInfo::ItemsThrown{this, getWeakPointers(item), trajectory}});
       modSafeSquare(v)->onItemLands(Position(v, this), std::move(item), attack, maxDist - cnt - 1, direction,
           vision);
       return;

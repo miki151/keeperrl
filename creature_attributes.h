@@ -92,7 +92,7 @@ class CreatureAttributes {
   bool considerAffecting(LastingEffect, double globalTime, double timeout);
   bool canCarryAnything() const;
   int getBarehandedDamage() const;
-  AttackType getAttackType(const Item* weapon) const;
+  AttackType getAttackType(const WItem weapon) const;
   optional<EffectType> getAttackEffect() const;
   bool canSleep() const;
   bool isInnocent() const;

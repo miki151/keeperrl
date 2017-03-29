@@ -5,14 +5,7 @@
 
 template <class Archive>
 void CreatureDebt::serialize(Archive& ar, const unsigned int version) {
-  if (version == 0) {
-    map<Creature*, int> SERIAL(tmp);
-    serializeAll(ar, tmp);
-    for (auto& elem : tmp)
-      debt.set(elem.first, elem.second);
-  } else
-    serializeAll(ar, debt);
-  serializeAll(ar, total);
+  serializeAll(ar, debt, total);
 }
 
 SERIALIZABLE(CreatureDebt);

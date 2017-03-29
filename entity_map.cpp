@@ -47,6 +47,41 @@ const Value& EntityMap<Key, Value>::getOrElse(const Key* key, const Value& value
 }
 
 template <typename Key, typename Value>
+void EntityMap<Key, Value>::set(WeakPointer<Key> key, const Value& v) {
+  set(key->getUniqueId(), v);
+}
+
+template <typename Key, typename Value>
+void EntityMap<Key, Value>::erase(WeakPointer<Key> key) {
+  erase(key->getUniqueId());
+}
+
+template <typename Key, typename Value>
+const Value& EntityMap<Key, Value>::getOrFail(WeakPointer<Key> key) const {
+  return getOrFail(key->getUniqueId());
+}
+
+template <typename Key, typename Value>
+Value& EntityMap<Key, Value>::getOrFail(WeakPointer<Key> key) {
+  return getOrFail(key->getUniqueId());
+}
+
+template <typename Key, typename Value>
+Value& EntityMap<Key, Value>::getOrInit(WeakPointer<Key> key) {
+  return getOrInit(key->getUniqueId());
+}
+
+template <typename Key, typename Value>
+optional<Value> EntityMap<Key, Value>::getMaybe(WeakPointer<Key> key) const {
+  return getMaybe(key->getUniqueId());
+}
+
+template <typename Key, typename Value>
+const Value& EntityMap<Key, Value>::getOrElse(WeakPointer<Key> key, const Value& value) const {
+  return getOrElse(key->getUniqueId(), value);
+}
+
+template <typename Key, typename Value>
 bool EntityMap<Key, Value>::empty() const {
   return elems.empty();
 }

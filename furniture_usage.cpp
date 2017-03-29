@@ -59,7 +59,7 @@ static void useChest(Position pos, const Furniture* furniture, Creature* c, cons
     ItemFactory itemFactory(itemInfo->items);
     vector<PItem> items = itemFactory.random();
     c->getGame()->addEvent({EventId::ITEMS_APPEARED, EventInfo::ItemsAppeared{c->getPosition(),
-        extractRefs(items)}});
+        getWeakPointers(items)}});
     c->getPosition().dropItems(std::move(items));
   }
 }

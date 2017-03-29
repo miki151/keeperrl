@@ -12,7 +12,7 @@ class TaskCallback {
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}
   virtual bool isConstructionReachable(Position) { return true; }
   virtual void onTorchBuilt(Position, Trigger*) {}
-  virtual void onAppliedItem(Position, Item* item) {}
+  virtual void onAppliedItem(Position, WItem item) {}
   virtual void onAppliedSquare(Creature*, Position) {}
   virtual void onAppliedItemCancel(Position) {}
   virtual void onTaskPickedUp(Position, EntitySet<Item>) {}

@@ -24,6 +24,12 @@ class EntityMap {
   using EntityId = typename UniqueEntity<Key>::Id;
   EntityMap();
   EntityMap& operator = (const EntityMap&) = default;
+
+  bool empty() const;
+  void clear();
+  int getSize() const;
+  vector<EntityId> getKeys() const;
+
   void set(const Key*, const Value&);
   void erase(const Key*);
   const Value& getOrFail(const Key*) const;
@@ -31,10 +37,14 @@ class EntityMap {
   Value& getOrInit(const Key*);
   optional<Value> getMaybe(const Key*) const;
   const Value& getOrElse(const Key*, const Value&) const;
-  bool empty() const;
-  void clear();
-  int getSize() const;
-  vector<EntityId> getKeys() const;
+
+  void set(WeakPointer<Key>, const Value&);
+  void erase(WeakPointer<Key>);
+  const Value& getOrFail(WeakPointer<Key>) const;
+  Value& getOrFail(WeakPointer<Key>);
+  Value& getOrInit(WeakPointer<Key>);
+  optional<Value> getMaybe(WeakPointer<Key>) const;
+  const Value& getOrElse(WeakPointer<Key>, const Value&) const;
 
   void set(EntityId, const Value&);
   void erase(EntityId);

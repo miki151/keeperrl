@@ -68,7 +68,7 @@ double Trigger::getLightEmission() const {
   return 0;
 }
 
-bool Trigger::interceptsFlyingItem(Item* it) const { return false; }
+bool Trigger::interceptsFlyingItem(WItem it) const { return false; }
 void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, VisionId) {}
 bool Trigger::isDangerous(const Creature* c) const { return false; }
 void Trigger::tick() {}
@@ -116,7 +116,7 @@ class Portal : public Trigger {
       c->playerMessage("The portal is inactive. Create another one to open a connection.");
   }
 
-  virtual bool interceptsFlyingItem(Item* it) const override {
+  virtual bool interceptsFlyingItem(WItem it) const override {
     return getOther() && !Random.roll(5);
   }
 

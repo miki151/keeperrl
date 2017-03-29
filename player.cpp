@@ -137,7 +137,7 @@ void Player::onBump(Creature*) {
   FATAL << "Shouldn't call onBump on a player";
 }
 
-string Player::getInventoryItemName(const Item* item, bool plural) const {
+string Player::getInventoryItemName(const WItem item, bool plural) const {
   if (getCreature()->getEquipment().isEquipped(item))
     return item->getNameAndModifiers(plural, getCreature()) + " "
       + getSlotSuffix(item->getEquipmentSlot());
@@ -145,10 +145,10 @@ string Player::getInventoryItemName(const Item* item, bool plural) const {
     return item->getNameAndModifiers(plural, getCreature());
 }
 
-void Player::getItemNames(vector<Item*> items, vector<ListElem>& names, vector<vector<Item*> >& groups,
+void Player::getItemNames(vector<WItem> items, vector<ListElem>& names, vector<vector<WItem> >& groups,
     ItemPredicate predicate) {
-  map<string, vector<Item*> > ret = groupBy<Item*, string>(items,
-      [this] (Item* const& item) { return getInventoryItemName(item, false); });
+  map<string, vector<WItem> > ret = groupBy<WItem, string>(items,
+      [this] (WItem const& item) { return getInventoryItemName(item, false); });
   for (auto elem : ret) {
     if (elem.second.size() == 1)
       names.push_back(ListElem(getInventoryItemName(elem.second[0], false),
@@ -171,7 +171,7 @@ void Player::pickUpItemAction(int numStack, bool multi) {
     }
   }
   if (numStack < stacks.size()) {
-    vector<Item*> items = stacks[numStack];
+    vector<WItem> items = stacks[numStack];
     if (multi && items.size() > 1) {
       auto num = getView()->getNumber("Pick up how many " + items[0]->getName(true) + "?", 1, items.size());
       if (!num)
@@ -229,11 +229,11 @@ static string getText(ItemClass type) {
 }
 
 
-vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, optional<UserInputId> exitAction) {
-  map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
-      getCreature()->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
+vector<WItem> Player::chooseItem(const string& text, ItemPredicate predicate, optional<UserInputId> exitAction) {
+  map<ItemClass, vector<WItem> > typeGroups = groupBy<WItem, ItemClass>(
+      getCreature()->getEquipment().getItems(), [](WItem const& item) { return item->getClass();});
   vector<ListElem> names;
-  vector<vector<Item*> > groups;
+  vector<vector<WItem> > groups;
   for (auto elem : typeDisplayOrder)
     if (typeGroups[elem].size() > 0) {
       names.push_back(ListElem(getText(elem), ListElem::TITLE));
@@ -242,10 +242,10 @@ vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, op
   optional<int> index = getView()->chooseFromList(text, names, 0, MenuType::NORMAL, nullptr, exitAction);
   if (index)
     return groups[*index];
-  return vector<Item*>();
+  return vector<WItem>();
 }
 
-void Player::applyItem(vector<Item*> items) {
+void Player::applyItem(vector<WItem> items) {
   if (getCreature()->isBlind() && contains({ItemClass::SCROLL, ItemClass::BOOK}, items[0]->getClass())) {
     privateMessage("You can't read while blind!");
     return;
@@ -263,7 +263,7 @@ void Player::applyItem(vector<Item*> items) {
   tryToPerform(getCreature()->applyItem(items[0]));
 }
 
-void Player::throwItem(vector<Item*> items, optional<Vec2> dir) {
+void Player::throwItem(vector<WItem> items, optional<Vec2> dir) {
   if (items[0]->getClass() == ItemClass::AMMO && getGame()->getOptions()->getBoolValue(OptionId::HINTS))
     privateMessage(PlayerMessage("To fire arrows equip a bow and use alt + direction key", MessagePriority::CRITICAL));
   if (!dir) {
@@ -275,7 +275,7 @@ void Player::throwItem(vector<Item*> items, optional<Vec2> dir) {
   tryToPerform(getCreature()->throwItem(items[0], *dir));
 }
 
-vector<ItemAction> Player::getItemActions(const vector<Item*>& item) const {
+vector<ItemAction> Player::getItemActions(const vector<WItem>& item) const {
   vector<ItemAction> actions;
   if (getCreature()->equip(item[0]))
     actions.push_back(ItemAction::EQUIP);
@@ -301,8 +301,8 @@ vector<ItemAction> Player::getItemActions(const vector<Item*>& item) const {
 }
 
 void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
-  vector<Item*> items = getCreature()->getEquipment().getItems(
-      [&](const Item* it) { return itemIds.contains(it);});
+  vector<WItem> items = getCreature()->getEquipment().getItems(
+      [&](const WItem it) { return itemIds.contains(it);});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
   // the above assertion fails for unknown reason, so just fail this softly.
   if (items.empty() || (items.size() == 1 && action == ItemAction::DROP_MULTI)) 
@@ -386,13 +386,13 @@ void Player::targetAction() {
     target = none;
 }
 
-void Player::payForItemAction(const vector<Item*>& items) {
+void Player::payForItemAction(const vector<WItem>& items) {
   int totalPrice = (int) items.size() * items[0]->getPrice();
   for (auto item : items) {
     CHECK(item->getShopkeeper(getCreature()));
     CHECK(item->getPrice() == items[0]->getPrice());
   }
-  vector<Item*> gold = getCreature()->getGold(totalPrice);
+  vector<WItem> gold = getCreature()->getGold(totalPrice);
   int canPayFor = (int) gold.size() / items[0]->getPrice();
   if (canPayFor == 0)
     privateMessage("You don't have enough gold to pay.");
@@ -419,7 +419,7 @@ void Player::payForAllItemsAction() {
   }
 }
 
-void Player::giveAction(vector<Item*> items) {
+void Player::giveAction(vector<WItem> items) {
   if (items.size() > 1) {
     if (auto num = getView()->getNumber("Give how many " + items[0]->getName(true) + "?", 1, items.size()))
       items = getPrefix(items, *num);
@@ -958,8 +958,8 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto stack : getCreature()->stackItems(getCreature()->getPickUpOptions()))
     info.lyingItems.push_back(getItemInfo(stack));
   info.inventory.clear();
-  map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
-      getCreature()->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
+  map<ItemClass, vector<WItem> > typeGroups = groupBy<WItem, ItemClass>(
+      getCreature()->getEquipment().getItems(), [](WItem const& item) { return item->getClass();});
   info.debt = getCreature()->getDebt().getTotal();
   for (auto elem : typeDisplayOrder)
     if (typeGroups[elem].size() > 0)
@@ -978,7 +978,7 @@ ItemInfo Player::getFurnitureUsageInfo(const string& question, ViewId viewId) co
     c.viewId = viewId;);
 }
 
-ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
+ItemInfo Player::getItemInfo(const vector<WItem>& stack) const {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(getCreature());
     c.fullName = stack[0]->getNameAndModifiers(false, getCreature());
@@ -995,9 +995,9 @@ ItemInfo Player::getItemInfo(const vector<Item*>& stack) const {
   );
 }
 
-vector<ItemInfo> Player::getItemInfos(const vector<Item*>& items) const {
-  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
-      [this] (Item* const& item) { return getInventoryItemName(item, false); });
+vector<ItemInfo> Player::getItemInfos(const vector<WItem>& items) const {
+  map<string, vector<WItem> > stacks = groupBy<WItem, string>(items,
+      [this] (WItem const& item) { return getInventoryItemName(item, false); });
   vector<ItemInfo> ret;
   for (auto elem : stacks)
     ret.push_back(getItemInfo(elem.second));

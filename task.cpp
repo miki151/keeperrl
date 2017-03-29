@@ -246,7 +246,7 @@ namespace {
 
 class PickItem : public Task {
   public:
-  PickItem(TaskCallback* c, Position pos, vector<Item*> _items, int retries = 10)
+  PickItem(TaskCallback* c, Position pos, vector<WItem> _items, int retries = 10)
       : items(_items), position(pos), callback(c), tries(retries) {
     CHECK(!items.empty());
   }
@@ -260,7 +260,7 @@ class PickItem : public Task {
   }
 
   bool itemsExist(Position target) {
-    for (const Item* it : target.getItems())
+    for (const WItem it : target.getItems())
       if (items.contains(it))
         return true;
     return false;
@@ -282,8 +282,8 @@ class PickItem : public Task {
       return NoMove;
     }
     if (c->getPosition() == position) {
-      vector<Item*> hereItems;
-      for (Item* it : c->getPickUpOptions())
+      vector<WItem> hereItems;
+      for (WItem it : c->getPickUpOptions())
         if (items.contains(it)) {
           hereItems.push_back(it);
           items.erase(it);
@@ -327,7 +327,7 @@ class PickItem : public Task {
 };
 }
 
-PTask Task::pickItem(TaskCallback* c, Position position, vector<Item*> items) {
+PTask Task::pickItem(TaskCallback* c, Position position, vector<WItem> items) {
   return PTask(new PickItem(c, position, items));
 }
 
@@ -335,7 +335,7 @@ namespace {
 
 class PickAndEquipItem : public PickItem {
   public:
-  PickAndEquipItem(TaskCallback* c, Position position, vector<Item*> _items) : PickItem(c, position, _items) {
+  PickAndEquipItem(TaskCallback* c, Position position, vector<WItem> _items) : PickItem(c, position, _items) {
   }
 
   virtual void onPickedUp() override {
@@ -348,7 +348,7 @@ class PickAndEquipItem : public PickItem {
   virtual MoveInfo getMove(Creature* c) override {
     if (!pickedUp)
       return PickItem::getMove(c);
-    vector<Item*> it = c->getEquipment().getItems(items.containsPredicate());
+    vector<WItem> it = c->getEquipment().getItems(items.containsPredicate());
     if (!it.empty()) {
       CHECK(it.size() == 1) << "Duplicate items: " << it[0]->getName() << " " << it[1]->getName();
       if (auto action = c->equip(getOnlyElement(it)))
@@ -366,7 +366,7 @@ class PickAndEquipItem : public PickItem {
 
 }
 
-PTask Task::pickAndEquipItem(TaskCallback* c, Position position, Item* items) {
+PTask Task::pickAndEquipItem(TaskCallback* c, Position position, WItem items) {
   return PTask(new PickAndEquipItem(c, position, {items}));
 }
 
@@ -374,7 +374,7 @@ namespace {
 
 class EquipItem : public Task {
   public:
-  EquipItem(Item* item) : itemId(item->getUniqueId()) {
+  EquipItem(WItem item) : itemId(item->getUniqueId()) {
   }
 
   virtual string getDescription() const override {
@@ -383,7 +383,7 @@ class EquipItem : public Task {
 
   virtual MoveInfo getMove(Creature* c) override {
     CHECK(c->getBody().isHumanoid()) << c->getName().bare();
-    if (Item* item = c->getEquipment().getItemById(itemId)) {
+    if (WItem item = c->getEquipment().getItemById(itemId)) {
       if (auto action = c->equip(item))
         return action.append([=](Creature* c) {setDone();});
       setDone();
@@ -402,7 +402,7 @@ class EquipItem : public Task {
 };
 }
 
-PTask Task::equipItem(Item* item) {
+PTask Task::equipItem(WItem item) {
   return PTask(new EquipItem(item));
 }
 
@@ -425,13 +425,13 @@ static Position chooseRandomClose(Position start, const vector<Position>& square
 class BringItem : public PickItem {
   public:
 
-  BringItem(TaskCallback* c, Position position, vector<Item*> items, vector<Position> target, int retries)
+  BringItem(TaskCallback* c, Position position, vector<WItem> items, vector<Position> target, int retries)
       : PickItem(c, position, items, retries), allTargets(target) {}
 
-  BringItem(TaskCallback* c, Position position, vector<Item*> items, Position t)
+  BringItem(TaskCallback* c, Position position, vector<WItem> items, Position t)
       : PickItem(c, position, items), target(t), allTargets({t}) {}
 
-  virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) {
+  virtual CreatureAction getBroughtAction(Creature* c, vector<WItem> it) {
     return c->drop(it).append([=](Creature* c) {
         callback->onBrought(c->getPosition(), it);
     });
@@ -474,7 +474,7 @@ class BringItem : public PickItem {
             setDone();
           });
     if (c->getPosition() == target) {
-      vector<Item*> myItems = c->getEquipment().getItems(items.containsPredicate());
+      vector<WItem> myItems = c->getEquipment().getItems(items.containsPredicate());
       if (auto action = getBroughtAction(c, myItems))
         return {1.0, action.append([=](Creature*) {setDone();})};
       else {
@@ -502,13 +502,13 @@ class BringItem : public PickItem {
   vector<Position> SERIAL(allTargets);
 };
 
-PTask Task::bringItem(TaskCallback* c, Position pos, vector<Item*> items, const set<Position>& target, int numRetries) {
+PTask Task::bringItem(TaskCallback* c, Position pos, vector<WItem> items, const set<Position>& target, int numRetries) {
   return PTask(new BringItem(c, pos, items, vector<Position>(target.begin(), target.end()), numRetries));
 }
 
 class ApplyItem : public BringItem {
   public:
-  ApplyItem(TaskCallback* c, Position position, vector<Item*> items, Position target)
+  ApplyItem(TaskCallback* c, Position position, vector<WItem> items, Position target)
       : BringItem(c, position, items, target), callback(c) {}
 
   virtual void cancel() override {
@@ -519,7 +519,7 @@ class ApplyItem : public BringItem {
     return "Bring and apply item " + toString(position) + " to " + toString(target);
   }
 
-  virtual CreatureAction getBroughtAction(Creature* c, vector<Item*> it) override {
+  virtual CreatureAction getBroughtAction(Creature* c, vector<WItem> it) override {
     if (it.empty()) {
       cancel();
       return c->wait();
@@ -527,7 +527,7 @@ class ApplyItem : public BringItem {
       if (it.size() > 1)
         FATAL << it[0]->getName() << " " << it[0]->getUniqueId().getHash() << " "  << it[1]->getName() << " " <<
             it[1]->getUniqueId().getHash();
-      Item* item = getOnlyElement(it);
+      WItem item = getOnlyElement(it);
       if (auto action = c->applyItem(item))
         return action.prepend([=](Creature* c) {
             callback->onAppliedItem(c->getPosition(), item);
@@ -545,7 +545,7 @@ class ApplyItem : public BringItem {
   TaskCallback* SERIAL(callback);
 };
 
-PTask Task::applyItem(TaskCallback* c, Position position, Item* item, Position target) {
+PTask Task::applyItem(TaskCallback* c, Position position, WItem item, Position target) {
   return PTask(new ApplyItem(c, position, {item}, target));
 }
 
@@ -854,7 +854,7 @@ PTask Task::attackLeader(Collective* col) {
 PTask Task::stealFrom(Collective* collective, TaskCallback* callback) {
   vector<PTask> tasks;
   for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType::TREASURE_CHEST)) {
-    vector<Item*> gold = pos.getItems(Item::classPredicate(ItemClass::GOLD));
+    vector<WItem> gold = pos.getItems(Item::classPredicate(ItemClass::GOLD));
     if (!gold.empty())
       tasks.push_back(pickItem(callback, pos, gold));
   }
@@ -993,7 +993,7 @@ PTask Task::killFighters(Collective* col, int numCreatures) {
 namespace {
 class ConsumeItem : public Task {
   public:
-  ConsumeItem(TaskCallback* c, vector<Item*> _items) : items(_items), callback(c) {}
+  ConsumeItem(TaskCallback* c, vector<WItem> _items) : items(_items), callback(c) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     return c->wait().append([=](Creature* c) {
@@ -1013,7 +1013,7 @@ class ConsumeItem : public Task {
 };
 }
 
-PTask Task::consumeItem(TaskCallback* c, vector<Item*> items) {
+PTask Task::consumeItem(TaskCallback* c, vector<WItem> items) {
   return PTask(new ConsumeItem(c, items));
 }
 
@@ -1111,8 +1111,8 @@ class Eat : public Task {
     return false;
   }
 
-  Item* getDeadChicken(Position pos) {
-    vector<Item*> chickens = pos.getItems(Item::classPredicate(ItemClass::FOOD));
+  WItem getDeadChicken(Position pos) {
+    vector<WItem> chickens = pos.getItems(Item::classPredicate(ItemClass::FOOD));
     if (chickens.empty())
       return nullptr;
     else
@@ -1132,13 +1132,13 @@ class Eat : public Task {
     }
     if (c->getPosition() != *position && getDeadChicken(*position))
       return c->moveTowards(*position);
-    Item* chicken = getDeadChicken(c->getPosition());
+    WItem chicken = getDeadChicken(c->getPosition());
     if (chicken)
       return c->eat(chicken).append([=] (Creature* c) {
         setDone();
       });
     for (Position pos : c->getPosition().neighbors8(Random)) {
-      Item* chicken = getDeadChicken(pos);
+      WItem chicken = getDeadChicken(pos);
       if (chicken) 
         if (auto move = c->move(pos))
           return move;
@@ -1356,7 +1356,7 @@ class DropItems : public Task {
 };
 }
 
-PTask Task::dropItems(vector<Item*> items) {
+PTask Task::dropItems(vector<WItem> items) {
   return PTask(new DropItems(items));
 }
 

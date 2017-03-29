@@ -100,28 +100,28 @@ class Player : public Controller, public CreatureView {
   void creatureAction(UniqueEntity<Creature>::Id);
   void pickUpItemAction(int item, bool multi = false);
   void equipmentAction();
-  void applyItem(vector<Item*> item);
-  void throwItem(vector<Item*> item, optional<Vec2> dir = none);
+  void applyItem(vector<WItem> item);
+  void throwItem(vector<WItem> item, optional<Vec2> dir = none);
   void takeOffAction();
   void hideAction();
   void displayInventory();
   void handleItems(const EntitySet<Item>&, ItemAction);
-  vector<ItemAction> getItemActions(const vector<Item*>&) const;
+  vector<ItemAction> getItemActions(const vector<WItem>&) const;
   bool interruptedByEnemy();
   void travelAction();
   void targetAction();
   void payForAllItemsAction();
-  void payForItemAction(const vector<Item*>&);
+  void payForItemAction(const vector<WItem>&);
   void chatAction(optional<Vec2> dir = none);
-  void giveAction(vector<Item*>);
+  void giveAction(vector<WItem>);
   void spellAction(SpellId);
   void fireAction();
   void fireAction(Vec2 dir);
-  vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
-  void getItemNames(vector<Item*> it, vector<ListElem>& names, vector<vector<Item*> >& groups,
-      ItemPredicate = alwaysTrue<const Item*>());
-  string getInventoryItemName(const Item*, bool plural) const;
-  string getPluralName(Item* item, int num);
+  vector<WItem> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
+  void getItemNames(vector<WItem> it, vector<ListElem>& names, vector<vector<WItem> >& groups,
+      ItemPredicate = alwaysTrue<const WItem>());
+  string getInventoryItemName(const WItem, bool plural) const;
+  string getPluralName(WItem item, int num);
   bool SERIAL(travelling) = false;
   Vec2 SERIAL(travelDir);
   optional<Position> SERIAL(target);
@@ -133,8 +133,8 @@ class Player : public Controller, public CreatureView {
   vector<PlayerMessage> SERIAL(messages);
   vector<PlayerMessage> SERIAL(messageHistory);
   string getRemainingString(LastingEffect) const;
-  vector<ItemInfo> getItemInfos(const vector<Item*>&) const;
-  ItemInfo getItemInfo(const vector<Item*>&) const;
+  vector<ItemInfo> getItemInfos(const vector<WItem>&) const;
+  ItemInfo getItemInfo(const vector<WItem>&) const;
   ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
   optional<FurnitureUsageType> getUsableUsageType() const;
   struct TimePosInfo {

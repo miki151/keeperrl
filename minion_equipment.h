@@ -25,33 +25,33 @@ class Item;
 class MinionEquipment {
   public:
 
-  static bool isItemUseful(const Item*);
-  bool needsItem(const Creature* c, const Item* it, bool noLimit = false) const;
-  optional<UniqueEntity<Creature>::Id> getOwner(const Item*) const;
-  bool isOwner(const Item*, const Creature*) const;
-  void own(const Creature*, Item*);
-  void discard(const Item*);
+  static bool isItemUseful(const WItem);
+  bool needsItem(const Creature* c, const WItem it, bool noLimit = false) const;
+  optional<UniqueEntity<Creature>::Id> getOwner(const WItem) const;
+  bool isOwner(const WItem, const Creature*) const;
+  void own(const Creature*, WItem);
+  void discard(const WItem);
   void discard(UniqueEntity<Item>::Id);
   void updateOwners(const vector<Creature*>&);
-  vector<Item*> getItemsOwnedBy(const Creature*, ItemPredicate = nullptr) const;
+  vector<WItem> getItemsOwnedBy(const Creature*, ItemPredicate = nullptr) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   void setLocked(const Creature*, UniqueEntity<Item>::Id, bool locked);
   bool isLocked(const Creature*, UniqueEntity<Item>::Id) const;
-  void sortByEquipmentValue(vector<Item*>& items) const;
-  void autoAssign(const Creature*, vector<Item*> possibleItems);
-  void updateItems(const vector<Item*>& items);
+  void sortByEquipmentValue(vector<WItem>& items) const;
+  void autoAssign(const Creature*, vector<WItem> possibleItems);
+  void updateItems(const vector<WItem>& items);
 
   private:
   enum EquipmentType { ARMOR, HEALING, ARCHERY, COMBAT_ITEM };
 
-  static optional<EquipmentType> getEquipmentType(const Item* it);
+  static optional<EquipmentType> getEquipmentType(const WItem it);
   optional<int> getEquipmentLimit(EquipmentType type) const;
-  bool isItemAppropriate(const Creature*, const Item*) const;
-  Item* getWorstItem(const Creature*, vector<Item*>) const;
-  int getItemValue(const Item*) const;
+  bool isItemAppropriate(const Creature*, const WItem) const;
+  WItem getWorstItem(const Creature*, vector<WItem>) const;
+  int getItemValue(const WItem) const;
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
   EntityMap<Creature, vector<WItem>> SERIAL(myItems);

@@ -124,13 +124,13 @@ class Square : public Renderable {
   optional<ViewObject> extractBackground() const;
   void getViewIndex(ViewIndex&, const Creature* viewer) const;
 
-  bool itemLands(vector<Item*> item, const Attack& attack) const;
+  bool itemLands(vector<WItem> item, const Attack& attack) const;
   void onItemLands(Position, vector<PItem>, const Attack&, int remainingDist, Vec2 dir, VisionId);
-  const vector<Item*>& getItems() const;
-  vector<Item*> getItems(function<bool (Item*)> predicate) const;
-  const vector<Item*>& getItems(ItemIndex) const;
-  PItem removeItem(Position, Item*);
-  vector<PItem> removeItems(Position, vector<Item*>);
+  const vector<WItem>& getItems() const;
+  vector<WItem> getItems(function<bool (WItem)> predicate) const;
+  const vector<WItem>& getItems(ItemIndex) const;
+  PItem removeItem(Position, WItem);
+  vector<PItem> removeItems(Position, vector<WItem>);
 
   void forbidMovementForTribe(Position, TribeId);
   void allowMovementForTribe(Position, TribeId);
@@ -160,7 +160,7 @@ class Square : public Renderable {
   string SERIAL(name);
 
   private:
-  Item* getTopItem() const;
+  WItem getTopItem() const;
   HeapAllocated<Inventory> SERIAL(inventory);
   Creature* SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);

@@ -20,5 +20,3 @@ class CreatureDebt {
   EntityMap<Creature, int> SERIAL(debt);
   int SERIAL(total);
 };
-
-BOOST_CLASS_VERSION(CreatureDebt, 1)

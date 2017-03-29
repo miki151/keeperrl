@@ -330,32 +330,32 @@ void Position::addTrigger(PTrigger t) {
     modSquare()->addTrigger(*this, std::move(t));
 }
 
-const vector<Item*>& Position::getItems() const {
+const vector<WItem>& Position::getItems() const {
   if (isValid())
     return getSquare()->getItems();
   else {
-    static vector<Item*> empty;
+    static vector<WItem> empty;
     return empty;
   }
 }
 
-vector<Item*> Position::getItems(function<bool (Item*)> predicate) const {
+vector<WItem> Position::getItems(function<bool (WItem)> predicate) const {
   if (isValid())
     return getSquare()->getItems(predicate);
   else
     return {};
 }
 
-const vector<Item*>& Position::getItems(ItemIndex index) const {
+const vector<WItem>& Position::getItems(ItemIndex index) const {
   if (isValid())
     return getSquare()->getItems(index);
   else {
-    static vector<Item*> empty;
+    static vector<WItem> empty;
     return empty;
   }
 }
 
-PItem Position::removeItem(Item* it) {
+PItem Position::removeItem(WItem it) {
   CHECK(isValid());
   return modSquare()->removeItem(*this, it);
 }
@@ -376,7 +376,7 @@ const Inventory& Position::getInventory() const {
     return getSquare()->getInventory();
 }
 
-vector<PItem> Position::removeItems(vector<Item*> it) {
+vector<PItem> Position::removeItems(vector<WItem> it) {
   CHECK(isValid());
   return modSquare()->removeItems(*this, it);
 }
@@ -509,7 +509,7 @@ void Position::fireDamage(double amount) {
     furniture->fireDamage(*this, amount);
   if (Creature* creature = getCreature())
     creature->fireDamage(amount);
-  for (Item* it : getItems())
+  for (WItem it : getItems())
     it->fireDamage(amount, *this);
   for (Trigger* t : getTriggers())
     t->fireDamage(amount);

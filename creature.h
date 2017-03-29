@@ -92,7 +92,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
   Equipment& getEquipment();
-  vector<PItem> steal(const vector<Item*> items);
+  vector<PItem> steal(const vector<WItem> items);
   bool canSee(const Creature*) const;
   bool canSee(Position) const;
   bool canSee(Vec2) const;
@@ -116,10 +116,10 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   TribeId getTribeId() const;
   void setTribe(TribeId);
   bool isFriend(const Creature*) const;
-  vector<Item*> getGold(int num) const;
+  vector<WItem> getGold(int num) const;
 
   void takeItems(vector<PItem> items, Creature* from);
-  bool canTakeItems(const vector<Item*>& items) const;
+  bool canTakeItems(const vector<WItem>& items) const;
 
   void youHit(BodyPart part, AttackType type) const;
 
@@ -145,16 +145,16 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
 
   void addSkill(Skill* skill);
 
-  string getPluralTheName(Item* item, int num) const;
-  string getPluralAName(Item* item, int num) const;
+  string getPluralTheName(WItem item, int num) const;
+  string getPluralAName(WItem item, int num) const;
   CreatureAction move(Position) const;
   CreatureAction move(Vec2) const;
   CreatureAction forceMove(Position) const;
   CreatureAction forceMove(Vec2) const;
   CreatureAction wait() const;
-  vector<Item*> getPickUpOptions() const;
-  CreatureAction pickUp(const vector<Item*>& item) const;
-  CreatureAction drop(const vector<Item*>& item) const;
+  vector<WItem> getPickUpOptions() const;
+  CreatureAction pickUp(const vector<WItem>& item) const;
+  CreatureAction drop(const vector<WItem>& item) const;
   void drop(vector<PItem> item);
   struct AttackParams {
     optional<AttackLevel> level;
@@ -163,13 +163,13 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   };
   CreatureAction attack(Creature*, optional<AttackParams> = none, bool spendTime = true) const;
   CreatureAction bumpInto(Vec2 direction) const;
-  CreatureAction applyItem(Item* item) const;
-  CreatureAction equip(Item* item) const;
-  bool isEquipmentAppropriate(const Item* item) const;
-  CreatureAction unequip(Item* item) const;
-  bool canEquipIfEmptySlot(const Item* item, string* reason = nullptr) const;
-  bool canEquip(const Item* item) const;
-  CreatureAction throwItem(Item*, Vec2 direction) const;
+  CreatureAction applyItem(WItem item) const;
+  CreatureAction equip(WItem item) const;
+  bool isEquipmentAppropriate(const WItem item) const;
+  CreatureAction unequip(WItem item) const;
+  bool canEquipIfEmptySlot(const WItem item, string* reason = nullptr) const;
+  bool canEquip(const WItem item) const;
+  CreatureAction throwItem(WItem, Vec2 direction) const;
   CreatureAction heal(Vec2 direction) const;
   CreatureAction applySquare(Position) const;
   CreatureAction hide() const;
@@ -179,16 +179,16 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction disappear() const;
   CreatureAction torture(Creature*) const;
   CreatureAction chatTo(Creature*) const;
-  CreatureAction stealFrom(Vec2 direction, const vector<Item*>&) const;
-  CreatureAction give(Creature* whom, vector<Item*> items) const;
-  CreatureAction payFor(const vector<Item*>&) const;
+  CreatureAction stealFrom(Vec2 direction, const vector<WItem>&) const;
+  CreatureAction give(Creature* whom, vector<WItem> items) const;
+  CreatureAction payFor(const vector<WItem>&) const;
   CreatureAction fire(Vec2 direction) const;
   CreatureAction construct(Vec2 direction, FurnitureType) const;
   CreatureAction placeTorch(Dir attachmentDir, function<void(Trigger*)> builtCallback) const;
   CreatureAction whip(const Position&) const;
   bool canConstruct(const SquareType&) const;
   bool canConstruct(FurnitureType) const;
-  CreatureAction eat(Item*) const;
+  CreatureAction eat(WItem) const;
   CreatureAction destroy(Vec2 direction, const DestroyAction&) const;
   void destroyImpl(Vec2 direction, const DestroyAction& action);
   CreatureAction copulate(Vec2 direction) const;
@@ -202,9 +202,9 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   
   void increaseExpLevel(ExperienceType, double increase);
 
-  Item* getWeapon() const;
+  WItem getWeapon() const;
   void dropWeapon();
-  vector<vector<Item*>> stackItems(vector<Item*>) const;
+  vector<vector<WItem>> stackItems(vector<WItem>) const;
 
   CreatureAction moveTowards(Position, bool stepOnTile = false);
   CreatureAction moveAway(Position, bool pathfinding = true);
@@ -272,9 +272,9 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   private:
 
   CreatureAction moveTowards(Position, bool away, bool stepOnTile);
-  Item* getAmmo() const;
+  WItem getAmmo() const;
   void spendTime(double time);
-  bool canCarry(const vector<Item*>&) const;
+  bool canCarry(const vector<WItem>&) const;
   TribeSet getFriendlyTribes() const;
   void addMovementInfo(const MovementInfo&);
   bool canSwapPositionInMovement(Creature* other) const;

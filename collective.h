@@ -96,8 +96,8 @@ class Collective : public TaskCallback {
 
   bool canPillage() const;
   bool hasTradeItems() const;
-  vector<Item*> getTradeItems() const;
-  PItem buyItem(Item*);
+  vector<WItem> getTradeItems() const;
+  PItem buyItem(WItem);
   vector<TriggerInfo> getTriggers(const Collective* against) const;
 
   double getEfficiency(const Creature*) const;
@@ -132,11 +132,11 @@ class Collective : public TaskCallback {
   optional<MinionTask> getMinionTask(const Creature*) const;
   bool isMinionTaskPossible(Creature* c, MinionTask task);
 
-  vector<Item*> getAllItems(bool includeMinions = true) const;
-  vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
-  vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
+  vector<WItem> getAllItems(bool includeMinions = true) const;
+  vector<WItem> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
+  vector<WItem> getAllItems(ItemIndex, bool includeMinions = true) const;
 
-  vector<pair<Item*, Position>> getTrapItems(TrapType, const vector<Position>&) const;
+  vector<pair<WItem, Position>> getTrapItems(TrapType, const vector<Position>&) const;
 
   void orderExecution(Creature*);
 
@@ -194,9 +194,9 @@ class Collective : public TaskCallback {
   const CollectiveName& getName() const;
   const TaskMap& getTaskMap() const;
   void updateResourceProduction();
-  bool isItemMarked(const Item*) const;
+  bool isItemMarked(const WItem) const;
   int getNumItems(ItemIndex, bool includeMinions = true) const;
-  optional<set<Position>> getStorageFor(const Item*) const;
+  optional<set<Position>> getStorageFor(const WItem) const;
 
   void addKnownVillain(const Collective*);
   bool isKnownVillain(const Collective*) const;
@@ -208,7 +208,7 @@ class Collective : public TaskCallback {
 
   protected:
   // From Task::Callback
-  virtual void onAppliedItem(Position, Item* item) override;
+  virtual void onAppliedItem(Position, WItem item) override;
   virtual void onAppliedItemCancel(Position) override;
   virtual void onTaskPickedUp(Position, EntitySet<Item>) override;
   virtual void onCantPickItem(EntitySet<Item> items) override;
@@ -238,7 +238,7 @@ class Collective : public TaskCallback {
   void decreaseMoraleForKill(const Creature* killer, const Creature* victim);
   void decreaseMoraleForBanishing(const Creature*);
 
-  bool isItemNeeded(const Item*) const;
+  bool isItemNeeded(const WItem) const;
   void addProducesMessage(const Creature*, const vector<PItem>&);
   int getDebt(ResourceId id) const;
 
@@ -246,7 +246,7 @@ class Collective : public TaskCallback {
   EnumMap<ResourceId, int> SERIAL(credit);
   HeapAllocated<TaskMap> SERIAL(taskMap);
   vector<TechId> SERIAL(technologies);
-  void markItem(const Item*);
+  void markItem(const WItem);
   void unmarkItem(UniqueEntity<Item>::Id);
 
   HeapAllocated<KnownTiles> SERIAL(knownTiles);
@@ -297,7 +297,7 @@ class Collective : public TaskCallback {
   EntitySet<Creature> SERIAL(surrendering);
   void updateConstructions();
   void handleTrapPlacementAndProduction();
-  void scheduleAutoProduction(function<bool (const Item*)> itemPredicate, int count);
+  void scheduleAutoProduction(function<bool (const WItem)> itemPredicate, int count);
   void delayDangerousTasks(const vector<Position>& enemyPos, double delayTime);
   bool isDelayed(Position);
   unordered_map<Position, double, CustomHash<Position>> SERIAL(delayedPos);

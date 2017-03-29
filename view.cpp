@@ -122,7 +122,7 @@ void PlayerInfo::readFrom(const Creature* c) {
   name = c->getName().bare();
   title = c->getName().title();
   description = capitalFirst(c->getAttributes().getDescription());
-  Item* weapon = c->getWeapon();
+  WItem weapon = c->getWeapon();
   weaponName = weapon ? weapon->getName() : "";
   viewId = c->getViewObject().id();
   morale = c->getMorale();

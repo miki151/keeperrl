@@ -155,7 +155,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     byTrait[t].push_back(c);
   if (auto spawnType = c->getAttributes().getSpawnType())
     bySpawnType[*spawnType].push_back(c);
-  for (Item* item : c->getEquipment().getItems())
+  for (WItem item : c->getEquipment().getItems())
     minionEquipment->own(c, item);
   if (traits.contains(MinionTrait::FIGHTER)) {
     c->setMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this)));
@@ -181,7 +181,7 @@ void Collective::banishCreature(Creature* c) {
   removeCreature(c);
   vector<Position> exitTiles = territory->getExtended(10, 20);
   vector<PTask> tasks;
-  vector<Item*> items = c->getEquipment().getItems();
+  vector<WItem> items = c->getEquipment().getItems();
   if (!items.empty())
     tasks.push_back(Task::dropItems(items));
   if (!exitTiles.empty())
@@ -214,16 +214,16 @@ bool Collective::hasTradeItems() const {
 
 //kocham Cię
 
-vector<Item*> Collective::getTradeItems() const {
-  vector<Item*> ret;
+vector<WItem> Collective::getTradeItems() const {
+  vector<WItem> ret;
   for (Position pos : territory->getAll())
     append(ret, pos.getItems(ItemIndex::FOR_SALE));
   return ret;
 }
 
-PItem Collective::buyItem(Item* item) {
+PItem Collective::buyItem(WItem item) {
   for (Position pos : territory->getAll())
-    for (Item* it : pos.getItems(ItemIndex::FOR_SALE))
+    for (WItem it : pos.getItems(ItemIndex::FOR_SALE))
       if (it == item) {
         PItem ret = pos.removeItem(it);
         ret->setShopkeeper(nullptr);
@@ -279,7 +279,7 @@ const vector<Creature*>& Collective::getCreatures() const {
 
 MoveInfo Collective::getDropItems(Creature *c) {
   if (territory->contains(c->getPosition())) {
-    vector<Item*> items = c->getEquipment().getItems([this, c](const Item* item) {
+    vector<WItem> items = c->getEquipment().getItems([this, c](const WItem item) {
         return minionEquipment->isItemUseful(item) && !minionEquipment->isOwner(item, c); });
     if (!items.empty())
       return c->drop(items);
@@ -397,13 +397,13 @@ PTask Collective::getEquipmentTask(Creature* c) {
   if (Random.roll(40))
     minionEquipment->autoAssign(c, getAllItems(ItemIndex::MINION_EQUIPMENT, false));
   vector<PTask> tasks;
-  for (Item* it : c->getEquipment().getItems())
+  for (WItem it : c->getEquipment().getItems())
     if (!c->getEquipment().isEquipped(it) && c->getEquipment().canEquip(it))
       tasks.push_back(Task::equipItem(it));
   for (Position v : zones->getPositions(ZoneId::STORAGE_EQUIPMENT)) {
-    vector<Item*> allItems = filter(v.getItems(ItemIndex::MINION_EQUIPMENT),
-        [this, c] (const Item* it) { return minionEquipment->isOwner(it, c);});
-    vector<Item*> consumables;
+    vector<WItem> allItems = filter(v.getItems(ItemIndex::MINION_EQUIPMENT),
+        [this, c] (const WItem it) { return minionEquipment->isOwner(it, c);});
+    vector<WItem> consumables;
     for (auto item : allItems)
       if (item->canEquip())
         tasks.push_back(Task::pickAndEquipItem(this, v, item));
@@ -913,8 +913,8 @@ void Collective::takeResource(const CostInfo& cost) {
   if (auto itemIndex = config->getResourceInfo(cost.id).itemIndex)
     if (auto storageType = config->getResourceInfo(cost.id).storageDestination)
       for (Position pos : storageType(this)) {
-        vector<Item*> goldHere = pos.getItems(*itemIndex);
-        for (Item* it : goldHere) {
+        vector<WItem> goldHere = pos.getItems(*itemIndex);
+        for (WItem it : goldHere) {
           pos.removeItem(it);
           if (--num == 0)
             return;
@@ -938,12 +938,12 @@ void Collective::returnResource(const CostInfo& amount) {
   credit[amount.id] += amount.value;
 }
 
-vector<pair<Item*, Position>> Collective::getTrapItems(TrapType type, const vector<Position>& squares) const {
-  vector<pair<Item*, Position>> ret;
+vector<pair<WItem, Position>> Collective::getTrapItems(TrapType type, const vector<Position>& squares) const {
+  vector<pair<WItem, Position>> ret;
   for (Position pos : squares) {
-    vector<Item*> v = filter(pos.getItems(ItemIndex::TRAP),
-        [type, this](Item* it) { return it->getTrapType() == type && !isItemMarked(it); });
-    for (Item* it : v)
+    vector<WItem> v = filter(pos.getItems(ItemIndex::TRAP),
+        [type, this](WItem it) { return it->getTrapType() == type && !isItemMarked(it); });
+    for (WItem it : v)
       ret.emplace_back(it, pos);
   }
   return ret;
@@ -955,8 +955,8 @@ bool Collective::usesEquipment(const Creature* c) const {
     && !hasTrait(c, MinionTrait::PRISONER);
 }
 
-vector<Item*> Collective::getAllItems(bool includeMinions) const {
-  vector<Item*> allItems;
+vector<WItem> Collective::getAllItems(bool includeMinions) const {
+  vector<WItem> allItems;
   for (Position v : territory->getAll())
     append(allItems, v.getItems());
   if (includeMinions)
@@ -965,8 +965,8 @@ vector<Item*> Collective::getAllItems(bool includeMinions) const {
   return allItems;
 }
 
-vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinions) const {
-  vector<Item*> allItems;
+vector<WItem> Collective::getAllItems(ItemPredicate predicate, bool includeMinions) const {
+  vector<WItem> allItems;
   for (Position v : territory->getAll())
     append(allItems, v.getItems(predicate));
   if (includeMinions)
@@ -975,8 +975,8 @@ vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinio
   return allItems;
 }
 
-vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) const {
-  vector<Item*> allItems;
+vector<WItem> Collective::getAllItems(ItemIndex index, bool includeMinions) const {
+  vector<WItem> allItems;
   for (Position v : territory->getAll())
     append(allItems, v.getItems(index));
   if (includeMinions)
@@ -1002,7 +1002,7 @@ int Collective::getNumItems(ItemIndex index, bool includeMinions) const {
   return ret;
 }
 
-optional<set<Position>> Collective::getStorageFor(const Item* item) const {
+optional<set<Position>> Collective::getStorageFor(const WItem item) const {
   for (auto& info : config->getFetchInfo())
     if (Inventory::getIndexPredicate(info.index)(item))
       return info.destinationFun(this);
@@ -1030,11 +1030,11 @@ void Collective::orderExecution(Creature* c) {
   setTask(c, Task::goToAndWait(c->getPosition(), 100));
 }
 
-bool Collective::isItemMarked(const Item* it) const {
+bool Collective::isItemMarked(const WItem it) const {
   return markedItems.contains(it);
 }
 
-void Collective::markItem(const Item* it) {
+void Collective::markItem(const WItem it) {
   markedItems.insert(it);
 }
 
@@ -1136,7 +1136,7 @@ void Collective::addTrap(Position pos, TrapType type) {
   updateConstructions();
 }
 
-void Collective::onAppliedItem(Position pos, Item* item) {
+void Collective::onAppliedItem(Position pos, WItem item) {
   CHECK(item->getTrapType());
   if (constructions->containsTrap(pos))
     constructions->getTrap(pos).setArmed();
@@ -1198,12 +1198,12 @@ void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAct
 }
 
 void Collective::handleTrapPlacementAndProduction() {
-  EnumMap<TrapType, vector<pair<Item*, Position>>> trapItems(
+  EnumMap<TrapType, vector<pair<WItem, Position>>> trapItems(
       [this] (TrapType type) { return getTrapItems(type, territory->getAll());});
   EnumMap<TrapType, int> missingTraps;
   for (auto elem : constructions->getTraps())
     if (!elem.second.isArmed() && !elem.second.isMarked() && !isDelayed(elem.first)) {
-      vector<pair<Item*, Position>>& items = trapItems[elem.second.getType()];
+      vector<pair<WItem, Position>>& items = trapItems[elem.second.getType()];
       if (!items.empty()) {
         Position pos = items.back().second;
         taskMap->addTask(Task::applyItem(this, pos, items.back().first, elem.first), pos);
@@ -1214,10 +1214,10 @@ void Collective::handleTrapPlacementAndProduction() {
         ++missingTraps[elem.second.getType()];
     }
   for (TrapType type : ENUM_ALL(TrapType))
-    scheduleAutoProduction([type](const Item* it) { return it->getTrapType() == type;}, missingTraps[type]);
+    scheduleAutoProduction([type](const WItem it) { return it->getTrapType() == type;}, missingTraps[type]);
 }
 
-void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicate, int count) {
+void Collective::scheduleAutoProduction(function<bool(const WItem)> itemPredicate, int count) {
   if (count > 0)
     for (auto workshopType : ENUM_ALL(WorkshopType))
       for (auto& item : workshops->get(workshopType).getQueued())
@@ -1239,7 +1239,7 @@ void Collective::updateResourceProduction() {
     if (auto index = config->getResourceInfo(resourceId).itemIndex) {
       int needed = getDebt(resourceId) - getNumItems(*index);
       if (needed > 0)
-        scheduleAutoProduction([resourceId] (const Item* it) { return it->getResourceId() == resourceId; }, needed);
+        scheduleAutoProduction([resourceId] (const WItem it) { return it->getResourceId() == resourceId; }, needed);
   }
 }
 
@@ -1298,8 +1298,8 @@ bool Collective::isDelayed(Position pos) {
 void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
   if (isDelayed(pos) || !pos.canEnterEmpty(MovementTrait::WALK) || elem.destinationFun(this).count(pos))
     return;
-  vector<Item*> equipment = filter(pos.getItems(elem.index),
-      [this, &elem] (const Item* item) { return elem.predicate(this, item); });
+  vector<WItem> equipment = filter(pos.getItems(elem.index),
+      [this, &elem] (const WItem item) { return elem.predicate(this, item); });
   if (!equipment.empty()) {
     const set<Position>& destination = elem.destinationFun(this);
     if (!destination.empty()) {
@@ -1307,7 +1307,7 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
       if (elem.oneAtATime)
         equipment = {equipment[0]};
       taskMap->addTask(Task::bringItem(this, pos, equipment, destination), pos);
-      for (Item* it : equipment)
+      for (WItem it : equipment)
         markItem(it);
     } else
       warnings->setWarning(elem.warning, true);

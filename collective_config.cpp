@@ -285,7 +285,7 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
 }
 
 static CollectiveItemPredicate unMarkedItems() {
-  return [](const Collective* col, const Item* it) { return !col->isItemMarked(it); };
+  return [](const Collective* col, const WItem it) { return !col->isItemMarked(it); };
 }
 
 
@@ -294,7 +294,7 @@ const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() {
       {ItemIndex::CORPSE, unMarkedItems(), getFurnitureStorage(FurnitureType::GRAVE), true, CollectiveWarning::GRAVES},
       {ItemIndex::GOLD, unMarkedItems(), getFurnitureStorage(FurnitureType::TREASURE_CHEST), false,
           CollectiveWarning::CHESTS},
-      {ItemIndex::MINION_EQUIPMENT, [](const Collective* col, const Item* it)
+      {ItemIndex::MINION_EQUIPMENT, [](const Collective* col, const WItem it)
           { return it->getClass() != ItemClass::GOLD && !col->isItemMarked(it);},
           getZoneStorage(ZoneId::STORAGE_EQUIPMENT), false, CollectiveWarning::EQUIPMENT_STORAGE},
       {ItemIndex::WOOD, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
