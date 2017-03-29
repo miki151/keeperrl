@@ -675,12 +675,15 @@ SGuiElem GuiBuilder::drawImmigrationHelp(const CollectiveInfo& info) {
       line.clear();
     }
   }
+  if (numPerLine > info.allImmigration.size())
+    line.addSpace(elemWidth * (numPerLine - info.allImmigration.size()));
   if (!line.isEmpty())
     lines.addElem(line.buildHorizontalList());
+
   lines.addElem(getImmigrationHelpText(), legendLineHeight * 6);
-  return gui.setHeight(450, gui.miniWindow(gui.margins(gui.stack(
+  return gui.miniWindow(gui.margins(gui.stack(
         gui.stopMouseMovement(),
-        lines.buildVerticalList()), 15), [this] { immigrantHelpOpen = false; }, true));
+        lines.buildVerticalList()), 15), [this] { immigrantHelpOpen = false; }, true);
 }
 
 SGuiElem GuiBuilder::getSunlightInfoGui(GameSunlightInfo& sunlightInfo) {

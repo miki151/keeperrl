@@ -104,8 +104,8 @@ struct FloorInfo {
 
 class CollectiveConfig {
   public:
-  static CollectiveConfig keeper(int immigrantInterval, int payoutTime, double payoutMultiplier,
-      int maxPopulation, vector<PopulationIncrease>, const vector<ImmigrantInfo>&);
+  static CollectiveConfig keeper(int immigrantInterval, int maxPopulation, vector<PopulationIncrease>,
+      const vector<ImmigrantInfo>&);
   static CollectiveConfig withImmigrants(int immigrantInterval, int maxPopulation, const vector<ImmigrantInfo>&);
   static CollectiveConfig noImmigrants();
 
@@ -117,8 +117,6 @@ class CollectiveConfig {
   bool getManageEquipment() const;
   bool getWorkerFollowLeader() const;
   int getImmigrantInterval() const;
-  int getPayoutTime() const;
-  double getPayoutMultiplier() const;
   bool getStripSpawns() const;
   bool getFetchItems() const;
   bool getEnemyPositions() const;
@@ -157,12 +155,10 @@ class CollectiveConfig {
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };
-  CollectiveConfig(int immigrantInterval, int payoutTime, double payoutMultiplier,
-      const vector<ImmigrantInfo>&, CollectiveType, int maxPopulation, vector<PopulationIncrease>);
+  CollectiveConfig(int immigrantInterval, const vector<ImmigrantInfo>&, CollectiveType, int maxPopulation,
+      vector<PopulationIncrease>);
 
   int SERIAL(immigrantInterval);
-  int SERIAL(payoutTime);
-  double SERIAL(payoutMultiplier);
   int SERIAL(maxPopulation);
   vector<PopulationIncrease> SERIAL(populationIncreases);
   vector<ImmigrantInfo> SERIAL(immigrantInfo);

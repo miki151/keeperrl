@@ -7,7 +7,7 @@
 #include "creature.h"
 #include "creature_attributes.h"
 
-SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto)
+SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto, timeout)
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
 
 AttractionInfo::AttractionInfo(int cl,  AttractionType a)
@@ -140,6 +140,12 @@ ImmigrantInfo& ImmigrantInfo::setSound(Sound s) {
 
 ImmigrantInfo& ImmigrantInfo::setNoAuto() {
   noAuto = true;
+  return *this;
+}
+
+ImmigrantInfo&ImmigrantInfo::setLimit(int num) {
+  consumeIds = true;
+  ids = vector<CreatureId>(num, ids[0]);
   return *this;
 }
 

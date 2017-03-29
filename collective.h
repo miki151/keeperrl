@@ -114,6 +114,7 @@ class Collective : public TaskCallback {
   void retire();
   CollectiveWarnings& getWarnings();
   const CollectiveConfig& getConfig() const;
+  void setConfig(const CollectiveConfig&);
 
   bool usesEquipment(const Creature*) const;
 

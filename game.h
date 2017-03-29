@@ -46,10 +46,10 @@ class Game {
   Tribe* getTribe(TribeId) const;
   double getGlobalTime() const;
   Collective* getPlayerCollective() const;
+  PlayerControl* getPlayerControl() const;
   void setPlayer(Creature*);
   Creature* getPlayer() const;
   void clearPlayer();
-  void addTutorial(STutorial);
 
   int getModelDistance(const Collective* c1, const Collective* c2) const;
 

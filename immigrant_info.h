@@ -87,6 +87,7 @@ class ImmigrantInfo {
   ImmigrantInfo& setKeybinding(Keybinding);
   ImmigrantInfo& setSound(Sound);
   ImmigrantInfo& setNoAuto();
+  ImmigrantInfo& setLimit(int);
 
   template <typename Visitor>
   struct RequirementVisitor : public boost::static_visitor<void> {

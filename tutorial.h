@@ -7,9 +7,12 @@ class Game;
 
 class Tutorial {
   public:
+  Tutorial();
   void refreshInfo(const Game*, optional<TutorialInfo>&) const;
   void continueTutorial(const Game*);
   void goBack();
+
+  static void createTutorial(Game&);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);

@@ -57,8 +57,6 @@ int ModelBuilder::getThronePopulationIncrease() {
 static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration) {
   return CollectiveConfig::keeper(
       fastImmigration ? 10 : 140,
-      500,
-      2,
       10,
       {
       CONSTRUCT(PopulationIncrease,

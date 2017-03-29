@@ -183,7 +183,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
       BuildInfo(ZoneId::STORAGE_EQUIPMENT, ViewId::STORAGE_EQUIPMENT, "Equipment",
           "All equipment for your minions can be stored here.", 0, "Storage"),
       BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 80}}, "Library", {},
-          "Mana is regenerated here.", 'y'),
+          "Mana is regenerated here.", 'y').setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
       BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 800}, false, 1}, "Throne",
           {{RequirementId::VILLAGE_CONQUERED}},
           "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),

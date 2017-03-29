@@ -317,7 +317,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
 PGame MainLoop::prepareTutorial() {
   PGame game = loadGame(dataFreePath.file("tutorial.kep"));
   if (game)
-    game->addTutorial(make_shared<Tutorial>());
+    Tutorial::createTutorial(*game);
   else
     view->presentText("Sorry", "Failed to load the tutorial :(");
   return game;

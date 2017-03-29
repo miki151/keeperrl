@@ -1358,6 +1358,11 @@ const CollectiveConfig& Collective::getConfig() const {
   return *config;
 }
 
+void Collective::setConfig(const CollectiveConfig& c) {
+  config = c;
+  immigration.reset(Immigration(this));
+}
+
 bool Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
     pos.setNeedsRenderUpdate(true);

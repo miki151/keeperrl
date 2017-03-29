@@ -95,10 +95,6 @@ PGame Game::splashScreen(PModel&& model, const CampaignSetup& s) {
   return game;
 }
 
-void Game::addTutorial(STutorial tut) {
-  playerControl->setTutorial(tut);
-}
-
 bool Game::isTurnBased() {
   return !spectator && (!playerControl || playerControl->isTurnBased());
 }
@@ -411,6 +407,10 @@ Tribe* Game::getTribe(TribeId id) const {
 
 Collective* Game::getPlayerCollective() const {
   return playerCollective;
+}
+
+PlayerControl* Game::getPlayerControl() const {
+  return playerControl;
 }
 
 MusicType Game::getCurrentMusic() const {

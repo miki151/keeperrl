@@ -10,6 +10,11 @@
 #include "level.h"
 #include "furniture.h"
 #include "destroy_action.h"
+#include "construction_map.h"
+#include "player_control.h"
+#include "collective_config.h"
+#include "immigrant_info.h"
+#include "keybinding.h"
 
 SERIALIZE_DEF(Tutorial, state)
 
@@ -20,6 +25,7 @@ enum class Tutorial::State {
   CONTROLS1,
   GET_1000_WOOD,
   DIG_ROOM,
+  BUILD_LIBRARY,
   FINISHED,
 };
 
@@ -27,18 +33,20 @@ enum class Tutorial::State {
 bool Tutorial::canContinue(const Game* game) const {
   auto collective = game->getPlayerCollective();
   switch (state) {
-    case State::DIG_ROOM:
-      return getHighlightedSquares(game).empty();
-    case State::GET_1000_WOOD:
-      return collective->numResource(CollectiveResourceId::WOOD) >= 1000;
+    case State::WELCOME:
+      return true;
+    case State::CUT_TREES:
+      return collective->getZones().getPositions(ZoneId::FETCH_ITEMS).size() > 0;
     case State::BUILD_STORAGE:
       return collective->getZones().getPositions(ZoneId::STORAGE_RESOURCES).size() >= 9;
     case State::CONTROLS1:
       return true;
-    case State::CUT_TREES:
-      return collective->getZones().getPositions(ZoneId::FETCH_ITEMS).size() > 0;
-    case State::WELCOME:
-      return true;
+    case State::GET_1000_WOOD:
+      return collective->numResource(CollectiveResourceId::WOOD) >= 1000;
+    case State::DIG_ROOM:
+      return getHighlightedSquares(game).empty();
+    case State::BUILD_LIBRARY:
+      return collective->getConstructions().getBuiltCount(FurnitureType::BOOK_SHELF) >= 4;
     case State::FINISHED:
       return false;
   }
@@ -72,6 +80,8 @@ string Tutorial::getMessage() const {
       return "Time to strike the mountain! Start by digging out a one tile-wide tunnel and finish it with at least "
           "a 5x5 room.\n \n"
           "Hold shift to select a rectangular area.";
+    case State::BUILD_LIBRARY:
+      return "Build library";
     case State::FINISHED:
       return "Congratulations, you have completed the tutorial! Go play the game now :)";
   }
@@ -88,6 +98,8 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(const Game* game) const {
       return {TutorialHighlight::RESOURCE_STORAGE};
     case State::GET_1000_WOOD:
       return {TutorialHighlight::WOOD_RESOURCE};
+    case State::BUILD_LIBRARY:
+      return {TutorialHighlight::BUILD_LIBRARY};
     default:
       return {};
   }
@@ -96,8 +108,8 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(const Game* game) const {
 vector<Vec2> Tutorial::getHighlightedSquares(const Game* game) const {
   switch (state) {
     case State::DIG_ROOM: {
-      vector<Vec2> ret {Vec2(120, 86), Vec2(120, 85), Vec2(120, 84), Vec2(120, 83)};
-      for (Vec2 v : Rectangle::centered(Vec2(120, 80), 2))
+      vector<Vec2> ret {Vec2(80, 121), Vec2(80, 120), Vec2(80, 119)};
+      for (Vec2 v : Rectangle::centered(Vec2(80, 117), 2))
         ret.push_back(v);
       for (auto elem : Iter(ret)) {
         if (auto furniture = Position(*elem, game->getPlayerCollective()->getLevel())
@@ -111,6 +123,10 @@ vector<Vec2> Tutorial::getHighlightedSquares(const Game* game) const {
     default:
       return {};
   }
+}
+
+Tutorial::Tutorial() : state(State::DIG_ROOM) {
+
 }
 
 void Tutorial::refreshInfo(const Game* game, optional<TutorialInfo>& info) const {
@@ -131,4 +147,20 @@ void Tutorial::continueTutorial(const Game* game) {
 void Tutorial::goBack() {
   if ((int) state > 0)
     state = (State)((int) state - 1);
+}
+
+void Tutorial::createTutorial(Game& game) {
+  game.getPlayerControl()->setTutorial(make_shared<Tutorial>());
+  game.getPlayerCollective()->setConfig(CollectiveConfig::keeper(0, 10, {}, {
+      ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
+          .setSpawnLocation(NearLeader{})
+          .setKeybinding(Keybinding::CREATE_IMP)
+          .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
+          .setNoAuto()
+          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::MANA, 20), 5, 4 }),
+      ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
+          .addRequirement(0.0, FurnitureType::BOOK_SHELF)
+          .setLimit(1)
+          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
+  }));
 }
