@@ -150,7 +150,7 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
   auto visitor = makeVisitor<void>(
       [&](const AttractionInfo& attraction, double prob) {
         visitAttraction(*this, attraction,
-            [&](int, int available) { if (!available) ret *= prob; });
+            [&](int, int available) { if (available < attraction.amountClaimed) ret *= prob; });
       },
       [&](const TechId& techId, double prob) {
         if (!collective->hasTech(techId))

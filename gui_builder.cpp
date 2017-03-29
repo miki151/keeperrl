@@ -586,7 +586,7 @@ SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
       ), 20)));
 }
 
-SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
+SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   const int elemWidth = getImmigrationBarWidth();
   auto makeHighlight = [=] (Color c) { return gui.margins(gui.rectangle(c), 4); };
   auto lines = gui.getListBuilder(elemWidth);
@@ -614,6 +614,8 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info) {
           gui.sprite(GuiFactory::TexId::IMMIGRANT2_BG, GuiFactory::Alignment::CENTER),
           cache->get(getRejectButton, THIS_LINE, elem.id)
       ));
+    if (tutorial && elem.tutorialHighlight && tutorial->highlights.contains(*elem.tutorialHighlight))
+        button = gui.stack(std::move(button), gui.blink(makeHighlight(Color(255, 255, 0, 100))));
     auto initTime = elem.generatedTime;
     lines.addElem(gui.translate([=]() { return Vec2(0, initTime ? -getImmigrantAnimationOffset(*initTime) : 0);},
         gui.stack(
@@ -1536,7 +1538,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
   switch (info.infoType) {
     case GameInfo::InfoType::BAND:
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
-           info.collectiveInfo), OverlayInfo::IMMIGRATION});
+           info.collectiveInfo, info.tutorial), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
            info.collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,

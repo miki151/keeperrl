@@ -194,11 +194,13 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "Increases minion population limit by up to " +
           toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 'p'),
       BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 60}}, "Bed", {},
-          "Humanoid minions sleep here.", 'b'),
+          "Humanoid minions sleep here.", 'b')
+             .setTutorialHighlight(TutorialHighlight::BUILD_BED),
       BuildInfo({FurnitureType::TRAINING_WOOD, {ResourceId::WOOD, 60}}, "Wooden dummy", {},
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_WOOD)) + " experience levels.",
-          't', "Training room", true),
+          't', "Training room", true)
+             .setTutorialHighlight(TutorialHighlight::TRAINING_ROOM),
       BuildInfo({FurnitureType::TRAINING_IRON, {ResourceId::IRON, 60}}, "Iron dummy",
           {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}},
           "Train your minions here. Adds up to " +
@@ -238,8 +240,9 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "Orders"),
       BuildInfo({FurnitureLayer::CEILING, FurnitureLayer::MIDDLE}, "Remove construction", "", 'e', "Orders"),
       BuildInfo(BuildInfo::FORBID_ZONE, "Forbid zone", "Mark tiles to keep minions from entering.", 0, "Orders"),
-      BuildInfo({FurnitureType::DOOR, {ResourceId::WOOD, 20}}, "Door",
-          {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "Click on a built door to lock it.", 'o', "Installations"),
+      BuildInfo({FurnitureType::DOOR, {ResourceId::WOOD, 20}}, "Door", {},
+          "Click on a built door to lock it.", 'o', "Installations")
+             .setTutorialHighlight(TutorialHighlight::BUILD_DOOR),
       BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 20}}, "Bridge", {},
         "Build it to pass over water or lava.", 0, "Installations"),
       BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 20}}, "Barricade",
@@ -1228,7 +1231,8 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         elem.first,
         none,
         candidate.getCreatedTime(),
-        candidate.getInfo().getKeybinding()
+        candidate.getInfo().getKeybinding(),
+        candidate.getInfo().getTutorialHighlight()
     });
   }
   sort(info.immigration.begin(), info.immigration.end(),

@@ -7,7 +7,7 @@
 #include "creature.h"
 #include "creature_attributes.h"
 
-SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto, timeout)
+SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto, tutorialHighlight)
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
 
 AttractionInfo::AttractionInfo(int cl,  AttractionType a)
@@ -93,6 +93,10 @@ bool ImmigrantInfo::isNoAuto() const {
   return noAuto;
 }
 
+optional<TutorialHighlight> ImmigrantInfo::getTutorialHighlight() const {
+  return tutorialHighlight;
+}
+
 ImmigrantInfo& ImmigrantInfo::addRequirement(ImmigrantRequirement t) {
   requirements.push_back({t, 1});
   return *this;
@@ -146,6 +150,11 @@ ImmigrantInfo& ImmigrantInfo::setNoAuto() {
 ImmigrantInfo&ImmigrantInfo::setLimit(int num) {
   consumeIds = true;
   ids = vector<CreatureId>(num, ids[0]);
+  return *this;
+}
+
+ImmigrantInfo& ImmigrantInfo::setTutorialHighlight(TutorialHighlight h) {
+  tutorialHighlight = h;
   return *this;
 }
 

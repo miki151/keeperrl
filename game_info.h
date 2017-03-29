@@ -148,7 +148,8 @@ struct ImmigrantDataInfo {
   optional<ImmigrantAutoState> HASH(autoState);
   optional<milliseconds> HASH(generatedTime);
   optional<Keybinding> HASH(keybinding);
-  HASH_ALL(requirements, info, name, viewId, expLevel, count, timeLeft, id, autoState, cost, generatedTime, keybinding)
+  optional<TutorialHighlight> HASH(tutorialHighlight);
+  HASH_ALL(requirements, info, name, viewId, expLevel, count, timeLeft, id, autoState, cost, generatedTime, keybinding, tutorialHighlight)
 };
 
 class CollectiveInfo {

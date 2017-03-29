@@ -25,7 +25,9 @@ enum class Tutorial::State {
   CONTROLS1,
   GET_1000_WOOD,
   DIG_ROOM,
+  BUILD_DOOR,
   BUILD_LIBRARY,
+  ACCEPT_IMMIGRANT,
   FINISHED,
 };
 
@@ -45,8 +47,13 @@ bool Tutorial::canContinue(const Game* game) const {
       return collective->numResource(CollectiveResourceId::WOOD) >= 1000;
     case State::DIG_ROOM:
       return getHighlightedSquares(game).empty();
+    case State::BUILD_DOOR:
+      return collective->getConstructions().getBuiltCount(FurnitureType::DOOR)
+          + collective->getConstructions().getBuiltCount(FurnitureType::LOCKED_DOOR) >= 1;
     case State::BUILD_LIBRARY:
-      return collective->getConstructions().getBuiltCount(FurnitureType::BOOK_SHELF) >= 4;
+      return collective->getConstructions().getBuiltCount(FurnitureType::BOOK_SHELF) >= 5;
+    case State::ACCEPT_IMMIGRANT:
+      return collective->getCreatures(MinionTrait::FIGHTER).size() >= 1;
     case State::FINISHED:
       return false;
   }
@@ -80,8 +87,21 @@ string Tutorial::getMessage() const {
       return "Time to strike the mountain! Start by digging out a one tile-wide tunnel and finish it with at least "
           "a 5x5 room.\n \n"
           "Hold shift to select a rectangular area.";
+    case State::BUILD_DOOR:
+      return "Build a door at the entrance to your dungeon. This will slow down any enemies, "
+          "as they will need to destroy it before they can enter. "
+          "Your minions can pass through doors freely, unless you lock a door by left clicking on it.\n \n"
+          "Try locking and unlocking the door.";
     case State::BUILD_LIBRARY:
-      return "Build library";
+      return "The first room that you need to build is a library. This is where the Keeper and other minions "
+          "will learn spells, and research new technology. It is also a source of mana. Place at least 5 book shelves "
+          "in the new room. Remember that book shelves and other furniture blocks your minions' movement.";
+    case State::ACCEPT_IMMIGRANT:
+      return "Your dungeon has attracted an orc. "
+          "Before your new minion joins you, you must fullfil a few requirements. "
+          "Hover your mouse over the immigrant icon to see them. "
+          "Once you are ready, accept the immigrant with a left click. Click on the '?' icon immediately to the left "
+          "to learn more about immigration.";
     case State::FINISHED:
       return "Congratulations, you have completed the tutorial! Go play the game now :)";
   }
@@ -98,8 +118,12 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(const Game* game) const {
       return {TutorialHighlight::RESOURCE_STORAGE};
     case State::GET_1000_WOOD:
       return {TutorialHighlight::WOOD_RESOURCE};
+    case State::ACCEPT_IMMIGRANT:
+      return {TutorialHighlight::ACCEPT_IMMIGRANT, TutorialHighlight::BUILD_BED, TutorialHighlight::TRAINING_ROOM};
     case State::BUILD_LIBRARY:
       return {TutorialHighlight::BUILD_LIBRARY};
+    case State::BUILD_DOOR:
+      return {TutorialHighlight::BUILD_DOOR};
     default:
       return {};
   }
@@ -109,7 +133,7 @@ vector<Vec2> Tutorial::getHighlightedSquares(const Game* game) const {
   switch (state) {
     case State::DIG_ROOM: {
       vector<Vec2> ret {Vec2(80, 121), Vec2(80, 120), Vec2(80, 119)};
-      for (Vec2 v : Rectangle::centered(Vec2(80, 117), 2))
+      for (Vec2 v : Rectangle::centered(Vec2(80, 116), 2))
         ret.push_back(v);
       for (auto elem : Iter(ret)) {
         if (auto furniture = Position(*elem, game->getPlayerCollective()->getLevel())
@@ -159,8 +183,9 @@ void Tutorial::createTutorial(Game& game) {
           .setNoAuto()
           .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::MANA, 20), 5, 4 }),
       ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
-          .addRequirement(0.0, FurnitureType::BOOK_SHELF)
           .setLimit(1)
+          .setTutorialHighlight(TutorialHighlight::ACCEPT_IMMIGRANT)
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
+          .addRequirement(0.0, AttractionInfo{5, FurnitureType::BOOK_SHELF})
   }));
 }
