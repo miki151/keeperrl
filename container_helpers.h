@@ -106,9 +106,11 @@ void emplaceBack(vector<T>& v, First&& first, Args&&... args) {
 }
 
 template <typename T, typename... Args>
-vector<T> makeVec(Args&&... args) {
+vector<T> makeVec(T&& f, Args&&... args) {
   vector<T> ret;
-  ret.reserve(sizeof...(Args));
+  ret.reserve(sizeof...(Args) + 1);
+  ret.push_back(std::move(f));
   emplaceBack(ret, args...);
   return ret;
 }
+

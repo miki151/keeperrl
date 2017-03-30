@@ -792,17 +792,18 @@ class ByCollective : public Behaviour {
 
 class ChooseRandom : public Behaviour {
   public:
-  ChooseRandom(WCreature c, vector<Behaviour*> beh, vector<double> w) : Behaviour(c), behaviours(beh), weights(w) {}
+  ChooseRandom(WCreature c, vector<PBehaviour>&& beh, vector<double> w)
+      : Behaviour(c), behaviours(std::move(beh)), weights(w) {}
 
   virtual MoveInfo getMove() override {
-    return Random.choose(behaviours, weights)->getMove();
+    return behaviours.at(Random.get(weights))->getMove();
   }
 
   SERIALIZATION_CONSTRUCTOR(ChooseRandom);
   SERIALIZE_ALL2(Behaviour, behaviours, weights);
 
   private:
-  vector<Behaviour*> SERIAL(behaviours);
+  vector<PBehaviour> SERIAL(behaviours);
   vector<double> SERIAL(weights);
 };
 
@@ -1141,7 +1142,7 @@ MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
         new Heal(c),
         new Fighter(c, 0.6, true),
         new ByCollective(c, col),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c)}, {3, 1})},
+        new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 10, 6, 5, 2, 1}, false);
       });
 }
@@ -1180,7 +1181,7 @@ MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t) {
         new Heal(c),
         new Fighter(c, 0.6, false),
         new SingleTask(c, PTask(task)),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c)}, {3, 1})},
+        new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, true);
       });
 }
@@ -1272,7 +1273,7 @@ MonsterAIFactory MonsterAIFactory::splashHeroes(bool leader) {
         leader ? (Behaviour*)new SplashHeroLeader(c) : (Behaviour*)new SplashHeroes(c),
         new Heal(c),
         new Fighter(c, 0.6, true),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c)}, {3, 1})},
+        new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, false);
       });
 }
@@ -1283,7 +1284,7 @@ MonsterAIFactory MonsterAIFactory::splashMonsters() {
         new SplashMonsters(c),
         new Heal(c),
         new Fighter(c, 0.6, true),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c)}, {3, 1})},
+        new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, false);
       });
 }
@@ -1294,7 +1295,7 @@ MonsterAIFactory MonsterAIFactory::splashImps(const FilePath& splashPath) {
         new SplashImps(c, splashPath),
         new Heal(c),
         new Fighter(c, 0.6, true),
-        new ChooseRandom(c, {new Rest(c), new MoveRandomly(c)}, {3, 1})},
+        new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, false);
       });
 }

@@ -163,7 +163,7 @@ optional<Position> TaskMap::getPosition(Task* task) const {
     return none;
 }
 
-WConstCreature TaskMap::getOwner(const Task* task) const {
+WCreature TaskMap::getOwner(const Task* task) const {
   if (auto c = creatureByTask.getMaybe(const_cast<Task*>(task)))
     return *c;
   else
