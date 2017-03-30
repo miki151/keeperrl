@@ -252,11 +252,11 @@ bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
 }
 
 static StorageDestinationFun getFurnitureStorage(FurnitureType t) {
-  return [t](const Collective* col)->const set<Position>& { return col->getConstructions().getBuiltPositions(t); };
+  return [t](WConstCollective col)->const set<Position>& { return col->getConstructions().getBuiltPositions(t); };
 }
 
 static StorageDestinationFun getZoneStorage(ZoneId zone) {
-  return [zone](const Collective* col)->const set<Position>& { return col->getZones().getPositions(zone); };
+  return [zone](WConstCollective col)->const set<Position>& { return col->getZones().getPositions(zone); };
 }
 
 const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
@@ -285,7 +285,7 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
 }
 
 static CollectiveItemPredicate unMarkedItems() {
-  return [](const Collective* col, const WItem it) { return !col->isItemMarked(it); };
+  return [](WConstCollective col, const WItem it) { return !col->isItemMarked(it); };
 }
 
 
@@ -294,7 +294,7 @@ const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() {
       {ItemIndex::CORPSE, unMarkedItems(), getFurnitureStorage(FurnitureType::GRAVE), true, CollectiveWarning::GRAVES},
       {ItemIndex::GOLD, unMarkedItems(), getFurnitureStorage(FurnitureType::TREASURE_CHEST), false,
           CollectiveWarning::CHESTS},
-      {ItemIndex::MINION_EQUIPMENT, [](const Collective* col, const WItem it)
+      {ItemIndex::MINION_EQUIPMENT, [](WConstCollective col, const WItem it)
           { return it->getClass() != ItemClass::GOLD && !col->isItemMarked(it);},
           getZoneStorage(ZoneId::STORAGE_EQUIPMENT), false, CollectiveWarning::EQUIPMENT_STORAGE},
       {ItemIndex::WOOD, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
@@ -413,7 +413,7 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
             else
               return false;
           },
-          [](const Collective* collective, FurnitureType t) {
+          [](WConstCollective collective, FurnitureType t) {
             if (auto type = getWorkshopType(t))
               return !collective->getWorkshops().get(*type).isIdle();
             else

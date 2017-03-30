@@ -26,6 +26,8 @@ class Location;
 class TaskCallback;
 class CreatureFactory;
 
+using WTaskCallback = WeakPointer<TaskCallback>;
+
 class Task : public UniqueEntity<Task> {
   public:
 
@@ -44,35 +46,35 @@ class Task : public UniqueEntity<Task> {
   bool isDone();
   void setViewId(ViewId);
 
-  static PTask construction(TaskCallback*, Position, FurnitureType);
-  static PTask destruction(TaskCallback*, Position, const Furniture*, DestroyAction);
-  static PTask buildTorch(TaskCallback*, Position, Dir attachmentDir);
-  static PTask bringItem(TaskCallback*, Position position, vector<WItem>, const set<Position>& target,
+  static PTask construction(WTaskCallback, Position, FurnitureType);
+  static PTask destruction(WTaskCallback, Position, const Furniture*, DestroyAction);
+  static PTask buildTorch(WTaskCallback, Position, Dir attachmentDir);
+  static PTask bringItem(WTaskCallback, Position position, vector<WItem>, const set<Position>& target,
       int numRetries = 10);
-  static PTask applyItem(TaskCallback*, Position, WItem, Position target);
+  static PTask applyItem(WTaskCallback, Position, WItem, Position target);
   enum SearchType { LAZY, RANDOM_CLOSE };
   enum ActionType { APPLY, NONE };
-  static PTask applySquare(TaskCallback*, vector<Position>, SearchType, ActionType);
-  static PTask pickAndEquipItem(TaskCallback*, Position, WItem);
+  static PTask applySquare(WTaskCallback, vector<Position>, SearchType, ActionType);
+  static PTask pickAndEquipItem(WTaskCallback, Position, WItem);
   static PTask equipItem(WItem);
-  static PTask pickItem(TaskCallback*, Position, vector<WItem>);
-  static PTask kill(TaskCallback*, WCreature);
-  static PTask torture(TaskCallback*, WCreature);
-  static PTask sacrifice(TaskCallback*, WCreature);
+  static PTask pickItem(WTaskCallback, Position, vector<WItem>);
+  static PTask kill(WTaskCallback, WCreature);
+  static PTask torture(WTaskCallback, WCreature);
+  static PTask sacrifice(WTaskCallback, WCreature);
   static PTask disappear();
   static PTask chain(PTask, PTask);
   static PTask chain(PTask, PTask, PTask);
   static PTask chain(vector<PTask>);
   static PTask explore(Position);
-  static PTask attackLeader(Collective*);
-  static PTask campAndSpawn(Collective* target, const CreatureFactory&, int defenseSize,
+  static PTask attackLeader(WCollective);
+  static PTask campAndSpawn(WCollective target, const CreatureFactory&, int defenseSize,
       Range attackSize, int numAttacks);
-  static PTask killFighters(Collective*, int numFighters);
-  static PTask stealFrom(Collective*, TaskCallback*);
-  static PTask createBed(TaskCallback*, Position, const SquareType& fromType, const SquareType& toType);
-  static PTask consumeItem(TaskCallback*, vector<WItem> items);
-  static PTask copulate(TaskCallback*, WCreature target, int numTurns);
-  static PTask consume(TaskCallback*, WCreature target);
+  static PTask killFighters(WCollective, int numFighters);
+  static PTask stealFrom(WCollective, WTaskCallback);
+  static PTask createBed(WTaskCallback, Position, const SquareType& fromType, const SquareType& toType);
+  static PTask consumeItem(WTaskCallback, vector<WItem> items);
+  static PTask copulate(WTaskCallback, WCreature target, int numTurns);
+  static PTask consume(WTaskCallback, WCreature target);
   static PTask eat(set<Position> hatcherySquares);
   static PTask goTo(Position);
   static PTask goToTryForever(Position);

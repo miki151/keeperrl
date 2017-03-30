@@ -8,6 +8,8 @@
 #include "creature_attributes.h"
 #include "collective_config.h"
 #include "tribe.h"
+#include "collective_control.h"
+#include "immigration.h"
 
 CollectiveBuilder::CollectiveBuilder(const CollectiveConfig& cfg, TribeId t)
     : config(cfg), tribe(t) {
@@ -49,8 +51,11 @@ CollectiveBuilder& CollectiveBuilder::addSquares(const vector<Position>& v) {
 
 PCollective CollectiveBuilder::build() {
   CHECK(!creatures.empty());
-  Collective* c = new Collective(NOTNULL(level), *config, *tribe,
-      CollectiveName(raceName, locationName, creatures[0].creature));
+  CHECK(level);
+  auto c = makeOwner<Collective>(level, *tribe, CollectiveName(raceName, locationName, creatures[0].creature));
+  Immigration im(c.get());
+  c->init(std::move(*config), std::move(im));
+  c->setControl(CollectiveControl::idle(c.get()));
   for (auto& elem : creatures)
     c->addCreature(elem.creature, elem.traits);
   for (Vec2 v : squares) {
@@ -59,7 +64,7 @@ PCollective CollectiveBuilder::build() {
     //if (c->canClaimSquare(pos))
       c->claimSquare(pos);
   }
-  return PCollective(c);
+  return c;
 }
 
 bool CollectiveBuilder::hasCreatures() const {

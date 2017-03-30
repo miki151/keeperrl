@@ -82,12 +82,12 @@ bool Workshops::Type::isIdle() const {
   return queued.empty() || !queued[0].state;
 }
 
-void Workshops::scheduleItems(Collective* collective) {
+void Workshops::scheduleItems(WCollective collective) {
   for (auto type : ENUM_ALL(WorkshopType))
     types[type].scheduleItems(collective);
 }
 
-void Workshops::Type::scheduleItems(Collective* collective) {
+void Workshops::Type::scheduleItems(WCollective collective) {
   if (queued.empty() || queued[0].state)
     return;
   for (int i : All(queued))

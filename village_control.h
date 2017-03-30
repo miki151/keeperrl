@@ -22,36 +22,33 @@
 #include "event_listener.h"
 
 class Task;
-template <typename T>
-class EventProxy;
 
-class VillageControl : public CollectiveControl {
+class VillageControl : public CollectiveControl, public EventListener {
   public:
 
   friend class VillageBehaviour;
 
-  VillageControl(Collective*, optional<VillageBehaviour>);
+  VillageControl(WCollective, optional<VillageBehaviour>);
 
   protected:
   virtual void update(bool currentlyActive) override;
   virtual void onMemberKilled(WConstCreature victim, WConstCreature killer) override;
   virtual void onOtherKilled(WConstCreature victim, WConstCreature killer) override;
   virtual void onRansomPaid() override;
-  virtual vector<TriggerInfo> getTriggers(const Collective* against) const override;
+  virtual vector<TriggerInfo> getTriggers(WConstCollective against) const override;
 
   SERIALIZATION_DECL(VillageControl);
 
   private:
-  HeapAllocated<EventProxy<VillageControl>> SERIAL(eventProxy);
-  friend EventProxy<VillageControl>;
-  void onEvent(const GameEvent&);
+
+  virtual void onEvent(const GameEvent&) override;
 
   void launchAttack(vector<WCreature> attackers);
   void considerWelcomeMessage();
   void considerCancellingAttack();
   void checkEntries();
   bool isEnemy(WConstCreature);
-  Collective* getEnemyCollective() const;
+  WCollective getEnemyCollective() const;
   bool canPerformAttack(bool currentlyActive);
   void acceptImmigration();
 

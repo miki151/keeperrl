@@ -45,16 +45,16 @@ class Game {
   const Statistics& getStatistics() const;
   Tribe* getTribe(TribeId) const;
   double getGlobalTime() const;
-  Collective* getPlayerCollective() const;
+  WCollective getPlayerCollective() const;
   PlayerControl* getPlayerControl() const;
   void setPlayer(WCreature);
   WCreature getPlayer() const;
   void clearPlayer();
 
-  int getModelDistance(const Collective* c1, const Collective* c2) const;
+  int getModelDistance(WConstCollective c1, WConstCollective c2) const;
 
-  const vector<Collective*>& getVillains(VillainType) const;
-  const vector<Collective*>& getCollectives() const;
+  const vector<WCollective>& getVillains(VillainType) const;
+  const vector<WCollective>& getCollectives() const;
 
   const SunlightInfo& getSunlightInfo() const;
   const string& getWorldName() const;
@@ -65,7 +65,7 @@ class Game {
   void killedKeeper(const string& title, const string& keeper, const string& land, int numKills, int points);
   bool isGameOver() const;
   bool isTurnBased();
-  bool isVillainActive(const Collective*);
+  bool isVillainActive(WConstCollective);
   SavedGameInfo getSavedGameInfo() const;
 
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
@@ -113,8 +113,8 @@ class Game {
   optional<double> SERIAL(lastTick);
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
-  map<VillainType, vector<Collective*>> SERIAL(villainsByType);
-  vector<Collective*> SERIAL(collectives);
+  map<VillainType, vector<WCollective>> SERIAL(villainsByType);
+  vector<WCollective> SERIAL(collectives);
   MusicType SERIAL(musicType);
   bool SERIAL(finishCurrentMusic) = true;
   unique_ptr<CreatureView> SERIAL(spectator);
@@ -124,7 +124,7 @@ class Game {
   Highscores* highscores;
   optional<milliseconds> lastUpdate;
   PlayerControl* SERIAL(playerControl) = nullptr;
-  Collective* SERIAL(playerCollective) = nullptr;
+  WCollective SERIAL(playerCollective) = nullptr;
   HeapAllocated<Campaign> SERIAL(campaign);
   bool wasTransfered = false;
   WCreature SERIAL(player) = nullptr;

@@ -100,7 +100,7 @@ namespace {
 
 class Construction : public Task {
   public:
-  Construction(TaskCallback* c, Position pos, FurnitureType type) : Task(true), furnitureType(type), position(pos),
+  Construction(WTaskCallback c, Position pos, FurnitureType type) : Task(true), furnitureType(type), position(pos),
       callback(c) {}
 
   virtual bool isBogus() const override {
@@ -137,19 +137,19 @@ class Construction : public Task {
   private:
   FurnitureType SERIAL(furnitureType);
   Position SERIAL(position);
-  TaskCallback* SERIAL(callback);
+  WTaskCallback SERIAL(callback);
 };
 
 }
 
-PTask Task::construction(TaskCallback* c, Position target, FurnitureType type) {
+PTask Task::construction(WTaskCallback c, Position target, FurnitureType type) {
   return PTask(new Construction(c, target, type));
 }
 
 namespace {
 class Destruction : public Task {
   public:
-  Destruction(TaskCallback* c, Position pos, const Furniture* furniture, DestroyAction action)
+  Destruction(WTaskCallback c, Position pos, const Furniture* furniture, DestroyAction action)
       : Task(true), position(pos), callback(c), destroyAction(action),
         description(action.getVerbSecondPerson() + " "_s + furniture->getName()),
         furnitureType(furniture->getType()) {}
@@ -194,7 +194,7 @@ class Destruction : public Task {
 
   private:
   Position SERIAL(position);
-  TaskCallback* SERIAL(callback);
+  WTaskCallback SERIAL(callback);
   DestroyAction SERIAL(destroyAction);
   string SERIAL(description);
   FurnitureType SERIAL(furnitureType);
@@ -202,7 +202,7 @@ class Destruction : public Task {
 
 }
 
-PTask Task::destruction(TaskCallback* c, Position target, const Furniture* furniture, DestroyAction destroyAction) {
+PTask Task::destruction(WTaskCallback c, Position target, const Furniture* furniture, DestroyAction destroyAction) {
   return PTask(new Destruction(c, target, furniture, destroyAction));
 }
 
@@ -210,7 +210,7 @@ namespace {
 
 class BuildTorch : public Task {
   public:
-  BuildTorch(TaskCallback* c, Position pos, Dir dir) : Task(true), position(pos), callback(c), attachmentDir(dir) {}
+  BuildTorch(WTaskCallback c, Position pos, Dir dir) : Task(true), position(pos), callback(c), attachmentDir(dir) {}
 
   virtual MoveInfo getMove(WCreature c) override {
     CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
@@ -232,13 +232,13 @@ class BuildTorch : public Task {
 
   private:
   Position SERIAL(position);
-  TaskCallback* SERIAL(callback);
+  WTaskCallback SERIAL(callback);
   Dir SERIAL(attachmentDir);
 };
 
 }
 
-PTask Task::buildTorch(TaskCallback* call, Position target, Dir attachmentDir) {
+PTask Task::buildTorch(WTaskCallback call, Position target, Dir attachmentDir) {
   return PTask(new BuildTorch(call, target, attachmentDir));
 }
 
@@ -246,7 +246,7 @@ namespace {
 
 class PickItem : public Task {
   public:
-  PickItem(TaskCallback* c, Position pos, vector<WItem> _items, int retries = 10)
+  PickItem(WTaskCallback c, Position pos, vector<WItem> _items, int retries = 10)
       : items(_items), position(pos), callback(c), tries(retries) {
     CHECK(!items.empty());
   }
@@ -322,12 +322,12 @@ class PickItem : public Task {
   EntitySet<Item> SERIAL(items);
   bool SERIAL(pickedUp) = false;
   Position SERIAL(position);
-  TaskCallback* SERIAL(callback);
+  WTaskCallback SERIAL(callback);
   int SERIAL(tries);
 };
 }
 
-PTask Task::pickItem(TaskCallback* c, Position position, vector<WItem> items) {
+PTask Task::pickItem(WTaskCallback c, Position position, vector<WItem> items) {
   return PTask(new PickItem(c, position, items));
 }
 
@@ -335,7 +335,7 @@ namespace {
 
 class PickAndEquipItem : public PickItem {
   public:
-  PickAndEquipItem(TaskCallback* c, Position position, vector<WItem> _items) : PickItem(c, position, _items) {
+  PickAndEquipItem(WTaskCallback c, Position position, vector<WItem> _items) : PickItem(c, position, _items) {
   }
 
   virtual void onPickedUp() override {
@@ -366,7 +366,7 @@ class PickAndEquipItem : public PickItem {
 
 }
 
-PTask Task::pickAndEquipItem(TaskCallback* c, Position position, WItem items) {
+PTask Task::pickAndEquipItem(WTaskCallback c, Position position, WItem items) {
   return PTask(new PickAndEquipItem(c, position, {items}));
 }
 
@@ -425,10 +425,10 @@ static Position chooseRandomClose(Position start, const vector<Position>& square
 class BringItem : public PickItem {
   public:
 
-  BringItem(TaskCallback* c, Position position, vector<WItem> items, vector<Position> target, int retries)
+  BringItem(WTaskCallback c, Position position, vector<WItem> items, vector<Position> target, int retries)
       : PickItem(c, position, items, retries), allTargets(target) {}
 
-  BringItem(TaskCallback* c, Position position, vector<WItem> items, Position t)
+  BringItem(WTaskCallback c, Position position, vector<WItem> items, Position t)
       : PickItem(c, position, items), target(t), allTargets({t}) {}
 
   virtual CreatureAction getBroughtAction(WCreature c, vector<WItem> it) {
@@ -502,13 +502,13 @@ class BringItem : public PickItem {
   vector<Position> SERIAL(allTargets);
 };
 
-PTask Task::bringItem(TaskCallback* c, Position pos, vector<WItem> items, const set<Position>& target, int numRetries) {
+PTask Task::bringItem(WTaskCallback c, Position pos, vector<WItem> items, const set<Position>& target, int numRetries) {
   return PTask(new BringItem(c, pos, items, vector<Position>(target.begin(), target.end()), numRetries));
 }
 
 class ApplyItem : public BringItem {
   public:
-  ApplyItem(TaskCallback* c, Position position, vector<WItem> items, Position target)
+  ApplyItem(WTaskCallback c, Position position, vector<WItem> items, Position target)
       : BringItem(c, position, items, target), callback(c) {}
 
   virtual void cancel() override {
@@ -542,16 +542,16 @@ class ApplyItem : public BringItem {
   SERIALIZATION_CONSTRUCTOR(ApplyItem);
 
   private:
-  TaskCallback* SERIAL(callback);
+  WTaskCallback SERIAL(callback);
 };
 
-PTask Task::applyItem(TaskCallback* c, Position position, WItem item, Position target) {
+PTask Task::applyItem(WTaskCallback c, Position position, WItem item, Position target) {
   return PTask(new ApplyItem(c, position, {item}, target));
 }
 
 class ApplySquare : public Task {
   public:
-  ApplySquare(TaskCallback* c, vector<Position> pos, SearchType t, ActionType a)
+  ApplySquare(WTaskCallback c, vector<Position> pos, SearchType t, ActionType a)
       : positions(pos), callback(c), searchType(t), actionType(a) {}
 
   void changePosIfOccupied() {
@@ -637,12 +637,12 @@ class ApplySquare : public Task {
   set<Position> SERIAL(rejectedPosition);
   int SERIAL(invalidCount) = 5;
   optional<Position> SERIAL(position);
-  TaskCallback* SERIAL(callback);
+  WTaskCallback SERIAL(callback);
   SearchType SERIAL(searchType);
   ActionType SERIAL(actionType);
 };
 
-PTask Task::applySquare(TaskCallback* c, vector<Position> position, SearchType searchType, ActionType actionType) {
+PTask Task::applySquare(WTaskCallback c, vector<Position> position, SearchType searchType, ActionType actionType) {
   CHECK(position.size() > 0);
   return PTask(new ApplySquare(c, position, searchType, actionType));
 }
@@ -652,7 +652,7 @@ namespace {
 class Kill : public Task {
   public:
   enum Type { ATTACK, TORTURE };
-  Kill(TaskCallback* call, WCreature c, Type t) : creature(c), type(t), callback(call) {}
+  Kill(WTaskCallback call, WCreature c, Type t) : creature(c), type(t), callback(call) {}
 
   CreatureAction getAction(WCreature c) {
     switch (type) {
@@ -694,16 +694,16 @@ class Kill : public Task {
   private:
   WCreature SERIAL(creature);
   Type SERIAL(type);
-  TaskCallback* SERIAL(callback);
+  WTaskCallback SERIAL(callback);
 };
 
 }
 
-PTask Task::kill(TaskCallback* callback, WCreature creature) {
+PTask Task::kill(WTaskCallback callback, WCreature creature) {
   return PTask(new Kill(callback, creature, Kill::ATTACK));
 }
 
-PTask Task::torture(TaskCallback* callback, WCreature creature) {
+PTask Task::torture(WTaskCallback callback, WCreature creature) {
   return PTask(new Kill(callback, creature, Kill::TORTURE));
 }
 
@@ -825,7 +825,7 @@ namespace {
 
 class AttackLeader : public Task {
   public:
-  AttackLeader(Collective* col) : collective(col) {}
+  AttackLeader(WCollective col) : collective(col) {}
 
   virtual MoveInfo getMove(WCreature c) override {
     if (!collective->hasLeader())
@@ -842,16 +842,16 @@ class AttackLeader : public Task {
   SERIALIZATION_CONSTRUCTOR(AttackLeader);
 
   private:
-  Collective* SERIAL(collective);
+  WCollective SERIAL(collective);
 };
 
 }
 
-PTask Task::attackLeader(Collective* col) {
+PTask Task::attackLeader(WCollective col) {
   return PTask(new AttackLeader(col));
 }
 
-PTask Task::stealFrom(Collective* collective, TaskCallback* callback) {
+PTask Task::stealFrom(WCollective collective, WTaskCallback callback) {
   vector<PTask> tasks;
   for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType::TREASURE_CHEST)) {
     vector<WItem> gold = pos.getItems(Item::classPredicate(ItemClass::GOLD));
@@ -868,7 +868,7 @@ namespace {
 
 class CampAndSpawn : public Task {
   public:
-  CampAndSpawn(Collective* _target, CreatureFactory s, int defense, Range attack, int numAtt)
+  CampAndSpawn(WCollective _target, CreatureFactory s, int defense, Range attack, int numAtt)
     : target(_target), spawns(s),
       campPos(Random.permutation(target->getTerritory().getStandardExtended())), defenseSize(defense),
       attackSize(attack), numAttacks(numAtt) {}
@@ -932,7 +932,7 @@ class CampAndSpawn : public Task {
   SERIALIZATION_CONSTRUCTOR(CampAndSpawn);
 
   private:
-  Collective* SERIAL(target);
+  WCollective SERIAL(target);
   CreatureFactory SERIAL(spawns);
   vector<Position> SERIAL(campPos);
   int SERIAL(defenseSize);
@@ -946,7 +946,7 @@ class CampAndSpawn : public Task {
 
 }
 
-PTask Task::campAndSpawn(Collective* target, const CreatureFactory& spawns, int defenseSize,
+PTask Task::campAndSpawn(WCollective target, const CreatureFactory& spawns, int defenseSize,
     Range attackSize, int numAttacks) {
   return PTask(new CampAndSpawn(target, spawns, defenseSize, attackSize, numAttacks));
 }
@@ -955,7 +955,7 @@ namespace {
 
 class KillFighters : public Task {
   public:
-  KillFighters(Collective* col, int numC) : collective(col), numCreatures(numC) {}
+  KillFighters(WCollective col, int numC) : collective(col), numCreatures(numC) {}
 
   virtual MoveInfo getMove(WCreature c) override {
     for (WConstCreature target : collective->getCreatures(MinionTrait::FIGHTER))
@@ -979,21 +979,21 @@ class KillFighters : public Task {
   SERIALIZATION_CONSTRUCTOR(KillFighters);
 
   private:
-  Collective* SERIAL(collective);
+  WCollective SERIAL(collective);
   int SERIAL(numCreatures);
   EntitySet<Creature> SERIAL(targets);
 };
 
 }
 
-PTask Task::killFighters(Collective* col, int numCreatures) {
+PTask Task::killFighters(WCollective col, int numCreatures) {
   return PTask(new KillFighters(col, numCreatures));
 }
 
 namespace {
 class ConsumeItem : public Task {
   public:
-  ConsumeItem(TaskCallback* c, vector<WItem> _items) : items(_items), callback(c) {}
+  ConsumeItem(WTaskCallback c, vector<WItem> _items) : items(_items), callback(c) {}
 
   virtual MoveInfo getMove(WCreature c) override {
     return c->wait().append([=](WCreature c) {
@@ -1009,18 +1009,18 @@ class ConsumeItem : public Task {
 
   protected:
   EntitySet<Item> SERIAL(items);
-  TaskCallback* SERIAL(callback);
+  WTaskCallback SERIAL(callback);
 };
 }
 
-PTask Task::consumeItem(TaskCallback* c, vector<WItem> items) {
+PTask Task::consumeItem(WTaskCallback c, vector<WItem> items) {
   return PTask(new ConsumeItem(c, items));
 }
 
 namespace {
 class Copulate : public Task {
   public:
-  Copulate(TaskCallback* c, WCreature t, int turns) : target(t), callback(c), numTurns(turns) {}
+  Copulate(WTaskCallback c, WCreature t, int turns) : target(t), callback(c), numTurns(turns) {}
 
   virtual MoveInfo getMove(WCreature c) override {
     if (target->isDead() || !target->isAffected(LastingEffect::SLEEP)) {
@@ -1054,19 +1054,19 @@ class Copulate : public Task {
 
   protected:
   WCreature SERIAL(target);
-  TaskCallback* SERIAL(callback);
+  WTaskCallback SERIAL(callback);
   int SERIAL(numTurns);
 };
 }
 
-PTask Task::copulate(TaskCallback* c, WCreature target, int numTurns) {
+PTask Task::copulate(WTaskCallback c, WCreature target, int numTurns) {
   return PTask(new Copulate(c, target, numTurns));
 }
 
 namespace {
 class Consume : public Task {
   public:
-  Consume(TaskCallback* c, WCreature t) : target(t), callback(c) {}
+  Consume(WTaskCallback c, WCreature t) : target(t), callback(c) {}
 
   virtual MoveInfo getMove(WCreature c) override {
     if (target->isDead()) {
@@ -1093,11 +1093,11 @@ class Consume : public Task {
 
   protected:
   WCreature SERIAL(target);
-  TaskCallback* SERIAL(callback);
+  WTaskCallback SERIAL(callback);
 };
 }
 
-PTask Task::consume(TaskCallback* c, WCreature target) {
+PTask Task::consume(WTaskCallback c, WCreature target) {
   return PTask(new Consume(c, target));
 }
 

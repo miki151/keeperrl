@@ -42,7 +42,6 @@
 #include "creature_attributes.h"
 #include "attack_level.h"
 #include "villain_type.h"
-#include "event_proxy.h"
 #include "visibility_map.h"
 #include "collective_name.h"
 #include "view_object.h"
@@ -54,9 +53,9 @@
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(Controller);
+  ar& SUBCLASS(Controller) & SUBCLASS(EventListener);
   serializeAll(ar, travelling, travelDir, target, lastLocation, displayGreeting, levelMemory, messages);
-  serializeAll(ar, messageHistory, adventurer, eventProxy, visibilityMap, tutorial);
+  serializeAll(ar, messageHistory, adventurer, visibilityMap, tutorial);
 }
 
 SERIALIZABLE(Player);
@@ -64,7 +63,7 @@ SERIALIZABLE(Player);
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
 Player::Player(WCreature c, bool adv, MapMemory* memory, STutorial t) :
-    Controller(c), levelMemory(memory), eventProxy(this), adventurer(adv), displayGreeting(adventurer), tutorial(t) {
+    Controller(c), levelMemory(memory), adventurer(adv), displayGreeting(adventurer), tutorial(t) {
   visibilityMap->update(c, c->getVisibleTiles());
 }
 
@@ -109,7 +108,7 @@ void Player::onEvent(const GameEvent& event) {
       break;
     case EventId::CONQUERED_ENEMY:
       if (adventurer) {
-        Collective* col = event.get<Collective*>();
+        WCollective col = event.get<WCollective>();
         if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER)
           privateMessage(PlayerMessage("The tribe of " + col->getName().getFull() + " is destroyed.",
                 MessagePriority::CRITICAL));
@@ -568,8 +567,8 @@ vector<Player::CommandInfo> Player::getCommands() const {
 }
 
 void Player::makeMove() {
-  if (!eventProxy->isSubscribed())
-    eventProxy->subscribeTo(getCreature()->getPosition().getModel());
+  if (!isSubscribed())
+    subscribeTo(getCreature()->getPosition().getModel());
   if (adventurer)
     considerAdventurerMusic();
   if (currentTimePos && currentTimePos->pos.getLevel() != getCreature()->getLevel()) {
@@ -910,7 +909,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
 }
 
 void Player::onKilled(WConstCreature attacker) {
-  eventProxy->unsubscribe();
+  unsubscribe();
   getView()->updateView(this, false);
   if (getView()->yesOrNoPrompt("Display message history?"))
     showHistory();
@@ -1018,7 +1017,7 @@ bool Player::isPlayerView() const {
 }
 
 void Player::considerAdventurerMusic() {
-  for (Collective* col : getCreature()->getPosition().getModel()->getCollectives())
+  for (WCollective col : getCreature()->getPosition().getModel()->getCollectives())
     if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&
         col->getTerritory().contains(getCreature()->getPosition())) {
       getGame()->setCurrentMusic(MusicType::ADV_BATTLE, true);

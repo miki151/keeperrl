@@ -60,21 +60,23 @@ CostInfo TaskMap::removeTask(Task* task) {
     marked.set(*pos, nullptr);
     pos->setNeedsRenderUpdate(true);
   }
-  for (int i : All(tasks))
-    if (tasks[i].get() == task) {
-      removeIndex(tasks, i);
-      break;
-    }
   if (auto c = creatureByTask.getMaybe(task)) {
+    CHECK(taskByCreature.getMaybe(*c));
     taskByCreature.erase(*c);
     creatureByTask.erase(task);
   }
+  CHECK(taskByCreature.getSize() == creatureByTask.getSize());
   if (positionMap.count(task)) {
     removeElement(reversePositions.getOrFail(positionMap.at(task)), task);
     positionMap.erase(task);
   }
   if (requiredTraits.count(task))
     requiredTraits.erase(task);
+  for (int i : All(tasks))
+    if (tasks[i].get() == task) {
+      removeIndex(tasks, i);
+      break;
+    }
   return cost;
 }
 
@@ -121,9 +123,10 @@ bool TaskMap::hasTask(WConstCreature c) const {
 
 Task* TaskMap::getTask(WConstCreature c) {
   if (auto task = taskByCreature.getMaybe(c)) {
-    if ((*task)->isDone())
+    if ((*task)->isDone()) {
       removeTask(*task);
-    else
+      CHECK(!taskByCreature.getMaybe(c));
+    } else
       return *task;
   }
   return nullptr;
@@ -135,8 +138,11 @@ const vector<Task*>& TaskMap::getTasks(Position pos) const {
 
 Task* TaskMap::addTaskFor(PTask task, WCreature c) {
   CHECK(!hasTask(c)) << c->getName().bare() << " already has a task";
+  CHECK(!taskByCreature.getMaybe(c));
+  CHECK(!creatureByTask.getMaybe(task.get()));
   taskByCreature.set(c, task.get());
   creatureByTask.set(task.get(), c);
+  CHECK(taskByCreature.getSize() == creatureByTask.getSize());
   if (auto pos = task->getPosition())
     setPosition(task.get(), *pos);
   tasks.push_back(std::move(task));
@@ -152,8 +158,12 @@ Task* TaskMap::addTask(PTask task, Position position, MinionTrait required) {
 
 void TaskMap::takeTask(WCreature c, Task* task) {
   freeTask(task);
+  CHECK(taskByCreature.getSize() == creatureByTask.getSize());
+  CHECK(!taskByCreature.getMaybe(c));
+  CHECK(!creatureByTask.getMaybe(task));
   taskByCreature.set(c, task);
   creatureByTask.set(task, c);
+  CHECK(taskByCreature.getSize() == creatureByTask.getSize());
 }
 
 optional<Position> TaskMap::getPosition(Task* task) const {
@@ -172,8 +182,10 @@ WCreature TaskMap::getOwner(const Task* task) const {
 
 void TaskMap::freeTask(Task* task) {
   if (auto c = creatureByTask.getMaybe(task)) {
+    CHECK(taskByCreature.getMaybe(*c));
     taskByCreature.erase(*c);
     creatureByTask.erase(task);
+    CHECK(taskByCreature.getSize() == creatureByTask.getSize());
   }
 }
 

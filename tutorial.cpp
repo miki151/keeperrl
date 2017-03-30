@@ -15,6 +15,7 @@
 #include "collective_config.h"
 #include "immigrant_info.h"
 #include "keybinding.h"
+#include "immigration.h"
 
 SERIALIZE_DEF(Tutorial, state)
 
@@ -175,7 +176,7 @@ void Tutorial::goBack() {
 
 void Tutorial::createTutorial(Game& game) {
   game.getPlayerControl()->setTutorial(make_shared<Tutorial>());
-  game.getPlayerCollective()->setConfig(CollectiveConfig::keeper(0, 10, {}, {
+  game.getPlayerCollective()->init(CollectiveConfig::keeper(0, 10, {}, {
       ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
           .setSpawnLocation(NearLeader{})
           .setKeybinding(Keybinding::CREATE_IMP)
@@ -187,5 +188,6 @@ void Tutorial::createTutorial(Game& game) {
           .setTutorialHighlight(TutorialHighlight::ACCEPT_IMMIGRANT)
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
           .addRequirement(0.0, AttractionInfo{5, FurnitureType::BOOK_SHELF})
-  }));
+  }),
+      Immigration(game.getPlayerCollective()));
 }

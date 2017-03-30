@@ -12,7 +12,7 @@ struct TriggerInfo;
 
 class CollectiveControl {
   public:
-  CollectiveControl(Collective*);
+  CollectiveControl(WCollective);
   virtual void update(bool currentlyActive);
   virtual void tick();
   virtual void onMemberKilled(WConstCreature victim, WConstCreature killer);
@@ -25,15 +25,15 @@ class CollectiveControl {
   virtual void onDestructed(Position, const DestroyAction&) {}
   virtual void onNoEnemies() {}
   virtual void onRansomPaid() {}
-  virtual vector<TriggerInfo> getTriggers(const Collective* against) const;
+  virtual vector<TriggerInfo> getTriggers(WConstCollective against) const;
 
-  Collective* getCollective() const;
+  WCollective getCollective() const;
 
   SERIALIZATION_DECL(CollectiveControl)
 
   virtual ~CollectiveControl();
 
-  static PCollectiveControl idle(Collective*);
+  static PCollectiveControl idle(WCollective);
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
@@ -41,7 +41,7 @@ class CollectiveControl {
   const vector<WCreature>& getCreatures() const;
 
   private:
-  Collective* SERIAL(collective) = nullptr;
+  WCollective SERIAL(collective) = nullptr;
 };
 
 

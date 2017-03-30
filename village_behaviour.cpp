@@ -18,7 +18,7 @@ VillageBehaviour::VillageBehaviour() {}
 VillageBehaviour::~VillageBehaviour() {}
 
 PTask VillageBehaviour::getAttackTask(VillageControl* self) {
-  Collective* enemy = self->getEnemyCollective();
+  WCollective enemy = self->getEnemyCollective();
   switch (attackBehaviour->getId()) {
     case AttackBehaviourId::KILL_LEADER:
       return Task::attackLeader(enemy);
@@ -136,7 +136,7 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
   double proximityMaxProb = 1.0 / 5000;
   double timerProb = 1.0 / 3000;
   double numConqueredMaxProb = 1.0 / 3000;
-  if (Collective* collective = self->getEnemyCollective())
+  if (WCollective collective = self->getEnemyCollective())
     switch (trigger.getId()) {
       case AttackTriggerId::TIMER: 
         return collective->getGlobalTime() >= trigger.get<int>() ? timerProb : 0;

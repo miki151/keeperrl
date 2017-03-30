@@ -160,7 +160,7 @@ ImmigrantInfo& ImmigrantInfo::setTutorialHighlight(TutorialHighlight h) {
 
 vector<WCreature> RecruitmentInfo::getAllRecruits(Game* game, CreatureId id) const {
   vector<WCreature> ret;
-  if (Collective* col = findEnemy(game))
+  if (WCollective col = findEnemy(game))
     ret = filter(col->getCreatures(), [&](WConstCreature c) { return c->getAttributes().getCreatureId() == id; });
   return ret;
 }
@@ -170,8 +170,8 @@ vector<WCreature> RecruitmentInfo::getAvailableRecruits(Game* game, CreatureId i
   return getPrefix(ret, max(0, (int)ret.size() - minPopulation));
 }
 
-Collective* RecruitmentInfo::findEnemy(Game* game) const {
-  for (Collective* col : game->getCollectives())
+WCollective RecruitmentInfo::findEnemy(Game* game) const {
+  for (WCollective col : game->getCollectives())
     if (auto id = col->getEnemyId())
       if (enemyId.contains(*id))
         return col;

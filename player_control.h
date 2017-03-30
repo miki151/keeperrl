@@ -38,17 +38,15 @@ struct TaskActionInfo;
 struct CreatureDropInfo;
 struct EquipmentActionInfo;
 struct TeamCreatureInfo;
-template <typename T>
-class EventProxy;
 class SquareType;
 class CostInfo;
 struct WorkshopItem;
 class ScrollPosition;
 class Tutorial;
 
-class PlayerControl : public CreatureView, public CollectiveControl {
+class PlayerControl : public CreatureView, public CollectiveControl, public EventListener {
   public:
-  PlayerControl(Collective*, Level*);
+  PlayerControl(WCollective, Level*);
   ~PlayerControl();
 
   void processInput(View* view, UserInput);
@@ -114,9 +112,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   virtual void update(bool currentlyActive) override;
 
   private:
-  HeapAllocated<EventProxy<PlayerControl>> SERIAL(eventProxy);
-  friend EventProxy<PlayerControl>;
-  void onEvent(const GameEvent&);
+  virtual void onEvent(const GameEvent&) override;
 
   void considerNightfallMessage();
   void considerWarning();
@@ -125,15 +121,15 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool canSee(WConstCreature) const;
   bool canSee(Position) const;
   void initialize();
-  bool isConsideredAttacking(WConstCreature, const Collective* enemy);
+  bool isConsideredAttacking(WConstCreature, WConstCollective enemy);
 
   void checkKeeperDanger();
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
   void updateKnownLocations(const Position&);
   bool isEnemy(WConstCreature) const;
-  vector<Collective*> getKnownVillains(VillainType) const;
-  Collective* getVillain(int num);
+  vector<WCollective> getKnownVillains(VillainType) const;
+  WCollective getVillain(int num);
   void scrollToMiddle(const vector<Position>&);
 
   WCreature getConsumptionTarget(View*, WCreature consumer);
@@ -147,7 +143,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool canSelectRectangle(const BuildInfo&);
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
-  VillageInfo::Village getVillageInfo(const Collective* enemy) const;
+  VillageInfo::Village getVillageInfo(WConstCollective enemy) const;
   void fillWorkshopInfo(CollectiveInfo&) const;
   void fillImmigration(CollectiveInfo&) const;
   void fillImmigrationHelp(CollectiveInfo&) const;
@@ -184,8 +180,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void fillEquipment(WCreature, PlayerInfo&) const;
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
-  void handleTrading(Collective* ally);
-  void handlePillage(Collective* enemy);
+  void handleTrading(WCollective ally);
+  void handlePillage(WCollective enemy);
   void handleRansom(bool pay);
   static ViewObject getTrapObject(TrapType, bool built);
   void addToMemory(Position);

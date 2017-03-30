@@ -60,7 +60,6 @@
 #include "creature_attributes.h"
 #include "collective_config.h"
 #include "villain_type.h"
-#include "event_proxy.h"
 #include "workshops.h"
 #include "attack_trigger.h"
 #include "view_object.h"
@@ -79,11 +78,11 @@
 
 template <class Archive> 
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(CollectiveControl);
+  ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion);
   serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
   serializeAll(ar, visibilityMap);
-  serializeAll(ar, messageHistory, eventProxy, tutorial);
+  serializeAll(ar, messageHistory, tutorial);
 }
 
 SERIALIZABLE(PlayerControl);
@@ -298,8 +297,8 @@ static vector<string> getHints() {
   };
 }
 
-PlayerControl::PlayerControl(Collective* col, Level* level) : CollectiveControl(col),
-    eventProxy(this, level->getModel()), hints(getHints()) {
+PlayerControl::PlayerControl(WCollective col, Level* level) : CollectiveControl(col),
+    EventListener(level->getModel()), hints(getHints()) {
   bool hotkeys[128] = {0};
   for (auto& info : getBuildInfo()) {
     if (info.hotkey) {
@@ -753,7 +752,7 @@ bool PlayerControl::meetsRequirement(Requirement req) const {
     case RequirementId::TECHNOLOGY:
       return getCollective()->hasTech(req.get<TechId>());
     case RequirementId::VILLAGE_CONQUERED:
-      for (const Collective* c : getGame()->getVillains(VillainType::MAIN))
+      for (WConstCollective c : getGame()->getVillains(VillainType::MAIN))
         if (c->isConquered())
           return true;
       return false;
@@ -882,7 +881,7 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
   }
 }
 
-VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const {
+VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
   VillageInfo::Village info;
   info.name = col->getName().getShort();
   info.tribeName = col->getName().getRace();
@@ -923,7 +922,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
   return info;
 }
 
-/*void PlayerControl::handleRecruiting(Collective* ally) {
+/*void PlayerControl::handleRecruiting(WCollective ally) {
   ScrollPosition scrollPos;
   vector<WCreature> recruited;
   vector<WCreature> transfers;
@@ -958,7 +957,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const 
         getGame()->transferCreature(c, getModel());
 }*/
 
-void PlayerControl::handleTrading(Collective* ally) {
+void PlayerControl::handleTrading(WCollective ally) {
   ScrollPosition scrollPos;
   const set<Position>& storage = getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT);
   if (storage.empty()) {
@@ -1001,7 +1000,7 @@ static ItemInfo getPillageItemInfo(const vector<WItem>& stack, bool noStorage) {
   );
 }
 
-static vector<PItem> retrieveItems(Collective* col, vector<WItem> items) {
+static vector<PItem> retrieveItems(WCollective col, vector<WItem> items) {
   vector<PItem> ret;
   EntitySet<Item> index(items);
   for (auto pos : col->getTerritory().getAll()) {
@@ -1012,7 +1011,7 @@ static vector<PItem> retrieveItems(Collective* col, vector<WItem> items) {
   return ret;
 }
 
-void PlayerControl::handlePillage(Collective* col) {
+void PlayerControl::handlePillage(WCollective col) {
   ScrollPosition scrollPos;
   while (1) {
     struct PillageOption {
@@ -1050,8 +1049,8 @@ void PlayerControl::handleRansom(bool pay) {
   removeIndex(ransomAttacks, 0);
 }
 
-vector<Collective*> PlayerControl::getKnownVillains(VillainType type) const {
-  return filter(getGame()->getVillains(type), [this](Collective* c) {
+vector<WCollective> PlayerControl::getKnownVillains(VillainType type) const {
+  return filter(getGame()->getVillains(type), [this](WCollective c) {
       return seeEverything || getCollective()->isKnownVillain(c);});
 }
 
@@ -1332,22 +1331,22 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.villageInfo.villages.clear();
   gameInfo.villageInfo.totalMain = 0;
   gameInfo.villageInfo.numConquered = 0;
-  for (const Collective* col : getGame()->getVillains(VillainType::MAIN)) {
+  for (WConstCollective col : getGame()->getVillains(VillainType::MAIN)) {
     ++gameInfo.villageInfo.totalMain;
     if (col->isConquered())
       ++gameInfo.villageInfo.numConquered;
   }
   gameInfo.villageInfo.numMainVillains = 0;
-  for (const Collective* col : getKnownVillains(VillainType::MAIN)) {
+  for (WConstCollective col : getKnownVillains(VillainType::MAIN)) {
     gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
     ++gameInfo.villageInfo.numMainVillains;
   }
   gameInfo.villageInfo.numLesserVillains = 0;
-  for (const Collective* col : getKnownVillains(VillainType::LESSER)) {
+  for (WConstCollective col : getKnownVillains(VillainType::LESSER)) {
     gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
     ++gameInfo.villageInfo.numLesserVillains;
   }
-  for (const Collective* col : getKnownVillains(VillainType::ALLY))
+  for (WConstCollective col : getKnownVillains(VillainType::ALLY))
     gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.getTimeRemaining() };
@@ -1379,7 +1378,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.warning = "";
   gameInfo.time = getCollective()->getGame()->getGlobalTime();
   gameInfo.modifiedSquares = gameInfo.totalSquares = 0;
-  for (Collective* col : getCollective()->getGame()->getCollectives()) {
+  for (WCollective col : getCollective()->getGame()->getCollectives()) {
     gameInfo.modifiedSquares += col->getLevel()->getNumGeneratedSquares();
     gameInfo.totalSquares += col->getLevel()->getNumTotalSquares();
   }
@@ -1505,7 +1504,7 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
         else if (loc->isMarkedAsSurprise())
           addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
       }
-  for (const Collective* col : getGame()->getCollectives())
+  for (WConstCollective col : getGame()->getCollectives())
     if (col != getCollective() && col->getTerritory().contains(pos)) {
       getCollective()->addKnownVillain(col);
       getCollective()->addKnownVillainLocation(col);
@@ -1755,7 +1754,7 @@ void PlayerControl::scrollToMiddle(const vector<Position>& pos) {
   getView()->setScrollPos(Rectangle::boundingBox(visible).middle());
 }
 
-Collective* PlayerControl::getVillain(int num) {
+WCollective PlayerControl::getVillain(int num) {
   return concat(getKnownVillains(VillainType::MAIN),
                 getKnownVillains(VillainType::LESSER),
                 getKnownVillains(VillainType::ALLY))[num];
@@ -1854,7 +1853,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
         break;
     case UserInputId::GO_TO_VILLAGE: 
-        if (Collective* col = getVillain(input.get<int>())) {
+        if (WCollective col = getVillain(input.get<int>())) {
           if (col->getLevel() != getLevel())
             setScrollPos(col->getTerritory().getAll().at(0));
           else
@@ -2150,7 +2149,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         handleSelection(info.pos, getBuildInfo()[info.building], false);
         break; }
     case UserInputId::VILLAGE_ACTION: 
-        if (Collective* village = getVillain(input.get<VillageActionInfo>().villageIndex))
+        if (WCollective village = getVillain(input.get<VillageActionInfo>().villageIndex))
           switch (input.get<VillageActionInfo>().action) {
             case VillageAction::TRADE: 
               handleTrading(village);
@@ -2445,7 +2444,7 @@ void PlayerControl::update(bool currentlyActive) {
   }
 }
 
-bool PlayerControl::isConsideredAttacking(WConstCreature c, const Collective* enemy) {
+bool PlayerControl::isConsideredAttacking(WConstCreature c, WConstCollective enemy) {
   if (enemy && enemy->getModel() == getModel())
     return canSee(c) && contains(getCollective()->getTerritory().getStandardExtended(), c->getPosition());
   else

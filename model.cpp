@@ -81,8 +81,8 @@ int Model::getSaveProgressCount() const {
   return ret;
 }
 
-vector<Collective*> Model::getCollectives() const {
-  return extractRefs(collectives);
+vector<WCollective> Model::getCollectives() const {
+  return getWeakPointers(collectives);
 }
 
 void Model::updateSunlightMovement() {

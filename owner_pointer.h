@@ -158,6 +158,16 @@ class OwnedObject : public std::enable_shared_from_this<T> {
   WeakPointer<const T> getThis() const {
     return WeakPointer<const T>(this->shared_from_this());
   }
+
+  template <typename U>
+  WeakPointer<U> getThisAs() {
+    return WeakPointer<U>(std::dynamic_pointer_cast<U>(this->shared_from_this()));
+  }
+
+  template <typename U>
+  WeakPointer<const U> getThisAs() const {
+    return WeakPointer<const U>(std::dynamic_pointer_cast<const U>(this->shared_from_this()));
+  }
 };
 
 template <typename T>

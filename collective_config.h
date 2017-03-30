@@ -52,7 +52,7 @@ struct DormInfo {
   optional<CollectiveWarning> warning;
 };
 
-typedef function<const set<Position>&(const Collective*)> StorageDestinationFun;
+typedef function<const set<Position>&(WConstCollective)> StorageDestinationFun;
 
 struct ResourceInfo {
   StorageDestinationFun storageDestination;
@@ -64,7 +64,7 @@ struct ResourceInfo {
   optional<TutorialHighlight> tutorialHighlight;
 };
 
-typedef function<bool(const Collective*, const WItem)> CollectiveItemPredicate;
+typedef function<bool(WConstCollective, const WItem)> CollectiveItemPredicate;
 
 struct ItemFetchInfo {
   ItemIndex index;
@@ -79,12 +79,12 @@ struct MinionTaskInfo {
   MinionTaskInfo();
   MinionTaskInfo(FurnitureType, const string& description);
   typedef function<bool(WConstCreature, FurnitureType)> UsagePredicate;
-  typedef function<bool(const Collective*, FurnitureType)> ActivePredicate;
+  typedef function<bool(WConstCollective, FurnitureType)> ActivePredicate;
   MinionTaskInfo(UsagePredicate, const string& description);
   MinionTaskInfo(UsagePredicate, ActivePredicate, const string& description);
   MinionTaskInfo(Type, const string& description, optional<CollectiveWarning> = none);
   UsagePredicate furniturePredicate;
-  ActivePredicate activePredicate = [](const Collective*, FurnitureType) { return true; };
+  ActivePredicate activePredicate = [](WConstCollective, FurnitureType) { return true; };
   string description;
   optional<CollectiveWarning> warning;
 };

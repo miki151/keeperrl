@@ -27,7 +27,7 @@ static optional<Position> getRandomCloseTile(Position from, const vector<Positio
   return ret;
 }
 
-static optional<Position> getTileToExplore(const Collective* collective, WConstCreature c, MinionTask task) {
+static optional<Position> getTileToExplore(WConstCollective collective, WConstCreature c, MinionTask task) {
   vector<Position> border = Random.permutation(collective->getKnownTiles().getBorderTiles());
   switch (task) {
     case MinionTask::EXPLORE_CAVES:
@@ -48,7 +48,7 @@ static optional<Position> getTileToExplore(const Collective* collective, WConstC
   return none;
 }
 
-static WCreature getCopulationTarget(const Collective* collective, WCreature succubus) {
+static WCreature getCopulationTarget(WConstCollective collective, WCreature succubus) {
   for (WCreature c : Random.permutation(collective->getCreatures(MinionTrait::FIGHTER)))
     if (succubus->canCopulateWith(c))
       return c;
@@ -92,7 +92,7 @@ optional<MinionTask> MinionTasks::getTaskFor(WConstCreature c, FurnitureType typ
   return none;
 }
 
-vector<Position> MinionTasks::getAllPositions(const Collective* collective, WConstCreature c, MinionTask task,
+vector<Position> MinionTasks::getAllPositions(WConstCollective collective, WConstCreature c, MinionTask task,
     bool onlyActive) {
   vector<Position> ret;
   auto& info = CollectiveConfig::getTaskInfo(task);
@@ -102,7 +102,7 @@ vector<Position> MinionTasks::getAllPositions(const Collective* collective, WCon
   return ret;
 }
 
-PTask MinionTasks::generate(Collective* collective, WCreature c, MinionTask task) {
+PTask MinionTasks::generate(WCollective collective, WCreature c, MinionTask task) {
   auto& info = CollectiveConfig::getTaskInfo(task);
   switch (info.type) {
     case MinionTaskInfo::FURNITURE: {

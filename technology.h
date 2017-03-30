@@ -56,11 +56,11 @@ class Technology : public Singleton<Technology, TechId> {
   const vector<Technology*> getAllowed() const;
   static vector<Technology*> getNextTechs(const vector<Technology*>& current);
   static vector<Spell*> getSpellLearning(TechId tech);
-  static vector<Spell*> getAvailableSpells(const Collective*);
+  static vector<Spell*> getAvailableSpells(WConstCollective);
   static vector<Spell*> getAllKeeperSpells();
   static TechId getNeededTech(Spell*);
 
-  static void onAcquired(TechId, Collective*);
+  static void onAcquired(TechId, WCollective);
 
   static void init();
 

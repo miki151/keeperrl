@@ -29,7 +29,6 @@
 #include "collective_name.h"
 #include "lasting_effect.h"
 #include "body.h"
-#include "event_proxy.h"
 #include "attack_trigger.h"
 #include "immigration.h"
 
@@ -38,19 +37,19 @@ typedef EnumVariant<AttackTriggerId, TYPES(int),
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
 
-VillageControl::VillageControl(Collective* col, optional<VillageBehaviour> v) : CollectiveControl(col),
-    eventProxy(this, col->getModel()), villain(v) {
+VillageControl::VillageControl(WCollective col, optional<VillageBehaviour> v) : CollectiveControl(col),
+  EventListener(col->getModel()), villain(v) {
   for (Position v : col->getTerritory().getAll())
     for (WItem it : v.getItems())
       myItems.insert(it);
 }
 
-Collective* VillageControl::getEnemyCollective() const {
+WCollective VillageControl::getEnemyCollective() const {
   return getCollective()->getGame()->getPlayerCollective();
 }
 
 bool VillageControl::isEnemy(WConstCreature c) {
-  if (Collective* col = getEnemyCollective())
+  if (WCollective col = getEnemyCollective())
     return contains(col->getCreatures(), c);
   else
     return false;
@@ -93,7 +92,7 @@ void VillageControl::onEvent(const GameEvent& event) {
 }
 
 void VillageControl::launchAttack(vector<WCreature> attackers) {
-  if (Collective* enemy = getEnemyCollective()) {
+  if (WCollective enemy = getEnemyCollective()) {
     for (WCreature c : attackers)
 //      if (getCollective()->getGame()->canTransferCreature(c, enemy->getLevel()->getModel()))
         getCollective()->getGame()->transferCreature(c, enemy->getModel());
@@ -133,7 +132,7 @@ void VillageControl::onRansomPaid() {
   }
 }
 
-vector<TriggerInfo> VillageControl::getTriggers(const Collective* against) const {
+vector<TriggerInfo> VillageControl::getTriggers(WConstCollective against) const {
   vector<TriggerInfo> ret;
   if (villain && against == getEnemyCollective())
     for (auto& elem : villain->triggers)
@@ -197,7 +196,7 @@ void VillageControl::update(bool currentlyActive) {
   double updateFreq = 0.1;
   if (canPerformAttack(currentlyActive) && Random.roll(1 / updateFreq))
     if (villain) {
-      if (Collective* enemy = getEnemyCollective())
+      if (WCollective enemy = getEnemyCollective())
         maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
       double prob = villain->getAttackProbability(this) / updateFreq;
       if (Random.chance(prob)) {

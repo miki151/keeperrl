@@ -6,7 +6,7 @@
 
 class SquareType;
 
-class TaskCallback {
+class TaskCallback : public OwnedObject<TaskCallback> {
   public:
   virtual void onConstructed(Position, FurnitureType) {}
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}

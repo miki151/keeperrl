@@ -19,6 +19,7 @@
 #include "task.h"
 #include "creature.h"
 #include "level.h"
+#include "collective.h"
 
 template<class T>
 template<class Container>
@@ -117,5 +118,4 @@ ItemPredicate EntitySet<Item>::containsPredicate() const {
 SERIALIZABLE_TMPL(EntitySet, Item);
 SERIALIZABLE_TMPL(EntitySet, Task);
 SERIALIZABLE_TMPL(EntitySet, Creature);
-
-
+SERIALIZABLE_TMPL(EntitySet, Collective);

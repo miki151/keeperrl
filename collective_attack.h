@@ -4,10 +4,10 @@
 
 class CollectiveAttack {
   public:
-  CollectiveAttack(Collective* attacker, const vector<WCreature>& creatures, optional<int> ransom = none);
+  CollectiveAttack(WCollective attacker, const vector<WCreature>& creatures, optional<int> ransom = none);
   CollectiveAttack(const string& name, const vector<WCreature>& creatures);
 
-  Collective* getAttacker() const;
+  WCollective getAttacker() const;
   const string& getAttackerName() const;
   const vector<WCreature>& getCreatures() const;
   optional<int> getRansom() const;
@@ -19,7 +19,7 @@ class CollectiveAttack {
   private:
   optional<int> SERIAL(ransom);
   vector<WCreature> SERIAL(creatures);
-  Collective* SERIAL(attacker) = nullptr;
+  WCollective SERIAL(attacker) = nullptr;
   string SERIAL(attackerName);
 };
 

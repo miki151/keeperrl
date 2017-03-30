@@ -23,5 +23,5 @@ class ExternalEnemies : public TaskCallback {
   private:
   vector<ExternalEnemy> SERIAL(enemies);
   vector<optional<int>> SERIAL(attackTime);
-  PTask getAttackTask(Collective* target, AttackBehaviour);
+  PTask getAttackTask(WCollective target, AttackBehaviour);
 };

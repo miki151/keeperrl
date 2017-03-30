@@ -64,7 +64,7 @@ class Model {
   void setGame(Game*);
   Game* getGame() const;
   void tick(double time);
-  vector<Collective*> getCollectives() const;
+  vector<WCollective> getCollectives() const;
   vector<WCreature> getAllCreatures() const;
   vector<Level*> getLevels() const;
 

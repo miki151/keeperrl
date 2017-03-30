@@ -11,10 +11,10 @@ void CollectiveControl::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(CollectiveControl);
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveControl);
 
-CollectiveControl::CollectiveControl(Collective* c) : collective(c) {
+CollectiveControl::CollectiveControl(WCollective c) : collective(c) {
 }
 
-Collective* CollectiveControl::getCollective() const {
+WCollective CollectiveControl::getCollective() const {
   return NOTNULL(collective);
 }
 
@@ -53,11 +53,11 @@ class IdleControl : public CollectiveControl {
   }
 };
 
-vector<TriggerInfo> CollectiveControl::getTriggers(const Collective* against) const {
+vector<TriggerInfo> CollectiveControl::getTriggers(WConstCollective against) const {
   return {};
 }
 
-PCollectiveControl CollectiveControl::idle(Collective* col) {
+PCollectiveControl CollectiveControl::idle(WCollective col) {
   return PCollectiveControl(new IdleControl(col));
 }
 

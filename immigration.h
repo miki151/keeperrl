@@ -13,7 +13,7 @@ struct AttractionInfo;
 
 class Immigration {
   public:
-  Immigration(Collective*);
+  Immigration(WCollective);
   void update();
 
   struct Group {
@@ -64,7 +64,7 @@ class Immigration {
   const vector<ImmigrantInfo>& getImmigrants() const;
   EntityMap<Creature, map<AttractionType, int>> SERIAL(minionAttraction);
   map<int, Available> SERIAL(available);
-  Collective* SERIAL(collective);
+  WCollective SERIAL(collective);
   map<int, EntitySet<Creature>> SERIAL(generated);
   double getImmigrantChance(const Group& info) const;
   vector<string> getMissingAttractions(const ImmigrantInfo&) const;

@@ -42,8 +42,6 @@ class CostInfo;
 struct TriggerInfo;
 class Territory;
 class CollectiveName;
-template <typename T>
-class EventProxy;
 class Workshops;
 class TileEfficiency;
 class Zones;
@@ -51,8 +49,10 @@ struct ItemFetchInfo;
 class CollectiveWarnings;
 class Immigration;
 
-class Collective : public TaskCallback {
+class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener {
   public:
+  Collective(Level*, TribeId, const CollectiveName&);
+  void init(CollectiveConfig&&, Immigration&&);
   void addCreature(WCreature, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
   MoveInfo getMove(WCreature);
@@ -98,7 +98,7 @@ class Collective : public TaskCallback {
   bool hasTradeItems() const;
   vector<WItem> getTradeItems() const;
   PItem buyItem(WItem);
-  vector<TriggerInfo> getTriggers(const Collective* against) const;
+  vector<TriggerInfo> getTriggers(WConstCollective against) const;
 
   double getEfficiency(WConstCreature) const;
   WConstCreature getLeader() const;
@@ -114,7 +114,6 @@ class Collective : public TaskCallback {
   void retire();
   CollectiveWarnings& getWarnings();
   const CollectiveConfig& getConfig() const;
-  void setConfig(const CollectiveConfig&);
 
   bool usesEquipment(WConstCreature) const;
 
@@ -198,10 +197,10 @@ class Collective : public TaskCallback {
   int getNumItems(ItemIndex, bool includeMinions = true) const;
   optional<set<Position>> getStorageFor(const WItem) const;
 
-  void addKnownVillain(const Collective*);
-  bool isKnownVillain(const Collective*) const;
-  void addKnownVillainLocation(const Collective*);
-  bool isKnownVillainLocation(const Collective*) const;
+  void addKnownVillain(WConstCollective);
+  bool isKnownVillain(WConstCollective) const;
+  void addKnownVillainLocation(WConstCollective);
+  bool isKnownVillainLocation(WConstCollective) const;
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
@@ -221,12 +220,12 @@ class Collective : public TaskCallback {
   virtual bool isConstructionReachable(Position) override;
 
   private:
-  HeapAllocated<EventProxy<Collective>> SERIAL(eventProxy);
-  friend EventProxy<Collective>;
-  void onEvent(const GameEvent&);
+  virtual void onEvent(const GameEvent&) override;
 
-  friend class CollectiveBuilder;
-  Collective(Level*, const CollectiveConfig&, TribeId, const CollectiveName&);
+  WCollective getThis();
+
+  WConstCollective getThis() const;
+
   void addCreatureInTerritory(PCreature, EnumSet<MinionTrait>);
   void removeCreature(WCreature);
   void onMinionKilled(WCreature victim, WCreature killer);
@@ -319,6 +318,6 @@ class Collective : public TaskCallback {
   HeapAllocated<CollectiveWarnings> SERIAL(warnings);
   HeapAllocated<Immigration> SERIAL(immigration);
   mutable optional<double> dangerLevelCache;
-  unordered_set<const Collective*> SERIAL(knownVillains);
-  unordered_set<const Collective*> SERIAL(knownVillainLocations);
+  EntitySet<Collective> SERIAL(knownVillains);
+  EntitySet<Collective> SERIAL(knownVillainLocations);
 };

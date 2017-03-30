@@ -93,7 +93,7 @@ DEF_UNIQUE_PTR(VillageControl);
 DEF_SHARED_PTR(GuiElem);
 DEF_UNIQUE_PTR(Animation);
 DEF_UNIQUE_PTR(ViewObject);
-DEF_UNIQUE_PTR(Collective);
+DEF_OWNER_PTR(Collective);
 DEF_UNIQUE_PTR(CollectiveControl);
 DEF_UNIQUE_PTR(Model);
 DEF_UNIQUE_PTR(Tribe);

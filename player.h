@@ -31,12 +31,10 @@ class Item;
 class ListElem;
 struct ItemInfo;
 class Game;
-template <typename T>
-class EventProxy;
 class VisibilityMap;
 class Tutorial;
 
-class Player : public Controller, public CreatureView {
+class Player : public Controller, public CreatureView, public EventListener {
   public:
   virtual ~Player();
 
@@ -90,9 +88,7 @@ class Player : public Controller, public CreatureView {
   bool tryToPerform(CreatureAction);
 
   private:
-  HeapAllocated<EventProxy<Player>> SERIAL(eventProxy);
-  friend EventProxy<Player>;
-  void onEvent(const GameEvent&);
+  virtual void onEvent(const GameEvent&) override;
 
   void considerAdventurerMusic();
   void extendedAttackAction(UniqueEntity<Creature>::Id);

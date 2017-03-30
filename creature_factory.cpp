@@ -42,7 +42,6 @@
 #include "attack_type.h"
 #include "attack_level.h"
 #include "attack.h"
-#include "event_proxy.h"
 #include "spell_map.h"
 #include "item_type.h"
 #include "item.h"
@@ -389,10 +388,10 @@ class KamikazeController : public Monster {
   SERIALIZATION_CONSTRUCTOR(KamikazeController);
 };
 
-class ShopkeeperController : public Monster {
+class ShopkeeperController : public Monster, public EventListener {
   public:
   ShopkeeperController(WCreature c, Location* area)
-      : Monster(c, MonsterAIFactory::stayInLocation(area)), eventProxy(this), shopArea(area) {
+      : Monster(c, MonsterAIFactory::stayInLocation(area)), shopArea(area) {
   }
 
   virtual void makeMove() override {
@@ -401,7 +400,7 @@ class ShopkeeperController : public Monster {
       return;
     }
     if (firstMove) {
-      eventProxy->subscribeTo(getCreature()->getPosition().getModel());
+      subscribeTo(getCreature()->getPosition().getModel());
       for (Position v : shopArea->getAllSquares()) {
         for (WItem item : v.getItems())
           item->setShopkeeper(getCreature());
@@ -453,7 +452,7 @@ class ShopkeeperController : public Monster {
       debtors.erase(from);
   }
   
-  void onEvent(const GameEvent& event) {
+  virtual void onEvent(const GameEvent& event) override {
     switch (event.getId()) {
       case EventId::ITEMS_APPEARED: {
           auto info = event.get<EventInfo::ItemsAppeared>();
@@ -493,9 +492,12 @@ class ShopkeeperController : public Monster {
     }
   }
 
-  HeapAllocated<EventProxy<ShopkeeperController>> SERIAL(eventProxy);
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int) {
+    ar & SUBCLASS(Monster) & SUBCLASS(EventListener);
+    serializeAll(ar, prevCreatures, debtors, thiefCount, thieves, shopArea, firstMove);
+  }
 
-  SERIALIZE_ALL2(Monster, prevCreatures, debtors, thiefCount, thieves, shopArea, firstMove, eventProxy);
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
 
   private:
@@ -598,7 +600,6 @@ void CreatureFactory::registerTypes(Archive& ar, int version) {
   REGISTER_TYPE(ar, KrakenController);
   REGISTER_TYPE(ar, KamikazeController);
   REGISTER_TYPE(ar, ShopkeeperController);
-  REGISTER_TYPE(ar, EventProxy<ShopkeeperController>);
   REGISTER_TYPE(ar, IllusionController);
 }
 

@@ -151,7 +151,7 @@ static vector<Vec2> cutShape(Rectangle rect) {
 }
 
 
-static void addResource(Collective* col, FurnitureType type, int maxDist) {
+static void addResource(WCollective col, FurnitureType type, int maxDist) {
   Position init = Random.choose(col->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF));
   Rectangle resourceArea(Random.get(4, 7), Random.get(4, 7));
   resourceArea.translate(-resourceArea.middle());
@@ -168,7 +168,7 @@ static void addResource(Collective* col, FurnitureType type, int maxDist) {
   }
 }
 
-static void addResources(Collective* col, int numGold, int numIron, int numStone, int maxDist) {
+static void addResources(WCollective col, int numGold, int numIron, int numStone, int maxDist) {
   for (int i : Range(numGold))
     addResource(col, FurnitureType::GOLD_ORE, maxDist);
   for (int i : Range(numIron))
@@ -201,7 +201,7 @@ static vector<SpellLearningInfo> spellLearning {
     { SpellId::METEOR_SHOWER, TechId::SPELLS_MAS},
 };
 
-void Technology::onAcquired(TechId id, Collective* col) {
+void Technology::onAcquired(TechId id, WCollective col) {
   switch (id) {
     case TechId::GEOLOGY1: addResources(col, 0, 2, 1, 25); break;
     case TechId::GEOLOGY2: addResources(col, 1, 3, 2, 35); break;
@@ -230,7 +230,7 @@ vector<Spell*> Technology::getAllKeeperSpells() {
   return ret;
 }
 
-vector<Spell*> Technology::getAvailableSpells(const Collective* col) {
+vector<Spell*> Technology::getAvailableSpells(WConstCollective col) {
   vector<Spell*> ret;
   for (auto elem : spellLearning)
     if (col->hasTech(elem.techId))

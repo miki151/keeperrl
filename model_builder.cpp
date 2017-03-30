@@ -22,7 +22,6 @@
 #include "villain_type.h"
 #include "enemy_factory.h"
 #include "location.h"
-#include "event_proxy.h"
 #include "view_object.h"
 #include "item.h"
 #include "furniture.h"
@@ -474,7 +473,7 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
     minT << "\nMaxT: " << maxT << "\nAvgT: " << sumT / numSuccess << std::endl;
 }
 
-Collective* ModelBuilder::spawnKeeper(Model* m, PCreature keeper) {
+WCollective ModelBuilder::spawnKeeper(Model* m, PCreature keeper) {
   Level* level = m->getTopLevel();
   WCreature keeperRef = keeper.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
@@ -484,7 +483,7 @@ Collective* ModelBuilder::spawnKeeper(Model* m, PCreature keeper) {
       .setLevel(level)
       .addCreature(keeperRef)
       .build());
-  Collective* playerCollective = m->collectives.back().get();
+  WCollective playerCollective = m->collectives.back().get();
   playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, level)));
   playerCollective->setVillainType(VillainType::PLAYER);
   return playerCollective;

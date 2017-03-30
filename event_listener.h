@@ -71,14 +71,14 @@ struct FurnitureEvent {
 
 }
 
-class GameEvent : public EnumVariant<EventId, TYPES(WCreature, Position, Technology*, Collective*,
+class GameEvent : public EnumVariant<EventId, TYPES(WCreature, Position, Technology*, WCollective,
     EventInfo::CreatureEvent, EventInfo::Attacked, EventInfo::ItemsHandled, EventInfo::ItemsAppeared,
     EventInfo::ItemsThrown, EventInfo::TrapDisarmed, EventInfo::FurnitureEvent),
     ASSIGN(WCreature, EventId::MOVED),
     ASSIGN(Position, EventId::EXPLOSION, EventId::ALARM, EventId::TRAP_TRIGGERED,
         EventId::POSITION_DISCOVERED),
     ASSIGN(Technology*, EventId::TECHBOOK_READ),
-    ASSIGN(Collective*, EventId::CONQUERED_ENEMY),
+    ASSIGN(WCollective, EventId::CONQUERED_ENEMY),
     ASSIGN(EventInfo::CreatureEvent, EventId::CREATURE_EVENT),
     ASSIGN(EventInfo::Attacked, EventId::KILLED, EventId::TORTURED, EventId::SURRENDERED),
     ASSIGN(EventInfo::ItemsHandled, EventId::PICKED_UP, EventId::DROPPED, EventId::EQUIPED),

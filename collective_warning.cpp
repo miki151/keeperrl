@@ -19,7 +19,7 @@ void CollectiveWarnings::setWarning(Warning w, bool state) {
   warnings.set(w, state);
 }
 
-void CollectiveWarnings::considerWarnings(Collective* col) {
+void CollectiveWarnings::considerWarnings(WCollective col) {
   setWarning(Warning::MANA, col->numResource(CollectiveResourceId::MANA) < 100);
   setWarning(Warning::DIGGING, col->getTerritory().isEmpty());
   setWarning(Warning::LIBRARY, !col->getTerritory().isEmpty() &&
@@ -45,7 +45,7 @@ bool CollectiveWarnings::isWarning(Warning w) const {
   return warnings.contains(w);
 }
 
-void CollectiveWarnings::considerWeaponWarning(Collective* col) {
+void CollectiveWarnings::considerWeaponWarning(WCollective col) {
   int numWeapons = col->getNumItems(ItemIndex::WEAPON);
   PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
   int numNeededWeapons = 0;
@@ -55,13 +55,13 @@ void CollectiveWarnings::considerWeaponWarning(Collective* col) {
   setWarning(Warning::NO_WEAPONS, numNeededWeapons > numWeapons);
 }
 
-void CollectiveWarnings::considerMoraleWarning(Collective* col) {
+void CollectiveWarnings::considerMoraleWarning(WCollective col) {
   vector<WCreature> minions = col->getCreatures(MinionTrait::FIGHTER);
   setWarning(Warning::LOW_MORALE,
       filter(minions, [] (WConstCreature c) { return c->getMorale() < -0.2; }).size() > minions.size() / 2);
 }
 
-void CollectiveWarnings::considerTorchesWarning(Collective* col) {
+void CollectiveWarnings::considerTorchesWarning(WCollective col) {
   double numLit = 0;
   const double unlitPen = 4;
   for (auto type : col->getConfig().getRoomsNeedingLight())
@@ -73,7 +73,7 @@ void CollectiveWarnings::considerTorchesWarning(Collective* col) {
   setWarning(Warning::MORE_LIGHTS, numLit < 0);
 }
 
-void CollectiveWarnings::considerTrainingRoomWarning(Collective* col) {
+void CollectiveWarnings::considerTrainingRoomWarning(WCollective col) {
   optional<FurnitureType> firstDummy;
   for (auto dummyType : MinionTasks::getAllFurniture(MinionTask::TRAIN))
     if (!firstDummy ||

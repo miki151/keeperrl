@@ -179,7 +179,7 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
         ret *= prob;
       },
       [&](const RecruitmentInfo& info, double prob) {
-        Collective* col = info.findEnemy(collective->getGame());
+        WCollective col = info.findEnemy(collective->getGame());
         if (!col || !collective->isKnownVillainLocation(col) ||
             info.getAvailableRecruits(collective->getGame(), getImmigrants()[group.immigrantIndex].getId(0)).empty())
           ret *= prob;
@@ -238,7 +238,7 @@ double Immigration::getImmigrantChance(const Group& group) const {
     return info.getFrequency() * getRequirementMultiplier(group);
 }
 
-Immigration::Immigration(Collective* c)
+Immigration::Immigration(WCollective c)
     : collective(c), candidateTimeout(c->getConfig().getImmigrantTimeout()) {
 }
 

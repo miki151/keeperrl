@@ -30,9 +30,9 @@ class Position;
 
 class MinionTasks {
   public:
-  static PTask generate(Collective*, WCreature, MinionTask);
+  static PTask generate(WCollective, WCreature, MinionTask);
   static optional<double> getDuration(WConstCreature, MinionTask);
-  static vector<Position> getAllPositions(const Collective*, WConstCreature, MinionTask, bool onlyActive = false);
+  static vector<Position> getAllPositions(WConstCollective, WConstCreature, MinionTask, bool onlyActive = false);
   static const vector<FurnitureType>& getAllFurniture(MinionTask);
   static optional<MinionTask> getTaskFor(WConstCreature, FurnitureType);
 

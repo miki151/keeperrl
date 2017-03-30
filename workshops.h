@@ -18,7 +18,7 @@ class Workshops {
     void queue(int index, int count = 1);
     void unqueue(int index);
     void changeNumber(int index, int number);
-    void scheduleItems(Collective*);
+    void scheduleItems(WCollective);
     bool isIdle() const;
 
     SERIALIZATION_DECL(Type);
@@ -37,7 +37,7 @@ class Workshops {
   Type& get(WorkshopType);
   const Type& get(WorkshopType) const;
   int getDebt(CollectiveResourceId) const;
-  void scheduleItems(Collective*);
+  void scheduleItems(WCollective);
 
   private:
   EnumMap<WorkshopType, Type> SERIAL(types);

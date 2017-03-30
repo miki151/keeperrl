@@ -18,7 +18,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> e) : e
     attackTime.push_back(random.get(enemies[i].attackTime));
 }
 
-PTask ExternalEnemies::getAttackTask(Collective* enemy, AttackBehaviour behaviour) {
+PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviour) {
   switch (behaviour.getId()) {
     case AttackBehaviourId::KILL_LEADER:
       return Task::attackLeader(enemy);
@@ -33,7 +33,7 @@ PTask ExternalEnemies::getAttackTask(Collective* enemy, AttackBehaviour behaviou
 }
 
 void ExternalEnemies::update(Level* level, double localTime) {
-  Collective* target = level->getModel()->getGame()->getPlayerCollective();
+  WCollective target = level->getModel()->getGame()->getPlayerCollective();
   CHECK(!!target);
   for (int i : All(enemies))
     if (attackTime[i] && *attackTime[i] <= localTime) {

@@ -777,7 +777,7 @@ class Thief : public Behaviour {
 
 class ByCollective : public Behaviour {
   public:
-  ByCollective(WCreature c, Collective* col) : Behaviour(c), collective(col) {}
+  ByCollective(WCreature c, WCollective col) : Behaviour(c), collective(col) {}
 
   virtual MoveInfo getMove() override {
     return collective->getMove(creature);
@@ -787,7 +787,7 @@ class ByCollective : public Behaviour {
   SERIALIZE_ALL2(Behaviour, collective);
 
   private:
-  Collective* SERIAL(collective);
+  WCollective SERIAL(collective);
 };
 
 class ChooseRandom : public Behaviour {
@@ -948,7 +948,7 @@ class SplashItems : public TaskCallback {
       return nullptr;
     Vec2 target = Random.choose(targets);
     removeElement(targets, target);
-    return Task::bringItem(this, Position(pos, level), it, {Position(target, level)}, 100);
+    return Task::bringItem(getThis(), Position(pos, level), it, {Position(target, level)}, 100);
   }
 
   void setInitialized(const FilePath& splashPath) {
@@ -1135,7 +1135,7 @@ MonsterAIFactory MonsterAIFactory::monster() {
   return stayInLocation(nullptr);
 }
 
-MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
+MonsterAIFactory MonsterAIFactory::collective(WCollective col) {
   return MonsterAIFactory([=](WCreature c) {
       return new MonsterAI(c, {
         new AvoidFire(c),
