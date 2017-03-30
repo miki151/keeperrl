@@ -68,15 +68,7 @@ optional<T> fromStringSafe(const string& s);
 #define DEF_OWNER_PTR(T) class T;\
   typedef OwnerPointer<T> P##T; \
   typedef WeakPointer<T> W##T; \
-  typedef WeakPointer<const T> WConst##T; \
-  template <typename... Args> \
-  OwnerPointer<T> make##T(Args... a) { \
-    return makeOwner<T>(a...); \
-  } \
-  template <typename Subclass, typename... Args> \
-  OwnerPointer<T> make##T(Args... a) { \
-    return makeOwner<T, Subclass>(a...); \
-  }
+  typedef WeakPointer<const T> WConst##T;
 
 DEF_OWNER_PTR(Item);
 DEF_UNIQUE_PTR(LevelMaker);
@@ -99,6 +91,7 @@ DEF_UNIQUE_PTR(Model);
 DEF_UNIQUE_PTR(Tribe);
 DEF_UNIQUE_PTR(Game);
 DEF_SHARED_PTR(Tutorial);
+DEF_OWNER_PTR(CreatureVision);
 
 template <typename T>
 T lambdaConstruct(function<void(T&)> fun) {

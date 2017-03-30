@@ -222,10 +222,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   private:
   virtual void onEvent(const GameEvent&) override;
 
-  WCollective getThis();
-
-  WConstCollective getThis() const;
-
   void addCreatureInTerritory(PCreature, EnumSet<MinionTrait>);
   void removeCreature(WCreature);
   void onMinionKilled(WCreature victim, WCreature killer);

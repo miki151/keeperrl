@@ -151,7 +151,7 @@ class Telepathy : public CreatureVision {
 
 class ItemOfCreatureVision : public Item {
   public:
-  ItemOfCreatureVision(const ItemAttributes& attr, CreatureVision* v) : Item(attr), vision(v) {}
+  ItemOfCreatureVision(const ItemAttributes& attr, PCreatureVision&& v) : Item(attr), vision(std::move(v)) {}
 
   virtual void onEquipSpecial(WCreature c) {
     c->addCreatureVision(vision.get());
@@ -165,7 +165,7 @@ class ItemOfCreatureVision : public Item {
   SERIALIZATION_CONSTRUCTOR(ItemOfCreatureVision);
 
   private:
-  unique_ptr<CreatureVision> SERIAL(vision);
+  PCreatureVision SERIAL(vision);
 };
 
 class Corpse : public Item {
@@ -236,7 +236,7 @@ class Corpse : public Item {
 PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemClass itemClass,
     CorpseInfo corpseInfo) {
   const double rotTime = 300;
-  return makeItem<Corpse>(
+  return makeOwner<Corpse>(
         ViewObject(ViewId::BONE, ViewLayer::ITEM, rottenName),
         ITATTR(
           i.viewId = ViewId::BODY_PART;
@@ -677,7 +677,7 @@ ViewId getTrapViewId(TrapType t) {
 }
 
 PItem getTrap(const ItemAttributes& attr, TrapInfo info) {
-  return makeItem<TrapItem>(ViewObject(getTrapViewId(info.trapType), ViewLayer::LARGE_ITEM,
+  return makeOwner<TrapItem>(ViewObject(getTrapViewId(info.trapType), ViewLayer::LARGE_ITEM,
           Effect::getName(info.effectType) + " trap"),
         attr, info.effectType, info.alwaysVisible);
 }
@@ -768,17 +768,17 @@ ItemFactory::~ItemFactory() {}
 
 PItem ItemFactory::fromId(ItemType item) {
   switch (item.getId()) {
-    case ItemId::WARNING_AMULET: return makeItem<AmuletOfWarning>(getAttributes(item), 5);
-    case ItemId::BOW: return makeItem<RangedWeapon>(getAttributes(item));
-    case ItemId::TELEPATHY_HELM: return makeItem<ItemOfCreatureVision>(getAttributes(item), new Telepathy());
-    case ItemId::HEALING_AMULET: return makeItem<AmuletOfHealing>(getAttributes(item));
-    case ItemId::FIRE_SCROLL: return makeItem<FireScroll>(getAttributes(item));
-    case ItemId::RANDOM_TECH_BOOK: return makeItem<TechBook>(getAttributes(item), none);
-    case ItemId::TECH_BOOK: return makeItem<TechBook>(getAttributes(item), item.get<TechId>());
-    case ItemId::POTION: return makeItem<Potion>(getAttributes(item));
+    case ItemId::WARNING_AMULET: return makeOwner<AmuletOfWarning>(getAttributes(item), 5);
+    case ItemId::BOW: return makeOwner<RangedWeapon>(getAttributes(item));
+    case ItemId::TELEPATHY_HELM: return makeOwner<ItemOfCreatureVision>(getAttributes(item), makeOwner<Telepathy>());
+    case ItemId::HEALING_AMULET: return makeOwner<AmuletOfHealing>(getAttributes(item));
+    case ItemId::FIRE_SCROLL: return makeOwner<FireScroll>(getAttributes(item));
+    case ItemId::RANDOM_TECH_BOOK: return makeOwner<TechBook>(getAttributes(item), none);
+    case ItemId::TECH_BOOK: return makeOwner<TechBook>(getAttributes(item), item.get<TechId>());
+    case ItemId::POTION: return makeOwner<Potion>(getAttributes(item));
     case ItemId::TRAP_ITEM:
         return getTrap(getAttributes(item), item.get<TrapInfo>());
-    default: return makeItem(getAttributes(item));
+    default: return makeOwner<Item>(getAttributes(item));
   }
 }
 

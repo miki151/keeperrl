@@ -235,8 +235,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void setController(SController);
   void popController();
 
-  void addCreatureVision(CreatureVision*);
-  void removeCreatureVision(CreatureVision*);
+  void addCreatureVision(WCreatureVision);
+  void removeCreatureVision(WCreatureVision);
   CreatureAction castSpell(Spell*) const;
   CreatureAction castSpell(Spell*, Vec2) const;
   double getSpellDelay(Spell*) const;
@@ -296,7 +296,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EntitySet<Creature> SERIAL(privateEnemies);
   optional<Creature::Id> SERIAL(holding);
   vector<SController> SERIAL(controllerStack);
-  vector<CreatureVision*> SERIAL(creatureVisions);
+  vector<WCreatureVision> SERIAL(creatureVisions);
   EntitySet<Creature> SERIAL(kills);
   mutable double SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;

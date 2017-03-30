@@ -164,11 +164,11 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
   });
 }
 
-void Creature::addCreatureVision(CreatureVision* creatureVision) {
+void Creature::addCreatureVision(WCreatureVision creatureVision) {
   creatureVisions.push_back(creatureVision);
 }
 
-void Creature::removeCreatureVision(CreatureVision* vision) {
+void Creature::removeCreatureVision(WCreatureVision vision) {
   removeElement(creatureVisions, vision);
 }
 
@@ -176,7 +176,7 @@ void Creature::pushController(SController ctrl) {
   if (ctrl->isPlayer()) {
     modViewObject().setModifier(ViewObject::Modifier::PLAYER);
     if (Game* g = getGame())
-      g->setPlayer(this);
+      g->setPlayer(getThis());
   }
   controllerStack.push_back(std::move(ctrl));
 }
@@ -1487,8 +1487,8 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
 bool Creature::canSee(WConstCreature c) const {
   if (!c->getPosition().isSameLevel(position))
     return false;
-  for (CreatureVision* v : creatureVisions)
-    if (v->canSee(getThis(), c))
+  for (auto vision : creatureVisions)
+    if (vision->canSee(getThis(), c))
       return true;
   return !isBlind() && (!c->isAffected(LastingEffect::INVISIBLE) || isFriend(c)) &&
          (!c->isHidden() || c->knowsHiding(getThis())) && c->getPosition().isVisibleBy(getThis());
