@@ -777,15 +777,15 @@ SGuiElem GuiFactory::stack(vector<SGuiElem> elems) {
 }
 
 SGuiElem GuiFactory::stack(SGuiElem g1, SGuiElem g2) {
-  return stack(makeVec<SGuiElem>(std::move(g1), std::move(g2)));
+  return stack(makeVec(std::move(g1), std::move(g2)));
 }
 
 SGuiElem GuiFactory::stack(SGuiElem g1, SGuiElem g2, SGuiElem g3) {
-  return stack(makeVec<SGuiElem>(std::move(g1), std::move(g2), std::move(g3)));
+  return stack(makeVec(std::move(g1), std::move(g2), std::move(g3)));
 }
 
 SGuiElem GuiFactory::stack(SGuiElem g1, SGuiElem g2, SGuiElem g3, SGuiElem g4) {
-  return stack(makeVec<SGuiElem>(std::move(g1), std::move(g2), std::move(g3), std::move(g4)));
+  return stack(makeVec(std::move(g1), std::move(g2), std::move(g3), std::move(g4)));
 }
 
 class External : public GuiElem {
@@ -846,7 +846,7 @@ SGuiElem GuiFactory::external(GuiElem* elem) {
 class Focusable : public GuiStack {
   public:
   Focusable(SGuiElem content, vector<SDL_Keysym> focus, vector<SDL_Keysym> defocus, bool& foc) :
-      GuiStack(makeVec<SGuiElem>(std::move(content))), focusEvent(focus), defocusEvent(defocus), focused(foc) {}
+      GuiStack(makeVec(std::move(content))), focusEvent(focus), defocusEvent(defocus), focused(foc) {}
 
   virtual bool onLeftClick(Vec2 pos) override {
     if (focused && !pos.inRectangle(getBounds())) {
@@ -919,7 +919,7 @@ SGuiElem GuiFactory::renderInBounds(SGuiElem elem) {
 class AlignmentGui : public GuiLayout {
   public:
   AlignmentGui(SGuiElem e, GuiFactory::Alignment align, optional<Vec2> sz)
-      : GuiLayout(makeVec<SGuiElem>(std::move(e))), alignment(align), size(sz) {}
+      : GuiLayout(makeVec(std::move(e))), alignment(align), size(sz) {}
 
   int getWidth() {
     if (size)
@@ -1319,7 +1319,7 @@ SGuiElem GuiFactory::horizontalListFit(vector<SGuiElem> e, double spacing) {
 
 class VerticalAspect : public GuiLayout {
   public:
-  VerticalAspect(SGuiElem e, double r) : GuiLayout(makeVec<SGuiElem>(std::move(e))), ratio(r) {}
+  VerticalAspect(SGuiElem e, double r) : GuiLayout(makeVec(std::move(e))), ratio(r) {}
 
   virtual Rectangle getElemBounds(int num) override {
     CHECK(num == 0);
@@ -1338,7 +1338,7 @@ SGuiElem GuiFactory::verticalAspect(SGuiElem elem, double ratio) {
 
 class CenterHoriz : public GuiLayout {
   public:
-  CenterHoriz(SGuiElem elem, optional<int> w) : GuiLayout(makeVec<SGuiElem>(std::move(elem))),
+  CenterHoriz(SGuiElem elem, optional<int> w) : GuiLayout(makeVec(std::move(elem))),
       width(w) {}
 
   optional<int> getPreferredHeight() override {
@@ -1366,7 +1366,7 @@ SGuiElem GuiFactory::centerHoriz(SGuiElem e, optional<int> width) {
 
 class CenterVert : public GuiLayout {
   public:
-  CenterVert(SGuiElem elem, optional<int> h) : GuiLayout(makeVec<SGuiElem>(std::move(elem))),
+  CenterVert(SGuiElem elem, optional<int> h) : GuiLayout(makeVec(std::move(elem))),
       height(h) {}
 
   optional<int> getPreferredWidth() override {
@@ -1395,7 +1395,7 @@ SGuiElem GuiFactory::centerVert(SGuiElem e, optional<int> height) {
 class MarginGui : public GuiLayout {
   public:
   MarginGui(SGuiElem top, SGuiElem rest, int _width, GuiFactory::MarginType t)
-    : GuiLayout(makeVec<SGuiElem>(std::move(top), std::move(rest))), width(_width), type(t) {}
+    : GuiLayout(makeVec(std::move(top), std::move(rest))), width(_width), type(t) {}
 
   virtual Rectangle getElemBounds(int num) override {
     CHECK(num == 0 || num == 1);
@@ -1470,7 +1470,7 @@ SGuiElem GuiFactory::maybeMargin(SGuiElem top, SGuiElem rest, int width, MarginT
 
 class FullScreen : public GuiLayout {
   public:
-  FullScreen(SGuiElem content, Renderer& r) : GuiLayout(makeVec<SGuiElem>(std::move(content))), renderer(r) {
+  FullScreen(SGuiElem content, Renderer& r) : GuiLayout(makeVec(std::move(content))), renderer(r) {
   }
 
   virtual void render(Renderer& r) override {
@@ -1492,7 +1492,7 @@ SGuiElem GuiFactory::fullScreen(SGuiElem content) {
 class MarginFit : public GuiLayout {
   public:
   MarginFit(SGuiElem top, SGuiElem rest, double _width, GuiFactory::MarginType t)
-    : GuiLayout(makeVec<SGuiElem>(std::move(top), std::move(rest))), width(_width), type(t) {}
+    : GuiLayout(makeVec(std::move(top), std::move(rest))), width(_width), type(t) {}
 
   virtual Rectangle getElemBounds(int num) override {
     CHECK(num == 0 || num == 1);
@@ -1543,7 +1543,7 @@ SGuiElem GuiFactory::progressBar(Color c, double state) {
 class Margins : public GuiLayout {
   public:
   Margins(SGuiElem content, int l, int t, int r, int b)
-      : GuiLayout(makeVec<SGuiElem>(std::move(content))), left(l), top(t), right(r), bottom(b) {}
+      : GuiLayout(makeVec(std::move(content))), left(l), top(t), right(r), bottom(b) {}
 
   virtual Rectangle getElemBounds(int num) override {
     return Rectangle(getBounds().left() + left, getBounds().top() + top,
@@ -1591,36 +1591,13 @@ SGuiElem GuiFactory::topMargin(int size, SGuiElem content) {
   return SGuiElem(new Margins(std::move(content), 0, size, 0, 0));
 }
 
-/*<<<<<<< HEAD
-class SetHeight : public GuiLayout {
-  public:
-  SetHeight(PGuiElem content, int h)
-      : GuiLayout(makeVec<PGuiElem>(std::move(content))), height(h) {}
-
-  virtual Rectangle getElemBounds(int num) override {
-    return Rectangle(getBounds().left(), getBounds().top(),
-        getBounds().right(), getBounds().top() + height);
-  }
-
-  virtual optional<int> getPreferredHeight() override {
-    return height;
-  }
-
-  private:
-  int height;
-};
-
-PGuiElem GuiFactory::setHeight(int height, PGuiElem content) {
-  return PGuiElem(new SetHeight(std::move(content), height));
-=======*/
 SGuiElem GuiFactory::bottomMargin(int size, SGuiElem content) {
   return SGuiElem(new Margins(std::move(content), 0, 0, 0, size));
-//>>>>>>> master
 }
 
 class Invisible : public GuiStack {
   public:
-  Invisible(SGuiElem content) : GuiStack(makeVec<SGuiElem>(std::move(content))) {}
+  Invisible(SGuiElem content) : GuiStack(makeVec(std::move(content))) {}
 
   virtual bool isVisible(int num) {
     return false;
@@ -1777,7 +1754,7 @@ SGuiElem GuiFactory::dragListener(function<void(DragContent)> fun) {
 class TranslateGui : public GuiLayout {
   public:
   TranslateGui(SGuiElem e, Vec2 p, Vec2 s)
-      : GuiLayout(makeVec<SGuiElem>(std::move(e))), pos(p), size(s) {
+      : GuiLayout(makeVec(std::move(e))), pos(p), size(s) {
   }
 
   virtual Rectangle getElemBounds(int num) override {
@@ -1795,7 +1772,7 @@ SGuiElem GuiFactory::translate(SGuiElem e, Vec2 pos, Vec2 size) {
 
 class TranslateGui2 : public GuiLayout {
   public:
-  TranslateGui2(SGuiElem e, function<Vec2()> v) : GuiLayout(makeVec<SGuiElem>(std::move(e))), vec(v) {
+  TranslateGui2(SGuiElem e, function<Vec2()> v) : GuiLayout(makeVec(std::move(e))), vec(v) {
   }
 
   virtual Rectangle getElemBounds(int num) override {
@@ -1899,7 +1876,7 @@ SGuiElem GuiFactory::onMouseRightButtonHeld(SGuiElem elem) {
 class MouseHighlightBase : public GuiStack {
   public:
   MouseHighlightBase(SGuiElem h, int ind, int* highlight)
-    : GuiStack(makeVec<SGuiElem>(std::move(h))), myIndex(ind), highlighted(highlight) {}
+    : GuiStack(makeVec(std::move(h))), myIndex(ind), highlighted(highlight) {}
 
   virtual void render(Renderer& r) override {
     if (*highlighted == myIndex)
@@ -1953,7 +1930,7 @@ class MouseHighlightClick : public MouseHighlightBase {
 
 class MouseHighlight2 : public GuiStack {
   public:
-  MouseHighlight2(SGuiElem h) : GuiStack(makeVec<SGuiElem>(std::move(h))) {}
+  MouseHighlight2(SGuiElem h) : GuiStack(makeVec(std::move(h))) {}
 
   virtual void render(Renderer& r) override {
     if (r.getMousePos().inRectangle(getBounds()))
@@ -2361,7 +2338,7 @@ Texture& GuiFactory::getIconTex(IconId id) {
 }
 
 SGuiElem GuiFactory::getScrollbar() {
-  return stack(makeVec<SGuiElem>(
+  return stack(makeVec(
         sprite(get(TexId::SCROLLBAR), GuiFactory::Alignment::VERTICAL_CENTER),
         sprite(get(TexId::SCROLL_UP), GuiFactory::Alignment::TOP_RIGHT),
         sprite(get(TexId::SCROLL_DOWN), GuiFactory::Alignment::BOTTOM_RIGHT)));
@@ -2377,7 +2354,7 @@ Vec2 GuiFactory::getScrollButtonSize() {
 
 class Conditional : public GuiStack {
   public:
-  Conditional(SGuiElem e, function<bool(GuiElem*)> f) : GuiStack(makeVec<SGuiElem>(std::move(e))), cond(f) {}
+  Conditional(SGuiElem e, function<bool(GuiElem*)> f) : GuiStack(makeVec(std::move(e))), cond(f) {}
 
   virtual bool isVisible(int num) override {
     return cond(this);
@@ -2464,7 +2441,7 @@ SGuiElem GuiFactory::mainMenuHighlight() {
 }
 
 SGuiElem GuiFactory::miniBorder() {
-  return stack(makeVec<SGuiElem>(
+  return stack(makeVec(
         sprite(get(TexId::HORI_BAR_MINI), Alignment::BOTTOM, true, false),
         sprite(get(TexId::HORI_BAR_MINI), Alignment::TOP, false, false),
         sprite(get(TexId::VERT_BAR_MINI), Alignment::RIGHT, false, true),
@@ -2476,7 +2453,7 @@ SGuiElem GuiFactory::miniBorder() {
 }
 
 SGuiElem GuiFactory::miniBorder2() {
-  return stack(makeVec<SGuiElem>(
+  return stack(makeVec(
         sprite(get(TexId::HORI_BAR_MINI2), Alignment::BOTTOM, false, false),
         sprite(get(TexId::HORI_BAR_MINI2), Alignment::TOP, true, false),
         sprite(get(TexId::VERT_BAR_MINI2), Alignment::RIGHT, false, false),
@@ -2493,7 +2470,7 @@ SGuiElem GuiFactory::miniWindow2(SGuiElem content, function<void()> onExitButton
 }
 
 SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton, bool captureExitClick) {
-  auto ret = makeVec<SGuiElem>(
+  auto ret = makeVec(
         stopMouseMovement(),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
@@ -2505,7 +2482,7 @@ SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton,
 }
 
 SGuiElem GuiFactory::miniWindow() {
-  return stack(makeVec<SGuiElem>(
+  return stack(makeVec(
         stopMouseMovement(),
         rectangle(colors[ColorId::BLACK]),
         background(background1),
@@ -2513,7 +2490,7 @@ SGuiElem GuiFactory::miniWindow() {
 }
 
 SGuiElem GuiFactory::window(SGuiElem content, function<void()> onExitButton) {
-  return stack(makeVec<SGuiElem>(
+  return stack(makeVec(
         stopMouseMovement(),
         alignment(Alignment::TOP_RIGHT, button(onExitButton, getKey(SDL::SDLK_ESCAPE), true), Vec2(38, 38)),
         rectangle(colors[ColorId::BLACK]),
@@ -2532,7 +2509,7 @@ SGuiElem GuiFactory::window(SGuiElem content, function<void()> onExitButton) {
 
 SGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight, optional<int> topBarHeight) {
   return margin(
-      stack(makeVec<SGuiElem>(
+      stack(makeVec(
           background(background1),
           sprite(get(TexId::HORI_BAR), Alignment::TOP),
           sprite(get(TexId::HORI_BAR), Alignment::BOTTOM, true),
@@ -2544,7 +2521,7 @@ SGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight, opti
           sprite(get(TexId::CORNER_TOP_RIGHT), Alignment::TOP_LEFT, false, true),
           sprite(get(TexId::CORNER_BOTTOM_RIGHT), Alignment::BOTTOM_LEFT, false, true)
       )),
-      stack(makeVec<SGuiElem>(
+      stack(makeVec(
           margin(background(background1), empty(), bottomBarHeight, BOTTOM),
           sprite(get(TexId::HORI_LINE), Alignment::BOTTOM),
  //         sprite(get(TexId::HORI_MIDDLE), Alignment::BOTTOM_CENTER),

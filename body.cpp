@@ -403,7 +403,7 @@ vector<PItem> Body::getCorpseItem(const string& name, Creature::Id id) {
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
-      return makeVec<PItem>(
+      return makeVec(
           ItemFactory::corpse(name + " corpse", name + " skeleton", weight,
             minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
             {id, true, numBodyParts(BodyPart::HEAD) > 0, false}));

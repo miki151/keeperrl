@@ -774,11 +774,11 @@ class Chain : public Task {
 }
 
 PTask Task::chain(PTask t1, PTask t2) {
-  return PTask(new Chain(makeVec<PTask>(std::move(t1), std::move(t2))));
+  return PTask(new Chain(makeVec(std::move(t1), std::move(t2))));
 }
 
 PTask Task::chain(PTask t1, PTask t2, PTask t3) {
-  return PTask(new Chain(makeVec<PTask>(std::move(t1), std::move(t2), std::move(t3))));
+  return PTask(new Chain(makeVec(std::move(t1), std::move(t2), std::move(t3))));
 }
 
 PTask Task::chain(vector<PTask> v) {
@@ -897,7 +897,7 @@ class CampAndSpawn : public Task {
     updateTeams();
     if (defenseTeam.size() < defenseSize && Random.roll(5)) {
       for (WCreature summon : Effect::summonCreatures(c, 4,
-          makeVec<PCreature>(spawns.random(MonsterAIFactory::summoned(c, 100000)))))
+          makeVec(spawns.random(MonsterAIFactory::summoned(c, 100000)))))
         defenseTeam.push_back(summon);
     }
     if (!contains(campPos, c->getPosition()))

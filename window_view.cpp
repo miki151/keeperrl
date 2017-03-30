@@ -936,7 +936,7 @@ SGuiElem WindowView::drawGameChoices(optional<PlayerRoleChoice>& choice, optiona
   const Vec2 hintSize(500, 100);
   for (auto& elem : gameChoices)
     choiceElems.push_back(
-        gui.stack(makeVec<SGuiElem>(
+        gui.stack(makeVec(
           gui.button([&] { choice = PlayerRoleChoice(elem.type);}),
           gui.tooltip2(gui.preferredSize(hintSize, gui.miniWindow(gui.margins(
               gui.labelMultiLine(elem.description, guiBuilder.getStandardLineHeight()), 20))),
@@ -1129,7 +1129,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   ScrollPosition localScrollPos(index >= 0 ? getScrollPos(optionIndexes[index]) : 0);
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
-  SGuiElem dismissBut = gui.margins(gui.stack(makeVec<SGuiElem>(
+  SGuiElem dismissBut = gui.margins(gui.stack(makeVec(
         gui.button([&](){ choice = -100; }),
         gui.mouseHighlight2(gui.mainMenuHighlight()),
         gui.centeredLabel(Renderer::HOR, "Dismiss"))), 0, 5, 0, 0);

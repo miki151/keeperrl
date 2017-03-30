@@ -203,7 +203,7 @@ void Square::onEnter(WCreature c) {
 }
 
 void Square::dropItem(Position pos, PItem item) {
-  dropItems(pos, makeVec<PItem>(std::move(item)));
+  dropItems(pos, makeVec(std::move(item)));
 }
 
 void Square::dropItemsLevelGen(vector<PItem> items) {

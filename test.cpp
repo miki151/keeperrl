@@ -591,16 +591,16 @@ class Test {
     MinionEquipment equipment;
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get(), sword3.get()});
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
-    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec<WItem>(sword1.get()));
+    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(sword1.get()));
     equipment.autoAssign(human2.get(), {sword1.get(), sword2.get()});
     CHECK(equipment.isOwner(sword2.get(), human2.get()));
-    CHECKEQ(equipment.getItemsOwnedBy(human2.get()), makeVec<WItem>(sword2.get()));
+    CHECKEQ(equipment.getItemsOwnedBy(human2.get()), makeVec(sword2.get()));
     equipment.autoAssign(human3.get(), {sword1.get(), sword2.get()});
     CHECK(equipment.getItemsOwnedBy(human3.get()).size() == 0);
     equipment.updateOwners({human2.get()});
     equipment.autoAssign(human2.get(), {sword3.get(), sword1.get(), sword2.get()});
     CHECK(equipment.isOwner(sword1.get(), human2.get()));
-    CHECKEQ(equipment.getItemsOwnedBy(human2.get()), makeVec<WItem>(sword1.get()));
+    CHECKEQ(equipment.getItemsOwnedBy(human2.get()), makeVec(sword1.get()));
     CHECK(!equipment.getOwner(sword2.get()));
     vector<PItem> arrows = ItemFactory::fromId(ItemId::ARROW, 100);
     PItem bow = ItemFactory::fromId(ItemId::BOW);
@@ -609,7 +609,7 @@ class Test {
     equipment.autoAssign(human1.get(), getWeakPointers(arrows));
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 0);
     equipment.autoAssign(human1.get(), {bow.get()});
-    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec<WItem>(bow.get()));
+    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(bow.get()));
     equipment.autoAssign(human1.get(), getWeakPointers(arrows));
     equipment.updateOwners({human1.get()});
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 41);
@@ -633,21 +633,21 @@ class Test {
     MinionEquipment equipment;
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get()});
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
-    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec<WItem>(sword1.get()));
+    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(sword1.get()));
     equipment.discard(sword1.get());
     equipment.autoAssign(human1.get(), {sword2.get()});
     equipment.setLocked(human1.get(), sword2->getUniqueId(), true);
     CHECK(equipment.isOwner(sword2.get(), human1.get()));
-    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec<WItem>(sword2.get()));
+    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(sword2.get()));
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get()});
     CHECK(!equipment.needsItem(human1.get(), sword1.get()));
     CHECK(equipment.needsItem(human1.get(), sword1.get(), true));
     CHECK(equipment.isOwner(sword2.get(), human1.get()));
-    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec<WItem>(sword2.get()));
+    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(sword2.get()));
     equipment.updateItems({sword1.get()});
     equipment.autoAssign(human1.get(), {sword1.get()});
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
-    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec<WItem>(sword1.get()));
+    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(sword1.get()));
   }
 
   void testMinionEquipment123() {
@@ -701,7 +701,7 @@ class Test {
       if (*elem % 3 == 1)
         elem.markToErase();
     sort(v.begin(), v.end());
-    CHECKEQ(v, makeVec<int>(2, 3, 5, 6, 8, 9, 11, 12));
+    CHECKEQ(v, makeVec(2, 3, 5, 6, 8, 9, 11, 12));
   }
 
   void testContainerRangeConst() {
@@ -711,7 +711,7 @@ class Test {
     for (auto elem : Iter(v))
       if (*elem % 3 == 1)
         o.push_back(*elem);
-    CHECKEQ(o, makeVec<int>(1, 4, 7, 10));
+    CHECKEQ(o, makeVec(1, 4, 7, 10));
   }
 
   void testContainerRangeMapConst() {
