@@ -7,9 +7,6 @@ template <typename T>
 class WeakPointer;
 
 template <typename T>
-class OwnedObject;
-
-template <typename T>
 class OwnerPointer {
   public:
 
@@ -118,6 +115,14 @@ class WeakPointer {
     return !(*this == o);
   }
 
+  bool operator == (const T* o) const {
+    return get() == o;
+  }
+
+  bool operator != (const T* o) const {
+    return !(*this == o);
+  }
+
   bool operator == (std::nullptr_t) const {
     return !elem.lock();
   }
@@ -131,36 +136,12 @@ class WeakPointer {
   private:
 
   template <typename>
-  friend class OwnedObject;
-  template <typename>
   friend class OwnerPointer;
   template <typename>
   friend class WeakPointer;
   WeakPointer(const shared_ptr<T>& e) : elem(e) {}
 
   weak_ptr<T> SERIAL(elem);
-};
-
-template <typename T>
-class OwnedObject : public std::enable_shared_from_this<T> {
-  public:
-  WeakPointer<T> getThis() {
-    return WeakPointer<T>(this->shared_from_this());
-  }
-
-  WeakPointer<const T> getThis() const {
-    return WeakPointer<const T>(this->shared_from_this());
-  }
-
-  template <typename U>
-  WeakPointer<U> getThisAs() {
-    return WeakPointer<U>(std::dynamic_pointer_cast<U>(this->shared_from_this()));
-  }
-
-  template <typename U>
-  WeakPointer<const U> getThisAs() const {
-    return WeakPointer<const U>(std::dynamic_pointer_cast<const U>(this->shared_from_this()));
-  }
 };
 
 template <typename T>

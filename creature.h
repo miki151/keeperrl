@@ -53,7 +53,7 @@ class CreatureDebt;
 struct AdjectiveInfo;
 struct MovementInfo;
 
-class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature> {
+class Creature : public Renderable, public UniqueEntity<Creature>, public std::enable_shared_from_this<Creature> {
   public:
   Creature(TribeId, const CreatureAttributes&);
   Creature(const ViewObject&, TribeId, const CreatureAttributes&);

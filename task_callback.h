@@ -6,7 +6,7 @@
 
 class SquareType;
 
-class TaskCallback : public OwnedObject<TaskCallback> {
+class TaskCallback : public std::enable_shared_from_this<TaskCallback> {
   public:
   virtual void onConstructed(Position, FurnitureType) {}
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}

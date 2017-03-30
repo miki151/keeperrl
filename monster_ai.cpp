@@ -948,7 +948,7 @@ class SplashItems : public TaskCallback {
       return nullptr;
     Vec2 target = Random.choose(targets);
     removeElement(targets, target);
-    return Task::bringItem(getThis(), Position(pos, level), it, {Position(target, level)}, 100);
+    return Task::bringItem(this, Position(pos, level), it, {Position(target, level)}, 100);
   }
 
   void setInitialized(const FilePath& splashPath) {
