@@ -6,7 +6,7 @@
 #include "creature_attributes.h"
 #include "body.h"
 
-void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
+void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
   switch (effect) {
     case LastingEffect::FLYING:
       if (msg) c->you(MsgType::ARE, "flying!");
@@ -66,7 +66,7 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
   }
 }
 
-bool LastingEffects::affects(const Creature* c, LastingEffect effect) {
+bool LastingEffects::affects(WConstCreature c, LastingEffect effect) {
   switch (effect) {
     case LastingEffect::RAGE:
     case LastingEffect::PANIC:
@@ -80,7 +80,7 @@ bool LastingEffects::affects(const Creature* c, LastingEffect effect) {
   }
 }
 
-void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
+void LastingEffects::onRemoved(WCreature c, LastingEffect effect, bool msg) {
   switch (effect) {
     case LastingEffect::POISON:
       if (msg)
@@ -91,7 +91,7 @@ void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
   }
 }
 
-void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
+void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
   switch (effect) {
     case LastingEffect::STUNNED: break;
     case LastingEffect::SLOWED: if (msg) c->you(MsgType::ARE, "moving faster again"); break;
@@ -134,7 +134,7 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
 
 int attrBonus = 3;
 
-void LastingEffects::modifyAttr(const Creature* c, AttrType attr, int& value) {
+void LastingEffects::modifyAttr(WConstCreature c, AttrType attr, int& value) {
   switch (attr) {
     case AttrType::STRENGTH:
       if (c->isAffected(LastingEffect::STR_BONUS))
@@ -154,7 +154,7 @@ void LastingEffects::modifyAttr(const Creature* c, AttrType attr, int& value) {
   }
 }
 
-void LastingEffects::modifyMod(const Creature* c, ModifierType type, int& value) {
+void LastingEffects::modifyMod(WConstCreature c, ModifierType type, int& value) {
   switch (type) {
     case ModifierType::FIRED_DAMAGE: 
     case ModifierType::THROWN_DAMAGE: 
@@ -232,7 +232,7 @@ const vector<LastingEffect>& LastingEffects::getCausingCondition(CreatureConditi
   }
 }
 
-void LastingEffects::onCreatureDamage(Creature* c, LastingEffect e) {
+void LastingEffects::onCreatureDamage(WCreature c, LastingEffect e) {
   switch (e) {
     case LastingEffect::SLEEP:
       c->removeEffect(e);

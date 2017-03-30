@@ -200,7 +200,7 @@ Vec2 ShortestPath::getTarget() const {
   return target;
 }
 
-ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Position to, Position from, double mult) {
+ShortestPath LevelShortestPath::makeShortestPath(WConstCreature creature, Position to, Position from, double mult) {
   Level* level = from.getLevel();
   Rectangle bounds = level->getBounds();
   CHECK(to.isSameLevel(from));
@@ -209,7 +209,7 @@ ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Posit
       if (pos.canEnter(creature) || creature->getPosition() == pos) 
         return 1.0;
       if (pos.canNavigate(creature->getMovementType())) {
-        if (const Creature* other = pos.getCreature())
+        if (WConstCreature other = pos.getCreature())
           if (other->isFriend(creature) && !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
             return 2.1;
         return 5.0;
@@ -241,7 +241,7 @@ SERIALIZABLE(LevelShortestPath);
 SERIALIZATION_CONSTRUCTOR_IMPL(LevelShortestPath);
 
 
-LevelShortestPath::LevelShortestPath(const Creature* creature, Position to, Position from, double mult)
+LevelShortestPath::LevelShortestPath(WConstCreature creature, Position to, Position from, double mult)
     : path(makeShortestPath(creature, to, from, mult)), level(to.getLevel()) {
 }
 

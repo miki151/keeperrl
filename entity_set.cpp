@@ -31,7 +31,7 @@ template
 EntitySet<Item>::EntitySet(const vector<WItem>&);
 
 template
-EntitySet<Creature>::EntitySet(const vector<Creature*>&);
+EntitySet<Creature>::EntitySet(const vector<WCreature>&);
 
 template <class T>
 bool EntitySet<T>::empty() const {
@@ -59,17 +59,17 @@ bool EntitySet<T>::contains(const T* e) const {
 }
 
 template <class T>
-void EntitySet<T>::insert(WeakPointer<T> e) {
+void EntitySet<T>::insert(WeakPointer<const T> e) {
   elems.insert(e->getUniqueId());
 }
 
 template <class T>
-void EntitySet<T>::erase(WeakPointer<T> e) {
+void EntitySet<T>::erase(WeakPointer<const T> e) {
   elems.erase(e->getUniqueId());
 }
 
 template <class T>
-bool EntitySet<T>::contains(WeakPointer<T> e) const {
+bool EntitySet<T>::contains(WeakPointer<const T> e) const {
   return elems.count(e->getUniqueId());
 }
 
@@ -111,7 +111,7 @@ typename EntitySet<T>::Iter EntitySet<T>::end() const {
 
 template <>
 ItemPredicate EntitySet<Item>::containsPredicate() const {
-  return [this](const WItem it) { return contains(it); };
+  return [this](WConstItem it) { return contains(it); };
 }
 
 SERIALIZABLE_TMPL(EntitySet, Item);

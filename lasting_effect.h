@@ -33,13 +33,13 @@ RICH_ENUM(CreatureCondition,
 
 class LastingEffects {
   public:
-  static void onAffected(Creature*, LastingEffect, bool msg);
-  static bool affects(const Creature*, LastingEffect);
-  static void onRemoved(Creature*, LastingEffect, bool msg);
-  static void onTimedOut(Creature*, LastingEffect, bool msg);
-  static void modifyAttr(const Creature*, AttrType, int&);
-  static void modifyMod(const Creature*, ModifierType, int&);
-  static void onCreatureDamage(Creature*, LastingEffect);
+  static void onAffected(WCreature, LastingEffect, bool msg);
+  static bool affects(WConstCreature, LastingEffect);
+  static void onRemoved(WCreature, LastingEffect, bool msg);
+  static void onTimedOut(WCreature, LastingEffect, bool msg);
+  static void modifyAttr(WConstCreature, AttrType, int&);
+  static void modifyMod(WConstCreature, ModifierType, int&);
+  static void onCreatureDamage(WCreature, LastingEffect);
   static const char* getGoodAdjective(LastingEffect);
   static const char* getBadAdjective(LastingEffect);
   static const vector<LastingEffect>& getCausingCondition(CreatureCondition);

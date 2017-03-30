@@ -58,7 +58,7 @@ string Spell::getDescription() const {
     return Effect::getDescription(boost::get<EffectType>(*effect));
 }
 
-void Spell::addMessage(Creature* c) {
+void Spell::addMessage(WCreature c) {
   switch (castMessageType) {
     case CastMessageType::STANDARD:
       c->playerMessage("You cast " + getName());

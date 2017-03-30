@@ -25,9 +25,9 @@ class Item;
 class Level;
 class PlayerMessage;
 
-class Controller {
+class Controller : public std::enable_shared_from_this<Controller> {
   public:
-  Controller(Creature*);
+  Controller(WCreature);
   Controller(const Controller&) = delete;
   Controller(Controller&&) = delete;
 
@@ -38,37 +38,37 @@ class Controller {
   virtual void you(const string& param) = 0;
   virtual void privateMessage(const PlayerMessage& message) {}
 
-  virtual void onKilled(const Creature* attacker) {}
-  virtual void onItemsGiven(vector<WItem> items, Creature* from) { }
+  virtual void onKilled(WConstCreature attacker) {}
+  virtual void onItemsGiven(vector<WItem> items, WCreature from) { }
   virtual void onDisplaced() {}
 
   virtual void makeMove() = 0;
   virtual void sleeping() {}
   virtual bool isCustomController() { return false; }
 
-  virtual void onBump(Creature*) = 0;
+  virtual void onBump(WCreature) = 0;
 
   virtual ~Controller() {}
 
   SERIALIZATION_DECL(Controller);
 
   protected:
-  Creature* getCreature() const;
+  WCreature getCreature() const;
 
   private:
-  Creature* SERIAL(creature);
+  WCreature SERIAL(creature);
 };
 
 class DoNothingController : public Controller {
   public:
-  DoNothingController(Creature*);
+  DoNothingController(WCreature);
 
   virtual bool isPlayer() const override;
   virtual void you(MsgType type, const string& param) override;
   virtual void you(MsgType type, const vector<string>& param) override;
   virtual void you(const string& param) override;
   virtual void makeMove() override;
-  virtual void onBump(Creature*) override;
+  virtual void onBump(WCreature) override;
 
   protected:
   SERIALIZATION_DECL(DoNothingController);
@@ -76,10 +76,10 @@ class DoNothingController : public Controller {
 
 class ControllerFactory {
   public:
-  ControllerFactory(function<SController(Creature*)>);
-  SController get(Creature*) const;
+  ControllerFactory(function<SController(WCreature)>);
+  SController get(WCreature) const;
 
   private:
-  function<SController(Creature*)> fun;
+  function<SController(WCreature)> fun;
 };
 

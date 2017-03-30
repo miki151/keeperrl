@@ -6,20 +6,20 @@ class Creature;
 
 class NODISCARD CreatureAction {
   public:
-  typedef function<void(Creature*)> ActionFun;
+  typedef function<void(WCreature)> ActionFun;
 
-  CreatureAction(const Creature*, ActionFun);
+  CreatureAction(WConstCreature, ActionFun);
   CreatureAction(const string& failedReason = "");
   CreatureAction prepend(ActionFun);
   CreatureAction append(ActionFun);
-  void perform(Creature*);
+  void perform(WCreature);
   string getFailedReason() const;
   operator bool() const;
 
   private:
   ActionFun action;
   string failedMessage;
-  const Creature* performer;
+  WConstCreature performer;
 };
 
 

@@ -62,18 +62,18 @@ class Body {
 
   void affectPosition(Position);
 
-  bool takeDamage(const Attack&, Creature*, double damage);
+  bool takeDamage(const Attack&, WCreature, double damage);
 
 
-  bool tick(const Creature*);
-  bool heal(Creature*, double amount, bool replaceLimbs);
-  void fireDamage(Creature*, double amount);
+  bool tick(WConstCreature);
+  bool heal(WCreature, double amount, bool replaceLimbs);
+  void fireDamage(WCreature, double amount);
   bool isIntrinsicallyAffected(LastingEffect) const;
-  bool affectByPoison(Creature*, double amount);
-  bool affectByPoisonGas(Creature*, double amount);
-  void affectByTorture(Creature*);
-  bool affectBySilver(Creature*);
-  bool affectByAcid(Creature*);
+  bool affectByPoison(WCreature, double amount);
+  bool affectByPoisonGas(WCreature, double amount);
+  void affectByTorture(WCreature);
+  bool affectBySilver(WCreature);
+  bool affectByAcid(WCreature);
   bool isKilledByBoulder() const;
   bool canWade() const;
   bool isMinionFood() const;
@@ -90,21 +90,21 @@ class Body {
   vector<AttackLevel> getAttackLevels() const;
   double modifyAttr(AttrType, double) const;
 
-  bool isCollapsed(const Creature*) const;
+  bool isCollapsed(WConstCreature) const;
   int numGood(BodyPart) const;
   int numLost(BodyPart) const;
   int numBodyParts(BodyPart) const;
   void getBadAdjectives(vector<AdjectiveInfo>&) const;
   optional<Sound> getDeathSound() const;
 
-  void healLimbs(Creature*, bool regrow);
+  void healLimbs(WCreature, bool regrow);
   int lostOrInjuredBodyParts() const;
   bool canHeal() const;
   bool hasHealth() const;
 
   static const char* getBodyPartName(BodyPart);
 
-  void consumeBodyParts(Creature*, const Body& other, vector<string>& adjectives);
+  void consumeBodyParts(WCreature, const Body& other, vector<string>& adjectives);
 
   bool isHumanoid() const;
   string getDescription() const;
@@ -118,7 +118,7 @@ class Body {
   private:
   friend class Test;
   Size getSize() const;
-  void injureBodyPart(Creature*, BodyPart, bool drop);
+  void injureBodyPart(WCreature, BodyPart, bool drop);
   BodyPart getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
   BodyPart armOrWing() const;
   int numInjured(BodyPart) const;
@@ -131,7 +131,7 @@ class Body {
   bool isCritical(BodyPart) const;
   PItem getBodyPartItem(const string& creatureName, BodyPart);
   bool isBleeding() const;
-  void bleed(Creature*, double amount);
+  void bleed(WCreature, double amount);
   string getMaterialAndSizeAdjectives() const;
   bool fallsApartFromDamage() const;
   bool SERIAL(xhumanoid);

@@ -4,11 +4,11 @@
 #include "task.h"
 #include "creature_name.h"
 
-SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, creatureMap, marked, completionCost, priorityTasks, delayedTasks, highlight, requiredTraits);
+SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, taskByCreature, creatureByTask, marked, completionCost, priorityTasks, delayedTasks, highlight, requiredTraits);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(TaskMap);
 
-Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
+Task* TaskMap::getClosestTask(WCreature c, MinionTrait trait) {
   if (Random.roll(20))
     for (Task* t : extractRefs(tasks))
       if (t->isDone())
@@ -18,7 +18,7 @@ Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
     if (requiredTraits.count(task.get()) && requiredTraits.at(task.get()) == trait && task->canPerform(c))
       if (auto pos = getPosition(task.get())) {
         double dist = pos->dist8(c->getPosition());
-        const Creature* owner = getOwner(task.get());
+        WConstCreature owner = getOwner(task.get());
         auto delayed = delayedTasks.getMaybe(task.get());
         if (!task->isDone() &&
             (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
@@ -65,8 +65,10 @@ CostInfo TaskMap::removeTask(Task* task) {
       removeIndex(tasks, i);
       break;
     }
-  if (creatureMap.contains(task))
-    creatureMap.erase(task);
+  if (auto c = creatureByTask.getMaybe(task)) {
+    taskByCreature.erase(*c);
+    creatureByTask.erase(task);
+  }
   if (positionMap.count(task)) {
     removeElement(reversePositions.getOrFail(positionMap.at(task)), task);
     positionMap.erase(task);
@@ -110,20 +112,19 @@ HighlightType TaskMap::getHighlightType(Position pos) const {
   return highlight.get(pos);
 }
 
-bool TaskMap::hasTask(const Creature* c) const {
-  if (creatureMap.contains(c))
-    return !creatureMap.get(c)->isDone();
+bool TaskMap::hasTask(WConstCreature c) const {
+  if (auto task = taskByCreature.getMaybe(c))
+    return !(*task)->isDone();
   else
     return false;
 }
 
-Task* TaskMap::getTask(const Creature* c) {
-  if (creatureMap.contains(c)) {
-    Task* task = creatureMap.get(c);
-    if (task->isDone())
-      removeTask(task);
+Task* TaskMap::getTask(WConstCreature c) {
+  if (auto task = taskByCreature.getMaybe(c)) {
+    if ((*task)->isDone())
+      removeTask(*task);
     else
-      return task;
+      return *task;
   }
   return nullptr;
 }
@@ -132,9 +133,10 @@ const vector<Task*>& TaskMap::getTasks(Position pos) const {
   return reversePositions.get(pos);
 }
 
-Task* TaskMap::addTaskFor(PTask task, const Creature* c) {
+Task* TaskMap::addTaskFor(PTask task, WCreature c) {
   CHECK(!hasTask(c)) << c->getName().bare() << " already has a task";
-  creatureMap.insert(c, task.get());
+  taskByCreature.set(c, task.get());
+  creatureByTask.set(task.get(), c);
   if (auto pos = task->getPosition())
     setPosition(task.get(), *pos);
   tasks.push_back(std::move(task));
@@ -148,9 +150,10 @@ Task* TaskMap::addTask(PTask task, Position position, MinionTrait required) {
   return tasks.back().get();
 }
 
-void TaskMap::takeTask(const Creature* c, Task* task) {
+void TaskMap::takeTask(WCreature c, Task* task) {
   freeTask(task);
-  creatureMap.insert(c, task);
+  taskByCreature.set(c, task);
+  creatureByTask.set(task, c);
 }
 
 optional<Position> TaskMap::getPosition(Task* task) const {
@@ -160,16 +163,18 @@ optional<Position> TaskMap::getPosition(Task* task) const {
     return none;
 }
 
-const Creature* TaskMap::getOwner(const Task* task) const {
-  if (creatureMap.contains(const_cast<Task*>(task)))
-    return creatureMap.get(const_cast<Task*>(task));
+WConstCreature TaskMap::getOwner(const Task* task) const {
+  if (auto c = creatureByTask.getMaybe(const_cast<Task*>(task)))
+    return *c;
   else
     return nullptr;
 }
 
 void TaskMap::freeTask(Task* task) {
-  if (creatureMap.contains(task))
-    creatureMap.erase(task);
+  if (auto c = creatureByTask.getMaybe(task)) {
+    taskByCreature.erase(*c);
+    creatureByTask.erase(task);
+  }
 }
 
 void TaskMap::setPosition(Task* task, Position position) {
@@ -177,7 +182,7 @@ void TaskMap::setPosition(Task* task, Position position) {
   reversePositions.getOrInit(position).push_back(task);
 }
 
-CostInfo TaskMap::freeFromTask(const Creature* c) {
+CostInfo TaskMap::freeFromTask(WConstCreature c) {
   if (Task* task = getTask(c)) {
     if (!task->canTransfer())
       return removeTask(task);

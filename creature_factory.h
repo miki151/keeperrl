@@ -167,7 +167,7 @@ class CreatureFactory {
 
   static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
   static PCreature fromId(CreatureId, TribeId);
-  static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
+  static vector<PCreature> getFlock(int size, CreatureId, WCreature leader);
   static CreatureFactory humanVillage(TribeId);
   static CreatureFactory humanPeaceful(TribeId);
   static CreatureFactory splashHeroes(TribeId);
@@ -203,8 +203,8 @@ class CreatureFactory {
 
   static PCreature getShopkeeper(Location* shopArea, TribeId);
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
-  static PCreature getGhost(Creature*);
-  static PCreature getIllusion(Creature*);
+  static PCreature getGhost(WCreature);
+  static PCreature getIllusion(WCreature);
 
   static PCreature addInventory(PCreature c, const vector<ItemType>& items);
   static CreatureAttributes getKrakenAttributes(ViewId, const char* name);

@@ -53,7 +53,7 @@ class Magma : public Square {
             .addTrait(MovementTrait::FLY)
             .addForcibleTrait(MovementTrait::WALK);)) {}
 
-  virtual void onEnterSpecial(Creature* c) override {
+  virtual void onEnterSpecial(WCreature c) override {
     if (c->getPosition().getFurniture().empty()) { // check if there is a bridge
       MovementType realMovement = c->getMovementType();
       realMovement.setForced(false);
@@ -87,7 +87,7 @@ class Water : public Square {
             c.movementSet = getMovement(_depth);
           )) {}
 
-  virtual void onEnterSpecial(Creature* c) override {
+  virtual void onEnterSpecial(WCreature c) override {
     if (c->getPosition().getFurniture().empty()) { // check if there is a bridge
       MovementType realMovement = c->getMovementType();
       realMovement.setForced(false);

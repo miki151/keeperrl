@@ -12,15 +12,15 @@ class Creature;
 
 class TaskMap {
   public:
-  Task* addTaskFor(PTask, const Creature*);
+  Task* addTaskFor(PTask, WCreature);
   Task* addTask(PTask, Position, MinionTrait required = MinionTrait::WORKER);
-  Task* getTask(const Creature*);
-  bool hasTask(const Creature*) const;
+  Task* getTask(WConstCreature);
+  bool hasTask(WConstCreature) const;
   const vector<Task*>& getTasks(Position) const;
   vector<const Task*> getAllTasks() const;
-  const Creature* getOwner(const Task*) const;
+  WCreature getOwner(const Task*) const;
   optional<Position> getPosition(Task*) const;
-  void takeTask(const Creature*, Task*);
+  void takeTask(WCreature, Task*);
   void freeTask(Task*);
 
   void setPosition(Task*, Position);
@@ -30,17 +30,18 @@ class TaskMap {
   HighlightType getHighlightType(Position) const;
   CostInfo removeTask(Task*);
   CostInfo removeTask(UniqueEntity<Task>::Id);
-  CostInfo freeFromTask(const Creature*);
+  CostInfo freeFromTask(WConstCreature);
   bool isPriorityTask(const Task*) const;
   bool hasPriorityTasks(Position) const;
   void setPriorityTasks(Position);
-  Task* getClosestTask(Creature* c, MinionTrait);
+  Task* getClosestTask(WCreature c, MinionTrait);
   const map<Task*, CostInfo>& getCompletionCosts() const;
 
   SERIALIZATION_DECL(TaskMap);
 
   private:
-  BiMap<const Creature*, Task*> SERIAL(creatureMap);
+  EntityMap<Creature, Task*> SERIAL(taskByCreature);
+  EntityMap<Task, WCreature> SERIAL(creatureByTask);
   unordered_map<Task*, Position> SERIAL(positionMap);
   PositionMap<vector<Task*>> SERIAL(reversePositions);
   vector<PTask> SERIAL(tasks);

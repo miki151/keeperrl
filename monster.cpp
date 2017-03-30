@@ -34,10 +34,10 @@ SERIALIZABLE(Monster);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Monster);
 
-Monster::Monster(Creature* c, const MonsterAIFactory& f) : Controller(c), monsterAI(f.getMonsterAI(c)) {}
+Monster::Monster(WCreature c, const MonsterAIFactory& f) : Controller(c), monsterAI(f.getMonsterAI(c)) {}
 
 ControllerFactory Monster::getFactory(MonsterAIFactory f) {
-  return ControllerFactory([=](Creature* c) { return SController(new Monster(c, f));});
+  return ControllerFactory([=](WCreature c) { return SController(new Monster(c, f));});
 }
 
 void Monster::makeMove() {
@@ -59,7 +59,7 @@ const MapMemory& Monster::getMemory() const {
   return MapMemory::empty();
 }
 
-void Monster::onBump(Creature* c) {
+void Monster::onBump(WCreature c) {
   if (c->isEnemy(getCreature()))
     c->attack(getCreature(), none, false).perform(c);
   else if (auto action = c->move(getCreature()->getPosition()))

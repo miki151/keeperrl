@@ -7,14 +7,14 @@
 #include "furniture.h"
 #include "player_message.h"
 
-void FurnitureEntry::handle(FurnitureEntryType type, const Furniture* f, Creature* c) {
+void FurnitureEntry::handle(FurnitureEntryType type, const Furniture* f, WCreature c) {
   switch (type) {
     case FurnitureEntryType::SOKOBAN:
       if (c->getAttributes().isBoulder()) {
         Position pos = c->getPosition();
         pos.globalMessage(c->getName().the() + " fills the " + f->getName());
         pos.removeFurniture(f);
-        c->die(nullptr, false, false);
+        c->die(false, false);
       } else {
         if (!c->isAffected(LastingEffect::FLYING))
           c->you(MsgType::FALL, "into the " + f->getName() + "!");

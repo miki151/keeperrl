@@ -58,14 +58,14 @@ class Model {
   bool isTurnBased();
 
   double getLocalTime() const;
-  void increaseLocalTime(Creature*, double diff);
-  double getLocalTime(const Creature*);
+  void increaseLocalTime(WCreature, double diff);
+  double getLocalTime(WConstCreature);
 
   void setGame(Game*);
   Game* getGame() const;
   void tick(double time);
   vector<Collective*> getCollectives() const;
-  vector<Creature*> getAllCreatures() const;
+  vector<WCreature> getAllCreatures() const;
   vector<Level*> getLevels() const;
 
   Level* getTopLevel() const;
@@ -75,12 +75,12 @@ class Model {
 
   int getSaveProgressCount() const;
 
-  void killCreature(Creature* victim);
+  void killCreature(WCreature victim);
   void updateSunlightMovement();
 
-  PCreature extractCreature(Creature*);
+  PCreature extractCreature(WCreature);
   void transferCreature(PCreature, Vec2 travelDir);
-  bool canTransferCreature(Creature*, Vec2 travelDir);
+  bool canTransferCreature(WCreature, Vec2 travelDir);
 
   Model();
 

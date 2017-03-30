@@ -92,7 +92,7 @@ void Model::updateSunlightMovement() {
 
 void Model::checkCreatureConsistency() {
   EntitySet<Creature> tmp;
-  for (Creature* c : timeQueue->getAllCreatures()) {
+  for (WCreature c : timeQueue->getAllCreatures()) {
     CHECK(!tmp.contains(c)) << c->getName().bare();
     tmp.insert(c);
   }
@@ -103,7 +103,7 @@ void Model::checkCreatureConsistency() {
 }
 
 void Model::update(double totalTime) {
-  if (Creature* creature = timeQueue->getNextCreature()) {
+  if (WCreature creature = timeQueue->getNextCreature()) {
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced before processing: " << creature->getName().bare() <<
         ". Any idea why this happened?";
     if (creature->isDead()) {
@@ -130,7 +130,7 @@ void Model::update(double totalTime) {
 }
 
 void Model::tick(double time) {
-  for (Creature* c : timeQueue->getAllCreatures()) {
+  for (WCreature c : timeQueue->getAllCreatures()) {
     c->tick();
   }
   for (PLevel& l : levels)
@@ -175,11 +175,11 @@ double Model::getLocalTime() const {
   return currentTime;
 }
 
-void Model::increaseLocalTime(Creature* c, double diff) {
+void Model::increaseLocalTime(WCreature c, double diff) {
   timeQueue->increaseTime(c, diff);
 }
 
-double Model::getLocalTime(const Creature* c) {
+double Model::getLocalTime(WConstCreature c) {
   return timeQueue->getTime(c);
 }
 
@@ -242,31 +242,31 @@ Level* Model::getTopLevel() const {
   return topLevel;
 }
 
-void Model::killCreature(Creature* c) {
+void Model::killCreature(WCreature c) {
   deadCreatures.push_back(timeQueue->removeCreature(c));
   cemetery->landCreature(cemetery->getAllPositions(), c);
 }
 
-PCreature Model::extractCreature(Creature* c) {
+PCreature Model::extractCreature(WCreature c) {
   PCreature ret = timeQueue->removeCreature(c);
   c->getLevel()->removeCreature(c);
   return ret;
 }
 
 void Model::transferCreature(PCreature c, Vec2 travelDir) {
-  Creature* ref = c.get();
+  WCreature ref = c.get();
   addCreature(std::move(c));
   CHECK(getTopLevel()->landCreature(StairKey::transferLanding(), ref, travelDir));
 }
 
-bool Model::canTransferCreature(Creature* c, Vec2 travelDir) {
+bool Model::canTransferCreature(WCreature c, Vec2 travelDir) {
   for (Position pos : getTopLevel()->getLandingSquares(StairKey::transferLanding()))
     if (pos.canEnter(c))
       return true;
   return false;
 }
 
-vector<Creature*> Model::getAllCreatures() const { 
+vector<WCreature> Model::getAllCreatures() const { 
   return timeQueue->getAllCreatures();
 }
 

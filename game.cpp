@@ -112,7 +112,7 @@ const vector<Collective*>& Game::getVillains(VillainType type) const {
 }
 
 Model* Game::getCurrentModel() const {
-  if (Creature* c = getPlayer())
+  if (WCreature c = getPlayer())
     return c->getPosition().getModel();
   else
     return models[baseModel].get();
@@ -179,17 +179,17 @@ void Game::prepareSiteRetirement() {
           c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.8, Random.get(500, 700));))));
   for (Collective* col : models[baseModel]->getCollectives())
-    for (Creature* c : col->getCreatures())
+    for (WCreature c : col->getCreatures())
       if (c->getPosition().getModel() != mainModel)
         transferCreature(c, mainModel);
   for (Vec2 v : models.getBounds())
     if (models[v] && v != baseModel)
       for (Collective* col : models[v]->getCollectives())
-        for (Creature* c : col->getCreatures())
+        for (WCreature c : col->getCreatures())
           if (c->getPosition().getModel() == mainModel)
             transferCreature(c, models[v].get());
   // So we don't have references to creatures in another model.
-  for (Creature* c : mainModel->getAllCreatures())
+  for (WCreature c : mainModel->getAllCreatures())
     c->clearLastAttacker();
   TribeId::switchForSerialization(TribeId::getKeeper(), TribeId::getRetiredKeeper());
   UniqueEntity<Item>::offsetForSerialization(Random.getLL());
@@ -337,13 +337,13 @@ Position Game::getTransferPos(Model* from, Model* to) const {
       getModelCoords(from) - getModelCoords(to));
 }
 
-void Game::transferCreature(Creature* c, Model* to) {
+void Game::transferCreature(WCreature c, Model* to) {
   Model* from = c->getLevel()->getModel();
   if (from != to)
     to->transferCreature(from->extractCreature(c), getModelCoords(from) - getModelCoords(to));
 }
 
-bool Game::canTransferCreature(Creature* c, Model* to) {
+bool Game::canTransferCreature(WCreature c, Model* to) {
   return to->canTransferCreature(c, getModelCoords(c->getLevel()->getModel()) - getModelCoords(to));
 }
 
@@ -363,20 +363,20 @@ void Game::presentWorldmap() {
   view->presentWorldmap(*campaign);
 }
 
-void Game::transferAction(vector<Creature*> creatures) {
+void Game::transferAction(vector<WCreature> creatures) {
   if (auto dest = view->chooseSite("Choose destination site:", *campaign,
         getModelCoords(creatures[0]->getLevel()->getModel()))) {
     Model* to = NOTNULL(models[*dest].get());
     vector<CreatureInfo> cant;
-    for (Creature* c : copyOf(creatures))
+    for (WCreature c : copyOf(creatures))
       if (!canTransferCreature(c, to)) {
-        cant.push_back(c);
+        cant.push_back(CreatureInfo(c));
         removeElement(creatures, c);
       }
     if (!cant.empty() && !view->creaturePrompt("These minions will be left behind due to sunlight.", cant))
       return;
     if (!creatures.empty()) {
-      for (Creature* c : creatures)
+      for (WCreature c : creatures)
         transferCreature(c, models[*dest].get());
       wasTransfered = true;
     }
@@ -471,7 +471,7 @@ bool Game::isGameOver() const {
   return !!exitInfo;
 }
 
-void Game::gameOver(const Creature* creature, int numKills, const string& enemiesString, int points) {
+void Game::gameOver(WConstCreature creature, int numKills, const string& enemiesString, int points) {
   string text = "And so dies " + creature->getName().title();
   if (auto reason = creature->getDeathReason()) {
     text += ", " + *reason;
@@ -531,11 +531,11 @@ const vector<Collective*>& Game::getCollectives() const {
   return collectives;
 }
 
-void Game::setPlayer(Creature* c) {
+void Game::setPlayer(WCreature c) {
   player = c;
 }
 
-Creature* Game::getPlayer() const {
+WCreature Game::getPlayer() const {
   if (player && !player->isDead())
     return player;
   else
@@ -546,7 +546,7 @@ void Game::clearPlayer() {
   player = nullptr;
 }
 
-static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
+static SavedGameInfo::MinionInfo getMinionInfo(WConstCreature c) {
   SavedGameInfo::MinionInfo ret;
   ret.level = (int)c->getAttributes().getVisibleExpLevel();
   ret.viewId = c->getViewObject().id();
@@ -562,17 +562,17 @@ string Game::getPlayerName() const {
 
 SavedGameInfo Game::getSavedGameInfo() const {
   if (Collective* col = getPlayerCollective()) {
-    vector<Creature*> creatures = col->getCreatures();
+    vector<WCreature> creatures = col->getCreatures();
     CHECK(!creatures.empty());
-    Creature* leader = col->getLeader();
+    WCreature leader = col->getLeader();
     //  CHECK(!leader->isDead());
-    sort(creatures.begin(), creatures.end(), [leader] (const Creature* c1, const Creature* c2) {
+    sort(creatures.begin(), creatures.end(), [leader] (WConstCreature c1, WConstCreature c2) {
         return c1 == leader
         || (c2 != leader && c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel());});
     CHECK(creatures[0] == leader);
     creatures.resize(min<int>(creatures.size(), 4));
     vector<SavedGameInfo::MinionInfo> minions;
-    for (Creature* c : creatures)
+    for (WCreature c : creatures)
       minions.push_back(getMinionInfo(c));
     return SavedGameInfo(minions, col->getDangerLevel(), getPlayerName(), getSaveProgressCount());
   } else
@@ -586,7 +586,7 @@ void Game::uploadEvent(const string& name, const map<string, string>& m) {
   fileSharing->uploadGameEvent(values);
 }
 
-void Game::handleMessageBoard(Position pos, Creature* c) {
+void Game::handleMessageBoard(Position pos, WCreature c) {
   int boardId = pos.getHash();
   vector<ListElem> options;
   atomic<bool> cancelled(false);

@@ -18,11 +18,11 @@ vector<Creature::Id> CreatureDebt::getCreditors() const {
   return debt.getKeys();
 }
 
-int CreatureDebt::getAmountOwed(Creature* creditor) const {
+int CreatureDebt::getAmountOwed(WCreature creditor) const {
   return debt.getMaybe(creditor).get_value_or(0);
 }
 
-void CreatureDebt::add(Creature* c, int amount) {
+void CreatureDebt::add(WCreature c, int amount) {
   auto& current = debt.getOrInit(c);
   amount = max(-current, amount);
   total += amount;

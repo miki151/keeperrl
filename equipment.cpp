@@ -63,33 +63,33 @@ bool Equipment::canEquip(const WItem item) const {
   return items[slot].size() < getMaxItems(slot);
 }
 
-void Equipment::equip(WItem item, EquipmentSlot slot, Creature* c) {
+void Equipment::equip(WItem item, EquipmentSlot slot, WCreature c) {
   items[slot].push_back(item);
   equipped.push_back(item);
   item->onEquip(c);
   CHECK(hasItem(item));
 }
 
-void Equipment::unequip(WItem item, Creature* c) {
+void Equipment::unequip(WItem item, WCreature c) {
   removeElement(items[item->getEquipmentSlot()], item);
   removeElement(equipped, item);
   item->onUnequip(c);
 }
 
-PItem Equipment::removeItem(WItem item, Creature* c) {
+PItem Equipment::removeItem(WItem item, WCreature c) {
   if (isEquipped(item))
     unequip(item, c);
   return Inventory::removeItem(item);
 }
   
-vector<PItem> Equipment::removeItems(const vector<WItem>& items, Creature* c) {
+vector<PItem> Equipment::removeItems(const vector<WItem>& items, WCreature c) {
   vector<PItem> ret;
   for (WItem it : items)
     ret.push_back(removeItem(it, c));
   return ret;
 }
 
-vector<PItem> Equipment::removeAllItems(Creature* c) {
+vector<PItem> Equipment::removeAllItems(WCreature c) {
   return removeItems(getItems(), c);
 }
 

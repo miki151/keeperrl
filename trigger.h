@@ -27,14 +27,14 @@ class EffectType;
 
 class Trigger {
   public:
-  virtual optional<ViewObject> getViewObject(const Creature* viewer) const;
+  virtual optional<ViewObject> getViewObject(WConstCreature viewer) const;
   virtual ~Trigger();
 
-  virtual void onCreatureEnter(Creature* c);
+  virtual void onCreatureEnter(WCreature c);
   virtual bool interceptsFlyingItem(WItem it) const;
   virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, VisionId);
 
-  virtual bool isDangerous(const Creature* c) const;
+  virtual bool isDangerous(WConstCreature c) const;
   virtual void tick();
   virtual void fireDamage(double size);
   virtual double getLightEmission() const;
@@ -42,7 +42,7 @@ class Trigger {
   static PTrigger getPortal(const ViewObject&, Position);
   static PTrigger getTrap(const ViewObject&, Position, EffectType, TribeId, bool alwaysVisible);
   static PTrigger getTorch(Dir attachmentDir, Position);
-  static PTrigger getMeteorShower(Creature*, double duration);
+  static PTrigger getMeteorShower(WCreature, double duration);
 
   static const ViewObject& getTorchViewObject(Dir);
 

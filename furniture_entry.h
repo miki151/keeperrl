@@ -10,5 +10,5 @@ class Furniture;
 
 class FurnitureEntry {
   public:
-  static void handle(FurnitureEntryType, const Furniture*, Creature*);
+  static void handle(FurnitureEntryType, const Furniture*, WCreature);
 };

@@ -88,7 +88,7 @@ View::View() {
 View::~View() {
 }
 
-CreatureInfo::CreatureInfo(const Creature* c) 
+CreatureInfo::CreatureInfo(WConstCreature c) 
     : viewId(c->getViewObject().id()),
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
@@ -107,7 +107,7 @@ string PlayerInfo::getTitle() const {
   return title;
 }
 
-vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
+vector<PlayerInfo::SkillInfo> getSkillNames(WConstCreature c) {
   vector<PlayerInfo::SkillInfo> ret;
   for (auto skill : c->getAttributes().getSkills().getAllDiscrete())
     ret.push_back(PlayerInfo::SkillInfo{Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
@@ -117,7 +117,7 @@ vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
   return ret;
 }
 
-void PlayerInfo::readFrom(const Creature* c) {
+void PlayerInfo::readFrom(WConstCreature c) {
   firstName = c->getName().first().get_value_or("");
   name = c->getName().bare();
   title = c->getName().title();

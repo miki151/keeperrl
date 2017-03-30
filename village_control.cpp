@@ -49,20 +49,20 @@ Collective* VillageControl::getEnemyCollective() const {
   return getCollective()->getGame()->getPlayerCollective();
 }
 
-bool VillageControl::isEnemy(const Creature* c) {
+bool VillageControl::isEnemy(WConstCreature c) {
   if (Collective* col = getEnemyCollective())
     return contains(col->getCreatures(), c);
   else
     return false;
 }
 
-void VillageControl::onOtherKilled(const Creature* victim, const Creature* killer) {
+void VillageControl::onOtherKilled(WConstCreature victim, WConstCreature killer) {
   if (victim->getTribe() == getCollective()->getTribe())
     if (isEnemy(killer))
       victims += 0.15; // small increase for same tribe but different village
 }
 
-void VillageControl::onMemberKilled(const Creature* victim, const Creature* killer) {
+void VillageControl::onMemberKilled(WConstCreature victim, WConstCreature killer) {
   if (isEnemy(killer))
     victims += 1;
 }
@@ -92,9 +92,9 @@ void VillageControl::onEvent(const GameEvent& event) {
   }
 }
 
-void VillageControl::launchAttack(vector<Creature*> attackers) {
+void VillageControl::launchAttack(vector<WCreature> attackers) {
   if (Collective* enemy = getEnemyCollective()) {
-    for (Creature* c : attackers)
+    for (WCreature c : attackers)
 //      if (getCollective()->getGame()->canTransferCreature(c, enemy->getLevel()->getModel()))
         getCollective()->getGame()->transferCreature(c, enemy->getModel());
     optional<int> ransom;
@@ -106,7 +106,7 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
     TeamId team = getCollective()->getTeams().createPersistent(attackers);
     getCollective()->getTeams().activate(team);
     getCollective()->freeTeamMembers(team);
-    for (Creature* c : attackers)
+    for (WCreature c : attackers)
       getCollective()->setTask(c, villain->getAttackTask(this));
     attackSizes[team] = attackers.size();
   }
@@ -114,10 +114,10 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
 
 void VillageControl::considerCancellingAttack() {
   for (auto team : getCollective()->getTeams().getAll()) {
-    vector<Creature*> members = getCollective()->getTeams().getMembers(team);
+    vector<WCreature> members = getCollective()->getTeams().getMembers(team);
     if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
           members[0]->getBody().isSeriouslyWounded())) {
-      for (Creature* c : members)
+      for (WCreature c : members)
         getCollective()->cancelTask(c);
       getCollective()->getTeams().cancel(team);
     }
@@ -126,8 +126,8 @@ void VillageControl::considerCancellingAttack() {
 
 void VillageControl::onRansomPaid() {
   for (auto team : getCollective()->getTeams().getAll()) {
-    vector<Creature*> members = getCollective()->getTeams().getMembers(team);
-    for (Creature* c : members)
+    vector<WCreature> members = getCollective()->getTeams().getMembers(team);
+    for (WCreature c : members)
       getCollective()->cancelTask(c);
     getCollective()->getTeams().cancel(team);
   }
@@ -149,7 +149,7 @@ void VillageControl::considerWelcomeMessage() {
       switch (*villain->welcomeMessage) {
         case VillageBehaviour::DRAGON_WELCOME:
           for (Position pos : getCollective()->getTerritory().getAll())
-            if (Creature* c = pos.getCreature())
+            if (WCreature c = pos.getCreature())
               if (c->isAffected(LastingEffect::INVISIBLE) && isEnemy(c) && c->isPlayer()
                   && getCollective()->getLeader()->canSee(c->getPosition())) {
                 c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
@@ -165,7 +165,7 @@ void VillageControl::checkEntries() {
     for (auto& trigger : villain->triggers)
       if (trigger.getId() == AttackTriggerId::ENTRY)
         for (Position pos : getCollective()->getTerritory().getAll())
-          if (Creature* c = pos.getCreature())
+          if (WCreature c = pos.getCreature())
             if (getCollective()->getTribe()->isEnemy(c))
               entries = true;
 }
@@ -185,9 +185,9 @@ void VillageControl::update(bool currentlyActive) {
   considerCancellingAttack();
   checkEntries();
   acceptImmigration();
-  vector<Creature*> allMembers = getCollective()->getCreatures();
+  vector<WCreature> allMembers = getCollective()->getCreatures();
   for (auto team : getCollective()->getTeams().getAll()) {
-    for (const Creature* c : getCollective()->getTeams().getMembers(team))
+    for (WConstCreature c : getCollective()->getTeams().getMembers(team))
       if (!getCollective()->hasTask(c)) {
         getCollective()->getTeams().cancel(team);
         break;
@@ -201,10 +201,10 @@ void VillageControl::update(bool currentlyActive) {
         maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
       double prob = villain->getAttackProbability(this) / updateFreq;
       if (Random.chance(prob)) {
-        vector<Creature*> fighters;
+        vector<WCreature> fighters;
         fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::SUMMONED});
         /*if (getCollective()->getGame()->isSingleModel())
-          fighters = filter(fighters, [this] (const Creature* c) {
+          fighters = filter(fighters, [this] (WConstCreature c) {
               return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });*/
         INFO << getCollective()->getName().getShort() << " fighters: " << int(fighters.size())
           << (!getCollective()->getTeams().getAll().empty() ? " attacking " : "");

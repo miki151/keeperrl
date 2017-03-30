@@ -6,6 +6,8 @@
 template <typename T>
 class WeakPointer;
 
+template <typename T>
+class OwnedObject;
 
 template <typename T>
 class OwnerPointer {
@@ -75,6 +77,10 @@ class WeakPointer {
   WeakPointer(const WeakPointer<T>& o) : elem(o.elem) {
   }
 
+  template <typename U>
+  WeakPointer(const WeakPointer<U>& o) : elem(o.elem) {
+  }
+
   WeakPointer(T* t) : elem(t->shared_from_this()) {}
 
   WeakPointer() {}
@@ -109,14 +115,49 @@ class WeakPointer {
     return !elem.lock();
   }
 
+  template <typename U>
+  bool operator == (const WeakPointer<U>& o) const {
+    return get() == o.get();
+  }
+
+  template <typename U>
+  bool operator != (const WeakPointer<U>& o) const {
+    return !(*this == o);
+  }
+
+  bool operator == (std::nullptr_t) const {
+    return !elem.lock();
+  }
+
+  bool operator != (std::nullptr_t) const {
+    return !!elem.lock();
+  }
+
   SERIALIZE_ALL(elem)
 
   private:
 
-  friend class OwnerPointer<T>;
+  template <typename>
+  friend class OwnedObject;
+  template <typename>
+  friend class OwnerPointer;
+  template <typename>
+  friend class WeakPointer;
   WeakPointer(const shared_ptr<T>& e) : elem(e) {}
 
   weak_ptr<T> SERIAL(elem);
+};
+
+template <typename T>
+class OwnedObject : public std::enable_shared_from_this<T> {
+  public:
+  WeakPointer<T> getThis() {
+    return WeakPointer<T>(this->shared_from_this());
+  }
+
+  WeakPointer<const T> getThis() const {
+    return WeakPointer<const T>(this->shared_from_this());
+  }
 };
 
 template <typename T>
@@ -135,9 +176,9 @@ OwnerPointer<T> makeOwner(Args... a) {
 }
 
 template<class T>
-vector<WeakPointer<T>> getWeakPointers(vector<OwnerPointer<T>>& v) {
+vector<WeakPointer<T>> getWeakPointers(const vector<OwnerPointer<T>>& v) {
   vector<WeakPointer<T>> ret;
-  ret.resize(v.size());
+  ret.reserve(v.size());
   for (auto& el : v)
     ret.push_back(el.get());
   return ret;

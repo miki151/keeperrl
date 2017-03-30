@@ -68,6 +68,7 @@ optional<T> fromStringSafe(const string& s);
 #define DEF_OWNER_PTR(T) class T;\
   typedef OwnerPointer<T> P##T; \
   typedef WeakPointer<T> W##T; \
+  typedef WeakPointer<const T> WConst##T; \
   template <typename... Args> \
   OwnerPointer<T> make##T(Args... a) { \
     return makeOwner<T>(a...); \
@@ -79,7 +80,7 @@ optional<T> fromStringSafe(const string& s);
 
 DEF_OWNER_PTR(Item);
 DEF_UNIQUE_PTR(LevelMaker);
-DEF_UNIQUE_PTR(Creature);
+DEF_OWNER_PTR(Creature);
 DEF_UNIQUE_PTR(Square);
 DEF_UNIQUE_PTR(Furniture);
 DEF_UNIQUE_PTR(MonsterAI);

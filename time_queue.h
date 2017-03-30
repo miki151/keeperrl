@@ -24,18 +24,18 @@ class Creature;
 class TimeQueue {
   public:
   TimeQueue();
-  Creature* getNextCreature();
-  vector<Creature*> getAllCreatures() const;
+  WCreature getNextCreature();
+  vector<WCreature> getAllCreatures() const;
   void addCreature(PCreature, double time);
-  PCreature removeCreature(Creature*);
-  double getTime(const Creature*);
-  void increaseTime(Creature*, double diff);
+  PCreature removeCreature(WCreature);
+  double getTime(WConstCreature);
+  void increaseTime(WCreature, double diff);
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  typedef set<Creature*, function<bool(const Creature*, const Creature*)>> Queue;
+  typedef set<WCreature, function<bool(WConstCreature, WConstCreature)>> Queue;
   vector<PCreature> SERIAL(creatures);
   Queue SERIAL(queue);
   EntityMap<Creature, double> SERIAL(timeMap);

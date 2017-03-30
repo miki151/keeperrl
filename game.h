@@ -31,10 +31,10 @@ class Game {
   void initialize(Options*, Highscores*, View*, FileSharing*);
   View* getView() const;
   void exitAction();
-  void transferAction(vector<Creature*>);
+  void transferAction(vector<WCreature>);
   void presentWorldmap();
-  void transferCreature(Creature*, Model* to);
-  bool canTransferCreature(Creature*, Model* to);
+  void transferCreature(WCreature, Model* to);
+  bool canTransferCreature(WCreature, Model* to);
   Position getTransferPos(Model* from, Model* to) const;
   string getGameIdentifier() const;
   string getGameDisplayName() const;
@@ -47,8 +47,8 @@ class Game {
   double getGlobalTime() const;
   Collective* getPlayerCollective() const;
   PlayerControl* getPlayerControl() const;
-  void setPlayer(Creature*);
-  Creature* getPlayer() const;
+  void setPlayer(WCreature);
+  WCreature getPlayer() const;
   void clearPlayer();
 
   int getModelDistance(const Collective* c1, const Collective* c2) const;
@@ -60,7 +60,7 @@ class Game {
   const string& getWorldName() const;
   bool gameWon() const;
 
-  void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
+  void gameOver(WConstCreature player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, int numKills, int points);
   void killedKeeper(const string& title, const string& keeper, const string& land, int numKills, int points);
   bool isGameOver() const;
@@ -69,11 +69,11 @@ class Game {
   SavedGameInfo getSavedGameInfo() const;
 
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
-  void killCreature(Creature*, Creature* attacker);
+  void killCreature(WCreature, WCreature attacker);
 
   optional<Position> getOtherPortal(Position) const;
   void registerPortal(Position);
-  void handleMessageBoard(Position, Creature*);
+  void handleMessageBoard(Position, WCreature);
 
   PModel& getMainModel();
   vector<Model*> getAllModels() const;
@@ -127,7 +127,7 @@ class Game {
   Collective* SERIAL(playerCollective) = nullptr;
   HeapAllocated<Campaign> SERIAL(campaign);
   bool wasTransfered = false;
-  Creature* SERIAL(player) = nullptr;
+  WCreature SERIAL(player) = nullptr;
   FileSharing* fileSharing;
   set<int> SERIAL(turnEvents);
   friend class GameListener;

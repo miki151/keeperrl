@@ -37,11 +37,11 @@ void ExternalEnemies::update(Level* level, double localTime) {
   CHECK(!!target);
   for (int i : All(enemies))
     if (attackTime[i] && *attackTime[i] <= localTime) {
-      vector<Creature*> attackers;
+      vector<WCreature> attackers;
       for (int j : Range(Random.get(enemies[i].groupSize))) {
         PCreature c = enemies[i].factory.random(
             MonsterAIFactory::singleTask(getAttackTask(target, enemies[i].behaviour)));
-        Creature* ref = c.get();
+        WCreature ref = c.get();
         if (level->landCreature(StairKey::transferLanding(), std::move(c)))
           attackers.push_back(ref);
       }

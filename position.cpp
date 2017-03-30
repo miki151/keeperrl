@@ -151,7 +151,7 @@ vector<Furniture*> Position::modFurniture() const {
   return ret;
 }
 
-Creature* Position::getCreature() const {
+WCreature Position::getCreature() const {
   if (isValid())
     return getSquare()->getCreature();
   else
@@ -198,7 +198,7 @@ void Position::globalMessage(const PlayerMessage& playerCanSee) const {
     level->globalMessage(coord, playerCanSee);
 }
 
-void Position::globalMessage(const Creature* c, const PlayerMessage& playerCanSee,
+void Position::globalMessage(WConstCreature c, const PlayerMessage& playerCanSee,
     const PlayerMessage& cannot) const {
   if (isValid())
     level->globalMessage(c, playerCanSee, cannot);
@@ -241,7 +241,7 @@ vector<Position> Position::getRectangle(Rectangle rect) const {
 
 void Position::addCreature(PCreature c) {
   if (isValid()) {
-    Creature* ref = c.get();
+    WCreature ref = c.get();
     getModel()->addCreature(std::move(c));
     level->putCreature(coord, ref);
   }
@@ -249,7 +249,7 @@ void Position::addCreature(PCreature c) {
 
 void Position::addCreature(PCreature c, double delay) {
   if (isValid()) {
-    Creature* ref = c.get();
+    WCreature ref = c.get();
     getModel()->addCreature(std::move(c), delay);
     level->putCreature(coord, ref);
   }
@@ -293,7 +293,7 @@ string Position::getName() const {
     return "";
 }
 
-void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
+void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
   if (isValid()) {
     getSquare()->getViewIndex(index, viewer);
     if (!index.hasObject(ViewLayer::FLOOR_BACKGROUND))
@@ -385,7 +385,7 @@ bool Position::isUnavailable() const {
   return !isValid() || level->isUnavailable(coord);
 }
 
-bool Position::canEnter(const Creature* c) const {
+bool Position::canEnter(WConstCreature c) const {
   return !isUnavailable() && !getCreature() && canEnterEmpty(c->getMovementType());
 }
 
@@ -393,7 +393,7 @@ bool Position::canEnter(const MovementType& t) const {
   return !isUnavailable() && !getCreature() && canEnterEmpty(t);
 }
 
-bool Position::canEnterEmpty(const Creature* c) const {
+bool Position::canEnterEmpty(WConstCreature c) const {
   return canEnterEmpty(c->getMovementType());
 } 
 
@@ -407,7 +407,7 @@ bool Position::canEnterSquare(const MovementType& t) const {
   return getSquare()->getMovementSet().canEnter(t, level->covered[coord], getSquare()->getForbiddenTribe());
 }
 
-void Position::onEnter(Creature* c) {
+void Position::onEnter(WCreature c) {
   for (auto f : getFurniture())
     f->onEnter(c);
 }
@@ -460,7 +460,7 @@ bool Position::isWall() const {
     return false;
 }
 
-void Position::construct(FurnitureType type, Creature* c) {
+void Position::construct(FurnitureType type, WCreature c) {
   if (construct(type, c->getTribeId()))
     getFurniture(Furniture::getLayer(type))->onConstructedBy(c);
 }
@@ -507,7 +507,7 @@ void Position::updateMovement() {
 void Position::fireDamage(double amount) {
   for (auto furniture : modFurniture())
     furniture->fireDamage(*this, amount);
-  if (Creature* creature = getCreature())
+  if (WCreature creature = getCreature())
     creature->fireDamage(amount);
   for (WItem it : getItems())
     it->fireDamage(amount, *this);
@@ -640,7 +640,7 @@ void Position::updateVisibility() const {
 bool Position::canNavigate(const MovementType& type) const {
   MovementType typeForced(type);
   typeForced.setForced();
-  Creature* creature = getCreature();
+  WCreature creature = getCreature();
   auto furniture = getFurniture(FurnitureLayer::MIDDLE);
   return canEnterEmpty(type) || 
     // for destroying doors, etc, but not entering forbidden zone
@@ -655,7 +655,7 @@ bool Position::canSeeThru(VisionId id) const {
     return false;
 }
 
-bool Position::isVisibleBy(const Creature* c) {
+bool Position::isVisibleBy(WConstCreature c) {
   return isValid() && level->canSee(c, coord);
 }
 
@@ -673,7 +673,7 @@ bool Position::isConnectedTo(Position pos, const MovementType& movement) const {
       level->areConnected(pos.coord, coord, movement);
 }
 
-vector<Creature*> Position::getAllCreatures(int range) const {
+vector<WCreature> Position::getAllCreatures(int range) const {
   if (isValid())
     return level->getAllCreatures(Rectangle::centered(coord, range));
   else
@@ -694,14 +694,14 @@ void Position::moveCreature(Vec2 direction) {
   level->moveCreature(getCreature(), direction);
 }
 
-static bool canPass(Position position, const Creature* c) {
+static bool canPass(Position position, WConstCreature c) {
   return position.canEnterEmpty(c) && (!position.getCreature() ||
       !position.getCreature()->getAttributes().isBoulder());
 }
 
 bool Position::canMoveCreature(Vec2 direction) const {
   if (!isUnavailable()) {
-    Creature* creature = getCreature();
+    WCreature creature = getCreature();
     Position destination = plus(direction);
     if (level->noDiagonalPassing && direction.isCardinal8() && !direction.isCardinal4() &&
         !canPass(plus(Vec2(direction.x, 0)), creature) &&
@@ -729,7 +729,7 @@ optional<Position> Position::getStairsTo(Position pos) const {
   return level->getStairsTo(pos.level); 
 }
 
-void Position::swapCreatures(Creature* c) {
+void Position::swapCreatures(WCreature c) {
   CHECK(isValid() && getCreature());
   level->swapCreatures(getCreature(), c);
 }
@@ -739,7 +739,7 @@ Position Position::withCoord(Vec2 newCoord) const {
   return Position(newCoord, level);
 }
 
-void Position::putCreature(Creature* c) {
+void Position::putCreature(WCreature c) {
   CHECK(isValid());
   level->putCreature(coord, c);
 }

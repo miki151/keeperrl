@@ -38,23 +38,23 @@ RICH_ENUM(TrapType,
   TERROR
 );
 
-class Item : public Renderable, public UniqueEntity<Item>, public std::enable_shared_from_this<Item> {
+class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
   Item(const ItemAttributes&);
   virtual ~Item();
 
   static string getTrapName(TrapType);
 
-  void apply(Creature*, bool noSound = false);
+  void apply(WCreature, bool noSound = false);
 
   bool isDiscarded();
 
-  string getName(bool plural = false, const Creature* owner = nullptr) const;
-  string getTheName(bool plural = false, const Creature* owner = nullptr) const;
-  string getAName(bool plural = false, const Creature* owner = nullptr) const;
-  string getNameAndModifiers(bool plural = false, const Creature* owner = nullptr) const;
+  string getName(bool plural = false, WConstCreature owner = nullptr) const;
+  string getTheName(bool plural = false, WConstCreature owner = nullptr) const;
+  string getAName(bool plural = false, WConstCreature owner = nullptr) const;
+  string getNameAndModifiers(bool plural = false, WConstCreature owner = nullptr) const;
   string getArtifactName() const;
-  string getShortName(const Creature* owner = nullptr, bool noSuffix = false) const;
+  string getShortName(WConstCreature owner = nullptr, bool noSuffix = false) const;
   string getPluralName(int count) const;
   string getPluralTheName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
@@ -64,9 +64,9 @@ class Item : public Renderable, public UniqueEntity<Item>, public std::enable_sh
   ItemClass getClass() const;
   
   int getPrice() const;
-  void setShopkeeper(const Creature* shopkeeper);
-  Creature* getShopkeeper(const Creature* owner) const;
-  bool isShopkeeper(const Creature*) const;
+  void setShopkeeper(WConstCreature shopkeeper);
+  WCreature getShopkeeper(WConstCreature owner) const;
+  bool isShopkeeper(WConstCreature) const;
   // This function returns true after shopkeeper was killed. TODO: refactor shops.
   bool isOrWasForSale() const;
 
@@ -81,19 +81,19 @@ class Item : public Renderable, public UniqueEntity<Item>, public std::enable_sh
 
   void tick(Position);
   
-  string getApplyMsgThirdPerson(const Creature* owner) const;
-  string getApplyMsgFirstPerson(const Creature* owner) const;
+  string getApplyMsgThirdPerson(WConstCreature owner) const;
+  string getApplyMsgFirstPerson(WConstCreature owner) const;
   string getNoSeeApplyMsg() const;
 
-  void onEquip(Creature*);
-  void onUnequip(Creature*);
-  virtual void onEquipSpecial(Creature*) {}
-  virtual void onUnequipSpecial(Creature*) {}
+  void onEquip(WCreature);
+  void onUnequip(WCreature);
+  virtual void onEquipSpecial(WCreature) {}
+  virtual void onUnequipSpecial(WCreature) {}
   virtual void fireDamage(double amount, Position);
   double getFireSize() const;
 
   void onHitSquareMessage(Position, int numItems);
-  void onHitCreature(Creature* c, const Attack& attack, int numItems);
+  void onHitCreature(WCreature c, const Attack& attack, int numItems);
 
   double getApplyTime() const;
   double getWeight() const;
@@ -121,7 +121,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public std::enable_sh
   virtual void specialTick(Position) {}
   void setName(const string& name);
   bool SERIAL(discarded) = false;
-  virtual void applySpecial(Creature*);
+  virtual void applySpecial(WCreature);
 
   private:
   string getModifiers(bool shorten = false) const;

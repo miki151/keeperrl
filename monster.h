@@ -23,7 +23,7 @@ class MonsterAIFactory;
 
 class Monster : public Controller {
   public:
-  Monster(Creature*, const MonsterAIFactory&);
+  Monster(WCreature, const MonsterAIFactory&);
   
   virtual void you(MsgType type, const string& param) override;
   virtual void you(MsgType type, const vector<string>& param) override;
@@ -33,7 +33,7 @@ class Monster : public Controller {
   virtual bool isPlayer() const override;
   virtual const MapMemory& getMemory() const;
 
-  virtual void onBump(Creature*) override;
+  virtual void onBump(WCreature) override;
 
   static ControllerFactory getFactory(MonsterAIFactory);
 

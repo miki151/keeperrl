@@ -30,7 +30,7 @@ class VillageBehaviour {
   PTask getAttackTask(VillageControl* self);
   double getAttackProbability(const VillageControl* self) const;
   double getTriggerValue(const Trigger&, const VillageControl* self) const;
-  bool contains(const Creature*);
+  bool contains(WConstCreature);
 
   ~VillageBehaviour();
 

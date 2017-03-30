@@ -47,37 +47,37 @@ const Value& EntityMap<Key, Value>::getOrElse(const Key* key, const Value& value
 }
 
 template <typename Key, typename Value>
-void EntityMap<Key, Value>::set(WeakPointer<Key> key, const Value& v) {
+void EntityMap<Key, Value>::set(WeakPointer<const Key> key, const Value& v) {
   set(key->getUniqueId(), v);
 }
 
 template <typename Key, typename Value>
-void EntityMap<Key, Value>::erase(WeakPointer<Key> key) {
+void EntityMap<Key, Value>::erase(WeakPointer<const Key> key) {
   erase(key->getUniqueId());
 }
 
 template <typename Key, typename Value>
-const Value& EntityMap<Key, Value>::getOrFail(WeakPointer<Key> key) const {
+const Value& EntityMap<Key, Value>::getOrFail(WeakPointer<const Key> key) const {
   return getOrFail(key->getUniqueId());
 }
 
 template <typename Key, typename Value>
-Value& EntityMap<Key, Value>::getOrFail(WeakPointer<Key> key) {
+Value& EntityMap<Key, Value>::getOrFail(WeakPointer<const Key> key) {
   return getOrFail(key->getUniqueId());
 }
 
 template <typename Key, typename Value>
-Value& EntityMap<Key, Value>::getOrInit(WeakPointer<Key> key) {
+Value& EntityMap<Key, Value>::getOrInit(WeakPointer<const Key> key) {
   return getOrInit(key->getUniqueId());
 }
 
 template <typename Key, typename Value>
-optional<Value> EntityMap<Key, Value>::getMaybe(WeakPointer<Key> key) const {
+optional<Value> EntityMap<Key, Value>::getMaybe(WeakPointer<const Key> key) const {
   return getMaybe(key->getUniqueId());
 }
 
 template <typename Key, typename Value>
-const Value& EntityMap<Key, Value>::getOrElse(WeakPointer<Key> key, const Value& value) const {
+const Value& EntityMap<Key, Value>::getOrElse(WeakPointer<const Key> key, const Value& value) const {
   return getOrElse(key->getUniqueId(), value);
 }
 
@@ -150,20 +150,20 @@ typename EntityMap<Key, Value>::Iter EntityMap<Key, Value>::end() const {
   return elems.end();
 }
 
-
 template <typename Key, typename Value>
 template <class Archive> 
 void EntityMap<Key, Value>::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, elems);
 }
 
-
 SERIALIZABLE_TMPL(EntityMap, Creature, double);
 SERIALIZABLE_TMPL(EntityMap, Creature, int);
+SERIALIZABLE_TMPL(EntityMap, Creature, Task*);
 SERIALIZABLE_TMPL(EntityMap, Creature, Collective::CurrentTaskInfo);
 SERIALIZABLE_TMPL(EntityMap, Creature, map<AttractionType, int>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<Position>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<WItem>);
-SERIALIZABLE_TMPL(EntityMap, Creature, Creature*);
+SERIALIZABLE_TMPL(EntityMap, Creature, WCreature);
 SERIALIZABLE_TMPL(EntityMap, Task, double);
+SERIALIZABLE_TMPL(EntityMap, Task, WCreature);
 SERIALIZABLE_TMPL(EntityMap, Item, Creature::Id);

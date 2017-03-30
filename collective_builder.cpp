@@ -28,7 +28,7 @@ CollectiveBuilder& CollectiveBuilder::setRaceName(const string& n) {
   return *this;
 }
 
-CollectiveBuilder& CollectiveBuilder::addCreature(Creature* c) {
+CollectiveBuilder& CollectiveBuilder::addCreature(WCreature c) {
   if (!c->getAttributes().isInnocent() && (!creatures.empty() || config->isLeaderFighter()))
     creatures.push_back({c, {MinionTrait::FIGHTER}});
   else

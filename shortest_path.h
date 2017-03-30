@@ -56,7 +56,7 @@ class ShortestPath {
 
 class LevelShortestPath {
   public:
-  LevelShortestPath(const Creature* creature, Position target, Position from, double mult = 0);
+  LevelShortestPath(WConstCreature creature, Position target, Position from, double mult = 0);
   bool isReachable(Position) const;
   Position getNextMove(Position);
   Position getTarget() const;
@@ -68,7 +68,7 @@ class LevelShortestPath {
   SERIALIZATION_DECL(LevelShortestPath);
 
   private:
-  static ShortestPath makeShortestPath(const Creature* creature, Position to, Position from, double mult);
+  static ShortestPath makeShortestPath(WConstCreature creature, Position to, Position from, double mult);
   ShortestPath SERIAL(path);
   Level* SERIAL(level);
 };

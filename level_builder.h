@@ -54,7 +54,7 @@ class LevelBuilder {
   Square* modSquare(Vec2);
 
   /** Checks if it's possible to put a creature on given square.*/
-  bool canPutCreature(Vec2, Creature*);
+  bool canPutCreature(Vec2, WCreature);
 
   /** Puts a creatue on a given square. If the square is later changed to something else, the creature remains.*/
   void putCreature(Vec2, PCreature);

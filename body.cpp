@@ -206,7 +206,7 @@ BodyPart Body::getBodyPart(AttackLevel attack, bool flying, bool collapsed) cons
   return BodyPart::ARM;
 }
 
-void Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
+void Body::injureBodyPart(WCreature creature, BodyPart part, bool drop) {
   bool wasCollapsed = isCollapsed(creature);
   if (numBodyParts(part) == 0)
     return;
@@ -250,7 +250,7 @@ void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string
 }
 
 
-void Body::consumeBodyParts(Creature* c, const Body& other, vector<string>& adjectives) {
+void Body::consumeBodyParts(WCreature c, const Body& other, vector<string>& adjectives) {
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (other.bodyParts[part] > bodyParts[part]) {
       if (bodyParts[part] + 1 == other.bodyParts[part])
@@ -425,7 +425,7 @@ void Body::affectPosition(Position position) {
     position.fireDamage(1);
 }
 
-bool Body::takeDamage(const Attack& attack, Creature* creature, double damage) {
+bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
   bleed(creature, damage);
   AttackType attackType = attack.getType();
   BodyPart part = attack.inTheBack() && Random.roll(3) ? BodyPart::BACK :
@@ -476,7 +476,7 @@ void Body::getBadAdjectives(vector<AdjectiveInfo>& ret) const {
       ret.push_back({getPlural(string("Lost ") + getBodyPartName(part), num), ""});
 }
 
-void Body::healLimbs(Creature* creature, bool regrow) {
+void Body::healLimbs(WCreature creature, bool regrow) {
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (numInjured(part) > 0) {
       creature->you(MsgType::YOUR, string(getBodyPartName(part)) + (numInjured(part) > 1 ? "s are" : " is") +
@@ -529,7 +529,7 @@ double Body::modifyAttr(AttrType type, double def) const {
   return def;
 }
 
-bool Body::tick(const Creature* c) {
+bool Body::tick(WConstCreature c) {
   if (fallsApartFromDamage() && lostOrInjuredBodyParts() >= 4) {
     c->you(MsgType::FALL, "apart");
     return true;
@@ -564,7 +564,7 @@ void Body::updateViewObject(ViewObject& obj) const {
   }
 }
 
-bool Body::heal(Creature* c, double amount, bool replaceLimbs) {
+bool Body::heal(WCreature c, double amount, bool replaceLimbs) {
   INFO << c->getName().the() << " heal";
   if (replaceLimbs)
     healLimbs(c, true);
@@ -601,12 +601,12 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
   }
 }
 
-void Body::fireDamage(Creature* c, double amount) {
+void Body::fireDamage(WCreature c, double amount) {
   c->you(MsgType::ARE, "burnt by the fire");
   bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::STRENGTH)));
 }
 
-bool Body::affectByPoison(Creature* c, double amount) {
+bool Body::affectByPoison(WCreature c, double amount) {
   if (material == Material::FLESH) {
     bleed(c, amount);
     c->playerMessage("You feel poison flowing in your veins.");
@@ -618,7 +618,7 @@ bool Body::affectByPoison(Creature* c, double amount) {
   return false;
 }
 
-bool Body::affectByPoisonGas(Creature* c, double amount) {
+bool Body::affectByPoisonGas(WCreature c, double amount) {
   if (!c->isAffected(LastingEffect::POISON_RESISTANT) && material == Material::FLESH) {
     bleed(c, amount / 20);
     c->you(MsgType::ARE, "poisoned by the gas");
@@ -630,7 +630,7 @@ bool Body::affectByPoisonGas(Creature* c, double amount) {
   return false;
 }
 
-void Body::affectByTorture(Creature* c) {
+void Body::affectByTorture(WCreature c) {
   bleed(c, 0.1);
   if (health < 0.3) {
     if (!Random.roll(8))
@@ -640,7 +640,7 @@ void Body::affectByTorture(Creature* c) {
   }
 }
 
-bool Body::affectBySilver(Creature* c) {
+bool Body::affectBySilver(WCreature c) {
   if (isUndead()) {
     c->you(MsgType::ARE, "hurt by the silver");
     bleed(c, Random.getDouble(0.0, 0.15));
@@ -648,7 +648,7 @@ bool Body::affectBySilver(Creature* c) {
   return health <= 0;
 }
 
-bool Body::affectByAcid(Creature* c) {
+bool Body::affectByAcid(WCreature c) {
   switch (material) {
     case Material::FIRE:
     case Material::SPIRIT:
@@ -660,7 +660,7 @@ bool Body::affectByAcid(Creature* c) {
   return health <= 0;
 }
 
-void Body::bleed(Creature* c, double amount) {
+void Body::bleed(WCreature c, double amount) {
   if (hasHealth()) {
     health -= amount;
     c->updateViewObject();
@@ -749,7 +749,7 @@ bool Body::isUndead() const {
   return material == Material::UNDEAD_FLESH || material == Material::BONE;
 }
 
-bool Body::isCollapsed(const Creature* c) const {
+bool Body::isCollapsed(WConstCreature c) const {
   return (numInjured(BodyPart::LEG) + numLost(BodyPart::LEG) > 0 && !c->isAffected(LastingEffect::FLYING))
    || (numInjured(BodyPart::WING) + numLost(BodyPart::WING) > 0 && numGood(BodyPart::LEG) < 2);
 }

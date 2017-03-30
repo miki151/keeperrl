@@ -24,14 +24,14 @@ void CollectiveControl::update(bool currentlyActive) {
 void CollectiveControl::tick() {
 }
 
-const vector<Creature*>& CollectiveControl::getCreatures() const {
+const vector<WCreature>& CollectiveControl::getCreatures() const {
   return getCollective()->getCreatures();
 }
 
-void CollectiveControl::onMemberKilled(const Creature* victim, const Creature* killer) {
+void CollectiveControl::onMemberKilled(WConstCreature victim, WConstCreature killer) {
 }
 
-void CollectiveControl::onOtherKilled(const Creature* victim, const Creature* killer) {
+void CollectiveControl::onOtherKilled(WConstCreature victim, WConstCreature killer) {
 }
 
 CollectiveControl::~CollectiveControl() {

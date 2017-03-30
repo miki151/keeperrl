@@ -65,7 +65,7 @@ class FireScroll : public Item {
   public:
   FireScroll(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void applySpecial(Creature* c) override {
+  virtual void applySpecial(WCreature c) override {
     set = true;
   }
 
@@ -88,7 +88,7 @@ class AmuletOfWarning : public Item {
   AmuletOfWarning(const ItemAttributes& attr, int r) : Item(attr), radius(r) {}
 
   virtual void specialTick(Position position) override {
-    Creature* owner = position.getCreature();
+    WCreature owner = position.getCreature();
     if (owner && owner->getEquipment().isEquipped(this)) {
       bool isDanger = false;
       bool isBigDanger = false;
@@ -100,7 +100,7 @@ class AmuletOfWarning : public Item {
             else
               isDanger = true;
           }
-        if (Creature* c = v.getCreature()) {
+        if (WCreature c = v.getCreature()) {
           if (!owner->canSee(c) && c->isEnemy(owner)) {
             int diff = c->getModifier(ModifierType::DAMAGE) - owner->getModifier(ModifierType::DAMAGE);
             if (diff > 5)
@@ -131,7 +131,7 @@ class AmuletOfHealing : public Item {
   AmuletOfHealing(const ItemAttributes& attr) : Item(attr) {}
 
   virtual void specialTick(Position position) override {
-    Creature* owner = position.getCreature();
+    WCreature owner = position.getCreature();
     if (owner && owner->getEquipment().isEquipped(this))
         owner->heal(1.0 / 20);
   }
@@ -142,7 +142,7 @@ class AmuletOfHealing : public Item {
 
 class Telepathy : public CreatureVision {
   public:
-  virtual bool canSee(const Creature* c1, const Creature* c2) override {
+  virtual bool canSee(WConstCreature c1, WConstCreature c2) override {
     return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain();
   }
 
@@ -153,11 +153,11 @@ class ItemOfCreatureVision : public Item {
   public:
   ItemOfCreatureVision(const ItemAttributes& attr, CreatureVision* v) : Item(attr), vision(v) {}
 
-  virtual void onEquipSpecial(Creature* c) {
+  virtual void onEquipSpecial(WCreature c) {
     c->addCreatureVision(vision.get());
   }
 
-  virtual void onUnequipSpecial(Creature* c) {
+  virtual void onUnequipSpecial(WCreature c) {
     c->removeCreatureVision(vision.get());
   }
 
@@ -179,7 +179,7 @@ class Corpse : public Item {
       corpseInfo(info) {
   }
 
-  virtual void applySpecial(Creature* c) override {
+  virtual void applySpecial(WCreature c) override {
     WItem it = c->getWeapon();
     if (it && it->getAttackType() == AttackType::CUT) {
       c->you(MsgType::DECAPITATE, getTheName());
@@ -277,7 +277,7 @@ class SkillBook : public Item {
   public:
   SkillBook(const ItemAttributes& attr, Skill* s) : Item(attr), skill(s->getId()) {}
 
-  virtual void applySpecial(Creature* c) override {
+  virtual void applySpecial(WCreature c) override {
     c->addSkill(Skill::get(skill));
   }
 
@@ -292,7 +292,7 @@ class TechBook : public Item {
   public:
   TechBook(const ItemAttributes& attr, optional<TechId> t) : Item(attr), tech(t) {}
 
-  virtual void applySpecial(Creature* c) override {
+  virtual void applySpecial(WCreature c) override {
     if (!read || !!tech) {
       c->getGame()->addEvent({EventId::TECHBOOK_READ, tech ? Technology::get(*tech) : nullptr});
       read = true;
@@ -313,7 +313,7 @@ class TrapItem : public Item {
       : Item(attr), effect(_effect), trapObject(_trapObject), alwaysVisible(visible) {
   }
 
-  virtual void applySpecial(Creature* c) override {
+  virtual void applySpecial(WCreature c) override {
     if (!alwaysVisible)
       c->you(MsgType::SET_UP_TRAP, "");
     c->getPosition().addTrigger(Trigger::getTrap(trapObject, c->getPosition(), effect, c->getTribeId(),

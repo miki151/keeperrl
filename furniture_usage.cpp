@@ -35,7 +35,7 @@ struct ChestInfo {
   optional<ItemInfo> itemInfo;
 };
 
-static void useChest(Position pos, const Furniture* furniture, Creature* c, const ChestInfo& chestInfo) {
+static void useChest(Position pos, const Furniture* furniture, WCreature c, const ChestInfo& chestInfo) {
   c->playerMessage("You open the " + furniture->getName());
   pos.replaceFurniture(furniture, FurnitureFactory::get(chestInfo.openedType, furniture->getTribe()));
   if (auto creatureInfo = chestInfo.creatureInfo)
@@ -64,7 +64,7 @@ static void useChest(Position pos, const Furniture* furniture, Creature* c, cons
   }
 }
 
-void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furniture* furniture, Creature* c) {
+void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furniture* furniture, WCreature c) {
   CHECK(c != nullptr);
   switch (type) {
     case FurnitureUsageType::CHEST:
@@ -131,7 +131,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furnitu
   }
 }
 
-bool FurnitureUsage::canHandle(FurnitureUsageType type, const Creature* c) {
+bool FurnitureUsage::canHandle(FurnitureUsageType type, WConstCreature c) {
   switch (type) {
     case FurnitureUsageType::KEEPER_BOARD:
     case FurnitureUsageType::FOUNTAIN:

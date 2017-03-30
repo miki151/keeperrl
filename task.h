@@ -32,13 +32,13 @@ class Task : public UniqueEntity<Task> {
   Task(bool transferable = false);
   virtual ~Task();
 
-  virtual MoveInfo getMove(Creature*) = 0;
+  virtual MoveInfo getMove(WCreature) = 0;
   virtual bool isBogus() const;
-  virtual bool isBlocked(Creature*) const;
+  virtual bool isBlocked(WCreature) const;
   virtual bool canTransfer();
   virtual void cancel() {}
   virtual string getDescription() const = 0;
-  virtual bool canPerform(const Creature* c);
+  virtual bool canPerform(WConstCreature c);
   virtual optional<Position> getPosition() const;
   optional<ViewId> getViewId() const;
   bool isDone();
@@ -56,9 +56,9 @@ class Task : public UniqueEntity<Task> {
   static PTask pickAndEquipItem(TaskCallback*, Position, WItem);
   static PTask equipItem(WItem);
   static PTask pickItem(TaskCallback*, Position, vector<WItem>);
-  static PTask kill(TaskCallback*, Creature*);
-  static PTask torture(TaskCallback*, Creature*);
-  static PTask sacrifice(TaskCallback*, Creature*);
+  static PTask kill(TaskCallback*, WCreature);
+  static PTask torture(TaskCallback*, WCreature);
+  static PTask sacrifice(TaskCallback*, WCreature);
   static PTask disappear();
   static PTask chain(PTask, PTask);
   static PTask chain(PTask, PTask, PTask);
@@ -71,14 +71,14 @@ class Task : public UniqueEntity<Task> {
   static PTask stealFrom(Collective*, TaskCallback*);
   static PTask createBed(TaskCallback*, Position, const SquareType& fromType, const SquareType& toType);
   static PTask consumeItem(TaskCallback*, vector<WItem> items);
-  static PTask copulate(TaskCallback*, Creature* target, int numTurns);
-  static PTask consume(TaskCallback*, Creature* target);
+  static PTask copulate(TaskCallback*, WCreature target, int numTurns);
+  static PTask consume(TaskCallback*, WCreature target);
   static PTask eat(set<Position> hatcherySquares);
   static PTask goTo(Position);
   static PTask goToTryForever(Position);
   static PTask transferTo(Model*);
   static PTask goToAndWait(Position, double waitTime);
-  static PTask whipping(Position, Creature* whipped);
+  static PTask whipping(Position, WCreature whipped);
   static PTask dropItems(vector<WItem>);
   static PTask spider(Position origin, const vector<Position>& posClose, const vector<Position>& posFurther);
 

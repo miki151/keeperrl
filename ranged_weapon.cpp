@@ -37,7 +37,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon);
 
 RangedWeapon::RangedWeapon(const ItemAttributes& attr) : Item(attr) {}
 
-void RangedWeapon::fire(Creature* c, PItem ammo, Vec2 dir) {
+void RangedWeapon::fire(WCreature c, PItem ammo, Vec2 dir) {
   c->getGame()->getView()->addSound(SoundId::SHOOT_BOW);
   int toHitVariance = 10;
   int attackVariance = 15;

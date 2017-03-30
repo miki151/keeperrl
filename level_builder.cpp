@@ -152,7 +152,7 @@ void LevelBuilder::setLandingLink(Vec2 posT, StairKey key) {
   squares.getWritable(pos)->setLandingLink(key);
 }
 
-bool LevelBuilder::canPutCreature(Vec2 posT, Creature* c) {
+bool LevelBuilder::canPutCreature(Vec2 posT, WCreature c) {
   Vec2 pos = transform(posT);
   if (!canNavigate(posT, c->getMovementType()))
     return false;

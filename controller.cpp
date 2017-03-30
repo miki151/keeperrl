@@ -37,16 +37,16 @@ SERIALIZABLE(Controller);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Controller);
 
-Controller::Controller(Creature* c) : creature(c) {
+Controller::Controller(WCreature c) : creature(c) {
 }
 
-ControllerFactory::ControllerFactory(function<SController(Creature*)> f) : fun(f) {}
+ControllerFactory::ControllerFactory(function<SController(WCreature)> f) : fun(f) {}
 
-SController ControllerFactory::get(Creature* c) const {
+SController ControllerFactory::get(WCreature c) const {
   return SController(fun(c));
 }
 
-DoNothingController::DoNothingController(Creature* c) : Controller(c) {}
+DoNothingController::DoNothingController(WCreature c) : Controller(c) {}
 
 bool DoNothingController::isPlayer() const {
   return false;
@@ -65,10 +65,10 @@ void DoNothingController::makeMove() {
   getCreature()->wait().perform(getCreature());
 }
 
-void DoNothingController::onBump(Creature* c) {
+void DoNothingController::onBump(WCreature c) {
 }
 
-Creature* Controller::getCreature() const {
+WCreature Controller::getCreature() const {
   return creature;
 }
 

@@ -53,14 +53,14 @@ Trigger::~Trigger() {}
 Trigger::Trigger(const ViewObject& obj, Position p): viewObject(new ViewObject(obj)), position(p) {
 }
 
-optional<ViewObject> Trigger::getViewObject(const Creature*) const {
+optional<ViewObject> Trigger::getViewObject(WConstCreature) const {
   if (viewObject)
     return *viewObject;
   else
     return none;
 }
 
-void Trigger::onCreatureEnter(Creature* c) {}
+void Trigger::onCreatureEnter(WCreature c) {}
 
 void Trigger::fireDamage(double size) {}
 
@@ -70,7 +70,7 @@ double Trigger::getLightEmission() const {
 
 bool Trigger::interceptsFlyingItem(WItem it) const { return false; }
 void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, VisionId) {}
-bool Trigger::isDangerous(const Creature* c) const { return false; }
+bool Trigger::isDangerous(WConstCreature c) const { return false; }
 void Trigger::tick() {}
 
 namespace {
@@ -95,7 +95,7 @@ class Portal : public Trigger {
     position.getGame()->registerPortal(position);
   }
 
-  virtual void onCreatureEnter(Creature* c) override {
+  virtual void onCreatureEnter(WCreature c) override {
     if (!active) {
       active = true;
       return;
@@ -160,7 +160,7 @@ class Trap : public Trigger {
       : Trigger(obj, position), effect(_effect), tribe(_tribe), alwaysVisible(visible) {
   }
 
-  virtual optional<ViewObject> getViewObject(const Creature* viewer) const override {
+  virtual optional<ViewObject> getViewObject(WConstCreature viewer) const override {
     if (!viewer || alwaysVisible || !viewer->getGame()->getTribe(tribe)->isEnemy(viewer)
         || viewer->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS))
       return *viewObject;
@@ -168,11 +168,11 @@ class Trap : public Trigger {
       return none;
   }
 
-  virtual bool isDangerous(const Creature* c) const override {
+  virtual bool isDangerous(WConstCreature c) const override {
     return c->getTribeId() != tribe;
   }
 
-  virtual void onCreatureEnter(Creature* c) override {
+  virtual void onCreatureEnter(WCreature c) override {
     if (c->getGame()->getTribe(tribe)->isEnemy(c)) {
       if (!c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
         if (!alwaysVisible)
@@ -236,7 +236,7 @@ namespace {
 
 class MeteorShower : public Trigger {
   public:
-  MeteorShower(Creature* c, double duration) : Trigger(c->getPosition()), creature(c),
+  MeteorShower(WCreature c, double duration) : Trigger(c->getPosition()), creature(c),
       endTime(creature->getGlobalTime() + duration) {}
 
   virtual void tick() override {
@@ -270,14 +270,14 @@ class MeteorShower : public Trigger {
   SERIALIZATION_CONSTRUCTOR(MeteorShower);
 
   private:
-  Creature* creature = nullptr; // Not serializing cause it might potentially cause a crash when saving a
+  WCreature creature = nullptr; // Not serializing cause it might potentially cause a crash when saving a
       // single model in campaign mode.
   double SERIAL(endTime);
 };
 
 }
 
-PTrigger Trigger::getMeteorShower(Creature* c, double duration) {
+PTrigger Trigger::getMeteorShower(WCreature c, double duration) {
   return PTrigger(new MeteorShower(c, duration));
 }
 

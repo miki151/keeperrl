@@ -15,9 +15,9 @@ class CollectiveControl {
   CollectiveControl(Collective*);
   virtual void update(bool currentlyActive);
   virtual void tick();
-  virtual void onMemberKilled(const Creature* victim, const Creature* killer);
-  virtual void onOtherKilled(const Creature* victim, const Creature* killer);
-  virtual void onMemberAdded(const Creature*) {}
+  virtual void onMemberKilled(WConstCreature victim, WConstCreature killer);
+  virtual void onOtherKilled(WConstCreature victim, WConstCreature killer);
+  virtual void onMemberAdded(WConstCreature) {}
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAttack(const CollectiveAttack&) {}
   virtual void onConstructed(Position, FurnitureType) {}
@@ -38,7 +38,7 @@ class CollectiveControl {
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
 
-  const vector<Creature*>& getCreatures() const;
+  const vector<WCreature>& getCreatures() const;
 
   private:
   Collective* SERIAL(collective) = nullptr;

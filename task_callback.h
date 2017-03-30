@@ -13,13 +13,13 @@ class TaskCallback {
   virtual bool isConstructionReachable(Position) { return true; }
   virtual void onTorchBuilt(Position, Trigger*) {}
   virtual void onAppliedItem(Position, WItem item) {}
-  virtual void onAppliedSquare(Creature*, Position) {}
+  virtual void onAppliedSquare(WCreature, Position) {}
   virtual void onAppliedItemCancel(Position) {}
   virtual void onTaskPickedUp(Position, EntitySet<Item>) {}
   virtual void onBrought(Position, EntitySet<Item>) {}
   virtual void onCantPickItem(EntitySet<Item> items) {}
-  virtual void onKillCancelled(Creature*) {}
-  virtual void onCopulated(Creature* who, Creature* with) {}
+  virtual void onKillCancelled(WCreature) {}
+  virtual void onCopulated(WCreature who, WCreature with) {}
 
   template <class Archive> 
   void serialize(Archive&, const unsigned int) {}

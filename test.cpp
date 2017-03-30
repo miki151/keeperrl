@@ -43,7 +43,7 @@ class Test {
     PCreature b(new Creature(ViewObject(ViewId::JACKAL, ViewLayer::CREATURE, ""), nullptr, attr));
     PCreature a(new Creature(ViewObject(ViewId::PLAYER, ViewLayer::CREATURE, ""), nullptr, attr));
     PCreature c(new Creature(ViewObject(ViewId::JACKAL, ViewLayer::CREATURE, ""), nullptr, attr));
-    Creature* rb = b.get(), *ra = a.get(), *rc = c.get();
+    WCreature rb = b.get(), *ra = a.get(), *rc = c.get();
     a->setTime(1);
     b->setTime(1.33);
     c->setTime(1.66);
@@ -461,6 +461,9 @@ class Test {
       OwnerPointer<tmp> t3 = makeOwner<tmp>(2);
       w1 = t3.get();
       w2 = t2.get();
+      CHECK(w1 != w2);
+      auto w4 = t3.get();
+      CHECK(w1 == w4);
       CHECK(!!w1);
       CHECKEQ(w1->x, 2);
       CHECK(!!w2);

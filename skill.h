@@ -48,12 +48,12 @@ class Creature;
 class Skill : public Singleton<Skill, SkillId> {
   public:
   string getName() const;
-  string getNameForCreature(const Creature*) const;
+  string getNameForCreature(WConstCreature) const;
   string getHelpText() const;
   bool transferOnConsumption() const;
   bool isDiscrete() const;
 
-  int getModifier(const Creature*, ModifierType) const;
+  int getModifier(WConstCreature, ModifierType) const;
 
   static void init();
 

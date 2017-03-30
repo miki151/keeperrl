@@ -34,12 +34,12 @@ enum class EventId {
 namespace EventInfo {
 
 struct Attacked {
-  Creature* victim;
-  Creature* attacker;
+  WCreature victim;
+  WCreature attacker;
 };
 
 struct ItemsHandled {
-  Creature* creature;
+  WCreature creature;
   vector<WItem> items;
 };
 
@@ -56,11 +56,11 @@ struct ItemsThrown {
 
 struct TrapDisarmed {
   Position position;
-  Creature* creature;
+  WCreature creature;
 };
 
 struct CreatureEvent {
-  Creature* creature;
+  WCreature creature;
   string message;
 };
 
@@ -71,10 +71,10 @@ struct FurnitureEvent {
 
 }
 
-class GameEvent : public EnumVariant<EventId, TYPES(Creature*, Position, Technology*, Collective*,
+class GameEvent : public EnumVariant<EventId, TYPES(WCreature, Position, Technology*, Collective*,
     EventInfo::CreatureEvent, EventInfo::Attacked, EventInfo::ItemsHandled, EventInfo::ItemsAppeared,
     EventInfo::ItemsThrown, EventInfo::TrapDisarmed, EventInfo::FurnitureEvent),
-    ASSIGN(Creature*, EventId::MOVED),
+    ASSIGN(WCreature, EventId::MOVED),
     ASSIGN(Position, EventId::EXPLOSION, EventId::ALARM, EventId::TRAP_TRIGGERED,
         EventId::POSITION_DISCOVERED),
     ASSIGN(Technology*, EventId::TECHBOOK_READ),

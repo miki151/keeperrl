@@ -14,7 +14,7 @@
 void FurnitureTick::handle(FurnitureTickType type, Position pos, Furniture* furniture) {
   switch (type) {
     case FurnitureTickType::BED:
-      if (Creature* c = pos.getCreature())
+      if (WCreature c = pos.getCreature())
         if (c->isAffected(LastingEffect::SLEEP))
           c->heal(0.005);
       break;
@@ -36,7 +36,7 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, Furniture* furn
         int radius = 4;
         for (int i = 1; i <= radius; ++i) {
           Position curPos = pos.plus(direction * i);
-          if (Creature* other = curPos.getCreature()) {
+          if (WCreature other = curPos.getCreature()) {
             if (!other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
               if (!other->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
                 pos.getGame()->addEvent({EventId::TRAP_TRIGGERED, pos});

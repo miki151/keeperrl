@@ -98,13 +98,13 @@ vector<pair<string, vector<WItem>>> Item::stackItems(vector<WItem> items, functi
   return ret;
 }
 
-void Item::onEquip(Creature* c) {
+void Item::onEquip(WCreature c) {
   onEquipSpecial(c);
   if (attributes->equipedEffect)
     c->addPermanentEffect(*attributes->equipedEffect);
 }
 
-void Item::onUnequip(Creature* c) {
+void Item::onUnequip(WCreature c) {
   onUnequipSpecial(c);
   if (attributes->equipedEffect)
     c->removePermanentEffect(*attributes->equipedEffect);
@@ -147,7 +147,7 @@ void Item::onHitSquareMessage(Position pos, int numItems) {
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
 }
 
-void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
+void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
   if (attributes->fragile) {
     c->you(numItems > 1 ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES, getPluralTheName(numItems));
     discarded = true;
@@ -180,11 +180,11 @@ int Item::getPrice() const {
   return attributes->price;
 }
 
-bool Item::isShopkeeper(const Creature* c) const {
+bool Item::isShopkeeper(WConstCreature c) const {
   return shopkeeper == c->getUniqueId();
 }
 
-void Item::setShopkeeper(const Creature* s) {
+void Item::setShopkeeper(WConstCreature s) {
   if (s)
     shopkeeper = s->getUniqueId();
   else
@@ -203,13 +203,13 @@ optional<CollectiveResourceId> Item::getResourceId() const {
   return attributes->resourceId;
 }
 
-void Item::apply(Creature* c, bool noSound) {
+void Item::apply(WCreature c, bool noSound) {
   if (attributes->applySound && !noSound)
     c->addSound(*attributes->applySound);
   applySpecial(c);
 }
 
-void Item::applySpecial(Creature* c) {
+void Item::applySpecial(WCreature c) {
   if (attributes->itemClass == ItemClass::SCROLL)
     c->getGame()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->effect)
@@ -221,7 +221,7 @@ void Item::applySpecial(Creature* c) {
   }
 }
 
-string Item::getApplyMsgThirdPerson(const Creature* owner) const {
+string Item::getApplyMsgThirdPerson(WConstCreature owner) const {
   if (attributes->applyMsgThirdPerson)
     return *attributes->applyMsgThirdPerson;
   switch (getClass()) {
@@ -235,7 +235,7 @@ string Item::getApplyMsgThirdPerson(const Creature* owner) const {
   return "";
 }
 
-string Item::getApplyMsgFirstPerson(const Creature* owner) const {
+string Item::getApplyMsgFirstPerson(WConstCreature owner) const {
   if (attributes->applyMsgFirstPerson)
     return *attributes->applyMsgFirstPerson;
   switch (getClass()) {
@@ -265,15 +265,15 @@ void Item::setName(const string& n) {
   attributes->name = n;
 }
 
-Creature* Item::getShopkeeper(const Creature* owner) const {
+WCreature Item::getShopkeeper(WConstCreature owner) const {
   if (shopkeeper)
-    for (Creature* c : owner->getVisibleCreatures())
+    for (WCreature c : owner->getVisibleCreatures())
       if (c->getUniqueId() == *shopkeeper)
         return c;
   return nullptr;
 }
 
-string Item::getName(bool plural, const Creature* owner) const {
+string Item::getName(bool plural, WConstCreature owner) const {
   string suff;
   if (fire->isBurning())
     suff.append(" (burning)");
@@ -284,14 +284,14 @@ string Item::getName(bool plural, const Creature* owner) const {
   return getVisibleName(plural) + suff;
 }
 
-string Item::getAName(bool getPlural, const Creature* owner) const {
+string Item::getAName(bool getPlural, WConstCreature owner) const {
   if (attributes->noArticle || getPlural)
     return getName(getPlural, owner);
   else
     return addAParticle(getName(getPlural, owner));
 }
 
-string Item::getTheName(bool getPlural, const Creature* owner) const {
+string Item::getTheName(bool getPlural, WConstCreature owner) const {
   string the = (attributes->noArticle || getPlural) ? "" : "the ";
   return the + getName(getPlural, owner);
 }
@@ -379,7 +379,7 @@ string Item::getModifiers(bool shorten) const {
   return artStr + attrString;
 }
 
-string Item::getShortName(const Creature* owner, bool noSuffix) const {
+string Item::getShortName(WConstCreature owner, bool noSuffix) const {
   if (owner && owner->isBlind() && attributes->blindName)
     return getBlindName(false);
   string name = getModifiers(true);
@@ -390,7 +390,7 @@ string Item::getShortName(const Creature* owner, bool noSuffix) const {
   return name;
 }
 
-string Item::getNameAndModifiers(bool getPlural, const Creature* owner) const {
+string Item::getNameAndModifiers(bool getPlural, WConstCreature owner) const {
   return getName(getPlural, owner) + getModifiers();
 }
 

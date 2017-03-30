@@ -23,7 +23,7 @@ class Immigration {
 
   class Available {
     public:
-    vector<Creature*> getCreatures() const;
+    vector<WCreature> getCreatures() const;
     optional<double> getEndTime() const;
     optional<CostInfo> getCost() const;
     const ImmigrantInfo& getInfo() const;
@@ -70,8 +70,8 @@ class Immigration {
   vector<string> getMissingAttractions(const ImmigrantInfo&) const;
   int SERIAL(idCnt) = 0;
   int SERIAL(candidateTimeout);
-  void occupyAttraction(const Creature*, const AttractionInfo&);
-  void occupyRequirements(const Creature*, int immigrantIndex);
+  void occupyAttraction(WConstCreature, const AttractionInfo&);
+  void occupyRequirements(WConstCreature, int immigrantIndex);
   double getRequirementMultiplier(const Group&) const;
   vector<string> getMissingRequirements(const Group&) const;
   void considerPersistentImmigrants(const vector<ImmigrantInfo>&);

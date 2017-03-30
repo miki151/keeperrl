@@ -140,7 +140,7 @@ static const double minLevelGain = 0.02;
 static const double equalLevelGain = 0.2;
 static const double maxLevelDiff = 5;
 
-double CreatureAttributes::getExpFromKill(const Creature* victim) const {
+double CreatureAttributes::getExpFromKill(WConstCreature victim) const {
   double levelDiff = victim->getAttributes().getExpLevel() - getExpLevel();
   double maxIncrease = max(0.0, maxExpFromCombat - getExpIncrease(ExperienceType::COMBAT));
   return min(maxIncrease, max(minLevelGain, min(maxLevelGain,
@@ -195,7 +195,7 @@ string CreatureAttributes::getDescription() const {
   return body->getDescription() + ". " + attack;
 }
 
-void CreatureAttributes::chatReaction(Creature* me, Creature* other) {
+void CreatureAttributes::chatReaction(WCreature me, WCreature other) {
   if (me->isEnemy(other) && chatReactionHostile) {
     if (chatReactionHostile->front() == '\"')
       other->playerMessage(*chatReactionHostile);
@@ -298,7 +298,7 @@ void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& effec
     }
 }
 
-void CreatureAttributes::consume(Creature* self, const CreatureAttributes& other) {
+void CreatureAttributes::consume(WCreature self, const CreatureAttributes& other) {
   INFO << name->bare() << " consume " << other.name->bare();
   self->you(MsgType::CONSUME, other.name->the());
   self->addPersonalEvent(self->getName().a() + " absorbs " + other.name->a());

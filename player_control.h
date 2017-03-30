@@ -52,10 +52,10 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   ~PlayerControl();
 
   void processInput(View* view, UserInput);
-  MoveInfo getMove(Creature* c);
+  MoveInfo getMove(WCreature c);
 
-  const Creature* getKeeper() const;
-  Creature* getKeeper();
+  WConstCreature getKeeper() const;
+  WCreature getKeeper();
 
   void render(View*);
 
@@ -86,8 +86,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
 
-  vector<Creature*> getTeam(const Creature*);
-  optional<FurnitureType> getMissingTrainingDummy(const Creature*);
+  vector<WCreature> getTeam(WConstCreature);
+  optional<FurnitureType> getMissingTrainingDummy(WConstCreature);
 
   protected:
   // from CreatureView
@@ -104,8 +104,8 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   // from CollectiveControl
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
-  virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
-  virtual void onMemberAdded(const Creature*) override;
+  virtual void onMemberKilled(WConstCreature victim, WConstCreature killer) override;
+  virtual void onMemberAdded(WConstCreature) override;
   virtual void onConstructed(Position, FurnitureType) override;
   virtual void onClaimedSquare(Position) override;
   virtual void onDestructed(Position, const DestroyAction&) override;
@@ -122,23 +122,23 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void considerWarning();
 
   TribeId getTribeId() const;
-  bool canSee(const Creature*) const;
+  bool canSee(WConstCreature) const;
   bool canSee(Position) const;
   void initialize();
-  bool isConsideredAttacking(const Creature*, const Collective* enemy);
+  bool isConsideredAttacking(WConstCreature, const Collective* enemy);
 
   void checkKeeperDanger();
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
   void updateKnownLocations(const Position&);
-  bool isEnemy(const Creature*) const;
+  bool isEnemy(WConstCreature) const;
   vector<Collective*> getKnownVillains(VillainType) const;
   Collective* getVillain(int num);
   void scrollToMiddle(const vector<Position>&);
 
-  Creature* getConsumptionTarget(View*, Creature* consumer);
-  Creature* getCreature(UniqueEntity<Creature>::Id id) const;
-  void controlSingle(const Creature*);
+  WCreature getConsumptionTarget(View*, WCreature consumer);
+  WCreature getCreature(UniqueEntity<Creature>::Id id) const;
+  void controlSingle(WCreature);
   void commandTeam(TeamId);
   void setScrollPos(Position);
 
@@ -165,23 +165,23 @@ class PlayerControl : public CreatureView, public CollectiveControl {
 
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&) const;
-  WItem chooseEquipmentItem(Creature* creature, vector<WItem> currentItems, ItemPredicate predicate,
+  WItem chooseEquipmentItem(WCreature creature, vector<WItem> currentItems, ItemPredicate predicate,
       ScrollPosition* scrollPos = nullptr);
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);
   void minionDragAndDrop(const CreatureDropInfo&);
   void fillMinions(CollectiveInfo&) const;
-  vector<Creature*> getMinionsLike(Creature*) const;
-  vector<PlayerInfo> getPlayerInfos(vector<Creature*>, UniqueEntity<Creature>::Id chosenId) const;
-  void sortMinionsForUI(vector<Creature*>&) const;
-  vector<CollectiveInfo::CreatureGroup> getCreatureGroups(vector<Creature*>) const;
+  vector<WCreature> getMinionsLike(WCreature) const;
+  vector<PlayerInfo> getPlayerInfos(vector<WCreature>, UniqueEntity<Creature>::Id chosenId) const;
+  void sortMinionsForUI(vector<WCreature>&) const;
+  vector<CollectiveInfo::CreatureGroup> getCreatureGroups(vector<WCreature>) const;
   vector<CollectiveInfo::CreatureGroup> getEnemyGroups() const;
   void minionEquipmentAction(const EquipmentActionInfo&);
-  void addEquipment(Creature*, EquipmentSlot);
-  void addConsumableItem(Creature*);
-  void handleEquipment(View* view, Creature* creature);
-  void fillEquipment(Creature*, PlayerInfo&) const;
+  void addEquipment(WCreature, EquipmentSlot);
+  void addConsumableItem(WCreature);
+  void handleEquipment(View* view, WCreature creature);
+  void fillEquipment(WCreature, PlayerInfo&) const;
   void handlePersonalSpells(View*);
   void handleLibrary(View*);
   void handleTrading(Collective* ally);
@@ -191,7 +191,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   void addToMemory(Position);
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
-  Creature* getControlled() const;
+  WCreature getControlled() const;
   optional<TeamId> getCurrentTeam() const;
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
@@ -232,7 +232,7 @@ class PlayerControl : public CreatureView, public CollectiveControl {
   bool firstRender = true;
   bool isNight = true;
   optional<UniqueEntity<Creature>::Id> draggedCreature;
-  void updateMinionVisibility(const Creature*);
+  void updateMinionVisibility(WConstCreature);
   STutorial SERIAL(tutorial);
 };
 

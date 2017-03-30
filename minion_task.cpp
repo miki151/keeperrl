@@ -27,7 +27,7 @@ static optional<Position> getRandomCloseTile(Position from, const vector<Positio
   return ret;
 }
 
-static optional<Position> getTileToExplore(const Collective* collective, const Creature* c, MinionTask task) {
+static optional<Position> getTileToExplore(const Collective* collective, WConstCreature c, MinionTask task) {
   vector<Position> border = Random.permutation(collective->getKnownTiles().getBorderTiles());
   switch (task) {
     case MinionTask::EXPLORE_CAVES:
@@ -48,8 +48,8 @@ static optional<Position> getTileToExplore(const Collective* collective, const C
   return none;
 }
 
-static Creature* getCopulationTarget(const Collective* collective, Creature* succubus) {
-  for (Creature* c : Random.permutation(collective->getCreatures(MinionTrait::FIGHTER)))
+static WCreature getCopulationTarget(const Collective* collective, WCreature succubus) {
+  for (WCreature c : Random.permutation(collective->getCreatures(MinionTrait::FIGHTER)))
     if (succubus->canCopulateWith(c))
       return c;
   return nullptr;
@@ -75,7 +75,7 @@ const vector<FurnitureType>& MinionTasks::getAllFurniture(MinionTask task) {
   return cache[task];
 }
 
-optional<MinionTask> MinionTasks::getTaskFor(const Creature* c, FurnitureType type) {
+optional<MinionTask> MinionTasks::getTaskFor(WConstCreature c, FurnitureType type) {
   static EnumMap<FurnitureType, optional<MinionTask>> cache;
   static bool initialized = false;
   if (!initialized) {
@@ -92,7 +92,7 @@ optional<MinionTask> MinionTasks::getTaskFor(const Creature* c, FurnitureType ty
   return none;
 }
 
-vector<Position> MinionTasks::getAllPositions(const Collective* collective, const Creature* c, MinionTask task,
+vector<Position> MinionTasks::getAllPositions(const Collective* collective, WConstCreature c, MinionTask task,
     bool onlyActive) {
   vector<Position> ret;
   auto& info = CollectiveConfig::getTaskInfo(task);
@@ -102,7 +102,7 @@ vector<Position> MinionTasks::getAllPositions(const Collective* collective, cons
   return ret;
 }
 
-PTask MinionTasks::generate(Collective* collective, Creature* c, MinionTask task) {
+PTask MinionTasks::generate(Collective* collective, WCreature c, MinionTask task) {
   auto& info = CollectiveConfig::getTaskInfo(task);
   switch (info.type) {
     case MinionTaskInfo::FURNITURE: {
@@ -121,7 +121,7 @@ PTask MinionTasks::generate(Collective* collective, Creature* c, MinionTask task
         return Task::explore(*pos);
       break;
     case MinionTaskInfo::COPULATE:
-      if (Creature* target = getCopulationTarget(collective, c))
+      if (WCreature target = getCopulationTarget(collective, c))
         return Task::copulate(collective, target, 20);
       break;
     case MinionTaskInfo::EAT: {
@@ -138,7 +138,7 @@ PTask MinionTasks::generate(Collective* collective, Creature* c, MinionTask task
   return nullptr;
 }
 
-optional<double> MinionTasks::getDuration(const Creature* c, MinionTask task) {
+optional<double> MinionTasks::getDuration(WConstCreature c, MinionTask task) {
   switch (task) {
     case MinionTask::COPULATE:
     case MinionTask::GRAVE:

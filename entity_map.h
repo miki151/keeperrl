@@ -38,13 +38,13 @@ class EntityMap {
   optional<Value> getMaybe(const Key*) const;
   const Value& getOrElse(const Key*, const Value&) const;
 
-  void set(WeakPointer<Key>, const Value&);
-  void erase(WeakPointer<Key>);
-  const Value& getOrFail(WeakPointer<Key>) const;
-  Value& getOrFail(WeakPointer<Key>);
-  Value& getOrInit(WeakPointer<Key>);
-  optional<Value> getMaybe(WeakPointer<Key>) const;
-  const Value& getOrElse(WeakPointer<Key>, const Value&) const;
+  void set(WeakPointer<const Key>, const Value&);
+  void erase(WeakPointer<const Key>);
+  const Value& getOrFail(WeakPointer<const Key>) const;
+  Value& getOrFail(WeakPointer<const Key>);
+  Value& getOrInit(WeakPointer<const Key>);
+  optional<Value> getMaybe(WeakPointer<const Key>) const;
+  const Value& getOrElse(WeakPointer<const Key>, const Value&) const;
 
   void set(EntityId, const Value&);
   void erase(EntityId);

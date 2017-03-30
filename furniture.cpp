@@ -83,7 +83,7 @@ bool Furniture::canEnter(const MovementType& movement) const {
   return blockType == NON_BLOCKING || (blockType == BLOCKING_ENEMIES && movement.isCompatible(getTribe()));
 }
 
-void Furniture::onEnter(Creature* c) const {
+void Furniture::onEnter(WCreature c) const {
   if (entryType)
     FurnitureEntry::handle(*entryType, this, c);
 }
@@ -99,7 +99,7 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
     pos.removeFurniture(this);
 }
 
-void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {
+void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& action) {
   if (auto& strength = destroyActions[action.getType()]) {
     c->addSound(action.getSound());
     *strength -= c->getAttr(AttrType::STRENGTH);
@@ -160,12 +160,12 @@ void Furniture::click(Position pos) const {
   }
 }
 
-void Furniture::use(Position pos, Creature* c) const {
+void Furniture::use(Position pos, WCreature c) const {
   if (usageType)
     FurnitureUsage::handle(*usageType, pos, this, c);
 }
 
-bool Furniture::canUse(const Creature* c) const {
+bool Furniture::canUse(WConstCreature c) const {
   if (usageType)
     return FurnitureUsage::canHandle(*usageType, c);
   else
@@ -192,7 +192,7 @@ bool Furniture::isWall() const {
   return wall;
 }
 
-void Furniture::onConstructedBy(Creature* c) const {
+void Furniture::onConstructedBy(WCreature c) const {
   switch (constructMessage) {
     case BUILD:
       c->monsterMessage(c->getName().the() + " builds a " + getName());

@@ -41,7 +41,7 @@ class Player : public Controller, public CreatureView {
   virtual ~Player();
 
   static ControllerFactory getFactory(MapMemory* levelMemory);
-  Player(Creature*, bool adventurer, MapMemory*, STutorial = nullptr);
+  Player(WCreature, bool adventurer, MapMemory*, STutorial = nullptr);
 
   SERIALIZATION_DECL(Player)
 
@@ -61,7 +61,7 @@ class Player : public Controller, public CreatureView {
   virtual bool isPlayerView() const override;
 
   // from Controller
-  virtual void onKilled(const Creature* attacker) override;
+  virtual void onKilled(WConstCreature attacker) override;
   virtual void makeMove() override;
   virtual void sleeping() override;
   virtual bool isPlayer() const override;
@@ -69,7 +69,7 @@ class Player : public Controller, public CreatureView {
   virtual void you(MsgType type, const vector<string>& param) override;
   virtual void you(const string& param) override;
   virtual void privateMessage(const PlayerMessage& message) override;
-  virtual void onBump(Creature*) override;
+  virtual void onBump(WCreature) override;
   virtual void onDisplaced() override;
 
   // overridden by subclasses
@@ -80,7 +80,7 @@ class Player : public Controller, public CreatureView {
   };
   virtual vector<CommandInfo> getCommands() const;
   virtual void onFellAsleep();
-  virtual vector<Creature*> getTeam() const;
+  virtual vector<WCreature> getTeam() const;
 
   MapMemory* SERIAL(levelMemory);
   void showHistory();
@@ -96,7 +96,7 @@ class Player : public Controller, public CreatureView {
 
   void considerAdventurerMusic();
   void extendedAttackAction(UniqueEntity<Creature>::Id);
-  void extendedAttackAction(Creature* other);
+  void extendedAttackAction(WCreature other);
   void creatureAction(UniqueEntity<Creature>::Id);
   void pickUpItemAction(int item, bool multi = false);
   void equipmentAction();

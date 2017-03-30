@@ -22,7 +22,7 @@ class RangedWeapon : public Item {
   public:
   RangedWeapon(const ItemAttributes&);
 
-  virtual void fire(Creature*, PItem ammo, Vec2 dir);
+  virtual void fire(WCreature, PItem ammo, Vec2 dir);
 
   SERIALIZATION_DECL(RangedWeapon);
 };

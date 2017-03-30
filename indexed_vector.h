@@ -29,8 +29,17 @@ class IndexedVector {
   }
 
   void insert(T&& t) {
+    CHECK(!contains(t));
     indexes.emplace(t->getUniqueId(), elems.size());
     elems.push_back(std::move(t));
+  }
+
+  bool contains(const T& t) const {
+    return indexes.count(t->getUniqueId());
+  }
+
+  void remove(const T& t) {
+    remove(t->getUniqueId());
   }
 
   T remove(Id id) {

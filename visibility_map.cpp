@@ -11,7 +11,7 @@ void VisibilityMap::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(VisibilityMap);
 
-void VisibilityMap::update(const Creature* c, vector<Position> visibleTiles) {
+void VisibilityMap::update(WConstCreature c, vector<Position> visibleTiles) {
   remove(c);
   lastUpdates.set(c, visibleTiles);
   for (Position v : visibleTiles)
@@ -19,7 +19,7 @@ void VisibilityMap::update(const Creature* c, vector<Position> visibleTiles) {
       v.setNeedsRenderUpdate(true);
 }
 
-void VisibilityMap::remove(const Creature* c) {
+void VisibilityMap::remove(WConstCreature c) {
   if (auto pos = lastUpdates.getMaybe(c))
     for (Position v : *pos)
       if (--visibilityCount.getOrFail(v) == 0)

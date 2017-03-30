@@ -13,7 +13,7 @@ SERIALIZABLE(CollectiveName);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveName);
 
-CollectiveName::CollectiveName(optional<string> race, optional<string> location, const Creature* leader) {
+CollectiveName::CollectiveName(optional<string> race, optional<string> location, WConstCreature leader) {
   if (location && race)
     fullName = capitalFirst(*race) + " of " + *location;
   else if (auto first = leader->getName().first())

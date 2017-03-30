@@ -87,16 +87,16 @@ class Square : public Renderable {
   void onAddedToLevel(Position) const;
 
   /** Puts a creature on the square.*/
-  void putCreature(Creature*);
+  void putCreature(WCreature);
 
   /** Puts a creature on the square without triggering any mechanisms that happen when a creature enters.*/ 
-  void setCreature(Creature*);
+  void setCreature(WCreature);
 
   /** Removes the creature from the square.*/
   void removeCreature(Position);
 
   /** Returns the creature from the square.*/
-  Creature* getCreature() const;
+  WCreature getCreature() const;
 
   /** Adds a trigger to the square.*/
   void addTrigger(Position, PTrigger);
@@ -122,7 +122,7 @@ class Square : public Renderable {
   void tick(Position);
 
   optional<ViewObject> extractBackground() const;
-  void getViewIndex(ViewIndex&, const Creature* viewer) const;
+  void getViewIndex(ViewIndex&, WConstCreature viewer) const;
 
   bool itemLands(vector<WItem> item, const Attack& attack) const;
   void onItemLands(Position, vector<PItem>, const Attack&, int remainingDist, Vec2 dir, VisionId);
@@ -153,16 +153,16 @@ class Square : public Renderable {
   SERIALIZATION_DECL(Square);
 
   protected:
-  void onEnter(Creature*);
-  virtual void onEnterSpecial(Creature*) {}
-  virtual void onApply(Creature*) { FATAL << "Bad square applied"; }
+  void onEnter(WCreature);
+  virtual void onEnterSpecial(WCreature) {}
+  virtual void onApply(WCreature) { FATAL << "Bad square applied"; }
   virtual void onApply(Position) { FATAL << "Bad square applied"; }
   string SERIAL(name);
 
   private:
   WItem getTopItem() const;
   HeapAllocated<Inventory> SERIAL(inventory);
-  Creature* SERIAL(creature) = nullptr;
+  WCreature SERIAL(creature) = nullptr;
   vector<PTrigger> SERIAL(triggers);
   optional<VisionId> SERIAL(vision);
   optional<StairKey> SERIAL(landingLink);

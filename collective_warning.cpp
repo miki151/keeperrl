@@ -49,16 +49,16 @@ void CollectiveWarnings::considerWeaponWarning(Collective* col) {
   int numWeapons = col->getNumItems(ItemIndex::WEAPON);
   PItem genWeapon = ItemFactory::fromId(ItemId::SWORD);
   int numNeededWeapons = 0;
-  for (Creature* c : col->getCreatures(MinionTrait::FIGHTER))
+  for (WCreature c : col->getCreatures(MinionTrait::FIGHTER))
     if (col->usesEquipment(c) && col->getMinionEquipment().needsItem(c, genWeapon.get(), true))
       ++numNeededWeapons;
   setWarning(Warning::NO_WEAPONS, numNeededWeapons > numWeapons);
 }
 
 void CollectiveWarnings::considerMoraleWarning(Collective* col) {
-  vector<Creature*> minions = col->getCreatures(MinionTrait::FIGHTER);
+  vector<WCreature> minions = col->getCreatures(MinionTrait::FIGHTER);
   setWarning(Warning::LOW_MORALE,
-      filter(minions, [] (const Creature* c) { return c->getMorale() < -0.2; }).size() > minions.size() / 2);
+      filter(minions, [] (WConstCreature c) { return c->getMorale() < -0.2; }).size() > minions.size() / 2);
 }
 
 void CollectiveWarnings::considerTorchesWarning(Collective* col) {

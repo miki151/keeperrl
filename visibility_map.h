@@ -10,8 +10,8 @@ class Level;
 
 class VisibilityMap {
   public:
-  void update(const Creature*, vector<Position> visibleTiles);
-  void remove(const Creature*);
+  void update(WConstCreature, vector<Position> visibleTiles);
+  void remove(WConstCreature);
   bool isVisible(Position) const;
 
   template <class Archive> 

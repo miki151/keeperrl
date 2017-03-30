@@ -25,7 +25,7 @@ string Skill::getName() const {
   return name;
 }
 
-string Skill::getNameForCreature(const Creature* c) const {
+string Skill::getNameForCreature(WConstCreature c) const {
   double val = c->getAttributes().getSkills().getValue(getId());
   CHECK(val >= 0 && val <= 1) << "Skill value " << val;
   return getName() + " (" + toString<int>(val * 100) + "%)";
@@ -39,7 +39,7 @@ bool Skill::isDiscrete() const {
   return discrete;
 }
 
-static int archeryBonus(const Creature* c, ModifierType t) {
+static int archeryBonus(WConstCreature c, ModifierType t) {
   switch (t) {
     case ModifierType::FIRED_ACCURACY: return c->getAttributes().getSkills().getValue(SkillId::ARCHERY) * 10;
     case ModifierType::FIRED_DAMAGE: return c->getAttributes().getSkills().getValue(SkillId::ARCHERY) * 10;
@@ -48,7 +48,7 @@ static int archeryBonus(const Creature* c, ModifierType t) {
   return 0;
 }
 
-static int weaponBonus(const Creature* c, ModifierType t) {
+static int weaponBonus(WConstCreature c, ModifierType t) {
   if (!c->getWeapon())
     return 0;
   switch (t) {
@@ -59,7 +59,7 @@ static int weaponBonus(const Creature* c, ModifierType t) {
   return 0;
 }
 
-static int unarmedBonus(const Creature* c, ModifierType t) {
+static int unarmedBonus(WConstCreature c, ModifierType t) {
   if (c->getWeapon())
     return 0;
   switch (t) {
@@ -70,7 +70,7 @@ static int unarmedBonus(const Creature* c, ModifierType t) {
   return 0;
 }
 
-static int knifeBonus(const Creature* c, ModifierType t) {
+static int knifeBonus(WConstCreature c, ModifierType t) {
   switch (t) {
     case ModifierType::THROWN_ACCURACY:
       return c->getAttributes().getSkills().getValue(SkillId::KNIFE_THROWING) * 10;
@@ -81,7 +81,7 @@ static int knifeBonus(const Creature* c, ModifierType t) {
   return 0;
 }
 
-int Skill::getModifier(const Creature* c, ModifierType t) const {
+int Skill::getModifier(WConstCreature c, ModifierType t) const {
   switch (getId()) {
     case SkillId::ARCHERY: return archeryBonus(c, t);
     case SkillId::WEAPON_MELEE: return weaponBonus(c, t);

@@ -65,7 +65,7 @@ Square::Square(const ViewObject& obj, Params p)
 Square::~Square() {
 }
 
-void Square::putCreature(Creature* c) {
+void Square::putCreature(WCreature c) {
   //CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
   setCreature(c);
   onEnter(c);
@@ -90,7 +90,7 @@ optional<StairKey> Square::getLandingLink() const {
   return landingLink;
 }
 
-void Square::setCreature(Creature* c) {
+void Square::setCreature(WCreature c) {
   creature = c;
 }
 
@@ -173,7 +173,7 @@ optional<ViewObject> Square::extractBackground() const {
     return none;
 }
 
-void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
+void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
   if ((!viewer && lastViewer) || (viewer && lastViewer == viewer->getUniqueId())) {
     ret = *viewIndex;
     return;
@@ -195,7 +195,7 @@ void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
   *viewIndex = ret;
 }
 
-void Square::onEnter(Creature* c) {
+void Square::onEnter(WCreature c) {
   setDirty(c->getPosition());
   for (Trigger* t : extractRefs(triggers))
     t->onCreatureEnter(c);
@@ -248,14 +248,14 @@ vector<PTrigger> Square::removeTriggers(Position pos) {
   return ret;
 }
 
-Creature* Square::getCreature() const {
+WCreature Square::getCreature() const {
   return creature;
 }
 
 void Square::removeCreature(Position pos) {
   setDirty(pos);
   CHECK(creature);
-  Creature* tmp = creature;
+  WCreature tmp = creature;
   creature = nullptr;
 }
 

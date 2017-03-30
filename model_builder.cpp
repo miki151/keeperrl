@@ -476,7 +476,7 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
 
 Collective* ModelBuilder::spawnKeeper(Model* m, PCreature keeper) {
   Level* level = m->getTopLevel();
-  Creature* keeperRef = keeper.get();
+  WCreature keeperRef = keeper.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   m->addCreature(std::move(keeper));
   m->collectives.push_back(CollectiveBuilder(

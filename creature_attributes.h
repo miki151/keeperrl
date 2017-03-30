@@ -66,7 +66,7 @@ class CreatureAttributes {
   double getVisibleExpLevel() const;
   void increaseExpLevel(ExperienceType, double increase);
   void increaseBaseExpLevel(double increase);
-  double getExpFromKill(const Creature* victim) const;
+  double getExpFromKill(WConstCreature victim) const;
   optional<double> getMaxExpIncrease(ExperienceType) const;
   string bodyDescription() const;
   SpellMap& getSpellMap();
@@ -78,7 +78,7 @@ class CreatureAttributes {
   ViewObject createViewObject() const;
   const optional<ViewObject>& getIllusionViewObject() const;
   bool canEquip() const;
-  void chatReaction(Creature* me, Creature* other);
+  void chatReaction(WCreature me, WCreature other);
   string getDescription() const;
   bool isAffected(LastingEffect, double globalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
@@ -96,7 +96,7 @@ class CreatureAttributes {
   optional<EffectType> getAttackEffect() const;
   bool canSleep() const;
   bool isInnocent() const;
-  void consume(Creature* self, const CreatureAttributes& other);
+  void consume(WCreature self, const CreatureAttributes& other);
   optional<SpawnType> getSpawnType() const; 
   const MinionTaskMap& getMinionTasks() const;
   MinionTaskMap& getMinionTasks();

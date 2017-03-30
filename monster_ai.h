@@ -43,10 +43,10 @@ class MonsterAI {
 
   private:
   friend class MonsterAIFactory;
-  MonsterAI(Creature*, const vector<Behaviour*>& behaviours, const vector<int>& weights, bool pickItems = true);
+  MonsterAI(WCreature, const vector<Behaviour*>& behaviours, const vector<int>& weights, bool pickItems = true);
   vector<PBehaviour> SERIAL(behaviours);
   vector<int> SERIAL(weights);
-  Creature* SERIAL(creature);
+  WCreature SERIAL(creature);
   bool SERIAL(pickItems);
 };
 
@@ -54,7 +54,7 @@ class Collective;
 
 class MonsterAIFactory {
   public:
-  PMonsterAI getMonsterAI(Creature* c) const;
+  PMonsterAI getMonsterAI(WCreature c) const;
 
   static MonsterAIFactory collective(Collective*);
   static MonsterAIFactory monster();
@@ -63,7 +63,7 @@ class MonsterAIFactory {
   static MonsterAIFactory guardSquare(Position);
   static MonsterAIFactory wildlifeNonPredator();
   static MonsterAIFactory scavengerBird(Position corpsePos);
-  static MonsterAIFactory summoned(Creature*, int ttl);
+  static MonsterAIFactory summoned(WCreature, int ttl);
   static MonsterAIFactory dieTime(double time);
   static MonsterAIFactory moveRandomly();
   static MonsterAIFactory stayOnFurniture(FurnitureType);
@@ -73,7 +73,7 @@ class MonsterAIFactory {
   static MonsterAIFactory splashImps(const FilePath& splashPath);
 
   private:
-  typedef function<MonsterAI*(Creature*)> MakerFun;
+  typedef function<MonsterAI*(WCreature)> MakerFun;
   MonsterAIFactory(MakerFun);
   MakerFun maker;
 };

@@ -53,13 +53,13 @@ class CreatureDebt;
 struct AdjectiveInfo;
 struct MovementInfo;
 
-class Creature : public Renderable, public UniqueEntity<Creature> {
+class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature> {
   public:
-  Creature(TribeId, const CreatureAttributes&, const ControllerFactory&);
-  Creature(const ViewObject&, TribeId, const CreatureAttributes&, const ControllerFactory&);
+  Creature(TribeId, const CreatureAttributes&);
+  Creature(const ViewObject&, TribeId, const CreatureAttributes&);
   virtual ~Creature();
 
-  static vector<vector<Creature*>> stack(const vector<Creature*>&);
+  static vector<vector<WCreature>> stack(const vector<WCreature>&);
 
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void makeMove();
@@ -67,8 +67,8 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   double getGlobalTime() const;
   Level* getLevel() const;
   Game* getGame() const;
-  vector<Creature*> getVisibleEnemies() const;
-  vector<Creature*> getVisibleCreatures() const;
+  vector<WCreature> getVisibleEnemies() const;
+  vector<WCreature> getVisibleCreatures() const;
   vector<Position> getVisibleTiles() const;
   void setPosition(Position);
   Position getPosition() const;
@@ -81,7 +81,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   DEF_UNIQUE_PTR(MoraleOverride);
   class MoraleOverride {
     public:
-    virtual optional<double> getMorale(const Creature*) = 0;
+    virtual optional<double> getMorale(WConstCreature) = 0;
     virtual ~MoraleOverride() {}
     template <class Archive> 
     void serialize(Archive& ar, const unsigned int version);
@@ -93,10 +93,10 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   const Equipment& getEquipment() const;
   Equipment& getEquipment();
   vector<PItem> steal(const vector<WItem> items);
-  bool canSee(const Creature*) const;
+  bool canSee(WConstCreature) const;
   bool canSee(Position) const;
   bool canSee(Vec2) const;
-  bool isEnemy(const Creature*) const;
+  bool isEnemy(WConstCreature) const;
   void tick();
 
   const CreatureName& getName() const;
@@ -115,10 +115,10 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   Tribe* getTribe();
   TribeId getTribeId() const;
   void setTribe(TribeId);
-  bool isFriend(const Creature*) const;
+  bool isFriend(WConstCreature) const;
   vector<WItem> getGold(int num) const;
 
-  void takeItems(vector<PItem> items, Creature* from);
+  void takeItems(vector<PItem> items, WCreature from);
   bool canTakeItems(const vector<WItem>& items) const;
 
   void youHit(BodyPart part, AttackType type) const;
@@ -161,7 +161,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
     enum Mod { WILD, SWIFT};
     optional<Mod> mod;
   };
-  CreatureAction attack(Creature*, optional<AttackParams> = none, bool spendTime = true) const;
+  CreatureAction attack(WCreature, optional<AttackParams> = none, bool spendTime = true) const;
   CreatureAction bumpInto(Vec2 direction) const;
   CreatureAction applyItem(WItem item) const;
   CreatureAction equip(WItem item) const;
@@ -174,13 +174,13 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction applySquare(Position) const;
   CreatureAction hide() const;
   bool isHidden() const;
-  bool knowsHiding(const Creature*) const;
+  bool knowsHiding(WConstCreature) const;
   CreatureAction flyAway() const;
   CreatureAction disappear() const;
-  CreatureAction torture(Creature*) const;
-  CreatureAction chatTo(Creature*) const;
+  CreatureAction torture(WCreature) const;
+  CreatureAction chatTo(WCreature) const;
   CreatureAction stealFrom(Vec2 direction, const vector<WItem>&) const;
-  CreatureAction give(Creature* whom, vector<WItem> items) const;
+  CreatureAction give(WCreature whom, vector<WItem> items) const;
   CreatureAction payFor(const vector<WItem>&) const;
   CreatureAction fire(Vec2 direction) const;
   CreatureAction construct(Vec2 direction, FurnitureType) const;
@@ -192,12 +192,12 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   CreatureAction destroy(Vec2 direction, const DestroyAction&) const;
   void destroyImpl(Vec2 direction, const DestroyAction& action);
   CreatureAction copulate(Vec2 direction) const;
-  bool canCopulateWith(const Creature*) const;
-  CreatureAction consume(Creature*) const;
-  bool canConsume(const Creature*) const;
+  bool canCopulateWith(WConstCreature) const;
+  CreatureAction consume(WCreature) const;
+  bool canConsume(WConstCreature) const;
   
   void displace(double time, Vec2);
-  void surrender(Creature* to);
+  void surrender(WCreature to);
   void retire();
   
   void increaseExpLevel(ExperienceType, double increase);
@@ -214,14 +214,15 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canNavigateTo(Position) const;
 
   bool atTarget() const;
-  void die(Creature* attacker = nullptr, bool dropInventory = true, bool dropCorpse = true);
+  void die(WCreature attacker, bool dropInventory = true, bool dropCorpse = true);
+  void die(bool dropInventory = true, bool dropCorpse = true);
   void die(const string& reason, bool dropInventory = true, bool dropCorpse = true);
   void fireDamage(double amount);
   void poisonWithGas(double amount);
   void affectBySilver();
   void affectByAcid();
-  void setHeld(Creature* holding);
-  Creature* getHoldingCreature() const;
+  void setHeld(WCreature holding);
+  WCreature getHoldingCreature() const;
 
   void you(MsgType type, const vector<string>& param) const;
   void you(MsgType type, const string& param) const;
@@ -252,7 +253,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool hasCondition(CreatureCondition) const;
   bool isDarknessSource() const;
 
-  bool isUnknownAttacker(const Creature*) const;
+  bool isUnknownAttacker(WConstCreature) const;
   int accuracyBonus() const;
   vector<string> getMainAdjectives() const;
   vector<AdjectiveInfo> getGoodAdjectives() const;
@@ -263,7 +264,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   void addPersonalEvent(const string&);
   void setInCombat();
   bool wasInCombat(double numLastTurns) const;
-  void onKilled(Creature* victim);
+  void onKilled(WCreature victim);
 
   void addSound(const Sound&) const;
   void updateViewObject();
@@ -277,7 +278,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   bool canCarry(const vector<WItem>&) const;
   TribeSet getFriendlyTribes() const;
   void addMovementInfo(const MovementInfo&);
-  bool canSwapPositionInMovement(Creature* other) const;
+  bool canSwapPositionInMovement(WCreature other) const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
@@ -288,7 +289,7 @@ class Creature : public Renderable, public UniqueEntity<Creature> {
   double SERIAL(morale) = 0;
   optional<double> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
-  Creature* lastAttacker = nullptr;
+  WCreature lastAttacker = nullptr;
   optional<string> SERIAL(deathReason);
   int SERIAL(swapPositionCooldown) = 0;
   EntitySet<Creature> SERIAL(unknownAttackers);

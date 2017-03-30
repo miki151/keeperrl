@@ -231,7 +231,7 @@ const char* CampaignBuilder::getIntroText() const {
    }
 }
 
-void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, const Creature* player) {
+void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, WConstCreature player) {
   switch (playerRole) {
     case PlayerRole::KEEPER:
       if (campaign.playerPos)

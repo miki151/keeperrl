@@ -317,7 +317,7 @@ MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWa
 MinionTaskInfo::MinionTaskInfo() {}
 
 MinionTaskInfo::MinionTaskInfo(FurnitureType type, const string& desc) : type(FURNITURE),
-  furniturePredicate([type](const Creature*, FurnitureType t) { return t == type;}),
+  furniturePredicate([type](WConstCreature, FurnitureType t) { return t == type;}),
     description(desc) {
 }
 
@@ -384,7 +384,7 @@ CollectiveConfig::~CollectiveConfig() {
 const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
   static EnumMap<MinionTask, MinionTaskInfo> map([](MinionTask task) -> MinionTaskInfo {
     switch (task) {
-      case MinionTask::TRAIN: return {[](const Creature* c, FurnitureType t) {
+      case MinionTask::TRAIN: return {[](WConstCreature c, FurnitureType t) {
             if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevelIncrease(t))
               return !c || c->getAttributes().getExpIncrease(ExperienceType::TRAINING) < *maxIncrease;
             else
@@ -407,7 +407,7 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
       case MinionTask::EXECUTE: return {FurnitureType::PRISON, "execution ordered"};
       case MinionTask::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped"};
       case MinionTask::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured"};
-      case MinionTask::CRAFT: return {[](const Creature* c, FurnitureType t) {
+      case MinionTask::CRAFT: return {[](WConstCreature c, FurnitureType t) {
             if (auto type = getWorkshopType(t))
               return !c || c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0;
             else

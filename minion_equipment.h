@@ -26,22 +26,22 @@ class MinionEquipment {
   public:
 
   static bool isItemUseful(const WItem);
-  bool needsItem(const Creature* c, const WItem it, bool noLimit = false) const;
+  bool needsItem(WConstCreature c, const WItem it, bool noLimit = false) const;
   optional<UniqueEntity<Creature>::Id> getOwner(const WItem) const;
-  bool isOwner(const WItem, const Creature*) const;
-  void own(const Creature*, WItem);
+  bool isOwner(const WItem, WConstCreature) const;
+  void own(WConstCreature, WItem);
   void discard(const WItem);
   void discard(UniqueEntity<Item>::Id);
-  void updateOwners(const vector<Creature*>&);
-  vector<WItem> getItemsOwnedBy(const Creature*, ItemPredicate = nullptr) const;
+  void updateOwners(const vector<WCreature>&);
+  vector<WItem> getItemsOwnedBy(WConstCreature, ItemPredicate = nullptr) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
-  void setLocked(const Creature*, UniqueEntity<Item>::Id, bool locked);
-  bool isLocked(const Creature*, UniqueEntity<Item>::Id) const;
+  void setLocked(WConstCreature, UniqueEntity<Item>::Id, bool locked);
+  bool isLocked(WConstCreature, UniqueEntity<Item>::Id) const;
   void sortByEquipmentValue(vector<WItem>& items) const;
-  void autoAssign(const Creature*, vector<WItem> possibleItems);
+  void autoAssign(WConstCreature, vector<WItem> possibleItems);
   void updateItems(const vector<WItem>& items);
 
   private:
@@ -49,8 +49,8 @@ class MinionEquipment {
 
   static optional<EquipmentType> getEquipmentType(const WItem it);
   optional<int> getEquipmentLimit(EquipmentType type) const;
-  bool isItemAppropriate(const Creature*, const WItem) const;
-  WItem getWorstItem(const Creature*, vector<WItem>) const;
+  bool isItemAppropriate(WConstCreature, const WItem) const;
+  WItem getWorstItem(WConstCreature, vector<WItem>) const;
   int getItemValue(const WItem) const;
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);

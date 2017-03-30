@@ -34,7 +34,7 @@ class Vision : public Singleton<Vision, VisionId> {
 class Creature;
 class CreatureVision {
   public:
-  virtual bool canSee(const Creature*, const Creature*) = 0;
+  virtual bool canSee(WConstCreature, WConstCreature) = 0;
   virtual ~CreatureVision() {}
 
   template <class Archive> 
