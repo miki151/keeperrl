@@ -1012,7 +1012,7 @@ class SplashImps : public Behaviour {
         if (!task->isDone())
           return task->getMove(creature);
         else
-          task.reset();
+          task.clear();
       }
       task = splashItems.getNextTask(creature->getPosition().getCoord(), creature->getLevel());
       if (!task)
@@ -1172,15 +1172,16 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(Location* l, bool moveRandomly
 }
 
 MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t) {
-  Task* released = t.release();
+  // Since the lambda can't capture OwnedPointer, let's release it to shared_ptr and recreate PTask inside the lambda.
+  auto released = t.release();
   return MonsterAIFactory([=](WCreature c) mutable {
       CHECK(released);
-      Task* task = released;
+      auto task = PTask(released);
       released = nullptr;
       return new MonsterAI(c, {
         new Heal(c),
         new Fighter(c, 0.6, false),
-        new SingleTask(c, PTask(task)),
+        new SingleTask(c, std::move(task)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, true);
       });

@@ -17,6 +17,11 @@ class OwnerPointer {
   OwnerPointer() {}
   OwnerPointer(std::nullptr_t) {}
 
+  shared_ptr<T> release() {
+    return elem;
+  }
+
+  explicit OwnerPointer(shared_ptr<T> t) : elem(t) {}
 
   OwnerPointer<T>& operator = (OwnerPointer<T>&& o) {
     elem = std::move(o.elem);
@@ -55,10 +60,9 @@ class OwnerPointer {
   template <typename>
   friend class OwnerPointer;
 
-  template <typename U, typename... Args>
-  friend OwnerPointer<U> makeOwner(Args&&... a);
+  /*template <typename U, typename... Args>
+  friend OwnerPointer<U> makeOwner(Args&&... a);*/
 
-  explicit OwnerPointer(shared_ptr<T> t) : elem(t) {}
 
   shared_ptr<T> SERIAL(elem);
 };

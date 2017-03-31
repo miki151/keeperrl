@@ -109,8 +109,8 @@ template <typename T, typename... Args>
 vector<T> makeVec(T&& f, Args&&... args) {
   vector<T> ret;
   ret.reserve(sizeof...(Args) + 1);
-  ret.push_back(std::move(f));
-  emplaceBack(ret, args...);
+  ret.push_back(std::forward<T>(f));
+  emplaceBack(ret, std::forward<Args>(args)...);
   return ret;
 }
 

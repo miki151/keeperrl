@@ -143,7 +143,7 @@ class Construction : public Task {
 }
 
 PTask Task::construction(WTaskCallback c, Position target, FurnitureType type) {
-  return PTask(new Construction(c, target, type));
+  return makeOwner<Construction>(c, target, type);
 }
 
 namespace {
@@ -203,7 +203,7 @@ class Destruction : public Task {
 }
 
 PTask Task::destruction(WTaskCallback c, Position target, const Furniture* furniture, DestroyAction destroyAction) {
-  return PTask(new Destruction(c, target, furniture, destroyAction));
+  return makeOwner<Destruction>(c, target, furniture, destroyAction);
 }
 
 namespace {
@@ -239,7 +239,7 @@ class BuildTorch : public Task {
 }
 
 PTask Task::buildTorch(WTaskCallback call, Position target, Dir attachmentDir) {
-  return PTask(new BuildTorch(call, target, attachmentDir));
+  return makeOwner<BuildTorch>(call, target, attachmentDir);
 }
 
 namespace {
@@ -328,7 +328,7 @@ class PickItem : public Task {
 }
 
 PTask Task::pickItem(WTaskCallback c, Position position, vector<WItem> items) {
-  return PTask(new PickItem(c, position, items));
+  return makeOwner<PickItem>(c, position, items);
 }
 
 namespace {
@@ -367,7 +367,7 @@ class PickAndEquipItem : public PickItem {
 }
 
 PTask Task::pickAndEquipItem(WTaskCallback c, Position position, WItem items) {
-  return PTask(new PickAndEquipItem(c, position, {items}));
+  return makeOwner<PickAndEquipItem>(c, position, makeVec<WItem>(std::move(items)));
 }
 
 namespace {
@@ -403,7 +403,7 @@ class EquipItem : public Task {
 }
 
 PTask Task::equipItem(WItem item) {
-  return PTask(new EquipItem(item));
+  return makeOwner<EquipItem>(item);
 }
 
 static Position chooseRandomClose(Position start, const vector<Position>& squares, Task::SearchType type) {
@@ -503,7 +503,7 @@ class BringItem : public PickItem {
 };
 
 PTask Task::bringItem(WTaskCallback c, Position pos, vector<WItem> items, const set<Position>& target, int numRetries) {
-  return PTask(new BringItem(c, pos, items, vector<Position>(target.begin(), target.end()), numRetries));
+  return makeOwner<BringItem>(c, pos, items, vector<Position>(target.begin(), target.end()), numRetries);
 }
 
 class ApplyItem : public BringItem {
@@ -546,7 +546,7 @@ class ApplyItem : public BringItem {
 };
 
 PTask Task::applyItem(WTaskCallback c, Position position, WItem item, Position target) {
-  return PTask(new ApplyItem(c, position, {item}, target));
+  return makeOwner<ApplyItem>(c, position, makeVec(std::move(item)), target);
 }
 
 class ApplySquare : public Task {
@@ -644,7 +644,7 @@ class ApplySquare : public Task {
 
 PTask Task::applySquare(WTaskCallback c, vector<Position> position, SearchType searchType, ActionType actionType) {
   CHECK(position.size() > 0);
-  return PTask(new ApplySquare(c, position, searchType, actionType));
+  return makeOwner<ApplySquare>(c, position, searchType, actionType);
 }
 
 namespace {
@@ -700,11 +700,11 @@ class Kill : public Task {
 }
 
 PTask Task::kill(WTaskCallback callback, WCreature creature) {
-  return PTask(new Kill(callback, creature, Kill::ATTACK));
+  return makeOwner<Kill>(callback, creature, Kill::ATTACK);
 }
 
 PTask Task::torture(WTaskCallback callback, WCreature creature) {
-  return PTask(new Kill(callback, creature, Kill::TORTURE));
+  return makeOwner<Kill>(callback, creature, Kill::TORTURE);
 }
 
 namespace {
@@ -727,7 +727,7 @@ class Disappear : public Task {
 }
 
 PTask Task::disappear() {
-  return PTask(new Disappear());
+  return makeOwner<Disappear>();
 }
 
 namespace {
@@ -774,15 +774,15 @@ class Chain : public Task {
 }
 
 PTask Task::chain(PTask t1, PTask t2) {
-  return PTask(new Chain(makeVec(std::move(t1), std::move(t2))));
+  return makeOwner<Chain>(makeVec(std::move(t1), std::move(t2)));
 }
 
 PTask Task::chain(PTask t1, PTask t2, PTask t3) {
-  return PTask(new Chain(makeVec(std::move(t1), std::move(t2), std::move(t3))));
+  return makeOwner<Chain>(makeVec(std::move(t1), std::move(t2), std::move(t3)));
 }
 
 PTask Task::chain(vector<PTask> v) {
-  return PTask(new Chain(std::move(v)));
+  return makeOwner<Chain>(std::move(v));
 }
 
 namespace {
@@ -818,7 +818,7 @@ class Explore : public Task {
 }
 
 PTask Task::explore(Position pos) {
-  return PTask(new Explore(pos));
+  return makeOwner<Explore>(pos);
 }
 
 namespace {
@@ -848,7 +848,7 @@ class AttackLeader : public Task {
 }
 
 PTask Task::attackLeader(WCollective col) {
-  return PTask(new AttackLeader(col));
+  return makeOwner<AttackLeader>(col);
 }
 
 PTask Task::stealFrom(WCollective collective, WTaskCallback callback) {
@@ -948,7 +948,7 @@ class CampAndSpawn : public Task {
 
 PTask Task::campAndSpawn(WCollective target, const CreatureFactory& spawns, int defenseSize,
     Range attackSize, int numAttacks) {
-  return PTask(new CampAndSpawn(target, spawns, defenseSize, attackSize, numAttacks));
+  return makeOwner<CampAndSpawn>(target, spawns, defenseSize, attackSize, numAttacks);
 }
 
 namespace {
@@ -987,7 +987,7 @@ class KillFighters : public Task {
 }
 
 PTask Task::killFighters(WCollective col, int numCreatures) {
-  return PTask(new KillFighters(col, numCreatures));
+  return makeOwner<KillFighters>(col, numCreatures);
 }
 
 namespace {
@@ -1014,7 +1014,7 @@ class ConsumeItem : public Task {
 }
 
 PTask Task::consumeItem(WTaskCallback c, vector<WItem> items) {
-  return PTask(new ConsumeItem(c, items));
+  return makeOwner<ConsumeItem>(c, items);
 }
 
 namespace {
@@ -1060,7 +1060,7 @@ class Copulate : public Task {
 }
 
 PTask Task::copulate(WTaskCallback c, WCreature target, int numTurns) {
-  return PTask(new Copulate(c, target, numTurns));
+  return makeOwner<Copulate>(c, target, numTurns);
 }
 
 namespace {
@@ -1098,7 +1098,7 @@ class Consume : public Task {
 }
 
 PTask Task::consume(WTaskCallback c, WCreature target) {
-  return PTask(new Consume(c, target));
+  return makeOwner<Consume>(c, target);
 }
 
 namespace {
@@ -1170,7 +1170,7 @@ class Eat : public Task {
 }
 
 PTask Task::eat(set<Position> hatcherySquares) {
-  return PTask(new Eat(hatcherySquares));
+  return makeOwner<Eat>(hatcherySquares);
 }
 
 namespace {
@@ -1202,11 +1202,11 @@ class GoTo : public Task {
 }
 
 PTask Task::goTo(Position pos) {
-  return PTask(new GoTo(pos, false));
+  return makeOwner<GoTo>(pos, false);
 }
 
 PTask Task::goToTryForever(Position pos) {
-  return PTask(new GoTo(pos, true));
+  return makeOwner<GoTo>(pos, true);
 }
 
 namespace {
@@ -1237,7 +1237,7 @@ class TransferTo : public Task {
 }
 
 PTask Task::transferTo(Model *m) {
-  return PTask(new TransferTo(m));
+  return makeOwner<TransferTo>(m);
 }
 
 namespace {
@@ -1295,7 +1295,7 @@ class GoToAndWait : public Task {
 }
 
 PTask Task::goToAndWait(Position pos, double waitTime) {
-  return PTask(new GoToAndWait(pos, waitTime));
+  return makeOwner<GoToAndWait>(pos, waitTime);
 }
 
 namespace {
@@ -1332,7 +1332,7 @@ class Whipping : public Task {
 }
 
 PTask Task::whipping(Position pos, WCreature whipped) {
-  return PTask(new Whipping(pos, whipped));
+  return makeOwner<Whipping>(pos, whipped);
 }
 
 namespace {
@@ -1357,7 +1357,7 @@ class DropItems : public Task {
 }
 
 PTask Task::dropItems(vector<WItem> items) {
-  return PTask(new DropItems(items));
+  return makeOwner<DropItems>(items);
 }
 
 namespace {
@@ -1410,7 +1410,7 @@ class Spider : public Task {
 }
 
 PTask Task::spider(Position origin, const vector<Position>& posClose, const vector<Position>& posFurther) {
-  return PTask(new Spider(origin, posClose, posFurther));
+  return makeOwner<Spider>(origin, posClose, posFurther);
 }
 
 template <class Archive>

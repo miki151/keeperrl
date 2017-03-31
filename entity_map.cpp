@@ -6,6 +6,7 @@
 #include "collective_config.h"
 #include "item.h"
 #include "immigrant_info.h"
+#include "cost_info.h"
 
 template <typename Key, typename Value>
 EntityMap<Key, Value>::EntityMap() {
@@ -158,12 +159,16 @@ void EntityMap<Key, Value>::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE_TMPL(EntityMap, Creature, double);
 SERIALIZABLE_TMPL(EntityMap, Creature, int);
-SERIALIZABLE_TMPL(EntityMap, Creature, Task*);
+SERIALIZABLE_TMPL(EntityMap, Creature, WTask);
 SERIALIZABLE_TMPL(EntityMap, Creature, Collective::CurrentTaskInfo);
 SERIALIZABLE_TMPL(EntityMap, Creature, map<AttractionType, int>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<Position>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<WItem>);
 SERIALIZABLE_TMPL(EntityMap, Creature, WCreature);
 SERIALIZABLE_TMPL(EntityMap, Task, double);
+SERIALIZABLE_TMPL(EntityMap, Task, WTask);
+SERIALIZABLE_TMPL(EntityMap, Task, MinionTrait);
+SERIALIZABLE_TMPL(EntityMap, Task, Position);
+SERIALIZABLE_TMPL(EntityMap, Task, CostInfo);
 SERIALIZABLE_TMPL(EntityMap, Task, WCreature);
 SERIALIZABLE_TMPL(EntityMap, Item, Creature::Id);

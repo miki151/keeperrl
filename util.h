@@ -77,7 +77,7 @@ DEF_UNIQUE_PTR(Square);
 DEF_UNIQUE_PTR(Furniture);
 DEF_UNIQUE_PTR(MonsterAI);
 DEF_UNIQUE_PTR(Behaviour);
-DEF_UNIQUE_PTR(Task);
+DEF_OWNER_PTR(Task);
 DEF_SHARED_PTR(Controller);
 DEF_UNIQUE_PTR(Trigger);
 DEF_UNIQUE_PTR(Level);

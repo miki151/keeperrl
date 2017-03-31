@@ -1398,7 +1398,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     info.techButtons.push_back(tech.button);
   gameInfo.messageBuffer = messages;
   info.taskMap.clear();
-  for (const Task* task : getCollective()->getTaskMap().getAllTasks()) {
+  for (WConstTask task : getCollective()->getTaskMap().getAllTasks()) {
     optional<UniqueEntity<Creature>::Id> creature;
     if (auto c = getCollective()->getTaskMap().getOwner(task))
       creature = c->getUniqueId();

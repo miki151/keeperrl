@@ -101,8 +101,8 @@ SERIALIZABLE_TMPL(PositionMap, double);
 
 class Task;
 
-SERIALIZABLE_TMPL(PositionMap, Task*);
+SERIALIZABLE_TMPL(PositionMap, WTask);
 SERIALIZABLE_TMPL(PositionMap, HighlightType);
-SERIALIZABLE_TMPL(PositionMap, vector<Task*>);
+SERIALIZABLE_TMPL(PositionMap, vector<WTask>);
 SERIALIZABLE_TMPL(PositionMap, optional<ViewIndex>);
 SERIALIZABLE_TMPL(PositionMap, EnumMap<FurnitureLayer, optional<FurnitureType>>);

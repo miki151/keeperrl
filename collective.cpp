@@ -293,9 +293,9 @@ MoveInfo Collective::getDropItems(WCreature c) {
 }
 
 MoveInfo Collective::getWorkerMove(WCreature c) {
-  if (Task* task = taskMap->getTask(c))
+  if (WTask task = taskMap->getTask(c))
     return task->getMove(c);
-  if (Task* closest = taskMap->getClosestTask(c, MinionTrait::WORKER)) {
+  if (WTask closest = taskMap->getClosestTask(c, MinionTrait::WORKER)) {
     taskMap->takeTask(c, closest);
     return closest->getMove(c);
   } else {
@@ -462,7 +462,7 @@ bool Collective::hasTask(WConstCreature c) const {
 }
 
 void Collective::cancelTask(WConstCreature c) {
-  if (Task* task = taskMap->getTask(c))
+  if (WTask task = taskMap->getTask(c))
     taskMap->removeTask(task);
 }
 
@@ -472,7 +472,7 @@ MoveInfo Collective::getMove(WCreature c) {
   CHECK(!c->isDead());
 /*  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
       c->getPosition().getLevel()->getName() << " " << c->getName().bare();*/
-  if (Task* task = taskMap->getTask(c))
+  if (WTask task = taskMap->getTask(c))
     if (taskMap->isPriorityTask(task))
       return task->getMove(c);
   if (MoveInfo move = getTeamMemberMove(c))
@@ -487,9 +487,9 @@ MoveInfo Collective::getMove(WCreature c) {
       return move;
   }
   considerHealingTask(c);
-  if (Task* task = taskMap->getTask(c))
+  if (WTask task = taskMap->getTask(c))
     return task->getMove(c);
-  if (Task* closest = taskMap->getClosestTask(c, MinionTrait::FIGHTER)) {
+  if (WTask closest = taskMap->getClosestTask(c, MinionTrait::FIGHTER)) {
     taskMap->takeTask(c, closest);
     return closest->getMove(c);
   }
@@ -891,7 +891,7 @@ int Collective::numResourcePlusDebt(ResourceId id) const {
 int Collective::getDebt(ResourceId id) const {
   int ret = constructions->getDebt(id);
   for (auto& elem : taskMap->getCompletionCosts())
-    if (elem.second.id == id && !elem.first->isDone())
+    if (elem.second.id == id && !taskMap->getTask(elem.first)->isDone())
       ret -= elem.second.value;
   ret += workshops->getDebt(id);
   return ret;
@@ -1179,7 +1179,7 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
   }
   constructions->onConstructed(pos, type);
   control->onConstructed(pos, type);
-  if (Task* task = taskMap->getMarked(pos))
+  if (WTask task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
 }
 
@@ -1368,7 +1368,7 @@ bool Collective::addKnownTile(Position pos) {
     pos.setNeedsRenderUpdate(true);
     knownTiles->addTile(pos);
     if (pos.getLevel() == level)
-      if (Task* task = taskMap->getMarked(pos))
+      if (WTask task = taskMap->getMarked(pos))
         if (task->isBogus())
           taskMap->removeTask(task);
     return true;
