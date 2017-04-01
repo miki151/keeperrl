@@ -37,9 +37,9 @@ struct RecruitmentInfo {
   EnumSet<EnemyId> SERIAL(enemyId);
   int SERIAL(minPopulation);
   MinionTrait SERIAL(trait);
-  WCollective findEnemy(Game*) const;
-  vector<WCreature> getAvailableRecruits(Game*, CreatureId) const;
-  vector<WCreature> getAllRecruits(Game*, CreatureId) const;
+  WCollective findEnemy(WGame) const;
+  vector<WCreature> getAvailableRecruits(WGame, CreatureId) const;
+  vector<WCreature> getAllRecruits(WGame, CreatureId) const;
   SERIALIZE_ALL(enemyId, minPopulation, trait)
 };
 

@@ -89,9 +89,9 @@ DEF_OWNER_PTR(Collective);
 DEF_UNIQUE_PTR(CollectiveControl);
 DEF_UNIQUE_PTR(Model);
 DEF_UNIQUE_PTR(Tribe);
-DEF_UNIQUE_PTR(Game);
 DEF_SHARED_PTR(Tutorial);
 DEF_OWNER_PTR(CreatureVision);
+DEF_OWNER_PTR(Game);
 
 template <typename T>
 T lambdaConstruct(function<void(T&)> fun) {

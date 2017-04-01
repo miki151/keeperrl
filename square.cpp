@@ -69,7 +69,7 @@ void Square::putCreature(WCreature c) {
   //CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
   setCreature(c);
   onEnter(c);
-  if (Game* game = c->getGame())
+  if (WGame game = c->getGame())
     game->addEvent({EventId::MOVED, c});
 }
 

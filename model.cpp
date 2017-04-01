@@ -183,11 +183,11 @@ double Model::getLocalTime(WConstCreature c) {
   return timeQueue->getTime(c);
 }
 
-void Model::setGame(Game* g) {
+void Model::setGame(WGame g) {
   game = g;
 }
 
-Game* Model::getGame() const {
+WGame Model::getGame() const {
   return game;
 }
 

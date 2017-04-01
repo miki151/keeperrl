@@ -2545,7 +2545,7 @@ Model* PlayerControl::getModel() const {
   return getLevel()->getModel();
 }
 
-Game* PlayerControl::getGame() const {
+WGame PlayerControl::getGame() const {
   return getLevel()->getModel()->getGame();
 }
 

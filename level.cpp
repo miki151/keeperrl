@@ -170,7 +170,7 @@ Model* Level::getModel() {
   return model;
 }
 
-Game* Level::getGame() const {
+WGame Level::getGame() const {
   return model->getGame();
 }
 

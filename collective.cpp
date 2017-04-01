@@ -150,7 +150,7 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
     leader = c;
   if (c->getTribeId() != *tribe)
     c->setTribe(*tribe);
-  if (Game* game = getGame())
+  if (WGame game = getGame())
     for (WCollective col : getGame()->getCollectives())
       if (contains(col->getCreatures(), c))
         col->removeCreature(c);
@@ -257,7 +257,7 @@ Level* Collective::getLevel() const {
   return level;
 }
 
-Game* Collective::getGame() const {
+WGame Collective::getGame() const {
   return level->getModel()->getGame();
 }
 

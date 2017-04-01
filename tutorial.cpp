@@ -33,7 +33,7 @@ enum class Tutorial::State {
 };
 
 
-bool Tutorial::canContinue(const Game* game) const {
+bool Tutorial::canContinue(const WGame game) const {
   auto collective = game->getPlayerCollective();
   switch (state) {
     case State::WELCOME:
@@ -108,7 +108,7 @@ string Tutorial::getMessage() const {
   }
 }
 
-EnumSet<TutorialHighlight> Tutorial::getHighlights(const Game* game) const {
+EnumSet<TutorialHighlight> Tutorial::getHighlights(const WGame game) const {
   if (canContinue(game))
     return {};
   switch (state) {
@@ -130,7 +130,7 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(const Game* game) const {
   }
 }
 
-vector<Vec2> Tutorial::getHighlightedSquares(const Game* game) const {
+vector<Vec2> Tutorial::getHighlightedSquares(const WGame game) const {
   switch (state) {
     case State::DIG_ROOM: {
       vector<Vec2> ret {Vec2(80, 121), Vec2(80, 120), Vec2(80, 119)};
@@ -154,7 +154,7 @@ Tutorial::Tutorial() : state(State::DIG_ROOM) {
 
 }
 
-void Tutorial::refreshInfo(const Game* game, optional<TutorialInfo>& info) const {
+void Tutorial::refreshInfo(const WGame game, optional<TutorialInfo>& info) const {
   info = TutorialInfo {
       getMessage(),
       canContinue(game),
@@ -164,7 +164,7 @@ void Tutorial::refreshInfo(const Game* game, optional<TutorialInfo>& info) const
   };
 }
 
-void Tutorial::continueTutorial(const Game* game) {
+void Tutorial::continueTutorial(const WGame game) {
   if (canContinue(game))
     state = (State)((int) state + 1);
 }

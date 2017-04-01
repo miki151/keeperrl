@@ -851,12 +851,12 @@ Level* Player::getLevel() const {
   return getCreature()->getLevel();
 }
 
-Game* Player::getGame() const {
+WGame Player::getGame() const {
   return getCreature()->getGame();
 }
 
 View* Player::getView() const {
-  if (Game* game = getGame())
+  if (WGame game = getGame())
     return game->getView();
   else
     return nullptr;

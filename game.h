@@ -21,7 +21,7 @@ class Campaign;
 class SavedGameInfo;
 struct CampaignSetup;
 
-class Game {
+class Game : public std::enable_shared_from_this<Game> {
   public:
   static PGame campaignGame(Table<PModel>&&, CampaignSetup&);
   static PGame splashScreen(PModel&&, const CampaignSetup&);
@@ -90,8 +90,9 @@ class Game {
 
   SERIALIZATION_DECL(Game)
 
-  private:
   Game(Table<PModel>&&, Vec2 basePos, const CampaignSetup&);
+
+  private:
   void updateSunlightInfo();
   void tick(double time);
   PCreature makeAdventurer(int handicap);

@@ -193,7 +193,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
   Model* getModel() const;
-  Game* getGame() const;
+  WGame getGame() const;
   View* getView() const;
 
   mutable unique_ptr<MapMemory> SERIAL(memory);

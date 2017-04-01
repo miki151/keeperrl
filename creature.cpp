@@ -174,7 +174,7 @@ void Creature::removeCreatureVision(WCreatureVision vision) {
 void Creature::pushController(SController ctrl) {
   if (ctrl->isPlayer()) {
     modViewObject().setModifier(ViewObject::Modifier::PLAYER);
-    if (Game* g = getGame())
+    if (WGame g = getGame())
       g->setPlayer(this);
   }
   controllerStack.push_back(std::move(ctrl));
@@ -406,7 +406,7 @@ Level* Creature::getLevel() const {
   return getPosition().getLevel();
 }
 
-Game* Creature::getGame() const {
+WGame Creature::getGame() const {
   return getPosition().getGame();
 }
 
@@ -558,7 +558,7 @@ CreatureAction Creature::equip(WItem item) const {
     self->equipment->equip(item, slot, self);
     playerMessage("You equip " + item->getTheName(false, self));
     monsterMessage(getName().the() + " equips " + item->getAName());
-/*    if (Game* game = getGame())
+/*    if (WGame game = getGame())
       game->addEvent({EventId::EQUIPED, EventInfo::ItemsHandled{self, {item}}});*/
     self->spendTime(1);
   });
@@ -856,7 +856,7 @@ double Creature::getLocalTime() const {
 }
 
 double Creature::getGlobalTime() const {
-  if (Game* g = getGame())
+  if (WGame g = getGame())
     return g->getGlobalTime();
   else
     return 1;
@@ -1514,7 +1514,7 @@ CreatureName& Creature::getName() {
 }
 
 TribeSet Creature::getFriendlyTribes() const {
-  if (Game* game = getGame())
+  if (WGame game = getGame())
     return game->getTribe(tribe)->getFriendlyTribes();
   else
     return TribeSet().insert(tribe);

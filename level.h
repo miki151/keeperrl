@@ -165,7 +165,7 @@ class Level {
 
   const Model* getModel() const;
   Model* getModel();
-  Game* getGame() const;
+  WGame getGame() const;
 
   void addLightSource(Vec2, double radius);
   void removeLightSource(Vec2, double radius);

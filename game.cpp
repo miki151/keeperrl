@@ -69,7 +69,6 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
           }
         }
       }
-      m->setGame(this);
       m->updateSunlightMovement();
     }
   turnEvents = {0, 10, 50, 100, 300, 500};
@@ -80,7 +79,9 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
 Game::~Game() {}
 
 PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup) {
-  PGame ret(new Game(std::move(models), *setup.campaign.getPlayerPos(), setup));
+  auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup);
+  for (auto model : ret->getAllModels())
+    model->setGame(ret.get());
   if (setup.campaign.getPlayerRole() == PlayerRole::ADVENTURER)
     ret->getMainModel()->landHeroPlayer(std::move(setup.player));
   return ret;
@@ -89,7 +90,7 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup) {
 PGame Game::splashScreen(PModel&& model, const CampaignSetup& s) {
   Table<PModel> t(1, 1);
   t[0][0] = std::move(model);
-  PGame game(new Game(std::move(t), Vec2(0, 0), s));
+  auto game = makeOwner<Game>(std::move(t), Vec2(0, 0), s);
   game->spectator.reset(new Spectator(game->models[0][0]->getTopLevel()));
   game->turnEvents.clear();
   return game;

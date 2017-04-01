@@ -63,7 +63,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   Tribe* getTribe() const;
   Level* getLevel() const;
   Model* getModel() const;
-  Game* getGame() const;
+  WGame getGame() const;
   void addNewCreatureMessage(const vector<WCreature>&);
   void setTask(WCreature, PTask);
   bool hasTask(WConstCreature) const;

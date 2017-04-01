@@ -61,8 +61,8 @@ class Model {
   void increaseLocalTime(WCreature, double diff);
   double getLocalTime(WConstCreature);
 
-  void setGame(Game*);
-  Game* getGame() const;
+  void setGame(WGame);
+  WGame getGame() const;
   void tick(double time);
   vector<WCollective> getCollectives() const;
   vector<WCreature> getAllCreatures() const;
@@ -102,7 +102,7 @@ class Model {
   vector<PLevel> SERIAL(levels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
-  Game* SERIAL(game) = nullptr;
+  WGame SERIAL(game) = nullptr;
   double SERIAL(lastTick) = 0;
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);

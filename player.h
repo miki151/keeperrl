@@ -83,7 +83,7 @@ class Player : public Controller, public CreatureView, public EventListener {
 
   MapMemory* SERIAL(levelMemory);
   void showHistory();
-  Game* getGame() const;
+  WGame getGame() const;
   View* getView() const;
 
   bool tryToPerform(CreatureAction);

@@ -8,8 +8,8 @@ class Game;
 class Tutorial {
   public:
   Tutorial();
-  void refreshInfo(const Game*, optional<TutorialInfo>&) const;
-  void continueTutorial(const Game*);
+  void refreshInfo(const WGame, optional<TutorialInfo>&) const;
+  void continueTutorial(const WGame);
   void goBack();
 
   static void createTutorial(Game&);
@@ -19,10 +19,10 @@ class Tutorial {
 
   private:
   string getMessage() const;
-  bool canContinue(const Game*) const;
+  bool canContinue(const WGame) const;
 
   enum class State;
   State SERIAL(state);
-  EnumSet<TutorialHighlight> getHighlights(const Game*) const;
-  vector<Vec2> getHighlightedSquares(const Game*) const;
+  EnumSet<TutorialHighlight> getHighlights(const WGame) const;
+  vector<Vec2> getHighlightedSquares(const WGame) const;
 };

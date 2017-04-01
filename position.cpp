@@ -50,7 +50,7 @@ Model* Position::getModel() const {
     return nullptr;
 }
 
-Game* Position::getGame() const {
+WGame Position::getGame() const {
   if (level)
     return level->getModel()->getGame();
   else

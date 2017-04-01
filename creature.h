@@ -65,7 +65,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public std::e
   double getLocalTime() const;
   double getGlobalTime() const;
   Level* getLevel() const;
-  Game* getGame() const;
+  WGame getGame() const;
   vector<WCreature> getVisibleEnemies() const;
   vector<WCreature> getVisibleCreatures() const;
   vector<Position> getVisibleTiles() const;
