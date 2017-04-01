@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "collective_builder.h"
 #include "collective.h"
-#include "location.h"
 #include "creature.h"
 #include "creature_name.h"
 #include "collective_name.h"
@@ -10,6 +9,7 @@
 #include "tribe.h"
 #include "collective_control.h"
 #include "immigration.h"
+#include "territory.h"
 
 CollectiveBuilder::CollectiveBuilder(const CollectiveConfig& cfg, TribeId t)
     : config(cfg), tribe(t) {
@@ -38,14 +38,9 @@ CollectiveBuilder& CollectiveBuilder::addCreature(WCreature c) {
   return *this;
 }
 
-CollectiveBuilder& CollectiveBuilder::addSquares(const vector<Vec2>& v) {
-  append(squares, v);
-  return *this;
-}
-
-CollectiveBuilder& CollectiveBuilder::addSquares(const vector<Position>& v) {
-  for (auto& pos : v)
-    squares.push_back(pos.getCoord());
+CollectiveBuilder& CollectiveBuilder::setArea(Rectangle v) {
+  squares = v.getAllSquares();
+  centralPoint = v.middle();
   return *this;
 }
 
@@ -64,6 +59,8 @@ PCollective CollectiveBuilder::build() {
     //if (c->canClaimSquare(pos))
       c->claimSquare(pos);
   }
+  if (centralPoint)
+    c->getTerritory().setCentralPoint(Position(*centralPoint, level));
   return c;
 }
 

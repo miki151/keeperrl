@@ -6,13 +6,16 @@
 class Territory {
   public:
   void insert(Position);
-  bool contains(Position) const;
   void remove(Position);
+  void setCentralPoint(Position);
+
+  bool contains(Position) const;
   const vector<Position>& getAll() const;
   const vector<Position>& getExtended(int min, int max) const;
   const vector<Position>& getExtended(int max) const;
   const vector<Position>& getStandardExtended() const;
   bool isEmpty() const;
+  const optional<Position>& getCentralPoint() const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -22,6 +25,7 @@ class Territory {
   vector<Position> calculateExtended(int minRadius, int maxRadius) const;
   set<Position> SERIAL(allSquares);
   vector<Position> SERIAL(allSquaresVec);
+  optional<Position> SERIAL(centralPoint);
   mutable map<pair<int, int>, vector<Position>> extendedCache;
   mutable map<int, vector<Position>> extendedCache2;
 };

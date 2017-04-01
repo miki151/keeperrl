@@ -98,6 +98,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getLocalTime() const override;
   virtual bool isPlayerView() const override;
+  virtual vector<Vec2> getUnknownLocations(const Level*) const override;
 
   // from CollectiveControl
   virtual void addAttack(const CollectiveAttack&) override;
@@ -213,7 +214,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void setChosenTeam(optional<TeamId>, optional<UniqueEntity<Creature>::Id> = none);
   optional<TeamId> chosenTeam;
   void clearChosenInfo();
-  unordered_set<Position, CustomHash<Position>> SERIAL(surprises);
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
   vector<PlayerMessage> SERIAL(messageHistory);
@@ -224,7 +224,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void updateVisibleCreatures();
   vector<Vec2> SERIAL(visibleEnemies);
   HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
-  set<const Location*> SERIAL(knownLocations);
   bool firstRender = true;
   bool isNight = true;
   optional<UniqueEntity<Creature>::Id> draggedCreature;

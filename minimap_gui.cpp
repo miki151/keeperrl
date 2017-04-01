@@ -18,7 +18,6 @@
 #include "level.h"
 #include "creature_view.h"
 #include "tile.h"
-#include "location.h"
 #include "renderer.h"
 #include "map_memory.h"
 #include "view_index.h"
@@ -49,15 +48,15 @@ void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
     renderer.drawFilledRectangle(Rectangle(topLeft + v - rad, topLeft + v + rad), colors[ColorId::RED]);
   }
   for (auto loc : info.locations) {
-    Vec2 v = (loc.pos - info.bounds.topLeft()) * scale;
-    if (loc.text.empty())
+    Vec2 v = (loc - info.bounds.topLeft()) * scale;
+//    if (loc.text.empty())
       renderer.drawText(colors[ColorId::LIGHT_GREEN], topLeft.x + v.x + 5, topLeft.y + v.y, "?");
-    else {
+/*    else {
       renderer.drawFilledRectangle(topLeft.x + v.x, topLeft.y + v.y,
           topLeft.x + v.x + renderer.getTextLength(loc.text) + 10, topLeft.y + v.y + 25,
           transparency(colors[ColorId::BLACK], 130));
       renderer.drawText(colors[ColorId::WHITE], topLeft.x + v.x + 5, topLeft.y + v.y, loc.text);
-    }
+    }*/
   }
 }
 
@@ -93,7 +92,7 @@ bool MinimapGui::onLeftClick(Vec2 v) {
   return false;
 }
 
-void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView* creature, bool printLocations) {
+void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView* creature) {
   info.bounds = bounds;
   info.enemies.clear();
   info.locations.clear();
@@ -122,20 +121,20 @@ void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView
   for (Vec2 pos : creature->getVisibleEnemies())
     if (pos.inRectangle(bounds))
       info.enemies.push_back(pos);
-  if (printLocations)
-    for (const Location* loc : level->getAllLocations()) {
-      bool seen = false;
-      for (Position v : loc->getAllSquares())
-        if (memory.getViewIndex(v)) {
-          seen = true;
-          break;
-        }
-      if (loc->isMarkedAsSurprise() && !seen)
-        info.locations.push_back({loc->getMiddle().getCoord(), ""});
-      if (loc->getName() && seen) {
-        info.locations.push_back({loc->getBottomRight().getCoord(), *loc->getName()});
+  info.locations = creature->getUnknownLocations(currentLevel);
+  /*for (const Location* loc : level->getAllLocations()) {
+    bool seen = false;
+    for (Position v : loc->getAllSquares())
+      if (memory.getViewIndex(v)) {
+        seen = true;
+        break;
       }
+    if (loc->isMarkedAsSurprise() && !seen)
+      info.locations.push_back({loc->getMiddle().getCoord(), ""});
+    if (loc->getName() && seen) {
+      info.locations.push_back({loc->getBottomRight().getCoord(), *loc->getName()});
     }
+  }*/
 }
 
 static Vec2 embed(Vec2 levelSize, Vec2 screenSize) {
@@ -149,7 +148,7 @@ void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Rend
   double scale = min(double(bounds.width()) / level->getBounds().width(),
       double(bounds.height()) / level->getBounds().height());
   while (1) {
-    update(level, level->getBounds(), creature, true);
+    update(level, level->getBounds(), creature);
     renderMap(r, Rectangle(Vec2(0, 0), embed(level->getBounds().bottomRight(), bounds.bottomRight())));
     r.drawAndClearBuffer();
     Event event;

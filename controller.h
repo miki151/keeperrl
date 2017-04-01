@@ -19,7 +19,6 @@
 #include "util.h"
 
 class Creature;
-class Location;
 class MapMemory;
 class Item;
 class Level;

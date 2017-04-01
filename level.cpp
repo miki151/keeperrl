@@ -16,7 +16,6 @@
 #include "stdafx.h"
 
 #include "level.h"
-#include "location.h"
 #include "model.h"
 #include "item.h"
 #include "creature.h"
@@ -42,7 +41,7 @@
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, squares, oldSquares, landingSquares, locations, tickingSquares, creatures, model, fieldOfView);
+  serializeAll(ar, squares, oldSquares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   serializeAll(ar, name, backgroundLevel, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
   serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, memoryUpdates);
   serializeAll(ar, furniture, tickingFurniture, covered);
@@ -54,10 +53,10 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 
 Level::~Level() {}
 
-Level::Level(SquareArray s, FurnitureArray f, Model* m, vector<Location*> l, const string& n,
+Level::Level(SquareArray s, FurnitureArray f, Model* m, const string& n,
     Table<double> sun, LevelId id, Table<bool> cover)
     : squares(std::move(s)), oldSquares(squares->getBounds()), furniture(std::move(f)),
-      memoryUpdates(squares->getBounds(), true), locations(l), model(m),
+      memoryUpdates(squares->getBounds(), true), model(m),
       name(n), sunlight(sun), covered(cover), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id) {
@@ -67,8 +66,6 @@ Level::Level(SquareArray s, FurnitureArray f, Model* m, vector<Location*> l, con
     if (optional<StairKey> link = square->getLandingLink())
       landingSquares[*link].push_back(Position(pos, this));
   }
-  for (Location *l : locations)
-    l->setLevel(this);
   for (VisionId vision : ENUM_ALL(VisionId))
     (*fieldOfView)[vision] = FieldOfView(this, vision);
   for (auto pos : getAllPositions())
@@ -163,21 +160,6 @@ WCreature Level::getPlayer() const {
       if (player->getLevel() == this)
         return player;
   return nullptr;
-}
-
-const vector<Location*> Level::getAllLocations() const {
-  return locations;
-}
-
-void Level::clearLocations() {
-  locations.clear();
-}
-
-void Level::addMarkedLocation(Rectangle bounds) {
-  locations.push_back(new Location());
-  locations.back()->setBounds(bounds);
-  locations.back()->setLevel(this);
-  locations.back()->setSurprise();
 }
 
 const Model* Level::getModel() const {

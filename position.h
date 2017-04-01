@@ -6,7 +6,6 @@
 class Square;
 class Level;
 class PlayerMessage;
-class Location;
 class Tribe;
 class ViewIndex;
 class SquareType;
@@ -57,7 +56,6 @@ class Position {
   vector<Position> getRectangle(Rectangle) const;
   void addCreature(PCreature, double delay);
   void addCreature(PCreature);
-  const Location* getLocation() const;
   bool canEnter(WConstCreature) const;
   bool canEnter(const MovementType&) const;
   bool canEnterEmpty(WConstCreature) const;

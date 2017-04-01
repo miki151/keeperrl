@@ -21,7 +21,6 @@
 #include "creature_name.h"
 #include "villain_type.h"
 #include "enemy_factory.h"
-#include "location.h"
 #include "view_object.h"
 #include "item.h"
 #include "furniture.h"
@@ -218,7 +217,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(Model* model, EnemyInfo& enemy) {
                       CreatureId::WATER_ELEMENTAL, CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL,
                       CreatureId::EARTH_ELEMENTAL));
                   c.numCreatures = random.get(1, 3);
-                  c.location = new Location();
+                  //c.location = new Location();
                   c.upStairs = {upLink};
                   c.downStairs = {downLink};
                   c.furniture = FurnitureFactory(TribeId::getHuman(), FurnitureType::TORCH);
@@ -305,21 +304,21 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
   for (int i : Range(random.get(1, 3)))
     enemies.push_back(enemyFactory->get(EnemyId::KOBOLD_CAVE));
   for (int i : Range(random.get(1, 3)))
-    enemies.push_back(enemyFactory->get(EnemyId::BANDITS).setSurprise().setVillainType(VillainType::LESSER));
-  enemies.push_back(enemyFactory->get(random.choose(EnemyId::GNOMES, EnemyId::DARK_ELVES)).setSurprise().setVillainType(VillainType::ALLY));
+    enemies.push_back(enemyFactory->get(EnemyId::BANDITS).setVillainType(VillainType::LESSER));
+  enemies.push_back(enemyFactory->get(random.choose(EnemyId::GNOMES, EnemyId::DARK_ELVES)).setVillainType(VillainType::ALLY));
   append(enemies, enemyFactory->getVaults());
   if (random.roll(4))
-    enemies.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED).setSurprise().setVillainType(VillainType::LESSER));
-  enemies.push_back(enemyFactory->get(EnemyId::KNIGHTS).setSurprise().setVillainType(VillainType::MAIN));
+    enemies.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED).setVillainType(VillainType::LESSER));
+  enemies.push_back(enemyFactory->get(EnemyId::KNIGHTS).setVillainType(VillainType::MAIN));
   enemies.push_back(enemyFactory->get(random.choose(EnemyId::OGRE_CAVE, EnemyId::HARPY_CAVE))
-      .setSurprise().setVillainType(VillainType::ALLY));
+      .setVillainType(VillainType::ALLY));
   for (auto& enemy : random.chooseN(3, {
         EnemyId::ELEMENTALIST,
         EnemyId::WARRIORS,
         EnemyId::ELVES,
         EnemyId::DWARVES,
         EnemyId::VILLAGE}))
-    enemies.push_back(enemyFactory->get(enemy).setSurprise().setVillainType(VillainType::MAIN));
+    enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::MAIN));
   for (auto& enemy : random.chooseN(3, {
         EnemyId::GREEN_DRAGON,
         EnemyId::SHELOB,
@@ -328,7 +327,7 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
         EnemyId::CYCLOPS,
         EnemyId::DRIADS,
         EnemyId::ENTS}))
-    enemies.push_back(enemyFactory->get(enemy).setSurprise().setVillainType(VillainType::LESSER));
+    enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::LESSER));
   for (auto& enemy : random.chooseN(1, {
         EnemyId::KRAKEN,
         EnemyId::WITCH,
@@ -400,7 +399,7 @@ static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
 }
 
 PModel ModelBuilder::tryCampaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type) {
-  vector<EnemyInfo> enemyInfo { enemyFactory->get(enemyId).setVillainType(type).setSurprise()};
+  vector<EnemyInfo> enemyInfo { enemyFactory->get(enemyId).setVillainType(type)};
   auto biomeId = getBiome(enemyId, random);
   CHECK(biomeId) << "Unimplemented enemy in campaign " << EnumInfo<EnemyId>::getString(enemyId);
   addMapVillains(enemyInfo, *biomeId);
@@ -515,12 +514,11 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
     if (!enemy.settlement.collective->hasCreatures())
       continue;
     PVillageControl control;
-    Location* location = enemy.settlement.location;
-    if (auto name = location->getName())
-      enemy.settlement.collective->setLocationName(*name);
+    if (enemy.settlement.locationName)
+      enemy.settlement.collective->setLocationName(*enemy.settlement.locationName);
     if (auto race = enemy.settlement.race)
       enemy.settlement.collective->setRaceName(*race);
-    PCollective collective = enemy.settlement.collective->addSquares(location->getAllSquares()).build();
+    PCollective collective = enemy.settlement.collective->build();
     control.reset(new VillageControl(collective.get(), enemy.villain));
     if (enemy.villainType)
       collective->setVillainType(*enemy.villainType);

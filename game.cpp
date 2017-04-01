@@ -162,8 +162,9 @@ void Game::prepareSiteRetirement() {
   if (locationPos.empty())
     locationPos = playerCollective->getTerritory().getAll();
   if (!locationPos.empty())
-    playerCollective->getLevel()->addMarkedLocation(Rectangle::boundingBox(transform2(locationPos,
-      [](const Position& p) { return p.getCoord();})));
+    playerCollective->getTerritory().setCentralPoint(
+        Position(Rectangle::boundingBox(transform2(locationPos, [](Position p){ return p.getCoord();})).middle(),
+            playerCollective->getLevel()));
   for (auto c : playerCollective->getCreatures())
     c->retire();
   playerControl = nullptr;

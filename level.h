@@ -29,9 +29,7 @@ class Model;
 class Square;
 class Player;
 class LevelMaker;
-class Location;
 class Attack;
-class CollectiveBuilder;
 class ProgressMeter;
 class Sectors;
 class Tribe;
@@ -165,10 +163,6 @@ class Level {
   /** Returns the player creature.*/
   WCreature getPlayer() const;
 
-  const vector<Location*> getAllLocations() const;
-  void addMarkedLocation(Rectangle bounds);
-  void clearLocations();
-
   const Model* getModel() const;
   Model* getModel();
   Game* getGame() const;
@@ -217,7 +211,6 @@ class Level {
   Table<bool> renderUpdates = Table<bool>(getMaxBounds(), true);
   Table<bool> SERIAL(unavailable);
   unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
-  vector<Location*> SERIAL(locations);
   set<Vec2> SERIAL(tickingSquares);
   set<Vec2> SERIAL(tickingFurniture);
   void eraseCreature(WCreature, Vec2 coord);
@@ -239,8 +232,7 @@ class Level {
   Sectors& getSectors(const MovementType&) const;
   
   friend class LevelBuilder;
-  Level(SquareArray, FurnitureArray, Model*, vector<Location*>, const string& name,
-        Table<double> sunlight, LevelId, Table<bool> cover);
+  Level(SquareArray, FurnitureArray, Model*, const string& name, Table<double> sunlight, LevelId, Table<bool> cover);
 
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);

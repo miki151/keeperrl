@@ -68,7 +68,6 @@ struct EnemyInfo {
   EnemyInfo(SettlementInfo s, CollectiveConfig c, optional<VillageBehaviour> v = none,
       optional<LevelConnection> = none);
   EnemyInfo& setVillainType(VillainType type);
-  EnemyInfo& setSurprise();
   EnemyInfo& setId(EnemyId);
   SettlementInfo settlement;
   CollectiveConfig config;

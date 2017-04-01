@@ -33,7 +33,6 @@
 #include "effect.h"
 #include "trigger.h"
 #include "music.h"
-#include "location.h"
 #include "model_builder.h"
 #include "encyclopedia.h"
 #include "map_memory.h"
@@ -80,7 +79,7 @@ template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion);
-  serializeAll(ar, surprises, newAttacks, ransomAttacks, messages, hints, visibleEnemies, knownLocations);
+  serializeAll(ar, newAttacks, ransomAttacks, messages, hints, visibleEnemies);
   serializeAll(ar, visibilityMap);
   serializeAll(ar, messageHistory, tutorial);
 }
@@ -313,9 +312,6 @@ PlayerControl::PlayerControl(WCollective col, Level* level) : CollectiveControl(
     }
   }
   memory.reset(new MapMemory());
-  for(const Location* loc : level->getAllLocations())
-    if (loc->isMarkedAsSurprise())
-      surprises.insert(loc->getMiddle());
 }
 
 PlayerControl::~PlayerControl() {
@@ -1494,7 +1490,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
 }
 
 void PlayerControl::updateKnownLocations(const Position& pos) {
-  if (pos.getModel() == getModel())
+  /*if (pos.getModel() == getModel())
     if (const Location* loc = pos.getLocation())
       if (!knownLocations.count(loc)) {
         knownLocations.insert(loc);
@@ -1503,11 +1499,15 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
               .setLocation(loc));
         else if (loc->isMarkedAsSurprise())
           addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
-      }
+      }*/
   for (WConstCollective col : getGame()->getCollectives())
     if (col != getCollective() && col->getTerritory().contains(pos)) {
       getCollective()->addKnownVillain(col);
-      getCollective()->addKnownVillainLocation(col);
+      if (!getCollective()->isKnownVillainLocation(col)) {
+        getCollective()->addKnownVillainLocation(col);
+        addMessage(PlayerMessage("Your minions discover the location of " + col->getName().getFull(),
+            MessagePriority::HIGH).setPosition(pos));
+      }
     }
 }
 
@@ -1608,8 +1608,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (constructions.containsTorch(position) && !constructions.getTorch(position).isBuilt())
     index.insert(copyOf(Trigger::getTorchViewObject(constructions.getTorch(position).getAttachmentDir()))
         .setModifier(ViewObject::Modifier::PLANNED));
-  if (surprises.count(position) && !getCollective()->getKnownTiles().isKnown(position))
-    index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));
+  /*if (surprises.count(position) && !getCollective()->getKnownTiles().isKnown(position))
+    index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));*/
 }
 
 Vec2 PlayerControl::getPosition() const {
@@ -1844,12 +1844,12 @@ void PlayerControl::processInput(View* view, UserInput input) {
           else if (auto id = message->getCreature()) {
             if (WConstCreature c = getCreature(*id))
               setScrollPos(c->getPosition());
-          } else if (auto loc = message->getLocation()) {
+          }/* else if (auto loc = message->getLocation()) {
             if (loc->getMiddle().isSameLevel(getLevel()))
               scrollToMiddle(loc->getAllSquares());
             else
               setScrollPos(loc->getMiddle());
-          }
+          }*/
         }
         break;
     case UserInputId::GO_TO_VILLAGE: 
@@ -2351,6 +2351,15 @@ double PlayerControl::getLocalTime() const {
 
 bool PlayerControl::isPlayerView() const {
   return false;
+}
+
+vector<Vec2> PlayerControl::getUnknownLocations(const Level*) const {
+  vector<Vec2> ret;
+  for (auto col : getModel()->getCollectives())
+    if (col->getLevel() == getLevel() && !getCollective()->isKnownVillainLocation(col))
+      if (auto& pos = col->getTerritory().getCentralPoint())
+        ret.push_back(pos->getCoord());
+  return ret;
 }
 
 WConstCreature PlayerControl::getKeeper() const {

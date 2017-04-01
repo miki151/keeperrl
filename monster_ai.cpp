@@ -21,7 +21,6 @@
 #include "effect.h"
 #include "item.h"
 #include "creature.h"
-#include "location.h"
 #include "player_message.h"
 #include "equipment.h"
 #include "spell.h"
@@ -642,20 +641,23 @@ class GuardTarget : public Behaviour {
 
 class GuardArea : public Behaviour {
   public:
-  GuardArea(WCreature c, const Location* l) : Behaviour(c), location(l) {}
+  GuardArea(WCreature c, Rectangle a) : Behaviour(c), area(a) {}
 
   virtual MoveInfo getMove() override {
-    if (auto action = creature->stayIn(location))
+    if (!myLevel)
+      myLevel = creature->getLevel();
+    if (auto action = creature->stayIn(myLevel, area))
       return {1.0, action};
     else
       return NoMove;
   }
 
   SERIALIZATION_CONSTRUCTOR(GuardArea);
-  SERIALIZE_ALL2(Behaviour, location);
+  SERIALIZE_ALL2(Behaviour, myLevel, area);
 
   private:
-  const Location* SERIAL(location);
+  Level* SERIAL(myLevel) = nullptr;
+  Rectangle SERIAL(area);
 };
 
 class GuardSquare : public GuardTarget {
@@ -1132,7 +1134,7 @@ MonsterAIFactory::MonsterAIFactory(MakerFun _maker) : maker(_maker) {
 }
 
 MonsterAIFactory MonsterAIFactory::monster() {
-  return stayInLocation(nullptr);
+  return stayInLocation(Level::getMaxBounds());
 }
 
 MonsterAIFactory MonsterAIFactory::collective(WCollective col) {
@@ -1147,19 +1149,17 @@ MonsterAIFactory MonsterAIFactory::collective(WCollective col) {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::stayInLocation(Location* l, bool moveRandomly) {
+MonsterAIFactory MonsterAIFactory::stayInLocation(Rectangle rect, bool moveRandomly) {
   return MonsterAIFactory([=](WCreature c) {
       vector<Behaviour*> actors { 
           new AvoidFire(c),
           new Heal(c),
           new Thief(c),
           new Fighter(c, 0.6, true),
-          new GoldLust(c)};
-      vector<int> weights { 10, 5, 4, 3, 1 };
-      if (l != nullptr) {
-        actors.push_back(new GuardArea(c, l));
-        weights.push_back(1);
-      }
+          new GoldLust(c),
+          new GuardArea(c, rect)
+      };
+      vector<int> weights { 10, 5, 4, 3, 1, 1 };
       if (moveRandomly) {
         actors.push_back(new MoveRandomly(c));
         weights.push_back(1);

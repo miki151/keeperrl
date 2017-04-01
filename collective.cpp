@@ -14,7 +14,6 @@
 #include "model.h"
 #include "game.h"
 #include "spell.h"
-#include "location.h"
 #include "view_id.h"
 #include "equipment.h"
 #include "view_index.h"
@@ -831,6 +830,10 @@ double Collective::getEfficiency(WConstCreature c) const {
 }
 
 const Territory& Collective::getTerritory() const {
+  return *territory;
+}
+
+Territory& Collective::getTerritory() {
   return *territory;
 }
 

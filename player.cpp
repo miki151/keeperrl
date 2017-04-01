@@ -16,7 +16,6 @@
 #include "stdafx.h"
 
 #include "player.h"
-#include "location.h"
 #include "level.h"
 #include "ranged_weapon.h"
 #include "name_generator.h"
@@ -54,7 +53,7 @@
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(Controller) & SUBCLASS(EventListener);
-  serializeAll(ar, travelling, travelDir, target, lastLocation, displayGreeting, levelMemory, messages);
+  serializeAll(ar, travelling, travelDir, target, displayGreeting, levelMemory, messages);
   serializeAll(ar, messageHistory, adventurer, visibilityMap, tutorial);
 }
 
@@ -946,9 +945,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.team.clear();
   for (WConstCreature c : getTeam())
     info.team.push_back(c);
-  const Location* location = getCreature()->getPosition().getLocation();
-  info.levelName = location && location->getName()
-    ? capitalFirst(*location->getName()) : getLevel()->getName();
+  info.levelName = getLevel()->getName();
   info.lyingItems.clear();
   if (auto usageType = getUsableUsageType()) {
     string question = FurnitureUsage::getUsageQuestion(*usageType, getCreature()->getPosition().getName());
@@ -1014,6 +1011,16 @@ double Player::getLocalTime() const {
 
 bool Player::isPlayerView() const {
   return true;
+}
+
+vector<Vec2> Player::getUnknownLocations(const Level* level) const {
+  vector<Vec2> ret;
+  for (auto col : getCreature()->getPosition().getModel()->getCollectives())
+    if (col->getLevel() == getLevel())
+      if (auto& pos = col->getTerritory().getCentralPoint())
+        if (!getMemory().getViewIndex(*pos))
+          ret.push_back(pos->getCoord());
+  return ret;
 }
 
 void Player::considerAdventurerMusic() {

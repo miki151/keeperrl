@@ -50,3 +50,7 @@ bool Spectator::isPlayerView() const {
   return false;
 }
 
+vector<Vec2> Spectator::getUnknownLocations(const Level*) const {
+  return {};
+}
+

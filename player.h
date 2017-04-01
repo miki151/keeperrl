@@ -57,6 +57,7 @@ class Player : public Controller, public CreatureView, public EventListener {
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getLocalTime() const override;
   virtual bool isPlayerView() const override;
+  virtual vector<Vec2> getUnknownLocations(const Level*) const override;
 
   // from Controller
   virtual void onKilled(WConstCreature attacker) override;
@@ -121,7 +122,6 @@ class Player : public Controller, public CreatureView, public EventListener {
   bool SERIAL(travelling) = false;
   Vec2 SERIAL(travelDir);
   optional<Position> SERIAL(target);
-  const Location* SERIAL(lastLocation) = nullptr;
   bool SERIAL(adventurer);
   bool SERIAL(displayGreeting);
   bool updateView = true;

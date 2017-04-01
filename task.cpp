@@ -22,7 +22,6 @@
 #include "creature.h"
 #include "collective.h"
 #include "trigger.h"
-#include "location.h"
 #include "square_factory.h"
 #include "equipment.h"
 #include "tribe.h"

@@ -84,7 +84,7 @@ PItem Equipment::removeItem(WItem item, WCreature c) {
   
 vector<PItem> Equipment::removeItems(const vector<WItem>& items, WCreature c) {
   vector<PItem> ret;
-  for (WItem it : items)
+  for (WItem& it : copyOf(items))
     ret.push_back(removeItem(it, c));
   return ret;
 }

@@ -17,8 +17,7 @@ class CollectiveBuilder {
   CollectiveBuilder(const CollectiveConfig&, TribeId);
   CollectiveBuilder& setLevel(Level*);
   CollectiveBuilder& addCreature(WCreature);
-  CollectiveBuilder& addSquares(const vector<Vec2>&);
-  CollectiveBuilder& addSquares(const vector<Position>&);
+  CollectiveBuilder& setArea(Rectangle);
   CollectiveBuilder& setLocationName(const string&);
   CollectiveBuilder& setRaceName(const string&);
   PCollective build();
@@ -34,6 +33,7 @@ class CollectiveBuilder {
   HeapAllocated<CollectiveConfig> config;
   HeapAllocated<TribeId> tribe;
   vector<Vec2> squares;
+  optional<Vec2> centralPoint;
   optional<string> locationName;
   optional<string> raceName;
 };

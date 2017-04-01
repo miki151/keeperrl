@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "player_message.h"
-#include "location.h"
 #include "view.h"
 
 PlayerMessage::PlayerMessage(const string& t, MessagePriority p) : text(makeSentence(t)), priority(p), freshness(1) {}
@@ -58,17 +57,8 @@ optional<UniqueEntity<Creature>::Id> PlayerMessage::getCreature() const {
   return creature;
 }
 
-PlayerMessage& PlayerMessage::setLocation(const Location* l) {
-  location = l;
-  return *this;
-}
-
-const Location* PlayerMessage::getLocation() const {
-  return location;
-}
-
 bool PlayerMessage::isClickable() const {
-  return position || creature || location;
+  return position || creature;
 }
 
 int PlayerMessage::getHash() const {
@@ -83,8 +73,7 @@ void PlayerMessage::serialize(Archive& ar, const unsigned int version) {
      & SVAR(freshness)
      & SVAR(announcementTitle)
      & SVAR(position)
-     & SVAR(creature)
-     & SVAR(location);
+     & SVAR(creature);
 }
 
 SERIALIZABLE(PlayerMessage);

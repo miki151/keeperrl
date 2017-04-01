@@ -3,7 +3,6 @@
 #include "square_factory.h"
 #include "progress_meter.h"
 #include "square.h"
-#include "location.h"
 #include "creature.h"
 #include "level_maker.h"
 #include "collective_builder.h"
@@ -79,11 +78,6 @@ void LevelBuilder::putSquare(Vec2 posT, SquareType t, vector<SquareAttrib> attr)
 
 Rectangle LevelBuilder::toGlobalCoordinates(Rectangle area) {
   return area.apply([this](Vec2 v) { return transform(v); });
-}
-
-void LevelBuilder::addLocation(Location* l, Rectangle area) {
-  l->setBounds(toGlobalCoordinates(area));
-  locations.push_back(l);
 }
 
 void LevelBuilder::addCollective(CollectiveBuilder* col) {
@@ -173,7 +167,7 @@ PLevel LevelBuilder::build(Model* m, LevelMaker* maker, LevelId levelId) {
   for (Vec2 v : squares.getBounds())
     if (!items[v].empty())
       squares.getWritable(v)->dropItemsLevelGen(std::move(items[v]));
-  PLevel l(new Level(std::move(squares), std::move(furniture), m, locations, name, sunlight, levelId, covered));
+  PLevel l(new Level(std::move(squares), std::move(furniture), m, name, sunlight, levelId, covered));
   l->background = background;
   l->unavailable = unavailable;
   for (pair<PCreature, Vec2>& c : creatures)

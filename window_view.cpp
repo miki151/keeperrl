@@ -21,7 +21,6 @@
 #include "replay_view.h"
 #include "level.h"
 #include "options.h"
-#include "location.h"
 #include "renderer.h"
 #include "tile.h"
 #include "clock.h"
@@ -536,7 +535,7 @@ void WindowView::updateMinimap(const CreatureView* creature) {
   Vec2 rad(40, 40);
   Vec2 playerPos = mapGui->getScreenPos().div(mapLayout->getSquareSize());
   Rectangle bounds(playerPos - rad, playerPos + rad);
-  minimapGui->update(level, bounds, creature, true);
+  minimapGui->update(level, bounds, creature);
 }
 
 void WindowView::updateView(CreatureView* view, bool noRefresh) {

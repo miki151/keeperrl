@@ -19,8 +19,6 @@
 #include "position.h"
 
 class Creature;
-class Location;
-
 
 enum MonsterAIType { 
   MONSTER,
@@ -59,7 +57,7 @@ class MonsterAIFactory {
   static MonsterAIFactory collective(WCollective);
   static MonsterAIFactory monster();
   static MonsterAIFactory singleTask(PTask&&);
-  static MonsterAIFactory stayInLocation(Location*, bool moveRandomly = true);
+  static MonsterAIFactory stayInLocation(Rectangle, bool moveRandomly = true);
   static MonsterAIFactory guardSquare(Position);
   static MonsterAIFactory wildlifeNonPredator();
   static MonsterAIFactory scavengerBird(Position corpsePos);

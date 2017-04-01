@@ -12,6 +12,7 @@ class Model;
 class LevelMaker;
 class Square;
 class FurnitureFactory;
+class CollectiveBuilder;
 
 RICH_ENUM(SquareAttrib,
   NO_DIG,
@@ -35,7 +36,6 @@ RICH_ENUM(SquareAttrib,
   CASTLE_CORNER,
   FOG,
   FORREST,
-  LOCATION,
   SOKOBAN_ENTRY,
   SOKOBAN_PRIZE
 );
@@ -108,9 +108,6 @@ class LevelBuilder {
   /** Returns the height of the given square.*/
   double getHeightMap(Vec2 pos);
 
-  /** Adds a location to the level and sets its coordinates.*/
-  void addLocation(Location*, Rectangle area);
-
   Rectangle toGlobalCoordinates(Rectangle);
 
   /** Adds a collective to the level and initializes it.*/
@@ -138,7 +135,6 @@ class LevelBuilder {
   Table<bool> unavailable;
   Table<double> heightMap;
   Table<double> dark;
-  vector<Location*> locations;
   vector<CollectiveBuilder*> collectives;
   Table<bool> covered;
   Table<double> sunlight;

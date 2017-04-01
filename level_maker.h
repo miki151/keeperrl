@@ -71,7 +71,7 @@ struct SettlementInfo {
   optional<CreatureFactory> creatures;
   int numCreatures;
   optional<pair<CreatureFactory, int>> neutralCreatures;
-  Location* location;
+  optional<string> locationName;
   TribeId tribe;
   optional<string> race;
   BuildingId buildingId;

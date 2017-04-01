@@ -22,7 +22,6 @@
 #include "destroy_action.h"
 
 class SquareType;
-class Location;
 class TaskCallback;
 class CreatureFactory;
 

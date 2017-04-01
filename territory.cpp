@@ -3,12 +3,7 @@
 #include "position.h"
 #include "movement_type.h"
 
-template <class Archive>
-void Territory::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(allSquares) & SVAR(allSquaresVec);
-}
-
-SERIALIZABLE(Territory);
+SERIALIZE_DEF(Territory, allSquares, allSquaresVec, centralPoint)
 
 void Territory::clearCache() {
   extendedCache.clear();
@@ -27,6 +22,10 @@ void Territory::remove(Position pos) {
   removeElement(allSquaresVec, pos);
   allSquares.erase(pos);
   clearCache();
+}
+
+void Territory::setCentralPoint(Position pos) {
+  centralPoint = pos;
 }
   
 bool Territory::contains(Position pos) const {
@@ -79,5 +78,9 @@ const vector<Position>& Territory::getExtended(int max) const {
 
 bool Territory::isEmpty() const {
   return allSquaresVec.empty();
+}
+
+const optional<Position>& Territory::getCentralPoint() const {
+  return centralPoint;
 }
 

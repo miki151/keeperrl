@@ -27,7 +27,7 @@ class MinimapGui : public GuiElem {
 
   MinimapGui(Renderer&, function<void()> clickFun);
 
-  void update(const Level* level, Rectangle bounds, const CreatureView* creature, bool printLocations = false);
+  void update(const Level*, Rectangle bounds, const CreatureView*);
   void presentMap(const CreatureView*, Rectangle bounds, Renderer&, function<void(double, double)> clickFun);
   void clear();
 
@@ -44,11 +44,7 @@ class MinimapGui : public GuiElem {
     unordered_set<Vec2, CustomHash<Vec2>> roads;
     vector<Vec2> enemies;
     Vec2 player;
-    struct Location {
-      Vec2 pos;
-      string text;
-    };
-    vector<Location> locations;
+    vector<Vec2> locations;
   } info;
 
   function<void()> clickFun;

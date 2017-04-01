@@ -22,7 +22,6 @@
 #include "collective.h"
 #include "shortest_path.h"
 #include "creature.h"
-#include "location.h"
 #include "level_builder.h"
 #include "square_factory.h"
 #include "model.h"
@@ -400,11 +399,8 @@ class Creatures : public LevelMaker {
       cfactory(cf), numCreature(numC), onPred(pred) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    if (!actorFactory) {
-      Location* loc = new Location();
-      builder->addLocation(loc, area);
-      actorFactory = MonsterAIFactory::stayInLocation(loc);
-    }
+    if (!actorFactory)
+      actorFactory = MonsterAIFactory::stayInLocation(builder->toGlobalCoordinates(area));
     Table<char> taken(area.right(), area.bottom());
     for (int i : Range(numCreature)) {
       PCreature creature = cfactory.random(*actorFactory);
@@ -1403,28 +1399,14 @@ class Forrest : public LevelMaker {
   SquareType onType;
 };
 
-class LocationMaker : public LevelMaker {
+class PlaceCollective : public LevelMaker {
   public:
-  LocationMaker(Location* l) : location(l) {}
+  PlaceCollective(CollectiveBuilder* c) : collective(c) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    builder->addLocation(location, area);
-    for (Vec2 v : area)
-      builder->addAttrib(v, SquareAttrib::LOCATION);
+    collective->setArea(builder->toGlobalCoordinates(area));
   }
-  
-  private:
-  Location* location;
-};
 
-class AddSquaresToCollective : public LevelMaker {
-  public:
-  AddSquaresToCollective(CollectiveBuilder* c) : collective(c) {}
-
-  virtual void make(LevelBuilder* builder, Rectangle area) override {
-    collective->addSquares(builder->toGlobalCoordinates(area).getAllSquares());
-  }
-  
   private:
   CollectiveBuilder* collective;
 };
@@ -1491,9 +1473,7 @@ class ShopMaker : public LevelMaker {
       : factory(_factory), tribe(_tribe), numItems(_numItems), building(_building) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    Location *loc = new Location();
-    builder->addLocation(loc, area);
-    PCreature shopkeeper = CreatureFactory::getShopkeeper(loc, tribe);
+    PCreature shopkeeper = CreatureFactory::getShopkeeper(builder->toGlobalCoordinates(area), tribe);
     vector<Vec2> pos;
     for (Vec2 v : area)
       if (builder->canNavigate(v, MovementTrait::WALK) && builder->getType(v) == building.floorInside)
@@ -1651,10 +1631,9 @@ class CastleExit : public LevelMaker {
       builder->putSquare(loc + v, building.floorInside);
     vector<Vec2> guardPos { Vec2(1, 1), Vec2(1, -1) };
     for (Vec2 pos : guardPos) {
-      Location* guard = new Location();
-      builder->addLocation(guard, Rectangle(loc + pos, loc + pos + Vec2(1, 1)));
       builder->putCreature(loc + pos, CreatureFactory::fromId(guardId, guardTribe,
-            MonsterAIFactory::stayInLocation(guard, false)));
+          MonsterAIFactory::stayInLocation(
+              builder->toGlobalCoordinates(Rectangle(loc + pos, loc + pos + Vec2(1, 1))), false)));
     }
   }
 
@@ -1697,7 +1676,7 @@ PLevelMaker LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
   BuildingInfo building = getBuildingInfo(info);
   queue->addMaker(new Empty(SquareChange(SquareId::FLOOR, FurnitureType::MOUNTAIN)));
-  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new PlaceCollective(info.collective));
   queue->addMaker(new RoomMaker(random.get(8, 15), 3, 5));
   queue->addMaker(new Connector(building.door, 0));
   if (info.furniture)
@@ -1748,7 +1727,7 @@ MakerQueue* getElderRoom(SettlementInfo info) {
 MakerQueue* village2(RandomGen& random, SettlementInfo info) {
   BuildingInfo building = getBuildingInfo(info);
   MakerQueue* queue = new MakerQueue();
-  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new PlaceCollective(info.collective));
   vector<LevelMaker*> insideMakers {getElderRoom(info)};
   for (auto& elem : info.stockpiles)
     insideMakers.push_back(stockpileMaker(elem));
@@ -1772,7 +1751,7 @@ MakerQueue* village2(RandomGen& random, SettlementInfo info) {
 MakerQueue* village(RandomGen& random, SettlementInfo info) {
   BuildingInfo building = getBuildingInfo(info);
   MakerQueue* queue = new MakerQueue();
-  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new PlaceCollective(info.collective));
   queue->addMaker(new UniformBlob(building.floorOutside, none, none, 0.6));
   vector<LevelMaker*> insideMakers {
  //     hatchery(CreatureFactory::singleType(info.tribe, CreatureId::PIG), random.get(2, 5)),
@@ -1816,7 +1795,7 @@ MakerQueue* cottage(SettlementInfo info) {
   if (info.outsideFeatures)
     room->addMaker(new Furnitures(Predicate::type(building.floorOutside), 0.1, *info.outsideFeatures));
   queue->addMaker(new Buildings(1, 2, 5, 7, building, false, {room}, false));
-  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new PlaceCollective(info.collective));
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, 
           Predicate::type(building.floorOutside)));
@@ -1840,7 +1819,7 @@ MakerQueue* forrestCottage(SettlementInfo info) {
   if (info.outsideFeatures)
     room->addMaker(new Furnitures(Predicate::type(building.floorOutside), 0.1, *info.outsideFeatures));
   queue->addMaker(new Buildings(1, 3, 3, 4, building, false, {room}, false));
-  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new PlaceCollective(info.collective));
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, 
           Predicate::type(building.floorOutside)));
@@ -1871,7 +1850,7 @@ MakerQueue* castle(RandomGen& random, SettlementInfo info) {
   insidePlusWall->addMaker(new BorderGuard(inside, building.wall));
   MakerQueue* queue = new MakerQueue();
   int insideMargin = 2;
-  queue->addMaker(new Margin(insideMargin, new LocationMaker(info.location)));
+  queue->addMaker(new Margin(insideMargin, new PlaceCollective(info.collective)));
   queue->addMaker(new Margin(insideMargin, insidePlusWall));
   vector<LevelMaker*> cornerMakers;
   for (auto& elem : info.stockpiles)
@@ -1914,7 +1893,7 @@ MakerQueue* castle2(RandomGen& random, SettlementInfo info) {
   insidePlusWall->addMaker(new Empty(building.floorOutside));
   insidePlusWall->addMaker(new BorderGuard(inside, building.wall));
   MakerQueue* queue = new MakerQueue();
-  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new PlaceCollective(info.collective));
   queue->addMaker(insidePlusWall);
   queue->addMaker(new Connector(building.door, 1, 18));
   queue->addMaker(new CastleExit(info.tribe, building, *info.guardId));
@@ -1933,8 +1912,6 @@ MakerQueue* castle2(RandomGen& random, SettlementInfo info) {
 
 LevelMaker* makeLake() {
   MakerQueue* queue = new MakerQueue();
-  Location* loc = new Location();
-  queue->addMaker(new LocationMaker(loc));
   queue->addMaker(new Lake());
   queue->addMaker(new Margin(10, new RandomLocations(
           {new UniformBlob(SquareId::GRASS, SquareType(SquareId::SAND))}, {{15, 15}},
@@ -1951,7 +1928,7 @@ static LevelMaker* tower(RandomGen& random, SettlementInfo info, bool withExit) 
   queue->addMaker(new Margin(1, new Empty(building.floorInside)));
   queue->addMaker(new Margin(1, new AddAttrib(SquareAttrib::ROOM)));
   queue->addMaker(new RemoveAttrib(SquareAttrib::ROAD_CUT_THRU));
-  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new PlaceCollective(info.collective));
   LevelMaker* downStairs = nullptr;
   for (StairKey key : info.downStairs)
     downStairs = new Stairs(StairDirection::DOWN, key, Predicate::type(building.floorInside));
@@ -2014,9 +1991,8 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
       return Predicate::type(FurnitureType::MOUNTAIN);
     case SettlementType::SPIDER_CAVE:
       return RandomLocations::LocationPredicate(
-          Predicate::type(FurnitureType::MOUNTAIN), Predicate::andPred(
-            Predicate::negate(Predicate::attrib(SquareAttrib::LOCATION)),
-            Predicate::attrib(SquareAttrib::CONNECTOR)), 1, 2);
+          Predicate::type(FurnitureType::MOUNTAIN),
+          Predicate::attrib(SquareAttrib::CONNECTOR), 1, 2);
     case SettlementType::MOUNTAIN_LAKE:
     case SettlementType::ISLAND_VAULT:
       return Predicate::attrib(SquareAttrib::MOUNTAIN);
@@ -2068,7 +2044,7 @@ static MakerQueue* genericMineTownMaker(RandomGen& random, SettlementInfo info, 
     queue->addMaker(
         new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
           Predicate::type(building.floorOutside)));
-  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new PlaceCollective(info.collective));
   return queue;
 }
 
@@ -2101,7 +2077,7 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
     queue->addMaker(
         new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
           Predicate::type(building.floorOutside)));
-  queue->addMaker(new Margin(1, new LocationMaker(info.location)));
+  queue->addMaker(new Margin(1, new PlaceCollective(info.collective)));
   return queue;
 }
 
@@ -2115,7 +2091,7 @@ static MakerQueue* spiderCaveMaker(SettlementInfo info) {
   if (info.shopFactory)
     inside->addMaker(new Items(*info.shopFactory, 5, 10));
   queue->addMaker(new Margin(3, inside));
-  queue->addMaker(new LocationMaker(info.location));
+  queue->addMaker(new PlaceCollective(info.collective));
   queue->addMaker(new Connector(none, 0));
   return queue;
 }
@@ -2123,7 +2099,7 @@ static MakerQueue* spiderCaveMaker(SettlementInfo info) {
 static LevelMaker* islandVaultMaker(RandomGen& random, SettlementInfo info, bool door) {
   BuildingInfo building = getBuildingInfo(info);
   MakerQueue* inside = new MakerQueue();
-  inside->addMaker(new LocationMaker(info.location));
+  inside->addMaker(new PlaceCollective(info.collective));
   Predicate featurePred = Predicate::type(building.floorInside);
   if (!info.stockpiles.empty())
     inside->addMaker(stockpileMaker(getOnlyElement(info.stockpiles)));
@@ -2177,7 +2153,7 @@ static void addResources(RandomGen& random, RandomLocations* locations, int coun
 MakerQueue* cemetery(SettlementInfo info) {
   BuildingInfo building = getBuildingInfo(info);
   MakerQueue* queue = new MakerQueue({
-          new LocationMaker(info.location),
+          new PlaceCollective(info.collective),
           new Margin(1, new Buildings(1, 2, 2, 3, building, false, {}, false)),
           new Furnitures(Predicate::type(SquareId::GRASS), 0.15,
               FurnitureFactory(info.tribe, FurnitureType::GRAVE))});
@@ -2190,14 +2166,15 @@ MakerQueue* cemetery(SettlementInfo info) {
 
 static LevelMaker* emptyCollective(SettlementInfo info) {
   return new MakerQueue({
-      new LocationMaker(info.location),
+      new PlaceCollective(info.collective),
       new Creatures(*info.creatures, info.numCreatures, info.collective)});
 }
 
 static LevelMaker* swamp(SettlementInfo info) {
   MakerQueue* queue = new MakerQueue({
       new Lake(false),
-      new LocationMaker(info.location)});
+      new PlaceCollective(info.collective),
+    });
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective));
   return queue;
@@ -2206,7 +2183,8 @@ static LevelMaker* swamp(SettlementInfo info) {
 static LevelMaker* mountainLake(SettlementInfo info) {
   MakerQueue* queue = new MakerQueue({
       new UniformBlob(SquareId::WATER, none, SquareAttrib::LAKE),
-      new LocationMaker(info.location)});
+      new PlaceCollective(info.collective),
+    });
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective));
   return queue;
@@ -2364,7 +2342,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
       locations->add(new MakerQueue({
             new RemoveFurniture(FurnitureLayer::MIDDLE),
             new FurnitureBlob(FurnitureFactory(cottage.tribe, FurnitureType::CROPS)),
-            new AddSquaresToCollective(cottage.collective)}),
+            new PlaceCollective(cottage.collective)}),
           {random.get(7, 12), random.get(7, 12)},
           lowlandPred);
       locations->setMaxDistanceLast(cottage.maker, 13);
@@ -2573,7 +2551,7 @@ PLevelMaker LevelMaker::sokobanFromFile(RandomGen& random, SettlementInfo info, 
   queue->addMaker(new SokobanFromFile(file, info.neutralCreatures->first, getOnlyElement(info.downStairs)));
   queue->addMaker(new Stairs(StairDirection::DOWN, getOnlyElement(info.downStairs),
         Predicate::attrib(SquareAttrib::SOKOBAN_ENTRY)));
-  queue->addMaker(new LocationMaker(info.location));
+  new PlaceCollective(info.collective),
   queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective,
         Predicate::attrib(SquareAttrib::SOKOBAN_PRIZE)));
   return PLevelMaker(queue);

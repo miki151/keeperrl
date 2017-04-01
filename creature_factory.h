@@ -20,7 +20,6 @@
 
 class Creature;
 class MonsterAIFactory;
-class Location;
 class Tribe;
 class ItemType;
 class CreatureAttributes;
@@ -201,7 +200,7 @@ class CreatureFactory {
 
   CreatureFactory& increaseLevel(double);
 
-  static PCreature getShopkeeper(Location* shopArea, TribeId);
+  static PCreature getShopkeeper(Rectangle shopArea, TribeId);
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
   static PCreature getGhost(WCreature);
   static PCreature getIllusion(WCreature);

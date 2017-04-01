@@ -14,6 +14,7 @@ class Spectator : public CreatureView {
   virtual double getLocalTime() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual bool isPlayerView() const override;
+  virtual vector<Vec2> getUnknownLocations(const Level*) const override;
 
   private:
   Level* level;

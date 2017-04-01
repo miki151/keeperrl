@@ -24,7 +24,6 @@
 #include "creature_attributes.h"
 #include "view_object.h"
 #include "view_id.h"
-#include "location.h"
 #include "creature.h"
 #include "game.h"
 #include "name_generator.h"
@@ -390,26 +389,35 @@ class KamikazeController : public Monster {
 
 class ShopkeeperController : public Monster, public EventListener {
   public:
-  ShopkeeperController(WCreature c, Location* area)
+  ShopkeeperController(WCreature c, Rectangle area)
       : Monster(c, MonsterAIFactory::stayInLocation(area)), shopArea(area) {
   }
 
+  vector<Position> getAllShopPositions() const {
+    return transform2(shopArea.getAllSquares(), [this](Vec2 v){ return Position(v, myLevel); });
+  }
+
+  bool isShopPosition(const Position& pos) {
+    return pos.isSameLevel(myLevel) && shopArea.contains(pos.getCoord());
+  }
+
   virtual void makeMove() override {
-    if (!getCreature()->getPosition().isSameLevel(shopArea->getLevel())) {
-      Monster::makeMove();
-      return;
-    }
     if (firstMove) {
+      myLevel = getCreature()->getLevel();
       subscribeTo(getCreature()->getPosition().getModel());
-      for (Position v : shopArea->getAllSquares()) {
+      for (Position v : getAllShopPositions()) {
         for (WItem item : v.getItems())
           item->setShopkeeper(getCreature());
         v.clearItemIndex(ItemIndex::FOR_SALE);
       }
       firstMove = false;
     }
+    if (!getCreature()->getPosition().isSameLevel(myLevel)) {
+      Monster::makeMove();
+      return;
+    }
     vector<Creature::Id> creatures;
-    for (Position v : shopArea->getAllSquares())
+    for (Position v : getAllShopPositions())
       if (WCreature c = v.getCreature()) {
         creatures.push_back(c->getUniqueId());
         if (!prevCreatures.contains(c) && !thieves.contains(c) && !getCreature()->isEnemy(c)) {
@@ -456,8 +464,8 @@ class ShopkeeperController : public Monster, public EventListener {
     switch (event.getId()) {
       case EventId::ITEMS_APPEARED: {
           auto info = event.get<EventInfo::ItemsAppeared>();
-          if (shopArea->contains(info.position)) {
-           for (WItem it : info.items) {
+          if (isShopPosition(info.position)) {
+           for (auto& it : info.items) {
              it->setShopkeeper(getCreature());
              info.position.clearItemIndex(ItemIndex::FOR_SALE);
            }
@@ -466,8 +474,8 @@ class ShopkeeperController : public Monster, public EventListener {
         break;
       case EventId::PICKED_UP: {
           auto info = event.get<EventInfo::ItemsHandled>();
-          if (shopArea->contains(info.creature->getPosition())) {
-            for (const WItem item : info.items)
+          if (isShopPosition(info.creature->getPosition())) {
+            for (auto& item : info.items)
               if (item->isShopkeeper(getCreature())) {
                 info.creature->getDebt().add(getCreature(), item->getPrice());
                 debtors.insert(info.creature);
@@ -477,8 +485,8 @@ class ShopkeeperController : public Monster, public EventListener {
         break;
       case EventId::DROPPED: {
           auto info = event.get<EventInfo::ItemsHandled>();
-          if (shopArea->contains(info.creature->getPosition())) {
-            for (const WItem item : info.items)
+          if (isShopPosition(info.creature->getPosition())) {
+            for (auto& item : info.items)
               if (item->isShopkeeper(getCreature())) {
                 info.creature->getDebt().add(getCreature(), -item->getPrice());
                 if (info.creature->getDebt().getAmountOwed(getCreature()) == 0)
@@ -495,7 +503,7 @@ class ShopkeeperController : public Monster, public EventListener {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int) {
     ar & SUBCLASS(Monster) & SUBCLASS(EventListener);
-    serializeAll(ar, prevCreatures, debtors, thiefCount, thieves, shopArea, firstMove);
+    serializeAll(ar, prevCreatures, debtors, thiefCount, thieves, shopArea, myLevel, firstMove);
   }
 
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
@@ -505,7 +513,8 @@ class ShopkeeperController : public Monster, public EventListener {
   EntitySet<Creature> SERIAL(debtors);
   EntityMap<Creature, int> SERIAL(thiefCount);
   EntitySet<Creature> SERIAL(thieves);
-  Location* SERIAL(shopArea);
+  Rectangle SERIAL(shopArea);
+  Level* SERIAL(myLevel) = nullptr;
   bool SERIAL(firstMove) = true;
 };
 
@@ -517,7 +526,7 @@ PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemType>& ite
   return c;
 }
 
-PCreature CreatureFactory::getShopkeeper(Location* shopArea, TribeId tribe) {
+PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
   auto ret = makeOwner<Creature>(tribe,
       CATTR(
         c.viewId = ViewId::SHOPKEEPER;

@@ -35,7 +35,6 @@ class ControllerFactory;
 class PlayerMessage;
 class CreatureVision;
 class SquareType;
-class Location;
 class ShortestPath;
 class LevelShortestPath;
 class Equipment;
@@ -209,7 +208,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public std::e
   CreatureAction moveTowards(Position, bool stepOnTile = false);
   CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();
-  CreatureAction stayIn(const Location*);
+  CreatureAction stayIn(Level*, Rectangle);
   bool isSameSector(Position) const;
   bool canNavigateTo(Position) const;
 

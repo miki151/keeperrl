@@ -6,7 +6,6 @@
 #include "trigger.h"
 #include "item.h"
 #include "view_id.h"
-#include "location.h"
 #include "model.h"
 #include "view_index.h"
 #include "sound.h"
@@ -262,14 +261,6 @@ Position Position::plus(Vec2 v) const {
 Position Position::minus(Vec2 v) const {
   return Position(coord - v, level);
 }
-
-const Location* Position::getLocation() const {
-  if (isValid())
-    for (auto location : level->getAllLocations())
-      if (location->contains(*this))
-        return location;
-  return nullptr;
-} 
 
 optional<FurnitureClickType> Position::getClickType() const {
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))

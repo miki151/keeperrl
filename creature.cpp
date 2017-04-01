@@ -24,7 +24,6 @@
 #include "game.h"
 #include "effect.h"
 #include "item_factory.h"
-#include "location.h"
 #include "controller.h"
 #include "player_message.h"
 #include "attack.h"
@@ -1550,13 +1549,14 @@ CreatureAction Creature::continueMoving() {
     return CreatureAction();
 }
 
-CreatureAction Creature::stayIn(const Location* location) {
-  if (!location->contains(getPosition())) {
-    for (Position v : getPosition().neighbors8(Random))
-      if (location->contains(v))
-        if (auto action = move(v))
-          return action;
-    return moveTowards(location->getMiddle());
+CreatureAction Creature::stayIn(Level* level, Rectangle area) {
+  if (level != getLevel() || !area.contains(getPosition().getCoord())) {
+    if (level == getLevel())
+      for (Position v : getPosition().neighbors8(Random))
+        if (area.contains(v.getCoord()))
+          if (auto action = move(v))
+            return action;
+    return moveTowards(Position(area.middle(), getLevel()));
   }
   return CreatureAction();
 }
