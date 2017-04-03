@@ -148,12 +148,12 @@ PTask Task::construction(WTaskCallback c, Position target, FurnitureType type) {
 namespace {
 class Destruction : public Task {
   public:
-  Destruction(WTaskCallback c, Position pos, const Furniture* furniture, DestroyAction action)
+  Destruction(WTaskCallback c, Position pos, WConstFurniture furniture, DestroyAction action)
       : Task(true), position(pos), callback(c), destroyAction(action),
         description(action.getVerbSecondPerson() + " "_s + furniture->getName()),
         furnitureType(furniture->getType()) {}
 
-  const Furniture* getFurniture() const {
+  WConstFurniture getFurniture() const {
     return position.getFurniture(Furniture::getLayer(furnitureType));
   }
 
@@ -201,7 +201,7 @@ class Destruction : public Task {
 
 }
 
-PTask Task::destruction(WTaskCallback c, Position target, const Furniture* furniture, DestroyAction destroyAction) {
+PTask Task::destruction(WTaskCallback c, Position target, WConstFurniture furniture, DestroyAction destroyAction) {
   return makeOwner<Destruction>(c, target, furniture, destroyAction);
 }
 

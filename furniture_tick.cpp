@@ -11,7 +11,7 @@
 #include "player_message.h"
 #include "movement_type.h"
 
-void FurnitureTick::handle(FurnitureTickType type, Position pos, Furniture* furniture) {
+void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furniture) {
   switch (type) {
     case FurnitureTickType::BED:
       if (WCreature c = pos.getCreature())

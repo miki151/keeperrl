@@ -46,7 +46,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   void setViewId(ViewId);
 
   static PTask construction(WTaskCallback, Position, FurnitureType);
-  static PTask destruction(WTaskCallback, Position, const Furniture*, DestroyAction);
+  static PTask destruction(WTaskCallback, Position, WConstFurniture, DestroyAction);
   static PTask buildTorch(WTaskCallback, Position, Dir attachmentDir);
   static PTask bringItem(WTaskCallback, Position position, vector<WItem>, const set<Position>& target,
       int numRetries = 10);

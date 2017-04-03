@@ -96,54 +96,54 @@ optional<StairKey> Position::getLandingLink() const {
     return none;
 }
 
-Square* Position::modSquare() const {
+WSquare Position::modSquare() const {
   CHECK(isValid());
   return level->modSafeSquare(coord);
 }
 
-const Square* Position::getSquare() const {
+WConstSquare Position::getSquare() const {
   CHECK(isValid());
   return level->getSafeSquare(coord);
 }
 
-Furniture* Position::modFurniture(FurnitureLayer layer) const {
+WFurniture Position::modFurniture(FurnitureLayer layer) const {
   if (isValid())
     return level->furniture->getBuilt(layer).getWritable(coord);
   else
     return nullptr;
 }
 
-Furniture* Position::modFurniture(FurnitureType type) const {
+WFurniture Position::modFurniture(FurnitureType type) const {
   if (auto furniture = modFurniture(Furniture::getLayer(type)))
     if (furniture->getType() == type)
       return furniture;
   return nullptr;
 }
 
-const Furniture* Position::getFurniture(FurnitureLayer layer) const {
+WConstFurniture Position::getFurniture(FurnitureLayer layer) const {
   if (isValid())
     return level->furniture->getBuilt(layer).getReadonly(coord);
   else
     return nullptr;
 }
 
-const Furniture* Position::getFurniture(FurnitureType type) const {
+WConstFurniture Position::getFurniture(FurnitureType type) const {
   if (auto furniture = getFurniture(Furniture::getLayer(type)))
     if (furniture->getType() == type)
       return furniture;
   return nullptr;
 }
 
-vector<const Furniture*> Position::getFurniture() const {
-  vector<const Furniture*> ret;
+vector<WConstFurniture> Position::getFurniture() const {
+  vector<WConstFurniture> ret;
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = getFurniture(layer))
       ret.push_back(f);
   return ret;
 }
 
-vector<Furniture*> Position::modFurniture() const {
-  vector<Furniture*> ret;
+vector<WFurniture> Position::modFurniture() const {
+  vector<WFurniture> ret;
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = modFurniture(layer))
       ret.push_back(f);
@@ -413,7 +413,7 @@ void Position::dropItems(vector<PItem> v) {
     modSquare()->dropItems(*this, std::move(v));
 }
 
-void Position::removeFurniture(const Furniture* f) const {
+void Position::removeFurniture(WConstFurniture f) const {
   auto layer = f->getLayer();
   CHECK(getFurniture(layer) == f);
   level->furniture->getBuilt(layer).clearElem(coord);
@@ -430,7 +430,7 @@ void Position::addFurniture(PFurniture f) const {
   setNeedsRenderUpdate(true);
 }
 
-void Position::replaceFurniture(const Furniture* prev, PFurniture next) const {
+void Position::replaceFurniture(WConstFurniture prev, PFurniture next) const {
   auto layer = next->getLayer();
   CHECK(prev->getLayer() == layer);
   CHECK(getFurniture(layer) == prev);

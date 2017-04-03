@@ -5,7 +5,8 @@
 template <typename Type, typename Param, typename Generator>
 class ReadWriteArray {
   public:
-  typedef unique_ptr<Type> PType;
+  typedef OwnerPointer<Type> PType;
+  typedef WeakPointer<Type> WType;
 
   ReadWriteArray(Rectangle bounds) : modified(bounds), readonly(bounds, nullptr), types(bounds) {}
 
@@ -16,7 +17,7 @@ class ReadWriteArray {
     return modified.getBounds();
   }
 
-  Type* getWritable(Vec2 pos) {
+  WType getWritable(Vec2 pos) {
     if (!modified[pos])
       if (auto type = types[pos])
         putElem(pos, Generator()(*type));
@@ -30,7 +31,7 @@ class ReadWriteArray {
     return std::move(modified[pos]);
   }
 
-  const Type* getReadonly(Vec2 pos) const {
+  const WType getReadonly(Vec2 pos) const {
     return readonly[pos];
   }
 
@@ -40,7 +41,7 @@ class ReadWriteArray {
     if (!readonly[pos])
       ++numTotal;
     readonly[pos] = readonlyMap.at(param).get();
-    modified[pos].reset();
+    modified[pos].clear();
     types[pos] = param;
   }
 
@@ -58,7 +59,7 @@ class ReadWriteArray {
       if (modified[pos])
         --numModified;
       types[pos] = none;
-      modified[pos].reset();
+      modified[pos].clear();
       readonly[pos] = nullptr;
     }
   }
@@ -73,7 +74,7 @@ class ReadWriteArray {
 
   private:
   Table<PType> SERIAL(modified);
-  Table<Type*> SERIAL(readonly);
+  Table<WType> SERIAL(readonly);
   Table<optional<Param>> SERIAL(types);
   unordered_map<Param, PType, CustomHash<Param>> SERIAL(readonlyMap);
   int SERIAL(numModified) = 0;

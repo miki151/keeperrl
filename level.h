@@ -196,8 +196,8 @@ class Level : public OwnedObject<Level> {
 
   private:
   friend class Position;
-  const Square* getSafeSquare(Vec2) const;
-  Square* modSafeSquare(Vec2);
+  WConstSquare getSafeSquare(Vec2) const;
+  WSquare modSafeSquare(Vec2);
   Vec2 transform(Vec2);
   HeapAllocated<SquareArray> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);

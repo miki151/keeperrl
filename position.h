@@ -78,9 +78,9 @@ class Position {
   vector<PItem> removeItems(vector<WItem>);
   bool canConstruct(FurnitureType) const;
   bool isWall() const;
-  void removeFurniture(const Furniture*) const;
+  void removeFurniture(WConstFurniture) const;
   void addFurniture(PFurniture) const;
-  void replaceFurniture(const Furniture*, PFurniture) const;
+  void replaceFurniture(WConstFurniture, PFurniture) const;
   bool isUnavailable() const;
   void dropItem(PItem);
   void dropItems(vector<PItem>);
@@ -124,19 +124,19 @@ class Position {
   void swapCreatures(WCreature);
   double getLight() const;
   optional<Position> getStairsTo(Position) const;
-  const Furniture* getFurniture(FurnitureLayer) const;
-  const Furniture* getFurniture(FurnitureType) const;
-  vector<const Furniture*> getFurniture() const;
-  Furniture* modFurniture(FurnitureLayer) const;
-  Furniture* modFurniture(FurnitureType) const;
-  vector<Furniture*> modFurniture() const;
+  WConstFurniture getFurniture(FurnitureLayer) const;
+  WConstFurniture getFurniture(FurnitureType) const;
+  vector<WConstFurniture> getFurniture() const;
+  WFurniture modFurniture(FurnitureLayer) const;
+  WFurniture modFurniture(FurnitureType) const;
+  vector<WFurniture> modFurniture() const;
 
   SERIALIZATION_DECL(Position);
   int getHash() const;
 
   private:
-  Square* modSquare() const;
-  const Square* getSquare() const;
+  WSquare modSquare() const;
+  WConstSquare getSquare() const;
   Vec2 SERIAL(coord);
   WLevel SERIAL(level) = nullptr;
 };

@@ -40,8 +40,6 @@ class SquareFactory {
   static SquareFactory single(SquareType);
 
   private:
-  static Square* getPtr(SquareType s);
-
   SquareFactory(const vector<SquareType>&, const vector<double>&);
   SquareFactory(const vector<SquareType>& first, const vector<SquareType>&, const vector<double>&);
 

@@ -7,7 +7,7 @@
 #include "furniture.h"
 #include "player_message.h"
 
-void FurnitureEntry::handle(FurnitureEntryType type, const Furniture* f, WCreature c) {
+void FurnitureEntry::handle(FurnitureEntryType type, WConstFurniture f, WCreature c) {
   switch (type) {
     case FurnitureEntryType::SOKOBAN:
       if (c->getAttributes().isBoulder()) {

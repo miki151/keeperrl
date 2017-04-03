@@ -136,63 +136,58 @@ void SquareFactory::registerTypes(Archive& ar, int version) {
 REGISTER_TYPES(SquareFactory::registerTypes);
 
 PSquare SquareFactory::get(SquareType s) {
-  return PSquare(getPtr(s));
-}
- 
-Square* SquareFactory::getPtr(SquareType s) {
   switch (s.getId()) {
     case SquareId::FLOOR:
-        return new Square(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR_BACKGROUND),
+        return makeOwner<Square>(ViewObject(ViewId::FLOOR, ViewLayer::FLOOR_BACKGROUND),
             CONSTRUCT(Square::Params,
               c.name = "floor";
               c.vision = VisionId::NORMAL;
               c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             ));
     case SquareId::BLACK_FLOOR:
-        return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND, "Floor"),
+        return makeOwner<Square>(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND, "Floor"),
             CONSTRUCT(Square::Params,
               c.name = "floor";
               c.vision = VisionId::NORMAL;
               c.movementSet = MovementSet().addTrait(MovementTrait::WALK);));
     case SquareId::GRASS:
-        return new Square(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND),
+        return makeOwner<Square>(ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND),
             CONSTRUCT(Square::Params,
               c.name = "grass";
               c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
               c.vision = VisionId::NORMAL;
             ));
     case SquareId::MUD:
-        return new Square(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND),
+        return makeOwner<Square>(ViewObject(ViewId::MUD, ViewLayer::FLOOR_BACKGROUND),
             CONSTRUCT(Square::Params,
               c.name = "mud";
               c.vision = VisionId::NORMAL;
               c.movementSet = MovementSet().addTrait(MovementTrait::WALK);));
     case SquareId::BLACK_WALL:
-        return new Square(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR, "Wall"),
+        return makeOwner<Square>(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR, "Wall"),
             CONSTRUCT(Square::Params, c.name = "wall";));
     case SquareId::HILL:
-        return new Square(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND),
+        return makeOwner<Square>(ViewObject(ViewId::HILL, ViewLayer::FLOOR_BACKGROUND),
           CONSTRUCT(Square::Params,
             c.name = "hill";
             c.vision = VisionId::NORMAL;
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);));
     case SquareId::WATER:
-        return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND), "water", 100);
+        return makeOwner<Water>(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND), "water", 100);
     case SquareId::WATER_WITH_DEPTH:
-        return new Water(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND), "water", s.get<double>());
+        return makeOwner<Water>(ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND), "water", s.get<double>());
     case SquareId::MAGMA: 
-        return new Magma(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR), "magma");
+        return makeOwner<Magma>(ViewObject(ViewId::MAGMA, ViewLayer::FLOOR), "magma");
     case SquareId::SAND:
-        return new Square(ViewObject(ViewId::SAND, ViewLayer::FLOOR_BACKGROUND),
+        return makeOwner<Square>(ViewObject(ViewId::SAND, ViewLayer::FLOOR_BACKGROUND),
           CONSTRUCT(Square::Params,
             c.name = "sand";
             c.movementSet = MovementSet().addTrait(MovementTrait::WALK);
             c.vision = VisionId::NORMAL;));
     case SquareId::BORDER_GUARD:
-        return new Square(ViewObject(ViewId::BORDER_GUARD, ViewLayer::FLOOR),
+        return makeOwner<Square>(ViewObject(ViewId::BORDER_GUARD, ViewLayer::FLOOR),
           CONSTRUCT(Square::Params, c.name = "wall";));
   }
-  return 0;
 }
 
 SquareFactory::SquareFactory(const vector<SquareType>& s, const vector<double>& w) : squares(s), weights(w) {

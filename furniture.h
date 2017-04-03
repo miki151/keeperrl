@@ -16,7 +16,7 @@ class Fire;
 class ItemFactory;
 class GameEvent;
 
-class Furniture : public Renderable {
+class Furniture : public Renderable, public OwnedObject<Furniture> {
   public:
   enum BlockType { BLOCKING, NON_BLOCKING, BLOCKING_ENEMIES };
 

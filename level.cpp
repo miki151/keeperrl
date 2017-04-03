@@ -470,12 +470,12 @@ vector<Vec2> Level::getVisibleTiles(Vec2 pos, VisionId vision) const {
       [&](Vec2 v) { return isWithinVision(pos, v, vision); });
 }
 
-const Square* Level::getSafeSquare(Vec2 pos) const {
+WConstSquare Level::getSafeSquare(Vec2 pos) const {
   CHECK(inBounds(pos));
   return squares->getReadonly(pos);
 }
 
-Square* Level::modSafeSquare(Vec2 pos) {
+WSquare Level::modSafeSquare(Vec2 pos) {
   CHECK(inBounds(pos));
   return squares->getWritable(pos);
 }

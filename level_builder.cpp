@@ -48,7 +48,7 @@ void LevelBuilder::removeAttrib(Vec2 pos, SquareAttrib attr) {
   attrib[transform(pos)].erase(attr);
 }
 
-Square* LevelBuilder::modSquare(Vec2 pos) {
+WSquare LevelBuilder::modSquare(Vec2 pos) {
   return squares.getWritable(transform(pos));
 }
    
@@ -66,7 +66,7 @@ void LevelBuilder::putSquare(Vec2 posT, SquareType t, vector<SquareAttrib> attr)
   Vec2 pos = transform(posT);
   for (auto layer : ENUM_ALL(FurnitureLayer))
     furniture.getBuilt(layer).clearElem(pos);
-  if (const Square* square = squares.getReadonly(pos)) {
+  if (WConstSquare square = squares.getReadonly(pos)) {
     if (auto backgroundObj = square->extractBackground())
       background[pos] = backgroundObj;
   }
@@ -137,7 +137,7 @@ bool LevelBuilder::isFurnitureType(Vec2 pos, FurnitureType type) {
   return getFurnitureType(pos, Furniture::getLayer(type)) == type;
 }
 
-const Furniture* LevelBuilder::getFurniture(Vec2 posT, FurnitureLayer layer) {
+WConstFurniture LevelBuilder::getFurniture(Vec2 posT, FurnitureLayer layer) {
   return furniture.getBuilt(layer).getReadonly(transform(posT));
 }
 
@@ -236,7 +236,7 @@ void LevelBuilder::setUnavailable(Vec2 pos) {
 
 bool LevelBuilder::canNavigate(Vec2 posT, const MovementType& movement) {
   Vec2 pos = transform(posT);
-  const Furniture* f = furniture.getBuilt(FurnitureLayer::MIDDLE).getReadonly(pos);
+  WConstFurniture f = furniture.getBuilt(FurnitureLayer::MIDDLE).getReadonly(pos);
   return !unavailable[pos] &&
       (squares.getReadonly(pos)->getMovementSet().canEnter(movement, covered[pos], none) ||
           (f && f->overridesMovement() && f->canEnter(movement))) &&

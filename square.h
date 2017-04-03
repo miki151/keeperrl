@@ -37,7 +37,7 @@ class MovementType;
 class MovementSet;
 class ViewObject;
 
-class Square : public Renderable {
+class Square : public Renderable, public OwnedObject<Square> {
   public:
   struct Params {
     string name;

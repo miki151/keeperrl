@@ -411,7 +411,7 @@ FurnitureFactory::FurnitureFactory(TribeId t, FurnitureType f) : tribe(t), distr
 }
 
 PFurniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
-  return PFurniture(new Furniture(::get(type, tribe)));
+  return makeOwner<Furniture>(::get(type, tribe));
 }
 
 FurnitureFactory FurnitureFactory::roomFurniture(TribeId tribe) {

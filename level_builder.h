@@ -51,7 +51,7 @@ class LevelBuilder {
   ~LevelBuilder();
 
   /** Returns a given square.*/
-  Square* modSquare(Vec2);
+  WSquare modSquare(Vec2);
 
   /** Checks if it's possible to put a creature on given square.*/
   bool canPutCreature(Vec2, WCreature);
@@ -93,7 +93,7 @@ class LevelBuilder {
   void removeFurniture(Vec2 pos, FurnitureLayer);
   optional<FurnitureType> getFurnitureType(Vec2 pos, FurnitureLayer);
   bool isFurnitureType(Vec2 pos, FurnitureType);
-  const Furniture* getFurniture(Vec2 pos, FurnitureLayer);
+  WConstFurniture getFurniture(Vec2 pos, FurnitureLayer);
 
   void setLandingLink(Vec2 pos, StairKey);
 
