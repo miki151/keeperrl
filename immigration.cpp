@@ -344,7 +344,7 @@ CostInfo Immigration::calculateCost(int index, const ExponentialCost& cost) cons
   return info;
 }*/
 
-Immigration::Available::Available(Immigration* im, vector<PCreature> c, int ind, optional<double> t)
+Immigration::Available::Available(WImmigration im, vector<PCreature> c, int ind, optional<double> t)
   : creatures(std::move(c)), immigrantIndex(ind), endTime(t), immigration(im) {
 }
 
@@ -413,11 +413,11 @@ void Immigration::rejectIfNonPersistent(int id) {
 SERIALIZE_DEF(Immigration::Available, creatures, immigrantIndex, endTime, immigration)
 SERIALIZATION_CONSTRUCTOR_IMPL2(Immigration::Available, Available)
 
-Immigration::Available Immigration::Available::generate(Immigration* immigration, int index) {
+Immigration::Available Immigration::Available::generate(WImmigration immigration, int index) {
   return generate(immigration, Group {index, Random.get(immigration->getImmigrants()[index].getGroupSize()) });
 }
 
-Immigration::Available Immigration::Available::generate(Immigration* immigration, const Group& group) {
+Immigration::Available Immigration::Available::generate(WImmigration immigration, const Group& group) {
   const ImmigrantInfo& info = immigration->getImmigrants()[group.immigrantIndex];
   vector<PCreature> immigrants;
   int numGenerated = immigration->generated[group.immigrantIndex].getSize();

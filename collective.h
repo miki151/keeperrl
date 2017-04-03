@@ -319,7 +319,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<Zones> SERIAL(zones);
   HeapAllocated<TileEfficiency> SERIAL(tileEfficiency);
   HeapAllocated<CollectiveWarnings> SERIAL(warnings);
-  HeapAllocated<Immigration> SERIAL(immigration);
+  PImmigration SERIAL(immigration);
   mutable optional<double> dangerLevelCache;
   EntitySet<Collective> SERIAL(knownVillains);
   EntitySet<Collective> SERIAL(knownVillainLocations);

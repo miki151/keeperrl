@@ -94,6 +94,7 @@ DEF_SHARED_PTR(Tutorial);
 DEF_OWNER_PTR(CreatureVision);
 DEF_OWNER_PTR(Game);
 DEF_SHARED_PTR(MapMemory);
+DEF_OWNER_PTR(Immigration);
 
 template <typename T>
 T lambdaConstruct(function<void(T&)> fun) {

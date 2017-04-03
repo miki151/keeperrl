@@ -11,7 +11,7 @@
 class Collective;
 struct AttractionInfo;
 
-class Immigration {
+class Immigration : public OwnedObject<Immigration> {
   public:
   Immigration(WCollective);
   void update();
@@ -33,16 +33,16 @@ class Immigration {
     SERIALIZATION_DECL(Available)
 
     private:
-    static Available generate(Immigration*, const Group& group);
-    static Available generate(Immigration*, int index);
+    static Available generate(WImmigration, const Group& group);
+    static Available generate(WImmigration, int index);
     vector<Position> getSpawnPositions() const;
-    Available(Immigration*, vector<PCreature>, int immigrantIndex, optional<double> endTime);
+    Available(WImmigration, vector<PCreature>, int immigrantIndex, optional<double> endTime);
     void addAllCreatures(const vector<Position>& spawnPositions);
     friend class Immigration;
     vector<PCreature> SERIAL(creatures);
     int SERIAL(immigrantIndex);
     optional<double> SERIAL(endTime);
-    Immigration* SERIAL(immigration);
+    WImmigration SERIAL(immigration);
     optional<milliseconds> createdTime;
   };
 

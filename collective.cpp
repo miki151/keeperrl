@@ -75,7 +75,7 @@ PCollective Collective::create(WLevel level, TribeId tribe, const CollectiveName
 
 void Collective::init(CollectiveConfig&& cfg, Immigration&& im) {
   config.reset(std::move(cfg));
-  immigration.reset(std::move(im));
+  immigration = makeOwner<Immigration>(std::move(im));
   credit = cfg.getStartingResource();
   workshops = config->getWorkshops();
 }
