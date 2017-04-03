@@ -287,17 +287,8 @@ vector<set<Vec2>> Vec2::calculateLayers(set<Vec2> elems) {
   return ret;
 }
 
-template <class Archive> 
-void Rectangle::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(px)
-    & BOOST_SERIALIZATION_NVP(py)
-    & BOOST_SERIALIZATION_NVP(kx)
-    & BOOST_SERIALIZATION_NVP(ky)
-    & BOOST_SERIALIZATION_NVP(w)
-    & BOOST_SERIALIZATION_NVP(h);
-}
+SERIALIZE_DEF(Rectangle, px, py, kx, ky, w, h)
 
-SERIALIZABLE(Rectangle);
 SERIALIZATION_CONSTRUCTOR_IMPL(Rectangle);
 
 Rectangle Rectangle::boundingBox(const vector<Vec2>& verts) {

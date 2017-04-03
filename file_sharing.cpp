@@ -4,6 +4,7 @@
 #include "save_file_info.h"
 #include "parse_game.h"
 #include "options.h"
+#include "text_serialization.h"
 
 #include <curl/curl.h>
 
@@ -220,7 +221,7 @@ static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
     elem.fileInfo.download = true;
     TextInput input(fields[4]);
     input.getArchive() >> elem.gameInfo;
-  } catch (boost::archive::archive_exception ex) {
+  } catch (cereal::Exception) {
     return none;
   } catch (ParsingException e) {
     return none;

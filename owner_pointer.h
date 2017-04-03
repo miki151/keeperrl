@@ -188,10 +188,12 @@ class OwnedObject {
     return weakPointer;
   }
 
+  SERIALIZE_ALL(weakPointer)
+
   private:
   template <typename>
   friend class OwnerPointer;
-  WeakPointer<T> weakPointer;
+  WeakPointer<T> SERIAL(weakPointer);
 };
 
 template <typename T>

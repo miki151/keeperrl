@@ -35,9 +35,6 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
 
   static PCollectiveControl idle(WCollective);
 
-  template <class Archive>
-  static void registerTypes(Archive& ar, int version);
-
   const vector<WCreature>& getCreatures() const;
 
   private:

@@ -330,21 +330,16 @@ class TrapItem : public Item {
   bool SERIAL(alwaysVisible);
 };
 
-template <class Archive>
-void ItemFactory::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, TrapItem);
-  REGISTER_TYPE(ar, SkillBook);
-  REGISTER_TYPE(ar, TechBook);
-  REGISTER_TYPE(ar, Potion);
-  REGISTER_TYPE(ar, FireScroll);
-  REGISTER_TYPE(ar, AmuletOfWarning);
-  REGISTER_TYPE(ar, AmuletOfHealing);
-  REGISTER_TYPE(ar, Telepathy);
-  REGISTER_TYPE(ar, ItemOfCreatureVision);
-  REGISTER_TYPE(ar, Corpse);
-}
-
-REGISTER_TYPES(ItemFactory::registerTypes);
+REGISTER_TYPE(TrapItem);
+REGISTER_TYPE(SkillBook);
+REGISTER_TYPE(TechBook);
+REGISTER_TYPE(Potion);
+REGISTER_TYPE(FireScroll);
+REGISTER_TYPE(AmuletOfWarning);
+REGISTER_TYPE(AmuletOfHealing);
+REGISTER_TYPE(Telepathy);
+REGISTER_TYPE(ItemOfCreatureVision);
+REGISTER_TYPE(Corpse);
 
 ItemFactory::ItemFactory(const vector<ItemInfo>& items) {
   for (auto elem : items)

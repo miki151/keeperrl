@@ -1401,7 +1401,7 @@ class Forrest : public LevelMaker {
 
 class PlaceCollective : public LevelMaker {
   public:
-  PlaceCollective(CollectiveBuilder* c) : collective(c) {}
+  PlaceCollective(CollectiveBuilder* c) : collective(NOTNULL(c)) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     collective->setArea(builder->toGlobalCoordinates(area));
@@ -1928,7 +1928,8 @@ static LevelMaker* tower(RandomGen& random, SettlementInfo info, bool withExit) 
   queue->addMaker(new Margin(1, new Empty(building.floorInside)));
   queue->addMaker(new Margin(1, new AddAttrib(SquareAttrib::ROOM)));
   queue->addMaker(new RemoveAttrib(SquareAttrib::ROAD_CUT_THRU));
-  queue->addMaker(new PlaceCollective(info.collective));
+  if (info.collective)
+    queue->addMaker(new PlaceCollective(info.collective));
   LevelMaker* downStairs = nullptr;
   for (StairKey key : info.downStairs)
     downStairs = new Stairs(StairDirection::DOWN, key, Predicate::type(building.floorInside));

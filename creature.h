@@ -311,8 +311,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   HeapAllocated<CreatureDebt> SERIAL(debt);
 };
 
-BOOST_CLASS_VERSION(Creature, 2);
-
 struct AdjectiveInfo {
   string name;
   string help;

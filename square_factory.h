@@ -25,9 +25,6 @@ class TribeId;
 class SquareFactory {
   public:
   static PSquare get(SquareType);
-
-  template <class Archive>
-  static void registerTypes(Archive& ar, int version);
   
   SquareType getRandom(RandomGen&);
 

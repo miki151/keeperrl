@@ -45,7 +45,7 @@ class LoggingView : public View {
 
     template<class T>
     T logAndGet(T val, LoggingToken token) {
-      output << BOOST_SERIALIZATION_NVP(token) << BOOST_SERIALIZATION_NVP(val);
+      output << token << val;
       return val;
     }
 

@@ -69,7 +69,6 @@
 #endif
 
 using namespace boost::iostreams;
-using namespace boost::archive;
 
 
 void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<bool>& initialized) {

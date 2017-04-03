@@ -1055,30 +1055,25 @@ class AvoidFire : public Behaviour {
   SERIALIZE_SUBCLASS(Behaviour);
 };
 
-template <class Archive>
-void MonsterAI::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, Heal);
-  REGISTER_TYPE(ar, Rest);
-  REGISTER_TYPE(ar, MoveRandomly);
-  REGISTER_TYPE(ar, BirdFlyAway);
-  REGISTER_TYPE(ar, GoldLust);
-  REGISTER_TYPE(ar, Wildlife);
-  REGISTER_TYPE(ar, Fighter);
-  REGISTER_TYPE(ar, GuardTarget);
-  REGISTER_TYPE(ar, GuardArea);
-  REGISTER_TYPE(ar, GuardSquare);
-  REGISTER_TYPE(ar, Summoned);
-  REGISTER_TYPE(ar, DieTime);
-  REGISTER_TYPE(ar, Wait);
-  REGISTER_TYPE(ar, Thief);
-  REGISTER_TYPE(ar, ByCollective);
-  REGISTER_TYPE(ar, ChooseRandom);
-  REGISTER_TYPE(ar, SingleTask);
-  REGISTER_TYPE(ar, AvoidFire);
-  REGISTER_TYPE(ar, StayOnFurniture);
-}
-
-REGISTER_TYPES(MonsterAI::registerTypes);
+REGISTER_TYPE(Heal);
+REGISTER_TYPE(Rest);
+REGISTER_TYPE(MoveRandomly);
+REGISTER_TYPE(BirdFlyAway);
+REGISTER_TYPE(GoldLust);
+REGISTER_TYPE(Wildlife);
+REGISTER_TYPE(Fighter);
+REGISTER_TYPE(GuardTarget);
+REGISTER_TYPE(GuardArea);
+REGISTER_TYPE(GuardSquare);
+REGISTER_TYPE(Summoned);
+REGISTER_TYPE(DieTime);
+REGISTER_TYPE(Wait);
+REGISTER_TYPE(Thief);
+REGISTER_TYPE(ByCollective);
+REGISTER_TYPE(ChooseRandom);
+REGISTER_TYPE(SingleTask);
+REGISTER_TYPE(AvoidFire);
+REGISTER_TYPE(StayOnFurniture);
 
 MonsterAI::MonsterAI(WCreature c, const vector<Behaviour*>& beh, const vector<int>& w, bool pick) :
     weights(w), creature(c), pickItems(pick) {

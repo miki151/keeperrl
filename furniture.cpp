@@ -43,7 +43,7 @@ Furniture::~Furniture() {}
 
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
-  ar & SUBCLASS(Renderable);
+  ar & SUBCLASS(OwnedObject<Furniture>) & SUBCLASS(Renderable);
   serializeAll(ar, name, pluralName, type, blockType, tribe, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   serializeAll(ar, blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall);
   serializeAll(ar, constructMessage, layer, entryType, lightEmission, canHideHere);

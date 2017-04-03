@@ -278,15 +278,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TorchInfo, TorchInfo);
 
 template <class Archive>
 void ConstructionMap::serialize(Archive& ar, const unsigned int version) {
-  if (version == 0) {
-    for (auto& elem : getAllFurniture()) {
-      auto& info = getFurniture(elem.first, elem.second);
-      if (!info.isBuilt())
-        addDebt(info.getCost());
-    }
-  } else
-    serializeAll(ar, debt);
-  serializeAll(ar, traps, torches, furniture, furniturePositions, unbuiltCounts, allFurniture);
+  serializeAll(ar, debt, traps, torches, furniture, furniturePositions, unbuiltCounts, allFurniture);
 }
 
 SERIALIZABLE(ConstructionMap);

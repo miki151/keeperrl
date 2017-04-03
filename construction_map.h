@@ -115,5 +115,3 @@ class ConstructionMap {
   EnumMap<CollectiveResourceId, int> SERIAL(debt);
   void addDebt(const CostInfo&);
 };
-
-BOOST_CLASS_VERSION(ConstructionMap, 1)

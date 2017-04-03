@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "saved_game_info.h"
+#include "text_serialization.h"
 
 SERIALIZE_DEF(SavedGameInfo, minions, dangerLevel, name, progressCount);
 
-#ifdef PARSE_GAME
-template void SavedGameInfo::serialize(text_oarchive&, unsigned);
-#endif
+template void SavedGameInfo::serialize(TextOutputArchive&, unsigned);
+template void SavedGameInfo::serialize(TextInputArchive&, unsigned);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(SavedGameInfo);
 

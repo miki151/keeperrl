@@ -76,10 +76,10 @@ IPATH = -I. -I./extern
 CFLAGS += $(IPATH)
 
 ifdef OSX
-BOOST_LIBS = -lboost_serialization -lboost_filesystem -lboost_system -lboost_thread -lboost_chrono
+BOOST_LIBS = -lboost_filesystem -lboost_system -lboost_thread -lboost_chrono
 OPENGL_LIBS = -framework OpenGL
 else
-BOOST_LIBS = -lboost_serialization -lboost_filesystem -lboost_system
+BOOST_LIBS =  -lboost_filesystem -lboost_system
 OPENGL_LIBS = -lGL
 endif
 
@@ -130,7 +130,7 @@ gen_version:
 endif
 
 parse_game:
-	clang++ -std=c++11 -g gzstream.cpp parse_game.cpp util.cpp debug.cpp saved_game_info.cpp file_path.cpp directory_path.cpp progress.cpp -o parse_game -lpthread -lboost_system -lboost_filesystem -lboost_serialization -DPARSE_GAME -lz
+	clang++ -DPARSE_GAME -std=c++11 -g gzstream.cpp parse_game.cpp util.cpp debug.cpp saved_game_info.cpp file_path.cpp directory_path.cpp progress.cpp -o parse_game -lpthread -lboost_system -lboost_filesystem  -lz
 
 clean:
 	$(RM) $(OBJDIR)/*.o

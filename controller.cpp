@@ -30,7 +30,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(DoNothingController);
 
 template <class Archive> 
 void Controller::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(creature);
+  ar & SUBCLASS(OwnedObject<Controller>) & SVAR(creature);
 }
 
 SERIALIZABLE(Controller);

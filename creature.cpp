@@ -58,7 +58,7 @@ SERIALIZABLE(Creature::MoraleOverride);
 
 template <class Archive> 
 void Creature::serialize(Archive& ar, const unsigned int version) { 
-  ar & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
+  ar & SUBCLASS(OwnedObject<Creature>) & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
   serializeAll(ar, attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
   serializeAll(ar, deathTime, hidden);
   serializeAll(ar, deathReason, swapPositionCooldown);

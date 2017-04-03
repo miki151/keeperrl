@@ -22,7 +22,9 @@ class TaskCallback : public OwnedObject<TaskCallback> {
   virtual void onCopulated(WCreature who, WCreature with) {}
 
   template <class Archive> 
-  void serialize(Archive&, const unsigned int) {}
+  void serialize(Archive& ar, const unsigned int) {
+    ar & SUBCLASS(OwnedObject<TaskCallback>);
+  }
 
   virtual ~TaskCallback() {}
 };

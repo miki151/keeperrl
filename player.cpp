@@ -71,7 +71,7 @@ Player::~Player() {
 
 void Player::onEvent(const GameEvent& event) {
   switch (event.getId()) {
-    case EventId::MOVED: 
+    case EventId::MOVED:
       if (event.get<WCreature>() == getCreature())
         visibilityMap->update(getCreature(), getCreature()->getVisibleTiles());
       break;
@@ -101,7 +101,7 @@ void Player::onEvent(const GameEvent& event) {
         if (pos == myPos)
           privateMessage("An alarm sounds near you.");
         else if (pos.isSameLevel(myPos))
-          privateMessage("An alarm sounds in the " + 
+          privateMessage("An alarm sounds in the " +
               getCardinalName(myPos.getDir(pos).getBearing().getCardinalDir()));
       }
       break;
@@ -250,8 +250,8 @@ void Player::applyItem(vector<WItem> items) {
   }
   if (items[0]->getApplyTime() > 1) {
     for (WConstCreature c : getCreature()->getVisibleEnemies())
-      if (getCreature()->getPosition().dist8(c->getPosition()) < 3) { 
-        if (!getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " + 
+      if (getCreature()->getPosition().dist8(c->getPosition()) < 3) {
+        if (!getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " +
             toString(items[0]->getApplyTime()) + " turns. Are you sure you want to continue?"))
           return;
         else
@@ -303,7 +303,7 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
       [&](const WItem it) { return itemIds.contains(it);});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
   // the above assertion fails for unknown reason, so just fail this softly.
-  if (items.empty() || (items.size() == 1 && action == ItemAction::DROP_MULTI)) 
+  if (items.empty() || (items.size() == 1 && action == ItemAction::DROP_MULTI))
     return;
   switch (action) {
     case ItemAction::DROP: tryToPerform(getCreature()->drop(items)); break;
@@ -315,7 +315,7 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
     case ItemAction::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
     case ItemAction::GIVE: giveAction(items); break;
     case ItemAction::PAY: payForItemAction(items); break;
-    case ItemAction::EQUIP: 
+    case ItemAction::EQUIP:
       if (getCreature()->isEquipmentAppropriate(items[0]) || getView()->yesOrNoPrompt(
           items[0]->getTheName() + " is too heavy and will incur an accuracy penalty. Do you want to continue?"))
         tryToPerform(getCreature()->equip(items[0])); break;
@@ -1033,3 +1033,4 @@ void Player::considerAdventurerMusic() {
   getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL, true);
 }
 
+REGISTER_TYPE(ListenerTemplate<Player>)

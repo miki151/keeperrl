@@ -1,5 +1,6 @@
+#ifdef PARSE_GAME
 #include "stdafx.h"
-
+#include "text_serialization.h"
 #include "gzstream.h"
 
 #include "debug.h"
@@ -10,10 +11,6 @@
 #include "player_role.h"
 #include "extern/ProgramOptions.h"
 
-using namespace boost::program_options;
-using namespace boost::archive;
-
-#ifdef PARSE_GAME
 
 const char delim = ',';
 
@@ -49,7 +46,7 @@ int main(int argc, char* argv[]) {
   if (flags["highscores"].was_set()) {
     vector<Highscores::Score> scores;
     CompressedInput in(inputPath.getPath());
-    in.getArchive() >> BOOST_SERIALIZATION_NVP(scores);
+    in.getArchive() >> scores;
     for (auto& score : scores)
       std::cout << getString(score) << std::endl;
   } else {

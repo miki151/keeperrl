@@ -84,28 +84,20 @@ static T loadGameUsing(const FilePath& filename) {
     string discard;
     SavedGameInfo discard2;
     int version;
-    input.getArchive() >>BOOST_SERIALIZATION_NVP(version) >> BOOST_SERIALIZATION_NVP(discard)
-      >> BOOST_SERIALIZATION_NVP(discard2);
-    Serialization::registerTypes(input.getArchive(), version);
-    input.getArchive() >> BOOST_SERIALIZATION_NVP(obj);
-  } catch (boost::archive::archive_exception& ex) {
+    input.getArchive() >> version >> discard >> discard2;
+    input.getArchive() >> obj;
+  } catch (cereal::Exception& ex) {
       return T();
   }
   return obj;
 }
 
 static PGame loadGameFromFile(const FilePath& filename) {
-  if (auto game = loadGameUsing<CompressedInput, PGame>(filename))
-    return game;
-  // Try alternative format that doesn't crash on OSX.
-  return loadGameUsing<CompressedInput2, PGame>(filename); 
+  return loadGameUsing<CompressedInput, PGame>(filename);
 }
 
 static PModel loadModelFromFile(const FilePath& filename) {
-  if (auto model = loadGameUsing<CompressedInput, PModel>(filename))
-    return model;
-  // Try alternative format that doesn't crash on OSX.
-  return loadGameUsing<CompressedInput2, PModel>(filename); 
+  return loadGameUsing<CompressedInput, PModel>(filename);
 }
 
 bool isNotFilename(char c) {
@@ -121,20 +113,16 @@ static void saveGame(PGame& game, const FilePath& path) {
   CompressedOutput out(path.getPath());
   string name = game->getGameDisplayName();
   SavedGameInfo savedInfo = game->getSavedGameInfo();
-  out.getArchive() << BOOST_SERIALIZATION_NVP(saveVersion) << BOOST_SERIALIZATION_NVP(name)
-      << BOOST_SERIALIZATION_NVP(savedInfo);
-  Serialization::registerTypes(out.getArchive(), saveVersion);
-  out.getArchive() << BOOST_SERIALIZATION_NVP(game);
+  out.getArchive() << saveVersion << name << savedInfo;
+  out.getArchive() << game;
 }
 
 static void saveMainModel(PGame& game, const FilePath& path) {
   CompressedOutput out(path.getPath());
   string name = game->getGameDisplayName();
   SavedGameInfo savedInfo = game->getSavedGameInfo();
-  out.getArchive() << BOOST_SERIALIZATION_NVP(saveVersion) << BOOST_SERIALIZATION_NVP(name)
-      << BOOST_SERIALIZATION_NVP(savedInfo);
-  Serialization::registerTypes(out.getArchive(), saveVersion);
-  out.getArchive() << BOOST_SERIALIZATION_NVP(game->getMainModel());
+  out.getArchive() << saveVersion << name << savedInfo;
+  out.getArchive() << game->getMainModel();
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
@@ -587,7 +575,7 @@ PGame MainLoop::loadGame(const FilePath& file) {
         [&] (ProgressMeter& meter) {
           Square::progressMeter = &meter;
           INFO << "Loading from " << file;
-          game = loadGameFromFile(file);
+          MEASURE(game = loadGameFromFile(file), "Loading game");
     });
   Square::progressMeter = nullptr;
   return game;

@@ -36,5 +36,3 @@ class MinionTaskMap {
   EnumSet<MinionTask> SERIAL(locked);
 };
 
-BOOST_CLASS_VERSION(MinionTaskMap, 1);
-

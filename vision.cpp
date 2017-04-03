@@ -3,6 +3,7 @@
 
 template <class Archive> 
 void CreatureVision::serialize(Archive& ar, const unsigned int version) {
+ ar & SUBCLASS(OwnedObject<CreatureVision>);
 }
 
 SERIALIZABLE(CreatureVision);

@@ -33,7 +33,7 @@
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(UniqueEntity) & SUBCLASS(Renderable);
+  ar & SUBCLASS(OwnedObject<Item>) & SUBCLASS(UniqueEntity) & SUBCLASS(Renderable);
   serializeAll(ar, attributes, discarded, shopkeeper, fire, classCache, canEquipCache);
 }
 

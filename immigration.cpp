@@ -18,7 +18,12 @@
 #include "collective_name.h"
 #include "clock.h"
 
-SERIALIZE_DEF(Immigration, available, minionAttraction, idCnt, collective, generated, candidateTimeout, initialized, nextImmigrantTime, autoState)
+template <class Archive>
+void Immigration::serialize(Archive& ar, const unsigned int) {
+  ar & SUBCLASS(OwnedObject<Immigration>);
+  serializeAll(ar, available, minionAttraction, idCnt, collective, generated, candidateTimeout, initialized, nextImmigrantTime, autoState);
+}
+SERIALIZABLE(Immigration);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Immigration)
 

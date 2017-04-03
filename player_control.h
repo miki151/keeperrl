@@ -81,9 +81,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   SERIALIZATION_DECL(PlayerControl);
 
-  template <class Archive>
-  static void registerTypes(Archive& ar, int version);
-
   vector<WCreature> getTeam(WConstCreature);
   optional<FurnitureType> getMissingTrainingDummy(WConstCreature);
 

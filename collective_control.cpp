@@ -5,7 +5,7 @@
 
 template <class Archive>
 void CollectiveControl::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(collective);
+  ar & SUBCLASS(OwnedObject<CollectiveControl>) & SVAR(collective);
 }
 
 SERIALIZABLE(CollectiveControl);
@@ -61,10 +61,5 @@ PCollectiveControl CollectiveControl::idle(WCollective col) {
   return makeOwner<IdleControl>(col);
 }
 
-template <class Archive>
-void CollectiveControl::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, IdleControl);
-}
-
-REGISTER_TYPES(CollectiveControl::registerTypes);
+REGISTER_TYPE(IdleControl);
 

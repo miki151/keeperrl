@@ -46,9 +46,7 @@ bool MinionTaskMap::hasAnyTask() const {
 
 template <class Archive>
 void MinionTaskMap::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(tasks);
-  if (version >= 1)
-    ar & SVAR(locked);
+  serializeAll(ar, tasks, locked);
 }
 
 SERIALIZABLE(MinionTaskMap);

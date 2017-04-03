@@ -37,24 +37,10 @@
 #include "visibility_map.h"
 #include "view_index.h"
 
-template <class Archive>
-void Serialization::registerTypes(Archive& ar, int version) {
-  CreatureFactory::registerTypes(ar, version);
-  ItemFactory::registerTypes(ar, version);
-  SquareFactory::registerTypes(ar, version);
-  MonsterAI::registerTypes(ar, version);
-  REGISTER_TYPE(ar, Player);
-  REGISTER_TYPE(ar, Monster);
-  REGISTER_TYPE(ar, RangedWeapon);
-  REGISTER_TYPE(ar, PlayerControl);
-  REGISTER_TYPE(ar, VillageControl);
-  REGISTER_TYPE(ar, DoNothingController);
-  Trigger::registerTypes(ar, version);
-  Task::registerTypes(ar, version);
-  PlayerControl::registerTypes(ar, version);
-  CollectiveControl::registerTypes(ar, version);
-  Collective::registerTypes(ar, version);
-}
-
-REGISTER_TYPES(Serialization::registerTypes);
+REGISTER_TYPE(Player);
+REGISTER_TYPE(Monster);
+REGISTER_TYPE(RangedWeapon);
+REGISTER_TYPE(PlayerControl);
+REGISTER_TYPE(VillageControl);
+REGISTER_TYPE(DoNothingController);
 

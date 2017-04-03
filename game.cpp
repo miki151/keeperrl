@@ -36,7 +36,8 @@
 #include "player_role.h"
 
 template <class Archive> 
-void Game::serialize(Archive& ar, const unsigned int version) { 
+void Game::serialize(Archive& ar, const unsigned int version) {
+  ar & SUBCLASS(OwnedObject<Game>);
   serializeAll(ar, villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
   serializeAll(ar, musicType, portals, statistics, spectator, tribes, gameIdentifier, player);
   serializeAll(ar, gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
@@ -91,6 +92,8 @@ PGame Game::splashScreen(PModel&& model, const CampaignSetup& s) {
   Table<PModel> t(1, 1);
   t[0][0] = std::move(model);
   auto game = makeOwner<Game>(std::move(t), Vec2(0, 0), s);
+  for (auto model : game->getAllModels())
+    model->setGame(game.get());
   game->spectator.reset(new Spectator(game->models[0][0]->getTopLevel()));
   game->turnEvents.clear();
   return game;

@@ -8,15 +8,26 @@ class ListenerBase {
   public:
   virtual void onEvent(const GameEvent&) = 0;
   virtual ~ListenerBase() {}
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+  }
 };
 
 template<typename T>
 class ListenerTemplate : public ListenerBase {
   public:
   ListenerTemplate(WeakPointer<T> p) : ptr(p) {}
+  SERIALIZATION_CONSTRUCTOR(ListenerTemplate)
 
   virtual void onEvent(const GameEvent& e) override {
     ptr->onEvent(e);
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar & SUBCLASS(ListenerBase);
+    serializeAll(ar, ptr);
   }
 
   private:
@@ -38,7 +49,7 @@ class EventGenerator : public OwnedObject<EventGenerator> {
 
   void removeListener(SubscriberId id);
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:

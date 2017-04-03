@@ -24,17 +24,7 @@
 
 template <class Archive> 
 void Inventory::serialize(Archive& ar, const unsigned int version) {
-  if (version == 0) {
-    vector<PItem> SERIAL(oldItems);
-    vector<WItem> SERIAL(oldItemsCache);
-    serializeAll(ar, oldItems, oldItemsCache);
-    items = PItemVector(std::move(oldItems));
-    itemsCache = ItemVector(oldItemsCache);
-    weight = 0;
-    for (auto item : itemsCache.getElems())
-      weight += item->getWeight();
-  } else
-    serializeAll(ar, items, itemsCache, weight);
+  serializeAll(ar, items, itemsCache, weight);
 }
 
 Inventory::~Inventory() {}

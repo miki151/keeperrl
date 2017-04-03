@@ -127,13 +127,8 @@ class Water : public Square {
   }
 };
 
-template <class Archive>
-void SquareFactory::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, Magma);
-  REGISTER_TYPE(ar, Water);
-}
-
-REGISTER_TYPES(SquareFactory::registerTypes);
+REGISTER_TYPE(Magma);
+REGISTER_TYPE(Water);
 
 PSquare SquareFactory::get(SquareType s) {
   switch (s.getId()) {

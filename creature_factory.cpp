@@ -601,17 +601,13 @@ PCreature CreatureFactory::getIllusion(WCreature creature) {
   return ret;
 }
 
-template <class Archive>
-void CreatureFactory::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, BoulderController);
-  REGISTER_TYPE(ar, SokobanController);
-  REGISTER_TYPE(ar, KrakenController);
-  REGISTER_TYPE(ar, KamikazeController);
-  REGISTER_TYPE(ar, ShopkeeperController);
-  REGISTER_TYPE(ar, IllusionController);
-}
-
-REGISTER_TYPES(CreatureFactory::registerTypes);
+REGISTER_TYPE(BoulderController);
+REGISTER_TYPE(SokobanController);
+REGISTER_TYPE(KrakenController);
+REGISTER_TYPE(KamikazeController);
+REGISTER_TYPE(ShopkeeperController);
+REGISTER_TYPE(IllusionController);
+REGISTER_TYPE(ListenerTemplate<ShopkeeperController>)
 
 TribeId CreatureFactory::getTribeFor(CreatureId id) {
   if (auto t = tribeOverrides[id])

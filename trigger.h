@@ -46,9 +46,6 @@ class Trigger : public OwnedObject<Trigger> {
 
   static const ViewObject& getTorchViewObject(Dir);
 
-  template <class Archive>
-  static void registerTypes(Archive& ar, int version);
-
   SERIALIZATION_DECL(Trigger);
 
   protected:

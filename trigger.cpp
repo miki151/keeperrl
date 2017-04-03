@@ -37,7 +37,8 @@
 
 template <class Archive> 
 void Trigger::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(viewObject)
+  ar& SUBCLASS(OwnedObject<Trigger>)
+    & SVAR(viewObject)
     & SVAR(position);
 }
 
@@ -281,12 +282,7 @@ PTrigger Trigger::getMeteorShower(WCreature c, double duration) {
   return makeOwner<MeteorShower>(c, duration);
 }
 
-template <class Archive>
-void Trigger::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, Torch);
-  REGISTER_TYPE(ar, Trap);
-  REGISTER_TYPE(ar, Portal);
-  REGISTER_TYPE(ar, MeteorShower);
-}
-
-REGISTER_TYPES(Trigger::registerTypes);
+REGISTER_TYPE(Torch);
+REGISTER_TYPE(Trap);
+REGISTER_TYPE(Portal);
+REGISTER_TYPE(MeteorShower);

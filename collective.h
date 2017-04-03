@@ -205,9 +205,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   void onEvent(const GameEvent&);
 
-  template <class Archive>
-  static void registerTypes(Archive& ar, int version);
-
   private:
   struct Private {};
 

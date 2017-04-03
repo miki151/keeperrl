@@ -26,10 +26,10 @@ class ReplayView : public View {
     template <class T>
     T readValue(LoggingToken token) {
       LoggingToken t;
-      input >> BOOST_SERIALIZATION_NVP(t);
+      input >> t;
       CHECKEQ(int(t), int(token));
       T ret;
-      input >> BOOST_SERIALIZATION_NVP(ret);
+      input >> ret;
       return ret;
     }
 

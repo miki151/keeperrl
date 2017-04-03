@@ -56,6 +56,7 @@
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
+  ar & SUBCLASS(OwnedObject<Model>);
   serializeAll(ar, levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
   serializeAll(ar, stairNavigation, cemetery, topLevel, eventGenerator, externalEnemies);
 }

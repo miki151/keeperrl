@@ -40,7 +40,7 @@ vector<Highscores::Score> Highscores::fromStream(istream& in) {
 
 void Highscores::saveToFile(const vector<Score>& scores, const FilePath& path) {
   CompressedOutput out(path.getPath());
-  out.getArchive() << BOOST_SERIALIZATION_NVP(scores);
+  out.getArchive() << scores;
 }
 
 bool Highscores::Score::operator == (const Score& s) const {
@@ -52,7 +52,7 @@ vector<Highscores::Score> Highscores::fromFile(const FilePath& path) {
   vector<Highscores::Score> scores;
   try {
     CompressedInput in(path.getPath());
-    in.getArchive() >> BOOST_SERIALIZATION_NVP(scores);
+    in.getArchive() >> scores;
   } catch (...) {}
   return filter(scores, [](const Score& s) { return s.version == highscoreVersion;});
 }

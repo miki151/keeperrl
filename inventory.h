@@ -61,5 +61,3 @@ class Inventory {
   double SERIAL(weight) = 0;
   mutable EnumMap<ItemIndex, optional<ItemVector>> indexes;
 };
-
-BOOST_CLASS_VERSION(Inventory, 1)

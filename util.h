@@ -332,7 +332,12 @@ class Rectangle {
   SERIALIZATION_DECL(Rectangle);
 
   private:
-  int px = 0, py = 0, kx = 0, ky = 0, w = 0, h = 0;
+  int SERIAL(px) = 0;
+  int SERIAL(py) = 0;
+  int SERIAL(kx) = 0;
+  int SERIAL(ky) = 0;
+  int SERIAL(w) = 0;
+  int SERIAL(h) = 0;
 };
 
 template <class T>
@@ -727,20 +732,18 @@ class Table {
 
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar << BOOST_SERIALIZATION_NVP(bounds);
+    ar << bounds;
     for (Vec2 v : bounds)
-      ar << boost::serialization::make_nvp("Elem", (*this)[v]);
+      ar << (*this)[v];
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar >> BOOST_SERIALIZATION_NVP(bounds);
+    ar >> bounds;
     mem.reset(new T[bounds.width() * bounds.height()]);
     for (Vec2 v : bounds)
-      ar >> boost::serialization::make_nvp("Elem", (*this)[v]);
+      ar >> (*this)[v];
   }
-
-  BOOST_SERIALIZATION_SPLIT_MEMBER()
 
   SERIALIZATION_CONSTRUCTOR(Table);
 
@@ -1070,13 +1073,10 @@ class MustInitialize {
     return elem.front();
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & BOOST_SERIALIZATION_NVP(elem);
-  }
+  SERIALIZE_ALL(elem);
 
   private:
-  queue<T> elem;
+  queue<T> SERIAL(elem);
 };
 
 template<class T>

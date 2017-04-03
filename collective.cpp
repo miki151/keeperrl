@@ -1625,10 +1625,6 @@ int Collective::getMaxPopulation() const {
   return ret;
 }
 
-template <class Archive>
-void Collective::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, LeaderControlOverride);
-  REGISTER_TYPE(ar, Collective);
-}
-
-REGISTER_TYPES(Collective::registerTypes);
+REGISTER_TYPE(LeaderControlOverride);
+REGISTER_TYPE(Collective);
+REGISTER_TYPE(ListenerTemplate<Collective>)

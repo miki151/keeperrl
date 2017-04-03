@@ -77,30 +77,13 @@
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
-#include "extern/portable_iarchive.hpp"
-#include "extern/portable_oarchive.hpp"
 
 
 #define BOOST_ENABLE_ASSERT_HANDLER
 #include <boost/assert.hpp>
 
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/deque.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/utility.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/array.hpp>
-#include "variant_serialization.h"
-#include <boost/serialization/optional.hpp>
-#include <boost/serialization/bitset.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/weak_ptr.hpp>
-#include <boost/serialization/unique_ptr.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/variant.hpp>
-#include <boost/any.hpp>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/version.hpp>
@@ -201,10 +184,6 @@ using boost::optional;
 using boost::none_t;
 using boost::none;
 using boost::replace_all;
-using eos::portable_oarchive;
-using eos::portable_iarchive;
-using boost::archive::text_iarchive;
-using boost::archive::text_oarchive;
 #include "serialization.h"
 #include "util.h"
 #include "debug.h"

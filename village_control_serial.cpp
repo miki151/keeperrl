@@ -9,3 +9,4 @@ void VillageControl::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE(VillageControl);
+REGISTER_TYPE(ListenerTemplate<VillageControl>)

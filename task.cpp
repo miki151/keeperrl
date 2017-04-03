@@ -47,7 +47,7 @@
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(UniqueEntity);
+  ar & SUBCLASS(OwnedObject<Task>) & SUBCLASS(UniqueEntity);
   serializeAll(ar, done, transfer, viewId);
 }
 
@@ -1418,34 +1418,29 @@ PTask Task::spider(Position origin, const vector<Position>& posClose, const vect
   return makeOwner<Spider>(origin, posClose, posFurther);
 }
 
-template <class Archive>
-void Task::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, Construction);
-  REGISTER_TYPE(ar, Destruction);
-  REGISTER_TYPE(ar, BuildTorch);
-  REGISTER_TYPE(ar, PickItem);
-  REGISTER_TYPE(ar, PickAndEquipItem);
-  REGISTER_TYPE(ar, EquipItem);
-  REGISTER_TYPE(ar, BringItem);
-  REGISTER_TYPE(ar, ApplyItem);
-  REGISTER_TYPE(ar, ApplySquare);
-  REGISTER_TYPE(ar, Kill);
-  REGISTER_TYPE(ar, Disappear);
-  REGISTER_TYPE(ar, Chain);
-  REGISTER_TYPE(ar, Explore);
-  REGISTER_TYPE(ar, AttackLeader);
-  REGISTER_TYPE(ar, KillFighters);
-  REGISTER_TYPE(ar, ConsumeItem);
-  REGISTER_TYPE(ar, Copulate);
-  REGISTER_TYPE(ar, Consume);
-  REGISTER_TYPE(ar, Eat);
-  REGISTER_TYPE(ar, GoTo);
-  REGISTER_TYPE(ar, TransferTo);
-  REGISTER_TYPE(ar, Whipping);
-  REGISTER_TYPE(ar, GoToAndWait);
-  REGISTER_TYPE(ar, DropItems);
-  REGISTER_TYPE(ar, CampAndSpawn);
-  REGISTER_TYPE(ar, Spider);
-}
-
-REGISTER_TYPES(Task::registerTypes);
+REGISTER_TYPE(Construction);
+REGISTER_TYPE(Destruction);
+REGISTER_TYPE(BuildTorch);
+REGISTER_TYPE(PickItem);
+REGISTER_TYPE(PickAndEquipItem);
+REGISTER_TYPE(EquipItem);
+REGISTER_TYPE(BringItem);
+REGISTER_TYPE(ApplyItem);
+REGISTER_TYPE(ApplySquare);
+REGISTER_TYPE(Kill);
+REGISTER_TYPE(Disappear);
+REGISTER_TYPE(Chain);
+REGISTER_TYPE(Explore);
+REGISTER_TYPE(AttackLeader);
+REGISTER_TYPE(KillFighters);
+REGISTER_TYPE(ConsumeItem);
+REGISTER_TYPE(Copulate);
+REGISTER_TYPE(Consume);
+REGISTER_TYPE(Eat);
+REGISTER_TYPE(GoTo);
+REGISTER_TYPE(TransferTo);
+REGISTER_TYPE(Whipping);
+REGISTER_TYPE(GoToAndWait);
+REGISTER_TYPE(DropItems);
+REGISTER_TYPE(CampAndSpawn);
+REGISTER_TYPE(Spider);

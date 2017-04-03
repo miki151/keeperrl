@@ -15,44 +15,51 @@
 
 #pragma once
 
+#include <cereal/cereal.hpp>
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/deque.hpp>
+#include <cereal/types/set.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/set.hpp>
+#include <cereal/types/unordered_set.hpp>
+#include <cereal/types/queue.hpp>
+#include <cereal/types/stack.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/tuple.hpp>
+#include <cereal/types/common.hpp>
+#include <cereal/types/utility.hpp>
+#include <cereal/access.hpp>
+#include <cereal/types/bitset.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/boost_variant.hpp>
+
 #include "progress.h"
 
-#ifdef TEXT_SERIALIZATION
-typedef text_iarchive InputArchive;
-typedef text_oarchive OutputArchive;
-typedef portable_iarchive InputArchive2;
-#else
-typedef portable_iarchive InputArchive;
-typedef portable_oarchive OutputArchive;
-typedef text_iarchive InputArchive2;
-#endif
+typedef cereal::BinaryInputArchive InputArchive;
+typedef cereal::BinaryOutputArchive OutputArchive;
 
-#define SUBCLASS(X) boost::serialization::make_nvp("Base", boost::serialization::base_object<X>(*this))
+#define SUBCLASS(X) cereal::base_class<X>(this)
+
 
 #define SERIALIZABLE(T) \
-   template void T::serialize(InputArchive&, unsigned); \
-   template void T::serialize(OutputArchive&, unsigned); \
-   template void T::serialize(InputArchive2&, unsigned);
+  template void T::serialize(InputArchive&, unsigned); \
+  template void T::serialize(OutputArchive&, unsigned);
 
 #define SERIALIZABLE_TMPL(T, ...) \
-   template class T<__VA_ARGS__>;\
-   template void T<__VA_ARGS__>::serialize(InputArchive&, unsigned); \
-   template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned); \
-   template void T<__VA_ARGS__>::serialize(InputArchive2&, unsigned);
+  template class T<__VA_ARGS__>;\
+  template void T<__VA_ARGS__>::serialize(InputArchive&, unsigned); \
+  template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned);
 
-#define REGISTER_TYPES(M) \
-   template void M(InputArchive&, int); \
-   template void M(OutputArchive&, int); \
-   template void M(InputArchive2&, int);
-
-#define REGISTER_TYPE(T, A)\
-(T).register_type(static_cast<A*>(nullptr))
+#define REGISTER_TYPE(M) CEREAL_REGISTER_TYPE(M)
 
 #define SERIAL(X) X
-#define SVAR(X) boost::serialization::make_nvp(#X, X)
+#define SVAR(X) X
 
 #define SERIALIZATION_DECL(A) \
-  friend boost::serialization::access; \
+  friend cereal::access; \
   A(); \
   template <class Archive> \
   void serialize(Archive& ar, const unsigned int);
@@ -69,7 +76,7 @@ typedef text_iarchive InputArchive2;
 #define SERIALIZE_DEF(CLASS, ...) \
 template <class Archive> \
 void CLASS::serialize(Archive& ar, const unsigned int) { \
-  serializeAll(ar, __VA_ARGS__);\
+  ar(__VA_ARGS__);\
 }\
 SERIALIZABLE(CLASS);
 
@@ -78,11 +85,10 @@ template <typename Archive>
 void serializeAll(Archive& ar) {
 }
 
-template <typename Archive, typename Arg1, typename... Args>
-void serializeAll(Archive& ar, Arg1& arg1, Args&... args) {
+template <typename Archive, typename... Args>
+void serializeAll(Archive& ar, Args&... args) {
   Progress::checkIfInterrupted();
-  ar & boost::serialization::make_nvp("arg1", arg1);
-  serializeAll(ar, args...);
+  ar(args...);
 }
 
 #define SERIALIZE_SUBCLASS(SUB) \
@@ -94,26 +100,19 @@ void serializeAll(Archive& ar, Arg1& arg1, Args&... args) {
 #define SERIALIZE_ALL2(SUB, ...) \
   template <class Archive> \
   void serialize(Archive& ar, const unsigned int) { \
-    ar & SUBCLASS(SUB);\
-    serializeAll(ar, __VA_ARGS__); \
+    ar(SUBCLASS(SUB), __VA_ARGS__); \
   }
 
 #define SERIALIZE_ALL(...) \
   template <class Archive> \
   void serialize(Archive& ar, const unsigned int) { \
-    serializeAll(ar, __VA_ARGS__); \
+    ar(__VA_ARGS__); \
   }
 
 #define SERIALIZE_EMPTY() \
   template <class Archive> \
   void serialize(Archive&, const unsigned int) { \
   }
-
-class Serialization {
-  public:
-  template <class Archive>
-  static void registerTypes(Archive& ar, int version);
-};
 
 template <class T, class U>
 class StreamCombiner {
@@ -136,248 +135,26 @@ class StreamCombiner {
   U archive;
 };
 
-
-namespace boost { 
-namespace serialization {
-
-// We can't use default boost functions for these structures as they don't support unique_ptr elements.
-
-//map
-template<class Archive, class T, class U, class H>
-inline void save(Archive& ar, const map<T, U, H>& t, unsigned int file_version){
-  int count = t.size();
-  ar << BOOST_SERIALIZATION_NVP(count);
-  for (auto& elem : t)
-    ar << boost::serialization::make_nvp("key", elem.first) << boost::serialization::make_nvp("value", elem.second);
-}
-
-template<class Archive, class T, class U, class H>
-inline void load(Archive& ar, map<T, U, H>& t, unsigned int){
-  int count;
-  ar >> BOOST_SERIALIZATION_NVP(count);
-  t.clear();
-  while (count-- > 0) {
-    pair<T, U> p;
-    ar >> boost::serialization::make_nvp("key", p.first) >> boost::serialization::make_nvp("value", p.second);
-    t.insert(std::move(p));
+namespace cereal {
+template <class Archive, class T>
+void save(Archive& ar, const optional<T>& elem) {
+  if (elem) {
+    ar(true);
+    ar(elem.get());
+  } else {
+    ar(false);
   }
 }
 
-template<class Archive, class T, class U, class H>
-inline void serialize(Archive& ar, map<T, U, H>& t, unsigned int file_version){
-  boost::serialization::split_free(ar, t, file_version);
-}
-
-//unordered_map
-template<class Archive, class T, class U, class H>
-inline void save(Archive& ar, const unordered_map<T, U, H>& t, unsigned int file_version){
-  int count = t.size();
-  ar << BOOST_SERIALIZATION_NVP(count);
-  for (auto& elem : t)
-    ar << boost::serialization::make_nvp("key", elem.first) << boost::serialization::make_nvp("value", elem.second);
-}
-
-template<class Archive, class T, class U, class H>
-inline void load(Archive& ar, unordered_map<T, U, H>& t, unsigned int){
-  int count;
-  ar >> BOOST_SERIALIZATION_NVP(count);
-  t.clear();
-  t.reserve(count);
-  while (count-- > 0) {
-    pair<T, U> p;
-    ar >> boost::serialization::make_nvp("key", p.first) >> boost::serialization::make_nvp("value", p.second);
-    t.insert(std::move(p));
+template <class Archive, class T>
+void load(Archive& ar, optional<T>& elem) {
+  bool initialized;
+  ar(initialized);
+  if (initialized) {
+    T val;
+    ar(val);
+    elem = std::move(val);
+  } else
+    elem = none;
   }
-}
-
-template<class Archive, class T, class U, class H>
-inline void serialize(Archive& ar, unordered_map<T, U, H>& t, unsigned int file_version){
-  boost::serialization::split_free(ar, t, file_version);
-}
-
-//priority queue
-template<class Archive, class T, class U, class V>
-inline void save(Archive& ar, priority_queue<T, U, V> t, unsigned int file_version){
-  vector<T> array;
-  while (!t.empty()) {
-    array.push_back(t.top());
-    t.pop();
-  }
-  ar << BOOST_SERIALIZATION_NVP(array);
-}
-
-template<class Archive, class T, class U, class V>
-inline void load(Archive& ar, priority_queue<T, U, V>& t, unsigned int){
-  vector<T> array;
-  ar >> BOOST_SERIALIZATION_NVP(array);
-  for (T& elem : array) {
-    t.push(std::move(elem));
-  }
-}
-
-template<class Archive, class T, class U, class V>
-inline void serialize(Archive& ar, priority_queue<T, U, V>& t, unsigned int file_version){
-  boost::serialization::split_free(ar, t, file_version);
-}
-
-//queue
-template<class Archive, class T>
-inline void save(Archive& ar, queue<T> t, unsigned int file_version){
-  int count = t.size();
-  ar << BOOST_SERIALIZATION_NVP(count);
-  while (!t.empty()) {
-    ar << boost::serialization::make_nvp("elem", t.front());
-    t.pop();
-  }
-}
-
-template<class Archive, class T>
-inline void load(Archive& ar, queue<T>& t, unsigned int){
-  int count;
-  ar >> BOOST_SERIALIZATION_NVP(count);
-  while (count-- > 0) {
-    T elem;
-    ar >> boost::serialization::make_nvp("elem", elem);
-    t.push(std::move(elem));
-  }
-}
-
-template<class Archive, class T>
-inline void serialize(Archive& ar, queue<T>& t, unsigned int file_version){
-  boost::serialization::split_free(ar, t, file_version);
-}
-
-//stack
-template<class Archive, class T>
-inline void save(Archive& ar, stack<T> t, unsigned int file_version){
-  int count = t.size();
-  ar << BOOST_SERIALIZATION_NVP(count);
-  while (!t.empty()) {
-    ar << boost::serialization::make_nvp("elem", t.top());
-    t.pop();
-  }
-}
-
-template<class Archive, class T>
-inline void load(Archive& ar, stack<T>& t, unsigned int){
-  int count;
-  ar >> BOOST_SERIALIZATION_NVP(count);
-  stack<T> s;
-  while (count-- > 0) {
-    T elem;
-    ar >> boost::serialization::make_nvp("elem", elem);
-    s.push(std::move(elem));
-  }
-  while (!s.empty()) {
-    t.push(std::move(s.top()));
-    s.pop();
-  }
-}
-
-template<class Archive, class T>
-inline void serialize(Archive& ar, stack<T>& t, unsigned int file_version){
-  boost::serialization::split_free(ar, t, file_version);
-}
-
-//unordered_set
-template<class Archive, class T, class H>
-inline void save(Archive& ar, const unordered_set<T, H>& t, unsigned int file_version){
-  int count = t.size();
-  ar << BOOST_SERIALIZATION_NVP(count);
-  for (auto elem : t)
-    ar << boost::serialization::make_nvp("item", elem);
-}
-
-template<class Archive, class T, class H>
-inline void load(Archive& ar, unordered_set<T, H>& t, unsigned int){
-  int count;
-  ar >> BOOST_SERIALIZATION_NVP(count);
-  t.clear();
-  t.reserve(count);
-  while (count-- > 0) {
-    T elem;
-    ar >> boost::serialization::make_nvp("item", elem);
-    t.insert(elem);
-  }
-}
-
-template<class Archive, class T, class H>
-inline void serialize(Archive& ar, unordered_set<T, H>& t, unsigned int file_version){
-  boost::serialization::split_free(ar, t, file_version);
-}
-
-// vector
-template<class Archive, class T, class Allocator>
-inline void save(Archive & ar, const std::vector<T, Allocator> &t, unsigned int){
-  int count = t.size();
-  ar << BOOST_SERIALIZATION_NVP(count);
-  for(auto it=t.begin(), end=t.end(); it!=end; ++it)
-    ar << boost::serialization::make_nvp("item", (*it));
-}
-
-template<class Archive, class T, class Allocator>
-inline void load(Archive & ar, std::vector<T, Allocator> &t, unsigned int){
-  int count;
-  ar >> BOOST_SERIALIZATION_NVP(count);
-  t.clear();
-  t.reserve(count);
-  while( count-- > 0 ) {
-    T i;
-    ar >> boost::serialization::make_nvp("item", i);
-    t.push_back(std::move(i));
-  }
-}
-
-template<class Archive, class T, class Allocator>
-inline void serialize(Archive & ar, std::vector<T, Allocator> & t, unsigned int file_version){
-  boost::serialization::split_free(ar, t, file_version);
-}
-
-#ifdef DEBUG_STL
-// stl debug dummies
-
-template<class Archive, class T>
-inline void serialize(Archive & ar, __gnu_debug::vector< T > &t, unsigned int file_version) {
-}
-
-/*template<class Archive>
-inline void serialize(Archive & ar, __gnu_debug::string &t, unsigned int file_version) {
-}*/
-
-template<class Archive, class T, class U>
-inline void serialize(Archive & ar, __gnu_debug::map< T, U > &t, unsigned int file_version) {
-}
-
-template<class Archive, class T>
-inline void serialize(Archive & ar, __gnu_debug::set< T > &t, unsigned int file_version) {
-}
-
-template<class Archive, class T>
-inline void serialize(Archive & ar, __gnu_debug::deque< T > &t, unsigned int file_version) {
-}
-
-#endif
-
-//tuple
-template<int N>
-struct Serialize {
-    template<class Archive, typename... Args>
-    static void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version) {
-        ar & boost::serialization::make_nvp("elem", std::get<N-1>(t));
-        Serialize<N-1>::serialize(ar, t, version);
-    }
-};
-
-template<>
-struct Serialize<0> {
-    template<class Archive, typename... Args>
-    static void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version) {
-    }
-};
-
-template<class Archive, typename... Args>
-void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version) {
-    Serialize<sizeof...(Args)>::serialize(ar, t, version);
-}
-
-}} // namespace boost::serialization
+} // namespace cereal

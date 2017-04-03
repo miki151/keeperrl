@@ -75,7 +75,7 @@
 #include "tutorial.h"
 #include "tutorial_highlight.h"
 
-template <class Archive> 
+template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion);
@@ -503,7 +503,7 @@ void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
       for (auto id : action.ids)
         getCollective()->getMinionEquipment().setLocked(creature, id, false);
       break;
-    default: 
+    default:
       break;
   }
 }
@@ -701,7 +701,7 @@ void PlayerControl::handleLibrary(View* view) {
     allInactive = true;
     options.emplace_back("You need a larger library to continue research.", ListElem::TITLE);
   }
-  options.push_back(ListElem("You have " 
+  options.push_back(ListElem("You have "
         + toString(int(getCollective()->numResource(ResourceId::MANA))) + " mana. ", ListElem::TITLE));
   vector<Technology*> techs = filter(Technology::getNextTechs(getCollective()->getTechnologies()),
       [](const Technology* tech) { return tech->canResearch(); });
@@ -1857,7 +1857,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           }*/
         }
         break;
-    case UserInputId::GO_TO_VILLAGE: 
+    case UserInputId::GO_TO_VILLAGE:
         if (WCollective col = getVillain(input.get<int>())) {
           if (col->getLevel() != getLevel())
             setScrollPos(col->getTerritory().getAll().at(0));
@@ -1882,7 +1882,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
                 getTeams().add(*team, c);
             }
         }
-        break;   
+        break;
     case UserInputId::CREATURE_DRAG:
         draggedCreature = input.get<Creature::Id>();
         for (auto task : ENUM_ALL(MinionTask))
@@ -1959,7 +1959,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           }
         }
         break;
-    case UserInputId::WORKSHOP_ADD: 
+    case UserInputId::WORKSHOP_ADD:
         if (chosenWorkshop) {
           getCollective()->getWorkshops().get(*chosenWorkshop).queue(input.get<int>());
           getCollective()->getWorkshops().scheduleItems(getCollective());
@@ -1992,7 +1992,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
       }
       break;
-    case UserInputId::CREATURE_GROUP_BUTTON: 
+    case UserInputId::CREATURE_GROUP_BUTTON:
         if (WCreature c = getCreature(input.get<Creature::Id>()))
           if (!chosenCreature || getChosenTeam() || !getCreature(*chosenCreature) ||
               getCreature(*chosenCreature)->getName().stack() != c->getName().stack()) {
@@ -2153,10 +2153,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
         auto& info = input.get<BuildingInfo>();
         handleSelection(info.pos, getBuildInfo()[info.building], false);
         break; }
-    case UserInputId::VILLAGE_ACTION: 
+    case UserInputId::VILLAGE_ACTION:
         if (WCollective village = getVillain(input.get<VillageActionInfo>().villageIndex))
           switch (input.get<VillageActionInfo>().action) {
-            case VillageAction::TRADE: 
+            case VillageAction::TRADE:
               handleTrading(village);
               break;
             case VillageAction::PILLAGE:
@@ -2391,7 +2391,7 @@ void PlayerControl::checkKeeperDanger() {
       return getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control " +
           keeper->getAttributes().getGender().him() + "?");
   };
-  if (!getKeeper()->isDead() && controlled != getKeeper()) { 
+  if (!getKeeper()->isDead() && controlled != getKeeper()) {
     if ((getKeeper()->wasInCombat(5) || getKeeper()->getBody().isWounded())
         && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 50) {
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
@@ -2434,7 +2434,7 @@ void PlayerControl::update(bool currentlyActive) {
     if (!contains(currentLevels, c->getLevel()))
       currentLevels.push_back(c->getLevel());
   for (WLevel l : currentLevels)
-    for (WCreature c : l->getAllCreatures()) 
+    for (WCreature c : l->getAllCreatures())
       if (c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
         if (c->getAttributes().getSpawnType() && !contains(getCreatures(), c) && !getCollective()->wasBanished(c)) {
           addedCreatures.push_back(c);
@@ -2449,7 +2449,7 @@ void PlayerControl::update(bool currentlyActive) {
                       MessagePriority::HIGH));
                 break;
               }
-        } else  
+        } else
           if (c->getBody().isMinionFood() && !contains(getCreatures(), c))
             getCollective()->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
       }
@@ -2592,7 +2592,7 @@ void PlayerControl::onDestructed(Position pos, const DestroyAction& action) {
 
 void PlayerControl::updateVisibleCreatures() {
   visibleEnemies.clear();
-  for (WConstCreature c : getLevel()->getAllCreatures()) 
+  for (WConstCreature c : getLevel()->getAllCreatures())
     if (canSee(c) && isEnemy(c))
         visibleEnemies.push_back(c->getPosition().getCoord());
 }
@@ -2601,10 +2601,5 @@ vector<Vec2> PlayerControl::getVisibleEnemies() const {
   return visibleEnemies;
 }
 
-template <class Archive>
-void PlayerControl::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, MinionController);
-}
-
-REGISTER_TYPES(PlayerControl::registerTypes);
-
+REGISTER_TYPE(MinionController);
+REGISTER_TYPE(ListenerTemplate<PlayerControl>)
