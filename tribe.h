@@ -111,7 +111,6 @@ class Tribe {
   double getMultiplier(WConstCreature member);
 
   EntityMap<Creature, double> SERIAL(standing);
-  unordered_set<Tribe*> SERIAL(enemyTribes);
   TribeSet SERIAL(friendlyTribes);
   TribeId SERIAL(id);
 };

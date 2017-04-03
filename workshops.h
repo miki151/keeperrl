@@ -11,7 +11,7 @@ class Workshops {
   typedef WorkshopItem Item;
   class Type {
     public:
-    Type(Workshops*, const vector<Item>& options);
+    Type(const vector<Item>& options);
     const vector<Item>& getOptions() const;
     const vector<Item>& getQueued() const;
     vector<PItem> addWork(double);
@@ -24,11 +24,12 @@ class Workshops {
     SERIALIZATION_DECL(Type);
 
     private:
+    friend class Workshops;
     void stackQueue();
     void addDebt(CostInfo);
     vector<Item> SERIAL(options);
     vector<Item> SERIAL(queued);
-    Workshops* SERIAL(workshops) = nullptr;
+    EnumMap<CollectiveResourceId, int> SERIAL(debt);
   };
 
   SERIALIZATION_DECL(Workshops);
@@ -41,5 +42,4 @@ class Workshops {
 
   private:
   EnumMap<WorkshopType, Type> SERIAL(types);
-  EnumMap<CollectiveResourceId, int> SERIAL(debt);
 };

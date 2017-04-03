@@ -5,7 +5,7 @@
 #include "item.h"
 
 Workshops::Workshops(const EnumMap<WorkshopType, vector<Item>>& options)
-    : types([&options, this] (WorkshopType t) { return Type(this, options[t]);}) {
+    : types([&options] (WorkshopType t) { return Type(options[t]);}) {
 }
 
 Workshops::Type& Workshops::get(WorkshopType type) {
@@ -17,12 +17,12 @@ const Workshops::Type& Workshops::get(WorkshopType type) const {
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Workshops);
-SERIALIZE_DEF(Workshops, types, debt);
+SERIALIZE_DEF(Workshops, types);
 
-Workshops::Type::Type(Workshops* w, const vector<Item>& o) : options(o), workshops(w) {}
+Workshops::Type::Type(const vector<Item>& o) : options(o) {}
 
 SERIALIZATION_CONSTRUCTOR_IMPL2(Workshops::Type, Type);
-SERIALIZE_DEF(Workshops::Type, options, queued, workshops);
+SERIALIZE_DEF(Workshops::Type, options, queued, debt);
 
 
 const vector<Workshops::Item>& Workshops::Type::getOptions() const {
@@ -40,7 +40,7 @@ void Workshops::Type::stackQueue() {
 }
 
 void Workshops::Type::addDebt(CostInfo cost) {
-  workshops->debt[cost.id] += cost.value;
+  debt[cost.id] += cost.value;
 }
 
 void Workshops::Type::queue(int index, int count) {
@@ -121,6 +121,9 @@ const vector<Workshops::Item>& Workshops::Type::getQueued() const {
 }
 
 int Workshops::getDebt(CollectiveResourceId resource) const {
-  return debt[resource];
+  int ret = 0;
+  for (auto type : ENUM_ALL(WorkshopType))
+    ret += types[type].debt[resource];
+  return ret;
 }
 

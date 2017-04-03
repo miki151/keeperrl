@@ -20,7 +20,7 @@
 
 template <class Archive> 
 void Tribe::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, diplomatic, standing, enemyTribes, friendlyTribes, id);
+  serializeAll(ar, diplomatic, standing, friendlyTribes, id);
 }
 
 SERIALIZABLE(Tribe);
@@ -31,7 +31,7 @@ Tribe::Tribe(TribeId d, bool p) : diplomatic(p), friendlyTribes(TribeSet::getFul
 }
 
 double Tribe::getStanding(WConstCreature c) const {
-  if (enemyTribes.count(const_cast<Tribe*>(c->getTribe())))
+  if (!friendlyTribes.contains(c->getTribeId()))
     return -1;
   if (c->getTribe() == this)
     return 1;
@@ -45,15 +45,11 @@ void Tribe::initStanding(WConstCreature c) {
 }
 
 void Tribe::addEnemy(Tribe* t) {
-  enemyTribes.insert(t);
   friendlyTribes.erase(t->id);
-  if (t != this) {
-    t->enemyTribes.insert(this);
+  if (t != this)
     t->friendlyTribes.erase(id);
-  }
 }
 
-static const double killBonus = 0.1;
 static const double killPenalty = 0.5;
 static const double attackPenalty = 0.2;
 static const double thiefPenalty = 0.5;
@@ -68,11 +64,6 @@ void Tribe::onMemberKilled(WCreature member, WCreature attacker) {
     return;
   initStanding(attacker);
   standing.getOrFail(attacker) -= killPenalty * getMultiplier(member);
-  for (Tribe* t : enemyTribes)
-    if (t->diplomatic) {
-      t->initStanding(attacker);
-      t->standing.getOrFail(attacker) += killBonus * getMultiplier(member);
-    }
 }
 
 bool Tribe::isEnemy(WConstCreature c) const {
@@ -80,7 +71,7 @@ bool Tribe::isEnemy(WConstCreature c) const {
 }
 
 bool Tribe::isEnemy(const Tribe* t) const {
-  return enemyTribes.count(const_cast<Tribe*>(t));
+  return !friendlyTribes.contains(t->id);
 }
 
 const TribeSet& Tribe::getFriendlyTribes() const {
