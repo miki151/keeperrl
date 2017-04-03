@@ -37,7 +37,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Monster);
 Monster::Monster(WCreature c, const MonsterAIFactory& f) : Controller(c), monsterAI(f.getMonsterAI(c)) {}
 
 ControllerFactory Monster::getFactory(MonsterAIFactory f) {
-  return ControllerFactory([=](WCreature c) { return SController(new Monster(c, f));});
+  return ControllerFactory([=](WCreature c) { return makeOwner<Monster>(c, f);});
 }
 
 void Monster::makeMove() {

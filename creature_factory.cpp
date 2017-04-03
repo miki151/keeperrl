@@ -145,7 +145,7 @@ PCreature CreatureFactory::getRollingBoulder(TribeId tribe, Vec2 direction) {
             c.boulder = true;
             c.name = "boulder";
             ));
-  ret->setController(make_shared<BoulderController>(ret.get(), direction));
+  ret->setController(makeOwner<BoulderController>(ret.get(), direction));
   return ret;
 }
 
@@ -194,7 +194,7 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
             c.name = "boulder";));
-  ret->setController(make_shared<SokobanController>(ret.get()));
+  ret->setController(makeOwner<SokobanController>(ret.get()));
   return ret;
 }
 
@@ -224,7 +224,7 @@ class KrakenController : public Monster {
   KrakenController(WCreature c) : Monster(c, MonsterAIFactory::monster()) {
   }
 
-  KrakenController(WCreature c, shared_ptr<KrakenController> f) : KrakenController(c) {
+  KrakenController(WCreature c, WeakPointer<KrakenController> f) : KrakenController(c) {
     father = f;
   }
 
@@ -324,8 +324,7 @@ class KrakenController : public Monster {
           ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
         auto spawn = makeOwner<Creature>(getCreature()->getTribeId(),
               CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"));
-        spawn->setController(make_shared<KrakenController>(c,
-            std::dynamic_pointer_cast<KrakenController>(shared_from_this())));
+        spawn->setController(makeOwner<KrakenController>(c, getThis().dynamicCast<KrakenController>()));
         spawns.push_back(spawn.get());
         getCreature()->getPosition().plus(move).addCreature(std::move(spawn));
       }
@@ -358,7 +357,7 @@ class KrakenController : public Monster {
   private:
   bool SERIAL(ready) = false;
   vector<WCreature> SERIAL(spawns);
-  shared_ptr<KrakenController> SERIAL(father);
+  WeakPointer<KrakenController> SERIAL(father);
 };
 
 class KamikazeController : public Monster {
@@ -387,7 +386,7 @@ class KamikazeController : public Monster {
   SERIALIZATION_CONSTRUCTOR(KamikazeController);
 };
 
-class ShopkeeperController : public Monster, public EventListener {
+class ShopkeeperController : public Monster, public EventListener<ShopkeeperController> {
   public:
   ShopkeeperController(WCreature c, Rectangle area)
       : Monster(c, MonsterAIFactory::stayInLocation(area)), shopArea(area) {
@@ -460,7 +459,7 @@ class ShopkeeperController : public Monster, public EventListener {
       debtors.erase(from);
   }
   
-  virtual void onEvent(const GameEvent& event) override {
+  void onEvent(const GameEvent& event) {
     switch (event.getId()) {
       case EventId::ITEMS_APPEARED: {
           auto info = event.get<EventInfo::ItemsAppeared>();
@@ -539,7 +538,7 @@ PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
         c.chatReactionHostile = "\"Die!\"";
         c.name = "shopkeeper";
         c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());));
-  ret->setController(make_shared<ShopkeeperController>(ret.get(), shopArea));
+  ret->setController(makeOwner<ShopkeeperController>(ret.get(), shopArea));
   vector<ItemType> inventory(Random.get(100, 300), ItemId::GOLD_PIECE);
   inventory.push_back(ItemId::SWORD);
   inventory.push_back(ItemId::LEATHER_ARMOR);
@@ -598,7 +597,7 @@ PCreature CreatureFactory::getIllusion(WCreature creature) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.noAttackSound = true;
           c.name = "illusion";));
-  ret->setController(make_shared<IllusionController>(ret.get(), creature->getGlobalTime() + Random.get(5, 10)));
+  ret->setController(makeOwner<IllusionController>(ret.get(), creature->getGlobalTime() + Random.get(5, 10)));
   return ret;
 }
 
@@ -2389,11 +2388,11 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
   switch (id) {
     case CreatureId::KRAKEN:
       return ControllerFactory([=](WCreature c) {
-          return SController(new KrakenController(c));
+          return makeOwner<KrakenController>(c);
           });
     case CreatureId::FIRE_SPHERE:
       return ControllerFactory([=](WCreature c) {
-          return SController(new KamikazeController(c, normalFactory));
+          return makeOwner<KamikazeController>(c, normalFactory);
           });
     default: return Monster::getFactory(normalFactory);
   }

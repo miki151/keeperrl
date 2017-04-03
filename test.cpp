@@ -448,7 +448,7 @@ class Test {
   void testOwnerPointer() {
     static int numRef = 0;
     numRef = 0;
-    struct tmp {
+    struct tmp : public OwnedObject<tmp> {
       tmp(int a) : x(a) { ++numRef;}
       ~tmp() { --numRef; }
       int x;

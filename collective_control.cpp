@@ -58,7 +58,7 @@ vector<TriggerInfo> CollectiveControl::getTriggers(WConstCollective against) con
 }
 
 PCollectiveControl CollectiveControl::idle(WCollective col) {
-  return PCollectiveControl(new IdleControl(col));
+  return makeOwner<IdleControl>(col);
 }
 
 template <class Archive>

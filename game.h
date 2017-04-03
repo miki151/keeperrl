@@ -15,13 +15,12 @@ class PlayerControl;
 class CreatureView;
 class FileSharing;
 class Technology;
-class EventListener;
 class GameEvent;
 class Campaign;
 class SavedGameInfo;
 struct CampaignSetup;
 
-class Game : public std::enable_shared_from_this<Game> {
+class Game : public OwnedObject<Game> {
   public:
   static PGame campaignGame(Table<PModel>&&, CampaignSetup&);
   static PGame splashScreen(PModel&&, const CampaignSetup&);
@@ -46,7 +45,7 @@ class Game : public std::enable_shared_from_this<Game> {
   Tribe* getTribe(TribeId) const;
   double getGlobalTime() const;
   WCollective getPlayerCollective() const;
-  PlayerControl* getPlayerControl() const;
+  WPlayerControl getPlayerControl() const;
   void setPlayer(WCreature);
   WCreature getPlayer() const;
   void clearPlayer();
@@ -83,7 +82,6 @@ class Game : public std::enable_shared_from_this<Game> {
   void prepareSiteRetirement();
   void doneRetirement();
 
-  typedef function<void(EventListener*)> EventFun;
   void addEvent(const GameEvent&);
 
   ~Game();
@@ -124,7 +122,7 @@ class Game : public std::enable_shared_from_this<Game> {
   Options* options;
   Highscores* highscores;
   optional<milliseconds> lastUpdate;
-  PlayerControl* SERIAL(playerControl) = nullptr;
+  WeakPointer<PlayerControl> SERIAL(playerControl);
   WCollective SERIAL(playerCollective) = nullptr;
   HeapAllocated<Campaign> SERIAL(campaign);
   bool wasTransfered = false;

@@ -259,7 +259,7 @@ class PickItem : public Task {
   }
 
   bool itemsExist(Position target) {
-    for (const WItem it : target.getItems())
+    for (WItem it : target.getItems())
       if (items.contains(it))
         return true;
     return false;
@@ -270,13 +270,15 @@ class PickItem : public Task {
   }
 
   virtual void cancel() override {
-    callback->onCantPickItem(items);
+    if (callback)
+      callback->onCantPickItem(items);
   }
 
   virtual MoveInfo getMove(WCreature c) override {
     CHECK(!pickedUp);
     if (!itemsExist(position)) {
-      callback->onCantPickItem(items);
+      if (callback)
+        callback->onCantPickItem(items);
       setDone();
       return NoMove;
     }
@@ -287,7 +289,8 @@ class PickItem : public Task {
           hereItems.push_back(it);
           items.erase(it);
         }
-      callback->onCantPickItem(items);
+      if (callback)
+        callback->onCantPickItem(items);
       if (hereItems.empty()) {
         setDone();
         return NoMove;
@@ -297,10 +300,12 @@ class PickItem : public Task {
         return {1.0, action.append([=](WCreature c) {
           pickedUp = true;
           onPickedUp();
-          callback->onTaskPickedUp(position, hereItems);
+          if (callback)
+            callback->onTaskPickedUp(position, hereItems);
         })}; 
       else {
-        callback->onCantPickItem(items);
+        if (callback)
+          callback->onCantPickItem(items);
         setDone();
         return NoMove;
       }
@@ -308,7 +313,8 @@ class PickItem : public Task {
     if (auto action = c->moveTowards(position, true))
       return action;
     else if (--tries == 0) {
-      callback->onCantPickItem(items);
+      if (callback)
+        callback->onCantPickItem(items);
       setDone();
     }
     return NoMove;

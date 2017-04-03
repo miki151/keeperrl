@@ -4,6 +4,7 @@
 #include "event_generator.h"
 #include "position.h"
 #include "enum_variant.h"
+#include "model.h"
 
 class Model;
 class Technology;
@@ -89,26 +90,39 @@ class GameEvent : public EnumVariant<EventId, TYPES(WCreature, Position, Technol
   using EnumVariant::EnumVariant;
 };
 
+template <typename T>
 class EventListener {
   public:
-  typedef EventGenerator<EventListener> Generator;
+  EventListener() {}
 
-  EventListener();
-  EventListener(Model*);
   EventListener(const EventListener&) = delete;
   EventListener(EventListener&&) = delete;
-  virtual ~EventListener();
 
-  void subscribeTo(Model*);
-  void unsubscribe();
-  bool isSubscribed() const;
+  void subscribeTo(Model* m) {
+    CHECK(!generator && !id);
+    generator = m->eventGenerator.get();
+    id = generator->addListener(WeakPointer<T>(static_cast<T*>(this)));
+  }
 
-  virtual void onEvent(const GameEvent&) = 0;
+  void unsubscribe() {
+    if (generator) {
+      generator->removeListener(*id);
+      generator = nullptr;
+    }
+  }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
+  bool isSubscribed() const {
+    return !!generator;
+  }
+
+  SERIALIZE_ALL(generator, id);
+
+  ~EventListener() {
+    unsubscribe();
+  }
 
   private:
-  Generator* SERIAL(generator) = nullptr;
+  WeakPointer<EventGenerator> SERIAL(generator);
+  optional<EventGenerator::SubscriberId> SERIAL(id);
 };
 

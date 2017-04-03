@@ -296,8 +296,7 @@ static vector<string> getHints() {
   };
 }
 
-PlayerControl::PlayerControl(WCollective col, Level* level) : CollectiveControl(col),
-    EventListener(level->getModel()), hints(getHints()) {
+PlayerControl::PlayerControl(Private, WCollective col) : CollectiveControl(col), hints(getHints()) {
   bool hotkeys[128] = {0};
   for (auto& info : getBuildInfo()) {
     if (info.hotkey) {
@@ -312,6 +311,12 @@ PlayerControl::PlayerControl(WCollective col, Level* level) : CollectiveControl(
     }
   }
   memory.reset(new MapMemory());
+}
+
+PPlayerControl PlayerControl::create(WCollective col) {
+  auto ret = makeOwner<PlayerControl>(Private{}, col);
+  ret->subscribeTo(col->getLevel()->getModel());
+  return ret;
 }
 
 PlayerControl::~PlayerControl() {
@@ -1717,7 +1722,7 @@ void PlayerControl::commandTeam(TeamId team) {
   if (getControlled())
     leaveControl();
   WCreature c = getTeams().getLeader(team);
-  c->pushController(SController(new MinionController(c, getModel(), memory.get(), this, tutorial)));
+  c->pushController(makeOwner<MinionController>(c, getModel(), memory.get(), this, tutorial));
   getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
   getView()->resetCenter();

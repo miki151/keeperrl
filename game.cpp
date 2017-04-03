@@ -64,7 +64,7 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
         if (auto type = c->getVillainType()) {
           villainsByType[*type].push_back(c);
           if (*type == VillainType::PLAYER) {
-            playerControl = NOTNULL(dynamic_cast<PlayerControl*>(c->getControl()));
+            playerControl = c->getControl().dynamicCast<PlayerControl>();
             playerCollective = c;
           }
         }
@@ -169,8 +169,8 @@ void Game::prepareSiteRetirement() {
   for (auto c : playerCollective->getCreatures())
     c->retire();
   playerControl = nullptr;
-  playerCollective->setControl(PCollectiveControl(
-        new VillageControl(playerCollective, CONSTRUCT(VillageBehaviour,
+  playerCollective->setControl(VillageControl::create(
+      playerCollective, CONSTRUCT(VillageBehaviour,
           c.minPopulation = 24;
           c.minTeamSize = 5;
           c.triggers = LIST(
@@ -179,7 +179,7 @@ void Game::prepareSiteRetirement() {
               AttackTriggerId::STOLEN_ITEMS,
           );
           c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
-          c.ransom = make_pair(0.8, Random.get(500, 700));))));
+          c.ransom = make_pair(0.8, Random.get(500, 700));)));
   for (WCollective col : models[baseModel]->getCollectives())
     for (WCreature c : col->getCreatures())
       if (c->getPosition().getModel() != mainModel)
@@ -411,7 +411,7 @@ WCollective Game::getPlayerCollective() const {
   return playerCollective;
 }
 
-PlayerControl* Game::getPlayerControl() const {
+WPlayerControl Game::getPlayerControl() const {
   return playerControl;
 }
 

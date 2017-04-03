@@ -24,7 +24,7 @@ class Item;
 class Level;
 class PlayerMessage;
 
-class Controller : public std::enable_shared_from_this<Controller> {
+class Controller : public OwnedObject<Controller> {
   public:
   Controller(WCreature);
   Controller(const Controller&) = delete;
@@ -75,10 +75,10 @@ class DoNothingController : public Controller {
 
 class ControllerFactory {
   public:
-  ControllerFactory(function<SController(WCreature)>);
-  SController get(WCreature) const;
+  ControllerFactory(function<PController(WCreature)>);
+  PController get(WCreature) const;
 
   private:
-  function<SController(WCreature)> fun;
+  function<PController(WCreature)> fun;
 };
 

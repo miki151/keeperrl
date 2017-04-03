@@ -166,6 +166,7 @@ Level* Model::buildTopLevel(LevelBuilder&& b, PLevelMaker maker) {
 Model::Model() {
   cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
       .build(this, LevelMaker::emptyLevel(Random).get(), Random.getLL());
+  eventGenerator = makeOwner<EventGenerator>();
 }
 
 Model::~Model() {
@@ -271,7 +272,7 @@ vector<WCreature> Model::getAllCreatures() const {
 }
 
 void Model::landHeroPlayer(PCreature player) {
-  player->setController(make_shared<Player>(player.get(), true, new MapMemory()));
+  player->setController(makeOwner<Player>(player.get(), true, new MapMemory()));
   Level* target = getTopLevel();
   vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
   for (Position pos : landing)
@@ -287,7 +288,6 @@ void Model::addExternalEnemies(const ExternalEnemies& e) {
 }
 
 void Model::addEvent(const GameEvent& e) {
-  for (EventListener* l : eventGenerator->getListeners())
-    l->onEvent(e);
+  eventGenerator->addEvent(e);
 }
 

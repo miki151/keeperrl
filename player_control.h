@@ -44,9 +44,9 @@ struct WorkshopItem;
 class ScrollPosition;
 class Tutorial;
 
-class PlayerControl : public CreatureView, public CollectiveControl, public EventListener {
+class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
-  PlayerControl(WCollective, Level*);
+  static PPlayerControl create(WCollective col);
   ~PlayerControl();
 
   void processInput(View* view, UserInput);
@@ -87,6 +87,14 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<WCreature> getTeam(WConstCreature);
   optional<FurnitureType> getMissingTrainingDummy(WConstCreature);
 
+  void onEvent(const GameEvent&);
+
+  private:
+  struct Private {};
+
+  public:
+  PlayerControl(Private, WCollective);
+
   protected:
   // from CreatureView
   virtual Level* getLevel() const override;
@@ -113,7 +121,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void update(bool currentlyActive) override;
 
   private:
-  virtual void onEvent(const GameEvent&) override;
 
   void considerNightfallMessage();
   void considerWarning();

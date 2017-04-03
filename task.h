@@ -27,7 +27,7 @@ class CreatureFactory;
 
 using WTaskCallback = WeakPointer<TaskCallback>;
 
-class Task : public UniqueEntity<Task>, public std::enable_shared_from_this<Task> {
+class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   public:
 
   Task(bool transferable = false);

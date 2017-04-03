@@ -22,7 +22,6 @@
 #include "tribe.h"
 #include "enum_variant.h"
 #include "event_generator.h"
-#include "event_listener.h"
 
 class Level;
 class ProgressMeter;
@@ -113,8 +112,9 @@ class Model {
   map<pair<const Level*, const Level*>, StairKey> SERIAL(stairNavigation);
   bool serializationLocked = false;
   Level* SERIAL(topLevel) = nullptr;
+  template <typename>
   friend class EventListener;
-  HeapAllocated<EventGenerator<EventListener>> SERIAL(eventGenerator);
+  OwnerPointer<EventGenerator> SERIAL(eventGenerator);
   void checkCreatureConsistency();
   HeapAllocated<optional<ExternalEnemies>> SERIAL(externalEnemies);
 };

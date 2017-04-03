@@ -38,7 +38,7 @@ RICH_ENUM(TrapType,
   TERROR
 );
 
-class Item : public Renderable, public UniqueEntity<Item>, public std::enable_shared_from_this<Item> {
+class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
   Item(const ItemAttributes&);
   virtual ~Item();

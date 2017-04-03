@@ -64,8 +64,13 @@ SERIALIZABLE(Collective);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective);
 
-Collective::Collective(Level* l, TribeId t, const CollectiveName& n)
-    : EventListener(l->getModel()), tribe(t), level(NOTNULL(l)), name(n) {
+Collective::Collective(Private, Level* l, TribeId t, const CollectiveName& n) : tribe(t), level(NOTNULL(l)), name(n) {
+}
+
+PCollective Collective::create(Level* level, TribeId tribe, const CollectiveName& name) {
+  auto ret = makeOwner<Collective>(Private {}, level, tribe, name);
+  ret->subscribeTo(level->getModel());
+  return ret;
 }
 
 void Collective::init(CollectiveConfig&& cfg, Immigration&& im) {
@@ -143,7 +148,7 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 
 void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   if (!traits.contains(MinionTrait::FARM_ANIMAL) && !c->getController()->isCustomController())
-    c->setController(SController(new Monster(c, MonsterAIFactory::collective(this))));
+    c->setController(makeOwner<Monster>(c, MonsterAIFactory::collective(this)));
   if (traits.contains(MinionTrait::WORKER))
     c->getAttributes().getMinionTasks().clear();
   if (!leader)
@@ -191,7 +196,7 @@ void Collective::banishCreature(WCreature c) {
   if (!exitTiles.empty())
     tasks.push_back(Task::goToTryForever(Random.choose(exitTiles)));
   tasks.push_back(Task::disappear());
-  c->setController(SController(new Monster(c, MonsterAIFactory::singleTask(Task::chain(std::move(tasks))))));
+  c->setController(makeOwner<Monster>(c, MonsterAIFactory::singleTask(Task::chain(std::move(tasks)))));
   banished.insert(c);
 }
 
@@ -261,7 +266,7 @@ WGame Collective::getGame() const {
   return level->getModel()->getGame();
 }
 
-CollectiveControl* Collective::getControl() const {
+WCollectiveControl Collective::getControl() const {
   return control.get();
 }
 

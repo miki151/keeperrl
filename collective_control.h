@@ -10,7 +10,7 @@ class SquareType;
 class CollectiveAttack;
 struct TriggerInfo;
 
-class CollectiveControl {
+class CollectiveControl : public OwnedObject<CollectiveControl> {
   public:
   CollectiveControl(WCollective);
   virtual void update(bool currentlyActive);

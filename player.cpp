@@ -124,7 +124,7 @@ void Player::onEvent(const GameEvent& event) {
 }
 
 ControllerFactory Player::getFactory(MapMemory* levelMemory) {
-  return ControllerFactory([=](WCreature c) { return SController(new Player(c, true, levelMemory));});
+  return ControllerFactory([=](WCreature c) { return makeOwner<Player>(c, true, levelMemory);});
 }
 
 static string getSlotSuffix(EquipmentSlot slot) {

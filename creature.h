@@ -52,7 +52,7 @@ class CreatureDebt;
 struct AdjectiveInfo;
 struct MovementInfo;
 
-class Creature : public Renderable, public UniqueEntity<Creature>, public std::enable_shared_from_this<Creature> {
+class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature> {
   public:
   Creature(TribeId, const CreatureAttributes&);
   Creature(const ViewObject&, TribeId, const CreatureAttributes&);
@@ -229,9 +229,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public std::e
   void playerMessage(const PlayerMessage&) const;
   bool isPlayer() const;
 
-  SController getController() const;
-  void pushController(SController);
-  void setController(SController);
+  WController getController() const;
+  void pushController(PController);
+  void setController(PController);
   void popController();
 
   void addCreatureVision(WCreatureVision);
@@ -294,7 +294,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public std::e
   EntitySet<Creature> SERIAL(unknownAttackers);
   EntitySet<Creature> SERIAL(privateEnemies);
   optional<Creature::Id> SERIAL(holding);
-  vector<SController> SERIAL(controllerStack);
+  vector<PController> SERIAL(controllerStack);
   vector<WCreatureVision> SERIAL(creatureVisions);
   EntitySet<Creature> SERIAL(kills);
   mutable double SERIAL(difficultyPoints) = 0;

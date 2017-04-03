@@ -40,10 +40,10 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Controller);
 Controller::Controller(WCreature c) : creature(c) {
 }
 
-ControllerFactory::ControllerFactory(function<SController(WCreature)> f) : fun(f) {}
+ControllerFactory::ControllerFactory(function<PController(WCreature)> f) : fun(f) {}
 
-SController ControllerFactory::get(WCreature c) const {
-  return SController(fun(c));
+PController ControllerFactory::get(WCreature c) const {
+  return fun(c);
 }
 
 DoNothingController::DoNothingController(WCreature c) : Controller(c) {}

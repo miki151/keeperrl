@@ -32,7 +32,7 @@ class Vision : public Singleton<Vision, VisionId> {
 };
 
 class Creature;
-class CreatureVision {
+class CreatureVision : public OwnedObject<CreatureVision> {
   public:
   virtual bool canSee(WConstCreature, WConstCreature) = 0;
   virtual ~CreatureVision() {}

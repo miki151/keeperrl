@@ -918,7 +918,7 @@ class SplashMonsters : public Behaviour {
   bool attack = false;
 };
 
-class SplashItems : public TaskCallback {
+class SplashItems {
   public:
   void addItems(Vec2 pos, vector<WItem> v) {
     items[pos] = v;
@@ -950,7 +950,7 @@ class SplashItems : public TaskCallback {
       return nullptr;
     Vec2 target = Random.choose(targets);
     removeElement(targets, target);
-    return Task::bringItem(this, Position(pos, level), it, {Position(target, level)}, 100);
+    return Task::bringItem(nullptr, Position(pos, level), it, {Position(target, level)}, 100);
   }
 
   void setInitialized(const FilePath& splashPath) {
@@ -1173,7 +1173,7 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(Rectangle rect, bool moveRando
 
 MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t) {
   // Since the lambda can't capture OwnedPointer, let's release it to shared_ptr and recreate PTask inside the lambda.
-  auto released = t.release();
+  auto released = t.giveMeSharedPointer();
   return MonsterAIFactory([=](WCreature c) mutable {
       CHECK(released);
       auto task = PTask(released);

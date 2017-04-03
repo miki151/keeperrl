@@ -23,12 +23,17 @@
 
 class Task;
 
-class VillageControl : public CollectiveControl, public EventListener {
+class VillageControl : public CollectiveControl, public EventListener<VillageControl> {
   public:
+  static PVillageControl create(WCollective col, optional<VillageBehaviour> v);
 
-  friend class VillageBehaviour;
+  void onEvent(const GameEvent&);
 
-  VillageControl(WCollective, optional<VillageBehaviour>);
+  private:
+  struct Private {};
+
+  public:
+  VillageControl(Private, WCollective, optional<VillageBehaviour>);
 
   protected:
   virtual void update(bool currentlyActive) override;
@@ -40,9 +45,7 @@ class VillageControl : public CollectiveControl, public EventListener {
   SERIALIZATION_DECL(VillageControl);
 
   private:
-
-  virtual void onEvent(const GameEvent&) override;
-
+  friend class VillageBehaviour;
   void launchAttack(vector<WCreature> attackers);
   void considerWelcomeMessage();
   void considerCancellingAttack();

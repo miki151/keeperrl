@@ -49,9 +49,9 @@ struct ItemFetchInfo;
 class CollectiveWarnings;
 class Immigration;
 
-class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener {
+class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
-  Collective(Level*, TribeId, const CollectiveName&);
+  static PCollective create(Level*, TribeId, const CollectiveName&);
   void init(CollectiveConfig&&, Immigration&&);
   void addCreature(WCreature, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
@@ -74,7 +74,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void setEnemyId(EnemyId);
   optional<VillainType> getVillainType() const;
   optional<EnemyId> getEnemyId() const;
-  CollectiveControl* getControl() const;
+  WCollectiveControl getControl() const;
   double getLocalTime() const;
   double getGlobalTime() const;
 
@@ -203,8 +203,16 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void addKnownVillainLocation(WConstCollective);
   bool isKnownVillainLocation(WConstCollective) const;
 
+  void onEvent(const GameEvent&);
+
   template <class Archive>
   static void registerTypes(Archive& ar, int version);
+
+  private:
+  struct Private {};
+
+  public:
+  Collective(Private, Level*, TribeId, const CollectiveName&);
 
   protected:
   // From Task::Callback
@@ -221,8 +229,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   virtual bool isConstructionReachable(Position) override;
 
   private:
-  virtual void onEvent(const GameEvent&) override;
-
   void addCreatureInTerritory(PCreature, EnumSet<MinionTrait>);
   void removeCreature(WCreature);
   void onMinionKilled(WCreature victim, WCreature killer);

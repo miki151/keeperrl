@@ -483,7 +483,7 @@ WCollective ModelBuilder::spawnKeeper(Model* m, PCreature keeper) {
       .addCreature(keeperRef)
       .build());
   WCollective playerCollective = m->collectives.back().get();
-  playerCollective->setControl(PCollectiveControl(new PlayerControl(playerCollective, level)));
+  playerCollective->setControl(PlayerControl::create(playerCollective));
   playerCollective->setVillainType(VillainType::PLAYER);
   return playerCollective;
 }
@@ -513,13 +513,12 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
   for (auto& enemy : enemyInfo) {
     if (!enemy.settlement.collective->hasCreatures())
       continue;
-    PVillageControl control;
     if (enemy.settlement.locationName)
       enemy.settlement.collective->setLocationName(*enemy.settlement.locationName);
     if (auto race = enemy.settlement.race)
       enemy.settlement.collective->setRaceName(*race);
     PCollective collective = enemy.settlement.collective->build();
-    control.reset(new VillageControl(collective.get(), enemy.villain));
+    auto control = VillageControl::create(collective.get(), enemy.villain);
     if (enemy.villainType)
       collective->setVillainType(*enemy.villainType);
     if (enemy.id)

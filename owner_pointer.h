@@ -17,11 +17,11 @@ class OwnerPointer {
   OwnerPointer() {}
   OwnerPointer(std::nullptr_t) {}
 
-  shared_ptr<T> release() {
+  shared_ptr<T> giveMeSharedPointer() {
     return elem;
   }
 
-  explicit OwnerPointer(shared_ptr<T> t) : elem(t) {}
+  explicit OwnerPointer(shared_ptr<T> t);
 
   OwnerPointer<T>& operator = (OwnerPointer<T>&& o) {
     elem = std::move(o.elem);
@@ -75,7 +75,7 @@ class WeakPointer {
   WeakPointer(const WeakPointer<U>& o) : elem(o.elem) {
   }
 
-  WeakPointer(T* t) : elem(std::dynamic_pointer_cast<T>(t->shared_from_this())) {}
+  WeakPointer(T* t) : WeakPointer(t->getThis().template dynamicCast<T>()) {}
 
   WeakPointer() {}
   WeakPointer(std::nullptr_t) {}
@@ -84,6 +84,11 @@ class WeakPointer {
     elem = std::move(o.elem);
     return *this;
   }*/
+
+  template <typename U>
+  WeakPointer<U> dynamicCast() {
+    return WeakPointer<U>(std::dynamic_pointer_cast<U>(elem.lock()));
+  }
 
   void clear() {
     elem.reset();
@@ -147,6 +152,30 @@ class WeakPointer {
 
   weak_ptr<T> SERIAL(elem);
 };
+
+template <typename T>
+class OwnedObject {
+  public:
+  WeakPointer<T> getThis() {
+    CHECK(!!weakPointer);
+    return weakPointer;
+  }
+
+  WeakPointer<const T> getThis() const {
+    CHECK(!!weakPointer);
+    return weakPointer;
+  }
+
+  private:
+  template <typename>
+  friend class OwnerPointer;
+  WeakPointer<T> weakPointer;
+};
+
+template <typename T>
+OwnerPointer<T>::OwnerPointer(shared_ptr<T> t) : elem(t) {
+  elem->weakPointer = WeakPointer<T>(elem);
+}
 
 template <typename T>
 WeakPointer<T> OwnerPointer<T>::get() const {

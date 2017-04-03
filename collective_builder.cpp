@@ -47,7 +47,7 @@ CollectiveBuilder& CollectiveBuilder::setArea(Rectangle v) {
 PCollective CollectiveBuilder::build() {
   CHECK(!creatures.empty());
   CHECK(level);
-  auto c = makeOwner<Collective>(level, *tribe, CollectiveName(raceName, locationName, creatures[0].creature));
+  auto c = Collective::create(level, *tribe, CollectiveName(raceName, locationName, creatures[0].creature));
   Immigration im(c.get());
   c->init(std::move(*config), std::move(im));
   c->setControl(CollectiveControl::idle(c.get()));

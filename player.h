@@ -34,12 +34,14 @@ class Game;
 class VisibilityMap;
 class Tutorial;
 
-class Player : public Controller, public CreatureView, public EventListener {
+class Player : public Controller, public CreatureView, public EventListener<Player> {
   public:
   virtual ~Player();
 
   static ControllerFactory getFactory(MapMemory* levelMemory);
   Player(WCreature, bool adventurer, MapMemory*, STutorial = nullptr);
+
+  void onEvent(const GameEvent&);
 
   SERIALIZATION_DECL(Player)
 
@@ -89,7 +91,6 @@ class Player : public Controller, public CreatureView, public EventListener {
   bool tryToPerform(CreatureAction);
 
   private:
-  virtual void onEvent(const GameEvent&) override;
 
   void considerAdventurerMusic();
   void extendedAttackAction(UniqueEntity<Creature>::Id);

@@ -37,11 +37,16 @@ typedef EnumVariant<AttackTriggerId, TYPES(int),
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
 
-VillageControl::VillageControl(WCollective col, optional<VillageBehaviour> v) : CollectiveControl(col),
-  EventListener(col->getModel()), villain(v) {
+VillageControl::VillageControl(Private, WCollective col, optional<VillageBehaviour> v) : CollectiveControl(col), villain(v) {
   for (Position v : col->getTerritory().getAll())
     for (WItem it : v.getItems())
       myItems.insert(it);
+}
+
+PVillageControl VillageControl::create(WCollective col, optional<VillageBehaviour> v) {
+  auto ret = makeOwner<VillageControl>(Private{}, col, v);
+  ret->subscribeTo(col->getModel());
+  return ret;
 }
 
 WCollective VillageControl::getEnemyCollective() const {

@@ -171,7 +171,7 @@ void Creature::removeCreatureVision(WCreatureVision vision) {
   removeElement(creatureVisions, vision);
 }
 
-void Creature::pushController(SController ctrl) {
+void Creature::pushController(PController ctrl) {
   if (ctrl->isPlayer()) {
     modViewObject().setModifier(ViewObject::Modifier::PLAYER);
     if (WGame g = getGame())
@@ -180,7 +180,7 @@ void Creature::pushController(SController ctrl) {
   controllerStack.push_back(std::move(ctrl));
 }
 
-void Creature::setController(SController ctrl) {
+void Creature::setController(PController ctrl) {
   controllerStack.clear();
   pushController(std::move(ctrl));
 }
@@ -314,9 +314,9 @@ void Creature::playerMessage(const PlayerMessage& message) const {
   getController()->privateMessage(message);
 }
 
-SController Creature::getController() const {
+WController Creature::getController() const {
   CHECK(!controllerStack.empty());
-  return controllerStack.back();
+  return controllerStack.back().get();
 }
 
 bool Creature::hasCondition(CreatureCondition condition) const {
@@ -363,7 +363,7 @@ void Creature::makeMove() {
   {
     // Calls makeMove() while preventing Controller destruction by holding a shared_ptr on stack.
     // This is needed, otherwise Controller could be destroyed during makeMove() if creature committed suicide.
-    SController controllerTmp = controllerStack.back();
+    shared_ptr<Controller> controllerTmp = controllerStack.back().giveMeSharedPointer();
     MEASURE(controllerTmp->makeMove(), "creature move time");
   }
 
@@ -1194,7 +1194,7 @@ void Creature::die(WCreature attacker, bool dropInventory, bool dCorpse) {
   getGame()->addEvent({EventId::KILLED, EventInfo::Attacked{this, attacker}});
   getTribe()->onMemberKilled(this, attacker);
   getLevel()->killCreature(this);
-  setController(make_shared<DoNothingController>(this));
+  setController(makeOwner<DoNothingController>(this));
 }
 
 void Creature::die(bool dropInventory, bool dropCorpse) {

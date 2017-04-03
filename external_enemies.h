@@ -13,7 +13,7 @@ struct ExternalEnemy {
   SERIALIZE_ALL(factory, groupSize, attackTime, behaviour, name)
 };
 
-class ExternalEnemies : public TaskCallback {
+class ExternalEnemies {
   public:
   ExternalEnemies(RandomGen&, vector<ExternalEnemy>);
   void update(Level*, double localTime);

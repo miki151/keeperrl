@@ -25,7 +25,7 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
     case AttackBehaviourId::KILL_MEMBERS:
       return Task::killFighters(enemy, behaviour.get<int>());
     case AttackBehaviourId::STEAL_GOLD:
-      return Task::stealFrom(enemy, this);
+      return Task::stealFrom(enemy, nullptr);
     case AttackBehaviourId::CAMP_AND_SPAWN:
       return Task::campAndSpawn(enemy,
             behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
