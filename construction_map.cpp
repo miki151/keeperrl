@@ -195,7 +195,7 @@ void ConstructionMap::TrapInfo::setMarked() {
   marked = true;
 }
 
-void ConstructionMap::TorchInfo::setBuilt(Trigger* t) {
+void ConstructionMap::TorchInfo::setBuilt(WTrigger t) {
   built = true;
   task = none;
   trigger = t;
@@ -221,7 +221,7 @@ bool ConstructionMap::TorchInfo::isBuilt() const {
   return built;
 }
 
-Trigger* ConstructionMap::TorchInfo::getTrigger() {
+WTrigger ConstructionMap::TorchInfo::getTrigger() {
   return trigger;
 }
 

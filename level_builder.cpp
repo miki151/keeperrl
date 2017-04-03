@@ -161,7 +161,7 @@ void LevelBuilder::setNoDiagonalPassing() {
   noDiagonalPassing = true;
 }
 
-PLevel LevelBuilder::build(Model* m, LevelMaker* maker, LevelId levelId) {
+PLevel LevelBuilder::build(WModel m, LevelMaker* maker, LevelId levelId) {
   CHECK(mapStack.empty());
   maker->make(this, squares.getBounds());
   for (Vec2 v : squares.getBounds())

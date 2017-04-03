@@ -102,10 +102,10 @@ class Square : public Renderable {
   void addTrigger(Position, PTrigger);
 
   /** Returns all triggers.*/
-  vector<Trigger*> getTriggers() const;
+  vector<WTrigger> getTriggers() const;
 
   /** Removes the trigger from the square.*/
-  PTrigger removeTrigger(Position, Trigger*);
+  PTrigger removeTrigger(Position, WTrigger);
 
   /** Removes all triggers from the square.*/
   vector<PTrigger> removeTriggers(Position);

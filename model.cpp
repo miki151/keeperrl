@@ -60,6 +60,8 @@ void Model::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, stairNavigation, cemetery, topLevel, eventGenerator, externalEnemies);
 }
 
+SERIALIZATION_CONSTRUCTOR_IMPL(Model)
+
 void Model::lockSerialization() {
   serializationLocked = true;
 }
@@ -163,10 +165,15 @@ WLevel Model::buildTopLevel(LevelBuilder&& b, PLevelMaker maker) {
   return ret;
 }
 
-Model::Model() {
-  cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
-      .build(this, LevelMaker::emptyLevel(Random).get(), Random.getLL());
-  eventGenerator = makeOwner<EventGenerator>();
+Model::Model(Private) {
+}
+
+PModel Model::create() {
+  auto ret = makeOwner<Model>(Private{});
+  ret->cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
+      .build(ret.get(), LevelMaker::emptyLevel(Random).get(), Random.getLL());
+  ret->eventGenerator = makeOwner<EventGenerator>();
+  return ret;
 }
 
 Model::~Model() {
@@ -276,7 +283,7 @@ vector<WCreature> Model::getAllCreatures() const {
 }
 
 void Model::landHeroPlayer(PCreature player) {
-  player->setController(makeOwner<Player>(player.get(), true, new MapMemory()));
+  player->setController(makeOwner<Player>(player.get(), true, make_shared<MapMemory>()));
   WLevel target = getTopLevel();
   vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
   for (Position pos : landing)

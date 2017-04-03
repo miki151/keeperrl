@@ -79,7 +79,7 @@ DEF_UNIQUE_PTR(MonsterAI);
 DEF_UNIQUE_PTR(Behaviour);
 DEF_OWNER_PTR(Task);
 DEF_OWNER_PTR(Controller);
-DEF_UNIQUE_PTR(Trigger);
+DEF_OWNER_PTR(Trigger);
 DEF_OWNER_PTR(Level);
 DEF_OWNER_PTR(VillageControl);
 DEF_SHARED_PTR(GuiElem);
@@ -88,11 +88,12 @@ DEF_UNIQUE_PTR(ViewObject);
 DEF_OWNER_PTR(Collective);
 DEF_OWNER_PTR(CollectiveControl);
 DEF_OWNER_PTR(PlayerControl);
-DEF_UNIQUE_PTR(Model);
+DEF_OWNER_PTR(Model);
 DEF_UNIQUE_PTR(Tribe);
 DEF_SHARED_PTR(Tutorial);
 DEF_OWNER_PTR(CreatureVision);
 DEF_OWNER_PTR(Game);
+DEF_SHARED_PTR(MapMemory);
 
 template <typename T>
 T lambdaConstruct(function<void(T&)> fun) {

@@ -29,7 +29,7 @@ class ModelBuilder {
 
   PModel splashModel(const FilePath& splashPath);
 
-  WCollective spawnKeeper(Model*, PCreature);
+  WCollective spawnKeeper(WModel, PCreature);
 
   static int getPigstyPopulationIncrease();
   static int getStatuePopulationIncrease();
@@ -44,7 +44,7 @@ class ModelBuilder {
   PModel tryModel(int width, const string& levelName, vector<EnemyInfo>,
       bool keeperSpawn, BiomeId, vector<ExternalEnemy>);
   PModel tryQuickModel(int width);
-  SettlementInfo& makeExtraLevel(Model*, EnemyInfo&);
+  SettlementInfo& makeExtraLevel(WModel, EnemyInfo&);
   PModel tryBuilding(int numTries, function<PModel()> buildFun);
   void addMapVillains(vector<EnemyInfo>&, BiomeId);
   RandomGen& random;

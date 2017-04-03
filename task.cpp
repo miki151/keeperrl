@@ -214,7 +214,7 @@ class BuildTorch : public Task {
   virtual MoveInfo getMove(WCreature c) override {
     CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
     if (c->getPosition() == position)
-      return c->placeTorch(attachmentDir, [=](Trigger* t) {
+      return c->placeTorch(attachmentDir, [=](WTrigger t) {
           callback->onTorchBuilt(position, t);
           setDone();
         });
@@ -1217,7 +1217,7 @@ PTask Task::goToTryForever(Position pos) {
 namespace {
 class TransferTo : public Task {
   public:
-  TransferTo(Model* m) : model(m) {}
+  TransferTo(WModel m) : model(m) {}
 
   virtual MoveInfo getMove(WCreature c) override {
     if (!target)
@@ -1237,11 +1237,11 @@ class TransferTo : public Task {
 
   protected:
   optional<Position> SERIAL(target);
-  Model* SERIAL(model);
+  WModel SERIAL(model);
 };
 }
 
-PTask Task::transferTo(Model *m) {
+PTask Task::transferTo(WModel m) {
   return makeOwner<TransferTo>(m);
 }
 

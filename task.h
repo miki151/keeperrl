@@ -77,7 +77,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask eat(set<Position> hatcherySquares);
   static PTask goTo(Position);
   static PTask goToTryForever(Position);
-  static PTask transferTo(Model*);
+  static PTask transferTo(WModel);
   static PTask goToAndWait(Position, double waitTime);
   static PTask whipping(Position, WCreature whipped);
   static PTask dropItems(vector<WItem>);

@@ -171,7 +171,7 @@ static EnumSet<MinionTrait> getImpTraits() {
 }
 
 PModel ModelBuilder::tryQuickModel(int width) {
-  Model* m = new Model();
+  auto m = Model::create();
   WLevel top = m->buildTopLevel(
       LevelBuilder(meter, random, width, width, "Quick", false),
       LevelMaker::quickLevel(random));
@@ -190,14 +190,14 @@ PModel ModelBuilder::tryQuickModel(int width) {
 //    m->playerCollective->addCreature(c.get(), {MinionTrait::FIGHTER});
     m->addCreature(std::move(c));
   }
-  return PModel(m);
+  return m;
 }
 
 PModel ModelBuilder::quickModel() {
   return tryBuilding(5000, [=] { return tryQuickModel(40); });
 }
 
-SettlementInfo& ModelBuilder::makeExtraLevel(Model* model, EnemyInfo& enemy) {
+SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
   const int towerHeight = random.get(7, 12);
   const int gnomeHeight = random.get(3, 5);
   SettlementInfo& mainSettlement = enemy.settlement;
@@ -472,7 +472,7 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
     minT << "\nMaxT: " << maxT << "\nAvgT: " << sumT / numSuccess << std::endl;
 }
 
-WCollective ModelBuilder::spawnKeeper(Model* m, PCreature keeper) {
+WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper) {
   WLevel level = m->getTopLevel();
   WCreature keeperRef = keeper.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
@@ -490,7 +490,7 @@ WCollective ModelBuilder::spawnKeeper(Model* m, PCreature keeper) {
 
 PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo, bool keeperSpawn,
     BiomeId biomeId, vector<ExternalEnemy> externalEnemies) {
-  Model* model = new Model();
+  auto model = Model::create();
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
   for (auto& elem : enemyInfo) {
@@ -499,7 +499,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
       elem.levelConnection->otherEnemy->settlement.collective =
           new CollectiveBuilder(elem.levelConnection->otherEnemy->config,
                                 elem.levelConnection->otherEnemy->settlement.tribe);
-      topLevelSettlements.push_back(makeExtraLevel(model, elem));
+      topLevelSettlements.push_back(makeExtraLevel(model.get(), elem));
       extraEnemies.push_back(*elem.levelConnection->otherEnemy);
     } else
       topLevelSettlements.push_back(elem.settlement);
@@ -528,11 +528,11 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
   }
   if (!externalEnemies.empty())
     model->addExternalEnemies(ExternalEnemies(random, externalEnemies));
-  return PModel(model);
+  return model;
 }
 
 PModel ModelBuilder::splashModel(const FilePath& splashPath) {
-  Model* m = new Model();
+  auto m = Model::create();
   WLevel l = m->buildTopLevel(
       LevelBuilder(meter, Random, Level::getSplashBounds().width(), Level::getSplashBounds().height(), "Splash",
         true, 1.0),
@@ -542,6 +542,6 @@ PModel ModelBuilder::splashModel(const FilePath& splashPath) {
           CreatureFactory::splashMonsters(TribeId::getKeeper()),
           CreatureFactory::singleType(TribeId::getKeeper(), CreatureId::IMP), splashPath));
   m->topLevel = l;
-  return PModel(m);
+  return m;
 }
 

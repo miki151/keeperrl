@@ -93,7 +93,7 @@ class AmuletOfWarning : public Item {
       bool isDanger = false;
       bool isBigDanger = false;
       for (Position v : position.getRectangle(Rectangle(-radius, -radius, radius + 1, radius + 1))) {
-        for (Trigger* t : v.getTriggers())
+        for (WTrigger t : v.getTriggers())
           if (t->isDangerous(owner)) {
             if (v.dist8(position) <= 1)
               isBigDanger = true;

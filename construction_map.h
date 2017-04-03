@@ -60,9 +60,9 @@ class ConstructionMap {
     UniqueEntity<Task>::Id getTask() const;
     bool hasTask() const;
     bool isBuilt() const;
-    Trigger* getTrigger();
+    WTrigger getTrigger();
     void setTask(UniqueEntity<Task>::Id);
-    void setBuilt(Trigger*);
+    void setBuilt(WTrigger);
 
     SERIALIZATION_DECL(TorchInfo);
     
@@ -70,7 +70,7 @@ class ConstructionMap {
     bool SERIAL(built) = false;
     optional<UniqueEntity<Task>::Id> SERIAL(task);
     Dir SERIAL(attachmentDir);
-    Trigger* SERIAL(trigger) = nullptr;
+    WTrigger SERIAL(trigger) = nullptr;
   };
 
   const FurnitureInfo& getFurniture(Position, FurnitureLayer) const;

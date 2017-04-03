@@ -23,7 +23,7 @@ class Position {
   public:
   Position(Vec2, WLevel);
   static vector<Position> getAll(WLevel, Rectangle);
-  Model* getModel() const;
+  WModel getModel() const;
   WGame getGame() const;
   int dist8(const Position&) const;
   bool isSameLevel(const Position&) const;
@@ -65,8 +65,8 @@ class Position {
   optional<FurnitureClickType> getClickType() const;
   void addSound(const Sound&) const;
   void getViewIndex(ViewIndex&, WConstCreature viewer) const;
-  vector<Trigger*> getTriggers() const;
-  PTrigger removeTrigger(Trigger*);
+  vector<WTrigger> getTriggers() const;
+  PTrigger removeTrigger(WTrigger);
   vector<PTrigger> removeTriggers();
   void addTrigger(PTrigger);
   const vector<WItem>& getItems() const;

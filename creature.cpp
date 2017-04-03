@@ -222,7 +222,7 @@ const EntitySet<Creature>& Creature::getKills() const {
 
 void Creature::spendTime(double t) {
   if (!isDead())
-    if (Model* m = position.getModel())
+    if (WModel m = position.getModel())
       m->increaseLocalTime(this, 100.0 * t / (double) getAttr(AttrType::SPEED));
   hidden = false;
 }
@@ -849,7 +849,7 @@ void Creature::setPosition(Position pos) {
 }
 
 double Creature::getLocalTime() const {
-  if (Model* m = position.getModel())
+  if (WModel m = position.getModel())
     return m->getLocalTime(this);
   else
     return 0;
@@ -1296,10 +1296,10 @@ CreatureAction Creature::fire(Vec2 direction) const {
   });
 }
 
-CreatureAction Creature::placeTorch(Dir attachmentDir, function<void(Trigger*)> builtCallback) const {
+CreatureAction Creature::placeTorch(Dir attachmentDir, function<void(WTrigger)> builtCallback) const {
   return CreatureAction(this, [=](WCreature self) {
       PTrigger torch = Trigger::getTorch(attachmentDir, position);
-      Trigger* tRef = torch.get();
+      WTrigger tRef = torch.get();
       getPosition().addTrigger(std::move(torch));
       addSound(Sound(SoundId::DIGGING).setPitch(0.5));
       builtCallback(tRef);
@@ -1408,7 +1408,7 @@ CreatureAction Creature::copulate(Vec2 direction) const {
 }
 
 void Creature::addPersonalEvent(const string& s) {
-  if (Model* m = position.getModel())
+  if (WModel m = position.getModel())
     m->addEvent({EventId::CREATURE_EVENT, EventInfo::CreatureEvent{this, s}});
 }
 

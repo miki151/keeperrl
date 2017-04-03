@@ -36,9 +36,9 @@ class Options;
 /**
   * Main class that holds all game logic.
   */
-class Model {
+class Model : public OwnedObject<Model> {
   public:
-  ~Model();
+  static PModel create();
   
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
@@ -81,14 +81,18 @@ class Model {
   void transferCreature(PCreature, Vec2 travelDir);
   bool canTransferCreature(WCreature, Vec2 travelDir);
 
-  Model();
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
+  SERIALIZATION_DECL(Model)
 
   void lockSerialization();
 
   void addEvent(const GameEvent&);
+
+  private:
+  struct Private {};
+
+  public:
+  Model(Private);
+  ~Model();
 
   private:
 

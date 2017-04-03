@@ -24,7 +24,7 @@ bool KnownTiles::isKnown(Position pos) const {
   return known.get(pos);
 };
 
-void KnownTiles::limitToModel(const Model* m) {
+void KnownTiles::limitToModel(const WModel m) {
   set<Position> copy;
   for (Position p : border)
     if (p.getModel() == m)

@@ -98,7 +98,7 @@ class EventListener {
   EventListener(const EventListener&) = delete;
   EventListener(EventListener&&) = delete;
 
-  void subscribeTo(Model* m) {
+  void subscribeTo(WModel m) {
     CHECK(!generator && !id);
     generator = m->eventGenerator.get();
     id = generator->addListener(WeakPointer<T>(static_cast<T*>(this)));

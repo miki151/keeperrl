@@ -278,7 +278,7 @@ Tribe* Collective::getTribe() const {
   return getGame()->getTribe(*tribe);
 }
 
-Model* Collective::getModel() const {
+WModel Collective::getModel() const {
   return getLevel()->getModel();
 }
 
@@ -1160,7 +1160,7 @@ void Collective::onAppliedItemCancel(Position pos) {
     constructions->getTrap(pos).reset();
 }
 
-void Collective::onTorchBuilt(Position pos, Trigger* t) {
+void Collective::onTorchBuilt(Position pos, WTrigger t) {
   if (!constructions->containsTorch(pos)) {
     if (canPlaceTorch(pos))
       addTorch(pos);

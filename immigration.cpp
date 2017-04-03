@@ -357,7 +357,7 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
         if (!recruits.empty()) {
           WCreature c = recruits[0];
           immigration->collective->addCreature(c, {MinionTrait::FIGHTER});
-          Model* target = immigration->collective->getModel();
+          WModel target = immigration->collective->getModel();
           if (c->getPosition().getModel() != target)
             c->getGame()->transferCreature(c, target);
           addedRecruits = true;

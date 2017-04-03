@@ -11,7 +11,7 @@ class TaskCallback : public OwnedObject<TaskCallback> {
   virtual void onConstructed(Position, FurnitureType) {}
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}
   virtual bool isConstructionReachable(Position) { return true; }
-  virtual void onTorchBuilt(Position, Trigger*) {}
+  virtual void onTorchBuilt(Position, WTrigger) {}
   virtual void onAppliedItem(Position, WItem item) {}
   virtual void onAppliedSquare(WCreature, Position) {}
   virtual void onAppliedItemCancel(Position) {}

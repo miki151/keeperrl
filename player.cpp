@@ -61,7 +61,7 @@ SERIALIZABLE(Player);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
-Player::Player(WCreature c, bool adv, MapMemory* memory, STutorial t) :
+Player::Player(WCreature c, bool adv, SMapMemory memory, STutorial t) :
     Controller(c), levelMemory(memory), adventurer(adv), displayGreeting(adventurer), tutorial(t) {
   visibilityMap->update(c, c->getVisibleTiles());
 }
@@ -123,7 +123,7 @@ void Player::onEvent(const GameEvent& event) {
   }
 }
 
-ControllerFactory Player::getFactory(MapMemory* levelMemory) {
+ControllerFactory Player::getFactory(SMapMemory levelMemory) {
   return ControllerFactory([=](WCreature c) { return makeOwner<Player>(c, true, levelMemory);});
 }
 

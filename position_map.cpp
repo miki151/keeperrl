@@ -77,7 +77,7 @@ void PositionMap<T>::set(Position pos, const T& elem) {
 }
 
 template <class T>
-void PositionMap<T>::limitToModel(const Model* m) {
+void PositionMap<T>::limitToModel(const WModel m) {
   std::set<LevelId> goodIds;
   for (WLevel l : m->getLevels())
     goodIds.insert(l->getUniqueId());

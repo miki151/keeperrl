@@ -53,7 +53,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 
 Level::~Level() {}
 
-Level::Level(Private, SquareArray s, FurnitureArray f, Model* m, const string& n,
+Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, const string& n,
     Table<double> sun, LevelId id, Table<bool> cover)
     : squares(std::move(s)), oldSquares(squares->getBounds()), furniture(std::move(f)),
       memoryUpdates(squares->getBounds(), true), model(m),
@@ -62,7 +62,7 @@ Level::Level(Private, SquareArray s, FurnitureArray f, Model* m, const string& n
       levelId(id) {
 }
 
-PLevel Level::create(SquareArray s, FurnitureArray f, Model* m, const string& n,
+PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
     Table<double> sun, LevelId id, Table<bool> cover) {
   auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, n, sun, id, cover);
   for (Vec2 pos : ret->squares->getBounds()) {
@@ -168,11 +168,11 @@ WCreature Level::getPlayer() const {
   return nullptr;
 }
 
-const Model* Level::getModel() const {
+const WModel Level::getModel() const {
   return model;
 }
 
-Model* Level::getModel() {
+WModel Level::getModel() {
   return model;
 }
 

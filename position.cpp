@@ -43,7 +43,7 @@ WLevel Position::getLevel() const {
   return level;
 }
 
-Model* Position::getModel() const {
+WModel Position::getModel() const {
   if (isValid())
     return level->getModel();
   else
@@ -297,14 +297,14 @@ void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
   }
 }
 
-vector<Trigger*> Position::getTriggers() const {
+vector<WTrigger> Position::getTriggers() const {
   if (isValid())
     return getSquare()->getTriggers();
   else
     return {};
 }
 
-PTrigger Position::removeTrigger(Trigger* trigger) {
+PTrigger Position::removeTrigger(WTrigger trigger) {
   CHECK(isValid());
   return modSquare()->removeTrigger(*this, trigger);
 }
@@ -502,7 +502,7 @@ void Position::fireDamage(double amount) {
     creature->fireDamage(amount);
   for (WItem it : getItems())
     it->fireDamage(amount, *this);
-  for (Trigger* t : getTriggers())
+  for (WTrigger t : getTriggers())
     t->fireDamage(amount);
 }
 

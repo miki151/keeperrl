@@ -25,7 +25,7 @@ class Tribe;
 class ViewObject;
 class EffectType;
 
-class Trigger {
+class Trigger : public OwnedObject<Trigger> {
   public:
   virtual optional<ViewObject> getViewObject(WConstCreature viewer) const;
   virtual ~Trigger();

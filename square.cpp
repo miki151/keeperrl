@@ -111,7 +111,7 @@ void Square::tick(Position pos) {
   if (creature && poisonGas->getAmount() > 0.2) {
     creature->poisonWithGas(min(1.0, poisonGas->getAmount()));
   }
-  for (Trigger* t : extractRefs(triggers))
+  for (auto t : getWeakPointers(triggers))
     t->tick();
 }
 
@@ -197,7 +197,7 @@ void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
 
 void Square::onEnter(WCreature c) {
   setDirty(c->getPosition());
-  for (Trigger* t : extractRefs(triggers))
+  for (auto t : getWeakPointers(triggers))
     t->onCreatureEnter(c);
   onEnterSpecial(c);
 }
@@ -223,11 +223,11 @@ void Square::addTrigger(Position pos, PTrigger t) {
   triggers.push_back(std::move(t));
 }
 
-vector<Trigger*> Square::getTriggers() const {
-  return extractRefs(triggers);
+vector<WTrigger> Square::getTriggers() const {
+  return getWeakPointers(triggers);
 }
 
-PTrigger Square::removeTrigger(Position pos, Trigger* trigger) {
+PTrigger Square::removeTrigger(Position pos, WTrigger trigger) {
   CHECK(trigger);
   setDirty(pos);
   for (PTrigger& t : triggers)
@@ -243,7 +243,7 @@ PTrigger Square::removeTrigger(Position pos, Trigger* trigger) {
 
 vector<PTrigger> Square::removeTriggers(Position pos) {
   vector<PTrigger> ret;
-  for (Trigger* t : extractRefs(triggers))
+  for (auto t : getWeakPointers(triggers))
     ret.push_back(removeTrigger(pos, t));
   return ret;
 }

@@ -1634,7 +1634,7 @@ static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
 class MinionController : public Player {
   public:
-  MinionController(WCreature c, Model* m, MapMemory* memory, PlayerControl* ctrl, STutorial tutorial)
+  MinionController(WCreature c, WModel m, SMapMemory memory, WPlayerControl ctrl, STutorial tutorial)
       : Player(c, false, memory, tutorial), control(ctrl) {}
 
   virtual vector<CommandInfo> getCommands() const override {
@@ -1695,7 +1695,7 @@ class MinionController : public Player {
   SERIALIZATION_CONSTRUCTOR(MinionController);
 
   private:
-  PlayerControl* SERIAL(control);
+  WPlayerControl SERIAL(control);
 };
 
 void PlayerControl::controlSingle(WCreature c) {
@@ -1722,7 +1722,7 @@ void PlayerControl::commandTeam(TeamId team) {
   if (getControlled())
     leaveControl();
   WCreature c = getTeams().getLeader(team);
-  c->pushController(makeOwner<MinionController>(c, getModel(), memory.get(), this, tutorial));
+  c->pushController(makeOwner<MinionController>(c, getModel(), memory, this, tutorial));
   getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
   getView()->resetCenter();
@@ -2546,7 +2546,7 @@ WLevel PlayerControl::getLevel() const {
   return getCollective()->getLevel();
 }
 
-Model* PlayerControl::getModel() const {
+WModel PlayerControl::getModel() const {
   return getLevel()->getModel();
 }
 

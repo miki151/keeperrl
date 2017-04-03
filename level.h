@@ -159,8 +159,8 @@ class Level : public OwnedObject<Level> {
   /** Returns the player creature.*/
   WCreature getPlayer() const;
 
-  const Model* getModel() const;
-  Model* getModel();
+  const WModel getModel() const;
+  WModel getModel();
   WGame getGame() const;
 
   void addLightSource(Vec2, double radius);
@@ -214,7 +214,7 @@ class Level : public OwnedObject<Level> {
   void unplaceCreature(WCreature, Vec2 pos);
   vector<WCreature> SERIAL(creatures);
   EntitySet<Creature> SERIAL(creatureIds);
-  Model* SERIAL(model) = nullptr;
+  WModel SERIAL(model) = nullptr;
   mutable HeapAllocated<EnumMap<VisionId, FieldOfView>> SERIAL(fieldOfView);
   string SERIAL(name);
   Vec2 SERIAL(backgroundOffset);
@@ -229,10 +229,10 @@ class Level : public OwnedObject<Level> {
   friend class LevelBuilder;
   struct Private {};
 
-  static PLevel create(SquareArray s, FurnitureArray f, Model* m, const string& n, Table<double> sun, LevelId id, Table<bool> cover);
+  static PLevel create(SquareArray s, FurnitureArray f, WModel m, const string& n, Table<double> sun, LevelId id, Table<bool> cover);
 
   public:
-  Level(Private, SquareArray, FurnitureArray, Model*, const string& name, Table<double> sunlight, LevelId, Table<bool> cover);
+  Level(Private, SquareArray, FurnitureArray, WModel, const string& name, Table<double> sunlight, LevelId, Table<bool> cover);
 
   private:
   void addLightSource(Vec2 pos, double radius, int numLight);

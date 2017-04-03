@@ -32,9 +32,9 @@ class Game : public OwnedObject<Game> {
   void exitAction();
   void transferAction(vector<WCreature>);
   void presentWorldmap();
-  void transferCreature(WCreature, Model* to);
-  bool canTransferCreature(WCreature, Model* to);
-  Position getTransferPos(Model* from, Model* to) const;
+  void transferCreature(WCreature, WModel to);
+  bool canTransferCreature(WCreature, WModel to);
+  Position getTransferPos(WModel from, WModel to) const;
   string getGameIdentifier() const;
   string getGameDisplayName() const;
   MusicType getCurrentMusic() const;
@@ -75,7 +75,7 @@ class Game : public OwnedObject<Game> {
   void handleMessageBoard(Position, WCreature);
 
   PModel& getMainModel();
-  vector<Model*> getAllModels() const;
+  vector<WModel> getAllModels() const;
   bool isSingleModel() const;
   int getSaveProgressCount() const;
 
@@ -94,16 +94,16 @@ class Game : public OwnedObject<Game> {
   void updateSunlightInfo();
   void tick(double time);
   PCreature makeAdventurer(int handicap);
-  Model* getCurrentModel() const;
-  Vec2 getModelCoords(const Model*) const;
-  optional<ExitInfo> updateModel(Model*, double totalTime);
+  WModel getCurrentModel() const;
+  Vec2 getModelCoords(const WModel) const;
+  optional<ExitInfo> updateModel(WModel, double totalTime);
   string getPlayerName() const;
   void uploadEvent(const string& name, const map<string, string>&);
 
   SunlightInfo sunlightInfo;
   Table<PModel> SERIAL(models);
   Table<bool> SERIAL(visited);
-  map<Model*, double> SERIAL(localTime);
+  map<WModel, double> SERIAL(localTime);
   Vec2 SERIAL(baseModel);
   View* view;
   double SERIAL(currentTime) = 0;

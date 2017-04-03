@@ -58,7 +58,7 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
   gameIdentifier = c.gameIdentifier;
   gameDisplayName = c.gameDisplayName;
   for (Vec2 v : models.getBounds())
-    if (Model* m = models[v].get()) {
+    if (WModel m = models[v].get()) {
       for (WCollective c : m->getCollectives()) {
         collectives.push_back(c);
         if (auto type = c->getVillainType()) {
@@ -112,7 +112,7 @@ const vector<WCollective>& Game::getVillains(VillainType type) const {
     return empty;
 }
 
-Model* Game::getCurrentModel() const {
+WModel Game::getCurrentModel() const {
   if (WCreature c = getPlayer())
     return c->getPosition().getModel();
   else
@@ -123,8 +123,8 @@ PModel& Game::getMainModel() {
   return models[baseModel];
 }
 
-vector<Model*> Game::getAllModels() const {
-  vector<Model*> ret;
+vector<WModel> Game::getAllModels() const {
+  vector<WModel> ret;
   for (Vec2 v : models.getBounds())
     if (models[v])
       ret.push_back(models[v].get());
@@ -143,7 +143,7 @@ int Game::getSaveProgressCount() const {
 }
 
 void Game::prepareSiteRetirement() {
-  Model* mainModel = models[baseModel].get();
+  WModel mainModel = models[baseModel].get();
   for (Vec2 v : models.getBounds())
     if (models[v]) {
       if (v != baseModel)
@@ -205,7 +205,7 @@ void Game::doneRetirement() {
 optional<ExitInfo> Game::update(double timeDiff) {
   ScopeTimer timer("Game::update timer");
   currentTime += timeDiff;
-  Model* currentModel = getCurrentModel();
+  WModel currentModel = getCurrentModel();
   // Give every model a couple of turns so that things like shopkeepers can initialize.
   for (Vec2 v : models.getBounds())
     if (models[v] && !localTime.count(models[v].get())) {
@@ -236,7 +236,7 @@ void Game::considerRealTimeRender() {
   }
 }
 
-optional<ExitInfo> Game::updateModel(Model* model, double totalTime) {
+optional<ExitInfo> Game::updateModel(WModel model, double totalTime) {
   do {
     if (spectator)
       while (1) {
@@ -271,7 +271,7 @@ optional<ExitInfo> Game::updateModel(Model* model, double totalTime) {
 }
 
 bool Game::isVillainActive(WConstCollective col) {
-  const Model* m = col->getModel();
+  const WModel m = col->getModel();
   return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
 }
 
@@ -288,7 +288,7 @@ void Game::tick(double time) {
   sunlightInfo.update(currentTime);
   if (previous != sunlightInfo.getState())
     for (Vec2 v : models.getBounds())
-      if (Model* m = models[v].get())
+      if (WModel m = models[v].get())
         m->updateSunlightMovement();
   INFO << "Global time " << time;
   for (WCollective col : collectives) {
@@ -334,18 +334,18 @@ void Game::exitAction() {
   }
 }
 
-Position Game::getTransferPos(Model* from, Model* to) const {
+Position Game::getTransferPos(WModel from, WModel to) const {
   return to->getTopLevel()->getLandingSquare(StairKey::transferLanding(),
       getModelCoords(from) - getModelCoords(to));
 }
 
-void Game::transferCreature(WCreature c, Model* to) {
-  Model* from = c->getLevel()->getModel();
+void Game::transferCreature(WCreature c, WModel to) {
+  WModel from = c->getLevel()->getModel();
   if (from != to)
     to->transferCreature(from->extractCreature(c), getModelCoords(from) - getModelCoords(to));
 }
 
-bool Game::canTransferCreature(WCreature c, Model* to) {
+bool Game::canTransferCreature(WCreature c, WModel to) {
   return to->canTransferCreature(c, getModelCoords(c->getLevel()->getModel()) - getModelCoords(to));
 }
 
@@ -353,7 +353,7 @@ int Game::getModelDistance(WConstCollective c1, WConstCollective c2) const {
   return getModelCoords(c1->getModel()).dist8(getModelCoords(c2->getModel()));
 }
  
-Vec2 Game::getModelCoords(const Model* m) const {
+Vec2 Game::getModelCoords(const WModel m) const {
   for (Vec2 v : models.getBounds())
     if (models[v].get() == m)
       return v;
@@ -368,7 +368,7 @@ void Game::presentWorldmap() {
 void Game::transferAction(vector<WCreature> creatures) {
   if (auto dest = view->chooseSite("Choose destination site:", *campaign,
         getModelCoords(creatures[0]->getLevel()->getModel()))) {
-    Model* to = NOTNULL(models[*dest].get());
+    WModel to = NOTNULL(models[*dest].get());
     vector<CreatureInfo> cant;
     for (WCreature c : copyOf(creatures))
       if (!canTransferCreature(c, to)) {

@@ -38,8 +38,8 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   public:
   virtual ~Player();
 
-  static ControllerFactory getFactory(MapMemory* levelMemory);
-  Player(WCreature, bool adventurer, MapMemory*, STutorial = nullptr);
+  static ControllerFactory getFactory(SMapMemory levelMemory);
+  Player(WCreature, bool adventurer, SMapMemory, STutorial = nullptr);
 
   void onEvent(const GameEvent&);
 
@@ -83,7 +83,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual void onFellAsleep();
   virtual vector<WCreature> getTeam() const;
 
-  MapMemory* SERIAL(levelMemory);
+  SMapMemory SERIAL(levelMemory);
   void showHistory();
   WGame getGame() const;
   View* getView() const;

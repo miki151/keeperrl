@@ -183,7 +183,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction payFor(const vector<WItem>&) const;
   CreatureAction fire(Vec2 direction) const;
   CreatureAction construct(Vec2 direction, FurnitureType) const;
-  CreatureAction placeTorch(Dir attachmentDir, function<void(Trigger*)> builtCallback) const;
+  CreatureAction placeTorch(Dir attachmentDir, function<void(WTrigger)> builtCallback) const;
   CreatureAction whip(const Position&) const;
   bool canConstruct(const SquareType&) const;
   bool canConstruct(FurnitureType) const;

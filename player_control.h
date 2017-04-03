@@ -199,11 +199,11 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<TeamId> getCurrentTeam() const;
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
-  Model* getModel() const;
+  WModel getModel() const;
   WGame getGame() const;
   View* getView() const;
 
-  mutable unique_ptr<MapMemory> SERIAL(memory);
+  mutable SMapMemory SERIAL(memory);
   bool SERIAL(showWelcomeMsg) = true;
   struct SelectionInfo {
     Vec2 corner1;

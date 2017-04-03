@@ -79,8 +79,8 @@ class Portal : public Trigger {
   public:
 
   Portal* getOther(Position info) const {
-    for (Trigger* t : info.getTriggers())
-      if (Portal* ret = dynamic_cast<Portal*>(t))
+    for (WTrigger t : info.getTriggers())
+      if (Portal* ret = dynamic_cast<Portal*>(t.get()))
         return ret;
     return nullptr;
   }
@@ -149,7 +149,7 @@ class Portal : public Trigger {
 }
 
 PTrigger Trigger::getPortal(const ViewObject& obj, Position position) {
-  return PTrigger(new Portal(obj, position));
+  return makeOwner<Portal>(obj, position);
 }
 
 namespace {
@@ -199,7 +199,7 @@ class Trap : public Trigger {
 }
 
 PTrigger Trigger::getTrap(const ViewObject& obj, Position pos, EffectType e, TribeId tribe, bool alwaysVisible) {
-  return PTrigger(new Trap(obj, pos, std::move(e), tribe, alwaysVisible));
+  return makeOwner<Trap>(obj, pos, std::move(e), tribe, alwaysVisible);
 }
 
 namespace {
@@ -229,7 +229,7 @@ const ViewObject& Trigger::getTorchViewObject(Dir dir) {
 }
 
 PTrigger Trigger::getTorch(Dir attachmentDir, Position position) {
-  return PTrigger(new Torch(getTorchViewObject(attachmentDir), position));
+  return makeOwner<Torch>(getTorchViewObject(attachmentDir), position);
 }
 
 namespace {
@@ -278,7 +278,7 @@ class MeteorShower : public Trigger {
 }
 
 PTrigger Trigger::getMeteorShower(WCreature c, double duration) {
-  return PTrigger(new MeteorShower(c, duration));
+  return makeOwner<MeteorShower>(c, duration);
 }
 
 template <class Archive>
