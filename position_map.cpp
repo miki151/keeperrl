@@ -79,7 +79,7 @@ void PositionMap<T>::set(Position pos, const T& elem) {
 template <class T>
 void PositionMap<T>::limitToModel(const Model* m) {
   std::set<LevelId> goodIds;
-  for (Level* l : m->getLevels())
+  for (WLevel l : m->getLevels())
     goodIds.insert(l->getUniqueId());
   for (auto& elem : copyOf(tables))
     if (!goodIds.count(elem.first))

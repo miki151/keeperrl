@@ -43,7 +43,7 @@ class FurnitureArray;
 class FieldOfView;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
-class Level {
+class Level : public OwnedObject<Level> {
   public:
 
   ~Level();
@@ -81,7 +81,7 @@ class Level {
   vector<StairKey> getAllStairKeys() const;
   bool hasStairKey(StairKey) const;
 
-  optional<Position> getStairsTo(const Level*) const;
+  optional<Position> getStairsTo(WConstLevel);
 
   /** Removes the creature from \paramname{position} from the level and model. The creature object is retained.*/
   void killCreature(WCreature victim);
@@ -103,7 +103,6 @@ class Level {
 
   //@{
   /** Returns the given square. \paramname{pos} must lie within the boundaries. */
-  Position getPosition(Vec2) const;
   vector<Position> getAllPositions() const;
   //@}
 
@@ -123,9 +122,6 @@ class Level {
   /** Performs a throw of the item, with all consequences of the event.*/
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId);
-
-  /** Sets the level to be rendered in the background with given offset.*/
-  void setBackgroundLevel(const Level*, Vec2 offset);
 
   //@{
   /** Returns all creatures on this level. */
@@ -221,7 +217,6 @@ class Level {
   Model* SERIAL(model) = nullptr;
   mutable HeapAllocated<EnumMap<VisionId, FieldOfView>> SERIAL(fieldOfView);
   string SERIAL(name);
-  const Level* SERIAL(backgroundLevel) = nullptr;
   Vec2 SERIAL(backgroundOffset);
   Table<double> SERIAL(sunlight);
   Table<bool> SERIAL(covered);
@@ -232,8 +227,14 @@ class Level {
   Sectors& getSectors(const MovementType&) const;
   
   friend class LevelBuilder;
-  Level(SquareArray, FurnitureArray, Model*, const string& name, Table<double> sunlight, LevelId, Table<bool> cover);
+  struct Private {};
 
+  static PLevel create(SquareArray s, FurnitureArray f, Model* m, const string& n, Table<double> sun, LevelId id, Table<bool> cover);
+
+  public:
+  Level(Private, SquareArray, FurnitureArray, Model*, const string& name, Table<double> sunlight, LevelId, Table<bool> cover);
+
+  private:
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
   FieldOfView& getFieldOfView(VisionId vision) const;

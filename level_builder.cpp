@@ -167,7 +167,7 @@ PLevel LevelBuilder::build(Model* m, LevelMaker* maker, LevelId levelId) {
   for (Vec2 v : squares.getBounds())
     if (!items[v].empty())
       squares.getWritable(v)->dropItemsLevelGen(std::move(items[v]));
-  PLevel l(new Level(std::move(squares), std::move(furniture), m, name, sunlight, levelId, covered));
+  auto l = Level::create(std::move(squares), std::move(furniture), m, name, sunlight, levelId, covered);
   l->background = background;
   l->unavailable = unavailable;
   for (pair<PCreature, Vec2>& c : creatures)

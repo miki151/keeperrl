@@ -32,7 +32,7 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
   }
 }
 
-void ExternalEnemies::update(Level* level, double localTime) {
+void ExternalEnemies::update(WLevel level, double localTime) {
   WCollective target = level->getModel()->getGame()->getPlayerCollective();
   CHECK(!!target);
   for (int i : All(enemies))

@@ -55,11 +55,11 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual void refreshGameInfo(GameInfo&) const override;
   virtual Vec2 getPosition() const override;
   virtual optional<MovementInfo> getMovementInfo() const override;
-  virtual Level* getLevel() const override;
+  virtual WLevel getLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getLocalTime() const override;
   virtual bool isPlayerView() const override;
-  virtual vector<Vec2> getUnknownLocations(const Level*) const override;
+  virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
 
   // from Controller
   virtual void onKilled(WConstCreature attacker) override;

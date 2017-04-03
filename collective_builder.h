@@ -15,7 +15,7 @@ class CollectiveConfig;
 class CollectiveBuilder {
   public:
   CollectiveBuilder(const CollectiveConfig&, TribeId);
-  CollectiveBuilder& setLevel(Level*);
+  CollectiveBuilder& setLevel(WLevel);
   CollectiveBuilder& addCreature(WCreature);
   CollectiveBuilder& setArea(Rectangle);
   CollectiveBuilder& setLocationName(const string&);
@@ -24,7 +24,7 @@ class CollectiveBuilder {
   bool hasCreatures() const;
 
   private:
-  Level* level = nullptr;
+  WLevel level = nullptr;
   struct CreatureInfo {
     WCreature creature;
     EnumSet<MinionTrait> traits;

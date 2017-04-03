@@ -402,7 +402,7 @@ WItem Creature::getAmmo() const {
   return nullptr;
 }
 
-Level* Creature::getLevel() const {
+WLevel Creature::getLevel() const {
   return getPosition().getLevel();
 }
 
@@ -1549,7 +1549,7 @@ CreatureAction Creature::continueMoving() {
     return CreatureAction();
 }
 
-CreatureAction Creature::stayIn(Level* level, Rectangle area) {
+CreatureAction Creature::stayIn(WLevel level, Rectangle area) {
   if (level != getLevel() || !area.contains(getPosition().getCoord())) {
     if (level == getLevel())
       for (Position v : getPosition().neighbors8(Random))

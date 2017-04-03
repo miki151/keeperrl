@@ -21,13 +21,13 @@ class Inventory;
 
 class Position {
   public:
-  Position(Vec2, Level*);
-  static vector<Position> getAll(Level*, Rectangle);
+  Position(Vec2, WLevel);
+  static vector<Position> getAll(WLevel, Rectangle);
   Model* getModel() const;
   WGame getGame() const;
   int dist8(const Position&) const;
   bool isSameLevel(const Position&) const;
-  bool isSameLevel(const Level*) const;
+  bool isSameLevel(WConstLevel) const;
   bool isSameModel(const Position&) const;
   Vec2 getDir(const Position&) const;
   WCreature getCreature() const;
@@ -36,7 +36,7 @@ class Position {
   string getName() const;
   Position withCoord(Vec2 newCoord) const;
   Vec2 getCoord() const;
-  Level* getLevel() const;
+  WLevel getLevel() const;
   optional<StairKey> getLandingLink() const;
  
   bool isValid() const;
@@ -138,7 +138,7 @@ class Position {
   Square* modSquare() const;
   const Square* getSquare() const;
   Vec2 SERIAL(coord);
-  Level* SERIAL(level) = nullptr;
+  WLevel SERIAL(level) = nullptr;
 };
 
 template <>

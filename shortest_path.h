@@ -61,7 +61,7 @@ class LevelShortestPath {
   Position getNextMove(Position);
   Position getTarget() const;
   bool isReversed() const;
-  Level* getLevel() const;
+  WLevel getLevel() const;
 
   static const double infinity;
 
@@ -70,7 +70,7 @@ class LevelShortestPath {
   private:
   static ShortestPath makeShortestPath(WConstCreature creature, Position to, Position from, double mult);
   ShortestPath SERIAL(path);
-  Level* SERIAL(level);
+  WLevel SERIAL(level);
 };
 
 class Dijkstra {

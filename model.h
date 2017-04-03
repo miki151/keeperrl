@@ -45,9 +45,9 @@ class Model {
   void update(double totalTime);
 
   /** Returns the level that the stairs lead to. */
-  Level* getLinkedLevel(Level* from, StairKey) const;
+  WLevel getLinkedLevel(WLevel from, StairKey) const;
 
-  optional<Position> getStairs(const Level* from, const Level* to);
+  optional<Position> getStairs(WConstLevel from, WConstLevel to);
 
   void addCreature(PCreature);
   void addCreature(PCreature, double delay);
@@ -65,9 +65,9 @@ class Model {
   void tick(double time);
   vector<WCollective> getCollectives() const;
   vector<WCreature> getAllCreatures() const;
-  vector<Level*> getLevels() const;
+  vector<WLevel> getLevels() const;
 
-  Level* getTopLevel() const;
+  WLevel getTopLevel() const;
 
   void addWoodCount(int);
   int getWoodCount() const;
@@ -95,8 +95,8 @@ class Model {
   friend class ModelBuilder;
 
   PCreature makePlayer(int handicap);
-  Level* buildLevel(LevelBuilder&&, PLevelMaker);
-  Level* buildTopLevel(LevelBuilder&&, PLevelMaker);
+  WLevel buildLevel(LevelBuilder&&, PLevelMaker);
+  WLevel buildTopLevel(LevelBuilder&&, PLevelMaker);
 
   vector<PLevel> SERIAL(levels);
   PLevel SERIAL(cemetery);
@@ -108,10 +108,10 @@ class Model {
   double SERIAL(currentTime) = 0;
   int SERIAL(woodCount) = 0;
   void calculateStairNavigation();
-  optional<StairKey> getStairsBetween(const Level* from, const Level* to);
-  map<pair<const Level*, const Level*>, StairKey> SERIAL(stairNavigation);
+  optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to);
+  map<pair<LevelId, LevelId>, StairKey> SERIAL(stairNavigation);
   bool serializationLocked = false;
-  Level* SERIAL(topLevel) = nullptr;
+  WLevel SERIAL(topLevel) = nullptr;
   template <typename>
   friend class EventListener;
   OwnerPointer<EventGenerator> SERIAL(eventGenerator);

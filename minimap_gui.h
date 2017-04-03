@@ -27,7 +27,7 @@ class MinimapGui : public GuiElem {
 
   MinimapGui(Renderer&, function<void()> clickFun);
 
-  void update(const Level*, Rectangle bounds, const CreatureView*);
+  void update(WConstLevel, Rectangle bounds, const CreatureView*);
   void presentMap(const CreatureView*, Rectangle bounds, Renderer&, function<void(double, double)> clickFun);
   void clear();
 
@@ -51,7 +51,7 @@ class MinimapGui : public GuiElem {
 
   SDL::SDL_Surface* mapBuffer;
   optional<Texture> mapBufferTex;
-  const Level* currentLevel = nullptr;
+  WConstLevel currentLevel = nullptr;
   Renderer& renderer;
 };
 

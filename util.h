@@ -80,7 +80,7 @@ DEF_UNIQUE_PTR(Behaviour);
 DEF_OWNER_PTR(Task);
 DEF_OWNER_PTR(Controller);
 DEF_UNIQUE_PTR(Trigger);
-DEF_UNIQUE_PTR(Level);
+DEF_OWNER_PTR(Level);
 DEF_OWNER_PTR(VillageControl);
 DEF_SHARED_PTR(GuiElem);
 DEF_UNIQUE_PTR(Animation);

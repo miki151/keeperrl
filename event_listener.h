@@ -50,7 +50,7 @@ struct ItemsAppeared {
 };
 
 struct ItemsThrown {
-  Level* level;
+  WLevel level;
   vector<WItem> items;
   vector<Vec2> trajectory;
 };

@@ -151,14 +151,14 @@ void Model::addCreature(PCreature c, double delay) {
   timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 
-Level* Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
+WLevel Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
   LevelBuilder builder(std::move(b));
   levels.push_back(builder.build(this, maker.get(), Random.getLL()));
   return levels.back().get();
 }
 
-Level* Model::buildTopLevel(LevelBuilder&& b, PLevelMaker maker) {
-  Level* ret = buildLevel(std::move(b), std::move(maker));
+WLevel Model::buildTopLevel(LevelBuilder&& b, PLevelMaker maker) {
+  WLevel ret = buildLevel(std::move(b), std::move(maker));
   topLevel = ret;
   return ret;
 }
@@ -192,54 +192,58 @@ WGame Model::getGame() const {
   return game;
 }
 
-Level* Model::getLinkedLevel(Level* from, StairKey key) const {
-  for (Level* target : getLevels())
+WLevel Model::getLinkedLevel(WLevel from, StairKey key) const {
+  for (WLevel target : getLevels())
     if (target != from && target->hasStairKey(key))
       return target;
   FATAL << "Failed to find next level for " << key.getInternalKey() << " " << from->getName();
   return nullptr;
 }
 
+static pair<LevelId, LevelId> getIds(WConstLevel l1, WConstLevel l2) {
+  return {l1->getUniqueId(), l2->getUniqueId()};
+}
+
 void Model::calculateStairNavigation() {
   // Floyd-Warshall algorithm
-  for (const Level* l1 : getLevels())
-    for (const Level* l2 : getLevels())
+  for (auto l1 : getLevels())
+    for (auto l2 : getLevels())
       if (l1 != l2)
         if (auto stairKey = getStairsBetween(l1, l2))
-          stairNavigation[make_pair(l1, l2)] = *stairKey;
-  for (const Level* li : getLevels())
-    for (const Level* l1 : getLevels())
+          stairNavigation[getIds(l1, l2)] = *stairKey;
+  for (auto li : getLevels())
+    for (auto l1 : getLevels())
       if (li != l1)
-        for (const Level* l2 : getLevels())
-          if (l2 != l1 && l2 != li && !stairNavigation.count(make_pair(l1, l2)) &&
-              stairNavigation.count(make_pair(li, l2)) && stairNavigation.count(make_pair(l1, li)))
-            stairNavigation[make_pair(l1, l2)] = stairNavigation.at(make_pair(l1, li));
-  for (const Level* l1 : getLevels())
-    for (const Level* l2 : getLevels())
+        for (auto l2 : getLevels())
+          if (l2 != l1 && l2 != li && !stairNavigation.count(getIds(l1, l2)) &&
+              stairNavigation.count(getIds(li, l2)) && stairNavigation.count(getIds(l1, li)))
+            stairNavigation[getIds(l1, l2)] = stairNavigation.at(getIds(l1, li));
+  for (auto l1 : getLevels())
+    for (auto l2 : getLevels())
       if (l1 != l2)
-        CHECK(stairNavigation.count(make_pair(l1, l2))) <<
+        CHECK(stairNavigation.count(getIds(l1, l2))) <<
             "No stair path between levels " << l1->getName() << " " << l2->getName();
 }
 
-optional<StairKey> Model::getStairsBetween(const Level* from, const Level* to) {
+optional<StairKey> Model::getStairsBetween(WConstLevel from, WConstLevel to) {
   for (StairKey key : from->getAllStairKeys())
     if (to->hasStairKey(key))
       return key;
   return none;
 }
 
-optional<Position> Model::getStairs(const Level* from, const Level* to) {
+optional<Position> Model::getStairs(WConstLevel from, WConstLevel to) {
   CHECK(from != to);
   if (!contains(getLevels(), from) || !contains(getLevels(), to) || !stairNavigation.count({from, to}))
     return none;
   return Random.choose(from->getLandingSquares(stairNavigation.at({from, to})));
 }
 
-vector<Level*> Model::getLevels() const {
-  return extractRefs(levels);
+vector<WLevel> Model::getLevels() const {
+  return getWeakPointers(levels);
 }
 
-Level* Model::getTopLevel() const {
+WLevel Model::getTopLevel() const {
   return topLevel;
 }
 
@@ -273,7 +277,7 @@ vector<WCreature> Model::getAllCreatures() const {
 
 void Model::landHeroPlayer(PCreature player) {
   player->setController(makeOwner<Player>(player.get(), true, new MapMemory()));
-  Level* target = getTopLevel();
+  WLevel target = getTopLevel();
   vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
   for (Position pos : landing)
     if (pos.canEnter(player.get())) {

@@ -97,7 +97,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   protected:
   // from CreatureView
-  virtual Level* getLevel() const override;
+  virtual WLevel getLevel() const override;
   virtual const MapMemory& getMemory() const override;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
@@ -106,7 +106,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getLocalTime() const override;
   virtual bool isPlayerView() const override;
-  virtual vector<Vec2> getUnknownLocations(const Level*) const override;
+  virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
 
   // from CollectiveControl
   virtual void addAttack(const CollectiveAttack&) override;

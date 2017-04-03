@@ -39,7 +39,7 @@ Vec2 Position::getCoord() const {
   return coord;
 }
 
-Level* Position::getLevel() const {
+WLevel Position::getLevel() const {
   return level;
 }
 
@@ -57,7 +57,7 @@ WGame Position::getGame() const {
     return nullptr;
 }
 
-Position::Position(Vec2 v, Level* l) : coord(v), level(l) {
+Position::Position(Vec2 v, WLevel l) : coord(v), level(l) {
 }
 
 const static int otherLevel = 1000000;
@@ -76,7 +76,7 @@ bool Position::isSameModel(const Position& p) const {
   return isValid() && p.isValid() && getModel() == p.getModel();
 }
 
-bool Position::isSameLevel(const Level* l) const {
+bool Position::isSameLevel(WConstLevel l) const {
   return isValid() && level == l;
 }
 

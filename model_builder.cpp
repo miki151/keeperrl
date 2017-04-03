@@ -172,7 +172,7 @@ static EnumSet<MinionTrait> getImpTraits() {
 
 PModel ModelBuilder::tryQuickModel(int width) {
   Model* m = new Model();
-  Level* top = m->buildTopLevel(
+  WLevel top = m->buildTopLevel(
       LevelBuilder(meter, random, width, width, "Quick", false),
       LevelMaker::quickLevel(random));
   m->calculateStairNavigation();
@@ -473,7 +473,7 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
 }
 
 WCollective ModelBuilder::spawnKeeper(Model* m, PCreature keeper) {
-  Level* level = m->getTopLevel();
+  WLevel level = m->getTopLevel();
   WCreature keeperRef = keeper.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   m->addCreature(std::move(keeper));
@@ -505,7 +505,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
       topLevelSettlements.push_back(elem.settlement);
   }
   append(enemyInfo, extraEnemies);
-  Level* top = model->buildTopLevel(
+  WLevel top = model->buildTopLevel(
       LevelBuilder(meter, random, width, width, levelName, false),
       LevelMaker::topLevel(random, CreatureFactory::forrest(TribeId::getWildlife()), topLevelSettlements, width,
         keeperSpawn, biomeId));
@@ -533,7 +533,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
 
 PModel ModelBuilder::splashModel(const FilePath& splashPath) {
   Model* m = new Model();
-  Level* l = m->buildTopLevel(
+  WLevel l = m->buildTopLevel(
       LevelBuilder(meter, Random, Level::getSplashBounds().width(), Level::getSplashBounds().height(), "Splash",
         true, 1.0),
       LevelMaker::splashLevel(

@@ -42,7 +42,7 @@
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
   serializeAll(ar, squares, oldSquares, landingSquares, tickingSquares, creatures, model, fieldOfView);
-  serializeAll(ar, name, backgroundLevel, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
+  serializeAll(ar, name, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
   serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, memoryUpdates);
   serializeAll(ar, furniture, tickingFurniture, covered);
 }  
@@ -53,23 +53,29 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 
 Level::~Level() {}
 
-Level::Level(SquareArray s, FurnitureArray f, Model* m, const string& n,
+Level::Level(Private, SquareArray s, FurnitureArray f, Model* m, const string& n,
     Table<double> sun, LevelId id, Table<bool> cover)
     : squares(std::move(s)), oldSquares(squares->getBounds()), furniture(std::move(f)),
       memoryUpdates(squares->getBounds(), true), model(m),
       name(n), sunlight(sun), covered(cover), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id) {
-  for (Vec2 pos : squares->getBounds()) {
-    const Square* square = squares->getReadonly(pos);
-    square->onAddedToLevel(Position(pos, this));
+}
+
+PLevel Level::create(SquareArray s, FurnitureArray f, Model* m, const string& n,
+    Table<double> sun, LevelId id, Table<bool> cover) {
+  auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, n, sun, id, cover);
+  for (Vec2 pos : ret->squares->getBounds()) {
+    auto square = ret->squares->getReadonly(pos);
+    square->onAddedToLevel(Position(pos, ret.get()));
     if (optional<StairKey> link = square->getLandingLink())
-      landingSquares[*link].push_back(Position(pos, this));
+      ret->landingSquares[*link].push_back(Position(pos, ret.get()));
   }
   for (VisionId vision : ENUM_ALL(VisionId))
-    (*fieldOfView)[vision] = FieldOfView(this, vision);
-  for (auto pos : getAllPositions())
-    addLightSource(pos.getCoord(), pos.getLightEmission(), 1);
+    (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision);
+  for (auto pos : ret->getAllPositions())
+    ret->addLightSource(pos.getCoord(), pos.getLightEmission(), 1);
+  return ret;
 }
 
 LevelId Level::getUniqueId() const {
@@ -199,7 +205,7 @@ bool Level::hasStairKey(StairKey key) const {
   return landingSquares.count(key);
 }
 
-optional<Position> Level::getStairsTo(const Level* level) const {
+optional<Position> Level::getStairsTo(WConstLevel level) {
   return model->getStairs(this, level);
 }
 
@@ -345,7 +351,7 @@ void Level::globalMessage(WConstCreature c, const PlayerMessage& ifPlayerCanSee,
 
 void Level::changeLevel(StairKey key, WCreature c) {
   Vec2 oldPos = c->getPosition().getCoord();
-  Level* otherLevel = model->getLinkedLevel(this, key);
+  WLevel otherLevel = model->getLinkedLevel(this, key);
   if (otherLevel->landCreature(key, c))
     eraseCreature(c, oldPos);
   else {
@@ -464,11 +470,6 @@ vector<Vec2> Level::getVisibleTiles(Vec2 pos, VisionId vision) const {
       [&](Vec2 v) { return isWithinVision(pos, v, vision); });
 }
 
-void Level::setBackgroundLevel(const Level* l, Vec2 offs) {
-  backgroundLevel = l;
-  backgroundOffset = offs;
-}
-
 const Square* Level::getSafeSquare(Vec2 pos) const {
   CHECK(inBounds(pos));
   return squares->getReadonly(pos);
@@ -479,14 +480,10 @@ Square* Level::modSafeSquare(Vec2 pos) {
   return squares->getWritable(pos);
 }
 
-Position Level::getPosition(Vec2 pos) const {
-  return Position(pos, const_cast<Level*>(this)); 
-}
-
 vector<Position> Level::getAllPositions() const {
   vector<Position> ret;
   for (Vec2 v : getBounds())
-    ret.emplace_back(v, const_cast<Level*>(this)); 
+    ret.emplace_back(v, getThis().removeConst());
   return ret;
 }
 

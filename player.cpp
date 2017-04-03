@@ -847,7 +847,7 @@ void Player::you(MsgType type, const string& param) {
   privateMessage(PlayerMessage(msg, MessagePriority::HIGH));
 }
 
-Level* Player::getLevel() const {
+WLevel Player::getLevel() const {
   return getCreature()->getLevel();
 }
 
@@ -1013,7 +1013,7 @@ bool Player::isPlayerView() const {
   return true;
 }
 
-vector<Vec2> Player::getUnknownLocations(const Level* level) const {
+vector<Vec2> Player::getUnknownLocations(WConstLevel level) const {
   vector<Vec2> ret;
   for (auto col : getCreature()->getPosition().getModel()->getCollectives())
     if (col->getLevel() == getLevel())

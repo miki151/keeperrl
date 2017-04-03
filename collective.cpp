@@ -64,10 +64,10 @@ SERIALIZABLE(Collective);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective);
 
-Collective::Collective(Private, Level* l, TribeId t, const CollectiveName& n) : tribe(t), level(NOTNULL(l)), name(n) {
+Collective::Collective(Private, WLevel l, TribeId t, const CollectiveName& n) : tribe(t), level(NOTNULL(l)), name(n) {
 }
 
-PCollective Collective::create(Level* level, TribeId tribe, const CollectiveName& name) {
+PCollective Collective::create(WLevel level, TribeId tribe, const CollectiveName& name) {
   auto ret = makeOwner<Collective>(Private {}, level, tribe, name);
   ret->subscribeTo(level->getModel());
   return ret;
@@ -258,7 +258,7 @@ bool Collective::hasLeader() const {
   return leader && !leader->isDead();
 }
 
-Level* Collective::getLevel() const {
+WLevel Collective::getLevel() const {
   return level;
 }
 

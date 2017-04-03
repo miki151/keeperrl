@@ -8,7 +8,7 @@
 #include "creature.h"
 #include "view_index.h"
 
-Spectator::Spectator(Level* l) : level(l) {
+Spectator::Spectator(WLevel l) : level(l) {
 }
 
 const MapMemory& Spectator::getMemory() const {
@@ -16,7 +16,7 @@ const MapMemory& Spectator::getMemory() const {
 }
 
 void Spectator::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  Position position = getLevel()->getPosition(pos);
+  Position position(pos, getLevel());
   position.getViewIndex(index, nullptr);
   if (WConstCreature c = position.getCreature())
     index.insert(c->getViewObject());
@@ -34,7 +34,7 @@ optional<CreatureView::MovementInfo> Spectator::getMovementInfo() const {
   return none;
 }
 
-Level* Spectator::getLevel() const {
+WLevel Spectator::getLevel() const {
   return level;
 }
 
@@ -50,7 +50,7 @@ bool Spectator::isPlayerView() const {
   return false;
 }
 
-vector<Vec2> Spectator::getUnknownLocations(const Level*) const {
+vector<Vec2> Spectator::getUnknownLocations(WConstLevel) const {
   return {};
 }
 

@@ -531,7 +531,7 @@ void WindowView::drawLevelMap(const CreatureView* creature) {
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {
-  const Level* level = creature->getLevel();
+  WConstLevel level = creature->getLevel();
   Vec2 rad(40, 40);
   Vec2 playerPos = mapGui->getScreenPos().div(mapLayout->getSquareSize());
   Rectangle bounds(playerPos - rad, playerPos + rad);

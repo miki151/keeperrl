@@ -92,7 +92,7 @@ bool MinimapGui::onLeftClick(Vec2 v) {
   return false;
 }
 
-void MinimapGui::update(const Level* level, Rectangle bounds, const CreatureView* creature) {
+void MinimapGui::update(WConstLevel level, Rectangle bounds, const CreatureView* creature) {
   info.bounds = bounds;
   info.enemies.clear();
   info.locations.clear();
@@ -144,7 +144,7 @@ static Vec2 embed(Vec2 levelSize, Vec2 screenSize) {
 
 void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Renderer& r,
     function<void(double, double)> clickFun) {
-  const Level* level = creature->getLevel();
+  WConstLevel level = creature->getLevel();
   double scale = min(double(bounds.width()) / level->getBounds().width(),
       double(bounds.height()) / level->getBounds().height());
   while (1) {

@@ -134,7 +134,7 @@ class MapGui : public GuiElem {
     double x;
     double y;
   } mouseOffset, center;
-  const Level* previousLevel = nullptr;
+  WConstLevel previousLevel = nullptr;
   const CreatureView* previousView = nullptr;
   Table<optional<milliseconds>> lastSquareUpdate;
   optional<Coords> softCenter;

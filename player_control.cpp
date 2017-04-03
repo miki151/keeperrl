@@ -2358,7 +2358,7 @@ bool PlayerControl::isPlayerView() const {
   return false;
 }
 
-vector<Vec2> PlayerControl::getUnknownLocations(const Level*) const {
+vector<Vec2> PlayerControl::getUnknownLocations(WConstLevel) const {
   vector<Vec2> ret;
   for (auto col : getModel()->getCollectives())
     if (col->getLevel() == getLevel() && !getCollective()->isKnownVillainLocation(col))
@@ -2429,11 +2429,11 @@ void PlayerControl::considerNightfallMessage() {
 void PlayerControl::update(bool currentlyActive) {
   updateVisibleCreatures();
   vector<WCreature> addedCreatures;
-  vector<Level*> currentLevels {getLevel()};
+  vector<WLevel> currentLevels {getLevel()};
   if (WCreature c = getControlled())
     if (!contains(currentLevels, c->getLevel()))
       currentLevels.push_back(c->getLevel());
-  for (Level* l : currentLevels)
+  for (WLevel l : currentLevels)
     for (WCreature c : l->getAllCreatures()) 
       if (c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
         if (c->getAttributes().getSpawnType() && !contains(getCreatures(), c) && !getCollective()->wasBanished(c)) {
@@ -2542,7 +2542,7 @@ void PlayerControl::onMemberAdded(WConstCreature c) {
   updateMinionVisibility(c);
 }
 
-Level* PlayerControl::getLevel() const {
+WLevel PlayerControl::getLevel() const {
   return getCollective()->getLevel();
 }
 

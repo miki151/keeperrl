@@ -201,7 +201,7 @@ Vec2 ShortestPath::getTarget() const {
 }
 
 ShortestPath LevelShortestPath::makeShortestPath(WConstCreature creature, Position to, Position from, double mult) {
-  Level* level = from.getLevel();
+  WLevel level = from.getLevel();
   Rectangle bounds = level->getBounds();
   CHECK(to.isSameLevel(from));
   auto entryFun = [=](Vec2 v) { 
@@ -245,7 +245,7 @@ LevelShortestPath::LevelShortestPath(WConstCreature creature, Position to, Posit
     : path(makeShortestPath(creature, to, from, mult)), level(to.getLevel()) {
 }
 
-Level* LevelShortestPath::getLevel() const {
+WLevel LevelShortestPath::getLevel() const {
   return level;
 }
 

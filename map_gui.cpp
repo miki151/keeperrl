@@ -962,7 +962,7 @@ void MapGui::updateEnemyPositions(const vector<Vec2>& positions) {
 }
 
 void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime) {
-  Level* level = view->getLevel();
+  WLevel level = view->getLevel();
   objects[pos].emplace();
   auto& index = *objects[pos];
   view->getViewIndex(pos, index);
@@ -993,7 +993,7 @@ void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime
 void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui,
     const vector<Vec2>& tutorial) {
   tutorialHighlight = tutorial;
-  Level* level = view->getLevel();
+  WLevel level = view->getLevel();
   levelBounds = view->getLevel()->getBounds();
   updateEnemyPositions(view->getVisibleEnemies());
   mouseUI = ui;

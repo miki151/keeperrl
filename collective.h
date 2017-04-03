@@ -51,7 +51,7 @@ class Immigration;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
-  static PCollective create(Level*, TribeId, const CollectiveName&);
+  static PCollective create(WLevel, TribeId, const CollectiveName&);
   void init(CollectiveConfig&&, Immigration&&);
   void addCreature(WCreature, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
@@ -61,7 +61,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void update(bool currentlyActive);
   TribeId getTribeId() const;
   Tribe* getTribe() const;
-  Level* getLevel() const;
+  WLevel getLevel() const;
   Model* getModel() const;
   WGame getGame() const;
   void addNewCreatureMessage(const vector<WCreature>&);
@@ -212,7 +212,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   struct Private {};
 
   public:
-  Collective(Private, Level*, TribeId, const CollectiveName&);
+  Collective(Private, WLevel, TribeId, const CollectiveName&);
 
   protected:
   // From Task::Callback
@@ -282,7 +282,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   EnumMap<SpawnType, vector<WCreature>> SERIAL(bySpawnType);
   PCollectiveControl SERIAL(control);
   HeapAllocated<TribeId> SERIAL(tribe);
-  Level* SERIAL(level) = nullptr;
+  WLevel SERIAL(level) = nullptr;
   HeapAllocated<Territory> SERIAL(territory);
   struct AlarmInfo {
     double SERIAL(finishTime);

@@ -75,19 +75,41 @@ class WeakPointer {
   WeakPointer(const WeakPointer<U>& o) : elem(o.elem) {
   }
 
+  template <typename U>
+  WeakPointer(WeakPointer<U>&& o) : elem(std::move(o.elem)) {
+  }
+
   WeakPointer(T* t) : WeakPointer(t->getThis().template dynamicCast<T>()) {}
 
   WeakPointer() {}
   WeakPointer(std::nullptr_t) {}
 
-  /*WeakPointer<T>& operator = (WeakPointer<T>&& o) {
+  template <typename U>
+  WeakPointer<T>& operator = (WeakPointer<U>&& o) {
     elem = std::move(o.elem);
     return *this;
-  }*/
+  }
+
+  template <typename U>
+  WeakPointer<T>& operator = (const WeakPointer<U>& o) {
+    elem = o.elem;
+    return *this;
+  }
+
+  WeakPointer<T>& operator = (std::nullptr_t) {
+    elem.reset();
+    return *this;
+  }
 
   template <typename U>
   WeakPointer<U> dynamicCast() {
     return WeakPointer<U>(std::dynamic_pointer_cast<U>(elem.lock()));
+  }
+
+  using NoConst = typename std::remove_const<T>::type;
+
+  WeakPointer<NoConst> removeConst() {
+    return WeakPointer<NoConst>(std::const_pointer_cast<NoConst>(elem.lock()));
   }
 
   void clear() {

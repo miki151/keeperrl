@@ -15,7 +15,7 @@ CollectiveBuilder::CollectiveBuilder(const CollectiveConfig& cfg, TribeId t)
     : config(cfg), tribe(t) {
 }
 
-CollectiveBuilder& CollectiveBuilder::setLevel(Level* l) {
+CollectiveBuilder& CollectiveBuilder::setLevel(WLevel l) {
   level = l;
   return *this;
 }

@@ -656,7 +656,7 @@ class GuardArea : public Behaviour {
   SERIALIZE_ALL2(Behaviour, myLevel, area);
 
   private:
-  Level* SERIAL(myLevel) = nullptr;
+  WLevel SERIAL(myLevel) = nullptr;
   Rectangle SERIAL(area);
 };
 
@@ -901,7 +901,7 @@ class SplashMonsters : public Behaviour {
       else
         return creature->moveTowards(Position(*initialPos, creature->getLevel()));
     }
-    if (WConstCreature other = creature->getLevel()->getPosition(splashTarget).getCreature())
+    if (WConstCreature other = Position(splashTarget, creature->getLevel()).getCreature())
       if (creature->isEnemy(other))
         attack = true;
     if (!attack)
@@ -932,7 +932,7 @@ class SplashItems {
     return ret;
   }
 
-  PTask getNextTask(Vec2 position, Level* level) {
+  PTask getNextTask(Vec2 position, WLevel level) {
     if (items.empty())
       return nullptr;
     Vec2 pos = chooseClosest(position);
@@ -990,7 +990,7 @@ class SplashImps : public Behaviour {
 
   void initializeSplashItems() {
     for (Vec2 v : Level::getSplashVisibleBounds()) {
-      vector<WItem> inv = creature->getLevel()->getPosition(v).getItems(
+      vector<WItem> inv = Position(v, creature->getLevel()).getItems(
           [](const WItem it) { return it->getClass() == ItemClass::GOLD || it->getClass() == ItemClass::CORPSE;});
       if (!inv.empty())
         splashItems.addItems(v, inv);

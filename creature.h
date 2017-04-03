@@ -64,7 +64,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void makeMove();
   double getLocalTime() const;
   double getGlobalTime() const;
-  Level* getLevel() const;
+  WLevel getLevel() const;
   WGame getGame() const;
   vector<WCreature> getVisibleEnemies() const;
   vector<WCreature> getVisibleCreatures() const;
@@ -208,7 +208,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction moveTowards(Position, bool stepOnTile = false);
   CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();
-  CreatureAction stayIn(Level*, Rectangle);
+  CreatureAction stayIn(WLevel, Rectangle);
   bool isSameSector(Position) const;
   bool canNavigateTo(Position) const;
 

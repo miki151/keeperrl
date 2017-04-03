@@ -513,7 +513,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
   EntityMap<Creature, int> SERIAL(thiefCount);
   EntitySet<Creature> SERIAL(thieves);
   Rectangle SERIAL(shopArea);
-  Level* SERIAL(myLevel) = nullptr;
+  WLevel SERIAL(myLevel) = nullptr;
   bool SERIAL(firstMove) = true;
 };
 

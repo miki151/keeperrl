@@ -16,7 +16,7 @@ struct ExternalEnemy {
 class ExternalEnemies {
   public:
   ExternalEnemies(RandomGen&, vector<ExternalEnemy>);
-  void update(Level*, double localTime);
+  void update(WLevel, double localTime);
 
   SERIALIZATION_DECL(ExternalEnemies)
 
