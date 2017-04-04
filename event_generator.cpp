@@ -8,7 +8,8 @@ void EventGenerator::addEvent(const GameEvent& e) {
 }
 
 void EventGenerator::removeListener(EventGenerator::SubscriberId id) {
-  CHECK(listeners.count(id));
+  // Seems to crash when an exception is thrown during game loading and the half-read game needs to be destructed.
+  //CHECK(listeners.count(id));
   listeners.erase(id);
 }
 

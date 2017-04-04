@@ -83,33 +83,6 @@ void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<boo
   }
 }
 
-#ifdef OSX // threads have a small stack by default on OSX, and we need a larger stack here for level gen
-static thread::attributes getAttributes() {
-  thread::attributes attr;
-  attr.set_stack_size(4096 * 4000);
-  return attr;
-}
-
-static void runGame(function<void()> game, function<void()> render, bool singleThread) {
-  if (singleThread)
-    game();
-  else {
-    FATAL << "Unimplemented";
-  }
-}
-
-#else
-static void runGame(function<void()> game, function<void()> render, bool singleThread) {
-  if (singleThread)
-    game();
-  else {
-    thread t(render);
-    game();
-    t.join();
-  }
-}
-
-#endif
 static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
   r.loadTilesFromDir(path.subdirectory("orig16"), Vec2(16, 16));
 //  r.loadAltTilesFromDir(path + "/orig16_scaled", Vec2(24, 24));
@@ -241,7 +214,7 @@ static po::parser getCommandLineFlags() {
   flags["help"].description("Print help");
   flags["steam"].description("Run with Steam");
   flags["no_minidump"].description("Don't write minidumps when crashed.");
-  flags["single_thread"].description("Use a single thread for rendering and game logic");
+  flags["single_thread"].description("Do operations like loading, saving and level generation without starting an extra thread.");
   flags["user_dir"].type(po::string).description("Directory for options and save files");
   flags["data_dir"].type(po::string).description("Directory containing the game data");
   flags["upload_url"].type(po::string).description("URL for uploading maps");
@@ -294,7 +267,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     std::cout << commandLineFlags << endl;
     return 0;
   }
-  bool useSingleThread = true;//vars.count("single_thread");
+  bool useSingleThread = commandLineFlags["single_thread"].was_set();
   FatalLog.addOutput(DebugOutput::crash());
   FatalLog.addOutput(DebugOutput::toStream(std::cerr));
 #ifndef RELEASE
@@ -382,10 +355,8 @@ static int keeperMain(po::parser& commandLineFlags) {
 #endif
   std::atomic<bool> gameFinished(false);
   std::atomic<bool> viewInitialized(false);
-  if (useSingleThread) {
-    view->initialize();
-    viewInitialized = true;
-  }
+  view->initialize();
+  viewInitialized = true;
   Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(
       &options,
@@ -405,17 +376,14 @@ static int keeperMain(po::parser& commandLineFlags) {
     loop.modelGenTest(commandLineFlags["worldgen_test"].get().i32, Random, &options);
     return 0;
   }
-  auto game = [&] {
+  try {
+    if (audioError)
+      view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
     while (!viewInitialized) {}
     ofstream systemInfo(userPath.file("system_info.txt").getPath());
     systemInfo << "KeeperRL version " << BUILD_VERSION << " " << BUILD_DATE << std::endl;
     renderer.printSystemInfo(systemInfo);
-    loop.start(tilesPresent); };
-  auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };
-  try {
-    if (audioError)
-      view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
-    runGame(game, render, useSingleThread);
+    loop.start(tilesPresent);
   } catch (GameExitException ex) {
   }
   jukebox.toggle(false);

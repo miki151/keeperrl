@@ -76,28 +76,23 @@ static string getSaveSuffix(GameSaveType t) {
   }
 }
 
-template <typename InputType, typename T>
-static T loadGameUsing(const FilePath& filename) {
+template <typename T>
+static T loadFromFile(const FilePath& filename, bool failSilently) {
   T obj;
   try {
-    InputType input(filename.getPath());
+    CompressedInput input(filename.getPath());
     string discard;
     SavedGameInfo discard2;
     int version;
     input.getArchive() >> version >> discard >> discard2;
     input.getArchive() >> obj;
-  } catch (cereal::Exception& ex) {
+  } catch (std::exception& ex) {
+    if (failSilently)
       return T();
+    else
+      throw ex;
   }
   return obj;
-}
-
-static PGame loadGameFromFile(const FilePath& filename) {
-  return loadGameUsing<CompressedInput, PGame>(filename);
-}
-
-static PModel loadModelFromFile(const FilePath& filename) {
-  return loadGameUsing<CompressedInput, PModel>(filename);
 }
 
 bool isNotFilename(char c) {
@@ -256,8 +251,7 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
       }
       lastAutoSave = gameTime;
     }
-    if (useSingleThread)
-      view->refreshView();
+    view->refreshView();
   }
 }
 
@@ -453,16 +447,16 @@ static thread makeThread(function<void()> fun) {
 void MainLoop::doWithSplash(SplashType type, const string& text, int totalProgress,
     function<void(ProgressMeter&)> fun, function<void()> cancelFun) {
   ProgressMeter meter(1.0 / totalProgress);
-  view->displaySplash(&meter, text, type, cancelFun);
-  if (useSingleThread) {
-    // A bit confusing, but the flag refers to using a single thread for rendering and gameplay.
-    // This forces us to build the world on an extra thread to be able to display a progress bar.
+  if (useSingleThread)
+    fun(meter);
+  else {
+    view->displaySplash(&meter, text, type, cancelFun);
     thread t = makeThread([fun, &meter, this] {
-      try {
-        fun(meter);
-        view->clearSplash();
-      } catch (Progress::InterruptedException) {}
-    });
+        try {
+          fun(meter);
+          view->clearSplash();
+        } catch (Progress::InterruptedException) {}
+      });
     try {
       view->refreshView();
       t.join();
@@ -471,23 +465,17 @@ void MainLoop::doWithSplash(SplashType type, const string& text, int totalProgre
       t.join();
       throw e;
     }
-  } else {
-    fun(meter);
-    view->clearSplash();
   }
 }
 
 void MainLoop::doWithSplash(SplashType type, const string& text, function<void()> fun, function<void()> cancelFun) {
-  view->displaySplash(nullptr, text, type, cancelFun);
-  if (useSingleThread) {
-    // A bit confusing, but the flag refers to using a single thread for rendering and gameplay.
-    // This forces us to build the world on an extra thread to be able to display a progress bar.
+  if (useSingleThread)
+    fun();
+  else {
+    view->displaySplash(nullptr, text, type, cancelFun);
     thread t = makeThread([fun, this] { fun(); view->clearSplash(); });
     view->refreshView();
     t.join();
-  } else {
-    fun();
-    view->clearSplash();
   }
 }
 
@@ -542,7 +530,7 @@ Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, RandomGen& r
           } else if (auto villain = sites[v].getVillain())
             models[v] = modelBuilder.campaignSiteModel("Campaign enemy site", villain->enemyId, villain->type);
           else if (auto retired = sites[v].getRetired()) {
-            if (PModel m = loadModelFromFile(userPath.file(retired->fileInfo.filename)))
+            if (PModel m = loadFromFile<PModel>(userPath.file(retired->fileInfo.filename), !useSingleThread))
               models[v] = std::move(m);
             else {
               failedToLoad = retired->fileInfo.filename;
@@ -575,7 +563,7 @@ PGame MainLoop::loadGame(const FilePath& file) {
         [&] (ProgressMeter& meter) {
           Square::progressMeter = &meter;
           INFO << "Loading from " << file;
-          MEASURE(game = loadGameFromFile(file), "Loading game");
+          MEASURE(game = loadFromFile<PGame>(file, !useSingleThread), "Loading game");
     });
   Square::progressMeter = nullptr;
   return game;

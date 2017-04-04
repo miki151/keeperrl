@@ -14,7 +14,7 @@ optional<pair<string, int>> getNameAndVersionUsing(const FilePath& filename) {
     pair<string, int> ret;
     input.getArchive() >> ret.second >> ret.first;
     return ret;
-  } catch (cereal::Exception&) {
+  } catch (std::exception&) {
     return none;
   }
 }
@@ -32,7 +32,7 @@ optional<SavedGameInfo> getSavedGameInfoUsing(const FilePath& filename) {
     SavedGameInfo ret;
     input.getArchive() >> discard >> discard2 >> ret;
     return ret;
-  } catch (cereal::Exception&) {
+  } catch (std::exception&) {
     return none;
   }
 }
