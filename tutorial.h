@@ -24,5 +24,6 @@ class Tutorial {
   enum class State;
   State SERIAL(state);
   EnumSet<TutorialHighlight> getHighlights(const WGame) const;
-  vector<Vec2> getHighlightedSquares(const WGame) const;
+  vector<Vec2> getHighlightedSquaresHigh(const WGame) const;
+  vector<Vec2> getHighlightedSquaresLow(const WGame) const;
 };

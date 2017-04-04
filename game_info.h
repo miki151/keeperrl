@@ -299,8 +299,9 @@ class TutorialInfo {
   bool HASH(canContinue);
   bool HASH(canGoBack);
   EnumSet<TutorialHighlight> HASH(highlights);
-  vector<Vec2> HASH(highlightedSquares);
-  HASH_ALL(message, canContinue, canGoBack, highlights, highlightedSquares)
+  vector<Vec2> HASH(highlightedSquaresHigh);
+  vector<Vec2> HASH(highlightedSquaresLow);
+  HASH_ALL(message, canContinue, canGoBack, highlights, highlightedSquaresHigh, highlightedSquaresLow)
 };
 
 /** Represents all the game information displayed around the map window.*/

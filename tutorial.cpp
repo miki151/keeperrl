@@ -16,6 +16,7 @@
 #include "immigrant_info.h"
 #include "keybinding.h"
 #include "immigration.h"
+#include "tile_efficiency.h"
 
 SERIALIZE_DEF(Tutorial, state)
 
@@ -28,7 +29,10 @@ enum class Tutorial::State {
   DIG_ROOM,
   BUILD_DOOR,
   BUILD_LIBRARY,
+  DIG_2_ROOMS,
   ACCEPT_IMMIGRANT,
+  TORCHES,
+  FLOORS,
   FINISHED,
 };
 
@@ -47,14 +51,24 @@ bool Tutorial::canContinue(const WGame game) const {
     case State::GET_1000_WOOD:
       return collective->numResource(CollectiveResourceId::WOOD) >= 1000;
     case State::DIG_ROOM:
-      return getHighlightedSquares(game).empty();
+      return getHighlightedSquaresHigh(game).empty();
     case State::BUILD_DOOR:
       return collective->getConstructions().getBuiltCount(FurnitureType::DOOR)
           + collective->getConstructions().getBuiltCount(FurnitureType::LOCKED_DOOR) >= 1;
     case State::BUILD_LIBRARY:
       return collective->getConstructions().getBuiltCount(FurnitureType::BOOK_SHELF) >= 5;
+    case State::DIG_2_ROOMS:
+      return getHighlightedSquaresHigh(game).empty();
     case State::ACCEPT_IMMIGRANT:
       return collective->getCreatures(MinionTrait::FIGHTER).size() >= 1;
+    case State::TORCHES:
+      for (auto furniture : {FurnitureType::BOOK_SHELF, FurnitureType::TRAINING_WOOD})
+        for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
+          if (pos.getLight() < 0.999)
+            return false;
+      return true;
+    case State::FLOORS:
+      return getHighlightedSquaresLow(game).empty();
     case State::FINISHED:
       return false;
   }
@@ -79,8 +93,8 @@ string Tutorial::getMessage() const {
     case State::CONTROLS1:
       return "Time to learn a few controls! Try scrolling the map using the arrow keys or by right clicking on the map "
           "and dragging it.\n \n"
-          "Press SPACE to pause the game and the numbers 1-4 to change its speed. You can "
-          "do the same using the mouse in the bottom left corner of the screen.";
+          "Press SPACE to pause and continue the game. You can still give orders and use all controls while the game "
+          "is paused.";
     case State::GET_1000_WOOD:
       return "Cut some more trees until how have gathered at least 1000 wood.\n \n";
           //"You can mark things in bulk by dragging the mouse or by holding SHIFT and selecting a rectangle. Try it!";
@@ -97,12 +111,22 @@ string Tutorial::getMessage() const {
       return "The first room that you need to build is a library. This is where the Keeper and other minions "
           "will learn spells, and research new technology. It is also a source of mana. Place at least 5 book shelves "
           "in the new room. Remember that book shelves and other furniture blocks your minions' movement.";
+    case State::DIG_2_ROOMS:
+      return "Dig out some more rooms. Change the speed of the game using the keys 1-4 or by clicking in the "
+          "lower left corner if it's taking too long.";
     case State::ACCEPT_IMMIGRANT:
       return "Your dungeon has attracted an orc. "
           "Before your new minion joins you, you must fullfil a few requirements. "
           "Hover your mouse over the immigrant icon to see them. "
           "Once you are ready, accept the immigrant with a left click. Click on the '?' icon immediately to the left "
           "to learn more about immigration.";
+    case State::TORCHES:
+      return "We need to make sure that your minions have good working conditions when studying and training. Place some "
+          "torches in your rooms to light them up. Hover your mouse over the book shelves and training dummies "
+          "and look in the lower right corner to make sure that their efficiency is at least 100.";
+    case State::FLOORS:
+      return "Furniture is more efficient if there is a nice floor underneath and around it. For now you can only "
+          "afford wooden floor, but it should do.";
     case State::FINISHED:
       return "Congratulations, you have completed the tutorial! Go play the game now :)";
   }
@@ -113,6 +137,7 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(const WGame game) const {
     return {};
   switch (state) {
     case State::DIG_ROOM:
+    case State::DIG_2_ROOMS:
     case State::CUT_TREES:
       return {TutorialHighlight::DIG_OR_CUT_TREES};
     case State::BUILD_STORAGE:
@@ -125,24 +150,47 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(const WGame game) const {
       return {TutorialHighlight::BUILD_LIBRARY};
     case State::BUILD_DOOR:
       return {TutorialHighlight::BUILD_DOOR};
+    case State::TORCHES:
+      return {TutorialHighlight::BUILD_TORCH};
+    case State::FLOORS:
+      return {TutorialHighlight::BUILD_FLOOR};
     default:
       return {};
   }
 }
 
-vector<Vec2> Tutorial::getHighlightedSquares(const WGame game) const {
+static void clearDugOutSquares(const WGame game, vector<Vec2>& highlights) {
+  for (auto elem : Iter(highlights)) {
+    if (auto furniture = Position(*elem, game->getPlayerCollective()->getLevel())
+        .getFurniture(FurnitureLayer::MIDDLE))
+      if (furniture->canDestroy(DestroyAction::Type::DIG))
+        continue;
+    elem.markToErase();
+  }
+}
+
+vector<Vec2> Tutorial::getHighlightedSquaresHigh(const WGame game) const {
+  auto collective = game->getPlayerCollective();
   switch (state) {
     case State::DIG_ROOM: {
-      vector<Vec2> ret {Vec2(80, 121), Vec2(80, 120), Vec2(80, 119)};
-      for (Vec2 v : Rectangle::centered(Vec2(80, 116), 2))
+      Vec2 entry(121, 96);
+      int corridor = 6;
+      vector<Vec2> ret;
+      for (int i : Range(0, corridor))
+        ret.push_back(entry - Vec2(0, 1) * i);
+      int roomWidth = 5;
+      for (Vec2 v : Rectangle::centered(entry - Vec2(0, 1) * (corridor + roomWidth / 2), roomWidth / 2))
         ret.push_back(v);
-      for (auto elem : Iter(ret)) {
-        if (auto furniture = Position(*elem, game->getPlayerCollective()->getLevel())
-            .getFurniture(FurnitureLayer::MIDDLE))
-          if (furniture->canDestroy(DestroyAction::Type::DIG))
-            continue;
-        elem.markToErase();
-      }
+      clearDugOutSquares(game, ret);
+      return ret;
+    }
+    case State::DIG_2_ROOMS: {
+      vector<Vec2> ret {Vec2(124, 88), Vec2(121, 85)};
+      for (Vec2 v : Rectangle::centered(Vec2(121, 82), 2))
+        ret.push_back(v);
+      for (Vec2 v : Rectangle::centered(Vec2(127, 88), 2))
+        ret.push_back(v);
+      clearDugOutSquares(game, ret);
       return ret;
     }
     default:
@@ -150,7 +198,25 @@ vector<Vec2> Tutorial::getHighlightedSquares(const WGame game) const {
   }
 }
 
-Tutorial::Tutorial() : state(State::DIG_ROOM) {
+vector<Vec2> Tutorial::getHighlightedSquaresLow(const WGame game) const {
+  auto collective = game->getPlayerCollective();
+  switch (state) {
+    case State::FLOORS: {
+      vector<Vec2> ret;
+      for (auto furniture : {FurnitureType::BOOK_SHELF, FurnitureType::TRAINING_WOOD})
+        for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
+          for (auto floorPos : concat({pos}, pos.neighbors8()))
+            if (collective->canAddFurniture(floorPos, FurnitureType::FLOOR_WOOD1) &&
+                !contains(ret, floorPos.getCoord()))
+              ret.push_back(floorPos.getCoord());
+      return ret;
+    }
+    default:
+      return {};
+  }
+}
+
+Tutorial::Tutorial() : state(State::DIG_2_ROOMS) {
 
 }
 
@@ -160,7 +226,8 @@ void Tutorial::refreshInfo(const WGame game, optional<TutorialInfo>& info) const
       canContinue(game),
       (int) state > 0,
       getHighlights(game),
-      getHighlightedSquares(game)
+      getHighlightedSquaresHigh(game),
+      getHighlightedSquaresLow(game)
   };
 }
 

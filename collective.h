@@ -29,7 +29,6 @@ class Tribe;
 class TribeId;
 class Level;
 class Trigger;
-struct ImmigrantInfo;
 struct AttractionInfo;
 class MinionEquipment;
 class TaskMap;

@@ -30,6 +30,7 @@ class CreatureView;
 class Clock;
 class Creature;
 class Options;
+class TutorialInfo;
 
 class MapGui : public GuiElem {
   public:
@@ -53,7 +54,7 @@ class MapGui : public GuiElem {
   virtual void onMouseRelease(Vec2) override;
   virtual bool onKeyPressed2(SDL::SDL_Keysym) override;
 
-  void updateObjects(CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, const vector<Vec2>& tutorial);
+  void updateObjects(CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, const optional<TutorialInfo>&);
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void setHint(const vector<string>&);
@@ -186,5 +187,6 @@ class MapGui : public GuiElem {
   GuiFactory* guiFactory;
   optional<UniqueEntity<Creature>::Id> getDraggedCreature() const;
   void setDraggedCreature(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
-  vector<Vec2> tutorialHighlight;
+  vector<Vec2> tutorialHighlightLow;
+  vector<Vec2> tutorialHighlightHigh;
 };

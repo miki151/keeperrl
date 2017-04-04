@@ -172,7 +172,9 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
                 floor.name + "  (+" + efficiency + ")",
                 {}, floor.name + " floor. +" + efficiency + " efficiency to surrounding tiles.", i == 0 ? 'f' : 0,
                       "Floors", i == 0));
-    };
+      if (floor.type == FurnitureType::FLOOR_WOOD1 || floor.type == FurnitureType::FLOOR_WOOD2)
+        buildInfo->back().setTutorialHighlight(TutorialHighlight::BUILD_FLOOR);
+    }
     append(*buildInfo, {
              BuildInfo({FurnitureLayer::FLOOR}, "Remove floor", "", 0, "Floors"),
       BuildInfo(ZoneId::STORAGE_RESOURCES, ViewId::STORAGE_RESOURCES, "Resources",
@@ -245,7 +247,8 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
         "Build it to pass over water or lava.", 0, "Installations"),
       BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 20}}, "Barricade",
         {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "", 0, "Installations"),
-      BuildInfo(BuildInfo::TORCH, "Torch", "Place it on tiles next to a wall.", 'c', "Installations"),
+      BuildInfo(BuildInfo::TORCH, "Torch", "Place it on tiles next to a wall.", 'c', "Installations")
+          .setTutorialHighlight(TutorialHighlight::BUILD_TORCH),
       BuildInfo({FurnitureType::KEEPER_BOARD, {ResourceId::WOOD, 80}}, "Message board", {},
           "A board where you can leave a message for other players.", 0, "Installations"),
       BuildInfo({FurnitureType::EYEBALL, {ResourceId::MANA, 10}}, "Eyeball", {},

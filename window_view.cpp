@@ -553,8 +553,7 @@ void WindowView::updateView(CreatureView* view, bool noRefresh) {
   rebuildGui();
   mapGui->setSpriteMode(currentTileLayout.sprites);
   bool spectator = gameInfo.infoType == GameInfo::InfoType::SPECTATOR;
-  mapGui->updateObjects(view, mapLayout, currentTileLayout.sprites || spectator, !spectator,
-      gameInfo.tutorial ? gameInfo.tutorial->highlightedSquares : vector<Vec2>());
+  mapGui->updateObjects(view, mapLayout, currentTileLayout.sprites || spectator, !spectator, gameInfo.tutorial);
   updateMinimap(view);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     guiBuilder.setGameSpeed(GuiBuilder::GameSpeed::NORMAL);

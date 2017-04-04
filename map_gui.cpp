@@ -28,6 +28,7 @@
 #include "creature_view.h"
 #include "options.h"
 #include "drag_and_drop.h"
+#include "game_info.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -756,7 +757,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
           if (isRenderedHighlight(*index, highlight)  && isRenderedHighlightLow(*index, highlight) == lowHighlights)
             renderHighlight(renderer, pos, size, *index, highlight);
       }
-  for (Vec2 wpos : tutorialHighlight) {
+  for (Vec2 wpos : lowHighlights ? tutorialHighlightLow : tutorialHighlightHigh) {
     Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
     if ((currentTimeReal.count() / 1000) % 2 == 0)
       renderTexturedHighlight(renderer, pos, size, Color(255, 255, 0, 40));
@@ -991,8 +992,14 @@ void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime
 }
 
 void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui,
-    const vector<Vec2>& tutorial) {
-  tutorialHighlight = tutorial;
+    const optional<TutorialInfo>& tutorial) {
+  if (tutorial) {
+    tutorialHighlightLow = tutorial->highlightedSquaresLow;
+    tutorialHighlightHigh = tutorial->highlightedSquaresHigh;
+  } else {
+    tutorialHighlightLow.clear();
+    tutorialHighlightHigh.clear();
+  }
   WLevel level = view->getLevel();
   levelBounds = view->getLevel()->getBounds();
   updateEnemyPositions(view->getVisibleEnemies());
