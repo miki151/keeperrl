@@ -20,6 +20,7 @@
 
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
+#define ProgramOptions_no_colors
 #include "extern/ProgramOptions.h"
 
 #include <exception>
