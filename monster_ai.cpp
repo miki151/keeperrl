@@ -932,6 +932,8 @@ class SplashItems {
     return ret;
   }
 
+  OwnerPointer<TaskCallback> callbackDummy = makeOwner<TaskCallback>();
+
   PTask getNextTask(Vec2 position, WLevel level) {
     if (items.empty())
       return nullptr;
@@ -950,7 +952,7 @@ class SplashItems {
       return nullptr;
     Vec2 target = Random.choose(targets);
     removeElement(targets, target);
-    return Task::bringItem(nullptr, Position(pos, level), it, {Position(target, level)}, 100);
+    return Task::bringItem(callbackDummy.get(), Position(pos, level), it, {Position(target, level)}, 100);
   }
 
   void setInitialized(const FilePath& splashPath) {

@@ -270,15 +270,13 @@ class PickItem : public Task {
   }
 
   virtual void cancel() override {
-    if (callback)
-      callback->onCantPickItem(items);
+    callback->onCantPickItem(items);
   }
 
   virtual MoveInfo getMove(WCreature c) override {
     CHECK(!pickedUp);
     if (!itemsExist(position)) {
-      if (callback)
-        callback->onCantPickItem(items);
+      callback->onCantPickItem(items);
       setDone();
       return NoMove;
     }
@@ -289,8 +287,7 @@ class PickItem : public Task {
           hereItems.push_back(it);
           items.erase(it);
         }
-      if (callback)
-        callback->onCantPickItem(items);
+      callback->onCantPickItem(items);
       if (hereItems.empty()) {
         setDone();
         return NoMove;
@@ -300,12 +297,10 @@ class PickItem : public Task {
         return {1.0, action.append([=](WCreature c) {
           pickedUp = true;
           onPickedUp();
-          if (callback)
-            callback->onTaskPickedUp(position, hereItems);
+          callback->onTaskPickedUp(position, hereItems);
         })}; 
       else {
-        if (callback)
-          callback->onCantPickItem(items);
+        callback->onCantPickItem(items);
         setDone();
         return NoMove;
       }
@@ -313,8 +308,7 @@ class PickItem : public Task {
     if (auto action = c->moveTowards(position, true))
       return action;
     else if (--tries == 0) {
-      if (callback)
-        callback->onCantPickItem(items);
+      callback->onCantPickItem(items);
       setDone();
     }
     return NoMove;
@@ -595,8 +589,7 @@ class ApplySquare : public Task {
       if (auto action = getAction(c))
         return {1.0, action.append([=](WCreature c) {
             setDone();
-            if (callback)
-              callback->onAppliedSquare(c, *position);
+            callback->onAppliedSquare(c, *position);
         })};
       else {
         setDone();

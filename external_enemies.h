@@ -21,6 +21,7 @@ class ExternalEnemies {
   SERIALIZATION_DECL(ExternalEnemies)
 
   private:
+  OwnerPointer<TaskCallback> callbackDummy = makeOwner<TaskCallback>();
   vector<ExternalEnemy> SERIAL(enemies);
   vector<optional<int>> SERIAL(attackTime);
   PTask getAttackTask(WCollective target, AttackBehaviour);
