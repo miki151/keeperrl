@@ -92,18 +92,22 @@ LIBS = -L/usr/lib/x86_64-linux-gnu $(OPENGL_LIBS) -lSDL2 -lopenal -lvorbis -lvor
 
 OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))
 DEPS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.d))
+DEPS += $(OBJDIR)/stdafx.h.d
 
 ##############################################################################
 
+all:
+	@$(MAKE) --no-print-directory info
+	@$(MAKE) --no-print-directory compile
 
-all: gen_version $(NAME)
+compile: gen_version $(NAME)
 
-stdafx.h.gch: stdafx.h
+$(OBJDIR)/stdafx.h.gch: stdafx.h
 	$(CC) -x c++-header $< -MMD $(CFLAGS) -o $@
 
 ifndef OPT
-PCH = stdafx.h.gch
-PCHINC = -include-pch stdafx.h.gch
+PCH = $(OBJDIR)/stdafx.h.gch
+PCHINC = -include-pch $(OBJDIR)/stdafx.h.gch
 endif
 
 $(OBJDIR)/%.o: %.cpp ${PCH}
@@ -123,6 +127,8 @@ run: $(NAME)
 
 run_gdb: $(NAME)
 	./run.sh ${RUN_FLAGS}
+info:
+	@$(CC) -v 2>&1 | head -n 2
 
 ifdef RELEASE
 gen_version:
@@ -140,6 +146,6 @@ clean:
 	$(RM) $(OBJDIR)-opt/*.o
 	$(RM) $(OBJDIR)-opt/*.d
 	$(RM) $(NAME)
-	$(RM) stdafx.h.gch
+	$(RM) $(OBJDIR)/stdafx.h.*
 
 -include $(DEPS)

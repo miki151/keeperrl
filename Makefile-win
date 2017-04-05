@@ -72,7 +72,11 @@ DEPS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.d))
 
 ##############################################################################
 
-all: gen_version $(NAME)
+all:
+	@$(MAKE) --no-print-directory info
+	@$(MAKE) --no-print-directory compile
+
+compile: gen_version $(NAME)
 
 stdafx.h.gch: stdafx.h $(wildcard *.h)
 	$(CC) -MMD $(CFLAGS) -c $< -o $@
@@ -89,6 +93,8 @@ test: $(OBJS) $(OBJDIR)/test.o
 gen_version:
 	bash ./gen_version.sh
 
+info:
+	@$(CC) -v 2>&1 | head -n 2
 clean:
 	$(RM) $(OBJDIR)/*.o
 	$(RM) $(OBJDIR)/*.d
