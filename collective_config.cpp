@@ -219,12 +219,12 @@ const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
 
 const vector<FloorInfo>& CollectiveConfig::getFloors() {
   static vector<FloorInfo> ret = {
-    {FurnitureType::FLOOR_WOOD1, {CollectiveResourceId::WOOD, 10}, "Wooden", 0.02},
-    {FurnitureType::FLOOR_WOOD2, {CollectiveResourceId::WOOD, 10}, "Wooden", 0.02},
-    {FurnitureType::FLOOR_STONE1, {CollectiveResourceId::STONE, 10}, "Stone", 0.04},
-    {FurnitureType::FLOOR_STONE2, {CollectiveResourceId::STONE, 10}, "Stone", 0.04},
-    {FurnitureType::FLOOR_CARPET1, {CollectiveResourceId::GOLD, 10}, "Carpet", 0.06},
-    {FurnitureType::FLOOR_CARPET2, {CollectiveResourceId::GOLD, 10}, "Carpet", 0.06},
+    {FurnitureType::FLOOR_WOOD1, {CollectiveResourceId::WOOD, 2}, "Wooden", 0.02},
+    {FurnitureType::FLOOR_WOOD2, {CollectiveResourceId::WOOD, 2}, "Wooden", 0.02},
+    {FurnitureType::FLOOR_STONE1, {CollectiveResourceId::STONE, 2}, "Stone", 0.04},
+    {FurnitureType::FLOOR_STONE2, {CollectiveResourceId::STONE, 2}, "Stone", 0.04},
+    {FurnitureType::FLOOR_CARPET1, {CollectiveResourceId::GOLD, 2}, "Carpet", 0.06},
+    {FurnitureType::FLOOR_CARPET2, {CollectiveResourceId::GOLD, 2}, "Carpet", 0.06},
   };
   return ret;
 }
@@ -432,49 +432,49 @@ const WorkshopInfo& CollectiveConfig::getWorkshopInfo(WorkshopType type) {
 unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
   return unique_ptr<Workshops>(new Workshops({
       {WorkshopType::WORKSHOP, {
-          Workshops::Item::fromType(ItemId::FIRST_AID_KIT, 1, {CollectiveResourceId::WOOD, 20}),
-          Workshops::Item::fromType(ItemId::LEATHER_ARMOR, 6, {CollectiveResourceId::WOOD, 100}),
-          Workshops::Item::fromType(ItemId::LEATHER_HELM, 1, {CollectiveResourceId::WOOD, 30}),
-          Workshops::Item::fromType(ItemId::LEATHER_BOOTS, 2, {CollectiveResourceId::WOOD, 50}),
-          Workshops::Item::fromType(ItemId::LEATHER_GLOVES, 1, {CollectiveResourceId::WOOD, 10}),
-          Workshops::Item::fromType(ItemId::CLUB, 3, {CollectiveResourceId::WOOD, 50}),
-          Workshops::Item::fromType(ItemId::HEAVY_CLUB, 5, {CollectiveResourceId::WOOD, 100})
+          Workshops::Item::fromType(ItemId::FIRST_AID_KIT, 1, {CollectiveResourceId::WOOD, 4}),
+          Workshops::Item::fromType(ItemId::LEATHER_ARMOR, 6, {CollectiveResourceId::WOOD, 20}),
+          Workshops::Item::fromType(ItemId::LEATHER_HELM, 1, {CollectiveResourceId::WOOD, 6}),
+          Workshops::Item::fromType(ItemId::LEATHER_BOOTS, 2, {CollectiveResourceId::WOOD, 10}),
+          Workshops::Item::fromType(ItemId::LEATHER_GLOVES, 1, {CollectiveResourceId::WOOD, 2}),
+          Workshops::Item::fromType(ItemId::CLUB, 3, {CollectiveResourceId::WOOD, 10}),
+          Workshops::Item::fromType(ItemId::HEAVY_CLUB, 5, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemId::BOW, 13, {CollectiveResourceId::WOOD, 100}).setTechId(TechId::ARCHERY),
-          Workshops::Item::fromType(ItemId::ARROW, 5, {CollectiveResourceId::WOOD, 50})
+          Workshops::Item::fromType(ItemId::BOW, 13, {CollectiveResourceId::WOOD, 20}).setTechId(TechId::ARCHERY),
+          Workshops::Item::fromType(ItemId::ARROW, 5, {CollectiveResourceId::WOOD, 10})
                   .setBatchSize(20).setTechId(TechId::ARCHERY),
-          Workshops::Item::fromType(ItemId::BOULDER_TRAP_ITEM, 20, {CollectiveResourceId::STONE, 250})
+          Workshops::Item::fromType(ItemId::BOULDER_TRAP_ITEM, 20, {CollectiveResourceId::STONE, 50})
                   .setTechId(TechId::TRAPS),
           Workshops::Item::fromType({ItemId::TRAP_ITEM,
-              TrapInfo({TrapType::POISON_GAS, EffectId::EMIT_POISON_GAS})}, 10, {CollectiveResourceId::WOOD, 100})
+              TrapInfo({TrapType::POISON_GAS, EffectId::EMIT_POISON_GAS})}, 10, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TRAPS),
           Workshops::Item::fromType({ItemId::TRAP_ITEM,
-              TrapInfo({TrapType::ALARM, EffectId::ALARM})}, 8, {CollectiveResourceId::WOOD, 100})
+              TrapInfo({TrapType::ALARM, EffectId::ALARM})}, 8, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TRAPS),
           Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapInfo({TrapType::WEB,
-                EffectType(EffectId::LASTING, LastingEffect::ENTANGLED)})}, 8, {CollectiveResourceId::WOOD, 100})
+                EffectType(EffectId::LASTING, LastingEffect::ENTANGLED)})}, 8, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TRAPS),
           Workshops::Item::fromType({ItemId::TRAP_ITEM,
-              TrapInfo({TrapType::SURPRISE, EffectId::TELE_ENEMIES})}, 8, {CollectiveResourceId::WOOD, 100})
+              TrapInfo({TrapType::SURPRISE, EffectId::TELE_ENEMIES})}, 8, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TRAPS),
           Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapInfo({TrapType::TERROR,
-                EffectType(EffectId::LASTING, LastingEffect::PANIC)})}, 8, {CollectiveResourceId::WOOD, 100})
+                EffectType(EffectId::LASTING, LastingEffect::PANIC)})}, 8, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TRAPS),
       }},
       {WorkshopType::FORGE, {
-          Workshops::Item::fromType(ItemId::SWORD, 10, {CollectiveResourceId::IRON, 100}),
-          Workshops::Item::fromType(ItemId::STEEL_SWORD, 20, {CollectiveResourceId::STEEL, 100})
+          Workshops::Item::fromType(ItemId::SWORD, 10, {CollectiveResourceId::IRON, 20}),
+          Workshops::Item::fromType(ItemId::STEEL_SWORD, 20, {CollectiveResourceId::STEEL, 20})
                   .setTechId(TechId::STEEL_MAKING),
-          Workshops::Item::fromType(ItemId::CHAIN_ARMOR, 30, {CollectiveResourceId::IRON, 200}),
-          Workshops::Item::fromType(ItemId::STEEL_ARMOR, 60, {CollectiveResourceId::STEEL, 200})
+          Workshops::Item::fromType(ItemId::CHAIN_ARMOR, 30, {CollectiveResourceId::IRON, 40}),
+          Workshops::Item::fromType(ItemId::STEEL_ARMOR, 60, {CollectiveResourceId::STEEL, 40})
                   .setTechId(TechId::STEEL_MAKING),
-          Workshops::Item::fromType(ItemId::IRON_HELM, 8, {CollectiveResourceId::IRON, 80}),
-          Workshops::Item::fromType(ItemId::IRON_BOOTS, 12, {CollectiveResourceId::IRON, 120}),
-          Workshops::Item::fromType(ItemId::WAR_HAMMER, 16, {CollectiveResourceId::IRON, 190})
+          Workshops::Item::fromType(ItemId::IRON_HELM, 8, {CollectiveResourceId::IRON, 16}),
+          Workshops::Item::fromType(ItemId::IRON_BOOTS, 12, {CollectiveResourceId::IRON, 24}),
+          Workshops::Item::fromType(ItemId::WAR_HAMMER, 16, {CollectiveResourceId::IRON, 40})
                   .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemId::BATTLE_AXE, 22, {CollectiveResourceId::IRON, 250})
+          Workshops::Item::fromType(ItemId::BATTLE_AXE, 22, {CollectiveResourceId::IRON, 50})
                   .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemId::STEEL_BATTLE_AXE, 44, {CollectiveResourceId::STEEL, 250})
+          Workshops::Item::fromType(ItemId::STEEL_BATTLE_AXE, 44, {CollectiveResourceId::STEEL, 50})
                   .setTechId(TechId::STEEL_MAKING),
       }},
       {WorkshopType::LABORATORY, {
@@ -502,15 +502,15 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
       }},
       {WorkshopType::JEWELER, {
           Workshops::Item::fromType({ItemId::RING, LastingEffect::POISON_RESISTANT}, 10,
-              {CollectiveResourceId::GOLD, 100}),
+              {CollectiveResourceId::GOLD, 20}),
           Workshops::Item::fromType({ItemId::RING, LastingEffect::FIRE_RESISTANT}, 10,
-              {CollectiveResourceId::GOLD, 150}),
-          Workshops::Item::fromType(ItemId::WARNING_AMULET, 10, {CollectiveResourceId::GOLD, 150}),
-          Workshops::Item::fromType(ItemId::DEFENSE_AMULET, 10, {CollectiveResourceId::GOLD, 200}),
-          Workshops::Item::fromType(ItemId::HEALING_AMULET, 10, {CollectiveResourceId::GOLD, 300}),
+              {CollectiveResourceId::GOLD, 30}),
+          Workshops::Item::fromType(ItemId::WARNING_AMULET, 10, {CollectiveResourceId::GOLD, 30}),
+          Workshops::Item::fromType(ItemId::DEFENSE_AMULET, 10, {CollectiveResourceId::GOLD, 40}),
+          Workshops::Item::fromType(ItemId::HEALING_AMULET, 10, {CollectiveResourceId::GOLD, 60}),
       }},
       {WorkshopType::STEEL_FURNACE, {
-          Workshops::Item::fromType(ItemId::STEEL_INGOT, 50, {CollectiveResourceId::IRON, 150}).setBatchSize(50),
+          Workshops::Item::fromType(ItemId::STEEL_INGOT, 50, {CollectiveResourceId::IRON, 30}).setBatchSize(10),
       }},
   }));
 }

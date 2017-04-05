@@ -141,16 +141,16 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration)
           .addRequirement(0.1, AttractionInfo{2, FurnitureType::TRAINING_IRON}),
       ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
           .addRequirement(0.0, RecruitmentInfo{{EnemyId::DARK_ELVES}, 3, MinionTrait::FIGHTER})
-          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100)),
+          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 20)),
       ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
           .addRequirement(0.0, RecruitmentInfo{{EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
-          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 15)),
+          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 5)),
       ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
           .addRequirement(0.0, RecruitmentInfo{{EnemyId::HARPY_CAVE}, 3, MinionTrait::FIGHTER})
-          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 60)),
+          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12)),
       ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
           .addRequirement(0.0, RecruitmentInfo{{EnemyId::OGRE_CAVE, EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
-          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 60)),
+          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12)),
       ImmigrantInfo(random.permutation({CreatureId::SPECIAL_HMBN, CreatureId::SPECIAL_HMBW,
               CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}), {MinionTrait::FIGHTER})
           .addRequirement(0.0, TechId::HUMANOID_MUT)

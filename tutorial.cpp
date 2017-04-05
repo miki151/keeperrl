@@ -25,7 +25,7 @@ enum class Tutorial::State {
   CUT_TREES,
   BUILD_STORAGE,
   CONTROLS1,
-  GET_1000_WOOD,
+  GET_200_WOOD,
   DIG_ROOM,
   BUILD_DOOR,
   BUILD_LIBRARY,
@@ -48,8 +48,8 @@ bool Tutorial::canContinue(const WGame game) const {
       return collective->getZones().getPositions(ZoneId::STORAGE_RESOURCES).size() >= 9;
     case State::CONTROLS1:
       return true;
-    case State::GET_1000_WOOD:
-      return collective->numResource(CollectiveResourceId::WOOD) >= 1000;
+    case State::GET_200_WOOD:
+      return collective->numResource(CollectiveResourceId::WOOD) >= 200;
     case State::DIG_ROOM:
       return getHighlightedSquaresHigh(game).empty();
     case State::BUILD_DOOR:
@@ -95,8 +95,8 @@ string Tutorial::getMessage() const {
           "and dragging it.\n \n"
           "Press SPACE to pause and continue the game. You can still give orders and use all controls while the game "
           "is paused.";
-    case State::GET_1000_WOOD:
-      return "Cut some more trees until how have gathered at least 1000 wood.\n \n";
+    case State::GET_200_WOOD:
+      return "Cut some more trees until how have gathered at least 200 wood.\n \n";
           //"You can mark things in bulk by dragging the mouse or by holding SHIFT and selecting a rectangle. Try it!";
     case State::DIG_ROOM:
       return "Time to strike the mountain! Start by digging out a one tile-wide tunnel and finish it with at least "
@@ -145,7 +145,7 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(const WGame game) const {
       return {TutorialHighlight::DIG_OR_CUT_TREES, TutorialHighlight::REMOVE_CONSTRUCTION};
     case State::BUILD_STORAGE:
       return {TutorialHighlight::RESOURCE_STORAGE};
-    case State::GET_1000_WOOD:
+    case State::GET_200_WOOD:
       return {TutorialHighlight::WOOD_RESOURCE};
     case State::ACCEPT_IMMIGRANT:
       return {TutorialHighlight::ACCEPT_IMMIGRANT, TutorialHighlight::BUILD_BED, TutorialHighlight::TRAINING_ROOM};

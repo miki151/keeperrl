@@ -135,7 +135,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.locationName = getVillageName();
             c.race = "humans";
             c.buildingId = BuildingId::WOOD_CASTLE;
-            c.stockpiles = LIST({StockpileInfo::GOLD, 800});
+            c.stockpiles = LIST({StockpileInfo::GOLD, 160});
             c.guardId = CreatureId::WARRIOR;
             c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::BEAST_MUT);
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
@@ -155,7 +155,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
-              c.ransom = make_pair(0.8, random.get(500, 700));));
+              c.ransom = make_pair(0.8, random.get(100, 140));));
     case EnemyId::KNIGHTS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CASTLE;
@@ -164,7 +164,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.numCreatures = random.get(20, 26);
             c.locationName = getVillageName();
             c.race = "humans";
-            c.stockpiles = LIST({StockpileInfo::GOLD, 700});
+            c.stockpiles = LIST({StockpileInfo::GOLD, 140});
             c.buildingId = BuildingId::BRICK;
             c.guardId = CreatureId::CASTLE_GUARD;
             c.shopFactory = ItemFactory::villageShop();
@@ -186,7 +186,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
-              c.ransom = make_pair(0.9, random.get(1400, 2000));),
+              c.ransom = make_pair(0.9, random.get(280, 400));),
           random.roll(4) ? LevelConnection{LevelConnection::MAZE, get(EnemyId::MINOTAUR)}
               : optional<LevelConnection>(none));
     case EnemyId::MINOTAUR:
@@ -249,7 +249,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.locationName = getVillageName();
             c.race = "dwarves";
             c.buildingId = BuildingId::DUNGEON;
-            c.stockpiles = LIST({StockpileInfo::GOLD, 1000}, {StockpileInfo::MINERALS, 600});
+            c.stockpiles = LIST({StockpileInfo::GOLD, 200}, {StockpileInfo::MINERALS, 120});
             c.shopFactory = ItemFactory::dwarfShop();
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
@@ -268,7 +268,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                 AttackTriggerId::FINISH_OFF,
                 AttackTriggerId::PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 3);
-            c.ransom = make_pair(0.8, random.get(1200, 1600));));
+            c.ransom = make_pair(0.8, random.get(240, 320));));
     case EnemyId::ELVES:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE2;
@@ -277,7 +277,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.locationName = getVillageName();
             c.tribe = TribeId::getElf();
             c.race = "elves";
-            c.stockpiles = LIST({StockpileInfo::GOLD, 800});
+            c.stockpiles = LIST({StockpileInfo::GOLD, 100});
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);
             c.furniture = FurnitureFactory::roomFurniture(TribeId::getPest());),
@@ -315,7 +315,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                   {AttackTriggerId::NUM_CONQUERED, 3});
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::CAMP_AND_SPAWN,
                 CreatureFactory::elementals(TribeId::getHuman()));
-              c.ransom = make_pair(0.5, random.get(200, 400));),
+              c.ransom = make_pair(0.5, random.get(40, 80));),
           LevelConnection{LevelConnection::TOWER, get(EnemyId::ELEMENTALIST_ENTRY)});
     case EnemyId::NO_AGGRO_BANDITS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -333,9 +333,9 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
       ret.villain = CONSTRUCT(VillageBehaviour,
               c.minPopulation = 0;
               c.minTeamSize = 3;
-              c.triggers = LIST({AttackTriggerId::GOLD, 500});
+              c.triggers = LIST({AttackTriggerId::GOLD, 100});
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::STEAL_GOLD);
-              c.ransom = make_pair(0.5, random.get(200, 400)););
+              c.ransom = make_pair(0.5, random.get(40, 80)););
       return ret;
     }
     case EnemyId::LIZARDMEN:
@@ -581,7 +581,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.numCreatures = random.get(3, 7);
             c.race = "kobolds";
             c.buildingId = BuildingId::DUNGEON;
-            c.stockpiles = LIST({StockpileInfo::MINERALS, 300});),
+            c.stockpiles = LIST({StockpileInfo::MINERALS, 60});),
           CollectiveConfig::noImmigrants());
     case EnemyId::DWARF_CAVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -591,8 +591,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.numCreatures = random.get(2, 5);
             c.race = "dwarves";
             c.buildingId = BuildingId::DUNGEON;
-            c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 300},
-                StockpileInfo{StockpileInfo::GOLD, 300}));
+            c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 60},
+                StockpileInfo{StockpileInfo::GOLD, 60}));
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants(),
@@ -601,7 +601,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.minTeamSize = 1;
             c.triggers = LIST(AttackTriggerId::SELF_VICTIMS, AttackTriggerId::STOLEN_ITEMS);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
-            c.ransom = make_pair(0.5, random.get(200, 400));));
+            c.ransom = make_pair(0.5, random.get(40, 80));));
   }
 }
 
