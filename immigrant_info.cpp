@@ -6,6 +6,7 @@
 #include "collective.h"
 #include "creature.h"
 #include "creature_attributes.h"
+#include "tutorial.h"
 
 SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto, tutorialHighlight)
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
@@ -176,4 +177,9 @@ WCollective RecruitmentInfo::findEnemy(WGame game) const {
       if (enemyId.contains(*id))
         return col;
   return nullptr;
+}
+
+template <typename Archive>
+void TutorialRequirement::serialize(Archive& ar, const unsigned) {
+  serializeAll(ar, tutorial);
 }

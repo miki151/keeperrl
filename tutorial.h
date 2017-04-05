@@ -11,6 +11,7 @@ class Tutorial {
   void refreshInfo(const WGame, optional<TutorialInfo>&) const;
   void continueTutorial(const WGame);
   void goBack();
+  bool showImmigrant() const;
 
   static void createTutorial(Game&);
 

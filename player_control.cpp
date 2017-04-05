@@ -238,7 +238,8 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "Orders"),
       BuildInfo(BuildInfo::DISPATCH, "Prioritize task", "Click on an existing task to give it a high priority.", 'a',
           "Orders"),
-      BuildInfo({FurnitureLayer::CEILING, FurnitureLayer::MIDDLE}, "Remove construction", "", 'e', "Orders"),
+      BuildInfo({FurnitureLayer::CEILING, FurnitureLayer::MIDDLE}, "Remove construction", "", 'e', "Orders")
+          .setTutorialHighlight(TutorialHighlight::REMOVE_CONSTRUCTION),
       BuildInfo(BuildInfo::FORBID_ZONE, "Forbid zone", "Mark tiles to keep minions from entering.", 0, "Orders"),
       BuildInfo({FurnitureType::DOOR, {ResourceId::WOOD, 20}}, "Door", {},
           "Click on a built door to lock it.", 'o', "Installations")
@@ -1309,6 +1310,8 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
             requirements.push_back("Ally must be discovered and have recruits available");
           else
             requirements.push_back("Recruit is not available in this game");
+        },
+        [&](const TutorialRequirement&) {
         }
     ));
     if (auto limit = elem->getLimit())

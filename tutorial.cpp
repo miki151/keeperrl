@@ -64,7 +64,7 @@ bool Tutorial::canContinue(const WGame game) const {
     case State::TORCHES:
       for (auto furniture : {FurnitureType::BOOK_SHELF, FurnitureType::TRAINING_WOOD})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
-          if (pos.getLight() < 0.999)
+          if (collective->getTileEfficiency().getEfficiency(pos) < 0.99)
             return false;
       return true;
     case State::FLOORS:
@@ -112,7 +112,9 @@ string Tutorial::getMessage() const {
           "will learn spells, and research new technology. It is also a source of mana. Place at least 5 book shelves "
           "in the new room. Remember that book shelves and other furniture blocks your minions' movement.";
     case State::DIG_2_ROOMS:
-      return "Dig out some more rooms. Change the speed of the game using the keys 1-4 or by clicking in the "
+      return "Dig out some more rooms. "
+          "If the library is blocking your tunnels, use the 'remove construction' order to get it out of the way.\n \n"
+          "Change the speed of the game using the keys 1-4 or by clicking in the "
           "lower left corner if it's taking too long.";
     case State::ACCEPT_IMMIGRANT:
       return "Your dungeon has attracted an orc. "
@@ -137,9 +139,10 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(const WGame game) const {
     return {};
   switch (state) {
     case State::DIG_ROOM:
-    case State::DIG_2_ROOMS:
     case State::CUT_TREES:
       return {TutorialHighlight::DIG_OR_CUT_TREES};
+    case State::DIG_2_ROOMS:
+      return {TutorialHighlight::DIG_OR_CUT_TREES, TutorialHighlight::REMOVE_CONSTRUCTION};
     case State::BUILD_STORAGE:
       return {TutorialHighlight::RESOURCE_STORAGE};
     case State::GET_1000_WOOD:
@@ -171,24 +174,25 @@ static void clearDugOutSquares(const WGame game, vector<Vec2>& highlights) {
 
 vector<Vec2> Tutorial::getHighlightedSquaresHigh(const WGame game) const {
   auto collective = game->getPlayerCollective();
+  const Vec2 entry(122, 84);
+  const int corridor = 6;
+  int roomWidth = 5;
+  const Vec2 firstRoom(entry - Vec2(0, corridor + roomWidth / 2));
   switch (state) {
     case State::DIG_ROOM: {
-      Vec2 entry(121, 96);
-      int corridor = 6;
       vector<Vec2> ret;
       for (int i : Range(0, corridor))
         ret.push_back(entry - Vec2(0, 1) * i);
-      int roomWidth = 5;
-      for (Vec2 v : Rectangle::centered(entry - Vec2(0, 1) * (corridor + roomWidth / 2), roomWidth / 2))
+      for (Vec2 v : Rectangle::centered(firstRoom, roomWidth / 2))
         ret.push_back(v);
       clearDugOutSquares(game, ret);
       return ret;
     }
     case State::DIG_2_ROOMS: {
-      vector<Vec2> ret {Vec2(124, 88), Vec2(121, 85)};
-      for (Vec2 v : Rectangle::centered(Vec2(121, 82), 2))
+      vector<Vec2> ret {firstRoom + Vec2(roomWidth / 2 + 1, 0), firstRoom - Vec2(0, roomWidth / 2 + 1)};
+      for (Vec2 v : Rectangle::centered(firstRoom + Vec2(roomWidth + 1, 0), 2))
         ret.push_back(v);
-      for (Vec2 v : Rectangle::centered(Vec2(127, 88), 2))
+      for (Vec2 v : Rectangle::centered(firstRoom - Vec2(0, roomWidth + 1), 2))
         ret.push_back(v);
       clearDugOutSquares(game, ret);
       return ret;
@@ -216,7 +220,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(const WGame game) const {
   }
 }
 
-Tutorial::Tutorial() : state(State::DIG_2_ROOMS) {
+Tutorial::Tutorial() : state(State::WELCOME) {
 
 }
 
@@ -241,8 +245,13 @@ void Tutorial::goBack() {
     state = (State)((int) state - 1);
 }
 
+bool Tutorial::showImmigrant() const {
+  return state == State::ACCEPT_IMMIGRANT;
+}
+
 void Tutorial::createTutorial(Game& game) {
-  game.getPlayerControl()->setTutorial(make_shared<Tutorial>());
+  auto tutorial = make_shared<Tutorial>();
+  game.getPlayerControl()->setTutorial(tutorial);
   game.getPlayerCollective()->init(CollectiveConfig::keeper(0, 10, {}, {
       ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
           .setSpawnLocation(NearLeader{})
@@ -253,8 +262,8 @@ void Tutorial::createTutorial(Game& game) {
       ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
           .setLimit(1)
           .setTutorialHighlight(TutorialHighlight::ACCEPT_IMMIGRANT)
+          .addRequirement(0.0, TutorialRequirement {tutorial})
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
-          .addRequirement(0.0, AttractionInfo{5, FurnitureType::BOOK_SHELF})
   }),
       Immigration(game.getPlayerCollective()));
 }

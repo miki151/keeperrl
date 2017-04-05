@@ -43,6 +43,12 @@ struct RecruitmentInfo {
   SERIALIZE_ALL(enemyId, minPopulation, trait)
 };
 
+struct TutorialRequirement {
+  STutorial SERIAL(tutorial);
+  template <class Archive>
+  void serialize(Archive&, const unsigned);
+};
+
 using ImmigrantRequirement = variant<
     AttractionInfo,
     TechId,
@@ -51,7 +57,8 @@ using ImmigrantRequirement = variant<
     CostInfo,
     ExponentialCost,
     Pregnancy,
-    RecruitmentInfo
+    RecruitmentInfo,
+    TutorialRequirement
 >;
 
 struct OutsideTerritory { SERIALIZE_EMPTY() };

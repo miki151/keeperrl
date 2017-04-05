@@ -404,7 +404,6 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
       case MinionTask::SPIDER: return {MinionTaskInfo::SPIDER, "spider"};
       case MinionTask::EXPLORE_NOCTURNAL: return {MinionTaskInfo::EXPLORE, "spying"};
       case MinionTask::EXPLORE_CAVES: return {MinionTaskInfo::EXPLORE, "spying"};
-      case MinionTask::EXECUTE: return {FurnitureType::PRISON, "execution ordered"};
       case MinionTask::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped"};
       case MinionTask::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured"};
       case MinionTask::CRAFT: return {[](WConstCreature c, FurnitureType t) {

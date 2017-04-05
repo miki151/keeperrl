@@ -1989,7 +1989,6 @@ static string getTaskText(MinionTask option) {
     case MinionTask::RITUAL: return "Rituals";
     case MinionTask::CROPS: return "Crops";
     case MinionTask::PRISON: return "Prison";
-    case MinionTask::EXECUTE: return "Execution";
     case MinionTask::TRAIN: return "Training";
     case MinionTask::CRAFT: return "Crafting";
     case MinionTask::STUDY: return "Studying";

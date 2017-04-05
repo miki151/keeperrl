@@ -17,6 +17,7 @@
 #include "game.h"
 #include "collective_name.h"
 #include "clock.h"
+#include "tutorial.h"
 
 template <class Archive>
 void Immigration::serialize(Archive& ar, const unsigned int) {
@@ -144,6 +145,10 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
           ret.push_back("Ally hasn't been discovered.");
         else if (info.getAvailableRecruits(collective->getGame(), immigrantInfo.getId(0)).empty())
           ret.push_back(col->getName().getFull() + " don't have recruits available at this moment.");
+      },
+      [&](const TutorialRequirement& t) {
+        if (!t.tutorial->showImmigrant())
+          ret.push_back("Tutorial not there yet.");
       }
   );
   immigrantInfo.visitRequirements(visitor);
@@ -188,6 +193,10 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
         if (!col || !collective->isKnownVillainLocation(col) ||
             info.getAvailableRecruits(collective->getGame(), getImmigrants()[group.immigrantIndex].getId(0)).empty())
           ret *= prob;
+      },
+      [&](const TutorialRequirement& t, double prob) {
+        if (!t.tutorial->showImmigrant())
+          ret *= prob;
       }
   );
   getImmigrants()[group.immigrantIndex].visitRequirementsAndProb(visitor);
@@ -213,7 +222,8 @@ void Immigration::occupyRequirements(WConstCreature c, int index) {
             break;
           }
       },
-      [&](const RecruitmentInfo&) {}
+      [&](const RecruitmentInfo&) {},
+      [&](const TutorialRequirement&) {}
   );
   getImmigrants()[index].visitRequirements(visitor);
 }

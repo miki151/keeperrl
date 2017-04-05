@@ -1680,7 +1680,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "talks about escape plans";
           c.minionTasks.setValue(MinionTask::PRISON, 1);
           c.minionTasks.setValue(MinionTask::BE_TORTURED, 0.0001);
-          c.minionTasks.setValue(MinionTask::EXECUTE, 0.0001);
           c.name = "prisoner";);
     case CreatureId::OGRE: 
       return CATTR(
