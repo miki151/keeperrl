@@ -6,7 +6,7 @@ struct MoveInfo {
   MoveInfo(double val, const CreatureAction&);
   MoveInfo(const CreatureAction&);
 
-  operator bool() const;
+  explicit operator bool() const;
 
   void setValue(double v);
   MoveInfo withValue(double v) const;

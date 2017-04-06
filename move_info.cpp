@@ -10,7 +10,7 @@ MoveInfo::MoveInfo(const CreatureAction& m) : MoveInfo(1.0, m) {
 }
 
 MoveInfo::operator bool() const {
-  return move;
+  return !!move;
 }
 
 MoveInfo MoveInfo::withValue(double v) const {

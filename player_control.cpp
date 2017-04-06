@@ -435,7 +435,7 @@ void PlayerControl::render(View* view) {
 }
 
 bool PlayerControl::isTurnBased() {
-  return getControlled();
+  return !!getControlled();
 }
 
 static vector<ItemType> marketItems {

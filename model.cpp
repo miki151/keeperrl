@@ -242,9 +242,9 @@ optional<StairKey> Model::getStairsBetween(WConstLevel from, WConstLevel to) {
 
 optional<Position> Model::getStairs(WConstLevel from, WConstLevel to) {
   CHECK(from != to);
-  if (!contains(getLevels(), from) || !contains(getLevels(), to) || !stairNavigation.count({from, to}))
+  if (!contains(getLevels(), from) || !contains(getLevels(), to) || !stairNavigation.count(getIds(from, to)))
     return none;
-  return Random.choose(from->getLandingSquares(stairNavigation.at({from, to})));
+  return Random.choose(from->getLandingSquares(stairNavigation.at(getIds(from, to))));
 }
 
 vector<WLevel> Model::getLevels() const {
@@ -295,8 +295,8 @@ void Model::landHeroPlayer(PCreature player) {
   CHECK(target->landCreature(target->getAllPositions(), std::move(player))) << "No place to spawn player";
 }
 
-void Model::addExternalEnemies(const ExternalEnemies& e) {
-  externalEnemies = e;
+void Model::addExternalEnemies(ExternalEnemies&& e) {
+  externalEnemies = optional<ExternalEnemies>(std::move(e));
 }
 
 void Model::addEvent(const GameEvent& e) {

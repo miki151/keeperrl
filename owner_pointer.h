@@ -40,9 +40,19 @@ class OwnerPointer {
     return *elem;
   }
 
+  template <typename U>
+  bool operator == (const OwnerPointer<U>& o) const {
+    return elem == o.elem;
+  }
+
+  template <typename U>
+  bool operator != (const OwnerPointer<U>& o) const {
+    return !(*this == o);
+  }
+
   WeakPointer<T> get() const;
 
-  operator bool() const {
+  explicit operator bool() const {
     return !!elem;
   }
 
@@ -128,7 +138,7 @@ class WeakPointer {
     return elem.lock().get();
   }
 
-  operator bool() const {
+  explicit operator bool() const {
     return !!elem.lock();
   }
 
@@ -174,6 +184,12 @@ class WeakPointer {
 
   weak_ptr<T> SERIAL(elem);
 };
+
+template<class T>
+std::ostream& operator<<(std::ostream& d, const WeakPointer<T>& p){
+  d << "pointer(" << p.get() << ")";
+  return d;
+}
 
 template <typename T>
 class OwnedObject {

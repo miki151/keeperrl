@@ -543,6 +543,7 @@ void WindowView::updateView(CreatureView* view, bool noRefresh) {
   if (!wasRendered && currentThreadId() != renderThreadId)
     return;
   RecursiveLock lock(renderMutex);
+  gameInfo = {};
   view->refreshGameInfo(gameInfo);
   wasRendered = false;
   guiBuilder.addUpsCounterTick();

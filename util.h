@@ -1434,6 +1434,11 @@ class HeapAllocated {
     return *this;
   }
 
+  HeapAllocated& operator = (HeapAllocated&& t) {
+    elem = std::move(t.elem);
+    return *this;
+  }
+
   SERIALIZE_ALL(elem);
 
   private:

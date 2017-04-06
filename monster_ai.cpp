@@ -563,8 +563,9 @@ class Fighter : public Behaviour {
             creature->setInCombat();
             other->setInCombat();
             lastSeen = {other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
-            if (!chaseFreeze.count(other) || other->getGlobalTime() > chaseFreeze.at(other).second)
-              chaseFreeze[other] = make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70);
+            auto chaseInfo = chaseFreeze.getMaybe(other);
+            if (!chaseInfo || other->getGlobalTime() > chaseInfo->second)
+              chaseFreeze.set(other, make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70));
           })};
       }
     }
@@ -606,11 +607,11 @@ class Fighter : public Behaviour {
       lastSeen.reset();
     return lastSeen;
   }
-  map<WConstCreature, pair<double, double>> chaseFreeze;
+  EntityMap<Creature, pair<double, double>> chaseFreeze;
 
   bool isChaseFrozen(WConstCreature c) {
-    return chaseFreeze.count(c) && chaseFreeze.at(c).first <= c->getGlobalTime()
-      && chaseFreeze.at(c).second >= c->getGlobalTime();
+    auto chaseInfo = chaseFreeze.getMaybe(c);
+    return chaseInfo && chaseInfo->first <= c->getGlobalTime() && chaseInfo->second >= c->getGlobalTime();
   }
 };
 

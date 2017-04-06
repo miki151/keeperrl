@@ -14,7 +14,7 @@ class NODISCARD CreatureAction {
   CreatureAction append(ActionFun);
   void perform(WCreature);
   string getFailedReason() const;
-  operator bool() const;
+  explicit operator bool() const;
 
   private:
   ActionFun action;

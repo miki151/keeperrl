@@ -103,7 +103,7 @@ class Game : public OwnedObject<Game> {
   SunlightInfo sunlightInfo;
   Table<PModel> SERIAL(models);
   Table<bool> SERIAL(visited);
-  map<WModel, double> SERIAL(localTime);
+  map<LevelId, double> SERIAL(localTime);
   Vec2 SERIAL(baseModel);
   View* view;
   double SERIAL(currentTime) = 0;

@@ -659,11 +659,15 @@ void Collective::setTrait(WCreature c, MinionTrait t) {
 }
 
 vector<WCreature> Collective::getCreaturesAnyOf(EnumSet<MinionTrait> trait) const {
-  set<WCreature> ret;
+  EntitySet<Creature> added;
+  vector<WCreature> ret;
   for (MinionTrait t : trait)
     for (WCreature c : byTrait[t])
-      ret.insert(c);
-  return vector<WCreature>(ret.begin(), ret.end());
+      if (!added.contains(c)) {
+        ret.push_back(c);
+        added.insert(c);
+      }
+  return ret;
 }
 
 vector<WCreature> Collective::getCreatures(EnumSet<MinionTrait> with, EnumSet<MinionTrait> without) const {
@@ -1114,7 +1118,7 @@ void Collective::cancelMarkedTask(Position pos) {
 }
 
 bool Collective::isMarked(Position pos) const {
-  return taskMap->getMarked(pos);
+  return !!taskMap->getMarked(pos);
 }
 
 HighlightType Collective::getMarkHighlight(Position pos) const {

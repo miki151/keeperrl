@@ -52,7 +52,7 @@ class Model : public OwnedObject<Model> {
   void addCreature(PCreature);
   void addCreature(PCreature, double delay);
   void landHeroPlayer(PCreature);
-  void addExternalEnemies(const ExternalEnemies&);
+  void addExternalEnemies(ExternalEnemies&&);
 
   bool isTurnBased();
 
