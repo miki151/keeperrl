@@ -1289,8 +1289,9 @@ CreatureAction Creature::fire(Vec2 direction) const {
     return CreatureAction("Out of ammunition");
   return CreatureAction(this, [=](WCreature self) {
     PItem ammo = self->equipment->removeItem(NOTNULL(getAmmo()), self);
-    RangedWeapon* weapon = NOTNULL(dynamic_cast<RangedWeapon*>(
-        getOnlyElement(self->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON)).get()));
+    auto weapon = getOnlyElement(self->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))
+        .dynamicCast<RangedWeapon>();
+    CHECK(!!weapon);
     weapon->fire(self, std::move(ammo), direction);
     self->spendTime(1);
   });

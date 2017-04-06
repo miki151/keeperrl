@@ -79,14 +79,14 @@ namespace {
 class Portal : public Trigger {
   public:
 
-  Portal* getOther(Position info) const {
+  WeakPointer<Portal> getOther(Position info) const {
     for (WTrigger t : info.getTriggers())
-      if (Portal* ret = dynamic_cast<Portal*>(t.get()))
+      if (auto ret = t.dynamicCast<Portal>())
         return ret;
     return nullptr;
   }
 
-  Portal* getOther() const {
+  WeakPointer<Portal> getOther() const {
     if (auto otherPortal = position.getGame()->getOtherPortal(position))
       return getOther(*otherPortal);
     return nullptr;
@@ -101,7 +101,7 @@ class Portal : public Trigger {
       active = true;
       return;
     }
-    if (Portal* other = getOther()) {
+    if (auto other = getOther()) {
       other->active = false;
       c->you(MsgType::ENTER_PORTAL, "");
       if (position.canMoveCreature(other->position)) {

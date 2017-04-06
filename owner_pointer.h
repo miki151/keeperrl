@@ -134,10 +134,6 @@ class WeakPointer {
     return *elem.lock().get();
   }
 
-  T* get() const {
-    return elem.lock().get();
-  }
-
   explicit operator bool() const {
     return !!elem.lock();
   }
@@ -175,6 +171,12 @@ class WeakPointer {
   SERIALIZE_ALL(elem)
 
   private:
+  template<class U>
+  friend std::ostream& operator<<(std::ostream&, const WeakPointer<U>&);
+
+  T* get() const {
+    return elem.lock().get();
+  }
 
   template <typename>
   friend class OwnerPointer;
