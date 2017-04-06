@@ -241,8 +241,6 @@ class WindowView: public View {
   Clock* clock;
   GuiBuilder guiBuilder;
   void drawMenuBackground(double barState, double mouthState);
-  atomic<int> fullScreenTrigger;
-  atomic<int> fullScreenResolution;
   atomic<int> zoomUI;
   void playSounds(const CreatureView*);
   vector<Sound> soundQueue;

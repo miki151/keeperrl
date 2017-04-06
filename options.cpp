@@ -27,6 +27,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
   {OptionId::FULLSCREEN_RESOLUTION, 0},
+  {OptionId::VSYNC, 1},
   {OptionId::ZOOM_UI, 0},
   {OptionId::DISABLE_MOUSE_WHEEL, 0},
   {OptionId::DISABLE_CURSOR, 0},
@@ -58,6 +59,7 @@ const map<OptionId, string> names {
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::FULLSCREEN, "Fullscreen"},
   {OptionId::FULLSCREEN_RESOLUTION, "Fullscreen resolution"},
+  {OptionId::VSYNC, "Vertical Sync"},
   {OptionId::ZOOM_UI, "Zoom in UI"},
   {OptionId::DISABLE_MOUSE_WHEEL, "Disable mouse wheel scrolling"},
   {OptionId::DISABLE_CURSOR, "Disable pretty mouse cursor"},
@@ -86,6 +88,7 @@ const map<OptionId, string> hints {
   {OptionId::KEEP_SAVEFILES, "Don't remove the save file when a game is loaded."},
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
   {OptionId::FULLSCREEN_RESOLUTION, "Choose resolution for fullscreen mode."},
+  {OptionId::VSYNC, "Limits frame rate to your monitor's refresh rate. Turning off may fix frame rate issues."},
   {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
       "Use you have a large resolution screen and things appear too small."},
   {OptionId::ONLINE, "Enable online features, like dungeon sharing and highscores."},
@@ -105,6 +108,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::SOUND,
 #endif
       OptionId::FULLSCREEN,
+      OptionId::VSYNC,
   //    OptionId::FULLSCREEN_RESOLUTION,
       OptionId::ZOOM_UI,
       OptionId::DISABLE_MOUSE_WHEEL,
@@ -235,6 +239,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::HINTS:
     case OptionId::ASCII:
     case OptionId::FULLSCREEN:
+    case OptionId::VSYNC:
     case OptionId::AUTOSAVE:
     case OptionId::WASD_SCROLLING:
     case OptionId::SOUND:

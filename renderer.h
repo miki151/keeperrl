@@ -122,6 +122,7 @@ class Renderer {
       const FilePath& clickedCursorPath);
   void setFullscreen(bool);
   void setFullscreenMode(int);
+  void setVsync(bool);
   void setZoom(int);
   int getZoom();
   void enableCustomCursor(bool);

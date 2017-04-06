@@ -561,6 +561,10 @@ void Renderer::showError(const string& s) {
   SDL_ShowSimpleMessageBox(SDL::SDL_MESSAGEBOX_ERROR, "Error", s.c_str(), window);
 }
 
+void Renderer::setVsync(bool on) {
+  SDL::SDL_GL_SetSwapInterval(on ? 1 : 0);
+}
+
 Renderer::Renderer(const string& title, Vec2 nominal, const DirectoryPath& fontPath, const FilePath& cursorP,
     const FilePath& clickedCursorP) : nominalSize(nominal), cursorPath(cursorP), clickedCursorPath(clickedCursorP) {
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
@@ -571,6 +575,7 @@ Renderer::Renderer(const string& title, Vec2 nominal, const DirectoryPath& fontP
   CHECK(SDL::SDL_GL_CreateContext(window)) << SDL::SDL_GetError();
   SDL_SetWindowMinimumSize(window, minResolution.x, minResolution.y);
   SDL_GetWindowSize(window, &width, &height);
+  setVsync(true);
   originalCursor = SDL::SDL_GetCursor();
   initOpenGL();
   loadFonts(fontPath, fonts);
@@ -709,11 +714,33 @@ Vec2 Renderer::getNominalSize() const {
   return nominalSize;
 }
 
-void Renderer::drawAndClearBuffer() {
-/*  static milliseconds last {0};
+static void measureLatency() {
+  static milliseconds last;
+  static long maxLat = 0;
+  static int counter = 0;
   auto curTime = Clock::getRealMillis();
-  std::cout << "Draw buffer " << (curTime - last).count() << std::endl;
-  last = curTime;*/
+  auto latency = (curTime - last).count();
+  if (latency > maxLat)
+    maxLat = latency;
+  if (latency > 50)
+    std::cout << "Draw buffer " << latency << std::endl;
+  if (++counter > 100) {
+    std::cout << "Max latency " << maxLat << std::endl;
+    maxLat = 0;
+    counter = 0;
+  }
+  last = curTime;
+  auto state = Clock::getRealMillis().count() % 500;
+  SDL::glBegin(GL_QUADS);
+  Color(255, 255, 255).applyGl();
+  SDL::glVertex2f(0, 0);
+  SDL::glVertex2f(2 * state, 0);
+  SDL::glVertex2f(2 * state, 30);
+  SDL::glVertex2f(0, 30);
+  SDL::glEnd();
+}
+
+void Renderer::drawAndClearBuffer() {
   for (int i : All(renderList)) {
     for (auto& elem : renderList[i])
       elem();
