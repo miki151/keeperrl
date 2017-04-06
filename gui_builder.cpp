@@ -518,10 +518,10 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
   hotkeys.push_back(gui.keyHandler(pauseFun, {gui.getKey(SDL::SDLK_SPACE)}));
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
     auto speedFun = [=] { gameSpeed = speed; gameSpeedDialogOpen = false; clock->cont();};
-    Color color = colors[speed == gameSpeed ? ColorId::GREEN : ColorId::WHITE];
+    auto colorFun = [this, speed] { return colors[speed == gameSpeed ? ColorId::GREEN : ColorId::WHITE]; };
     lines.push_back(gui.stack(gui.getListBuilder(keyMargin)
-              .addElem(gui.label(getGameSpeedName(speed), color))
-              .addElem(gui.label("'" + string(1, getHotkeyChar(speed)) + "' ", color)).buildHorizontalList(),
+              .addElem(gui.label(getGameSpeedName(speed), colorFun))
+              .addElem(gui.label("'" + string(1, getHotkeyChar(speed)) + "' ", colorFun)).buildHorizontalList(),
           gui.button(speedFun)));
     hotkeys.push_back(gui.keyHandler(speedFun, {gui.getKey(getHotkey(speed))}));
   }
