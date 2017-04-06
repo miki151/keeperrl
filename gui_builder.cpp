@@ -413,6 +413,17 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
           std::move(buttons[i]),
           gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }));
     }
+    if (info.tutorial)
+      for (auto& building : info.collectiveInfo.buildings)
+        if (auto& highlight = building.tutorialHighlight)
+          if (info.tutorial->highlights.contains(*highlight)) {
+            buttons[0] = gui.stack(
+                gui.conditional(
+                    gui.blink(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::YELLOW])),
+                    [this] { return collectiveTab != CollectiveTab::BUILDINGS;}),
+                buttons[0]);
+            break;
+          }
     if (!info.singleModel)
       buttons.push_back(gui.stack(
             gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
