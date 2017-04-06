@@ -210,13 +210,14 @@ optional<ExitInfo> Game::update(double timeDiff) {
   currentTime += timeDiff;
   WModel currentModel = getCurrentModel();
   // Give every model a couple of turns so that things like shopkeepers can initialize.
-  for (Vec2 v : models.getBounds()) {
-    // Use top level's id as unique id of the model.
-    auto id = models[v]->getTopLevel()->getUniqueId();
-    if (models[v] && !localTime.count(id)) {
-      localTime[id] = models[v]->getLocalTime() + 2;
-      updateModel(models[v].get(), localTime[id]);
-    }
+  for (Vec2 v : models.getBounds())
+    if (models[v]) {
+      // Use top level's id as unique id of the model.
+      auto id = models[v]->getTopLevel()->getUniqueId();
+      if (!localTime.count(id)) {
+        localTime[id] = models[v]->getLocalTime() + 2;
+        updateModel(models[v].get(), localTime[id]);
+      }
   }
   auto currentId = currentModel->getTopLevel()->getUniqueId();
   localTime[currentId] += timeDiff;
