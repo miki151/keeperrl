@@ -71,19 +71,6 @@
 
 using namespace boost::iostreams;
 
-
-void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<bool>& initialized) {
-  view->initialize();
-  options->setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
-  initialized = true;
-  Intervalometer meter(milliseconds{1000 / 60});
-  while (!finished) {    
-    while (!meter.getCount(view->getTimeMilliAbsolute())) {
-    }
-    view->refreshView();
-  }
-}
-
 static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
   r.loadTilesFromDir(path.subdirectory("orig16"), Vec2(16, 16));
 //  r.loadAltTilesFromDir(path + "/orig16_scaled", Vec2(24, 24));
