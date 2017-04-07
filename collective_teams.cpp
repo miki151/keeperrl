@@ -119,9 +119,4 @@ void CollectiveTeams::cancel(TeamId team) {
   teamInfo.erase(team);
 }
 
-template <class Archive>
-void CollectiveTeams::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(teamInfo) & SVAR(nextId);
-}
-
-SERIALIZABLE(CollectiveTeams);
+SERIALIZE_DEF(CollectiveTeams, teamInfo, nextId)

@@ -485,7 +485,7 @@ class EnumMap {
     vector<U> SERIAL(tmp);
     for (int i : All(elems))
       tmp.push_back(std::move(elems[i]));
-    ar & SVAR(tmp);
+    ar(tmp);
     CHECK(tmp.size() <= elems.size()) << tmp.size() << " " << elems.size();
     for (int i : All(tmp))
       elems[i] = std::move(tmp[i]);
@@ -1309,7 +1309,7 @@ class EnumSet {
     vector<T> SERIAL(tmp);
     for (T elem : *this)
       tmp.push_back(elem);
-    ar & SVAR(tmp);
+    ar(tmp);
     for (T elem : tmp) {
       CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
       insert(elem);
@@ -1378,7 +1378,7 @@ class BiMap {
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(m1) & SVAR(m2);
+    ar(m1, m2);
   }
 
   private:

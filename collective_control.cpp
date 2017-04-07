@@ -3,12 +3,7 @@
 #include "collective.h"
 #include "attack_trigger.h"
 
-template <class Archive>
-void CollectiveControl::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(OwnedObject<CollectiveControl>) & SVAR(collective);
-}
-
-SERIALIZABLE(CollectiveControl);
+SERIALIZE_DEF(CollectiveControl, SUBCLASS(OwnedObject<CollectiveControl>), collective)
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveControl);
 
 CollectiveControl::CollectiveControl(WCollective c) : collective(c) {

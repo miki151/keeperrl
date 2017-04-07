@@ -35,9 +35,5 @@ void SpellMap::clear() {
   elems.clear();
 }
 
-template <class Archive>
-void SpellMap::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(elems);
-}
+SERIALIZE_DEF(SpellMap, elems)
 
-SERIALIZABLE(SpellMap);

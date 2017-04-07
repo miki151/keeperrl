@@ -63,10 +63,7 @@ class EnumVariant {
     return !(*this == other);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(id) & SVAR(values);
-  }
+  SERIALIZE_ALL(id, values)
 
   private:
   template<typename T>

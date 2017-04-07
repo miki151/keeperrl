@@ -2,16 +2,7 @@
 #include "movement_type.h"
 #include "tribe.h"
 
-template <class Archive> 
-void MovementType::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(traits)
-    & SVAR(tribeSet)
-    & SVAR(sunlightVulnerable)
-    & SVAR(fireResistant)
-    & SVAR(forced);
-}
-
-SERIALIZABLE(MovementType);
+SERIALIZE_DEF(MovementType, traits, tribeSet, sunlightVulnerable, fireResistant, forced)
 
 MovementType::MovementType(EnumSet<MovementTrait> t) : traits(t) {
 }

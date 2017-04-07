@@ -9,6 +9,8 @@
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
+SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, influenceSize, playerRole, type)
+
 const Table<Campaign::SiteInfo>& Campaign::getSites() const {
   return sites;
 }

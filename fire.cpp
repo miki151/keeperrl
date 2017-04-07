@@ -17,17 +17,7 @@
 
 #include "fire.h"
 
-
-template <class Archive> 
-void Fire::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(burnt)
-    & SVAR(size)
-    & SVAR(weight)
-    & SVAR(flamability);
-}
-
-SERIALIZABLE(Fire);
-
+SERIALIZE_DEF(Fire, burnt, size, weight, flamability)
 SERIALIZATION_CONSTRUCTOR_IMPL(Fire);
 
 Fire::Fire(double objectWeight, double objectFlamability) : weight(objectWeight), flamability(objectFlamability) {}

@@ -56,7 +56,6 @@ typedef cereal::BinaryOutputArchive OutputArchive;
 #define REGISTER_TYPE(M) CEREAL_REGISTER_TYPE(M)
 
 #define SERIAL(X) X
-#define SVAR(X) X
 
 #define SERIALIZATION_DECL(A) \
   friend cereal::access; \
@@ -73,12 +72,15 @@ typedef cereal::BinaryOutputArchive OutputArchive;
 #define SERIALIZATION_CONSTRUCTOR(A) \
   A() {}
 
-#define SERIALIZE_DEF(CLASS, ...) \
+#define SERIALIZE_TMPL(CLASS, ...) \
 template <class Archive> \
 void CLASS::serialize(Archive& ar1, const unsigned int) { \
   ar1(__VA_ARGS__);\
-}\
-SERIALIZABLE(CLASS);
+}
+
+#define SERIALIZE_DEF(CLASS, ...) \
+  SERIALIZE_TMPL(CLASS, __VA_ARGS__)\
+  SERIALIZABLE(CLASS);
 
 #define SERIALIZE_ALL(...) \
   template <class Archive> \

@@ -65,16 +65,5 @@ int PlayerMessage::getHash() const {
   return combineHash(text, priority, freshness);
 }
 
-template <class Archive> 
-void PlayerMessage::serialize(Archive& ar, const unsigned int version) { 
-  ar & SUBCLASS(UniqueEntity) 
-     & SVAR(text)
-     & SVAR(priority)
-     & SVAR(freshness)
-     & SVAR(announcementTitle)
-     & SVAR(position)
-     & SVAR(creature);
-}
-
-SERIALIZABLE(PlayerMessage);
+SERIALIZE_DEF(PlayerMessage, SUBCLASS(UniqueEntity), text, priority, freshness, announcementTitle, position, creature)
 SERIALIZATION_CONSTRUCTOR_IMPL(PlayerMessage);

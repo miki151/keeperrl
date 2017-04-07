@@ -20,12 +20,7 @@
 #include "view_object.h"
 #include "view_index.h"
 
-template <class Archive> 
-void MapMemory::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(table);
-}
-
-SERIALIZABLE(MapMemory);
+SERIALIZE_DEF(MapMemory, table)
 
 MapMemory::MapMemory() {}
 

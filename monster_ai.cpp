@@ -52,7 +52,8 @@ class Behaviour {
 
   virtual ~Behaviour() {}
 
-  SERIALIZATION_DECL(Behaviour);
+  SERIALIZE_ALL(creature)
+  SERIALIZATION_CONSTRUCTOR(Behaviour)
 
   protected:
   WCreature SERIAL(creature);
@@ -60,28 +61,11 @@ class Behaviour {
 
 MonsterAI::~MonsterAI() {}
 
-template <class Archive> 
-void MonsterAI::serialize(Archive& ar, const unsigned int version) {
-   ar & SVAR(behaviours)
-    & SVAR(weights)
-    & SVAR(creature)
-    & SVAR(pickItems);
-}
-
-SERIALIZABLE(MonsterAI);
-
+SERIALIZE_DEF(MonsterAI, behaviours, weights, creature, pickItems)
 SERIALIZATION_CONSTRUCTOR_IMPL(MonsterAI);
-
-template <class Archive> 
-void Behaviour::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(creature);
-}
-
 
 Behaviour::Behaviour(WCreature c) : creature(c) {
 }
-
-SERIALIZATION_CONSTRUCTOR_IMPL(Behaviour);
 
 WCreature Behaviour::getClosestEnemy() {
   int dist = 1000000000;

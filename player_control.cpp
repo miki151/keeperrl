@@ -1692,12 +1692,7 @@ class MinionController : public Player {
     return control->getTeam(getCreature());
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(Player)
-      & SVAR(control);
-  }
-
+  SERIALIZE_ALL(SUBCLASS(Player), control)
   SERIALIZATION_CONSTRUCTOR(MinionController);
 
   private:

@@ -35,15 +35,7 @@
 #include "event_listener.h"
 #include "item_type.h"
 
-template <class Archive> 
-void Trigger::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(OwnedObject<Trigger>)
-    & SVAR(viewObject)
-    & SVAR(position);
-}
-
-SERIALIZABLE(Trigger);
-
+SERIALIZE_DEF(Trigger, SUBCLASS(OwnedObject<Trigger>), viewObject, position)
 SERIALIZATION_CONSTRUCTOR_IMPL(Trigger);
 
 Trigger::Trigger(Position p) : position(p) {

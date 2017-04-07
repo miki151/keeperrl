@@ -18,13 +18,7 @@
 #include "poison_gas.h"
 #include "level.h"
 
-
-template <class Archive> 
-void PoisonGas::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(amount);
-}
-
-SERIALIZABLE(PoisonGas);
+SERIALIZE_DEF(PoisonGas, amount)
 
 void PoisonGas::addAmount(double a) {
   CHECK(a > 0);

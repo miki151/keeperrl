@@ -118,11 +118,7 @@ class LeaderControlOverride : public Creature::MoraleOverride {
   }
 
   SERIALIZATION_CONSTRUCTOR(LeaderControlOverride);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Creature::MoraleOverride) & SVAR(collective);
-  }
+  SERIALIZE_ALL(SUBCLASS(Creature::MoraleOverride), collective)
 
   private:
   WCollective SERIAL(collective);

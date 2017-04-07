@@ -24,14 +24,7 @@
 #include "monster_ai.h"
 #include "creature_attributes.h"
 
-template <class Archive> 
-void Monster::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(Controller)
-     & SVAR(monsterAI);
-}
-
-SERIALIZABLE(Monster);
-
+SERIALIZE_DEF(Monster, SUBCLASS(Controller), monsterAI)
 SERIALIZATION_CONSTRUCTOR_IMPL(Monster);
 
 Monster::Monster(WCreature c, const MonsterAIFactory& f) : Controller(c), monsterAI(f.getMonsterAI(c)) {}

@@ -23,12 +23,7 @@
 #include "furniture_array.h"
 #include "inventory.h"
 
-template <class Archive> 
-void Position::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(coord) & SVAR(level);
-}
-
-SERIALIZABLE(Position);
+SERIALIZE_DEF(Position, coord, level)
 SERIALIZATION_CONSTRUCTOR_IMPL(Position);
 
 int Position::getHash() const {

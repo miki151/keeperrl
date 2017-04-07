@@ -95,12 +95,6 @@ bool EntitySet<T>::contains(typename UniqueEntity<T>::Id e) const {
 }
 
 template <class T>
-template <class Archive> 
-void EntitySet<T>::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(elems);
-}
-
-template <class T>
 typename EntitySet<T>::Iter EntitySet<T>::begin() const {
   return elems.begin();
 }
@@ -114,6 +108,9 @@ template <>
 ItemPredicate EntitySet<Item>::containsPredicate() const {
   return [this](WConstItem it) { return contains(it); };
 }
+
+template <class T>
+SERIALIZE_TMPL(EntitySet<T>, elems)
 
 SERIALIZABLE_TMPL(EntitySet, Item);
 SERIALIZABLE_TMPL(EntitySet, Task);

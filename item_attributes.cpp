@@ -19,38 +19,10 @@
 
 template <class Archive> 
 void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(name)
-    & SVAR(viewId)
-    & SVAR(description)
-    & SVAR(weight)
-    & SVAR(itemClass)
-    & SVAR(plural)
-    & SVAR(blindName)
-    & SVAR(firingWeapon)
-    & SVAR(artifactName)
-    & SVAR(trapType)
-    & SVAR(resourceId)
-    & SVAR(flamability)
-    & SVAR(price)
-    & SVAR(noArticle)
-    & SVAR(twoHanded)
-    & SVAR(attackType)
-    & SVAR(attackTime)
-    & SVAR(equipmentSlot)
-    & SVAR(applyTime)
-    & SVAR(fragile)
-    & SVAR(effect)
-    & SVAR(attackEffect)
-    & SVAR(uses)
-    & SVAR(usedUpMsg)
-    & SVAR(displayUses)
-    & SVAR(modifiers)
-    & SVAR(attrs)
-    & SVAR(shortName)
-    & SVAR(equipedEffect)
-    & SVAR(applyMsgFirstPerson)
-    & SVAR(applyMsgThirdPerson)
-    & SVAR(applySound);
+  ar(name, viewId, description, weight, itemClass, plural, blindName, firingWeapon, artifactName, trapType);
+  ar(resourceId, flamability, price, noArticle, twoHanded, attackType, attackTime, equipmentSlot, applyTime);
+  ar(fragile, effect, attackEffect, uses, usedUpMsg, displayUses, modifiers, attrs, shortName, equipedEffect);
+  ar(applyMsgFirstPerson, applyMsgThirdPerson, applySound);
 }
 
 SERIALIZABLE(ItemAttributes);

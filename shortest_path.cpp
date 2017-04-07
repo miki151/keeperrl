@@ -231,13 +231,7 @@ ShortestPath LevelShortestPath::makeShortestPath(WConstCreature creature, Positi
   }
 }
 
-template <class Archive> 
-void LevelShortestPath::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(path)
-    & SVAR(level);
-}
-
-SERIALIZABLE(LevelShortestPath);
+SERIALIZE_DEF(LevelShortestPath, path, level)
 SERIALIZATION_CONSTRUCTOR_IMPL(LevelShortestPath);
 
 

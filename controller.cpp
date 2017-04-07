@@ -20,21 +20,10 @@
 #include "creature.h"
 #include "player_message.h"
 
-template <class Archive> 
-void DoNothingController::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(Controller);
-}
-
-SERIALIZABLE(DoNothingController);
+SERIALIZE_DEF(DoNothingController, SUBCLASS(Controller))
 SERIALIZATION_CONSTRUCTOR_IMPL(DoNothingController);
 
-template <class Archive> 
-void Controller::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(OwnedObject<Controller>) & SVAR(creature);
-}
-
-SERIALIZABLE(Controller);
-
+SERIALIZE_DEF(Controller, SUBCLASS(OwnedObject<Controller>), creature)
 SERIALIZATION_CONSTRUCTOR_IMPL(Controller);
 
 Controller::Controller(WCreature c) : creature(c) {

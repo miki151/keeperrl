@@ -155,10 +155,4 @@ const EnumSet<SkillId>& Skillset::getAllDiscrete() const {
   return discrete;
 }
 
-
-template <class Archive>
-void Skillset::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(discrete) & SVAR(gradable);
-}
-
-SERIALIZABLE(Skillset);
+SERIALIZE_DEF(Skillset, discrete, gradable)

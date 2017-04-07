@@ -18,16 +18,7 @@
 #include "view_index.h"
 #include "view_object.h"
 
-
-template <class Archive> 
-void ViewIndex::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(objIndex)
-    & SVAR(highlight)
-    & SVAR(objects)
-    & SVAR(anyHighlight);
-}
-
-SERIALIZABLE(ViewIndex);
+SERIALIZE_DEF(ViewIndex, objIndex, highlight, objects, anyHighlight)
 
 ViewIndex::ViewIndex() {
   for (auto& elem : objIndex)

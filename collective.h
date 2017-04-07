@@ -283,10 +283,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   struct AlarmInfo {
     double SERIAL(finishTime);
     Position SERIAL(position);
-    template<class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-      ar & SVAR(finishTime) & SVAR(position);
-    }
+    SERIALIZE_ALL(finishTime, position)
   };
   optional<AlarmInfo> SERIAL(alarmInfo);
   MoveInfo getAlarmMove(WCreature c);

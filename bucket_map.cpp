@@ -3,12 +3,7 @@
 #include "creature.h"
 
 template <class T>
-template <class Archive>
-void BucketMap<T>::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(bucketSize)
-    & SVAR(buckets);
-}
-
+SERIALIZE_TMPL(BucketMap<T>, bucketSize, buckets)
 SERIALIZABLE(BucketMap<Creature>);
 
 template <class T>

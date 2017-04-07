@@ -677,14 +677,7 @@ const Range::Iter& Range::Iter::operator++ () {
   return *this;
 }
 
-template <class Archive> 
-void Range::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(start)
-    & SVAR(finish)
-    & SVAR(increment);
-}
-
-SERIALIZABLE(Range);
+SERIALIZE_DEF(Range, start, finish, increment)
 SERIALIZATION_CONSTRUCTOR_IMPL(Range);
 
 string combine(const vector<string>& adj, bool commasOnly) {
