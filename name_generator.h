@@ -37,6 +37,8 @@ RICH_ENUM(NameGeneratorId,
   VAMPIRE
 );
 
+class DirectoryPath;
+
 class NameGenerator : public Singleton<NameGenerator, NameGeneratorId> {
   public:
   NameGenerator() = default;

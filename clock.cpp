@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "clock.h"
+#include "debug.h"
 
 Clock::Clock() {
   initTime = steady_clock::now();

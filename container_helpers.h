@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "debug.h"
 
 template<class T>
 void removeIndex(vector<T>& v, int index) {

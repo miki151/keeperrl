@@ -1,7 +1,8 @@
 #pragma once
 
 #include "stdafx.h"
-#include "util.h"
+#include "serialization.h"
+#include "debug.h"
 
 template <typename T>
 class WeakPointer;
@@ -237,3 +238,40 @@ vector<WeakPointer<T>> getWeakPointers(const vector<OwnerPointer<T>>& v) {
     ret.push_back(el.get());
   return ret;
 }
+
+#define DEF_UNIQUE_PTR(T) class T;\
+  typedef unique_ptr<T> P##T;
+
+#define DEF_SHARED_PTR(T) class T;\
+  typedef shared_ptr<T> S##T;
+
+#define DEF_OWNER_PTR(T) class T;\
+  typedef OwnerPointer<T> P##T; \
+  typedef WeakPointer<T> W##T; \
+  typedef WeakPointer<const T> WConst##T;
+
+DEF_OWNER_PTR(Item);
+DEF_UNIQUE_PTR(LevelMaker);
+DEF_OWNER_PTR(Creature);
+DEF_OWNER_PTR(Square);
+DEF_OWNER_PTR(Furniture);
+DEF_UNIQUE_PTR(MonsterAI);
+DEF_UNIQUE_PTR(Behaviour);
+DEF_OWNER_PTR(Task);
+DEF_OWNER_PTR(Controller);
+DEF_OWNER_PTR(Trigger);
+DEF_OWNER_PTR(Level);
+DEF_OWNER_PTR(VillageControl);
+DEF_SHARED_PTR(GuiElem);
+DEF_UNIQUE_PTR(Animation);
+DEF_UNIQUE_PTR(ViewObject);
+DEF_OWNER_PTR(Collective);
+DEF_OWNER_PTR(CollectiveControl);
+DEF_OWNER_PTR(PlayerControl);
+DEF_OWNER_PTR(Model);
+DEF_UNIQUE_PTR(Tribe);
+DEF_SHARED_PTR(Tutorial);
+DEF_OWNER_PTR(CreatureVision);
+DEF_OWNER_PTR(Game);
+DEF_SHARED_PTR(MapMemory);
+DEF_OWNER_PTR(Immigration);

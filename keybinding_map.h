@@ -3,6 +3,8 @@
 #include "sdl.h"
 #include "keybinding.h"
 
+class FilePath;
+
 class KeybindingMap {
   public:
   KeybindingMap(const FilePath&);

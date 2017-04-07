@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stdafx.h"
+
 class Clock {
   public:
   Clock();

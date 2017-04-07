@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util.h"
+
 RICH_ENUM(SpellId,
   HEALING,
   SUMMON_INSECTS,

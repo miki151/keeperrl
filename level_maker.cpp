@@ -32,6 +32,7 @@
 #include "furniture_factory.h"
 #include "furniture.h"
 #include "progress.h"
+#include "file_path.h"
 
 namespace {
 

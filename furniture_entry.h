@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util.h"
+
 enum class FurnitureEntryType {
   SOKOBAN
 };

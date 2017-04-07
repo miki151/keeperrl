@@ -17,15 +17,14 @@
 
 #include <iostream>
 
+#include "stdafx.h"
 #include "debug.h"
 #include "enums.h"
-#include "serialization.h"
 #include "hashing.h"
-#include "owner_pointer.h"
 #include "container_helpers.h"
-#include "container_range.h"
-#include "directory_path.h"
-#include "file_path.h"
+#include "serialization.h"
+#include "owner_pointer.h"
+#include "hashing.h"
 
 template <class T>
 string toString(const T& t) {
@@ -59,43 +58,6 @@ T fromString(const string& s) {
 template <class T>
 optional<T> fromStringSafe(const string& s);
 
-#define DEF_UNIQUE_PTR(T) class T;\
-  typedef unique_ptr<T> P##T;
-
-#define DEF_SHARED_PTR(T) class T;\
-  typedef shared_ptr<T> S##T;
-
-#define DEF_OWNER_PTR(T) class T;\
-  typedef OwnerPointer<T> P##T; \
-  typedef WeakPointer<T> W##T; \
-  typedef WeakPointer<const T> WConst##T;
-
-DEF_OWNER_PTR(Item);
-DEF_UNIQUE_PTR(LevelMaker);
-DEF_OWNER_PTR(Creature);
-DEF_OWNER_PTR(Square);
-DEF_OWNER_PTR(Furniture);
-DEF_UNIQUE_PTR(MonsterAI);
-DEF_UNIQUE_PTR(Behaviour);
-DEF_OWNER_PTR(Task);
-DEF_OWNER_PTR(Controller);
-DEF_OWNER_PTR(Trigger);
-DEF_OWNER_PTR(Level);
-DEF_OWNER_PTR(VillageControl);
-DEF_SHARED_PTR(GuiElem);
-DEF_UNIQUE_PTR(Animation);
-DEF_UNIQUE_PTR(ViewObject);
-DEF_OWNER_PTR(Collective);
-DEF_OWNER_PTR(CollectiveControl);
-DEF_OWNER_PTR(PlayerControl);
-DEF_OWNER_PTR(Model);
-DEF_UNIQUE_PTR(Tribe);
-DEF_SHARED_PTR(Tutorial);
-DEF_OWNER_PTR(CreatureVision);
-DEF_OWNER_PTR(Game);
-DEF_SHARED_PTR(MapMemory);
-DEF_OWNER_PTR(Immigration);
-
 template <typename T>
 T lambdaConstruct(function<void(T&)> fun) {
   T ret {};
@@ -108,7 +70,6 @@ T lambdaConstruct(function<void(T&)> fun) {
 
 #define LIST(...) {__VA_ARGS__}
 
-class Item;
 typedef function<bool(const WItem)> ItemPredicate;
 
 template<class T>
@@ -131,15 +92,6 @@ vector<unique_ptr<T>> toUniquePtr(const vector<T*>& v) {
 
 template<class T>
 const vector<T*> extractRefs(const vector<unique_ptr<T>>& v) {
-  vector<T*> ret;
-  ret.reserve(v.size());
-  for (auto& el : v)
-    ret.push_back(el.get());
-  return ret;
-}
-
-template<class T>
-const vector<T*> extractRefs(const vector<OwnerPointer<T>>& v) {
   vector<T*> ret;
   ret.reserve(v.size());
   for (auto& el : v)

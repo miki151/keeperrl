@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "saved_game_info.h"
 #include "text_serialization.h"
+#include "parse_game.h"
 
 SERIALIZE_DEF(SavedGameInfo, minions, dangerLevel, name, progressCount);
 

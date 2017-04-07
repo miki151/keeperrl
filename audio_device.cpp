@@ -6,6 +6,7 @@
 #include <vorbis/vorbisfile.h>
 
 #include "audio_device.h"
+#include "file_path.h"
 
 AudioDevice::AudioDevice() {
 }

@@ -29,7 +29,7 @@
 #include "modifier_type.h"
 #include "body.h"
 #include "call_cache.h"
-
+#include "container_range.h"
 
 class Test {
   public:

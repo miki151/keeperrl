@@ -37,6 +37,7 @@
 #include "item_class.h"
 #include "furniture.h"
 #include "furniture_factory.h"
+#include "file_path.h"
 
 class Behaviour {
   public:

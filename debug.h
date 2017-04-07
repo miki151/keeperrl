@@ -19,6 +19,8 @@
 #include <ostream>
 #include <functional>
 
+#include "stdafx.h"
+
 #define FATAL FatalLog.get() << "FATAL " << __FILE__ << ":" << __LINE__ << " "
 #define INFO InfoLog.get() << __FILE__ << ":" <<  __LINE__ << " "
 #define CHECK(exp) if (!(exp)) FATAL << ": " << #exp << " is false. "

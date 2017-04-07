@@ -17,6 +17,7 @@
 
 #include "name_generator.h"
 #include "util.h"
+#include "file_path.h"
 
 string getSyllable() {
   string vowels = "aeyuio";

@@ -17,6 +17,7 @@
 
 #include "creature_action.h"
 #include "position.h"
+#include "file_path.h"
 
 class Creature;
 

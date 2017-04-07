@@ -9,6 +9,7 @@
 #include "entity_set.h"
 #include "immigrant_auto_state.h"
 #include "tutorial_highlight.h"
+#include "hashing.h"
 
 enum class SpellId;
 

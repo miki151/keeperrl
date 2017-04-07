@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util.h"
 
 RICH_ENUM(ViewLayer,
   FLOOR_BACKGROUND,

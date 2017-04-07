@@ -17,6 +17,7 @@
 
 #include "util.h"
 #include "gui_elem.h"
+#include "hashing.h"
 
 class Level;
 class CreatureView;

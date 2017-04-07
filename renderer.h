@@ -17,6 +17,7 @@
 
 #include "sdl.h"
 #include "util.h"
+#include "file_path.h"
 
 struct Color : public SDL::SDL_Color {
   Color(Uint8, Uint8, Uint8, Uint8 = 255);

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "file_path.h"
-
+#include "debug.h"
+#include "util.h"
 
 const char* FilePath::getPath() const {
   return fullPath.c_str();

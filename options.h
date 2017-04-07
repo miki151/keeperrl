@@ -16,6 +16,7 @@
 #pragma once
 
 #include "util.h"
+#include "file_path.h"
 
 RICH_ENUM(OptionId,
   HINTS,

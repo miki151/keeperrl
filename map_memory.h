@@ -18,6 +18,7 @@
 #include "util.h"
 #include "position.h"
 #include "position_map.h"
+#include "hashing.h"
 
 class ViewObject;
 class ViewIndex;

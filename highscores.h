@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util.h"
+#include "file_path.h"
 
 class View;
 class FileSharing;

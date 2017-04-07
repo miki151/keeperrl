@@ -17,8 +17,6 @@
 
 
 #include "window_view.h"
-#include "logging_view.h"
-#include "replay_view.h"
 #include "level.h"
 #include "options.h"
 #include "renderer.h"

@@ -3,6 +3,7 @@
 #include "util.h"
 #include "saved_game_info.h"
 #include "gzstream.h"
+#include "file_path.h"
 
 typedef StreamCombiner<ogzstream, OutputArchive> CompressedOutput;
 typedef StreamCombiner<igzstream, InputArchive> CompressedInput;

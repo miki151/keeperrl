@@ -87,6 +87,8 @@ struct SettlementInfo {
   bool closeToPlayer;
 };
 
+class FilePath;
+
 class LevelMaker {
   public:
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;

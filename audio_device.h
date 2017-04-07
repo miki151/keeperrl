@@ -4,6 +4,7 @@
 
 struct OggVorbis_File;
 struct vorbis_info;
+class FilePath;
 
 typedef unsigned int OpenalId;
 

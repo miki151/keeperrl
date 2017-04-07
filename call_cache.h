@@ -1,6 +1,8 @@
 #pragma once
 
 #include "stdafx.h"
+#include "hashing.h"
+#include "util.h"
 
 template <typename Value>
 class CallCache {

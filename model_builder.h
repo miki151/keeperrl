@@ -14,6 +14,7 @@ class SokobanInput;
 class ExternalEnemies;
 struct ExternalEnemy;
 class Tutorial;
+class FilePath;
 
 class ModelBuilder {
   public:

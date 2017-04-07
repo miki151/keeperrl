@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "furniture_type.h"
+#include "enum_variant.h"
 
 RICH_ENUM(AttackTriggerId,
   POWER,

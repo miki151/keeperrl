@@ -17,6 +17,7 @@
 #include "keybinding.h"
 #include "immigration.h"
 #include "tile_efficiency.h"
+#include "container_range.h"
 
 SERIALIZE_DEF(Tutorial, state)
 

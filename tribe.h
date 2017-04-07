@@ -21,6 +21,7 @@
 #include "enums.h"
 #include "singleton.h"
 #include "entity_map.h"
+#include "hashing.h"
 
 class Creature;
 

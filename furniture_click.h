@@ -3,6 +3,7 @@
 class Furniture;
 class Position;
 
+#include "util.h"
 
 enum class FurnitureClickType { LOCK, UNLOCK };
 

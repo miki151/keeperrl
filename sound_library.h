@@ -6,6 +6,7 @@
 class Options;
 class AudioDevice;
 class SoundBuffer;
+class DirectoryPath;
 
 class SoundLibrary {
   public:

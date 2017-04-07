@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _STDAFX_H
-#define _STDAFX_H
+#pragma once
 
 #ifndef RELEASE
 #if __has_cpp_attribute(nodiscard)
@@ -182,9 +181,3 @@ using boost::optional;
 using boost::none_t;
 using boost::none;
 using boost::replace_all;
-#include "serialization.h"
-#include "util.h"
-#include "debug.h"
-#include "enums.h"
-
-#endif

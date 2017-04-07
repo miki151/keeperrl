@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stdafx.h"
+
 struct general_ {};
 struct special_ : general_ {};
 template<typename> struct int_ { typedef int type; };

@@ -15,6 +15,9 @@
 
 #pragma once
 
+#include "stdafx.h"
+#include "serialization.h"
+
 class Gender {
   public:
   const static Gender male;

@@ -74,6 +74,7 @@
 #include "scroll_position.h"
 #include "tutorial.h"
 #include "tutorial_highlight.h"
+#include "container_range.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {

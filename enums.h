@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "serialization.h"
-
 typedef int TeamId;
 typedef long long LevelId;
 

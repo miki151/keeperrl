@@ -36,6 +36,7 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/types/boost_variant.hpp>
 
+#include "stdafx.h"
 #include "progress.h"
 
 typedef cereal::BinaryInputArchive InputArchive;

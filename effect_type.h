@@ -1,6 +1,7 @@
 #pragma once
 
 #include "enum_variant.h"
+#include "lasting_effect.h"
 
 enum class EffectId { 
     TELEPORT,
