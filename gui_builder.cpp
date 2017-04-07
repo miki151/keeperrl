@@ -427,7 +427,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
     if (!info.singleModel)
       buttons.push_back(gui.stack(
             gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
-              [this] { return false;}),
+              [] { return false;}),
             gui.icon(gui.WORLD_MAP),
             gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP))));
     vector<pair<CollectiveTab, SGuiElem>> elems = makeVec(
@@ -1109,7 +1109,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
             auto& command = info.commands[i];
             function<void()> buttonFun = [] {};
             if (command.active)
-              buttonFun = [&exit, &ret, i, this] {
+              buttonFun = [&exit, i, this] {
                   callbacks.input({UserInputId::PLAYER_COMMAND, i});
                   exit = true;
               };
@@ -2058,7 +2058,7 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                     gui.label(getTaskText(task.task), colors[getTaskColor(task)])))
                 .addBackElemAuto(gui.stack(
                     getTooltip({"Click to turn this task on/off."}, THIS_LINE),
-                    gui.button([&exit, &retAction, task] {
+                    gui.button([&retAction, task] {
                       retAction.lock.toggle(task.task);
                     }),
                     gui.rightMargin(20, gui.labelUnicode(u8"✓", [&retAction, task] {
@@ -2310,8 +2310,8 @@ SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
   lines.addElem(gui.centerHoriz(gui.label("Use the travel command while controlling a minion or team "
           "to travel to another site.", Renderer::smallTextSize, colors[ColorId::LIGHT_GRAY])));
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, nullptr,
-      [&campaign](Vec2 pos) { return false; },
-      [&campaign](Vec2 pos) { })));
+      [](Vec2) { return false; },
+      [](Vec2) { })));
   lines.addBackElem(gui.centerHoriz(
         gui.stack(
           gui.button([&] { sem.v(); }),
@@ -2327,7 +2327,7 @@ SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
   lines.addElem(gui.centerHoriz(gui.label(message)));
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, &sitePos,
       [&campaign](Vec2 pos) { return campaign.canTravelTo(pos); },
-      [&campaign, &sitePos](Vec2 pos) { sitePos = pos; })));
+      [&sitePos](Vec2 pos) { sitePos = pos; })));
   lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
         .addElemAuto(gui.conditional(
             gui.stack(
@@ -2508,7 +2508,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
     lines.addBackElem(gui.centerHoriz(gui.label(*title)));
   lines.addBackElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, nullptr,
         [&campaign](Vec2 pos) { return campaign.canEmbark(pos); },
-        [&campaign, &queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
+        [&queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
   lines.addBackElem(gui.topMargin(10, gui.centerHoriz(gui.getListBuilder()
         .addElemAuto(gui.conditional(
             gui.stack(

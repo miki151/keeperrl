@@ -236,8 +236,8 @@ CreatureAction Creature::forceMove(Position pos) const {
   CreatureAction action = move(pos);
   const_cast<Creature*>(this)->forceMovement = false;
   if (action)
-    return action.prepend([this] (WCreature c) { c->forceMovement = true; })
-      .append([this] (WCreature c) { c->forceMovement = false; });
+    return action.prepend([] (WCreature c) { c->forceMovement = true; })
+      .append([] (WCreature c) { c->forceMovement = false; });
   else
     return action;
 }

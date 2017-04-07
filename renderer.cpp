@@ -340,7 +340,7 @@ void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text,
 
 void Renderer::drawImage(int px, int py, const Texture& image, double scale, optional<Color> color) {
   Vec2 p(px, py);
-  addRenderElem([this, p, &image, scale, color] {
+  addRenderElem([p, &image, scale, color] {
     image.render(p, p + image.getSize() * scale, Vec2(0, 0), image.getSize(), color);
   });
 }
@@ -355,7 +355,7 @@ void Renderer::drawSprite(Vec2 pos, Vec2 stretchSize, const Texture& t) {
 
 void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t, optional<Vec2> targetSize,
     optional<Color> color, bool vFlip, bool hFlip) {
-  addRenderElem([this, &t, pos, source, size, targetSize, color, vFlip, hFlip] {
+  addRenderElem([&t, pos, source, size, targetSize, color, vFlip, hFlip] {
       if (targetSize)
         t.render(pos, pos + *targetSize, source, source + size, color, vFlip, hFlip);
       else
@@ -364,7 +364,7 @@ void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t, op
 }
 
 void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline) {
-  addRenderElem([this, t, color, outline] {
+  addRenderElem([t, color, outline] {
     Vec2 a = t.topLeft();
     Vec2 b = t.bottomRight();
     if (outline) {

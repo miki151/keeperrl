@@ -857,11 +857,11 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
 
 vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   vector<TechInfo> ret;
-  ret.push_back({{ViewId::MANA, "Sorcery"}, [this](PlayerControl* c, View* view) {c->handlePersonalSpells(view);}});
+  ret.push_back({{ViewId::MANA, "Sorcery"}, [](PlayerControl* c, View* view) {c->handlePersonalSpells(view);}});
   ret.push_back({{ViewId::LIBRARY, "Library", 'l'},
-      [this](PlayerControl* c, View* view) { c->handleLibrary(view); }});
+      [](PlayerControl* c, View* view) { c->handleLibrary(view); }});
   ret.push_back({{ViewId::BOOK, "Keeperopedia"},
-      [this](PlayerControl* c, View* view) { Encyclopedia().present(view); }});
+      [](PlayerControl* c, View* view) { Encyclopedia().present(view); }});
   return ret;
 }
 
@@ -976,7 +976,7 @@ void PlayerControl::handleTrading(WCollective ally) {
       break;
     int budget = getCollective()->numResource(ResourceId::GOLD);
     vector<ItemInfo> itemInfo = transform2(items,
-        [this, budget] (const pair<string, vector<WItem>> it) {
+        [budget] (const pair<string, vector<WItem>> it) {
             return getTradeItemInfo(it.second, budget);});
     auto index = getView()->chooseTradeItem("Trade with " + ally->getName().getShort(),
         {ViewId::GOLD, getCollective()->numResource(ResourceId::GOLD)}, itemInfo, &scrollPos);
@@ -1031,7 +1031,7 @@ void PlayerControl::handlePillage(WCollective col) {
         options.push_back({elem.second, getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)});
     if (options.empty())
       return;
-    vector<ItemInfo> itemInfo = transform2(options, [this] (const PillageOption& it) {
+    vector<ItemInfo> itemInfo = transform2(options, [] (const PillageOption& it) {
             return getPillageItemInfo(it.items, it.storage.empty());});
     auto index = getView()->choosePillageItem("Pillage " + col->getName().getShort(), itemInfo, &scrollPos);
     if (!index)
