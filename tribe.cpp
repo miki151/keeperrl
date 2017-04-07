@@ -20,7 +20,7 @@
 
 template <class Archive> 
 void Tribe::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, diplomatic, standing, friendlyTribes, id);
+  ar(diplomatic, standing, friendlyTribes, id);
 }
 
 SERIALIZABLE(Tribe);
@@ -235,7 +235,7 @@ template <class Archive>
 void TribeId::serialize(Archive& ar, const unsigned int version) {
   if (serialSwitch && *this == serialSwitch->first)
     *this = serialSwitch->second;
-  serializeAll(ar, key);
+  ar(key);
   if (serialSwitch && *this == serialSwitch->second)
     *this = serialSwitch->first;
 }

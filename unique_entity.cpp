@@ -71,7 +71,7 @@ template<typename T>
 template <class Archive> 
 void UniqueEntity<T>::Id::serialize(Archive& ar, const unsigned int version) {
   key += offset;
-  serializeAll(ar, key, hash);
+  ar(key, hash);
   key -= offset;
 }
 
@@ -83,7 +83,7 @@ auto UniqueEntity<T>::getUniqueId() const -> Id {
 template<typename T>
 template <class Archive> 
 void UniqueEntity<T>::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, id);
+  ar(id);
 }
 
 SERIALIZABLE_TMPL(UniqueEntity, Level);

@@ -52,12 +52,12 @@
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(TaskCallback) & SUBCLASS(EventListener);
-  serializeAll(ar, creatures, leader, taskMap, tribe, control, byTrait, bySpawnType);
-  serializeAll(ar, territory, alarmInfo, markedItems, constructions, minionEquipment);
-  serializeAll(ar, surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
-  serializeAll(ar, credit, level, immigration, teams, name);
-  serializeAll(ar, config, warnings, knownVillains, knownVillainLocations, banished);
-  serializeAll(ar, villainType, enemyId, workshops, zones, tileEfficiency);
+  ar(creatures, leader, taskMap, tribe, control, byTrait, bySpawnType);
+  ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
+  ar(surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
+  ar(credit, level, immigration, teams, name);
+  ar(config, warnings, knownVillains, knownVillainLocations, banished);
+  ar(villainType, enemyId, workshops, zones, tileEfficiency);
 }
 
 SERIALIZABLE(Collective);

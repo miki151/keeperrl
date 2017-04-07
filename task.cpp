@@ -48,7 +48,7 @@
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Task>) & SUBCLASS(UniqueEntity);
-  serializeAll(ar, done, transfer, viewId);
+  ar(done, transfer, viewId);
 }
 
 SERIALIZABLE(Task);
@@ -226,7 +226,7 @@ class BuildTorch : public Task {
     return "Build torch " + toString(position);
   }
 
-  SERIALIZE_ALL2(Task, position, callback, attachmentDir); 
+  SERIALIZE_ALL(SUBCLASS(Task), position, callback, attachmentDir);
   SERIALIZATION_CONSTRUCTOR(BuildTorch);
 
   private:

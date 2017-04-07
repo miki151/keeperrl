@@ -181,5 +181,5 @@ WCollective RecruitmentInfo::findEnemy(WGame game) const {
 
 template <typename Archive>
 void TutorialRequirement::serialize(Archive& ar, const unsigned) {
-  serializeAll(ar, tutorial);
+  ar(tutorial);
 }

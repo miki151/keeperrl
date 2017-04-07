@@ -6,7 +6,7 @@
 
 template <class Archive>
 void CollectiveName::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, fullName, shortName, raceName);
+  ar(fullName, shortName, raceName);
 }
 
 SERIALIZABLE(CollectiveName);

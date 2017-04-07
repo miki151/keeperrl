@@ -5,8 +5,8 @@
 
 template <class Archive>
 void Campaign::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, sites);
-  serializeAll(ar, playerPos, worldName, defeated, influencePos, influenceSize, playerRole, type);
+  ar(sites);
+  ar(playerPos, worldName, defeated, influencePos, influenceSize, playerRole, type);
 }
 
 SERIALIZABLE(Campaign);

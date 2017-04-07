@@ -5,7 +5,7 @@
 
 template <class Archive>
 void CreatureDebt::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, debt, total);
+  ar(debt, total);
 }
 
 SERIALIZABLE(CreatureDebt);

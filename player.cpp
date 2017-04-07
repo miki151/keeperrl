@@ -53,8 +53,8 @@
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(Controller) & SUBCLASS(EventListener);
-  serializeAll(ar, travelling, travelDir, target, displayGreeting, levelMemory, messages);
-  serializeAll(ar, messageHistory, adventurer, visibilityMap, tutorial);
+  ar(travelling, travelDir, target, displayGreeting, levelMemory, messages);
+  ar(messageHistory, adventurer, visibilityMap, tutorial);
 }
 
 SERIALIZABLE(Player);

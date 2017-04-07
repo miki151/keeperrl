@@ -27,11 +27,11 @@ class ListenerTemplate : public ListenerBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar & SUBCLASS(ListenerBase);
-    serializeAll(ar, ptr);
+    ar(ptr);
   }
 
   private:
-  WeakPointer<T> ptr;
+  WeakPointer<T> SERIAL(ptr);
 };
 
 class EventGenerator : public OwnedObject<EventGenerator> {

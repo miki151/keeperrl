@@ -44,7 +44,7 @@
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, items, weights, count, uniqueCounts);
+  ar(items, weights, count, uniqueCounts);
 }
 
 SERIALIZABLE(ItemFactory);

@@ -154,7 +154,7 @@ typename EntityMap<Key, Value>::Iter EntityMap<Key, Value>::end() const {
 template <typename Key, typename Value>
 template <class Archive> 
 void EntityMap<Key, Value>::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, elems);
+  ar(elems);
 }
 
 SERIALIZABLE_TMPL(EntityMap, Creature, double);

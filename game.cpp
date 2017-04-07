@@ -38,9 +38,9 @@
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Game>);
-  serializeAll(ar, villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
-  serializeAll(ar, musicType, portals, statistics, spectator, tribes, gameIdentifier, player);
-  serializeAll(ar, gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
+  ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
+  ar(musicType, portals, statistics, spectator, tribes, gameIdentifier, player);
+  ar(gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
     sunlightInfo.update(currentTime);
 }

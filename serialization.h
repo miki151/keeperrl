@@ -75,21 +75,10 @@ typedef cereal::BinaryOutputArchive OutputArchive;
 
 #define SERIALIZE_DEF(CLASS, ...) \
 template <class Archive> \
-void CLASS::serialize(Archive& ar, const unsigned int) { \
-  ar(__VA_ARGS__);\
+void CLASS::serialize(Archive& ar1, const unsigned int) { \
+  ar1(__VA_ARGS__);\
 }\
 SERIALIZABLE(CLASS);
-
-
-template <typename Archive>
-void serializeAll(Archive& ar) {
-}
-
-template <typename Archive, typename... Args>
-void serializeAll(Archive& ar, Args&... args) {
-  Progress::checkIfInterrupted();
-  ar(args...);
-}
 
 #define SERIALIZE_SUBCLASS(SUB) \
   template <class Archive> \
@@ -105,8 +94,8 @@ void serializeAll(Archive& ar, Args&... args) {
 
 #define SERIALIZE_ALL(...) \
   template <class Archive> \
-  void serialize(Archive& ar, const unsigned int) { \
-    ar(__VA_ARGS__); \
+  void serialize(Archive& ar1, const unsigned int) { \
+    ar1(__VA_ARGS__); \
   }
 
 #define SERIALIZE_EMPTY() \
@@ -137,22 +126,22 @@ class StreamCombiner {
 
 namespace cereal {
 template <class Archive, class T>
-void save(Archive& ar, const optional<T>& elem) {
+void save(Archive& ar1, const optional<T>& elem) {
   if (elem) {
-    ar(true);
-    ar(elem.get());
+    ar1(true);
+    ar1(elem.get());
   } else {
-    ar(false);
+    ar1(false);
   }
 }
 
 template <class Archive, class T>
-void load(Archive& ar, optional<T>& elem) {
+void load(Archive& ar1, optional<T>& elem) {
   bool initialized;
-  ar(initialized);
+  ar1(initialized);
   if (initialized) {
     T val;
-    ar(val);
+    ar1(val);
     elem = std::move(val);
   } else
     elem = none;

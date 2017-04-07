@@ -21,7 +21,7 @@
 
 template <class Archive> 
 void TimeQueue::serialize(Archive& ar, const unsigned int version) { 
-  serializeAll(ar, creatures, timeMap, queue);
+  ar(creatures, timeMap, queue);
 }
 
 SERIALIZABLE(TimeQueue);

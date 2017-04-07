@@ -19,7 +19,7 @@
 
 template <class Archive> 
 void Sectors::serialize(Archive& ar, const unsigned int) {
-  serializeAll(ar, sectors, bounds, sizes);
+  ar(sectors, bounds, sizes);
 }
 
 SERIALIZABLE(Sectors);

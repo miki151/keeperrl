@@ -5,7 +5,7 @@
 template <class Archive>
 void VillageControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
-  serializeAll(ar, villain, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower);
+  ar(villain, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower);
 }
 
 SERIALIZABLE(VillageControl);

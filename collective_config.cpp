@@ -30,8 +30,8 @@
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, immigrantInterval, maxPopulation, populationIncreases, immigrantInfo);
-  serializeAll(ar, type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo);
+  ar(immigrantInterval, maxPopulation, populationIncreases, immigrantInfo);
+  ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo);
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -39,7 +39,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveConfig);
 
 template <class Archive>
 void AttractionInfo::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, types, amountClaimed);
+  ar(types, amountClaimed);
 }
 
 SERIALIZABLE(AttractionInfo);
@@ -47,14 +47,14 @@ SERIALIZATION_CONSTRUCTOR_IMPL(AttractionInfo);
 
 template <class Archive>
 void PopulationIncrease::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, type, increasePerSquare, maxIncrease);
+  ar(type, increasePerSquare, maxIncrease);
 }
 
 SERIALIZABLE(PopulationIncrease);
 
 template <class Archive>
 void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, creature, probability, minEnemies, minVictims);
+  ar(creature, probability, minEnemies, minVictims);
 }
 
 SERIALIZABLE(GuardianInfo);

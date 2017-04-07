@@ -5,7 +5,7 @@
 
 template <class Archive> 
 void MovementSet::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, onFire, traits, forcibleTraits);
+  ar(onFire, traits, forcibleTraits);
 }
 
 SERIALIZABLE(MovementSet);

@@ -48,7 +48,7 @@ static bool isCombatConsumable(EffectType type) {
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, owners, locked, myItems);
+  ar(owners, locked, myItems);
 }
 
 SERIALIZABLE(MinionEquipment);

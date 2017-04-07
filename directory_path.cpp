@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "directory_path.h"
 #include "file_path.h"
+#include <boost/filesystem.hpp>
+#include "dirent.h"
 
 DirectoryPath::DirectoryPath(const std::string& p) : path(p) {}
 

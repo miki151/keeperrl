@@ -502,7 +502,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
   template <class Archive>
   void serialize(Archive& ar, const unsigned int) {
     ar & SUBCLASS(Monster) & SUBCLASS(EventListener);
-    serializeAll(ar, prevCreatures, debtors, thiefCount, thieves, shopArea, myLevel, firstMove);
+    ar(prevCreatures, debtors, thiefCount, thieves, shopArea, myLevel, firstMove);
   }
 
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
@@ -573,7 +573,7 @@ class IllusionController : public DoNothingController {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(DoNothingController);
-    serializeAll(ar, deathTime);
+    ar(deathTime);
   }
 
   SERIALIZATION_CONSTRUCTOR(IllusionController);

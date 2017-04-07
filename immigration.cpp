@@ -22,7 +22,7 @@
 template <class Archive>
 void Immigration::serialize(Archive& ar, const unsigned int) {
   ar & SUBCLASS(OwnedObject<Immigration>);
-  serializeAll(ar, available, minionAttraction, idCnt, collective, generated, candidateTimeout, initialized, nextImmigrantTime, autoState);
+  ar(available, minionAttraction, idCnt, collective, generated, candidateTimeout, initialized, nextImmigrantTime, autoState);
 }
 SERIALIZABLE(Immigration);
 

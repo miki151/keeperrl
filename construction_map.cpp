@@ -262,7 +262,7 @@ int ConstructionMap::getDebt(CollectiveResourceId id) const {
 
 template <class Archive>
 void ConstructionMap::TrapInfo::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, type, armed, marked);
+  ar(type, armed, marked);
 }
 
 SERIALIZABLE(ConstructionMap::TrapInfo);
@@ -270,7 +270,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TrapInfo, TrapInfo);
 
 template <class Archive>
 void ConstructionMap::TorchInfo::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, built, task, attachmentDir, trigger);
+  ar(built, task, attachmentDir, trigger);
 }
 
 SERIALIZABLE(ConstructionMap::TorchInfo);
@@ -278,7 +278,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TorchInfo, TorchInfo);
 
 template <class Archive>
 void ConstructionMap::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, debt, traps, torches, furniture, furniturePositions, unbuiltCounts, allFurniture);
+  ar(debt, traps, torches, furniture, furniturePositions, unbuiltCounts, allFurniture);
 }
 
 SERIALIZABLE(ConstructionMap);

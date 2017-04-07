@@ -42,10 +42,10 @@
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
-  serializeAll(ar, squares, oldSquares, landingSquares, tickingSquares, creatures, model, fieldOfView);
-  serializeAll(ar, name, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
-  serializeAll(ar, levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, memoryUpdates);
-  serializeAll(ar, furniture, tickingFurniture, covered);
+  ar(squares, oldSquares, landingSquares, tickingSquares, creatures, model, fieldOfView);
+  ar(name, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
+  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, memoryUpdates);
+  ar(furniture, tickingFurniture, covered);
 }  
 
 SERIALIZABLE(Level);

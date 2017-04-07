@@ -78,10 +78,10 @@
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
-  serializeAll(ar, memory, showWelcomeMsg, lastControlKeeperQuestion);
-  serializeAll(ar, newAttacks, ransomAttacks, messages, hints, visibleEnemies);
-  serializeAll(ar, visibilityMap);
-  serializeAll(ar, messageHistory, tutorial);
+  ar(memory, showWelcomeMsg, lastControlKeeperQuestion);
+  ar(newAttacks, ransomAttacks, messages, hints, visibleEnemies);
+  ar(visibilityMap);
+  ar(messageHistory, tutorial);
 }
 
 SERIALIZABLE(PlayerControl);

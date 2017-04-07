@@ -92,7 +92,7 @@ void PositionMap<T>::limitToModel(const WModel m) {
 template <class T>
 template <class Archive> 
 void PositionMap<T>::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, tables, outliers, defaultVal);
+  ar(tables, outliers, defaultVal);
 }
 
 SERIALIZABLE_TMPL(PositionMap, int);

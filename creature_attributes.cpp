@@ -42,13 +42,13 @@ CreatureAttributes::~CreatureAttributes() {}
 
 template <class Archive> 
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, viewId, retiredViewId, illusionViewObject, spawnType, name, attr, chatReactionFriendly);
-  serializeAll(ar, chatReactionHostile, barehandedDamage, barehandedAttack, attackEffect, passiveAttack, gender);
-  serializeAll(ar, body, innocent);
-  serializeAll(ar, animal, cantEquip, courage);
-  serializeAll(ar, carryAnything, boulder, noChase, isSpecial, skills, spells);
-  serializeAll(ar, permanentEffects, lastingEffects, minionTasks, attrIncrease);
-  serializeAll(ar, noAttackSound, maxExpFromCombat, creatureId);
+  ar(viewId, retiredViewId, illusionViewObject, spawnType, name, attr, chatReactionFriendly);
+  ar(chatReactionHostile, barehandedDamage, barehandedAttack, attackEffect, passiveAttack, gender);
+  ar(body, innocent);
+  ar(animal, cantEquip, courage);
+  ar(carryAnything, boulder, noChase, isSpecial, skills, spells);
+  ar(permanentEffects, lastingEffects, minionTasks, attrIncrease);
+  ar(noAttackSound, maxExpFromCombat, creatureId);
 }
 
 SERIALIZABLE(CreatureAttributes);

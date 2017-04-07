@@ -43,10 +43,10 @@
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
   ar & SUBCLASS(OwnedObject<Square>) & SUBCLASS(Renderable);
-  serializeAll(ar, inventory);
-  serializeAll(ar, name, creature, triggers, vision, landingLink, poisonGas);
-  serializeAll(ar, movementSet, lastViewer, viewIndex);
-  serializeAll(ar, forbiddenTribe);
+  ar(inventory);
+  ar(name, creature, triggers, vision, landingLink, poisonGas);
+  ar(movementSet, lastViewer, viewIndex);
+  ar(forbiddenTribe);
   if (progressMeter)
     progressMeter->addProgress();
 }

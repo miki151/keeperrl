@@ -16,6 +16,6 @@ void EventGenerator::removeListener(EventGenerator::SubscriberId id) {
 template <class Archive>
 void EventGenerator::serialize(Archive& ar, const unsigned int) {
   ar & SUBCLASS(OwnedObject<EventGenerator>);
-  serializeAll(ar, listeners);
+  ar(listeners);
 }
 SERIALIZABLE(EventGenerator);

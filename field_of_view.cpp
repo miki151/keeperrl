@@ -25,14 +25,14 @@ template <class Archive>
 void FieldOfView::serialize(Archive& ar, const unsigned int) {
   if (Archive::is_saving::value) // don't save the visibility values, as they can be easily recomputed
     visibility = Table<unique_ptr<Visibility>>(visibility.getBounds());
-  serializeAll(ar, level, visibility, vision);
+  ar(level, visibility, vision);
 }
 
 SERIALIZABLE(FieldOfView);
 
 template <class Archive> 
 void FieldOfView::Visibility::serialize(Archive& ar, const unsigned int) {
-  serializeAll(ar, visible, visibleTiles, px, py);
+  ar(visible, visibleTiles, px, py);
 }
 
 SERIALIZABLE(FieldOfView::Visibility);

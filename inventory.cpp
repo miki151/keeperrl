@@ -24,7 +24,7 @@
 
 template <class Archive> 
 void Inventory::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, items, itemsCache, weight);
+  ar(items, itemsCache, weight);
 }
 
 Inventory::~Inventory() {}

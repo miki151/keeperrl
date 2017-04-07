@@ -3,7 +3,7 @@
 
 template <class Archive>
 void KnownTiles::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, known, border);
+  ar(known, border);
 }
 
 SERIALIZABLE(KnownTiles);
