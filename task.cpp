@@ -130,7 +130,7 @@ class Construction : public Task {
     }
   }
 
-  SERIALIZE_ALL2(Task, position, furnitureType, callback)
+  SERIALIZE_ALL(SUBCLASS(Task), position, furnitureType, callback)
   SERIALIZATION_CONSTRUCTOR(Construction)
 
   private:
@@ -188,7 +188,7 @@ class Destruction : public Task {
     }
   }
 
-  SERIALIZE_ALL2(Task, position, callback, destroyAction, description, furnitureType)
+  SERIALIZE_ALL(SUBCLASS(Task), position, callback, destroyAction, description, furnitureType)
   SERIALIZATION_CONSTRUCTOR(Destruction)
 
   private:
@@ -314,7 +314,7 @@ class PickItem : public Task {
     return NoMove;
   }
 
-  SERIALIZE_ALL2(Task, items, pickedUp, position, tries, callback)
+  SERIALIZE_ALL(SUBCLASS(Task), items, pickedUp, position, tries, callback)
   SERIALIZATION_CONSTRUCTOR(PickItem)
 
   protected:
@@ -359,7 +359,7 @@ class PickAndEquipItem : public PickItem {
     return NoMove;
   }
 
-  SERIALIZE_SUBCLASS(PickItem);   
+  SERIALIZE_ALL(SUBCLASS(PickItem));   
   SERIALIZATION_CONSTRUCTOR(PickAndEquipItem);
 };
 
@@ -393,7 +393,7 @@ class EquipItem : public Task {
     }
   }
 
-  SERIALIZE_ALL2(Task, itemId); 
+  SERIALIZE_ALL(SUBCLASS(Task), itemId); 
   SERIALIZATION_CONSTRUCTOR(EquipItem);
 
   private:
@@ -493,7 +493,7 @@ class BringItem : public PickItem {
     return !pickedUp;
   }
 
-  SERIALIZE_ALL2(PickItem, target, allTargets)
+  SERIALIZE_ALL(SUBCLASS(PickItem), target, allTargets)
   SERIALIZATION_CONSTRUCTOR(BringItem)
 
   protected:
@@ -537,7 +537,7 @@ class ApplyItem : public BringItem {
     }
   }
 
-  SERIALIZE_ALL2(BringItem, callback); 
+  SERIALIZE_ALL(SUBCLASS(BringItem), callback); 
   SERIALIZATION_CONSTRUCTOR(ApplyItem);
 
   private:
@@ -627,7 +627,7 @@ class ApplySquare : public Task {
     return position == c->getPosition() || (!position->canEnterEmpty(c) && position->dist8(c->getPosition()) == 1);
   }
 
-  SERIALIZE_ALL2(Task, positions, rejectedPosition, invalidCount, position, callback, searchType, actionType)
+  SERIALIZE_ALL(SUBCLASS(Task), positions, rejectedPosition, invalidCount, position, callback, searchType, actionType)
   SERIALIZATION_CONSTRUCTOR(ApplySquare)
 
   private:
@@ -686,7 +686,7 @@ class Kill : public Task {
     callback->onKillCancelled(creature);
   }
 
-  SERIALIZE_ALL2(Task, creature, type, callback); 
+  SERIALIZE_ALL(SUBCLASS(Task), creature, type, callback); 
   SERIALIZATION_CONSTRUCTOR(Kill);
 
   private:
@@ -719,7 +719,7 @@ class Disappear : public Task {
     return "Disappear";
   }
 
-  SERIALIZE_SUBCLASS(Task); 
+  SERIALIZE_ALL(SUBCLASS(Task)); 
 };
 
 }
@@ -761,7 +761,7 @@ class Chain : public Task {
     return tasks[current]->getDescription();
   }
 
-  SERIALIZE_ALL2(Task, tasks, current); 
+  SERIALIZE_ALL(SUBCLASS(Task), tasks, current); 
   SERIALIZATION_CONSTRUCTOR(Chain);
 
   private:
@@ -806,7 +806,7 @@ class Explore : public Task {
     return "Explore " + toString(position);
   }
 
-  SERIALIZE_ALL2(Task, position); 
+  SERIALIZE_ALL(SUBCLASS(Task), position); 
   SERIALIZATION_CONSTRUCTOR(Explore);
 
   private:
@@ -836,7 +836,7 @@ class AttackLeader : public Task {
     return "Attack " + collective->getLeader()->getName().bare();
   }
   
-  SERIALIZE_ALL2(Task, collective); 
+  SERIALIZE_ALL(SUBCLASS(Task), collective); 
   SERIALIZATION_CONSTRUCTOR(AttackLeader);
 
   private:
@@ -926,7 +926,7 @@ class CampAndSpawn : public Task {
     return "Camp and spawn " + target->getLeader()->getName().bare();
   }
  
-  SERIALIZE_ALL2(Task, target, spawns, campPos, defenseSize, attackSize, attackCountdown, defenseTeam, attackTeam, numAttacks);
+  SERIALIZE_ALL(SUBCLASS(Task), target, spawns, campPos, defenseSize, attackSize, attackCountdown, defenseTeam, attackTeam, numAttacks);
   SERIALIZATION_CONSTRUCTOR(CampAndSpawn);
 
   private:
@@ -973,7 +973,7 @@ class KillFighters : public Task {
     return "Kill " + toString(numCreatures) + " minions of " + collective->getName().getFull();
   }
 
-  SERIALIZE_ALL2(Task, collective, numCreatures, targets); 
+  SERIALIZE_ALL(SUBCLASS(Task), collective, numCreatures, targets); 
   SERIALIZATION_CONSTRUCTOR(KillFighters);
 
   private:
@@ -1002,7 +1002,7 @@ class ConsumeItem : public Task {
     return "Consume item";
   }
   
-  SERIALIZE_ALL2(Task, items, callback); 
+  SERIALIZE_ALL(SUBCLASS(Task), items, callback); 
   SERIALIZATION_CONSTRUCTOR(ConsumeItem);
 
   protected:
@@ -1047,7 +1047,7 @@ class Copulate : public Task {
     return "Copulate with " + target->getName().bare();
   }
 
-  SERIALIZE_ALL2(Task, target, numTurns, callback); 
+  SERIALIZE_ALL(SUBCLASS(Task), target, numTurns, callback); 
   SERIALIZATION_CONSTRUCTOR(Copulate);
 
   protected:
@@ -1086,7 +1086,7 @@ class Consume : public Task {
     return "Absorb " + target->getName().bare();
   }
 
-  SERIALIZE_ALL2(Task, target, callback); 
+  SERIALIZE_ALL(SUBCLASS(Task), target, callback); 
   SERIALIZATION_CONSTRUCTOR(Consume);
 
   protected:
@@ -1156,7 +1156,7 @@ class Eat : public Task {
       return "Eat";
   }
 
-  SERIALIZE_ALL2(Task, position, positions, rejectedPosition); 
+  SERIALIZE_ALL(SUBCLASS(Task), position, positions, rejectedPosition); 
   SERIALIZATION_CONSTRUCTOR(Eat);
 
   private:
@@ -1190,7 +1190,7 @@ class GoTo : public Task {
     return "Go to " + toString(target);
   }
 
-  SERIALIZE_ALL2(Task, target, tryForever)
+  SERIALIZE_ALL(SUBCLASS(Task), target, tryForever)
   SERIALIZATION_CONSTRUCTOR(GoTo);
 
   protected:
@@ -1225,7 +1225,7 @@ class TransferTo : public Task {
     return "Go to site";
   }
 
-  SERIALIZE_ALL2(Task, target, model); 
+  SERIALIZE_ALL(SUBCLASS(Task), target, model); 
   SERIALIZATION_CONSTRUCTOR(TransferTo);
 
   protected:
@@ -1281,7 +1281,7 @@ class GoToAndWait : public Task {
     return "Go to and wait " + toString(position);
   }
 
-  SERIALIZE_ALL2(Task, position, waitTime, maxTime, timeout);
+  SERIALIZE_ALL(SUBCLASS(Task), position, waitTime, maxTime, timeout);
   SERIALIZATION_CONSTRUCTOR(GoToAndWait);
 
   private:
@@ -1320,7 +1320,7 @@ class Whipping : public Task {
     return "Whipping " + whipped->getName().a();
   }
 
-  SERIALIZE_ALL2(Task, position, whipped);
+  SERIALIZE_ALL(SUBCLASS(Task), position, whipped);
   SERIALIZATION_CONSTRUCTOR(Whipping);
 
   protected:
@@ -1346,7 +1346,7 @@ class DropItems : public Task {
     return "Drop items";
   }
 
-  SERIALIZE_ALL2(Task, items); 
+  SERIALIZE_ALL(SUBCLASS(Task), items); 
   SERIALIZATION_CONSTRUCTOR(DropItems);
 
   protected:
@@ -1396,7 +1396,7 @@ class Spider : public Task {
     return "Spider";
   }
 
-  SERIALIZE_ALL2(Task, origin, positionsClose, positionsFurther, makeWeb); 
+  SERIALIZE_ALL(SUBCLASS(Task), origin, positionsClose, positionsFurther, makeWeb); 
   SERIALIZATION_CONSTRUCTOR(Spider);
 
   protected:

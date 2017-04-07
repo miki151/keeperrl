@@ -139,7 +139,7 @@ class Portal : public Trigger {
     }
   }
 
-  SERIALIZE_ALL2(Trigger, startTime, active);
+  SERIALIZE_ALL(SUBCLASS(Trigger), startTime, active);
   SERIALIZATION_CONSTRUCTOR(Portal);
 
   private:
@@ -188,7 +188,7 @@ class Trap : public Trigger {
     }
   }
 
-  SERIALIZE_ALL2(Trigger, effect, tribe, alwaysVisible);
+  SERIALIZE_ALL(SUBCLASS(Trigger), effect, tribe, alwaysVisible);
   SERIALIZATION_CONSTRUCTOR(Trap);
 
   private:
@@ -214,7 +214,7 @@ class Torch : public Trigger {
     return 8.2;
   }
 
-  SERIALIZE_SUBCLASS(Trigger);
+  SERIALIZE_ALL(SUBCLASS(Trigger));
   SERIALIZATION_CONSTRUCTOR(Torch);
 };
 
@@ -267,7 +267,7 @@ class MeteorShower : public Trigger {
     return true;
   }
 
-  SERIALIZE_ALL2(Trigger, endTime);
+  SERIALIZE_ALL(SUBCLASS(Trigger), endTime);
   SERIALIZATION_CONSTRUCTOR(MeteorShower);
 
   private:

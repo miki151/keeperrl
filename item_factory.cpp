@@ -76,7 +76,7 @@ class FireScroll : public Item {
     }
   }
 
-  SERIALIZE_ALL2(Item, set);
+  SERIALIZE_ALL(SUBCLASS(Item), set);
   SERIALIZATION_CONSTRUCTOR(FireScroll);
 
   private:
@@ -119,7 +119,7 @@ class AmuletOfWarning : public Item {
     }
   }
 
-  SERIALIZE_ALL2(Item, radius);
+  SERIALIZE_ALL(SUBCLASS(Item), radius);
   SERIALIZATION_CONSTRUCTOR(AmuletOfWarning);
 
   private:
@@ -136,7 +136,7 @@ class AmuletOfHealing : public Item {
         owner->heal(1.0 / 20);
   }
 
-  SERIALIZE_SUBCLASS(Item);
+  SERIALIZE_ALL(SUBCLASS(Item));
   SERIALIZATION_CONSTRUCTOR(AmuletOfHealing);
 };
 
@@ -146,7 +146,7 @@ class Telepathy : public CreatureVision {
     return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain();
   }
 
-  SERIALIZE_SUBCLASS(CreatureVision);
+  SERIALIZE_ALL(SUBCLASS(CreatureVision));
 };
 
 class ItemOfCreatureVision : public Item {
@@ -161,7 +161,7 @@ class ItemOfCreatureVision : public Item {
     c->removeCreatureVision(vision.get());
   }
 
-  SERIALIZE_ALL2(Item, vision);
+  SERIALIZE_ALL(SUBCLASS(Item), vision);
   SERIALIZATION_CONSTRUCTOR(ItemOfCreatureVision);
 
   private:
@@ -221,7 +221,7 @@ class Corpse : public Item {
     return corpseInfo;
   }
 
-  SERIALIZE_ALL2(Item, object2, rotten, rottenTime, rottingTime, rottenName, corpseInfo);
+  SERIALIZE_ALL(SUBCLASS(Item), object2, rotten, rottenTime, rottingTime, rottenName, corpseInfo);
   SERIALIZATION_CONSTRUCTOR(Corpse);
 
   private:
@@ -266,7 +266,7 @@ class Potion : public Item {
     heat = max(0., heat - 0.005);
   }
 
-  SERIALIZE_ALL2(Item, heat);
+  SERIALIZE_ALL(SUBCLASS(Item), heat);
   SERIALIZATION_CONSTRUCTOR(Potion);
 
   private:
@@ -281,7 +281,7 @@ class SkillBook : public Item {
     c->addSkill(Skill::get(skill));
   }
 
-  SERIALIZE_ALL2(Item, skill);
+  SERIALIZE_ALL(SUBCLASS(Item), skill);
   SERIALIZATION_CONSTRUCTOR(SkillBook);
 
   private:
@@ -299,7 +299,7 @@ class TechBook : public Item {
     }
   }
 
-  SERIALIZE_ALL2(Item, tech, read);
+  SERIALIZE_ALL(SUBCLASS(Item), tech, read);
   SERIALIZATION_CONSTRUCTOR(TechBook);
 
   private:
@@ -321,7 +321,7 @@ class TrapItem : public Item {
     discarded = true;
   }
 
-  SERIALIZE_ALL2(Item, effect, trapObject, alwaysVisible);
+  SERIALIZE_ALL(SUBCLASS(Item), effect, trapObject, alwaysVisible);
   SERIALIZATION_CONSTRUCTOR(TrapItem);
 
   private:

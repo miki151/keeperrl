@@ -73,7 +73,7 @@ class Magma : public Square {
       Square::dropItems(position, std::move(items));
   }
 
-  SERIALIZE_SUBCLASS(Square);
+  SERIALIZE_ALL(SUBCLASS(Square));
   SERIALIZATION_CONSTRUCTOR(Magma);
 };
 
@@ -112,7 +112,7 @@ class Water : public Square {
       Square::dropItems(position, std::move(items));
   }
 
-  SERIALIZE_SUBCLASS(Square);
+  SERIALIZE_ALL(SUBCLASS(Square));
   SERIALIZATION_CONSTRUCTOR(Water);
   
   private:

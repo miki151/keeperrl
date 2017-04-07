@@ -187,7 +187,7 @@ class Heal : public Behaviour {
   }
 
 
-  SERIALIZE_SUBCLASS(Behaviour);
+  SERIALIZE_ALL(SUBCLASS(Behaviour));
   SERIALIZATION_CONSTRUCTOR(Heal);
 };
 
@@ -200,7 +200,7 @@ class Rest : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Rest);
-  SERIALIZE_SUBCLASS(Behaviour);
+  SERIALIZE_ALL(SUBCLASS(Behaviour));
 };
 
 class MoveRandomly : public Behaviour {
@@ -245,7 +245,7 @@ class MoveRandomly : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(MoveRandomly);
-  SERIALIZE_SUBCLASS(Behaviour);
+  SERIALIZE_ALL(SUBCLASS(Behaviour));
 
   private:
   deque<Position> memory;
@@ -276,7 +276,7 @@ class StayOnFurniture : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(StayOnFurniture)
-  SERIALIZE_ALL2(Behaviour, type)
+  SERIALIZE_ALL(SUBCLASS(Behaviour), type)
 
   private:
   FurnitureType SERIAL(type);
@@ -296,7 +296,7 @@ class BirdFlyAway : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(BirdFlyAway);
-  SERIALIZE_ALL2(Behaviour, maxDist);
+  SERIALIZE_ALL(SUBCLASS(Behaviour), maxDist);
 
   private:
   double SERIAL(maxDist);
@@ -314,7 +314,7 @@ class GoldLust : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(GoldLust);
-  SERIALIZE_SUBCLASS(Behaviour);
+  SERIALIZE_ALL(SUBCLASS(Behaviour));
 };
 
 class Wildlife : public Behaviour {
@@ -334,7 +334,7 @@ class Wildlife : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Wildlife);
-  SERIALIZE_SUBCLASS(Behaviour);
+  SERIALIZE_ALL(SUBCLASS(Behaviour));
 };
 
 class Fighter : public Behaviour {
@@ -589,7 +589,7 @@ class Fighter : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Fighter);
-  SERIALIZE_ALL2(Behaviour, maxPowerRatio, chase, lastSeen);
+  SERIALIZE_ALL(SUBCLASS(Behaviour), maxPowerRatio, chase, lastSeen);
 
   private:
   double SERIAL(maxPowerRatio);
@@ -620,7 +620,7 @@ class GuardTarget : public Behaviour {
   GuardTarget(WCreature c, double minD, double maxD) : Behaviour(c), minDist(minD), maxDist(maxD) {}
 
   SERIALIZATION_CONSTRUCTOR(GuardTarget);
-  SERIALIZE_ALL2(Behaviour, minDist, maxDist);
+  SERIALIZE_ALL(SUBCLASS(Behaviour), minDist, maxDist);
 
   protected:
   MoveInfo getMoveTowards(Position target) {
@@ -654,7 +654,7 @@ class GuardArea : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(GuardArea);
-  SERIALIZE_ALL2(Behaviour, myLevel, area);
+  SERIALIZE_ALL(SUBCLASS(Behaviour), myLevel, area);
 
   private:
   WLevel SERIAL(myLevel) = nullptr;
@@ -671,7 +671,7 @@ class GuardSquare : public GuardTarget {
   }
 
   SERIALIZATION_CONSTRUCTOR(GuardSquare);
-  SERIALIZE_ALL2(GuardTarget, pos);
+  SERIALIZE_ALL(SUBCLASS(GuardTarget), pos);
 
   private:
   Position SERIAL(pos);
@@ -686,7 +686,7 @@ class Wait : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Wait);
-  SERIALIZE_SUBCLASS(Behaviour);
+  SERIALIZE_ALL(SUBCLASS(Behaviour));
 };
 
 class DieTime : public Behaviour {
@@ -703,7 +703,7 @@ class DieTime : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(DieTime);
-  SERIALIZE_ALL2(Behaviour, dieTime);
+  SERIALIZE_ALL(SUBCLASS(Behaviour), dieTime);
 
   private:
   double SERIAL(dieTime);
@@ -731,7 +731,7 @@ class Summoned : public GuardTarget {
   }
 
   SERIALIZATION_CONSTRUCTOR(Summoned);
-  SERIALIZE_ALL2(GuardTarget, target, dieTime);
+  SERIALIZE_ALL(SUBCLASS(GuardTarget), target, dieTime);
 
   private:
   WCreature SERIAL(target);
@@ -772,7 +772,7 @@ class Thief : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Thief);
-  SERIALIZE_ALL2(Behaviour, robbed);
+  SERIALIZE_ALL(SUBCLASS(Behaviour), robbed);
 
   private:
   EntitySet<Creature> SERIAL(robbed);
@@ -787,7 +787,7 @@ class ByCollective : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(ByCollective);
-  SERIALIZE_ALL2(Behaviour, collective);
+  SERIALIZE_ALL(SUBCLASS(Behaviour), collective);
 
   private:
   WCollective SERIAL(collective);
@@ -803,7 +803,7 @@ class ChooseRandom : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(ChooseRandom);
-  SERIALIZE_ALL2(Behaviour, behaviours, weights);
+  SERIALIZE_ALL(SUBCLASS(Behaviour), behaviours, weights);
 
   private:
   vector<PBehaviour> SERIAL(behaviours);
@@ -819,7 +819,7 @@ class SingleTask : public Behaviour {
   };
 
   SERIALIZATION_CONSTRUCTOR(SingleTask);
-  SERIALIZE_ALL2(Behaviour, task);
+  SERIALIZE_ALL(SUBCLASS(Behaviour), task);
 
   private:
   PTask SERIAL(task);
@@ -848,7 +848,7 @@ class SplashHeroes : public Behaviour {
   };
 
   SERIALIZATION_CONSTRUCTOR(SplashHeroes);
-  SERIALIZE_SUBCLASS(Behaviour);
+  SERIALIZE_ALL(SUBCLASS(Behaviour));
 
   private:
   bool started = false;
@@ -877,7 +877,7 @@ class SplashHeroLeader : public Behaviour {
   };
 
   SERIALIZATION_CONSTRUCTOR(SplashHeroLeader);
-  SERIALIZE_SUBCLASS(Behaviour);
+  SERIALIZE_ALL(SUBCLASS(Behaviour));
 
   private:
 
@@ -912,7 +912,7 @@ class SplashMonsters : public Behaviour {
   };
 
   SERIALIZATION_CONSTRUCTOR(SplashMonsters);
-  SERIALIZE_SUBCLASS(Behaviour);
+  SERIALIZE_ALL(SUBCLASS(Behaviour));
 
   private:
   optional<Vec2> initialPos;
@@ -1029,7 +1029,7 @@ class SplashImps : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(SplashImps);
-  SERIALIZE_SUBCLASS(Behaviour);
+  SERIALIZE_ALL(SUBCLASS(Behaviour));
 
   private:
   optional<Vec2> initialPos;
@@ -1055,7 +1055,7 @@ class AvoidFire : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(AvoidFire);
-  SERIALIZE_SUBCLASS(Behaviour);
+  SERIALIZE_ALL(SUBCLASS(Behaviour));
 };
 
 REGISTER_TYPE(Heal);

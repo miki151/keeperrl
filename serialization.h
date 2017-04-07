@@ -80,18 +80,6 @@ void CLASS::serialize(Archive& ar1, const unsigned int) { \
 }\
 SERIALIZABLE(CLASS);
 
-#define SERIALIZE_SUBCLASS(SUB) \
-  template <class Archive> \
-  void serialize(Archive& ar, const unsigned int) { \
-    ar & SUBCLASS(SUB);\
-  }
-
-#define SERIALIZE_ALL2(SUB, ...) \
-  template <class Archive> \
-  void serialize(Archive& ar, const unsigned int) { \
-    ar(SUBCLASS(SUB), __VA_ARGS__); \
-  }
-
 #define SERIALIZE_ALL(...) \
   template <class Archive> \
   void serialize(Archive& ar1, const unsigned int) { \

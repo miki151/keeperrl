@@ -124,7 +124,7 @@ class BoulderController : public Monster {
       getCreature()->monsterMessage(msg, msgNoSee);
   }
 
-  SERIALIZE_ALL2(Monster, direction)
+  SERIALIZE_ALL(SUBCLASS(Monster), direction)
   SERIALIZATION_CONSTRUCTOR(BoulderController)
 
   private:
@@ -176,7 +176,7 @@ class SokobanController : public Monster {
       getCreature()->monsterMessage(msg, msgNoSee);
   }
 
-  SERIALIZE_SUBCLASS(Monster);
+  SERIALIZE_ALL(SUBCLASS(Monster));
   SERIALIZATION_CONSTRUCTOR(SokobanController);
 
   private:
@@ -351,7 +351,7 @@ class KrakenController : public Monster {
     getCreature()->wait().perform(getCreature());
   }
 
-  SERIALIZE_ALL2(Monster, ready, spawns, father);
+  SERIALIZE_ALL(SUBCLASS(Monster), ready, spawns, father);
   SERIALIZATION_CONSTRUCTOR(KrakenController);
 
   private:
