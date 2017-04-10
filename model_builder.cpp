@@ -220,7 +220,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
                   //c.location = new Location();
                   c.upStairs = {upLink};
                   c.downStairs = {downLink};
-                  c.furniture = FurnitureFactory(TribeId::getHuman(), FurnitureType::TORCH);
+                  c.furniture = FurnitureFactory(TribeId::getHuman(), FurnitureType::GROUND_TORCH);
                   c.buildingId = BuildingId::BRICK;)));
         downLink = upLink;
       }

@@ -139,6 +139,7 @@ class Position {
   WConstSquare getSquare() const;
   Vec2 SERIAL(coord);
   WLevel SERIAL(level) = nullptr;
+  void updateSupport() const;
 };
 
 template <>

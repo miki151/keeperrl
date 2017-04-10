@@ -37,11 +37,9 @@ class Trigger : public OwnedObject<Trigger> {
   virtual bool isDangerous(WConstCreature c) const;
   virtual void tick();
   virtual void fireDamage(double size);
-  virtual double getLightEmission() const;
 
   static PTrigger getPortal(const ViewObject&, Position);
   static PTrigger getTrap(const ViewObject&, Position, EffectType, TribeId, bool alwaysVisible);
-  static PTrigger getTorch(Dir attachmentDir, Position);
   static PTrigger getMeteorShower(WCreature, double duration);
 
   static const ViewObject& getTorchViewObject(Dir);

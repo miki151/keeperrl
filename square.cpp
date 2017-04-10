@@ -219,7 +219,6 @@ void Square::dropItems(Position pos, vector<PItem> items) {
 void Square::addTrigger(Position pos, PTrigger t) {
   setDirty(pos);
   pos.getLevel()->addTickingSquare(pos.getCoord());
-  pos.getLevel()->addLightSource(pos.getCoord(), t->getLightEmission());
   triggers.push_back(std::move(t));
 }
 
@@ -234,7 +233,6 @@ PTrigger Square::removeTrigger(Position pos, WTrigger trigger) {
     if (t.get() == trigger) {
       PTrigger ret = std::move(t);
       removeElement(triggers, t);
-      pos.getLevel()->removeLightSource(pos.getCoord(), ret->getLightEmission());
       return ret;
     }
   FATAL << "Trigger not found";

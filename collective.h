@@ -218,7 +218,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   virtual void onCantPickItem(EntitySet<Item> items) override;
   virtual void onConstructed(Position, FurnitureType) override;
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
-  virtual void onTorchBuilt(Position, WTrigger) override;
   virtual void onAppliedSquare(WCreature, Position) override;
   virtual void onKillCancelled(WCreature) override;
   virtual void onCopulated(WCreature who, WCreature with) override;

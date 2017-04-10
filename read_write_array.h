@@ -24,13 +24,6 @@ class ReadWriteArray {
     return modified[pos].get();
   }
 
-  PType extractElem(Vec2 pos) {
-    getWritable(pos);
-    types[pos].reset();
-    readonly[pos] = nullptr;
-    return std::move(modified[pos]);
-  }
-
   const WType getReadonly(Vec2 pos) const {
     return readonly[pos];
   }

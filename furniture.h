@@ -1,6 +1,5 @@
 #pragma once
 
-#include "position.h"
 #include "renderable.h"
 #include "destroy_action.h"
 #include "fire.h"
@@ -15,6 +14,7 @@ class MovementType;
 class Fire;
 class ItemFactory;
 class GameEvent;
+class Position;
 
 class Furniture : public Renderable, public OwnedObject<Furniture> {
   public:

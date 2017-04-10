@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "construction_map.h"
 #include "creature.h"
-#include "trigger.h"
 #include "tribe.h"
 #include "furniture.h"
+#include "furniture_factory.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::FurnitureInfo, FurnitureInfo);
 
@@ -56,16 +56,16 @@ FurnitureLayer ConstructionMap::FurnitureInfo::getLayer() const {
   return Furniture::getLayer(type);
 }
 
-const ConstructionMap::FurnitureInfo& ConstructionMap::getFurniture(Position pos, FurnitureLayer layer) const {
-  return furniture[layer].at(pos);
+optional<const ConstructionMap::FurnitureInfo&> ConstructionMap::getFurniture(Position pos, FurnitureLayer layer) const {
+  return getReferenceMaybe(furniture[layer], pos);
 }
 
 void ConstructionMap::setTask(Position pos, FurnitureLayer layer, UniqueEntity<Task>::Id id) {
-  modFurniture(pos, layer).setTask(id);
+  modFurniture(pos, layer)->setTask(id);
 }
 
-ConstructionMap::FurnitureInfo& ConstructionMap::modFurniture(Position pos, FurnitureLayer layer) {
-  return furniture[layer].at(pos);
+optional<ConstructionMap::FurnitureInfo&> ConstructionMap::modFurniture(Position pos, FurnitureLayer layer) {
+  return getReferenceMaybe(furniture[layer], pos);
 }
 
 void ConstructionMap::removeFurniture(Position pos, FurnitureLayer layer) {
@@ -86,10 +86,16 @@ void ConstructionMap::addDebt(const CostInfo& cost) {
 }
 
 void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
-  auto& info = modFurniture(pos, layer);
-  if (info.isBuilt())
-    addDebt(info.getCost());
-  info.reset();
+  if (auto info = modFurniture(pos, layer)) {
+    if (info->isBuilt())
+      addDebt(info->getCost());
+    info.reset();
+  }
+  for (auto pos2 : pos.neighbors8())
+    for (auto layer : ENUM_ALL(FurnitureLayer))
+      if (auto info = getFurniture(pos2, layer))
+        if (!FurnitureFactory::hasSupport(info->getFurnitureType(), pos2))
+          removeFurniture(pos2, layer);
 }
 
 void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
@@ -111,7 +117,7 @@ bool ConstructionMap::containsFurniture(Position pos, FurnitureLayer layer) cons
 }
 
 int ConstructionMap::getBuiltCount(FurnitureType type) const {
-  return furniturePositions[type].size();
+  return (int) furniturePositions[type].size();
 }
 
 int ConstructionMap::getTotalCount(FurnitureType type) const {
@@ -195,67 +201,6 @@ void ConstructionMap::TrapInfo::setMarked() {
   marked = true;
 }
 
-void ConstructionMap::TorchInfo::setBuilt(WTrigger t) {
-  built = true;
-  task = none;
-  trigger = t;
-}
-
-ConstructionMap::TorchInfo::TorchInfo(Dir d) : attachmentDir(d) {
-}
-
-Dir ConstructionMap::TorchInfo::getAttachmentDir() const {
-  return attachmentDir;
-}
-
-UniqueEntity<Task>::Id ConstructionMap::TorchInfo::getTask() const {
-  CHECK(hasTask());
-  return *task;
-}
-
-bool ConstructionMap::TorchInfo::hasTask() const {
-  return !!task;
-}
-
-bool ConstructionMap::TorchInfo::isBuilt() const {
-  return built;
-}
-
-WTrigger ConstructionMap::TorchInfo::getTrigger() {
-  return trigger;
-}
-
-void ConstructionMap::TorchInfo::setTask(UniqueEntity<Task>::Id id) {
-  task = id;
-}
-
-const ConstructionMap::TorchInfo& ConstructionMap::getTorch(Position pos) const {
-  return torches.at(pos);
-}
-
-ConstructionMap::TorchInfo& ConstructionMap::getTorch(Position pos) {
-  return torches.at(pos);
-}
-
-void ConstructionMap::removeTorch(Position pos) {
-  torches.erase(pos);
-  pos.setNeedsRenderUpdate(true);
-}
-
-void ConstructionMap::addTorch(Position pos, const TorchInfo& info) {
-  CHECK(!containsTorch(pos));
-  torches.insert(make_pair(pos, info));
-  pos.setNeedsRenderUpdate(true);
-}
-
-bool ConstructionMap::containsTorch(Position pos) const {
-  return torches.count(pos);
-}
-
-const map<Position, ConstructionMap::TorchInfo>& ConstructionMap::getTorches() const {
-  return torches;
-}
-
 int ConstructionMap::getDebt(CollectiveResourceId id) const {
   return debt[id];
 }
@@ -269,16 +214,8 @@ SERIALIZABLE(ConstructionMap::TrapInfo);
 SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TrapInfo, TrapInfo);
 
 template <class Archive>
-void ConstructionMap::TorchInfo::serialize(Archive& ar, const unsigned int version) {
-  ar(built, task, attachmentDir, trigger);
-}
-
-SERIALIZABLE(ConstructionMap::TorchInfo);
-SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TorchInfo, TorchInfo);
-
-template <class Archive>
 void ConstructionMap::serialize(Archive& ar, const unsigned int version) {
-  ar(debt, traps, torches, furniture, furniturePositions, unbuiltCounts, allFurniture);
+  ar(debt, traps, furniture, furniturePositions, unbuiltCounts, allFurniture);
 }
 
 SERIALIZABLE(ConstructionMap);

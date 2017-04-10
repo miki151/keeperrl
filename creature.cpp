@@ -1297,17 +1297,6 @@ CreatureAction Creature::fire(Vec2 direction) const {
   });
 }
 
-CreatureAction Creature::placeTorch(Dir attachmentDir, function<void(WTrigger)> builtCallback) const {
-  return CreatureAction(this, [=](WCreature self) {
-      PTrigger torch = Trigger::getTorch(attachmentDir, position);
-      WTrigger tRef = torch.get();
-      getPosition().addTrigger(std::move(torch));
-      addSound(Sound(SoundId::DIGGING).setPitch(0.5));
-      builtCallback(tRef);
-      self->spendTime(1);
-  });
-}
-
 void Creature::addMovementInfo(const MovementInfo& info) {
   modViewObject().addMovementInfo(info);
   getPosition().setNeedsRenderUpdate(true);

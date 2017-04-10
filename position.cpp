@@ -409,34 +409,42 @@ void Position::dropItems(vector<PItem> v) {
 }
 
 void Position::removeFurniture(WConstFurniture f) const {
+  level->removeLightSource(coord, f->getLightEmission());
   auto layer = f->getLayer();
   CHECK(getFurniture(layer) == f);
   level->furniture->getBuilt(layer).clearElem(coord);
   level->furniture->getConstruction(coord, layer).reset();
   updateConnectivity();
   updateVisibility();
+  updateSupport();
   setNeedsRenderUpdate(true);
 }
 
 void Position::addFurniture(PFurniture f) const {
+  auto furniture = f.get();
   level->setFurniture(coord, std::move(f));
   updateConnectivity();
   updateVisibility();
+  level->addLightSource(coord, furniture->getLightEmission());
   setNeedsRenderUpdate(true);
 }
 
 void Position::replaceFurniture(WConstFurniture prev, PFurniture next) const {
+  level->removeLightSource(coord, prev->getLightEmission());
+  auto furniture = next.get();
   auto layer = next->getLayer();
   CHECK(prev->getLayer() == layer);
   CHECK(getFurniture(layer) == prev);
   level->setFurniture(coord, std::move(next));
   updateConnectivity();
   updateVisibility();
+  updateSupport();
+  level->addLightSource(coord, furniture->getLightEmission());
   setNeedsRenderUpdate(true);
 }
 
 bool Position::canConstruct(FurnitureType type) const {
-  return !isUnavailable() && FurnitureFactory::canBuild(type, *this);
+  return !isUnavailable() && FurnitureFactory::canBuild(type, *this) && FurnitureFactory::hasSupport(type, *this);
 }
 
 bool Position::isWall() const {
@@ -591,8 +599,6 @@ double Position::getLightEmission() const {
   if (!isValid())
     return 0;
   double ret = 0;
-  for (auto t : getSquare()->getTriggers())
-    ret += t->getLightEmission();
   for (auto f : getFurniture())
     ret += f->getLightEmission();
   return ret;
@@ -621,6 +627,13 @@ void Position::updateConnectivity() const {
 void Position::updateVisibility() const {
   if (isValid())
     level->updateVisibility(coord);
+}
+
+void Position::updateSupport() const {
+  for (auto pos : neighbors8())
+    for (auto f : pos.modFurniture())
+      if (!FurnitureFactory::hasSupport(f->getType(), pos))
+        f->destroy(pos, DestroyAction::Type::BASH);
 }
 
 bool Position::canNavigate(const MovementType& type) const {

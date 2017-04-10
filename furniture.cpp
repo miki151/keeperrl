@@ -90,13 +90,14 @@ void Furniture::onEnter(WCreature c) const {
 
 void Furniture::destroy(Position pos, const DestroyAction& action) {
   pos.globalMessage("The " + name + " " + action.getIsDestroyed());
-  pos.getGame()->addEvent({EventId::FURNITURE_DESTROYED, EventInfo::FurnitureEvent{pos, getLayer()}});
+  auto layer = getLayer();
   if (*itemDrop)
     pos.dropItems((*itemDrop)->random());
   if (destroyedRemains)
     pos.replaceFurniture(this, FurnitureFactory::get(*destroyedRemains, getTribe()));
   else
     pos.removeFurniture(this);
+  pos.getGame()->addEvent({EventId::FURNITURE_DESTROYED, EventInfo::FurnitureEvent{pos, layer}});
 }
 
 void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& action) {

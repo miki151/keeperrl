@@ -115,6 +115,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::EYEBALL:
       return Furniture("eyeball", ViewObject(ViewId::EYEBALL, ViewLayer::FLOOR), type, Furniture::BLOCKING, tribe)
           .setCanHide()
+          .setLightEmission(8.2)
           .setDestroyable(30);
     case FurnitureType::WHIPPING_POST:
       return Furniture("whipping post", ViewObject(ViewId::WHIPPING_POST, ViewLayer::FLOOR), type,
@@ -178,9 +179,29 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("pigsty", ViewObject(ViewId::MUD, ViewLayer::FLOOR),
                        type, Furniture::NON_BLOCKING, tribe)
           .setTickType(FurnitureTickType::PIGSTY);
-    case FurnitureType::TORCH:
+    case FurnitureType::GROUND_TORCH:
       return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe)
           .setLightEmission(8.2);
+    case FurnitureType::TORCH_N:
+      return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::TORCH1).setAttachmentDir(Dir::N), type,
+          Furniture::NON_BLOCKING, tribe)
+          .setLightEmission(8.2)
+          .setLayer(FurnitureLayer::CEILING);
+    case FurnitureType::TORCH_E:
+      return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::TORCH2).setAttachmentDir(Dir::E), type,
+          Furniture::NON_BLOCKING, tribe)
+          .setLightEmission(8.2)
+          .setLayer(FurnitureLayer::CEILING);
+    case FurnitureType::TORCH_S:
+      return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::TORCH2).setAttachmentDir(Dir::S), type,
+           Furniture::NON_BLOCKING, tribe)
+          .setLightEmission(8.2)
+          .setLayer(FurnitureLayer::CEILING);
+    case FurnitureType::TORCH_W:
+      return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::TORCH2).setAttachmentDir(Dir::W), type,
+          Furniture::NON_BLOCKING, tribe)
+          .setLightEmission(8.2)
+          .setLayer(FurnitureLayer::CEILING);
     case FurnitureType::TORTURE_TABLE:
       return Furniture("torture table", ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR), type,
           Furniture::NON_BLOCKING, tribe)
@@ -358,18 +379,28 @@ bool FurnitureParams::operator == (const FurnitureParams& p) const {
   return type == p.type && tribe == p.tribe;
 }
 
-static bool canBuildDoor(Position pos) {
-  return pos.canEnterEmpty({MovementTrait::WALK}) && (
-      (pos.minus(Vec2(0, 1)).isWall() && pos.minus(Vec2(0, -1)).isWall()) ||
-      (pos.minus(Vec2(1, 0)).isWall() && pos.minus(Vec2(-1, 0)).isWall()));
+bool FurnitureFactory::hasSupport(FurnitureType type, Position pos) {
+  switch (type) {
+    case FurnitureType::TORCH_N:
+      return pos.minus(Vec2(0, 1)).isWall();
+    case FurnitureType::TORCH_E:
+      return pos.plus(Vec2(1, 0)).isWall();
+    case FurnitureType::TORCH_S:
+      return pos.plus(Vec2(0, 1)).isWall();
+    case FurnitureType::TORCH_W:
+      return pos.minus(Vec2(1, 0)).isWall();
+    case FurnitureType::DOOR:
+      return (pos.minus(Vec2(0, 1)).isWall() && pos.minus(Vec2(0, -1)).isWall()) ||
+             (pos.minus(Vec2(1, 0)).isWall() && pos.minus(Vec2(-1, 0)).isWall());
+    default:
+      return true;
+  }
 }
 
 bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
   switch (type) {
     case FurnitureType::BRIDGE:
       return !pos.canEnterEmpty({MovementTrait::WALK}) && pos.canEnterEmpty({MovementTrait::SWIM});
-    case FurnitureType::DOOR:
-      return canBuildDoor(pos);
     case FurnitureType::DUNGEON_WALL:
       if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
         return furniture->getType() == FurnitureType::MOUNTAIN;
@@ -417,7 +448,7 @@ PFurniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
 FurnitureFactory FurnitureFactory::roomFurniture(TribeId tribe) {
   return FurnitureFactory(tribe, {
       {FurnitureType::BED, 2},
-      {FurnitureType::TORCH, 1},
+      {FurnitureType::GROUND_TORCH, 1},
       {FurnitureType::CHEST, 2}
   });
 }
@@ -425,7 +456,7 @@ FurnitureFactory FurnitureFactory::roomFurniture(TribeId tribe) {
 FurnitureFactory FurnitureFactory::castleFurniture(TribeId tribe) {
   return FurnitureFactory(tribe, {
       {FurnitureType::BED, 2},
-      {FurnitureType::TORCH, 1},
+      {FurnitureType::GROUND_TORCH, 1},
       {FurnitureType::FOUNTAIN, 1},
       {FurnitureType::CHEST, 2}
   });
@@ -433,20 +464,20 @@ FurnitureFactory FurnitureFactory::castleFurniture(TribeId tribe) {
 
 FurnitureFactory FurnitureFactory::dungeonOutside(TribeId tribe) {
   return FurnitureFactory(tribe, {
-      {FurnitureType::TORCH, 1},
+      {FurnitureType::GROUND_TORCH, 1},
   });
 }
 
 FurnitureFactory FurnitureFactory::castleOutside(TribeId tribe) {
   return FurnitureFactory(tribe, {
-      {FurnitureType::TORCH, 1},
+      {FurnitureType::GROUND_TORCH, 1},
       {FurnitureType::WELL, 1},
   });
 }
 
 FurnitureFactory FurnitureFactory::villageOutside(TribeId tribe) {
   return FurnitureFactory(tribe, {
-      {FurnitureType::TORCH, 1},
+      {FurnitureType::GROUND_TORCH, 1},
       {FurnitureType::WELL, 1},
   });
 }

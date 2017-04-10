@@ -769,8 +769,7 @@ void Collective::onEvent(const GameEvent& event) {
       break;
     case EventId::FURNITURE_DESTROYED: {
         auto info = event.get<EventInfo::FurnitureEvent>();
-        if (constructions->containsFurniture(info.position, info.layer))
-          constructions->onFurnitureDestroyed(info.position, info.layer);
+        constructions->onFurnitureDestroyed(info.position, info.layer);
         tileEfficiency->update(info.position);
       }
       break;
@@ -1070,8 +1069,9 @@ bool Collective::canAddFurniture(Position position, FurnitureType type) const {
 }
 
 void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
-  if (constructions->getFurniture(pos, layer).hasTask())
-    returnResource(taskMap->removeTask(constructions->getFurniture(pos, layer).getTask()));
+  auto f = constructions->getFurniture(pos, layer);
+  if (f->hasTask())
+    returnResource(taskMap->removeTask(f->getTask()));
   constructions->removeFurniture(pos, layer);
 }
 
@@ -1085,8 +1085,6 @@ void Collective::destroySquare(Position pos, FurnitureLayer layer) {
     removeFurniture(pos, layer);
   if (layer != FurnitureLayer::FLOOR) {
     zones->eraseZones(pos);
-    if (constructions->containsTorch(pos))
-      removeTorch(pos);
     if (constructions->containsTrap(pos))
       removeTrap(pos);
     pos.removeTriggers();
@@ -1160,16 +1158,6 @@ void Collective::onAppliedItemCancel(Position pos) {
     constructions->getTrap(pos).reset();
 }
 
-void Collective::onTorchBuilt(Position pos, WTrigger t) {
-  if (!constructions->containsTorch(pos)) {
-    if (canPlaceTorch(pos))
-      addTorch(pos);
-    else
-      return;
-  }
-  constructions->getTorch(pos).setBuilt(t);
-}
-
 bool Collective::isConstructionReachable(Position pos) {
   for (Position v : pos.neighbors8())
     if (knownTiles->isKnown(v))
@@ -1199,10 +1187,6 @@ void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAct
       break;
     case DestroyAction::Type::DIG:
       territory->insert(pos);
-      for (Position v : pos.neighbors4())
-        if (constructions->containsTorch(v) &&
-            constructions->getTorch(v).getAttachmentDir() == v.getDir(pos).getCardinalDir())
-          removeTorch(v);
       break;
     default:
       break;
@@ -1259,7 +1243,7 @@ void Collective::updateResourceProduction() {
 void Collective::updateConstructions() {
   handleTrapPlacementAndProduction();
   for (auto& pos : constructions->getAllFurniture()) {
-    auto& construction = constructions->getFurniture(pos.first, pos.second);
+    auto& construction = *constructions->getFurniture(pos.first, pos.second);
     if (!isDelayed(pos.first) &&
         !construction.hasTask() &&
         !construction.isBuilt() &&
@@ -1270,10 +1254,6 @@ void Collective::updateConstructions() {
       takeResource(construction.getCost());
     }
   }
-  for (auto& elem : constructions->getTorches())
-    if (!isDelayed(elem.first) && !elem.second.hasTask() && !elem.second.isBuilt())
-      constructions->getTorch(elem.first).setTask(taskMap->addTask(
-          Task::buildTorch(this, elem.first, elem.second.getAttachmentDir()), elem.first)->getUniqueId());
 }
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, double delayTime) {
@@ -1578,34 +1558,12 @@ static optional<Vec2> getAdjacentWall(Position pos) {
   return none;
 }
 
-bool Collective::isPlannedTorch(Position pos) const {
-  return constructions->containsTorch(pos) && !constructions->getTorch(pos).isBuilt();
-}
-
-void Collective::removeTorch(Position pos) {
-  if (constructions->getTorch(pos).hasTask())
-    taskMap->removeTask(constructions->getTorch(pos).getTask());
-  if (auto trigger = constructions->getTorch(pos).getTrigger())
-    pos.removeTrigger(trigger);
-  constructions->removeTorch(pos);
-}
-
-void Collective::addTorch(Position pos) {
-  CHECK(canPlaceTorch(pos));
-  constructions->addTorch(pos, ConstructionMap::TorchInfo(getAdjacentWall(pos)->getCardinalDir()));
-}
-
 Zones& Collective::getZones() {
   return *zones;
 }
 
 const Zones& Collective::getZones() const {
   return *zones;
-}
-
-bool Collective::canPlaceTorch(Position pos) const {
-  return getAdjacentWall(pos) && !constructions->containsTorch(pos) &&
-    knownTiles->isKnown(pos) && pos.canEnterEmpty({MovementTrait::WALK});
 }
 
 const TaskMap& Collective::getTaskMap() const {

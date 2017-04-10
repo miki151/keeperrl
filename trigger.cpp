@@ -57,10 +57,6 @@ void Trigger::onCreatureEnter(WCreature c) {}
 
 void Trigger::fireDamage(double size) {}
 
-double Trigger::getLightEmission() const {
-  return 0;
-}
-
 bool Trigger::interceptsFlyingItem(WItem it) const { return false; }
 void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, VisionId) {}
 bool Trigger::isDangerous(WConstCreature c) const { return false; }
@@ -197,36 +193,6 @@ PTrigger Trigger::getTrap(const ViewObject& obj, Position pos, EffectType e, Tri
 
 namespace {
 
-class Torch : public Trigger {
-  public:
-  Torch(const ViewObject& obj, Position position) : Trigger(obj, position) {
-  }
-
-  virtual double getLightEmission() const override {
-    return 8.2;
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Trigger));
-  SERIALIZATION_CONSTRUCTOR(Torch);
-};
-
-}
-
-const ViewObject& Trigger::getTorchViewObject(Dir dir) {
-  static map<Dir, ViewObject> objs;
-  if (objs.empty())
-    for (Dir dir : ENUM_ALL(Dir))
-      objs[dir] = ViewObject(ViewId::TORCH, dir == Dir::N ? ViewLayer::TORCH1 : ViewLayer::TORCH2, "Torch")
-        .setAttachmentDir(dir);
-  return objs[dir];
-}
-
-PTrigger Trigger::getTorch(Dir attachmentDir, Position position) {
-  return makeOwner<Torch>(getTorchViewObject(attachmentDir), position);
-}
-
-namespace {
-
 class MeteorShower : public Trigger {
   public:
   MeteorShower(WCreature c, double duration) : Trigger(c->getPosition()), creature(c),
@@ -274,7 +240,6 @@ PTrigger Trigger::getMeteorShower(WCreature c, double duration) {
   return makeOwner<MeteorShower>(c, duration);
 }
 
-REGISTER_TYPE(Torch);
 REGISTER_TYPE(Trap);
 REGISTER_TYPE(Portal);
 REGISTER_TYPE(MeteorShower);

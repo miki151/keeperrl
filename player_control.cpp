@@ -93,7 +93,12 @@ typedef Collective::ResourceId ResourceId;
 
 struct PlayerControl::BuildInfo {
   struct FurnitureInfo {
-    FurnitureType type;
+    FurnitureInfo(FurnitureType type, CostInfo cost = CostInfo::noCost(), bool noCredit = false, optional<int> maxNumber = none)
+        : FurnitureInfo(vector<FurnitureType>(1, type), cost, noCredit, maxNumber) {}
+    FurnitureInfo(vector<FurnitureType> t, CostInfo c = CostInfo::noCost(), bool n = false, optional<int> m = none)
+        : types(t), cost(c), noCredit(n), maxNumber(m) {}
+    FurnitureInfo() {}
+    vector<FurnitureType> types;
     CostInfo cost;
     bool noCredit;
     optional<int> maxNumber;
@@ -112,8 +117,7 @@ struct PlayerControl::BuildInfo {
     ZONE,
     DISPATCH,
     CLAIM_TILE,
-    FORBID_ZONE,
-    TORCH,
+    FORBID_ZONE
   } buildType;
 
   string name;
@@ -141,7 +145,7 @@ struct PlayerControl::BuildInfo {
 
   BuildInfo(BuildType type, const string& n, const string& h = "", char key = 0, string group = "")
       : buildType(type), name(n), help(h), hotkey(key), groupName(group) {
-    CHECK(contains({DIG, FORBID_ZONE, DISPATCH, CLAIM_TILE, TORCH}, type));
+    CHECK(contains({DIG, FORBID_ZONE, DISPATCH, CLAIM_TILE}, type));
   }
   BuildInfo(const vector<FurnitureLayer>& layers, const string& n, const string& h = "", char key = 0, string group = "")
       : buildType(DESTROY), name(n), help(h), hotkey(key), groupName(group), destroyLayers(layers) {
@@ -249,7 +253,9 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
         "Build it to pass over water or lava.", 0, "Installations"),
       BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 5}}, "Barricade",
         {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "", 0, "Installations"),
-      BuildInfo(BuildInfo::TORCH, "Torch", "Place it on tiles next to a wall.", 'c', "Installations")
+      BuildInfo(BuildInfo::FurnitureInfo(
+             {FurnitureType::TORCH_N, FurnitureType::TORCH_E, FurnitureType::TORCH_S, FurnitureType::TORCH_W}),
+             "Torch", {}, "Place it on tiles next to a wall.", 'c', "Installations")
           .setTutorialHighlight(TutorialHighlight::BUILD_TORCH),
       BuildInfo({FurnitureType::KEEPER_BOARD, {ResourceId::WOOD, 15}}, "Message board", {},
           "A board where you can leave a message for other players.", 0, "Installations"),
@@ -795,11 +801,15 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
     switch (button.buildType) {
       case BuildInfo::FURNITURE: {
            auto& elem = button.furnitureInfo;
-           ViewId viewId = getFurnitureViewId(elem.type);
+           ViewId viewId = getFurnitureViewId(elem.types[0]);
            string description;
-           if (elem.cost.value > 0)
-             if (int num = getCollective()->getConstructions().getBuiltPositions(elem.type).size())
+           if (elem.cost.value > 0) {
+             int num = 0;
+             for (auto type : elem.types)
+               num += getCollective()->getConstructions().getBuiltCount(type);
+             if (num > 0)
                description = "[" + toString(num) + "]";
+           }
            int availableNow = !elem.cost.value ? 1 : numResource[elem.cost.id] / elem.cost.value;
            if (CollectiveConfig::getResourceInfo(elem.cost.id).dontDisplay && availableNow)
              description += " (" + toString(availableNow) + " available)";
@@ -833,9 +843,6 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
            break;
       case BuildInfo::FORBID_ZONE:
            buttons.push_back({ViewId::FORBID_ZONE, button.name, none, "", CollectiveInfo::Button::ACTIVE});
-           break;
-      case BuildInfo::TORCH:
-           buttons.push_back({ViewId::TORCH, button.name, none, "", CollectiveInfo::Button::ACTIVE});
            break;
     }
     vector<string> unmetReqText;
@@ -1614,12 +1621,10 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.insert(getTrapObject(constructions.getTrap(position).getType(),
             constructions.getTrap(position).isArmed()));
     for (auto layer : ENUM_ALL(FurnitureLayer))
-      if (constructions.containsFurniture(position, layer) && !constructions.getFurniture(position, layer).isBuilt())
-        index.insert(getConstructionObject(constructions.getFurniture(position, layer).getFurnitureType()));
+      if (auto f = constructions.getFurniture(position, layer))
+        if (!f->isBuilt())
+          index.insert(getConstructionObject(f->getFurnitureType()));
   }
-  if (constructions.containsTorch(position) && !constructions.getTorch(position).isBuilt())
-    index.insert(copyOf(Trigger::getTorchViewObject(constructions.getTorch(position).getAttachmentDir()))
-        .setModifier(ViewObject::Modifier::PLANNED));
   /*if (surprises.count(position) && !getCollective()->getKnownTiles().isKnown(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));*/
 }
@@ -1810,16 +1815,14 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
   if (WCreature c = getCreature(info.creatureId)) {
     c->removeEffect(LastingEffect::TIED_UP);
     c->removeEffect(LastingEffect::SLEEP);
-    if (getCollective()->getConstructions().containsFurniture(pos, FurnitureLayer::MIDDLE)) {
-      auto& furniture = getCollective()->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE);
-      if (auto task = MinionTasks::getTaskFor(c, furniture.getFurnitureType())) {
+    if (auto furniture = getCollective()->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
+      if (auto task = MinionTasks::getTaskFor(c, furniture->getFurnitureType())) {
         if (getCollective()->isMinionTaskPossible(c, *task)) {
           getCollective()->setMinionTask(c, *task);
           getCollective()->setTask(c, Task::goTo(pos));
           return;
         }
       }
-    }
     PTask task = Task::goToAndWait(pos, 15);
     task->setViewId(ViewId::GUARD_POST);
     getCollective()->setTask(c, std::move(task));
@@ -2238,9 +2241,9 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         }
       break;
     case BuildInfo::DESTROY:
-        for (auto layer : building.destroyLayers)
-          if (getCollective()->getConstructions().containsFurniture(position, layer) &&
-              !getCollective()->getConstructions().getFurniture(position, layer).isBuilt()) {
+        for (auto layer : building.destroyLayers) {
+          auto f = getCollective()->getConstructions().getFurniture(position, layer);
+          if (f && !f->isBuilt()) {
             getCollective()->removeFurniture(position, layer);
             getView()->addSound(SoundId::DIG_UNMARK);
             selection = SELECT;
@@ -2251,6 +2254,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
             getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
             updateSquareMemory(position);
           }
+        }
         break;
     case BuildInfo::FORBID_ZONE:
         if (position.isTribeForbidden(getTribeId()) && selection != SELECT) {
@@ -2260,18 +2264,6 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         else if (!position.isTribeForbidden(getTribeId()) && selection != DESELECT) {
           position.forbidMovementForTribe(getTribeId());
           selection = SELECT;
-        }
-        break;
-    case BuildInfo::TORCH:
-        if (getCollective()->isPlannedTorch(position) && selection != SELECT) {
-          getCollective()->removeTorch(position);
-          getView()->addSound(SoundId::DIG_UNMARK);
-          selection = DESELECT;
-        }
-        else if (getCollective()->canPlaceTorch(position) && selection != DESELECT) {
-          getCollective()->addTorch(position);
-          selection = SELECT;
-          getView()->addSound(SoundId::ADD_CONSTRUCTION);
         }
         break;
     case BuildInfo::DIG: {
@@ -2314,26 +2306,39 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         break;
     case BuildInfo::FURNITURE: {
         auto& info = building.furnitureInfo;
-        auto layer = Furniture::getLayer(info.type);
-        if (getCollective()->getConstructions().containsFurniture(position, layer) &&
-            !getCollective()->getConstructions().getFurniture(position, layer).isBuilt()) {
-          if (selection != SELECT) {
-            getCollective()->removeFurniture(position, layer);
-            selection = DESELECT;
-            getView()->addSound(SoundId::DIG_UNMARK);
-          }
-        } else
-        if (getCollective()->canAddFurniture(position, info.type) && selection != DESELECT
-            && (!info.maxNumber || *info.maxNumber >
-                getCollective()->getConstructions().getTotalCount(info.type))) {
-          CostInfo cost = info.cost;
-          getCollective()->addFurniture(position, info.type, cost, info.noCredit);
+        auto layer = Furniture::getLayer(info.types[0]);
+        auto currentPlanned = getCollective()->getConstructions().getFurniture(position, layer);
+        if (currentPlanned && currentPlanned->isBuilt())
+          currentPlanned = none;
+        int nextIndex = 0;
+        if (currentPlanned) {
+          if (auto currentIndex = findElement(info.types, currentPlanned->getFurnitureType()))
+            nextIndex = *currentIndex + 1;
+          else
+            break;
+        }
+        bool removed = false;
+        if (!!currentPlanned && selection != SELECT) {
+          getCollective()->removeFurniture(position, layer);
+          removed = true;
+        }
+        while (nextIndex < info.types.size() && !getCollective()->canAddFurniture(position, info.types[nextIndex]))
+          ++nextIndex;
+        int totalCount = 0;
+        for (auto type : info.types)
+          totalCount += getCollective()->getConstructions().getTotalCount(type);
+        if (nextIndex < info.types.size() && selection != DESELECT &&
+            (!info.maxNumber || *info.maxNumber > totalCount)) {
+          getCollective()->addFurniture(position, info.types[nextIndex], info.cost, info.noCredit);
           getCollective()->updateResourceProduction();
           selection = SELECT;
           getView()->addSound(SoundId::ADD_CONSTRUCTION);
+        } else if (removed) {
+          selection = DESELECT;
+          getView()->addSound(SoundId::DIG_UNMARK);
         }
+        break;
       }
-      break;
   }
 }
 

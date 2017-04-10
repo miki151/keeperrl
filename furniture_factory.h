@@ -17,6 +17,7 @@ struct FurnitureParams {
 class FurnitureFactory {
   public:
   static bool canBuild(FurnitureType, Position);
+  static bool hasSupport(FurnitureType, Position);
   static bool isUpgrade(FurnitureType base, FurnitureType upgraded);
   static const vector<FurnitureType>& getUpgrades(FurnitureType base);
 

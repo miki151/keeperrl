@@ -207,42 +207,6 @@ PTask Task::destruction(WTaskCallback c, Position target, WConstFurniture furnit
 
 namespace {
 
-class BuildTorch : public Task {
-  public:
-  BuildTorch(WTaskCallback c, Position pos, Dir dir) : Task(true), position(pos), callback(c), attachmentDir(dir) {}
-
-  virtual MoveInfo getMove(WCreature c) override {
-    CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
-    if (c->getPosition() == position)
-      return c->placeTorch(attachmentDir, [=](WTrigger t) {
-          callback->onTorchBuilt(position, t);
-          setDone();
-        });
-    else
-      return c->moveTowards(position);
-  }
-
-  virtual string getDescription() const override {
-    return "Build torch " + toString(position);
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Task), position, callback, attachmentDir);
-  SERIALIZATION_CONSTRUCTOR(BuildTorch);
-
-  private:
-  Position SERIAL(position);
-  WTaskCallback SERIAL(callback);
-  Dir SERIAL(attachmentDir);
-};
-
-}
-
-PTask Task::buildTorch(WTaskCallback call, Position target, Dir attachmentDir) {
-  return makeOwner<BuildTorch>(call, target, attachmentDir);
-}
-
-namespace {
-
 class PickItem : public Task {
   public:
   PickItem(WTaskCallback c, Position pos, vector<WItem> _items, int retries = 10)
@@ -1413,7 +1377,6 @@ PTask Task::spider(Position origin, const vector<Position>& posClose, const vect
 
 REGISTER_TYPE(Construction);
 REGISTER_TYPE(Destruction);
-REGISTER_TYPE(BuildTorch);
 REGISTER_TYPE(PickItem);
 REGISTER_TYPE(PickAndEquipItem);
 REGISTER_TYPE(EquipItem);

@@ -1480,7 +1480,7 @@ class ShopMaker : public LevelMaker {
       if (builder->canNavigate(v, MovementTrait::WALK) && builder->getType(v) == building.floorInside)
         pos.push_back(v);
     builder->putCreature(pos[builder->getRandom().get(pos.size())], std::move(shopkeeper));
-    builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureParams{FurnitureType::TORCH, tribe});
+    builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureParams{FurnitureType::GROUND_TORCH, tribe});
     for (int i : Range(numItems)) {
       Vec2 v = pos[builder->getRandom().get(pos.size())];
       builder->putItems(v, factory.random());
