@@ -70,8 +70,6 @@ class Game : public OwnedObject<Game> {
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
   void killCreature(WCreature, WCreature attacker);
 
-  optional<Position> getOtherPortal(Position) const;
-  void registerPortal(Position);
   void handleMessageBoard(Position, WCreature);
 
   PModel& getMainModel();
@@ -117,7 +115,6 @@ class Game : public OwnedObject<Game> {
   MusicType SERIAL(musicType);
   bool SERIAL(finishCurrentMusic) = true;
   unique_ptr<CreatureView> SERIAL(spectator);
-  vector<Position> SERIAL(portals);
   HeapAllocated<Statistics> SERIAL(statistics);
   Options* options;
   Highscores* highscores;

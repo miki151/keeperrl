@@ -7,17 +7,19 @@ class Furniture;
 class Creature;
 
 enum class FurnitureUsageType {
-    CHEST,
-    COFFIN,
-    VAMPIRE_COFFIN,
-    SLEEP,
-    FOUNTAIN,
-    KEEPER_BOARD,
-    CROPS,
-    STAIRS,
-    TIE_UP,
-    TRAIN
+  CHEST,
+  COFFIN,
+  VAMPIRE_COFFIN,
+  SLEEP,
+  FOUNTAIN,
+  KEEPER_BOARD,
+  CROPS,
+  STAIRS,
+  TIE_UP,
+  TRAIN,
+  PORTAL
 };
+
 class FurnitureUsage {
   public:
   static void handle(FurnitureUsageType, Position, WConstFurniture, WCreature);

@@ -57,7 +57,7 @@ template <class Archive>
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
-  ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
+  ar(portals, levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
   ar(stairNavigation, cemetery, topLevel, eventGenerator, externalEnemies);
 }
 
@@ -303,3 +303,17 @@ void Model::addEvent(const GameEvent& e) {
   eventGenerator->addEvent(e);
 }
 
+optional<Position> Model::getOtherPortal(Position position) const {
+  if (auto index = findElement(portals, position)) {
+    if (*index % 2 == 1)
+      return portals[*index - 1];
+    if (*index < portals.size() - 1)
+      return portals[*index + 1];
+  }
+  return none;
+}
+
+void Model::registerPortal(Position pos) {
+  if (!contains(portals, pos))
+    portals.push_back(pos);
+}

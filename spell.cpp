@@ -98,7 +98,6 @@ void Spell::init() {
         CastMessageType::AIR_BLAST));
   set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", EffectType(EffectId::SUMMON, CreatureId::SPIRIT), 150,
         SoundId::SPELL_SUMMON_SPIRIT));
-  set(SpellId::PORTAL, new Spell("portal", EffectId::PORTAL, 150, SoundId::SPELL_PORTAL));
   set(SpellId::CURE_POISON, new Spell("cure poisoning", EffectId::CURE_POISON, 150, SoundId::SPELL_CURE_POISON));
   set(SpellId::METEOR_SHOWER, new Spell("meteor shower", EffectId::METEOR_SHOWER, 150,
         SoundId::SPELL_METEOR_SHOWER));

@@ -369,7 +369,6 @@ vector<PItem> ItemFactory::random() {
 ItemFactory ItemFactory::villageShop() {
   return ItemFactory({
       {{ItemId::SCROLL, EffectId::TELEPORT}, 5 },
-      {{ItemId::SCROLL, EffectId::PORTAL}, 5 },
       {{ItemId::SCROLL, EffectId::ENHANCE_ARMOR}, 5 },
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 5 },
       {ItemId::FIRE_SCROLL, 5 },
@@ -395,7 +394,7 @@ ItemFactory ItemFactory::villageShop() {
 }
 
 ItemFactory ItemFactory::dwarfShop() {
-  return armory().addUniqueItem({ItemId::SCROLL, EffectId::PORTAL});
+  return armory();
 }
 
 ItemFactory ItemFactory::armory() {
@@ -503,8 +502,7 @@ ItemFactory ItemFactory::scrolls() {
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 1 },
       {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 1 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 1 },
-      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 1 },
-      {{ItemId::SCROLL, EffectId::PORTAL}, 1 }});
+      {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 1 }});
 }
 
 static ViewId getMushroomViewId(EffectType e) {
@@ -559,7 +557,6 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::DEXTERITY_GLOVES, 3 },
       {ItemId::STRENGTH_GLOVES, 3 },
       {{ItemId::SCROLL, EffectId::TELEPORT}, 30 },
-      {{ItemId::SCROLL, EffectId::PORTAL}, 10 },
       {{ItemId::SCROLL, EffectId::ENHANCE_ARMOR}, 30 },
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 30 },
       {ItemId::FIRE_SCROLL, 30 },
@@ -624,7 +621,6 @@ int getEffectPrice(EffectType type) {
     case EffectId::FIRE:
     case EffectId::ALARM:
     case EffectId::SILVER_DAMAGE:
-    case EffectId::PORTAL: return 10;
     case EffectId::ROLLING_BOULDER:
     case EffectId::DESTROY_EQUIPMENT:
     case EffectId::ENHANCE_WEAPON:

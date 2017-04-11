@@ -64,6 +64,24 @@ static void useChest(Position pos, WConstFurniture furniture, WCreature c, const
   }
 }
 
+static void usePortal(Position pos, WCreature c) {
+  c->you(MsgType::ENTER_PORTAL, "");
+  if (auto otherPos = pos.getModel()->getOtherPortal(pos))
+    for (auto f : otherPos->getFurniture())
+      if (f->getUsageType() == FurnitureUsageType::PORTAL) {
+        if (pos.canMoveCreature(*otherPos)) {
+          pos.moveCreature(*otherPos);
+          return;
+        }
+        for (Position v : otherPos->neighbors8(Random))
+          if (pos.canMoveCreature(v)) {
+            pos.moveCreature(v);
+            return;
+          }
+      }
+  c->playerMessage("The portal is inactive. Create another one to open a connection.");
+}
+
 void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurniture furniture, WCreature c) {
   CHECK(c != nullptr);
   switch (type) {
@@ -127,7 +145,9 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
     case FurnitureUsageType::TRAIN:
       c->addSound(SoundId::MISSED_ATTACK);
       break;
-    default: break;
+    case FurnitureUsageType::PORTAL:
+      usePortal(pos, c);
+      break;
   }
 }
 
@@ -145,15 +165,16 @@ bool FurnitureUsage::canHandle(FurnitureUsageType type, WConstCreature c) {
 }
 
 string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitureName) {
-    switch (type) {
-        case FurnitureUsageType::STAIRS: return "use " + furnitureName;
-        case FurnitureUsageType::COFFIN:
-        case FurnitureUsageType::VAMPIRE_COFFIN:
-        case FurnitureUsageType::CHEST: return "open " + furnitureName;
-        case FurnitureUsageType::FOUNTAIN: return "drink from " + furnitureName;
-        case FurnitureUsageType::SLEEP: return "sleep on " + furnitureName;
-        case FurnitureUsageType::KEEPER_BOARD: return "view " + furnitureName;
-        default: break;
-    }
-    return "";
+  switch (type) {
+    case FurnitureUsageType::STAIRS: return "use " + furnitureName;
+    case FurnitureUsageType::COFFIN:
+    case FurnitureUsageType::VAMPIRE_COFFIN:
+    case FurnitureUsageType::CHEST: return "open " + furnitureName;
+    case FurnitureUsageType::FOUNTAIN: return "drink from " + furnitureName;
+    case FurnitureUsageType::SLEEP: return "sleep on " + furnitureName;
+    case FurnitureUsageType::KEEPER_BOARD: return "view " + furnitureName;
+    case FurnitureUsageType::PORTAL: return "enter " + furnitureName;
+    default: break;
+  }
+  return "";
 }

@@ -8,7 +8,6 @@ enum class EffectId {
     HEAL,
     ROLLING_BOULDER,
     FIRE,
-    PORTAL,
     DESTROY_EQUIPMENT,
     ENHANCE_ARMOR,
     ENHANCE_WEAPON,

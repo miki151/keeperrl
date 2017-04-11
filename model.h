@@ -77,6 +77,9 @@ class Model : public OwnedObject<Model> {
   void killCreature(WCreature victim);
   void updateSunlightMovement();
 
+  optional<Position> getOtherPortal(Position) const;
+  void registerPortal(Position);
+
   PCreature extractCreature(WCreature);
   void transferCreature(PCreature, Vec2 travelDir);
   bool canTransferCreature(WCreature, Vec2 travelDir);
@@ -121,5 +124,6 @@ class Model : public OwnedObject<Model> {
   OwnerPointer<EventGenerator> SERIAL(eventGenerator);
   void checkCreatureConsistency();
   HeapAllocated<optional<ExternalEnemies>> SERIAL(externalEnemies);
+  vector<Position> SERIAL(portals);
 };
 

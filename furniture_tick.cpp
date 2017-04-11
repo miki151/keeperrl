@@ -58,5 +58,8 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furn
         }
       }
       break;
+    case FurnitureTickType::PORTAL:
+      pos.getModel()->registerPortal(pos);
+      break;
   }
 }

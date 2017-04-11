@@ -284,7 +284,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::SOKOBAN_HOLE:
       return Furniture("hole", ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR), type,
             Furniture::NON_BLOCKING, tribe)
-          .setEntryType(FurnitureEntry(SokobanEntryType{}));
+          .setEntryType(FurnitureEntry(FurnitureEntry::Sokoban{}));
     case FurnitureType::BRIDGE:
       return Furniture("bridge", ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, TribeId::getHostile())
           .setOverrideMovement();
@@ -370,36 +370,36 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::ALARM_TRAP:
       return Furniture("alarm trap", ViewObject(ViewId::ALARM_TRAP, ViewLayer::FLOOR), type,
             Furniture::NON_BLOCKING, tribe)
-          .setEntryType(FurnitureEntry(TrapEntryType(EffectId::ALARM, tribe)))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectId::ALARM)))
           .setEmitsWarning()
           .setPlacementMessage(MsgType::SET_UP_TRAP);
     case FurnitureType::POISON_GAS_TRAP:
       return Furniture("poison gas trap", ViewObject(ViewId::GAS_TRAP, ViewLayer::FLOOR), type,
             Furniture::NON_BLOCKING, tribe)
-          .setEntryType(FurnitureEntry(TrapEntryType(EffectId::EMIT_POISON_GAS, tribe)))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectId::EMIT_POISON_GAS)))
           .setEmitsWarning()
           .setPlacementMessage(MsgType::SET_UP_TRAP);
     case FurnitureType::WEB_TRAP:
       return Furniture("web trap", ViewObject(ViewId::WEB_TRAP, ViewLayer::FLOOR), type,
             Furniture::NON_BLOCKING, tribe)
-          .setEntryType(FurnitureEntry(TrapEntryType(EffectType(EffectId::LASTING, LastingEffect::ENTANGLED), tribe)))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectType(EffectId::LASTING, LastingEffect::ENTANGLED))))
           .setEmitsWarning()
           .setPlacementMessage(MsgType::SET_UP_TRAP);
     case FurnitureType::SPIDER_WEB:
       return Furniture("spider web", ViewObject(ViewId::WEB_TRAP, ViewLayer::FLOOR), type,
             Furniture::NON_BLOCKING, tribe)
-          .setEntryType(FurnitureEntry(TrapEntryType(EffectType(EffectId::LASTING, LastingEffect::ENTANGLED),
-               tribe, true)));
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectType(EffectId::LASTING, LastingEffect::ENTANGLED),
+              true)));
     case FurnitureType::SURPRISE_TRAP:
       return Furniture("surprise trap", ViewObject(ViewId::SURPRISE_TRAP, ViewLayer::FLOOR), type,
             Furniture::NON_BLOCKING, tribe)
-          .setEntryType(FurnitureEntry(TrapEntryType(EffectId::TELE_ENEMIES, tribe)))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectId::TELE_ENEMIES)))
           .setEmitsWarning()
           .setPlacementMessage(MsgType::SET_UP_TRAP);
     case FurnitureType::TERROR_TRAP:
       return Furniture("panic trap", ViewObject(ViewId::TERROR_TRAP, ViewLayer::FLOOR), type,
             Furniture::NON_BLOCKING, tribe)
-          .setEntryType(FurnitureEntry(TrapEntryType(EffectType(EffectId::LASTING, LastingEffect::PANIC), tribe)))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectType(EffectId::LASTING, LastingEffect::PANIC))))
           .setEmitsWarning()
           .setPlacementMessage(MsgType::SET_UP_TRAP);
     case FurnitureType::BOULDER_TRAP:
@@ -410,6 +410,11 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(40)
           .setEmitsWarning()
           .setPlacementMessage(MsgType::SET_UP_TRAP);
+    case FurnitureType::PORTAL:
+      return Furniture("portal", ViewObject(ViewId::PORTAL, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, tribe)
+          .setDestroyable(40)
+          .setUsageType(FurnitureUsageType::PORTAL)
+          .setTickType(FurnitureTickType::PORTAL);
   }
 }
 

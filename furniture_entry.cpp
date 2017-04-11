@@ -14,7 +14,7 @@ FurnitureEntry::FurnitureEntry(FurnitureEntry::EntryData d) : entryData(d) {
 
 void FurnitureEntry::handle(WFurniture f, WCreature c) {
   apply_visitor(makeVisitor<void>(
-      [&](SokobanEntryType) {
+      [&](Sokoban) {
         if (c->getAttributes().isBoulder()) {
           Position pos = c->getPosition();
           pos.globalMessage(c->getName().the() + " fills the " + f->getName());
@@ -29,9 +29,9 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
           level->changeLevel(getOnlyElement(level->getAllStairKeys()), c);
         }
       },
-      [&](TrapEntryType type) {
+      [&](Trap type) {
         auto position = c->getPosition();
-        if (c->getGame()->getTribe(type.tribeId)->isEnemy(c)) {
+        if (c->getGame()->getTribe(f->getTribe())->isEnemy(c)) {
           if (!c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
             if (!type.alwaysVisible)
               c->you(MsgType::TRIGGER_TRAP, "");
@@ -43,20 +43,20 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
           }
           position.removeFurniture(f);
         }
-      }),
-  entryData);
+      }
+    ), entryData);
 }
 
 bool FurnitureEntry::isVisibleTo(WConstFurniture f, WConstCreature c) const {
   return apply_visitor(makeVisitor<bool>(
-      [&](SokobanEntryType) {
+      [&](Sokoban) {
         return true;
       },
-      [&](TrapEntryType type) {
-        return type.alwaysVisible || !c->getGame()->getTribe(type.tribeId)->isEnemy(c)
+      [&](Trap type) {
+        return type.alwaysVisible || !c->getGame()->getTribe(f->getTribe())->isEnemy(c)
             || c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS);
-      }),
-  entryData);
+      }
+  ), entryData);
 }
 
 SERIALIZE_DEF(FurnitureEntry, entryData)

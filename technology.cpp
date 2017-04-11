@@ -197,7 +197,6 @@ static vector<SpellLearningInfo> spellLearning {
     { SpellId::INVISIBILITY, TechId::SPELLS_MAS},
     { SpellId::BLAST, TechId::SPELLS_MAS},
     { SpellId::WORD_OF_POWER, TechId::SPELLS_MAS},
-    { SpellId::PORTAL, TechId::SPELLS_MAS},
     { SpellId::METEOR_SHOWER, TechId::SPELLS_MAS},
 };
 

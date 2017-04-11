@@ -63,85 +63,6 @@ void Trigger::tick() {}
 
 namespace {
 
-class Portal : public Trigger {
-  public:
-
-  WeakPointer<Portal> getOther(Position info) const {
-    for (WTrigger t : info.getTriggers())
-      if (auto ret = t.dynamicCast<Portal>())
-        return ret;
-    return nullptr;
-  }
-
-  WeakPointer<Portal> getOther() const {
-    if (auto otherPortal = position.getGame()->getOtherPortal(position))
-      return getOther(*otherPortal);
-    return nullptr;
-  }
-
-  Portal(const ViewObject& obj, Position position) : Trigger(obj, position) {
-    position.getGame()->registerPortal(position);
-  }
-
-  virtual void onCreatureEnter(WCreature c) override {
-    if (!active) {
-      active = true;
-      return;
-    }
-    if (auto other = getOther()) {
-      other->active = false;
-      c->you(MsgType::ENTER_PORTAL, "");
-      if (position.canMoveCreature(other->position)) {
-        position.moveCreature(other->position);
-        return;
-      }
-      for (Position v : other->position.neighbors8())
-        if (position.canMoveCreature(v)) {
-          position.moveCreature(v);
-          return;
-        }
-    } else
-      c->playerMessage("The portal is inactive. Create another one to open a connection.");
-  }
-
-  virtual bool interceptsFlyingItem(WItem it) const override {
-    return getOther() && !Random.roll(5);
-  }
-
-  virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir,
-      VisionId vision) override {
-    position.globalMessage(it[0]->getPluralTheNameAndVerb(it.size(), "disappears", "disappear") +
-        " in the portal.");
-    NOTNULL(getOther())->position.throwItem(std::move(it), a, remainingDist, dir, vision);
-  }
-
-  virtual void tick() override {
-    position.getGame()->registerPortal(position);
-    double time = position.getGame()->getGlobalTime();
-    if (startTime == -1)
-      startTime = time;
-    if (time - startTime >= 30) {
-      position.globalMessage("The portal disappears.");
-      position.removeTrigger(this);
-    }
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Trigger), startTime, active);
-  SERIALIZATION_CONSTRUCTOR(Portal);
-
-  private:
-  double SERIAL(startTime) = 1000000;
-  bool SERIAL(active) = true;
-};
-
-}
-
-PTrigger Trigger::getPortal(const ViewObject& obj, Position position) {
-  return makeOwner<Portal>(obj, position);
-}
-
-namespace {
-
 class MeteorShower : public Trigger {
   public:
   MeteorShower(WCreature c, double duration) : Trigger(c->getPosition()), creature(c),
@@ -189,5 +110,4 @@ PTrigger Trigger::getMeteorShower(WCreature c, double duration) {
   return makeOwner<MeteorShower>(c, duration);
 }
 
-REGISTER_TYPE(Portal);
 REGISTER_TYPE(MeteorShower);

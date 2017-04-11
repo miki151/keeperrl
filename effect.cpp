@@ -190,15 +190,6 @@ static void heal(WCreature c, int strength) {
     c->playerMessage("You feel refreshed.");
 }
 
-static void portal(WCreature c) {
-  for (Position pos : c->getPosition().neighbors8(Random))
-    if (pos.canEnter(c)) {
-      pos.globalMessage("A magic portal appears.");
-      pos.addTrigger(Trigger::getPortal(ViewObject(ViewId::PORTAL, ViewLayer::LARGE_ITEM, "Portal"), pos));
-      return;
-    }
-}
-
 static void teleport(WCreature c) {
   Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
   int infinity = 10000;
@@ -371,7 +362,6 @@ void Effect::applyToCreature(WCreature c, const EffectType& type, EffectStrength
     case EffectId::DESTROY_EQUIPMENT: destroyEquipment(c); break;
     case EffectId::HEAL: heal(c, strength); break;
     case EffectId::FIRE: c->getPosition().fireDamage(fireAmount[strength]); break;
-    case EffectId::PORTAL: portal(c); break;
     case EffectId::TELEPORT: teleport(c); break;
     case EffectId::ROLLING_BOULDER: FATAL << "Not implemented"; break;
     case EffectId::EMIT_POISON_GAS: emitPoisonGas(c->getPosition(), strength, true); break;
@@ -424,7 +414,6 @@ string Effect::getName(const EffectType& type) {
     case EffectId::HEAL: return "healing";
     case EffectId::TELEPORT: return "teleport";
     case EffectId::ROLLING_BOULDER: return "rolling boulder";
-    case EffectId::PORTAL: return "magic portal";
     case EffectId::EMIT_POISON_GAS: return "poison gas";
     case EffectId::DESTROY_EQUIPMENT: return "destruction";
     case EffectId::ENHANCE_WEAPON: return "weapon enchantment";
@@ -465,7 +454,6 @@ string Effect::getDescription(const EffectType& type) {
     case EffectId::HEAL: return "Heals your wounds.";
     case EffectId::TELEPORT: return "Teleports to a safer location close by.";
     case EffectId::ROLLING_BOULDER: return "rolling boulder";
-    case EffectId::PORTAL: return "Creates a magic portal. Two portals are needed for a connection.";
     case EffectId::EMIT_POISON_GAS: return "poison gas";
     case EffectId::DESTROY_EQUIPMENT: return "Destroys a random piece of equipment.";
     case EffectId::ENHANCE_WEAPON: return "Increases weapon damage or accuracy.";

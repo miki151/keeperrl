@@ -39,7 +39,7 @@ template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Game>);
   ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
-  ar(musicType, portals, statistics, spectator, tribes, gameIdentifier, player);
+  ar(musicType, statistics, spectator, tribes, gameIdentifier, player);
   ar(gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
     sunlightInfo.update(currentTime);
@@ -520,21 +520,6 @@ void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f) {
 
 const string& Game::getWorldName() const {
   return campaign->getWorldName();
-}
-
-optional<Position> Game::getOtherPortal(Position position) const {
-  if (auto index = findElement(portals, position)) {
-    if (*index % 2 == 1)
-      return portals[*index - 1];
-    if (*index < portals.size() - 1)
-      return portals[*index + 1];
-  }
-  return none;
-}
-
-void Game::registerPortal(Position pos) {
-  if (!contains(portals, pos))
-    portals.push_back(pos);
 }
 
 const vector<WCollective>& Game::getCollectives() const {

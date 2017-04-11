@@ -262,6 +262,8 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "A board where you can leave a message for other players.", 0, "Installations"),
       BuildInfo({FurnitureType::EYEBALL, {ResourceId::MANA, 10}}, "Eyeball", {},
         "Makes the area around it visible.", 0, "Installations"),
+      BuildInfo({FurnitureType::PORTAL, {ResourceId::MANA, 300}}, "Portal", {},
+        "Opens a connection if another portal is present.", 0, "Installations"),
       BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 60}}, "Statue", {},
         "Increases minion population limit by " +
               toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),

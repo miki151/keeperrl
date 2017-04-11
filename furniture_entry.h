@@ -4,23 +4,23 @@
 #include "effect_type.h"
 #include "tribe.h"
 
-struct SokobanEntryType {};
-struct TrapEntryType {
-  TrapEntryType(EffectType e, TribeId t, bool vis = false) : effect(e), tribeId(t), alwaysVisible(vis) {}
-  SERIALIZATION_CONSTRUCTOR(TrapEntryType)
-  EffectType SERIAL(effect);
-  TribeId SERIAL(tribeId);
-  bool SERIAL(alwaysVisible);
-  SERIALIZE_ALL(effect, tribeId, alwaysVisible)
-};
-
 class Position;
 class Creature;
 class Furniture;
 
 class FurnitureEntry {
   public:
-  using EntryData = variant<SokobanEntryType, TrapEntryType>;
+  struct Sokoban {};
+
+  struct Trap {
+    Trap(EffectType e, bool vis = false) : effect(e), alwaysVisible(vis) {}
+    SERIALIZATION_CONSTRUCTOR(Trap)
+    EffectType SERIAL(effect);
+    bool SERIAL(alwaysVisible);
+    SERIALIZE_ALL(effect, alwaysVisible)
+  };
+
+  using EntryData = variant<Sokoban, Trap>;
   FurnitureEntry(EntryData);
   void handle(WFurniture, WCreature);
   bool isVisibleTo(WConstFurniture, WConstCreature) const;

@@ -37,7 +37,6 @@ class Trigger : public OwnedObject<Trigger> {
   virtual void tick();
   virtual void fireDamage(double size);
 
-  static PTrigger getPortal(const ViewObject&, Position);
   static PTrigger getMeteorShower(WCreature, double duration);
 
   static const ViewObject& getTorchViewObject(Dir);
