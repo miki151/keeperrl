@@ -13,6 +13,7 @@
 #include "furniture_entry.h"
 #include "level.h"
 #include "square_type.h"
+#include "creature.h"
 
 static Furniture get(FurnitureType type, TribeId tribe) {
   switch (type) {
@@ -283,12 +284,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::SOKOBAN_HOLE:
       return Furniture("hole", ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR), type,
             Furniture::NON_BLOCKING, tribe)
-          .setEntryType(FurnitureEntryType::SOKOBAN);
-    case FurnitureType::BOULDER_TRAP:
-      return Furniture("boulder", ViewObject(ViewId::BOULDER, ViewLayer::CREATURE), type, Furniture::BLOCKING, tribe)
-          .setCanHide()
-          .setTickType(FurnitureTickType::BOULDER_TRAP)
-          .setDestroyable(40);
+          .setEntryType(FurnitureEntry(SokobanEntryType{}));
     case FurnitureType::BRIDGE:
       return Furniture("bridge", ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR), type, Furniture::NON_BLOCKING, TribeId::getHostile())
           .setOverrideMovement();
@@ -371,6 +367,49 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("floor", ViewObject(ViewId::CARPET_FLOOR4, ViewLayer::FLOOR_BACKGROUND), type,
           Furniture::NON_BLOCKING, tribe)
           .setLayer(FurnitureLayer::FLOOR);
+    case FurnitureType::ALARM_TRAP:
+      return Furniture("alarm trap", ViewObject(ViewId::ALARM_TRAP, ViewLayer::FLOOR), type,
+            Furniture::NON_BLOCKING, tribe)
+          .setEntryType(FurnitureEntry(TrapEntryType(EffectId::ALARM, tribe)))
+          .setEmitsWarning()
+          .setPlacementMessage(MsgType::SET_UP_TRAP);
+    case FurnitureType::POISON_GAS_TRAP:
+      return Furniture("poison gas trap", ViewObject(ViewId::GAS_TRAP, ViewLayer::FLOOR), type,
+            Furniture::NON_BLOCKING, tribe)
+          .setEntryType(FurnitureEntry(TrapEntryType(EffectId::EMIT_POISON_GAS, tribe)))
+          .setEmitsWarning()
+          .setPlacementMessage(MsgType::SET_UP_TRAP);
+    case FurnitureType::WEB_TRAP:
+      return Furniture("web trap", ViewObject(ViewId::WEB_TRAP, ViewLayer::FLOOR), type,
+            Furniture::NON_BLOCKING, tribe)
+          .setEntryType(FurnitureEntry(TrapEntryType(EffectType(EffectId::LASTING, LastingEffect::ENTANGLED), tribe)))
+          .setEmitsWarning()
+          .setPlacementMessage(MsgType::SET_UP_TRAP);
+    case FurnitureType::SPIDER_WEB:
+      return Furniture("spider web", ViewObject(ViewId::WEB_TRAP, ViewLayer::FLOOR), type,
+            Furniture::NON_BLOCKING, tribe)
+          .setEntryType(FurnitureEntry(TrapEntryType(EffectType(EffectId::LASTING, LastingEffect::ENTANGLED),
+               tribe, true)));
+    case FurnitureType::SURPRISE_TRAP:
+      return Furniture("surprise trap", ViewObject(ViewId::SURPRISE_TRAP, ViewLayer::FLOOR), type,
+            Furniture::NON_BLOCKING, tribe)
+          .setEntryType(FurnitureEntry(TrapEntryType(EffectId::TELE_ENEMIES, tribe)))
+          .setEmitsWarning()
+          .setPlacementMessage(MsgType::SET_UP_TRAP);
+    case FurnitureType::TERROR_TRAP:
+      return Furniture("panic trap", ViewObject(ViewId::TERROR_TRAP, ViewLayer::FLOOR), type,
+            Furniture::NON_BLOCKING, tribe)
+          .setEntryType(FurnitureEntry(TrapEntryType(EffectType(EffectId::LASTING, LastingEffect::PANIC), tribe)))
+          .setEmitsWarning()
+          .setPlacementMessage(MsgType::SET_UP_TRAP);
+    case FurnitureType::BOULDER_TRAP:
+      return Furniture("boulder trap", ViewObject(ViewId::BOULDER, ViewLayer::CREATURE), type,
+            Furniture::BLOCKING, tribe)
+          .setCanHide()
+          .setTickType(FurnitureTickType::BOULDER_TRAP)
+          .setDestroyable(40)
+          .setEmitsWarning()
+          .setPlacementMessage(MsgType::SET_UP_TRAP);
   }
 }
 
@@ -407,7 +446,9 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
       else
         return false;
     default:
-      return pos.canEnterSquare({MovementTrait::WALK}) && !pos.isWall();
+      return pos.canEnterSquare({MovementTrait::WALK}) &&
+          !pos.getFurniture(Furniture::getLayer(type)) &&
+          !pos.isWall();
   }
 }
 

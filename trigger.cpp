@@ -59,7 +59,6 @@ void Trigger::fireDamage(double size) {}
 
 bool Trigger::interceptsFlyingItem(WItem it) const { return false; }
 void Trigger::onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, VisionId) {}
-bool Trigger::isDangerous(WConstCreature c) const { return false; }
 void Trigger::tick() {}
 
 namespace {
@@ -143,56 +142,6 @@ PTrigger Trigger::getPortal(const ViewObject& obj, Position position) {
 
 namespace {
 
-class Trap : public Trigger {
-  public:
-  Trap(const ViewObject& obj, Position position, EffectType _effect, TribeId _tribe, bool visible)
-      : Trigger(obj, position), effect(_effect), tribe(_tribe), alwaysVisible(visible) {
-  }
-
-  virtual optional<ViewObject> getViewObject(WConstCreature viewer) const override {
-    if (!viewer || alwaysVisible || !viewer->getGame()->getTribe(tribe)->isEnemy(viewer)
-        || viewer->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS))
-      return *viewObject;
-    else
-      return none;
-  }
-
-  virtual bool isDangerous(WConstCreature c) const override {
-    return c->getTribeId() != tribe;
-  }
-
-  virtual void onCreatureEnter(WCreature c) override {
-    if (c->getGame()->getTribe(tribe)->isEnemy(c)) {
-      if (!c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
-        if (!alwaysVisible)
-          c->you(MsgType::TRIGGER_TRAP, "");
-        Effect::applyToCreature(c, effect, EffectStrength::NORMAL);
-        position.getGame()->addEvent({EventId::TRAP_TRIGGERED, c->getPosition()});
-      } else {
-        c->you(MsgType::DISARM_TRAP, Effect::getName(effect) + " trap");
-        position.getGame()->addEvent({EventId::TRAP_DISARMED, EventInfo::TrapDisarmed{c->getPosition(), c}});
-      }
-      c->getPosition().removeTrigger(this);
-    }
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Trigger), effect, tribe, alwaysVisible);
-  SERIALIZATION_CONSTRUCTOR(Trap);
-
-  private:
-  EffectType SERIAL(effect);
-  TribeId SERIAL(tribe);
-  bool SERIAL(alwaysVisible);
-};
-
-}
-
-PTrigger Trigger::getTrap(const ViewObject& obj, Position pos, EffectType e, TribeId tribe, bool alwaysVisible) {
-  return makeOwner<Trap>(obj, pos, std::move(e), tribe, alwaysVisible);
-}
-
-namespace {
-
 class MeteorShower : public Trigger {
   public:
   MeteorShower(WCreature c, double duration) : Trigger(c->getPosition()), creature(c),
@@ -240,6 +189,5 @@ PTrigger Trigger::getMeteorShower(WCreature c, double duration) {
   return makeOwner<MeteorShower>(c, duration);
 }
 
-REGISTER_TYPE(Trap);
 REGISTER_TYPE(Portal);
 REGISTER_TYPE(MeteorShower);

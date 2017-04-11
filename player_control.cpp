@@ -75,6 +75,7 @@
 #include "tutorial.h"
 #include "tutorial_highlight.h"
 #include "container_range.h"
+#include "trap_type.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -268,7 +269,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "A place to whip your minions if they need a morale boost.", 0, "Installations"),
       BuildInfo({FurnitureType::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, true}, "Prisoner head", {},
           "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
-      BuildInfo({TrapType::TERROR, ViewId::TERROR_TRAP}, "Terror trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+      BuildInfo({TrapType::TERROR, ViewId::TERROR_TRAP}, "Panic trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
           "Causes the trespasser to panic.", 0, "Traps"),
       BuildInfo({TrapType::POISON_GAS, ViewId::GAS_TRAP}, "Gas trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
           "Releases a cloud of poisonous gas.", 0, "Traps"),
@@ -1539,10 +1540,10 @@ ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
   for (auto& info : getBuildInfo())
     if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type) {
       if (!armed)
-        return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed " + Item::getTrapName(type) + " trap")
+        return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed " + getTrapName(type) + " trap")
           .setModifier(ViewObject::Modifier::PLANNED);
       else
-        return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, Item::getTrapName(type) + " trap");
+        return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, getTrapName(type) + " trap");
     }
   FATAL << "trap not found" << int(type);
   return ViewObject(ViewId::EMPTY, ViewLayer::LARGE_ITEM);

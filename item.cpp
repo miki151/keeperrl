@@ -48,17 +48,6 @@ Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, Vie
 Item::~Item() {
 }
 
-string Item::getTrapName(TrapType type) {
-  switch (type) {
-    case TrapType::BOULDER: return "boulder";
-    case TrapType::POISON_GAS: return "poison gas";
-    case TrapType::ALARM: return "alarm";
-    case TrapType::WEB: return "web";
-    case TrapType::SURPRISE: return "surprise";
-    case TrapType::TERROR: return "terror";
-  }
-}
-
 ItemPredicate Item::effectPredicate(EffectType type) {
   return [type](const WItem item) { return item->getEffectType() == type; };
 }

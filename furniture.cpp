@@ -46,7 +46,7 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar & SUBCLASS(OwnedObject<Furniture>) & SUBCLASS(Renderable);
   ar(name, pluralName, type, blockType, tribe, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall);
-  ar(constructMessage, layer, entryType, lightEmission, canHideHere);
+  ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, placementMessage);
 }
 
 SERIALIZABLE(Furniture);
@@ -79,13 +79,22 @@ FurnitureType Furniture::getType() const {
   return type;
 }
 
+bool Furniture::isVisibleTo(WConstCreature c) const {
+  if (*entryType)
+    return (*entryType)->isVisibleTo(this, c);
+  else
+    return true;
+}
+
 bool Furniture::canEnter(const MovementType& movement) const {
   return blockType == NON_BLOCKING || (blockType == BLOCKING_ENEMIES && movement.isCompatible(getTribe()));
 }
 
 void Furniture::onEnter(WCreature c) const {
-  if (entryType)
-    FurnitureEntry::handle(*entryType, this, c);
+  if (*entryType) {
+    auto f = c->getPosition().modFurniture(layer);
+    (*f->entryType)->handle(f, c);
+  }
 }
 
 void Furniture::destroy(Position pos, const DestroyAction& action) {
@@ -222,6 +231,15 @@ bool Furniture::canHide() const {
   return canHideHere;
 }
 
+bool Furniture::emitsWarning(WConstCreature) const {
+  return warning;
+}
+
+void Furniture::addPlacementMessage(WConstCreature c) const {
+  if (placementMessage)
+    c->you(*placementMessage);
+}
+
 Furniture& Furniture::setConstructMessage(Furniture::ConstructMessage msg) {
   constructMessage = msg;
   return *this;
@@ -311,7 +329,7 @@ Furniture& Furniture::setTickType(FurnitureTickType type) {
   return *this;
 }
 
-Furniture& Furniture::setEntryType(FurnitureEntryType type) {
+Furniture& Furniture::setEntryType(FurnitureEntry type) {
   entryType = type;
   return *this;
 }
@@ -343,6 +361,16 @@ Furniture& Furniture::setLightEmission(double v) {
 
 Furniture& Furniture::setCanHide() {
   canHideHere = true;
+  return *this;
+}
+
+Furniture&Furniture::setEmitsWarning() {
+  warning = true;
+  return *this;
+}
+
+Furniture&Furniture::setPlacementMessage(MsgType msg) {
+  placementMessage = msg;
   return *this;
 }
 

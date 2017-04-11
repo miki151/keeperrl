@@ -223,7 +223,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   WCreature getHoldingCreature() const;
 
   void you(MsgType type, const vector<string>& param) const;
-  void you(MsgType type, const string& param) const;
+  void you(MsgType type, const string& param = "") const;
   void you(const string& param) const;
   void playerMessage(const PlayerMessage&) const;
   bool isPlayer() const;

@@ -6,23 +6,58 @@
 #include "creature_attributes.h"
 #include "furniture.h"
 #include "player_message.h"
+#include "game.h"
+#include "effect.h"
 
-void FurnitureEntry::handle(FurnitureEntryType type, WConstFurniture f, WCreature c) {
-  switch (type) {
-    case FurnitureEntryType::SOKOBAN:
-      if (c->getAttributes().isBoulder()) {
-        Position pos = c->getPosition();
-        pos.globalMessage(c->getName().the() + " fills the " + f->getName());
-        pos.removeFurniture(f);
-        c->die(false, false);
-      } else {
-        if (!c->isAffected(LastingEffect::FLYING))
-          c->you(MsgType::FALL, "into the " + f->getName() + "!");
-        else
-          c->you(MsgType::ARE, "sucked into the " + f->getName() + "!");
-        auto level = c->getPosition().getLevel();
-        level->changeLevel(getOnlyElement(level->getAllStairKeys()), c);
-      }
-      break;
-  }
+FurnitureEntry::FurnitureEntry(FurnitureEntry::EntryData d) : entryData(d) {
 }
+
+void FurnitureEntry::handle(WFurniture f, WCreature c) {
+  apply_visitor(makeVisitor<void>(
+      [&](SokobanEntryType) {
+        if (c->getAttributes().isBoulder()) {
+          Position pos = c->getPosition();
+          pos.globalMessage(c->getName().the() + " fills the " + f->getName());
+          pos.removeFurniture(f);
+          c->die(false, false);
+        } else {
+          if (!c->isAffected(LastingEffect::FLYING))
+            c->you(MsgType::FALL, "into the " + f->getName() + "!");
+          else
+            c->you(MsgType::ARE, "sucked into the " + f->getName() + "!");
+          auto level = c->getPosition().getLevel();
+          level->changeLevel(getOnlyElement(level->getAllStairKeys()), c);
+        }
+      },
+      [&](TrapEntryType type) {
+        auto position = c->getPosition();
+        if (c->getGame()->getTribe(type.tribeId)->isEnemy(c)) {
+          if (!c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
+            if (!type.alwaysVisible)
+              c->you(MsgType::TRIGGER_TRAP, "");
+            Effect::applyToCreature(c, type.effect, EffectStrength::NORMAL);
+            position.getGame()->addEvent({EventId::TRAP_TRIGGERED, c->getPosition()});
+          } else {
+            c->you(MsgType::DISARM_TRAP, Effect::getName(type.effect) + " trap");
+            position.getGame()->addEvent({EventId::TRAP_DISARMED, EventInfo::TrapDisarmed{c->getPosition(), c}});
+          }
+          position.removeFurniture(f);
+        }
+      }),
+  entryData);
+}
+
+bool FurnitureEntry::isVisibleTo(WConstFurniture f, WConstCreature c) const {
+  return apply_visitor(makeVisitor<bool>(
+      [&](SokobanEntryType) {
+        return true;
+      },
+      [&](TrapEntryType type) {
+        return type.alwaysVisible || !c->getGame()->getTribe(type.tribeId)->isEnemy(c)
+            || c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS);
+      }),
+  entryData);
+}
+
+SERIALIZE_DEF(FurnitureEntry, entryData)
+SERIALIZATION_CONSTRUCTOR_IMPL(FurnitureEntry)

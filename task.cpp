@@ -41,6 +41,7 @@
 #include "item_type.h"
 #include "body.h"
 #include "furniture_type.h"
+#include "furniture_factory.h"
 #include "construction_map.h"
 #include "furniture.h"
 #include "monster_ai.h"
@@ -1347,11 +1348,9 @@ class Spider : public Task {
       return c->moveTowards(origin);
     if (c->getPosition() == *makeWeb)
       return c->wait().append([this](WCreature c) {
-            ItemFactory::fromId(ItemType{ItemId::TRAP_ITEM,
-                TrapInfo{TrapType::WEB, EffectType{EffectId::LASTING, LastingEffect::ENTANGLED}, true}})->
-                apply(c, true);
-            setDone();
-          });
+          c->getPosition().addFurniture(FurnitureFactory::get(FurnitureType::SPIDER_WEB, c->getTribeId()));
+          setDone();
+      });
     else
       return c->moveTowards(*makeWeb, true);
   }

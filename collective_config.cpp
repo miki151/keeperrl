@@ -27,6 +27,7 @@
 #include "furniture.h"
 #include "immigrant_info.h"
 #include "tutorial_highlight.h"
+#include "trap_type.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
@@ -246,6 +247,10 @@ bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
     case FurnitureType::EYEBALL:
     case FurnitureType::KEEPER_BOARD:
     case FurnitureType::DUNGEON_WALL:
+    case FurnitureType::TORCH_N:
+    case FurnitureType::TORCH_E:
+    case FurnitureType::TORCH_S:
+    case FurnitureType::TORCH_W:
     case FurnitureType::BRIDGE: return true;
     default: return false;
   }
@@ -443,22 +448,17 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemId::BOW, 13, {CollectiveResourceId::WOOD, 20}).setTechId(TechId::ARCHERY),
           Workshops::Item::fromType(ItemId::ARROW, 5, {CollectiveResourceId::WOOD, 10})
                   .setBatchSize(20).setTechId(TechId::ARCHERY),
-          Workshops::Item::fromType(ItemId::BOULDER_TRAP_ITEM, 20, {CollectiveResourceId::STONE, 50})
+          Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapType::BOULDER}, 20, {CollectiveResourceId::STONE, 50})
                   .setTechId(TechId::TRAPS),
-          Workshops::Item::fromType({ItemId::TRAP_ITEM,
-              TrapInfo({TrapType::POISON_GAS, EffectId::EMIT_POISON_GAS})}, 10, {CollectiveResourceId::WOOD, 20})
+          Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapType::POISON_GAS}, 10, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TRAPS),
-          Workshops::Item::fromType({ItemId::TRAP_ITEM,
-              TrapInfo({TrapType::ALARM, EffectId::ALARM})}, 8, {CollectiveResourceId::WOOD, 20})
+          Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapType::ALARM}, 8, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TRAPS),
-          Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapInfo({TrapType::WEB,
-                EffectType(EffectId::LASTING, LastingEffect::ENTANGLED)})}, 8, {CollectiveResourceId::WOOD, 20})
+          Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapType::WEB}, 8, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TRAPS),
-          Workshops::Item::fromType({ItemId::TRAP_ITEM,
-              TrapInfo({TrapType::SURPRISE, EffectId::TELE_ENEMIES})}, 8, {CollectiveResourceId::WOOD, 20})
+          Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapType::SURPRISE}, 8, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TRAPS),
-          Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapInfo({TrapType::TERROR,
-                EffectType(EffectId::LASTING, LastingEffect::PANIC)})}, 8, {CollectiveResourceId::WOOD, 20})
+          Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapType::TERROR}, 8, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TRAPS),
       }},
       {WorkshopType::FORGE, {

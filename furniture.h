@@ -15,6 +15,7 @@ class Fire;
 class ItemFactory;
 class GameEvent;
 class Position;
+class FurnitureEntry;
 
 class Furniture : public Renderable, public OwnedObject<Furniture> {
   public:
@@ -27,6 +28,7 @@ class Furniture : public Renderable, public OwnedObject<Furniture> {
   Furniture(const Furniture&);
   const string& getName(int count = 1) const;
   FurnitureType getType() const;
+  bool isVisibleTo(WConstCreature) const;
   bool canEnter(const MovementType&) const;
   void onEnter(WCreature) const;
   bool canDestroy(const MovementType&, const DestroyAction&) const;
@@ -55,6 +57,8 @@ class Furniture : public Renderable, public OwnedObject<Furniture> {
   FurnitureLayer getLayer() const;
   double getLightEmission() const;
   bool canHide() const;
+  bool emitsWarning(WConstCreature) const;
+  void addPlacementMessage(WConstCreature) const;
 
   enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE };
 
@@ -70,13 +74,15 @@ class Furniture : public Renderable, public OwnedObject<Furniture> {
   Furniture& setUsageTime(int);
   Furniture& setClickType(FurnitureClickType);
   Furniture& setTickType(FurnitureTickType);
-  Furniture& setEntryType(FurnitureEntryType);
+  Furniture& setEntryType(FurnitureEntry);
   Furniture& setFireInfo(const Fire&);
   Furniture& setIsWall();
   Furniture& setOverrideMovement();
   Furniture& setLayer(FurnitureLayer);
   Furniture& setLightEmission(double);
   Furniture& setCanHide();
+  Furniture& setEmitsWarning();
+  Furniture& setPlacementMessage(MsgType);
 
   SERIALIZATION_DECL(Furniture)
 
@@ -98,11 +104,13 @@ class Furniture : public Renderable, public OwnedObject<Furniture> {
   optional<FurnitureUsageType> SERIAL(usageType);
   optional<FurnitureClickType> SERIAL(clickType);
   optional<FurnitureTickType> SERIAL(tickType);
-  optional<FurnitureEntryType> SERIAL(entryType);
+  HeapAllocated<optional<FurnitureEntry>> SERIAL(entryType);
   int SERIAL(usageTime) = 1;
   bool SERIAL(overrideMovement) = false;
   bool SERIAL(wall) = false;
   ConstructMessage SERIAL(constructMessage) = BUILD;
   double SERIAL(lightEmission) = 0;
   bool SERIAL(canHideHere) = false;
+  bool SERIAL(warning) = false;
+  optional<MsgType> SERIAL(placementMessage);
 };

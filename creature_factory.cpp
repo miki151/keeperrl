@@ -48,6 +48,7 @@
 #include "furniture.h"
 #include "experience_type.h"
 #include "creature_debt.h"
+#include "trap_type.h"
 
 SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory);

@@ -48,6 +48,7 @@
 #include "furniture_usage.h"
 #include "collective_warning.h"
 #include "immigration.h"
+#include "trap_type.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -761,7 +762,7 @@ void Collective::onEvent(const GameEvent& event) {
         WCreature who = event.get<EventInfo::TrapDisarmed>().creature;
         if (constructions->containsTrap(pos)) {
           control->addMessage(PlayerMessage(who->getName().a() + " disarms a "
-                + Item::getTrapName(constructions->getTrap(pos).getType()) + " trap.",
+                + getTrapName(constructions->getTrap(pos).getType()) + " trap.",
                 MessagePriority::HIGH).setPosition(pos));
           constructions->getTrap(pos).reset();
         }
@@ -844,7 +845,8 @@ Territory& Collective::getTerritory() {
 bool Collective::canClaimSquare(Position pos) const {
   return getKnownTiles().isKnown(pos) &&
       pos.isCovered() &&
-      pos.canConstruct(FurnitureType::BED);
+      pos.canEnterSquare({MovementTrait::WALK}) &&
+      !pos.isWall();
 }
 
 void Collective::claimSquare(Position pos) {
@@ -952,12 +954,10 @@ void Collective::returnResource(const CostInfo& amount) {
 
 vector<pair<WItem, Position>> Collective::getTrapItems(TrapType type, const vector<Position>& squares) const {
   vector<pair<WItem, Position>> ret;
-  for (Position pos : squares) {
-    vector<WItem> v = filter(pos.getItems(ItemIndex::TRAP),
-        [type, this](WItem it) { return it->getTrapType() == type && !isItemMarked(it); });
-    for (WItem it : v)
-      ret.emplace_back(it, pos);
-  }
+  for (Position pos : squares)
+    for (auto it : pos.getItems(ItemIndex::TRAP))
+      if (it->getTrapType() == type && !isItemMarked(it))
+        ret.emplace_back(it, pos);
   return ret;
 }
 

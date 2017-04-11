@@ -24,7 +24,7 @@
 #include "effect.h"
 #include "view_object.h"
 #include "view_id.h"
-#include "trigger.h"
+#include "furniture.h"
 #include "game.h"
 #include "creature.h"
 #include "monster_ai.h"
@@ -41,6 +41,8 @@
 #include "item_type.h"
 #include "body.h"
 #include "item.h"
+#include "furniture_factory.h"
+#include "trap_type.h"
 
 template <class Archive> 
 void ItemFactory::serialize(Archive& ar, const unsigned int version) {
@@ -93,8 +95,8 @@ class AmuletOfWarning : public Item {
       bool isDanger = false;
       bool isBigDanger = false;
       for (Position v : position.getRectangle(Rectangle(-radius, -radius, radius + 1, radius + 1))) {
-        for (WTrigger t : v.getTriggers())
-          if (t->isDangerous(owner)) {
+        for (auto f : v.getFurniture())
+          if (f->emitsWarning(owner)) {
             if (v.dist8(position) <= 1)
               isBigDanger = true;
             else
@@ -307,30 +309,24 @@ class TechBook : public Item {
   bool SERIAL(read) = false;
 };
 
-class TrapItem : public Item {
-  public:
-  TrapItem(ViewObject _trapObject, const ItemAttributes& attr, EffectType _effect, bool visible)
-      : Item(attr), effect(_effect), trapObject(_trapObject), alwaysVisible(visible) {
+
+static FurnitureType getTrapFurniture(TrapType type) {
+  switch (type) {
+    case TrapType::ALARM:
+      return FurnitureType::ALARM_TRAP;
+    case TrapType::BOULDER:
+      return FurnitureType::BOULDER_TRAP;
+    case TrapType::POISON_GAS:
+      return FurnitureType::POISON_GAS_TRAP;
+    case TrapType::SURPRISE:
+      return FurnitureType::SURPRISE_TRAP;
+    case TrapType::TERROR:
+      return FurnitureType::TERROR_TRAP;
+    case TrapType::WEB:
+      return FurnitureType::WEB_TRAP;
   }
+}
 
-  virtual void applySpecial(WCreature c) override {
-    if (!alwaysVisible)
-      c->you(MsgType::SET_UP_TRAP, "");
-    c->getPosition().addTrigger(Trigger::getTrap(trapObject, c->getPosition(), effect, c->getTribeId(),
-          alwaysVisible));
-    discarded = true;
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Item), effect, trapObject, alwaysVisible);
-  SERIALIZATION_CONSTRUCTOR(TrapItem);
-
-  private:
-  EffectType SERIAL(effect);
-  ViewObject SERIAL(trapObject);
-  bool SERIAL(alwaysVisible);
-};
-
-REGISTER_TYPE(TrapItem);
 REGISTER_TYPE(SkillBook);
 REGISTER_TYPE(TechBook);
 REGISTER_TYPE(Potion);
@@ -636,12 +632,12 @@ int getEffectPrice(EffectType type) {
     case EffectId::TELE_ENEMIES:
     case EffectId::CURE_POISON:
     case EffectId::SUMMON: return 12;
-    case EffectId::GUARDING_BOULDER:
     case EffectId::EMIT_POISON_GAS:  return 20;
     case EffectId::DECEPTION: 
     case EffectId::LEAVE_BODY: 
     case EffectId::METEOR_SHOWER: 
     case EffectId::AIR_BLAST: 
+    case EffectId::PLACE_FURNITURE:
     case EffectId::WORD_OF_POWER: return 30;
   }
   return -1;
@@ -658,24 +654,6 @@ const static vector<EffectType> potionEffects {
    {EffectId::LASTING, LastingEffect::INVISIBLE},
    {EffectId::LASTING, LastingEffect::FLYING},
 };
-
-ViewId getTrapViewId(TrapType t) {
-  switch (t) {
-    case TrapType::BOULDER: FATAL << "Not handled trap type " << int(t); break;
-    case TrapType::POISON_GAS: return ViewId::GAS_TRAP;
-    case TrapType::ALARM: return ViewId::ALARM_TRAP;
-    case TrapType::WEB: return ViewId::WEB_TRAP;
-    case TrapType::SURPRISE: return ViewId::SURPRISE_TRAP;
-    case TrapType::TERROR: return ViewId::TERROR_TRAP;
-  }
-  return ViewId(0);
-}
-
-PItem getTrap(const ItemAttributes& attr, TrapInfo info) {
-  return makeOwner<TrapItem>(ViewObject(getTrapViewId(info.trapType), ViewLayer::LARGE_ITEM,
-          Effect::getName(info.effectType) + " trap"),
-        attr, info.effectType, info.alwaysVisible);
-}
 
 ViewId getRingViewId(LastingEffect e) {
   switch (e) {
@@ -771,8 +749,6 @@ PItem ItemFactory::fromId(ItemType item) {
     case ItemId::RANDOM_TECH_BOOK: return makeOwner<TechBook>(getAttributes(item), none);
     case ItemId::TECH_BOOK: return makeOwner<TechBook>(getAttributes(item), item.get<TechId>());
     case ItemId::POTION: return makeOwner<Potion>(getAttributes(item));
-    case ItemId::TRAP_ITEM:
-        return getTrap(getAttributes(item), item.get<TrapInfo>());
     default: return makeOwner<Item>(getAttributes(item));
   }
 }
@@ -1146,30 +1122,19 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.uses = 1;
             i.price = 60;
             i.effect = EffectType(EffectId::SUMMON, CreatureId::AUTOMATON););
-    case ItemId::BOULDER_TRAP_ITEM: return ITATTR(
-            i.viewId = ViewId::TRAP_ITEM;
-            i.name = "boulder trap";
-            i.shortName = "boulder";
-            i.weight = 0.5;
-            i.itemClass = ItemClass::TOOL;
-            i.applyTime = 3;
-            i.applySound = SoundId::TRAP_ARMING;
-            i.uses = 1;
-            i.usedUpMsg = true;
-            i.effect = EffectId::GUARDING_BOULDER;
-            i.trapType = TrapType::BOULDER;
-            i.price = 2;);
     case ItemId::TRAP_ITEM: return ITATTR(
             i.viewId = ViewId::TRAP_ITEM;
-            i.name = "unarmed " + Effect::getName(item.get<TrapInfo>().effectType) + " trap";
-            i.shortName = Effect::getName(item.get<TrapInfo>().effectType);
+            auto trapName = getTrapName(item.get<TrapType>());
+            i.name = "unarmed " + trapName + " trap";
+            i.shortName = trapName;
             i.weight = 0.5;
             i.itemClass = ItemClass::TOOL;
             i.applyTime = 3;
             i.applySound = SoundId::TRAP_ARMING;
             i.uses = 1;
             i.usedUpMsg = true;
-            i.trapType = item.get<TrapInfo>().trapType;
+            i.trapType = item.get<TrapType>();
+            i.effect = EffectType(EffectId::PLACE_FURNITURE, getTrapFurniture(item.get<TrapType>()));
             i.price = 2;);
     case ItemId::POTION: return ITATTR(
             EffectType effect = item.get<EffectType>();

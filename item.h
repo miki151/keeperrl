@@ -29,21 +29,10 @@ class ItemAttributes;
 class EffectType;
 struct CorpseInfo;
 
-RICH_ENUM(TrapType,
-  BOULDER,
-  POISON_GAS,
-  ALARM,
-  WEB,
-  SURPRISE,
-  TERROR
-);
-
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
   Item(const ItemAttributes&);
   virtual ~Item();
-
-  static string getTrapName(TrapType);
 
   void apply(WCreature, bool noSound = false);
 

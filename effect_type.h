@@ -12,7 +12,6 @@ enum class EffectId {
     DESTROY_EQUIPMENT,
     ENHANCE_ARMOR,
     ENHANCE_WEAPON,
-    GUARDING_BOULDER,
     EMIT_POISON_GAS,
     WORD_OF_POWER,
     AIR_BLAST,
@@ -26,11 +25,14 @@ enum class EffectId {
     CURE_POISON,
     METEOR_SHOWER,
     LASTING,
+    PLACE_FURNITURE,
 };
 
-class EffectType : public EnumVariant<EffectId, TYPES(LastingEffect, CreatureId),
+class EffectType : public EnumVariant<EffectId, TYPES(LastingEffect, CreatureId, FurnitureType),
         ASSIGN(LastingEffect, EffectId::LASTING),
-        ASSIGN(CreatureId, EffectId::SUMMON)> {
+        ASSIGN(CreatureId, EffectId::SUMMON),
+        ASSIGN(FurnitureType, EffectId::PLACE_FURNITURE)
+      > {
   using EnumVariant::EnumVariant;
 };
 

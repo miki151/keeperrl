@@ -144,23 +144,6 @@ static void emitPoisonGas(Position pos, int strength, bool msg) {
     pos.globalMessage("A cloud of gas is released", "You hear a hissing sound");
 }
 
-static void guardingBuilder(WCreature c) {
-  optional<Vec2> dest;
-  for (Position pos : c->getPosition().neighbors8(Random))
-    if (c->move(pos) && !pos.getCreature() && pos.getDir(c->getPosition()).length4() == 2) {
-      dest = c->getPosition().getDir(pos);
-      break;
-    }
-  Position pos = c->getPosition();
-  if (dest)
-    c->displace(c->getLocalTime(), *dest);
-  else {
-    Effect::applyToCreature(c, EffectType(EffectId::TELEPORT), EffectStrength::NORMAL);
-  }
-  if (c->getPosition() != pos)
-    pos.addFurniture(FurnitureFactory::get(FurnitureType::BOULDER_TRAP, c->getTribeId()));
-}
-
 vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, int ttl, double delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
@@ -348,6 +331,28 @@ static void summon(WCreature summoner, CreatureId id) {
   }
 }
 
+static void placeFurniture(WCreature c, FurnitureType type) {
+  Position pos = c->getPosition();
+  auto f = FurnitureFactory::get(type, c->getTribeId());
+  bool furnitureBlocks = !f->canEnter(c->getMovementType());
+  if (furnitureBlocks) {
+    optional<Vec2> dest;
+    for (Position pos2 : c->getPosition().neighbors8(Random))
+      if (c->move(pos2) && !pos2.getCreature()) {
+        dest = pos.getDir(pos2);
+        break;
+      }
+    if (dest)
+      c->displace(c->getLocalTime(), *dest);
+    else
+      Effect::applyToCreature(c, EffectType(EffectId::TELEPORT), EffectStrength::NORMAL);
+  }
+  if (c->getPosition() != pos || !furnitureBlocks) {
+    f->addPlacementMessage(c);
+    pos.addFurniture(std::move(f));
+  }
+}
+
 void Effect::applyToCreature(WCreature c, const EffectType& type, EffectStrength strengthEnum) {
   int strength = int(strengthEnum);
   switch (type.getId()) {
@@ -361,7 +366,6 @@ void Effect::applyToCreature(WCreature c, const EffectType& type, EffectStrength
     case EffectId::DECEPTION: deception(c); break;
     case EffectId::WORD_OF_POWER: wordOfPower(c, strength); break;
     case EffectId::AIR_BLAST: airBlast(c, strength); break;
-    case EffectId::GUARDING_BOULDER: guardingBuilder(c); break;
     case EffectId::ENHANCE_ARMOR: enhanceArmor(c); break;
     case EffectId::ENHANCE_WEAPON: enhanceWeapon(c); break;
     case EffectId::DESTROY_EQUIPMENT: destroyEquipment(c); break;
@@ -374,6 +378,7 @@ void Effect::applyToCreature(WCreature c, const EffectType& type, EffectStrength
     case EffectId::SILVER_DAMAGE: c->affectBySilver(); break;
     case EffectId::CURE_POISON: c->removeEffect(LastingEffect::POISON); break;
     case EffectId::METEOR_SHOWER: c->getPosition().addTrigger(Trigger::getMeteorShower(c, 15)); break;
+    case EffectId::PLACE_FURNITURE: placeFurniture(c, type.get<FurnitureType>()); break;
   }
 }
 
@@ -431,13 +436,13 @@ string Effect::getName(const EffectType& type) {
     case EffectId::LEAVE_BODY: return "possesion";
     case EffectId::FIRE: return "fire";
     case EffectId::ACID: return "acid";
-    case EffectId::GUARDING_BOULDER: return "boulder";
     case EffectId::ALARM: return "alarm";
     case EffectId::TELE_ENEMIES: return "surprise";
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "cure poisoning";
     case EffectId::METEOR_SHOWER: return "meteor shower";
     case EffectId::LASTING: return getName(type.get<LastingEffect>());
+    case EffectId::PLACE_FURNITURE: return Furniture::getName(type.get<FurnitureType>());
   }
 }
 
@@ -472,13 +477,13 @@ string Effect::getDescription(const EffectType& type) {
     case EffectId::LEAVE_BODY: return "Lets the spellcaster leave his body and possess another one.";
     case EffectId::FIRE: return "fire";
     case EffectId::ACID: return "acid";
-    case EffectId::GUARDING_BOULDER: return "boulder";
     case EffectId::ALARM: return "alarm";
     case EffectId::TELE_ENEMIES: return "surprise";
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "Cures poisoning.";
     case EffectId::METEOR_SHOWER: return "Initiates a deadly meteor shower at the site.";
     case EffectId::LASTING: return getLastingDescription(getDescription(type.get<LastingEffect>()));
+    case EffectId::PLACE_FURNITURE: return "Places a " + Furniture::getName(type.get<FurnitureType>());
   }
 }
 

@@ -61,22 +61,12 @@ enum class ItemId {
   TECH_BOOK,
 
   TRAP_ITEM,
-  BOULDER_TRAP_ITEM,
   AUTOMATON_ITEM,
 };
 
-struct TrapInfo {
-  TrapType SERIAL(trapType);
-  EffectType SERIAL(effectType);
-  bool SERIAL(alwaysVisible);
-  SERIALIZE_ALL(trapType, effectType, alwaysVisible);
-  bool operator == (const TrapInfo& o) const { return trapType == o.trapType && effectType == o.effectType &&
-      alwaysVisible == o.alwaysVisible; }
-};
-
-class ItemType : public EnumVariant<ItemId, TYPES(EffectType, TrapInfo, LastingEffect, TechId),
+class ItemType : public EnumVariant<ItemId, TYPES(EffectType, TrapType, LastingEffect, TechId),
         ASSIGN(EffectType, ItemId::SCROLL, ItemId::POTION, ItemId::MUSHROOM),
-        ASSIGN(TrapInfo, ItemId::TRAP_ITEM),
+        ASSIGN(TrapType, ItemId::TRAP_ITEM),
         ASSIGN(LastingEffect, ItemId::RING),
         ASSIGN(TechId, ItemId::TECH_BOOK)> {
   using EnumVariant::EnumVariant;

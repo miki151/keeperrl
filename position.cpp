@@ -288,7 +288,8 @@ void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
     if (isValid() && isUnavailable())
       index.setHighlight(HighlightType::UNAVAILABLE);
     for (auto furniture : getFurniture())
-      index.insert(furniture->getViewObject());
+      if (furniture->isVisibleTo(viewer))
+        index.insert(furniture->getViewObject());
   }
 }
 

@@ -54,7 +54,6 @@ enum class SquareInteraction;
 enum class FurnitureUsageType;
 enum class FurnitureClickType;
 enum class FurnitureTickType;
-enum class FurnitureEntryType;
 
 enum class MinionTask;
 enum class MinionTrait;

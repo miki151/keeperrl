@@ -34,12 +34,10 @@ class Trigger : public OwnedObject<Trigger> {
   virtual bool interceptsFlyingItem(WItem it) const;
   virtual void onInterceptFlyingItem(vector<PItem> it, const Attack& a, int remainingDist, Vec2 dir, VisionId);
 
-  virtual bool isDangerous(WConstCreature c) const;
   virtual void tick();
   virtual void fireDamage(double size);
 
   static PTrigger getPortal(const ViewObject&, Position);
-  static PTrigger getTrap(const ViewObject&, Position, EffectType, TribeId, bool alwaysVisible);
   static PTrigger getMeteorShower(WCreature, double duration);
 
   static const ViewObject& getTorchViewObject(Dir);
