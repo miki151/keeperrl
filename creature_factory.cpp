@@ -48,7 +48,6 @@
 #include "furniture.h"
 #include "experience_type.h"
 #include "creature_debt.h"
-#include "trap_type.h"
 
 SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory);
@@ -2504,7 +2503,7 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::KEEPER_F:
     case CreatureId::KEEPER:
       return ItemList()
-        .add(ItemId::ROBE);
+          .add(ItemId::ROBE);
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
       return ItemList()

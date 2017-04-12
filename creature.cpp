@@ -38,7 +38,6 @@
 #include "position.h"
 #include "view.h"
 #include "sound.h"
-#include "trigger.h"
 #include "lasting_effect.h"
 #include "attack_type.h"
 #include "attack_level.h"

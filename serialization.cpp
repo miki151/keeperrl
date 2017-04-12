@@ -22,7 +22,6 @@
 #include "effect.h"
 #include "skill.h"
 #include "tribe.h"
-#include "trigger.h"
 #include "player.h"
 #include "monster.h"
 #include "ranged_weapon.h"

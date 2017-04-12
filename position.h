@@ -65,10 +65,6 @@ class Position {
   optional<FurnitureClickType> getClickType() const;
   void addSound(const Sound&) const;
   void getViewIndex(ViewIndex&, WConstCreature viewer) const;
-  vector<WTrigger> getTriggers() const;
-  PTrigger removeTrigger(WTrigger);
-  vector<PTrigger> removeTriggers();
-  void addTrigger(PTrigger);
   const vector<WItem>& getItems() const;
   vector<WItem> getItems(function<bool (WItem)> predicate) const;
   const vector<WItem>& getItems(ItemIndex) const;

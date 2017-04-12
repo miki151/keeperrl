@@ -21,7 +21,6 @@
 #include "creature.h"
 #include "item.h"
 #include "view_object.h"
-#include "trigger.h"
 #include "progress_meter.h"
 #include "game.h"
 #include "vision.h"
@@ -44,7 +43,7 @@ template <class Archive>
 void Square::serialize(Archive& ar, const unsigned int version) { 
   ar & SUBCLASS(OwnedObject<Square>) & SUBCLASS(Renderable);
   ar(inventory);
-  ar(name, creature, triggers, vision, landingLink, poisonGas);
+  ar(name, creature, vision, landingLink, poisonGas);
   ar(movementSet, lastViewer, viewIndex);
   ar(forbiddenTribe);
   if (progressMeter)
@@ -111,8 +110,6 @@ void Square::tick(Position pos) {
   if (creature && poisonGas->getAmount() > 0.2) {
     creature->poisonWithGas(min(1.0, poisonGas->getAmount()));
   }
-  for (auto t : getWeakPointers(triggers))
-    t->tick();
 }
 
 bool Square::itemLands(vector<WItem> item, const Attack& attack) const {
@@ -127,9 +124,6 @@ bool Square::itemLands(vector<WItem> item, const Attack& attack) const {
       return false;
     }
   }
-  for (const PTrigger& t : triggers)
-    if (t->interceptsFlyingItem(item[0]))
-      return true;
   return false;
 }
 
@@ -142,12 +136,6 @@ void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack,
       dropItems(pos, std::move(item));
     return;
   }
-  for (PTrigger& t : triggers)
-    if (t->interceptsFlyingItem(item[0].get())) {
-      t->onInterceptFlyingItem(std::move(item), attack, remainingDist, dir, vision);
-      return;
-    }
-
   item[0]->onHitSquareMessage(pos, item.size());
   if (!item[0]->isDiscarded())
     dropItems(pos, std::move(item));
@@ -185,9 +173,6 @@ void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
     for (WItem it : getInventory().getItems())
       fireSize = max(fireSize, it->getFireSize());
   ret.insert(getViewObject());
-  for (const PTrigger& t : triggers)
-    if (auto obj = t->getViewObject(viewer))
-      ret.insert(copyOf(*obj).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (WItem it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (poisonGas->getAmount() > 0)
@@ -197,8 +182,6 @@ void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
 
 void Square::onEnter(WCreature c) {
   setDirty(c->getPosition());
-  for (auto t : getWeakPointers(triggers))
-    t->onCreatureEnter(c);
   onEnterSpecial(c);
 }
 
@@ -214,36 +197,6 @@ void Square::dropItems(Position pos, vector<PItem> items) {
   setDirty(pos);
   pos.getLevel()->addTickingSquare(pos.getCoord());
   dropItemsLevelGen(std::move(items));
-}
-
-void Square::addTrigger(Position pos, PTrigger t) {
-  setDirty(pos);
-  pos.getLevel()->addTickingSquare(pos.getCoord());
-  triggers.push_back(std::move(t));
-}
-
-vector<WTrigger> Square::getTriggers() const {
-  return getWeakPointers(triggers);
-}
-
-PTrigger Square::removeTrigger(Position pos, WTrigger trigger) {
-  CHECK(trigger);
-  setDirty(pos);
-  for (PTrigger& t : triggers)
-    if (t.get() == trigger) {
-      PTrigger ret = std::move(t);
-      removeElement(triggers, t);
-      return ret;
-    }
-  FATAL << "Trigger not found";
-  return nullptr;
-}
-
-vector<PTrigger> Square::removeTriggers(Position pos) {
-  vector<PTrigger> ret;
-  for (auto t : getWeakPointers(triggers))
-    ret.push_back(removeTrigger(pos, t));
-  return ret;
 }
 
 WCreature Square::getCreature() const {

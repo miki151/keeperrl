@@ -21,7 +21,6 @@
 #include "creature.h"
 #include "square.h"
 #include "collective_builder.h"
-#include "trigger.h"
 #include "progress_meter.h"
 #include "level_maker.h"
 #include "movement_type.h"

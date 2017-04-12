@@ -1,6 +1,5 @@
 #pragma once
 
-#include "renderable.h"
 #include "destroy_action.h"
 #include "fire.h"
 #include "item_factory.h"
@@ -16,16 +15,18 @@ class ItemFactory;
 class GameEvent;
 class Position;
 class FurnitureEntry;
+class ViewObject;
 
-class Furniture : public Renderable, public OwnedObject<Furniture> {
+class Furniture : public OwnedObject<Furniture> {
   public:
   enum BlockType { BLOCKING, NON_BLOCKING, BLOCKING_ENEMIES };
 
   static const string& getName(FurnitureType, int count = 1);
   static FurnitureLayer getLayer(FurnitureType);
 
-  Furniture(const string& name, const ViewObject&, FurnitureType, BlockType, TribeId);
+  Furniture(const string& name, const optional<ViewObject>&, FurnitureType, BlockType, TribeId);
   Furniture(const Furniture&);
+  const optional<ViewObject>& getViewObject() const;
   const string& getName(int count = 1) const;
   FurnitureType getType() const;
   bool isVisibleTo(WConstCreature) const;
@@ -53,16 +54,18 @@ class Furniture : public Renderable, public OwnedObject<Furniture> {
   optional<FurnitureClickType> getClickType() const;
   bool isTicking() const;
   bool isWall() const;
-  void onConstructedBy(WCreature) const;
+  void onConstructedBy(WCreature);
   FurnitureLayer getLayer() const;
   double getLightEmission() const;
   bool canHide() const;
   bool emitsWarning(WConstCreature) const;
   void addPlacementMessage(WConstCreature) const;
+  WCreature getCreator() const;
+  optional<double> getCreatedTime() const;
 
-  enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE };
+  enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE, SET_UP };
 
-  Furniture& setConstructMessage(ConstructMessage);
+  Furniture& setConstructMessage(optional<ConstructMessage>);
   Furniture& setDestroyable(double);
   Furniture& setDestroyable(double, DestroyAction::Type);
   Furniture& setItemDrop(ItemFactory);
@@ -89,6 +92,7 @@ class Furniture : public Renderable, public OwnedObject<Furniture> {
   ~Furniture();
 
   private:
+  HeapAllocated<optional<ViewObject>> SERIAL(viewObject);
   string SERIAL(name);
   string SERIAL(pluralName);
   FurnitureType SERIAL(type);
@@ -108,9 +112,10 @@ class Furniture : public Renderable, public OwnedObject<Furniture> {
   int SERIAL(usageTime) = 1;
   bool SERIAL(overrideMovement) = false;
   bool SERIAL(wall) = false;
-  ConstructMessage SERIAL(constructMessage) = BUILD;
+  optional<ConstructMessage> SERIAL(constructMessage) = BUILD;
   double SERIAL(lightEmission) = 0;
   bool SERIAL(canHideHere) = false;
   bool SERIAL(warning) = false;
-  optional<MsgType> SERIAL(placementMessage);
+  WCreature SERIAL(creator);
+  optional<double> SERIAL(createdTime);
 };

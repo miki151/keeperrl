@@ -10,7 +10,6 @@
 #include "technology.h"
 #include "monster.h"
 #include "options.h"
-#include "trigger.h"
 #include "model.h"
 #include "game.h"
 #include "spell.h"
@@ -1087,7 +1086,6 @@ void Collective::destroySquare(Position pos, FurnitureLayer layer) {
     zones->eraseZones(pos);
     if (constructions->containsTrap(pos))
       removeTrap(pos);
-    pos.removeTriggers();
   }
 }
 

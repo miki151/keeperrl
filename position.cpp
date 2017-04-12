@@ -3,7 +3,6 @@
 #include "level.h"
 #include "square.h"
 #include "creature.h"
-#include "trigger.h"
 #include "item.h"
 #include "view_id.h"
 #include "model.h"
@@ -288,33 +287,9 @@ void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
     if (isValid() && isUnavailable())
       index.setHighlight(HighlightType::UNAVAILABLE);
     for (auto furniture : getFurniture())
-      if (furniture->isVisibleTo(viewer))
-        index.insert(furniture->getViewObject());
+      if (furniture->isVisibleTo(viewer) && furniture->getViewObject())
+        index.insert(*furniture->getViewObject());
   }
-}
-
-vector<WTrigger> Position::getTriggers() const {
-  if (isValid())
-    return getSquare()->getTriggers();
-  else
-    return {};
-}
-
-PTrigger Position::removeTrigger(WTrigger trigger) {
-  CHECK(isValid());
-  return modSquare()->removeTrigger(*this, trigger);
-}
-
-vector<PTrigger> Position::removeTriggers() {
-  if (isValid())
-    return modSquare()->removeTriggers(*this);
-  else
-    return {};
-}
-
-void Position::addTrigger(PTrigger t) {
-  if (isValid())
-    modSquare()->addTrigger(*this, std::move(t));
 }
 
 const vector<WItem>& Position::getItems() const {
@@ -457,7 +432,7 @@ bool Position::isWall() const {
 
 void Position::construct(FurnitureType type, WCreature c) {
   if (construct(type, c->getTribeId()))
-    getFurniture(Furniture::getLayer(type))->onConstructedBy(c);
+    modFurniture(Furniture::getLayer(type))->onConstructedBy(c);
 }
 
 bool Position::construct(FurnitureType type, TribeId tribe) {
@@ -506,8 +481,6 @@ void Position::fireDamage(double amount) {
     creature->fireDamage(amount);
   for (WItem it : getItems())
     it->fireDamage(amount, *this);
-  for (WTrigger t : getTriggers())
-    t->fireDamage(amount);
 }
 
 bool Position::needsMemoryUpdate() const {
@@ -536,7 +509,8 @@ ViewObject& Position::modViewObject() {
 
 const ViewObject& Position::getViewObject() const {
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    return furniture->getViewObject();
+    if (auto& obj = furniture->getViewObject())
+      return *obj;
   if (isValid())
     return getSquare()->getViewObject();
   else {

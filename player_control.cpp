@@ -31,7 +31,6 @@
 #include "view_id.h"
 #include "collective.h"
 #include "effect.h"
-#include "trigger.h"
 #include "music.h"
 #include "model_builder.h"
 #include "encyclopedia.h"
@@ -793,7 +792,7 @@ static ViewId getSquareViewId(SquareType type) {
 static ViewId getFurnitureViewId(FurnitureType type) {
   static EnumMap<FurnitureType, optional<ViewId>> ids;
   if (!ids[type])
-    ids[type] = FurnitureFactory::get(type, TribeId::getMonster())->getViewObject().id();
+    ids[type] = FurnitureFactory::get(type, TribeId::getMonster())->getViewObject()->id();
   return *ids[type];
 }
 

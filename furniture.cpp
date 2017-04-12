@@ -32,8 +32,8 @@ static string makePlural(const string& s) {
   return s + "s";
 }
 
-Furniture::Furniture(const string& n, const ViewObject& o, FurnitureType t, BlockType b, TribeId id)
-    : Renderable(o), name(n), pluralName(makePlural(name)), type(t), blockType(b), tribe(id) {}
+Furniture::Furniture(const string& n, const optional<ViewObject>& o, FurnitureType t, BlockType b, TribeId id)
+  : viewObject(o), name(n), pluralName(makePlural(name)), type(t), blockType(b), tribe(id) {}
 
 Furniture::Furniture(const Furniture&) = default;
 
@@ -43,13 +43,17 @@ Furniture::~Furniture() {}
 
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
-  ar & SUBCLASS(OwnedObject<Furniture>) & SUBCLASS(Renderable);
+  ar(SUBCLASS(OwnedObject<Furniture>), viewObject);
   ar(name, pluralName, type, blockType, tribe, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
-  ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall);
-  ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, placementMessage);
+  ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
+  ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning);
 }
 
 SERIALIZABLE(Furniture);
+
+const optional<ViewObject>& Furniture::getViewObject() const {
+  return *viewObject;
+}
 
 const string& Furniture::getName(FurnitureType type, int count) {
   static EnumMap<FurnitureType, string> names(
@@ -129,7 +133,8 @@ void Furniture::setTribe(TribeId id) {
 void Furniture::tick(Position pos) {
   if (auto& fire = getFire())
     if (fire->isBurning()) {
-      modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+      if (*viewObject)
+        (*viewObject)->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
       INFO << getName() << " burning " << fire->getSize();
       for (Position v : pos.neighbors8(Random))
         if (fire->getSize() > Random.getDouble() * 40)
@@ -202,21 +207,28 @@ bool Furniture::isWall() const {
   return wall;
 }
 
-void Furniture::onConstructedBy(WCreature c) const {
-  switch (constructMessage) {
-    case BUILD:
-      c->monsterMessage(c->getName().the() + " builds a " + getName());
-      c->playerMessage("You build a " + getName());
-      break;
-    case FILL_UP:
-      c->monsterMessage(c->getName().the() + " fills up the tunnel");
-      c->playerMessage("You fill up the tunnel");
-      break;
-    case REINFORCE:
-      c->monsterMessage(c->getName().the() + " reinforces the wall");
-      c->playerMessage("You reinforce the wall");
-      break;
-  }
+void Furniture::onConstructedBy(WCreature c) {
+  creator = c;
+  createdTime = c->getLocalTime();
+  if (constructMessage)
+    switch (*constructMessage) {
+      case BUILD:
+        c->monsterMessage(c->getName().the() + " builds " + addAParticle(getName()));
+        c->playerMessage("You build " + addAParticle(getName()));
+        break;
+      case FILL_UP:
+        c->monsterMessage(c->getName().the() + " fills up the tunnel");
+        c->playerMessage("You fill up the tunnel");
+        break;
+      case REINFORCE:
+        c->monsterMessage(c->getName().the() + " reinforces the wall");
+        c->playerMessage("You reinforce the wall");
+        break;
+      case SET_UP:
+        c->monsterMessage(c->getName().the() + " sets up " + addAParticle(getName()));
+        c->playerMessage("You set up " + addAParticle(getName()));
+        break;
+    }
 }
 
 FurnitureLayer Furniture::getLayer() const {
@@ -235,12 +247,15 @@ bool Furniture::emitsWarning(WConstCreature) const {
   return warning;
 }
 
-void Furniture::addPlacementMessage(WConstCreature c) const {
-  if (placementMessage)
-    c->you(*placementMessage);
+WCreature Furniture::getCreator() const {
+  return creator;
 }
 
-Furniture& Furniture::setConstructMessage(Furniture::ConstructMessage msg) {
+optional<double> Furniture::getCreatedTime() const {
+  return createdTime;
+}
+
+Furniture& Furniture::setConstructMessage(optional<ConstructMessage> msg) {
   constructMessage = msg;
   return *this;
 }
@@ -265,7 +280,8 @@ void Furniture::fireDamage(Position pos, double amount) {
     fire->set(amount);
     if (!burning && fire->isBurning()) {
       pos.globalMessage("The " + getName() + " catches fire");
-      modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+      if (*viewObject)
+        (*viewObject)->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
       pos.updateMovement();
       pos.getLevel()->addTickingFurniture(pos.getCoord());
     }
@@ -364,13 +380,8 @@ Furniture& Furniture::setCanHide() {
   return *this;
 }
 
-Furniture&Furniture::setEmitsWarning() {
+Furniture& Furniture::setEmitsWarning() {
   warning = true;
-  return *this;
-}
-
-Furniture&Furniture::setPlacementMessage(MsgType msg) {
-  placementMessage = msg;
   return *this;
 }
 

@@ -25,7 +25,6 @@
 #include "view_id.h"
 #include "game.h"
 #include "model.h"
-#include "trigger.h"
 #include "monster_ai.h"
 #include "attack.h"
 #include "player_message.h"
@@ -339,7 +338,7 @@ static void placeFurniture(WCreature c, FurnitureType type) {
       Effect::applyToCreature(c, EffectType(EffectId::TELEPORT), EffectStrength::NORMAL);
   }
   if (c->getPosition() != pos || !furnitureBlocks) {
-    f->addPlacementMessage(c);
+    f->onConstructedBy(c);
     pos.addFurniture(std::move(f));
   }
 }
@@ -367,7 +366,6 @@ void Effect::applyToCreature(WCreature c, const EffectType& type, EffectStrength
     case EffectId::EMIT_POISON_GAS: emitPoisonGas(c->getPosition(), strength, true); break;
     case EffectId::SILVER_DAMAGE: c->affectBySilver(); break;
     case EffectId::CURE_POISON: c->removeEffect(LastingEffect::POISON); break;
-    case EffectId::METEOR_SHOWER: c->getPosition().addTrigger(Trigger::getMeteorShower(c, 15)); break;
     case EffectId::PLACE_FURNITURE: placeFurniture(c, type.get<FurnitureType>()); break;
   }
 }
@@ -429,7 +427,6 @@ string Effect::getName(const EffectType& type) {
     case EffectId::TELE_ENEMIES: return "surprise";
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "cure poisoning";
-    case EffectId::METEOR_SHOWER: return "meteor shower";
     case EffectId::LASTING: return getName(type.get<LastingEffect>());
     case EffectId::PLACE_FURNITURE: return Furniture::getName(type.get<FurnitureType>());
   }
@@ -469,9 +466,8 @@ string Effect::getDescription(const EffectType& type) {
     case EffectId::TELE_ENEMIES: return "surprise";
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "Cures poisoning.";
-    case EffectId::METEOR_SHOWER: return "Initiates a deadly meteor shower at the site.";
     case EffectId::LASTING: return getLastingDescription(getDescription(type.get<LastingEffect>()));
-    case EffectId::PLACE_FURNITURE: return "Places a " + Furniture::getName(type.get<FurnitureType>());
+    case EffectId::PLACE_FURNITURE: return "Creates a " + Furniture::getName(type.get<FurnitureType>());
   }
 }
 

@@ -21,7 +21,6 @@
 #include "item.h"
 #include "creature.h"
 #include "collective.h"
-#include "trigger.h"
 #include "square_factory.h"
 #include "equipment.h"
 #include "tribe.h"
@@ -1339,7 +1338,7 @@ class Spider : public Task {
     if (!makeWeb && Random.roll(10)) {
       vector<Position>& positions = Random.roll(10) ? positionsFurther : positionsClose;
       for (auto& pos : Random.permutation(positions))
-        if (pos.getTriggers().empty() && !!c->moveTowards(pos, true)) {
+        if (pos.canConstruct(FurnitureType::SPIDER_WEB) && !!c->moveTowards(pos, true)) {
           makeWeb = pos;
           break;
         }

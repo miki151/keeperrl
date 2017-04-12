@@ -98,18 +98,6 @@ class Square : public Renderable, public OwnedObject<Square> {
   /** Returns the creature from the square.*/
   WCreature getCreature() const;
 
-  /** Adds a trigger to the square.*/
-  void addTrigger(Position, PTrigger);
-
-  /** Returns all triggers.*/
-  vector<WTrigger> getTriggers() const;
-
-  /** Removes the trigger from the square.*/
-  PTrigger removeTrigger(Position, WTrigger);
-
-  /** Removes all triggers from the square.*/
-  vector<PTrigger> removeTriggers(Position);
-
   //@{
   /** Drops item or items on the square. The square assumes ownership.*/
   void dropItem(Position, PItem);
@@ -163,7 +151,6 @@ class Square : public Renderable, public OwnedObject<Square> {
   WItem getTopItem() const;
   HeapAllocated<Inventory> SERIAL(inventory);
   WCreature SERIAL(creature) = nullptr;
-  vector<PTrigger> SERIAL(triggers);
   optional<VisionId> SERIAL(vision);
   optional<StairKey> SERIAL(landingLink);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);

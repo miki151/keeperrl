@@ -8,6 +8,7 @@
 #include "sound.h"
 #include "lasting_effect.h"
 #include "effect_type.h"
+#include "furniture_type.h"
 
 const string& Spell::getName() const {
   return name;
@@ -99,6 +100,7 @@ void Spell::init() {
   set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", EffectType(EffectId::SUMMON, CreatureId::SPIRIT), 150,
         SoundId::SPELL_SUMMON_SPIRIT));
   set(SpellId::CURE_POISON, new Spell("cure poisoning", EffectId::CURE_POISON, 150, SoundId::SPELL_CURE_POISON));
-  set(SpellId::METEOR_SHOWER, new Spell("meteor shower", EffectId::METEOR_SHOWER, 150,
+  set(SpellId::METEOR_SHOWER, new Spell("meteor shower", {EffectId::PLACE_FURNITURE, FurnitureType::METEOR_SHOWER}, 150,
         SoundId::SPELL_METEOR_SHOWER));
+  set(SpellId::PORTAL, new Spell("portal", {EffectId::PLACE_FURNITURE, FurnitureType::PORTAL}, 150, SoundId::SPELL_PORTAL));
 }

@@ -259,7 +259,6 @@ DEF_UNIQUE_PTR(MonsterAI);
 DEF_UNIQUE_PTR(Behaviour);
 DEF_OWNER_PTR(Task);
 DEF_OWNER_PTR(Controller);
-DEF_OWNER_PTR(Trigger);
 DEF_OWNER_PTR(Level);
 DEF_OWNER_PTR(VillageControl);
 DEF_SHARED_PTR(GuiElem);

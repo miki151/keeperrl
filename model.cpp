@@ -29,7 +29,6 @@
 #include "view_id.h"
 #include "collective.h"
 #include "music.h"
-#include "trigger.h"
 #include "level_maker.h"
 #include "map_memory.h"
 #include "level_builder.h"
