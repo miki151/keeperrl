@@ -1467,7 +1467,7 @@ bool Collective::hasTech(TechId id) const {
   return contains(technologies, id);
 }
 
-double Collective::getTechCost(Technology* t) {
+int Collective::getTechCost(Technology* t) {
   return t->getCost();
 }
 

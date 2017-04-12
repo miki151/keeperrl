@@ -162,7 +162,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool hasTech(TechId id) const;
   void acquireTech(Technology*);
   vector<Technology*> getTechnologies() const;
-  double getTechCost(Technology*);
+  int getTechCost(Technology*);
   bool addKnownTile(Position);
 
   const EntitySet<Creature>& getKills() const;

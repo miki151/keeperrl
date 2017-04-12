@@ -152,6 +152,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void fillWorkshopInfo(CollectiveInfo&) const;
   void fillImmigration(CollectiveInfo&) const;
   void fillImmigrationHelp(CollectiveInfo&) const;
+  void fillLibraryInfo(CollectiveInfo&) const;
   static const vector<BuildInfo>& getBuildInfo();
 
   typedef CollectiveInfo::TechButton TechButton;
@@ -184,7 +185,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handleEquipment(View* view, WCreature creature);
   void fillEquipment(WCreature, PlayerInfo&) const;
   void handlePersonalSpells(View*);
-  void handleLibrary(View*);
   void handleTrading(WCollective ally);
   void handlePillage(WCollective enemy);
   void handleRansom(bool pay);
@@ -218,6 +218,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void setChosenTeam(optional<TeamId>, optional<UniqueEntity<Creature>::Id> = none);
   optional<TeamId> chosenTeam;
   void clearChosenInfo();
+  bool chosenLibrary = false;
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
   vector<PlayerMessage> SERIAL(messageHistory);
@@ -233,5 +234,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<UniqueEntity<Creature>::Id> draggedCreature;
   void updateMinionVisibility(WConstCreature);
   STutorial SERIAL(tutorial);
+  void setChosenLibrary(bool);
+  void acquireTech(int index);
 };
 

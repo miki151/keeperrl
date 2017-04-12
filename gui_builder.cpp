@@ -72,7 +72,7 @@ void GuiBuilder::setCollectiveTab(CollectiveTab t) {
   if (collectiveTab != t) {
     collectiveTab = t;
     clearActiveButton();
-    closeOverlayWindows();
+    closeOverlayWindowsAndClearButton();
   }
 }
 
@@ -84,6 +84,13 @@ void GuiBuilder::closeOverlayWindows() {
   // send a random id which wont be found
   callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()});
   callbacks.input({UserInputId::WORKSHOP, -1});
+  callbacks.input({UserInputId::LIBRARY_CLOSE});
+  showTasks = false;
+}
+
+void GuiBuilder::closeOverlayWindowsAndClearButton() {
+  closeOverlayWindows();
+  clearActiveButton();
 }
 
 optional<int> GuiBuilder::getActiveButton(CollectiveTab tab) const {
@@ -94,7 +101,7 @@ optional<int> GuiBuilder::getActiveButton(CollectiveTab tab) const {
 }
 
 void GuiBuilder::setActiveGroup(const string& group, optional<TutorialHighlight> tutorial) {
-  clearActiveButton();
+  closeOverlayWindowsAndClearButton();
   activeGroup = group;
   if (tutorial)
     onTutorialClicked(combineHash(group), *tutorial);
@@ -102,6 +109,7 @@ void GuiBuilder::setActiveGroup(const string& group, optional<TutorialHighlight>
 
 void GuiBuilder::setActiveButton(CollectiveTab tab, int num, ViewId viewId, optional<string> group,
     optional<TutorialHighlight> tutorial) {
+  closeOverlayWindowsAndClearButton();
   activeButton = {tab, num};
   mapGui->setButtonViewId(viewId);
   activeGroup = group;
@@ -275,7 +283,7 @@ SGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
       line.addElemAuto(gui.label(info.techButtons[i].name, colors[ColorId::WHITE], info.techButtons[i].hotkey));
       lines.addElem(gui.stack(
             gui.buttonChar([this, i] {
-              closeOverlayWindows();
+              closeOverlayWindowsAndClearButton();
               getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i))();
             }, info.techButtons[i].hotkey, true, true),
             line.buildHorizontalList()));
@@ -1316,7 +1324,7 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
     list.addElem(gui.stack(
               gui.uiHighlightConditional([=] { return showTasks;}),
               gui.label("Show tasks"),
-              gui.button([this] { closeOverlayWindows(); showTasks = !showTasks; })));
+              gui.button([this] { closeOverlayWindowsAndClearButton(); showTasks = !showTasks; })));
     for (auto& button : getSettingsButtons())
       list.addElem(std::move(button));
     list.addElem(gui.stack(
@@ -1343,8 +1351,6 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
 const int taskMapWindowWidth = 400;
 
 SGuiElem GuiBuilder::drawTasksOverlay(const CollectiveInfo& info) {
-  if (info.taskMap.empty())
-    return gui.empty();
   vector<SGuiElem> lines;
   vector<SGuiElem> freeLines;
   for (auto& elem : info.taskMap) {
@@ -1359,13 +1365,18 @@ SGuiElem GuiBuilder::drawTasksOverlay(const CollectiveInfo& info) {
             gui.empty(),
             gui.label(elem.name, colors[elem.priority ? ColorId::GREEN : ColorId::WHITE])), 35));
   }
+  if (info.taskMap.empty())
+    lines.push_back(gui.label("No tasks present."));
   int lineHeight = 25;
   int margin = 20;
   append(lines, std::move(freeLines));
-  return gui.preferredSize(taskMapWindowWidth, info.taskMap.size() * lineHeight + 2 * margin,
-      gui.conditional(gui.miniWindow(
+  int numLines = lines.size();
+  return gui.preferredSize(taskMapWindowWidth, numLines * lineHeight + 2 * margin,
+      gui.conditionalStopKeys(gui.stack(
+          gui.keyHandler([this]{showTasks = false;}, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+          gui.miniWindow(
         gui.margins(gui.scrollable(gui.verticalList(std::move(lines), lineHeight), &tasksScroll, &scrollbarsHeld),
-          margin)), [this] { return showTasks; }));
+          margin))), [this] { return showTasks; }));
 }
 
 SGuiElem GuiBuilder::drawRansomOverlay(const optional<CollectiveInfo::Ransom>& ransom) {
@@ -1474,6 +1485,50 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info) {
                 margin)).buildHorizontalList())));
 }
 
+SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo) {
+  if (!collectiveInfo.libraryInfo)
+    return gui.empty();
+  auto& info = *collectiveInfo.libraryInfo;
+  int margin = 20;
+  int rightElemMargin = 10;
+  auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(gui.rightMargin(rightElemMargin, gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
+  if (info.warning)
+    lines.addElem(gui.label(*info.warning, colors[ColorId::RED]));
+  lines.addElem(gui.label("Available technology:", colors[ColorId::YELLOW]));
+  for (int i : All(info.available)) {
+    auto& elem = info.available[i];
+    auto line = gui.getListBuilder()
+        .addElem(gui.label(elem.name, colors[elem.active ? ColorId::WHITE : ColorId::GRAY]), 10)
+        .addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(elem.cost)), 80)
+        .buildHorizontalList();
+    line = gui.stack(std::move(line), getTooltip({elem.description}, THIS_LINE));
+    if (elem.active)
+      line = gui.stack(
+          gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
+          std::move(line),
+          gui.button(getButtonCallback({UserInputId::LIBRARY_ADD, i})));
+    lines.addElem(gui.rightMargin(rightElemMargin, std::move(line)));
+  }
+  lines.addSpace(legendLineHeight * 2 / 3);
+  if (!info.researched.empty())
+  lines.addElem(gui.label("Researched technology:", colors[ColorId::YELLOW]));
+  for (int i : All(info.researched)) {
+    auto& elem = info.researched[i];
+    auto line = gui.getListBuilder()
+        .addElem(gui.label(elem.name, colors[ColorId::GRAY]), 10)
+        .addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(elem.cost)), 80)
+        .buildHorizontalList();
+    line = gui.stack(std::move(line), getTooltip({elem.description}, THIS_LINE));
+    lines.addElem(gui.rightMargin(rightElemMargin, std::move(line)));
+  }
+  int height = lines.getSize();
+  return gui.preferredSize(500, height + 2 * margin,
+      gui.miniWindow(gui.stack(
+          gui.keyHandler(getButtonCallback(UserInputId::LIBRARY_CLOSE), {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+          gui.margins(gui.scrollable(lines.buildVerticalList(), &libraryScroll, &scrollbarsHeld), margin))));
+}
+
 SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo& info) {
   int margin = 20;
   int minionListWidth = 220;
@@ -1553,9 +1608,11 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
            info.collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
-           info.collectiveInfo), OverlayInfo::MINIONS});
+           info.collectiveInfo), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
-           info.collectiveInfo), OverlayInfo::MINIONS});
+           info.collectiveInfo), OverlayInfo::TOP_LEFT});
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawLibraryOverlay, this), THIS_LINE,
+           info.collectiveInfo), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,

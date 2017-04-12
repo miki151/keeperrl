@@ -175,7 +175,7 @@ static void clearDugOutSquares(const WGame game, vector<Vec2>& highlights) {
 
 vector<Vec2> Tutorial::getHighlightedSquaresHigh(const WGame game) const {
   auto collective = game->getPlayerCollective();
-  const Vec2 entry(83, 110);
+  const Vec2 entry(117, 123);
   const int corridor = 6;
   int roomWidth = 5;
   const Vec2 firstRoom(entry - Vec2(0, corridor + roomWidth / 2));

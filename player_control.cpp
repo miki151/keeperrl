@@ -695,46 +695,11 @@ void PlayerControl::handlePersonalSpells(View* view) {
 }
 
 int PlayerControl::getNumMinions() const {
-  return getCollective()->getCreatures(MinionTrait::FIGHTER).size();
+  return (int) getCollective()->getCreatures(MinionTrait::FIGHTER).size();
 }
 
 int PlayerControl::getMinLibrarySize() const {
-  return getCollective()->getTechnologies().size();
-}
-
-void PlayerControl::handleLibrary(View* view) {
-  int libraryCount = getCollective()->getConstructions().getBuiltCount(FurnitureType::BOOK_SHELF);
-  if (libraryCount == 0) {
-    view->presentText("", "You need to build a library to start research.");
-    return;
-  }
-  vector<ListElem> options;
-  bool allInactive = false;
-  if (libraryCount <= getMinLibrarySize()) {
-    allInactive = true;
-    options.emplace_back("You need a larger library to continue research.", ListElem::TITLE);
-  }
-  options.push_back(ListElem("You have "
-        + toString(int(getCollective()->numResource(ResourceId::MANA))) + " mana. ", ListElem::TITLE));
-  vector<Technology*> techs = filter(Technology::getNextTechs(getCollective()->getTechnologies()),
-      [](const Technology* tech) { return tech->canResearch(); });
-  for (Technology* tech : techs) {
-    int cost = getCollective()->getTechCost(tech);
-    string text = tech->getName() + " (" + toString(cost) + " mana)";
-    options.push_back(ListElem(text, cost <= int(getCollective()->numResource(ResourceId::MANA))
-        && !allInactive ? ListElem::NORMAL : ListElem::INACTIVE).setTip(tech->getDescription()));
-  }
-  options.emplace_back("Researched:", ListElem::TITLE);
-  for (Technology* tech : getCollective()->getTechnologies())
-    options.push_back(ListElem(tech->getName(), ListElem::INACTIVE).setTip(tech->getDescription()));
-  auto index = view->chooseFromList("Library", options);
-  if (!index)
-    return;
-  Technology* tech = techs[*index];
-  getCollective()->takeResource({ResourceId::MANA, int(getCollective()->getTechCost(tech))});
-  getCollective()->acquireTech(tech);
-  view->updateView(this, true);
-  handleLibrary(view);
+  return (int) getCollective()->getTechnologies().size();
 }
 
 typedef CollectiveInfo::Button Button;
@@ -869,7 +834,7 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   vector<TechInfo> ret;
   ret.push_back({{ViewId::MANA, "Sorcery"}, [](PlayerControl* c, View* view) {c->handlePersonalSpells(view);}});
   ret.push_back({{ViewId::LIBRARY, "Library", 'l'},
-      [](PlayerControl* c, View* view) { c->handleLibrary(view); }});
+      [](PlayerControl* c, View* view) { c->setChosenLibrary(!c->chosenLibrary); }});
   ret.push_back({{ViewId::BOOK, "Keeperopedia"},
       [](PlayerControl* c, View* view) { Encyclopedia().present(view); }});
   return ret;
@@ -1177,6 +1142,45 @@ static const ViewObject& getConstructionObject(FurnitureType type) {
   return *objects[type];
 }
 
+void PlayerControl::acquireTech(int index) {
+  auto techs = filter(Technology::getNextTechs(getCollective()->getTechnologies()),
+      [](const Technology* tech) { return tech->canResearch(); });
+  Technology* tech = techs[index];
+  getCollective()->takeResource({ResourceId::MANA, int(getCollective()->getTechCost(tech))});
+  getCollective()->acquireTech(tech);
+}
+
+void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
+  if (chosenLibrary) {
+    collectiveInfo.libraryInfo.emplace();
+    auto& info = *collectiveInfo.libraryInfo;
+    int libraryCount = getCollective()->getConstructions().getBuiltCount(FurnitureType::BOOK_SHELF);
+    if (libraryCount == 0)
+      info.warning = "You need to build a library to start research.";
+    else if (libraryCount <= getMinLibrarySize())
+      info.warning = "You need a larger library to continue research.";
+    info.resource = make_pair(ViewId::MANA, getCollective()->numResource(ResourceId::MANA));
+    auto techs = filter(Technology::getNextTechs(getCollective()->getTechnologies()),
+        [](const Technology* tech) { return tech->canResearch(); });
+    for (Technology* tech : techs) {
+      info.available.emplace_back();
+      auto& techInfo = info.available.back();
+      techInfo.name = tech->getName();
+      int cost = getCollective()->getTechCost(tech);
+      techInfo.cost = make_pair(ViewId::MANA, cost);
+      techInfo.active = !info.warning && cost <= getCollective()->numResource(ResourceId::MANA);
+      techInfo.description = tech->getDescription();
+    }
+    for (Technology* tech : getCollective()->getTechnologies()) {
+      info.researched.emplace_back();
+      auto& techInfo = info.researched.back();
+      techInfo.name = tech->getName();
+      techInfo.cost = make_pair(ViewId::MANA, getCollective()->getTechCost(tech));
+      techInfo.description = tech->getDescription();
+    }
+  }
+}
+
 void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   info.workshopButtons.clear();
   int index = 0;
@@ -1207,7 +1211,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   auto& immigration = getCollective()->getImmigration();
   for (auto& elem : immigration.getAvailable()) {
     const auto& candidate = elem.second.get();
-    const int count = candidate.getCreatures().size();
+    const int count = (int) candidate.getCreatures().size();
     optional<double> timeRemaining;
     if (auto time = candidate.getEndTime())
       timeRemaining = *time - getGame()->getGlobalTime();
@@ -1383,6 +1387,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
             *chosenCreature), *getChosenTeam()};
     }
   fillWorkshopInfo(info);
+  fillLibraryInfo(info);
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemyGroups = getEnemyGroups();
   info.numResource.clear();
@@ -1593,7 +1598,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
       if (furniture->getType() == FurnitureType::BOOK_SHELF || CollectiveConfig::getWorkshopType(furniture->getType()))
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
-      if (chosenWorkshop && chosenWorkshop == CollectiveConfig::getWorkshopType(furniture->getType()))
+      if ((chosenWorkshop && chosenWorkshop == CollectiveConfig::getWorkshopType(furniture->getType())) ||
+          (chosenLibrary && furniture->getType() == FurnitureType::BOOK_SHELF))
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
@@ -1794,8 +1800,17 @@ void PlayerControl::setChosenTeam(optional<TeamId> team, optional<UniqueEntity<C
 
 void PlayerControl::clearChosenInfo() {
   setChosenWorkshop(none);
+  setChosenLibrary(false);
   chosenCreature = none;
   chosenTeam = none;
+}
+
+void PlayerControl::setChosenLibrary(bool state) {
+  for (auto pos : getCollective()->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF))
+    pos.setNeedsRenderUpdate(true);
+  if (state)
+    clearChosenInfo();
+  chosenLibrary = state;
 }
 
 void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
@@ -1972,6 +1987,12 @@ void PlayerControl::processInput(View* view, UserInput input) {
           getCollective()->getWorkshops().scheduleItems(getCollective());
           getCollective()->updateResourceProduction();
         }
+        break;
+    case UserInputId::LIBRARY_ADD:
+        acquireTech(input.get<int>());
+        break;
+    case UserInputId::LIBRARY_CLOSE:
+        setChosenLibrary(false);
         break;
     case UserInputId::WORKSHOP_ITEM_ACTION: {
         auto& info = input.get<WorkshopQueuedActionInfo>();
@@ -2354,7 +2375,7 @@ void PlayerControl::onSquareClick(Position pos) {
         if (auto workshopType = CollectiveConfig::getWorkshopType(furniture->getType()))
           setChosenWorkshop(*workshopType);
         if (furniture->getType() == FurnitureType::BOOK_SHELF)
-          handleLibrary(getView());
+          setChosenLibrary(!chosenLibrary);
       }
     }
 }

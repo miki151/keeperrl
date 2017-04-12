@@ -128,8 +128,11 @@ void WindowView::initialize() {
   mapGui.reset(new MapGui({
       bindMethod(&WindowView::mapContinuousLeftClickFun, this),
       [this] (Vec2 pos) {
-          if (!guiBuilder.getActiveButton(CollectiveTab::BUILDINGS))
-            inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));},
+          if (!guiBuilder.getActiveButton(CollectiveTab::BUILDINGS)) {
+            guiBuilder.closeOverlayWindowsAndClearButton();
+            inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
+          }
+      },
       bindMethod(&WindowView::mapRightClickFun, this),
       bindMethod(&WindowView::mapCreatureClickFun, this),
       [this] { refreshInput = true;},

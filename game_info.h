@@ -208,6 +208,21 @@ class CollectiveInfo {
     HASH_ALL(index, options, queued);
   };
   optional<ChosenWorkshopInfo> HASH(chosenWorkshop);
+  struct LibraryInfo {
+    struct TechInfo {
+      string HASH(name);
+      string HASH(description);
+      pair<ViewId, int> HASH(cost);
+      bool HASH(active);
+      HASH_ALL(name, cost, active, description);
+    };
+    optional<string> HASH(warning);
+    pair<ViewId, int> HASH(resource);
+    vector<TechInfo> HASH(available);
+    vector<TechInfo> HASH(researched);
+    HASH_ALL(warning, resource, available, researched);
+  };
+  optional<LibraryInfo> HASH(libraryInfo);
   struct Resource {
     ViewId HASH(viewId);
     int HASH(count);
@@ -254,7 +269,7 @@ class CollectiveInfo {
   };
   optional<Ransom> HASH(ransom);
 
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, chosenWorkshop, workshopButtons, immigration, allImmigration);
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo);
 };
 
 class VillageInfo {

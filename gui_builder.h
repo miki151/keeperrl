@@ -112,6 +112,7 @@ class GuiBuilder {
   void addFpsCounterTick();
   void addUpsCounterTick();
   void closeOverlayWindows();
+  void closeOverlayWindowsAndClearButton();
   bool clearActiveButton();
   void setActiveButton(CollectiveTab, int num, ViewId, optional<string> activeGroup, optional<TutorialHighlight>);
   void setActiveGroup(const string&, optional<TutorialHighlight>);
@@ -200,6 +201,7 @@ class GuiBuilder {
   ScrollPosition tasksScroll;
   ScrollPosition workshopsScroll;
   ScrollPosition workshopsScroll2;
+  ScrollPosition libraryScroll;
   ScrollPosition minionPageScroll;
   int itemIndex = -1;
   int numSeenVillains = -1;
@@ -251,6 +253,7 @@ class GuiBuilder {
   unordered_set<pair<int, TutorialHighlight>, CustomHash<pair<int, TutorialHighlight>>> tutorialClicks;
   bool wasTutorialClicked(size_t hash, TutorialHighlight);
   void onTutorialClicked(size_t hash, TutorialHighlight);
+  SGuiElem drawLibraryOverlay(const CollectiveInfo&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,
