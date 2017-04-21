@@ -186,7 +186,8 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "Only wood, iron and granite can be stored here.", 's', "Storage", true)
              .setTutorialHighlight(TutorialHighlight::RESOURCE_STORAGE),
       BuildInfo(ZoneId::STORAGE_EQUIPMENT, ViewId::STORAGE_EQUIPMENT, "Equipment",
-          "All equipment for your minions can be stored here.", 0, "Storage"),
+          "All equipment for your minions can be stored here.", 0, "Storage")
+             .setTutorialHighlight(TutorialHighlight::EQUIPMENT_STORAGE),
       BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 15}}, "Library", {},
           "Mana is regenerated here.", 'y').setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
       BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 160}, false, 1}, "Throne",
@@ -218,7 +219,8 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           0, "Training room"),
       BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 15}}, "Workshop",
           {{RequirementId::TECHNOLOGY, TechId::CRAFTING}},
-          "Produces leather equipment, traps, first-aid kits and other.", 'm', workshop, true),
+          "Produces leather equipment, traps, first-aid kits and other.", 'm', workshop, true)
+             .setTutorialHighlight(TutorialHighlight::BUILD_WORKSHOP),
       BuildInfo({FurnitureType::FORGE, {ResourceId::IRON, 20}}, "Forge",
           {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}}, "Produces iron weapons and armor.", 0, workshop),
       BuildInfo({FurnitureType::LABORATORY, {ResourceId::STONE, 10}}, "Laboratory",
@@ -1168,6 +1170,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
       techInfo.name = tech->getName();
       int cost = getCollective()->getTechCost(tech);
       techInfo.cost = make_pair(ViewId::MANA, cost);
+      techInfo.tutorialHighlight = tech->getTutorialHighlight();
       techInfo.active = !info.warning && cost <= getCollective()->numResource(ResourceId::MANA);
       techInfo.description = tech->getDescription();
     }

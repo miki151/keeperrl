@@ -18,6 +18,7 @@
 #include "immigration.h"
 #include "tile_efficiency.h"
 #include "container_range.h"
+#include "technology.h"
 
 SERIALIZE_DEF(Tutorial, state)
 
@@ -34,6 +35,8 @@ enum class Tutorial::State {
   ACCEPT_IMMIGRANT,
   TORCHES,
   FLOORS,
+  RESEARCH_CRAFTING,
+  BUILD_WORKSHOP,
   FINISHED,
 };
 
@@ -70,6 +73,11 @@ bool Tutorial::canContinue(const WGame game) const {
       return true;
     case State::FLOORS:
       return getHighlightedSquaresLow(game).empty();
+    case State::RESEARCH_CRAFTING:
+      return collective->hasTech(TechId::CRAFTING);
+    case State::BUILD_WORKSHOP:
+      return collective->getConstructions().getBuiltCount(FurnitureType::WORKSHOP) >= 2 &&
+          collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT).size() >= 1;
     case State::FINISHED:
       return false;
   }
@@ -130,6 +138,13 @@ string Tutorial::getMessage() const {
     case State::FLOORS:
       return "Furniture is more efficient if there is a nice floor underneath and around it. For now you can only "
           "afford wooden floor, but it should do.";
+    case State::RESEARCH_CRAFTING:
+      return "Your minions will need equipment, such as weapons, armor, and consumables, before they can engage in "
+          "combat.\n \n"
+          "Click on your library, bring up the research menu and unlock crafting.";
+    case State::BUILD_WORKSHOP:
+      return "Build at least 2 workshop stands in your dungeon. It's best to dig out a dedicated room for them. "
+          "You will also need a storage area for equipment. Place it somewhere near your workshop.";
     case State::FINISHED:
       return "Congratulations, you have completed the tutorial! Go play the game now :)";
   }
@@ -158,6 +173,10 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(const WGame game) const {
       return {TutorialHighlight::BUILD_TORCH};
     case State::FLOORS:
       return {TutorialHighlight::BUILD_FLOOR};
+    case State::RESEARCH_CRAFTING:
+      return {TutorialHighlight::RESEARCH_CRAFTING};
+    case State::BUILD_WORKSHOP:
+      return {TutorialHighlight::EQUIPMENT_STORAGE, TutorialHighlight::BUILD_WORKSHOP};
     default:
       return {};
   }
@@ -216,12 +235,15 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(const WGame game) const {
               ret.push_back(floorPos.getCoord());
       return ret;
     }
+    case State::RESEARCH_CRAFTING:
+      return transform2(collective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF),
+          [](const Position& pos) { return pos.getCoord(); });
     default:
       return {};
   }
 }
 
-Tutorial::Tutorial() : state(State::WELCOME) {
+Tutorial::Tutorial() : state(State::RESEARCH_CRAFTING) {
 
 }
 

@@ -162,7 +162,6 @@ class Vec2 {
   vector<Vec2> neighbors8(RandomGen&) const;
   static vector<Vec2> directions4(RandomGen&);
   vector<Vec2> neighbors4(RandomGen&) const;
-  vector<Vec2> neighbors(const vector<Vec2>& directions) const;
   static vector<Vec2> corners();
   static vector<set<Vec2>> calculateLayers(set<Vec2>);
 
@@ -815,20 +814,11 @@ string transform2(const string& u, Fun fun) {
   return ret;
 }
 
-template <typename U, typename Fun>
-auto transform2(const vector<U>& u, Fun fun) -> vector<decltype(fun(u[0]))> {
-  vector<decltype(fun(u[0]))> ret;
+template <typename Container, typename Fun>
+auto transform2(const Container& u, Fun fun) -> vector<decltype(fun(*u.begin()))> {
+  vector<decltype(fun(*u.begin()))> ret;
   ret.reserve(u.size());
-  for (const U& elem : u)
-    ret.push_back(fun(elem));
-  return ret;
-}
-
-template <typename U, typename Fun>
-auto transform2(vector<U>& u, Fun fun) -> vector<decltype(fun(u[0]))> {
-  vector<decltype(fun(u[0]))> ret;
-  ret.reserve(u.size());
-  for (U& elem : u)
+  for (const auto& elem : u)
     ret.push_back(fun(elem));
   return ret;
 }

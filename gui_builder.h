@@ -253,7 +253,7 @@ class GuiBuilder {
   unordered_set<pair<int, TutorialHighlight>, CustomHash<pair<int, TutorialHighlight>>> tutorialClicks;
   bool wasTutorialClicked(size_t hash, TutorialHighlight);
   void onTutorialClicked(size_t hash, TutorialHighlight);
-  SGuiElem drawLibraryOverlay(const CollectiveInfo&);
+  SGuiElem drawLibraryOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

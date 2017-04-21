@@ -1485,7 +1485,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info) {
                 margin)).buildHorizontalList())));
 }
 
-SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo) {
+SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, const optional<TutorialInfo>& tutorial) {
   if (!collectiveInfo.libraryInfo)
     return gui.empty();
   auto& info = *collectiveInfo.libraryInfo;
@@ -1503,6 +1503,8 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo) {
         .addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(elem.cost)), 80)
         .buildHorizontalList();
     line = gui.stack(std::move(line), getTooltip({elem.description}, THIS_LINE));
+    if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
+      line = gui.stack(gui.tutorialHighlight(), std::move(line));
     if (elem.active)
       line = gui.stack(
           gui.uiHighlightMouseOver(colors[ColorId::GREEN]),
@@ -1612,7 +1614,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawLibraryOverlay, this), THIS_LINE,
-           info.collectiveInfo), OverlayInfo::TOP_LEFT});
+           info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,

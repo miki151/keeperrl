@@ -214,7 +214,8 @@ class CollectiveInfo {
       string HASH(description);
       pair<ViewId, int> HASH(cost);
       bool HASH(active);
-      HASH_ALL(name, cost, active, description);
+      optional<TutorialHighlight> HASH(tutorialHighlight);
+      HASH_ALL(name, cost, active, description, tutorialHighlight);
     };
     optional<string> HASH(warning);
     pair<ViewId, int> HASH(resource);

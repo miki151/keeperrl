@@ -760,7 +760,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
   for (Vec2 wpos : lowHighlights ? tutorialHighlightLow : tutorialHighlightHigh) {
     Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
     if ((currentTimeReal.count() / 1000) % 2 == 0)
-      renderTexturedHighlight(renderer, pos, size, Color(255, 255, 0, 40));
+      renderTexturedHighlight(renderer, pos, size, Color(255, 255, 0, lowHighlights ? 120 : 40));
   }
   renderer.drawQuads();
 }
