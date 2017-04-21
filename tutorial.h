@@ -4,6 +4,7 @@
 
 class TutorialInfo;
 class Game;
+class ImmigrantInfo;
 
 class Tutorial {
   public:
@@ -11,7 +12,7 @@ class Tutorial {
   void refreshInfo(const WGame, optional<TutorialInfo>&) const;
   void continueTutorial(const WGame);
   void goBack();
-  bool showImmigrant() const;
+  bool showImmigrant(const ImmigrantInfo&) const;
 
   static void createTutorial(Game&);
 

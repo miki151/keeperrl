@@ -148,7 +148,7 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
           ret.push_back(col->getName().getFull() + " don't have recruits available at this moment.");
       },
       [&](const TutorialRequirement& t) {
-        if (!t.tutorial->showImmigrant())
+        if (!t.tutorial->showImmigrant(immigrantInfo))
           ret.push_back("Tutorial not there yet.");
       }
   );
@@ -158,6 +158,7 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
 
 double Immigration::getRequirementMultiplier(const Group& group) const {
   double ret = 1;
+  auto& immigrantInfo = getImmigrants()[group.immigrantIndex];
   auto visitor = makeVisitor<void>(
       [&](const AttractionInfo& attraction, double prob) {
         visitAttraction(*this, attraction,
@@ -196,7 +197,7 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
           ret *= prob;
       },
       [&](const TutorialRequirement& t, double prob) {
-        if (!t.tutorial->showImmigrant())
+        if (!t.tutorial->showImmigrant(immigrantInfo))
           ret *= prob;
       }
   );

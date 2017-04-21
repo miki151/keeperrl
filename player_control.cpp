@@ -1132,6 +1132,7 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
       c.productionState = option.state.get_value_or(0);
       c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
       c.number = option.number * option.batchSize;
+      c.tutorialHighlight = option.tutorialHighlight;
     );
 }
 
@@ -1287,6 +1288,8 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     return *creatureStats[id];
   };
   for (auto elem : Iter(getCollective()->getConfig().getImmigrantInfo())) {
+    if (elem->isHiddenInHelp())
+      continue;
     auto creatureId = elem->getId(0);
     WCreature c = getStats(creatureId).creature.get();
     optional<pair<ViewId, int>> costObj;

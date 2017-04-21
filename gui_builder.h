@@ -225,7 +225,7 @@ class GuiBuilder {
   SGuiElem drawMinionsOverlay(const CollectiveInfo&);
   SGuiElem minionsOverlayCache;
   int minionsOverlayHash = 0;
-  SGuiElem drawWorkshopsOverlay(const CollectiveInfo&);
+  SGuiElem drawWorkshopsOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem workshopsOverlayCache;
   int workshopsOverlayHash = 0;
   SGuiElem drawTasksOverlay(const CollectiveInfo&);

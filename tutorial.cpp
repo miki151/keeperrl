@@ -19,6 +19,9 @@
 #include "tile_efficiency.h"
 #include "container_range.h"
 #include "technology.h"
+#include "workshops.h"
+#include "item_index.h"
+#include "minion_task.h"
 
 SERIALIZE_DEF(Tutorial, state)
 
@@ -37,6 +40,8 @@ enum class Tutorial::State {
   FLOORS,
   RESEARCH_CRAFTING,
   BUILD_WORKSHOP,
+  SCHEDULE_WORKSHOP_ITEMS,
+  ORDER_CRAFTING,
   FINISHED,
 };
 
@@ -78,6 +83,15 @@ bool Tutorial::canContinue(const WGame game) const {
     case State::BUILD_WORKSHOP:
       return collective->getConstructions().getBuiltCount(FurnitureType::WORKSHOP) >= 2 &&
           collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT).size() >= 1;
+    case State::SCHEDULE_WORKSHOP_ITEMS: {
+      int numWeapons = collective->getNumItems(ItemIndex::WEAPON);
+      for (auto& item : collective->getWorkshops().get(WorkshopType::WORKSHOP).getQueued())
+        if (item.type.getId() == ItemId::CLUB)
+          ++numWeapons;
+      return numWeapons >= 1;
+    }
+    case State::ORDER_CRAFTING:
+      return collective->getNumItems(ItemIndex::WEAPON) >= 1;
     case State::FINISHED:
       return false;
   }
@@ -139,12 +153,21 @@ string Tutorial::getMessage() const {
       return "Furniture is more efficient if there is a nice floor underneath and around it. For now you can only "
           "afford wooden floor, but it should do.";
     case State::RESEARCH_CRAFTING:
-      return "Your minions will need equipment, such as weapons, armor, and consumables, before they can engage in "
+      return "Your minions will need equipment, such as weapons, armor, and consumables, to be more efficient in "
           "combat.\n \n"
-          "Click on your library, bring up the research menu and unlock crafting.";
+          "Before you can produce anything, click on your library, bring up the research menu and unlock crafting.";
     case State::BUILD_WORKSHOP:
       return "Build at least 2 workshop stands in your dungeon. It's best to dig out a dedicated room for them. "
           "You will also need a storage area for equipment. Place it somewhere near your workshop.";
+    case State::SCHEDULE_WORKSHOP_ITEMS:
+      return "Weapons are the most important piece of equipment, because unarmed, your minions have little chance "
+          "against an enemy. Open the workshop menu by clicking on any of your workshop stands and schedule the "
+          "production of a club.";
+    case State::ORDER_CRAFTING:
+      return "To have your item produced, order your orc to pick up crafting. "
+          "You can do that by clicking and dragging him onto a workshop stand. "
+          "Pausing the game will make dragging a bit easier.\n \n"
+          "You can check the progress of production in the workshop menu.";
     case State::FINISHED:
       return "Congratulations, you have completed the tutorial! Go play the game now :)";
   }
@@ -177,6 +200,8 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(const WGame game) const {
       return {TutorialHighlight::RESEARCH_CRAFTING};
     case State::BUILD_WORKSHOP:
       return {TutorialHighlight::EQUIPMENT_STORAGE, TutorialHighlight::BUILD_WORKSHOP};
+    case State::SCHEDULE_WORKSHOP_ITEMS:
+      return {TutorialHighlight::SCHEDULE_CLUB};
     default:
       return {};
   }
@@ -194,7 +219,7 @@ static void clearDugOutSquares(const WGame game, vector<Vec2>& highlights) {
 
 vector<Vec2> Tutorial::getHighlightedSquaresHigh(const WGame game) const {
   auto collective = game->getPlayerCollective();
-  const Vec2 entry(117, 123);
+  const Vec2 entry(86, 86);
   const int corridor = 6;
   int roomWidth = 5;
   const Vec2 firstRoom(entry - Vec2(0, corridor + roomWidth / 2));
@@ -238,12 +263,15 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(const WGame game) const {
     case State::RESEARCH_CRAFTING:
       return transform2(collective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF),
           [](const Position& pos) { return pos.getCoord(); });
+    case State::SCHEDULE_WORKSHOP_ITEMS:
+      return transform2(collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP),
+          [](const Position& pos) { return pos.getCoord(); });
     default:
       return {};
   }
 }
 
-Tutorial::Tutorial() : state(State::RESEARCH_CRAFTING) {
+Tutorial::Tutorial() : state(State::WELCOME) {
 
 }
 
@@ -268,14 +296,16 @@ void Tutorial::goBack() {
     state = (State)((int) state - 1);
 }
 
-bool Tutorial::showImmigrant() const {
-  return state == State::ACCEPT_IMMIGRANT;
+bool Tutorial::showImmigrant(const ImmigrantInfo& info) const {
+  return info.getId(0) == CreatureId::IMP ||
+      (state == State::ACCEPT_IMMIGRANT && info.getLimit() == 1) ||
+      (state > State::ACCEPT_IMMIGRANT && !info.isPersistent());
 }
 
 void Tutorial::createTutorial(Game& game) {
   auto tutorial = make_shared<Tutorial>();
   game.getPlayerControl()->setTutorial(tutorial);
-  game.getPlayerCollective()->init(CollectiveConfig::keeper(0, 10, {}, {
+  game.getPlayerCollective()->init(CollectiveConfig::keeper(140, 10, {}, {
       ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
           .setSpawnLocation(NearLeader{})
           .setKeybinding(Keybinding::CREATE_IMP)
@@ -285,6 +315,15 @@ void Tutorial::createTutorial(Game& game) {
       ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
           .setLimit(1)
           .setTutorialHighlight(TutorialHighlight::ACCEPT_IMMIGRANT)
+          .addRequirement(0.0, TutorialRequirement {tutorial})
+          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
+          .setHiddenInHelp(),
+      ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
+          .setFrequency(0.5)
+          .addRequirement(0.0, TutorialRequirement {tutorial})
+          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
+      ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER})
+          .setFrequency(0.5)
           .addRequirement(0.0, TutorialRequirement {tutorial})
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
   }),

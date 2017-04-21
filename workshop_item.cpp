@@ -29,6 +29,11 @@ WorkshopItem& WorkshopItem::setTechId(TechId id) {
   return *this;
 }
 
+WorkshopItem& WorkshopItem::setTutorialHighlight(TutorialHighlight h) {
+  tutorialHighlight = h;
+  return *this;
+}
+
 bool WorkshopItem::operator == (const WorkshopItem& item) const {
   return type == item.type;
 }

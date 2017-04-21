@@ -1399,7 +1399,7 @@ SGuiElem GuiBuilder::drawRansomOverlay(const optional<CollectiveInfo::Ransom>& r
   return gui.setWidth(600, gui.miniWindow(gui.margins(lines.buildVerticalList(), 20)));
 }
 
-SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info) {
+SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   if (!info.chosenWorkshop)
     return gui.empty();
   int margin = 20;
@@ -1417,6 +1417,8 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info) {
       line.addBackElem(gui.label(toString(elem.number) + "x"), 35);
     line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
     SGuiElem guiElem = line.buildHorizontalList();
+    if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
+      guiElem = gui.stack(gui.tutorialHighlight(), std::move(guiElem));
     if (elem.unavailable) {
       CHECK(!elem.unavailableReason.empty());
       guiElem = gui.stack(getTooltip({elem.unavailableReason, elem.description}, THIS_LINE), std::move(guiElem));
@@ -1612,7 +1614,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
            info.collectiveInfo), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
-           info.collectiveInfo), OverlayInfo::TOP_LEFT});
+           info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawLibraryOverlay, this), THIS_LINE,
            info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
