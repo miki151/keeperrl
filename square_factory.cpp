@@ -59,7 +59,7 @@ class Magma : public Square {
       realMovement.setForced(false);
       if (!c->getPosition().canEnterEmpty(realMovement)) {
         c->you(MsgType::BURN, getName());
-        c->die("burned to death", false);
+        c->dieWithReason("burned to death", Creature::DropType::NOTHING);
       }
     }
   }
@@ -94,10 +94,10 @@ class Water : public Square {
       if (!c->getPosition().canEnterEmpty(realMovement)) {
         if (auto holding = c->getHoldingCreature()) {
           c->you(MsgType::ARE, "drowned by " + holding->getName().the());
-          c->die(holding, false);
+          c->dieWithAttacker(holding, Creature::DropType::NOTHING);
         } else {
           c->you(MsgType::DROWN, getName());
-          c->die("drowned", false);
+          c->dieWithReason("drowned", Creature::DropType::NOTHING);
         }
       }
     }

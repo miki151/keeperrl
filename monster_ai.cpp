@@ -681,7 +681,7 @@ class DieTime : public Behaviour {
   virtual MoveInfo getMove() override {
     if (creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](WCreature creature) {
-        creature->die(false, false);
+        creature->dieNoReason(Creature::DropType::NOTHING);
       })};
     }
     return NoMove;
@@ -706,7 +706,7 @@ class Summoned : public GuardTarget {
   virtual MoveInfo getMove() override {
     if (target->isDead() || creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](WCreature creature) {
-        creature->die(false, false);
+        creature->dieNoReason(Creature::DropType::NOTHING);
       })};
     }
     if (MoveInfo move = getMoveTowards(target->getPosition()))

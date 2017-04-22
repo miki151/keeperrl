@@ -19,7 +19,7 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
           Position pos = c->getPosition();
           pos.globalMessage(c->getName().the() + " fills the " + f->getName());
           pos.removeFurniture(f);
-          c->die(false, false);
+          c->dieNoReason(Creature::DropType::NOTHING);
         } else {
           if (!c->isAffected(LastingEffect::FLYING))
             c->you(MsgType::FALL, "into the " + f->getName() + "!");

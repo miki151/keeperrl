@@ -604,7 +604,7 @@ void Collective::tick() {
           if (pos.canEnterEmpty(prisoner.get())) {
             pos.globalMessage(c->getName().the() + " surrenders.");
             control->addMessage(PlayerMessage(c->getName().a() + " surrenders.").setPosition(c->getPosition()));
-            c->die(true, false);
+            c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
             addCreature(std::move(prisoner), pos, {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
           }
         }

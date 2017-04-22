@@ -75,12 +75,12 @@ class BoulderController : public Monster {
         if (health <= 0) {
           nextPos.globalMessage(getCreature()->getName().the() + " crashes on " + c->getName().the(),
                 "You hear a crash");
-          getCreature()->die();
+          getCreature()->dieNoReason();
           c->takeDamage(Attack(getCreature(), AttackLevel::MIDDLE, AttackType::HIT, 1000, 35, false));
           return;
         } else {
           c->you(MsgType::KILLED_BY, getCreature()->getName().the());
-          c->die(getCreature());
+          c->dieWithAttacker(getCreature());
         }
       }
     }
@@ -97,14 +97,14 @@ class BoulderController : public Monster {
     else {
       nextPos.globalMessage(getCreature()->getName().the() + " crashes on the " + nextPos.getName(),
           "You hear a crash");
-      getCreature()->die();
+      getCreature()->dieNoReason();
       return;
     }
     int speed = getCreature()->getAttr(AttrType::SPEED);
     double deceleration = 0.1;
     speed -= deceleration * 100 * 100 / speed;
     if (speed < 30 && !getCreature()->isDead()) {
-      getCreature()->die();
+      getCreature()->dieNoReason();
       return;
     }
     getCreature()->getAttributes().setBaseAttr(AttrType::SPEED, speed);
@@ -248,7 +248,7 @@ class KrakenController : public Monster {
     }
     for (WCreature c : spawns)
       if (!c->isDead())
-        c->die();
+        c->dieNoReason();
   }
 
   virtual void you(MsgType type, const string& param) override {
@@ -274,11 +274,11 @@ class KrakenController : public Monster {
       held->setHeld(father->getCreature());
       Vec2 pullDir = held->getPosition().getDir(getCreature()->getPosition());
       double localTime = getCreature()->getLocalTime();
-      getCreature()->die(false, false);
+      getCreature()->dieNoReason(Creature::DropType::NOTHING);
       held->displace(localTime, pullDir);
     } else {
       held->you(MsgType::ARE, "eaten by " + getCreature()->getName().the());
-      held->die();
+      held->dieNoReason();
     }
   }
 
@@ -344,7 +344,7 @@ class KrakenController : public Monster {
       } else if (auto c = getVisibleEnemy()) {
         considerAttacking(c);
       } else if (father && Random.roll(5)) {
-        getCreature()->die(false, false);
+        getCreature()->dieNoReason(Creature::DropType::NOTHING);
         return;
       }
     }
@@ -372,7 +372,7 @@ class KamikazeController : public Monster {
           for (Position v : c->getPosition().neighbors8())
             v.fireDamage(1);
           c->getPosition().fireDamage(1);
-          getCreature()->die(false);
+          getCreature()->dieNoReason(Creature::DropType::ONLY_INVENTORY);
           return;
         }
     Monster::makeMove();
@@ -555,7 +555,7 @@ class IllusionController : public DoNothingController {
   void kill() {
     getCreature()->monsterMessage("The illusion disappears.");
     if (!getCreature()->isDead())
-      getCreature()->die();
+      getCreature()->dieNoReason();
   }
 
   virtual void onBump(WCreature c) override {
