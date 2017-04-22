@@ -1181,7 +1181,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
               callbacks.input({UserInputId::INVENTORY_ITEM, InventoryItemInfo{item.ids, *choice}});}));
   }
   return gui.margins(
-      gui.scrollable(list.buildVerticalList(), &inventoryScroll), -5, 0, 0, 0);
+      gui.scrollable(list.buildVerticalList(), &inventoryScroll, &scrollbarsHeld), -5, 0, 0, 0);
 }
 
 SGuiElem GuiBuilder::drawRightPlayerInfo(PlayerInfo& info) {
