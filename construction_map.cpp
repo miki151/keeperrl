@@ -89,7 +89,7 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
   if (auto info = modFurniture(pos, layer)) {
     if (info->isBuilt())
       addDebt(info->getCost());
-    info.reset();
+    info->reset();
   }
   for (auto pos2 : pos.neighbors8())
     for (auto layer : ENUM_ALL(FurnitureLayer))
