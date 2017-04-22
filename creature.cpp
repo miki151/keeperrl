@@ -1509,7 +1509,7 @@ TribeSet Creature::getFriendlyTribes() const {
     return TribeSet().insert(tribe);
 }
 
-MovementType Creature::getMovementType() const {
+MovementType Creature:: getMovementType() const {
   return MovementType(getFriendlyTribes(), {
       true,
       isAffected(LastingEffect::FLYING),

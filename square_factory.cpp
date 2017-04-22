@@ -57,7 +57,7 @@ class Magma : public Square {
     if (c->getPosition().getFurniture().empty()) { // check if there is a bridge
       MovementType realMovement = c->getMovementType();
       realMovement.setForced(false);
-      if (!c->getPosition().canEnterEmpty(realMovement)) {
+      if (!getMovementSet().canEnter(realMovement, true, none)) {
         c->you(MsgType::BURN, getName());
         c->dieWithReason("burned to death", Creature::DropType::NOTHING);
       }
@@ -91,7 +91,7 @@ class Water : public Square {
     if (c->getPosition().getFurniture().empty()) { // check if there is a bridge
       MovementType realMovement = c->getMovementType();
       realMovement.setForced(false);
-      if (!c->getPosition().canEnterEmpty(realMovement)) {
+      if (!getMovementSet().canEnter(realMovement, true, none)) {
         if (auto holding = c->getHoldingCreature()) {
           c->you(MsgType::ARE, "drowned by " + holding->getName().the());
           c->dieWithAttacker(holding, Creature::DropType::NOTHING);
