@@ -34,7 +34,7 @@
 #include <cereal/access.hpp>
 #include <cereal/types/bitset.hpp>
 #include <cereal/types/memory.hpp>
-#include <cereal/types/boost_variant.hpp>
+#include "extern/variant_serialize.h"
 
 #include "stdafx.h"
 #include "progress.h"

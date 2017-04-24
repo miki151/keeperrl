@@ -13,7 +13,7 @@ FurnitureEntry::FurnitureEntry(FurnitureEntry::EntryData d) : entryData(d) {
 }
 
 void FurnitureEntry::handle(WFurniture f, WCreature c) {
-  apply_visitor(makeVisitor<void>(
+  entryData.match(
       [&](Sokoban) {
         if (c->getAttributes().isBoulder()) {
           Position pos = c->getPosition();
@@ -44,11 +44,11 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
           position.removeFurniture(f);
         }
       }
-    ), entryData);
+    );
 }
 
 bool FurnitureEntry::isVisibleTo(WConstFurniture f, WConstCreature c) const {
-  return apply_visitor(makeVisitor<bool>(
+  return entryData.match(
       [&](Sokoban) {
         return true;
       },
@@ -56,7 +56,7 @@ bool FurnitureEntry::isVisibleTo(WConstFurniture f, WConstCreature c) const {
         return type.alwaysVisible || !c->getGame()->getTribe(f->getTribe())->isEnemy(c)
             || c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS);
       }
-  ), entryData);
+  );
 }
 
 SERIALIZE_DEF(FurnitureEntry, entryData)

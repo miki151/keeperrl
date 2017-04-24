@@ -62,6 +62,7 @@
 #include <tuple>
 #include <numeric>
 #include <chrono>
+#include <cstddef>
 
 // Use boost threads on OSX to use the main thread for rendering
 // and set a large stack size for the model thread.
@@ -76,11 +77,6 @@
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
-
-
-#define BOOST_ENABLE_ASSERT_HANDLER
-#include <boost/assert.hpp>
-#include <boost/variant.hpp>
 #include "extern/optional.h"
 
 #ifdef DEBUG_STL
@@ -170,7 +166,6 @@ inline thread::id currentThreadId() { return std::this_thread::get_id(); }
 using std::atomic;
 using std::swap;
 using std::remove_if;
-using boost::variant;
 using std::experimental::optional;
 using none_t = std::experimental::nullopt_t;
 using std::experimental::none;

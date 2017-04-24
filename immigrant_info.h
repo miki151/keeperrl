@@ -101,7 +101,7 @@ class ImmigrantInfo {
   ImmigrantInfo& setHiddenInHelp();
 
   template <typename Visitor>
-  struct RequirementVisitor : public boost::static_visitor<void> {
+  struct RequirementVisitor {
     RequirementVisitor(const Visitor& v, double p) : visitor(v), prob(p) {}
     const Visitor& visitor;
     double prob;
@@ -115,14 +115,14 @@ class ImmigrantInfo {
   void visitRequirementsAndProb(const Visitor& visitor) const {
     for (auto& requirement : requirements) {
       RequirementVisitor<Visitor> v {visitor, requirement.candidateProb};
-      applyVisitor(requirement.type, v);
+      requirement.type.visit(v);
     }
   }
 
   template <typename Visitor>
   void visitRequirements(const Visitor& visitor) const {
     for (auto& requirement : requirements) {
-      applyVisitor(requirement.type, visitor);
+      requirement.type.visit(visitor);
     }
   }
 

@@ -1677,10 +1677,14 @@ class ViewObjectGui : public GuiElem {
   ViewObjectGui(ViewId id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {}
   
   virtual void render(Renderer& renderer) override {
-    if (ViewObject* obj = boost::get<ViewObject>(&object))
-      renderer.drawViewObject(getBounds().topLeft(), *obj, true, scale, color);
-    else
-      renderer.drawViewObject(getBounds().topLeft(), boost::get<ViewId>(object), true, scale, color);
+    object.match(
+          [&](const ViewObject& obj) {
+            renderer.drawViewObject(getBounds().topLeft(), obj, true, scale, color);
+          },
+          [&](ViewId viewId) {
+            renderer.drawViewObject(getBounds().topLeft(), viewId, true, scale, color);
+          }
+    );
   }
 
   virtual optional<int> getPreferredWidth() override {

@@ -23,6 +23,7 @@
 #include "serialization.h"
 #include "owner_pointer.h"
 #include "hashing.h"
+#include "extern/variant.h"
 
 template <class T>
 string toString(const T& t) {
@@ -1496,54 +1497,6 @@ class DisjointSets {
   vector<int> father;
   vector<int> size;
 };
-
-template <typename ReturnType, typename... Lambdas>
-struct LambdaVisitor;
-
-template <typename ReturnType, typename Lambda1, typename... Lambdas>
-struct LambdaVisitor< ReturnType, Lambda1 , Lambdas...> : public Lambda1, public LambdaVisitor<ReturnType, Lambdas...> {
-    using Lambda1::operator();
-    using LambdaVisitor<ReturnType, Lambdas...>::operator();
-    LambdaVisitor(Lambda1 l1, Lambdas... lambdas)
-      : Lambda1(l1), LambdaVisitor<ReturnType, Lambdas...> (lambdas...)
-    {}
-};
-
-template <typename ReturnType, typename Lambda1>
-struct LambdaVisitor<ReturnType, Lambda1> : public boost::static_visitor<ReturnType>, public Lambda1 {
-    using Lambda1::operator();
-    LambdaVisitor(Lambda1 l1)
-      : boost::static_visitor<ReturnType>(), Lambda1(l1)
-    {}
-};
-
-template <typename ReturnType, typename... Lambdas>
-LambdaVisitor<ReturnType, Lambdas...> makeVisitor(Lambdas... lambdas) {
-  return LambdaVisitor<ReturnType, Lambdas...>(lambdas...);
-}
-
-struct DefaultOperator {
-  template <typename... T>
-  void operator() (const T&...) const {}
-};
-
-template <typename... Lambdas>
-LambdaVisitor<void, DefaultOperator, Lambdas...> makeDefaultVisitor(Lambdas... lambdas) {
-  return LambdaVisitor<void, DefaultOperator, Lambdas...>(DefaultOperator {}, lambdas...);
-}
-
-template <typename Visitor, typename Visitable>
-typename Visitor::result_type applyVisitor(Visitable& visitable, const Visitor& visitor) {
-  return visitable.apply_visitor(visitor);
-}
-
-template <typename T, typename ...Args>
-optional<T&> getType(variant<Args...>& v) {
-  if (auto ptr = boost::get<T>(&v))
-    return *ptr;
-  else
-    return none;
-}
 
 template <typename Key, typename Map>
 optional<const typename Map::mapped_type&> getReferenceMaybe(const Map& m, const Key& key) {

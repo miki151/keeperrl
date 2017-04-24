@@ -1220,7 +1220,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     if (auto time = candidate.getEndTime())
       timeRemaining = *time - getGame()->getGlobalTime();
     vector<string> infoLines;
-    candidate.getInfo().visitRequirements(makeDefaultVisitor(
+    candidate.getInfo().visitRequirements(makeVisitor(
         [&](const Pregnancy&) {
           optional<int> maxT;
           for (WCreature c : getCollective()->getCreatures())
@@ -1235,7 +1235,8 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
           infoLines.push_back(
               toString(info.getAvailableRecruits(getGame(), candidate.getInfo().getId(0)).size()) +
               " recruits available");
-        }
+        },
+        [&](const auto&) {}
     ));
     WCreature c = candidate.getCreatures()[0];
     string name = c->getName().multiple(count);
@@ -1295,7 +1296,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     optional<pair<ViewId, int>> costObj;
     vector<string> requirements;
     vector<string> infoLines;
-    elem->visitRequirements(makeVisitor<void>(
+    elem->visitRequirements(makeVisitor(
         [&](const AttractionInfo& attraction) {
           int required = attraction.amountClaimed;
           requirements.push_back("Requires " + toString(required) + " " +

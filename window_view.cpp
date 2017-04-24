@@ -1005,28 +1005,28 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
             if (!index)
               index = PlayerRoleChoice((PlayerRole) 0);
             else
-              applyVisitor(*index, makeVisitor<void>(
+              index->match(
                   [&] (PlayerRole role) {
                     index = PlayerRoleChoice(PlayerRole(((int) role - 1 + numRoles) % numRoles));
                   },
                   [&] (NonRoleChoice) {
                     index = PlayerRoleChoice(PlayerRole(0));
                   }
-              ));
+              );
             break;
           case SDL::SDLK_KP_6:
           case SDL::SDLK_RIGHT: {
             if (!index)
               index = PlayerRoleChoice((PlayerRole) (numRoles - 1));
             else
-              applyVisitor(*index, makeVisitor<void>(
+              index->match(
                   [&] (PlayerRole role) {
                     index = PlayerRoleChoice(PlayerRole(((int) role + 1) % numRoles));
                   },
                   [&] (NonRoleChoice) {
                     index = PlayerRoleChoice(PlayerRole(numRoles - 1));
                   }
-              ));
+              );
             break;
           }
           case SDL::SDLK_KP_8:
@@ -1034,7 +1034,7 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
             if (!index)
               index = PlayerRoleChoice((PlayerRole) 0);
             else
-              applyVisitor(*index, makeVisitor<void>(
+              index->match(
                   [&] (PlayerRole) {
                     index = PlayerRoleChoice(NonRoleChoice(numNonRoles - 1));
                   },
@@ -1044,14 +1044,14 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
                     else
                       index = PlayerRoleChoice(NonRoleChoice((int) choice - 1));
                   }
-              ));
+              );
             break;
           case SDL::SDLK_KP_2:
           case SDL::SDLK_DOWN:
             if (!index)
               index = PlayerRoleChoice((PlayerRole) 0);
             else
-              applyVisitor(*index, makeVisitor<void>(
+              index->match(
                   [&] (PlayerRole role) {
                     index = PlayerRoleChoice(NonRoleChoice(0));
                   },
@@ -1061,7 +1061,7 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
                     else
                       index = PlayerRoleChoice(NonRoleChoice((int) choice + 1));
                   }
-              ));
+              );
             break;
           case SDL::SDLK_KP_5:
           case SDL::SDLK_KP_ENTER:

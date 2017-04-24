@@ -15,14 +15,14 @@ AttractionInfo::AttractionInfo(int cl,  AttractionType a)
   : types({a}), amountClaimed(cl) {}
 
 string AttractionInfo::getAttractionName(const AttractionType& attraction, int count) {
-  return applyVisitor(attraction, makeVisitor<string>(
-      [&](FurnitureType type) {
+  return attraction.match(
+      [&](FurnitureType type)->string {
         return Furniture::getName(type, count);
       },
-      [&](ItemIndex index) {
+      [&](ItemIndex index)->string {
         return getName(index, count);
       }
-  ));
+  );
 }
 
 AttractionInfo::AttractionInfo(int cl, vector<AttractionType> a)

@@ -223,7 +223,10 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
     }
     INFO << "Time step " << step;
     if (auto exitInfo = game->update(step)) {
-      applyVisitor(*exitInfo, makeVisitor<void>(
+      exitInfo->match(
+          [&](ExitAndQuit) {
+            eraseAllSavesExcept(game, none);
+          },
           [&](GameSaveType type) {
             if (type == GameSaveType::RETIRED_SITE) {
               game->prepareSiteRetirement();
@@ -232,11 +235,8 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
             } else
               saveUI(game, type, SplashType::BIG);
             eraseAllSavesExcept(game, type);
-          },
-          [&](ExitAndQuit) {
-            eraseAllSavesExcept(game, none);
           }
-      ));
+      );
       return;
     }
     double gameTime = game->getGlobalTime();
@@ -314,7 +314,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random, const optional<ForceGameInfo>
   auto choice = PlayerRoleChoice(PlayerRole::KEEPER);
   while (1) {
     choice = view->getPlayerRoleChoice(choice);
-    if (auto ret = applyVisitor(choice, makeVisitor<optional<PGame>>(
+    if (auto ret = choice.match(
         [&] (PlayerRole role) -> optional<PGame> {
           CampaignBuilder builder(view, random, options, role);
           if (auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {
@@ -335,7 +335,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random, const optional<ForceGameInfo>
               return PGame(nullptr);
           }
         }
-        )))
+        ))
       return std::move(*ret);
   }
 }

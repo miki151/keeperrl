@@ -62,7 +62,7 @@ class Immigration : public OwnedObject<Immigration> {
 
   private:
   const vector<ImmigrantInfo>& getImmigrants() const;
-  EntityMap<Creature, map<AttractionType, int>> SERIAL(minionAttraction);
+  EntityMap<Creature, unordered_map<AttractionType, int, CustomHash<AttractionType>>> SERIAL(minionAttraction);
   map<int, Available> SERIAL(available);
   WCollective SERIAL(collective);
   map<int, EntitySet<Creature>> SERIAL(generated);

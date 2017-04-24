@@ -66,12 +66,13 @@ void CollectiveConfig::addBedRequirementToImmigrants() {
     if (auto spawnType = c->getAttributes().getSpawnType()) {
       AttractionType bedType = getDormInfo()[*spawnType].bedType;
       bool hasBed = false;
-      info.visitRequirements(makeDefaultVisitor(
+      info.visitRequirements(makeVisitor(
           [&](const AttractionInfo& attraction) -> void {
             for (auto& type : attraction.types)
               if (type == bedType)
                 hasBed = true;
-          }
+          },
+          [&](const auto&) {}
       ));
       if (!hasBed)
         info.addRequirement(AttractionInfo(1, bedType));

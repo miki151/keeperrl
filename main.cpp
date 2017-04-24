@@ -18,8 +18,6 @@
 #include <ctime>
 #include <locale>
 
-#include <boost/iostreams/filtering_streambuf.hpp>
-#include <boost/iostreams/copy.hpp>
 #define ProgramOptions_no_colors
 #include "extern/ProgramOptions.h"
 
@@ -68,8 +66,6 @@
 #ifndef USER_DIR
 #define USER_DIR "."
 #endif
-
-using namespace boost::iostreams;
 
 static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
   r.loadTilesFromDir(path.subdirectory("orig16"), Vec2(16, 16));
@@ -168,7 +164,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     args = split_winmain(lpCmdLine);
     store(command_line_parser(args).options(getOptions()).run(), vars);
   }
-  catch (boost::exception& ex) {
+  catch (...) {
     std::cout << "Bad command line flags.";
   }
   if (!vars.count("no_minidump"))

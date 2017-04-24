@@ -175,7 +175,7 @@ Options::Value Options::getValue(OptionId id) {
 }
 
 bool Options::getBoolValue(OptionId id) {
-  return boost::get<int>(getValue(id));
+  return *getValue(id).getValueMaybe<int>();
 }
 
 string Options::getStringValue(OptionId id) {
@@ -183,11 +183,11 @@ string Options::getStringValue(OptionId id) {
 }
 
 int Options::getChoiceValue(OptionId id) {
-  return boost::get<int>(getValue(id));
+  return *getValue(id).getValueMaybe<int>();
 }
 
 int Options::getIntValue(OptionId id) {
-  int v = boost::get<int>(getValue(id));
+  int v = *getValue(id).getValueMaybe<int>();
   if (limits[id]) {
     if (v > limits[id]->second)
       return limits[id]->second;
@@ -198,11 +198,11 @@ int Options::getIntValue(OptionId id) {
 }
 
 CreatureId Options::getCreatureId(OptionId id) {
-  return choicesCreatureId[id].at(boost::get<int>(getValue(id)) % choicesCreatureId[id].size());
+  return choicesCreatureId[id].at(*getValue(id).getValueMaybe<int>() % choicesCreatureId[id].size());
 }
 
 void Options::setNextCreatureId(OptionId id) {
-  setValue(id, boost::get<int>(getValue(id)) + 1);
+  setValue(id, *getValue(id).getValueMaybe<int>() + 1);
 }
 
 void Options::setLimits(OptionId id, int minV, int maxV) {
@@ -217,7 +217,7 @@ void Options::setValue(OptionId id, Value value) {
   readValues();
   (*values)[id] = value;
   if (triggers.count(id))
-    triggers.at(id)(boost::get<int>(value));
+    triggers.at(id)(*value.getValueMaybe<int>());
   writeValues();
 }
 
@@ -226,11 +226,11 @@ void Options::setDefaultString(OptionId id, const string& s) {
 }
 
 static string getOnOff(const Options::Value& value) {
-  return boost::get<int>(value) ? "on" : "off";
+  return value.getValueMaybe<int>() ? "on" : "off";
 }
 
 static string getYesNo(const Options::Value& value) {
-  return boost::get<int>(value) ? "yes" : "no";
+  return value.getValueMaybe<int>() ? "yes" : "no";
 }
 
 string Options::getValueString(OptionId id) {
@@ -259,14 +259,14 @@ string Options::getValueString(OptionId id) {
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_SEED:
     case OptionId::KEEPER_NAME: {
-      string val = boost::get<string>(value);
+      string val = *value.getValueMaybe<string>();
       if (val.empty())
         return defaultStrings[id];
       else
         return val;
       }
     case OptionId::FULLSCREEN_RESOLUTION: {
-      int val = boost::get<int>(value);
+      int val = *value.getValueMaybe<int>();
       if (val >= 0 && val < choices[id].size())
         return choices[id][val];
       else
@@ -307,12 +307,12 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
   switch (id) {
     case OptionId::KEEPER_NAME:
     case OptionId::ADVENTURER_NAME:
-        if (auto val = view->getText("Enter " + names.at(id), boost::get<string>(value), 23,
+        if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
               "Leave blank to use a random name."))
           setValue(id, *val);
         break;
     case OptionId::KEEPER_SEED:
-        if (auto val = view->getText("Enter " + names.at(id), boost::get<string>(value), 23,
+        if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
               "Leave blank to use a random seed."))
           setValue(id, *val);
         break;
@@ -321,7 +321,7 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
           setValue(id, *index);
         break;
     default:
-        setValue(id, !boost::get<int>(value));
+        setValue(id, !value.getValueMaybe<int>());
   }
 }
 

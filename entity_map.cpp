@@ -161,7 +161,7 @@ SERIALIZABLE_TMPL(EntityMap, Creature, double);
 SERIALIZABLE_TMPL(EntityMap, Creature, int);
 SERIALIZABLE_TMPL(EntityMap, Creature, WTask);
 SERIALIZABLE_TMPL(EntityMap, Creature, Collective::CurrentTaskInfo);
-SERIALIZABLE_TMPL(EntityMap, Creature, map<AttractionType, int>);
+SERIALIZABLE_TMPL(EntityMap, Creature, unordered_map<AttractionType, int, CustomHash<AttractionType>>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<Position>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<WItem>);
 SERIALIZABLE_TMPL(EntityMap, Creature, WCreature);
