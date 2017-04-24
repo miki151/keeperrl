@@ -300,7 +300,7 @@ Furniture& Furniture::setDestroyable(double s, DestroyAction::Type type) {
 }
 
 Furniture& Furniture::setItemDrop(ItemFactory f) {
-  itemDrop->reset(f);
+  *itemDrop = f;
   return *this;
 }
 

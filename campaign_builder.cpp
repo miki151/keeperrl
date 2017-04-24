@@ -237,7 +237,8 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, WConstCreature 
       if (campaign.playerPos)
         campaign.clearSite(*campaign.playerPos);
       campaign.playerPos = pos;
-      campaign.sites[*campaign.playerPos].dweller = Campaign::KeeperInfo{player->getViewObject().id()};
+      campaign.sites[*campaign.playerPos].dweller =
+          Campaign::SiteInfo::Dweller(Campaign::KeeperInfo{player->getViewObject().id()});
       break;
     case PlayerRole:: ADVENTURER:
       campaign.playerPos = pos;

@@ -1172,7 +1172,7 @@ void Creature::dieWithReason(const string& reason, DropType drops) {
 }
 
 void Creature::dieWithAttacker(WCreature attacker, DropType drops) {
-  CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().get_value_or("");
+  CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
   deathTime = getGlobalTime();
   lastAttacker = attacker;
   INFO << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");

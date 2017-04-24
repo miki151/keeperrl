@@ -26,7 +26,7 @@ struct EmptyThing {
   bool operator == (const EmptyThing& other) const {
     return true;
   }
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
   }
 };

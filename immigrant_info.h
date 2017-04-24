@@ -115,14 +115,14 @@ class ImmigrantInfo {
   void visitRequirementsAndProb(const Visitor& visitor) const {
     for (auto& requirement : requirements) {
       RequirementVisitor<Visitor> v {visitor, requirement.candidateProb};
-      apply_visitor(requirement.type, v);
+      applyVisitor(requirement.type, v);
     }
   }
 
   template <typename Visitor>
   void visitRequirements(const Visitor& visitor) const {
     for (auto& requirement : requirements) {
-      apply_visitor(requirement.type, visitor);
+      applyVisitor(requirement.type, visitor);
     }
   }
 

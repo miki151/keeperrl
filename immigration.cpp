@@ -43,7 +43,7 @@ int Immigration::getAttractionOccupation(const AttractionType& type) const {
 }
 
 int Immigration::getAttractionValue(const AttractionType& attraction) const {
-  return apply_visitor(attraction, makeVisitor<int>(
+  return applyVisitor(attraction, makeVisitor<int>(
         [&](FurnitureType type) {
           auto& constructions = collective->getConstructions();
           int ret = constructions.getBuiltCount(type);
@@ -294,7 +294,7 @@ static vector<Position> pickSpawnPositions(const vector<WCreature>& creatures, v
 }
 
 vector<Position> Immigration::Available::getSpawnPositions() const {
-  vector<Position> positions = apply_visitor(getInfo().getSpawnLocation(), makeVisitor<vector<Position>>(
+  vector<Position> positions = applyVisitor(getInfo().getSpawnLocation(), makeVisitor<vector<Position>>(
     [&] (FurnitureType type) {
       return asVector<Position>(immigration->collective->getConstructions().getBuiltPositions(type));
     },

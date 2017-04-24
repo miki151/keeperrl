@@ -534,8 +534,8 @@ PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
         c.attr[AttrType::STRENGTH] = 17;
         c.attr[AttrType::DEXTERITY] = 13;
         c.barehandedDamage = 13;
-        c.chatReactionFriendly = "complains about high import tax";
-        c.chatReactionHostile = "\"Die!\"";
+        c.chatReactionFriendly = "complains about high import tax"_s;
+        c.chatReactionHostile = "\"Die!\""_s;
         c.name = "shopkeeper";
         c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());));
   ret->setController(makeOwner<ShopkeeperController>(ret.get(), shopArea));
@@ -651,9 +651,9 @@ CreatureFactory::CreatureFactory(TribeId t, const vector<CreatureId>& c, const v
 CreatureFactory::CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& c, const vector<CreatureId>& u)
     : unique(u) {
   for (auto& elem : c) {
-    creatures.push_back(::get<0>(elem));
-    weights.push_back(::get<1>(elem));
-    tribeOverrides[::get<0>(elem)] = ::get<2>(elem);
+    creatures.push_back(std::get<0>(elem));
+    weights.push_back(std::get<1>(elem));
+    tribeOverrides[std::get<0>(elem)] = std::get<2>(elem);
   }
 }
 
@@ -1083,8 +1083,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 15;
           c.attr[AttrType::DEXTERITY] = 15;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all law enforcement";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all law enforcement"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
  //         c.skills.insert(SkillId::DISARM_TRAPS);
           c.name = "bandit";);
     case CreatureId::GHOST: 
@@ -1097,8 +1097,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.barehandedDamage = 3;
           c.barehandedAttack = AttackType::HIT;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
-          c.chatReactionHostile = "\"Wouuuouuu!!!\"";
+          c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
+          c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
           c.name = "ghost";);
     case CreatureId::SPIRIT:
       return CATTR(
@@ -1110,8 +1110,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.barehandedAttack = AttackType::HIT;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
-          c.chatReactionHostile = "\"Wouuuouuu!!!\"";
+          c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
+          c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
           c.name = "ancient spirit";);
     case CreatureId::LOST_SOUL:
       return CATTR(
@@ -1126,8 +1126,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.barehandedDamage = 3;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
-          c.chatReactionHostile = "\"Wouuuouuu!!!\"";
+          c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
+          c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
           c.name = "ghost";);
     case CreatureId::SUCCUBUS:
       return CATTR(
@@ -1170,8 +1170,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name->setFirst("Cornelia");
           c.barehandedDamage = 6;
           c.gender = Gender::female;
-          c.chatReactionFriendly = "curses all humans";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all humans"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           );
     case CreatureId::WITCHMAN: 
       return CATTR(
@@ -1184,8 +1184,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.barehandedDamage = 6;
           c.gender = Gender::male;
-          c.chatReactionFriendly = "curses all monsters";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all monsters"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           );
     case CreatureId::CYCLOPS: 
       return CATTR(
@@ -1283,8 +1283,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 30;
           c.attr[AttrType::DEXTERITY] = 22;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "knight";);
@@ -1296,8 +1296,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 30;
           c.attr[AttrType::DEXTERITY] = 22;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "guard";);
@@ -1309,8 +1309,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 40;
           c.attr[AttrType::DEXTERITY] = 29;
           c.barehandedDamage = 8;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.courage = 3;
@@ -1323,8 +1323,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 27;
           c.attr[AttrType::DEXTERITY] = 19;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "warrior";);
@@ -1336,8 +1336,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 27;
           c.attr[AttrType::DEXTERITY] = 19;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.courage = 3;
@@ -1358,8 +1358,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 17;
           c.attr[AttrType::DEXTERITY] = 24;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.skills.setValue(SkillId::ARCHERY, 1);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "archer";);
@@ -1372,8 +1372,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::DEXTERITY] = 12;
           c.barehandedDamage = 3;
           c.innocent = true;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Heeelp!\"";
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Heeelp!\""_s;
           c.minionTasks.setValue(MinionTask::CROPS, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "peasant";);
@@ -1386,8 +1386,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::DEXTERITY] = 16;
           c.barehandedDamage = 3;
           c.innocent = true;
-          c.chatReactionFriendly = "\"plaaaaay!\"";
-          c.chatReactionHostile = "\"Heeelp!\"";
+          c.chatReactionFriendly = "\"plaaaaay!\""_s;
+          c.chatReactionHostile = "\"Heeelp!\""_s;
           c.minionTasks.setValue(MinionTask::CROPS, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = CreatureName("child", "children"););
@@ -1472,8 +1472,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 17;
           c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 2;
-          c.chatReactionFriendly = "\"All men be cursed!\"";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "\"All men be cursed!\""_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.spawnType = SpawnType::UNDEAD;
           c.skills.insert(SkillId::NIGHT_VISION);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
@@ -1511,7 +1511,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
               SpellId::TELEPORT}))
             c.spells->add(id);
           c.chatReactionFriendly = c.chatReactionHostile =
-              "\"There are times when you simply cannot refuse a drink!\"";
+              "\"There are times when you simply cannot refuse a drink!\""_s;
           );
     case CreatureId::MUMMY: 
       return CATTR(
@@ -1535,8 +1535,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::DEXTERITY] = 14;
           c.barehandedDamage = 3;
           c.spawnType = SpawnType::HUMANOID;
-          c.chatReactionFriendly = "curses all elves";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all elves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.minionTasks.setValue(MinionTask::TRAIN, 4);
           c.minionTasks.setValue(MinionTask::CRAFT, 1);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
@@ -1564,8 +1564,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::MANA, 0.4);
           c.skills.setValue(SkillId::LABORATORY, 0.7);
           c.skills.insert(SkillId::HEALING);
-          c.chatReactionFriendly = "curses all elves";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all elves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.name = "orc shaman";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );
@@ -1596,8 +1596,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 12;
           c.attr[AttrType::DEXTERITY] = 13;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "talks about digging";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "talks about digging"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "kobold";);
     case CreatureId::GNOME: 
@@ -1608,8 +1608,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 12;
           c.attr[AttrType::DEXTERITY] = 13;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "talks about digging";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "talks about digging"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "gnome";);
     case CreatureId::GNOME_CHIEF:
@@ -1620,8 +1620,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 15;
           c.attr[AttrType::DEXTERITY] = 16;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "talks about digging";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "talks about digging"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "gnome chief";);
     case CreatureId::GOBLIN: 
@@ -1633,8 +1633,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::DEXTERITY] = 13;
           c.barehandedDamage = 3;
           c.spawnType = SpawnType::HUMANOID;
-          c.chatReactionFriendly = "talks about crafting";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "talks about crafting"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.minionTasks.setValue(MinionTask::TRAIN, 1);
           c.minionTasks.setValue(MinionTask::CRAFT, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
@@ -1661,8 +1661,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.noChase = true;
           c.cantEquip = true;
           c.skills.insert(SkillId::CONSTRUCTION);
-          c.chatReactionFriendly = "talks about digging";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "talks about digging"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.name = "imp";);
     case CreatureId::PRISONER:
@@ -1677,7 +1677,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.noChase = true;
           c.cantEquip = true;
           c.skills.insert(SkillId::CONSTRUCTION);
-          c.chatReactionFriendly = "talks about escape plans";
+          c.chatReactionFriendly = "talks about escape plans"_s;
           c.minionTasks.setValue(MinionTask::PRISON, 1);
           c.minionTasks.setValue(MinionTask::BE_TORTURED, 0.0001);
           c.name = "prisoner";);
@@ -1720,8 +1720,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.barehandedDamage = 3;
           c.courage = 20;
           c.skills.insert(SkillId::STEALING);
-          c.chatReactionFriendly = "discusses the weather";
-          c.chatReactionHostile = "discusses the weather";
+          c.chatReactionFriendly = "discusses the weather"_s;
+          c.chatReactionHostile = "discusses the weather"_s;
           c.name = "leprechaun";);
     case CreatureId::DWARF: 
       return CATTR(
@@ -1733,8 +1733,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 28;
           c.attr[AttrType::DEXTERITY] = 19;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all orcs";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all orcs"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           );
     case CreatureId::DWARF_FEMALE:
       return CATTR(
@@ -1747,8 +1747,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 25;
           c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all orcs";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all orcs"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.gender = Gender::female;);
     case CreatureId::DWARF_BARON: 
       return CATTR(
@@ -1758,8 +1758,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 37;
           c.attr[AttrType::DEXTERITY] = 27;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all orcs";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all orcs"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.courage = 3;
           c.name = "dwarf baron";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
@@ -1775,8 +1775,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.barehandedAttack = AttackType::BITE;
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
-          c.chatReactionFriendly = "curses all humans";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all humans"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = CreatureName("lizardman", "lizardmen"););
     case CreatureId::LIZARDLORD: 
@@ -1790,8 +1790,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.barehandedAttack = AttackType::BITE;
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
-          c.chatReactionFriendly = "curses all humans";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all humans"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.courage = 3;
           c.name = "lizardman chief";);
@@ -1804,8 +1804,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 3;
           c.innocent = true;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
           c.skills.insert(SkillId::ELF_VISION);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
@@ -1818,8 +1818,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 11;
           c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
           c.skills.setValue(SkillId::ARCHERY, 1);
           c.skills.insert(SkillId::ELF_VISION);
@@ -1834,8 +1834,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 0;
           c.innocent = true;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
           c.skills.insert(SkillId::ELF_VISION);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
@@ -1848,8 +1848,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 16;
           c.attr[AttrType::DEXTERITY] = 23;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
           c.skills.setValue(SkillId::ARCHERY, 1);
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
@@ -1872,8 +1872,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 3;
           c.innocent = true;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
@@ -1887,8 +1887,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 11;
           c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
           c.skills.setValue(SkillId::ARCHERY, 0.5);
           c.skills.insert(SkillId::NIGHT_VISION);
@@ -1909,8 +1909,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 0;
           c.innocent = true;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
@@ -1923,8 +1923,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 16;
           c.attr[AttrType::DEXTERITY] = 23;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
           c.skills.setValue(SkillId::ARCHERY, 1);
           c.skills.setValue(SkillId::WEAPON_MELEE, 1);
@@ -1946,8 +1946,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 11;
           c.attr[AttrType::DEXTERITY] = 17;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all humans";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all humans"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
           c.skills.insert(SkillId::ELF_VISION);
           c.skills.setValue(SkillId::ARCHERY, 1);
@@ -2267,8 +2267,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.barehandedDamage = 3;
           c.gender = Gender::female;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.name = "elementalist";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           );
@@ -2329,8 +2329,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.barehandedDamage = 0;
           c.skills.insert(SkillId::ELF_VISION);
           c.minionTasks.clear();
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.name = "tree spirit";);
     case CreatureId::ANGEL:
       return CATTR(
@@ -2340,8 +2340,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 30;
           c.attr[AttrType::DEXTERITY] = 22;
           c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.name = "angel";);
     case CreatureId::KRAKEN:
@@ -2371,7 +2371,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr[AttrType::STRENGTH] = 100;
           c.attr[AttrType::DEXTERITY] = 35;
           c.barehandedDamage = 10;
-          c.chatReactionFriendly = c.chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\"";
+          c.chatReactionFriendly = c.chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE "
+              "YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""_s;
           c.name = "Death";);
     default: FATAL << "This is not handled here " << int(id);
   }

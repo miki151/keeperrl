@@ -161,14 +161,14 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
   const string workshop = "Manufactories";
   static optional<vector<BuildInfo>> buildInfo;
   if (!buildInfo) {
-    buildInfo = {
+    buildInfo = vector<BuildInfo>({
       BuildInfo(BuildInfo::DIG, "Dig or cut tree", "", 'd').setTutorialHighlight(TutorialHighlight::DIG_OR_CUT_TREES),
       BuildInfo({FurnitureType::MOUNTAIN, {ResourceId::STONE, 10}}, "Fill up tunnel", {},
           "Fill up one tile at a time. Cutting off an area is not allowed.", 0, "Structure"),
       BuildInfo({FurnitureType::DUNGEON_WALL, {ResourceId::STONE, 2}}, "Reinforce wall", {},
           "Reinforce wall. +" + toString<int>(100 * CollectiveConfig::getEfficiencyBonus(FurnitureType::DUNGEON_WALL)) +
-          " efficiency to to surrounding tiles.", 0, "Structure"),
-    };
+          " efficiency to to surrounding tiles.", 0, "Structure")
+    });
     for (int i : All(CollectiveConfig::getFloors())) {
       auto& floor = CollectiveConfig::getFloors()[i];
       string efficiency = toString<int>(floor.efficiencyBonus * 100);
@@ -1129,7 +1129,7 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
         c.unavailableReason = "Requires technology: " + Technology::get(*option.techId)->getName();
       }
       c.description = option.description;
-      c.productionState = option.state.get_value_or(0);
+      c.productionState = option.state.value_or(0);
       c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
       c.number = option.number * option.batchSize;
       c.tutorialHighlight = option.tutorialHighlight;
@@ -1159,9 +1159,9 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     auto& info = *collectiveInfo.libraryInfo;
     int libraryCount = getCollective()->getConstructions().getBuiltCount(FurnitureType::BOOK_SHELF);
     if (libraryCount == 0)
-      info.warning = "You need to build a library to start research.";
+      info.warning = "You need to build a library to start research."_s;
     else if (libraryCount <= getMinLibrarySize())
-      info.warning = "You need a larger library to continue research.";
+      info.warning = "You need a larger library to continue research."_s;
     info.resource = make_pair(ViewId::MANA, getCollective()->numResource(ResourceId::MANA));
     auto techs = filter(Technology::getNextTechs(getCollective()->getTechnologies()),
         [](const Technology* tech) { return tech->canResearch(); });
@@ -1229,7 +1229,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
                 if (!maxT || *remaining > *maxT)
                   maxT = *remaining;
           if (maxT && (!timeRemaining || *maxT > *timeRemaining))
-            timeRemaining = maxT;
+            timeRemaining = *maxT;
         },
         [&](const RecruitmentInfo& info) {
           infoLines.push_back(
@@ -1387,10 +1387,11 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   if (chosenCreature)
     if (WCreature c = getCreature(*chosenCreature)) {
       if (!getChosenTeam())
-        info.chosenCreature = {*chosenCreature, getPlayerInfos(getMinionsLike(c), *chosenCreature)};
+        info.chosenCreature = CollectiveInfo::ChosenCreatureInfo {
+            *chosenCreature, getPlayerInfos(getMinionsLike(c), *chosenCreature)};
       else
-        info.chosenCreature = {*chosenCreature, getPlayerInfos(getTeams().getMembers(*getChosenTeam()),
-            *chosenCreature), *getChosenTeam()};
+        info.chosenCreature = CollectiveInfo::ChosenCreatureInfo {
+            *chosenCreature, getPlayerInfos(getTeams().getMembers(*getChosenTeam()), *chosenCreature), *getChosenTeam()};
     }
   fillWorkshopInfo(info);
   fillLibraryInfo(info);
@@ -1433,7 +1434,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
   }
   for (auto& elem : ransomAttacks) {
-    info.ransom = {make_pair(ViewId::GOLD, *elem.getRansom()), elem.getAttackerName(),
+    info.ransom = CollectiveInfo::Ransom {make_pair(ViewId::GOLD, *elem.getRansom()), elem.getAttackerName(),
         getCollective()->hasResource({ResourceId::GOLD, *elem.getRansom()})};
     break;
   }

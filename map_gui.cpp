@@ -463,7 +463,7 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
 }
 
 bool MapGui::isCreatureHighlighted(UniqueEntity<Creature>::Id creature) {
-  return teamHighlight.getMaybe(creature).get_value_or(0) > 0;
+  return teamHighlight.getMaybe(creature).value_or(0) > 0;
 }
 
 static bool mirrorSprite(ViewId id) {
@@ -1030,7 +1030,7 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   if (smoothMovement) {
     if (auto movement = view->getMovementInfo()) {
       if (!screenMovement || screenMovement->startTimeGame != movement->prevTime) {
-        screenMovement = {
+        screenMovement = ScreenMovement {
           movement->from,
           movement->to,
           clock->getRealMillis(),

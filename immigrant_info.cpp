@@ -15,7 +15,7 @@ AttractionInfo::AttractionInfo(int cl,  AttractionType a)
   : types({a}), amountClaimed(cl) {}
 
 string AttractionInfo::getAttractionName(const AttractionType& attraction, int count) {
-  return apply_visitor(attraction, makeVisitor<string>(
+  return applyVisitor(attraction, makeVisitor<string>(
       [&](FurnitureType type) {
         return Furniture::getName(type, count);
       },

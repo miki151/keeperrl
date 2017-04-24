@@ -440,7 +440,7 @@ bool Position::construct(FurnitureType type, TribeId tribe) {
   CHECK(canConstruct(type));
   auto& construction = level->furniture->getConstruction(coord, Furniture::getLayer(type));
   if (!construction || construction->type != type)
-    construction = {type, 10};
+    construction = FurnitureArray::Construction{type, 10};
   if (--construction->time == 0) {
     addFurniture(FurnitureFactory::get(type, tribe));
     return true;

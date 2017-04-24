@@ -120,7 +120,7 @@ template <class Archive, class T>
 void save(Archive& ar1, const optional<T>& elem) {
   if (elem) {
     ar1(true);
-    ar1(elem.get());
+    ar1(*elem);
   } else {
     ar1(false);
   }

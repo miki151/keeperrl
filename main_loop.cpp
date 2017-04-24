@@ -223,7 +223,7 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
     }
     INFO << "Time step " << step;
     if (auto exitInfo = game->update(step)) {
-      apply_visitor(*exitInfo, makeVisitor<void>(
+      applyVisitor(*exitInfo, makeVisitor<void>(
           [&](GameSaveType type) {
             if (type == GameSaveType::RETIRED_SITE) {
               game->prepareSiteRetirement();
@@ -314,7 +314,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random, const optional<ForceGameInfo>
   auto choice = PlayerRoleChoice(PlayerRole::KEEPER);
   while (1) {
     choice = view->getPlayerRoleChoice(choice);
-    if (auto ret = apply_visitor(choice, makeVisitor<optional<PGame>>(
+    if (auto ret = applyVisitor(choice, makeVisitor<optional<PGame>>(
         [&] (PlayerRole role) -> optional<PGame> {
           CampaignBuilder builder(view, random, options, role);
           if (auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {

@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include <iostream>
-
 #include "stdafx.h"
 #include "debug.h"
 #include "enums.h"
@@ -1535,7 +1533,7 @@ LambdaVisitor<void, DefaultOperator, Lambdas...> makeDefaultVisitor(Lambdas... l
 }
 
 template <typename Visitor, typename Visitable>
-typename Visitor::result_type apply_visitor(Visitable& visitable, const Visitor& visitor) {
+typename Visitor::result_type applyVisitor(Visitable& visitable, const Visitor& visitor) {
   return visitable.apply_visitor(visitor);
 }
 

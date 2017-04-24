@@ -110,7 +110,7 @@ void GuiBuilder::setActiveGroup(const string& group, optional<TutorialHighlight>
 void GuiBuilder::setActiveButton(CollectiveTab tab, int num, ViewId viewId, optional<string> group,
     optional<TutorialHighlight> tutorial) {
   closeOverlayWindowsAndClearButton();
-  activeButton = {tab, num};
+  activeButton = ActiveButton {tab, num};
   mapGui->setButtonViewId(viewId);
   activeGroup = group;
   if (tutorial) {

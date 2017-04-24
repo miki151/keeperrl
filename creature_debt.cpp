@@ -19,7 +19,7 @@ vector<Creature::Id> CreatureDebt::getCreditors() const {
 }
 
 int CreatureDebt::getAmountOwed(WCreature creditor) const {
-  return debt.getMaybe(creditor).get_value_or(0);
+  return debt.getMaybe(creditor).value_or(0);
 }
 
 void CreatureDebt::add(WCreature c, int amount) {

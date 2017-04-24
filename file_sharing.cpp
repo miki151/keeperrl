@@ -43,7 +43,12 @@ size_t dataFun(void *buffer, size_t size, size_t nmemb, void *userp) {
 }
 
 static string escapeSpaces(string s) {
-  replace_all(s, " ", "%20");
+  string ret;
+  for (auto c : s)
+    if (c == ' ')
+      ret += "%20";
+    else
+      ret += c;
   return s;
 }
 

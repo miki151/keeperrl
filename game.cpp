@@ -496,7 +496,7 @@ void Game::gameOver(WConstCreature creature, int numKills, const string& enemies
         c.points = points;
         c.gameId = getGameIdentifier();
         c.playerName = *creature->getName().first();
-        c.gameResult = creature->getDeathReason().get_value_or("");
+        c.gameResult = creature->getDeathReason().value_or("");
         c.gameWon = false;
         c.turns = (int) getGlobalTime();
         c.campaignType = campaign->getType();

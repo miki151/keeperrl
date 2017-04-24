@@ -98,7 +98,7 @@ bool Campaign::SiteInfo::isEmpty() const {
 
 optional<string> Campaign::SiteInfo::getDwellerDescription() const {
   if (dweller)
-    return apply_visitor(*dweller, makeVisitor<string>(
+    return applyVisitor(*dweller, makeVisitor<string>(
         [](const VillainInfo& info) { return info.name + " (" + info.getDescription() + ")"; },
         [](const RetiredInfo& info) { return info.gameInfo.getName() + " (main villain)" ;},
         [](const KeeperInfo&) { return "This is your home site"; }));
@@ -108,7 +108,7 @@ optional<string> Campaign::SiteInfo::getDwellerDescription() const {
 
 optional<VillainType> Campaign::SiteInfo::getVillainType() const {
   if (dweller)
-    return apply_visitor(*dweller, makeVisitor<VillainType>(
+    return applyVisitor(*dweller, makeVisitor<VillainType>(
         [](const VillainInfo& info) { return info.type; },
         [](const RetiredInfo&) { return VillainType::MAIN; },
         [](const KeeperInfo&) { return VillainType::PLAYER; }));
@@ -118,7 +118,7 @@ optional<VillainType> Campaign::SiteInfo::getVillainType() const {
 
 optional<ViewId> Campaign::SiteInfo::getDwellerViewId() const {
   if (dweller)
-    return apply_visitor(*dweller, makeVisitor<ViewId>(
+    return applyVisitor(*dweller, makeVisitor<ViewId>(
         [](const VillainInfo& info) { return info.viewId; },
         [](const RetiredInfo& info) { return info.gameInfo.getViewId(); },
         [](const KeeperInfo& info) { return info.viewId; }));

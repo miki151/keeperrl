@@ -719,7 +719,7 @@ void Collective::onEvent(const GameEvent& event) {
         static const int alarmTime = 100;
         if (getTerritory().contains(pos)) {
           control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(pos));
-          alarmInfo = {getGlobalTime() + alarmTime, pos };
+          alarmInfo = AlarmInfo {getGlobalTime() + alarmTime, pos };
           for (WCreature c : byTrait[MinionTrait::FIGHTER])
             if (c->isAffected(LastingEffect::SLEEP))
               c->removeEffect(LastingEffect::SLEEP);
