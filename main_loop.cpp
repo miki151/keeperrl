@@ -4,9 +4,6 @@
 #include "highscores.h"
 #include "music.h"
 #include "options.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include "dirent.h"
 #include "progress_meter.h"
 #include "file_sharing.h"
 #include "square.h"
@@ -42,11 +39,8 @@ MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const Director
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
   vector<SaveFileInfo> ret;
   for (auto file : path.getFiles()) {
-    if (file.hasSuffix(suffix)) {
-      struct stat buf;
-      stat(file.getPath(), &buf);
-      ret.push_back({file.getFileName(), buf.st_mtime, false});
-    }
+    if (file.hasSuffix(suffix))
+      ret.push_back({file.getFileName(), file.getModificationTime(), false});
   }
   sort(ret.begin(), ret.end(), [](const SaveFileInfo& a, const SaveFileInfo& b) {
         return a.date > b.date;

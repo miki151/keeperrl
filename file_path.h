@@ -6,6 +6,7 @@ class FilePath {
   public:
   const char* getPath() const;
   const char* getFileName() const;
+  time_t getModificationTime() const;
   bool hasSuffix(const string&) const;
   FilePath changeSuffix(const string& current, const string& newSuf) const;
 

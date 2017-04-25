@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "directory_path.h"
 #include "file_path.h"
-#include <boost/filesystem.hpp>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "dirent.h"
 
 DirectoryPath::DirectoryPath(const std::string& p) : path(p) {}
@@ -14,20 +15,31 @@ DirectoryPath DirectoryPath::subdirectory(const std::string& s) const {
   return DirectoryPath(path + "/" + s);
 }
 
-bool DirectoryPath::exists() const {
-  return boost::filesystem::is_directory(path.c_str());
+static bool isDirectory(const string& path) {
+  struct stat path_stat;
+  if (stat(path.c_str(), &path_stat))
+    return false;
+  else
+    return S_ISDIR(path_stat.st_mode);
 }
 
-void DirectoryPath::createIfDoesntExist() const {
-  if (!exists())
-    boost::filesystem::create_directories(path.c_str());
+bool DirectoryPath::exists() const {
+  return isDirectory(get());
+}
+
+static bool isRegularFile(const string& path) {
+  struct stat path_stat;
+  if (stat(path.c_str(), &path_stat))
+    return false;
+  else
+    return S_ISREG(path_stat.st_mode);
 }
 
 vector<FilePath> DirectoryPath::getFiles() const {
   vector<FilePath> ret;
   if (DIR* dir = opendir(path.c_str())) {
     while (dirent* ent = readdir(dir))
-      if (!boost::filesystem::is_directory(path + ent->d_name))
+      if (isRegularFile(path + "/" + ent->d_name))
         ret.push_back(FilePath(*this, ent->d_name));
     closedir(dir);
   }

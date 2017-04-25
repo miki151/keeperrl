@@ -302,7 +302,8 @@ static int keeperMain(po::parser& commandLineFlags) {
 #else
     uploadUrl = "http://localhost/~michal/" + serverVersion;
 #endif
-  userPath.createIfDoesntExist();
+  //userPath.createIfDoesntExist();
+  CHECK(userPath.exists()) << "User directory \"" << userPath << "\" doesn't exist.";
   auto settingsPath = userPath.file("options.txt");
   if (commandLineFlags["restore_settings"].was_set())
     remove(settingsPath.getPath());
