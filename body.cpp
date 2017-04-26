@@ -435,7 +435,7 @@ bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
     injureBodyPart(creature, part, contains({AttackType::CUT, AttackType::BITE}, attackType));
     if (isCritical(part)) {
       creature->you(MsgType::DIE, "");
-      creature->die(attack.getAttacker());
+      creature->dieWithAttacker(attack.getAttacker());
       return true;
     }
     if (health <= 0)
@@ -445,7 +445,7 @@ bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
   if (health <= 0) {
     creature->you(MsgType::ARE, "critically wounded");
     creature->you(MsgType::DIE, "");
-    creature->die(attack.getAttacker());
+    creature->dieWithAttacker(attack.getAttacker());
     return true;
   } else
     if (health < 0.5)
@@ -636,7 +636,7 @@ void Body::affectByTorture(WCreature c) {
     if (!Random.roll(8))
       c->heal();
     else
-      c->die("killed by torture");
+      c->dieWithReason("killed by torture");
   }
 }
 

@@ -4,7 +4,7 @@ ifndef RPATH
 RPATH = .
 endif
 
-CFLAGS = -Wall -std=c++11 -Wno-sign-compare -Wno-unused-variable -Wno-unused-function -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512
+CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-unused-function -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512
 
 CC = g++
 LD = g++
@@ -136,7 +136,7 @@ gen_version:
 endif
 
 parse_game:
-	clang++ -DPARSE_GAME -std=c++11 -g gzstream.cpp parse_game.cpp util.cpp debug.cpp saved_game_info.cpp file_path.cpp directory_path.cpp progress.cpp -o parse_game -lpthread -lboost_system -lboost_filesystem  -lz
+	clang++ -DPARSE_GAME -std=c++1y -g gzstream.cpp parse_game.cpp util.cpp debug.cpp saved_game_info.cpp file_path.cpp directory_path.cpp progress.cpp -o parse_game -lpthread -lboost_system -lboost_filesystem  -lz
 
 clean:
 	$(RM) $(OBJDIR)/*.o

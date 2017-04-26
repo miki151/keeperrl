@@ -225,7 +225,7 @@ class GuiBuilder {
   SGuiElem drawMinionsOverlay(const CollectiveInfo&);
   SGuiElem minionsOverlayCache;
   int minionsOverlayHash = 0;
-  SGuiElem drawWorkshopsOverlay(const CollectiveInfo&);
+  SGuiElem drawWorkshopsOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem workshopsOverlayCache;
   int workshopsOverlayHash = 0;
   SGuiElem drawTasksOverlay(const CollectiveInfo&);
@@ -253,7 +253,7 @@ class GuiBuilder {
   unordered_set<pair<int, TutorialHighlight>, CustomHash<pair<int, TutorialHighlight>>> tutorialClicks;
   bool wasTutorialClicked(size_t hash, TutorialHighlight);
   void onTutorialClicked(size_t hash, TutorialHighlight);
-  SGuiElem drawLibraryOverlay(const CollectiveInfo&);
+  SGuiElem drawLibraryOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

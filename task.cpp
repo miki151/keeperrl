@@ -848,7 +848,7 @@ class CampAndSpawn : public Task {
     // Cancel only the attack team, as the defense will disappear when the summoner dies
     for (WCreature c : attackTeam)
       if (!c->isDead())
-        c->die(false, false);
+        c->dieNoReason(Creature::DropType::NOTHING);
   }
 
   virtual MoveInfo getMove(WCreature c) override {

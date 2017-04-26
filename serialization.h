@@ -34,7 +34,7 @@
 #include <cereal/access.hpp>
 #include <cereal/types/bitset.hpp>
 #include <cereal/types/memory.hpp>
-#include <cereal/types/boost_variant.hpp>
+#include "extern/variant_serialize.h"
 
 #include "stdafx.h"
 #include "progress.h"
@@ -120,7 +120,7 @@ template <class Archive, class T>
 void save(Archive& ar1, const optional<T>& elem) {
   if (elem) {
     ar1(true);
-    ar1(elem.get());
+    ar1(*elem);
   } else {
     ar1(false);
   }

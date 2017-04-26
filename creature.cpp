@@ -545,13 +545,13 @@ CreatureAction Creature::equip(WItem item) const {
   string reason;
   if (!canEquipIfEmptySlot(item, &reason))
     return CreatureAction(reason);
-  if (contains(equipment->getItem(item->getEquipmentSlot()), item))
+  if (contains(equipment->getSlotItems(item->getEquipmentSlot()), item))
     return CreatureAction();
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " equip " << item->getName();
     EquipmentSlot slot = item->getEquipmentSlot();
-    if (self->equipment->getItem(slot).size() >= self->equipment->getMaxItems(slot)) {
-      WItem previousItem = self->equipment->getItem(slot)[0];
+    if (self->equipment->getSlotItems(slot).size() >= self->equipment->getMaxItems(slot)) {
+      WItem previousItem = self->equipment->getSlotItems(slot)[0];
       self->equipment->unequip(previousItem, self);
     }
     self->equipment->equip(item, slot, self);
@@ -876,12 +876,12 @@ void Creature::tick() {
       LastingEffects::onTimedOut(this, effect, true);
   if (isAffected(LastingEffect::POISON))
     if (getBody().affectByPoison(this, 0.015)) {
-      die(lastAttacker);
+      dieWithAttacker(lastAttacker);
       return;
     }
   updateViewObject();
   if (getBody().tick(this)) {
-    die(lastAttacker);
+    dieWithAttacker(lastAttacker);
     return;
   }
 }
@@ -1035,7 +1035,7 @@ bool Creature::takeDamage(const Attack& attack) {
           p.getCreature()->removeEffect(LastingEffect::SLEEP);
     if (attackType == AttackType::POSSESS) {
       you(MsgType::ARE, "possessed by " + attacker->getName().the());
-      attacker->die(false, false);
+      attacker->dieNoReason(Creature::DropType::NOTHING);
       addEffect(LastingEffect::INSANITY, 10);
       return false;
     }
@@ -1128,17 +1128,17 @@ void Creature::fireDamage(double amount) {
 
 void Creature::affectBySilver() {
   if (getBody().affectBySilver(this))
-    die(lastAttacker);
+    dieWithAttacker(lastAttacker);
 }
 
 void Creature::affectByAcid() {
   if (getBody().affectByAcid(this))
-    die("dissolved by acid");
+    dieWithReason("dissolved by acid");
 }
 
 void Creature::poisonWithGas(double amount) {
   if (getBody().affectByPoisonGas(this, amount))
-    die("poisoned with gas");
+    dieWithReason("poisoned with gas");
 }
 
 void Creature::setHeld(WCreature c) {
@@ -1166,25 +1166,25 @@ void Creature::take(PItem item) {
     action.perform(this);
 }
 
-void Creature::die(const string& reason, bool dropInventory, bool dCorpse) {
+void Creature::dieWithReason(const string& reason, DropType drops) {
   deathReason = reason;
-  die(dropInventory, dCorpse);
+  dieNoReason(drops);
 }
 
-void Creature::die(WCreature attacker, bool dropInventory, bool dCorpse) {
-  CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().get_value_or("");
+void Creature::dieWithAttacker(WCreature attacker, DropType drops) {
+  CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
   deathTime = getGlobalTime();
-  if (dCorpse)
-    if (auto sound = getBody().getDeathSound())
-      addSound(*sound);
   lastAttacker = attacker;
   INFO << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   getController()->onKilled(attacker);
-  if (dropInventory)
+  if (drops == DropType::EVERYTHING || drops == DropType::ONLY_INVENTORY)
     for (PItem& item : equipment->removeAllItems(this))
       getPosition().dropItem(std::move(item));
-  if (dropInventory && dCorpse)
+  if (drops == DropType::EVERYTHING) {
     getPosition().dropItems(getBody().getCorpseItem(getName().bare(), getUniqueId()));
+    if (auto sound = getBody().getDeathSound())
+      addSound(*sound);
+  }
   if (attributes->isInnocent())
     getGame()->getStatistics().add(StatId::INNOCENT_KILLED);
   getGame()->getStatistics().add(StatId::DEATH);
@@ -1196,8 +1196,8 @@ void Creature::die(WCreature attacker, bool dropInventory, bool dCorpse) {
   setController(makeOwner<DoNothingController>(this));
 }
 
-void Creature::die(bool dropInventory, bool dropCorpse) {
-  die(WCreature(), dropInventory, dropCorpse);
+void Creature::dieNoReason(DropType drops) {
+  dieWithAttacker(nullptr, drops);
 }
 
 CreatureAction Creature::flyAway() const {
@@ -1206,7 +1206,7 @@ CreatureAction Creature::flyAway() const {
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " fly away";
     monsterMessage(getName().the() + " flies away.");
-    self->die(false, false);
+    self->dieNoReason(Creature::DropType::NOTHING);
   });
 }
 
@@ -1214,7 +1214,7 @@ CreatureAction Creature::disappear() const {
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " disappears";
     monsterMessage(getName().the() + " disappears.");
-    self->die(false, false);
+    self->dieNoReason(Creature::DropType::NOTHING);
   });
 }
 
@@ -1280,7 +1280,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
   CHECK(direction.length8() == 1);
   if (getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty())
     return CreatureAction("You need a ranged weapon.");
-  if (getEquipment().getItem(EquipmentSlot::RANGED_WEAPON).empty())
+  if (getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty())
     return CreatureAction("You need to equip your ranged weapon.");
   if (getBody().numGood(BodyPart::ARM) < 2)
     return CreatureAction("You need two hands to shoot a bow.");
@@ -1288,7 +1288,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
     return CreatureAction("Out of ammunition");
   return CreatureAction(this, [=](WCreature self) {
     PItem ammo = self->equipment->removeItem(NOTNULL(getAmmo()), self);
-    auto weapon = getOnlyElement(self->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))
+    auto weapon = getOnlyElement(self->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON))
         .dynamicCast<RangedWeapon>();
     CHECK(!!weapon);
     weapon->fire(self, std::move(ammo), direction);
@@ -1406,13 +1406,13 @@ CreatureAction Creature::consume(WCreature other) const {
     return CreatureAction();
   return CreatureAction(this, [=] (WCreature self) {
     self->attributes->consume(self, *other->attributes);
-    other->die(self, true, false);
+    other->dieWithAttacker(self, Creature::DropType::ONLY_INVENTORY);
     self->spendTime(2);
   });
 }
 
 WItem Creature::getWeapon() const {
-  vector<WItem> it = equipment->getItem(EquipmentSlot::WEAPON);
+  vector<WItem> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
   if (it.empty())
     return nullptr;
   else
@@ -1502,6 +1502,10 @@ CreatureName& Creature::getName() {
   return attributes->getName();
 }
 
+const char* Creature::identify() const {
+  return getName().bare().c_str();
+}
+
 TribeSet Creature::getFriendlyTribes() const {
   if (WGame game = getGame())
     return game->getTribe(tribe)->getFriendlyTribes();
@@ -1509,7 +1513,7 @@ TribeSet Creature::getFriendlyTribes() const {
     return TribeSet().insert(tribe);
 }
 
-MovementType Creature::getMovementType() const {
+MovementType Creature:: getMovementType() const {
   return MovementType(getFriendlyTribes(), {
       true,
       isAffected(LastingEffect::FLYING),

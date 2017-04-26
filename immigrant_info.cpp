@@ -8,21 +8,21 @@
 #include "creature_attributes.h"
 #include "tutorial.h"
 
-SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto, tutorialHighlight)
+SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto, tutorialHighlight, hiddenInHelp)
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
 
 AttractionInfo::AttractionInfo(int cl,  AttractionType a)
   : types({a}), amountClaimed(cl) {}
 
 string AttractionInfo::getAttractionName(const AttractionType& attraction, int count) {
-  return apply_visitor(attraction, makeVisitor<string>(
-      [&](FurnitureType type) {
+  return attraction.match(
+      [&](FurnitureType type)->string {
         return Furniture::getName(type, count);
       },
-      [&](ItemIndex index) {
+      [&](ItemIndex index)->string {
         return getName(index, count);
       }
-  ));
+  );
 }
 
 AttractionInfo::AttractionInfo(int cl, vector<AttractionType> a)
@@ -98,6 +98,10 @@ optional<TutorialHighlight> ImmigrantInfo::getTutorialHighlight() const {
   return tutorialHighlight;
 }
 
+bool ImmigrantInfo::isHiddenInHelp() const {
+  return hiddenInHelp;
+}
+
 ImmigrantInfo& ImmigrantInfo::addRequirement(ImmigrantRequirement t) {
   requirements.push_back({t, 1});
   return *this;
@@ -156,6 +160,11 @@ ImmigrantInfo&ImmigrantInfo::setLimit(int num) {
 
 ImmigrantInfo& ImmigrantInfo::setTutorialHighlight(TutorialHighlight h) {
   tutorialHighlight = h;
+  return *this;
+}
+
+ImmigrantInfo& ImmigrantInfo::setHiddenInHelp() {
+  hiddenInHelp = true;
   return *this;
 }
 

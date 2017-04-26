@@ -232,10 +232,6 @@ vector<Vec2> Vec2::neighbors4(RandomGen& random) const {
   return random.permutation(neighbors4());
 }
 
-vector<Vec2> Vec2::neighbors(const vector<Vec2>& directions) const {
-  return transform2<Vec2>(directions, [this] (const Vec2& v) { return *this + v;});
-}
-
 bool Vec2::isCardinal4() const {
   return abs(x) + abs(y) == 1;
 }

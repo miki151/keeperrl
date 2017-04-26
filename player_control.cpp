@@ -161,14 +161,14 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
   const string workshop = "Manufactories";
   static optional<vector<BuildInfo>> buildInfo;
   if (!buildInfo) {
-    buildInfo = {
+    buildInfo = vector<BuildInfo>({
       BuildInfo(BuildInfo::DIG, "Dig or cut tree", "", 'd').setTutorialHighlight(TutorialHighlight::DIG_OR_CUT_TREES),
       BuildInfo({FurnitureType::MOUNTAIN, {ResourceId::STONE, 10}}, "Fill up tunnel", {},
           "Fill up one tile at a time. Cutting off an area is not allowed.", 0, "Structure"),
       BuildInfo({FurnitureType::DUNGEON_WALL, {ResourceId::STONE, 2}}, "Reinforce wall", {},
           "Reinforce wall. +" + toString<int>(100 * CollectiveConfig::getEfficiencyBonus(FurnitureType::DUNGEON_WALL)) +
-          " efficiency to to surrounding tiles.", 0, "Structure"),
-    };
+          " efficiency to to surrounding tiles.", 0, "Structure")
+    });
     for (int i : All(CollectiveConfig::getFloors())) {
       auto& floor = CollectiveConfig::getFloors()[i];
       string efficiency = toString<int>(floor.efficiencyBonus * 100);
@@ -186,7 +186,8 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "Only wood, iron and granite can be stored here.", 's', "Storage", true)
              .setTutorialHighlight(TutorialHighlight::RESOURCE_STORAGE),
       BuildInfo(ZoneId::STORAGE_EQUIPMENT, ViewId::STORAGE_EQUIPMENT, "Equipment",
-          "All equipment for your minions can be stored here.", 0, "Storage"),
+          "All equipment for your minions can be stored here.", 0, "Storage")
+             .setTutorialHighlight(TutorialHighlight::EQUIPMENT_STORAGE),
       BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 15}}, "Library", {},
           "Mana is regenerated here.", 'y').setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
       BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 160}, false, 1}, "Throne",
@@ -218,7 +219,8 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           0, "Training room"),
       BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 15}}, "Workshop",
           {{RequirementId::TECHNOLOGY, TechId::CRAFTING}},
-          "Produces leather equipment, traps, first-aid kits and other.", 'm', workshop, true),
+          "Produces leather equipment, traps, first-aid kits and other.", 'm', workshop, true)
+             .setTutorialHighlight(TutorialHighlight::BUILD_WORKSHOP),
       BuildInfo({FurnitureType::FORGE, {ResourceId::IRON, 20}}, "Forge",
           {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}}, "Produces iron weapons and armor.", 0, workshop),
       BuildInfo({FurnitureType::LABORATORY, {ResourceId::STONE, 10}}, "Laboratory",
@@ -479,7 +481,7 @@ void PlayerControl::addConsumableItem(WCreature creature) {
 }
 
 void PlayerControl::addEquipment(WCreature creature, EquipmentSlot slot) {
-  vector<WItem> currentItems = creature->getEquipment().getItem(slot);
+  vector<WItem> currentItems = creature->getEquipment().getSlotItems(slot);
   WItem chosenItem = chooseEquipmentItem(creature, currentItems, [&](const WItem it) {
       return !getCollective()->getMinionEquipment().isOwner(it, creature)
       && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slot; });
@@ -623,6 +625,9 @@ void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
       slotIndex.push_back(slot);
       slotItems.push_back(nullptr);
     }
+    if (slot == EquipmentSlot::WEAPON && tutorial &&
+        tutorial->getHighlights(getGame()).contains(TutorialHighlight::EQUIPMENT_SLOT_WEAPON))
+      info.inventory.back().tutorialHighlight = true;
   }
   vector<pair<string, vector<WItem>>> consumables = Item::stackItems(ownedItems,
       [&](const WItem it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
@@ -1127,9 +1132,11 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
         c.unavailableReason = "Requires technology: " + Technology::get(*option.techId)->getName();
       }
       c.description = option.description;
-      c.productionState = option.state.get_value_or(0);
+      c.productionState = option.state.value_or(0);
       c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
       c.number = option.number * option.batchSize;
+      c.tutorialHighlight = tutorial && option.tutorialHighlight &&
+          tutorial->getHighlights(getGame()).contains(*option.tutorialHighlight);
     );
 }
 
@@ -1156,9 +1163,9 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     auto& info = *collectiveInfo.libraryInfo;
     int libraryCount = getCollective()->getConstructions().getBuiltCount(FurnitureType::BOOK_SHELF);
     if (libraryCount == 0)
-      info.warning = "You need to build a library to start research.";
+      info.warning = "You need to build a library to start research."_s;
     else if (libraryCount <= getMinLibrarySize())
-      info.warning = "You need a larger library to continue research.";
+      info.warning = "You need a larger library to continue research."_s;
     info.resource = make_pair(ViewId::MANA, getCollective()->numResource(ResourceId::MANA));
     auto techs = filter(Technology::getNextTechs(getCollective()->getTechnologies()),
         [](const Technology* tech) { return tech->canResearch(); });
@@ -1168,6 +1175,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
       techInfo.name = tech->getName();
       int cost = getCollective()->getTechCost(tech);
       techInfo.cost = make_pair(ViewId::MANA, cost);
+      techInfo.tutorialHighlight = tech->getTutorialHighlight();
       techInfo.active = !info.warning && cost <= getCollective()->numResource(ResourceId::MANA);
       techInfo.description = tech->getDescription();
     }
@@ -1216,7 +1224,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     if (auto time = candidate.getEndTime())
       timeRemaining = *time - getGame()->getGlobalTime();
     vector<string> infoLines;
-    candidate.getInfo().visitRequirements(makeDefaultVisitor(
+    candidate.getInfo().visitRequirements(makeVisitor(
         [&](const Pregnancy&) {
           optional<int> maxT;
           for (WCreature c : getCollective()->getCreatures())
@@ -1225,13 +1233,14 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
                 if (!maxT || *remaining > *maxT)
                   maxT = *remaining;
           if (maxT && (!timeRemaining || *maxT > *timeRemaining))
-            timeRemaining = maxT;
+            timeRemaining = *maxT;
         },
         [&](const RecruitmentInfo& info) {
           infoLines.push_back(
               toString(info.getAvailableRecruits(getGame(), candidate.getInfo().getId(0)).size()) +
               " recruits available");
-        }
+        },
+        [&](const auto&) {}
     ));
     WCreature c = candidate.getCreatures()[0];
     string name = c->getName().multiple(count);
@@ -1284,12 +1293,14 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     return *creatureStats[id];
   };
   for (auto elem : Iter(getCollective()->getConfig().getImmigrantInfo())) {
+    if (elem->isHiddenInHelp())
+      continue;
     auto creatureId = elem->getId(0);
     WCreature c = getStats(creatureId).creature.get();
     optional<pair<ViewId, int>> costObj;
     vector<string> requirements;
     vector<string> infoLines;
-    elem->visitRequirements(makeVisitor<void>(
+    elem->visitRequirements(makeVisitor(
         [&](const AttractionInfo& attraction) {
           int required = attraction.amountClaimed;
           requirements.push_back("Requires " + toString(required) + " " +
@@ -1381,10 +1392,11 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   if (chosenCreature)
     if (WCreature c = getCreature(*chosenCreature)) {
       if (!getChosenTeam())
-        info.chosenCreature = {*chosenCreature, getPlayerInfos(getMinionsLike(c), *chosenCreature)};
+        info.chosenCreature = CollectiveInfo::ChosenCreatureInfo {
+            *chosenCreature, getPlayerInfos(getMinionsLike(c), *chosenCreature)};
       else
-        info.chosenCreature = {*chosenCreature, getPlayerInfos(getTeams().getMembers(*getChosenTeam()),
-            *chosenCreature), *getChosenTeam()};
+        info.chosenCreature = CollectiveInfo::ChosenCreatureInfo {
+            *chosenCreature, getPlayerInfos(getTeams().getMembers(*getChosenTeam()), *chosenCreature), *getChosenTeam()};
     }
   fillWorkshopInfo(info);
   fillLibraryInfo(info);
@@ -1427,7 +1439,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
   }
   for (auto& elem : ransomAttacks) {
-    info.ransom = {make_pair(ViewId::GOLD, *elem.getRansom()), elem.getAttackerName(),
+    info.ransom = CollectiveInfo::Ransom {make_pair(ViewId::GOLD, *elem.getRansom()), elem.getAttackerName(),
         getCollective()->hasResource({ResourceId::GOLD, *elem.getRansom()})};
     break;
   }

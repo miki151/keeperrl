@@ -30,6 +30,7 @@
 #include "furniture.h"
 #include "furniture_factory.h"
 #include "game.h"
+#include "tutorial_highlight.h"
 
 void Technology::init() {
   Technology::set(TechId::ALCHEMY, new Technology(
@@ -40,8 +41,9 @@ void Technology::init() {
         "humanoid mutation", "Breed new, very powerful humanoid species.", 400, {TechId::ALCHEMY}));
   Technology::set(TechId::BEAST_MUT, new Technology(
         "beast mutation", "Breed new, very powerful beast species.", 400, {TechId::ALCHEMY}));
-  Technology::set(TechId::CRAFTING, new Technology(
-        "crafting", "Build a workshop and produce basic equipment.", 40, {}));
+  Technology::set(TechId::CRAFTING, (new Technology(
+        "crafting", "Build a workshop and produce basic equipment.", 40, {}))
+                  ->setTutorialHighlight(TutorialHighlight::RESEARCH_CRAFTING));
   Technology::set(TechId::PIGSTY, new Technology(
         "pig breeding", "Build a pigsty to feed your minions.", 120, {}));
   Technology::set(TechId::IRON_WORKING, new Technology(
@@ -76,6 +78,11 @@ bool Technology::canResearch() const {
   return research;
 }
 
+Technology* Technology::setTutorialHighlight(TutorialHighlight h) {
+  tutorial = h;
+  return this;
+}
+
 int Technology::getCost() const {
   return cost;
 }
@@ -107,6 +114,10 @@ const string& Technology::getName() const {
 
 const string& Technology::getDescription() const {
   return description;
+}
+
+const optional<TutorialHighlight> Technology::getTutorialHighlight() const {
+  return tutorial;
 }
 
 vector<Technology*> Technology::getSorted() {

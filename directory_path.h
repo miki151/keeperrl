@@ -11,7 +11,6 @@ class DirectoryPath {
   FilePath file(const string&) const;
   DirectoryPath subdirectory(const string& s) const;
   bool exists() const;
-  void createIfDoesntExist() const;
   vector<FilePath> getFiles() const;
 
   private:

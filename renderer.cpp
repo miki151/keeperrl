@@ -192,7 +192,7 @@ Texture::Texture(const FilePath& filename, int px, int py, int w, int h) : path(
   CHECK(!SDL_BlitSurface(image, &src, sub, &offset)) << SDL::SDL_GetError();
   SDL::SDL_FreeSurface(image);
   if (auto error = loadFromMaybe(sub))
-    FATAL << "Couldn't load image: " << path << ". Error code " << toString(*error);
+    FATAL << "Couldn't load image: " << *path << ". Error code " << toString(*error);
   SDL::SDL_FreeSurface(sub);
 }
 
@@ -586,7 +586,7 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
 }
 
 Color Renderer::getBleedingColor(const ViewObject& object) {
-  double bleeding = object.getAttribute(ViewObject::Attribute::WOUNDED).get_value_or(0);
+  double bleeding = object.getAttribute(ViewObject::Attribute::WOUNDED).value_or(0);
   if (bleeding > 0)
     bleeding = 0.3 + bleeding * 0.7;
   if (object.hasModifier(ViewObject::Modifier::SPIRIT_DAMAGE))

@@ -399,7 +399,7 @@ void Collective::orderConsumption(WCreature consumer, WCreature who) {
 }
 
 PTask Collective::getEquipmentTask(WCreature c) {
-  if (Random.roll(40))
+  if (!hasTrait(c, MinionTrait::NO_AUTO_EQUIPMENT) && Random.roll(40))
     minionEquipment->autoAssign(c, getAllItems(ItemIndex::MINION_EQUIPMENT, false));
   vector<PTask> tasks;
   for (WItem it : c->getEquipment().getItems())
@@ -604,7 +604,7 @@ void Collective::tick() {
           if (pos.canEnterEmpty(prisoner.get())) {
             pos.globalMessage(c->getName().the() + " surrenders.");
             control->addMessage(PlayerMessage(c->getName().a() + " surrenders.").setPosition(c->getPosition()));
-            c->die(true, false);
+            c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
             addCreature(std::move(prisoner), pos, {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
           }
         }
@@ -652,6 +652,10 @@ bool Collective::hasAnyTrait(WConstCreature c, EnumSet<MinionTrait> traits) cons
 void Collective::setTrait(WCreature c, MinionTrait t) {
   if (!hasTrait(c, t))
     byTrait[t].push_back(c);
+}
+
+void Collective::removeTrait(WCreature c, MinionTrait t) {
+  removeElementMaybe(byTrait[t], c);
 }
 
 vector<WCreature> Collective::getCreaturesAnyOf(EnumSet<MinionTrait> trait) const {
@@ -719,7 +723,7 @@ void Collective::onEvent(const GameEvent& event) {
         static const int alarmTime = 100;
         if (getTerritory().contains(pos)) {
           control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(pos));
-          alarmInfo = {getGlobalTime() + alarmTime, pos };
+          alarmInfo = AlarmInfo {getGlobalTime() + alarmTime, pos };
           for (WCreature c : byTrait[MinionTrait::FIGHTER])
             if (c->isAffected(LastingEffect::SLEEP))
               c->removeEffect(LastingEffect::SLEEP);

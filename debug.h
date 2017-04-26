@@ -15,10 +15,6 @@
 
 #pragma once
 
-#include <string>
-#include <ostream>
-#include <functional>
-
 #include "stdafx.h"
 
 #define FATAL FatalLog.get() << "FATAL " << __FILE__ << ":" << __LINE__ << " "

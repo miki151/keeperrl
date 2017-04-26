@@ -22,13 +22,6 @@ static void fail() {
   *((int*) 0x1234) = 0; // best way to fail
 }
 
-namespace boost {
-  void assertion_failed(char const * expr, char const * function, char const * file, long line) {
-    FATAL << "Assertion at " << file << ":" << (int)line;
-    fail();
-  }
-}
-
 DebugOutput DebugOutput::toStream(std::ostream& o) {
   return DebugOutput(o, [&] { o << "\n" << std::flush;});
 }

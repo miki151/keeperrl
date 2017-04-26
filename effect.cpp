@@ -159,7 +159,7 @@ vector<WCreature> Effect::summon(Position pos, CreatureFactory& factory, int num
 
 static void enhanceArmor(WCreature c, int mod = 1, const string msg = "is improved") {
   for (EquipmentSlot slot : Random.permutation(getKeys(Equipment::slotTitles)))
-    for (WItem item : c->getEquipment().getItem(slot))
+    for (WItem item : c->getEquipment().getSlotItems(slot))
       if (item->getClass() == ItemClass::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
         if (item->getModifier(ModifierType::DEFENSE) > 0 || mod > 0)

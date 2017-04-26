@@ -84,6 +84,7 @@ class ImmigrantInfo {
   optional<Sound> getSound() const;
   bool isNoAuto() const;
   optional<TutorialHighlight> getTutorialHighlight() const;
+  bool isHiddenInHelp() const;
 
   ImmigrantInfo& addRequirement(double candidateProb, ImmigrantRequirement);
   ImmigrantInfo& addRequirement(ImmigrantRequirement);
@@ -97,9 +98,10 @@ class ImmigrantInfo {
   ImmigrantInfo& setNoAuto();
   ImmigrantInfo& setLimit(int);
   ImmigrantInfo& setTutorialHighlight(TutorialHighlight);
+  ImmigrantInfo& setHiddenInHelp();
 
   template <typename Visitor>
-  struct RequirementVisitor : public boost::static_visitor<void> {
+  struct RequirementVisitor {
     RequirementVisitor(const Visitor& v, double p) : visitor(v), prob(p) {}
     const Visitor& visitor;
     double prob;
@@ -113,14 +115,14 @@ class ImmigrantInfo {
   void visitRequirementsAndProb(const Visitor& visitor) const {
     for (auto& requirement : requirements) {
       RequirementVisitor<Visitor> v {visitor, requirement.candidateProb};
-      apply_visitor(requirement.type, v);
+      requirement.type.visit(v);
     }
   }
 
   template <typename Visitor>
   void visitRequirements(const Visitor& visitor) const {
     for (auto& requirement : requirements) {
-      apply_visitor(requirement.type, visitor);
+      requirement.type.visit(visitor);
     }
   }
 
@@ -146,4 +148,5 @@ class ImmigrantInfo {
   optional<Sound> SERIAL(sound);
   bool SERIAL(noAuto) = false;
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
+  bool SERIAL(hiddenInHelp) = false;
 };

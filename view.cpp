@@ -118,7 +118,7 @@ vector<PlayerInfo::SkillInfo> getSkillNames(WConstCreature c) {
 }
 
 void PlayerInfo::readFrom(WConstCreature c) {
-  firstName = c->getName().first().get_value_or("");
+  firstName = c->getName().first().value_or("");
   name = c->getName().bare();
   title = c->getName().title();
   description = capitalFirst(c->getAttributes().getDescription());

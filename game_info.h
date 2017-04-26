@@ -46,7 +46,8 @@ struct ItemInfo {
   optional<pair<ViewId, int>> HASH(price);
   double HASH(productionState);
   optional<double> HASH(weight);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason, weight)
+  bool HASH(tutorialHighlight);
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason, weight, tutorialHighlight)
 };
 
 
@@ -214,7 +215,8 @@ class CollectiveInfo {
       string HASH(description);
       pair<ViewId, int> HASH(cost);
       bool HASH(active);
-      HASH_ALL(name, cost, active, description);
+      optional<TutorialHighlight> HASH(tutorialHighlight);
+      HASH_ALL(name, cost, active, description, tutorialHighlight);
     };
     optional<string> HASH(warning);
     pair<ViewId, int> HASH(resource);

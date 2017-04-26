@@ -100,6 +100,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   const CreatureName& getName() const;
   CreatureName& getName();
+  const char* identify() const;
   int getModifier(ModifierType) const;
   int getAttr(AttrType) const;
   static string getAttrName(AttrType);
@@ -212,9 +213,12 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canNavigateTo(Position) const;
 
   bool atTarget() const;
-  void die(WCreature attacker, bool dropInventory = true, bool dropCorpse = true);
-  void die(bool dropInventory = true, bool dropCorpse = true);
-  void die(const string& reason, bool dropInventory = true, bool dropCorpse = true);
+
+  enum class DropType { NOTHING, ONLY_INVENTORY, EVERYTHING };
+  void dieWithAttacker(WCreature attacker, DropType = DropType::EVERYTHING);
+  void dieNoReason(DropType = DropType::EVERYTHING);
+  void dieWithReason(const string& reason, DropType = DropType::EVERYTHING);
+
   void fireDamage(double amount);
   void poisonWithGas(double amount);
   void affectBySilver();

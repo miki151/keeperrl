@@ -25,7 +25,7 @@ CollectiveName::CollectiveName(optional<string> race, optional<string> location,
   if (location)
     shortName = *location;
   else
-    shortName = leader->getName().first().get_value_or(leader->getName().bare());
+    shortName = leader->getName().first().value_or(leader->getName().bare());
   if (race)
     raceName = *race;
   else

@@ -13,8 +13,6 @@ class MovementSet {
 
   MovementSet& setOnFire(bool);
   bool isOnFire() const;
-  MovementSet& setCovered(bool);
-  bool isCovered() const;
   
   MovementSet& addTrait(MovementTrait);
   MovementSet& removeTrait(MovementTrait);

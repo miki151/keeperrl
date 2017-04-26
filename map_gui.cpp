@@ -463,7 +463,7 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
 }
 
 bool MapGui::isCreatureHighlighted(UniqueEntity<Creature>::Id creature) {
-  return teamHighlight.getMaybe(creature).get_value_or(0) > 0;
+  return teamHighlight.getMaybe(creature).value_or(0) > 0;
 }
 
 static bool mirrorSprite(ViewId id) {
@@ -760,7 +760,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
   for (Vec2 wpos : lowHighlights ? tutorialHighlightLow : tutorialHighlightHigh) {
     Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
     if ((currentTimeReal.count() / 1000) % 2 == 0)
-      renderTexturedHighlight(renderer, pos, size, Color(255, 255, 0, 40));
+      renderTexturedHighlight(renderer, pos, size, Color(255, 255, 0, lowHighlights ? 120 : 40));
   }
   renderer.drawQuads();
 }
@@ -1030,7 +1030,7 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   if (smoothMovement) {
     if (auto movement = view->getMovementInfo()) {
       if (!screenMovement || screenMovement->startTimeGame != movement->prevTime) {
-        screenMovement = {
+        screenMovement = ScreenMovement {
           movement->from,
           movement->to,
           clock->getRealMillis(),

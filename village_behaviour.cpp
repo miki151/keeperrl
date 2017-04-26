@@ -113,7 +113,7 @@ static double getFinishOffProb(double maxPower, double currentPower, double self
   return 1 - 2 * (currentPower / maxPower) * (1 - minProb);
 }
 
-static double getNumConqueredProb(const WGame game, int minCount) {
+static double getNumConqueredProb(WConstGame game, int minCount) {
   int numConquered = 0;
   for (auto col : game->getCollectives())
     if ((col->getVillainType() == VillainType::LESSER || col->getVillainType() == VillainType::MAIN) &&

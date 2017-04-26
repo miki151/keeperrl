@@ -15,25 +15,23 @@ const string& Spell::getName() const {
 }
 
 bool Spell::isDirected() const {
-  return boost::get<DirEffectType>(&*effect);
+  return effect->contains<DirEffectType>();
 }
 
 bool Spell::hasEffect(EffectType t) const {
-  return !isDirected() && boost::get<EffectType>(*effect) == t;
+  return effect->getReferenceMaybe<EffectType>() == t;
 }
 
 bool Spell::hasEffect(DirEffectType t) const {
-  return isDirected() && boost::get<DirEffectType>(*effect) == t;
+  return effect->getReferenceMaybe<DirEffectType>() == t;
 }
 
 EffectType Spell::getEffectType() const {
-  CHECK(!isDirected());
-  return boost::get<EffectType>(*effect);
+  return *effect->getReferenceMaybe<EffectType>();
 }
 
 DirEffectType Spell::getDirEffectType() const{
-  CHECK(isDirected());
-  return boost::get<DirEffectType>(*effect);
+  return *effect->getReferenceMaybe<DirEffectType>();
 }
 
 int Spell::getDifficulty() const {
@@ -53,10 +51,7 @@ SoundId Spell::getSound() const {
 }
 
 string Spell::getDescription() const {
-  if (isDirected())
-    return Effect::getDescription(boost::get<DirEffectType>(*effect));
-  else
-    return Effect::getDescription(boost::get<EffectType>(*effect));
+  return effect->visit([](const auto& e) { return Effect::getDescription(e); });
 }
 
 void Spell::addMessage(WCreature c) {

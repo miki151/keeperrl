@@ -66,12 +66,13 @@ void CollectiveConfig::addBedRequirementToImmigrants() {
     if (auto spawnType = c->getAttributes().getSpawnType()) {
       AttractionType bedType = getDormInfo()[*spawnType].bedType;
       bool hasBed = false;
-      info.visitRequirements(makeDefaultVisitor(
+      info.visitRequirements(makeVisitor(
           [&](const AttractionInfo& attraction) -> void {
             for (auto& type : attraction.types)
               if (type == bedType)
                 hasBed = true;
-          }
+          },
+          [&](const auto&) {}
       ));
       if (!hasBed)
         info.addRequirement(AttractionInfo(1, bedType));
@@ -442,7 +443,8 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemId::LEATHER_HELM, 1, {CollectiveResourceId::WOOD, 6}),
           Workshops::Item::fromType(ItemId::LEATHER_BOOTS, 2, {CollectiveResourceId::WOOD, 10}),
           Workshops::Item::fromType(ItemId::LEATHER_GLOVES, 1, {CollectiveResourceId::WOOD, 2}),
-          Workshops::Item::fromType(ItemId::CLUB, 3, {CollectiveResourceId::WOOD, 10}),
+          Workshops::Item::fromType(ItemId::CLUB, 3, {CollectiveResourceId::WOOD, 10})
+              .setTutorialHighlight(TutorialHighlight::SCHEDULE_CLUB),
           Workshops::Item::fromType(ItemId::HEAVY_CLUB, 5, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TWO_H_WEAP),
           Workshops::Item::fromType(ItemId::BOW, 13, {CollectiveResourceId::WOOD, 20}).setTechId(TechId::ARCHERY),

@@ -382,7 +382,7 @@ class Fighter : public Behaviour {
       return {weight, action.prepend([=](WCreature creature) {
         creature->setInCombat();
         other->setInCombat();
-        lastSeen = {creature->getPosition(), creature->getGlobalTime(), LastSeen::PANIC, other->getUniqueId()};
+        lastSeen = LastSeen{creature->getPosition(), creature->getGlobalTime(), LastSeen::PANIC, other->getUniqueId()};
       })};
     else
       return NoMove;
@@ -547,7 +547,7 @@ class Fighter : public Behaviour {
           return {max(0., 1.0 - double(distance) / 10), action.prepend([=](WCreature creature) {
             creature->setInCombat();
             other->setInCombat();
-            lastSeen = {other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
+            lastSeen = LastSeen{other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
             auto chaseInfo = chaseFreeze.getMaybe(other);
             if (!chaseInfo || other->getGlobalTime() > chaseInfo->second)
               chaseFreeze.set(other, make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70));
@@ -681,7 +681,7 @@ class DieTime : public Behaviour {
   virtual MoveInfo getMove() override {
     if (creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](WCreature creature) {
-        creature->die(false, false);
+        creature->dieNoReason(Creature::DropType::NOTHING);
       })};
     }
     return NoMove;
@@ -706,7 +706,7 @@ class Summoned : public GuardTarget {
   virtual MoveInfo getMove() override {
     if (target->isDead() || creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](WCreature creature) {
-        creature->die(false, false);
+        creature->dieNoReason(Creature::DropType::NOTHING);
       })};
     }
     if (MoveInfo move = getMoveTowards(target->getPosition()))

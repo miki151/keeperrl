@@ -62,6 +62,7 @@
 #include <tuple>
 #include <numeric>
 #include <chrono>
+#include <cstddef>
 
 // Use boost threads on OSX to use the main thread for rendering
 // and set a large stack size for the model thread.
@@ -76,17 +77,7 @@
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
-
-
-#define BOOST_ENABLE_ASSERT_HANDLER
-#include <boost/assert.hpp>
-
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/variant.hpp>
-#include <boost/optional.hpp>
-#include <boost/optional/optional_io.hpp>
-#include <boost/version.hpp>
-#include <boost/operators.hpp>
+#include "extern/optional.h"
 
 #ifdef DEBUG_STL
 
@@ -149,7 +140,6 @@ using std::stack;
 using std::uniform_int_distribution;
 using std::uniform_real_distribution;
 using std::make_tuple;
-using std::get;
 using std::hash;
 using std::array;
 
@@ -176,8 +166,6 @@ inline thread::id currentThreadId() { return std::this_thread::get_id(); }
 using std::atomic;
 using std::swap;
 using std::remove_if;
-using boost::variant;
-using boost::optional;
-using boost::none_t;
-using boost::none;
-using boost::replace_all;
+using std::experimental::optional;
+using none_t = std::experimental::nullopt_t;
+using std::experimental::none;

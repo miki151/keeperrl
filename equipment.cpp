@@ -37,7 +37,7 @@ void Equipment::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Equipment);
 SERIALIZATION_CONSTRUCTOR_IMPL(Equipment);
 
-vector<WItem> Equipment::getItem(EquipmentSlot slot) const {
+vector<WItem> Equipment::getSlotItems(EquipmentSlot slot) const {
   return items[slot];
 }
 

@@ -50,7 +50,9 @@ class Technology : public Singleton<Technology, TechId> {
   const string& getName() const;
   int getCost() const;
   bool canResearch() const;
+  Technology* setTutorialHighlight(TutorialHighlight);
   const string& getDescription() const;
+  const optional<TutorialHighlight> getTutorialHighlight() const;
   static vector<Technology*> getSorted();
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
@@ -71,5 +73,6 @@ class Technology : public Singleton<Technology, TechId> {
   int cost;
   vector<Technology*> prerequisites;
   bool research;
+  optional<TutorialHighlight> tutorial;
 };
 

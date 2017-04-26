@@ -84,7 +84,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::antNest(TribeId::getAnt());
             c.numCreatures = random.get(9, 14);
             c.tribe = TribeId::getAnt();
-            c.race = "ants";
+            c.race = "ants"_s;
             c.buildingId = BuildingId::DUNGEON;),
           CollectiveConfig::withImmigrants(500, 15, {
             ImmigrantInfo(CreatureId::ANT_WORKER, {MinionTrait::FIGHTER}).setFrequency(1),
@@ -106,7 +106,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::orcTown(c.tribe);
             c.numCreatures = random.get(12, 16);
             c.locationName = getVillageName();
-            c.race = "greenskins";
+            c.race = "greenskins"_s;
             c.buildingId = BuildingId::BRICK;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
@@ -121,7 +121,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::humanVillage(c.tribe);
             c.numCreatures = random.get(12, 20);
             c.locationName = getVillageName();
-            c.race = "humans";
+            c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD;
             c.shopFactory = ItemFactory::armory();
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
@@ -133,7 +133,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::vikingTown(c.tribe);
             c.numCreatures = random.get(12, 16);
             c.locationName = getVillageName();
-            c.race = "humans";
+            c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD_CASTLE;
             c.stockpiles = LIST({StockpileInfo::GOLD, 160});
             c.guardId = CreatureId::WARRIOR;
@@ -163,7 +163,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::humanCastle(c.tribe);
             c.numCreatures = random.get(20, 26);
             c.locationName = getVillageName();
-            c.race = "humans";
+            c.race = "humans"_s;
             c.stockpiles = LIST({StockpileInfo::GOLD, 140});
             c.buildingId = BuildingId::BRICK;
             c.guardId = CreatureId::CASTLE_GUARD;
@@ -194,8 +194,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getMonster();
             c.creatures = CreatureFactory::singleType(c.tribe, CreatureId::MINOTAUR);
             c.numCreatures = 1;
-            c.locationName = "maze";
-            c.race = "monsters";
+            c.locationName = "maze"_s;
+            c.race = "monsters"_s;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants());
     case EnemyId::RED_DRAGON:
@@ -203,7 +203,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.type = SettlementType::CAVE;
             c.creatures = CreatureFactory::singleType(TribeId::getHostile(), CreatureId::RED_DRAGON);
             c.numCreatures = 1;
-            c.race = "dragon";
+            c.race = "dragon"_s;
             c.tribe = TribeId::getHostile();
             c.buildingId = BuildingId::DUNGEON;
             c.shopFactory = ItemFactory::dragonCave();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
@@ -225,7 +225,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::singleType(TribeId::getHostile(), CreatureId::GREEN_DRAGON);
             c.numCreatures = 1;
             c.tribe = TribeId::getHostile();
-            c.race = "dragon";
+            c.race = "dragon"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.shopFactory = ItemFactory::dragonCave();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
           .setGhostSpawns(0.03, 1),
@@ -247,7 +247,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::dwarfTown(c.tribe);
             c.numCreatures = random.get(9, 14);
             c.locationName = getVillageName();
-            c.race = "dwarves";
+            c.race = "dwarves"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST({StockpileInfo::GOLD, 200}, {StockpileInfo::MINERALS, 120});
             c.shopFactory = ItemFactory::dwarfShop();
@@ -276,7 +276,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.numCreatures = random.get(11, 18);
             c.locationName = getVillageName();
             c.tribe = TribeId::getElf();
-            c.race = "elves";
+            c.race = "elves"_s;
             c.stockpiles = LIST({StockpileInfo::GOLD, 100});
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::SPELLS_MAS);
@@ -323,7 +323,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::singleType(TribeId::getBandit(), CreatureId::BANDIT);
             c.numCreatures = random.get(4, 9);
             c.tribe = TribeId::getBandit();
-            c.race = "bandits";
+            c.race = "bandits"_s;
             c.buildingId = BuildingId::DUNGEON;),
           CollectiveConfig::withImmigrants(1000, 10, {
               ImmigrantInfo(CreatureId::BANDIT, {MinionTrait::FIGHTER}).setFrequency(1),
@@ -345,7 +345,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::lizardTown(c.tribe);
             c.numCreatures = random.get(8, 14);
             c.locationName = getVillageName();
-            c.race = "lizardmen";
+            c.race = "lizardmen"_s;
             c.buildingId = BuildingId::MUD;
             c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::HUMANOID_MUT);
             c.shopFactory = ItemFactory::mushrooms();
@@ -373,7 +373,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::darkElfVillage(c.tribe);
             c.numCreatures = random.get(14, 16);
             c.locationName = getVillageName();
-            c.race = "dark elves";
+            c.race = "dark elves"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
@@ -387,7 +387,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getDarkElf();
             c.creatures = CreatureFactory::darkElfEntrance(c.tribe);
             c.numCreatures = random.get(3, 7);
-            c.race = "dark elves";
+            c.race = "dark elves"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
@@ -399,7 +399,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::gnomeVillage(c.tribe);
             c.numCreatures = random.get(12, 24);
             c.locationName = getVillageName();
-            c.race = "gnomes";
+            c.race = "gnomes"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.shopFactory = ItemFactory::gnomeShop();
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
@@ -412,7 +412,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getGnome();
             c.creatures = CreatureFactory::gnomeEntrance(c.tribe);
             c.numCreatures = random.get(3, 7);
-            c.race = "gnomes";
+            c.race = "gnomes"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
@@ -423,7 +423,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::ENT);
             c.numCreatures = random.get(7, 13);
             c.tribe = TribeId::getMonster();
-            c.race = "tree spirits";
+            c.race = "tree spirits"_s;
             c.buildingId = BuildingId::WOOD;),
           CollectiveConfig::withImmigrants(300, 15, {
               ImmigrantInfo(CreatureId::ENT, {MinionTrait::FIGHTER}).setFrequency(1),
@@ -434,7 +434,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::DRIAD);
             c.numCreatures = random.get(7, 13);
             c.tribe = TribeId::getMonster();
-            c.race = "driads";
+            c.race = "driads"_s;
             c.buildingId = BuildingId::WOOD;),
           CollectiveConfig::withImmigrants(300, 15, {
               ImmigrantInfo(CreatureId::DRIAD, {MinionTrait::FIGHTER}).setFrequency(1),
@@ -444,7 +444,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.type = SettlementType::CAVE;
             c.creatures = CreatureFactory::singleType(TribeId::getShelob(), CreatureId::SHELOB);
             c.numCreatures = 1;
-            c.race = "giant spider";
+            c.race = "giant spider"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.tribe = TribeId::getShelob();), CollectiveConfig::noImmigrants().setLeaderAsFighter());
     case EnemyId::CYCLOPS:
@@ -452,7 +452,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.type = SettlementType::CAVE;
             c.creatures = CreatureFactory::singleType(TribeId::getHostile(), CreatureId::CYCLOPS);
             c.numCreatures = 1;
-            c.race = "cyclops";
+            c.race = "cyclops"_s;
             c.tribe = TribeId::getHostile();
             c.buildingId = BuildingId::DUNGEON;
             c.shopFactory = ItemFactory::mushrooms(true);), CollectiveConfig::noImmigrants().setLeaderAsFighter()
@@ -469,7 +469,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.type = SettlementType::SWAMP;
             c.creatures = CreatureFactory::singleType(TribeId::getHostile(), CreatureId::HYDRA);
             c.numCreatures = 1;
-            c.race = "hydra";
+            c.race = "hydra"_s;
             c.tribe = TribeId::getHostile();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
           .setGhostSpawns(0.03, 1));
     case EnemyId::KRAKEN:
@@ -477,16 +477,16 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.type = SettlementType::MOUNTAIN_LAKE;
             c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::KRAKEN);
             c.numCreatures = 1;
-            c.race = "kraken";
+            c.race = "kraken"_s;
             c.tribe = TribeId::getMonster();), CollectiveConfig::noImmigrants().setLeaderAsFighter());
     case EnemyId::CEMETERY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CEMETERY;
             c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::ZOMBIE);
             c.numCreatures = random.get(8, 12);
-            c.locationName = "cemetery";
+            c.locationName = "cemetery"_s;
             c.tribe = TribeId::getMonster();
-            c.race = "undead";
+            c.race = "undead"_s;
             c.furniture = FurnitureFactory::cryptCoffins(TribeId::getKeeper());
             c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {},
           LevelConnection{LevelConnection::CRYPT, get(EnemyId::CEMETERY_ENTRY)});
@@ -495,8 +495,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.type = SettlementType::CEMETERY;
             c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::ZOMBIE);
             c.numCreatures = 1;
-            c.locationName = "cemetery";
-            c.race = "undead";
+            c.locationName = "cemetery"_s;
+            c.race = "undead"_s;
             c.tribe = TribeId::getMonster();
             c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants());
     case EnemyId::OGRE_CAVE:
@@ -549,7 +549,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getMonster();
             c.creatures = CreatureFactory::singleType(c.tribe, CreatureId::WITCH);
             c.numCreatures = 1;
-            c.race = "witch";
+            c.race = "witch"_s;
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);
             c.furniture = FurnitureFactory(c.tribe, FurnitureType::LABORATORY);), CollectiveConfig::noImmigrants());
@@ -559,7 +559,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getHuman();
             c.creatures = CreatureFactory::humanPeaceful(c.tribe);
             c.numCreatures = random.get(3, 7);
-            c.race = "humans";
+            c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants().setGuardian({CreatureId::WITCHMAN, 0.001, 1, 2}));
@@ -569,7 +569,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getElf();
             c.creatures = CreatureFactory::elvenCottage(c.tribe);
             c.numCreatures = random.get(3, 7);
-            c.race = "elves";
+            c.race = "elves"_s;
             c.buildingId = BuildingId::WOOD;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants());
@@ -579,7 +579,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getDwarf();
             c.creatures = CreatureFactory::koboldVillage(c.tribe);
             c.numCreatures = random.get(3, 7);
-            c.race = "kobolds";
+            c.race = "kobolds"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST({StockpileInfo::MINERALS, 60});),
           CollectiveConfig::noImmigrants());
@@ -589,7 +589,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getDwarf();
             c.creatures = CreatureFactory::dwarfCave(c.tribe);
             c.numCreatures = random.get(2, 5);
-            c.race = "dwarves";
+            c.race = "dwarves"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 60},
                 StockpileInfo{StockpileInfo::GOLD, 60}));

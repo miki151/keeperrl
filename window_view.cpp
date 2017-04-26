@@ -936,7 +936,7 @@ SGuiElem WindowView::drawGameChoices(optional<PlayerRoleChoice>& choice, optiona
           gui.tooltip2(gui.preferredSize(hintSize, gui.miniWindow(gui.margins(
               gui.labelMultiLine(elem.description, guiBuilder.getStandardLineHeight()), 20))),
               [=](const Rectangle&) { return Vec2((renderer.getSize().x - hintSize.x) / 2, renderer.getSize().y * 4 / 5); }),
-          gui.mouseOverAction([&] { index = elem.type;}),
+          gui.mouseOverAction([&] { index = PlayerRoleChoice(elem.type);}),
           gui.sprite(elem.texId, GuiFactory::Alignment::CENTER_STRETCHED),
           gui.marginFit(gui.empty(), gui.centerHoriz(gui.mainMenuLabel(elem.name, -0.08,
               colors[ColorId::MAIN_MENU_OFF])), 0.94, gui.TOP),
@@ -950,7 +950,7 @@ SGuiElem WindowView::drawGameChoices(optional<PlayerRoleChoice>& choice, optiona
   for (auto nonRoleChoice : ENUM_ALL(NonRoleChoice))
     nonRoleChoices.push_back(
         gui.stack(
-            gui.button([&choice, nonRoleChoice] { choice = nonRoleChoice;}),
+            gui.button([&choice, nonRoleChoice] { choice = PlayerRoleChoice(nonRoleChoice);}),
             gui.mainMenuLabelBg(getRoleText(nonRoleChoice), 0.15),
             gui.mouseHighlightGameChoice(gui.mainMenuLabel(getRoleText(nonRoleChoice), 0.15),
                 PlayerRoleChoice(nonRoleChoice), index))
@@ -1003,38 +1003,38 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
           case SDL::SDLK_KP_4:
           case SDL::SDLK_LEFT:
             if (!index)
-              index = (PlayerRole) 0;
+              index = PlayerRoleChoice((PlayerRole) 0);
             else
-              apply_visitor(*index, makeVisitor<void>(
+              index->match(
                   [&] (PlayerRole role) {
                     index = PlayerRoleChoice(PlayerRole(((int) role - 1 + numRoles) % numRoles));
                   },
                   [&] (NonRoleChoice) {
                     index = PlayerRoleChoice(PlayerRole(0));
                   }
-              ));
+              );
             break;
           case SDL::SDLK_KP_6:
           case SDL::SDLK_RIGHT: {
             if (!index)
-              index = (PlayerRole) (numRoles - 1);
+              index = PlayerRoleChoice((PlayerRole) (numRoles - 1));
             else
-              apply_visitor(*index, makeVisitor<void>(
+              index->match(
                   [&] (PlayerRole role) {
                     index = PlayerRoleChoice(PlayerRole(((int) role + 1) % numRoles));
                   },
                   [&] (NonRoleChoice) {
                     index = PlayerRoleChoice(PlayerRole(numRoles - 1));
                   }
-              ));
+              );
             break;
           }
           case SDL::SDLK_KP_8:
           case SDL::SDLK_UP:
             if (!index)
-              index = (PlayerRole) 0;
+              index = PlayerRoleChoice((PlayerRole) 0);
             else
-              apply_visitor(*index, makeVisitor<void>(
+              index->match(
                   [&] (PlayerRole) {
                     index = PlayerRoleChoice(NonRoleChoice(numNonRoles - 1));
                   },
@@ -1044,14 +1044,14 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
                     else
                       index = PlayerRoleChoice(NonRoleChoice((int) choice - 1));
                   }
-              ));
+              );
             break;
           case SDL::SDLK_KP_2:
           case SDL::SDLK_DOWN:
             if (!index)
-              index = (PlayerRole) 0;
+              index = PlayerRoleChoice((PlayerRole) 0);
             else
-              apply_visitor(*index, makeVisitor<void>(
+              index->match(
                   [&] (PlayerRole role) {
                     index = PlayerRoleChoice(NonRoleChoice(0));
                   },
@@ -1061,7 +1061,7 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
                     else
                       index = PlayerRoleChoice(NonRoleChoice((int) choice + 1));
                   }
-              ));
+              );
             break;
           case SDL::SDLK_KP_5:
           case SDL::SDLK_KP_ENTER:
@@ -1167,7 +1167,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
             if (count > 0 && index > -1) {
               CHECK(index < indexes.size()) <<
                   index << " " << indexes.size() << " " << count << " " << options.size();
-              callbackRet = indexes[index];
+              callbackRet = optional<int>(indexes[index]);
               break;
             }
             break;

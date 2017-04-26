@@ -710,7 +710,7 @@ void Player::makeMove() {
       previousTimePos = currentTimePos;
     else
       previousTimePos = none;
-    currentTimePos = { getCreature()->getPosition(), getCreature()->getLocalTime()};
+    currentTimePos = TimePosInfo { getCreature()->getPosition(), getCreature()->getLocalTime()};
   }
 }
 
@@ -876,7 +876,7 @@ optional<CreatureView::MovementInfo> Player::getMovementInfo() const {
 
 void Player::onDisplaced() {
   if (!currentTimePos)
-    currentTimePos = { getCreature()->getPosition(), getCreature()->getLocalTime()};
+    currentTimePos = TimePosInfo { getCreature()->getPosition(), getCreature()->getLocalTime()};
   currentTimePos->pos = getCreature()->getPosition();
 }
 

@@ -29,6 +29,7 @@ class Immigration : public OwnedObject<Immigration> {
     const ImmigrantInfo& getInfo() const;
     bool isUnavailable() const;
     optional<milliseconds> getCreatedTime() const;
+    int getImmigrantIndex() const;
 
     SERIALIZATION_DECL(Available)
 
@@ -62,7 +63,7 @@ class Immigration : public OwnedObject<Immigration> {
 
   private:
   const vector<ImmigrantInfo>& getImmigrants() const;
-  EntityMap<Creature, map<AttractionType, int>> SERIAL(minionAttraction);
+  EntityMap<Creature, unordered_map<AttractionType, int, CustomHash<AttractionType>>> SERIAL(minionAttraction);
   map<int, Available> SERIAL(available);
   WCollective SERIAL(collective);
   map<int, EntitySet<Creature>> SERIAL(generated);
@@ -81,4 +82,5 @@ class Immigration : public OwnedObject<Immigration> {
   double SERIAL(nextImmigrantTime) = -1;
   void resetImmigrantTime();
   map<int, ImmigrantAutoState> SERIAL(autoState);
+  int getNumGeneratedAndCandidates(int index) const;
 };

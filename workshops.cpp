@@ -58,7 +58,7 @@ void Workshops::Type::queue(int index, int count) {
 
 void Workshops::Type::unqueue(int index) {
   if (index >= 0 && index < queued.size()) {
-    if (queued[index].state.get_value_or(0) == 0)
+    if (queued[index].state.value_or(0) == 0)
       addDebt(-queued[index].cost * queued[index].number);
     else
       addDebt(-queued[index].cost * (queued[index].number - 1));

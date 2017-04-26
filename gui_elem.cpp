@@ -1127,7 +1127,7 @@ class VerticalList : public ElemList {
     optional<int> ret;
     for (auto& elem : elems)
       if (auto width = elem->getPreferredWidth())
-        if (ret.get_value_or(-1) < *width)
+        if (ret.value_or(-1) < *width)
           ret = width;
     return ret;
   }
@@ -1154,7 +1154,7 @@ class HorizontalList : public ElemList {
     optional<int> ret;
     for (auto& elem : elems)
       if (auto height = elem->getPreferredHeight())
-        if (ret.get_value_or(-1) < *height)
+        if (ret.value_or(-1) < *height)
           ret = height;
     return ret;
   }
@@ -1640,8 +1640,8 @@ class PreferredSize : public GuiLayout {
   virtual Rectangle getElemBounds(int num) override {
     auto bounds = getBounds();
     return Rectangle(bounds.left(), bounds.top(),
-        bounds.left() + max(1, min(bounds.width(), width.get_value_or(bounds.width()))),
-        bounds.top() + max(1, min(bounds.height(), height.get_value_or(bounds.height()))));
+        bounds.left() + max(1, min(bounds.width(), width.value_or(bounds.width()))),
+        bounds.top() + max(1, min(bounds.height(), height.value_or(bounds.height()))));
   }
 
   private:
@@ -1677,10 +1677,14 @@ class ViewObjectGui : public GuiElem {
   ViewObjectGui(ViewId id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {}
   
   virtual void render(Renderer& renderer) override {
-    if (ViewObject* obj = boost::get<ViewObject>(&object))
-      renderer.drawViewObject(getBounds().topLeft(), *obj, true, scale, color);
-    else
-      renderer.drawViewObject(getBounds().topLeft(), boost::get<ViewId>(object), true, scale, color);
+    object.match(
+          [&](const ViewObject& obj) {
+            renderer.drawViewObject(getBounds().topLeft(), obj, true, scale, color);
+          },
+          [&](ViewId viewId) {
+            renderer.drawViewObject(getBounds().topLeft(), viewId, true, scale, color);
+          }
+    );
   }
 
   virtual optional<int> getPreferredWidth() override {

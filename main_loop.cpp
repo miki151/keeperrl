@@ -4,9 +4,6 @@
 #include "highscores.h"
 #include "music.h"
 #include "options.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include "dirent.h"
 #include "progress_meter.h"
 #include "file_sharing.h"
 #include "square.h"
@@ -42,11 +39,8 @@ MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const Director
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
   vector<SaveFileInfo> ret;
   for (auto file : path.getFiles()) {
-    if (file.hasSuffix(suffix)) {
-      struct stat buf;
-      stat(file.getPath(), &buf);
-      ret.push_back({file.getFileName(), buf.st_mtime, false});
-    }
+    if (file.hasSuffix(suffix))
+      ret.push_back({file.getFileName(), file.getModificationTime(), false});
   }
   sort(ret.begin(), ret.end(), [](const SaveFileInfo& a, const SaveFileInfo& b) {
         return a.date > b.date;
@@ -223,7 +217,10 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
     }
     INFO << "Time step " << step;
     if (auto exitInfo = game->update(step)) {
-      apply_visitor(*exitInfo, makeVisitor<void>(
+      exitInfo->match(
+          [&](ExitAndQuit) {
+            eraseAllSavesExcept(game, none);
+          },
           [&](GameSaveType type) {
             if (type == GameSaveType::RETIRED_SITE) {
               game->prepareSiteRetirement();
@@ -232,11 +229,8 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
             } else
               saveUI(game, type, SplashType::BIG);
             eraseAllSavesExcept(game, type);
-          },
-          [&](ExitAndQuit) {
-            eraseAllSavesExcept(game, none);
           }
-      ));
+      );
       return;
     }
     double gameTime = game->getGlobalTime();
@@ -314,7 +308,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random, const optional<ForceGameInfo>
   auto choice = PlayerRoleChoice(PlayerRole::KEEPER);
   while (1) {
     choice = view->getPlayerRoleChoice(choice);
-    if (auto ret = apply_visitor(choice, makeVisitor<optional<PGame>>(
+    if (auto ret = choice.match(
         [&] (PlayerRole role) -> optional<PGame> {
           CampaignBuilder builder(view, random, options, role);
           if (auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {
@@ -335,7 +329,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random, const optional<ForceGameInfo>
               return PGame(nullptr);
           }
         }
-        )))
+        ))
       return std::move(*ret);
   }
 }

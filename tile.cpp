@@ -58,7 +58,7 @@ Tile Tile::addConnection(DirSet dirs, TileCoord coord) {
 }
 
 Tile Tile::addOption(Dir d, TileCoord coord) {
-  connectionOption = {d, coord};
+  connectionOption = make_pair(d, coord);
   return *this;
 }
 
