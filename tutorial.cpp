@@ -48,6 +48,7 @@ enum class Tutorial::State {
   ORDER_CRAFTING,
   EQUIP_WEAPON,
   ACCEPT_MORE_IMMIGRANTS,
+  EQUIP_ALL_FIGHTERS,
   FINISHED,
 };
 
@@ -106,8 +107,8 @@ bool Tutorial::canContinue(WConstGame game) const {
           return true;
       return false;
     case State::ACCEPT_MORE_IMMIGRANTS:
-      if (collective->getCreatures(MinionTrait::FIGHTER).size() < 4)
-        return false;
+      return collective->getCreatures(MinionTrait::FIGHTER).size() == 4;
+    case State::EQUIP_ALL_FIGHTERS:
       for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
         if (!collective->hasTrait(c, MinionTrait::NO_EQUIPMENT) &&
             c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
@@ -202,9 +203,10 @@ string Tutorial::getMessage() const {
           "but you can also control it manually. Click on your orc and on the weapon slot to assign him the club that "
           "he has just produced. He will go and pick it up.\n \n";
     case State::ACCEPT_MORE_IMMIGRANTS:
-      return "You are ready to grow your military force. Accept 3 more orc immigrants, and equip them with "
-          "weapons. Equip your Keeper as well!\n \n"
-          "You can also accept goblins, which don't fight, but are excellent craftsmen.";
+      return "You are ready to grow your military force. Three more orc immigrants should do.\n \n"
+          "You can also invite goblins, which don't fight, but are excellent craftsmen.";
+    case State::EQUIP_ALL_FIGHTERS:
+      return "Equip all your orcs, as well as the Keeper, with clubs. They will be needed soon.";
     case State::FINISHED:
       return "Congratulations, you have completed the tutorial! Go play the game now :)";
   }
