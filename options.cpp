@@ -226,11 +226,11 @@ void Options::setDefaultString(OptionId id, const string& s) {
 }
 
 static string getOnOff(const Options::Value& value) {
-  return value.getValueMaybe<int>() ? "on" : "off";
+  return *value.getValueMaybe<int>() ? "on" : "off";
 }
 
 static string getYesNo(const Options::Value& value) {
-  return value.getValueMaybe<int>() ? "yes" : "no";
+  return *value.getValueMaybe<int>() ? "yes" : "no";
 }
 
 string Options::getValueString(OptionId id) {
@@ -321,7 +321,7 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
           setValue(id, *index);
         break;
     default:
-        setValue(id, !value.getValueMaybe<int>());
+        setValue(id, !*value.getValueMaybe<int>());
   }
 }
 
