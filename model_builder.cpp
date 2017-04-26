@@ -358,9 +358,9 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId)
 PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExternalEnemies) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
-  enemyInfo.push_back(enemyFactory->get(EnemyId::DWARF_CAVE));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::KOBOLD_CAVE));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
+  enemyInfo.push_back(random.choose(enemyFactory->get(EnemyId::DWARF_CAVE), enemyFactory->get(EnemyId::KOBOLD_CAVE)));
+  //enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
   vector<ExternalEnemy> externalEnemies;
@@ -422,8 +422,7 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
 }
 
 PModel ModelBuilder::campaignBaseModel(const string& siteName, bool externalEnemies) {
-  auto ret = tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); });
-  return ret;
+  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); });
 }
 
 PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type) {

@@ -670,6 +670,11 @@ CreatureFactory CreatureFactory::humanPeaceful(TribeId tribe) {
       { 2, 1, 1, 1, 1, 1, 1}, {});
 }
 
+CreatureFactory CreatureFactory::tutorialVillage(TribeId tribe) {
+  return CreatureFactory(tribe, {}, {}, {CreatureId::PESEANT, CreatureId::PESEANT, CreatureId::PESEANT,
+      CreatureId::PESEANT, CreatureId::PESEANT, CreatureId::DONKEY, CreatureId::PIG, CreatureId::PIG, CreatureId::DOG});
+}
+
 CreatureFactory CreatureFactory::gnomeVillage(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::GNOME },
       { 1}, { CreatureId::GNOME_CHIEF});

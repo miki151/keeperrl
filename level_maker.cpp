@@ -612,28 +612,27 @@ class Blob : public LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     vector<Vec2> squares;
     Table<char> isInside(area, 0);
-    Vec2 center((area.right() + area.left()) / 2, (area.bottom() + area.top()) / 2);
+    Vec2 center = area.middle();
     squares.push_back(center);
     isInside[center] = 1;
-    int maxSquares = area.width() * area.height() * insideRatio;
-    int numSquares = 0;
-    bool done = false;
-    while (!done) {
-      Vec2 pos = squares[builder->getRandom().get(squares.size())];
-      for (Vec2 next : pos.neighbors4(builder->getRandom())) {
-        if (next.inRectangle(area.minusMargin(1)) && !isInside[next]) {
-          Vec2 proj = next - center;
-          proj.y *= area.width();
-          proj.y /= area.height();
-          if (builder->getRandom().getDouble() <= 1. - proj.lengthD() / (area.width() / 2)) {
-            isInside[next] = 1;
-            squares.push_back(next);
-            if (++numSquares >= maxSquares)
-              done = true;
-          }
-          break;
-        }
-      }
+    for (int i : Range(area.width() * area.height() * insideRatio)) {
+      vector<Vec2> nextPos;
+      for (auto pos : squares)
+        for (Vec2 next : pos.neighbors4())
+          if (next.inRectangle(area) && !contains(squares, next))
+            nextPos.push_back(next);
+      vector<double> probs = transform2(nextPos, [&](Vec2 v) {
+          double px = std::abs(v.x - center.x);
+          double py = std::abs(v.y - center.y);
+          py *= area.width();
+          py /= area.height();
+          double coeff = -1.0 + 1.0 / (sqrt(px * px + py * py) / sqrt(2 * area.width() * area.width()));
+          CHECK(coeff > 0.0);
+          return coeff;
+        });
+      Vec2 chosen = builder->getRandom().choose(nextPos, probs);
+      isInside[chosen] = 1;
+      squares.push_back(chosen);
     }
     queue<Vec2> q;
     int inf = 10000;
@@ -1749,7 +1748,7 @@ MakerQueue* village2(RandomGen& random, SettlementInfo info) {
   return queue;
 }
 
-MakerQueue* village(RandomGen& random, SettlementInfo info) {
+MakerQueue* village(RandomGen& random, SettlementInfo info, int minRooms, int maxRooms) {
   BuildingInfo building = getBuildingInfo(info);
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new PlaceCollective(info.collective));
@@ -1761,7 +1760,7 @@ MakerQueue* village(RandomGen& random, SettlementInfo info) {
     insideMakers.push_back(new ShopMaker(*info.shopFactory, info.tribe, random.get(8, 16), building));
   for (auto& elem : info.stockpiles)
     insideMakers.push_back(stockpileMaker(elem));
-  queue->addMaker(new Buildings(4, 8, 3, 7, building, true, insideMakers));
+  queue->addMaker(new Buildings(minRooms, maxRooms, 3, 7, building, true, insideMakers));
   if (info.furniture)
     queue->addMaker(new Furnitures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture));
   if (info.outsideFeatures)
@@ -1955,11 +1954,12 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::WITCH_HOUSE:
     case SettlementType::CEMETERY:
     case SettlementType::MOUNTAIN_LAKE:
+    case SettlementType::SMALL_VILLAGE:
     case SettlementType::SWAMP: return {random.get(12, 16), random.get(12, 16)};
     case SettlementType::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
     case SettlementType::FORREST_COTTAGE: return {15, 15};
     case SettlementType::FOREST: return {18, 13};
-    case SettlementType::VILLAGE2: return {20, 20};
+    case SettlementType::FORREST_VILLAGE: return {20, 20};
     case SettlementType::VILLAGE:
     case SettlementType::ANT_NEST:
     case SettlementType::CASTLE: return {30, 20};
@@ -1979,7 +1979,7 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
   switch (type) {
     case SettlementType::FOREST:
     case SettlementType::FORREST_COTTAGE:
-    case SettlementType::VILLAGE2:
+    case SettlementType::FORREST_VILLAGE:
       return Predicate::andPred(
           Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)),
           Predicate::attrib(SquareAttrib::FORREST));
@@ -2254,15 +2254,20 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
     LevelMaker* maker;
     CollectiveBuilder* collective;
     TribeId tribe;
+    int maxDistance;
   };
   vector<CottageInfo> cottages;
   for (SettlementInfo settlement : settlements) {
     LevelMaker* queue = nullptr;
     switch (settlement.type) {
-      case SettlementType::VILLAGE:
-        queue = village(random, settlement);
+      case SettlementType::SMALL_VILLAGE:
+        queue = village(random, settlement, 3, 4);
+        cottages.push_back({queue, settlement.collective, settlement.tribe, 16});
         break;
-      case SettlementType::VILLAGE2:
+      case SettlementType::VILLAGE:
+        queue = village(random, settlement, 4, 8);
+        break;
+      case SettlementType::FORREST_VILLAGE:
         queue = village2(random, settlement);
         break;
       case SettlementType::CASTLE:
@@ -2273,7 +2278,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
         break;
       case SettlementType::COTTAGE:
         queue = cottage(settlement);
-        cottages.push_back({queue, settlement.collective, settlement.tribe});
+        cottages.push_back({queue, settlement.collective, settlement.tribe, 13});
         break;
       case SettlementType::FORREST_COTTAGE:
         queue = forrestCottage(settlement);
@@ -2347,7 +2352,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, CreatureFactory forrestCreat
             new PlaceCollective(cottage.collective)}),
           {random.get(7, 12), random.get(7, 12)},
           lowlandPred);
-      locations->setMaxDistanceLast(cottage.maker, 13);
+      locations->setMaxDistanceLast(cottage.maker, cottage.maxDistance);
     }
   if (biomeId == BiomeId::GRASSLAND || biomeId == BiomeId::FORREST)
     for (int i : Range(random.get(0, 3)))

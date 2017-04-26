@@ -169,6 +169,7 @@ class CreatureFactory {
   static vector<PCreature> getFlock(int size, CreatureId, WCreature leader);
   static CreatureFactory humanVillage(TribeId);
   static CreatureFactory humanPeaceful(TribeId);
+  static CreatureFactory tutorialVillage(TribeId);
   static CreatureFactory splashHeroes(TribeId);
   static CreatureFactory splashLeader(TribeId);
   static CreatureFactory splashMonsters(TribeId);
