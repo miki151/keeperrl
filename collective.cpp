@@ -654,6 +654,10 @@ void Collective::setTrait(WCreature c, MinionTrait t) {
     byTrait[t].push_back(c);
 }
 
+void Collective::removeTrait(WCreature c, MinionTrait t) {
+  removeElementMaybe(byTrait[t], c);
+}
+
 vector<WCreature> Collective::getCreaturesAnyOf(EnumSet<MinionTrait> trait) const {
   EntitySet<Creature> added;
   vector<WCreature> ret;

@@ -29,4 +29,5 @@ class Tutorial {
   State SERIAL(state);
   vector<Vec2> getHighlightedSquaresHigh(WConstGame) const;
   vector<Vec2> getHighlightedSquaresLow(WConstGame) const;
+  void onNewState(WConstGame);
 };

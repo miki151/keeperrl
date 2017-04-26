@@ -328,9 +328,22 @@ void Tutorial::refreshInfo(WConstGame game, optional<TutorialInfo>& info) const 
   };
 }
 
+void Tutorial::onNewState(WConstGame game) {
+  auto collective = game->getPlayerCollective();
+  switch (state) {
+    case State::ACCEPT_MORE_IMMIGRANTS:
+      for (auto c : collective->getCreatures())
+        collective->removeTrait(c, MinionTrait::NO_AUTO_EQUIPMENT);
+      break;
+    default:
+      break;
+  }
+}
+
 void Tutorial::continueTutorial(WConstGame game) {
   if (canContinue(game))
     state = (State)((int) state + 1);
+  onNewState(game);
 }
 
 void Tutorial::goBack() {
