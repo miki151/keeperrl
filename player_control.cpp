@@ -481,7 +481,7 @@ void PlayerControl::addConsumableItem(WCreature creature) {
 }
 
 void PlayerControl::addEquipment(WCreature creature, EquipmentSlot slot) {
-  vector<WItem> currentItems = creature->getEquipment().getItem(slot);
+  vector<WItem> currentItems = creature->getEquipment().getSlotItems(slot);
   WItem chosenItem = chooseEquipmentItem(creature, currentItems, [&](const WItem it) {
       return !getCollective()->getMinionEquipment().isOwner(it, creature)
       && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slot; });
@@ -625,6 +625,9 @@ void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
       slotIndex.push_back(slot);
       slotItems.push_back(nullptr);
     }
+    if (slot == EquipmentSlot::WEAPON && tutorial &&
+        tutorial->getHighlights(getGame()).contains(TutorialHighlight::EQUIPMENT_SLOT_WEAPON))
+      info.inventory.back().tutorialHighlight = true;
   }
   vector<pair<string, vector<WItem>>> consumables = Item::stackItems(ownedItems,
       [&](const WItem it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
@@ -1132,7 +1135,8 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
       c.productionState = option.state.value_or(0);
       c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
       c.number = option.number * option.batchSize;
-      c.tutorialHighlight = option.tutorialHighlight;
+      c.tutorialHighlight = tutorial && option.tutorialHighlight &&
+          tutorial->getHighlights(getGame()).contains(*option.tutorialHighlight);
     );
 }
 

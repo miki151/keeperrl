@@ -249,7 +249,7 @@ void Immigration::occupyAttraction(WConstCreature c, const AttractionInfo& attra
 
 double Immigration::getImmigrantChance(const Group& group) const {
   auto& info = getImmigrants()[group.immigrantIndex];
-  if (info.isPersistent())
+  if (info.isPersistent() || !info.isAvailable(getNumGeneratedAndCandidates(group.immigrantIndex) + group.count - 1))
     return 0.0;
   else
     return info.getFrequency() * getRequirementMultiplier(group);
@@ -436,6 +436,16 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
   return generate(immigration, Group {index, Random.get(immigration->getImmigrants()[index].getGroupSize()) });
 }
 
+int Immigration::getNumGeneratedAndCandidates(int index) const {
+  int ret = 0;
+  if (auto gen = getReferenceMaybe(generated, index))
+    ret = gen->getSize();
+  for (auto& available : getAvailable())
+    if (available.second.get().getImmigrantIndex() == index)
+      ++ret;
+  return ret;
+}
+
 Immigration::Available Immigration::Available::generate(WImmigration immigration, const Group& group) {
   const ImmigrantInfo& info = immigration->getImmigrants()[group.immigrantIndex];
   vector<PCreature> immigrants;
@@ -463,6 +473,10 @@ bool Immigration::Available::isUnavailable() const {
 
 optional<milliseconds> Immigration::Available::getCreatedTime() const {
   return createdTime;
+}
+
+int Immigration::Available::getImmigrantIndex() const {
+  return immigrantIndex;
 }
 
 void Immigration::initializePersistent() {

@@ -29,6 +29,7 @@ class Immigration : public OwnedObject<Immigration> {
     const ImmigrantInfo& getInfo() const;
     bool isUnavailable() const;
     optional<milliseconds> getCreatedTime() const;
+    int getImmigrantIndex() const;
 
     SERIALIZATION_DECL(Available)
 
@@ -81,4 +82,5 @@ class Immigration : public OwnedObject<Immigration> {
   double SERIAL(nextImmigrantTime) = -1;
   void resetImmigrantTime();
   map<int, ImmigrantAutoState> SERIAL(autoState);
+  int getNumGeneratedAndCandidates(int index) const;
 };

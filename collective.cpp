@@ -399,7 +399,7 @@ void Collective::orderConsumption(WCreature consumer, WCreature who) {
 }
 
 PTask Collective::getEquipmentTask(WCreature c) {
-  if (Random.roll(40))
+  if (!hasTrait(c, MinionTrait::NO_AUTO_EQUIPMENT) && Random.roll(40))
     minionEquipment->autoAssign(c, getAllItems(ItemIndex::MINION_EQUIPMENT, false));
   vector<PTask> tasks;
   for (WItem it : c->getEquipment().getItems())

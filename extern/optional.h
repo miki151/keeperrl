@@ -502,6 +502,14 @@ public:
     return TR2_OPTIONAL_ASSERTED_EXPRESSION(initialized(), dataptr());
   }
 
+  template <typename Fun>
+  auto map(const Fun& f) const -> optional<decltype(Fun(contained_val()))> {
+    if (initialized())
+      return f(contained_val());
+    else
+      return none;
+  }
+
 # if OPTIONAL_HAS_MOVE_ACCESSORS == 1
 
   OPTIONAL_MUTABLE_CONSTEXPR T* operator ->() {
@@ -685,6 +693,14 @@ public:
 
   constexpr T& operator*() const {
     return TR2_OPTIONAL_ASSERTED_EXPRESSION(ref, *ref);
+  }
+
+  template <typename Fun>
+  auto map(const Fun& f) const -> optional<decltype(f(*ref))> {
+    if (ref)
+      return f(*ref);
+    else
+      return none;
   }
 
   constexpr T& value() const {

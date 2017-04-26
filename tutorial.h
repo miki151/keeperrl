@@ -9,10 +9,12 @@ class ImmigrantInfo;
 class Tutorial {
   public:
   Tutorial();
-  void refreshInfo(const WGame, optional<TutorialInfo>&) const;
-  void continueTutorial(const WGame);
+  void refreshInfo(WConstGame, optional<TutorialInfo>&) const;
+  void continueTutorial(WConstGame);
   void goBack();
   bool showImmigrant(const ImmigrantInfo&) const;
+  EnumSet<TutorialHighlight> getHighlights(WConstGame) const;
+  bool blockAutoEquipment() const;
 
   static void createTutorial(Game&);
 
@@ -21,11 +23,10 @@ class Tutorial {
 
   private:
   string getMessage() const;
-  bool canContinue(const WGame) const;
+  bool canContinue(WConstGame) const;
 
   enum class State;
   State SERIAL(state);
-  EnumSet<TutorialHighlight> getHighlights(const WGame) const;
-  vector<Vec2> getHighlightedSquaresHigh(const WGame) const;
-  vector<Vec2> getHighlightedSquaresLow(const WGame) const;
+  vector<Vec2> getHighlightedSquaresHigh(WConstGame) const;
+  vector<Vec2> getHighlightedSquaresLow(WConstGame) const;
 };

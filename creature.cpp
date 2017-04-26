@@ -545,13 +545,13 @@ CreatureAction Creature::equip(WItem item) const {
   string reason;
   if (!canEquipIfEmptySlot(item, &reason))
     return CreatureAction(reason);
-  if (contains(equipment->getItem(item->getEquipmentSlot()), item))
+  if (contains(equipment->getSlotItems(item->getEquipmentSlot()), item))
     return CreatureAction();
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " equip " << item->getName();
     EquipmentSlot slot = item->getEquipmentSlot();
-    if (self->equipment->getItem(slot).size() >= self->equipment->getMaxItems(slot)) {
-      WItem previousItem = self->equipment->getItem(slot)[0];
+    if (self->equipment->getSlotItems(slot).size() >= self->equipment->getMaxItems(slot)) {
+      WItem previousItem = self->equipment->getSlotItems(slot)[0];
       self->equipment->unequip(previousItem, self);
     }
     self->equipment->equip(item, slot, self);
@@ -1280,7 +1280,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
   CHECK(direction.length8() == 1);
   if (getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty())
     return CreatureAction("You need a ranged weapon.");
-  if (getEquipment().getItem(EquipmentSlot::RANGED_WEAPON).empty())
+  if (getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty())
     return CreatureAction("You need to equip your ranged weapon.");
   if (getBody().numGood(BodyPart::ARM) < 2)
     return CreatureAction("You need two hands to shoot a bow.");
@@ -1288,7 +1288,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
     return CreatureAction("Out of ammunition");
   return CreatureAction(this, [=](WCreature self) {
     PItem ammo = self->equipment->removeItem(NOTNULL(getAmmo()), self);
-    auto weapon = getOnlyElement(self->getEquipment().getItem(EquipmentSlot::RANGED_WEAPON))
+    auto weapon = getOnlyElement(self->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON))
         .dynamicCast<RangedWeapon>();
     CHECK(!!weapon);
     weapon->fire(self, std::move(ammo), direction);
@@ -1412,7 +1412,7 @@ CreatureAction Creature::consume(WCreature other) const {
 }
 
 WItem Creature::getWeapon() const {
-  vector<WItem> it = equipment->getItem(EquipmentSlot::WEAPON);
+  vector<WItem> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
   if (it.empty())
     return nullptr;
   else
@@ -1500,6 +1500,10 @@ const CreatureName& Creature::getName() const {
 
 CreatureName& Creature::getName() {
   return attributes->getName();
+}
+
+const char* Creature::identify() const {
+  return getName().bare().c_str();
 }
 
 TribeSet Creature::getFriendlyTribes() const {

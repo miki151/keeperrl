@@ -818,7 +818,10 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
         gui.button(onMultiClick),
         getTooltip({"Click to choose how many to pick up."}, THIS_LINE)), 25);
   }
-  return gui.margins(line.buildHorizontalList(), leftMargin, 0, 0, 0);
+  auto elem = line.buildHorizontalList();
+  if (item.tutorialHighlight)
+    elem = gui.stack(gui.tutorialHighlight(), std::move(elem));
+  return gui.margins(std::move(elem), leftMargin, 0, 0, 0);
 }
 
 SGuiElem GuiBuilder::getTooltip(const vector<string>& text, int id) {
@@ -1417,7 +1420,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
       line.addBackElem(gui.label(toString(elem.number) + "x"), 35);
     line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
     SGuiElem guiElem = line.buildHorizontalList();
-    if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
+    if (elem.tutorialHighlight)
       guiElem = gui.stack(gui.tutorialHighlight(), std::move(guiElem));
     if (elem.unavailable) {
       CHECK(!elem.unavailableReason.empty());

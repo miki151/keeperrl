@@ -100,6 +100,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   const CreatureName& getName() const;
   CreatureName& getName();
+  const char* identify() const;
   int getModifier(ModifierType) const;
   int getAttr(AttrType) const;
   static string getAttrName(AttrType);
