@@ -241,7 +241,7 @@ class GuiBuilder {
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
   vector<SGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);
   SGuiElem menuElemMargins(SGuiElem);
-  SGuiElem getHighlight(MenuType, const string& label, int height);
+  SGuiElem getHighlight(SGuiElem line, MenuType, const string& label, int numActive, int* highlight);
   string getPlayerTitle(PlayerInfo&);
   SDL::SDL_KeyboardEvent getHotkeyEvent(char);
   shared_ptr<MapGui> mapGui = nullptr;

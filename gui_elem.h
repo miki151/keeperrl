@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "stdafx.h"
+#include "util.h"
 #include "renderer.h"
 #include "drag_and_drop.h"
 #include "player_role_choice.h"
@@ -162,7 +164,7 @@ class GuiFactory {
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = colors[ColorId::WHITE]);
   SGuiElem viewObject(ViewId, double scale = 1, Color = colors[ColorId::WHITE]);
   SGuiElem asciiBackground(ViewId);
-  SGuiElem translate(SGuiElem, Vec2 pos, Vec2 size);
+  SGuiElem translate(SGuiElem, Vec2 pos, optional<Vec2> size = none);
   SGuiElem translate(function<Vec2()>, SGuiElem);
   SGuiElem centerHoriz(SGuiElem, optional<int> width = none);
   SGuiElem centerVert(SGuiElem, optional<int> height = none);

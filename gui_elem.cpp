@@ -1757,20 +1757,21 @@ SGuiElem GuiFactory::dragListener(function<void(DragContent)> fun) {
 
 class TranslateGui : public GuiLayout {
   public:
-  TranslateGui(SGuiElem e, Vec2 p, Vec2 s)
+  TranslateGui(SGuiElem e, Vec2 p, optional<Vec2> s)
       : GuiLayout(makeVec(std::move(e))), pos(p), size(s) {
   }
 
   virtual Rectangle getElemBounds(int num) override {
-    return Rectangle(getBounds().topLeft() + pos, getBounds().topLeft() + pos + size);
+    Vec2 sz = size ? *size : getBounds().getSize();
+    return Rectangle(getBounds().topLeft() + pos, getBounds().topLeft() + pos + sz);
   }
 
   private:
   Vec2 pos;
-  Vec2 size;
+  optional<Vec2> size;
 };
 
-SGuiElem GuiFactory::translate(SGuiElem e, Vec2 pos, Vec2 size) {
+SGuiElem GuiFactory::translate(SGuiElem e, Vec2 pos, optional<Vec2> size) {
   return SGuiElem(new TranslateGui(std::move(e), pos, size));
 }
 
@@ -2559,12 +2560,16 @@ SGuiElem GuiFactory::spellIcon(SpellId id) {
   return sprite(spellTextures[int(id)], Alignment::CENTER);
 }
 
+static int trans1 = 1094;
+static int trans2 = 1693;
+
 SGuiElem GuiFactory::uiHighlightMouseOver(Color c) {
   return mouseHighlight2(uiHighlight(c));
 }
 
 SGuiElem GuiFactory::uiHighlight(Color c) {
-  return leftMargin(-8, topMargin(-4, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_STRETCHED, c)));
+  return margins(rectangle(transparency(c, trans1), transparency(c, trans2)), -8, -3, -3, 3);
+  //return leftMargin(-8, topMargin(-4, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_STRETCHED, c)));
 }
 
 SGuiElem GuiFactory::blink(SGuiElem elem) {
