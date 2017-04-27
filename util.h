@@ -1155,6 +1155,10 @@ class EnumSet {
     return elems.test(size_t(elem));
   }
 
+  bool isEmpty() const {
+    return elems.none();
+  }
+
   void insert(T elem) {
     elems.set(size_t(elem));
   }

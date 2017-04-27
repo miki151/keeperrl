@@ -85,6 +85,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<FurnitureType> getMissingTrainingDummy(WConstCreature);
 
   void onEvent(const GameEvent&);
+  WCreature getControlled() const;
 
   private:
   struct Private {};
@@ -192,7 +193,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void addToMemory(Position);
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
-  WCreature getControlled() const;
   optional<TeamId> getCurrentTeam() const;
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;

@@ -419,7 +419,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
           std::move(buttons[i]),
           gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }));
     }
-    if (info.tutorial)
+    if (info.tutorial) {
       for (auto& building : info.collectiveInfo.buildings)
         if (auto& highlight = building.tutorialHighlight)
           if (info.tutorial->highlights.contains(*highlight)) {
@@ -430,6 +430,14 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
                 buttons[0]);
             break;
           }
+      EnumSet<TutorialHighlight> minionHighlights = { TutorialHighlight::NEW_TEAM, TutorialHighlight::CONTROL_TEAM};
+      if (!info.tutorial->highlights.intersection(minionHighlights).isEmpty())
+        buttons[1] = gui.stack(
+            gui.conditional(
+                gui.blink(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::YELLOW])),
+                [this] { return collectiveTab != CollectiveTab::MINIONS;}),
+            buttons[1]);
+    }
     if (!info.singleModel)
       buttons.push_back(gui.stack(
             gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, colors[ColorId::GREEN]),
@@ -437,7 +445,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
             gui.icon(gui.WORLD_MAP),
             gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP))));
     vector<pair<CollectiveTab, SGuiElem>> elems = makeVec(
-        make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo)),
+        make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::BUILDINGS, cache->get(bindMethod(
             &GuiBuilder::drawBuildings, this), THIS_LINE, info.collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp()),
@@ -1216,7 +1224,7 @@ SGuiElem GuiBuilder::drawMinionAndLevel(ViewId viewId, int level, int iconMult) 
         gui.label(toString(level), 12 * iconMult)));
 }
 
-SGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
+SGuiElem GuiBuilder::drawTeams(CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   const int elemWidth = 30;
   auto lines = gui.getListBuilder(legendLineHeight);
   for (int i : All(info.teams)) {
@@ -1234,12 +1242,18 @@ SGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
       teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
     ViewId leaderViewId = info.getMinion(team.members[0])->viewId;
     auto selectButton = [this](int teamId) {
-      return gui.releaseLeftButton(getButtonCallback({UserInputId::SELECT_TEAM, teamId}));
+      return gui.releaseLeftButton([=]() {
+          onTutorialClicked(0, TutorialHighlight::CONTROL_TEAM);
+          callbacks.input({UserInputId::SELECT_TEAM, teamId});
+      });
     };
+    const bool isTutorialHighlight = tutorial && tutorial->highlights.contains(TutorialHighlight::CONTROL_TEAM);
     lines.addElemAuto(gui.stack(makeVec(
             gui.mouseOverAction([team, this] { mapGui->highlightTeam(team.members); },
               [team, this] { mapGui->unhighlightTeam(team.members); }),
             cache->get(selectButton, THIS_LINE, team.id),
+            gui.conditional(gui.tutorialHighlight(),
+                [=]{ return !wasTutorialClicked(0, TutorialHighlight::CONTROL_TEAM) && isTutorialHighlight; }),
             gui.uiHighlightConditional([team] () { return team.highlight; }),
             gui.uiHighlightMouseOver(),
             gui.dragListener([this, team](DragContent content) {
@@ -1259,24 +1273,28 @@ SGuiElem GuiBuilder::drawTeams(CollectiveInfo& info) {
               .addElem(gui.topMargin(8, gui.icon(GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
               .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
   }
-  string hint = "Drag and drop minions onto the [new team] button to create a new team. "
+  const char* hint = "Drag and drop minions onto the [new team] button to create a new team. "
     "You can drag them both from the map and the menus.";
-  lines.addElem(gui.stack(makeVec(
-        gui.dragListener([this](DragContent content) {
-            UserInputId id;
-            switch (content.getId()) {
-              case DragContentId::CREATURE:
-                id = UserInputId::CREATE_TEAM; break;
-              case DragContentId::CREATURE_GROUP:
-                id = UserInputId::CREATE_TEAM_FROM_GROUP; break;
-              default:
-                return;
-            }
-            callbacks.input({id, content.get<UniqueEntity<Creature>::Id>() });}),
-        gui.uiHighlightMouseOver(),
-        getHintCallback({hint}),
-        gui.button([this, hint] { callbacks.info(hint); }),
-        gui.label("[new team]", colors[ColorId::WHITE]))));
+  if (!tutorial || info.teams.empty()) {
+    const bool isTutorialHighlight = tutorial && tutorial->highlights.contains(TutorialHighlight::NEW_TEAM);
+    lines.addElem(gui.stack(makeVec(
+          gui.dragListener([this](DragContent content) {
+              UserInputId id;
+              switch (content.getId()) {
+                case DragContentId::CREATURE:
+                  id = UserInputId::CREATE_TEAM; break;
+                case DragContentId::CREATURE_GROUP:
+                  id = UserInputId::CREATE_TEAM_FROM_GROUP; break;
+                default:
+                  return;
+              }
+              callbacks.input({id, content.get<UniqueEntity<Creature>::Id>() });}),
+          gui.conditional(gui.uiHighlightMouseOver(), [&]{return gui.getDragContainer().hasElement();} ),
+          gui.conditional(gui.tutorialHighlight(), [yes = isTutorialHighlight && info.teams.empty()]{ return yes; }),
+          getHintCallback({hint}),
+          gui.button([this, hint] { callbacks.info(hint); }),
+          gui.label("[new team]", colors[ColorId::WHITE]))));
+  }
   return lines.buildVerticalList();
 }
 
@@ -1293,7 +1311,7 @@ vector<SGuiElem> GuiBuilder::getSettingsButtons() {
             gui.button([this] { mapGui->setHighlightEnemies(!mapGui->highlightEnemies()); }))));
 }
 
-SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
+SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   int newHash = info.getHash();
   if (newHash != minionsHash) {
     minionsHash = newHash;
@@ -1320,7 +1338,7 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info) {
        )));
     }
     list.addElem(gui.label("Teams: ", colors[ColorId::WHITE]));
-    list.addElemAuto(drawTeams(info));
+    list.addElemAuto(drawTeams(info, tutorial));
     list.addSpace();
     list.addElem(gui.stack(
               gui.label("Show tasks", [=]{ return colors[showTasks ? ColorId::GREEN : ColorId::WHITE];}),
@@ -1533,7 +1551,7 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
           gui.margins(gui.scrollable(lines.buildVerticalList(), &libraryScroll, &scrollbarsHeld), margin))));
 }
 
-SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo& info) {
+SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   int margin = 20;
   int minionListWidth = 220;
   if (!info.chosenCreature)
@@ -1543,7 +1561,7 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo& info) {
   auto current = info.chosenCreature->chosenId;
   for (int i : All(minions))
     if (minions[i].creatureId == current)
-      minionPage = gui.margins(drawMinionPage(minions[i]), 10, 15, 10, 10);
+      minionPage = gui.margins(drawMinionPage(minions[i], tutorial), 10, 15, 10, 10);
   if (!minionPage)
     return gui.empty();
   SGuiElem menu;
@@ -1612,7 +1630,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
            info.collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
-           info.collectiveInfo), OverlayInfo::TOP_LEFT});
+           info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
            info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawLibraryOverlay, this), THIS_LINE,
@@ -2045,7 +2063,7 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
       list.addElem(gui.stack(makeVec(
             cache->get(selectButton, THIS_LINE, minionId),
             gui.leftMargin(teamId ? -10 : 0, gui.stack(
-                 gui.uiHighlightConditional([=] { return mapGui->isCreatureHighlighted(minionId);}, colors[ColorId::YELLOW]),
+                 gui.uiHighlightConditional([=] { return !teamId && mapGui->isCreatureHighlighted(minionId);}, colors[ColorId::YELLOW]),
                  gui.uiHighlightConditional([=] { return current == minionId;}))),
             gui.dragSource({DragContentId::CREATURE, minionId},
               [=]{ return gui.viewObject(minion.viewId);}),
@@ -2183,13 +2201,16 @@ vector<SGuiElem> GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minio
   return lines;
 }
 
-vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion) {
+vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<TutorialInfo>& tutorial) {
   vector<SGuiElem> line;
+  const bool tutorialHighlight = tutorial && tutorial->highlights.contains(TutorialHighlight::CONTROL_TEAM);
   for (auto action : minion.actions)
     switch (action) {
       case PlayerInfo::CONTROL:
         line.push_back(gui.stack(
-            gui.labelHighlight("[Control]", colors[ColorId::LIGHT_BLUE]),
+            tutorialHighlight
+                ? gui.labelHighlightBlink("[Control]", colors[ColorId::LIGHT_BLUE], colors[ColorId::WHITE])
+                : gui.labelHighlight("[Control]", colors[ColorId::LIGHT_BLUE]),
             gui.button(getButtonCallback({UserInputId::CREATURE_CONTROL, minion.creatureId}))));
         break;
       case PlayerInfo::RENAME:
@@ -2228,12 +2249,12 @@ vector<SGuiElem> GuiBuilder::joinLists(vector<SGuiElem>&& v1, vector<SGuiElem>&&
   return ret;
 }
 
-SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion) {
+SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const optional<TutorialInfo>& tutorial) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(minion.getTitle()));
   if (!minion.description.empty())
     list.addElem(gui.label(minion.description, Renderer::smallTextSize, colors[ColorId::LIGHT_GRAY]));
-  list.addElem(gui.horizontalList(drawMinionActions(minion), 140));
+  list.addElem(gui.horizontalList(drawMinionActions(minion, tutorial), 140));
   vector<SGuiElem> leftLines;
   leftLines.push_back(gui.label("Attributes", colors[ColorId::YELLOW]));
   leftLines.push_back(drawPlayerLevelButton(minion));

@@ -24,6 +24,7 @@
 #include "minion_task.h"
 #include "creature.h"
 #include "equipment.h"
+#include "collective_teams.h"
 
 SERIALIZE_DEF(Tutorial, state)
 
@@ -49,9 +50,18 @@ enum class Tutorial::State {
   EQUIP_WEAPON,
   ACCEPT_MORE_IMMIGRANTS,
   EQUIP_ALL_FIGHTERS,
+  CREATE_TEAM,
+  CONTROL_TEAM,
   FINISHED,
 };
 
+static bool isTeam(WConstCollective collective) {
+  auto teams = collective->getTeams().getAll();
+  if (teams.empty())
+    return false;
+  CHECK(teams.size() == 1);
+  return collective->getTeams().getMembers(teams[0]).size() >= 4;
+}
 
 bool Tutorial::canContinue(WConstGame game) const {
   auto collective = game->getPlayerCollective();
@@ -107,13 +117,17 @@ bool Tutorial::canContinue(WConstGame game) const {
           return true;
       return false;
     case State::ACCEPT_MORE_IMMIGRANTS:
-      return collective->getCreatures(MinionTrait::FIGHTER).size() == 4;
+      return collective->getCreatures(MinionTrait::FIGHTER).size() >= 4;
     case State::EQUIP_ALL_FIGHTERS:
       for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
         if (!collective->hasTrait(c, MinionTrait::NO_EQUIPMENT) &&
             c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
           return false;
       return true;
+    case State::CREATE_TEAM:
+      return isTeam(collective);
+    case State::CONTROL_TEAM:
+      return isTeam(collective) && !!game->getPlayerControl()->getControlled();
     case State::FINISHED:
       return false;
   }
@@ -200,13 +214,21 @@ string Tutorial::getMessage() const {
           "You can check the progress of production when you click on the workshop.";
     case State::EQUIP_WEAPON:
       return "Your minions will automatically pick up weapons and other equipment that's in storage, "
-          "but you can also control it manually. Click on your orc and on the weapon slot to assign him the club that "
-          "he has just produced. He will go and pick it up.\n \n";
+          "but you can also control it manually. Click on your orc and then on the weapon slot to assign him the "
+          "club that he has just produced. He will go and pick it up.\n \n";
     case State::ACCEPT_MORE_IMMIGRANTS:
       return "You are ready to grow your military force. Three more orc immigrants should do.\n \n"
           "You can also invite goblins, which don't fight, but are excellent craftsmen.";
     case State::EQUIP_ALL_FIGHTERS:
-      return "Equip all your orcs, as well as the Keeper, with clubs. They will be needed soon.";
+      return "Craft clubs for all of your orcs, as well as the Keeper, and equip them. They will be needed soon.\n \n"
+          "In the meantime, order your Keeper to train by dragging him to the training room.";
+    case State::CREATE_TEAM:
+      return "Your tiny army is ready! Assemble a team by dragging your orcs onto the [new team] button. You can "
+          "drag them straight from the map or the minion menu.\n \n"
+          "Create a team of 4 orcs.";
+    case State::CONTROL_TEAM:
+      return "Time to take control over your team. Select the team, and one of the team members as the leader, "
+          "and click [Control].";
     case State::FINISHED:
       return "Congratulations, you have completed the tutorial! Go play the game now :)";
   }
@@ -243,6 +265,10 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
       return {TutorialHighlight::SCHEDULE_CLUB};
     case State::EQUIP_WEAPON:
       return {TutorialHighlight::EQUIPMENT_SLOT_WEAPON};
+    case State::CREATE_TEAM:
+      return {TutorialHighlight::NEW_TEAM};
+    case State::CONTROL_TEAM:
+      return {TutorialHighlight::CONTROL_TEAM};
     default:
       return {};
   }

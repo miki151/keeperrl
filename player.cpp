@@ -674,6 +674,14 @@ void Player::makeMove() {
     case UserInputId::PAY_DEBT:
         payForAllItemsAction();
       break;
+    case UserInputId::TUTORIAL_CONTINUE:
+        if (tutorial)
+          tutorial->continueTutorial(getGame());
+        break;
+    case UserInputId::TUTORIAL_GO_BACK:
+        if (tutorial)
+          tutorial->goBack();
+        break;
 #ifndef RELEASE
     case UserInputId::CHEAT_ATTRIBUTES:
       getCreature()->getAttributes().setBaseAttr(AttrType::STRENGTH, 80);
