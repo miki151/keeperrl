@@ -1439,7 +1439,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
       guiElem = gui.stack(gui.tutorialHighlight(), std::move(guiElem));
     if (elem.unavailable) {
       CHECK(!elem.unavailableReason.empty());
-      guiElem = gui.stack(getTooltip({elem.unavailableReason, elem.description}, THIS_LINE), std::move(guiElem));
+      guiElem = gui.stack(getTooltip({elem.unavailableReason, elem.description}, THIS_LINE + i), std::move(guiElem));
     }
     else
       guiElem = gui.stack(

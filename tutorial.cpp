@@ -141,9 +141,10 @@ string Tutorial::getMessage() const {
           "a small village inhabited mostly by innocents, whom we will all murder.\n \n"
           "This should get you up to speed with the game!";
     case State::INTRO:
-      return "Let's check out some things that you see on the map. The little wizard in the red robe is you. "
-          "If he dies, then it's game over, so be careful!\n \n"
-          "Remember that KeeperRL features perma-death, which means that you can't reload the game after a failure.";
+      return "Let's check out some things that you see on the map. The little wizard wearing a red robe is you, "
+          "the Keeper.\n \n"
+          "Remember that KeeperRL features perma-death, which means that you can't reload the game after a failure. "
+          "If your Keeper dies, then the game is over, so be careful!";
     case State::INTRO2:
       return "The four little creatures are your imps and they are here to perform your orders. Try hovering the mouse "
           "over other things on the map, and notice the hints in the lower right corner.";
@@ -167,9 +168,9 @@ string Tutorial::getMessage() const {
     case State::DIG_ROOM:
       return "Time to strike the mountain! Start by digging out a one tile-wide tunnel and finish it with at least "
           "a 5x5 room.\n \n"
-          "Hold shift to select a rectangular area.";
+          "Hold down shift to select a rectangular area.";
     case State::BUILD_DOOR:
-      return "Build a door at the entrance to your dungeon. This will slow down any enemies, "
+      return "Build a door at the entrance to your dungeon. This will slow down potential intruders, "
           "as they will need to destroy it before they can enter. "
           "Your minions can pass through doors freely, unless you lock a door by left clicking on it.\n \n"
           "Try locking and unlocking the door.";
@@ -193,11 +194,11 @@ string Tutorial::getMessage() const {
           "torches in your rooms to light them up. Hover your mouse over the book shelves and training dummies "
           "and look in the lower right corner to make sure that their efficiency is at least 100.";
     case State::FLOORS:
-      return "Minions are more efficient if there is a nice floor wherever they are working. For now you can only "
+      return "Minions are also more efficient if there is a nice floor where they are working. For now you can only "
           "afford wooden floor, but it should do.\n \n"
           "Make sure you have enough wood!";
     case State::RESEARCH_CRAFTING:
-      return "Your minions will need equipment, such as weapons, armor, and consumables, to be more efficient in "
+      return "Your minions will need equipment, such as weapons, armor, and consumables, to be more deadly in "
           "combat.\n \n"
           "Before you can produce anything, click on your library, bring up the research menu and unlock crafting.";
     case State::BUILD_WORKSHOP:
@@ -215,7 +216,8 @@ string Tutorial::getMessage() const {
     case State::EQUIP_WEAPON:
       return "Your minions will automatically pick up weapons and other equipment that's in storage, "
           "but you can also control it manually. Click on your orc and then on the weapon slot to assign him the "
-          "club that he has just produced. He will go and pick it up.\n \n";
+          "club that he has just produced.\n \n"
+          "This way you will order him to go and pick it up.\n \n";
     case State::ACCEPT_MORE_IMMIGRANTS:
       return "You are ready to grow your military force. Three more orc immigrants should do.\n \n"
           "You can also invite goblins, which don't fight, but are excellent craftsmen.";
@@ -224,7 +226,7 @@ string Tutorial::getMessage() const {
           "In the meantime, order your Keeper to train by dragging him to the training room.";
     case State::CREATE_TEAM:
       return "Your tiny army is ready! Assemble a team by dragging your orcs onto the [new team] button. You can "
-          "drag them straight from the map or the minion menu.\n \n"
+          "drag them straight from the map or from the minion menu.\n \n"
           "Create a team of 4 orcs.";
     case State::CONTROL_TEAM:
       return "Time to take control over your team. Select the team, and one of the team members as the leader, "
