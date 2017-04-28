@@ -143,11 +143,11 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
   switch (type) {
     case HighlightType::RECT_DESELECTION: return transparency(colors[ColorId::RED], 90);
     case HighlightType::DIG: return transparency(colors[ColorId::YELLOW], 120);
-    case HighlightType::CUT_TREE: return transparency(colors[ColorId::YELLOW], 170);
-    case HighlightType::FETCH_ITEMS: return transparency(colors[ColorId::YELLOW], 50);
+    case HighlightType::FETCH_ITEMS: //return transparency(colors[ColorId::YELLOW], 50);
+    case HighlightType::CUT_TREE: return transparency(colors[ColorId::YELLOW], 100);
     case HighlightType::PERMANENT_FETCH_ITEMS: return transparency(colors[ColorId::ORANGE], 50);
-    case HighlightType::STORAGE_EQUIPMENT: return transparency(colors[ColorId::GREEN], buttonViewId ? 120 : 50);
-    case HighlightType::STORAGE_RESOURCES: return transparency(colors[ColorId::BLUE], buttonViewId ? 120 : 50);
+    case HighlightType::STORAGE_EQUIPMENT: return transparency(colors[ColorId::BLUE], buttonViewId ? 120 : 50);
+    case HighlightType::STORAGE_RESOURCES: return transparency(colors[ColorId::GREEN], buttonViewId ? 120 : 50);
     case HighlightType::RECT_SELECTION: return transparency(colors[ColorId::YELLOW], 90);
     case HighlightType::FOG: return transparency(colors[ColorId::WHITE], 120 * amount);
     case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., amount * 500), 0, (Uint8)(amount * 140));
@@ -522,9 +522,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
           tilePos.getHash() % 2, tilePos.getHash() % 4 > 1);
     else
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
-    if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
+    /*if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
       if (auto coord = tile.getHighlightCoord())
-        renderer.drawTile(pos + move, *coord, size, color);
+        renderer.drawTile(pos + move, *coord, size, color);*/
     if (tile.hasCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, coord, size, color);
@@ -716,6 +716,7 @@ bool MapGui::isRenderedHighlightLow(const ViewIndex& index, HighlightType type) 
     case HighlightType::STORAGE_EQUIPMENT:
     case HighlightType::STORAGE_RESOURCES:
     case HighlightType::CLICKED_FURNITURE:
+    case HighlightType::CUT_TREE:
       return true;
     default: return false;
   }
@@ -736,10 +737,10 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
     case HighlightType::NIGHT:
       renderer.addQuad(Rectangle(pos, pos + size), color);
       break;
-    case HighlightType::CUT_TREE:
+/*    case HighlightType::CUT_TREE:
       if (spriteMode && index.hasObject(ViewLayer::FLOOR))
         break;
-      FALLTHROUGH;
+      FALLTHROUGH;*/
     default:
       renderTexturedHighlight(renderer, pos, size, color);
       break;

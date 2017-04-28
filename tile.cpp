@@ -530,8 +530,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::IRON_ROCK, sprite("ironpile"));
     Tile::addTile(ViewId::STEEL_INGOT, sprite("steelpile"));
     Tile::addTile(ViewId::WOOD_PLANK, sprite("wood2"));
-    Tile::addTile(ViewId::STORAGE_EQUIPMENT, sprite("dig_mark").setColor(transparency(colors[ColorId::GREEN], 120)));
-    Tile::addTile(ViewId::STORAGE_RESOURCES, sprite("dig_mark").setColor(transparency(colors[ColorId::BLUE], 120)));
+    Tile::addTile(ViewId::STORAGE_EQUIPMENT, sprite("dig_mark").setColor(transparency(colors[ColorId::BLUE], 120)));
+    Tile::addTile(ViewId::STORAGE_RESOURCES, sprite("dig_mark").setColor(transparency(colors[ColorId::GREEN], 120)));
     Tile::addTile(ViewId::PRISON, sprite("prison"));
     Tile::addTile(ViewId::BED, sprite("sleepdeco").setRoundShadow());
     Tile::addTile(ViewId::DORM, sprite("sleep").setFloorBorders());
