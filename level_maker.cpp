@@ -1404,7 +1404,7 @@ class PlaceCollective : public LevelMaker {
   PlaceCollective(CollectiveBuilder* c) : collective(NOTNULL(c)) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    collective->setArea(builder->toGlobalCoordinates(area));
+    collective->addArea(builder->toGlobalCoordinates(area));
   }
 
   private:

@@ -17,7 +17,7 @@ class CollectiveBuilder {
   CollectiveBuilder(const CollectiveConfig&, TribeId);
   CollectiveBuilder& setLevel(WLevel);
   CollectiveBuilder& addCreature(WCreature);
-  CollectiveBuilder& setArea(Rectangle);
+  CollectiveBuilder& addArea(Rectangle);
   CollectiveBuilder& setLocationName(const string&);
   CollectiveBuilder& setRaceName(const string&);
   PCollective build();
