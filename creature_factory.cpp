@@ -32,7 +32,6 @@
 #include "minion_task_map.h"
 #include "spell_map.h"
 #include "tribe.h"
-#include "square_type.h"
 #include "monster_ai.h"
 #include "sound.h"
 #include "player.h"
@@ -324,7 +323,7 @@ class KrakenController : public Monster {
           ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
         auto spawn = makeOwner<Creature>(getCreature()->getTribeId(),
               CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"));
-        spawn->setController(makeOwner<KrakenController>(c, getThis().dynamicCast<KrakenController>()));
+        spawn->setController(makeOwner<KrakenController>(spawn.get(), getThis().dynamicCast<KrakenController>()));
         spawns.push_back(spawn.get());
         getCreature()->getPosition().plus(move).addCreature(std::move(spawn));
       }
@@ -397,7 +396,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
   }
 
   bool isShopPosition(const Position& pos) {
-    return pos.isSameLevel(myLevel) && shopArea.contains(pos.getCoord());
+    return pos.isSameLevel(myLevel) && pos.getCoord().inRectangle(shopArea);
   }
 
   virtual void makeMove() override {
@@ -1396,7 +1395,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.minionTasks.setValue(MinionTask::CROPS, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = CreatureName("child", "children"););
-    case CreatureId::CLAY_GOLEM: 
+    case CreatureId::CLAY_GOLEM:
       return CATTR(
           c.viewId = ViewId::CLAY_GOLEM;
           c.attr[AttrType::SPEED] = 50;
