@@ -685,9 +685,11 @@ bool Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tile
   auto files = filter(path.getFiles(), [](const FilePath& f) { return f.hasSuffix(imageSuf);});
   int rowLength = setWidth / size.x;
   SDL::SDL_Surface* image = createSurface(setWidth, ((files.size() + rowLength - 1) / rowLength) * size.y);
+  SDL::SDL_SetSurfaceBlendMode(image, SDL::SDL_BLENDMODE_NONE);
   CHECK(image) << SDL::SDL_GetError();
   for (int i : All(files)) {
     SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
+    SDL::SDL_SetSurfaceBlendMode(im, SDL::SDL_BLENDMODE_NONE);
     CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
     CHECK(im->w == size.x && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
     SDL::SDL_Rect offset;
