@@ -166,6 +166,73 @@ class ConstContainerRange {
 };
 
 template <typename Container>
+class TempContainerRange {
+  public:
+  TempContainerRange(Container&& c) : container(std::move(c)) {}
+
+  typedef typename Container::value_type Value;
+
+  class Accessor {
+    public:
+
+    Accessor(TempContainerRange& r, int i, typename Container::iterator it) : range(r), ind(i), iterator(it) {}
+
+    const Value& operator * () const {
+      return *iterator;
+    }
+
+    const Value* operator -> () const {
+      return &(*iterator);
+    }
+
+    int index() const {
+      return ind;
+    }
+
+    private:
+    TempContainerRange& range;
+    int ind;
+    typename Container::iterator iterator;
+  };
+
+  class Iter {
+    public:
+    Iter(TempContainerRange& r, int i, typename Container::iterator iter) : range(r), index(i), iterator(iter) {}
+
+    Accessor operator* () const {
+      return Accessor(range, index, iterator);
+    }
+
+    bool operator != (const Iter& other) const {
+      return iterator != other.iterator;
+    }
+
+    const Iter& operator++ () {
+      ++iterator;
+      ++index;
+      return *this;
+    }
+
+    private:
+    TempContainerRange& range;
+    int index;
+    typename Container::iterator iterator;
+  };
+
+  Iter begin() {
+    return Iter(*this, 0, container.begin());
+  }
+
+  Iter end() {
+    return Iter(*this, container.size(), container.end());
+  }
+
+  private:
+  friend Accessor;
+  Container container;
+};
+
+template <typename Container>
 ContainerRange<Container> Iter(Container& c) {
   return ContainerRange<Container>(c);
 }
@@ -173,4 +240,11 @@ ContainerRange<Container> Iter(Container& c) {
 template <typename Container>
 ConstContainerRange<Container> Iter(const Container& c) {
   return ConstContainerRange<Container>(c);
+}
+
+template <typename Container>
+TempContainerRange<Container> Iter(Container&& c,
+    typename std::enable_if<std::is_rvalue_reference<Container&&>::value >::type* = 0,
+    typename std::enable_if<!std::is_const<Container>::value>::type* = 0) {
+  return TempContainerRange<Container>(std::move(c));
 }

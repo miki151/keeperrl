@@ -633,6 +633,7 @@ int getEffectPrice(EffectType type) {
     case EffectId::LEAVE_BODY: 
     case EffectId::AIR_BLAST: 
     case EffectId::PLACE_FURNITURE:
+    case EffectId::SUMMON_ELEMENT:
     case EffectId::WORD_OF_POWER: return 30;
   }
   return -1;

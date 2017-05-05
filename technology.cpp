@@ -19,7 +19,6 @@
 #include "skill.h"
 #include "collective.h"
 #include "level.h"
-#include "square_factory.h"
 #include "square.h"
 #include "cost_info.h"
 #include "spell.h"
@@ -209,6 +208,7 @@ static vector<SpellLearningInfo> spellLearning {
     { SpellId::BLAST, TechId::SPELLS_MAS},
     { SpellId::WORD_OF_POWER, TechId::SPELLS_MAS},
     { SpellId::METEOR_SHOWER, TechId::SPELLS_MAS},
+    { SpellId::SUMMON_ELEMENT, TechId::SPELLS},
 };
 
 void Technology::onAcquired(TechId id, WCollective col) {

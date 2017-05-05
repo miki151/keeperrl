@@ -26,8 +26,6 @@ class ModelBuilder {
   void measureModelGen(int numTries, function<void()> genFun);
   void measureSiteGen(int numTries);
 
-  PModel quickModel();
-
   PModel splashModel(const FilePath& splashPath);
 
   WCollective spawnKeeper(WModel, PCreature);
@@ -44,7 +42,6 @@ class ModelBuilder {
   PModel tryCampaignSiteModel(const string& siteName, EnemyId, VillainType);
   PModel tryModel(int width, const string& levelName, vector<EnemyInfo>,
       bool keeperSpawn, BiomeId, vector<ExternalEnemy>);
-  PModel tryQuickModel(int width);
   SettlementInfo& makeExtraLevel(WModel, EnemyInfo&);
   PModel tryBuilding(int numTries, function<PModel()> buildFun);
   void addMapVillains(vector<EnemyInfo>&, BiomeId);

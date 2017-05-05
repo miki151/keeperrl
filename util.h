@@ -223,12 +223,13 @@ class Rectangle {
   template<typename T>
   friend class Table;
   Rectangle(int width, int height);
-  Rectangle(Vec2 dim);
+  explicit Rectangle(Vec2 dim);
   Rectangle(int px, int py, int kx, int ky);
   Rectangle(Vec2 p, Vec2 k);
   Rectangle(Range xRange, Range yRange);
   static Rectangle boundingBox(const vector<Vec2>& v);
   static Rectangle centered(Vec2 center, int radius);
+  static Rectangle centered(int radius);
 
   int left() const;
   int top() const;
@@ -333,9 +334,13 @@ class EnumInfo<Name> { \
 template <class T>
 class EnumAll {
   public:
+  EnumAll() : b(0, 1), e(EnumInfo<T>::size, 1) {}
+  struct Reverse {};
+  EnumAll(Reverse) : b(EnumInfo<T>::size - 1, -1), e(-1, -1) {}
+
   class Iter {
     public:
-    Iter(int num) : ind(num) {
+    Iter(int num, int d) : ind(num), dir(d) {
     }
 
     T operator* () const {
@@ -347,24 +352,30 @@ class EnumAll {
     }
 
     const Iter& operator++ () {
-      ++ind;
+      ind += dir;
       return *this;
     }
 
     private:
     int ind;
+    int dir;
   };
 
   Iter begin() {
-    return Iter(0);
+    return b;
   }
 
   Iter end() {
-    return Iter(EnumInfo<T>::size);
+    return e;
   }
+
+  private:
+  Iter b;
+  Iter e;
 };
 
 #define ENUM_ALL(X) EnumAll<X>()
+#define ENUM_ALL_REVERSE(X) EnumAll<X>(EnumAll<X>::Reverse{})
 
 template<class T, class U>
 class EnumMap {
@@ -605,10 +616,16 @@ class Table {
   Table(int w, int h) : Table(0, 0, w, h) {
   }
 
+  Table(Vec2 size) : Table(size.x, size.y) {
+  }
+
   Table(int x, int y, int width, int height, const T& value) : Table(Rectangle(x, y, x + width, y + height), value) {
   }
 
   Table(int width, int height, const T& value) : Table(0, 0, width, height, value) {
+  }
+
+  Table(Vec2 size, const T& value) : Table(size.x, size.y, value) {
   }
 
   const Rectangle& getBounds() const {

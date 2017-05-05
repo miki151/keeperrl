@@ -40,6 +40,7 @@
 #include "item_class.h"
 #include "furniture_factory.h"
 #include "furniture.h"
+#include "movement_set.h"
 
 static vector<int> healingPoints { 5, 15, 40};
 static vector<int> sleepTime { 15, 80, 200};
@@ -280,23 +281,21 @@ double getDuration(WConstCreature c, LastingEffect e, int strength) {
 
 static int getSummonTtl(CreatureId id) {
   switch (id) {
-    case CreatureId::FIRE_SPHERE: return 30;
-    case CreatureId::SPIRIT: return 100;
-    case CreatureId::FLY: return 100;
-    case CreatureId::AUTOMATON: return 100;
-    default: FATAL << "Unsupported summon creature" << int(id);
-             return 0;
+    case CreatureId::FIRE_SPHERE:
+      return 30;
+    default:
+      return 100;
   }
 }
 
 static Range getSummonNumber(CreatureId id) {
   switch (id) {
-    case CreatureId::FIRE_SPHERE: return Range(1, 2);
-    case CreatureId::SPIRIT: return Range(2, 5);
-    case CreatureId::FLY: return Range(3, 7);
-    case CreatureId::AUTOMATON: return Range(1, 2);
-    default: FATAL << "Unsupported summon creature" << int(id);
-             return Range(0);
+    case CreatureId::SPIRIT:
+      return Range(2, 5);
+    case CreatureId::FLY:
+      return Range(3, 7);
+    default:
+      return Range(1, 2);
   }
 }
 
@@ -324,7 +323,7 @@ static void summon(WCreature summoner, CreatureId id) {
 static void placeFurniture(WCreature c, FurnitureType type) {
   Position pos = c->getPosition();
   auto f = FurnitureFactory::get(type, c->getTribeId());
-  bool furnitureBlocks = !f->canEnter(c->getMovementType());
+  bool furnitureBlocks = !f->getMovementSet().canEnter(c->getMovementType());
   if (furnitureBlocks) {
     optional<Vec2> dest;
     for (Position pos2 : c->getPosition().neighbors8(Random))
@@ -343,6 +342,14 @@ static void placeFurniture(WCreature c, FurnitureType type) {
   }
 }
 
+static CreatureId getSummonedElement(Position position) {
+  for (Position p : position.getRectangle(Rectangle::centered(3)))
+    for (auto f : p.getFurniture())
+      if (auto elem = f->getSummonedElement())
+        return *elem;
+  return CreatureId::AIR_ELEMENTAL;
+}
+
 void Effect::applyToCreature(WCreature c, const EffectType& type, EffectStrength strengthEnum) {
   int strength = int(strengthEnum);
   switch (type.getId()) {
@@ -353,6 +360,7 @@ void Effect::applyToCreature(WCreature c, const EffectType& type, EffectStrength
     case EffectId::ALARM: alarm(c); break;
     case EffectId::ACID: acid(c); break;
     case EffectId::SUMMON: ::summon(c, type.get<CreatureId>()); break;
+    case EffectId::SUMMON_ELEMENT: ::summon(c, getSummonedElement(c->getPosition())); break;
     case EffectId::DECEPTION: deception(c); break;
     case EffectId::WORD_OF_POWER: wordOfPower(c, strength); break;
     case EffectId::AIR_BLAST: airBlast(c, strength); break;
@@ -417,6 +425,7 @@ string Effect::getName(const EffectType& type) {
     case EffectId::ENHANCE_WEAPON: return "weapon enchantment";
     case EffectId::ENHANCE_ARMOR: return "armor enchantment";
     case EffectId::SUMMON: return getCreatureName(type.get<CreatureId>());
+    case EffectId::SUMMON_ELEMENT: return "summon element";
     case EffectId::WORD_OF_POWER: return "power";
     case EffectId::AIR_BLAST: return "air blast";
     case EffectId::DECEPTION: return "deception";
@@ -456,6 +465,7 @@ string Effect::getDescription(const EffectType& type) {
     case EffectId::ENHANCE_WEAPON: return "Increases weapon damage or accuracy.";
     case EffectId::ENHANCE_ARMOR: return "Increases armor defense.";
     case EffectId::SUMMON: return getSummoningDescription(type.get<CreatureId>());
+    case EffectId::SUMMON_ELEMENT: return "Summons an element or spirit from the surroundings.";
     case EffectId::WORD_OF_POWER: return "Causes an explosion around the spellcaster.";
     case EffectId::AIR_BLAST: return "Causes an explosion of air around the spellcaster.";
     case EffectId::DECEPTION: return "Creates multiple illusions of the spellcaster to confuse the enemy.";

@@ -25,7 +25,6 @@
 #include "save_file_info.h"
 #include "file_sharing.h"
 #include "villain_type.h"
-#include "square_type.h"
 #include "attack_trigger.h"
 #include "view_object.h"
 #include "campaign.h"

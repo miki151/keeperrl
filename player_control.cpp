@@ -35,7 +35,6 @@
 #include "model_builder.h"
 #include "encyclopedia.h"
 #include "map_memory.h"
-#include "square_factory.h"
 #include "item_action.h"
 #include "equipment.h"
 #include "collective_teams.h"
@@ -750,13 +749,6 @@ string PlayerControl::getRequirementText(Requirement req) {
     case PlayerControl::RequirementId::VILLAGE_CONQUERED:
       return "that at least one main villain is conquered";
   }
-}
-
-static ViewId getSquareViewId(SquareType type) {
-  static unordered_map<SquareType, ViewId, CustomHash<SquareType>> ids;
-  if (!ids.count(type))
-    ids.insert(make_pair(type, SquareFactory::get(type)->getViewObject().id()));
-  return ids.at(type);
 }
 
 static ViewId getFurnitureViewId(FurnitureType type) {
@@ -2615,7 +2607,7 @@ void PlayerControl::onConstructed(Position pos, FurnitureType type) {
 }
 
 void PlayerControl::onClaimedSquare(Position position) {
-  position.modViewObject().setId(ViewId::KEEPER_FLOOR);
+  position.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId::KEEPER_FLOOR);
   position.setNeedsRenderUpdate(true);
   updateSquareMemory(position);
 }
@@ -2627,7 +2619,7 @@ void PlayerControl::onDestructed(Position pos, const DestroyAction& action) {
       getCollective()->addKnownTile(v);
       updateSquareMemory(v);
     }
-    pos.modViewObject().setId(ViewId::KEEPER_FLOOR);
+    pos.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId::KEEPER_FLOOR);
     pos.setNeedsRenderUpdate(true);
   }
 }

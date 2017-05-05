@@ -16,6 +16,7 @@ enum class EffectId {
     AIR_BLAST,
     DECEPTION,
     SUMMON,
+    SUMMON_ELEMENT,
     ACID,
     ALARM,
     TELE_ENEMIES,

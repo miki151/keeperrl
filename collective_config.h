@@ -15,7 +15,6 @@
 #pragma once
 
 #include "enum_variant.h"
-#include "square_type.h"
 #include "util.h"
 #include "minion_trait.h"
 #include "workshop_type.h"

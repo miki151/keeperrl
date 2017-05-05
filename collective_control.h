@@ -6,7 +6,6 @@
 class Creature;
 class Collective;
 class Tribe;
-class SquareType;
 class CollectiveAttack;
 struct TriggerInfo;
 

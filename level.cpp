@@ -304,7 +304,7 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
       trajectory.pop_back();
       getGame()->addEvent({EventId::ITEMS_THROWN, EventInfo::ItemsThrown{this, getWeakPointers(item), trajectory}});
       if (!item[0]->isDiscarded())
-        modSafeSquare(v - direction)->dropItems(Position(v - direction, this), std::move(item));
+        pos.minus(direction).dropItems(std::move(item));
       return;
     }
     if (++cnt > maxDist || getSafeSquare(v)->itemLands(getWeakPointers(item), attack)) {

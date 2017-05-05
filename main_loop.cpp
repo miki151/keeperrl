@@ -473,16 +473,6 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
   }
 }
 
-PModel MainLoop::quickGame(RandomGen& random) {
-  PModel model;
-  NameGenerator::init(dataFreePath.subdirectory("names"));
-  doWithSplash(SplashType::BIG, "Generating map...", 166000,
-      [&] (ProgressMeter& meter) {
-        model = ModelBuilder(&meter, random, options, sokobanInput).quickModel();
-      });
-  return model;
-}
-
 void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
   NameGenerator::init(dataFreePath.subdirectory("names"));
   ProgressMeter meter(1);

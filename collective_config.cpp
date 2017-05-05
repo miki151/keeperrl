@@ -12,7 +12,6 @@
 #include "workshops.h"
 #include "lasting_effect.h"
 #include "item.h"
-#include "square_type.h"
 #include "view_id.h"
 #include "furniture_type.h"
 #include "spawn_type.h"

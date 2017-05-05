@@ -17,7 +17,6 @@
 
 #include "serialization.h"
 #include "creature_factory.h"
-#include "square_factory.h"
 #include "monster_ai.h"
 #include "effect.h"
 #include "skill.h"

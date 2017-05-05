@@ -937,7 +937,7 @@ void GuiBuilder::drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 me
           [&exit] { exit = true; });
   menu->setBounds(Rectangle(menuPos, menuPos + Vec2(width + 2 * margin, contentHeight + 2 * margin)));
   SGuiElem bg = gui.darken();
-  bg->setBounds(renderer.getSize());
+  bg->setBounds(Rectangle(renderer.getSize()));
   while (1) {
     callbacks.refreshScreen();
     bg->render(renderer);
@@ -2804,7 +2804,7 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
     std::move(stuff), 30, gui.BOTTOM);
   stuff = gui.window(std::move(stuff), [&dismiss] { dismiss = true; });
   SGuiElem bg = gui.darken();
-  bg->setBounds(renderer.getSize());
+  bg->setBounds(Rectangle(renderer.getSize()));
   SDL::SDL_StartTextInput();
   OnExit tmp([]{ SDL::SDL_StopTextInput();});
   while (1) {

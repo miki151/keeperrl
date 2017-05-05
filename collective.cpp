@@ -848,7 +848,7 @@ Territory& Collective::getTerritory() {
 bool Collective::canClaimSquare(Position pos) const {
   return getKnownTiles().isKnown(pos) &&
       pos.isCovered() &&
-      pos.canEnterSquare({MovementTrait::WALK}) &&
+      pos.canEnter({MovementTrait::WALK}) &&
       !pos.isWall();
 }
 

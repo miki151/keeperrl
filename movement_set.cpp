@@ -5,12 +5,14 @@
 
 template <class Archive> 
 void MovementSet::serialize(Archive& ar, const unsigned int version) {
-  ar(onFire, traits, forcibleTraits);
+  ar(traits, forcibleTraits, onlyAllowed);
 }
 
 SERIALIZABLE(MovementSet);
 
-bool MovementSet::canEnter(const MovementType& movementType, bool covered, const optional<TribeId>& forbidden) const {
+bool MovementSet::canEnter(const MovementType& movementType, bool covered, bool onFire, const optional<TribeId>& forbidden) const {
+  if (onlyAllowed && !movementType.isCompatible(*onlyAllowed))
+    return false;
   if (!movementType.isForced()) {
     if ((!covered && movementType.isSunlightVulnerable()) ||
         (onFire && !movementType.isFireResistant()) ||
@@ -26,13 +28,12 @@ bool MovementSet::canEnter(const MovementType& movementType, bool covered, const
   return false;
 }
 
-MovementSet& MovementSet::setOnFire(bool state) {
-  onFire = state;
-  return *this;
+bool MovementSet::canEnter(const MovementType& t) const {
+  return canEnter(t, true, false, none);
 }
 
-bool MovementSet::isOnFire() const {
-  return onFire;
+bool MovementSet::hasTrait(MovementTrait trait) const {
+  return traits.contains(trait);
 }
 
 MovementSet& MovementSet::addTrait(MovementTrait trait) {
@@ -47,6 +48,11 @@ MovementSet& MovementSet::removeTrait(MovementTrait trait) {
 
 MovementSet& MovementSet::addForcibleTrait(MovementTrait trait) {
   forcibleTraits.insert(trait);
+  return *this;
+}
+
+MovementSet& MovementSet::setOnlyAllowed(TribeId id) {
+  onlyAllowed = id;
   return *this;
 }
 

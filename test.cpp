@@ -714,6 +714,15 @@ class Test {
     CHECKEQ(o, makeVec(1, 4, 7, 10));
   }
 
+  void testContainerRangeTemp() {
+    vector<int> o;
+    int cnt = 0;
+    for (auto elem : Iter(vector<int>({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})))
+      if (*elem % 3 == 1)
+        o.push_back(*elem);
+    CHECKEQ(o, makeVec(1, 4, 7, 10));
+  }
+
   void testContainerRangeMapConst() {
     const map<int, string> v { {0, "abc"}, {1, "def"}, {2, "ghi"} };
     int i = 0;
@@ -824,6 +833,7 @@ void testAll() {
   Test().testContainerRangeErase();
   Test().testContainerRangeMapErase();
   Test().testContainerRangeConst();
+  Test().testContainerRangeTemp();
   Test().testContainerRangeMapConst();
   Test().testCacheTemplate();
   Test().testCacheTemplate2();

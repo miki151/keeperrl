@@ -28,7 +28,6 @@
 #include "player_message.h"
 #include "attack.h"
 #include "vision.h"
-#include "square_type.h"
 #include "equipment.h"
 #include "shortest_path.h"
 #include "spell_map.h"
@@ -1338,10 +1337,6 @@ CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
   return CreatureAction();
 }
 
-bool Creature::canConstruct(const SquareType& type) const {
-  return attributes->getSkills().hasDiscrete(SkillId::CONSTRUCTION);
-}
-
 bool Creature::canConstruct(FurnitureType type) const {
   return attributes->getSkills().hasDiscrete(SkillId::CONSTRUCTION);
 }
@@ -1543,10 +1538,10 @@ CreatureAction Creature::continueMoving() {
 }
 
 CreatureAction Creature::stayIn(WLevel level, Rectangle area) {
-  if (level != getLevel() || !area.contains(getPosition().getCoord())) {
+  if (level != getLevel() || !getPosition().getCoord().inRectangle(area)) {
     if (level == getLevel())
       for (Position v : getPosition().neighbors8(Random))
-        if (area.contains(v.getCoord()))
+        if (v.getCoord().inRectangle(area))
           if (auto action = move(v))
             return action;
     return moveTowards(Position(area.middle(), getLevel()));

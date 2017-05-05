@@ -304,6 +304,10 @@ Rectangle Rectangle::centered(Vec2 center, int radius) {
   return Rectangle(center - Vec2(radius, radius), center + Vec2(radius + 1, radius + 1));
 }
 
+Rectangle Rectangle::centered(int radius) {
+  return Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1));
+}
+
 vector<Vec2> Rectangle::getAllSquares() const {
   vector<Vec2> ret;
   for (Vec2 v : (*this))

@@ -34,7 +34,6 @@ class Controller;
 class ControllerFactory;
 class PlayerMessage;
 class CreatureVision;
-class SquareType;
 class ShortestPath;
 class LevelShortestPath;
 class Equipment;
@@ -185,7 +184,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction fire(Vec2 direction) const;
   CreatureAction construct(Vec2 direction, FurnitureType) const;
   CreatureAction whip(const Position&) const;
-  bool canConstruct(const SquareType&) const;
   bool canConstruct(FurnitureType) const;
   CreatureAction eat(WItem) const;
   CreatureAction destroy(Vec2 direction, const DestroyAction&) const;

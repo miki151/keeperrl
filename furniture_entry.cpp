@@ -8,6 +8,7 @@
 #include "player_message.h"
 #include "game.h"
 #include "effect.h"
+#include "movement_set.h"
 
 FurnitureEntry::FurnitureEntry(FurnitureEntry::EntryData d) : entryData(d) {
 }
@@ -43,18 +44,39 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
           }
           position.removeFurniture(f);
         }
+      },
+      [&](Water) {
+        MovementType realMovement = c->getMovementType();
+        realMovement.setForced(false);
+        if (!f->getMovementSet().canEnter(realMovement)) {
+          if (auto holding = c->getHoldingCreature()) {
+            c->you(MsgType::ARE, "drowned by " + holding->getName().the());
+            c->dieWithAttacker(holding, Creature::DropType::NOTHING);
+          } else {
+            c->you(MsgType::DROWN, f->getName());
+            c->dieWithReason("drowned", Creature::DropType::NOTHING);
+          }
+        }
+      },
+      [&](Magma) {
+        MovementType realMovement = c->getMovementType();
+        realMovement.setForced(false);
+        if (!f->getMovementSet().canEnter(realMovement)) {
+          c->you(MsgType::BURN, f->getName());
+          c->dieWithReason("burned to death", Creature::DropType::NOTHING);
+        }
       }
-    );
+  );
 }
 
 bool FurnitureEntry::isVisibleTo(WConstFurniture f, WConstCreature c) const {
-  return entryData.match(
-      [&](Sokoban) {
-        return true;
-      },
-      [&](Trap type) {
+  return entryData.visit(
+      [&](const Trap& type) {
         return type.alwaysVisible || !c->getGame()->getTribe(f->getTribe())->isEnemy(c)
             || c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS);
+      },
+      [&](const auto&) {
+        return true;
       }
   );
 }

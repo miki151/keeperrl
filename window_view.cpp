@@ -797,7 +797,7 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPositi
             gui.scrollable(gui.verticalList(std::move(lines), guiBuilder.getStandardLineHeight()), scrollPos),
         15), [&retVal] { retVal = optional<int>(none); });
     SGuiElem bg2 = gui.darken();
-    bg2->setBounds(renderer.getSize());
+    bg2->setBounds(Rectangle(renderer.getSize()));
     while (1) {
       refreshScreen(false);
       menu->setBounds(guiBuilder.getEquipmentMenuPosition(menuHeight));
@@ -872,7 +872,7 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
     origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
   if (blockingElems.empty()) {
     blockingElems.push_back(gui.darken());
-    blockingElems.back()->setBounds(renderer.getSize());
+    blockingElems.back()->setBounds(Rectangle(renderer.getSize()));
   }
   Vec2 size(*elem->getPreferredWidth(), min(renderer.getSize().y - origin->y, *elem->getPreferredHeight()));
   elem->setBounds(Rectangle(*origin, *origin + size));

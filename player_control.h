@@ -38,7 +38,6 @@ struct TaskActionInfo;
 struct CreatureDropInfo;
 struct EquipmentActionInfo;
 struct TeamCreatureInfo;
-class SquareType;
 class CostInfo;
 struct WorkshopItem;
 class ScrollPosition;

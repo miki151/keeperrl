@@ -4,8 +4,6 @@
 #include "entity_set.h"
 #include "position.h"
 
-class SquareType;
-
 class TaskCallback : public OwnedObject<TaskCallback> {
   public:
   virtual void onConstructed(Position, FurnitureType) {}

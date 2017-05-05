@@ -2,7 +2,6 @@
 
 #include "cost_info.h"
 #include "util.h"
-#include "square_type.h"
 #include "unique_entity.h"
 #include "position.h"
 #include "furniture_type.h"
