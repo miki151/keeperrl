@@ -767,7 +767,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
 }
 
 void MapGui::renderAnimations(Renderer& renderer, milliseconds currentTimeReal) {
-  animations = filter(std::move(animations), [=](const AnimationInfo& elem)
+  animations = std::move(animations).filter([=](const AnimationInfo& elem)
       { return !elem.animation->isDone(currentTimeReal);});
   for (auto& elem : animations)
     elem.animation->render(

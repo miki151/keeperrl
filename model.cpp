@@ -241,7 +241,7 @@ optional<StairKey> Model::getStairsBetween(WConstLevel from, WConstLevel to) {
 
 optional<Position> Model::getStairs(WConstLevel from, WConstLevel to) {
   CHECK(from != to);
-  if (!contains(getLevels(), from) || !contains(getLevels(), to) || !stairNavigation.count(getIds(from, to)))
+  if (!getLevels().contains(from) || !getLevels().contains(to) || !stairNavigation.count(getIds(from, to)))
     return none;
   return Random.choose(from->getLandingSquares(stairNavigation.at(getIds(from, to))));
 }
@@ -303,7 +303,7 @@ void Model::addEvent(const GameEvent& e) {
 }
 
 optional<Position> Model::getOtherPortal(Position position) const {
-  if (auto index = findElement(portals, position)) {
+  if (auto index = portals.findElement(position)) {
     if (*index % 2 == 1)
       return portals[*index - 1];
     if (*index < portals.size() - 1)
@@ -313,6 +313,6 @@ optional<Position> Model::getOtherPortal(Position position) const {
 }
 
 void Model::registerPortal(Position pos) {
-  if (!contains(portals, pos))
+  if (!portals.contains(pos))
     portals.push_back(pos);
 }

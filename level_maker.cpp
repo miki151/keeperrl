@@ -298,7 +298,7 @@ class Connector : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     Vec2 p1, p2;
-    vector<Vec2> points = filter(area.getAllSquares(), [&] (Vec2 v) { return connectPred.apply(builder, v);});
+    vector<Vec2> points = area.getAllSquares().filter([&] (Vec2 v) { return connectPred.apply(builder, v);});
     if (points.size() < 2)
       return;
     for (int i : Range(30)) {
@@ -356,7 +356,7 @@ class Furnitures : public LevelMaker {
       builder->putFurniture(pos, factory);
       if (attr)
         builder->addAttrib(pos, *attr);
-      removeElement(available, pos);
+      available.removeElement(pos);
     }
   }
 
@@ -525,7 +525,7 @@ class MountainRiver : public LevelMaker {
     }
     if (builder->getRandom().roll(predecessor.size()) || ret.empty()) {
       for (auto& elem : predecessor)
-        if (!contains(ret, elem.first))
+        if (!ret.contains(elem.first))
           waterTiles.insert(elem.first);
       if (ret.empty())
         return none;
@@ -599,9 +599,9 @@ class Blob : public LevelMaker {
       vector<Vec2> nextPos;
       for (auto pos : squares)
         for (Vec2 next : pos.neighbors4())
-          if (next.inRectangle(area) && !contains(squares, next))
+          if (next.inRectangle(area) && !squares.contains(next))
             nextPos.push_back(next);
-      vector<double> probs = transform2(nextPos, [&](Vec2 v) {
+      vector<double> probs = nextPos.transform([&](Vec2 v) {
           double px = std::abs(v.x - center.x);
           double py = std::abs(v.y - center.y);
           py *= area.width();
@@ -1854,7 +1854,7 @@ MakerQueue* castle2(RandomGen& random, SettlementInfo info) {
   MakerQueue* inside = new MakerQueue();
   vector<LevelMaker*> insideMakers {new MakerQueue({
       getElderRoom(info),
-      stockpileMaker(getOnlyElement(info.stockpiles))})};
+      stockpileMaker(info.stockpiles.getOnlyElement())})};
   inside->addMaker(new Buildings(1, 2, 3, 4, building, false, insideMakers, false));
   MakerQueue* insidePlusWall = new MakerQueue();
   insidePlusWall->addMaker(new Empty(building.floorOutside));
@@ -2062,7 +2062,7 @@ static LevelMaker* islandVaultMaker(RandomGen& random, SettlementInfo info, bool
   inside->addMaker(new PlaceCollective(info.collective));
   Predicate featurePred = Predicate::type(building.floorInside);
   if (!info.stockpiles.empty())
-    inside->addMaker(stockpileMaker(getOnlyElement(info.stockpiles)));
+    inside->addMaker(stockpileMaker(info.stockpiles.getOnlyElement()));
   else
     inside->addMaker(new Empty(SquareChange::reset(building.floorInside)));
   for (StairKey key : info.downStairs)
@@ -2495,8 +2495,8 @@ class SokobanFromFile : public LevelMaker {
 
 PLevelMaker LevelMaker::sokobanFromFile(RandomGen& random, SettlementInfo info, Table<char> file) {
   MakerQueue* queue = new MakerQueue();
-  queue->addMaker(new SokobanFromFile(file, info.neutralCreatures->first, getOnlyElement(info.downStairs)));
-  queue->addMaker(new Stairs(StairDirection::DOWN, getOnlyElement(info.downStairs),
+  queue->addMaker(new SokobanFromFile(file, info.neutralCreatures->first, info.downStairs.getOnlyElement()));
+  queue->addMaker(new Stairs(StairDirection::DOWN, info.downStairs.getOnlyElement(),
         Predicate::attrib(SquareAttrib::SOKOBAN_ENTRY)));
   queue->addMaker(new PlaceCollective(info.collective));
   queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective,

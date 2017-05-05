@@ -54,7 +54,7 @@ vector<Highscores::Score> Highscores::fromFile(const FilePath& path) {
     CompressedInput in(path.getPath());
     in.getArchive() >> scores;
   } catch (...) {}
-  return filter(scores, [](const Score& s) { return s.version == highscoreVersion;});
+  return scores.filter([](const Score& s) { return s.version == highscoreVersion;});
 }
 
 vector<Highscores::Score> Highscores::fromString(const string& s) {
@@ -139,10 +139,10 @@ void Highscores::present(View* view, optional<Score> lastAdded) const {
     return;
   vector<HighscoreList> lists;
   for (auto& elem : getPublicScores())
-    lists.push_back(fillScores(elem.name, lastAdded, filter(localScores,
+    lists.push_back(fillScores(elem.name, lastAdded, localScores.filter(
         [&] (const Score& s) { return s.campaignType == elem.type && s.playerRole == elem.role;})));
   for (auto& elem : getPublicScores())
-    lists.push_back(fillScores(elem.name, lastAdded, filter(remoteScores,
+    lists.push_back(fillScores(elem.name, lastAdded, remoteScores.filter(
         [&] (const Score& s) { return s.campaignType == elem.type && s.playerRole == elem.role;})));
   view->presentHighscores(lists);
 }

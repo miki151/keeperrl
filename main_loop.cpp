@@ -170,11 +170,11 @@ void MainLoop::getSaveOptions(const vector<pair<GameSaveType, string>>& games, v
     vector<SaveFileInfo>& allFiles) {
   for (auto elem : games) {
     vector<SaveFileInfo> files = getSaveFiles(userPath, getSaveSuffix(elem.first));
-    files = ::filter(files, [this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
+    files = files.filter([this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
     append(allFiles, files);
     if (!files.empty()) {
       options.emplace_back(elem.second, ListElem::TITLE);
-      append(options, transform2(files,
+      append(options, files.transform(
           [this] (const SaveFileInfo& info) {
               auto nameAndVersion = getNameAndVersion(userPath.file(info.filename));
               return ListElem(nameAndVersion->first, getDateString(info.date));}));

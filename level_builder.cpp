@@ -57,7 +57,7 @@ Rectangle LevelBuilder::toGlobalCoordinates(Rectangle area) {
 }
 
 void LevelBuilder::addCollective(CollectiveBuilder* col) {
-  if (!contains(collectives, col))
+  if (!collectives.contains(col))
     collectives.push_back(col);
 }
 
@@ -210,7 +210,7 @@ void LevelBuilder::popMap() {
 }
 
 Vec2 LevelBuilder::transform(Vec2 v) {
-  for (auto m : reverse2(mapStack)) {
+  for (auto m : mapStack.reverse()) {
     v = m(v);
   }
   return v;

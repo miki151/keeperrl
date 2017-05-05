@@ -27,7 +27,7 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
           else
             c->you(MsgType::ARE, "sucked into the " + f->getName() + "!");
           auto level = c->getPosition().getLevel();
-          level->changeLevel(getOnlyElement(level->getAllStairKeys()), c);
+          level->changeLevel(level->getAllStairKeys().getOnlyElement(), c);
         }
       },
       [&](Trap type) {

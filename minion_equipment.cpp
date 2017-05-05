@@ -179,7 +179,7 @@ void MinionEquipment::discard(UniqueEntity<Item>::Id id) {
     for (int i : All(items))
       if (items[i])
         if (items[i]->getUniqueId() == id) {
-          removeIndex(items, i);
+          items.removeIndex(i);
           break;
         }
   }
@@ -252,7 +252,7 @@ void MinionEquipment::autoAssign(WConstCreature creature, vector<WItem> possible
           (replacedItem && getItemValue(replacedItem) < getItemValue(it))) {
         if (numInSlot == slotSize) {
           discard(replacedItem);
-          removeElement(slots[it->getEquipmentSlot()], replacedItem);
+          slots[it->getEquipmentSlot()].removeElement(replacedItem);
         }
         own(creature, it);
         slots[it->getEquipmentSlot()].push_back(it);

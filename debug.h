@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <vector>
 #include "stdafx.h"
 
 #define FATAL FatalLog.get() << "FATAL " << __FILE__ << ":" << __LINE__ << " "
@@ -47,31 +48,9 @@
 #endif
 
 
-template<class T>
-std::ostream& operator<<(std::ostream& d, const vector<T>& container){
-  d << "{";
-  for (const T& elem : container) {
-    d << elem << ",";
-  }
-  d << "}";
-  return d;
-}
 
 inline std::ostream& operator<<(std::ostream& d, const milliseconds& millis) {
   return d << millis.count() << "ms";
-}
-
-template<class T>
-std::ostream& operator<<(std::ostream& d, const vector<vector<T> >& container){
-  d << "{";
-  for (int i = 0; i < container[0].size(); ++i) {
-    for (int j = 0; j < container[0].size(); ++i) {
-      d << container[j][i] << ",";
-    }
-    d << '\n';
-  }
-  d << "}";
-  return d;
 }
 
 class DebugOutput {
@@ -94,7 +73,7 @@ class DebugLog {
 
   class Logger {
     public:
-    Logger(vector<DebugOutput>& s) : outputs(s) {}
+    Logger(std::vector<DebugOutput>& s) : outputs(s) {}
 
     template <typename T>
     Logger& operator << (const T& t) {
@@ -108,13 +87,13 @@ class DebugLog {
     }
 
     private:
-    vector<DebugOutput>& outputs;
+    std::vector<DebugOutput>& outputs;
   };
 
   Logger get();
 
   private:
-  vector<DebugOutput> outputs;
+  std::vector<DebugOutput> outputs;
 };
 
 extern DebugLog InfoLog;

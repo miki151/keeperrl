@@ -77,7 +77,7 @@ void ConstructionMap::removeFurniture(Position pos, FurnitureLayer layer) {
   }
   furniturePositions[type].erase(pos);
   furniture[layer].erase(pos);
-  removeElement(allFurniture, {pos, layer});
+  allFurniture.removeElement({pos, layer});
   pos.setNeedsRenderUpdate(true);
 }
 

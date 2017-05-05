@@ -153,7 +153,7 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
     c->setTribe(*tribe);
   if (WGame game = getGame())
     for (WCollective col : getGame()->getCollectives())
-      if (contains(col->getCreatures(), c))
+      if (col->getCreatures().contains(c))
         col->removeCreature(c);
   creatures.push_back(c);
   for (MinionTrait t : traits)
@@ -169,15 +169,15 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
 }
 
 void Collective::removeCreature(WCreature c) {
-  removeElement(creatures, c);
+  creatures.removeElement(c);
   returnResource(taskMap->freeFromTask(c));
   if (auto spawnType = c->getAttributes().getSpawnType())
-    removeElement(bySpawnType[*spawnType], c);
+    bySpawnType[*spawnType].removeElement(c);
   for (auto team : teams->getContaining(c))
     teams->remove(team, c);
   for (MinionTrait t : ENUM_ALL(MinionTrait))
-    if (contains(byTrait[t], c))
-      removeElement(byTrait[t], c);
+    if (byTrait[t].contains(c))
+      byTrait[t].removeElement(c);
   c->setMoraleOverride(nullptr);
 }
 
@@ -394,7 +394,7 @@ vector<WCreature> Collective::getConsumptionTargets(WCreature consumer) const {
 }
 
 void Collective::orderConsumption(WCreature consumer, WCreature who) {
-  CHECK(contains(getConsumptionTargets(consumer), who));
+  CHECK(getConsumptionTargets(consumer).contains(who));
   setTask(consumer, Task::consume(this, who));
 }
 
@@ -406,7 +406,7 @@ PTask Collective::getEquipmentTask(WCreature c) {
     if (!c->getEquipment().isEquipped(it) && c->getEquipment().canEquip(it))
       tasks.push_back(Task::equipItem(it));
   for (Position v : zones->getPositions(ZoneId::STORAGE_EQUIPMENT)) {
-    vector<WItem> allItems = filter(v.getItems(ItemIndex::MINION_EQUIPMENT),
+    vector<WItem> allItems = v.getItems(ItemIndex::MINION_EQUIPMENT).filter(
         [this, c] (const WItem it) { return minionEquipment->isOwner(it, c);});
     vector<WItem> consumables;
     for (auto item : allItems)
@@ -468,7 +468,7 @@ void Collective::cancelTask(WConstCreature c) {
 
 MoveInfo Collective::getMove(WCreature c) {
   CHECK(control);
-  CHECK(contains(creatures, c));
+  CHECK(creatures.contains(c));
   CHECK(!c->isDead());
 /*  CHECK(contains(c->getPosition().getModel()->getLevels(), c->getPosition().getLevel())) <<
       c->getPosition().getLevel()->getName() << " " << c->getName().bare();*/
@@ -639,7 +639,7 @@ const vector<WCreature>& Collective::getCreatures(SpawnType type) const {
 }
 
 bool Collective::hasTrait(WConstCreature c, MinionTrait t) const {
-  return contains(byTrait[t], c);
+  return byTrait[t].contains(c);
 }
 
 bool Collective::hasAnyTrait(WConstCreature c, EnumSet<MinionTrait> traits) const {
@@ -655,7 +655,7 @@ void Collective::setTrait(WCreature c, MinionTrait t) {
 }
 
 void Collective::removeTrait(WCreature c, MinionTrait t) {
-  removeElementMaybe(byTrait[t], c);
+  byTrait[t].removeElementMaybe(c);
 }
 
 vector<WCreature> Collective::getCreaturesAnyOf(EnumSet<MinionTrait> trait) const {
@@ -733,20 +733,20 @@ void Collective::onEvent(const GameEvent& event) {
     case EventId::KILLED: {
         WCreature victim = event.get<EventInfo::Attacked>().victim;
         WCreature killer = event.get<EventInfo::Attacked>().attacker;
-        if (contains(creatures, victim))
+        if (creatures.contains(victim))
           onMinionKilled(victim, killer);
-        if (contains(creatures, killer))
+        if (creatures.contains(killer))
           onKilledSomeone(killer, victim);
       }
       break;
     case EventId::TORTURED:
-      if (contains(creatures, event.get<EventInfo::Attacked>().attacker))
+      if (creatures.contains(event.get<EventInfo::Attacked>().attacker))
         returnResource({ResourceId::MANA, 1});
       break;
     case EventId::SURRENDERED: {
         WCreature victim = event.get<EventInfo::Attacked>().victim;
         WCreature attacker = event.get<EventInfo::Attacked>().attacker;
-        if (contains(getCreatures(), attacker) && !contains(getCreatures(), victim) &&
+        if (getCreatures().contains(attacker) && !getCreatures().contains(victim) &&
             victim->getBody().isHumanoid())
           surrendering.insert(victim);
       }
@@ -800,7 +800,7 @@ void Collective::onEvent(const GameEvent& event) {
 
 void Collective::onMinionKilled(WCreature victim, WCreature killer) {
   control->onMemberKilled(victim, killer);
-  if (hasTrait(victim, MinionTrait::PRISONER) && killer && contains(getCreatures(), killer))
+  if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId::PRISONER_HEAD, 1});
   if (victim == leader)
     for (WCreature c : getCreatures(MinionTrait::SUMMONED)) // shortcut to get rid of summons when summonner dies
@@ -1259,9 +1259,9 @@ void Collective::updateConstructions() {
 }
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, double delayTime) {
-  vector<Vec2> enemyPos = transform2(filter(enemyPos1,
-        [=] (const Position& p) { return p.isSameLevel(level); }),
-      [] (const Position& p) { return p.getCoord();});
+  vector<Vec2> enemyPos = enemyPos1
+      .filter([=] (const Position& p) { return p.isSameLevel(level); })
+      .transform([] (const Position& p) { return p.getCoord();});
   int infinity = 1000000;
   int radius = 10;
   Table<int> dist(Rectangle::boundingBox(enemyPos)
@@ -1293,7 +1293,7 @@ bool Collective::isDelayed(Position pos) {
 void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
   if (isDelayed(pos) || !pos.canEnterEmpty(MovementTrait::WALK) || elem.destinationFun(this).count(pos))
     return;
-  vector<WItem> equipment = filter(pos.getItems(elem.index),
+  vector<WItem> equipment = pos.getItems(elem.index).filter(
       [this, &elem] (const WItem item) { return elem.predicate(this, item); });
   if (!equipment.empty()) {
     const set<Position>& destination = elem.destinationFun(this);
@@ -1468,7 +1468,7 @@ double Collective::getDangerLevel() const {
 }
 
 bool Collective::hasTech(TechId id) const {
-  return contains(technologies, id);
+  return technologies.contains(id);
 }
 
 int Collective::getTechCost(Technology* t) {
@@ -1481,7 +1481,7 @@ void Collective::acquireTech(Technology* tech) {
 }
 
 vector<Technology*> Collective::getTechnologies() const {
-  return transform2(technologies, [] (const TechId t) { return Technology::get(t); });
+  return technologies.transform([] (const TechId t) { return Technology::get(t); });
 }
 
 const EntitySet<Creature>& Collective::getKills() const {
@@ -1502,7 +1502,7 @@ void Collective::onCopulated(WCreature who, WCreature with) {
         + " with a monkey on " + who->getAttributes().getGender().his() + " knee");
   else
     control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
-  if (contains(getCreatures(), with))
+  if (getCreatures().contains(with))
     with->addMorale(1);
   if (!who->isAffected(LastingEffect::PREGNANT) && Random.roll(2)) {
     who->addEffect(LastingEffect::PREGNANT, getConfig().getImmigrantTimeout());

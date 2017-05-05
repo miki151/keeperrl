@@ -78,7 +78,7 @@ optional<UserInputId> ListElem::getAction() const {
 }
 
 vector<ListElem> ListElem::convert(const vector<string>& v) {
-  return transform2(v, [](const string& s) { return ListElem(s); });
+  return v.transform([](const string& s) { return ListElem(s); });
 }
 
 View::View() {

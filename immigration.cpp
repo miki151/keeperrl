@@ -107,7 +107,7 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
               if (required > 0) {
                 const char* extra = total > 0 ? "more " : "";
                 ret.push_back("Requires " + toString(required) + " " + extra +
-                    combineWithOr(transform2(attraction.types,
+                    combineWithOr(attraction.types.transform(
                         [&](const AttractionType& type) { return AttractionInfo::getAttractionName(type, required); })));
               }
             });
@@ -283,7 +283,7 @@ static vector<Position> pickSpawnPositions(const vector<WCreature>& creatures, v
     int cnt = 100;
     do {
       pos = Random.choose(allPositions);
-    } while ((!pos.canEnter(c) || contains(spawnPos, pos)) && --cnt > 0);
+    } while ((!pos.canEnter(c) || spawnPos.contains(pos)) && --cnt > 0);
     if (cnt == 0) {
       INFO << "Couldn't spawn immigrant " << c->getName().bare();
       return {};
@@ -512,7 +512,7 @@ void Immigration::update() {
     vector<Group> immigrantInfo;
     for (auto elem : Iter(getImmigrants()))
       immigrantInfo.push_back(Group {elem.index(), Random.get(elem->getGroupSize())});
-    vector<double> weights = transform2(immigrantInfo,
+    vector<double> weights = immigrantInfo.transform(
         [&](const Group& group) { return getImmigrantChance(group);});
     if (std::accumulate(weights.begin(), weights.end(), 0.0) > 0) {
       ++idCnt;

@@ -332,7 +332,7 @@ bool Player::interruptedByEnemy() {
   vector<string> ignoreCreatures { "a boar" ,"a deer", "a fox", "a vulture", "a rat", "a jackal", "a boulder" };
   if (enemies.size() > 0) {
     for (WCreature c : enemies)
-      if (!contains(ignoreCreatures, c->getName().a())) {
+      if (!ignoreCreatures.contains(c->getName().a())) {
         getView()->updateView(this, false);
         privateMessage("You notice " + c->getName().a());
         return true;
@@ -903,7 +903,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (WConstCreature c = position.getCreature()) {
     if (getCreature()->canSee(c) || c == getCreature()) {
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));
-      if (contains(getTeam(), c))
+      if (getTeam().contains(c))
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
       if (getCreature()->isEnemy(c))
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::HOSTILE);
@@ -968,7 +968,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto elem : typeDisplayOrder)
     if (typeGroups[elem].size() > 0)
       append(info.inventory, getItemInfos(typeGroups[elem]));
-  info.commands = transform2(getCommands(), [](const CommandInfo& info) -> PlayerInfo::CommandInfo { return info.commandInfo;});
+  info.commands = getCommands().transform([](const CommandInfo& info) -> PlayerInfo::CommandInfo { return info.commandInfo;});
   if (tutorial)
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
 }
@@ -1009,7 +1009,7 @@ vector<ItemInfo> Player::getItemInfos(const vector<WItem>& items) const {
 }
 
 vector<Vec2> Player::getVisibleEnemies() const {
-  return transform2(getCreature()->getVisibleEnemies(),
+  return getCreature()->getVisibleEnemies().transform(
       [](WConstCreature c) { return c->getPosition().getCoord(); });
 }
 

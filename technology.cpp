@@ -89,7 +89,7 @@ int Technology::getCost() const {
 vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current) {
   vector<Technology*> ret;
   for (Technology* t : Technology::getAll())
-    if (t->canLearnFrom(current) && !contains(current, t))
+    if (t->canLearnFrom(current) && !current.contains(t))
       ret.push_back(t);
   return ret;
 }
@@ -103,7 +103,7 @@ Technology::Technology(const string& n, const string& d, int c, const vector<Tec
 bool Technology::canLearnFrom(const vector<Technology*>& techs) const {
   vector<Technology*> myPre = prerequisites;
   for (Technology* t : techs)
-    removeElementMaybe(myPre, t);
+    myPre.removeElementMaybe(t);
   return myPre.empty();
 }
 
@@ -134,7 +134,7 @@ const vector<Technology*> Technology::getPrerequisites() const {
 const vector<Technology*> Technology::getAllowed() const {
   vector<Technology*> ret;
   for (Technology* t : getAll())
-    if (contains(t->prerequisites, this))
+    if (t->prerequisites.contains(this))
       ret.push_back(t);
   return ret;
 }

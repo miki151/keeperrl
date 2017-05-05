@@ -67,7 +67,7 @@ void Jukebox::continueCurrent() {
 
 MusicType Jukebox::getCurrentType() {
   for (auto& elem : byType)
-    if (contains(elem.second, current))
+    if (elem.second.contains(current))
       return elem.first;
   FATAL << "Track type not found " << current;
   return MusicType::PEACEFUL;

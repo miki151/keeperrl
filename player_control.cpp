@@ -613,7 +613,7 @@ void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
     append(slotItems, items);
     append(slotIndex, vector<EquipmentSlot>(items.size(), slot));
     for (WItem item : items) {
-      removeElement(ownedItems, item);
+      ownedItems.removeElement(item);
       bool equiped = creature->getEquipment().isEquipped(item);
       bool locked = getCollective()->getMinionEquipment().isLocked(creature, item->getUniqueId());
       info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
@@ -645,7 +645,7 @@ WItem PlayerControl::chooseEquipmentItem(WCreature creature, vector<WItem> curre
   vector<WItem> allItems = getCollective()->getAllItems(predicate);
   getCollective()->getMinionEquipment().sortByEquipmentValue(allItems);
   for (WItem item : allItems)
-    if (!contains(currentItems, item)) {
+    if (!currentItems.contains(item)) {
       auto owner = getCollective()->getMinionEquipment().getOwner(item);
       if (owner && getCreature(*owner))
         usedItems.push_back(item);
@@ -689,7 +689,7 @@ void PlayerControl::handlePersonalSpells(View* view) {
   for (Spell* spell : Technology::getAllKeeperSpells()) {
     ListElem::ElemMod mod = ListElem::NORMAL;
     string suff;
-    if (!contains(knownSpells, spell)) {
+    if (!knownSpells.contains(spell)) {
       mod = ListElem::INACTIVE;
       suff = requires(Technology::getNeededTech(spell));
     }
@@ -947,7 +947,7 @@ void PlayerControl::handleTrading(WCollective ally) {
     if (items.empty())
       break;
     int budget = getCollective()->numResource(ResourceId::GOLD);
-    vector<ItemInfo> itemInfo = transform2(items,
+    vector<ItemInfo> itemInfo = items.transform(
         [budget] (const pair<string, vector<WItem>> it) {
             return getTradeItemInfo(it.second, budget);});
     auto index = getView()->chooseTradeItem("Trade with " + ally->getName().getShort(),
@@ -1003,7 +1003,7 @@ void PlayerControl::handlePillage(WCollective col) {
         options.push_back({elem.second, getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)});
     if (options.empty())
       return;
-    vector<ItemInfo> itemInfo = transform2(options, [] (const PillageOption& it) {
+    vector<ItemInfo> itemInfo = options.transform([] (const PillageOption& it) {
             return getPillageItemInfo(it.items, it.storage.empty());});
     auto index = getView()->choosePillageItem("Pillage " + col->getName().getShort(), itemInfo, &scrollPos);
     if (!index)
@@ -1023,11 +1023,11 @@ void PlayerControl::handleRansom(bool pay) {
     getCollective()->takeResource({ResourceId::GOLD, amount});
     ransom.getAttacker()->onRansomPaid();
   }
-  removeIndex(ransomAttacks, 0);
+  ransomAttacks.removeIndex(0);
 }
 
 vector<WCollective> PlayerControl::getKnownVillains(VillainType type) const {
-  return filter(getGame()->getVillains(type), [this](WCollective c) {
+  return getGame()->getVillains(type).filter([this](WCollective c) {
       return seeEverything || getCollective()->isKnownVillain(c);});
 }
 
@@ -1109,7 +1109,7 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
     minions.push_back(c);
   minions.push_back(getCollective()->getLeader());
   info.minionGroups = getCreatureGroups(minions);
-  info.minions = transform2(minions, [](WConstCreature c) { return CreatureInfo(c) ;});
+  info.minions = minions.transform([](WConstCreature c) { return CreatureInfo(c) ;});
   info.minionCount = getCollective()->getPopulationSize();
   info.minionLimit = getCollective()->getMaxPopulation();
 }
@@ -1142,7 +1142,7 @@ static const ViewObject& getConstructionObject(FurnitureType type) {
 }
 
 void PlayerControl::acquireTech(int index) {
-  auto techs = filter(Technology::getNextTechs(getCollective()->getTechnologies()),
+  auto techs = Technology::getNextTechs(getCollective()->getTechnologies()).filter(
       [](const Technology* tech) { return tech->canResearch(); });
   Technology* tech = techs[index];
   getCollective()->takeResource({ResourceId::MANA, int(getCollective()->getTechCost(tech))});
@@ -1159,7 +1159,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     else if (libraryCount <= getMinLibrarySize())
       info.warning = "You need a larger library to continue research."_s;
     info.resource = make_pair(ViewId::MANA, getCollective()->numResource(ResourceId::MANA));
-    auto techs = filter(Technology::getNextTechs(getCollective()->getTechnologies()),
+    auto techs = Technology::getNextTechs(getCollective()->getTechnologies()).filter(
         [](const Technology* tech) { return tech->canResearch(); });
     for (Technology* tech : techs) {
       info.available.emplace_back();
@@ -1199,8 +1199,8 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   if (chosenWorkshop) {
     auto transFun = [this](const WorkshopItem& item) { return getWorkshopItem(item); };
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
-        transform2(getCollective()->getWorkshops().get(*chosenWorkshop).getOptions(), transFun),
-        transform2(getCollective()->getWorkshops().get(*chosenWorkshop).getQueued(), transFun),
+        getCollective()->getWorkshops().get(*chosenWorkshop).getOptions().transform(transFun),
+        getCollective()->getWorkshops().get(*chosenWorkshop).getQueued().transform(transFun),
         index
     };
   }
@@ -1296,7 +1296,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         [&](const AttractionInfo& attraction) {
           int required = attraction.amountClaimed;
           requirements.push_back("Requires " + toString(required) + " " +
-              combineWithOr(transform2(attraction.types,
+              combineWithOr(attraction.types.transform(
                   [&](const AttractionType& type) { return AttractionInfo::getAttractionName(type, required); })));
         },
         [&](const TechId& techId) {
@@ -1473,13 +1473,13 @@ void PlayerControl::onEvent(const GameEvent& event) {
     }
     case EventId::CREATURE_EVENT: {
       auto& info = event.get<EventInfo::CreatureEvent>();
-      if (contains(getCollective()->getCreatures(), info.creature))
+      if (getCollective()->getCreatures().contains(info.creature))
         addMessage(PlayerMessage(info.message).setCreature(info.creature->getUniqueId()));
       break;
     }
     case EventId::MOVED: {
       WCreature c = event.get<WCreature>();
-      if (contains(getCreatures(), c))
+      if (getCreatures().contains(c))
         updateMinionVisibility(c);
       break;
     }
@@ -1499,8 +1499,8 @@ void PlayerControl::onEvent(const GameEvent& event) {
           else
             tech = Random.choose(Technology::getAll());
         }
-        if (!contains(getCollective()->getTechnologies(), tech)) {
-          if (!contains(nextTechs, tech))
+        if (!getCollective()->getTechnologies().contains(tech)) {
+          if (!nextTechs.contains(tech))
             getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
                 + ", but you do not comprehend it.");
           else {
@@ -1688,7 +1688,7 @@ class MinionController : public Player {
       if (!dir)
         return;
       if (WCreature c = getCreature()->getPosition().plus(*dir).getCreature())
-        if (contains(targets, c) && getView()->yesOrNoPrompt("Really absorb " + c->getName().the() + "?"))
+        if (targets.contains(c) && getView()->yesOrNoPrompt("Really absorb " + c->getName().the() + "?"))
           tryToPerform(getCreature()->consume(c));
     }
   }
@@ -1718,7 +1718,7 @@ class MinionController : public Player {
 };
 
 void PlayerControl::controlSingle(WCreature c) {
-  CHECK(contains(getCreatures(), c));
+  CHECK(getCreatures().contains(c));
   CHECK(!c->isDead());
   commandTeam(getTeams().create({c}));
 }
@@ -2071,7 +2071,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CREATURE_CONSUME:
         if (WCreature c = getCreature(input.get<Creature::Id>())) {
           if (auto creatureId = getView()->chooseTeamLeader("Choose minion to absorb",
-              transform2(getCollective()->getConsumptionTargets(c),
+              getCollective()->getConsumptionTargets(c).transform(
                   [] (WConstCreature c) { return CreatureInfo(c);}), "cancel"))
             if (WCreature consumed = getCreature(*creatureId))
               getCollective()->orderConsumption(c, consumed);
@@ -2339,7 +2339,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           currentPlanned = none;
         int nextIndex = 0;
         if (currentPlanned) {
-          if (auto currentIndex = findElement(info.types, currentPlanned->getFurnitureType()))
+          if (auto currentIndex = info.types.findElement(currentPlanned->getFurnitureType()))
             nextIndex = *currentIndex + 1;
           else
             break;
@@ -2465,12 +2465,12 @@ void PlayerControl::update(bool currentlyActive) {
   vector<WCreature> addedCreatures;
   vector<WLevel> currentLevels {getLevel()};
   if (WCreature c = getControlled())
-    if (!contains(currentLevels, c->getLevel()))
+    if (!currentLevels.contains(c->getLevel()))
       currentLevels.push_back(c->getLevel());
   for (WLevel l : currentLevels)
     for (WCreature c : l->getAllCreatures())
       if (c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
-        if (c->getAttributes().getSpawnType() && !contains(getCreatures(), c) && !getCollective()->wasBanished(c)) {
+        if (c->getAttributes().getSpawnType() && !getCreatures().contains(c) && !getCollective()->wasBanished(c)) {
           addedCreatures.push_back(c);
           getCollective()->addCreature(c, {MinionTrait::FIGHTER});
           if (WCreature controlled = getControlled())
@@ -2484,7 +2484,7 @@ void PlayerControl::update(bool currentlyActive) {
                 break;
               }
         } else
-          if (c->getBody().isMinionFood() && !contains(getCreatures(), c))
+          if (c->getBody().isMinionFood() && !getCreatures().contains(c))
             getCollective()->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
       }
   if (!addedCreatures.empty()) {
@@ -2494,7 +2494,7 @@ void PlayerControl::update(bool currentlyActive) {
 
 bool PlayerControl::isConsideredAttacking(WConstCreature c, WConstCollective enemy) {
   if (enemy && enemy->getModel() == getModel())
-    return canSee(c) && contains(getCollective()->getTerritory().getStandardExtended(), c->getPosition());
+    return canSee(c) && getCollective()->getTerritory().getStandardExtended().contains(c->getPosition());
   else
     return canSee(c) && c->getLevel() == getLevel();
 }
@@ -2504,7 +2504,7 @@ const double messageTimeout = 80;
 void PlayerControl::tick() {
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
-  messages = filter(messages, [&] (const PlayerMessage& msg) {
+  messages = messages.filter([&] (const PlayerMessage& msg) {
       return msg.getFreshness() > 0; });
   considerNightfallMessage();
   if (auto msg = getCollective()->getWarnings().getNextWarning(getLocalTime()))
@@ -2513,7 +2513,7 @@ void PlayerControl::tick() {
   for (auto attack : copyOf(ransomAttacks))
     for (WConstCreature c : attack.getCreatures())
       if (getCollective()->getTerritory().contains(c->getPosition())) {
-        removeElement(ransomAttacks, attack);
+        ransomAttacks.removeElement(attack);
         break;
       }
   for (auto attack : copyOf(newAttacks))
@@ -2522,7 +2522,7 @@ void PlayerControl::tick() {
         addMessage(PlayerMessage("You are under attack by " + attack.getAttackerName() + "!",
             MessagePriority::CRITICAL).setPosition(c->getPosition()));
         getGame()->setCurrentMusic(MusicType::BATTLE, true);
-        removeElement(newAttacks, attack);
+        newAttacks.removeElement(attack);
         if (auto attacker = attack.getAttacker())
           getCollective()->addKnownVillain(attacker);
         if (attack.getRansom())

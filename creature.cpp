@@ -166,7 +166,7 @@ void Creature::addCreatureVision(WCreatureVision creatureVision) {
 }
 
 void Creature::removeCreatureVision(WCreatureVision vision) {
-  removeElement(creatureVisions, vision);
+  creatureVisions.removeElement(vision);
 }
 
 void Creature::pushController(PController ctrl) {
@@ -544,7 +544,7 @@ CreatureAction Creature::equip(WItem item) const {
   string reason;
   if (!canEquipIfEmptySlot(item, &reason))
     return CreatureAction(reason);
-  if (contains(equipment->getSlotItems(item->getEquipmentSlot()), item))
+  if (equipment->getSlotItems(item->getEquipmentSlot()).contains(item))
     return CreatureAction();
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " equip " << item->getName();
@@ -1060,7 +1060,7 @@ bool Creature::takeDamage(const Attack& attack) {
 }
 
 static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
-  return transform2(adjectives, [] (const AdjectiveInfo& e) -> string { return e.name; });
+  return adjectives.transform([] (const AdjectiveInfo& e) -> string { return e.name; });
 }
 
 void Creature::updateViewObject() {
@@ -1287,7 +1287,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
     return CreatureAction("Out of ammunition");
   return CreatureAction(this, [=](WCreature self) {
     PItem ammo = self->equipment->removeItem(NOTNULL(getAmmo()), self);
-    auto weapon = getOnlyElement(self->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON))
+    auto weapon = self->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).getOnlyElement()
         .dynamicCast<RangedWeapon>();
     CHECK(!!weapon);
     weapon->fire(self, std::move(ammo), direction);
@@ -1411,7 +1411,7 @@ WItem Creature::getWeapon() const {
   if (it.empty())
     return nullptr;
   else
-    return getOnlyElement(it);
+    return it.getOnlyElement();
 }
 
 CreatureAction Creature::applyItem(WItem item) const {

@@ -375,7 +375,7 @@ void Level::changeLevel(Position destination, WCreature c) {
 }
 
 void Level::eraseCreature(WCreature c, Vec2 coord) {
-  removeElement(creatures, c);
+  creatures.removeElement(c);
   unplaceCreature(c, coord);
   creatureIds.erase(c);
 }
@@ -466,7 +466,7 @@ vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
 }
 
 vector<Vec2> Level::getVisibleTiles(Vec2 pos, VisionId vision) const {
-  return filter(getFieldOfView(vision).getVisibleTiles(pos),
+  return getFieldOfView(vision).getVisibleTiles(pos).filter(
       [&](Vec2 v) { return isWithinVision(pos, v, vision); });
 }
 

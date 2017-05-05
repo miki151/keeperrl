@@ -963,7 +963,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
   int index = 0;
   disableTooltip = true;
   DestructorFunction dFun([this] { disableTooltip = false; });
-  vector<string> options = transform2(itemInfo.actions, bindFunction(getActionText));
+  vector<string> options = itemInfo.actions.transform(bindFunction(getActionText));
   options.push_back("cancel");
   int count = options.size();
   SGuiElem stuff = gui.margins(
@@ -1990,7 +1990,7 @@ SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
     if (menuType != MenuType::MAIN)
       line = gui.verticalList(std::move(label1), listBrokenLineHeight);
     else
-      line = std::move(getOnlyElement(label1));
+      line = std::move(label1.getOnlyElement());
     if (!options[i].getTip().empty())
       line = gui.stack(std::move(line),
           gui.tooltip({options[i].getTip()}));

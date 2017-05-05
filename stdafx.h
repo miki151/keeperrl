@@ -96,14 +96,11 @@ using std::string;
 
 #else
 
-#include <vector>
 #include <string>
 #include <deque>
-#include <set>
 #include <map>
-using std::vector;
+#include <set>
 using std::map;
-using std::set;
 using std::multiset;
 using std::deque;
 using std::string;

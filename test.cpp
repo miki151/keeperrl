@@ -185,7 +185,7 @@ class Test {
     a.clear();
     for (int x : Range(4, 5).reverse())
       a.push_back(x);
-    CHECK(getOnlyElement(a) == 4);
+    CHECK(a.getOnlyElement() == 4);
   }
 
   void testContains() {
@@ -344,7 +344,7 @@ class Test {
     vector<int> v { 5, 4, 3, 2, 1};
     vector<string> s { "s5", "s4", "s3", "s2", "s1" };
     function<string(const int&)> func = [](const int& a) { return "s" + toString(a); };
-    vector<string> res = transform2(v, func);
+    vector<string> res = v.transform(func);
     CHECKEQ(res, s);
   }
 
@@ -429,19 +429,19 @@ class Test {
   void testReverse() {
     vector<int> v1 {1, 2, 3, 4};
     vector<int> v2 {4, 3, 2, 1};
-    CHECKEQ(reverse2(v1), v2);
+    CHECKEQ(v1.reverse(), v2);
   }
 
   void testReverse2() {
     vector<int> v1 {1};
     vector<int> v2 {1};
-    CHECKEQ(reverse2(v1), v2);
+    CHECKEQ(v1.reverse(), v2);
   }
 
   void testReverse3() {
     vector<int> v1;
     vector<int> v2;
-    CHECKEQ(reverse2(v1), v2);
+    CHECKEQ(v1.reverse(), v2);
   }
 
 
@@ -487,10 +487,10 @@ class Test {
     equipment.own(human.get(), bow1.get());
     CHECK(equipment.needsItem(human.get(), bow1.get(), false));
     CHECK(equipment.isOwner(bow1.get(), human.get()));
-    CHECK(contains(equipment.getItemsOwnedBy(human.get()), bow1.get()));
+    CHECK(equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
     equipment.discard(bow1.get());
     CHECK(!equipment.isOwner(bow1.get(), human.get()));
-    CHECK(!contains(equipment.getItemsOwnedBy(human.get()), bow1.get()));
+    CHECK(!equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
     equipment.own(human.get(), bow1.get());
     bow2->addModifier(ModifierType::FIRED_ACCURACY, -10);
     CHECK(!equipment.needsItem(human.get(), bow2.get(), false));
@@ -502,12 +502,12 @@ class Test {
     CHECK(equipment.isOwner(bow2.get(), human.get()));
     equipment.own(human.get(), bow1.get());
     CHECK(equipment.isOwner(bow1.get(), human.get()));
-    CHECK(contains(equipment.getItemsOwnedBy(human.get()), bow1.get()));
+    CHECK(equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
     CHECK(equipment.getOwner(bow2.get()) == none);
     equipment.setLocked(human.get(), bow1->getUniqueId(), true);
     equipment.own(human.get(), bow3.get());
     CHECK(equipment.isOwner(bow1.get(), human.get()));
-    CHECK(contains(equipment.getItemsOwnedBy(human.get()), bow1.get()));
+    CHECK(equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
   }
 
   void testMinionEquipmentAmmo() {
@@ -615,7 +615,7 @@ class Test {
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 41);
     equipment.autoAssign(human1.get(), {bow2.get()});
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 41);
-    CHECK(contains(equipment.getItemsOwnedBy(human1.get()), bow2.get()));
+    CHECK(equipment.getItemsOwnedBy(human1.get()).contains(bow2.get()));
     equipment.updateOwners({human1.get()});
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 41);
     human1->getBody().looseBodyPart(BodyPart::ARM);

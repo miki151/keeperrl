@@ -682,7 +682,7 @@ SDL::SDL_Surface* Renderer::createSurface(int w, int h) {
 
 bool Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
   const static string imageSuf = ".png";
-  auto files = filter(path.getFiles(), [](const FilePath& f) { return f.hasSuffix(imageSuf);});
+  auto files = path.getFiles().filter([](const FilePath& f) { return f.hasSuffix(imageSuf);});
   int rowLength = setWidth / size.x;
   SDL::SDL_Surface* image = createSurface(setWidth, ((files.size() + rowLength - 1) / rowLength) * size.y);
   SDL::SDL_SetSurfaceBlendMode(image, SDL::SDL_BLENDMODE_NONE);

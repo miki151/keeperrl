@@ -1221,7 +1221,7 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
 void WindowView::zoom(int dir) {
   refreshInput = true;
   auto& layouts = currentTileLayout.layouts;
-  int index = *findAddress(layouts, mapLayout);
+  int index = *layouts.findAddress(mapLayout);
   if (dir != 0 )
     index += dir;
   else {
@@ -1233,7 +1233,7 @@ void WindowView::zoom(int dir) {
 }
 
 void WindowView::switchTiles() {
-  int index = *findAddress(currentTileLayout.layouts, mapLayout);
+  int index = *currentTileLayout.layouts.findAddress(mapLayout);
   if (options->getBoolValue(OptionId::ASCII) || !useTiles)
     currentTileLayout = asciiLayouts;
   else

@@ -549,7 +549,7 @@ optional<TribeId> Position::getForbiddenTribe() const {
 
 vector<Position> Position::getVisibleTiles(VisionId vision) {
   if (isValid())
-    return transform2(getLevel()->getVisibleTiles(coord, vision), [this] (Vec2 v) { return Position(v, getLevel()); });
+    return getLevel()->getVisibleTiles(coord, vision).transform([this] (Vec2 v) { return Position(v, getLevel()); });
   else
     return {};
 }

@@ -328,15 +328,15 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
       for (auto furniture : {FurnitureType::BOOK_SHELF, FurnitureType::TRAINING_WOOD})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
           for (auto floorPos : concat({pos}, pos.neighbors8()))
-            if (floorPos.canConstruct(FurnitureType::FLOOR_WOOD1) && !contains(ret, floorPos.getCoord()))
+            if (floorPos.canConstruct(FurnitureType::FLOOR_WOOD1) && !ret.contains(floorPos.getCoord()))
               ret.push_back(floorPos.getCoord());
       return ret;
     }
     case State::RESEARCH_CRAFTING:
-      return transform2(collective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF),
+      return collective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF).transform(
           [](const Position& pos) { return pos.getCoord(); });
     case State::SCHEDULE_WORKSHOP_ITEMS:
-      return transform2(collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP),
+      return collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP).transform(
           [](const Position& pos) { return pos.getCoord(); });
     default:
       return {};

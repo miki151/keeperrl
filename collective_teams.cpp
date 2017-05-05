@@ -3,18 +3,18 @@
 #include "creature.h"
 
 bool CollectiveTeams::contains(TeamId team, WConstCreature c) const {
-  return ::contains(teamInfo.at(team).creatures, c);
+  return teamInfo.at(team).creatures.contains(c);
 }
 
 void CollectiveTeams::add(TeamId team, WCreature c) {
-  CHECK(!::contains(teamInfo[team].creatures, c));
+  CHECK(!teamInfo[team].creatures.contains(c));
   teamInfo[team].creatures.push_back(c);
 }
 
 void CollectiveTeams::remove(TeamId team, WCreature c) {
   if (c == getLeader(team))
     deactivate(team); // otherwise teams are still active when the player gets killed
-  removeElement(teamInfo[team].creatures, c);
+  teamInfo[team].creatures.removeElement(c);
   if (teamInfo[team].creatures.empty())
     cancel(team);
 }
@@ -28,9 +28,9 @@ void CollectiveTeams::deactivate(TeamId team) {
 }
 
 void CollectiveTeams::setLeader(TeamId team, WCreature c) {
-  if (!::contains(teamInfo[team].creatures, c))
+  if (!teamInfo[team].creatures.contains(c))
     add(team, c);
-  swap(teamInfo[team].creatures[0], teamInfo[team].creatures[*findElement(teamInfo[team].creatures, c)]);
+  swap(teamInfo[team].creatures[0], teamInfo[team].creatures[*teamInfo[team].creatures.findElement(c)]);
 }
 
 void CollectiveTeams::rotateLeader(TeamId team) {

@@ -312,7 +312,7 @@ class PickAndEquipItem : public PickItem {
     vector<WItem> it = c->getEquipment().getItems(items.containsPredicate());
     if (!it.empty()) {
       CHECK(it.size() == 1) << "Duplicate items: " << it[0]->getName() << " " << it[1]->getName();
-      if (auto action = c->equip(getOnlyElement(it)))
+      if (auto action = c->equip(it.getOnlyElement()))
         return {1.0, action.append([=](WCreature c) {
           setDone();
         })};
@@ -415,7 +415,7 @@ class BringItem : public PickItem {
   }
 
   optional<Position> getBestTarget(WCreature c, const vector<Position>& pos) const {
-    vector<Position> available = filter(pos, [c](const Position& pos) { return c->isSameSector(pos); });
+    vector<Position> available = pos.filter([c](const Position& pos) { return c->isSameSector(pos); });
     if (!available.empty())
       return chooseRandomClose(c->getPosition(), available, LAZY);
     else
@@ -473,7 +473,7 @@ class ApplyItem : public BringItem {
       : BringItem(c, position, items, target), callback(c) {}
 
   virtual void cancel() override {
-    callback->onAppliedItemCancel(getOnlyElement(allTargets));
+    callback->onAppliedItemCancel(allTargets.getOnlyElement());
   }
 
   virtual string getDescription() const override {
@@ -488,7 +488,7 @@ class ApplyItem : public BringItem {
       if (it.size() > 1)
         FATAL << it[0]->getName() << " " << it[0]->getUniqueId().getHash() << " "  << it[1]->getName() << " " <<
             it[1]->getUniqueId().getHash();
-      WItem item = getOnlyElement(it);
+      WItem item = it.getOnlyElement();
       if (auto action = c->applyItem(item))
         return action.prepend([=](WCreature c) {
             callback->onAppliedItem(c->getPosition(), item);
@@ -836,10 +836,10 @@ class CampAndSpawn : public Task {
   void updateTeams() {
     for (auto member : copyOf(defenseTeam))
       if (member->isDead())
-        removeElement(defenseTeam, member);
+        defenseTeam.removeElement(member);
     for (auto member : copyOf(attackTeam))
       if (member->isDead())
-        removeElement(attackTeam, member);
+        attackTeam.removeElement(member);
   }
 
   virtual void cancel() override {
@@ -860,7 +860,7 @@ class CampAndSpawn : public Task {
           makeVec(spawns.random(MonsterAIFactory::summoned(c, 100000)))))
         defenseTeam.push_back(summon);
     }
-    if (!contains(campPos, c->getPosition()))
+    if (!campPos.contains(c->getPosition()))
       return c->moveTowards(campPos[0]);
     if (attackTeam.empty()) {
       if (!attackCountdown) {

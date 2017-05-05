@@ -61,7 +61,7 @@ ItemPredicate Item::equipmentSlotPredicate(EquipmentSlot slot) {
 }
 
 ItemPredicate Item::classPredicate(vector<ItemClass> cl) {
-  return [cl](const WItem item) { return contains(cl, item->getClass()); };
+  return [cl](const WItem item) { return cl.contains(item->getClass()); };
 }
 
 ItemPredicate Item::namePredicate(const string& name) {
