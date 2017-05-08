@@ -445,21 +445,19 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
 
 void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Vec2 pos, Vec2 sz,
     milliseconds curTime) {
-  if (object.hasModifier(ViewObject::Modifier::PLAYER))
-    drawCreatureHighlight(renderer, pos, sz, colors[ColorId::ALMOST_WHITE]);
+  auto getHighlight = [](ColorId id) { return transparency(colors[id], 200); };
   if (object.hasModifier(ViewObject::Modifier::HOSTILE) && enemies)
-    drawCreatureHighlight(renderer, pos, sz, colors[ColorId::PURPLE]);
+    drawCreatureHighlight(renderer, pos, sz, getHighlight(ColorId::PURPLE));
   if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && morale)
     if (auto morale = object.getAttribute(ViewObject::Attribute::MORALE))
       drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));
-  if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT) && (curTime.count() / 1000) % 2) {
-    drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
-  } else
+  if (object.hasModifier(ViewObject::Modifier::PLAYER))
+    drawCreatureHighlight(renderer, pos, sz, getHighlight(ColorId::WHITE));
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
-    drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
+    drawCreatureHighlight(renderer, pos, sz, getHighlight(ColorId::YELLOW));
   if (auto id = object.getCreatureId())
     if (isCreatureHighlighted(*id))
-      drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
+      drawCreatureHighlight(renderer, pos, sz, getHighlight(ColorId::YELLOW));
 }
 
 bool MapGui::isCreatureHighlighted(UniqueEntity<Creature>::Id creature) {

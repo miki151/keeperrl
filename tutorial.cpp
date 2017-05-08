@@ -52,6 +52,7 @@ enum class Tutorial::State {
   EQUIP_ALL_FIGHTERS,
   CREATE_TEAM,
   CONTROL_TEAM,
+  CONTROL_MODE_MOVEMENT,
   FINISHED,
 };
 
@@ -128,6 +129,8 @@ bool Tutorial::canContinue(WConstGame game) const {
       return isTeam(collective);
     case State::CONTROL_TEAM:
       return isTeam(collective) && !!game->getPlayerControl()->getControlled();
+    case State::CONTROL_MODE_MOVEMENT:
+      return true;
     case State::FINISHED:
       return false;
   }
@@ -231,6 +234,11 @@ string Tutorial::getMessage() const {
     case State::CONTROL_TEAM:
       return "Time to take control over your team. Select the team, and one of the team members as the leader, "
           "and click [Control].";
+    case State::CONTROL_MODE_MOVEMENT:
+      return "You are now in control of your minion, and the game has become turn-based. Try to moving around using "
+          "the arrow keys or by left-clicking on the map. You can scroll the map by dragging it with the right "
+          "mouse button.\n \n"
+          "Notice the rest of your team, which follows you.";
     case State::FINISHED:
       return "Congratulations, you have completed the tutorial! Go play the game now :)";
   }
@@ -292,7 +300,7 @@ static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
 
 vector<Vec2> Tutorial::getHighlightedSquaresHigh(WConstGame game) const {
   auto collective = game->getPlayerCollective();
-  const Vec2 entry(123, 112);
+  const Vec2 entry(149, 133);
   const int corridor = 6;
   int roomWidth = 5;
   const Vec2 firstRoom(entry - Vec2(0, corridor + roomWidth / 2));

@@ -903,7 +903,9 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (WConstCreature c = position.getCreature()) {
     if (getCreature()->canSee(c) || c == getCreature()) {
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));
-      if (getTeam().contains(c))
+      if (c == getCreature())
+        index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::PLAYER);
+      else if (getTeam().contains(c))
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
       if (getCreature()->isEnemy(c))
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::HOSTILE);
