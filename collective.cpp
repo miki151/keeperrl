@@ -719,68 +719,70 @@ void Collective::onKillCancelled(WCreature c) {
 void Collective::onEvent(const GameEvent& event) {
   switch (event.getId()) {
     case EventId::ALARM: {
-        Position pos = event.get<Position>();
-        static const int alarmTime = 100;
-        if (getTerritory().contains(pos)) {
-          control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(pos));
-          alarmInfo = AlarmInfo {getGlobalTime() + alarmTime, pos };
-          for (WCreature c : byTrait[MinionTrait::FIGHTER])
-            if (c->isAffected(LastingEffect::SLEEP))
-              c->removeEffect(LastingEffect::SLEEP);
-        }
+      Position pos = event.get<Position>();
+      static const int alarmTime = 100;
+      if (getTerritory().contains(pos)) {
+        control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(pos));
+        alarmInfo = AlarmInfo {getGlobalTime() + alarmTime, pos };
+        for (WCreature c : byTrait[MinionTrait::FIGHTER])
+          if (c->isAffected(LastingEffect::SLEEP))
+            c->removeEffect(LastingEffect::SLEEP);
       }
       break;
+    }
     case EventId::KILLED: {
-        WCreature victim = event.get<EventInfo::Attacked>().victim;
-        WCreature killer = event.get<EventInfo::Attacked>().attacker;
-        if (creatures.contains(victim))
-          onMinionKilled(victim, killer);
-        if (creatures.contains(killer))
-          onKilledSomeone(killer, victim);
-      }
+      WCreature victim = event.get<EventInfo::Attacked>().victim;
+      WCreature killer = event.get<EventInfo::Attacked>().attacker;
+      if (creatures.contains(victim))
+        onMinionKilled(victim, killer);
+      if (creatures.contains(killer))
+        onKilledSomeone(killer, victim);
       break;
+    }
     case EventId::TORTURED:
       if (creatures.contains(event.get<EventInfo::Attacked>().attacker))
         returnResource({ResourceId::MANA, 1});
       break;
     case EventId::SURRENDERED: {
-        WCreature victim = event.get<EventInfo::Attacked>().victim;
-        WCreature attacker = event.get<EventInfo::Attacked>().attacker;
-        if (getCreatures().contains(attacker) && !getCreatures().contains(victim) &&
-            victim->getBody().isHumanoid())
-          surrendering.insert(victim);
-      }
+      WCreature victim = event.get<EventInfo::Attacked>().victim;
+      WCreature attacker = event.get<EventInfo::Attacked>().attacker;
+      if (getCreatures().contains(attacker) && !getCreatures().contains(victim) &&
+          victim->getBody().isHumanoid())
+        surrendering.insert(victim);
       break;
+    }
     case EventId::TRAP_TRIGGERED: {
-        Position pos = event.get<Position>();
-        if (constructions->containsTrap(pos)) {
-          constructions->getTrap(pos).reset();
-          if (constructions->getTrap(pos).getType() == TrapType::SURPRISE)
-            handleSurprise(pos);
-        }
+      Position pos = event.get<Position>();
+      if (constructions->containsTrap(pos)) {
+        constructions->getTrap(pos).reset();
+        if (constructions->getTrap(pos).getType() == TrapType::SURPRISE)
+          handleSurprise(pos);
       }
       break;
+    }
     case EventId::TRAP_DISARMED: {
-        Position pos = event.get<EventInfo::TrapDisarmed>().position;
-        WCreature who = event.get<EventInfo::TrapDisarmed>().creature;
-        if (constructions->containsTrap(pos)) {
-          control->addMessage(PlayerMessage(who->getName().a() + " disarms a "
-                + getTrapName(constructions->getTrap(pos).getType()) + " trap.",
-                MessagePriority::HIGH).setPosition(pos));
-          constructions->getTrap(pos).reset();
-        }
+      Position pos = event.get<EventInfo::TrapDisarmed>().position;
+      WCreature who = event.get<EventInfo::TrapDisarmed>().creature;
+      if (constructions->containsTrap(pos)) {
+        control->addMessage(PlayerMessage(who->getName().a() + " disarms a "
+              + getTrapName(constructions->getTrap(pos).getType()) + " trap.",
+              MessagePriority::HIGH).setPosition(pos));
+        constructions->getTrap(pos).reset();
       }
       break;
+    }
     case EventId::FURNITURE_DESTROYED: {
-        auto info = event.get<EventInfo::FurnitureEvent>();
-        constructions->onFurnitureDestroyed(info.position, info.layer);
-        tileEfficiency->update(info.position);
-      }
+      auto info = event.get<EventInfo::FurnitureEvent>();
+      constructions->onFurnitureDestroyed(info.position, info.layer);
+      tileEfficiency->update(info.position);
       break;
-    /*case EventId::EQUIPED:
-      minionEquipment->own(event.get<EventInfo::ItemsHandled>().creature,
-          getOnlyElement(event.get<EventInfo::ItemsHandled>().items));
-      break;*/
+    }
+    case EventId::EQUIPED: {
+      auto info = event.get<EventInfo::ItemsHandled>();
+      if (info.creature->isPlayer())
+        minionEquipment->own(info.creature, info.items.getOnlyElement());
+      break;
+    }
     case EventId::CONQUERED_ENEMY: {
       WCollective col = event.get<WCollective>();
       if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER) {
@@ -791,8 +793,8 @@ void Collective::onEvent(const GameEvent& event) {
         control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
             MessagePriority::HIGH));
       }
+      break;
     }
-    break;
     default:
       break;
   }

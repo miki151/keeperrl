@@ -552,8 +552,8 @@ CreatureAction Creature::equip(WItem item) const {
     self->equipment->equip(item, slot, self);
     playerMessage("You equip " + item->getTheName(false, self));
     monsterMessage(getName().the() + " equips " + item->getAName());
-/*    if (WGame game = getGame())
-      game->addEvent({EventId::EQUIPED, EventInfo::ItemsHandled{self, {item}}});*/
+    if (WGame game = getGame())
+      game->addEvent({EventId::EQUIPED, EventInfo::ItemsHandled{self, {item}}});
     self->spendTime(1);
   });
 }
