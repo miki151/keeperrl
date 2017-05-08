@@ -24,41 +24,43 @@
 #include "sdl_event_generator.h"
 #include "clock.h"
 
-EnumMap<ColorId, Color> colors({
-  {ColorId::WHITE, Color(255, 255, 255)},
-  {ColorId::YELLOW, Color(250, 255, 0)},
-  {ColorId::LIGHT_BROWN, Color(210, 150, 0)},
-  {ColorId::ORANGE_BROWN, Color(250, 150, 0)},
-  {ColorId::BROWN, Color(240, 130, 0)},
-  {ColorId::DARK_BROWN, Color(100, 60, 0)},
-  {ColorId::MAIN_MENU_ON, Color(255, 255, 255, 190)},
-  {ColorId::MAIN_MENU_OFF, Color(255, 255, 255, 70)},
-  {ColorId::LIGHT_GRAY, Color(150, 150, 150)},
-  {ColorId::GRAY, Color(100, 100, 100)},
-  {ColorId::ALMOST_GRAY, Color(102, 102, 102)},
-  {ColorId::DARK_GRAY, Color(50, 50, 50)},
-  {ColorId::ALMOST_BLACK, Color(20, 20, 20)},
-  {ColorId::ALMOST_DARK_GRAY, Color(60, 60, 60)},
-  {ColorId::BLACK, Color(0, 0, 0)},
-  {ColorId::ALMOST_WHITE, Color(200, 200, 200)},
-  {ColorId::GREEN, Color(0, 255, 0)},
-  {ColorId::LIGHT_GREEN, Color(100, 255, 100)},
-  {ColorId::DARK_GREEN, Color(0, 150, 0)},
-  {ColorId::RED, Color(255, 0, 0)},
-  {ColorId::LIGHT_RED, Color(255, 100, 100)},
-  {ColorId::PINK, Color(255, 20, 147)},
-  {ColorId::ORANGE, Color(255, 165, 0)},
-  {ColorId::BLUE, Color(0, 0, 255)},
-  {ColorId::NIGHT_BLUE, Color(0, 0, 20)},
-  {ColorId::DARK_BLUE, Color(50, 50, 200)},
-  {ColorId::LIGHT_BLUE, Color(100, 100, 255)},
-  {ColorId::PURPLE, Color(160, 32, 240)},
-  {ColorId::VIOLET, Color(120, 0, 255)},
-  {ColorId::TRANSLUCENT_BLACK, Color(0, 0, 0)},
-  {ColorId::TRANSPARENT, Color(0, 0, 0, 0)}
-});
+Color Color::WHITE(255, 255, 255);
+Color Color::YELLOW(250, 255, 0);
+Color Color::LIGHT_BROWN(210, 150, 0);
+Color Color::ORANGE_BROWN(250, 150, 0);
+Color Color::BROWN(240, 130, 0);
+Color Color::DARK_BROWN(100, 60, 0);
+Color Color::MAIN_MENU_ON(255, 255, 255, 190);
+Color Color::MAIN_MENU_OFF(255, 255, 255, 70);
+Color Color::LIGHT_GRAY(150, 150, 150);
+Color Color::GRAY(100, 100, 100);
+Color Color::ALMOST_GRAY(102, 102, 102);
+Color Color::DARK_GRAY(50, 50, 50);
+Color Color::ALMOST_BLACK(20, 20, 20);
+Color Color::ALMOST_DARK_GRAY(60, 60, 60);
+Color Color::BLACK(0, 0, 0);
+Color Color::ALMOST_WHITE(200, 200, 200);
+Color Color::GREEN(0, 255, 0);
+Color Color::LIGHT_GREEN(100, 255, 100);
+Color Color::DARK_GREEN(0, 150, 0);
+Color Color::RED(255, 0, 0);
+Color Color::LIGHT_RED(255, 100, 100);
+Color Color::PINK(255, 20, 147);
+Color Color::ORANGE(255, 165, 0);
+Color Color::BLUE(0, 0, 255);
+Color Color::NIGHT_BLUE(0, 0, 20);
+Color Color::DARK_BLUE(50, 50, 200);
+Color Color::LIGHT_BLUE(100, 100, 255);
+Color Color::PURPLE(160, 32, 240);
+Color Color::VIOLET(120, 0, 255);
+Color Color::TRANSLUCENT_BLACK(0, 0, 0);
+Color Color::TRANSPARENT(0, 0, 0, 0);
 
 Color::Color(Uint8 r, Uint8 g, Uint8 b, Uint8 a) : SDL_Color{r, g, b, a} {
+}
+
+Color Color::transparency(int trans) {
+  return Color(r, g, b, (Uint8)trans);
 }
 
 Color::Color() : Color(0, 0, 0) {
@@ -81,18 +83,6 @@ Renderer::TileCoord::TileCoord(Vec2 p, int t) : pos(p), texNum(t) {
 
 Renderer::TileCoord::TileCoord() : TileCoord(Vec2(0, 0), -1) {
 }
-
-Color transparency(const Color& color, int trans) {
-  return Color{color.r, color.g, color.b, (Uint8)trans};
-}
-
-/*Text& Renderer::getTextObject() {
-  static Text t1, t2;
-  if (currentThreadId() == *renderThreadId)
-    return t1;
-  else
-    return t2;
-}*/
 
 static void checkOpenglError() {
   auto error = SDL::glGetError();
@@ -332,7 +322,7 @@ void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text,
     int ind = lowercase(text).find(key);
     if (ind != string::npos) {
       int pos = x + getTextLength(text.substr(0, ind));
-      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, colors[ColorId::GREEN]);
+      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, Color::GREEN);
     }
   }
   drawText(color, x, y, text);
@@ -661,7 +651,7 @@ void Renderer::drawViewObject(Vec2 pos, const ViewObject& object) {
 
 void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {
   if (!Tile::getTile(id, true).hasSpriteCoord())
-    drawFilledRectangle(bounds, colors[ColorId::BLACK]);
+    drawFilledRectangle(bounds, Color::BLACK);
 }
 
 bool Renderer::loadAltTilesFromDir(const DirectoryPath& path, Vec2 altSize) {

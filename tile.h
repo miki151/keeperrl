@@ -29,7 +29,7 @@ class Tile {
   static Color getColor(const ViewObject& object);
 
   static Tile empty();
-  static Tile fromString(const string&, ColorId, bool symbol = false);
+  static Tile fromString(const string&, Color, bool symbol = false);
   static Tile byCoord(TileCoord);
 
   static void initialize(Renderer&, bool useTiles);

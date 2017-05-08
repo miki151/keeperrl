@@ -19,51 +19,47 @@
 #include "util.h"
 #include "file_path.h"
 
+
 struct Color : public SDL::SDL_Color {
   Color(Uint8, Uint8, Uint8, Uint8 = 255);
+  Color transparency(int);
   static Color f(double, double, double, double = 1.0);
   Color operator* (Color);
   Color();
   void applyGl() const;
+
+  static Color WHITE;
+  static Color MAIN_MENU_ON;
+  static Color MAIN_MENU_OFF;
+  static Color YELLOW;
+  static Color LIGHT_BROWN;
+  static Color ORANGE_BROWN;
+  static Color BROWN;
+  static Color DARK_BROWN;
+  static Color LIGHT_GRAY;
+  static Color GRAY;
+  static Color ALMOST_GRAY;
+  static Color DARK_GRAY;
+  static Color ALMOST_BLACK;
+  static Color ALMOST_DARK_GRAY;
+  static Color BLACK;
+  static Color ALMOST_WHITE;
+  static Color GREEN;
+  static Color LIGHT_GREEN;
+  static Color DARK_GREEN;
+  static Color RED;
+  static Color LIGHT_RED;
+  static Color PINK;
+  static Color ORANGE;
+  static Color BLUE;
+  static Color DARK_BLUE;
+  static Color NIGHT_BLUE;
+  static Color LIGHT_BLUE;
+  static Color PURPLE;
+  static Color VIOLET;
+  static Color TRANSLUCENT_BLACK;
+  static Color TRANSPARENT;
 };
-
-RICH_ENUM(ColorId,
-    WHITE,
-  MAIN_MENU_ON,
-  MAIN_MENU_OFF,
-  YELLOW,
-  LIGHT_BROWN,
-  ORANGE_BROWN,
-  BROWN,
-  DARK_BROWN,
-  LIGHT_GRAY,
-  GRAY,
-  ALMOST_GRAY,
-  DARK_GRAY,
-  ALMOST_BLACK,
-  ALMOST_DARK_GRAY,
-  BLACK,
-  ALMOST_WHITE,
-  GREEN,
-  LIGHT_GREEN,
-  DARK_GREEN,
-  RED,
-  LIGHT_RED,
-  PINK,
-  ORANGE,
-  BLUE,
-  DARK_BLUE,
-  NIGHT_BLUE,
-  LIGHT_BLUE,
-  PURPLE,
-  VIOLET,
-  TRANSLUCENT_BLACK,
-  TRANSPARENT
-);
-
-Color transparency(const Color& color, int trans);
-
-extern EnumMap<ColorId, Color> colors;
 
 enum class SpriteId {
   BUILDINGS,
@@ -153,14 +149,14 @@ class Renderer {
   void drawFilledRectangle(const Rectangle&, Color, optional<Color> outline = none);
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline = none);
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, Vec2 size);
-  void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
+  void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1, Color = Color::WHITE);
   void drawViewObject(Vec2 pos, const ViewObject&);
-  void drawViewObject(Vec2 pos, ViewId, bool useSprite, double scale = 1, Color = colors[ColorId::WHITE]);
-  void drawViewObject(Vec2 pos, ViewId, bool useSprite, Vec2 size, Color = colors[ColorId::WHITE]);
-  void drawViewObject(Vec2 pos, ViewId, Color = colors[ColorId::WHITE]);
+  void drawViewObject(Vec2 pos, ViewId, bool useSprite, double scale = 1, Color = Color::WHITE);
+  void drawViewObject(Vec2 pos, ViewId, bool useSprite, Vec2 size, Color = Color::WHITE);
+  void drawViewObject(Vec2 pos, ViewId, Color = Color::WHITE);
   void drawAsciiBackground(ViewId, Rectangle bounds);
-  void drawTile(Vec2 pos, TileCoord coord, double scale = 1, Color = colors[ColorId::WHITE]);
-  void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = colors[ColorId::WHITE], bool hFlip = false,
+  void drawTile(Vec2 pos, TileCoord coord, double scale = 1, Color = Color::WHITE);
+  void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = Color::WHITE, bool hFlip = false,
       bool vFlip = false);
   void setScissor(optional<Rectangle>);
   void addQuad(const Rectangle&, Color);

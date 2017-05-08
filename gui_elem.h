@@ -142,27 +142,27 @@ class GuiFactory {
   SGuiElem topMargin(int size, SGuiElem content);
   SGuiElem bottomMargin(int size, SGuiElem content);
   SGuiElem progressBar(Color, double state);
-  SGuiElem label(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
-  SGuiElem labelHighlight(const string&, Color = colors[ColorId::WHITE], char hotkey = 0);
+  SGuiElem label(const string&, Color = Color::WHITE, char hotkey = 0);
+  SGuiElem labelHighlight(const string&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem labelHighlightBlink(const string& s, Color, Color, char hotkey = 0);
-  SGuiElem label(const string&, int size, Color = colors[ColorId::WHITE]);
+  SGuiElem label(const string&, int size, Color = Color::WHITE);
   SGuiElem label(const string&, function<Color()>, char hotkey = 0);
   SGuiElem labelFun(function<string()>, function<Color()>);
-  SGuiElem labelFun(function<string()>, Color = colors[ColorId::WHITE]);
+  SGuiElem labelFun(function<string()>, Color = Color::WHITE);
   SGuiElem labelMultiLine(const string&, int lineHeight, int size = Renderer::textSize,
-      Color = colors[ColorId::WHITE]);
-  SGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = colors[ColorId::WHITE]);
-  SGuiElem centeredLabel(Renderer::CenterType, const string&, Color = colors[ColorId::WHITE]);
+      Color = Color::WHITE);
+  SGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = Color::WHITE);
+  SGuiElem centeredLabel(Renderer::CenterType, const string&, Color = Color::WHITE);
   SGuiElem variableLabel(function<string()>, int lineHeight, int size = Renderer::textSize,
-      Color = colors[ColorId::WHITE]);
-  SGuiElem mainMenuLabel(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_ON]);
-  SGuiElem mainMenuLabelBg(const string&, double vPadding, Color = colors[ColorId::MAIN_MENU_OFF]);
-  SGuiElem labelUnicode(const string&, Color = colors[ColorId::WHITE], int size = Renderer::textSize,
+      Color = Color::WHITE);
+  SGuiElem mainMenuLabel(const string&, double vPadding, Color = Color::MAIN_MENU_ON);
+  SGuiElem mainMenuLabelBg(const string&, double vPadding, Color = Color::MAIN_MENU_OFF);
+  SGuiElem labelUnicode(const string&, Color = Color::WHITE, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
   SGuiElem labelUnicode(const string&, function<Color()>, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
-  SGuiElem viewObject(const ViewObject&, double scale = 1, Color = colors[ColorId::WHITE]);
-  SGuiElem viewObject(ViewId, double scale = 1, Color = colors[ColorId::WHITE]);
+  SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);
+  SGuiElem viewObject(ViewId, double scale = 1, Color = Color::WHITE);
   SGuiElem asciiBackground(ViewId);
   SGuiElem translate(SGuiElem, Vec2 pos, optional<Vec2> size = none);
   SGuiElem translate(function<Vec2()>, SGuiElem);
@@ -261,10 +261,10 @@ class GuiFactory {
   SGuiElem translucentBackground();
   Color translucentBgColor = Color(0, 0, 0, 150);
   Color foreground1 = Color(0x20, 0x5c, 0x4a, 150);
-  Color text = colors[ColorId::WHITE];
-  Color titleText = colors[ColorId::YELLOW];
-  Color inactiveText = colors[ColorId::LIGHT_GRAY];
-  Color background1 = colors[ColorId::BLACK];
+  Color text = Color::WHITE;
+  Color titleText = Color::YELLOW;
+  Color inactiveText = Color::LIGHT_GRAY;
+  Color background1 = Color::BLACK;
 
   enum IconId {
     WORLD_MAP,
@@ -289,12 +289,12 @@ class GuiFactory {
     TEAM_BUTTON_HIGHLIGHT,
   };
 
-  SGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = colors[ColorId::WHITE]);
+  SGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color::WHITE);
   Texture& get(TexId);
   SGuiElem spellIcon(SpellId);
-  SGuiElem uiHighlightMouseOver(Color = colors[ColorId::GREEN]);
-  SGuiElem uiHighlightConditional(function<bool()>, Color = colors[ColorId::GREEN]);
-  SGuiElem uiHighlight(Color = colors[ColorId::GREEN]);
+  SGuiElem uiHighlightMouseOver(Color = Color::GREEN);
+  SGuiElem uiHighlightConditional(function<bool()>, Color = Color::GREEN);
+  SGuiElem uiHighlight(Color = Color::GREEN);
   SGuiElem blink(SGuiElem);
   SGuiElem tutorialHighlight();
   SGuiElem rectangleBorder(Color);
