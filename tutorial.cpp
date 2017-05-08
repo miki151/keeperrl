@@ -238,7 +238,7 @@ string Tutorial::getMessage() const {
       return "You are now in control of your minion, and the game has become turn-based. Try to moving around using "
           "the arrow keys or by left-clicking on the map. You can scroll the map by dragging it with the right "
           "mouse button.\n \n"
-          "Notice the rest of your team, which follows you.";
+          "Notice the rest of your team following you.";
     case State::FINISHED:
       return "Congratulations, you have completed the tutorial! Go play the game now :)";
   }
@@ -300,7 +300,7 @@ static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
 
 vector<Vec2> Tutorial::getHighlightedSquaresHigh(WConstGame game) const {
   auto collective = game->getPlayerCollective();
-  const Vec2 entry(149, 133);
+  const Vec2 entry(108, 96);
   const int corridor = 6;
   int roomWidth = 5;
   const Vec2 firstRoom(entry - Vec2(0, corridor + roomWidth / 2));

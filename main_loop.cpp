@@ -480,16 +480,18 @@ void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
 }
 
 PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) {
-  switch (setup.campaign.getType()) {
-    case CampaignType::SINGLE_KEEPER:
-      return modelBuilder.singleMapModel(setup.campaign.getWorldName(), std::move(setup.player));
-    default: {
-      auto ret = modelBuilder.campaignBaseModel("Campaign base site",
-          setup.campaign.getType() == CampaignType::ENDLESS);
-      modelBuilder.spawnKeeper(ret.get(), std::move(setup.player));
-      return ret;
+  auto ret = [&] {
+    switch (setup.campaign.getType()) {
+      case CampaignType::SINGLE_KEEPER:
+        return modelBuilder.singleMapModel(setup.campaign.getWorldName());
+      case CampaignType::QUICK_MAP:
+        return modelBuilder.tutorialModel("Campaign base site");
+      default:
+        return modelBuilder.campaignBaseModel("Campaign base site", setup.campaign.getType() == CampaignType::ENDLESS);
     }
-  }
+  }();
+  modelBuilder.spawnKeeper(ret.get(), std::move(setup.player));
+  return ret;
 }
 
 Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, RandomGen& random) {
@@ -526,18 +528,6 @@ Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, RandomGen& r
   if (failedToLoad)
     view->presentText("Sorry", "Error reading " + *failedToLoad + ". Leaving blank site.");
   return models;
-}
-
-PModel MainLoop::keeperSingleMap(RandomGen& random) {
-  PModel model;
-  NameGenerator::init(dataFreePath.subdirectory("names"));
-  doWithSplash(SplashType::BIG, "Generating map...", 300000,
-      [&] (ProgressMeter& meter) {
-        ModelBuilder modelBuilder(&meter, random, options, sokobanInput);
-        PCreature player = CreatureFactory::fromId(CreatureId::KEEPER, TribeId::getKeeper());
-        model = modelBuilder.singleMapModel(NameGenerator::get(NameGeneratorId::WORLD)->getNext(), std::move(player));
-      });
-  return model;
 }
 
 PGame MainLoop::loadGame(const FilePath& file) {

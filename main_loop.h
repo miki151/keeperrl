@@ -59,7 +59,6 @@ class MainLoop {
   void playMenuMusic();
 
   Table<PModel> prepareCampaignModels(CampaignSetup& campaign, RandomGen& random);
-  PModel keeperSingleMap(RandomGen& random);
   PGame loadGame(const FilePath&);
   PGame loadPrevious();
   FilePath getSavePath(const PGame&, GameSaveType);

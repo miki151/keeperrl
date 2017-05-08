@@ -257,10 +257,8 @@ static string getBoardText(const string& keeperName, const string& dukeName) {
   return dukeName + " will reward a daring hero 150 florens for slaying " + keeperName + " the Keeper.";
 }
 
-PModel ModelBuilder::singleMapModel(const string& worldName, PCreature keeper) {
-  auto ret = tryBuilding(10, [&] { return trySingleMapModel(worldName);});
-  spawnKeeper(ret.get(), std::move(keeper));
-  return ret;
+PModel ModelBuilder::singleMapModel(const string& worldName) {
+  return tryBuilding(10, [&] { return trySingleMapModel(worldName);});
 }
 
 PModel ModelBuilder::trySingleMapModel(const string& worldName) {
@@ -335,6 +333,13 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   return tryModel(230, siteName, enemyInfo, true, biome, externalEnemies);
 }
 
+PModel ModelBuilder::tryTutorialModel(const string& siteName) {
+  vector<EnemyInfo> enemyInfo;
+  BiomeId biome = BiomeId::MOUNTAIN;
+  enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
+  return tryModel(230, siteName, enemyInfo, true, biome, {});
+}
+
 static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
   switch (enemyId) {
     case EnemyId::KNIGHTS:
@@ -389,6 +394,10 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
 
 PModel ModelBuilder::campaignBaseModel(const string& siteName, bool externalEnemies) {
   return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); });
+}
+
+PModel ModelBuilder::tutorialModel(const string& siteName) {
+  return tryBuilding(20, [=] { return tryTutorialModel(siteName); });
 }
 
 PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type) {
