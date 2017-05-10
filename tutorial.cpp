@@ -23,6 +23,7 @@
 #include "item_index.h"
 #include "minion_task.h"
 #include "creature.h"
+#include "body.h"
 #include "equipment.h"
 #include "collective_teams.h"
 
@@ -53,6 +54,9 @@ enum class Tutorial::State {
   CREATE_TEAM,
   CONTROL_TEAM,
   CONTROL_MODE_MOVEMENT,
+  DISCOVER_VILLAGE,
+  KILL_VILLAGE,
+  LOOT_VILLAGE,
   FINISHED,
 };
 
@@ -66,6 +70,13 @@ static bool isTeam(WConstCollective collective) {
 
 bool Tutorial::canContinue(WConstGame game) const {
   auto collective = game->getPlayerCollective();
+  WCollective villain;
+  for (auto c : game->getCollectives())
+    if (c != collective) {
+      CHECK(!villain) << "Only one villain allowed in tutorial.";
+      villain = c;
+    }
+  CHECK(villain) << "Villain not found in tutorial.";
   switch (state) {
     case State::WELCOME:
     case State::INTRO:
@@ -131,6 +142,18 @@ bool Tutorial::canContinue(WConstGame game) const {
       return isTeam(collective) && !!game->getPlayerControl()->getControlled();
     case State::CONTROL_MODE_MOVEMENT:
       return true;
+    case State::DISCOVER_VILLAGE:
+      return collective->isKnownVillain(villain);
+    case State::KILL_VILLAGE:
+      for (auto c : villain->getCreatures())
+        if (c->getBody().isHumanoid())
+          return false;
+      return true;
+    case State::LOOT_VILLAGE:
+      for (auto pos : villain->getTerritory().getAll())
+        if (!pos.getItems(ItemIndex::GOLD).empty())
+          return false;
+      return true;
     case State::FINISHED:
       return false;
   }
@@ -149,7 +172,7 @@ string Tutorial::getMessage() const {
           "Remember that KeeperRL features perma-death, which means that you can't reload the game after a failure. "
           "If your Keeper dies, then the game is over, so be careful!";
     case State::INTRO2:
-      return "The four little creatures are your imps and they are here to perform your orders. Try hovering the mouse "
+      return "The four little creatures are your imps. They are here to perform your orders. Try hovering the mouse "
           "over other things on the map, and notice the hints in the lower right corner.";
     case State::CUT_TREES:
       return "Great things come from small beginnings. Your first task is to gather some wood! "
@@ -176,7 +199,7 @@ string Tutorial::getMessage() const {
       return "Build a door at the entrance to your dungeon. This will slow down potential intruders, "
           "as they will need to destroy it before they can enter. "
           "Your minions can pass through doors freely, unless you lock a door by left clicking on it.\n \n"
-          "Try locking and unlocking the door.";
+          "Try locking and unlocking your new door.";
     case State::BUILD_LIBRARY:
       return "The first room that you need to build is a library. This is where the Keeper and other minions "
           "will learn spells, and research new technology. It is also a source of mana. Place at least 5 book shelves "
@@ -218,14 +241,14 @@ string Tutorial::getMessage() const {
           "You can check the progress of production when you click on the workshop.";
     case State::EQUIP_WEAPON:
       return "Your minions will automatically pick up weapons and other equipment that's in storage, "
-          "but you can also control it manually. Click on your orc and then on the weapon slot to assign him the "
+          "but you can also control it manually. Click on your orc, and on his weapon slot to assign him the "
           "club that he has just produced.\n \n"
           "This way you will order him to go and pick it up.\n \n";
     case State::ACCEPT_MORE_IMMIGRANTS:
       return "You are ready to grow your military force. Three more orc immigrants should do.\n \n"
           "You can also invite goblins, which don't fight, but are excellent craftsmen.";
     case State::EQUIP_ALL_FIGHTERS:
-      return "Craft clubs for all of your orcs, as well as the Keeper, and equip them. They will be needed soon.\n \n"
+      return "Craft clubs for all of your orcs, and the Keeper, and have them equipped. They will be needed soon.\n \n"
           "In the meantime, order your Keeper to train by dragging him to the training room.";
     case State::CREATE_TEAM:
       return "Your tiny army is ready! Assemble a team by dragging your orcs onto the [new team] button. You can "
@@ -239,6 +262,16 @@ string Tutorial::getMessage() const {
           "the arrow keys or by left-clicking on the map. You can scroll the map by dragging it with the right "
           "mouse button.\n \n"
           "Notice the rest of your team following you.";
+    case State::DISCOVER_VILLAGE:
+      return "It's time to discover the whereabouts of the nearby human village. Click on the minimap in the upper "
+          "right corner. The approximate location of the village is marked by a '?'. Take your team there.";
+    case State::KILL_VILLAGE:
+      return "Your team has arrived at the village. The only right thing to do in this situation is to find and "
+          "exterminate all inhabitants!\n \n"
+          "Remember to break into every house by destroying the door.";
+    case State::LOOT_VILLAGE:
+      return "There is a nice treasure in one of the houses. Pick it all up by moving your orc over the gold "
+          "and using the menu in the upper left corner.";
     case State::FINISHED:
       return "Congratulations, you have completed the tutorial! Go play the game now :)";
   }
@@ -351,7 +384,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
   }
 }
 
-Tutorial::Tutorial() : state(State::WELCOME) {
+Tutorial::Tutorial() : state(State::KILL_VILLAGE) {
 
 }
 
@@ -418,11 +451,11 @@ void Tutorial::createTutorial(Game& game) {
           .setFrequency(0.5)
           .addRequirement(0.0, TutorialRequirement {tutorial})
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
-      ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
+      ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::NO_EQUIPMENT})
           .setLimit(1)
           .setFrequency(0.5)
           .addRequirement(0.0, TutorialRequirement {tutorial})
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
+          .addRequirement(0.1, AttractionInfo{1, FurnitureType::WORKSHOP})
   }),
       Immigration(collective));
 }

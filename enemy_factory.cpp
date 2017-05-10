@@ -571,6 +571,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.numCreatures = 9;
             c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD;
+            c.stockpiles = LIST({StockpileInfo::GOLD, 50});
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants());
     case EnemyId::ELVEN_COTTAGE:

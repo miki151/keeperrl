@@ -412,8 +412,8 @@ class Creatures : public LevelMaker {
 
 class Items : public LevelMaker {
   public:
-  Items(ItemFactory _factory, int minc, int maxc) :
-      factory(_factory), minItem(minc), maxItem(maxc) {}
+  Items(ItemFactory _factory, int minc, int maxc, bool _placeOnFurniture = false) :
+      factory(_factory), minItem(minc), maxItem(maxc), placeOnFurniture(_placeOnFurniture) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     int numItem = builder->getRandom().get(minItem, maxItem);
@@ -422,7 +422,8 @@ class Items : public LevelMaker {
       do {
         pos = Vec2(builder->getRandom().get(area.left(), area.right()), builder->getRandom().get(area.top(),
               area.bottom()));
-      } while (!builder->canNavigate(pos, MovementTrait::WALK) || builder->getFurniture(pos, FurnitureLayer::MIDDLE));
+      } while (!builder->canNavigate(pos, MovementTrait::WALK) ||
+           (!placeOnFurniture && builder->getFurniture(pos, FurnitureLayer::MIDDLE)));
       builder->putItems(pos, factory.random());
     }
   }
@@ -431,6 +432,7 @@ class Items : public LevelMaker {
   ItemFactory factory;
   int minItem;
   int maxItem;
+  bool placeOnFurniture;
 };
 
 class River : public LevelMaker {
@@ -1629,13 +1631,21 @@ class BorderGuard : public LevelMaker {
 static MakerQueue* stockpileMaker(StockpileInfo info) {
   auto floor = FurnitureType::FLOOR_STONE1;
   ItemFactory items;
+  optional<FurnitureType> furniture;
   switch (info.type) {
-    case StockpileInfo::GOLD: items = ItemFactory::singleType(ItemId::GOLD_PIECE); break;
-    case StockpileInfo::MINERALS: items = ItemFactory::minerals(); break;
+    case StockpileInfo::GOLD:
+      furniture = FurnitureType::TREASURE_CHEST;
+      items = ItemFactory::singleType(ItemId::GOLD_PIECE);
+      break;
+    case StockpileInfo::MINERALS:
+      items = ItemFactory::minerals();
+      break;
   }
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareChange::reset(floor)));
-  queue->addMaker(new Items(items, info.number, info.number + 1));
+  if (furniture)
+    queue->addMaker(new Empty(SquareChange(*furniture)));
+  queue->addMaker(new Items(items, info.number, info.number + 1, !!furniture));
   return queue;
 }
 
