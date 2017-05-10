@@ -2291,6 +2291,7 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   textures.emplace(TexId::SCROLL_DOWN, path.file("ui/down.png"));
   textures.emplace(TexId::WINDOW_CORNER, path.file("ui/corner1.png"));
   textures.emplace(TexId::WINDOW_CORNER_EXIT, path.file("ui/corner2X.png"));
+  textures.emplace(TexId::WINDOW_CORNER_EXIT_HIGHLIGHT, path.file("ui/corner2X_highlight.png"));
   textures.emplace(TexId::WINDOW_VERT_BAR, path.file("ui/vertibarmsg1.png"));
   textures.emplace(TexId::MAIN_MENU_HIGHLIGHT, path.file("ui/menu_highlight.png"));
   textures.emplace(TexId::SPLASH1, path.file("splash2f.png"));
@@ -2508,6 +2509,7 @@ SGuiElem GuiFactory::window(SGuiElem content, function<void()> onExitButton) {
         sprite(get(TexId::WINDOW_CORNER), Alignment::BOTTOM_RIGHT, true, true, Vec2(6, 2)),
         sprite(get(TexId::WINDOW_CORNER), Alignment::BOTTOM_LEFT, true, false, Vec2(-6, 2)),
         sprite(get(TexId::WINDOW_CORNER_EXIT), Alignment::TOP_RIGHT, false, false, Vec2(6, -2)),
+        alignment(Alignment::TOP_RIGHT, mouseHighlight2(sprite(get(TexId::WINDOW_CORNER_EXIT_HIGHLIGHT), Alignment::TOP_RIGHT, false, false, Vec2(6, -2))), Vec2(47, 41)),
         sprite(get(TexId::WINDOW_CORNER), Alignment::TOP_LEFT, false, false, Vec2(-6, -2))
         ));
 }
