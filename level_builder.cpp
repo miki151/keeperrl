@@ -14,7 +14,7 @@
 
 LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int height, const string& n, bool allCovered,
     optional<double> defaultLight)
-  : squares(Rectangle(width, height)), background(width, height), unavailable(width, height, false),
+  : squares(Rectangle(width, height)), unavailable(width, height, false),
     heightMap(width, height, 0), covered(width, height, allCovered),
     sunlight(width, height, defaultLight ? *defaultLight : (allCovered ? 0.0 : 1.0)),
     attrib(width, height), items(width, height), furniture(Rectangle(width, height)),
@@ -162,7 +162,6 @@ PLevel LevelBuilder::build(WModel m, LevelMaker* maker, LevelId levelId) {
     if (!items[v].empty())
       squares.getWritable(v)->dropItemsLevelGen(std::move(items[v]));
   auto l = Level::create(std::move(squares), std::move(furniture), m, name, sunlight, levelId, covered);
-  l->background = background;
   l->unavailable = unavailable;
   for (pair<PCreature, Vec2>& c : creatures)
     Position(c.second, l.get()).addCreature(std::move(c.first));

@@ -121,7 +121,6 @@ class LevelBuilder {
   private:
   Vec2 transform(Vec2);
   SquareArray squares;
-  Table<optional<ViewObject>> background;
   Table<bool> unavailable;
   Table<double> heightMap;
   Table<double> dark;

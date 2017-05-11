@@ -42,8 +42,8 @@ template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, oldSquares, landingSquares, tickingSquares, creatures, model, fieldOfView);
-  ar(name, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
-  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, memoryUpdates);
+  ar(name, sunlight, bucketMap, sectors, lightAmount, unavailable);
+  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
   ar(furniture, tickingFurniture, covered);
 }  
 
@@ -537,10 +537,6 @@ bool Level::isChokePoint(Vec2 pos, const MovementType& movement) const {
 
 void Level::updateSunlightMovement() {
   sectors.clear();
-}
-
-const optional<ViewObject>& Level::getBackgroundObject(Vec2 pos) const {
-  return (*background)[pos];
 }
 
 int Level::getNumGeneratedSquares() const {

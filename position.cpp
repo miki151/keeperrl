@@ -278,10 +278,7 @@ string Position::getName() const {
 void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
   if (isValid()) {
     getSquare()->getViewIndex(index, viewer);
-    if (!index.hasObject(ViewLayer::FLOOR_BACKGROUND))
-      if (auto& obj = level->getBackgroundObject(coord))
-        index.insert(*obj);
-    if (isValid() && isUnavailable())
+    if (isUnavailable())
       index.setHighlight(HighlightType::UNAVAILABLE);
     for (auto furniture : getFurniture())
       if (furniture->isVisibleTo(viewer) && furniture->getViewObject())

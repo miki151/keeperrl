@@ -179,7 +179,6 @@ class Level : public OwnedObject<Level> {
 
   void updateSunlightMovement();
 
-  const optional<ViewObject>& getBackgroundObject(Vec2) const;
   int getNumGeneratedSquares() const;
   int getNumTotalSquares() const;
   bool isUnavailable(Vec2) const;
@@ -202,7 +201,6 @@ class Level : public OwnedObject<Level> {
   HeapAllocated<SquareArray> SERIAL(squares);
   Table<PSquare> SERIAL(oldSquares);
   HeapAllocated<FurnitureArray> SERIAL(furniture);
-  HeapAllocated<Table<optional<ViewObject>>> SERIAL(background);
   Table<bool> SERIAL(memoryUpdates);
   Table<bool> renderUpdates = Table<bool>(getMaxBounds(), true);
   Table<bool> SERIAL(unavailable);
@@ -217,7 +215,6 @@ class Level : public OwnedObject<Level> {
   WModel SERIAL(model) = nullptr;
   mutable HeapAllocated<EnumMap<VisionId, FieldOfView>> SERIAL(fieldOfView);
   string SERIAL(name);
-  Vec2 SERIAL(backgroundOffset);
   Table<double> SERIAL(sunlight);
   Table<bool> SERIAL(covered);
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
