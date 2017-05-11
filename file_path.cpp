@@ -16,7 +16,7 @@ const char* FilePath::getFileName() const {
 time_t FilePath::getModificationTime() const {
   struct stat buf;
   stat(getPath(), &buf);
-  return buf.st_mtim.tv_sec;
+  return buf.st_mtime;
 }
 
 bool FilePath::hasSuffix(const string& suf) const {
