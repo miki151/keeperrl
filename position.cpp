@@ -283,6 +283,8 @@ void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
     for (auto furniture : getFurniture())
       if (furniture->isVisibleTo(viewer) && furniture->getViewObject())
         index.insert(*furniture->getViewObject());
+    if (index.noObjects())
+      index.insert(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND));
   }
 }
 
