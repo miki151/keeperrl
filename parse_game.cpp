@@ -9,6 +9,7 @@
 #include "highscores.h"
 #include "campaign_type.h"
 #include "player_role.h"
+#define ProgramOptions_no_colors
 #include "extern/ProgramOptions.h"
 
 
